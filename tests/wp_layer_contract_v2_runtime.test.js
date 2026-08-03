@@ -15,6 +15,7 @@ import {
   collectStaticModuleImports,
   collectStaticModuleSpecifiers,
   evaluateLayerContract,
+  evaluatePendingLayerRatchetReductions,
   layerOfRelativeFile,
   validateLayerContractSchema,
 } from '../tools/wp_layer_contract_support.mjs';
@@ -56,6 +57,7 @@ const RATCHET = Object.freeze({
   owner: 'architecture-contract',
   reason: 'Budgets only move down after verified dependency removal.',
   reviewedAt: '2026-07-14',
+  pendingReductionGraceDays: 14,
 });
 
 function edge(overrides = {}) {
@@ -97,6 +99,7 @@ function allowRule(overrides = {}) {
 }
 
 function contract({
+  ratchet = RATCHET,
   rules = [allowRule()],
   facades = [],
   dynamicImportAllowlist = [],
@@ -109,7 +112,7 @@ function contract({
   return {
     version: '2.7',
     root: 'esm',
-    ratchet: RATCHET,
+    ratchet,
     rules,
     facades,
     dynamicImportAllowlist,
@@ -2511,6 +2514,22 @@ test('layer contract schema rejects duplicate rules, unknown layers, invalid bud
   );
   assert.throws(
     () =>
+      validateLayerContractSchema({
+        ...contract(),
+        ratchet: { ...RATCHET, pendingReductionGraceDays: 0 },
+      }),
+    /pendingReductionGraceDays/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema({
+        ...contract(),
+        ratchet: { ...RATCHET, pendingReductionGraceDays: 91 },
+      }),
+    /pendingReductionGraceDays/
+  );
+  assert.throws(
+    () =>
       validateLayerContractSchema(
         contract({
           dynamicImportAllowlist: [
@@ -2808,6 +2827,68 @@ test('layer contract proposal ratchets budgets down and never raises reviewed ce
   );
 });
 
+test('layer ratchet freshness guard gives clean reductions a bounded grace window', () => {
+  const current = contract({
+    ratchet: {
+      ...RATCHET,
+      reviewedAt: '2026-07-01',
+      pendingReductionGraceDays: 14,
+    },
+    rules: [
+      allowRule({
+        maxImporterCount: 2,
+        maxImportCount: 2,
+        maxValueImporterCount: 2,
+        maxValueImportCount: 2,
+      }),
+    ],
+  });
+  const graph = { edges: [edge()] };
+
+  const boundary = evaluatePendingLayerRatchetReductions(graph, current, {
+    currentDate: '2026-07-15',
+  });
+  assert.equal(boundary.ok, true);
+  assert.equal(boundary.hasPendingReductions, true);
+  assert.equal(boundary.reviewAgeDays, 14);
+  assert.equal(boundary.overdue, false);
+  assert.equal(boundary.pendingBudgetChanges.length, 4);
+
+  const overdue = evaluatePendingLayerRatchetReductions(graph, current, {
+    currentDate: '2026-07-16',
+  });
+  assert.equal(overdue.ok, false);
+  assert.equal(overdue.overdue, true);
+  assert.equal(overdue.reviewAgeDays, 15);
+
+  const proposal = buildLayerContractProposal(graph, current, {
+    currentDate: '2026-07-16',
+  });
+  assert.equal(proposal.reviewRequired, false);
+  assert.equal(proposal.contract.ratchet.reviewedAt, '2026-07-16');
+  const applied = evaluatePendingLayerRatchetReductions(graph, proposal.contract, {
+    currentDate: '2026-08-31',
+  });
+  assert.equal(applied.ok, true);
+  assert.equal(applied.hasPendingReductions, false);
+});
+
+test('layer ratchet freshness guard fails closed on a future review date', () => {
+  const report = evaluatePendingLayerRatchetReductions(
+    { edges: [edge()] },
+    contract({
+      ratchet: {
+        ...RATCHET,
+        reviewedAt: '2026-07-22',
+      },
+    }),
+    { currentDate: '2026-07-21' }
+  );
+
+  assert.equal(report.ok, false);
+  assert.equal(report.futureReview, true);
+});
+
 test('layer contract proposal preserves explicit deny decisions', () => {
   const deniedRule = {
     from: 'ui',
@@ -2861,6 +2942,47 @@ test('layer contract proposal CLI exits nonzero when ratchet growth requires rev
     const proposal = JSON.parse(result.stdout);
     assert.equal(proposal.reviewRequired, true);
     assert.ok(proposal.diff.ratchetViolations.length > 0);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('layer ratchet freshness CLI rejects overdue clean reductions', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  const observedRule = baseline.rules.find(
+    rule => rule.decision === 'allow' && Number(rule.maxImportCount) > 0
+  );
+  assert.ok(observedRule, 'fixture requires one observed allow rule');
+  observedRule.maxImportCount += 1;
+  baseline.ratchet.reviewedAt = '2026-01-01';
+
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-layer-ratchet-'));
+  try {
+    const baselinePath = path.join(tempRoot, 'baseline.json');
+    fs.writeFileSync(baselinePath, JSON.stringify(baseline));
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repositoryRoot, 'tools', 'wp_layer_contract.js'),
+        '--check-pending-reductions',
+        '--baseline',
+        baselinePath,
+      ],
+      {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      }
+    );
+
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /pending budget reduction/);
+    assert.match(result.stderr, /contract:layers:propose/);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

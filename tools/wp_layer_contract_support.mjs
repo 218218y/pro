@@ -9,6 +9,7 @@ const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
 const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
 const RATCHET_MODE = 'decrease-only';
 export const LAYER_CONTRACT_VERSION = '2.7';
+export const MAX_PENDING_LAYER_RATCHET_REDUCTION_DAYS = 90;
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
@@ -644,10 +645,13 @@ export function validateLayerContractSchema(contract) {
     typeof contract.ratchet?.reason !== 'string' ||
     !contract.ratchet.reason.trim() ||
     typeof contract.ratchet?.reviewedAt !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(contract.ratchet.reviewedAt)
+    !/^\d{4}-\d{2}-\d{2}$/.test(contract.ratchet.reviewedAt) ||
+    !Number.isInteger(contract.ratchet?.pendingReductionGraceDays) ||
+    contract.ratchet.pendingReductionGraceDays < 1 ||
+    contract.ratchet.pendingReductionGraceDays > MAX_PENDING_LAYER_RATCHET_REDUCTION_DAYS
   ) {
     throw new Error(
-      'wp_layer_contract: ratchet requires decrease-only mode, owner, reason, and reviewedAt (YYYY-MM-DD)'
+      `wp_layer_contract: ratchet requires decrease-only mode, owner, reason, reviewedAt (YYYY-MM-DD), and pendingReductionGraceDays (1-${MAX_PENDING_LAYER_RATCHET_REDUCTION_DAYS})`
     );
   }
   const known = new Set(KNOWN_LAYERS);
@@ -2867,10 +2871,19 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
     ];
   });
 
+  const reviewRequired =
+    addedEdges.length > 0 ||
+    ratchetViolations.length > 0 ||
+    requiresFacadeDecision.length > 0 ||
+    migrationEvaluation.failures.length > 0;
+  const proposedRatchet = JSON.parse(JSON.stringify(currentContract.ratchet));
+  if (!reviewRequired && (removedEdges.length > 0 || budgetChanges.length > 0)) {
+    proposedRatchet.reviewedAt = isoDateOnlyFromTimestamp(evaluationDateTimestamp(options.currentDate));
+  }
   const proposedContract = {
     version: LAYER_CONTRACT_VERSION,
     root: 'esm',
-    ratchet: JSON.parse(JSON.stringify(currentContract.ratchet)),
+    ratchet: proposedRatchet,
     rules: nextRules,
     facades: JSON.parse(JSON.stringify(currentContract.facades)),
     dynamicImportAllowlist: JSON.parse(JSON.stringify(currentContract.dynamicImportAllowlist)),
@@ -2881,12 +2894,6 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
     migrationConsolidations: JSON.parse(JSON.stringify(currentContract.migrationConsolidations)),
   };
   validateLayerContractSchema(proposedContract);
-
-  const reviewRequired =
-    addedEdges.length > 0 ||
-    ratchetViolations.length > 0 ||
-    requiresFacadeDecision.length > 0 ||
-    migrationEvaluation.failures.length > 0;
 
   return {
     reviewRequired,
@@ -2905,5 +2912,40 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       reviewedOwnershipBudgets: migrationEvaluation.reviewedOwnershipStatuses.length,
       migrationConsolidations: migrationEvaluation.consolidationStatuses.length,
     },
+  };
+}
+
+export function evaluatePendingLayerRatchetReductions(graph, currentContract, options = {}) {
+  validateLayerContractSchema(currentContract);
+  const proposal = buildLayerContractProposal(graph, currentContract, options);
+  const currentDateMs = evaluationDateTimestamp(options.currentDate);
+  const currentDate = isoDateOnlyFromTimestamp(currentDateMs);
+  const reviewedAtMs = parseIsoDateOnly(currentContract.ratchet.reviewedAt, 'ratchet.reviewedAt');
+  const reviewAgeDays = Math.floor((currentDateMs - reviewedAtMs) / DAY_MS);
+  const pendingBudgetChanges = proposal.diff.budgetChanges.flatMap(entry =>
+    entry.changes.map(change => ({ edge: entry.edge, ...change }))
+  );
+  const pendingRemovedEdges = proposal.diff.removedEdges.slice();
+  const cleanProposal = !proposal.reviewRequired;
+  const hasPendingReductions =
+    cleanProposal && (pendingBudgetChanges.length > 0 || pendingRemovedEdges.length > 0);
+  const futureReview = reviewAgeDays < 0;
+  const overdue =
+    hasPendingReductions &&
+    !futureReview &&
+    reviewAgeDays > currentContract.ratchet.pendingReductionGraceDays;
+
+  return {
+    ok: !futureReview && !overdue,
+    cleanProposal,
+    currentDate,
+    reviewedAt: currentContract.ratchet.reviewedAt,
+    reviewAgeDays,
+    graceDays: currentContract.ratchet.pendingReductionGraceDays,
+    hasPendingReductions,
+    overdue,
+    futureReview,
+    pendingBudgetChanges,
+    pendingRemovedEdges,
   };
 }

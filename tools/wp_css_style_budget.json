@@ -3,16 +3,16 @@
   "policy": "CSS cascade debt ratchet. Counts may stay at or below these limits; z-index declarations must use shared --wp-z-* layer tokens so stacking order stays reviewable.",
   "metrics": {
     "important": {
-      "max": 1,
-      "description": "Locks the current !important count so cascade exceptions do not grow silently."
+      "max": 0,
+      "description": "Locks !important at zero so cascade exceptions cannot return silently."
     },
     "transitionAll": {
       "max": 0,
       "description": "Locks transition: all usage; new transitions should name concrete properties."
     },
     "zIndex": {
-      "max": 41,
-      "description": "Locks the total z-index declaration count while layering is centralized through tokens."
+      "max": 40,
+      "description": "Locks the current z-index declaration count while layering is centralized through tokens."
     },
     "boxShadow": {
       "max": 0,

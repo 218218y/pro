@@ -218,6 +218,9 @@ jobs:
       - name: Run layer contract
         run: npm run contract:layers
 
+      - name: Enforce pending layer ratchet reductions
+        run: npm run contract:layers:ratchet
+
       - name: Run public API contract
         run: npm run contract:api
 

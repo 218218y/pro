@@ -71,8 +71,10 @@ throughout scanned ESM source. Facade `/**` patterns match path segments rather 
 The baseline uses a decrease-only ratchet. `npm run contract:layers:propose` preserves reviewed reasons,
 facades, dynamic-import approvals, deny rules, and ratchet ownership. A proposal lowers a ceiling only after
 the dependency graph has actually shrunk; it reports growth as a ratchet violation and never raises an
-existing budget to absorb it. The command only prints a review candidate and never edits
-`tools/wp_layer_baseline.json`. If an edge owned by a facade disappears, the candidate retains both its rule
+existing budget to absorb it. A clean reduction candidate refreshes `ratchet.reviewedAt` in the printed
+candidate; `npm run contract:layers:ratchet` fails once lower budgets or removable edges remain unapplied
+beyond the configured `pendingReductionGraceDays` window. The proposal command only prints a review
+candidate and never edits `tools/wp_layer_baseline.json`. If an edge owned by a facade disappears, the candidate retains both its rule
 and facade, reports `requiresFacadeDecision`, and exits non-zero until a reviewer explicitly removes or
 retains that public boundary.
 

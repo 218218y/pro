@@ -10,9 +10,9 @@
     "zIndexTokenless": 0
   },
   "max": {
-    "important": 1,
+    "important": 0,
     "transitionAll": 0,
-    "zIndex": 41,
+    "zIndex": 40,
     "boxShadow": 0,
     "zIndexTokenless": 0
   },
