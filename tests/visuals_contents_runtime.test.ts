@@ -18,7 +18,7 @@ import {
   resolveShowHanger,
 } from '../esm/native/builder/visuals_contents_shared.ts';
 import { __asBufferAttribute } from '../esm/native/builder/visuals_and_contents_shared.ts';
-import { CONTENT_VISUAL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BOOK_CONTENT_VISUAL_POLICY } from '../esm/shared/dimensions/content_visual_policy.ts';
 
 class FakeVector3 {
   x: number;
@@ -484,7 +484,7 @@ test('visuals_contents library books avoid tiny decorative slabs and keep depth 
 
   addFoldedClothes(App, 0, 0.2, shelfZ, 1.1, parent as any, 0.42, maxDepth, foldedContentsPolicy(true));
 
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const dims = BOOK_CONTENT_VISUAL_POLICY;
   const books = parent.children.filter(child => child.userData.__kind === 'library_book');
   const stacks = parent.children.filter(child => child.userData.__kind === 'library_book_stack');
   assert.ok(books.length > 0, 'library mode should render upright books');

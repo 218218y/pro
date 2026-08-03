@@ -12,7 +12,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const helperRel = 'esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts';
 const compatibilityRel = 'esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts';
 const ownerRel = 'esm/shared/dimensions/chest_mode_policy.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const runtimeRel = 'esm/native/runtime/api.ts';
 const semanticSnapshotRel = 'tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json';
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -219,18 +218,12 @@ test('CHEST compatibility helper and owner are exact identity-only type adaptati
   ]);
 });
 
-test('CHEST compatibility owner has only facade and Runtime consumers and its helper stays private', () => {
+test('CHEST compatibility owner has only the supported Runtime consumer and its helper stays private', () => {
   assert.deepEqual(collectConsumers(compatibilityRel), [
     {
       file: runtimeRel,
       kind: 'value',
       syntax: 'static-re-export',
-      symbols: ['CHEST_MODE_DIMENSIONS'],
-    },
-    {
-      file: facadeRel,
-      kind: 'value',
-      syntax: 'static-import',
       symbols: ['CHEST_MODE_DIMENSIONS'],
     },
   ]);
@@ -242,7 +235,7 @@ test('CHEST compatibility owner has only facade and Runtime consumers and its he
       symbols: ['legacyDimensionNumberView'],
     },
   ]);
-  for (const rel of [facadeRel, 'esm/native/features/dimensions/index.ts', runtimeRel]) {
+  for (const rel of [runtimeRel]) {
     const exported = new Set(collectNamedModuleExports(rel, read(rel)).map(entry => entry.exportedName));
     assert.equal(exported.has('legacyDimensionNumberView'), false, rel);
     assert.equal(exported.has('LegacyDimensionNumberView'), false, rel);
@@ -260,31 +253,24 @@ test('CHEST compatibility target resolution rejects alias, absolute, extensionle
   ]) {
     assert.equal(resolveModuleTarget(runtimeAbsolute, specifier), compatibilityTarget, specifier);
   }
-  assert.equal(
-    resolveModuleTarget(runtimeAbsolute, '../features/dimensions'),
-    canonicalModuleTarget(path.join(root, 'esm/native/features/dimensions/index.ts'))
-  );
+  assert.equal(resolveModuleTarget(runtimeAbsolute, '../features/dimensions'), null);
 });
 
-test('CHEST facade, Runtime, and Services declarations preserve the frozen legacy number view', () => {
+test('CHEST Runtime and Services declarations preserve the frozen supported number view', () => {
   const snapshot = JSON.parse(read(semanticSnapshotRel));
   const chest = snapshot.symbols.find(entry => entry.name === 'CHEST_MODE_DIMENSIONS');
   assert.equal(chest.surfaces.runtime.sourceFile, compatibilityRel);
   assert.equal(
-    chest.surfaces.runtime.declarationTypeFingerprint,
-    chest.surfaces.facade.declarationTypeFingerprint
-  );
-  assert.equal(
     chest.surfaces.servicesBase.declarationTypeFingerprint,
-    chest.surfaces.facade.declarationTypeFingerprint
+    chest.surfaces.runtime.declarationTypeFingerprint
   );
   assert.equal(
     chest.surfaces.servicesEntry.declarationTypeFingerprint,
-    chest.surfaces.facade.declarationTypeFingerprint
+    chest.surfaces.runtime.declarationTypeFingerprint
   );
   assert.notEqual(
-    chest.canonicalOwner[0].declarationTypeFingerprint,
-    chest.surfaces.facade.declarationTypeFingerprint
+    chest.canonicalOwner.declarationTypeFingerprint,
+    chest.surfaces.runtime.declarationTypeFingerprint
   );
 });
 

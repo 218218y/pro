@@ -9,8 +9,6 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const servicesApiRel = 'esm/native/services/api.ts';
 const servicesRuntimeBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
@@ -270,6 +268,7 @@ function isDirectory(candidate) {
 }
 
 function canonicalFileTarget(file) {
+  if (!isFile(file)) return null;
   const realFile = fs.realpathSync.native(file);
   const normalized = path.normalize(realFile);
   return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
@@ -302,11 +301,9 @@ function resolveModuleTarget(fromFile, specifier) {
 }
 
 const ownerTarget = canonicalFileTarget(path.join(root, ownerRel));
-const facadeTarget = canonicalFileTarget(path.join(root, facadeRel));
-const publicDimensionsTarget = canonicalFileTarget(path.join(root, publicDimensionsRel));
 
 function targets(file, dependency, target) {
-  return resolveModuleTarget(file, dependency.specifier) === target;
+  return target !== null && resolveModuleTarget(file, dependency.specifier) === target;
 }
 
 function isTypeOnlyPosition(node) {
@@ -401,10 +398,6 @@ function inspectPrivateOwnerUniverse(entries) {
     const rel = normalizeRel(file);
     const analysis = analyzeModuleDependencies(file, source);
     const ownerDependencies = analysis.imports.filter(dependency => targets(file, dependency, ownerTarget));
-    const facadeDependencies = analysis.imports.filter(dependency => targets(file, dependency, facadeTarget));
-    const publicBarrelDependencies = analysis.imports.filter(dependency =>
-      targets(file, dependency, publicDimensionsTarget)
-    );
 
     for (const dependency of ownerDependencies) {
       focusedImports.push({
@@ -462,23 +455,6 @@ function inspectPrivateOwnerUniverse(entries) {
       }
     }
 
-    for (const dependency of publicBarrelDependencies) {
-      if (
-        dependency.kind === 'dynamic' ||
-        dependency.importedSymbols.includes('*') ||
-        dependency.importedSymbols.includes(policySymbol)
-      ) {
-        violations.push({
-          kind: 'public-barrel-owner-import',
-          file: rel,
-          syntax: dependency.syntax,
-        });
-      }
-    }
-    if (ownerDependencies.length > 0 && facadeDependencies.length > 0) {
-      violations.push({ kind: 'dual-focused-and-facade-import', file: rel });
-    }
-
     const focusedBindings = new Set(
       ownerDependencies
         .flatMap(dependency => dependency.bindings)
@@ -526,7 +502,7 @@ function inspectPrivateOwnerUniverse(entries) {
 test('Preset Models Dimension Defaults owner has exact dependencies, projections, exports, and no derived logic', () => {
   assert.deepEqual(ownerViolations(read(ownerRel)), []);
 
-  for (const rel of [facadeRel, publicDimensionsRel, runtimeApiRel, servicesApiRel, servicesRuntimeBaseRel]) {
+  for (const rel of [runtimeApiRel, servicesApiRel, servicesRuntimeBaseRel]) {
     assert.deepEqual(inspectPrivateOwnerUniverse([[path.join(root, rel), read(rel)]]).violations, []);
   }
 });
@@ -598,87 +574,6 @@ test('Preset Models Dimension Defaults owner rejects dependency, literal, arithm
     'owner-import-alias',
     'import alias'
   );
-
-  const facadeWithExport = `${read(facadeRel)}
-export { ${policySymbol} } from './dimensions/preset_models_dimension_defaults_policy.js';
-`;
-  const facadeBridgeResult = inspectPrivateOwnerUniverse([[path.join(root, facadeRel), facadeWithExport]]);
-  assert.equal(
-    facadeBridgeResult.violations.some(violation => violation.kind === 'private-owner-bridge'),
-    true,
-    JSON.stringify(facadeBridgeResult.violations)
-  );
-});
-
-test('Preset Models Dimension Defaults resolver detects extensionless owner, facade, and public-barrel routes', () => {
-  const approvedPath = path.join(root, approvedConsumerRel);
-  const extensionlessOwnerSpecifier = '../../shared/dimensions/preset_models_dimension_defaults_policy';
-
-  assert.equal(resolveModuleTarget(approvedPath, extensionlessOwnerSpecifier), ownerTarget);
-  assert.equal(resolveModuleTarget(approvedPath, `${extensionlessOwnerSpecifier}.js?raw#owner`), ownerTarget);
-  assert.equal(resolveModuleTarget(approvedPath, `${extensionlessOwnerSpecifier}.mjs`), ownerTarget);
-  assert.equal(resolveModuleTarget(approvedPath, '../features/dimensions/'), publicDimensionsTarget);
-  assert.equal(
-    resolveModuleTarget(approvedPath, '../../shared/wardrobe_dimension_tokens_shared'),
-    facadeTarget
-  );
-  assert.equal(resolveModuleTarget(approvedPath, './missing_preset_models_owner'), null);
-  assert.equal(resolveModuleTarget(approvedPath, 'node:path'), null);
-
-  const extensionlessOwnerResult = inspectPrivateOwnerUniverse([
-    [
-      approvedPath,
-      `import { ${policySymbol} } from '${extensionlessOwnerSpecifier}';
-export const doors = ${policySymbol}.hingedDoorsCount;`,
-    ],
-  ]);
-  assert.deepEqual(extensionlessOwnerResult.focusedImports, [
-    {
-      file: approvedConsumerRel,
-      specifier: extensionlessOwnerSpecifier,
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: [policySymbol],
-    },
-  ]);
-  assert.equal(
-    extensionlessOwnerResult.violations.some(
-      violation => violation.kind === 'invalid-focused-owner-dependency'
-    ),
-    true,
-    JSON.stringify(extensionlessOwnerResult.violations)
-  );
-
-  for (const specifier of ['../features/dimensions', '../features/dimensions/']) {
-    const result = inspectPrivateOwnerUniverse([
-      [
-        approvedPath,
-        `import { ${policySymbol} } from '${specifier}';
-export const doors = ${policySymbol}.hingedDoorsCount;`,
-      ],
-    ]);
-    assert.equal(
-      result.violations.some(violation => violation.kind === 'public-barrel-owner-import'),
-      true,
-      `${specifier}: ${JSON.stringify(result.violations)}`
-    );
-  }
-
-  const extensionlessFacadeResult = inspectPrivateOwnerUniverse([
-    [
-      approvedPath,
-      `import { ${policySymbol} } from '../../shared/dimensions/preset_models_dimension_defaults_policy.js';
-import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared';
-export const doors = ${policySymbol}.hingedDoorsCount;`,
-    ],
-  ]);
-  assert.equal(
-    extensionlessFacadeResult.violations.some(
-      violation => violation.kind === 'dual-focused-and-facade-import'
-    ),
-    true,
-    JSON.stringify(extensionlessFacadeResult.violations)
-  );
 });
 
 test('Preset Models Dimension Defaults repository-wide audit rejects arbitrary private-owner bridges', () => {
@@ -749,7 +644,7 @@ export const doors = ${policySymbol}.hingedDoorsCount;`;
   );
 });
 
-test('Preset Models Dimension Defaults consumer guard permits direct fields and rejects alternate paths and policy escapes', () => {
+test('Preset Models Dimension Defaults consumer guard permits direct fields and rejects policy escapes', () => {
   const approvedPath = path.join(root, approvedConsumerRel);
   const unapprovedPath = path.join(root, 'esm/native/features/unapproved_preset_models_consumer.ts');
   const focusedImport = `import { ${policySymbol} } from '../../shared/dimensions/preset_models_dimension_defaults_policy.js';`;
@@ -797,21 +692,6 @@ export const doors = defaults.${policySymbol}.hingedDoorsCount;`,
 }`,
     'invalid-focused-owner-dependency',
     'dynamic import'
-  );
-  assertViolation(
-    approvedPath,
-    `import { ${policySymbol} } from '../features/dimensions/index.js';
-export const doors = ${policySymbol}.hingedDoorsCount;`,
-    'public-barrel-owner-import',
-    'public barrel'
-  );
-  assertViolation(
-    approvedPath,
-    `${focusedImport}
-import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-export const doors = ${policySymbol}.hingedDoorsCount;`,
-    'dual-focused-and-facade-import',
-    'facade overlap'
   );
   assertViolation(
     approvedPath,

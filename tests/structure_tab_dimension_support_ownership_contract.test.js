@@ -14,10 +14,9 @@ const featureRel = 'esm/native/features/structure_tab_dimension_support.ts';
 const adapterRel = 'esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts';
 const baselineRel = 'tools/wp_layer_baseline.json';
 const featureManifestRel = 'tools/wp_features_public_api_manifest.json';
-const transitionInventoryRel = 'tools/wp_wardrobe_dimension_facade_transition_inventory.json';
 const adapterSpecifier = './structure_tab_dimension_defaults.js';
 const featureSpecifier = '../../../features/structure_tab_dimension_support.js';
-const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
+
 const servicesApiRel = 'esm/native/services/api.ts';
 const hexIndexRel = 'esm/native/features/hex_cell/index.ts';
 const autoWidthPolicySpecifier = '../../shared/dimensions/structure_tab_auto_width_policy.js';
@@ -699,20 +698,6 @@ function inspectHistoricalFeatureRatchet(baseline, entries) {
   return violations;
 }
 
-function inspectGroupATransitionHistory(candidateInventory) {
-  const violations = [];
-  const ownedConsumers = new Set(Object.keys(groupAConsumers));
-  for (const consumer of candidateInventory.consumers ?? []) {
-    if (ownedConsumers.has(consumer.consumer)) {
-      addViolation(violations, 'group-a-transition-consumer', consumer.consumer);
-    }
-    if (consumer.checkpointGroup === 'A') {
-      addViolation(violations, 'group-a-transition-group', consumer.consumer);
-    }
-  }
-  return violations;
-}
-
 function expectedLedgerEntries() {
   return ownerGroups.map((group, index) => {
     const companion = ownerGroups[(index + 1) % ownerGroups.length];
@@ -864,108 +849,6 @@ test('Group A historical ratchet remains backed by active Entries 167-171', () =
   assert.deepEqual(inspectHistoricalFeatureRatchet(futureHigherCeiling, entries), []);
 });
 
-test('the four Group A consumers remain absent from the append-safe transition inventory', () => {
-  const inventory = JSON.parse(read(transitionInventoryRel));
-  assert.deepEqual(inspectGroupATransitionHistory(inventory), []);
-
-  const futureInventory = structuredClone(inventory);
-  futureInventory.consumers.push({
-    consumer: 'esm/native/ui/future_dimension_transition_consumer.ts',
-    checkpointGroup: 'FUTURE',
-    symbols: [],
-  });
-  assert.deepEqual(inspectGroupATransitionHistory(futureInventory), []);
-});
-
-test('feature and adapter mutation probes reject facades, aliases, wrappers, and topology growth', () => {
-  const feature = read(featureRel);
-  assertMutationRejected(
-    inspectFeature(feature.replace(compositionOwnerSpecifier, facadeSpecifier)),
-    'feature-facade-import',
-    'facade import'
-  );
-  assertMutationRejected(
-    inspectFeature(
-      feature.replace('CHEST_MODE_DIMENSIONS,', 'CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_ALIAS,')
-    ),
-    'owner-alias',
-    'owner alias'
-  );
-  assertMutationRejected(
-    inspectFeature(
-      feature.replace(
-        /import \{[\s\S]*?\} from '\.\.\/\.\.\/shared\/dimensions\/structure_tab_dimension_policy\.js';/u,
-        `import * as structureDimensions from '${compositionOwnerSpecifier}';`
-      )
-    ),
-    'owner-namespace',
-    'namespace import'
-  );
-  assertMutationRejected(
-    inspectFeature(`${feature}\nvoid import('${compositionOwnerSpecifier}');\n`),
-    'feature-dynamic-import',
-    'dynamic import'
-  );
-  assertMutationRejected(
-    inspectFeature(
-      feature.replace(
-        /import \{[\s\S]*?\} from '\.\.\/\.\.\/shared\/dimensions\/structure_tab_dimension_policy\.js';\r?\n/u,
-        ''
-      )
-    ),
-    'owner-statement-count',
-    'missing owner statement'
-  );
-  assertMutationRejected(
-    inspectFeature(`${feature}\nimport { mToCm } from '../../shared/dimensions/units.js';\n`),
-    'owner-statement-count',
-    'extra owner statement'
-  );
-  assertMutationRejected(
-    inspectFeature(
-      feature.replace(
-        `${autoWidthPolicySymbol}.resolveAutoWidthForDoors`,
-        `(...args) => ${autoWidthPolicySymbol}.resolveAutoWidthForDoors(...args)`
-      )
-    ),
-    'auto-width-direct-projection',
-    'auto-width wrapper'
-  );
-  assertMutationRejected(
-    inspectFeature(`${feature}\nexport const COPIED_WIDTH = DEFAULT_WIDTH;\n`),
-    'feature-copy-wrapper-or-logic',
-    'copied constant'
-  );
-  assertMutationRejected(
-    inspectFeature(`${feature}\nexport const dimensionDefaults = { width: DEFAULT_WIDTH };\n`),
-    'feature-copy-wrapper-or-logic',
-    'object wrapper'
-  );
-  assertMutationRejected(
-    inspectAdapter(`${read(adapterRel)}\nexport const ADAPTER_LITERAL = 1;\n`),
-    'adapter-logic-literal-or-copy',
-    'adapter logic or literal'
-  );
-  const extraConsumer = [
-    'esm/native/ui/react/tabs/structure_tab_extra_consumer.ts',
-    "import { DEFAULT_WIDTH } from '../../../features/structure_tab_dimension_support';\nexport function readWidth() { return DEFAULT_WIDTH; }\n",
-  ];
-  assertMutationRejected(
-    inspectConsumerTopology([...productionEntries(), extraConsumer]),
-    'direct-ui-feature-boundary-import',
-    'additional feature consumer'
-  );
-  const aliasConsumer = [
-    'esm/native/ui/react/tabs/structure_tab_alias_consumer.ts',
-    "import { DEFAULT_WIDTH } from '@/native/features/structure_tab_dimension_support.js';\nexport function readWidth() { return DEFAULT_WIDTH; }\n",
-  ];
-  assertMutationRejected(
-    inspectConsumerTopology([...productionEntries(), aliasConsumer]),
-    'direct-ui-feature-boundary-import',
-    'alias feature consumer'
-  );
-});
-
 test('route and behavior mutation probes reject owned Structure Tab regressions', () => {
   const constraintsRel = 'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts';
   const cellRel = 'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx';
@@ -1079,22 +962,6 @@ test('Ledger and historical ratchet mutation probes reject owned-entry drift', (
     'active Group A Entries without importer ceiling support'
   );
 
-  const returnedConsumer = structuredClone(JSON.parse(read(transitionInventoryRel)));
-  returnedConsumer.consumers.push({
-    consumer: Object.keys(groupAConsumers)[0],
-    checkpointGroup: 'A',
-    symbols: [],
-  });
-  assertMutationRejected(
-    inspectGroupATransitionHistory(returnedConsumer),
-    'group-a-transition-consumer',
-    'Group A transition consumer returned'
-  );
-  assertMutationRejected(
-    inspectGroupATransitionHistory(returnedConsumer),
-    'group-a-transition-group',
-    'Group A transition group returned'
-  );
   const unrelatedCurrentTotals = structuredClone(baseline);
   const unrelatedRule = unrelatedCurrentTotals.rules.find(
     rule => rule.from === 'ui' && rule.to === 'features'

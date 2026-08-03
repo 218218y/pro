@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CARCASS_SHELL_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { CARCASS_SHELL_DIMENSIONS } from '../esm/shared/dimensions/carcass_shell_policy.ts';
 import { createInterDivider } from '../esm/native/builder/module_loop_pipeline_module_dividers.ts';
 import { applyHexCellGeometryForModule } from '../esm/native/builder/module_loop_pipeline_hex_cell.ts';
 

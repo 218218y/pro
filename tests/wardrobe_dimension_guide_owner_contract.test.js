@@ -7,15 +7,13 @@ import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
-import { createTsRuntimeModuleLoader } from './_ts_runtime_module_loader.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const runtimeApiRel = 'esm/native/runtime/api.ts';
+
 const baselineRel = 'tools/wp_layer_baseline.json';
-const ownerSpecifier = './dimensions/wardrobe_dimension_guide_policy.js';
+
 const ownerSymbol = 'WARDROBE_DIMENSION_GUIDE_POLICY';
 const compatibilitySymbol = 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS';
 const initializerSha256 = '5c23d1d4ea81ab8735b9214d73d1b6bfbe7eec9ed5ad6a7165a0381a486a811d';
@@ -38,12 +36,6 @@ const expectedFlowSemanticHashes = Object.freeze({
 });
 
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
-const runtimeExtensionCandidates = Object.freeze({
-  '.js': Object.freeze(['.ts', '.tsx', '.js', '.jsx']),
-  '.mjs': Object.freeze(['.mts', '.mjs']),
-  '.cjs': Object.freeze(['.cts', '.cjs']),
-  '.jsx': Object.freeze(['.tsx', '.jsx']),
-});
 
 const expectedValues = Object.freeze({
   textScale: Object.freeze({
@@ -173,52 +165,6 @@ function listSourceFiles(directory, files = []) {
 function relativePath(file) {
   return path.relative(root, file).replaceAll('\\', '/');
 }
-
-function stripQueryHash(specifier) {
-  const queryIndex = specifier.indexOf('?');
-  const hashIndex = specifier.indexOf('#');
-  const cutIndex =
-    queryIndex === -1 ? hashIndex : hashIndex === -1 ? queryIndex : Math.min(queryIndex, hashIndex);
-  return cutIndex === -1 ? specifier : specifier.slice(0, cutIndex);
-}
-
-function canonicalTarget(file) {
-  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return null;
-  return path.normalize(fs.realpathSync.native(file)).toLowerCase();
-}
-
-function resolveModuleTarget(fromFile, specifier) {
-  if (typeof specifier !== 'string') return null;
-  const clean = stripQueryHash(specifier);
-  let raw;
-  if (clean.startsWith('@/')) raw = path.join(root, 'esm', clean.slice(2));
-  else if (clean.startsWith('.')) raw = path.resolve(path.dirname(fromFile), clean);
-  else return null;
-
-  const extension = path.extname(raw).toLowerCase();
-  const candidates = [raw];
-  if (!extension) {
-    for (const candidateExtension of sourceExtensions) candidates.push(`${raw}${candidateExtension}`);
-    for (const candidateExtension of sourceExtensions) {
-      candidates.push(path.join(raw, `index${candidateExtension}`));
-    }
-  } else {
-    const stem = raw.slice(0, -extension.length);
-    for (const candidateExtension of runtimeExtensionCandidates[extension] ?? []) {
-      candidates.push(`${stem}${candidateExtension}`);
-    }
-  }
-
-  for (const candidate of candidates) {
-    const target = canonicalTarget(candidate);
-    if (target) return target;
-  }
-  return null;
-}
-
-const ownerTarget = canonicalTarget(path.join(root, ownerRel));
-const facadeTarget = canonicalTarget(path.join(root, facadeRel));
-const publicDimensionsTarget = canonicalTarget(path.join(root, publicDimensionsRel));
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -504,113 +450,6 @@ function inspectOwner(source) {
   return violations;
 }
 
-function inspectFacade(source) {
-  const violations = [];
-  const facadeFile = path.join(root, facadeRel);
-  const sourceFile = createSourceFile(facadeRel, source);
-  const ownerDependencies = analyzeModuleDependencies(facadeRel, source).imports.filter(
-    dependency => resolveModuleTarget(facadeFile, dependency.specifier) === ownerTarget
-  );
-  if (
-    ownerDependencies.length !== 1 ||
-    ownerDependencies[0].specifier !== ownerSpecifier ||
-    ownerDependencies[0].kind !== 'value' ||
-    ownerDependencies[0].syntax !== 'static-import' ||
-    stableJson(ownerDependencies[0].importedSymbols) !== stableJson([ownerSymbol]) ||
-    stableJson(ownerDependencies[0].bindings) !==
-      stableJson([
-        {
-          importedName: ownerSymbol,
-          localName: ownerSymbol,
-          exportedName: null,
-        },
-      ])
-  ) {
-    addViolation(violations, 'facade-owner-import');
-  }
-
-  const declaration = exportedConstDeclarator(sourceFile, compatibilitySymbol);
-  if (
-    declaration?.statement.declaration.declarations?.length !== 1 ||
-    declaration.declarator.id?.type !== 'Identifier' ||
-    declaration.declarator.id.name !== compatibilitySymbol ||
-    declaration.declarator.id.typeAnnotation ||
-    declaration.declarator.id.optional ||
-    declaration.declarator.id.definite
-  ) {
-    addViolation(violations, 'facade-export-const');
-  }
-  if (
-    declaration?.declarator.init?.type !== 'Identifier' ||
-    declaration.declarator.init.name !== ownerSymbol
-  ) {
-    addViolation(violations, 'facade-identity-alias');
-  }
-
-  walkAst(sourceFile, node => {
-    if (
-      (node?.type === 'AssignmentExpression' || node?.type === 'UpdateExpression') &&
-      identifierName(node.left ?? node.argument) === compatibilitySymbol
-    ) {
-      addViolation(violations, 'facade-reassignment');
-    }
-  });
-
-  const publicExports = collectNamedModuleExports(facadeRel, source);
-  if (
-    publicExports.filter(entry => entry.kind === 'value' && entry.exportedName === compatibilitySymbol)
-      .length !== 1
-  ) {
-    addViolation(violations, 'facade-compatibility-export');
-  }
-  if (
-    publicExports.some(
-      entry =>
-        entry.exportedName === ownerSymbol ||
-        entry.localName === ownerSymbol ||
-        entry.source === ownerSpecifier
-    )
-  ) {
-    addViolation(violations, 'facade-owner-public-leak');
-  }
-  for (const statement of sourceFile.body ?? []) {
-    if (statement.type !== 'ExportNamedDeclaration') continue;
-    for (const specifier of statement.specifiers ?? []) {
-      if (identifierName(specifier.local) === ownerSymbol) {
-        addViolation(violations, 'facade-owner-public-leak');
-      }
-    }
-    if (statement.declaration?.type !== 'VariableDeclaration') continue;
-    for (const declarator of statement.declaration.declarations ?? []) {
-      if (
-        identifierName(declarator.id) !== compatibilitySymbol &&
-        declarator.init?.type === 'Identifier' &&
-        declarator.init.name === ownerSymbol
-      ) {
-        addViolation(violations, 'facade-owner-public-leak');
-      }
-    }
-  }
-
-  return violations;
-}
-
-function ownerDependenciesFor(file, source) {
-  return analyzeModuleDependencies(file, source).imports.filter(
-    dependency => resolveModuleTarget(file, dependency.specifier) === ownerTarget
-  );
-}
-
-function compatibilityDependenciesFor(file, source) {
-  return analyzeModuleDependencies(file, source).imports.filter(dependency => {
-    const target = resolveModuleTarget(file, dependency.specifier);
-    return (
-      (target === facadeTarget || target === publicDimensionsTarget) &&
-      (dependency.importedSymbols.includes(compatibilitySymbol) || dependency.importedSymbols.includes('*'))
-    );
-  });
-}
-
 function dependencyFacts(dependency) {
   return {
     specifier: dependency.specifier,
@@ -639,63 +478,6 @@ function exactNamedImport(specifier, symbol, kind = 'value', syntax = 'static-im
       },
     ],
   };
-}
-
-function isExactPublicDimensionsRoute(file, dependency) {
-  return (
-    relativePath(file) === publicDimensionsRel &&
-    resolveModuleTarget(file, dependency.specifier) === facadeTarget &&
-    dependency.kind === 'value' &&
-    dependency.syntax === 'static-re-export' &&
-    stableJson(dependency.importedSymbols) === stableJson(['*']) &&
-    stableJson(dependency.exportedSymbols) === stableJson(['*'])
-  );
-}
-
-function inspectCompatibilitySource(file, source) {
-  const violations = [];
-  const rel = relativePath(file);
-  const sourceFile = createSourceFile(file, source);
-  const analysis = analyzeModuleDependencies(file, source);
-
-  for (const dependency of analysis.imports) {
-    const target = resolveModuleTarget(file, dependency.specifier);
-    const targetsCompatibilityRoute = target === facadeTarget || target === publicDimensionsTarget;
-    const exposesCompatibility =
-      dependency.importedSymbols.includes(compatibilitySymbol) ||
-      (targetsCompatibilityRoute && dependency.importedSymbols.includes('*'));
-
-    if (exposesCompatibility && !isExactPublicDimensionsRoute(file, dependency)) {
-      addViolation(
-        violations,
-        'compatibility-consumer',
-        `${rel}:${dependency.syntax}:${dependency.specifier}`
-      );
-    }
-    if (dependency.syntax === 'dynamic-import' && targetsCompatibilityRoute) {
-      addViolation(violations, 'compatibility-dynamic-route', `${rel}:${dependency.specifier}`);
-    }
-  }
-  if (rel.startsWith('esm/native/') && analysis.unresolvedDynamicImports.length !== 0) {
-    addViolation(
-      violations,
-      'compatibility-unresolved-dynamic-route',
-      stableJson(analysis.unresolvedDynamicImports)
-    );
-  }
-
-  if (rel !== facadeRel) {
-    walkAst(sourceFile, node => {
-      if (node?.type === 'Identifier' && node.name === compatibilitySymbol) {
-        addViolation(violations, 'compatibility-symbol-reference', rel);
-      }
-      if (node?.type === 'Literal' && typeof node.value === 'string' && node.value === compatibilitySymbol) {
-        addViolation(violations, 'compatibility-computed-reference', rel);
-      }
-    });
-  }
-
-  return violations;
 }
 
 function inspectRenderConsumer(rel, source) {
@@ -773,55 +555,6 @@ function inspectRenderConsumer(rel, source) {
   return violations;
 }
 
-function collectOwnerInventory(files) {
-  return files.flatMap(file =>
-    ownerDependenciesFor(file, fs.readFileSync(file, 'utf8')).map(dependency => ({
-      file: relativePath(file),
-      specifier: dependency.specifier,
-      kind: dependency.kind,
-      syntax: dependency.syntax,
-      importedSymbols: [...dependency.importedSymbols],
-      bindings: dependency.bindings.map(binding => ({
-        importedName: binding.importedName,
-        localName: binding.localName,
-        exportedName: binding.exportedName,
-      })),
-    }))
-  );
-}
-
-function collectCompatibilityInventory(files) {
-  return files
-    .flatMap(file =>
-      compatibilityDependenciesFor(file, fs.readFileSync(file, 'utf8')).flatMap(dependency => {
-        if (!dependency.importedSymbols.includes(compatibilitySymbol)) return [];
-        return [
-          {
-            file: relativePath(file),
-            importedSymbols: [...dependency.importedSymbols],
-            kind: dependency.kind,
-            syntax: dependency.syntax,
-            aliasFree: dependency.bindings
-              .filter(binding => binding.importedName === compatibilitySymbol)
-              .every(binding => binding.localName === compatibilitySymbol && binding.exportedName === null),
-          },
-        ];
-      })
-    )
-    .sort((left, right) => left.file.localeCompare(right.file));
-}
-
-function publicOwnerReferences(source) {
-  const references = [];
-  const sourceFile = createSourceFile('public-owner-probe.ts', source);
-  walkAst(sourceFile, node => {
-    if ((node?.type === 'Identifier' || node?.type === 'Literal') && identifierName(node) === ownerSymbol) {
-      references.push(node.type);
-    }
-  });
-  return references;
-}
-
 function assertRejected(inspect, source, kind, label) {
   const violations = inspect(source);
   assert.equal(
@@ -831,64 +564,12 @@ function assertRejected(inspect, source, kind, label) {
   );
 }
 
-const esmFiles = listSourceFiles(path.join(root, 'esm'));
-const nativeFiles = esmFiles.filter(file => relativePath(file).startsWith('esm/native/'));
-
 test('Wardrobe Dimension Guide owner preserves the exact inline initializer, key order, literals, and freezes', () => {
   const ownerFiles = listSourceFiles(path.join(root, 'esm/shared/dimensions'))
     .map(relativePath)
     .filter(file => path.basename(file) === 'wardrobe_dimension_guide_policy.ts');
   assert.deepEqual(ownerFiles, [ownerRel]);
   assert.deepEqual(inspectOwner(read(ownerRel)), []);
-});
-
-test('Wardrobe Dimension Guide facade is an inferred direct identity alias with no public owner leak', () => {
-  assert.deepEqual(inspectFacade(read(facadeRel)), []);
-  assert.deepEqual(publicOwnerReferences(read(publicDimensionsRel)), []);
-  assert.deepEqual(publicOwnerReferences(read(runtimeApiRel)), []);
-});
-
-test('closeout keeps exactly the focused render trio plus facade owner import and zero production compatibility consumers', () => {
-  const exactNativeOwnerImport = file => ({
-    file,
-    specifier: '../../shared/dimensions/wardrobe_dimension_guide_policy.js',
-    kind: 'value',
-    syntax: 'static-import',
-    importedSymbols: [ownerSymbol],
-    bindings: [
-      {
-        importedName: ownerSymbol,
-        localName: ownerSymbol,
-        exportedName: null,
-      },
-    ],
-  });
-
-  assert.deepEqual(collectOwnerInventory(esmFiles), [
-    ...renderConsumerRels.map(exactNativeOwnerImport),
-    {
-      file: facadeRel,
-      specifier: ownerSpecifier,
-      kind: 'value',
-      syntax: 'static-import',
-      importedSymbols: [ownerSymbol],
-      bindings: [
-        {
-          importedName: ownerSymbol,
-          localName: ownerSymbol,
-          exportedName: null,
-        },
-      ],
-    },
-  ]);
-  assert.deepEqual(collectCompatibilityInventory(nativeFiles), []);
-  assert.deepEqual(
-    esmFiles.flatMap(file => inspectCompatibilitySource(file, fs.readFileSync(file, 'utf8'))),
-    []
-  );
-  for (const rel of renderConsumerRels) {
-    assert.deepEqual(inspectRenderConsumer(rel, read(rel)), [], rel);
-  }
 });
 
 test('render flow semantic AST fingerprints preserve formulas, offsets, branches, types, and call order', () => {
@@ -909,29 +590,6 @@ test('Ledger Entry 166 and Prefixes 165-166 exactly own the single focused state
   const withMutatedEntry166 = structuredClone(migrationBudgets.slice(0, 166));
   withMutatedEntry166[165].owner = 'mutated-owner-probe';
   assert.throws(() => assertDimensionGuideLedgerHistory(withMutatedEntry166));
-});
-
-test('runtime and declaration parity preserve identity, values, readonly topology, and serialization', () => {
-  const loader = createTsRuntimeModuleLoader();
-  const facade = loader.load(path.join(root, facadeRel));
-  const owner = loader.load(path.join(root, ownerRel));
-  const facadeValue = facade[compatibilitySymbol];
-  const ownerValue = owner[ownerSymbol];
-
-  assert.equal(facadeValue, ownerValue);
-  assert.deepEqual(JSON.parse(JSON.stringify(ownerValue)), expectedValues);
-  assert.deepEqual(Object.keys(ownerValue), Object.keys(expectedValues));
-  for (const key of Object.keys(expectedValues)) {
-    assert.deepEqual(Object.keys(ownerValue[key]), Object.keys(expectedValues[key]));
-    assert.equal(Object.isFrozen(ownerValue[key]), true, key);
-  }
-  assert.equal(Object.isFrozen(ownerValue), true);
-
-  const facadeSourceFile = createSourceFile(facadeRel, read(facadeRel));
-  const declaration = exportedConstDeclarator(facadeSourceFile, compatibilitySymbol);
-  assert.equal(declaration?.declarator.id.typeAnnotation ?? null, null);
-  assert.equal(declaration?.declarator.init?.type, 'Identifier');
-  assert.equal(declaration?.declarator.init?.name, ownerSymbol);
 });
 
 test('owner mutation probes reject literal, order, freeze, dependency, export, spread, and side-effect drift', () => {
@@ -984,133 +642,6 @@ test('owner mutation probes reject literal, order, freeze, dependency, export, s
     'owner-top-level-topology',
     'owner side effect'
   );
-});
-
-test('facade and closeout mutation probes reject wrappers, annotations, compatibility routes, extra consumers, and public leaks', () => {
-  const facadeSource = read(facadeRel);
-  const canonicalAlias = `export const ${compatibilitySymbol} = ${ownerSymbol};`;
-  assertRejected(
-    inspectFacade,
-    facadeSource.replace(canonicalAlias, `export const ${compatibilitySymbol} = { ...${ownerSymbol} };`),
-    'facade-identity-alias',
-    'facade object copy'
-  );
-  assertRejected(
-    inspectFacade,
-    facadeSource.replace(
-      canonicalAlias,
-      `export const ${compatibilitySymbol} = legacyDimensionNumberView(${ownerSymbol});`
-    ),
-    'facade-identity-alias',
-    'facade wrapper'
-  );
-  assertRejected(
-    inspectFacade,
-    facadeSource.replace(
-      canonicalAlias,
-      `export const ${compatibilitySymbol}: typeof ${ownerSymbol} = ${ownerSymbol};`
-    ),
-    'facade-export-const',
-    'facade annotation'
-  );
-  assertRejected(
-    inspectFacade,
-    facadeSource.replace(
-      `import { ${ownerSymbol} } from '${ownerSpecifier}';`,
-      `import { ${ownerSymbol} as dimensionGuidePolicy } from '${ownerSpecifier}';`
-    ),
-    'facade-owner-import',
-    'facade import alias'
-  );
-  assertRejected(
-    inspectFacade,
-    facadeSource.replace(
-      canonicalAlias,
-      `const ${compatibilitySymbol} = ${ownerSymbol};\nexport { ${compatibilitySymbol} };`
-    ),
-    'facade-export-const',
-    'facade exported later'
-  );
-  assertRejected(
-    inspectFacade,
-    `${facadeSource}\nexport { ${ownerSymbol} as ALTERNATE_DIMENSION_GUIDE_POLICY };\n`,
-    'facade-owner-public-leak',
-    'facade alternate owner export'
-  );
-
-  const nativeProbeFile = path.join(root, 'esm/native/builder/dimension_guide_probe.ts');
-  const focusedProbe = `import { ${ownerSymbol} } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';\nexport const value = ${ownerSymbol}.textScale.total;`;
-  const canonicalOwnerInventory = collectOwnerInventory(esmFiles);
-  const focusedProbeInventory = ownerDependenciesFor(nativeProbeFile, focusedProbe);
-  assert.equal(canonicalOwnerInventory.length, 4);
-  assert.equal(focusedProbeInventory.length, 1);
-  assert.notDeepEqual([...canonicalOwnerInventory, ...focusedProbeInventory], canonicalOwnerInventory);
-
-  for (const [label, source] of [
-    [
-      'direct aggregate import',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
-    ],
-    [
-      'extensionless compatibility import',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
-    ],
-    [
-      'directory-index compatibility import',
-      `import { ${compatibilitySymbol} } from '../features/dimensions';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
-    ],
-    [
-      'namespace computed compatibility import',
-      `import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = dimensions['${compatibilitySymbol}'];`,
-    ],
-    [
-      'dynamic compatibility import',
-      `export const value = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
-    ],
-    [
-      'unresolved dynamic compatibility import',
-      `const modulePath = '../../shared/' + 'wardrobe_dimension_tokens_shared.js';\nconst symbol = 'WARDROBE_' + 'DIMENSION_GUIDE_DIMENSIONS';\nexport const value = import(modulePath).then(module => module[symbol]);`,
-    ],
-    [
-      'compatibility re-export bridge',
-      `export { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';`,
-    ],
-    [
-      'compatibility object copy',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = { ...${compatibilitySymbol} };`,
-    ],
-  ]) {
-    assert.notDeepEqual(inspectCompatibilitySource(nativeProbeFile, source), [], label);
-  }
-
-  const mainRel = 'esm/native/builder/render_dimension_ops_main.ts';
-  assertRejected(
-    inspectRenderConsumer.bind(null, mainRel),
-    read(mainRel).replace(`import { ${ownerSymbol} }`, `import { ${ownerSymbol} as dimensionGuidePolicy }`),
-    'render-import-inventory',
-    'focused import alias'
-  );
-  assertRejected(
-    inspectRenderConsumer.bind(null, mainRel),
-    `${read(mainRel)}\nimport { DEFAULT_CORNER_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
-    'render-import-inventory',
-    'third focused import'
-  );
-  assertRejected(
-    inspectRenderConsumer.bind(null, mainRel),
-    read(mainRel).replace(`${ownerSymbol}.main`, `${ownerSymbol}['main']`),
-    'render-computed-owner-access',
-    'computed owner access'
-  );
-
-  const featureProbeFile = path.join(root, 'esm/native/features/dimensions/guide_bridge.ts');
-  const ownerBridge = `export { ${ownerSymbol} } from '../../../shared/dimensions/wardrobe_dimension_guide_policy.js';`;
-  const ownerBridgeInventory = ownerDependenciesFor(featureProbeFile, ownerBridge);
-  assert.equal(ownerBridgeInventory.length, 1);
-  assert.notDeepEqual([...canonicalOwnerInventory, ...ownerBridgeInventory], canonicalOwnerInventory);
-
-  const publicLeak = `${read(runtimeApiRel)}\nexport { ${ownerSymbol} } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';\n`;
-  assert.notDeepEqual(publicOwnerReferences(publicLeak), []);
 });
 
 test('render flow mutation probes reject formula, branch, literal, aggregate, and wrapper drift', () => {

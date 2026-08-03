@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { HANDLE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { HANDLE_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
 import { resolveSketchBoxDoorLayout } from '../esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts';
 import { resolveSketchFreeBoxSharedHandleAbsY } from '../esm/native/builder/render_interior_sketch_boxes_fronts_door_handle_policy.ts';
 
@@ -103,7 +103,7 @@ test('free-placement sketch-box doors share the lifted handle height from box ex
   assert.ok(sharedHandleAbsY != null);
   assert.ok(withoutLongEdge != null);
   assert.ok(sharedHandleAbsY > renderArgs.frontsArgs.shell.centerY);
-  assert.ok(Math.abs(sharedHandleAbsY - withoutLongEdge - HANDLE_DIMENSIONS.edge.longLiftExtraM) < 1e-9);
+  assert.ok(Math.abs(sharedHandleAbsY - withoutLongEdge - HANDLE_POLICY.edge.longLiftExtraM) < 1e-9);
 
   const layout = resolveSketchBoxDoorLayout({
     renderArgs,

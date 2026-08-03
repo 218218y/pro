@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "owner": "architecture-contract",
+  "effectiveStage": "dimension-legacy-surface-retirement",
+  "effectiveDate": "2026-08-03",
+  "applicationPolicy": "WardrobePro is a private application. Source paths are internal unless an explicit public manifest or supported-surface contract lists them.",
+  "supportedSurfaces": [
+    {
+      "path": "esm/native/runtime/api.ts",
+      "contract": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
+      "scope": "runtime"
+    },
+    {
+      "path": "esm/native/services/api_runtime_base_surface.ts",
+      "contract": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
+      "scope": "services-base"
+    },
+    {
+      "path": "esm/native/services/api.ts",
+      "contract": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
+      "scope": "services-entry"
+    }
+  ],
+  "publicManifests": [
+    {
+      "path": "tools/wp_features_public_api_manifest.json",
+      "scope": "feature-entries"
+    }
+  ],
+  "retiredSurfaces": [
+    {
+      "path": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+      "kind": "legacy-source-path-facade",
+      "replacement": "Use focused owners internally or the supported Runtime/Services routes when the symbol is public.",
+      "reason": "The private application has no production consumer for this 99-symbol compatibility surface."
+    },
+    {
+      "path": "esm/native/features/dimensions/index.ts",
+      "kind": "unsupported-feature-wildcard-barrel",
+      "replacement": "Use an entry listed in tools/wp_features_public_api_manifest.json.",
+      "reason": "The barrel was absent from the Feature Public API manifest and had no production consumer."
+    }
+  ],
+  "retiredFacadeOnlyRoutes": [
+    { "name": "Centimeters", "kind": "type" },
+    { "name": "DoorMountConstructionMode", "kind": "type" },
+    { "name": "DoorMountThicknessConfigKey", "kind": "type" },
+    { "name": "DoorMountThicknessKind", "kind": "type" },
+    { "name": "ExternalDrawerGeometry", "kind": "type" },
+    { "name": "Meters", "kind": "type" },
+    { "name": "Millimeters", "kind": "type" },
+    { "name": "Pixels", "kind": "type" },
+    { "name": "WorldUnits", "kind": "type" },
+    { "name": "BASE_LEG_DIMENSIONS", "kind": "value" },
+    { "name": "CARCASS_BASE_DIMENSIONS", "kind": "value" },
+    { "name": "CARCASS_CORNICE_DIMENSIONS", "kind": "value" },
+    { "name": "CARCASS_INTERIOR_DIMENSIONS", "kind": "value" },
+    { "name": "CARCASS_SHELL_DIMENSIONS", "kind": "value" },
+    { "name": "clampDimension", "kind": "value" },
+    { "name": "CM_PER_METER", "kind": "value" },
+    { "name": "cmToM", "kind": "value" },
+    { "name": "CONTENT_VISUAL_DIMENSIONS", "kind": "value" },
+    { "name": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS", "kind": "value" },
+    { "name": "CORNER_WING_DIMENSIONS", "kind": "value" },
+    { "name": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS", "kind": "value" },
+    { "name": "DOOR_MOUNT_THICKNESS_DIMENSIONS", "kind": "value" },
+    { "name": "DOOR_SYSTEM_DIMENSIONS", "kind": "value" },
+    { "name": "DOOR_TRIM_DIMENSIONS", "kind": "value" },
+    { "name": "DOOR_VISUAL_DIMENSIONS", "kind": "value" },
+    { "name": "DRAWER_DIMENSIONS", "kind": "value" },
+    { "name": "FRONT_REVEAL_FRAME_DIMENSIONS", "kind": "value" },
+    { "name": "getDefaultDoorMountThicknessCm", "kind": "value" },
+    { "name": "getDefaultDoorMountThicknessM", "kind": "value" },
+    { "name": "getDoorMountThicknessConfigKey", "kind": "value" },
+    { "name": "HANDLE_DIMENSIONS", "kind": "value" },
+    { "name": "INTERIOR_FITTINGS_DIMENSIONS", "kind": "value" },
+    { "name": "LIBRARY_PRESET_DIMENSIONS", "kind": "value" },
+    { "name": "MATERIAL_DIMENSIONS", "kind": "value" },
+    { "name": "MM_PER_METER", "kind": "value" },
+    { "name": "mToCm", "kind": "value" },
+    { "name": "NO_MAIN_SKETCH_DIMENSIONS", "kind": "value" },
+    { "name": "normalizeDoorMountThicknessCm", "kind": "value" },
+    { "name": "resolveDoorMountThicknessesFromConfig", "kind": "value" },
+    { "name": "resolveExternalDrawerGeometry", "kind": "value" },
+    { "name": "resolveWardrobeTypeDefaults", "kind": "value" },
+    { "name": "SKETCH_BOX_DIMENSIONS", "kind": "value" },
+    { "name": "WARDROBE_DEFAULTS", "kind": "value" },
+    { "name": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS", "kind": "value" },
+    { "name": "WARDROBE_LAYOUT_DIMENSIONS", "kind": "value" },
+    { "name": "WARDROBE_LIMITS", "kind": "value" }
+  ],
+  "retiredFacadeOwnedSymbols": [
+    { "name": "CARCASS_BASE_DIMENSIONS", "kind": "value" },
+    { "name": "CARCASS_CORNICE_DIMENSIONS", "kind": "value" },
+    { "name": "CONTENT_VISUAL_DIMENSIONS", "kind": "value" },
+    { "name": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS", "kind": "value" },
+    { "name": "CORNER_WING_DIMENSIONS", "kind": "value" },
+    { "name": "DRAWER_DIMENSIONS", "kind": "value" },
+    { "name": "FRONT_REVEAL_FRAME_DIMENSIONS", "kind": "value" },
+    { "name": "HANDLE_DIMENSIONS", "kind": "value" },
+    { "name": "INTERIOR_FITTINGS_DIMENSIONS", "kind": "value" },
+    { "name": "LIBRARY_PRESET_DIMENSIONS", "kind": "value" },
+    { "name": "MATERIAL_DIMENSIONS", "kind": "value" },
+    { "name": "NO_MAIN_SKETCH_DIMENSIONS", "kind": "value" },
+    { "name": "SKETCH_BOX_DIMENSIONS", "kind": "value" },
+    { "name": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS", "kind": "value" },
+    { "name": "WARDROBE_LAYOUT_DIMENSIONS", "kind": "value" }
+  ]
+}

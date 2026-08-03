@@ -587,7 +587,7 @@ test('offline TypeScript scripts use the pinned compiler and preserve declaratio
   assert.doesNotMatch(pkg.scripts['test:offline:declaration-snapshot'], /--node-only/);
   assert.match(
     pkg.scripts['test:offline:declaration-snapshot'],
-    /wardrobe_dimension_public_surface_semantic_contract\.test\.js/
+    /wardrobe_dimension_runtime_public_surface_contract\.test\.js/
   );
 
   const resolver = fs.readFileSync(path.join(root, 'tools/wp_typescript_resolver.js'), 'utf8');

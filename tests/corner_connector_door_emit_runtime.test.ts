@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_SYSTEM_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
 import { readSplitPosListFromMap } from '../esm/native/runtime/maps_access.js';
 import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.js';
 import { resetEdgeHandleDefaultNoneCacheMaps } from '../esm/native/builder/edge_handle_default_none_runtime.js';
@@ -148,7 +148,7 @@ test('corner connector door shared wrappers assemble context/state and normalize
   assert.equal(state.hingeSide, 'left');
   assert.equal(partIdForCornerConnectorSegment(state, 4, 2), 'corner_pent_door_1_mid2');
 
-  const topEdge = ctx!.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = ctx!.effectiveTopLimit - CORNER_SYSTEM_POLICY.connector.doorTopClearanceM;
   const doorHeight = topEdge - ctx!.doorBottomY;
   const expectedCuts = [ctx!.doorBottomY + 0.25 * doorHeight, ctx!.doorBottomY + 0.75 * doorHeight];
   const cuts = readCornerConnectorCustomSplitCutsY(ctx!, state);
@@ -210,7 +210,7 @@ test('corner connector custom split cuts ignore string-encoded runtime normalize
 
   const ctx = createCornerConnectorDoorContext(params);
   const state = createCornerConnectorDoorState(ctx!, 1);
-  const topEdge = ctx!.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = ctx!.effectiveTopLimit - CORNER_SYSTEM_POLICY.connector.doorTopClearanceM;
   const doorHeight = topEdge - ctx!.doorBottomY;
   const cuts = readCornerConnectorCustomSplitCutsY(ctx!, state);
 

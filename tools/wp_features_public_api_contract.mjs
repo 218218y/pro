@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { analyzeModuleDependencies, collectNamedModuleExports } from './wp_layer_contract_support.mjs';
+import { retiredSurfaceForSpecifier } from './wp_public_surface_policy_support.mjs';
+
 const root = process.cwd();
 const importPattern = /(?:import|export)\s+(?:[^;'\"]*?\s+from\s+)?['\"]([^'\"]*\/features\/[^'\"]+)['\"]/gs;
 
@@ -149,11 +152,25 @@ function checkDocsAreCurrent(result) {
 
 export function runFeaturesPublicApiContract(projectRoot = root) {
   const manifest = readJson(path.join(projectRoot, 'tools/wp_features_public_api_manifest.json'));
+  const publicSurfacePolicy = readJson(path.join(projectRoot, 'tools/wp_public_surface_policy.json'));
   const publicEntries = Array.isArray(manifest.publicEntries) ? manifest.publicEntries : [];
   const allowed = new Set(publicEntries);
   const importSites = [];
   const violations = [];
   const byFamily = {};
+  const retiredSurfaceViolations = [];
+  const retiredFacadeOnlyRoutes = new Set(
+    (publicSurfacePolicy.retiredFacadeOnlyRoutes ?? []).map(entry => `${entry.kind}:${entry.name}`)
+  );
+  const retiredFacadeOwnedSymbols = new Set(
+    (publicSurfacePolicy.retiredFacadeOwnedSymbols ?? []).map(entry => `${entry.kind}:${entry.name}`)
+  );
+
+  for (const surface of publicSurfacePolicy.retiredSurfaces ?? []) {
+    if (fs.existsSync(path.join(projectRoot, surface.path))) {
+      retiredSurfaceViolations.push(`${surface.path} is retired but still exists`);
+    }
+  }
 
   for (const entry of publicEntries) {
     const family = familyOf(entry);
@@ -176,8 +193,37 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
     }
   }
 
+  for (const file of walk(path.join(projectRoot, 'esm'))) {
+    const fileRel = rel(projectRoot, file);
+    const source = fs.readFileSync(file, 'utf8');
+    const dependencies = analyzeModuleDependencies(fileRel, source).imports;
+    for (const dependency of dependencies) {
+      const retiredSurface = retiredSurfaceForSpecifier(fileRel, dependency.specifier, publicSurfacePolicy);
+      if (retiredSurface) {
+        retiredSurfaceViolations.push(
+          `${fileRel} uses retired surface ${retiredSurface.path} via ${dependency.syntax}`
+        );
+      }
+    }
+
+    for (const exported of collectNamedModuleExports(fileRel, source)) {
+      const key = `${exported.kind}:${exported.exportedName}`;
+      if (retiredFacadeOwnedSymbols.has(key)) {
+        retiredSurfaceViolations.push(
+          `${fileRel} recreates retired facade-owned export ${exported.exportedName}`
+        );
+      } else if (!fileRel.startsWith('esm/shared/dimensions/') && retiredFacadeOnlyRoutes.has(key)) {
+        retiredSurfaceViolations.push(
+          `${fileRel} recreates retired dimension export ${exported.exportedName}`
+        );
+      }
+    }
+  }
+
   importSites.sort((left, right) => compareCodePoints(left.file, right.file));
   violations.sort(compareCodePoints);
+  retiredSurfaceViolations.sort(compareCodePoints);
+  violations.push(...retiredSurfaceViolations);
 
   return {
     ok: violations.length === 0,
@@ -185,6 +231,8 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
     publicEntries,
     byFamily,
     importSites,
+    retiredSurfaces: (publicSurfacePolicy.retiredSurfaces ?? []).map(surface => surface.path),
+    retiredSurfaceViolations,
     violations,
   };
 }

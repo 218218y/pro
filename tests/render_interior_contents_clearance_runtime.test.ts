@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createBuilderRenderInteriorPresetOps } from '../esm/native/builder/render_interior_preset_ops.js';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { INTERIOR_FITTINGS_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 
 type FoldedCall = {
   shelfY: number;
@@ -174,8 +174,8 @@ test('renderInteriorPresetOps keeps brace shelves full-width while regular shelv
   const regular = boards.find(board => board.partId === 'module_shelf_0_g1');
   const brace = boards.find(board => board.partId === 'module_shelf_0_g2');
 
-  assert.equal(regular?.width, 1 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM);
-  assert.equal(regular?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+  assert.equal(regular?.width, 1 - INTERIOR_FITTINGS_POLICY.shelves.regularWidthClearanceM);
+  assert.equal(regular?.depth, INTERIOR_FITTINGS_POLICY.shelves.regularDepthM);
   assert.equal(brace?.width, 1);
   assert.equal(brace?.depth, 0.55);
 });
@@ -256,8 +256,8 @@ test('renderInteriorCustomOps keeps brace shelves full-width while regular shelv
   const regular = boards.find(board => board.partId === 'module_shelf_0_g1');
   const brace = boards.find(board => board.partId === 'module_shelf_0_g2');
 
-  assert.equal(regular?.width, 1 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM);
-  assert.equal(regular?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+  assert.equal(regular?.width, 1 - INTERIOR_FITTINGS_POLICY.shelves.regularWidthClearanceM);
+  assert.equal(regular?.depth, INTERIOR_FITTINGS_POLICY.shelves.regularDepthM);
   assert.equal(brace?.width, 1);
   assert.equal(brace?.depth, 0.55);
 });
@@ -368,7 +368,7 @@ test('lower stack preset shelves do not inherit top removed frame side brace pol
   const topOnlyShelf = topRemovedBoards.find(board => board.partId === 'module_shelf_0_g1');
   const lowerShelf = lowerRemovedBoards.find(board => board.partId === 'module_shelf_0_g1');
 
-  assert.equal(topOnlyShelf?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+  assert.equal(topOnlyShelf?.depth, INTERIOR_FITTINGS_POLICY.shelves.regularDepthM);
   assert.equal(lowerShelf?.width, 1);
   assert.equal(lowerShelf?.depth, 0.55);
   assert.deepEqual(lowerShelf?.options, {
@@ -407,7 +407,7 @@ test('removed right frame side forces only the last custom module shelves to bra
 
   const leftShelf = leftBoards.find(board => board.partId === 'module_shelf_0_g1');
   const rightShelf = rightBoards.find(board => board.partId === 'module_shelf_1_g1');
-  assert.equal(leftShelf?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+  assert.equal(leftShelf?.depth, INTERIOR_FITTINGS_POLICY.shelves.regularDepthM);
   assert.equal(rightShelf?.width, 1);
   assert.equal(rightShelf?.depth, 0.55);
   assert.deepEqual(rightShelf?.options, { shelfExposedSide: 'right' });

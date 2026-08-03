@@ -334,7 +334,7 @@
     "typecheck:offline": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck.js --mode project",
     "typecheck:offline:all": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck_parallel.mjs",
     "typecheck:offline:dist": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck.js --mode dist",
-    "test:offline:declaration-snapshot": "python tools/run_offline_node24.py --with-typescript --with-esbuild --test tests/wardrobe_dimension_public_surface_semantic_contract.test.js",
+    "test:offline:declaration-snapshot": "python tools/run_offline_node24.py --with-typescript --with-esbuild --test tests/wardrobe_dimension_runtime_public_surface_contract.test.js",
     "test:offline:esbuild": "python tools/selftest_offline_esbuild.py",
     "setup:offline:tsx": "python tools/bootstrap_offline_tsx.py",
     "setup:offline:tsx:engine": "python tools/bootstrap_offline_tsx.py --engine-only",

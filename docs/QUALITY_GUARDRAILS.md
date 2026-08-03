@@ -29,6 +29,9 @@ npm run check:esnext-target
 
 Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for split modules.
 
+- WardrobePro is a private application. Source paths are internal unless an explicit machine-readable manifest promotes them; absence from a manifest means unsupported.
+- `tools/wp_public_surface_policy.json` owns supported and retired source-path policy. Retired paths must remain absent across static, dynamic, alias, extensionless, and directory-index import forms.
+- The supported dimension API is the exact 53-route Runtime/Services inventory. The retired 99-symbol facade and its Feature wildcard barrel must not be recreated, narrowed into a new shim, or replaced by another aggregate.
 - A facade is correct when it protects a deliberate public import boundary, a service/family entry point, a browser/adapter boundary, or a widely used stable seam.
 - A facade is not correct when it exists only to hide arbitrary fragmentation, preserve a bad name forever, or bypass a public API contract.
 - Do not keep splitting by line count alone. A cohesive 150–300 line owner is usually better than several tiny files that scatter one responsibility across the project.

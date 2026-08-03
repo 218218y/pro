@@ -1911,5 +1911,10 @@
       "entry": "modules_configuration/modules_config_api.js"
     }
   ],
+  "retiredSurfaces": [
+    "esm/shared/wardrobe_dimension_tokens_shared.ts",
+    "esm/native/features/dimensions/index.ts"
+  ],
+  "retiredSurfaceViolations": [],
   "violations": []
 }

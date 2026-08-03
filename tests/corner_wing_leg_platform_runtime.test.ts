@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyCornerWingCarcassFloorAndBase } from '../esm/native/builder/corner_wing_carcass_shell_floor_base.ts';
-import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -34,7 +34,7 @@ class FakeMesh {
 }
 
 test('corner wing legs stage emits lower and upper paintable platform boards', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const added: FakeMesh[] = [];
   const outlined: FakeMesh[] = [];
   const params = {

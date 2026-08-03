@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyCornerWingCarcassCeiling } from '../esm/native/builder/corner_wing_carcass_shell_ceiling.ts';
-import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { CORNER_SYSTEM_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -151,7 +151,7 @@ function assertRoofReachesRightSideInnerFace(mesh: FakeMesh, wingW: number, wood
   const remainingGap = expectedInnerFaceX - rightEdge(mesh);
   assert.ok(remainingGap >= -1e-9, 'roof must not cross through the right side panel');
   assert.ok(
-    remainingGap <= CORNER_WING_DIMENSIONS.ceiling.widthClearanceM + 1e-9,
+    remainingGap <= CORNER_SYSTEM_POLICY.ceiling.widthClearanceM + 1e-9,
     `roof should stop only at the tiny shell clearance, got ${remainingGap}`
   );
 }

@@ -1,277 +1,45 @@
 {
-  "version": 1,
+  "version": 2,
   "typescriptVersion": "7.0.2",
-  "capturedProductionHead": "d6a1b554fc35b248889daca5895880a135963cce",
+  "manifestVersion": 3,
   "surfaceTopology": {
-    "facade": {
-      "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "values": 89,
-      "types": 10,
-      "form": "explicit-export-inventory",
-      "wildcardStatements": 0
-    },
-    "featureBarrel": {
-      "file": "esm/native/features/dimensions/index.ts",
-      "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "values": 89,
-      "types": 10,
-      "form": "wildcard-re-export",
-      "wildcardStatements": 1
-    },
     "runtime": {
       "file": "esm/native/runtime/api.ts",
       "values": 52,
       "types": 1,
-      "form": "explicit-re-export-inventory"
+      "form": "explicit-re-exports"
     },
     "servicesBase": {
       "file": "esm/native/services/api_runtime_base_surface.ts",
-      "sourceFile": "esm/native/runtime/api.ts",
       "values": 52,
       "types": 1,
-      "form": "explicit-re-export-inventory"
+      "form": "explicit-re-exports"
     },
     "servicesEntry": {
       "file": "esm/native/services/api.ts",
-      "sourceFile": "esm/native/services/api_runtime_base_surface.ts",
       "values": 52,
       "types": 1,
-      "form": "wildcard-plus-representative-re-exports",
-      "wildcardStatements": 1,
-      "representativeValueExports": 40
+      "form": "services-base-wildcard"
     }
   },
-  "symbolCount": 99,
+  "symbolCount": 53,
   "symbols": [
-    {
-      "name": "BASE_LEG_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/base_leg_policy.ts",
-          "symbol": "BASE_LEG_DIMENSIONS",
-          "declarationTypeFingerprint": "2520ac7f72c054b494098ef44c050e888d22e6d170583f57b9f6238d275a1774"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "BASE_LEG_DIMENSIONS",
-          "publicExportedName": "BASE_LEG_DIMENSIONS",
-          "declarationTypeFingerprint": "4bf6a493e29d000dad42506a600679bd317d81ec0ff8bc647c305ba833dbe527"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "BASE_LEG_DIMENSIONS",
-          "publicExportedName": "BASE_LEG_DIMENSIONS",
-          "declarationTypeFingerprint": "4bf6a493e29d000dad42506a600679bd317d81ec0ff8bc647c305ba833dbe527"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CARCASS_BASE_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/base_plinth_policy.ts",
-          "symbol": "BASE_PLINTH_POLICY",
-          "declarationTypeFingerprint": "9288a8c1279155d39164adc9c1b382b9a7764ab7f250ae2bf6e8ad7551b94078"
-        },
-        {
-          "file": "esm/shared/dimensions/base_leg_policy.ts",
-          "symbol": "BASE_LEG_LAYOUT_POLICY",
-          "declarationTypeFingerprint": "7811ad6f9207882b3d54b353b3ac14ccdc3523fba359dbf9ddbf80c1305a36c8"
-        },
-        {
-          "file": "esm/shared/dimensions/chest_structural_policy.ts",
-          "symbol": "CHEST_STRUCTURAL_DIMENSIONS",
-          "declarationTypeFingerprint": "0e2b66cc20b03d50000150a1aaa523b938c58f0ffc1914e8f183a6f9fbf0932c"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_BASE_DIMENSIONS",
-          "publicExportedName": "CARCASS_BASE_DIMENSIONS",
-          "declarationTypeFingerprint": "e32be57ff9dbd39e72c5612cf51344398ff134bf2c15fec31aeb249526f32f41"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_BASE_DIMENSIONS",
-          "publicExportedName": "CARCASS_BASE_DIMENSIONS",
-          "declarationTypeFingerprint": "e32be57ff9dbd39e72c5612cf51344398ff134bf2c15fec31aeb249526f32f41"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CARCASS_CORNICE_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
-          "symbol": "CARCASS_CORNICE_RENDER_POLICY",
-          "declarationTypeFingerprint": "2ac5bf78ca351cfbd7145dca6a4a3f8ba639c76d344cab69eca9376274de32b3"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_CORNICE_DIMENSIONS",
-          "publicExportedName": "CARCASS_CORNICE_DIMENSIONS",
-          "declarationTypeFingerprint": "051eceb91a19495063b8573f5c56d03162f28d485eef46d71ff17bc3c8bd069d"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_CORNICE_DIMENSIONS",
-          "publicExportedName": "CARCASS_CORNICE_DIMENSIONS",
-          "declarationTypeFingerprint": "051eceb91a19495063b8573f5c56d03162f28d485eef46d71ff17bc3c8bd069d"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CARCASS_INTERIOR_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/carcass_interior_policy.ts",
-          "symbol": "CARCASS_INTERIOR_DIMENSIONS",
-          "declarationTypeFingerprint": "eab3bcc8d310e9c3be5e7317246be7a9c542db5ac923857255df12ccfef6f2bd"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/carcass_interior_policy.ts",
-          "sourceSymbol": "CARCASS_INTERIOR_DIMENSIONS",
-          "publicExportedName": "CARCASS_INTERIOR_DIMENSIONS",
-          "declarationTypeFingerprint": "eab3bcc8d310e9c3be5e7317246be7a9c542db5ac923857255df12ccfef6f2bd"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_INTERIOR_DIMENSIONS",
-          "publicExportedName": "CARCASS_INTERIOR_DIMENSIONS",
-          "declarationTypeFingerprint": "eab3bcc8d310e9c3be5e7317246be7a9c542db5ac923857255df12ccfef6f2bd"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CARCASS_SHELL_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/carcass_shell_policy.ts",
-          "symbol": "CARCASS_SHELL_DIMENSIONS",
-          "declarationTypeFingerprint": "7aba3048fc76b701f74af25224ac8dfceb344cb60b51c71d64eea4c347ea5dbf"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/carcass_shell_policy.ts",
-          "sourceSymbol": "CARCASS_SHELL_DIMENSIONS",
-          "publicExportedName": "CARCASS_SHELL_DIMENSIONS",
-          "declarationTypeFingerprint": "7aba3048fc76b701f74af25224ac8dfceb344cb60b51c71d64eea4c347ea5dbf"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CARCASS_SHELL_DIMENSIONS",
-          "publicExportedName": "CARCASS_SHELL_DIMENSIONS",
-          "declarationTypeFingerprint": "7aba3048fc76b701f74af25224ac8dfceb344cb60b51c71d64eea4c347ea5dbf"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "Centimeters",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "Centimeters",
-          "declarationTypeFingerprint": "cf0ef407b07f964e77e942c206ef2894bd8c3961b7121ef1063a81efbc91d99a"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "Centimeters",
-          "publicExportedName": "Centimeters",
-          "declarationTypeFingerprint": "cf0ef407b07f964e77e942c206ef2894bd8c3961b7121ef1063a81efbc91d99a"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "Centimeters",
-          "publicExportedName": "Centimeters",
-          "declarationTypeFingerprint": "cf0ef407b07f964e77e942c206ef2894bd8c3961b7121ef1063a81efbc91d99a"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
     {
       "name": "CHEST_MODE_DIMENSIONS",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/chest_mode_policy.ts",
-          "symbol": "CHEST_MODE_DIMENSIONS",
-          "declarationTypeFingerprint": "1be7568c42c8d08a156ba034a57568667a0b2c5a1740a13314f54ad4cb929c39"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/chest_mode_policy.ts",
+        "symbol": "CHEST_MODE_DIMENSIONS",
+        "declarationTypeFingerprint": "1be7568c42c8d08a156ba034a57568667a0b2c5a1740a13314f54ad4cb929c39"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
+        "symbol": "CHEST_MODE_DIMENSIONS",
+        "declarationMode": "explicit-compatibility-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "explicit-compatibility-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
-          "sourceSymbol": "CHEST_MODE_DIMENSIONS",
-          "publicExportedName": "CHEST_MODE_DIMENSIONS",
-          "declarationTypeFingerprint": "5b53b3ce3895d926c08448a87304c11f6d6b6ee640c6c67b4b39b1e39f608066"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CHEST_MODE_DIMENSIONS",
-          "publicExportedName": "CHEST_MODE_DIMENSIONS",
-          "declarationTypeFingerprint": "5b53b3ce3895d926c08448a87304c11f6d6b6ee640c6c67b4b39b1e39f608066"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
@@ -296,244 +64,21 @@
       }
     },
     {
-      "name": "clampDimension",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "clampDimension",
-          "declarationTypeFingerprint": "55b815b848522da98b4deedab9eb36a5adfb77078cb992143a58e0ce625f5c97"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "clampDimension",
-          "publicExportedName": "clampDimension",
-          "declarationTypeFingerprint": "55b815b848522da98b4deedab9eb36a5adfb77078cb992143a58e0ce625f5c97"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "clampDimension",
-          "publicExportedName": "clampDimension",
-          "declarationTypeFingerprint": "55b815b848522da98b4deedab9eb36a5adfb77078cb992143a58e0ce625f5c97"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CM_PER_METER",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "CM_PER_METER",
-          "declarationTypeFingerprint": "e0ed80ebd57a050ff2498799156732f05a5133cdd66ca7122909cef6dc2c60d6"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "CM_PER_METER",
-          "publicExportedName": "CM_PER_METER",
-          "declarationTypeFingerprint": "e0ed80ebd57a050ff2498799156732f05a5133cdd66ca7122909cef6dc2c60d6"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CM_PER_METER",
-          "publicExportedName": "CM_PER_METER",
-          "declarationTypeFingerprint": "e0ed80ebd57a050ff2498799156732f05a5133cdd66ca7122909cef6dc2c60d6"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "cmToM",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "cmToM",
-          "declarationTypeFingerprint": "fb3f6c49d908eeebabaebfe20ef6256db0f630bb62c31666acac8cf662cb4d60"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "cmToM",
-          "publicExportedName": "cmToM",
-          "declarationTypeFingerprint": "fb3f6c49d908eeebabaebfe20ef6256db0f630bb62c31666acac8cf662cb4d60"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "cmToM",
-          "publicExportedName": "cmToM",
-          "declarationTypeFingerprint": "fb3f6c49d908eeebabaebfe20ef6256db0f630bb62c31666acac8cf662cb4d60"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CONTENT_VISUAL_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/content_visual_policy.ts",
-          "symbol": "BOOK_CONTENT_VISUAL_POLICY",
-          "declarationTypeFingerprint": "cb223c4082be0bc23b8ef57b0f0eacc45b0b970e4609d847066a936eebca9af0"
-        },
-        {
-          "file": "esm/shared/dimensions/content_visual_policy.ts",
-          "symbol": "FOLDED_CLOTHES_VISUAL_POLICY",
-          "declarationTypeFingerprint": "4fe1ac9849dafab4ef1dd13a59bf08f759dbca5b7a45f82fb7ad2c57697f8301"
-        },
-        {
-          "file": "esm/shared/dimensions/content_visual_policy.ts",
-          "symbol": "HANGER_VISUAL_POLICY",
-          "declarationTypeFingerprint": "3cc5312d61ba1d00536db8a521601078d0614c12ea46031e5f372bff8812f6fc"
-        },
-        {
-          "file": "esm/shared/dimensions/content_visual_policy.ts",
-          "symbol": "HANGING_CLOTHES_VISUAL_POLICY",
-          "declarationTypeFingerprint": "80dc468d66c5f2242b4bce9897bb33085c9784cb2d0bbb89f6c56156333b730f"
-        },
-        {
-          "file": "esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts",
-          "symbol": "SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY",
-          "declarationTypeFingerprint": "2431cc0e0926e048270bc8f7b9b3ecd4d83483ba82e7d4e8ea1ad917bad4d9dd"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CONTENT_VISUAL_DIMENSIONS",
-          "publicExportedName": "CONTENT_VISUAL_DIMENSIONS",
-          "declarationTypeFingerprint": "bca81c366632f6ec0a0f210dfdf133b9ec9937671c0ab84af0b427c770bf1aac"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CONTENT_VISUAL_DIMENSIONS",
-          "publicExportedName": "CONTENT_VISUAL_DIMENSIONS",
-          "declarationTypeFingerprint": "bca81c366632f6ec0a0f210dfdf133b9ec9937671c0ab84af0b427c770bf1aac"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/corner_connector_interior_policy.ts",
-          "symbol": "CORNER_CONNECTOR_INTERIOR_POLICY",
-          "declarationTypeFingerprint": "0181b9c15dd7b41c58ba990cc7ab1c5f178d1f439aee27551e50c618fa82fe70"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
-          "publicExportedName": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
-          "declarationTypeFingerprint": "43b35295119ebd853be3e95fe4ec73278c9f1d466fbc6b98d045b2cbcaf89c8a"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
-          "publicExportedName": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
-          "declarationTypeFingerprint": "43b35295119ebd853be3e95fe4ec73278c9f1d466fbc6b98d045b2cbcaf89c8a"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "CORNER_WING_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/corner_system_policy.ts",
-          "symbol": "CORNER_SYSTEM_POLICY",
-          "declarationTypeFingerprint": "d6a6b189bf9fce2ebbe8315bb9371e4ef3de166ad4f9f1e70667df656835923b"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CORNER_WING_DIMENSIONS",
-          "publicExportedName": "CORNER_WING_DIMENSIONS",
-          "declarationTypeFingerprint": "268cf7c6a5c14dc2497a6841fd933134f5782a8e2e71959c4fa7d747d6f88262"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "CORNER_WING_DIMENSIONS",
-          "publicExportedName": "CORNER_WING_DIMENSIONS",
-          "declarationTypeFingerprint": "268cf7c6a5c14dc2497a6841fd933134f5782a8e2e71959c4fa7d747d6f88262"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "DEFAULT_CHEST_DRAWERS_COUNT",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_CHEST_DRAWERS_COUNT",
-          "declarationTypeFingerprint": "200687941b90c4c139efa16181ac5c70218395727df7cdf092bb97e2e9f71100"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CHEST_DRAWERS_COUNT",
+        "declarationTypeFingerprint": "200687941b90c4c139efa16181ac5c70218395727df7cdf092bb97e2e9f71100"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CHEST_DRAWERS_COUNT",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_CHEST_DRAWERS_COUNT",
-          "publicExportedName": "DEFAULT_CHEST_DRAWERS_COUNT",
-          "declarationTypeFingerprint": "200687941b90c4c139efa16181ac5c70218395727df7cdf092bb97e2e9f71100"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_CHEST_DRAWERS_COUNT",
-          "publicExportedName": "DEFAULT_CHEST_DRAWERS_COUNT",
-          "declarationTypeFingerprint": "200687941b90c4c139efa16181ac5c70218395727df7cdf092bb97e2e9f71100"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -560,30 +105,19 @@
     {
       "name": "DEFAULT_CORNER_DOORS",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_CORNER_DOORS",
-          "declarationTypeFingerprint": "841868b8483748bb379b7c8ea254bd014395b968c005212eb0acd20face3cdee"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CORNER_DOORS",
+        "declarationTypeFingerprint": "841868b8483748bb379b7c8ea254bd014395b968c005212eb0acd20face3cdee"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CORNER_DOORS",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_CORNER_DOORS",
-          "publicExportedName": "DEFAULT_CORNER_DOORS",
-          "declarationTypeFingerprint": "841868b8483748bb379b7c8ea254bd014395b968c005212eb0acd20face3cdee"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_CORNER_DOORS",
-          "publicExportedName": "DEFAULT_CORNER_DOORS",
-          "declarationTypeFingerprint": "841868b8483748bb379b7c8ea254bd014395b968c005212eb0acd20face3cdee"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -610,30 +144,19 @@
     {
       "name": "DEFAULT_CORNER_WIDTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_CORNER_WIDTH",
-          "declarationTypeFingerprint": "5f1443bf51bc8f2ad6c88f4acf5f37e1106217af08f7df936070cafdc64bea13"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CORNER_WIDTH",
+        "declarationTypeFingerprint": "5f1443bf51bc8f2ad6c88f4acf5f37e1106217af08f7df936070cafdc64bea13"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_CORNER_WIDTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_CORNER_WIDTH",
-          "publicExportedName": "DEFAULT_CORNER_WIDTH",
-          "declarationTypeFingerprint": "5f1443bf51bc8f2ad6c88f4acf5f37e1106217af08f7df936070cafdc64bea13"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_CORNER_WIDTH",
-          "publicExportedName": "DEFAULT_CORNER_WIDTH",
-          "declarationTypeFingerprint": "5f1443bf51bc8f2ad6c88f4acf5f37e1106217af08f7df936070cafdc64bea13"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -660,30 +183,19 @@
     {
       "name": "DEFAULT_HEIGHT",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_HEIGHT",
-          "declarationTypeFingerprint": "c2dea0a4e7508743c4d103e5f9b9276a0f85906ab6db2559833ea2373b946478"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_HEIGHT",
+        "declarationTypeFingerprint": "c2dea0a4e7508743c4d103e5f9b9276a0f85906ab6db2559833ea2373b946478"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_HEIGHT",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_HEIGHT",
-          "publicExportedName": "DEFAULT_HEIGHT",
-          "declarationTypeFingerprint": "c2dea0a4e7508743c4d103e5f9b9276a0f85906ab6db2559833ea2373b946478"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_HEIGHT",
-          "publicExportedName": "DEFAULT_HEIGHT",
-          "declarationTypeFingerprint": "c2dea0a4e7508743c4d103e5f9b9276a0f85906ab6db2559833ea2373b946478"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -710,30 +222,19 @@
     {
       "name": "DEFAULT_HINGED_DOORS",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_HINGED_DOORS",
-          "declarationTypeFingerprint": "659b11412ebe2bfafcf7907d1f4fb7587d74daac9d880ba02475b15b749dc8f1"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_HINGED_DOORS",
+        "declarationTypeFingerprint": "659b11412ebe2bfafcf7907d1f4fb7587d74daac9d880ba02475b15b749dc8f1"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_HINGED_DOORS",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_HINGED_DOORS",
-          "publicExportedName": "DEFAULT_HINGED_DOORS",
-          "declarationTypeFingerprint": "659b11412ebe2bfafcf7907d1f4fb7587d74daac9d880ba02475b15b749dc8f1"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_HINGED_DOORS",
-          "publicExportedName": "DEFAULT_HINGED_DOORS",
-          "declarationTypeFingerprint": "659b11412ebe2bfafcf7907d1f4fb7587d74daac9d880ba02475b15b749dc8f1"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -760,30 +261,19 @@
     {
       "name": "DEFAULT_SLIDING_DOORS",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_SLIDING_DOORS",
-          "declarationTypeFingerprint": "e10034603a2696995bebddea6eddf0171ecec9c4819e01004de379372f2fc94f"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_SLIDING_DOORS",
+        "declarationTypeFingerprint": "e10034603a2696995bebddea6eddf0171ecec9c4819e01004de379372f2fc94f"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_SLIDING_DOORS",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_SLIDING_DOORS",
-          "publicExportedName": "DEFAULT_SLIDING_DOORS",
-          "declarationTypeFingerprint": "e10034603a2696995bebddea6eddf0171ecec9c4819e01004de379372f2fc94f"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_SLIDING_DOORS",
-          "publicExportedName": "DEFAULT_SLIDING_DOORS",
-          "declarationTypeFingerprint": "e10034603a2696995bebddea6eddf0171ecec9c4819e01004de379372f2fc94f"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -810,30 +300,19 @@
     {
       "name": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "declarationTypeFingerprint": "7011f54daf840d1c5e874984395cf1cbbb3253d4d50c004421ae9956a4264efd"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+        "declarationTypeFingerprint": "7011f54daf840d1c5e874984395cf1cbbb3253d4d50c004421ae9956a4264efd"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
-          "sourceSymbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "publicExportedName": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "declarationTypeFingerprint": "7011f54daf840d1c5e874984395cf1cbbb3253d4d50c004421ae9956a4264efd"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "publicExportedName": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "declarationTypeFingerprint": "7011f54daf840d1c5e874984395cf1cbbb3253d4d50c004421ae9956a4264efd"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -860,30 +339,19 @@
     {
       "name": "DEFAULT_WIDTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "DEFAULT_WIDTH",
-          "declarationTypeFingerprint": "37019b98231eded0b15767b80bc56fa6c8244b81333cf83a38c84d58e9f28106"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_WIDTH",
+        "declarationTypeFingerprint": "37019b98231eded0b15767b80bc56fa6c8244b81333cf83a38c84d58e9f28106"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "DEFAULT_WIDTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "DEFAULT_WIDTH",
-          "publicExportedName": "DEFAULT_WIDTH",
-          "declarationTypeFingerprint": "37019b98231eded0b15767b80bc56fa6c8244b81333cf83a38c84d58e9f28106"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DEFAULT_WIDTH",
-          "publicExportedName": "DEFAULT_WIDTH",
-          "declarationTypeFingerprint": "37019b98231eded0b15767b80bc56fa6c8244b81333cf83a38c84d58e9f28106"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -908,394 +376,21 @@
       }
     },
     {
-      "name": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-          "declarationTypeFingerprint": "a76425f2e6be3d58697053338e5ef6cd7c60f5544028542e78d1f8b0fda6ed68"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-          "publicExportedName": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-          "declarationTypeFingerprint": "a76425f2e6be3d58697053338e5ef6cd7c60f5544028542e78d1f8b0fda6ed68"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-          "publicExportedName": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
-          "declarationTypeFingerprint": "a76425f2e6be3d58697053338e5ef6cd7c60f5544028542e78d1f8b0fda6ed68"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-          "declarationTypeFingerprint": "e31eb802fd07b2d87bc2bbe8e26d1d81580688b10ce8cc0e4bcc156be9c59cc8"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-          "publicExportedName": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-          "declarationTypeFingerprint": "d459e090f69b1d882728779b51f50f7696a23c76f1c157f871ca97fc1b639f7c"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-          "publicExportedName": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
-          "declarationTypeFingerprint": "d459e090f69b1d882728779b51f50f7696a23c76f1c157f871ca97fc1b639f7c"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DOOR_SYSTEM_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_system_policy.ts",
-          "symbol": "DOOR_SYSTEM_DIMENSIONS",
-          "declarationTypeFingerprint": "634118e3175ce3f49fce79ec097005d3d810ae9e7b2f466b23191caf3864bd90"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_SYSTEM_DIMENSIONS",
-          "publicExportedName": "DOOR_SYSTEM_DIMENSIONS",
-          "declarationTypeFingerprint": "52dd6988aacb6ce97dc3fb506c7758646b3d1aa217bbbc94994f62e52bac4eea"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_SYSTEM_DIMENSIONS",
-          "publicExportedName": "DOOR_SYSTEM_DIMENSIONS",
-          "declarationTypeFingerprint": "52dd6988aacb6ce97dc3fb506c7758646b3d1aa217bbbc94994f62e52bac4eea"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DOOR_TRIM_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_trim_policy.ts",
-          "symbol": "DOOR_TRIM_DIMENSIONS",
-          "declarationTypeFingerprint": "56069231dc1a7520e5a95e6cea97e3d2f31dd662641ff18244e97f5561f7a20c"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_TRIM_DIMENSIONS",
-          "publicExportedName": "DOOR_TRIM_DIMENSIONS",
-          "declarationTypeFingerprint": "ead67205e228ae6c423f7e2b2193cbedeaed1f47f7ddb750da9e14ef382dc9ea"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_TRIM_DIMENSIONS",
-          "publicExportedName": "DOOR_TRIM_DIMENSIONS",
-          "declarationTypeFingerprint": "ead67205e228ae6c423f7e2b2193cbedeaed1f47f7ddb750da9e14ef382dc9ea"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DOOR_VISUAL_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_visual_policy.ts",
-          "symbol": "DOOR_VISUAL_DIMENSIONS",
-          "declarationTypeFingerprint": "9f1f630fa0a5448ecdb7a760010b24b779250dc6e1e2ca524e3e5fe933df625c"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_VISUAL_DIMENSIONS",
-          "publicExportedName": "DOOR_VISUAL_DIMENSIONS",
-          "declarationTypeFingerprint": "6df63ef8a62ecde150fe2c3adae15242e381447bc64e73ae4918a307b002a342"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DOOR_VISUAL_DIMENSIONS",
-          "publicExportedName": "DOOR_VISUAL_DIMENSIONS",
-          "declarationTypeFingerprint": "6df63ef8a62ecde150fe2c3adae15242e381447bc64e73ae4918a307b002a342"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DoorMountConstructionMode",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "DoorMountConstructionMode",
-          "declarationTypeFingerprint": "2dfae665f542c7b4c3cdbe38291f7a187adcb49c805d34a056a157ca5afbf279"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "DoorMountConstructionMode",
-          "publicExportedName": "DoorMountConstructionMode",
-          "declarationTypeFingerprint": "2dfae665f542c7b4c3cdbe38291f7a187adcb49c805d34a056a157ca5afbf279"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DoorMountConstructionMode",
-          "publicExportedName": "DoorMountConstructionMode",
-          "declarationTypeFingerprint": "2dfae665f542c7b4c3cdbe38291f7a187adcb49c805d34a056a157ca5afbf279"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DoorMountThicknessConfigKey",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "DoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "cfa9fedeea69c39928dea458357c52ef7f5098e61921dada157e2cd1be8024f7"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "DoorMountThicknessConfigKey",
-          "publicExportedName": "DoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "cfa9fedeea69c39928dea458357c52ef7f5098e61921dada157e2cd1be8024f7"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DoorMountThicknessConfigKey",
-          "publicExportedName": "DoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "cfa9fedeea69c39928dea458357c52ef7f5098e61921dada157e2cd1be8024f7"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DoorMountThicknessKind",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "DoorMountThicknessKind",
-          "declarationTypeFingerprint": "817acdea38ccedef81ef535b567debde2990e5ea64b1973df2551c3040e90634"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "DoorMountThicknessKind",
-          "publicExportedName": "DoorMountThicknessKind",
-          "declarationTypeFingerprint": "817acdea38ccedef81ef535b567debde2990e5ea64b1973df2551c3040e90634"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DoorMountThicknessKind",
-          "publicExportedName": "DoorMountThicknessKind",
-          "declarationTypeFingerprint": "817acdea38ccedef81ef535b567debde2990e5ea64b1973df2551c3040e90634"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "DRAWER_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/drawer_sketch_policy.ts",
-          "symbol": "DRAWER_SKETCH_POLICY",
-          "declarationTypeFingerprint": "5bf019ae7baca202e223415e35449a939006c5309bffd39e4e373a1f8328750c"
-        },
-        {
-          "file": "esm/shared/dimensions/external_drawer_policy.ts",
-          "symbol": "EXTERNAL_DRAWER_POLICY",
-          "declarationTypeFingerprint": "476aa18aee6fe78430991a56d575f02dc5daedca7e45131d7c06eeed6d51b4ae"
-        },
-        {
-          "file": "esm/shared/dimensions/internal_drawer_policy.ts",
-          "symbol": "INTERNAL_DRAWER_POLICY",
-          "declarationTypeFingerprint": "b2b9f9189a580f7cb3a3466e258438a1dfb81e865bf688d2b2c0be4efc01b87d"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DRAWER_DIMENSIONS",
-          "publicExportedName": "DRAWER_DIMENSIONS",
-          "declarationTypeFingerprint": "40ba34d09b0c9a80500bd71ca1e9a078b83604fe20953458a64ee292ee656e6f"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "DRAWER_DIMENSIONS",
-          "publicExportedName": "DRAWER_DIMENSIONS",
-          "declarationTypeFingerprint": "40ba34d09b0c9a80500bd71ca1e9a078b83604fe20953458a64ee292ee656e6f"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "ExternalDrawerGeometry",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/external_drawer_policy.ts",
-          "symbol": "ExternalDrawerGeometry",
-          "declarationTypeFingerprint": "2176c3c644f0f0467efecee3192fb47983c82c6a5f84a067a593381f7170a778"
-        }
-      ],
-      "facadeDeclarationForm": "imported-type-local-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/external_drawer_policy.ts",
-          "sourceSymbol": "ExternalDrawerGeometry",
-          "publicExportedName": "ExternalDrawerGeometry",
-          "declarationTypeFingerprint": "2176c3c644f0f0467efecee3192fb47983c82c6a5f84a067a593381f7170a778"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "ExternalDrawerGeometry",
-          "publicExportedName": "ExternalDrawerGeometry",
-          "declarationTypeFingerprint": "2176c3c644f0f0467efecee3192fb47983c82c6a5f84a067a593381f7170a778"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "FRONT_REVEAL_FRAME_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/front_reveal_frame_policy.ts",
-          "symbol": "FRONT_REVEAL_FRAME_POLICY",
-          "declarationTypeFingerprint": "e347796545b05c10710a86a01ea1ec10d3c9644fc87edc52020e5bf5a44f8ea3"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "FRONT_REVEAL_FRAME_DIMENSIONS",
-          "publicExportedName": "FRONT_REVEAL_FRAME_DIMENSIONS",
-          "declarationTypeFingerprint": "59300f3ff664c6294f50901159828ba7c33b9ccdc15d6d13dbb030731323ca30"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "FRONT_REVEAL_FRAME_DIMENSIONS",
-          "publicExportedName": "FRONT_REVEAL_FRAME_DIMENSIONS",
-          "declarationTypeFingerprint": "59300f3ff664c6294f50901159828ba7c33b9ccdc15d6d13dbb030731323ca30"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "getDefaultChestDrawersCount",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultChestDrawersCount",
-          "declarationTypeFingerprint": "034bac71ff1664f274f86673b8fef222ddb5c31b3f605f13d0d1266a10be4c35"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultChestDrawersCount",
+        "declarationTypeFingerprint": "034bac71ff1664f274f86673b8fef222ddb5c31b3f605f13d0d1266a10be4c35"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultChestDrawersCount",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultChestDrawersCount",
-          "publicExportedName": "getDefaultChestDrawersCount",
-          "declarationTypeFingerprint": "034bac71ff1664f274f86673b8fef222ddb5c31b3f605f13d0d1266a10be4c35"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultChestDrawersCount",
-          "publicExportedName": "getDefaultChestDrawersCount",
-          "declarationTypeFingerprint": "034bac71ff1664f274f86673b8fef222ddb5c31b3f605f13d0d1266a10be4c35"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1322,30 +417,19 @@
     {
       "name": "getDefaultDepthForWardrobeType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultDepthForWardrobeType",
-          "declarationTypeFingerprint": "636196407fe3df3610de2b2b565435a3ea4c9a140d479948395af69e9bd8cad3"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultDepthForWardrobeType",
+        "declarationTypeFingerprint": "636196407fe3df3610de2b2b565435a3ea4c9a140d479948395af69e9bd8cad3"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultDepthForWardrobeType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultDepthForWardrobeType",
-          "publicExportedName": "getDefaultDepthForWardrobeType",
-          "declarationTypeFingerprint": "636196407fe3df3610de2b2b565435a3ea4c9a140d479948395af69e9bd8cad3"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultDepthForWardrobeType",
-          "publicExportedName": "getDefaultDepthForWardrobeType",
-          "declarationTypeFingerprint": "636196407fe3df3610de2b2b565435a3ea4c9a140d479948395af69e9bd8cad3"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1370,96 +454,21 @@
       }
     },
     {
-      "name": "getDefaultDoorMountThicknessCm",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "getDefaultDoorMountThicknessCm",
-          "declarationTypeFingerprint": "02514a2a6cdfaa719dad8acfa65763e2138c1f48e65d82d22677af35ed6ac069"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "getDefaultDoorMountThicknessCm",
-          "publicExportedName": "getDefaultDoorMountThicknessCm",
-          "declarationTypeFingerprint": "02514a2a6cdfaa719dad8acfa65763e2138c1f48e65d82d22677af35ed6ac069"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultDoorMountThicknessCm",
-          "publicExportedName": "getDefaultDoorMountThicknessCm",
-          "declarationTypeFingerprint": "02514a2a6cdfaa719dad8acfa65763e2138c1f48e65d82d22677af35ed6ac069"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "getDefaultDoorMountThicknessM",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "getDefaultDoorMountThicknessM",
-          "declarationTypeFingerprint": "f60bf983a2690a6e2f36004ac22e881db51e899cab215f29befa01c11eda10a3"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "getDefaultDoorMountThicknessM",
-          "publicExportedName": "getDefaultDoorMountThicknessM",
-          "declarationTypeFingerprint": "f60bf983a2690a6e2f36004ac22e881db51e899cab215f29befa01c11eda10a3"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultDoorMountThicknessM",
-          "publicExportedName": "getDefaultDoorMountThicknessM",
-          "declarationTypeFingerprint": "f60bf983a2690a6e2f36004ac22e881db51e899cab215f29befa01c11eda10a3"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "getDefaultDoorsForWardrobeType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultDoorsForWardrobeType",
-          "declarationTypeFingerprint": "a54030410149c89360c541c7dbfe001f556670bdf4ec4c915a862ed6b3982b3f"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultDoorsForWardrobeType",
+        "declarationTypeFingerprint": "a54030410149c89360c541c7dbfe001f556670bdf4ec4c915a862ed6b3982b3f"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultDoorsForWardrobeType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultDoorsForWardrobeType",
-          "publicExportedName": "getDefaultDoorsForWardrobeType",
-          "declarationTypeFingerprint": "a54030410149c89360c541c7dbfe001f556670bdf4ec4c915a862ed6b3982b3f"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultDoorsForWardrobeType",
-          "publicExportedName": "getDefaultDoorsForWardrobeType",
-          "declarationTypeFingerprint": "a54030410149c89360c541c7dbfe001f556670bdf4ec4c915a862ed6b3982b3f"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1486,30 +495,19 @@
     {
       "name": "getDefaultHeightForWardrobeType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultHeightForWardrobeType",
-          "declarationTypeFingerprint": "1356a84b710eaced01e7d1ea29dd52247ea30d74ebedc886cc18b0c080301071"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultHeightForWardrobeType",
+        "declarationTypeFingerprint": "1356a84b710eaced01e7d1ea29dd52247ea30d74ebedc886cc18b0c080301071"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultHeightForWardrobeType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultHeightForWardrobeType",
-          "publicExportedName": "getDefaultHeightForWardrobeType",
-          "declarationTypeFingerprint": "1356a84b710eaced01e7d1ea29dd52247ea30d74ebedc886cc18b0c080301071"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultHeightForWardrobeType",
-          "publicExportedName": "getDefaultHeightForWardrobeType",
-          "declarationTypeFingerprint": "1356a84b710eaced01e7d1ea29dd52247ea30d74ebedc886cc18b0c080301071"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1536,30 +534,19 @@
     {
       "name": "getDefaultPerDoorWidthForWardrobeType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultPerDoorWidthForWardrobeType",
-          "declarationTypeFingerprint": "cce27ccd6f50b319d69763a14af10861087ea2044a6e6e803dd8a3b1db6280ae"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultPerDoorWidthForWardrobeType",
+        "declarationTypeFingerprint": "cce27ccd6f50b319d69763a14af10861087ea2044a6e6e803dd8a3b1db6280ae"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultPerDoorWidthForWardrobeType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultPerDoorWidthForWardrobeType",
-          "publicExportedName": "getDefaultPerDoorWidthForWardrobeType",
-          "declarationTypeFingerprint": "cce27ccd6f50b319d69763a14af10861087ea2044a6e6e803dd8a3b1db6280ae"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultPerDoorWidthForWardrobeType",
-          "publicExportedName": "getDefaultPerDoorWidthForWardrobeType",
-          "declarationTypeFingerprint": "cce27ccd6f50b319d69763a14af10861087ea2044a6e6e803dd8a3b1db6280ae"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1586,30 +573,19 @@
     {
       "name": "getDefaultWidthForWardrobeType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "getDefaultWidthForWardrobeType",
-          "declarationTypeFingerprint": "fcd2945957db224cee67b56f4234897e70b7a6f0d617de8768b455561fb85f62"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultWidthForWardrobeType",
+        "declarationTypeFingerprint": "fcd2945957db224cee67b56f4234897e70b7a6f0d617de8768b455561fb85f62"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "getDefaultWidthForWardrobeType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "getDefaultWidthForWardrobeType",
-          "publicExportedName": "getDefaultWidthForWardrobeType",
-          "declarationTypeFingerprint": "fcd2945957db224cee67b56f4234897e70b7a6f0d617de8768b455561fb85f62"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDefaultWidthForWardrobeType",
-          "publicExportedName": "getDefaultWidthForWardrobeType",
-          "declarationTypeFingerprint": "fcd2945957db224cee67b56f4234897e70b7a6f0d617de8768b455561fb85f62"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1634,96 +610,21 @@
       }
     },
     {
-      "name": "getDoorMountThicknessConfigKey",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "getDoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "3e7a949e3198b7a70319d74a3370f261d03362adbb4290b68641c50ddb8a605a"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "getDoorMountThicknessConfigKey",
-          "publicExportedName": "getDoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "3e7a949e3198b7a70319d74a3370f261d03362adbb4290b68641c50ddb8a605a"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "getDoorMountThicknessConfigKey",
-          "publicExportedName": "getDoorMountThicknessConfigKey",
-          "declarationTypeFingerprint": "3e7a949e3198b7a70319d74a3370f261d03362adbb4290b68641c50ddb8a605a"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "HANDLE_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/handle_policy.ts",
-          "symbol": "HANDLE_POLICY",
-          "declarationTypeFingerprint": "bd36b147d0a64540be2b8ee979a559cc8d21e41b65a857d242999e4c6f386df3"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "HANDLE_DIMENSIONS",
-          "publicExportedName": "HANDLE_DIMENSIONS",
-          "declarationTypeFingerprint": "b7af89d32a3000181f35d659dafdd4946169cc737139e7bee64ee48ca7034898"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "HANDLE_DIMENSIONS",
-          "publicExportedName": "HANDLE_DIMENSIONS",
-          "declarationTypeFingerprint": "b7af89d32a3000181f35d659dafdd4946169cc737139e7bee64ee48ca7034898"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "HINGED_DEFAULT_DEPTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "HINGED_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "44a852233562c6fb589f2592bd175f48399201ec82899411721d978389e2bc0d"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "HINGED_DEFAULT_DEPTH",
+        "declarationTypeFingerprint": "44a852233562c6fb589f2592bd175f48399201ec82899411721d978389e2bc0d"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "HINGED_DEFAULT_DEPTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "HINGED_DEFAULT_DEPTH",
-          "publicExportedName": "HINGED_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "44a852233562c6fb589f2592bd175f48399201ec82899411721d978389e2bc0d"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "HINGED_DEFAULT_DEPTH",
-          "publicExportedName": "HINGED_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "44a852233562c6fb589f2592bd175f48399201ec82899411721d978389e2bc0d"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -1750,30 +651,19 @@
     {
       "name": "HINGED_DEFAULT_PER_DOOR_WIDTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "1e798ecfc498924f475433ee8e91cec22c2cdc43d57af787a9b7d21605213b28"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
+        "declarationTypeFingerprint": "1e798ecfc498924f475433ee8e91cec22c2cdc43d57af787a9b7d21605213b28"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
-          "publicExportedName": "HINGED_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "1e798ecfc498924f475433ee8e91cec22c2cdc43d57af787a9b7d21605213b28"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
-          "publicExportedName": "HINGED_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "1e798ecfc498924f475433ee8e91cec22c2cdc43d57af787a9b7d21605213b28"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -1798,64 +688,21 @@
       }
     },
     {
-      "name": "INTERIOR_FITTINGS_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/interior_fittings_policy.ts",
-          "symbol": "INTERIOR_FITTINGS_POLICY",
-          "declarationTypeFingerprint": "45b87ebceb1decec7109259234bfe01ee403ea329860f6e0166530e3634b953b"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "INTERIOR_FITTINGS_DIMENSIONS",
-          "publicExportedName": "INTERIOR_FITTINGS_DIMENSIONS",
-          "declarationTypeFingerprint": "899600b1f6e8250f75903edb642945569ffaa63a821ecdfc94f8eb34253d1c6b"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "INTERIOR_FITTINGS_DIMENSIONS",
-          "publicExportedName": "INTERIOR_FITTINGS_DIMENSIONS",
-          "declarationTypeFingerprint": "899600b1f6e8250f75903edb642945569ffaa63a821ecdfc94f8eb34253d1c6b"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "isAutoWidthForDoors",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "isAutoWidthForDoors",
-          "declarationTypeFingerprint": "f37d9c97625a7c518c3dfa44c9516b08628bc75e0d1a436038be37e7a114717f"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "isAutoWidthForDoors",
+        "declarationTypeFingerprint": "f37d9c97625a7c518c3dfa44c9516b08628bc75e0d1a436038be37e7a114717f"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "isAutoWidthForDoors",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "isAutoWidthForDoors",
-          "publicExportedName": "isAutoWidthForDoors",
-          "declarationTypeFingerprint": "f37d9c97625a7c518c3dfa44c9516b08628bc75e0d1a436038be37e7a114717f"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "isAutoWidthForDoors",
-          "publicExportedName": "isAutoWidthForDoors",
-          "declarationTypeFingerprint": "f37d9c97625a7c518c3dfa44c9516b08628bc75e0d1a436038be37e7a114717f"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -1880,288 +727,21 @@
       }
     },
     {
-      "name": "LIBRARY_PRESET_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/library_preset_policy.ts",
-          "symbol": "LIBRARY_PRESET_POLICY",
-          "declarationTypeFingerprint": "579611475aef5c1babcb4a252ba7c4973bbed9c45fc22585c5dca34ccb625107"
-        }
-      ],
-      "facadeDeclarationForm": "focused-owner-local-alias",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "LIBRARY_PRESET_DIMENSIONS",
-          "publicExportedName": "LIBRARY_PRESET_DIMENSIONS",
-          "declarationTypeFingerprint": "219ca9b02b3c02434afdadb5f4949dc191e1a5d8181ed4c82327576620d9f3e0"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "LIBRARY_PRESET_DIMENSIONS",
-          "publicExportedName": "LIBRARY_PRESET_DIMENSIONS",
-          "declarationTypeFingerprint": "219ca9b02b3c02434afdadb5f4949dc191e1a5d8181ed4c82327576620d9f3e0"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "MATERIAL_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/material_thickness_policy.ts",
-          "symbol": "MATERIAL_THICKNESS_POLICY",
-          "declarationTypeFingerprint": "370be75ad69b45ba33b77dedeb1033f6e51bb46aa9858fab31b23d2dad507f5b"
-        }
-      ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "MATERIAL_DIMENSIONS",
-          "publicExportedName": "MATERIAL_DIMENSIONS",
-          "declarationTypeFingerprint": "0acfb260327c4fe29c5c1a3c90f1767277be84744f3886fbfb643d1afe15bc5b"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "MATERIAL_DIMENSIONS",
-          "publicExportedName": "MATERIAL_DIMENSIONS",
-          "declarationTypeFingerprint": "0acfb260327c4fe29c5c1a3c90f1767277be84744f3886fbfb643d1afe15bc5b"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "Meters",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "Meters",
-          "declarationTypeFingerprint": "88ba9b9893040d93ad255bd105fd1687fd829a5609b27ec2ed9fdc55819b0062"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "Meters",
-          "publicExportedName": "Meters",
-          "declarationTypeFingerprint": "88ba9b9893040d93ad255bd105fd1687fd829a5609b27ec2ed9fdc55819b0062"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "Meters",
-          "publicExportedName": "Meters",
-          "declarationTypeFingerprint": "88ba9b9893040d93ad255bd105fd1687fd829a5609b27ec2ed9fdc55819b0062"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "Millimeters",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "Millimeters",
-          "declarationTypeFingerprint": "c9cdaf9364e310c2ab90d5820fa1fcbce85439d987b63f1f52fded5aa3f08914"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "Millimeters",
-          "publicExportedName": "Millimeters",
-          "declarationTypeFingerprint": "c9cdaf9364e310c2ab90d5820fa1fcbce85439d987b63f1f52fded5aa3f08914"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "Millimeters",
-          "publicExportedName": "Millimeters",
-          "declarationTypeFingerprint": "c9cdaf9364e310c2ab90d5820fa1fcbce85439d987b63f1f52fded5aa3f08914"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "MM_PER_METER",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "MM_PER_METER",
-          "declarationTypeFingerprint": "f0c534b94bca1c5b8603a75bf0702526f1c219cf97de2c19e74d0b297616ca73"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "MM_PER_METER",
-          "publicExportedName": "MM_PER_METER",
-          "declarationTypeFingerprint": "f0c534b94bca1c5b8603a75bf0702526f1c219cf97de2c19e74d0b297616ca73"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "MM_PER_METER",
-          "publicExportedName": "MM_PER_METER",
-          "declarationTypeFingerprint": "f0c534b94bca1c5b8603a75bf0702526f1c219cf97de2c19e74d0b297616ca73"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "mToCm",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "mToCm",
-          "declarationTypeFingerprint": "398714f425b1273eb59edc600dba43bf5cb3a57f356559fd2a1a7f17dc6fa473"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "mToCm",
-          "publicExportedName": "mToCm",
-          "declarationTypeFingerprint": "398714f425b1273eb59edc600dba43bf5cb3a57f356559fd2a1a7f17dc6fa473"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "mToCm",
-          "publicExportedName": "mToCm",
-          "declarationTypeFingerprint": "398714f425b1273eb59edc600dba43bf5cb3a57f356559fd2a1a7f17dc6fa473"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "NO_MAIN_SKETCH_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/no_main_sketch_policy.ts",
-          "symbol": "NO_MAIN_SKETCH_POLICY",
-          "declarationTypeFingerprint": "d4bc29ccbbb40424a846db1721b215da8c9ab7eebcad0a73ab12547b52295be2"
-        }
-      ],
-      "facadeDeclarationForm": "focused-owner-local-alias",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "NO_MAIN_SKETCH_DIMENSIONS",
-          "publicExportedName": "NO_MAIN_SKETCH_DIMENSIONS",
-          "declarationTypeFingerprint": "7049ee46a1640db13c5f4330588da49b0fab5ed22362ed72b21e2aa21c034ab4"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "NO_MAIN_SKETCH_DIMENSIONS",
-          "publicExportedName": "NO_MAIN_SKETCH_DIMENSIONS",
-          "declarationTypeFingerprint": "7049ee46a1640db13c5f4330588da49b0fab5ed22362ed72b21e2aa21c034ab4"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "normalizeDoorMountThicknessCm",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "normalizeDoorMountThicknessCm",
-          "declarationTypeFingerprint": "fbdd6e557ba1de88efab08bb71fda801a2f3bf88e32925a62ef0910e753e0f37"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "normalizeDoorMountThicknessCm",
-          "publicExportedName": "normalizeDoorMountThicknessCm",
-          "declarationTypeFingerprint": "fbdd6e557ba1de88efab08bb71fda801a2f3bf88e32925a62ef0910e753e0f37"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "normalizeDoorMountThicknessCm",
-          "publicExportedName": "normalizeDoorMountThicknessCm",
-          "declarationTypeFingerprint": "fbdd6e557ba1de88efab08bb71fda801a2f3bf88e32925a62ef0910e753e0f37"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "normalizeWardrobeDimensionDefaultType",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "normalizeWardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "ec86aed6f3eca0d9f263a3d3f05d751bba7adce5553ca5c91a7997713cef9b4d"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "normalizeWardrobeDimensionDefaultType",
+        "declarationTypeFingerprint": "ec86aed6f3eca0d9f263a3d3f05d751bba7adce5553ca5c91a7997713cef9b4d"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "normalizeWardrobeDimensionDefaultType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "normalizeWardrobeDimensionDefaultType",
-          "publicExportedName": "normalizeWardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "ec86aed6f3eca0d9f263a3d3f05d751bba7adce5553ca5c91a7997713cef9b4d"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "normalizeWardrobeDimensionDefaultType",
-          "publicExportedName": "normalizeWardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "ec86aed6f3eca0d9f263a3d3f05d751bba7adce5553ca5c91a7997713cef9b4d"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -2186,64 +766,21 @@
       }
     },
     {
-      "name": "Pixels",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "Pixels",
-          "declarationTypeFingerprint": "8b103357fa6eeb2d85a2b141847dc2cc112ecc0b312a2597febbc4ecc24f7d56"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "Pixels",
-          "publicExportedName": "Pixels",
-          "declarationTypeFingerprint": "8b103357fa6eeb2d85a2b141847dc2cc112ecc0b312a2597febbc4ecc24f7d56"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "Pixels",
-          "publicExportedName": "Pixels",
-          "declarationTypeFingerprint": "8b103357fa6eeb2d85a2b141847dc2cc112ecc0b312a2597febbc4ecc24f7d56"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "resolveAutoWidthForDoors",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "resolveAutoWidthForDoors",
-          "declarationTypeFingerprint": "0a016031f3b548e96827eb6d02ccb2c2e6e26290e4050aadb2026ecb2149f73c"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "resolveAutoWidthForDoors",
+        "declarationTypeFingerprint": "0a016031f3b548e96827eb6d02ccb2c2e6e26290e4050aadb2026ecb2149f73c"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "resolveAutoWidthForDoors",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "resolveAutoWidthForDoors",
-          "publicExportedName": "resolveAutoWidthForDoors",
-          "declarationTypeFingerprint": "0a016031f3b548e96827eb6d02ccb2c2e6e26290e4050aadb2026ecb2149f73c"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "resolveAutoWidthForDoors",
-          "publicExportedName": "resolveAutoWidthForDoors",
-          "declarationTypeFingerprint": "0a016031f3b548e96827eb6d02ccb2c2e6e26290e4050aadb2026ecb2149f73c"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -2270,30 +807,19 @@
     {
       "name": "resolveDefaultWardrobeDimensions",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "resolveDefaultWardrobeDimensions",
-          "declarationTypeFingerprint": "fb152048959524f21e735152b4afefed86c32fee7410b85cc7d9ccc3f6a72c43"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "resolveDefaultWardrobeDimensions",
+        "declarationTypeFingerprint": "fb152048959524f21e735152b4afefed86c32fee7410b85cc7d9ccc3f6a72c43"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "symbol": "resolveDefaultWardrobeDimensions",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "resolveDefaultWardrobeDimensions",
-          "publicExportedName": "resolveDefaultWardrobeDimensions",
-          "declarationTypeFingerprint": "fb152048959524f21e735152b4afefed86c32fee7410b85cc7d9ccc3f6a72c43"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "resolveDefaultWardrobeDimensions",
-          "publicExportedName": "resolveDefaultWardrobeDimensions",
-          "declarationTypeFingerprint": "fb152048959524f21e735152b4afefed86c32fee7410b85cc7d9ccc3f6a72c43"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
@@ -2318,180 +844,21 @@
       }
     },
     {
-      "name": "resolveDoorMountThicknessesFromConfig",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "symbol": "resolveDoorMountThicknessesFromConfig",
-          "declarationTypeFingerprint": "b9642bd01abd70bfaee4b77b38b7cb98961d7a1c4a3a00538104c9014258c41e"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
-          "sourceSymbol": "resolveDoorMountThicknessesFromConfig",
-          "publicExportedName": "resolveDoorMountThicknessesFromConfig",
-          "declarationTypeFingerprint": "b9642bd01abd70bfaee4b77b38b7cb98961d7a1c4a3a00538104c9014258c41e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "resolveDoorMountThicknessesFromConfig",
-          "publicExportedName": "resolveDoorMountThicknessesFromConfig",
-          "declarationTypeFingerprint": "b9642bd01abd70bfaee4b77b38b7cb98961d7a1c4a3a00538104c9014258c41e"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "resolveExternalDrawerGeometry",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/external_drawer_policy.ts",
-          "symbol": "resolveExternalDrawerGeometry",
-          "declarationTypeFingerprint": "44bb0498a15dba254dcaf3666483de7602efb89491910936c2c88a6ec8abcfe2"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/external_drawer_policy.ts",
-          "sourceSymbol": "resolveExternalDrawerGeometry",
-          "publicExportedName": "resolveExternalDrawerGeometry",
-          "declarationTypeFingerprint": "44bb0498a15dba254dcaf3666483de7602efb89491910936c2c88a6ec8abcfe2"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "resolveExternalDrawerGeometry",
-          "publicExportedName": "resolveExternalDrawerGeometry",
-          "declarationTypeFingerprint": "44bb0498a15dba254dcaf3666483de7602efb89491910936c2c88a6ec8abcfe2"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "resolveWardrobeTypeDefaults",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "symbol": "resolveWardrobeTypeDefaults",
-          "declarationTypeFingerprint": "ac64a2e7765ba4c21c3af51d4f1cb4566f6fcb12bd802080f65165cac957357d"
-        }
-      ],
-      "facadeDeclarationForm": "named-re-export",
-      "runtimeIdentityMode": "direct-owner-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-          "sourceSymbol": "resolveWardrobeTypeDefaults",
-          "publicExportedName": "resolveWardrobeTypeDefaults",
-          "declarationTypeFingerprint": "ac64a2e7765ba4c21c3af51d4f1cb4566f6fcb12bd802080f65165cac957357d"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "resolveWardrobeTypeDefaults",
-          "publicExportedName": "resolveWardrobeTypeDefaults",
-          "declarationTypeFingerprint": "ac64a2e7765ba4c21c3af51d4f1cb4566f6fcb12bd802080f65165cac957357d"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "SKETCH_BOX_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
-          "symbol": "SKETCH_BOX_GEOMETRY_POLICY",
-          "declarationTypeFingerprint": "e610c468964a17570a6f6bb38abba07b2d5826d97cb9bfd89f7a37cc813cfe6d"
-        },
-        {
-          "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
-          "symbol": "SKETCH_BOX_DIVIDER_POLICY",
-          "declarationTypeFingerprint": "db2d6012a6ed751ffcdd837278a35002a7d22d85bf0f83e10a4b418c111a3b2a"
-        },
-        {
-          "file": "esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts",
-          "symbol": "SKETCH_BOX_DIMENSION_OVERLAY_POLICY",
-          "declarationTypeFingerprint": "164e9ad6c03bd29c7a5e353237d8ef85f3400b34e6a84dee0bd19aa976754cdf"
-        },
-        {
-          "file": "esm/shared/dimensions/sketch_box_preview_policy.ts",
-          "symbol": "SKETCH_BOX_PREVIEW_POLICY",
-          "declarationTypeFingerprint": "0b1548e7a8b6aaaf97c0a613f0379b725f68e920ce2de15535c6e32d12adf8e8"
-        },
-        {
-          "file": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
-          "symbol": "SKETCH_BOX_FREE_PLACEMENT_POLICY",
-          "declarationTypeFingerprint": "d62301580ff8a11293b185a32e5097348eb8562a223fe636595dafcb94c8eed1"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "SKETCH_BOX_DIMENSIONS",
-          "publicExportedName": "SKETCH_BOX_DIMENSIONS",
-          "declarationTypeFingerprint": "35b98e9a0552dbda265135d1f9bcacb9574d55b3a34ad2723e7fb4a18b7255c3"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "SKETCH_BOX_DIMENSIONS",
-          "publicExportedName": "SKETCH_BOX_DIMENSIONS",
-          "declarationTypeFingerprint": "35b98e9a0552dbda265135d1f9bcacb9574d55b3a34ad2723e7fb4a18b7255c3"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "SLIDING_DEFAULT_DEPTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "SLIDING_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "eb811776b2320acf3bfabbbbaf18630e7613140acead769bb86fde077bbae5e4"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "SLIDING_DEFAULT_DEPTH",
+        "declarationTypeFingerprint": "eb811776b2320acf3bfabbbbaf18630e7613140acead769bb86fde077bbae5e4"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "SLIDING_DEFAULT_DEPTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "SLIDING_DEFAULT_DEPTH",
-          "publicExportedName": "SLIDING_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "eb811776b2320acf3bfabbbbaf18630e7613140acead769bb86fde077bbae5e4"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "SLIDING_DEFAULT_DEPTH",
-          "publicExportedName": "SLIDING_DEFAULT_DEPTH",
-          "declarationTypeFingerprint": "eb811776b2320acf3bfabbbbaf18630e7613140acead769bb86fde077bbae5e4"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -2518,30 +885,19 @@
     {
       "name": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "f2fffff159930c87d0c2cccd4b6eb471ebf0d5168975bd634228c8b11fbc1e05"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+        "declarationTypeFingerprint": "f2fffff159930c87d0c2cccd4b6eb471ebf0d5168975bd634228c8b11fbc1e05"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
-          "publicExportedName": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "f2fffff159930c87d0c2cccd4b6eb471ebf0d5168975bd634228c8b11fbc1e05"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
-          "publicExportedName": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
-          "declarationTypeFingerprint": "f2fffff159930c87d0c2cccd4b6eb471ebf0d5168975bd634228c8b11fbc1e05"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -2568,30 +924,19 @@
     {
       "name": "STACK_SPLIT_LOWER_DEPTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
-          "declarationTypeFingerprint": "555bfed851325f32d79a6bcab06dade0bb4889266ef25da7146832649b19987e"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
+        "declarationTypeFingerprint": "555bfed851325f32d79a6bcab06dade0bb4889266ef25da7146832649b19987e"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MAX",
-          "declarationTypeFingerprint": "555bfed851325f32d79a6bcab06dade0bb4889266ef25da7146832649b19987e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MAX",
-          "declarationTypeFingerprint": "555bfed851325f32d79a6bcab06dade0bb4889266ef25da7146832649b19987e"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2618,30 +963,19 @@
     {
       "name": "STACK_SPLIT_LOWER_DEPTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
-          "declarationTypeFingerprint": "a96e9ab8c6120c98fb29cff4269de42294b5f9f3be8165e1b9161b23f5cda374"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
+        "declarationTypeFingerprint": "a96e9ab8c6120c98fb29cff4269de42294b5f9f3be8165e1b9161b23f5cda374"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MIN",
-          "declarationTypeFingerprint": "a96e9ab8c6120c98fb29cff4269de42294b5f9f3be8165e1b9161b23f5cda374"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MIN",
-          "declarationTypeFingerprint": "a96e9ab8c6120c98fb29cff4269de42294b5f9f3be8165e1b9161b23f5cda374"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2668,30 +1002,19 @@
     {
       "name": "STACK_SPLIT_LOWER_DOORS_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_DOORS_MAX",
-          "declarationTypeFingerprint": "87a13b6ef86e4078eb05d8797ee9c99cc9df5e5dc6ba72dd4948c628f7fbcf81"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DOORS_MAX",
+        "declarationTypeFingerprint": "87a13b6ef86e4078eb05d8797ee9c99cc9df5e5dc6ba72dd4948c628f7fbcf81"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DOORS_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MAX",
-          "declarationTypeFingerprint": "87a13b6ef86e4078eb05d8797ee9c99cc9df5e5dc6ba72dd4948c628f7fbcf81"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MAX",
-          "declarationTypeFingerprint": "87a13b6ef86e4078eb05d8797ee9c99cc9df5e5dc6ba72dd4948c628f7fbcf81"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2718,30 +1041,19 @@
     {
       "name": "STACK_SPLIT_LOWER_DOORS_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_DOORS_MIN",
-          "declarationTypeFingerprint": "8438f16daef7884be719fdd712869c2e3003b5a9d0d8627338c14e261139c048"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DOORS_MIN",
+        "declarationTypeFingerprint": "8438f16daef7884be719fdd712869c2e3003b5a9d0d8627338c14e261139c048"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_DOORS_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MIN",
-          "declarationTypeFingerprint": "8438f16daef7884be719fdd712869c2e3003b5a9d0d8627338c14e261139c048"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MIN",
-          "declarationTypeFingerprint": "8438f16daef7884be719fdd712869c2e3003b5a9d0d8627338c14e261139c048"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2768,30 +1080,19 @@
     {
       "name": "STACK_SPLIT_LOWER_HEIGHT_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "declarationTypeFingerprint": "2123dd477668f473fe5adda19aaf83978fbb00b9a68041ae3b4d189db20c6933"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
+        "declarationTypeFingerprint": "2123dd477668f473fe5adda19aaf83978fbb00b9a68041ae3b4d189db20c6933"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "declarationTypeFingerprint": "2123dd477668f473fe5adda19aaf83978fbb00b9a68041ae3b4d189db20c6933"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "declarationTypeFingerprint": "2123dd477668f473fe5adda19aaf83978fbb00b9a68041ae3b4d189db20c6933"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2818,30 +1119,19 @@
     {
       "name": "STACK_SPLIT_LOWER_WIDTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
-          "declarationTypeFingerprint": "2a24a53d99b90191d8fdabe3086a275f0cfd9b0df2757ef2b556e9996bf8d4c2"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
+        "declarationTypeFingerprint": "2a24a53d99b90191d8fdabe3086a275f0cfd9b0df2757ef2b556e9996bf8d4c2"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MAX",
-          "declarationTypeFingerprint": "2a24a53d99b90191d8fdabe3086a275f0cfd9b0df2757ef2b556e9996bf8d4c2"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
-          "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MAX",
-          "declarationTypeFingerprint": "2a24a53d99b90191d8fdabe3086a275f0cfd9b0df2757ef2b556e9996bf8d4c2"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2868,30 +1158,19 @@
     {
       "name": "STACK_SPLIT_LOWER_WIDTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "declarationTypeFingerprint": "8daeba385ff15ecaa32abe909a2473dc31e1c3f8f74116e4b05991ad148a3de5"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
+        "declarationTypeFingerprint": "8daeba385ff15ecaa32abe909a2473dc31e1c3f8f74116e4b05991ad148a3de5"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "declarationTypeFingerprint": "8daeba385ff15ecaa32abe909a2473dc31e1c3f8f74116e4b05991ad148a3de5"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "declarationTypeFingerprint": "8daeba385ff15ecaa32abe909a2473dc31e1c3f8f74116e4b05991ad148a3de5"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2918,30 +1197,19 @@
     {
       "name": "STACK_SPLIT_MIN_TOP_HEIGHT",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "declarationTypeFingerprint": "7f47f4683592c88a0c3971a95783fe6e59e462fca913c7457997b6c52fff6069"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
+        "declarationTypeFingerprint": "7f47f4683592c88a0c3971a95783fe6e59e462fca913c7457997b6c52fff6069"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "publicExportedName": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "declarationTypeFingerprint": "7f47f4683592c88a0c3971a95783fe6e59e462fca913c7457997b6c52fff6069"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "publicExportedName": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "declarationTypeFingerprint": "7f47f4683592c88a0c3971a95783fe6e59e462fca913c7457997b6c52fff6069"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -2968,30 +1236,19 @@
     {
       "name": "STACK_SPLIT_SEAM_GAP_M",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_SEAM_GAP_M",
-          "declarationTypeFingerprint": "2d3eb2cf27fcfd447c3648fa3a292cb5f716c57ec281b1353b1d0ffd99e527ec"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_SEAM_GAP_M",
+        "declarationTypeFingerprint": "2d3eb2cf27fcfd447c3648fa3a292cb5f716c57ec281b1353b1d0ffd99e527ec"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/stack_split_policy.ts",
+        "symbol": "STACK_SPLIT_SEAM_GAP_M",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
-          "sourceSymbol": "STACK_SPLIT_SEAM_GAP_M",
-          "publicExportedName": "STACK_SPLIT_SEAM_GAP_M",
-          "declarationTypeFingerprint": "2d3eb2cf27fcfd447c3648fa3a292cb5f716c57ec281b1353b1d0ffd99e527ec"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "STACK_SPLIT_SEAM_GAP_M",
-          "publicExportedName": "STACK_SPLIT_SEAM_GAP_M",
-          "declarationTypeFingerprint": "2d3eb2cf27fcfd447c3648fa3a292cb5f716c57ec281b1353b1d0ffd99e527ec"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
@@ -3018,30 +1275,19 @@
     {
       "name": "WARDROBE_CELL_DEPTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_DEPTH_MAX",
-          "declarationTypeFingerprint": "553072eca3a241f2213a0f39d1837ceb298ad954103e82f158a1f34165edbd82"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DEPTH_MAX",
+        "declarationTypeFingerprint": "553072eca3a241f2213a0f39d1837ceb298ad954103e82f158a1f34165edbd82"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DEPTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_DEPTH_MAX",
-          "publicExportedName": "WARDROBE_CELL_DEPTH_MAX",
-          "declarationTypeFingerprint": "553072eca3a241f2213a0f39d1837ceb298ad954103e82f158a1f34165edbd82"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_DEPTH_MAX",
-          "publicExportedName": "WARDROBE_CELL_DEPTH_MAX",
-          "declarationTypeFingerprint": "553072eca3a241f2213a0f39d1837ceb298ad954103e82f158a1f34165edbd82"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3068,30 +1314,19 @@
     {
       "name": "WARDROBE_CELL_DEPTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_DEPTH_MIN",
-          "declarationTypeFingerprint": "bfdcc0ffbc2d90b9bb4600f8d0ab79056c2b5639fbbe359742e0bd97135e5cbf"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DEPTH_MIN",
+        "declarationTypeFingerprint": "bfdcc0ffbc2d90b9bb4600f8d0ab79056c2b5639fbbe359742e0bd97135e5cbf"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DEPTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_DEPTH_MIN",
-          "publicExportedName": "WARDROBE_CELL_DEPTH_MIN",
-          "declarationTypeFingerprint": "bfdcc0ffbc2d90b9bb4600f8d0ab79056c2b5639fbbe359742e0bd97135e5cbf"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_DEPTH_MIN",
-          "publicExportedName": "WARDROBE_CELL_DEPTH_MIN",
-          "declarationTypeFingerprint": "bfdcc0ffbc2d90b9bb4600f8d0ab79056c2b5639fbbe359742e0bd97135e5cbf"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3118,30 +1353,19 @@
     {
       "name": "WARDROBE_CELL_DIM_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_DIM_MIN",
-          "declarationTypeFingerprint": "224b389991666cd84450a2d48664d0a578bde608edaa45881af22a6dfe329998"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DIM_MIN",
+        "declarationTypeFingerprint": "224b389991666cd84450a2d48664d0a578bde608edaa45881af22a6dfe329998"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_DIM_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_DIM_MIN",
-          "publicExportedName": "WARDROBE_CELL_DIM_MIN",
-          "declarationTypeFingerprint": "224b389991666cd84450a2d48664d0a578bde608edaa45881af22a6dfe329998"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_DIM_MIN",
-          "publicExportedName": "WARDROBE_CELL_DIM_MIN",
-          "declarationTypeFingerprint": "224b389991666cd84450a2d48664d0a578bde608edaa45881af22a6dfe329998"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3168,30 +1392,19 @@
     {
       "name": "WARDROBE_CELL_HEIGHT_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_HEIGHT_MAX",
-          "declarationTypeFingerprint": "c20c9b2d942909f7c35a795c503d6fc53b7ac18ecddac24af8910d6668e4daba"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_HEIGHT_MAX",
+        "declarationTypeFingerprint": "c20c9b2d942909f7c35a795c503d6fc53b7ac18ecddac24af8910d6668e4daba"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_HEIGHT_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_HEIGHT_MAX",
-          "publicExportedName": "WARDROBE_CELL_HEIGHT_MAX",
-          "declarationTypeFingerprint": "c20c9b2d942909f7c35a795c503d6fc53b7ac18ecddac24af8910d6668e4daba"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_HEIGHT_MAX",
-          "publicExportedName": "WARDROBE_CELL_HEIGHT_MAX",
-          "declarationTypeFingerprint": "c20c9b2d942909f7c35a795c503d6fc53b7ac18ecddac24af8910d6668e4daba"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3218,30 +1431,19 @@
     {
       "name": "WARDROBE_CELL_HEIGHT_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_HEIGHT_MIN",
-          "declarationTypeFingerprint": "22b16056c80a484a1d182ba6eebc91fb2367a48b7f44234df23344444fd2db7f"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_HEIGHT_MIN",
+        "declarationTypeFingerprint": "22b16056c80a484a1d182ba6eebc91fb2367a48b7f44234df23344444fd2db7f"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_HEIGHT_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_CELL_HEIGHT_MIN",
-          "declarationTypeFingerprint": "22b16056c80a484a1d182ba6eebc91fb2367a48b7f44234df23344444fd2db7f"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_CELL_HEIGHT_MIN",
-          "declarationTypeFingerprint": "22b16056c80a484a1d182ba6eebc91fb2367a48b7f44234df23344444fd2db7f"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3268,30 +1470,19 @@
     {
       "name": "WARDROBE_CELL_WIDTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_WIDTH_MAX",
-          "declarationTypeFingerprint": "93686d0b47fa2f93f45e4d4bd0e5798eb25e07c82d72568f250f197395a2c8ec"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_WIDTH_MAX",
+        "declarationTypeFingerprint": "93686d0b47fa2f93f45e4d4bd0e5798eb25e07c82d72568f250f197395a2c8ec"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_WIDTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_WIDTH_MAX",
-          "publicExportedName": "WARDROBE_CELL_WIDTH_MAX",
-          "declarationTypeFingerprint": "93686d0b47fa2f93f45e4d4bd0e5798eb25e07c82d72568f250f197395a2c8ec"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_WIDTH_MAX",
-          "publicExportedName": "WARDROBE_CELL_WIDTH_MAX",
-          "declarationTypeFingerprint": "93686d0b47fa2f93f45e4d4bd0e5798eb25e07c82d72568f250f197395a2c8ec"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3318,30 +1509,19 @@
     {
       "name": "WARDROBE_CELL_WIDTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CELL_WIDTH_MIN",
-          "declarationTypeFingerprint": "752271a16c2f97fca5141fbb2fdc5fa95c3a3d30316545b07499571f5063d7c0"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_WIDTH_MIN",
+        "declarationTypeFingerprint": "752271a16c2f97fca5141fbb2fdc5fa95c3a3d30316545b07499571f5063d7c0"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CELL_WIDTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CELL_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_CELL_WIDTH_MIN",
-          "declarationTypeFingerprint": "752271a16c2f97fca5141fbb2fdc5fa95c3a3d30316545b07499571f5063d7c0"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CELL_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_CELL_WIDTH_MIN",
-          "declarationTypeFingerprint": "752271a16c2f97fca5141fbb2fdc5fa95c3a3d30316545b07499571f5063d7c0"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3368,30 +1548,19 @@
     {
       "name": "WARDROBE_CHEST_DRAWERS_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CHEST_DRAWERS_MAX",
-          "declarationTypeFingerprint": "e3cdf0582edb733f1d1a0ce2d683238f5c83970e687504b9024456568b487fb3"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_DRAWERS_MAX",
+        "declarationTypeFingerprint": "e3cdf0582edb733f1d1a0ce2d683238f5c83970e687504b9024456568b487fb3"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_DRAWERS_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MAX",
-          "publicExportedName": "WARDROBE_CHEST_DRAWERS_MAX",
-          "declarationTypeFingerprint": "e3cdf0582edb733f1d1a0ce2d683238f5c83970e687504b9024456568b487fb3"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MAX",
-          "publicExportedName": "WARDROBE_CHEST_DRAWERS_MAX",
-          "declarationTypeFingerprint": "e3cdf0582edb733f1d1a0ce2d683238f5c83970e687504b9024456568b487fb3"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3418,30 +1587,19 @@
     {
       "name": "WARDROBE_CHEST_DRAWERS_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CHEST_DRAWERS_MIN",
-          "declarationTypeFingerprint": "da4eb170ce55d0212a878a073ca4c649f61a1a3d0369acdfc8de63986323a619"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_DRAWERS_MIN",
+        "declarationTypeFingerprint": "da4eb170ce55d0212a878a073ca4c649f61a1a3d0369acdfc8de63986323a619"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_DRAWERS_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MIN",
-          "publicExportedName": "WARDROBE_CHEST_DRAWERS_MIN",
-          "declarationTypeFingerprint": "da4eb170ce55d0212a878a073ca4c649f61a1a3d0369acdfc8de63986323a619"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MIN",
-          "publicExportedName": "WARDROBE_CHEST_DRAWERS_MIN",
-          "declarationTypeFingerprint": "da4eb170ce55d0212a878a073ca4c649f61a1a3d0369acdfc8de63986323a619"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3468,30 +1626,19 @@
     {
       "name": "WARDROBE_CHEST_HEIGHT_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CHEST_HEIGHT_MIN",
-          "declarationTypeFingerprint": "6e5bfadafcdd3d8ad04330190bc35382bc5b914dae69477969a4efade1da6f5e"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_HEIGHT_MIN",
+        "declarationTypeFingerprint": "6e5bfadafcdd3d8ad04330190bc35382bc5b914dae69477969a4efade1da6f5e"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_HEIGHT_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CHEST_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_CHEST_HEIGHT_MIN",
-          "declarationTypeFingerprint": "6e5bfadafcdd3d8ad04330190bc35382bc5b914dae69477969a4efade1da6f5e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CHEST_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_CHEST_HEIGHT_MIN",
-          "declarationTypeFingerprint": "6e5bfadafcdd3d8ad04330190bc35382bc5b914dae69477969a4efade1da6f5e"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3518,30 +1665,19 @@
     {
       "name": "WARDROBE_CHEST_WIDTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_CHEST_WIDTH_MIN",
-          "declarationTypeFingerprint": "e5d748f68568c15fe97f9b39994b94dbc2a5339a7f6f4a5c4f2c26018b1687c0"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_WIDTH_MIN",
+        "declarationTypeFingerprint": "e5d748f68568c15fe97f9b39994b94dbc2a5339a7f6f4a5c4f2c26018b1687c0"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_CHEST_WIDTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_CHEST_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_CHEST_WIDTH_MIN",
-          "declarationTypeFingerprint": "e5d748f68568c15fe97f9b39994b94dbc2a5339a7f6f4a5c4f2c26018b1687c0"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_CHEST_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_CHEST_WIDTH_MIN",
-          "declarationTypeFingerprint": "e5d748f68568c15fe97f9b39994b94dbc2a5339a7f6f4a5c4f2c26018b1687c0"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3566,74 +1702,21 @@
       }
     },
     {
-      "name": "WARDROBE_DEFAULTS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "WARDROBE_DEFAULTS",
-          "declarationTypeFingerprint": "f69542ec878a6c00d5d963044938e940d2811727bb12ff2cadec44327327000d"
-        },
-        {
-          "file": "esm/shared/dimensions/stack_split_policy.ts",
-          "symbol": "STACK_SPLIT_POLICY",
-          "declarationTypeFingerprint": "5287f5a2ab2d283afe45d22403f6ccbe482bcf83c968b2cd929ce0d8fb35b9bc"
-        },
-        {
-          "file": "esm/shared/dimensions/stack_split_render_policy.ts",
-          "symbol": "STACK_SPLIT_RENDER_POLICY",
-          "declarationTypeFingerprint": "63333c618138d3bd5442b7852d511cf20f39a027350998e32b0d580ab29ac687"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DEFAULTS",
-          "publicExportedName": "WARDROBE_DEFAULTS",
-          "declarationTypeFingerprint": "76ec488ea19dfe1853eb68a4d24088b51c0f7370b8c63b987637f5430de03629"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DEFAULTS",
-          "publicExportedName": "WARDROBE_DEFAULTS",
-          "declarationTypeFingerprint": "76ec488ea19dfe1853eb68a4d24088b51c0f7370b8c63b987637f5430de03629"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "WARDROBE_DEPTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_DEPTH_MAX",
-          "declarationTypeFingerprint": "a45756f3aab7bc2a979d61af2f901d7abcfa7256ea563912329232269ec7ab08"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DEPTH_MAX",
+        "declarationTypeFingerprint": "a45756f3aab7bc2a979d61af2f901d7abcfa7256ea563912329232269ec7ab08"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DEPTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_DEPTH_MAX",
-          "publicExportedName": "WARDROBE_DEPTH_MAX",
-          "declarationTypeFingerprint": "a45756f3aab7bc2a979d61af2f901d7abcfa7256ea563912329232269ec7ab08"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DEPTH_MAX",
-          "publicExportedName": "WARDROBE_DEPTH_MAX",
-          "declarationTypeFingerprint": "a45756f3aab7bc2a979d61af2f901d7abcfa7256ea563912329232269ec7ab08"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3660,30 +1743,19 @@
     {
       "name": "WARDROBE_DEPTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_DEPTH_MIN",
-          "declarationTypeFingerprint": "88a6d938131157a7318bad7abb0bbafd7b80ca593363edfd52e4edd6d3ef8f79"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DEPTH_MIN",
+        "declarationTypeFingerprint": "88a6d938131157a7318bad7abb0bbafd7b80ca593363edfd52e4edd6d3ef8f79"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DEPTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_DEPTH_MIN",
-          "publicExportedName": "WARDROBE_DEPTH_MIN",
-          "declarationTypeFingerprint": "88a6d938131157a7318bad7abb0bbafd7b80ca593363edfd52e4edd6d3ef8f79"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DEPTH_MIN",
-          "publicExportedName": "WARDROBE_DEPTH_MIN",
-          "declarationTypeFingerprint": "88a6d938131157a7318bad7abb0bbafd7b80ca593363edfd52e4edd6d3ef8f79"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3708,64 +1780,21 @@
       }
     },
     {
-      "name": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_dimension_guide_policy.ts",
-          "symbol": "WARDROBE_DIMENSION_GUIDE_POLICY",
-          "declarationTypeFingerprint": "d295b676095986a313789b6d1958153496d211262dd2f694e0035e80b64f0265"
-        }
-      ],
-      "facadeDeclarationForm": "focused-owner-local-alias",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
-          "publicExportedName": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
-          "declarationTypeFingerprint": "ff09ef2bb114e700572eec1635ce747dbef3d1e94203b7f3e123173b86f1f78e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
-          "publicExportedName": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
-          "declarationTypeFingerprint": "ff09ef2bb114e700572eec1635ce747dbef3d1e94203b7f3e123173b86f1f78e"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "WARDROBE_DOORS_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_DOORS_MAX",
-          "declarationTypeFingerprint": "d2d1a93e0480dc1284ecef66ad0039aa450a0840383061c11acee21baece6d4e"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DOORS_MAX",
+        "declarationTypeFingerprint": "d2d1a93e0480dc1284ecef66ad0039aa450a0840383061c11acee21baece6d4e"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DOORS_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_DOORS_MAX",
-          "publicExportedName": "WARDROBE_DOORS_MAX",
-          "declarationTypeFingerprint": "d2d1a93e0480dc1284ecef66ad0039aa450a0840383061c11acee21baece6d4e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DOORS_MAX",
-          "publicExportedName": "WARDROBE_DOORS_MAX",
-          "declarationTypeFingerprint": "d2d1a93e0480dc1284ecef66ad0039aa450a0840383061c11acee21baece6d4e"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3792,30 +1821,19 @@
     {
       "name": "WARDROBE_DOORS_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_DOORS_MIN",
-          "declarationTypeFingerprint": "8d21c6075bbca254922118c691542ff0282bc35fb9d7eb6231c1e283058e13b4"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DOORS_MIN",
+        "declarationTypeFingerprint": "8d21c6075bbca254922118c691542ff0282bc35fb9d7eb6231c1e283058e13b4"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_DOORS_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_DOORS_MIN",
-          "publicExportedName": "WARDROBE_DOORS_MIN",
-          "declarationTypeFingerprint": "8d21c6075bbca254922118c691542ff0282bc35fb9d7eb6231c1e283058e13b4"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_DOORS_MIN",
-          "publicExportedName": "WARDROBE_DOORS_MIN",
-          "declarationTypeFingerprint": "8d21c6075bbca254922118c691542ff0282bc35fb9d7eb6231c1e283058e13b4"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3842,30 +1860,19 @@
     {
       "name": "WARDROBE_HEIGHT_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_HEIGHT_MAX",
-          "declarationTypeFingerprint": "d9d18c9536428de016ae4b1f190a64b09b74fdd79ac5475b3e4c76a7bd42b523"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_HEIGHT_MAX",
+        "declarationTypeFingerprint": "d9d18c9536428de016ae4b1f190a64b09b74fdd79ac5475b3e4c76a7bd42b523"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_HEIGHT_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_HEIGHT_MAX",
-          "publicExportedName": "WARDROBE_HEIGHT_MAX",
-          "declarationTypeFingerprint": "d9d18c9536428de016ae4b1f190a64b09b74fdd79ac5475b3e4c76a7bd42b523"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_HEIGHT_MAX",
-          "publicExportedName": "WARDROBE_HEIGHT_MAX",
-          "declarationTypeFingerprint": "d9d18c9536428de016ae4b1f190a64b09b74fdd79ac5475b3e4c76a7bd42b523"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3892,30 +1899,19 @@
     {
       "name": "WARDROBE_HEIGHT_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_HEIGHT_MIN",
-          "declarationTypeFingerprint": "9c8d5c413e38117d7c5b8333512b82564a7f60ea5548d20ee53924b24d0a31ba"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_HEIGHT_MIN",
+        "declarationTypeFingerprint": "9c8d5c413e38117d7c5b8333512b82564a7f60ea5548d20ee53924b24d0a31ba"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_HEIGHT_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_HEIGHT_MIN",
-          "declarationTypeFingerprint": "9c8d5c413e38117d7c5b8333512b82564a7f60ea5548d20ee53924b24d0a31ba"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_HEIGHT_MIN",
-          "publicExportedName": "WARDROBE_HEIGHT_MIN",
-          "declarationTypeFingerprint": "9c8d5c413e38117d7c5b8333512b82564a7f60ea5548d20ee53924b24d0a31ba"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -3940,111 +1936,21 @@
       }
     },
     {
-      "name": "WARDROBE_LAYOUT_DIMENSIONS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_layout_policy.ts",
-          "symbol": "WARDROBE_MODULE_LAYOUT_POLICY",
-          "declarationTypeFingerprint": "30945adda267ef6ca67d55cce9d6133ee552321e514bdcc32953fe7cc96a472c"
-        },
-        {
-          "file": "esm/shared/dimensions/wardrobe_layout_comparison_policy.ts",
-          "symbol": "WARDROBE_LAYOUT_COMPARISON_POLICY",
-          "declarationTypeFingerprint": "5ddfa59f3ed012121e2c5189ad5b60084be66219657cbc4912f1b860aebaddff"
-        },
-        {
-          "file": "esm/shared/dimensions/cell_dimension_policy.ts",
-          "symbol": "CELL_DIMENSION_MATCH_POLICY",
-          "declarationTypeFingerprint": "af2fe6ca95b95535d81eabd6d169018633442fd4b971534c7ebcc74a70fd9a80"
-        },
-        {
-          "file": "esm/shared/dimensions/cell_dimension_policy.ts",
-          "symbol": "CELL_DIMENSION_PREVIEW_POLICY",
-          "declarationTypeFingerprint": "2fa1b852a430f71a989be53e2fde01a1ee772b74e7619e79fe2c368e5ae6b051"
-        }
-      ],
-      "facadeDeclarationForm": "local-composition",
-      "runtimeIdentityMode": "new-aggregate",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_LAYOUT_DIMENSIONS",
-          "publicExportedName": "WARDROBE_LAYOUT_DIMENSIONS",
-          "declarationTypeFingerprint": "9a3c91743d918ec5d4e59c68f541d9a7b4edae1953bfcf706ad451e98d69492e"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_LAYOUT_DIMENSIONS",
-          "publicExportedName": "WARDROBE_LAYOUT_DIMENSIONS",
-          "declarationTypeFingerprint": "9a3c91743d918ec5d4e59c68f541d9a7b4edae1953bfcf706ad451e98d69492e"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
-      "name": "WARDROBE_LIMITS",
-      "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_LIMITS",
-          "declarationTypeFingerprint": "64c276ea36b4c8ac659ced142c2c5fc816b8555923c411f5d0c90ab4554471af"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_LIMITS",
-          "publicExportedName": "WARDROBE_LIMITS",
-          "declarationTypeFingerprint": "64c276ea36b4c8ac659ced142c2c5fc816b8555923c411f5d0c90ab4554471af"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_LIMITS",
-          "publicExportedName": "WARDROBE_LIMITS",
-          "declarationTypeFingerprint": "64c276ea36b4c8ac659ced142c2c5fc816b8555923c411f5d0c90ab4554471af"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
-      }
-    },
-    {
       "name": "WARDROBE_SLIDING_DOORS_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_SLIDING_DOORS_MIN",
-          "declarationTypeFingerprint": "a08e75c8c8cb62992bf09bd9e28fd02463eda3b9d2f429076feba34d1832d557"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_SLIDING_DOORS_MIN",
+        "declarationTypeFingerprint": "a08e75c8c8cb62992bf09bd9e28fd02463eda3b9d2f429076feba34d1832d557"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_SLIDING_DOORS_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_SLIDING_DOORS_MIN",
-          "publicExportedName": "WARDROBE_SLIDING_DOORS_MIN",
-          "declarationTypeFingerprint": "a08e75c8c8cb62992bf09bd9e28fd02463eda3b9d2f429076feba34d1832d557"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_SLIDING_DOORS_MIN",
-          "publicExportedName": "WARDROBE_SLIDING_DOORS_MIN",
-          "declarationTypeFingerprint": "a08e75c8c8cb62992bf09bd9e28fd02463eda3b9d2f429076feba34d1832d557"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -4071,30 +1977,19 @@
     {
       "name": "WARDROBE_WIDTH_MAX",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_WIDTH_MAX",
-          "declarationTypeFingerprint": "9bc84f2d9f84d68080579702be396adf69969e6cc83cd9cdccfb459154b114c8"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_WIDTH_MAX",
+        "declarationTypeFingerprint": "9bc84f2d9f84d68080579702be396adf69969e6cc83cd9cdccfb459154b114c8"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_WIDTH_MAX",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_WIDTH_MAX",
-          "publicExportedName": "WARDROBE_WIDTH_MAX",
-          "declarationTypeFingerprint": "9bc84f2d9f84d68080579702be396adf69969e6cc83cd9cdccfb459154b114c8"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_WIDTH_MAX",
-          "publicExportedName": "WARDROBE_WIDTH_MAX",
-          "declarationTypeFingerprint": "9bc84f2d9f84d68080579702be396adf69969e6cc83cd9cdccfb459154b114c8"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -4121,30 +2016,19 @@
     {
       "name": "WARDROBE_WIDTH_MIN",
       "kind": "value",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/product_limits.ts",
-          "symbol": "WARDROBE_WIDTH_MIN",
-          "declarationTypeFingerprint": "2829539650d3ad80e340ccae5d9f3594576906a2a7a70e79a2f6996a5da6ce4b"
-        }
-      ],
-      "facadeDeclarationForm": "identity-local-export",
-      "runtimeIdentityMode": "direct-runtime-reference",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_WIDTH_MIN",
+        "declarationTypeFingerprint": "2829539650d3ad80e340ccae5d9f3594576906a2a7a70e79a2f6996a5da6ce4b"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/product_limits.ts",
+        "symbol": "WARDROBE_WIDTH_MIN",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/product_limits.ts",
-          "sourceSymbol": "WARDROBE_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_WIDTH_MIN",
-          "declarationTypeFingerprint": "2829539650d3ad80e340ccae5d9f3594576906a2a7a70e79a2f6996a5da6ce4b"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WARDROBE_WIDTH_MIN",
-          "publicExportedName": "WARDROBE_WIDTH_MIN",
-          "declarationTypeFingerprint": "2829539650d3ad80e340ccae5d9f3594576906a2a7a70e79a2f6996a5da6ce4b"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/product_limits.ts",
@@ -4171,30 +2055,19 @@
     {
       "name": "WardrobeDimensionDefaultType",
       "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "symbol": "WardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
+      "canonicalOwner": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "WardrobeDimensionDefaultType",
+        "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"
+      },
+      "runtimeSource": {
+        "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "symbol": "WardrobeDimensionDefaultType",
+        "declarationMode": "canonical-focused-owner"
+      },
+      "runtimeIdentity": "strict",
+      "declarationParity": "exact-owner",
       "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
-          "sourceSymbol": "WardrobeDimensionDefaultType",
-          "publicExportedName": "WardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WardrobeDimensionDefaultType",
-          "publicExportedName": "WardrobeDimensionDefaultType",
-          "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"
-        },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
           "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
@@ -4216,38 +2089,6 @@
           "publicExportedName": "WardrobeDimensionDefaultType",
           "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"
         }
-      }
-    },
-    {
-      "name": "WorldUnits",
-      "kind": "type",
-      "canonicalOwner": [
-        {
-          "file": "esm/shared/dimensions/units.ts",
-          "symbol": "WorldUnits",
-          "declarationTypeFingerprint": "4b80128321743ae1c0f29c49229d2dded6a8e3e90a584601e7e36b644827a8b5"
-        }
-      ],
-      "facadeDeclarationForm": "type-re-export",
-      "runtimeIdentityMode": "declaration-identity",
-      "surfaces": {
-        "facade": {
-          "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/dimensions/units.ts",
-          "sourceSymbol": "WorldUnits",
-          "publicExportedName": "WorldUnits",
-          "declarationTypeFingerprint": "4b80128321743ae1c0f29c49229d2dded6a8e3e90a584601e7e36b644827a8b5"
-        },
-        "featureBarrel": {
-          "routeFile": "esm/native/features/dimensions/index.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceSymbol": "WorldUnits",
-          "publicExportedName": "WorldUnits",
-          "declarationTypeFingerprint": "4b80128321743ae1c0f29c49229d2dded6a8e3e90a584601e7e36b644827a8b5"
-        },
-        "runtime": null,
-        "servicesBase": null,
-        "servicesEntry": null
       }
     }
   ]

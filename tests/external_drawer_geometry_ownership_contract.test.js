@@ -6,7 +6,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
-import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
@@ -65,30 +64,6 @@ function stableJson(value) {
 }
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
-function definedExternalDrawerSymbols(file, source) {
-  const definitions = [];
-  const sourceFile = createSourceFile(file, source);
-  walkAst(sourceFile, node => {
-    if (node?.type === 'FunctionDeclaration' && node.id?.name === 'resolveExternalDrawerGeometry') {
-      definitions.push('resolveExternalDrawerGeometry');
-    }
-    if (node?.type === 'TSTypeAliasDeclaration' && node.id?.name === 'ExternalDrawerGeometry') {
-      definitions.push('ExternalDrawerGeometry');
-    }
-  });
-  return definitions.sort();
-}
 
 function focusedImports(rel) {
   return analyzeModuleDependencies(path.join(root, rel), read(rel))
@@ -205,49 +180,6 @@ const expectedEntries = Object.freeze([
       'Remove this entry when a reviewed Sketch external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
   },
 ]);
-
-test('External Drawer geometry type and resolver have one focused definition and facade-only compatibility exports', () => {
-  const definitions = listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file =>
-      definedExternalDrawerSymbols(file, fs.readFileSync(file, 'utf8')).map(symbol => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
-        symbol,
-      }))
-    )
-    .sort((a, b) => a.symbol.localeCompare(b.symbol));
-  assert.deepEqual(definitions, [
-    { file: ownerRel, symbol: 'ExternalDrawerGeometry' },
-    { file: ownerRel, symbol: 'resolveExternalDrawerGeometry' },
-  ]);
-
-  const facadeSource = read(facadeRel);
-  const facadeAnalysis = analyzeModuleDependencies(path.join(root, facadeRel), facadeSource);
-  const facadeOwnerImports = facadeAnalysis.imports
-    .filter(dependency => dependency.specifier === './dimensions/external_drawer_policy.js')
-    .map(dependency => ({
-      kind: dependency.kind,
-      syntax: dependency.syntax,
-      symbols: [...dependency.importedSymbols],
-    }));
-  assert.deepEqual(facadeOwnerImports, [
-    {
-      kind: 'type',
-      syntax: 'type-import',
-      symbols: ['ExternalDrawerGeometry'],
-    },
-    {
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['EXTERNAL_DRAWER_POLICY', 'resolveExternalDrawerGeometry'],
-    },
-  ]);
-  assert.match(facadeSource, /export \{ resolveExternalDrawerGeometry \};/u);
-  assert.match(facadeSource, /export type \{ ExternalDrawerGeometry \};/u);
-  assert.doesNotMatch(
-    facadeSource,
-    /(?:function\s+resolveExternalDrawerGeometry|type\s+ExternalDrawerGeometry\s*=)/u
-  );
-});
 
 test('External Drawer consumers import only their exact focused owners without aliases or aggregates', () => {
   for (const [rel, expected] of Object.entries(consumerImports)) {

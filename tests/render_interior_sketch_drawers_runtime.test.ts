@@ -7,7 +7,8 @@ import {
   SHELF_GROUP_PART_ID,
   createSketchExternalDrawerBraceShelfPartId,
 } from '../esm/native/features/part_identity/api.ts';
-import { DRAWER_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { DRAWER_SKETCH_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
+import { EXTERNAL_DRAWER_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -287,10 +288,7 @@ test('render sketch external drawers emit one individually paintable brace shelf
   assert.equal(shelf.userData.__wpShelfGroupPartId, SHELF_GROUP_PART_ID);
   assert.equal(shelf.userData.__wpShelfVariant, 'brace');
   assert.equal(shelf.userData.__wpShelfIsBrace, true);
-  assert.equal(
-    shelf.geometry.args[0],
-    args.innerW - DRAWER_DIMENSIONS.external.separatorBoardWidthClearanceM
-  );
+  assert.equal(shelf.geometry.args[0], args.innerW - EXTERNAL_DRAWER_POLICY.separatorBoardWidthClearanceM);
   assert.equal(shelf.geometry.args[2], args.internalDepth);
   assert.equal(shelf.position.z, args.internalZ);
 });
@@ -426,10 +424,10 @@ test('render sketch internal drawers stay visible when external sketch drawers o
   const internalDrawerHeightM = 0.3;
   const externalDrawerHeightM = 0.3;
   const internalCenterY = 1.2;
-  const internalStackH = internalDrawerHeightM * 2 + DRAWER_DIMENSIONS.sketch.internalGapM;
+  const internalStackH = internalDrawerHeightM * 2 + DRAWER_SKETCH_POLICY.internalGapM;
   const internalCassetteMinY = internalCenterY - internalStackH / 2 - woodThick;
   const externalStackH = externalDrawerHeightM * 2;
-  const visualClearanceM = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM / 2;
+  const visualClearanceM = DRAWER_SKETCH_POLICY.verticalStackCollisionGapM / 2;
   const externalCenterY = internalCassetteMinY - visualClearanceM - externalStackH / 2;
 
   const ops = buildSketchInternalDrawerOps({

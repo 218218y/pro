@@ -12,16 +12,14 @@ import { createTsRuntimeModuleLoader } from './_ts_runtime_module_loader.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/no_main_sketch_policy.ts';
 const workspacePolicyRel = 'esm/shared/dimensions/no_main_sketch_workspace_policy.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const builderRel = 'esm/native/builder/build_no_main_sketch_host.ts';
 const serviceRel = 'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts';
-const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const runtimeApiRel = 'esm/native/runtime/api.ts';
+
 const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSymbol = 'NO_MAIN_SKETCH_POLICY';
 const workspacePolicySymbol = 'NO_MAIN_SKETCH_WORKSPACE_POLICY';
 const compatibilitySymbol = 'NO_MAIN_SKETCH_DIMENSIONS';
-const ownerSpecifier = './dimensions/no_main_sketch_policy.js';
+
 const ownerInitializerSha256 = '1ac8627d6358514b4bd83cff5eb4881430402eb9145aba3417f0e0517b90f903';
 const builderSemanticSha256 = 'c044eb8052b5f5bdec3289bdcffb7e870a9fc44794aa474fbba714f51a017295';
 const builderLiteralSha256 = '854e96bc723cbdd1d8e1b83660b9c94189012a8ae456714f0a38055d68a31faf';
@@ -38,22 +36,7 @@ const expectedOwnerValues = Object.freeze({
   minGridSpanM: 0.02,
 });
 
-const expectedBuilderReferences = Object.freeze({
-  defaultGridDivisions: 4,
-  workspacePaddingM: 1,
-  defaultWorkspaceWidthM: 2,
-  minHostHeightM: 1,
-  minInnerWidthM: 1,
-  minGridSpanM: 2,
-});
-
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
-const runtimeExtensionCandidates = Object.freeze({
-  '.js': Object.freeze(['.ts', '.tsx', '.js', '.jsx']),
-  '.mjs': Object.freeze(['.mts', '.mjs']),
-  '.cjs': Object.freeze(['.cts', '.cjs']),
-  '.jsx': Object.freeze(['.tsx', '.jsx']),
-});
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
@@ -112,74 +95,6 @@ function relativePath(file) {
   return path.relative(root, file).replaceAll('\\', '/');
 }
 
-function stripQueryHash(specifier) {
-  const queryIndex = specifier.indexOf('?');
-  const hashIndex = specifier.indexOf('#');
-  const cutIndex =
-    queryIndex === -1 ? hashIndex : hashIndex === -1 ? queryIndex : Math.min(queryIndex, hashIndex);
-  return cutIndex === -1 ? specifier : specifier.slice(0, cutIndex);
-}
-
-const canonicalTargetCache = new Map();
-
-function canonicalTarget(file) {
-  const key = path.normalize(file).toLowerCase();
-  if (canonicalTargetCache.has(key)) return canonicalTargetCache.get(key);
-  const target =
-    fs.existsSync(file) && fs.statSync(file).isFile()
-      ? path.normalize(fs.realpathSync.native(file)).toLowerCase()
-      : null;
-  canonicalTargetCache.set(key, target);
-  return target;
-}
-
-const moduleTargetCache = new Map();
-
-function resolveModuleTarget(fromFile, specifier) {
-  if (typeof specifier !== 'string') return null;
-  const cacheKey = `${path.normalize(fromFile).toLowerCase()}\0${specifier}`;
-  if (moduleTargetCache.has(cacheKey)) return moduleTargetCache.get(cacheKey);
-
-  const clean = stripQueryHash(specifier);
-  let raw;
-  if (clean.startsWith('@/')) raw = path.join(root, 'esm', clean.slice(2));
-  else if (clean.startsWith('.')) raw = path.resolve(path.dirname(fromFile), clean);
-  else {
-    moduleTargetCache.set(cacheKey, null);
-    return null;
-  }
-
-  const extension = path.extname(raw).toLowerCase();
-  const candidates = [raw];
-  if (!extension) {
-    for (const candidateExtension of sourceExtensions) {
-      candidates.push(`${raw}${candidateExtension}`);
-      candidates.push(path.join(raw, `index${candidateExtension}`));
-    }
-  } else {
-    const stem = raw.slice(0, -extension.length);
-    for (const candidateExtension of runtimeExtensionCandidates[extension] ?? []) {
-      candidates.push(`${stem}${candidateExtension}`);
-    }
-  }
-
-  for (const candidate of candidates) {
-    const target = canonicalTarget(candidate);
-    if (target) {
-      moduleTargetCache.set(cacheKey, target);
-      return target;
-    }
-  }
-  moduleTargetCache.set(cacheKey, null);
-  return null;
-}
-
-const ownerTarget = canonicalTarget(path.join(root, ownerRel));
-const workspacePolicyTarget = canonicalTarget(path.join(root, workspacePolicyRel));
-const facadeTarget = canonicalTarget(path.join(root, facadeRel));
-const publicDimensionsTarget = canonicalTarget(path.join(root, publicDimensionsRel));
-const sharedRootPrefix = `${path.normalize(path.join(root, 'esm/shared')).toLowerCase()}${path.sep}`;
-
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
   if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
@@ -196,12 +111,6 @@ function memberPath(node) {
       : null
     : identifierName(node.property);
   return object && typeof property === 'string' ? `${object}.${property}` : null;
-}
-
-function memberRootIdentifier(node) {
-  let current = node;
-  while (current?.type === 'MemberExpression') current = current.object;
-  return current?.type === 'Identifier' ? current.name : null;
 }
 
 function exportedConstDeclarator(sourceFile, symbol) {
@@ -512,76 +421,6 @@ function inspectWorkspacePolicy(source) {
   return violations;
 }
 
-function inspectFacade(source) {
-  const violations = [];
-  const facadeFile = path.join(root, facadeRel);
-  const sourceFile = createSourceFile(facadeRel, source);
-  const ownerDependencies = analyzeSource(facadeRel, source).imports.filter(
-    dependency => resolveModuleTarget(facadeFile, dependency.specifier) === ownerTarget
-  );
-  if (
-    ownerDependencies.length !== 1 ||
-    ownerDependencies[0].specifier !== ownerSpecifier ||
-    stableJson(dependencyFacts(ownerDependencies[0])) !==
-      stableJson(exactNamedImport(ownerSpecifier, [ownerSymbol]))
-  ) {
-    addViolation(violations, 'facade-owner-import');
-  }
-  const declaration = exportedConstDeclarator(sourceFile, compatibilitySymbol);
-  if (
-    declaration?.statement.declaration.declarations?.length !== 1 ||
-    declaration.declarator.id?.type !== 'Identifier' ||
-    declaration.declarator.id.name !== compatibilitySymbol ||
-    declaration.declarator.id.typeAnnotation ||
-    declaration.declarator.id.optional ||
-    declaration.declarator.id.definite
-  ) {
-    addViolation(violations, 'facade-export-const');
-  }
-  if (
-    declaration?.declarator.init?.type !== 'Identifier' ||
-    declaration.declarator.init.name !== ownerSymbol
-  ) {
-    addViolation(violations, 'facade-identity-alias');
-  }
-
-  const exports = collectNamedModuleExports(facadeRel, source);
-  if (
-    exports.filter(entry => entry.kind === 'value' && entry.exportedName === compatibilitySymbol).length !== 1
-  ) {
-    addViolation(violations, 'facade-compatibility-export');
-  }
-  if (
-    exports.some(
-      entry =>
-        entry.exportedName === ownerSymbol ||
-        entry.localName === ownerSymbol ||
-        entry.source === ownerSpecifier
-    )
-  ) {
-    addViolation(violations, 'facade-owner-public-leak');
-  }
-  for (const statement of sourceFile.body ?? []) {
-    if (statement.type !== 'ExportNamedDeclaration') continue;
-    for (const specifier of statement.specifiers ?? []) {
-      if (identifierName(specifier.local) === ownerSymbol) {
-        addViolation(violations, 'facade-owner-public-leak');
-      }
-    }
-    if (statement.declaration?.type !== 'VariableDeclaration') continue;
-    for (const declarator of statement.declaration.declarations ?? []) {
-      if (
-        identifierName(declarator.id) !== compatibilitySymbol &&
-        declarator.init?.type === 'Identifier' &&
-        declarator.init.name === ownerSymbol
-      ) {
-        addViolation(violations, 'facade-owner-public-leak');
-      }
-    }
-  }
-  return violations;
-}
-
 const omittedAstKeys = new Set([
   'comments',
   'end',
@@ -682,226 +521,6 @@ function literalFlowHash(rel, source) {
   return sha256(stableJson(literals));
 }
 
-function sharedDependenciesFor(rel, source) {
-  const absolute = path.join(root, rel);
-  return analyzeSource(rel, source).imports.filter(dependency => {
-    const target = resolveModuleTarget(absolute, dependency.specifier);
-    return typeof target === 'string' && target.startsWith(sharedRootPrefix);
-  });
-}
-
-function inspectBuilder(source) {
-  const violations = [];
-  const analysis = analyzeSource(builderRel, source);
-  if (
-    stableJson(sharedDependenciesFor(builderRel, source).map(dependencyFacts)) !==
-    stableJson([exactNamedImport('../../shared/dimensions/no_main_sketch_policy.js', [ownerSymbol])])
-  ) {
-    addViolation(violations, 'builder-shared-import-inventory');
-  }
-  if (
-    analysis.unresolvedDynamicImports.length !== 0 ||
-    analysis.forbiddenModuleSyntax.length !== 0 ||
-    source.includes(compatibilitySymbol) ||
-    source.includes('wardrobe_dimension_tokens_shared')
-  ) {
-    addViolation(violations, 'builder-compatibility-or-dynamic-route');
-  }
-
-  const counts = Object.fromEntries(Object.keys(expectedBuilderReferences).map(key => [key, 0]));
-  let ownerIdentifiers = 0;
-  const sourceFile = createSourceFile(builderRel, source);
-  for (const statement of sourceFile.body ?? []) {
-    if (statement.type === 'ImportDeclaration') continue;
-    walkAst(statement, node => {
-      if (node?.type === 'Identifier' && node.name === ownerSymbol) {
-        ownerIdentifiers += 1;
-      }
-      if (node?.type === 'MemberExpression' && node.computed && memberRootIdentifier(node) === ownerSymbol) {
-        addViolation(violations, 'builder-computed-owner-access');
-      }
-      const value = memberPath(node);
-      if (!value?.startsWith(`${ownerSymbol}.`)) return;
-      const key = value.slice(ownerSymbol.length + 1);
-      if (!Object.hasOwn(counts, key)) {
-        addViolation(violations, 'builder-owner-field', key);
-        return;
-      }
-      counts[key] += 1;
-    });
-  }
-  if (stableJson(counts) !== stableJson(expectedBuilderReferences) || ownerIdentifiers !== 11) {
-    addViolation(violations, 'builder-owner-reference-inventory', stableJson({ counts, ownerIdentifiers }));
-  }
-  if (semanticFlowHash(builderRel, source) !== builderSemanticSha256) {
-    addViolation(violations, 'builder-semantic-fingerprint');
-  }
-  if (literalFlowHash(builderRel, source) !== builderLiteralSha256) {
-    addViolation(violations, 'builder-literal-fingerprint');
-  }
-  return violations;
-}
-
-function inspectService(source) {
-  const violations = [];
-  const analysis = analyzeSource(serviceRel, source);
-  if (
-    stableJson(sharedDependenciesFor(serviceRel, source).map(dependencyFacts)) !==
-    stableJson([
-      exactNamedImport('../../shared/dimensions/no_main_sketch_workspace_policy.js', [workspacePolicySymbol]),
-    ])
-  ) {
-    addViolation(violations, 'service-shared-import-inventory');
-  }
-  if (
-    analysis.unresolvedDynamicImports.length !== 0 ||
-    analysis.forbiddenModuleSyntax.length !== 0 ||
-    source.includes(compatibilitySymbol) ||
-    source.includes('WARDROBE_DEFAULTS') ||
-    source.includes('wardrobe_dimension_tokens_shared')
-  ) {
-    addViolation(violations, 'service-compatibility-or-aggregate-route');
-  }
-
-  const expectedReferences = {
-    [`${workspacePolicySymbol}.noMainSketch.workspacePaddingM`]: 1,
-    [`${workspacePolicySymbol}.fallbackDimensionsCm.widthCm`]: 1,
-    [`${workspacePolicySymbol}.fallbackDimensionsCm.heightCm`]: 1,
-    [`${workspacePolicySymbol}.fallbackDimensionsCm.depthCm`]: 1,
-    [`${workspacePolicySymbol}.cmToM`]: 5,
-    [`${workspacePolicySymbol}.mToCm`]: 1,
-  };
-  const counts = Object.fromEntries(Object.keys(expectedReferences).map(key => [key, 0]));
-  const allowedIntermediatePaths = new Set([
-    `${workspacePolicySymbol}.noMainSketch`,
-    `${workspacePolicySymbol}.fallbackDimensionsCm`,
-  ]);
-  let policyIdentifiers = 0;
-  const sourceFile = createSourceFile(serviceRel, source);
-  for (const statement of sourceFile.body ?? []) {
-    if (statement.type === 'ImportDeclaration') continue;
-    walkAst(statement, node => {
-      if (node?.type === 'Identifier' && node.name === workspacePolicySymbol) {
-        policyIdentifiers += 1;
-      }
-      if (
-        node?.type === 'MemberExpression' &&
-        node.computed &&
-        memberRootIdentifier(node) === workspacePolicySymbol
-      ) {
-        addViolation(violations, 'service-computed-policy-access');
-      }
-      const value = memberPath(node);
-      if (!value?.startsWith(`${workspacePolicySymbol}.`)) return;
-      if (Object.hasOwn(counts, value)) counts[value] += 1;
-      else if (!allowedIntermediatePaths.has(value)) {
-        addViolation(violations, 'service-policy-field', value);
-      }
-    });
-  }
-  if (stableJson(counts) !== stableJson(expectedReferences) || policyIdentifiers !== 10) {
-    addViolation(violations, 'service-policy-reference-inventory', stableJson({ counts, policyIdentifiers }));
-  }
-  if (semanticFlowHash(serviceRel, source) !== serviceSemanticSha256) {
-    addViolation(violations, 'service-semantic-fingerprint');
-  }
-  if (literalFlowHash(serviceRel, source) !== serviceLiteralSha256) {
-    addViolation(violations, 'service-literal-fingerprint');
-  }
-  return violations;
-}
-
-function dependenciesForTarget(file, source, target) {
-  return analyzeSource(file, source).imports.filter(
-    dependency => resolveModuleTarget(file, dependency.specifier) === target
-  );
-}
-
-function collectTargetInventory(files, target) {
-  return files.flatMap(file =>
-    dependenciesForTarget(file, fs.readFileSync(file, 'utf8'), target).map(dependency => ({
-      file: relativePath(file),
-      ...dependencyFacts(dependency),
-    }))
-  );
-}
-
-function isExactPublicDimensionsRoute(file, dependency) {
-  return (
-    relativePath(file) === publicDimensionsRel &&
-    resolveModuleTarget(file, dependency.specifier) === facadeTarget &&
-    dependency.kind === 'value' &&
-    dependency.syntax === 'static-re-export' &&
-    stableJson(dependency.importedSymbols) === stableJson(['*']) &&
-    stableJson(dependency.exportedSymbols) === stableJson(['*'])
-  );
-}
-
-function inspectCompatibilitySource(file, source) {
-  const violations = [];
-  const rel = relativePath(file);
-  const sourceFile = createSourceFile(file, source);
-  const analysis = analyzeSource(file, source);
-
-  for (const dependency of analysis.imports) {
-    const target = resolveModuleTarget(file, dependency.specifier);
-    const compatibilityRoute = target === facadeTarget || target === publicDimensionsTarget;
-    const exposesCompatibility =
-      dependency.importedSymbols.includes(compatibilitySymbol) ||
-      (compatibilityRoute && dependency.importedSymbols.includes('*'));
-    if (exposesCompatibility && !isExactPublicDimensionsRoute(file, dependency)) {
-      addViolation(
-        violations,
-        'compatibility-consumer',
-        `${rel}:${dependency.syntax}:${dependency.specifier}`
-      );
-    }
-    if (dependency.syntax === 'dynamic-import' && compatibilityRoute) {
-      addViolation(violations, 'compatibility-dynamic-route', `${rel}:${dependency.specifier}`);
-    }
-  }
-  if (rel.startsWith('esm/native/') && analysis.unresolvedDynamicImports.length !== 0) {
-    addViolation(
-      violations,
-      'compatibility-unresolved-dynamic-route',
-      stableJson(analysis.unresolvedDynamicImports)
-    );
-  }
-  if (rel !== facadeRel) {
-    walkAst(sourceFile, node => {
-      if (node?.type === 'Identifier' && node.name === compatibilitySymbol) {
-        addViolation(violations, 'compatibility-symbol-reference', rel);
-      }
-      if (node?.type === 'Literal' && typeof node.value === 'string' && node.value === compatibilitySymbol) {
-        addViolation(violations, 'compatibility-computed-reference', rel);
-      }
-    });
-  }
-  return violations;
-}
-
-function publicSymbolReferences(source, symbols) {
-  const references = [];
-  const sourceFile = createSourceFile('public-symbol-probe.ts', source);
-  walkAst(sourceFile, node => {
-    const name = identifierName(node);
-    if (symbols.includes(name)) references.push(name);
-  });
-  return references;
-}
-
-function assertRejected(inspect, source, expectedKind, label) {
-  const violations = inspect(source);
-  assert.equal(
-    violations.some(violation => violation.kind === expectedKind),
-    true,
-    `${label}: ${JSON.stringify(violations)}`
-  );
-}
-
-const esmFiles = listSourceFiles(path.join(root, 'esm'));
-const nativeFiles = esmFiles.filter(file => relativePath(file).startsWith('esm/native/'));
-
 test('No-Main Sketch owner preserves the exact inline literals, key order, freeze, and dependency-free topology', () => {
   const ownerFiles = listSourceFiles(path.join(root, 'esm/shared/dimensions'))
     .map(relativePath)
@@ -918,54 +537,6 @@ test('No-Main Sketch workspace composition has one focused export and exact iden
   assert.deepEqual(inspectWorkspacePolicy(read(workspacePolicyRel)), []);
 });
 
-test('No-Main Sketch facade remains an inferred direct identity alias without a public owner leak', () => {
-  assert.deepEqual(inspectFacade(read(facadeRel)), []);
-  assert.deepEqual(
-    publicSymbolReferences(read(publicDimensionsRel), [ownerSymbol, workspacePolicySymbol]),
-    []
-  );
-  assert.deepEqual(publicSymbolReferences(read(runtimeApiRel), [ownerSymbol, workspacePolicySymbol]), []);
-});
-
-test('closeout has zero native compatibility consumers and exact owner/workspace consumer inventories', () => {
-  assert.deepEqual(collectTargetInventory(esmFiles, ownerTarget), [
-    {
-      file: builderRel,
-      ...exactNamedImport('../../shared/dimensions/no_main_sketch_policy.js', [ownerSymbol]),
-    },
-    {
-      file: workspacePolicyRel,
-      ...exactNamedImport('./no_main_sketch_policy.js', [ownerSymbol]),
-    },
-    {
-      file: facadeRel,
-      ...exactNamedImport(ownerSpecifier, [ownerSymbol]),
-    },
-  ]);
-  assert.deepEqual(collectTargetInventory(esmFiles, workspacePolicyTarget), [
-    {
-      file: serviceRel,
-      ...exactNamedImport('../../shared/dimensions/no_main_sketch_workspace_policy.js', [
-        workspacePolicySymbol,
-      ]),
-    },
-  ]);
-  assert.deepEqual(
-    esmFiles.flatMap(file => inspectCompatibilitySource(file, fs.readFileSync(file, 'utf8'))),
-    []
-  );
-  assert.deepEqual(
-    nativeFiles.flatMap(file =>
-      dependenciesForTarget(file, fs.readFileSync(file, 'utf8'), facadeTarget).filter(dependency =>
-        dependency.importedSymbols.includes(compatibilitySymbol)
-      )
-    ),
-    []
-  );
-  assert.deepEqual(inspectBuilder(read(builderRel)), []);
-  assert.deepEqual(inspectService(read(serviceRel)), []);
-});
-
 test('builder and service semantic/literal fingerprints preserve formulas, branches, and operation order', () => {
   assert.equal(semanticFlowHash(builderRel, read(builderRel)), builderSemanticSha256);
   assert.equal(literalFlowHash(builderRel, read(builderRel)), builderLiteralSha256);
@@ -973,15 +544,13 @@ test('builder and service semantic/literal fingerprints preserve formulas, branc
   assert.equal(literalFlowHash(serviceRel, read(serviceRel)), serviceLiteralSha256);
 });
 
-test('runtime identity, values, fallbacks, conversions, freezes, and serialization remain exact', () => {
+test('runtime values, fallbacks, conversions, freezes, and serialization remain exact', () => {
   const loader = createTsRuntimeModuleLoader();
   const owner = loader.load(path.join(root, ownerRel))[ownerSymbol];
-  const facade = loader.load(path.join(root, facadeRel))[compatibilitySymbol];
   const workspace = loader.load(path.join(root, workspacePolicyRel))[workspacePolicySymbol];
   const defaults = loader.load(path.join(root, 'esm/shared/dimensions/wardrobe_defaults.ts'));
   const units = loader.load(path.join(root, 'esm/shared/dimensions/units.ts'));
 
-  assert.equal(facade, owner);
   assert.equal(workspace.noMainSketch, owner);
   assert.equal(workspace.fallbackDimensionsCm.widthCm, defaults.DEFAULT_WIDTH);
   assert.equal(workspace.fallbackDimensionsCm.heightCm, defaults.DEFAULT_HEIGHT);
@@ -993,7 +562,6 @@ test('runtime identity, values, fallbacks, conversions, freezes, and serializati
   assert.equal(Object.isFrozen(owner), true);
   assert.equal(Object.isFrozen(workspace), true);
   assert.equal(Object.isFrozen(workspace.fallbackDimensionsCm), true);
-  assert.deepEqual(JSON.parse(JSON.stringify(facade)), expectedOwnerValues);
 });
 
 test('statement-neutral migration preserves Prefix 166 without owning the current Ledger tail', () => {
@@ -1003,236 +571,4 @@ test('statement-neutral migration preserves Prefix 166 without owning the curren
   const withFutureEntry167 = appendSyntheticFutureEntry167(baseline.migrationBudgets);
   assert.equal(withFutureEntry167.length, 167);
   assert.doesNotThrow(() => assertStatementNeutralLedgerHistory(withFutureEntry167));
-});
-
-test('owner, workspace, and facade mutation probes reject literals, wrappers, aggregates, aliases, and leaks', () => {
-  const owner = read(ownerRel);
-  assertRejected(
-    inspectOwner,
-    owner.replace('  defaultGridDivisions: 6,', '  defaultGridDivisions: 7,'),
-    'owner-initializer-fingerprint',
-    'owner literal'
-  );
-  assertRejected(
-    inspectOwner,
-    owner.replace(
-      '  defaultGridDivisions: 6,\n  workspacePaddingM: 0.12,',
-      '  workspacePaddingM: 0.12,\n  defaultGridDivisions: 6,'
-    ),
-    'owner-key-order',
-    'owner key order'
-  );
-  assertRejected(
-    inspectOwner,
-    owner.replace('Object.freeze({', '({'),
-    'owner-freeze-shape',
-    'owner freeze removal'
-  );
-  assertRejected(
-    inspectOwner,
-    `import { meters } from './units.js';\n${owner}`,
-    'owner-dependency-free',
-    'owner dependency'
-  );
-  assertRejected(
-    inspectOwner,
-    `${owner}\nexport default ${ownerSymbol};\n`,
-    'owner-top-level-topology',
-    'owner default export'
-  );
-  assertRejected(
-    inspectOwner,
-    owner.replace('  defaultGridDivisions:', '  ...{},\n  defaultGridDivisions:'),
-    'owner-wrapper-or-spread',
-    'owner spread'
-  );
-
-  const workspace = read(workspacePolicyRel);
-  assertRejected(
-    inspectWorkspacePolicy,
-    workspace.replace(
-      "import { DEFAULT_HEIGHT, DEFAULT_WIDTH, HINGED_DEFAULT_DEPTH } from './wardrobe_defaults.js';",
-      "import { WARDROBE_DEFAULTS } from './wardrobe_defaults.js';"
-    ),
-    'workspace-dependency-inventory',
-    'workspace aggregate defaults'
-  );
-  assertRejected(
-    inspectWorkspacePolicy,
-    workspace.replace("import { cmToM, mToCm } from './units.js';", "import * as units from './units.js';"),
-    'workspace-dependency-inventory',
-    'workspace units namespace'
-  );
-  assertRejected(
-    inspectWorkspacePolicy,
-    workspace.replace('    widthCm: DEFAULT_WIDTH,', '    widthCm: 160,'),
-    'workspace-fallback-projection',
-    'workspace fallback literal'
-  );
-  assertRejected(
-    inspectWorkspacePolicy,
-    workspace.replace('  cmToM,', '  cmToM: value => cmToM(value),'),
-    'workspace-identity-projection',
-    'workspace conversion wrapper'
-  );
-  assertRejected(
-    inspectWorkspacePolicy,
-    `${workspace}\nexport default ${workspacePolicySymbol};\n`,
-    'workspace-top-level-topology',
-    'workspace default export'
-  );
-
-  const facade = read(facadeRel);
-  const alias = `export const ${compatibilitySymbol} = ${ownerSymbol};`;
-  assertRejected(
-    inspectFacade,
-    facade.replace(alias, `export const ${compatibilitySymbol} = { ...${ownerSymbol} };`),
-    'facade-identity-alias',
-    'facade copy'
-  );
-  assertRejected(
-    inspectFacade,
-    facade.replace(alias, `export const ${compatibilitySymbol}: typeof ${ownerSymbol} = ${ownerSymbol};`),
-    'facade-export-const',
-    'facade annotation'
-  );
-  assertRejected(
-    inspectFacade,
-    facade.replace(
-      `import { ${ownerSymbol} } from '${ownerSpecifier}';`,
-      `import { ${ownerSymbol} as noMainPolicy } from '${ownerSpecifier}';`
-    ),
-    'facade-owner-import',
-    'facade import alias'
-  );
-  assertRejected(
-    inspectFacade,
-    `${facade}\nexport { ${ownerSymbol} as ALTERNATE_NO_MAIN_POLICY };\n`,
-    'facade-owner-public-leak',
-    'facade owner leak'
-  );
-});
-
-test('consumer mutation probes reject compatibility routes, bridges, direct service owners, computed access, literals, and flow drift', () => {
-  const probeFile = path.join(root, 'esm/native/services/no_main_probe.ts');
-  for (const [label, source] of [
-    [
-      'direct compatibility import',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = ${compatibilitySymbol}.workspacePaddingM;`,
-    ],
-    [
-      'extensionless compatibility import',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared';\nexport const value = ${compatibilitySymbol}.workspacePaddingM;`,
-    ],
-    [
-      'directory-index compatibility import',
-      `import { ${compatibilitySymbol} } from '../features/dimensions';\nexport const value = ${compatibilitySymbol}.workspacePaddingM;`,
-    ],
-    [
-      'namespace computed compatibility import',
-      `import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = dimensions['${compatibilitySymbol}'];`,
-    ],
-    [
-      'dynamic compatibility import',
-      `export const value = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
-    ],
-    [
-      'unresolved dynamic compatibility import',
-      `const route = '../../shared/' + 'wardrobe_dimension_tokens_shared.js';\nconst symbol = 'NO_MAIN_' + 'SKETCH_DIMENSIONS';\nexport const value = import(route).then(module => module[symbol]);`,
-    ],
-    [
-      'compatibility bridge',
-      `export { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';`,
-    ],
-    [
-      'compatibility object copy',
-      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = { ...${compatibilitySymbol} };`,
-    ],
-  ]) {
-    assert.notDeepEqual(inspectCompatibilitySource(probeFile, source), [], label);
-  }
-
-  const builder = read(builderRel);
-  assertRejected(
-    inspectBuilder,
-    builder.replace(`import { ${ownerSymbol} }`, `import { ${ownerSymbol} as noMainPolicy }`),
-    'builder-shared-import-inventory',
-    'builder alias'
-  );
-  assertRejected(
-    inspectBuilder,
-    builder.replace(`${ownerSymbol}.minGridSpanM`, `${ownerSymbol}['minGridSpanM']`),
-    'builder-computed-owner-access',
-    'builder computed access'
-  );
-  assertRejected(
-    inspectBuilder,
-    builder.replace(`${ownerSymbol}.defaultGridDivisions`, '6'),
-    'builder-owner-reference-inventory',
-    'builder wrapper literal'
-  );
-  assertRejected(
-    inspectBuilder,
-    builder.replace(
-      'estimateNoMainWorkspaceWidthM(moduleCfg) || 0',
-      'estimateNoMainWorkspaceWidthM(moduleCfg) ?? 0'
-    ),
-    'builder-semantic-fingerprint',
-    'builder fallback formula'
-  );
-  assertRejected(
-    inspectBuilder,
-    builder.replace('return applyInteriorLayout({', 'return makeRodCreator({'),
-    'builder-semantic-fingerprint',
-    'builder operation order'
-  );
-
-  const service = read(serviceRel);
-  assertRejected(
-    inspectService,
-    `${service}\nimport { DEFAULT_WIDTH } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
-    'service-shared-import-inventory',
-    'service direct defaults owner'
-  );
-  assertRejected(
-    inspectService,
-    service.replace(
-      `import { ${workspacePolicySymbol} }`,
-      `import { ${workspacePolicySymbol} as workspacePolicy }`
-    ),
-    'service-shared-import-inventory',
-    'service composition alias'
-  );
-  assertRejected(
-    inspectService,
-    service.replace(`${workspacePolicySymbol}.fallbackDimensionsCm.widthCm`, '160'),
-    'service-policy-reference-inventory',
-    'service fallback literal'
-  );
-  assertRejected(
-    inspectService,
-    service.replace(`${workspacePolicySymbol}.cmToM(heightCm)`, 'heightCm / 100'),
-    'service-policy-reference-inventory',
-    'service conversion literal'
-  );
-  assertRejected(
-    inspectService,
-    service.replace(
-      'const doors = Math.round(__asNum(doorsRaw, NaN));',
-      'const doors = __asNum(doorsRaw, NaN);'
-    ),
-    'service-semantic-fingerprint',
-    'service door gate'
-  );
-  assertRejected(
-    inspectService,
-    service.replace('if (cachedNoMainMetrics) {', 'if (!cachedNoMainMetrics) {'),
-    'service-semantic-fingerprint',
-    'service cache precedence'
-  );
-
-  const ownerProbe = `import { ${ownerSymbol} } from '../../shared/dimensions/no_main_sketch_policy.js';`;
-  assert.equal(dependenciesForTarget(probeFile, ownerProbe, ownerTarget).length, 1);
-  const workspaceProbe = `import { ${workspacePolicySymbol} } from '../../shared/dimensions/no_main_sketch_workspace_policy.js';`;
-  assert.equal(dependenciesForTarget(probeFile, workspaceProbe, workspacePolicyTarget).length, 1);
 });

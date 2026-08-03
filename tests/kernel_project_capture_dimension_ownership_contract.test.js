@@ -57,14 +57,6 @@ const expectedConsumerReferenceCounts = Object.freeze({
   defaultHingedDoorsCount: 1,
   normalizeDoorMountThicknessCm: 4,
 });
-const approvedUnresolvedDynamicImports = Object.freeze({
-  'esm/entry_pro_main_boot_support.ts': Object.freeze([
-    'THREE_PATH',
-    'ORBIT_PATH',
-    'ROUNDED_BOX_PATH',
-    'url',
-  ]),
-});
 
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
@@ -644,92 +636,6 @@ function inspectConsumer(source) {
   return violations;
 }
 
-function collectOwnerConsumers(entries) {
-  return entries.flatMap(([file, source]) =>
-    dependenciesForTarget(file, source, ownerTarget).map(dependency => ({
-      file: relativePath(file),
-      ...dependencyFacts(dependency),
-      bindings: dependency.bindings.map(binding => ({
-        importedName: binding.importedName,
-        localName: binding.localName,
-        exportedName: binding.exportedName,
-      })),
-    }))
-  );
-}
-
-function inspectOwnerConsumerUniverse(entries) {
-  const violations = [];
-  const consumers = collectOwnerConsumers(entries);
-  const expected = [
-    {
-      file: consumerRel,
-      specifier: ownerSpecifier,
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: [ownerSymbol],
-      bindings: [
-        {
-          importedName: ownerSymbol,
-          localName: ownerSymbol,
-          exportedName: null,
-        },
-      ],
-    },
-  ];
-  if (stableJson(consumers) !== stableJson(expected)) {
-    addViolation(violations, 'owner-consumer-inventory', consumers);
-  }
-  for (const [file, source] of entries) {
-    const rel = relativePath(file);
-    const analysis = analyzeSource(file, source);
-    const expectedUnresolved = approvedUnresolvedDynamicImports[rel] ?? [];
-    const actualUnresolved = analysis.unresolvedDynamicImports.map(entry => entry.expression);
-    if (stableJson(actualUnresolved) !== stableJson(expectedUnresolved)) {
-      addViolation(violations, 'universe-unresolved-dynamic-import', {
-        file: rel,
-        expressions: actualUnresolved,
-      });
-    }
-    if (analysis.forbiddenModuleSyntax.length !== 0) {
-      addViolation(violations, 'universe-forbidden-module-syntax', {
-        file: rel,
-        syntax: analysis.forbiddenModuleSyntax,
-      });
-    }
-    if (rel === ownerRel || rel === consumerRel) continue;
-    const sourceFile = createSourceFile(rel, source);
-    walkAst(sourceFile, node => {
-      if (
-        (node?.type === 'Identifier' && node.name === ownerSymbol) ||
-        (node?.type === 'Literal' && node.value === ownerSymbol)
-      ) {
-        addViolation(violations, 'owner-symbol-outside-inventory', rel);
-      }
-    });
-    if (source.includes('project_capture_dimension_policy')) {
-      addViolation(violations, 'owner-route-outside-inventory', rel);
-    }
-  }
-  return violations;
-}
-
-function publicOwnerLeaks(source, rel) {
-  const leaks = [];
-  const sourceFile = createSourceFile(rel, source);
-  walkAst(sourceFile, node => {
-    if (
-      (node?.type === 'Identifier' && node.name === ownerSymbol) ||
-      (node?.type === 'Literal' &&
-        typeof node.value === 'string' &&
-        (node.value === ownerSymbol || node.value.includes('project_capture_dimension_policy')))
-    ) {
-      leaks.push({ type: node.type, value: node.name ?? node.value });
-    }
-  });
-  return leaks;
-}
-
 function assertRejected(inspect, source, expectedKind, label) {
   const violations = inspect(source);
   assert.equal(
@@ -738,9 +644,6 @@ function assertRejected(inspect, source, expectedKind, label) {
     `${label}: ${JSON.stringify(violations)}`
   );
 }
-
-const esmFiles = listSourceFiles(path.join(root, 'esm'));
-const esmEntries = esmFiles.map(file => [file, fs.readFileSync(file, 'utf8')]);
 
 test('Project Capture dimension policy has the exact pure composition owner shape', () => {
   const ownerFiles = listSourceFiles(path.join(root, 'esm/shared/dimensions'))
@@ -767,16 +670,6 @@ test('Project Capture dimension policy preserves scalar value, function identity
   assert.equal(policy.normalizeDoorMountThicknessCm(0.39), 0.4);
   assert.equal(policy.normalizeDoorMountThicknessCm(1.85), 1.9);
   assert.equal(policy.normalizeDoorMountThicknessCm(8.1), 8);
-});
-
-test('Kernel capture is the sole policy consumer and has no facade, direct-owner, or public route', () => {
-  assert.deepEqual(inspectOwnerConsumerUniverse(esmEntries), []);
-  assert.deepEqual(inspectConsumer(read(consumerRel)), []);
-  for (const publicRel of [facadeRel, publicDimensionsRel, runtimeApiRel]) {
-    const source = read(publicRel);
-    assert.deepEqual(publicOwnerLeaks(source, publicRel), [], publicRel);
-    assert.equal(source.includes('project_capture_dimension_policy'), false, publicRel);
-  }
 });
 
 test('normalized capture AST fingerprints preserve fallback, payload shape, normalization order, and literals', () => {
@@ -877,131 +770,6 @@ test('owner mutation probes reject dependencies, aliases, aggregates, literals, 
     `${owner}\nexport type ProjectCaptureDimensionPolicy = typeof ${ownerSymbol};\n`,
     'owner-top-level-topology',
     'type export'
-  );
-});
-
-test('consumer mutation probes reject compatibility routes, direct owners, aliases, dynamic imports, and bridges', () => {
-  const consumer = read(consumerRel);
-  const policyImport = `import { ${ownerSymbol} } from '${ownerSpecifier}';`;
-  assert.match(consumer, new RegExp(policyImport.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
-
-  for (const [label, specifier] of [
-    ['facade', '../../shared/wardrobe_dimension_tokens_shared.js'],
-    ['extensionless facade', '../../shared/wardrobe_dimension_tokens_shared'],
-    ['query/hash facade', '../../shared/wardrobe_dimension_tokens_shared.js?capture=1#compat'],
-    ['public directory index', '../features/dimensions'],
-    ['runtime API', '../runtime/api.js'],
-  ]) {
-    assertRejected(
-      inspectConsumer,
-      consumer.replace(ownerSpecifier, specifier),
-      'consumer-owner-import',
-      label
-    );
-  }
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(
-      policyImport,
-      `import { ${ownerSymbol} as CAPTURE_DIMENSIONS } from '${ownerSpecifier}';`
-    ),
-    'consumer-owner-alias',
-    'policy alias'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(policyImport, `import * as captureDimensions from '${ownerSpecifier}';`),
-    'consumer-owner-import',
-    'namespace import'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(policyImport, `const captureDimensions = import('${ownerSpecifier}');`),
-    'consumer-owner-import',
-    'dynamic import'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(policyImport, `import '${ownerSpecifier}';`),
-    'consumer-owner-import',
-    'side-effect import'
-  );
-  assertRejected(
-    inspectConsumer,
-    `${consumer}\nimport { DEFAULT_HINGED_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
-    'consumer-shared-import-inventory',
-    'direct defaults owner'
-  );
-  assertRejected(
-    inspectConsumer,
-    `${consumer}\nimport { normalizeDoorMountThicknessCm } from '../../shared/dimensions/door_mount_thickness_policy.js';\n`,
-    'consumer-forbidden-dimension-dependency',
-    'direct thickness owner'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(`${ownerSymbol}.defaultHingedDoorsCount`, `${ownerSymbol}['defaultHingedDoorsCount']`),
-    'consumer-computed-owner-access',
-    'computed access'
-  );
-  assertRejected(
-    inspectConsumer,
-    `${consumer}\nexport const CAPTURE_DIMENSION_COPY = { ...${ownerSymbol} };\n`,
-    'consumer-owner-reference-escape',
-    'object copy'
-  );
-  assertRejected(
-    inspectConsumer,
-    `${consumer}\nexport const { defaultHingedDoorsCount } = ${ownerSymbol};\n`,
-    'consumer-owner-reference-escape',
-    'destructuring bridge'
-  );
-
-  const bridgeEntries = [
-    ...esmEntries,
-    [
-      path.join(root, 'esm/native/features/project_capture_dimension_bridge.ts'),
-      `export { ${ownerSymbol} } from '../../shared/dimensions/project_capture_dimension_policy';`,
-    ],
-  ];
-  assertRejected(
-    inspectOwnerConsumerUniverse,
-    bridgeEntries,
-    'owner-consumer-inventory',
-    'feature re-export bridge'
-  );
-
-  const splitDynamicEntries = [
-    ...esmEntries,
-    [
-      path.join(root, 'esm/native/features/project_capture_dimension_dynamic_bridge.ts'),
-      `const route =
-  '../../shared/dimensions/' + 'project_capture_' + 'dimension_policy.js';
-const symbol = 'PROJECT_CAPTURE_' + 'DIMENSION_POLICY';
-export const policy = import(route).then(module => module[symbol]);`,
-    ],
-  ];
-  assertRejected(
-    inspectOwnerConsumerUniverse,
-    splitDynamicEntries,
-    'universe-unresolved-dynamic-import',
-    'split-string dynamic bridge'
-  );
-
-  const splitRequireEntries = [
-    ...esmEntries,
-    [
-      path.join(root, 'esm/native/features/project_capture_dimension_require_bridge.ts'),
-      `const route =
-  '../../shared/dimensions/' + 'project_capture_' + 'dimension_policy.js';
-export const policy = require(route);`,
-    ],
-  ];
-  assertRejected(
-    inspectOwnerConsumerUniverse,
-    splitRequireEntries,
-    'universe-forbidden-module-syntax',
-    'split-string require bridge'
   );
 });
 

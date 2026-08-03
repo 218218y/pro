@@ -26,7 +26,7 @@ const expectedUiLiteralInventoryFingerprint =
 const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
 const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
 const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
-const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
+
 const expectedBoundarySymbols = Object.freeze([
   'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
   'DEFAULT_BASE_LEG_PLATFORM_MODE',
@@ -118,20 +118,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && sourceExtensions.includes(path.extname(entry.name))) files.push(absolute);
-  }
-  return files;
-}
-
-function normalizeRel(file) {
-  return path.relative(root, file).split(path.sep).join('/');
 }
 
 function identifierName(node) {
@@ -543,152 +529,6 @@ test('Interior Tab UI imports all eight defaults through one feature-owned bound
   assert.equal(
     publicFeatureManifest.publicEntries.filter(entry => entry === 'interior_tab_defaults.js').length,
     1
-  );
-});
-
-test('Interior Fittings compatibility aggregate has zero native production consumers', () => {
-  const consumers = [];
-  for (const file of listSourceFiles(path.join(root, 'esm/native'))) {
-    const source = fs.readFileSync(file, 'utf8');
-    if (/\bINTERIOR_FITTINGS_DIMENSIONS\b/u.test(source)) consumers.push(normalizeRel(file));
-  }
-  assert.deepEqual(consumers, []);
-});
-
-test('Interior Tab boundary rejects direct owners, facade routes, aliases, wrappers, and formula drift', () => {
-  const source = read(boundaryRel);
-  assertViolation(
-    inspectBoundary(
-      source.replace(compositionOwnerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')
-    ),
-    'feature-boundary-facade-import',
-    'feature facade import'
-  );
-  assertViolation(
-    inspectBoundary(source.replace(ownerSymbol, 'INTERIOR_FITTINGS_POLICY')),
-    'aggregate-interior-fittings-policy',
-    'aggregate owner import'
-  );
-  assertViolation(
-    inspectBoundary(source.replace(ownerSymbol, `${ownerSymbol} as shelfGeometry`)),
-    'owner-alias',
-    'owner alias'
-  );
-  assertViolation(
-    inspectBoundary(source.replace('mToCm,', 'mToCm as convertToCm,')),
-    'units-alias',
-    'mToCm alias'
-  );
-  assertViolation(
-    inspectBoundary(
-      source.replace(
-        `import {\n  ${ownerSymbol},\n  mToCm,\n} from '${compositionOwnerSpecifier}';`,
-        `import * as interiorFittings from '${compositionOwnerSpecifier}';`
-      )
-    ),
-    'namespace-import',
-    'namespace import'
-  );
-  assertViolation(
-    inspectBoundary(`${source}\nvoid import('${compositionOwnerSpecifier}');\n`),
-    'dynamic-import',
-    'dynamic import'
-  );
-  assertViolation(
-    inspectBoundary(
-      source.replace(
-        `export const ${depthSymbol}: number = mToCm(${ownerSymbol}.regularDepthM);`,
-        `const shelfGeometry = ${ownerSymbol};\nexport const ${depthSymbol}: number = mToCm(shelfGeometry.regularDepthM);`
-      )
-    ),
-    'local-owner-copy',
-    'local owner copy'
-  );
-  assertViolation(
-    inspectBoundary(
-      source.replace(
-        `export const ${depthSymbol}: number = mToCm(${ownerSymbol}.regularDepthM);`,
-        `const wrapper = { shelfGeometry: ${ownerSymbol} };\nexport const ${depthSymbol}: number = mToCm(wrapper.shelfGeometry.regularDepthM);`
-      )
-    ),
-    'object-wrapper',
-    'object wrapper'
-  );
-  assertViolation(
-    inspectBoundary(source.replace('.regularDepthM', "['regularDepthM']")),
-    'computed-regular-depth',
-    'computed depth access'
-  );
-  assertViolation(
-    inspectBoundary(
-      source.replace(`mToCm(${ownerSymbol}.regularDepthM)`, `${ownerSymbol}.regularDepthM * 100`)
-    ),
-    'numeric-conversion-literal',
-    'numeric conversion literal'
-  );
-  assertViolation(
-    inspectBoundary(source.replace(compositionOwnerSpecifier, '../dimensions/index.js')),
-    'boundary-dependency-inventory',
-    'public dimensions barrel'
-  );
-});
-
-test('Interior Tab UI rejects facade routes, direct shared owners, wrappers, and split feature imports', () => {
-  const source = read(uiRel);
-  assertViolation(
-    inspectUi(
-      source.replace(
-        `} from '${boundarySpecifier}';`,
-        `} from '../../../../shared/wardrobe_dimension_tokens_shared.js';`
-      )
-    ),
-    'ui-facade-import',
-    'UI facade import'
-  );
-  assertViolation(
-    inspectUi(
-      source.replace(
-        `} from '${boundarySpecifier}';`,
-        `} from '../../../../shared/dimensions/interior_fittings_policy.js';`
-      )
-    ),
-    'ui-direct-focused-owner-import',
-    'UI direct focused owner import'
-  );
-  assertViolation(
-    inspectUi(source.replace(boundarySpecifier, '../../../features/dimensions/index.js')),
-    'ui-public-dimensions-barrel',
-    'UI public dimensions barrel'
-  );
-  assertViolation(
-    inspectUi(`${source}\nvoid import('${boundarySpecifier}');\n`),
-    'ui-dynamic-import',
-    'UI dynamic import'
-  );
-  const boundaryImport = `import {
-  ${expectedBoundarySymbols.join(',\n  ')},
-} from '${boundarySpecifier}';`;
-  assertViolation(
-    inspectUi(source.replace(boundaryImport, `import * as defaults from '${boundarySpecifier}';`)),
-    'ui-namespace-import',
-    'UI namespace import'
-  );
-  assertViolation(
-    inspectUi(source.replace(`export { ${depthSymbol} };`, `export const ${depthSymbol} = 45;`)),
-    'ui-wrapper-constant',
-    'UI wrapper constant'
-  );
-  assertViolation(
-    inspectUi(
-      `${source}\nimport { DEFAULT_BASE_PLINTH_HEIGHT_CM } from '../../../features/base_plinth_support.js';\n`
-    ),
-    'ui-feature-import-consolidation',
-    'duplicate feature import'
-  );
-  assertViolation(
-    inspectUi(`${source}\nimport { EXTRA_DEFAULT } from '../../../features/extra_defaults.js';\n`),
-    'ui-feature-import-consolidation',
-    'fifth separate feature import'
   );
 });
 

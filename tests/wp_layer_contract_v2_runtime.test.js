@@ -1949,13 +1949,13 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     [
       'features>shared',
       {
-        observed: 61,
+        observed: 60,
         migration: 0,
         compatibility: 0,
         consolidation: 11,
         reviewedOwnership: 0,
-        reviewedGeneral: 50,
-        budget: 50,
+        reviewedGeneral: 49,
+        budget: 49,
       },
     ],
     [
@@ -2080,8 +2080,8 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   const uiFeaturesEdge = graph.edges.find(entry => entry.from === 'ui' && entry.to === 'features');
   assert.ok(featureSharedEdge);
   assert.ok(uiFeaturesEdge);
-  assert.equal(featureSharedEdge.importerCount, 43);
-  assert.equal(featureSharedEdge.valueImporterCount, 43);
+  assert.equal(featureSharedEdge.importerCount, 42);
+  assert.equal(featureSharedEdge.valueImporterCount, 42);
   assert.equal(uiFeaturesEdge.importerCount, 47);
   assert.equal(uiFeaturesEdge.importCount, 76);
   assert.equal(uiFeaturesEdge.valueImporterCount, 37);
@@ -2109,19 +2109,9 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   );
   assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 0);
   assert.equal(staticFacadeDependencies.length, 0);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 1);
-  assert.equal(facadeDependencies.length, 1);
-
-  const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
-  const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
+  assert.equal(facadeDependencies.length, 0);
+  assert.equal(fs.existsSync(path.join(repositoryRoot, facadeRel)), false);
+  assert.equal(fs.existsSync(path.join(repositoryRoot, 'esm/native/features/dimensions/index.ts')), false);
 });
 
 test('repository Sketch Box Geometry migration entries remain exact after Interior Tab UI consolidation', () => {
@@ -2914,9 +2904,9 @@ test('layer contract proposal CLI exits nonzero when ratchet growth requires rev
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
   const observedRule = baseline.rules.find(
-    rule => rule.decision === 'allow' && Number(rule.maxImportCount) > 0
+    rule => rule.decision === 'allow' && rule.from === 'features' && rule.to === 'shared'
   );
-  assert.ok(observedRule, 'fixture requires one observed allow rule');
+  assert.ok(observedRule, 'fixture requires the observed features -> shared allow rule');
   for (const key of Object.keys(observedRule)) {
     if (key.startsWith('max') && typeof observedRule[key] === 'number') observedRule[key] = 0;
   }

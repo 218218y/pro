@@ -4,28 +4,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const ownerRel = 'esm/shared/dimensions/material_thickness_policy.ts';
-const publicFacadeRels = Object.freeze(['esm/native/features/dimensions/index.ts']);
-const facadeAbsolute = path.join(root, facadeRel);
-const publicFacadeAbsolutes = new Set(
-  publicFacadeRels.map(rel => path.normalize(path.join(root, rel)).toLowerCase())
-);
-const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
+const facadeAbsolute = path.join(root, facadeRel);
+
+const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -57,10 +45,6 @@ function isFacadeTarget(fromFile, specifier) {
   return resolveModuleTarget(fromFile, specifier) === path.normalize(facadeAbsolute).toLowerCase();
 }
 
-function isPublicFacadeTarget(fromFile, specifier) {
-  return publicFacadeAbsolutes.has(resolveModuleTarget(fromFile, specifier));
-}
-
 function findVariableDeclarator(sourceFile, name) {
   let result = null;
   walkAst(sourceFile, node => {
@@ -77,74 +61,6 @@ function frozenObjectProperties(node) {
   assert.equal(objectExpression?.type, 'ObjectExpression');
   return objectExpression.properties ?? [];
 }
-
-test('MATERIAL_DIMENSIONS has no AST-visible production consumer or facade/barrel bypass', () => {
-  const violations = [];
-  const facadeReexportFiles = new Set();
-  const productionFiles = listSourceFiles(path.join(root, 'esm')).filter(
-    file => path.normalize(file).toLowerCase() !== path.normalize(facadeAbsolute).toLowerCase()
-  );
-
-  for (const file of productionFiles) {
-    const source = fs.readFileSync(file, 'utf8');
-    const sourceFile = createSourceFile(file, source);
-    walkAst(sourceFile, node => {
-      const symbol = identifierName(node);
-      if (symbol === 'MATERIAL_DIMENSIONS') {
-        violations.push({
-          file: path.relative(root, file).replaceAll('\\', '/'),
-          kind: node.type,
-          symbol,
-        });
-      }
-      const pathValue = memberPath(node);
-      if (pathValue?.includes('MATERIAL_DIMENSIONS.')) {
-        violations.push({
-          file: path.relative(root, file).replaceAll('\\', '/'),
-          kind: 'member-chain',
-          symbol: pathValue,
-        });
-      }
-    });
-
-    const analysis = analyzeModuleDependencies(file, source);
-    for (const dependency of analysis.imports) {
-      if (
-        isFacadeTarget(file, dependency.specifier) &&
-        ['static-re-export', 'type-re-export'].includes(dependency.syntax)
-      ) {
-        facadeReexportFiles.add(path.relative(root, file).replaceAll('\\', '/'));
-      }
-      if (dependency.kind === 'type') continue;
-      const targetsMaterialSurface =
-        isFacadeTarget(file, dependency.specifier) || isPublicFacadeTarget(file, dependency.specifier);
-      if (!targetsMaterialSurface) continue;
-      if (
-        dependency.syntax === 'dynamic-import' ||
-        dependency.importedSymbols.includes('*') ||
-        dependency.importedSymbols.includes('MATERIAL_DIMENSIONS')
-      ) {
-        const isApprovedFacadeProjection =
-          path.normalize(file).toLowerCase() ===
-            path.normalize(path.join(root, publicFacadeRels[0])).toLowerCase() &&
-          isFacadeTarget(file, dependency.specifier) &&
-          dependency.syntax === 'static-re-export' &&
-          dependency.importedSymbols.length === 1 &&
-          dependency.importedSymbols[0] === '*';
-        if (!isApprovedFacadeProjection) {
-          violations.push({
-            file: path.relative(root, file).replaceAll('\\', '/'),
-            kind: dependency.syntax,
-            symbols: dependency.importedSymbols,
-          });
-        }
-      }
-    }
-  }
-
-  assert.deepEqual(violations, []);
-  assert.deepEqual([...facadeReexportFiles].sort(), [...publicFacadeRels].sort());
-});
 
 test('Material Thickness owner is exact and has no dependency on the legacy facade', () => {
   const source = read(ownerRel);
@@ -196,39 +112,4 @@ test('Material Thickness owner is exact and has no dependency on the legacy faca
     /export const MATERIAL_THICKNESS_POLICY = Object\.freeze\(\{\n  wood: Object\.freeze\(\{\n    thicknessM: MATERIAL_THICKNESS_M,\n  \}\),\n  glassShelf: Object\.freeze\(\{\n    thicknessM: MATERIAL_THICKNESS_M,\n  \}\),\n\}\);/u
   );
   assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared|\bMATERIAL_DIMENSIONS\b/u);
-});
-
-test('public MATERIAL_DIMENSIONS remains the direct owner projection pending public-surface review', () => {
-  const source = read(facadeRel);
-  const sourceFile = createSourceFile(facadeRel, source);
-  const projection = findVariableDeclarator(sourceFile, 'MATERIAL_DIMENSIONS');
-
-  assert.ok(projection);
-  assert.equal(projection.parent?.kind, 'const');
-  assert.equal(projection.init?.type, 'CallExpression');
-  assert.equal(identifierName(projection.init?.callee), 'legacyDimensionNumberView');
-  assert.deepEqual((projection.init?.arguments ?? []).map(identifierName), ['MATERIAL_THICKNESS_POLICY']);
-  assert.match(
-    source,
-    /const MATERIAL_DIMENSIONS = legacyDimensionNumberView\(MATERIAL_THICKNESS_POLICY\);/u
-  );
-
-  const forbiddenProjectionNodes = [];
-  walkAst(projection.init, node => {
-    if (
-      node?.type === 'SpreadElement' ||
-      node?.type === 'ObjectExpression' ||
-      (node?.type === 'Literal' && typeof node.value === 'number')
-    ) {
-      forbiddenProjectionNodes.push(node.type);
-    }
-  });
-  assert.deepEqual(forbiddenProjectionNodes, []);
-
-  const valueExports = new Set(
-    collectNamedModuleExports(facadeRel, source)
-      .filter(entry => entry.kind === 'value')
-      .map(entry => entry.exportedName)
-  );
-  assert.equal(valueExports.has('MATERIAL_DIMENSIONS'), true);
 });

@@ -64,7 +64,7 @@ test('reviewed ownership and general ownership are decomposed exactly on every c
   const expected = new Map([
     ['builder>shared', [280, 0, 0, 6, 61, 213, 213]],
     ['services>shared', [214, 0, 0, 4, 47, 163, 163]],
-    ['features>shared', [61, 0, 0, 11, 0, 50, 50]],
+    ['features>shared', [60, 0, 0, 11, 0, 49, 49]],
     ['ui>shared', [26, 0, 0, 1, 0, 25, 25]],
     ['platform>shared', [4, 0, 0, 1, 0, 3, 3]],
     ['runtime>shared', [36, 0, 4, 1, 0, 31, 31]],
@@ -113,30 +113,28 @@ test('all reviewed ownership and consolidation evidence hashes are exact', () =>
   }
 });
 
-test('public surface remains 89 values and 10 types with all 99 removals blocked', () => {
-  const decision = readJson('tools/wp_wardrobe_dimension_public_surface_decision_report.json');
+test('legacy source paths are retired while all 53 supported Runtime and Services routes remain locked', () => {
+  const manifest = readJson('tools/wp_wardrobe_dimension_public_surface_manifest.json');
+  const policy = readJson('tools/wp_public_surface_policy.json');
   assert.deepEqual(
     {
-      symbols: decision.summary.publicSymbols,
-      values: decision.summary.publicValues,
-      types: decision.summary.publicTypes,
-      removals: decision.summary.removalAuthorized,
-      option: decision.recommendation.option,
-      proofValues: decision.recommendation.proof.valueRuntimeIdentityParity,
-      proofDeclarations: decision.recommendation.proof.declarationFingerprintParity,
+      symbols: manifest.symbolCount,
+      values: manifest.valueCount,
+      types: manifest.typeCount,
+      routes: manifest.symbols.length,
+      retiredSurfaces: policy.retiredSurfaces.length,
+      retiredSymbols: policy.retiredFacadeOnlyRoutes.length,
     },
     {
-      symbols: 99,
-      values: 89,
-      types: 10,
-      removals: 0,
-      option: 'A',
-      proofValues: 89,
-      proofDeclarations: 99,
+      symbols: 53,
+      values: 52,
+      types: 1,
+      routes: 53,
+      retiredSurfaces: 2,
+      retiredSymbols: 46,
     }
   );
-  assert.equal(
-    decision.symbols.every(symbol => symbol.classification === 'undetermined — blocks removal'),
-    true
-  );
+  for (const surface of policy.retiredSurfaces) {
+    assert.equal(fs.existsSync(path.join(root, surface.path)), false, surface.path);
+  }
 });

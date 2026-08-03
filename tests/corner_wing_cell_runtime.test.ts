@@ -9,7 +9,7 @@ import {
   addCornerWingGridShelf,
   createCornerWingInteriorShelfRuntime,
 } from '../esm/native/builder/corner_wing_cell_interiors_shelves.ts';
-import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { CORNER_SYSTEM_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
 import { createCornerWingCellCfgResolver } from '../esm/native/builder/corner_wing_extension_cells_config.ts';
 
 class FakeVector3 {
@@ -148,7 +148,7 @@ test('corner wing grid shelves keep brace shelves full-width and regular shelves
   assert.equal(regular?.geometry.parameters.width, cellRuntime.cellShelfW);
   assert.equal(
     regular?.geometry.parameters.width,
-    cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.interior.shelfWidthClearanceM
+    cellRuntime.cellInnerW - CORNER_SYSTEM_POLICY.interior.shelfWidthClearanceM
   );
   assert.equal(brace?.geometry.parameters.width, cellRuntime.cellInnerW);
 });
@@ -224,7 +224,7 @@ test('corner wing extension-cell config ignores string numeric runtime values', 
   const cfg = resolver(0);
 
   assert.equal(cfg.extDrawersCount, 0);
-  assert.equal(cfg.gridDivisions, CORNER_WING_DIMENSIONS.cells.defaultGridDivisions);
+  assert.equal(cfg.gridDivisions, CORNER_SYSTEM_POLICY.cells.defaultGridDivisions);
 });
 
 test('corner wing brace shelves ignore string-encoded shelf indexes', () => {

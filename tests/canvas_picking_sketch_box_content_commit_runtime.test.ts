@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
-import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 import { createSetBaseCommand, withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
-const LEG_PLATFORM_HEIGHT_M = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+const LEG_PLATFORM_HEIGHT_M = BASE_LEG_LAYOUT_POLICY.platform.heightM;
 
 function createBox(overrides: Record<string, unknown> = {}) {
   return {

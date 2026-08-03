@@ -1,164 +1,74 @@
 # Facade and Public API Policy
 
-This document updates the refactor plan after the Stage 43–69 ownership-split run.
+WardrobePro is a private application, not a source-distributed package. A source file is internal unless an explicit manifest or supported-surface contract promotes it.
 
-## Decision
+## Public-surface rule
 
-The current pattern of splitting hot modules into a tiny public facade plus focused owner modules is generally the right professional direction for this repository.
+A route is supported only when one of these contracts lists it:
 
-Do not remove facades globally. A facade is not a dirty word; it is a boundary. The problem is not the facade. The problem is a facade that starts acting like a junk drawer with a nicer label.
+- `tools/wp_features_public_api_manifest.json` for Feature entries.
+- `tools/wp_wardrobe_dimension_public_surface_manifest.json` for the 53 supported dimension routes exposed through Runtime and Services.
+- an equivalent machine-readable manifest owned by the relevant architecture contract.
+- an application or release entrypoint explicitly used by the build and deployment pipeline.
 
-The next phase should keep stable public facades where they protect imports and product behavior, while adding clearer rules for when a facade is allowed, when a direct owner import is better, and when a public API should be intentionally redesigned.
+Absence from a manifest means unsupported. Repository source paths do not become public merely because they are importable, once had a barrel, or could theoretically be consumed outside the repository.
 
-## Line-count rule
+The machine-readable policy is `tools/wp_public_surface_policy.json`. `check:features-public-api` enforces both approved Feature entries and retired source paths.
 
-Do not continue splitting only because a file is over 200 or 300 lines.
+## Supported dimension API
 
-Line count is a smell, not a verdict. In this codebase, a cohesive 220-line owner with one responsibility is usually healthier than five 40-line files that force the reader to play import ping-pong. Split by responsibility, volatility, testability, and public boundary — not by a ruler.
+The supported dimension chain is:
 
-Use these practical thresholds:
+```text
+esm/native/runtime/api.ts
+  -> esm/native/services/api_runtime_base_surface.ts
+  -> esm/native/services/api.ts
+```
 
-| File shape                                          | Default decision                                                               |
-| --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Under 150 lines and cohesive                        | Do not split unless it has clear mixed responsibilities or risky side effects. |
-| 150–300 lines and cohesive                          | Usually keep. Add tests/guards before more fragmentation.                      |
-| 300–500 lines with multiple reasons to change       | Split only along real ownership seams.                                         |
-| Over 500 lines or mixes UI/state/effects/I/O/policy | Strong candidate for split, but still require behavior coverage.               |
-| Any size with public consumers                      | Protect the public import path unless redesigning the API deliberately.        |
+It exposes 52 values and one type. Runtime routes must come directly from their focused canonical owners, except `CHEST_MODE_DIMENSIONS`, whose explicit compatibility owner preserves the supported plain-number declaration without cloning or wrapping the canonical runtime value.
 
-A split is justified when at least one of these is true:
+Focused owners under `esm/shared/dimensions/*` remain internal implementation owners. Internal callers should import the narrow owner that owns the policy they need; they must not recreate an aggregate facade.
 
-- the file has multiple independent reasons to change;
-- tests need to target a smaller owner to cover behavior cleanly;
-- public callers should not know about internal state/material/geometry/controller layout;
-- a runtime owner mixes side effects with pure policy or data normalization;
-- lifecycle cleanup, timers, DOM access, storage access, or error reporting are mixed with unrelated logic;
-- the current module is hard to review because unrelated changes appear in one diff.
+## Retired dimension surfaces
 
-A split is probably not justified when:
+The following source-path surfaces were retired on 2026-08-03:
 
-- the only reason is “the file is 210 lines”;
-- the new files are named mechanically but still share one tangled responsibility;
-- every function is still imported by every other new file;
-- the facade is private and has only one caller;
-- the guard only checks text shape while no runtime/user behavior is protected.
+- `esm/shared/wardrobe_dimension_tokens_shared.ts`
+- `esm/native/features/dimensions/index.ts`
 
-## Module categories
+The first was a 99-symbol compatibility facade with no production consumer after the ownership migration. The second was its sole wildcard re-export and was neither consumed in production nor listed in the Feature Public API manifest.
 
-Every split module should fit one of these categories.
+The retirement is deliberate and breaking only for unsupported source-path imports. It does not change Runtime or Services behavior, numeric values, runtime identity, or declarations for their 53 supported routes. The machine policy records the other 46 facade-only routes as unsupported; canonical focused-owner exports that happen to share a name remain internal. The 15 aggregates and aliases that were owned only by the facade are forbidden globally and were not recreated because they had no consumer.
 
-| Category             | Purpose                                                                                                  | Allowed imports                              | Must not contain                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
-| Stable public facade | External or cross-family entry point, stable import path, service/hook/factory surface                   | Public consumers and sibling owners          | Business logic, mutable hidden state, DOM/storage/timers, fallback chains |
-| Internal owner       | Owns one narrow responsibility such as state, geometry, material policy, lifecycle, or command execution | Facade and sibling owners in the same family | Public cross-family imports unless explicitly promoted                    |
-| Internal shared seam | Shared contract/types/helper used by sibling owners                                                      | Same implementation family, sometimes tests  | Product behavior orchestration                                            |
-| Adapter boundary     | Browser, DOM, storage, timer, or vendor integration boundary                                             | Explicit adapter callers                     | Domain logic or hidden fallback chains                                    |
-| Compatibility shim   | Temporary legacy import path during migration                                                            | Existing legacy consumers only               | New callers, new behavior, or unbounded lifetime                          |
+The retired paths must remain absent. Static imports, re-exports, namespace imports, dynamic imports, alias imports, extensionless paths, query/hash variants, and directory-index routes are all forbidden. A replacement facade or aggregate under a new name is equally forbidden.
 
-## When to keep a facade
+## Facade standard
 
-Keep a facade when it is a real boundary:
+A facade is appropriate when it owns a deliberate stable boundary, shields many consumers from private implementation layout, or represents a service/family/adapter contract. It may re-export a small typed surface or assemble a narrow public factory, but it must not own business logic, mutable state, DOM/storage/timer work, fallback chains, or historical aliases without a live compatibility requirement.
 
-- many files already import the path;
-- the file is the public service/hook/factory entry point;
-- it shields public consumers from internal owner layout;
-- it lets internals split without import churn;
-- it represents a stable product contract, not just a file location.
+Do not add a facade when there is one internal caller, the focused owner is already the correct boundary, or the wrapper exists only to preserve an obsolete name. A compatibility shim requires a real consumer, an owner, a removal condition, and a contract that blocks new callers.
 
-A correct tiny facade may do only one of these:
+## API change sequence
 
-- re-export public functions/types from the canonical owner;
-- construct a small public factory/hook from internal owners;
-- normalize a narrow public argument into an internal owner contract;
-- preserve a stable import path while implementation ownership changes behind it.
+For an intentional public API change:
 
-## When not to add a facade
+1. Inventory every current consumer and classify the boundary.
+2. Confirm the canonical typed owner and replacement route.
+3. Migrate internal consumers.
+4. Lock the supported surface and runtime/declaration behavior.
+5. Add negative import guards for the retired route.
+6. Remove the old route, callers, reports, snapshots, and compatibility-only tooling as one complete slice.
+7. Lower architecture ratchets immediately.
 
-Do not add a facade when:
+Do not retain deprecated entries in a manifest after the contract proves that no supported consumer remains.
 
-- there is only one internal caller and no stable public seam;
-- the facade just forwards to one private function and adds no boundary value;
-- the internal owner is already the correct public API;
-- the facade exists only to satisfy a line-count target;
-- the facade hides a bad module name that should simply be renamed through a planned migration;
-- the facade becomes a dumping ground for old fallback code.
+## Relevant checks
 
-## When to redesign external API
-
-Changing public API can be professional, but only when the existing API is genuinely wrong.
-
-Good reasons:
-
-- the API exposes implementation details that block clean ownership;
-- the API encourages runtime fallback or shape guessing;
-- callers pass broad mutable bags where a typed command/context is required;
-- the API causes duplicated behavior across families;
-- the API creates unsafe import direction or circular dependency risk.
-
-Bad reasons:
-
-- the implementation file moved;
-- the new layout looks prettier;
-- a facade feels philosophically annoying;
-- a regex guard is easier if old imports disappear.
-
-Safe API redesign sequence:
-
-1. Inventory current consumers.
-2. Add the canonical API with clear types and behavior tests.
-3. Move internal consumers first.
-4. Add an import-boundary guard so new code uses the canonical API.
-5. Keep the old facade only as a deprecated compatibility shim when needed.
-6. Add removal criteria and a target stage.
-7. Remove the shim only when the import graph proves it is unused.
-
-Do not break external API just because a new file layout looks cleaner. That is a workshop accident wearing a tie.
-
-## Guard test policy
-
-Ownership guard tests are allowed to assert file shape:
-
-- facade stays below a small line budget;
-- facade imports only its approved owner/factory;
-- private owner modules are not imported by unrelated families;
-- no `export default` returns;
-- no DOM/storage/timer access appears in pure owners.
-
-But file-shape guards are not enough. Risky splits also need behavior coverage:
-
-- public factory/hook/service still returns the same stable surface;
-- key lifecycle paths still call cleanup/settle/report handlers;
-- old public facade and new owners do not diverge;
-- user-visible behavior stays covered by runtime/browser tests where possible.
-
-## Stage 70 proposal
-
-Stage 69 already exists in this repository as the render-interior-sketch external-drawers ownership split. Therefore the facade/API closeout must be Stage 70 or a documentation-only pre-stage, not another Stage 69.
-
-### Stage 70 — Public facade/API policy closeout
-
-Scope:
-
-- Add this policy to the repo.
-- Update `docs/QUALITY_GUARDRAILS.md` with facade/API rules.
-- Add an import-boundary audit plan for private owner modules.
-- Define the next code PR as guardrail enhancement and product-risk balancing, not another blind split.
-
-Definition of done for the future code PR:
-
-- `verify:refactor-modernization` remains the primary entry point.
-- `check:refactor-guardrails` includes public/private import boundary checks.
-- Recent facade splits have behavior/runtime guards in addition to regex ownership guards.
-- Deprecated facades, if any, have removal criteria and no new-import allowance.
-- The stage catalog records explicit metadata for high-number stages instead of only generic `Stage N` labels.
-
-## Practical standard
-
-The clean professional standard is:
-
-- Keep public API stable by default.
-- Split implementation ownership behind that API.
-- Break API only when the API itself is wrong, not merely because the implementation moved.
-- Stop splitting when modules are cohesive, reviewable, and behavior-covered.
-- Use facades deliberately, not ceremonially.
-- Guard behavior, not just file shape.
+```bash
+npm run check:features-public-api
+node --test tests/retired_dimension_import_paths_contract.test.js
+node --test tests/wardrobe_dimension_runtime_public_surface_contract.test.js
+npm run contract:layers
+npm run contract:layers:propose
+npm run contract:layers:ratchet
+```

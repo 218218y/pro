@@ -411,13 +411,6 @@ test('policy mutations reject wrappers, bind, aliases, key drift, owner drift, a
     'policy-owner-dependency',
     'wrong owner'
   );
-
-  const publicBridge = `${read(publicDimensionsRel)}\nexport { ${policySymbol} } from '../../../shared/dimensions/structure_tab_auto_width_policy.js';\n`;
-  assertRejected(
-    inspectPolicyRoute(productionEntries({ [publicDimensionsRel]: publicBridge })),
-    'policy-public-export',
-    'public export'
-  );
 });
 
 test('Entry 172 mutation changes its owned entry while unrelated future entries remain append-safe', () => {

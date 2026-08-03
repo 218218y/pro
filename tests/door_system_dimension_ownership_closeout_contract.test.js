@@ -4,14 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/door_system_policy.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const runtimeApiRel = 'esm/native/runtime/api.ts';
+
 const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 const identityReexportOwners = new Set([
   'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
@@ -28,9 +26,7 @@ const identityCompositionRoutes = new Map([
   ],
 ]);
 const ownerAbsolute = path.join(root, ownerRel);
-const facadeAbsolute = path.join(root, facadeRel);
-const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
-const runtimeApiAbsolute = path.join(root, runtimeApiRel);
+
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const esmSourceFiles = listSourceFiles(path.join(root, 'esm'));
 const sourceCache = new Map();
@@ -159,10 +155,6 @@ function resolveModuleTarget(fromFile, specifier) {
     .toLowerCase();
 }
 
-function isTarget(fromFile, specifier, target) {
-  return resolveModuleTarget(fromFile, specifier) === path.normalize(target).toLowerCase();
-}
-
 function findVariableDeclarator(sourceFile, name) {
   let result = null;
   walkAst(sourceFile, node => {
@@ -210,146 +202,6 @@ function importedConsumers(symbol) {
     )
     .sort((left, right) => left.file.localeCompare(right.file));
 }
-
-test('DOOR_SYSTEM_DIMENSIONS has no production consumer or facade/barrel bypass', () => {
-  const occurrenceFiles = esmSourceFiles
-    .filter(file => /\bDOOR_SYSTEM_DIMENSIONS\b/u.test(sourceFor(file)))
-    .map(rel)
-    .sort();
-  assert.deepEqual(occurrenceFiles, [ownerRel, facadeRel].sort());
-
-  const directImports = importedConsumers('DOOR_SYSTEM_DIMENSIONS');
-  assert.deepEqual(
-    directImports.map(imported => ({
-      file: imported.file,
-      kind: imported.kind,
-      syntax: imported.syntax,
-      bindings: imported.bindings,
-    })),
-    [
-      {
-        file: facadeRel,
-        kind: 'value',
-        syntax: 'static-import',
-        bindings: [
-          {
-            importedName: 'DOOR_SYSTEM_DIMENSIONS',
-            localName: 'DOOR_SYSTEM_DIMENSIONS_OWNER',
-            exportedName: null,
-          },
-        ],
-      },
-    ]
-  );
-
-  const violations = [];
-  for (const file of esmSourceFiles) {
-    const fileRel = rel(file);
-    if (![ownerRel, facadeRel].includes(fileRel)) {
-      walkAst(sourceFileFor(file), node => {
-        if (identifierName(node) === 'DOOR_SYSTEM_DIMENSIONS') {
-          violations.push({ file: fileRel, kind: node.type, symbol: 'DOOR_SYSTEM_DIMENSIONS' });
-        }
-        const pathValue = memberPath(node);
-        if (pathValue?.includes('DOOR_SYSTEM_DIMENSIONS.')) {
-          violations.push({ file: fileRel, kind: 'member-chain', symbol: pathValue });
-        }
-      });
-    }
-
-    for (const dependency of analysisFor(file).imports) {
-      const targetsFacade = isTarget(file, dependency.specifier, facadeAbsolute);
-      const targetsDimensionsBarrel = isTarget(file, dependency.specifier, publicDimensionsAbsolute);
-      const targetsRuntimeApi = isTarget(file, dependency.specifier, runtimeApiAbsolute);
-      const approvedWildcardProjection =
-        fileRel === publicDimensionsRel &&
-        targetsFacade &&
-        dependency.syntax === 'static-re-export' &&
-        dependency.kind === 'value' &&
-        dependency.importedSymbols.length === 1 &&
-        dependency.importedSymbols[0] === '*';
-      if (approvedWildcardProjection) continue;
-      if (dependency.kind === 'type') continue;
-
-      const exposesDoorSystem =
-        dependency.syntax === 'dynamic-import' ||
-        dependency.importedSymbols.includes('*') ||
-        dependency.importedSymbols.includes('DOOR_SYSTEM_DIMENSIONS');
-      if ((targetsFacade || targetsDimensionsBarrel || targetsRuntimeApi) && exposesDoorSystem) {
-        violations.push({
-          file: fileRel,
-          kind: dependency.syntax,
-          specifier: dependency.specifier,
-          symbols: dependency.importedSymbols,
-        });
-      }
-    }
-  }
-  assert.deepEqual(violations, []);
-
-  const dimensionsProjection = analysisFor(publicDimensionsAbsolute).imports.filter(dependency =>
-    isTarget(publicDimensionsAbsolute, dependency.specifier, facadeAbsolute)
-  );
-  assert.deepEqual(
-    dimensionsProjection.map(({ kind, syntax, importedSymbols }) => ({
-      kind,
-      syntax,
-      importedSymbols,
-    })),
-    [{ kind: 'value', syntax: 'static-re-export', importedSymbols: ['*'] }]
-  );
-  assert.equal(read(runtimeApiRel).includes('DOOR_SYSTEM_DIMENSIONS'), false);
-});
-
-test('Door System aggregate objects remain definition/facade-only with no aggregate bridge', () => {
-  const aggregateOccurrences = new Map(
-    [
-      'HINGED_DOOR_SPLIT_POLICY',
-      'HINGED_DOOR_SYSTEM_POLICY',
-      'SLIDING_DOOR_SYSTEM_POLICY',
-      'DOOR_SYSTEM_DIMENSIONS',
-    ].map(symbol => [
-      symbol,
-      esmSourceFiles
-        .filter(file => new RegExp(`\\b${symbol}\\b`, 'u').test(sourceFor(file)))
-        .map(rel)
-        .sort(),
-    ])
-  );
-  assert.deepEqual(aggregateOccurrences.get('HINGED_DOOR_SPLIT_POLICY'), [ownerRel]);
-  assert.deepEqual(aggregateOccurrences.get('HINGED_DOOR_SYSTEM_POLICY'), [ownerRel]);
-  assert.deepEqual(aggregateOccurrences.get('SLIDING_DOOR_SYSTEM_POLICY'), [ownerRel]);
-  assert.deepEqual(aggregateOccurrences.get('DOOR_SYSTEM_DIMENSIONS'), [ownerRel, facadeRel].sort());
-
-  for (const symbol of [
-    'HINGED_DOOR_SPLIT_POLICY',
-    'HINGED_DOOR_SYSTEM_POLICY',
-    'SLIDING_DOOR_SYSTEM_POLICY',
-  ]) {
-    assert.deepEqual(importedConsumers(symbol), []);
-  }
-
-  const exportedValues = collectNamedModuleExports(ownerRel, read(ownerRel))
-    .filter(entry => entry.kind === 'value')
-    .map(entry => entry.exportedName)
-    .sort();
-  assert.deepEqual(
-    exportedValues,
-    [
-      'DOOR_SYSTEM_DIMENSIONS',
-      'HINGED_DOOR_MOUNT_POLICY',
-      'HINGED_DOOR_RENDER_POLICY',
-      'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
-      'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
-      'HINGED_DOOR_SPLIT_POLICY',
-      'HINGED_DOOR_SYSTEM_POLICY',
-      'SLIDING_DOOR_CONSTRUCTION_POLICY',
-      'SLIDING_DOOR_HANDLE_RENDER_POLICY',
-      'SLIDING_DOOR_MOTION_POLICY',
-      'SLIDING_DOOR_SYSTEM_POLICY',
-    ].sort()
-  );
-});
 
 test('Door System focused-owner inventory is exact, reviewed, and alias-free', () => {
   for (const [symbol, expectedFiles] of focusedInventories) {
@@ -546,68 +398,4 @@ test('Door System owner imports only canonical dependencies and aggregates direc
     });
     assert.deepEqual(forbiddenNodes, [], aggregateName);
   }
-});
-
-test('public DOOR_SYSTEM_DIMENSIONS remains the single direct owner projection', () => {
-  const source = read(facadeRel);
-  const sourceFile = sourceFileFor(facadeAbsolute);
-  const analysis = analysisFor(facadeAbsolute);
-  const ownerImport = analysis.imports.filter(dependency =>
-    isTarget(facadeAbsolute, dependency.specifier, ownerAbsolute)
-  );
-  assert.deepEqual(
-    ownerImport.map(({ specifier, kind, syntax, importedSymbols, bindings }) => ({
-      specifier,
-      kind,
-      syntax,
-      importedSymbols,
-      bindings: bindings.filter(binding => binding.importedName === 'DOOR_SYSTEM_DIMENSIONS'),
-    })),
-    [
-      {
-        specifier: './dimensions/door_system_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['DOOR_SYSTEM_DIMENSIONS'],
-        bindings: [
-          {
-            importedName: 'DOOR_SYSTEM_DIMENSIONS',
-            localName: 'DOOR_SYSTEM_DIMENSIONS_OWNER',
-            exportedName: null,
-          },
-        ],
-      },
-    ]
-  );
-
-  const projection = findVariableDeclarator(sourceFile, 'DOOR_SYSTEM_DIMENSIONS');
-  assert.ok(projection);
-  assert.equal(projection.parent?.kind, 'const');
-  assert.equal(projection.init?.type, 'CallExpression');
-  assert.equal(identifierName(projection.init.callee), 'legacyDimensionNumberView');
-  assert.deepEqual((projection.init.arguments ?? []).map(identifierName), ['DOOR_SYSTEM_DIMENSIONS_OWNER']);
-  assert.match(
-    source,
-    /const DOOR_SYSTEM_DIMENSIONS = legacyDimensionNumberView\(DOOR_SYSTEM_DIMENSIONS_OWNER\);/u
-  );
-
-  const forbiddenProjectionNodes = [];
-  walkAst(projection.init, node => {
-    if (
-      node?.type === 'SpreadElement' ||
-      node?.type === 'ObjectExpression' ||
-      (node?.type === 'Literal' && typeof node.value === 'number') ||
-      (node?.type === 'CallExpression' && node !== projection.init)
-    ) {
-      forbiddenProjectionNodes.push(node.type);
-    }
-  });
-  assert.deepEqual(forbiddenProjectionNodes, []);
-
-  const valueExports = new Set(
-    collectNamedModuleExports(facadeRel, source)
-      .filter(entry => entry.kind === 'value')
-      .map(entry => entry.exportedName)
-  );
-  assert.equal(valueExports.has('DOOR_SYSTEM_DIMENSIONS'), true);
 });

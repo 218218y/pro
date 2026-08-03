@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/build_flow_plan_inputs.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const runtimeApiRel = 'esm/native/runtime/api.ts';
+
 const interiorOwnerRel = 'esm/shared/dimensions/carcass_interior_policy.ts';
 const doorMountOwnerRel = 'esm/shared/dimensions/door_mount_thickness_policy.ts';
 const stackSplitOwnerRel = 'esm/shared/dimensions/stack_split_policy.ts';
@@ -160,18 +160,6 @@ function stableJson(value) {
 }
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:[cm]?[jt]sx?)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function rel(file) {
-  return path.relative(root, file).replaceAll('\\', '/');
-}
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -336,36 +324,6 @@ function sourceFacts(sourceFile) {
   return { memberCounts, numericLiterals, calls, exportedFunction, returnObject };
 }
 
-function legacyFacadeConsumers(symbol) {
-  const consumers = [];
-  for (const file of listSourceFiles(path.join(root, 'esm'))) {
-    const fileRel = rel(file);
-    const source = fs.readFileSync(file, 'utf8');
-    for (const dependency of analyzeModuleDependencies(file, source).imports) {
-      if (!isTarget(file, dependency.specifier, facadeAbsolute)) continue;
-      const approvedPublicWildcard =
-        fileRel === publicDimensionsRel &&
-        dependency.syntax === 'static-re-export' &&
-        dependency.importedSymbols.length === 1 &&
-        dependency.importedSymbols[0] === '*';
-      const approvedRuntimeStackSplitReexport =
-        symbol === 'STACK_SPLIT_SEAM_GAP_M' &&
-        fileRel === runtimeApiRel &&
-        dependency.syntax === 'static-re-export' &&
-        dependency.importedSymbols.includes(symbol);
-      if (approvedPublicWildcard || approvedRuntimeStackSplitReexport) continue;
-      if (
-        dependency.importedSymbols.includes(symbol) ||
-        dependency.importedSymbols.includes('*') ||
-        dependency.syntax === 'dynamic-import'
-      ) {
-        consumers.push({ file: fileRel, syntax: dependency.syntax, symbols: dependency.importedSymbols });
-      }
-    }
-  }
-  return consumers;
-}
-
 test('Build Flow Plan Inputs imports exactly three focused owners with exact unaliased value bindings', () => {
   const source = read(consumerRel);
   const inspection = inspectOwnershipViolations(consumerAbsolute, source);
@@ -459,56 +417,6 @@ test('Build Flow Plan Inputs preserves numeric literals, public signature, and e
     facts.returnObject.properties.map(property => identifierName(property.key)),
     expectedReturnKeys
   );
-});
-
-test('Build Flow Plan Inputs ownership guard rejects facade, aliases, barrels, extensionless imports, and owner copies', () => {
-  const cases = [
-    {
-      name: 'legacy facade import',
-      expectedKind: 'legacy-facade',
-      source:
-        "import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM;",
-    },
-    {
-      name: 'focused-owner alias',
-      expectedKind: 'focused-import-shape',
-      source:
-        "import { CARCASS_INTERIOR_DIMENSIONS as INTERIOR } from '../../shared/dimensions/carcass_interior_policy.js';\nexport const value = INTERIOR.minTopBodyHeightM;",
-    },
-    {
-      name: 'public dimensions namespace',
-      expectedKind: 'public-dimensions-barrel',
-      source:
-        "import * as dimensions from '../features/dimensions/index.js';\nexport const value = dimensions.STACK_SPLIT_SEAM_GAP_M;",
-    },
-    {
-      name: 'extensionless facade import',
-      expectedKind: 'legacy-facade',
-      source:
-        "import { STACK_SPLIT_SEAM_GAP_M } from '../../shared/wardrobe_dimension_tokens_shared';\nexport const value = STACK_SPLIT_SEAM_GAP_M;",
-    },
-    {
-      name: 'local owner projection',
-      expectedKind: 'owner-object-projection',
-      source:
-        "import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';\nconst copiedInterior = { minTopBodyHeightM: CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM, slidingDepthReductionM: CARCASS_INTERIOR_DIMENSIONS.slidingDepthReductionM, hingedDepthReductionM: CARCASS_INTERIOR_DIMENSIONS.hingedDepthReductionM };\nexport const value = copiedInterior;",
-    },
-  ];
-
-  for (const probe of cases) {
-    const inspection = inspectOwnershipViolations(consumerAbsolute, probe.source);
-    assert.equal(
-      inspection.violations.some(violation => violation.kind === probe.expectedKind),
-      true,
-      probe.name
-    );
-  }
-});
-
-test('Build Flow Plan Inputs migration leaves no production facade imports for the three migrated symbols', () => {
-  assert.deepEqual(legacyFacadeConsumers('CARCASS_INTERIOR_DIMENSIONS'), []);
-  assert.deepEqual(legacyFacadeConsumers('resolveDoorMountThicknessesFromConfig'), []);
-  assert.deepEqual(legacyFacadeConsumers('STACK_SPLIT_SEAM_GAP_M'), []);
 });
 
 test('Build Flow Plan Inputs appends exactly Entries 155-156 after the unchanged 154-entry prefix', () => {

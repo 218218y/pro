@@ -13,7 +13,7 @@ import {
 } from '../esm/shared/dimensions/interior_storage_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 
-import { DRAWER_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { EXTERNAL_DRAWER_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
 import {
   findSketchBoxRegularExternalDrawerInCell,
   getSketchBoxRegularExternalDrawerStackHeight,
@@ -63,10 +63,7 @@ test('regular external drawer count parsing is limited to tool/UI counts', () =>
   assert.equal(normalizeSketchBoxRegularExternalDrawerCount(99), 6);
   assert.equal(normalizeStoredSketchBoxRegularExternalDrawerCount(6), 6);
   assert.equal(normalizeStoredSketchBoxRegularExternalDrawerCount('3'), 0);
-  assert.equal(
-    getSketchBoxRegularExternalDrawerStackHeight('3'),
-    3 * DRAWER_DIMENSIONS.external.regularHeightM
-  );
+  assert.equal(getSketchBoxRegularExternalDrawerStackHeight('3'), 3 * EXTERNAL_DRAWER_POLICY.regularHeightM);
   assert.equal(getSketchBoxRegularExternalDrawerStackHeight({ count: '3' }), 0);
 
   assert.deepEqual(

@@ -33,7 +33,6 @@ import {
 import { INTERNAL_DRAWER_LAYOUT_POLICY } from '../esm/shared/dimensions/internal_drawer_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import { WARDROBE_DEFAULTS } from '../esm/shared/dimensions/wardrobe_defaults.ts';
-import { CORNER_WING_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 const EXPECTED_CORNER_SYSTEM_LEAVES = Object.freeze({
   wing: {
@@ -192,8 +191,7 @@ test('Corner System preserves the exhaustive pre-migration leaf snapshot', () =>
   assert.equal(Object.keys(CORNER_SYSTEM_POLICY).length, 9);
 });
 
-test('Corner System facade and compatibility sections preserve runtime identity', () => {
-  assert.equal(CORNER_WING_DIMENSIONS, CORNER_SYSTEM_POLICY);
+test('Corner System focused composition sections preserve runtime identity', () => {
   assert.equal(CORNER_SYSTEM_POLICY.wing, CORNER_WING_BODY_POLICY);
   assert.equal(CORNER_SYSTEM_POLICY.connector, CORNER_CONNECTOR_POLICY);
   assert.equal(CORNER_SYSTEM_POLICY.interior, CORNER_WING_INTERIOR_POLICY);

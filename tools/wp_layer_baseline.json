@@ -461,12 +461,12 @@
       "from": "features",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 43,
-      "maxImportCount": 50,
+      "maxImporterCount": 42,
+      "maxImportCount": 49,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
-      "maxValueImporterCount": 43,
-      "maxValueImportCount": 49,
+      "maxValueImporterCount": 42,
+      "maxValueImportCount": 48,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Feature policies build on environment-neutral shared domain contracts and tokens."
@@ -11248,11 +11248,11 @@
       "evidenceContracts": [
         {
           "path": "tests/structure_tab_dimension_support_ownership_contract.test.js",
-          "sha256": "385bb5553fe6d92d60c5e51433edf4ca76e3eb956e5bf2ee724542ee5cbf3248"
+          "sha256": "b3d99552e8d791369736101e537f9029dceb6b9e9a1b4d6518dcee8022f6bfb3"
         },
         {
           "path": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "sha256": "ede5fca2bdb658c2164cb4af082267ab95527fa02ab84860e9a03bb924558c31"
+          "sha256": "8fcf6c4c92ca4467850546ae6596a00d0f1185d77f3d03533bbe0070f50753e1"
         }
       ],
       "replacementProvenance": {
@@ -11370,7 +11370,7 @@
       "evidenceContracts": [
         {
           "path": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
-          "sha256": "f56129ec9abc05280f1e205bf1ee25cd1f8883b6bf117897c22b06b582e4f068"
+          "sha256": "694b3d69a6d5655d8d971a88bdeb65c05bb8dd423d79bb276a62006f443f5457"
         },
         {
           "path": "tests/interior_tab_local_state_runtime.test.js",
@@ -11435,7 +11435,7 @@
       "evidenceContracts": [
         {
           "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
-          "sha256": "f5fae83981e38aa03158e4bc59e1c896de039337f09b4dd4138dc41dabf27f87"
+          "sha256": "2cc329f6bd6cdbdd3eee17bb38f336af0570df15424cbd3c6acd58bc0c949ff5"
         },
         {
           "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
@@ -11683,7 +11683,7 @@
         },
         {
           "path": "tests/interior_layout_presets_feature_ownership_contract.test.js",
-          "sha256": "c97988632781382a1af4ddf626d143fc8e5bf501f31de3c73467a6ae8ded61b8"
+          "sha256": "47d9017d683f9ba56a8e42028f47ec71e5aea2c8b7e5b6cd71ff98e706e25239"
         }
       ],
       "replacementProvenance": {
@@ -11743,7 +11743,7 @@
         },
         {
           "path": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
-          "sha256": "8a2c6f734745edede3c6c4484490c9146b2205873e7fc3dd670c56377eed2764"
+          "sha256": "55846c906bb58bbf8ee679896d702f5e6c73bc5ee3c35e21cd6b3665cb7f6682"
         }
       ],
       "replacementProvenance": {
@@ -11867,7 +11867,7 @@
         },
         {
           "path": "tests/library_preset_flow_layout_ownership_contract.test.js",
-          "sha256": "6aec8c78cff0245baf108642684d8bd0795313aa32f70b0082e96fbef2e2a4b4"
+          "sha256": "ea09bdd926e96c162061f05a0b7524af1cd08a4b4255027514c90e2be0a3a1ff"
         }
       ],
       "replacementProvenance": {
@@ -11927,7 +11927,7 @@
         },
         {
           "path": "tests/library_preset_module_defaults_ownership_contract.test.js",
-          "sha256": "452c13857fff65ffa60a7af1267308fe52e4e9a1f07d3449e6044f19d8517c3b"
+          "sha256": "417491c787981fb10ff427603a614210d29cbdb1032c4c7991f11db208eb3bac"
         }
       ],
       "replacementProvenance": {

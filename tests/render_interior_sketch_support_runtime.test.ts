@@ -8,7 +8,7 @@ import {
   createInteriorSketchPlacementSupport,
   createSketchBoxLocator,
 } from '../esm/native/builder/render_interior_sketch_support.ts';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { INTERIOR_FITTINGS_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { createSketchInteriorHarness, FakeMaterial } from './sketch_box_runtime_helpers.ts';
 
@@ -393,7 +393,7 @@ test('render interior sketch module shelves keep brace shelves on the brace mate
   assert.equal(braceShelf?.userData.__wpShelfIsBrace, true);
   assert.equal(
     regularShelf?.geometry.parameters.width,
-    1.2 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM
+    1.2 - INTERIOR_FITTINGS_POLICY.shelves.regularWidthClearanceM
   );
   assert.equal(braceShelf?.geometry.parameters.width, 1.2);
 });

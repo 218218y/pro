@@ -15,11 +15,9 @@ const fixturePath = path.join(
   'door_mount_dimension_type_contract.fixture.ts'
 );
 
-test('[Door Mount types] owner branding stays internal while facade and public API remain numeric', () => {
+test('[Door Mount types] focused owner preserves its branded Centimeters contract', () => {
   const source = fs.readFileSync(fixturePath, 'utf8');
   assert.match(source, /const ownerStep: Centimeters = OWNER_DIMENSIONS\.stepCm/u);
-  assert.match(source, /const facadeAcceptsPlainNumber: typeof FACADE_DIMENSIONS\.stepCm = 0\.1/u);
-  assert.match(source, /const publicAcceptsPlainNumber: typeof PUBLIC_DIMENSIONS\.stepCm = 0\.1/u);
   assert.match(source, /@ts-expect-error/u);
 
   const tscRef = resolveTsc(rootDir);

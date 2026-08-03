@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-03T11:14:02.067Z",
+  "generatedAt": "2026-08-03T14:07:14.722Z",
   "totals": {
-    "tests": 1341,
-    "unitRunnerTests": 1333,
+    "tests": 1336,
+    "unitRunnerTests": 1328,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
     "packageTestReferences": 199,
@@ -13,12 +13,12 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 492,
-    "runtime-unit": 322,
+    "contract": 487,
+    "runtime-unit": 321,
     "integration": 466,
     "e2e-smoke": 9,
     "perf-smoke": 9,
-    "legacy-migration": 43
+    "legacy-migration": 44
   },
   "failures": {
     "missingTestRefs": [],
@@ -1895,10 +1895,6 @@
     },
     {
       "file": "tests/doors_transient_meta_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/drawer_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
     },
     {
@@ -3866,6 +3862,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/retired_dimension_import_paths_contract.test.js",
+      "category": "legacy-migration"
+    },
+    {
       "file": "tests/room_actions_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -5062,31 +5062,11 @@
       "category": "contract"
     },
     {
-      "file": "tests/wardrobe_dimension_facade_transition_topology_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wardrobe_dimension_foundation_contracts.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/wardrobe_dimension_guide_owner_contract.test.js",
       "category": "contract"
     },
     {
-      "file": "tests/wardrobe_dimension_public_surface_decision_report_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wardrobe_dimension_public_surface_semantic_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wardrobe_dimension_tokens_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/wardrobe_dimension_tokens_source_guard.test.js",
+      "file": "tests/wardrobe_dimension_runtime_public_surface_contract.test.js",
       "category": "contract"
     },
     {

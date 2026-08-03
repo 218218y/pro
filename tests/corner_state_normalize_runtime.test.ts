@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { normalizeCornerWingState } from '../esm/native/builder/corner_state_normalize.js';
 import { resolveCornerWingFlags } from '../esm/native/builder/corner_state_normalize_layout.ts';
 import { createCornerWingEmitContext } from '../esm/native/builder/corner_wing_context.js';
-import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 
 const normalRenderPolicy = { sketchMode: false, addOutlines: () => undefined };
 const sketchRenderPolicy = { sketchMode: true, addOutlines: () => undefined };
@@ -449,7 +449,7 @@ test('normalizeCornerWingState rejects a missing config snapshot instead of read
 });
 
 test('normalizeCornerWingState carries leg platform stage dimensions for corner wardrobes', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const state = normalizeCornerWingState({
     mainW: 2.0,
     mainH: 2.2,

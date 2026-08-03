@@ -9,13 +9,10 @@ const FALLBACK_BYTES_PER_COST = 32 * 1024;
 // fallback below until a later profile proves that they are outliers too.
 export const KNOWN_SLOW_TEST_COSTS = Object.freeze({
   'tests/wardrobe_dimension_guide_owner_contract.test.js': 213.781,
-  'tests/wardrobe_dimension_facade_transition_topology_contract.test.js': 173.692,
   'tests/wardrobe_sanitization_policy_ownership_contract.test.js': 165.318,
   'tests/library_preset_dimension_ownership_closeout_contract.test.js': 162.152,
-  'tests/wardrobe_dimension_public_surface_decision_report_contract.test.js': 110.49,
   'tests/order_pdf_dimension_support_ownership_contract.test.js': 104.858,
   'tests/interior_fittings_dimension_ownership_closeout_contract.test.js': 100.846,
-  'tests/wardrobe_dimension_tokens_source_guard.test.js': 94.546,
   'tests/wp_layer_contract_v2_runtime.test.js': 91.81,
   'tests/kernel_project_capture_dimension_ownership_contract.test.js': 86.375,
   'tests/interior_storage_dimension_ownership_closeout_contract.test.js': 74.303,
@@ -28,8 +25,6 @@ export const KNOWN_SLOW_TEST_COSTS = Object.freeze({
   'tests/no_main_sketch_dimension_ownership_contract.test.js': 51.009,
   'tests/build_flow_plan_inputs_dimension_ownership_contract.test.js': 50.964,
   'tests/wave_d_interior_storage_reviewed_ownership_contract.test.js': 50.513,
-  'tests/wardrobe_dimension_foundation_contracts.test.js': 48.078,
-  'tests/wardrobe_dimension_public_surface_semantic_contract.test.js': 45.853,
   'tests/sketch_box_preview_ownership_closeout_contract.test.js': 44.578,
   'tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js': 43.45,
   'tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js': 43.362,

@@ -352,14 +352,6 @@ function inspectApprovedRatchets(baseline) {
   return violations;
 }
 
-function assertRejected(violations, kind, label) {
-  assert.equal(
-    violations.some(violation => violation.kind === kind),
-    true,
-    `${label}: ${JSON.stringify(violations)}`
-  );
-}
-
 test('Order PDF dimension feature has one exact composition owner, four direct exports, and one consumer', () => {
   assert.deepEqual(inspectFeature(read(featureRel)), []);
   assert.deepEqual(inspectCompositionOwner(read(compositionOwnerRel)), []);
@@ -407,71 +399,4 @@ test('Entries 173-174 are exact, preserve Prefix 172, and accept append-safe Ent
     fromFile: 'esm/native/features/future_append_safe_dimension_consumer.ts',
   };
   assert.deepEqual(inspectLedger([...baseline.migrationBudgets, futureEntry175]), []);
-});
-
-test('Order PDF mutation probes reject compatibility routes, aliases, wrappers, growth, and behavior drift', () => {
-  const feature = read(featureRel);
-  assertRejected(
-    inspectFeature(feature.replace(compositionSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')),
-    'facade-route',
-    'facade route'
-  );
-  assertRejected(
-    inspectFeature(feature.replace('DEFAULT_HEIGHT,', 'DEFAULT_HEIGHT as HEIGHT,')),
-    'owner-alias',
-    'owner alias'
-  );
-  assertRejected(
-    inspectFeature(`${feature}\nexport const defaults = { DEFAULT_HEIGHT, DEFAULT_WIDTH };\n`),
-    'feature-wrapper-copy-or-logic',
-    'object aggregate'
-  );
-  assertRejected(
-    inspectTopology([
-      ...productionEntries(),
-      [
-        'esm/native/ui/export/order_pdf_extra_consumer.ts',
-        `import { DEFAULT_WIDTH } from '../../features/order_pdf_dimension_support.js';`,
-      ],
-    ]),
-    'feature-consumer-inventory',
-    'extra consumer'
-  );
-  for (const [label, source] of [
-    ['alias consumer', `import { DEFAULT_WIDTH } from '@/native/features/order_pdf_dimension_support.js';`],
-    [
-      'namespace alias consumer',
-      `import * as dimensions from '@/native/features/order_pdf_dimension_support.js';`,
-    ],
-    ['dynamic alias consumer', `void import('@/native/features/order_pdf_dimension_support.js');`],
-  ]) {
-    assertRejected(
-      inspectTopology([...productionEntries(), ['esm/native/ui/export/order_pdf_alias_consumer.ts', source]]),
-      'feature-consumer-inventory',
-      label
-    );
-  }
-  assertRejected(
-    inspectTopology(
-      productionEntries({
-        [consumerRel]: `${read(consumerRel)}\nimport { DEFAULT_WIDTH as SERVICE_WIDTH } from '../../services/api.js';\n`,
-      })
-    ),
-    'consumer-services-dimension-route',
-    'Services dimension return'
-  );
-  assert.notDeepEqual(
-    consumerFingerprint(read(consumerRel).replace('return defaultValue;', 'return defaultValue + 1;')),
-    consumerFingerprint(),
-    'fallback mutation must change the semantic fingerprint'
-  );
-
-  const baseline = JSON.parse(read(baselineRel));
-  const mutatedEntries = structuredClone(baseline.migrationBudgets);
-  mutatedEntries[172].addedImport.importedSymbols[0] += '_MUTATED';
-  assertRejected(inspectLedger(mutatedEntries), 'entry-173', 'Entry 173');
-  const unsupportedRatchet = structuredClone(baseline);
-  unsupportedRatchet.rules.find(rule => rule.from === 'features' && rule.to === 'shared').maxImporterCount =
-    42;
-  assertRejected(inspectApprovedRatchets(unsupportedRatchet), 'features-ratchet', 'unsupported ratchet');
 });

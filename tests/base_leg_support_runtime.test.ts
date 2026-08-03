@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { computeCarcassOps } from '../esm/native/builder/core_pure_compute.ts';
-import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { parseSketchBoxBaseToolSpec } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
 
 test('carcass leg support keeps the tapered default and supports round and square legs', () => {
@@ -58,7 +58,7 @@ test('carcass leg support keeps the tapered default and supports round and squar
 });
 
 test('carcass leg platform mode adds bottom and top stages without changing leg height', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const stageOps = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,
@@ -154,7 +154,7 @@ test('carcass leg platform uses custom side/front overhang values and keeps flus
 });
 
 test('carcass leg platform mode can suppress only the upper stage for decorative stack separators', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const ops = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,
@@ -176,7 +176,7 @@ test('carcass leg platform mode can suppress only the upper stage for decorative
 });
 
 test('carcass can preserve only the top leg platform for split upper stacks', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const ops = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,
@@ -217,7 +217,7 @@ test('carcass can preserve only the top leg platform for split upper stacks', ()
 });
 
 test('carcass top-only leg platform flag survives stripped top base without a duplicated mode value', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   const ops = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,

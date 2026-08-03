@@ -8,7 +8,6 @@ import {
   CORNER_CONNECTOR_SPECIAL_POST_POLICY,
 } from '../esm/shared/dimensions/corner_connector_interior_policy.ts';
 import { CM_PER_METER, MM_PER_METER } from '../esm/shared/dimensions/units.ts';
-import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { applyCornerConnectorAttachRod } from '../esm/native/builder/corner_connector_interior_rod.ts';
 import {
   createLeftShelvesContentsPlan,
@@ -86,7 +85,6 @@ function assertClose(actual: number, expected: number, epsilon = 1e-9): void {
 
 test('Corner Connector Interior preserves every pre-migration leaf and compatibility identity', () => {
   assert.deepEqual(CORNER_CONNECTOR_INTERIOR_POLICY, EXPECTED_CORNER_CONNECTOR_INTERIOR_LEAVES);
-  assert.equal(CORNER_CONNECTOR_INTERIOR_DIMENSIONS, CORNER_CONNECTOR_INTERIOR_POLICY);
   assert.equal(CORNER_CONNECTOR_INTERIOR_POLICY.specialPost, CORNER_CONNECTOR_SPECIAL_POST_POLICY);
   assert.equal(CORNER_CONNECTOR_INTERIOR_POLICY.attachRod, CORNER_CONNECTOR_ATTACH_ROD_POLICY);
   assert.equal(CORNER_CONNECTOR_INTERIOR_POLICY.foldedContents, CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY);

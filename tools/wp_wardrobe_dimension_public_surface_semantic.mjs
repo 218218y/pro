@@ -29,151 +29,12 @@ const omittedAstKeys = new Set([
 ]);
 
 const surfaceFiles = Object.freeze({
-  facade: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
-  featureBarrel: 'esm/native/features/dimensions/index.ts',
   runtime: 'esm/native/runtime/api.ts',
   servicesBase: 'esm/native/services/api_runtime_base_surface.ts',
   servicesEntry: 'esm/native/services/api.ts',
 });
 
 const sha256 = value => createHash('sha256').update(value).digest('hex');
-
-function upgradeManifestSchema(root) {
-  const manifestFile = path.join(root, 'tools/wp_wardrobe_dimension_public_surface_manifest.json');
-  const inventoryFile = path.join(root, 'tools/wp_wardrobe_dimension_facade_transition_inventory.json');
-  const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
-  const capturedProductionHead = manifest.capturedProductionHead ?? manifest.capturedAtHead;
-  manifest.version = 2;
-  delete manifest.capturedAtHead;
-  manifest.capturedProductionHead = capturedProductionHead;
-  manifest.policy =
-    'Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal. capturedProductionHead names the latest committed production snapshot represented by this metadata; same-commit metadata changes are intentionally non-self-referential.';
-  manifest.surfaceTopology = {
-    facade: {
-      file: surfaceFiles.facade,
-      values: 89,
-      types: 10,
-      form: 'explicit-export-inventory',
-      wildcardStatements: 0,
-    },
-    featureBarrel: {
-      file: surfaceFiles.featureBarrel,
-      sourceFile: surfaceFiles.facade,
-      values: 89,
-      types: 10,
-      form: 'wildcard-re-export',
-      wildcardStatements: 1,
-    },
-    runtime: {
-      file: surfaceFiles.runtime,
-      values: 52,
-      types: 1,
-      form: 'explicit-re-export-inventory',
-    },
-    servicesBase: {
-      file: surfaceFiles.servicesBase,
-      sourceFile: surfaceFiles.runtime,
-      values: 52,
-      types: 1,
-      form: 'explicit-re-export-inventory',
-    },
-    servicesEntry: {
-      file: surfaceFiles.servicesEntry,
-      sourceFile: surfaceFiles.servicesBase,
-      values: 52,
-      types: 1,
-      form: 'wildcard-plus-representative-re-exports',
-      wildcardStatements: 1,
-      representativeValueExports: 40,
-    },
-  };
-  const runtimeSource = fs.readFileSync(path.join(root, surfaceFiles.runtime), 'utf8');
-  const runtimeRoutes = analyzeModuleDependencies(surfaceFiles.runtime, runtimeSource).imports.filter(
-    dependency => dependency.syntax === 'static-re-export' || dependency.syntax === 'type-re-export'
-  );
-  const routeByExportedName = new Map();
-  for (const dependency of runtimeRoutes) {
-    const sourceFile = path.posix
-      .normalize(path.posix.join(path.posix.dirname(surfaceFiles.runtime), dependency.specifier))
-      .replace(/\.js$/u, '.ts');
-    for (const binding of dependency.bindings) {
-      if (!binding.exportedName || binding.exportedName === '*') continue;
-      routeByExportedName.set(binding.exportedName, {
-        sourceFile,
-        sourceSymbol: binding.importedName,
-        kind: dependency.kind,
-        syntax: dependency.syntax,
-      });
-    }
-  }
-  let exactDirectOwnerParity = 0;
-  let identityOnlyDeclarationReview = 0;
-  let explicitCompatibilityOwner = 0;
-  for (const entry of manifest.symbols) {
-    if (!entry.runtimeApiRoute) {
-      entry.runtimeReconstruction = null;
-      continue;
-    }
-    const [owner] = entry.canonicalOwner.exports;
-    const [ownerSymbol] = owner.symbols;
-    const route = routeByExportedName.get(entry.name);
-    if (!route) throw new Error(`Missing Runtime route for ${entry.name}`);
-    const isChest = entry.name === 'CHEST_MODE_DIMENSIONS';
-    const isFacadeRoute = route.sourceFile === surfaceFiles.facade;
-    const isCompatibilityRoute = route.sourceFile.includes('/dimensions/compatibility/');
-    const declarationMode = isFacadeRoute
-      ? 'legacy-facade'
-      : isCompatibilityRoute
-        ? 'explicit-compatibility-owner'
-        : 'canonical-focused-owner';
-    if (isChest && isCompatibilityRoute) {
-      entry.facadeDeclaration.form = 'identity-local-export';
-    }
-    entry.runtimeApiRoute = {
-      routeFile: surfaceFiles.runtime,
-      sourceFile: route.sourceFile,
-      sourceSymbol: route.sourceSymbol,
-      kind: route.kind,
-      form: entry.kind === 'type' ? 'type-re-export' : 'named-re-export',
-      identity: entry.facadeDeclaration.identity,
-      declarationMode,
-    };
-    if (isChest && isCompatibilityRoute) explicitCompatibilityOwner += 1;
-    else if (isChest) identityOnlyDeclarationReview += 1;
-    else exactDirectOwnerParity += 1;
-    entry.runtimeReconstruction = {
-      status:
-        isChest && isCompatibilityRoute
-          ? 'explicit-compatibility-owner'
-          : isChest
-            ? 'identity-parity-declaration-review'
-            : 'exact-direct-owner-parity',
-      target: { file: owner.file, symbol: ownerSymbol, kind: entry.kind },
-      runtimeIdentity: 'strict',
-      declarationParity:
-        isChest && isCompatibilityRoute
-          ? 'exact-legacy-number-view'
-          : isChest
-            ? 'branded-owner/plain-number-compatibility'
-            : 'exact',
-    };
-  }
-  manifest.runtimeReconstructionInventory = {
-    exactDirectOwnerParity,
-    identityOnlyDeclarationReview,
-    explicitCompatibilityOwner,
-    specialSymbols: ['CHEST_MODE_DIMENSIONS'],
-  };
-  fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
-
-  const inventory = JSON.parse(fs.readFileSync(inventoryFile, 'utf8'));
-  inventory.version = 2;
-  inventory.capturedProductionHead = inventory.capturedProductionHead ?? inventory.capturedAtHead;
-  delete inventory.capturedAtHead;
-  inventory.policy =
-    'Canonical consumer-row inventory for production dimension symbols that currently traverse the facade through runtime and services. capturedProductionHead names the latest committed production snapshot and is deliberately not a self-reference to metadata-only commits. The public-surface manifest owns the complete routed and routed-but-unconsumed symbol inventory.';
-  fs.writeFileSync(inventoryFile, `${JSON.stringify(inventory, null, 2)}\n`);
-}
 
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
@@ -492,41 +353,38 @@ export function buildWardrobeDimensionPublicSurfaceSemanticSnapshot(root = defau
     emitDeclarations(root, emittedRoot);
     const graph = new DeclarationGraph(root, emittedRoot);
     const symbols = manifest.symbols.map(entry => {
-      const facade = surfaceRecord(graph, surfaceFiles.facade, entry);
-      const featureBarrel = surfaceRecord(graph, surfaceFiles.featureBarrel, entry);
-      const runtime = entry.runtimeApiRoute ? surfaceRecord(graph, surfaceFiles.runtime, entry) : null;
-      const servicesBase = entry.servicesApiRoute
-        ? surfaceRecord(graph, surfaceFiles.servicesBase, entry)
-        : null;
-      const servicesEntry = entry.servicesApiRoute
-        ? surfaceRecord(graph, surfaceFiles.servicesEntry, entry)
-        : null;
-      const canonicalOwner = entry.canonicalOwner.exports.flatMap(owner =>
-        owner.symbols.map(symbol => {
-          const resolved = graph.resolve(emittedRelForSource(owner.file), symbol, entry.kind);
-          return {
-            file: owner.file,
-            symbol,
-            declarationTypeFingerprint: resolved.fingerprint,
-          };
-        })
+      const runtime = surfaceRecord(graph, surfaceFiles.runtime, entry);
+      const servicesBase = surfaceRecord(graph, surfaceFiles.servicesBase, entry);
+      const servicesEntry = surfaceRecord(graph, surfaceFiles.servicesEntry, entry);
+      const owner = graph.resolve(
+        emittedRelForSource(entry.canonicalOwner.file),
+        entry.canonicalOwner.symbol,
+        entry.kind
       );
       return {
         name: entry.name,
         kind: entry.kind,
-        canonicalOwner,
-        facadeDeclarationForm: entry.facadeDeclaration.form,
-        runtimeIdentityMode: entry.facadeDeclaration.identity,
-        surfaces: { facade, featureBarrel, runtime, servicesBase, servicesEntry },
+        canonicalOwner: {
+          ...entry.canonicalOwner,
+          declarationTypeFingerprint: owner.fingerprint,
+        },
+        runtimeSource: {
+          file: entry.runtimeRoute.sourceFile,
+          symbol: entry.runtimeRoute.sourceSymbol,
+          declarationMode: entry.runtimeRoute.declarationMode,
+        },
+        runtimeIdentity: entry.runtimeIdentity,
+        declarationParity: entry.declarationParity,
+        surfaces: { runtime, servicesBase, servicesEntry },
       };
     });
     const typescriptPackage = JSON.parse(
       fs.readFileSync(path.join(root, 'node_modules/typescript/package.json'), 'utf8')
     );
     return {
-      version: 1,
+      version: 2,
       typescriptVersion: typescriptPackage.version,
-      capturedProductionHead: manifest.capturedProductionHead,
+      manifestVersion: manifest.version,
       surfaceTopology: manifest.surfaceTopology,
       symbolCount: symbols.length,
       symbols,
@@ -538,10 +396,6 @@ export function buildWardrobeDimensionPublicSurfaceSemanticSnapshot(root = defau
 
 function runCli() {
   const args = process.argv.slice(2);
-  if (args.includes('--upgrade-manifest')) {
-    upgradeManifestSchema(defaultRoot);
-    return;
-  }
   const writeIndex = args.indexOf('--write');
   const checkIndex = args.indexOf('--check');
   const snapshot = buildWardrobeDimensionPublicSurfaceSemanticSnapshot(defaultRoot);

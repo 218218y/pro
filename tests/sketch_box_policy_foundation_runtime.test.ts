@@ -48,9 +48,8 @@ import {
   SKETCH_BOX_FREE_WALL_SNAP_POLICY,
   SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
 } from '../esm/shared/dimensions/sketch_box_free_placement_policy.ts';
-import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
-const EXPECTED_SEMANTIC_HASH = '85e2d05a42ba6ec2ea9bba3ba6f63f6604558b8a0174d64b5df51632cc87354c';
+const EXPECTED_SEMANTIC_HASH = '111aedc412c2673f9267a8e03405a05779126ed832e0de678a632581cf853256';
 const EXPECTED_KEYS = Object.freeze({
   geometry: Object.freeze([
     'defaultWoodThicknessM',
@@ -307,39 +306,30 @@ const EXPECTED_KEYS = Object.freeze({
   ]),
 });
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+const FOCUSED_POLICY_SEQUENCE = Object.freeze([
+  Object.freeze(['geometry', SKETCH_BOX_GEOMETRY_POLICY] as const),
+  Object.freeze(['dividers', SKETCH_BOX_DIVIDER_POLICY] as const),
+  Object.freeze(['dimensionOverlay', SKETCH_BOX_DIMENSION_OVERLAY_POLICY] as const),
+  Object.freeze(['preview', SKETCH_BOX_PREVIEW_POLICY] as const),
+  Object.freeze(['freePlacement', SKETCH_BOX_FREE_PLACEMENT_POLICY] as const),
+]);
+
 function assertNumericLeaves(value: Record<string, unknown>): void {
   for (const [key, leaf] of Object.entries(value)) {
-    assert.equal(typeof leaf, 'number', `${key} must remain a numeric legacy dimension`);
+    assert.equal(typeof leaf, 'number', `${key} must remain a numeric focused-policy dimension`);
   }
 }
-test('Sketch Box compatibility projection preserves the pre-foundation semantic snapshot and key order', () => {
-  assert.deepEqual(Object.keys(SKETCH_BOX_DIMENSIONS), [
-    'geometry',
-    'dividers',
-    'dimensionOverlay',
-    'preview',
-    'freePlacement',
-  ]);
+test('focused Sketch Box policies preserve the semantic snapshot and key order', () => {
   let total = 0;
-  for (const section of Object.keys(EXPECTED_KEYS) as Array<keyof typeof EXPECTED_KEYS>) {
-    const branch = SKETCH_BOX_DIMENSIONS[section];
-    assert.deepEqual(Object.keys(branch), EXPECTED_KEYS[section]);
-    assertNumericLeaves(branch);
-    total += Object.keys(branch).length;
+  for (const [section, policy] of FOCUSED_POLICY_SEQUENCE) {
+    assert.deepEqual(Object.keys(policy), EXPECTED_KEYS[section]);
+    assertNumericLeaves(policy);
+    total += Object.keys(policy).length;
   }
   assert.equal(total, 243);
-  const serialized = JSON.stringify(SKETCH_BOX_DIMENSIONS);
+  const serialized = JSON.stringify(FOCUSED_POLICY_SEQUENCE);
   assert.equal(sha256(serialized), EXPECTED_SEMANTIC_HASH);
-  assert.deepEqual(JSON.parse(serialized), SKETCH_BOX_DIMENSIONS);
-});
-test('Sketch Box compatibility projection preserves freeze and aggregate identity', () => {
-  assert.ok(Object.isFrozen(SKETCH_BOX_DIMENSIONS));
-  assert.ok(Object.values(SKETCH_BOX_DIMENSIONS).every(Object.isFrozen));
-  assert.equal(SKETCH_BOX_DIMENSIONS.geometry, SKETCH_BOX_GEOMETRY_POLICY);
-  assert.equal(SKETCH_BOX_DIMENSIONS.dividers, SKETCH_BOX_DIVIDER_POLICY);
-  assert.equal(SKETCH_BOX_DIMENSIONS.dimensionOverlay, SKETCH_BOX_DIMENSION_OVERLAY_POLICY);
-  assert.equal(SKETCH_BOX_DIMENSIONS.preview, SKETCH_BOX_PREVIEW_POLICY);
-  assert.equal(SKETCH_BOX_DIMENSIONS.freePlacement, SKETCH_BOX_FREE_PLACEMENT_POLICY);
+  assert.deepEqual(JSON.parse(serialized), FOCUSED_POLICY_SEQUENCE);
 });
 test('all focused Sketch Box policies are frozen', () => {
   for (const policy of [

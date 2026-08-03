@@ -96,21 +96,6 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
       ];
     },
   }),
-  Object.freeze({
-    id: 'wardrobe-dimension-public-surface-decisions',
-    lifecycle: 'source-derived',
-    json: 'tools/wp_wardrobe_dimension_public_surface_decision_report.json',
-    markdown: 'docs/WARDROBE_DIMENSION_PUBLIC_SURFACE_DECISION_REPORT.md',
-    command({ json, markdown }) {
-      return [
-        'tools/wp_wardrobe_dimension_public_surface_decision_report.mjs',
-        '--json-out',
-        json,
-        '--md-out',
-        markdown,
-      ];
-    },
-  }),
 ]);
 
 function compareCodePoints(left, right) {

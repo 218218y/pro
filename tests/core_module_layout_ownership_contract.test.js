@@ -109,55 +109,6 @@ test('Wardrobe Module Layout owner contains only its exact three canonical value
   assert.deepEqual(analysis.forbiddenModuleSyntax, []);
 });
 
-test('legacy Wardrobe Layout facade directly projects the three owner fields in the existing key order', () => {
-  const facade = read(facadeRel);
-  const analysis = analyzeModuleDependencies(path.join(root, facadeRel), facade);
-  const ownerImports = analysis.imports.filter(dependency =>
-    dependency.specifier.endsWith('/wardrobe_layout_policy.js')
-  );
-  assert.deepEqual(
-    ownerImports.map(({ specifier, kind, syntax, importedSymbols }) => ({
-      specifier,
-      kind,
-      syntax,
-      importedSymbols,
-    })),
-    [
-      {
-        specifier: './dimensions/wardrobe_layout_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['WARDROBE_MODULE_LAYOUT_POLICY'],
-      },
-    ]
-  );
-
-  const projection = facade.slice(
-    facade.indexOf('export const WARDROBE_LAYOUT_DIMENSIONS'),
-    facade.indexOf('export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS')
-  );
-  assert.deepEqual(
-    Array.from(projection.matchAll(/^  ([A-Za-z_$][\w$]*):/gmu), match => match[1]),
-    [
-      'minSegmentWidthCm',
-      'boundaryFullThicknessMultiplier',
-      'boundarySharedThicknessMultiplier',
-      'autoWidthMatchToleranceCm',
-      'valueEqualityToleranceCm',
-      'cellDimsMatchToleranceCm',
-      'cellDimsPreview',
-    ]
-  );
-  for (const field of [
-    'minSegmentWidthCm',
-    'boundaryFullThicknessMultiplier',
-    'boundarySharedThicknessMultiplier',
-  ]) {
-    assert.match(projection, new RegExp(`${field}: WARDROBE_MODULE_LAYOUT_POLICY\\.${field}`, 'u'));
-    assert.doesNotMatch(projection, new RegExp(`${field}:\\s*-?(?:\\d|\\.\\d)`, 'u'));
-  }
-});
-
 test('Core Module Layout imports exactly three focused owners without aliases or aggregates', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
