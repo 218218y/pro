@@ -22,14 +22,12 @@ test('generated report catalog classifies source-derived reports separately from
       'test-groups',
       'test-portfolio',
       'dimension-migration-retirement-inventory',
-      'wardrobe-dimension-public-surface-decisions',
     ]
   );
   assert.deepEqual(
     GENERATED_REPORT_CATALOG.map(report => report.lifecycle),
     [
       'release-evidence',
-      'source-derived',
       'source-derived',
       'source-derived',
       'source-derived',
@@ -59,7 +57,6 @@ test('generated report default selection excludes release evidence while explici
       'test-groups',
       'test-portfolio',
       'dimension-migration-retirement-inventory',
-      'wardrobe-dimension-public-surface-decisions',
     ]
   );
   assert.deepEqual(

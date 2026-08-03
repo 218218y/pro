@@ -11435,7 +11435,7 @@
       "evidenceContracts": [
         {
           "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
-          "sha256": "2cc329f6bd6cdbdd3eee17bb38f336af0570df15424cbd3c6acd58bc0c949ff5"
+          "sha256": "908778206ccf9e4729dd1f4f8e520f15ebcd494b71a94964b9d7650d9f69adbd"
         },
         {
           "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",

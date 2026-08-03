@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 function readJson(file) {
@@ -41,7 +41,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
     'esm/native/services/render_surface_runtime_support.ts',
     'esm/native/services/render_surface_runtime_support_readers.ts',
     'esm/native/services/render_surface_runtime_support_shared.ts',
-    'esm/shared/wardrobe_dimension_tokens_shared.ts',
   ]) {
     assert.equal(
       audit.summary.byFile[file]?.total || 0,
@@ -49,6 +48,14 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
       `${file} should use current default/runtime naming without fallback or compat vocabulary`
     );
   }
+
+  const retiredDimensionFacade = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+  assert.equal(existsSync(retiredDimensionFacade), false, 'retired dimension facade must stay absent');
+  assert.equal(
+    Object.hasOwn(audit.summary.byFile, retiredDimensionFacade),
+    false,
+    'retired dimension facade must not re-enter the legacy fallback inventory'
+  );
 
   assert.equal(
     audit.summary.byFile['esm/native/ui/react/tabs/design_tab_color_action_result_reason.ts']?.total || 0,
@@ -151,7 +158,6 @@ test('stage 42 legacy fallback inventory closeout is anchored', () => {
       'esm/native/builder/core_carcass_cornice.ts',
       /buildLegacyCorniceEnvelope|LegacyCorniceEnvelopeParams|legacyEnvelope/,
     ],
-    ['esm/shared/wardrobe_dimension_tokens_shared.ts', /legacyEnvelope/],
     [
       'esm/native/services/scene_view_lighting_renderer.ts',
       /applyRendererCompatibility|ensureRendererCompatDefaults|restoreRendererCompatDefaults|applyNormalModeRendererCompat|rendererCompat/,

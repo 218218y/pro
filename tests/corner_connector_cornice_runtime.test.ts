@@ -7,10 +7,8 @@ import {
   positiveConnectorTopPlatformHeight,
   resolveCornerConnectorCorniceSideReturns,
 } from '../esm/native/builder/corner_connector_cornice_shared.ts';
-import {
-  CARCASS_BASE_DIMENSIONS,
-  CARCASS_CORNICE_DIMENSIONS,
-} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
 
 const THREE = createFakeThreeRuntime();
 
@@ -104,7 +102,7 @@ test('pentagon wave cornice adds exposed side return on the main-cabinet seam wh
 });
 
 test('pentagon cornice sits above the upper leg stage like the regular wardrobe', () => {
-  const platformH = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
+  const platformH = BASE_LEG_LAYOUT_POLICY.platform.heightM;
   for (const type of ['classic', 'wave'] as const) {
     const { ctx, locals, helpers, cornerGroup } = makeConnectorParams({ type });
     ctx.baseLegTopPlatformHeightM = platformH;
@@ -117,7 +115,7 @@ test('pentagon cornice sits above the upper leg stage like the regular wardrobe'
     assert.ok(front, `${type} pentagon cornice should emit a front piece`);
     assert.equal(
       Number((front as { position: { y: number } }).position.y.toFixed(6)),
-      Number((ctx.startY + ctx.wingH + platformH + CARCASS_CORNICE_DIMENSIONS.common.yLiftM).toFixed(6))
+      Number((ctx.startY + ctx.wingH + platformH + CARCASS_CORNICE_RENDER_POLICY.common.yLiftM).toFixed(6))
     );
   }
 });

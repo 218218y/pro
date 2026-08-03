@@ -334,10 +334,10 @@ function inspectApprovedRatchets(baseline) {
   const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
   const uiRule = baseline.rules.find(rule => rule.from === 'ui' && rule.to === 'features');
   if (
-    !(featureRule?.maxImporterCount >= 43) ||
-    !(featureRule?.maxValueImporterCount >= 43) ||
-    featureRule?.maxImportCount !== 50 ||
-    featureRule?.maxValueImportCount !== 49
+    featureRule?.maxImporterCount !== 42 ||
+    featureRule?.maxValueImporterCount !== 42 ||
+    featureRule?.maxImportCount !== 49 ||
+    featureRule?.maxValueImportCount !== 48
   ) {
     addViolation(violations, 'features-ratchet');
   }

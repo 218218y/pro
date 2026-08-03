@@ -17,7 +17,6 @@ export const KNOWN_SLOW_TEST_COSTS = Object.freeze({
   'tests/kernel_project_capture_dimension_ownership_contract.test.js': 86.375,
   'tests/interior_storage_dimension_ownership_closeout_contract.test.js': 74.303,
   'tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js': 71.693,
-  'tests/drawer_dimension_ownership_closeout_contract.test.js': 65.893,
   'tests/carcass_base_dimension_ownership_closeout_contract.test.js': 63.985,
   'tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js': 61.823,
   'tests/wave_d_corner_layout_reviewed_ownership_contract.test.js': 52.666,
