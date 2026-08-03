@@ -9,7 +9,7 @@
     },
     "semanticSnapshot": {
       "file": "tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json",
-      "sha256": "ff5d5e93a4041ada5e094611e020b268178f3422efaf949654b191b739589001"
+      "sha256": "9684f42d40223074dc1486948d49abfe982c075c297f48f32989df45ebeaa682"
     },
     "facade": {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -17,7 +17,7 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "0a097a8e171c715ac310284dbea1648e699fb15108907e5ce629863f86c71acb"
+      "sha256": "f91428a8a9e2945d30c1b364736757924c34d6c8270d55b4d274479532dc163a"
     }
   },
   "layerContractOwnership": {
@@ -1356,7 +1356,7 @@
           {
             "file": "esm/shared/dimensions/drawer_sketch_policy.ts",
             "symbol": "DRAWER_SKETCH_POLICY",
-            "fingerprint": "ce209be9d3a5face0f8d725cd22b8573202bc2280acaa7c1cc0a63b4470d0edf"
+            "fingerprint": "5bf019ae7baca202e223415e35449a939006c5309bffd39e4e373a1f8328750c"
           },
           {
             "file": "esm/shared/dimensions/external_drawer_policy.ts",

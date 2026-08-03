@@ -1170,7 +1170,7 @@
         {
           "file": "esm/shared/dimensions/drawer_sketch_policy.ts",
           "symbol": "DRAWER_SKETCH_POLICY",
-          "declarationTypeFingerprint": "ce209be9d3a5face0f8d725cd22b8573202bc2280acaa7c1cc0a63b4470d0edf"
+          "declarationTypeFingerprint": "5bf019ae7baca202e223415e35449a939006c5309bffd39e4e373a1f8328750c"
         },
         {
           "file": "esm/shared/dimensions/external_drawer_policy.ts",

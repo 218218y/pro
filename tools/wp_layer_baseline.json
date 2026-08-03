@@ -11369,11 +11369,11 @@
       "evidenceContracts": [
         {
           "path": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
-          "sha256": "22d8e448b94b7dc5b752217146bff76081494861255e0b93bb6d4562cfc20ae3"
+          "sha256": "f56129ec9abc05280f1e205bf1ee25cd1f8883b6bf117897c22b06b582e4f068"
         },
         {
           "path": "tests/interior_tab_local_state_runtime.test.js",
-          "sha256": "efe40c0f2fb48a92972cfdd5e97b8e7f4f19524acbc90012974039d8dd41b3b9"
+          "sha256": "a71d01df023a3e242cbb2302a4bed83bfc528690dda0ea1093e9fc0ba813d2ac"
         }
       ],
       "replacementProvenance": {

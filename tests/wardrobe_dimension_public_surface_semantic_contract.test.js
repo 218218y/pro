@@ -122,7 +122,7 @@ const compositionShapes = Object.freeze({
     keys: Object.freeze(['books', 'foldedClothes', 'hanger', 'hangingClothes', 'sketchBoxClassic']),
   }),
   DRAWER_DIMENSIONS: Object.freeze({
-    sha256: 'b2c81a0c02f6aca0170c8e48bea734ad47d212e83f235ea951204492170cbbf8',
+    sha256: '3771437a205ac7d6bf0b18e943de0b12ba841c1005756bc996498411dfb1baa5',
     keys: Object.freeze(['sketch', 'external', 'internal']),
   }),
   SKETCH_BOX_DIMENSIONS: Object.freeze({

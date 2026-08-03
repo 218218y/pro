@@ -1223,6 +1223,10 @@
       "entry": "hex_cell/index.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_external_drawer_count_policy.ts",
+      "entry": "sketch_drawer_sizing.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_flow.ts",
       "entry": "door_authoring/api.js"
     },
@@ -1475,10 +1479,6 @@
       "entry": "sketch_box_regular_external_drawers.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts",
-      "entry": "sketch_drawer_sizing.js"
-    },
-    {
       "file": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_state.ts",
       "entry": "sketch_box_regular_external_drawers.js"
     },
@@ -1545,10 +1545,6 @@
     {
       "file": "esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts",
       "entry": "sketch_internal_drawer_cassette.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_sketch_module_stack_commit_ext_drawers.ts",
-      "entry": "sketch_drawer_sizing.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_stack_commit_mutation.ts",
