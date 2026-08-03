@@ -182,7 +182,6 @@ const projectNamedSurfaceBundle = bundleSources(
     '../esm/native/io/project_io_orchestrator_load_file.ts',
     '../esm/native/io/project_io_orchestrator_project_load.ts',
     '../esm/native/io/project_io_orchestrator_restore.ts',
-    '../esm/native/io/project_payload_canonical.ts',
     '../esm/native/ui/project_action_execution.ts',
     '../esm/native/ui/project_action_family_shared.ts',
     '../esm/native/ui/project_action_feedback.ts',

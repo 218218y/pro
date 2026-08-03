@@ -311,21 +311,6 @@ requireNeedle(
   'reports recovery transition failures without rejecting'
 );
 requireNeedle(
-  'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
-  read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
-  'stage 24 polling recovery publishes active state only after timer installation succeeds'
-);
-requireNeedle(
-  'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
-  read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
-  'stage 26 lifecycle refresh and attention pulls report sync and async pull failures through one seam'
-);
-requireNeedle(
-  'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js',
-  read('tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'),
-  'stage 27 polling recovery hooks observe async rejections without losing fallback polling'
-);
-requireNeedle(
   'tests/cloud_sync_lifecycle_polling_tick_recovery_runtime.test.ts',
   pollingTickTest,
   'cloud sync polling tick reports restart and refresh failures without detaching later ticks'

@@ -141,7 +141,7 @@ function createCompleteFixture() {
   return { App, builderDeps, THREE, calls };
 }
 
-test('stage17 builder deps resolver resolves required deps and preserves owner bindings', async () => {
+test('builder deps resolver resolves required deps and preserves owner bindings', async () => {
   const { resolveBuilderDepsOrThrow } = await loadResolverForRuntimeTest();
   const fixture = createCompleteFixture();
 
@@ -178,7 +178,7 @@ test('stage17 builder deps resolver resolves required deps and preserves owner b
   assert.equal(fixture.calls[5][0], 'platform.pruneCachesSafe');
 });
 
-test('stage17 builder deps resolver fails at the resolver boundary for missing critical deps', async () => {
+test('builder deps resolver fails at the resolver boundary for missing critical deps', async () => {
   const { resolveBuilderDepsOrThrow } = await loadResolverForRuntimeTest();
   const complete = createCompleteFixture();
 
@@ -218,7 +218,7 @@ test('stage17 builder deps resolver fails at the resolver boundary for missing c
   }
 });
 
-test('stage17 builder deps resolver wraps render group failures with a clear owner message', async () => {
+test('builder deps resolver wraps render group failures with a clear owner message', async () => {
   const { resolveBuilderDepsOrThrow } = await loadResolverForRuntimeTest();
   const fixture = createCompleteFixture();
   fixture.builderDeps.render.ensureWardrobeGroup = function ensureWardrobeGroup() {

@@ -9,7 +9,7 @@ import {
 } from './project_load_action_result.js';
 import { loadProjectDataActionResultViaService } from './project_io_access.js';
 import { resolveProjectFileLoadInput } from './project_file_input_resolver.js';
-import { runPerfPhase } from './perf_runtime_core.js';
+import { runPerfPhase } from './perf_runtime_surface.js';
 
 function clearFileInputValue(target: { value?: string } | null): void {
   if (!target) return;

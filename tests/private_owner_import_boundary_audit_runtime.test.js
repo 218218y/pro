@@ -9,6 +9,11 @@ import {
   runPrivateOwnerImportBoundaryAudit,
 } from '../tools/wp_private_owner_import_boundary_audit.mjs';
 
+const EMPTY_TOPOLOGY = {
+  candidateCount: 0,
+  sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+};
+
 function tempProject() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-private-owner-imports-'));
 }
@@ -58,6 +63,7 @@ test('private owner import boundary audit allows facade and sibling owners but r
     path.join(projectRoot, 'esm/native/consumer/bad.ts'),
     "import { privateThing } from '../family/public_facade_private.js';\nexport const value = privateThing;\n"
   );
+  writeFile(path.join(projectRoot, 'tests/family_runtime.test.ts'), 'export {};\n');
 
   const result = runPrivateOwnerImportBoundaryAudit(projectRoot, {
     families: [
@@ -68,8 +74,12 @@ test('private owner import boundary audit allows facade and sibling owners but r
           'esm/native/family/public_facade_private.ts',
           'esm/native/family/public_facade_sibling.ts',
         ],
+        behaviorTests: ['tests/family_runtime.test.ts'],
+        justification: 'Test fixture public boundary.',
       },
     ],
+    justifiedOneLineFacades: [],
+    oneLineFacadeBaseline: EMPTY_TOPOLOGY,
   });
 
   assert.equal(result.ok, false);
@@ -89,4 +99,23 @@ test('private owner import boundary audit passes on the live registered owner fa
   assert.ok(result.families.some(family => family.id === 'services:drawer-cross-family'));
   assert.ok(result.privateOwners >= 30);
   assert.ok(result.importSites.length >= result.privateOwners);
+  assert.equal(result.oneLineFacadeTopologyMismatch.length, 0);
+  assert.ok(result.oneLineFacades.length > 0);
+});
+
+test('private facade topology rejects an unregistered identity-only wrapper', () => {
+  const projectRoot = tempProject();
+  writeFile(path.join(projectRoot, 'esm/native/owner.ts'), 'export const value = 1;\n');
+  writeFile(path.join(projectRoot, 'esm/native/orphan_facade.ts'), "export { value } from './owner.js';\n");
+
+  const result = runPrivateOwnerImportBoundaryAudit(projectRoot, {
+    families: [],
+    justifiedOneLineFacades: [],
+    oneLineFacadeBaseline: EMPTY_TOPOLOGY,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.oneLineFacadeTopology.candidateCount, 1);
+  assert.equal(result.oneLineFacadeTopologyMismatch.length, 1);
+  assert.match(result.oneLineFacadeTopologyMismatch[0], /identity-only facade topology changed/);
 });

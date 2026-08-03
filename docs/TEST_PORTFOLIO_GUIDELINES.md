@@ -62,19 +62,20 @@ Use concern-specific `test:*` scripts and verify lanes for targeted local valida
 
 ## Portfolio audit lane
 
-Stage 9 adds a portfolio-level audit:
+The portfolio-level audit is the canonical test control plane:
 
 ```bash
 npm run check:test-portfolio
 npm run report:test-portfolio
-npm run test:refactor-stage-guards
 ```
 
 The audit is not a snapshot test for every assertion. It protects the control plane around tests:
 
 - package scripts must not reference missing test files;
 - files with `legacy` in the name must state their purpose as migration, compatibility, cleanup, root, guard, audit, contract, or surface coverage;
-- refactor stage guard tests must be reachable through the canonical `tools/wp_test_group_catalog.mjs` group used by one short package facade;
+- architecture contracts must have one canonical owner in `tools/wp_contract_registry.mjs`;
+- numbered `refactor_stage*` proof files are rejected once their current invariant is covered by a capability-named contract;
+- overlap between stage/source/ownership guards is mapped so redundant proofs can be consolidated deliberately;
 - named test groups must not contain duplicate or missing files.
 - repository-wide Layer Contract collection must remain behind the one cached central fixture.
 
@@ -82,7 +83,7 @@ Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-tho
 
 Use `portfolioRole: primary` only for non-overlapping top-level portfolio ownership. Use `focused` for targeted suites that intentionally reuse files from broader lanes, and `architecture` for long-lived guard collections. Primary overlap is a control-plane error; focused overlap is explicit and allowed.
 
-Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; the focused `structure-tab-family-core`, `mirror-runtime`, `sketch-box-content-protocol`, all Order PDF runtime batches, Cloud Sync, and Sketch surface suites; plus the architecture-owned `refactor-stage-guards` collection. Package scripts and closeout lanes remain short facades and do not duplicate those file lists or serial policies. Direct closeout execution is reserved for build, performance, mixed-contract, or E2E work that is not a canonical test group.
+Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; plus focused runtime families such as Structure Tab, Mirror, Sketch Box, Order PDF, Cloud Sync, and Sketch surfaces. Package scripts remain short facades and do not duplicate those file lists or serial policies. Architecture ownership lives in the contract registry, not in a second test group that reruns tests already reached by `npm test`.
 
 The generated catalog can be inspected with:
 

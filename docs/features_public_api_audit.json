@@ -823,11 +823,11 @@
       "entry": "shoe_drawer_base_constraint.js"
     },
     {
-      "file": "esm/native/io/project_payload_canonical.ts",
+      "file": "esm/native/io/project_schema_current.ts",
       "entry": "project_config/api.js"
     },
     {
-      "file": "esm/native/io/project_schema_current.ts",
+      "file": "esm/native/io/project_schema_normalize.ts",
       "entry": "project_config/api.js"
     },
     {

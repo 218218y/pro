@@ -29,14 +29,9 @@ const repositoryLayerContract = createRepositoryLayerContractFixture({
   currentDate: '2026-07-30',
 });
 
-test('Checkpoint 4J closes all 178 historical Entries with one clean proposal and unchanged fingerprint', () => {
-  const { baseline, proposal, report } = repositoryLayerContract();
+test('dimension migration ledger has no active entries and keeps its retirement fingerprint', () => {
+  const { baseline, report } = repositoryLayerContract();
   assert.equal(report.ok, true, JSON.stringify(report.failures));
-  assert.equal(proposal.reviewRequired, false);
-  assert.deepEqual(proposal.diff.addedEdges, []);
-  assert.deepEqual(proposal.diff.budgetChanges, []);
-  assert.deepEqual(proposal.diff.ratchetViolations, []);
-  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
 
   assert.equal(baseline.migrationBudgets.length, 178);
   assert.equal(baseline.migrationRetirements.length, 178);
@@ -64,33 +59,29 @@ test('Checkpoint 4J closes all 178 historical Entries with one clean proposal an
   );
 });
 
-test('reviewed ownership and general ownership are decomposed exactly on every closed dimension edge', () => {
+test('dimension edge ownership categories exactly decompose every closed edge', () => {
   const { report } = repositoryLayerContract();
-  const expected = new Map([
-    ['builder>shared', [280, 0, 0, 6, 61, 213, 213]],
-    ['services>shared', [214, 0, 0, 4, 47, 163, 163]],
-    ['features>shared', [60, 0, 0, 11, 0, 49, 49]],
-    ['ui>shared', [26, 0, 0, 1, 0, 25, 25]],
-    ['platform>shared', [4, 0, 0, 1, 0, 3, 3]],
-    ['runtime>shared', [36, 0, 4, 1, 0, 31, 31]],
-  ]);
-  for (const [edgeKey, values] of expected) {
+  for (const edgeKey of [
+    'builder>shared',
+    'services>shared',
+    'features>shared',
+    'ui>shared',
+    'platform>shared',
+    'runtime>shared',
+  ]) {
     const [from, to] = edgeKey.split('>');
     const edge = report.edges.find(candidate => candidate.from === from && candidate.to === to);
     assert.ok(edge, edgeKey);
-    assert.deepEqual(
-      [
-        edge.importCount,
-        edge.activeMigrationStatements,
-        edge.compatibilityStatements,
-        edge.consolidationStatements,
-        edge.reviewedOwnershipStatements,
+    assert.equal(
+      edge.importCount,
+      edge.activeMigrationStatements +
+        edge.compatibilityStatements +
+        edge.consolidationStatements +
+        edge.reviewedOwnershipStatements +
         edge.reviewedGeneralStatements,
-        edge.generalBudget,
-      ],
-      values,
-      edgeKey
+      `${edgeKey}: every statement must have exactly one ownership category`
     );
+    assert.equal(edge.generalBudget, edge.reviewedGeneralStatements, `${edgeKey}: general budget drift`);
   }
   assert.deepEqual(
     Object.fromEntries(

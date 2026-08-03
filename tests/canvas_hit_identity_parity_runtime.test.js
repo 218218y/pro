@@ -7,8 +7,6 @@ import test from 'node:test';
 import { readSourceText } from '../tools/wp_source_text.mjs';
 import { transformTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
-import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
-
 async function loadHitIdentityOwner() {
   const doorPartHelperShim = `
 function __wp_isDoorLikePartId(partId) {
@@ -60,7 +58,7 @@ function __wp_isDrawerLikePartId(partId) {
   return import(`${pathToFileURL(file).href}?cacheBust=${Date.now()}-${Math.random()}`);
 }
 
-test('stage 18 keeps hover and click identities equivalent for child-surface door hits', async () => {
+test('hover and click identities stay equivalent for child-surface door hits', async () => {
   const {
     areCanvasPickingHitIdentitiesEquivalent,
     createCanvasPickingClickHitIdentity,
@@ -111,7 +109,7 @@ test('stage 18 keeps hover and click identities equivalent for child-surface doo
   assert.equal(areCanvasPickingHitIdentitiesEquivalent(hoverIdentity, clickIdentity), true);
 });
 
-test('stage 18 keeps mirror, split, and sketch identities canonical', async () => {
+test('mirror, split, and sketch identities stay canonical', async () => {
   const {
     createCanvasPickingClickHitIdentity,
     createCanvasPickingDoorHoverHitIdentity,
@@ -165,15 +163,4 @@ test('stage 18 keeps mirror, split, and sketch identities canonical', async () =
   assert.equal(sketchIdentity.doorId, 'sbdr_1');
   assert.equal(sketchIdentity.moduleIndex, 7);
   assert.equal(sketchIdentity.faceSide, 'outside');
-});
-
-test('stage 18 canvas parity contract is wired into guardrails', () => {
-  const pkg = JSON.parse(readSourceText('package.json'));
-  assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
-  assert.ok(
-    readTestGroupFiles('refactor-stage-guards')?.includes(
-      'tests/refactor_stage18_canvas_hit_parity_runtime.test.js'
-    ),
-    'tests/refactor_stage18_canvas_hit_parity_runtime.test.js must belong to the canonical stage guard group'
-  );
 });

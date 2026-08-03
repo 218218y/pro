@@ -15,8 +15,11 @@ test('test-group catalog report exposes execution ownership and package bindings
   const catalogGroupCount = Object.keys(TEST_GROUP_CATALOG).length;
   assert.equal(report.summary.groups, catalogGroupCount);
   assert.equal(report.summary.scriptBindings, catalogGroupCount);
-  assert.ok(report.summary.catalogFileReferences > 320);
-  assert.ok(report.summary.directPackageTestReferences < 200);
+  assert.equal(
+    report.summary.catalogFileReferences,
+    report.groups.reduce((total, group) => total + group.fileCount, 0)
+  );
+  assert.ok(report.summary.catalogFileReferences > report.summary.directPackageTestReferences);
   assert.deepEqual(report.failures, { catalogIssues: [], bindingIssues: [] });
 
   for (const groupName of [

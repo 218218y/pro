@@ -3,7 +3,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 
 import { Button, InlineNotice } from '../components/index.js';
 import { useApp, useUiFeedback } from '../hooks.js';
-import { exportSystemSettings, importSystemSettings } from '../actions/settings_backup_actions.js';
+import { exportSystemSettings, importSystemSettings } from '../../settings_backup.js';
 import { reportSettingsBackupActionResult } from '../../settings_backup_action_feedback.js';
 import type { SettingsBackupActionResult } from '../../settings_backup_contracts.js';
 

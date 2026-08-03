@@ -22,7 +22,7 @@ import { deepCloneProjectJson } from './project_schema_shared.js';
 import { cloneProjectJson as cloneProjectJsonSafe } from './project_payload_shared.js';
 import { createProjectIoLoadOps } from './project_io_orchestrator_load_ops.js';
 import { createProjectIoExportOps } from './project_io_orchestrator_export_ops.js';
-export { resolveProjectFileLoadInput } from './project_file_input_resolver.js';
+export { resolveProjectFileLoadInput } from '../runtime/project_file_input_resolver.js';
 
 export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
   const App = ctx.App;

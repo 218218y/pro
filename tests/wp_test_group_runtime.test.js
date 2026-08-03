@@ -29,14 +29,14 @@ function assertCanonicalTsxPlan(plan, group) {
   assert.deepEqual(plan.args.slice(0, testArgIndex + 1), ['--yes', 'tsx', '--test']);
 }
 
-test('test group catalog owns refactor-stage guard membership and metadata', () => {
-  const group = readTestGroup('refactor-stage-guards');
-  assert.equal(group.runner, 'node-test');
-  assert.equal(group.environment, 'node');
-  assert.equal(group.portfolioRole, 'architecture');
-  assert.equal(group.kind, 'architecture-guard');
-  assert.deepEqual(group.owners, ['architecture/control-plane']);
-  assert.ok(group.files.length > 50);
+test('test group catalog owns focused runtime membership and metadata', () => {
+  const group = readTestGroup('mirror-runtime');
+  assert.equal(group.runner, 'tsx-test');
+  assert.equal(group.environment, 'tsx');
+  assert.equal(group.portfolioRole, 'focused');
+  assert.equal(group.kind, 'runtime-integration');
+  assert.deepEqual(group.owners, ['platform/render-loop', 'runtime/planar-reflector']);
+  assert.ok(group.files.length >= 6);
   assert.equal(new Set(group.files).size, group.files.length);
   for (const file of group.files) assert.equal(fs.existsSync(file), true, `${file} should exist`);
 });
@@ -50,8 +50,8 @@ test('test group reads return defensive owner, file, and serial-policy copies', 
   assert.notEqual(first.files.length, second.files.length);
   assert.notEqual(first.owners.length, second.owners.length);
   assert.equal(second.serialPolicy.batchSize, 1);
-  const firstFiles = readTestGroupFiles('refactor-stage-guards');
-  const secondFiles = readTestGroupFiles('refactor-stage-guards');
+  const firstFiles = readTestGroupFiles('mirror-runtime');
+  const secondFiles = readTestGroupFiles('mirror-runtime');
   firstFiles.pop();
   assert.notEqual(firstFiles.length, secondFiles.length);
 });
@@ -99,17 +99,17 @@ test('test group catalog validates runners, primary ownership, and unique script
 });
 
 test('test group runner validates args and missing files before spawning', () => {
-  assert.deepEqual(parseTestGroupArgs(['refactor-stage-guards', '--print', '--dry-run']), {
-    groupName: 'refactor-stage-guards',
+  assert.deepEqual(parseTestGroupArgs(['mirror-runtime', '--print', '--dry-run']), {
+    groupName: 'mirror-runtime',
     list: false,
     print: true,
     dryRun: true,
   });
-  assert.throws(() => parseTestGroupArgs(['refactor-stage-guards', '--unknown']), /unknown test-group/);
+  assert.throws(() => parseTestGroupArgs(['mirror-runtime', '--unknown']), /unknown test-group/);
   assert.throws(() => resolveTestGroupPlan({ groupName: 'missing' }), /unknown test group/);
   const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-test-group-'));
   assert.throws(
-    () => resolveTestGroupPlan({ projectRoot, groupName: 'refactor-stage-guards' }),
+    () => resolveTestGroupPlan({ projectRoot, groupName: 'mirror-runtime' }),
     /references missing file/
   );
 });

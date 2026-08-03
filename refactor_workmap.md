@@ -6,16 +6,15 @@ This is the root workmap pointer for future work. Older long-form workmaps were 
 ## Canonical Planning Files
 
 - `docs/REFACTOR_NEXT_STAGE_PLAN.md` is the decision gate for any future refactor stage.
-- `docs/REFACTOR_WORKMAP_PROGRESS.md` is the compact progress marker guarded by integration tests.
 - `docs/QUALITY_GUARDRAILS.md` is the living engineering policy.
 - `docs/FACADE_AND_PUBLIC_API_POLICY.md` owns facade/public API decisions.
 
 ## Current Baseline
 
-- Stage 74, Stage 75, Stage 76, Stage 77, Stage 78, Stage 79, and Stage 80 are retained in the compact progress marker and stage catalog.
-- Stage 80 - Measurement and performance guard closeout retained: the refactor track is closed unless a real bug, measured performance regression, missing behavior coverage, or newly proven ownership seam justifies new work.
+- The numbered refactor track is closed. `tools/wp_contract_registry.mjs` records current architecture invariants; historical stage proof files are not part of the active control plane.
+- New work requires a real bug, measured performance regression, missing behavior coverage, or newly proven ownership seam.
 - Import cycles are a guardrail, not an active decomposition target: `check:import-cycles` currently covers `esm` and `types`.
-- Private facade/owner splits are guarded by `check:private-owner-imports`.
+- Private facade/owner splits and the one-line-facade topology ratchet are guarded by `check:private-owner-imports`.
 - Legacy/fallback inventory is camelCase/PascalCase-aware, category-locked, and now excludes the cleaned prefixed-map alias helper names and cornice envelope helper names, and renderer-lighting local helper names.
 - Project import behavior is guarded by `check:project-import-fixtures` with real JSON fixtures.
 - CSS cascade debt is ratcheted by `check:css-style` using `tools/wp_css_style_budget.json`.

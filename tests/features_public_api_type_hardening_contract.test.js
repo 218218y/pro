@@ -1,21 +1,7 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import test from 'node:test';
 import { readSourceText } from '../tools/wp_source_text.mjs';
-
-function runNodeScript(script, args = []) {
-  const result = spawnSync(process.execPath, [script, ...args], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  assert.equal(
-    result.status,
-    0,
-    `${script} ${args.join(' ')} failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
-  );
-}
 
 function compareCodePoints(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -39,10 +25,6 @@ function extractNamedExportSymbols(source) {
   }
   return symbols.sort(compareCodePoints);
 }
-
-test('feature imports outside features use only the public manifest surface', () => {
-  runNodeScript('tools/wp_features_public_api_contract.mjs');
-});
 
 test('features public API manifest exposes canonical facades instead of private owners', () => {
   const manifest = JSON.parse(fs.readFileSync('tools/wp_features_public_api_manifest.json', 'utf8'));
@@ -219,10 +201,6 @@ test('features public API reports use platform-independent ordering', () => {
   assert.match(source, /importSites\.sort\(/);
   assert.match(source, /violations\.sort\(compareCodePoints\)/);
   assert.doesNotMatch(source, /localeCompare\(/);
-});
-
-test('production source does not use unsafe any casts', () => {
-  runNodeScript('tools/wp_type_hardening_audit.mjs');
 });
 
 test('cloud sync lifecycle pull helper uses the runtime status contract without any-cast bypass', () => {

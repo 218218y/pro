@@ -24,7 +24,6 @@ const files = {
   hoverClickRuntimeTest: 'tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts',
   sketchHoverIntentRuntimeTest: 'tests/canvas_picking_manual_layout_sketch_hover_intent_runtime.test.ts',
   paintRuntimeTest: 'tests/canvas_picking_paint_flow_apply_runtime.test.ts',
-  stageRuntimeTest: 'tests/refactor_stage18_canvas_hit_parity_runtime.test.js',
 };
 
 const errors = [];
@@ -475,14 +474,6 @@ requireMatch(
   paintRuntimeTest,
   /sketch_box_free_alpha_door_sbdr_1/,
   'runtime test must cover sketch-box door special paint target preservation'
-);
-
-const stageRuntimeTest = read(files.stageRuntimeTest);
-requireMatch(
-  files.stageRuntimeTest,
-  stageRuntimeTest,
-  /stage 18 keeps mirror, split, and sketch identities canonical/,
-  'stage guard must pin mirror/split/sketch identity behavior'
 );
 
 if (errors.length) {

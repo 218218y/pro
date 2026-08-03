@@ -489,11 +489,11 @@
       "from": "io",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 14,
+      "maxImporterCount": 13,
       "maxImportCount": 32,
       "maxTypeImporterCount": 5,
       "maxTypeImportCount": 5,
-      "maxValueImporterCount": 12,
+      "maxValueImporterCount": 11,
       "maxValueImportCount": 30,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -629,12 +629,12 @@
       "from": "runtime",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 20,
-      "maxImportCount": 31,
+      "maxImporterCount": 19,
+      "maxImportCount": 30,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 20,
-      "maxValueImportCount": 30,
+      "maxValueImporterCount": 19,
+      "maxValueImportCount": 29,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Runtime primitives consume environment-neutral shared normalization and policy contracts."
@@ -11436,10 +11436,6 @@
         {
           "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
           "sha256": "3cad5b54864c58c05089d495ec9a1dc0bc712d328ea43599c5a281ef6e8f2d4a"
-        },
-        {
-          "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
-          "sha256": "7fe48915e42c34115cf64cca53233562df248a656adc746589bed18a0a984e7c"
         }
       ],
       "replacementProvenance": {

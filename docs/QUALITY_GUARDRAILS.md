@@ -39,19 +39,20 @@ Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for spl
 - External API changes must be deliberate: inventory current consumers, introduce the canonical API, migrate internal imports, keep a compatibility shim only when it has an owner and removal criteria, and then remove the old entry after guards prove it is unused.
 - Tiny facades should stay tiny. They may re-export, compose a stable factory/hook, or normalize a narrow public contract; they must not regain business logic, hidden state, timers, DOM access, storage access, or fallback chains.
 - Private owner modules should be imported only by their facade or by sibling owners inside the same implementation family. Cross-family consumers should use the public facade unless the policy explicitly marks a lower-level owner as public.
-- `check:private-owner-imports` is the cross-family guard for registered recent facade/owner splits. Add a family there when a split creates private owners that must not leak to unrelated consumers.
+- `tools/wp_contract_registry.mjs` is the canonical registry for architecture contracts and private-owner families. Add the owner, scope, package lane, behavior evidence, and facade justification there instead of creating a numbered stage proof.
+- `check:private-owner-imports` is the data-driven cross-family guard. It also ratchets identity-only private wrappers: a new one-line facade must have an explicit justification, while a deliberate deletion lowers the topology baseline.
 - Ownership guard tests are useful, but they are not enough by themselves. Every risky split should also keep behavior/runtime coverage for the public operation that the facade exposes.
-- Completed high-number stages must be registered in `tools/wp_refactor_stage_catalog.mjs` with explicit owner/guard/lane metadata instead of relying only on prose in workmap files.
+- Historical stage proofs must not be retained after the current invariant has a canonical owner. Capability-named behavior tests and registered architecture contracts are the durable control plane.
 
 Relevant checks:
 
 ```bash
 npm run check:import-cycles
+npm run check:contract-registry
 npm run check:private-owner-imports
 npm run check:docs-control-plane
 npm run verify:refactor-modernization
 npm run check:refactor-guardrails
-npm run test:refactor-stage-guards
 ```
 
 ## Control-plane reports, scripts, and site profiles
@@ -82,10 +83,9 @@ npm run check:site-profiles
 npm run check:test-portfolio
 ```
 
-## Measurement and refactor closeout
+## Measurement and modernization closeout
 
-- Stage 80 closes the current refactor track. Do not add Stage 81 unless a new, concrete ownership seam passes the professional split gate in `docs/REFACTOR_NEXT_STAGE_PLAN.md`.
-- Post-closeout guards are named by capability, never by continuing the stage number sequence.
+- The numbered refactor track is closed. New guards are named by capability and registered by current invariant, never by continuing the stage sequence.
 - Refactor completion is not proven by smaller files. It is proven by stable public seams, behavior tests, hotpath guards, and practical smoke baselines.
 - Keep `check:perf-hotpaths` as the fast source-level performance gate for render/scheduler hotpaths.
 - Use `perf:smoke` and `perf:browser` for measured runtime/browser baselines when dependencies and a browser environment are available; update baselines only after a deliberate product/performance decision.
@@ -96,7 +96,6 @@ Relevant checks:
 
 ```bash
 npm run check:perf-hotpaths
-npm run check:refactor-closeout
 npm run perf:smoke
 npm run perf:browser
 ```

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
 import { buildTestGroupCatalogReport } from './wp_test_group_catalog_report.mjs';
+import { runContractRegistryAudit } from './wp_contract_registry_audit.mjs';
 import {
   isCanonicalTestFile,
   isPlaywrightE2ETestFile,
@@ -27,6 +28,7 @@ const PACKAGE_TEST_REF_RE =
 const REPOSITORY_LAYER_GRAPH_CALL = 'collectLayerContractGraph(';
 const REPOSITORY_LAYER_GRAPH_OWNER = 'tests/helpers/repository_layer_contract_fixture.mjs';
 const HISTORICAL_MIGRATION_PREFIX_ACCESS = 'migrationBudgets.slice';
+const CONTRACT_SOURCE_REF_RE = /['"`]((?:\.\.\/)?esm\/[A-Za-z0-9_./-]+\.(?:ts|tsx|js))['"`]/gu;
 
 function walk(dir) {
   const entries = [];
@@ -75,6 +77,41 @@ function classify(rel) {
   return 'runtime-unit';
 }
 
+function contractKind(rel) {
+  const name = path.posix.basename(rel);
+  if (/^refactor_stage\d+_/u.test(name)) return 'stage-guard';
+  if (/ownership/u.test(name)) return 'ownership';
+  if (/source_(?:guard|contract)/u.test(name)) return 'source-guard';
+  return null;
+}
+
+export function collectContractOverlapTargets(projectRoot = ROOT, testFiles = null) {
+  const files = testFiles ?? listCanonicalTestFiles(projectRoot).map(normalize);
+  const targetOwners = new Map();
+  for (const file of files) {
+    const kind = contractKind(file);
+    if (!kind) continue;
+    const source = fs.readFileSync(path.join(projectRoot, file), 'utf8');
+    const targets = new Set(
+      [...source.matchAll(CONTRACT_SOURCE_REF_RE)].map(match =>
+        match[1].replace(/^\.\.\//u, '').replace(/\.js$/u, '.ts')
+      )
+    );
+    for (const target of targets) {
+      if (!targetOwners.has(target)) targetOwners.set(target, []);
+      targetOwners.get(target).push({ file, kind });
+    }
+  }
+  return [...targetOwners]
+    .map(([target, owners]) => ({
+      target,
+      kinds: [...new Set(owners.map(owner => owner.kind))].sort(),
+      owners: owners.sort((left, right) => left.file.localeCompare(right.file)),
+    }))
+    .filter(entry => entry.kinds.length > 1)
+    .sort((left, right) => left.target.localeCompare(right.target));
+}
+
 function collectPackageTestRefs() {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const refs = [];
@@ -121,6 +158,7 @@ export function collectHistoricalMigrationPrefixTests(projectRoot = ROOT, testFi
 
 export function buildReport() {
   const groupCatalogReport = buildTestGroupCatalogReport(ROOT);
+  const contractRegistryReport = runContractRegistryAudit(ROOT);
   const tests = listCanonicalTestFiles(ROOT).map(normalize);
   const nonTestRuntimeFiles = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
     .map(normalize)
@@ -162,9 +200,7 @@ export function buildReport() {
     }
     return duplicates;
   });
-  const unreferencedStageGuards = tests.filter(
-    file => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !testRefSet.has(file)
-  );
+  const historicalStageGuards = tests.filter(file => /tests\/refactor_stage\d+_.*\.test\.js$/u.test(file));
   const unitRunnerFileSet = new Set(unitRunnerFiles);
   const duplicateRunnerFiles = unitRunnerFiles.filter(
     (file, index) => unitRunnerFiles.indexOf(file) !== index
@@ -173,6 +209,7 @@ export function buildReport() {
   const helpersIncludedInUnitRunner = unitRunnerFiles.filter(file => nonTestRuntimeFiles.includes(file));
   const directRepositoryLayerScanTests = collectDirectRepositoryLayerScanTests(ROOT, tests);
   const historicalMigrationPrefixTests = collectHistoricalMigrationPrefixTests(ROOT, tests);
+  const contractOverlapTargets = collectContractOverlapTargets(ROOT, tests);
   return {
     generatedAt: new Date().toISOString(),
     totals: {
@@ -188,6 +225,9 @@ export function buildReport() {
       primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
       directRepositoryLayerScanTests: directRepositoryLayerScanTests.length,
       historicalMigrationPrefixTests: historicalMigrationPrefixTests.length,
+      canonicalContracts: contractRegistryReport.contracts,
+      historicalStageGuards: historicalStageGuards.length,
+      contractOverlapTargets: contractOverlapTargets.length,
     },
     categories,
     failures: {
@@ -196,7 +236,8 @@ export function buildReport() {
       invalidCatalogDefinitions: groupCatalogReport.failures.catalogIssues,
       staleCatalogScriptBindings: groupCatalogReport.failures.bindingIssues,
       legacyRuntimeNames,
-      unreferencedStageGuards,
+      contractRegistry: contractRegistryReport.failures,
+      historicalStageGuards,
       duplicateRunnerFiles,
       e2eIncludedInUnitRunner,
       helpersIncludedInUnitRunner,
@@ -204,6 +245,7 @@ export function buildReport() {
       historicalMigrationPrefixTests,
       missingFromUnitRunner: tests.filter(file => !e2eFiles.includes(file) && !unitRunnerFileSet.has(file)),
     },
+    contractOverlapTargets,
     records,
   };
 }
@@ -224,6 +266,9 @@ function renderMarkdown(report) {
     `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
     `- Tests directly invoking the repository layer graph: ${report.totals.directRepositoryLayerScanTests}`,
     `- Tests copying historical migration-ledger prefixes: ${report.totals.historicalMigrationPrefixTests}`,
+    `- Canonical contracts in registry: ${report.totals.canonicalContracts}`,
+    `- Historical refactor-stage guard files: ${report.totals.historicalStageGuards}`,
+    `- Cross-kind contract overlap targets: ${report.totals.contractOverlapTargets}`,
     ''
   );
   lines.push('| Category | Count |', '|---|---:|');
@@ -242,8 +287,9 @@ function renderMarkdown(report) {
   lines.push(
     `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`
   );
+  lines.push(`| Contract registry is valid and wired once | ${report.failures.contractRegistry.length} |`);
   lines.push(
-    `| Refactor stage guard tests have package/catalog ownership | ${report.failures.unreferencedStageGuards.length} |`
+    `| Historical refactor-stage proof files are retired | ${report.failures.historicalStageGuards.length} |`
   );
   lines.push(`| Unit runner has no duplicate files | ${report.failures.duplicateRunnerFiles.length} |`);
   lines.push(`| Unit runner excludes Playwright E2E | ${report.failures.e2eIncludedInUnitRunner.length} |`);
@@ -272,6 +318,15 @@ function renderMarkdown(report) {
       if (items.length > 100) lines.push(`- ... ${items.length - 100} more`);
       lines.push('');
     }
+  }
+  if (report.contractOverlapTargets.length) {
+    lines.push('## Cross-kind overlap map', '');
+    for (const entry of report.contractOverlapTargets) {
+      lines.push(
+        `- \`${entry.target}\` — ${entry.kinds.join(' / ')} — ${entry.owners.map(owner => `\`${owner.file}\``).join(', ')}`
+      );
+    }
+    lines.push('');
   }
   lines.push(
     '## Policy',

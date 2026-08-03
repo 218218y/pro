@@ -1,6 +1,6 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 
-import { canonicalizeProjectPayloadConfigSlicesInPlace } from './project_payload_canonical.js';
+import { canonicalizeProjectPayloadConfigSlicesInPlace } from '../features/project_config/api.js';
 import { normalizeCurrentProjectData } from './project_schema_current.js';
 import {
   cloneProjectJson,
