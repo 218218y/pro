@@ -344,8 +344,8 @@ function inspectApprovedRatchets(baseline) {
   if (
     !(uiRule?.maxImporterCount >= 47) ||
     !(uiRule?.maxValueImporterCount >= 37) ||
-    uiRule?.maxImportCount !== 78 ||
-    uiRule?.maxValueImportCount !== 65
+    uiRule?.maxImportCount !== 76 ||
+    uiRule?.maxValueImportCount !== 63
   ) {
     addViolation(violations, 'ui-ratchet');
   }

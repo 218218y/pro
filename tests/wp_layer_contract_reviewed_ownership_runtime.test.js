@@ -15,6 +15,7 @@ const RATCHET = Object.freeze({
   owner: 'architecture-contract',
   reason: 'Reviewed budgets only move down.',
   reviewedAt: '2026-07-30',
+  pendingReductionGraceDays: 14,
 });
 const evidence = () => [
   { path: TEST_FILE, sha256: createHash('sha256').update(fs.readFileSync(TEST_FILE)).digest('hex') },
