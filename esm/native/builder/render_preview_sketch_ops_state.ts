@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { EXTERNAL_DRAWER_PREVIEW_MESH_COUNT } from './render_preview_sketch_pipeline_box_content_drawers.js';
 import type { PreviewGroupLike, PreviewTHREESurface } from './render_preview_ops_contracts.js';
 import { hideSketchPlacementMeasurements } from './render_preview_sketch_measurements.js';
 import { createSketchPlacementPreviewMaterials } from './render_preview_sketch_ops_materials.js';
@@ -50,7 +51,9 @@ function hasAttachedSketchPreviewChildren(
     isAttached(slots.boxBottom) &&
     isAttached(slots.boxLeft) &&
     isAttached(slots.boxRight) &&
-    isAttached(slots.boxBack)
+    isAttached(slots.boxBack) &&
+    slots.externalDrawerMeshes.length === EXTERNAL_DRAWER_PREVIEW_MESH_COUNT &&
+    slots.externalDrawerMeshes.every(isAttached)
   );
 }
 
@@ -132,6 +135,14 @@ export function hideSketchPlacementPreviewOwner(
       for (const key of owner.shared.sketchMeshKeys) {
         const mesh = owner.shared.asPreviewMesh(userData[key]);
         if (!mesh) continue;
+        mesh.visible = false;
+        try {
+          owner.shared.setOutlineVisible(mesh, false);
+        } catch {
+          // ignore stale outline cleanup failures
+        }
+      }
+      for (const mesh of owner.shared.readPreviewObjectList(userData.__externalDrawerMeshes)) {
         mesh.visible = false;
         try {
           owner.shared.setOutlineVisible(mesh, false);

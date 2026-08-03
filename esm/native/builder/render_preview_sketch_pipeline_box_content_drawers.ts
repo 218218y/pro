@@ -11,6 +11,8 @@ import {
   readPreviewPositiveNumber,
 } from './render_preview_number_contracts.js';
 
+export const EXTERNAL_DRAWER_PREVIEW_MESH_COUNT: number = DRAWER_SKETCH_SIZING_POLICY.externalCountMax;
+
 function resolvePreviewBodyMaterials(ctx: SketchPlacementPreviewContext) {
   return {
     material: ctx.isRemove ? ctx.ud.__matRemove : ctx.ud.__matShelf || ctx.ud.__matBox,
@@ -101,7 +103,7 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
   if (ctx.kind !== 'ext_drawers') return false;
 
   const drawerList = ctx.readPreviewDrawerList(ctx.input.drawers);
-  const drawerMeshes = [ctx.boxTop, ctx.boxBottom, ctx.boxLeft, ctx.boxRight, ctx.boxBack];
+  const drawerMeshes = ctx.externalDrawerMeshes;
   const { material, lineMaterial } = resolvePreviewBodyMaterials(ctx);
   const drawerHeights = drawerList
     .map(entry => readPreviewPositiveNumber(ctx.asObject<PreviewDrawerEntry>(entry)?.h))

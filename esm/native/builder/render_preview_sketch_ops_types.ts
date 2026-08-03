@@ -48,6 +48,7 @@ export type SketchPlacementPreviewMeshSlots = {
   boxLeft: PreviewMeshLike | null;
   boxRight: PreviewMeshLike | null;
   boxBack: PreviewMeshLike | null;
+  externalDrawerMeshes: PreviewMeshLike[];
 };
 
 export type CreateSketchPlacementPreviewGroupArgs = {

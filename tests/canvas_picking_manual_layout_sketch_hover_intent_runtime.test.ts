@@ -258,9 +258,9 @@ test('manual-layout command decoder rejects missing, unknown, and extra fields f
       removeSlot: null,
       drawerH: 0.2,
       drawerGap: null,
-      stackH: 0.4,
+      stackH: 1.2,
       drawerHeightM: 0.2,
-      drawerCount: 2,
+      drawerCount: 6,
       blockedReason: null,
     },
   ];

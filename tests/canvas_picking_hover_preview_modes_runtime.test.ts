@@ -62,7 +62,7 @@ test('ext-drawers hover preview uses canonical preview wiring and toggles remove
     hideLayoutPreview(args: unknown) {
       hidden.push(args);
     },
-    readUi: () => ({ currentExtDrawerType: 'regular', currentExtDrawerCount: 3 }),
+    readUi: () => ({ currentExtDrawerType: 'regular', currentExtDrawerCount: 6 }),
     resolveInteriorHoverTarget: () => ({
       hitModuleKey: 0,
       hitSelectorObj: { id: 'selector-1' },
@@ -89,7 +89,7 @@ test('ext-drawers hover preview uses canonical preview wiring and toggles remove
       height: 2,
       depth: 0.55,
     }),
-    readInteriorModuleConfigRef: () => ({ extDrawersCount: 3, hasShoeDrawer: false }),
+    readInteriorModuleConfigRef: () => ({ extDrawersCount: 6, hasShoeDrawer: false }),
   });
 
   assert.equal(handled, true);
@@ -97,7 +97,7 @@ test('ext-drawers hover preview uses canonical preview wiring and toggles remove
   assert.equal(previews.length, 1);
   assert.equal(previews[0].kind, 'ext_drawers');
   assert.equal(previews[0].op, 'remove');
-  assert.equal(previews[0].drawers.length, 3);
+  assert.equal(previews[0].drawers.length, 6);
   assert.equal(previews[0].anchor.id, 'selector-1');
 });
 

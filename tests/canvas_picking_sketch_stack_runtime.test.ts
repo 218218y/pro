@@ -622,7 +622,7 @@ test('stack tool toggles focused box drawers through the box-content owner', () 
 test('stack tool toggles focused box ext drawers through the box-content owner', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {
-      boxes: [{ id: 'box-1', heightM: 1.2, extDrawers: [] }],
+      boxes: [{ id: 'box-1', heightM: 1.4, extDrawers: [] }],
     },
   };
   let nextHover: Record<string, unknown> | null = null;
@@ -630,7 +630,7 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
   const handled = tryCommitSketchModuleStackTool({
     App: {},
     cfg,
-    tool: 'sketch_ext_drawers:4',
+    tool: 'sketch_ext_drawers:6',
     hoverOk: true,
     hoverRec: withSketchBoxContentCommand(
       {},
@@ -644,9 +644,9 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
         boxYNorm: 0.4,
         boxBaseYNorm: 0.22,
         contentXNorm: 0.5,
-        drawerCount: 4,
-        drawerHeightM: 0.3,
-        drawerH: 0.3,
+        drawerCount: 6,
+        drawerHeightM: 0.2,
+        drawerH: 0.2,
         stackH: 1.2,
       }
     ),
@@ -655,7 +655,7 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
     totalHeight: 2.4,
     pad: 0.02,
     hitYClamped: 0.9,
-    hoverHost: { tool: 'sketch_ext_drawers:4@30', moduleKey: 2, isBottom: false },
+    hoverHost: { tool: 'sketch_ext_drawers:6@20', moduleKey: 2, isBottom: false },
     writeSketchHover: (_app, hover) => {
       nextHover = hover as Record<string, unknown> | null;
     },
@@ -665,15 +665,15 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
   const boxes = (cfg.sketchExtras as any).boxes;
   assert.equal(Array.isArray(boxes[0].extDrawers), true);
   assert.equal(boxes[0].extDrawers.length, 1);
-  assert.equal(boxes[0].extDrawers[0].count, 4);
-  assert.equal(boxes[0].extDrawers[0].drawerHeightM, 0.3);
+  assert.equal(boxes[0].extDrawers[0].count, 6);
+  assert.equal(boxes[0].extDrawers[0].drawerHeightM, 0.2);
   const next = requireSketchBoxCommandHover(nextHover);
   assert.equal(next.contentKind, 'ext_drawers');
   assert.equal(next.command.kind, 'sketch-external-drawers');
   assert.equal(next.command.boxId, 'box-1');
   assert.equal(next.command.op, 'remove');
-  assert.equal(next.command.drawerCount, 4);
-  assert.equal(next.command.drawerHeightM, 0.3);
+  assert.equal(next.command.drawerCount, 6);
+  assert.equal(next.command.drawerHeightM, 0.2);
 });
 
 test('stack tool remove hover for focused box ext drawers never falls back to add or collision toast', () => {
@@ -798,7 +798,7 @@ test('stack tool commits module ext drawers through the canonical stack owner wh
   const handled = tryCommitSketchModuleStackTool({
     App: {},
     cfg,
-    tool: 'sketch_ext_drawers:4@30',
+    tool: 'sketch_ext_drawers:6@20',
     hoverOk: false,
     hoverRec: {},
     bottomY: 0,
@@ -806,7 +806,7 @@ test('stack tool commits module ext drawers through the canonical stack owner wh
     totalHeight: 2.4,
     pad: 0.02,
     hitYClamped: 1.1,
-    hoverHost: { tool: 'sketch_ext_drawers:4@30', moduleKey: 2, isBottom: false },
+    hoverHost: { tool: 'sketch_ext_drawers:6@20', moduleKey: 2, isBottom: false },
     writeSketchHover: (_app, hover) => {
       nextHover = hover as Record<string, unknown> | null;
     },
@@ -815,12 +815,12 @@ test('stack tool commits module ext drawers through the canonical stack owner wh
   assert.equal(handled, true);
   assert.equal(Array.isArray((cfg.sketchExtras as any).extDrawers), true);
   assert.equal((cfg.sketchExtras as any).extDrawers.length, 1);
-  assert.equal((cfg.sketchExtras as any).extDrawers[0].count, 4);
-  assert.equal((cfg.sketchExtras as any).extDrawers[0].drawerHeightM, 0.3);
+  assert.equal((cfg.sketchExtras as any).extDrawers[0].count, 6);
+  assert.equal((cfg.sketchExtras as any).extDrawers[0].drawerHeightM, 0.2);
   assert.equal(nextHover?.kind, 'ext_drawers');
   assert.equal(nextHover?.op, 'remove');
-  assert.equal(nextHover?.drawerCount, 4);
-  assert.equal(nextHover?.drawerHeightM, 0.3);
+  assert.equal(nextHover?.drawerCount, 6);
+  assert.equal(nextHover?.drawerHeightM, 0.2);
 });
 
 test('stack tool rejects module sketch external drawers instead of shrinking exact custom heights', () => {

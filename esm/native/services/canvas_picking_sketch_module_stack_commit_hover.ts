@@ -2,6 +2,10 @@ import type {
   CommitSketchModuleExternalDrawerArgs,
   CommitSketchModuleInternalDrawerArgs,
 } from './canvas_picking_sketch_module_stack_commit_contracts.js';
+import {
+  SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
+  SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+} from './canvas_picking_external_drawer_count_policy.js';
 import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 
 export function resolveInternalDrawerHoverIntent(args: {
@@ -63,7 +67,10 @@ export function maybeOverrideExternalDrawerPlacement(args: {
 
   const hoverDrawerCount =
     stackHover.op === 'remove' && stackHover.drawerCount != null
-      ? Math.max(1, Math.min(5, Math.floor(stackHover.drawerCount)))
+      ? Math.max(
+          SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+          Math.min(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, Math.floor(stackHover.drawerCount))
+        )
       : args.requestedDrawerCount;
   const drawerH =
     stackHover.op === 'remove' && stackHover.drawerH != null && stackHover.drawerH > 0

@@ -4,6 +4,7 @@ import type {
   PreviewMeshLike,
   PreviewTHREESurface,
 } from './render_preview_ops_contracts.js';
+import { EXTERNAL_DRAWER_PREVIEW_MESH_COUNT } from './render_preview_sketch_pipeline_box_content_drawers.js';
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
 import type {
   SketchPlacementPreviewMaterialSet,
@@ -49,6 +50,7 @@ export function readSketchPlacementPreviewMeshSlots(
     boxLeft: shared.asPreviewMesh(userData.__boxLeft),
     boxRight: shared.asPreviewMesh(userData.__boxRight),
     boxBack: shared.asPreviewMesh(userData.__boxBack),
+    externalDrawerMeshes: shared.readPreviewObjectList(userData.__externalDrawerMeshes),
   };
 }
 
@@ -84,8 +86,11 @@ export function createSketchPlacementPreviewGroup(args: {
   const boxLeft = createMesh(materials.matBox, materials.lineBox);
   const boxRight = createMesh(materials.matBox, materials.lineBox);
   const boxBack = createMesh(materials.matBox, materials.lineBox);
+  const externalDrawerMeshes = Array.from({ length: EXTERNAL_DRAWER_PREVIEW_MESH_COUNT }, () =>
+    createMesh(materials.matBox, materials.lineBox)
+  );
 
-  group.add(shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack);
+  group.add(shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack, ...externalDrawerMeshes);
 
   userData.__shelfA = shelfA;
   userData.__boxTop = boxTop;
@@ -93,6 +98,7 @@ export function createSketchPlacementPreviewGroup(args: {
   userData.__boxLeft = boxLeft;
   userData.__boxRight = boxRight;
   userData.__boxBack = boxBack;
+  userData.__externalDrawerMeshes = externalDrawerMeshes;
   userData.__matShelf = materials.matShelf;
   userData.__matGlass = materials.matGlass;
   userData.__matBox = materials.matBox;

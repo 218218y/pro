@@ -1,4 +1,8 @@
 import type { UnknownRecord } from '../../../types';
+import {
+  SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
+  SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+} from './canvas_picking_external_drawer_count_policy.js';
 import { asRecord } from '../runtime/record.js';
 
 export const MANUAL_LAYOUT_COMMAND_VERSION = 1 as const;
@@ -328,7 +332,10 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
     blockedReason === undefined ||
     (record.kind === 'drawers' && (drawerCount !== null || drawerGap === null)) ||
     (record.kind === 'ext_drawers' &&
-      (drawerCount == null || drawerCount < 1 || drawerCount > 5 || drawerGap !== null))
+      (drawerCount == null ||
+        drawerCount < SKETCH_EXTERNAL_DRAWER_COUNT_MIN ||
+        drawerCount > SKETCH_EXTERNAL_DRAWER_COUNT_MAX ||
+        drawerGap !== null))
   )
     return null;
 

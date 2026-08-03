@@ -9,7 +9,7 @@ import {
   buildManualLayoutSketchInternalDrawerBlockers,
   resolveManualLayoutSketchExternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
-import { sketchStackFitsAvailableHeight } from '../features/sketch_drawer_sizing.js';
+import { sketchStackFitsAvailableHeight } from './canvas_picking_external_drawer_count_policy.js';
 import { buildSketchBoxVerticalContentBlockers } from './canvas_picking_sketch_box_vertical_content_blockers.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';

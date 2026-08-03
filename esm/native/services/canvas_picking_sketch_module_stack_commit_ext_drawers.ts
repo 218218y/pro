@@ -21,7 +21,7 @@ import {
   ensureRecord,
   ensureRecordList,
 } from './canvas_picking_sketch_module_stack_commit_shared.js';
-import { sketchStackFitsAvailableHeight } from '../features/sketch_drawer_sizing.js';
+import { sketchStackFitsAvailableHeight } from './canvas_picking_external_drawer_count_policy.js';
 
 export function commitSketchModuleExternalDrawers(
   args: CommitSketchModuleExternalDrawerArgs

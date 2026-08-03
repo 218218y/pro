@@ -100,6 +100,7 @@ export type SketchPlacementPreviewUserData = PreviewValueRecord & {
   __boxLeft?: PreviewMeshLike;
   __boxRight?: PreviewMeshLike;
   __boxBack?: PreviewMeshLike;
+  __externalDrawerMeshes?: PreviewMeshLike[];
   __matShelf?: PreviewMaterialLike;
   __matGlass?: PreviewMaterialLike;
   __matBox?: PreviewMaterialLike;

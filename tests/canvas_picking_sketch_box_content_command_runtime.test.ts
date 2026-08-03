@@ -131,6 +131,53 @@ test('sketch-box command decoder rejects partial, mismatched and non-finite comm
   );
 });
 
+test('sketch-box command decoder accepts six external drawers for sketch and regular families', () => {
+  const sketchCommand = {
+    kind: 'sketch-external-drawers',
+    boxId: 'box-1',
+    freePlacement: false,
+    blockedReason: null,
+    op: 'add',
+    removeId: null,
+    contentXNorm: 0.5,
+    boxYNorm: 0.6,
+    boxBaseYNorm: 0.2,
+    drawerCount: 6,
+    drawerHeightM: 0.2,
+    drawerH: 0.2,
+    stackH: 1.2,
+  } as const;
+  const regularCommand = {
+    kind: 'regular-external-drawers',
+    boxId: 'box-1',
+    freePlacement: false,
+    blockedReason: null,
+    op: 'add',
+    removeId: null,
+    contentXNorm: 0.5,
+    boxYNorm: 0.6,
+    boxBaseYNorm: 0.2,
+    drawerCount: 6,
+    hasShoeDrawer: false,
+    drawerHeightM: 0.2,
+  } as const;
+
+  assert.deepEqual(
+    decodeSketchBoxContentCommand({
+      record: { boxContentCommand: createSketchBoxContentCommandEnvelope(sketchCommand) },
+      expectedContentKind: 'ext_drawers',
+    }),
+    { ok: true, value: sketchCommand }
+  );
+  assert.deepEqual(
+    decodeSketchBoxContentCommand({
+      record: { boxContentCommand: createSketchBoxContentCommandEnvelope(regularCommand) },
+      expectedContentKind: 'regular_ext_drawers',
+    }),
+    { ok: true, value: regularCommand }
+  );
+});
+
 test('strict hover creation emits only the canonical command record shape', () => {
   const hover = createManualLayoutSketchBoxCommandHoverRecord({
     host: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false, ts: 123 },

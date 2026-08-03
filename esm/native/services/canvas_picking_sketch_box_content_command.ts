@@ -1,4 +1,8 @@
 import type { UnknownRecord } from '../../../types';
+import {
+  SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
+  SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+} from './canvas_picking_external_drawer_count_policy.js';
 import { asRecord } from '../runtime/record.js';
 
 export const SKETCH_BOX_CONTENT_COMMAND_VERSION = 1 as const;
@@ -308,7 +312,11 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
     if (!hasOnlyCommandFields(record, 'sketch-external-drawers')) return null;
     const geometry = readDrawerGeometry(record);
     const removeId = readNullableString(record.removeId);
-    const drawerCount = readIntegerInRange(record.drawerCount, 1, 5);
+    const drawerCount = readIntegerInRange(
+      record.drawerCount,
+      SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+      SKETCH_EXTERNAL_DRAWER_COUNT_MAX
+    );
     if (
       !geometry ||
       removeId === undefined ||
@@ -326,7 +334,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
     const contentXNorm = readUnit(record.contentXNorm);
     const boxYNorm = readUnit(record.boxYNorm);
     const boxBaseYNorm = readUnit(record.boxBaseYNorm);
-    const drawerCount = readIntegerInRange(record.drawerCount, 0, 5);
+    const drawerCount = readIntegerInRange(record.drawerCount, 0, SKETCH_EXTERNAL_DRAWER_COUNT_MAX);
     const hasShoeDrawer = readBoolean(record.hasShoeDrawer);
     const drawerHeightM = readPositive(record.drawerHeightM);
     if (

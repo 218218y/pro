@@ -24,6 +24,49 @@ function createRegularFreeBoxDrawerHit(boxId = 'free-1', drawerId = 'sbrd-1') {
   };
 }
 
+test('regular external drawer mode commits and removes six drawers on the first click', () => {
+  const cfg: Record<string, unknown> = { extDrawersCount: 0 };
+  const App = {
+    store: {
+      getState: () => ({
+        ui: { currentExtDrawerType: 'regular', currentExtDrawerCount: 6 },
+      }),
+      patch() {},
+    },
+    services: {},
+  } as never;
+  const patchConfigForKey = (_key: unknown, patchFn: (value: never) => void) => {
+    patchFn(cfg as never);
+    return null;
+  };
+
+  assert.equal(
+    tryHandleExternalDrawerModeClick({
+      App,
+      foundModuleIndex: 2,
+      activeModuleKey: 2,
+      isExtDrawerEditMode: true,
+      intersects: [],
+      patchConfigForKey,
+    }),
+    true
+  );
+  assert.equal(cfg.extDrawersCount, 6);
+
+  assert.equal(
+    tryHandleExternalDrawerModeClick({
+      App,
+      foundModuleIndex: 2,
+      activeModuleKey: 2,
+      isExtDrawerEditMode: true,
+      intersects: [],
+      patchConfigForKey,
+    }),
+    true
+  );
+  assert.equal(cfg.extDrawersCount, 0);
+});
+
 test('free-box regular external drawer mode direct hit removes regularExtDrawers instead of consuming the click', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

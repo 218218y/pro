@@ -57,6 +57,10 @@ function createHarness(
   const boxLeft = makeMesh('boxLeft');
   const boxRight = makeMesh('boxRight');
   const boxBack = makeMesh('boxBack');
+  const externalDrawerMeshes = Array.from(
+    { length: DRAWER_SKETCH_SIZING_POLICY.externalCountMax },
+    (_, index) => makeMesh(`externalDrawer${index}`)
+  );
   const placements: Placement[] = [];
   const overlayCalls: OverlayCall[] = [];
   const g = { visible: true };
@@ -98,6 +102,7 @@ function createHarness(
     boxLeft,
     boxRight,
     boxBack,
+    externalDrawerMeshes,
     readPreviewDrawerList(value: unknown) {
       return Array.isArray(value) ? value : [];
     },
@@ -138,7 +143,7 @@ function createHarness(
     ud,
     placements,
     overlayCalls,
-    meshes: { shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack },
+    meshes: { shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack, externalDrawerMeshes },
   };
 }
 
@@ -220,7 +225,7 @@ test('stacked drawers preserve validation, gap fallback, geometry, overlay clamp
   assert.equal(placementFor(fallback.placements, 'boxTop').lineMaterial, 'line-remove');
 });
 
-test('external drawers preserve default height, valid-height sum, five-mesh order, invalid-entry hiding, and overlay thickness', () => {
+test('external drawers use the policy-sized mesh pool, render six entries, hide invalid entries, and preserve overlay geometry', () => {
   const empty = createHarness('ext_drawers', { drawers: [] }, { d: 0.001 });
   assert.equal(applyStackedBoxContentSketchPlacementPreview(empty.ctx), true);
   assert.equal(empty.overlayCalls[0]?.h, DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewExternalDefaultHeightM);
@@ -229,13 +234,7 @@ test('external drawers preserve default height, valid-height sum, five-mesh orde
     empty.placements.map(entry => entry.mesh.name),
     ['shelfA']
   );
-  for (const mesh of [
-    empty.meshes.boxTop,
-    empty.meshes.boxBottom,
-    empty.meshes.boxLeft,
-    empty.meshes.boxRight,
-    empty.meshes.boxBack,
-  ]) {
+  for (const mesh of empty.meshes.externalDrawerMeshes) {
     assert.equal(mesh.visible, false);
   }
 
@@ -253,10 +252,10 @@ test('external drawers preserve default height, valid-height sum, five-mesh orde
   assert.equal(populated.overlayCalls[0]?.t, DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMaxM);
   assert.deepEqual(
     populated.placements.map(entry => entry.mesh.name),
-    ['shelfA', 'boxTop', 'boxBack']
+    ['shelfA', 'externalDrawer0', 'externalDrawer4']
   );
-  assert.deepEqual(placementFor(populated.placements, 'boxTop'), {
-    mesh: populated.meshes.boxTop,
+  assert.deepEqual(placementFor(populated.placements, 'externalDrawer0'), {
+    mesh: populated.meshes.externalDrawerMeshes[0],
     sx: 0.8,
     sy: 0.1,
     sz: 0.5,
@@ -266,11 +265,27 @@ test('external drawers preserve default height, valid-height sum, five-mesh orde
     material: 'mat-shelf',
     lineMaterial: 'line-shelf',
   });
-  assert.equal(populated.meshes.boxBottom.visible, false);
-  assert.equal(populated.meshes.boxLeft.visible, false);
-  assert.equal(populated.meshes.boxRight.visible, false);
-  assert.equal(populated.meshes.boxBack.visible, true);
+  assert.equal(populated.meshes.externalDrawerMeshes[1]?.visible, false);
+  assert.equal(populated.meshes.externalDrawerMeshes[2]?.visible, false);
+  assert.equal(populated.meshes.externalDrawerMeshes[3]?.visible, false);
+  assert.equal(populated.meshes.externalDrawerMeshes[4]?.visible, true);
+  assert.equal(populated.meshes.externalDrawerMeshes[5]?.visible, false);
   assert.equal(placementFor(populated.placements, 'shelfA').sz, 0.009);
+
+  const sixDrawers = Array.from({ length: DRAWER_SKETCH_SIZING_POLICY.externalCountMax }, (_, index) => ({
+    y: 0.2 + index * 0.18,
+    h: 0.16,
+  }));
+  const six = createHarness('ext_drawers', { drawers: sixDrawers });
+  assert.equal(applyStackedBoxContentSketchPlacementPreview(six.ctx), true);
+  assert.deepEqual(
+    six.placements.map(entry => entry.mesh.name),
+    ['shelfA', ...six.meshes.externalDrawerMeshes.map(mesh => mesh.name)]
+  );
+  assert.equal(
+    six.meshes.externalDrawerMeshes.every(mesh => mesh.visible),
+    true
+  );
 });
 
 test('drawer divider preserves axes, clamps, material precedence, depth extra, and resilient motion cache lifecycle', () => {

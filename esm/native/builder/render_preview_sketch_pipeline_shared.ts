@@ -23,6 +23,7 @@ export type SketchPlacementPreviewMeshes = {
   boxLeft: PreviewMeshLike | null;
   boxRight: PreviewMeshLike | null;
   boxBack: PreviewMeshLike | null;
+  externalDrawerMeshes: PreviewMeshLike[];
   helperMeshes: Array<PreviewMeshLike | null>;
 };
 
@@ -65,7 +66,8 @@ type PreviewPlacementArgs = {
 
 export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPreviewArgs) {
   const { App, input, THREE, g, ud, meshes, shared, wardrobeGroup, asObject } = args;
-  const { shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack, helperMeshes } = meshes;
+  const { shelfA, boxTop, boxBottom, boxLeft, boxRight, boxBack, externalDrawerMeshes, helperMeshes } =
+    meshes;
   const {
     asPreviewGroup,
     readOutline,
@@ -120,6 +122,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     setVisible(boxLeft, false);
     setVisible(boxRight, false);
     setVisible(boxBack, false);
+    for (const mesh of externalDrawerMeshes) setVisible(mesh, false);
   };
 
   const readFrontOverlay = (
@@ -204,6 +207,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     boxLeft,
     boxRight,
     boxBack,
+    externalDrawerMeshes,
     helperMeshes,
     asPreviewGroup,
     readOutline,

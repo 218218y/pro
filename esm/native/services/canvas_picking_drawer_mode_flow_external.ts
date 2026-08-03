@@ -1,4 +1,8 @@
 import type { AppContainer, ModuleConfigLike } from '../../../types';
+import {
+  SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
+  SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+} from './canvas_picking_external_drawer_count_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
@@ -221,7 +225,12 @@ export function tryHandleExternalDrawerModeClick(args: {
         removedShoeDrawer = !targetHasShoe;
       } else {
         const currentCount = cfg.extDrawersCount || 0;
-        const target = drawerCount >= 1 && drawerCount <= 5 ? drawerCount : 1;
+        const normalizedDrawerCount = Number.isFinite(drawerCount) ? Math.floor(drawerCount) : NaN;
+        const target =
+          normalizedDrawerCount >= SKETCH_EXTERNAL_DRAWER_COUNT_MIN &&
+          normalizedDrawerCount <= SKETCH_EXTERNAL_DRAWER_COUNT_MAX
+            ? normalizedDrawerCount
+            : SKETCH_EXTERNAL_DRAWER_COUNT_MIN;
         const nextCount = currentCount === target ? 0 : target;
         if (
           nextCount > 0 &&
