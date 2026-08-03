@@ -1,7 +1,7 @@
 {
   "version": 1,
   "profileName": "default",
-  "generatedAt": "2026-07-08T08:23:53.760Z",
+  "generatedAt": "2026-08-03T11:17:02.716Z",
   "nodeVersion": "v24.18.0",
   "laneNames": ["perf-toolchain-core", "ui-react-jsx-hardening-core"],
   "policy": {
@@ -14,35 +14,35 @@
   "scripts": [
     {
       "name": "test:perf-toolchain-core",
-      "baselineMs": 575,
-      "maxMs": 1527
+      "baselineMs": 221,
+      "maxMs": 1049
     },
     {
       "name": "test:ui-react-import-hardening-contracts",
-      "baselineMs": 475,
-      "maxMs": 1392
+      "baselineMs": 143,
+      "maxMs": 1000
     },
     {
       "name": "test:ui-react-jsx-hardening-contracts",
-      "baselineMs": 496,
-      "maxMs": 1420
+      "baselineMs": 125,
+      "maxMs": 1000
     },
     {
       "name": "test:ui-type-hardening-contracts",
-      "baselineMs": 566,
-      "maxMs": 1515
+      "baselineMs": 114,
+      "maxMs": 1000
     },
     {
       "name": "contract:layers",
-      "baselineMs": 1568,
-      "maxMs": 2867
+      "baselineMs": 4713,
+      "maxMs": 7113
     },
     {
       "name": "contract:api",
-      "baselineMs": 1388,
-      "maxMs": 2624
+      "baselineMs": 967,
+      "maxMs": 2056
     }
   ],
-  "totalBaselineMs": 5068,
-  "totalMaxMs": 7582
+  "totalBaselineMs": 6283,
+  "totalMaxMs": 9040
 }
