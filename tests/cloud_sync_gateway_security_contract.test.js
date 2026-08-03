@@ -201,7 +201,8 @@ test('migration history repair is explicit, scoped, and never re-executes produc
   assert.match(repair, /'--status',\s*'applied'/u);
   assert.match(repair, /'db',\s*'push',\s*'--linked',\s*'--dry-run'/u);
   assert.match(repair, /supabase\/\.temp\/project-ref/u);
-  assert.match(repair, /supabase\/\.temp\/linked-project\.json/u);
+  assert.match(repair, /project metadata only/u);
+  assert.doesNotMatch(repair, /ConvertFrom-Json/u);
   assert.match(repair, /\[regex\]::Matches/u);
   assert.match(repair, /\$versionOccurrences\.Count -ge 2/u);
   assert.doesNotMatch(repair, /[^\x00-\x7f]/u);

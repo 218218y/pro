@@ -76,6 +76,10 @@ npx --yes supabase@latest login
 npx --yes supabase@latest link --project-ref paqzrxrvowwndevqptdk
 ```
 
+The link command must create `supabase/.temp/project-ref`. A
+`supabase/.temp/linked-project.json` metadata file by itself is not a valid CLI link and
+is intentionally ignored by the repair script.
+
 Run the non-mutating check first:
 
 ```powershell

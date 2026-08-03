@@ -10,7 +10,6 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $linkedProjectRefPath = Join-Path $repoRoot 'supabase/.temp/project-ref'
-$linkedProjectMetadataPath = Join-Path $repoRoot 'supabase/.temp/linked-project.json'
 $expectedMigrations = @(
   [pscustomobject]@{
     Version = '20260713110031'
@@ -68,28 +67,24 @@ foreach ($migration in $expectedMigrations) {
   }
 }
 
-$linkedProjectRefs = @()
-if (Test-Path -LiteralPath $linkedProjectRefPath -PathType Leaf) {
-  $linkedProjectRefs += (Get-Content -LiteralPath $linkedProjectRefPath -Raw).Trim()
-}
-if (Test-Path -LiteralPath $linkedProjectMetadataPath -PathType Leaf) {
-  $linkedProjectMetadata = Get-Content -LiteralPath $linkedProjectMetadataPath -Raw | ConvertFrom-Json
-  $linkedProjectRefs += [string]$linkedProjectMetadata.ref
-}
-$linkedProjectRefs = @($linkedProjectRefs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
-
-if ($linkedProjectRefs.Count -eq 0) {
+if (-not (Test-Path -LiteralPath $linkedProjectRefPath -PathType Leaf)) {
   throw @"
-Supabase is not linked from this repository. Run:
+Supabase CLI is not linked from this repository. Run:
   npx --yes supabase@latest login
   npx --yes supabase@latest link --project-ref $ProjectRef
 Then rerun this script.
+
+Note: supabase/.temp/linked-project.json is project metadata only. The CLI requires
+supabase/.temp/project-ref, which is created by the supabase link command.
 "@
 }
 
-$unexpectedProjectRefs = @($linkedProjectRefs | Where-Object { $_ -ne $ProjectRef })
-if ($unexpectedProjectRefs.Count -gt 0) {
-  throw "Linked Supabase project '$($unexpectedProjectRefs -join ', ')' does not match required project '$ProjectRef'."
+$linkedProjectRef = (Get-Content -LiteralPath $linkedProjectRefPath -Raw).Trim()
+if ([string]::IsNullOrWhiteSpace($linkedProjectRef)) {
+  throw "Supabase CLI link file is empty: $linkedProjectRefPath"
+}
+if ($linkedProjectRef -ne $ProjectRef) {
+  throw "Linked Supabase project '$linkedProjectRef' does not match required project '$ProjectRef'."
 }
 
 function Invoke-SupabaseCli {
