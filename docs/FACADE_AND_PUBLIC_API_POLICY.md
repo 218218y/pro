@@ -40,7 +40,7 @@ The first was a 99-symbol compatibility facade with no production consumer after
 
 The retirement is deliberate and breaking only for unsupported source-path imports. It does not change Runtime or Services behavior, numeric values, runtime identity, or declarations for their 53 supported routes. The machine policy records the other 46 facade-only routes as unsupported; canonical focused-owner exports that happen to share a name remain internal. The 15 aggregates and aliases that were owned only by the facade are forbidden globally and were not recreated because they had no consumer.
 
-The retired paths must remain absent. Static imports, re-exports, namespace imports, dynamic imports, alias imports, extensionless paths, query/hash variants, and directory-index routes are all forbidden. A replacement facade or aggregate under a new name is equally forbidden.
+The retired paths must remain absent. Static imports, re-exports, namespace imports, dynamic imports, alias imports, extensionless paths, query/hash variants, and directory-index routes are all forbidden. Outside the focused-owner directory, direct dimension-owner re-exports are allowed only as exact entries of the supported Runtime manifest: wildcard barrels, aliases, unlisted routes, and parallel re-export surfaces are rejected. The 15 facade-owned aggregate identities must not be reconstructed. Narrow owner-specific compositions remain valid internal implementation seams; the policy does not attempt to reject them by heuristic shape.
 
 ## Facade standard
 

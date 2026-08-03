@@ -4,7 +4,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies, collectNamedModuleExports } from './wp_layer_contract_support.mjs';
-import { retiredSurfaceForSpecifier } from './wp_public_surface_policy_support.mjs';
+import {
+  dimensionOwnerPublicBridgeViolations,
+  retiredSurfaceForSpecifier,
+} from './wp_public_surface_policy_support.mjs';
 
 const root = process.cwd();
 const importPattern = /(?:import|export)\s+(?:[^;'\"]*?\s+from\s+)?['\"]([^'\"]*\/features\/[^'\"]+)['\"]/gs;
@@ -153,6 +156,10 @@ function checkDocsAreCurrent(result) {
 export function runFeaturesPublicApiContract(projectRoot = root) {
   const manifest = readJson(path.join(projectRoot, 'tools/wp_features_public_api_manifest.json'));
   const publicSurfacePolicy = readJson(path.join(projectRoot, 'tools/wp_public_surface_policy.json'));
+  const runtimeSurface = (publicSurfacePolicy.supportedSurfaces ?? []).find(
+    surface => surface.scope === 'runtime'
+  );
+  const dimensionManifest = readJson(path.join(projectRoot, runtimeSurface.contract));
   const publicEntries = Array.isArray(manifest.publicEntries) ? manifest.publicEntries : [];
   const allowed = new Set(publicEntries);
   const importSites = [];
@@ -205,6 +212,9 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
         );
       }
     }
+    retiredSurfaceViolations.push(
+      ...dimensionOwnerPublicBridgeViolations(fileRel, dependencies, publicSurfacePolicy, dimensionManifest)
+    );
 
     for (const exported of collectNamedModuleExports(fileRel, source)) {
       const key = `${exported.kind}:${exported.exportedName}`;

@@ -400,3 +400,62 @@ test('Entries 173-174 are exact, preserve Prefix 172, and accept append-safe Ent
   };
   assert.deepEqual(inspectLedger([...baseline.migrationBudgets, futureEntry175]), []);
 });
+
+test('Order PDF mutation probes keep the focused route, topology, behavior, and ratchet enforceable', () => {
+  const featureSource = read(featureRel);
+  assert.equal(
+    inspectFeature(
+      featureSource.replace(compositionSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')
+    ).some(violation => violation.kind === 'facade-route'),
+    true
+  );
+  assert.equal(
+    inspectFeature(
+      featureSource.replace('  DEFAULT_HEIGHT,', '  DEFAULT_HEIGHT as ORDER_DEFAULT_HEIGHT,')
+    ).some(violation => violation.kind === 'owner-alias'),
+    true
+  );
+  assert.equal(
+    inspectFeature(
+      featureSource.replace(
+        'export { DEFAULT_HEIGHT, DEFAULT_WIDTH, getDefaultDepthForWardrobeType, getDefaultDoorsForWardrobeType };',
+        'export const ORDER_DEFAULT_HEIGHT = DEFAULT_HEIGHT;'
+      )
+    ).some(violation => violation.kind === 'feature-wrapper-copy-or-logic'),
+    true
+  );
+
+  const extraConsumerEntries = productionEntries();
+  extraConsumerEntries.push([
+    'esm/native/services/order_pdf_dimension_probe.ts',
+    `import { DEFAULT_WIDTH } from '../features/order_pdf_dimension_support.js';`,
+  ]);
+  assert.equal(
+    inspectTopology(extraConsumerEntries).some(violation => violation.kind === 'feature-consumer-inventory'),
+    true
+  );
+
+  const servicesBypass = read(consumerRel).replace(
+    '../../features/order_pdf_dimension_support.js',
+    '../../services/api.js'
+  );
+  assert.equal(
+    inspectTopology(productionEntries({ [consumerRel]: servicesBypass })).some(
+      violation => violation.kind === 'consumer-services-dimension-route'
+    ),
+    true
+  );
+
+  const behaviorDrift = read(consumerRel).replace(
+    `return typeof v === 'string' ? v : defaultValue;`,
+    'return defaultValue;'
+  );
+  assert.notDeepEqual(consumerFingerprint(behaviorDrift), consumerFingerprint());
+
+  const ratchetDrift = JSON.parse(read(baselineRel));
+  ratchetDrift.rules.find(rule => rule.from === 'features' && rule.to === 'shared').maxImportCount += 1;
+  assert.equal(
+    inspectApprovedRatchets(ratchetDrift).some(violation => violation.kind === 'features-ratchet'),
+    true
+  );
+});

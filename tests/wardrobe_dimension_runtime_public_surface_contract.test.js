@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,7 @@ const manifestRel = 'tools/wp_wardrobe_dimension_public_surface_manifest.json';
 const snapshotRel = 'tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json';
 const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestRel), 'utf8'));
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, snapshotRel), 'utf8'));
+const supportedInventoryFingerprint = '9b9995d3844abf68253245fe094f830bd559c000ca26f07482af47243a22556c';
 
 function read(rel) {
   return fs.readFileSync(path.join(root, rel), 'utf8');
@@ -22,6 +24,29 @@ function sourceTarget(fromRel, specifier) {
   return path.posix
     .normalize(path.posix.join(path.posix.dirname(fromRel), specifier.split(/[?#]/u, 1)[0]))
     .replace(/\.js$/u, '.ts');
+}
+
+function inventoryKeys(entries) {
+  return entries.map(entry => `${entry.kind}:${entry.name}`).sort();
+}
+
+function inventoryFingerprint(entries) {
+  return createHash('sha256').update(inventoryKeys(entries).join('\n')).digest('hex');
+}
+
+function actualRuntimeDimensionRoutes() {
+  return analyzeModuleDependencies(
+    manifest.surfaceTopology.runtime.file,
+    read(manifest.surfaceTopology.runtime.file)
+  ).imports.flatMap(dependency => {
+    const target = sourceTarget(manifest.surfaceTopology.runtime.file, dependency.specifier);
+    if (!target.startsWith('esm/shared/dimensions/')) return [];
+    if (!['static-re-export', 'type-re-export'].includes(dependency.syntax)) return [];
+    return dependency.bindings.map(binding => ({
+      kind: dependency.kind,
+      name: binding.exportedName,
+    }));
+  });
 }
 
 function exportedRoute(rel, name, kind) {
@@ -45,6 +70,7 @@ function validateManifest(candidate) {
   assert.deepEqual([candidate.symbolCount, candidate.valueCount, candidate.typeCount], [53, 52, 1]);
   assert.equal(candidate.symbols.length, 53);
   assert.equal(new Set(candidate.symbols.map(entry => `${entry.kind}:${entry.name}`)).size, 53);
+  assert.equal(inventoryFingerprint(candidate.symbols), supportedInventoryFingerprint);
   assert.deepEqual(Object.keys(candidate.surfaceTopology), ['runtime', 'servicesBase', 'servicesEntry']);
   assert.deepEqual(
     Object.values(candidate.surfaceTopology).map(surface => [surface.values, surface.types]),
@@ -77,6 +103,7 @@ function validateManifest(candidate) {
 
 test('the supported dimension manifest contains exactly 53 Runtime and Services routes', () => {
   validateManifest(manifest);
+  assert.deepEqual(inventoryKeys(actualRuntimeDimensionRoutes()), inventoryKeys(manifest.symbols));
 
   for (const entry of manifest.symbols) {
     const runtime = exportedRoute(manifest.surfaceTopology.runtime.file, entry.name, entry.kind);
@@ -175,4 +202,9 @@ test('manifest mutations cannot broaden, duplicate, or reroute the supported sur
   const removedSymbol = structuredClone(manifest);
   removedSymbol.symbols.pop();
   assert.throws(() => validateManifest(removedSymbol));
+
+  const substitutedSymbol = structuredClone(manifest);
+  substitutedSymbol.symbols[0].name = 'FAKE_UNUSED_ROUTE';
+  substitutedSymbol.symbols[0].runtimeRoute.sourceSymbol = 'FAKE_UNUSED_ROUTE';
+  assert.throws(() => validateManifest(substitutedSymbol));
 });
