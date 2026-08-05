@@ -9,6 +9,8 @@ The numbered refactor track is closed. This file is the current decision gate fo
 - The same audit owns identity-only private-wrapper topology. Deliberate facades need an explicit registry justification; reviewed single-consumer wrappers live in `tools/wp_identity_facade_inventory.json` with their exact importer, and dead wrappers are removed rather than preserved as compatibility archaeology.
 - `tools/wp_test_portfolio_audit.mjs` owns test reachability, group integrity, historical-stage rejection, overlap mapping, and the rule that large direct package test lists must move into the canonical group catalog.
 - Capability-named runtime and ownership tests preserve current behavior. Historical `refactor_stage*` proof files are not an accepted substitute. Phase 5 control-plane cleanup is complete: historical proof files are absent, dead identity wrappers are absent, current wrapper topology is explicit, and large named test lanes are catalog-backed.
+- Performance observability is on browser schema 20: interaction wait is separated from code execution, CLS/LCP/Long Tasks/render-settle are measured, and INP is estimated from Event Timing interactions with a first-input fallback.
+- Error-observability modernization is active and capability-based. The canonical Oxc-based silent-catch policy distinguishes 762 statement-free catches from the 99 truly bare catches and owns exact current-state layer ratchets for both; history operations and boot command finalizers now report nonfatal owner failures while preserving fail-soft behavior.
 
 ## Professional change gate
 

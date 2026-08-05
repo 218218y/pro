@@ -152,6 +152,7 @@ export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
       .map(Number);
   const clsValues = metricValues('browser.cls');
   const lcpValues = metricValues('browser.lcp');
+  const inpValues = metricValues('browser.inp');
   const longTaskSummary = createDurationSummary(metricValues('browser.longTask'));
   const renderSettleSummary = createDurationSummary(
     normalizedEntries
@@ -175,6 +176,23 @@ export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
       valueMs: lcpValues.length ? roundDuration(Math.max(...lcpValues)) : 0,
       entryCount: lcpValues.length,
       lastUpdatedAt: roundDuration(Number(source.lcp?.lastUpdatedAt) || 0),
+    },
+    inp: {
+      valueMs: inpValues.length
+        ? roundDuration(inpValues[inpValues.length - 1])
+        : roundDuration(Number(source.inp?.valueMs) || 0),
+      interactionCount: Math.max(0, Math.floor(Number(source.inp?.interactionCount) || 0)),
+      observedInteractionCount: Math.max(0, Math.floor(Number(source.inp?.observedInteractionCount) || 0)),
+      entryCount: inpValues.length || Math.max(0, Math.floor(Number(source.inp?.entryCount) || 0)),
+      p98Rank: Math.max(0, Math.floor(Number(source.inp?.p98Rank) || 0)),
+      interactionId: Math.max(0, Math.floor(Number(source.inp?.interactionId) || 0)),
+      source:
+        source.inp?.source === 'event' || source.inp?.source === 'first-input'
+          ? source.inp.source
+          : inpValues.length
+            ? 'event'
+            : 'none',
+      lastUpdatedAt: roundDuration(Number(source.inp?.lastUpdatedAt) || 0),
     },
     longTasks: {
       count: longTaskSummary.count,
@@ -3047,7 +3065,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   const browserMetrics = result.windowBrowserMetrics || {};
   lines.push('', '## Browser responsiveness metrics', '');
   lines.push(
-    `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
+    `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, INP=${formatMs(Number(browserMetrics.inp?.valueMs) || 0)} (${Number(browserMetrics.inp?.interactionCount) || 0} interactions, source=${browserMetrics.inp?.source || 'none'}), Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
   );
   lines.push('', '## Runtime perf summary', '');
   lines.push(`Required metrics present: ${presentRequiredMetrics.length}/${requiredMetrics.length}`);
@@ -3263,6 +3281,7 @@ export function createBrowserMetricBudget(metrics) {
   return {
     maxCls: Math.max(Number(((Number(value.cls?.value) || 0) * 1.35 + 0.02).toFixed(4)), 0.1),
     maxLcpMs: Math.max(Math.ceil((Number(value.lcp?.valueMs) || 0) * 1.35 + 250), 2500),
+    maxInpMs: Math.max(Math.ceil((Number(value.inp?.valueMs) || 0) * 1.35 + 20), 200),
     maxLongTaskCount: Math.max(Math.ceil((Number(value.longTasks?.count) || 0) * 1.4 + 2), 5),
     maxLongTaskP95Ms: Math.max(Math.ceil((Number(value.longTasks?.p95Ms) || 0) * 1.35 + 10), 60),
     maxRenderSettleP95Ms: Math.max(Math.ceil((Number(value.renderSettle?.p95Ms) || 0) * 1.35 + 10), 50),
@@ -3335,10 +3354,15 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
     result.userJourneyDiagnosisSummary && Object.keys(result.userJourneyDiagnosisSummary).length
       ? result.userJourneyDiagnosisSummary
       : createUserJourneyDiagnosisSummary(userJourneySummary, storeFlowSummary, journeyStoreSourceSummary);
+  const requiredBrowserMetrics = Array.isArray(contracts.requiredBrowserMetrics)
+    ? Array.from(
+        new Set(contracts.requiredBrowserMetrics.map(item => String(item || '').trim()).filter(Boolean))
+      ).sort((left, right) => left.localeCompare(right))
+    : [];
   const requiredJourneyNames = readRequiredUserJourneyNames(contracts, null, userJourneySummary);
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
   return {
-    version: 19,
+    version: 20,
     generatedAt: new Date().toISOString(),
     uxJourneyBudgetMs: budget,
     runtimeUxBudgetMs: createRuntimeUxBudget(perfSummary),
@@ -3353,6 +3377,7 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
     buildPressureBudget: createBuildPressureBudget(buildFlowSummary),
     userJourneyBudget: createUserJourneyBudget(userJourneySummary),
     userJourneyDiagnosisBudget: createUserJourneyDiagnosisBudget(userJourneyDiagnosisSummary),
+    requiredBrowserMetrics,
     requiredRuntimeMetrics: requiredMetrics.slice(),
     requiredRuntimeDomains: requiredDomains.slice(),
     requiredRuntimeMetricMinimumCounts: { ...metricMinimumCounts },
@@ -3373,10 +3398,10 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
 export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   const failures = [];
   if (!baseline || typeof baseline !== 'object') {
-    failures.push('Browser perf baseline missing; generate a fresh schema-v19 baseline');
-  } else if (baseline.version !== 19) {
+    failures.push('Browser perf baseline missing; generate a fresh schema-v20 baseline');
+  } else if (baseline.version !== 20) {
     failures.push(
-      `Browser perf baseline schema mismatch (expected 19, got ${String(baseline.version ?? 'missing')})`
+      `Browser perf baseline schema mismatch (expected 20, got ${String(baseline.version ?? 'missing')})`
     );
   }
   const budget = baseline && typeof baseline === 'object' ? baseline.uxJourneyBudgetMs || {} : {};
@@ -3387,9 +3412,27 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     }
   }
 
+  const requiredBrowserMetrics = Array.isArray(contracts.requiredBrowserMetrics)
+    ? contracts.requiredBrowserMetrics
+    : Array.isArray(baseline?.requiredBrowserMetrics)
+      ? baseline.requiredBrowserMetrics
+      : [];
+  const normalizedRequiredBrowserMetrics = new Set(
+    requiredBrowserMetrics.map(item => String(item || '').trim()).filter(Boolean)
+  );
   const browserMetricBudget =
     baseline && typeof baseline === 'object' ? baseline.browserMetricBudget || {} : {};
   const browserMetrics = result.windowBrowserMetrics || {};
+  if (normalizedRequiredBrowserMetrics.has('inp')) {
+    const inpValue = Number(browserMetrics.inp?.valueMs || 0);
+    const inpEntryCount = Number(browserMetrics.inp?.entryCount || 0);
+    const inpSource = browserMetrics.inp?.source || 'none';
+    if (inpValue <= 0 || inpEntryCount < 1 || inpSource === 'none') {
+      failures.push(
+        'Required INP measurement missing; Event Timing or first-input produced no usable interaction'
+      );
+    }
+  }
   if (
     browserMetricBudget.maxCls != null &&
     Number(browserMetrics.cls?.value || 0) > browserMetricBudget.maxCls
@@ -3404,6 +3447,14 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   ) {
     failures.push(
       `LCP exceeded budget (${formatMs(Number(browserMetrics.lcp?.valueMs || 0))} > ${formatMs(browserMetricBudget.maxLcpMs)})`
+    );
+  }
+  if (
+    browserMetricBudget.maxInpMs != null &&
+    Number(browserMetrics.inp?.valueMs || 0) > browserMetricBudget.maxInpMs
+  ) {
+    failures.push(
+      `INP exceeded budget (${formatMs(Number(browserMetrics.inp?.valueMs || 0))} > ${formatMs(browserMetricBudget.maxInpMs)})`
     );
   }
   if (

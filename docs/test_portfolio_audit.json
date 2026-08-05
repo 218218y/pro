@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-05T10:48:49.813Z",
+  "generatedAt": "2026-08-05T15:59:45.563Z",
   "totals": {
-    "tests": 1228,
-    "unitRunnerTests": 1220,
+    "tests": 1230,
+    "unitRunnerTests": 1222,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
     "packageTestReferences": 38,
@@ -14,13 +14,13 @@
     "primaryCatalogGroups": 5,
     "directRepositoryLayerScanTests": 0,
     "retiredLayerLedgerAccessTests": 0,
-    "canonicalContracts": 18,
+    "canonicalContracts": 19,
     "historicalArchitectureProofs": 0,
     "contractOverlapTargets": 169
   },
   "categories": {
-    "contract": 405,
-    "runtime-unit": 325,
+    "contract": 406,
+    "runtime-unit": 326,
     "integration": 459,
     "persistence-ingress": 24,
     "e2e-smoke": 9,
@@ -5327,6 +5327,10 @@
       "category": "runtime-unit"
     },
     {
+      "file": "tests/error_observability_core_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/error_overlay_release_regressions.test.js",
       "category": "runtime-unit"
     },
@@ -7273,6 +7277,10 @@
     {
       "file": "tests/sidebar_background_exit_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/silent_catch_policy_runtime.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/site_profiles_runtime.test.js",

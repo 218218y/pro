@@ -329,6 +329,16 @@ export interface WardrobeProBrowserPerfMetrics {
     entryCount: number;
     lastUpdatedAt: number;
   };
+  inp: {
+    valueMs: number;
+    interactionCount: number;
+    observedInteractionCount: number;
+    entryCount: number;
+    p98Rank: number;
+    interactionId: number;
+    source: 'event' | 'first-input' | 'none';
+    lastUpdatedAt: number;
+  };
   longTasks: {
     count: number;
     totalMs: number;

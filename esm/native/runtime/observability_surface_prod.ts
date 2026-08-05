@@ -236,6 +236,16 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
         supportedEntryTypes: [],
         cls: { value: 0, entryCount: 0, lastUpdatedAt: 0 },
         lcp: { valueMs: 0, entryCount: 0, lastUpdatedAt: 0 },
+        inp: {
+          valueMs: 0,
+          interactionCount: 0,
+          observedInteractionCount: 0,
+          entryCount: 0,
+          p98Rank: 0,
+          interactionId: 0,
+          source: 'none',
+          lastUpdatedAt: 0,
+        },
         longTasks: { count: 0, totalMs: 0, maxMs: 0, p95Ms: 0, lastUpdatedAt: 0 },
         renderSettle: { count: 0, totalMs: 0, maxMs: 0, p95Ms: 0, lastUpdatedAt: 0 },
       };

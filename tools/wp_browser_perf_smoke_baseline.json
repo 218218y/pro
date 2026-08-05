@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 20,
   "generatedAt": "2026-08-05T15:23:37.995Z",
   "uxJourneyBudgetMs": {
     "boot.app-shell": 36304,
@@ -217,6 +217,7 @@
   "browserMetricBudget": {
     "maxCls": 0.1,
     "maxLcpMs": 35782,
+    "maxInpMs": 500,
     "maxLongTaskCount": 660,
     "maxLongTaskP95Ms": 217,
     "maxRenderSettleP95Ms": 137
@@ -959,5 +960,6 @@
     "settings-backup.recovery-import-stays-stable",
     "settings-backup.reimport.idempotent",
     "settings-backup.roundtrip.saved-state"
-  ]
+  ],
+  "requiredBrowserMetrics": ["inp"]
 }

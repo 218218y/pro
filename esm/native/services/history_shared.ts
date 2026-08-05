@@ -1,6 +1,7 @@
 import { readRootState } from '../runtime/root_state_access.js';
 import { ensureHistoryService, getHistorySystemMaybe } from '../runtime/history_system_access.js';
 import { getBrowserTimers } from '../runtime/api.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 import type {
   ActionMetaLike,
@@ -10,6 +11,10 @@ import type {
   TimeoutHandleLike,
   UnknownRecord,
 } from '../../../types';
+
+export function reportHistoryRuntimeNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportServiceNonFatal(App, error, { where: 'native/services/history_runtime', op });
+}
 
 export function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);

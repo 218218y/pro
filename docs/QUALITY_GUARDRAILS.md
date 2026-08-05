@@ -89,6 +89,7 @@ npm run check:test-portfolio
 - Refactor completion is not proven by smaller files. It is proven by stable public seams, behavior tests, hotpath guards, and practical smoke baselines.
 - Keep `check:perf-hotpaths` as the fast source-level performance gate for render/scheduler hotpaths.
 - Use `perf:smoke` and `perf:browser` for measured runtime/browser baselines when dependencies and a browser environment are available; update baselines only after a deliberate product/performance decision.
+- Browser performance schema 20 tracks CLS, LCP, Long Tasks, render-settle, and INP. INP is collected from Event Timing entries grouped by `interactionId`, estimated as the p98 interaction, and falls back to `first-input` when no interaction id is available. Browser baseline enforcement requires a usable INP sample; a missing observer result cannot pass as a zero-duration success.
 - Run `perf:smoke` as the foreground perf lane when enforcing total-runtime budgets; concurrent browser perf work can add machine noise to the aggregate time while individual script timings remain healthy.
 - If a future performance issue appears, start from measured regressions and the owning surface, not from broad file decomposition.
 
@@ -98,6 +99,19 @@ Relevant checks:
 npm run check:perf-hotpaths
 npm run perf:smoke
 npm run perf:browser
+```
+
+## Functional error observability
+
+- A functional operation may remain fail-soft, but it must not fail silently. Report nonfatal failures through the canonical runtime error surface with a stable `where` and `op` identity.
+- Empty catches are allowed only for reviewed cleanup, defensive browser fallbacks, or diagnostics that cannot affect business state. Do not use an empty catch around history writes, build requests, command installation, persistence, or state mutation.
+- `check:silent-catches` parses production sources with Oxc and owns two exact current-state ratchets by layer: all statement-free catches (including documented best-effort blocks) and the narrower bare-catch subset with no statement or explanation. The current baseline is 762 statement-free catches, of which 99 are bare. Any increase fails immediately; any reduction must update the exact ratchet in the same change so that removed debt cannot return.
+- The first protected functional owners are `services/history_runtime.ts` and `services/boot_finalizers.ts`. Expand the protected set as each remaining family is migrated; do not add per-stage proof files.
+
+Relevant check:
+
+```bash
+npm run check:silent-catches
 ```
 
 ## Dependency security and release audit

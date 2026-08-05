@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 
 import { readUiStateFromApp } from '../runtime/root_state_access.js';
-import { reportError } from '../runtime/errors.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 export type BuildReactionsRecord = Record<string, unknown>;
 
@@ -58,5 +58,5 @@ export function reportBuildReactionsSoftError(
   where: string,
   error: unknown
 ): void {
-  reportError(App, error, { where, fatal: false });
+  reportServiceNonFatal(App, error, { where });
 }

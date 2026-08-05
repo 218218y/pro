@@ -672,11 +672,11 @@
       "to": "runtime",
       "decision": "allow",
       "maxImporterCount": 256,
-      "maxImportCount": 550,
+      "maxImportCount": 549,
       "maxTypeImporterCount": 19,
       "maxTypeImportCount": 25,
       "maxValueImporterCount": 256,
-      "maxValueImportCount": 544,
+      "maxValueImportCount": 543,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Services depend on focused runtime ports and accessors."
@@ -827,7 +827,7 @@
       "reason": "Permanently review and preserve the Runtime Product Limits public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-wardrobe-defaults-public-compatibility",
@@ -856,7 +856,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Defaults public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-stack-split-public-compatibility",
@@ -884,7 +884,7 @@
       "reason": "Permanently review and preserve the Runtime Stack Split public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-default-resolution-public-compatibility",
@@ -912,7 +912,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Default Resolution public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     }
   ],
   "reviewedOwnershipBudgets": [

@@ -158,6 +158,17 @@ export const ARCHITECTURE_CONTRACT_REGISTRY = Object.freeze([
     supportingTests: ['tests/perf_runtime_surface_runtime.test.ts'],
   }),
   contract({
+    id: 'silent-catch-policy',
+    kind: 'source-guard',
+    packageScript: 'check:silent-catches',
+    owner: 'tools/wp_silent_catch_policy_audit.mjs',
+    scopes: ['production empty-catch ratchets', 'functional failure observability'],
+    supportingTests: [
+      'tests/silent_catch_policy_runtime.test.js',
+      'tests/error_observability_core_runtime.test.ts',
+    ],
+  }),
+  contract({
     id: 'test-portfolio',
     kind: 'portfolio',
     packageScript: 'check:test-portfolio',

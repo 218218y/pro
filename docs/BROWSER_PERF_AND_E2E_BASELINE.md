@@ -2,6 +2,8 @@
 
 Generated: 2026-08-05T15:21:01.334Z
 
+> Schema 20 adds required INP/Event Timing enforcement. This checked-in measurement predates the INP observer; the transitional `maxInpMs` ceiling is 500ms until the next deliberate `perf:browser:update-baseline` run replaces it with a measured budget.
+
 ## User flow timings
 
 - boot.app-shell: 26706ms

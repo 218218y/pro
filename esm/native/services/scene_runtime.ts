@@ -6,7 +6,7 @@
 
 import type { AppContainer, SceneViewSyncOptsLike } from '../../../types';
 
-import { reportError } from '../runtime/errors.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 import {
   initSceneLightsViaService,
   installSceneViewStoreSyncViaService,
@@ -16,7 +16,7 @@ import {
 } from './scene_view_access.js';
 
 function reportSceneRuntime(App: AppContainer, op: string, err: unknown): void {
-  reportError(App, err, { where: 'native/services/scene_runtime', op, fatal: false });
+  reportServiceNonFatal(App, err, { where: 'native/services/scene_runtime', op });
 }
 
 export function initializeSceneRuntime(App: AppContainer): boolean {

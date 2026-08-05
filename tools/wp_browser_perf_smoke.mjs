@@ -60,6 +60,8 @@ const textureFixturePath = path.join(
   '.artifacts/browser-perf/fixtures/cabinet-variant-texture.png'
 );
 
+const REQUIRED_BROWSER_METRICS = Object.freeze(['inp']);
+
 const USER_JOURNEYS = Object.freeze({
   bootAndShell: 'boot-and-shell',
   cabinetCoreAuthoring: 'cabinet-core-authoring',
@@ -434,6 +436,24 @@ function mergeBrowserMetrics(existing, incoming) {
       entryCount: (Number(before.lcp?.entryCount) || 0) + (Number(next.lcp?.entryCount) || 0),
       lastUpdatedAt: Math.max(Number(before.lcp?.lastUpdatedAt) || 0, Number(next.lcp?.lastUpdatedAt) || 0),
     },
+    inp: (() => {
+      const beforeValue = Number(before.inp?.valueMs) || 0;
+      const nextValue = Number(next.inp?.valueMs) || 0;
+      const winner = nextValue >= beforeValue ? next.inp || {} : before.inp || {};
+      return {
+        valueMs: Math.max(beforeValue, nextValue),
+        interactionCount:
+          (Number(before.inp?.interactionCount) || 0) + (Number(next.inp?.interactionCount) || 0),
+        observedInteractionCount:
+          (Number(before.inp?.observedInteractionCount) || 0) +
+          (Number(next.inp?.observedInteractionCount) || 0),
+        entryCount: (Number(before.inp?.entryCount) || 0) + (Number(next.inp?.entryCount) || 0),
+        p98Rank: Number(winner.p98Rank) || 0,
+        interactionId: Number(winner.interactionId) || 0,
+        source: winner.source === 'event' || winner.source === 'first-input' ? winner.source : 'none',
+        lastUpdatedAt: Math.max(Number(before.inp?.lastUpdatedAt) || 0, Number(next.inp?.lastUpdatedAt) || 0),
+      };
+    })(),
     longTasks: mergeDurationMetric(before.longTasks, next.longTasks),
     renderSettle: mergeDurationMetric(before.renderSettle, next.renderSettle),
   };
@@ -3279,6 +3299,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     writeJson(
       baselinePath,
       createBrowserPerfBaseline(result, {
+        requiredBrowserMetrics: REQUIRED_BROWSER_METRICS,
         requiredRuntimeMetrics,
         requiredRuntimeMetricMinimumCounts,
         requiredProjectActions,
@@ -3290,6 +3311,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   if (enforce) {
     const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')) : null;
     const failures = evaluateBrowserPerfBaseline(result, baseline, {
+      requiredBrowserMetrics: REQUIRED_BROWSER_METRICS,
       requiredRuntimeMetrics,
       requiredRuntimeMetricMinimumCounts,
       happyPathMetricsWithoutErrors,

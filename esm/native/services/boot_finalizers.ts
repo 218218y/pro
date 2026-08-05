@@ -14,6 +14,7 @@ import { cleanGroupViaPlatform } from '../runtime/platform_access.js';
 import { ensureCommandsService, getCommandsServiceMaybe } from '../runtime/commands_access.js';
 import { resolveInstallContext, type InstallContext } from '../runtime/install_context.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 // (No ready-registry)
 import {
@@ -36,35 +37,54 @@ function resolveBootFinalizerInstallContext(
   return resolveInstallContext(bootFinalizerInstallContexts, commands, App);
 }
 
+function reportBootFinalizerNonFatal(
+  App: AppContainer,
+  op: string,
+  error: unknown,
+  consoleOutput = true
+): void {
+  reportServiceNonFatal(App, error, { where: 'native/services/boot_finalizers', op }, { consoleOutput });
+}
+
 export function ensureBuildTags(App: AppContainer): void {
   if (!App || typeof App !== 'object') return;
 
   // Diagnostics build tags (non-functional; useful for cache/version debugging)
   try {
     setSlidingDoorsFixTag(App, 'step12_stage13_fix17_internal_drawers_close_delay_2026-01-07');
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'ensureBuildTags.slidingDoorsFix', error, false);
+  }
 
   try {
     setBuildTag(App, 'core', 'fix47_stage10_step7_remove_app_data');
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'ensureBuildTags.core', error, false);
+  }
 }
 
 export function wardrobeRebuild(App: AppContainer): void {
   try {
     requestBuilderForcedBuild(App, { reason: 'wardrobe.rebuild' });
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'wardrobeRebuild', error);
+  }
 }
 
 export function wardrobeRebuildDebounced(App: AppContainer): void {
   try {
     requestBuilderDebouncedBuild(App, { reason: 'wardrobe.rebuildDebounced' });
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'wardrobeRebuildDebounced', error);
+  }
 }
 
 export function wardrobeClean(App: AppContainer, group: unknown): unknown {
   try {
     if (cleanGroupViaPlatform(App, group)) return group;
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'wardrobeClean', error);
+  }
   return undefined;
 }
 
@@ -102,13 +122,16 @@ export function installBootFinalizers(App: AppContainer): CommandsServiceLike | 
   try {
     const c: MutableCommandsService = ensureCommandsService(App);
     ensureCanonicalCommandsSurface(App, c);
-  } catch (_) {}
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'installCommandsSurface', error);
+  }
 
   // Primary mode UI effects are store-driven (React-only); no imperative hydration needed.
 
   try {
     return getCommandsServiceMaybe(App) || null;
-  } catch (_) {
+  } catch (error) {
+    reportBootFinalizerNonFatal(App, 'readCommandsSurface', error, false);
     return null;
   }
 }

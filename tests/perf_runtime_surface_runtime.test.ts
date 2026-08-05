@@ -454,10 +454,16 @@ test('perf runtime unions overlapping interaction waits before subtracting code 
   }
 });
 
-test('perf runtime observes CLS, LCP, and Long Tasks through PerformanceObserver', () => {
+test('perf runtime observes CLS, LCP, INP, and Long Tasks through PerformanceObserver', () => {
   type ObserverCallback = (list: { getEntries: () => PerformanceEntry[] }) => void;
   class FakePerformanceObserver {
-    static supportedEntryTypes = ['layout-shift', 'largest-contentful-paint', 'longtask'];
+    static supportedEntryTypes = [
+      'layout-shift',
+      'largest-contentful-paint',
+      'longtask',
+      'event',
+      'first-input',
+    ];
     static observers: FakePerformanceObserver[] = [];
     callback: ObserverCallback;
     type = '';
@@ -481,7 +487,10 @@ test('perf runtime observes CLS, LCP, and Long Tasks through PerformanceObserver
   }
 
   const app = { deps: { config: {} }, services: {} } as any;
-  const win = { PerformanceObserver: FakePerformanceObserver } as unknown as Window;
+  const win = {
+    PerformanceObserver: FakePerformanceObserver,
+    performance: { interactionCount: 3 },
+  } as unknown as Window;
   const surface = installPerfRuntimeSurface(app, win);
   assert.ok(surface);
 
@@ -511,15 +520,159 @@ test('perf runtime observes CLS, LCP, and Long Tasks through PerformanceObserver
     { entryType: 'longtask', name: 'self', startTime: 300, duration: 75 } as any,
     { entryType: 'longtask', name: 'self', startTime: 600, duration: 120 } as any,
   ]);
+  FakePerformanceObserver.emit('first-input', [
+    {
+      entryType: 'first-input',
+      name: 'pointerdown',
+      startTime: 200,
+      duration: 32,
+      interactionId: 0,
+      processingStart: 208,
+      processingEnd: 220,
+    } as any,
+  ]);
+  FakePerformanceObserver.emit('event', [
+    {
+      entryType: 'event',
+      name: 'click',
+      startTime: 800,
+      duration: 80,
+      interactionId: 1,
+      processingStart: 820,
+      processingEnd: 850,
+    } as any,
+    {
+      entryType: 'event',
+      name: 'keydown',
+      startTime: 900,
+      duration: 120,
+      interactionId: 2,
+      processingStart: 910,
+      processingEnd: 960,
+    } as any,
+    {
+      entryType: 'event',
+      name: 'keyup',
+      startTime: 905,
+      duration: 96,
+      interactionId: 2,
+      processingStart: 915,
+      processingEnd: 970,
+    } as any,
+  ]);
 
   const metrics = surface?.getBrowserMetrics();
   assert.equal(metrics?.observerSupported, true);
   assert.equal(metrics?.cls.value, 0.07);
   assert.equal(metrics?.cls.entryCount, 2);
   assert.equal(metrics?.lcp.valueMs, 1200);
+  assert.equal(metrics?.inp.valueMs, 120);
+  assert.equal(metrics?.inp.interactionCount, 3);
+  assert.equal(metrics?.inp.observedInteractionCount, 2);
+  assert.equal(metrics?.inp.entryCount, 4);
+  assert.equal(metrics?.inp.p98Rank, 0);
+  assert.equal(metrics?.inp.interactionId, 2);
+  assert.equal(metrics?.inp.source, 'event');
   assert.equal(metrics?.longTasks.count, 2);
   assert.equal(metrics?.longTasks.totalMs, 195);
   assert.equal(metrics?.longTasks.p95Ms, 120);
   assert.equal(getPerfEntries(app, 'browser.cls').at(-1)?.kind, 'browser-metric');
   assert.equal(getPerfEntries(app, 'browser.longTask').length, 2);
+  assert.equal(getPerfEntries(app, 'browser.inp').at(-1)?.metricValue, 120);
+});
+
+test('perf runtime estimates INP as the p98 interaction when the interaction count crosses 50', () => {
+  type ObserverCallback = (list: { getEntries: () => PerformanceEntry[] }) => void;
+  class FakePerformanceObserver {
+    static supportedEntryTypes = ['event'];
+    static observers: FakePerformanceObserver[] = [];
+    callback: ObserverCallback;
+    type = '';
+
+    constructor(callback: ObserverCallback) {
+      this.callback = callback;
+      FakePerformanceObserver.observers.push(this);
+    }
+
+    observe(options: PerformanceObserverInit) {
+      this.type = String(options.type || options.entryTypes?.[0] || '');
+      assert.equal(options.durationThreshold, 16);
+    }
+
+    disconnect() {}
+
+    static emit(entries: PerformanceEntry[]) {
+      for (const observer of FakePerformanceObserver.observers) {
+        observer.callback({ getEntries: () => entries });
+      }
+    }
+  }
+
+  const app = { deps: { config: {} }, services: {} } as any;
+  const win = {
+    PerformanceObserver: FakePerformanceObserver,
+    performance: { interactionCount: 50 },
+  } as unknown as Window;
+  const surface = installPerfRuntimeSurface(app, win);
+
+  FakePerformanceObserver.emit([
+    { entryType: 'event', name: 'click', startTime: 100, duration: 300, interactionId: 1 } as any,
+    { entryType: 'event', name: 'click', startTime: 200, duration: 200, interactionId: 2 } as any,
+    { entryType: 'event', name: 'click', startTime: 300, duration: 100, interactionId: 3 } as any,
+  ]);
+
+  const metrics = surface?.getBrowserMetrics();
+  assert.equal(metrics?.inp.valueMs, 200);
+  assert.equal(metrics?.inp.p98Rank, 1);
+  assert.equal(metrics?.inp.interactionCount, 50);
+  assert.equal(metrics?.inp.interactionId, 2);
+});
+
+test('perf runtime falls back to first-input when Event Timing has no interaction id', () => {
+  type ObserverCallback = (list: { getEntries: () => PerformanceEntry[] }) => void;
+  class FakePerformanceObserver {
+    static supportedEntryTypes = ['first-input'];
+    static observers: FakePerformanceObserver[] = [];
+    callback: ObserverCallback;
+    type = '';
+
+    constructor(callback: ObserverCallback) {
+      this.callback = callback;
+      FakePerformanceObserver.observers.push(this);
+    }
+
+    observe(options: PerformanceObserverInit) {
+      this.type = String(options.type || options.entryTypes?.[0] || '');
+    }
+
+    disconnect() {}
+
+    static emit(entries: PerformanceEntry[]) {
+      for (const observer of FakePerformanceObserver.observers) {
+        observer.callback({ getEntries: () => entries });
+      }
+    }
+  }
+
+  const app = { deps: { config: {} }, services: {} } as any;
+  const win = {
+    PerformanceObserver: FakePerformanceObserver,
+    performance: { interactionCount: 0 },
+  } as unknown as Window;
+  const surface = installPerfRuntimeSurface(app, win);
+
+  FakePerformanceObserver.emit([
+    {
+      entryType: 'first-input',
+      name: 'pointerdown',
+      startTime: 100,
+      duration: 24,
+      interactionId: 0,
+    } as any,
+  ]);
+
+  const metrics = surface?.getBrowserMetrics();
+  assert.equal(metrics?.inp.valueMs, 24);
+  assert.equal(metrics?.inp.source, 'first-input');
+  assert.equal(metrics?.inp.interactionCount, 1);
 });

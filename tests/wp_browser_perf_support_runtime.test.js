@@ -135,9 +135,9 @@ function perfSummary({
   };
 }
 
-function baseline19(overrides = {}) {
+function baseline20(overrides = {}) {
   return {
-    version: 19,
+    version: 20,
     uxJourneyBudgetMs: {},
     runtimeUxBudgetMs: {},
     runtimeCodeExecutionBudgetMs: {},
@@ -145,6 +145,7 @@ function baseline19(overrides = {}) {
     runtimeDomainCodeExecutionBudgetMs: {},
     runtimeDomainDriftBudgetPct: {},
     browserMetricBudget: {},
+    requiredBrowserMetrics: [],
     runtimeRecoveryDebtBudgetMs: {},
     runtimeRecoveryHangoverBudget: {},
     storePressureBudget: {},
@@ -194,6 +195,18 @@ test('browser perf support rebuilds exact browser metrics from all captured entr
         metricUnit: 'ms',
         uxTotalMs: 0,
       }),
+      perfEntry('browser.inp', 0, 'ok', {
+        kind: 'browser-metric',
+        metricValue: 180,
+        metricUnit: 'ms',
+        uxTotalMs: 0,
+      }),
+      perfEntry('browser.inp', 0, 'ok', {
+        kind: 'browser-metric',
+        metricValue: 140,
+        metricUnit: 'ms',
+        uxTotalMs: 0,
+      }),
       ...longTasks,
       perfEntry('render.settle', 0, 'ok', {
         kind: 'render-settle',
@@ -204,13 +217,35 @@ test('browser perf support rebuilds exact browser metrics from all captured entr
         uxTotalMs: 32,
       }),
     ],
-    { observerSupported: true, supportedEntryTypes: ['longtask', 'layout-shift', 'longtask'] }
+    {
+      observerSupported: true,
+      supportedEntryTypes: ['longtask', 'layout-shift', 'event', 'longtask'],
+      inp: {
+        interactionCount: 50,
+        observedInteractionCount: 12,
+        entryCount: 19,
+        p98Rank: 1,
+        interactionId: 42,
+        source: 'event',
+        lastUpdatedAt: 900,
+      },
+    }
   );
 
   assert.equal(metrics.observerSupported, true);
-  assert.deepEqual(metrics.supportedEntryTypes, ['layout-shift', 'longtask']);
+  assert.deepEqual(metrics.supportedEntryTypes, ['event', 'layout-shift', 'longtask']);
   assert.deepEqual(metrics.cls, { value: 0.09, entryCount: 2, lastUpdatedAt: 0 });
   assert.equal(metrics.lcp.valueMs, 1200);
+  assert.deepEqual(metrics.inp, {
+    valueMs: 140,
+    interactionCount: 50,
+    observedInteractionCount: 12,
+    entryCount: 2,
+    p98Rank: 1,
+    interactionId: 42,
+    source: 'event',
+    lastUpdatedAt: 900,
+  });
   assert.equal(metrics.longTasks.count, 20);
   assert.equal(metrics.longTasks.totalMs, 210);
   assert.equal(metrics.longTasks.p95Ms, 19);
@@ -1819,12 +1854,12 @@ test('browser perf support rejects old baselines and enforces UX and code budget
     },
   };
 
-  const schemaFailures = evaluateBrowserPerfBaseline(result, { ...baseline19(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 19, got 18\)/.test(item)));
+  const schemaFailures = evaluateBrowserPerfBaseline(result, { ...baseline20(), version: 18 });
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 20, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,
-    baseline19({
+    baseline20({
       runtimeUxBudgetMs: { 'project.save': 400 },
       runtimeCodeExecutionBudgetMs: { 'project.save': 50 },
     })
@@ -1834,13 +1869,37 @@ test('browser perf support rejects old baselines and enforces UX and code budget
 
   const codeFailures = evaluateBrowserPerfBaseline(
     result,
-    baseline19({
+    baseline20({
       runtimeUxBudgetMs: { 'project.save': 600 },
       runtimeCodeExecutionBudgetMs: { 'project.save': 10 },
     })
   );
   assert.ok(!codeFailures.some(item => /project\.save UX p95 exceeded budget/.test(item)));
   assert.ok(codeFailures.some(item => /project\.save code-execution p95 exceeded budget/.test(item)));
+
+  const inpFailures = evaluateBrowserPerfBaseline(
+    {
+      ...result,
+      windowBrowserMetrics: { inp: { valueMs: 240 } },
+    },
+    baseline20({ browserMetricBudget: { maxInpMs: 200 } })
+  );
+  assert.ok(inpFailures.some(item => /INP exceeded budget \(240ms > 200ms\)/.test(item)));
+
+  const missingInpFailures = evaluateBrowserPerfBaseline(
+    {
+      ...result,
+      windowBrowserMetrics: { inp: { valueMs: 0, entryCount: 0, source: 'none' } },
+    },
+    baseline20({ requiredBrowserMetrics: ['inp'] })
+  );
+  assert.ok(
+    missingInpFailures.some(item =>
+      /Required INP measurement missing; Event Timing or first-input produced no usable interaction/.test(
+        item
+      )
+    )
+  );
 });
 
 test('browser perf support groups runtime metrics into stable domains and ranks domain risk', () => {
