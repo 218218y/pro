@@ -1083,6 +1083,12 @@ import {
     assert.match(browserPerfSmoke, /cabinet-door-drawer-authoring\.layout-scenario-matrix-roundtrip/);
     assert.match(browserPerfSmoke, /USER_JOURNEYS/);
     assert.match(browserPerfSmoke, /resolveBrowserPerfBaselinePath/);
+    assert.match(browserPerfSmoke, /installPerfEntryCapture\(page\)/);
+    assert.match(browserPerfSmoke, /wardrobepro:perf-entry/);
+    assert.match(browserPerfSmoke, /__WP_BROWSER_PERF_ENTRIES__/);
+    assert.match(browserPerfSmoke, /withMergedSavedColorValues\(/);
+    assert.match(browserPerfSmoke, /#room=\$\{encodeURIComponent\(browserPerfRoomId\)\}&roomToken=/);
+    assert.doesNotMatch(browserPerfSmoke, /index_pro\.html\?room=/);
     assert.match(browserPerfSmoke, /windowStoreDebugTopSources/);
     assert.match(browserPerfSmoke, /windowStoreFlowPressureSummary/);
     assert.match(browserPerfSmoke, /windowPerfTransitionSummary/);
@@ -1104,7 +1110,7 @@ import {
     assert.match(browserPerfSmoke, /project\.restore-last-session\.recovery-stays-stable/);
     assert.match(browserPerfSmoke, /project\.restore-last-session\.recovery-clean-window/);
     assert.match(browserPerfSmoke, /settings-backup\.invalid-import-preserves-state/);
-    assert.match(browserPerfSmoke, /settings-backup\.recovery-import-restores-state/);
+    assert.match(browserPerfSmoke, /settings-backup\.recovery-import-merges-state/);
     assert.match(browserPerfSmoke, /settings-backup\.recovery-import-stays-stable/);
     assert.match(browserPerfSmoke, /settings-backup\.recovery-import-clean-window/);
   });

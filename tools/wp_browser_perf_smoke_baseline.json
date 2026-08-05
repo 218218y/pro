@@ -1,0 +1,963 @@
+{
+  "version": 19,
+  "generatedAt": "2026-08-05T15:23:37.995Z",
+  "uxJourneyBudgetMs": {
+    "boot.app-shell": 36304,
+    "tab.settings.open": 500,
+    "settings.visual.global-click.roundtrip": 962,
+    "header.sketch-mode.roundtrip": 1024,
+    "viewer.notes.draw-mode.roundtrip": 919,
+    "viewer.notes.visibility.roundtrip": 824,
+    "viewer.contents.visibility.roundtrip": 2228,
+    "cabinet-core.configure": 5808,
+    "cabinet-core.mixed-edit-burst": 12205,
+    "cabinet-build-variants.profile-texture.configure": 4004,
+    "cabinet-build-variants.authoring-matrix": 8224,
+    "cabinet-build-variants.structure-material-door-burst": 12299,
+    "cabinet-build-variants.option-burst": 5607,
+    "cabinet-door-drawer-authoring.configure": 5100,
+    "cabinet-door-drawer-authoring.mode-burst": 11470,
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip": 5142,
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": 9295,
+    "export.snapshot.download": 2181,
+    "export.copy.clipboard": 583,
+    "export.render-sketch.clipboard": 789,
+    "export.dual.clipboard": 500,
+    "settings-backup.roundtrip": 8222,
+    "cloud-sync.floating.toggle-on": 662,
+    "cloud-sync.floating.toggle-off": 530,
+    "order-pdf.open-close.initial": 3393,
+    "project.save-load.roundtrip": 1765,
+    "project.reset-default.confirmed": 1438,
+    "export.clipboard.pressure": 2469,
+    "order-pdf.reopen.pressure": 727,
+    "project.restore-last-session": 8873,
+    "project.persistence-recovery.burst": 18261,
+    "project.load.invalid-keeps-state": 500,
+    "project.load.recovery-sequence": 2165,
+    "project.restore-last-session.missing-autosave": 23454,
+    "settings-backup.invalid-import-keeps-state": 10856
+  },
+  "runtimeUxBudgetMs": {
+    "browser.lcp": 100,
+    "browser.longTask": 100,
+    "boot.browser.setup": 2852,
+    "boot.react.mount.reactSidebarRoot": 100,
+    "boot.react.mounted.reactSidebarRoot": 100,
+    "boot.react.mount.reactOverlayRoot": 100,
+    "boot.react.mounted.reactOverlayRoot": 100,
+    "browser.cls": 100,
+    "render.settle": 152,
+    "settingsVisual.globalClick.toggle": 100,
+    "ui.header.sketch.toggle": 102,
+    "viewer.notes.drawMode.toggle": 100,
+    "viewer.notes.visibility.toggle": 100,
+    "viewer.contents.visibility.toggle": 1033,
+    "structure.dimensions.width.commit": 100,
+    "structure.dimensions.height.commit": 100,
+    "structure.dimensions.depth.commit": 100,
+    "design.savedColor.add.prompt": 500,
+    "design.savedColor.add.prepare": 100,
+    "design.savedColor.add.order": 100,
+    "design.savedColor.storage.commit": 100,
+    "design.savedColor.add.storage": 100,
+    "design.savedColor.add.patch": 100,
+    "design.savedColor.add.mutation": 131,
+    "design.savedColor.add": 609,
+    "design.savedColor.delete.confirm": 495,
+    "design.savedColor.delete.prepare": 100,
+    "design.savedColor.delete.order": 100,
+    "design.savedColor.delete.storage": 100,
+    "design.savedColor.delete.patch": 100,
+    "design.savedColor.delete.mutation": 129,
+    "design.savedColor.delete": 559,
+    "project.save.dispatched": 100,
+    "project.save.export": 100,
+    "project.save.prompt": 550,
+    "project.save.download": 100,
+    "project.save.commit": 100,
+    "project.save": 558,
+    "project.load.readFile": 100,
+    "project.load.parse": 100,
+    "project.load.apply": 226,
+    "project.load": 232,
+    "export.snapshot": 1189,
+    "export.copy": 133,
+    "export.renderSketch": 379,
+    "export.dual": 106,
+    "settingsBackup.export": 100,
+    "settingsBackup.import.confirm": 500,
+    "settingsBackup.import.readFile": 100,
+    "settingsBackup.import.parse": 100,
+    "settingsBackup.import.collections.commit": 100,
+    "settingsBackup.import.commit": 109,
+    "settingsBackup.import": 588,
+    "cloudSync.floatingSync.toggle": 100,
+    "orderPdf.open": 100,
+    "orderPdf.close": 100,
+    "project.resetDefault": 664,
+    "project.restoreLastSession": 675
+  },
+  "runtimeCodeExecutionBudgetMs": {
+    "boot.browser.setup": 2837,
+    "boot.react.mount.reactSidebarRoot": 50,
+    "boot.react.mount.reactOverlayRoot": 50,
+    "settingsVisual.globalClick.toggle": 50,
+    "ui.header.sketch.toggle": 87,
+    "viewer.notes.drawMode.toggle": 50,
+    "viewer.notes.visibility.toggle": 50,
+    "viewer.contents.visibility.toggle": 1018,
+    "structure.dimensions.width.commit": 50,
+    "structure.dimensions.height.commit": 50,
+    "structure.dimensions.depth.commit": 50,
+    "design.savedColor.add.prepare": 50,
+    "design.savedColor.add.order": 50,
+    "design.savedColor.storage.commit": 50,
+    "design.savedColor.add.storage": 50,
+    "design.savedColor.add.patch": 50,
+    "design.savedColor.add.mutation": 116,
+    "design.savedColor.add": 121,
+    "design.savedColor.delete.prepare": 50,
+    "design.savedColor.delete.order": 50,
+    "design.savedColor.delete.storage": 50,
+    "design.savedColor.delete.patch": 50,
+    "design.savedColor.delete.mutation": 114,
+    "design.savedColor.delete": 115,
+    "project.save.export": 50,
+    "project.save.download": 50,
+    "project.save.commit": 50,
+    "project.save": 50,
+    "project.load.readFile": 50,
+    "project.load.parse": 50,
+    "project.load.apply": 211,
+    "project.load": 217,
+    "export.snapshot": 1174,
+    "export.copy": 118,
+    "export.renderSketch": 364,
+    "export.dual": 91,
+    "settingsBackup.export": 50,
+    "settingsBackup.import.readFile": 50,
+    "settingsBackup.import.parse": 50,
+    "settingsBackup.import.collections.commit": 50,
+    "settingsBackup.import.commit": 94,
+    "settingsBackup.import": 108,
+    "cloudSync.floatingSync.toggle": 58,
+    "orderPdf.open": 50,
+    "orderPdf.close": 50,
+    "project.resetDefault": 649,
+    "project.restoreLastSession": 660
+  },
+  "runtimeDriftBudgetPct": {
+    "settingsVisual.globalClick.toggle": 45,
+    "ui.header.sketch.toggle": 45,
+    "viewer.notes.drawMode.toggle": 45,
+    "viewer.notes.visibility.toggle": 45,
+    "viewer.contents.visibility.toggle": 45,
+    "structure.dimensions.width.commit": 45,
+    "structure.dimensions.height.commit": 45,
+    "structure.dimensions.depth.commit": 45,
+    "design.savedColor.add.prepare": 45,
+    "design.savedColor.add.order": 45,
+    "design.savedColor.storage.commit": 45,
+    "design.savedColor.add.storage": 45,
+    "design.savedColor.add.patch": 45,
+    "design.savedColor.add.mutation": 45,
+    "design.savedColor.add": 45,
+    "design.savedColor.delete.prepare": 45,
+    "design.savedColor.delete.order": 45,
+    "design.savedColor.delete.storage": 72,
+    "design.savedColor.delete.patch": 45,
+    "design.savedColor.delete.mutation": 45,
+    "design.savedColor.delete": 45,
+    "project.save.export": 45,
+    "project.save.download": 45,
+    "project.save.commit": 45,
+    "project.save": 45,
+    "project.load.readFile": 45,
+    "project.load.parse": 45,
+    "project.load.apply": 45,
+    "project.load": 45,
+    "export.copy": 45,
+    "export.renderSketch": 45,
+    "export.dual": 45,
+    "settingsBackup.import.readFile": 45,
+    "settingsBackup.import.parse": 45,
+    "settingsBackup.import.collections.commit": 45,
+    "settingsBackup.import.commit": 45,
+    "settingsBackup.import": 45,
+    "cloudSync.floatingSync.toggle": 45,
+    "orderPdf.open": 45,
+    "orderPdf.close": 45,
+    "project.restoreLastSession": 46
+  },
+  "runtimeDomainCodeExecutionBudgetMs": {
+    "boot": 5738,
+    "project": 12433,
+    "export": 4860,
+    "other": 3147,
+    "structure": 553,
+    "design": 3776,
+    "cloud-sync": 213,
+    "order-pdf": 150,
+    "settings-backup": 1036,
+    "render": 150
+  },
+  "runtimeDomainDriftBudgetPct": {
+    "boot": 45,
+    "project": 45,
+    "export": 45,
+    "other": 45,
+    "structure": 45,
+    "design": 63,
+    "cloud-sync": 45,
+    "order-pdf": 45,
+    "settings-backup": 45,
+    "render": 45
+  },
+  "browserMetricBudget": {
+    "maxCls": 0.1,
+    "maxLcpMs": 35782,
+    "maxLongTaskCount": 660,
+    "maxLongTaskP95Ms": 217,
+    "maxRenderSettleP95Ms": 137
+  },
+  "runtimeRecoveryDebtBudgetMs": {
+    "boot.react.mounted.reactSidebarRoot": 40,
+    "boot.react.mounted.reactOverlayRoot": 40,
+    "project.save.dispatched": 40,
+    "project.load": 176,
+    "settingsBackup.import": 144,
+    "project.restoreLastSession": 544
+  },
+  "runtimeRecoveryHangoverBudget": {
+    "project.load": {
+      "maxP95HangoverRatio": 1.3,
+      "maxMaxHangoverRatio": 1.26,
+      "maxP95HangoverDeltaMs": 15,
+      "maxMaxHangoverDeltaMs": 20,
+      "maxLingeringSettlingCount": 1
+    },
+    "settingsBackup.import": {
+      "maxP95HangoverRatio": 3.47,
+      "maxMaxHangoverRatio": 3.28,
+      "maxP95HangoverDeltaMs": 73,
+      "maxMaxHangoverDeltaMs": 74,
+      "maxLingeringSettlingCount": 2
+    },
+    "project.restoreLastSession": {
+      "maxP95HangoverRatio": 1.19,
+      "maxMaxHangoverRatio": 1.2,
+      "maxP95HangoverDeltaMs": 15,
+      "maxMaxHangoverDeltaMs": 20,
+      "maxLingeringSettlingCount": 1
+    }
+  },
+  "storePressureBudget": {
+    "tab.settings.open": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "settings.visual.global-click.roundtrip": {
+      "maxCommitCount": 9,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "header.sketch-mode.roundtrip": {
+      "maxCommitCount": 9,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 129
+    },
+    "viewer.notes.draw-mode.roundtrip": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "viewer.notes.visibility.roundtrip": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "viewer.contents.visibility.roundtrip": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 1189
+    },
+    "cabinet-core.configure": {
+      "maxCommitCount": 27,
+      "maxSelectorNotifyCount": 46,
+      "maxTotalSourceMs": 105
+    },
+    "cabinet-core.mixed-edit-burst": {
+      "maxCommitCount": 62,
+      "maxSelectorNotifyCount": 110,
+      "maxTotalSourceMs": 149
+    },
+    "cabinet-build-variants.profile-texture.configure": {
+      "maxCommitCount": 17,
+      "maxSelectorNotifyCount": 42,
+      "maxTotalSourceMs": 32
+    },
+    "cabinet-build-variants.authoring-matrix": {
+      "maxCommitCount": 60,
+      "maxSelectorNotifyCount": 117,
+      "maxTotalSourceMs": 152
+    },
+    "cabinet-build-variants.structure-material-door-burst": {
+      "maxCommitCount": 92,
+      "maxSelectorNotifyCount": 168,
+      "maxTotalSourceMs": 272
+    },
+    "cabinet-build-variants.option-burst": {
+      "maxCommitCount": 26,
+      "maxSelectorNotifyCount": 60,
+      "maxTotalSourceMs": 50
+    },
+    "cabinet-door-drawer-authoring.configure": {
+      "maxCommitCount": 41,
+      "maxSelectorNotifyCount": 129,
+      "maxTotalSourceMs": 47
+    },
+    "cabinet-door-drawer-authoring.mode-burst": {
+      "maxCommitCount": 69,
+      "maxSelectorNotifyCount": 194,
+      "maxTotalSourceMs": 181
+    },
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip": {
+      "maxCommitCount": 24,
+      "maxSelectorNotifyCount": 62,
+      "maxTotalSourceMs": 40
+    },
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": {
+      "maxCommitCount": 45,
+      "maxSelectorNotifyCount": 135,
+      "maxTotalSourceMs": 53
+    },
+    "export.snapshot.download": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "export.copy.clipboard": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "export.render-sketch.clipboard": {
+      "maxCommitCount": 9,
+      "maxSelectorNotifyCount": 24,
+      "maxTotalSourceMs": 30
+    },
+    "export.dual.clipboard": {
+      "maxCommitCount": 9,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "settings-backup.roundtrip": {
+      "maxCommitCount": 23,
+      "maxSelectorNotifyCount": 58,
+      "maxTotalSourceMs": 32
+    },
+    "cloud-sync.floating.toggle-on": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "cloud-sync.floating.toggle-off": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "order-pdf.open-close.initial": {
+      "maxCommitCount": 9,
+      "maxSelectorNotifyCount": 23,
+      "maxTotalSourceMs": 30
+    },
+    "project.save-load.roundtrip": {
+      "maxCommitCount": 14,
+      "maxSelectorNotifyCount": 31,
+      "maxTotalSourceMs": 30
+    },
+    "project.reset-default.confirmed": {
+      "maxCommitCount": 8,
+      "maxSelectorNotifyCount": 33,
+      "maxTotalSourceMs": 30
+    },
+    "export.clipboard.pressure": {
+      "maxCommitCount": 35,
+      "maxSelectorNotifyCount": 62,
+      "maxTotalSourceMs": 36
+    },
+    "order-pdf.reopen.pressure": {
+      "maxCommitCount": 11,
+      "maxSelectorNotifyCount": 27,
+      "maxTotalSourceMs": 30
+    },
+    "project.restore-last-session": {
+      "maxCommitCount": 12,
+      "maxSelectorNotifyCount": 40,
+      "maxTotalSourceMs": 30
+    },
+    "project.persistence-recovery.burst": {
+      "maxCommitCount": 59,
+      "maxSelectorNotifyCount": 120,
+      "maxTotalSourceMs": 155
+    },
+    "project.load.invalid-keeps-state": {
+      "maxCommitCount": 6,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 30
+    },
+    "project.load.recovery-sequence": {
+      "maxCommitCount": 18,
+      "maxSelectorNotifyCount": 50,
+      "maxTotalSourceMs": 33
+    },
+    "project.restore-last-session.missing-autosave": {
+      "maxCommitCount": 17,
+      "maxSelectorNotifyCount": 47,
+      "maxTotalSourceMs": 30
+    },
+    "settings-backup.invalid-import-keeps-state": {
+      "maxCommitCount": 29,
+      "maxSelectorNotifyCount": 79,
+      "maxTotalSourceMs": 43
+    }
+  },
+  "buildPressureBudget": {
+    "tab.settings.open": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "settings.visual.global-click.roundtrip": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "header.sketch-mode.roundtrip": {
+      "maxRequestCount": 5,
+      "maxExecuteCount": 4,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "viewer.notes.draw-mode.roundtrip": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "viewer.notes.visibility.roundtrip": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "viewer.contents.visibility.roundtrip": {
+      "maxRequestCount": 5,
+      "maxExecuteCount": 4,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "cabinet-core.configure": {
+      "maxRequestCount": 11,
+      "maxExecuteCount": 10,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 8
+    },
+    "cabinet-core.mixed-edit-burst": {
+      "maxRequestCount": 29,
+      "maxExecuteCount": 27,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 24
+    },
+    "cabinet-build-variants.profile-texture.configure": {
+      "maxRequestCount": 7,
+      "maxExecuteCount": 6,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 6
+    },
+    "cabinet-build-variants.authoring-matrix": {
+      "maxRequestCount": 28,
+      "maxExecuteCount": 22,
+      "maxPendingOverwriteCount": 4,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 20
+    },
+    "cabinet-build-variants.structure-material-door-burst": {
+      "maxRequestCount": 40,
+      "maxExecuteCount": 34,
+      "maxPendingOverwriteCount": 4,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 25
+    },
+    "cabinet-build-variants.option-burst": {
+      "maxRequestCount": 8,
+      "maxExecuteCount": 7,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 4
+    },
+    "cabinet-door-drawer-authoring.configure": {
+      "maxRequestCount": 8,
+      "maxExecuteCount": 7,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 6
+    },
+    "cabinet-door-drawer-authoring.mode-burst": {
+      "maxRequestCount": 19,
+      "maxExecuteCount": 17,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 13
+    },
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip": {
+      "maxRequestCount": 7,
+      "maxExecuteCount": 6,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": {
+      "maxRequestCount": 16,
+      "maxExecuteCount": 14,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "export.snapshot.download": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "export.copy.clipboard": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "export.render-sketch.clipboard": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "export.dual.clipboard": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "settings-backup.roundtrip": {
+      "maxRequestCount": 7,
+      "maxExecuteCount": 6,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 6
+    },
+    "cloud-sync.floating.toggle-on": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "cloud-sync.floating.toggle-off": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "order-pdf.open-close.initial": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.save-load.roundtrip": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 3,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.reset-default.confirmed": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 3,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "export.clipboard.pressure": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "order-pdf.reopen.pressure": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.restore-last-session": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 3,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.persistence-recovery.burst": {
+      "maxRequestCount": 23,
+      "maxExecuteCount": 21,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 15
+    },
+    "project.load.invalid-keeps-state": {
+      "maxRequestCount": 4,
+      "maxExecuteCount": 2,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.load.recovery-sequence": {
+      "maxRequestCount": 7,
+      "maxExecuteCount": 6,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "project.restore-last-session.missing-autosave": {
+      "maxRequestCount": 7,
+      "maxExecuteCount": 6,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 1
+    },
+    "settings-backup.invalid-import-keeps-state": {
+      "maxRequestCount": 11,
+      "maxExecuteCount": 10,
+      "maxPendingOverwriteCount": 1,
+      "maxSuppressedRequestCount": 1,
+      "maxDebounceCount": 10
+    }
+  },
+  "userJourneyBudget": {
+    "boot-and-shell": {
+      "maxTotalDurationMs": 37665,
+      "maxCommitCount": 8,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 35
+    },
+    "cabinet-core-authoring": {
+      "maxTotalDurationMs": 22257,
+      "maxCommitCount": 100,
+      "maxSelectorNotifyCount": 177,
+      "maxTotalSourceMs": 1437
+    },
+    "cabinet-build-variants": {
+      "maxTotalDurationMs": 29172,
+      "maxCommitCount": 174,
+      "maxSelectorNotifyCount": 358,
+      "maxTotalSourceMs": 435
+    },
+    "cabinet-door-drawer-authoring": {
+      "maxTotalDurationMs": 30046,
+      "maxCommitCount": 160,
+      "maxSelectorNotifyCount": 490,
+      "maxTotalSourceMs": 262
+    },
+    "export-authoring": {
+      "maxTotalDurationMs": 5369,
+      "maxCommitCount": 52,
+      "maxSelectorNotifyCount": 96,
+      "maxTotalSourceMs": 54
+    },
+    "settings-backup-resilience": {
+      "maxTotalDurationMs": 18618,
+      "maxCommitCount": 46,
+      "maxSelectorNotifyCount": 129,
+      "maxTotalSourceMs": 62
+    },
+    "cloud-sync-controls": {
+      "maxTotalDurationMs": 732,
+      "maxCommitCount": 8,
+      "maxSelectorNotifyCount": 20,
+      "maxTotalSourceMs": 35
+    },
+    "order-pdf-lifecycle": {
+      "maxTotalDurationMs": 3660,
+      "maxCommitCount": 17,
+      "maxSelectorNotifyCount": 41,
+      "maxTotalSourceMs": 35
+    },
+    "project-roundtrip": {
+      "maxTotalDurationMs": 29376,
+      "maxCommitCount": 79,
+      "maxSelectorNotifyCount": 195,
+      "maxTotalSourceMs": 171
+    },
+    "project-recovery-proveout": {
+      "maxTotalDurationMs": 25323,
+      "maxCommitCount": 31,
+      "maxSelectorNotifyCount": 88,
+      "maxTotalSourceMs": 50
+    }
+  },
+  "userJourneyDiagnosisBudget": {
+    "boot-and-shell": {
+      "maxBurstyStepCount": 2,
+      "maxRepeatedSourceCount": 2,
+      "maxDominantSourceSharePct": 682
+    },
+    "cabinet-core-authoring": {
+      "maxBurstyStepCount": 7,
+      "maxRepeatedSourceCount": 4,
+      "maxDominantSourceSharePct": 103
+    },
+    "cabinet-build-variants": {
+      "maxBurstyStepCount": 7,
+      "maxRepeatedSourceCount": 6,
+      "maxDominantSourceSharePct": 72
+    },
+    "cabinet-door-drawer-authoring": {
+      "maxBurstyStepCount": 7,
+      "maxRepeatedSourceCount": 3,
+      "maxDominantSourceSharePct": 55
+    },
+    "export-authoring": {
+      "maxBurstyStepCount": 3,
+      "maxRepeatedSourceCount": 6,
+      "maxDominantSourceSharePct": 84
+    },
+    "settings-backup-resilience": {
+      "maxBurstyStepCount": 4,
+      "maxRepeatedSourceCount": 4,
+      "maxDominantSourceSharePct": 69
+    },
+    "cloud-sync-controls": {
+      "maxBurstyStepCount": 2,
+      "maxRepeatedSourceCount": 2,
+      "maxDominantSourceSharePct": 55
+    },
+    "order-pdf-lifecycle": {
+      "maxBurstyStepCount": 2,
+      "maxRepeatedSourceCount": 4,
+      "maxDominantSourceSharePct": 56
+    },
+    "project-roundtrip": {
+      "maxBurstyStepCount": 6,
+      "maxRepeatedSourceCount": 4,
+      "maxDominantSourceSharePct": 66
+    },
+    "project-recovery-proveout": {
+      "maxBurstyStepCount": 4,
+      "maxRepeatedSourceCount": 6,
+      "maxDominantSourceSharePct": 69
+    }
+  },
+  "requiredRuntimeMetrics": [
+    "boot.browser.setup",
+    "boot.react.mount.reactSidebarRoot",
+    "project.save",
+    "project.load",
+    "project.resetDefault",
+    "project.restoreLastSession",
+    "export.snapshot",
+    "export.copy",
+    "export.renderSketch",
+    "export.dual",
+    "settingsVisual.globalClick.toggle",
+    "ui.header.sketch.toggle",
+    "viewer.notes.drawMode.toggle",
+    "viewer.notes.visibility.toggle",
+    "viewer.contents.visibility.toggle",
+    "structure.dimensions.width.commit",
+    "structure.dimensions.height.commit",
+    "structure.dimensions.depth.commit",
+    "design.savedColor.add",
+    "design.savedColor.delete",
+    "cloudSync.floatingSync.toggle",
+    "orderPdf.open",
+    "orderPdf.close",
+    "settingsBackup.export",
+    "settingsBackup.import"
+  ],
+  "requiredRuntimeDomains": [
+    "boot",
+    "cloud-sync",
+    "design",
+    "export",
+    "order-pdf",
+    "other",
+    "project",
+    "settings-backup",
+    "structure"
+  ],
+  "requiredRuntimeMetricMinimumCounts": {
+    "export.copy": 3,
+    "export.renderSketch": 3,
+    "export.dual": 3,
+    "orderPdf.open": 3,
+    "orderPdf.close": 3,
+    "settingsBackup.export": 1,
+    "settingsBackup.import": 6,
+    "project.load": 6,
+    "project.restoreLastSession": 6,
+    "structure.dimensions.width.commit": 7,
+    "structure.dimensions.height.commit": 7,
+    "structure.dimensions.depth.commit": 7,
+    "design.savedColor.add": 5,
+    "design.savedColor.delete": 3
+  },
+  "requiredProjectActions": ["save", "load", "reset-default", "restore-last-session"],
+  "requiredUserJourneys": [
+    "boot-and-shell",
+    "cabinet-core-authoring",
+    "cabinet-build-variants",
+    "cabinet-door-drawer-authoring",
+    "export-authoring",
+    "settings-backup-resilience",
+    "cloud-sync-controls",
+    "order-pdf-lifecycle",
+    "project-roundtrip",
+    "project-recovery-proveout"
+  ],
+  "requiredUserJourneyMinimumStepCounts": {
+    "boot-and-shell": 2,
+    "cabinet-build-variants": 4,
+    "cabinet-core-authoring": 2,
+    "cabinet-door-drawer-authoring": 4,
+    "cloud-sync-controls": 2,
+    "export-authoring": 5,
+    "order-pdf-lifecycle": 2,
+    "project-recovery-proveout": 3,
+    "project-roundtrip": 4,
+    "settings-backup-resilience": 2
+  },
+  "requiredRuntimeOutcomeCoverage": {
+    "project.load": {
+      "error": 1,
+      "ok": 1
+    },
+    "project.restoreLastSession": {
+      "mark": 1,
+      "ok": 1
+    },
+    "settingsBackup.import": {
+      "error": 1,
+      "ok": 2
+    }
+  },
+  "requiredRuntimeStatusTransitions": {
+    "project.load": {
+      "error->ok": 1,
+      "ok->error": 1
+    },
+    "project.restoreLastSession": {
+      "mark->ok": 1,
+      "ok->mark": 1
+    },
+    "settingsBackup.import": {
+      "error->ok": 1,
+      "ok->error": 1
+    }
+  },
+  "requiredRuntimeRecoverySequences": {
+    "project.load": {
+      "cleanRecoveryCount": 1,
+      "maxRecoverySpanEntries": 1,
+      "maxRelapseCount": 0,
+      "minPostRecoveryOkStreak": 3,
+      "recoveredCount": 1,
+      "stableRecoveryCount": 1,
+      "unresolvedCount": 0
+    },
+    "project.restoreLastSession": {
+      "cleanRecoveryCount": 1,
+      "maxRecoverySpanEntries": 1,
+      "maxRelapseCount": 0,
+      "minPostRecoveryOkStreak": 3,
+      "recoveredCount": 1,
+      "stableRecoveryCount": 1,
+      "unresolvedCount": 0
+    },
+    "settingsBackup.import": {
+      "cleanRecoveryCount": 1,
+      "maxRecoverySpanEntries": 1,
+      "maxRelapseCount": 0,
+      "minPostRecoveryOkStreak": 3,
+      "recoveredCount": 1,
+      "stableRecoveryCount": 1,
+      "unresolvedCount": 0
+    }
+  },
+  "requiredStateIntegrityChecks": [
+    "cabinet-build-variants.authoring-matrix.restored-state",
+    "cabinet-build-variants.option-burst.restored-state",
+    "cabinet-build-variants.structure-material-door-burst.restored-state",
+    "cabinet-core.mixed-edit-burst.restored-state",
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip.fixture-state",
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip.reload-state",
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip.restored-authoring-state",
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip.restored-cabinet-core",
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip.saved-project-payload",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.drawer-stack-heavy.fixture-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.drawer-stack-heavy.reload-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.drawer-stack-heavy.saved-project-payload",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.mixed-layout.fixture-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.mixed-layout.reload-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.mixed-layout.saved-project-payload",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.open-niche-remove.fixture-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.open-niche-remove.reload-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.open-niche-remove.saved-project-payload",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.restored-authoring-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.restored-cabinet-core",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.split-heavy-cut.fixture-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.split-heavy-cut.reload-state",
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.split-heavy-cut.saved-project-payload",
+    "cabinet-door-drawer-authoring.mode-burst.cabinet-core-state",
+    "cabinet-door-drawer-authoring.mode-burst.restored-state",
+    "project.load.invalid-preserves-state",
+    "project.load.recovery-clean-window",
+    "project.load.recovery-restores-state",
+    "project.load.recovery-stays-stable",
+    "project.persistence-recovery.load-restores-cabinet-core",
+    "project.persistence-recovery.restore-restores-cabinet-core",
+    "project.restore-last-session.cabinet-core-state",
+    "project.restore-last-session.missing-autosave-preserves-state",
+    "project.restore-last-session.recovery-clean-window",
+    "project.restore-last-session.recovery-restores-state",
+    "project.restore-last-session.recovery-stays-stable",
+    "project.restore-last-session.saved-state",
+    "project.save-load.cabinet-core-state",
+    "settings-backup.invalid-import-preserves-state",
+    "settings-backup.recovery-import-clean-window",
+    "settings-backup.recovery-import-merges-state",
+    "settings-backup.recovery-import-stays-stable",
+    "settings-backup.reimport.idempotent",
+    "settings-backup.roundtrip.saved-state"
+  ]
+}

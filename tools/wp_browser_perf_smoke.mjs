@@ -49,7 +49,8 @@ import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
 const projectRoot = process.cwd();
 const baseUrl = 'http://127.0.0.1:5175';
 const browserPerfRoomId = `browser-perf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-const pageUrl = `${baseUrl}/index_pro.html?room=${encodeURIComponent(browserPerfRoomId)}`;
+const browserPerfRoomCredential = buildBrowserPerfRoomCredential(browserPerfRoomId);
+const pageUrl = `${baseUrl}/index_pro.html#room=${encodeURIComponent(browserPerfRoomId)}&roomToken=${encodeURIComponent(browserPerfRoomCredential.token)}`;
 const latestJsonPath = path.join(projectRoot, '.artifacts/browser-perf/latest.json');
 const latestMdPath = path.join(projectRoot, '.artifacts/browser-perf/latest.md');
 const docPath = path.join(projectRoot, 'docs/BROWSER_PERF_AND_E2E_BASELINE.md');
@@ -84,6 +85,20 @@ function writeJson(filePath, value) {
 function writeText(filePath, value) {
   ensureDir(filePath);
   fs.writeFileSync(filePath, value, 'utf8');
+}
+
+function buildBrowserPerfRoomToken(expiresAtMs) {
+  const encode = value => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ exp: Math.floor(expiresAtMs / 1000) })}.browser-perf-signature`;
+}
+
+function buildBrowserPerfRoomCredential(room) {
+  const expiresAtMs = Date.now() + 7 * 86_400_000;
+  return {
+    room,
+    token: buildBrowserPerfRoomToken(expiresAtMs),
+    expiresAt: new Date(expiresAtMs).toISOString(),
+  };
 }
 
 function ensureTextureFixture(filePath = textureFixturePath) {
@@ -161,18 +176,19 @@ async function installCloudSyncGatewayIsolation(context) {
     } catch {}
     const action = typeof body.action === 'string' ? body.action : '';
     const room = typeof body.room === 'string' ? body.room : '';
-    if (action === 'issue-public' || action === 'create-room') {
-      const issuedRoom = action === 'issue-public' ? 'public' : `room_perf_${Date.now().toString(36)}`;
+    if (action === 'issue-public' || action === 'create-room' || action === 'renew-room') {
+      const issuedRoom =
+        action === 'issue-public'
+          ? 'public'
+          : action === 'renew-room'
+            ? room
+            : `room_perf_${Date.now().toString(36)}`;
       await route.fulfill({
-        status: action === 'issue-public' ? 200 : 201,
+        status: action === 'create-room' ? 201 : 200,
         contentType: 'application/json',
         body: JSON.stringify({
           ok: true,
-          credential: {
-            room: issuedRoom,
-            token: `perf-token-${issuedRoom}`,
-            expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
-          },
+          credential: buildBrowserPerfRoomCredential(issuedRoom),
         }),
       });
       return;
@@ -425,7 +441,10 @@ function mergeBrowserMetrics(existing, incoming) {
 
 async function captureSessionArtifacts(page, result) {
   const [entries, events, diagnostics, browserMetrics] = await Promise.all([
-    page.evaluate(() => window.__WP_PERF__?.getEntries?.() || []),
+    page.evaluate(() => {
+      const captured = window.__WP_BROWSER_PERF_ENTRIES__;
+      return Array.isArray(captured) ? captured.slice() : window.__WP_PERF__?.getEntries?.() || [];
+    }),
     page.evaluate(() => window.__WP_PROJECT_ACTION_EVENTS__ || []),
     page.evaluate(() => window.__WP_PERF__?.getErrorHistory?.() || []),
     page.evaluate(() => window.__WP_PERF__?.getBrowserMetrics?.() || null),
@@ -440,11 +459,29 @@ async function captureSessionArtifacts(page, result) {
 }
 
 async function readPerfSummary(page) {
-  return await page.evaluate(() => window.__WP_PERF__?.getSummary?.() || {});
+  return await page.evaluate(() => {
+    const summary = window.__WP_PERF__?.getSummary?.() || {};
+    const captured = window.__WP_BROWSER_PERF_ENTRIES__;
+    if (!Array.isArray(captured)) return summary;
+
+    const counts = {};
+    for (const entry of captured) {
+      const name = typeof entry?.name === 'string' ? entry.name : '';
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    }
+    for (const [name, count] of Object.entries(counts)) {
+      summary[name] = { ...(summary[name] || {}), count };
+    }
+    return summary;
+  });
 }
 
 async function readPerfEntries(page, name) {
-  return await page.evaluate(metricName => window.__WP_PERF__?.getEntries?.(metricName) || [], name);
+  return await page.evaluate(metricName => {
+    const captured = window.__WP_BROWSER_PERF_ENTRIES__;
+    if (!Array.isArray(captured)) return window.__WP_PERF__?.getEntries?.(metricName) || [];
+    return captured.filter(entry => entry?.name === metricName);
+  }, name);
 }
 
 async function readStoreDebugStats(page) {
@@ -590,11 +627,17 @@ function stableStateFingerprintText(fingerprint) {
   return JSON.stringify(normalizeUiStateFingerprint(fingerprint));
 }
 
-function withPreservedProjectName(expected, projectName) {
-  return normalizeUiStateFingerprint({
-    ...normalizeUiStateFingerprint(expected),
-    projectName: typeof projectName === 'string' ? projectName : '',
-  });
+function withMergedSavedColorValues(current, imported) {
+  const normalizedCurrent = normalizeUiStateFingerprint(current);
+  const normalizedImported = normalizeUiStateFingerprint(imported);
+  const savedColorValues = Array.from(
+    new Set([...normalizedCurrent.savedColorValues, ...normalizedImported.savedColorValues])
+  ).sort((left, right) => left.localeCompare(right));
+  return {
+    ...normalizedCurrent,
+    savedColorCount: savedColorValues.length,
+    savedColorValues,
+  };
 }
 
 async function readUiStateFingerprint(page) {
@@ -811,6 +854,18 @@ async function installClipboardCapture(page) {
         value: FakeClipboardItem,
       });
     }
+  });
+}
+
+async function installPerfEntryCapture(page) {
+  await page.addInitScript(() => {
+    const win = window;
+    win.__WP_BROWSER_PERF_ENTRIES__ = [];
+    window.addEventListener('wardrobepro:perf-entry', event => {
+      const entry = event?.detail;
+      if (!entry || typeof entry !== 'object') return;
+      win.__WP_BROWSER_PERF_ENTRIES__?.push(entry);
+    });
   });
 }
 
@@ -1942,6 +1997,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   const page = await context.newPage();
   await installInitialStorageReset(page);
   await installClipboardCapture(page);
+  await installPerfEntryCapture(page);
 
   const result = {
     version: 12,
@@ -3021,17 +3077,17 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           await openMainTab(page, 'design');
           await deleteSavedDesignColor(page, expectedImportedState.savedColorValues[0]);
         }
-        const recoveryImportExpectedState = withPreservedProjectName(
-          expectedImportedState || expectedState,
-          (await readUiStateFingerprint(page)).projectName
+        const recoveryImportExpectedState = withMergedSavedColorValues(
+          await readUiStateFingerprint(page),
+          expectedImportedState || expectedState
         );
         await importSettingsBackupFromFile(page, settingsBackupPath);
         await assertUiStateFingerprint(
           result,
           page,
-          'settings-backup.recovery-import-restores-state',
+          'settings-backup.recovery-import-merges-state',
           recoveryImportExpectedState,
-          'A valid settings backup import after an invalid import should recover the canonical backup state'
+          'A valid settings backup import after an invalid import should merge canonical backup colors into the current state'
         );
 
         if (
@@ -3042,9 +3098,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           await openMainTab(page, 'design');
           await deleteSavedDesignColor(page, expectedImportedState.savedColorValues[0]);
         }
-        const stableRecoveryImportExpectedState = withPreservedProjectName(
-          expectedImportedState || expectedState,
-          (await readUiStateFingerprint(page)).projectName
+        const stableRecoveryImportExpectedState = withMergedSavedColorValues(
+          await readUiStateFingerprint(page),
+          expectedImportedState || expectedState
         );
         await importSettingsBackupFromFile(page, settingsBackupPath);
         await assertUiStateFingerprint(
@@ -3063,9 +3119,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           await openMainTab(page, 'design');
           await deleteSavedDesignColor(page, expectedImportedState.savedColorValues[0]);
         }
-        const cleanRecoveryImportExpectedState = withPreservedProjectName(
-          expectedImportedState || expectedState,
-          (await readUiStateFingerprint(page)).projectName
+        const cleanRecoveryImportExpectedState = withMergedSavedColorValues(
+          await readUiStateFingerprint(page),
+          expectedImportedState || expectedState
         );
         await importSettingsBackupFromFile(page, settingsBackupPath);
         await assertUiStateFingerprint(
