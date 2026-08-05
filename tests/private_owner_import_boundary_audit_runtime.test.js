@@ -9,10 +9,7 @@ import {
   runPrivateOwnerImportBoundaryAudit,
 } from '../tools/wp_private_owner_import_boundary_audit.mjs';
 
-const EMPTY_TOPOLOGY = {
-  candidateCount: 0,
-  sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-};
+const EMPTY_REVIEWED_FACADES = [];
 
 function tempProject() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-private-owner-imports-'));
@@ -79,7 +76,7 @@ test('private owner import boundary audit allows facade and sibling owners but r
       },
     ],
     justifiedOneLineFacades: [],
-    oneLineFacadeBaseline: EMPTY_TOPOLOGY,
+    reviewedOneLineFacades: EMPTY_REVIEWED_FACADES,
   });
 
   assert.equal(result.ok, false);
@@ -99,7 +96,7 @@ test('private owner import boundary audit passes on the live registered owner fa
   assert.ok(result.families.some(family => family.id === 'services:drawer-cross-family'));
   assert.ok(result.privateOwners >= 30);
   assert.ok(result.importSites.length >= result.privateOwners);
-  assert.equal(result.oneLineFacadeTopologyMismatch.length, 0);
+  assert.equal(result.reviewedOneLineFacadeMismatches.length, 0);
   assert.ok(result.oneLineFacades.length > 0);
 });
 
@@ -111,11 +108,39 @@ test('private facade topology rejects an unregistered identity-only wrapper', ()
   const result = runPrivateOwnerImportBoundaryAudit(projectRoot, {
     families: [],
     justifiedOneLineFacades: [],
-    oneLineFacadeBaseline: EMPTY_TOPOLOGY,
+    reviewedOneLineFacades: EMPTY_REVIEWED_FACADES,
   });
 
   assert.equal(result.ok, false);
-  assert.equal(result.oneLineFacadeTopology.candidateCount, 1);
-  assert.equal(result.oneLineFacadeTopologyMismatch.length, 1);
-  assert.match(result.oneLineFacadeTopologyMismatch[0], /identity-only facade topology changed/);
+  assert.equal(result.unreviewedOneLineFacades.length, 1);
+  assert.equal(result.reviewedOneLineFacadeMismatches.length, 1);
+  assert.match(result.reviewedOneLineFacadeMismatches[0], /unreviewed identity-only facade/);
+});
+
+test('private facade topology reports explicit importer drift instead of an opaque hash mismatch', () => {
+  const projectRoot = tempProject();
+  writeFile(path.join(projectRoot, 'esm/native/owner.ts'), 'export const value = 1;\n');
+  writeFile(path.join(projectRoot, 'esm/native/orphan_facade.ts'), "export { value } from './owner.js';\n");
+  writeFile(
+    path.join(projectRoot, 'esm/native/consumer.ts'),
+    "import { value } from './orphan_facade.js';\nexport const result = value;\n"
+  );
+
+  const result = runPrivateOwnerImportBoundaryAudit(projectRoot, {
+    families: [],
+    justifiedOneLineFacades: [],
+    reviewedOneLineFacades: [
+      { path: 'esm/native/orphan_facade.ts', importer: 'esm/native/other_consumer.ts' },
+    ],
+  });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.reviewedOneLineFacadeImporterDrift, [
+    {
+      file: 'esm/native/orphan_facade.ts',
+      expectedImporter: 'esm/native/other_consumer.ts',
+      actualImporter: 'esm/native/consumer.ts',
+    },
+  ]);
+  assert.match(result.reviewedOneLineFacadeMismatches[0], /importer changed/);
 });

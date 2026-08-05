@@ -75,15 +75,15 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 - compatibility and persistence-ingress tests must state the current boundary or behavior they protect;
 - architecture contracts must have one canonical owner in `tools/wp_contract_registry.mjs`;
 - stage/wave/checkpoint/delete-pass proof files are rejected; durable tests are named by capability;
-- overlap between contract, source-guard, and ownership coverage is mapped so redundant current proofs can be consolidated deliberately;
+- overlap between contract, source-guard, and ownership coverage is mapped only for live production targets, so retired-path negative fixtures do not masquerade as current architecture and redundant current proofs can be consolidated deliberately;
 - named test groups must not contain duplicate or missing files.
 - repository-wide Layer Contract collection must remain behind the one cached central fixture.
 
-Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Each group declares its package-script binding, verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
+Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Direct `test:*` commands are capped at four test-file references; a fifth file means the lane needs a catalog owner rather than a longer shell string. Each group declares its package-script binding, verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
 
 Use `portfolioRole: primary` only for non-overlapping top-level portfolio ownership. Use `focused` for targeted suites that intentionally reuse files from broader lanes, and `architecture` for long-lived guard collections. Primary overlap is a control-plane error; focused overlap is explicit and allowed.
 
-Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; plus focused runtime families such as Structure Tab, Mirror, Sketch Box, Order PDF, Cloud Sync, and Sketch surfaces. Package scripts remain short facades and do not duplicate those file lists or serial policies. Architecture ownership lives in the contract registry, not in a second test group that reruns tests already reached by `npm test`.
+Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; focused Structure Tab, Mirror, Sketch Box, Order PDF, Cloud Sync, and Sketch families; and the builder, runtime-access, domain, render, door-build, state/config, canonical-access, overlay/export, service, performance, and no-main lanes that previously lived as long package commands. Package scripts remain short facades and do not duplicate those file lists or serial policies. Architecture ownership lives in the contract registry, not in a second test group that reruns tests already reached by `npm test`.
 
 The generated catalog can be inspected with:
 

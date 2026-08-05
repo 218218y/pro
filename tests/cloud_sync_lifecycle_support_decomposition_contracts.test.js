@@ -4,10 +4,6 @@ import assert from 'node:assert/strict';
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
 const facade = readSource('../esm/native/services/cloud_sync_lifecycle_support.ts', import.meta.url);
-const sharedFacade = readSource(
-  '../esm/native/services/cloud_sync_lifecycle_support_shared.ts',
-  import.meta.url
-);
 const bindingsOwner = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_bindings.ts',
   import.meta.url
@@ -21,7 +17,7 @@ const realtimeOwner = readSource(
   import.meta.url
 );
 
-test('[cloud-sync-lifecycle-support] facade and shared layer stay thin while bindings, refresh, and realtime owners hold behavior', () => {
+test('[cloud-sync-lifecycle-support] facade stays thin while bindings, refresh, and realtime owners hold behavior', () => {
   assertMatchesAll(
     assert,
     facade,
@@ -42,28 +38,6 @@ test('[cloud-sync-lifecycle-support] facade and shared layer stay thin while bin
       /export function syncCloudSyncRealtimeStatusInPlace\(/,
     ],
     'facade'
-  );
-
-  assertMatchesAll(
-    assert,
-    sharedFacade,
-    [
-      /cloud_sync_lifecycle_support_bindings\.js/,
-      /cloud_sync_lifecycle_support_refresh\.js/,
-      /cloud_sync_lifecycle_support_realtime\.js/,
-      /export \{ requestCloudSyncLifecycleRefresh \}/,
-    ],
-    'sharedFacade'
-  );
-  assertLacksAll(
-    assert,
-    sharedFacade,
-    [
-      /export function addCloudSyncLifecycleListener\(/,
-      /export function requestCloudSyncLifecycleRefresh\(/,
-      /export function syncCloudSyncRealtimeStatusInPlace\(/,
-    ],
-    'sharedFacade'
   );
 
   assertMatchesAll(

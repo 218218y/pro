@@ -15,7 +15,6 @@ const ownerContext = bundleSources(
     '../esm/native/services/cloud_sync_owner_context.ts',
     '../esm/native/services/cloud_sync_owner_context_shared.ts',
     '../esm/native/services/cloud_sync_owner_context_create.ts',
-    '../esm/native/services/cloud_sync_owner_context_runtime.ts',
     '../esm/native/services/cloud_sync_owner_context_runtime_shared.ts',
     '../esm/native/services/cloud_sync_owner_context_runtime_access.ts',
     '../esm/native/services/cloud_sync_owner_context_runtime_client.ts',

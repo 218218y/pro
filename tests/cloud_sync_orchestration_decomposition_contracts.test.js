@@ -42,10 +42,6 @@ const panelSurfaceRuntimeOwner = readSource(
 );
 
 const lifecycleFacade = readSource('../esm/native/services/cloud_sync_lifecycle_support.ts', import.meta.url);
-const lifecycleSharedFacade = readSource(
-  '../esm/native/services/cloud_sync_lifecycle_support_shared.ts',
-  import.meta.url
-);
 const lifecycleBindingsOwner = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_bindings.ts',
   import.meta.url
@@ -247,26 +243,6 @@ test('[cloud-sync-orchestration] panel api install and lifecycle support stay th
       /export function addCloudSyncLifecycleListener\(/,
     ],
     'lifecycleFacade'
-  );
-  assertMatchesAll(
-    assert,
-    lifecycleSharedFacade,
-    [
-      /cloud_sync_lifecycle_support_bindings\.js/,
-      /cloud_sync_lifecycle_support_refresh\.js/,
-      /cloud_sync_lifecycle_support_realtime\.js/,
-    ],
-    'lifecycleSharedFacade'
-  );
-  assertLacksAll(
-    assert,
-    lifecycleSharedFacade,
-    [
-      /export function addCloudSyncLifecycleListener\(/,
-      /export function requestCloudSyncLifecycleRefresh\(/,
-      /export function syncCloudSyncRealtimeStatusInPlace\(/,
-    ],
-    'lifecycleSharedFacade'
   );
   assertMatchesAll(
     assert,

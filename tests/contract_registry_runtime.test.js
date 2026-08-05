@@ -7,6 +7,7 @@ import { runContractRegistryAudit } from '../tools/wp_contract_registry_audit.mj
 import {
   collectContractOverlapTargets,
   collectDirectRepositoryLayerScanTests,
+  collectOversizedDirectPackageTestScripts,
   collectRetiredLayerLedgerAccessTests,
 } from '../tools/wp_test_portfolio_audit.mjs';
 
@@ -29,7 +30,19 @@ test('cross-kind ownership overlap is explicitly mapped by the portfolio audit',
   const overlaps = collectContractOverlapTargets();
   assert.equal(Array.isArray(overlaps), true);
   assert.equal(
-    overlaps.every(entry => entry.kinds.length > 1 && entry.owners.length > 1),
+    overlaps.every(entry => entry.kinds.length > 1 && entry.owners.length > 1 && fs.existsSync(entry.target)),
     true
   );
+  assert.equal(
+    overlaps.some(entry => entry.target === 'esm/shared/wardrobe_dimension_tokens_shared.ts'),
+    false
+  );
+  assert.equal(
+    overlaps.some(entry => entry.target === 'esm/native/features/dimensions/index.ts'),
+    false
+  );
+});
+
+test('large named package test lanes are catalog-backed short facades', () => {
+  assert.deepEqual(collectOversizedDirectPackageTestScripts(), []);
 });

@@ -142,7 +142,6 @@ test('[runtime-config-platform] platform hot paths keep browser timers and fetch
   const platform = read('esm/native/platform/platform.ts');
   const cloudOwner = [
     read('esm/native/services/cloud_sync_owner_context.ts'),
-    read('esm/native/services/cloud_sync_owner_context_runtime.ts'),
     read('esm/native/services/cloud_sync_owner_context_runtime_access.ts'),
   ].join('\n');
   const cloudSync = read('esm/native/services/cloud_sync.ts');

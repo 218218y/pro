@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
-const owner = readSource('../esm/native/services/cloud_sync_owner_context_runtime.ts', import.meta.url);
 const shared = readSource(
   '../esm/native/services/cloud_sync_owner_context_runtime_shared.ts',
   import.meta.url
@@ -17,32 +16,7 @@ const client = readSource(
   import.meta.url
 );
 
-test('cloud sync owner context runtime keeps a thin facade over shared/access/client seams', () => {
-  assertMatchesAll(
-    assert,
-    owner,
-    [
-      /cloud_sync_owner_context_runtime_access\.js/,
-      /cloud_sync_owner_context_runtime_client\.js/,
-      /cloud_sync_owner_context_runtime_shared\.js/,
-      /export \{/,
-    ],
-    'cloud sync owner context runtime facade'
-  );
-
-  assertLacksAll(
-    assert,
-    owner,
-    [
-      /getBrowserFetchMaybe\(/,
-      /getBrowserTimers\(/,
-      /getStorageServiceMaybe\(/,
-      /sessionStorage/,
-      /randomCloudSyncIdSegment\(/,
-    ],
-    'cloud sync owner context runtime facade'
-  );
-
+test('cloud sync owner context runtime keeps shared, access, and client responsibilities in focused owners', () => {
   assertMatchesAll(
     assert,
     shared,
@@ -76,5 +50,18 @@ test('cloud sync owner context runtime keeps a thin facade over shared/access/cl
     client,
     [/sessionStorage/, /randomCloudSyncIdSegment\(/, /resolveCloudSyncClientId/, /CLOUD_SYNC_CLIENT_KEY/],
     'cloud sync owner context runtime client'
+  );
+
+  assertLacksAll(
+    assert,
+    shared,
+    [/getBrowserFetchMaybe\(/, /getBrowserTimers\(/, /getStorageServiceMaybe\(/, /sessionStorage/],
+    'cloud sync owner context runtime shared'
+  );
+  assertLacksAll(
+    assert,
+    access,
+    [/sessionStorage/, /randomCloudSyncIdSegment\(/],
+    'cloud sync owner context runtime access'
   );
 });

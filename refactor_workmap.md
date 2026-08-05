@@ -11,9 +11,10 @@ This is the root pointer for future architecture work. It links only to the curr
 ## Current Baseline
 
 - The numbered refactor track is closed. `tools/wp_contract_registry.mjs` records current architecture invariants; historical stage proof files are not part of the active control plane.
+- Phase 5 test/control-plane simplification is closed: historical proof files and dead identity wrappers are removed, large named test lanes are catalog-backed, and package.json no longer owns long test-file inventories.
 - New work requires a real bug, measured performance regression, missing behavior coverage, or newly proven ownership seam.
 - Import cycles are a guardrail, not an active decomposition target: `check:import-cycles` currently covers `esm` and `types`.
-- Private facade/owner splits and the one-line-facade topology ratchet are guarded by `check:private-owner-imports`.
+- Private facade/owner splits are guarded by `check:private-owner-imports`; justified entry facades live in the registry and the reviewed single-consumer identity topology is explicit in `tools/wp_identity_facade_inventory.json`.
 - Legacy/fallback inventory is camelCase/PascalCase-aware, category-locked, and now excludes the cleaned prefixed-map alias helper names and cornice envelope helper names, and renderer-lighting local helper names.
 - Project import behavior is guarded by `check:project-import-fixtures` with real JSON fixtures.
 - CSS cascade debt is ratcheted by `check:css-style` using `tools/wp_css_style_budget.json`.

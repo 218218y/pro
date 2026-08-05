@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-05T08:45:30.592Z
+Generated: 2026-08-05T10:48:49.813Z
 
 ## Summary
 
@@ -8,17 +8,18 @@ Generated: 2026-08-05T08:45:30.592Z
 - Canonical unit/runtime runner files: 1220
 - Playwright E2E files excluded from unit runner: 8
 - Helpers/fixtures excluded by filename contract: 35
-- Package script test references: 200
-- Catalog test references: 290
+- Package script test references: 38
+- Catalog test references: 452
 - Total explicit test references: 490
-- Catalog groups: 28
-- Catalog-backed package scripts: 28
+- Oversized direct package test lanes: 0
+- Catalog groups: 43
+- Catalog-backed package scripts: 43
 - Primary non-overlapping portfolio groups: 5
 - Tests directly invoking the repository layer graph: 0
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 18
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 171
+- Cross-kind contract overlap targets: 169
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -37,6 +38,7 @@ Generated: 2026-08-05T08:45:30.592Z
 | Test groups contain no duplicate file membership                   |        0 |
 | Test-group catalog definitions are valid                           |        0 |
 | Catalog script bindings match package.json facades                 |        0 |
+| Direct package test lanes contain at most 4 files                  |        0 |
 | Contract registry is valid and wired once                          |        0 |
 | Historical stage/wave/checkpoint proof files are retired           |        0 |
 | Unit runner has no duplicate files                                 |        0 |
@@ -90,7 +92,6 @@ Generated: 2026-08-05T08:45:30.592Z
 - `esm/native/builder/visuals_chest_mode_inputs.ts` — contract / ownership — `tests/builder_surface_family_contracts.test.js`, `tests/chest_mode_inputs_ownership_contract.test.js`, `tests/dimension_composition_owner_remaining_contract.test.js`
 - `esm/native/core/api.ts` — contract / ownership — `tests/core_engine_entrypoints_guard.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/data/preset_models_data.ts` — contract / ownership — `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_dimension_ownership_closeout_contract.test.js`, `tests/preset_models_data_dimension_ownership_contract.test.js`, `tests/preset_models_dimension_defaults_owner_contract.test.js`
-- `esm/native/features/dimensions/index.ts` — contract / ownership — `tests/build_flow_plan_inputs_dimension_ownership_contract.test.js`, `tests/interior_fittings_builder_pair_ownership_contract.test.js`, `tests/interior_layout_presets_feature_ownership_contract.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_flow_layout_ownership_contract.test.js`, `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/structure_tab_auto_width_policy_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_sanitization_policy_ownership_contract.test.js`
 - `esm/native/features/library_preset/library_preset_flow_shared.ts` — contract / ownership — `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_flow_layout_ownership_contract.test.js`, `tests/settings_visual_library_preset_contracts.test.js`
 - `esm/native/features/library_preset/module_defaults.ts` — contract / ownership — `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/settings_visual_library_preset_contracts.test.js`
 - `esm/native/features/modules_configuration/module_defaults.ts` — contract / ownership — `tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js`, `tests/library_preset_dimension_owner_contract.test.js`
@@ -218,8 +219,7 @@ Generated: 2026-08-05T08:45:30.592Z
 - `esm/shared/dimensions/units.ts` — contract / ownership — `tests/carcass_interior_dimension_ownership_closeout_contract.test.js`, `tests/core_module_layout_ownership_runtime.test.ts`, `tests/dimension_composition_owner_remaining_contract.test.js`, `tests/module_depth_ownership_runtime.test.ts`, `tests/no_main_sketch_dimension_ownership_contract.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`
 - `esm/shared/dimensions/wardrobe_default_resolution_policy.ts` — contract / ownership — `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/structure_tab_auto_width_policy_ownership_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/wardrobe_sanitization_policy_ownership_contract.test.js`
 - `esm/shared/dimensions/wardrobe_defaults.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/default_state_dimension_ownership_contract.test.js`, `tests/default_state_dimension_ownership_runtime.test.ts`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/no_main_sketch_dimension_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_sanitization_policy_ownership_contract.test.js`
-- `esm/shared/wardrobe_dimension_tokens_shared.ts` — contract / ownership — `tests/build_flow_plan_inputs_dimension_ownership_contract.test.js`, `tests/carcass_base_dimension_ownership_closeout_contract.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/carcass_interior_dimension_ownership_closeout_contract.test.js`, `tests/interior_fittings_builder_pair_ownership_contract.test.js`, `tests/interior_layout_presets_feature_ownership_contract.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_flow_layout_ownership_contract.test.js`, `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/material_dimension_ownership_closeout_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/sketch_box_preview_ownership_closeout_contract.test.js`, `tests/structure_tab_auto_width_policy_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_dimension_runtime_public_surface_contract.test.js`, `tests/wardrobe_sanitization_policy_ownership_contract.test.js`
 
 ## Policy
 
-This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Current behavior, persistence ingress, and architecture invariants remain first-class categories.
+This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Large named test lanes must live in the catalog rather than package.json. Current behavior, persistence ingress, and architecture invariants remain first-class categories.

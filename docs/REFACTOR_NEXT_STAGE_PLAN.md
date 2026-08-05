@@ -6,9 +6,9 @@ The numbered refactor track is closed. This file is the current decision gate fo
 
 - `tools/wp_contract_registry.mjs` registers each canonical architecture contract with one owner, one package lane, its scope, and focused behavior evidence.
 - `tools/wp_private_owner_import_boundary_audit.mjs` enforces registered facade/private-owner families through one data-driven import audit.
-- The same audit maintains a quiet topology ratchet for identity-only private wrappers. A new one-line facade needs an explicit registry justification; deleting an obsolete wrapper lowers the baseline.
-- `tools/wp_test_portfolio_audit.mjs` owns test reachability, group integrity, historical-stage rejection, and overlap mapping.
-- Capability-named runtime and ownership tests preserve current behavior. Historical `refactor_stage*` proof files are not an accepted substitute.
+- The same audit owns identity-only private-wrapper topology. Deliberate facades need an explicit registry justification; reviewed single-consumer wrappers live in `tools/wp_identity_facade_inventory.json` with their exact importer, and dead wrappers are removed rather than preserved as compatibility archaeology.
+- `tools/wp_test_portfolio_audit.mjs` owns test reachability, group integrity, historical-stage rejection, overlap mapping, and the rule that large direct package test lists must move into the canonical group catalog.
+- Capability-named runtime and ownership tests preserve current behavior. Historical `refactor_stage*` proof files are not an accepted substitute. Phase 5 control-plane cleanup is complete: historical proof files are absent, dead identity wrappers are absent, current wrapper topology is explicit, and large named test lanes are catalog-backed.
 
 ## Professional change gate
 

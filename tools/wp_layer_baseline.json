@@ -5,7 +5,7 @@
     "mode": "decrease-only",
     "owner": "architecture-contract",
     "reason": "V2.2 establishes complete AST budgets including TypeScript import-type queries; from this reviewed baseline proposals may lower ceilings after verified dependency removal but never raise them to absorb growth.",
-    "reviewedAt": "2026-08-03",
+    "reviewedAt": "2026-08-05",
     "pendingReductionGraceDays": 14
   },
   "rules": [
@@ -713,12 +713,12 @@
       "from": "ui",
       "to": "services",
       "decision": "allow",
-      "maxImporterCount": 174,
-      "maxImportCount": 194,
-      "maxTypeImporterCount": 17,
-      "maxTypeImportCount": 17,
-      "maxValueImporterCount": 170,
-      "maxValueImportCount": 188,
+      "maxImporterCount": 173,
+      "maxImportCount": 192,
+      "maxTypeImporterCount": 16,
+      "maxTypeImportCount": 16,
+      "maxValueImporterCount": 169,
+      "maxValueImportCount": 187,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "UI uses the canonical services facade instead of runtime or owner internals."

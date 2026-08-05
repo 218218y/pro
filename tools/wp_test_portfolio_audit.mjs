@@ -26,6 +26,7 @@ const shouldPrint = !args.has('--no-print');
 const PACKAGE_TEST_REF_RE =
   /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
 const REPOSITORY_LAYER_GRAPH_CALL = 'collectLayerContractGraph(';
+const MAX_DIRECT_TEST_REFS_PER_PACKAGE_SCRIPT = 4;
 const REPOSITORY_LAYER_GRAPH_OWNER = 'tests/helpers/repository_layer_contract_fixture.mjs';
 const RETIRED_LAYER_LEDGER_ACCESS_RE =
   /\.\s*(?:migrationBudgets|migrationRetirements|migrationConsolidations)\b/u;
@@ -96,6 +97,14 @@ export function isHistoricalArchitectureProofFile(rel) {
   return HISTORICAL_PROOF_NAME_RE.test(path.posix.basename(rel));
 }
 
+function resolveLiveContractTarget(projectRoot, rawTarget) {
+  const normalized = rawTarget.replace(/^\.\.\//u, '');
+  const candidates = normalized.endsWith('.js')
+    ? [normalized.replace(/\.js$/u, '.ts'), normalized.replace(/\.js$/u, '.tsx'), normalized]
+    : [normalized];
+  return candidates.find(candidate => fs.existsSync(path.join(projectRoot, candidate))) ?? null;
+}
+
 export function collectContractOverlapTargets(projectRoot = ROOT, testFiles = null) {
   const files = testFiles ?? listCanonicalTestFiles(projectRoot).map(normalize);
   const targetOwners = new Map();
@@ -104,9 +113,9 @@ export function collectContractOverlapTargets(projectRoot = ROOT, testFiles = nu
     if (!kind) continue;
     const source = fs.readFileSync(path.join(projectRoot, file), 'utf8');
     const targets = new Set(
-      [...source.matchAll(CONTRACT_SOURCE_REF_RE)].map(match =>
-        match[1].replace(/^\.\.\//u, '').replace(/\.js$/u, '.ts')
-      )
+      [...source.matchAll(CONTRACT_SOURCE_REF_RE)]
+        .map(match => resolveLiveContractTarget(projectRoot, match[1]))
+        .filter(Boolean)
     );
     for (const target of targets) {
       if (!targetOwners.has(target)) targetOwners.set(target, []);
@@ -131,6 +140,19 @@ function collectPackageTestRefs() {
     for (const file of matches) refs.push({ script, file });
   }
   return refs;
+}
+
+export function collectOversizedDirectPackageTestScripts(packageRefs = collectPackageTestRefs()) {
+  const refsByScript = new Map();
+  for (const ref of packageRefs) {
+    if (!String(ref.script || '').startsWith('test:')) continue;
+    if (!refsByScript.has(ref.script)) refsByScript.set(ref.script, []);
+    refsByScript.get(ref.script).push(ref.file);
+  }
+  return [...refsByScript]
+    .filter(([, files]) => files.length > MAX_DIRECT_TEST_REFS_PER_PACKAGE_SCRIPT)
+    .map(([script, files]) => ({ script, files: [...files] }))
+    .sort((left, right) => left.script.localeCompare(right.script));
 }
 
 function collectCatalogTestRefs() {
@@ -183,6 +205,7 @@ export function buildReport() {
     ...packageRefs.map(ref => ({ source: 'package', owner: ref.script, ...ref })),
     ...catalogRefs.map(ref => ({ source: 'catalog', owner: ref.group, ...ref })),
   ];
+  const oversizedDirectPackageTestScripts = collectOversizedDirectPackageTestScripts(packageRefs);
   const categories = {
     contract: 0,
     'runtime-unit': 0,
@@ -227,6 +250,7 @@ export function buildReport() {
       packageTestReferences: packageRefs.length,
       catalogTestReferences: catalogRefs.length,
       totalTestReferences: refs.length,
+      oversizedDirectPackageTestScripts: oversizedDirectPackageTestScripts.length,
       catalogGroups: groupCatalogReport.summary.groups,
       catalogScriptBindings: groupCatalogReport.summary.scriptBindings,
       primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
@@ -242,6 +266,7 @@ export function buildReport() {
       duplicateCatalogRefs,
       invalidCatalogDefinitions: groupCatalogReport.failures.catalogIssues,
       staleCatalogScriptBindings: groupCatalogReport.failures.bindingIssues,
+      oversizedDirectPackageTestScripts,
       contractRegistry: contractRegistryReport.failures,
       historicalArchitectureProofs,
       duplicateRunnerFiles,
@@ -267,6 +292,7 @@ function renderMarkdown(report) {
     `- Package script test references: ${report.totals.packageTestReferences}`,
     `- Catalog test references: ${report.totals.catalogTestReferences}`,
     `- Total explicit test references: ${report.totals.totalTestReferences}`,
+    `- Oversized direct package test lanes: ${report.totals.oversizedDirectPackageTestScripts}`,
     `- Catalog groups: ${report.totals.catalogGroups}`,
     `- Catalog-backed package scripts: ${report.totals.catalogScriptBindings}`,
     `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
@@ -289,6 +315,9 @@ function renderMarkdown(report) {
   );
   lines.push(
     `| Catalog script bindings match package.json facades | ${report.failures.staleCatalogScriptBindings.length} |`
+  );
+  lines.push(
+    `| Direct package test lanes contain at most ${MAX_DIRECT_TEST_REFS_PER_PACKAGE_SCRIPT} files | ${report.failures.oversizedDirectPackageTestScripts.length} |`
   );
   lines.push(`| Contract registry is valid and wired once | ${report.failures.contractRegistry.length} |`);
   lines.push(
@@ -335,7 +364,7 @@ function renderMarkdown(report) {
   lines.push(
     '## Policy',
     '',
-    'This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Current behavior, persistence ingress, and architecture invariants remain first-class categories.',
+    'This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Large named test lanes must live in the catalog rather than package.json. Current behavior, persistence ingress, and architecture invariants remain first-class categories.',
     ''
   );
   return lines.join('\n');

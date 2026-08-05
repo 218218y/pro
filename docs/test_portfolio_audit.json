@@ -1,21 +1,22 @@
 {
-  "generatedAt": "2026-08-05T08:45:30.592Z",
+  "generatedAt": "2026-08-05T10:48:49.813Z",
   "totals": {
     "tests": 1228,
     "unitRunnerTests": 1220,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
-    "packageTestReferences": 200,
-    "catalogTestReferences": 290,
+    "packageTestReferences": 38,
+    "catalogTestReferences": 452,
     "totalTestReferences": 490,
-    "catalogGroups": 28,
-    "catalogScriptBindings": 28,
+    "oversizedDirectPackageTestScripts": 0,
+    "catalogGroups": 43,
+    "catalogScriptBindings": 43,
     "primaryCatalogGroups": 5,
     "directRepositoryLayerScanTests": 0,
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 18,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 171
+    "contractOverlapTargets": 169
   },
   "categories": {
     "contract": 405,
@@ -30,6 +31,7 @@
     "duplicateCatalogRefs": [],
     "invalidCatalogDefinitions": [],
     "staleCatalogScriptBindings": [],
+    "oversizedDirectPackageTestScripts": [],
     "contractRegistry": [],
     "historicalArchitectureProofs": [],
     "duplicateRunnerFiles": [],
@@ -809,64 +811,6 @@
         {
           "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
           "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/features/dimensions/index.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/library_preset_dimension_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/retired_dimension_import_paths_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -3412,88 +3356,6 @@
         },
         {
           "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
-      "target": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/library_preset_dimension_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/material_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/retired_dimension_import_paths_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_dimension_runtime_public_surface_contract.test.js",
           "kind": "contract"
         },
         {

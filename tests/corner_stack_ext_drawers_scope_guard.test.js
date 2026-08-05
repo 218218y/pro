@@ -8,7 +8,6 @@ const CELL_BUNDLE = bundleSources(
   [
     '../esm/native/builder/corner_wing_cell_emit.ts',
     '../esm/native/builder/corner_wing_cell_interiors.ts',
-    '../esm/native/builder/corner_wing_cell_interiors_shared.ts',
     '../esm/native/builder/corner_wing_cell_interiors_storage.ts',
   ],
   import.meta.url

@@ -71,7 +71,6 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
 test('free-box content commit stays centralized while preserving click safeguards', () => {
   const shared = [
     read('esm/native/services/canvas_picking_sketch_box_content_commit.ts'),
-    read('esm/native/services/canvas_picking_sketch_box_content_commit_shared.ts'),
     read('esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts'),
   ].join('\n');
   const helpers = [

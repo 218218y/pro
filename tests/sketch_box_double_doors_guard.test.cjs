@@ -61,7 +61,6 @@ test('sketch box hover\/click flows route the new double-door tool for both modu
   const commit = [
     read('esm/native/services/canvas_picking_sketch_box_content_commit.ts'),
     read('esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts'),
-    read('esm/native/services/canvas_picking_sketch_box_content_commit_shared.ts'),
     read('esm/native/services/canvas_picking_sketch_box_content_commit_boxes.ts'),
   ].join('\n');
   const freeCommit = read('esm/native/services/canvas_picking_sketch_free_commit.ts');

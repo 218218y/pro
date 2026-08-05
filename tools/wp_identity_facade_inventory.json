@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "esm/native/builder/core_storage_compute.ts",
+      "importer": "esm/native/builder/core_pure_compute.ts"
+    },
+    {
+      "path": "esm/native/builder/install.ts",
+      "importer": "esm/boot/boot_manifest_steps.ts"
+    },
+    {
+      "path": "esm/native/builder/post_build_sketch_door_cuts.ts",
+      "importer": "esm/native/builder/post_build_visual_overlays.ts"
+    },
+    {
+      "path": "esm/native/builder/render_interior_sketch_drawers.ts",
+      "importer": "esm/native/builder/render_interior_sketch_ops_extras.ts"
+    },
+    {
+      "path": "esm/native/builder/render_interior_sketch_layout_dimensions.ts",
+      "importer": "esm/native/builder/render_interior_sketch_layout.ts"
+    },
+    {
+      "path": "esm/native/builder/render_interior_sketch_support_apply.ts",
+      "importer": "esm/native/builder/render_interior_sketch_support.ts"
+    },
+    {
+      "path": "esm/native/builder/render_ops_shared.ts",
+      "importer": "esm/native/builder/render_ops.ts"
+    },
+    {
+      "path": "esm/native/builder/scheduler_debug_stats_full.ts",
+      "importer": "esm/native/builder/scheduler_debug_stats.ts"
+    },
+    {
+      "path": "esm/native/builder/visuals_and_contents_door_visual_styles.ts",
+      "importer": "esm/native/builder/visuals_and_contents_door_visual.ts"
+    },
+    {
+      "path": "esm/native/builder/visuals_chest_mode.ts",
+      "importer": "esm/native/builder/visuals_and_contents.ts"
+    },
+    {
+      "path": "esm/native/builder/visuals_contents.ts",
+      "importer": "esm/native/builder/visuals_and_contents.ts"
+    },
+    {
+      "path": "esm/native/core/api.ts",
+      "importer": "esm/native/core/install.ts"
+    },
+    {
+      "path": "esm/native/engine/api.ts",
+      "importer": "esm/native/engine/install.ts"
+    },
+    {
+      "path": "esm/native/features/library_preset/library_preset_flow.ts",
+      "importer": "esm/native/features/library_preset/library_preset.ts"
+    },
+    {
+      "path": "esm/native/features/modules_configuration/corner_cells_snapshot.ts",
+      "importer": "esm/native/features/modules_configuration/corner_cells_api.ts"
+    },
+    {
+      "path": "esm/native/features/project_config/project_config_lists_canonical.ts",
+      "importer": "esm/native/features/project_config/api.ts"
+    },
+    {
+      "path": "esm/native/features/project_config/project_config_snapshot_canonical.ts",
+      "importer": "esm/native/features/project_config/api.ts"
+    },
+    {
+      "path": "esm/native/io/project_io_config_snapshot_canonical.ts",
+      "importer": "esm/native/io/project_io_load_helpers_config.ts"
+    },
+    {
+      "path": "esm/native/kernel/install.ts",
+      "importer": "esm/boot/boot_manifest_steps.ts"
+    },
+    {
+      "path": "esm/native/platform/install.ts",
+      "importer": "esm/boot/boot_manifest_steps.ts"
+    },
+    {
+      "path": "esm/native/platform/three_geometry_cache_patch.ts",
+      "importer": "esm/native/platform/install.ts"
+    },
+    {
+      "path": "esm/native/runtime/api_boot_render_surface.ts",
+      "importer": "esm/native/runtime/api.ts"
+    },
+    {
+      "path": "esm/native/runtime/api_dom_surface.ts",
+      "importer": "esm/native/runtime/api.ts"
+    },
+    {
+      "path": "esm/native/runtime/api_services_state_surface.ts",
+      "importer": "esm/native/runtime/api.ts"
+    },
+    {
+      "path": "esm/native/runtime/builder_service_access_build.ts",
+      "importer": "esm/native/runtime/builder_service_access.ts"
+    },
+    {
+      "path": "esm/native/runtime/render_access_state.ts",
+      "importer": "esm/native/runtime/render_access.ts"
+    },
+    {
+      "path": "esm/native/services/api_actions_surface.ts",
+      "importer": "esm/native/services/api.ts"
+    },
+    {
+      "path": "esm/native/services/api_feature_surface.ts",
+      "importer": "esm/native/services/api.ts"
+    },
+    {
+      "path": "esm/native/services/api_runtime_base_surface.ts",
+      "importer": "esm/native/services/api.ts"
+    },
+    {
+      "path": "esm/native/services/api_services_core_surface.ts",
+      "importer": "esm/native/services/api_services_surface.ts"
+    },
+    {
+      "path": "esm/native/services/api_services_platform_surface.ts",
+      "importer": "esm/native/services/api_services_surface.ts"
+    },
+    {
+      "path": "esm/native/services/api_services_ui_surface.ts",
+      "importer": "esm/native/services/api_services_surface.ts"
+    },
+    {
+      "path": "esm/native/services/api_state_surface.ts",
+      "importer": "esm/native/services/api.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_click_hit_flow_stack.ts",
+      "importer": "esm/native/services/canvas_picking_click_hit_flow.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_door_action_hover_preview.ts",
+      "importer": "esm/native/services/canvas_picking_door_action_hover_marker.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_hover_preview_modes.ts",
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_interior_hover_flow.ts",
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_manual_layout_sketch_hover_tools.ts",
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_sketch.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_box_divider_state.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_box_doors.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_box_overlap_placement.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_box_overlap.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts",
+      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_free_box_geometry.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_free_box_shared.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_free_box_placement_overlap.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_free_box_placement.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_free_box_workflow.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_free_boxes.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_sketch_module_surface_commit.ts",
+      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_split_hover_helpers.ts",
+      "importer": "esm/native/services/canvas_picking_core_helpers.ts"
+    },
+    {
+      "path": "esm/native/services/canvas_picking_toggle_flow_sketch_box.ts",
+      "importer": "esm/native/services/canvas_picking_toggle_flow.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_coalescer.ts",
+      "importer": "esm/native/services/cloud_sync_install_support_coalescer.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_install_lifecycle.ts",
+      "importer": "esm/native/services/cloud_sync_service_install_runtime.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_install_support_publication_shared.ts",
+      "importer": "esm/native/services/cloud_sync_install_support_publication_runtime.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_attention.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_start.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_realtime_channel.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_realtime_support_broadcast.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_realtime_support_status.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_realtime.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_setup.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_shared.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_support_polling_runtime.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_support_polling.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle_support_polling.ts",
+      "importer": "esm/native/services/cloud_sync_lifecycle_support.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_lifecycle.ts",
+      "importer": "esm/native/services/cloud_sync_install_lifecycle_runtime_setup.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_main_row_pull.ts",
+      "importer": "esm/native/services/cloud_sync_main_row.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_main_row_push.ts",
+      "importer": "esm/native/services/cloud_sync_main_row.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_panel_api_install_shared.ts",
+      "importer": "esm/native/services/cloud_sync_panel_api_install.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_sketch_ops_floating_shared.ts",
+      "importer": "esm/native/services/cloud_sync_sketch_ops_floating.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_sketch_ops_floating.ts",
+      "importer": "esm/native/services/cloud_sync_sketch_ops.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_sketch_ops_sketch_shared.ts",
+      "importer": "esm/native/services/cloud_sync_sketch_ops_sketch.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_sketch_ops_sketch.ts",
+      "importer": "esm/native/services/cloud_sync_sketch_ops.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_support_storage.ts",
+      "importer": "esm/native/services/cloud_sync_support.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_tabs_gate_local.ts",
+      "importer": "esm/native/services/cloud_sync_tabs_gate.ts"
+    },
+    {
+      "path": "esm/native/services/cloud_sync_tabs_gate_remote.ts",
+      "importer": "esm/native/services/cloud_sync_tabs_gate.ts"
+    },
+    {
+      "path": "esm/native/services/doors_runtime_lifecycle.ts",
+      "importer": "esm/native/services/doors_runtime.ts"
+    },
+    {
+      "path": "esm/native/services/models_registry_shared.ts",
+      "importer": "esm/native/services/models_registry.ts"
+    },
+    {
+      "path": "esm/native/services/render_surface_runtime_support.ts",
+      "importer": "esm/native/services/render_surface_runtime.ts"
+    },
+    {
+      "path": "esm/native/services/scene_view_store_sync.ts",
+      "importer": "esm/native/services/scene_view.ts"
+    },
+    {
+      "path": "esm/native/ui/export/export_canvas_scene_render.ts",
+      "importer": "esm/native/ui/export/export_canvas_scene.ts"
+    },
+    {
+      "path": "esm/native/ui/export/export_canvas_viewport.ts",
+      "importer": "esm/native/ui/export/export_canvas_shared.ts"
+    },
+    {
+      "path": "esm/native/ui/feedback.ts",
+      "importer": "esm/native/ui/ui_manifest.ts"
+    },
+    {
+      "path": "esm/native/ui/project_recovery_runtime.ts",
+      "importer": "esm/native/ui/react/project_ui_action_controller_recovery.ts"
+    },
+    {
+      "path": "esm/native/ui/project_session_commands.ts",
+      "importer": "esm/native/ui/react/actions/project_actions.ts"
+    },
+    {
+      "path": "esm/native/ui/react/actions/store_actions_config.ts",
+      "importer": "esm/native/ui/react/actions/store_actions.ts"
+    },
+    {
+      "path": "esm/native/ui/react/actions/store_actions_ui.ts",
+      "importer": "esm/native/ui/react/actions/store_actions.ts"
+    },
+    {
+      "path": "esm/native/ui/react/notes/notes_overlay_controller_interactions.ts",
+      "importer": "esm/native/ui/react/notes/notes_overlay_controller_runtime.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/notes/notes_overlay_controller.tsx",
+      "importer": "esm/native/ui/react/notes/NotesOverlay.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/pdf/order_pdf_overlay_component_runtime.ts",
+      "importer": "esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/pdf/order_pdf_overlay_controller_actions.ts",
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts"
+    },
+    {
+      "path": "esm/native/ui/react/pdf/order_pdf_overlay_controller_effects.ts",
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts"
+    },
+    {
+      "path": "esm/native/ui/react/pdf/order_pdf_overlay_pdf_import.ts",
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_component_runtime_apis.ts"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/design_tab_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/DesignTab.view.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/interior_layout_sketch_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/interior_tab_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/InteriorTab.view.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/settings_visual_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/SettingsTab.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/structure_tab_actions_controller_runtime.ts",
+      "importer": "esm/native/ui/react/tabs/use_structure_tab_actions.ts"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/structure_tab_aux_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/structure_tab_sections.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/structure_tab_sections.tsx",
+      "importer": "esm/native/ui/react/tabs/StructureTab.view.tsx"
+    },
+    {
+      "path": "esm/native/ui/react/tabs/structure_tab_structure_mutations.ts",
+      "importer": "esm/native/ui/react/tabs/structure_tab_shared.ts"
+    },
+    {
+      "path": "esm/native/ui/settings_backup.ts",
+      "importer": "esm/native/ui/react/panels/SettingsBackupPanel.tsx"
+    },
+    {
+      "path": "esm/native/ui/ui_boot_controller_runtime.ts",
+      "importer": "esm/native/ui/boot_main.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/chest_mode_build_dimension_policy.ts",
+      "importer": "esm/native/builder/visuals_chest_mode_build.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts",
+      "importer": "esm/native/builder/visuals_chest_mode_inputs.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/core_carcass_dimension_policy.ts",
+      "importer": "esm/native/builder/core_carcass_shared.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/corner_cells_ui_defaults_dimension_policy.ts",
+      "importer": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts",
+      "importer": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/interior_layout_presets_dimension_policy.ts",
+      "importer": "esm/native/features/interior_layout_presets/ops.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts",
+      "importer": "esm/native/builder/render_interior_rod_clearance.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts",
+      "importer": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts",
+      "importer": "esm/native/features/interior_tab_defaults.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/library_preset_flow_dimension_policy.ts",
+      "importer": "esm/native/features/library_preset/library_preset_flow_shared.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts",
+      "importer": "esm/native/features/library_preset/module_defaults.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts",
+      "importer": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts",
+      "importer": "esm/native/features/modules_configuration/module_defaults.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/order_pdf_dimension_policy.ts",
+      "importer": "esm/native/features/order_pdf_dimension_support.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts",
+      "importer": "esm/native/builder/render_preview_interior_hover_apply.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts",
+      "importer": "esm/native/platform/render_loop_motion_doors.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/runtime_default_state_dimension_policy.ts",
+      "importer": "esm/native/runtime/default_state.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts",
+      "importer": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts",
+      "importer": "esm/native/features/sketch_drawer_sizing.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts",
+      "importer": "esm/native/features/sketch_internal_drawer_cassette.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts",
+      "importer": "esm/native/services/canvas_picking_split_hover_preview_line.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts",
+      "importer": "esm/native/builder/build_stack_split_lower_setup.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/stack_split_module_config_dimension_policy.ts",
+      "importer": "esm/native/features/stack_split/module_config.ts"
+    },
+    {
+      "path": "esm/shared/dimensions/structure_tab_dimension_policy.ts",
+      "importer": "esm/native/features/structure_tab_dimension_support.ts"
+    }
+  ]
+}

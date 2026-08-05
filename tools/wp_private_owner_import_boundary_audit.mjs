@@ -1,18 +1,14 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  JUSTIFIED_ONE_LINE_FACADES,
-  LEGACY_ONE_LINE_FACADE_BASELINE,
-  PRIVATE_OWNER_IMPORT_FAMILIES,
-} from './wp_contract_registry.mjs';
+import { JUSTIFIED_ONE_LINE_FACADES, PRIVATE_OWNER_IMPORT_FAMILIES } from './wp_contract_registry.mjs';
 
 export { PRIVATE_OWNER_IMPORT_FAMILIES } from './wp_contract_registry.mjs';
 
 const root = process.cwd();
+const REVIEWED_ONE_LINE_FACADE_INVENTORY = 'tools/wp_identity_facade_inventory.json';
 const SOURCE_FILE_RE = /\.(?:js|mjs|ts|tsx|mts)$/u;
 const IMPORT_FROM_RE = /\bimport\b[^;]*?\bfrom\b\s*['"]([^'"]+)['"]/gu;
 const IMPORT_SIDE_EFFECT_RE = /\bimport\b\s*['"]([^'"]+)['"]/gu;
@@ -164,11 +160,36 @@ export function collectOneLineFacadeTopology(projectRoot, files, dependencySites
   return facades.sort((left, right) => left.file.localeCompare(right.file));
 }
 
+function readReviewedOneLineFacadeInventory(projectRoot) {
+  const file = path.join(projectRoot, REVIEWED_ONE_LINE_FACADE_INVENTORY);
+  if (!fs.existsSync(file)) return [];
+  const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (Number(parsed?.schemaVersion) !== 1 || !Array.isArray(parsed?.entries)) {
+    throw new Error(`${REVIEWED_ONE_LINE_FACADE_INVENTORY}: expected schemaVersion=1 and entries[]`);
+  }
+  return parsed.entries;
+}
+
+function normalizeReviewedOneLineFacades(entries, configErrors) {
+  const reviewed = new Map();
+  for (const entry of entries) {
+    const file = normalizeRel(String(entry?.path || ''));
+    const importer = normalizeRel(String(entry?.importer || ''));
+    if (!file || !importer || reviewed.has(file)) {
+      configErrors.push(`invalid or duplicate reviewed one-line facade: ${file || '<empty>'}`);
+      continue;
+    }
+    reviewed.set(file, importer);
+  }
+  return reviewed;
+}
+
 export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options = {}) {
   const families = (options.families || PRIVATE_OWNER_IMPORT_FAMILIES).map(normalizeFamily);
   const sourceRoots = options.sourceRoots || ['esm'];
   const justifiedOneLineFacades = options.justifiedOneLineFacades || JUSTIFIED_ONE_LINE_FACADES;
-  const oneLineFacadeBaseline = options.oneLineFacadeBaseline || LEGACY_ONE_LINE_FACADE_BASELINE;
+  const reviewedOneLineFacadeEntries =
+    options.reviewedOneLineFacades ?? readReviewedOneLineFacadeInventory(projectRoot);
   const { index: privateOwnerIndex, configErrors } = createPrivateOwnerIndex(families);
   const missingFiles = [];
   for (const family of families) {
@@ -188,6 +209,7 @@ export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options =
     justified.set(file, reason);
   }
   for (const family of families) justified.set(family.publicFacade, family.justification);
+  const reviewedOneLineFacades = normalizeReviewedOneLineFacades(reviewedOneLineFacadeEntries, configErrors);
 
   const files = sourceRoots.flatMap(sourceRoot => walk(path.join(projectRoot, sourceRoot)));
   const dependencySites = [];
@@ -222,37 +244,57 @@ export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options =
   }
 
   const oneLineFacades = collectOneLineFacadeTopology(projectRoot, files, dependencySites);
-  const legacyOneLineFacades = oneLineFacades.filter(entry => !justified.has(entry.file));
-  const legacyOneLineFacadePaths = legacyOneLineFacades.map(entry => entry.file).sort();
-  const oneLineFacadeTopology = {
-    candidateCount: legacyOneLineFacadePaths.length,
-    sha256: crypto.createHash('sha256').update(legacyOneLineFacadePaths.join('\n')).digest('hex'),
-  };
-  const oneLineFacadeTopologyMismatch =
-    oneLineFacadeTopology.candidateCount !== Number(oneLineFacadeBaseline.candidateCount) ||
-    oneLineFacadeTopology.sha256 !== String(oneLineFacadeBaseline.sha256 || '')
-      ? [
-          `identity-only facade topology changed: expected ${oneLineFacadeBaseline.candidateCount}/${oneLineFacadeBaseline.sha256 || '<unset>'}, current ${oneLineFacadeTopology.candidateCount}/${oneLineFacadeTopology.sha256}`,
-        ]
-      : [];
+  const unregisteredOneLineFacades = oneLineFacades.filter(entry => !justified.has(entry.file));
+  const actualReviewedTopology = new Map(
+    unregisteredOneLineFacades.map(entry => [entry.file, entry.importers[0] || ''])
+  );
+  const unreviewedOneLineFacades = unregisteredOneLineFacades.filter(
+    entry => !reviewedOneLineFacades.has(entry.file)
+  );
+  const staleReviewedOneLineFacades = [...reviewedOneLineFacades]
+    .filter(([file]) => !actualReviewedTopology.has(file))
+    .map(([file, importer]) => ({ file, importer }));
+  const reviewedOneLineFacadeImporterDrift = [...reviewedOneLineFacades]
+    .filter(
+      ([file, importer]) => actualReviewedTopology.has(file) && actualReviewedTopology.get(file) !== importer
+    )
+    .map(([file, importer]) => ({
+      file,
+      expectedImporter: importer,
+      actualImporter: actualReviewedTopology.get(file) || '',
+    }));
+  const reviewedOneLineFacadeMismatches = [
+    ...unreviewedOneLineFacades.map(
+      entry => `unreviewed identity-only facade: ${entry.file} (importer: ${entry.importers[0] || '<none>'})`
+    ),
+    ...staleReviewedOneLineFacades.map(
+      entry => `stale reviewed identity-only facade: ${entry.file} (expected importer: ${entry.importer})`
+    ),
+    ...reviewedOneLineFacadeImporterDrift.map(
+      entry =>
+        `identity-only facade importer changed: ${entry.file} expected ${entry.expectedImporter}, current ${entry.actualImporter || '<none>'}`
+    ),
+  ];
 
   return {
     ok:
       configErrors.length === 0 &&
       missingFiles.length === 0 &&
       violations.length === 0 &&
-      oneLineFacadeTopologyMismatch.length === 0,
+      reviewedOneLineFacadeMismatches.length === 0,
     families,
     scannedFiles: files.length,
     privateOwners: privateOwnerIndex.size,
     importSites,
     oneLineFacades,
-    legacyOneLineFacades,
-    oneLineFacadeTopology,
+    reviewedOneLineFacades: unregisteredOneLineFacades,
+    unreviewedOneLineFacades,
+    staleReviewedOneLineFacades,
+    reviewedOneLineFacadeImporterDrift,
     configErrors,
     missingFiles,
     violations,
-    oneLineFacadeTopologyMismatch,
+    reviewedOneLineFacadeMismatches,
   };
 }
 
@@ -260,13 +302,13 @@ function main() {
   const result = runPrivateOwnerImportBoundaryAudit(root);
   if (!result.ok) {
     console.error('[private-owner-imports] FAILED');
-    for (const key of ['configErrors', 'missingFiles', 'violations', 'oneLineFacadeTopologyMismatch']) {
+    for (const key of ['configErrors', 'missingFiles', 'violations', 'reviewedOneLineFacadeMismatches']) {
       for (const error of result[key]) console.error(`- ${error}`);
     }
     process.exit(1);
   }
   console.log(
-    `[private-owner-imports] ok (${result.families.length} families, ${result.privateOwners} private owners, ${result.importSites.length} guarded import sites, ${result.oneLineFacades.length} identity facades, ${result.legacyOneLineFacades.length} on the no-growth ratchet)`
+    `[private-owner-imports] ok (${result.families.length} families, ${result.privateOwners} private owners, ${result.importSites.length} guarded import sites, ${result.oneLineFacades.length} identity facades, ${result.reviewedOneLineFacades.length} explicitly inventoried)`
   );
 }
 

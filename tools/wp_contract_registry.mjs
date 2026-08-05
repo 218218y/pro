@@ -31,7 +31,11 @@ export const ARCHITECTURE_CONTRACT_REGISTRY = Object.freeze([
     kind: 'topology',
     packageScript: 'check:private-owner-imports',
     owner: 'tools/wp_private_owner_import_boundary_audit.mjs',
-    scopes: ['registered public facades', 'private implementation owners', 'one-line facade topology'],
+    scopes: [
+      'registered public facades',
+      'private implementation owners',
+      'reviewed identity-facade inventory',
+    ],
     supportingTests: ['tests/private_owner_import_boundary_audit_runtime.test.js'],
   }),
   contract({
@@ -749,6 +753,10 @@ export const JUSTIFIED_ONE_LINE_FACADES = Object.freeze(
     ['esm/native/builder/scheduler_debug_stats.ts', 'Build-mode alias boundary.'],
     ['esm/native/data/install.ts', 'Boot manifest entry.'],
     ['esm/native/io/project_file_ingress_command.ts', 'Project file ingress command boundary.'],
+    [
+      'esm/native/services/install.ts',
+      'Supported Services installer entry listed by the public API contract.',
+    ],
     ['esm/native/services/canvas_picking_generic_paint_hover.ts', 'Canvas hover use-case entry.'],
     [
       'esm/native/services/canvas_picking_sketch_free_surface_preview_target.ts',
@@ -762,10 +770,3 @@ export const JUSTIFIED_ONE_LINE_FACADES = Object.freeze(
     ['esm/native/ui/notes_export_render.ts', 'Notes export rendering entry.'],
   ].map(([path, reason]) => Object.freeze({ path, reason }))
 );
-
-// Ratchet for identity-only private wrappers that predate the registry. New wrappers must either be
-// justified above (or be a registered family facade) or explicitly replace this baseline after review.
-export const LEGACY_ONE_LINE_FACADE_BASELINE = Object.freeze({
-  candidateCount: 128,
-  sha256: '77395d3ba3c7769a8c22f6993be2cc153409c7ee664702fdfb60d0a967748763',
-});
