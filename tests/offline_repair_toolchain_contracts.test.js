@@ -643,8 +643,8 @@ test('offline TSX scripts install the lock-derived runtime profile without npx o
   );
   assert.equal(pkg.scripts['test:offline:tsx'], 'python tools/selftest_offline_tsx.py');
   assert.match(
-    pkg.scripts['test:offline:wave-c-runtime'],
-    /run_offline_tsx_tests\.py tests\/wave_c1_dimension_consolidation_runtime\.test\.ts/u
+    pkg.scripts['test:offline:dimension-composition-runtime'],
+    /run_offline_tsx_tests\.py tests\/dimension_composition_owner_primary_runtime\.test\.ts tests\/dimension_composition_owner_secondary_runtime\.test\.ts tests\/dimension_composition_owner_remaining_runtime\.test\.ts/u
   );
 
   const bootstrap = fs.readFileSync(path.join(root, 'tools/bootstrap_offline_repair_core.py'), 'utf8');

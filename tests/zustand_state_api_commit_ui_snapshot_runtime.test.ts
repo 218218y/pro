@@ -24,7 +24,7 @@ test('[state-api] commitUiSnapshot commits through the canonical root patch path
     },
     stateKernel: {
       commitFromSnapshot: (_snap: AnyRecord, _meta: AnyRecord) => {
-        throw new Error('delete-pass: should not use raw kernel snapshot commit');
+        throw new Error('canonical path: should not use raw kernel snapshot commit');
       },
     },
   };

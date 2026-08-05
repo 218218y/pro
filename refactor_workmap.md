@@ -1,7 +1,6 @@
 # Refactor Workmap
 
-This is the root workmap pointer for future work. Older long-form workmaps were consolidated on
-2026-05-04, and the remaining stage-update root notes were removed during the 2026-05-11 closeout so there is one clear plan instead of several historical drafts.
+This is the root pointer for future architecture work. It links only to the current planning and engineering policies.
 
 ## Canonical Planning Files
 
@@ -31,21 +30,6 @@ These are the useful remaining upgrade lanes, ordered by value:
 1. Behavior coverage for the last facade splits, especially where a public facade exposes real user-facing behavior rather than only ownership boundaries.
 2. Further CSS cleanup only where it can safely lower remaining `!important`, `z-index`, or `box-shadow` budgets without changing layout behavior.
 3. Targeted performance owner changes only when future `perf:smoke` or `perf:browser` measurements show a real regression, or when a deliberate product decision accepts a measured hotspot improvement.
-
-## Historical Cleanup
-
-The removed root workmaps and stage-update notes were historical inputs, not active source of truth:
-
-- `wardrobepro_refactor_workmap_2026-04-26.md`
-- `wardrobepro_refactor_workmap_2026-04-28.md`
-- `refactor_workmap_next_phase_2026-05-03.md`
-- the root `new refactor_workmap` draft
-- `README_UPDATED_PLAN_FILES.md`
-- `UPGRADE_COMPLETION_WORKPLAN_STAGE7_UPDATED.md`
-- `UPGRADE_COMPLETION_WORKPLAN_STAGE8_UPDATED.md`
-- `UPGRADE_COMPLETION_WORKPLAN_STAGE9_UPDATED.md`
-
-Their live decisions are now represented in the canonical planning files listed above.
 
 ## Verification
 

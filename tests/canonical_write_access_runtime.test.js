@@ -1,0 +1,215 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { patchUi, setUiScalarSoft } from '../esm/native/runtime/ui_write_access.ts';
+import { setRuntimeSketchMode } from '../esm/native/runtime/runtime_write_access.ts';
+import { setModePrimary } from '../esm/native/runtime/mode_write_access.ts';
+import { patchSliceCanonical } from '../esm/native/runtime/slice_write_access.ts';
+
+function createCallLog() {
+  /** @type {Array<Record<string, unknown>>} */
+  return [];
+}
+
+test('[canonical-write-access] ui write seam prefers slice namespace patch and preserves UI-only soft meta defaults', () => {
+  const calls = createCallLog();
+  const App = {
+    actions: {
+      ui: {
+        patch(patch, meta) {
+          calls.push({ op: 'ui.patch', patch, meta });
+          return { via: 'ui.patch' };
+        },
+        patchSoft(patch, meta) {
+          calls.push({ op: 'ui.patchSoft', patch, meta });
+          return { via: 'ui.patchSoft' };
+        },
+        setScalar(key, value, meta) {
+          calls.push({ op: 'ui.setScalar', key, value, meta });
+          return { via: 'ui.setScalar' };
+        },
+        setScalarSoft(key, value, meta) {
+          calls.push({ op: 'ui.setScalarSoft', key, value, meta });
+          return { via: 'ui.setScalarSoft' };
+        },
+        setRawScalar(key, value, meta) {
+          calls.push({ op: 'ui.setRawScalar', key, value, meta });
+          return { via: 'ui.setRawScalar' };
+        },
+      },
+      patch(patch, meta) {
+        calls.push({ op: 'actions.patch', patch, meta });
+        return { via: 'actions.patch' };
+      },
+    },
+    store: {
+      setUi(patch, meta) {
+        calls.push({ op: 'store.setUi', patch, meta });
+        return { via: 'store.setUi' };
+      },
+      patch(patch, meta) {
+        calls.push({ op: 'store.patch', patch, meta });
+        return { via: 'store.patch' };
+      },
+    },
+  };
+
+  assert.deepEqual(patchUi(App, { activeTab: 'design' }, { source: 'ui:patch' }), { via: 'ui.patch' });
+  assert.deepEqual(calls, [{ op: 'ui.patch', patch: { activeTab: 'design' }, meta: { source: 'ui:patch' } }]);
+
+  calls.length = 0;
+  assert.deepEqual(setUiScalarSoft(App, 'showContents', true, { source: 'ui:soft' }), {
+    via: 'ui.setScalarSoft',
+  });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].op, 'ui.setScalarSoft');
+  assert.equal(calls[0].key, 'showContents');
+  assert.equal(calls[0].value, true);
+  assert.equal(calls[0].meta?.source, 'ui:soft');
+  assert.equal(calls[0].meta?.uiOnly, true);
+  assert.equal(calls[0].meta?.noBuild, true);
+  assert.equal(calls[0].meta?.noPersist, true);
+  assert.equal(calls[0].meta?.noHistory, true);
+  assert.equal(calls[0].meta?.noCapture, true);
+  assert.equal(calls[0].meta?.noAutosave, true);
+});
+
+test('[canonical-write-access] runtime + mode write seams require canonical namespaced actions without touching store/root aliases', () => {
+  const calls = createCallLog();
+  const App = {
+    modes: { NONE: 'none' },
+    actions: {
+      runtime: {
+        setScalar(key, value, meta) {
+          calls.push({ op: 'runtime.setScalar', key, value, meta });
+          return { via: 'runtime.setScalar' };
+        },
+      },
+      mode: {
+        set(primary, opts, meta) {
+          calls.push({ op: 'mode.set', primary, opts, meta });
+          return { via: 'mode.set' };
+        },
+      },
+    },
+    store: {
+      setRuntime(patch, meta) {
+        calls.push({ op: 'store.setRuntime', patch, meta });
+        return { via: 'store.setRuntime' };
+      },
+      setModePatch(patch, meta) {
+        calls.push({ op: 'store.setModePatch', patch, meta });
+        return { via: 'store.setModePatch' };
+      },
+      patch(patch, meta) {
+        calls.push({ op: 'store.patch', patch, meta });
+        return { via: 'store.patch' };
+      },
+    },
+  };
+
+  assert.deepEqual(setRuntimeSketchMode(App, 1, { source: 'runtime:sketch' }), {
+    via: 'runtime.setScalar',
+  });
+  assert.deepEqual(calls[0], {
+    op: 'runtime.setScalar',
+    key: 'sketchMode',
+    value: true,
+    meta: {
+      source: 'runtime:sketch',
+      noBuild: true,
+      noAutosave: true,
+      noPersist: true,
+      noHistory: true,
+      noCapture: true,
+    },
+  });
+  assert.equal(
+    calls.some(call => call.op.startsWith('store.')),
+    false
+  );
+
+  calls.length = 0;
+  assert.deepEqual(setModePrimary(App, '', { slot: 'left' }, { source: 'mode:set' }), {
+    via: 'mode.set',
+  });
+  assert.deepEqual(calls, [
+    {
+      op: 'mode.set',
+      primary: 'none',
+      opts: { slot: 'left' },
+      meta: {
+        source: 'mode:set',
+        noBuild: true,
+        noAutosave: true,
+        noPersist: true,
+        noHistory: true,
+        noCapture: true,
+      },
+    },
+  ]);
+});
+
+test('[canonical-write-access] slice write router no-ops on empty patches and uses dedicated UI/runtime store writers before root patch routes', () => {
+  const calls = createCallLog();
+  const App = {
+    actions: {
+      ui: {
+        patch(patch, meta) {
+          calls.push({ op: 'ui.patch', patch, meta });
+          return { via: 'ui.patch' };
+        },
+      },
+      patch(patch, meta) {
+        calls.push({ op: 'actions.patch', patch, meta });
+        return { via: 'actions.patch' };
+      },
+    },
+    store: {
+      setUi(patch, meta) {
+        calls.push({ op: 'store.setUi', patch, meta });
+        return { via: 'store.setUi' };
+      },
+      patch(patch, meta) {
+        calls.push({ op: 'store.patch', patch, meta });
+        return { via: 'store.patch' };
+      },
+    },
+  };
+
+  assert.equal(
+    patchSliceCanonical(
+      App,
+      'ui',
+      {},
+      { source: 'empty' },
+      {
+        storeWriter: 'setUi',
+        preferStoreWriter: true,
+        allowRootActionPatch: true,
+        allowRootStorePatch: true,
+      }
+    ),
+    undefined
+  );
+  assert.deepEqual(calls, []);
+
+  assert.deepEqual(
+    patchSliceCanonical(
+      App,
+      'ui',
+      { activeTab: 'notes' },
+      { source: 'writer:first' },
+      {
+        storeWriter: 'setUi',
+        preferStoreWriter: true,
+        allowRootActionPatch: true,
+        allowRootStorePatch: true,
+      }
+    ),
+    { via: 'store.setUi' }
+  );
+  assert.deepEqual(calls, [
+    { op: 'store.setUi', patch: { activeTab: 'notes' }, meta: { source: 'writer:first' } },
+  ]);
+});

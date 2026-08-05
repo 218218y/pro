@@ -89,7 +89,7 @@ test('[state-api] stack router compat collapse: state_api ignores stateKernel st
     },
     store,
     stateKernel: {
-      // These must be ignored by delete-pass state_api.
+      // These must be ignored by canonical state_api.
       ensureModuleConfigForStack: (stack: 'top' | 'bottom', key: unknown) => {
         calls.push({ via: 'ensureModuleConfigForStack', args: [stack, key] });
         return undefined;

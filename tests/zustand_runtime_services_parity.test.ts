@@ -291,7 +291,7 @@ test('runtime services parity: history undo/redo seam uses canonical stateKernel
   assert.equal(hs2UndoCalls, 1);
   assert.equal(hs2RedoCalls, 1);
 
-  // Final delete-pass behavior: deps-only fallback is intentionally not used anymore.
+  // Current behavior: deps-only fallback is intentionally not used anymore.
   assert.equal(getHistorySystem({ deps: { historySystem: hs } } as any), null);
 });
 
@@ -312,7 +312,7 @@ test('runtime services parity: import/load schema accepts only canonical payload
   const normalized = normalizeProjectData(raw as any);
   assert.ok(normalized);
 
-  // Canonical since stage4:
+  // Canonical behavior:
   // schema normalization may stamp additional defaults beyond user-provided scalars.
   // We validate the important invariants without forbidding new defaults.
   assert.equal((normalized?.settings as AnyRecord).width, 120);

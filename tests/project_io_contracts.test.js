@@ -339,7 +339,6 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     [
       /ProjectIO\.[A-Za-z]+ = ProjectIO\.[A-Za-z]+ \|\| runtime\./,
       /typeof api\.(?:exportCurrentProject|handleFileLoad|loadProjectData|restoreLastSession|buildDefaultProjectData)/,
-      /stage3_orchestration_cleanup/,
     ],
     'projectIoOwner'
   );
@@ -473,7 +472,7 @@ test('project load/save helpers preserve semantic load flags, UI ephemera, and b
   );
 });
 
-test('project io + project action helper seams stay named-only after delete-pass cleanup', () => {
+test('project io + project action helper seams stay named-only', () => {
   assertLacksAll(assert, projectNamedSurfaceBundle, [/export default\s*\{/], 'project named surfaces');
   assertMatchesAll(
     assert,

@@ -146,7 +146,7 @@ test('modules stack surface: store-backed ensure/patch work when canonical stack
     actions: {},
     store,
     stateKernel: {
-      // These exist in some legacy setups, but delete-pass state_api must ignore them.
+      // These exist in some legacy setups, but canonical state_api must ignore them.
       ensureModuleConfigForStack(stack: string, key: unknown) {
         kernelCalls.push({ op: 'ensureModuleConfigForStack', stack, key });
         return { via: 'kernel.ensureModuleConfigForStack' };
@@ -384,7 +384,7 @@ test('modules stack surface: bottom-corner ensure and patch always use the store
     },
     store,
     stateKernel: {
-      // Legacy surfaces must not be used by delete-pass state_api.
+      // Legacy surfaces must not be used by canonical state_api.
       ensureSplitLowerCornerCellConfig(index: number) {
         calls.push({ op: 'ensureSplitLowerCornerCellConfig', index });
         return { kind: 'lowerCornerCell', index };

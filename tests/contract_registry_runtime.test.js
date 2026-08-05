@@ -7,7 +7,7 @@ import { runContractRegistryAudit } from '../tools/wp_contract_registry_audit.mj
 import {
   collectContractOverlapTargets,
   collectDirectRepositoryLayerScanTests,
-  collectHistoricalMigrationPrefixTests,
+  collectRetiredLayerLedgerAccessTests,
 } from '../tools/wp_test_portfolio_audit.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
@@ -20,9 +20,9 @@ test('contract registry owns the canonical architecture checks', () => {
   assert.equal(packageJson.scripts['check:contract-registry'], 'node tools/wp_contract_registry_audit.mjs');
 });
 
-test('repository-wide layer collection and historical ledger prefixes have one central owner', () => {
+test('repository-wide layer collection is centralized and retired ledger fields have no consumers', () => {
   assert.deepEqual(collectDirectRepositoryLayerScanTests(), []);
-  assert.deepEqual(collectHistoricalMigrationPrefixTests(), []);
+  assert.deepEqual(collectRetiredLayerLedgerAccessTests(), []);
 });
 
 test('cross-kind ownership overlap is explicitly mapped by the portfolio audit', () => {

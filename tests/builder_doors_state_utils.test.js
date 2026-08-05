@@ -8,7 +8,7 @@ test('doors_state_utils: makeDoorStateAccessors resolves hinge, split, curtain a
 
   const acc = makeDoorStateAccessors({
     hingeMap: { hinge_d1: 'left' },
-    // Canonical since stage4: curtain keys are door-part ids (no "curtain_" prefix)
+    // Canonical behavior: curtain keys are door-part ids (no "curtain_" prefix)
     curtainMap: { d7_mid: 'fabric' },
     groovesMap: { groove_d3_full: true, groove_d4_full: false },
   });
@@ -45,7 +45,7 @@ test('doors_state_utils: makeDoorRemovalChecker supports canonical removed_* key
 
   const isRemoved = makeDoorRemovalChecker({
     removedDoorsMap: {
-      // Canonical since stage4:
+      // Canonical behavior:
       // - map keys are always "removed_<doorPartId>"
       // - base ids (d1) canonicalize to d1_full at read/write
       removed_d1_full: true,

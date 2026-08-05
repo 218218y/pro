@@ -1,53 +1,946 @@
 {
-  "generatedAt": "2026-08-03T19:53:58.393Z",
+  "generatedAt": "2026-08-05T08:45:30.592Z",
   "totals": {
-    "tests": 1280,
-    "unitRunnerTests": 1272,
+    "tests": 1228,
+    "unitRunnerTests": 1220,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 36,
-    "packageTestReferences": 198,
+    "nonTestRuntimeFiles": 35,
+    "packageTestReferences": 200,
     "catalogTestReferences": 290,
-    "totalTestReferences": 488,
+    "totalTestReferences": 490,
     "catalogGroups": 28,
     "catalogScriptBindings": 28,
     "primaryCatalogGroups": 5,
     "directRepositoryLayerScanTests": 0,
-    "historicalMigrationPrefixTests": 0,
+    "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 18,
-    "historicalStageGuards": 0,
-    "contractOverlapTargets": 2
+    "historicalArchitectureProofs": 0,
+    "contractOverlapTargets": 171
   },
   "categories": {
-    "contract": 449,
-    "runtime-unit": 317,
-    "integration": 457,
+    "contract": 405,
+    "runtime-unit": 325,
+    "integration": 459,
+    "persistence-ingress": 24,
     "e2e-smoke": 9,
-    "perf-smoke": 6,
-    "legacy-migration": 42
+    "perf-smoke": 6
   },
   "failures": {
     "missingTestRefs": [],
     "duplicateCatalogRefs": [],
     "invalidCatalogDefinitions": [],
     "staleCatalogScriptBindings": [],
-    "legacyRuntimeNames": [],
     "contractRegistry": [],
-    "historicalStageGuards": [],
+    "historicalArchitectureProofs": [],
     "duplicateRunnerFiles": [],
     "e2eIncludedInUnitRunner": [],
     "helpersIncludedInUnitRunner": [],
     "directRepositoryLayerScanTests": [],
-    "historicalMigrationPrefixTests": [],
+    "retiredLayerLedgerAccessTests": [],
     "missingFromUnitRunner": []
   },
   "contractOverlapTargets": [
     {
-      "target": "esm/native/kernel/kernel_project_capture_payload.ts",
-      "kinds": ["ownership", "source-guard"],
+      "target": "esm/entry_pro_main_boot_support.ts",
+      "kinds": ["contract", "ownership"],
       "owners": [
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_config_platform_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/build_flow_plan_inputs.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/build_flow_plan.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_hotpath_runtime_cleanup_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/build_no_main_sketch_host.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/no_main_sketch_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/carcass_pipeline.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/chest_mode_pipeline.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_scalar_geometry_type_hardening_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_builder_aggregate_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/chest_mode_builder_aggregate_pair_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/final_root_surface_cleanup_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_carcass_cornice.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wp_legacy_fallback_audit_runtime.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_carcass_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_carcass_shell.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_doors_compute.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/core_doors_material_door_system_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_pure_number_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_layout_compute.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/core_module_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_module_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_pure_number_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_storage_compute_custom.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/core_storage_compute_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/core_storage_compute_external_drawers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/core_storage_compute_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/external_drawer_geometry_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_connector_cornice_profile.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_connector_cornice_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_connector_cornice_wave.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_state_normalize_layout.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/door_removal_visibility_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_carcass_shell_metrics.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_cell_layouts.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_cornice_wave.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/hinged_doors_module_ops_full.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_doors_type_hardening_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/hinged_doors_module_ops_split.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_doors_type_hardening_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_doors_type_hardening_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/module_depth_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/module_depth_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/module_loop_pipeline_runtime.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_doors_type_hardening_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/module_depth_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_door_ops_hinged.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_door_style_override_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_door_ops_sliding.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/planar_reflector_quality_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sliding_wardrobe_regression_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_custom_ops_layout.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_ops_numeric_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_divider_segments_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/sketch_box_divider_segments_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_rod_preview_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/external_drawer_geometry_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/corner_sketch_ext_drawers_alignment_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/external_drawer_geometry_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_module_defaults_and_free_click_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_preview_interior_hover_apply.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_builder_shelf_hover_preview_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/sliding_doors_pipeline.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/state_sanitize_pipeline.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/visuals_chest_mode_build.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_build_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/visuals_chest_mode_drawer_box.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_builder_aggregate_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_inputs_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/core/api.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/core_engine_entrypoints_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/data/preset_models_data.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_data_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/dimensions/index.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
         {
           "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
           "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/retired_dimension_import_paths_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/settings_visual_library_preset_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/library_preset/module_defaults.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/settings_visual_library_preset_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/modules_configuration/module_defaults.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/order_pdf_dimension_support.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/order_pdf_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/project_config/project_config_map_readers.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/door_trim_center_contract_runtime.test.ts",
+          "kind": "contract"
         },
         {
           "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
@@ -56,15 +949,2555 @@
       ]
     },
     {
-      "target": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
-      "kinds": ["ownership", "source-guard"],
+      "target": "esm/native/features/stack_split/module_config.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/features/structure_tab_dimension_support.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_config_persisted_snapshot.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/wp_legacy_fallback_audit_runtime.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_io_load_helpers_maps.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/project_io_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_payload_schema_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_load_canonical_snapshot.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/project_migration_boundary_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_schema_current.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/project_payload_schema_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_schema_validation.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/builder_scalar_geometry_type_hardening_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/project_payload_schema_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_colors_section.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/kernel_di_and_owner_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_install_helpers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_parity_integration_paths_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_parity_integration_paths_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_parity_integration_paths_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_parity_integration_paths_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/kernel_project_capture_payload.ts",
+      "kinds": ["contract", "ownership", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/kernel_snapshot_capture_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/kernel_state_kernel_config_maps_shared.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/kernel_di_and_owner_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/runtime_platform_core_family_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/maps_api_named_maps.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/maps_saved_colors_storage_bridge_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/kernel/state_api_config_namespace_maps.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/config_map_noop_reuse_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_store_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/platform/render_loop_motion_doors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/config_render_seam_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/local_internal_drawers_local_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/local_motion_toggle_wakeup_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_free_box_internal_drawers_open_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/platform/render_loop_motion_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/api.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/app_container_legacy_surfaces_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_dimensions_compatibility_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/export_download_dom_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/retired_dimension_import_paths_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_platform_core_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/cfg_access_map_owner.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/store_backend_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/cfg_access_maps.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_store_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/cfg_access_scalars.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_store_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/cfg_access.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_store_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/maps_access_normalizers_visuals.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
+          "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/maps_access_writers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/runtime_platform_core_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/maps_access.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/runtime_platform_core_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/planar_reflector_contracts.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/planar_reflector_performance_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/planar_reflector_render_pass.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/planar_reflector_quality_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/planar_reflector_runtime.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/planar_reflector_performance_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/planar_reflector_quality_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/simple_writable_map_writer_owner.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/runtime_platform_core_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/api_runtime_base_surface.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/retired_dimension_import_paths_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/api_state_surface.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/store_backend_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/api.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_service_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_io_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/retired_dimension_import_paths_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wp_layer_contract_runtime.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_cell_dims_flow.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_cell_dims_linear_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_cell_dims_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_click_flow.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/platform_runtime_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/statekernel_audit_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_click_route_actions.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_click_route.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_action_hover_flow.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/door_trim_mirror_avoidance_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/mirror_layout_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sliding_wardrobe_regression_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_action_hover_remove.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_edit_flow.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_hinge_groove_click.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_segment_doors_fix_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_remove_click.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/sketch_box_segment_doors_fix_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_split_click_custom.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_split_click_toggle.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_split_hover_flow.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_trim_click.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_trim_mirror_avoidance_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_interior_hover_final_consumer_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_manual_layout_free_box_commit.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_click_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_manual_layout_free_box_hover_protocol.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_sketch_hover_identity_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_module_defaults_and_free_click_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_door_style_override_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_paint_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/cell_dims_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/no_main_sketch_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_sketch_box_command_hover_cutover_guard.test.mjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canvas_picking_sketch_hover_identity_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/regular_external_drawers_free_box_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_vertical_shelf_occupancy_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/sketch_box_divider_segments_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_rod_preview_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_divider_segments_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_manual_layout_sketch_shared_helpers_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_module_defaults_and_free_click_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/platform_runtime_access_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/doors_runtime_visuals_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/export_overlay_errors_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/platform_runtime_access_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/pdf/order_pdf_overlay_editor_modes.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/order_pdf_toolbar_visual_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/order_pdf_toolbar_visual_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/pdf/order_pdf_overlay_editor_surface_contracts.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/order_pdf_toolbar_visual_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/export_download_dom_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_bridge_surface_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/export_download_dom_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/order_pdf_toolbar_visual_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_bridge_surface_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_selector_hotspots_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_store_cleanup_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx",
+      "kinds": ["contract", "source-guard"],
       "owners": [
         {
           "file": "tests/interior_sketch_box_validation_source_guard.test.js",
           "kind": "source-guard"
         },
         {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_family_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_dimensions.ts",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/interior_sketch_box_validation_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_family_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx",
+      "kinds": ["contract", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/interior_sketch_box_validation_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
+          "file": "tests/mirror_center_and_box_controls_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_form_unique_id_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_double_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_family_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/interior_tab_helpers.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_fittings_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/mirror_center_and_box_controls_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/react_bridge_surface_family_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_double_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/interior_fittings_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_manual_dims_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/mode_toggle_button_icon_position_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_owner_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_owner_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_owner_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/settings_visual_library_preset_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_owner_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_write_and_surface_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/base_leg_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/base_platform_render_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/base_plinth_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/carcass_interior_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/module_depth_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/carcass_shell_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/module_depth_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/chest_mode_build_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/chest_mode_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/chest_mode_builder_aggregate_pair_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/chest_mode_dimensions_compatibility_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/chest_structural_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/chest_mode_dimensions_compatibility_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_dimension_runtime_public_surface_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/core_carcass_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/door_system_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/drawer_sketch_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/ext_drawers_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/external_drawer_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/ext_drawers_hover_preview_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/external_drawer_geometry_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/interior_fittings_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/interior_storage_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/library_preset_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/material_thickness_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_module_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/material_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/preset_models_dimension_defaults_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+      "kinds": ["contract", "ownership", "source-guard"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_sketch_box_validation_source_guard.test.js",
+          "kind": "source-guard"
+        },
+        {
           "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_primary_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/stack_split_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/structure_tab_auto_width_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/units.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/core_module_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/module_depth_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/no_main_sketch_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/order_pdf_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/wardrobe_defaults.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/no_main_sketch_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/order_pdf_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_base_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_dimension_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/material_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/retired_dimension_import_paths_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_dimension_runtime_public_surface_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -109,7 +3542,7 @@
     },
     {
       "file": "tests/app_container_legacy_surfaces_cleanup_guard.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/app_helpers_runtime.test.ts",
@@ -445,7 +3878,7 @@
     },
     {
       "file": "tests/cache_access_hybrid_migration_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/cache_pruning_runtime.test.ts",
@@ -466,6 +3899,10 @@
     {
       "file": "tests/camera_scene_access_cleanup_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/canonical_write_access_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/canvas_hit_identity_parity_runtime.test.js",
@@ -1161,7 +4598,7 @@
     },
     {
       "file": "tests/cloud_sync_main_row_payload_dedupe_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/cloud_sync_main_row_pull_decomposition_contracts.test.js",
@@ -1321,15 +4758,15 @@
     },
     {
       "file": "tests/cloud_sync_payload_merge_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/cloud_sync_payload_readers_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/cloud_sync_payload_state_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/cloud_sync_pull_coalescer_runtime.test.ts",
@@ -1557,10 +4994,6 @@
     },
     {
       "file": "tests/core_storage_compute_decomposition_contracts.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/corner_cells_ui_defaults_dimension_consolidation_contract.test.js",
       "category": "contract"
     },
     {
@@ -1808,12 +5241,32 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/dimension_migration_final_closeout_contract.test.js",
-      "category": "legacy-migration"
+      "file": "tests/dimension_composition_owner_primary_contract.test.js",
+      "category": "contract"
     },
     {
-      "file": "tests/dimension_migration_retirement_inventory_contract.test.js",
-      "category": "legacy-migration"
+      "file": "tests/dimension_composition_owner_primary_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dimension_composition_owner_remaining_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/dimension_composition_owner_remaining_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dimension_composition_owner_secondary_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/dimension_composition_owner_secondary_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dimension_layer_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/display_text_shared_runtime.test.ts",
@@ -2037,7 +5490,7 @@
     },
     {
       "file": "tests/esm_import_sanity.test.js",
-      "category": "legacy-migration"
+      "category": "runtime-unit"
     },
     {
       "file": "tests/export_actions_runtime.test.ts",
@@ -2248,10 +5701,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/interior_layout_presets_dimension_consolidation_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
       "category": "contract"
     },
@@ -2418,10 +5867,6 @@
     {
       "file": "tests/library_preset_canonical_materialization_runtime.test.ts",
       "category": "runtime-unit"
-    },
-    {
-      "file": "tests/library_preset_dimension_consolidations_contract.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/library_preset_dimension_owner_contract.test.js",
@@ -2602,10 +6047,6 @@
     {
       "file": "tests/models_service_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/module_config_dimension_consolidations_contract.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/module_depth_ownership_contract.test.js",
@@ -2821,7 +6262,7 @@
     },
     {
       "file": "tests/order_pdf_overlay_imported_draft_fields_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "integration"
     },
     {
       "file": "tests/order_pdf_overlay_interactions_runtime.test.ts",
@@ -2833,7 +6274,7 @@
     },
     {
       "file": "tests/order_pdf_overlay_pdf_import_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "integration"
     },
     {
       "file": "tests/order_pdf_overlay_pdf_render_canvas_runtime.test.ts",
@@ -3169,7 +6610,7 @@
     },
     {
       "file": "tests/private_owner_import_boundary_audit_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/profile_door_paint_material_refresh_guard.test.cjs",
@@ -3193,7 +6634,7 @@
     },
     {
       "file": "tests/project_config_migration_replace_keys_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_config_persisted_snapshot_runtime.test.ts",
@@ -3229,47 +6670,51 @@
     },
     {
       "file": "tests/project_import_fixtures_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_access_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_config_snapshot_canonicalization_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_contracts.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/project_io_export_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_fail_fast_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_load_helpers_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_load_ops_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_load_presets_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_orchestrator_shared_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_io_owner_rejection_visibility_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
+    },
+    {
+      "file": "tests/project_io_snapshot_helpers_runtime.test.js",
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_load_action_result_runtime.test.ts",
@@ -3285,11 +6730,11 @@
     },
     {
       "file": "tests/project_migration_boundary_contracts.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/project_migration_runtime_selector_hardening_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_model_release_regressions_runtime.test.js",
@@ -3297,11 +6742,11 @@
     },
     {
       "file": "tests/project_payload_runtime_hardening.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_payload_schema_contracts.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/project_recovery_action_result_runtime.test.ts",
@@ -3325,15 +6770,15 @@
     },
     {
       "file": "tests/project_save_load_controller_failure_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_save_load_controller_save_success_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_save_load_controller_singleflight_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/project_save_runtime_user_flow_runtime.test.ts",
@@ -3394,6 +6839,10 @@
     {
       "file": "tests/react_bridge_surface_family_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/react_canonical_write_wrappers_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/react_config_selectors_runtime.test.ts",
@@ -3681,7 +7130,7 @@
     },
     {
       "file": "tests/retired_dimension_import_paths_contract.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/room_actions_runtime.test.ts",
@@ -3800,6 +7249,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/semantic_config_writers_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/seo_noindex_contracts.test.js",
       "category": "contract"
     },
@@ -3809,7 +7262,7 @@
     },
     {
       "file": "tests/service_access_legacy_root_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/service_install_healing_runtime_extended.test.ts",
@@ -3873,19 +7326,19 @@
     },
     {
       "file": "tests/settings_backup_import_atomic_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "runtime-unit"
     },
     {
       "file": "tests/settings_backup_import_models_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "runtime-unit"
     },
     {
       "file": "tests/settings_backup_import_read_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "runtime-unit"
     },
     {
       "file": "tests/settings_backup_import_storage_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "runtime-unit"
     },
     {
       "file": "tests/settings_backup_release_regressions.test.js",
@@ -4140,10 +7593,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/sketch_drawer_door_cuts_ownership_contract.test.js",
       "category": "contract"
     },
@@ -4292,142 +7741,6 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/stage19_20_three_remaining_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stage2_hotspot_compression_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stage3_orchestration_boundary_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stage4_ui_build_reactivity_behavior_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/stage4_ui_build_reactivity_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stage4_workflow_owner_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stage7_ui_surface_consolidation_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageA_domain_corner_delegate_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAB_render_ops_interior_dimensions_decomposition_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAG_manual_layout_sketch_contract_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAL_interiortab_sections_bundle_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAS_preset_stack_corner_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAV_design_interior_surface_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageAX_sidebar_hooks_notes_selection_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_kernel_viewport_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_notes_settings_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_service_meta_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_type_surface_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBC_maps_doors_runtime_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBE_mode_transition_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBF_builder_render_room_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBG_meta_opts_surface_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBH_canonical_base_types_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBI_builder_module_content_callable_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBK_three_builder_constructor_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBM_no_raw_unknown_rest_seams_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageBN_preview_cloudsync_contract_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageC_D_semantic_actions_dom_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageC_react_canonical_write_wrappers_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageF_react_write_wrapper_sweep_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageI_cfg_ui_semantic_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageJ_semantic_cfg_helper_expansion_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageO_render_ops_preview_decomposition_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageO_ui_surface_anyrecord_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/state_api_config_namespace_canonical_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -4513,7 +7826,7 @@
     },
     {
       "file": "tests/store_zustand_root_canonicalization_runtime.test.ts",
-      "category": "legacy-migration"
+      "category": "persistence-ingress"
     },
     {
       "file": "tests/store_zustand_runtime_workflows.test.ts",
@@ -4724,6 +8037,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/ui_build_reactivity_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/ui_ephemeral_defaults_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -4781,11 +8098,11 @@
     },
     {
       "file": "tests/ui_react_import_hardening_contracts.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/ui_react_jsx_import_hardening_contracts.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/ui_runtime_browser_board_runtime.test.ts",
@@ -4896,90 +8213,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/wave_c1_dimension_consolidation_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/wave_c2_dimension_consolidation_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/wave_c3_dimension_consolidation_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave_e_single_entry_family_inventory_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave1_write_access_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave2_namespace_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave3_react_hotspot_wrapper_cleanup_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave4_hot_path_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wave7_project_io_decomposition_guard.test.js",
-      "category": "legacy-migration"
-    },
-    {
-      "file": "tests/wave8_render_ops_decomposition_guard.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/wp_ast_adapter_runtime.test.js",
       "category": "runtime-unit"
     },
@@ -5016,16 +8249,12 @@
       "category": "contract"
     },
     {
-      "file": "tests/wp_layer_contract_reviewed_ownership_runtime.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wp_layer_contract_v2_runtime.test.js",
+      "file": "tests/wp_layer_contract_runtime.test.js",
       "category": "contract"
     },
     {
       "file": "tests/wp_legacy_fallback_audit_runtime.test.js",
-      "category": "legacy-migration"
+      "category": "contract"
     },
     {
       "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
@@ -5165,10 +8394,6 @@
     },
     {
       "file": "tests/zustand_parity_integration_paths_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/zustand_routeA_deletepass_bigstep_stage8x_guard.test.js",
       "category": "contract"
     },
     {

@@ -81,21 +81,6 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
       ];
     },
   }),
-  Object.freeze({
-    id: 'dimension-migration-retirement-inventory',
-    lifecycle: 'source-derived',
-    json: 'tools/wp_dimension_migration_retirement_inventory.json',
-    markdown: 'docs/DIMENSION_MIGRATION_RETIREMENT_INVENTORY.md',
-    command({ json, markdown }) {
-      return [
-        'tools/wp_dimension_migration_retirement_inventory.mjs',
-        '--json-out',
-        json,
-        '--md-out',
-        markdown,
-      ];
-    },
-  }),
 ]);
 
 function compareCodePoints(left, right) {

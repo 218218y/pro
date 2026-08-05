@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-03T19:52:59.612Z",
+  "generatedAt": "2026-08-05T08:45:30.489Z",
   "summary": {
     "groups": 28,
     "scriptBindings": 28,
     "catalogFileReferences": 290,
-    "directPackageTestReferences": 198,
+    "directPackageTestReferences": 200,
     "catalogIssues": 0,
     "bindingIssues": 0,
     "portfolioRoles": {

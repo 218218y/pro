@@ -16,7 +16,6 @@
     "check:gate": "node tools/wp_check.js --strict --gate",
     "check:generated-reports": "node tools/wp_generated_report_contract.mjs --check",
     "check:generated-reports:offline": "python tools/run_offline_node24.py --with-prettier tools/wp_generated_report_contract.mjs --check",
-    "check:dimension-ledger-closeout": "node tools/check_dimension_ledger_closeout.mjs",
     "check:verification-summary": "node tools/wp_generated_report_contract.mjs --check --only=verification-summary",
     "check:script-duplicates": "node tools/wp_script_duplicate_audit.mjs --check --expect-groups 0",
     "check:site-profiles": "node tools/wp_site_profile_contract.mjs && node tools/wp_generate_runtime_config.mjs --check",
@@ -339,7 +338,6 @@
     "verify:offline:tsx:engine": "python tools/verify_offline_repair_vendor.py --tsx-engine-only",
     "test:offline:tsx": "python tools/selftest_offline_tsx.py",
     "test:offline:tsx-runtime-smoke": "python tools/run_offline_tsx_tests.py tests/offline_tsx_runtime_smoke.test.tsx",
-    "test:offline:wave-c-runtime": "python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts",
     "test:offline:react-runtime": "python tools/run_offline_tsx_tests.py tests/design_tab_sections_runtime.test.tsx",
     "test:offline:order-pdf-diagnostic": "python tools/run_offline_tsx_tests.py tests/order_pdf_diagnostic_classifier_runtime.test.ts",
     "vendor:offline:oxc:refresh": "node tools/wp_refresh_offline_oxc_vendor.mjs",
@@ -366,7 +364,8 @@
     "deps:update:playwright-browsers": "playwright install",
     "deps:update:verify": "npm run check:node-runtime && npm run toolchain:version-policy && npm run lint && npm run typecheck:all && npm run build:dist && npm run e2e:smoke:list",
     "deps:update:oxc": "npm update oxc-parser && npm run deps:update:sync-generated && npm run deps:update:oxc:verify",
-    "deps:update:oxc:verify": "npm run toolchain:version-policy && npm run lint:modern-readiness && node --test tests/wp_ast_adapter_runtime.test.js tests/wp_toolchain_version_policy_runtime.test.js tests/offline_repair_toolchain_contracts.test.js"
+    "deps:update:oxc:verify": "npm run toolchain:version-policy && npm run lint:modern-readiness && node --test tests/wp_ast_adapter_runtime.test.js tests/wp_toolchain_version_policy_runtime.test.js tests/offline_repair_toolchain_contracts.test.js",
+    "test:offline:dimension-composition-runtime": "python tools/run_offline_tsx_tests.py tests/dimension_composition_owner_primary_runtime.test.ts tests/dimension_composition_owner_secondary_runtime.test.ts tests/dimension_composition_owner_remaining_runtime.test.ts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

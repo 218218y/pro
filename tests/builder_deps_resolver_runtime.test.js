@@ -148,7 +148,7 @@ test('builder deps resolver resolves required deps and preserves owner bindings'
   const resolved = resolveBuilderDepsOrThrow({
     App: fixture.App,
     builderDeps: fixture.builderDeps,
-    label: 'stage17-test',
+    label: 'builder-deps-test',
   });
 
   assert.equal(resolved.THREE, fixture.THREE);

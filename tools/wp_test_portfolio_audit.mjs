@@ -27,7 +27,10 @@ const PACKAGE_TEST_REF_RE =
   /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
 const REPOSITORY_LAYER_GRAPH_CALL = 'collectLayerContractGraph(';
 const REPOSITORY_LAYER_GRAPH_OWNER = 'tests/helpers/repository_layer_contract_fixture.mjs';
-const HISTORICAL_MIGRATION_PREFIX_ACCESS = 'migrationBudgets.slice';
+const RETIRED_LAYER_LEDGER_ACCESS_RE =
+  /\.\s*(?:migrationBudgets|migrationRetirements|migrationConsolidations)\b/u;
+const HISTORICAL_PROOF_NAME_RE =
+  /^(?:(?:refactor_)?stage(?:\d+|[a-z]+)(?:[_-]|$)|wave(?:\d+|_[a-z]\d*)(?:[_-]|$))|(?:delete[-_]?pass|checkpoint|migration_(?:retirement|final_closeout))/iu;
 const CONTRACT_SOURCE_REF_RE = /['"`]((?:\.\.\/)?esm\/[A-Za-z0-9_./-]+\.(?:ts|tsx|js))['"`]/gu;
 
 function walk(dir) {
@@ -55,34 +58,42 @@ function classify(rel) {
   const name = rel.toLowerCase();
   if (
     name.includes('/e2e/') ||
-    /(?:^|[_.-])e2e(?:[_.-]|$)/.test(name) ||
-    /\.spec\.(?:js|tsx|ts|mjs|cjs)$/.test(name)
-  )
+    /(?:^|[_.-])e2e(?:[_.-]|$)/u.test(name) ||
+    /\.spec\.(?:js|tsx|ts|mjs|cjs)$/u.test(name)
+  ) {
     return 'e2e-smoke';
-  if (/perf|performance|browser_perf|budget|benchmark/.test(name)) return 'perf-smoke';
-  if (/migration|project_io|import|save_load|payload|canonicalization|legacy/.test(name))
-    return 'legacy-migration';
+  }
+  if (/perf|performance|browser_perf|budget|benchmark/u.test(name)) return 'perf-smoke';
   if (
-    /contract|surface|guard|audit|policy|layer|ownership|public_api|type_hardening|closeout|control_plane/.test(
+    /contract|surface|guard|audit|policy|layer|ownership|public_api|type_hardening|closeout|control_plane/u.test(
       name
     )
-  )
+  ) {
     return 'contract';
+  }
+  if (/migration|project_io|project_import|save_load|payload|canonicalization|legacy/u.test(name)) {
+    return 'persistence-ingress';
+  }
   if (
-    /cloud_sync|order_pdf|notes|canvas|picking|builder|render|scheduler|project|export|door|drawer|sketch|service|controller|flow|integration/.test(
+    /cloud_sync|order_pdf|notes|canvas|picking|builder|render|scheduler|project|export|door|drawer|sketch|service|controller|flow|integration/u.test(
       name
     )
-  )
+  ) {
     return 'integration';
+  }
   return 'runtime-unit';
 }
 
 function contractKind(rel) {
   const name = path.posix.basename(rel);
-  if (/^refactor_stage\d+_/u.test(name)) return 'stage-guard';
   if (/ownership/u.test(name)) return 'ownership';
   if (/source_(?:guard|contract)/u.test(name)) return 'source-guard';
+  if (/contract|guard|audit/u.test(name)) return 'contract';
   return null;
+}
+
+export function isHistoricalArchitectureProofFile(rel) {
+  return HISTORICAL_PROOF_NAME_RE.test(path.posix.basename(rel));
 }
 
 export function collectContractOverlapTargets(projectRoot = ROOT, testFiles = null) {
@@ -145,14 +156,14 @@ export function collectDirectRepositoryLayerScanTests(projectRoot = ROOT, testFi
   );
 }
 
-export function collectHistoricalMigrationPrefixTests(projectRoot = ROOT, testFiles = null) {
+export function collectRetiredLayerLedgerAccessTests(projectRoot = ROOT, testFiles = null) {
   const files =
     testFiles ??
     listCanonicalTestFiles(projectRoot).map(file =>
       path.relative(projectRoot, file).split(path.sep).join('/')
     );
   return files.filter(file =>
-    fs.readFileSync(path.join(projectRoot, file), 'utf8').includes(HISTORICAL_MIGRATION_PREFIX_ACCESS)
+    RETIRED_LAYER_LEDGER_ACCESS_RE.test(fs.readFileSync(path.join(projectRoot, file), 'utf8'))
   );
 }
 
@@ -172,23 +183,19 @@ export function buildReport() {
     ...packageRefs.map(ref => ({ source: 'package', owner: ref.script, ...ref })),
     ...catalogRefs.map(ref => ({ source: 'catalog', owner: ref.group, ...ref })),
   ];
-  const testRefSet = new Set(refs.map(({ file }) => file));
   const categories = {
     contract: 0,
     'runtime-unit': 0,
     integration: 0,
+    'persistence-ingress': 0,
     'e2e-smoke': 0,
     'perf-smoke': 0,
-    'legacy-migration': 0,
   };
   const records = [];
-  const legacyRuntimeNames = [];
   for (const file of tests) {
     const category = classify(file);
     categories[category] = (categories[category] || 0) + 1;
     records.push({ file, category });
-    if (/legacy/i.test(file) && !/(migration|compat|cleanup|guard|audit|contract|surface|root)/i.test(file))
-      legacyRuntimeNames.push(file);
   }
   const missingTestRefs = refs.filter(({ file }) => !fs.existsSync(path.join(ROOT, file)));
   const duplicateCatalogRefs = Object.entries(TEST_GROUP_CATALOG).flatMap(([group, definition]) => {
@@ -200,7 +207,7 @@ export function buildReport() {
     }
     return duplicates;
   });
-  const historicalStageGuards = tests.filter(file => /tests\/refactor_stage\d+_.*\.test\.js$/u.test(file));
+  const historicalArchitectureProofs = tests.filter(isHistoricalArchitectureProofFile);
   const unitRunnerFileSet = new Set(unitRunnerFiles);
   const duplicateRunnerFiles = unitRunnerFiles.filter(
     (file, index) => unitRunnerFiles.indexOf(file) !== index
@@ -208,7 +215,7 @@ export function buildReport() {
   const e2eIncludedInUnitRunner = unitRunnerFiles.filter(file => e2eFiles.includes(file));
   const helpersIncludedInUnitRunner = unitRunnerFiles.filter(file => nonTestRuntimeFiles.includes(file));
   const directRepositoryLayerScanTests = collectDirectRepositoryLayerScanTests(ROOT, tests);
-  const historicalMigrationPrefixTests = collectHistoricalMigrationPrefixTests(ROOT, tests);
+  const retiredLayerLedgerAccessTests = collectRetiredLayerLedgerAccessTests(ROOT, tests);
   const contractOverlapTargets = collectContractOverlapTargets(ROOT, tests);
   return {
     generatedAt: new Date().toISOString(),
@@ -224,9 +231,9 @@ export function buildReport() {
       catalogScriptBindings: groupCatalogReport.summary.scriptBindings,
       primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
       directRepositoryLayerScanTests: directRepositoryLayerScanTests.length,
-      historicalMigrationPrefixTests: historicalMigrationPrefixTests.length,
+      retiredLayerLedgerAccessTests: retiredLayerLedgerAccessTests.length,
       canonicalContracts: contractRegistryReport.contracts,
-      historicalStageGuards: historicalStageGuards.length,
+      historicalArchitectureProofs: historicalArchitectureProofs.length,
       contractOverlapTargets: contractOverlapTargets.length,
     },
     categories,
@@ -235,14 +242,13 @@ export function buildReport() {
       duplicateCatalogRefs,
       invalidCatalogDefinitions: groupCatalogReport.failures.catalogIssues,
       staleCatalogScriptBindings: groupCatalogReport.failures.bindingIssues,
-      legacyRuntimeNames,
       contractRegistry: contractRegistryReport.failures,
-      historicalStageGuards,
+      historicalArchitectureProofs,
       duplicateRunnerFiles,
       e2eIncludedInUnitRunner,
       helpersIncludedInUnitRunner,
       directRepositoryLayerScanTests,
-      historicalMigrationPrefixTests,
+      retiredLayerLedgerAccessTests,
       missingFromUnitRunner: tests.filter(file => !e2eFiles.includes(file) && !unitRunnerFileSet.has(file)),
     },
     contractOverlapTargets,
@@ -265,9 +271,9 @@ function renderMarkdown(report) {
     `- Catalog-backed package scripts: ${report.totals.catalogScriptBindings}`,
     `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
     `- Tests directly invoking the repository layer graph: ${report.totals.directRepositoryLayerScanTests}`,
-    `- Tests copying historical migration-ledger prefixes: ${report.totals.historicalMigrationPrefixTests}`,
+    `- Tests reading retired layer-ledger fields: ${report.totals.retiredLayerLedgerAccessTests}`,
     `- Canonical contracts in registry: ${report.totals.canonicalContracts}`,
-    `- Historical refactor-stage guard files: ${report.totals.historicalStageGuards}`,
+    `- Historical stage/wave proof files: ${report.totals.historicalArchitectureProofs}`,
     `- Cross-kind contract overlap targets: ${report.totals.contractOverlapTargets}`,
     ''
   );
@@ -284,12 +290,9 @@ function renderMarkdown(report) {
   lines.push(
     `| Catalog script bindings match package.json facades | ${report.failures.staleCatalogScriptBindings.length} |`
   );
-  lines.push(
-    `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`
-  );
   lines.push(`| Contract registry is valid and wired once | ${report.failures.contractRegistry.length} |`);
   lines.push(
-    `| Historical refactor-stage proof files are retired | ${report.failures.historicalStageGuards.length} |`
+    `| Historical stage/wave/checkpoint proof files are retired | ${report.failures.historicalArchitectureProofs.length} |`
   );
   lines.push(`| Unit runner has no duplicate files | ${report.failures.duplicateRunnerFiles.length} |`);
   lines.push(`| Unit runner excludes Playwright E2E | ${report.failures.e2eIncludedInUnitRunner.length} |`);
@@ -300,7 +303,7 @@ function renderMarkdown(report) {
     `| Repository layer graph is owned only by the cached central fixture | ${report.failures.directRepositoryLayerScanTests.length} |`
   );
   lines.push(
-    `| Historical migration prefixes are owned only by the final closeout fingerprint | ${report.failures.historicalMigrationPrefixTests.length} |`
+    `| Retired layer-ledger fields have no test consumers | ${report.failures.retiredLayerLedgerAccessTests.length} |`
   );
   lines.push(
     `| Every non-E2E test reaches the unit runner | ${report.failures.missingFromUnitRunner.length} |`,
@@ -311,10 +314,11 @@ function renderMarkdown(report) {
     for (const [key, items] of Object.entries(report.failures)) {
       if (!items.length) continue;
       lines.push(`### ${key}`, '');
-      for (const item of items.slice(0, 100))
+      for (const item of items.slice(0, 100)) {
         lines.push(
           `- ${typeof item === 'string' ? item : `${item.owner || item.script || item.group}: ${item.file}`}`
         );
+      }
       if (items.length > 100) lines.push(`- ... ${items.length - 100} more`);
       lines.push('');
     }
@@ -331,7 +335,7 @@ function renderMarkdown(report) {
   lines.push(
     '## Policy',
     '',
-    'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package/catalog references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.',
+    'This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Current behavior, persistence ingress, and architecture invariants remain first-class categories.',
     ''
   );
   return lines.join('\n');
@@ -350,8 +354,9 @@ function main() {
   }
   if (failures) {
     console.error(`[test-portfolio-audit] FAILED with ${failures} issue(s)`);
-    for (const [key, items] of Object.entries(report.failures))
+    for (const [key, items] of Object.entries(report.failures)) {
       if (items.length) console.error(`- ${key}: ${items.length}`);
+    }
     process.exitCode = 1;
     return;
   }

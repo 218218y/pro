@@ -12,7 +12,6 @@ import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const featureRel = 'esm/native/features/structure_tab_dimension_support.ts';
 const adapterRel = 'esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const featureManifestRel = 'tools/wp_features_public_api_manifest.json';
 const adapterSpecifier = './structure_tab_dimension_defaults.js';
 const featureSpecifier = '../../../features/structure_tab_dimension_support.js';
@@ -295,14 +294,6 @@ const expectedViewStateKeyOrder = Object.freeze({
     'shouldShowHingeBtn',
   ]),
 });
-const prefixHashes = Object.freeze([
-  'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111',
-  'a0db5a8fefe35b6bf5c8973ab27929439eed2ebb3776df8370f8ad048f64c279',
-  '712628686f0d4c3a1a6e9c1226f47acc9739cf6ef90bf6b5143a446ab22014d6',
-  'e9e354c89e3797cd5f11a67c35420e7bef99abad543315ff36b8a110c66fedff',
-  '4b2b446933a4e711b80e3aff428b22d7341062d2a2ae45cdaf8d72dd5be6dd65',
-  '2fadcd1f9b416aefc7f79d4d074b52eac9e64dea5bc1dd35e486a843264a0088',
-]);
 const omittedAstKeys = new Set([
   'comments',
   'end',
@@ -662,93 +653,6 @@ function inspectConsumerTopology(entries) {
   return violations;
 }
 
-function inspectHistoricalFeatureRatchet(baseline, entries) {
-  const violations = [];
-  const approval = Object.freeze({
-    beforeImporterCount: 41,
-    beforeValueImporterCount: 41,
-    approvedImporterCount: 42,
-    approvedValueImporterCount: 42,
-    entryNumbers: Object.freeze([167, 168, 169, 170, 171]),
-  });
-  const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  if (approval.approvedImporterCount - approval.beforeImporterCount !== 1) {
-    addViolation(violations, 'historical-importer-ratchet');
-  }
-  if (approval.approvedValueImporterCount - approval.beforeValueImporterCount !== 1) {
-    addViolation(violations, 'historical-value-importer-ratchet');
-  }
-  if (!(featureRule?.maxImporterCount >= approval.approvedImporterCount)) {
-    addViolation(violations, 'historical-importer-ceiling-support');
-  }
-  if (!(featureRule?.maxValueImporterCount >= approval.approvedValueImporterCount)) {
-    addViolation(violations, 'historical-value-importer-ceiling-support');
-  }
-  const expected = expectedLedgerEntries();
-  for (let index = 0; index < approval.entryNumbers.length; index += 1) {
-    const entryNumber = approval.entryNumbers[index];
-    const entry = entries[entryNumber - 1];
-    if (stableJson(entry) !== stableJson(expected[index])) {
-      addViolation(violations, `historical-ratchet-entry-${entryNumber}`);
-    }
-    if (typeof entry?.removalCondition !== 'string' || entry.removalCondition.length === 0) {
-      addViolation(violations, `historical-ratchet-removal-condition-${entryNumber}`);
-    }
-  }
-  return violations;
-}
-
-function expectedLedgerEntries() {
-  return ownerGroups.map((group, index) => {
-    const companion = ownerGroups[(index + 1) % ownerGroups.length];
-    return {
-      from: 'features',
-      to: 'shared',
-      additionalStatements: 1,
-      owner: 'dimension-ownership-migration',
-      reviewedAt: '2026-07-28',
-      reviewBy: '2026-10-18',
-      fromFile: featureRel,
-      companionImport: {
-        toFile: companion.file,
-        kind: 'value',
-        importedSymbols: [...companion.symbols],
-        syntax: 'static-import',
-      },
-      removedImport: {
-        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
-        kind: 'value',
-        importedSymbols: [...group.symbols],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: group.file,
-        kind: 'value',
-        importedSymbols: [...group.symbols],
-        syntax: 'static-import',
-      },
-      reason: `The Structure Tab Dimension Support feature boundary replaces the ${group.family} symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.`,
-      removalCondition: `Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra ${group.family} owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel.`,
-    };
-  });
-}
-
-function inspectLedger(entries) {
-  const violations = [];
-  if (entries.length < 171) addViolation(violations, 'ledger-history-length');
-  for (let count = 166; count <= 171 && entries.length >= count; count += 1) {
-    const actual = sha256(stableJson(entries.slice(0, count)));
-    if (actual !== prefixHashes[count - 166]) addViolation(violations, `prefix-${count}`, actual);
-  }
-  const expected = expectedLedgerEntries();
-  for (let index = 0; index < expected.length; index += 1) {
-    if (stableJson(entries[166 + index]) !== stableJson(expected[index])) {
-      addViolation(violations, `entry-${167 + index}`);
-    }
-  }
-  return violations;
-}
-
 function viewStateKeyOrder(source) {
   const expectedFunctions = new Set(Object.keys(expectedViewStateKeyOrder));
   const facts = {};
@@ -822,31 +726,6 @@ test('normalized Group A-D AST and literal inventories remain unchanged', () => 
     viewStateKeyOrder(read('esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts')),
     expectedViewStateKeyOrder
   );
-});
-
-test('Entries 167-171 are exact, preserve Prefix 166, and accept later appended entries', () => {
-  const entries = JSON.parse(read(baselineRel)).migrationBudgets;
-  assert.equal(entries.length >= 171, true);
-  assert.deepEqual(inspectLedger(entries), []);
-  const futureEntryAfterHistory = {
-    ...entries[170],
-    fromFile: 'esm/native/features/future_append_safe_dimension_consumer.ts',
-  };
-  assert.deepEqual(inspectLedger([...entries, futureEntryAfterHistory]), []);
-});
-
-test('Group A historical ratchet remains backed by active Entries 167-171', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  const entries = baseline.migrationBudgets;
-  assert.deepEqual(inspectHistoricalFeatureRatchet(baseline, entries), []);
-
-  const futureHigherCeiling = structuredClone(baseline);
-  const futureFeatureRule = futureHigherCeiling.rules.find(
-    rule => rule.from === 'features' && rule.to === 'shared'
-  );
-  futureFeatureRule.maxImporterCount += 1;
-  futureFeatureRule.maxValueImporterCount += 1;
-  assert.deepEqual(inspectHistoricalFeatureRatchet(futureHigherCeiling, entries), []);
 });
 
 test('route and behavior mutation probes reject owned Structure Tab regressions', () => {
@@ -932,43 +811,4 @@ test('route and behavior mutation probes reject owned Structure Tab regressions'
     semanticFingerprints[stackSplitRel],
     'Stack Split lower-height default mutation must change its fingerprints'
   );
-});
-
-test('Ledger and historical ratchet mutation probes reject owned-entry drift', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  const entries = baseline.migrationBudgets;
-  for (let index = 166; index < 171; index += 1) {
-    const mutated = structuredClone(entries);
-    mutated[index].addedImport.importedSymbols[0] += '_MUTATED';
-    assertMutationRejected(inspectLedger(mutated), `entry-${index + 1}`, `Entry ${index + 1}`);
-  }
-  const withoutRemovalConditions = structuredClone(entries);
-  for (let index = 166; index < 171; index += 1) {
-    delete withoutRemovalConditions[index].removalCondition;
-  }
-  assertMutationRejected(
-    inspectLedger(withoutRemovalConditions),
-    'entry-167',
-    'owned Entries without migration removal conditions'
-  );
-
-  const unsupportedCeiling = structuredClone(baseline);
-  const featureRule = unsupportedCeiling.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  featureRule.maxImporterCount = 41;
-  featureRule.maxValueImporterCount = 41;
-  assertMutationRejected(
-    inspectHistoricalFeatureRatchet(unsupportedCeiling, entries),
-    'historical-importer-ceiling-support',
-    'active Group A Entries without importer ceiling support'
-  );
-
-  const unrelatedCurrentTotals = structuredClone(baseline);
-  const unrelatedRule = unrelatedCurrentTotals.rules.find(
-    rule => rule.from === 'ui' && rule.to === 'features'
-  );
-  if (unrelatedRule) {
-    unrelatedRule.maxImporterCount += 10;
-    unrelatedRule.maxImportCount += 10;
-  }
-  assert.deepEqual(inspectHistoricalFeatureRatchet(unrelatedCurrentTotals, entries), []);
 });

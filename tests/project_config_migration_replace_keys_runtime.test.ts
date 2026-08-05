@@ -46,8 +46,8 @@ test('project config canonical snapshot fails fast when a replace-owned branch i
   delete cfg.removedDoorsMap;
 
   assert.throws(
-    () => assertCanonicalProjectConfigSnapshot(cfg, 'stage33.projectConfig'),
-    /stage33\.projectConfig missing canonical config key\(s\): removedDoorsMap/
+    () => assertCanonicalProjectConfigSnapshot(cfg, 'projectConfigSnapshot'),
+    /projectConfigSnapshot missing canonical config key\(s\): removedDoorsMap/
   );
 });
 

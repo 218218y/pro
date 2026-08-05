@@ -64,7 +64,7 @@ try {
       console.error('Run with --json for the complete proposal.');
     } else {
       console.log(
-        'Layer contract proposal clean (no added edges, budget changes, ratchet violations, or migration budget failures).'
+        'Layer contract proposal clean (no added edges, budget changes, ratchet violations, or ownership failures).'
       );
     }
     process.exitCode = proposal.reviewRequired ? 1 : 0;

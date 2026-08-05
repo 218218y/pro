@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +18,6 @@ const runtimeApiRel = 'esm/native/runtime/api.ts';
 const servicesBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
 const servicesApiRel = 'esm/native/services/api.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSpecifier = './wardrobe_default_resolution_policy.js';
 const featurePolicySpecifier = '../../shared/dimensions/structure_tab_dimension_policy.js';
 const compositionPolicySpecifier = './structure_tab_auto_width_policy.js';
@@ -66,8 +64,6 @@ const featureCompositionSymbols = Object.freeze([
   'getDefaultDepthForWardrobeType',
   policySymbol,
 ]);
-const prefix171 = '2fadcd1f9b416aefc7f79d4d074b52eac9e64dea5bc1dd35e486a843264a0088';
-const prefix172 = '3ab71bc2e36c7c225c754defcd9734e2a62dd44a96139eea00d8d26e059add5f';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 function stableJson(value) {
@@ -80,8 +76,6 @@ function stableJson(value) {
   }
   return JSON.stringify(value);
 }
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function addViolation(violations, kind, detail) {
   violations.push(detail === undefined ? { kind } : { kind, detail });
@@ -274,53 +268,6 @@ function inspectPolicyRoute(entries) {
   return violations;
 }
 
-function expectedEntry172() {
-  return {
-    from: 'features',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-29',
-    reviewBy: '2026-10-18',
-    fromFile: featureRel,
-    companionImport: {
-      toFile: ownerRel,
-      kind: 'value',
-      importedSymbols: ['getDefaultDepthForWardrobeType'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['isAutoWidthForDoors', 'resolveAutoWidthForDoors'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: policyRel,
-      kind: 'value',
-      importedSymbols: [policySymbol],
-      syntax: 'static-import',
-    },
-    reason:
-      'The Structure Tab Dimension Support feature boundary replaces the auto-width function group from the legacy shared facade route with the private Structure Tab Auto Width composition policy alongside the canonical focused default-depth resolver, without exposing shared ownership or function references to UI.',
-    removalCondition:
-      'Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Structure Tab Auto Width policy statement without reintroducing the legacy facade, a direct shared owner import in UI, escaped function references, copied values, or a general dimension barrel.',
-  };
-}
-
-function inspectLedger(entries) {
-  const violations = [];
-  if (entries.length < 172) addViolation(violations, 'ledger-history-length');
-  const actualPrefix171 = semanticSha256(entries.slice(0, 171));
-  if (actualPrefix171 !== prefix171) addViolation(violations, 'prefix-171', actualPrefix171);
-  if (stableJson(entries[171]) !== stableJson(expectedEntry172())) {
-    addViolation(violations, 'entry-172');
-  }
-  const actualPrefix172 = semanticSha256(entries.slice(0, 172));
-  if (actualPrefix172 !== prefix172) addViolation(violations, 'prefix-172', actualPrefix172);
-  return violations;
-}
-
 function assertRejected(violations, kind, label) {
   assert.equal(
     violations.some(violation => violation.kind === kind),
@@ -352,16 +299,6 @@ test('private Structure Tab auto-width policy has one exact owner import and fro
     mock: specifier => (specifier === adapterFeatureSpecifier ? feature : undefined),
   }).load(path.join(root, 'esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts'));
   for (const name of functionNames) assert.strictEqual(adapter[name], owner[name], name);
-});
-
-test('Entry 172 is exact, preserves Prefix 171, and accepts append-safe Entry 173', () => {
-  const entries = JSON.parse(read(baselineRel)).migrationBudgets;
-  assert.deepEqual(inspectLedger(entries), []);
-  const futureEntry173 = {
-    ...entries[171],
-    fromFile: 'esm/native/features/future_append_safe_dimension_consumer.ts',
-  };
-  assert.deepEqual(inspectLedger([...entries, futureEntry173]), []);
 });
 
 test('policy mutations reject wrappers, bind, aliases, key drift, owner drift, and public export', () => {
@@ -411,11 +348,4 @@ test('policy mutations reject wrappers, bind, aliases, key drift, owner drift, a
     'policy-owner-dependency',
     'wrong owner'
   );
-});
-
-test('Entry 172 mutation changes its owned entry while unrelated future entries remain append-safe', () => {
-  const entries = JSON.parse(read(baselineRel)).migrationBudgets;
-  const mutated = structuredClone(entries);
-  mutated[171].addedImport.importedSymbols = ['MUTATED_POLICY'];
-  assertRejected(inspectLedger(mutated), 'entry-172', 'Entry 172');
 });

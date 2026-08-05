@@ -29,9 +29,9 @@ Remove or rewrite tests when they only preserve old migration steps, historical 
 
 Guard tests may check strings/imports/line counts for canonical ownership, but they must stay narrow. If a guard needs paragraphs of explanation, the doc or owner map probably needs cleanup instead.
 
-A local ownership test must inspect only the source files and behavior it owns. Repository-wide Layer Contract collection belongs to `tests/helpers/repository_layer_contract_fixture.mjs`, which memoizes one graph and evaluation for central Layer Contract/closeout tests. Do not call the graph collector from individual ownership tests or from another helper. When a ledger entry names an exact consumer, analyze that consumer directly instead of walking all of `esm`.
+A local ownership test must inspect only the source files and behavior it owns. Repository-wide Layer Contract collection belongs to `tests/helpers/repository_layer_contract_fixture.mjs`, which memoizes one graph and evaluation for the central Layer Contract tests. Do not call the graph collector from individual ownership tests or from another helper. Analyze an exact consumer directly instead of walking all of `esm`.
 
-Historical ledger prefixes are protected centrally by the final migration closeout and its exact inventory fingerprint. Local ownership tests should protect current imports, aliases, formulas, and behavior; they should not copy historical `migrationBudgets` prefixes or rerun the global closeout. This separation keeps failures attributable: a behavior regression fails its owner test, while ledger drift fails one central contract.
+The layer contract stores current ownership only. Local ownership tests protect current imports, aliases, formulas, provenance, and behavior; they must not recreate migration entries, retirement inventories, checkpoint hashes, or stage-by-stage proof files. This keeps failures attributable to a current owner rather than to obsolete implementation history.
 
 Layer proposal output is concise by default so CI logs show the decision instead of dumping the full baseline. Use `node tools/wp_layer_contract.js --propose --json` only when the complete machine-readable proposal is needed. CLI tests must use a minimal `--root` fixture rather than scanning the production tree merely to verify argument handling or exit codes.
 
@@ -72,10 +72,10 @@ npm run report:test-portfolio
 The audit is not a snapshot test for every assertion. It protects the control plane around tests:
 
 - package scripts must not reference missing test files;
-- files with `legacy` in the name must state their purpose as migration, compatibility, cleanup, root, guard, audit, contract, or surface coverage;
+- compatibility and persistence-ingress tests must state the current boundary or behavior they protect;
 - architecture contracts must have one canonical owner in `tools/wp_contract_registry.mjs`;
-- numbered `refactor_stage*` proof files are rejected once their current invariant is covered by a capability-named contract;
-- overlap between stage/source/ownership guards is mapped so redundant proofs can be consolidated deliberately;
+- stage/wave/checkpoint/delete-pass proof files are rejected; durable tests are named by capability;
+- overlap between contract, source-guard, and ownership coverage is mapped so redundant current proofs can be consolidated deliberately;
 - named test groups must not contain duplicate or missing files.
 - repository-wide Layer Contract collection must remain behind the one cached central fixture.
 

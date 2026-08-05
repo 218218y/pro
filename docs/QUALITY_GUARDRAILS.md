@@ -139,7 +139,7 @@ node --test tests/wp_release_runtime.test.js
 - `contract:layers:propose` is the canonical decrease-only architecture proposal.
 - A clean proposal that still contains lower budgets or removable edges is allowed only within the configured `ratchet.pendingReductionGraceDays` window after the last reviewed ratchet application.
 - `contract:layers:ratchet` fails after that window, so CI cannot carry known architecture slack indefinitely.
-- Applying a clean reduction refreshes `ratchet.reviewedAt`; growth, facade decisions, and migration failures remain review-blocking and are never absorbed by this guard.
+- Applying a clean reduction refreshes `ratchet.reviewedAt`; growth, facade decisions, and ownership failures remain review-blocking and are never absorbed by this guard.
 
 Relevant checks:
 
