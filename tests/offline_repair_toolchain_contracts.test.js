@@ -5,9 +5,42 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import zlib from 'node:zlib';
 
 const root = process.cwd();
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
+
+function writeTarOctal(header, offset, length, value) {
+  const encoded = value.toString(8).padStart(length - 1, '0') + '\0';
+  header.write(encoded, offset, length, 'ascii');
+}
+
+function createTarEntry(name, content) {
+  const body = Buffer.from(content);
+  const header = Buffer.alloc(512);
+  header.write(name, 0, 100, 'utf8');
+  writeTarOctal(header, 100, 8, 0o644);
+  writeTarOctal(header, 108, 8, 0);
+  writeTarOctal(header, 116, 8, 0);
+  writeTarOctal(header, 124, 12, body.length);
+  writeTarOctal(header, 136, 12, 0);
+  header.fill(0x20, 148, 156);
+  header.write('0', 156, 1, 'ascii');
+  header.write('ustar\0', 257, 6, 'ascii');
+  header.write('00', 263, 2, 'ascii');
+  const checksum = header.reduce((sum, byte) => sum + byte, 0);
+  header.write(`${checksum.toString(8).padStart(6, '0')}\0 `, 148, 8, 'ascii');
+  const padding = Buffer.alloc((512 - (body.length % 512)) % 512);
+  return Buffer.concat([header, body, padding]);
+}
+
+function createNpmArchive(packageJson) {
+  const tar = Buffer.concat([
+    createTarEntry('package/package.json', `${JSON.stringify(packageJson, null, 2)}\n`),
+    Buffer.alloc(1024),
+  ]);
+  return zlib.gzipSync(tar, { level: 9 });
+}
 
 function assertLockEntry(manifestEntry, expectedVersion, packages) {
   const lockEntry = packages[manifestEntry.lockPath];
@@ -68,6 +101,48 @@ test('offline TypeScript manifest is exact, native, and lockfile-backed', () => 
     assert.equal(entry.executable, executable);
     assertLockEntry(entry, typescript.version, lock.packages);
   }
+});
+
+test('offline Oxlint manifest is exact, Linux-only, and includes the type-aware backend', () => {
+  const manifest = readJson('vendor/offline/manifest.json');
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const oxlint = manifest.oxlint;
+  const typeAware = oxlint.typeAware;
+
+  assert.equal(oxlint.version, lock.packages['node_modules/oxlint'].version);
+  assert.equal(pkg.devDependencies.oxlint, lock.packages[''].devDependencies.oxlint);
+  assert.equal(oxlint.launcher, 'bin/oxlint');
+  assertLockEntry(oxlint.package, oxlint.version, lock.packages);
+
+  assert.deepEqual(Object.keys(oxlint.platforms), ['linux-x64']);
+  const binding = oxlint.platforms['linux-x64'];
+  assert.equal(binding.lockPath, 'node_modules/@oxlint/binding-linux-x64-gnu');
+  assert.equal(binding.installPath, binding.lockPath);
+  assert.equal(binding.runtime, 'gnu');
+  assert.equal(supportsLinuxX64Glibc(lock.packages[binding.lockPath]), true);
+  assertLockEntry(binding, oxlint.version, lock.packages);
+  assert.equal(
+    lock.packages['node_modules/oxlint'].optionalDependencies['@oxlint/binding-linux-x64-gnu'],
+    oxlint.version
+  );
+
+  assert.equal(typeAware.version, lock.packages['node_modules/oxlint-tsgolint'].version);
+  assert.equal(pkg.devDependencies['oxlint-tsgolint'], typeAware.version);
+  assert.equal(typeAware.launcher, 'bin/tsgolint.js');
+  assert.equal(typeAware.environmentVariable, 'OXLINT_TSGOLINT_PATH');
+  assertLockEntry(typeAware.package, typeAware.version, lock.packages);
+  assert.deepEqual(Object.keys(typeAware.platforms), ['linux-x64']);
+  const typeAwareBinding = typeAware.platforms['linux-x64'];
+  assert.equal(typeAwareBinding.lockPath, 'node_modules/@oxlint-tsgolint/linux-x64');
+  assert.equal(typeAwareBinding.installPath, typeAwareBinding.lockPath);
+  assert.equal(supportsLinuxX64Glibc(lock.packages[typeAwareBinding.lockPath]), true);
+  assertLockEntry(typeAwareBinding, typeAware.version, lock.packages);
+  assert.equal(
+    lock.packages['node_modules/oxlint-tsgolint'].optionalDependencies['@oxlint-tsgolint/linux-x64'],
+    typeAware.version
+  );
+  assert.equal(lock.packages['node_modules/oxlint'].peerDependencies['oxlint-tsgolint'], '>=7.0.2001');
 });
 
 test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', () => {
@@ -178,13 +253,43 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
 
-  const checkedIn = spawnSync(process.execPath, [tool, '--all', '--check'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
+  const checkedIn = spawnSync(
+    process.execPath,
+    [
+      tool,
+      '--component',
+      'esbuild',
+      '--component',
+      'tsx',
+      '--component',
+      'prettier',
+      '--component',
+      'typescript',
+      '--check',
+    ],
+    {
+      cwd: root,
+      encoding: 'utf8',
+    }
+  );
   assert.equal(checkedIn.status, 0, checkedIn.stderr || checkedIn.stdout);
   for (const component of ['esbuild', 'tsx', 'prettier', 'typescript']) {
     assert.match(checkedIn.stdout, new RegExp(`OK: ${component} `, 'u'));
+  }
+
+  const downloadPlan = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(downloadPlan.status, 0, downloadPlan.stderr || downloadPlan.stdout);
+  for (const entry of [
+    manifest.oxlint.package,
+    manifest.oxlint.platforms['linux-x64'],
+    manifest.oxlint.typeAware.package,
+    manifest.oxlint.typeAware.platforms['linux-x64'],
+  ]) {
+    assert.match(downloadPlan.stdout, new RegExp(entry.url.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+    assert.match(downloadPlan.stdout, new RegExp(entry.file.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
   }
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-npm-vendor-'));
@@ -277,6 +382,83 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     );
     assert.notEqual(tampered.status, 0);
     assert.match(tampered.stderr, /integrity mismatch/u);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('offline npm vendor synchronizer adopts the complete Oxlint Linux slice atomically', () => {
+  const lock = readJson('package-lock.json');
+  const manifest = readJson('vendor/offline/manifest.json');
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-oxlint-vendor-'));
+  const lockPaths = [
+    'node_modules/oxlint',
+    'node_modules/@oxlint/binding-linux-x64-gnu',
+    'node_modules/oxlint-tsgolint',
+    'node_modules/@oxlint-tsgolint/linux-x64',
+  ];
+
+  try {
+    const fixtureLock = structuredClone(lock);
+    const fixtureManifest = structuredClone(manifest);
+    delete fixtureManifest.oxlint;
+    fs.mkdirSync(path.join(fixtureRoot, 'vendor/offline/oxlint'), { recursive: true });
+
+    for (const lockPath of lockPaths) {
+      const lockEntry = fixtureLock.packages[lockPath];
+      const packageName = lockPath.slice(lockPath.lastIndexOf('node_modules/') + 'node_modules/'.length);
+      const packageJson = { name: packageName, version: lockEntry.version };
+      for (const constraint of ['os', 'cpu', 'libc']) {
+        if (Array.isArray(lockEntry[constraint])) packageJson[constraint] = lockEntry[constraint];
+      }
+      const archive = createNpmArchive(packageJson);
+      lockEntry.integrity = `sha512-${crypto.createHash('sha512').update(archive).digest('base64')}`;
+      const fileName = new URL(lockEntry.resolved).pathname.split('/').at(-1);
+      fs.writeFileSync(path.join(fixtureRoot, 'vendor/offline/oxlint', fileName), archive);
+    }
+    fs.writeFileSync(path.join(fixtureRoot, 'vendor/offline/oxlint/stale-0.0.0.tgz'), 'stale');
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'package-lock.json'),
+      `${JSON.stringify(fixtureLock, null, 2)}\n`
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(fixtureManifest, null, 2)}\n`
+    );
+
+    const adopt = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'oxlint', '--adopt-existing'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+    assert.match(
+      adopt.stdout,
+      new RegExp(
+        `OK: oxlint ${fixtureLock.packages['node_modules/oxlint'].version.replaceAll('.', '\\.')}\\b`,
+        'u'
+      )
+    );
+
+    const synced = JSON.parse(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
+    );
+    assert.equal(synced.oxlint.version, fixtureLock.packages['node_modules/oxlint'].version);
+    assert.equal(synced.oxlint.platforms['linux-x64'].lockPath, 'node_modules/@oxlint/binding-linux-x64-gnu');
+    assert.equal(
+      synced.oxlint.typeAware.version,
+      fixtureLock.packages['node_modules/oxlint-tsgolint'].version
+    );
+    assert.equal(synced.oxlint.typeAware.environmentVariable, 'OXLINT_TSGOLINT_PATH');
+    assert.equal(fs.existsSync(path.join(fixtureRoot, 'vendor/offline/oxlint/stale-0.0.0.tgz')), false);
+
+    const check = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'oxlint', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(check.status, 0, check.stderr || check.stdout);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -479,6 +661,8 @@ test('offline native manifests and archives are scoped to Linux x64 glibc', () =
     manifest.ast.bindings,
     manifest.esbuild.platforms,
     manifest.typescript.platforms,
+    manifest.oxlint.platforms,
+    manifest.oxlint.typeAware.platforms,
   ];
 
   for (const platforms of nativePlatformMaps) {
@@ -500,9 +684,51 @@ test('offline native manifests and archives are scoped to Linux x64 glibc', () =
     'bootstrap_offline_typescript.bat',
     'bootstrap_offline_esbuild.bat',
     'bootstrap_offline_tsx.bat',
+    'bootstrap_offline_oxlint.bat',
   ]) {
     assert.equal(fs.existsSync(path.join(root, 'tools', wrapper)), false);
   }
+});
+
+test('offline Oxlint scripts install and run both syntax and type-aware lint without npm', () => {
+  const pkg = readJson('package.json');
+  assert.equal(pkg.scripts['setup:offline:oxlint'], 'python tools/bootstrap_offline_oxlint.py');
+  assert.equal(
+    pkg.scripts['verify:offline:oxlint'],
+    'python tools/verify_offline_repair_vendor.py --oxlint-only'
+  );
+  assert.equal(pkg.scripts['run:offline:oxlint'], 'python tools/run_offline_oxlint.py');
+  assert.equal(
+    pkg.scripts['lint:ts-modern:syntax:offline'],
+    'python tools/run_offline_node24.py --node-only --with-oxlint tools/wp_oxlint_audit.mjs --mode syntax --fail-on-diagnostics'
+  );
+  assert.equal(
+    pkg.scripts['lint:ts-modern:type-aware:offline'],
+    'python tools/run_offline_node24.py --node-only --with-oxlint tools/wp_oxlint_audit.mjs --mode type-aware --fail-on-diagnostics'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:oxlint:refresh'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --component oxlint'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:oxlint:downloads'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --component oxlint --print-downloads --missing-only'
+  );
+
+  const bootstrap = fs.readFileSync(path.join(root, 'tools/bootstrap_offline_repair_core.py'), 'utf8');
+  const nodeRunner = fs.readFileSync(path.join(root, 'tools/run_offline_node24.py'), 'utf8');
+  const directRunner = fs.readFileSync(path.join(root, 'tools/run_offline_oxlint.py'), 'utf8');
+  const processRunner = fs.readFileSync(path.join(root, 'tools/offline_process_runner.py'), 'utf8');
+  assert.match(bootstrap, /def install_oxlint\(/u);
+  assert.match(bootstrap, /OXLINT_TSGOLINT_PATH/u);
+  assert.match(bootstrap, /npm run vendor:offline:oxlint:refresh/u);
+  assert.doesNotMatch(bootstrap, /subprocess\.(?:run|Popen)\(\s*\[\s*['"]npm/u);
+  assert.match(nodeRunner, /--with-oxlint/u);
+  assert.match(nodeRunner, /core\.install_oxlint/u);
+  assert.match(directRunner, /process_runner\.run_isolated/u);
+  assert.match(directRunner, /environmentVariable/u);
+  assert.match(processRunner, /env: Mapping\[str, str\] \| None = None/u);
+  assert.match(processRunner, /env=None if env is None else dict\(env\)/u);
 });
 
 test('offline platform selection rejects Windows before archive lookup or download guidance', () => {

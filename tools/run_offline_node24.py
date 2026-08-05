@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 import bootstrap_offline_repair_core as core
@@ -42,6 +43,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install the Linux x64 project runtime profile for tests importing production packages",
     )
+    parser.add_argument(
+        "--with-oxlint",
+        action="store_true",
+        help="Also install Oxlint and its Linux type-aware backend",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -60,6 +66,7 @@ def main(argv: list[str] | None = None) -> int:
             tsx=args.with_tsx,
             prettier=args.with_prettier,
             typescript=args.with_typescript,
+            oxlint=args.with_oxlint,
             workspace_profile_name="tsx-tests" if args.with_runtime else None,
         )
         executable = core.install_node(manifest, key)
@@ -73,6 +80,13 @@ def main(argv: list[str] | None = None) -> int:
             core.install_typescript(manifest, key, executable)
         if args.with_prettier:
             core.install_prettier(manifest, executable)
+        environment = None
+        if args.with_oxlint:
+            _, type_aware_launcher = core.install_oxlint(manifest, key, executable)
+            environment = os.environ.copy()
+            environment[manifest["oxlint"]["typeAware"]["environmentVariable"]] = str(
+                type_aware_launcher
+            )
         if args.with_runtime:
             core.install_workspace_profile(manifest, key, executable, "tsx-tests")
     except core.OfflineCoreError as exc:
@@ -82,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
     return process_runner.run_isolated(
         [str(executable), *node_args],
         cwd=core.ROOT,
+        env=environment,
     )
 
 

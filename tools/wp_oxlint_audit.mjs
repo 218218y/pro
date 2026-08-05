@@ -38,7 +38,9 @@ function parseArgs(argv) {
 function resolveOxlintBin() {
   const bin = path.join(ROOT, 'node_modules', 'oxlint', 'bin', 'oxlint');
   if (!fs.existsSync(bin)) {
-    throw new Error('[Oxlint Audit] oxlint not found. Run: npm ci --ignore-scripts');
+    throw new Error(
+      '[Oxlint Audit] oxlint not found. Run npm ci --ignore-scripts, or on Linux x64 glibc run npm run setup:offline:oxlint after refreshing the offline vendor.'
+    );
   }
   return bin;
 }

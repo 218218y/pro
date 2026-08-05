@@ -6,7 +6,8 @@ This directory stores manually downloaded archives used by focused repair tasks.
 The native offline vendor is intentionally limited to Linux x64 with glibc. Windows, macOS, musl Linux, and
 ARM hosts fail immediately with `Offline repair vendor supports Linux x64 glibc only`; the tools do not look
 for an archive or offer a download URL on those platforms. Prettier and TSX remain platform-neutral packages,
-but their offline launch path still depends on the vendored Linux x64 Node runtime (and esbuild for TSX). A
+while Oxlint, oxlint-tsgolint, esbuild, and TypeScript use explicit Linux x64 native packages. Every offline
+launch path still depends on the vendored Linux x64 Node runtime. A
 separate lockfile-derived `tsx-tests` workspace profile supplies project runtime dependencies required by
 React, Three.js, PDF, Supabase, and other `.ts`/`.tsx` tests.
 
@@ -32,7 +33,8 @@ python tools/bootstrap_offline_repair_core.py
 
 ## Keep npm-backed slices synchronized
 
-`package-lock.json` is the single source of truth for esbuild, TSX, Prettier, and TypeScript. Do not edit their
+`package-lock.json` is the single source of truth for esbuild, TSX, Prettier, TypeScript, Oxlint, and
+oxlint-tsgolint. Do not edit their
 manifest versions or download URLs by hand.
 
 ```bash
@@ -45,6 +47,40 @@ npm run vendor:offline:packages:check
 downloads only missing targets. For a completely manual/no-network flow, place the files first and run
 `npm run vendor:offline:packages:adopt`. All archives are checked against lockfile integrity and embedded npm
 metadata before the manifest is replaced; old `.tgz` files are cleaned only after success.
+
+## Optional linter set: Oxlint + type-aware backend
+
+Oxlint syntax linting needs the common package and its GNU/Linux x64 binding. The existing type-aware gate
+also needs `oxlint-tsgolint` and its Linux x64 executable package:
+
+```text
+vendor/offline/oxlint/oxlint-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/binding-linux-x64-gnu-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/oxlint-tsgolint-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/linux-x64-<LOCKFILE_VERSION>.tgz
+```
+
+Download and verify only this slice, or let the complete package refresh include it automatically:
+
+```bash
+npm run vendor:offline:oxlint:downloads
+npm run vendor:offline:oxlint:refresh
+npm run vendor:offline:oxlint:check
+```
+
+For a manual/no-network adoption, place the four untouched archives at the printed paths and run
+`npm run vendor:offline:oxlint:adopt`. Install or invoke the linter without npm resolution:
+
+```bash
+npm run verify:offline:oxlint
+npm run setup:offline:oxlint
+npm run run:offline:oxlint -- --version
+npm run lint:ts-modern:syntax:offline
+npm run lint:ts-modern:type-aware:offline
+```
+
+The offline runners export the manifest-pinned `OXLINT_TSGOLINT_PATH`, so type-aware linting does not depend
+on a globally installed backend or PATH lookup.
 
 ## Optional formatter set: Prettier
 

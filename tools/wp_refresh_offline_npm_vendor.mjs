@@ -7,7 +7,7 @@ import path from 'node:path';
 import process from 'node:process';
 import zlib from 'node:zlib';
 
-const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript']);
+const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']);
 const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
 const SUPPORTED_PROFILES = Object.freeze(['tsx-tests']);
 const PROFILE_SET = new Set(SUPPORTED_PROFILES);
@@ -180,6 +180,18 @@ function tildeRangeAccepts(version, range) {
   return actual[0] === minimum[0] && actual[1] === minimum[1] && actual[2] >= minimum[2];
 }
 
+function minimumRangeAccepts(version, range) {
+  const versionMatch = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version ?? '');
+  const rangeMatch = /^>=(\d+)\.(\d+)\.(\d+)$/u.exec(range ?? '');
+  if (!versionMatch || !rangeMatch) fail(`unsupported minimum version pair: ${version} / ${range}`);
+  const actual = versionMatch.slice(1).map(Number);
+  const minimum = rangeMatch.slice(1).map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    if (actual[index] !== minimum[index]) return actual[index] > minimum[index];
+  }
+  return true;
+}
+
 function verifyTsxEsbuildCompatibility(manifest) {
   const tsx = manifest.tsx;
   const esbuild = manifest.esbuild;
@@ -290,6 +302,66 @@ function buildComponent(lock, component) {
             },
           },
           launcher: packageBin(packageTarget.lockEntry, 'tsc'),
+        };
+      },
+    };
+  }
+
+  if (component === 'oxlint') {
+    const packageTarget = targetFromLock(packages, 'node_modules/oxlint', 'oxlint');
+    const platformTarget = targetFromLock(packages, 'node_modules/@oxlint/binding-linux-x64-gnu', 'oxlint');
+    const typeAwareTarget = targetFromLock(packages, 'node_modules/oxlint-tsgolint', 'oxlint');
+    const typeAwarePlatformTarget = targetFromLock(
+      packages,
+      'node_modules/@oxlint-tsgolint/linux-x64',
+      'oxlint'
+    );
+    const version = assertAlignedVersions(component, [packageTarget, platformTarget]);
+    const typeAwareVersion = assertAlignedVersions('oxlint-tsgolint', [
+      typeAwareTarget,
+      typeAwarePlatformTarget,
+    ]);
+    if (!supportsLinuxX64Glibc(platformTarget.lockEntry)) {
+      fail(`${platformTarget.lockPath} does not target Linux x64 glibc`);
+    }
+    if (!supportsLinuxX64Glibc(typeAwarePlatformTarget.lockEntry)) {
+      fail(`${typeAwarePlatformTarget.lockPath} does not target Linux x64 glibc`);
+    }
+    const typeAwareRange = packageTarget.lockEntry.peerDependencies?.['oxlint-tsgolint'];
+    if (typeof typeAwareRange !== 'string' || !minimumRangeAccepts(typeAwareVersion, typeAwareRange)) {
+      fail(`oxlint-tsgolint ${typeAwareVersion} does not satisfy oxlint peer ${typeAwareRange}`);
+    }
+    if (packageTarget.lockEntry.optionalDependencies?.['@oxlint/binding-linux-x64-gnu'] !== version) {
+      fail('oxlint Linux x64 glibc binding is not aligned with the common package');
+    }
+    if (typeAwareTarget.lockEntry.optionalDependencies?.['@oxlint-tsgolint/linux-x64'] !== typeAwareVersion) {
+      fail('oxlint-tsgolint Linux x64 binding is not aligned with the common package');
+    }
+    return {
+      component,
+      directory: 'oxlint',
+      version,
+      targets: [packageTarget, platformTarget, typeAwareTarget, typeAwarePlatformTarget],
+      createManifestEntry() {
+        return {
+          version,
+          package: toManifestEntry(packageTarget),
+          platforms: {
+            'linux-x64': {
+              ...toManifestEntry(platformTarget),
+              runtime: 'gnu',
+            },
+          },
+          launcher: packageBin(packageTarget.lockEntry, 'oxlint'),
+          typeAware: {
+            version: typeAwareVersion,
+            package: toManifestEntry(typeAwareTarget),
+            platforms: {
+              'linux-x64': toManifestEntry(typeAwarePlatformTarget),
+            },
+            launcher: packageBin(typeAwareTarget.lockEntry, 'tsgolint'),
+            environmentVariable: 'OXLINT_TSGOLINT_PATH',
+          },
         };
       },
     };
@@ -434,12 +506,28 @@ function verifyArchive(buffer, target) {
         `received ${packageJson.name}@${packageJson.version}`
     );
   }
+  for (const constraint of ['os', 'cpu', 'libc']) {
+    if (
+      Array.isArray(target.lockEntry[constraint]) &&
+      JSON.stringify(packageJson[constraint]) !== JSON.stringify(target.lockEntry[constraint])
+    ) {
+      fail(`${target.fileName} ${constraint} metadata does not match package-lock.json`);
+    }
+  }
 }
 
 function manifestEntriesFor(component, entry) {
   if (component === 'tsx' || component === 'prettier') return [entry.package];
   if (component === 'esbuild' || component === 'typescript') {
     return [entry.package, entry.platforms?.['linux-x64']];
+  }
+  if (component === 'oxlint') {
+    return [
+      entry.package,
+      entry.platforms?.['linux-x64'],
+      entry.typeAware?.package,
+      entry.typeAware?.platforms?.['linux-x64'],
+    ];
   }
   return [];
 }
@@ -488,6 +576,20 @@ function verifyComponentManifest(manifest, definition, buffers) {
     if (actual.launcher !== expected.launcher) fail('manifest typescript.launcher is stale');
     if (actual.platforms?.['linux-x64']?.executable !== 'lib/tsc') {
       fail('manifest TypeScript platform executable is stale');
+    }
+  } else if (definition.component === 'oxlint') {
+    if (actual.launcher !== expected.launcher) fail('manifest oxlint.launcher is stale');
+    if (actual.platforms?.['linux-x64']?.runtime !== 'gnu') {
+      fail('manifest oxlint Linux platform runtime is stale');
+    }
+    if (actual.typeAware?.version !== expected.typeAware.version) {
+      fail('manifest oxlint.typeAware.version is stale');
+    }
+    if (actual.typeAware?.launcher !== expected.typeAware.launcher) {
+      fail('manifest oxlint.typeAware.launcher is stale');
+    }
+    if (actual.typeAware?.environmentVariable !== expected.typeAware.environmentVariable) {
+      fail('manifest oxlint.typeAware.environmentVariable is stale');
     }
   }
 }

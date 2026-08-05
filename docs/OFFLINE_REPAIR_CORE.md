@@ -15,7 +15,9 @@ smaller trusted set:
 - a generated `tsx-tests` profile containing every production runtime dependency and transitive package
   needed by `.ts`/`.tsx` tests on Linux x64 glibc;
 - optionally, lockfile-pinned Prettier;
-- optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package.
+- optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package;
+- optionally, lockfile-pinned Oxlint plus its GNU/Linux x64 binding and the matching `oxlint-tsgolint`
+  type-aware backend.
 
 The bootstrap extracts only explicitly listed archives. The workspace profile is resolved ahead of time from
 `package-lock.json`; installation itself does not invoke npm, resolve packages, run lifecycle scripts, install
@@ -83,6 +85,20 @@ the `@typescript/typescript-linux-x64` package contains the native compiler exec
 Both archives at the same exact version are required. The filenames match the download basenames. Do not
 extract or rename them.
 
+### Optional Oxlint slice
+
+```text
+vendor/offline/oxlint/oxlint-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/binding-linux-x64-gnu-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/oxlint-tsgolint-<LOCKFILE_VERSION>.tgz
+vendor/offline/oxlint/linux-x64-<LOCKFILE_VERSION>.tgz
+```
+
+The common `oxlint` package supplies the CLI launcher and loads the GNU/Linux x64 binding. The project's
+blocking type-aware command additionally requires `oxlint-tsgolint` and its Linux x64 native package. All four
+entries are resolved from `package-lock.json`; the synchronizer rejects a mismatched binding, a non-Linux
+platform package, or a type-aware version outside Oxlint's peer range.
+
 ## Verify and bootstrap Node/Oxc
 
 ```bash
@@ -129,8 +145,8 @@ Place them under `vendor/offline/ast/` without renaming them, then run `npm run 
 
 ## Synchronize lockfile-backed offline packages
 
-The npm-backed slices (`esbuild`, `tsx`, `prettier`, and `typescript`) are synchronized from
-`package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
+The npm-backed slices (`esbuild`, `tsx`, `prettier`, `typescript`, and `oxlint` with its type-aware
+backend) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
 command first adopts a correctly named archive that is already present, otherwise it downloads the official
 npm tarball. It verifies SHA-512 integrity, embedded package name/version, native executable layout, and the
 esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Superseded archives are removed
@@ -140,6 +156,17 @@ only after the complete replacement set is verified.
 npm run vendor:offline:packages:refresh
 npm run vendor:offline:packages:check
 ```
+
+The complete package refresh now includes the four Oxlint archives. To print or refresh only that slice:
+
+```bash
+npm run vendor:offline:oxlint:downloads
+npm run vendor:offline:oxlint:refresh
+npm run vendor:offline:oxlint:check
+```
+
+For manual downloads, place the untouched files at the paths printed by `downloads` and run
+`npm run vendor:offline:oxlint:adopt`.
 
 For a TSX-only update:
 
@@ -319,11 +346,28 @@ Do not set `WP_ALLOW_SYSTEM_TSC=1` for these checks. A system compiler such as T
 replacement for the repository-pinned TypeScript 7.0.2 compiler, and declaration snapshots must not be
 regenerated to hide that mismatch.
 
+## Verify and run Oxlint independently
+
+The Oxlint path validates all four archives against `package-lock.json`, installs them directly under their
+locked `node_modules` paths without npm or lifecycle scripts, and probes the exact CLI version. The runners
+pin `OXLINT_TSGOLINT_PATH` to the extracted backend so the type-aware audit cannot silently use a global tool.
+
+```bash
+npm run verify:offline:oxlint
+npm run setup:offline:oxlint
+npm run run:offline:oxlint -- --version
+npm run lint:ts-modern:syntax:offline
+npm run lint:ts-modern:type-aware:offline
+```
+
+`npm run vendor:offline:packages:refresh` downloads this slice together with the other lockfile-backed tools.
+When only Oxlint is missing, `npm run vendor:offline:oxlint:refresh` is the smaller equivalent.
+
 ## Scope boundary
 
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
 TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and repository
 `.ts`/`.tsx` runtime tests whose production dependencies are represented in the lock-derived workspace
-profile. It does not provide ESLint/Oxlint, Vite, release bundling,
-obfuscation, Playwright, or browser binaries. `package-lock.json` remains cross-platform for normal installs;
+profile. It provides Oxlint but does not provide ESLint, Vite, release bundling, obfuscation, Playwright, or
+browser binaries. `package-lock.json` remains cross-platform for normal installs;
 only the checked-in `vendor/offline` repair path is Linux x64 glibc-only.

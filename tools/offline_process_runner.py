@@ -9,7 +9,7 @@ from pathlib import Path
 import signal
 import subprocess
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 
 _PR_SET_CHILD_SUBREAPER = 36
@@ -56,13 +56,19 @@ def reap_descendants(*, timeout_seconds: float = 1.0) -> None:
         time.sleep(0.02)
 
 
-def run_isolated(command: Sequence[str], *, cwd: Path) -> int:
+def run_isolated(
+    command: Sequence[str],
+    *,
+    cwd: Path,
+    env: Mapping[str, str] | None = None,
+) -> int:
     """Run a command in a new session and clean its complete process tree afterward."""
 
     enable_child_subreaper()
     process = subprocess.Popen(
         list(command),
         cwd=cwd,
+        env=None if env is None else dict(env),
         start_new_session=True,
     )
     try:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's focused offline Node, AST, esbuild, TSX, TypeScript and Prettier toolchain.
+"""Install the repository's focused offline Node, AST, esbuild, TSX, TypeScript, Prettier and Oxlint toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -169,6 +169,45 @@ def _tilde_range_accepts(version: str, requirement: str) -> bool:
     return len(actual) == 3 and len(minimum) == 3 and actual[:2] == minimum[:2] and actual >= minimum
 
 
+def _minimum_range_accepts(version: str, requirement: str) -> bool:
+    match = re.fullmatch(r">=(\d+\.\d+\.\d+)", requirement)
+    if match is None:
+        return False
+    try:
+        actual = tuple(int(part) for part in version.split("."))
+        minimum = tuple(int(part) for part in match.group(1).split("."))
+    except ValueError:
+        return False
+    return len(actual) == 3 and len(minimum) == 3 and actual >= minimum
+
+
+def _platform_constraint_accepts(values: object, target: str) -> bool:
+    if not isinstance(values, list) or not values:
+        return True
+    allowed = [value for value in values if isinstance(value, str) and not value.startswith("!")]
+    blocked = [value[1:] for value in values if isinstance(value, str) and value.startswith("!")]
+    return target not in blocked and (not allowed or target in allowed)
+
+
+def _supports_linux_x64_glibc(lock_entry: dict) -> bool:
+    return (
+        _platform_constraint_accepts(lock_entry.get("os"), "linux")
+        and _platform_constraint_accepts(lock_entry.get("cpu"), "x64")
+        and _platform_constraint_accepts(lock_entry.get("libc"), "glibc")
+    )
+
+
+def _lock_bin_path(lock_entry: dict, bin_name: str) -> str | None:
+    value = lock_entry.get("bin")
+    if isinstance(value, str):
+        return value.removeprefix("./")
+    if isinstance(value, dict):
+        candidate = value.get(bin_name)
+        if isinstance(candidate, str):
+            return candidate.removeprefix("./")
+    return None
+
+
 def validate_manifest_against_project(manifest: dict) -> None:
     pinned_node = NODE_VERSION_PATH.read_text(encoding="utf-8").strip()
     manifest_node = str(manifest["node"]["version"])
@@ -247,6 +286,76 @@ def validate_manifest_against_project(manifest: dict) -> None:
         raise OfflineCoreError("vendor/offline/manifest.json has no TypeScript platform definitions")
     for entry in platforms.values():
         _validate_lock_entry(packages, entry, str(typescript["version"]), "TypeScript platform")
+
+    oxlint = manifest.get("oxlint")
+    if not isinstance(oxlint, dict) or not isinstance(oxlint.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no Oxlint package definition")
+    oxlint_version = str(oxlint.get("version", ""))
+    _validate_lock_entry(packages, oxlint["package"], oxlint_version, "Oxlint")
+    oxlint_lock_entry = packages.get(oxlint["package"]["lockPath"])
+    if not isinstance(oxlint_lock_entry, dict):
+        raise OfflineCoreError("Oxlint lock entry is missing")
+    if oxlint.get("launcher") != _lock_bin_path(oxlint_lock_entry, "oxlint"):
+        raise OfflineCoreError("Oxlint launcher does not match package-lock.json")
+    oxlint_platforms = oxlint.get("platforms")
+    if not isinstance(oxlint_platforms, dict) or not oxlint_platforms:
+        raise OfflineCoreError("vendor/offline/manifest.json has no Oxlint platform definitions")
+    for entry in oxlint_platforms.values():
+        _validate_lock_entry(packages, entry, oxlint_version, "Oxlint platform")
+        platform_lock_entry = packages.get(entry["lockPath"])
+        if not isinstance(platform_lock_entry, dict) or not _supports_linux_x64_glibc(
+            platform_lock_entry
+        ):
+            raise OfflineCoreError(f"Oxlint platform is not Linux x64 glibc: {entry['lockPath']}")
+    expected_oxlint_binding = oxlint_lock_entry.get("optionalDependencies", {}).get(
+        "@oxlint/binding-linux-x64-gnu"
+    )
+    if expected_oxlint_binding != oxlint_version:
+        raise OfflineCoreError("Oxlint Linux x64 glibc binding is not aligned with the common package")
+
+    type_aware = oxlint.get("typeAware")
+    if not isinstance(type_aware, dict) or not isinstance(type_aware.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no Oxlint type-aware definition")
+    type_aware_version = str(type_aware.get("version", ""))
+    _validate_lock_entry(
+        packages,
+        type_aware["package"],
+        type_aware_version,
+        "oxlint-tsgolint",
+    )
+    type_aware_lock_entry = packages.get(type_aware["package"]["lockPath"])
+    if not isinstance(type_aware_lock_entry, dict):
+        raise OfflineCoreError("oxlint-tsgolint lock entry is missing")
+    if type_aware.get("launcher") != _lock_bin_path(type_aware_lock_entry, "tsgolint"):
+        raise OfflineCoreError("oxlint-tsgolint launcher does not match package-lock.json")
+    if type_aware.get("environmentVariable") != "OXLINT_TSGOLINT_PATH":
+        raise OfflineCoreError("Oxlint type-aware environment variable is not pinned")
+    type_aware_platforms = type_aware.get("platforms")
+    if not isinstance(type_aware_platforms, dict) or not type_aware_platforms:
+        raise OfflineCoreError("vendor/offline/manifest.json has no oxlint-tsgolint platform definitions")
+    for entry in type_aware_platforms.values():
+        _validate_lock_entry(packages, entry, type_aware_version, "oxlint-tsgolint platform")
+        platform_lock_entry = packages.get(entry["lockPath"])
+        if not isinstance(platform_lock_entry, dict) or not _supports_linux_x64_glibc(
+            platform_lock_entry
+        ):
+            raise OfflineCoreError(
+                f"oxlint-tsgolint platform is not Linux x64 glibc: {entry['lockPath']}"
+            )
+    expected_tsgolint_binding = type_aware_lock_entry.get("optionalDependencies", {}).get(
+        "@oxlint-tsgolint/linux-x64"
+    )
+    if expected_tsgolint_binding != type_aware_version:
+        raise OfflineCoreError(
+            "oxlint-tsgolint Linux x64 binding is not aligned with the common package"
+        )
+    type_aware_range = oxlint_lock_entry.get("peerDependencies", {}).get("oxlint-tsgolint")
+    if not isinstance(type_aware_range, str) or not _minimum_range_accepts(
+        type_aware_version, type_aware_range
+    ):
+        raise OfflineCoreError(
+            f"oxlint-tsgolint {type_aware_version} does not satisfy Oxlint peer {type_aware_range}"
+        )
 
     workspace = manifest.get("workspace")
     if workspace is not None:
@@ -333,6 +442,25 @@ def typescript_entries(manifest: dict, key: str) -> tuple[dict, dict]:
     return package_entry, platform_entry
 
 
+def oxlint_entries(manifest: dict, key: str) -> tuple[dict, dict, dict, dict]:
+    oxlint = manifest.get("oxlint")
+    if not isinstance(oxlint, dict):
+        raise OfflineCoreError("No offline Oxlint package definition")
+    package_entry = oxlint.get("package")
+    platform_entry = oxlint.get("platforms", {}).get(key)
+    type_aware = oxlint.get("typeAware")
+    if not isinstance(type_aware, dict):
+        raise OfflineCoreError("No offline Oxlint type-aware definition")
+    type_aware_entry = type_aware.get("package")
+    type_aware_platform_entry = type_aware.get("platforms", {}).get(key)
+    if not all(
+        isinstance(entry, dict)
+        for entry in (package_entry, platform_entry, type_aware_entry, type_aware_platform_entry)
+    ):
+        raise OfflineCoreError(f"No offline Oxlint definition for platform {key}")
+    return package_entry, platform_entry, type_aware_entry, type_aware_platform_entry
+
+
 def workspace_profile(manifest: dict, key: str, profile_name: str = "tsx-tests") -> dict:
     workspace = manifest.get("workspace")
     if not isinstance(workspace, dict):
@@ -388,6 +516,7 @@ def verify_vendor(
     tsx: bool = False,
     prettier: bool = False,
     typescript: bool = False,
+    oxlint: bool = False,
     workspace_profile_name: str | None = None,
 ) -> None:
     validate_manifest_against_project(manifest)
@@ -417,6 +546,13 @@ def verify_vendor(
 
     if typescript:
         _verify_npm_archives(list(typescript_entries(manifest, key)), "TypeScript")
+
+    if oxlint:
+        _verify_npm_archives(
+            list(oxlint_entries(manifest, key)),
+            "Oxlint",
+            missing_command="npm run vendor:offline:oxlint:refresh",
+        )
 
     if workspace_profile_name:
         profile = workspace_profile(manifest, key, workspace_profile_name)
@@ -583,6 +719,7 @@ def _protected_offline_install_paths(manifest: dict, key: str) -> set[str]:
         tsx_entry(manifest),
         prettier_entry(manifest),
         *typescript_entries(manifest, key),
+        *oxlint_entries(manifest, key),
     ]
     for entry in entries:
         install_path = entry.get("installPath")
@@ -921,6 +1058,69 @@ def install_prettier(manifest: dict, node_executable: Path, *, force: bool = Fal
     return executable
 
 
+def install_oxlint(
+    manifest: dict,
+    key: str,
+    node_executable: Path,
+    *,
+    force: bool = False,
+) -> tuple[Path, Path]:
+    package_entry, platform_entry, type_aware_entry, type_aware_platform_entry = oxlint_entries(
+        manifest, key
+    )
+    expected_version = str(manifest["oxlint"]["version"])
+    expected_type_aware_version = str(manifest["oxlint"]["typeAware"]["version"])
+    package_dir = _install_npm_entry(package_entry, expected_version, force=force)
+    _install_npm_entry(platform_entry, expected_version, force=force)
+    type_aware_dir = _install_npm_entry(
+        type_aware_entry, expected_type_aware_version, force=force
+    )
+    _install_npm_entry(type_aware_platform_entry, expected_type_aware_version, force=force)
+
+    launcher = package_dir.joinpath(
+        *_safe_relative_posix(manifest["oxlint"]["launcher"], "Oxlint launcher").parts
+    )
+    type_aware_launcher = type_aware_dir.joinpath(
+        *_safe_relative_posix(
+            manifest["oxlint"]["typeAware"]["launcher"],
+            "oxlint-tsgolint launcher",
+        ).parts
+    )
+    if not launcher.is_file():
+        raise OfflineCoreError(
+            f"Oxlint launcher is missing after extraction: {_display_path(launcher)}"
+        )
+    if not type_aware_launcher.is_file():
+        raise OfflineCoreError(
+            "oxlint-tsgolint launcher is missing after extraction: "
+            f"{_display_path(type_aware_launcher)}"
+        )
+    if os.name != "nt":
+        launcher.chmod(launcher.stat().st_mode | 0o111)
+        type_aware_launcher.chmod(type_aware_launcher.stat().st_mode | 0o111)
+
+    environment = os.environ.copy()
+    environment[manifest["oxlint"]["typeAware"]["environmentVariable"]] = str(
+        type_aware_launcher
+    )
+    probe = subprocess.run(
+        [str(node_executable), str(launcher), "--version"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+        env=environment,
+    )
+    actual = probe.stdout.strip()
+    if probe.returncode != 0 or expected_version not in actual:
+        detail = (probe.stderr or probe.stdout).strip()
+        raise OfflineCoreError(
+            f"Offline Oxlint failed verification; expected {expected_version}, got "
+            f"{actual or detail or 'no output'}"
+        )
+    return launcher, type_aware_launcher
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
@@ -946,6 +1146,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install and verify lockfile-pinned TypeScript and its native platform package",
     )
+    parser.add_argument(
+        "--with-oxlint",
+        action="store_true",
+        help="Also install and verify Oxlint plus its Linux type-aware backend",
+    )
     parser.add_argument("--force", action="store_true", help="Re-extract even when matching installs exist")
     parser.add_argument("--print-node", action="store_true", help="Print only the installed Node executable path")
     args = parser.parse_args(argv)
@@ -964,6 +1169,7 @@ def main(argv: list[str] | None = None) -> int:
             tsx=args.with_tsx,
             prettier=args.with_prettier,
             typescript=args.with_typescript,
+            oxlint=args.with_oxlint,
         )
 
         node_entry, _ = selected_entries(manifest, key)
@@ -984,6 +1190,8 @@ def main(argv: list[str] | None = None) -> int:
             install_prettier(manifest, node_executable, force=args.force)
         if args.with_typescript:
             install_typescript(manifest, key, node_executable, force=args.force)
+        if args.with_oxlint:
+            install_oxlint(manifest, key, node_executable, force=args.force)
 
         if args.print_node:
             print(node_executable)
@@ -999,6 +1207,11 @@ def main(argv: list[str] | None = None) -> int:
                 installed.append(f"Prettier {manifest['prettier']['version']}")
             if args.with_typescript:
                 installed.append(f"TypeScript {manifest['typescript']['version']}")
+            if args.with_oxlint:
+                installed.append(
+                    f"Oxlint {manifest['oxlint']['version']} + "
+                    f"oxlint-tsgolint {manifest['oxlint']['typeAware']['version']}"
+                )
             print(f"Offline repair toolchain ready for {key}: " + ", ".join(installed))
         return 0
     except OfflineCoreError as exc:
