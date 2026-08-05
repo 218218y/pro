@@ -53,6 +53,7 @@ import { resolvePointMeasurementEnd } from './viewer_measurement_tool_point_geom
 
 export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
+export { resolveViewerMeasurementPartLabel } from './viewer_measurement_part_label.js';
 
 const VIEWER_MEASUREMENT_CACHE_KEY = '__wpViewerMeasurementOverlay';
 const VIEWER_MEASUREMENT_HOVER_CACHE_KEY = '__wpViewerMeasurementHoverOverlay';

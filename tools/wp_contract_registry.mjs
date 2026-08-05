@@ -708,6 +708,7 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
       'esm/native/services/viewer_measurement_tool_point_geometry.ts',
       'esm/native/services/viewer_measurement_tool_point_resolution.ts',
       'esm/native/services/viewer_measurement_tool_resolution.ts',
+      'esm/native/services/viewer_measurement_part_label.ts',
     ],
     behaviorTests: ['tests/viewer_measurement_tool_runtime.test.ts'],
     justification: 'Viewer measurement lifecycle is a supported service facade.',

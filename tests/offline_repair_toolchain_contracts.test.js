@@ -252,31 +252,17 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   );
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
-  assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:vite-build:refresh/u);
+  assert.doesNotMatch(pkg.scripts['deps:update:sync-generated'], /vendor:offline:vite-build:refresh/u);
 
-  const checkedIn = spawnSync(
-    process.execPath,
-    [
-      tool,
-      '--component',
-      'esbuild',
-      '--component',
-      'tsx',
-      '--component',
-      'prettier',
-      '--component',
-      'typescript',
-      '--check',
-    ],
-    {
-      cwd: root,
-      encoding: 'utf8',
-    }
-  );
+  const checkedIn = spawnSync(process.execPath, [tool, '--all', '--check'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
   assert.equal(checkedIn.status, 0, checkedIn.stderr || checkedIn.stdout);
-  for (const component of ['esbuild', 'tsx', 'prettier', 'typescript']) {
+  for (const component of ['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']) {
     assert.match(checkedIn.stdout, new RegExp(`OK: ${component} `, 'u'));
   }
+  assert.match(checkedIn.stdout, /OK: workspace vite-build \(16 packages\)/u);
 
   const downloadPlan = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
     cwd: root,
@@ -675,12 +661,12 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
   assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
   assert.match(planCheck.stdout, /workspace plan vite-build \(16 packages\)/u);
 
-  const downloads = spawnSync(
-    process.execPath,
-    [tool, '--profile', 'vite-build', '--print-downloads', '--missing-only'],
-    { cwd: root, encoding: 'utf8' }
-  );
+  const downloads = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
   assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
+  assert.match(downloads.stdout, /workspace vite-build \(16 packages\)/u);
   assert.match(downloads.stdout, /vite-8\.2\.0\.tgz/u);
   assert.match(downloads.stdout, /plugin-react-6\.0\.5\.tgz/u);
   assert.match(downloads.stdout, /binding-linux-x64-gnu-1\.2\.1\.tgz/u);

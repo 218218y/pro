@@ -25,10 +25,10 @@ import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_mat
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import {
   getViewerMeasurementToolMode,
+  resolveViewerMeasurementPartLabel,
   tryHandleViewerMeasurementHover,
   VIEWER_MEASUREMENT_MODE_ID,
 } from './viewer_measurement_tool.js';
-import { resolveViewerMeasurementPartLabel } from './viewer_measurement_part_label.js';
 
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
 const VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND = 'viewer-measurement';

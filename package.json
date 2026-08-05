@@ -379,7 +379,7 @@
     "vendor:offline:vite-build:adopt": "node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --adopt-existing",
     "vendor:offline:vite-build:check": "node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --check",
     "deps:outdated": "npm outdated",
-    "deps:update:sync-generated": "npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh && npm run vendor:offline:tsx-tests:refresh && npm run vendor:offline:vite-build:refresh",
+    "deps:update:sync-generated": "npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh && npm run vendor:offline:tsx-tests:refresh",
     "deps:update:safe": "npm update && npm run deps:update:sync-generated",
     "deps:update:recommended": "npm update @playwright/test @supabase/supabase-js @types/node @types/react @types/react-dom @vitejs/plugin-react oxc-parser oxlint pdfjs-dist vite && npm run deps:update:sync-generated",
     "deps:update:playwright-browsers": "playwright install",

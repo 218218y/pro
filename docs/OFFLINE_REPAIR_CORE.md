@@ -217,21 +217,22 @@ The Vite build profile uses the same lockfile-fingerprint contract, but planning
 archive to be present:
 
 ```bash
-npm run vendor:offline:vite-build:plan
+npm run vendor:offline:packages:downloads
 npm run vendor:offline:vite-build:check-plan
-npm run vendor:offline:vite-build:downloads
 ```
 
-After manually placing every printed archive under `vendor/offline/vite/`, adopt and verify them with:
+After manually placing every printed Vite archive under `vendor/offline/vite/`, adopt and verify the complete
+standard package set with:
 
 ```bash
-npm run vendor:offline:vite-build:adopt
-npm run vendor:offline:vite-build:check
+npm run vendor:offline:packages:adopt
+npm run vendor:offline:packages:check
 ```
 
-For an online refresh, use `npm run vendor:offline:vite-build:refresh`. The dependency update workflow runs
-that refresh after the focused npm components and the TSX runtime profile, so Vite upgrades cannot leave the
-offline plan stale.
+For an online refresh, use `npm run vendor:offline:packages:refresh`. Its `--all` selection includes the
+`vite-build` workspace profile, so the regular package refresh downloads and verifies Vite together with the
+focused npm components. The `vendor:offline:vite-build:*` commands remain available only as focused maintenance
+aliases; the dependency update workflow does not invoke a second Vite refresh.
 
 Install and run the build tool without npm resolution or lifecycle scripts:
 
