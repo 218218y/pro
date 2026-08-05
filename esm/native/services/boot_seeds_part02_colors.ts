@@ -1,49 +1,25 @@
 import { getCfg as __getCfgStore } from '../kernel/api.js';
 import { readCloudCollectionsEnvelopeViaServiceOrThrow } from '../runtime/cloud_collections_access.js';
 import { setCfgMultiColorMode } from '../runtime/cfg_access.js';
-import { metaMerge, metaRestore } from '../runtime/meta_profiles_access.js';
-import { writeColorSwatchesOrder, writeSavedColors } from '../runtime/maps_access.js';
+import { writeColorSwatchesOrderOrThrow, writeSavedColorsOrThrow } from '../runtime/maps_access.js';
 
 import {
   type AppLike,
   cloneUnknownArray,
+  createBootSeedRestoreMeta,
   getCfgSafe,
   getColorsActions,
-  isRecord,
+  reportBootSeedNonFatal,
 } from './boot_seeds_part02_shared.js';
 
 function readCfg(App: AppLike) {
-  return getCfgSafe(App, __getCfgStore);
-}
-
-function cfgMeta(App: AppLike, meta: Record<string, unknown> | null | undefined) {
-  const m = isRecord(meta) ? { ...meta } : {};
-  if (!m.source) m.source = 'boot:seed';
-  try {
-    return metaMerge(App, m, undefined, undefined);
-  } catch (_) {
-    return m;
-  }
-}
-
-function cfgMetaRestoreProfile(
-  App: AppLike,
-  meta: Record<string, unknown> | null | undefined,
-  source: string
-) {
-  const m = isRecord(meta) ? { ...meta } : {};
-  if (!m.source) m.source = source;
-  try {
-    return metaRestore(App, m, source);
-  } catch (_) {
-    return cfgMeta(App, m);
-  }
+  return getCfgSafe(App, __getCfgStore, 'colors.config.read');
 }
 
 function normalizeStoredColorOrder(value: unknown[]): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
-  for (let i = 0; i < value.length; i++) {
+  for (let i = 0; i < value.length; i += 1) {
     const candidate = value[i];
     const next = typeof candidate === 'string' ? candidate.trim() : '';
     if (!next || seen.has(next)) continue;
@@ -63,7 +39,7 @@ export function seedMultiColorMode(App: AppLike): void {
   if (typeof cfg0.isMultiColorMode === 'boolean') return;
 
   const defMulti = typeof cfg0.isMultiColorMode === 'boolean' ? cfg0.isMultiColorMode : false;
-  const meta = cfgMetaRestoreProfile(App, null, 'boot:defaultMultiColor');
+  const meta = createBootSeedRestoreMeta(App, null, 'boot:defaultMultiColor');
 
   try {
     const colors = getColorsActions(App);
@@ -71,11 +47,15 @@ export function seedMultiColorMode(App: AppLike): void {
       colors.setMultiMode(defMulti, meta);
       return;
     }
-  } catch (_) {}
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'colors.setMultiMode.action', error);
+  }
 
   try {
     setCfgMultiColorMode(App, defMulti, meta);
-  } catch (_) {}
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'colors.setMultiMode.configWriter', error, true);
+  }
 }
 
 export async function seedSavedColors(App: AppLike): Promise<void> {
@@ -89,7 +69,8 @@ export async function seedSavedColors(App: AppLike): Promise<void> {
   let vSavedColors: unknown[] = [];
   try {
     vSavedColors = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'boot saved colors seed').savedColors;
-  } catch (_) {
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'savedColors.readCloudCollections', error);
     vSavedColors = [];
   }
 
@@ -98,15 +79,18 @@ export async function seedSavedColors(App: AppLike): Promise<void> {
     try {
       const cfg2 = readCfg(App);
       vSavedColors = Array.isArray(cfg2.savedColors) ? cfg2.savedColors : [];
-    } catch (_) {
+    } catch (error) {
+      reportBootSeedNonFatal(App, 'savedColors.readConfigSecondary', error);
       vSavedColors = [];
     }
   }
 
   try {
-    const meta = cfgMetaRestoreProfile(App, { noStorageWrite: true }, 'core:initSavedColorsSeed');
-    await writeSavedColors(App, cloneStoredArray(vSavedColors), meta);
-  } catch (_) {}
+    const meta = createBootSeedRestoreMeta(App, { noStorageWrite: true }, 'core:initSavedColorsSeed');
+    await writeSavedColorsOrThrow(App, cloneStoredArray(vSavedColors), meta);
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'savedColors.write', error, true);
+  }
 }
 
 export async function seedColorSwatchesOrder(App: AppLike): Promise<void> {
@@ -118,7 +102,9 @@ export async function seedColorSwatchesOrder(App: AppLike): Promise<void> {
   try {
     const cur = cfg0.colorSwatchesOrder;
     if (Array.isArray(cur)) curArr = cur;
-  } catch (_) {}
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'colorOrder.readCurrent', error);
+  }
   if (curArr && curArr.length > 0) return;
 
   let clean: string[] = [];
@@ -126,14 +112,17 @@ export async function seedColorSwatchesOrder(App: AppLike): Promise<void> {
     clean = normalizeStoredColorOrder(
       readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'boot color order seed').colorOrder
     );
-  } catch (_) {
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'colorOrder.readCloudCollections', error);
     clean = [];
   }
 
   if (!Array.isArray(clean)) clean = [];
 
   try {
-    const meta = cfgMetaRestoreProfile(App, { noStorageWrite: true }, 'core:initColorSwatchOrderSeed');
-    await writeColorSwatchesOrder(App, clean, meta);
-  } catch (_) {}
+    const meta = createBootSeedRestoreMeta(App, { noStorageWrite: true }, 'core:initColorSwatchOrderSeed');
+    await writeColorSwatchesOrderOrThrow(App, clean, meta);
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'colorOrder.write', error, true);
+  }
 }

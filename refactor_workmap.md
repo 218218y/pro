@@ -23,6 +23,7 @@ This is the root pointer for future architecture work. It links only to the curr
 - Cloud Sync browser reconnect is smoked by `e2e:cloud-sync-reconnect`.
 - Canvas browser pointer parity is smoked by `e2e:canvas-pointer-parity`.
 - Performance measurement was refreshed on 2026-05-04: `perf:smoke` passed under the stored budget and `perf:browser` passed while refreshing `docs/BROWSER_PERF_AND_E2E_BASELINE.md`.
+- Error observability now covers the complete history scheduling family and the boot-seed default pipeline: owner/action failures, required writes, restore-state reads, and timer cleanup publish stable nonfatal diagnostics while their existing fallbacks remain intact. The service-layer silent-catch ratchet fell from 180/27 to 168/15 (statement-free/bare).
 
 ## Remaining Product-Risk Work
 

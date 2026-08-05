@@ -3,7 +3,7 @@ import type { UnknownRecord } from '../../../types';
 import { getBootFlags } from '../runtime/internal_state.js';
 
 import type { AppLike } from './boot_seeds_part02_shared.js';
-import { getCfgSafe, seedInternalGridMap } from './boot_seeds_part02_shared.js';
+import { getCfgSafe, reportBootSeedNonFatal, seedInternalGridMap } from './boot_seeds_part02_shared.js';
 import { seedMultiColorMode, seedSavedColors, seedColorSwatchesOrder } from './boot_seeds_part02_colors.js';
 import { seedWardrobeType, seedManualWidthFlag } from './boot_seeds_part02_flags.js';
 import { getCfg as readCfgStore } from '../kernel/api.js';
@@ -11,7 +11,7 @@ import { getInternalGridMap } from '../runtime/cache_access.js';
 
 function hasBootSeedsPart02Contract(App: AppLike): boolean {
   try {
-    const cfg = getCfgSafe(App, readCfgStore as never);
+    const cfg = getCfgSafe(App, readCfgStore as never, 'contract.config.read');
     const hasConfigSeeds = !!(
       cfg &&
       typeof cfg.isMultiColorMode === 'boolean' &&
@@ -24,7 +24,8 @@ function hasBootSeedsPart02Contract(App: AppLike): boolean {
 
     const gridMap = getInternalGridMap(App, false);
     return !!gridMap && typeof gridMap === 'object' && !Array.isArray(gridMap);
-  } catch (_) {
+  } catch (error) {
+    reportBootSeedNonFatal(App, 'contract.verify', error);
     return false;
   }
 }

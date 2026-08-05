@@ -15,7 +15,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 19,
   platform: 62,
   runtime: 129,
-  services: 180,
+  services: 168,
   ui: 214,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -27,12 +27,17 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 10,
   platform: 16,
   runtime: 0,
-  services: 27,
+  services: 15,
   ui: 26,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/boot_finalizers.ts',
+  'esm/native/services/boot_seeds_part02_colors.ts',
+  'esm/native/services/boot_seeds_part02_flags.ts',
+  'esm/native/services/boot_seeds_part02_runtime.ts',
   'esm/native/services/history_runtime.ts',
+  'esm/native/services/history_schedule.ts',
+  'esm/native/services/history_shared.ts',
 ]);
 
 function parserLanguage(file) {

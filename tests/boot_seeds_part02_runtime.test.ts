@@ -6,6 +6,7 @@ import {
   seedColorSwatchesOrder,
   seedMultiColorMode,
   seedSavedColors,
+  seedWardrobeType,
 } from '../esm/native/services/boot_seeds_part02.ts';
 import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
@@ -17,9 +18,16 @@ async function makeApp(config: Record<string, unknown> = {}) {
     colors: [],
     room: [],
     savedColors: [],
+    errors: [],
   };
   const App: Record<string, unknown> = {
     actions: {
+      config: {
+        setScalar(key: string, value: unknown) {
+          cfg[key] = value;
+          return value;
+        },
+      },
       colors: {
         setMultiMode(next: boolean, meta?: Record<string, unknown>) {
           calls.multi.push({ next, meta });
@@ -48,6 +56,11 @@ async function makeApp(config: Record<string, unknown> = {}) {
       },
     },
     services: {
+      errors: {
+        report(error: unknown, context: unknown) {
+          calls.errors.push({ error, context });
+        },
+      },
       storage: {
         KEYS: { SAVED_COLORS: 'wardrobeSavedColors', SAVED_MODELS: 'wardrobeSavedModels' },
         getString(key: string) {
@@ -182,4 +195,43 @@ test('installBootSeedsPart02 heals missing seeded config even when the old boot 
   assert.deepEqual(config.colorSwatchesOrder, ['oak', 'white']);
   assert.equal(config.wardrobeType, 'hinged');
   assert.equal(config.isManualWidth, false);
+});
+
+test('boot seed action failures are reported while the canonical config fallback still applies', async () => {
+  const { App, calls, config } = await makeApp({});
+  ((App as any).actions as any).room.setWardrobeType = () => {
+    throw new Error('room owner unavailable');
+  };
+
+  seedWardrobeType(App as never);
+
+  assert.equal(config.wardrobeType, 'hinged');
+  assert.equal(
+    calls.errors.some(
+      entry =>
+        ((entry as any).context as { where?: string; op?: string })?.where ===
+          'native/services/boot_seeds_part02' &&
+        ((entry as any).context as { op?: string })?.op === 'flags.setWardrobeType.action'
+    ),
+    true
+  );
+});
+
+test('boot seed terminal write failures remain fail-soft and publish a nonfatal diagnostic', async () => {
+  const { App, calls } = await makeApp({});
+  ((App as any).maps as any).setSavedColors = () => {
+    throw new Error('saved colors write failed');
+  };
+
+  await assert.doesNotReject(() => seedSavedColors(App as never));
+
+  assert.equal(
+    calls.errors.some(
+      entry =>
+        ((entry as any).context as { where?: string; op?: string })?.where ===
+          'native/services/boot_seeds_part02' &&
+        ((entry as any).context as { op?: string })?.op === 'savedColors.write'
+    ),
+    true
+  );
 });

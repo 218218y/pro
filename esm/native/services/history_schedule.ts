@@ -45,9 +45,7 @@ export function schedulePush(App: AppContainer, action?: ActionMetaLike): void {
   const state = ensureHistoryRuntimeState(App);
   if (!state) return;
 
-  try {
-    clearHistoryTimer(App, state);
-  } catch {}
+  clearHistoryTimer(App, state);
 
   state.pendingAction = normalizePendingAction(safeAction);
 

@@ -16,6 +16,15 @@ export function reportHistoryRuntimeNonFatal(App: AppContainer, op: string, erro
   reportServiceNonFatal(App, error, { where: 'native/services/history_runtime', op });
 }
 
+function reportHistorySharedNonFatal(
+  App: AppContainer,
+  op: string,
+  error: unknown,
+  consoleOutput = false
+): void {
+  reportServiceNonFatal(App, error, { where: 'native/services/history_shared', op }, { consoleOutput });
+}
+
 export function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
@@ -99,7 +108,9 @@ export function isRestoring(App: AppContainer): boolean {
   try {
     const st = readRootState(App);
     if (st.runtime?.restoring === true) return true;
-  } catch {}
+  } catch (error) {
+    reportHistorySharedNonFatal(App, 'isRestoring.readRootState', error, true);
+  }
   return false;
 }
 
@@ -113,14 +124,18 @@ export function hasPendingPush(App: AppContainer): boolean {
 }
 
 export function clearHistoryTimer(App: AppContainer, state: HistoryRuntimeState): void {
+  if (state.timer == null) return;
+
   try {
-    if (state.timer == null) return;
     const timers = getBrowserTimers(App);
     timers.clearTimeout(state.timer);
-  } catch {
+  } catch (error) {
+    reportHistorySharedNonFatal(App, 'clearTimer.browser', error);
     try {
-      if (state.timer != null) clearTimeout(state.timer);
-    } catch {}
+      clearTimeout(state.timer);
+    } catch (globalError) {
+      reportHistorySharedNonFatal(App, 'clearTimer.globalTimer', globalError, true);
+    }
   }
   state.timer = null;
 }
