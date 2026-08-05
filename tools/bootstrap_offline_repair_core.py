@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's focused offline Node, AST, esbuild, TSX, TypeScript, Prettier and Oxlint toolchain.
+"""Install the repository's focused offline Node, AST, Vite, and validation toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -372,8 +372,8 @@ def validate_manifest_against_project(manifest: dict) -> None:
         expected_lockfile_sha256 = _sha256(LOCK_PATH)
         if workspace.get("lockfileSha256") != expected_lockfile_sha256:
             raise OfflineCoreError(
-                "Offline workspace plan is stale for package-lock.json; run "
-                "npm run vendor:offline:tsx-tests:plan"
+                "Offline workspace plan is stale for package-lock.json; regenerate the "
+                "tsx-tests and vite-build plans before using offline workspace packages"
             )
         profiles = workspace.get("profiles")
         if not isinstance(profiles, dict):
@@ -477,6 +477,47 @@ def workspace_profile(manifest: dict, key: str, profile_name: str = "tsx-tests")
     return profile
 
 
+def workspace_package_entry(
+    manifest: dict,
+    key: str,
+    profile_name: str,
+    package_name: str,
+) -> dict:
+    profile = workspace_profile(manifest, key, profile_name)
+    matches = [entry for entry in profile["packages"] if entry.get("name") == package_name]
+    if len(matches) != 1:
+        raise OfflineCoreError(
+            f"Offline workspace profile {profile_name} must contain exactly one {package_name} package"
+        )
+    return matches[0]
+
+
+def workspace_package_executable(
+    manifest: dict,
+    key: str,
+    profile_name: str,
+    package_name: str,
+    bin_name: str,
+) -> Path:
+    entry = workspace_package_entry(manifest, key, profile_name, package_name)
+    packages = _read_json(LOCK_PATH).get("packages")
+    if not isinstance(packages, dict):
+        raise OfflineCoreError("package-lock.json has no packages map")
+    lock_entry = packages.get(entry["lockPath"])
+    if not isinstance(lock_entry, dict):
+        raise OfflineCoreError(f"Workspace package is absent from package-lock.json: {entry['lockPath']}")
+    relative = _lock_bin_path(lock_entry, bin_name)
+    if relative is None:
+        raise OfflineCoreError(f"Workspace package {package_name} has no {bin_name} executable")
+    install_root = _root_path(entry["installPath"], f"{package_name} install path")
+    executable = install_root.joinpath(*_safe_relative_posix(relative, f"{bin_name} executable").parts)
+    if not executable.is_file():
+        raise OfflineCoreError(
+            f"Offline workspace executable is missing after install: {_display_path(executable)}"
+        )
+    return executable
+
+
 def _verify_npm_archives(
     entries: list[dict],
     label: str,
@@ -518,6 +559,7 @@ def verify_vendor(
     typescript: bool = False,
     oxlint: bool = False,
     workspace_profile_name: str | None = None,
+    workspace_profile_names: tuple[str, ...] = (),
 ) -> None:
     validate_manifest_against_project(manifest)
     node_entry, ast_entries = selected_entries(manifest, key)
@@ -554,12 +596,15 @@ def verify_vendor(
             missing_command="npm run vendor:offline:oxlint:refresh",
         )
 
+    selected_profiles = [*workspace_profile_names]
     if workspace_profile_name:
-        profile = workspace_profile(manifest, key, workspace_profile_name)
+        selected_profiles.append(workspace_profile_name)
+    for profile_name in dict.fromkeys(selected_profiles):
+        profile = workspace_profile(manifest, key, profile_name)
         _verify_npm_archives(
             profile["packages"],
-            f"workspace {workspace_profile_name}",
-            missing_command="npm run vendor:offline:tsx-tests:downloads",
+            f"workspace {profile_name}",
+            missing_command=f"npm run vendor:offline:{profile_name}:downloads",
         )
 
 
@@ -725,6 +770,15 @@ def _protected_offline_install_paths(manifest: dict, key: str) -> set[str]:
         install_path = entry.get("installPath")
         if isinstance(install_path, str):
             protected.add(install_path)
+    workspace_profiles = manifest.get("workspace", {}).get("profiles", {})
+    if isinstance(workspace_profiles, dict):
+        for profile in workspace_profiles.values():
+            if not isinstance(profile, dict):
+                continue
+            for entry in profile.get("packages", []):
+                install_path = entry.get("installPath") if isinstance(entry, dict) else None
+                if isinstance(install_path, str):
+                    protected.add(install_path)
     return protected
 
 
@@ -814,6 +868,37 @@ def install_workspace_profile(
             detail = (probe.stderr or probe.stdout).strip()
             raise OfflineCoreError(
                 "Offline workspace packages were extracted but the TSX runtime profile failed "
+                f"verification:\n{detail or 'no output'}"
+            )
+    elif profile_name == "vite-build":
+        probe_script = (
+            "const roots=JSON.parse(process.argv[1]);"
+            "for(const name of roots){if(!import.meta.resolve(name)) throw new Error('unresolved '+name);}"
+            "const vite=await import('vite');"
+            "const react=(await import('@vitejs/plugin-react')).default;"
+            "await import('rolldown');"
+            "await import('lightningcss');"
+            "if(typeof vite.build!=='function') throw new Error('missing Vite build API');"
+            "if(typeof react!=='function') throw new Error('missing plugin-react factory');"
+            "console.log('workspace-vite-ok');"
+        )
+        probe = subprocess.run(
+            [
+                str(node_executable),
+                "--input-type=module",
+                "--eval",
+                probe_script,
+                json.dumps(profile.get("rootDependencies", [])),
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if probe.returncode != 0 or probe.stdout.strip() != "workspace-vite-ok":
+            detail = (probe.stderr or probe.stdout).strip()
+            raise OfflineCoreError(
+                "Offline workspace packages were extracted but the Vite build profile failed "
                 f"verification:\n{detail or 'no output'}"
             )
 

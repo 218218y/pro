@@ -379,6 +379,156 @@
             "integrity": "sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g=="
           }
         ]
+      },
+      "vite-build": {
+        "rootDependencies": ["@vitejs/plugin-react", "vite"],
+        "packageCount": 16,
+        "packages": [
+          {
+            "name": "@oxc-project/types",
+            "version": "0.142.0",
+            "lockPath": "node_modules/@oxc-project/types",
+            "installPath": "node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.142.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.142.0.tgz",
+            "integrity": "sha512-7W+2q5AKQVU36fkaryontrHn3YDt1RyUYXatw9i5H8ocYe2sPKSFB6eS8WNPeRKiN1qAWWZUPm7gwFzJGrccqQ=="
+          },
+          {
+            "name": "@rolldown/binding-linux-x64-gnu",
+            "version": "1.2.1",
+            "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
+            "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.1.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.1.tgz",
+            "integrity": "sha512-/Orga1fZYkLc/56jBICcHrKchl8Z2UKdDSr3LG9ToWO1lQ6a4Livk9Xz+9WN91zsz5QR3XQz2NNoSDEvP6qadw=="
+          },
+          {
+            "name": "@rolldown/pluginutils",
+            "version": "1.0.1",
+            "lockPath": "node_modules/@rolldown/pluginutils",
+            "installPath": "node_modules/@rolldown/pluginutils",
+            "file": "vendor/offline/vite/rolldown__pluginutils-1.0.1.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz",
+            "integrity": "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="
+          },
+          {
+            "name": "@vitejs/plugin-react",
+            "version": "6.0.5",
+            "lockPath": "node_modules/@vitejs/plugin-react",
+            "installPath": "node_modules/@vitejs/plugin-react",
+            "file": "vendor/offline/vite/vitejs__plugin-react-6.0.5.tgz",
+            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.0.5.tgz",
+            "integrity": "sha512-BOVzne/NL162sMdResB25mUv+vWMF5NoAjNf09TeGlE7ZpszZWSD3winycicLJw72yeVsoCn/2kOhEuCvEShMA=="
+          },
+          {
+            "name": "detect-libc",
+            "version": "2.1.2",
+            "lockPath": "node_modules/detect-libc",
+            "installPath": "node_modules/detect-libc",
+            "file": "vendor/offline/vite/detect-libc-2.1.2.tgz",
+            "url": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+            "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="
+          },
+          {
+            "name": "fdir",
+            "version": "6.5.0",
+            "lockPath": "node_modules/fdir",
+            "installPath": "node_modules/fdir",
+            "file": "vendor/offline/vite/fdir-6.5.0.tgz",
+            "url": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+            "integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="
+          },
+          {
+            "name": "lightningcss",
+            "version": "1.33.0",
+            "lockPath": "node_modules/lightningcss",
+            "installPath": "node_modules/lightningcss",
+            "file": "vendor/offline/vite/lightningcss-1.33.0.tgz",
+            "url": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+            "integrity": "sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA=="
+          },
+          {
+            "name": "lightningcss-linux-x64-gnu",
+            "version": "1.33.0",
+            "lockPath": "node_modules/lightningcss-linux-x64-gnu",
+            "installPath": "node_modules/lightningcss-linux-x64-gnu",
+            "file": "vendor/offline/vite/lightningcss-linux-x64-gnu-1.33.0.tgz",
+            "url": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.33.0.tgz",
+            "integrity": "sha512-ar+Ju7LmcN0Jo4FpL4hpFybwNG9/3A/Br5KW2n2jyODg3MEZXaDYADdemoNS+BDNfMgKvylJLj4S5tyRActuAg=="
+          },
+          {
+            "name": "nanoid",
+            "version": "3.3.16",
+            "lockPath": "node_modules/nanoid",
+            "installPath": "node_modules/nanoid",
+            "file": "vendor/offline/vite/nanoid-3.3.16.tgz",
+            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.16.tgz",
+            "integrity": "sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q=="
+          },
+          {
+            "name": "picocolors",
+            "version": "1.1.1",
+            "lockPath": "node_modules/picocolors",
+            "installPath": "node_modules/picocolors",
+            "file": "vendor/offline/vite/picocolors-1.1.1.tgz",
+            "url": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+            "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="
+          },
+          {
+            "name": "picomatch",
+            "version": "4.0.5",
+            "lockPath": "node_modules/picomatch",
+            "installPath": "node_modules/picomatch",
+            "file": "vendor/offline/vite/picomatch-4.0.5.tgz",
+            "url": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.5.tgz",
+            "integrity": "sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A=="
+          },
+          {
+            "name": "postcss",
+            "version": "8.5.23",
+            "lockPath": "node_modules/postcss",
+            "installPath": "node_modules/postcss",
+            "file": "vendor/offline/vite/postcss-8.5.23.tgz",
+            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.23.tgz",
+            "integrity": "sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg=="
+          },
+          {
+            "name": "rolldown",
+            "version": "1.2.1",
+            "lockPath": "node_modules/rolldown",
+            "installPath": "node_modules/rolldown",
+            "file": "vendor/offline/vite/rolldown-1.2.1.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.1.tgz",
+            "integrity": "sha512-4FKJhg8d3OiyQOA6Q1Q0hoFFpW9/OoX+VsHzpECsdsIZoOArrAK90gl59YK/Z+gnDel45bgJZK03ozH/9bCqEw=="
+          },
+          {
+            "name": "source-map-js",
+            "version": "1.2.1",
+            "lockPath": "node_modules/source-map-js",
+            "installPath": "node_modules/source-map-js",
+            "file": "vendor/offline/vite/source-map-js-1.2.1.tgz",
+            "url": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+            "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="
+          },
+          {
+            "name": "tinyglobby",
+            "version": "0.2.17",
+            "lockPath": "node_modules/tinyglobby",
+            "installPath": "node_modules/tinyglobby",
+            "file": "vendor/offline/vite/tinyglobby-0.2.17.tgz",
+            "url": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
+            "integrity": "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g=="
+          },
+          {
+            "name": "vite",
+            "version": "8.2.0",
+            "lockPath": "node_modules/vite",
+            "installPath": "node_modules/vite",
+            "file": "vendor/offline/vite/vite-8.2.0.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.2.0.tgz",
+            "integrity": "sha512-pn+CFpM0lwDeKwmOq1ZaBK/9sjorZcgqxki6MbY/jPEVd9vichIlmlD4HmQ5wdP5EgqQCFRaACBxMC7uEGc6lQ=="
+          }
+        ]
       }
     },
     "lockfileSha256": "b0669c987764b60f5fce4baa3b80c782fd5e71912a7110ccd094ef4ab9f3dc32"

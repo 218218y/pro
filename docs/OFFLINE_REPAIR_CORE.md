@@ -14,6 +14,8 @@ smaller trusted set:
 - optionally, lockfile-pinned TSX, reusing the compatible esbuild slice;
 - a generated `tsx-tests` profile containing every production runtime dependency and transitive package
   needed by `.ts`/`.tsx` tests on Linux x64 glibc;
+- a generated `vite-build` profile containing Vite, `@vitejs/plugin-react`, their transitive packages, and
+  only the GNU/Linux x64 Rolldown and Lightning CSS bindings;
 - optionally, lockfile-pinned Prettier;
 - optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package;
 - optionally, lockfile-pinned Oxlint plus its GNU/Linux x64 binding and the matching `oxlint-tsgolint`
@@ -72,6 +74,19 @@ vendor/offline/runtime/*.tgz
 That list is derived from every production dependency, including transitive and required peer dependencies.
 TSX and esbuild remain separate focused toolchain slices. Platform filtering keeps only Linux x64 glibc packages such as
 `@napi-rs/canvas-linux-x64-gnu`; Windows, macOS, ARM, and musl variants never enter the profile.
+
+### Optional Vite 8 build slice
+
+The Vite plan is generated from the exact lockfile entries for `vite 8.2.0` and
+`@vitejs/plugin-react 6.0.5`. Their complete required dependency closure is stored under:
+
+```text
+vendor/offline/vite/*.tgz
+```
+
+The profile includes native GNU/Linux x64 packages for Rolldown and Lightning CSS. It excludes macOS,
+Windows, ARM, musl, `fsevents`, and Rolldown's WASI fallback. Production dependencies remain owned by the
+existing `tsx-tests` profile; the offline Vite runner installs both profiles before invoking the Vite CLI.
 
 ### Optional TypeScript 7 slice
 
@@ -197,6 +212,36 @@ embedded package metadata, update the manifest atomically, and remove obsolete r
 complete successful replacement. The manifest stores a SHA-256 fingerprint of `package-lock.json`; any lockfile
 change blocks a stale workspace plan until it is regenerated. `deps:update:sync-generated` refreshes this
 profile as well.
+
+The Vite build profile uses the same lockfile-fingerprint contract, but planning does not require any Vite
+archive to be present:
+
+```bash
+npm run vendor:offline:vite-build:plan
+npm run vendor:offline:vite-build:check-plan
+npm run vendor:offline:vite-build:downloads
+```
+
+After manually placing every printed archive under `vendor/offline/vite/`, adopt and verify them with:
+
+```bash
+npm run vendor:offline:vite-build:adopt
+npm run vendor:offline:vite-build:check
+```
+
+For an online refresh, use `npm run vendor:offline:vite-build:refresh`. The dependency update workflow runs
+that refresh after the focused npm components and the TSX runtime profile, so Vite upgrades cannot leave the
+offline plan stale.
+
+Install and run the build tool without npm resolution or lifecycle scripts:
+
+```bash
+npm run verify:offline:vite
+npm run setup:offline:vite
+npm run run:offline:vite -- --version
+npm run vite:build:offline
+npm run vite:build:modules:offline
+```
 
 ## Run focused Node commands
 
@@ -366,8 +411,9 @@ When only Oxlint is missing, `npm run vendor:offline:oxlint:refresh` is the smal
 ## Scope boundary
 
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
-TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and repository
+TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, repository
 `.ts`/`.tsx` runtime tests whose production dependencies are represented in the lock-derived workspace
-profile. It provides Oxlint but does not provide ESLint, Vite, release bundling, obfuscation, Playwright, or
-browser binaries. `package-lock.json` remains cross-platform for normal installs;
+profile, and Vite 8 builds using the project's React plugin. It provides Oxlint and Vite, but does not provide
+ESLint, release-only minifiers and obfuscators, Playwright, or browser binaries. `package-lock.json` remains
+cross-platform for normal installs;
 only the checked-in `vendor/offline` repair path is Linux x64 glibc-only.

@@ -9,8 +9,10 @@ import zlib from 'node:zlib';
 
 const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']);
 const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
-const SUPPORTED_PROFILES = Object.freeze(['tsx-tests']);
+const SUPPORTED_PROFILES = Object.freeze(['tsx-tests', 'vite-build']);
 const PROFILE_SET = new Set(SUPPORTED_PROFILES);
+const VITE_BUILD_ROOT_DEPENDENCIES = Object.freeze(['@vitejs/plugin-react', 'vite']);
+const VITE_BUILD_EXCLUDED_OPTIONAL_DEPENDENCIES = new Set(['@rolldown/binding-wasm32-wasi']);
 const LINUX_X64_GLIBC = Object.freeze({
   key: 'linux-x64',
   os: 'linux',
@@ -143,14 +145,14 @@ function resolveDependencyLockPath(packages, fromLockPath, dependencyName) {
   return dependencyCandidates(fromLockPath, dependencyName).find(candidate => packages[candidate]) ?? null;
 }
 
-function profileArchiveFile(target) {
+function profileArchiveFile(target, directory) {
   const safeName = target.packageName.replace(/^@/u, '').replaceAll('/', '__');
-  return `vendor/offline/runtime/${safeName}-${target.version}.tgz`;
+  return `vendor/offline/${directory}/${safeName}-${target.version}.tgz`;
 }
 
-function profileTargetFromLock(packages, lockPath) {
-  const target = targetFromLock(packages, lockPath, 'runtime');
-  return { ...target, file: profileArchiveFile(target) };
+function profileTargetFromLock(packages, lockPath, directory) {
+  const target = targetFromLock(packages, lockPath, directory);
+  return { ...target, file: profileArchiveFile(target, directory) };
 }
 
 function toManifestEntry(target) {
@@ -370,7 +372,11 @@ function buildComponent(lock, component) {
   fail(`unsupported component: ${component}`);
 }
 
-function buildTsxTestsProfile(lock, lockfileSha256) {
+function buildWorkspaceProfile(
+  lock,
+  lockfileSha256,
+  { profile, directory, rootDependencies, excludedOptionalDependencies = new Set() }
+) {
   const packages = lock.packages;
   if (!packages || typeof packages !== 'object') fail('package-lock.json has no packages map');
   const rootPackage = packages[''];
@@ -378,7 +384,6 @@ function buildTsxTestsProfile(lock, lockfileSha256) {
     fail('package-lock.json has no root package entry');
   }
 
-  const rootDependencies = Object.keys(rootPackage.dependencies ?? {}).sort();
   const queue = [];
   for (const dependencyName of rootDependencies) {
     const lockPath = resolveDependencyLockPath(packages, '', dependencyName);
@@ -397,23 +402,24 @@ function buildTsxTestsProfile(lock, lockfileSha256) {
     }
     selected.add(lockPath);
 
-    const optionalDependencies = lockEntry.optionalDependencies ?? {};
-    const dependencies = {
-      ...(lockEntry.dependencies ?? {}),
-      ...optionalDependencies,
-    };
-    for (const dependencyName of Object.keys(dependencies)) {
+    for (const dependencyName of Object.keys(lockEntry.dependencies ?? {})) {
       const dependencyPath = resolveDependencyLockPath(packages, lockPath, dependencyName);
       if (!dependencyPath) {
-        if (Object.hasOwn(optionalDependencies, dependencyName)) continue;
         fail(`${lockPath} dependency is absent from package-lock.json: ${dependencyName}`);
       }
       const dependencyEntry = packages[dependencyPath];
       if (!supportsLinuxX64Glibc(dependencyEntry)) {
-        if (Object.hasOwn(optionalDependencies, dependencyName)) continue;
         fail(`${lockPath} requires an incompatible package: ${dependencyPath}`);
       }
       queue.push(dependencyPath);
+    }
+
+    for (const dependencyName of Object.keys(lockEntry.optionalDependencies ?? {})) {
+      if (excludedOptionalDependencies.has(dependencyName)) continue;
+      const dependencyPath = resolveDependencyLockPath(packages, lockPath, dependencyName);
+      if (!dependencyPath) continue;
+      const dependencyEntry = packages[dependencyPath];
+      if (supportsLinuxX64Glibc(dependencyEntry)) queue.push(dependencyPath);
     }
 
     for (const dependencyName of Object.keys(lockEntry.peerDependencies ?? {})) {
@@ -426,7 +432,7 @@ function buildTsxTestsProfile(lock, lockfileSha256) {
 
   const targets = [...selected]
     .sort((left, right) => left.localeCompare(right))
-    .map(lockPath => profileTargetFromLock(packages, lockPath));
+    .map(lockPath => profileTargetFromLock(packages, lockPath, directory));
   const archiveOwners = new Map();
   for (const target of targets) {
     const existing = archiveOwners.get(target.file);
@@ -436,8 +442,8 @@ function buildTsxTestsProfile(lock, lockfileSha256) {
     archiveOwners.set(target.file, target);
   }
   return {
-    profile: 'tsx-tests',
-    directory: 'runtime',
+    profile,
+    directory,
     version: lock.lockfileVersion,
     lockfileSha256,
     rootDependencies,
@@ -456,8 +462,36 @@ function buildTsxTestsProfile(lock, lockfileSha256) {
   };
 }
 
+function buildTsxTestsProfile(lock, lockfileSha256) {
+  const rootDependencies = Object.keys(lock.packages?.['']?.dependencies ?? {}).sort();
+  return buildWorkspaceProfile(lock, lockfileSha256, {
+    profile: 'tsx-tests',
+    directory: 'runtime',
+    rootDependencies,
+  });
+}
+
+function buildViteBuildProfile(lock, lockfileSha256) {
+  const rootPackage = lock.packages?.[''];
+  if (!rootPackage || typeof rootPackage !== 'object') {
+    fail('package-lock.json has no root package entry');
+  }
+  for (const dependencyName of VITE_BUILD_ROOT_DEPENDENCIES) {
+    if (!Object.hasOwn(rootPackage.devDependencies ?? {}, dependencyName)) {
+      fail(`Vite build root is not a project devDependency: ${dependencyName}`);
+    }
+  }
+  return buildWorkspaceProfile(lock, lockfileSha256, {
+    profile: 'vite-build',
+    directory: 'vite',
+    rootDependencies: [...VITE_BUILD_ROOT_DEPENDENCIES],
+    excludedOptionalDependencies: VITE_BUILD_EXCLUDED_OPTIONAL_DEPENDENCIES,
+  });
+}
+
 function buildProfile(lock, profile, lockfileSha256) {
   if (profile === 'tsx-tests') return buildTsxTestsProfile(lock, lockfileSha256);
+  if (profile === 'vite-build') return buildViteBuildProfile(lock, lockfileSha256);
   fail(`unsupported profile: ${profile}`);
 }
 

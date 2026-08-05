@@ -10,6 +10,9 @@ while Oxlint, oxlint-tsgolint, esbuild, and TypeScript use explicit Linux x64 na
 launch path still depends on the vendored Linux x64 Node runtime. A
 separate lockfile-derived `tsx-tests` workspace profile supplies project runtime dependencies required by
 React, Three.js, PDF, Supabase, and other `.ts`/`.tsx` tests.
+A second lockfile-derived `vite-build` profile supplies Vite, `@vitejs/plugin-react`, and the exact GNU/Linux
+x64 build dependency closure. The Vite runner installs both profiles so a clean workspace can resolve the
+application's production imports as well as the build toolchain.
 
 ## Core set: Node 24 + Oxc AST compatibility fallback
 
@@ -165,6 +168,49 @@ python tools/bootstrap_offline_tsx.py --engine-only
 
 Plain JavaScript tests that import production packages can use the same profile through
 `python tools/run_offline_node24.py --with-runtime ...`.
+
+## Optional Vite 8 build set
+
+The Vite slice is generated from the two project devDependencies `vite` and `@vitejs/plugin-react`. The
+profile follows their complete required dependency graph from `package-lock.json` and selects only the
+GNU/Linux x64 native bindings for Rolldown and Lightning CSS. It intentionally excludes `fsevents`, musl,
+macOS, Windows, ARM, and Rolldown's WASI fallback.
+
+The plan itself does not download anything:
+
+```bash
+npm run vendor:offline:vite-build:plan
+npm run vendor:offline:vite-build:check-plan
+npm run vendor:offline:vite-build:downloads
+```
+
+`downloads` prints the official npm URL and exact destination under `vendor/offline/vite/` for every missing
+archive. After downloading the untouched files manually, adopt and verify them with:
+
+```bash
+npm run vendor:offline:vite-build:adopt
+npm run vendor:offline:vite-build:check
+```
+
+Automatic download remains available when network access is allowed:
+
+```bash
+npm run vendor:offline:vite-build:refresh
+```
+
+Install or invoke the build tool without npm resolution or lifecycle scripts:
+
+```bash
+npm run verify:offline:vite
+npm run setup:offline:vite
+npm run run:offline:vite -- --version
+npm run vite:build:offline
+npm run vite:build:modules:offline
+```
+
+The Vite runner installs the existing `tsx-tests` runtime profile before the `vite-build` profile. This is
+required because the bundler must resolve React, Three.js, PDF, Supabase, and the rest of the application's
+production dependency graph while building.
 
 Generated report checks use Prettier as an imported library, not only as a CLI. Run them in a clean offline
 workspace with:

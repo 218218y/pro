@@ -41,6 +41,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also require and verify Oxlint plus the Linux type-aware backend",
     )
+    parser.add_argument(
+        "--with-vite",
+        action="store_true",
+        help="Also require and verify the Vite build and project runtime profiles",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--esbuild-only",
@@ -72,6 +77,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Require and verify only Node plus Oxlint and its Linux type-aware backend",
     )
+    group.add_argument(
+        "--vite-only",
+        action="store_true",
+        help="Require only Node plus the Linux Vite build and project runtime profiles",
+    )
     args = parser.parse_args(argv)
     try:
         manifest = core.load_manifest()
@@ -82,7 +92,13 @@ def main(argv: list[str] | None = None) -> int:
         core.tsx_entry(manifest)
         core.typescript_entries(manifest, key)
         core.oxlint_entries(manifest, key)
+        core.workspace_profile(manifest, key, "vite-build")
         if not args.manifest_only:
+            workspace_profiles = []
+            if args.tsx_only:
+                workspace_profiles.append("tsx-tests")
+            if args.with_vite or args.vite_only:
+                workspace_profiles.extend(["tsx-tests", "vite-build"])
             core.verify_vendor(
                 manifest,
                 key,
@@ -94,13 +110,14 @@ def main(argv: list[str] | None = None) -> int:
                     or args.prettier_only
                     or args.typescript_only
                     or args.oxlint_only
+                    or args.vite_only
                 ),
                 esbuild=args.with_esbuild or args.esbuild_only,
                 tsx=args.with_tsx or args.tsx_only or args.tsx_engine_only,
                 prettier=args.with_prettier or args.prettier_only,
                 typescript=args.with_typescript or args.typescript_only,
                 oxlint=args.with_oxlint or args.oxlint_only,
-                workspace_profile_name="tsx-tests" if args.tsx_only else None,
+                workspace_profile_names=tuple(workspace_profiles),
             )
         components = [f"Node {manifest['node']['version']}"]
         if not (
@@ -110,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
             or args.prettier_only
             or args.typescript_only
             or args.oxlint_only
+            or args.vite_only
         ):
             components.append(f"Oxc {manifest['ast']['version']}")
         if (
@@ -133,6 +151,19 @@ def main(argv: list[str] | None = None) -> int:
             components.append(
                 f"Oxlint {manifest['oxlint']['version']} + "
                 f"oxlint-tsgolint {manifest['oxlint']['typeAware']['version']}"
+            )
+        if args.with_vite or args.vite_only:
+            vite_profile = manifest["workspace"]["profiles"]["vite-build"]
+            vite_entry = core.workspace_package_entry(manifest, key, "vite-build", "vite")
+            react_entry = core.workspace_package_entry(
+                manifest,
+                key,
+                "vite-build",
+                "@vitejs/plugin-react",
+            )
+            components.append(
+                f"Vite {vite_entry['version']} + @vitejs/plugin-react {react_entry['version']} "
+                f"({vite_profile['packageCount']} build packages)"
             )
         print(f"Offline vendor definition is valid for {key} ({', '.join(components)}).")
         return 0

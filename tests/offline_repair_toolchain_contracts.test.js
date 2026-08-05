@@ -252,6 +252,7 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   );
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
+  assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:vite-build:refresh/u);
 
   const checkedIn = spawnSync(
     process.execPath,
@@ -596,6 +597,148 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
     assert.deepEqual(fixtureManifest.workspace.profiles['tsx-tests'].rootDependencies, ['tsx']);
     assert.equal(fixtureManifest.workspace.profiles['tsx-tests'].packageCount, 3);
     assert.equal(fs.existsSync(path.join(fixtureRoot, 'vendor/offline/runtime/stale-0.0.0.tgz')), false);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('offline Vite build profile is complete, Linux x64 glibc only, and manually adoptable', () => {
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const manifest = readJson('vendor/offline/manifest.json');
+  const profile = manifest.workspace.profiles['vite-build'];
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+
+  assert.equal(lock.packages['node_modules/vite'].version, '8.2.0');
+  assert.equal(lock.packages['node_modules/@vitejs/plugin-react'].version, '6.0.5');
+  assert.deepEqual(profile.rootDependencies, ['@vitejs/plugin-react', 'vite']);
+  assert.equal(profile.packageCount, profile.packages.length);
+  assert.ok(profile.packageCount > profile.rootDependencies.length);
+
+  const names = new Set(profile.packages.map(entry => entry.name));
+  for (const requiredName of [
+    'vite',
+    '@vitejs/plugin-react',
+    'rolldown',
+    '@rolldown/binding-linux-x64-gnu',
+    'lightningcss',
+    'lightningcss-linux-x64-gnu',
+    '@rolldown/pluginutils',
+    'postcss',
+  ]) {
+    assert.ok(names.has(requiredName), `${requiredName} must be present in the Vite build profile`);
+  }
+  for (const excludedName of [
+    'fsevents',
+    '@rolldown/binding-wasm32-wasi',
+    '@rolldown/binding-linux-x64-musl',
+    'lightningcss-linux-x64-musl',
+  ]) {
+    assert.equal(names.has(excludedName), false, `${excludedName} must not enter the GNU/Linux profile`);
+  }
+
+  for (const entry of profile.packages) {
+    assertLockEntry(entry, entry.version, lock.packages);
+    assert.equal(entry.installPath, entry.lockPath);
+    assert.equal(supportsLinuxX64Glibc(lock.packages[entry.lockPath]), true, entry.lockPath);
+    assert.doesNotMatch(entry.lockPath, /darwin|win32|arm64|musl/u);
+    assert.match(entry.file, /^vendor\/offline\/vite\//u);
+  }
+
+  const expectedScripts = {
+    plan: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --sync-plan',
+    'check-plan': 'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --check-plan',
+    downloads:
+      'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --print-downloads --missing-only',
+    refresh: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build',
+    adopt: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --adopt-existing',
+    check: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile vite-build --check',
+  };
+  for (const [suffix, command] of Object.entries(expectedScripts)) {
+    assert.equal(pkg.scripts[`vendor:offline:vite-build:${suffix}`], command);
+  }
+  assert.equal(pkg.scripts['setup:offline:vite'], 'python tools/bootstrap_offline_vite.py');
+  assert.equal(
+    pkg.scripts['verify:offline:vite'],
+    'python tools/verify_offline_repair_vendor.py --vite-only'
+  );
+  assert.equal(pkg.scripts['run:offline:vite'], 'python tools/run_offline_vite.py');
+  assert.equal(
+    pkg.scripts['vite:build:offline'],
+    'python tools/run_offline_vite.py --config vite.config.mjs build'
+  );
+
+  const planCheck = spawnSync(process.execPath, [tool, '--profile', 'vite-build', '--check-plan'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
+  assert.match(planCheck.stdout, /workspace plan vite-build \(16 packages\)/u);
+
+  const downloads = spawnSync(
+    process.execPath,
+    [tool, '--profile', 'vite-build', '--print-downloads', '--missing-only'],
+    { cwd: root, encoding: 'utf8' }
+  );
+  assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
+  assert.match(downloads.stdout, /vite-8\.2\.0\.tgz/u);
+  assert.match(downloads.stdout, /plugin-react-6\.0\.5\.tgz/u);
+  assert.match(downloads.stdout, /binding-linux-x64-gnu-1\.2\.1\.tgz/u);
+  assert.match(downloads.stdout, /lightningcss-linux-x64-gnu-1\.33\.0\.tgz/u);
+  assert.doesNotMatch(downloads.stdout, /wasm32|darwin|win32|musl|arm64/u);
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-vite-vendor-'));
+  try {
+    const fixtureLock = structuredClone(lock);
+    const fixtureManifest = structuredClone(manifest);
+    delete fixtureManifest.workspace.profiles['vite-build'];
+    const fixtureVendor = path.join(fixtureRoot, 'vendor/offline/vite');
+    fs.mkdirSync(fixtureVendor, { recursive: true });
+
+    for (const entry of profile.packages) {
+      const lockEntry = fixtureLock.packages[entry.lockPath];
+      const packageJson = { name: entry.name, version: entry.version };
+      for (const constraint of ['os', 'cpu', 'libc']) {
+        if (Array.isArray(lockEntry[constraint])) packageJson[constraint] = lockEntry[constraint];
+      }
+      const archive = createNpmArchive(packageJson);
+      lockEntry.integrity = `sha512-${crypto.createHash('sha512').update(archive).digest('base64')}`;
+      fs.writeFileSync(path.join(fixtureRoot, entry.file), archive);
+    }
+    fs.writeFileSync(path.join(fixtureVendor, 'stale-0.0.0.tgz'), 'stale');
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'package-lock.json'),
+      `${JSON.stringify(fixtureLock, null, 2)}\n`
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(fixtureManifest, null, 2)}\n`
+    );
+
+    const adopt = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'vite-build', '--adopt-existing'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+    assert.match(adopt.stdout, /workspace vite-build \(16 packages\)/u);
+
+    const synced = JSON.parse(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
+    );
+    assert.deepEqual(synced.workspace.profiles['vite-build'].rootDependencies, [
+      '@vitejs/plugin-react',
+      'vite',
+    ]);
+    assert.equal(synced.workspace.profiles['vite-build'].packageCount, 16);
+    assert.equal(fs.existsSync(path.join(fixtureVendor, 'stale-0.0.0.tgz')), false);
+
+    const check = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'vite-build', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(check.status, 0, check.stderr || check.stdout);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
