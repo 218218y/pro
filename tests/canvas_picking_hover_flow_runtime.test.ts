@@ -33,11 +33,11 @@ function createBoxObject(partId: string) {
   };
 }
 
-function createApp(wardrobeGroup: any, raycaster: any) {
+function createApp(wardrobeGroup: any, raycaster: any, primaryMode = 'paint') {
   const state = {
     ui: { stackSplitEnabled: false },
     config: {},
-    mode: { primary: 'paint' },
+    mode: { primary: primaryMode },
     runtime: {},
     meta: {},
   };
@@ -130,4 +130,21 @@ test('hover flow paint mode routes through the canonical generic paint preview p
   assert.equal(previews.length, 1);
   assert.equal(previews[0]?.App, App);
   assert.deepEqual(raycaster.lastMouse, { x: 0.15, y: -0.25 });
+});
+
+test('hover flow measurement mode returns the canonical part label with cursor preservation', () => {
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const bodyLeft = createBoxObject('body_left');
+  bodyLeft.parent = wardrobeGroup;
+  wardrobeGroup.children.push(bodyLeft);
+  const raycaster = createRaycaster([{ object: bodyLeft, point: { x: 0.25, y: 0.1, z: 0 } }]);
+  const App = createApp(wardrobeGroup, raycaster, 'measure');
+
+  const feedback = __coreHandleCanvasHoverNDC(App, 0.15, -0.25) as unknown;
+
+  assert.deepEqual(feedback, {
+    kind: 'viewer-measurement',
+    cursor: '__wp_canvas_hover_cursor_preserve',
+    partLabel: 'דופן שמאלית',
+  });
 });

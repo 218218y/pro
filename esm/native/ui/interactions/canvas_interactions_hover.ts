@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../../types';
+import { disposeViewerMeasurementHoverTooltip } from './canvas_measurement_hover_tooltip.js';
 import { cancelCanvasPostBuildHoverRefresh, updateCanvasPostBuildHoverRefresh } from '../../services/api.js';
 import {
   cancelQueuedCanvasHoverRefresh,
@@ -89,6 +90,7 @@ export function createCanvasHoverInteractionOps(
     rectOps.invalidateRectCache();
     cancelQueuedCanvasHoverRefresh(App, state, timers, 'cancelRaf');
     cancelCanvasPostBuildHoverRefresh(App);
+    disposeViewerMeasurementHoverTooltip(deps.domEl);
   };
 
   return { onPointerMove, onPointerLeave, disposeHover };

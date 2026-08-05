@@ -7,6 +7,7 @@ import {
   tryHandleViewerMeasurementClick,
   tryHandleViewerMeasurementHover,
 } from '../esm/native/services/viewer_measurement_tool.ts';
+import { resolveViewerMeasurementPartLabel } from '../esm/native/services/viewer_measurement_part_label.ts';
 
 class FakeVector3 {
   x: number;
@@ -351,6 +352,93 @@ function createPartHit(part: any, partId: string, point: { x: number; y: number;
     hitUserData: part.userData,
   };
 }
+
+test('viewer part measurement labels use explicit metadata first and canonical Hebrew names otherwise', () => {
+  const explicit = createMesh({
+    width: 0.4,
+    height: 0.4,
+    depth: 0.02,
+    userData: { partId: 'custom_panel', partLabel: 'לוח תצוגה מיוחד' },
+  });
+  assert.equal(
+    resolveViewerMeasurementPartLabel(createPartHit(explicit, 'custom_panel', { x: 0, y: 0.2, z: 0.01 })),
+    'לוח תצוגה מיוחד'
+  );
+
+  const side = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.55,
+    userData: { partId: 'body_left', kind: 'board' },
+  });
+  assert.equal(
+    resolveViewerMeasurementPartLabel(createPartHit(side, 'body_left', { x: 0, y: 1, z: 0 })),
+    'דופן שמאלית'
+  );
+
+  const shelf = createMesh({
+    width: 0.9,
+    height: 0.02,
+    depth: 0.45,
+    userData: { partId: 'module_shelf_0_g2', moduleIndex: 0 },
+  });
+  assert.equal(
+    resolveViewerMeasurementPartLabel(createPartHit(shelf, 'module_shelf_0_g2', { x: 0, y: 0.8, z: 0 })),
+    'מדף 2 בתא 1'
+  );
+
+  const shelfPin = createMesh({
+    width: 0.01,
+    height: 0.01,
+    depth: 0.04,
+    userData: {
+      partId: 'module_shelf_0_g2',
+      moduleIndex: 0,
+      __kind: 'shelf_pin',
+      __wpShelfGroupPartId: 'all_shelves',
+    },
+  });
+  assert.equal(
+    resolveViewerMeasurementPartLabel(createPartHit(shelfPin, 'module_shelf_0_g2', { x: 0, y: 0.8, z: 0 })),
+    'תומך מדף'
+  );
+
+  const glassShelf = createMesh({
+    width: 0.9,
+    height: 0.01,
+    depth: 0.45,
+    userData: {
+      partId: 'module_shelf_1_g3',
+      moduleIndex: 1,
+      __wpShelfIndex: 3,
+      __wpShelfVariant: 'glass',
+      __wpShelfGroupPartId: 'all_shelves',
+    },
+  });
+  assert.equal(
+    resolveViewerMeasurementPartLabel(createPartHit(glassShelf, 'module_shelf_1_g3', { x: 0, y: 0.8, z: 0 })),
+    'מדף זכוכית 3 בתא 2'
+  );
+});
+
+test('viewer part measurement labels identify cavity targets by stack and module', () => {
+  const selector = createMesh({
+    width: 1,
+    height: 1,
+    depth: 0.55,
+    userData: { isModuleSelector: true, moduleIndex: 1, __wpStack: 'bottom' },
+    opacity: 0,
+  });
+  const hitState = {
+    ...createPartHit(selector, '', { x: 0, y: 0.5, z: 0 }),
+    foundPartId: null,
+    foundModuleIndex: 1,
+    foundModuleStack: 'bottom' as const,
+    hitIdentity: { moduleIndex: 1 } as any,
+  };
+
+  assert.equal(resolveViewerMeasurementPartLabel(hitState), 'תא תחתון 2');
+});
 
 test('viewer part measurement hover previews the exact selectable part without committing dimensions', () => {
   const wardrobe = createGroup();

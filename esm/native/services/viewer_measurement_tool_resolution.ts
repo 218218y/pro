@@ -62,9 +62,21 @@ function readFiniteNumber(value: unknown, key: string): number | null {
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
 }
 
+export function readViewerMeasurementIdentityText(value: unknown): string {
+  return formatIdentityValue(readIdentityValue(value)).trim();
+}
+
+export function isViewerMeasurementShelfPartId(value: unknown): boolean {
+  return isShelfBoardPartId(value);
+}
+
+export function isViewerMeasurementDoorOrDrawerPartId(value: unknown): boolean {
+  return __wp_isDoorOrDrawerLikePartId(value);
+}
+
 function readPartIdFromUserData(userData: UnknownRecord | null): string | null {
   const raw = userData?.partId ?? userData?.pid;
-  const text = formatIdentityValue(readIdentityValue(raw)).trim();
+  const text = readViewerMeasurementIdentityText(raw);
   return text || null;
 }
 

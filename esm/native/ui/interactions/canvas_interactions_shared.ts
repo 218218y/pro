@@ -8,6 +8,11 @@ import {
   reportError,
   syncCanvasPickingViewportMatrices,
 } from '../../services/api.js';
+import {
+  hideViewerMeasurementHoverTooltip,
+  shouldPreserveCanvasHoverCursor,
+  syncViewerMeasurementHoverTooltip,
+} from './canvas_measurement_hover_tooltip.js';
 
 export type Ndc = { x: number; y: number };
 export type RectLike = { left: number; top: number; width: number; height: number };
@@ -202,6 +207,7 @@ export function createClearTransientHoverPreview(
     }
 
     try {
+      hideViewerMeasurementHoverTooltip(domEl);
       safeSetCursor(domEl, '', App);
       state.cursorManaged = false;
     } catch (err) {
@@ -219,7 +225,7 @@ export function createHoverCursorApplier(
 ) {
   return (hoverRes: unknown): void => {
     try {
-      if (hoverRes === CANVAS_HOVER_CURSOR_PRESERVE) return;
+      if (shouldPreserveCanvasHoverCursor(hoverRes)) return;
       if (typeof hoverRes === 'boolean') {
         safeSetCursor(domEl, hoverRes ? 'pointer' : '', App);
         state.cursorManaged = true;
@@ -276,13 +282,15 @@ export function refreshCanvasHoverAtClientPoint(args: CanvasHoverRefreshArgs): b
       if (syncPickingMatrices) syncCanvasPickingViewportMatrices(App);
       hoverRes = deps.handleCanvasHoverNDC(ndc.x, ndc.y, App);
     }
+    syncViewerMeasurementHoverTooltip(deps.domEl, hoverRes, cx, cy);
     applyHoverCursorFromResult(hoverRes);
     return !!ndc;
   } catch (err) {
     try {
+      syncViewerMeasurementHoverTooltip(deps.domEl, null, cx, cy);
       applyHoverCursorFromResult(null);
     } catch {
-      // ignore secondary cursor errors; the original hover error is the useful signal.
+      // ignore secondary hover chrome errors; the original hover error is the useful signal.
     }
     reportCanvasInteractionsNonFatal(App, op, err);
     return false;

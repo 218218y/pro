@@ -23,9 +23,15 @@ import { tryHandleCanvasNonSplitHover } from './canvas_picking_hover_flow_nonspl
 import { tryHandleCanvasSplitHover } from './canvas_picking_hover_flow_split.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
-import { tryHandleViewerMeasurementHover, VIEWER_MEASUREMENT_MODE_ID } from './viewer_measurement_tool.js';
+import {
+  getViewerMeasurementToolMode,
+  tryHandleViewerMeasurementHover,
+  VIEWER_MEASUREMENT_MODE_ID,
+} from './viewer_measurement_tool.js';
+import { resolveViewerMeasurementPartLabel } from './viewer_measurement_part_label.js';
 
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
+const VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND = 'viewer-measurement';
 
 function ensureSplitHoverMarker(App: AppContainer) {
   try {
@@ -126,7 +132,13 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      return CANVAS_HOVER_CURSOR_PRESERVE as unknown as boolean;
+      const partLabel =
+        getViewerMeasurementToolMode(App) === 'part' ? resolveViewerMeasurementPartLabel(hitState) : null;
+      return {
+        kind: VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND,
+        cursor: CANVAS_HOVER_CURSOR_PRESERVE,
+        partLabel,
+      } as unknown as boolean;
     }
 
     const marker = ensureSplitHoverMarker(App);
