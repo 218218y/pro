@@ -9,7 +9,7 @@ import {
   readModelId,
 } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
-import { _cloneJSON, _normalizeList, _normalizeModel } from './models_registry_normalization.js';
+import { _normalizeList, _normalizeModel } from './models_registry_normalization.js';
 import {
   _getStoredHiddenPresets,
   _getStoredPresetOrder,
@@ -116,7 +116,7 @@ export function splitStoredModels(
 
 export function buildVisibleCorePresets(App: AppContainer, hidden: ReadonlySet<string>): SavedModelLike[] {
   const state = getModelsRuntimeStateForApp(App);
-  const presets = asMutableModelsList(_normalizeList(_cloneJSON(state.presets), { App }));
+  const presets = asMutableModelsList(_normalizeList(state.presets, { App }));
   const corePresets: SavedModelLike[] = [];
 
   for (let i = 0; i < presets.length; i++) {
@@ -185,7 +185,11 @@ export function exportUserModelsInternalImpl(App: AppContainer): SavedModelLike[
   for (let i = 0; i < state.all.length; i++) {
     const model = state.all[i];
     if (model && (!model.isPreset || model.isUserPreset)) {
-      const normalized = _normalizeModel(_cloneJSON(model));
+      const normalized = _normalizeModel(model, {
+        App,
+        op: 'exportUserModels',
+        applyAppNormalizer: false,
+      });
       if (normalized) user.push(normalized);
     }
   }

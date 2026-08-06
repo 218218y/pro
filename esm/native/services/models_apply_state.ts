@@ -1,7 +1,6 @@
 import type { AppContainer, SavedModelLike } from '../../../types';
 
 import {
-  _cloneJSON,
   _normalizeModel,
   asMutableSavedModel,
   markModelAsCorePreset,
@@ -79,7 +78,7 @@ export function getCorePresetById(App: AppContainer, id: string): SavedModelLike
 }
 
 export function cloneNormalizedModel(App: AppContainer, model: unknown): SavedModelLike | null {
-  return _normalizeModel(_cloneJSON(model), { App });
+  return _normalizeModel(model, { App, op: 'apply.cloneNormalizedModel' });
 }
 
 export function splitModels(App: AppContainer): { presets: SavedModelLike[]; saved: SavedModelLike[] } {

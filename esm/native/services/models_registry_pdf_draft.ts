@@ -89,7 +89,9 @@ export function _attachPdfEditorDraft(App: AppContainer, snap: PdfDraftSnapshotL
 
     if (!hasMeaningfulOrderPdfDraft(d)) return;
 
-    snap.orderPdfEditorDraft = _cloneJSON(d);
+    const clonedDraft = _cloneJSON(d, { App, op: 'attachPdfEditorDraft' });
+    if (clonedDraft === null) return;
+    snap.orderPdfEditorDraft = clonedDraft;
     const zz = Number(z);
     snap.orderPdfEditorZoom = Number.isFinite(zz) && zz > 0 ? zz : 1;
   } catch (e) {

@@ -6,9 +6,19 @@ import { asMutableSavedModel, readModelId, syncPresetFlags } from './models_regi
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
-type NormalizeModelsContext = {
+type CloneModelsContext = {
   App?: AppContainer | null;
+  op?: string;
+};
+
+type NormalizeModelsContext = CloneModelsContext & {
   normalizer?: ModelsNormalizer | null;
+  applyAppNormalizer?: boolean;
+};
+
+type CloneFailure = {
+  stage: 'structuredClone' | 'json' | 'detachedCopy';
+  error: unknown;
 };
 
 function cloneDetachedUnknown(value: unknown, seen = new Map<object, unknown>()): unknown {
@@ -29,31 +39,79 @@ function cloneDetachedUnknown(value: unknown, seen = new Map<object, unknown>())
   return out;
 }
 
-function resolveModelsNormalizer(context?: NormalizeModelsContext): ModelsNormalizer | null {
-  if (typeof context?.normalizer === 'function') return context.normalizer;
-  return getModelsRuntimeStateForApp(context?.App).normalizer;
-}
-
-export function _cloneJSON<T>(obj: T): T {
+function readCloneFailureMessage(error: unknown): string {
   try {
-    if (typeof structuredClone === 'function') return structuredClone(obj);
-  } catch {}
-  try {
-    return JSON.parse(JSON.stringify(obj));
-  } catch {}
-  try {
-    return cloneDetachedUnknown(obj) as T;
-  } catch {
-    return obj;
+    if (error instanceof Error && error.message) return error.message;
+    return String(error);
+  } catch (messageError) {
+    return `unreadable clone error (${String(typeof messageError)})`;
   }
 }
 
-export function cloneSavedModel(model: unknown) {
-  return asMutableSavedModel(_cloneJSON(model));
+function createCloneExhaustedError(op: string, failures: CloneFailure[]): Error {
+  const stages = failures
+    .map(failure => `${failure.stage}: ${readCloneFailureMessage(failure.error)}`)
+    .join('; ');
+  return new Error(`[WardrobePro][models] ${op} could not create a detached clone (${stages})`);
+}
+
+function resolveModelsNormalizer(context?: NormalizeModelsContext): ModelsNormalizer | null {
+  if (typeof context?.normalizer === 'function') return context.normalizer;
+  if (context?.applyAppNormalizer === false) return null;
+  return getModelsRuntimeStateForApp(context?.App).normalizer;
+}
+
+export function _cloneJSON<T>(obj: T, context?: CloneModelsContext): T | null {
+  const failures: CloneFailure[] = [];
+
+  if (typeof structuredClone === 'function') {
+    try {
+      return structuredClone(obj);
+    } catch (error) {
+      failures.push({ stage: 'structuredClone', error });
+    }
+  }
+
+  try {
+    const serialized = JSON.stringify(obj);
+    if (typeof serialized === 'string') return JSON.parse(serialized) as T;
+    failures.push({
+      stage: 'json',
+      error: new Error('JSON serialization returned no payload'),
+    });
+  } catch (error) {
+    failures.push({ stage: 'json', error });
+  }
+
+  try {
+    return cloneDetachedUnknown(obj) as T;
+  } catch (error) {
+    failures.push({ stage: 'detachedCopy', error });
+  }
+
+  if (context) {
+    const op = String(context.op || 'cloneJSON');
+    _modelsReportNonFatal(
+      context.App ?? null,
+      `${op}.cloneExhausted`,
+      createCloneExhaustedError(op, failures),
+      1500
+    );
+  }
+  return null;
+}
+
+export function cloneSavedModel(model: unknown, context?: CloneModelsContext) {
+  return asMutableSavedModel(
+    _cloneJSON(model, {
+      App: context?.App,
+      op: context?.op || 'normalizeModel',
+    })
+  );
 }
 
 export function _normalizeModel(m: unknown, context?: NormalizeModelsContext): SavedModelLike | null {
-  const out = cloneSavedModel(m);
+  const out = cloneSavedModel(m, { App: context?.App, op: context?.op || 'normalizeModel' });
   if (!out) return null;
 
   try {
@@ -76,6 +134,7 @@ export function _normalizeList(
     preferLatestDuplicateIds?: boolean;
     App?: AppContainer | null;
     normalizer?: ModelsNormalizer | null;
+    applyAppNormalizer?: boolean;
   }
 ): SavedModelLike[] {
   if (!Array.isArray(list)) return [];
@@ -85,6 +144,8 @@ export function _normalizeList(
   const normalizeContext: NormalizeModelsContext = {
     App: options?.App,
     normalizer: options?.normalizer,
+    applyAppNormalizer: options?.applyAppNormalizer,
+    op: 'normalizeList.item',
   };
   for (let i = 0; i < list.length; i += 1) {
     const nm = _normalizeModel(list[i], normalizeContext);

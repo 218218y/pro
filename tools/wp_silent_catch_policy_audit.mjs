@@ -15,7 +15,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 19,
   platform: 62,
   runtime: 129,
-  services: 143,
+  services: 140,
   ui: 214,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -27,7 +27,7 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 10,
   platform: 16,
   runtime: 0,
-  services: 5,
+  services: 2,
   ui: 26,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
@@ -46,6 +46,8 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/history_runtime.ts',
   'esm/native/services/history_schedule.ts',
   'esm/native/services/history_shared.ts',
+  'esm/native/services/models_registry_nonfatal.ts',
+  'esm/native/services/models_registry_normalization.ts',
 ]);
 
 function parserLanguage(file) {

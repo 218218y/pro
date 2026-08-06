@@ -17,7 +17,7 @@ import {
   readModelName,
 } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
-import { _cloneJSON, _normalizeList } from './models_registry_normalization.js';
+import { _normalizeList } from './models_registry_normalization.js';
 import { ensureModelsLoadedInternalImpl } from './models_registry_loading.js';
 import { _hydrateFromApp, syncModelsStateToApp } from './models_registry_storage.js';
 import { getModelsRuntimeStateForApp, markModelsRuntimeStateDirty } from './models_registry_state.js';
@@ -46,7 +46,7 @@ function buildImportedModelsDecision(
   snapshot: ModelsCollectionsSnapshot,
   incomingSource: SavedModelLike[]
 ): ModelsCollectionsDecision<ModelsMergeResult> {
-  const incoming = asMutableModelsList(_cloneJSON(incomingSource));
+  const incoming = asMutableModelsList(incomingSource);
   const current = snapshot.saved;
   const byId = new Map<string, number>();
   const byName = new Map<string, number>();
@@ -191,7 +191,7 @@ export function setModelPresetsInternalImpl(App: AppContainer, presetsArr: Saved
   _hydrateFromApp(App);
 
   const state = getModelsRuntimeStateForApp(App);
-  const nextPresets = _normalizeList(_cloneJSON(presetsArr));
+  const nextPresets = _normalizeList(presetsArr, { App, applyAppNormalizer: false });
   for (let i = 0; i < nextPresets.length; i++) {
     try {
       nextPresets[i].isPreset = true;
