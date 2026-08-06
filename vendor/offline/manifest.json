@@ -65,13 +65,13 @@
     "launcher": "bin/esbuild"
   },
   "tsx": {
-    "version": "4.23.8",
+    "version": "4.23.9",
     "package": {
       "lockPath": "node_modules/tsx",
       "installPath": "node_modules/tsx",
-      "file": "vendor/offline/tsx/tsx-4.23.8.tgz",
-      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.8.tgz",
-      "integrity": "sha512-8W675THjbzfFmLOQzjDBIBna+WjqMGIxmSZ1mMc1+o9qoVsEuAgQu5j5ueLhau8inOkDu9OslVg0FmfBs1RIHw=="
+      "file": "vendor/offline/tsx/tsx-4.23.9.tgz",
+      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.9.tgz",
+      "integrity": "sha512-6q8uTORRGauQVjqMQnKUucLFoeXZAfw6zKvG35GLbdKWbLdeOtZ3H4mhyA5mxuUd2o2cRTskhj59nLLQseUvUw=="
     },
     "esbuildRange": "~0.28.0",
     "executable": "dist/cli.mjs"
@@ -218,21 +218,21 @@
           },
           {
             "name": "@supabase/auth-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/auth-js",
             "installPath": "node_modules/@supabase/auth-js",
-            "file": "vendor/offline/runtime/supabase__auth-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.1.tgz",
-            "integrity": "sha512-TBacB69YXSYYFFet9ISgNC2jsPExFPIWngmzeLHAWrp/xvKWfYIyhh0nyvDLryi8WP6KoexkXO9kRF6Y9oBUTA=="
+            "file": "vendor/offline/runtime/supabase__auth-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.2.tgz",
+            "integrity": "sha512-l1InCp4j98d09LZ6+RgubgF4eVPGBGXcLEhFusLg1qUCHJ2IEkYu5FohKK+eaFmIOwEk0kqG/j/lycw5e15mcQ=="
           },
           {
             "name": "@supabase/functions-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/functions-js",
             "installPath": "node_modules/@supabase/functions-js",
-            "file": "vendor/offline/runtime/supabase__functions-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.1.tgz",
-            "integrity": "sha512-t5L8qBpRC2ZswHD4A7DNL/sNpFLEeflaYaZVe5dCWvAD82pm2WOysU8EKgiJub3doxo/QU8RuDvYFlRyRk8ghw=="
+            "file": "vendor/offline/runtime/supabase__functions-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.2.tgz",
+            "integrity": "sha512-oMuSWN0ERmrG9S6kOM0bwhHmESGVl3kMtkZl2dNCU/r89hMiziX4GfD1omNo9QcBDele4N0GwSZ7hdbpuiA35A=="
           },
           {
             "name": "@supabase/phoenix",
@@ -245,39 +245,39 @@
           },
           {
             "name": "@supabase/postgrest-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/postgrest-js",
             "installPath": "node_modules/@supabase/postgrest-js",
-            "file": "vendor/offline/runtime/supabase__postgrest-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.1.tgz",
-            "integrity": "sha512-oX42JgoVT8bP73/XYE1+kQdj6/Ql1j6lD6zpCoL8aq1B0uhZsz4FSoT+cBJB3pi4aPZEA0Ntkid6w7uzuAH5jQ=="
+            "file": "vendor/offline/runtime/supabase__postgrest-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.2.tgz",
+            "integrity": "sha512-ewhhtRny/HFRGhUTTg/PsqIatsl8OhW8Eha/Tz4S+SRAXBnuhKei9ZpsQTgL/3XcH9UEwuPQyQgQ9itq7nRQeg=="
           },
           {
             "name": "@supabase/realtime-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/realtime-js",
             "installPath": "node_modules/@supabase/realtime-js",
-            "file": "vendor/offline/runtime/supabase__realtime-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.1.tgz",
-            "integrity": "sha512-jp5TgXXTb1m2rqF6kiirOhVnvAoFHrjj7ZHOzWRa+SL+Am0BbcMcQr6FyHkJJS1ngw0TAL2DeymfGgKkSanN0A=="
+            "file": "vendor/offline/runtime/supabase__realtime-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.2.tgz",
+            "integrity": "sha512-cd9/CEUJ6Go13FxtfiuC5rYELJtuQzVzTXlGG+XjSppjDS+anq+xo++WQe7ZRUNTuHOCeyKRwmx9Hw/OQJ04ig=="
           },
           {
             "name": "@supabase/storage-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/storage-js",
             "installPath": "node_modules/@supabase/storage-js",
-            "file": "vendor/offline/runtime/supabase__storage-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.1.tgz",
-            "integrity": "sha512-FHKAQTw4KUV9nF3bnOLvZvjB3bkmtl6ltavlJfdJKdabvqMtQQ2iyBliFyp2dSHMCn9qA8c6WoZoRkgV5nxAmg=="
+            "file": "vendor/offline/runtime/supabase__storage-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.2.tgz",
+            "integrity": "sha512-6jyBq/J1iXOHNpbjCZS7gFcDk49iM1MCJUVkDl71gLd/+XnLDzpUBs8icGebtwiHpl4kVszxIRDYAosbF4Rsig=="
           },
           {
             "name": "@supabase/supabase-js",
-            "version": "2.112.1",
+            "version": "2.112.2",
             "lockPath": "node_modules/@supabase/supabase-js",
             "installPath": "node_modules/@supabase/supabase-js",
-            "file": "vendor/offline/runtime/supabase__supabase-js-2.112.1.tgz",
-            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.1.tgz",
-            "integrity": "sha512-KooEPqALZNkQCr1PBhbEImnPm6Ko6TKWiOrj3UxQki74g2KWlXGleQgEudUwRAKZs5U1ilSssO0TpxgVOspihQ=="
+            "file": "vendor/offline/runtime/supabase__supabase-js-2.112.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.2.tgz",
+            "integrity": "sha512-UyI1epU9B4X51HvNpkmlwTdF20fEcz2vyvrcDKVzFN4jZN41f5iQRqsiIQjAY5OVJD6ljqA/1g9JQeOTvFHpkA=="
           },
           {
             "name": "iceberg-js",
@@ -485,12 +485,12 @@
           },
           {
             "name": "postcss",
-            "version": "8.5.25",
+            "version": "8.5.26",
             "lockPath": "node_modules/postcss",
             "installPath": "node_modules/postcss",
-            "file": "vendor/offline/vite/postcss-8.5.25.tgz",
-            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.25.tgz",
-            "integrity": "sha512-DTPx3RWSSnWyzLxQnlH0rJP+EW5ekl16ZU4/psbIhA0e53kJfdgaN5vKM+xP7yJtXVu+nfdVFmlgFDEKAe4Pyw=="
+            "file": "vendor/offline/vite/postcss-8.5.26.tgz",
+            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz",
+            "integrity": "sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ=="
           },
           {
             "name": "rolldown",
@@ -521,12 +521,12 @@
           },
           {
             "name": "vite",
-            "version": "8.2.0",
+            "version": "8.2.1",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.2.0.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.2.0.tgz",
-            "integrity": "sha512-pn+CFpM0lwDeKwmOq1ZaBK/9sjorZcgqxki6MbY/jPEVd9vichIlmlD4HmQ5wdP5EgqQCFRaACBxMC7uEGc6lQ=="
+            "file": "vendor/offline/vite/vite-8.2.1.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.2.1.tgz",
+            "integrity": "sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw=="
           }
         ]
       },
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "b8f672c935acfae7fa4c10861f7c021b9f99d837ca995e9fc0e6d1856301425f"
+    "lockfileSha256": "1b90e448411fefcd5540947bc2da819c717c684ca12d51c2fb4b96475cc27486"
   }
 }
