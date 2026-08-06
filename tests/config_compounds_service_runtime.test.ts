@@ -180,3 +180,128 @@ test('config compounds seed waits for a concrete config snapshot and keeps one i
   assert.equal(typeof state.config.cornerConfiguration, 'object');
   assert.ok(patchCalls >= 1);
 });
+
+test('config compounds seed does not mark partial writes as seeded and a later call retries after synchronous failure', async () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  let rejectModulesWrite = true;
+  let state: any = {
+    ui: {
+      doors: 2,
+      structureSelect: '[1,1]',
+      singleDoorPos: 'left',
+      raw: {
+        doors: 2,
+        structureSelect: '[1,1]',
+        singleDoorPos: 'left',
+      },
+    },
+    config: { wardrobeType: 'hinged' },
+    runtime: {},
+    mode: {},
+    meta: { dirty: false, version: 0, updatedAt: 0 },
+  };
+
+  const store = {
+    getState: () => state,
+    setConfig: (patch: any, meta?: any) => {
+      if (rejectModulesWrite && Object.prototype.hasOwnProperty.call(patch || {}, 'modulesConfiguration')) {
+        throw new Error('modules writer rejected');
+      }
+      state = {
+        ...state,
+        config: applyStoreConfigPatch(state.config, patch, meta, state.ui),
+      };
+      return state.config;
+    },
+  };
+
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: unknown) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+    store,
+  };
+
+  assert.equal(await seedConfigCompounds(App, { maxAttempts: 1, retryDelayMs: 0 }), false);
+  assert.equal(isConfigCompoundsSeeded(App), false);
+  assert.equal(Array.isArray(state.config.modulesConfiguration), false);
+  assert.equal(typeof state.config.cornerConfiguration, 'object');
+  assert.ok(reports.some(report => report.ctx?.op === 'write.modulesConfiguration'));
+  assert.ok(reports.some(report => report.ctx?.op === 'seedAttemptsExhausted'));
+
+  rejectModulesWrite = false;
+  assert.equal(await seedConfigCompounds(App, { maxAttempts: 1, retryDelayMs: 0 }), true);
+  assert.equal(isConfigCompoundsSeeded(App), true);
+  assert.equal(Array.isArray(state.config.modulesConfiguration), true);
+});
+
+test('config compounds seed rejects an unobservable write and reports failed state verification', async () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const state: any = {
+    ui: {
+      doors: 2,
+      structureSelect: '[1,1]',
+      singleDoorPos: 'left',
+      raw: {
+        doors: 2,
+        structureSelect: '[1,1]',
+        singleDoorPos: 'left',
+      },
+    },
+    config: { wardrobeType: 'hinged' },
+    runtime: {},
+    mode: {},
+    meta: { dirty: false, version: 0, updatedAt: 0 },
+  };
+
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: unknown) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+    store: {
+      getState: () => state,
+      setConfig: (patch: any) => patch,
+    },
+  };
+
+  assert.equal(await seedConfigCompounds(App, { maxAttempts: 1, retryDelayMs: 0 }), false);
+  assert.equal(isConfigCompoundsSeeded(App), false);
+  assert.ok(reports.some(report => report.ctx?.op === 'verifySeededState'));
+  assert.ok(reports.every(report => report.ctx?.fatal === false));
+});
+
+test('config compounds retry scheduling failure stays fail-soft and publishes a diagnostic', async () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: unknown) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+    store: {
+      getState: () => ({ ui: {}, runtime: {}, mode: {}, meta: {} }),
+    },
+    deps: {
+      browser: {
+        setTimeout() {
+          throw new Error('timer unavailable');
+        },
+        clearTimeout() {},
+      },
+    },
+  };
+
+  assert.equal(await seedConfigCompounds(App, { maxAttempts: 2, retryDelayMs: 1 }), false);
+  assert.equal(isConfigCompoundsSeeded(App), false);
+  assert.ok(reports.some(report => report.ctx?.op === 'scheduleRetry'));
+});

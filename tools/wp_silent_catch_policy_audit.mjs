@@ -15,7 +15,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 19,
   platform: 62,
   runtime: 129,
-  services: 140,
+  services: 131,
   ui: 214,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -35,6 +35,10 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/camera_motion.ts',
   'esm/native/services/camera_runtime.ts',
   'esm/native/services/camera_shared.ts',
+  'esm/native/services/config_compounds.ts',
+  'esm/native/services/config_compounds_runtime.ts',
+  'esm/native/services/config_compounds_seed.ts',
+  'esm/native/services/config_compounds_shared.ts',
   'esm/native/services/boot_finalizers.ts',
   'esm/native/services/boot_seeds_part02_colors.ts',
   'esm/native/services/boot_seeds_part02_flags.ts',

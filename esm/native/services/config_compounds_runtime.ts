@@ -6,7 +6,11 @@ import { isConfigCompoundsInstalled, markConfigCompoundsInstalled } from '../run
 import { resolveInstallContext, type InstallContext } from '../runtime/install_context.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 
-import { cloneSeedOptions, type ConfigCompoundsSeedOptions } from './config_compounds_shared.js';
+import {
+  cloneSeedOptions,
+  reportConfigCompoundsNonFatal,
+  type ConfigCompoundsSeedOptions,
+} from './config_compounds_shared.js';
 import { isConfigCompoundsSeeded, seedConfigCompounds } from './config_compounds_seed.js';
 
 type ConfigCompoundsServiceWithCanonicalRefs = ConfigCompoundsServiceLike & {
@@ -51,8 +55,8 @@ export function installConfigCompoundsService(
 
   const service = installConfigCompoundsSurface(App, opts);
 
-  void seedConfigCompounds(App, opts).catch(() => {
-    // ignore
+  void seedConfigCompounds(App, opts).catch(error => {
+    reportConfigCompoundsNonFatal(App, 'installSeed', error);
   });
 
   return service;
