@@ -12,7 +12,7 @@ test('camera motion explicitly keeps the render loop awake while camera buttons 
   const cameraShared = read('esm/native/services/camera_shared.ts');
 
   assert.match(cameraShared, /CAMERA_MOVE_RENDERING_UNTIL_SLOT = '__wpCameraMoveRenderingUntilMs'/);
-  assert.match(cameraShared, /export function wakeCameraRenderLoop\(App: AppLike\): void \{/);
+  assert.match(cameraShared, /export function wakeCameraRenderLoop\(App: AppLike\): boolean \{/);
   assert.match(cameraShared, /triggerRenderViaPlatform\(App, false\)/);
   assert.match(cameraShared, /ensureRenderLoopViaPlatform\(App\)/);
 

@@ -16,11 +16,13 @@ import {
 } from '../runtime/platform_access.js';
 import { getCamera, getControls, setRenderSlot } from '../runtime/render_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 export type AppLike = AppContainer | (UnknownRecord & { services?: unknown }) | null | undefined;
 export type AppStateWithGetLike = { get?: () => unknown };
 export type TimeoutHandle = ReturnType<typeof setTimeout>;
 export type RafLike = (cb: (t?: number) => void) => TimeoutHandle;
+export type CameraClock = () => number;
 export type VectorLike = Pick<Vector3Like, 'x' | 'y' | 'z'>;
 export type VectorCtorLike = new (x?: number, y?: number, z?: number) => Vector3Like;
 export type ThreeLike = { Vector3: VectorCtorLike };
@@ -31,51 +33,118 @@ export type DimsLike = { w: number; h: number };
 export type DimsStateLike = { dims?: { m?: { w?: unknown; h?: unknown }; w?: unknown; h?: unknown } };
 export type CloneableVectorLike = VectorLike & { clone: () => Vector3Like };
 export type LerpVectorsLike = { lerpVectors: (a: VectorLike, b: VectorLike, alpha: number) => void };
+export type CameraVectorInterpolator = (a: VectorLike, b: VectorLike, alpha: number) => boolean;
 
-export function nowMs(App: AppLike): number {
+export function reportCameraNonFatal(
+  App: AppLike,
+  where: string,
+  op: string,
+  error: unknown,
+  consoleOutput = false
+): void {
+  reportServiceNonFatal(App as AppContainer | null | undefined, error, { where, op }, { consoleOutput });
+}
+
+export function createCameraClock(App: AppLike): CameraClock {
+  let now: (() => number) | null = null;
   try {
-    const t = getBrowserTimers(App);
-    return typeof t.now === 'function' ? t.now() : Date.now();
-  } catch {
-    return Date.now();
+    const timers = getBrowserTimers(App);
+    now = typeof timers.now === 'function' ? timers.now : null;
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_shared', 'clock.resolve', error);
   }
+
+  let rejected = false;
+  return () => {
+    if (now) {
+      try {
+        const value = now();
+        if (Number.isFinite(value)) return value;
+        throw new Error('camera clock returned a non-finite timestamp');
+      } catch (error) {
+        if (!rejected) {
+          reportCameraNonFatal(App, 'native/services/camera_shared', 'clock.read', error);
+          rejected = true;
+        }
+        now = null;
+      }
+    }
+    return Date.now();
+  };
 }
 
 export const CAMERA_MOVE_RENDERING_UNTIL_SLOT = '__wpCameraMoveRenderingUntilMs';
 
-export function markCameraMoveRenderingActive(App: AppLike, untilMs: number): void {
+export function markCameraMoveRenderingActive(App: AppLike, untilMs: number): boolean {
+  const next = Number.isFinite(untilMs) && untilMs > 0 ? untilMs : 0;
   try {
-    const next = Number.isFinite(untilMs) && untilMs > 0 ? untilMs : 0;
-    setRenderSlot(App, CAMERA_MOVE_RENDERING_UNTIL_SLOT, next);
-  } catch (_) {}
+    const stored = setRenderSlot(App, CAMERA_MOVE_RENDERING_UNTIL_SLOT, next);
+    const storedMatches = next === 0 ? stored == null : stored === next;
+    if (storedMatches) return true;
+    reportCameraNonFatal(
+      App,
+      'native/services/camera_shared',
+      'renderActivity.writeRejected',
+      new Error('camera render-activity slot rejected the requested value')
+    );
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_shared', 'renderActivity.write', error);
+  }
+  return false;
 }
 
-export function clearCameraMoveRenderingActive(App: AppLike): void {
-  markCameraMoveRenderingActive(App, 0);
+export function clearCameraMoveRenderingActive(App: AppLike): boolean {
+  return markCameraMoveRenderingActive(App, 0);
 }
 
-export function wakeCameraRenderLoop(App: AppLike): void {
-  try {
-    if (triggerRenderViaPlatform(App, false)) return;
-  } catch (_) {}
-
-  try {
-    ensureRenderLoopViaPlatform(App);
-  } catch (_) {}
+export function wakeCameraRenderLoop(App: AppLike): boolean {
+  if (triggerRenderViaPlatform(App, false)) return true;
+  return ensureRenderLoopViaPlatform(App);
 }
 
 export function getRAF(App: AppLike): RafLike {
+  let raf: ((cb: FrameRequestCallback) => number) | null = null;
+  let timerScheduler: ((cb: () => void, ms?: number) => TimeoutHandle) | null = null;
+
   try {
-    const t = getBrowserTimers(App);
-    const raf = t && typeof t.requestAnimationFrame === 'function' ? t.requestAnimationFrame : null;
-    if (raf) return (cb: (t?: number) => void) => raf(ts => cb(ts));
-  } catch (_) {}
-  return (cb: (t?: number) => void) => {
-    try {
-      return setTimeout(() => cb(), 16);
-    } catch (_) {
-      return 0;
+    const timers = getBrowserTimers(App);
+    raf = typeof timers.requestAnimationFrame === 'function' ? timers.requestAnimationFrame : null;
+    timerScheduler =
+      typeof timers.setTimeout === 'function'
+        ? (cb: () => void, ms?: number) => timers.setTimeout(cb, ms) as TimeoutHandle
+        : null;
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_shared', 'frameScheduler.resolve', error);
+  }
+
+  let rafRejected = false;
+  let timeoutRejected = false;
+  return (cb: (t?: number) => void): TimeoutHandle => {
+    if (raf) {
+      try {
+        return raf(ts => cb(ts)) as TimeoutHandle;
+      } catch (error) {
+        if (!rafRejected) {
+          reportCameraNonFatal(App, 'native/services/camera_shared', 'frameScheduler.raf', error);
+          rafRejected = true;
+        }
+        raf = null;
+      }
     }
+
+    if (timerScheduler) {
+      try {
+        return timerScheduler(() => cb(), 16);
+      } catch (error) {
+        if (!timeoutRejected) {
+          reportCameraNonFatal(App, 'native/services/camera_shared', 'frameScheduler.timeout', error);
+          timeoutRejected = true;
+        }
+        timerScheduler = null;
+      }
+    }
+
+    return 0 as TimeoutHandle;
   };
 }
 
@@ -162,10 +231,8 @@ export function readCameraService(value: unknown): CameraServiceLike | null {
 }
 
 export function getDimsSafe(App: AppLike): DimsLike {
-  try {
-    const dims = readDimsLike(getDimsMFromPlatform(App));
-    if (dims) return dims;
-  } catch (_) {}
+  const platformDims = readDimsLike(getDimsMFromPlatform(App));
+  if (platformDims) return platformDims;
 
   try {
     const stateWithGetter = getStateWithGetter(App);
@@ -173,30 +240,67 @@ export function getDimsSafe(App: AppLike): DimsLike {
     const stateRec = readDimsState(stateValue);
     const dims = readDimsLike(stateRec?.dims?.m) || readDimsLike(stateRec?.dims);
     if (dims) return dims;
-  } catch (_) {}
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_shared', 'dimensions.readState', error);
+  }
 
   return { w: 2, h: 2 };
 }
 
-export function safeCloneVec(THREE: ThreeLike, v: unknown): Vector3Like {
-  try {
-    if (isCloneableVector(v)) return v.clone();
-    if (hasVectorShape(v)) return new THREE.Vector3(v.x, v.y, v.z);
-  } catch (_) {}
+export function safeCloneVec(App: AppLike, THREE: ThreeLike, value: unknown, op: string): Vector3Like {
+  if (isCloneableVector(value)) {
+    try {
+      return value.clone();
+    } catch (error) {
+      reportCameraNonFatal(App, 'native/services/camera_shared', `${op}.clone`, error);
+    }
+  }
+
+  if (hasVectorShape(value)) {
+    try {
+      return new THREE.Vector3(value.x, value.y, value.z);
+    } catch (error) {
+      reportCameraNonFatal(App, 'native/services/camera_shared', `${op}.copy`, error);
+    }
+  }
+
   return new THREE.Vector3(0, 0, 0);
 }
 
-export function lerpVectorsSafe(out: Vector3Like, a: VectorLike, b: VectorLike, t: number): void {
-  try {
-    if (isLerpVectorsLike(out)) {
-      Reflect.apply(out.lerpVectors, out, [a, b, t]);
-      return;
-    }
-  } catch (_) {}
+export function createCameraVectorInterpolator(
+  App: AppLike,
+  out: Vector3Like,
+  op: string
+): CameraVectorInterpolator {
+  let useNativeLerp = isLerpVectorsLike(out);
+  let nativeFailureReported = false;
+  let manualFailureReported = false;
 
-  try {
-    out.x = a.x + (b.x - a.x) * t;
-    out.y = a.y + (b.y - a.y) * t;
-    out.z = a.z + (b.z - a.z) * t;
-  } catch (_) {}
+  return (a: VectorLike, b: VectorLike, alpha: number): boolean => {
+    if (useNativeLerp && isLerpVectorsLike(out)) {
+      try {
+        Reflect.apply(out.lerpVectors, out, [a, b, alpha]);
+        return true;
+      } catch (error) {
+        if (!nativeFailureReported) {
+          reportCameraNonFatal(App, 'native/services/camera_shared', `${op}.nativeLerp`, error);
+          nativeFailureReported = true;
+        }
+        useNativeLerp = false;
+      }
+    }
+
+    try {
+      out.x = a.x + (b.x - a.x) * alpha;
+      out.y = a.y + (b.y - a.y) * alpha;
+      out.z = a.z + (b.z - a.z) * alpha;
+      return true;
+    } catch (error) {
+      if (!manualFailureReported) {
+        reportCameraNonFatal(App, 'native/services/camera_shared', `${op}.manualLerp`, error);
+        manualFailureReported = true;
+      }
+      return false;
+    }
+  };
 }

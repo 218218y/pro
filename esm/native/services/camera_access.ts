@@ -3,6 +3,7 @@ import type { AppContainer, CameraMoveFn, CameraServiceLike } from '../../../typ
 import { asRecord } from '../runtime/record.js';
 import { getServiceSlotMaybe } from '../runtime/services_root_access.js';
 import { installCameraService } from './camera.js';
+import { reportCameraNonFatal } from './camera_shared.js';
 
 function isAppContainerLike(value: unknown): value is AppContainer {
   return !!value && typeof value === 'object';
@@ -16,7 +17,13 @@ function asCameraService(value: unknown): CameraServiceLike | null {
 export function getCameraServiceMaybe(App: unknown): CameraServiceLike | null {
   try {
     return asCameraService(getServiceSlotMaybe<CameraServiceLike>(App, 'camera'));
-  } catch {
+  } catch (error) {
+    reportCameraNonFatal(
+      App as AppContainer | null | undefined,
+      'native/services/camera_access',
+      'service.read',
+      error
+    );
     return null;
   }
 }
@@ -30,39 +37,32 @@ export function getCameraMoveHandler(App: unknown): CameraMoveFn | null {
     try {
       const svc = ensureCameraService(App);
       if (svc && typeof svc.moveTo === 'function') return svc.moveTo.bind(svc);
-    } catch {
-      // ignore and fall back to a best-effort slot read
+    } catch (error) {
+      reportCameraNonFatal(App, 'native/services/camera_access', 'handler.ensure', error);
     }
   }
 
-  try {
-    const svc = getCameraServiceMaybe(App);
-    if (svc && typeof svc.moveTo === 'function') return svc.moveTo.bind(svc);
-  } catch {
-    // ignore
-  }
-  return null;
+  const svc = getCameraServiceMaybe(App);
+  return svc && typeof svc.moveTo === 'function' ? svc.moveTo.bind(svc) : null;
 }
 
 export function moveCameraViaService(App: AppContainer, view: string): boolean {
-  try {
-    const move = getCameraMoveHandler(App);
-    if (typeof move === 'function') {
-      move(view);
-      return true;
-    }
-  } catch {
-    // ignore
+  const move = getCameraMoveHandler(App);
+  if (typeof move !== 'function') {
+    reportCameraNonFatal(
+      App,
+      'native/services/camera_access',
+      'move.handlerUnavailable',
+      new Error('camera move handler is unavailable')
+    );
+    return false;
   }
 
   try {
-    const svc = ensureCameraService(App);
-    if (typeof svc.moveTo === 'function') {
-      svc.moveTo(view);
-      return true;
-    }
-  } catch {
-    // ignore
+    move(view);
+    return true;
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_access', 'move.invoke', error);
+    return false;
   }
-  return false;
 }

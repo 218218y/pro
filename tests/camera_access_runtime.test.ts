@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { getCameraService } from '../esm/native/services/camera_runtime.ts';
 import {
   ensureCameraService,
   getCameraMoveHandler,
@@ -75,4 +76,57 @@ test('camera access runtime: getCameraMoveHandler heals drifted moveTo back to t
 
   healedMove?.('front');
   assert.deepEqual(calls, ['canonical:front']);
+});
+
+test('camera access runtime: a rejected move is reported once and is not retried through the same service', () => {
+  const calls: string[] = [];
+  const reports: Array<{ error: unknown; context: any }> = [];
+  const App: any = {
+    services: {
+      errors: {
+        report(error: unknown, context: any) {
+          reports.push({ error, context });
+        },
+      },
+      camera: {
+        moveTo(view: string) {
+          calls.push(view);
+          throw new Error('camera move rejected');
+        },
+      },
+    },
+  };
+
+  assert.equal(moveCameraViaService(App, 'front'), false);
+  assert.deepEqual(calls, ['front']);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].context?.where, 'native/services/camera_access');
+  assert.equal(reports[0].context?.op, 'move.invoke');
+  assert.equal(reports[0].context?.fatal, false);
+});
+
+test('camera runtime: a rejected canonical service read remains fail-soft and publishes a diagnostic', () => {
+  const reports: Array<{ error: unknown; context: any }> = [];
+  const services = new Proxy(
+    {
+      errors: {
+        report(error: unknown, context: any) {
+          reports.push({ error, context });
+        },
+      },
+    } as Record<string, unknown>,
+    {
+      get(target, key, receiver) {
+        if (key === 'camera') throw new Error('camera slot read rejected');
+        return Reflect.get(target, key, receiver);
+      },
+    }
+  );
+  const App: any = { services };
+
+  assert.equal(getCameraService(App), null);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].context?.where, 'native/services/camera_runtime');
+  assert.equal(reports[0].context?.op, 'service.read');
+  assert.equal(reports[0].context?.fatal, false);
 });

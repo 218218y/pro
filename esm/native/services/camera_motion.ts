@@ -3,13 +3,14 @@ import { resolveCurrentDefaultCameraPresetPose } from './camera_presets.js';
 import {
   type AppLike,
   clearCameraMoveRenderingActive,
+  createCameraClock,
+  createCameraVectorInterpolator,
   getDimsSafe,
   getRAF,
   getRenderCameraAccess,
   getTHREE,
-  lerpVectorsSafe,
   markCameraMoveRenderingActive,
-  nowMs,
+  reportCameraNonFatal,
   safeCloneVec,
   wakeCameraRenderLoop,
 } from './camera_shared.js';
@@ -76,27 +77,44 @@ export function moveCamera(App: AppLike, view: string): void {
       return;
   }
 
-  const startPos = safeCloneVec(THREE, cam.position);
-  const startTarget = safeCloneVec(THREE, controls.target);
+  const startPos = safeCloneVec(app, THREE, cam.position, 'move.startPosition');
+  const startTarget = safeCloneVec(app, THREE, controls.target, 'move.startTarget');
+  const interpolatePosition = createCameraVectorInterpolator(app, cam.position, 'move.position');
+  const interpolateTarget = createCameraVectorInterpolator(app, controls.target, 'move.target');
   const duration = CAMERA_MOVE_DURATION_MS;
 
   const raf = getRAF(app);
+  const now = createCameraClock(app);
   const gen = ++moveGeneration;
-  const startTime = nowMs(app);
+  const startTime = now();
   const renderUntilMs = startTime + duration + CAMERA_MOVE_RENDER_SETTLE_MS;
   markCameraMoveRenderingActive(app, renderUntilMs);
+
+  function finishMove(): void {
+    clearCameraMoveRenderingActive(app);
+    wakeCameraRenderLoop(app);
+  }
 
   function step() {
     if (gen !== moveGeneration) return;
 
-    const progress = Math.min(1, (nowMs(app) - startTime) / duration);
+    const progress = Math.min(1, Math.max(0, (now() - startTime) / duration));
     const ease = 1 - Math.pow(1 - progress, 3);
 
+    const positionUpdated = interpolatePosition(startPos, finalPos, ease);
+    const targetUpdated = interpolateTarget(startTarget, finalTarget, ease);
+    if (!positionUpdated || !targetUpdated) {
+      finishMove();
+      return;
+    }
+
     try {
-      lerpVectorsSafe(cam.position, startPos, finalPos, ease);
-      lerpVectorsSafe(controls.target, startTarget, finalTarget, ease);
-      if (typeof controls.update === 'function') controls.update();
-    } catch (_) {}
+      controls.update();
+    } catch (error) {
+      reportCameraNonFatal(app, 'native/services/camera_motion', 'move.controlsUpdate', error);
+      finishMove();
+      return;
+    }
 
     wakeCameraRenderLoop(app);
 
@@ -105,8 +123,7 @@ export function moveCamera(App: AppLike, view: string): void {
       return;
     }
 
-    clearCameraMoveRenderingActive(app);
-    wakeCameraRenderLoop(app);
+    finishMove();
   }
 
   raf(step);

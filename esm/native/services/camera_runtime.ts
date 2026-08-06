@@ -6,7 +6,7 @@ import { resolveInstallContext, type InstallContext } from '../runtime/install_c
 import { ensureServiceSlot, getServiceSlotMaybe } from '../runtime/services_root_access.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { moveCamera } from './camera_motion.js';
-import { type AppLike, readCameraService } from './camera_shared.js';
+import { type AppLike, readCameraService, reportCameraNonFatal } from './camera_shared.js';
 
 type InstallableCameraService = CameraServiceLike & {
   __wpMoveTo?: (view: string) => void;
@@ -37,7 +37,8 @@ export function installCameraService(App: AppLike): CameraServiceLike {
 export function getCameraService(App: AppLike): CameraServiceLike | null {
   try {
     return readCameraService(getServiceSlotMaybe<CameraServiceLike>(App, 'camera'));
-  } catch (_) {
+  } catch (error) {
+    reportCameraNonFatal(App, 'native/services/camera_runtime', 'service.read', error);
     return null;
   }
 }

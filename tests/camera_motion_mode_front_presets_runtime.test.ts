@@ -36,6 +36,7 @@ class Vec3 {
 function createCameraApp(ui: Record<string, unknown> = {}) {
   let nowTick = 0;
   const updates: string[] = [];
+  const reports: Array<{ error: unknown; context: any }> = [];
   const App: any = {
     deps: {
       THREE: { Vector3: Vec3 },
@@ -52,6 +53,11 @@ function createCameraApp(ui: Record<string, unknown> = {}) {
       },
     },
     services: {
+      errors: {
+        report(error: unknown, context: any) {
+          reports.push({ error, context });
+        },
+      },
       platform: {
         getDimsM() {
           return { w: 2, h: 2, d: 2 };
@@ -73,7 +79,7 @@ function createCameraApp(ui: Record<string, unknown> = {}) {
       },
     },
   };
-  return { App, updates };
+  return { App, updates, reports };
 }
 
 function assertClose(actual: number, expected: number, message: string): void {
@@ -141,4 +147,94 @@ test('camera motion front preset ignores retired UI mode aliases', () => {
   assertClose(App.render.controls.target.x, 0, 'alias-only front target x');
   assertClose(App.render.controls.target.y, 1.4, 'alias-only front target y');
   assertClose(App.render.controls.target.z, 0, 'alias-only front target z');
+});
+
+class CloneRejectVec extends Vec3 {
+  clone(): Vec3 {
+    throw new Error('clone unavailable');
+  }
+}
+
+class NativeLerpRejectVec extends Vec3 {
+  lerpVectors(_a: Vec3, _b: Vec3, _alpha: number): this {
+    throw new Error('native lerp unavailable');
+  }
+}
+
+test('camera motion: clone rejection is observable and falls through to a detached vector copy', () => {
+  const { App, reports } = createCameraApp();
+  App.render.camera.position = new CloneRejectVec(9, 9, 9);
+
+  assert.doesNotThrow(() => moveCamera(App, 'front'));
+  assertClose(App.render.camera.position.x, 0, 'clone fallback camera x');
+  assertClose(App.render.camera.position.y, 2.2, 'clone fallback camera y');
+  assertClose(App.render.camera.position.z, 5.5, 'clone fallback camera z');
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/services/camera_shared' &&
+        report.context?.op === 'move.startPosition.clone' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
+});
+
+test('camera motion: native interpolation rejection is reported once and manual interpolation completes the move', () => {
+  const { App, reports } = createCameraApp();
+  App.render.camera.position = new NativeLerpRejectVec(9, 9, 9);
+
+  assert.doesNotThrow(() => moveCamera(App, 'front'));
+  assertClose(App.render.camera.position.x, 0, 'manual interpolation camera x');
+  assertClose(App.render.camera.position.y, 2.2, 'manual interpolation camera y');
+  assertClose(App.render.camera.position.z, 5.5, 'manual interpolation camera z');
+  assert.equal(
+    reports.filter(
+      report =>
+        report.context?.where === 'native/services/camera_shared' &&
+        report.context?.op === 'move.position.nativeLerp'
+    ).length,
+    1
+  );
+});
+
+test('camera motion: rejected requestAnimationFrame reports once and continues through the timer fallback', () => {
+  const { App, reports } = createCameraApp();
+  App.deps.browser.requestAnimationFrame = () => {
+    throw new Error('raf unavailable');
+  };
+  App.deps.browser.setTimeout = (cb: () => void) => {
+    cb();
+    return 7;
+  };
+
+  assert.doesNotThrow(() => moveCamera(App, 'front'));
+  assertClose(App.render.camera.position.z, 5.5, 'timer fallback camera z');
+  assert.equal(
+    reports.filter(
+      report =>
+        report.context?.where === 'native/services/camera_shared' &&
+        report.context?.op === 'frameScheduler.raf'
+    ).length,
+    1
+  );
+});
+
+test('camera motion: controls update rejection remains fail-soft, is observable, and clears activity state', () => {
+  const { App, reports } = createCameraApp();
+  App.render.controls.update = () => {
+    throw new Error('controls update rejected');
+  };
+
+  assert.doesNotThrow(() => moveCamera(App, 'front'));
+  assert.equal(App.render.__wpCameraMoveRenderingUntilMs, null);
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/services/camera_motion' &&
+        report.context?.op === 'move.controlsUpdate' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
 });
