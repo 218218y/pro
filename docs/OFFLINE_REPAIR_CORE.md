@@ -177,8 +177,14 @@ The npm-backed slices (`esbuild`, `tsx`, `prettier`, `typescript`, `oxlint` with
 Vite, and ESLint) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
 command first adopts a correctly named archive that is already present, otherwise it downloads the official
 npm tarball. It verifies SHA-512 integrity, embedded package name/version, native executable layout, and the
-esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Superseded archives are removed
-only after the complete replacement set is verified.
+esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Verified downloads are cached
+at their final `vendor/offline/...` paths immediately, so a later network or archive failure can resume without
+downloading the completed files again. The manifest and superseded-archive cleanup are still committed only
+after the complete replacement set is verified.
+
+The npm archive reader accepts both the normal `package/package.json` layout and the single-root layout used by
+some DefinitelyTyped packages, such as `esrecurse/package.json` inside `@types/esrecurse`. In both cases the
+embedded package name, version, integrity, and safe extraction root remain mandatory.
 
 ```bash
 npm run vendor:offline:packages:refresh

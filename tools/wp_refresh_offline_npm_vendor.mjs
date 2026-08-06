@@ -75,6 +75,28 @@ function parseTarEntries(buffer) {
   return entries;
 }
 
+function npmPackageJsonEntry(entries, target) {
+  const canonical = entries.get('package/package.json');
+  if (canonical) return canonical;
+
+  const candidates = [...entries.entries()].filter(([entryName]) => {
+    const parts = entryName.split('/').filter(Boolean);
+    return parts.at(-1) === 'package.json' && parts.length <= 2;
+  });
+  if (candidates.length === 1) return candidates[0][1];
+  if (candidates.length === 0) {
+    fail(
+      `${target.fileName} has no npm package.json at package/package.json ` +
+        'or beneath a single top-level package directory'
+    );
+  }
+  fail(
+    `${target.fileName} has ambiguous top-level package.json entries: ${candidates
+      .map(([entryName]) => entryName)
+      .join(', ')}`
+  );
+}
+
 function packageNameFromLockPath(lockPath) {
   const marker = 'node_modules/';
   const markerIndex = lockPath.lastIndexOf(marker);
@@ -551,8 +573,7 @@ function verifyArchive(buffer, target) {
   if (actualIntegrity !== target.integrity) {
     fail(`${target.fileName} integrity mismatch\nexpected ${target.integrity}\nactual   ${actualIntegrity}`);
   }
-  const packageJsonBuffer = parseTarEntries(buffer).get('package/package.json');
-  if (!packageJsonBuffer) fail(`${target.fileName} has no package/package.json`);
+  const packageJsonBuffer = npmPackageJsonEntry(parseTarEntries(buffer), target);
   const packageJson = JSON.parse(packageJsonBuffer.toString('utf8'));
   if (packageJson.name !== target.packageName || packageJson.version !== target.version) {
     fail(
@@ -568,6 +589,25 @@ function verifyArchive(buffer, target) {
       fail(`${target.fileName} ${constraint} metadata does not match package-lock.json`);
     }
   }
+}
+
+function persistVerifiedArchive(root, target, buffer) {
+  const archivePath = path.join(root, target.file);
+  fs.mkdirSync(path.dirname(archivePath), { recursive: true });
+  const temporaryPath = `${archivePath}.tmp-${process.pid}-${crypto.randomBytes(6).toString('hex')}`;
+  try {
+    fs.writeFileSync(temporaryPath, buffer);
+    try {
+      fs.renameSync(temporaryPath, archivePath);
+    } catch (error) {
+      if (!['EACCES', 'EEXIST', 'EPERM'].includes(error?.code)) throw error;
+      fs.rmSync(archivePath, { force: true });
+      fs.renameSync(temporaryPath, archivePath);
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
+  console.log(`[offline-npm-vendor] cached ${target.file}`);
 }
 
 function manifestEntriesFor(component, entry) {
@@ -763,6 +803,7 @@ async function acquireArchive(root, target, { adoptExisting }) {
   console.log(`[offline-npm-vendor] downloading ${target.packageName}@${target.version}`);
   const buffer = await download(target.url);
   verifyArchive(buffer, target);
+  persistVerifiedArchive(root, target, buffer);
   return buffer;
 }
 

@@ -689,13 +689,59 @@ def _extract_npm_tgz(archive: Path, destination: Path) -> None:
             members = bundle.getmembers()
             if not members:
                 raise OfflineCoreError(f"Empty npm archive: {_display_path(archive)}")
+
+            package_json_candidates: list[tuple[tarfile.TarInfo, PurePosixPath]] = []
             for member in members:
                 path = PurePosixPath(member.name)
-                if path.is_absolute() or not path.parts or path.parts[0] != "package":
+                if (
+                    member.isfile()
+                    and not path.is_absolute()
+                    and path.parts
+                    and path.parts[-1] == "package.json"
+                    and len(path.parts) <= 2
+                ):
+                    package_json_candidates.append((member, path))
+
+            canonical = next(
+                (
+                    candidate
+                    for candidate in package_json_candidates
+                    if candidate[1] == PurePosixPath("package/package.json")
+                ),
+                None,
+            )
+            if canonical is not None:
+                package_root = canonical[1].parent
+            elif len(package_json_candidates) == 1:
+                package_root = package_json_candidates[0][1].parent
+            elif not package_json_candidates:
+                raise OfflineCoreError(
+                    "npm archive has no package.json at package/package.json or beneath a "
+                    f"single top-level package directory: {_display_path(archive)}"
+                )
+            else:
+                names = ", ".join(str(path) for _, path in package_json_candidates)
+                raise OfflineCoreError(
+                    f"npm archive has ambiguous top-level package.json entries in "
+                    f"{_display_path(archive)}: {names}"
+                )
+
+            extracted_paths: set[PurePosixPath] = set()
+            for member in members:
+                path = PurePosixPath(member.name)
+                if path.is_absolute() or not path.parts:
                     raise OfflineCoreError(
                         f"Unexpected npm archive path in {_display_path(archive)}: {member.name!r}"
                     )
-                relative = PurePosixPath(*path.parts[1:])
+                if package_root.parts:
+                    if path.parts[: len(package_root.parts)] != package_root.parts:
+                        raise OfflineCoreError(
+                            f"Unexpected npm archive root in {_display_path(archive)}: "
+                            f"{member.name!r}"
+                        )
+                    relative = PurePosixPath(*path.parts[len(package_root.parts) :])
+                else:
+                    relative = path
                 if not relative.parts:
                     continue
                 if any(part in {"", ".", ".."} for part in relative.parts):
@@ -710,6 +756,11 @@ def _extract_npm_tgz(archive: Path, destination: Path) -> None:
                     raise OfflineCoreError(
                         f"Unsupported non-regular npm archive member: {member.name!r}"
                     )
+                if relative in extracted_paths:
+                    raise OfflineCoreError(
+                        f"Duplicate npm archive member after root stripping: {member.name!r}"
+                    )
+                extracted_paths.add(relative)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 source = bundle.extractfile(member)
                 if source is None:
@@ -720,7 +771,7 @@ def _extract_npm_tgz(archive: Path, destination: Path) -> None:
 
         package_json = temp_dir / "package.json"
         if not package_json.is_file():
-            raise OfflineCoreError(f"npm archive has no package/package.json: {_display_path(archive)}")
+            raise OfflineCoreError(f"npm archive has no installable package.json: {_display_path(archive)}")
         if destination.exists():
             shutil.rmtree(destination)
         temp_dir.replace(destination)

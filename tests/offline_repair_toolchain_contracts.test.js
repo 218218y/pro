@@ -34,10 +34,10 @@ function createTarEntry(name, content) {
   return Buffer.concat([header, body, padding]);
 }
 
-function createNpmArchive(packageJson, files = {}) {
+function createNpmArchive(packageJson, files = {}, rootName = 'package') {
   const tar = Buffer.concat([
-    createTarEntry('package/package.json', `${JSON.stringify(packageJson, null, 2)}\n`),
-    ...Object.entries(files).map(([name, content]) => createTarEntry(`package/${name}`, content)),
+    createTarEntry(`${rootName}/package.json`, `${JSON.stringify(packageJson, null, 2)}\n`),
+    ...Object.entries(files).map(([name, content]) => createTarEntry(`${rootName}/${name}`, content)),
     Buffer.alloc(1024),
   ]);
   return zlib.gzipSync(tar, { level: 9 });
@@ -860,7 +860,8 @@ test('offline ESLint strict-JS profile is lock-derived, included in standard ref
         packageJson,
         entry.name === 'eslint'
           ? { 'bin/eslint.js': `#!/usr/bin/env node\nconsole.log('v${entry.version}');\n` }
-          : {}
+          : {},
+        entry.name === '@types/esrecurse' ? 'esrecurse' : 'package'
       );
       lockEntry.integrity = `sha512-${crypto.createHash('sha512').update(archive).digest('base64')}`;
       fs.mkdirSync(path.dirname(path.join(fixtureRoot, entry.file)), { recursive: true });
@@ -932,6 +933,116 @@ assert (fixture / "node_modules" / "eslint" / "bin" / "eslint.js").is_file()
       encoding: 'utf8',
     });
     assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.equal(
+      fs.existsSync(path.join(fixtureRoot, 'node_modules/@types/esrecurse/package.json')),
+      true,
+      'DefinitelyTyped-style tarball roots must install under the lockfile path'
+    );
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('offline npm refresh keeps each verified download so a later failure can resume', () => {
+  const manifest = readJson('vendor/offline/manifest.json');
+  const lock = readJson('package-lock.json');
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-vendor-resume-'));
+  try {
+    const fixtureLock = structuredClone(lock);
+    const fixtureManifest = structuredClone(manifest);
+    const common = fixtureLock.packages['node_modules/esbuild'];
+    const platform = fixtureLock.packages['node_modules/@esbuild/linux-x64'];
+    const commonArchive = createNpmArchive({ name: 'esbuild', version: common.version });
+    const platformArchive = createNpmArchive(
+      {
+        name: '@esbuild/linux-x64',
+        version: platform.version,
+        os: platform.os,
+        cpu: platform.cpu,
+      },
+      { 'bin/esbuild': '#!/bin/sh\nexit 0\n' }
+    );
+    common.integrity = `sha512-${crypto.createHash('sha512').update(commonArchive).digest('base64')}`;
+    platform.integrity = `sha512-${crypto.createHash('sha512').update(platformArchive).digest('base64')}`;
+
+    fs.mkdirSync(path.join(fixtureRoot, 'vendor/offline'), { recursive: true });
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'package-lock.json'),
+      `${JSON.stringify(fixtureLock, null, 2)}\n`
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(fixtureManifest, null, 2)}\n`
+    );
+
+    const preload = path.join(fixtureRoot, 'mock-https.cjs');
+    fs.writeFileSync(
+      preload,
+      String.raw`
+const https = require('node:https');
+const { EventEmitter } = require('node:events');
+const { Readable } = require('node:stream');
+const fixtures = JSON.parse(process.env.OFFLINE_VENDOR_DOWNLOAD_FIXTURES || '{}');
+https.get = (url, options, callback) => {
+  const request = new EventEmitter();
+  request.setTimeout = () => request;
+  request.destroy = error => {
+    if (error) process.nextTick(() => request.emit('error', error));
+  };
+  process.nextTick(() => {
+    const encoded = fixtures[String(url)];
+    const response = Readable.from(encoded ? [Buffer.from(encoded, 'base64')] : []);
+    response.statusCode = encoded ? 200 : 404;
+    response.headers = {};
+    callback(response);
+  });
+  return request;
+};
+`
+    );
+
+    const runRefresh = fixtures =>
+      spawnSync(process.execPath, [tool, '--root', fixtureRoot, '--component', 'esbuild'], {
+        cwd: root,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${JSON.stringify(preload)}`.trim(),
+          OFFLINE_VENDOR_DOWNLOAD_FIXTURES: JSON.stringify(fixtures),
+        },
+      });
+
+    const failed = runRefresh({
+      [common.resolved]: commonArchive.toString('base64'),
+      [platform.resolved]: Buffer.from('not-the-pinned-platform-archive').toString('base64'),
+    });
+    assert.equal(failed.status, 1, failed.stderr || failed.stdout);
+    assert.match(failed.stdout, /cached vendor\/offline\/esbuild\/esbuild-/u);
+    assert.match(failed.stderr, /integrity mismatch/u);
+    const cachedCommon = path.join(
+      fixtureRoot,
+      `vendor/offline/esbuild/${new URL(common.resolved).pathname.split('/').at(-1)}`
+    );
+    assert.equal(fs.readFileSync(cachedCommon).equals(commonArchive), true);
+    assert.equal(
+      fs.existsSync(
+        path.join(
+          fixtureRoot,
+          `vendor/offline/esbuild/${new URL(platform.resolved).pathname.split('/').at(-1)}`
+        )
+      ),
+      false
+    );
+
+    const resumed = runRefresh({
+      [common.resolved]: commonArchive.toString('base64'),
+      [platform.resolved]: platformArchive.toString('base64'),
+    });
+    assert.equal(resumed.status, 0, resumed.stderr || resumed.stdout);
+    assert.match(resumed.stdout, /adopting vendor\/offline\/esbuild\/esbuild-/u);
+    assert.match(resumed.stdout, /cached vendor\/offline\/esbuild\/linux-x64-/u);
+    assert.match(resumed.stdout, /OK: esbuild/u);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }

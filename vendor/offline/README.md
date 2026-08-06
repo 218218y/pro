@@ -52,7 +52,11 @@ npm run vendor:offline:packages:check
 `downloads` prints exact official URLs and destination paths. `refresh` adopts valid files already present and
 downloads only missing targets. For a completely manual/no-network flow, place the files first and run
 `npm run vendor:offline:packages:adopt`. All archives are checked against lockfile integrity and embedded npm
-metadata before the manifest is replaced; old `.tgz` files are cleaned only after success.
+metadata before the manifest is replaced. Each verified automatic download is cached immediately at its final
+path, allowing an interrupted large profile to resume on the next run; the manifest replacement and cleanup of
+old `.tgz` files remain deferred until the complete selected set succeeds. Both standard `package/` tarball
+roots and the single-package roots used by some `@types/*` archives are supported and safely stripped during
+installation.
 
 ## Optional linter set: Oxlint + type-aware backend
 
