@@ -781,3 +781,39 @@ test('cloud collections repository cache preserves canonical lock ownership', ()
     /lock isolation is already process/i
   );
 });
+
+test('cloud collections repository gives every observer an independent committed snapshot', async () => {
+  const { storage } = createMapStorage({
+    models: [],
+    colors: [],
+    colorOrder: [],
+    presetOrder: [],
+    hiddenPresets: [],
+  });
+  const repository = createRepository({ storage, keys });
+  await repository.ensureInitialized();
+  const observed: unknown[] = [];
+
+  repository.subscribe(envelope => {
+    envelope.savedModels[0]!.name = 'mutated by first observer';
+    envelope.savedModels.push({ id: 'observer-only', name: 'Observer Only' });
+    envelope.savedColors.push({ id: 'observer-color', value: '#ffffff' });
+  });
+  repository.subscribe(envelope => {
+    observed.push(envelope);
+  });
+
+  const result = await repository.commit({
+    m: [{ id: 'm1', name: 'Canonical Model' }],
+    c: [{ id: 'c1', value: '#111111' }],
+    o: ['c1'],
+    p: [],
+    h: [],
+  });
+
+  assert.deepEqual(observed, [result.envelope]);
+  assert.equal(result.envelope.savedModels[0]?.name, 'Canonical Model');
+  assert.equal(result.envelope.savedModels.length, 1);
+  assert.equal(result.envelope.savedColors.length, 1);
+  assert.deepEqual(repository.read().m, [{ id: 'm1', name: 'Canonical Model' }]);
+});

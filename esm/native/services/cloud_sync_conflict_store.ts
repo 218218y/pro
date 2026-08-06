@@ -9,6 +9,16 @@ import type { StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 const CONFLICT_SCHEMA_VERSION = 3 as const;
 export const CLOUD_SYNC_CONFLICT_PERSISTENCE_MAX_BYTES = 256 * 1024;
 
+export type CloudSyncConflictStoreFailureOperation = 'read' | 'write' | 'clear-remove' | 'clear-tombstone';
+
+export type CloudSyncConflictStoreFailure = {
+  operation: CloudSyncConflictStoreFailureOperation;
+  room: string;
+  error: unknown;
+};
+
+export type CloudSyncConflictStoreFailureReporter = (failure: CloudSyncConflictStoreFailure) => void;
+
 type StoredConflictRecord = CloudSyncConflictRecord & {
   schemaVersion: typeof CONFLICT_SCHEMA_VERSION;
 };
@@ -142,14 +152,44 @@ function persistString(storage: StorageLike, key: string, serialized: string, va
   return typeof storage.setJSON === 'function' ? storage.setJSON(key, value) : false;
 }
 
-function writeConflict(storage: StorageLike, key: string, conflict: CloudSyncConflictRecord): boolean {
+function reportConflictStoreFailure(
+  reportFailure: CloudSyncConflictStoreFailureReporter | undefined,
+  operation: CloudSyncConflictStoreFailureOperation,
+  room: string,
+  error: unknown
+): void {
+  if (typeof reportFailure !== 'function') return;
+  try {
+    reportFailure({ operation, room, error });
+  } catch {
+    return;
+  }
+}
+
+function writeConflict(
+  storage: StorageLike,
+  key: string,
+  conflict: CloudSyncConflictRecord,
+  reportFailure?: CloudSyncConflictStoreFailureReporter
+): boolean {
   try {
     const stored: StoredConflictRecord = {
       schemaVersion: CONFLICT_SCHEMA_VERSION,
       ...cloneJson(conflict),
     };
     const serialized = serializeWithinBudget(stored);
-    if (serialized) return persistString(storage, key, serialized, stored);
+    if (serialized) {
+      const persisted = persistString(storage, key, serialized, stored);
+      if (!persisted) {
+        reportConflictStoreFailure(
+          reportFailure,
+          'write',
+          conflict.room,
+          new Error(`Cloud Sync conflict write was rejected for ${conflict.room}`)
+        );
+      }
+      return persisted;
+    }
 
     const blocked: StoredConflictRecord = {
       schemaVersion: CONFLICT_SCHEMA_VERSION,
@@ -161,8 +201,18 @@ function writeConflict(storage: StorageLike, key: string, conflict: CloudSyncCon
       limitationReason: 'projection-too-large',
     };
     const blockedSerialized = serializeWithinBudget(blocked);
-    return !!blockedSerialized && persistString(storage, key, blockedSerialized, blocked);
-  } catch {
+    const persisted = !!blockedSerialized && persistString(storage, key, blockedSerialized, blocked);
+    if (!persisted) {
+      reportConflictStoreFailure(
+        reportFailure,
+        'write',
+        conflict.room,
+        new Error(`Cloud Sync bounded conflict write was rejected for ${conflict.room}`)
+      );
+    }
+    return persisted;
+  } catch (error) {
+    reportConflictStoreFailure(reportFailure, 'write', conflict.room, error);
     return false;
   }
 }
@@ -178,8 +228,9 @@ export interface CloudSyncConflictStore {
 export function createCloudSyncConflictStore(args: {
   storage: StorageLike;
   storeId: string;
+  reportFailure?: CloudSyncConflictStoreFailureReporter;
 }): CloudSyncConflictStore {
-  const { storage, storeId } = args;
+  const { storage, storeId, reportFailure } = args;
   return {
     read(room) {
       const key = conflictStorageKey(storeId, room);
@@ -193,7 +244,8 @@ export function createCloudSyncConflictStore(args: {
           value = storage.getJSON(key, null);
           if (value == null) return { kind: 'missing' };
         }
-      } catch {
+      } catch (error) {
+        reportConflictStoreFailure(reportFailure, 'read', room, error);
         return { kind: 'corrupt' };
       }
       const conflict = normalizeStoredConflict(value, room);
@@ -211,14 +263,14 @@ export function createCloudSyncConflictStore(args: {
       return { kind: 'corrupt' };
     },
     write(conflict) {
-      return writeConflict(storage, conflictStorageKey(storeId, conflict.room), conflict);
+      return writeConflict(storage, conflictStorageKey(storeId, conflict.room), conflict, reportFailure);
     },
     clear(room, conflict) {
       const key = conflictStorageKey(storeId, room);
       try {
         if (typeof storage.remove === 'function' && storage.remove(key)) return true;
-      } catch {
-        // Fall through to a minimal tombstone so the resolved payload cannot consume quota.
+      } catch (error) {
+        reportConflictStoreFailure(reportFailure, 'clear-remove', room, error);
       }
       const tombstone: StoredResolvedConflict = {
         schemaVersion: CONFLICT_SCHEMA_VERSION,
@@ -230,8 +282,18 @@ export function createCloudSyncConflictStore(args: {
       };
       try {
         const serialized = JSON.stringify(tombstone);
-        return persistString(storage, key, serialized, tombstone);
-      } catch {
+        const persisted = persistString(storage, key, serialized, tombstone);
+        if (!persisted) {
+          reportConflictStoreFailure(
+            reportFailure,
+            'clear-tombstone',
+            room,
+            new Error(`Cloud Sync conflict tombstone write was rejected for ${room}`)
+          );
+        }
+        return persisted;
+      } catch (error) {
+        reportConflictStoreFailure(reportFailure, 'clear-tombstone', room, error);
         return false;
       }
     },

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createCloudSyncMainRowOps } from '../esm/native/services/cloud_sync_main_row.ts';
+import { createCloudSyncMainRowPullFlow } from '../esm/native/services/cloud_sync_main_row_pull.ts';
 import { createCloudCollectionsRepository } from '../esm/native/services/cloud_sync_collections_repository.ts';
 
 function cloudRead(row: any) {
@@ -1899,4 +1900,92 @@ test('cloud sync main row keeps canonical main pull reasons across a push-blocke
     2,
     'push follow-up fetch plus one queued pull should still run canonically'
   );
+});
+
+test('cloud sync main-row pull runs immediately and reports when timer scheduling is unavailable', async () => {
+  const reports: string[] = [];
+  let runs = 0;
+  const flow = createCloudSyncMainRowPullFlow({
+    setTimeoutFn() {
+      throw new Error('timer unavailable');
+    },
+    clearTimeoutFn: () => undefined,
+    suppressRef: { v: false },
+    isPushInFlight: () => false,
+    runPullRemote: async () => {
+      runs += 1;
+    },
+    reportFailure: operation => reports.push(operation),
+  });
+
+  flow.schedulePullSoon({ immediate: true, reason: 'test.timer-unavailable' });
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(runs, 1);
+  assert.deepEqual(reports, ['cloudSync.mainRow.pull.scheduleTimer']);
+});
+
+test('cloud sync main-row pull reports scheduled rejections without leaking an unhandled promise', async () => {
+  const reports: string[] = [];
+  let scheduled: (() => void) | null = null;
+  const flow = createCloudSyncMainRowPullFlow({
+    setTimeoutFn(handler) {
+      scheduled = handler;
+      return { handler } as any;
+    },
+    clearTimeoutFn: () => undefined,
+    suppressRef: { v: false },
+    isPushInFlight: () => false,
+    runPullRemote: async () => {
+      throw new Error('remote pull failed');
+    },
+    reportFailure: operation => reports.push(operation),
+  });
+
+  flow.schedulePullSoon({ immediate: true, reason: 'test.rejection' });
+  assert.ok(scheduled);
+  scheduled!();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.deepEqual(reports, ['cloudSync.mainRow.pull.runScheduled']);
+});
+
+test('cloud sync main-row pull keeps running when diagnostics or timer cleanup fail', async () => {
+  const reports: string[] = [];
+  const timers: Array<() => void> = [];
+  let runs = 0;
+  const flow = createCloudSyncMainRowPullFlow({
+    setTimeoutFn(handler) {
+      timers.push(handler);
+      return { handler } as any;
+    },
+    clearTimeoutFn() {
+      throw new Error('clear failed');
+    },
+    suppressRef: { v: false },
+    diag() {
+      throw new Error('diag failed');
+    },
+    isPushInFlight: () => false,
+    runPullRemote: async () => {
+      runs += 1;
+    },
+    reportFailure: operation => reports.push(operation),
+  });
+
+  flow.schedulePullSoon({ delayMs: 50, reason: 'first' });
+  flow.schedulePullSoon({ immediate: true, reason: 'second' });
+  assert.equal(timers.length, 2);
+  timers[1]!();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(runs, 1);
+  assert.deepEqual(reports, ['cloudSync.mainRow.pull.clearTimer', 'cloudSync.mainRow.pull.publishDiag']);
 });

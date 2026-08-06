@@ -41,6 +41,9 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     clearTimeoutFn: args.clearTimeoutFn,
     suppressRef: args.suppressRef,
     diag: args.diag,
+    reportFailure: (operation, error) => {
+      _cloudSyncReportNonFatal(args.App, operation, error, { throttleMs: 8000 });
+    },
     isPushInFlight: state.isPushInFlight,
     hasPendingPushWork: () => pushFlowRef?.hasPendingPushWork() ?? false,
     runPullRemote: isInitial => remoteOpsRef?.pullOnce(isInitial) ?? Promise.resolve(),

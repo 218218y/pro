@@ -697,12 +697,15 @@ export function createCloudCollectionsRepository(args: {
     return failures;
   };
 
+  const cloneCommittedEnvelope = (envelope: CloudCollectionsEnvelope): CloudCollectionsEnvelope =>
+    JSON.parse(JSON.stringify(envelope)) as CloudCollectionsEnvelope;
+
   const notifyCommitted = (envelope: CloudCollectionsEnvelope): CloudCollectionsCommitResult['warnings'] => {
     const warnings: CloudCollectionsCommitResult['warnings'] = [];
     const committedListeners = Array.from(listeners);
     for (let observerIndex = 0; observerIndex < committedListeners.length; observerIndex += 1) {
       try {
-        committedListeners[observerIndex]?.(envelope);
+        committedListeners[observerIndex]?.(cloneCommittedEnvelope(envelope));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         warnings.push({ kind: 'observer_failure', observerIndex, message });

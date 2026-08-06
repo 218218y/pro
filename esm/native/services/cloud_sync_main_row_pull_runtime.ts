@@ -21,12 +21,25 @@ export function createCloudSyncMainRowPullFlow(
 ): CloudSyncMainRowPullFlow {
   const state = createCloudSyncMainRowPullMutableState();
   const diag = args.diag || (() => undefined);
+  const reportFailure = (operation: string, error: unknown): void => {
+    if (typeof args.reportFailure !== 'function') return;
+    try {
+      args.reportFailure(operation, error);
+    } catch {
+      return;
+    }
+  };
 
   const clearPendingPull = (): void => {
-    if (!state.pullSoonTimer) return;
-    args.clearTimeoutFn(state.pullSoonTimer);
+    const timer = state.pullSoonTimer;
     state.pullSoonTimer = null;
     state.pullSoonDueAt = 0;
+    if (!timer) return;
+    try {
+      args.clearTimeoutFn(timer);
+    } catch (error) {
+      reportFailure('cloudSync.mainRow.pull.clearTimer', error);
+    }
   };
 
   const readActivePullBlocker = (): PullFollowUpBlocker | null => {
@@ -47,12 +60,30 @@ export function createCloudSyncMainRowPullFlow(
     clearPendingPull();
     if (state.pullInFlight) return state.pullInFlight;
     clearCloudSyncMainRowPendingPullDelays(state);
-    const pull = Promise.resolve(args.runPullRemote(isInitial)).finally(() => {
+    let remotePull: Promise<void>;
+    try {
+      remotePull = Promise.resolve(args.runPullRemote(isInitial));
+    } catch (error) {
+      remotePull = Promise.reject(error);
+    }
+    const pull = remotePull.finally(() => {
       if (state.pullInFlight === pull) state.pullInFlight = null;
       flushPendingPullAfterFlights();
     });
     state.pullInFlight = pull;
     return pull;
+  };
+
+  const runScheduledPull = (): void => {
+    try {
+      publishCloudSyncMainRowPendingPullDiag(state, diag);
+    } catch (error) {
+      reportFailure('cloudSync.mainRow.pull.publishDiag', error);
+    }
+    resetCloudSyncMainRowPendingPullRequestState(state);
+    void runPullOnce(false).catch(error => {
+      reportFailure('cloudSync.mainRow.pull.runScheduled', error);
+    });
   };
 
   const queuePullSoon = (opts?: MainRowPullRequestOptions, rememberReason = true): void => {
@@ -67,19 +98,25 @@ export function createCloudSyncMainRowPullFlow(
     if (state.pullSoonTimer && state.pullSoonDueAt > 0 && state.pullSoonDueAt <= dueAt) return;
     clearPendingPull();
     state.pullSoonDueAt = dueAt;
-    state.pullSoonTimer = args.setTimeoutFn(() => {
+    try {
+      state.pullSoonTimer = args.setTimeoutFn(() => {
+        state.pullSoonTimer = null;
+        state.pullSoonDueAt = 0;
+        if (args.suppressRef.v) {
+          clearCloudSyncMainRowPendingPullDelays(state);
+          resetCloudSyncMainRowPendingPullRequestState(state);
+          return;
+        }
+        if (parkPullUntilFlightsSettle(0)) return;
+        runScheduledPull();
+      }, delayMs);
+    } catch (error) {
       state.pullSoonTimer = null;
       state.pullSoonDueAt = 0;
-      if (args.suppressRef.v) {
-        clearCloudSyncMainRowPendingPullDelays(state);
-        resetCloudSyncMainRowPendingPullRequestState(state);
-        return;
-      }
+      reportFailure('cloudSync.mainRow.pull.scheduleTimer', error);
       if (parkPullUntilFlightsSettle(0)) return;
-      publishCloudSyncMainRowPendingPullDiag(state, diag);
-      resetCloudSyncMainRowPendingPullRequestState(state);
-      void runPullOnce(false);
-    }, delayMs);
+      runScheduledPull();
+    }
   };
 
   const flushPendingPullAfterFlights = (): void => {

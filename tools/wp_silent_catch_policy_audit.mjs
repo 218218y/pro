@@ -15,7 +15,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 19,
   platform: 62,
   runtime: 127,
-  services: 116,
+  services: 113,
   ui: 211,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -63,6 +63,11 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/edit_state_sync.ts',
   'esm/native/runtime/edit_state_access.ts',
   'esm/native/runtime/dimension_sync_coalescer.ts',
+  'esm/native/services/cloud_sync_conflict_store.ts',
+  'esm/native/services/cloud_sync_install_lifecycle_runtime.ts',
+  'esm/native/services/cloud_sync_main_row_pull_runtime.ts',
+  'esm/native/services/cloud_sync_main_row_remote_pull.ts',
+  'esm/native/services/cloud_sync_owner_context_status_publication_runtime.ts',
   'esm/native/ui/react/actions/modes_actions.ts',
 ]);
 

@@ -143,3 +143,30 @@ test('cloud sync owner status publisher owns subscriber fanout, disposal, and er
   publisher.publishStatus();
   assert.deepEqual(seen, [12]);
 });
+
+test('cloud sync owner status publisher isolates subscriber snapshots from owner state and peer subscribers', () => {
+  const App = createApp();
+  const runtimeStatus = createRuntimeStatus();
+  runtimeStatus.lastError = 'canonical-error';
+  const seen: Array<{ lastError: string; room: string }> = [];
+  const publisher = createCloudSyncOwnerStatusPublisher({
+    App,
+    runtimeStatus: runtimeStatus as any,
+    publicationEpoch: 1,
+    reportNonFatal: () => undefined,
+  });
+
+  publisher.subscribeRuntimeStatus(status => {
+    status.lastError = 'mutated-by-first-subscriber';
+    status.room = 'mutated-room';
+  });
+  publisher.subscribeRuntimeStatus(status => {
+    seen.push({ lastError: status.lastError, room: status.room });
+  });
+
+  publisher.publishStatus();
+
+  assert.deepEqual(seen, [{ lastError: 'canonical-error', room: 'room-a' }]);
+  assert.equal(runtimeStatus.lastError, 'canonical-error');
+  assert.equal(runtimeStatus.room, 'room-a');
+});

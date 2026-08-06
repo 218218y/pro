@@ -4,6 +4,7 @@ import { normalizeUnknownErrorInfo } from '../runtime/error_normalization.js';
 import { addCloudSyncCleanup, runCloudSyncInitialPulls } from './cloud_sync_owner_support.js';
 import { type CloudSyncInstallLifecycleArgs } from './cloud_sync_install_lifecycle_shared.js';
 import { prepareCloudSyncInstallLifecycle } from './cloud_sync_install_lifecycle_runtime_setup.js';
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 
 function toCloudSyncDiagPayload(error: unknown): CloudSyncDiagPayload {
   if (error === null) return null;
@@ -67,10 +68,14 @@ export async function installCloudSyncOwnerLifecycle(args: CloudSyncInstallLifec
         yieldBetweenPulls,
       }),
     onError: error => {
+      _cloudSyncReportNonFatal(args.App, 'cloudSync.initialPulls', error, { throttleMs: 8000 });
       try {
         args.ownerContext.diag('initialPulls.error', toCloudSyncDiagPayload(error));
-      } catch {
-        // Non-fatal: lifecycle should stay installed even when diagnostics fail.
+      } catch (diagError) {
+        _cloudSyncReportNonFatal(args.App, 'cloudSync.initialPulls.diag', diagError, {
+          throttleMs: 8000,
+          noConsole: true,
+        });
       }
     },
   });

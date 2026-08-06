@@ -127,7 +127,15 @@ export function createCloudSyncOwnerGatewayIo(args: {
   let expiredPrivateRoom = '';
   let lastCredentialFailure: CloudSyncGatewayFailure | null = null;
   const conflictStore = args.storage
-    ? createCloudSyncConflictStore({ storage: args.storage, storeId: cfg.storeId })
+    ? createCloudSyncConflictStore({
+        storage: args.storage,
+        storeId: cfg.storeId,
+        reportFailure: failure => {
+          _cloudSyncReportNonFatal(App, `conflict.store.${failure.operation}`, failure.error, {
+            throttleMs: 8000,
+          });
+        },
+      })
     : null;
   const navigatorValue = getNavigatorMaybe(App);
   const conflictResolutionLock = navigatorValue
@@ -176,18 +184,8 @@ export function createCloudSyncOwnerGatewayIo(args: {
     runtimeStatus.lastError = `conflict:${activeConflict.keys.join(',') || 'revision'}`;
   }
 
-  const reportConflictPersistenceFailure = (op: 'write' | 'clear'): void => {
-    _cloudSyncReportNonFatal(
-      App,
-      `conflict.persistence.${op}`,
-      new Error(`Cloud Sync conflict persistence ${op} failed`),
-      { throttleMs: 8000 }
-    );
-  };
-
   const persistConflict = (conflict: CloudSyncConflictRecord): boolean => {
     const persisted = !conflictStore || conflictStore.write(conflict);
-    if (!persisted) reportConflictPersistenceFailure('write');
     if (persisted && conflictStore && conflict.projectionAvailable) {
       const stored = conflictStore.read(conflict.room);
       if (stored.kind === 'record' && !stored.conflict.projectionAvailable) {
@@ -380,21 +378,38 @@ export function createCloudSyncOwnerGatewayIo(args: {
 
   const isMainCollectionsRoom = (room: string): boolean => room === rooms.currentRoom();
 
-  const clearConflictStatus = (room: string, expectedConflictId?: string): void => {
+  const clearConflictStatus = (
+    room: string,
+    expectedConflictId?: string,
+    durableResolutionRecorded = false
+  ): boolean => {
     const conflict = activeConflict;
-    if (!conflict || conflict.room !== room) return;
-    if (expectedConflictId && conflict.conflictId !== expectedConflictId) return;
+    if (!conflict || conflict.room !== room) return true;
+    if (expectedConflictId && conflict.conflictId !== expectedConflictId) return false;
     const cleared = !conflictStore || conflictStore.clear(room, conflict);
-    if (!cleared) {
-      reportConflictPersistenceFailure('clear');
+    if (!durableResolutionRecorded && !cleared) {
+      conflict.state = 'awaiting-resolution';
+      activeConflict = conflict;
+      runtimeStatus.conflict = toConflictStatus(conflict);
+      runtimeStatus.lastError = 'conflict:persistence-finalize';
+      publishStatus();
+      return false;
     }
     activeConflict = null;
     activeConflictBase = null;
     activeConflictStoreObserved = false;
     delete runtimeStatus.conflict;
-    if (!cleared) runtimeStatus.lastError = 'conflict:persistence-clear';
-    else if (runtimeStatus.lastError.startsWith('conflict:')) runtimeStatus.lastError = '';
+    if (runtimeStatus.lastError.startsWith('conflict:')) runtimeStatus.lastError = '';
     publishStatus();
+    return true;
+  };
+
+  const finalizeConflictStatus = (room: string, expectedConflictId?: string): boolean => {
+    const conflict = activeConflict;
+    if (!conflict || conflict.room !== room) return true;
+    if (expectedConflictId && conflict.conflictId !== expectedConflictId) return false;
+    const resolvedPersisted = publishConflictState(conflict, 'resolved');
+    return clearConflictStatus(room, expectedConflictId, resolvedPersisted);
   };
 
   const publishConflictStatus = (args: {
@@ -440,7 +455,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
   const publishConflictState = (
     conflict: CloudSyncConflictRecord,
     state: CloudSyncConflictRecord['state']
-  ): void => {
+  ): boolean => {
     conflict.state = state;
     activeConflict = conflict;
     const persisted = persistConflict(conflict);
@@ -450,6 +465,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
       ? `conflict:${conflict.keys.join(',') || 'revision'}`
       : 'conflict:persistence-write';
     publishStatus();
+    return persisted;
   };
 
   const reconcileStoredConflict = (room: string, forceLockedReread = false): boolean => {
@@ -593,7 +609,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
       if (first.ok === true) {
         publishCredentialStatus(credential);
         cacheRow(first.row);
-        clearConflictStatus(roomIn);
+        finalizeConflictStatus(roomIn);
         return first;
       }
       if (first.conflict !== true) {
@@ -634,7 +650,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
       if (retry.ok === true) {
         cacheRow(retry.row);
         publishCredentialStatus(credential);
-        clearConflictStatus(roomIn);
+        finalizeConflictStatus(roomIn);
       } else if (retry.conflict === true) {
         const conflictKeys = retry.conflictKeys?.length ? retry.conflictKeys : ['revision'];
         cacheRow(retry.row);
@@ -791,8 +807,19 @@ export function createCloudSyncOwnerGatewayIo(args: {
               adoption: Extract<CloudSyncRemoteAdoptionResult, { ok: true }>
             ): CloudSyncConflictResolutionResult => {
               publishCredentialStatus(credential);
-              publishConflictState(conflict, 'resolved');
-              clearConflictStatus(roomIn, conflict.conflictId);
+              if (!finalizeConflictStatus(roomIn, conflict.conflictId)) {
+                return {
+                  ok: false,
+                  resolution,
+                  reason: 'write',
+                  failure: {
+                    kind: 'server',
+                    status: 500,
+                    code: 'conflict_persistence_finalize_failed',
+                  },
+                  conflict: toConflictStatus(conflict),
+                };
+              }
               return {
                 ok: true,
                 resolution,

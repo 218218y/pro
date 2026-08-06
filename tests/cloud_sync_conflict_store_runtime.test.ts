@@ -82,3 +82,64 @@ test('cloud conflict clear replaces a payload projection with a minimal tombston
   assert.equal('fields' in tombstone, false);
   assert.equal(store.read('room-a').kind, 'missing');
 });
+
+test('cloud conflict persistence reports rejected and exceptional storage operations without throwing', () => {
+  const failures: Array<{ operation: string; room: string; error: unknown }> = [];
+  let readThrows = true;
+  let removeThrows = true;
+  const storage = {
+    getString() {
+      if (readThrows) throw new Error('read unavailable');
+      return null;
+    },
+    setString() {
+      return false;
+    },
+    remove() {
+      if (removeThrows) throw new Error('remove unavailable');
+      return false;
+    },
+  };
+  const store = createCloudSyncConflictStore({
+    storage,
+    storeId: 'store-a',
+    reportFailure: failure => failures.push(failure),
+  });
+  const conflict = createConflict('small');
+
+  assert.equal(store.read('room-a').kind, 'corrupt');
+  readThrows = false;
+  assert.equal(store.write(conflict), false);
+  assert.equal(store.clear('room-a', conflict), false);
+
+  assert.deepEqual(
+    failures.map(failure => [failure.operation, failure.room]),
+    [
+      ['read', 'room-a'],
+      ['write', 'room-a'],
+      ['clear-remove', 'room-a'],
+      ['clear-tombstone', 'room-a'],
+    ]
+  );
+  removeThrows = false;
+});
+
+test('cloud conflict persistence isolates a failing failure reporter', () => {
+  const store = createCloudSyncConflictStore({
+    storage: {
+      getString() {
+        throw new Error('read unavailable');
+      },
+      setString() {
+        return false;
+      },
+    },
+    storeId: 'store-a',
+    reportFailure() {
+      throw new Error('reporter unavailable');
+    },
+  });
+
+  assert.equal(store.read('room-a').kind, 'corrupt');
+  assert.equal(store.write(createConflict('small')), false);
+});

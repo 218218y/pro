@@ -2,7 +2,7 @@ import type { AppContainer, CloudSyncRuntimeStatus } from '../../../types';
 
 import { ensureCloudSyncServiceState } from '../runtime/cloud_sync_access.js';
 
-import { buildRuntimeStatusSnapshotKey } from './cloud_sync_support.js';
+import { buildRuntimeStatusSnapshotKey, cloneRuntimeStatus } from './cloud_sync_support.js';
 import { isCloudSyncPublicationEpochCurrent } from './cloud_sync_install_support.js';
 import { installCloudSyncStatusSurface, isCloudSyncStatusSurfaceFresh } from './cloud_sync_status_install.js';
 import type { CloudSyncReportNonFatal } from './cloud_sync_owner_context_runtime_shared.js';
@@ -76,7 +76,7 @@ export function createCloudSyncOwnerStatusPublisher(args: {
     }
     for (const subscriber of statusSubscribers) {
       try {
-        subscriber(runtimeStatus);
+        subscriber(cloneRuntimeStatus(runtimeStatus));
       } catch (error) {
         reportNonFatal(App, 'diag.runtimeStatusSubscriber', error, { throttleMs: 4000 });
       }

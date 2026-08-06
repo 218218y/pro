@@ -1465,3 +1465,89 @@ test('owner gateway blocks repeated reads until the rate-limit retry deadline', 
   assert.equal(runtimeStatus.credential.state, 'rate-limited');
   assert.equal(runtimeStatus.credential.retryAt > Date.now(), true);
 });
+
+test('owner gateway fails closed when conflict resolution cannot persist either resolved state or tombstone', async () => {
+  const values = new Map<string, string>();
+  let storageWritable = true;
+  const storage = {
+    getString(key: unknown) {
+      return values.get(String(key)) || null;
+    },
+    setString(key: unknown, value: unknown) {
+      if (!storageWritable) return false;
+      values.set(String(key), String(value));
+      return true;
+    },
+    remove(key: unknown) {
+      if (!storageWritable) return false;
+      return values.delete(String(key));
+    },
+  };
+  let readCount = 0;
+  const fetch = async (_url: string, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body || '{}')) as RequestBody;
+    if (body.action === 'read') {
+      readCount += 1;
+      return response(200, {
+        ok: true,
+        row: {
+          room: 'room_a',
+          payload: { sketchHash: readCount === 1 ? 'base' : 'remote' },
+          revision: readCount === 1 ? 1 : 2,
+          updated_at: '2026-07-13T08:00:02.000Z',
+          updated_by: 'client-b',
+        },
+      });
+    }
+    return response(409, {
+      ok: false,
+      code: 'revision_conflict',
+      row: {
+        room: 'room_a',
+        payload: { sketchHash: 'remote' },
+        revision: 2,
+        updated_at: '2026-07-13T08:00:02.000Z',
+        updated_by: 'client-b',
+      },
+    });
+  };
+  const runtimeStatus = createRuntimeStatus() as any;
+  const io = createCloudSyncOwnerGatewayIo({
+    App: { deps: { browser: { fetch } } } as any,
+    cfg,
+    gatewayUrl: 'gateway',
+    rooms: createRooms(),
+    clientId: 'client-local',
+    runtimeStatus,
+    publishStatus: () => {},
+    storage,
+  });
+  assert.ok(io);
+
+  await io.getRow('gateway', 'anon', 'room_a');
+  const opened = await io.upsertRow('gateway', 'anon', 'room_a', { sketchHash: 'local' });
+  assert.equal(opened.ok, false);
+  assert.equal(runtimeStatus.conflict?.state, 'awaiting-resolution');
+  storageWritable = false;
+
+  const result = await io.resolveConflict(
+    'room_a',
+    'use-remote',
+    async () => ({ ok: true, uiRefreshWarning: false }),
+    () => ({ payload: { sketchHash: 'local' }, revision: 7 })
+  );
+
+  assert.equal(result.ok, false);
+  if (result.ok === false) {
+    assert.equal(result.reason, 'write');
+    if (result.reason === 'write') {
+      assert.equal(result.failure?.code, 'conflict_persistence_finalize_failed');
+    }
+  }
+  assert.equal(runtimeStatus.conflict?.state, 'awaiting-resolution');
+  assert.equal(runtimeStatus.lastError, 'conflict:persistence-finalize');
+  const persisted = JSON.parse(values.get('wp_cloud_sync_conflict:v1:bargig:room_a') || '{}') as {
+    state?: string;
+  };
+  assert.equal(persisted.state, 'awaiting-resolution');
+});
