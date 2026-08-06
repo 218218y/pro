@@ -59,13 +59,27 @@ export function createKernelEditStateSystem(args: CreateKernelEditStateSystemArg
       const opts = asRecord(optsRaw, {});
 
       try {
-        resetAllEditModesViaService(args.App);
+        if (!resetAllEditModesViaService(args.App)) {
+          args.reportNonFatal(
+            'applyEditState.resetAllEditModes',
+            new Error('[kernel_edit_state] edit-state reset was rejected'),
+            { throttleMs: 8000 }
+          );
+          return;
+        }
       } catch (_eResetModes) {
         args.reportNonFatal('applyEditState.resetAllEditModes', _eResetModes, { throttleMs: 8000 });
       }
 
       try {
-        setModePrimary(args.App, primary, opts, { source: 'applyEditState' });
+        const result = setModePrimary(args.App, primary, opts, { source: 'applyEditState' });
+        if (result === false) {
+          args.reportNonFatal(
+            'applyEditState.storeSetMode',
+            new Error('[kernel_edit_state] mode write was rejected'),
+            { throttleMs: 6000 }
+          );
+        }
       } catch (_eStoreSetMode) {
         args.reportNonFatal('applyEditState.storeSetMode', _eStoreSetMode, { throttleMs: 6000 });
       }

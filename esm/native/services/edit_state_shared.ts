@@ -15,6 +15,7 @@ import { getTools } from '../runtime/service_access.js';
 import { getMetaActionFn } from '../runtime/actions_access_domains.js';
 import { getDimsMFromPlatform } from '../runtime/platform_access.js';
 import { getDocumentMaybe } from '../runtime/api.js';
+import { reportEditStateNonFatal } from './edit_state_observability.js';
 
 export type AppLike = AppContainer | UnknownRecord | null | undefined;
 
@@ -50,7 +51,8 @@ export function readPreviousMode(App: AppContainer, noneMode: string): string {
   try {
     const modeState = readModeStateFromStore(getStoreSurfaceMaybe(App));
     return typeof modeState.primary === 'string' ? modeState.primary : noneMode;
-  } catch {
+  } catch (error) {
+    reportEditStateNonFatal(App, 'read.previousMode', error);
     return noneMode;
   }
 }
@@ -60,11 +62,15 @@ export function asDrawerOpenId(value: unknown): string | number | null {
   return typeof value === 'string' || typeof value === 'number' ? value : null;
 }
 
-export function readPreviousOpenDrawerId(tools: DrawerToolsLike | null): string | number | null {
+export function readPreviousOpenDrawerId(
+  App: AppContainer,
+  tools: DrawerToolsLike | null
+): string | number | null {
   try {
     if (typeof tools?.getDrawersOpenId !== 'function') return null;
     return asDrawerOpenId(tools.getDrawersOpenId());
-  } catch {
+  } catch (error) {
+    reportEditStateNonFatal(App, 'read.previousOpenDrawerId', error);
     return null;
   }
 }
@@ -77,8 +83,8 @@ export function buildDimsSyncMeta(App: AppContainer): UnknownRecord {
   if (typeof transient === 'function') {
     try {
       return transient(undefined, 'ui:dimsSync');
-    } catch {
-      // ignore
+    } catch (error) {
+      reportEditStateNonFatal(App, 'sync.buildMeta', error);
     }
   }
   return { source: 'ui:dimsSync' };
@@ -99,21 +105,23 @@ export function readWardrobeUiSnapshot(App: AppContainer): {
   try {
     const nextDoors = readCanonicalUiRawIntFromSnapshot(safeUi, 'doors', -999);
     if (Number.isFinite(nextDoors) && nextDoors !== -999) doors = nextDoors;
-  } catch {
+  } catch (error) {
+    reportEditStateNonFatal(App, 'sync.readDoors', error);
     doors = null;
   }
 
   return { safeUi, raw, dims, doors };
 }
 
-function readActiveElementAttr(value: unknown, name: string): string {
+function readActiveElementAttr(App: AppContainer, value: unknown, name: string): string {
   if (!value || typeof value !== 'object') return '';
   const getAttribute = Reflect.get(value, 'getAttribute');
   if (typeof getAttribute !== 'function') return '';
   try {
     const raw = Reflect.apply(getAttribute, value, [name]);
     return typeof raw === 'string' ? raw : '';
-  } catch {
+  } catch (error) {
+    reportEditStateNonFatal(App, 'sync.readActiveElementAttribute', error);
     return '';
   }
 }
@@ -122,9 +130,10 @@ export function readActiveDimensionEditId(App: AppContainer): string {
   try {
     const doc = getDocumentMaybe(App);
     const activeElement = doc?.activeElement;
-    const activeId = readActiveElementAttr(activeElement, 'data-wp-active-id');
+    const activeId = readActiveElementAttr(App, activeElement, 'data-wp-active-id');
     return activeId.trim();
-  } catch {
+  } catch (error) {
+    reportEditStateNonFatal(App, 'sync.readActiveDimensionEditId', error);
     return '';
   }
 }

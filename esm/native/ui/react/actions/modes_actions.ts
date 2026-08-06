@@ -8,8 +8,7 @@ import {
   enterPrimaryMode as nativeEnterPrimaryMode,
   exitPrimaryMode as nativeExitPrimaryMode,
 } from '../../modes.js';
-import { resetAllEditModesViaService } from '../../../services/api.js';
-import { readStoreStateMaybe } from '../../../services/api.js';
+import { readStoreStateMaybe, reportError, resetAllEditModesViaService } from '../../../services/api.js';
 
 type StoreStateLike = {
   mode?: unknown;
@@ -67,11 +66,25 @@ function getNativeModeApi(): NativeModeApi {
   };
 }
 
-function resetAllEditModes(app: AppContainer): void {
+function reportModeActionFailure(app: AppContainer, op: string, error: unknown): void {
+  reportError(
+    app,
+    error,
+    { where: 'native/ui/react/actions/modes_actions', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
+
+function resetAllEditModes(app: AppContainer): boolean {
   try {
-    resetAllEditModesViaService(app);
-  } catch {
-    // ignore
+    const reset = resetAllEditModesViaService(app);
+    if (!reset) {
+      reportModeActionFailure(app, 'resetAllEditModes.rejected', new Error('Edit-state reset was rejected'));
+    }
+    return reset;
+  } catch (error) {
+    reportModeActionFailure(app, 'resetAllEditModes.ownerRejected', error);
+    return false;
   }
 }
 
@@ -93,19 +106,19 @@ export function getModeState(app: AppContainer): UnknownRecord {
 }
 
 export function enterPrimaryMode(app: AppContainer, modeId: string, opts?: UnknownRecord): void {
-  resetAllEditModes(app);
+  if (!resetAllEditModes(app)) return;
 
   try {
     getNativeModeApi().enter(app, modeId, opts || {});
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModeActionFailure(app, 'enterPrimaryMode.ownerRejected', error);
   }
 }
 
 export function exitPrimaryMode(app: AppContainer, expectedMode?: string, opts?: UnknownRecord): void {
   try {
     getNativeModeApi().exit(app, expectedMode, opts || {});
-  } catch {
-    // ignore
+  } catch (error) {
+    reportModeActionFailure(app, 'exitPrimaryMode.ownerRejected', error);
   }
 }

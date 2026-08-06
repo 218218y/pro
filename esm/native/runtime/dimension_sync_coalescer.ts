@@ -1,6 +1,7 @@
 import type { ActionMetaLike, AppContainer, TimeoutHandleLike } from '../../../types';
 
 import { getBrowserTimers } from './api.js';
+import { reportError } from './errors.js';
 import { patchRuntime } from './runtime_write_access.js';
 
 export type DimensionRuntimePatch = {
@@ -24,6 +25,19 @@ type DimensionRuntimeSyncState = {
 
 const DIMENSION_RUNTIME_SYNC_DELAY_MS = 90;
 const dimensionRuntimeSyncStates = new WeakMap<object, DimensionRuntimeSyncState>();
+
+function reportDimensionRuntimeSyncFailure(App: unknown, op: string, error: unknown): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/dimension_sync_coalescer', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
+
+function createRuntimePatchRejectedError(): Error {
+  return new Error('[dimension_sync] runtime.patch rejected the dimension synchronization');
+}
 
 export function isDimensionBurstActiveId(value: unknown): boolean {
   const id = typeof value === 'string' ? value.trim() : '';
@@ -61,14 +75,35 @@ function getSyncState(App: AppContainer): DimensionRuntimeSyncState {
   return state;
 }
 
-function clearSyncTimer(App: AppContainer, state: DimensionRuntimeSyncState): void {
-  if (typeof state.timer === 'undefined') return;
-  try {
-    getBrowserTimers(App).clearTimeout(state.timer);
-  } catch {
-    // ignore
-  }
+function clearSyncTimer(App: AppContainer, state: DimensionRuntimeSyncState): boolean {
+  if (typeof state.timer === 'undefined') return true;
+  const timer = state.timer;
   state.timer = undefined;
+  try {
+    getBrowserTimers(App).clearTimeout(timer);
+    return true;
+  } catch (error) {
+    reportDimensionRuntimeSyncFailure(App, 'timer.clear', error);
+    return false;
+  }
+}
+
+function applyRuntimePatch(
+  App: AppContainer,
+  patch: DimensionRuntimePatch,
+  meta: ActionMetaLike | undefined
+): boolean {
+  try {
+    const result = patchRuntime(App, patch, meta);
+    if (result === false) {
+      reportDimensionRuntimeSyncFailure(App, 'runtimePatch.rejected', createRuntimePatchRejectedError());
+      return false;
+    }
+    return true;
+  } catch (error) {
+    reportDimensionRuntimeSyncFailure(App, 'runtimePatch.ownerRejected', error);
+    return false;
+  }
 }
 
 function flushState(App: AppContainer, state: DimensionRuntimeSyncState): boolean {
@@ -79,8 +114,7 @@ function flushState(App: AppContainer, state: DimensionRuntimeSyncState): boolea
   const meta = state.meta;
   state.patch = null;
   state.meta = undefined;
-  patchRuntime(App, patch, meta);
-  return true;
+  return applyRuntimePatch(App, patch, meta);
 }
 
 export function flushDimensionRuntimeSync(App: AppContainer): boolean {
@@ -103,8 +137,7 @@ export function syncDimensionRuntimePatch(
   opts?: { activeId?: unknown; delayMs?: number }
 ): DimensionRuntimeSyncResult {
   if (!isObjectLike(App)) {
-    patchRuntime(App, patch, meta);
-    return { scheduled: false, flushed: true };
+    return { scheduled: false, flushed: applyRuntimePatch(App, patch, meta) };
   }
 
   const state = getSyncState(App);
@@ -112,8 +145,7 @@ export function syncDimensionRuntimePatch(
     clearSyncTimer(App, state);
     state.patch = null;
     state.meta = undefined;
-    patchRuntime(App, patch, meta);
-    return { scheduled: false, flushed: true };
+    return { scheduled: false, flushed: applyRuntimePatch(App, patch, meta) };
   }
 
   state.patch = clonePatch(patch);
@@ -121,8 +153,15 @@ export function syncDimensionRuntimePatch(
   state.token += 1;
   const token = state.token;
   clearSyncTimer(App, state);
-  state.timer = getBrowserTimers(App).setTimeout(() => {
-    flushDimensionRuntimeSyncToken(App, token);
-  }, readDelayMs(opts?.delayMs));
-  return { scheduled: true, flushed: false };
+
+  try {
+    state.timer = getBrowserTimers(App).setTimeout(() => {
+      flushDimensionRuntimeSyncToken(App, token);
+    }, readDelayMs(opts?.delayMs));
+    return { scheduled: true, flushed: false };
+  } catch (error) {
+    state.timer = undefined;
+    reportDimensionRuntimeSyncFailure(App, 'timer.schedule', error);
+    return { scheduled: false, flushed: flushState(App, state) };
+  }
 }

@@ -167,7 +167,10 @@ function commitPrimaryModeTransition(
   const uiPatch = readTransitionUiPatch(opts);
   const meta = readTransitionMeta(opts, fallbackSource);
   if (!uiPatch) {
-    setModePrimary(App, nextMode, modeOpts, meta);
+    const applied = setModePrimary(App, nextMode, modeOpts, meta);
+    if (applied === false) {
+      throw new Error('[WardrobePro] Primary mode transition was rejected by the canonical mode owner.');
+    }
     return;
   }
 
@@ -245,7 +248,10 @@ export function togglePrimaryModeImpl(App: AppLike, mode: string, opts: ModeActi
   const next = cur === mode ? NONE : mode;
 
   try {
-    setModePrimary(App, next, opts, { source: 'ui:modes:togglePrimaryMode' });
+    const applied = setModePrimary(App, next, opts, { source: 'ui:modes:togglePrimaryMode' });
+    if (applied === false) {
+      throw new Error('[WardrobePro] Primary mode toggle was rejected by the canonical mode owner.');
+    }
     applyModeOptsImpl(App, next, opts);
   } catch (err) {
     try {
@@ -273,13 +279,19 @@ export function enterPrimaryModeImpl(
 
   try {
     commitPrimaryModeTransition(App, nextMode, modeOpts, opts, 'ui:modes:enterPrimaryMode');
-    applyModeOptsImpl(App, nextMode, modeOpts);
   } catch (err) {
     try {
       reportError(App, err, 'ui.enterPrimaryMode');
     } catch (reportErr) {
       modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:enterPrimaryMode', reportErr);
     }
+    return;
+  }
+
+  try {
+    applyModeOptsImpl(App, nextMode, modeOpts);
+  } catch (err) {
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:applyModeOpts', err);
   }
 
   try {
@@ -321,16 +333,26 @@ export function exitPrimaryModeImpl(
   }
 
   if (shouldExit) {
+    let transitionSucceeded = false;
     try {
-      try {
-        commitPrimaryModeTransition(App, NONE, {}, opts, 'ui:modes:exitPrimaryMode');
-      } catch (_err) {
-        if (readTransitionUiPatch(opts)) throw _err;
-        resetAllEditModesViaService(App);
+      commitPrimaryModeTransition(App, NONE, {}, opts, 'ui:modes:exitPrimaryMode');
+      transitionSucceeded = true;
+    } catch (error) {
+      if (readTransitionUiPatch(opts)) {
+        modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:exitPrimaryMode', error);
+        return;
       }
+      transitionSucceeded = resetAllEditModesViaService(App);
+      if (!transitionSucceeded) {
+        modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:resetAllEditModesRejected', error);
+        return;
+      }
+    }
+
+    try {
       onPrimaryModeChanged(App, currentMode, NONE, {});
     } catch (err) {
-      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:exitPrimaryMode', err);
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:exitPrimaryModeChanged', err);
     }
     try {
       safeUpdateEditToast(App, null, false);

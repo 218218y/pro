@@ -176,8 +176,8 @@ test('[kernel-edit-state] kernel delegates edit-state capture/apply to dedicated
       /export interface KernelEditStateSystem \{/,
       /const captureEditState = \(\): KernelEditStateSnapshot => \{/,
       /const applyEditState = \(edit: unknown\): void => \{/,
-      /resetAllEditModesViaService\(args\.App\);/,
-      /setModePrimary\(args\.App, primary, opts, \{ source: 'applyEditState' \}\);/,
+      /!resetAllEditModesViaService\(args\.App\)/,
+      /const result = setModePrimary\(args\.App, primary, opts, \{ source: 'applyEditState' \}\);/,
     ],
     'kernel edit-state seam'
   );

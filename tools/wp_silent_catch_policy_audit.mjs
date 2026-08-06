@@ -14,9 +14,9 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   io: 4,
   kernel: 19,
   platform: 62,
-  runtime: 129,
-  services: 131,
-  ui: 214,
+  runtime: 127,
+  services: 116,
+  ui: 211,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,
@@ -56,6 +56,14 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/models_registry_storage_persistence.ts',
   'esm/native/services/models_registry_storage_state.ts',
   'esm/native/services/models_collections_transaction.ts',
+  'esm/native/services/edit_state_observability.ts',
+  'esm/native/services/edit_state_reset.ts',
+  'esm/native/services/edit_state_runtime.ts',
+  'esm/native/services/edit_state_shared.ts',
+  'esm/native/services/edit_state_sync.ts',
+  'esm/native/runtime/edit_state_access.ts',
+  'esm/native/runtime/dimension_sync_coalescer.ts',
+  'esm/native/ui/react/actions/modes_actions.ts',
 ]);
 
 function parserLanguage(file) {

@@ -46,6 +46,11 @@ test('edit_state_access heals a drifted resetAllEditModes slot back to the canon
         triggerRender: () => void 0,
       },
     },
+    actions: {
+      mode: {
+        set: () => calls.push('mode.set'),
+      },
+    },
     store: {
       getState: () => ({
         ui: {},

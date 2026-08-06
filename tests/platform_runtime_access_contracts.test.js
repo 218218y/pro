@@ -454,7 +454,7 @@ test('[platform-runtime] bundles route through canonical platform, notes, comman
       /ensureCommandsService\(App\)/,
       /getCommandsServiceMaybe\(App\)/,
       /runPlatformRenderFollowThrough\((?:App|app),\s*\{[\s\S]*ensureRenderLoop:\s*false[\s\S]*\}\)/,
-      /exitNotesDrawModeViaService\(App\)/,
+      /exitNotesDrawModeViaService\((?:App|app)\)/,
       /isNotesScreenDrawMode\(App\)/,
       /reportError\(App,\s*(?:e|err|error),\s*(?:''|'ui\\.(?:togglePrimaryMode|enterPrimaryMode)'|'builder\.buildWardrobe')\)/,
       /readAutosaveInfoFromStorage\(app\)/,

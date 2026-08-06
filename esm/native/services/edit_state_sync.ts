@@ -1,6 +1,10 @@
-import type { AppContainer, TimeoutHandleLike } from '../../../types';
+import type { ActionMetaLike, AppContainer, TimeoutHandleLike, UnknownRecord } from '../../../types';
 
-import { ensureBuilderBuildUi } from '../runtime/builder_service_access.js';
+import {
+  clearBuilderBuildUi,
+  ensureBuilderBuildUi,
+  getBuilderBuildUi,
+} from '../runtime/builder_service_access.js';
 import { isDimensionBurstActiveId, syncDimensionRuntimePatch } from '../runtime/dimension_sync_coalescer.js';
 import { getBrowserTimers } from '../runtime/api.js';
 
@@ -11,6 +15,17 @@ import {
   readActiveDimensionEditId,
   readWardrobeUiSnapshot,
 } from './edit_state_shared.js';
+import {
+  createEditStateOperationRejectedError,
+  reportEditStateNonFatal,
+} from './edit_state_observability.js';
+
+type DimensionRuntimePatch = {
+  wardrobeWidthM: number;
+  wardrobeHeightM: number;
+  wardrobeDepthM: number;
+  wardrobeDoorsCount?: number;
+};
 
 type DimensionBuildUiPatch = {
   width?: number;
@@ -20,100 +35,218 @@ type DimensionBuildUiPatch = {
   raw: Record<string, unknown>;
 };
 
-type DimensionBuildUiSyncState = {
-  timer: TimeoutHandleLike | undefined;
-  token: number;
-  patch: DimensionBuildUiPatch | null;
+type DimensionSyncTransaction = {
+  buildUiPatch: DimensionBuildUiPatch;
+  runtimePatch: DimensionRuntimePatch | null;
+  meta: ActionMetaLike | undefined;
 };
 
-const DIMENSION_BUILD_UI_SYNC_DELAY_MS = 90;
-const dimensionBuildUiSyncStates = new WeakMap<object, DimensionBuildUiSyncState>();
+type DimensionSyncState = {
+  timer: TimeoutHandleLike | undefined;
+  token: number;
+  transaction: DimensionSyncTransaction | null;
+};
+
+type PropertySnapshot = {
+  present: boolean;
+  value: unknown;
+};
+
+type BuilderBuildUiSnapshot = {
+  existed: boolean;
+  scalar: Record<'width' | 'height' | 'depth' | 'doors', PropertySnapshot>;
+  raw: Record<'width' | 'height' | 'depth' | 'doors', PropertySnapshot>;
+};
+
+const DIMENSION_SYNC_DELAY_MS = 90;
+const BUILD_UI_KEYS = Object.freeze(['width', 'height', 'depth', 'doors'] as const);
+const dimensionSyncStates = new WeakMap<object, DimensionSyncState>();
 
 function cloneBuildUiPatch(patch: DimensionBuildUiPatch): DimensionBuildUiPatch {
   return { ...patch, raw: { ...patch.raw } };
 }
 
-function getBuildUiSyncState(app: AppContainer): DimensionBuildUiSyncState {
-  let state = dimensionBuildUiSyncStates.get(app);
+function cloneRuntimePatch(patch: DimensionRuntimePatch | null): DimensionRuntimePatch | null {
+  return patch ? { ...patch } : null;
+}
+
+function cloneMeta(meta: ActionMetaLike | undefined): ActionMetaLike | undefined {
+  return meta ? { ...meta } : undefined;
+}
+
+function cloneTransaction(transaction: DimensionSyncTransaction): DimensionSyncTransaction {
+  return {
+    buildUiPatch: cloneBuildUiPatch(transaction.buildUiPatch),
+    runtimePatch: cloneRuntimePatch(transaction.runtimePatch),
+    meta: cloneMeta(transaction.meta),
+  };
+}
+
+function getDimensionSyncState(app: AppContainer): DimensionSyncState {
+  let state = dimensionSyncStates.get(app);
   if (!state) {
-    state = {
-      timer: undefined,
-      token: 0,
-      patch: null,
-    };
-    dimensionBuildUiSyncStates.set(app, state);
+    state = { timer: undefined, token: 0, transaction: null };
+    dimensionSyncStates.set(app, state);
   }
   return state;
 }
 
-function clearBuildUiSyncTimer(app: AppContainer, state: DimensionBuildUiSyncState): void {
-  if (typeof state.timer === 'undefined') return;
+function clearDimensionSyncTimer(app: AppContainer, state: DimensionSyncState): boolean {
+  if (typeof state.timer === 'undefined') return true;
+  const timer = state.timer;
+  state.timer = undefined;
   try {
-    getBrowserTimers(app).clearTimeout(state.timer);
-  } catch {
-    // ignore
-  }
-  state.timer = undefined;
-}
-
-function applyBuilderBuildUiPatch(app: AppContainer, patch: DimensionBuildUiPatch): void {
-  const buildUi = ensureBuilderBuildUi(app, 'services/edit_state.syncWardrobeState');
-  if (!buildUi) return;
-
-  const buildUiRaw = buildUi.raw || {};
-  if (typeof patch.width === 'number') buildUi.width = patch.width;
-  if (typeof patch.height === 'number') buildUi.height = patch.height;
-  if (typeof patch.depth === 'number') buildUi.depth = patch.depth;
-  if (typeof patch.doors === 'number') buildUi.doors = patch.doors;
-
-  const buildUiKeys: ReadonlyArray<'width' | 'height' | 'depth' | 'doors'> = [
-    'width',
-    'height',
-    'depth',
-    'doors',
-  ];
-  for (const key of buildUiKeys) {
-    const value = patch.raw[key];
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      buildUiRaw[key] = value;
-      continue;
-    }
-    if (value === null) buildUiRaw[key] = null;
+    getBrowserTimers(app).clearTimeout(timer);
+    return true;
+  } catch (error) {
+    reportEditStateNonFatal(app, 'sync.timer.clear', error);
+    return false;
   }
 }
 
-function flushBuildUiState(app: AppContainer, state: DimensionBuildUiSyncState): boolean {
-  clearBuildUiSyncTimer(app, state);
-  const patch = state.patch;
-  if (!patch) return false;
-  state.patch = null;
-  applyBuilderBuildUiPatch(app, patch);
-  return true;
+function snapshotProperty(record: object, key: PropertyKey): PropertySnapshot {
+  return {
+    present: Object.prototype.hasOwnProperty.call(record, key),
+    value: Reflect.get(record, key),
+  };
 }
 
-function flushBuildUiSyncToken(app: AppContainer, token: number): void {
-  const state = dimensionBuildUiSyncStates.get(app);
-  if (!state || state.token !== token) return;
-  state.timer = undefined;
-  void flushBuildUiState(app, state);
+function captureBuilderBuildUiSnapshot(app: AppContainer): BuilderBuildUiSnapshot {
+  const buildUi = getBuilderBuildUi(app);
+  const raw = buildUi?.raw && typeof buildUi.raw === 'object' ? buildUi.raw : {};
+  return {
+    existed: !!buildUi,
+    scalar: Object.fromEntries(
+      BUILD_UI_KEYS.map(key => [key, snapshotProperty(buildUi || {}, key)])
+    ) as Record<(typeof BUILD_UI_KEYS)[number], PropertySnapshot>,
+    raw: Object.fromEntries(BUILD_UI_KEYS.map(key => [key, snapshotProperty(raw, key)])) as Record<
+      (typeof BUILD_UI_KEYS)[number],
+      PropertySnapshot
+    >,
+  };
 }
 
-function syncDimensionBuildUiPatch(app: AppContainer, patch: DimensionBuildUiPatch, activeId: string): void {
-  const state = getBuildUiSyncState(app);
-  if (!isDimensionBurstActiveId(activeId)) {
-    clearBuildUiSyncTimer(app, state);
-    state.patch = null;
-    applyBuilderBuildUiPatch(app, patch);
+function restoreProperty(record: object, key: PropertyKey, snapshot: PropertySnapshot): void {
+  if (snapshot.present) {
+    Reflect.set(record, key, snapshot.value);
     return;
   }
+  Reflect.deleteProperty(record, key);
+}
 
-  state.patch = cloneBuildUiPatch(patch);
+function restoreBuilderBuildUiSnapshot(app: AppContainer, snapshot: BuilderBuildUiSnapshot): boolean {
+  try {
+    if (!snapshot.existed) return clearBuilderBuildUi(app) || getBuilderBuildUi(app) === null;
+
+    const buildUi = ensureBuilderBuildUi(app, 'services/edit_state.syncWardrobeState.rollback');
+    const raw = buildUi.raw || (buildUi.raw = {});
+    for (const key of BUILD_UI_KEYS) {
+      restoreProperty(buildUi, key, snapshot.scalar[key]);
+      restoreProperty(raw, key, snapshot.raw[key]);
+    }
+    return true;
+  } catch (error) {
+    reportEditStateNonFatal(app, 'sync.builder.rollback', error);
+    return false;
+  }
+}
+
+function applyBuilderBuildUiPatch(app: AppContainer, patch: DimensionBuildUiPatch): boolean {
+  try {
+    const buildUi = ensureBuilderBuildUi(app, 'services/edit_state.syncWardrobeState');
+    const buildUiRaw = buildUi.raw || (buildUi.raw = {});
+
+    if (typeof patch.width === 'number') buildUi.width = patch.width;
+    if (typeof patch.height === 'number') buildUi.height = patch.height;
+    if (typeof patch.depth === 'number') buildUi.depth = patch.depth;
+    if (typeof patch.doors === 'number') buildUi.doors = patch.doors;
+
+    for (const key of BUILD_UI_KEYS) {
+      const value = patch.raw[key];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        buildUiRaw[key] = value;
+        continue;
+      }
+      if (value === null) buildUiRaw[key] = null;
+    }
+    return true;
+  } catch (error) {
+    reportEditStateNonFatal(app, 'sync.builder.apply', error);
+    return false;
+  }
+}
+
+function applyDimensionSyncTransaction(app: AppContainer, transaction: DimensionSyncTransaction): boolean {
+  let snapshot: BuilderBuildUiSnapshot;
+  try {
+    snapshot = captureBuilderBuildUiSnapshot(app);
+  } catch (error) {
+    reportEditStateNonFatal(app, 'sync.builder.captureSnapshot', error);
+    return false;
+  }
+  if (!applyBuilderBuildUiPatch(app, transaction.buildUiPatch)) {
+    restoreBuilderBuildUiSnapshot(app, snapshot);
+    return false;
+  }
+
+  if (!transaction.runtimePatch) return true;
+
+  const runtimeResult = syncDimensionRuntimePatch(app, transaction.runtimePatch, transaction.meta, {
+    activeId: '',
+  });
+  if (runtimeResult.flushed) return true;
+
+  reportEditStateNonFatal(
+    app,
+    'sync.runtime.apply',
+    createEditStateOperationRejectedError('runtime dimension synchronization')
+  );
+  restoreBuilderBuildUiSnapshot(app, snapshot);
+  return false;
+}
+
+function flushDimensionSyncState(app: AppContainer, state: DimensionSyncState): boolean {
+  clearDimensionSyncTimer(app, state);
+  const transaction = state.transaction;
+  if (!transaction) return false;
+  state.transaction = null;
+  return applyDimensionSyncTransaction(app, transaction);
+}
+
+function flushDimensionSyncToken(app: AppContainer, token: number): void {
+  const state = dimensionSyncStates.get(app);
+  if (!state || state.token !== token) return;
+  state.timer = undefined;
+  void flushDimensionSyncState(app, state);
+}
+
+function scheduleDimensionSyncTransaction(
+  app: AppContainer,
+  transaction: DimensionSyncTransaction,
+  activeId: string
+): boolean {
+  const state = getDimensionSyncState(app);
+  if (!isDimensionBurstActiveId(activeId)) {
+    clearDimensionSyncTimer(app, state);
+    state.transaction = null;
+    return applyDimensionSyncTransaction(app, transaction);
+  }
+
+  state.transaction = cloneTransaction(transaction);
   state.token += 1;
   const token = state.token;
-  clearBuildUiSyncTimer(app, state);
-  state.timer = getBrowserTimers(app).setTimeout(() => {
-    flushBuildUiSyncToken(app, token);
-  }, DIMENSION_BUILD_UI_SYNC_DELAY_MS);
+  clearDimensionSyncTimer(app, state);
+
+  try {
+    state.timer = getBrowserTimers(app).setTimeout(() => {
+      flushDimensionSyncToken(app, token);
+    }, DIMENSION_SYNC_DELAY_MS);
+    return true;
+  } catch (error) {
+    state.timer = undefined;
+    reportEditStateNonFatal(app, 'sync.timer.schedule', error);
+    return flushDimensionSyncState(app, state);
+  }
 }
 
 function buildDimensionBuildUiPatch(
@@ -129,13 +262,7 @@ function buildDimensionBuildUiPatch(
   }
   if (typeof doors === 'number' && Number.isFinite(doors)) patch.doors = doors;
 
-  const buildUiKeys: ReadonlyArray<'width' | 'height' | 'depth' | 'doors'> = [
-    'width',
-    'height',
-    'depth',
-    'doors',
-  ];
-  for (const key of buildUiKeys) {
+  for (const key of BUILD_UI_KEYS) {
     const value = raw[key];
     if ((typeof value === 'number' && Number.isFinite(value)) || value === null) {
       patch.raw[key] = value;
@@ -144,57 +271,38 @@ function buildDimensionBuildUiPatch(
   return patch;
 }
 
-function syncBuilderBuildUi(
-  app: AppContainer,
+function buildDimensionRuntimePatch(
   dims: { w: number; h: number; d: number } | null,
-  doors: number | null,
-  raw: Record<string, unknown>,
-  activeId: string
-): void {
-  try {
-    syncDimensionBuildUiPatch(app, buildDimensionBuildUiPatch(dims, doors, raw), activeId);
-  } catch {
-    // ignore
-  }
+  doors: number | null
+): DimensionRuntimePatch | null {
+  if (!dims) return null;
+  const patch: DimensionRuntimePatch = {
+    wardrobeWidthM: dims.w,
+    wardrobeHeightM: dims.h,
+    wardrobeDepthM: dims.d,
+  };
+  if (typeof doors === 'number' && Number.isFinite(doors)) patch.wardrobeDoorsCount = doors;
+  return patch;
 }
 
-function syncRuntimeDims(
-  app: AppContainer,
-  dims: { w: number; h: number; d: number } | null,
-  doors: number | null,
-  activeId: string
-): void {
+export function syncWardrobeStateWithResult(App: AppLike): boolean {
+  const app = asApp(App);
+  if (!app) return false;
+
   try {
-    if (!dims) return;
-
-    const patch: {
-      wardrobeWidthM: number;
-      wardrobeHeightM: number;
-      wardrobeDepthM: number;
-      wardrobeDoorsCount?: number;
-    } = {
-      wardrobeWidthM: dims.w,
-      wardrobeHeightM: dims.h,
-      wardrobeDepthM: dims.d,
+    const { raw, dims, doors } = readWardrobeUiSnapshot(app);
+    const transaction: DimensionSyncTransaction = {
+      buildUiPatch: buildDimensionBuildUiPatch(dims, doors, raw as UnknownRecord),
+      runtimePatch: buildDimensionRuntimePatch(dims, doors),
+      meta: buildDimsSyncMeta(app),
     };
-    if (typeof doors === 'number' && Number.isFinite(doors)) patch.wardrobeDoorsCount = doors;
-
-    syncDimensionRuntimePatch(app, patch, buildDimsSyncMeta(app), { activeId });
-  } catch {
-    // ignore
+    return scheduleDimensionSyncTransaction(app, transaction, readActiveDimensionEditId(app));
+  } catch (error) {
+    reportEditStateNonFatal(app, 'sync.outer', error);
+    return false;
   }
 }
 
 export function syncWardrobeState(App: AppLike): void {
-  const app = asApp(App);
-  if (!app) return;
-
-  try {
-    const { raw, dims, doors } = readWardrobeUiSnapshot(app);
-    const activeId = readActiveDimensionEditId(app);
-    syncBuilderBuildUi(app, dims, doors, raw, activeId);
-    syncRuntimeDims(app, dims, doors, activeId);
-  } catch {
-    // ignore
-  }
+  void syncWardrobeStateWithResult(App);
 }
