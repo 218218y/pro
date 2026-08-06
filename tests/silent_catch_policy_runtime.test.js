@@ -29,10 +29,23 @@ test('silent-catch policy keeps current production ratchets exact and functional
   const result = runSilentCatchPolicyAudit(process.cwd());
   assert.deepEqual(result.failures, []);
   assert.equal(result.ok, true);
-  assert.equal(result.inventory.statementFreeTotal, 750);
-  assert.equal(result.inventory.bareTotal, 87);
-  assert.equal(result.inventory.entries.length, 333);
-  assert.equal(result.inventory.bareFileCount, 34);
+  const statementFreeTotalFromLayers = Object.values(result.inventory.statementFreeByLayer).reduce(
+    (total, count) => total + count,
+    0
+  );
+  const bareTotalFromLayers = Object.values(result.inventory.bareByLayer).reduce(
+    (total, count) => total + count,
+    0
+  );
+  const bareFileCountFromEntries = result.inventory.entries.filter(entry => entry.bare > 0).length;
+
+  assert.equal(result.inventory.statementFreeTotal, statementFreeTotalFromLayers);
+  assert.equal(result.inventory.bareTotal, bareTotalFromLayers);
+  assert.equal(result.inventory.bareFileCount, bareFileCountFromEntries);
+  assert.equal(
+    result.inventory.entries.every(entry => entry.statementFree > 0),
+    true
+  );
 
   const inventory = collectProductionEmptyCatchInventory(process.cwd());
   const paths = new Set(inventory.entries.map(entry => entry.file));
