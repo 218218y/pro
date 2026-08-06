@@ -11,9 +11,7 @@ import {
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { _normalizeList, _normalizeModel } from './models_registry_normalization.js';
 import {
-  _getStoredHiddenPresets,
-  _getStoredPresetOrder,
-  _getStoredUserModels,
+  _getStoredModelsCollections,
   _hydrateFromApp,
   _notify,
   syncModelsStateToApp,
@@ -143,10 +141,11 @@ export function ensureModelsLoadedInternalImpl(
   const safeOpts = normalizeModelsOpts(opts);
   if (state.loaded && !safeOpts.forceRebuild) return state.all.slice();
 
-  const { userPresets, userModels } = splitStoredModels(App, _getStoredUserModels(App));
-  const availablePresetIds = collectAvailablePresetIds(state.presets, userPresets);
-  const hiddenPresetIds = new Set<string>(_getStoredHiddenPresets(App, availablePresetIds));
-  const presetOrder = _getStoredPresetOrder(App, availablePresetIds);
+  const corePresetIds = collectAvailablePresetIds(state.presets, []);
+  const storedCollections = _getStoredModelsCollections(App, corePresetIds);
+  const { userPresets, userModels } = splitStoredModels(App, storedCollections.savedModels);
+  const hiddenPresetIds = new Set<string>(storedCollections.hiddenPresets);
+  const presetOrder = storedCollections.presetOrder;
   const allPresets = buildVisibleCorePresets(App, hiddenPresetIds).concat(userPresets);
   reorderPresetsByStoredOrder(App, allPresets, presetOrder);
 

@@ -48,6 +48,10 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/history_shared.ts',
   'esm/native/services/models_registry_nonfatal.ts',
   'esm/native/services/models_registry_normalization.ts',
+  'esm/native/services/models_registry_pdf_draft.ts',
+  'esm/native/services/models_registry_storage_persistence.ts',
+  'esm/native/services/models_registry_storage_state.ts',
+  'esm/native/services/models_collections_transaction.ts',
 ]);
 
 function parserLanguage(file) {

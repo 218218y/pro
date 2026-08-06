@@ -10,6 +10,7 @@ export {
 export { syncModelsStateToApp, _hydrateFromApp, _notify } from './models_registry_storage_state.js';
 
 export {
+  _getStoredModelsCollections,
   _getStoredHiddenPresets,
   _getStoredPresetOrder,
   _getStoredUserModels,

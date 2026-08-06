@@ -74,7 +74,8 @@ export function hasMeaningfulOrderPdfDraft(draft: unknown): boolean {
 export function readUiPdfState(App: AppContainer): ProjectPdfStateLike | null {
   try {
     return asUiPdfState(readUiStateFromApp(App));
-  } catch {
+  } catch (error) {
+    _modelsReportNonFatal(App, 'readUiPdfState', error, 1500);
     return null;
   }
 }

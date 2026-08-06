@@ -388,3 +388,114 @@ test('models registry storage: no-op preset and normalizer installs do not trigg
   assert.equal(App.services.models.__wpRuntimeMirrorRevision, runtimeMirrorRevisionAfterInitialLoad);
   assert.equal(App.services.models._all, publishedAll);
 });
+
+test('models registry storage: ensureLoaded reads one canonical envelope and batches all repairs into one transaction', async () => {
+  const { App, storage } = await createApp({
+    savedModels: [
+      { id: ' user-1 ', name: ' User 1 ' },
+      { id: 'user-1', name: 'duplicate drop' },
+    ],
+    'savedModels:presetOrder': [' preset-b ', 'missing', 'preset-a', 'preset-b'],
+    'savedModels:hiddenPresets': [' missing ', 'preset-a', 'preset-a'],
+  });
+  setModelPresetsInternal(App, [
+    { id: 'preset-a', name: 'Preset A' },
+    { id: 'preset-b', name: 'Preset B' },
+  ] as any);
+
+  const repository = App.services.cloudCollections.repository;
+  const originalReadEnvelope = repository.readEnvelope.bind(repository);
+  let readEnvelopeCalls = 0;
+  repository.readEnvelope = () => {
+    readEnvelopeCalls += 1;
+    return originalReadEnvelope();
+  };
+
+  const originalSetJSON = storage.setJSON.bind(storage);
+  let canonicalWrites = 0;
+  storage.setJSON = (key: string, value: unknown): boolean => {
+    if (key === repository.envelopeKey) canonicalWrites += 1;
+    return originalSetJSON(key, value);
+  };
+
+  const loaded = ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+  assert.equal(readEnvelopeCalls, 1);
+  assert.deepEqual(
+    loaded.map(model => model.id),
+    ['preset-b', 'user-1']
+  );
+
+  await flushAsyncMutations();
+  assert.equal(canonicalWrites, 1);
+  const repaired = originalReadEnvelope();
+  assert.deepEqual(repaired.presetOrder, ['preset-b', 'preset-a']);
+  assert.deepEqual(repaired.hiddenPresets, ['preset-a']);
+  assert.deepEqual(
+    repaired.savedModels.map(model => model.id),
+    ['user-1']
+  );
+});
+
+test('models registry runtime: each onChange listener receives an independently detached nested snapshot', async () => {
+  const { App } = await createApp({ savedModels: [] });
+  setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A', meta: { accent: 'red' } }] as any);
+
+  const secondListenerAccents: string[] = [];
+  onModelsChangeInternal(App, models => {
+    (models[0] as any).meta.accent = 'blue';
+  });
+  onModelsChangeInternal(App, models => {
+    secondListenerAccents.push(String((models[0] as any).meta.accent));
+  });
+
+  ensureModelsLoadedInternal(App, { forceRebuild: true, silent: false });
+
+  assert.deepEqual(secondListenerAccents, ['red']);
+  assert.equal((getModelsRuntimeStateForApp(App).all[0] as any).meta.accent, 'red');
+});
+
+test('models registry storage: runtime mirror snapshots detach nested model payloads', async () => {
+  const { App } = await createApp({ savedModels: [] });
+  setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A', meta: { accent: 'red' } }] as any);
+  ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+
+  (App.services.models._all[0] as any).meta.accent = 'blue';
+  (App.services.models._presets[0] as any).meta.accent = 'green';
+
+  const state = getModelsRuntimeStateForApp(App);
+  assert.equal((state.all[0] as any).meta.accent, 'red');
+  assert.equal((state.presets[0] as any).meta.accent, 'red');
+});
+
+test('models registry transaction: durable canonical commit reports failed legacy mirror writes', async () => {
+  const { App, storage } = await createApp({
+    savedModels: [{ id: 'user-1', name: 'User 1' }],
+    'savedModels:presetOrder': [],
+    'savedModels:hiddenPresets': [],
+  });
+  ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  App.services.platform = {
+    reportError(error: unknown, ctx: unknown) {
+      reports.push({ error, ctx });
+    },
+  };
+  const repository = App.services.cloudCollections.repository;
+  const originalSetJSON = storage.setJSON.bind(storage);
+  storage.setJSON = (key: string, value: unknown): boolean =>
+    key === 'savedModels' ? false : originalSetJSON(key, value);
+
+  const result = await deleteModelByIdInternal(App, 'user-1');
+
+  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(repository.readEnvelope().savedModels, []);
+  const mirrorReport = reports.find(report => report.ctx?.op === 'modelsCollectionsTransaction.mirrorWrite');
+  assert.ok(mirrorReport);
+  assert.match(String((mirrorReport?.error as Error)?.message || ''), /savedModels/);
+  assert.deepEqual(mirrorReport?.ctx, {
+    where: 'native/services/models_registry',
+    op: 'modelsCollectionsTransaction.mirrorWrite',
+    fatal: false,
+  });
+});

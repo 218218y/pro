@@ -6,6 +6,7 @@ import {
   _modelsReportNonFatal,
   _normalizeModel,
   _attachPdfEditorDraft,
+  readUiPdfState,
   modelsRuntimeState,
 } from '../esm/native/services/models_registry.ts';
 
@@ -152,4 +153,31 @@ test('models registry shared: attachPdfEditorDraft detaches nested draft payload
 
   (snap.orderPdfEditorDraft as any).meta.accent = 'blue';
   assert.equal(draft.meta.accent, 'red');
+});
+
+test('models registry shared: PDF draft state read failures publish a stable nonfatal diagnostic', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(error: unknown, ctx: unknown) {
+          reports.push({ error, ctx });
+        },
+      },
+    },
+    store: {
+      getState() {
+        throw new Error('ui state unavailable');
+      },
+    },
+  } as any;
+
+  assert.equal(readUiPdfState(App), null);
+  assert.equal(reports.length, 1);
+  assert.match(String((reports[0]?.error as Error)?.message || ''), /ui state unavailable/);
+  assert.deepEqual(reports[0]?.ctx, {
+    where: 'native/services/models_registry',
+    op: 'readUiPdfState',
+    fatal: false,
+  });
 });
