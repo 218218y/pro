@@ -211,7 +211,8 @@ export function idleViaPlatform(App: unknown, cb: () => void, timeout?: number):
     if (!fn) return false;
     fn(cb, timeout);
     return true;
-  } catch {
+  } catch (error) {
+    reportPlatformOpRejected(App, error, 'idle.ownerRejected', false);
     return false;
   }
 }

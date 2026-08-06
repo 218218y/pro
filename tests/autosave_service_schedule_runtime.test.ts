@@ -24,6 +24,7 @@ function createApp(label: string, opts: { idleAvailable?: boolean } = {}) {
   const uiWrites: Array<{ key: string; value: unknown; meta: any }> = [];
   const storageWrites: Array<{ key: string; payload: any }> = [];
   const idleRuns: Array<{ cb: () => void; timeout?: number }> = [];
+  const reports: Array<{ error: unknown; context: any }> = [];
   const idleAvailable = opts.idleAvailable !== false;
   let handle = 1;
 
@@ -41,6 +42,11 @@ function createApp(label: string, opts: { idleAvailable?: boolean } = {}) {
       },
     },
     services: {
+      errors: {
+        report(error: unknown, context: any) {
+          reports.push({ error, context });
+        },
+      },
       platform: {
         util: idleAvailable
           ? {
@@ -84,7 +90,7 @@ function createApp(label: string, opts: { idleAvailable?: boolean } = {}) {
     },
   } as any;
 
-  return { App, timers, cleared, uiWrites, storageWrites, idleRuns };
+  return { App, timers, cleared, uiWrites, storageWrites, idleRuns, reports };
 }
 
 test('autosave service: install exposes restore info immediately and schedule reuses one pending timer', () => {
@@ -282,6 +288,85 @@ test('autosave service: flush clears pending idle timeout and keeps stale idle t
 
   idleTimeoutTimer.cb();
   assert.equal(storageWrites.length, 1, 'stale cleared idle timeout callback must not run a second autosave');
+
+  cancelAutosaveTimer();
+});
+
+test('autosave service: timer registration failure is observable and leaves no pending schedule', () => {
+  cancelAutosaveTimer();
+
+  const { App, reports } = createApp('timer-registration-failure');
+  installAutosaveService(App);
+  App.deps.browser.setTimeout = () => {
+    throw new Error('timer registration failed');
+  };
+
+  assert.doesNotThrow(() => scheduleAutosave(App));
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/services/autosave_schedule' &&
+        report.context?.op === 'schedule.timer' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
+
+  cancelAutosaveTimer();
+});
+
+test('autosave service: timer cleanup failure is observable while cancellation still invalidates work', () => {
+  cancelAutosaveTimer();
+
+  const { App, timers, storageWrites, reports } = createApp('timer-cleanup-failure');
+  App.deps.browser.clearTimeout = () => {
+    throw new Error('timer cleanup failed');
+  };
+  installAutosaveService(App);
+  scheduleAutosave(App);
+  assert.equal(timers.length, 1);
+
+  assert.doesNotThrow(() => cancelAutosaveTimer(App));
+  timers[0].cb();
+
+  assert.equal(storageWrites.length, 0);
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/services/autosave_schedule' &&
+        report.context?.op === 'clearTimer.browser' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
+
+  cancelAutosaveTimer();
+});
+
+test('autosave service: rejected platform idle is observable and falls back to a timer commit', () => {
+  cancelAutosaveTimer();
+
+  const { App, timers, storageWrites, reports } = createApp('idle-owner-failure');
+  installAutosaveService(App);
+  App.services.platform.util.idle = () => {
+    throw new Error('idle owner failed');
+  };
+
+  scheduleAutosave(App);
+  timers[0].cb();
+  assert.equal(timers.length, 2, 'idle rejection should schedule the timer fallback');
+  timers[1].cb();
+
+  assert.equal(storageWrites.length, 1);
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/runtime/platform_access' &&
+        report.context?.op === 'idle.ownerRejected' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
 
   cancelAutosaveTimer();
 });

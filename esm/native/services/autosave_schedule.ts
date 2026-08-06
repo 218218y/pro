@@ -12,10 +12,20 @@ import {
   canAutosaveRun,
 } from './autosave_shared.js';
 import { commitAutosaveNow } from './autosave_runtime.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 import type { AppContainer, AutosaveSuspensionLike } from '../../../types';
 
 const DEFAULT_AUTOSAVE_DELAY_MS = 4000;
+
+function reportAutosaveScheduleNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportServiceNonFatal(
+    App,
+    error,
+    { where: 'native/services/autosave_schedule', op },
+    { consoleOutput: false }
+  );
+}
 
 export function cancelAutosaveTimer(App?: AppContainer): void {
   if (App && typeof App === 'object') {
@@ -42,20 +52,22 @@ function scheduleAutosaveAfter(App: AppContainer, delayMs: number): void {
   state.clearTimer = handle => {
     try {
       timers.clearTimeout(handle || undefined);
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAutosaveScheduleNonFatal(App, 'clearTimer.browser', error);
     }
   };
   state.clearIdleTimeoutTimer = handle => {
     try {
       timers.clearTimeout(handle || undefined);
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAutosaveScheduleNonFatal(App, 'clearIdleTimeoutTimer.browser', error);
     }
   };
+
   const safeDelayMs = Math.max(0, Math.floor(Number(delayMs) || 0));
   state.timerDueAt = Date.now() + safeDelayMs;
-  state.timer = timers.setTimeout(() => {
+
+  const onTimer = () => {
     state.timer = null;
     state.timerDueAt = null;
     refreshAutosaveScheduleStateRegistration(state);
@@ -65,6 +77,9 @@ function scheduleAutosaveAfter(App: AppContainer, delayMs: number): void {
       if (!isAutosaveIdleTokenLive(state, token)) return false;
       try {
         return commitAutosaveNow(App);
+      } catch (error) {
+        reportAutosaveScheduleNonFatal(App, 'commitAutosaveNow', error);
+        return false;
       } finally {
         if (Number(state.idleToken || 0) === token) state.idlePending = false;
         state.idleTimeoutTimer = null;
@@ -72,24 +87,30 @@ function scheduleAutosaveAfter(App: AppContainer, delayMs: number): void {
       }
     };
 
+    if (idleViaPlatform(App, run, 1500)) return;
+
     try {
-      if (!idleViaPlatform(App, run, 1500)) {
-        const idleTimeoutHandle = timers.setTimeout(() => {
-          if (state.idleTimeoutTimer === idleTimeoutHandle) state.idleTimeoutTimer = null;
-          run();
-        }, 0);
-        state.idleTimeoutTimer = idleTimeoutHandle;
-        refreshAutosaveScheduleStateRegistration(state);
-      }
-    } catch {
-      try {
+      const idleTimeoutHandle = timers.setTimeout(() => {
+        if (state.idleTimeoutTimer === idleTimeoutHandle) state.idleTimeoutTimer = null;
         run();
-      } catch {
-        // ignore
-      }
+      }, 0);
+      state.idleTimeoutTimer = idleTimeoutHandle;
+      refreshAutosaveScheduleStateRegistration(state);
+    } catch (error) {
+      reportAutosaveScheduleNonFatal(App, 'scheduleIdleSecondary.timer', error);
+      run();
     }
-  }, safeDelayMs);
-  refreshAutosaveScheduleStateRegistration(state);
+  };
+
+  try {
+    state.timer = timers.setTimeout(onTimer, safeDelayMs);
+    refreshAutosaveScheduleStateRegistration(state);
+  } catch (error) {
+    state.timer = null;
+    state.timerDueAt = null;
+    refreshAutosaveScheduleStateRegistration(state);
+    reportAutosaveScheduleNonFatal(App, 'schedule.timer', error);
+  }
 }
 
 export function scheduleAutosave(App: AppContainer): void {

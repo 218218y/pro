@@ -56,7 +56,13 @@ test('autosave service guards: runtime gating blocks writes until the app is rea
   });
   assert.deepEqual(restoring.writes, []);
 
+  const unavailableReports: Array<{ error: unknown; ctx: any }> = [];
   const unavailable = createApp({ systemReady: true, restoring: false });
+  unavailable.App.services.errors = {
+    report(error: unknown, ctx: any) {
+      unavailableReports.push({ error, ctx });
+    },
+  };
   unavailable.App.store.getState = () => {
     throw new Error('runtime selector failed');
   };
@@ -67,6 +73,15 @@ test('autosave service guards: runtime gating blocks writes until the app is rea
     detail: 'runtime-state-unavailable',
   });
   assert.deepEqual(unavailable.writes, []);
+  assert.equal(
+    unavailableReports.every(
+      report =>
+        report.ctx?.where === 'native/services/autosave_shared' &&
+        report.ctx?.op === 'readReadiness.runtimeState' &&
+        report.ctx?.fatal === false
+    ),
+    true
+  );
 });
 
 test('autosave service reports storage write failures without marking the save successful', () => {
@@ -85,13 +100,19 @@ test('autosave service reports storage write failures without marking the save s
     reason: 'storage-write-failed',
   });
   assert.equal(reports.length, 2);
-  assert.equal(reports[0].ctx?.where, 'services/autosave');
-  assert.equal(reports[0].ctx?.op, 'commitAutosaveNow.writeStorage');
-  assert.equal(reports[0].ctx?.nonFatal, true);
+  assert.equal(reports[0].ctx?.where, 'native/services/autosave_runtime');
+  assert.equal(reports[0].ctx?.op, 'commitAutosaveNow.writeStorageRejected');
+  assert.equal(reports[0].ctx?.fatal, false);
 });
 
 test('autosave service reports snapshot unavailability without exposing project data', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
   const { App, writes } = createApp({ systemReady: true, restoring: false });
+  App.services.errors = {
+    report(error: unknown, ctx: any) {
+      reports.push({ error, ctx });
+    },
+  };
   App.services.project.capture = () => null;
 
   assert.deepEqual(commitAutosaveNowResult(App), {
@@ -99,4 +120,41 @@ test('autosave service reports snapshot unavailability without exposing project 
     reason: 'snapshot-unavailable',
   });
   assert.deepEqual(writes, []);
+  assert.deepEqual(
+    reports.map(report => [report.ctx?.where, report.ctx?.op]),
+    [
+      ['native/services/autosave_snapshot', 'capture.projectInvalidResult'],
+      ['native/services/autosave_runtime', 'commitAutosaveNow.snapshotUnavailable'],
+    ]
+  );
+  assert.equal(
+    reports.every(report => report.ctx?.fatal === false),
+    true
+  );
+});
+
+test('autosave service keeps a successful storage commit when the UI status stamp fails', () => {
+  const reports: Array<{ error: unknown; ctx: any }> = [];
+  const { App, writes } = createApp({ systemReady: true, restoring: false });
+  App.services.errors = {
+    report(error: unknown, ctx: any) {
+      reports.push({ error, ctx });
+    },
+  };
+  App.actions = {
+    ui: {
+      setScalarSoft() {
+        throw new Error('autosave status UI unavailable');
+      },
+    },
+  };
+
+  assert.deepEqual(commitAutosaveNowResult(App), { ok: true });
+  assert.equal(writes.length, 1);
+  assert.equal(
+    reports.some(
+      report => report.ctx?.where === 'native/services/autosave_shared' && report.ctx?.op === 'stampInfoUi'
+    ),
+    true
+  );
 });

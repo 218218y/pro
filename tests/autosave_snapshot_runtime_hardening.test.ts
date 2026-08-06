@@ -65,3 +65,54 @@ test('autosave snapshot: toxic orderPdfEditorDraft is sanitized and detached ins
     nested: { keep: 1 },
   });
 });
+
+test('autosave snapshot: project capture failure is observable and history remains a valid fallback', () => {
+  const reports: Array<{ error: unknown; context: any }> = [];
+  const App = {
+    services: {
+      errors: {
+        report(error: unknown, context: any) {
+          reports.push({ error, context });
+        },
+      },
+      project: {
+        capture() {
+          throw new Error('project capture unavailable');
+        },
+      },
+      history: {
+        system: {
+          getCurrentSnapshot() {
+            return JSON.stringify({ settings: { width: 135 }, source: 'history' });
+          },
+        },
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { orderPdfEditorZoom: 1.75 },
+          config: {},
+          runtime: { systemReady: true, restoring: false },
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+  } as any;
+
+  assert.deepEqual(captureAutosaveSnapshot(App), {
+    settings: { width: 135 },
+    source: 'history',
+    orderPdfEditorZoom: 1.75,
+  });
+  assert.equal(
+    reports.some(
+      report =>
+        report.context?.where === 'native/services/autosave_snapshot' &&
+        report.context?.op === 'capture.project' &&
+        report.context?.fatal === false
+    ),
+    true
+  );
+});

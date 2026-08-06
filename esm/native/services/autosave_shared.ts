@@ -8,6 +8,7 @@ import {
 import { cloneProjectJson as cloneProjectJsonSafe } from '../../shared/project_json_clone.js';
 import { asRecord, createNullRecord } from '../runtime/record.js';
 import { setUiScalarSoft } from '../runtime/ui_write_access.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 import type {
   AppContainer,
@@ -32,7 +33,29 @@ export type AutosaveScheduleState = UnknownRecord & {
   clearIdleTimeoutTimer?: ((handle?: TimeoutHandleLike | null) => void) | null;
 };
 
+export type AutosaveStorageWriteResult =
+  { ok: true } | { ok: false; reason: 'storage-rejected' | 'storage-threw' };
+
 const activeScheduleStates = new Set<AutosaveScheduleState>();
+const autosaveScheduleOwners = new WeakMap<object, AppContainer>();
+
+function reportAutosaveSharedNonFatal(
+  App: AppContainer,
+  op: string,
+  error: unknown,
+  consoleOutput = false
+): void {
+  reportServiceNonFatal(App, error, { where: 'native/services/autosave_shared', op }, { consoleOutput });
+}
+
+function reportAutosaveScheduleStateNonFatal(state: AutosaveScheduleState, op: string, error: unknown): void {
+  const App = autosaveScheduleOwners.get(state);
+  if (App) reportAutosaveSharedNonFatal(App, op, error);
+}
+
+function registerAutosaveScheduleOwner(state: AutosaveScheduleState, App: AppContainer): void {
+  autosaveScheduleOwners.set(state, App);
+}
 
 export function isAutosaveSnapshotLike(value: unknown): value is AutosaveSnapshotLike {
   return !!asRecord(value);
@@ -78,14 +101,20 @@ export function getActiveAutosaveScheduleStates(): AutosaveScheduleState[] {
 export function getAutosaveScheduleStateMaybe(App: AppContainer): AutosaveScheduleState | null {
   const service = getAutosaveServiceMaybe(App);
   const state = service ? service.__scheduleState : null;
-  return isAutosaveScheduleState(state) ? state : null;
+  if (!isAutosaveScheduleState(state)) return null;
+  registerAutosaveScheduleOwner(state, App);
+  return state;
 }
 
 export function ensureAutosaveScheduleState(App: AppContainer): AutosaveScheduleState {
   const service = ensureAutosaveService(App);
   const current = isAutosaveScheduleState(service.__scheduleState) ? service.__scheduleState : null;
-  if (current) return current;
+  if (current) {
+    registerAutosaveScheduleOwner(current, App);
+    return current;
+  }
   const next = createAutosaveScheduleState();
+  registerAutosaveScheduleOwner(next, App);
   service.__scheduleState = next;
   return next;
 }
@@ -97,16 +126,16 @@ export function clearAutosaveScheduleTimer(state: AutosaveScheduleState): void {
   if (timer) {
     try {
       state.clearTimer?.(timer);
-    } catch {
-      // ignore timer cleanup failures
+    } catch (error) {
+      reportAutosaveScheduleStateNonFatal(state, 'clearTimer.callback', error);
     }
   }
 
   if (idleTimeoutTimer) {
     try {
       state.clearIdleTimeoutTimer?.(idleTimeoutTimer);
-    } catch {
-      // ignore timer cleanup failures
+    } catch (error) {
+      reportAutosaveScheduleStateNonFatal(state, 'clearIdleTimeoutTimer.callback', error);
     }
   }
 
@@ -136,11 +165,7 @@ export function isAutosaveIdleTokenLive(state: AutosaveScheduleState, token: num
 }
 
 export function deepCloneJson<T>(obj: T): T {
-  try {
-    return JSON.parse(JSON.stringify(obj));
-  } catch {
-    return cloneProjectJsonSafe(obj) as T;
-  }
+  return cloneProjectJsonSafe(obj) as T;
 }
 
 export function stampAutosaveInfoUi(App: AppContainer, info: AutosaveSnapshotLike): void {
@@ -151,8 +176,8 @@ export function stampAutosaveInfoUi(App: AppContainer, info: AutosaveSnapshotLik
 
   try {
     setUiScalarSoft(App, 'autosaveInfo', out, { source: 'autosave:info' });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAutosaveSharedNonFatal(App, 'stampInfoUi', error);
   }
 }
 
@@ -168,7 +193,8 @@ export function readAutosaveReadiness(App: AppContainer): AutosaveReadinessResul
 
     const restoring = !!readRuntimeScalarOrDefault(runtimeState.state, 'restoring', false);
     if (restoring) return { ok: false, detail: 'restore-in-progress' };
-  } catch {
+  } catch (error) {
+    reportAutosaveSharedNonFatal(App, 'readReadiness.runtimeState', error);
     return { ok: false, detail: 'runtime-state-unavailable' };
   }
 
@@ -187,11 +213,14 @@ export function writeAutosavePayloadToStorage(
   App: AppContainer,
   key: string,
   payload: AutosaveSnapshotLike
-): boolean {
+): AutosaveStorageWriteResult {
   try {
-    return setStorageString(App, key, JSON.stringify(payload));
-  } catch {
-    return false;
+    return setStorageString(App, key, JSON.stringify(payload))
+      ? { ok: true }
+      : { ok: false, reason: 'storage-rejected' };
+  } catch (error) {
+    reportAutosaveSharedNonFatal(App, 'writeStorage.exception', error);
+    return { ok: false, reason: 'storage-threw' };
   }
 }
 
@@ -199,7 +228,7 @@ export function bootstrapAutosaveInfoUi(App: AppContainer): void {
   try {
     const info = readAutosaveInfoFromStorage(App);
     if (info) stampAutosaveInfoUi(App, info);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAutosaveSharedNonFatal(App, 'bootstrapInfo.readStorage', error);
   }
 }

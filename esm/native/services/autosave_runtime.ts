@@ -1,5 +1,4 @@
 import { logViaPlatform } from '../runtime/platform_access.js';
-import { reportError } from '../runtime/errors.js';
 import { getAutosaveServiceMaybe } from '../runtime/autosave_access.js';
 
 import {
@@ -10,8 +9,18 @@ import {
   writeAutosavePayloadToStorage,
 } from './autosave_shared.js';
 import { captureAutosaveSnapshot } from './autosave_snapshot.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 
 import type { AppContainer, AutosaveOwnerRefreshResult, AutosaveServiceLike } from '../../../types';
+
+function reportAutosaveRuntimeNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportServiceNonFatal(
+    App,
+    error,
+    { where: 'native/services/autosave_runtime', op },
+    { consoleOutput: false }
+  );
+}
 
 export function commitAutosaveNowResult(App: AppContainer): AutosaveOwnerRefreshResult {
   const readiness = readAutosaveReadiness(App);
@@ -20,42 +29,40 @@ export function commitAutosaveNowResult(App: AppContainer): AutosaveOwnerRefresh
   }
 
   const dataObj = captureAutosaveSnapshot(App);
-  if (!dataObj) return { ok: false, reason: 'snapshot-unavailable' };
+  if (!dataObj) {
+    reportAutosaveRuntimeNonFatal(
+      App,
+      'commitAutosaveNow.snapshotUnavailable',
+      new Error('Autosave snapshot is unavailable')
+    );
+    return { ok: false, reason: 'snapshot-unavailable' };
+  }
 
   dataObj.timestamp = Date.now();
   dataObj.dateString = new Date().toLocaleTimeString();
 
   const storageKey = getAutosaveStorageKey(App);
-  const ok = writeAutosavePayloadToStorage(App, storageKey, dataObj);
+  const writeResult = writeAutosavePayloadToStorage(App, storageKey, dataObj);
 
-  if (!ok) {
-    reportError(
+  if (writeResult.ok === false) {
+    reportAutosaveRuntimeNonFatal(
       App,
-      new Error('Autosave storage write failed'),
-      { where: 'services/autosave', op: 'commitAutosaveNow.writeStorage', nonFatal: true },
-      { consoleOutput: false }
+      writeResult.reason === 'storage-threw'
+        ? 'commitAutosaveNow.writeStorageException'
+        : 'commitAutosaveNow.writeStorageRejected',
+      new Error('Autosave storage write failed')
     );
+  } else {
+    stampAutosaveInfoUi(App, dataObj);
   }
 
-  if (ok) {
-    try {
-      stampAutosaveInfoUi(App, dataObj);
-    } catch {
-      // ignore
-    }
-  }
+  logViaPlatform(
+    App,
+    (writeResult.ok ? '✅ Auto-saved at ' : '⚠️ Auto-save skipped (storage unavailable) at ') +
+      String(dataObj.dateString || '')
+  );
 
-  try {
-    logViaPlatform(
-      App,
-      (ok ? '✅ Auto-saved at ' : '⚠️ Auto-save skipped (storage unavailable) at ') +
-        String(dataObj.dateString || '')
-    );
-  } catch {
-    // ignore
-  }
-
-  return ok ? { ok: true } : { ok: false, reason: 'storage-write-failed' };
+  return writeResult.ok ? { ok: true } : { ok: false, reason: 'storage-write-failed' };
 }
 
 export function commitAutosaveNow(App: AppContainer): boolean {
@@ -66,7 +73,8 @@ export function getAutosaveService(App: AppContainer): AutosaveServiceLike | nul
   try {
     const svc = getAutosaveServiceMaybe(App);
     return isAutosaveServiceLike(svc) ? svc : null;
-  } catch {
+  } catch (error) {
+    reportAutosaveRuntimeNonFatal(App, 'getAutosaveService.readOwner', error);
     return null;
   }
 }
