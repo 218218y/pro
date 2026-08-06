@@ -529,6 +529,633 @@
             "integrity": "sha512-pn+CFpM0lwDeKwmOq1ZaBK/9sjorZcgqxki6MbY/jPEVd9vichIlmlD4HmQ5wdP5EgqQCFRaACBxMC7uEGc6lQ=="
           }
         ]
+      },
+      "eslint-js-strict": {
+        "rootDependencies": ["eslint"],
+        "packageCount": 69,
+        "packages": [
+          {
+            "name": "@eslint-community/eslint-utils",
+            "version": "4.10.1",
+            "lockPath": "node_modules/@eslint-community/eslint-utils",
+            "installPath": "node_modules/@eslint-community/eslint-utils",
+            "file": "vendor/offline/eslint/eslint-community__eslint-utils-4.10.1.tgz",
+            "url": "https://registry.npmjs.org/@eslint-community/eslint-utils/-/eslint-utils-4.10.1.tgz",
+            "integrity": "sha512-cuadcxVFE8sDK6iWJbs8Sn0av2Nrh2QSGQhVlBW9AaAHqHwjWsZHT8LJ4hFGPh7ASBV2deFdM7H/DPjulmh8rg=="
+          },
+          {
+            "name": "eslint-visitor-keys",
+            "version": "3.4.3",
+            "lockPath": "node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys",
+            "installPath": "node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys",
+            "file": "vendor/offline/eslint/eslint-visitor-keys-3.4.3.tgz",
+            "url": "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.4.3.tgz",
+            "integrity": "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="
+          },
+          {
+            "name": "@eslint-community/regexpp",
+            "version": "4.12.2",
+            "lockPath": "node_modules/@eslint-community/regexpp",
+            "installPath": "node_modules/@eslint-community/regexpp",
+            "file": "vendor/offline/eslint/eslint-community__regexpp-4.12.2.tgz",
+            "url": "https://registry.npmjs.org/@eslint-community/regexpp/-/regexpp-4.12.2.tgz",
+            "integrity": "sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew=="
+          },
+          {
+            "name": "@eslint/config-array",
+            "version": "0.23.5",
+            "lockPath": "node_modules/@eslint/config-array",
+            "installPath": "node_modules/@eslint/config-array",
+            "file": "vendor/offline/eslint/eslint__config-array-0.23.5.tgz",
+            "url": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.23.5.tgz",
+            "integrity": "sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA=="
+          },
+          {
+            "name": "@eslint/config-helpers",
+            "version": "0.7.0",
+            "lockPath": "node_modules/@eslint/config-helpers",
+            "installPath": "node_modules/@eslint/config-helpers",
+            "file": "vendor/offline/eslint/eslint__config-helpers-0.7.0.tgz",
+            "url": "https://registry.npmjs.org/@eslint/config-helpers/-/config-helpers-0.7.0.tgz",
+            "integrity": "sha512-DObd/KKUsU+FaFv4PLxSRenpXfQWmPXXP3pPZ6/K1PCrMu2vQpMDMuQe/BqYeoLcz8ro0bVDF1RxOJgfVEdhUw=="
+          },
+          {
+            "name": "@eslint/core",
+            "version": "1.2.1",
+            "lockPath": "node_modules/@eslint/core",
+            "installPath": "node_modules/@eslint/core",
+            "file": "vendor/offline/eslint/eslint__core-1.2.1.tgz",
+            "url": "https://registry.npmjs.org/@eslint/core/-/core-1.2.1.tgz",
+            "integrity": "sha512-MwcE1P+AZ4C6DWlpin/OmOA54mmIZ/+xZuJiQd4SyB29oAJjN30UW9wkKNptW2ctp4cEsvhlLY/CsQ1uoHDloQ=="
+          },
+          {
+            "name": "@eslint/object-schema",
+            "version": "3.0.5",
+            "lockPath": "node_modules/@eslint/object-schema",
+            "installPath": "node_modules/@eslint/object-schema",
+            "file": "vendor/offline/eslint/eslint__object-schema-3.0.5.tgz",
+            "url": "https://registry.npmjs.org/@eslint/object-schema/-/object-schema-3.0.5.tgz",
+            "integrity": "sha512-vqTaUEgxzm+YDSdElad6PiRoX4t8VGDjCtt05zn4nU810UIx/uNEV7/lZJ6KwFThKZOzOxzXy48da+No7HZaMw=="
+          },
+          {
+            "name": "@eslint/plugin-kit",
+            "version": "0.7.2",
+            "lockPath": "node_modules/@eslint/plugin-kit",
+            "installPath": "node_modules/@eslint/plugin-kit",
+            "file": "vendor/offline/eslint/eslint__plugin-kit-0.7.2.tgz",
+            "url": "https://registry.npmjs.org/@eslint/plugin-kit/-/plugin-kit-0.7.2.tgz",
+            "integrity": "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="
+          },
+          {
+            "name": "@humanfs/core",
+            "version": "0.19.2",
+            "lockPath": "node_modules/@humanfs/core",
+            "installPath": "node_modules/@humanfs/core",
+            "file": "vendor/offline/eslint/humanfs__core-0.19.2.tgz",
+            "url": "https://registry.npmjs.org/@humanfs/core/-/core-0.19.2.tgz",
+            "integrity": "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA=="
+          },
+          {
+            "name": "@humanfs/node",
+            "version": "0.16.8",
+            "lockPath": "node_modules/@humanfs/node",
+            "installPath": "node_modules/@humanfs/node",
+            "file": "vendor/offline/eslint/humanfs__node-0.16.8.tgz",
+            "url": "https://registry.npmjs.org/@humanfs/node/-/node-0.16.8.tgz",
+            "integrity": "sha512-gE1eQNZ3R++kTzFUpdGlpmy8kDZD/MLyHqDwqjkVQI0JMdI1D51sy1H958PNXYkM2rAac7e5/CnIKZrHtPh3BQ=="
+          },
+          {
+            "name": "@humanfs/types",
+            "version": "0.15.0",
+            "lockPath": "node_modules/@humanfs/types",
+            "installPath": "node_modules/@humanfs/types",
+            "file": "vendor/offline/eslint/humanfs__types-0.15.0.tgz",
+            "url": "https://registry.npmjs.org/@humanfs/types/-/types-0.15.0.tgz",
+            "integrity": "sha512-ZZ1w0aoQkwuUuC7Yf+7sdeaNfqQiiLcSRbfI08oAxqLtpXQr9AIVX7Ay7HLDuiLYAaFPu8oBYNq/QIi9URHJ3Q=="
+          },
+          {
+            "name": "@humanwhocodes/module-importer",
+            "version": "1.0.1",
+            "lockPath": "node_modules/@humanwhocodes/module-importer",
+            "installPath": "node_modules/@humanwhocodes/module-importer",
+            "file": "vendor/offline/eslint/humanwhocodes__module-importer-1.0.1.tgz",
+            "url": "https://registry.npmjs.org/@humanwhocodes/module-importer/-/module-importer-1.0.1.tgz",
+            "integrity": "sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA=="
+          },
+          {
+            "name": "@humanwhocodes/retry",
+            "version": "0.4.3",
+            "lockPath": "node_modules/@humanwhocodes/retry",
+            "installPath": "node_modules/@humanwhocodes/retry",
+            "file": "vendor/offline/eslint/humanwhocodes__retry-0.4.3.tgz",
+            "url": "https://registry.npmjs.org/@humanwhocodes/retry/-/retry-0.4.3.tgz",
+            "integrity": "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="
+          },
+          {
+            "name": "@types/esrecurse",
+            "version": "4.3.1",
+            "lockPath": "node_modules/@types/esrecurse",
+            "installPath": "node_modules/@types/esrecurse",
+            "file": "vendor/offline/eslint/types__esrecurse-4.3.1.tgz",
+            "url": "https://registry.npmjs.org/@types/esrecurse/-/esrecurse-4.3.1.tgz",
+            "integrity": "sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw=="
+          },
+          {
+            "name": "@types/estree",
+            "version": "1.0.9",
+            "lockPath": "node_modules/@types/estree",
+            "installPath": "node_modules/@types/estree",
+            "file": "vendor/offline/eslint/types__estree-1.0.9.tgz",
+            "url": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
+            "integrity": "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="
+          },
+          {
+            "name": "@types/json-schema",
+            "version": "7.0.15",
+            "lockPath": "node_modules/@types/json-schema",
+            "installPath": "node_modules/@types/json-schema",
+            "file": "vendor/offline/eslint/types__json-schema-7.0.15.tgz",
+            "url": "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz",
+            "integrity": "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="
+          },
+          {
+            "name": "acorn",
+            "version": "8.17.0",
+            "lockPath": "node_modules/acorn",
+            "installPath": "node_modules/acorn",
+            "file": "vendor/offline/eslint/acorn-8.17.0.tgz",
+            "url": "https://registry.npmjs.org/acorn/-/acorn-8.17.0.tgz",
+            "integrity": "sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg=="
+          },
+          {
+            "name": "acorn-jsx",
+            "version": "5.3.2",
+            "lockPath": "node_modules/acorn-jsx",
+            "installPath": "node_modules/acorn-jsx",
+            "file": "vendor/offline/eslint/acorn-jsx-5.3.2.tgz",
+            "url": "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz",
+            "integrity": "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ=="
+          },
+          {
+            "name": "ajv",
+            "version": "6.15.0",
+            "lockPath": "node_modules/ajv",
+            "installPath": "node_modules/ajv",
+            "file": "vendor/offline/eslint/ajv-6.15.0.tgz",
+            "url": "https://registry.npmjs.org/ajv/-/ajv-6.15.0.tgz",
+            "integrity": "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="
+          },
+          {
+            "name": "balanced-match",
+            "version": "4.0.4",
+            "lockPath": "node_modules/balanced-match",
+            "installPath": "node_modules/balanced-match",
+            "file": "vendor/offline/eslint/balanced-match-4.0.4.tgz",
+            "url": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+            "integrity": "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA=="
+          },
+          {
+            "name": "brace-expansion",
+            "version": "5.0.8",
+            "lockPath": "node_modules/brace-expansion",
+            "installPath": "node_modules/brace-expansion",
+            "file": "vendor/offline/eslint/brace-expansion-5.0.8.tgz",
+            "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.8.tgz",
+            "integrity": "sha512-JZyDyq3D4AUifKTPOB7DELf6XsB3WdPuNxCtob1vFXPsSXhdAiHBWJ/tJ8HAc9aH84BK+5JFZLNkJKx3G9kzQg=="
+          },
+          {
+            "name": "cross-spawn",
+            "version": "7.0.6",
+            "lockPath": "node_modules/cross-spawn",
+            "installPath": "node_modules/cross-spawn",
+            "file": "vendor/offline/eslint/cross-spawn-7.0.6.tgz",
+            "url": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+            "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="
+          },
+          {
+            "name": "debug",
+            "version": "4.4.3",
+            "lockPath": "node_modules/debug",
+            "installPath": "node_modules/debug",
+            "file": "vendor/offline/eslint/debug-4.4.3.tgz",
+            "url": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+            "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="
+          },
+          {
+            "name": "deep-is",
+            "version": "0.1.4",
+            "lockPath": "node_modules/deep-is",
+            "installPath": "node_modules/deep-is",
+            "file": "vendor/offline/eslint/deep-is-0.1.4.tgz",
+            "url": "https://registry.npmjs.org/deep-is/-/deep-is-0.1.4.tgz",
+            "integrity": "sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ=="
+          },
+          {
+            "name": "escape-string-regexp",
+            "version": "4.0.0",
+            "lockPath": "node_modules/escape-string-regexp",
+            "installPath": "node_modules/escape-string-regexp",
+            "file": "vendor/offline/eslint/escape-string-regexp-4.0.0.tgz",
+            "url": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
+            "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA=="
+          },
+          {
+            "name": "eslint",
+            "version": "10.8.0",
+            "lockPath": "node_modules/eslint",
+            "installPath": "node_modules/eslint",
+            "file": "vendor/offline/eslint/eslint-10.8.0.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.8.0.tgz",
+            "integrity": "sha512-nuKKvN+oIBO0koN7Tm7dlkmnkc21mtt0QJLwAKzjLq14y6lRTdVG36MZHJ8eQHwdJMwZbQNMlPOYedMq/oVJvQ=="
+          },
+          {
+            "name": "eslint-scope",
+            "version": "9.1.2",
+            "lockPath": "node_modules/eslint-scope",
+            "installPath": "node_modules/eslint-scope",
+            "file": "vendor/offline/eslint/eslint-scope-9.1.2.tgz",
+            "url": "https://registry.npmjs.org/eslint-scope/-/eslint-scope-9.1.2.tgz",
+            "integrity": "sha512-xS90H51cKw0jltxmvmHy2Iai1LIqrfbw57b79w/J7MfvDfkIkFZ+kj6zC3BjtUwh150HsSSdxXZcsuv72miDFQ=="
+          },
+          {
+            "name": "eslint-visitor-keys",
+            "version": "5.0.1",
+            "lockPath": "node_modules/eslint-visitor-keys",
+            "installPath": "node_modules/eslint-visitor-keys",
+            "file": "vendor/offline/eslint/eslint-visitor-keys-5.0.1.tgz",
+            "url": "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-5.0.1.tgz",
+            "integrity": "sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA=="
+          },
+          {
+            "name": "espree",
+            "version": "11.2.0",
+            "lockPath": "node_modules/espree",
+            "installPath": "node_modules/espree",
+            "file": "vendor/offline/eslint/espree-11.2.0.tgz",
+            "url": "https://registry.npmjs.org/espree/-/espree-11.2.0.tgz",
+            "integrity": "sha512-7p3DrVEIopW1B1avAGLuCSh1jubc01H2JHc8B4qqGblmg5gI9yumBgACjWo4JlIc04ufug4xJ3SQI8HkS/Rgzw=="
+          },
+          {
+            "name": "esquery",
+            "version": "1.7.0",
+            "lockPath": "node_modules/esquery",
+            "installPath": "node_modules/esquery",
+            "file": "vendor/offline/eslint/esquery-1.7.0.tgz",
+            "url": "https://registry.npmjs.org/esquery/-/esquery-1.7.0.tgz",
+            "integrity": "sha512-Ap6G0WQwcU/LHsvLwON1fAQX9Zp0A2Y6Y/cJBl9r/JbW90Zyg4/zbG6zzKa2OTALELarYHmKu0GhpM5EO+7T0g=="
+          },
+          {
+            "name": "esrecurse",
+            "version": "4.3.0",
+            "lockPath": "node_modules/esrecurse",
+            "installPath": "node_modules/esrecurse",
+            "file": "vendor/offline/eslint/esrecurse-4.3.0.tgz",
+            "url": "https://registry.npmjs.org/esrecurse/-/esrecurse-4.3.0.tgz",
+            "integrity": "sha512-KmfKL3b6G+RXvP8N1vr3Tq1kL/oCFgn2NYXEtqP8/L3pKapUA4G8cFVaoF3SU323CD4XypR/ffioHmkti6/Tag=="
+          },
+          {
+            "name": "estraverse",
+            "version": "5.3.0",
+            "lockPath": "node_modules/estraverse",
+            "installPath": "node_modules/estraverse",
+            "file": "vendor/offline/eslint/estraverse-5.3.0.tgz",
+            "url": "https://registry.npmjs.org/estraverse/-/estraverse-5.3.0.tgz",
+            "integrity": "sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA=="
+          },
+          {
+            "name": "esutils",
+            "version": "2.0.3",
+            "lockPath": "node_modules/esutils",
+            "installPath": "node_modules/esutils",
+            "file": "vendor/offline/eslint/esutils-2.0.3.tgz",
+            "url": "https://registry.npmjs.org/esutils/-/esutils-2.0.3.tgz",
+            "integrity": "sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g=="
+          },
+          {
+            "name": "fast-deep-equal",
+            "version": "3.1.3",
+            "lockPath": "node_modules/fast-deep-equal",
+            "installPath": "node_modules/fast-deep-equal",
+            "file": "vendor/offline/eslint/fast-deep-equal-3.1.3.tgz",
+            "url": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+            "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+          },
+          {
+            "name": "fast-json-stable-stringify",
+            "version": "2.1.0",
+            "lockPath": "node_modules/fast-json-stable-stringify",
+            "installPath": "node_modules/fast-json-stable-stringify",
+            "file": "vendor/offline/eslint/fast-json-stable-stringify-2.1.0.tgz",
+            "url": "https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz",
+            "integrity": "sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw=="
+          },
+          {
+            "name": "fast-levenshtein",
+            "version": "2.0.6",
+            "lockPath": "node_modules/fast-levenshtein",
+            "installPath": "node_modules/fast-levenshtein",
+            "file": "vendor/offline/eslint/fast-levenshtein-2.0.6.tgz",
+            "url": "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz",
+            "integrity": "sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw=="
+          },
+          {
+            "name": "file-entry-cache",
+            "version": "8.0.0",
+            "lockPath": "node_modules/file-entry-cache",
+            "installPath": "node_modules/file-entry-cache",
+            "file": "vendor/offline/eslint/file-entry-cache-8.0.0.tgz",
+            "url": "https://registry.npmjs.org/file-entry-cache/-/file-entry-cache-8.0.0.tgz",
+            "integrity": "sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ=="
+          },
+          {
+            "name": "find-up",
+            "version": "5.0.0",
+            "lockPath": "node_modules/find-up",
+            "installPath": "node_modules/find-up",
+            "file": "vendor/offline/eslint/find-up-5.0.0.tgz",
+            "url": "https://registry.npmjs.org/find-up/-/find-up-5.0.0.tgz",
+            "integrity": "sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng=="
+          },
+          {
+            "name": "flat-cache",
+            "version": "4.0.1",
+            "lockPath": "node_modules/flat-cache",
+            "installPath": "node_modules/flat-cache",
+            "file": "vendor/offline/eslint/flat-cache-4.0.1.tgz",
+            "url": "https://registry.npmjs.org/flat-cache/-/flat-cache-4.0.1.tgz",
+            "integrity": "sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw=="
+          },
+          {
+            "name": "flatted",
+            "version": "3.4.3",
+            "lockPath": "node_modules/flatted",
+            "installPath": "node_modules/flatted",
+            "file": "vendor/offline/eslint/flatted-3.4.3.tgz",
+            "url": "https://registry.npmjs.org/flatted/-/flatted-3.4.3.tgz",
+            "integrity": "sha512-/zipXxyO6rGvuNGDiULY9MvEGSkb2gaG4GGH4ygMi0ZZzyMHdUZBmntJmx5x1G2VuPytCwGN4xsJP6cw+sK+vQ=="
+          },
+          {
+            "name": "glob-parent",
+            "version": "6.0.2",
+            "lockPath": "node_modules/glob-parent",
+            "installPath": "node_modules/glob-parent",
+            "file": "vendor/offline/eslint/glob-parent-6.0.2.tgz",
+            "url": "https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz",
+            "integrity": "sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A=="
+          },
+          {
+            "name": "ignore",
+            "version": "5.3.2",
+            "lockPath": "node_modules/ignore",
+            "installPath": "node_modules/ignore",
+            "file": "vendor/offline/eslint/ignore-5.3.2.tgz",
+            "url": "https://registry.npmjs.org/ignore/-/ignore-5.3.2.tgz",
+            "integrity": "sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g=="
+          },
+          {
+            "name": "imurmurhash",
+            "version": "0.1.4",
+            "lockPath": "node_modules/imurmurhash",
+            "installPath": "node_modules/imurmurhash",
+            "file": "vendor/offline/eslint/imurmurhash-0.1.4.tgz",
+            "url": "https://registry.npmjs.org/imurmurhash/-/imurmurhash-0.1.4.tgz",
+            "integrity": "sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA=="
+          },
+          {
+            "name": "is-extglob",
+            "version": "2.1.1",
+            "lockPath": "node_modules/is-extglob",
+            "installPath": "node_modules/is-extglob",
+            "file": "vendor/offline/eslint/is-extglob-2.1.1.tgz",
+            "url": "https://registry.npmjs.org/is-extglob/-/is-extglob-2.1.1.tgz",
+            "integrity": "sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ=="
+          },
+          {
+            "name": "is-glob",
+            "version": "4.0.3",
+            "lockPath": "node_modules/is-glob",
+            "installPath": "node_modules/is-glob",
+            "file": "vendor/offline/eslint/is-glob-4.0.3.tgz",
+            "url": "https://registry.npmjs.org/is-glob/-/is-glob-4.0.3.tgz",
+            "integrity": "sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg=="
+          },
+          {
+            "name": "isexe",
+            "version": "2.0.0",
+            "lockPath": "node_modules/isexe",
+            "installPath": "node_modules/isexe",
+            "file": "vendor/offline/eslint/isexe-2.0.0.tgz",
+            "url": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+            "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw=="
+          },
+          {
+            "name": "json-buffer",
+            "version": "3.0.1",
+            "lockPath": "node_modules/json-buffer",
+            "installPath": "node_modules/json-buffer",
+            "file": "vendor/offline/eslint/json-buffer-3.0.1.tgz",
+            "url": "https://registry.npmjs.org/json-buffer/-/json-buffer-3.0.1.tgz",
+            "integrity": "sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ=="
+          },
+          {
+            "name": "json-schema-traverse",
+            "version": "0.4.1",
+            "lockPath": "node_modules/json-schema-traverse",
+            "installPath": "node_modules/json-schema-traverse",
+            "file": "vendor/offline/eslint/json-schema-traverse-0.4.1.tgz",
+            "url": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz",
+            "integrity": "sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg=="
+          },
+          {
+            "name": "json-stable-stringify-without-jsonify",
+            "version": "1.0.1",
+            "lockPath": "node_modules/json-stable-stringify-without-jsonify",
+            "installPath": "node_modules/json-stable-stringify-without-jsonify",
+            "file": "vendor/offline/eslint/json-stable-stringify-without-jsonify-1.0.1.tgz",
+            "url": "https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz",
+            "integrity": "sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw=="
+          },
+          {
+            "name": "keyv",
+            "version": "4.5.4",
+            "lockPath": "node_modules/keyv",
+            "installPath": "node_modules/keyv",
+            "file": "vendor/offline/eslint/keyv-4.5.4.tgz",
+            "url": "https://registry.npmjs.org/keyv/-/keyv-4.5.4.tgz",
+            "integrity": "sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw=="
+          },
+          {
+            "name": "levn",
+            "version": "0.4.1",
+            "lockPath": "node_modules/levn",
+            "installPath": "node_modules/levn",
+            "file": "vendor/offline/eslint/levn-0.4.1.tgz",
+            "url": "https://registry.npmjs.org/levn/-/levn-0.4.1.tgz",
+            "integrity": "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="
+          },
+          {
+            "name": "locate-path",
+            "version": "6.0.0",
+            "lockPath": "node_modules/locate-path",
+            "installPath": "node_modules/locate-path",
+            "file": "vendor/offline/eslint/locate-path-6.0.0.tgz",
+            "url": "https://registry.npmjs.org/locate-path/-/locate-path-6.0.0.tgz",
+            "integrity": "sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw=="
+          },
+          {
+            "name": "minimatch",
+            "version": "10.2.5",
+            "lockPath": "node_modules/minimatch",
+            "installPath": "node_modules/minimatch",
+            "file": "vendor/offline/eslint/minimatch-10.2.5.tgz",
+            "url": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.5.tgz",
+            "integrity": "sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg=="
+          },
+          {
+            "name": "ms",
+            "version": "2.1.3",
+            "lockPath": "node_modules/ms",
+            "installPath": "node_modules/ms",
+            "file": "vendor/offline/eslint/ms-2.1.3.tgz",
+            "url": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+            "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+          },
+          {
+            "name": "natural-compare",
+            "version": "1.4.0",
+            "lockPath": "node_modules/natural-compare",
+            "installPath": "node_modules/natural-compare",
+            "file": "vendor/offline/eslint/natural-compare-1.4.0.tgz",
+            "url": "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz",
+            "integrity": "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw=="
+          },
+          {
+            "name": "optionator",
+            "version": "0.9.4",
+            "lockPath": "node_modules/optionator",
+            "installPath": "node_modules/optionator",
+            "file": "vendor/offline/eslint/optionator-0.9.4.tgz",
+            "url": "https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz",
+            "integrity": "sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g=="
+          },
+          {
+            "name": "p-limit",
+            "version": "3.1.0",
+            "lockPath": "node_modules/p-limit",
+            "installPath": "node_modules/p-limit",
+            "file": "vendor/offline/eslint/p-limit-3.1.0.tgz",
+            "url": "https://registry.npmjs.org/p-limit/-/p-limit-3.1.0.tgz",
+            "integrity": "sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ=="
+          },
+          {
+            "name": "p-locate",
+            "version": "5.0.0",
+            "lockPath": "node_modules/p-locate",
+            "installPath": "node_modules/p-locate",
+            "file": "vendor/offline/eslint/p-locate-5.0.0.tgz",
+            "url": "https://registry.npmjs.org/p-locate/-/p-locate-5.0.0.tgz",
+            "integrity": "sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw=="
+          },
+          {
+            "name": "path-exists",
+            "version": "4.0.0",
+            "lockPath": "node_modules/path-exists",
+            "installPath": "node_modules/path-exists",
+            "file": "vendor/offline/eslint/path-exists-4.0.0.tgz",
+            "url": "https://registry.npmjs.org/path-exists/-/path-exists-4.0.0.tgz",
+            "integrity": "sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w=="
+          },
+          {
+            "name": "path-key",
+            "version": "3.1.1",
+            "lockPath": "node_modules/path-key",
+            "installPath": "node_modules/path-key",
+            "file": "vendor/offline/eslint/path-key-3.1.1.tgz",
+            "url": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+            "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q=="
+          },
+          {
+            "name": "prelude-ls",
+            "version": "1.2.1",
+            "lockPath": "node_modules/prelude-ls",
+            "installPath": "node_modules/prelude-ls",
+            "file": "vendor/offline/eslint/prelude-ls-1.2.1.tgz",
+            "url": "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz",
+            "integrity": "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g=="
+          },
+          {
+            "name": "punycode",
+            "version": "2.3.1",
+            "lockPath": "node_modules/punycode",
+            "installPath": "node_modules/punycode",
+            "file": "vendor/offline/eslint/punycode-2.3.1.tgz",
+            "url": "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz",
+            "integrity": "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="
+          },
+          {
+            "name": "shebang-command",
+            "version": "2.0.0",
+            "lockPath": "node_modules/shebang-command",
+            "installPath": "node_modules/shebang-command",
+            "file": "vendor/offline/eslint/shebang-command-2.0.0.tgz",
+            "url": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+            "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA=="
+          },
+          {
+            "name": "shebang-regex",
+            "version": "3.0.0",
+            "lockPath": "node_modules/shebang-regex",
+            "installPath": "node_modules/shebang-regex",
+            "file": "vendor/offline/eslint/shebang-regex-3.0.0.tgz",
+            "url": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+            "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A=="
+          },
+          {
+            "name": "type-check",
+            "version": "0.4.0",
+            "lockPath": "node_modules/type-check",
+            "installPath": "node_modules/type-check",
+            "file": "vendor/offline/eslint/type-check-0.4.0.tgz",
+            "url": "https://registry.npmjs.org/type-check/-/type-check-0.4.0.tgz",
+            "integrity": "sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew=="
+          },
+          {
+            "name": "uri-js",
+            "version": "4.4.1",
+            "lockPath": "node_modules/uri-js",
+            "installPath": "node_modules/uri-js",
+            "file": "vendor/offline/eslint/uri-js-4.4.1.tgz",
+            "url": "https://registry.npmjs.org/uri-js/-/uri-js-4.4.1.tgz",
+            "integrity": "sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg=="
+          },
+          {
+            "name": "which",
+            "version": "2.0.2",
+            "lockPath": "node_modules/which",
+            "installPath": "node_modules/which",
+            "file": "vendor/offline/eslint/which-2.0.2.tgz",
+            "url": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+            "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="
+          },
+          {
+            "name": "word-wrap",
+            "version": "1.2.5",
+            "lockPath": "node_modules/word-wrap",
+            "installPath": "node_modules/word-wrap",
+            "file": "vendor/offline/eslint/word-wrap-1.2.5.tgz",
+            "url": "https://registry.npmjs.org/word-wrap/-/word-wrap-1.2.5.tgz",
+            "integrity": "sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA=="
+          },
+          {
+            "name": "yocto-queue",
+            "version": "0.1.0",
+            "lockPath": "node_modules/yocto-queue",
+            "installPath": "node_modules/yocto-queue",
+            "file": "vendor/offline/eslint/yocto-queue-0.1.0.tgz",
+            "url": "https://registry.npmjs.org/yocto-queue/-/yocto-queue-0.1.0.tgz",
+            "integrity": "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="
+          }
+        ]
       }
     },
     "lockfileSha256": "b0669c987764b60f5fce4baa3b80c782fd5e71912a7110ccd094ef4ab9f3dc32"

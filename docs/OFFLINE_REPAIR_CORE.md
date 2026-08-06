@@ -88,6 +88,19 @@ The profile includes native GNU/Linux x64 packages for Rolldown and Lightning CS
 Windows, ARM, musl, `fsevents`, and Rolldown's WASI fallback. Production dependencies remain owned by the
 existing `tsx-tests` profile; the offline Vite runner installs both profiles before invoking the Vite CLI.
 
+### Optional ESLint strict-JS slice
+
+The exact `eslint` devDependency and its complete required dependency closure are generated from
+`package-lock.json` into:
+
+```text
+vendor/offline/eslint/*.tgz
+```
+
+The profile includes direct dependencies, transitive dependencies, and required peer dependencies used by
+ESLint's flat-config CLI. Optional peer `jiti` is excluded because the repository uses `eslint.config.js`.
+No package version list is maintained manually outside the lockfile-derived manifest.
+
 ### Optional TypeScript 7 slice
 
 ```text
@@ -160,8 +173,8 @@ Place them under `vendor/offline/ast/` without renaming them, then run `npm run 
 
 ## Synchronize lockfile-backed offline packages
 
-The npm-backed slices (`esbuild`, `tsx`, `prettier`, `typescript`, and `oxlint` with its type-aware
-backend) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
+The npm-backed slices (`esbuild`, `tsx`, `prettier`, `typescript`, `oxlint` with its type-aware backend,
+Vite, and ESLint) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
 command first adopts a correctly named archive that is already present, otherwise it downloads the official
 npm tarball. It verifies SHA-512 integrity, embedded package name/version, native executable layout, and the
 esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Superseded archives are removed
@@ -230,9 +243,9 @@ npm run vendor:offline:packages:check
 ```
 
 For an online refresh, use `npm run vendor:offline:packages:refresh`. Its `--all` selection includes the
-`vite-build` workspace profile, so the regular package refresh downloads and verifies Vite together with the
-focused npm components. The `vendor:offline:vite-build:*` commands remain available only as focused maintenance
-aliases; the dependency update workflow does not invoke a second Vite refresh.
+`vite-build` and `eslint-js-strict` workspace profiles, so the regular package refresh downloads and verifies
+both toolchains together with the focused npm components. The profile-specific commands remain available only
+as focused maintenance aliases; the dependency update workflow does not invoke duplicate refreshes.
 
 Install and run the build tool without npm resolution or lifecycle scripts:
 
@@ -243,6 +256,20 @@ npm run run:offline:vite -- --version
 npm run vite:build:offline
 npm run vite:build:modules:offline
 ```
+
+The same standard refresh also prepares the strict JavaScript lint lane. After manually downloading every
+path printed under `vendor/offline/eslint/`, run:
+
+```bash
+npm run vendor:offline:packages:adopt
+npm run vendor:offline:packages:check
+npm run verify:offline:eslint
+npm run setup:offline:eslint
+npm run lint:js:strict:offline
+```
+
+The offline command reuses `tools/wp_lint.js`, so it has the same file targets, `js-only` profile, and
+`--max-warnings=0` behavior as `npm run lint:js:strict`.
 
 ## Run focused Node commands
 

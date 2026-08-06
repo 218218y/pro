@@ -601,10 +601,15 @@ def verify_vendor(
         selected_profiles.append(workspace_profile_name)
     for profile_name in dict.fromkeys(selected_profiles):
         profile = workspace_profile(manifest, key, profile_name)
+        missing_command = (
+            "npm run vendor:offline:packages:downloads"
+            if profile_name in {"vite-build", "eslint-js-strict"}
+            else f"npm run vendor:offline:{profile_name}:downloads"
+        )
         _verify_npm_archives(
             profile["packages"],
             f"workspace {profile_name}",
-            missing_command=f"npm run vendor:offline:{profile_name}:downloads",
+            missing_command=missing_command,
         )
 
 
@@ -900,6 +905,29 @@ def install_workspace_profile(
             raise OfflineCoreError(
                 "Offline workspace packages were extracted but the Vite build profile failed "
                 f"verification:\n{detail or 'no output'}"
+            )
+    elif profile_name == "eslint-js-strict":
+        eslint_entry = workspace_package_entry(manifest, key, profile_name, "eslint")
+        eslint_executable = workspace_package_executable(
+            manifest,
+            key,
+            profile_name,
+            "eslint",
+            "eslint",
+        )
+        probe = subprocess.run(
+            [str(node_executable), str(eslint_executable), "--version"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        expected_version = f"v{eslint_entry['version']}"
+        if probe.returncode != 0 or probe.stdout.strip() != expected_version:
+            detail = (probe.stderr or probe.stdout).strip()
+            raise OfflineCoreError(
+                "Offline workspace packages were extracted but the ESLint strict-JS profile "
+                f"failed verification; expected {expected_version}:\n{detail or 'no output'}"
             )
 
     _write_workspace_stamp(profile_name, profile)

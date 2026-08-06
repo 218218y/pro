@@ -9,11 +9,12 @@ import zlib from 'node:zlib';
 
 const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']);
 const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
-const SUPPORTED_PROFILES = Object.freeze(['tsx-tests', 'vite-build']);
-const STANDARD_PACKAGE_PROFILES = Object.freeze(['vite-build']);
+const SUPPORTED_PROFILES = Object.freeze(['tsx-tests', 'vite-build', 'eslint-js-strict']);
+const STANDARD_PACKAGE_PROFILES = Object.freeze(['vite-build', 'eslint-js-strict']);
 const PROFILE_SET = new Set(SUPPORTED_PROFILES);
 const VITE_BUILD_ROOT_DEPENDENCIES = Object.freeze(['@vitejs/plugin-react', 'vite']);
 const VITE_BUILD_EXCLUDED_OPTIONAL_DEPENDENCIES = new Set(['@rolldown/binding-wasm32-wasi']);
+const ESLINT_JS_STRICT_ROOT_DEPENDENCIES = Object.freeze(['eslint']);
 const LINUX_X64_GLIBC = Object.freeze({
   key: 'linux-x64',
   os: 'linux',
@@ -490,9 +491,27 @@ function buildViteBuildProfile(lock, lockfileSha256) {
   });
 }
 
+function buildEslintJsStrictProfile(lock, lockfileSha256) {
+  const rootPackage = lock.packages?.[''];
+  if (!rootPackage || typeof rootPackage !== 'object') {
+    fail('package-lock.json has no root package entry');
+  }
+  for (const dependencyName of ESLINT_JS_STRICT_ROOT_DEPENDENCIES) {
+    if (!Object.hasOwn(rootPackage.devDependencies ?? {}, dependencyName)) {
+      fail(`ESLint strict root is not a project devDependency: ${dependencyName}`);
+    }
+  }
+  return buildWorkspaceProfile(lock, lockfileSha256, {
+    profile: 'eslint-js-strict',
+    directory: 'eslint',
+    rootDependencies: [...ESLINT_JS_STRICT_ROOT_DEPENDENCIES],
+  });
+}
+
 function buildProfile(lock, profile, lockfileSha256) {
   if (profile === 'tsx-tests') return buildTsxTestsProfile(lock, lockfileSha256);
   if (profile === 'vite-build') return buildViteBuildProfile(lock, lockfileSha256);
+  if (profile === 'eslint-js-strict') return buildEslintJsStrictProfile(lock, lockfileSha256);
   fail(`unsupported profile: ${profile}`);
 }
 

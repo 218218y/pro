@@ -46,6 +46,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also require and verify the Vite build and project runtime profiles",
     )
+    parser.add_argument(
+        "--with-eslint",
+        action="store_true",
+        help="Also require and verify the ESLint strict-JS workspace profile",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--esbuild-only",
@@ -82,6 +87,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Require only Node plus the Linux Vite build and project runtime profiles",
     )
+    group.add_argument(
+        "--eslint-only",
+        action="store_true",
+        help="Require only Node plus the ESLint strict-JS workspace profile",
+    )
     args = parser.parse_args(argv)
     try:
         manifest = core.load_manifest()
@@ -93,12 +103,15 @@ def main(argv: list[str] | None = None) -> int:
         core.typescript_entries(manifest, key)
         core.oxlint_entries(manifest, key)
         core.workspace_profile(manifest, key, "vite-build")
+        core.workspace_profile(manifest, key, "eslint-js-strict")
         if not args.manifest_only:
             workspace_profiles = []
             if args.tsx_only:
                 workspace_profiles.append("tsx-tests")
             if args.with_vite or args.vite_only:
                 workspace_profiles.extend(["tsx-tests", "vite-build"])
+            if args.with_eslint or args.eslint_only:
+                workspace_profiles.append("eslint-js-strict")
             core.verify_vendor(
                 manifest,
                 key,
@@ -111,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
                     or args.typescript_only
                     or args.oxlint_only
                     or args.vite_only
+                    or args.eslint_only
                 ),
                 esbuild=args.with_esbuild or args.esbuild_only,
                 tsx=args.with_tsx or args.tsx_only or args.tsx_engine_only,
@@ -128,6 +142,7 @@ def main(argv: list[str] | None = None) -> int:
             or args.typescript_only
             or args.oxlint_only
             or args.vite_only
+            or args.eslint_only
         ):
             components.append(f"Oxc {manifest['ast']['version']}")
         if (
@@ -164,6 +179,18 @@ def main(argv: list[str] | None = None) -> int:
             components.append(
                 f"Vite {vite_entry['version']} + @vitejs/plugin-react {react_entry['version']} "
                 f"({vite_profile['packageCount']} build packages)"
+            )
+        if args.with_eslint or args.eslint_only:
+            eslint_profile = manifest["workspace"]["profiles"]["eslint-js-strict"]
+            eslint_entry = core.workspace_package_entry(
+                manifest,
+                key,
+                "eslint-js-strict",
+                "eslint",
+            )
+            components.append(
+                f"ESLint {eslint_entry['version']} "
+                f"({eslint_profile['packageCount']} strict-JS packages)"
             )
         print(f"Offline vendor definition is valid for {key} ({', '.join(components)}).")
         return 0

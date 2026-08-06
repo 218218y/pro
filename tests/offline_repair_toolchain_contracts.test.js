@@ -34,9 +34,10 @@ function createTarEntry(name, content) {
   return Buffer.concat([header, body, padding]);
 }
 
-function createNpmArchive(packageJson) {
+function createNpmArchive(packageJson, files = {}) {
   const tar = Buffer.concat([
     createTarEntry('package/package.json', `${JSON.stringify(packageJson, null, 2)}\n`),
+    ...Object.entries(files).map(([name, content]) => createTarEntry(`package/${name}`, content)),
     Buffer.alloc(1024),
   ]);
   return zlib.gzipSync(tar, { level: 9 });
@@ -254,15 +255,41 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
   assert.doesNotMatch(pkg.scripts['deps:update:sync-generated'], /vendor:offline:vite-build:refresh/u);
 
-  const checkedIn = spawnSync(process.execPath, [tool, '--all', '--check'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
+  const checkedIn = spawnSync(
+    process.execPath,
+    [
+      tool,
+      '--component',
+      'esbuild',
+      '--component',
+      'tsx',
+      '--component',
+      'prettier',
+      '--component',
+      'typescript',
+      '--component',
+      'oxlint',
+      '--profile',
+      'vite-build',
+      '--check',
+    ],
+    {
+      cwd: root,
+      encoding: 'utf8',
+    }
+  );
   assert.equal(checkedIn.status, 0, checkedIn.stderr || checkedIn.stdout);
   for (const component of ['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']) {
     assert.match(checkedIn.stdout, new RegExp(`OK: ${component} `, 'u'));
   }
   assert.match(checkedIn.stdout, /OK: workspace vite-build \(16 packages\)/u);
+
+  const eslintPlan = spawnSync(process.execPath, [tool, '--profile', 'eslint-js-strict', '--check-plan'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(eslintPlan.status, 0, eslintPlan.stderr || eslintPlan.stdout);
+  assert.match(eslintPlan.stdout, /OK: workspace plan eslint-js-strict \(69 packages\)/u);
 
   const downloadPlan = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
     cwd: root,
@@ -278,6 +305,9 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     assert.match(downloadPlan.stdout, new RegExp(entry.url.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
     assert.match(downloadPlan.stdout, new RegExp(entry.file.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
   }
+  assert.match(downloadPlan.stdout, /workspace eslint-js-strict \(69 packages\)/u);
+  assert.match(downloadPlan.stdout, /eslint-10\.8\.0\.tgz/u);
+  assert.match(downloadPlan.stdout, /vendor\/offline\/eslint\/eslint-10\.8\.0\.tgz/u);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-npm-vendor-'));
   try {
@@ -725,6 +755,183 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
       { cwd: root, encoding: 'utf8' }
     );
     assert.equal(check.status, 0, check.stderr || check.stdout);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('offline ESLint strict-JS profile is lock-derived, included in standard refresh, and manually adoptable', () => {
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const manifest = readJson('vendor/offline/manifest.json');
+  const profile = manifest.workspace.profiles['eslint-js-strict'];
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+
+  assert.equal(lock.packages['node_modules/eslint'].version, '10.8.0');
+  assert.equal(pkg.devDependencies.eslint, lock.packages[''].devDependencies.eslint);
+  assert.deepEqual(profile.rootDependencies, ['eslint']);
+  assert.equal(profile.packageCount, 69);
+  assert.equal(profile.packageCount, profile.packages.length);
+
+  const names = new Set(profile.packages.map(entry => entry.name));
+  for (const requiredName of [
+    'eslint',
+    '@eslint/config-array',
+    '@eslint/core',
+    '@eslint/plugin-kit',
+    'espree',
+    'eslint-scope',
+    'eslint-visitor-keys',
+    'ajv',
+    'minimatch',
+  ]) {
+    assert.ok(names.has(requiredName), `${requiredName} must be present in the ESLint profile`);
+  }
+  assert.equal(names.has('jiti'), false, 'optional ESLint peer jiti must not enter the profile');
+
+  for (const entry of profile.packages) {
+    assertLockEntry(entry, entry.version, lock.packages);
+    assert.equal(entry.installPath, entry.lockPath);
+    assert.equal(supportsLinuxX64Glibc(lock.packages[entry.lockPath]), true, entry.lockPath);
+    assert.match(entry.file, /^vendor\/offline\/eslint\//u);
+  }
+
+  const expectedScripts = {
+    plan: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --sync-plan',
+    'check-plan': 'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --check-plan',
+    downloads:
+      'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --print-downloads --missing-only',
+    refresh: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict',
+    adopt: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --adopt-existing',
+    check: 'node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --check',
+  };
+  for (const [suffix, command] of Object.entries(expectedScripts)) {
+    assert.equal(pkg.scripts[`vendor:offline:eslint-js-strict:${suffix}`], command);
+  }
+  assert.equal(pkg.scripts['setup:offline:eslint'], 'python tools/bootstrap_offline_eslint.py');
+  assert.equal(
+    pkg.scripts['verify:offline:eslint'],
+    'python tools/verify_offline_repair_vendor.py --eslint-only'
+  );
+  assert.equal(pkg.scripts['run:offline:eslint'], 'python tools/run_offline_eslint.py');
+  assert.equal(
+    pkg.scripts['lint:js:strict:offline'],
+    'python tools/run_offline_eslint.py --profile js-only --strict'
+  );
+
+  const bootstrap = fs.readFileSync(path.join(root, 'tools/bootstrap_offline_eslint.py'), 'utf8');
+  const runner = fs.readFileSync(path.join(root, 'tools/run_offline_eslint.py'), 'utf8');
+  assert.match(bootstrap, /ESLINT_PROFILE = "eslint-js-strict"/u);
+  assert.match(bootstrap, /install_workspace_profile/u);
+  assert.match(runner, /tools" \/ "wp_lint\.js"/u);
+  assert.match(runner, /process_runner\.run_isolated/u);
+  assert.doesNotMatch(runner, /(?:npm|npx|node_modules\/eslint\/bin\/eslint\.js)/u);
+
+  const planCheck = spawnSync(process.execPath, [tool, '--profile', 'eslint-js-strict', '--check-plan'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
+  assert.match(planCheck.stdout, /workspace plan eslint-js-strict \(69 packages\)/u);
+
+  const downloads = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
+  assert.match(downloads.stdout, /workspace eslint-js-strict \(69 packages\)/u);
+  assert.match(downloads.stdout, /eslint-10\.8\.0\.tgz/u);
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-eslint-vendor-'));
+  try {
+    const fixtureLock = structuredClone(lock);
+    const fixtureManifest = structuredClone(manifest);
+    delete fixtureManifest.workspace.profiles['eslint-js-strict'];
+    const fixtureVendor = path.join(fixtureRoot, 'vendor/offline/eslint');
+    fs.mkdirSync(fixtureVendor, { recursive: true });
+
+    for (const entry of profile.packages) {
+      const lockEntry = fixtureLock.packages[entry.lockPath];
+      const packageJson = { name: entry.name, version: entry.version };
+      for (const constraint of ['os', 'cpu', 'libc']) {
+        if (Array.isArray(lockEntry[constraint])) packageJson[constraint] = lockEntry[constraint];
+      }
+      const archive = createNpmArchive(
+        packageJson,
+        entry.name === 'eslint'
+          ? { 'bin/eslint.js': `#!/usr/bin/env node\nconsole.log('v${entry.version}');\n` }
+          : {}
+      );
+      lockEntry.integrity = `sha512-${crypto.createHash('sha512').update(archive).digest('base64')}`;
+      fs.mkdirSync(path.dirname(path.join(fixtureRoot, entry.file)), { recursive: true });
+      fs.writeFileSync(path.join(fixtureRoot, entry.file), archive);
+    }
+    fs.writeFileSync(path.join(fixtureVendor, 'stale-0.0.0.tgz'), 'stale');
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'package-lock.json'),
+      `${JSON.stringify(fixtureLock, null, 2)}\n`
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(fixtureManifest, null, 2)}\n`
+    );
+
+    const adopt = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'eslint-js-strict', '--adopt-existing'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+    assert.match(adopt.stdout, /workspace eslint-js-strict \(69 packages\)/u);
+
+    const synced = JSON.parse(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
+    );
+    assert.deepEqual(synced.workspace.profiles['eslint-js-strict'].rootDependencies, ['eslint']);
+    assert.equal(synced.workspace.profiles['eslint-js-strict'].packageCount, 69);
+    assert.equal(fs.existsSync(path.join(fixtureVendor, 'stale-0.0.0.tgz')), false);
+
+    const check = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'eslint-js-strict', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(check.status, 0, check.stderr || check.stdout);
+
+    const installProbe = String.raw`
+from pathlib import Path
+import json
+import sys
+
+sys.path.insert(0, str(Path.cwd() / "tools"))
+import bootstrap_offline_repair_core as core
+
+fixture = Path(sys.argv[1]).resolve()
+core.ROOT = fixture
+core.MANIFEST_PATH = fixture / "vendor" / "offline" / "manifest.json"
+core.LOCK_PATH = fixture / "package-lock.json"
+manifest = core.load_manifest()
+key = core.platform_key()
+core.install_workspace_profile(
+    manifest,
+    key,
+    Path(sys.argv[2]),
+    "eslint-js-strict",
+    force=True,
+)
+stamp = json.loads(
+    (fixture / "node_modules" / ".offline-workspace-eslint-js-strict.json").read_text(
+        encoding="utf-8"
+    )
+)
+assert stamp["packageCount"] == 69
+assert (fixture / "node_modules" / "eslint" / "bin" / "eslint.js").is_file()
+`;
+    const install = spawnSync('python', ['-c', installProbe, fixtureRoot, process.execPath], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(install.status, 0, install.stderr || install.stdout);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }

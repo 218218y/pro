@@ -13,6 +13,9 @@ React, Three.js, PDF, Supabase, and other `.ts`/`.tsx` tests.
 A second lockfile-derived `vite-build` profile supplies Vite, `@vitejs/plugin-react`, and the exact GNU/Linux
 x64 build dependency closure. The Vite runner installs both profiles so a clean workspace can resolve the
 application's production imports as well as the build toolchain.
+A third lockfile-derived `eslint-js-strict` profile supplies ESLint and the complete dependency closure used
+by `lint:js:strict`. It is platform-neutral JavaScript, but it is still verified and installed only through
+the repository's Linux x64 glibc offline runtime.
 
 ## Core set: Node 24 + Oxc AST compatibility fallback
 
@@ -36,8 +39,8 @@ python tools/bootstrap_offline_repair_core.py
 
 ## Keep npm-backed slices synchronized
 
-`package-lock.json` is the single source of truth for esbuild, TSX, Prettier, TypeScript, Oxlint, and
-oxlint-tsgolint. Do not edit their
+`package-lock.json` is the single source of truth for esbuild, TSX, Prettier, TypeScript, Oxlint,
+oxlint-tsgolint, Vite, and ESLint. Do not edit their
 manifest versions or download URLs by hand.
 
 ```bash
@@ -84,6 +87,38 @@ npm run lint:ts-modern:type-aware:offline
 
 The offline runners export the manifest-pinned `OXLINT_TSGOLINT_PATH`, so type-aware linting does not depend
 on a globally installed backend or PATH lookup.
+
+## Optional strict JavaScript linter set: ESLint
+
+The `eslint-js-strict` workspace profile is generated from the exact `eslint` devDependency in
+`package-lock.json`. It follows every required direct, transitive, and non-optional peer dependency needed by
+the flat-config CLI. Optional peer `jiti` is intentionally excluded because `eslint.config.js` is JavaScript
+and does not require TypeScript config loading.
+
+The regular package commands already include this profile:
+
+```bash
+npm run vendor:offline:packages:downloads
+npm run vendor:offline:packages:refresh
+npm run vendor:offline:packages:adopt
+npm run vendor:offline:packages:check
+```
+
+For a manual/no-network flow, download the missing archives to the exact paths printed under
+`vendor/offline/eslint/`, then run `vendor:offline:packages:adopt`. Focused maintenance aliases remain
+available as `vendor:offline:eslint-js-strict:*`.
+
+Verify, install, and run the existing strict-JS lane without npm resolution:
+
+```bash
+npm run verify:offline:eslint
+npm run setup:offline:eslint
+npm run run:offline:eslint -- --profile js-only --strict
+npm run lint:js:strict:offline
+```
+
+The offline runner invokes the canonical `tools/wp_lint.js`; target selection, profile handling, strict
+warning policy, and future lint behavior therefore stay identical to the online `lint:js:strict` command.
 
 ## Optional formatter set: Prettier
 
