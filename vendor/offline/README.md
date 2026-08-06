@@ -49,6 +49,9 @@ npm run vendor:offline:packages:refresh
 npm run vendor:offline:packages:check
 ```
 
+The standard `--all` selection covers the `tsx-tests`, `vite-build`, and `eslint-js-strict` workspace
+profiles in addition to the focused tool packages, so one regular refresh follows runtime dependency updates too.
+
 `downloads` prints exact official URLs and destination paths. `refresh` adopts valid files already present and
 downloads only missing targets. For a completely manual/no-network flow, place the files first and run
 `npm run vendor:offline:packages:adopt`. All archives are checked against lockfile integrity and embedded npm

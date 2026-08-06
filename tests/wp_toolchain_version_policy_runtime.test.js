@@ -69,7 +69,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
     'oxlint-tsgolint': '7.0.2001',
-    'oxc-parser': '>=0.142.0 <0.143.0',
+    'oxc-parser': '>=0.143.0 <0.144.0',
   };
   assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
   assert.deepEqual(
@@ -87,19 +87,20 @@ test('toolchain version policy allows bounded compatible updates', () => {
   );
   const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
   const activeOxcVersion = byName.get('oxc-parser').resolvedVersion;
-  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.142.0', '0.143.0'), true);
-  assert.match(offlineManifest.ast.version, /^0\.(?:141|142)\.\d+$/u);
-  assert.equal(offlineManifest.ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
-  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.141.0', '0.143.0'), true);
-  assert.equal(isVersionWithinBounds(offlineManifest.ast.version, '0.141.0', '0.143.0'), true);
+  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.143.0', '0.144.0'), true);
+  assert.match(offlineManifest.ast.version, /^0\.(?:142|143)\.\d+$/u);
+  assert.equal(offlineManifest.ast.compatibleProjectRange, '>=0.142.0 <0.144.0');
+  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.142.0', '0.144.0'), true);
+  assert.equal(isVersionWithinBounds(offlineManifest.ast.version, '0.142.0', '0.144.0'), true);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
   assert.equal(isVersionWithinBounds('7.0.2', '7.0.2', '7.1.0'), true);
   assert.equal(isVersionWithinBounds('7.0.99', '7.0.2', '7.1.0'), true);
   assert.equal(isVersionWithinBounds('7.1.0', '7.0.2', '7.1.0'), false);
-  assert.equal(isVersionWithinBounds('0.142.0', '0.141.0', '0.143.0'), true);
-  assert.equal(isVersionWithinBounds('0.143.0', '0.141.0', '0.143.0'), false);
+  assert.equal(isVersionWithinBounds('0.142.0', '0.142.0', '0.144.0'), true);
+  assert.equal(isVersionWithinBounds('0.143.9', '0.142.0', '0.144.0'), true);
+  assert.equal(isVersionWithinBounds('0.144.0', '0.142.0', '0.144.0'), false);
   assert.equal(isVersionWithinBounds('latest', '1.0.0', '2.0.0'), false);
 });
 
@@ -131,7 +132,7 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
 
   assert.equal(
     scripts['deps:update:sync-generated'],
-    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh && npm run vendor:offline:tsx-tests:refresh'
+    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
   );
   assert.equal(
     scripts['vendor:offline:packages:refresh'],

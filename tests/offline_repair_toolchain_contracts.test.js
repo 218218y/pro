@@ -179,11 +179,11 @@ test('offline AST fallback is signed independently and compatible with the activ
   const activeParser = lock.packages['node_modules/oxc-parser'];
   const activeVersion = activeParser.version;
 
-  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.142.0 <0.143.0');
+  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.143.0 <0.144.0');
   assert.equal(lock.packages[''].devDependencies['oxc-parser'], pkg.devDependencies['oxc-parser']);
-  assert.equal(isVersionInBoundedRange(activeVersion, '>=0.142.0 <0.143.0'), true);
-  assert.match(ast.version, /^0\.(?:141|142)\.\d+$/u);
-  assert.equal(ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
+  assert.equal(isVersionInBoundedRange(activeVersion, '>=0.143.0 <0.144.0'), true);
+  assert.match(ast.version, /^0\.(?:142|143)\.\d+$/u);
+  assert.equal(ast.compatibleProjectRange, '>=0.142.0 <0.144.0');
   assert.equal(isVersionInBoundedRange(activeVersion, ast.compatibleProjectRange), true);
   assert.equal(isVersionInBoundedRange(ast.version, ast.compatibleProjectRange), true);
   assert.equal(lock.packages['node_modules/@oxc-project/types'].version, activeVersion);
@@ -222,7 +222,7 @@ test('offline Oxc vendor refresh command validates the checked-in bundle without
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /offline 0\.(?:141|142)\.\d+; active 0\.142\.\d+/u);
+  assert.match(result.stdout, /offline 0\.(?:142|143)\.\d+; active 0\.143\.\d+/u);
 });
 
 test('offline npm vendor synchronizer adopts lockfile packages and cleans superseded archives', () => {
@@ -252,8 +252,14 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     'node tools/wp_refresh_offline_npm_vendor.mjs --component tsx --adopt-existing'
   );
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
-  assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
-  assert.doesNotMatch(pkg.scripts['deps:update:sync-generated'], /vendor:offline:vite-build:refresh/u);
+  assert.equal(
+    pkg.scripts['deps:update:sync-generated'],
+    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
+  );
+  assert.doesNotMatch(
+    pkg.scripts['deps:update:sync-generated'],
+    /vendor:offline:(?:tsx-tests|vite-build|eslint-js-strict):refresh/u
+  );
 
   const checkedIn = spawnSync(
     process.execPath,
@@ -305,6 +311,8 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     assert.match(downloadPlan.stdout, new RegExp(entry.url.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
     assert.match(downloadPlan.stdout, new RegExp(entry.file.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
   }
+  assert.match(downloadPlan.stdout, /workspace tsx-tests \(23 packages\)/u);
+  assert.match(downloadPlan.stdout, /workspace vite-build \(16 packages\)/u);
   assert.match(downloadPlan.stdout, /workspace eslint-js-strict \(69 packages\)/u);
   assert.match(downloadPlan.stdout, /eslint-10\.8\.0\.tgz/u);
   assert.match(downloadPlan.stdout, /vendor\/offline\/eslint\/eslint-10\.8\.0\.tgz/u);
@@ -699,7 +707,12 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
   assert.match(downloads.stdout, /workspace vite-build \(16 packages\)/u);
   assert.match(downloads.stdout, /vite-8\.2\.0\.tgz/u);
   assert.match(downloads.stdout, /plugin-react-6\.0\.5\.tgz/u);
-  assert.match(downloads.stdout, /binding-linux-x64-gnu-1\.2\.1\.tgz/u);
+  const rolldownBindingVersion = lock.packages['node_modules/@rolldown/binding-linux-x64-gnu'].version;
+  const escapedRolldownBindingVersion = rolldownBindingVersion.replaceAll('.', '\\.');
+  assert.match(
+    downloads.stdout,
+    new RegExp(`binding-linux-x64-gnu-${escapedRolldownBindingVersion}\\.tgz`, 'u')
+  );
   assert.match(downloads.stdout, /lightningcss-linux-x64-gnu-1\.33\.0\.tgz/u);
   assert.doesNotMatch(downloads.stdout, /wasm32|darwin|win32|musl|arm64/u);
 
@@ -1059,22 +1072,22 @@ import tempfile
 sys.path.insert(0, str(Path.cwd() / "tools"))
 import bootstrap_offline_repair_core as core
 
-assert core._bounded_range_accepts("0.141.0", ">=0.141.0 <0.143.0")
-assert core._bounded_range_accepts("0.142.9", ">=0.141.0 <0.143.0")
-assert not core._bounded_range_accepts("0.143.0", ">=0.141.0 <0.143.0")
+assert core._bounded_range_accepts("0.142.0", ">=0.142.0 <0.144.0")
+assert core._bounded_range_accepts("0.143.9", ">=0.142.0 <0.144.0")
+assert not core._bounded_range_accepts("0.144.0", ">=0.142.0 <0.144.0")
 
 manifest = core.load_manifest()
 offline_boundary_manifest = deepcopy(manifest)
-offline_boundary_manifest["ast"]["version"] = "0.143.0"
+offline_boundary_manifest["ast"]["version"] = "0.144.0"
 try:
     core.validate_manifest_against_project(offline_boundary_manifest)
 except core.OfflineCoreError as error:
-    assert "Offline AST version 0.143.0" in str(error)
+    assert "Offline AST version 0.144.0" in str(error)
 else:
     raise AssertionError("incompatible offline fallback was accepted")
 
 lock = json.loads(core.LOCK_PATH.read_text(encoding="utf-8"))
-lock["packages"]["node_modules/oxc-parser"]["version"] = "0.143.0"
+lock["packages"]["node_modules/oxc-parser"]["version"] = "0.144.0"
 with tempfile.TemporaryDirectory() as temp_dir:
     original_lock_path = core.LOCK_PATH
     test_lock_path = Path(temp_dir) / "package-lock.json"
@@ -1083,7 +1096,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     try:
         core.validate_manifest_against_project(manifest)
     except core.OfflineCoreError as error:
-        assert "Project oxc-parser 0.143.0" in str(error)
+        assert "Project oxc-parser 0.144.0" in str(error)
     else:
         raise AssertionError("incompatible active parser was accepted")
     finally:

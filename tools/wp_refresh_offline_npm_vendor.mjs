@@ -10,7 +10,7 @@ import zlib from 'node:zlib';
 const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']);
 const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
 const SUPPORTED_PROFILES = Object.freeze(['tsx-tests', 'vite-build', 'eslint-js-strict']);
-const STANDARD_PACKAGE_PROFILES = Object.freeze(['vite-build', 'eslint-js-strict']);
+const STANDARD_PACKAGE_PROFILES = Object.freeze(['tsx-tests', 'vite-build', 'eslint-js-strict']);
 const PROFILE_SET = new Set(SUPPORTED_PROFILES);
 const VITE_BUILD_ROOT_DEPENDENCIES = Object.freeze(['@vitejs/plugin-react', 'vite']);
 const VITE_BUILD_EXCLUDED_OPTIONAL_DEPENDENCIES = new Set(['@rolldown/binding-wasm32-wasi']);

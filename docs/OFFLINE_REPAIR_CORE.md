@@ -6,7 +6,7 @@ The full project toolchain is intentionally large. Most focused architecture and
 smaller trusted set:
 
 - repository-pinned Node `24.18.0`;
-- active project parser `oxc-parser 0.142.x` from `package-lock.json`;
+- active project parser `oxc-parser 0.143.x` from `package-lock.json`;
 - signed offline Oxc bundle whose exact version is declared in `vendor/offline/manifest.json`;
 - matching offline `@oxc-project/types`;
 - the matching Linux x64 glibc native Oxc parser binding;
@@ -20,6 +20,8 @@ smaller trusted set:
 - optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package;
 - optionally, lockfile-pinned Oxlint plus its GNU/Linux x64 binding and the matching `oxlint-tsgolint`
   type-aware backend.
+
+The standard `npm run vendor:offline:packages:refresh` command refreshes the focused toolchain plus all lock-derived workspace profiles (`tsx-tests`, `vite-build`, and `eslint-js-strict`), so a dependency update cannot leave the runtime profile stale.
 
 The bootstrap extracts only explicitly listed archives. The workspace profile is resolved ahead of time from
 `package-lock.json`; installation itself does not invoke npm, resolve packages, run lifecycle scripts, install
@@ -150,7 +152,7 @@ Use the repository command rather than editing the version and generated policy 
 npm run deps:update:oxc
 ```
 
-The active parser is bounded to `>=0.142.0 <0.143.0`, so reviewed `0.142.x` patches may advance while `0.143.0` remains blocked pending a new AST compatibility review. The signed offline bundle may lag inside the reviewed manifest window, but it can be synchronized to the exact active lockfile version with:
+The active parser is bounded to `>=0.143.0 <0.144.0`, so reviewed `0.143.x` patches may advance while `0.144.0` remains blocked pending a new AST compatibility review. The signed `0.142.x` offline bundle remains valid through the explicitly reviewed `>=0.142.0 <0.144.0` bridge because both parser lines pass the same AST adapter contract; it can still be synchronized to the exact active lockfile version with:
 
 ```bash
 npm run vendor:offline:oxc:refresh
@@ -248,10 +250,11 @@ npm run vendor:offline:packages:adopt
 npm run vendor:offline:packages:check
 ```
 
-For an online refresh, use `npm run vendor:offline:packages:refresh`. Its `--all` selection includes the
-`vite-build` and `eslint-js-strict` workspace profiles, so the regular package refresh downloads and verifies
-both toolchains together with the focused npm components. The profile-specific commands remain available only
-as focused maintenance aliases; the dependency update workflow does not invoke duplicate refreshes.
+For an online refresh, use `npm run vendor:offline:packages:refresh`. Its `--all` selection includes all
+lock-derived workspace profiles: `tsx-tests`, `vite-build`, and `eslint-js-strict`. The regular package refresh
+therefore downloads and verifies runtime, build, and lint dependencies together with the focused npm
+components. The profile-specific commands remain available only as focused maintenance aliases; the dependency
+update workflow does not invoke duplicate refreshes.
 
 Install and run the build tool without npm resolution or lifecycle scripts:
 

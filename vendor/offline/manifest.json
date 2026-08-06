@@ -15,7 +15,7 @@
   },
   "ast": {
     "version": "0.142.0",
-    "compatibleProjectRange": ">=0.141.0 <0.143.0",
+    "compatibleProjectRange": ">=0.142.0 <0.144.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
@@ -173,21 +173,21 @@
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.2.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.2.tgz",
-            "integrity": "sha512-EYEqlMYaCbpZDz+IgDH5xp9MTd3ui4dmGqbQYryhMLnSRxrhHKq5KQWHHKxFUcEP4Hp8/BWgvqXocX4j7iSbOQ=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.3.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.3.tgz",
+            "integrity": "sha512-OlI657a5XXvKGFX7kNeIzJ8rO7IXt87Mqu2H8rXE46viAuOfum/JA7ysX7+eBhxNKznT+RCZh418mndlcFX3+w=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.2.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.2.tgz",
-            "integrity": "sha512-nPR97DXhbWIAy7yazF3jc06kEPMqYMLmPzFOVNlwKPfIoSChnI+x7dc0hTLaihz3jxrjL6j4BbA7earxfx4X3g=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.3.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.3.tgz",
+            "integrity": "sha512-jtfzAHFp+FRaR7zGT4jyCe6wUgAG/dVb5A4Apd8FY9jKarntDfUAlJXscugiH7ZF5kKnu7/lHFk9LaDPcrGEVQ=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -218,21 +218,21 @@
           },
           {
             "name": "@supabase/auth-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/auth-js",
             "installPath": "node_modules/@supabase/auth-js",
-            "file": "vendor/offline/runtime/supabase__auth-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.111.0.tgz",
-            "integrity": "sha512-hbRLgyQZEX0SDyF4LYXpv94qOIQyFATfpT5SIs2V0SisHnisVRkYgiPQWzv80l4S2mO3qof78rmoH9j5zoFsYQ=="
+            "file": "vendor/offline/runtime/supabase__auth-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.1.tgz",
+            "integrity": "sha512-TBacB69YXSYYFFet9ISgNC2jsPExFPIWngmzeLHAWrp/xvKWfYIyhh0nyvDLryi8WP6KoexkXO9kRF6Y9oBUTA=="
           },
           {
             "name": "@supabase/functions-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/functions-js",
             "installPath": "node_modules/@supabase/functions-js",
-            "file": "vendor/offline/runtime/supabase__functions-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.111.0.tgz",
-            "integrity": "sha512-RW/OCsd6MO592zU8ifzP8/f8XzxxIdpb+Up5XaOtE26Fw+3zTp475WX7+GuuktiD1WF8pFUDe6khUPbMp77RCw=="
+            "file": "vendor/offline/runtime/supabase__functions-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.1.tgz",
+            "integrity": "sha512-t5L8qBpRC2ZswHD4A7DNL/sNpFLEeflaYaZVe5dCWvAD82pm2WOysU8EKgiJub3doxo/QU8RuDvYFlRyRk8ghw=="
           },
           {
             "name": "@supabase/phoenix",
@@ -245,39 +245,39 @@
           },
           {
             "name": "@supabase/postgrest-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/postgrest-js",
             "installPath": "node_modules/@supabase/postgrest-js",
-            "file": "vendor/offline/runtime/supabase__postgrest-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.111.0.tgz",
-            "integrity": "sha512-pcqeDsnWP0lx9GawduYxNZJHeuTm53O7L0SC8RF8tniV3GWIPY6me6OTdnwzdwNUmNy1dzUVtSyIfE6+OflzPQ=="
+            "file": "vendor/offline/runtime/supabase__postgrest-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.1.tgz",
+            "integrity": "sha512-oX42JgoVT8bP73/XYE1+kQdj6/Ql1j6lD6zpCoL8aq1B0uhZsz4FSoT+cBJB3pi4aPZEA0Ntkid6w7uzuAH5jQ=="
           },
           {
             "name": "@supabase/realtime-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/realtime-js",
             "installPath": "node_modules/@supabase/realtime-js",
-            "file": "vendor/offline/runtime/supabase__realtime-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.111.0.tgz",
-            "integrity": "sha512-6oRf/vZyRwg8f8GbFSJkrD2w4HAu/yTvyMViHXHS+H5hNJzdXCrUR7cP5oW7daT3YlRnzRPY9LcGSJKZAmfMSg=="
+            "file": "vendor/offline/runtime/supabase__realtime-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.1.tgz",
+            "integrity": "sha512-jp5TgXXTb1m2rqF6kiirOhVnvAoFHrjj7ZHOzWRa+SL+Am0BbcMcQr6FyHkJJS1ngw0TAL2DeymfGgKkSanN0A=="
           },
           {
             "name": "@supabase/storage-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/storage-js",
             "installPath": "node_modules/@supabase/storage-js",
-            "file": "vendor/offline/runtime/supabase__storage-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.111.0.tgz",
-            "integrity": "sha512-UEViNmTzVOxE8dqUA81wls+n9xgmlvSFfhfwo6QxrO4kQOytCYyw3ciYFoi4XoD4Jl95NJ3jnndHN5iIudWzqw=="
+            "file": "vendor/offline/runtime/supabase__storage-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.1.tgz",
+            "integrity": "sha512-FHKAQTw4KUV9nF3bnOLvZvjB3bkmtl6ltavlJfdJKdabvqMtQQ2iyBliFyp2dSHMCn9qA8c6WoZoRkgV5nxAmg=="
           },
           {
             "name": "@supabase/supabase-js",
-            "version": "2.111.0",
+            "version": "2.112.1",
             "lockPath": "node_modules/@supabase/supabase-js",
             "installPath": "node_modules/@supabase/supabase-js",
-            "file": "vendor/offline/runtime/supabase__supabase-js-2.111.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.111.0.tgz",
-            "integrity": "sha512-9q0/AULthQnWeiDh1vGyjoJZbSY04bu6qHcWit70pqEYn5Kv/dkCPY62Ja1123jEnJbB9Vd2pjY7Kvk/lK3peA=="
+            "file": "vendor/offline/runtime/supabase__supabase-js-2.112.1.tgz",
+            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.1.tgz",
+            "integrity": "sha512-KooEPqALZNkQCr1PBhbEImnPm6Ko6TKWiOrj3UxQki74g2KWlXGleQgEudUwRAKZs5U1ilSssO0TpxgVOspihQ=="
           },
           {
             "name": "iceberg-js",
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "aa73085bf6a627ae1bd9673ca59f2f89f70c13ceab622d5d37d8ffb6cbcd54ca"
+    "lockfileSha256": "b8f672c935acfae7fa4c10861f7c021b9f99d837ca995e9fc0e6d1856301425f"
   }
 }

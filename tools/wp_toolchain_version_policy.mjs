@@ -17,7 +17,7 @@ const APPROVED_DEV_DEP_RANGES = Object.freeze({
   eslint: '^10.8.0',
   oxlint: '^1.75.0',
   'oxlint-tsgolint': '7.0.2001',
-  'oxc-parser': '>=0.142.0 <0.143.0',
+  'oxc-parser': '>=0.143.0 <0.144.0',
 });
 
 const TOOLCHAIN_DEV_DEPS = [
@@ -71,11 +71,11 @@ const TOOLCHAIN_DEV_DEPS = [
   {
     name: 'oxc-parser',
     approvedRange: APPROVED_DEV_DEP_RANGES['oxc-parser'],
-    minVersion: '0.142.0',
-    maxExclusiveVersion: '0.143.0',
+    minVersion: '0.143.0',
+    maxExclusiveVersion: '0.144.0',
     role: 'Internal AST adapter parser used by production contracts and code-analysis tools.',
     updatePolicy:
-      'Allow reviewed 0.142.x patch releases. The separately signed offline fallback may lag inside the same tested AST compatibility window.',
+      'Allow reviewed 0.143.x patch releases. The separately signed offline fallback may remain on 0.142.x while both lines pass the same AST adapter contract.',
   },
 ];
 
