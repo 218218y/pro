@@ -2254,3 +2254,140 @@ test('paint click rejects mirror on carcass frame parts before grouped body pain
   assert.equal(toasts.length, 1);
   assert.match(String(toasts[0]?.message || ''), /מראה זמינה/);
 });
+
+test('paint commit does not replay a config mutation when history batch throws after callback completion', () => {
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  const renderCalls: boolean[] = [];
+  let applyCalls = 0;
+  let materialRefreshes = 0;
+  const App = createApp({
+    maps: {
+      individualColors: { body_left: 'white' },
+      curtainMap: {},
+      doorSpecialMap: {},
+      mirrorLayoutMap: {},
+    },
+    builderMaterials: {
+      applyMaterials() {
+        materialRefreshes += 1;
+      },
+    },
+  });
+  App.services.errors = {
+    report(error: unknown, context: unknown) {
+      diagnostics.push({ error, context });
+    },
+  };
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        cb();
+        throw new Error('batch-after-callback');
+      },
+    },
+    colors: {
+      applyPaint() {
+        applyCalls += 1;
+      },
+    },
+  };
+  App.platform = {
+    triggerRender(updateShadows?: boolean) {
+      renderCalls.push(!!updateShadows);
+    },
+  };
+
+  const state = createPaintFlowMutableState(App as never);
+  state.ensureColors().body_left = 'black';
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  try {
+    const summary = commitPaintFlowState({
+      App: App as never,
+      state,
+      paintSource: 'paint.apply:group',
+      invalidationKind: 'materialRefreshOnly',
+    });
+    assert.equal(summary.didChange, true);
+  } finally {
+    console.warn = originalWarn;
+  }
+
+  assert.equal(applyCalls, 1);
+  assert.equal(materialRefreshes, 1);
+  assert.deepEqual(renderCalls, [false]);
+  assert.equal(
+    diagnostics.some(entry => entry.context?.where === 'canvasPicking.history'),
+    true
+  );
+});
+
+test('paint commit never refreshes a write that failed inside history batch and never retries the mutation', () => {
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  const renderCalls: boolean[] = [];
+  let applyCalls = 0;
+  let materialRefreshes = 0;
+  const App = createApp({
+    maps: {
+      individualColors: { body_left: 'white' },
+      curtainMap: {},
+      doorSpecialMap: {},
+      mirrorLayoutMap: {},
+    },
+    builderMaterials: {
+      applyMaterials() {
+        materialRefreshes += 1;
+      },
+    },
+  });
+  App.services.errors = {
+    report(error: unknown, context: unknown) {
+      diagnostics.push({ error, context });
+    },
+  };
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    colors: {
+      applyPaint() {
+        applyCalls += 1;
+        throw new Error('paint-write-failed');
+      },
+    },
+  };
+  App.platform = {
+    triggerRender(updateShadows?: boolean) {
+      renderCalls.push(!!updateShadows);
+    },
+  };
+
+  const state = createPaintFlowMutableState(App as never);
+  state.ensureColors().body_left = 'black';
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  try {
+    assert.doesNotThrow(() =>
+      commitPaintFlowState({
+        App: App as never,
+        state,
+        paintSource: 'paint.apply:group',
+        invalidationKind: 'materialRefreshOnly',
+      })
+    );
+  } finally {
+    console.warn = originalWarn;
+  }
+
+  assert.equal(applyCalls, 1);
+  assert.equal(materialRefreshes, 0);
+  assert.deepEqual(renderCalls, []);
+  assert.equal(
+    diagnostics.some(
+      entry => entry.context?.where === 'canvasPicking.paint' && entry.context?.op === 'commit'
+    ),
+    true
+  );
+});

@@ -13,9 +13,9 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   features: 12,
   io: 4,
   kernel: 19,
-  platform: 62,
-  runtime: 127,
-  services: 113,
+  platform: 61,
+  runtime: 126,
+  services: 106,
   ui: 211,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -25,9 +25,9 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   features: 1,
   io: 0,
   kernel: 10,
-  platform: 16,
+  platform: 15,
   runtime: 0,
-  services: 2,
+  services: 1,
   ui: 26,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
@@ -68,6 +68,9 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/cloud_sync_main_row_pull_runtime.ts',
   'esm/native/services/cloud_sync_main_row_remote_pull.ts',
   'esm/native/services/cloud_sync_owner_context_status_publication_runtime.ts',
+  'esm/native/services/canvas_picking_paint_flow_apply_commit.ts',
+  'esm/native/runtime/app_helpers.ts',
+  'esm/native/platform/render_scheduler.ts',
   'esm/native/ui/react/actions/modes_actions.ts',
 ]);
 

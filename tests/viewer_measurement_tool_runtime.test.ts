@@ -936,6 +936,29 @@ test('viewer measurement exits primary mode when clicking an empty canvas area',
   assert.deepEqual(App.__lastToast, { value: null, active: false });
 });
 
+test('viewer measurement reports a rejected primary-mode exit while keeping local cleanup fail-soft', () => {
+  const wardrobe = createGroup();
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  App.services.errors = {
+    report(error: unknown, context: unknown) {
+      diagnostics.push({ error, context });
+    },
+  };
+  App.actions = {
+    mode: {
+      set() {
+        throw new Error('mode-write-failed');
+      },
+    },
+  };
+
+  assert.doesNotThrow(() => tryHandleViewerMeasurementClick({ App, hitState: null }));
+  assert.equal(diagnostics.at(-1)?.context?.where, 'viewerMeasurement');
+  assert.equal(diagnostics.at(-1)?.context?.op, 'exitPrimaryMode');
+});
+
 test('viewer point measurement exits when the canvas click has no measurement target', () => {
   const wardrobe = createGroup();
   const labels: string[] = [];

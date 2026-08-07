@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-08-05T15:59:45.414Z",
+  "generatedAt": "2026-08-07T04:34:29.426Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 8,
-    "totalFiles": 4,
+    "totalOccurrences": 10,
+    "totalFiles": 6,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 0,
+      "domain-default": 1,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
-      "project-migration": 0,
+      "project-migration": 1,
       "external-api-compat": 0,
       "compat-boundary": 0,
       "test-fixture": 6,
@@ -18,6 +18,18 @@
       "unknown": 0
     },
     "byFile": {
+      "esm/native/runtime/app_helpers.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/services/render_surface_runtime_support_ops.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
@@ -52,6 +64,20 @@
         }
       },
       {
+        "file": "esm/native/runtime/app_helpers.ts",
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      {
+        "file": "esm/native/services/render_surface_runtime_support_ops.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
@@ -76,6 +102,20 @@
   },
   "allowlistComparison": null,
   "occurrences": [
+    {
+      "file": "esm/native/runtime/app_helpers.ts",
+      "line": 22,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "* A direct fallback is safe only when the canonical batch surface fails before"
+    },
+    {
+      "file": "esm/native/services/render_surface_runtime_support_ops.ts",
+      "line": 46,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// is still a safe snapshot fallback and avoids fabricating a zero vector."
+    },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 58,

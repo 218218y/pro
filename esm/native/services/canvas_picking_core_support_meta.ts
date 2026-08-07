@@ -42,8 +42,8 @@ export function __wp_historyBatch(App: AppContainer, meta: ActionMetaLike, fn: (
     return historyBatch(App, meta, fn);
   } catch (err) {
     __wp_reportPickingIssue(App, err, { where: 'canvasPicking.history', op: 'batch', throttleMs: 2000 });
+    return undefined;
   }
-  return fn();
 }
 
 export function __wp_str(App: AppContainer, v: unknown): string {

@@ -52,16 +52,14 @@ export function triggerRender(App: unknown, updateShadows?: boolean): void {
   ensureActivity(A);
   runPlatformWakeupFollowThrough(A, {
     afterTouch: () => {
-      try {
-        const renderer = (() => {
-          const value = getRenderer(A);
-          return isRendererLike(value) ? value : null;
-        })();
-        ensureRenderNamespace(A);
-        if (updateShadows === true && renderer && renderer.shadowMap) {
-          renderer.shadowMap.needsUpdate = true;
-        }
-      } catch (_) {}
+      const renderer = (() => {
+        const value = getRenderer(A);
+        return isRendererLike(value) ? value : null;
+      })();
+      ensureRenderNamespace(A);
+      if (updateShadows === true && renderer && renderer.shadowMap) {
+        renderer.shadowMap.needsUpdate = true;
+      }
     },
   });
 }

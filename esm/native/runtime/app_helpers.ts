@@ -13,16 +13,27 @@ import type { ActionMetaLike, AppContainer } from '../../../types/index.js';
 
 import { callMetaAction, hasMetaAction } from './actions_access_domains.js';
 import { runHistoryBatchViaActions } from './actions_access_mutations.js';
+import { reportError } from './errors.js';
 import { metaNoBuild } from './meta_profiles_access.js';
 
 /**
  * Run a history batch when `App.actions.history.batch` is available.
- * Falls back to direct execution of `fn` when unavailable or if it throws.
+ *
+ * A direct fallback is safe only when the canonical batch surface fails before
+ * invoking the callback. Once the callback has started it may already have
+ * mutated canonical state, so re-running it would risk duplicate commits.
  */
 export function historyBatch(App: AppContainer, meta: ActionMetaLike, fn: () => unknown): unknown {
+  let callbackStarted = false;
+  const guardedFn = () => {
+    callbackStarted = true;
+    return fn();
+  };
+
   try {
-    return runHistoryBatchViaActions(App, meta, fn);
-  } catch (_e) {
+    return runHistoryBatchViaActions(App, meta, guardedFn);
+  } catch (error) {
+    if (callbackStarted) throw error;
     return fn();
   }
 }
@@ -44,7 +55,12 @@ export function historyTouch(App: AppContainer, source: string): void {
     if (hasMetaAction(App, 'touch')) {
       callMetaAction<(meta?: ActionMetaLike) => unknown>(App, 'touch', meta);
     }
-  } catch (_e) {
-    // ignore
+  } catch (error) {
+    reportError(
+      App,
+      error,
+      { where: 'appHelpers', op: 'historyTouch', fatal: false },
+      { consoleOutput: false }
+    );
   }
 }

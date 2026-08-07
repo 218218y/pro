@@ -28,10 +28,11 @@ export function writeVec3(target: unknown, x: number, y: number, z: number): boo
 }
 
 export function cloneVec3Like(target: unknown): Vec3Like | null {
-  try {
-    const vec = readVec3Writable(target);
-    if (!vec) return null;
-    if (typeof vec.clone === 'function') {
+  const vec = readVec3Writable(target);
+  if (!vec) return null;
+
+  if (typeof vec.clone === 'function') {
+    try {
       const clone = readVec3Writable(vec.clone());
       if (clone) {
         return {
@@ -40,7 +41,13 @@ export function cloneVec3Like(target: unknown): Vec3Like | null {
           z: readFiniteNumber(clone.z, 0),
         };
       }
+    } catch {
+      // A host clone() implementation may throw. Reading the live vector values
+      // is still a safe snapshot fallback and avoids fabricating a zero vector.
     }
+  }
+
+  try {
     return {
       x: readFiniteNumber(vec.x, 0),
       y: readFiniteNumber(vec.y, 0),
@@ -51,29 +58,35 @@ export function cloneVec3Like(target: unknown): Vec3Like | null {
   }
 }
 
-export function updateCameraAndControls(camera: unknown, controls: unknown): void {
+export function updateCameraAndControls(camera: unknown, controls: unknown): boolean {
+  const cam = readCameraWritable(camera);
+  const ctl = readControlsWritable(controls);
+  if (!cam || !ctl) return false;
+
   try {
-    const cam = readCameraWritable(camera);
-    if (cam && typeof cam.updateProjectionMatrix === 'function') cam.updateProjectionMatrix();
+    if (typeof cam.updateProjectionMatrix === 'function') cam.updateProjectionMatrix();
   } catch {
-    // ignore update failure
+    return false;
   }
 
   try {
-    const ctl = readControlsWritable(controls);
-    if (ctl && typeof ctl.update === 'function') ctl.update();
+    if (typeof ctl.update === 'function') ctl.update();
   } catch {
-    // ignore update failure
+    return false;
   }
+
+  return true;
 }
 
-export function addNode(parent: unknown, child: unknown): void {
+export function addNode(parent: unknown, child: unknown): boolean {
   try {
     const obj = readObject3DWritable(parent);
     const childNode = readObject3DLike(child);
-    if (obj && childNode && typeof obj.add === 'function') obj.add(childNode);
+    if (!obj || !childNode || typeof obj.add !== 'function') return false;
+    obj.add(childNode);
+    return true;
   } catch {
-    // ignore add failure
+    return false;
   }
 }
 

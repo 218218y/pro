@@ -1,5 +1,7 @@
 import type {
+  AppContainer,
   CameraLike,
+  ControlsLike,
   Object3DLike,
   RenderCameraControlsLike,
   RenderCoreSurfaceLike,
@@ -28,6 +30,7 @@ import {
   updateCameraAndControls,
   writeVec3,
 } from './render_surface_runtime_support.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 import type {
   AppLike,
   CameraPoseLike,
@@ -41,6 +44,25 @@ const DEFAULT_MIRROR_CUBE_SIZE = 256;
 const DEFAULT_MAX_PIXEL_RATIO = 1.5;
 const DEFAULT_RENDER_ANTIALIAS = true;
 const DEFAULT_RENDER_SHADOWS_ENABLED = true;
+
+function reportRenderSurfaceNonFatal(App: AppLike, op: string, error: unknown): void {
+  reportServiceNonFatal(App as AppContainer, error, { where: 'renderSurface', op }, { consoleOutput: false });
+}
+
+function renderSurfaceOperationError(op: string, detail: string): Error {
+  return new Error(`[WardrobePro][renderSurface] ${op}: ${detail}`);
+}
+
+function restoreCameraPoseBestEffort(
+  camera: CameraLike,
+  controls: ControlsLike,
+  position: { x: number; y: number; z: number },
+  target: { x: number; y: number; z: number } | null
+): void {
+  writeVec3(readCameraPosition(camera), position.x, position.y, position.z);
+  if (target) writeVec3(readControlsTarget(controls), target.x, target.y, target.z);
+  updateCameraAndControls(camera, controls);
+}
 
 function readConfigNumber(
   App: AppLike,
@@ -78,14 +100,16 @@ export function getViewportRenderCore(App: AppLike): RenderCoreSurfaceLike | nul
   try {
     const render = getRenderBag(App);
     return render.renderer && render.scene ? { renderer: render.renderer, scene: render.scene } : null;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readCore', error);
     return null;
   }
 }
 export function getViewportCamera(App: AppLike): CameraLike | null {
   try {
     return getRenderBag(App).camera || null;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readCamera', error);
     return null;
   }
 }
@@ -93,21 +117,24 @@ export function getViewportCameraControls(App: AppLike): RenderCameraControlsLik
   try {
     const render = getRenderBag(App);
     return render.camera && render.controls ? { camera: render.camera, controls: render.controls } : null;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readCameraControls', error);
     return null;
   }
 }
 export function getViewportWardrobeGroup(App: AppLike): Object3DLike | null {
   try {
     return getRenderBag(App).wardrobeGroup || null;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readWardrobeGroup', error);
     return null;
   }
 }
 export function getViewportRoomGroup(App: AppLike): Object3DLike | null {
   try {
     return getRenderBag(App).roomGroup || null;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readRoomGroup', error);
     return null;
   }
 }
@@ -121,7 +148,8 @@ export function stampMirrorLastUpdate(App: AppLike, stampMs?: number): boolean {
           ? performance.now()
           : Date.now();
     return true;
-  } catch {
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'stampMirrorLastUpdate', error);
     return false;
   }
 }
@@ -129,11 +157,19 @@ export function snapshotViewportCameraPose(App: AppLike): CameraPoseLike | null 
   try {
     const cc = getViewportCameraControls(App);
     if (!cc) return null;
-    return {
-      position: cloneVec3Like(readCameraPosition(cc.camera)),
-      target: cloneVec3Like(readControlsTarget(cc.controls)),
-    };
-  } catch {
+    const position = cloneVec3Like(readCameraPosition(cc.camera));
+    const target = cloneVec3Like(readControlsTarget(cc.controls));
+    if (!position || !target) {
+      reportRenderSurfaceNonFatal(
+        App,
+        'snapshotCameraPose',
+        renderSurfaceOperationError('snapshotCameraPose', 'camera position or controls target is unreadable')
+      );
+      return null;
+    }
+    return { position, target };
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'snapshotCameraPose', error);
     return null;
   }
 }
@@ -142,14 +178,36 @@ export function setViewportCameraPose(
   position: { x: number; y: number; z: number },
   target?: { x: number; y: number; z: number } | null
 ): boolean {
+  const cc = getViewportCameraControls(App);
+  if (!cc) return false;
+
+  const previousPosition = cloneVec3Like(readCameraPosition(cc.camera));
+  const previousTarget = target ? cloneVec3Like(readControlsTarget(cc.controls)) : null;
+  if (!previousPosition || (target && !previousTarget)) {
+    reportRenderSurfaceNonFatal(
+      App,
+      'setCameraPose.snapshot',
+      renderSurfaceOperationError('setCameraPose.snapshot', 'cannot capture rollback pose')
+    );
+    return false;
+  }
+
   try {
-    const cc = getViewportCameraControls(App);
-    if (!cc) return false;
     const posOk = writeVec3(readCameraPosition(cc.camera), position.x, position.y, position.z);
     const tgtOk = target ? writeVec3(readControlsTarget(cc.controls), target.x, target.y, target.z) : true;
-    updateCameraAndControls(cc.camera, cc.controls);
-    return !!(posOk && tgtOk);
-  } catch {
+    if (!posOk || !tgtOk) {
+      throw renderSurfaceOperationError(
+        'setCameraPose.write',
+        'camera position or controls target rejected the write'
+      );
+    }
+    if (!updateCameraAndControls(cc.camera, cc.controls)) {
+      throw renderSurfaceOperationError('setCameraPose.update', 'camera or controls update failed');
+    }
+    return true;
+  } catch (error) {
+    restoreCameraPoseBestEffort(cc.camera, cc.controls, previousPosition, previousTarget);
+    reportRenderSurfaceNonFatal(App, 'setCameraPose', error);
     return false;
   }
 }
@@ -158,19 +216,34 @@ export function restoreViewportCameraPose(App: AppLike, pose: CameraPoseLike | n
   return setViewportCameraPose(App, pose.position, pose.target || null);
 }
 export function scaleViewportCameraDistance(App: AppLike, factor: number): boolean {
+  if (!Number.isFinite(factor)) return false;
+  const cc = getViewportCameraControls(App);
+  if (!cc) return false;
+  const previousPosition = cloneVec3Like(readCameraPosition(cc.camera));
+  if (!previousPosition) {
+    reportRenderSurfaceNonFatal(
+      App,
+      'scaleCameraDistance.snapshot',
+      renderSurfaceOperationError('scaleCameraDistance.snapshot', 'cannot capture rollback position')
+    );
+    return false;
+  }
+
   try {
-    if (!Number.isFinite(factor)) return false;
-    const cc = getViewportCameraControls(App);
-    if (!cc) return false;
     const changed = scalePositionAroundTarget(
       readCameraPosition(cc.camera),
       readControlsTarget(cc.controls),
       factor
     );
     if (!changed) return false;
-    updateCameraAndControls(cc.camera, cc.controls);
+    if (!updateCameraAndControls(cc.camera, cc.controls)) {
+      throw renderSurfaceOperationError('scaleCameraDistance.update', 'camera or controls update failed');
+    }
     return true;
-  } catch {
+  } catch (error) {
+    writeVec3(readCameraPosition(cc.camera), previousPosition.x, previousPosition.y, previousPosition.z);
+    updateCameraAndControls(cc.camera, cc.controls);
+    reportRenderSurfaceNonFatal(App, 'scaleCameraDistance', error);
     return false;
   }
 }
@@ -221,15 +294,21 @@ export function createViewportSurface(
       '[WardrobePro][render_surface_runtime] THREE.CubeCamera did not return an Object3D-like instance'
     );
   render.mirrorCubeCamera = mirrorCubeCamera;
-  addNode(scene, render.mirrorCubeCamera);
-  writeVec3(readObject3DWritable(render.mirrorCubeCamera)?.position, 0, 1.5, 3.0);
+  if (!addNode(scene, render.mirrorCubeCamera))
+    throw renderSurfaceOperationError('createSurface.mirrorCamera', 'cannot attach mirror camera to scene');
+  if (!writeVec3(readObject3DWritable(render.mirrorCubeCamera)?.position, 0, 1.5, 3.0))
+    throw renderSurfaceOperationError(
+      'createSurface.mirrorCamera',
+      'cannot initialize mirror camera position'
+    );
   const camera = readCameraLike(new THREE.PerspectiveCamera(45, width / height, 0.1, 100));
   if (!camera)
     throw new Error(
       '[WardrobePro][render_surface_runtime] THREE.PerspectiveCamera did not return a camera-like instance'
     );
   render.camera = camera;
-  writeVec3(readCameraPosition(camera), 0, 2.2, 5.5);
+  if (!writeVec3(readCameraPosition(camera), 0, 2.2, 5.5))
+    throw renderSurfaceOperationError('createSurface.camera', 'cannot initialize camera position');
   const renderer = readRendererLike(
     new THREE.WebGLRenderer({
       antialias: readConfigBoolean(App, 'RENDER_ANTIALIAS', DEFAULT_RENDER_ANTIALIAS),
@@ -253,7 +332,10 @@ export function createViewportSurface(
     const shadowsEnabled = readConfigBoolean(App, 'RENDER_SHADOWS_ENABLED', DEFAULT_RENDER_SHADOWS_ENABLED);
     ensureRendererShadowMap(renderer, THREE.PCFShadowMap, shadowsEnabled);
     if (typeof container.appendChild === 'function' && rr?.domElement) container.appendChild(rr.domElement);
-  } catch {}
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'createSurface.rendererSetup', error);
+    throw error;
+  }
   const domElement = readRendererWritable(renderer)?.domElement;
   const controls = readControlsLike(new THREE.OrbitControls(camera, domElement));
   if (!controls)
@@ -261,9 +343,12 @@ export function createViewportSurface(
       '[WardrobePro][render_surface_runtime] THREE.OrbitControls did not return a controls-like instance'
     );
   render.controls = controls;
-  setControlsEnableDamping(controls, true);
-  writeVec3(readControlsTarget(controls), 0, 1.4, 0);
-  updateCameraAndControls(camera, controls);
+  if (!setControlsEnableDamping(controls, true))
+    throw renderSurfaceOperationError('createSurface.controls', 'cannot enable damping');
+  if (!writeVec3(readControlsTarget(controls), 0, 1.4, 0))
+    throw renderSurfaceOperationError('createSurface.controls', 'cannot initialize controls target');
+  if (!updateCameraAndControls(camera, controls))
+    throw renderSurfaceOperationError('createSurface.controls', 'camera or controls update failed');
   let wardrobeGroup = render.wardrobeGroup;
   if (!wardrobeGroup) {
     wardrobeGroup = readObject3DLike(new THREE.Group());
@@ -273,7 +358,8 @@ export function createViewportSurface(
       );
     render.wardrobeGroup = wardrobeGroup;
   }
-  if (readObject3DWritable(wardrobeGroup)?.parent !== scene) addNode(scene, wardrobeGroup);
+  if (readObject3DWritable(wardrobeGroup)?.parent !== scene && !addNode(scene, wardrobeGroup))
+    throw renderSurfaceOperationError('createSurface.wardrobeGroup', 'cannot attach wardrobe group to scene');
   try {
     scheduleAdhesiveGlassStandardShaderWarmup(App, THREE);
   } catch {

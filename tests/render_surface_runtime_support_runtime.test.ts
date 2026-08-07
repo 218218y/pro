@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  cloneVec3Like,
   readCameraLike,
   readControlsLike,
   readObject3DLike,
   readRendererLike,
+  updateCameraAndControls,
   setControlsEnableDamping,
 } from '../esm/native/services/render_surface_runtime_support.ts';
 
@@ -104,4 +106,34 @@ test('render surface runtime support: sets damping only on control-like surfaces
   assert.equal(setControlsEnableDamping(controls, true), true);
   assert.equal(controls.enableDamping, true);
   assert.equal(setControlsEnableDamping({}, true), false);
+});
+
+test('render surface runtime support falls back to direct vector values when clone throws', () => {
+  const vec = makeVec3();
+  vec.x = 4;
+  vec.y = 5;
+  vec.z = 6;
+  vec.clone = () => {
+    throw new Error('clone-failed');
+  };
+
+  assert.deepEqual(cloneVec3Like(vec), { x: 4, y: 5, z: 6 });
+});
+
+test('render surface runtime support reports camera/control update success explicitly', () => {
+  const camera = {
+    position: makeVec3(),
+    fov: 45,
+    updateProjectionMatrix() {},
+  };
+  const controls = {
+    target: makeVec3(),
+    update() {},
+  };
+
+  assert.equal(updateCameraAndControls(camera, controls), true);
+  controls.update = () => {
+    throw new Error('controls-update-failed');
+  };
+  assert.equal(updateCameraAndControls(camera, controls), false);
 });

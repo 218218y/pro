@@ -312,3 +312,73 @@ test('render surface runtime still allows explicit render-performance overrides'
   assert.equal(renderer.shadowMap.enabled, false);
   assert.equal(renderer.rendererOpts.antialias, false);
 });
+
+test('render surface camera pose mutation rolls back when camera/control update fails and reports nonfatal diagnostics', () => {
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    browser: { getWindow: () => makeWindowStub(1) },
+    services: {
+      errors: {
+        report(error: unknown, context: unknown) {
+          diagnostics.push({ error, context });
+        },
+      },
+    },
+  };
+
+  const surface = createViewportSurface(App as any, {
+    container: { clientWidth: 640, clientHeight: 480, appendChild: () => undefined },
+  });
+  const camera = surface.camera as AnyRecord;
+  const controls = surface.controls as AnyRecord;
+  const beforePosition = { ...camera.position };
+  const beforeTarget = { ...controls.target };
+  controls.update = () => {
+    throw new Error('controls-update-failed');
+  };
+
+  assert.equal(setViewportCameraPose(App as any, { x: 8, y: 9, z: 10 }, { x: 2, y: 3, z: 4 }), false);
+  assert.deepEqual(
+    { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+    { x: beforePosition.x, y: beforePosition.y, z: beforePosition.z }
+  );
+  assert.deepEqual(
+    { x: controls.target.x, y: controls.target.y, z: controls.target.z },
+    { x: beforeTarget.x, y: beforeTarget.y, z: beforeTarget.z }
+  );
+  assert.equal(diagnostics.at(-1)?.context?.where, 'renderSurface');
+  assert.equal(diagnostics.at(-1)?.context?.op, 'setCameraPose');
+});
+
+test('render surface creation fails closed when renderer setup throws instead of returning a partial surface', () => {
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  const THREE = makeThreeStub();
+  const RendererBase = THREE.WebGLRenderer;
+  THREE.WebGLRenderer = class extends RendererBase {
+    setSize() {
+      throw new Error('renderer-size-failed');
+    }
+  };
+  const App: AnyRecord = {
+    deps: { THREE },
+    browser: { getWindow: () => makeWindowStub(1) },
+    services: {
+      errors: {
+        report(error: unknown, context: unknown) {
+          diagnostics.push({ error, context });
+        },
+      },
+    },
+  };
+
+  assert.throws(
+    () =>
+      createViewportSurface(App as any, {
+        container: { clientWidth: 640, clientHeight: 480, appendChild: () => undefined },
+      }),
+    /renderer-size-failed/
+  );
+  assert.equal(diagnostics.at(-1)?.context?.where, 'renderSurface');
+  assert.equal(diagnostics.at(-1)?.context?.op, 'createSurface.rendererSetup');
+});

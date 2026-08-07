@@ -46,6 +46,61 @@ test('historyBatch prefers the canonical history.batch action and falls back cle
   assert.deepEqual(fallbackCalls, ['ran']);
 });
 
+test('historyBatch never replays a callback after canonical batch execution has started', () => {
+  let callbackRuns = 0;
+
+  assert.throws(
+    () =>
+      historyBatch(
+        {
+          actions: {
+            history: {
+              batch(fn: () => unknown) {
+                fn();
+                throw new Error('after-callback');
+              },
+            },
+          },
+        } as any,
+        { source: 'test:no-replay' },
+        () => {
+          callbackRuns += 1;
+          return 'committed';
+        }
+      ),
+    /after-callback/
+  );
+
+  assert.equal(callbackRuns, 1);
+});
+
+test('historyBatch propagates callback failures without retrying a partial mutation', () => {
+  let callbackRuns = 0;
+
+  assert.throws(
+    () =>
+      historyBatch(
+        {
+          actions: {
+            history: {
+              batch(fn: () => unknown) {
+                return fn();
+              },
+            },
+          },
+        } as any,
+        { source: 'test:callback-failure' },
+        () => {
+          callbackRuns += 1;
+          throw new Error('mutation-failed');
+        }
+      ),
+    /mutation-failed/
+  );
+
+  assert.equal(callbackRuns, 1);
+});
+
 test('historyTouch sends immediate canonical meta and applies the noBuild profile only when available', () => {
   const touched: any[] = [];
   historyTouch(

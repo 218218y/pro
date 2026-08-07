@@ -163,3 +163,43 @@ test('render scheduler triggerRender uses canonical wakeup follow-through once p
   assert.equal(App.render.renderer.shadowMap.needsUpdate, true);
   assert.deepEqual(calls, [['ensureRenderLoop']]);
 });
+
+test('render scheduler reports shadow invalidation failures without losing the wakeup', () => {
+  const diagnostics: Array<{ error: unknown; context: any }> = [];
+  let touchCount = 0;
+  const renderer: any = {};
+  Object.defineProperty(renderer, 'shadowMap', {
+    get() {
+      throw new Error('shadow-map-read-failed');
+    },
+  });
+  const App: any = {
+    deps: {
+      browser: createBrowserStub(),
+      THREE: {},
+    },
+    services: {
+      platform: {
+        ensureRenderLoop() {},
+      },
+      errors: {
+        report(error: unknown, context: unknown) {
+          diagnostics.push({ error, context });
+        },
+      },
+    },
+    platform: {},
+    render: { renderer },
+    lifecycle: Object.create(null),
+  };
+
+  installRenderScheduler(App);
+  App.services.platform.activity.touch = () => {
+    touchCount += 1;
+  };
+
+  assert.doesNotThrow(() => App.platform.triggerRender(true));
+  assert.equal(touchCount, 1);
+  assert.equal(diagnostics.at(-1)?.context?.where, 'native/runtime/platform_access');
+  assert.equal(diagnostics.at(-1)?.context?.op, 'runPlatformWakeupFollowThrough.afterTouchRejected');
+});

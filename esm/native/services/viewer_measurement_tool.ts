@@ -16,6 +16,7 @@ import { getWardrobeGroup, readRenderCacheValue, writeRenderCacheValue } from '.
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
 import {
   FRONT_Z_EPSILON_M,
@@ -66,6 +67,10 @@ const PART_HOVER_COLOR = 0x38bdf8;
 const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
 const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
+
+function reportViewerMeasurementNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportServiceNonFatal(App, error, { where: 'viewerMeasurement', op }, { consoleOutput: false });
+}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -165,8 +170,8 @@ function touchRender(App: AppContainer): void {
       updateShadows: false,
       ensureRenderLoopAfterTrigger: true,
     });
-  } catch {
-    // ignore render wakeup failures; the overlay state is still updated.
+  } catch (error) {
+    reportViewerMeasurementNonFatal(App, 'renderWakeup', error);
   }
 }
 
@@ -196,7 +201,8 @@ function readAddDimensionLine(App: AppContainer): BuilderDimensionLineFn | null 
     const renderOps = getBuilderRenderOps(App) as UnknownRecord | null;
     const fn = renderOps && renderOps.addDimensionLine;
     return typeof fn === 'function' ? (fn as BuilderDimensionLineFn) : null;
-  } catch {
+  } catch (error) {
+    reportViewerMeasurementNonFatal(App, 'readDimensionLineBuilder', error);
     return null;
   }
 }
@@ -252,9 +258,10 @@ function exitViewerMeasurementPrimaryMode(App: AppContainer): void {
         immediate: true,
       }
     );
-  } catch {
-    // Some isolated tests or partial hosts do not install mode actions; clearing
-    // the overlay and chrome is still the correct local behavior.
+  } catch (error) {
+    // Isolated hosts can omit mode actions, but a production mode-write failure
+    // must remain visible because the overlay may clear while primary mode stays active.
+    reportViewerMeasurementNonFatal(App, 'exitPrimaryMode', error);
   }
 
   clearMeasurementModeChrome(App);
@@ -975,8 +982,9 @@ export function tryHandleViewerMeasurementClick(args: {
         mouse: args.mouse,
       });
     }
-  } catch {
-    // Fall back to the regular part measurement in partial hosts.
+  } catch (error) {
+    reportViewerMeasurementNonFatal(App, 'readToolMode', error);
+    // Fall back to the regular part measurement so the click remains usable.
   }
 
   clearViewerMeasurementOverlay(App, false);
