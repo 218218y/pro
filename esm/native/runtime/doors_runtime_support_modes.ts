@@ -71,7 +71,7 @@ export function getSketchManualTool(App: AppLike): string | null {
     const mt = opts?.manualTool ?? null;
     if (typeof mt === 'string' && mt) return mt;
   } catch {
-    // ignore
+    // mode-state-probe-fallback: continue to the next canonical manual-tool source.
   }
 
   try {
@@ -82,7 +82,7 @@ export function getSketchManualTool(App: AppLike): string | null {
         : null;
     if (typeof mt2 === 'string' && mt2) return mt2;
   } catch {
-    // ignore
+    // tools-surface-probe-fallback: continue to the mode-slice compatibility source.
   }
 
   try {
@@ -95,7 +95,7 @@ export function getSketchManualTool(App: AppLike): string | null {
       if (typeof mt3 === 'string' && mt3) return mt3;
     }
   } catch {
-    // ignore
+    // mode-compatibility-probe-fallback: no manual tool is available from the fallback chain.
   }
 
   return null;

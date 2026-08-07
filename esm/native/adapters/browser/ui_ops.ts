@@ -147,7 +147,7 @@ export function installBrowserUiOpsAdapter(app: unknown): AppContainer {
         const sel = b.getSelection ? b.getSelection() : null;
         if (sel && typeof sel.removeAllRanges === 'function') sel.removeAllRanges();
       } catch {
-        // ignore
+        // selection-cleanup-best-effort: restricted selection APIs may reject range cleanup.
       }
     };
   }
@@ -159,7 +159,7 @@ export function installBrowserUiOpsAdapter(app: unknown): AppContainer {
         if (!doc?.body?.style) return;
         doc.body.style.cursor = String(cursor || '');
       } catch {
-        // ignore
+        // DOM-cursor-mirror-best-effort: cursor styling must not affect UI state.
       }
     };
   }
@@ -171,7 +171,7 @@ export function installBrowserUiOpsAdapter(app: unknown): AppContainer {
         const ae = doc?.activeElement;
         if (hasBlur(ae)) ae.blur();
       } catch {
-        // ignore
+        // focus-cleanup-best-effort: detached or restricted elements may reject blur.
       }
     };
   }
@@ -198,7 +198,7 @@ export function installBrowserUiOpsAdapter(app: unknown): AppContainer {
         if (!w || typeof w.scrollTo !== 'function') return;
         w.scrollTo(safeNumber(x, 0), safeNumber(y, 0));
       } catch {
-        // ignore
+        // browser-scroll-best-effort: restricted window contexts may reject imperative scrolling.
       }
     };
   }
@@ -220,7 +220,7 @@ export function installBrowserUiOpsAdapter(app: unknown): AppContainer {
         const cancel = getClearTimeoutFn(getWindowMaybe(App));
         if (cancel) cancel(id);
       } catch {
-        // ignore
+        // timer-cleanup-best-effort: stale or foreign timeout handles may reject cancellation.
       }
     };
   }

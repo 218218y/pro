@@ -29,7 +29,7 @@ export function installDoorStatusCssAdapter(app: unknown): AppContainer {
         if (!doc || !doc.body || typeof doc.body.setAttribute !== 'function') return;
         doc.body.setAttribute('data-door-status', isOpen ? 'open' : 'closed');
       } catch {
-        // ignore
+        // DOM-status-mirror-best-effort: door behavior must not depend on a body data attribute.
       }
     };
   });

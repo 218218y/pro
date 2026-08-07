@@ -72,7 +72,7 @@ export function readConfigLooseScalarFromApp(App: unknown, key: string, defaultV
     const value = getCfgRecord(cfg)[key];
     if (!(typeof value === 'undefined' || value === null || value === '')) return value;
   } catch {
-    // ignore
+    // config-compatibility-fallback: fall back to the retired direct config root for loose reads.
   }
 
   const direct = getConfigRootMaybe<UnknownRecord>(App);

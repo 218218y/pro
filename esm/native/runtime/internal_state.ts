@@ -9,6 +9,7 @@
 // - Never throws; callers should treat missing data as "not installed".
 
 import type { UnknownRecord } from '../../../types';
+import { reportError } from './errors.js';
 import { asRecord } from './record.js';
 
 const INTERNAL_KEY = '__wpInternal';
@@ -43,8 +44,12 @@ function ensureInternalRoot(App: unknown): InternalRoot {
   const next: InternalRoot = {};
   try {
     owner[INTERNAL_KEY] = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/internal_state',
+      op: 'internalRoot.attach',
+      fatal: false,
+    });
   }
   return next;
 }
@@ -58,8 +63,8 @@ export function getBootFlags(App: unknown): UnknownRecord {
   const next: UnknownRecord = {};
   try {
     root.boot = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, { where: 'native/runtime/internal_state', op: 'bootFlags.attach', fatal: false });
   }
   return next;
 }

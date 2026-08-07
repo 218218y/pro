@@ -61,7 +61,7 @@ export function waitForReady(
     try {
       timers.clearTimeout(handle);
     } catch {
-      // ignore
+      // timer-cleanup-best-effort: an expired or foreign timeout handle may reject cancellation.
     }
     handle = null;
   };

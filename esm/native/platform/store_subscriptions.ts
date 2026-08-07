@@ -120,7 +120,7 @@ export function createSelectorRegistryEntry<T>(args: {
       try {
         args.listener(cached.value, cached.value, actionMeta);
       } catch {
-        // ignore
+        // observer-isolation: a listener failure must not corrupt subscription state.
       }
     },
     shouldNotify(actionMeta) {
@@ -143,7 +143,7 @@ export function createSelectorRegistryEntry<T>(args: {
         try {
           args.listener(nextValue, nextValue, actionMeta);
         } catch {
-          // ignore
+          // observer-isolation: initial listener delivery must not corrupt cached selector state.
         }
         return;
       }
@@ -151,7 +151,7 @@ export function createSelectorRegistryEntry<T>(args: {
       try {
         if (args.equalityFn(cached.value, nextValue)) return;
       } catch {
-        // ignore
+        // selector-equality-fallback: if equality probing fails, notify conservatively as changed.
       }
 
       const previousValue = cached.value;
@@ -160,7 +160,7 @@ export function createSelectorRegistryEntry<T>(args: {
       try {
         args.listener(nextValue, previousValue, actionMeta);
       } catch {
-        // ignore
+        // observer-isolation: one listener failure must not block later store updates.
       }
     },
   };

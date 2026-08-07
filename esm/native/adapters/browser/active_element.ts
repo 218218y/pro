@@ -36,7 +36,7 @@ export function makeActiveElementIdReader(app: unknown): () => string {
         const v = hasGetAttribute(ae) ? ae.getAttribute('data-wp-active-id') : null;
         if (v && String(v).trim()) return String(v).trim();
       } catch {
-        // ignore
+        // DOM-active-id-probe-fallback: fall back to the native element id when data attributes are unavailable.
       }
 
       // Secondary source: DOM id.

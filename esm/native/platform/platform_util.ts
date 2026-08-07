@@ -69,7 +69,7 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
         const context = typeof ctx === 'string' && ctx ? `[${ctx}]` : '';
         console.error('[Platform]', context, msg);
       } catch {
-        // swallow
+        // reporter-isolation: console reporting must never throw into the caller.
       }
     };
   });
@@ -235,7 +235,7 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
           console.log(...args);
         }
       } catch {
-        // swallow
+        // debug-log-best-effort: debug console output must not affect runtime behavior.
       }
     };
   });

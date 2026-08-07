@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-07T07:57:20.987Z",
+  "generatedAt": "2026-08-07T10:45:28.366Z",
   "totals": {
-    "tests": 1232,
-    "unitRunnerTests": 1224,
+    "tests": 1233,
+    "unitRunnerTests": 1225,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
     "packageTestReferences": 38,
@@ -19,7 +19,7 @@
     "contractOverlapTargets": 169
   },
   "categories": {
-    "contract": 406,
+    "contract": 407,
     "runtime-unit": 327,
     "integration": 460,
     "persistence-ingress": 24,
@@ -7040,6 +7040,10 @@
     },
     {
       "file": "tests/runtime_callable_surface_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_classification_closeout_runtime.test.ts",
       "category": "contract"
     },
     {

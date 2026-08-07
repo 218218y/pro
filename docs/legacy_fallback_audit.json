@@ -1,23 +1,35 @@
 {
-  "generatedAt": "2026-08-07T09:31:44.781Z",
+  "generatedAt": "2026-08-07T10:45:28.211Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 144,
-    "totalFiles": 78,
+    "totalOccurrences": 168,
+    "totalFiles": 91,
     "byCategory": {
-      "runtime-default": 13,
+      "runtime-default": 31,
       "domain-default": 101,
       "error-message-default": 0,
       "framework-default": 2,
-      "browser-adapter": 4,
-      "project-migration": 11,
+      "browser-adapter": 6,
+      "project-migration": 14,
       "external-api-compat": 0,
-      "compat-boundary": 1,
+      "compat-boundary": 2,
       "test-fixture": 6,
       "legacy-runtime-risk": 6,
       "unknown": 0
     },
     "byFile": {
+      "esm/native/adapters/browser/active_element.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
+      "esm/native/adapters/browser/dom.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
       "esm/native/builder/core_storage_compute_custom.ts": {
         "total": 1,
         "categories": {
@@ -223,16 +235,84 @@
           "project-migration": 1
         }
       },
+      "esm/native/platform/platform.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/native/platform/store_shared.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/platform/store_subscriptions.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
       "esm/native/runtime/app_helpers.ts": {
         "total": 1,
         "categories": {
           "project-migration": 1
         }
       },
+      "esm/native/runtime/browser_env_surface.ts": {
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
+      },
       "esm/native/runtime/browser_env_timers.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      "esm/native/runtime/config_selectors_scalars.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/native/runtime/data_attrs.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/doors_runtime_support_entries.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/runtime/doors_runtime_support_modes.ts": {
+        "total": 3,
+        "categories": {
+          "project-migration": 1,
+          "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/platform_access_ops.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/render_access_shared.ts": {
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
+      "esm/native/runtime/render_access_state_bags.ts": {
+        "total": 2,
+        "categories": {
+          "compat-boundary": 1,
+          "runtime-default": 1
         }
       },
       "esm/native/runtime/runtime_globals.ts": {
@@ -508,6 +588,13 @@
         }
       },
       {
+        "file": "esm/native/runtime/browser_env_surface.ts",
+        "total": 5,
+        "categories": {
+          "runtime-default": 5
+        }
+      },
+      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 5,
         "categories": {
@@ -562,6 +649,21 @@
         "total": 3,
         "categories": {
           "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+        "total": 3,
+        "categories": {
+          "project-migration": 1,
+          "runtime-default": 2
+        }
+      },
+      {
+        "file": "esm/native/runtime/render_access_shared.ts",
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
         }
       },
       {
@@ -677,39 +779,30 @@
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts",
+        "file": "esm/native/runtime/data_attrs.ts",
         "total": 2,
         "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 1,
-          "legacy-runtime-risk": 1
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 1,
-          "legacy-runtime-risk": 1
-        }
-      },
-      {
-        "file": "esm/native/services/viewport_runtime_support.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
+          "runtime-default": 2
         }
       }
     ]
   },
   "allowlistComparison": null,
   "occurrences": [
+    {
+      "file": "esm/native/adapters/browser/active_element.ts",
+      "line": 39,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// DOM-active-id-probe-fallback: fall back to the native element id when data attributes are unavailable."
+    },
+    {
+      "file": "esm/native/adapters/browser/dom.ts",
+      "line": 42,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// browser-canvas-capability-fallback: fall back to a DOM canvas when OffscreenCanvas construction fails."
+    },
     {
       "file": "esm/native/builder/core_storage_compute_custom.ts",
       "line": 142,
@@ -1124,11 +1217,67 @@
       "text": "// reporter-isolation: console fallback must never break canonical map error handling"
     },
     {
+      "file": "esm/native/platform/platform.ts",
+      "line": 107,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// runtime-debug-probe-fallback: fall back to injected debug flags when store runtime is unavailable."
+    },
+    {
+      "file": "esm/native/platform/store_shared.ts",
+      "line": 198,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// clock-capability-fallback: Date.now remains the canonical fallback when performance.now is unavailable."
+    },
+    {
+      "file": "esm/native/platform/store_subscriptions.ts",
+      "line": 154,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// selector-equality-fallback: if equality probing fails, notify conservatively as changed."
+    },
+    {
       "file": "esm/native/runtime/app_helpers.ts",
       "line": 22,
       "term": "fallback",
       "category": "project-migration",
       "text": "* A direct fallback is safe only when the canonical batch surface fails before"
+    },
+    {
+      "file": "esm/native/runtime/browser_env_surface.ts",
+      "line": 20,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-surface-fallback: fall back to injected browser dependencies for window access."
+    },
+    {
+      "file": "esm/native/runtime/browser_env_surface.ts",
+      "line": 52,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-surface-fallback: fall back to injected browser dependencies for document access."
+    },
+    {
+      "file": "esm/native/runtime/browser_env_surface.ts",
+      "line": 87,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-surface-fallback: fall back to injected location/window dependencies."
+    },
+    {
+      "file": "esm/native/runtime/browser_env_surface.ts",
+      "line": 113,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-surface-fallback: fall back to injected navigator/window dependencies."
+    },
+    {
+      "file": "esm/native/runtime/browser_env_surface.ts",
+      "line": 138,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-surface-fallback: fall back to the navigator-derived user agent."
     },
     {
       "file": "esm/native/runtime/browser_env_timers.ts",
@@ -1143,6 +1292,104 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// cleanup-best-effort: interval fallback delegates to timeout cleanup and tolerates unavailable handles."
+    },
+    {
+      "file": "esm/native/runtime/config_selectors_scalars.ts",
+      "line": 75,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
+    },
+    {
+      "file": "esm/native/runtime/data_attrs.ts",
+      "line": 67,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// DOM-attribute-probe-fallback: malformed element-like objects are treated as missing data."
+    },
+    {
+      "file": "esm/native/runtime/data_attrs.ts",
+      "line": 81,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// DOM-attribute-probe-fallback: malformed element-like objects are treated as lacking the attribute."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_entries.ts",
+      "line": 113,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// perf-state-probe-fallback: fall back to the canonical drawer collection scan."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+      "line": 74,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// mode-state-probe-fallback: continue to the next canonical manual-tool source."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+      "line": 85,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// tools-surface-probe-fallback: continue to the mode-slice compatibility source."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+      "line": 98,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// mode-compatibility-probe-fallback: no manual tool is available from the fallback chain."
+    },
+    {
+      "file": "esm/native/runtime/platform_access_ops.ts",
+      "line": 178,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// platform-canvas-fallback: use the browser OffscreenCanvas capability when the platform owner rejects creation."
+    },
+    {
+      "file": "esm/native/runtime/platform_access_ops.ts",
+      "line": 183,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-fallback: canvas creation remains optional in non-browser runtimes."
+    },
+    {
+      "file": "esm/native/runtime/render_access_shared.ts",
+      "line": 140,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// state-slot-attachment-fallback: return a detached record for exotic readonly owners."
+    },
+    {
+      "file": "esm/native/runtime/render_access_shared.ts",
+      "line": 152,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// state-slot-attachment-fallback: return a detached array for exotic readonly owners."
+    },
+    {
+      "file": "esm/native/runtime/render_access_shared.ts",
+      "line": 164,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// state-slot-attachment-fallback: return a detached map for exotic readonly owners."
+    },
+    {
+      "file": "esm/native/runtime/render_access_state_bags.ts",
+      "line": 36,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// state-bag-attachment-fallback: return the detached bag when an exotic owner rejects assignment."
+    },
+    {
+      "file": "esm/native/runtime/render_access_state_bags.ts",
+      "line": 236,
+      "term": "legacy",
+      "category": "compat-boundary",
+      "text": "// retired-alias-cleanup-best-effort: frozen legacy roots may reject deletion."
     },
     {
       "file": "esm/native/runtime/runtime_globals.ts",

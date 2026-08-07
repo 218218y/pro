@@ -13,8 +13,8 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   features: 12,
   io: 4,
   kernel: 9,
-  platform: 42,
-  runtime: 99,
+  platform: 38,
+  runtime: 82,
   services: 84,
   ui: 158,
 });
@@ -31,14 +31,14 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   ui: 0,
 });
 const EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER = Object.freeze({
-  adapters: 13,
+  adapters: 0,
   boot: 0,
   builder: 0,
   features: 0,
   io: 0,
   kernel: 0,
-  platform: 23,
-  runtime: 41,
+  platform: 0,
+  runtime: 0,
   services: 0,
   ui: 0,
 });
@@ -117,6 +117,10 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/runtime/doors_access_doors.ts',
   'esm/native/runtime/render_access_state_runtime.ts',
   'esm/native/runtime/render_access_surface.ts',
+  'esm/native/runtime/boot_entry_access.ts',
+  'esm/native/runtime/internal_state.ts',
+  'esm/native/runtime/doors_access_services.ts',
+  'esm/native/runtime/cache_access.ts',
   'esm/native/ui/react/actions/interior_actions.ts',
 ]);
 

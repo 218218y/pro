@@ -39,7 +39,7 @@ function createCanvasFactory(doc: Document): CanvasFactory {
         return new OffscreenCanvas(w, h);
       }
     } catch {
-      // ignore
+      // browser-canvas-capability-fallback: fall back to a DOM canvas when OffscreenCanvas construction fails.
     }
     try {
       const canvas = doc.createElement('canvas');

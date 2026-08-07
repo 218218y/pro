@@ -1,6 +1,7 @@
 import type { DoorVisualEntryLike, DrawerVisualEntryLike } from '../../../types';
 
 import { readConfigScalarOrDefaultFromApp } from './config_selectors.js';
+import { reportError } from './errors.js';
 import { getPlatformPerf } from './platform_access.js';
 import { getDoorsArray, getDrawersArray } from './render_access.js';
 import { isSketchFreeBoxMotionControlledEntry } from './sketch_free_box_motion_identity.js';
@@ -51,8 +52,13 @@ export function getOpenDoorModuleKeys(App: AppLike): Set<string> {
       const moduleKey = getDoorModuleKey(door);
       if (moduleKey) modules.add(moduleKey);
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    modules.clear();
+    reportError(App, error, {
+      where: 'native/runtime/doors_runtime_support_entries',
+      op: 'openDoorModules.scan',
+      fatal: false,
+    });
   }
   return modules;
 }
@@ -104,7 +110,7 @@ export function hasInternalDrawers(App: AppLike): boolean {
     const perf = getPlatformPerf(App);
     if (perf && typeof perf.hasInternalDrawers !== 'undefined') return !!perf.hasInternalDrawers;
   } catch {
-    // ignore
+    // perf-state-probe-fallback: fall back to the canonical drawer collection scan.
   }
 
   try {
@@ -125,8 +131,13 @@ export function getVisibleOpenInternalDrawerModuleKeys(App: AppLike): Set<string
       const moduleKey = getDrawerModuleKey(drawer);
       if (moduleKey) modules.add(moduleKey);
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    modules.clear();
+    reportError(App, error, {
+      where: 'native/runtime/doors_runtime_support_entries',
+      op: 'openInternalDrawerModules.scan',
+      fatal: false,
+    });
   }
   return modules;
 }

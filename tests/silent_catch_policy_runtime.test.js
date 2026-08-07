@@ -51,7 +51,21 @@ test('silent-catch policy keeps current production ratchets exact and functional
   assert.equal(result.inventory.bareFileCount, bareFileCountFromEntries);
   assert.equal(result.inventory.bareFileCount, 0);
   assert.equal(result.inventory.vagueTotal, vagueTotalFromLayers);
-  for (const layer of ['builder', 'features', 'kernel', 'services', 'ui']) {
+  assert.equal(
+    result.inventory.vagueTotal,
+    0,
+    'production must not contain vague ignore/swallow catch comments'
+  );
+  for (const layer of [
+    'adapters',
+    'builder',
+    'features',
+    'kernel',
+    'platform',
+    'runtime',
+    'services',
+    'ui',
+  ]) {
     assert.equal(
       result.inventory.vagueByLayer[layer] || 0,
       0,
@@ -75,6 +89,10 @@ test('silent-catch policy keeps current production ratchets exact and functional
     'esm/native/services/history_shared.ts',
     'esm/native/runtime/render_access_state_runtime.ts',
     'esm/native/runtime/render_access_surface.ts',
+    'esm/native/runtime/boot_entry_access.ts',
+    'esm/native/runtime/internal_state.ts',
+    'esm/native/runtime/doors_access_services.ts',
+    'esm/native/runtime/cache_access.ts',
     'esm/native/ui/react/actions/interior_actions.ts',
   ]) {
     assert.equal(paths.has(file), false, `${file} must remain free of statement-free catches`);

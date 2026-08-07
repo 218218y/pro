@@ -11,6 +11,7 @@
 
 import type { RuntimeCacheServiceLike, UnknownRecord } from '../../../types';
 
+import { reportError } from './errors.js';
 import { asRecord, createNullRecord } from './record.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 
@@ -56,8 +57,12 @@ function dropRootCacheAlias(App: unknown): void {
   } catch {
     try {
       app.cache = undefined;
-    } catch {
-      // ignore
+    } catch (error) {
+      reportError(App, error, {
+        where: 'native/runtime/cache_access',
+        op: 'legacyRootAlias.clear',
+        fatal: false,
+      });
     }
   }
 }
@@ -97,8 +102,12 @@ export function writeStackSplitLowerTopY(App: unknown, y: unknown): void {
   try {
     const n = typeof y === 'number' ? y : typeof y === 'string' ? Number(y) : NaN;
     getCacheBag(App).stackSplitLowerTopY = Number.isFinite(n) ? n : null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/cache_access',
+      op: 'stackSplitLowerTopY.write',
+      fatal: false,
+    });
   }
 }
 
@@ -111,8 +120,12 @@ export function getInternalGridMap(App: unknown, isBottomStack?: boolean): Cache
   const next = createCacheMapRecord();
   try {
     cache[key] = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/cache_access',
+      op: `internalGridMap.attach:${key}`,
+      fatal: false,
+    });
   }
   return next;
 }
@@ -123,13 +136,21 @@ export function resetInternalGridMaps(App: unknown): { top: CacheMapRecord; bott
   const bottom = createCacheMapRecord();
   try {
     cache.internalGridMap = top;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/cache_access',
+      op: 'internalGridMap.resetTop',
+      fatal: false,
+    });
   }
   try {
     cache.internalGridMapSplitBottom = bottom;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/cache_access',
+      op: 'internalGridMap.resetBottom',
+      fatal: false,
+    });
   }
   return { top, bottom };
 }

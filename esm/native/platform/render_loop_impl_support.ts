@@ -193,7 +193,7 @@ export function debugSketchLog(A: AppLike, ...args: readonly unknown[]): void {
     A.render.__wpSketchDbgLast = Array.from(args);
     A.render.__wpSketchDbgLastTs = Date.now();
   } catch (_e) {
-    // ignore
+    // debug-state-best-effort: sketch debug capture must never affect the render loop.
   }
 }
 

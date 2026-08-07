@@ -175,12 +175,12 @@ export function createCanvasViaPlatform(
     const fn = getPlatformCreateCanvas(App);
     if (fn) return fn(width, height) || null;
   } catch {
-    // ignore
+    // platform-canvas-fallback: use the browser OffscreenCanvas capability when the platform owner rejects creation.
   }
   try {
     if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(width, height);
   } catch {
-    // ignore
+    // browser-capability-fallback: canvas creation remains optional in non-browser runtimes.
   }
   return null;
 }

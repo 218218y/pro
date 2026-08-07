@@ -16,7 +16,7 @@ function clearFileInputValue(target: { value?: string } | null): void {
   try {
     target.value = '';
   } catch {
-    // ignore
+    // DOM-input-cleanup-best-effort: readonly or detached file inputs may reject value reset.
   }
 }
 

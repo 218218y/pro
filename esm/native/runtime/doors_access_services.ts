@@ -1,3 +1,4 @@
+import { reportError } from './errors.js';
 import { asRecord } from './record.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 import {
@@ -81,8 +82,12 @@ export function writeDoorsRuntimeNumber(App: unknown, key: string, value: number
   const next = asFiniteNumber(value, 0);
   try {
     getDoorsRuntime(App)[key] = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/doors_access_services',
+      op: `runtimeNumber.write:${key}`,
+      fatal: false,
+    });
   }
   return next;
 }
@@ -103,8 +108,12 @@ export function writeDoorsRuntimeBool(App: unknown, key: string, value: boolean)
   const next = !!value;
   try {
     getDoorsRuntime(App)[key] = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/doors_access_services',
+      op: `runtimeBool.write:${key}`,
+      fatal: false,
+    });
   }
   return next;
 }

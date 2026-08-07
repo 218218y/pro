@@ -1,21 +1,21 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-07T09:31:44.781Z
+Generated at: 2026-08-07T10:45:28.211Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **144**
-- Files with occurrences: **78**
+- Total categorized occurrences: **168**
+- Files with occurrences: **91**
 - Category counts:
-  - `runtime-default`: **13**
+  - `runtime-default`: **31**
   - `domain-default`: **101**
   - `error-message-default`: **0**
   - `framework-default`: **2**
-  - `browser-adapter`: **4**
-  - `project-migration`: **11**
+  - `browser-adapter`: **6**
+  - `project-migration`: **14**
   - `external-api-compat`: **0**
-  - `compat-boundary`: **1**
+  - `compat-boundary`: **2**
   - `test-fixture`: **6**
   - `legacy-runtime-risk`: **6**
   - `unknown`: **0**
@@ -37,6 +37,7 @@ Generated at: 2026-08-07T09:31:44.781Z
 
 - `esm/native/runtime/runtime_globals.ts` - **11** (runtime-default: 11)
 - `esm/native/builder/plan.ts` - **8** (domain-default: 4, legacy-runtime-risk: 4)
+- `esm/native/runtime/browser_env_surface.ts` - **5** (runtime-default: 5)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
 - `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
 - `esm/native/services/site_variant.ts` - **4** (domain-default: 4)
@@ -45,6 +46,8 @@ Generated at: 2026-08-07T09:31:44.781Z
 - `esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts` - **3** (domain-default: 3)
 - `esm/native/builder/visuals_and_contents_door_visual_glass.ts` - **3** (domain-default: 3)
 - `esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts` - **3** (domain-default: 3)
+- `esm/native/runtime/doors_runtime_support_modes.ts` - **3** (project-migration: 1, runtime-default: 2)
+- `esm/native/runtime/render_access_shared.ts` - **3** (runtime-default: 3)
 - `esm/native/services/canvas_picking_cell_dims_post_click_hover.ts` - **3** (domain-default: 3)
 - `esm/native/services/canvas_picking_projection_runtime_box_object.ts` - **3** (domain-default: 3)
 - `esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts` - **3** (domain-default: 3)
@@ -61,10 +64,7 @@ Generated at: 2026-08-07T09:31:44.781Z
 - `esm/native/builder/room_visual_apply.ts` - **2** (domain-default: 2)
 - `esm/native/builder/visuals_and_contents_door_visual_cache.ts` - **2** (domain-default: 2)
 - `esm/native/runtime/browser_env_timers.ts` - **2** (domain-default: 2)
-- `esm/native/services/canvas_picking_door_action_hover_preview_materials.ts` - **2** (domain-default: 2)
-- `esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts` - **2** (domain-default: 1, legacy-runtime-risk: 1)
-- `esm/native/services/canvas_picking_sketch_free_boxes.ts` - **2** (domain-default: 1, legacy-runtime-risk: 1)
-- `esm/native/services/viewport_runtime_support.ts` - **2** (domain-default: 2)
+- `esm/native/runtime/data_attrs.ts` - **2** (runtime-default: 2)
 
 ## Allowlist check
 

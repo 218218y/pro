@@ -137,7 +137,7 @@ export function ensureRecordSlot(owner: UnknownRecord, key: string): UnknownReco
   try {
     owner[key] = next;
   } catch {
-    // ignore
+    // state-slot-attachment-fallback: return a detached record for exotic readonly owners.
   }
   return next;
 }
@@ -149,7 +149,7 @@ export function ensureArraySlot<T = unknown>(owner: UnknownRecord, key: string):
   try {
     owner[key] = next;
   } catch {
-    // ignore
+    // state-slot-attachment-fallback: return a detached array for exotic readonly owners.
   }
   return next;
 }
@@ -161,7 +161,7 @@ export function ensureMapSlot<T = unknown>(owner: UnknownRecord, key: string): M
   try {
     owner[key] = next;
   } catch {
-    // ignore
+    // state-slot-attachment-fallback: return a detached map for exotic readonly owners.
   }
   return next;
 }

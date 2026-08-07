@@ -178,7 +178,7 @@ export function installBrowserEnvBaseSurface(App: AppContainer, browserSurface: 
         const caf = browser?.cancelAnimationFrame ?? win?.cancelAnimationFrame?.bind(win);
         if (caf && typeof handle === 'number') caf(handle);
       } catch {
-        // swallow
+        // animation-frame-cleanup-best-effort: stale or foreign RAF handles may reject cancellation.
       }
     };
   });
@@ -216,7 +216,7 @@ export function installBrowserEnvBaseSurface(App: AppContainer, browserSurface: 
       try {
         getWindowEventTarget(App)?.addEventListener(String(type), handler, opts);
       } catch {
-        // swallow
+        // browser-event-registration-best-effort: missing or restricted window targets remain optional.
       }
     };
   });
@@ -230,7 +230,7 @@ export function installBrowserEnvBaseSurface(App: AppContainer, browserSurface: 
       try {
         getWindowEventTarget(App)?.removeEventListener(String(type), handler, opts);
       } catch {
-        // swallow
+        // browser-event-cleanup-best-effort: detached window targets may reject listener removal.
       }
     };
   });
@@ -244,7 +244,7 @@ export function installBrowserEnvBaseSurface(App: AppContainer, browserSurface: 
       try {
         getDocumentEventTarget(App)?.addEventListener(String(type), handler, opts);
       } catch {
-        // swallow
+        // browser-event-registration-best-effort: missing or restricted document targets remain optional.
       }
     };
   });
@@ -258,7 +258,7 @@ export function installBrowserEnvBaseSurface(App: AppContainer, browserSurface: 
       try {
         getDocumentEventTarget(App)?.removeEventListener(String(type), handler, opts);
       } catch {
-        // swallow
+        // browser-event-cleanup-best-effort: detached document targets may reject listener removal.
       }
     };
   });

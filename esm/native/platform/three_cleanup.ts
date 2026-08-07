@@ -116,7 +116,7 @@ function disposeGeometry(geometry: unknown): void {
   try {
     geo.dispose();
   } catch {
-    // ignore
+    // resource-disposal-best-effort: third-party geometry disposal may reject during cleanup.
   }
 }
 
@@ -127,7 +127,7 @@ function disposeMaterialTextures(material: MaterialLike, customTexture: TextureL
     try {
       texture.dispose();
     } catch {
-      // ignore
+      // resource-disposal-best-effort: third-party texture disposal may reject during cleanup.
     }
   }
 }
@@ -139,7 +139,7 @@ function disposeMaterial(material: MaterialLike, customTexture: TextureLike | nu
   try {
     material.dispose();
   } catch {
-    // ignore
+    // resource-disposal-best-effort: third-party material disposal may reject during cleanup.
   }
 }
 
@@ -156,7 +156,7 @@ function removeChild(root: GroupLike, child: Object3DLike): void {
   try {
     root.remove(child);
   } catch {
-    // ignore
+    // scene-cleanup-best-effort: detached or foreign scene nodes may reject removal.
   }
 }
 

@@ -226,7 +226,7 @@ export function ensureCacheTouch(util: UnknownRecord): CacheTouchFn {
     try {
       meta.set(key, Date.now());
     } catch {
-      // ignore
+      // cache-touch-metadata-best-effort: geometry cache ownership does not depend on recency metadata.
     }
   };
   util.cacheTouch = defaultTouch;
@@ -240,7 +240,7 @@ export function touchMeta(touch: CacheTouchFn, meta: Map<string, number>, key: s
     try {
       meta.set(key, Date.now());
     } catch {
-      // ignore
+      // cache-touch-metadata-best-effort: a custom touch failure falls back without invalidating cached geometry.
     }
   }
 }

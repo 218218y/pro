@@ -16,6 +16,7 @@ import {
 } from '../runtime/sketch_free_box_motion_identity.js';
 import { readSketchFreeBoxMotionTimeSinceToggle } from '../runtime/sketch_free_box_motion_state.js';
 
+import { reportRenderLoop } from './render_loop_impl_support.js';
 import type { DebugLogFn, MotionFrameState } from './render_loop_motion_shared.js';
 import { asDrawerMotion, moveDrawerGroupPosition } from './render_loop_motion_shared.js';
 
@@ -152,7 +153,7 @@ export function updateRenderLoopDrawerMotions(
       );
     }
   } catch {
-    // ignore
+    // debug-log-best-effort: diagnostics must not affect drawer motion.
   }
 
   const drawers = getDrawersArray(App);
@@ -206,8 +207,8 @@ export function updateRenderLoopDrawerMotions(
       shouldOpen = false;
       try {
         d.isOpen = false;
-      } catch {
-        // ignore
+      } catch (error) {
+        reportRenderLoop(App, 'drawer.externalEdit.forceClosed', error);
       }
     }
 
@@ -215,15 +216,15 @@ export function updateRenderLoopDrawerMotions(
       shouldOpen = false;
       try {
         d.isOpen = false;
-      } catch {
-        // ignore
+      } catch (error) {
+        reportRenderLoop(App, 'drawer.sketchInternalEdit.forceClosed', error);
       }
     } else if (forceClosedByInteriorEdit) {
       shouldOpen = false;
       try {
         d.isOpen = false;
-      } catch {
-        // ignore
+      } catch (error) {
+        reportRenderLoop(App, 'drawer.interiorEdit.forceClosed', error);
       }
     } else if (
       !forceClosedBySketchExternalDrawerEdit &&
@@ -269,7 +270,7 @@ export function updateRenderLoopDrawerMotions(
           }
         }
       } catch {
-        // ignore
+        // debug-log-best-effort: drawer motion state remains authoritative when debug serialization fails.
       }
     }
   }

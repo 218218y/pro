@@ -104,7 +104,7 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
       const runtime = readRuntimeStateFromApp(App);
       if (runtime && typeof runtime.debug === 'boolean') return !!runtime.debug;
     } catch {
-      // swallow
+      // runtime-debug-probe-fallback: fall back to injected debug flags when store runtime is unavailable.
     }
     try {
       const flags = getDepsFlags();
@@ -190,8 +190,17 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
   // ---------------------------------------------------------------------------
   try {
     installToolsRuntimeState(App);
-  } catch {
-    // ignore
+  } catch (error) {
+    try {
+      platform.reportError?.(error, {
+        where: 'native/platform/platform',
+        op: 'toolsRuntime.install',
+        fatal: false,
+      });
+    } catch (reporterError) {
+      void reporterError;
+    }
+    throw error;
   }
 
   if (!isPlatformInstalled(App)) markPlatformInstalled(App);

@@ -17,7 +17,7 @@ export function getWindowMaybe(app: unknown): Window | null {
       if (isWindowLike(w)) return w;
     }
   } catch {
-    // swallow
+    // browser-surface-fallback: fall back to injected browser dependencies for window access.
   }
 
   try {
@@ -49,7 +49,7 @@ export function getDocumentMaybe(app: unknown): Document | null {
       if (isDocumentLike(d)) return d;
     }
   } catch {
-    // swallow
+    // browser-surface-fallback: fall back to injected browser dependencies for document access.
   }
 
   try {
@@ -84,7 +84,7 @@ export function getLocationSearchMaybe(app: unknown): string {
       if (typeof search === 'string') return search;
     }
   } catch {
-    // swallow
+    // browser-surface-fallback: fall back to injected location/window dependencies.
   }
 
   try {
@@ -110,7 +110,7 @@ export function getNavigatorMaybe(app: unknown): Navigator | null {
       if (isNavigatorLike(nav)) return nav;
     }
   } catch {
-    // swallow
+    // browser-surface-fallback: fall back to injected navigator/window dependencies.
   }
 
   try {
@@ -135,7 +135,7 @@ export function getUserAgentMaybe(app: unknown): string | null {
       return ua && typeof ua === 'string' ? ua : null;
     }
   } catch {
-    // swallow
+    // browser-surface-fallback: fall back to the navigator-derived user agent.
   }
 
   const nav = getNavigatorMaybe(app);

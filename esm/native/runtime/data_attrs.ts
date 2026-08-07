@@ -64,7 +64,7 @@ export function getDataAttrAny(el: ElementAttrTarget, keys: string[]): string {
       if (v != null && String(v).trim() !== '') return String(v).trim();
     }
   } catch {
-    // swallow
+    // DOM-attribute-probe-fallback: malformed element-like objects are treated as missing data.
   }
   return '';
 }
@@ -78,7 +78,7 @@ export function hasDataAttr(el: ElementAttrTarget, key: string): boolean {
     if (typeof target.hasAttribute === 'function') return !!target.hasAttribute(name);
     if (typeof target.getAttribute === 'function') return target.getAttribute(name) != null;
   } catch {
-    // swallow
+    // DOM-attribute-probe-fallback: malformed element-like objects are treated as lacking the attribute.
   }
   return false;
 }
@@ -95,6 +95,6 @@ export function setDataAttr(el: ElementAttrTarget, key: string, value: string | 
     }
     if (typeof target.setAttribute === 'function') target.setAttribute(name, String(value));
   } catch {
-    // swallow
+    // DOM-attribute-write-best-effort: readonly or detached element-like objects may reject writes.
   }
 }

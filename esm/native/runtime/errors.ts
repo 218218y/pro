@@ -44,7 +44,7 @@ export function toError(err: unknown): Error {
   try {
     e.cause = err;
   } catch {
-    // ignore
+    // error-cause-metadata-best-effort: exotic Error objects may reject cause assignment.
   }
   return e;
 }
@@ -56,7 +56,7 @@ function __consoleWarnDedup(tag: string, err: unknown, dedupeMs = DEFAULT_VERBOS
     if (!__shouldConsoleLogOnce(key, dedupeMs)) return;
     console.warn(tag, err);
   } catch {
-    // ignore
+    // console-reporter-isolation: diagnostics must never throw back into the caller.
   }
 }
 

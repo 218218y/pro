@@ -5,6 +5,7 @@ import type {
   UiNotesNamespaceLike,
 } from '../../../types';
 
+import { reportError } from './errors.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 import {
   createNotesRecord,
@@ -48,7 +49,7 @@ function notifyDrawModeListeners(rt: NotesRuntimeNamespaceLike, active: boolean)
     try {
       listener(active);
     } catch {
-      // ignore
+      // observer-isolation: one notes listener must not block the remaining listeners.
     }
   }
 }
@@ -126,8 +127,12 @@ export function subscribeNotesDrawMode(App: unknown, listener: (active: boolean)
   try {
     const rt = ensureNotesRuntime(App);
     if (typeof rt.subscribeDrawModeChange === 'function') return rt.subscribeDrawModeChange(listener);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/notes_access_services',
+      op: 'drawMode.subscribe',
+      fatal: false,
+    });
   }
   return () => {};
 }

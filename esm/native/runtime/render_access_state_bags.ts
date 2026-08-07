@@ -23,6 +23,7 @@ import {
   ensureRenderBag,
   readValue,
 } from './render_access_shared.js';
+import { reportError } from './errors.js';
 import { asRecord } from './record.js';
 
 function ensureOwnedBag<T extends UnknownRecord>(owner: UnknownRecord, key: string, create: () => T): T {
@@ -32,7 +33,7 @@ function ensureOwnedBag<T extends UnknownRecord>(owner: UnknownRecord, key: stri
   try {
     owner[key] = next;
   } catch {
-    // ignore
+    // state-bag-attachment-fallback: return the detached bag when an exotic owner rejects assignment.
   }
   return next;
 }
@@ -108,8 +109,12 @@ export function writeRenderCacheValue<T = unknown>(App: unknown, key: string, va
   try {
     if (value == null) delete cache[key];
     else cache[key] = value;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/render_access_state_bags',
+      op: `cache.write:${key}`,
+      fatal: false,
+    });
   }
   return readValue<T>(cache[key]);
 }
@@ -190,8 +195,12 @@ export function ensureRenderMaterialSlot<T = unknown>(App: unknown, key: string,
   const next = create();
   try {
     materials[key] = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/render_access_state_bags',
+      op: `material.ensure:${key}`,
+      fatal: false,
+    });
   }
   return readValue<T>(materials[key]) || next;
 }
@@ -206,8 +215,12 @@ export function writeRenderMaterialSlot<T = unknown>(App: unknown, key: string, 
   try {
     if (value == null) delete materials[key];
     else materials[key] = value;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/render_access_state_bags',
+      op: `material.write:${key}`,
+      fatal: false,
+    });
   }
   return readValue<T>(materials[key]);
 }
@@ -220,7 +233,7 @@ export function clearDeprecatedRenderRefs(App: unknown): void {
     if ('__wpRenderMaterials' in app) delete app.__wpRenderMaterials;
     if ('__wpRenderMeta' in app) delete app.__wpRenderMeta;
   } catch {
-    // ignore
+    // retired-alias-cleanup-best-effort: frozen legacy roots may reject deletion.
   }
 }
 

@@ -195,7 +195,7 @@ export function nowMs(): number {
       return performance.now();
     }
   } catch {
-    // ignore
+    // clock-capability-fallback: Date.now remains the canonical fallback when performance.now is unavailable.
   }
   return Date.now();
 }

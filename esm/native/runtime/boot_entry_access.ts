@@ -1,6 +1,7 @@
 import type { AppStartServiceLike, UiBootServiceLike } from '../../../types';
 import type { UnknownCallable } from '../../../types/common';
 
+import { reportError } from './errors.js';
 import { asRecord } from './record.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 
@@ -31,7 +32,12 @@ function readUiBootService(v: unknown): UiBootServiceLike | null {
 export function getAppStartServiceMaybe(App: unknown): AppStartServiceLike | null {
   try {
     return readAppStartService(getServiceSlotMaybe<AppStartServiceLike>(App, 'appStart'));
-  } catch {
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/boot_entry_access',
+      op: 'appStart.lookup',
+      fatal: false,
+    });
     return null;
   }
 }
@@ -44,7 +50,8 @@ export function ensureAppStartService(App: unknown): AppStartServiceLike {
 export function getUiBootServiceMaybe(App: unknown): UiBootServiceLike | null {
   try {
     return readUiBootService(getServiceSlotMaybe<UiBootServiceLike>(App, 'uiBoot'));
-  } catch {
+  } catch (error) {
+    reportError(App, error, { where: 'native/runtime/boot_entry_access', op: 'uiBoot.lookup', fatal: false });
     return null;
   }
 }
@@ -75,8 +82,12 @@ export function getBootStartEntry(App: unknown): UnknownCallable | null {
     if (appStart && typeof appStart.start === 'function') {
       return appStart.start.bind(appStart);
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/boot_entry_access',
+      op: 'appStart.resolve',
+      fatal: false,
+    });
   }
 
   try {
@@ -84,8 +95,12 @@ export function getBootStartEntry(App: unknown): UnknownCallable | null {
     if (uiBoot && typeof uiBoot.bootMain === 'function') {
       return uiBoot.bootMain.bind(uiBoot);
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportError(App, error, {
+      where: 'native/runtime/boot_entry_access',
+      op: 'uiBoot.resolve',
+      fatal: false,
+    });
   }
 
   return null;

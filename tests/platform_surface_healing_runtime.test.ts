@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { installPlatform } from '../esm/native/platform/platform.ts';
 import { installPlatformUtilSurface } from '../esm/native/platform/platform_util.ts';
+import { isPlatformInstalled } from '../esm/native/runtime/install_state_access.ts';
 import { installPlatformServiceSurface } from '../esm/native/platform/platform_services.ts';
 import { PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY } from '../esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts';
 import { getDefaultDepthForWardrobeType } from '../esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
@@ -381,4 +383,50 @@ test('platform getDimsM preserves per-axis UI, raw, runtime, and generic fallbac
     wardrobeDepthM: Number.NEGATIVE_INFINITY,
   });
   assert.deepEqual(unknownTypeApp.services.platform.getDimsM(), { w: 1.6, h: 2.4, d: 0.55 });
+});
+
+test('platform install does not publish installed state when required tools runtime installation fails', () => {
+  const diagnostics: Array<{ error: unknown; ctx: unknown }> = [];
+  const App: any = {
+    platform: {
+      reportError(error: unknown, ctx: unknown) {
+        diagnostics.push({ error, ctx });
+      },
+    },
+    deps: {
+      THREE: {},
+      browser: {
+        setTimeout: (fn: () => void) => {
+          fn();
+          return 1;
+        },
+        clearTimeout: () => {},
+        requestAnimationFrame: (cb: (ts?: number) => void) => {
+          cb(0);
+          return 1;
+        },
+        performanceNow: () => 0,
+      },
+      flags: {},
+    },
+    services: {
+      tools: Object.freeze({}),
+    },
+  };
+
+  assert.throws(
+    () => installPlatform(App),
+    /extensible|read only|Cannot add property|object is not extensible/i
+  );
+  assert.equal(isPlatformInstalled(App), false, 'failed tools bootstrap must not publish platform installed');
+  assert.equal(diagnostics.length, 1);
+  assert.deepEqual(diagnostics[0]?.ctx, {
+    where: 'native/platform/platform',
+    op: 'toolsRuntime.install',
+    fatal: false,
+  });
+
+  App.services.tools = {};
+  assert.doesNotThrow(() => installPlatform(App));
+  assert.equal(isPlatformInstalled(App), true, 'retry after repairing tools owner must converge');
 });

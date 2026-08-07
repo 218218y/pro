@@ -190,7 +190,7 @@ export function touchCacheClock(
     metaMap.set(key, currentClock);
     setRenderSlot(root, 'cacheClock', currentClock + 1);
   } catch {
-    // ignore
+    // cache-recency-metadata-best-effort: pruning remains valid when touch metadata cannot be updated.
   }
 }
 
