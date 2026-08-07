@@ -108,7 +108,9 @@ function readSanitizedAttrValue(
 function removeNode(node: Node): void {
   try {
     node.parentNode?.removeChild(node);
-  } catch {}
+  } catch {
+    // sanitizer best-effort: malformed/hostile DOM nodes are skipped without breaking the caller.
+  }
 }
 
 function unwrapNode(el: Element): void {
@@ -136,7 +138,9 @@ function sanitizeElementAttrs(policy: HtmlSanitizePolicy, el: Element, tag: stri
     if (policy === 'overlay-help' && tag === 'A' && el.getAttribute('target') === '_blank') {
       el.setAttribute('rel', 'noopener noreferrer');
     }
-  } catch {}
+  } catch {
+    // sanitizer best-effort: malformed/hostile DOM nodes are skipped without breaking the caller.
+  }
 }
 
 function sanitizeDomTree(policy: HtmlSanitizePolicy, root: Element): string {
@@ -162,12 +166,16 @@ function sanitizeDomTree(policy: HtmlSanitizePolicy, root: Element): string {
     try {
       const children = Array.from(node.childNodes || []);
       for (const child of children) walk(child);
-    } catch {}
+    } catch {
+      // sanitizer best-effort: malformed/hostile DOM nodes are skipped without breaking the caller.
+    }
   };
   try {
     const children = Array.from(root.childNodes || []);
     for (const child of children) walk(child);
-  } catch {}
+  } catch {
+    // sanitizer best-effort: malformed/hostile DOM nodes are skipped without breaking the caller.
+  }
   return readInnerHtml(root);
 }
 

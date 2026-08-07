@@ -205,10 +205,14 @@ export function installBuilderVisualsAndContents(App: AppContainer) {
 
   try {
     M.__esm_visuals_v1 = true;
-  } catch {}
+  } catch {
+    // install-marker best-effort: marker writes are diagnostic/idempotency metadata only.
+  }
   try {
     C.__esm_contents_v1 = true;
-  } catch {}
+  } catch {
+    // install-marker best-effort: marker writes are diagnostic/idempotency metadata only.
+  }
 
   return { builderModules: M, builderContents: C };
 }

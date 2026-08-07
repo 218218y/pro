@@ -494,3 +494,82 @@ test('state-api store reactivity runtime clears queued delayed builds when resto
     []
   );
 });
+
+test('state-api history batch reports pause/resume/schedule failures without replaying the mutation', () => {
+  const diagnostics: Array<{ op?: string }> = [];
+  let ran = 0;
+  const App: AnyRecord = {
+    services: {
+      errors: {
+        report(_error: unknown, ctx?: { op?: string }) {
+          diagnostics.push(ctx || {});
+        },
+      },
+      history: {
+        system: {
+          pause() {
+            throw new Error('pause failed');
+          },
+          resume() {
+            throw new Error('resume failed');
+          },
+        },
+        schedulePush() {
+          throw new Error('schedule failed');
+        },
+      },
+    },
+    store: {
+      subscribe() {
+        return () => undefined;
+      },
+      getState() {
+        return { meta: { version: 1 }, runtime: {}, ui: {} };
+      },
+    },
+  };
+
+  const historyNs: AnyRecord = {};
+  installStateApiHistoryMetaReactivity({
+    A: App,
+    store: App.store,
+    storeNs: {},
+    historyNs,
+    metaActionsNs: {},
+    asObj,
+    safeCall: (fn: () => unknown) => fn(),
+    normMeta,
+    mergeMeta,
+    isObj: (value: unknown): value is AnyRecord =>
+      !!value && typeof value === 'object' && !Array.isArray(value),
+    commitMetaTouch: () => null,
+    asMeta(meta: AnyRecord | null | undefined) {
+      return asObj(meta) || {};
+    },
+    commitMetaPatch: () => null,
+  } as never);
+
+  const out = historyNs.batch(
+    () => {
+      ran += 1;
+      return 'done';
+    },
+    { source: 'history:failure-path' }
+  );
+
+  assert.equal(out, 'done');
+  assert.equal(ran, 1);
+  assert.equal(
+    diagnostics.some(ctx => ctx.op === 'history.batch.pause'),
+    true
+  );
+  assert.equal(
+    diagnostics.some(ctx => ctx.op === 'history.batch.schedulePush.rejected'),
+    true
+  );
+  assert.equal(
+    diagnostics.some(ctx => ctx.op === 'history.batch.resume'),
+    false,
+    'resume is not attempted when pause never converged'
+  );
+});

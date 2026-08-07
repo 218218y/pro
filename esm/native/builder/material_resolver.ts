@@ -117,7 +117,9 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
         if (reportError) {
           try {
             reportError(err, { where: 'builder/material_resolver', partId });
-          } catch (_) {}
+          } catch (_) {
+            // reporter-isolation: diagnostics must not hide the original material-resolution failure.
+          }
         }
         throw err;
       }

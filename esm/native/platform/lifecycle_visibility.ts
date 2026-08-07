@@ -5,7 +5,7 @@ import {
   isLifecycleVisibilityInstalled,
   markLifecycleVisibilityInstalled,
 } from '../runtime/install_state_access.js';
-import { getDocumentMaybe, getWindowMaybe, cancelAnimationFrameMaybe } from '../runtime/api.js';
+import { getDocumentMaybe, getWindowMaybe, cancelAnimationFrameMaybe, reportError } from '../runtime/api.js';
 import { snapDrawersToTargetsViaService } from '../runtime/doors_access.js';
 import { runPlatformWakeupFollowThrough } from '../runtime/platform_access.js';
 import { getLoopRaf, setLoopRaf } from '../runtime/render_access.js';
@@ -60,6 +60,14 @@ function readDocumentHidden(doc: Document | null | undefined): boolean {
   if (!doc) return false;
   const hidden = Reflect.get(doc, 'hidden');
   return typeof hidden === 'boolean' ? hidden : false;
+}
+
+function reportLifecycleNonFatal(root: LifecycleRootLike, op: string, error: unknown): void {
+  try {
+    reportError(root, error, { where: 'native/platform/lifecycle_visibility', op, fatal: false });
+  } catch {
+    // reporter-isolation: lifecycle recovery must not fail because diagnostics failed.
+  }
 }
 
 function ensureLifecycleBindingsState(root: object): LifecycleBindingsState {
@@ -168,8 +176,10 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
 }
 
 export function installLifecycleVisibility(App: unknown) {
-  const root = readLifecycleRoot(App);
-  if (!root) throw new Error('[WardrobePro][ESM] installLifecycleVisibility(App) requires an app object');
+  const rootCandidate = readLifecycleRoot(App);
+  if (!rootCandidate)
+    throw new Error('[WardrobePro][ESM] installLifecycleVisibility(App) requires an app object');
+  const root = rootCandidate;
 
   root.lifecycleHandlers = readLifecycleHandlers(root.lifecycleHandlers) || {};
   const life = root.lifecycleHandlers;
@@ -178,7 +188,9 @@ export function installLifecycleVisibility(App: unknown) {
   function snapDrawersToTargetsSafe() {
     try {
       snapDrawersToTargetsViaService(root);
-    } catch (_e) {}
+    } catch (error) {
+      reportLifecycleNonFatal(root, 'snapDrawersToTargets', error);
+    }
   }
 
   ensureLifecycleRoot(root);
@@ -193,7 +205,9 @@ export function installLifecycleVisibility(App: unknown) {
     return function (isHidden: unknown) {
       try {
         setLifecycleTabHidden(root, !!isHidden);
-      } catch (_e0) {}
+      } catch (error) {
+        reportLifecycleNonFatal(root, 'visibility.setHidden', error);
+      }
 
       if (isHidden) {
         try {
@@ -208,19 +222,25 @@ export function installLifecycleVisibility(App: unknown) {
             }
             setLoopRaf(root, 0);
           }
-        } catch (_e1) {}
+        } catch (error) {
+          reportLifecycleNonFatal(root, 'visibility.pauseRenderLoop', error);
+        }
         return;
       }
 
       try {
         setLifecycleTabHidden(root, false);
-      } catch (_e2) {}
+      } catch (error) {
+        reportLifecycleNonFatal(root, 'visibility.clearHidden', error);
+      }
 
       runPlatformWakeupFollowThrough(root, {
         afterTouch: () => {
           try {
             life.snapDrawersToTargets?.();
-          } catch (_e4) {}
+          } catch (error) {
+            reportLifecycleNonFatal(root, 'visibility.snapDrawers', error);
+          }
         },
       });
     };
@@ -232,7 +252,9 @@ export function installLifecycleVisibility(App: unknown) {
         afterTouch: () => {
           try {
             life.snapDrawersToTargets?.();
-          } catch (_e1) {}
+          } catch (error) {
+            reportLifecycleNonFatal(root, 'focus.snapDrawers', error);
+          }
         },
       });
     };
@@ -244,7 +266,9 @@ export function installLifecycleVisibility(App: unknown) {
         afterTouch: () => {
           try {
             life.snapDrawersToTargets?.();
-          } catch (_e1) {}
+          } catch (error) {
+            reportLifecycleNonFatal(root, 'pageshow.snapDrawers', error);
+          }
         },
       });
     };

@@ -8,6 +8,7 @@ import type {
 } from '../../../types';
 
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
 import { getStorageKey, getStorageString, removeStorageKey } from './storage_access.js';
 
@@ -39,6 +40,10 @@ const SAFE_AUTOSAVE_OWNER_ERROR_NAMES = new Set([
   'EvalError',
   'AggregateError',
 ]);
+
+function reportAutosaveAccessNonFatal(App: unknown, op: string, error: unknown): void {
+  reportError(App, error, { where: 'native/runtime/autosave_access', op, fatal: false });
+}
 
 function asAutosaveService(value: unknown): AutosaveServiceLike | null {
   return asRecord<AutosaveServiceLike>(value);
@@ -155,8 +160,8 @@ export function scheduleAutosaveViaService(App: unknown): boolean {
       Reflect.apply(svc.schedule, svc, []);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAutosaveAccessNonFatal(App, 'schedule.ownerRejected', error);
   }
   return false;
 }
@@ -164,8 +169,8 @@ export function scheduleAutosaveViaService(App: unknown): boolean {
 export function cancelAutosavePendingViaService(App: unknown): boolean {
   try {
     return callBooleanMethod(getAutosaveServiceMaybe(App), 'cancelPending');
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAutosaveAccessNonFatal(App, 'cancelPending.ownerRejected', error);
   }
   return false;
 }
@@ -173,8 +178,8 @@ export function cancelAutosavePendingViaService(App: unknown): boolean {
 export function flushAutosavePendingViaService(App: unknown): boolean {
   try {
     return callBooleanMethod(getAutosaveServiceMaybe(App), 'flushPending');
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAutosaveAccessNonFatal(App, 'flushPending.ownerRejected', error);
   }
   return false;
 }

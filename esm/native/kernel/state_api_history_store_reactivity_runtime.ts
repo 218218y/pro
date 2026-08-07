@@ -8,6 +8,7 @@ import { hasLiveHandle } from '../runtime/install_idempotency_patterns.js';
 import type { StateApiHistoryMetaReactivityContext } from './state_api_history_meta_reactivity_contracts.js';
 import { readKernelBuilderRequestForce, requestKernelBuilderBuild } from './kernel_builder_request_policy.js';
 import { mergeStateApiDelayedBuildMeta } from './state_api_history_store_reactivity_build_meta.js';
+import { domainApiReportNonFatal } from './domain_api_shared.js';
 
 export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaReactivityContext): void {
   const { A, store, storeNs, historyNs, asObj } = ctx;
@@ -32,7 +33,9 @@ export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaRe
         if (!buildTimer) return;
         try {
           timers.clearTimeout(buildTimer);
-        } catch (_e) {}
+        } catch (error) {
+          domainApiReportNonFatal(A, 'storeReactivity.clearBuildTimer', error);
+        }
         buildTimer = null;
       };
 
@@ -74,15 +77,26 @@ export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaRe
       const scheduleAutosave = (metaAny: UnknownRecord | null): void => {
         if (metaAny && (metaAny.silent || metaAny.noAutosave || metaAny.noPersist)) return;
         try {
-          scheduleAutosaveViaService(A);
-        } catch (_e) {}
+          const scheduled = scheduleAutosaveViaService(A);
+          if (!scheduled) {
+            domainApiReportNonFatal(
+              A,
+              'storeReactivity.scheduleAutosave.rejected',
+              new Error('Autosave service rejected the scheduled save.')
+            );
+          }
+        } catch (error) {
+          domainApiReportNonFatal(A, 'storeReactivity.scheduleAutosave', error);
+        }
       };
 
       const isRestoringNow = (stateAny: BuildStateLike): boolean => {
         try {
           const rt = asObj(stateAny.runtime);
           return !!(rt && rt.restoring === true);
-        } catch (_e) {}
+        } catch (error) {
+          domainApiReportNonFatal(A, 'storeReactivity.readRestoring', error);
+        }
         return false;
       };
 
@@ -109,8 +123,17 @@ export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaRe
 
           scheduleAutosave(a0);
           try {
-            historyNs.schedulePush?.(a0 || {});
-          } catch (_e) {}
+            const historyScheduled = historyNs.schedulePush?.(a0 || {});
+            if (historyScheduled === false) {
+              domainApiReportNonFatal(
+                A,
+                'storeReactivity.scheduleHistoryPush.rejected',
+                new Error('History service rejected the scheduled push.')
+              );
+            }
+          } catch (error) {
+            domainApiReportNonFatal(A, 'storeReactivity.scheduleHistoryPush', error);
+          }
 
           const suppressBuild = !!(a0 && (a0.silent || (a0.noBuild && !forceBuild)));
           if (suppressBuild) return;
@@ -124,8 +147,9 @@ export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaRe
           }
 
           scheduleDelayedBuild(a0);
-        } catch (_e) {
-          // Best-effort: never break store commits.
+        } catch (error) {
+          // Store commits must remain fail-soft, but losing autosave/history/build follow-through is observable.
+          domainApiReportNonFatal(A, 'storeReactivity.commitFollowThrough', error);
         }
       });
 

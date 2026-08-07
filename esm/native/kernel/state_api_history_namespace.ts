@@ -10,6 +10,7 @@ import {
 } from '../runtime/history_system_access.js';
 
 import type { StateApiHistoryMetaReactivityContext } from './state_api_history_meta_reactivity_contracts.js';
+import { domainApiReportNonFatal } from './domain_api_shared.js';
 
 export function installStateApiHistoryNamespace(ctx: StateApiHistoryMetaReactivityContext): void {
   const { A, historyNs, asObj, safeCall } = ctx;
@@ -43,17 +44,30 @@ export function installStateApiHistoryNamespace(ctx: StateApiHistoryMetaReactivi
           pause.call(hs);
           didPause = true;
         }
-      } catch (_e) {}
+      } catch (error) {
+        domainApiReportNonFatal(A, 'history.batch.pause', error);
+      }
 
       try {
         return typeof fn === 'function' ? fn() : undefined;
       } finally {
         try {
           if (didPause && hs && typeof resume === 'function') resume.call(hs);
-        } catch (_e) {}
+        } catch (error) {
+          domainApiReportNonFatal(A, 'history.batch.resume', error);
+        }
         try {
-          scheduleHistoryPushOnServiceMaybe(A, m);
-        } catch (_e) {}
+          const scheduled = scheduleHistoryPushOnServiceMaybe(A, m);
+          if (!scheduled) {
+            domainApiReportNonFatal(
+              A,
+              'history.batch.schedulePush.rejected',
+              new Error('History service rejected the batched push.')
+            );
+          }
+        } catch (error) {
+          domainApiReportNonFatal(A, 'history.batch.schedulePush', error);
+        }
       }
     };
   }

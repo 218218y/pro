@@ -299,3 +299,43 @@ test('autosave access: storage helpers share one canonical payload seam and self
   assert.equal(readAutosavePayloadFromStorage(App), null);
   assert.equal(readAutosaveInfoFromStorage(App), null);
 });
+
+test('autosave access reports schedule/cancel/flush owner exceptions while preserving fail-soft results', () => {
+  const reports: Array<{ op?: string }> = [];
+  const App: any = {
+    services: {
+      errors: {
+        report(_error: unknown, ctx?: { op?: string }) {
+          reports.push(ctx || {});
+        },
+      },
+      autosave: {
+        schedule() {
+          throw new Error('schedule failed');
+        },
+        cancelPending() {
+          throw new Error('cancel failed');
+        },
+        flushPending() {
+          throw new Error('flush failed');
+        },
+      },
+    },
+  };
+
+  assert.equal(scheduleAutosaveViaService(App), false);
+  assert.equal(cancelAutosavePendingViaService(App), false);
+  assert.equal(flushAutosavePendingViaService(App), false);
+  assert.equal(
+    reports.some(ctx => ctx.op === 'schedule.ownerRejected'),
+    true
+  );
+  assert.equal(
+    reports.some(ctx => ctx.op === 'cancelPending.ownerRejected'),
+    true
+  );
+  assert.equal(
+    reports.some(ctx => ctx.op === 'flushPending.ownerRejected'),
+    true
+  );
+});

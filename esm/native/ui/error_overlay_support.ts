@@ -75,7 +75,9 @@ export function setFatalOverlayController(win: Window | null, ctrl: FatalOverlay
     const root = _readObjectRecord(win);
     if (!root) return;
     root.__WARDROBE_PRO_FATAL_OVERLAY__ = ctrl;
-  } catch (_e) {}
+  } catch (_e) {
+    // error-overlay best-effort: optional global/clipboard helpers must not break fatal reporting.
+  }
 }
 
 export function safeFatalOverlayText(value: unknown): string {
@@ -180,7 +182,9 @@ export function copyFatalOverlayText(win: Window | null, txt: unknown): boolean 
       void nav.clipboard.writeText(text);
       return true;
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // error-overlay best-effort: optional global/clipboard helpers must not break fatal reporting.
+  }
 
   try {
     const doc = win && win.document;

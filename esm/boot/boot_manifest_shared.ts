@@ -1,4 +1,4 @@
-import { guardVoid } from '../native/runtime/api.js';
+import { guardVoid, reportError } from '../native/runtime/api.js';
 
 import { makeActiveElementIdReader } from '../native/adapters/browser/install.js';
 
@@ -28,14 +28,22 @@ export function installPresetModels(app: AppContainer): boolean {
   if (!app || typeof app !== 'object') return false;
   const appObj = app;
   if (__presetModelsInstalled && __presetModelsInstalled.has(appObj)) return true;
-  if (__presetModelsInstalled) __presetModelsInstalled.add(appObj);
 
   try {
-    setModelNormalizerViaService(app, normalizeModelRecord);
-    setPresetModelsViaService(app, PRESET_MODELS);
-  } catch (_) {}
-
-  return true;
+    const normalizerResult = setModelNormalizerViaService(app, normalizeModelRecord);
+    if (normalizerResult === false) {
+      throw new Error('[WardrobePro][ESM] Models service rejected the preset-model normalizer.');
+    }
+    const presetsResult = setPresetModelsViaService(app, PRESET_MODELS);
+    if (presetsResult === false) {
+      throw new Error('[WardrobePro][ESM] Models service rejected built-in preset models.');
+    }
+    if (__presetModelsInstalled) __presetModelsInstalled.add(appObj);
+    return true;
+  } catch (error) {
+    reportError(app, error, { where: 'boot/boot_manifest', op: 'models.installPresetModels', fatal: false });
+    return false;
+  }
 }
 
 export function isRecord(x: unknown): x is UnknownRecord {

@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-08-07T05:52:26.806Z",
+  "generatedAt": "2026-08-07T06:53:06.704Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 10,
-    "totalFiles": 6,
+    "totalOccurrences": 20,
+    "totalFiles": 11,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 1,
+      "domain-default": 9,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
-      "project-migration": 1,
+      "project-migration": 3,
       "external-api-compat": 0,
       "compat-boundary": 0,
       "test-fixture": 6,
@@ -18,6 +18,24 @@
       "unknown": 0
     },
     "byFile": {
+      "esm/native/builder/core_storage_compute_custom.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/materials_factory_texture_runtime.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/module_layout_pipeline.ts": {
+        "total": 2,
+        "categories": {
+          "project-migration": 2
+        }
+      },
       "esm/native/runtime/app_helpers.ts": {
         "total": 1,
         "categories": {
@@ -30,6 +48,12 @@
           "domain-default": 1
         }
       },
+      "esm/native/ui/errors_install_support.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
@@ -40,6 +64,12 @@
         "total": 1,
         "categories": {
           "framework-default": 1
+        }
+      },
+      "esm/native/ui/ui_boot_controller_reporter.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/test_imports.mjs": {
@@ -61,6 +91,41 @@
         "total": 5,
         "categories": {
           "test-fixture": 5
+        }
+      },
+      {
+        "file": "esm/native/ui/errors_install_support.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/materials_factory_texture_runtime.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/module_layout_pipeline.ts",
+        "total": 2,
+        "categories": {
+          "project-migration": 2
+        }
+      },
+      {
+        "file": "esm/native/ui/ui_boot_controller_reporter.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/core_storage_compute_custom.ts",
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       {
@@ -103,6 +168,41 @@
   "allowlistComparison": null,
   "occurrences": [
     {
+      "file": "esm/native/builder/core_storage_compute_custom.ts",
+      "line": 142,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails."
+    },
+    {
+      "file": "esm/native/builder/materials_factory_texture_runtime.ts",
+      "line": 32,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// render-capability fallback: optional texture metadata is not required for a usable texture."
+    },
+    {
+      "file": "esm/native/builder/materials_factory_texture_runtime.ts",
+      "line": 191,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// render-capability fallback: optional texture metadata is not required for a usable texture."
+    },
+    {
+      "file": "esm/native/builder/module_layout_pipeline.ts",
+      "line": 251,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below."
+    },
+    {
+      "file": "esm/native/builder/module_layout_pipeline.ts",
+      "line": 251,
+      "term": "legacy",
+      "category": "project-migration",
+      "text": "// builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below."
+    },
+    {
       "file": "esm/native/runtime/app_helpers.ts",
       "line": 22,
       "term": "fallback",
@@ -117,6 +217,27 @@
       "text": "// is still a safe snapshot fallback and avoids fabricating a zero vector."
     },
     {
+      "file": "esm/native/ui/errors_install_support.ts",
+      "line": 187,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
+    },
+    {
+      "file": "esm/native/ui/errors_install_support.ts",
+      "line": 193,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
+    },
+    {
+      "file": "esm/native/ui/errors_install_support.ts",
+      "line": 198,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
+    },
+    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 58,
       "term": "fallback",
@@ -129,6 +250,20 @@
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"
+    },
+    {
+      "file": "esm/native/ui/ui_boot_controller_reporter.ts",
+      "line": 13,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: fallback diagnostics must never break boot error handling."
+    },
+    {
+      "file": "esm/native/ui/ui_boot_controller_reporter.ts",
+      "line": 26,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: fallback diagnostics must never break boot error handling."
     },
     {
       "file": "esm/test_imports.mjs",

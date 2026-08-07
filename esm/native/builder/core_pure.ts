@@ -69,6 +69,8 @@ export function installBuilderCorePure(App: unknown) {
   }
   try {
     C.__esm_v1 = true;
-  } catch (_) {}
+  } catch (_) {
+    // install-marker best-effort: marker writes are diagnostic/idempotency metadata only.
+  }
   return C;
 }

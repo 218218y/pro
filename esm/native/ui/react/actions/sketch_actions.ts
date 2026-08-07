@@ -2,8 +2,7 @@
 
 import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../../types';
 
-import { getMetaActionFn } from '../../../services/api.js';
-import { readStoreStateMaybe } from '../../../services/api.js';
+import { getMetaActionFn, readStoreStateMaybe, reportError } from '../../../services/api.js';
 import { setRuntimeSketchMode, setUiSketchModeMirror } from './store_actions.js';
 import { applyImmediateStructuralRuntimeMutation } from './structural_build_refresh_actions.js';
 
@@ -63,9 +62,22 @@ export function toggleSketchMode(app: AppContainer, meta?: ActionMetaLike): void
       },
       meta
     );
-  } catch {}
+  } catch (error) {
+    reportError(app, error, {
+      where: 'native/ui/react/actions/sketch_actions',
+      op: 'runtime.commit',
+      fatal: false,
+    });
+    return;
+  }
 
   try {
     setUiSketchModeMirror(app, !!next, getUiOnlyImmediateMeta(app, 'react:sketch:syncUi'));
-  } catch {}
+  } catch (error) {
+    reportError(app, error, {
+      where: 'native/ui/react/actions/sketch_actions',
+      op: 'uiMirror.commit',
+      fatal: false,
+    });
+  }
 }

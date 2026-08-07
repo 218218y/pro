@@ -127,7 +127,9 @@ export function getMaterial(
 
   try {
     newMat.userData = { isCached: true };
-  } catch {}
+  } catch {
+    // render-metadata best-effort: cache metadata is secondary to the material instance.
+  }
 
   touchMaterialsCacheMeta(App, renderMeta.material, cacheKey);
   renderCache.materialCache.set(cacheKey, newMat);

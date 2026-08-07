@@ -116,11 +116,15 @@ export function installBuilderMaterialsFactory(appIn: unknown) {
     if (deps.generateTexture !== materials.generateTexture) deps.generateTexture = materials.generateTexture;
     if (deps.getDataURLTexture !== materials.getDataURLTexture)
       deps.getDataURLTexture = materials.getDataURLTexture;
-  } catch {}
+  } catch {
+    // install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service.
+  }
 
   try {
     materials.__esm_materials_factory_v1 = true;
-  } catch {}
+  } catch {
+    // install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service.
+  }
 
   return materials;
 }

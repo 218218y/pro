@@ -52,7 +52,9 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
       if (reportError) {
         try {
           reportError(err, { where: 'builder/handle_factory', type });
-        } catch (_) {}
+        } catch (_) {
+          // reporter-isolation: diagnostics must not hide the original builder failure.
+        }
       }
       throw err;
     }
@@ -62,7 +64,9 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
       if (reportError) {
         try {
           reportError(err, { where: 'builder/handle_factory', type });
-        } catch (_) {}
+        } catch (_) {
+          // reporter-isolation: diagnostics must not hide the original builder failure.
+        }
       }
       throw err;
     }
@@ -75,7 +79,9 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
       if (reportError) {
         try {
           reportError(err, { where: 'builder/handle_factory', type });
-        } catch (_) {}
+        } catch (_) {
+          // reporter-isolation: diagnostics must not hide the original builder failure.
+        }
       }
       throw err;
     }

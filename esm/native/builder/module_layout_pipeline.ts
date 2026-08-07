@@ -247,7 +247,9 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
         }
       }
     }
-  } catch (_) {}
+  } catch (_) {
+    // builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below.
+  }
 
   if (!Array.isArray(modules) || !isModuleStructureCurrentForDoorCount(modules, doorsCount)) {
     modules = canonicalModules || computeCanonicalModules();

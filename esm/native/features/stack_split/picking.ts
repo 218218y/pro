@@ -21,7 +21,9 @@ export function projectWorldYToNdcY(
 
     try {
       if (typeof camera.updateMatrixWorld === 'function') camera.updateMatrixWorld(true);
-    } catch (_) {}
+    } catch (_) {
+      // projection best-effort: matrix refresh failure falls through to the existing projection attempt.
+    }
 
     const v = new THREE.Vector3(0, worldY, 0);
     if (typeof v.project === 'function') v.project(camera);

@@ -73,7 +73,9 @@ export function installBuilderHandlesV7(App: unknown) {
 
   try {
     h.__esm_builder_handles_v7_v1 = true;
-  } catch (_error) {}
+  } catch (_error) {
+    // install-marker best-effort: marker writes are diagnostic/idempotency metadata only.
+  }
 
   return h;
 }

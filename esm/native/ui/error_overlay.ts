@@ -58,7 +58,9 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
         info,
         opts && opts.context ? opts.context : ''
       );
-    } catch (_e) {}
+    } catch (_e) {
+      // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+    }
     return null;
   }
 
@@ -87,11 +89,15 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
     if (overlay.parentNode !== domDoc.body) {
       domDoc.body.appendChild(overlay);
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+  }
 
   try {
     overlay.style.display = 'flex';
-  } catch (_e) {}
+  } catch (_e) {
+    // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+  }
 
   const detailsId = 'wpFatalOverlayDetails';
   const actionsId = 'wpFatalOverlayActions';
@@ -149,7 +155,9 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
     btnReload.onclick = () => {
       try {
         win.location.reload();
-      } catch (_e) {}
+      } catch (_e) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     };
   }
 
@@ -162,9 +170,13 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
         st(() => {
           try {
             btnCopy.textContent = 'העתק פרטים';
-          } catch (_e) {}
+          } catch (_e) {
+            // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+          }
         }, 1200);
-      } catch (_e2) {}
+      } catch (_e2) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     };
   }
 
@@ -177,9 +189,13 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
         st(() => {
           try {
             btnDownload.textContent = 'הורד debug.json';
-          } catch (_e) {}
+          } catch (_e) {
+            // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+          }
         }, 1200);
-      } catch (_e2) {}
+      } catch (_e2) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     };
   }
 
@@ -187,7 +203,9 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
     btnClose.onclick = () => {
       try {
         overlay.style.display = 'none';
-      } catch (_e) {}
+      } catch (_e) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     };
   }
 
@@ -196,12 +214,16 @@ export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController
     show(_opts?: FatalOverlayShowOptionsLike) {
       try {
         overlay.style.display = 'flex';
-      } catch (_e) {}
+      } catch (_e) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     },
     hide(_opts?: FatalOverlayHideOptionsLike) {
       try {
         overlay.style.display = 'none';
-      } catch (_e) {}
+      } catch (_e) {
+        // error-overlay best-effort: keep fatal diagnostics usable when optional DOM/browser actions fail.
+      }
     },
   };
 

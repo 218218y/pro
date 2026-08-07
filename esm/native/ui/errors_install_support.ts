@@ -183,14 +183,20 @@ export function createErrorsInstallReportNonFatal(App: AppContainer): ReportNonF
     } catch (_seenErr) {
       try {
         console.error('[WardrobePro][errors_install][reportNonFatal]', _seenErr);
-      } catch {}
+      } catch {
+        // reporter-isolation: the error-reporting fallback must never throw into application code.
+      }
     }
     try {
       if (silentConsoleForApp(App)) return;
-    } catch {}
+    } catch {
+      // reporter-isolation: the error-reporting fallback must never throw into application code.
+    }
     try {
       console.warn('[WardrobePro][errors_install][reportNonFatal]', op, err);
-    } catch {}
+    } catch {
+      // reporter-isolation: the error-reporting fallback must never throw into application code.
+    }
   };
 }
 

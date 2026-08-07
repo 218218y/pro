@@ -138,7 +138,9 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
   try {
     const keys = Object.keys(shelfVariantsByIndex);
     if (keys.length) ops.shelfVariants = shelfVariantsByIndex;
-  } catch {}
+  } catch {
+    // builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails.
+  }
 
   return ops;
 }

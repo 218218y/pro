@@ -1,19 +1,19 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-07T05:52:26.806Z
+Generated at: 2026-08-07T06:53:06.704Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **10**
-- Files with occurrences: **6**
+- Total categorized occurrences: **20**
+- Files with occurrences: **11**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **1**
+  - `domain-default`: **9**
   - `error-message-default`: **0**
   - `framework-default`: **2**
   - `browser-adapter`: **0**
-  - `project-migration`: **1**
+  - `project-migration`: **3**
   - `external-api-compat`: **0**
   - `compat-boundary`: **0**
   - `test-fixture`: **6**
@@ -36,6 +36,11 @@ Generated at: 2026-08-07T05:52:26.806Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
+- `esm/native/ui/errors_install_support.ts` - **3** (domain-default: 3)
+- `esm/native/builder/materials_factory_texture_runtime.ts` - **2** (domain-default: 2)
+- `esm/native/builder/module_layout_pipeline.ts` - **2** (project-migration: 2)
+- `esm/native/ui/ui_boot_controller_reporter.ts` - **2** (domain-default: 2)
+- `esm/native/builder/core_storage_compute_custom.ts` - **1** (domain-default: 1)
 - `esm/native/runtime/app_helpers.ts` - **1** (project-migration: 1)
 - `esm/native/services/render_surface_runtime_support_ops.ts` - **1** (domain-default: 1)
 - `esm/native/ui/react/overlay_pdf_host.tsx` - **1** (framework-default: 1)

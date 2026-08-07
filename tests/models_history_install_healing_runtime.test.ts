@@ -286,3 +286,45 @@ test('history/models install healing runtime: preset boot step populates built-i
     true
   );
 });
+
+test('history/models install healing runtime: failed preset installation is observable, remains retryable, and only seals after convergence', () => {
+  const diagnostics: Array<{ error: unknown; ctx: any }> = [];
+  let rejectNormalizer = true;
+  let normalizerCalls = 0;
+  let presetCalls = 0;
+  const App: any = {
+    services: {
+      errors: {
+        report(error: unknown, ctx: unknown) {
+          diagnostics.push({ error, ctx });
+        },
+      },
+      models: {
+        setNormalizer() {
+          normalizerCalls += 1;
+          if (rejectNormalizer) throw new Error('normalizer unavailable');
+        },
+        setPresets() {
+          presetCalls += 1;
+        },
+      },
+    },
+  };
+
+  assert.equal(installPresetModels(App), false);
+  assert.equal(normalizerCalls, 1);
+  assert.equal(presetCalls, 0);
+  assert.equal(
+    diagnostics.some(entry => entry.ctx?.op === 'models.installPresetModels'),
+    true
+  );
+
+  rejectNormalizer = false;
+  assert.equal(installPresetModels(App), true);
+  assert.equal(normalizerCalls, 2);
+  assert.equal(presetCalls, 1);
+
+  assert.equal(installPresetModels(App), true);
+  assert.equal(normalizerCalls, 2, 'successful convergence should seal the idempotency guard');
+  assert.equal(presetCalls, 1);
+});

@@ -9,7 +9,9 @@ export function createUiBootReporter(App: AppContainer): UiBootReporterLike {
     } catch (_) {
       try {
         console.warn(`[WardrobePro][boot_main] ${op}`, err);
-      } catch (_) {}
+      } catch (_) {
+        // reporter-isolation: fallback diagnostics must never break boot error handling.
+      }
     }
   };
 
@@ -20,7 +22,9 @@ export function createUiBootReporter(App: AppContainer): UiBootReporterLike {
     } catch (_) {
       try {
         soft(op, err);
-      } catch (_) {}
+      } catch (_) {
+        // reporter-isolation: fallback diagnostics must never break boot error handling.
+      }
     }
   };
 

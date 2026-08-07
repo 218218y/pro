@@ -3,6 +3,7 @@ import type { ActionMetaLike } from '../../../types';
 import { isActionStubFn } from '../runtime/actions_access_shared.js';
 
 import type { StateApiHistoryMetaReactivityContext } from './state_api_history_meta_reactivity_contracts.js';
+import { domainApiReportNonFatal } from './domain_api_shared.js';
 
 const META_INTERACTIVE: ActionMetaLike = { silent: false };
 const META_UI_ONLY: ActionMetaLike = {
@@ -32,7 +33,7 @@ const META_TRANSIENT: ActionMetaLike = {
 };
 
 export function installStateApiMetaNamespace(ctx: StateApiHistoryMetaReactivityContext): void {
-  const { metaActionsNs, mergeMeta, isObj, normMeta, commitMetaTouch, asMeta, commitMetaPatch } = ctx;
+  const { A, metaActionsNs, mergeMeta, isObj, normMeta, commitMetaTouch, asMeta, commitMetaPatch } = ctx;
 
   const emptyMeta = (patch?: Partial<ActionMetaLike>): ActionMetaLike => Object.assign({}, patch || {});
   const metaNs = metaActionsNs;
@@ -86,7 +87,9 @@ export function installStateApiMetaNamespace(ctx: StateApiHistoryMetaReactivityC
       try {
         const m = normMeta(meta, 'meta:touch');
         return commitMetaTouch(m);
-      } catch (_e) {}
+      } catch (error) {
+        domainApiReportNonFatal(A, 'meta.touch', error);
+      }
       return undefined;
     };
   }
@@ -97,7 +100,9 @@ export function installStateApiMetaNamespace(ctx: StateApiHistoryMetaReactivityC
         const m = normMeta(meta, 'meta:persist');
         // Delete-pass: persistence nudges should stay on canonical actions/store paths.
         return metaNs.touch?.(m);
-      } catch (_) {}
+      } catch (error) {
+        domainApiReportNonFatal(A, 'meta.persist', error);
+      }
       return undefined;
     };
   }

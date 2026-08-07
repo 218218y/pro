@@ -86,3 +86,35 @@ test('runtime access hardening: doors/drawers helpers keep service routing and r
   assert.equal(consumeDrawerRebuildIntent(App, secondIntent), 'drawer-1');
   assert.equal(consumeDrawerRebuildIntent(App), null);
 });
+
+test('runtime access hardening: rejected door owner calls stay fail-soft and publish diagnostics', () => {
+  const reports: Array<{ op?: string }> = [];
+  const App: any = {
+    services: {
+      errors: {
+        report(_error: unknown, ctx?: { op?: string }) {
+          reports.push(ctx || {});
+        },
+      },
+      doors: {
+        setOpen() {
+          throw new Error('door write failed');
+        },
+        getLastToggleTime() {
+          throw new Error('door read failed');
+        },
+      },
+    },
+  };
+
+  assert.equal(setDoorsOpenViaService(App, true), false);
+  assert.equal(getDoorsLastToggleTime(App), 0);
+  assert.equal(
+    reports.some(ctx => ctx.op === 'setOpen.ownerRejected'),
+    true
+  );
+  assert.equal(
+    reports.some(ctx => ctx.op === 'getLastToggleTime.ownerRejected'),
+    true
+  );
+});

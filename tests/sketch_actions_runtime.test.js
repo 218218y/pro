@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
-function loadSketchActionsHarness(initialRuntime = {}) {
+function loadSketchActionsHarness(initialRuntime = {}, options = {}) {
   const file = path.resolve('esm/native/ui/react/actions/sketch_actions.ts');
   const calls = [];
+  const diagnostics = [];
   const store = {
     runtime: {
       sketchMode: false,
@@ -30,6 +31,7 @@ function loadSketchActionsHarness(initialRuntime = {}) {
                 })
               : null,
           readStoreStateMaybe: () => store,
+          reportError: (_app, error, ctx) => diagnostics.push({ error, ctx }),
         };
       }
       if (specifier === './store_actions.js') {
@@ -60,6 +62,7 @@ function loadSketchActionsHarness(initialRuntime = {}) {
             overrides
           ) => {
             calls.push(['applyImmediateStructuralRuntimeMutation', sourceName, patch, overrides]);
+            if (options.rejectStructuralMutation) throw new Error('structural mutation rejected');
             applyDirectMutation(buildMeta(sourceName, overrides));
             return { appliedViaActions: false, requestedBuild: false };
           },
@@ -69,7 +72,7 @@ function loadSketchActionsHarness(initialRuntime = {}) {
     },
     globals: { console },
   });
-  return { api, calls, store, app };
+  return { api, calls, diagnostics, store, app };
 }
 
 test('[sketch-actions] sketch mode runtime write routes through immediate structural runtime mutation', () => {
@@ -113,5 +116,25 @@ test('[sketch-actions] sketch mode runtime write routes through immediate struct
             uiOnly: true,
           })
     )
+  );
+});
+
+test('[sketch-actions] rejected runtime commit reports and does not publish a stale UI mirror', () => {
+  const { api, calls, diagnostics, store, app } = loadSketchActionsHarness(
+    {},
+    { rejectStructuralMutation: true }
+  );
+
+  api.toggleSketchMode(app, { source: 'react:sketch:reject' });
+
+  assert.equal(store.runtime.sketchMode, false);
+  assert.equal(store.ui.sketchMode, undefined);
+  assert.equal(
+    calls.some(entry => entry[0] === 'setUiSketchModeMirror'),
+    false
+  );
+  assert.equal(
+    diagnostics.some(entry => entry.ctx?.op === 'runtime.commit'),
+    true
   );
 });

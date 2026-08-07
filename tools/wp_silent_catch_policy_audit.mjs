@@ -8,27 +8,39 @@ const SOURCE_ROOTS = ['esm/native', 'esm/boot'];
 const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx']);
 const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 16,
-  boot: 4,
+  boot: 3,
   builder: 122,
   features: 12,
   io: 4,
-  kernel: 19,
-  platform: 53,
-  runtime: 126,
+  kernel: 9,
+  platform: 47,
+  runtime: 112,
   services: 87,
-  ui: 207,
+  ui: 205,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,
-  boot: 1,
-  builder: 18,
-  features: 1,
+  boot: 0,
+  builder: 0,
+  features: 0,
   io: 0,
-  kernel: 10,
-  platform: 7,
+  kernel: 0,
+  platform: 0,
   runtime: 0,
   services: 0,
-  ui: 24,
+  ui: 0,
+});
+const EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER = Object.freeze({
+  adapters: 13,
+  boot: 0,
+  builder: 46,
+  features: 9,
+  io: 0,
+  kernel: 1,
+  platform: 38,
+  runtime: 87,
+  services: 49,
+  ui: 110,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/camera_access.ts',
@@ -86,6 +98,11 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/platform/render_scheduler.ts',
   'esm/native/ui/boot_main.ts',
   'esm/native/ui/react/actions/modes_actions.ts',
+  'esm/native/kernel/state_api_history_namespace.ts',
+  'esm/native/kernel/state_api_meta_namespace.ts',
+  'esm/boot/boot_manifest_shared.ts',
+  'esm/native/ui/react/actions/sketch_actions.ts',
+  'esm/native/runtime/doors_access_doors.ts',
 ]);
 
 function parserLanguage(file) {
@@ -139,7 +156,16 @@ function collectStatementFreeCatches(source, file) {
     const bodyText = String(source || '')
       .slice(node.body.start + 1, node.body.end - 1)
       .trim();
-    catches.push({ bare: bodyText.length === 0 });
+    const normalizedComment = bodyText
+      .replace(/^\/\*+\s*/, '')
+      .replace(/\s*\*\/$/, '')
+      .replace(/^\/\/\s*/, '')
+      .trim()
+      .toLowerCase();
+    catches.push({
+      bare: bodyText.length === 0,
+      vague: normalizedComment === 'ignore' || normalizedComment === 'swallow',
+    });
   });
   return catches;
 }
@@ -149,6 +175,7 @@ export function countEmptyCatchesInSource(source, file = 'source.ts') {
   return {
     statementFree: catches.length,
     bare: catches.filter(entry => entry.bare).length,
+    vague: catches.filter(entry => entry.vague).length,
   };
 }
 
@@ -179,6 +206,7 @@ export function collectProductionEmptyCatchInventory(projectRoot = process.cwd()
   const entries = [];
   const statementFreeByLayer = {};
   const bareByLayer = {};
+  const vagueByLayer = {};
   for (const absolutePath of walkSourceFiles(projectRoot)) {
     const relativePath = path.relative(projectRoot, absolutePath).split(path.sep).join('/');
     const counts = countEmptyCatchesInSource(fs.readFileSync(absolutePath, 'utf8'), relativePath);
@@ -187,6 +215,7 @@ export function collectProductionEmptyCatchInventory(projectRoot = process.cwd()
     const layer = classifyLayer(relativePath);
     statementFreeByLayer[layer] = (statementFreeByLayer[layer] || 0) + counts.statementFree;
     bareByLayer[layer] = (bareByLayer[layer] || 0) + counts.bare;
+    vagueByLayer[layer] = (vagueByLayer[layer] || 0) + counts.vague;
   }
   return {
     entries,
@@ -196,9 +225,14 @@ export function collectProductionEmptyCatchInventory(projectRoot = process.cwd()
     bareByLayer: Object.fromEntries(
       Object.entries(bareByLayer).sort(([left], [right]) => left.localeCompare(right))
     ),
+    vagueByLayer: Object.fromEntries(
+      Object.entries(vagueByLayer).sort(([left], [right]) => left.localeCompare(right))
+    ),
     statementFreeTotal: entries.reduce((sum, entry) => sum + entry.statementFree, 0),
     bareTotal: entries.reduce((sum, entry) => sum + entry.bare, 0),
+    vagueTotal: entries.reduce((sum, entry) => sum + entry.vague, 0),
     bareFileCount: entries.filter(entry => entry.bare > 0).length,
+    vagueFileCount: entries.filter(entry => entry.vague > 0).length,
   };
 }
 
@@ -231,6 +265,12 @@ export function runSilentCatchPolicyAudit(projectRoot = process.cwd()) {
     failures
   );
   auditLayerRatchet(inventory.bareByLayer, EXPECTED_BARE_CATCHES_BY_LAYER, 'bare catch', failures);
+  auditLayerRatchet(
+    inventory.vagueByLayer,
+    EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER,
+    'vague catch comment',
+    failures
+  );
 
   const inventoryByFile = new Map(inventory.entries.map(entry => [entry.file, entry.statementFree]));
   for (const file of FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES) {
@@ -255,7 +295,7 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `[silent-catch-policy] ok (${result.inventory.statementFreeTotal} statement-free catches, ${result.inventory.bareTotal} bare catches, ${result.inventory.entries.length} files)`
+    `[silent-catch-policy] ok (${result.inventory.statementFreeTotal} statement-free catches, ${result.inventory.bareTotal} bare catches, ${result.inventory.vagueTotal} vague catch comments, ${result.inventory.entries.length} files)`
   );
 }
 

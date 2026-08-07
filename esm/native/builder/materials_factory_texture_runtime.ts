@@ -28,7 +28,9 @@ export function getDataURLTexture(appIn: unknown, dataUrl: unknown) {
   const tex = new THREE.Texture();
   try {
     setTextureColorSpace(tex, THREE);
-  } catch {}
+  } catch {
+    // render-capability fallback: optional texture metadata is not required for a usable texture.
+  }
 
   const img = new Image();
   img.onload = function () {
@@ -185,7 +187,9 @@ export function generateTexture(appIn: unknown, colorHex: unknown, type: unknown
   const texture = new THREE.CanvasTexture(canvas);
   try {
     setTextureColorSpace(texture, THREE);
-  } catch {}
+  } catch {
+    // render-capability fallback: optional texture metadata is not required for a usable texture.
+  }
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   if (textureType === 'wood' || textureType === 'wood-dark') texture.repeat.set(2, 4);

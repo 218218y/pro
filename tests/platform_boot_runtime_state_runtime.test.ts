@@ -178,3 +178,28 @@ test('platform boot runtime state: failed entry stays retryable and never publis
   assert.equal(App.lifecycle.bootReady, true);
   assert.equal(boot.isReady?.(), true);
 });
+
+test('lifecycle visibility reports failed required drawer snap while staying fail-soft', () => {
+  const reports: Array<{ op?: string }> = [];
+  const App: any = {
+    deps: { browser: {} },
+    platform: {
+      reportError(_error: unknown, ctx?: { op?: string }) {
+        reports.push(ctx || {});
+      },
+      triggerRender() {},
+    },
+    services: {
+      doors: {
+        snapDrawersToTargets() {
+          throw new Error('drawer snap rejected');
+        },
+      },
+    },
+  };
+
+  installLifecycleVisibility(App);
+
+  assert.doesNotThrow(() => App.lifecycleHandlers.snapDrawersToTargets());
+  assert.ok(reports.some(ctx => ctx.op === 'snapDrawersToTargets.ownerRejected'));
+});

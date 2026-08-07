@@ -119,7 +119,9 @@ export function touchMaterialsCacheMeta(
   try {
     if (typeof util.cacheTouch === 'function') util.cacheTouch(metaMap, key);
     else if (metaMap instanceof Map) metaMap.set(key, Date.now());
-  } catch {}
+  } catch {
+    // cache-metadata best-effort: cache-touch bookkeeping must not break material resolution.
+  }
 }
 
 function isCanvasLike(value: unknown): value is CanvasLike {

@@ -12,12 +12,14 @@ test('silent-catch policy recognizes AST-level statement-free and bare catch bod
     const misleadingText = "catch (error) {}";
     try { work(); } catch {}
     try { work(); } catch (error) { /* documented cleanup without a statement */ }
+    try { work(); } catch (error) { /* ignore */ }
     try { work(); } catch (error) { report(error); }
     try { work(); } catch (error) { void error; }
   `;
   assert.deepEqual(countEmptyCatchesInSource(source, 'fixture.ts'), {
-    statementFree: 2,
+    statementFree: 3,
     bare: 1,
+    vague: 1,
   });
 });
 
@@ -37,11 +39,19 @@ test('silent-catch policy keeps current production ratchets exact and functional
     (total, count) => total + count,
     0
   );
+  const vagueTotalFromLayers = Object.values(result.inventory.vagueByLayer).reduce(
+    (total, count) => total + count,
+    0
+  );
   const bareFileCountFromEntries = result.inventory.entries.filter(entry => entry.bare > 0).length;
 
   assert.equal(result.inventory.statementFreeTotal, statementFreeTotalFromLayers);
   assert.equal(result.inventory.bareTotal, bareTotalFromLayers);
+  assert.equal(result.inventory.bareTotal, 0, 'production must not contain undocumented bare catches');
   assert.equal(result.inventory.bareFileCount, bareFileCountFromEntries);
+  assert.equal(result.inventory.bareFileCount, 0);
+  assert.equal(result.inventory.vagueTotal, vagueTotalFromLayers);
+  assert.equal(result.inventory.vagueTotal, 353);
   assert.equal(
     result.inventory.entries.every(entry => entry.statementFree > 0),
     true

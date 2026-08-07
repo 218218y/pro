@@ -125,7 +125,9 @@ export function domainApiReportNonFatal(
   });
   try {
     console.warn('[WardrobePro][domain_api][' + op + ']', error);
-  } catch {}
+  } catch {
+    // reporter-isolation: console diagnostics must never break the domain operation.
+  }
   if (opts && opts.failFast && shouldFailFast(app)) throw error;
 }
 export function readNumberOrNull(value: unknown): number | null {

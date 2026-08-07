@@ -77,7 +77,9 @@ export function installBuilderCore(AppIn: unknown) {
       } catch (e) {
         try {
           console.warn('[WardrobePro][builder] reportError hook failed:', e);
-        } catch (_e2) {}
+        } catch (_e2) {
+          // reporter-isolation: secondary console diagnostics must not hide the original builder error.
+        }
       }
 
       throw err;
@@ -115,7 +117,9 @@ export function installBuilderCore(AppIn: unknown) {
     // Scheduler flush is best-effort; log so devs can see it.
     try {
       console.warn('[WardrobePro][builder] scheduler.flush failed:', e);
-    } catch (_e2) {}
+    } catch (_e2) {
+      // reporter-isolation: secondary console diagnostics must not hide the original builder error.
+    }
   }
 
   // Mark install for fast idempotency checks (without relying on build-tags).

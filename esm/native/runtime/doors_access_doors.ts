@@ -7,6 +7,7 @@ import type {
 } from '../../../types';
 
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import { asFiniteNumber, asKey } from './doors_access_shared.js';
 import {
   getDoorEditHoldActive,
@@ -15,12 +16,16 @@ import {
   writeDoorsRuntimeNumber,
 } from './doors_access_services.js';
 
+function reportDoorsAccessNonFatal(App: unknown, op: string, error: unknown): void {
+  reportError(App, error, { where: 'native/runtime/doors_access', op, fatal: false });
+}
+
 export function getDoorsOpenViaService(App: unknown): boolean | null {
   try {
     const getOpen = getDoorsMethod<() => unknown>(App, 'getOpen');
     if (getOpen) return !!getOpen();
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'getOpen.ownerRejected', error);
   }
   return null;
 }
@@ -29,8 +34,8 @@ export function getDoorsLastToggleTime(App: unknown): number {
   try {
     const getLastToggleTime = getDoorsMethod<() => unknown>(App, 'getLastToggleTime');
     if (getLastToggleTime) return asFiniteNumber(getLastToggleTime(), 0);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'getLastToggleTime.ownerRejected', error);
   }
   return readDoorsRuntimeNumber(App, 'lastToggleTime', 0);
 }
@@ -42,8 +47,8 @@ export function setDoorsOpenViaService(App: unknown, open: boolean, meta?: Actio
       setOpen(!!open, asRecord<ActionMetaLike>(meta) || undefined);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'setOpen.ownerRejected', error);
   }
   return false;
 }
@@ -55,8 +60,8 @@ export function toggleDoorsViaService(App: unknown, meta?: ActionMetaLike): bool
       toggle(asRecord<ActionMetaLike>(meta) || undefined);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'toggle.ownerRejected', error);
   }
   return false;
 }
@@ -74,8 +79,8 @@ export function releaseDoorsEditHoldViaService(
       releaseEditHold(asRecord<DoorsReleaseEditHoldOptionsLike>(opts) || undefined);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'releaseEditHold.ownerRejected', error);
   }
   return false;
 }
@@ -98,8 +103,8 @@ export function closeDrawerByIdViaService(
       );
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'closeDrawerById.ownerRejected', error);
   }
   return false;
 }
@@ -117,8 +122,8 @@ export function captureLocalOpenStateBeforeBuild(
       capture(asRecord<DoorsCaptureLocalOpenOptionsLike>(opts) || undefined);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'captureLocalOpenStateBeforeBuild.ownerRejected', error);
   }
   return false;
 }
@@ -130,8 +135,8 @@ export function applyLocalOpenStateAfterBuild(App: unknown): boolean {
       apply();
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'applyLocalOpenStateAfterBuild.ownerRejected', error);
   }
   return false;
 }
@@ -143,8 +148,8 @@ export function applyEditHoldAfterBuild(App: unknown): boolean {
       apply();
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'applyEditHoldAfterBuild.ownerRejected', error);
   }
   return false;
 }
@@ -159,8 +164,8 @@ export function syncDoorsVisualsNow(App: unknown, opts?: DoorsSyncVisualsOptions
       syncVisualsNow(asRecord<DoorsSyncVisualsOptionsLike>(opts) || undefined);
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'syncVisualsNow.ownerRejected', error);
   }
   return false;
 }
@@ -172,8 +177,8 @@ export function snapDrawersToTargetsViaService(App: unknown): boolean {
       snapDrawersToTargets();
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportDoorsAccessNonFatal(App, 'snapDrawersToTargets.ownerRejected', error);
   }
   return false;
 }
