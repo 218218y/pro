@@ -39,7 +39,7 @@ export function __measureWardrobeSceneLocalBox(
   try {
     if (typeof wg.updateWorldMatrix === 'function') wg.updateWorldMatrix(true, true);
   } catch {
-    // ignore
+    // projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds
   }
 
   wg.traverse((node: unknown) => {
@@ -60,7 +60,7 @@ export function __measureWardrobeSceneLocalBox(
         box.union(tmp);
       }
     } catch {
-      // ignore
+      // projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds
     }
   });
 
@@ -74,7 +74,7 @@ export function __measureWardrobeSceneLocalBox(
     const worldToLocal = __getWorldToLocalFn(wg);
     if (worldToLocal) worldToLocal(center);
   } catch {
-    // ignore
+    // projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds
   }
   return {
     centerX: Number(center.x),

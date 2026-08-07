@@ -161,7 +161,7 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
   try {
     glassMat.premultipliedAlpha = true;
   } catch {
-    // ignore
+    // builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces
   }
   return glassMat;
 }
@@ -206,14 +206,14 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   try {
     curtainMat.premultipliedAlpha = true;
   } catch {
-    // ignore
+    // builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces
   }
   if (forceCurtainFix) {
     try {
       curtainMat.emissive = new THREE.Color(curtainColor);
       curtainMat.emissiveIntensity = DOOR_GLASS_RENDER_POLICY.curtainForcedEmissiveIntensity;
     } catch {
-      // ignore
+      // builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces
     }
   }
 

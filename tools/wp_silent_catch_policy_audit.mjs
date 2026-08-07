@@ -9,13 +9,13 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx']);
 const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 16,
   boot: 3,
-  builder: 122,
+  builder: 120,
   features: 12,
   io: 4,
   kernel: 9,
   platform: 42,
   runtime: 99,
-  services: 87,
+  services: 84,
   ui: 183,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -33,13 +33,13 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
 const EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER = Object.freeze({
   adapters: 13,
   boot: 0,
-  builder: 46,
-  features: 9,
+  builder: 0,
+  features: 0,
   io: 0,
-  kernel: 1,
+  kernel: 0,
   platform: 23,
   runtime: 41,
-  services: 49,
+  services: 0,
   ui: 78,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([

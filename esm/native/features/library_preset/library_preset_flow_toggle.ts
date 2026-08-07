@@ -72,7 +72,7 @@ export function restoreLibraryPresetPreState(
         src + ':off'
       );
     } catch {
-      // ignore
+      // structural-recompute-follow-up: committed preset state remains authoritative when optional recompute follow-through fails
     }
   }, meta);
 
@@ -183,7 +183,7 @@ export function applyLibraryPresetMode(
         src + ':on'
       );
     } catch {
-      // ignore
+      // structural-recompute-follow-up: committed preset state remains authoritative when optional recompute follow-through fails
     }
   }, meta);
 

@@ -1,24 +1,48 @@
 {
-  "generatedAt": "2026-08-07T07:57:20.829Z",
+  "generatedAt": "2026-08-07T08:43:49.090Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 39,
-    "totalFiles": 15,
+    "totalOccurrences": 133,
+    "totalFiles": 68,
     "byCategory": {
       "runtime-default": 13,
-      "domain-default": 13,
+      "domain-default": 94,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 2,
-      "project-migration": 3,
+      "project-migration": 10,
       "external-api-compat": 0,
       "compat-boundary": 0,
       "test-fixture": 6,
-      "legacy-runtime-risk": 0,
+      "legacy-runtime-risk": 6,
       "unknown": 0
     },
     "byFile": {
       "esm/native/builder/core_storage_compute_custom.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_cell_sketch_extras.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/door_trim_visuals.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/handles_apply_doors.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/interior_pipeline_shared.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -34,6 +58,169 @@
         "total": 2,
         "categories": {
           "project-migration": 2
+        }
+      },
+      "esm/native/builder/plan.ts": {
+        "total": 8,
+        "categories": {
+          "domain-default": 4,
+          "legacy-runtime-risk": 4
+        }
+      },
+      "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/registry.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_adapter.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts": {
+        "total": 2,
+        "categories": {
+          "project-migration": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_module_geometry.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_support_materials.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_support_shelf_pins.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_support_storage.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_visuals_adornments_runtime.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/render_preview_sketch_pipeline_shared.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/room_visual_apply.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/visuals_and_contents_door_visual_accent.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/visuals_and_contents_door_visual_cache.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/visuals_and_contents_door_visual_glass.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/visuals_and_contents_door_visual_mirror.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/features/model_record/api.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/features/modules_configuration/corner_cells_patch.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/features/modules_configuration/modules_config_patch.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/kernel/maps_api_shared.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
         }
       },
       "esm/native/runtime/app_helpers.ts": {
@@ -61,10 +248,144 @@
           "runtime-default": 2
         }
       },
+      "esm/native/services/app_start.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/services/canvas_picking_door_action_hover_remove.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_door_split_click_custom.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_door_split_pointer_y.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_hover_targets_config.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_hover_targets_drawer.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_hover_targets_interior_front.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_hover_targets_shared.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_interior_hover_config.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 1,
+          "legacy-runtime-risk": 1
+        }
+      },
+      "esm/native/services/canvas_picking_projection_runtime_box_object.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelves_shared.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_free_boxes.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 1,
+          "legacy-runtime-risk": 1
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/doors_runtime_visuals_drawers.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
       "esm/native/services/render_surface_runtime_support_ops.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/services/site_variant.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/services/viewer_measurement_tool.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/services/viewport_runtime_support.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/ui/errors_install_support.ts": {
@@ -119,6 +440,14 @@
         }
       },
       {
+        "file": "esm/native/builder/plan.ts",
+        "total": 8,
+        "categories": {
+          "domain-default": 4,
+          "legacy-runtime-risk": 4
+        }
+      },
+      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 5,
         "categories": {
@@ -131,6 +460,76 @@
         "categories": {
           "domain-default": 2,
           "runtime-default": 2
+        }
+      },
+      {
+        "file": "esm/native/services/site_variant.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/services/viewer_measurement_tool.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/door_trim_visuals.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
+        "total": 3,
+        "categories": {
+          "domain-default": 3
         }
       },
       {
@@ -155,6 +554,62 @@
         }
       },
       {
+        "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/render_adapter.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
+        "total": 2,
+        "categories": {
+          "project-migration": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/room_visual_apply.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/builder/visuals_and_contents_door_visual_cache.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
         "file": "esm/native/runtime/browser_env_timers.ts",
         "total": 2,
         "categories": {
@@ -162,59 +617,33 @@
         }
       },
       {
-        "file": "esm/native/ui/interactions/viewer_resize.ts",
-        "total": 2,
-        "categories": {
-          "browser-adapter": 2
-        }
-      },
-      {
-        "file": "esm/native/ui/ui_boot_controller_reporter.ts",
+        "file": "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts",
         "total": 2,
         "categories": {
           "domain-default": 2
         }
       },
       {
-        "file": "esm/native/builder/core_storage_compute_custom.ts",
-        "total": 1,
+        "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+        "total": 2,
         "categories": {
-          "domain-default": 1
+          "domain-default": 1,
+          "legacy-runtime-risk": 1
         }
       },
       {
-        "file": "esm/native/runtime/app_helpers.ts",
-        "total": 1,
+        "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+        "total": 2,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1,
+          "legacy-runtime-risk": 1
         }
       },
       {
-        "file": "esm/native/services/render_surface_runtime_support_ops.ts",
-        "total": 1,
+        "file": "esm/native/services/viewport_runtime_support.ts",
+        "total": 2,
         "categories": {
-          "domain-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/react/overlay_pdf_host.tsx",
-        "total": 1,
-        "categories": {
-          "framework-default": 1
-        }
-      },
-      {
-        "file": "esm/native/ui/react/sidebar_app.tsx",
-        "total": 1,
-        "categories": {
-          "framework-default": 1
-        }
-      },
-      {
-        "file": "esm/test_imports.mjs",
-        "total": 1,
-        "categories": {
-          "test-fixture": 1
+          "domain-default": 2
         }
       }
     ]
@@ -227,6 +656,48 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails."
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
+      "line": 172,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
+    },
+    {
+      "file": "esm/native/builder/door_trim_visuals.ts",
+      "line": 142,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-visual-metadata-fallback: optional trim material metadata must not block door rendering"
+    },
+    {
+      "file": "esm/native/builder/door_trim_visuals.ts",
+      "line": 147,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-visual-metadata-fallback: optional trim material metadata must not block door rendering"
+    },
+    {
+      "file": "esm/native/builder/door_trim_visuals.ts",
+      "line": 227,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-visual-metadata-fallback: optional trim material metadata must not block door rendering"
+    },
+    {
+      "file": "esm/native/builder/handles_apply_doors.ts",
+      "line": 107,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-handle-visual-fallback: optional handle visual metadata must not block door rendering"
+    },
+    {
+      "file": "esm/native/builder/interior_pipeline_shared.ts",
+      "line": 198,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
     },
     {
       "file": "esm/native/builder/materials_factory_texture_runtime.ts",
@@ -255,6 +726,342 @@
       "term": "legacy",
       "category": "project-migration",
       "text": "// builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below."
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 111,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 111,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 121,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 121,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 185,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 185,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 191,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/plan.ts",
+      "line": 191,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
+      "line": 57,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup"
+    },
+    {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
+      "line": 100,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup"
+    },
+    {
+      "file": "esm/native/builder/registry.ts",
+      "line": 249,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-install-metadata-fallback: optional registry marker is advisory and may be unavailable on sealed surfaces"
+    },
+    {
+      "file": "esm/native/builder/render_adapter.ts",
+      "line": 119,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
+    },
+    {
+      "file": "esm/native/builder/render_adapter.ts",
+      "line": 151,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
+      "line": 16,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
+      "line": 39,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
+      "line": 22,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated rod materials"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
+      "line": 64,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
+      "line": 121,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
+      "line": 73,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
+      "line": 39,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 105,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 163,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_materials.ts",
+      "line": 73,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
+      "line": 52,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_storage.ts",
+      "line": 83,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-material-fallback: unresolved optional storage material falls back to the canonical barrier material"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_visuals_adornments_runtime.ts",
+      "line": 65,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// builder-material-fallback: unresolved optional adornment material falls back to the canonical body material"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
+      "line": 25,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
+      "line": 89,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
+      "line": 117,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 114,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-preview-outline-fallback: optional outline mutation must not block preview visibility"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 167,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-preview-outline-fallback: optional outline mutation must not block preview visibility"
+    },
+    {
+      "file": "esm/native/builder/room_visual_apply.ts",
+      "line": 114,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-ui-mirror-fallback: room visuals remain authoritative when the optional UI color mirror is unavailable"
+    },
+    {
+      "file": "esm/native/builder/room_visual_apply.ts",
+      "line": 151,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-ui-mirror-fallback: room visuals remain authoritative when the optional UI color mirror is unavailable"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_accent.ts",
+      "line": 89,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated accent materials"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_cache.ts",
+      "line": 35,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-cache-metadata-fallback: cache timestamps and advisory flags must not block reusable geometry/materials"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_cache.ts",
+      "line": 46,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-cache-metadata-fallback: cache timestamps and advisory flags must not block reusable geometry/materials"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 164,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 209,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 216,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
+      "line": 79,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-cache-write-fallback: mirror-canvas caching is an optimization and must not block visual creation"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts",
+      "line": 28,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated frame materials"
+    },
+    {
+      "file": "esm/native/features/model_record/api.ts",
+      "line": 35,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// clone-capability-fallback: JSON cloning remains available when structuredClone rejects the payload"
+    },
+    {
+      "file": "esm/native/features/modules_configuration/corner_cells_patch.ts",
+      "line": 76,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting corner-cell normalization"
+    },
+    {
+      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts",
+      "line": 147,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization"
+    },
+    {
+      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts",
+      "line": 160,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization"
+    },
+    {
+      "file": "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts",
+      "line": 257,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization"
+    },
+    {
+      "file": "esm/native/features/modules_configuration/modules_config_patch.ts",
+      "line": 171,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting patch normalization"
+    },
+    {
+      "file": "esm/native/kernel/maps_api_shared.ts",
+      "line": 81,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// reporter-isolation: console fallback must never break canonical map error handling"
     },
     {
       "file": "esm/native/runtime/app_helpers.ts",
@@ -383,11 +1190,291 @@
       "text": "// browser-dialog-fallback: confirm access/callback failure falls through to the negative path."
     },
     {
+      "file": "esm/native/services/app_start.ts",
+      "line": 37,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: console fallback must never break startup error handling"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
+      "line": 37,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
+      "line": 75,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
+      "line": 105,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts",
+      "line": 18,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-preview-material-fallback: optional preview tinting must not break picking"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts",
+      "line": 29,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-preview-material-fallback: optional preview tinting must not break picking"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_remove.ts",
+      "line": 71,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-identity-scan-fallback: malformed preview metadata is skipped during optional hover cleanup"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_split_click_custom.ts",
+      "line": 86,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_split_pointer_y.ts",
+      "line": 68,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-fallback: alternate door-bound projection remains available when local transforms fail"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
+      "line": 57,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-state-read-fallback: unavailable optional cell-dimension state yields null defaults"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_config.ts",
+      "line": 40,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-config-read-fallback: malformed optional configuration disables this hover candidate only"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+      "line": 110,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-target-scan-fallback: malformed drawer metadata disables this hover candidate only"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_interior_front.ts",
+      "line": 54,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-geometry-fallback: malformed interior geometry falls back to the current front estimate"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_shared.ts",
+      "line": 153,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-projection-fallback: failed local projection preserves the caller-provided hit coordinate"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_interior_hover_config.ts",
+      "line": 74,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-config-read-fallback: malformed optional interior configuration disables this hover candidate only"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+      "line": 136,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
+      "line": 136,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
+      "line": 154,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
+      "line": 192,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
+      "line": 210,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts",
+      "line": 42,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts",
+      "line": 63,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts",
+      "line": 77,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelves_shared.ts",
+      "line": 39,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// malformed-shelf-list-fallback: failed optional removal is returned to the caller as no match"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+      "line": 95,
+      "term": "legacy",
+      "category": "legacy-runtime-risk",
+      "text": "// legacy-free-box-config-fallback: unreadable optional configuration disables the legacy zero-door special case"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+      "line": 95,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// legacy-free-box-config-fallback: unreadable optional configuration disables the legacy zero-door special case"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
+      "line": 158,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
+    },
+    {
+      "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
+      "line": 171,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
+    },
+    {
+      "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
+      "line": 178,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
+    },
+    {
+      "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
+      "line": 185,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
+    },
+    {
       "file": "esm/native/services/render_surface_runtime_support_ops.ts",
       "line": 46,
       "term": "fallback",
       "category": "domain-default",
       "text": "// is still a safe snapshot fallback and avoids fabricating a zero vector."
+    },
+    {
+      "file": "esm/native/services/site_variant.ts",
+      "line": 37,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
+    },
+    {
+      "file": "esm/native/services/site_variant.ts",
+      "line": 53,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
+    },
+    {
+      "file": "esm/native/services/site_variant.ts",
+      "line": 65,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
+    },
+    {
+      "file": "esm/native/services/site_variant.ts",
+      "line": 87,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "line": 155,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "line": 163,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "line": 336,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "line": 343,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewport_runtime_support.ts",
+      "line": 60,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// error-metadata-fallback: optional Error metadata may be unavailable on exotic runtimes"
+    },
+    {
+      "file": "esm/native/services/viewport_runtime_support.ts",
+      "line": 65,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// error-metadata-fallback: optional Error metadata may be unavailable on exotic runtimes"
     },
     {
       "file": "esm/native/ui/errors_install_support.ts",

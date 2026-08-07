@@ -34,7 +34,7 @@ function readVariantFromConfig(App: AppContainer): SiteVariant | null {
     const v1 = asString(cfg.site);
     if (v1 && (v1 === '2' || v1.toLowerCase() === 'site2')) return 'site2';
   } catch {
-    // ignore
+    // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
   }
   return null;
 }
@@ -50,7 +50,7 @@ function readVariantFromMeta(App: AppContainer): SiteVariant | null {
     if (content && content.toLowerCase() === 'site2') return 'site2';
     if (content && content.toLowerCase() === 'main') return 'main';
   } catch {
-    // ignore
+    // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
   }
   return null;
 }
@@ -62,7 +62,7 @@ function readVariantFromPath(App: AppContainer): SiteVariant | null {
     if (!pathname) return null;
     if (/index_site2(?:\.html)?$/i.test(pathname) || /(?:^|\/)site2(?:\/|$)/i.test(pathname)) return 'site2';
   } catch {
-    // ignore
+    // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
   }
   return null;
 }
@@ -84,7 +84,7 @@ export function getSiteVariant(App: AppContainer): SiteVariant {
     const fromPath = readVariantFromPath(App);
     if (fromPath) return fromPath;
   } catch {
-    // ignore
+    // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
   }
   return 'main';
 }

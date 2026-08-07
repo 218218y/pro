@@ -111,7 +111,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     try {
       setOutlineVisible(m, !!on);
     } catch {
-      // ignore
+      // builder-preview-outline-fallback: optional outline mutation must not block preview visibility
     }
   };
 
@@ -164,7 +164,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
       if (outline && lineMaterial) outline.material = lineMaterial;
       if (outline && typeof outlineRenderOrder === 'number') outline.renderOrder = outlineRenderOrder;
     } catch {
-      // ignore
+      // builder-preview-outline-fallback: optional outline mutation must not block preview visibility
     }
   };
 

@@ -36,7 +36,7 @@ export function tryRemoveSketchShelfByHit(
       return true;
     }
   } catch {
-    // ignore
+    // malformed-shelf-list-fallback: failed optional removal is returned to the caller as no match
   }
   return false;
 }

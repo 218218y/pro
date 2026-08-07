@@ -61,7 +61,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
     const grooveMaterial = asMaterial(grooveMat);
     if (grooveMaterial) grooveMaterial.__keepMaterial = true;
   } catch {
-    // ignore
+    // builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents
   }
 
   const classicDims = SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY;
@@ -118,7 +118,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
       const grooveFillMaterial = asMaterial(grooveFillMat);
       if (grooveFillMaterial) grooveFillMaterial.__keepMaterial = true;
     } catch {
-      // ignore
+      // builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents
     }
     const grooveCount =
       normalizeGrooveLinesCount(boxDoor.grooveLinesCount) ??

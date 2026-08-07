@@ -82,7 +82,7 @@ export function tryHandleGenericPartPaintHover(args: {
       if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
       if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
     } catch {
-      // ignore
+      // hover-preview-cleanup: optional preview teardown is best-effort and must not block pointer flow
     }
     return false;
   }
@@ -99,7 +99,7 @@ export function tryHandleGenericPartPaintHover(args: {
     try {
       if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
     } catch {
-      // ignore
+      // hover-preview-cleanup: optional preview teardown is best-effort and must not block pointer flow
     }
     return false;
   }
@@ -114,7 +114,7 @@ export function tryHandleGenericPartPaintHover(args: {
       if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
       if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
     } catch {
-      // ignore
+      // hover-preview-cleanup: optional preview teardown is best-effort and must not block pointer flow
     }
     return false;
   }
@@ -141,7 +141,7 @@ export function tryHandleGenericPartPaintHover(args: {
       if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
       if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
     } catch {
-      // ignore
+      // hover-preview-cleanup: optional preview teardown is best-effort and must not block pointer flow
     }
     return false;
   }
@@ -157,7 +157,7 @@ export function tryHandleGenericPartPaintHover(args: {
     if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
     if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
   } catch {
-    // ignore
+    // hover-preview-cleanup: optional preview teardown is best-effort and must not block pointer flow
   }
 
   setPreview(

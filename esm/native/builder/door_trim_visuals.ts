@@ -139,12 +139,12 @@ function getTrimMaterial(args: {
     try {
       mat.__keepMaterial = true;
     } catch {
-      // ignore
+      // builder-visual-metadata-fallback: optional trim material metadata must not block door rendering
     }
     cache[key] = mat;
     return mat;
   } catch {
-    // ignore
+    // builder-visual-metadata-fallback: optional trim material metadata must not block door rendering
   }
   return null;
 }
@@ -224,7 +224,7 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
       };
       groupObj.add(mesh);
     } catch {
-      // ignore
+      // builder-visual-metadata-fallback: optional trim material metadata must not block door rendering
     }
   }
 }

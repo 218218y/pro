@@ -65,7 +65,7 @@ function localPointToWorldY(
       if (isFiniteNumber(v.y) && isFiniteNumber(localPoint.y)) return Number(v.y) + localPoint.y;
     }
   } catch {
-    // ignore
+    // projection-fallback: alternate door-bound projection remains available when local transforms fail
   }
 
   const pos = asRecord(group.position);

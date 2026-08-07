@@ -133,7 +133,7 @@ export function resolveManualLayoutSketchHoverModuleConfigContext(
           const ex0 = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
           if (ex0) extra = ex0;
         } catch {
-          // ignore
+          // hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records
         }
       }
     }

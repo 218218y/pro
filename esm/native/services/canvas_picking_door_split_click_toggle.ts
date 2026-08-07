@@ -4,6 +4,7 @@ import type {
 } from './canvas_picking_door_split_click_contracts.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { __wp_getRegularSplitPreviewLineY } from './canvas_picking_core_helpers.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
 import {
@@ -201,8 +202,12 @@ function handleSketchBoxStandardSplitClick(args: {
   );
   try {
     requestDoorAuthoringBurstRefresh(click.App, 'splitDoors:click:sketchBox');
-  } catch {
-    // ignore
+  } catch (error) {
+    __wp_reportPickingIssue(click.App, error, {
+      where: 'canvasPicking',
+      op: 'splitDoors.toggle.refresh',
+      throttleMs: 1000,
+    });
   }
   return true;
 }

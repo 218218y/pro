@@ -70,7 +70,7 @@ export function createSketchPlacementMaterialResources(args: {
           const sketchShelfPinMat = asMaterial(cache.__sketchShelfPinMat);
           if (sketchShelfPinMat) sketchShelfPinMat.__keepMaterial = true;
         } catch {
-          // ignore
+          // builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials
         }
       }
       pinGeo = cache.__sketchShelfPinGeo;

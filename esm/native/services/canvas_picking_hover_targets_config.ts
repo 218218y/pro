@@ -37,7 +37,7 @@ export function readInteriorModuleConfigRef(
       return asRecord(readCornerConfigurationCellForStack(cfg, isBottom ? 'bottom' : 'top', idx)) || null;
     }
   } catch {
-    // ignore
+    // hover-config-read-fallback: malformed optional configuration disables this hover candidate only
   }
   return null;
 }

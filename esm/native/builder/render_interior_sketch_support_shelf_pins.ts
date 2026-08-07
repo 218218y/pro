@@ -49,7 +49,7 @@ export function createShelfPinAdder(args: {
         const pinMaterial = asMaterial(mesh.material);
         if (pinMaterial) pinMaterial.__keepMaterial = true;
       } catch {
-        // ignore
+        // builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials
       }
       group.add?.(mesh);
     };

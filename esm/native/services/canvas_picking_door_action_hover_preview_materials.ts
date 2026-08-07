@@ -15,7 +15,7 @@ function __setMaterialColor(mat: unknown, hex: number): void {
     if (color && typeof color.setHex === 'function') color.setHex(hex);
     else if (color && typeof color.set === 'function') color.set(hex);
   } catch {
-    // ignore
+    // hover-preview-material-fallback: optional preview tinting must not break picking
   }
 }
 
@@ -26,7 +26,7 @@ function __setMaterialEmissive(mat: unknown, hex: number, intensity: number): vo
     if (emissive && typeof emissive.setHex === 'function') emissive.setHex(hex);
     else if (emissive && typeof emissive.set === 'function') emissive.set(hex);
   } catch {
-    // ignore
+    // hover-preview-material-fallback: optional preview tinting must not break picking
   }
   if (material) {
     material.emissiveIntensity = intensity;

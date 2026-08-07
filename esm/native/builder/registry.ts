@@ -246,7 +246,7 @@ export function installBuilderRegistry(App: AppContainer): BuilderRegistryLike {
   try {
     registry.__esm_v1 = true;
   } catch {
-    // ignore
+    // builder-install-metadata-fallback: optional registry marker is advisory and may be unavailable on sealed surfaces
   }
 
   return registry;

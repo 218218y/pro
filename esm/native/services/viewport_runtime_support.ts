@@ -57,12 +57,12 @@ export function createViewportRuntimeError(op: string, message: string, cause?: 
   try {
     Reflect.set(err, 'cause', cause);
   } catch {
-    // ignore
+    // error-metadata-fallback: optional Error metadata may be unavailable on exotic runtimes
   }
   try {
     Reflect.set(err, '__wpViewportOp', op);
   } catch {
-    // ignore
+    // error-metadata-fallback: optional Error metadata may be unavailable on exotic runtimes
   }
   return err;
 }

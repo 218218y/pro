@@ -195,7 +195,7 @@ export function reportInteriorLayoutError(
       reportError(App, error, ctx);
     }
   } catch {
-    // ignore
+    // builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior
   }
 }
 

@@ -115,6 +115,6 @@ export function ensureLibraryPresetInvariants(env: LibraryPresetEnv, args: Libra
       }
     }, meta);
   } catch {
-    // ignore
+    // structural-recompute-follow-up: invariant state remains committed when optional recompute follow-through fails
   }
 }

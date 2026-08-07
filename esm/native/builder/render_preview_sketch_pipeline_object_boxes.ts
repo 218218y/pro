@@ -22,7 +22,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
   try {
     ctx.callMethod(parentGroup, 'updateMatrixWorld', [true]);
   } catch {
-    // ignore
+    // builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering
   }
 
   if (!ctx.isFn(parentInv.multiplyMatrices)) {
@@ -86,7 +86,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
       try {
         geomRec.computeBoundingBox();
       } catch {
-        // ignore
+        // builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering
       }
     }
     const boundingBox = ctx.readValueRecord(geomRec.boundingBox);
@@ -114,7 +114,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     try {
       ctx.callMethod(obj, 'updateMatrixWorld', [true]);
     } catch {
-      // ignore
+      // builder-preview-bounds-fallback: optional matrix/bounds refresh may degrade preview precision without blocking rendering
     }
     const rel = ctx.readMatrix4(ctx.makeCtorValue(ctx.THREE, 'Matrix4'));
     if (!rel || !ctx.isFn(rel.multiplyMatrices) || !ctx.isFn(rel.decompose) || !obj.matrixWorld) {

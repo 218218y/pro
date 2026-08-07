@@ -62,7 +62,7 @@ export function createSketchAdornmentPlacementRuntime(args: {
         if (resolved) return resolved;
       }
     } catch {
-      // ignore
+      // builder-material-fallback: unresolved optional adornment material falls back to the canonical body material
     }
     return bodyMat;
   };

@@ -54,7 +54,7 @@ export function readCellDimsSpecialDims(
       return { widthSd, heightDepthSd };
     }
   } catch {
-    // ignore
+    // hover-state-read-fallback: unavailable optional cell-dimension state yields null defaults
   }
   return { widthSd: null, heightDepthSd: null };
 }

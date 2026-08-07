@@ -51,7 +51,7 @@ export function estimateVisibleModuleFrontZ(args: EstimateVisibleModuleFrontZArg
       }
     }
   } catch {
-    // ignore
+    // hover-geometry-fallback: malformed interior geometry falls back to the current front estimate
   }
   return bestFrontZ;
 }

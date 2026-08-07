@@ -108,7 +108,7 @@ function ensureState(input: unknown, deps: PlanDepsLike): BuildStateLike {
       if (st) return st;
     }
   } catch {
-    // ignore
+    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
   }
 
   try {
@@ -118,7 +118,7 @@ function ensureState(input: unknown, deps: PlanDepsLike): BuildStateLike {
       if (st) return st;
     }
   } catch {
-    // ignore
+    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
   }
 
   const ui = readValueRecord(input) || {};
@@ -182,13 +182,13 @@ export function installBuilderPlan(App: AppContainer, deps?: unknown): BuilderPl
     if ('App' in normalizedDeps) depsRecord.App = normalizedDeps.App ?? null;
     plan.__deps = depsRecord;
   } catch {
-    // ignore
+    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
   }
 
   try {
     plan.__esm_v1 = true;
   } catch {
-    // ignore
+    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
   }
 
   return plan;

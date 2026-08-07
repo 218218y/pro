@@ -116,7 +116,7 @@ export function ensureWardrobeGroup(
         scene.add(wardrobeGroup);
       }
     } catch {
-      // ignore
+      // builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability
     }
 
     return wardrobeGroup;
@@ -148,7 +148,7 @@ export function installBuilderRenderAdapter(App: AppContainer): RenderAdapterLik
   try {
     ra.__esm_v1 = true;
   } catch {
-    // ignore
+    // builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability
   }
 
   return ra;

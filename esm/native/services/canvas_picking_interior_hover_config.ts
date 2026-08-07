@@ -71,7 +71,7 @@ export function readHoverModuleConfig(
       return readMaterializedCornerHoverConfig(App, cfg, idx, isBottom);
     }
   } catch {
-    // ignore
+    // hover-config-read-fallback: malformed optional interior configuration disables this hover candidate only
   }
   return null;
 }

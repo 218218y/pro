@@ -152,7 +152,7 @@ function removeObjectFromScene(obj: Object3DLike): void {
     const dispose = isRecord(geometry) ? geometry.dispose : null;
     if (typeof dispose === 'function') Reflect.apply(dispose, geometry, []);
   } catch {
-    // ignore
+    // measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits
   }
 
   try {
@@ -160,7 +160,7 @@ function removeObjectFromScene(obj: Object3DLike): void {
     const dispose = isRecord(material) ? material.dispose : null;
     if (typeof dispose === 'function') Reflect.apply(dispose, material, []);
   } catch {
-    // ignore
+    // measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits
   }
 }
 
@@ -333,14 +333,14 @@ function tuneOverlayObject(obj: Object3DLike, options: { depthTest: boolean }): 
   try {
     rec.renderOrder = OVERLAY_RENDER_ORDER;
   } catch {
-    // ignore
+    // measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits
   }
   const material = rec.material;
   try {
     if (Array.isArray(material)) rec.material = material.map(item => tuneOverlayMaterial(item, options));
     else if (material) rec.material = tuneOverlayMaterial(material, options);
   } catch {
-    // ignore
+    // measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits
   }
 }
 

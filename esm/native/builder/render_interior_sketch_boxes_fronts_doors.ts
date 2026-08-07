@@ -70,7 +70,7 @@ export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): 
       try {
         markSplitHoverPickablesDirty?.(App);
       } catch {
-        // ignore
+        // builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output
       }
     }
   }

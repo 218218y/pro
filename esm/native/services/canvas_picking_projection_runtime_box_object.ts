@@ -151,7 +151,7 @@ export function __wp_measureObjectLocalBox(
             try {
               worldToLocal(corner);
             } catch {
-              // ignore
+              // projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies
             }
             if (Number.isFinite(corner.x)) {
               localMinX = Math.min(localMinX, Number(corner.x));
@@ -189,7 +189,7 @@ export function __wp_measureObjectLocalBox(
         try {
           if (worldToLocal) worldToLocal(center);
         } catch {
-          // ignore
+          // projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies
         }
         return {
           centerX: Number(center.x),
@@ -207,7 +207,7 @@ export function __wp_measureObjectLocalBox(
       if (projectedBox) return projectedBox;
     }
   } catch {
-    // ignore
+    // projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies
   }
   return null;
 }

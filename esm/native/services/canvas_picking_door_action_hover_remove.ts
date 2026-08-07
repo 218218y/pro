@@ -68,7 +68,7 @@ function readDoorActionHoverFamilyPartIds(args: {
       if (identity.isSegment) out.add(pid);
     }
   } catch {
-    // ignore
+    // hover-identity-scan-fallback: malformed preview metadata is skipped during optional hover cleanup
   }
 
   return Array.from(out);

@@ -104,7 +104,7 @@ function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
       if (ch && ch.position && typeof ch.position.z === 'number') ch.position.z *= -1;
     });
   } catch (_e) {
-    // ignore
+    // builder-handle-visual-fallback: optional handle visual metadata must not block door rendering
   }
 }
 

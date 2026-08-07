@@ -25,7 +25,7 @@ function createSeamLineMaterial(args: { App: AppContainer; THREE: ThreeLike; isS
     lineMat.userData = lineMat.userData || {};
     lineMat.userData.__keepMaterial = true;
   } catch {
-    // ignore
+    // builder-material-metadata-fallback: keep-material metadata is advisory for generated frame materials
   }
   return lineMat;
 }

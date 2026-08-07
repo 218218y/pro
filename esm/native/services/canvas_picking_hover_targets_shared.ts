@@ -150,7 +150,7 @@ export function readLocalHitY(args: {
     const localPoint = projectWorldPointToLocal(App, hitPoint || null, parent || null);
     if (localPoint && Number.isFinite(localPoint.y)) hitY = Number(localPoint.y);
   } catch {
-    // ignore
+    // hover-projection-fallback: failed local projection preserves the caller-provided hit coordinate
   }
   return hitY;
 }

@@ -68,12 +68,12 @@ export function __wp_toast(App: AppContainer, message: string, type?: string): v
     getUiFeedback(App).toast(message, type);
     return;
   } catch {
-    // ignore
+    // feedback-isolation: toast/console feedback must never break Cloud Sync state transitions
   }
 
   try {
     console.log('[toast]', type || 'info', message);
   } catch {
-    // ignore
+    // feedback-isolation: toast/console feedback must never break Cloud Sync state transitions
   }
 }

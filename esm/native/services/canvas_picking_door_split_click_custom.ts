@@ -5,6 +5,7 @@ import type {
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { getCamera, getDoorsArray } from '../runtime/render_access.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
 import {
@@ -82,7 +83,7 @@ function sanitizeCanvasDoorSplitCuts(bounds: CanvasDoorSplitBounds, normsIn: num
       norms.push(clampNumber((keptAbs[i] - minY) / H, 0, 1));
     }
   } catch {
-    // ignore
+    // door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state
   }
   return norms;
 }
@@ -186,8 +187,12 @@ function commitCanvasDoorCustomSplitList(args: {
   });
   try {
     requestDoorAuthoringBurstRefresh(App, 'splitDoors:custom');
-  } catch {
-    // ignore
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'canvasPicking',
+      op: 'splitDoors.custom.refresh',
+      throttleMs: 1000,
+    });
   }
 }
 

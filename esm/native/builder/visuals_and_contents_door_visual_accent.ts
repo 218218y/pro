@@ -86,7 +86,7 @@ export function appendSubtleDoorAccentBorder(args: {
     accentMat.userData = accentMat.userData || {};
     accentMat.userData.__keepMaterial = true;
   } catch {
-    // ignore
+    // builder-material-metadata-fallback: keep-material metadata is advisory for generated accent materials
   }
 
   const z = faceZ + DOOR_VISUAL_COMMON_POLICY.frontSurfaceNudgeM * zSign;

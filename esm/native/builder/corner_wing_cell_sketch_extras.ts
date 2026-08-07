@@ -169,6 +169,6 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
     };
     fnX(extrasArgs);
   } catch (_e) {
-    // ignore
+    // builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output
   }
 }

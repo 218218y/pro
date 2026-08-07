@@ -34,7 +34,7 @@ function nowMs(): number {
       return performance.now();
     }
   } catch {
-    // ignore
+    // hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions
   }
   return Date.now();
 }
@@ -72,7 +72,7 @@ function clearCellDimsPostClickHoverTarget(App: AppContainer): void {
       delete runtime[RUNTIME_KEY];
     }
   } catch {
-    // ignore
+    // hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions
   }
 }
 
@@ -102,7 +102,7 @@ export function rememberCellDimsPostClickHoverTarget(args: {
       freeBoxId: typeof freeBoxId === 'string' && freeBoxId.trim() ? freeBoxId.trim() : null,
     } satisfies CellDimsPostClickHoverTarget;
   } catch {
-    // ignore
+    // hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions
   }
 }
 

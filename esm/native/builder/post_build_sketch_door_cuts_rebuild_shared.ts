@@ -54,7 +54,7 @@ function disposeResource(value: unknown): void {
   try {
     rec.dispose();
   } catch {
-    // ignore
+    // builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup
   }
 }
 
@@ -97,7 +97,7 @@ export function removeAllChildren(node: SketchDoorNode): void {
     try {
       node.remove(child);
     } catch {
-      // ignore
+      // builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup
     }
   }
 }

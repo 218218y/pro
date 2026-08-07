@@ -102,7 +102,7 @@ export function createMeasureWardrobeLocalBox(args: CreateMeasureWardrobeLocalBo
             box.union?.(tmp);
           }
         } catch {
-          // ignore
+          // builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry
         }
       });
       if (!hasAny) return null;
@@ -160,7 +160,7 @@ export function resolveSketchModuleInnerFaces(
         if (maxX != null && minX != null) return Math.abs(maxX - minX);
       }
     } catch {
-      // ignore
+      // builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry
     }
     return woodThick;
   };

@@ -155,7 +155,7 @@ export function resolveSketchModuleShelfRemovePreview(
       }
     }
   } catch {
-    // ignore
+    // preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring
   }
 
   if (op === 'remove' && shelfRemoveKind) {

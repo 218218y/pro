@@ -80,7 +80,7 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
         if (resolved) barrierMat = resolved;
       }
     } catch {
-      // ignore
+      // builder-material-fallback: unresolved optional storage material falls back to the canonical barrier material
     }
 
     createBoard(barrierW, heightM, barrierD, internalCenterX, cy, barrierZ, barrierMat, partId);

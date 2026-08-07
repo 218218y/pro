@@ -111,7 +111,7 @@ function updateRoomWallWithContext(
   try {
     setUiScalarSoft(App, 'lastSelectedWallColor', cv, ROOM_UPDATE_WALL_META);
   } catch (_) {
-    // ignore
+    // builder-ui-mirror-fallback: room visuals remain authoritative when the optional UI color mirror is unavailable
   }
 
   const { roomGroup, walls } = sceneNodes;
@@ -148,7 +148,7 @@ function resetRoomToDefaultWithContext(context: RoomVisualMutationContext): bool
   try {
     setUiScalarSoft(App, 'lastSelectedWallColor', ROOM_VISUAL_RESET_WALL_COLOR, ROOM_RESET_DEFAULT_META);
   } catch (_) {
-    // ignore
+    // builder-ui-mirror-fallback: room visuals remain authoritative when the optional UI color mirror is unavailable
   }
   triggerRoomRenderFromContext(context);
   return true;

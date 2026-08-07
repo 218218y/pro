@@ -32,7 +32,7 @@ function cloneJsonValue<T>(value: T, defaultValue: T): T {
   try {
     if (typeof structuredClone === 'function') return structuredClone(value);
   } catch {
-    // ignore
+    // clone-capability-fallback: JSON cloning remains available when structuredClone rejects the payload
   }
   try {
     return JSON.parse(JSON.stringify(value)) as T;

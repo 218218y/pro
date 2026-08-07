@@ -19,7 +19,7 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     const rodMaterial = asMaterial(rodMat);
     if (rodMaterial) rodMaterial.__keepMaterial = true;
   } catch {
-    // ignore
+    // builder-material-metadata-fallback: keep-material metadata is advisory for generated rod materials
   }
   for (let ri = 0; ri < boxRods.length; ri++) {
     const rod = boxRods[ri] || null;

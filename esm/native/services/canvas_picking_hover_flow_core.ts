@@ -158,7 +158,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
       }
       if (__isSplitEditMode && __hideLayoutPreview) __hideLayoutPreview(createPreviewOpsArgs(App));
     } catch {
-      // ignore
+      // hover-preview-cleanup: optional split/layout preview teardown is best-effort
     }
 
     if (!__isSplitEditMode) {

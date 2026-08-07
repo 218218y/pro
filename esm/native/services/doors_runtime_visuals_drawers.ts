@@ -168,21 +168,21 @@ export function snapDrawersToTargets(App: AppLike): void {
       try {
         drawer.isOpen = false;
       } catch (_) {
-        // ignore
+        // drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy
       }
     } else if (sketchIntDrawersEditActive) {
       shouldOpen = false;
       try {
         drawer.isOpen = false;
       } catch (_) {
-        // ignore
+        // drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy
       }
     } else if (interiorDoorEditActive && isInternal) {
       shouldOpen = false;
       try {
         drawer.isOpen = false;
       } catch (_) {
-        // ignore
+        // drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy
       }
     } else if (globalClickMode) {
       shouldOpen = isSketchFreeBoxLocalDrawer

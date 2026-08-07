@@ -36,7 +36,7 @@ export function createSketchBoxPartMaterialResolver(args: {
         if (resolved) return resolved;
       }
     } catch {
-      // ignore
+      // builder-material-fallback: unresolved optional part material falls back to the canonical default material
     }
     return defaultMaterial;
   };

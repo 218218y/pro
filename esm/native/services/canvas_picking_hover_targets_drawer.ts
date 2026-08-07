@@ -107,7 +107,7 @@ export function resolveDrawerHoverPreviewTarget(
       return { drawer: foundDrawer, parent, box };
     }
   } catch {
-    // ignore
+    // hover-target-scan-fallback: malformed drawer metadata disables this hover candidate only
   }
   return null;
 }

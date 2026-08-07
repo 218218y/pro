@@ -34,7 +34,7 @@ function softReport(App: AppContainer, op: string, err: unknown): void {
     try {
       console.warn(`[WardrobePro][app_start] ${op}`, err);
     } catch {
-      // ignore
+      // reporter-isolation: console fallback must never break startup error handling
     }
   }
 }

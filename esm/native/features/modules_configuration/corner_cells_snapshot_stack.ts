@@ -144,7 +144,7 @@ function stripTopOnlyCornerDimsFromLowerSeed(out: CornerConfigurationLike): void
     try {
       delete out[key];
     } catch {
-      // ignore
+      // plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization
     }
   }
 }
@@ -157,7 +157,7 @@ export function cloneCornerConfigurationForLowerSnapshot(nextVal: unknown): Corn
   try {
     delete out.stackSplitLower;
   } catch {
-    // ignore
+    // plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization
   }
   stripTopOnlyCornerDimsFromLowerSeed(out);
   return cloneMutableCornerValue(out);
@@ -254,7 +254,7 @@ function applyCornerConfigurationPatch<T extends UnknownRecord>(base: T, patch: 
       try {
         delete target[key];
       } catch {
-        // ignore
+        // plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting snapshot normalization
       }
       continue;
     }

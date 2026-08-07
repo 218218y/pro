@@ -51,6 +51,13 @@ test('silent-catch policy keeps current production ratchets exact and functional
   assert.equal(result.inventory.bareFileCount, bareFileCountFromEntries);
   assert.equal(result.inventory.bareFileCount, 0);
   assert.equal(result.inventory.vagueTotal, vagueTotalFromLayers);
+  for (const layer of ['builder', 'features', 'kernel', 'services']) {
+    assert.equal(
+      result.inventory.vagueByLayer[layer] || 0,
+      0,
+      `${layer} must remain free of vague ignore/swallow catch classifications`
+    );
+  }
   assert.equal(
     result.inventory.entries.every(entry => entry.statementFree > 0),
     true

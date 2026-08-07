@@ -73,7 +73,7 @@ function applyCornerCellPatch(cellIn: CornerCellConfigLike, patch: unknown): Cor
       try {
         delete cell[k];
       } catch {
-        // ignore
+        // plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting corner-cell normalization
       }
       continue;
     }

@@ -32,7 +32,7 @@ function touchCacheMeta(App: AppContainer, kind: 'geometry' | 'material', key: s
   try {
     ensureRenderMetaMap(App, kind).set(key, Date.now());
   } catch {
-    // ignore
+    // builder-cache-metadata-fallback: cache timestamps and advisory flags must not block reusable geometry/materials
   }
 }
 
@@ -43,7 +43,7 @@ function markCachedValue<T>(value: T): T {
       rec.userData = rec.userData || {};
       rec.userData.isCached = true;
     } catch {
-      // ignore
+      // builder-cache-metadata-fallback: cache timestamps and advisory flags must not block reusable geometry/materials
     }
   }
   return value;

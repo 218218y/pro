@@ -2,6 +2,7 @@ import type { AppContainer } from '../../../types';
 import { MODES } from '../runtime/api.js';
 import { setModePrimary } from '../runtime/mode_write_access.js';
 import { __wp_primaryMode, __wp_triggerRender } from './canvas_picking_core_helpers.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import { resetAllEditModes } from './edit_state.js';
 
 type RecordMap = Record<string, unknown>;
@@ -78,8 +79,12 @@ export function resetCanvasPickingEmptyClick(args: {
     } else {
       try {
         setModePrimary(App, NONE, {}, { source: 'canvasPicking:emptyClick' });
-      } catch {
-        // ignore
+      } catch (error) {
+        __wp_reportPickingIssue(App, error, {
+          where: 'canvasPicking',
+          op: 'emptyClick.setModePrimary',
+          throttleMs: 1000,
+        });
       }
     }
     __wp_triggerRender(App, true);

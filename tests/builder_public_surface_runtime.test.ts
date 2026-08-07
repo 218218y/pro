@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installBuilderBootstrap } from '../esm/native/builder/bootstrap.ts';
+import { isBuilderProvided, provideBuilder } from '../esm/native/builder/provide.ts';
 import {
   applyBuilderHandles,
   clearBuilderBuildUi,
@@ -816,6 +817,45 @@ test('builder public surface runtime: chest-mode follow-through refreshes tracke
   assert.equal(App.render.__mirrorPresenceHasMirror, true);
   assert.equal(App.render.__mirrorUpdateCount, 1);
   assert.equal(calls.ensureRenderLoop.length, 0);
+});
+
+test('builder public surface runtime: provider readiness stays false until required bootstrap dependencies converge', () => {
+  const App: AnyRecord = {
+    deps: { browser: { window: {}, document: {} } },
+    services: {},
+    render: {
+      drawersArray: [],
+      scene: { add() {} },
+      camera: {},
+      renderer: {},
+      controls: {},
+    },
+    platform: {},
+    actions: {},
+    store: {
+      getState() {
+        return {};
+      },
+      subscribe() {
+        return () => {};
+      },
+    },
+  };
+  const originalConsoleError = console.error;
+  console.error = () => {};
+  try {
+    const firstBuilder = provideBuilder(App as any);
+    assert.equal(isBuilderProvided(App as any), false);
+    assert.notEqual(firstBuilder.__provided_v1, true);
+
+    App.deps.THREE = { REVISION: 'test' };
+    const repairedBuilder = provideBuilder(App as any);
+    assert.equal(repairedBuilder, firstBuilder);
+    assert.equal(isBuilderProvided(App as any), true);
+    assert.equal(repairedBuilder.__provided_v1, true);
+  } finally {
+    console.error = originalConsoleError;
+  }
 });
 
 test('builder public surface runtime: bootstrap seeds canonical builder deps namespaces and heals missing slots on reinstall', () => {

@@ -13,7 +13,7 @@ export function resolveSketchBoxContentPartMaterial(args: {
       if (resolved) return resolved;
     }
   } catch {
-    // ignore
+    // builder-material-fallback: unresolved optional part material falls back to the canonical default material
   }
   return defaultMaterial;
 }
@@ -36,7 +36,7 @@ export function resolveSketchBoxShelfMaterial(args: {
       if (resolved) shelfMat = resolved;
     }
   } catch {
-    // ignore
+    // builder-material-fallback: unresolved optional part material falls back to the canonical default material
   }
   return shelfMat;
 }

@@ -78,7 +78,7 @@ export function createMapsApiShared(App: AppContainer): MapsApiShared {
     try {
       console.warn('[WardrobePro][maps_api]', op, err);
     } catch {
-      // ignore
+      // reporter-isolation: console fallback must never break canonical map error handling
     }
   }
 

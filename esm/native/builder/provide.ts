@@ -12,7 +12,7 @@ import type {
   BuilderServiceLike,
 } from '../../../types/index.js';
 
-import { assertApp } from '../runtime/api.js';
+import { assertApp, reportError } from '../runtime/api.js';
 import { getBuilderDepsRoot } from '../runtime/builder_deps_access.js';
 import { ensureBuilderService, getBuilderPlanService } from '../runtime/builder_service_access.js';
 
@@ -56,6 +56,24 @@ function readBuilderDeps(root: unknown): BuilderDepsLike | null {
     : null;
 }
 
+function reportBuilderProvideNonFatal(App: AppContainer, op: string, error: unknown): void {
+  try {
+    reportError(App, error, { where: 'native/builder/provide', op, fatal: false });
+  } catch {
+    // reporter-isolation: provider recovery must not fail because diagnostics are unavailable
+  }
+}
+
+function installBuilderBootstrapObserved(App: AppContainer, op: string): boolean {
+  try {
+    installBuilderBootstrap(App);
+    return true;
+  } catch (error) {
+    reportBuilderProvideNonFatal(App, op, error);
+    return false;
+  }
+}
+
 function hasProvidedFlag(root: unknown): boolean {
   const rec = isObjectRecord(root) ? root : null;
   return rec?.__provided_v1 === true;
@@ -87,12 +105,8 @@ export function provideBuilder(App: AppContainer): BuilderServiceLike {
 
   // Idempotency marker lives on the canonical namespace.
   if (B.__provided_v1 === true) {
-    // Still refresh builder deps wiring (fill-missing) when called again.
-    try {
-      installBuilderBootstrap(A);
-    } catch {
-      // ignore
-    }
+    // A previously converged provider stays usable even if a later fill-missing refresh fails.
+    installBuilderBootstrapObserved(A, 'refreshBuilderBootstrap');
     return B;
   }
 
@@ -156,18 +170,15 @@ export function provideBuilder(App: AppContainer): BuilderServiceLike {
   // Builder deps (explicit dependency surface for BuilderCore)
   // ---------------------------------------------------------------------------
   // IMPORTANT: bootstrap is designed to be safely callable multiple times.
-  // We call it here so BuilderCore (loaded later) can start immediately.
-  try {
-    installBuilderBootstrap(A);
-  } catch {
-    // ignore
-  }
+  // Do not publish the provider-ready marker until the required deps bootstrap has converged.
+  const bootstrapReady = installBuilderBootstrapObserved(A, 'installBuilderBootstrap');
 
-  // Mark provider as installed.
-  try {
-    B.__provided_v1 = true;
-  } catch {
-    // ignore
+  if (bootstrapReady) {
+    try {
+      B.__provided_v1 = true;
+    } catch (error) {
+      reportBuilderProvideNonFatal(A, 'markBuilderProvided', error);
+    }
   }
 
   return B;

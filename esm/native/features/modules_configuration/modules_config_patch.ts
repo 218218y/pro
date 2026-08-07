@@ -168,7 +168,7 @@ function applyModuleRecordPatch(baseIn: ModuleConfigLike, patch: unknown): Modul
       try {
         delete base[k];
       } catch {
-        // ignore
+        // plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting patch normalization
       }
       continue;
     }

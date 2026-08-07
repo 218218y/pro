@@ -76,7 +76,7 @@ function getOrCreateSketchPatternCanvas(App: AppContainer, _THREE: ThreeLike): C
   try {
     if (cache) cache[key] = canvas;
   } catch {
-    // ignore
+    // builder-cache-write-fallback: mirror-canvas caching is an optimization and must not block visual creation
   }
   return canvas;
 }
