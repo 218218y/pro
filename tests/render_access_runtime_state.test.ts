@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ensureRenderRuntimeState,
   getMirrorHideScratch,
+  markSplitHoverPickablesDirty,
   readAutoHideFloorCache,
   readRendererLightingDefaults,
 } from '../esm/native/runtime/render_access.ts';
@@ -76,4 +77,33 @@ test('ensureRenderRuntimeState repairs canonical loop/mirror/autohide runtime sl
   const scratch = getMirrorHideScratch(App) as unknown[];
   scratch.push({ id: 'mirror-1' });
   assert.equal((getMirrorHideScratch(App) as unknown[]).length, 1);
+});
+
+test('render runtime state write rejection is observable and does not report false success', () => {
+  const reports: Array<{ error: unknown; context: Record<string, unknown> }> = [];
+  const App: AnyRecord = {
+    services: {
+      platform: {
+        reportError: (error: unknown, context: Record<string, unknown>) => reports.push({ error, context }),
+      },
+    },
+    render: {},
+  };
+
+  const normalized = ensureRenderRuntimeState(App);
+  App.render = new Proxy(normalized as unknown as AnyRecord, {
+    set(target, prop, value) {
+      if (prop === '__splitHoverPickablesDirty') throw new Error('render state rejected');
+      return Reflect.set(target, prop, value);
+    },
+  });
+
+  assert.equal(markSplitHoverPickablesDirty(App, true), false);
+  assert.ok(
+    reports.some(
+      entry =>
+        entry.context.where === 'native/runtime/render_access_state_runtime' &&
+        entry.context.op === 'splitHoverPickablesDirty.write'
+    )
+  );
 });

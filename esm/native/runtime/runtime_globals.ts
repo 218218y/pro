@@ -73,13 +73,13 @@ export function buildBrowserDeps(env: {
   try {
     if (w && typeof w.location === 'object') browser.location = w.location;
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
 
   try {
     if (w && typeof w.navigator === 'object') browser.navigator = w.navigator;
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
 
   // Timing / async surfaces (optional).
@@ -90,7 +90,7 @@ export function buildBrowserDeps(env: {
       browser.setTimeout = (fn, ms) => setTimeoutMethod.call(w, fn, ms);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     if (w && typeof w.clearTimeout === 'function') {
@@ -99,7 +99,7 @@ export function buildBrowserDeps(env: {
       };
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     const setIntervalMethod = readWindowMethod(w, 'setInterval');
@@ -107,7 +107,7 @@ export function buildBrowserDeps(env: {
       browser.setInterval = (fn, ms) => setIntervalMethod.call(w, fn, ms);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     if (w && typeof w.clearInterval === 'function') {
@@ -116,7 +116,7 @@ export function buildBrowserDeps(env: {
       };
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     const requestAnimationFrameMethod = readWindowMethod(w, 'requestAnimationFrame');
@@ -124,7 +124,7 @@ export function buildBrowserDeps(env: {
       browser.requestAnimationFrame = callback => requestAnimationFrameMethod.call(w, callback);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     const cancelAnimationFrameMethod = readWindowMethod(w, 'cancelAnimationFrame');
@@ -132,7 +132,7 @@ export function buildBrowserDeps(env: {
       browser.cancelAnimationFrame = handle => cancelAnimationFrameMethod.call(w, handle);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     const queueMicrotaskMethod = readWindowMethod(w, 'queueMicrotask');
@@ -140,13 +140,13 @@ export function buildBrowserDeps(env: {
       browser.queueMicrotask = callback => queueMicrotaskMethod.call(w, callback);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
   try {
     const performanceNow = readPerformanceNow(w);
     if (performanceNow) browser.performanceNow = performanceNow;
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
 
   // Networking (optional).
@@ -156,7 +156,7 @@ export function buildBrowserDeps(env: {
       browser.fetch = (input, init) => fetchMethod.call(w, input, init);
     }
   } catch {
-    // ignore
+    // browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback.
   }
 
   return browser;

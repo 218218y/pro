@@ -20,7 +20,7 @@ function disposeTexture(texture: TextureLike): void {
   try {
     texture.dispose?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
 }
 
@@ -28,7 +28,7 @@ function disposeGeometry(geometry: GeometryLike): void {
   try {
     geometry.dispose?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
 }
 
@@ -39,7 +39,7 @@ function disposeMaterial(material: MaterialLike, usedTextures: Set<TextureLike>)
     }
     material.dispose?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
 }
 
@@ -47,12 +47,12 @@ function disposeDimLabelEntry(entry: DimLabelCacheEntryLike): void {
   try {
     entry.mat?.dispose?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
   try {
     entry.texture?.dispose?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
 }
 
@@ -147,6 +147,6 @@ export function pruneCachesSafe(
       );
     }
   } catch {
-    // ignore
+    // cleanup-best-effort: cache disposal must continue even when one resource rejects cleanup.
   }
 }

@@ -8,6 +8,8 @@
 
 import type { AppContainer } from '../../../../types';
 
+import { __uiFeedbackReportNonFatal } from '../feedback_shared.js';
+
 export type AccessibilityDeps = {
   doc: Document;
 };
@@ -42,6 +44,10 @@ function clickElement(el: unknown): void {
   readClickableElement(el)?.click?.();
 }
 
+function reportAccessibilityFailure(App: AppContainer, op: string, error: unknown): void {
+  __uiFeedbackReportNonFatal(App, `accessibility.${op}`, error);
+}
+
 export function installAccessibilityShortcuts(App: AppContainer, deps: AccessibilityDeps): () => void {
   const doc = deps?.doc;
   if (!App || typeof App !== 'object') return () => undefined;
@@ -68,8 +74,8 @@ export function installAccessibilityShortcuts(App: AppContainer, deps: Accessibi
       const checkbox = checkboxEl instanceof HTMLInputElement ? checkboxEl : null;
       if (checkbox) checkbox.click();
       else clickElement(el);
-    } catch {
-      // swallow
+    } catch (error) {
+      reportAccessibilityFailure(App, 'keydown.activate', error);
     }
   };
 
@@ -88,32 +94,32 @@ export function installAccessibilityShortcuts(App: AppContainer, deps: Accessibi
       const checkboxEl = row.querySelector('input[type="checkbox"]');
       const checkbox = checkboxEl instanceof HTMLInputElement ? checkboxEl : null;
       if (checkbox) checkbox.click();
-    } catch {
-      // swallow
+    } catch (error) {
+      reportAccessibilityFailure(App, 'click.toggleRow', error);
     }
   };
 
   try {
     doc.addEventListener('keydown', onKeydown, false);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAccessibilityFailure(App, 'keydown.install', error);
   }
   try {
     doc.addEventListener('click', onClick, false);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportAccessibilityFailure(App, 'click.install', error);
   }
 
   const dispose = () => {
     try {
       doc.removeEventListener('keydown', onKeydown, false);
     } catch {
-      // ignore
+      // cleanup-best-effort: keydown listener removal must not block accessibility teardown.
     }
     try {
       doc.removeEventListener('click', onClick, false);
     } catch {
-      // ignore
+      // cleanup-best-effort: click listener removal must not block accessibility teardown.
     }
   };
   return dispose;

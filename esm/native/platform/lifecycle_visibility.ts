@@ -95,8 +95,8 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
     state.onVisibilityEvent = () => {
       try {
         if (typeof life.onVisibilityChange === 'function') life.onVisibilityChange(readDocumentHidden(doc));
-      } catch {
-        // swallow
+      } catch (error) {
+        reportLifecycleNonFatal(root, 'events.visibilityChange', error);
       }
     };
   }
@@ -104,8 +104,8 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
     state.onFocusEvent = () => {
       try {
         if (typeof life.onWindowFocus === 'function') life.onWindowFocus();
-      } catch {
-        // swallow
+      } catch (error) {
+        reportLifecycleNonFatal(root, 'events.windowFocus', error);
       }
     };
   }
@@ -113,8 +113,8 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
     state.onPageShowEvent = () => {
       try {
         if (typeof life.onWindowPageShow === 'function') life.onWindowPageShow();
-      } catch {
-        // swallow
+      } catch (error) {
+        reportLifecycleNonFatal(root, 'events.pageShow', error);
       }
     };
   }
@@ -128,7 +128,7 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
           if (typeof doc.removeEventListener === 'function')
             doc.removeEventListener('visibilitychange', onVisibilityEvent);
         } catch {
-          // swallow
+          // cleanup-best-effort: visibility listener removal must not block lifecycle teardown.
         }
       });
     }
@@ -141,7 +141,7 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
           try {
             if (typeof win.removeEventListener === 'function') win.removeEventListener('focus', onFocusEvent);
           } catch {
-            // swallow
+            // cleanup-best-effort: focus listener removal must not block lifecycle teardown.
           }
         });
       }
@@ -153,13 +153,13 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
             if (typeof win.removeEventListener === 'function')
               win.removeEventListener('pageshow', onPageShowEvent);
           } catch {
-            // swallow
+            // cleanup-best-effort: pageshow listener removal must not block lifecycle teardown.
           }
         });
       }
     }
-  } catch {
-    // swallow (platform stays DOM-optional under Node/tests)
+  } catch (error) {
+    reportLifecycleNonFatal(root, 'events.bind', error);
   }
 
   state.cleanup = () => {
@@ -168,7 +168,7 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
       try {
         fns[i]();
       } catch {
-        // swallow
+        // cleanup-best-effort: one failed remover must not prevent the remaining lifecycle cleanup.
       }
     }
     state.cleanup = null;
@@ -217,8 +217,8 @@ export function installLifecycleVisibility(App: unknown) {
               const caf = cancelAnimationFrameMaybe(root);
               if (caf) caf(loopRaf);
               else cancelAnimationFrame(loopRaf);
-            } catch (_eCaf) {
-              // swallow
+            } catch (error) {
+              reportLifecycleNonFatal(root, 'visibility.cancelAnimationFrame', error);
             }
             setLoopRaf(root, 0);
           }
@@ -286,7 +286,7 @@ export function installLifecycleVisibility(App: unknown) {
     try {
       bindings.cleanup?.();
     } catch {
-      // swallow
+      // cleanup-best-effort: lifecycle cleanup remains idempotent even if a browser remover fails.
     }
   };
 }

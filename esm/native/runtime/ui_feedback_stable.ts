@@ -83,7 +83,7 @@ function copyStubMeta<T extends CallableLike>(target: T, source: unknown): T {
     Reflect.set(target, '__wp_isStub', true);
     if (typeof meta.__wp_stubKind === 'string') Reflect.set(target, '__wp_stubKind', meta.__wp_stubKind);
   } catch {
-    // ignore
+    // metadata-best-effort: feedback wrapper metadata is diagnostic only and must not affect callability.
   }
   return target;
 }
@@ -98,7 +98,7 @@ function markWrapperGroup<T extends CallableLike>(target: T, group: string): T {
   try {
     Reflect.set(target, '__wp_wrapperGroup', group);
   } catch {
-    // ignore
+    // metadata-best-effort: wrapper-group tagging is advisory and must not affect feedback behavior.
   }
   return target;
 }
@@ -199,7 +199,7 @@ function markStub<T extends CallableLike>(fn: T, kind: string): T {
     Reflect.set(fn, '__wp_isStub', true);
     Reflect.set(fn, '__wp_stubKind', kind);
   } catch {
-    // ignore
+    // metadata-best-effort: stub tagging is advisory and must not affect the fallback callable.
   }
   return fn;
 }
@@ -212,7 +212,7 @@ function buildToastBase(feedback: UiFeedbackNamespaceLike): UiFeedbackToastFn {
       try {
         console.log('[toast]', kind || 'info', msg);
       } catch {
-        // ignore
+        // console-fallback-isolation: logging failure must not make the toast stub throw.
       }
     }, 'toast')
   );
@@ -229,13 +229,13 @@ function buildPromptBase(App: unknown, feedback: UiFeedbackNamespaceLike): UiFee
         cb(value == null ? null : safeString(value));
         return;
       } catch {
-        // ignore
+        // browser-dialog-fallback: prompt access/callback failure falls through to the explicit null result.
       }
 
       try {
         cb(null);
       } catch {
-        // ignore
+        // callback-isolation: consumer prompt callback failure must not escape the feedback stub.
       }
     }, 'prompt')
   );
@@ -253,13 +253,13 @@ function buildConfirmBase(App: unknown, feedback: UiFeedbackNamespaceLike): UiFe
         if (!ok && typeof onNo === 'function') onNo();
         return;
       } catch {
-        // ignore
+        // browser-dialog-fallback: confirm access/callback failure falls through to the negative path.
       }
 
       try {
         if (typeof onNo === 'function') onNo();
       } catch {
-        // ignore
+        // callback-isolation: consumer confirm callback failure must not escape the feedback stub.
       }
     }, 'confirm')
   );

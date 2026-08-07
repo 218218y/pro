@@ -15,6 +15,7 @@ import {
   readValue,
 } from './render_access_shared.js';
 import { asRecord } from './record.js';
+import { reportError } from './errors.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 import {
   isPlanarMirrorSurface,
@@ -59,6 +60,15 @@ export type RenderRuntimeStateLike = {
   cacheClock: number;
   lastPruneAt: number;
 };
+
+function reportRenderStateWriteFailure(App: unknown, op: string, error: unknown): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/render_access_state_runtime', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
 
 export type MirrorRefreshNowResult = {
   refreshed: boolean;
@@ -153,8 +163,8 @@ export function setAmbientLight(App: unknown, light: Object3DLike | null): Objec
   const renderBag = ensureRenderRuntimeState(App);
   try {
     renderBag.ambLightObj = light || null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'ambientLight.write', error);
   }
   return readObject3D(renderBag.ambLightObj);
 }
@@ -167,8 +177,8 @@ export function setDirectionalLight(App: unknown, light: Object3DLike | null): O
   const renderBag = ensureRenderRuntimeState(App);
   try {
     renderBag.dirLightObj = light || null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'directionalLight.write', error);
   }
   return readObject3D(renderBag.dirLightObj);
 }
@@ -188,8 +198,8 @@ export function markSplitHoverPickablesDirty(App: unknown, value = true): boolea
   const next = value === true;
   try {
     renderBag.__splitHoverPickablesDirty = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'splitHoverPickablesDirty.write', error);
   }
   return renderBag.__splitHoverPickablesDirty === true;
 }
@@ -203,8 +213,9 @@ export function trackMirrorSurface(App: unknown, obj: unknown): boolean {
   try {
     renderBag.__mirrorDirty = true;
     renderBag.__mirrorPresenceKnown = false;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'mirrorTracking.markDirty', error);
+    return false;
   }
   return true;
 }
@@ -373,8 +384,8 @@ export function invalidateMirrorTracking(App: unknown): void {
     renderBag.__mirrorPresenceCheckedAtMs = 0;
     renderBag.__mirrorTrackedPruneAtMs = 0;
     renderBag.__mirrorPlanarInitialBatchPending = false;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'mirrorTracking.invalidate', error);
   }
 }
 
@@ -400,8 +411,8 @@ export function writeAutoHideFloorCache(
     renderBag.__wpAutoHideFloorRef = floor || null;
     renderBag.__wpAutoHideFloorRoomKey = roomKey;
     renderBag.__wpAutoHideFloorSceneKey = sceneKey;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'autoHideFloorCache.write', error);
   }
 }
 
@@ -416,8 +427,8 @@ export function writeRendererLightingDefaults(
   const renderBag = ensureRenderRuntimeState(App);
   try {
     renderBag.__wpRendererLightingDefaults = value || null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderStateWriteFailure(App, 'rendererLightingDefaults.write', error);
   }
   return readValue<RendererLightingDefaultsLike>(renderBag.__wpRendererLightingDefaults);
 }

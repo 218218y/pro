@@ -48,7 +48,11 @@ function loadHandlesActionsHarness(initial = {}) {
         return {
           MODES: { HANDLE: 'handle' },
           getBrowserTimers: () => ({ setTimeout: fn => fn() }),
-          refreshBuilderHandles: (...args) => calls.push(['refreshBuilderHandles', ...args]),
+          refreshBuilderHandles: (...args) => {
+            if (initial.failRefresh) throw new Error('refresh rejected');
+            calls.push(['refreshBuilderHandles', ...args]);
+          },
+          reportError: (_app, error, context) => calls.push(['reportError', error, context]),
           getDoorsActionFn: () => null,
           getMetaActionFn: () => null,
           readStoreStateMaybe: () => store,
@@ -329,6 +333,20 @@ test('handle control enablement uses immediate structural ui mutation with no-hi
             forceBuild: true,
             source: 'react:handles:toggle',
           })
+    )
+  );
+});
+
+test('handle refresh failures are observable while the action surface remains fail-soft', () => {
+  const { api, calls, app } = loadHandlesActionsHarness({ failRefresh: true });
+
+  assert.doesNotThrow(() => api.setGlobalHandleColor(app, 'black'));
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'reportError' &&
+        entry[2]?.where === 'native/ui/react/actions/handles_actions' &&
+        entry[2]?.op === 'builder.refresh'
     )
   );
 });

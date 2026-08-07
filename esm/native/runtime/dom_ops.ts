@@ -33,7 +33,7 @@ function clear(el: Element | null): void {
   try {
     while (el && el.firstChild) el.removeChild(el.firstChild);
   } catch {
-    // swallow
+    // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
   }
 }
 
@@ -71,7 +71,7 @@ export function clearEl(_App: unknown, el: Element | null): void {
     if (!el) return;
     clear(el);
   } catch {
-    // swallow
+    // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
   }
 }
 
@@ -97,7 +97,7 @@ export function setIconText(
           try {
             i.setAttribute('aria-hidden', 'true');
           } catch {
-            // swallow
+            // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
           }
           el.appendChild(i);
         } else {
@@ -119,10 +119,10 @@ export function setIconText(
     try {
       if (hasTitle(el)) el.title = t ? t.trim() : '';
     } catch {
-      // swallow
+      // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
     }
   } catch {
-    // swallow
+    // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
   }
 }
 
@@ -152,7 +152,7 @@ export function setStrongInline(_App: unknown, el: Element | null, ...args: read
       el.textContent = args.map(v => formatDisplayScalar(readDisplayScalar(v))).join('');
     }
   } catch {
-    // swallow
+    // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
   }
 }
 
@@ -186,7 +186,7 @@ export function setStrongSmall(
 
     if (hasTextContent(el)) el.textContent = s + (sm ? ' ' + sm : '');
   } catch {
-    // swallow
+    // dom-best-effort: optional DOM mutation may fail on detached or hostile nodes; callers remain fail-soft.
   }
 }
 

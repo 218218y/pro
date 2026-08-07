@@ -12,6 +12,7 @@ import type {
   RenderViewportSurfaceLike,
   SceneOpsLike,
 } from './render_access_shared.js';
+import { reportError } from './errors.js';
 import {
   ensureArraySlot,
   ensureRenderBag,
@@ -20,6 +21,15 @@ import {
   readRenderSurface,
   readValue,
 } from './render_access_shared.js';
+
+function reportRenderSurfaceWriteFailure(App: unknown, op: string, error: unknown): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/runtime/render_access_surface', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
 
 export function ensureRenderNamespace(App: unknown): Namespace & RenderNamespaceLike {
   return ensureRenderBag(App);
@@ -67,8 +77,8 @@ export function setRoomGroup(App: unknown, group: Object3DLike | null): Object3D
   const renderBag = ensureRenderBag(App);
   try {
     renderBag.roomGroup = group || null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, 'roomGroup.write', error);
   }
   return readObject3D(renderBag.roomGroup);
 }
@@ -98,8 +108,8 @@ export function setRenderSlot<T = unknown>(App: unknown, key: string, value: T |
   const renderBag = ensureRenderBag(App);
   try {
     renderBag[key] = value || null;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, `slot.${key}.write`, error);
   }
   return readValue<T>(renderBag[key]);
 }
@@ -120,8 +130,8 @@ export function clearRenderArrays(App: unknown): void {
     const drawers = getDrawersArray(App);
     doors.length = 0;
     drawers.length = 0;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, 'visualArrays.clear', error);
   }
 }
 
@@ -143,8 +153,8 @@ export function setLoopRaf(App: unknown, value: number): number {
   const next = Number.isFinite(value) ? value : 0;
   try {
     renderBag.loopRaf = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, 'loopRaf.write', error);
   }
   return typeof renderBag.loopRaf === 'number' ? renderBag.loopRaf : next;
 }
@@ -159,8 +169,8 @@ export function setLastFrameTs(App: unknown, value: number): number {
   const next = Number.isFinite(value) ? value : 0;
   try {
     renderBag.__lastFrameTs = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, 'lastFrameTs.write', error);
   }
   return typeof renderBag.__lastFrameTs === 'number' ? renderBag.__lastFrameTs : next;
 }
@@ -175,8 +185,8 @@ export function setRafScheduledAt(App: unknown, value: number): number {
   const next = Number.isFinite(value) ? value : 0;
   try {
     renderBag.__rafScheduledAt = next;
-  } catch {
-    // ignore
+  } catch (error) {
+    reportRenderSurfaceWriteFailure(App, 'rafScheduledAt.write', error);
   }
   return typeof renderBag.__rafScheduledAt === 'number' ? renderBag.__rafScheduledAt : next;
 }

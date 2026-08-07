@@ -4,7 +4,7 @@ import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../..
 import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 import { getPrimaryMode, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
-import { getUiFeedback, MODES } from '../../../services/api.js';
+import { getUiFeedback, MODES, reportError } from '../../../services/api.js';
 import {
   setUiCurrentLayoutType,
   setUiExtDrawerSelection,
@@ -55,12 +55,21 @@ function interactiveStructuralMetaOverrides(app: AppContainer, source: string): 
   return { source, immediate: true };
 }
 
+function reportInteriorActionFailure(app: AppContainer, op: string, error: unknown): void {
+  reportError(
+    app,
+    error,
+    { where: 'native/ui/react/actions/interior_actions', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
+
 function toast(app: AppContainer, msg: string, kind?: string): void {
   try {
     const fb = getUiFeedback(app);
     fb.toast(msg, kind);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'toast', error);
   }
 }
 
@@ -85,8 +94,8 @@ function turnOffHandleModeIfNeeded(app: AppContainer): void {
     if (String(cur) === HANDLE) {
       exitPrimaryMode(app, HANDLE, { preserveDoors: true });
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'handleMode.exit', error);
   }
 }
 
@@ -105,8 +114,8 @@ export function enterLayoutMode(app: AppContainer, layoutType: unknown): void {
       noPersist: true,
     };
     setUiCurrentLayoutType(app, selectedLayout, m);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'layoutType.write', error);
   }
 
   enterPrimaryMode(app, MODE_LAYOUT, {
@@ -174,8 +183,8 @@ export function setGridDivisions(app: AppContainer, n: unknown): void {
     }
 
     setUiGridDivisionsState(app, divs, undefined, undefined, m);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'gridDivisions.write', error);
   }
 }
 
@@ -193,8 +202,8 @@ export function setGridShelfVariant(app: AppContainer, variant: unknown): void {
       noPersist: true,
     };
     setUiGridShelfVariantState(app, v, m);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'gridShelfVariant.write', error);
   }
 }
 
@@ -218,8 +227,8 @@ export function enterExtDrawerMode(app: AppContainer, drawerType: unknown, count
       noPersist: true,
     };
     setUiExtDrawerSelection(app, selectedDrawerType, finalCount, m);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'extDrawerSelection.write', error);
   }
 
   enterPrimaryMode(app, MODE_EXT, {
@@ -283,7 +292,7 @@ export function setInternalDrawersEnabled(
         metaOverrides: m,
       }
     );
-  } catch {
-    // ignore
+  } catch (error) {
+    reportInteriorActionFailure(app, 'internalDrawers.write', error);
   }
 }

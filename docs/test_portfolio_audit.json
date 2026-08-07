@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-07T06:53:06.868Z",
+  "generatedAt": "2026-08-07T07:57:20.987Z",
   "totals": {
-    "tests": 1231,
-    "unitRunnerTests": 1223,
+    "tests": 1232,
+    "unitRunnerTests": 1224,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
     "packageTestReferences": 38,
@@ -20,7 +20,7 @@
   },
   "categories": {
     "contract": 406,
-    "runtime-unit": 326,
+    "runtime-unit": 327,
     "integration": 460,
     "persistence-ingress": 24,
     "e2e-smoke": 9,
@@ -8017,6 +8017,10 @@
     {
       "file": "tests/viewer_resize_perf_contract.test.js",
       "category": "perf-smoke"
+    },
+    {
+      "file": "tests/viewer_resize_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/viewport_layout_runtime.test.ts",

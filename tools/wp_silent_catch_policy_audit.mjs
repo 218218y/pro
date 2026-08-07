@@ -13,10 +13,10 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   features: 12,
   io: 4,
   kernel: 9,
-  platform: 47,
-  runtime: 112,
+  platform: 42,
+  runtime: 99,
   services: 87,
-  ui: 205,
+  ui: 183,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,
@@ -37,10 +37,10 @@ const EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER = Object.freeze({
   features: 9,
   io: 0,
   kernel: 1,
-  platform: 38,
-  runtime: 87,
+  platform: 23,
+  runtime: 41,
   services: 49,
-  ui: 110,
+  ui: 78,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/camera_access.ts',
@@ -103,6 +103,9 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/boot/boot_manifest_shared.ts',
   'esm/native/ui/react/actions/sketch_actions.ts',
   'esm/native/runtime/doors_access_doors.ts',
+  'esm/native/runtime/render_access_state_runtime.ts',
+  'esm/native/runtime/render_access_surface.ts',
+  'esm/native/ui/react/actions/interior_actions.ts',
 ]);
 
 function parserLanguage(file) {

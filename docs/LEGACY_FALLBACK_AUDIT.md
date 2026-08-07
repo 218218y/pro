@@ -1,18 +1,18 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-07T06:53:06.704Z
+Generated at: 2026-08-07T07:57:20.829Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **20**
-- Files with occurrences: **11**
+- Total categorized occurrences: **39**
+- Files with occurrences: **15**
 - Category counts:
-  - `runtime-default`: **0**
-  - `domain-default`: **9**
+  - `runtime-default`: **13**
+  - `domain-default`: **13**
   - `error-message-default`: **0**
   - `framework-default`: **2**
-  - `browser-adapter`: **0**
+  - `browser-adapter`: **2**
   - `project-migration`: **3**
   - `external-api-compat`: **0**
   - `compat-boundary`: **0**
@@ -35,10 +35,14 @@ Generated at: 2026-08-07T06:53:06.704Z
 
 ## Hot files
 
+- `esm/native/runtime/runtime_globals.ts` - **11** (runtime-default: 11)
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
+- `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
 - `esm/native/ui/errors_install_support.ts` - **3** (domain-default: 3)
 - `esm/native/builder/materials_factory_texture_runtime.ts` - **2** (domain-default: 2)
 - `esm/native/builder/module_layout_pipeline.ts` - **2** (project-migration: 2)
+- `esm/native/runtime/browser_env_timers.ts` - **2** (domain-default: 2)
+- `esm/native/ui/interactions/viewer_resize.ts` - **2** (browser-adapter: 2)
 - `esm/native/ui/ui_boot_controller_reporter.ts` - **2** (domain-default: 2)
 - `esm/native/builder/core_storage_compute_custom.ts` - **1** (domain-default: 1)
 - `esm/native/runtime/app_helpers.ts` - **1** (project-migration: 1)

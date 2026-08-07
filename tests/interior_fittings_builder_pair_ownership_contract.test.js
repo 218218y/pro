@@ -614,9 +614,26 @@ test('Interior Fittings builder pair preserves numeric literals, function signat
     coreFacts.source,
     /limitAdd = -\(\s*Math\.abs\(INTERIOR_ROD_PLACEMENT_POLICY\.defaultYOffsetM\) \+\s*INTERIOR_STORAGE_BARRIER_POLICY\.barrierHeightM\s*\);/u
   );
-  assert.match(
-    coreFacts.source,
-    /try \{[\s\S]*ops\.shelfVariants = shelfVariantsByIndex;[\s\S]*\} catch \{\}/u
+  const shelfVariantGuard = coreExport.declaration.body.body.find(statement => {
+    if (statement?.type !== 'TryStatement') return false;
+    let assignsShelfVariants = false;
+    walkAst(statement.block, node => {
+      if (
+        node?.type === 'AssignmentExpression' &&
+        memberPath(node.left) === 'ops.shelfVariants' &&
+        identifierName(node.right) === 'shelfVariantsByIndex'
+      ) {
+        assignsShelfVariants = true;
+      }
+    });
+    return assignsShelfVariants;
+  });
+  assert.ok(shelfVariantGuard, 'optional shelf-variant assignment remains guarded');
+  assert.equal(shelfVariantGuard.handler?.type, 'CatchClause');
+  assert.deepEqual(
+    shelfVariantGuard.handler?.body?.body ?? [],
+    [],
+    'optional shelf-variant guard catch must remain statement-free'
   );
 
   const cornerSource = sourceFacts(consumers[1].rel).source;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
-function loadInteriorActionsHarness(initialUi = {}) {
+function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
   const file = path.resolve('esm/native/ui/react/actions/interior_actions.ts');
   const calls = [];
   const store = {
@@ -26,6 +26,7 @@ function loadInteriorActionsHarness(initialUi = {}) {
         return {
           MODES: {},
           getUiFeedback: () => ({ toast: (...args) => calls.push(['toast', ...args]) }),
+          reportError: (_app, error, context) => calls.push(['reportError', error, context]),
           getMetaActionFn: (_app, name) =>
             name === 'interactiveImmediate'
               ? sourceName => ({ source: sourceName, immediate: true, profile: 'interactive' })
@@ -38,7 +39,10 @@ function loadInteriorActionsHarness(initialUi = {}) {
           setUiCurrentLayoutType: (...args) => calls.push(['setUiCurrentLayoutType', ...args]),
           setUiExtDrawerSelection: (...args) => calls.push(['setUiExtDrawerSelection', ...args]),
           setUiGridDivisionsState: (...args) => calls.push(['setUiGridDivisionsState', ...args]),
-          setUiGridShelfVariantState: (...args) => calls.push(['setUiGridShelfVariantState', ...args]),
+          setUiGridShelfVariantState: (...args) => {
+            if (failures.gridShelfVariant) throw new Error('grid shelf variant rejected');
+            calls.push(['setUiGridShelfVariantState', ...args]);
+          },
           setUiFlag: (_app, key, value, meta) => {
             calls.push(['setUiFlag', key, value, meta]);
             store.ui[key] = !!value;
@@ -131,5 +135,19 @@ test('[interior-actions] internal drawer toggle keeps semantic no-op quiet', () 
   assert.equal(
     calls.some(entry => entry[0] === 'setUiFlag'),
     false
+  );
+});
+
+test('[interior-actions] rejected ui mirror writes are reported without escaping the action surface', () => {
+  const { api, calls, app } = loadInteriorActionsHarness({}, { gridShelfVariant: true });
+
+  assert.doesNotThrow(() => api.setGridShelfVariant(app, 'glass'));
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'reportError' &&
+        entry[2]?.where === 'native/ui/react/actions/interior_actions' &&
+        entry[2]?.op === 'gridShelfVariant.write'
+    )
   );
 });

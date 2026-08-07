@@ -10,7 +10,7 @@ import type {
 } from '../../../../../types';
 
 import { getPrimaryMode, getModeState, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
-import { MODES, getBrowserTimers } from '../../../services/api.js';
+import { MODES, getBrowserTimers, reportError } from '../../../services/api.js';
 import { captureBuilderOutlineBinding, refreshBuilderHandles } from '../../../services/api.js';
 import { patchUiSoft, setCfgGlobalHandleType, setCfgHandlesMap, setUiFlag } from './store_actions.js';
 import { getDoorsActionFn, getMetaActionFn } from '../../../services/api.js';
@@ -49,6 +49,15 @@ type StoreStateLike = UnknownRecord & {
 type ModesBagLike = UnknownRecord & {
   HANDLE?: unknown;
 };
+
+function reportHandlesActionFailure(app: AppContainer, op: string, error: unknown): void {
+  reportError(
+    app,
+    error,
+    { where: 'native/ui/react/actions/handles_actions', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -222,8 +231,8 @@ function applyHandlesBestEffort(app: AppContainer): void {
       removeDoorsEnabled: resolveRemoveDoorsEnabledFromSnapshots(getUiSnap(app), getModeState(app)),
       purgeRemovedDoors: true,
     });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'builder.refresh', error);
   }
 }
 
@@ -244,8 +253,8 @@ function patchHandlesMapReservedKey(app: AppContainer, key: string, value: unkno
       },
       { forceBuild: true }
     );
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'handlesMap.write', error);
   }
 }
 
@@ -282,8 +291,8 @@ function setHandleControlEnabledCore(
       },
       getNoHistoryForceBuildMeta(app, source)
     );
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'handleControl.write', error);
   }
 
   try {
@@ -293,8 +302,8 @@ function setHandleControlEnabledCore(
     } catch {
       run();
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'handles.apply', error);
   }
 
   if (enabled) {
@@ -306,8 +315,8 @@ function setHandleControlEnabledCore(
     const modeHandle = getHandleModeId();
     const cur = getPrimaryMode(app);
     if (String(cur) === modeHandle) exitPrimaryMode(app, modeHandle, { preserveDoors: true });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'handleMode.exit', error);
   }
 }
 
@@ -336,8 +345,8 @@ export function setGlobalHandleType(app: AppContainer, t: HandleType): void {
         { forceBuild: true }
       );
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'globalType.write', error);
   }
 
   applyHandlesBestEffort(app);
@@ -421,8 +430,8 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
   try {
     const enabled = !!getUiSnap(app).handleControl;
     if (!enabled) setHandleControlEnabledCore(app, true, { autoEnterCleanDefault: false });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'manualPosition.ensureEnabled', error);
   }
 
   const modeHandle = getHandleModeId();
@@ -473,8 +482,8 @@ export function toggleHandleMode(app: AppContainer, t?: unknown): void {
   try {
     const enabled = !!getUiSnap(app).handleControl;
     if (!enabled) setHandleControlEnabledCore(app, true, { autoEnterCleanDefault: false });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportHandlesActionFailure(app, 'handleMode.ensureEnabled', error);
   }
 
   const modeHandle = getHandleModeId();

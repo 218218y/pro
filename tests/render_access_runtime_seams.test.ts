@@ -73,3 +73,32 @@ test('render_access owns viewport slots, cache values, arrays, and loop metadata
   assert.equal(getDoorsArray(App).length, 0);
   assert.equal(getDrawersArray(App).length, 0);
 });
+
+test('render surface write rejection is observable while preserving the previous slot value', () => {
+  const reports: Array<{ error: unknown; context: Record<string, unknown> }> = [];
+  const App: AnyRecord = {
+    services: {
+      platform: {
+        reportError: (error: unknown, context: Record<string, unknown>) => reports.push({ error, context }),
+      },
+    },
+  };
+
+  const render = ensureRenderNamespace(App) as AnyRecord;
+  render.customSlot = 'before';
+  App.render = new Proxy(render, {
+    set(target, prop, value) {
+      if (prop === 'customSlot') throw new Error('slot rejected');
+      return Reflect.set(target, prop, value);
+    },
+  });
+
+  assert.equal(setRenderSlot(App, 'customSlot', 'after'), 'before');
+  assert.ok(
+    reports.some(
+      entry =>
+        entry.context.where === 'native/runtime/render_access_surface' &&
+        entry.context.op === 'slot.customSlot.write'
+    )
+  );
+});

@@ -12,6 +12,7 @@ import {
   getBrowserTimers,
   ensureRenderNamespace,
   getRenderNamespace,
+  reportError,
 } from '../../services/api.js';
 
 type CameraWithAspect = {
@@ -93,6 +94,15 @@ function isViewerSize(value: unknown): value is ViewerSize {
   );
 }
 
+function reportViewerResizeFailure(App: AppContainer, op: string, error: unknown): void {
+  reportError(
+    App,
+    error,
+    { where: 'native/ui/interactions/viewer_resize', op, fatal: false },
+    { consoleOutput: false }
+  );
+}
+
 export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): () => void {
   const container = deps?.container;
   const win = deps?.win ?? null;
@@ -117,7 +127,6 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
 
       const size = isViewerSize(sizeHint) ? sizeHint : readContainerSize(container);
       if (!size || isSameSize(size, lastAppliedSize)) return;
-      lastAppliedSize = size;
 
       camera.aspect = size.width / size.height;
       if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
@@ -130,8 +139,9 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
       if (controls && typeof controls.handleResize === 'function') controls.handleResize();
 
       if (typeof triggerRender === 'function') triggerRender(false);
-    } catch {
-      // swallow
+      lastAppliedSize = size;
+    } catch (error) {
+      reportViewerResizeFailure(App, 'apply', error);
     }
   };
 
@@ -143,12 +153,12 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         if (typeof id === 'number') return id;
       }
     } catch {
-      // swallow
+      // browser-capability-fallback: injected animation-frame scheduling failed; try the host window.
     }
     try {
       if (win && typeof win.requestAnimationFrame === 'function') return win.requestAnimationFrame(cb);
     } catch {
-      // swallow
+      // browser-capability-fallback: host-window animation-frame scheduling failed; use canonical timers.
     }
     return getBrowserTimers(App).requestAnimationFrame(cb);
   };
@@ -166,7 +176,7 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         return;
       }
     } catch {
-      // swallow
+      // cleanup-best-effort: injected animation-frame cancellation failed; try the host window.
     }
     try {
       if (win && typeof win.cancelAnimationFrame === 'function') {
@@ -174,12 +184,12 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         return;
       }
     } catch {
-      // swallow
+      // cleanup-best-effort: host-window animation-frame cancellation failed; try canonical timers.
     }
     try {
       getBrowserTimers(App).cancelAnimationFrame(id);
     } catch {
-      // swallow
+      // cleanup-best-effort: canonical timer cancellation may be unavailable during teardown.
     }
   };
 
@@ -203,8 +213,13 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         apply(queuedSize);
         queuedSize = null;
       }
-    } catch {
-      // swallow
+    } catch (error) {
+      reportViewerResizeFailure(App, 'schedule', error);
+      pending = false;
+      rafId = null;
+      const sizeToApply = queuedSize;
+      queuedSize = null;
+      apply(sizeToApply);
     }
   };
 
@@ -214,7 +229,8 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
       ro = new ResizeObserver(entries => schedule(readResizeObserverSize(entries, container)));
       ro.observe(container);
       ensureRender(App)._resizeObserver = ro;
-    } catch {
+    } catch (error) {
+      reportViewerResizeFailure(App, 'resizeObserver.install', error);
       ro = null;
     }
   }
@@ -228,10 +244,11 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         try {
           win.removeEventListener('resize', scheduleFromWindowResize);
         } catch {
-          // swallow
+          // cleanup-best-effort: window resize listener removal must not block viewer teardown.
         }
       };
-    } catch {
+    } catch (error) {
+      reportViewerResizeFailure(App, 'windowResize.install', error);
       cleanupWin = null;
     }
   }
@@ -246,19 +263,19 @@ export function installViewerResize(App: AppContainer, deps: ViewerResizeDeps): 
         try {
           ro.disconnect();
         } catch {
-          // swallow
+          // cleanup-best-effort: ResizeObserver disconnect must not block remaining teardown.
         }
       }
       if (cleanupWin) cleanupWin();
-    } catch {
-      // swallow
+    } catch (error) {
+      reportViewerResizeFailure(App, 'cleanup', error);
     }
 
     try {
       const render = readRender(App);
       if (render && render._resizeObserver === ro) render._resizeObserver = null;
     } catch {
-      // swallow
+      // cleanup-best-effort: render resize-observer mirror cleanup is advisory during disposal.
     }
   };
 }

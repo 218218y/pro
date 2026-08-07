@@ -49,7 +49,7 @@ export function requestAnimationFrameMaybe(app: unknown): RequestAnimationFrameL
     const raf = browser?.requestAnimationFrame;
     if (typeof raf === 'function') return raf;
   } catch {
-    // swallow
+    // browser-capability-probe: injected animation-frame access is optional; fall through to the host window.
   }
 
   const w = getWindowMaybe(app);
@@ -62,7 +62,7 @@ export function cancelAnimationFrameMaybe(app: unknown): CancelAnimationFrameLik
     const caf = browser?.cancelAnimationFrame;
     if (typeof caf === 'function') return caf;
   } catch {
-    // swallow
+    // browser-capability-probe: injected animation-frame cancellation is optional; fall through to the host window.
   }
 
   const w = getWindowMaybe(app);
@@ -75,7 +75,7 @@ export function requestIdleCallbackMaybe(app: unknown): RequestIdleCallbackLike 
     const ric = browser?.requestIdleCallback;
     if (typeof ric === 'function') return ric;
   } catch {
-    // swallow
+    // browser-capability-probe: injected idle-callback access is optional; fall through to the host window.
   }
 
   const w = asWindowExtras(getWindowMaybe(app));
@@ -102,7 +102,7 @@ export function getBrowserTimers(app: unknown): BrowserTimersLike {
       try {
         fn && fn();
       } catch {
-        // swallow
+        // callback-isolation: last-resort synchronous timer fallback must not leak callback failures.
       }
       return -1;
     };
@@ -147,7 +147,7 @@ export function getBrowserTimers(app: unknown): BrowserTimersLike {
       try {
         ct(typeof handle === 'number' || typeof handle === 'undefined' ? handle : undefined);
       } catch {
-        // swallow
+        // cleanup-best-effort: interval fallback delegates to timeout cleanup and tolerates unavailable handles.
       }
     };
 
@@ -197,14 +197,14 @@ export function getBrowserFetchMaybe(app: unknown): FetchLike | null {
     const f = browser?.fetch;
     if (typeof f === 'function') return f;
   } catch {
-    // swallow
+    // browser-capability-probe: injected fetch is optional; fall through to the host window.
   }
 
   try {
     const w = asWindowExtras(getWindowMaybe(app));
     if (w && typeof w.fetch === 'function') return w.fetch.bind(w);
   } catch {
-    // swallow
+    // browser-capability-probe: host-window fetch may be inaccessible; fall through to the global surface.
   }
 
   try {

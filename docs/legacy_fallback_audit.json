@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-07T06:53:06.704Z",
+  "generatedAt": "2026-08-07T07:57:20.829Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 20,
-    "totalFiles": 11,
+    "totalOccurrences": 39,
+    "totalFiles": 15,
     "byCategory": {
-      "runtime-default": 0,
-      "domain-default": 9,
+      "runtime-default": 13,
+      "domain-default": 13,
       "error-message-default": 0,
       "framework-default": 2,
-      "browser-adapter": 0,
+      "browser-adapter": 2,
       "project-migration": 3,
       "external-api-compat": 0,
       "compat-boundary": 0,
@@ -42,6 +42,25 @@
           "project-migration": 1
         }
       },
+      "esm/native/runtime/browser_env_timers.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/runtime/runtime_globals.ts": {
+        "total": 11,
+        "categories": {
+          "runtime-default": 11
+        }
+      },
+      "esm/native/runtime/ui_feedback_stable.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 2,
+          "runtime-default": 2
+        }
+      },
       "esm/native/services/render_surface_runtime_support_ops.ts": {
         "total": 1,
         "categories": {
@@ -52,6 +71,12 @@
         "total": 3,
         "categories": {
           "domain-default": 3
+        }
+      },
+      "esm/native/ui/interactions/viewer_resize.ts": {
+        "total": 2,
+        "categories": {
+          "browser-adapter": 2
         }
       },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
@@ -87,10 +112,25 @@
     },
     "hotFiles": [
       {
+        "file": "esm/native/runtime/runtime_globals.ts",
+        "total": 11,
+        "categories": {
+          "runtime-default": 11
+        }
+      },
+      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 5,
         "categories": {
           "test-fixture": 5
+        }
+      },
+      {
+        "file": "esm/native/runtime/ui_feedback_stable.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 2,
+          "runtime-default": 2
         }
       },
       {
@@ -112,6 +152,20 @@
         "total": 2,
         "categories": {
           "project-migration": 2
+        }
+      },
+      {
+        "file": "esm/native/runtime/browser_env_timers.ts",
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      {
+        "file": "esm/native/ui/interactions/viewer_resize.ts",
+        "total": 2,
+        "categories": {
+          "browser-adapter": 2
         }
       },
       {
@@ -210,6 +264,125 @@
       "text": "* A direct fallback is safe only when the canonical batch surface fails before"
     },
     {
+      "file": "esm/native/runtime/browser_env_timers.ts",
+      "line": 105,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// callback-isolation: last-resort synchronous timer fallback must not leak callback failures."
+    },
+    {
+      "file": "esm/native/runtime/browser_env_timers.ts",
+      "line": 150,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// cleanup-best-effort: interval fallback delegates to timeout cleanup and tolerates unavailable handles."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 76,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 82,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 93,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 102,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 110,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 119,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 127,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 135,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 143,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 149,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/runtime_globals.ts",
+      "line": 159,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
+    },
+    {
+      "file": "esm/native/runtime/ui_feedback_stable.ts",
+      "line": 202,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// metadata-best-effort: stub tagging is advisory and must not affect the fallback callable."
+    },
+    {
+      "file": "esm/native/runtime/ui_feedback_stable.ts",
+      "line": 215,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// console-fallback-isolation: logging failure must not make the toast stub throw."
+    },
+    {
+      "file": "esm/native/runtime/ui_feedback_stable.ts",
+      "line": 232,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-dialog-fallback: prompt access/callback failure falls through to the explicit null result."
+    },
+    {
+      "file": "esm/native/runtime/ui_feedback_stable.ts",
+      "line": 256,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "// browser-dialog-fallback: confirm access/callback failure falls through to the negative path."
+    },
+    {
       "file": "esm/native/services/render_surface_runtime_support_ops.ts",
       "line": 46,
       "term": "fallback",
@@ -236,6 +409,20 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
+    },
+    {
+      "file": "esm/native/ui/interactions/viewer_resize.ts",
+      "line": 156,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// browser-capability-fallback: injected animation-frame scheduling failed; try the host window."
+    },
+    {
+      "file": "esm/native/ui/interactions/viewer_resize.ts",
+      "line": 161,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// browser-capability-fallback: host-window animation-frame scheduling failed; use canonical timers."
     },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
