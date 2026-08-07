@@ -165,7 +165,7 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
 
     if (isNewLayout && manualTool === 'shelf') {
       const fillPlanRef: { current: ManualLayoutShelfFillPlan | null } = { current: null };
-      __patchConfigForKey(
+      const committed = __patchConfigForKey(
         __activeModuleKey,
         cfg => {
           fillPlanRef.current = fillManualLayoutShelves(cfg, {
@@ -178,7 +178,7 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
         },
         createCanvasPickingConfigStructuralPatchMeta('manualLayout.fillAllShelves')
       );
-      toastManualLayoutSkippedShelves(App, fillPlanRef.current?.skippedCount ?? 0);
+      if (committed !== false) toastManualLayoutSkippedShelves(App, fillPlanRef.current?.skippedCount ?? 0);
       return;
     }
 
@@ -208,7 +208,7 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
     }
 
     const shelfResultRef: { current: ManualLayoutShelfToggleResult | null } = { current: null };
-    __patchConfigForKey(
+    const committed = __patchConfigForKey(
       __activeModuleKey,
       cfg => {
         const savedDivsInner = cfg.gridDivisions ? Number(cfg.gridDivisions) : currentToolDivs;
@@ -249,7 +249,8 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
       },
       createCanvasPickingConfigStructuralPatchMeta('manualLayout.toggleItem')
     );
-    if (shelfResultRef.current?.blockedBySketchDrawers) toastManualLayoutShelfCollision(App);
+    if (committed !== false && shelfResultRef.current?.blockedBySketchDrawers)
+      toastManualLayoutShelfCollision(App);
   })();
 
   return true;

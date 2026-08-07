@@ -18,6 +18,7 @@ import { tryHandleCanvasManualSketchFreeContentClick } from './canvas_picking_cl
 import { tryHandleCanvasManualSketchFreeBoxClick } from './canvas_picking_click_manual_sketch_free_box.js';
 import { isRecentModuleScopedSketchHover } from './canvas_picking_click_manual_sketch_free_recent.js';
 import { tryCommitManualLayoutFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 
 export function tryHandleCanvasManualSketchFreeClick(args: CanvasPickingManualSketchFreeClickArgs): boolean {
   const { App, ndcX, ndcY, foundModuleIndex, raycaster, mouse } = args;
@@ -79,8 +80,12 @@ export function tryHandleCanvasManualSketchFreeClick(args: CanvasPickingManualSk
     ) {
       return true;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'canvasPicking.structuralCommit',
+      op: 'manualSketchFree.click',
+      throttleMs: 1000,
+    });
   }
 
   return false;

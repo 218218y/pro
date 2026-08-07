@@ -15,7 +15,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 19,
   platform: 61,
   runtime: 126,
-  services: 106,
+  services: 93,
   ui: 211,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
@@ -27,7 +27,7 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   kernel: 10,
   platform: 15,
   runtime: 0,
-  services: 1,
+  services: 0,
   ui: 26,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
@@ -69,6 +69,18 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/cloud_sync_main_row_remote_pull.ts',
   'esm/native/services/cloud_sync_owner_context_status_publication_runtime.ts',
   'esm/native/services/canvas_picking_paint_flow_apply_commit.ts',
+  'esm/native/services/canvas_picking_structural_commit.ts',
+  'esm/native/services/canvas_picking_click_module_refs.ts',
+  'esm/native/services/canvas_picking_sketch_free_commit.ts',
+  'esm/native/services/canvas_picking_manual_layout_free_box_commit.ts',
+  'esm/native/services/canvas_picking_cell_dims_free_box.ts',
+  'esm/native/services/canvas_picking_door_sketch_box_edit.ts',
+  'esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts',
+  'esm/native/services/canvas_picking_toggle_flow_sketch_free_box.ts',
+  'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelf.ts',
+  'esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts',
+  'esm/native/services/canvas_picking_click_manual_sketch_free_flow.ts',
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts',
   'esm/native/runtime/app_helpers.ts',
   'esm/native/platform/render_scheduler.ts',
   'esm/native/ui/react/actions/modes_actions.ts',

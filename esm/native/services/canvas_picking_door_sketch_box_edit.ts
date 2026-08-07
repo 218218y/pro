@@ -1,10 +1,13 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
-import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import { asRecord, ensureRecordSlot } from './canvas_picking_door_edit_shared.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
+import {
+  commitCanvasModuleStructuralPatch,
+  readCanvasModuleConfigForStack,
+} from './canvas_picking_structural_commit.js';
 
 export type SketchBoxDoorTarget = {
   moduleKey: string | null;
@@ -206,22 +209,25 @@ export function patchSketchBoxDoor(
 ): boolean {
   if (!target) return false;
   const { boxId, doorId: rawDoorId } = target;
-  const mods = getModulesActions(App);
-  if (!mods || typeof mods.patchForStack !== 'function') return false;
-  const ensureForStack = typeof mods.ensureForStack === 'function' ? mods.ensureForStack.bind(mods) : null;
   const patchTargets = resolveSketchBoxDoorPatchTargets(App, target, preferredStack);
   for (const patchTarget of patchTargets) {
     const stack = patchTarget.stack;
-    const cfg = ensureForStack ? ensureForStack(stack, patchTarget.moduleKey) : null;
+    const cfg = readCanvasModuleConfigForStack({
+      App,
+      stack,
+      moduleKey: patchTarget.moduleKey,
+      op: 'sketchBoxDoorEdit.target',
+    });
     const cfgRec = asRecord(cfg);
     const extra = asRecord(cfgRec?.sketchExtras);
     const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : null;
     if (!boxes) continue;
     let changed = false;
-    mods.patchForStack(
+    const outcome = commitCanvasModuleStructuralPatch({
+      App,
       stack,
-      patchTarget.moduleKey,
-      (cfgPatch: UnknownRecord) => {
+      moduleKey: patchTarget.moduleKey,
+      mutate: (cfgPatch: UnknownRecord) => {
         const extraRec = ensureRecordSlot(cfgPatch, 'sketchExtras');
         const list = Array.isArray(extraRec.boxes) ? extraRec.boxes : (extraRec.boxes = []);
         for (let i = 0; i < list.length; i++) {
@@ -261,10 +267,13 @@ export function patchSketchBoxDoor(
           changed = matched;
           return;
         }
+        return changed;
       },
-      createCanvasPickingModulesStructuralPatchMeta(readSketchBoxDoorPatchSource(options))
-    );
-    if (changed) return true;
+      meta: createCanvasPickingModulesStructuralPatchMeta(readSketchBoxDoorPatchSource(options)),
+      op: 'sketchBoxDoorEdit.patch',
+    });
+    if (!outcome.committed) return false;
+    if (outcome.changed && changed) return true;
   }
   return false;
 }

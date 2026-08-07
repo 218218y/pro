@@ -16,6 +16,7 @@ import {
 } from './canvas_picking_drawer_cross_family.js';
 import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 
 function readStrictDrawerRemoval(hoverRec: unknown): {
   contentKind: 'drawers' | 'ext_drawers' | 'regular_ext_drawers';
@@ -129,8 +130,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           return true;
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      __wp_reportPickingIssue(App, error, {
+        where: 'canvasPicking.structuralCommit',
+        op: 'sketchDirectHit.drawer.externalCross',
+        throttleMs: 1000,
+      });
     }
 
     try {
@@ -170,8 +175,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             const diff = Math.max(0, maxY - minY);
             halfH = Math.max(0.035, diff - 0.01);
           }
-        } catch {
-          // ignore
+        } catch (error) {
+          __wp_reportPickingIssue(App, error, {
+            where: 'canvasPicking.structuralCommit',
+            op: 'sketchDirectHit.drawer.internalBounds',
+            throttleMs: 1000,
+          });
         }
 
         if (!Number.isFinite(centerY)) centerY = Number(hitY0);
@@ -200,8 +209,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           }
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      __wp_reportPickingIssue(App, error, {
+        where: 'canvasPicking.structuralCommit',
+        op: 'sketchDirectHit.drawer.internalRemove',
+        throttleMs: 1000,
+      });
     }
   }
 
@@ -231,8 +244,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           return true;
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      __wp_reportPickingIssue(App, error, {
+        where: 'canvasPicking.structuralCommit',
+        op: 'sketchDirectHit.drawer.crossInternal',
+        throttleMs: 1000,
+      });
     }
 
     const standardExternalHit = findDirectCrossDrawerHitInIntersects(App, intersects, 'standard_external');
@@ -296,8 +313,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
               const h0 = ud ? readRecordNumber(ud, '__doorHeight') : null;
               if (typeof h0 === 'number' && Number.isFinite(h0) && h0 > 0) halfH = h0 / 2;
             }
-          } catch {
-            // ignore
+          } catch (error) {
+            __wp_reportPickingIssue(App, error, {
+              where: 'canvasPicking.structuralCommit',
+              op: 'sketchDirectHit.drawer.externalPrimaryBounds',
+              throttleMs: 1000,
+            });
           }
 
           if (!Number.isFinite(centerY) || !Number.isFinite(halfH)) {
@@ -319,8 +340,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
                 const diff = Math.max(0, maxY - minY);
                 halfH = Math.max(0.05, diff / 2 + 0.015);
               }
-            } catch {
-              // ignore
+            } catch (error) {
+              __wp_reportPickingIssue(App, error, {
+                where: 'canvasPicking.structuralCommit',
+                op: 'sketchDirectHit.drawer.externalChildBounds',
+                throttleMs: 1000,
+              });
             }
           }
 
@@ -346,8 +371,12 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           }
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      __wp_reportPickingIssue(App, error, {
+        where: 'canvasPicking.structuralCommit',
+        op: 'sketchDirectHit.drawer.externalRemove',
+        throttleMs: 1000,
+      });
     }
   }
 

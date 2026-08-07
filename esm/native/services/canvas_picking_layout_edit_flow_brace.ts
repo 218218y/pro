@@ -75,14 +75,14 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
           ? freshSketchHover.removeIdx
           : null;
       if (removeIdx == null) return;
-      __patchConfigForKey(
+      const committed = __patchConfigForKey(
         mapKey,
         cfg => {
           toggleBraceSketchShelfAtIndex(cfg, removeIdx);
         },
         createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
       );
-      __wp_clearSketchHover(App);
+      if (committed !== false) __wp_clearSketchHover(App);
       return;
     }
 
@@ -98,14 +98,14 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       ),
     });
     if (directSketchShelfMatch) {
-      __patchConfigForKey(
+      const committed = __patchConfigForKey(
         mapKey,
         cfg => {
           toggleBraceSketchShelfAtIndex(cfg, directSketchShelfMatch.index);
         },
         createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
       );
-      __wp_clearSketchHover(App);
+      if (committed !== false) __wp_clearSketchHover(App);
       return;
     }
 

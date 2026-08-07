@@ -95,7 +95,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         __wp_clearSketchHover(App);
         return true;
       }
-      __patchConfigForKey(
+      const committed = __patchConfigForKey(
         __activeModuleKey,
         cfg => {
           const boxes = ensureSketchModuleBoxes(cfg);
@@ -117,7 +117,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         },
         createCanvasPickingConfigStructuralPatchMeta(getSketchModuleBoxContentSource(contentKind))
       );
-      __wp_clearSketchHover(App);
+      if (committed !== false) __wp_clearSketchHover(App);
       return true;
     }
   }
@@ -135,7 +135,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         __wp_clearSketchHover(App);
         return true;
       }
-      __patchConfigForKey(
+      const committed = __patchConfigForKey(
         __activeModuleKey,
         cfg => {
           const boxes = ensureSketchModuleBoxes(cfg);
@@ -157,7 +157,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         },
         createCanvasPickingConfigStructuralPatchMeta(getSketchModuleBoxContentSource(contentKind))
       );
-      __wp_clearSketchHover(App);
+      if (committed !== false) __wp_clearSketchHover(App);
       return true;
     }
   }
@@ -215,7 +215,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
     const totalHeight = topY - bottomY;
     const yNorm = shelfHover.yNorm;
     if (!(totalHeight > 0) || typeof yNorm !== 'number' || !Number.isFinite(yNorm)) return false;
-    __patchConfigForKey(
+    const committed = __patchConfigForKey(
       __activeModuleKey,
       cfg => {
         const yNormClamped = Math.max(0, Math.min(1, Number(yNorm)));
@@ -232,7 +232,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       },
       createCanvasPickingConfigStructuralPatchMeta('sketch.hoverAddShelf')
     );
-    __wp_clearSketchHover(App);
+    if (committed !== false) __wp_clearSketchHover(App);
     return true;
   }
   if (shelfHover && shelfHover.op === 'remove') {

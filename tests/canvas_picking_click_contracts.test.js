@@ -9,6 +9,7 @@ const owner = read('esm/native/services/canvas_picking_core.ts');
 const clickFlow = read('esm/native/services/canvas_picking_click_flow.ts');
 const clickModeState = read('esm/native/services/canvas_picking_click_mode_state.ts');
 const clickModuleRefs = read('esm/native/services/canvas_picking_click_module_refs.ts');
+const structuralCommit = read('esm/native/services/canvas_picking_structural_commit.ts');
 const modulesPatchMeta = read('esm/native/services/canvas_picking_modules_patch_meta.ts');
 const configPatchMeta = read('esm/native/services/canvas_picking_config_patch_meta.ts');
 const doorAuthoringMeta = read('esm/native/services/canvas_picking_door_authoring_meta.ts');
@@ -115,14 +116,17 @@ test('canvas picking click owner stays thin and routes edit families through foc
 
   assert.match(clickModuleRefs, /export function createCanvasPickingClickModuleRefs\(/);
   assert.match(clickModuleRefs, /const __patchConfigForKey = \(/);
-  assert.match(
-    clickModuleRefs,
-    /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null => \{/
-  );
-  assert.match(clickModuleRefs, /typeof mods\.ensureForStack === 'function'/);
-  assert.match(clickModuleRefs, /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/);
+  assert.match(clickModuleRefs, /commitCanvasModuleStructuralPatch\(\{/);
+  assert.match(clickModuleRefs, /readCanvasModuleConfigForStack\(\{/);
+  assert.match(clickModuleRefs, /moduleKey: `corner:\$\{cellIdx\}`/);
   assert.doesNotMatch(clickModuleRefs, /ensureCornerCellAt/);
-  assert.match(clickModuleRefs, /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/);
+  assert.doesNotMatch(clickModuleRefs, /patchForStack/);
+  assert.doesNotMatch(clickModuleRefs, /ensureForStack/);
+  assert.match(structuralCommit, /getModulesActionFn<[\s\S]*>\(App, 'patchForStack'\)/);
+  assert.match(structuralCommit, /const draft = cloneStructuralValue\(cfg\)/);
+  assert.match(structuralCommit, /patchForStack\(stack, moduleKey, guardedMutation, meta\)/);
+  assert.match(structuralCommit, /writerRejected/);
+  assert.match(structuralCommit, /reconcileStructuralValue/);
   assert.match(
     modulesPatchMeta,
     /export function createCanvasPickingModulesStructuralPatchMeta\(source: string\): ActionMetaLike/
@@ -498,4 +502,18 @@ test('canvas picking click owner stays thin and routes edit families through foc
       '`services/canvas_picking_cell_dims_corner.ts` now stays a thin seam while the canonical corner contracts/context/effects surface lives behind `services/canvas_picking_cell_dims_corner_shared.ts`, per-cell corner width/height/depth policy lives in `services/canvas_picking_cell_dims_corner_cell.ts`, and global wing/connector width policy lives in the focused `services/canvas_picking_cell_dims_corner_global_state.ts` + `services/canvas_picking_cell_dims_corner_global_apply.ts` owners behind `services/canvas_picking_cell_dims_corner_global.ts`'
     )
   );
+});
+
+test('canvas structural authoring has one canonical modules patch seam', () => {
+  const servicesDir = new URL('../esm/native/services/', import.meta.url);
+  const directPatchOwners = fs
+    .readdirSync(servicesDir)
+    .filter(name => name.startsWith('canvas_picking') && name.endsWith('.ts'))
+    .filter(name => fs.readFileSync(new URL(name, servicesDir), 'utf8').includes('patchForStack'))
+    .sort();
+
+  assert.deepEqual(directPatchOwners, ['canvas_picking_structural_commit.ts']);
+  assert.match(structuralCommit, /writerUnavailable/);
+  assert.match(structuralCommit, /writerRejected/);
+  assert.match(structuralCommit, /mutationError/);
 });

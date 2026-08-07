@@ -39,7 +39,7 @@ function tryHandleCanvasLayoutPresetClick(args: CanvasLayoutEditClickArgs): bool
     return true;
   }
 
-  __patchConfigForKey(
+  const committed = __patchConfigForKey(
     __activeModuleKey,
     (cfg: LayoutConfigRecordLike) => {
       cfg.layout = __layoutType;
@@ -48,7 +48,7 @@ function tryHandleCanvasLayoutPresetClick(args: CanvasLayoutEditClickArgs): bool
     },
     createCanvasPickingConfigStructuralPatchMeta('layoutPreset')
   );
-  return true;
+  return committed !== false;
 }
 
 export function tryHandleCanvasLayoutEditClick(args: CanvasLayoutEditClickArgs): boolean {

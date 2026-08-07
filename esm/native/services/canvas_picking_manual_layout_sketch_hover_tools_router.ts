@@ -5,6 +5,7 @@ import { readManualLayoutSketchHoverRuntime } from './canvas_picking_manual_layo
 import type { ManualLayoutSketchHoverPreviewArgs } from './canvas_picking_manual_layout_sketch_hover_tools_shared.js';
 import { resolvePreferredManualLayoutSketchSelectorHit } from './canvas_picking_manual_layout_sketch_hover_tools_selector.js';
 import { resolveSketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 
 export function tryHandleManualLayoutSketchHoverPreviewImpl(
   args: ManualLayoutSketchHoverPreviewArgs
@@ -179,7 +180,13 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
       __wp_readSketchBoxDividerXNorm,
       __wp_writeSketchHover,
     });
-  } catch (_e) {}
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'canvasPicking.hover',
+      op: 'manualLayoutSketchHover.route',
+      throttleMs: 1000,
+    });
+  }
 
   return false;
 }

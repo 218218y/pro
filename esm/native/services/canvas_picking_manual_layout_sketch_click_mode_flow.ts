@@ -74,7 +74,7 @@ export function tryApplyManualLayoutSketchModeClick(args: ManualLayoutSketchClic
     isBottom: __isBottomStack,
   };
 
-  __patchConfigForKey(
+  const committed = __patchConfigForKey(
     __activeModuleKey,
     (cfg: RecordMap) => {
       if (
@@ -123,5 +123,5 @@ export function tryApplyManualLayoutSketchModeClick(args: ManualLayoutSketchClic
     },
     createCanvasPickingConfigStructuralPatchMeta('sketch.place')
   );
-  return true;
+  return committed !== false;
 }

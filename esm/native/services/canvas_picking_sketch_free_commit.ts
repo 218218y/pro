@@ -1,6 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type { ModuleKey } from './canvas_picking_manual_layout_sketch_contracts.js';
-import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { asRecord } from '../runtime/record.js';
 import {
   decodeSketchBoxContentCommandHover,
@@ -23,6 +22,7 @@ import {
 } from './canvas_picking_sketch_free_box_command.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
+import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
 
 type RecordMap = UnknownRecord;
 
@@ -74,22 +74,25 @@ function commitSketchFreePlacementContent(args: {
   contentKind: string;
   hoverRec: RecordMap;
   floorY: number;
-}): RecordMap | null {
+}): { found: boolean; nextHover: RecordMap | null } {
   const boxes = ensureSketchModuleBoxes(args.cfg);
   const box = findSketchModuleBoxById(boxes, args.boxId, { freePlacement: true });
-  if (!box) return null;
+  if (!box) return { found: false, nextHover: null };
 
-  return commitSketchModuleBoxContent({
-    App: args.App,
-    cfg: args.cfg,
-    box,
-    boxId: args.boxId,
-    contentKind: args.contentKind,
-    hoverRec: args.hoverRec,
-    floorY: args.floorY,
-    hoverMode: 'free-toggle',
-    hoverHost: { tool: readRecordString(args.hoverRec, 'tool') || '', ...args.host },
-  });
+  return {
+    found: true,
+    nextHover: commitSketchModuleBoxContent({
+      App: args.App,
+      cfg: args.cfg,
+      box,
+      boxId: args.boxId,
+      contentKind: args.contentKind,
+      hoverRec: args.hoverRec,
+      floorY: args.floorY,
+      hoverMode: 'free-toggle',
+      hoverHost: { tool: readRecordString(args.hoverRec, 'tool') || '', ...args.host },
+    }),
+  };
 }
 
 function commitSketchFreePlacementBox(args: {
@@ -152,11 +155,9 @@ export function createSketchFreePlacementBoxHoverRecord(
 export function commitSketchFreePlacementHoverRecord(
   args: CommitSketchFreePlacementHoverRecordArgs
 ): CommitSketchFreePlacementHoverRecordResult {
-  const mods = getModulesActions(args.App);
-  if (!mods || typeof mods.patchForStack !== 'function') return { committed: false };
-
   const contentKind = typeof args.freeBoxContentKind === 'string' ? args.freeBoxContentKind : '';
   const floorY = typeof args.floorY === 'number' ? args.floorY : NaN;
+  const stack = args.host.isBottom ? 'bottom' : 'top';
 
   const strictHover = decodeSketchBoxContentCommandHover(args.hoverRec);
   if (contentKind && strictHover.ok) {
@@ -171,12 +172,12 @@ export function commitSketchFreePlacementHoverRecord(
     }
 
     let nextHover: RecordMap | null = null;
-    let touched = false;
-    mods.patchForStack(
-      args.host.isBottom ? 'bottom' : 'top',
-      args.host.moduleKey,
-      (cfg: RecordMap) => {
-        nextHover = commitSketchFreePlacementContent({
+    const outcome = commitCanvasModuleStructuralPatch({
+      App: args.App,
+      stack,
+      moduleKey: args.host.moduleKey,
+      mutate: cfg => {
+        const result = commitSketchFreePlacementContent({
           App: args.App,
           host: args.host,
           cfg,
@@ -185,11 +186,14 @@ export function commitSketchFreePlacementHoverRecord(
           hoverRec: args.hoverRec,
           floorY,
         });
-        touched = true;
+        if (!result.found) return false;
+        nextHover = result.nextHover;
+        return true;
       },
-      createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree')
-    );
-    return touched ? { committed: true, nextHover } : { committed: false };
+      meta: createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree'),
+      op: 'sketchFree.content',
+    });
+    return outcome.committed && outcome.changed ? { committed: true, nextHover } : { committed: false };
   }
 
   const structuralHover = decodeSketchStructuralCommandHover(args.hoverRec);
@@ -204,12 +208,12 @@ export function commitSketchFreePlacementHoverRecord(
     }
 
     let nextHover: RecordMap | null = null;
-    let touched = false;
-    mods.patchForStack(
-      args.host.isBottom ? 'bottom' : 'top',
-      args.host.moduleKey,
-      (cfg: RecordMap) => {
-        nextHover = commitSketchFreePlacementContent({
+    const outcome = commitCanvasModuleStructuralPatch({
+      App: args.App,
+      stack,
+      moduleKey: args.host.moduleKey,
+      mutate: cfg => {
+        const result = commitSketchFreePlacementContent({
           App: args.App,
           host: args.host,
           cfg,
@@ -218,24 +222,26 @@ export function commitSketchFreePlacementHoverRecord(
           hoverRec: args.hoverRec,
           floorY,
         });
-        touched = true;
+        if (!result.found) return false;
+        nextHover = result.nextHover;
+        return true;
       },
-      createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree')
-    );
-    return touched ? { committed: true, nextHover } : { committed: false };
+      meta: createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree'),
+      op: 'sketchFree.structuralContent',
+    });
+    return outcome.committed && outcome.changed ? { committed: true, nextHover } : { committed: false };
   }
 
   const placement = decodeSketchFreeBoxPlacementHover(args.hoverRec);
   if (!placement.ok) return { committed: false };
 
-  let committed = false;
-  mods.patchForStack(
-    args.host.isBottom ? 'bottom' : 'top',
-    args.host.moduleKey,
-    (cfg: RecordMap) => {
-      committed = commitSketchFreePlacementBox({ cfg, command: placement.value });
-    },
-    createCanvasPickingModulesStructuralPatchMeta(args.boxSource || 'manualSketchBoxFree')
-  );
-  return committed ? { committed: true, nextHover: null } : { committed: false };
+  const outcome = commitCanvasModuleStructuralPatch({
+    App: args.App,
+    stack,
+    moduleKey: args.host.moduleKey,
+    mutate: cfg => commitSketchFreePlacementBox({ cfg, command: placement.value }),
+    meta: createCanvasPickingModulesStructuralPatchMeta(args.boxSource || 'manualSketchBoxFree'),
+    op: 'sketchFree.box',
+  });
+  return outcome.committed && outcome.changed ? { committed: true, nextHover: null } : { committed: false };
 }

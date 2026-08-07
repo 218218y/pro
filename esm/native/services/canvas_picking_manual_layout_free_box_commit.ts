@@ -2,7 +2,6 @@ import type { AppContainer } from '../../../types/index.js';
 
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
-import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import {
   __wp_clearSketchHover,
@@ -43,6 +42,7 @@ import {
   SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_structural_command.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
+import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 
 type ManualFreeVerticalRemovalContentKind = 'shelf' | 'rod' | 'storage';
@@ -144,9 +144,6 @@ function commitShelfGridHover(args: {
   host: SketchFreePlacementHostLike;
   hoverRec: RecordMap;
 }): boolean {
-  const mods = getModulesActions(args.App);
-  if (!mods || typeof mods.patchForStack !== 'function') return false;
-
   const command = readShelfGridFreeBoxCommand(args.hoverRec);
   if (!command) {
     __wp_clearSketchHover(args.App);
@@ -169,12 +166,13 @@ function commitShelfGridHover(args: {
     cellYNormMax,
   } = command;
 
-  mods.patchForStack(
-    args.host.isBottom ? 'bottom' : 'top',
-    args.host.moduleKey,
-    (cfg: RecordMap) => {
+  const outcome = commitCanvasModuleStructuralPatch({
+    App: args.App,
+    stack: args.host.isBottom ? 'bottom' : 'top',
+    moduleKey: args.host.moduleKey,
+    mutate: cfg => {
       const box = findSketchModuleBoxById(ensureSketchModuleBoxes(cfg), boxId, { freePlacement: true });
-      if (!box) return;
+      if (!box) return false;
       const shelves = ensureSketchBoxContentList(box, 'shelves') as RecordMap[];
       removeShelvesInGridCell({
         list: shelves,
@@ -192,11 +190,13 @@ function commitShelfGridHover(args: {
           ...(depthM != null && depthM > 0 ? { depthM } : {}),
         });
       }
+      return true;
     },
-    createCanvasPickingModulesStructuralPatchMeta('manualLayout.freeBoxShelfGrid')
-  );
-  __wp_clearSketchHover(args.App);
-  return true;
+    meta: createCanvasPickingModulesStructuralPatchMeta('manualLayout.freeBoxShelfGrid'),
+    op: 'manualLayout.freeBoxShelfGrid',
+  });
+  if (outcome.committed && outcome.changed) __wp_clearSketchHover(args.App);
+  return outcome.committed && outcome.changed;
 }
 
 function commitPresetLayoutHover(args: {
@@ -204,9 +204,6 @@ function commitPresetLayoutHover(args: {
   host: SketchFreePlacementHostLike;
   hoverRec: RecordMap;
 }): boolean {
-  const mods = getModulesActions(args.App);
-  if (!mods || typeof mods.patchForStack !== 'function') return false;
-
   const command = readPresetLayoutFreeBoxCommand(args.hoverRec);
   if (!command) {
     __wp_clearSketchHover(args.App);
@@ -232,12 +229,13 @@ function commitPresetLayoutHover(args: {
     cellYNormMax,
   } = command;
 
-  mods.patchForStack(
-    args.host.isBottom ? 'bottom' : 'top',
-    args.host.moduleKey,
-    (cfg: RecordMap) => {
+  const outcome = commitCanvasModuleStructuralPatch({
+    App: args.App,
+    stack: args.host.isBottom ? 'bottom' : 'top',
+    moduleKey: args.host.moduleKey,
+    mutate: cfg => {
       const box = findSketchModuleBoxById(ensureSketchModuleBoxes(cfg), boxId, { freePlacement: true });
-      if (!box) return;
+      if (!box) return false;
       if (
         rodYNorms.length > 0 &&
         blockRemovableSideContentBuildIfSketchBoxSideMissing({
@@ -249,7 +247,7 @@ function commitPresetLayoutHover(args: {
           freePlacement: true,
         })
       ) {
-        return;
+        return false;
       }
 
       const shelves = ensureSketchBoxContentList(box, 'shelves') as RecordMap[];
@@ -269,9 +267,7 @@ function commitPresetLayoutHover(args: {
           ...(depthM != null && depthM > 0 ? { depthM } : {}),
         });
       }
-      for (const yNorm of rodYNorms) {
-        rods.push({ id: createRandomId('sbc'), yNorm, xNorm: contentXNorm });
-      }
+      for (const yNorm of rodYNorms) rods.push({ id: createRandomId('sbc'), yNorm, xNorm: contentXNorm });
       if (storageYNorm != null) {
         storageBarriers.push({
           id: createRandomId('sbc'),
@@ -283,11 +279,13 @@ function commitPresetLayoutHover(args: {
               : INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM,
         });
       }
+      return true;
     },
-    createCanvasPickingModulesStructuralPatchMeta('layoutPreset.freeBox')
-  );
-  __wp_clearSketchHover(args.App);
-  return true;
+    meta: createCanvasPickingModulesStructuralPatchMeta('layoutPreset.freeBox'),
+    op: 'manualLayout.freeBoxPreset',
+  });
+  if (outcome.committed && outcome.changed) __wp_clearSketchHover(args.App);
+  return outcome.committed && outcome.changed;
 }
 
 function commitBraceShelvesHover(args: {
@@ -295,28 +293,25 @@ function commitBraceShelvesHover(args: {
   host: SketchFreePlacementHostLike;
   hoverRec: RecordMap;
 }): boolean {
-  const mods = getModulesActions(args.App);
-  if (!mods || typeof mods.patchForStack !== 'function') return false;
-
   const command = readBraceShelvesFreeBoxCommand(args.hoverRec);
   if (!command) {
     __wp_clearSketchHover(args.App);
     return true;
   }
   const { boxId } = command;
-  let updated = false;
-  mods.patchForStack(
-    args.host.isBottom ? 'bottom' : 'top',
-    args.host.moduleKey,
-    (cfg: RecordMap) => {
+  const outcome = commitCanvasModuleStructuralPatch({
+    App: args.App,
+    stack: args.host.isBottom ? 'bottom' : 'top',
+    moduleKey: args.host.moduleKey,
+    mutate: cfg => {
       const box = findSketchModuleBoxById(ensureSketchModuleBoxes(cfg), boxId, { freePlacement: true });
-      if (!box) return;
-      updated = updateFreeBoxShelfVariant({ box, command });
+      return box ? updateFreeBoxShelfVariant({ box, command }) : false;
     },
-    createCanvasPickingModulesStructuralPatchMeta('braceShelves.freeBoxToggle')
-  );
-  __wp_clearSketchHover(args.App);
-  return updated;
+    meta: createCanvasPickingModulesStructuralPatchMeta('braceShelves.freeBoxToggle'),
+    op: 'manualLayout.freeBoxBraceToggle',
+  });
+  if (outcome.committed && outcome.changed) __wp_clearSketchHover(args.App);
+  return outcome.committed && outcome.changed;
 }
 
 export function tryCommitPresetLayoutFreeBoxFromHover(App: AppContainer): boolean {

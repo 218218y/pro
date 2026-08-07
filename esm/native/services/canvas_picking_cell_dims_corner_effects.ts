@@ -1,7 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { getUiFeedback } from '../runtime/service_access.js';
-import { getModulesActions } from '../runtime/actions_access.js';
 import { patchUiSoft } from '../runtime/ui_write_access.js';
 import { __wp_commitHistoryTouch } from './canvas_picking_core_helpers.js';
 import { requestCanvasPickingCommitStructuralRefresh } from './canvas_picking_structural_refresh.js';
@@ -12,6 +11,7 @@ import {
 } from '../features/modules_configuration/corner_cells_api.js';
 import type { CornerConfigShape } from './canvas_picking_cell_dims_corner_contracts.js';
 import { asRecord, reportCornerDimsIssue } from './canvas_picking_cell_dims_corner_context.js';
+import { commitCanvasModuleStructuralReplacement } from './canvas_picking_structural_commit.js';
 
 type FeedbackShape = { updateEditStateToast?: (message: string, sticky?: boolean) => unknown };
 
@@ -48,16 +48,21 @@ export function patchCornerConfigForStack(
   op: string,
   stackKey: 'top' | 'bottom' = 'top'
 ): void {
-  try {
-    const meta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
-    const modulesActions = getModulesActions(App);
-    const patchForStack = modulesActions?.patchForStack;
-    if (typeof patchForStack !== 'function') {
-      throw new Error('[WardrobePro][canvas_picking_cell_dims] actions.modules.patchForStack is required.');
-    }
-    patchForStack(stackKey, 'corner', nextCornerCfg, meta);
-  } catch (_e) {
-    reportCornerDimsIssue(App, _e, op);
+  const meta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
+  const committed = commitCanvasModuleStructuralReplacement({
+    App,
+    stack: stackKey,
+    moduleKey: 'corner',
+    nextConfig: nextCornerCfg,
+    meta,
+    op: `cellDims.corner.${op}`,
+  });
+  if (!committed) {
+    reportCornerDimsIssue(
+      App,
+      new Error('[WardrobePro][canvas_picking_cell_dims] corner structural commit was rejected.'),
+      op
+    );
   }
 }
 

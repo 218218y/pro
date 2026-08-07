@@ -26,7 +26,6 @@ import {
   isBaseLegStageUiState,
   willHeightDepthTargetCreateActiveSpecialOverride,
 } from '../features/base_leg_stage_special_dims_guard.js';
-import { getModulesActions } from '../runtime/actions_access_domains.js';
 import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
@@ -35,6 +34,7 @@ import { __wp_toModuleKey, __wp_toast } from './canvas_picking_core_helpers.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
 import { readToastFn } from './canvas_picking_cell_dims_linear_shared.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
+import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
 
 export type CanvasFreeBoxCellDimsArgs = {
   App: AppContainer;
@@ -381,25 +381,25 @@ export function tryHandleCanvasFreeBoxCellDimsClick(args: CanvasFreeBoxCellDimsA
   const moduleKey = resolveModuleKey(args);
   if (!boxId || moduleKey == null) return false;
 
-  const mods = getModulesActions(args.App);
-  if (!mods || typeof mods.patchForStack !== 'function') return false;
-
   let outcome: { changed: boolean; removedHex: boolean; appliedHex: boolean } = {
     changed: false,
     removedHex: false,
     appliedHex: false,
   };
   const source = args.hexCellMode ? 'cellDims.freeBox.hex.apply' : 'cellDims.freeBox.apply';
-  mods.patchForStack(
-    args.isBottomStack ? 'bottom' : 'top',
+  const commit = commitCanvasModuleStructuralPatch({
+    App: args.App,
+    stack: args.isBottomStack ? 'bottom' : 'top',
     moduleKey,
-    (cfg: ModuleConfigLike) => {
+    mutate: (cfg: ModuleConfigLike) => {
       outcome = updateFreeBox({ cfg, boxId, clickArgs: args });
+      return outcome.changed;
     },
-    createCanvasPickingModulesStructuralPatchMeta(source)
-  );
+    meta: createCanvasPickingModulesStructuralPatchMeta(source),
+    op: 'cellDims.freeBox',
+  });
 
-  if (!outcome.changed) return true;
+  if (!commit.committed || !commit.changed || !outcome.changed) return true;
 
   if (outcome.removedHex) emitToast(args.App, 'הקופסא חזרה לתא רגיל');
   else if (outcome.appliedHex) emitToast(args.App, 'הקופסא הוגדרה כתא משושה');

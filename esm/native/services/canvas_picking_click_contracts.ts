@@ -74,7 +74,7 @@ export type CanvasPickingClickModuleRefs = {
     mk: ModuleKey | 'corner' | null,
     patchFn: (cfg: ModuleConfigLike) => void,
     meta: ActionMetaLike
-  ) => void;
+  ) => boolean;
   __getActiveConfigRef: () => ModuleConfigLike | null;
   __ensureCornerCellConfigRef: (cellIdx: number) => ModuleConfigLike | null;
 };

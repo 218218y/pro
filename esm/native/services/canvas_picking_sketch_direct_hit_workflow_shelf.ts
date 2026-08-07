@@ -1,5 +1,6 @@
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import { asConfig } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
@@ -24,6 +25,7 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
     __hoverOk,
     __hoverKind,
     __hoverOp,
+    App,
   } = args;
 
   if (__hoverOk && (__hoverKind !== 'shelf' || __hoverOp !== 'remove')) return false;
@@ -48,7 +50,7 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
 
         const targetY = bottomY + shelfIndex * step;
         if (Math.abs(shelfHitY - targetY) <= 0.035) {
-          __patchConfigForKey(
+          const committed = __patchConfigForKey(
             __activeModuleKey,
             cfg0 => {
               const cfg = asConfig(cfg0);
@@ -61,12 +63,16 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
             },
             createCanvasPickingConfigStructuralPatchMeta('sketch.toggleBaseShelf')
           );
-          return true;
+          return committed !== false;
         }
       }
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'canvasPicking.structuralCommit',
+      op: 'sketchDirectHit.shelf',
+      throttleMs: 1000,
+    });
   }
 
   return false;
