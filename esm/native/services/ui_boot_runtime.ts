@@ -8,6 +8,7 @@ import {
   ensureUiBootRuntimeService,
   getUiBootRuntimeState,
   markUiBootDidInit,
+  resetUiBootDidInit,
   setUiBootBooting,
   setUiBootBuildScheduled,
 } from '../runtime/ui_boot_state_access.js';
@@ -30,27 +31,62 @@ function reportBootRuntimeSoft(report: BootReporter | undefined, op: string, err
   try {
     report?.(op, err);
   } catch {
-    // ignore reporter failures
+    // Reporter isolation is best-effort by definition.
   }
+}
+
+function rejectedBootRuntimeWrite(op: string): Error {
+  return new Error(`[WardrobePro][uiBootRuntime] ${op} was rejected by its canonical owner.`);
 }
 
 function getUiBootReadyTimersState(App: AppContainer): UiBootReadyTimersState {
   return ensureUiBootRuntimeService(App) as UiBootReadyTimersState;
 }
 
-function clearUiBootReadyTimers(App: AppContainer): void {
+function writeRuntimeSystemReady(App: AppContainer, on: boolean, report?: BootReporter): boolean {
+  const op = `runtime.setSystemReady(${String(on)})`;
+  try {
+    const result = setRuntimeSystemReady(App, on, RUNTIME_READY_META);
+    if (result === false) {
+      reportBootRuntimeSoft(report, op, rejectedBootRuntimeWrite(op));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    reportBootRuntimeSoft(report, op, err);
+    return false;
+  }
+}
+
+function writeAutosaveAllowed(App: AppContainer, on: boolean, report?: BootReporter): boolean {
+  const op = `autosave.allow=${String(on)}`;
+  try {
+    if (setAutosaveAllowed(App, on)) return true;
+    reportBootRuntimeSoft(report, op, rejectedBootRuntimeWrite(op));
+    return false;
+  } catch (err) {
+    reportBootRuntimeSoft(report, op, err);
+    return false;
+  }
+}
+
+function clearUiBootReadyTimers(App: AppContainer, report?: BootReporter): void {
   const service = getUiBootReadyTimersState(App);
   const timers = getBrowserTimers(App);
 
-  try {
-    if (service.__systemReadyTimer != null) timers.clearTimeout(service.__systemReadyTimer);
-  } catch {
-    // ignore timer cleanup failures
+  if (service.__systemReadyTimer != null) {
+    try {
+      timers.clearTimeout(service.__systemReadyTimer);
+    } catch (err) {
+      reportBootRuntimeSoft(report, 'timers.clearSystemReady', err);
+    }
   }
-  try {
-    if (service.__clearBootingTimer != null) timers.clearTimeout(service.__clearBootingTimer);
-  } catch {
-    // ignore timer cleanup failures
+  if (service.__clearBootingTimer != null) {
+    try {
+      timers.clearTimeout(service.__clearBootingTimer);
+    } catch (err) {
+      reportBootRuntimeSoft(report, 'timers.clearBooting', err);
+    }
   }
 
   service.__systemReadyTimer = null;
@@ -59,22 +95,45 @@ function clearUiBootReadyTimers(App: AppContainer): void {
     typeof service.__readyTimersToken === 'number' ? service.__readyTimersToken + 1 : 1;
 }
 
+function clearUiBootFlags(App: AppContainer, report?: BootReporter, resetDidInit = false): void {
+  try {
+    setUiBootBooting(App, false);
+  } catch (err) {
+    reportBootRuntimeSoft(report, 'uiBootRuntime.booting=false', err);
+  }
+  try {
+    setUiBootBuildScheduled(App, false, null);
+  } catch (err) {
+    reportBootRuntimeSoft(report, 'uiBootRuntime.buildScheduled=false', err);
+  }
+  if (resetDidInit) {
+    try {
+      resetUiBootDidInit(App);
+    } catch (err) {
+      reportBootRuntimeSoft(report, 'uiBootRuntime.didInit=false', err);
+    }
+  }
+}
+
 export function beginUiBootSession(App: AppContainer): boolean {
   getUiBootRuntimeState(App);
   if (!markUiBootDidInit(App)) return false;
-  setUiBootBooting(App, true);
-  setUiBootBuildScheduled(App, false, null);
-  return true;
+  try {
+    setUiBootBooting(App, true);
+    setUiBootBuildScheduled(App, false, null);
+    return true;
+  } catch (err) {
+    // A session that could not publish its initial flags must remain retryable.
+    resetUiBootDidInit(App);
+    throw err;
+  }
 }
 
 export function installUiBootReadyTimers(App: AppContainer, report?: BootReporter): void {
-  try {
-    setRuntimeSystemReady(App, false, RUNTIME_READY_META);
-  } catch (err) {
-    reportBootRuntimeSoft(report, 'runtime.setSystemReady(false)', err);
-  }
+  writeRuntimeSystemReady(App, false, report);
+  writeAutosaveAllowed(App, false, report);
 
-  clearUiBootReadyTimers(App);
+  clearUiBootReadyTimers(App, report);
   const timers = getBrowserTimers(App);
   const service = getUiBootReadyTimersState(App);
   const token = service.__readyTimersToken || 0;
@@ -82,18 +141,16 @@ export function installUiBootReadyTimers(App: AppContainer, report?: BootReporte
   service.__systemReadyTimer = timers.setTimeout(() => {
     if (service.__readyTimersToken !== token) return;
     service.__systemReadyTimer = null;
+    if (!writeRuntimeSystemReady(App, true, report)) return;
+    if (!writeAutosaveAllowed(App, true, report)) return;
     try {
-      setRuntimeSystemReady(App, true, RUNTIME_READY_META);
-    } catch (err) {
-      reportBootRuntimeSoft(report, 'runtime.setSystemReady(true)', err);
-    }
-    try {
-      setAutosaveAllowed(App, true);
-    } catch (err) {
-      reportBootRuntimeSoft(report, 'autosave.allow=true', err);
-    }
-    try {
-      logViaPlatform(App, 'System Ready. Autosave active.');
+      if (!logViaPlatform(App, 'System Ready. Autosave active.')) {
+        reportBootRuntimeSoft(
+          report,
+          'util.log(systemReady)',
+          rejectedBootRuntimeWrite('util.log(systemReady)')
+        );
+      }
     } catch (err) {
       reportBootRuntimeSoft(report, 'util.log(systemReady)', err);
     }
@@ -102,29 +159,26 @@ export function installUiBootReadyTimers(App: AppContainer, report?: BootReporte
   service.__clearBootingTimer = timers.setTimeout(() => {
     if (service.__readyTimersToken !== token) return;
     service.__clearBootingTimer = null;
-    try {
-      setUiBootBooting(App, false);
-      setUiBootBuildScheduled(App, false, null);
-    } catch (err) {
-      reportBootRuntimeSoft(report, 'uiBootRuntime.clear', err);
-    }
+    clearUiBootFlags(App, report);
   }, 2500);
 }
 
-export function clearUiBootRuntimeState(App: AppContainer): void {
+export function clearUiBootRuntimeState(App: AppContainer, report?: BootReporter): void {
   try {
-    clearUiBootReadyTimers(App);
-  } catch {
-    // ignore
+    clearUiBootReadyTimers(App, report);
+  } catch (err) {
+    reportBootRuntimeSoft(report, 'timers.clearAll', err);
   }
+  clearUiBootFlags(App, report);
+}
+
+export function abortUiBootSession(App: AppContainer, report?: BootReporter): void {
   try {
-    setUiBootBooting(App, false);
-  } catch {
-    // ignore
+    clearUiBootReadyTimers(App, report);
+  } catch (err) {
+    reportBootRuntimeSoft(report, 'timers.abortClearAll', err);
   }
-  try {
-    setUiBootBuildScheduled(App, false, null);
-  } catch {
-    // ignore
-  }
+  clearUiBootFlags(App, report, true);
+  writeRuntimeSystemReady(App, false, report);
+  writeAutosaveAllowed(App, false, report);
 }

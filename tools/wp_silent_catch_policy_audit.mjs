@@ -13,10 +13,10 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   features: 12,
   io: 4,
   kernel: 19,
-  platform: 61,
+  platform: 53,
   runtime: 126,
-  services: 93,
-  ui: 211,
+  services: 87,
+  ui: 207,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,
@@ -25,10 +25,10 @@ const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   features: 1,
   io: 0,
   kernel: 10,
-  platform: 15,
+  platform: 7,
   runtime: 0,
   services: 0,
-  ui: 26,
+  ui: 24,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/camera_access.ts',
@@ -82,7 +82,9 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/canvas_picking_click_manual_sketch_free_flow.ts',
   'esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts',
   'esm/native/runtime/app_helpers.ts',
+  'esm/native/platform/boot_main.ts',
   'esm/native/platform/render_scheduler.ts',
+  'esm/native/ui/boot_main.ts',
   'esm/native/ui/react/actions/modes_actions.ts',
 ]);
 

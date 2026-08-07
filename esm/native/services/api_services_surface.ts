@@ -26,6 +26,7 @@ export {
   sanitizeNotesHtmlViaService,
   exitNotesDrawModeViaService,
   subscribeNotesDrawMode,
+  abortUiBootSession,
   beginUiBootSession,
   clearUiBootRuntimeState,
   clearRetiredUiBootStart,

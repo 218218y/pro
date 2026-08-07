@@ -131,3 +131,50 @@ test('installLifecycleVisibility heals missing and drifted handlers in place wit
   assert.equal(App.lifecycleHandlers.onWindowFocus, focusRef);
   assert.equal(App.lifecycleHandlers.onWindowPageShow, App.lifecycleHandlers.__wpOnWindowPageShow);
 });
+
+test('platform boot runtime state: failed entry stays retryable and never publishes bootReady/initDone', () => {
+  const reports: Array<{ op?: string }> = [];
+  let attempts = 0;
+  const App: any = {
+    deps: { THREE: {} },
+    lifecycle: { bootReady: false },
+    platform: {
+      reportError(_error: unknown, ctx?: { op?: string }) {
+        reports.push(ctx || {});
+      },
+      util: {
+        afterPaint(cb: () => void) {
+          cb();
+        },
+      },
+    },
+    services: {
+      appStart: {
+        start() {
+          attempts += 1;
+          throw new Error('boot entry exploded');
+        },
+      },
+    },
+  };
+
+  const boot = installBootMain(App);
+  assert.doesNotThrow(() => boot.start?.());
+  assert.equal(attempts, 1);
+  assert.equal(isPlatformBootInitDone(App), false);
+  assert.equal(isPlatformBootInitRunning(App), false);
+  assert.equal(App.lifecycle.bootReady, false);
+  assert.equal(boot.isReady?.(), false);
+  assert.ok(reports.some(ctx => ctx.op === 'boot.start.entry'));
+
+  App.services.appStart.start = () => {
+    attempts += 1;
+  };
+
+  assert.doesNotThrow(() => boot.start?.());
+  assert.equal(attempts, 2);
+  assert.equal(isPlatformBootInitDone(App), true);
+  assert.equal(isPlatformBootInitRunning(App), false);
+  assert.equal(App.lifecycle.bootReady, true);
+  assert.equal(boot.isReady?.(), true);
+});

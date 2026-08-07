@@ -38,6 +38,12 @@ export function markUiBootDidInit(App: unknown): boolean {
   return true;
 }
 
+export function resetUiBootDidInit(App: unknown): boolean {
+  const service = ensureUiBootRuntimeService(App);
+  service.didInit = false;
+  return service.didInit === false;
+}
+
 export function setUiBootBooting(App: unknown, next: boolean): boolean {
   const service = ensureUiBootRuntimeService(App);
   service.booting = next === true;

@@ -308,3 +308,29 @@ test('entering a different primary mode clears any active divider drawer session
   assert.deepEqual(setOpenIdCalls, [null]);
   assert.equal(consumeDrawerRebuildIntent(App), null);
 });
+
+test('primary mode UI mirror reports failed store reads and subscription installation without breaking install healing', () => {
+  const ops: string[] = [];
+  const App = {
+    services: {
+      platform: {
+        reportError(_error: unknown, ctx?: { op?: string }) {
+          if (ctx?.op) ops.push(ctx.op);
+        },
+      },
+    },
+    store: {
+      getState() {
+        throw new Error('mode mirror read failed');
+      },
+      subscribe() {
+        throw new Error('mode mirror subscribe failed');
+      },
+    },
+  } as any;
+
+  const render = installUiPrimaryMode(App);
+  assert.equal(typeof render, 'function');
+  assert.ok(ops.includes('effects.apply'));
+  assert.ok(ops.includes('effects.subscribe'));
+});

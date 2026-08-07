@@ -278,11 +278,18 @@ test('ui boot fail-fast: missing RoomDesign wiring throws and clears boot runtim
 
   assert.throws(() => bootMain(App), /RoomDesign service missing|expected App\.services\.roomDesign/);
   assert.deepEqual(getUiBootRuntimeState(App), {
-    didInit: true,
+    didInit: false,
     booting: false,
     bootBuildScheduled: false,
     bootBuildArgs: null,
   });
+
+  App.services.roomDesign = { buildRoom() {} };
+  assert.doesNotThrow(
+    () => bootMain(App),
+    'failed UI boot sessions must remain retryable after wiring is repaired'
+  );
+  assert.equal(getUiBootRuntimeState(App).didInit, true);
 });
 
 test('ui boot fail-fast: missing store reactivity wiring throws before boot completes', () => {

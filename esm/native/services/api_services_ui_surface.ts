@@ -82,7 +82,12 @@ export {
   sanitizeNotesHtmlViaService,
 } from '../runtime/notes_access.js';
 
-export { beginUiBootSession, clearUiBootRuntimeState, installUiBootReadyTimers } from './ui_boot_runtime.js';
+export {
+  abortUiBootSession,
+  beginUiBootSession,
+  clearUiBootRuntimeState,
+  installUiBootReadyTimers,
+} from './ui_boot_runtime.js';
 
 export {
   VIEWER_MEASUREMENT_MODE_ID,

@@ -43,8 +43,8 @@ function resolveUiBootEntry(App: AppContainer): (() => unknown) | null {
   try {
     const uiBoot = getUiBootServiceMaybe(App);
     if (uiBoot && typeof uiBoot.bootMain === 'function') return uiBoot.bootMain.bind(uiBoot);
-  } catch {
-    // ignore
+  } catch (err) {
+    softReport(App, 'uiBoot.resolve', err);
   }
   return null;
 }

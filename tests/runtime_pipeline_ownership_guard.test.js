@@ -64,7 +64,8 @@ test('runtime pipeline ownership keeps free-box preview and commit on one typed 
   assert.match(commit, /readShelfGridFreeBoxCommand/);
   assert.match(commit, /readPresetLayoutFreeBoxCommand/);
   assert.match(commit, /readBraceShelvesFreeBoxCommand/);
-  assert.match(commit, /getModulesActions/);
+  assert.match(commit, /commitCanvasModuleStructuralPatch/);
+  assert.doesNotMatch(commit, /getModulesActions|patchForStack/);
 });
 
 test('runtime pipeline ownership keeps the order PDF editor surface as a grouped-prop compositor', () => {

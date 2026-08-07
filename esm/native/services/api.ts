@@ -149,6 +149,7 @@ export {
   ensureUiNotesService,
   exitNotesDrawModeViaService,
   subscribeNotesDrawMode,
+  abortUiBootSession,
   beginUiBootSession,
   clearUiBootRuntimeState,
   clearRetiredUiBootStart,

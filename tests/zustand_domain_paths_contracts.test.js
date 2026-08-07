@@ -175,18 +175,22 @@ test('[zustand-domain] module/corner stack and config paths stay on canonical ac
   assert.match(clickModuleRefs, /const __patchConfigForKey = \(/);
   assert.match(
     clickModuleRefs,
-    /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null => \{/
+    /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null =>/
   );
-  assert.match(clickModuleRefs, /typeof mods\.ensureForStack === 'function'/);
-  assert.match(clickModuleRefs, /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/);
+  assert.match(clickModuleRefs, /readCanvasModuleConfigForStack\(\{/);
+  assert.match(clickModuleRefs, /moduleKey: `corner:\$\{cellIdx\}`/);
   assert.doesNotMatch(clickModuleRefs, /ensureCornerCellAt/);
-  assert.match(clickModuleRefs, /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/);
+  assert.match(clickModuleRefs, /commitCanvasModuleStructuralPatch\(\{/);
+  assert.match(clickModuleRefs, /op: 'clickModuleRefs\.patch'/);
+  assert.doesNotMatch(clickModuleRefs, /getModulesActions|patchForStack|ensureForStack/);
   assert.doesNotMatch(canvasPicking, /if \(App\.stateKernel\) \{\s*__patchConfigForKey\(/);
   assert.doesNotMatch(canvasPicking, /App\?\.stateKernel\?\.ensureCornerCellConfig/);
   assert.doesNotMatch(canvasPicking, /sk\.ensureModuleConfigForStack\(__activeStack, mk\)/);
   assert.doesNotMatch(canvasPicking, /sk\.patchModuleConfigForStack\(__activeStack, mk, patchFn, meta\)/);
-  assert.match(cellDimsCornerEffects, /getModulesActions\(App\)/);
-  assert.match(cellDimsCornerEffects, /patchForStack\(stackKey, 'corner', nextCornerCfg, meta\)/);
+  assert.match(cellDimsCornerEffects, /commitCanvasModuleStructuralReplacement\(\{/);
+  assert.match(cellDimsCornerEffects, /moduleKey: 'corner'/);
+  assert.match(cellDimsCornerEffects, /op: `cellDims\.corner\.\$\{op\}`/);
+  assert.doesNotMatch(cellDimsCornerEffects, /getModulesActions|patchForStack/);
   assert.doesNotMatch(cellDimsCornerEffects, /setCfgCornerConfiguration|patchCornerConfigurationForStack/);
 
   assert.match(domainModulesCorner, /delete modulesActions\[key\]/);

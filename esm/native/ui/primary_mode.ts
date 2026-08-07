@@ -13,6 +13,7 @@ import {
   ensureUiModesRuntimeService,
   getStoreSubscriber,
   getStoreSurfaceMaybe,
+  reportError,
 } from '../services/api.js';
 import { toggleBodyClass } from './dom_helpers.js';
 
@@ -22,6 +23,10 @@ import type {
   UiPrimaryModeEffectsStoreLike,
   UnknownRecord,
 } from '../../../types';
+
+function reportPrimaryModeMirrorFailure(App: AppContainer, op: string, error: unknown): void {
+  reportError(App, error, { where: 'native/ui/primary_mode', op, fatal: false }, { consoleOutput: false });
+}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -88,11 +93,13 @@ export function renderPrimaryModeUI(
         setDataAttr(doc.body, 'wpPrimaryMode', String(m));
         toggleBodyClass(doc, 'wp-primary-mode-active', !!(m && m !== NONE));
       }
-    } catch (_) {}
+    } catch (error) {
+      reportPrimaryModeMirrorFailure(App, 'render.domMirror', error);
+    }
     // React-only path: panel refresh is driven by store/React renders.
-
-    // React-only path: panel refresh is driven by store/React renders.
-  } catch (_) {}
+  } catch (error) {
+    reportPrimaryModeMirrorFailure(App, 'render', error);
+  }
 }
 
 export function installUiPrimaryMode(
@@ -121,8 +128,8 @@ export function installUiPrimaryMode(
           if (cur === last) return;
           last = cur;
           renderPrimaryModeUI(App, cur, readModesRecord(MODES));
-        } catch (_) {
-          // ignore
+        } catch (error) {
+          reportPrimaryModeMirrorFailure(App, 'effects.apply', error);
         }
       };
     }
@@ -139,21 +146,23 @@ export function installUiPrimaryMode(
 
     try {
       effects.apply?.();
-    } catch (_) {
-      // ignore
+    } catch (error) {
+      reportPrimaryModeMirrorFailure(App, 'effects.initialApply', error);
     }
 
     if (createdApply || !isLiveCleanupHandle(effects.unsub)) {
       try {
         const subscribe = getStoreSubscriber(App);
         effects.unsub = subscribe ? subscribe(() => effects.apply?.()) : null;
-      } catch (_) {
+      } catch (error) {
         effects.unsub = null;
+        reportPrimaryModeMirrorFailure(App, 'effects.subscribe', error);
       }
     }
 
     return effects.render || null;
-  } catch (_) {
+  } catch (error) {
+    reportPrimaryModeMirrorFailure(App, 'install', error);
     return (mode?: string | null, modes?: UnknownRecord | null) => renderPrimaryModeUI(App, mode, modes);
   }
 }

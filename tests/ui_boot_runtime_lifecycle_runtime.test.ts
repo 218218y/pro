@@ -151,11 +151,38 @@ test('ui boot runtime lifecycle keeps one ready-timer owner and stale callbacks 
     { on: false, source: 'ui/boot_main' },
   ]);
   assert.equal(logs.length, 0);
-  assert.equal(App.services.autosave.allow, undefined);
+  assert.equal(App.services.autosave.allow, false);
   assert.deepEqual(getUiBootRuntimeState(App), {
     didInit: true,
     booting: false,
     bootBuildScheduled: false,
     bootBuildArgs: null,
   });
+});
+
+test('ui boot runtime lifecycle: rejected system-ready write keeps autosave disabled and reports the stale mirror', () => {
+  const { App, logs, readyWrites, timers } = createAppHarness();
+  const reports: Array<{ op: string; message: string }> = [];
+  const originalSetScalar = App.actions.runtime.setScalar;
+  App.actions.runtime.setScalar = (key: string, value: unknown, meta: { source: string }) => {
+    originalSetScalar(key, value, meta);
+    if (key === 'systemReady' && value === true) return false;
+    return undefined;
+  };
+
+  beginUiBootSession(App);
+  installUiBootReadyTimers(App, (op, err) => {
+    reports.push({ op, message: err instanceof Error ? err.message : String(err) });
+  });
+
+  assert.equal(App.services.autosave.allow, false);
+  timers.advance(1100);
+
+  assert.deepEqual(readyWrites, [
+    { on: false, source: 'ui/boot_main' },
+    { on: true, source: 'ui/boot_main' },
+  ]);
+  assert.equal(App.services.autosave.allow, false, 'autosave must not activate when systemReady is rejected');
+  assert.equal(logs.length, 0, 'ready log must not claim convergence after a rejected runtime mirror');
+  assert.ok(reports.some(entry => entry.op === 'runtime.setSystemReady(true)'));
 });

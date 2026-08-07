@@ -14,8 +14,8 @@ import {
   ensureUiBootService,
   isUiBootMainInstalled,
   markUiBootMainInstalled,
+  abortUiBootSession,
   beginUiBootSession,
-  clearUiBootRuntimeState,
   installUiBootReadyTimers,
   installStableSurfaceMethod,
 } from '../services/api.js';
@@ -63,7 +63,7 @@ export function bootMain(App: AppContainer) {
     installUiBootInteractions(App, ctx, reporter);
     installUiBootReadyTimers(App, reporter.soft);
   } catch (err) {
-    clearUiBootRuntimeState(App);
+    abortUiBootSession(App, reporter.soft);
     throw err;
   }
 }

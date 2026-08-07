@@ -128,16 +128,16 @@ test('[statekernel audit] notes, boot, and canvas writers stay on canonical acti
     assert,
     canvasPickingBundle,
     [
-      /getModulesActions\(App\)/,
-      /mods\.patchForStack\(__activeStack, mk, patchFn, meta\)/,
-      /mods\.ensureForStack\('top', `corner:\$\{cellIdx\}`\)/,
+      /commitCanvasModuleStructuralPatch\(\{/,
+      /readCanvasModuleConfigForStack\(\{/,
+      /moduleKey: `corner:\$\{cellIdx\}`/,
     ],
     'canvas picking bundle'
   );
-  assertMatchesAny(
+  assertLacksAll(
     assert,
     canvasPickingBundle,
-    [/mods\.ensureForStack\(__activeStack, mk\)/, /getModulesActionFn<[\s\S]*?\(App, 'ensureForStack'\)/],
+    [/getModulesActions\(App\)/, /mods\.patchForStack/, /mods\.ensureForStack/],
     'canvas picking bundle'
   );
   assertLacksAll(
