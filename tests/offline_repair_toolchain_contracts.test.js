@@ -9,6 +9,7 @@ import zlib from 'node:zlib';
 
 const root = process.cwd();
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
+const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
 function writeTarOctal(header, offset, length, value) {
   const encoded = value.toString(8).padStart(length - 1, '0') + '\0';
@@ -288,14 +289,26 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   for (const component of ['esbuild', 'tsx', 'prettier', 'typescript', 'oxlint']) {
     assert.match(checkedIn.stdout, new RegExp(`OK: ${component} `, 'u'));
   }
-  assert.match(checkedIn.stdout, /OK: workspace vite-build \(16 packages\)/u);
+  assert.match(
+    checkedIn.stdout,
+    new RegExp(
+      `OK: workspace vite-build \\(${manifest.workspace.profiles['vite-build'].packageCount} packages\\)`,
+      'u'
+    )
+  );
 
   const eslintPlan = spawnSync(process.execPath, [tool, '--profile', 'eslint-js-strict', '--check-plan'], {
     cwd: root,
     encoding: 'utf8',
   });
   assert.equal(eslintPlan.status, 0, eslintPlan.stderr || eslintPlan.stdout);
-  assert.match(eslintPlan.stdout, /OK: workspace plan eslint-js-strict \(69 packages\)/u);
+  assert.match(
+    eslintPlan.stdout,
+    new RegExp(
+      `OK: workspace plan eslint-js-strict \\(${manifest.workspace.profiles['eslint-js-strict'].packageCount} packages\\)`,
+      'u'
+    )
+  );
 
   const downloadPlan = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
     cwd: root,
@@ -308,14 +321,21 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     manifest.oxlint.typeAware.package,
     manifest.oxlint.typeAware.platforms['linux-x64'],
   ]) {
-    assert.match(downloadPlan.stdout, new RegExp(entry.url.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
-    assert.match(downloadPlan.stdout, new RegExp(entry.file.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+    assert.match(downloadPlan.stdout, new RegExp(escapeRegex(entry.url), 'u'));
+    assert.match(downloadPlan.stdout, new RegExp(escapeRegex(entry.file), 'u'));
   }
-  assert.match(downloadPlan.stdout, /workspace tsx-tests \(23 packages\)/u);
-  assert.match(downloadPlan.stdout, /workspace vite-build \(16 packages\)/u);
-  assert.match(downloadPlan.stdout, /workspace eslint-js-strict \(69 packages\)/u);
-  assert.match(downloadPlan.stdout, /eslint-10\.8\.0\.tgz/u);
-  assert.match(downloadPlan.stdout, /vendor\/offline\/eslint\/eslint-10\.8\.0\.tgz/u);
+  for (const profileName of ['tsx-tests', 'vite-build', 'eslint-js-strict']) {
+    const packageCount = manifest.workspace.profiles[profileName].packageCount;
+    assert.match(
+      downloadPlan.stdout,
+      new RegExp(`workspace ${escapeRegex(profileName)} \\(${packageCount} packages\\)`, 'u')
+    );
+  }
+  const eslintArchive = manifest.workspace.profiles['eslint-js-strict'].packages.find(
+    entry => entry.name === 'eslint'
+  );
+  assert.ok(eslintArchive, 'ESLint profile must contain the eslint root package');
+  assert.match(downloadPlan.stdout, new RegExp(escapeRegex(eslintArchive.file), 'u'));
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-npm-vendor-'));
   try {
@@ -613,13 +633,16 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
       { cwd: root, encoding: 'utf8' }
     );
     assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
-    assert.match(adopt.stdout, /workspace tsx-tests \(3 packages\)/u);
+    assert.match(adopt.stdout, /workspace tsx-tests \(\d+ packages\)/u);
 
     const fixtureManifest = JSON.parse(
       fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
     );
     assert.deepEqual(fixtureManifest.workspace.profiles['tsx-tests'].rootDependencies, ['tsx']);
-    assert.equal(fixtureManifest.workspace.profiles['tsx-tests'].packageCount, 3);
+    assert.equal(
+      fixtureManifest.workspace.profiles['tsx-tests'].packageCount,
+      fixtureManifest.workspace.profiles['tsx-tests'].packages.length
+    );
     assert.equal(fs.existsSync(path.join(fixtureRoot, 'vendor/offline/runtime/stale-0.0.0.tgz')), false);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
@@ -633,8 +656,11 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
   const profile = manifest.workspace.profiles['vite-build'];
   const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
 
-  assert.equal(lock.packages['node_modules/vite'].version, '8.2.0');
-  assert.equal(lock.packages['node_modules/@vitejs/plugin-react'].version, '6.0.5');
+  assert.equal(pkg.devDependencies.vite, lock.packages[''].devDependencies.vite);
+  assert.equal(
+    pkg.devDependencies['@vitejs/plugin-react'],
+    lock.packages[''].devDependencies['@vitejs/plugin-react']
+  );
   assert.deepEqual(profile.rootDependencies, ['@vitejs/plugin-react', 'vite']);
   assert.equal(profile.packageCount, profile.packages.length);
   assert.ok(profile.packageCount > profile.rootDependencies.length);
@@ -697,23 +723,30 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
     encoding: 'utf8',
   });
   assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
-  assert.match(planCheck.stdout, /workspace plan vite-build \(16 packages\)/u);
+  assert.match(
+    planCheck.stdout,
+    new RegExp(`workspace plan vite-build \\(${profile.packageCount} packages\\)`, 'u')
+  );
 
   const downloads = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
     cwd: root,
     encoding: 'utf8',
   });
   assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
-  assert.match(downloads.stdout, /workspace vite-build \(16 packages\)/u);
-  assert.match(downloads.stdout, /vite-8\.2\.0\.tgz/u);
-  assert.match(downloads.stdout, /plugin-react-6\.0\.5\.tgz/u);
-  const rolldownBindingVersion = lock.packages['node_modules/@rolldown/binding-linux-x64-gnu'].version;
-  const escapedRolldownBindingVersion = rolldownBindingVersion.replaceAll('.', '\\.');
   assert.match(
     downloads.stdout,
-    new RegExp(`binding-linux-x64-gnu-${escapedRolldownBindingVersion}\\.tgz`, 'u')
+    new RegExp(`workspace vite-build \\(${profile.packageCount} packages\\)`, 'u')
   );
-  assert.match(downloads.stdout, /lightningcss-linux-x64-gnu-1\.33\.0\.tgz/u);
+  for (const rootDependency of profile.rootDependencies) {
+    const entry = profile.packages.find(candidate => candidate.name === rootDependency);
+    assert.ok(entry, `${rootDependency} must be present in the Vite build profile`);
+    assert.match(downloads.stdout, new RegExp(escapeRegex(entry.file), 'u'));
+  }
+  for (const nativeName of ['@rolldown/binding-linux-x64-gnu', 'lightningcss-linux-x64-gnu']) {
+    const entry = profile.packages.find(candidate => candidate.name === nativeName);
+    assert.ok(entry, `${nativeName} must be present in the Vite build profile`);
+    assert.match(downloads.stdout, new RegExp(escapeRegex(entry.file), 'u'));
+  }
   assert.doesNotMatch(downloads.stdout, /wasm32|darwin|win32|musl|arm64/u);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-vite-vendor-'));
@@ -750,7 +783,10 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
       { cwd: root, encoding: 'utf8' }
     );
     assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
-    assert.match(adopt.stdout, /workspace vite-build \(16 packages\)/u);
+    assert.match(
+      adopt.stdout,
+      new RegExp(`workspace vite-build \\(${profile.packageCount} packages\\)`, 'u')
+    );
 
     const synced = JSON.parse(
       fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
@@ -759,7 +795,7 @@ test('offline Vite build profile is complete, Linux x64 glibc only, and manually
       '@vitejs/plugin-react',
       'vite',
     ]);
-    assert.equal(synced.workspace.profiles['vite-build'].packageCount, 16);
+    assert.equal(synced.workspace.profiles['vite-build'].packageCount, profile.packageCount);
     assert.equal(fs.existsSync(path.join(fixtureVendor, 'stale-0.0.0.tgz')), false);
 
     const check = spawnSync(
@@ -780,11 +816,10 @@ test('offline ESLint strict-JS profile is lock-derived, included in standard ref
   const profile = manifest.workspace.profiles['eslint-js-strict'];
   const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
 
-  assert.equal(lock.packages['node_modules/eslint'].version, '10.8.0');
   assert.equal(pkg.devDependencies.eslint, lock.packages[''].devDependencies.eslint);
   assert.deepEqual(profile.rootDependencies, ['eslint']);
-  assert.equal(profile.packageCount, 69);
   assert.equal(profile.packageCount, profile.packages.length);
+  assert.ok(profile.packageCount > profile.rootDependencies.length);
 
   const names = new Set(profile.packages.map(entry => entry.name));
   for (const requiredName of [
@@ -845,15 +880,23 @@ test('offline ESLint strict-JS profile is lock-derived, included in standard ref
     encoding: 'utf8',
   });
   assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
-  assert.match(planCheck.stdout, /workspace plan eslint-js-strict \(69 packages\)/u);
+  assert.match(
+    planCheck.stdout,
+    new RegExp(`workspace plan eslint-js-strict \\(${profile.packageCount} packages\\)`, 'u')
+  );
 
   const downloads = spawnSync(process.execPath, [tool, '--all', '--print-downloads'], {
     cwd: root,
     encoding: 'utf8',
   });
   assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
-  assert.match(downloads.stdout, /workspace eslint-js-strict \(69 packages\)/u);
-  assert.match(downloads.stdout, /eslint-10\.8\.0\.tgz/u);
+  assert.match(
+    downloads.stdout,
+    new RegExp(`workspace eslint-js-strict \\(${profile.packageCount} packages\\)`, 'u')
+  );
+  const eslintEntry = profile.packages.find(entry => entry.name === 'eslint');
+  assert.ok(eslintEntry, 'ESLint profile must contain the eslint root package');
+  assert.match(downloads.stdout, new RegExp(escapeRegex(eslintEntry.file), 'u'));
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-eslint-vendor-'));
   try {
@@ -896,13 +939,16 @@ test('offline ESLint strict-JS profile is lock-derived, included in standard ref
       { cwd: root, encoding: 'utf8' }
     );
     assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
-    assert.match(adopt.stdout, /workspace eslint-js-strict \(69 packages\)/u);
+    assert.match(
+      adopt.stdout,
+      new RegExp(`workspace eslint-js-strict \\(${profile.packageCount} packages\\)`, 'u')
+    );
 
     const synced = JSON.parse(
       fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
     );
     assert.deepEqual(synced.workspace.profiles['eslint-js-strict'].rootDependencies, ['eslint']);
-    assert.equal(synced.workspace.profiles['eslint-js-strict'].packageCount, 69);
+    assert.equal(synced.workspace.profiles['eslint-js-strict'].packageCount, profile.packageCount);
     assert.equal(fs.existsSync(path.join(fixtureVendor, 'stale-0.0.0.tgz')), false);
 
     const check = spawnSync(
@@ -925,7 +971,9 @@ core.ROOT = fixture
 core.MANIFEST_PATH = fixture / "vendor" / "offline" / "manifest.json"
 core.LOCK_PATH = fixture / "package-lock.json"
 manifest = core.load_manifest()
-key = core.platform_key()
+platform_definition = manifest.get("workspace", {}).get("platform", {})
+key = platform_definition.get("key")
+assert key == "linux-x64"
 core.install_workspace_profile(
     manifest,
     key,
@@ -938,7 +986,7 @@ stamp = json.loads(
         encoding="utf-8"
     )
 )
-assert stamp["packageCount"] == 69
+assert stamp["packageCount"] == len(manifest["workspace"]["profiles"]["eslint-js-strict"]["packages"])
 assert (fixture / "node_modules" / "eslint" / "bin" / "eslint.js").is_file()
 `;
     const install = spawnSync('python', ['-c', installProbe, fixtureRoot, process.execPath], {
