@@ -77,7 +77,7 @@ export function createCanvasPointerInteractionOps(
         if (dx > opts.clickMaxDistPx || dy > opts.clickMaxDistPx) isClick = false;
       }
     } catch {
-      // swallow
+      // pointer-compatibility: coordinate probing may fail on exotic events; preserve the conservative click decision.
     }
 
     state.hasDown = false;

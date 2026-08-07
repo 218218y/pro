@@ -44,12 +44,12 @@ function applySketchManualToolSnap(App: AppLike): void {
       try {
         d.isOpen = false;
       } catch (_e2) {
-        // ignore
+        // drawer-fallback: a non-writable isOpen flag must not prevent position recovery for other drawers.
       }
       try {
         if (d.group.position && typeof d.group.position.copy === 'function') d.group.position.copy(d.closed);
       } catch (_e3) {
-        // ignore
+        // drawer-fallback: an individual position copy failure must not abort recovery for remaining drawers.
       }
     }
   }
@@ -68,7 +68,7 @@ function applyManualLayoutModeOpts(App: AppLike, opts: ModeActionOptsLike): void
     try {
       if (tools && typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(null);
     } catch (_e0) {
-      // ignore
+      // tool-mirror-best-effort: clearing the open-drawer id is secondary to entering the requested sketch tool.
     }
     applySketchManualToolSnap(App);
   } catch (err) {

@@ -33,12 +33,12 @@ export function createUiBootReporter(App: AppContainer): UiBootReporterLike {
     try {
       Reflect.set(err, 'cause', cause);
     } catch {
-      // ignore
+      // error-metadata-best-effort: a frozen Error object may reject cause attachment without affecting boot failure propagation.
     }
     try {
       Reflect.set(err, '__wpBootOp', op);
     } catch {
-      // ignore
+      // error-metadata-best-effort: a frozen Error object may reject operation metadata without affecting boot failure propagation.
     }
     return err;
   };

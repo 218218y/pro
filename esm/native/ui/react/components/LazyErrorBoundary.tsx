@@ -48,7 +48,7 @@ function tryReloadViaDi(app: unknown): void {
   try {
     readReloadLocation(app)?.reload();
   } catch {
-    // ignore
+    // recovery-best-effort: reload may be unavailable; the lazy-load fallback UI remains usable.
   }
 }
 
@@ -73,7 +73,7 @@ export class LazyErrorBoundary extends Component<Props, State> {
         label: this.props.label || null,
       });
     } catch {
-      // ignore
+      // reporter-isolation: lazy-load diagnostics must not throw from the React error boundary itself.
     }
   }
 

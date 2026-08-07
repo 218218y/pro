@@ -106,7 +106,7 @@ export function getGoogleClientIdFromEnvOrDefault(): string {
     const envId = readImportMetaEnv()?.VITE_GOOGLE_CLIENT_ID;
     if (typeof envId === 'string' && envId.trim()) return envId.trim();
   } catch {
-    // ignore
+    // build-env-probe: fall back to the configured default client id when import.meta.env is unavailable.
   }
   return DEFAULT_GOOGLE_CLIENT_ID;
 }

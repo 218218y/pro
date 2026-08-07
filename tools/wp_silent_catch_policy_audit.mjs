@@ -16,7 +16,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   platform: 42,
   runtime: 99,
   services: 84,
-  ui: 183,
+  ui: 158,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,
@@ -40,7 +40,7 @@ const EXPECTED_VAGUE_CATCH_COMMENTS_BY_LAYER = Object.freeze({
   platform: 23,
   runtime: 41,
   services: 0,
-  ui: 78,
+  ui: 0,
 });
 const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/camera_access.ts',
@@ -88,6 +88,18 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/services/canvas_picking_cell_dims_free_box.ts',
   'esm/native/services/canvas_picking_door_sketch_box_edit.ts',
   'esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts',
+  'esm/native/ui/notes_service_shared.ts',
+  'esm/native/ui/notes_service_runtime.ts',
+  'esm/native/ui/react/actions/builder_actions.ts',
+  'esm/native/ui/react/actions/interactive_actions.ts',
+  'esm/native/ui/react/actions/room_actions.ts',
+  'esm/native/ui/react/actions/store_actions_runtime.ts',
+  'esm/native/ui/react/tabs/interior_tab_workflows_controller_manual.ts',
+  'esm/native/ui/react/tabs/interior_tab_workflows_controller_shared.ts',
+  'esm/native/ui/react/tabs/settings_visual_display_controller_runtime.ts',
+  'esm/native/ui/react/tabs/settings_visual_shared_interactions.ts',
+  'esm/native/ui/multicolor_service.ts',
+  'esm/native/ui/modes.ts',
   'esm/native/services/canvas_picking_toggle_flow_sketch_free_box.ts',
   'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelf.ts',
   'esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts',

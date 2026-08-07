@@ -43,14 +43,14 @@ export function TabsBar<T extends string>(props: TabsProps<T>) {
             try {
               if (onHoverTab) onHoverTab(t.id);
             } catch {
-              // ignore
+              // prefetch-best-effort: hover prefetch failure must not interfere with tab interaction.
             }
           }}
           onFocus={() => {
             try {
               if (onHoverTab) onHoverTab(t.id);
             } catch {
-              // ignore
+              // prefetch-best-effort: focus prefetch failure must not interfere with keyboard tab interaction.
             }
           }}
           onClick={(e: import('react').MouseEvent<HTMLDivElement>) => {

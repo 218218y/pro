@@ -75,7 +75,7 @@ export function useNotesOverlayControllerState(args: {
         typingCommitTokenRef.current += 1;
         getBrowserTimers(App).clearTimeout(handle || undefined);
       } catch {
-        // ignore
+        // timer-cleanup-best-effort: stale typing timers must not block overlay teardown.
       }
       typingCommitTimerRef.current = null;
 
@@ -83,7 +83,7 @@ export function useNotesOverlayControllerState(args: {
         clearNotesEditorAsync(App, editorFocusAsyncStateRef.current);
         clearNotesEditorAsync(App, editorSelectionAsyncStateRef.current);
       } catch {
-        // ignore
+        // async-cleanup-best-effort: stale editor focus/selection jobs must not block overlay teardown.
       }
     };
   }, [App, editorFocusAsyncStateRef, editorSelectionAsyncStateRef]);

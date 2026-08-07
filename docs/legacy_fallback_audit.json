@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-08-07T08:43:49.090Z",
+  "generatedAt": "2026-08-07T09:31:44.781Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 133,
-    "totalFiles": 68,
+    "totalOccurrences": 144,
+    "totalFiles": 78,
     "byCategory": {
       "runtime-default": 13,
-      "domain-default": 94,
+      "domain-default": 101,
       "error-message-default": 0,
       "framework-default": 2,
-      "browser-adapter": 2,
-      "project-migration": 10,
+      "browser-adapter": 4,
+      "project-migration": 11,
       "external-api-compat": 0,
-      "compat-boundary": 0,
+      "compat-boundary": 1,
       "test-fixture": 6,
       "legacy-runtime-risk": 6,
       "unknown": 0
@@ -394,10 +394,40 @@
           "domain-default": 3
         }
       },
+      "esm/native/ui/interactions/history_ui_shortcut_guard.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
       "esm/native/ui/interactions/viewer_resize.ts": {
         "total": 2,
         "categories": {
           "browser-adapter": 2
+        }
+      },
+      "esm/native/ui/modes_mode_opts.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/ui/react/boot_react_ui.tsx": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/ui/react/components/AppErrorBoundary.tsx": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/ui/react/components/LazyErrorBoundary.tsx": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
@@ -406,10 +436,40 @@
           "framework-default": 1
         }
       },
+      "esm/native/ui/react/release_asset_recovery.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
       "esm/native/ui/react/sidebar_app.tsx": {
         "total": 1,
         "categories": {
           "framework-default": 1
+        }
+      },
+      "esm/native/ui/react/sidebar_shared.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
+      "esm/native/ui/react/tabs/interior_tab_workflows_controller_shared.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/ui/runtime/ui_runtime.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
         }
       },
       "esm/native/ui/ui_boot_controller_reporter.ts": {
@@ -1498,6 +1558,13 @@
       "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
     },
     {
+      "file": "esm/native/ui/interactions/history_ui_shortcut_guard.ts",
+      "line": 23,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// DOM-probe-fallback: if closest/activeElement probing fails, continue with the document-level suspension check."
+    },
+    {
       "file": "esm/native/ui/interactions/viewer_resize.ts",
       "line": 156,
       "term": "fallback",
@@ -1512,6 +1579,41 @@
       "text": "// browser-capability-fallback: host-window animation-frame scheduling failed; use canonical timers."
     },
     {
+      "file": "esm/native/ui/modes_mode_opts.ts",
+      "line": 47,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// drawer-fallback: a non-writable isOpen flag must not prevent position recovery for other drawers."
+    },
+    {
+      "file": "esm/native/ui/modes_mode_opts.ts",
+      "line": 52,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// drawer-fallback: an individual position copy failure must not abort recovery for remaining drawers."
+    },
+    {
+      "file": "esm/native/ui/react/boot_react_ui.tsx",
+      "line": 57,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// console-fallback-isolation: debug toast logging is optional and must never break UI boot."
+    },
+    {
+      "file": "esm/native/ui/react/components/AppErrorBoundary.tsx",
+      "line": 34,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// recovery-best-effort: reload may be unavailable; the error boundary fallback remains usable."
+    },
+    {
+      "file": "esm/native/ui/react/components/LazyErrorBoundary.tsx",
+      "line": 51,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// recovery-best-effort: reload may be unavailable; the lazy-load fallback UI remains usable."
+    },
+    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 58,
       "term": "fallback",
@@ -1519,11 +1621,46 @@
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
     },
     {
+      "file": "esm/native/ui/react/release_asset_recovery.ts",
+      "line": 101,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// reporter-isolation: asset-recovery diagnostics must not interfere with the recovery fallback itself."
+    },
+    {
       "file": "esm/native/ui/react/sidebar_app.tsx",
       "line": 92,
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"
+    },
+    {
+      "file": "esm/native/ui/react/sidebar_shared.ts",
+      "line": 91,
+      "term": "fallback",
+      "category": "project-migration",
+      "text": "// config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list."
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
+      "line": 30,
+      "term": "fallback",
+      "category": "browser-adapter",
+      "text": "// browser-input-fallback: programmatic file-input click may be blocked; the explicit click path remains available."
+    },
+    {
+      "file": "esm/native/ui/react/tabs/interior_tab_workflows_controller_shared.ts",
+      "line": 119,
+      "term": "toggleFallback",
+      "category": "domain-default",
+      "text": "reportUiNonFatal(app, 'interiorDrawerModeBootstrap.toggleFallback', error, {"
+    },
+    {
+      "file": "esm/native/ui/runtime/ui_runtime.ts",
+      "line": 101,
+      "term": "legacy",
+      "category": "compat-boundary",
+      "text": "// cleanup-isolation: one legacy disposer failure must not prevent the runtime cleanup sequence."
     },
     {
       "file": "esm/native/ui/ui_boot_controller_reporter.ts",

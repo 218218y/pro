@@ -29,6 +29,6 @@ export function clearInputValue(input: unknown): void {
     const target = getInputTarget(input);
     if (target && 'value' in target) target.value = '';
   } catch {
-    // ignore
+    // DOM-cleanup-best-effort: clearing the file input value is secondary to completing backup import handling.
   }
 }

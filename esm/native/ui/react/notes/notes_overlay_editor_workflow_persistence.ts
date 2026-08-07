@@ -280,7 +280,7 @@ export function useNotesOverlayEditorWorkflowPersistence(
         setSizePaletteOpen(false);
         setActive(null);
       } catch {
-        // ignore
+        // local-ui-cleanup-best-effort: closing transient editor chrome must not invalidate the completed note deletion.
       }
 
       try {
@@ -288,7 +288,7 @@ export function useNotesOverlayEditorWorkflowPersistence(
         const toast = !showToast && typeof fb?.toast === 'function' ? fb.toast : null;
         (showToast || toast)?.('הפתק נמחק', 'info');
       } catch {
-        // ignore
+        // feedback-best-effort: deletion toast failure must not invalidate the completed note deletion.
       }
     },
     [

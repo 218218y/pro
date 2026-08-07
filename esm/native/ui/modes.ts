@@ -16,6 +16,7 @@ import {
   getPrimaryModeValue,
   buildModeActionOptsFingerprint,
   isModeActiveValue,
+  modesReportNonFatal,
   isRecord,
 } from './modes_shared.js';
 import { applyModeOptsImpl } from './modes_mode_opts.js';
@@ -73,15 +74,15 @@ function hasLiveCleanupHandle(value: unknown): boolean {
   return typeof value === 'function' || !!readCleanupUnsubscribe(value);
 }
 
-function callCleanupHandle(value: unknown): void {
+function callCleanupHandle(App: AppLike, value: unknown): void {
   try {
     if (typeof value === 'function') {
       value();
       return;
     }
     readCleanupUnsubscribe(value)?.();
-  } catch {
-    // ignore
+  } catch (error) {
+    modesReportNonFatal(App, 'esm/native/ui/modes.ts:cleanupHandle', error);
   }
 }
 
@@ -111,8 +112,8 @@ function ensureModesControllerSurface(App: AppLike): ModesControllerApi {
         lastKey = key;
 
         onPrimaryModeChanged(App, prev, primary, opts);
-      } catch (_e) {
-        // ignore
+      } catch (error) {
+        modesReportNonFatal(App, 'esm/native/ui/modes.ts:apply', error);
       }
     };
   }
@@ -133,14 +134,14 @@ function ensureModesControllerSurface(App: AppLike): ModesControllerApi {
   }
 
   if (createdApply && hasLiveCleanupHandle(api.unsub)) {
-    callCleanupHandle(api.unsub);
+    callCleanupHandle(App, api.unsub);
     api.unsub = null;
   }
 
   try {
     api.apply();
-  } catch (_e) {
-    // ignore
+  } catch (error) {
+    modesReportNonFatal(App, 'esm/native/ui/modes.ts:initialApply', error);
   }
 
   if (createdApply || !hasLiveCleanupHandle(api.unsub)) {

@@ -1,6 +1,7 @@
 import type { AppContainer, TimeoutHandleLike, UnknownRecord } from '../../../../../types';
 import { getBrowserTimers, MODES } from '../../../services/api.js';
 import { toggleIntDrawerMode as interiorToggleIntDrawerMode } from '../actions/interior_actions.js';
+import { reportUiNonFatal } from '../../feedback_shared.js';
 import {
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
   SKETCH_BOX_OPTIONAL_DIM_MIN_CM,
@@ -67,8 +68,10 @@ export function clearInteriorDrawerModeBootstrap(app: AppContainer): void {
   pending.handle = null;
   try {
     pending.clearTimeoutFn(handle);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(app, 'interiorDrawerModeBootstrap.clearTimer', error, {
+      where: 'native/ui/react/tabs/interior',
+    });
   }
 }
 
@@ -84,8 +87,10 @@ export function scheduleInteriorDrawerModeBootstrap(app: AppContainer): void {
       clearTimeoutFn: handle => {
         try {
           timers.clearTimeout(handle || undefined);
-        } catch {
-          // ignore
+        } catch (error) {
+          reportUiNonFatal(app, 'interiorDrawerModeBootstrap.timerCleanup', error, {
+            where: 'native/ui/react/tabs/interior',
+          });
         }
       },
     };
@@ -96,8 +101,10 @@ export function scheduleInteriorDrawerModeBootstrap(app: AppContainer): void {
       current.handle = null;
       try {
         interiorToggleIntDrawerMode(app);
-      } catch {
-        // ignore
+      } catch (error) {
+        reportUiNonFatal(app, 'interiorDrawerModeBootstrap.toggle', error, {
+          where: 'native/ui/react/tabs/interior',
+        });
       }
     }, 0);
     state.handle = pending;
@@ -108,7 +115,9 @@ export function scheduleInteriorDrawerModeBootstrap(app: AppContainer): void {
   }
   try {
     interiorToggleIntDrawerMode(app);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(app, 'interiorDrawerModeBootstrap.toggleFallback', error, {
+      where: 'native/ui/react/tabs/interior',
+    });
   }
 }

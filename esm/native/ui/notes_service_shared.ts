@@ -17,6 +17,7 @@ import {
   getMetaActions as getMetaActionsDomain,
   setNotesScreenDrawMode,
 } from '../services/api.js';
+import { reportUiNonFatal } from './feedback_shared.js';
 
 export type NotesNamespace = NotesNamespaceLike;
 export type NotesServiceApp = NotesServiceAppLike;
@@ -84,8 +85,8 @@ export function patchSavedNotes(
     if (!setSavedNotesViaActions(App, notes, meta)) {
       throw new Error('Missing actions.config.setSavedNotes');
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(App, 'notes.patchSavedNotes', error, { where: 'native/ui/notes' });
   }
 }
 
@@ -116,8 +117,8 @@ export function wireUiNotesService(App: NotesServiceApp, notesNs: NotesNamespace
       setNotesScreenDrawMode(App, true);
       try {
         ensureNotesRuntime(notesNs).onEnterDrawMode?.();
-      } catch {
-        // ignore
+      } catch (error) {
+        reportUiNonFatal(App, 'notes.enterScreenDrawMode.hook', error, { where: 'native/ui/notes' });
       }
     };
   }
@@ -127,8 +128,8 @@ export function wireUiNotesService(App: NotesServiceApp, notesNs: NotesNamespace
       setNotesScreenDrawMode(App, false);
       try {
         ensureNotesRuntime(notesNs).onExitDrawMode?.();
-      } catch {
-        // ignore
+      } catch (error) {
+        reportUiNonFatal(App, 'notes.exitScreenDrawMode.hook', error, { where: 'native/ui/notes' });
       }
     };
   }

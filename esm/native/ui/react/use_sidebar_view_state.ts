@@ -19,6 +19,7 @@ import {
   readEventTargetElement,
 } from './sidebar_shared.js';
 import { scheduleReactBackgroundWarmup } from './background_warmup.js';
+import { reportUiNonFatal } from '../feedback_shared.js';
 import {
   clearSidebarBackgroundExit,
   createSidebarBackgroundExitState,
@@ -102,8 +103,8 @@ export function useSidebarViewState(): SidebarViewState {
       if (next) {
         setUiActiveTab(app, next, meta.uiOnlyImmediate('react:site2:clampActiveTab'));
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportUiNonFatal(app, 'sidebar.clampSite2ActiveTab', error, { where: 'native/ui/react/sidebar' });
     }
   }, [isSite2, gateOpen, enabledTabs, enabledSet, active, app, meta]);
 
@@ -113,8 +114,8 @@ export function useSidebarViewState(): SidebarViewState {
       if (activeSafe === active) return;
       if (isSite2 && !enabledSet.has(activeSafe)) return;
       setUiActiveTab(app, activeSafe, meta.uiOnlyImmediate('react:tabs:clampRemoved'));
-    } catch {
-      // ignore
+    } catch (error) {
+      reportUiNonFatal(app, 'sidebar.clampRemovedActiveTab', error, { where: 'native/ui/react/sidebar' });
     }
   }, [active, activeSafe, isSite2, enabledSet, app, meta]);
 
@@ -200,13 +201,15 @@ export function useSidebarViewState(): SidebarViewState {
                 cursor: 'default',
                 source: 'react:sidebar:bgclick',
               });
-            } catch {
-              // ignore
+            } catch (error) {
+              reportUiNonFatal(app, 'sidebar.backgroundExit.transition', error, {
+                where: 'native/ui/react/sidebar',
+              });
             }
           },
         });
-      } catch {
-        // ignore
+      } catch (error) {
+        reportUiNonFatal(app, 'sidebar.backgroundExit.schedule', error, { where: 'native/ui/react/sidebar' });
       }
     },
     [primaryMode, app]

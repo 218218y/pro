@@ -5,6 +5,7 @@ import {
   setRuntimeSketchMode as setRuntimeSketchModeApi,
 } from '../../../services/api.js';
 import { runAppStructuralModulesRecompute } from '../../../services/api.js';
+import { reportUiNonFatal, reportUiRejected } from '../../feedback_shared.js';
 
 function setRuntimeGlobalClickMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
   void setRuntimeGlobalClickModeApi(app, !!on, meta);
@@ -21,9 +22,24 @@ function recomputeFromUi(
   opts?: ModulesRecomputeFromUiOptionsLike
 ): void {
   try {
-    void runAppStructuralModulesRecompute(app, uiArg, meta, { source: 'react:recomputeFromUi' }, opts, {});
-  } catch {
-    // ignore
+    const result = runAppStructuralModulesRecompute(
+      app,
+      uiArg,
+      meta,
+      { source: 'react:recomputeFromUi' },
+      opts,
+      {}
+    );
+    if (result === false) {
+      reportUiRejected(
+        app,
+        'storeActions.recomputeFromUi',
+        'Structural module recompute was rejected.',
+        'native/ui/react/actions'
+      );
+    }
+  } catch (error) {
+    reportUiNonFatal(app, 'storeActions.recomputeFromUi', error, { where: 'native/ui/react/actions' });
   }
 }
 

@@ -90,7 +90,7 @@ function safeBodyCursor(App: AppLike, cursor: string): void {
     if (!body || !body.style) return;
     body.style.cursor = cursor;
   } catch (_e) {
-    // ignore
+    // DOM-mirror-best-effort: cursor styling failure must not block the canonical mode transition.
   }
 }
 
@@ -112,7 +112,7 @@ function safeRestoreScrollTop(App: AppLike, scrollPos: number): void {
     const el = getScrollRoot(getDocumentMaybe(App));
     if (el && typeof el.scrollTop === 'number') el.scrollTop = pos;
   } catch (_e) {
-    // ignore
+    // DOM-mirror-best-effort: scroll restoration failure must not block the canonical mode transition.
   }
 }
 
@@ -121,7 +121,7 @@ function safeBlurActiveElement(App: AppLike): void {
     const ae = asActiveElement(asDocumentWithScroll(getDocumentMaybe(App))?.activeElement);
     if (ae && typeof ae.blur === 'function') ae.blur();
   } catch (_e) {
-    // ignore
+    // DOM-mirror-best-effort: active-element blur failure must not block the canonical mode transition.
   }
 }
 

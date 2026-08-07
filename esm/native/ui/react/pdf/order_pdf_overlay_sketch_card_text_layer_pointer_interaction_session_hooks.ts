@@ -109,7 +109,7 @@ export function useOrderPdfSketchTextLayerInteractionSession(
       try {
         event.preventDefault();
       } catch {
-        // ignore
+        // event-compatibility: preventDefault failure must not invalidate the committed pointer interaction.
       }
     };
 
@@ -120,7 +120,7 @@ export function useOrderPdfSketchTextLayerInteractionSession(
       try {
         event.preventDefault();
       } catch {
-        // ignore
+        // event-compatibility: preventDefault failure must not invalidate the active drag interaction.
       }
     };
 

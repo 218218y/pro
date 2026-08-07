@@ -64,7 +64,7 @@ export function installCanvasInteractions(
         try {
           fn();
         } catch {
-          // ignore
+          // cleanup-best-effort: one disposer must not prevent the remaining interaction listeners from being released.
         }
       }
     } catch (err) {

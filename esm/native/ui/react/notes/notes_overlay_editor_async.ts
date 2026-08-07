@@ -30,7 +30,7 @@ function clearTimeoutHandle(App: unknown, handle: NotesEditorTimeoutHandle | nul
   try {
     getBrowserTimers(App).clearTimeout(handle);
   } catch {
-    // ignore
+    // timer-cleanup-best-effort: timeout cancellation is secondary to invalidating the async token.
   }
 }
 
@@ -39,7 +39,7 @@ function cancelAnimationHandle(App: unknown, handle: NotesEditorAnimationHandle 
   try {
     getBrowserTimers(App).cancelAnimationFrame(handle);
   } catch {
-    // ignore
+    // frame-cleanup-best-effort: animation-frame cancellation is secondary to invalidating the async token.
   }
 }
 

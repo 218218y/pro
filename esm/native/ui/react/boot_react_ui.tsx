@@ -54,7 +54,7 @@ function createConsoleToast(): (msg: string, type?: string) => void {
     try {
       console.log('[toast]', type || 'info', msg);
     } catch {
-      // swallow
+      // console-fallback-isolation: debug toast logging is optional and must never break UI boot.
     }
   };
 }

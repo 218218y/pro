@@ -51,7 +51,7 @@ test('silent-catch policy keeps current production ratchets exact and functional
   assert.equal(result.inventory.bareFileCount, bareFileCountFromEntries);
   assert.equal(result.inventory.bareFileCount, 0);
   assert.equal(result.inventory.vagueTotal, vagueTotalFromLayers);
-  for (const layer of ['builder', 'features', 'kernel', 'services']) {
+  for (const layer of ['builder', 'features', 'kernel', 'services', 'ui']) {
     assert.equal(
       result.inventory.vagueByLayer[layer] || 0,
       0,

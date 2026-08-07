@@ -26,7 +26,7 @@ export function clearSidebarBackgroundExit(App: AppContainer, state: SidebarBack
   try {
     getBrowserTimers(App).clearTimeout(handle);
   } catch {
-    // ignore
+    // timer-cleanup-best-effort: stale background-exit timeout cancellation must not block state reset.
   }
 }
 

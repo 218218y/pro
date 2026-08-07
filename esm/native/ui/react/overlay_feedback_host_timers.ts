@@ -47,7 +47,7 @@ function clearTimeoutHandle(
   try {
     getBrowserTimers(App).clearTimeout(handle);
   } catch {
-    // ignore
+    // timer-cleanup-best-effort: stale feedback timeout cancellation must not break host cleanup.
   }
 }
 
@@ -135,7 +135,7 @@ export function clearOverlayFeedbackPromptFocusTimers(
     try {
       timers.cancelAnimationFrame(state.animationHandle);
     } catch {
-      // ignore
+      // frame-cleanup-best-effort: stale feedback animation cancellation must not break host cleanup.
     }
   }
 

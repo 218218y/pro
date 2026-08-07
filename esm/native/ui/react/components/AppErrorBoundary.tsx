@@ -31,7 +31,7 @@ function tryReloadViaDi(app: unknown): void {
   try {
     readReloadLocation(app)?.reload();
   } catch {
-    // ignore
+    // recovery-best-effort: reload may be unavailable; the error boundary fallback remains usable.
   }
 }
 
@@ -50,7 +50,7 @@ export class AppErrorBoundary extends Component<Props, State> {
         label: this.props.label || null,
       });
     } catch {
-      // ignore
+      // reporter-isolation: reporting a component failure must not throw from the React error boundary itself.
     }
   }
 

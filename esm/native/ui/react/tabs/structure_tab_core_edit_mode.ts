@@ -43,7 +43,7 @@ export function setBodyCursor(app: unknown, cursor: string): void {
     const doc = getDocumentMaybe(app);
     if (doc && doc.body) doc.body.style.cursor = String(cursor || 'default');
   } catch {
-    // ignore
+    // DOM-mirror-best-effort: cursor styling failure must not invalidate the canonical edit-mode transition.
   }
 }
 

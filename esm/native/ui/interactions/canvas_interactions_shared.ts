@@ -321,7 +321,7 @@ export function createEventBinding(App: AppContainer, domEl: HTMLElement) {
         try {
           domEl.removeEventListener(type, handler, opts);
         } catch {
-          // swallow
+          // cleanup-best-effort: listener detachment failure must not break the rest of canvas teardown.
         }
       };
     } catch (err) {

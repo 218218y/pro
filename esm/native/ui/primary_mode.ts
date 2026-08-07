@@ -13,9 +13,9 @@ import {
   ensureUiModesRuntimeService,
   getStoreSubscriber,
   getStoreSurfaceMaybe,
-  reportError,
 } from '../services/api.js';
 import { toggleBodyClass } from './dom_helpers.js';
+import { reportUiNonFatal } from './feedback_shared.js';
 
 import type {
   AppContainer,
@@ -25,7 +25,7 @@ import type {
 } from '../../../types';
 
 function reportPrimaryModeMirrorFailure(App: AppContainer, op: string, error: unknown): void {
-  reportError(App, error, { where: 'native/ui/primary_mode', op, fatal: false }, { consoleOutput: false });
+  reportUiNonFatal(App, op, error, { where: 'native/ui/primary_mode' });
 }
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -50,7 +50,7 @@ function callCleanupHandle(value: unknown): void {
     }
     readCleanupUnsubscribe(value)?.();
   } catch {
-    // ignore
+    // cleanup-best-effort: stale subscription handles must not block mode reinstallation.
   }
 }
 

@@ -103,7 +103,7 @@ export const OrderPdfSketchNoteBox = memo(function OrderPdfSketchNoteBox(
           try {
             event.stopPropagation();
           } catch {
-            // ignore
+            // event-compatibility: stopPropagation failure must not block note-box focus handling.
           }
         }}
         onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) =>
@@ -124,7 +124,7 @@ export const OrderPdfSketchNoteBox = memo(function OrderPdfSketchNoteBox(
               try {
                 event.stopPropagation();
               } catch {
-                // ignore
+                // event-compatibility: stopPropagation failure must not block pointer activation of the note box.
               }
             }}
             onClick={(event: ReactMouseEvent<HTMLDivElement>) => {
@@ -132,7 +132,7 @@ export const OrderPdfSketchNoteBox = memo(function OrderPdfSketchNoteBox(
                 event.preventDefault();
                 event.stopPropagation();
               } catch {
-                // ignore
+                // event-compatibility: event suppression failure must not block click activation of the note box.
               }
               onActivate(textBox.id);
             }}
@@ -142,7 +142,7 @@ export const OrderPdfSketchNoteBox = memo(function OrderPdfSketchNoteBox(
                 event.preventDefault();
                 event.stopPropagation();
               } catch {
-                // ignore
+                // event-compatibility: event suppression failure must not block keyboard activation of the note box.
               }
               onActivate(textBox.id);
             }}

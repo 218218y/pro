@@ -10,6 +10,7 @@ import {
   refreshBuilderHandles,
 } from '../../../services/api.js';
 import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_authoring/api.js';
+import { reportUiNonFatal } from '../../feedback_shared.js';
 
 export function syncHandlesAfterDoorOps(app: AppContainer): void {
   try {
@@ -22,7 +23,9 @@ export function syncHandlesAfterDoorOps(app: AppContainer): void {
       ),
       purgeRemovedDoors: true,
     });
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(app, 'builderActions.syncHandlesAfterDoorOps', error, {
+      where: 'native/ui/react/actions',
+    });
   }
 }

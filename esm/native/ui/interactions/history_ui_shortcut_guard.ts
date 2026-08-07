@@ -20,7 +20,7 @@ export function hasSuspendedHistoryShortcuts(
         : null;
     if (target?.closest('[data-wp-history-shortcuts="suspend"]')) return true;
   } catch {
-    // ignore
+    // DOM-probe-fallback: if closest/activeElement probing fails, continue with the document-level suspension check.
   }
   try {
     return !!doc.querySelector('[data-wp-history-shortcuts="suspend"]');

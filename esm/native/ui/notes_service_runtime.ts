@@ -12,6 +12,7 @@ import {
   wireUiNotesService,
 } from './notes_service_shared.js';
 import { normalizeSavedNotes, sanitizeRichTextHTML } from './notes_service_sanitize.js';
+import { reportUiNonFatal, reportUiRejected } from './feedback_shared.js';
 
 export function installNotesService(App: NotesServiceApp): NotesNamespace {
   if (!App || typeof App !== 'object') throw new Error('installNotesService(App): App is required');
@@ -51,9 +52,21 @@ export function installNotesService(App: NotesServiceApp): NotesNamespace {
       try {
         const metaNs = getMetaActions(App);
         const payload = notesMeta.build('notes:react', readActionMeta(meta));
-        if (metaNs && typeof metaNs.persist === 'function') metaNs.persist(payload);
-      } catch {
-        // ignore
+        if (metaNs && typeof metaNs.persist === 'function') {
+          const result = metaNs.persist(payload);
+          if (result === false) {
+            reportUiRejected(
+              App,
+              'notes.persist',
+              'Notes metadata persistence was rejected.',
+              'native/ui/notes'
+            );
+          }
+        } else {
+          reportUiRejected(App, 'notes.persist', 'Missing actions.meta.persist.', 'native/ui/notes');
+        }
+      } catch (error) {
+        reportUiNonFatal(App, 'notes.persist', error, { where: 'native/ui/notes' });
       }
     };
   }

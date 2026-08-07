@@ -12,6 +12,7 @@ import {
   syncGlobalClickMode,
 } from './settings_visual_shared_interactions.js';
 import { runPerfAction } from '../../../services/api.js';
+import { reportUiNonFatal } from '../../feedback_shared.js';
 
 export type SettingsVisualDisplayController = {
   syncGlobalClickState: (globalClickRt: boolean, globalClickUi: boolean) => void;
@@ -94,8 +95,10 @@ export function createSettingsVisualDisplayController(
         setUiGlobalClickUiFn(app, next, meta.uiOnlyImmediate('react:settingsVisual:globalClickUi'));
         try {
           syncGlobalClickModeFn(app, next, meta.uiOnlyImmediate('react:settingsVisual:globalClick'));
-        } catch {
-          // ignore
+        } catch (error) {
+          reportUiNonFatal(app, 'settingsVisual.globalClick.syncRuntime', error, {
+            where: 'native/ui/react/tabs/settings',
+          });
         }
         if (!next) closeInteractiveStateOnGlobalOffFn(app);
       },
@@ -125,8 +128,10 @@ export function createSettingsVisualDisplayController(
         !!globalClickUi,
         meta.uiOnlyImmediate('react:settingsVisual:globalClickSync')
       );
-    } catch {
-      // ignore
+    } catch (error) {
+      reportUiNonFatal(app, 'settingsVisual.globalClick.syncMirror', error, {
+        where: 'native/ui/react/tabs/settings',
+      });
     }
   };
 

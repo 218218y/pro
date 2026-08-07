@@ -105,7 +105,7 @@ export function scheduleReactBackgroundWarmup(app: AppContainer): Cleanup {
       try {
         cleanup?.();
       } catch {
-        // ignore
+        // cleanup-best-effort: one warmup disposer must not prevent the remaining cleanup callbacks from running.
       }
     }
   };

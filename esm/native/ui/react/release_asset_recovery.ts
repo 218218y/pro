@@ -98,7 +98,7 @@ export function requestReleaseAssetRecovery(
         nonFatal: true,
       });
     } catch {
-      // ignore
+      // reporter-isolation: asset-recovery diagnostics must not interfere with the recovery fallback itself.
     }
   }
 

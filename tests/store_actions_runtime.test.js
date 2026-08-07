@@ -19,6 +19,12 @@ function loadTsModule(relPath, calls, cache = new Map()) {
         },
       };
     }
+    if (specifier === '../../feedback_shared.js') {
+      return {
+        reportUiNonFatal: (...args) => calls.push(['reportUiNonFatal', ...args]),
+        reportUiRejected: (...args) => calls.push(['reportUiRejected', ...args]),
+      };
+    }
     return require(specifier);
   };
 
@@ -47,7 +53,7 @@ test('store actions runtime: recomputeFromUi delegates to canonical app-bound st
   assert.deepEqual(JSON.parse(JSON.stringify(calls[0][6])), {});
 });
 
-test('store actions runtime: recomputeFromUi swallows owner failures without throwing', () => {
+test('store actions runtime: recomputeFromUi reports owner failures without throwing', () => {
   const calls = [];
   const file = path.join(process.cwd(), 'esm/native/ui/react/actions/store_actions_runtime.ts');
   const mod = loadTsRuntimeModule(file, {
@@ -62,6 +68,12 @@ test('store actions runtime: recomputeFromUi swallows owner failures without thr
           },
         };
       }
+      if (specifier === '../../feedback_shared.js') {
+        return {
+          reportUiNonFatal: (...args) => calls.push(['reportUiNonFatal', ...args]),
+          reportUiRejected: (...args) => calls.push(['reportUiRejected', ...args]),
+        };
+      }
       return require(specifier);
     },
   });
@@ -70,4 +82,6 @@ test('store actions runtime: recomputeFromUi swallows owner failures without thr
     mod.recomputeFromUi({ id: 'app' }, null, undefined, { structureChanged: true });
   });
   assert.equal(calls[0][0], 'runAppStructuralModulesRecompute');
+  assert.equal(calls[1][0], 'reportUiNonFatal');
+  assert.equal(calls[1][2], 'storeActions.recomputeFromUi');
 });

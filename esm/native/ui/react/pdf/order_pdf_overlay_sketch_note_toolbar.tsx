@@ -11,7 +11,7 @@ function stopToolbarMouse(event: ReactMouseEvent<HTMLElement> | ReactPointerEven
     event.preventDefault();
     event.stopPropagation();
   } catch {
-    // ignore
+    // event-compatibility: toolbar event suppression is best-effort; toolbar behavior remains primary.
   }
 }
 

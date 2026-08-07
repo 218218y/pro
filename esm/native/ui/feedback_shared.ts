@@ -20,14 +20,47 @@ import {
 
 const __uiFeedbackReportNonFatalSeen = new Map<string, number>();
 
+export function reportUiNonFatal(
+  App: unknown,
+  op: string,
+  err: unknown,
+  opts?: { where?: string; dedupeMs?: number; consoleOutput?: boolean }
+): void {
+  const where = opts?.where || 'native/ui';
+  const dedupeMs = typeof opts?.dedupeMs === 'number' ? Math.max(0, opts.dedupeMs) : 4000;
+  try {
+    const now = Date.now();
+    const e = err instanceof Error ? err : new Error(String(err));
+    const key = `${where}|${op}|${e.name}|${e.message}`;
+    const last = __uiFeedbackReportNonFatalSeen.get(key) ?? 0;
+    if (dedupeMs > 0 && now - last < dedupeMs) return;
+    __uiFeedbackReportNonFatalSeen.set(key, now);
+    if (__uiFeedbackReportNonFatalSeen.size > 600) {
+      const cutoff = Math.max(10000, dedupeMs * 4);
+      for (const [entryKey, ts] of __uiFeedbackReportNonFatalSeen) {
+        if (now - ts > cutoff) __uiFeedbackReportNonFatalSeen.delete(entryKey);
+      }
+    }
+  } catch {
+    // reporter-dedupe-isolation: diagnostic bookkeeping must never break the UI action being reported.
+  }
+  try {
+    reportError(App, err, { where, op, fatal: false }, { consoleOutput: opts?.consoleOutput ?? false });
+  } catch {
+    // reporter-isolation: observability is best-effort and must not become a second UI failure.
+  }
+}
+
+export function reportUiRejected(App: unknown, op: string, message: string, where?: string): void {
+  reportUiNonFatal(App, op, new Error(message), { where });
+}
+
 export function __uiFeedbackReportNonFatal(App: unknown, op: string, err: unknown, dedupeMs = 4000): void {
-  const now = Date.now();
-  const e = err instanceof Error ? err : new Error(String(err));
-  const key = `${op}|${e.name}|${e.message}`;
-  const last = __uiFeedbackReportNonFatalSeen.get(key) ?? 0;
-  if (dedupeMs > 0 && now - last < dedupeMs) return;
-  __uiFeedbackReportNonFatalSeen.set(key, now);
-  reportError(App, err, { where: 'native/ui/feedback', op, fatal: false });
+  reportUiNonFatal(App, op, err, {
+    where: 'native/ui/feedback',
+    dedupeMs,
+    consoleOutput: true,
+  });
 }
 
 export type ToastType = UiFeedbackToastKind;

@@ -98,7 +98,7 @@ function safeCall(fn: unknown): void {
   try {
     if (typeof fn === 'function') Reflect.apply(fn, undefined, []);
   } catch {
-    // swallow
+    // cleanup-isolation: one legacy disposer failure must not prevent the runtime cleanup sequence.
   }
 }
 
@@ -169,7 +169,7 @@ export function getUiRuntime(App: unknown): UiRuntime {
         try {
           api.clearDisposer(k);
         } catch {
-          // swallow
+          // cleanup-isolation: bulk disposer cleanup must continue after an individual disposer failure.
         }
       }
     },

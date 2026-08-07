@@ -38,6 +38,7 @@ import {
   type InteriorWorkflowModeIds,
 } from './interior_tab_workflows_controller_contracts.js';
 import { clampInteriorSketchOptionalDim } from './interior_tab_workflows_controller_shared.js';
+import { reportUiNonFatal } from '../../feedback_shared.js';
 
 type CreateInteriorTabManualWorkflowControllerArgs = {
   app: AppContainer;
@@ -77,8 +78,10 @@ export function createInteriorTabManualWorkflowController(
       const draftDepth = state.sketchShelfDepthByVariant[variant];
       const depth = typeof draftDepth === 'number' ? draftDepth : null;
       enterManualLayoutMode(app, mkSketchShelfTool(variant, depth));
-    } catch {
-      // ignore
+    } catch (error) {
+      reportUiNonFatal(app, 'interiorWorkflow.enterSketchShelfTool', error, {
+        where: 'native/ui/react/tabs/interior',
+      });
     }
   };
 

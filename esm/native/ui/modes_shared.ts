@@ -277,6 +277,6 @@ export function safeUpdateEditToast(App: AppLike, text: string | null, isActive:
     }
     if (text && isActive && fb && typeof fb.toast === 'function') fb.toast(text, 'info');
   } catch (_e) {
-    // ignore
+    // feedback-best-effort: toast/chrome feedback must not invalidate a committed mode transition.
   }
 }

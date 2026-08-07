@@ -88,7 +88,7 @@ export function getSite2EnabledTabs(app: AppContainer): TabId[] {
       return out;
     }
   } catch {
-    // ignore
+    // config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list.
   }
   return SITE2_ENABLED_TABS_DEFAULT.slice();
 }

@@ -202,3 +202,66 @@ test('notes service restore, persist, and draw-mode hooks stay behavior-first th
   assert.equal(persisted[0]?.noHistory, true);
   assert.equal(persisted[0]?.immediate, true);
 });
+
+test('notes service reports rejected persistence and draw hooks while staying fail-soft', () => {
+  const reports: Array<{ op?: unknown; message: string }> = [];
+  const state: any = { config: { savedNotes: [] } };
+  const App: any = {
+    services: {
+      errors: {
+        report(error: unknown, ctx?: Record<string, unknown>) {
+          reports.push({ op: ctx?.op, message: error instanceof Error ? error.message : String(error) });
+        },
+      },
+    },
+    store: {
+      getState: () => state,
+      setState() {},
+      subscribe() {
+        return () => {};
+      },
+    },
+    actions: {
+      config: {
+        setSavedNotes() {
+          throw new Error('notes write failed');
+        },
+      },
+      meta: {
+        noBuild(meta: any) {
+          return meta;
+        },
+        noHistory(meta: any) {
+          return meta;
+        },
+        persist() {
+          return false;
+        },
+      },
+    },
+  };
+
+  const notes = installNotesService(App);
+  const uiNotes = getUiNotesServiceMaybe(App);
+  notes.runtime!.onEnterDrawMode = () => {
+    throw new Error('enter hook failed');
+  };
+  notes.runtime!.onExitDrawMode = () => {
+    throw new Error('exit hook failed');
+  };
+
+  assert.doesNotThrow(() => notes.clear?.());
+  assert.doesNotThrow(() => notes.persist?.());
+  assert.doesNotThrow(() => uiNotes?.enterScreenDrawMode?.());
+  assert.doesNotThrow(() => uiNotes?.exitScreenDrawMode?.());
+
+  assert.deepEqual(
+    reports.map(entry => entry.op),
+    [
+      'notes.patchSavedNotes',
+      'notes.persist',
+      'notes.enterScreenDrawMode.hook',
+      'notes.exitScreenDrawMode.hook',
+    ]
+  );
+});

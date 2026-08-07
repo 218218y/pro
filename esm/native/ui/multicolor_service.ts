@@ -22,6 +22,7 @@ import {
   setMultiModeViaActions,
   setUiScalarSoft,
 } from '../services/api.js';
+import { reportUiNonFatal } from './feedback_shared.js';
 
 type MulticolorActionMeta = ActionMetaLike & { source?: string; immediate?: boolean };
 
@@ -35,11 +36,11 @@ export type MulticolorStateSummary = {
   currentCurtainChoice?: string;
 };
 
-function _safe(_label: string, fn: () => void): void {
+function _safe(App: AppContainer, label: string, fn: () => void): void {
   try {
     fn();
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(App, `multicolor.${label}`, error, { where: 'native/ui/multicolor' });
   }
 }
 
@@ -100,7 +101,7 @@ export function isPaintModeActive(App: AppContainer): boolean {
 export function setMultiEnabled(App: AppContainer, next: boolean, meta?: MulticolorActionMeta): void {
   const m = normalizeMeta(meta, 'ui:multiColorToggle');
 
-  _safe('setMultiEnabled', () => {
+  _safe(App, 'setMultiEnabled', () => {
     setMultiModeViaActions(App, !!next, m);
     setCfgMultiColorMode(App, !!next, m);
   });
@@ -110,7 +111,7 @@ export function setCurtainChoice(App: AppContainer, id: unknown): void {
   const next = typeof id === 'string' ? id.trim() : '';
   if (!next) return;
 
-  _safe('setCurtainChoice', () => {
+  _safe(App, 'setCurtainChoice', () => {
     setUiScalarSoft(App, 'currentCurtainChoice', next, {
       source: 'ui:multicolor:setCurtainChoice',
       immediate: true,
@@ -119,17 +120,17 @@ export function setCurtainChoice(App: AppContainer, id: unknown): void {
 }
 
 export function exitPaintMode(App: AppContainer): void {
-  _safe('exitPaintMode', () => {
+  _safe(App, 'exitPaintMode', () => {
     const { NONE } = readModes();
     setModePrimary(App, NONE, {}, { source: 'ui:multicolor:exitPaintMode', immediate: true });
   });
 
-  _safe('exitPaintMode.tools', () => {
+  _safe(App, 'exitPaintMode.tools', () => {
     const tools = getTools(App);
     if (typeof tools.setPaintColor === 'function') tools.setPaintColor(null);
   });
 
-  _safe('exitPaintMode.toast', () => {
+  _safe(App, 'exitPaintMode.toast', () => {
     const fb = getUiFeedback(App);
     if (typeof fb.updateEditStateToast === 'function') {
       fb.updateEditStateToast(null, false);

@@ -44,7 +44,7 @@ function _readCanvasFromNode(value: unknown): HTMLCanvasElement | null {
       const inner = Reflect.apply(qs, value, ['canvas']);
       if (_isHtmlCanvasElement(inner)) return inner;
     } catch {
-      // ignore
+      // capability-probe: continue to alternate canvas discovery when querySelector is unavailable or throws.
     }
   }
 
@@ -63,7 +63,7 @@ export function _getRendererCanvasSource(renderer: { domElement: unknown }): HTM
         const canvas = _readCanvasFromNode(getProp(ctx, 'canvas'));
         if (canvas) return canvas;
       } catch {
-        // ignore
+        // capability-probe: continue to the next renderer context when context discovery fails.
       }
     }
   }
@@ -109,7 +109,7 @@ function _getDomElementSize(el: unknown): { width: number; height: number } {
       const rectSize = bounds ? readPositiveSize(bounds.width, bounds.height) : null;
       if (rectSize) return rectSize;
     } catch {
-      // ignore
+      // geometry-probe: continue to alternate size sources when getBoundingClientRect is unavailable.
     }
   }
 

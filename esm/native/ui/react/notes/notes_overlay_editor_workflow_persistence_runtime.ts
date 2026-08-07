@@ -34,7 +34,7 @@ export function clearNotesTypingPersist(
   try {
     getBrowserTimers(App).clearTimeout(handle || undefined);
   } catch {
-    // ignore
+    // timer-cleanup-best-effort: clearing a stale typing timer must not block persistence teardown.
   }
 }
 

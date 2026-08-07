@@ -101,7 +101,7 @@ export function installHistoryUI(App: AppContainer, deps: Partial<HistoryUiDeps>
         try {
           if (typeof e.stopPropagation === 'function') e.stopPropagation();
         } catch {
-          // ignore
+          // event-compatibility: stopPropagation failure does not invalidate the already accepted clipboard action.
         }
         try {
           copyToClipboard();

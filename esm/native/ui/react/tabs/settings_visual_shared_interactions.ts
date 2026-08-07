@@ -2,22 +2,27 @@ import type { ActionMetaLike, AppContainer, MetaActionsNamespaceLike } from '../
 
 import { closeInteractiveOnGlobalOff } from '../actions/interactive_actions.js';
 import { setRuntimeGlobalClickMode } from '../actions/store_actions.js';
+import { reportUiNonFatal } from '../../feedback_shared.js';
 
 export function syncGlobalClickMode(app: AppContainer, enabled: boolean, meta?: ActionMetaLike): void {
   const nextMeta: ActionMetaLike =
     meta && typeof meta === 'object' ? meta : { source: 'react:settingsVisual:globalClick' };
   try {
     setRuntimeGlobalClickMode(app, !!enabled, nextMeta);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(app, 'settingsVisual.syncGlobalClickMode', error, {
+      where: 'native/ui/react/tabs/settings',
+    });
   }
 }
 
 export function closeInteractiveStateOnGlobalOff(app: AppContainer): void {
   try {
     closeInteractiveOnGlobalOff(app);
-  } catch {
-    // ignore
+  } catch (error) {
+    reportUiNonFatal(app, 'settingsVisual.closeInteractiveStateOnGlobalOff', error, {
+      where: 'native/ui/react/tabs/settings',
+    });
   }
 }
 

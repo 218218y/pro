@@ -26,3 +26,33 @@ test('room_actions delegate manual-width and wardrobe-type changes through names
   assert.deepEqual(calls[0], ['manual', true, { source: 'react:manualWidth' }]);
   assert.deepEqual(calls[1], ['wardrobe', 'sliding']);
 });
+
+test('room_actions report rejected or throwing room mutations without breaking the UI caller', () => {
+  const reports: Array<{ op?: unknown; message: string }> = [];
+  const app: any = {
+    services: {
+      errors: {
+        report(error: unknown, ctx?: Record<string, unknown>) {
+          reports.push({ op: ctx?.op, message: error instanceof Error ? error.message : String(error) });
+        },
+      },
+    },
+    actions: {
+      room: {
+        setManualWidth() {
+          return false;
+        },
+        setWardrobeType() {
+          throw new Error('wardrobe write failed');
+        },
+      },
+    },
+  };
+
+  assert.equal(setManualWidth(app, true), false);
+  assert.equal(setWardrobeType(app, 'sliding'), undefined);
+  assert.deepEqual(
+    reports.map(entry => entry.op),
+    ['roomActions.setManualWidth', 'roomActions.setWardrobeType']
+  );
+});

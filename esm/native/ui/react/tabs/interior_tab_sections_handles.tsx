@@ -27,7 +27,7 @@ function openNativeColorPicker(input: HTMLInputElement | null): void {
   try {
     input.click();
   } catch {
-    // ignore
+    // browser-input-fallback: programmatic file-input click may be blocked; the explicit click path remains available.
   }
 }
 
