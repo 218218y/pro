@@ -73,6 +73,7 @@ export function prepareBuildWardrobeExecution(
   const { notesToPreserve, calculateModuleStructureFn, getMaterialFn, addOutlinesMesh, toStr } = setup;
 
   const doorState = makeDoorStateAccessors(cfg);
+  const isRemoveDoorMode = isRemoveDoorModeFromSnapshot(state.mode);
   const plan = resolveBuildFlowPlan({
     orchestration: prepared.orchestration,
     THREE,
@@ -83,6 +84,7 @@ export function prepareBuildWardrobeExecution(
     heightCm,
     depthCm,
     doorsCount,
+    removablePartInteractionActive: isRemoveDoorMode,
     sketchMode,
     getMaterialFn,
     addOutlines,
@@ -91,7 +93,6 @@ export function prepareBuildWardrobeExecution(
     doorState,
   });
 
-  const isRemoveDoorMode = isRemoveDoorModeFromSnapshot(state.mode);
   const removeDoorsEnabled = resolveRemoveDoorsEnabledFromSnapshots(ui, state.mode);
   const isDoorRemoved = makeDoorRemovalChecker(cfg);
   const { getHandleType, createHandleMesh } = prepared.orchestration.createHandleBindings({

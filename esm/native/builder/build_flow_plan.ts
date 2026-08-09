@@ -1,5 +1,4 @@
 import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
-import { isRemoveDoorModeFromSnapshot } from '../features/door_authoring/api.js';
 import { resolveBuildFlowPlanInputs } from './build_flow_plan_inputs.js';
 
 import type { BuildFlowPlan, BuildFlowPlanResolveArgs } from './build_flow_plan_contracts.js';
@@ -18,6 +17,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     heightCm,
     depthCm,
     doorsCount,
+    removablePartInteractionActive,
     sketchMode,
     getMaterialFn,
     addOutlines,
@@ -32,7 +32,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     heightCm,
     depthCm,
     doorsCount,
-    removablePartInteractionActive: isRemoveDoorModeFromSnapshot(state?.mode),
+    removablePartInteractionActive,
     toStr,
   });
   const materials = orchestration.resolvePlanMaterials({

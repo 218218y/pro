@@ -19,6 +19,13 @@ function readRuntimeIndex(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? Math.floor(value) : -1;
 }
 
+export function hasRemovedFrameSideOnEitherEdge(cfg: unknown, frameSidePartIdPrefix?: unknown): boolean {
+  return (
+    isRemovedFrameSideOn(cfg, 'left', frameSidePartIdPrefix) ||
+    isRemovedFrameSideOn(cfg, 'right', frameSidePartIdPrefix)
+  );
+}
+
 export function shouldForceBraceShelvesForRemovedFrameSide(input: RemovedFrameSideBraceInput): boolean {
   return getExposedShelfSideForRemovedFrameSide(input) != null;
 }

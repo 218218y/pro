@@ -227,7 +227,7 @@ test('build_flow_plan inputs keep stack frames separate after a scoped upper or 
   }
 });
 
-test('build_flow_plan routes remove-door mode into separate stack interaction frames', () => {
+test('build_flow_plan routes removable-part interaction into separate stack frames', () => {
   const plan = resolveBuildFlowPlan({
     orchestration: {
       resolvePlanMaterials: () => ({}),
@@ -253,6 +253,7 @@ test('build_flow_plan routes remove-door mode into separate stack interaction fr
     heightCm: 240,
     depthCm: 60,
     doorsCount: 3,
+    removablePartInteractionActive: true,
     sketchMode: false,
     getMaterialFn: null,
     addOutlines: null,

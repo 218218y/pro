@@ -223,7 +223,14 @@ export type BuildFlowPlanInfrastructurePorts = Readonly<{
 export type BuildFlowPlanResolveArgs = BuildFlowPlanMaterialsInput &
   Pick<
     BuildFlowPlanInputsArgs,
-    'ui' | 'cfg' | 'widthCm' | 'heightCm' | 'depthCm' | 'doorsCount' | 'toStr'
+    | 'ui'
+    | 'cfg'
+    | 'widthCm'
+    | 'heightCm'
+    | 'depthCm'
+    | 'doorsCount'
+    | 'removablePartInteractionActive'
+    | 'toStr'
   > & {
     orchestration: BuildFlowPlanInfrastructurePorts;
     state: BuildStateLike;

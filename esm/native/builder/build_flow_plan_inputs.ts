@@ -1,5 +1,4 @@
 import { moduleHasHexCell } from '../features/hex_cell/index.js';
-import { isRemovedFrameSideOn } from '../features/part_identity/api.js';
 import { getActiveDepthCmFromConfig, getActiveHeightCmFromConfig } from '../features/special_dims/index.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { normalizeStackSplit } from '../features/stack_split/index.js';
@@ -13,6 +12,7 @@ import {
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import { hasRemovedFrameSideOnEitherEdge } from './removed_frame_side_brace_shelves.js';
 import {
   normalizeBaseLegPlatformFrontOverhangCm,
   normalizeBaseLegPlatformSideOverhangCm,
@@ -85,12 +85,7 @@ function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown, lowerHeightCm: 
 }
 
 function hasStackSplitScopedFrameSideRemoval(cfg: unknown): boolean {
-  return (
-    isRemovedFrameSideOn(cfg, 'left') ||
-    isRemovedFrameSideOn(cfg, 'right') ||
-    isRemovedFrameSideOn(cfg, 'left', 'lower_') ||
-    isRemovedFrameSideOn(cfg, 'right', 'lower_')
-  );
+  return hasRemovedFrameSideOnEitherEdge(cfg) || hasRemovedFrameSideOnEitherEdge(cfg, 'lower_');
 }
 
 export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): BuildFlowPlanInputs {
