@@ -8,7 +8,6 @@ export {
 export {
   classifyCrossDrawerPart,
   findCrossDrawerHitInIntersects,
-  findStandardExternalShoePartIdForModule,
   readCrossDrawerCanonicalPartId,
 } from './canvas_picking_drawer_cross_family_hit_identity.js';
 export type {
@@ -17,6 +16,7 @@ export type {
   SketchExternalDrawerListKind,
 } from './canvas_picking_drawer_cross_family_model.js';
 export {
+  findStandardExternalShoePartIdForModule,
   resolveExternalCrossDrawerStackPreview,
   resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family_preview.js';

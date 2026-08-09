@@ -303,6 +303,69 @@ test('shoe mode treats an existing sketch shoe drawer as removal from the module
   assert.equal(hover?.removeId, 'sketch-shoe');
 });
 
+test('sketch shoe edit hover over a standard shoe drawer previews the existing drawer itself for removal', () => {
+  const previews: any[] = [];
+  const parent = { id: 'wardrobe-parent' };
+  const shoeGroup = {
+    id: 'd1_draw_shoe',
+    parent,
+    userData: { partId: 'd1_draw_shoe', moduleIndex: 1 },
+    geometry: { parameters: { width: 0.82, height: 0.18, depth: 0.08 } },
+    position: { x: 0.1, y: 0.14, z: 0.25 },
+    scale: { x: 1, y: 1, z: 1 },
+  };
+  const App = createApp({
+    render: {
+      drawersArray: [{ id: 'd1_draw_shoe', group: shoeGroup }],
+    },
+    renderOps: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+  });
+
+  const handled = tryHandleExtDrawersHoverPreview({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {},
+    mouse: {},
+    isExtDrawerEditMode: true,
+    readUi: () => ({ currentExtDrawerType: 'shoe', currentExtDrawerCount: 1 }),
+    resolveDrawerHoverPreviewTarget: () => ({
+      drawer: { id: 'd1_draw_shoe', group: shoeGroup },
+      parent,
+      box: { centerX: 0.1, centerY: 0.14, centerZ: 0.25, width: 0.82, height: 0.18, depth: 0.08 },
+    }),
+    resolveInteriorHoverTarget: () => {
+      throw new Error('existing standard shoe drawer hover must resolve before module preview');
+    },
+    measureObjectLocalBox: (_App, obj) => {
+      const rec = obj as any;
+      return {
+        centerX: rec.position.x,
+        centerY: rec.position.y,
+        centerZ: rec.position.z,
+        width: rec.geometry.parameters.width,
+        height: rec.geometry.parameters.height,
+        depth: rec.geometry.parameters.depth,
+      };
+    },
+    readInteriorModuleConfigRef: () => ({ hasShoeDrawer: true, extDrawersCount: 0 }),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].op, 'remove');
+  assert.deepEqual(previews[0].drawers, [{ y: 0.14, h: 0.18 }]);
+  const hover = readRecentExtDrawerModeHover(App);
+  assert.equal(hover?.op, 'remove');
+  assert.equal(hover?.removeKind, 'std');
+  assert.equal(hover?.removePid, 'd1_draw_shoe');
+  assert.ok(Math.abs(Number(hover?.yCenter) - 0.14) < 1e-9);
+});
+
 test('regular external drawer hover removal previews the entire sketch external drawer stack', () => {
   const previews: any[] = [];
   const parent = { id: 'wardrobe-parent' };

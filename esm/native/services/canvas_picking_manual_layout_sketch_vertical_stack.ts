@@ -61,6 +61,25 @@ export function parseSketchExtDrawerType(tool: string): 'regular' | 'shoe' {
   return parseSketchExternalDrawersTool(tool)?.drawerType ?? 'regular';
 }
 
+export function readSketchExternalShoeDrawerState(
+  value: unknown,
+  defaultHeightM: number
+): { id: string; drawerHeightM: number } | null {
+  const cfg = asRecord<Record<string, unknown>>(value);
+  const sketchExtras = asRecord<Record<string, unknown>>(cfg?.sketchExtras);
+  const extDrawers = Array.isArray(sketchExtras?.extDrawers) ? sketchExtras.extDrawers : [];
+  for (const item of extDrawers) {
+    if (!isSketchExternalShoeDrawerItem(item)) continue;
+    const rec = asRecord<Record<string, unknown>>(item);
+    if (!rec) continue;
+    return {
+      id: formatIdentityValue(readIdentityValue(rec.id)),
+      drawerHeightM: readSketchDrawerHeightMFromItem(rec, defaultHeightM),
+    };
+  }
+  return null;
+}
+
 export function parseSketchIntDrawerHeightM(tool: string): number {
   return parseSketchInternalDrawersTool(tool)?.drawerHeightM ?? DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M;
 }

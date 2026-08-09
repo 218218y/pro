@@ -52,6 +52,32 @@ export type CrossDrawerMeasureObjectLocalBoxFn = (
   parentOverride?: unknown
 ) => CrossDrawerPreviewBox | null;
 
+function isStandardExternalShoeDrawer(partId: string, userData: UnknownRecord | null): boolean {
+  return userData?.__wpShoeDrawer === true || /^d\d+_draw_shoe$/u.test(partId);
+}
+
+export function findStandardExternalShoePartIdForModule(App: AppContainer, moduleKey: unknown): string {
+  const targetModuleKey = readCrossDrawerString(moduleKey);
+  const drawers = getDrawersArray(App);
+  for (let i = 0; i < drawers.length; i++) {
+    const group = readCrossDrawerEntryGroup(drawers[i]);
+    if (!group) continue;
+    const userData = readCrossDrawerUserData(group);
+    const partId = readCrossDrawerCanonicalPartId(
+      userData?.partId ?? asCrossDrawerNode(drawers[i])?.id,
+      userData
+    );
+    if (classifyCrossDrawerPart(partId, userData) !== 'standard_external') continue;
+    if (!isStandardExternalShoeDrawer(partId, userData)) continue;
+    const entryModuleKey = readCrossDrawerString(
+      userData?.moduleIndex ?? userData?.__wpSketchModuleKey ?? asCrossDrawerNode(drawers[i])?.moduleIndex
+    );
+    if (targetModuleKey && entryModuleKey && targetModuleKey !== entryModuleKey) continue;
+    return partId;
+  }
+  return '';
+}
+
 export type CrossInternalDrawerStackPreview = {
   anchor: unknown;
   anchorParent: unknown;
