@@ -879,6 +879,46 @@ test('sketch box external drawers render with custom per-drawer height', () => {
   assert.ok(Math.abs(ys[1] - ys[0] - 0.3) < 1e-6);
 });
 
+test('sketch box shoe drawer keeps its sketch-controlled custom height', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'boxCustomShoe',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.0,
+            heightM: 1.2,
+            widthM: 0.78,
+            depthM: 0.5,
+            extDrawers: [
+              {
+                id: 'shoeCustom',
+                yNormC: 0,
+                yNorm: 0,
+                yAnchor: 'bottom',
+                count: 0,
+                hasShoeDrawer: true,
+                drawerHeightM: 0.275,
+              },
+            ],
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const drawerGroups = wardrobeGroup.children.filter(
+    node => (node as FakeNode).userData?.__wpSketchExtDrawer === true
+  ) as FakeNode[];
+  assert.equal(drawerGroups.length, 1);
+  assert.ok(Number(drawerGroups[0]?.userData.__doorHeight) > 0.25);
+});
+
 test('sketch box external drawers emit an individually paintable brace shelf above each stack', () => {
   const { boards, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
 

@@ -254,6 +254,29 @@ test('render sketch external drawers honors per-stack custom drawer height', () 
   assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - 0.292) < 1e-9);
 });
 
+test('render sketch shoe drawer from sketch uses one shoe drawer with its custom height', () => {
+  const { args, App } = createExternalDrawerArgs();
+  args.extDrawers = [
+    {
+      id: 'shoe-custom',
+      count: 0,
+      hasShoeDrawer: true,
+      yNormC: 0,
+      yNorm: 0,
+      yAnchor: 'bottom',
+      drawerHeightM: 0.275,
+    },
+  ];
+
+  applySketchExternalDrawers(args);
+
+  const drawers = App.render?.drawersArray || [];
+  assert.equal(drawers.length, 1);
+  const renderedHeight = Number(drawers[0]?.group.userData.__doorHeight);
+  assert.ok(renderedHeight > 0.25 && renderedHeight <= 0.275);
+  assert.ok(Math.abs(Number(drawers[0]?.group.userData.__wpFaceMinY) - args.effectiveBottomY) < 1e-9);
+});
+
 test('render sketch external drawers reject string-encoded live stack positions', () => {
   const { args, App } = createExternalDrawerArgs();
   args.extDrawers = [{ id: 'string-y', count: 1, yNormC: '0.5' }];

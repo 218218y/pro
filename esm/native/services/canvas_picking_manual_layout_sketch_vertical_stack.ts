@@ -7,6 +7,7 @@ import {
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
+  isSketchExternalShoeDrawerItem,
   parseSketchExternalDrawersTool,
   parseSketchInternalDrawersTool,
   readSketchDrawerHeightMFromItem,
@@ -54,6 +55,10 @@ export function parseSketchExtDrawerCount(tool: string): number {
 
 export function parseSketchExtDrawerHeightM(tool: string): number {
   return parseSketchExternalDrawersTool(tool)?.drawerHeightM ?? DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M;
+}
+
+export function parseSketchExtDrawerType(tool: string): 'regular' | 'shoe' {
+  return parseSketchExternalDrawersTool(tool)?.drawerType ?? 'regular';
 }
 
 export function parseSketchIntDrawerHeightM(tool: string): number {
@@ -313,9 +318,14 @@ export function buildSketchExternalDrawerBlockers<T extends Record<string, unkno
   return args.extDrawers
     .map((item, index) => {
       const countRaw = readRecordNumber(item, 'count');
+      const isShoeOnly = isSketchExternalShoeDrawerItem(item);
+      const itemDrawerHeightM = readSketchDrawerHeightMFromItem(
+        item,
+        DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M
+      );
       const metrics = resolveSketchExternalDrawerMetrics({
-        drawerCount: countRaw,
-        drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
+        drawerCount: isShoeOnly ? 1 : countRaw,
+        drawerHeightM: itemDrawerHeightM,
       });
       const count = metrics.drawerCount;
       const stackH = metrics.stackH;

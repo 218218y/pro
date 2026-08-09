@@ -87,7 +87,7 @@ export type InteriorTabWorkflowController = {
     platformSideOverhangCm?: number,
     platformFrontOverhangCm?: number
   ) => void;
-  enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
+  enterSketchExtDrawersTool: (count: number, drawerHeightCm: number, drawerType?: ExtDrawerType) => void;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;
 };
 

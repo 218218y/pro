@@ -48,6 +48,7 @@ export type ResolveSketchBoxStackPreviewArgs = {
   pointerY: number;
   woodThick: number;
   selectedDrawerCount?: number | null;
+  externalDrawerType?: 'regular' | 'shoe';
   drawerHeightM?: number | null;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
   readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];

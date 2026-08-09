@@ -23,6 +23,7 @@ export type CommitSketchModuleExternalDrawerArgs = {
   hoverRec: RecordMap;
   hoverOk: boolean;
   requestedDrawerCount: number;
+  drawerType: 'regular' | 'shoe';
   drawerHeightM: number;
   bottomY: number;
   topY: number;

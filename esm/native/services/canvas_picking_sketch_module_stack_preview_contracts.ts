@@ -33,6 +33,7 @@ export type ResolveSketchModuleStackPreviewArgs = {
   extDrawers: RecordMap[];
   boxes?: RecordMap[];
   selectedDrawerCount?: number | null;
+  externalDrawerType?: 'regular' | 'shoe';
   drawerHeightM?: number | null;
   woodThick: number;
   selectorFrontEnvelope?: SelectorFrontEnvelope | null;

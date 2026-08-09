@@ -255,6 +255,7 @@ export interface BuilderSketchDrawerLike extends UnknownRecord {
 
 export interface BuilderSketchExternalDrawerLike extends BuilderSketchDrawerLike {
   count?: BuilderSketchScalar;
+  hasShoeDrawer?: boolean | null;
 }
 
 export interface BuilderSketchBoxDoorLike extends UnknownRecord {

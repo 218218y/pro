@@ -33,6 +33,20 @@ function findElementByTestId(node, testId) {
   return findElementByTestId(children, testId);
 }
 
+function findElementByTypeName(node, typeName) {
+  if (!node || typeof node !== 'object') return null;
+  if (node.type?.name === typeName) return node;
+  const children = node.props?.children;
+  if (Array.isArray(children)) {
+    for (const child of children) {
+      const match = findElementByTypeName(child, typeName);
+      if (match) return match;
+    }
+    return null;
+  }
+  return findElementByTypeName(children, typeName);
+}
+
 function createLayoutProps(overrides = {}) {
   return {
     wardrobeType: 'hinged',
@@ -513,6 +527,27 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(externalHtml, /data-testid="interior-external-drawers-count-6-button"/);
   assert.doesNotMatch(externalHtml, /בחר סוג מגירות ואז לחץ על תא כדי ליישם/);
 
+  const shoeSketchHtml = renderToStaticMarkup(
+    React.createElement(InteriorExternalDrawersSection, {
+      wardrobeType: 'hinged',
+      isExtDrawerMode: false,
+      extDrawerType: 'regular',
+      extDrawerCount: 3,
+      extCounts: [1, 2, 3, 4, 5, 6],
+      enterExtDrawer: noop,
+      exitExtDrawer: noop,
+      sketchControls: createSketchExternalDrawerControls({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_ext_drawers:shoe',
+        sketchExtDrawersPanelOpen: true,
+        sketchExtDrawerHeightCm: 20,
+        sketchExtDrawerHeightDraft: '20',
+      }),
+    })
+  );
+  assert.match(shoeSketchHtml, /value="20"/);
+  assert.match(shoeSketchHtml, /wp-r-ext-drawer-count-row hidden/);
+
   const sketchHtml = renderToStaticMarkup(
     React.createElement(
       InteriorLayoutSketchToolsPanel,
@@ -585,6 +620,77 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(handlesHtml, /צבע ידית ברירת מחדל/);
   assert.match(handlesHtml, /צבע לידית שתשויך/);
   assert.match(handlesHtml, /לחץ על דלת או מגירה כדי לשנות ידית/);
+});
+
+test('[interior-tab-sections-runtime] shoe drawers and sketch mode switch in both orders with the shoe default height', () => {
+  const activeSketchCalls = [];
+  const activeSketchControls = createSketchExternalDrawerControls({
+    isSketchToolActive: true,
+    manualToolRaw: 'sketch_ext_drawers:3',
+    setSketchExtDrawersPanelOpen: value => activeSketchCalls.push(['panel', value]),
+    setSketchExtDrawerHeightCm: value => activeSketchCalls.push(['height', value]),
+    setSketchExtDrawerHeightDraft: value => activeSketchCalls.push(['draft', value]),
+    enterSketchExtDrawersTool: (...args) => activeSketchCalls.push(['enterSketch', ...args]),
+  });
+  const activeSketchTree = InteriorExternalDrawersSection({
+    wardrobeType: 'hinged',
+    isExtDrawerMode: false,
+    extDrawerType: 'regular',
+    extDrawerCount: 3,
+    extCounts: [1, 2, 3, 4, 5, 6],
+    enterExtDrawer: (...args) => activeSketchCalls.push(['enterRegular', ...args]),
+    exitExtDrawer: noop,
+    sketchControls: activeSketchControls,
+  });
+  const shoeButton = findElementByTestId(activeSketchTree, 'interior-external-drawers-shoe-button');
+  assert.ok(shoeButton);
+  shoeButton.props.onClick();
+  assert.deepEqual(activeSketchCalls, [
+    ['height', 20],
+    ['draft', '20'],
+    ['panel', true],
+    ['enterSketch', 3, 20, 'shoe'],
+  ]);
+
+  const shoeFirstCalls = [];
+  const shoeFirstControls = createSketchExternalDrawerControls({
+    isSketchToolActive: false,
+    manualToolRaw: '',
+    sketchExtDrawerHeightCm: 20,
+    sketchExtDrawerHeightDraft: '20',
+    setSketchShelvesOpen: value => shoeFirstCalls.push(['shelves', value]),
+    setSketchRowOpen: value => shoeFirstCalls.push(['row', value]),
+    setSketchExtDrawerCount: value => shoeFirstCalls.push(['count', value]),
+    setSketchExtDrawersPanelOpen: value => shoeFirstCalls.push(['panel', value]),
+    setSketchExtDrawerHeightCm: value => shoeFirstCalls.push(['height', value]),
+    setSketchExtDrawerHeightDraft: value => shoeFirstCalls.push(['draft', value]),
+    enterSketchExtDrawersTool: (...args) => shoeFirstCalls.push(['enterSketch', ...args]),
+  });
+  const shoeFirstTree = InteriorExternalDrawersSection({
+    wardrobeType: 'hinged',
+    isExtDrawerMode: true,
+    extDrawerType: 'shoe',
+    extDrawerCount: 3,
+    extCounts: [1, 2, 3, 4, 5, 6],
+    enterExtDrawer: noop,
+    exitExtDrawer: noop,
+    sketchControls: shoeFirstControls,
+  });
+  const embeddedControls = findElementByTypeName(shoeFirstTree, 'EmbeddedExternalDrawerSketchControls');
+  assert.ok(embeddedControls);
+  const embeddedTree = embeddedControls.type(embeddedControls.props);
+  const sketchButton = findElementByTestId(embeddedTree, 'interior-external-drawers-sketch-button');
+  assert.ok(sketchButton);
+  sketchButton.props.onClick();
+  assert.deepEqual(shoeFirstCalls, [
+    ['shelves', false],
+    ['row', false],
+    ['count', 3],
+    ['height', 20],
+    ['draft', '20'],
+    ['panel', true],
+    ['enterSketch', 3, 20, 'shoe'],
+  ]);
 });
 
 test('interior handles section keeps advanced controls open when handle editing has ended', () => {

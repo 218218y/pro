@@ -6,11 +6,14 @@ import { ModeToggleButton } from '../components/index.js';
 import {
   CountBtn,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
   OptionBtn,
   SKETCH_TOOL_EXT_DRAWERS_PREFIX,
   cx,
   isSketchInternalDrawersTool,
+  parseSketchExternalDrawersType,
+  type ExtDrawerType,
 } from './interior_tab_helpers.js';
 import {
   SketchDrawerHeightField,
@@ -45,19 +48,46 @@ function isEmbeddedSketchInternalDrawersActive(
 
 function createEmbeddedExternalDrawerHeightController(
   sketchControls: EmbeddedSketchExternalDrawersControlsProps,
-  isToolActive: boolean
+  isToolActive: boolean,
+  drawerType: ExtDrawerType
 ): SketchDrawerHeightDraftController {
   return {
     heightCm: sketchControls.sketchExtDrawerHeightCm,
     heightDraft: sketchControls.sketchExtDrawerHeightDraft,
-    defaultHeightCm: DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+    defaultHeightCm:
+      drawerType === 'shoe' ? DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM : DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
     isToolActive,
     setHeightCm: sketchControls.setSketchExtDrawerHeightCm,
     setHeightDraft: sketchControls.setSketchExtDrawerHeightDraft,
     onActiveHeightChange: next => {
-      sketchControls.enterSketchExtDrawersTool(sketchControls.sketchExtDrawerCount, next);
+      sketchControls.enterSketchExtDrawersTool(sketchControls.sketchExtDrawerCount, next, drawerType);
     },
   };
+}
+
+function getSketchExternalDrawerDefaultHeightCm(drawerType: ExtDrawerType): number {
+  return drawerType === 'shoe'
+    ? DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM
+    : DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
+}
+
+function enterSketchExternalDrawerType(args: {
+  sketchControls: EmbeddedSketchExternalDrawersControlsProps;
+  drawerType: ExtDrawerType;
+  drawerCount: number;
+}): void {
+  const { sketchControls, drawerType, drawerCount } = args;
+  const previousType = parseSketchExternalDrawersType(sketchControls.manualToolRaw);
+  const nextHeightCm =
+    previousType === drawerType
+      ? sketchControls.sketchExtDrawerHeightCm
+      : getSketchExternalDrawerDefaultHeightCm(drawerType);
+  if (previousType !== drawerType) {
+    sketchControls.setSketchExtDrawerHeightCm(nextHeightCm);
+    sketchControls.setSketchExtDrawerHeightDraft(String(nextHeightCm));
+  }
+  sketchControls.setSketchExtDrawersPanelOpen(true);
+  sketchControls.enterSketchExtDrawersTool(drawerCount, nextHeightCm, drawerType);
 }
 
 function createEmbeddedInternalDrawerHeightController(
@@ -79,13 +109,15 @@ function createEmbeddedInternalDrawerHeightController(
 
 function EmbeddedExternalDrawerSketchControls(props: {
   regularDrawerCount: number;
+  drawerType: ExtDrawerType;
   sketchControls: EmbeddedSketchExternalDrawersControlsProps;
   isSketchExternalDrawersToolActive: boolean;
 }): ReactElement {
-  const { sketchControls, isSketchExternalDrawersToolActive } = props;
+  const { sketchControls, drawerType, isSketchExternalDrawersToolActive } = props;
   const heightController = createEmbeddedExternalDrawerHeightController(
     sketchControls,
-    isSketchExternalDrawersToolActive
+    isSketchExternalDrawersToolActive,
+    drawerType
   );
   const isHeightPanelOpen = sketchControls.sketchExtDrawersPanelOpen || isSketchExternalDrawersToolActive;
 
@@ -109,11 +141,11 @@ function EmbeddedExternalDrawerSketchControls(props: {
             return;
           }
           sketchControls.setSketchExtDrawerCount(props.regularDrawerCount);
-          sketchControls.setSketchExtDrawersPanelOpen(true);
-          sketchControls.enterSketchExtDrawersTool(
-            props.regularDrawerCount,
-            sketchControls.sketchExtDrawerHeightCm
-          );
+          enterSketchExternalDrawerType({
+            sketchControls,
+            drawerType,
+            drawerCount: props.regularDrawerCount,
+          });
         }}
         data-testid="interior-external-drawers-sketch-button"
       >
@@ -149,8 +181,19 @@ export function InteriorExternalDrawersSection(
   if (props.wardrobeType === 'sliding') return null;
 
   const isSketchExternalDrawersToolActive = isEmbeddedSketchExternalDrawersActive(props.sketchControls);
-  const countButtonsUseSketchTool = !!props.sketchControls && isSketchExternalDrawersToolActive;
-  const showRegularCountButtons = props.extDrawerType === 'regular' || countButtonsUseSketchTool;
+  const parsedSketchDrawerType = props.sketchControls
+    ? parseSketchExternalDrawersType(props.sketchControls.manualToolRaw)
+    : null;
+  const sketchDrawerType: ExtDrawerType = isSketchExternalDrawersToolActive
+    ? parsedSketchDrawerType || 'regular'
+    : props.isExtDrawerMode
+      ? props.extDrawerType
+      : parsedSketchDrawerType || props.extDrawerType;
+  const countButtonsUseSketchTool =
+    !!props.sketchControls && isSketchExternalDrawersToolActive && sketchDrawerType === 'regular';
+  const showRegularCountButtons = isSketchExternalDrawersToolActive
+    ? sketchDrawerType === 'regular'
+    : props.extDrawerType === 'regular';
 
   return (
     <div
@@ -178,8 +221,27 @@ export function InteriorExternalDrawersSection(
       <div className="wp-row wp-gap-8 wp-mb-10">
         <OptionBtn
           className="type-option--iconrow wp-flex-1"
-          selected={props.isExtDrawerMode && props.extDrawerType === 'shoe'}
-          onClick={() => props.enterExtDrawer('shoe')}
+          selected={
+            isSketchExternalDrawersToolActive
+              ? sketchDrawerType === 'shoe'
+              : props.isExtDrawerMode && props.extDrawerType === 'shoe'
+          }
+          onClick={() => {
+            if (isSketchExternalDrawersToolActive && props.sketchControls) {
+              enterSketchExternalDrawerType({
+                sketchControls: props.sketchControls,
+                drawerType: 'shoe',
+                drawerCount: props.sketchControls.sketchExtDrawerCount,
+              });
+              return;
+            }
+            if (props.sketchControls && props.extDrawerType !== 'shoe') {
+              const defaultHeight = getSketchExternalDrawerDefaultHeightCm('shoe');
+              props.sketchControls.setSketchExtDrawerHeightCm(defaultHeight);
+              props.sketchControls.setSketchExtDrawerHeightDraft(String(defaultHeight));
+            }
+            props.enterExtDrawer('shoe');
+          }}
           testId="interior-external-drawers-shoe-button"
         >
           <i className="fas fa-shoe-prints" aria-hidden="true" /> נעליים
@@ -187,8 +249,27 @@ export function InteriorExternalDrawersSection(
 
         <OptionBtn
           className="type-option--iconrow wp-flex-1"
-          selected={props.isExtDrawerMode && props.extDrawerType === 'regular'}
-          onClick={() => props.enterExtDrawer('regular', props.extDrawerCount)}
+          selected={
+            isSketchExternalDrawersToolActive
+              ? sketchDrawerType === 'regular'
+              : props.isExtDrawerMode && props.extDrawerType === 'regular'
+          }
+          onClick={() => {
+            if (isSketchExternalDrawersToolActive && props.sketchControls) {
+              enterSketchExternalDrawerType({
+                sketchControls: props.sketchControls,
+                drawerType: 'regular',
+                drawerCount: props.sketchControls.sketchExtDrawerCount,
+              });
+              return;
+            }
+            if (props.sketchControls && props.extDrawerType !== 'regular') {
+              const defaultHeight = getSketchExternalDrawerDefaultHeightCm('regular');
+              props.sketchControls.setSketchExtDrawerHeightCm(defaultHeight);
+              props.sketchControls.setSketchExtDrawerHeightDraft(String(defaultHeight));
+            }
+            props.enterExtDrawer('regular', props.extDrawerCount);
+          }}
           testId="interior-external-drawers-regular-button"
         >
           <i className="fas fa-layer-group" aria-hidden="true" /> רגילות
@@ -233,6 +314,7 @@ export function InteriorExternalDrawersSection(
       {props.sketchControls ? (
         <EmbeddedExternalDrawerSketchControls
           regularDrawerCount={props.extDrawerCount}
+          drawerType={sketchDrawerType}
           sketchControls={props.sketchControls}
           isSketchExternalDrawersToolActive={isSketchExternalDrawersToolActive}
         />

@@ -28,6 +28,7 @@ import {
 } from '../../../features/platform_overhang_support.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
   SKETCH_DRAWER_HEIGHT_MAX_CM,
   SKETCH_DRAWER_HEIGHT_MIN_CM,
@@ -88,6 +89,7 @@ export const DEFAULT_SKETCH_BOX_DEPTH_CM: number = Math.round(
 );
 export {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
   SKETCH_DRAWER_HEIGHT_MAX_CM,
   SKETCH_DRAWER_HEIGHT_MIN_CM,
@@ -282,11 +284,16 @@ export function parseSketchExternalDrawersHeightCm(tool: string): number | null 
   return parseSketchExternalDrawersTool(tool)?.drawerHeightCm ?? null;
 }
 
+export function parseSketchExternalDrawersType(tool: string): 'regular' | 'shoe' | null {
+  return parseSketchExternalDrawersTool(tool)?.drawerType ?? null;
+}
+
 export function mkSketchExternalDrawersTool(
   count: number,
-  drawerHeightCm = DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM
+  drawerHeightCm = DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  drawerType: 'regular' | 'shoe' = 'regular'
 ): string {
-  return createSketchExternalDrawersTool(count, drawerHeightCm);
+  return createSketchExternalDrawersTool(count, drawerHeightCm, drawerType);
 }
 
 export function parseSketchInternalDrawersHeightCm(tool: string): number | null {

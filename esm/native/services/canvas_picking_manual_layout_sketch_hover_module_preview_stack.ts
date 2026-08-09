@@ -3,6 +3,7 @@ import { shouldBlockDrawerBuildInHexCell } from '../features/hex_cell/index.js';
 import {
   parseSketchExtDrawerCount,
   parseSketchExtDrawerHeightM,
+  parseSketchExtDrawerType,
   parseSketchIntDrawerHeightM,
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import { resolveSketchBoxStackPreview } from './canvas_picking_sketch_box_stack_preview.js';
@@ -53,6 +54,12 @@ function resolveSelectedDrawerHeightM(ctx: ManualLayoutSketchHoverModuleContext)
   return null;
 }
 
+function resolveSelectedExternalDrawerType(
+  ctx: ManualLayoutSketchHoverModuleContext
+): 'regular' | 'shoe' | undefined {
+  return ctx.isExtDrawers ? parseSketchExtDrawerType(ctx.tool) : undefined;
+}
+
 export function tryHandleManualLayoutSketchHoverModuleStackPreview(
   ctx: ManualLayoutSketchHoverModuleContext
 ): boolean {
@@ -94,6 +101,7 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
   const contentKind = resolveSketchDrawerContentKind(ctx);
   const selectedDrawerCount = resolveSelectedDrawerCount(ctx);
   const drawerHeightM = resolveSelectedDrawerHeightM(ctx);
+  const externalDrawerType = resolveSelectedExternalDrawerType(ctx);
 
   if (activeModuleBox) {
     const stackPreview = resolveSketchBoxStackPreview({
@@ -109,6 +117,7 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
       pointerY: yClamped,
       woodThick,
       selectedDrawerCount,
+      externalDrawerType,
       drawerHeightM,
       readSketchBoxDividers: __wp_readSketchBoxDividers,
       readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
@@ -148,6 +157,7 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
     boxes,
     woodThick,
     selectedDrawerCount,
+    externalDrawerType,
     drawerHeightM,
     hitSelectorObj,
     isCornerKey: __wp_isCornerKey,

@@ -52,6 +52,7 @@ export function resolveSketchBoxExternalDrawersPreview(
       selectedDrawerCount != null && selectedDrawerCount > 0
         ? selectedDrawerCount
         : DRAWER_SKETCH_SIZING_POLICY.externalPreviewDefaultCount,
+    drawerType: args.externalDrawerType,
     drawerHeightM: args.drawerHeightM,
     bottomY: boxBottomY,
     topY: boxTopY,

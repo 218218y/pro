@@ -17,4 +17,5 @@ export type CommitSketchModuleBoxContentArgs = {
   woodThick?: number;
   hoverMode?: SketchBoxToggleHoverMode;
   hoverHost?: ManualLayoutSketchHoverHost | null;
+  sketchExternalDrawerType?: 'regular' | 'shoe';
 };

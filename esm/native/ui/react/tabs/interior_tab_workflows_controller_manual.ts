@@ -149,8 +149,12 @@ export function createInteriorTabManualWorkflowController(
       );
     },
 
-    enterSketchExtDrawersTool(count: number, drawerHeightCm: number) {
-      activateManualToolId(mkSketchExternalDrawersTool(count, drawerHeightCm));
+    enterSketchExtDrawersTool(
+      count: number,
+      drawerHeightCm: number,
+      drawerType: 'regular' | 'shoe' = 'regular'
+    ) {
+      activateManualToolId(mkSketchExternalDrawersTool(count, drawerHeightCm, drawerType));
     },
 
     enterSketchIntDrawersTool(drawerHeightCm: number) {

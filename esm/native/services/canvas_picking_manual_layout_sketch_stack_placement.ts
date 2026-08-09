@@ -7,6 +7,7 @@ import {
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
+  isSketchExternalShoeDrawerItem,
   resolveSketchExternalDrawerFit,
   resolveSketchInternalDrawerFit,
 } from '../features/sketch_drawer_sizing.js';
@@ -170,6 +171,7 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
 export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
   desiredCenterY: number;
   selectedDrawerCount: number;
+  drawerType?: 'regular' | 'shoe';
   drawerHeightM?: number | null;
   bottomY: number;
   topY: number;
@@ -199,27 +201,39 @@ export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
     availableHeightM: Math.max(0, args.topY - args.bottomY),
   });
   const metrics = fit.metrics;
+  const isShoeDrawer = args.drawerType === 'shoe';
   const clampCenter = (yCenter: number, stackH: number) => {
+    if (isShoeDrawer) return args.bottomY + stackH / 2;
     const lo = args.bottomY + stackH / 2;
     const hi = args.topY - stackH / 2;
     if (!(hi > lo)) return Math.max(args.bottomY, Math.min(args.topY, yCenter));
     return Math.max(lo, Math.min(hi, yCenter));
   };
+  const sameTypeItems = args.extDrawers.filter(item => isSketchExternalShoeDrawerItem(item) === isShoeDrawer);
+  const otherTypeItems = args.extDrawers.filter(
+    item => isSketchExternalShoeDrawerItem(item) !== isShoeDrawer
+  );
   const placement = resolveSketchVerticalStackPlacement({
-    desiredCenterY: args.desiredCenterY,
+    desiredCenterY: isShoeDrawer ? args.bottomY + metrics.stackH / 2 : args.desiredCenterY,
     selectedStackH: metrics.stackH,
     clampCenter,
     sameStacks: buildManualLayoutSketchExternalDrawerBlockers({
-      extDrawers: args.extDrawers,
+      extDrawers: sameTypeItems,
       bottomY: args.bottomY,
       topY: args.topY,
       pad: args.pad,
       readCenterY: args.readCenterY,
     }),
-    blockers: args.blockers,
+    blockers: buildManualLayoutSketchExternalDrawerBlockers({
+      extDrawers: otherTypeItems,
+      bottomY: args.bottomY,
+      topY: args.topY,
+      pad: args.pad,
+      readCenterY: args.readCenterY,
+    }).concat(args.blockers || []),
     gap: args.gap,
     relocateOnCollision: false,
-    snapToAvailableSlot: true,
+    snapToAvailableSlot: !isShoeDrawer,
   });
   const match = placement.range;
   const matchCount = readFiniteNumber(match?.count);

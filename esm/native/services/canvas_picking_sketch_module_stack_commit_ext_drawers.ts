@@ -84,6 +84,7 @@ export function commitSketchModuleExternalDrawers(
   const basePlacement = resolveManualLayoutSketchExternalDrawerPlacement({
     desiredCenterY: args.hitYClamped,
     selectedDrawerCount: args.requestedDrawerCount,
+    drawerType: args.drawerType,
     drawerHeightM: args.drawerHeightM,
     bottomY: args.bottomY,
     topY: args.topY,
@@ -132,8 +133,9 @@ export function commitSketchModuleExternalDrawers(
     yNormC: normalized.yNormC,
     yNorm: normalized.yNormBase,
     yAnchor: normalized.yAnchor,
-    count: placement.drawerCount,
+    count: args.drawerType === 'shoe' ? 0 : placement.drawerCount,
     drawerHeightM: args.drawerHeightM,
+    ...(args.drawerType === 'shoe' ? { hasShoeDrawer: true } : {}),
   };
   mutableList.push(item);
   return createManualLayoutSketchStackHoverRecord({

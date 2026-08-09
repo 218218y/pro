@@ -118,7 +118,7 @@ export function createSketchBoxExternalDrawerStackPlan(
     drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
   });
   const drawerH = metrics.drawerH;
-  const shoeDrawerH = EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
+  const shoeDrawerH = hasShoeDrawer && drawerCount === 0 ? drawerH : EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
   const stackH = (hasShoeDrawer ? shoeDrawerH : 0) + drawerCount * drawerH;
   if (!sketchStackFitsAvailableHeight(stackH, Math.max(0, containerMaxY - containerMinY))) {
     return null;

@@ -206,6 +206,7 @@ function buildDrawerItem(args: {
   boxBaseYNorm: number | null;
   contentXNorm: number | null;
   drawerCount?: number;
+  hasShoeDrawer?: boolean;
   drawerHeightM?: number | null;
   stackH?: number | null;
 }): SketchModuleBoxContentLike {
@@ -218,8 +219,10 @@ function buildDrawerItem(args: {
   };
   if (args.boxBaseYNorm != null) item.yNorm = yNorm;
   writeSketchCommitOptionalDrawerXNorm(item, args.contentXNorm);
-  writeSketchCommitPositiveNumber(item, 'count', args.drawerCount);
+  if (args.hasShoeDrawer && args.drawerCount === 0) item.count = 0;
+  else writeSketchCommitPositiveNumber(item, 'count', args.drawerCount);
   writeSketchCommitPositiveNumber(item, 'drawerHeightM', args.drawerHeightM);
+  if (args.hasShoeDrawer) item.hasShoeDrawer = true;
   return item;
 }
 
@@ -312,7 +315,8 @@ export function tryCommitSketchBoxDrawerContent(args: {
       boxYNorm,
       boxBaseYNorm,
       contentXNorm,
-      drawerCount,
+      drawerCount: commitArgs.sketchExternalDrawerType === 'shoe' ? 0 : drawerCount,
+      hasShoeDrawer: commitArgs.sketchExternalDrawerType === 'shoe',
       drawerHeightM,
       stackH,
     });

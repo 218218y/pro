@@ -13,6 +13,8 @@ export const SKETCH_EXTERNAL_DRAWER_COUNT_MIN: number = DRAWER_SKETCH_SIZING_POL
 export const SKETCH_EXTERNAL_DRAWER_COUNT_MAX: number = DRAWER_SKETCH_SIZING_POLICY.externalCountMax;
 export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: number =
   DRAWER_SKETCH_SIZING_POLICY.externalDefaultHeightCm;
+export const DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM: number =
+  DRAWER_SKETCH_SIZING_POLICY.externalShoeDefaultHeightCm;
 export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: number =
   DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm;
 
@@ -66,6 +68,7 @@ export function hasSketchInternalDrawersDirtyOrData(value: unknown): boolean {
 }
 
 export type SketchExternalDrawersToolSpec = {
+  drawerType: 'regular' | 'shoe';
   count: number;
   drawerHeightCm: number;
   drawerHeightM: number;
@@ -184,6 +187,18 @@ export function parseSketchExternalDrawersTool(tool: unknown): SketchExternalDra
   if (!isSketchExternalDrawersTool(tool)) return null;
   const raw = String(tool).slice(SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX.length).trim();
   const [countRaw = '', heightRaw = ''] = raw.split(SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR);
+  const drawerType = countRaw.trim().toLowerCase() === 'shoe' ? 'shoe' : 'regular';
+  if (drawerType === 'shoe') {
+    const heightCm = heightRaw
+      ? normalizeSketchDrawerHeightCm(heightRaw, DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM)
+      : DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM;
+    return {
+      drawerType,
+      count: 1,
+      drawerHeightCm: heightCm,
+      drawerHeightM: cmToM(heightCm),
+    };
+  }
   const countNum = parseFiniteNumberToken(countRaw);
   if (countNum == null) return null;
   const count = Math.max(
@@ -194,6 +209,7 @@ export function parseSketchExternalDrawersTool(tool: unknown): SketchExternalDra
     ? normalizeSketchDrawerHeightCm(heightRaw, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM)
     : DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM;
   return {
+    drawerType,
     count,
     drawerHeightCm: heightCm,
     drawerHeightM: cmToM(heightCm),
@@ -208,7 +224,17 @@ export function createSketchInternalDrawersTool(heightCm: unknown): string {
   return `${SKETCH_INTERNAL_DRAWERS_TOOL_ID}${SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR}${formatHeightToken(normalized)}`;
 }
 
-export function createSketchExternalDrawersTool(count: unknown, heightCm: unknown): string {
+export function createSketchExternalDrawersTool(
+  count: unknown,
+  heightCm: unknown,
+  drawerType: 'regular' | 'shoe' = 'regular'
+): string {
+  if (drawerType === 'shoe') {
+    const normalized = normalizeSketchDrawerHeightCm(heightCm, DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM);
+    const base = `${SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX}shoe`;
+    if (isSameHeightCm(normalized, DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM)) return base;
+    return `${base}${SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR}${formatHeightToken(normalized)}`;
+  }
   const countNum = parseFiniteNumberToken(count);
   const safeCount =
     countNum != null
@@ -226,6 +252,13 @@ export function createSketchExternalDrawersTool(count: unknown, heightCm: unknow
 export function readSketchDrawerHeightMFromItem(value: unknown, defaultM: number): number {
   const rec = readRecord(value);
   return normalizeSketchDrawerHeightM(rec?.drawerHeightM, defaultM);
+}
+
+export function isSketchExternalShoeDrawerItem(value: unknown): boolean {
+  const rec = readRecord(value);
+  if (!rec || rec.hasShoeDrawer !== true) return false;
+  const count = parseFiniteNumberToken(rec.count);
+  return count != null && Math.floor(count) === 0;
 }
 
 export function resolveSketchInternalDrawerMetrics(args?: {

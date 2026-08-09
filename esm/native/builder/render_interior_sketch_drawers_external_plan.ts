@@ -5,6 +5,7 @@ import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
   SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
+  isSketchExternalShoeDrawerItem,
   readSketchDrawerHeightMFromItem,
   resolveSketchExternalDrawerMetrics,
   sketchStackFitsAvailableHeight,
@@ -36,20 +37,22 @@ export function createSketchExternalDrawerStackPlan(
 ): SketchExternalDrawerStackPlan | null {
   if (!item) return null;
 
+  const isShoeDrawer = isSketchExternalShoeDrawerItem(item);
   const countRaw = toFiniteNumber(item.count);
-  const drawerCount =
-    countRaw != null
+  const drawerCount = isShoeDrawer
+    ? 0
+    : countRaw != null
       ? Math.max(
           SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
           Math.min(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, Math.floor(countRaw))
         )
       : 1;
   const metrics = resolveSketchExternalDrawerMetrics({
-    drawerCount,
+    drawerCount: isShoeDrawer ? 1 : drawerCount,
     drawerHeightM: readSketchDrawerHeightMFromItem(item, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
   });
   const drawerH = metrics.drawerH;
-  const stackH = metrics.stackH;
+  const stackH = isShoeDrawer ? drawerH : metrics.stackH;
   if (
     !sketchStackFitsAvailableHeight(stackH, Math.max(0, context.effectiveTopY - context.effectiveBottomY))
   ) {
@@ -79,9 +82,10 @@ export function createSketchExternalDrawerStackPlan(
       woodThick: context.woodThick,
       doorMountMode: resolveSketchExternalDrawerDoorMountMode(context.input),
       keyPrefix,
-      regCount: drawerCount,
+      regCount: isShoeDrawer ? 0 : drawerCount,
       regDrawerHeight: drawerH,
-      hasShoe: false,
+      shoeDrawerHeight: drawerH,
+      hasShoe: isShoeDrawer,
     })
   );
   const drawerOps = asRecordArray(opsRec?.drawers);

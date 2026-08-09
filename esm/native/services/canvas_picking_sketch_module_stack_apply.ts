@@ -13,6 +13,7 @@ import {
 import {
   parseSketchExtDrawerCount,
   parseSketchExtDrawerHeightM,
+  parseSketchExtDrawerType,
   parseSketchIntDrawerHeightM,
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import {
@@ -33,6 +34,10 @@ import {
   decodeSketchBoxContentCommandHover,
   SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_box_content_command.js';
+import {
+  applyShoeDrawerBaseAutoNoneIfNeeded,
+  restoreShoeDrawerBaseIfNoShoeDrawersRemain,
+} from './canvas_picking_shoe_drawer_base_auto_none.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -340,7 +345,15 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       woodThick: args.woodThick,
       hoverMode: 'manual-toggle',
       hoverHost: args.hoverHost,
+      sketchExternalDrawerType: parseSketchExtDrawerType(args.tool),
     });
+    if (nextHover && parseSketchExtDrawerType(args.tool) === 'shoe') {
+      if (command.op === 'remove') {
+        restoreShoeDrawerBaseIfNoShoeDrawersRemain(args.App, 'sketchExtDrawers.shoe.box:autoBaseRestore');
+      } else {
+        applyShoeDrawerBaseAutoNoneIfNeeded(args.App, 'sketchExtDrawers.shoe.box:autoBaseNone');
+      }
+    }
     args.writeSketchHover(args.App, nextHover);
     return true;
   }
@@ -420,6 +433,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   const extStackHover = stackHover?.kind === 'ext_drawers' ? stackHover : null;
   const drawerHeightM = parseSketchExtDrawerHeightM(args.tool);
   const requestedDrawerCount = parseSketchExtDrawerCount(args.tool);
+  const drawerType = parseSketchExtDrawerType(args.tool);
   if (
     extStackHover?.op !== 'remove' &&
     blockSketchStackCommitIfRemovedFrameSide({
@@ -469,6 +483,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     hoverRec: args.hoverRec,
     hoverOk: args.hoverOk,
     requestedDrawerCount,
+    drawerType,
     drawerHeightM,
     bottomY: args.bottomY,
     topY: args.topY,
@@ -480,6 +495,14 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   });
   if (extStackHover?.op !== 'remove' && nextHover == null) {
     toastSketchDrawerCollisionFailure({ App: args.App, contentKind: 'ext_drawers' });
+  }
+  if (nextHover && drawerType === 'shoe') {
+    const nextIntent = readManualLayoutSketchStackHoverIntent(nextHover);
+    if (nextIntent?.op === 'remove') {
+      applyShoeDrawerBaseAutoNoneIfNeeded(args.App, 'sketchExtDrawers.shoe:autoBaseNone');
+    } else if (nextIntent?.op === 'add') {
+      restoreShoeDrawerBaseIfNoShoeDrawersRemain(args.App, 'sketchExtDrawers.shoe:autoBaseRestore');
+    }
   }
   args.writeSketchHover(args.App, nextHover);
   return true;

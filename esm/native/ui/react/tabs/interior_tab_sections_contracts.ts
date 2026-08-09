@@ -30,7 +30,7 @@ export type EmbeddedSketchExternalDrawersControlsProps = {
   setSketchExtDrawerCount: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightCm: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightDraft: Dispatch<SetStateAction<string>>;
-  enterSketchExtDrawersTool: (count: number, drawerHeightCm: number) => void;
+  enterSketchExtDrawersTool: (count: number, drawerHeightCm: number, drawerType?: ExtDrawerType) => void;
   exitManual: () => void;
 };
 

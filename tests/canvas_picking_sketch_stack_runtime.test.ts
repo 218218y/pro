@@ -2,12 +2,92 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
-import { buildManualLayoutSketchInternalDrawerBlockers } from '../esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts';
+import {
+  buildManualLayoutSketchInternalDrawerBlockers,
+  resolveManualLayoutSketchExternalDrawerPlacement,
+} from '../esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts';
+import { commitSketchModuleExternalDrawers } from '../esm/native/services/canvas_picking_sketch_module_stack_commit_ext_drawers.ts';
 import { resolveSketchFreeStackContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts';
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 import { createManualLayoutSketchStackHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
+import {
+  DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM,
+  createSketchExternalDrawersTool,
+  isSketchExternalShoeDrawerItem,
+  parseSketchExternalDrawersTool,
+} from '../esm/native/features/sketch_drawer_sizing.ts';
+
+test('shoe sketch external drawer tool keeps the regular encoding backward-compatible and owns a 20cm default', () => {
+  assert.equal(createSketchExternalDrawersTool(3, 22), 'sketch_ext_drawers:3');
+  assert.equal(
+    createSketchExternalDrawersTool(3, DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM, 'shoe'),
+    'sketch_ext_drawers:shoe'
+  );
+  assert.equal(createSketchExternalDrawersTool(3, 27.5, 'shoe'), 'sketch_ext_drawers:shoe@27.5');
+
+  assert.deepEqual(parseSketchExternalDrawersTool('sketch_ext_drawers:shoe'), {
+    drawerType: 'shoe',
+    count: 1,
+    drawerHeightCm: 20,
+    drawerHeightM: 0.2,
+  });
+  assert.deepEqual(parseSketchExternalDrawersTool('sketch_ext_drawers:shoe@27.5'), {
+    drawerType: 'shoe',
+    count: 1,
+    drawerHeightCm: 27.5,
+    drawerHeightM: 0.275,
+  });
+});
+
+test('shoe sketch external drawer placement is fixed to the target bottom while keeping custom height', () => {
+  const placement = resolveManualLayoutSketchExternalDrawerPlacement({
+    desiredCenterY: 1.7,
+    selectedDrawerCount: 1,
+    drawerType: 'shoe',
+    drawerHeightM: 0.275,
+    bottomY: 0.2,
+    topY: 2,
+    pad: 0.02,
+    extDrawers: [],
+    readCenterY: () => null,
+    blockers: [],
+  });
+
+  assert.equal(placement.op, 'add');
+  assert.ok(Math.abs(placement.stackH - 0.275) < 1e-12);
+  assert.ok(Math.abs(placement.yCenter - 0.3375) < 1e-12);
+});
+
+test('shoe sketch external drawer commit persists explicit shoe semantics and custom height', () => {
+  const cfg: Record<string, unknown> = {};
+  const nextHover = commitSketchModuleExternalDrawers({
+    cfg,
+    hoverRec: {},
+    hoverOk: false,
+    requestedDrawerCount: 1,
+    drawerType: 'shoe',
+    drawerHeightM: 0.275,
+    bottomY: 0.2,
+    topY: 2,
+    totalHeight: 1.8,
+    pad: 0.02,
+    woodThick: 0.018,
+    hitYClamped: 1.5,
+    hoverHost: { tool: 'sketch_ext_drawers:shoe@27.5', moduleKey: 2, isBottom: false },
+  });
+
+  assert.ok(nextHover);
+  const extDrawers = (cfg.sketchExtras as any).extDrawers;
+  assert.equal(extDrawers.length, 1);
+  assert.equal(extDrawers[0].count, 0);
+  assert.equal(extDrawers[0].hasShoeDrawer, true);
+  assert.equal(extDrawers[0].drawerHeightM, 0.275);
+  assert.equal(extDrawers[0].yAnchor, 'bottom');
+  assert.equal(isSketchExternalShoeDrawerItem(extDrawers[0]), true);
+  assert.ok(Math.abs(extDrawers[0].yNorm - 0) < 1e-12);
+});
 
 function requireSketchBoxCommandHover(value: unknown) {
   const decoded = decodeSketchBoxContentCommandHover(value);
