@@ -130,6 +130,7 @@ export type InteriorLayoutSectionProps = {
   sketchBoxLegWidthCm: number;
   sketchBoxLegWidthDraft: string;
   sketchExtDrawersPanelOpen: boolean;
+  sketchExtDrawerType: ExtDrawerType;
   sketchExtDrawerCount: number;
   sketchExtDrawerHeightCm: number;
   sketchExtDrawerHeightDraft: string;
@@ -184,6 +185,7 @@ export type InteriorLayoutSectionProps = {
   setSketchBoxLegWidthCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegWidthDraft: Dispatch<SetStateAction<string>>;
   setSketchExtDrawersPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setSketchExtDrawerType: Dispatch<SetStateAction<ExtDrawerType>>;
   setSketchExtDrawerCount: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightCm: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightDraft: Dispatch<SetStateAction<string>>;

@@ -108,6 +108,7 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
   const setSketchBoxLegWidthCm = () => undefined;
   const setSketchBoxLegWidthDraft = () => undefined;
   const setSketchExtDrawerCount = () => undefined;
+  const setSketchExtDrawerType = () => undefined;
   const setSketchExtDrawerHeightCm = () => undefined;
   const setSketchExtDrawerHeightDraft = () => undefined;
   const setSketchIntDrawerHeightCm = () => undefined;
@@ -153,6 +154,7 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
     setSketchBoxLegWidthCm,
     setSketchBoxLegWidthDraft,
     setSketchExtDrawerCount,
+    setSketchExtDrawerType,
     setSketchExtDrawerHeightCm,
     setSketchExtDrawerHeightDraft,
     setSketchIntDrawerHeightCm,
@@ -211,6 +213,7 @@ test('[interior-view-state-sync] keeps the controller stable across local draft 
           localState.setSketchBoxLegWidthCm,
           localState.setSketchBoxLegWidthDraft,
           localState.setSketchExtDrawerCount,
+          localState.setSketchExtDrawerType,
           localState.setSketchExtDrawerHeightCm,
           localState.setSketchExtDrawerHeightDraft,
           localState.setSketchIntDrawerHeightCm,

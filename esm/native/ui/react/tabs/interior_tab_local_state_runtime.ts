@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
+  ExtDrawerType,
   ManualToolId,
   SketchBoxBaseType,
   SketchBoxCorniceType,
@@ -100,6 +101,9 @@ export function useInteriorTabLocalState() {
   const [sketchExtDrawersPanelOpen, setSketchExtDrawersPanelOpen] = useState<boolean>(
     () => defaults.sketchExtDrawersPanelOpen
   );
+  const [sketchExtDrawerType, setSketchExtDrawerType] = useState<ExtDrawerType>(
+    () => defaults.sketchExtDrawerType
+  );
   const [sketchExtDrawerCount, setSketchExtDrawerCount] = useState<number>(
     () => defaults.sketchExtDrawerCount
   );
@@ -185,6 +189,7 @@ export function useInteriorTabLocalState() {
     sketchBoxLegWidthCm,
     sketchBoxLegWidthDraft,
     sketchExtDrawersPanelOpen,
+    sketchExtDrawerType,
     sketchExtDrawerCount,
     sketchExtDrawerHeightCm,
     sketchExtDrawerHeightDraft,
@@ -233,6 +238,7 @@ export function useInteriorTabLocalState() {
     setSketchBoxLegWidthCm,
     setSketchBoxLegWidthDraft,
     setSketchExtDrawersPanelOpen,
+    setSketchExtDrawerType,
     setSketchExtDrawerCount,
     setSketchExtDrawerHeightCm,
     setSketchExtDrawerHeightDraft,

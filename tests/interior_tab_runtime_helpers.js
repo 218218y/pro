@@ -247,13 +247,23 @@ export function loadInteriorTabViewStateControllerModule(calls, options = {}) {
             String(value).startsWith('sketch_box_base:') ? String(value).split(':')[1].split('@')[0] : null,
           parseSketchExternalDrawersCount: value =>
             String(value).startsWith('sketch_ext_drawers:')
-              ? Number(String(value).slice('sketch_ext_drawers:'.length).split('@')[0])
+              ? String(value).slice('sketch_ext_drawers:'.length).split('@')[0] === 'shoe'
+                ? 1
+                : Number(String(value).slice('sketch_ext_drawers:'.length).split('@')[0])
+              : null,
+          parseSketchExternalDrawersType: value =>
+            String(value).startsWith('sketch_ext_drawers:')
+              ? String(value).slice('sketch_ext_drawers:'.length).split('@')[0] === 'shoe'
+                ? 'shoe'
+                : 'regular'
               : null,
           parseSketchExternalDrawersHeightCm: value =>
             String(value).startsWith('sketch_ext_drawers:') && String(value).includes('@')
               ? Number(String(value).split('@')[1])
               : String(value).startsWith('sketch_ext_drawers:')
-                ? 22
+                ? String(value).slice('sketch_ext_drawers:'.length).split('@')[0] === 'shoe'
+                  ? 20
+                  : 22
                 : null,
           parseSketchInternalDrawersHeightCm: value =>
             String(value) === 'sketch_int_drawers'
@@ -335,6 +345,7 @@ export function createInteriorViewStateControllerHarness(options = {}) {
     setSketchBoxLegWidthCm: value => calls.push(['setSketchBoxLegWidthCm', value]),
     setSketchBoxLegWidthDraft: value => calls.push(['setSketchBoxLegWidthDraft', value]),
     setSketchExtDrawerCount: value => calls.push(['setSketchExtDrawerCount', value]),
+    setSketchExtDrawerType: value => calls.push(['setSketchExtDrawerType', value]),
     setSketchExtDrawerHeightCm: value => calls.push(['setSketchExtDrawerHeightCm', value]),
     setSketchExtDrawerHeightDraft: value => calls.push(['setSketchExtDrawerHeightDraft', value]),
     setSketchIntDrawerHeightCm: value => calls.push(['setSketchIntDrawerHeightCm', value]),

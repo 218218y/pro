@@ -44,6 +44,7 @@ export type InteriorTabViewStateControllerBindings = Pick<
   | 'setSketchBoxLegHeightCm'
   | 'setSketchBoxLegHeightDraft'
   | 'setSketchExtDrawerCount'
+  | 'setSketchExtDrawerType'
   | 'setSketchExtDrawerHeightCm'
   | 'setSketchExtDrawerHeightDraft'
   | 'setSketchIntDrawerHeightCm'
@@ -99,6 +100,7 @@ export function createInteriorTabViewStateControllerMemoDeps(
     bindings.setSketchBoxLegHeightCm,
     bindings.setSketchBoxLegHeightDraft,
     bindings.setSketchExtDrawerCount,
+    bindings.setSketchExtDrawerType,
     bindings.setSketchExtDrawerHeightCm,
     bindings.setSketchExtDrawerHeightDraft,
     bindings.setSketchIntDrawerHeightCm,
@@ -155,6 +157,7 @@ export function createInteriorTabViewStateControllerArgs(
     setSketchBoxLegHeightCm: bindings.setSketchBoxLegHeightCm,
     setSketchBoxLegHeightDraft: bindings.setSketchBoxLegHeightDraft,
     setSketchExtDrawerCount: bindings.setSketchExtDrawerCount,
+    setSketchExtDrawerType: bindings.setSketchExtDrawerType,
     setSketchExtDrawerHeightCm: bindings.setSketchExtDrawerHeightCm,
     setSketchExtDrawerHeightDraft: bindings.setSketchExtDrawerHeightDraft,
     setSketchIntDrawerHeightCm: bindings.setSketchIntDrawerHeightCm,

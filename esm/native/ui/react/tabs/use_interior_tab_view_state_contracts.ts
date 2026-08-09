@@ -93,6 +93,7 @@ export type InteriorTabViewState = {
   sketchBoxLegWidthCm: number;
   sketchBoxLegWidthDraft: string;
   sketchExtDrawersPanelOpen: boolean;
+  sketchExtDrawerType: ExtDrawerType;
   sketchExtDrawerCount: number;
   sketchExtDrawerHeightCm: number;
   sketchExtDrawerHeightDraft: string;
@@ -147,6 +148,7 @@ export type InteriorTabViewState = {
   setSketchBoxLegWidthCm: Dispatch<SetStateAction<number>>;
   setSketchBoxLegWidthDraft: Dispatch<SetStateAction<string>>;
   setSketchExtDrawersPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setSketchExtDrawerType: Dispatch<SetStateAction<ExtDrawerType>>;
   setSketchExtDrawerCount: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightCm: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightDraft: Dispatch<SetStateAction<string>>;

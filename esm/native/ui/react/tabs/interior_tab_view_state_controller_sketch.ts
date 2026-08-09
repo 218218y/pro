@@ -5,6 +5,7 @@ import {
   parseSketchBoxTool,
   parseSketchExternalDrawersCount,
   parseSketchExternalDrawersHeightCm,
+  parseSketchExternalDrawersType,
   parseSketchInternalDrawersHeightCm,
   parseSketchShelfDepthCm,
   parseSketchShelfVariant,
@@ -74,6 +75,7 @@ export function createInteriorTabSketchViewStateController(
     | 'setSketchBoxLegHeightCm'
     | 'setSketchBoxLegHeightDraft'
     | 'setSketchExtDrawerCount'
+    | 'setSketchExtDrawerType'
     | 'setSketchExtDrawersPanelOpen'
     | 'setSketchExtDrawerHeightCm'
     | 'setSketchExtDrawerHeightDraft'
@@ -113,6 +115,7 @@ export function createInteriorTabSketchViewStateController(
     setSketchBoxLegHeightCm,
     setSketchBoxLegHeightDraft,
     setSketchExtDrawerCount,
+    setSketchExtDrawerType,
     setSketchExtDrawersPanelOpen,
     setSketchExtDrawerHeightCm,
     setSketchExtDrawerHeightDraft,
@@ -218,8 +221,10 @@ export function createInteriorTabSketchViewStateController(
       if (!isSketchToolActive) return;
       const next = parseSketchExternalDrawersCount(manualToolRaw);
       if (!next) return;
+      const nextType = parseSketchExternalDrawersType(manualToolRaw);
       const nextHeight = parseSketchExternalDrawersHeightCm(manualToolRaw);
-      setSketchExtDrawerCount(next);
+      if (nextType !== 'shoe') setSketchExtDrawerCount(next);
+      if (nextType) setSketchExtDrawerType(nextType);
       if (typeof nextHeight === 'number') {
         setSketchExtDrawerHeightCm(nextHeight);
         setSketchExtDrawerHeightDraft(String(nextHeight));

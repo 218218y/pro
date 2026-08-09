@@ -4,10 +4,14 @@ import { ModeToggleButton } from '../components/index.js';
 import {
   CountBtn,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
+  OptionBtn,
   SKETCH_TOOL_EXT_DRAWERS_PREFIX,
   cx,
   isSketchInternalDrawersTool,
+  parseSketchExternalDrawersType,
+  type ExtDrawerType,
 } from './interior_tab_helpers.js';
 import {
   SketchDrawerHeightField,
@@ -23,17 +27,24 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
   const { isSketchExtDrawersControlsOpen } = props;
   const isSketchExternalDrawersToolActive =
     props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX);
+  const parsedSketchExternalDrawerType = isSketchExternalDrawersToolActive
+    ? parseSketchExternalDrawersType(props.manualToolRaw)
+    : null;
+  const sketchExternalDrawerType: ExtDrawerType = parsedSketchExternalDrawerType || props.sketchExtDrawerType;
   const isSketchInternalDrawersToolActive =
     props.isSketchToolActive && isSketchInternalDrawersTool(props.manualToolRaw);
   const externalHeightController: SketchDrawerHeightDraftController = {
     heightCm: props.sketchExtDrawerHeightCm,
     heightDraft: props.sketchExtDrawerHeightDraft,
-    defaultHeightCm: DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+    defaultHeightCm:
+      sketchExternalDrawerType === 'shoe'
+        ? DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM
+        : DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
     isToolActive: isSketchExternalDrawersToolActive,
     setHeightCm: props.setSketchExtDrawerHeightCm,
     setHeightDraft: props.setSketchExtDrawerHeightDraft,
     onActiveHeightChange: next => {
-      props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next);
+      props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, next, sketchExternalDrawerType);
     },
   };
   const internalHeightController: SketchDrawerHeightDraftController = {
@@ -48,6 +59,23 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
     },
   };
   const canShowExternalDrawers = props.wardrobeType !== 'sliding';
+
+  const selectSketchExternalDrawerType = (nextType: ExtDrawerType): void => {
+    const typeChanged = sketchExternalDrawerType !== nextType;
+    const nextHeightCm = typeChanged
+      ? nextType === 'shoe'
+        ? DEFAULT_SKETCH_SHOE_DRAWER_HEIGHT_CM
+        : DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM
+      : props.sketchExtDrawerHeightCm;
+
+    if (typeChanged) {
+      props.setSketchExtDrawerType(nextType);
+      props.setSketchExtDrawerHeightCm(nextHeightCm);
+      props.setSketchExtDrawerHeightDraft(String(nextHeightCm));
+    }
+    props.setSketchExtDrawersPanelOpen(true);
+    props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, nextHeightCm, nextType);
+  };
 
   return (
     <>
@@ -71,7 +99,11 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
                   return;
                 }
                 props.setSketchExtDrawersPanelOpen(true);
-                props.enterSketchExtDrawersTool(props.sketchExtDrawerCount, props.sketchExtDrawerHeightCm);
+                props.enterSketchExtDrawersTool(
+                  props.sketchExtDrawerCount,
+                  props.sketchExtDrawerHeightCm,
+                  sketchExternalDrawerType
+                );
               }}
             >
               הוסף/הסר מגירות חיצוניות
@@ -87,11 +119,33 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           </div>
 
           <div
+            className={cx('wp-row', 'wp-gap-8', isSketchExtDrawersControlsOpen ? '' : 'hidden')}
+            style={{ marginTop: 8, marginBottom: 10 }}
+          >
+            <OptionBtn
+              className="type-option--iconrow wp-flex-1"
+              selected={sketchExternalDrawerType === 'shoe'}
+              onClick={() => selectSketchExternalDrawerType('shoe')}
+              testId="interior-sketch-external-drawers-shoe-button"
+            >
+              <i className="fas fa-shoe-prints" aria-hidden="true" /> נעליים
+            </OptionBtn>
+            <OptionBtn
+              className="type-option--iconrow wp-flex-1"
+              selected={sketchExternalDrawerType === 'regular'}
+              onClick={() => selectSketchExternalDrawerType('regular')}
+              testId="interior-sketch-external-drawers-regular-button"
+            >
+              <i className="fas fa-layer-group" aria-hidden="true" /> רגילות
+            </OptionBtn>
+          </div>
+
+          <div
             className={cx(
               'wp-row',
               'wp-gap-5',
               'wp-r-ext-drawer-count-row',
-              isSketchExtDrawersControlsOpen ? '' : 'hidden'
+              isSketchExtDrawersControlsOpen && sketchExternalDrawerType === 'regular' ? '' : 'hidden'
             )}
             style={{ marginTop: 8, marginBottom: 10 }}
           >
@@ -102,7 +156,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
                 onClick={() => {
                   props.setSketchExtDrawerCount(n);
                   props.setSketchExtDrawersPanelOpen(true);
-                  props.enterSketchExtDrawersTool(n, props.sketchExtDrawerHeightCm);
+                  props.enterSketchExtDrawersTool(n, props.sketchExtDrawerHeightCm, 'regular');
                 }}
                 testId={`interior-sketch-external-drawers-count-${n}-button`}
               >

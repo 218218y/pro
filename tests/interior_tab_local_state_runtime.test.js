@@ -66,6 +66,7 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   assert.equal(defaults.sketchBoxLegPlatformSideMode, 'overhang');
   assert.equal(defaults.sketchBoxLegPlatformSideOverhangCm, 1.5);
   assert.equal(defaults.sketchBoxLegPlatformFrontOverhangCm, 2);
+  assert.equal(defaults.sketchExtDrawerType, 'regular');
   assert.equal(defaults.sketchExtDrawerCount, 1);
   assert.equal(defaults.sketchExtDrawerHeightCm, 22);
   assert.equal(defaults.sketchExtDrawerHeightDraft, '22');

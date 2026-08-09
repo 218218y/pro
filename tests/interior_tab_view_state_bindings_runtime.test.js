@@ -53,6 +53,7 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
     setSketchBoxLegHeightCm: () => 'legHeightCm',
     setSketchBoxLegHeightDraft: () => 'legHeightDraft',
     setSketchExtDrawerCount: () => 'extDrawerCount',
+    setSketchExtDrawerType: () => 'extDrawerType',
     setSketchExtDrawerHeightCm: () => 'extDrawerHeightCm',
     setSketchExtDrawerHeightDraft: () => 'extDrawerHeightDraft',
     setSketchIntDrawerHeightCm: () => 'intDrawerHeightCm',
@@ -81,14 +82,15 @@ test('[interior-view-state-bindings] maps local setters into controller args onc
   assert.equal(args.setSketchBoxLegWidthCm, bindings.setSketchBoxLegWidthCm);
   assert.equal(args.setSketchBoxLegWidthDraft, bindings.setSketchBoxLegWidthDraft);
   assert.equal(args.setSketchBoxLegHeightDraft, bindings.setSketchBoxLegHeightDraft);
+  assert.equal(args.setSketchExtDrawerType, bindings.setSketchExtDrawerType);
   assert.equal(args.setSketchExtDrawerHeightCm, bindings.setSketchExtDrawerHeightCm);
   assert.equal(args.setSketchExtDrawerHeightDraft, bindings.setSketchExtDrawerHeightDraft);
   assert.equal(args.setSketchIntDrawerHeightCm, bindings.setSketchIntDrawerHeightCm);
   assert.equal(args.setSketchIntDrawerHeightDraft, bindings.setSketchIntDrawerHeightDraft);
   assert.equal(args.setSketchExtDrawersPanelOpen, bindings.setSketchExtDrawersPanelOpen);
   assert.equal(args.setManualUiTool, bindings.setManualUiTool);
-  assert.equal(Object.keys(args).length, 48);
-  assert.equal(deps.length, 48);
+  assert.equal(Object.keys(args).length, 49);
+  assert.equal(deps.length, 49);
   assert.equal(deps[0].id, 'app');
   assert.equal(deps.at(-1), bindings.setManualUiTool);
   assert.equal(deps[1], bindings.setSketchShelvesOpen);

@@ -1,6 +1,7 @@
 import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
+  ExtDrawerType,
   HandleType,
   LayoutTypeId,
   ManualToolId,
@@ -82,6 +83,7 @@ export type InteriorTabLocalStateDefaults = {
   sketchBoxLegWidthCm: number;
   sketchBoxLegWidthDraft: string;
   sketchExtDrawersPanelOpen: boolean;
+  sketchExtDrawerType: ExtDrawerType;
   sketchExtDrawerCount: number;
   sketchExtDrawerHeightCm: number;
   sketchExtDrawerHeightDraft: string;
@@ -140,6 +142,7 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
     sketchBoxLegWidthCm: 4,
     sketchBoxLegWidthDraft: '4',
     sketchExtDrawersPanelOpen: false,
+    sketchExtDrawerType: 'regular',
     sketchExtDrawerCount: 1,
     sketchExtDrawerHeightCm: DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
     sketchExtDrawerHeightDraft: String(DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM),

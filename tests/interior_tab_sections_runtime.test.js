@@ -95,6 +95,7 @@ function createLayoutProps(overrides = {}) {
     sketchBoxLegWidthCm: 4,
     sketchBoxLegWidthDraft: '4',
     sketchExtDrawersPanelOpen: false,
+    sketchExtDrawerType: 'regular',
     sketchExtDrawerCount: 3,
     sketchExtDrawerHeightCm: 22,
     sketchExtDrawerHeightDraft: '22',
@@ -156,6 +157,7 @@ function createLayoutProps(overrides = {}) {
     setSketchBoxLegWidthCm: setStateNoop,
     setSketchBoxLegWidthDraft: setStateNoop,
     setSketchExtDrawersPanelOpen: setStateNoop,
+    setSketchExtDrawerType: setStateNoop,
     setSketchExtDrawerCount: setStateNoop,
     setSketchExtDrawerHeightCm: setStateNoop,
     setSketchExtDrawerHeightDraft: setStateNoop,
@@ -691,6 +693,63 @@ test('[interior-tab-sections-runtime] shoe drawers and sketch mode switch in bot
     ['panel', true],
     ['enterSketch', 3, 20, 'shoe'],
   ]);
+});
+
+test('[interior-tab-sections-runtime] sketch tab external drawers expose regular/shoe selection with type-aware height', () => {
+  const calls = [];
+  const panelTree = InteriorLayoutSketchToolsPanel(
+    createLayoutProps({
+      isSketchToolActive: true,
+      manualToolRaw: 'sketch_ext_drawers:3',
+      sketchExtDrawersPanelOpen: true,
+      sketchExtDrawerType: 'regular',
+      sketchExtDrawerCount: 3,
+      sketchExtDrawerHeightCm: 22,
+      sketchExtDrawerHeightDraft: '22',
+      setSketchExtDrawerType: value => calls.push(['type', value]),
+      setSketchExtDrawerHeightCm: value => calls.push(['height', value]),
+      setSketchExtDrawerHeightDraft: value => calls.push(['draft', value]),
+      setSketchExtDrawersPanelOpen: value => calls.push(['panel', value]),
+      enterSketchExtDrawersTool: (...args) => calls.push(['enterSketch', ...args]),
+    })
+  );
+  const drawersSection = findElementByTypeName(panelTree, 'InteriorSketchDrawersSection');
+  assert.ok(drawersSection);
+  const drawersTree = drawersSection.type(drawersSection.props);
+  const shoeButton = findElementByTestId(drawersTree, 'interior-sketch-external-drawers-shoe-button');
+  const regularButton = findElementByTestId(drawersTree, 'interior-sketch-external-drawers-regular-button');
+  assert.ok(shoeButton);
+  assert.ok(regularButton);
+  assert.equal(regularButton.props.selected, true);
+  assert.equal(shoeButton.props.selected, false);
+
+  shoeButton.props.onClick();
+  assert.deepEqual(calls, [
+    ['type', 'shoe'],
+    ['height', 20],
+    ['draft', '20'],
+    ['panel', true],
+    ['enterSketch', 3, 20, 'shoe'],
+  ]);
+
+  const shoeHtml = renderToStaticMarkup(
+    React.createElement(
+      InteriorLayoutSketchToolsPanel,
+      createLayoutProps({
+        isSketchToolActive: true,
+        manualToolRaw: 'sketch_ext_drawers:shoe',
+        sketchExtDrawersPanelOpen: true,
+        sketchExtDrawerType: 'shoe',
+        sketchExtDrawerCount: 3,
+        sketchExtDrawerHeightCm: 20,
+        sketchExtDrawerHeightDraft: '20',
+      })
+    )
+  );
+  assert.match(shoeHtml, /data-testid="interior-sketch-external-drawers-shoe-button"/);
+  assert.match(shoeHtml, /data-testid="interior-sketch-external-drawers-regular-button"/);
+  assert.match(shoeHtml, /value="20"/);
+  assert.match(shoeHtml, /wp-r-ext-drawer-count-row hidden/);
 });
 
 test('interior handles section keeps advanced controls open when handle editing has ended', () => {

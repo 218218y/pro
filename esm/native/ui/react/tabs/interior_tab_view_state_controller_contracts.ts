@@ -3,6 +3,7 @@ import type { AppContainer, UnknownRecord } from '../../../../../types';
 import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
+  ExtDrawerType,
   SketchBoxBaseType,
   SketchBoxCorniceType,
   SketchBoxLegColor,
@@ -95,6 +96,7 @@ export type CreateInteriorTabViewStateControllerArgs = {
   setSketchBoxLegHeightCm: (next: number) => void;
   setSketchBoxLegHeightDraft: (next: string) => void;
   setSketchExtDrawerCount: (next: number) => void;
+  setSketchExtDrawerType: (next: ExtDrawerType) => void;
   setSketchExtDrawersPanelOpen: (next: boolean) => void;
   setSketchExtDrawerHeightCm: (next: number) => void;
   setSketchExtDrawerHeightDraft: (next: string) => void;

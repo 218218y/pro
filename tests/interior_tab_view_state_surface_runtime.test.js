@@ -86,6 +86,7 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
       ['setSketchBoxLegWidthDraft', '4'],
       ['setSketchBoxBasePanelOpen', true],
       ['setSketchExtDrawerCount', 3],
+      ['setSketchExtDrawerType', 'regular'],
       ['setSketchExtDrawerHeightCm', 28],
       ['setSketchExtDrawerHeightDraft', '28'],
       ['setSketchExtDrawersPanelOpen', true],
@@ -115,6 +116,19 @@ test('[interior-view-state-controller] syncs sketch box plinth height from the a
     ['setSketchBoxLegWidthCm', 4],
     ['setSketchBoxLegWidthDraft', '4'],
     ['setSketchBoxBasePanelOpen', true],
+  ]);
+});
+
+test('[interior-view-state-controller] syncs shoe sketch drawer type and height without overwriting regular count', () => {
+  const { calls, controller } = createInteriorViewStateControllerHarness();
+
+  controller.syncSketchExtDrawersState(true, 'sketch_ext_drawers:shoe');
+
+  assert.deepEqual(calls, [
+    ['setSketchExtDrawerType', 'shoe'],
+    ['setSketchExtDrawerHeightCm', 20],
+    ['setSketchExtDrawerHeightDraft', '20'],
+    ['setSketchExtDrawersPanelOpen', true],
   ]);
 });
 
