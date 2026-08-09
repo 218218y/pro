@@ -43,7 +43,7 @@ export type HandlesApplyRuntime = {
   isDoorRemovedV7: (partId: unknown) => boolean;
   syncDoorVisibilityForRemovedDoors: () => void;
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant;
-  getHandleType: (id: unknown, stackKey?: 'top' | 'bottom') => string;
+  getHandleType: (id: unknown, stackKey?: 'top' | 'bottom', defaultNoHandle?: boolean) => string;
   getHandleColor: (id: unknown) => string;
   getManualHandlePosition: (id: unknown) => ManualHandlePosition | null;
   clampAbsYToGroup: (absY: number, centerY: number, height: number) => number;
@@ -119,7 +119,7 @@ function createHandleTypeResolver(
   App: AppContainer,
   cfgSnapshot: HandlesConfigSnapshot,
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant
-): (id: unknown, stackKey?: 'top' | 'bottom') => string {
+): (id: unknown, stackKey?: 'top' | 'bottom', defaultNoHandle?: boolean) => string {
   void getEdgeHandleVariant;
   const cfg = cfgSnapshot.cfg;
   const hm = cfgSnapshot.handlesMap;
@@ -128,7 +128,7 @@ function createHandleTypeResolver(
   const globalHandleType =
     __rawGht === 'standard' || __rawGht === 'edge' || __rawGht === 'none' ? __rawGht : 'standard';
 
-  return (id: unknown, stackKey?: 'top' | 'bottom'): string => {
+  return (id: unknown, stackKey?: 'top' | 'bottom', defaultNoHandle?: boolean): string => {
     const sid = formatIdentityValue(readIdentityValue(id));
     const base = stripSuffix(sid);
     const sk: 'top' | 'bottom' = stackKey === 'bottom' ? 'bottom' : 'top';
@@ -142,6 +142,7 @@ function createHandleTypeResolver(
     if (override !== undefined) return override;
 
     if (
+      defaultNoHandle === true ||
       isInternalDrawerDefaultNoHandleId(sid) ||
       isInternalDrawerDefaultNoHandleId(base) ||
       isShoeDrawerDefaultNoHandleId(sid) ||

@@ -7,6 +7,7 @@ import {
   tryHandleExtDrawersHoverPreview,
 } from '../esm/native/services/canvas_picking_hover_preview_modes.ts';
 import { updateRenderLoopDrawerMotions } from '../esm/native/platform/render_loop_motion_drawers.ts';
+import { readRecentExtDrawerModeHover } from '../esm/native/services/canvas_picking_ext_drawer_mode_hover.ts';
 
 function createApp(overrides: Record<string, unknown> = {}) {
   const state = {
@@ -224,6 +225,82 @@ test('ext-drawers hover preview marks hex cells as blocked instead of blue add',
   assert.equal(previews[0].op, 'blocked');
   assert.equal(previews[0].blockedReason, 'hex-cell');
   assert.equal(previews[0].anchor.id, 'selector-hex-cell');
+});
+
+test('shoe mode treats an existing sketch shoe drawer as removal from the module surface', () => {
+  const previews: any[] = [];
+  const App = createApp({
+    render: { cache: {} },
+    renderOps: {
+      setSketchPlacementPreview(args: unknown) {
+        previews.push(args);
+      },
+    },
+  });
+
+  const handled = tryHandleExtDrawersHoverPreview({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: {},
+    mouse: {},
+    isExtDrawerEditMode: true,
+    readUi: () => ({ currentExtDrawerType: 'shoe', currentExtDrawerCount: 1 }),
+    resolveDrawerHoverPreviewTarget: () => null,
+    resolveInteriorHoverTarget: () => ({
+      hitModuleKey: 1,
+      hitSelectorObj: { id: 'selector-shoe' },
+      isBottom: false,
+      hitY: 0.2,
+      info: {},
+      bottomY: 0,
+      topY: 2,
+      spanH: 2,
+      woodThick: 0.018,
+      innerW: 0.9,
+      internalCenterX: 0,
+      internalDepth: 0.5,
+      internalZ: 0,
+      backZ: -0.25,
+      regularDepth: 0.45,
+      intersects: [],
+    }),
+    measureObjectLocalBox: () => ({
+      centerX: 0,
+      centerY: 1,
+      centerZ: 0,
+      width: 0.936,
+      height: 2,
+      depth: 0.536,
+    }),
+    readInteriorModuleConfigRef: () => ({
+      extDrawersCount: 0,
+      hasShoeDrawer: false,
+      sketchExtras: {
+        extDrawers: [
+          {
+            id: 'sketch-shoe',
+            count: 0,
+            hasShoeDrawer: true,
+            yNorm: 0,
+            yNormC: 0,
+            yAnchor: 'bottom',
+            drawerHeightM: 0.275,
+          },
+        ],
+      },
+    }),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].op, 'remove');
+  assert.equal(previews[0].drawers.length, 1);
+  assert.ok(previews[0].drawers[0].h > 0.25);
+  const hover = readRecentExtDrawerModeHover(App);
+  assert.equal(hover?.op, 'remove');
+  assert.equal(hover?.removeKind, 'sketch');
+  assert.equal(hover?.removeId, 'sketch-shoe');
 });
 
 test('regular external drawer hover removal previews the entire sketch external drawer stack', () => {

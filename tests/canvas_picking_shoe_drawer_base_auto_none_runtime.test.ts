@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_external.ts';
+import { writeExtDrawerModeHover } from '../esm/native/services/canvas_picking_ext_drawer_mode_hover.ts';
+import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts';
+import { createManualLayoutSketchStackHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
 import { tryRemoveSketchExternalDrawerByDirectHit } from '../esm/native/services/canvas_picking_drawer_cross_family_direct_hit.ts';
 import { tryCommitSketchBoxRegularExternalDrawersHover } from '../esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts';
 import {
@@ -247,6 +250,73 @@ test('direct-hit removal of the final sketch shoe drawer restores the previous f
   assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], null);
   assert.equal(calls.uiPatches[0]?.meta?.source, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
   assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('legs'));
+});
+
+test('regular shoe mode removes an existing sketch shoe from module hover instead of adding a second shoe', () => {
+  const { App, state } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'legs';
+  state.config.sketchExtras = {
+    extDrawers: [{ id: 'shoe-sketch', count: 0, hasShoeDrawer: true, drawerHeightM: 0.275 }],
+  };
+  writeExtDrawerModeHover(App, {
+    moduleKey: 1,
+    kind: 'ext_drawers',
+    op: 'remove',
+    removeId: 'shoe-sketch',
+    removeKind: 'sketch',
+  });
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isExtDrawerEditMode: true,
+    patchConfigForKey: (_mk, patcher) => patcher(state.config as never),
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(state.config.sketchExtras.extDrawers, []);
+  assert.notEqual(state.config.hasShoeDrawer, true);
+  assert.equal(state.ui.baseType, 'legs');
+});
+
+test('sketch shoe hover removes an existing standard shoe instead of adding a second shoe', () => {
+  const { App, state } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';
+  state.config.hasShoeDrawer = true;
+  const hover = createManualLayoutSketchStackHoverRecord({
+    host: { tool: 'sketch_ext_drawers:shoe@0.2', moduleKey: 1, isBottom: false, ts: Date.now() },
+    kind: 'ext_drawers',
+    op: 'remove',
+    removeKind: 'std',
+    removePid: 'd1_draw_shoe',
+    yCenter: 0.1,
+    drawerCount: 1,
+    drawerH: 0.2,
+    stackH: 0.2,
+    drawerHeightM: 0.2,
+  });
+
+  const handled = tryApplyManualLayoutSketchHoverClick({
+    App,
+    __activeModuleKey: 1,
+    __isBottomStack: false,
+    topY: 2,
+    bottomY: 0,
+    __gridInfo: null,
+    __hoverRec: hover,
+    __hoverOk: true,
+    __patchConfigForKey: (_mk, patcher) => {
+      patcher(state.config);
+      return true;
+    },
+    __wp_clearSketchHover: () => undefined,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.hasShoeDrawer, false);
+  assert.equal(state.config.sketchExtras?.extDrawers?.length ?? 0, 0);
+  assert.equal(state.ui.baseType, 'plinth');
 });
 
 test('removing the final module shoe drawer restores the base selected before the forced none', () => {

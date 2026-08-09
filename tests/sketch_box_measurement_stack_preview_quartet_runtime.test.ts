@@ -248,6 +248,28 @@ test('Sketch Box external-drawer preview preserves default-count precedence and 
   assert.equal((explicit.preview.drawers as unknown[]).length, 2);
 });
 
+test('Sketch module shoe preview removes an existing standard shoe drawer instead of stacking another', () => {
+  const args = createModuleArgs({
+    innerWidth: 0.9,
+    internalDepth: 0.55,
+    selectedDrawerCount: 1,
+    drawerHeightM: 0.24,
+  });
+  const result = resolveSketchModuleExternalDrawersPreview({
+    ...args,
+    contentKind: 'ext_drawers',
+    cfgRef: { hasShoeDrawer: true },
+    externalDrawerType: 'shoe',
+    standardShoePartId: 'd3_draw_shoe',
+  });
+
+  assert.equal(result.hoverRecord.op, 'remove');
+  assert.equal(result.hoverRecord.removeKind, 'std');
+  assert.equal(result.hoverRecord.removePid, 'd3_draw_shoe');
+  assert.equal(result.preview.op, 'remove');
+  assert.equal((result.preview.drawers as unknown[]).length, 1);
+});
+
 test('Sketch module external-drawer preview preserves selector envelope, default count, and focused front geometry', () => {
   const selectorFrontEnvelope = { centerX: 0.31, centerZ: 0.4, outerW: 1.1, outerD: 0.62 };
   const args = createModuleArgs({

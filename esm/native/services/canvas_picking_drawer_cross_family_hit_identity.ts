@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { getDrawersArray } from '../runtime/render_access.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import {
@@ -74,6 +75,34 @@ export function classifyCrossDrawerPart(partId: unknown, userData?: UnknownRecor
   if (canonicalPartId.startsWith('div_int_sketch_')) return 'sketch_internal';
   if (/^d\d+_draw_(?:shoe|\d+)$/.test(canonicalPartId)) return 'standard_external';
   return 'other';
+}
+
+function isCrossDrawerShoePart(partId: unknown, userData?: UnknownRecord | null): boolean {
+  const ud = userData || null;
+  const canonicalPartId = readCrossDrawerCanonicalPartId(partId, ud);
+  return ud?.__wpShoeDrawer === true || /^d\d+_draw_shoe$/.test(canonicalPartId);
+}
+
+export function findStandardExternalShoePartIdForModule(App: AppContainer, moduleKey: unknown): string {
+  const targetModuleKey = readCrossDrawerString(moduleKey);
+  const drawers = getDrawersArray(App);
+  for (let i = 0; i < drawers.length; i++) {
+    const group = readCrossDrawerEntryGroup(drawers[i]);
+    if (!group) continue;
+    const userData = readCrossDrawerUserData(group);
+    const partId = readCrossDrawerCanonicalPartId(
+      userData?.partId ?? asCrossDrawerNode(drawers[i])?.id,
+      userData
+    );
+    if (classifyCrossDrawerPart(partId, userData) !== 'standard_external') continue;
+    if (!isCrossDrawerShoePart(partId, userData)) continue;
+    const entryModuleKey = readCrossDrawerString(
+      userData?.moduleIndex ?? userData?.__wpSketchModuleKey ?? asCrossDrawerNode(drawers[i])?.moduleIndex
+    );
+    if (targetModuleKey && entryModuleKey && targetModuleKey !== entryModuleKey) continue;
+    return partId;
+  }
+  return '';
 }
 
 export function findCrossDrawerHitOnObject(

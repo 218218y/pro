@@ -273,6 +273,7 @@ test('render sketch shoe drawer from sketch uses one shoe drawer with its custom
   const drawers = App.render?.drawersArray || [];
   assert.equal(drawers.length, 1);
   const renderedHeight = Number(drawers[0]?.group.userData.__doorHeight);
+  assert.equal(drawers[0]?.group.userData.__wpShoeDrawer, true);
   assert.ok(renderedHeight > 0.25 && renderedHeight <= 0.275);
   assert.ok(Math.abs(Number(drawers[0]?.group.userData.__wpFaceMinY) - args.effectiveBottomY) < 1e-9);
 });

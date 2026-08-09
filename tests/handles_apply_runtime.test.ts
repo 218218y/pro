@@ -455,6 +455,54 @@ test('handles apply keeps shoe drawers handle-free by default even when global h
   );
 });
 
+test('handles apply keeps sketch shoe drawers handle-free by semantic metadata', () => {
+  const { App } = createApp();
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+
+  const shoeDrawer = new FakeGroup3D();
+  shoeDrawer.userData = {
+    partId: 'sketch_ext_drawers_1_shoe-sketch_1',
+    __wpShoeDrawer: true,
+    __doorWidth: 0.7,
+    __doorHeight: 0.2,
+    __frontMaxZ: 0.018,
+    __wpType: 'extDrawer',
+  };
+  App.render.drawersArray = [
+    { id: 'sketch_ext_drawers_1_shoe-sketch_1', group: shoeDrawer, isInternal: false },
+  ];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'standard', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(
+    shoeDrawer.children.some(child => child.userData.__kind === 'handle'),
+    false,
+    'sketch shoe drawers must share the shoe-drawer default of no handle'
+  );
+});
+
 test('handles apply honors explicit advanced handle overrides on shoe drawers', () => {
   const { App } = createApp();
   const outlined: unknown[] = [];

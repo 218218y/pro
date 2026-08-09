@@ -1,5 +1,9 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { shouldBlockDrawerBuildInHexCell } from '../features/hex_cell/index.js';
+import {
+  isSketchExternalShoeDrawerItem,
+  readSketchDrawerHeightMFromItem,
+} from '../features/sketch_drawer_sizing.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
   classifyCrossDrawerPart,
@@ -29,6 +33,16 @@ import {
   __withAppThree,
   type ExtDrawersHoverPreviewArgs,
 } from './canvas_picking_hover_preview_modes_shared.js';
+
+function findSketchExternalShoeDrawerItemInConfig(value: unknown): Record<string, unknown> | null {
+  const cfg = __readRecord(value);
+  const sketchExtras = __readRecord(cfg?.sketchExtras);
+  const extDrawers = Array.isArray(sketchExtras?.extDrawers) ? sketchExtras.extDrawers : [];
+  for (const item of extDrawers) {
+    if (isSketchExternalShoeDrawerItem(item)) return __readRecord(item);
+  }
+  return null;
+}
 
 function readInternalModuleKeyFromPartId(partId: string): string {
   const prefix = 'div_int_sketch_';
@@ -281,8 +295,16 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         : DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
     const currentCount = __readNumber(cfgRef, 'extDrawersCount', 0);
     const hasShoe = !!cfgRef?.hasShoeDrawer;
+    const sketchShoeItem = drawerType === 'shoe' ? findSketchExternalShoeDrawerItemInConfig(cfgRef) : null;
+    const hasSketchShoe = !!sketchShoeItem;
     const op =
-      drawerType === 'shoe' ? (hasShoe ? 'remove' : 'add') : currentCount === drawerCount ? 'remove' : 'add';
+      drawerType === 'shoe'
+        ? hasShoe || hasSketchShoe
+          ? 'remove'
+          : 'add'
+        : currentCount === drawerCount
+          ? 'remove'
+          : 'add';
     const blockedByHexCell = op !== 'remove' && shouldBlockDrawerBuildInHexCell(cfgRef);
     const blockedByFit =
       !blockedByHexCell &&
@@ -327,7 +349,10 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     const frontZ =
       frontPlaneZ + visualT / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM;
     const drawers = [];
-    const shoeH = EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
+    const shoeH =
+      sketchShoeItem && !hasShoe
+        ? readSketchDrawerHeightMFromItem(sketchShoeItem, EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM)
+        : EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
     const regH = EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
     const baseStackOffset = drawerType === 'shoe' ? 0 : hasShoe ? shoeH : 0;
     if (drawerType === 'shoe') {
@@ -365,6 +390,10 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       op: previewOp,
       blockedReason: blockedByHexCell ? 'hex-cell' : blockedByFit ? 'no-room' : undefined,
     });
+    const sketchShoeRemoveId =
+      drawerType === 'shoe' && previewOp === 'remove' && !hasShoe && sketchShoeItem
+        ? __readString(sketchShoeItem, 'id', '')
+        : '';
     writeExtDrawerModeHover(App, {
       moduleKey: target.hitModuleKey,
       isBottom: !!target.isBottom,
@@ -372,6 +401,7 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       op: previewOp === 'remove' ? 'remove' : 'add',
       yCenter: baseY + (drawerType === 'shoe' ? shoeH : drawerCount * regH) / 2,
       baseY,
+      ...(sketchShoeRemoveId ? { removeId: sketchShoeRemoveId, removeKind: 'sketch' } : null),
       drawerCount,
       drawerH: drawerType === 'shoe' ? shoeH : regH,
       stackH: drawerType === 'shoe' ? shoeH : drawerCount * regH,

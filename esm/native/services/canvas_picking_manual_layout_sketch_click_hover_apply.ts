@@ -6,9 +6,12 @@ import {
   getSketchModuleBoxContentSource,
 } from './canvas_picking_sketch_box_content_commit.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { removeStandardExternalDrawerFromConfig } from './canvas_picking_drawer_cross_family.js';
+import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import {
   readManualLayoutSketchRodHoverIntent,
   readManualLayoutSketchShelfHoverIntent,
+  readManualLayoutSketchStackHoverIntent,
   readManualLayoutSketchStorageHoverIntent,
 } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import {
@@ -255,6 +258,31 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       },
       createCanvasPickingConfigStructuralPatchMeta('sketch.hoverRemoveShelf')
     );
+    return true;
+  }
+
+  const stackHover = __hoverOk ? readManualLayoutSketchStackHoverIntent(__hoverRec) : null;
+  if (
+    stackHover?.kind === 'ext_drawers' &&
+    stackHover.op === 'remove' &&
+    stackHover.removeKind === 'std' &&
+    stackHover.removePid
+  ) {
+    let removed = false;
+    __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        removed = removeStandardExternalDrawerFromConfig(cfg, stackHover.removePid || '') || removed;
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverRemoveStandardExternalDrawer')
+    );
+    if (removed) {
+      restoreShoeDrawerBaseIfNoShoeDrawersRemain(
+        App,
+        'sketch.hoverRemoveStandardExternalDrawer:autoBaseRestore'
+      );
+    }
+    __wp_clearSketchHover(App);
     return true;
   }
 

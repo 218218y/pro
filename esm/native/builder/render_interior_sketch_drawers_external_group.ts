@@ -39,6 +39,7 @@ export function createSketchExternalDrawerGroupNode(
   groupUd.__wpType = 'extDrawer';
   groupUd.__wpSketchExtDrawerId = stack.drawerId;
   groupUd.__wpSketchModuleKey = context.moduleKeyStr;
+  groupUd.__wpShoeDrawer = opPlan.op.kind === 'shoe';
   groupNode.userData = groupUd;
 
   return groupNode;

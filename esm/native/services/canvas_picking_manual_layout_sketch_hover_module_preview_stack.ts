@@ -9,6 +9,7 @@ import {
 import { resolveSketchBoxStackPreview } from './canvas_picking_sketch_box_stack_preview.js';
 import { resolveSketchModuleStackPreview } from './canvas_picking_sketch_module_stack_preview.js';
 import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
+import { findStandardExternalShoePartIdForModule } from './canvas_picking_drawer_cross_family.js';
 import { replaceManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   createManualLayoutSketchHoverHost,
@@ -158,6 +159,8 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
     woodThick,
     selectedDrawerCount,
     externalDrawerType,
+    standardShoePartId:
+      externalDrawerType === 'shoe' ? findStandardExternalShoePartIdForModule(ctx.App, hitModuleKey) : null,
     drawerHeightM,
     hitSelectorObj,
     isCornerKey: __wp_isCornerKey,

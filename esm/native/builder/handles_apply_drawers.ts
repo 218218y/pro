@@ -27,7 +27,7 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const id = resolveDrawerHandlePartId(g);
     runtime.removeExistingHandleChildren(g);
 
-    const hType = runtime.getHandleType(id);
+    const hType = runtime.getHandleType(id, undefined, g.userData?.__wpShoeDrawer === true);
     if (!hType || hType === 'none') continue;
 
     const drawW =

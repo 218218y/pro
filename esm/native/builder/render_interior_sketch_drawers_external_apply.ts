@@ -54,6 +54,7 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
           {
             __wpSketchExtDrawer: true,
             __wpSketchExtDrawerId: stack.drawerId,
+            __wpShoeDrawer: opPlan.op.kind === 'shoe',
           },
           {
             preserveExistingPartId: true,

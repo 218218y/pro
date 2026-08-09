@@ -3,6 +3,7 @@ import {
   DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
   DRAWER_SKETCH_SIZING_POLICY,
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
 } from '../../shared/dimensions/drawer_sketch_policy.js';
 import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
@@ -111,7 +112,7 @@ export function resolveSketchModuleExternalDrawersPreview(
       woodThick,
     }),
   ];
-  const placement = resolveManualLayoutSketchExternalDrawerPlacement({
+  const placementBase = resolveManualLayoutSketchExternalDrawerPlacement({
     desiredCenterY,
     selectedDrawerCount:
       selectedDrawerCount != null && selectedDrawerCount > 0
@@ -127,6 +128,22 @@ export function resolveSketchModuleExternalDrawersPreview(
     readCenterY,
     blockers: internalDrawerBlockers,
   });
+  const standardShoePartId =
+    args.externalDrawerType === 'shoe' && args.cfgRef?.hasShoeDrawer === true
+      ? String(args.standardShoePartId || '')
+      : '';
+  const placement = standardShoePartId
+    ? {
+        ...placementBase,
+        op: 'remove' as const,
+        removeId: null,
+        yCenter: bottomY + EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM / 2,
+        drawerCount: 1,
+        drawerH: EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM,
+        stackH: EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM,
+        fitsAvailable: true,
+      }
+    : placementBase;
   const blockedReason =
     placement.op === 'blocked'
       ? 'collision'
@@ -185,6 +202,7 @@ export function resolveSketchModuleExternalDrawersPreview(
   const drawerH = placement.drawerH;
   const hoverOp: 'add' | 'remove' = blockedReason || placement.op === 'blocked' ? 'add' : placement.op;
   const hoverRemoveId = blockedReason || placement.op === 'blocked' ? null : placement.removeId;
+  const hoverRemovePid = hoverOp === 'remove' && standardShoePartId ? standardShoePartId : null;
   for (let i = 0; i < placement.drawerCount; i++) {
     drawersPreview.push({
       y: baseY + i * drawerH + drawerH / 2,
@@ -201,6 +219,8 @@ export function resolveSketchModuleExternalDrawersPreview(
       kind: 'ext_drawers',
       op: hoverOp,
       removeId: hoverRemoveId,
+      removeKind: hoverRemovePid ? 'std' : undefined,
+      removePid: hoverRemovePid,
       yCenter: placement.yCenter,
       baseY,
       drawerCount: placement.drawerCount,
