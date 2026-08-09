@@ -259,3 +259,66 @@ test('sketch external drawer tool hovering an internal drawer cassette maps to t
   assert.equal(previews[0].kind, 'drawers');
   assert.equal(previews[0].op, 'remove');
 });
+
+test('sketch shoe hover over a standard shoe drawer uses canonical front geometry instead of whole-group bounds', () => {
+  const parent = { id: 'wardrobe-parent' };
+  const shoeGroup = {
+    id: 'd1_draw_shoe',
+    parent,
+    userData: {
+      partId: 'd1_draw_shoe',
+      moduleIndex: 1,
+      __wpShoeDrawer: true,
+      __doorWidth: 0.796,
+      __doorHeight: 0.192,
+      __wpFaceOffsetX: 0.015,
+    },
+    // The group itself is at the canonical drawer-front center, while the resolved
+    // whole-group bounds below are deliberately shifted upward by internal geometry.
+    // The remove hover must follow the visible front, not those aggregate bounds.
+    position: { x: 0.1, y: 0.12, z: 0.24 },
+  };
+  const previews: any[] = [];
+  const hoverRecords: any[] = [];
+  const App = {
+    render: {
+      drawersArray: [
+        {
+          id: 'd1_draw_shoe',
+          group: shoeGroup,
+          closed: { x: 0.1, y: 0.12, z: 0.24 },
+          open: { x: 0.1, y: 0.12, z: 0.59 },
+          isInternal: false,
+        },
+      ],
+    },
+  } as any;
+
+  const handled = tryHandleSketchHoverOverStandardDrawer({
+    App,
+    tool: 'sketch_ext_drawers:shoe@20',
+    ndcX: 0,
+    ndcY: 0,
+    __wpRaycaster: {},
+    __wpMouse: {},
+    __wp_toModuleKey: (value: unknown) => Number(value),
+    __wp_writeSketchHover: (_App: unknown, hover: unknown) => hoverRecords.push(hover),
+    __wp_resolveDrawerHoverPreviewTarget: () => ({
+      drawer: App.render.drawersArray[0],
+      parent,
+      box: { centerX: 0.1, centerY: 0.31, centerZ: 0.25, width: 0.82, height: 0.42, depth: 0.38 },
+    }),
+    setPreview: (preview: unknown) => previews.push(preview),
+  } as any);
+
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].op, 'remove');
+  assert.ok(Math.abs(Number(previews[0].x) - 0.115) < 1e-9);
+  assert.ok(Math.abs(Number(previews[0].z) - 0.261) < 1e-9);
+  assert.deepEqual(previews[0].drawers, [{ y: 0.12, h: 0.192 }]);
+  assert.ok(Math.abs(Number(hoverRecords[0].yCenter) - 0.12) < 1e-9);
+  assert.ok(Math.abs(Number(hoverRecords[0].baseY) - 0.024) < 1e-9);
+  assert.equal(hoverRecords[0].removeKind, 'std');
+  assert.equal(hoverRecords[0].removePid, 'd1_draw_shoe');
+});

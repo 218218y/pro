@@ -37,6 +37,51 @@ function readNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+function readPositiveNumber(value: unknown): number | null {
+  const n = readNumber(value);
+  return n != null && n > 0 ? n : null;
+}
+
+function isStandardExternalShoeDrawer(partId: string, userData: UnknownRecord | null): boolean {
+  return userData?.__wpShoeDrawer === true || /^d\d+_draw_shoe$/u.test(partId);
+}
+
+function resolveStandardShoeFrontPreview(args: {
+  drawer: UnknownRecord;
+  group: UnknownRecord;
+  userData: UnknownRecord | null;
+  parent: UnknownRecord;
+  box: { centerX: number; centerY: number; centerZ: number; width: number; height: number; depth: number };
+}) {
+  const closed = asRecord(args.drawer.closed);
+  const position = asRecord(args.group.position);
+  const faceOffsetX = readNumber(args.userData?.__wpFaceOffsetX) ?? 0;
+  const centerX = readNumber(closed?.x) ?? readNumber(position?.x) ?? args.box.centerX;
+  const centerY = readNumber(closed?.y) ?? readNumber(position?.y) ?? args.box.centerY;
+  const centerZ = readNumber(closed?.z) ?? readNumber(position?.z) ?? args.box.centerZ;
+  const width = readPositiveNumber(args.userData?.__doorWidth) ?? args.box.width;
+  const height = readPositiveNumber(args.userData?.__doorHeight) ?? args.box.height;
+  const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
+  return {
+    anchor: args.group,
+    anchorParent: args.parent,
+    x: centerX + faceOffsetX,
+    y: centerY - height / 2,
+    z: centerZ + visualT + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+    w: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM, width),
+    d: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM, visualT),
+    stackH: height,
+    drawerH: height,
+    drawerCount: 1,
+    drawers: [
+      {
+        y: centerY,
+        h: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM, height),
+      },
+    ],
+  };
+}
+
 function isCrossDrawerFamilyForSketchTool(tool: string, family: string): boolean {
   if (tool.startsWith('sketch_ext_drawers:')) {
     return family === 'standard_external' || family === 'sketch_internal';
@@ -96,23 +141,28 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
 
   if (family === 'standard_external') {
     const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
-    const stackPreview = resolveExternalCrossDrawerStackPreview({
-      App,
-      target,
-      measureObjectLocalBox: __wp_measureObjectLocalBox,
-      family: 'standard_external',
-      minWidth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
-      minHeight: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
-      minDepth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
-      visualThickness: visualT,
-      frontZOffset: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
-    });
+    const standardShoeFront = isStandardExternalShoeDrawer(partId, userData)
+      ? resolveStandardShoeFrontPreview({ drawer, group, userData, parent, box })
+      : null;
+    const stackPreview =
+      standardShoeFront ||
+      resolveExternalCrossDrawerStackPreview({
+        App,
+        target,
+        measureObjectLocalBox: __wp_measureObjectLocalBox,
+        family: 'standard_external',
+        minWidth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+        minHeight: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+        minDepth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
+        visualThickness: visualT,
+        frontZOffset: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+      });
     const previewBaseY = stackPreview?.y ?? baseY;
     const previewStackH = stackPreview?.stackH ?? box.height;
     const previewDrawerH = stackPreview?.drawerH ?? box.height;
     const previewDrawerCount =
       stackPreview?.drawerCount ??
-      (/^d\d+_draw_shoe$/.test(partId) ? 1 : (readNumber(drawer?.drawerCount) ?? 1));
+      (isStandardExternalShoeDrawer(partId, userData) ? 1 : (readNumber(drawer?.drawerCount) ?? 1));
     __wp_writeSketchHover(
       App,
       createManualLayoutSketchStackHoverRecord({
