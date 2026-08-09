@@ -1,30 +1,115 @@
 {
-  "version": 1,
+  "version": 2,
   "sourceRoot": "esm",
-  "policy": "Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.",
+  "guardedCategories": ["project-migration", "external-api-compat", "compat-boundary"],
+  "policy": "Reviewed compatibility seams are growth-ratcheted by file/category. Ordinary defaults and capability fallbacks stay report-visible but are not allowlisted. Reductions pass automatically; legacy-runtime-risk and unknown must stay at zero.",
   "entries": {
-    "esm/native/ui/react/overlay_pdf_host.tsx": {
+    "esm/native/builder/corner_connector_interior_special.ts": {
       "total": 1,
       "categories": {
-        "framework-default": 1
+        "compat-boundary": 1
       }
     },
-    "esm/native/ui/react/sidebar_app.tsx": {
+    "esm/native/builder/materials_factory.ts": {
+      "total": 2,
+      "categories": {
+        "compat-boundary": 2
+      }
+    },
+    "esm/native/builder/module_layout_pipeline.ts": {
       "total": 1,
       "categories": {
-        "framework-default": 1
+        "compat-boundary": 1
       }
     },
-    "esm/test_imports.mjs": {
+    "esm/native/builder/render_ops.ts": {
       "total": 1,
       "categories": {
-        "test-fixture": 1
+        "compat-boundary": 1
       }
     },
-    "esm/test_no_side_effects_on_import.mjs": {
+    "esm/native/builder/room_shared_types.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/builder/visuals_and_contents_door_visual_glass.ts": {
+      "total": 3,
+      "categories": {
+        "external-api-compat": 3
+      }
+    },
+    "esm/native/platform/store_contract.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/autosave_access.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/cache_access.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/config_selectors_scalars.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/doors_runtime_support_modes.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/planar_reflector_runtime.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/runtime/render_access_state_bags.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/native/services/canvas_picking_removable_part_remove_constraints.ts": {
+      "total": 1,
+      "categories": {
+        "project-migration": 1
+      }
+    },
+    "esm/native/services/cloud_sync_config_browser.ts": {
+      "total": 1,
+      "categories": {
+        "external-api-compat": 1
+      }
+    },
+    "esm/native/ui/error_overlay.ts": {
+      "total": 1,
+      "categories": {
+        "compat-boundary": 1
+      }
+    },
+    "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts": {
+      "total": 3,
+      "categories": {
+        "compat-boundary": 3
+      }
+    },
+    "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts": {
       "total": 5,
       "categories": {
-        "test-fixture": 5
+        "compat-boundary": 5
       }
     }
   }

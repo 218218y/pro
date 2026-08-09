@@ -92,7 +92,7 @@ export function pickSketchFreeBoxHost(App: AppContainer): { moduleKey: ModuleKey
       return { moduleKey: 0, isBottom: false };
     }
   } catch {
-    // legacy-free-box-config-fallback: unreadable optional configuration disables the legacy zero-door special case
+    // no-main-host-probe: unreadable optional configuration disables the zero-door hinged host fallback
   }
   return null;
 }

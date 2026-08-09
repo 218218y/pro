@@ -232,8 +232,8 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   // Prefer store-derived, precomputed structure only when it exactly matches the
   // active canonical signature. A stale sliding cache like [1,1] must not be
   // accepted for a hinged two-door wardrobe just because the door sum is also 2.
-  // Legacy/unit callers that do not provide the calculator may still reuse a
-  // door-count-current store structure; production builder calls pass the calculator.
+  // compatibility-boundary: callers without the calculator may still reuse a door-count-current
+  // store structure; production builder calls pass the calculator and verify the canonical signature.
   try {
     const stBuild = state?.build;
     if (stBuild && Array.isArray(stBuild.modulesStructure)) {
@@ -248,7 +248,7 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
       }
     }
   } catch (_) {
-    // builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below.
+    // builder-layout-probe: failed cached-layout probing falls through to canonical recomputation below.
   }
 
   if (!Array.isArray(modules) || !isModuleStructureCurrentForDoorCount(modules, doorsCount)) {

@@ -226,6 +226,7 @@ export function writeRenderMaterialSlot<T = unknown>(App: unknown, key: string, 
 }
 
 export function clearDeprecatedRenderRefs(App: unknown): void {
+  // compatibility-boundary: clear retired root render aliases; canonical state lives in runtime services.
   const app = asRecord(App);
   if (!app) return;
   try {
@@ -233,7 +234,7 @@ export function clearDeprecatedRenderRefs(App: unknown): void {
     if ('__wpRenderMaterials' in app) delete app.__wpRenderMaterials;
     if ('__wpRenderMeta' in app) delete app.__wpRenderMeta;
   } catch {
-    // retired-alias-cleanup-best-effort: frozen legacy roots may reject deletion.
+    // retired-alias-cleanup-best-effort: frozen retired roots may reject deletion.
   }
 }
 

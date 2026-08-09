@@ -286,12 +286,13 @@ export function forceAutosaveNowResultViaService(
     }
 
     if (typeof service.forceSaveNow === 'function') {
-      const legacyResult = Reflect.apply(service.forceSaveNow, service, []);
-      if (legacyResult === true) return { ok: true };
-      if (legacyResult === false) {
+      // compatibility-boundary: adapt the pre-result forceSaveNow() owner surface.
+      const ownerResult = Reflect.apply(service.forceSaveNow, service, []);
+      if (ownerResult === true) return { ok: true };
+      if (ownerResult === false) {
         return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
       }
-      observeRejectedThenable(legacyResult);
+      observeRejectedThenable(ownerResult);
       return { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 

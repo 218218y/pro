@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-09T12:07:39.057Z
+Generated: 2026-08-09T20:39:33.950Z
 
 ## Summary
 
@@ -19,7 +19,7 @@ Generated: 2026-08-09T12:07:39.057Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 169
+- Cross-kind contract overlap targets: 168
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -99,7 +99,6 @@ Generated: 2026-08-09T12:07:39.057Z
 - `esm/native/features/project_config/project_config_map_readers.ts` — contract / source-guard — `tests/door_trim_center_contract_runtime.test.ts`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
 - `esm/native/features/stack_split/module_config.ts` — contract / ownership — `tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js`, `tests/library_preset_dimension_owner_contract.test.js`
 - `esm/native/features/structure_tab_dimension_support.ts` — contract / ownership — `tests/structure_tab_auto_width_policy_ownership_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`
-- `esm/native/io/project_config_persisted_snapshot.ts` — contract / source-guard — `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/wp_legacy_fallback_audit_runtime.test.js`
 - `esm/native/io/project_io_load_helpers_maps.ts` — contract / source-guard — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_io_contracts.test.js`, `tests/project_payload_schema_contracts.test.js`
 - `esm/native/io/project_load_canonical_snapshot.ts` — contract / source-guard — `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_migration_boundary_contracts.test.js`
 - `esm/native/io/project_schema_current.ts` — contract / source-guard — `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_payload_schema_contracts.test.js`

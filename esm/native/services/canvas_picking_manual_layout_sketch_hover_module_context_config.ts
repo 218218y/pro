@@ -129,12 +129,8 @@ export function resolveManualLayoutSketchHoverModuleConfigContext(
         cfgRef =
           !hasAnyCellCfg && rootCfg && !isDefaultRoot ? rootCfg : createDefaultCornerCellConfig(cellIdx);
 
-        try {
-          const ex0 = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
-          if (ex0) extra = ex0;
-        } catch {
-          // hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records
-        }
+        const ex0 = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
+        if (ex0) extra = ex0;
       }
     }
 

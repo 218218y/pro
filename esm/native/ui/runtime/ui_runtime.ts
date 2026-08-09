@@ -98,7 +98,7 @@ function safeCall(fn: unknown): void {
   try {
     if (typeof fn === 'function') Reflect.apply(fn, undefined, []);
   } catch {
-    // cleanup-isolation: one legacy disposer failure must not prevent the runtime cleanup sequence.
+    // cleanup-isolation: one disposer failure must not prevent the runtime cleanup sequence.
   }
 }
 

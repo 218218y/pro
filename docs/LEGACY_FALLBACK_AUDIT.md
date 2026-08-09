@@ -1,70 +1,75 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-09T12:07:33.190Z
+Generated at: 2026-08-09T20:37:46.157Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **167**
-- Files with occurrences: **91**
+- Total categorized occurrences: **543**
+- Files with occurrences: **213**
+- Reviewed compatibility seams under growth ratchet: **27**
 - Category counts:
-  - `runtime-default`: **31**
-  - `domain-default`: **100**
-  - `error-message-default`: **0**
+  - `runtime-default`: **56**
+  - `domain-default`: **387**
+  - `error-message-default`: **42**
   - `framework-default`: **2**
-  - `browser-adapter`: **6**
-  - `project-migration`: **14**
-  - `external-api-compat`: **0**
-  - `compat-boundary`: **2**
-  - `test-fixture`: **6**
-  - `legacy-runtime-risk`: **6**
+  - `browser-adapter`: **18**
+  - `forward-compatibility`: **1**
+  - `legacy-rejection`: **3**
+  - `project-migration`: **1**
+  - `external-api-compat`: **4**
+  - `compat-boundary`: **22**
+  - `test-fixture`: **7**
+  - `legacy-runtime-risk`: **0**
   - `unknown`: **0**
 
 ## Policy
 
-- Runtime compatibility must not grow silently. New `legacy`/`fallback`/`compat` mentions require an intentional category and allowlist update.
-- The scanner includes camelCase and PascalCase identifiers, not only standalone words.
+- Runtime compatibility must not grow silently. Reviewed migration/API/compatibility seams are growth-ratcheted; ordinary defaults remain visible without creating allowlist churn.
+- The scanner includes prefix, camelCase, PascalCase, `compatibility`, and `compatible` vocabulary.
 - `framework-default` is reserved for framework-owned API names such as React `Suspense` fallback props.
-- `project-migration` belongs at import/load/persisted-payload boundaries.
+- `forward-compatibility` describes intentional forward-compatible data/config behavior and is informational.
+- `legacy-rejection` records fail-closed guards that explicitly reject retired result shapes; it is informational, not live compatibility.
+- `project-migration` belongs at import/load/persisted-payload boundaries and is growth-ratcheted.
 - `browser-adapter` belongs at browser/DOM/environment adapter boundaries.
 - `domain-default` and `error-message-default` are ordinary default-value names, kept visible so they do not hide runtime compatibility work.
-- `external-api-compat` is reserved for third-party/framework compatibility seams.
-- `compat-boundary` is a reviewed canonicalization or persisted-shape compatibility seam, not an unowned live fallback.
-- `legacy-runtime-risk` is the review queue for possible old live-path compatibility.
+- `external-api-compat` is reserved for third-party/framework compatibility seams and is growth-ratcheted.
+- `compat-boundary` is an explicitly reviewed live compatibility seam and is growth-ratcheted.
+- `legacy-runtime-risk` is forbidden in the checked baseline: ambiguous live legacy paths must be removed or made an explicit reviewed seam.
 - `unknown` should stay at zero.
 
 ## Hot files
 
+- `esm/native/ui/react/notes/notes_overlay_editor_async.ts` - **15** (domain-default: 15)
+- `esm/native/builder/visuals_and_contents_door_visual_glass.ts` - **14** (domain-default: 11, external-api-compat: 3)
+- `esm/native/builder/render_preview_sketch_pipeline_shared.ts` - **12** (domain-default: 12)
+- `esm/native/builder/core_carcass_cornice.ts` - **11** (domain-default: 11)
+- `esm/native/runtime/groove_lines_access.ts` - **11** (domain-default: 6, runtime-default: 5)
 - `esm/native/runtime/runtime_globals.ts` - **11** (runtime-default: 11)
-- `esm/native/builder/plan.ts` - **8** (domain-default: 4, legacy-runtime-risk: 4)
+- `esm/native/services/viewer_measurement_tool_resolution.ts` - **11** (domain-default: 11)
+- `esm/native/ui/react/overlay_feedback_host_timers.ts` - **11** (domain-default: 11)
+- `esm/native/builder/module_loop_pipeline_runtime_shared.ts` - **10** (domain-default: 10)
+- `esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts` - **9** (domain-default: 9)
+- `esm/native/builder/render_interior_sketch_drawers_external_plan.ts` - **9** (domain-default: 9)
+- `esm/native/builder/render_interior_sketch_module_geometry.ts` - **8** (domain-default: 8)
+- `esm/native/builder/core_doors_compute.ts` - **6** (domain-default: 6)
+- `esm/native/builder/corner_connector_emit.ts` - **6** (domain-default: 6)
+- `esm/native/features/sketch_stack_positioning.ts` - **6** (domain-default: 6)
+- `esm/native/ui/project_load_runtime_action.ts` - **6** (error-message-default: 6)
+- `esm/test_no_side_effects_on_import.mjs` - **6** (test-fixture: 6)
 - `esm/native/runtime/browser_env_surface.ts` - **5** (runtime-default: 5)
-- `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
+- `esm/native/runtime/doors_runtime_support_modes.ts` - **5** (compat-boundary: 1, domain-default: 1, runtime-default: 3)
+- `esm/native/services/canvas_picking_door_shared.ts` - **5** (domain-default: 5)
+- `esm/native/services/canvas_picking_hover_targets_drawer.ts` - **5** (domain-default: 5)
+- `esm/native/ui/project_session_commands_shared.ts` - **5** (error-message-default: 5)
+- `esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts` - **5** (compat-boundary: 5)
+- `esm/native/builder/render_interior_sketch_layout_geometry.ts` - **4** (domain-default: 4)
+- `esm/native/builder/render_interior_sketch_support_shelves.ts` - **4** (domain-default: 4)
+- `esm/native/builder/visuals_and_contents_door_visual.ts` - **4** (domain-default: 4)
+- `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **4** (runtime-default: 4)
 - `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
-- `esm/native/services/site_variant.ts` - **4** (domain-default: 4)
-- `esm/native/services/viewer_measurement_tool.ts` - **4** (domain-default: 4)
-- `esm/native/builder/door_trim_visuals.ts` - **3** (domain-default: 3)
-- `esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts` - **3** (domain-default: 3)
-- `esm/native/builder/visuals_and_contents_door_visual_glass.ts` - **3** (domain-default: 3)
-- `esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts` - **3** (domain-default: 3)
-- `esm/native/runtime/doors_runtime_support_modes.ts` - **3** (project-migration: 1, runtime-default: 2)
-- `esm/native/runtime/render_access_shared.ts` - **3** (runtime-default: 3)
-- `esm/native/services/canvas_picking_cell_dims_post_click_hover.ts` - **3** (domain-default: 3)
-- `esm/native/services/canvas_picking_projection_runtime_box_object.ts` - **3** (domain-default: 3)
-- `esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts` - **3** (domain-default: 3)
-- `esm/native/services/doors_runtime_visuals_drawers.ts` - **3** (domain-default: 3)
-- `esm/native/ui/errors_install_support.ts` - **3** (domain-default: 3)
-- `esm/native/builder/materials_factory_texture_runtime.ts` - **2** (domain-default: 2)
-- `esm/native/builder/module_layout_pipeline.ts` - **2** (project-migration: 2)
-- `esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts` - **2** (domain-default: 2)
-- `esm/native/builder/render_adapter.ts` - **2** (domain-default: 2)
-- `esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts` - **2** (project-migration: 2)
-- `esm/native/builder/render_interior_sketch_module_geometry.ts` - **2** (domain-default: 2)
-- `esm/native/builder/render_preview_sketch_pipeline_shared.ts` - **2** (domain-default: 2)
-- `esm/native/builder/room_visual_apply.ts` - **2** (domain-default: 2)
-- `esm/native/builder/visuals_and_contents_door_visual_cache.ts` - **2** (domain-default: 2)
-- `esm/native/runtime/browser_env_timers.ts` - **2** (domain-default: 2)
-- `esm/native/runtime/data_attrs.ts` - **2** (runtime-default: 2)
-- `esm/native/runtime/platform_access_ops.ts` - **2** (runtime-default: 2)
+- `esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts` - **4** (domain-default: 4)
+- `esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

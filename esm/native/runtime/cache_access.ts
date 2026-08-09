@@ -52,6 +52,7 @@ function readGridMapKey(isBottomStack?: boolean): InternalGridMapKey {
 function dropRootCacheAlias(App: unknown): void {
   const app = asRootCacheAliasHost(App);
   if (!app || !('cache' in app)) return;
+  // compatibility-boundary: clear the retired root cache alias while runtimeCache owns live state.
   try {
     delete app.cache;
   } catch {
@@ -60,7 +61,7 @@ function dropRootCacheAlias(App: unknown): void {
     } catch (error) {
       reportError(App, error, {
         where: 'native/runtime/cache_access',
-        op: 'legacyRootAlias.clear',
+        op: 'retiredRootAlias.clear',
         fatal: false,
       });
     }

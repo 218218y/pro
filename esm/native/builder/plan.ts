@@ -108,7 +108,7 @@ function ensureState(input: unknown, deps: PlanDepsLike): BuildStateLike {
       if (st) return st;
     }
   } catch {
-    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
+    // optional-plan-state-probe: injected state resolution is best-effort; canonical input normalization remains available
   }
 
   try {
@@ -118,7 +118,7 @@ function ensureState(input: unknown, deps: PlanDepsLike): BuildStateLike {
       if (st) return st;
     }
   } catch {
-    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
+    // optional-plan-state-probe: App-backed state resolution is best-effort; canonical input normalization remains available
   }
 
   const ui = readValueRecord(input) || {};
@@ -182,13 +182,13 @@ export function installBuilderPlan(App: AppContainer, deps?: unknown): BuilderPl
     if ('App' in normalizedDeps) depsRecord.App = normalizedDeps.App ?? null;
     plan.__deps = depsRecord;
   } catch {
-    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
+    // optional-debug-metadata-write: diagnostic dependency exposure is non-critical to the installed plan service
   }
 
   try {
     plan.__esm_v1 = true;
   } catch {
-    // builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort
+    // optional-install-marker-write: the marker is advisory after canonical method installation has completed
   }
 
   return plan;

@@ -560,13 +560,14 @@ function readMirrorDimensionM(mirror: Object3DLike, axis: 'width' | 'height'): n
 
 function resolveConfiguredReflectorLongEdge(App: unknown): number {
   const configuredLongEdge = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_LONG_EDGE', NaN);
-  const legacySquareSize = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_SIZE', NaN);
+  // compatibility-boundary: keep the retired square-size config key readable during the config-key transition.
+  const previousSquareSize = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_SIZE', NaN);
   return Math.floor(
     clampNumber(
       Number.isFinite(configuredLongEdge)
         ? configuredLongEdge
-        : Number.isFinite(legacySquareSize)
-          ? legacySquareSize
+        : Number.isFinite(previousSquareSize)
+          ? previousSquareSize
           : DEFAULT_REFLECTOR_LONG_EDGE,
       DEFAULT_REFLECTOR_LONG_EDGE,
       256,

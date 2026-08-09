@@ -1,23 +1,31 @@
 {
-  "generatedAt": "2026-08-09T12:07:33.190Z",
+  "generatedAt": "2026-08-09T20:37:46.157Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 167,
-    "totalFiles": 91,
+    "totalOccurrences": 543,
+    "totalFiles": 213,
     "byCategory": {
-      "runtime-default": 31,
-      "domain-default": 100,
-      "error-message-default": 0,
+      "runtime-default": 56,
+      "domain-default": 387,
+      "error-message-default": 42,
       "framework-default": 2,
-      "browser-adapter": 6,
-      "project-migration": 14,
-      "external-api-compat": 0,
-      "compat-boundary": 2,
-      "test-fixture": 6,
-      "legacy-runtime-risk": 6,
+      "browser-adapter": 18,
+      "forward-compatibility": 1,
+      "legacy-rejection": 3,
+      "project-migration": 1,
+      "external-api-compat": 4,
+      "compat-boundary": 22,
+      "test-fixture": 7,
+      "legacy-runtime-risk": 0,
       "unknown": 0
     },
     "byFile": {
+      "esm/boot/boot_error_policy.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
       "esm/native/adapters/browser/active_element.ts": {
         "total": 1,
         "categories": {
@@ -30,16 +38,130 @@
           "browser-adapter": 1
         }
       },
+      "esm/native/adapters/browser/env_shared.ts": {
+        "total": 2,
+        "categories": {
+          "browser-adapter": 2
+        }
+      },
+      "esm/native/builder/build_app_context.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/core_carcass_cornice.ts": {
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
+      "esm/native/builder/core_carcass_shell.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/core_doors_compute.ts": {
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      "esm/native/builder/core_layout_compute.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
       "esm/native/builder/core_storage_compute_custom.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
         }
       },
+      "esm/native/builder/corner_connector_cornice_wave.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_connector_door_emit_policy.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/corner_connector_emit.ts": {
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      "esm/native/builder/corner_connector_interior_special.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
+        }
+      },
+      "esm/native/builder/corner_state_normalize_layout.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/corner_wing_carcass_selectors.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_carcass_shell_floor_base.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/corner_wing_carcass_shell_panels.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_cell_doors_context.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_cell_doors_contracts.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_cell_doors_state.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
       "esm/native/builder/corner_wing_cell_sketch_extras.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_cornice_wave.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/corner_wing_hex_cell_geometry.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/builder/door_trim_visuals.ts": {
@@ -49,9 +171,9 @@
         }
       },
       "esm/native/builder/handles_apply_doors.ts": {
-        "total": 1,
+        "total": 3,
         "categories": {
-          "domain-default": 1
+          "domain-default": 3
         }
       },
       "esm/native/builder/interior_pipeline_shared.ts": {
@@ -66,17 +188,34 @@
           "domain-default": 2
         }
       },
-      "esm/native/builder/module_layout_pipeline.ts": {
+      "esm/native/builder/materials_factory.ts": {
         "total": 2,
         "categories": {
-          "project-migration": 2
+          "compat-boundary": 2
         }
       },
-      "esm/native/builder/plan.ts": {
-        "total": 8,
+      "esm/native/builder/module_layout_pipeline.ts": {
+        "total": 1,
         "categories": {
-          "domain-default": 4,
-          "legacy-runtime-risk": 4
+          "compat-boundary": 1
+        }
+      },
+      "esm/native/builder/module_loop_pipeline_runtime_contracts.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/module_loop_pipeline_runtime_shared.ts": {
+        "total": 10,
+        "categories": {
+          "domain-default": 10
+        }
+      },
+      "esm/native/builder/post_build_dimensions_module_metrics.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts": {
@@ -97,10 +236,46 @@
           "domain-default": 2
         }
       },
+      "esm/native/builder/render_carcass_ops_cornice_apply.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_carcass_ops_cornice_finalize.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_carcass_ops_cornice_types.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_drawer_ops_external.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_drawer_ops_internal.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_rod_clearance.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
       "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts": {
         "total": 2,
         "categories": {
-          "project-migration": 2
+          "domain-default": 2
         }
       },
       "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts": {
@@ -121,16 +296,58 @@
           "domain-default": 1
         }
       },
+      "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts": {
+        "total": 9,
+        "categories": {
+          "domain-default": 9
+        }
+      },
       "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
         }
       },
-      "esm/native/builder/render_interior_sketch_module_geometry.ts": {
+      "esm/native/builder/render_interior_sketch_drawers_external_context.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_drawers_external_plan.ts": {
+        "total": 9,
+        "categories": {
+          "domain-default": 9
+        }
+      },
+      "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_interior_sketch_layout_dividers.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_interior_sketch_layout_geometry.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/builder/render_interior_sketch_module_geometry.ts": {
+        "total": 8,
+        "categories": {
+          "domain-default": 8
         }
       },
       "esm/native/builder/render_interior_sketch_support_materials.ts": {
@@ -145,16 +362,28 @@
           "domain-default": 1
         }
       },
+      "esm/native/builder/render_interior_sketch_support_shelves.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
       "esm/native/builder/render_interior_sketch_support_storage.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
         }
       },
       "esm/native/builder/render_interior_sketch_visuals_adornments_runtime.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
+        }
+      },
+      "esm/native/builder/render_ops.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
         }
       },
       "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts": {
@@ -164,6 +393,18 @@
         }
       },
       "esm/native/builder/render_preview_sketch_pipeline_shared.ts": {
+        "total": 12,
+        "categories": {
+          "domain-default": 12
+        }
+      },
+      "esm/native/builder/room_shared_types.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
+        }
+      },
+      "esm/native/builder/room_shared_utils.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
@@ -188,9 +429,10 @@
         }
       },
       "esm/native/builder/visuals_and_contents_door_visual_glass.ts": {
-        "total": 3,
+        "total": 14,
         "categories": {
-          "domain-default": 3
+          "domain-default": 11,
+          "external-api-compat": 3
         }
       },
       "esm/native/builder/visuals_and_contents_door_visual_mirror.ts": {
@@ -205,10 +447,28 @@
           "domain-default": 1
         }
       },
+      "esm/native/builder/visuals_and_contents_door_visual.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/builder/visuals_chest_mode_inputs.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/features/drawer_box_identity.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
       "esm/native/features/model_record/model_record_normalization.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
         }
       },
       "esm/native/features/modules_configuration/corner_cells_patch.ts": {
@@ -229,10 +489,22 @@
           "domain-default": 1
         }
       },
+      "esm/native/features/sketch_stack_positioning.ts": {
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts": {
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
+        }
+      },
       "esm/native/kernel/maps_api_shared.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
         }
       },
       "esm/native/platform/platform.ts": {
@@ -241,10 +513,16 @@
           "runtime-default": 1
         }
       },
+      "esm/native/platform/store_contract.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
+        }
+      },
       "esm/native/platform/store_shared.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "runtime-default": 1
         }
       },
       "esm/native/platform/store_subscriptions.ts": {
@@ -253,10 +531,22 @@
           "runtime-default": 1
         }
       },
+      "esm/native/runtime/api.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
       "esm/native/runtime/app_helpers.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
+        }
+      },
+      "esm/native/runtime/autosave_access.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
         }
       },
       "esm/native/runtime/browser_env_surface.ts": {
@@ -271,9 +561,22 @@
           "domain-default": 2
         }
       },
-      "esm/native/runtime/config_selectors_scalars.ts": {
+      "esm/native/runtime/builder_service_access_calls.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/cache_access.ts": {
         "total": 1,
         "categories": {
+          "compat-boundary": 1
+        }
+      },
+      "esm/native/runtime/config_selectors_scalars.ts": {
+        "total": 2,
+        "categories": {
+          "compat-boundary": 1,
           "runtime-default": 1
         }
       },
@@ -286,20 +589,46 @@
       "esm/native/runtime/doors_runtime_support_entries.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "runtime-default": 1
         }
       },
       "esm/native/runtime/doors_runtime_support_modes.ts": {
-        "total": 3,
+        "total": 5,
         "categories": {
-          "project-migration": 1,
-          "runtime-default": 2
+          "compat-boundary": 1,
+          "domain-default": 1,
+          "runtime-default": 3
+        }
+      },
+      "esm/native/runtime/groove_lines_access.ts": {
+        "total": 11,
+        "categories": {
+          "domain-default": 6,
+          "runtime-default": 5
+        }
+      },
+      "esm/native/runtime/planar_reflector_runtime.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
         }
       },
       "esm/native/runtime/platform_access_ops.ts": {
         "total": 2,
         "categories": {
           "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/project_recovery_action_result.ts": {
+        "total": 2,
+        "categories": {
+          "legacy-rejection": 2
+        }
+      },
+      "esm/native/runtime/project_save_action_result.ts": {
+        "total": 1,
+        "categories": {
+          "legacy-rejection": 1
         }
       },
       "esm/native/runtime/render_access_shared.ts": {
@@ -315,10 +644,28 @@
           "runtime-default": 1
         }
       },
+      "esm/native/runtime/runtime_config_validation.ts": {
+        "total": 1,
+        "categories": {
+          "forward-compatibility": 1
+        }
+      },
       "esm/native/runtime/runtime_globals.ts": {
         "total": 11,
         "categories": {
           "runtime-default": 11
+        }
+      },
+      "esm/native/runtime/sketch_free_box_motion_identity.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/sketch_free_box_motion_state.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
         }
       },
       "esm/native/runtime/ui_feedback_stable.ts": {
@@ -334,7 +681,19 @@
           "domain-default": 1
         }
       },
+      "esm/native/services/canvas_picking_cell_dims_linear_context_current.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
       "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts": {
         "total": 3,
         "categories": {
           "domain-default": 3
@@ -352,6 +711,12 @@
           "domain-default": 1
         }
       },
+      "esm/native/services/canvas_picking_door_shared.ts": {
+        "total": 5,
+        "categories": {
+          "domain-default": 5
+        }
+      },
       "esm/native/services/canvas_picking_door_split_click_custom.ts": {
         "total": 1,
         "categories": {
@@ -362,6 +727,12 @@
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_door_trim_targets.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts": {
@@ -377,9 +748,9 @@
         }
       },
       "esm/native/services/canvas_picking_hover_targets_drawer.ts": {
-        "total": 1,
+        "total": 5,
         "categories": {
-          "domain-default": 1
+          "domain-default": 5
         }
       },
       "esm/native/services/canvas_picking_hover_targets_interior_front.ts": {
@@ -400,11 +771,16 @@
           "domain-default": 1
         }
       },
-      "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts": {
+      "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts": {
         "total": 2,
         "categories": {
-          "domain-default": 1,
-          "legacy-runtime-risk": 1
+          "domain-default": 2
+        }
+      },
+      "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
         }
       },
       "esm/native/services/canvas_picking_projection_runtime_box_object.ts": {
@@ -419,23 +795,88 @@
           "domain-default": 3
         }
       },
+      "esm/native/services/canvas_picking_removable_part_remove_constraints.ts": {
+        "total": 1,
+        "categories": {
+          "project-migration": 1
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_box_segments.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
       "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelves_shared.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
         }
       },
-      "esm/native/services/canvas_picking_sketch_free_boxes.ts": {
-        "total": 2,
+      "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts": {
+        "total": 4,
         "categories": {
-          "domain-default": 1,
-          "legacy-runtime-risk": 1
+          "domain-default": 4
+        }
+      },
+      "esm/native/services/canvas_picking_sketch_free_boxes.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/services/cloud_sync_coalescer_policy.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/services/cloud_sync_coalescer_shared.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/services/cloud_sync_config_browser.ts": {
+        "total": 1,
+        "categories": {
+          "external-api-compat": 1
+        }
+      },
+      "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/services/cloud_sync_owner_gateway_remote_adoption.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/services/config_compounds_seed.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
         }
       },
       "esm/native/services/doors_runtime_visuals_drawers.ts": {
@@ -456,6 +897,12 @@
           "domain-default": 4
         }
       },
+      "esm/native/services/viewer_measurement_tool_resolution.ts": {
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
       "esm/native/services/viewer_measurement_tool.ts": {
         "total": 4,
         "categories": {
@@ -468,16 +915,70 @@
           "domain-default": 2
         }
       },
+      "esm/native/ui/error_overlay.ts": {
+        "total": 1,
+        "categories": {
+          "compat-boundary": 1
+        }
+      },
+      "esm/native/ui/errors_install_runtime.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
       "esm/native/ui/errors_install_support.ts": {
         "total": 3,
         "categories": {
           "domain-default": 3
         }
       },
+      "esm/native/ui/export/export_canvas_scene_wall.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/ui/export/export_order_pdf_sketch_annotations.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/ui/interactions/canvas_interactions_pointer.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
       "esm/native/ui/interactions/history_ui_shortcut_guard.ts": {
         "total": 1,
         "categories": {
           "browser-adapter": 1
+        }
+      },
+      "esm/native/ui/interactions/history_ui.ts": {
+        "total": 1,
+        "categories": {
+          "browser-adapter": 1
+        }
+      },
+      "esm/native/ui/interactions/project_drag_drop_controller_drop.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      "esm/native/ui/interactions/project_save_load_controller_load.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      "esm/native/ui/interactions/project_save_load_controller_save.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
         }
       },
       "esm/native/ui/interactions/viewer_resize.ts": {
@@ -487,6 +988,84 @@
         }
       },
       "esm/native/ui/modes_mode_opts.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/ui/modes_transition_policy.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/project_action_execution_async.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/project_action_execution_shared.ts": {
+        "total": 4,
+        "categories": {
+          "error-message-default": 4
+        }
+      },
+      "esm/native/ui/project_action_execution_sync.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/project_action_feedback_shared.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/project_action_feedback.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/project_load_runtime_action.ts": {
+        "total": 6,
+        "categories": {
+          "error-message-default": 6
+        }
+      },
+      "esm/native/ui/project_load_runtime_shared.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/project_recovery_runtime_reset.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      "esm/native/ui/project_recovery_runtime_restore.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      "esm/native/ui/project_recovery_runtime_shared.ts": {
+        "total": 4,
+        "categories": {
+          "error-message-default": 4
+        }
+      },
+      "esm/native/ui/project_session_commands_shared.ts": {
+        "total": 5,
+        "categories": {
+          "error-message-default": 5
+        }
+      },
+      "esm/native/ui/react/actions/sketch_actions.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
@@ -510,16 +1089,100 @@
           "domain-default": 1
         }
       },
+      "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/react/notes/notes_overlay_controller_pointer_runtime.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
+        }
+      },
+      "esm/native/ui/react/notes/notes_overlay_editor_async.ts": {
+        "total": 15,
+        "categories": {
+          "domain-default": 15
+        }
+      },
+      "esm/native/ui/react/overlay_feedback_host_timers.ts": {
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
           "framework-default": 1
         }
       },
-      "esm/native/ui/react/release_asset_recovery.ts": {
+      "esm/native/ui/react/panels/cloud_sync_panel_actions.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_draft_action_feedback.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_pages.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts": {
+        "total": 2,
+        "categories": {
+          "browser-adapter": 2
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box.tsx": {
+        "total": 4,
+        "categories": {
+          "browser-adapter": 4
+        }
+      },
+      "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_toolbar.tsx": {
         "total": 1,
         "categories": {
-          "domain-default": 1
+          "browser-adapter": 1
+        }
+      },
+      "esm/native/ui/react/project_ui_action_controller_load.ts": {
+        "total": 3,
+        "categories": {
+          "error-message-default": 3
+        }
+      },
+      "esm/native/ui/react/project_ui_action_controller_save.ts": {
+        "total": 1,
+        "categories": {
+          "error-message-default": 1
+        }
+      },
+      "esm/native/ui/react/release_asset_recovery.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 3
+        }
+      },
+      "esm/native/ui/react/selectors/root_selectors.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/ui/react/sidebar_app.tsx": {
@@ -531,7 +1194,7 @@
       "esm/native/ui/react/sidebar_shared.ts": {
         "total": 1,
         "categories": {
-          "project-migration": 1
+          "domain-default": 1
         }
       },
       "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx": {
@@ -546,16 +1209,88 @@
           "domain-default": 1
         }
       },
-      "esm/native/ui/runtime/ui_runtime.ts": {
+      "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts": {
+        "total": 2,
+        "categories": {
+          "error-message-default": 2
+        }
+      },
+      "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts": {
         "total": 1,
         "categories": {
-          "compat-boundary": 1
+          "domain-default": 1
+        }
+      },
+      "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      "esm/native/ui/settings_backup_action_result.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/ui/ui_boot_controller_reporter.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      "esm/shared/dimensions/base_plinth_policy.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/shared/dimensions/carcass_cornice_render_policy.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts": {
+        "total": 3,
+        "categories": {
+          "compat-boundary": 3
+        }
+      },
+      "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts": {
+        "total": 5,
+        "categories": {
+          "compat-boundary": 5
+        }
+      },
+      "esm/shared/dimensions/corner_system_policy.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      "esm/shared/dimensions/no_main_sketch_workspace_policy.ts": {
+        "total": 1,
+        "categories": {
+          "runtime-default": 1
+        }
+      },
+      "esm/shared/dimensions/sketch_box_divider_policy.ts": {
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
         }
       },
       "esm/test_imports.mjs": {
@@ -565,13 +1300,50 @@
         }
       },
       "esm/test_no_side_effects_on_import.mjs": {
-        "total": 5,
+        "total": 6,
         "categories": {
-          "test-fixture": 5
+          "test-fixture": 6
         }
       }
     },
     "hotFiles": [
+      {
+        "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+        "total": 15,
+        "categories": {
+          "domain-default": 15
+        }
+      },
+      {
+        "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+        "total": 14,
+        "categories": {
+          "domain-default": 11,
+          "external-api-compat": 3
+        }
+      },
+      {
+        "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+        "total": 12,
+        "categories": {
+          "domain-default": 12
+        }
+      },
+      {
+        "file": "esm/native/builder/core_carcass_cornice.ts",
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
+      {
+        "file": "esm/native/runtime/groove_lines_access.ts",
+        "total": 11,
+        "categories": {
+          "domain-default": 6,
+          "runtime-default": 5
+        }
+      },
       {
         "file": "esm/native/runtime/runtime_globals.ts",
         "total": 11,
@@ -580,11 +1352,80 @@
         }
       },
       {
-        "file": "esm/native/builder/plan.ts",
+        "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
+      {
+        "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+        "total": 11,
+        "categories": {
+          "domain-default": 11
+        }
+      },
+      {
+        "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+        "total": 10,
+        "categories": {
+          "domain-default": 10
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+        "total": 9,
+        "categories": {
+          "domain-default": 9
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+        "total": 9,
+        "categories": {
+          "domain-default": 9
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
         "total": 8,
         "categories": {
-          "domain-default": 4,
-          "legacy-runtime-risk": 4
+          "domain-default": 8
+        }
+      },
+      {
+        "file": "esm/native/builder/core_doors_compute.ts",
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      {
+        "file": "esm/native/builder/corner_connector_emit.ts",
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      {
+        "file": "esm/native/features/sketch_stack_positioning.ts",
+        "total": 6,
+        "categories": {
+          "domain-default": 6
+        }
+      },
+      {
+        "file": "esm/native/ui/project_load_runtime_action.ts",
+        "total": 6,
+        "categories": {
+          "error-message-default": 6
+        }
+      },
+      {
+        "file": "esm/test_no_side_effects_on_import.mjs",
+        "total": 6,
+        "categories": {
+          "test-fixture": 6
         }
       },
       {
@@ -595,10 +1436,68 @@
         }
       },
       {
-        "file": "esm/test_no_side_effects_on_import.mjs",
+        "file": "esm/native/runtime/doors_runtime_support_modes.ts",
         "total": 5,
         "categories": {
-          "test-fixture": 5
+          "compat-boundary": 1,
+          "domain-default": 1,
+          "runtime-default": 3
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_door_shared.ts",
+        "total": 5,
+        "categories": {
+          "domain-default": 5
+        }
+      },
+      {
+        "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+        "total": 5,
+        "categories": {
+          "domain-default": 5
+        }
+      },
+      {
+        "file": "esm/native/ui/project_session_commands_shared.ts",
+        "total": 5,
+        "categories": {
+          "error-message-default": 5
+        }
+      },
+      {
+        "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+        "total": 5,
+        "categories": {
+          "compat-boundary": 5
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
+      {
+        "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+        "total": 4,
+        "categories": {
+          "runtime-default": 4
         }
       },
       {
@@ -610,185 +1509,37 @@
         }
       },
       {
-        "file": "esm/native/services/site_variant.ts",
+        "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
         }
       },
       {
-        "file": "esm/native/services/viewer_measurement_tool.ts",
+        "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/builder/door_trim_visuals.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/features/modules_configuration/corner_cells_snapshot_stack.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/runtime/doors_runtime_support_modes.ts",
-        "total": 3,
-        "categories": {
-          "project-migration": 1,
-          "runtime-default": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/render_access_shared.ts",
-        "total": 3,
-        "categories": {
-          "runtime-default": 3
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_projection_runtime_box_wardrobe_scene.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/ui/errors_install_support.ts",
-        "total": 3,
-        "categories": {
-          "domain-default": 3
-        }
-      },
-      {
-        "file": "esm/native/builder/materials_factory_texture_runtime.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/module_layout_pipeline.ts",
-        "total": 2,
-        "categories": {
-          "project-migration": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/render_adapter.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
-        "total": 2,
-        "categories": {
-          "project-migration": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/room_visual_apply.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/builder/visuals_and_contents_door_visual_cache.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/browser_env_timers.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/data_attrs.ts",
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
-        }
-      },
-      {
-        "file": "esm/native/runtime/platform_access_ops.ts",
-        "total": 2,
-        "categories": {
-          "runtime-default": 2
         }
       }
     ]
   },
   "allowlistComparison": null,
   "occurrences": [
+    {
+      "file": "esm/boot/boot_error_policy.ts",
+      "line": 31,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "function __toError(err: unknown, fallbackMessage: string): Error {"
+    },
+    {
+      "file": "esm/boot/boot_error_policy.ts",
+      "line": 32,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "return err instanceof Error ? err : new Error(normalizeUnknownError(err, fallbackMessage).message);"
+    },
     {
       "file": "esm/native/adapters/browser/active_element.ts",
       "line": 39,
@@ -804,6 +1555,181 @@
       "text": "// browser-canvas-capability-fallback: fall back to a DOM canvas when OffscreenCanvas construction fails."
     },
     {
+      "file": "esm/native/adapters/browser/env_shared.ts",
+      "line": 108,
+      "term": "fallbackPromise",
+      "category": "browser-adapter",
+      "text": "const fallbackPromise: DelayPromise = new Promise(resolve => setTimeout(() => resolve(true), timeoutMs));"
+    },
+    {
+      "file": "esm/native/adapters/browser/env_shared.ts",
+      "line": 109,
+      "term": "fallbackPromise",
+      "category": "browser-adapter",
+      "text": "return fallbackPromise;"
+    },
+    {
+      "file": "esm/native/builder/build_app_context.ts",
+      "line": 105,
+      "term": "fallbackReplay",
+      "category": "domain-default",
+      "text": "reportSoftError('native/builder/build_runner.fallbackReplay', error);"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 203,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 204,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 295,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "fallbackDepth: number"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 298,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "const edgeDepth = Math.max(prepared.woodThick, fallbackDepth);"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 299,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "const fallbackZ = backZ + edgeDepth;"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 305,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "path: [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 326,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "path: path.length ? path : [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 577,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "fallbackZ: number"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 579,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "if (!seg) return fallbackZ;"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 583,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "return Number.isFinite(z) ? z : fallbackZ;"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_cornice.ts",
+      "line": 630,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shell.ts",
+      "line": 232,
+      "term": "fallbackBackPanel",
+      "category": "domain-default",
+      "text": "fallbackBackPanel: MutableRecord"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shell.ts",
+      "line": 237,
+      "term": "fallbackBackPanel",
+      "category": "domain-default",
+      "text": "const single = { ...fallbackBackPanel };"
+    },
+    {
+      "file": "esm/native/builder/core_carcass_shell.ts",
+      "line": 263,
+      "term": "fallbackBackPanel",
+      "category": "domain-default",
+      "text": "const seg: MutableRecord = { ...fallbackBackPanel };"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 307,
+      "term": "fallbackMinX",
+      "category": "domain-default",
+      "text": "const fallbackMinX = -internalWidthForDoors / 2 + doorWidth / 2;"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 308,
+      "term": "fallbackMaxX",
+      "category": "domain-default",
+      "text": "const fallbackMaxX = internalWidthForDoors / 2 - doorWidth / 2;"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 314,
+      "term": "fallbackMinX",
+      "category": "domain-default",
+      "text": "minX: fallbackMinX,"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 315,
+      "term": "fallbackMaxX",
+      "category": "domain-default",
+      "text": "maxX: fallbackMaxX,"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 328,
+      "term": "fallbackMinX",
+      "category": "domain-default",
+      "text": "minX: __asNum(sp.minX, fallbackMinX),"
+    },
+    {
+      "file": "esm/native/builder/core_doors_compute.ts",
+      "line": 329,
+      "term": "fallbackMaxX",
+      "category": "domain-default",
+      "text": "maxX: __asNum(sp.maxX, fallbackMaxX),"
+    },
+    {
+      "file": "esm/native/builder/core_layout_compute.ts",
+      "line": 107,
+      "term": "fallbackDenom",
+      "category": "domain-default",
+      "text": "const fallbackDenom = doorUnits > 0 ? doorUnits : modules.length || 1;"
+    },
+    {
+      "file": "esm/native/builder/core_layout_compute.ts",
+      "line": 114,
+      "term": "fallbackDenom",
+      "category": "domain-default",
+      "text": "seg = (totalWcm * doors) / fallbackDenom;"
+    },
+    {
       "file": "esm/native/builder/core_storage_compute_custom.ts",
       "line": 142,
       "term": "fallback",
@@ -811,11 +1737,186 @@
       "text": "// builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails."
     },
     {
+      "file": "esm/native/builder/corner_connector_cornice_wave.ts",
+      "line": 66,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": "Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_policy.ts",
+      "line": 97,
+      "term": "fallbackCfg",
+      "category": "domain-default",
+      "text": "const fallbackCfg = readConfigRecord(ctx.config);"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_door_emit_policy.ts",
+      "line": 99,
+      "term": "fallbackCfg",
+      "category": "domain-default",
+      "text": "else if (fallbackCfg) out.push(fallbackCfg);"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 54,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": "fallbackBodyHeight: number;"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 56,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": "const { ctx, cfgMod, fallbackBodyHeight } = args;"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 58,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": "const baseAbsCm = baseHeightCm ?? (ctx.startY + fallbackBodyHeight) * 100;"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 61,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": "if (!hasActiveHeight || heightCm == null) return fallbackBodyHeight;"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 68,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": ": fallbackBodyHeight;"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_emit.ts",
+      "line": 94,
+      "term": "fallbackBodyHeight",
+      "category": "domain-default",
+      "text": "fallbackBodyHeight: mainBodyHeight,"
+    },
+    {
+      "file": "esm/native/builder/corner_connector_interior_special.ts",
+      "line": 3,
+      "term": "compatible",
+      "category": "compat-boundary",
+      "text": "// Keep this file as a narrow import-compatible seam. Implementation ownership"
+    },
+    {
+      "file": "esm/native/builder/corner_state_normalize_layout.ts",
+      "line": 96,
+      "term": "fallbackWingLengthCm",
+      "category": "domain-default",
+      "text": "fallbackWingLengthCm: number,"
+    },
+    {
+      "file": "esm/native/builder/corner_state_normalize_layout.ts",
+      "line": 100,
+      "term": "fallbackWingLengthCm",
+      "category": "domain-default",
+      "text": "return fallbackWingLengthCm;"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
+      "line": 52,
+      "term": "fallbackMinWidthM",
+      "category": "domain-default",
+      "text": "Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, activeWidth),"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "line": 143,
+      "term": "fallbackMinWidthM",
+      "category": "domain-default",
+      "text": "const floorW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "line": 268,
+      "term": "fallbackMinWidthM",
+      "category": "domain-default",
+      "text": "const platformW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "line": 322,
+      "term": "fallbackWidthClearanceM",
+      "category": "domain-default",
+      "text": "new THREE.BoxGeometry(wingW - PLINTH_DIMENSIONS.fallbackWidthClearanceM, baseH, __plD0),"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_carcass_shell_panels.ts",
+      "line": 73,
+      "term": "fallbackSegmentWidthM",
+      "category": "domain-default",
+      "text": "const w = Number.isFinite(segW) && segW > 0 ? segW : CORNER_WING_PANEL_POLICY.fallbackSegmentWidthM;"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "line": 69,
+      "term": "fallbackDoorW",
+      "category": "domain-default",
+      "text": "fallbackDoorW: ctx.activeWidth / locals.doorCount,"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_contracts.ts",
+      "line": 63,
+      "term": "fallbackDoorW",
+      "category": "domain-default",
+      "text": "fallbackDoorW: number;"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
+      "line": 49,
+      "term": "fallbackDoorW",
+      "category": "domain-default",
+      "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
+      "line": 53,
+      "term": "fallbackDoorW",
+      "category": "domain-default",
+      "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
+      "line": 149,
+      "term": "fallbackDoorW",
+      "category": "domain-default",
+      "text": "const doorW = ctx.fallbackDoorW;"
+    },
+    {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
       "line": 172,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_cornice_wave.ts",
+      "line": 55,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": "Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_hex_cell_geometry.ts",
+      "line": 67,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "export function getCornerHexDoorDepth(cell: CornerCell, fallbackDepth: number): number {"
+    },
+    {
+      "file": "esm/native/builder/corner_wing_hex_cell_geometry.ts",
+      "line": 71,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": ": fallbackDepth;"
     },
     {
       "file": "esm/native/builder/door_trim_visuals.ts",
@@ -846,6 +1947,20 @@
       "text": "// builder-handle-visual-fallback: optional handle visual metadata must not block door rendering"
     },
     {
+      "file": "esm/native/builder/handles_apply_doors.ts",
+      "line": 142,
+      "term": "fallbackHingeLeft",
+      "category": "domain-default",
+      "text": "const fallbackHingeLeft = !!root.userData?.__hingeLeft;"
+    },
+    {
+      "file": "esm/native/builder/handles_apply_doors.ts",
+      "line": 179,
+      "term": "fallbackHingeLeft",
+      "category": "domain-default",
+      "text": "isLeftHinge: typeof ud.__hingeLeft === 'boolean' ? !!ud.__hingeLeft : fallbackHingeLeft,"
+    },
+    {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
       "line": 198,
       "term": "fallback",
@@ -867,74 +1982,123 @@
       "text": "// render-capability fallback: optional texture metadata is not required for a usable texture."
     },
     {
-      "file": "esm/native/builder/module_layout_pipeline.ts",
-      "line": 251,
-      "term": "fallback",
-      "category": "project-migration",
-      "text": "// builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below."
+      "file": "esm/native/builder/materials_factory.ts",
+      "line": 120,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service."
+    },
+    {
+      "file": "esm/native/builder/materials_factory.ts",
+      "line": 126,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service."
     },
     {
       "file": "esm/native/builder/module_layout_pipeline.ts",
-      "line": 251,
-      "term": "legacy",
-      "category": "project-migration",
-      "text": "// builder-fallback: failed legacy/current-layout probing falls through to canonical recomputation below."
+      "line": 235,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// compatibility-boundary: callers without the calculator may still reuse a door-count-current"
     },
     {
-      "file": "esm/native/builder/plan.ts",
-      "line": 111,
-      "term": "fallback",
+      "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
+      "line": 89,
+      "term": "fallbackCenterX",
       "category": "domain-default",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+      "text": "fallbackCenterX: number,"
     },
     {
-      "file": "esm/native/builder/plan.ts",
-      "line": 111,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
-    },
-    {
-      "file": "esm/native/builder/plan.ts",
-      "line": 121,
-      "term": "fallback",
+      "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
+      "line": 90,
+      "term": "fallbackW",
       "category": "domain-default",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+      "text": "fallbackW: number"
     },
     {
-      "file": "esm/native/builder/plan.ts",
-      "line": 121,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
-    },
-    {
-      "file": "esm/native/builder/plan.ts",
-      "line": 185,
-      "term": "fallback",
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 50,
+      "term": "fallbackCenterX",
       "category": "domain-default",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+      "text": "fallbackCenterX: number,"
     },
     {
-      "file": "esm/native/builder/plan.ts",
-      "line": 185,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
-    },
-    {
-      "file": "esm/native/builder/plan.ts",
-      "line": 191,
-      "term": "fallback",
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 51,
+      "term": "fallbackW",
       "category": "domain-default",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+      "text": "fallbackW: number"
     },
     {
-      "file": "esm/native/builder/plan.ts",
-      "line": 191,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// builder-plan-compatibility-fallback: optional legacy build-state/dependency metadata is best-effort"
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 53,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "const defMin = fallbackCenterX - fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 53,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const defMin = fallbackCenterX - fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 54,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "const defMax = fallbackCenterX + fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 54,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const defMax = fallbackCenterX + fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 86,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "if (!found) return { spanW: fallbackW, centerX: fallbackCenterX };"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 86,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "if (!found) return { spanW: fallbackW, centerX: fallbackCenterX };"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 91,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "spanW: Number.isFinite(spanW) && spanW > 0 ? spanW : fallbackW,"
+    },
+    {
+      "file": "esm/native/builder/module_loop_pipeline_runtime_shared.ts",
+      "line": 92,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "centerX: Number.isFinite(centerX) ? centerX : fallbackCenterX,"
+    },
+    {
+      "file": "esm/native/builder/post_build_dimensions_module_metrics.ts",
+      "line": 105,
+      "term": "fallbackDenom",
+      "category": "domain-default",
+      "text": "const fallbackDenom = sumDoors > 0 ? sumDoors : mods.length || 1;"
+    },
+    {
+      "file": "esm/native/builder/post_build_dimensions_module_metrics.ts",
+      "line": 112,
+      "term": "fallbackDenom",
+      "category": "domain-default",
+      "text": "seg = (totalWcm * doors) / fallbackDenom;"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
@@ -972,17 +2136,80 @@
       "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
     },
     {
+      "file": "esm/native/builder/render_carcass_ops_cornice_apply.ts",
+      "line": 106,
+      "term": "fallbackY",
+      "category": "domain-default",
+      "text": "{ x, y, z: Number.isFinite(z) ? z : 0, flipX, rotY, segPid, fallbackY: h / 2 },"
+    },
+    {
+      "file": "esm/native/builder/render_carcass_ops_cornice_finalize.ts",
+      "line": 14,
+      "term": "fallbackY",
+      "category": "domain-default",
+      "text": "Number.isFinite(args.y) ? args.y : (args.fallbackY ?? 0),"
+    },
+    {
+      "file": "esm/native/builder/render_carcass_ops_cornice_types.ts",
+      "line": 21,
+      "term": "fallbackY",
+      "category": "domain-default",
+      "text": "fallbackY?: number;"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_external.ts",
+      "line": 85,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial: drawerBoxBaseMat,"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_internal.ts",
+      "line": 79,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial: bodyMat || drawerBoxBaseMat,"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_internal.ts",
+      "line": 90,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial: drawerBoxBaseMat,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_rod_clearance.ts",
+      "line": 158,
+      "term": "fallbackGridIndex",
+      "category": "domain-default",
+      "text": "fallbackGridIndex?: number;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_rod_clearance.ts",
+      "line": 160,
+      "term": "fallbackGridIndex",
+      "category": "domain-default",
+      "text": "const { rod, effectiveBottomY, localGridStep, fallbackGridIndex } = args;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_rod_clearance.ts",
+      "line": 164,
+      "term": "fallbackGridIndex",
+      "category": "domain-default",
+      "text": "const factor = rawYFactor ?? rawGridIndex ?? fallbackGridIndex ?? null;"
+    },
+    {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
       "line": 16,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
       "line": 39,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
     },
     {
@@ -1007,11 +2234,221 @@
       "text": "// builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "line": 79,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "const fallbackMaterial = resolveDrawerBoxBaseMaterial();"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "line": 82,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "line": 84,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "getPartMaterial: partId => args.resolvePartMaterial(partId, fallbackMaterial),"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 203,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "const fallbackGeom = resolveExternalDrawerGeometry({"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 213,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "const pz = readRenderOpNumber(closed?.z) ?? fallbackGeom.zClosed;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 220,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.visualW) ?? fallbackGeom.visualW"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 229,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.visualH) ?? fallbackGeom.visualH"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 274,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 278,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 282,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxD) ?? fallbackGeom.boxD"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 284,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "boxOffsetZ: readRenderOpNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "line": 288,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "connectorZ: readRenderOpNumber(op.connectZ) ?? fallbackGeom.connectZ,"
+    },
+    {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_support.ts",
       "line": 39,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_context.ts",
+      "line": 117,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "const fallbackMaterial = resolveDrawerBoxBaseMaterial();"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_context.ts",
+      "line": 120,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 121,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "const fallbackGeom = resolveExternalDrawerGeometry({"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 131,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "const pz = readRenderOpNumber(closed?.z) ?? fallbackGeom.zClosed;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 138,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.visualW) ?? fallbackGeom.visualW"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 147,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.visualH) ?? fallbackGeom.visualH"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 189,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 193,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 197,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "readRenderOpNumber(op.boxD) ?? fallbackGeom.boxD"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 199,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "boxOffsetZ: readRenderOpNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "line": 203,
+      "term": "fallbackGeom",
+      "category": "domain-default",
+      "text": "connectorZ: readRenderOpNumber(op.connectZ) ?? fallbackGeom.connectZ,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts",
+      "line": 28,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial?: unknown;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts",
+      "line": 75,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "currentShelfMat: args.currentShelfMat || args.fallbackMaterial,"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_layout_dividers.ts",
+      "line": 27,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": "return n != null && n > 0 ? n : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "line": 109,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const fallbackW = Math.max("
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "line": 116,
+      "term": "fallbackD",
+      "category": "domain-default",
+      "text": "const fallbackD = Math.max("
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "line": 125,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const outerW = widthValue != null ? Math.max(minW, widthValue) : fallbackW;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "line": 126,
+      "term": "fallbackD",
+      "category": "domain-default",
+      "text": "const outerD = depthValue != null ? Math.max(minD, depthValue) : fallbackD;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
@@ -1028,6 +2465,48 @@
       "text": "// builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 199,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "const fallbackCenterX = toFiniteNumber(input.externalCenterX) ?? internalCenterX;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 200,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const fallbackW = Math.max(0.02, toFiniteNumber(input.externalW) ?? innerW);"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 205,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "let minX = fallbackCenterX - fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 205,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "let minX = fallbackCenterX - fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 206,
+      "term": "fallbackCenterX",
+      "category": "domain-default",
+      "text": "let maxX = fallbackCenterX + fallbackW / 2;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
+      "line": 206,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "let maxX = fallbackCenterX + fallbackW / 2;"
+    },
+    {
       "file": "esm/native/builder/render_interior_sketch_support_materials.ts",
       "line": 73,
       "term": "fallback",
@@ -1042,18 +2521,53 @@
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "line": 23,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "fallbackDepth: number;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "line": 26,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "line": 27,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "let shelfDepth = fallbackDepth;"
+    },
+    {
+      "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "line": 142,
+      "term": "fallbackDepth",
+      "category": "domain-default",
+      "text": "fallbackDepth: isBrace ? internalDepth : regularDepth,"
+    },
+    {
       "file": "esm/native/builder/render_interior_sketch_support_storage.ts",
       "line": 83,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// builder-material-fallback: unresolved optional storage material falls back to the canonical barrier material"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_visuals_adornments_runtime.ts",
       "line": 65,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// builder-material-fallback: unresolved optional adornment material falls back to the canonical body material"
+    },
+    {
+      "file": "esm/native/builder/render_ops.ts",
+      "line": 190,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// Signature kept for compatibility: (type, doorWidth, doorHeight, isLeftHinge) -> THREE.Group|null"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts",
@@ -1085,10 +2599,101 @@
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 129,
+      "term": "fallbackX",
+      "category": "domain-default",
+      "text": "fallbackX: number,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 130,
+      "term": "fallbackY",
+      "category": "domain-default",
+      "text": "fallbackY: number,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 131,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "fallbackW: number,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 132,
+      "term": "fallbackH",
+      "category": "domain-default",
+      "text": "fallbackH: number,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 133,
+      "term": "fallbackT",
+      "category": "domain-default",
+      "text": "fallbackT: number"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 143,
+      "term": "fallbackX",
+      "category": "domain-default",
+      "text": "x: overlayX != null ? overlayX : fallbackX,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 144,
+      "term": "fallbackY",
+      "category": "domain-default",
+      "text": "y: overlayY != null ? overlayY : fallbackY,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 146,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "w: overlayW != null ? overlayW : fallbackW,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 147,
+      "term": "fallbackH",
+      "category": "domain-default",
+      "text": "h: overlayH != null ? overlayH : fallbackH,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
+      "line": 148,
+      "term": "fallbackT",
+      "category": "domain-default",
+      "text": "t: overlayT != null ? overlayT : fallbackT,"
+    },
+    {
+      "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
       "line": 167,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-preview-outline-fallback: optional outline mutation must not block preview visibility"
+    },
+    {
+      "file": "esm/native/builder/room_shared_types.ts",
+      "line": 88,
+      "term": "Compatibility",
+      "category": "compat-boundary",
+      "text": "// Compatibility field still read by room selection callers."
+    },
+    {
+      "file": "esm/native/builder/room_shared_utils.ts",
+      "line": 59,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "export function _asActionMeta(meta: unknown, fallbackSource: string): ActionMetaLike {"
+    },
+    {
+      "file": "esm/native/builder/room_shared_utils.ts",
+      "line": 60,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "return _asObject<ActionMetaLike>(meta) || { source: fallbackSource };"
     },
     {
       "file": "esm/native/builder/room_visual_apply.ts",
@@ -1134,9 +2739,23 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 164,
+      "term": "compatible",
+      "category": "external-api-compat",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
       "line": 209,
       "term": "fallback",
       "category": "domain-default",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 209,
+      "term": "compatible",
+      "category": "external-api-compat",
       "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
     },
     {
@@ -1145,6 +2764,69 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 216,
+      "term": "compatible",
+      "category": "external-api-compat",
+      "text": "// builder-material-capability-fallback: optional material properties may be unavailable on alternate THREE-compatible surfaces"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 304,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const fallbackW = Math.max("
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 308,
+      "term": "fallbackH",
+      "category": "domain-default",
+      "text": "const fallbackH = Math.max("
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 312,
+      "term": "fallbackFaceZ",
+      "category": "domain-default",
+      "text": "const fallbackFaceZ ="
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 322,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 322,
+      "term": "fallbackH",
+      "category": "domain-default",
+      "text": "const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 322,
+      "term": "fallbackFaceZ",
+      "category": "domain-default",
+      "text": "const { glassPane } = appendGlassPane(args, fallbackW, fallbackH, fallbackFaceZ);"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 323,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "return { glassW: fallbackW, glassH: fallbackH, glassPaneZ: glassPane.position.z };"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_glass.ts",
+      "line": 323,
+      "term": "fallbackH",
+      "category": "domain-default",
+      "text": "return { glassW: fallbackW, glassH: fallbackH, glassPaneZ: glassPane.position.z };"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
@@ -1161,10 +2843,73 @@
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated frame materials"
     },
     {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "line": 58,
+      "term": "fallbackFaceSign",
+      "category": "domain-default",
+      "text": "fallbackFaceSign: number"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "line": 63,
+      "term": "fallbackFaceSign",
+      "category": "domain-default",
+      "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) !== -1) {"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "line": 70,
+      "term": "fallbackFaceSign",
+      "category": "domain-default",
+      "text": "function hasInsideFullMirrorLayout(mirrorLayout: MirrorLayoutList | null, fallbackFaceSign: number): boolean {"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "line": 74,
+      "term": "fallbackFaceSign",
+      "category": "domain-default",
+      "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) === -1) {"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "line": 79,
+      "term": "fallbackCm",
+      "category": "domain-default",
+      "text": "fallbackCm: number,"
+    },
+    {
+      "file": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "line": 82,
+      "term": "fallbackCm",
+      "category": "domain-default",
+      "text": "const raw = readRuntimeNumber(value) ?? fallbackCm;"
+    },
+    {
+      "file": "esm/native/features/drawer_box_identity.ts",
+      "line": 55,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial: unknown;"
+    },
+    {
+      "file": "esm/native/features/drawer_box_identity.ts",
+      "line": 61,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "if (!hasExplicitDrawerBoxPaint(value)) return args.fallbackMaterial;"
+    },
+    {
+      "file": "esm/native/features/drawer_box_identity.ts",
+      "line": 64,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "return material || args.fallbackMaterial;"
+    },
+    {
       "file": "esm/native/features/model_record/model_record_normalization.ts",
       "line": 35,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// clone-capability-fallback: JSON cloning remains available when structuredClone rejects the payload"
     },
     {
@@ -1203,10 +2948,80 @@
       "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting patch normalization"
     },
     {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 36,
+      "term": "fallbackMin",
+      "category": "domain-default",
+      "text": "fallbackMin: number;"
+    },
+    {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 37,
+      "term": "fallbackMax",
+      "category": "domain-default",
+      "text": "fallbackMax: number;"
+    },
+    {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 45,
+      "term": "fallbackMin",
+      "category": "domain-default",
+      "text": "fallbackMin: minY,"
+    },
+    {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 46,
+      "term": "fallbackMax",
+      "category": "domain-default",
+      "text": "fallbackMax: maxY,"
+    },
+    {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 58,
+      "term": "fallbackMin",
+      "category": "domain-default",
+      "text": "if (!(bounds.hi > bounds.lo)) return clamp(args.centerY, bounds.fallbackMin, bounds.fallbackMax);"
+    },
+    {
+      "file": "esm/native/features/sketch_stack_positioning.ts",
+      "line": 58,
+      "term": "fallbackMax",
+      "category": "domain-default",
+      "text": "if (!(bounds.hi > bounds.lo)) return clamp(args.centerY, bounds.fallbackMin, bounds.fallbackMax);"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+      "line": 147,
+      "term": "fallbackSource",
+      "category": "runtime-default",
+      "text": "function readMetaSource(meta: ActionMetaLike | null | undefined, fallbackSource: string): string {"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+      "line": 148,
+      "term": "fallbackSource",
+      "category": "runtime-default",
+      "text": "return typeof meta?.source === 'string' && meta.source ? meta.source : fallbackSource;"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+      "line": 157,
+      "term": "fallbackSource",
+      "category": "runtime-default",
+      "text": "fallbackSource: string,"
+    },
+    {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
+      "line": 162,
+      "term": "fallbackSource",
+      "category": "runtime-default",
+      "text": "source: readMetaSource(meta, fallbackSource),"
+    },
+    {
       "file": "esm/native/kernel/maps_api_shared.ts",
       "line": 81,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// reporter-isolation: console fallback must never break canonical map error handling"
     },
     {
@@ -1217,10 +3032,17 @@
       "text": "// runtime-debug-probe-fallback: fall back to injected debug flags when store runtime is unavailable."
     },
     {
+      "file": "esm/native/platform/store_contract.ts",
+      "line": 92,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "* Keep this stable: it is the compatibility boundary between the app and the store backend."
+    },
+    {
       "file": "esm/native/platform/store_shared.ts",
       "line": 198,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "runtime-default",
       "text": "// clock-capability-fallback: Date.now remains the canonical fallback when performance.now is unavailable."
     },
     {
@@ -1231,11 +3053,32 @@
       "text": "// selector-equality-fallback: if equality probing fails, notify conservatively as changed."
     },
     {
+      "file": "esm/native/runtime/api.ts",
+      "line": 260,
+      "term": "compatibility",
+      "category": "domain-default",
+      "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"
+    },
+    {
+      "file": "esm/native/runtime/api.ts",
+      "line": 260,
+      "term": "chest_mode_dimensions_compatibility",
+      "category": "domain-default",
+      "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"
+    },
+    {
       "file": "esm/native/runtime/app_helpers.ts",
       "line": 22,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "* A direct fallback is safe only when the canonical batch surface fails before"
+    },
+    {
+      "file": "esm/native/runtime/autosave_access.ts",
+      "line": 289,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// compatibility-boundary: adapt the pre-result forceSaveNow() owner surface."
     },
     {
       "file": "esm/native/runtime/browser_env_surface.ts",
@@ -1287,6 +3130,34 @@
       "text": "// cleanup-best-effort: interval fallback delegates to timeout cleanup and tolerates unavailable handles."
     },
     {
+      "file": "esm/native/runtime/builder_service_access_calls.ts",
+      "line": 100,
+      "term": "fallbackFactory",
+      "category": "runtime-default",
+      "text": "fallbackFactory?: (() => unknown) | null"
+    },
+    {
+      "file": "esm/native/runtime/builder_service_access_calls.ts",
+      "line": 104,
+      "term": "fallbackFactory",
+      "category": "runtime-default",
+      "text": "return typeof fallbackFactory === 'function' ? fallbackFactory() : null;"
+    },
+    {
+      "file": "esm/native/runtime/cache_access.ts",
+      "line": 55,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// compatibility-boundary: clear the retired root cache alias while runtimeCache owns live state."
+    },
+    {
+      "file": "esm/native/runtime/config_selectors_scalars.ts",
+      "line": 75,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
+    },
+    {
       "file": "esm/native/runtime/config_selectors_scalars.ts",
       "line": 75,
       "term": "fallback",
@@ -1311,14 +3182,14 @@
       "file": "esm/native/runtime/doors_runtime_support_entries.ts",
       "line": 113,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "runtime-default",
       "text": "// perf-state-probe-fallback: fall back to the canonical drawer collection scan."
     },
     {
       "file": "esm/native/runtime/doors_runtime_support_modes.ts",
       "line": 74,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "runtime-default",
       "text": "// mode-state-probe-fallback: continue to the next canonical manual-tool source."
     },
     {
@@ -1330,10 +3201,108 @@
     },
     {
       "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+      "line": 85,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// tools-surface-probe-fallback: continue to the mode-slice compatibility source."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_modes.ts",
+      "line": 98,
+      "term": "compatibility",
+      "category": "domain-default",
+      "text": "// mode-compatibility-probe-fallback: no manual tool is available from the fallback chain."
+    },
+    {
+      "file": "esm/native/runtime/doors_runtime_support_modes.ts",
       "line": 98,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// mode-compatibility-probe-fallback: no manual tool is available from the fallback chain."
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 236,
+      "term": "fallbackWidth",
+      "category": "runtime-default",
+      "text": "const fallbackWidth = dimensions?.widthM ?? readUiAutoDoorWidthM(args.App);"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 237,
+      "term": "fallbackHeight",
+      "category": "runtime-default",
+      "text": "const fallbackHeight = dimensions?.heightM ?? readUiAutoDoorHeightM(args.App);"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 240,
+      "term": "fallbackWidth",
+      "category": "domain-default",
+      "text": "(fallbackWidth != null && fallbackHeight != null"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 240,
+      "term": "fallbackHeight",
+      "category": "domain-default",
+      "text": "(fallbackWidth != null && fallbackHeight != null"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 242,
+      "term": "fallbackWidth",
+      "category": "domain-default",
+      "text": "minX: -fallbackWidth / 2,"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 243,
+      "term": "fallbackWidth",
+      "category": "domain-default",
+      "text": "maxX: fallbackWidth / 2,"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 244,
+      "term": "fallbackHeight",
+      "category": "domain-default",
+      "text": "minY: -fallbackHeight / 2,"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 245,
+      "term": "fallbackHeight",
+      "category": "domain-default",
+      "text": "maxY: fallbackHeight / 2,"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 249,
+      "term": "fallbackWidth",
+      "category": "runtime-default",
+      "text": "if (!rect) return fallbackWidth;"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 372,
+      "term": "fallbackWidth",
+      "category": "runtime-default",
+      "text": "const fallbackWidth = readUiAutoDoorWidthM(App);"
+    },
+    {
+      "file": "esm/native/runtime/groove_lines_access.ts",
+      "line": 373,
+      "term": "fallbackWidth",
+      "category": "runtime-default",
+      "text": "const stableWidth = widthFromHit ?? widthFromPart ?? fallbackWidth ?? targetDistributionSpanM;"
+    },
+    {
+      "file": "esm/native/runtime/planar_reflector_runtime.ts",
+      "line": 563,
+      "term": "compatibility",
+      "category": "compat-boundary",
+      "text": "// compatibility-boundary: keep the retired square-size config key readable during the config-key transition."
     },
     {
       "file": "esm/native/runtime/platform_access_ops.ts",
@@ -1348,6 +3317,27 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// browser-capability-fallback: canvas creation remains optional in non-browser runtimes."
+    },
+    {
+      "file": "esm/native/runtime/project_recovery_action_result.ts",
+      "line": 47,
+      "term": "Legacy",
+      "category": "legacy-rejection",
+      "text": "message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',"
+    },
+    {
+      "file": "esm/native/runtime/project_recovery_action_result.ts",
+      "line": 53,
+      "term": "Legacy",
+      "category": "legacy-rejection",
+      "text": "message: 'Legacy pending reset results are not supported; recovery operations must settle terminally.',"
+    },
+    {
+      "file": "esm/native/runtime/project_save_action_result.ts",
+      "line": 83,
+      "term": "Legacy",
+      "category": "legacy-rejection",
+      "text": "message: 'Legacy project save pending results are not supported; return an accepted operation handle.',"
     },
     {
       "file": "esm/native/runtime/render_access_shared.ts",
@@ -1379,10 +3369,17 @@
     },
     {
       "file": "esm/native/runtime/render_access_state_bags.ts",
-      "line": 236,
-      "term": "legacy",
+      "line": 229,
+      "term": "compatibility",
       "category": "compat-boundary",
-      "text": "// retired-alias-cleanup-best-effort: frozen legacy roots may reject deletion."
+      "text": "// compatibility-boundary: clear retired root render aliases; canonical state lives in runtime services."
+    },
+    {
+      "file": "esm/native/runtime/runtime_config_validation.ts",
+      "line": 5,
+      "term": "compatible",
+      "category": "forward-compatibility",
+      "text": "// - Preserve unknown keys for forward-compatible feature configuration."
     },
     {
       "file": "esm/native/runtime/runtime_globals.ts",
@@ -1462,6 +3459,34 @@
       "text": "// browser-capability-probe: optional injected browser surface may be unavailable; keep the default fallback."
     },
     {
+      "file": "esm/native/runtime/sketch_free_box_motion_identity.ts",
+      "line": 108,
+      "term": "fallbackPrefix",
+      "category": "runtime-default",
+      "text": "const fallbackPrefix = normalizePrefix("
+    },
+    {
+      "file": "esm/native/runtime/sketch_free_box_motion_identity.ts",
+      "line": 111,
+      "term": "fallbackPrefix",
+      "category": "runtime-default",
+      "text": "return fallbackPrefix ? { boxId, moduleKey, prefix: fallbackPrefix } : null;"
+    },
+    {
+      "file": "esm/native/runtime/sketch_free_box_motion_state.ts",
+      "line": 93,
+      "term": "fallbackMs",
+      "category": "runtime-default",
+      "text": "fallbackMs: number,"
+    },
+    {
+      "file": "esm/native/runtime/sketch_free_box_motion_state.ts",
+      "line": 97,
+      "term": "fallbackMs",
+      "category": "runtime-default",
+      "text": "if (!state || !state.lastToggleTime) return fallbackMs;"
+    },
+    {
       "file": "esm/native/runtime/ui_feedback_stable.ts",
       "line": 202,
       "term": "fallback",
@@ -1497,6 +3522,20 @@
       "text": "// reporter-isolation: console fallback must never break startup error handling"
     },
     {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_current.ts",
+      "line": 55,
+      "term": "fallbackDenomW",
+      "category": "domain-default",
+      "text": "const fallbackDenomW = sumDoors > 0 ? sumDoors : Math.max(1, moduleCount);"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_cell_dims_linear_context_current.ts",
+      "line": 65,
+      "term": "fallbackDenomW",
+      "category": "domain-default",
+      "text": "if (!Number.isFinite(seg) || seg <= 0) seg = (totalW * doorsU) / fallbackDenomW;"
+    },
+    {
       "file": "esm/native/services/canvas_picking_cell_dims_post_click_hover.ts",
       "line": 37,
       "term": "fallback",
@@ -1516,6 +3555,27 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// hover-ephemeral-fallback: optional post-click hover bookkeeping must not block committed dimension actions"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts",
+      "line": 18,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "function resolveMarkerLocalZ(groupRec: TransformNodeLike | null, fallbackZ: number): number {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts",
+      "line": 21,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "if (!Number.isFinite(frontMaxZ) || Math.abs(frontMaxZ) <= 0.000001) return fallbackZ;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_action_hover_preview_marker.ts",
+      "line": 24,
+      "term": "fallbackZ",
+      "category": "domain-default",
+      "text": "const nudge = Math.abs(fallbackZ);"
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_preview_materials.ts",
@@ -1539,6 +3599,41 @@
       "text": "// hover-identity-scan-fallback: malformed preview metadata is skipped during optional hover cleanup"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_shared.ts",
+      "line": 262,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "fallbackPartId: string,"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_shared.ts",
+      "line": 276,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "return resolveDoorTrimTarget(App, partId || fallbackPartId, current);"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_shared.ts",
+      "line": 281,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "? resolveDoorTrimTarget(App, fallbackPartId, asDoorRecord<DoorHitNode>(preferredGroup))"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_shared.ts",
+      "line": 286,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "return resolveDoorTrimTarget(App, firstTaggedPartId || fallbackPartId, firstTaggedNode);"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_shared.ts",
+      "line": 287,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "return resolveDoorTrimTarget(App, fallbackPartId);"
+    },
+    {
       "file": "esm/native/services/canvas_picking_door_split_click_custom.ts",
       "line": 86,
       "term": "fallback",
@@ -1553,6 +3648,20 @@
       "text": "// projection-fallback: alternate door-bound projection remains available when local transforms fail"
     },
     {
+      "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
+      "line": 200,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "const fallbackPartId = normalizeDoorTrimMapPartId(candidatePartId, group);"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_trim_targets.ts",
+      "line": 201,
+      "term": "fallbackPartId",
+      "category": "domain-default",
+      "text": "if (fallbackPartId && group) return { partId: fallbackPartId, group };"
+    },
+    {
       "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
       "line": 57,
       "term": "fallback",
@@ -1565,6 +3674,34 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// hover-config-read-fallback: malformed optional configuration disables this hover candidate only"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+      "line": 63,
+      "term": "fallbackDrawer",
+      "category": "domain-default",
+      "text": "let fallbackDrawer = null;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+      "line": 71,
+      "term": "fallbackDrawer",
+      "category": "domain-default",
+      "text": "if (!fallbackDrawer) {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+      "line": 76,
+      "term": "fallbackDrawer",
+      "category": "domain-default",
+      "text": "fallbackDrawer = {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
+      "line": 89,
+      "term": "fallbackDrawer",
+      "category": "domain-default",
+      "text": "foundDrawer = foundDrawer || fallbackDrawer;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
@@ -1595,18 +3732,39 @@
       "text": "// hover-config-read-fallback: malformed optional interior configuration disables this hover candidate only"
     },
     {
-      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
-      "line": 136,
-      "term": "fallback",
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts",
+      "line": 14,
+      "term": "fallbackX",
       "category": "domain-default",
-      "text": "// hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records"
+      "text": "export function resolveManualLayoutSketchHoverPointerX(pointerX: unknown, fallbackX: number): number {"
     },
     {
-      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts",
-      "line": 136,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// hover-config-fallback: optional sketchExtras lookup may be unavailable on legacy module records"
+      "file": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts",
+      "line": 15,
+      "term": "fallbackX",
+      "category": "domain-default",
+      "text": "return readNumber(pointerX) ?? fallbackX;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
+      "line": 140,
+      "term": "fallbackDimensionsCm",
+      "category": "domain-default",
+      "text": "NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.widthCm"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
+      "line": 142,
+      "term": "fallbackDimensionsCm",
+      "category": "domain-default",
+      "text": "const heightCm = Math.max(rawHeightCm, NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.heightCm);"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
+      "line": 143,
+      "term": "fallbackDimensionsCm",
+      "category": "domain-default",
+      "text": "const depthCm = Math.max(rawDepthCm, NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.depthCm);"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
@@ -1651,6 +3809,41 @@
       "text": "// projection-scene-fallback: malformed optional scene nodes are skipped while deriving wardrobe bounds"
     },
     {
+      "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
+      "line": 282,
+      "term": "Legacy",
+      "category": "project-migration",
+      "text": "// Legacy/imported snapshots occasionally lack the freePlacement marker while the rendered part id still"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts",
+      "line": 33,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": ": SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "line": 197,
+      "term": "fallbackId",
+      "category": "domain-default",
+      "text": "export function normalizeSketchBoxDoorState(raw: unknown, fallbackId: string): SketchBoxDoorState | null {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
+      "line": 204,
+      "term": "fallbackId",
+      "category": "domain-default",
+      "text": "const id = formatIdentityValue(readIdentityValue(idRaw)) || fallbackId;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_box_segments.ts",
+      "line": 31,
+      "term": "fallbackWoodThicknessM",
+      "category": "domain-default",
+      "text": ": SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
+    },
+    {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelves_shared.ts",
       "line": 39,
       "term": "fallback",
@@ -1658,18 +3851,39 @@
       "text": "// malformed-shelf-list-fallback: failed optional removal is returned to the caller as no match"
     },
     {
-      "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
-      "line": 95,
-      "term": "legacy",
-      "category": "legacy-runtime-risk",
-      "text": "// legacy-free-box-config-fallback: unreadable optional configuration disables the legacy zero-door special case"
+      "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
+      "line": 33,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const fallbackW = Math.max("
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
+      "line": 40,
+      "term": "fallbackD",
+      "category": "domain-default",
+      "text": "const fallbackD = Math.max("
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
+      "line": 49,
+      "term": "fallbackW",
+      "category": "domain-default",
+      "text": "const outerW = widthValue != null && widthValue > 0 ? Math.max(minW, widthValue) : fallbackW;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
+      "line": 50,
+      "term": "fallbackD",
+      "category": "domain-default",
+      "text": "const outerD = depthValue != null && depthValue > 0 ? Math.max(minD, depthValue) : fallbackD;"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
       "line": 95,
       "term": "fallback",
       "category": "domain-default",
-      "text": "// legacy-free-box-config-fallback: unreadable optional configuration disables the legacy zero-door special case"
+      "text": "// no-main-host-probe: unreadable optional configuration disables the zero-door hinged host fallback"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
@@ -1677,6 +3891,118 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_coalescer_policy.ts",
+      "line": 2,
+      "term": "FALLBACK_MAIN_PUSH_RETRY_MS",
+      "category": "domain-default",
+      "text": "FALLBACK_MAIN_PUSH_RETRY_MS,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_coalescer_policy.ts",
+      "line": 13,
+      "term": "FALLBACK_MAIN_PUSH_RETRY_MS",
+      "category": "domain-default",
+      "text": "const policyDelayMs = Math.max(FALLBACK_MAIN_PUSH_RETRY_MS, policy.debounceMs, policy.minGapMs);"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_coalescer_shared.ts",
+      "line": 54,
+      "term": "FALLBACK_MAIN_PUSH_RETRY_MS",
+      "category": "domain-default",
+      "text": "export const FALLBACK_MAIN_PUSH_RETRY_MS = 25;"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_config_browser.ts",
+      "line": 16,
+      "term": "compatibility",
+      "category": "external-api-compat",
+      "text": "// Narrow external compatibility boundary for links generated before Credential v2."
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
+      "line": 192,
+      "term": "fallbackLocal",
+      "category": "domain-default",
+      "text": "fallbackLocal: initialLocal.payload,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
+      "line": 193,
+      "term": "fallbackConflictKeys",
+      "category": "domain-default",
+      "text": "fallbackConflictKeys: conflict.keys,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
+      "line": 287,
+      "term": "fallbackLocal",
+      "category": "domain-default",
+      "text": "fallbackLocal: currentLocal.payload,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
+      "line": 288,
+      "term": "fallbackConflictKeys",
+      "category": "domain-default",
+      "text": "fallbackConflictKeys: conflict.keys,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_remote_adoption.ts",
+      "line": 56,
+      "term": "fallbackLocal",
+      "category": "domain-default",
+      "text": "fallbackLocal: CloudSyncPayload;"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_remote_adoption.ts",
+      "line": 57,
+      "term": "fallbackConflictKeys",
+      "category": "domain-default",
+      "text": "fallbackConflictKeys: string[];"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_remote_adoption.ts",
+      "line": 98,
+      "term": "fallbackConflictKeys",
+      "category": "domain-default",
+      "text": "keys: options.fallbackConflictKeys,"
+    },
+    {
+      "file": "esm/native/services/cloud_sync_owner_gateway_remote_adoption.ts",
+      "line": 100,
+      "term": "fallbackLocal",
+      "category": "domain-default",
+      "text": "local: options.fallbackLocal,"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "line": 57,
+      "term": "fallbackSnapshot",
+      "category": "domain-default",
+      "text": "const fallbackSnapshot = getCfgSnapshot(App);"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "line": 59,
+      "term": "fallbackSnapshot",
+      "category": "domain-default",
+      "text": "fallbackSnapshot && fallbackSnapshot !== cfgSnapshot ? fallbackSnapshot : cfgSnapshot;"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "line": 87,
+      "term": "fallbackSnapshot",
+      "category": "domain-default",
+      "text": "const fallbackSnapshot = getCfgSnapshot(App);"
+    },
+    {
+      "file": "esm/native/services/config_compounds_seed.ts",
+      "line": 89,
+      "term": "fallbackSnapshot",
+      "category": "domain-default",
+      "text": "fallbackSnapshot && fallbackSnapshot !== cfgSnapshot ? fallbackSnapshot : cfgSnapshot;"
     },
     {
       "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
@@ -1735,6 +4061,83 @@
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 744,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const fallbackBox = selectorBox || readMeasuredBox(App, target, wardrobeGroup);"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 751,
+      "term": "fallbackBottomY",
+      "category": "domain-default",
+      "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 751,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 752,
+      "term": "fallbackTopY",
+      "category": "domain-default",
+      "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 752,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 753,
+      "term": "fallbackBottomY",
+      "category": "domain-default",
+      "text": "const bottomY = readFiniteNumber(gridInfo, 'effectiveBottomY') ?? fallbackBottomY;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 754,
+      "term": "fallbackTopY",
+      "category": "domain-default",
+      "text": "const topY = readFiniteNumber(gridInfo, 'effectiveTopY') ?? fallbackTopY;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 755,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const innerW = readFiniteNumber(gridInfo, 'innerW') ?? Math.max(0, fallbackBox?.width ?? 0);"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 756,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const internalCenterX = readFiniteNumber(gridInfo, 'internalCenterX') ?? fallbackBox?.centerX ?? 0;"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 757,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const internalDepth = readFiniteNumber(gridInfo, 'internalDepth') ?? Math.max(0, fallbackBox?.depth ?? 0);"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
+      "line": 758,
+      "term": "fallbackBox",
+      "category": "domain-default",
+      "text": "const internalZ = readFiniteNumber(gridInfo, 'internalZ') ?? fallbackBox?.centerZ ?? 0;"
+    },
+    {
       "file": "esm/native/services/viewer_measurement_tool.ts",
       "line": 155,
       "term": "fallback",
@@ -1777,6 +4180,20 @@
       "text": "// error-metadata-fallback: optional Error metadata may be unavailable on exotic runtimes"
     },
     {
+      "file": "esm/native/ui/error_overlay.ts",
+      "line": 36,
+      "term": "Compatibility",
+      "category": "compat-boundary",
+      "text": "* Compatibility note: some callers still pass `opts.doc` / `opts.win`."
+    },
+    {
+      "file": "esm/native/ui/errors_install_runtime.ts",
+      "line": 72,
+      "term": "fallbackFatal",
+      "category": "browser-adapter",
+      "text": "reportNonFatal('window.error.fallbackFatal', recoveryErr, 6000);"
+    },
+    {
       "file": "esm/native/ui/errors_install_support.ts",
       "line": 187,
       "term": "fallback",
@@ -1798,11 +4215,81 @@
       "text": "// reporter-isolation: the error-reporting fallback must never throw into application code."
     },
     {
+      "file": "esm/native/ui/export/export_canvas_scene_wall.ts",
+      "line": 7,
+      "term": "EXPORT_WALL_COLOR_BLUE_FALLBACK",
+      "category": "domain-default",
+      "text": "const EXPORT_WALL_COLOR_BLUE_FALLBACK = '#e3f2fd';"
+    },
+    {
+      "file": "esm/native/ui/export/export_canvas_scene_wall.ts",
+      "line": 25,
+      "term": "EXPORT_WALL_COLOR_BLUE_FALLBACK",
+      "category": "domain-default",
+      "text": "return EXPORT_WALL_COLOR_BLUE_FALLBACK;"
+    },
+    {
+      "file": "esm/native/ui/export/export_order_pdf_sketch_annotations.ts",
+      "line": 236,
+      "term": "fallbackStrokes",
+      "category": "domain-default",
+      "text": "const fallbackStrokes = strokes.some(stroke => isExportOrderPdfSketchEraserTool(stroke.tool))"
+    },
+    {
+      "file": "esm/native/ui/export/export_order_pdf_sketch_annotations.ts",
+      "line": 239,
+      "term": "fallbackStrokes",
+      "category": "domain-default",
+      "text": "if (!fallbackStrokes.length) return false;"
+    },
+    {
+      "file": "esm/native/ui/export/export_order_pdf_sketch_annotations.ts",
+      "line": 244,
+      "term": "fallbackStrokes",
+      "category": "domain-default",
+      "text": "strokes: fallbackStrokes,"
+    },
+    {
+      "file": "esm/native/ui/interactions/canvas_interactions_pointer.ts",
+      "line": 80,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// pointer-compatibility: coordinate probing may fail on exotic events; preserve the conservative click decision."
+    },
+    {
       "file": "esm/native/ui/interactions/history_ui_shortcut_guard.ts",
       "line": 23,
       "term": "fallback",
       "category": "browser-adapter",
       "text": "// DOM-probe-fallback: if closest/activeElement probing fails, continue with the document-level suspension check."
+    },
+    {
+      "file": "esm/native/ui/interactions/history_ui.ts",
+      "line": 104,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: stopPropagation failure does not invalidate the already accepted clipboard action."
+    },
+    {
+      "file": "esm/native/ui/interactions/project_drag_drop_controller_drop.ts",
+      "line": 30,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "await runProjectLoadAction(App, { toast }, file, { fallbackMessage: 'טעינת קובץ נכשלה' });"
+    },
+    {
+      "file": "esm/native/ui/interactions/project_save_load_controller_load.ts",
+      "line": 22,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'טעינת קובץ נכשלה',"
+    },
+    {
+      "file": "esm/native/ui/interactions/project_save_load_controller_save.ts",
+      "line": 47,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'שמירת פרויקט נכשלה',"
     },
     {
       "file": "esm/native/ui/interactions/viewer_resize.ts",
@@ -1833,6 +4320,265 @@
       "text": "// drawer-fallback: an individual position copy failure must not abort recovery for remaining drawers."
     },
     {
+      "file": "esm/native/ui/modes_transition_policy.ts",
+      "line": 146,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "function readTransitionMeta(opts: ModeTransitionOptsLike, fallbackSource: string): ActionMetaLike {"
+    },
+    {
+      "file": "esm/native/ui/modes_transition_policy.ts",
+      "line": 147,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "const source = typeof opts.source === 'string' && opts.source ? opts.source : fallbackSource;"
+    },
+    {
+      "file": "esm/native/ui/modes_transition_policy.ts",
+      "line": 165,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "fallbackSource: string"
+    },
+    {
+      "file": "esm/native/ui/modes_transition_policy.ts",
+      "line": 168,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "const meta = readTransitionMeta(opts, fallbackSource);"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_async.ts",
+      "line": 17,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "const { feedback, run, report, buildError, fallbackMessage, onReportError } = args;"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_async.ts",
+      "line": 23,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "result = buildError(error, fallbackMessage);"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_shared.ts",
+      "line": 5,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "export type ProjectActionErrorBuilder<Result> = (error: unknown, fallbackMessage: string) => Result;"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_shared.ts",
+      "line": 11,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string;"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_shared.ts",
+      "line": 51,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_shared.ts",
+      "line": 53,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "const result = buildError(error, fallbackMessage);"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_sync.ts",
+      "line": 18,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "const { feedback, run, report, buildError, fallbackMessage } = args;"
+    },
+    {
+      "file": "esm/native/ui/project_action_execution_sync.ts",
+      "line": 22,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "return buildProjectActionErrorResultFromThrown(feedback, error, report, buildError, fallbackMessage);"
+    },
+    {
+      "file": "esm/native/ui/project_action_feedback_shared.ts",
+      "line": 25,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string"
+    },
+    {
+      "file": "esm/native/ui/project_action_feedback_shared.ts",
+      "line": 27,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "return buildProjectLoadActionErrorResult(error, fallbackMessage);"
+    },
+    {
+      "file": "esm/native/ui/project_action_feedback.ts",
+      "line": 31,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string"
+    },
+    {
+      "file": "esm/native/ui/project_action_feedback.ts",
+      "line": 33,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "return buildProjectActionErrorResultImpl(error, fallbackMessage);"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 30,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage?: string;"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 42,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: resolveProjectLoadDefaultMessage(options?.fallbackMessage),"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 52,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage?: string;"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 61,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "const fallbackMessage = options?.fallbackMessage;"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 68,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_action.ts",
+      "line": 79,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_shared.ts",
+      "line": 53,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "export function resolveProjectLoadDefaultMessage(fallbackMessage?: string | null): string {"
+    },
+    {
+      "file": "esm/native/ui/project_load_runtime_shared.ts",
+      "line": 54,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "return typeof fallbackMessage === 'string' && fallbackMessage.trim() ? fallbackMessage : 'טעינת קובץ נכשלה';"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_reset.ts",
+      "line": 22,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'האיפוס נכשל',"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_restore.ts",
+      "line": 19,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'שחזור העריכה נכשל',"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_shared.ts",
+      "line": 45,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "buildError: (error: unknown, fallbackMessage: string) => Result;"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_shared.ts",
+      "line": 46,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string;"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_shared.ts",
+      "line": 57,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/project_recovery_runtime_shared.ts",
+      "line": 78,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/project_session_commands_shared.ts",
+      "line": 9,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: string;"
+    },
+    {
+      "file": "esm/native/ui/project_session_commands_shared.ts",
+      "line": 15,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'שחזור העריכה נכשל',"
+    },
+    {
+      "file": "esm/native/ui/project_session_commands_shared.ts",
+      "line": 21,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'האיפוס נכשל',"
+    },
+    {
+      "file": "esm/native/ui/project_session_commands_shared.ts",
+      "line": 42,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "buildError: (message: string, fallbackMessage: string) => Result;"
+    },
+    {
+      "file": "esm/native/ui/project_session_commands_shared.ts",
+      "line": 57,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "onRequestError: message => buildError(message, copy.fallbackMessage),"
+    },
+    {
+      "file": "esm/native/ui/react/actions/sketch_actions.ts",
+      "line": 23,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "fallbackSource: string"
+    },
+    {
+      "file": "esm/native/ui/react/actions/sketch_actions.ts",
+      "line": 25,
+      "term": "fallbackSource",
+      "category": "domain-default",
+      "text": "return typeof value?.source === 'string' && value.source.trim() ? value.source : fallbackSource;"
+    },
+    {
       "file": "esm/native/ui/react/boot_react_ui.tsx",
       "line": 57,
       "term": "fallback",
@@ -1854,6 +4600,223 @@
       "text": "// recovery-best-effort: reload may be unavailable; the lazy-load fallback UI remains usable."
     },
     {
+      "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
+      "line": 151,
+      "term": "fallbackNotes",
+      "category": "domain-default",
+      "text": "fallbackNotes: SavedNote[];"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
+      "line": 154,
+      "term": "fallbackNotes",
+      "category": "domain-default",
+      "text": "const { startNotes, currentNotes, fallbackNotes, captureEditorsIntoNotes } = args;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
+      "line": 155,
+      "term": "fallbackNotes",
+      "category": "domain-default",
+      "text": "const base = currentNotes || fallbackNotes;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
+      "line": 158,
+      "term": "fallbackNotes",
+      "category": "domain-default",
+      "text": "const baseline = startNotes || fallbackNotes;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_controller_pointer_runtime.ts",
+      "line": 210,
+      "term": "fallbackNotes",
+      "category": "domain-default",
+      "text": "fallbackNotes: draftNotes,"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 14,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "fallbackHandle: NotesEditorTimeoutHandle | null;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 24,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "fallbackHandle: null,"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 50,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "clearTimeoutHandle(App, state.fallbackHandle);"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 53,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = null;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 59,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = null;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 69,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs: number;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 71,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "const { App, state, run, report, op, frames, fallbackDelayMs } = args;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 88,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "const fallbackHandle = timers.setTimeout(() => {"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 89,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "if (state.token !== token || state.fallbackHandle !== fallbackHandle) return;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 91,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "}, fallbackDelayMs);"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 92,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = fallbackHandle;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 124,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs?: number;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 129,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs: args.fallbackDelayMs ?? 48,"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 139,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs?: number;"
+    },
+    {
+      "file": "esm/native/ui/react/notes/notes_overlay_editor_async.ts",
+      "line": 144,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs: args.fallbackDelayMs ?? 72,"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 21,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "fallbackHandle: OverlayFeedbackTimeoutHandle | null;"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 38,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "fallbackHandle: null,"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 143,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "clearTimeoutHandle(App, state.fallbackHandle);"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 146,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = null;"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 156,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs?: number;"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 165,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "fallbackDelayMs = 60,"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 195,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "const fallbackHandle = timers.setTimeout(() => {"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 196,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "if (state.token !== token || state.fallbackHandle !== fallbackHandle) return;"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 197,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = null;"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 199,
+      "term": "fallbackDelayMs",
+      "category": "domain-default",
+      "text": "}, fallbackDelayMs);"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",
+      "line": 200,
+      "term": "fallbackHandle",
+      "category": "domain-default",
+      "text": "state.fallbackHandle = fallbackHandle;"
+    },
+    {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 58,
       "term": "fallback",
@@ -1861,11 +4824,193 @@
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"
     },
     {
+      "file": "esm/native/ui/react/panels/cloud_sync_panel_actions.ts",
+      "line": 29,
+      "term": "FALLBACK_PANEL_SNAPSHOT",
+      "category": "domain-default",
+      "text": "const FALLBACK_PANEL_SNAPSHOT: CloudSyncPanelSnapshot = {"
+    },
+    {
+      "file": "esm/native/ui/react/panels/cloud_sync_panel_actions.ts",
+      "line": 51,
+      "term": "FALLBACK_PANEL_SNAPSHOT",
+      "category": "domain-default",
+      "text": ": FALLBACK_PANEL_SNAPSHOT.status,"
+    },
+    {
+      "file": "esm/native/ui/react/panels/cloud_sync_panel_actions.ts",
+      "line": 90,
+      "term": "FALLBACK_PANEL_SNAPSHOT",
+      "category": "domain-default",
+      "text": ": FALLBACK_PANEL_SNAPSHOT.status,"
+    },
+    {
+      "file": "esm/native/ui/react/panels/cloud_sync_panel_actions.ts",
+      "line": 98,
+      "term": "FALLBACK_PANEL_SNAPSHOT",
+      "category": "domain-default",
+      "text": "return FALLBACK_PANEL_SNAPSHOT;"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_draft_action_feedback.ts",
+      "line": 12,
+      "term": "fallbackInlineConfirmToast",
+      "category": "domain-default",
+      "text": "function fallbackInlineConfirmToast("
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_draft_action_feedback.ts",
+      "line": 53,
+      "term": "fallbackInlineConfirmToast",
+      "category": "domain-default",
+      "text": "return fallbackInlineConfirmToast(inlineConfirm, 'ok', !!result.next);"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_draft_action_feedback.ts",
+      "line": 56,
+      "term": "fallbackInlineConfirmToast",
+      "category": "domain-default",
+      "text": "return fallbackInlineConfirmToast(inlineConfirm, 'cancel', !!result.next);"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts",
+      "line": 106,
+      "term": "fallbackDocumentCtor",
+      "category": "domain-default",
+      "text": "const fallbackDocumentCtor = !injectedCreateDoc ? await loadPdfDocumentCtor() : null;"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts",
+      "line": 107,
+      "term": "fallbackDocumentCtor",
+      "category": "domain-default",
+      "text": "const canonicalCreateDoc = injectedCreateDoc || fallbackDocumentCtor?.create;"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_pages.ts",
+      "line": 62,
+      "term": "fallbackName",
+      "category": "domain-default",
+      "text": "const fallbackName = String(readNames[1] || '');"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_pdf_import_pages.ts",
+      "line": 63,
+      "term": "fallbackName",
+      "category": "domain-default",
+      "text": "if (fallbackName) names.push(fallbackName);"
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts",
+      "line": 112,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: preventDefault failure must not invalidate the committed pointer interaction."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts",
+      "line": 123,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: preventDefault failure must not invalidate the active drag interaction."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box.tsx",
+      "line": 106,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: stopPropagation failure must not block note-box focus handling."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box.tsx",
+      "line": 127,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: stopPropagation failure must not block pointer activation of the note box."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box.tsx",
+      "line": 135,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: event suppression failure must not block click activation of the note box."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_box.tsx",
+      "line": 145,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: event suppression failure must not block keyboard activation of the note box."
+    },
+    {
+      "file": "esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_toolbar.tsx",
+      "line": 14,
+      "term": "compatibility",
+      "category": "browser-adapter",
+      "text": "// event-compatibility: toolbar event suppression is best-effort; toolbar behavior remains primary."
+    },
+    {
+      "file": "esm/native/ui/react/project_ui_action_controller_load.ts",
+      "line": 23,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "const fallbackMessage = 'טעינת קובץ נכשלה';"
+    },
+    {
+      "file": "esm/native/ui/react/project_ui_action_controller_load.ts",
+      "line": 31,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/react/project_ui_action_controller_load.ts",
+      "line": 44,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage,"
+    },
+    {
+      "file": "esm/native/ui/react/project_ui_action_controller_save.ts",
+      "line": 89,
+      "term": "fallbackMessage",
+      "category": "error-message-default",
+      "text": "fallbackMessage: 'Project save failed.',"
+    },
+    {
+      "file": "esm/native/ui/react/release_asset_recovery.ts",
+      "line": 55,
+      "term": "fallbackReload",
+      "category": "domain-default",
+      "text": "function fallbackReload(win: RecoveryWindowLike, assetUrl: string, reason: string): boolean {"
+    },
+    {
       "file": "esm/native/ui/react/release_asset_recovery.ts",
       "line": 101,
       "term": "fallback",
       "category": "domain-default",
       "text": "// reporter-isolation: asset-recovery diagnostics must not interfere with the recovery fallback itself."
+    },
+    {
+      "file": "esm/native/ui/react/release_asset_recovery.ts",
+      "line": 105,
+      "term": "fallbackReload",
+      "category": "domain-default",
+      "text": "return fallbackReload(win, assetUrl, reason);"
+    },
+    {
+      "file": "esm/native/ui/react/selectors/root_selectors.ts",
+      "line": 18,
+      "term": "fallbackDoors",
+      "category": "domain-default",
+      "text": "export function readModulesCountFromRootSnapshot(state: RootStateLike, fallbackDoors: number): number {"
+    },
+    {
+      "file": "esm/native/ui/react/selectors/root_selectors.ts",
+      "line": 25,
+      "term": "fallbackDoors",
+      "category": "domain-default",
+      "text": "return arr.length || Math.max(0, Math.round(Number(fallbackDoors) / 2) || 0);"
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
@@ -1878,7 +5023,7 @@
       "file": "esm/native/ui/react/sidebar_shared.ts",
       "line": 91,
       "term": "fallback",
-      "category": "project-migration",
+      "category": "domain-default",
       "text": "// config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list."
     },
     {
@@ -1896,11 +5041,123 @@
       "text": "reportUiNonFatal(app, 'interiorDrawerModeBootstrap.toggleFallback', error, {"
     },
     {
-      "file": "esm/native/ui/runtime/ui_runtime.ts",
-      "line": 101,
-      "term": "legacy",
-      "category": "compat-boundary",
-      "text": "// cleanup-isolation: one legacy disposer failure must not prevent the runtime cleanup sequence."
+      "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
+      "line": 55,
+      "term": "fallbackErr",
+      "category": "error-message-default",
+      "text": "} catch (fallbackErr) {"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
+      "line": 56,
+      "term": "fallbackErr",
+      "category": "error-message-default",
+      "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "line": 229,
+      "term": "fallbackPatternLabel",
+      "category": "domain-default",
+      "text": "const fallbackPatternLabel = args.doors % 2 === 0 ? 'ברירת מחדל (זוגות)' : 'ברירת מחדל';"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "line": 231,
+      "term": "fallbackPatternLabel",
+      "category": "domain-default",
+      "text": "{ label: fallbackPatternLabel, structure: 'default' },"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "line": 233,
+      "term": "fallbackStruct",
+      "category": "domain-default",
+      "text": "const fallbackStruct = patterns.length ? JSON.stringify(patterns[0].structure) : '\"default\"';"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+      "line": 235,
+      "term": "fallbackStruct",
+      "category": "domain-default",
+      "text": "args.structureSelectRaw && args.structureSelectRaw.trim() ? args.structureSelectRaw : fallbackStruct;"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
+      "line": 17,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID,"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
+      "line": 120,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
+      "line": 135,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
+      "line": 150,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts",
+      "line": 28,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
+      "line": 11,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID,"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
+      "line": 41,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
+      "line": 58,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
+      "line": 75,
+      "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/settings_backup_action_result.ts",
+      "line": 157,
+      "term": "fallbackKind",
+      "category": "domain-default",
+      "text": "fallbackKind: SettingsBackupActionKind = 'export'"
+    },
+    {
+      "file": "esm/native/ui/settings_backup_action_result.ts",
+      "line": 161,
+      "term": "fallbackKind",
+      "category": "domain-default",
+      "text": "return fallbackKind === 'import'"
     },
     {
       "file": "esm/native/ui/ui_boot_controller_reporter.ts",
@@ -1917,6 +5174,111 @@
       "text": "// reporter-isolation: fallback diagnostics must never break boot error handling."
     },
     {
+      "file": "esm/shared/dimensions/base_plinth_policy.ts",
+      "line": 15,
+      "term": "fallbackWidthClearanceM",
+      "category": "runtime-default",
+      "text": "fallbackWidthClearanceM: meters(0.02),"
+    },
+    {
+      "file": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+      "line": 21,
+      "term": "fallbackWoodThicknessM",
+      "category": "runtime-default",
+      "text": "fallbackWoodThicknessM: MATERIAL_THICKNESS_POLICY.wood.thicknessM,"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
+      "line": 2,
+      "term": "legacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "import { legacyDimensionNumberView } from './legacy_dimension_number_view.js';"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
+      "line": 2,
+      "term": "legacy_dimension_number_view",
+      "category": "compat-boundary",
+      "text": "import { legacyDimensionNumberView } from './legacy_dimension_number_view.js';"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
+      "line": 4,
+      "term": "legacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "export const CHEST_MODE_DIMENSIONS = legacyDimensionNumberView(CHEST_MODE_DIMENSIONS_OWNER);"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+      "line": 1,
+      "term": "LegacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "export type LegacyDimensionNumberView<T> = T extends number"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+      "line": 4,
+      "term": "LegacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "? { readonly [Key in keyof T]: LegacyDimensionNumberView<T[Key]> }"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+      "line": 7,
+      "term": "legacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "export function legacyDimensionNumberView<T>(value: T): LegacyDimensionNumberView<T> {"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+      "line": 7,
+      "term": "LegacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "export function legacyDimensionNumberView<T>(value: T): LegacyDimensionNumberView<T> {"
+    },
+    {
+      "file": "esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts",
+      "line": 8,
+      "term": "LegacyDimensionNumberView",
+      "category": "compat-boundary",
+      "text": "return value as LegacyDimensionNumberView<T>;"
+    },
+    {
+      "file": "esm/shared/dimensions/corner_system_policy.ts",
+      "line": 166,
+      "term": "fallbackSegmentWidthM",
+      "category": "runtime-default",
+      "text": "fallbackSegmentWidthM: meters(0.2),"
+    },
+    {
+      "file": "esm/shared/dimensions/corner_system_policy.ts",
+      "line": 180,
+      "term": "fallbackMinWidthM",
+      "category": "runtime-default",
+      "text": "fallbackMinWidthM: meters(0.01),"
+    },
+    {
+      "file": "esm/shared/dimensions/no_main_sketch_workspace_policy.ts",
+      "line": 7,
+      "term": "fallbackDimensionsCm",
+      "category": "runtime-default",
+      "text": "fallbackDimensionsCm: Object.freeze({"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 5,
+      "term": "fallbackWoodThicknessM",
+      "category": "runtime-default",
+      "text": "fallbackWoodThicknessM: MATERIAL_THICKNESS_POLICY.wood.thicknessM,"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 28,
+      "term": "fallbackWoodThicknessM",
+      "category": "runtime-default",
+      "text": "fallbackWoodThicknessM: SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM,"
+    },
+    {
       "file": "esm/test_imports.mjs",
       "line": 16,
       "term": "legacy",
@@ -1929,6 +5291,13 @@
       "term": "legacy",
       "category": "test-fixture",
       "text": "// - No legacy globals are read/written/defined (App / THREE)."
+    },
+    {
+      "file": "esm/test_no_side_effects_on_import.mjs",
+      "line": 75,
+      "term": "Legacy",
+      "category": "test-fixture",
+      "text": "// --- Legacy global traps (reads + writes) ----------------------------------"
     },
     {
       "file": "esm/test_no_side_effects_on_import.mjs",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-09T12:07:39.057Z",
+  "generatedAt": "2026-08-09T20:39:33.950Z",
   "totals": {
     "tests": 1236,
     "unitRunnerTests": 1228,
@@ -16,7 +16,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 169
+    "contractOverlapTargets": 168
   },
   "categories": {
     "contract": 407,
@@ -920,20 +920,6 @@
         },
         {
           "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/io/project_config_persisted_snapshot.ts",
-      "kinds": ["contract", "source-guard"],
-      "owners": [
-        {
-          "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
-          "kind": "source-guard"
-        },
-        {
-          "file": "tests/wp_legacy_fallback_audit_runtime.test.js",
           "kind": "contract"
         }
       ]

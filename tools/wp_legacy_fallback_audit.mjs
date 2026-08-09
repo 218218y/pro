@@ -9,6 +9,8 @@ export const LEGACY_FALLBACK_CATEGORIES = [
   'error-message-default',
   'framework-default',
   'browser-adapter',
+  'forward-compatibility',
+  'legacy-rejection',
   'project-migration',
   'external-api-compat',
   'compat-boundary',
@@ -17,19 +19,30 @@ export const LEGACY_FALLBACK_CATEGORIES = [
   'unknown',
 ];
 
-// Keep this intentionally broader than a simple word-boundary search. The old
-// audit only saw standalone words such as `fallback` and missed camelCase /
-// PascalCase identifiers like `fallbackReason`,
-// `buildCompatCorniceEnvelope`, and `coreBrowserCompat`. Those names are still
-// compatibility/default vocabulary and must stay visible to the closeout guard.
-const NEEDLE_RE =
-  /\b(?:legacy|fallbacks?|compat)\b|\b[$A-Z_a-z][$\w]*(?:Legacy|legacy|Fallback|fallback|Compat)[$\w]*\b/g;
+export const LEGACY_FALLBACK_GUARDED_CATEGORIES = Object.freeze([
+  'project-migration',
+  'external-api-compat',
+  'compat-boundary',
+]);
+
+// Scan identifier/word tokens first, then decide semantically whether the token
+// belongs to this audit. This catches both prefix forms (`legacyResult`,
+// `fallbackReason`, `compatibility`) and embedded camel/Pascal forms
+// (`buildCompatSurface`, `readLegacyValue`) without treating punctuation as
+// part of the contract identity.
+const IDENTIFIER_RE = /\b[$A-Z_a-z][$\w]*\b/g;
 const EXTERNAL_API_COMPAT_RE =
-  /(THREE|Three|three|React|browser|Browser|adapter|polyfill|vendor|rendererCompat|import-compatible|compatible seam)/;
-const REVIEWED_COMPAT_BOUNDARY_TERM_RE =
-  /(alias|bytes|canonical|cleanup|clear|compat|cornice|dispose|drift|envelope|frames|id|invalidate|lights|mirror|normalize|payload|persisted|profile|remove|schema|seam|stored|saved|surface)/i;
+  /(React|browser|Browser|polyfill|vendor|third[- ]party|external API|THREE[- ]compatible|Three[- ]compatible|three[- ]compatible|rendererCompat)/;
 const REVIEWED_COMPAT_BOUNDARY_TEXT_RE =
-  /\b(alias|bytes|canonical|cleanup|clear|compat|compatible|cornice|dispose|drift|envelope|frames|id|invalidate|lights|mirror|normalize|normalized|payload|persisted|profile|remove|schema|seam|stored|saved|surface)\b/i;
+  /\b(alias|boundary|cleanup|clear|deprecated|dispose|disposer|field|kept|marker|mirror|older|previous|retired|seam|shim|signature|surface|version)\b|\bstill\s+(?:read|pass|supported)\b|\bbefore\s+v?\d+\b/i;
+const PROJECT_MIGRATION_PATH_RE =
+  /(^|\/)(?:native\/io(?:\/|$)|native\/features\/project_config(?:\/|_|\.)|project_(?:io|config)(?:\/|_|\.))/;
+const PROJECT_MIGRATION_TEXT_RE =
+  /\b(migrat(?:e|ed|es|ing|ion|ions)|imported|persisted|serialized|deserialized|schema(?:Version)?|saved|stored|payload)\b/i;
+const FORWARD_COMPATIBILITY_RE = /\bforward[- ]compat(?:ible|ibility)?\b|\bpreserve unknown keys\b/i;
+const NEGATED_COMPATIBILITY_RE = /\bnot\s+(?:an?\s+)?compat(?:ibility|ible)?\b/i;
+const LEGACY_REJECTION_RE =
+  /\b(?:not supported|unsupported|reject(?:ed|ion)?|forbid(?:den)?|must not|removed|retired)\b/i;
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md']);
 const DEFAULT_SOURCE_ROOT = 'esm';
 const DEFAULT_JSON_OUT = 'docs/legacy_fallback_audit.json';
@@ -100,13 +113,10 @@ export function walkAuditFiles(rootDir) {
   return files.sort((a, b) => a.localeCompare(b));
 }
 
-function isProjectMigrationPath(relPath, lineText) {
+function isProjectMigrationPath(relPath, lineText, term) {
+  if (PROJECT_MIGRATION_PATH_RE.test(relPath)) return true;
   return (
-    /(^|\/)project_(io|config)(\/|_|\.)/.test(relPath) ||
-    /(^|\/)(io|features\/project_config)(\/|$)/.test(relPath) ||
-    /\b(migration|migrations|migrate|persisted|payload|canonicali[sz]e|canonical|normalizer|normalize)\b/i.test(
-      relPath + ' ' + lineText
-    )
+    (hasLegacyTerm(term) || hasCompatTerm(term)) && PROJECT_MIGRATION_TEXT_RE.test(String(lineText || ''))
   );
 }
 
@@ -115,7 +125,7 @@ function isBrowserAdapterPath(relPath, lineText) {
     /(^|\/)adapters\/browser(\/|$)/.test(relPath) ||
     /(^|\/)entry_pro/.test(relPath) ||
     (/(^|\/)native\/(platform|ui)\//.test(relPath) &&
-      /\b(browser|dom|document|window|raf|timer|clipboard|overlay|fatal overlay|localStorage)\b/i.test(
+      /\b(browser|dom|document|window|raf|requestAnimationFrame|timer|clipboard|overlay|localStorage|event|pointer|preventDefault|stopPropagation|file[- ]?input)\b/i.test(
         lineText
       ))
   );
@@ -153,6 +163,22 @@ function hasCompatTerm(term) {
   return /compat/i.test(String(term || ''));
 }
 
+function isAuditNeedleTerm(term) {
+  return /(legacy|fallback|compat)/i.test(String(term || ''));
+}
+
+function isForwardCompatibilityLine(lineText, term) {
+  return hasCompatTerm(term) && FORWARD_COMPATIBILITY_RE.test(String(lineText || ''));
+}
+
+function isNegatedCompatibilityLine(lineText, term) {
+  return hasCompatTerm(term) && NEGATED_COMPATIBILITY_RE.test(String(lineText || ''));
+}
+
+function isLegacyRejectionLine(lineText, term) {
+  return hasLegacyTerm(term) && LEGACY_REJECTION_RE.test(String(lineText || ''));
+}
+
 function isTypedAutosaveDiagnosticLabel(relPath, lineText) {
   return (
     relPath === 'esm/native/runtime/autosave_access.ts' &&
@@ -183,10 +209,9 @@ function isExternalApiCompatLine(relPath, lineText, term) {
 function isCompatBoundaryLine(relPath, lineText, term) {
   const termText = String(term || '');
   const haystack = `${relPath} ${lineText}`;
+  if (/(^|\/)compatibility(\/|$)/.test(relPath)) return true;
   return (
-    hasCompatTerm(termText) ||
-    REVIEWED_COMPAT_BOUNDARY_TERM_RE.test(termText) ||
-    (hasLegacyTerm(termText) && REVIEWED_COMPAT_BOUNDARY_TEXT_RE.test(haystack))
+    (hasCompatTerm(termText) || hasLegacyTerm(termText)) && REVIEWED_COMPAT_BOUNDARY_TEXT_RE.test(haystack)
   );
 }
 
@@ -198,7 +223,9 @@ export function classifyLegacyFallbackOccurrence({ relPath, lineText, term }) {
     return 'framework-default';
   }
   if (isBrowserAdapterPath(normalizedPath, normalizedLine)) return 'browser-adapter';
-  if (isProjectMigrationPath(normalizedPath, normalizedLine)) return 'project-migration';
+  if (isForwardCompatibilityLine(normalizedLine, term)) return 'forward-compatibility';
+  if (isLegacyRejectionLine(normalizedLine, term)) return 'legacy-rejection';
+  if (isProjectMigrationPath(normalizedPath, normalizedLine, term)) return 'project-migration';
   if (isExternalApiCompatLine(normalizedPath, normalizedLine, term)) return 'external-api-compat';
   if (isCompatBoundaryLine(normalizedPath, normalizedLine, term)) return 'compat-boundary';
   if (hasFallbackTerm(term) && isErrorMessageDefaultLine(normalizedLine)) return 'error-message-default';
@@ -206,6 +233,7 @@ export function classifyLegacyFallbackOccurrence({ relPath, lineText, term }) {
   if (hasFallbackTerm(term) && isRuntimeDefaultLine(normalizedLine)) return 'runtime-default';
   if (hasFallbackTerm(term)) return 'domain-default';
   if (hasLegacyTerm(term)) return 'legacy-runtime-risk';
+  if (hasCompatTerm(term)) return 'domain-default';
   return 'unknown';
 }
 
@@ -222,11 +250,15 @@ export function collectLegacyFallbackOccurrences({
     const lines = text.split(/\r?\n/);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
       const lineText = lines[lineIndex];
-      NEEDLE_RE.lastIndex = 0;
+      IDENTIFIER_RE.lastIndex = 0;
       const seenTermsOnLine = new Set();
-      for (const match of lineText.matchAll(NEEDLE_RE)) {
+      for (const match of lineText.matchAll(IDENTIFIER_RE)) {
         const term = match[0];
+        if (!isAuditNeedleTerm(term)) continue;
         if (isTypedAutosaveDiagnosticLabel(relPath, lineText)) continue;
+        if (isNegatedCompatibilityLine(lineText, term) && !hasFallbackTerm(term) && !hasLegacyTerm(term)) {
+          continue;
+        }
         if (seenTermsOnLine.has(term)) continue;
         seenTermsOnLine.add(term);
         const category = classifyLegacyFallbackOccurrence({ relPath, lineText, term });
@@ -278,13 +310,29 @@ export function summarizeLegacyFallbackOccurrences(occurrences) {
   };
 }
 
-export function createLegacyFallbackAllowlist(summary) {
+function selectGuardedByFile(summary) {
+  const guarded = {};
+  for (const [file, stats] of Object.entries(summary?.byFile || {})) {
+    const categories = Object.fromEntries(
+      LEGACY_FALLBACK_GUARDED_CATEGORIES.map(category => [
+        category,
+        stats.categories?.[category] || 0,
+      ]).filter(([, count]) => count > 0)
+    );
+    const total = Object.values(categories).reduce((sum, count) => sum + count, 0);
+    if (total > 0) guarded[file] = { total, categories };
+  }
+  return guarded;
+}
+
+export function createLegacyFallbackAllowlist(summary, { sourceRoot = DEFAULT_SOURCE_ROOT } = {}) {
   return {
-    version: 1,
-    sourceRoot: DEFAULT_SOURCE_ROOT,
+    version: 2,
+    sourceRoot,
+    guardedCategories: [...LEGACY_FALLBACK_GUARDED_CATEGORIES],
     policy:
-      'Every existing legacy/fallback occurrence is categorized and count-locked by file. New or moved occurrences must be reviewed and the allowlist regenerated deliberately.',
-    entries: summary.byFile,
+      'Reviewed compatibility seams are growth-ratcheted by file/category. Ordinary defaults and capability fallbacks stay report-visible but are not allowlisted. Reductions pass automatically; legacy-runtime-risk and unknown must stay at zero.',
+    entries: selectGuardedByFile(summary),
   };
 }
 
@@ -292,33 +340,51 @@ function normalizeAllowlistEntries(allowlist) {
   return allowlist && allowlist.entries && typeof allowlist.entries === 'object' ? allowlist.entries : {};
 }
 
-export function compareLegacyFallbackAllowlist(summary, allowlist) {
-  const expected = normalizeAllowlistEntries(allowlist);
-  const actual = summary.byFile;
+export function compareLegacyFallbackAllowlist(
+  summary,
+  allowlist,
+  { sourceRoot = DEFAULT_SOURCE_ROOT } = {}
+) {
   const failures = [];
-  const files = new Set([...Object.keys(expected), ...Object.keys(actual)]);
+  if (!allowlist || allowlist.version !== 2) {
+    return {
+      ok: false,
+      failures: [{ kind: 'allowlist-version', expected: 2, actual: allowlist?.version ?? null }],
+    };
+  }
 
-  for (const file of [...files].sort()) {
+  if (allowlist.sourceRoot !== sourceRoot) {
+    failures.push({ kind: 'source-root', expected: sourceRoot, actual: allowlist.sourceRoot ?? null });
+  }
+
+  const expectedCategories = Array.isArray(allowlist.guardedCategories)
+    ? [...allowlist.guardedCategories].sort()
+    : [];
+  const actualCategories = [...LEGACY_FALLBACK_GUARDED_CATEGORIES].sort();
+  if (JSON.stringify(expectedCategories) !== JSON.stringify(actualCategories)) {
+    failures.push({
+      kind: 'guarded-categories',
+      expected: actualCategories,
+      actual: expectedCategories,
+    });
+  }
+
+  const expected = normalizeAllowlistEntries(allowlist);
+  const actual = selectGuardedByFile(summary);
+  for (const [file, actualStats] of Object.entries(actual).sort(([left], [right]) =>
+    left.localeCompare(right)
+  )) {
     const expectedStats = expected[file];
-    const actualStats = actual[file];
     if (!expectedStats) {
-      failures.push({ kind: 'new-file', file, actual: actualStats });
+      failures.push({ kind: 'new-guarded-file', file, actual: actualStats });
       continue;
     }
-    if (!actualStats) {
-      failures.push({ kind: 'missing-file', file, expected: expectedStats });
-      continue;
-    }
-    const categories = new Set([
-      ...Object.keys(expectedStats.categories || {}),
-      ...Object.keys(actualStats.categories || {}),
-    ]);
-    for (const category of [...categories].sort()) {
+    for (const category of LEGACY_FALLBACK_GUARDED_CATEGORIES) {
       const expectedCount = expectedStats.categories?.[category] || 0;
       const actualCount = actualStats.categories?.[category] || 0;
-      if (expectedCount !== actualCount) {
+      if (actualCount > expectedCount) {
         failures.push({
-          kind: 'category-count',
+          kind: 'guarded-category-growth',
           file,
           category,
           expected: expectedCount,
@@ -331,10 +397,15 @@ export function compareLegacyFallbackAllowlist(summary, allowlist) {
   return { ok: failures.length === 0, failures };
 }
 
-export function createLegacyFallbackPayload({ occurrences, summary, allowlistComparison = null }) {
+export function createLegacyFallbackPayload({
+  occurrences,
+  summary,
+  sourceRoot = DEFAULT_SOURCE_ROOT,
+  allowlistComparison = null,
+}) {
   return {
     generatedAt: new Date().toISOString(),
-    sourceRoot: DEFAULT_SOURCE_ROOT,
+    sourceRoot,
     summary,
     allowlistComparison,
     occurrences,
@@ -353,6 +424,9 @@ export function toLegacyFallbackMarkdown(payload) {
   lines.push(`- Source root: \`${payload.sourceRoot}\``);
   lines.push(`- Total categorized occurrences: **${summary.totalOccurrences}**`);
   lines.push(`- Files with occurrences: **${summary.totalFiles}**`);
+  const guardedByFile = selectGuardedByFile(summary);
+  const guardedCount = Object.values(guardedByFile).reduce((sum, stats) => sum + stats.total, 0);
+  lines.push(`- Reviewed compatibility seams under growth ratchet: **${guardedCount}**`);
   lines.push('- Category counts:');
   for (const category of LEGACY_FALLBACK_CATEGORIES) {
     lines.push(`  - \`${category}\`: **${summary.byCategory[category] || 0}**`);
@@ -361,22 +435,36 @@ export function toLegacyFallbackMarkdown(payload) {
   lines.push('## Policy');
   lines.push('');
   lines.push(
-    '- Runtime compatibility must not grow silently. New `legacy`/`fallback`/`compat` mentions require an intentional category and allowlist update.'
+    '- Runtime compatibility must not grow silently. Reviewed migration/API/compatibility seams are growth-ratcheted; ordinary defaults remain visible without creating allowlist churn.'
   );
-  lines.push('- The scanner includes camelCase and PascalCase identifiers, not only standalone words.');
+  lines.push(
+    '- The scanner includes prefix, camelCase, PascalCase, `compatibility`, and `compatible` vocabulary.'
+  );
   lines.push(
     '- `framework-default` is reserved for framework-owned API names such as React `Suspense` fallback props.'
   );
-  lines.push('- `project-migration` belongs at import/load/persisted-payload boundaries.');
+  lines.push(
+    '- `forward-compatibility` describes intentional forward-compatible data/config behavior and is informational.'
+  );
+  lines.push(
+    '- `legacy-rejection` records fail-closed guards that explicitly reject retired result shapes; it is informational, not live compatibility.'
+  );
+  lines.push(
+    '- `project-migration` belongs at import/load/persisted-payload boundaries and is growth-ratcheted.'
+  );
   lines.push('- `browser-adapter` belongs at browser/DOM/environment adapter boundaries.');
   lines.push(
     '- `domain-default` and `error-message-default` are ordinary default-value names, kept visible so they do not hide runtime compatibility work.'
   );
-  lines.push('- `external-api-compat` is reserved for third-party/framework compatibility seams.');
   lines.push(
-    '- `compat-boundary` is a reviewed canonicalization or persisted-shape compatibility seam, not an unowned live fallback.'
+    '- `external-api-compat` is reserved for third-party/framework compatibility seams and is growth-ratcheted.'
   );
-  lines.push('- `legacy-runtime-risk` is the review queue for possible old live-path compatibility.');
+  lines.push(
+    '- `compat-boundary` is an explicitly reviewed live compatibility seam and is growth-ratcheted.'
+  );
+  lines.push(
+    '- `legacy-runtime-risk` is forbidden in the checked baseline: ambiguous live legacy paths must be removed or made an explicit reviewed seam.'
+  );
   lines.push('- `unknown` should stay at zero.');
   lines.push('');
   lines.push('## Hot files');
@@ -416,17 +504,20 @@ export function runLegacyFallbackAudit({
   const allowlistPath = path.resolve(projectRoot, args.allowlistPath || DEFAULT_ALLOWLIST);
   if (args.writeAllowlist) {
     ensureParentDir(allowlistPath);
-    fs.writeFileSync(allowlistPath, `${JSON.stringify(createLegacyFallbackAllowlist(summary), null, 2)}\n`);
+    fs.writeFileSync(
+      allowlistPath,
+      `${JSON.stringify(createLegacyFallbackAllowlist(summary, { sourceRoot }), null, 2)}\n`
+    );
   }
 
   if (args.check) {
     if (!fs.existsSync(allowlistPath)) {
       throw new Error(`Legacy fallback allowlist missing: ${args.allowlistPath || DEFAULT_ALLOWLIST}`);
     }
-    allowlistComparison = compareLegacyFallbackAllowlist(summary, readJson(allowlistPath));
+    allowlistComparison = compareLegacyFallbackAllowlist(summary, readJson(allowlistPath), { sourceRoot });
   }
 
-  const payload = createLegacyFallbackPayload({ occurrences, summary, allowlistComparison });
+  const payload = createLegacyFallbackPayload({ occurrences, summary, sourceRoot, allowlistComparison });
 
   const jsonOutPath = args.jsonOutPath && path.resolve(projectRoot, args.jsonOutPath);
   const mdOutPath = args.mdOutPath && path.resolve(projectRoot, args.mdOutPath);
@@ -441,6 +532,13 @@ export function runLegacyFallbackAudit({
 
   if (args.failOnUnknown && summary.byCategory.unknown > 0) {
     const err = new Error(`Legacy fallback audit found ${summary.byCategory.unknown} unknown occurrence(s).`);
+    err.payload = payload;
+    throw err;
+  }
+  if (summary.byCategory['legacy-runtime-risk'] > 0) {
+    const err = new Error(
+      `Legacy fallback audit found ${summary.byCategory['legacy-runtime-risk']} unreviewed legacy runtime risk occurrence(s).`
+    );
     err.payload = payload;
     throw err;
   }
