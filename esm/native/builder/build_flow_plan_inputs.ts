@@ -1,4 +1,5 @@
 import { moduleHasHexCell } from '../features/hex_cell/index.js';
+import { isRemovedFrameSideOn } from '../features/part_identity/api.js';
 import { getActiveDepthCmFromConfig, getActiveHeightCmFromConfig } from '../features/special_dims/index.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { normalizeStackSplit } from '../features/stack_split/index.js';
@@ -83,6 +84,15 @@ function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown, lowerHeightCm: 
   );
 }
 
+function hasStackSplitScopedFrameSideRemoval(cfg: unknown): boolean {
+  return (
+    isRemovedFrameSideOn(cfg, 'left') ||
+    isRemovedFrameSideOn(cfg, 'right') ||
+    isRemovedFrameSideOn(cfg, 'left', 'lower_') ||
+    isRemovedFrameSideOn(cfg, 'right', 'lower_')
+  );
+}
+
 export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): BuildFlowPlanInputs {
   const { ui, cfg, widthCm, heightCm, depthCm, doorsCount, toStr } = args;
 
@@ -119,10 +129,14 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
   const shelfThick = resolvedThicknesses.shelfThicknessM;
   const stackSplitHasFrameBreakingPerCellGeometry =
     splitActiveForBuild && hasStackSplitPerCellFrameBreakingGeometry(cfg, lowerHeightCm);
+  const stackSplitHasScopedFrameSideRemoval = splitActiveForBuild && hasStackSplitScopedFrameSideRemoval(cfg);
+  const stackSplitNeedsInteractionFrames = splitActiveForBuild && !!args.removablePartInteractionActive;
   const stackSplitUnifiedFrame =
     splitActiveForBuild &&
     !stackSplitDecorativeSeparatorEnabled &&
     !stackSplitHasFrameBreakingPerCellGeometry &&
+    !stackSplitHasScopedFrameSideRemoval &&
+    !stackSplitNeedsInteractionFrames &&
     areStackSplitOuterDimensionsEqual({
       lowerDepthCm,
       lowerWidthCm,

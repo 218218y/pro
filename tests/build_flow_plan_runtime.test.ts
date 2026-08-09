@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { resolveBuildFlowPlan } from '../esm/native/builder/build_flow_plan.ts';
 import { resolveBuildFlowPlanInputs } from '../esm/native/builder/build_flow_plan_inputs.ts';
 import { resolveBuildFlowPlanLayout } from '../esm/native/builder/build_flow_plan_layout.ts';
 
@@ -160,6 +161,107 @@ test('build_flow_plan inputs keep one frame for stack split when lower width and
   assert.equal(plan.baseTypeBottom, 'legs');
   assert.equal(plan.baseTypeTop, 'legs');
   assert.equal(plan.H, 1.5 + 0.018);
+});
+
+test('build_flow_plan inputs expose separate stack frames while removable-part interaction is active', () => {
+  const plan = resolveBuildFlowPlanInputs({
+    ui: {
+      baseType: 'legs',
+      raw: {
+        stackSplitLowerHeight: 90,
+        stackSplitLowerHeightManual: true,
+        stackSplitLowerDepth: 60,
+        stackSplitLowerDepthManual: false,
+        stackSplitLowerWidth: 180,
+        stackSplitLowerWidthManual: false,
+      },
+      stackSplitEnabled: true,
+    } as any,
+    cfg: {
+      wardrobeType: 'hinged',
+    } as any,
+    widthCm: 180,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 3,
+    removablePartInteractionActive: true,
+    toStr,
+  });
+
+  assert.equal(plan.splitActiveForBuild, true);
+  assert.equal(plan.stackSplitUnifiedFrame, false);
+  assert.equal(plan.splitSeamGapM, 0.002);
+  assert.equal(plan.baseTypeBottom, 'legs');
+  assert.equal(plan.baseTypeTop, '');
+  assert.equal(plan.H, 1.5 - 0.002);
+});
+
+test('build_flow_plan inputs keep stack frames separate after a scoped upper or lower side removal', () => {
+  for (const removedPartId of ['body_left', 'body_right', 'lower_body_left', 'lower_body_right']) {
+    const plan = resolveBuildFlowPlanInputs({
+      ui: {
+        baseType: 'legs',
+        raw: {
+          stackSplitLowerHeight: 90,
+          stackSplitLowerHeightManual: true,
+          stackSplitLowerDepth: 60,
+          stackSplitLowerDepthManual: false,
+          stackSplitLowerWidth: 180,
+          stackSplitLowerWidthManual: false,
+        },
+        stackSplitEnabled: true,
+      } as any,
+      cfg: {
+        wardrobeType: 'hinged',
+        removedDoorsMap: { [`removed_${removedPartId}`]: true },
+      } as any,
+      widthCm: 180,
+      heightCm: 240,
+      depthCm: 60,
+      doorsCount: 3,
+      toStr,
+    });
+
+    assert.equal(plan.stackSplitUnifiedFrame, false, removedPartId);
+    assert.equal(plan.splitSeamGapM, 0.002, removedPartId);
+  }
+});
+
+test('build_flow_plan routes remove-door mode into separate stack interaction frames', () => {
+  const plan = resolveBuildFlowPlan({
+    orchestration: {
+      resolvePlanMaterials: () => ({}),
+      computeModuleLayout: () => ({ carcassD: 0.6 }),
+      createBoardFactory: () => () => ({}),
+    },
+    THREE: null,
+    state: { mode: { primary: 'remove_door' } },
+    ui: {
+      baseType: 'legs',
+      raw: {
+        stackSplitLowerHeight: 90,
+        stackSplitLowerHeightManual: true,
+        stackSplitLowerDepth: 60,
+        stackSplitLowerDepthManual: false,
+        stackSplitLowerWidth: 180,
+        stackSplitLowerWidthManual: false,
+      },
+      stackSplitEnabled: true,
+    },
+    cfg: { wardrobeType: 'hinged' },
+    widthCm: 180,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 3,
+    sketchMode: false,
+    getMaterialFn: null,
+    addOutlines: null,
+    calculateModuleStructureFn: null,
+    toStr,
+  } as any);
+
+  assert.equal(plan.stackSplitUnifiedFrame, false);
+  assert.equal(plan.splitSeamGapM, 0.002);
 });
 
 test('build_flow_plan inputs force separate stack frames when decorative separator is enabled', () => {

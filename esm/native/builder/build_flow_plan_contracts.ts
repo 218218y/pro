@@ -176,6 +176,7 @@ export type BuildFlowPlanInputsArgs = {
   heightCm: number;
   depthCm: number;
   doorsCount: number;
+  removablePartInteractionActive?: boolean;
   toStr: Stringifier;
 };
 
