@@ -2,11 +2,44 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  resolveDesignTabGrooveLinesAutoBaseline,
   selectSavedColors,
   selectColorSwatchesOrder,
   selectHasInternalDrawersData,
   selectGroovesDirty,
 } from '../esm/native/ui/react/selectors/config_selectors.ts';
+
+test('design-tab groove auto baseline follows orientation and manual distribution span', () => {
+  assert.equal(
+    resolveDesignTabGrooveLinesAutoBaseline({
+      grooveOrientation: 'horizontal',
+      wardrobeWidthCm: 240,
+      wardrobeHeightCm: 240,
+      wardrobeDoorsCount: 4,
+    }),
+    48
+  );
+  assert.equal(
+    resolveDesignTabGrooveLinesAutoBaseline({
+      grooveOrientation: 'horizontal',
+      grooveDraftHeightCm: '60',
+      wardrobeWidthCm: 240,
+      wardrobeHeightCm: 240,
+      wardrobeDoorsCount: 4,
+    }),
+    12
+  );
+  assert.equal(
+    resolveDesignTabGrooveLinesAutoBaseline({
+      grooveOrientation: 'vertical',
+      grooveDraftWidthCm: '35',
+      wardrobeWidthCm: 240,
+      wardrobeHeightCm: 240,
+      wardrobeDoorsCount: 4,
+    }),
+    7
+  );
+});
 
 test('react config selectors keep saved colors and swatch order typed with safe defaults', () => {
   const cfg = {

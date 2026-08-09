@@ -90,6 +90,7 @@ export function tryHandleDoorActionHoverMarkerRoute(args: DoorActionHoverPreview
     if (modeState.isGrooveLayoutPlacementMode) {
       return tryHandleDoorGrooveLayoutHoverPreview({
         App,
+        THREE,
         hit,
         doorMarker,
         markerUd,
@@ -100,6 +101,7 @@ export function tryHandleDoorActionHoverMarkerRoute(args: DoorActionHoverPreview
         scopedHitDoorPid,
         canonDoorPartKeyForMaps,
         readUi,
+        setSketchPreview,
       });
     }
 

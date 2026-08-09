@@ -26,6 +26,7 @@ export type DesignTabDoorFeaturesSectionModel = {
   groovesEnabled: boolean;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
+  grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
@@ -92,8 +93,12 @@ export type DesignTabControllerState = {
   corniceType: DesignTabCorniceType;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
+  grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
+  wardrobeWidthCm: number;
+  wardrobeHeightCm: number;
+  wardrobeDoorsCount: number;
 } & DesignTabModeStateSummary;

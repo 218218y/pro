@@ -23,13 +23,19 @@ import { readModulesConfigurationListFromConfigSnapshot } from '../../../feature
 import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/index.js';
 import { moduleHasHexCell } from '../../../features/hex_cell/index.js';
 import { hasSketchInternalDrawersDirtyOrData } from '../../../features/sketch_drawer_sizing.js';
-import { resolveDoorMountThicknessesFromConfig } from '../../../../shared/dimensions/door_mount_thickness_policy.js';
+import {
+  DESIGN_TAB_WARDROBE_DEFAULTS,
+  resolveDesignTabGrooveLinesAutoBaseline,
+  resolveDoorMountThicknessesFromConfig,
+} from '../../../../shared/dimensions/react_config_selectors_dimension_policy.js';
 
 type CornerDrawersLike = {
   sketchExtras?: { drawers?: unknown[] } | null;
 } & UnknownRecord;
 
 type ModuleConfigReadLike = ModuleConfigLike & CornerDrawersLike;
+
+export { DESIGN_TAB_WARDROBE_DEFAULTS, resolveDesignTabGrooveLinesAutoBaseline };
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);

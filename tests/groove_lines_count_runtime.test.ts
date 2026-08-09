@@ -193,6 +193,46 @@ test('materializeActiveGrooveLinesCountMap freezes active grooved doors to stabl
   });
 });
 
+test('materializeActiveGrooveLinesCountMap preserves the rendered horizontal auto baseline', () => {
+  const grooveSurface = {
+    userData: {
+      __wpGrooveSurfacePartId: 'd2_full',
+      __wpGrooveSurfaceRect: { minX: -0.25, maxX: 0.25, minY: -1.2, maxY: 1.2 },
+    },
+    children: [],
+  };
+  const App = {
+    store: {
+      getState() {
+        return {
+          config: {
+            groovesMap: { groove_d2_full: true },
+            grooveLinesCountMap: {},
+            grooveLayoutMap: { d2_full: [{ orientation: 'horizontal' }] },
+          },
+          ui: { raw: { width: 240, height: 240, doors: 4 } },
+        };
+      },
+    },
+    render: {
+      doorsArray: [
+        {
+          partId: 'd2_full',
+          group: {
+            userData: { partId: 'd2_full', __doorWidth: 0.5, __doorHeight: 2.4 },
+            children: [grooveSurface],
+          },
+        },
+      ],
+      drawersArray: [],
+    },
+  };
+
+  assert.deepEqual(asPlainRecord(materializeActiveGrooveLinesCountMap(App as never)), {
+    d2_full: 48,
+  });
+});
+
 test('materializeActiveGrooveLinesCountMap keeps drawer auto count based on drawer face width', () => {
   const App = {
     store: {

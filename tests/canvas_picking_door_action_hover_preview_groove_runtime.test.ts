@@ -34,7 +34,11 @@ const surface = {
   },
 };
 
-function runPreview(grooveLayoutMap: Record<string, unknown>) {
+function runPreview(
+  grooveLayoutMap: Record<string, unknown>,
+  hitPoint: { x: number; y: number } = { x: 0.2, y: 0.3 }
+) {
+  const previewCalls: Record<string, unknown>[] = [];
   const marker = {
     visible: false,
     material: 'base',
@@ -58,11 +62,12 @@ function runPreview(grooveLayoutMap: Record<string, unknown>) {
   };
   const handled = tryHandleDoorGrooveLayoutHoverPreview({
     App: App as never,
+    THREE: {},
     hit: {
       hitDoorPid: 'd1_left',
       hitDoorGroup: surface as never,
       hitY: 0.3,
-      hitPoint: { x: 0.2, y: 0.3, z: 0.02, set() {} } as never,
+      hitPoint: { x: hitPoint.x, y: hitPoint.y, z: 0.02, set() {} } as never,
       wardrobeGroup: {
         worldToLocal(point: Vec3) {
           return point;
@@ -91,8 +96,11 @@ function runPreview(grooveLayoutMap: Record<string, unknown>) {
       currentGrooveDraftHeightCm: '60',
       currentGrooveOrientation: 'horizontal',
     }),
+    setSketchPreview: args => {
+      previewCalls.push(args);
+    },
   });
-  return { handled, marker };
+  return { handled, marker, previewCalls };
 }
 
 test('manual groove hover uses the same sized rectangle as the persisted placement', () => {
@@ -115,4 +123,24 @@ test('manual groove hover uses the same sized rectangle as the persisted placeme
   });
   assert.equal(remove.marker.material, 'remove');
   assert.deepEqual(remove.marker.scale.last, [0.395, 0.595, 1]);
+});
+
+test('manual groove hover marks the same centered width and height clearances as sized mirror hover', () => {
+  const centered = runPreview({}, { x: 0.01, y: 0.02 });
+  assert.equal(centered.previewCalls.length, 1);
+  assert.equal(centered.marker.material, 'add');
+  assert.equal(centered.previewCalls[0].showCenterXGuide, false);
+  assert.equal(centered.previewCalls[0].showCenterYGuide, false);
+  const measurements = centered.previewCalls[0].clearanceMeasurements as Array<{
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    styleKey?: string;
+  }>;
+  assert.equal(measurements.length, 4);
+  assert.equal(
+    measurements.every(entry => entry.styleKey === 'center'),
+    true
+  );
 });

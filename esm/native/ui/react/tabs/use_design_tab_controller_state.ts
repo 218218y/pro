@@ -15,7 +15,7 @@ export function useDesignTabControllerState(): DesignTabControllerState {
   const uiState = useUiSelectorShallow(ui => readDesignTabUiState(ui));
   const modeState = useModeSelectorShallow(mode => readDesignTabModeState(mode));
 
-  const { grooveLinesCount, grooveLinesCountIsAuto } = useMemo(
+  const { grooveLinesCount, grooveLinesCountIsAuto, grooveLinesCountAutoBaseline } = useMemo(
     () =>
       deriveDesignTabDoorFeaturesState({
         wardrobeType: cfgState.wardrobeType,
@@ -23,6 +23,12 @@ export function useDesignTabControllerState(): DesignTabControllerState {
         groovesEnabled: uiState.groovesEnabled,
         splitDoors: uiState.splitDoors,
         removeDoorsEnabled: uiState.removeDoorsEnabled,
+        grooveOrientation: uiState.grooveOrientation,
+        grooveDraftHeightCm: uiState.grooveDraftHeightCm,
+        grooveDraftWidthCm: uiState.grooveDraftWidthCm,
+        wardrobeWidthCm: uiState.wardrobeWidthCm,
+        wardrobeHeightCm: uiState.wardrobeHeightCm,
+        wardrobeDoorsCount: uiState.wardrobeDoorsCount,
       }),
     [
       cfgState.wardrobeType,
@@ -30,6 +36,12 @@ export function useDesignTabControllerState(): DesignTabControllerState {
       uiState.groovesEnabled,
       uiState.splitDoors,
       uiState.removeDoorsEnabled,
+      uiState.grooveOrientation,
+      uiState.grooveDraftHeightCm,
+      uiState.grooveDraftWidthCm,
+      uiState.wardrobeWidthCm,
+      uiState.wardrobeHeightCm,
+      uiState.wardrobeDoorsCount,
     ]
   );
 
@@ -40,7 +52,8 @@ export function useDesignTabControllerState(): DesignTabControllerState {
       ...modeState,
       grooveLinesCount,
       grooveLinesCountIsAuto,
+      grooveLinesCountAutoBaseline,
     }),
-    [cfgState, uiState, modeState, grooveLinesCount, grooveLinesCountIsAuto]
+    [cfgState, uiState, modeState, grooveLinesCount, grooveLinesCountIsAuto, grooveLinesCountAutoBaseline]
   );
 }

@@ -1,4 +1,6 @@
 import {
+  DESIGN_TAB_WARDROBE_DEFAULTS,
+  resolveDesignTabGrooveLinesAutoBaseline,
   selectColorSwatchesOrder,
   selectCustomUploadedDataURL,
   selectGrooveLinesCount,
@@ -14,7 +16,7 @@ import {
   type DesignTabDoorStyle,
 } from './design_tab_shared.js';
 import { readRemovedFrameSideShelfState } from '../../../features/part_identity/api.js';
-import { readUiRawIntFromSnapshot } from '../selectors/ui_raw_selectors.js';
+import { readUiRawIntFromSnapshot, readUiRawNumberFromSnapshot } from '../selectors/ui_raw_selectors.js';
 
 import type { GrooveOrientation, UnknownRecord } from '../../../../../types';
 
@@ -43,6 +45,9 @@ export type DesignTabUiState = {
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
+  wardrobeWidthCm: number;
+  wardrobeHeightCm: number;
+  wardrobeDoorsCount: number;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
   hasCornice: boolean;
@@ -54,6 +59,7 @@ export type DesignTabDoorFeaturesViewState = {
   groovesEnabled: boolean;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
+  grooveLinesCountAutoBaseline: number;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
 };
@@ -112,6 +118,9 @@ export function readDesignTabUiState(ui: unknown): DesignTabUiState {
     grooveDraftHeightCm: readDraftString(rec?.currentGrooveDraftHeightCm),
     grooveDraftWidthCm: readDraftString(rec?.currentGrooveDraftWidthCm),
     grooveOrientation: rec?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical',
+    wardrobeWidthCm: readUiRawNumberFromSnapshot(ui, 'width', DESIGN_TAB_WARDROBE_DEFAULTS.widthCm),
+    wardrobeHeightCm: readUiRawNumberFromSnapshot(ui, 'height', DESIGN_TAB_WARDROBE_DEFAULTS.heightCm),
+    wardrobeDoorsCount: doors > 0 ? doors : DESIGN_TAB_WARDROBE_DEFAULTS.doorsCount,
     splitDoors: readBoolean(rec?.splitDoors),
     removeDoorsEnabled: readBoolean(rec?.removeDoorsEnabled),
     hasCornice: readBoolean(rec?.hasCornice),
@@ -125,6 +134,12 @@ export function deriveDesignTabDoorFeaturesState(args: {
   groovesEnabled: boolean;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
+  grooveOrientation?: unknown;
+  grooveDraftHeightCm?: unknown;
+  grooveDraftWidthCm?: unknown;
+  wardrobeWidthCm?: unknown;
+  wardrobeHeightCm?: unknown;
+  wardrobeDoorsCount?: unknown;
 }): DesignTabDoorFeaturesViewState {
   const grooveLinesCountIsAuto = args.grooveLinesCountOverride == null;
   return {
@@ -132,6 +147,7 @@ export function deriveDesignTabDoorFeaturesState(args: {
     groovesEnabled: !!args.groovesEnabled,
     grooveLinesCount: grooveLinesCountIsAuto ? '' : String(args.grooveLinesCountOverride),
     grooveLinesCountIsAuto,
+    grooveLinesCountAutoBaseline: resolveDesignTabGrooveLinesAutoBaseline(args),
     splitDoors: !!args.splitDoors,
     removeDoorsEnabled: !!args.removeDoorsEnabled,
   };

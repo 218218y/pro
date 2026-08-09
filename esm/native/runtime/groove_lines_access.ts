@@ -7,10 +7,13 @@ import { getDoorsArray, getDrawersArray } from './render_access.js';
 import { readRuntimeStateFromApp, readUiStateFromApp } from './root_state_access.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 import {
+  DEFAULT_GROOVE_DENSITY_PER_M,
   listDoorGrooveTargetLookupKeys,
+  readGrooveLayoutListForPart,
+  resolveGroovePlacementInRect,
   toCanonicalDoorGrooveTargetKey,
   toCanonicalGrooveLinesCountMapKey,
-} from '../../shared/door_groove_key_contracts_shared.js';
+} from '../../shared/surface_layout_contracts_shared.js';
 
 import type {
   AppContainer,
@@ -20,7 +23,9 @@ import type {
   UnknownRecord,
 } from '../../../types/index.js';
 
-export const DEFAULT_GROOVE_DENSITY = 20;
+type GrooveLayoutRect = Parameters<typeof resolveGroovePlacementInRect>[0]['rect'];
+
+export const DEFAULT_GROOVE_DENSITY = DEFAULT_GROOVE_DENSITY_PER_M;
 export const PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY = 'pendingGrooveLinesCountMap';
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -62,11 +67,71 @@ function readDoorWidthFromGroup(group: Object3DLike | null | undefined): number 
   return readPositiveFinite(userData?.__doorWidth);
 }
 
+function readDoorHeightFromGroup(group: Object3DLike | null | undefined): number | null {
+  const userData = readRecord(group && group.userData);
+  return readPositiveFinite(userData?.__doorHeight);
+}
+
+function readGrooveSurfaceRectFromGroup(
+  group: Object3DLike | null | undefined,
+  partId: string
+): GrooveLayoutRect | null {
+  if (!group) return null;
+  const stack: Object3DLike[] = [group];
+  const seen = new Set<Object3DLike>();
+  let firstRect: GrooveLayoutRect | null = null;
+  let visited = 0;
+
+  while (stack.length && visited < 500) {
+    visited += 1;
+    const current = stack.pop();
+    if (!current || seen.has(current)) continue;
+    seen.add(current);
+
+    const userData = readRecord(current.userData);
+    const rawRect = readRecord(userData?.__wpGrooveSurfaceRect);
+    if (rawRect) {
+      const minX = Number(rawRect.minX);
+      const maxX = Number(rawRect.maxX);
+      const minY = Number(rawRect.minY);
+      const maxY = Number(rawRect.maxY);
+      if (
+        Number.isFinite(minX) &&
+        Number.isFinite(maxX) &&
+        Number.isFinite(minY) &&
+        Number.isFinite(maxY) &&
+        maxX > minX &&
+        maxY > minY
+      ) {
+        const rect = { minX, maxX, minY, maxY };
+        if (!firstRect) firstRect = rect;
+        const surfacePartId = readPartId(userData?.__wpGrooveSurfacePartId);
+        if (!partId || surfacePartId === partId) return rect;
+      }
+    }
+
+    const children = Array.isArray(current.children) ? current.children : [];
+    for (let index = 0; index < children.length; index += 1) {
+      const child = readRecord(children[index]) as Object3DLike | null;
+      if (child) stack.push(child);
+    }
+  }
+
+  return firstRect;
+}
+
 function readFrontWidthFromEntry(
   entry: DoorVisualEntryLike | DrawerVisualEntryLike | null | undefined
 ): number | null {
   const record = readRecord(entry);
   return readPositiveFinite(record?.width) ?? readDoorWidthFromGroup(entry?.group);
+}
+
+function readFrontHeightFromEntry(
+  entry: DoorVisualEntryLike | DrawerVisualEntryLike | null | undefined
+): number | null {
+  const record = readRecord(entry);
+  return readPositiveFinite(record?.height) ?? readDoorHeightFromGroup(entry?.group);
 }
 
 function readFrontEntryPartId(entry: DoorVisualEntryLike | DrawerVisualEntryLike | null | undefined): string {
@@ -88,6 +153,63 @@ function readUiAutoDoorWidthM(App: AppContainer): number | null {
   return widthCm / 100 / safeDoorsCount;
 }
 
+function readUiAutoDoorHeightM(App: AppContainer): number | null {
+  const ui = readRecord(readUiStateFromApp(App));
+  const raw = readRecord(ui?.raw);
+  const heightCm = Number(raw?.height ?? ui?.height);
+  return Number.isFinite(heightCm) && heightCm > 0 ? heightCm / 100 : null;
+}
+
+type GrooveFrontDimensions = {
+  widthM: number | null;
+  heightM: number | null;
+  surfaceRect: GrooveLayoutRect | null;
+};
+
+function readFrontDimensionsForPart(App: AppContainer, partId: string): GrooveFrontDimensions | null {
+  const targetId = String(partId || '');
+  if (!targetId) return null;
+
+  const findTargetNode = (root: Object3DLike | null | undefined): Object3DLike | null => {
+    if (!root) return null;
+    const stack: Object3DLike[] = [root];
+    const seen = new Set<Object3DLike>();
+    let visited = 0;
+    while (stack.length && visited < 500) {
+      visited += 1;
+      const current = stack.pop();
+      if (!current || seen.has(current)) continue;
+      seen.add(current);
+      if (readPartId(readRecord(current.userData)?.partId) === targetId) return current;
+      const children = Array.isArray(current.children) ? current.children : [];
+      for (let index = 0; index < children.length; index += 1) {
+        const child = readRecord(children[index]) as Object3DLike | null;
+        if (child) stack.push(child);
+      }
+    }
+    return null;
+  };
+
+  const scanEntries = (
+    entries: Array<DoorVisualEntryLike | DrawerVisualEntryLike>
+  ): GrooveFrontDimensions | null => {
+    for (let index = 0; index < entries.length; index += 1) {
+      const entry = entries[index] || null;
+      const rootMatches = readFrontEntryPartId(entry) === targetId;
+      const targetNode = rootMatches ? entry?.group : findTargetNode(entry?.group);
+      if (!rootMatches && !targetNode) continue;
+      return {
+        widthM: rootMatches ? readFrontWidthFromEntry(entry) : readDoorWidthFromGroup(targetNode),
+        heightM: rootMatches ? readFrontHeightFromEntry(entry) : readDoorHeightFromGroup(targetNode),
+        surfaceRect: targetNode ? readGrooveSurfaceRectFromGroup(targetNode, targetId) : null,
+      };
+    }
+    return null;
+  };
+
+  return scanEntries(getDoorsArray(App)) ?? scanEntries(getDrawersArray(App));
+}
+
 function readFrontWidthForPart(App: AppContainer, partId: string): number | null {
   const targetId = String(partId || '');
   if (!targetId) return null;
@@ -103,6 +225,30 @@ function readFrontWidthForPart(App: AppContainer, partId: string): number | null
   };
 
   return scanEntries(getDoorsArray(App)) ?? scanEntries(getDrawersArray(App));
+}
+
+function resolveActiveGrooveDistributionSpanM(args: {
+  App: AppContainer;
+  partId: string;
+  grooveLayoutMap: unknown;
+}): number | null {
+  const dimensions = readFrontDimensionsForPart(args.App, args.partId);
+  const fallbackWidth = dimensions?.widthM ?? readUiAutoDoorWidthM(args.App);
+  const fallbackHeight = dimensions?.heightM ?? readUiAutoDoorHeightM(args.App);
+  const rect =
+    dimensions?.surfaceRect ||
+    (fallbackWidth != null && fallbackHeight != null
+      ? {
+          minX: -fallbackWidth / 2,
+          maxX: fallbackWidth / 2,
+          minY: -fallbackHeight / 2,
+          maxY: fallbackHeight / 2,
+        }
+      : null);
+  const layout = readGrooveLayoutListForPart({ map: args.grooveLayoutMap, partId: args.partId })?.layouts[0];
+  if (!rect) return fallbackWidth;
+  const placement = resolveGroovePlacementInRect({ rect, layout });
+  return placement.orientation === 'horizontal' ? placement.heightM : placement.widthM;
 }
 
 function readActiveGroovePartIds(App: AppContainer): string[] {
@@ -182,7 +328,8 @@ export function materializeActiveGrooveLinesCountMap(
   densityOverride?: number
 ): Record<string, number> {
   const activePartIds = readActiveGroovePartIds(App);
-  const fallbackWidth = readUiAutoDoorWidthM(App);
+  const config = readConfigStateFromApp(App);
+  const grooveLayoutMap = readConfigMapFromSnapshot(config, 'grooveLayoutMap', {});
   const out: Record<string, number> = {};
 
   for (let index = 0; index < activePartIds.length; index++) {
@@ -195,9 +342,9 @@ export function materializeActiveGrooveLinesCountMap(
       continue;
     }
 
-    const doorWidth = readFrontWidthForPart(App, partId) ?? fallbackWidth;
-    if (doorWidth === null) continue;
-    out[partId] = computeAutoGrooveLinesCount(doorWidth, densityOverride);
+    const distributionSpan = resolveActiveGrooveDistributionSpanM({ App, partId, grooveLayoutMap });
+    if (distributionSpan === null) continue;
+    out[partId] = computeAutoGrooveLinesCount(distributionSpan, densityOverride);
   }
 
   return out;
@@ -205,16 +352,16 @@ export function materializeActiveGrooveLinesCountMap(
 
 export function resolvePendingGrooveLinesCount(
   App: AppContainer,
-  targetWidthM: number | null | undefined,
+  targetDistributionSpanM: number | null | undefined,
   densityOverride?: number,
   partId?: string | null
 ): number {
   const override = readGrooveLinesCountOverride(App);
   if (override !== null) return override;
 
-  const widthFromHit = readPositiveFinite(targetWidthM);
+  const widthFromHit = readPositiveFinite(targetDistributionSpanM);
   const widthFromPart = readFrontWidthForPart(App, readPartId(partId));
   const fallbackWidth = readUiAutoDoorWidthM(App);
-  const stableWidth = widthFromHit ?? widthFromPart ?? fallbackWidth ?? targetWidthM;
+  const stableWidth = widthFromHit ?? widthFromPart ?? fallbackWidth ?? targetDistributionSpanM;
   return computeAutoGrooveLinesCount(Number(stableWidth), densityOverride);
 }

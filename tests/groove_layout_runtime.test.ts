@@ -33,6 +33,34 @@ test('manual groove layout clamps requested dimensions and position inside the r
   assert.equal(placement.orientation, 'horizontal');
 });
 
+test('manual groove center snapping reports independent width and height alignment', () => {
+  assert.deepEqual(
+    buildGrooveLayoutFromHit({
+      rect,
+      hitX: 0.01,
+      hitY: 0.3,
+      draft: { widthCm: 20, heightCm: 40 },
+    }),
+    {
+      widthCm: 20,
+      heightCm: 40,
+      centerYNorm: 0.65,
+    }
+  );
+  assert.deepEqual(
+    buildGrooveLayoutFromHit({
+      rect,
+      hitX: 0.01,
+      hitY: 0.02,
+      draft: { widthCm: 20, heightCm: 40 },
+    }),
+    {
+      widthCm: 20,
+      heightCm: 40,
+    }
+  );
+});
+
 test('groove layout lookup removes only the placement under the pointer', () => {
   const layouts = [
     { widthCm: 20, heightCm: 40, centerXNorm: 0.25 },

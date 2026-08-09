@@ -51,6 +51,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         grooveActive: true,
         grooveLinesCount: '8',
         grooveLinesCountIsAuto: false,
+        grooveLinesCountAutoBaseline: 12,
         grooveManualEnabled: true,
         grooveDraftHeightCm: '80',
         grooveDraftWidthCm: '35',
@@ -87,6 +88,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         grooveActive: false,
         grooveLinesCount: '',
         grooveLinesCountIsAuto: true,
+        grooveLinesCountAutoBaseline: 48,
         splitDoors: true,
         splitActive: false,
         splitIsCustom: false,
@@ -115,6 +117,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         grooveActive: false,
         grooveLinesCount: '',
         grooveLinesCountIsAuto: true,
+        grooveLinesCountAutoBaseline: 12,
         splitDoors: false,
         splitActive: false,
         splitIsCustom: false,
@@ -141,6 +144,9 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /מדפים מעוגלים/);
   assert.match(hingedHtml, /design-rounded-frame-side-shelves-button/);
   assert.match(hingedHtml, /design-groove-manual-button/);
+  assert.match(hingedHtml, /aria-expanded="true"/);
+  assert.match(hingedHtml, /fa-chevron-up/);
+  assert.match(hingedHtml, /aria-controls="design-groove-manual-panel"/);
   assert.match(hingedHtml, /wp-r-groove-draft-height/);
   assert.match(hingedHtml, /wp-r-groove-draft-width/);
   assert.match(hingedHtml, /design-groove-orientation-vertical/);
@@ -165,6 +171,7 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         grooveActive: false,
         grooveLinesCount: '6',
         grooveLinesCountIsAuto: false,
+        grooveLinesCountAutoBaseline: 48,
         grooveManualEnabled: false,
         grooveDraftHeightCm: '',
         grooveDraftWidthCm: '',

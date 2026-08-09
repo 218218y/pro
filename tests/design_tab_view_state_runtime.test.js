@@ -11,6 +11,8 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
   const localRequire = specifier => {
     if (specifier === '../selectors/config_selectors.js') {
       return {
+        DESIGN_TAB_WARDROBE_DEFAULTS: { widthCm: 160, heightCm: 240, doorsCount: 4 },
+        resolveDesignTabGrooveLinesAutoBaseline: stubs.resolveDesignTabGrooveLinesAutoBaseline || (() => 8),
         selectWardrobeType: stubs.selectWardrobeType || (cfg => cfg.wardrobeType),
         selectSavedColors: stubs.selectSavedColors || (cfg => cfg.savedColors),
         selectCustomUploadedDataURL: stubs.selectCustomUploadedDataURL || (cfg => cfg.customUploadedDataURL),
@@ -36,6 +38,13 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
             const raw = ui && typeof ui === 'object' && ui.raw && typeof ui.raw === 'object' ? ui.raw : ui;
             const value = raw && typeof raw === 'object' ? raw[key] : undefined;
             const n = Number.parseInt(String(value), 10);
+            return Number.isFinite(n) ? n : defaultValue;
+          }),
+        readUiRawNumberFromSnapshot:
+          stubs.readUiRawNumberFromSnapshot ||
+          ((ui, key, defaultValue) => {
+            const raw = ui && typeof ui === 'object' && ui.raw && typeof ui.raw === 'object' ? ui.raw : ui;
+            const n = Number(raw && typeof raw === 'object' ? raw[key] : undefined);
             return Number.isFinite(n) ? n : defaultValue;
           }),
       };
@@ -128,6 +137,9 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       grooveDraftHeightCm: '80',
       grooveDraftWidthCm: '35.5',
       grooveOrientation: 'horizontal',
+      wardrobeWidthCm: 160,
+      wardrobeHeightCm: 240,
+      wardrobeDoorsCount: 4,
       splitDoors: false,
       removeDoorsEnabled: true,
       hasCornice: true,
@@ -172,6 +184,7 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       groovesEnabled: true,
       grooveLinesCount: '',
       grooveLinesCountIsAuto: true,
+      grooveLinesCountAutoBaseline: 8,
       splitDoors: false,
       removeDoorsEnabled: true,
     })
@@ -191,6 +204,7 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       groovesEnabled: false,
       grooveLinesCount: '9',
       grooveLinesCountIsAuto: false,
+      grooveLinesCountAutoBaseline: 8,
       splitDoors: true,
       removeDoorsEnabled: false,
     })
@@ -270,6 +284,9 @@ test('[design-tab-view-state-runtime] delegates selector and shared readers exac
       grooveDraftHeightCm: '',
       grooveDraftWidthCm: '',
       grooveOrientation: 'vertical',
+      wardrobeWidthCm: 160,
+      wardrobeHeightCm: 240,
+      wardrobeDoorsCount: 4,
       splitDoors: false,
       removeDoorsEnabled: false,
       hasCornice: false,

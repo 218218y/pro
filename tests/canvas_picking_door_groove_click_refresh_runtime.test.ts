@@ -186,6 +186,7 @@ test('manual horizontal groove click persists the exact sized surface placement 
   state.ui.currentGrooveDraftWidthCm = '40';
   state.ui.currentGrooveDraftHeightCm = '60';
   state.ui.currentGrooveOrientation = 'horizontal';
+  state.config.grooveLinesCount = 13;
   const grooveSurface = {
     userData: {
       __wpGrooveSurface: true,
@@ -219,15 +220,57 @@ test('manual horizontal groove click persists the exact sized surface placement 
     },
   ]);
   assert.equal(state.config.groovesMap.groove_d1_left, true);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, 13);
 
   assert.equal(click(), true);
   assert.equal(state.config.grooveLayoutMap.d1_left, undefined);
   assert.equal(state.config.groovesMap.groove_d1_left, false);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, undefined);
   assert.equal(buildRequests.length, 2);
   assert.equal(
     buildRequests.every(request => request.meta.source === 'groove:layout:click'),
     true
   );
+});
+
+test('selecting vertical converts an existing horizontal groove on the first click', () => {
+  const { App, state } = createApp();
+  state.ui.grooveManualEnabled = false;
+  state.ui.currentGrooveOrientation = 'vertical';
+  state.config.grooveLinesCount = 17;
+  state.config.groovesMap = { groove_d1_left: true };
+  state.config.grooveLinesCountMap = { d1_left: 48 };
+  state.config.grooveLayoutMap = { d1_left: [{ orientation: 'horizontal' }] };
+  const grooveSurface = {
+    userData: {
+      partId: 'd1_left',
+      __doorWidth: 1,
+      __doorHeight: 2,
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+
+  assert.equal(
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_left',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitPoint: new GrooveTestVector3().set(0.1, 0.2, 0.02),
+      doorHitObject: grooveSurface,
+      doorHitGroup: grooveSurface,
+    }),
+    true
+  );
+  assert.equal(state.config.groovesMap.groove_d1_left, true);
+  assert.equal(state.config.grooveLayoutMap.d1_left, undefined);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, 17);
 });
 
 test('regular door groove click allows outside grooves when the mirror is only on the inside face', () => {

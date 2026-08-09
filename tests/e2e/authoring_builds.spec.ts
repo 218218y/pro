@@ -561,6 +561,8 @@ test.describe('Playwright authoring build coverage', () => {
 
     await manualButton.click();
     await expect(manualButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(manualButton).toHaveAttribute('aria-expanded', 'true');
+    await expect(manualButton.locator('.fa-chevron-up')).toBeVisible();
     await expect(features.locator('[data-testid="design-groove-manual-fields"]')).toBeVisible();
 
     await heightInput.fill('80');
@@ -569,11 +571,17 @@ test.describe('Playwright authoring build coverage', () => {
     await expect(horizontalButton).toHaveAttribute('aria-pressed', 'true');
     await expect(verticalButton).toHaveAttribute('aria-pressed', 'false');
 
+    const grooveLinesInput = features.locator('[data-testid="design-groove-lines-input"]');
+    await expect(grooveLinesInput).toHaveAttribute('placeholder', /\(16\)$/);
+    await grooveLinesInput.press('ArrowUp');
+    await expect(grooveLinesInput).toHaveValue('17');
+
     let ui = asRecord((await readDebugStoreState(page)).ui);
     expect(ui.grooveManualEnabled).toBe(true);
     expect(ui.currentGrooveDraftHeightCm).toBe('80');
     expect(ui.currentGrooveDraftWidthCm).toBe('35.5');
     expect(ui.currentGrooveOrientation).toBe('horizontal');
+    expect(asRecord((await readDebugStoreState(page)).config).grooveLinesCount).toBe(17);
 
     await heightInput.locator('xpath=preceding-sibling::button').click();
     await expect(heightInput).toHaveValue('');
@@ -583,6 +591,11 @@ test.describe('Playwright authoring build coverage', () => {
     await expect(widthInput).toHaveValue('');
     await verticalButton.click();
     await expect(verticalButton).toHaveAttribute('aria-pressed', 'true');
+
+    await manualButton.click();
+    await expect(manualButton).toHaveAttribute('aria-expanded', 'false');
+    await expect(manualButton.locator('.fa-chevron-down')).toBeVisible();
+    await expect(features.locator('[data-testid="design-groove-manual-fields"]')).toHaveCount(0);
 
     ui = asRecord((await readDebugStoreState(page)).ui);
     expect(ui.currentGrooveDraftHeightCm).toBe('');

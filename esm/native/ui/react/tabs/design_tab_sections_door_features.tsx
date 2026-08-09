@@ -35,16 +35,29 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
           <ModeToggleButton
             active={model.grooveManualEnabled}
-            icon={<i className="fas fa-ruler-combined" aria-hidden="true" />}
+            icon={
+              <i
+                className={
+                  model.grooveManualEnabled
+                    ? 'fas fa-chevron-up wp-chevron'
+                    : 'fas fa-chevron-down wp-chevron'
+                }
+                aria-hidden="true"
+              />
+            }
+            iconPosition="end"
             onClick={model.toggleGrooveManual}
             className="wp-r-mt-2"
             data-testid="design-groove-manual-button"
+            aria-expanded={model.grooveManualEnabled}
+            aria-controls="design-groove-manual-panel"
           >
-            חריטה ידנית
+            <i className="fas fa-ruler-combined" aria-hidden="true" /> חריטה ידנית
           </ModeToggleButton>
 
           {model.grooveManualEnabled ? (
             <div
+              id="design-groove-manual-panel"
               className="wp-tool-card wp-tool-card--curtain wp-r-mt-2"
               data-testid="design-groove-manual-fields"
             >
@@ -118,7 +131,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                       : 'wp-r-input wp-r-groove-lines-input'
                   }
                   value={model.grooveLinesCount}
-                  placeholder="אוטומטי"
+                  placeholder={`אוטומטי (${model.grooveLinesCountAutoBaseline})`}
+                  min={1}
                   step={1}
                   inputMode="numeric"
                   aria-label="מספר חריטות"
@@ -129,7 +143,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                   onKeyDown={(e: import('react').KeyboardEvent<HTMLInputElement>) => {
                     if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.currentTarget.value.trim()) {
                       e.preventDefault();
-                      model.setGrooveLinesCount(10);
+                      const delta = e.key === 'ArrowUp' ? 1 : -1;
+                      model.setGrooveLinesCount(Math.max(1, model.grooveLinesCountAutoBaseline + delta));
                     }
                   }}
                   onChange={(e: import('react').ChangeEvent<HTMLInputElement>) => {

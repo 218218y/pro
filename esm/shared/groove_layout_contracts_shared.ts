@@ -12,6 +12,7 @@ import {
 import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 export const DEFAULT_GROOVE_ORIENTATION: GrooveOrientation = 'vertical';
+export const DEFAULT_GROOVE_DENSITY_PER_M = 20;
 export const GROOVE_LAYOUT_CENTER_NORM = 0.5;
 export const GROOVE_LAYOUT_CENTER_EPSILON = 1e-6;
 export const GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD = 0.04;
@@ -47,6 +48,14 @@ export type GrooveLayoutHitMatch = {
   layout: GrooveLayoutEntry;
   placement: ResolvedGroovePlacement;
   distanceM: number;
+};
+
+type GrooveSnappedCenter = {
+  centerXNorm: number;
+  centerYNorm: number;
+  snappedX: boolean;
+  snappedY: boolean;
+  isCentered: boolean;
 };
 
 export type GrooveLayoutListLookup = {
@@ -216,6 +225,27 @@ export function resolveGroovePlacementListInRect(args: {
   return layouts.map(layout => resolveGroovePlacementInRect({ rect: args.rect, layout }));
 }
 
+function buildSnappedGrooveCenterFromHit(args: {
+  rect: GrooveLayoutRect;
+  hitX: number;
+  hitY: number;
+}): GrooveSnappedCenter {
+  const rect = normalizeRect(args.rect);
+  const rectWidth = Math.max(0, rect.maxX - rect.minX);
+  const rectHeight = Math.max(0, rect.maxY - rect.minY);
+  const rawXNorm = buildCenterNorm(args.hitX, rect.minX, rectWidth);
+  const rawYNorm = buildCenterNorm(args.hitY, rect.minY, rectHeight);
+  const snappedX = Math.abs(rawXNorm - GROOVE_LAYOUT_CENTER_NORM) <= GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD;
+  const snappedY = Math.abs(rawYNorm - GROOVE_LAYOUT_CENTER_NORM) <= GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD;
+  return {
+    centerXNorm: snappedX ? GROOVE_LAYOUT_CENTER_NORM : rawXNorm,
+    centerYNorm: snappedY ? GROOVE_LAYOUT_CENTER_NORM : rawYNorm,
+    snappedX,
+    snappedY,
+    isCentered: snappedX && snappedY,
+  };
+}
+
 export function buildGrooveLayoutFromHit(args: {
   rect: GrooveLayoutRect;
   hitX: number;
@@ -223,21 +253,12 @@ export function buildGrooveLayoutFromHit(args: {
   draft?: GrooveDraftInput | null;
 }): GrooveLayoutEntry | null {
   const rect = normalizeRect(args.rect);
-  const rectWidth = Math.max(0, rect.maxX - rect.minX);
-  const rectHeight = Math.max(0, rect.maxY - rect.minY);
   const widthCm = normalizePositiveCm(args.draft?.widthCm);
   const heightCm = normalizePositiveCm(args.draft?.heightCm);
   const hasSizedLayout = widthCm != null || heightCm != null;
-  const rawXNorm = buildCenterNorm(args.hitX, rect.minX, rectWidth);
-  const rawYNorm = buildCenterNorm(args.hitY, rect.minY, rectHeight);
-  const centerXNorm =
-    Math.abs(rawXNorm - GROOVE_LAYOUT_CENTER_NORM) <= GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD
-      ? GROOVE_LAYOUT_CENTER_NORM
-      : rawXNorm;
-  const centerYNorm =
-    Math.abs(rawYNorm - GROOVE_LAYOUT_CENTER_NORM) <= GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD
-      ? GROOVE_LAYOUT_CENTER_NORM
-      : rawYNorm;
+  const center = buildSnappedGrooveCenterFromHit({ rect, hitX: args.hitX, hitY: args.hitY });
+  const centerXNorm = center.centerXNorm;
+  const centerYNorm = center.centerYNorm;
   const orientation = readGrooveOrientation(args.draft?.orientation);
   const placement = resolveGroovePlacementInRect({
     rect,
