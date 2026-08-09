@@ -1,6 +1,11 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 import { normalizeProjectData } from './project_schema_normalize.js';
-import { deepCloneProjectJson, hasCurrentProjectSchema } from './project_schema_shared.js';
+import {
+  PROJECT_SCHEMA_ID,
+  PROJECT_SCHEMA_VERSION,
+  deepCloneProjectJson,
+  hasCurrentProjectSchema,
+} from './project_schema_shared.js';
 import { validateProjectData } from './project_schema_validation.js';
 
 function serializeCanonicalProjectValue(value: unknown): string {
@@ -66,9 +71,26 @@ export const projectSchemaCodec = Object.freeze({
   },
 });
 
-export function serializeProjectDataForFile(value: ProjectDataLike, spacing = 2): string {
-  if (!projectSchemaCodec.validate(value)) {
-    throw new TypeError('Cannot serialize a non-canonical current project payload');
+type ProjectSchemaIdentity = Readonly<{
+  schemaId: string;
+  schemaVersion: number;
+}>;
+
+function validateProjectDataForSchema(value: ProjectDataLike, schema: ProjectSchemaIdentity): boolean {
+  if (value.__schema !== schema.schemaId || value.__version !== schema.schemaVersion) return false;
+  return validateProjectData(value).ok;
+}
+
+export function serializeProjectDataForFile(
+  value: ProjectDataLike,
+  spacing = 2,
+  schema: ProjectSchemaIdentity = {
+    schemaId: PROJECT_SCHEMA_ID,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+  }
+): string {
+  if (!validateProjectDataForSchema(value, schema)) {
+    throw new TypeError('Cannot serialize a non-canonical project payload for the requested schema');
   }
   const canonical = projectSchemaCodec.serialize(value);
   return spacing > 0 ? JSON.stringify(JSON.parse(canonical), null, spacing) : canonical;

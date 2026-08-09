@@ -133,7 +133,14 @@ export function runDomainCodecContract(projectRoot = process.cwd()) {
     requireNeedle(failures, FILES.projectCodec, projectCodec, needle);
   }
   const projectExport = sources.projectExport || '';
-  requireNeedle(failures, FILES.projectExport, projectExport, 'serializeProjectDataForFile(projectData)');
+  requireNeedle(
+    failures,
+    FILES.projectExport,
+    projectExport,
+    'serializeProjectDataForFile(projectData, 2, {'
+  );
+  requireNeedle(failures, FILES.projectExport, projectExport, 'schemaId: deps.schemaId');
+  requireNeedle(failures, FILES.projectExport, projectExport, 'schemaVersion: deps.schemaVersion');
   requireNoNeedle(failures, FILES.projectExport, projectExport, 'JSON.stringify(projectData');
 
   const settingsCodec = sources.settingsCodec || '';

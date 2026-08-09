@@ -57,7 +57,10 @@ export function createProjectIoExportOps(
 
       return buildProjectExportResult({
         projectData,
-        jsonStr: serializeProjectDataForFile(projectData),
+        jsonStr: serializeProjectDataForFile(projectData, 2, {
+          schemaId: deps.schemaId,
+          schemaVersion: deps.schemaVersion,
+        }),
         defaultBaseName,
         projectName,
         meta: safeMeta,

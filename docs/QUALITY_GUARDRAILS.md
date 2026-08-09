@@ -225,6 +225,8 @@ npm run e2e:canvas-pointer-parity
 ## Cloud Sync
 
 - Lifecycle orchestration belongs in cloud-sync service owners; UI/panel code displays state and dispatches actions.
+- `createCloudSyncOwnerGatewayIo` is the stable gateway composition surface. Credential/session lifecycle, row cache, conflict journal, gateway transport, conflict resolution, and remote adoption stay in independent state/lifecycle owners rather than being recombined into one runtime owner.
+- Browser-only conflict locking belongs at the runtime-access boundary and is injected into the conflict-resolution owner; service-domain conflict logic must not import browser-runtime capability access directly.
 - Long-lived timers must come from injected Cloud Sync dependencies or a single browser-runtime timer boundary, not direct global timer calls.
 - Pull coalescers and main-row push flows must reset stale queued work across dispose/suppression boundaries.
 - Repeated start/stop/pull calls must be singleflight or idempotent.
@@ -252,6 +254,7 @@ Relevant docs/checks:
 docs/CLOUD_SYNC_LIFECYCLE_STATE_MACHINE.md
 npm run check:cloud-sync-timers
 npm run check:cloud-sync-races
+npm run check:cloud-sync-owner-decomposition
 npm run check:cloud-sync-offline-reconnect
 npm run e2e:cloud-sync-reconnect
 ```

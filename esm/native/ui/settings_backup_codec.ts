@@ -1,7 +1,6 @@
 import type { SettingsBackupData } from './settings_backup_shared_contracts.js';
 import { sanitizeSettingsBackupJsonText } from './settings_backup_shared_contracts.js';
 import {
-  normalizeSavedModelForSettingsBackup,
   readSavedColorList,
   readSavedModelList,
   readSettingsBackupIdList,

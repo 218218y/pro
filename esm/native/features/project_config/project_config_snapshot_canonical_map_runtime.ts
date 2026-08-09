@@ -156,9 +156,9 @@ export function validateKnownProjectConfigMap(key: string, value: unknown): bool
   }
 }
 
-export function cloneKnownProjectConfigMap(key: string, value: unknown): unknown | null {
+export function cloneKnownProjectConfigMap(key: string, value: unknown): Record<string, unknown> | null {
   if (!isKnownProjectConfigMapKey(key)) return null;
-  return cloneCanonicalFeatureValue(normalizeKnownProjectConfigMap(key, value));
+  return cloneCanonicalFeatureValue(normalizeKnownProjectConfigMap(key, value) as Record<string, unknown>);
 }
 
 export function serializeKnownProjectConfigMap(key: string, value: unknown): string | null {

@@ -150,6 +150,21 @@ export const ARCHITECTURE_CONTRACT_REGISTRY = Object.freeze([
     ],
   }),
   contract({
+    id: 'cloud-sync-owner-decomposition',
+    kind: 'source-guard',
+    packageScript: 'check:cloud-sync-owner-decomposition',
+    owner: 'tests/cloud_sync_owner_context_runtime_decomposition_contracts.test.js',
+    scopes: [
+      'Cloud Sync credential session ownership',
+      'Cloud Sync row cache ownership',
+      'Cloud Sync conflict journal ownership',
+      'Cloud Sync gateway transport ownership',
+      'Cloud Sync conflict resolution state machine',
+      'Cloud Sync remote adoption coordination',
+    ],
+    supportingTests: ['tests/cloud_sync_owner_gateway_io_runtime.test.ts'],
+  }),
+  contract({
     id: 'performance-hotpaths',
     kind: 'source-guard',
     packageScript: 'check:perf-hotpaths',

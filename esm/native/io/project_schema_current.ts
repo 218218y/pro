@@ -5,7 +5,6 @@ import { normalizeKnownProjectConfigMap } from './project_config_codec_access.js
 import {
   PROJECT_SCHEMA_ID,
   PROJECT_SCHEMA_VERSION,
-  asObject,
   ensureSettingsRecord,
   ensureTogglesRecord,
 } from './project_schema_shared.js';
