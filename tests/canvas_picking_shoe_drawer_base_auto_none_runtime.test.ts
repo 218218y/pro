@@ -280,6 +280,27 @@ test('regular shoe mode removes an existing sketch shoe from module hover instea
   assert.equal(state.ui.baseType, 'legs');
 });
 
+test('regular shoe mode removes an existing sketch shoe even without a recent hover record', () => {
+  const { App, state } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'legs';
+  state.config.sketchExtras = {
+    extDrawers: [{ id: 'shoe-sketch-stale-hover', count: 0, hasShoeDrawer: true, drawerHeightM: 0.275 }],
+  };
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App,
+    foundModuleIndex: 1,
+    activeModuleKey: 1,
+    isExtDrawerEditMode: true,
+    patchConfigForKey: (_mk, patcher) => patcher(state.config as never),
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(state.config.sketchExtras.extDrawers, []);
+  assert.notEqual(state.config.hasShoeDrawer, true);
+  assert.equal(state.ui.baseType, 'legs');
+});
+
 test('sketch shoe hover removes an existing standard shoe instead of adding a second shoe', () => {
   const { App, state } = createAppHarness('none');
   state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';

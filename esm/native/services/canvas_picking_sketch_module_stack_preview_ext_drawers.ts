@@ -127,19 +127,20 @@ export function resolveSketchModuleExternalDrawersPreview(
     readCenterY,
     blockers: internalDrawerBlockers,
   });
-  const standardShoePartId =
-    args.externalDrawerType === 'shoe' && args.cfgRef?.hasShoeDrawer === true
-      ? String(args.standardShoePartId || '')
-      : '';
-  const placement = standardShoePartId
+  const standardShoeExists = args.externalDrawerType === 'shoe' && args.cfgRef?.hasShoeDrawer === true;
+  const standardShoePreview = standardShoeExists ? (args.standardShoePreview ?? null) : null;
+  const placement = standardShoeExists
     ? {
         ...placementBase,
         op: 'remove' as const,
         removeId: null,
-        yCenter: bottomY + placementBase.drawerH / 2,
+        yCenter:
+          standardShoePreview != null
+            ? standardShoePreview.y + standardShoePreview.stackH / 2
+            : bottomY + placementBase.drawerH / 2,
         drawerCount: 1,
-        drawerH: placementBase.drawerH,
-        stackH: placementBase.drawerH,
+        drawerH: standardShoePreview?.drawerH ?? placementBase.drawerH,
+        stackH: standardShoePreview?.stackH ?? placementBase.drawerH,
         fitsAvailable: true,
       }
     : placementBase;
@@ -155,7 +156,7 @@ export function resolveSketchModuleExternalDrawersPreview(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM,
     faceEnvelope?.outerW ?? innerW
   );
-  const centerX = faceEnvelope?.centerX ?? internalCenterX;
+  const defaultCenterX = faceEnvelope?.centerX ?? internalCenterX;
   const frontPlaneZ =
     (faceEnvelope?.centerZ ??
       internalZ + internalDepth / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewCenterZInsetM) +
@@ -165,13 +166,17 @@ export function resolveSketchModuleExternalDrawersPreview(
         internalDepth + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewDepthClearanceM
       )) /
       2;
-  const frontZ =
+  const defaultFrontZ =
     frontPlaneZ + visualT / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM;
-  const baseY = placement.yCenter - placement.stackH / 2;
-  const previewW = Math.max(
+  const defaultPreviewW = Math.max(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
     outerW - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
   );
+  const centerX = standardShoePreview?.x ?? defaultCenterX;
+  const frontZ = standardShoePreview?.z ?? defaultFrontZ;
+  const previewW = standardShoePreview?.w ?? defaultPreviewW;
+  const previewD = standardShoePreview?.d ?? visualT;
+  const baseY = standardShoePreview?.y ?? placement.yCenter - placement.stackH / 2;
   const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
     bottomY,
     topY,
@@ -189,27 +194,31 @@ export function resolveSketchModuleExternalDrawersPreview(
     targetHeight: placement.stackH,
     z:
       frontZ +
-      visualT / 2 +
+      previewD / 2 +
       Math.max(
         DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMeasurementZOffsetMinM,
-        visualT * DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMeasurementZOffsetThicknessRatio
+        previewD * DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMeasurementZOffsetThicknessRatio
       ),
     styleKey: 'cell',
     textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
-  const drawersPreview: RecordMap[] = [];
   const drawerH = placement.drawerH;
   const hoverOp: 'add' | 'remove' = blockedReason || placement.op === 'blocked' ? 'add' : placement.op;
   const hoverRemoveId = blockedReason || placement.op === 'blocked' ? null : placement.removeId;
-  const hoverRemovePid = hoverOp === 'remove' && standardShoePartId ? standardShoePartId : null;
-  for (let i = 0; i < placement.drawerCount; i++) {
-    drawersPreview.push({
-      y: baseY + i * drawerH + drawerH / 2,
-      h: Math.max(
-        DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
-        drawerH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
-      ),
-    });
+  const hoverRemovePid = hoverOp === 'remove' && standardShoePreview ? standardShoePreview.partId : null;
+  const drawersPreview: RecordMap[] = standardShoePreview
+    ? standardShoePreview.drawers.map(drawer => ({ ...drawer }))
+    : [];
+  if (!standardShoePreview) {
+    for (let i = 0; i < placement.drawerCount; i++) {
+      drawersPreview.push({
+        y: baseY + i * drawerH + drawerH / 2,
+        h: Math.max(
+          DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+          drawerH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
+        ),
+      });
+    }
   }
 
   return {
@@ -223,18 +232,21 @@ export function resolveSketchModuleExternalDrawersPreview(
       yCenter: placement.yCenter,
       baseY,
       drawerCount: placement.drawerCount,
-      drawerHeightM: args.drawerHeightM ?? placement.drawerH,
+      drawerHeightM: standardShoePreview?.drawerH ?? args.drawerHeightM ?? placement.drawerH,
       drawerH,
       stackH: placement.stackH,
       blockedReason,
     }),
     preview: {
       kind: 'ext_drawers',
+      ...(standardShoePreview
+        ? { anchor: standardShoePreview.anchor, anchorParent: standardShoePreview.anchorParent }
+        : {}),
       x: centerX,
       y: baseY,
       z: frontZ,
       w: previewW,
-      d: visualT,
+      d: previewD,
       woodThick,
       drawers: drawersPreview,
       op: blockedReason ? 'blocked' : placement.op,

@@ -1,5 +1,6 @@
 import type { UnknownRecord } from '../../../types';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import type { StandardExternalShoeDrawerPreview } from './canvas_picking_drawer_cross_family.js';
 
 export type RecordMap = UnknownRecord;
 export type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -34,7 +35,7 @@ export type ResolveSketchModuleStackPreviewArgs = {
   boxes?: RecordMap[];
   selectedDrawerCount?: number | null;
   externalDrawerType?: 'regular' | 'shoe';
-  standardShoePartId?: string | null;
+  standardShoePreview?: StandardExternalShoeDrawerPreview | null;
   drawerHeightM?: number | null;
   woodThick: number;
   selectorFrontEnvelope?: SelectorFrontEnvelope | null;

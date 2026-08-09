@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleSketchHoverOverStandardDrawer } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_standard_drawer.ts';
+import { findStandardExternalShoePreviewForModule } from '../esm/native/services/canvas_picking_drawer_cross_family_preview.ts';
 
 function makeExternalDrawerGroup(partId: string, y: number, parent: Record<string, unknown>) {
   return {
@@ -321,4 +322,48 @@ test('sketch shoe hover over a standard shoe drawer uses canonical front geometr
   assert.ok(Math.abs(Number(hoverRecords[0].baseY) - 0.024) < 1e-9);
   assert.equal(hoverRecords[0].removeKind, 'std');
   assert.equal(hoverRecords[0].removePid, 'd1_draw_shoe');
+});
+
+test('standard shoe module preview lookup requires exact module identity and returns the real front geometry', () => {
+  const parent = { id: 'wardrobe-parent' };
+  const missingIdentityGroup = {
+    id: 'd1_draw_shoe',
+    parent,
+    userData: {
+      partId: 'd1_draw_shoe',
+      __wpShoeDrawer: true,
+      __doorWidth: 0.75,
+      __doorHeight: 0.18,
+    },
+    position: { x: -0.4, y: 0.1, z: 0.22 },
+  };
+  const moduleTwoGroup = {
+    id: 'd3_draw_shoe',
+    parent,
+    userData: {
+      partId: 'd3_draw_shoe',
+      moduleIndex: 2,
+      __wpShoeDrawer: true,
+      __doorWidth: 0.812,
+      __doorHeight: 0.192,
+      __wpFaceOffsetX: 0.015,
+    },
+    position: { x: 0.3, y: 0.14, z: 0.59 },
+  };
+  const App = {
+    render: {
+      drawersArray: [
+        { id: 'd1_draw_shoe', group: missingIdentityGroup, closed: { x: -0.4, y: 0.1, z: 0.22 } },
+        { id: 'd3_draw_shoe', group: moduleTwoGroup, closed: { x: 0.3, y: 0.14, z: 0.59 } },
+      ],
+    },
+  } as any;
+
+  const preview = findStandardExternalShoePreviewForModule(App, 2);
+
+  assert.ok(preview);
+  assert.equal(preview.partId, 'd3_draw_shoe');
+  assert.ok(Math.abs(preview.x - 0.315) < 1e-9);
+  assert.ok(Math.abs(preview.y - 0.044) < 1e-9);
+  assert.deepEqual(preview.drawers, [{ y: 0.14, h: 0.192 }]);
 });

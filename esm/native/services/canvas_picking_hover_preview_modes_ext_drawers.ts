@@ -15,7 +15,7 @@ import {
   EXTERNAL_DRAWER_SIZE_POLICY,
 } from '../../shared/dimensions/drawer_sketch_policy.js';
 import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from './canvas_picking_regular_ext_drawers_free_box.js';
-import { readSketchExternalShoeDrawerState } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
+import { readModuleShoeDrawerState } from './canvas_picking_shoe_drawer_module_state.js';
 import {
   clearExtDrawerModeHover,
   coerceExtDrawerModeHoverModuleKey,
@@ -347,11 +347,12 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         : DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
     const currentCount = __readNumber(cfgRef, 'extDrawersCount', 0);
     const hasShoe = !!cfgRef?.hasShoeDrawer;
-    const sketchShoeState =
+    const moduleShoeState =
       drawerType === 'shoe'
-        ? readSketchExternalShoeDrawerState(cfgRef, EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM)
+        ? readModuleShoeDrawerState(cfgRef, EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM)
         : null;
-    const hasSketchShoe = !!sketchShoeState;
+    const sketchShoeState = moduleShoeState?.sketchDrawers[0] ?? null;
+    const hasSketchShoe = moduleShoeState?.hasSketch === true;
     const op =
       drawerType === 'shoe'
         ? hasShoe || hasSketchShoe

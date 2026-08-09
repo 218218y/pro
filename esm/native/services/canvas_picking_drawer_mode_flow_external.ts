@@ -10,6 +10,10 @@ import {
   shouldBlockDrawerBuildInHexCell,
 } from '../features/hex_cell/index.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
+import {
+  readModuleShoeDrawerState,
+  removeTopLevelSketchShoeDrawers,
+} from './canvas_picking_shoe_drawer_module_state.js';
 import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
   applyShoeDrawerBaseAutoNoneIfNeeded,
@@ -195,9 +199,18 @@ export function tryHandleExternalDrawerModeClick(args: {
       const drawerCount = ui && typeof ui.currentExtDrawerCount === 'number' ? ui.currentExtDrawerCount : 1;
 
       if (drawerType === 'shoe') {
-        const targetHasShoe = !cfg.hasShoeDrawer;
+        const shoeState = readModuleShoeDrawerState(cfg);
+        if (shoeState.hasStandard) {
+          cfg.hasShoeDrawer = false;
+          removedShoeDrawer = true;
+          return;
+        }
+        if (shoeState.hasSketch) {
+          removedShoeDrawer = removeTopLevelSketchShoeDrawers(cfg) > 0;
+          return;
+        }
+
         if (
-          targetHasShoe &&
           blockRemovableSideContentBuildIfModuleSideMissing({
             App,
             moduleKey: targetModuleKey,
@@ -205,23 +218,21 @@ export function tryHandleExternalDrawerModeClick(args: {
           })
         )
           return;
-        if (targetHasShoe && blockDrawerBuildInHexCell(App, cfg)) return;
+        if (blockDrawerBuildInHexCell(App, cfg)) return;
         if (
-          targetHasShoe &&
           !canApplyExternalDrawerChoice({
             App,
             moduleKey: targetModuleKey,
             isBottomStack: !!args.isBottomStack,
-            hasShoe: targetHasShoe,
+            hasShoe: true,
             regCount: cfg.extDrawersCount || 0,
             drawerType,
           })
         ) {
           return;
         }
-        cfg.hasShoeDrawer = targetHasShoe;
-        addedShoeDrawer = targetHasShoe;
-        removedShoeDrawer = !targetHasShoe;
+        cfg.hasShoeDrawer = true;
+        addedShoeDrawer = true;
       } else {
         const currentCount = cfg.extDrawersCount || 0;
         const normalizedDrawerCount = Number.isFinite(drawerCount) ? Math.floor(drawerCount) : NaN;

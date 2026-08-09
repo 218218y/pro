@@ -16,6 +16,7 @@ import {
   parseSketchExtDrawerType,
   parseSketchIntDrawerHeightM,
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
+import { readModuleShoeDrawerState } from './canvas_picking_shoe_drawer_module_state.js';
 import {
   isSketchInternalDrawersTool,
   resolveSketchExternalDrawerFit,
@@ -434,8 +435,10 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   const drawerHeightM = parseSketchExtDrawerHeightM(args.tool);
   const requestedDrawerCount = parseSketchExtDrawerCount(args.tool);
   const drawerType = parseSketchExtDrawerType(args.tool);
+  const moduleShoeState = drawerType === 'shoe' ? readModuleShoeDrawerState(args.cfg, drawerHeightM) : null;
+  const isExternalRemovalIntent = extStackHover?.op === 'remove' || moduleShoeState?.hasAny === true;
   if (
-    extStackHover?.op !== 'remove' &&
+    !isExternalRemovalIntent &&
     blockSketchStackCommitIfRemovedFrameSide({
       App: args.App,
       hoverHost: args.hoverHost,
@@ -445,7 +448,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     return true;
   }
   if (
-    extStackHover?.op !== 'remove' &&
+    !isExternalRemovalIntent &&
     blockSketchStackCommitIfHexCell({
       App: args.App,
       cfg: args.cfg,
@@ -455,7 +458,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     return true;
   }
   if (
-    extStackHover?.op !== 'remove' &&
+    !isExternalRemovalIntent &&
     blockSketchStackCommitIfCollision({
       App: args.App,
       contentKind: 'ext_drawers',
@@ -466,7 +469,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     return true;
   }
   if (
-    extStackHover?.op !== 'remove' &&
+    !isExternalRemovalIntent &&
     blockSketchStackCommitIfNoRoom({
       App: args.App,
       contentKind: 'ext_drawers',

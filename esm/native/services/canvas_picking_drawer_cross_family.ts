@@ -16,7 +16,8 @@ export type {
   SketchExternalDrawerListKind,
 } from './canvas_picking_drawer_cross_family_model.js';
 export {
-  findStandardExternalShoePartIdForModule,
+  findStandardExternalShoePreviewForModule,
+  resolveStandardExternalShoeDrawerFrontPreview,
   resolveExternalCrossDrawerStackPreview,
   resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family_preview.js';
@@ -25,6 +26,7 @@ export type {
   CrossDrawerMeasureObjectLocalBoxFn,
   CrossDrawerPreviewBox,
   CrossDrawerStackPreview,
+  StandardExternalShoeDrawerPreview,
   CrossInternalDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family_preview.js';
 export {

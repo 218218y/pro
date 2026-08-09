@@ -1,3 +1,4 @@
+import { readModuleShoeDrawerState } from './canvas_picking_shoe_drawer_module_state.js';
 import {
   buildManualLayoutSketchInternalDrawerBlockers,
   buildManualLayoutStandardInternalDrawerBlockers,
@@ -7,6 +8,7 @@ import {
 import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manual_layout_vertical_blockers.js';
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import type {
   CommitSketchModuleExternalDrawerArgs,
   RecordMap,
@@ -21,11 +23,41 @@ import {
   ensureRecord,
   ensureRecordList,
 } from './canvas_picking_sketch_module_stack_commit_shared.js';
-import { sketchStackFitsAvailableHeight } from './canvas_picking_external_drawer_count_policy.js';
+import {
+  resolveSketchExternalDrawerMetrics,
+  sketchStackFitsAvailableHeight,
+} from './canvas_picking_external_drawer_count_policy.js';
 
 export function commitSketchModuleExternalDrawers(
   args: CommitSketchModuleExternalDrawerArgs
 ): RecordMap | null {
+  if (args.drawerType === 'shoe') {
+    const shoeState = readModuleShoeDrawerState(args.cfg, args.drawerHeightM);
+    const hoverIntent = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
+    const explicitlyRemovingSketchShoe =
+      hoverIntent?.kind === 'ext_drawers' &&
+      hoverIntent.op === 'remove' &&
+      hoverIntent.removeKind !== 'std' &&
+      !!hoverIntent.removeId;
+
+    if (shoeState.hasStandard && !explicitlyRemovingSketchShoe) {
+      args.cfg.hasShoeDrawer = false;
+      const metrics = resolveSketchExternalDrawerMetrics({
+        drawerCount: 1,
+        drawerHeightM: args.drawerHeightM,
+      });
+      return createManualLayoutSketchStackHoverRecord({
+        host: args.hoverHost,
+        kind: 'ext_drawers',
+        op: 'add',
+        yCenter: args.bottomY + metrics.stackH / 2,
+        drawerCount: 1,
+        drawerHeightM: args.drawerHeightM,
+        drawerH: metrics.drawerH,
+        stackH: metrics.stackH,
+      });
+    }
+  }
   const existingExtra =
     args.cfg.sketchExtras &&
     typeof args.cfg.sketchExtras === 'object' &&

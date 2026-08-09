@@ -89,6 +89,60 @@ test('shoe sketch external drawer commit persists explicit shoe semantics and cu
   assert.ok(Math.abs(extDrawers[0].yNorm - 0) < 1e-12);
 });
 
+test('shoe sketch commit removes an existing standard shoe even when hover is stale', () => {
+  const cfg: Record<string, unknown> = { hasShoeDrawer: true };
+  const nextHover = commitSketchModuleExternalDrawers({
+    cfg,
+    hoverRec: {},
+    hoverOk: false,
+    requestedDrawerCount: 1,
+    drawerType: 'shoe',
+    drawerHeightM: 0.275,
+    bottomY: 0.2,
+    topY: 2,
+    totalHeight: 1.8,
+    pad: 0.02,
+    woodThick: 0.018,
+    hitYClamped: 1.5,
+    hoverHost: { tool: 'sketch_ext_drawers:shoe@27.5', moduleKey: 2, isBottom: false },
+  });
+
+  assert.ok(nextHover);
+  assert.equal(cfg.hasShoeDrawer, false);
+  assert.equal((cfg.sketchExtras as any)?.extDrawers?.length ?? 0, 0);
+  assert.equal(nextHover.op, 'add');
+});
+
+test('stale sketch shoe hover cannot turn a standard shoe removal into an add-only blocked action', () => {
+  const cfg: Record<string, unknown> = {
+    hasShoeDrawer: true,
+    hexCell: { enabled: true },
+  };
+  const writes: Array<Record<string, unknown> | null> = [];
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: {} as any,
+    cfg,
+    tool: 'sketch_ext_drawers:shoe@27.5',
+    hoverOk: false,
+    hoverRec: {},
+    bottomY: 0.2,
+    topY: 2,
+    totalHeight: 1.8,
+    pad: 0.02,
+    woodThick: 0.018,
+    hitYClamped: 1.5,
+    hoverHost: { tool: 'sketch_ext_drawers:shoe@27.5', moduleKey: 2, isBottom: false },
+    writeSketchHover: (_app, hover) => writes.push(hover),
+  });
+
+  assert.equal(handled, true);
+  assert.equal(cfg.hasShoeDrawer, false);
+  assert.equal((cfg.sketchExtras as any)?.extDrawers?.length ?? 0, 0);
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0]?.op, 'add');
+});
+
 function requireSketchBoxCommandHover(value: unknown) {
   const decoded = decodeSketchBoxContentCommandHover(value);
   assert.equal(decoded.ok, true);
@@ -273,6 +327,57 @@ test('sketch free external drawer removal preview does not emit a full-cell fron
   assert.equal(result.preview.drawers.length, 2);
   assert.equal(Object.prototype.hasOwnProperty.call(result.preview, 'frontOverlayZ'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(result.preview, 'frontOverlayH'), false);
+});
+
+test('module-surface sketch shoe hover marks the existing standard shoe front itself for removal', () => {
+  const parent = { id: 'wardrobe-parent' };
+  const shoeGroup = {
+    id: 'd3_draw_shoe',
+    parent,
+    userData: {
+      partId: 'd3_draw_shoe',
+      moduleIndex: 2,
+      __wpShoeDrawer: true,
+      __doorWidth: 0.812,
+      __doorHeight: 0.192,
+      __wpFaceOffsetX: 0.015,
+    },
+    position: { x: 0.3, y: 0.14, z: 0.59 },
+  };
+  const { ctx, calls } = createModuleStackContext({
+    App: {
+      render: {
+        drawersArray: [
+          {
+            id: 'd3_draw_shoe',
+            group: shoeGroup,
+            closed: { x: 0.3, y: 0.14, z: 0.59 },
+          },
+        ],
+      },
+    },
+    tool: 'sketch_ext_drawers:shoe@27.5',
+    hitModuleKey: 2,
+    isDrawers: false,
+    isExtDrawers: true,
+    cfgRef: { hasShoeDrawer: true },
+    yClamped: 1.4,
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleStackPreview(ctx);
+
+  assert.equal(handled, true);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.previews.length, 1);
+  assert.equal(calls.hover[0]?.op, 'remove');
+  assert.equal(calls.hover[0]?.removeKind, 'std');
+  assert.equal(calls.hover[0]?.removePid, 'd3_draw_shoe');
+  assert.ok(Math.abs(Number(calls.hover[0]?.baseY) - 0.044) < 1e-9);
+  assert.ok(Math.abs(Number(calls.hover[0]?.yCenter) - 0.14) < 1e-9);
+  assert.equal(calls.previews[0]?.op, 'remove');
+  assert.ok(Math.abs(Number(calls.previews[0]?.x) - 0.315) < 1e-9);
+  assert.ok(Math.abs(Number(calls.previews[0]?.y) - 0.044) < 1e-9);
+  assert.deepEqual(calls.previews[0]?.drawers, [{ y: 0.14, h: 0.192 }]);
 });
 
 test('manual-layout module sketch external drawer preview keeps exact size and marks no-room hover red when it cannot fit', () => {

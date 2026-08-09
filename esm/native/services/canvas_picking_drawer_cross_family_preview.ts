@@ -3,6 +3,7 @@ import {
   DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
   DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
   DRAWER_SKETCH_SIZING_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
 } from '../../shared/dimensions/drawer_sketch_policy.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import {
@@ -46,6 +47,10 @@ export type CrossDrawerStackPreview = {
   drawers: Array<{ y: number; h: number }>;
 };
 
+export type StandardExternalShoeDrawerPreview = CrossDrawerStackPreview & {
+  partId: string;
+};
+
 export type CrossDrawerMeasureObjectLocalBoxFn = (
   App: AppContainer,
   obj: unknown,
@@ -56,26 +61,91 @@ function isStandardExternalShoeDrawer(partId: string, userData: UnknownRecord | 
   return userData?.__wpShoeDrawer === true || /^d\d+_draw_shoe$/u.test(partId);
 }
 
-export function findStandardExternalShoePartIdForModule(App: AppContainer, moduleKey: unknown): string {
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readPositiveNumber(value: unknown): number | null {
+  const valueNumber = readFiniteNumber(value);
+  return valueNumber != null && valueNumber > 0 ? valueNumber : null;
+}
+
+export function resolveStandardExternalShoeDrawerFrontPreview(args: {
+  drawer: unknown;
+  group?: unknown;
+  parent?: unknown;
+  box?: CrossDrawerPreviewBox | null;
+}): CrossDrawerStackPreview | null {
+  const drawer = asCrossDrawerNode(args.drawer);
+  const group = asCrossDrawerNode(args.group ?? drawer?.group);
+  if (!drawer || !group) return null;
+
+  const userData = readCrossDrawerUserData(group);
+  const partId = readCrossDrawerCanonicalPartId(userData?.partId ?? drawer.id, userData);
+  if (classifyCrossDrawerPart(partId, userData) !== 'standard_external') return null;
+  if (!isStandardExternalShoeDrawer(partId, userData)) return null;
+
+  const closed = asCrossDrawerNode(drawer.closed);
+  const position = asCrossDrawerNode(group.position);
+  const box = args.box ?? null;
+  const centerX = readFiniteNumber(closed?.x) ?? readFiniteNumber(position?.x) ?? box?.centerX ?? null;
+  const centerY = readFiniteNumber(closed?.y) ?? readFiniteNumber(position?.y) ?? box?.centerY ?? null;
+  const centerZ = readFiniteNumber(closed?.z) ?? readFiniteNumber(position?.z) ?? box?.centerZ ?? null;
+  const width = readPositiveNumber(userData?.__doorWidth) ?? box?.width ?? null;
+  const height = readPositiveNumber(userData?.__doorHeight) ?? box?.height ?? null;
+  if (centerX == null || centerY == null || centerZ == null || width == null || height == null) return null;
+
+  const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
+  const faceOffsetX = readFiniteNumber(userData?.__wpFaceOffsetX) ?? 0;
+  return {
+    anchor: group,
+    anchorParent: args.parent ?? group.parent ?? null,
+    x: centerX + faceOffsetX,
+    y: centerY - height / 2,
+    z: centerZ + visualT + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+    w: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM, width),
+    d: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM, visualT),
+    stackH: height,
+    drawerH: height,
+    drawerCount: 1,
+    drawers: [
+      {
+        y: centerY,
+        h: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM, height),
+      },
+    ],
+  };
+}
+
+export function findStandardExternalShoePreviewForModule(
+  App: AppContainer,
+  moduleKey: unknown
+): StandardExternalShoeDrawerPreview | null {
   const targetModuleKey = readCrossDrawerString(moduleKey);
   const drawers = getDrawersArray(App);
   for (let i = 0; i < drawers.length; i++) {
-    const group = readCrossDrawerEntryGroup(drawers[i]);
-    if (!group) continue;
+    const drawer = asCrossDrawerNode(drawers[i]);
+    const group = readCrossDrawerEntryGroup(drawer);
+    if (!drawer || !group) continue;
     const userData = readCrossDrawerUserData(group);
-    const partId = readCrossDrawerCanonicalPartId(
-      userData?.partId ?? asCrossDrawerNode(drawers[i])?.id,
-      userData
-    );
+    const partId = readCrossDrawerCanonicalPartId(userData?.partId ?? drawer.id, userData);
     if (classifyCrossDrawerPart(partId, userData) !== 'standard_external') continue;
     if (!isStandardExternalShoeDrawer(partId, userData)) continue;
+
     const entryModuleKey = readCrossDrawerString(
-      userData?.moduleIndex ?? userData?.__wpSketchModuleKey ?? asCrossDrawerNode(drawers[i])?.moduleIndex
+      userData?.moduleIndex ?? userData?.__wpSketchModuleKey ?? drawer.moduleIndex
     );
-    if (targetModuleKey && entryModuleKey && targetModuleKey !== entryModuleKey) continue;
-    return partId;
+    if (targetModuleKey && entryModuleKey !== targetModuleKey) continue;
+
+    const preview = resolveStandardExternalShoeDrawerFrontPreview({
+      drawer,
+      group,
+      parent: group.parent ?? null,
+    });
+    if (!preview) continue;
+    return { ...preview, partId };
   }
-  return '';
+  return null;
 }
 
 export type CrossInternalDrawerStackPreview = {

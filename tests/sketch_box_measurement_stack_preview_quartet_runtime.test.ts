@@ -255,19 +255,42 @@ test('Sketch module shoe preview removes an existing standard shoe drawer instea
     selectedDrawerCount: 1,
     drawerHeightM: 0.24,
   });
+  const standardShoePreview = {
+    partId: 'd3_draw_shoe',
+    anchor: { id: 'shoe-front' },
+    anchorParent: { id: 'wardrobe' },
+    x: 0.31,
+    y: 0.044,
+    z: 0.611,
+    w: 0.812,
+    d: 0.02,
+    stackH: 0.192,
+    drawerH: 0.192,
+    drawerCount: 1,
+    drawers: [{ y: 0.14, h: 0.192 }],
+  };
   const result = resolveSketchModuleExternalDrawersPreview({
     ...args,
     contentKind: 'ext_drawers',
     cfgRef: { hasShoeDrawer: true },
     externalDrawerType: 'shoe',
-    standardShoePartId: 'd3_draw_shoe',
+    standardShoePreview,
   });
 
   assert.equal(result.hoverRecord.op, 'remove');
   assert.equal(result.hoverRecord.removeKind, 'std');
   assert.equal(result.hoverRecord.removePid, 'd3_draw_shoe');
+  assertClose(result.hoverRecord.yCenter, 0.14);
+  assertClose(result.hoverRecord.baseY, 0.044);
+  assertClose(result.hoverRecord.drawerH, 0.192);
   assert.equal(result.preview.op, 'remove');
-  assert.equal((result.preview.drawers as unknown[]).length, 1);
+  assert.equal(result.preview.anchor, standardShoePreview.anchor);
+  assert.equal(result.preview.anchorParent, standardShoePreview.anchorParent);
+  assertClose(result.preview.x, 0.31);
+  assertClose(result.preview.y, 0.044);
+  assertClose(result.preview.z, 0.611);
+  assertClose(result.preview.w, 0.812);
+  assert.deepEqual(result.preview.drawers, [{ y: 0.14, h: 0.192 }]);
 });
 
 test('Sketch module external-drawer preview preserves selector envelope, default count, and focused front geometry', () => {
