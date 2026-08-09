@@ -66,7 +66,12 @@ import {
   type ProjectRestoreFailureResult,
 } from '../runtime/project_recovery_action_result.js';
 import { normalizeModelsCommandReason } from '../runtime/models_access.js';
-import { normalizeModelRecord, normalizeModelList } from '../features/model_record/api.js';
+import {
+  normalizeModelList,
+  normalizeModelRecord,
+  readSavedModelRecordList,
+  savedModelCodec,
+} from './saved_model_codec_access.js';
 import { planImportedModelsCollectionsMutationFromCanonicalModels } from './models_registry_mutations.js';
 
 export {
@@ -109,6 +114,8 @@ export {
   normalizeModelsCommandReason,
   normalizeModelRecord,
   normalizeModelList,
+  readSavedModelRecordList,
+  savedModelCodec,
 };
 
 export type {

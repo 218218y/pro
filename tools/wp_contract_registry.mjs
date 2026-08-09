@@ -169,6 +169,20 @@ export const ARCHITECTURE_CONTRACT_REGISTRY = Object.freeze([
     ],
   }),
   contract({
+    id: 'canonical-domain-codecs',
+    kind: 'source-guard',
+    packageScript: 'check:domain-codecs',
+    owner: 'tools/wp_domain_codec_contract.mjs',
+    scopes: [
+      'saved model persistence codec',
+      'cloud collections persistence codec',
+      'project config map codecs',
+      'settings backup persistence codec',
+      'project schema persistence codec',
+    ],
+    supportingTests: ['tests/canonical_domain_codecs_runtime.test.ts'],
+  }),
+  contract({
     id: 'test-portfolio',
     kind: 'portfolio',
     packageScript: 'check:test-portfolio',

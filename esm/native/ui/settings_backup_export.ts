@@ -6,7 +6,7 @@ import {
   buildSettingsBackupExportFailureResult,
   buildSettingsBackupExportSuccessResult,
 } from './settings_backup_action_result.js';
-import { countItems, SettingsBackupActionError } from './settings_backup_shared.js';
+import { countItems, settingsBackupCodec, SettingsBackupActionError } from './settings_backup_shared.js';
 import {
   buildExportBackupData,
   requireSettingsBackupApp,
@@ -20,7 +20,11 @@ export async function exportSystemSettings(App: AppContainer): Promise<SettingsB
   return runSettingsBackupFlight(App, 'export', async () => {
     return await runSettingsBackupPerfAction(App, 'settingsBackup.export', async () => {
       try {
-        const settingsData = buildExportBackupData(App);
+        const builtSettingsData = buildExportBackupData(App);
+        if (!settingsBackupCodec.validate(builtSettingsData)) {
+          throw new SettingsBackupActionError('error', 'Settings backup export payload is not canonical');
+        }
+        const settingsData = settingsBackupCodec.clone(builtSettingsData);
         const fileName = `wardrobe_system_backup_${new Date().toISOString().slice(0, 10)}.json`;
         const downloadResult = downloadJsonObjectResultViaBrowser(App, fileName, settingsData, {
           spacing: 2,

@@ -1,3 +1,8 @@
+import {
+  cloneCanonicalFeatureValue,
+  fingerprintCanonicalFeatureValue,
+  serializeCanonicalFeatureValue,
+} from '../canonical_codec_runtime.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import { isCanonicalGrooveLinesCountMapKey } from '../../../shared/door_groove_key_contracts_shared.js';
 import {
@@ -140,3 +145,36 @@ export function normalizeKnownProjectConfigMap(key: string, value: unknown): unk
   const normalize = PROJECT_CONFIG_MAP_NORMALIZERS[key];
   return normalize ? normalize(value) : cloneComparableProjectConfigValue(value);
 }
+
+export function validateKnownProjectConfigMap(key: string, value: unknown): boolean {
+  if (!isKnownProjectConfigMapKey(key) || !isComparableRecord(value)) return false;
+  const normalized = normalizeKnownProjectConfigMap(key, value);
+  try {
+    return serializeCanonicalFeatureValue(value) === serializeCanonicalFeatureValue(normalized);
+  } catch {
+    return false;
+  }
+}
+
+export function cloneKnownProjectConfigMap(key: string, value: unknown): unknown | null {
+  if (!isKnownProjectConfigMapKey(key)) return null;
+  return cloneCanonicalFeatureValue(normalizeKnownProjectConfigMap(key, value));
+}
+
+export function serializeKnownProjectConfigMap(key: string, value: unknown): string | null {
+  if (!isKnownProjectConfigMapKey(key)) return null;
+  return serializeCanonicalFeatureValue(normalizeKnownProjectConfigMap(key, value));
+}
+
+export function fingerprintKnownProjectConfigMap(key: string, value: unknown): string | null {
+  if (!isKnownProjectConfigMapKey(key)) return null;
+  return fingerprintCanonicalFeatureValue(normalizeKnownProjectConfigMap(key, value));
+}
+
+export const projectConfigMapCodec = Object.freeze({
+  validate: validateKnownProjectConfigMap,
+  normalize: normalizeKnownProjectConfigMap,
+  clone: cloneKnownProjectConfigMap,
+  serialize: serializeKnownProjectConfigMap,
+  fingerprint: fingerprintKnownProjectConfigMap,
+});

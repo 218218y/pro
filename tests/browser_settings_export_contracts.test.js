@@ -8,6 +8,7 @@ const settingsBackupExport = readSource('../esm/native/ui/settings_backup_export
 const settingsBackupImport = readSource('../esm/native/ui/settings_backup_import.ts', import.meta.url);
 const settingsBackupRuntime = readSource('../esm/native/ui/settings_backup_runtime.ts', import.meta.url);
 const settingsBackupShared = readSource('../esm/native/ui/settings_backup_shared.ts', import.meta.url);
+const settingsBackupCodec = readSource('../esm/native/ui/settings_backup_codec.ts', import.meta.url);
 const settingsBackupSupport = readSource('../esm/native/ui/settings_backup_support.ts', import.meta.url);
 const settingsBackupSharedContracts = readSource(
   '../esm/native/ui/settings_backup_shared_contracts.ts',
@@ -147,6 +148,7 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     assert,
     settingsBackupShared,
     [
+      /export \* from ['"]\.\/settings_backup_codec\.js['"];/,
       /export \* from ['"]\.\/settings_backup_shared_contracts\.js['"];/,
       /export \* from ['"]\.\/settings_backup_shared_collections\.js['"];/,
       /export \* from ['"]\.\/settings_backup_shared_input\.js['"];/,
@@ -167,13 +169,36 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
 
   assertMatchesAll(
     assert,
+    settingsBackupCodec,
+    [
+      /export const SETTINGS_BACKUP_SCHEMA_VERSION = 1/,
+      /export function isSettingsBackupData\(value: unknown\): value is SettingsBackupData/,
+      /export function normalizeSettingsBackupData\(value: unknown\): SettingsBackupData \| null/,
+      /export function parseSettingsBackup\(text: string\): SettingsBackupData \| null \{/,
+      /export const settingsBackupCodec/,
+      /validateSavedModelForSettingsBackup/,
+    ],
+    'settingsBackupCodec'
+  );
+
+  assertMatchesAll(
+    assert,
     settingsBackupSharedCollections,
     [
-      /export function isSettingsBackupData\(v: unknown\): v is SettingsBackupData/,
       /export function readSavedModelList\(value: unknown\): SavedModelLike\[] \{/,
-      /export function parseSettingsBackup\(text: string\): SettingsBackupData \| null \{/,
+      /normalizeSavedModelForSettingsBackup\(cloned\)/,
     ],
     'settingsBackupSharedCollections'
+  );
+  assertLacksAll(
+    assert,
+    settingsBackupSharedCollections,
+    [
+      /function isSettingsBackupData\(/,
+      /function normalizeSettingsBackupData\(/,
+      /function parseSettingsBackup\(/,
+    ],
+    'settingsBackupSharedCollections codec ownership'
   );
 
   assertMatchesAll(

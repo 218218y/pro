@@ -4,7 +4,7 @@ import { getCfg } from '../kernel/api.js';
 import { captureProjectSnapshotMaybe } from '../runtime/project_capture_access.js';
 import { cloneProjectJson } from '../../shared/project_json_clone.js';
 import { readPersistedProjectConfigSnapshot } from '../features/project_config/api.js';
-import { normalizeModelRecord } from '../features/model_record/api.js';
+import { normalizeModelRecord } from './saved_model_codec_access.js';
 import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/api.js';
 import { asCornerConfiguration } from '../runtime/cfg_access_shared.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';

@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-08-07T10:45:28.366Z",
+  "generatedAt": "2026-08-09T04:28:40.413Z",
   "totals": {
-    "tests": 1233,
-    "unitRunnerTests": 1225,
+    "tests": 1234,
+    "unitRunnerTests": 1226,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
-    "packageTestReferences": 38,
+    "packageTestReferences": 39,
     "catalogTestReferences": 452,
-    "totalTestReferences": 490,
+    "totalTestReferences": 491,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 43,
     "catalogScriptBindings": 43,
     "primaryCatalogGroups": 5,
     "directRepositoryLayerScanTests": 0,
     "retiredLayerLedgerAccessTests": 0,
-    "canonicalContracts": 19,
+    "canonicalContracts": 20,
     "historicalArchitectureProofs": 0,
     "contractOverlapTargets": 169
   },
   "categories": {
     "contract": 407,
-    "runtime-unit": 327,
+    "runtime-unit": 328,
     "integration": 460,
     "persistence-ingress": 24,
     "e2e-smoke": 9,
@@ -3761,6 +3761,10 @@
     {
       "file": "tests/camera_scene_access_cleanup_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/canonical_domain_codecs_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/canonical_write_access_runtime.test.js",

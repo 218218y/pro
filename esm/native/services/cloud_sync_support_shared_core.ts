@@ -9,6 +9,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
+import { readSavedModelRecordList } from './saved_model_codec_access.js';
 import { normalizeUnknownError } from '../runtime/error_normalization.js';
 
 export function asRecord(v: unknown): UnknownRecord | null {
@@ -33,11 +34,6 @@ export function asUiState(v: unknown): UiStateLike | null {
   return next;
 }
 
-function isSavedModelLike(v: unknown): v is SavedModelLike {
-  const rec = asRecord(v);
-  return !!rec && typeof rec.id === 'string' && typeof rec.name === 'string';
-}
-
 function isSavedColorLike(v: unknown): v is SavedColorLike {
   const rec = asRecord(v);
   return (
@@ -49,7 +45,7 @@ function isSavedColorLike(v: unknown): v is SavedColorLike {
 }
 
 export function normalizeModelList(v: unknown): SavedModelLike[] {
-  return Array.isArray(v) ? v.filter(isSavedModelLike) : [];
+  return readSavedModelRecordList(v);
 }
 
 export function normalizeSavedColorsList(v: unknown): SavedColorLike[] {

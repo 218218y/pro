@@ -1,6 +1,6 @@
 import type { AppContainer, ModelsNormalizer, SavedModelLike } from '../../../types';
 
-import { normalizeModelRecord } from '../features/model_record/api.js';
+import { savedModelCodec } from './saved_model_codec_access.js';
 
 import { asMutableSavedModel, readModelId, syncPresetFlags } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
@@ -119,7 +119,8 @@ export function _normalizeModel(m: unknown, context?: NormalizeModelsContext): S
     const normalizer = resolveModelsNormalizer(context);
     const next = normalizer ? normalizer(out) : out;
     if (!next || typeof next !== 'object') return null;
-    const normalized = normalizeModelRecord(next);
+    const normalized = savedModelCodec.normalize(next);
+    if (!normalized) return null;
     syncPresetFlags(normalized);
     return asMutableSavedModel(normalized);
   } catch (e) {

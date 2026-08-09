@@ -1,26 +1,7 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 
-import {
-  readDoorStyleMap,
-  readDoorTrimConfigMap,
-  readMirrorLayoutConfigMap,
-} from '../features/project_config/api.js';
+import { normalizeKnownProjectConfigMap } from './project_config_codec_access.js';
 
-import {
-  readCurtainMap,
-  readDoorSpecialMap,
-  readGrooveLinesCountMap,
-  readGroovesMap,
-  readHandlesMap,
-  readHingeMap,
-  readIndividualColorsMap,
-  readRemovedDoorsMap,
-  readRoundedFrameSideShelvesMap,
-} from './project_payload_shared.js';
-import {
-  normalizeSplitDoorsBottomMap as normalizeSplitDoorsBottomMapImpl,
-  normalizeSplitDoorsMap as normalizeSplitDoorsMapImpl,
-} from './project_schema_door_maps.js';
 import {
   PROJECT_SCHEMA_ID,
   PROJECT_SCHEMA_VERSION,
@@ -46,21 +27,59 @@ export function normalizeCurrentProjectData(data: ProjectDataLike, nowISO?: stri
   const settings = ensureSettingsRecord(data);
   ensureTogglesRecord(data);
 
-  data.splitDoorsMap = normalizeSplitDoorsMapImpl(asObject(data.splitDoorsMap));
-  data.splitDoorsBottomMap = normalizeSplitDoorsBottomMapImpl(asObject(data.splitDoorsBottomMap));
-  data.handlesMap = readHandlesMap(data.handlesMap);
-  data.hingeMap = readHingeMap(data.hingeMap);
-  data.removedDoorsMap = readRemovedDoorsMap(data.removedDoorsMap);
-  data.roundedFrameSideShelvesMap = readRoundedFrameSideShelvesMap(data.roundedFrameSideShelvesMap);
-  data.curtainMap = readCurtainMap(data.curtainMap);
-  data.groovesMap = readGroovesMap(data.groovesMap);
-  data.grooveLinesCountMap = readGrooveLinesCountMap(data.grooveLinesCountMap);
+  data.splitDoorsMap = normalizeKnownProjectConfigMap('splitDoorsMap', data.splitDoorsMap) as NonNullable<
+    ProjectDataLike['splitDoorsMap']
+  >;
+  data.splitDoorsBottomMap = normalizeKnownProjectConfigMap(
+    'splitDoorsBottomMap',
+    data.splitDoorsBottomMap
+  ) as NonNullable<ProjectDataLike['splitDoorsBottomMap']>;
+  data.handlesMap = normalizeKnownProjectConfigMap('handlesMap', data.handlesMap) as NonNullable<
+    ProjectDataLike['handlesMap']
+  >;
+  data.hingeMap = normalizeKnownProjectConfigMap('hingeMap', data.hingeMap) as NonNullable<
+    ProjectDataLike['hingeMap']
+  >;
+  data.removedDoorsMap = normalizeKnownProjectConfigMap(
+    'removedDoorsMap',
+    data.removedDoorsMap
+  ) as NonNullable<ProjectDataLike['removedDoorsMap']>;
+  data.roundedFrameSideShelvesMap = normalizeKnownProjectConfigMap(
+    'roundedFrameSideShelvesMap',
+    data.roundedFrameSideShelvesMap
+  ) as NonNullable<ProjectDataLike['roundedFrameSideShelvesMap']>;
+  data.drawerDividersMap = normalizeKnownProjectConfigMap(
+    'drawerDividersMap',
+    data.drawerDividersMap
+  ) as NonNullable<ProjectDataLike['drawerDividersMap']>;
+  data.curtainMap = normalizeKnownProjectConfigMap('curtainMap', data.curtainMap) as NonNullable<
+    ProjectDataLike['curtainMap']
+  >;
+  data.groovesMap = normalizeKnownProjectConfigMap('groovesMap', data.groovesMap) as NonNullable<
+    ProjectDataLike['groovesMap']
+  >;
+  data.grooveLinesCountMap = normalizeKnownProjectConfigMap(
+    'grooveLinesCountMap',
+    data.grooveLinesCountMap
+  ) as NonNullable<ProjectDataLike['grooveLinesCountMap']>;
   data.grooveLinesCount = normalizeGrooveLinesCount(data.grooveLinesCount);
-  data.individualColors = readIndividualColorsMap(data.individualColors);
-  data.doorSpecialMap = readDoorSpecialMap(data.doorSpecialMap);
-  data.doorStyleMap = readDoorStyleMap(data.doorStyleMap);
-  data.mirrorLayoutMap = readMirrorLayoutConfigMap(data.mirrorLayoutMap);
-  data.doorTrimMap = readDoorTrimConfigMap(data.doorTrimMap);
+  data.individualColors = normalizeKnownProjectConfigMap(
+    'individualColors',
+    data.individualColors
+  ) as NonNullable<ProjectDataLike['individualColors']>;
+  data.doorSpecialMap = normalizeKnownProjectConfigMap('doorSpecialMap', data.doorSpecialMap) as NonNullable<
+    ProjectDataLike['doorSpecialMap']
+  >;
+  data.doorStyleMap = normalizeKnownProjectConfigMap('doorStyleMap', data.doorStyleMap) as NonNullable<
+    ProjectDataLike['doorStyleMap']
+  >;
+  data.mirrorLayoutMap = normalizeKnownProjectConfigMap(
+    'mirrorLayoutMap',
+    data.mirrorLayoutMap
+  ) as NonNullable<ProjectDataLike['mirrorLayoutMap']>;
+  data.doorTrimMap = normalizeKnownProjectConfigMap('doorTrimMap', data.doorTrimMap) as NonNullable<
+    ProjectDataLike['doorTrimMap']
+  >;
 
   normalizeGlobalHandleType(settings);
 

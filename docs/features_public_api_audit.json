@@ -791,6 +791,10 @@
       "entry": "model_record/api.js"
     },
     {
+      "file": "esm/native/io/project_config_codec_access.ts",
+      "entry": "project_config/api.js"
+    },
+    {
       "file": "esm/native/io/project_config_persisted_snapshot.ts",
       "entry": "project_config/api.js"
     },
@@ -821,10 +825,6 @@
     {
       "file": "esm/native/io/project_io_save_helpers.ts",
       "entry": "shoe_drawer_base_constraint.js"
-    },
-    {
-      "file": "esm/native/io/project_schema_current.ts",
-      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_schema_normalize.ts",
@@ -973,10 +973,6 @@
     {
       "file": "esm/native/platform/store_shared.ts",
       "entry": "project_config/api.js"
-    },
-    {
-      "file": "esm/native/services/api_services_project_surface.ts",
-      "entry": "model_record/api.js"
     },
     {
       "file": "esm/native/services/api_state_surface.ts",
@@ -1588,19 +1584,15 @@
     },
     {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
-      "entry": "model_record/api.js"
-    },
-    {
-      "file": "esm/native/services/models_apply_project_snapshot.ts",
       "entry": "project_config/api.js"
-    },
-    {
-      "file": "esm/native/services/models_registry_normalization.ts",
-      "entry": "model_record/api.js"
     },
     {
       "file": "esm/native/services/project_reset_default_payload.ts",
       "entry": "project_config/api.js"
+    },
+    {
+      "file": "esm/native/services/saved_model_codec_access.ts",
+      "entry": "model_record/api.js"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",

@@ -7,6 +7,7 @@ import {
   detectProjectSchemaVersion as detectProjectSchemaVersionImpl,
   hasCurrentProjectSchema as hasCurrentProjectSchemaImpl,
 } from './project_schema_shared.js';
+import { projectSchemaCodec, serializeProjectDataForFile } from './project_schema_codec.js';
 import { normalizeProjectData as normalizeProjectDataImpl } from './project_schema_normalize.js';
 import { validateProjectData as validateProjectDataImpl } from './project_schema_validation.js';
 
@@ -30,5 +31,9 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
 }
 
 export function normalizeProjectData(input: unknown, nowISO?: string): ProjectDataLike | null {
-  return normalizeProjectDataImpl(input, nowISO);
+  return typeof nowISO === 'string'
+    ? normalizeProjectDataImpl(input, nowISO)
+    : projectSchemaCodec.normalize(input);
 }
+
+export { projectSchemaCodec, serializeProjectDataForFile };

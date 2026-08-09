@@ -1,6 +1,7 @@
 import type { ProjectExportResultLike, UnknownRecord } from '../../../types/index.js';
 
 import { buildDefaultProjectDataSnapshot, finalizeProjectForSavePayload } from './project_io_save_helpers.js';
+import { serializeProjectDataForFile } from './project_schema.js';
 import { createDefaultState } from '../runtime/default_state.js';
 import { getBuildTagsSnapshot } from '../runtime/build_info_access.js';
 import { captureProjectSnapshotMaybe } from '../runtime/project_capture_access.js';
@@ -56,7 +57,7 @@ export function createProjectIoExportOps(
 
       return buildProjectExportResult({
         projectData,
-        jsonStr: JSON.stringify(projectData, null, 2),
+        jsonStr: serializeProjectDataForFile(projectData),
         defaultBaseName,
         projectName,
         meta: safeMeta,

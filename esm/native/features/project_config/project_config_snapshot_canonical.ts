@@ -13,3 +13,11 @@ export type {
   PersistedProjectConfigBranchKey,
   ProjectConfigSnapshotCanonicalizationOptions,
 } from './project_config_snapshot_canonical_shared.js';
+export {
+  cloneKnownProjectConfigMap,
+  fingerprintKnownProjectConfigMap,
+  normalizeKnownProjectConfigMap,
+  projectConfigMapCodec,
+  serializeKnownProjectConfigMap,
+  validateKnownProjectConfigMap,
+} from './project_config_snapshot_canonical_map_runtime.js';

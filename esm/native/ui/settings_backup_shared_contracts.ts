@@ -18,6 +18,7 @@ export type SettingsBackupIdList = string[];
 
 export type SettingsBackupData = {
   type: 'system_backup';
+  schemaVersion: 1;
   timestamp: number;
   presetOrder: SettingsBackupIdList;
   hiddenPresets: SettingsBackupIdList;

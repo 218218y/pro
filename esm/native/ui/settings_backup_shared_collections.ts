@@ -1,15 +1,10 @@
 import type { SavedModelLike } from '../../../types';
-import { normalizeModelRecord } from '../services/api.js';
+import { savedModelCodec } from '../services/api.js';
 import type {
-  SettingsBackupData,
   SettingsBackupIdList,
   SettingsBackupSavedColorEntry,
 } from './settings_backup_shared_contracts.js';
-import {
-  cloneJsonValue,
-  isRecord,
-  sanitizeSettingsBackupJsonText,
-} from './settings_backup_shared_contracts.js';
+import { cloneJsonValue, isRecord } from './settings_backup_shared_contracts.js';
 
 export function normalizeSettingsBackupId(value: unknown): string | null {
   if (typeof value === 'string' || typeof value === 'number') {
@@ -223,9 +218,12 @@ export function resolveColorSwatchesOrder(
   return sanitizeColorSwatchesOrder(savedColors, preferredOrder, flattenedSecondaryOrder);
 }
 
-export function isSettingsBackupData(v: unknown): v is SettingsBackupData {
-  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
-  return 'type' in v && v.type === 'system_backup';
+export function validateSavedModelForSettingsBackup(value: unknown): value is SavedModelLike {
+  return savedModelCodec.validate(value);
+}
+
+export function normalizeSavedModelForSettingsBackup(value: unknown): SavedModelLike | null {
+  return savedModelCodec.normalize(value);
 }
 
 export function readSavedModelList(value: unknown): SavedModelLike[] {
@@ -242,7 +240,8 @@ export function readSavedModelList(value: unknown): SavedModelLike[] {
     if (!isRecord(cloned)) continue;
     cloned.id = id;
     cloned.name = name;
-    const normalized = normalizeModelRecord(cloned);
+    const normalized = normalizeSavedModelForSettingsBackup(cloned);
+    if (!normalized) continue;
     const existingIndex = byId.get(id);
     if (typeof existingIndex === 'number') {
       out[existingIndex] = normalized;
@@ -252,25 +251,4 @@ export function readSavedModelList(value: unknown): SavedModelLike[] {
     out.push(normalized);
   }
   return out;
-}
-
-export function normalizeSettingsBackupData(value: unknown): SettingsBackupData | null {
-  if (!isSettingsBackupData(value)) return null;
-  const timestamp = Number.isFinite(Number(value.timestamp)) ? Number(value.timestamp) : Date.now();
-  const savedModels = readSavedModelList(value.savedModels);
-  const savedColors = readSavedColorList(value.savedColors);
-  return {
-    type: 'system_backup',
-    timestamp,
-    presetOrder: readSettingsBackupIdList(value.presetOrder),
-    hiddenPresets: readSettingsBackupIdList(value.hiddenPresets),
-    savedModels,
-    savedColors,
-    colorSwatchesOrder: resolveColorSwatchesOrder(savedColors, value.colorSwatchesOrder),
-  };
-}
-
-export function parseSettingsBackup(text: string): SettingsBackupData | null {
-  const parsed: unknown = JSON.parse(sanitizeSettingsBackupJsonText(text));
-  return normalizeSettingsBackupData(parsed);
 }

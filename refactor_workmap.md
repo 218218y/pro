@@ -12,6 +12,7 @@ This is the root pointer for future architecture work. It links only to the curr
 
 - The numbered refactor track is closed. `tools/wp_contract_registry.mjs` records current architecture invariants; historical stage proof files are not part of the active control plane.
 - Phase 5 test/control-plane simplification is closed: historical proof files and dead identity wrappers are removed, large named test lanes are catalog-backed, and package.json no longer owns long test-file inventories.
+- Canonical Domain Codecs are closed across Saved Models, Cloud Collections, Project Config maps, Settings Backup, and the current Project Schema. `check:domain-codecs` owns the cross-domain source boundary, `test:domain-codecs` owns deterministic round-trip/malformed evidence, Settings Backup now exports schema v1 with an explicit unversioned-v0 migration, and Cloud/Project version boundaries reject unsupported schemas.
 - New work requires a real bug, measured performance regression, missing behavior coverage, or newly proven ownership seam.
 - Import cycles are a guardrail, not an active decomposition target: `check:import-cycles` currently covers `esm` and `types`.
 - Private facade/owner splits are guarded by `check:private-owner-imports`; justified entry facades live in the registry and the reviewed single-consumer identity topology is explicit in `tools/wp_identity_facade_inventory.json`.
@@ -29,10 +30,11 @@ This is the root pointer for future architecture work. It links only to the curr
 
 These are the useful remaining upgrade lanes, ordered by value:
 
-1. Start the next modernization lane: **Canonical Domain Codecs**. Begin with Saved Models and Cloud Collections, then Project Config maps, Settings Backup, and the full Project Schema. Each domain owner should provide one canonical validate/normalize/clone/serialize/fingerprint pipeline with positive, malformed, and round-trip fixtures. Phase 3 remains closed unless a real regression proves a new silent functional-failure seam.
-2. Behavior coverage for the last facade splits, especially where a public facade exposes real user-facing behavior rather than only ownership boundaries.
-3. Further CSS cleanup only where it can safely lower remaining `!important`, `z-index`, or `box-shadow` budgets without changing layout behavior.
-4. Targeted performance owner changes only when future `perf:smoke` or `perf:browser` measurements show a real regression, or when a deliberate product decision accepts a measured hotspot improvement.
+1. **Cloud Sync state-machine decomposition.** Split credential/session state, gateway transport, row cache, conflict journal, conflict resolution, and remote adoption behind the existing external gateway surface. Split only on independent state/lifecycle seams; do not split by file length.
+2. **Targeted E2E matrix expansion.** Run critical journeys across desktop, XS portrait/landscape, touch/DPR2, reduced motion, and relevant offline/reconnect profiles without multiplying the whole suite across every device.
+3. Behavior coverage for the last facade splits, especially where a public facade exposes real user-facing behavior rather than only ownership boundaries.
+4. Further CSS cleanup only where it can safely lower remaining `!important`, `z-index`, or `box-shadow` budgets without changing layout behavior.
+5. Targeted performance owner changes only when future `perf:smoke` or `perf:browser` measurements show a real regression, or when a deliberate product decision accepts a measured hotspot improvement.
 
 ## Verification
 

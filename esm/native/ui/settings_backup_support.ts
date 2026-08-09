@@ -127,6 +127,7 @@ export function buildExportBackupData(App: AppContainer): SettingsBackupData {
 
   return {
     type: 'system_backup',
+    schemaVersion: 1,
     timestamp: Date.now(),
     presetOrder: presetCollections.presetOrder,
     hiddenPresets: presetCollections.hiddenPresets,
