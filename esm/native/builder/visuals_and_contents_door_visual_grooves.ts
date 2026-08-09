@@ -1,6 +1,6 @@
 import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
-import { resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
+import { readGrooveLayoutList, resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
 import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
@@ -62,19 +62,23 @@ export function appendGrooveStrips(args: {
   );
   if (isSketch) grooveMat.color.setHex(0x000000);
 
+  const normalizedLayouts = readGrooveLayoutList(grooveLayout);
   const placements = resolveGroovePlacementListInRect({
     rect: { minX: -targetW / 2, maxX: targetW / 2, minY: -targetH / 2, maxY: targetH / 2 },
-    layouts: grooveLayout,
+    layouts: normalizedLayouts,
   });
   const explicitLinesCount = normalizeGrooveLinesCount(linesCountOverride);
-  for (const placement of placements) {
+  for (let placementIndex = 0; placementIndex < placements.length; placementIndex += 1) {
+    const placement = placements[placementIndex];
     const isHorizontal = placement.orientation === 'horizontal';
     const distributionSpan = isHorizontal ? placement.heightM : placement.widthM;
     const stripSpan = Math.max(
       DOOR_GROOVE_RENDER_POLICY.stripWidthM,
       (isHorizontal ? placement.widthM : placement.heightM) - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
     );
+    const placementLinesCount = normalizeGrooveLinesCount(normalizedLayouts[placementIndex]?.linesCount);
     const stripesCount =
+      placementLinesCount ??
       explicitLinesCount ??
       resolveGrooveLinesCount(App, distributionSpan, densityOverride, groovePartId || null);
     const gap = distributionSpan / (stripesCount + 1);

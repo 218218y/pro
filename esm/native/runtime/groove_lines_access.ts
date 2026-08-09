@@ -336,6 +336,14 @@ export function materializeActiveGrooveLinesCountMap(
     const partId = activePartIds[index] || '';
     if (!partId) continue;
 
+    const placedLayouts = readGrooveLayoutListForPart({ map: grooveLayoutMap, partId })?.layouts || [];
+    if (
+      placedLayouts.length > 0 &&
+      placedLayouts.every(layout => normalizeGrooveLinesCount(layout.linesCount) !== null)
+    ) {
+      continue;
+    }
+
     const storedCount = readGrooveLinesCountForPart(App, partId);
     if (storedCount !== null) {
       out[partId] = storedCount;

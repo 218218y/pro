@@ -44,6 +44,9 @@ test('Saved Model codec owns validation, normalization, round-trip and malformed
     name: ' Model One ',
     settings: { wardrobeType: 'hinged', width: 180, height: 240, depth: 60, doors: 3 },
     splitDoorsMap: { split_d1: true, splitpos_d1: [0.25, 0.75] },
+    grooveLayoutMap: {
+      d1_full: [{ widthCm: 30, heightCm: 60, orientation: 'horizontal', linesCount: 7 }],
+    },
     savedNotes: [{ id: 'n1', text: 'note' }],
   });
 
@@ -72,6 +75,14 @@ test('Saved Model codec owns validation, normalization, round-trip and malformed
   assert.equal(savedModelCodec.normalize({ id: '', name: 'bad' }), null);
   assert.equal(savedModelCodec.validate({ id: 'm1', name: 'bad', settings: { width: '180' } }), false);
   assert.equal(savedModelCodec.validate({ id: 'm1', name: 'bad', doorStyleMap: { d1: 'unknown' } }), false);
+  assert.equal(
+    savedModelCodec.validate({
+      id: 'm1',
+      name: 'bad',
+      grooveLayoutMap: { d1_full: [{ widthCm: 30, linesCount: '7' }] },
+    }),
+    false
+  );
 });
 
 test('Cloud Collections codec composes Saved Model codec and rejects unsupported envelope versions', () => {
@@ -111,6 +122,25 @@ test('Project Config map codec gives one canonical decision across normalize/val
   );
   assert.equal(projectConfigMapCodec.validate('splitDoorsMap', { split_d1: 'true' }), false);
   assert.equal(projectConfigMapCodec.validate('unknownMap', canonical), false);
+
+  const grooveLayout = {
+    d1_full: [{ widthCm: 30, heightCm: 60, orientation: 'horizontal', linesCount: 7 }],
+  };
+  assert.equal(projectConfigMapCodec.validate('grooveLayoutMap', grooveLayout), true);
+  assert.deepEqual(
+    { ...(projectConfigMapCodec.normalize('grooveLayoutMap', grooveLayout) as Record<string, unknown>) },
+    grooveLayout
+  );
+  assert.deepEqual(
+    {
+      ...(projectConfigMapCodec.normalize('grooveLayoutMap', {
+        d1_full: [{ widthCm: 30, linesCount: 7.9 }],
+      }) as Record<string, unknown>),
+    },
+    {
+      d1_full: [{ widthCm: 30, linesCount: 7 }],
+    }
+  );
 
   // Deterministic property pass: object insertion order must never change the canonical map fingerprint.
   const entries = Object.entries(canonical);

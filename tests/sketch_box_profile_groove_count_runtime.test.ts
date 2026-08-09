@@ -152,6 +152,46 @@ test('horizontal manual grooves render across the selected rectangle and expose 
   });
 });
 
+test('each placed groove region renders its own stable line count across mixed orientations', () => {
+  const THREE = createThree();
+  const visualGroup = new THREE.Group();
+  appendGrooveStrips({
+    App: {} as never,
+    THREE: THREE as never,
+    visualGroup: visualGroup as never,
+    tagDoorVisualPart() {},
+    hasGrooves: true,
+    isSketch: false,
+    groovePartId: 'd1_full',
+    zSign: 1,
+    targetW: 1,
+    targetH: 2,
+    zOffset: 0.02,
+    linesCountOverride: 99,
+    grooveLayout: [
+      { widthCm: 20, heightCm: 40, centerXNorm: 0.25, linesCount: 4 },
+      {
+        widthCm: 20,
+        heightCm: 40,
+        centerXNorm: 0.75,
+        orientation: 'horizontal',
+        linesCount: 7,
+      },
+    ],
+  });
+
+  assert.equal(visualGroup.children.length, 11);
+  const strips = visualGroup.children as FakeMesh[];
+  assert.equal(
+    strips.slice(0, 4).every(strip => strip.position.y === strips[0].position.y),
+    true
+  );
+  assert.equal(
+    strips.slice(4).every(strip => strip.position.x === strips[4].position.x),
+    true
+  );
+});
+
 test('styled sketch-box profile doors forward the stored per-box groove count into createDoorVisual', () => {
   const calls: unknown[][] = [];
   const doorGroup = new FakeGroup();

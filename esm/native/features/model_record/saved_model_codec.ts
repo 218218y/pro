@@ -163,7 +163,14 @@ function isGrooveLayoutEntry(value: unknown): boolean {
   for (const key of ['widthCm', 'heightCm', 'centerXNorm', 'centerYNorm']) {
     if (!hasValidOptionalField(value, key, entry => entry === null || isFiniteNumber(entry))) return false;
   }
-  return hasValidOptionalField(value, 'orientation', entry => entry === 'vertical' || entry === 'horizontal');
+  return (
+    hasValidOptionalField(value, 'orientation', entry => entry === 'vertical' || entry === 'horizontal') &&
+    hasValidOptionalField(
+      value,
+      'linesCount',
+      entry => entry === null || (isFiniteNumber(entry) && entry >= 1)
+    )
+  );
 }
 
 function isGrooveLayoutMap(value: unknown): boolean {

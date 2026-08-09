@@ -19,8 +19,11 @@ import {
   createCanvasPickingDoorAuthoringStructuralMeta,
 } from './canvas_picking_door_authoring_meta.js';
 import {
+  computeAutoGrooveLinesCount,
   normalizeGrooveLinesCount,
   readGrooveLinesCountOverride,
+  readGrooveLinesCountForPart,
+  readPendingGrooveLinesCountForPart,
   resolvePendingGrooveLinesCount,
 } from '../runtime/groove_lines_access.js';
 import {
@@ -212,10 +215,21 @@ function handleCanvasDoorGrooveLayoutClick(args: {
   const groovesMap = normalizeKnownMapSnapshot('groovesMap', __wp_map(args.App, 'groovesMap'));
   const hasCanonicalFullVertical =
     !currentLayouts.length && readDoorGrooveVisualMapFlag(groovesMap, args.targetId) === true;
-  const nextLayouts = currentLayouts.map(layout => ({ ...layout }));
+  const currentPartLinesCount =
+    readGrooveLinesCountForPart(args.App, args.targetId) ??
+    readPendingGrooveLinesCountForPart(args.App, args.targetId);
+  const nextLayouts = currentLayouts.map(layout => {
+    const storedLinesCount = normalizeGrooveLinesCount(layout.linesCount);
+    if (storedLinesCount != null) return { ...layout, linesCount: storedLinesCount };
+    const placement = resolveGroovePlacementInRect({ rect: surfaceRect, layout });
+    const distributionSpan = placement.orientation === 'horizontal' ? placement.heightM : placement.widthM;
+    return {
+      ...layout,
+      linesCount: currentPartLinesCount ?? computeAutoGrooveLinesCount(distributionSpan),
+    };
+  });
   let nextGrooveOn = true;
   let nextGrooveLinesCount: number | null = null;
-  let shouldWriteGrooveLinesCount = false;
 
   const nextLayout = buildGrooveLayoutFromHit({
     rect: surfaceRect,
@@ -228,36 +242,34 @@ function handleCanvasDoorGrooveLayoutClick(args: {
     },
   });
 
-  const prepareNextGrooveLinesCount = (layout: GrooveLayoutEntry | null): void => {
+  const resolveNextGrooveLinesCount = (layout: GrooveLayoutEntry | null): number => {
     const placement = resolveGroovePlacementInRect({ rect: surfaceRect, layout });
     const distributionSpan = placement.orientation === 'horizontal' ? placement.heightM : placement.widthM;
-    nextGrooveLinesCount = resolvePendingGrooveLinesCount(
-      args.App,
-      distributionSpan,
-      undefined,
-      args.targetId
-    );
-    shouldWriteGrooveLinesCount = true;
+    return resolvePendingGrooveLinesCount(args.App, distributionSpan, undefined, args.targetId);
   };
 
   if (removeMatch && removeMatch.placement.orientation !== tool.orientation) {
     nextLayouts.splice(removeMatch.index, 1);
-    if (nextLayout) nextLayouts.splice(removeMatch.index, 0, nextLayout);
-    prepareNextGrooveLinesCount(nextLayout);
+    nextGrooveLinesCount = resolveNextGrooveLinesCount(nextLayout);
+    if (nextLayout) {
+      nextLayouts.splice(removeMatch.index, 0, {
+        ...nextLayout,
+        linesCount: nextGrooveLinesCount,
+      });
+    }
   } else if (removeMatch) {
     nextLayouts.splice(removeMatch.index, 1);
     nextGrooveOn = nextLayouts.length > 0;
-    shouldWriteGrooveLinesCount = !nextGrooveOn;
   } else if (hasCanonicalFullVertical && tool.orientation === 'vertical') {
     nextGrooveOn = false;
-    shouldWriteGrooveLinesCount = true;
   } else {
-    if (nextLayout) nextLayouts.push(nextLayout);
-    prepareNextGrooveLinesCount(nextLayout);
+    nextGrooveLinesCount = resolveNextGrooveLinesCount(nextLayout);
+    if (nextLayout) nextLayouts.push({ ...nextLayout, linesCount: nextGrooveLinesCount });
   }
 
   const grooveKey = toCanonicalGroovesMapKey(args.targetId);
   const layoutPatchValue: GrooveLayoutEntry[] | null = nextLayouts.length ? nextLayouts : null;
+  const partLinesCountValue = nextGrooveOn && !layoutPatchValue ? nextGrooveLinesCount : null;
   const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta('groove:layout:click');
   const refreshMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta(
     args.App,
@@ -276,30 +288,23 @@ function handleCanvasDoorGrooveLayoutClick(args: {
             ? {
                 ...current,
                 groove: nextGrooveOn,
-                grooveLinesCount: nextGrooveOn
-                  ? shouldWriteGrooveLinesCount
-                    ? nextGrooveLinesCount
-                    : current.grooveLinesCount
-                  : null,
+                grooveLinesCount: partLinesCountValue,
               }
             : current,
         { source: 'groove:layout:click' }
       );
     }
-    if (shouldWriteGrooveLinesCount) {
-      const countValue = nextGrooveOn ? nextGrooveLinesCount : null;
-      writePendingGrooveLinesCountForPart(
-        args.App,
-        args.targetId,
-        countValue,
-        'groove:layout:click:pendingCount'
-      );
-      patchDoorGrooveLinesCountEntries(
-        args.App,
-        [{ key: toCanonicalGrooveLinesCountMapKey(args.targetId), value: countValue }],
-        refreshMeta
-      );
-    }
+    writePendingGrooveLinesCountForPart(
+      args.App,
+      args.targetId,
+      partLinesCountValue,
+      'groove:layout:click:pendingCount'
+    );
+    patchDoorGrooveLinesCountEntries(
+      args.App,
+      [{ key: toCanonicalGrooveLinesCountMapKey(args.targetId), value: partLinesCountValue }],
+      refreshMeta
+    );
     patchDoorGrooveLayoutEntries(args.App, [{ key: args.targetId, value: layoutPatchValue }], refreshMeta);
     patchDoorGrooveMapEntries(args.App, [{ key: grooveKey, value: nextGrooveOn }], refreshMeta);
     return undefined;

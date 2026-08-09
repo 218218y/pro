@@ -75,9 +75,10 @@ test('persisted groove layout map rejects legacy aliases and normalizes vertical
   const map = readCanonicalGrooveLayoutMap({
     d1: [{ widthCm: 10, orientation: 'horizontal' }],
     d1_full: [
-      { widthCm: '30', heightCm: 50, orientation: 'vertical' },
+      { widthCm: '30', heightCm: 50, orientation: 'vertical', linesCount: 8.9 },
       { widthCm: 0, orientation: 'diagonal' },
+      { widthCm: 20, linesCount: '12' },
     ],
   });
-  assert.deepEqual({ ...map }, { d1_full: [{ widthCm: 30, heightCm: 50 }] });
+  assert.deepEqual({ ...map }, { d1_full: [{ widthCm: 30, heightCm: 50, linesCount: 8 }, { widthCm: 20 }] });
 });

@@ -203,23 +203,35 @@ export function resolveGrooveSurfaceOwnerByPartId(
     return !targetId || ownerPartId === targetId ? node : null;
   };
 
-  const descendants: DoorHitNode[] = [root];
+  const searchRoots: DoorHitNode[] = [];
+  let ancestor: DoorHitNode | null = root;
+  let ancestorCount = 0;
+  while (ancestor && ancestorCount < 60) {
+    ancestorCount += 1;
+    searchRoots.push(ancestor);
+    ancestor = asDoorRecord<DoorHitNode>(ancestor.parent);
+  }
+
+  const seen = new Set<DoorHitNode>();
   let visited = 0;
-  while (descendants.length && visited < 500) {
-    visited += 1;
-    const current = descendants.shift();
-    if (!current) continue;
-    const resolved = match(current);
-    if (resolved) return resolved;
-    const children = Array.isArray(current.children) ? current.children : [];
-    for (const child of children) {
-      const next = asDoorRecord<DoorHitNode>(child);
-      if (next) descendants.push(next);
+  for (let rootIndex = 0; rootIndex < searchRoots.length && visited < 1000; rootIndex += 1) {
+    const descendants: DoorHitNode[] = [searchRoots[rootIndex]];
+    while (descendants.length && visited < 1000) {
+      const current = descendants.shift();
+      if (!current || seen.has(current)) continue;
+      seen.add(current);
+      visited += 1;
+      const resolved = match(current);
+      if (resolved) return resolved;
+      const children = Array.isArray(current.children) ? current.children : [];
+      for (const child of children) {
+        const next = asDoorRecord<DoorHitNode>(child);
+        if (next && !seen.has(next)) descendants.push(next);
+      }
     }
   }
 
-  const ancestor = walkDoorHitNode(root, match);
-  return ancestor || firstOwner;
+  return targetId ? null : firstOwner;
 }
 
 export function readPointXYZ(value: unknown): { x: number; y: number; z: number } | null {

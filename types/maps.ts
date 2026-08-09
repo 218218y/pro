@@ -60,6 +60,8 @@ export interface GrooveLayoutEntry extends UnknownRecord {
   centerXNorm?: number | null;
   centerYNorm?: number | null;
   orientation?: GrooveOrientation;
+  /** Stable number of strips for this specific placed groove region. */
+  linesCount?: number | null;
 }
 export type GrooveLayoutList = GrooveLayoutEntry[];
 export type GrooveLayoutMap = Record<string, GrooveLayoutList | undefined>;

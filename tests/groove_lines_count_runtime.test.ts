@@ -157,11 +157,19 @@ test('materializeActiveGrooveLinesCountMap freezes active grooved doors to stabl
               groove_d2_full: true,
               groove_d3_mid2: true,
               groove_d4_mid2: true,
+              groove_d5_full: true,
             },
             grooveLinesCountMap: {
               d1_full: 9,
               d3_mid2: 7,
               d4_mid2: 8,
+              d5_full: 99,
+            },
+            grooveLayoutMap: {
+              d5_full: [
+                { widthCm: 20, heightCm: 40, linesCount: 4 },
+                { widthCm: 30, heightCm: 20, orientation: 'horizontal', linesCount: 7 },
+              ],
             },
           },
           ui: {

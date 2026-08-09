@@ -19,6 +19,7 @@ import {
   requestDoorAuthoringBurstRefresh,
   requestDoorAuthoringImmediateRefresh,
 } from '../esm/native/services/canvas_picking_door_authoring_burst.ts';
+import { tryHandleCanvasPickingActionRoute } from '../esm/native/services/canvas_picking_click_route_actions.ts';
 
 type BuildRequest = {
   uiOverride: unknown;
@@ -217,10 +218,11 @@ test('manual horizontal groove click persists the exact sized surface placement 
       centerXNorm: 0.7,
       centerYNorm: 0.65,
       orientation: 'horizontal',
+      linesCount: 13,
     },
   ]);
   assert.equal(state.config.groovesMap.groove_d1_left, true);
-  assert.equal(state.config.grooveLinesCountMap.d1_left, 13);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, undefined);
 
   assert.equal(click(), true);
   assert.equal(state.config.grooveLayoutMap.d1_left, undefined);
@@ -231,6 +233,196 @@ test('manual horizontal groove click persists the exact sized surface placement 
     buildRequests.every(request => request.meta.source === 'groove:layout:click'),
     true
   );
+});
+
+test('multiple manual groove regions on one front preserve independent counts and orientations', () => {
+  const { App, state } = createApp();
+  state.ui.grooveManualEnabled = true;
+  state.ui.currentGrooveDraftWidthCm = 20;
+  state.ui.currentGrooveDraftHeightCm = 40;
+  state.ui.currentGrooveOrientation = 'vertical';
+  state.config.grooveLinesCount = 4;
+  const grooveSurface = {
+    userData: {
+      partId: 'd1_left',
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+  const clickAt = (x: number) =>
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_left',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitPoint: new GrooveTestVector3().set(x, 0, 0.02),
+      doorHitObject: grooveSurface,
+      doorHitGroup: grooveSurface,
+    });
+
+  assert.equal(clickAt(-0.3), true);
+  state.config.grooveLinesCount = 7;
+  assert.equal(clickAt(0), true);
+  state.config.grooveLinesCount = 9;
+  state.ui.currentGrooveOrientation = 'horizontal';
+  assert.equal(clickAt(0.3), true);
+
+  assert.deepEqual(state.config.grooveLayoutMap.d1_left, [
+    { widthCm: 20, heightCm: 40, centerXNorm: 0.2, linesCount: 4 },
+    { widthCm: 20, heightCm: 40, linesCount: 7 },
+    {
+      widthCm: 20,
+      heightCm: 40,
+      centerXNorm: 0.8,
+      orientation: 'horizontal',
+      linesCount: 9,
+    },
+  ]);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, undefined);
+});
+
+test('adding a placement upgrades an existing shared count without changing the old region', () => {
+  const { App, state } = createApp();
+  state.ui.grooveManualEnabled = true;
+  state.ui.currentGrooveDraftWidthCm = 20;
+  state.ui.currentGrooveDraftHeightCm = 40;
+  state.ui.currentGrooveOrientation = 'vertical';
+  state.config.grooveLinesCount = 9;
+  state.config.groovesMap = { groove_d1_left: true };
+  state.config.grooveLinesCountMap = { d1_left: 5 };
+  state.config.grooveLayoutMap = {
+    d1_left: [{ widthCm: 20, heightCm: 40, centerXNorm: 0.2 }],
+  };
+  const grooveSurface = {
+    userData: {
+      partId: 'd1_left',
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+
+  assert.equal(
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_left',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitPoint: new GrooveTestVector3().set(0.3, 0, 0.02),
+      doorHitObject: grooveSurface,
+      doorHitGroup: grooveSurface,
+    }),
+    true
+  );
+  assert.deepEqual(state.config.grooveLayoutMap.d1_left, [
+    { widthCm: 20, heightCm: 40, centerXNorm: 0.2, linesCount: 5 },
+    { widthCm: 20, heightCm: 40, centerXNorm: 0.8, linesCount: 9 },
+  ]);
+  assert.equal(state.config.grooveLinesCountMap.d1_left, undefined);
+});
+
+test('groove placement routes the primary face hit for wardrobe and chest drawer fronts', () => {
+  const cases = [
+    { partId: 'd1_draw_1', manual: false, orientation: 'horizontal' as const },
+    { partId: 'd1_draw_2', manual: true, orientation: 'vertical' as const },
+    { partId: 'chest_drawer_0', manual: true, orientation: 'horizontal' as const },
+    { partId: 'chest_drawer_1', manual: true, orientation: 'vertical' as const },
+  ];
+
+  for (const currentCase of cases) {
+    const { App, state, feedbackToasts } = createApp();
+    state.ui.grooveManualEnabled = currentCase.manual;
+    state.ui.currentGrooveDraftWidthCm = 30;
+    state.ui.currentGrooveDraftHeightCm = 20;
+    state.ui.currentGrooveOrientation = currentCase.orientation;
+    state.config.grooveLinesCount = 6;
+    const grooveSurface: any = {
+      userData: {
+        partId: currentCase.partId,
+        __wpGrooveSurface: true,
+        __wpGrooveSurfacePartId: currentCase.partId,
+        __wpGrooveSurfaceRect: { minX: -0.4, maxX: 0.4, minY: -0.15, maxY: 0.15 },
+      },
+      children: [],
+      parent: null,
+      worldToLocal(point: GrooveTestVector3) {
+        return point;
+      },
+    };
+    const hitObject: any = {
+      userData: { partId: currentCase.partId },
+      children: [],
+      parent: null,
+    };
+    const frontGroup: any = {
+      userData: {
+        partId: currentCase.partId,
+        __doorWidth: 0.8,
+        __doorHeight: 0.3,
+      },
+      children: [grooveSurface, hitObject],
+      parent: null,
+    };
+    grooveSurface.parent = frontGroup;
+    hitObject.parent = frontGroup;
+
+    const handled = tryHandleCanvasPickingActionRoute({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: {} as never,
+      mouse: {} as never,
+      modeState: {
+        __pm: 'grooveEdit',
+        __isPaintMode: false,
+        __isGrooveEditMode: true,
+        __isSplitEditMode: false,
+        __isHandleEditMode: false,
+        __isHingeEditMode: false,
+        __isRemoveDoorMode: false,
+        __isDoorTrimMode: false,
+      } as never,
+      hitState: {
+        intersects: [],
+        foundPartId: currentCase.partId,
+        foundModuleIndex: null,
+        foundModuleStack: 'top',
+        effectiveDoorId: null,
+        foundDrawerId: currentCase.partId,
+        primaryHitObject: hitObject,
+        doorHitObject: null,
+        doorHitGroup: null,
+        primaryHitPoint: new GrooveTestVector3().set(0.1, 0.05, 0.02),
+        doorHitPoint: null,
+        moduleHitY: null,
+        doorHitY: null,
+        primaryHitY: 0.05,
+        hitIdentity: null,
+      },
+      moduleRefs: {
+        __activeStack: 'top',
+      } as never,
+    });
+
+    assert.equal(handled, true, currentCase.partId);
+    assert.equal(feedbackToasts.length, 0, currentCase.partId);
+    assert.equal(state.config.groovesMap[`groove_${currentCase.partId}`], true, currentCase.partId);
+    assert.equal(state.config.grooveLayoutMap[currentCase.partId][0].linesCount, 6, currentCase.partId);
+    assert.equal(
+      state.config.grooveLayoutMap[currentCase.partId][0].orientation,
+      currentCase.orientation === 'horizontal' ? 'horizontal' : undefined,
+      currentCase.partId
+    );
+  }
 });
 
 test('selecting vertical converts an existing horizontal groove on the first click', () => {

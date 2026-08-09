@@ -85,6 +85,12 @@ function normalizePositiveCm(value: unknown): number | null {
   return parsed != null && parsed > 0 ? parsed : null;
 }
 
+function normalizeLinesCount(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 1
+    ? Math.max(1, Math.floor(value))
+    : null;
+}
+
 function normalizeCenter(value: unknown): number {
   const parsed = readFinite(value);
   if (parsed == null) return GROOVE_LAYOUT_CENTER_NORM;
@@ -126,6 +132,7 @@ export function readGrooveLayoutEntry(value: unknown): GrooveLayoutEntry | null 
   const centerXNorm = normalizeCenter(value.centerXNorm);
   const centerYNorm = normalizeCenter(value.centerYNorm);
   const orientation = readGrooveOrientation(value.orientation);
+  const linesCount = normalizeLinesCount(value.linesCount);
   const out: GrooveLayoutEntry = {};
   if (widthCm != null) out.widthCm = widthCm;
   if (heightCm != null) out.heightCm = heightCm;
@@ -136,6 +143,7 @@ export function readGrooveLayoutEntry(value: unknown): GrooveLayoutEntry | null 
     out.centerYNorm = centerYNorm;
   }
   if (orientation !== DEFAULT_GROOVE_ORIENTATION) out.orientation = orientation;
+  if (linesCount != null) out.linesCount = linesCount;
   return Object.keys(out).length ? out : null;
 }
 
