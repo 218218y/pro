@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_external.ts';
+import { tryRemoveSketchExternalDrawerByDirectHit } from '../esm/native/services/canvas_picking_drawer_cross_family_direct_hit.ts';
 import { tryCommitSketchBoxRegularExternalDrawersHover } from '../esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts';
 import {
   SHOE_DRAWER_BASE_AUTO_NONE_MESSAGE,
@@ -210,6 +211,42 @@ test('auto-base helper restores the previous forced base only after all shoe dra
   });
   assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('plinth'));
   assert.equal(calls.toasts[0]?.type, 'info');
+});
+
+test('direct-hit removal of the final sketch shoe drawer restores the previous forced base', () => {
+  const { App, state, calls } = createAppHarness('none');
+  state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'legs';
+  state.config.sketchExtras = {
+    extDrawers: [{ id: 'shoe-sketch', count: 0, hasShoeDrawer: true }],
+  };
+
+  const drawerGroup = {
+    userData: {
+      partId: 'sketch_ext_drawers_1_shoe-sketch_1',
+      moduleIndex: '1',
+      __wpSketchExtDrawer: true,
+      __wpSketchExtDrawerId: 'shoe-sketch',
+    },
+    parent: null,
+  };
+
+  const handled = tryRemoveSketchExternalDrawerByDirectHit({
+    App,
+    intersects: [{ object: drawerGroup }] as any,
+    activeModuleKey: 1,
+    patchConfigForKey: (_mk, patcher) => {
+      patcher(state.config as never);
+      return true;
+    },
+    source: 'sketch.removeExternalDrawerByHit',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(state.config.sketchExtras.extDrawers, []);
+  assert.equal(state.ui.baseType, 'legs');
+  assert.equal(state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY], null);
+  assert.equal(calls.uiPatches[0]?.meta?.source, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
+  assert.equal(calls.toasts[0]?.message, getShoeDrawerBaseAutoRestoreMessage('legs'));
 });
 
 test('removing the final module shoe drawer restores the base selected before the forced none', () => {

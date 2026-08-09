@@ -164,7 +164,6 @@ export function tryHandleExternalDrawerModeClick(args: {
         source: 'extDrawers.removeSketchExternalByHit',
       })
     ) {
-      restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.removeSketchExternalByHit:autoBaseRestore');
       return true;
     }
 

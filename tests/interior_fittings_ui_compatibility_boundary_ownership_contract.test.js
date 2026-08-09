@@ -16,9 +16,9 @@ const boundarySpecifier = '../../../features/interior_tab_defaults.js';
 const compositionOwnerSpecifier = '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 const depthSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
 const ownerSymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
-const expectedUiSemanticFingerprint = 'f16e56048cf07f84bc3efbb762107b6473ca6ce0ddf57beed0a3981714d7a934';
+const expectedUiSemanticFingerprint = 'cc8aad1edf08cc83979587e9d67f8f91369a37602667798119b387ab476793ce';
 const expectedUiLiteralInventoryFingerprint =
-  '2a4f0188a66b4a12d2c650b08aa460070ed15a87d065f523d79056bf1c7f92db';
+  '434eba412ffc2a26f3043c674b9b1dc23ae1654f3f6e6b5fad2d7ab3f7dd647d';
 const expectedBoundarySymbols = Object.freeze([
   'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
   'DEFAULT_BASE_LEG_PLATFORM_MODE',

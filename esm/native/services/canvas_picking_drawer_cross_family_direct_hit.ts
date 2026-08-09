@@ -22,6 +22,7 @@ import {
   __wp_projectWorldPointToLocal,
 } from './canvas_picking_local_helpers_runtime.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
+import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 
 function isRenderableDirectHitObject(object: unknown): boolean {
   const node = asCrossDrawerNode(object);
@@ -129,11 +130,15 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
 
   const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
   if (!plan || plan.kind !== 'remove-sketch-external-drawer') return false;
-  return commitCrossDrawerRemovePlan({
+  const changed = commitCrossDrawerRemovePlan({
     plan,
     patchConfigForKey: args.patchConfigForKey,
     source: args.source,
   });
+  if (!changed) return false;
+
+  restoreShoeDrawerBaseIfNoShoeDrawersRemain(args.App, `${args.source}:autoBaseRestore`);
+  return true;
 }
 
 export function tryRemoveSketchInternalDrawerByDirectHit(args: {
