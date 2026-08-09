@@ -289,8 +289,8 @@ test('canvas hover interactions render and clear the measurement part-name toolt
   const tooltip = bodyChildren[0];
   assert.equal(tooltip.getAttribute('aria-hidden'), 'false');
   assert.equal(tooltip.getAttribute('data-part-label'), 'דופן שמאלית');
+  assert.equal(tooltip.children.length, 1);
   assert.equal(tooltip.children[0]?.textContent, 'דופן שמאלית');
-  assert.equal(tooltip.children[1]?.textContent, 'לחיצה להצגת מידות החלק');
   assert.equal(tooltip.classList.contains('is-open'), true);
   assert.equal(tooltip.classList.contains('is-below'), true);
   assert.equal(domEl.style.cursor, 'crosshair');

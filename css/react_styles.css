@@ -4640,14 +4640,13 @@ body.wp-ui-react .wp-r-floating-tooltip-detail {
 
 body.wp-ui-react .wp-r-floating-tooltip.wp-viewer-measurement-part-tooltip {
   width: max-content;
-  min-width: 176px;
   max-width: min(264px, calc(100vw - 20px));
-  padding: 9px 12px 10px;
+  padding: 6px 9px;
   border: 1px solid rgba(125, 211, 252, 0.42);
   border-inline-start: 3px solid #38bdf8;
   border-radius: 10px;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
-  text-align: right;
+  text-align: center;
   backdrop-filter: blur(8px);
   transition:
     opacity 0.14s ease,
@@ -4663,14 +4662,10 @@ body.wp-ui-react .wp-r-floating-tooltip.wp-viewer-measurement-part-tooltip.is-be
 }
 
 body.wp-ui-react .wp-viewer-measurement-part-tooltip .wp-r-floating-tooltip-title {
+  margin-bottom: 0;
   color: #f8fafc;
   font-size: 0.96rem;
   letter-spacing: 0.01em;
-}
-
-body.wp-ui-react .wp-viewer-measurement-part-tooltip .wp-r-floating-tooltip-detail {
-  color: #bae6fd;
-  font-size: 0.72rem;
 }
 
 body.wp-ui-react .wp-r-floating-tooltip-arrow {

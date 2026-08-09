@@ -44,7 +44,7 @@ function ensureMeasurementTooltip(domEl: HTMLElement): MeasurementTooltipState |
   if (!doc?.body || typeof doc.createElement !== 'function') return null;
 
   const root = doc.createElement('div');
-  root.className = 'wp-r-floating-tooltip wp-viewer-measurement-part-tooltip is-rich is-above';
+  root.className = 'wp-r-floating-tooltip wp-viewer-measurement-part-tooltip is-above';
   root.setAttribute('role', 'tooltip');
   root.setAttribute('aria-hidden', 'true');
   root.setAttribute('data-wp-viewer-measurement-part-tooltip', 'true');
@@ -54,11 +54,6 @@ function ensureMeasurementTooltip(domEl: HTMLElement): MeasurementTooltipState |
   const title = doc.createElement('strong');
   title.className = 'wp-r-floating-tooltip-title';
   root.appendChild(title);
-
-  const detail = doc.createElement('small');
-  detail.className = 'wp-r-floating-tooltip-detail';
-  detail.textContent = 'לחיצה להצגת מידות החלק';
-  root.appendChild(detail);
 
   doc.body.appendChild(root);
   const state = { root, title };
