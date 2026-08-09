@@ -50,6 +50,20 @@ export type GroovesMap = ToggleMap;
 /** Per-part groove lines count override. */
 export type GrooveLinesCountMap = Record<string, number | null | undefined>;
 
+/** Orientation of the parallel groove strips on a door/front surface. */
+export type GrooveOrientation = 'vertical' | 'horizontal';
+
+/** Optional per-front groove sizing / placement (persisted in cm + normalized anchor). */
+export interface GrooveLayoutEntry extends UnknownRecord {
+  widthCm?: number | null;
+  heightCm?: number | null;
+  centerXNorm?: number | null;
+  centerYNorm?: number | null;
+  orientation?: GrooveOrientation;
+}
+export type GrooveLayoutList = GrooveLayoutEntry[];
+export type GrooveLayoutMap = Record<string, GrooveLayoutList | undefined>;
+
 /** Removed doors: toggle surface. */
 export type RemovedDoorsMap = ToggleMap;
 
@@ -114,6 +128,7 @@ export interface MapsByName {
   drawerDividersMap: DrawerDividersMap;
   groovesMap: GroovesMap;
   grooveLinesCountMap: GrooveLinesCountMap;
+  grooveLayoutMap: GrooveLayoutMap;
   removedDoorsMap: RemovedDoorsMap;
   roundedFrameSideShelvesMap: RoundedFrameSideShelvesMap;
 

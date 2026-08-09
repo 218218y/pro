@@ -366,7 +366,10 @@ test('render sketch glass drawers keep the selected frame style and remove hidde
 
   assert.equal(doorVisualCalls.length, 1);
   assert.equal(doorVisualCalls[0]?.style, 'glass');
-  assert.deepEqual(doorVisualCalls[0]?.options, { glassFrameStyle: 'double_profile' });
+  assert.deepEqual(doorVisualCalls[0]?.options, {
+    grooveLayout: null,
+    glassFrameStyle: 'double_profile',
+  });
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0]?.[8], { omitFrontPanel: true });
 

@@ -27,6 +27,7 @@ import {
 import type {
   AppContainer,
   BuilderMirrorReflectorProfile,
+  GrooveLayoutList,
   MirrorLayoutList,
   Object3DLike,
   ThreeLike,
@@ -52,6 +53,7 @@ type CreateStyledMirrorDoorVisualArgs = {
   hasGrooves?: boolean;
   groovePartId?: string | null;
   grooveLinesCount?: number | null;
+  grooveLayout?: GrooveLayoutList | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
 };
 
@@ -155,6 +157,7 @@ function buildStyledDoorFrame(args: CreateStyledMirrorDoorVisualArgs): {
     hasGrooves: args.hasGrooves === true,
     groovePartId: args.groovePartId ?? null,
     grooveLinesCount: args.grooveLinesCount ?? null,
+    grooveLayout: args.grooveLayout ?? null,
     isSketch: args.isSketch,
     zSign: args.zSign,
   } as const;
@@ -186,6 +189,7 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
       hasGrooves: args.hasGrooves === true,
       groovePartId: args.groovePartId ?? null,
       grooveLinesCount: args.grooveLinesCount ?? null,
+      grooveLayout: args.grooveLayout ?? null,
       tagDoorVisualPart: args.tagDoorVisualPart,
       mirrorReflectorProfile: args.mirrorReflectorProfile ?? null,
     });

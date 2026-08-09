@@ -19,10 +19,10 @@ const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const ownerSymbol = 'PROJECT_CAPTURE_DIMENSION_POLICY';
 const ownerSpecifier = '../../shared/dimensions/project_capture_dimension_policy.js';
-const consumerBodySha256 = 'b4b5f860ba20101e8e36d6f46602229f7f7f055378b3428bf77adaca5f85a89c';
+const consumerBodySha256 = '9bc8a35e8ef86ec62b8bd981161bad938bfafad2207837f49c825548012fca63';
 const persistedDoorsSha256 = 'd0b63e533964a4559b69d2224217dfc4f9b9c098714256503bdf9502d88f2fa3';
-const buildPayloadSha256 = '369aca88642d39779075ac6866986f488b911d84bf09773989eb27dbad7d0ff1';
-const returnObjectSha256 = '7b38c82b28a1de4b29c7b189a2d1898a4c50e1183547ffee5e349edbdcea28d7';
+const buildPayloadSha256 = '7c851afd1075aa85fe0dbca53d7c3d7d82a26c4cdab5334e5baaa29301309db4';
+const returnObjectSha256 = '62121f215ced9cc93aff08e0adcf891e936e5ad0d2fa401312001b3ae58347c7';
 const consumerLiteralSha256 = '517c74b64ba1bc22310d01455d22f9225df5f2e4dae5078fed001c30d605ee31';
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({

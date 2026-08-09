@@ -542,6 +542,55 @@ test.describe('Playwright authoring build coverage', () => {
     expectNoRuntimeIssues(issues);
   });
 
+  test('manual groove controls keep independent dimensions and explicit orientation', async ({ page }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await setDoorFeatureToggle(page, 'groovesEnabled', true);
+
+    const features = page.locator(
+      '#reactSidebarRoot .tab-content[data-tab="design"]:visible [data-testid="design-door-features-section"]'
+    );
+    const manualButton = features.locator('button[data-testid="design-groove-manual-button"]');
+    const heightInput = features.locator('#wp-r-groove-draft-height');
+    const widthInput = features.locator('#wp-r-groove-draft-width');
+    const verticalButton = features.locator('button[data-testid="design-groove-orientation-vertical"]');
+    const horizontalButton = features.locator('button[data-testid="design-groove-orientation-horizontal"]');
+
+    await expect(verticalButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(horizontalButton).toHaveAttribute('aria-pressed', 'false');
+
+    await manualButton.click();
+    await expect(manualButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(features.locator('[data-testid="design-groove-manual-fields"]')).toBeVisible();
+
+    await heightInput.fill('80');
+    await widthInput.fill('35.5');
+    await horizontalButton.click();
+    await expect(horizontalButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(verticalButton).toHaveAttribute('aria-pressed', 'false');
+
+    let ui = asRecord((await readDebugStoreState(page)).ui);
+    expect(ui.grooveManualEnabled).toBe(true);
+    expect(ui.currentGrooveDraftHeightCm).toBe('80');
+    expect(ui.currentGrooveDraftWidthCm).toBe('35.5');
+    expect(ui.currentGrooveOrientation).toBe('horizontal');
+
+    await heightInput.locator('xpath=preceding-sibling::button').click();
+    await expect(heightInput).toHaveValue('');
+    await expect(widthInput).toHaveValue('35.5');
+
+    await widthInput.locator('xpath=preceding-sibling::button').click();
+    await expect(widthInput).toHaveValue('');
+    await verticalButton.click();
+    await expect(verticalButton).toHaveAttribute('aria-pressed', 'true');
+
+    ui = asRecord((await readDebugStoreState(page)).ui);
+    expect(ui.currentGrooveDraftHeightCm).toBe('');
+    expect(ui.currentGrooveDraftWidthCm).toBe('');
+    expect(ui.currentGrooveOrientation).toBe('vertical');
+    expectNoRuntimeIssues(issues);
+  });
+
   test('authored structure, design, and interior state rebuilds cleanly after project load', async ({
     page,
   }) => {

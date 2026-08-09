@@ -39,6 +39,7 @@ export {
   readSlidingUiState,
   resolveDoorVisualStyle,
   resolveMirrorLayout,
+  resolveGrooveLayout,
   resolveSlidingDoorVisualState,
   resolveHandleType,
 } from './render_door_ops_shared_config.js';

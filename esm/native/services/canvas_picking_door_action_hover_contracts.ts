@@ -17,6 +17,7 @@ export type DoorActionHoverModeState = {
   isManualHandlePositionMode: boolean;
   isHingeHoverMode: boolean;
   isFacePreviewMode: boolean;
+  isGrooveLayoutPlacementMode: boolean;
 };
 
 export type DoorActionHoverResolvedState = {

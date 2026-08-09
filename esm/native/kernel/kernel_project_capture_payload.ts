@@ -1,7 +1,11 @@
 import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
-import { readDoorTrimConfigMap, readMirrorLayoutConfigMap } from '../features/project_config/api.js';
+import {
+  readDoorTrimConfigMap,
+  readGrooveLayoutConfigMap,
+  readMirrorLayoutConfigMap,
+} from '../features/project_config/api.js';
 import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/project_capture_dimension_policy.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
@@ -287,6 +291,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     cornerConfiguration: canonicalConfigLists.cornerConfiguration,
     groovesMap: cloneProjectCaptureValue(canonicalCfg.groovesMap, {}),
     grooveLinesCountMap: cloneProjectCaptureValue(canonicalCfg.grooveLinesCountMap, {}),
+    grooveLayoutMap: cloneProjectCaptureValue(readGrooveLayoutConfigMap(cfgRec.grooveLayoutMap), {}),
     splitDoorsMap: cloneProjectCaptureValue(canonicalCfg.splitDoorsMap, {}),
     splitDoorsBottomMap: cloneProjectCaptureValue(canonicalCfg.splitDoorsBottomMap, {}),
     removedDoorsMap: cloneProjectCaptureValue(canonicalCfg.removedDoorsMap, {}),

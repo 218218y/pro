@@ -9,7 +9,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx']);
 const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 16,
   boot: 3,
-  builder: 120,
+  builder: 119,
   features: 12,
   io: 4,
   kernel: 9,

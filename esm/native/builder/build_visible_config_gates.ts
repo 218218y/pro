@@ -15,6 +15,7 @@ export function applyBuildVisibleConfigMapGates(
   if (!readBuildUiToggle(uiSnapshot.groovesEnabled)) {
     cfg.groovesMap = normalizeKnownMapSnapshot('groovesMap', null);
     cfg.grooveLinesCountMap = normalizeKnownMapSnapshot('grooveLinesCountMap', null);
+    cfg.grooveLayoutMap = normalizeKnownMapSnapshot('grooveLayoutMap', null);
   }
 
   if (!readBuildUiToggle(uiSnapshot.splitDoors)) {

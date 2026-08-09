@@ -24,6 +24,7 @@ export type ProjectConfigSnapshotReplaceKey =
   | 'individualColors'
   | 'doorSpecialMap'
   | 'doorStyleMap'
+  | 'grooveLayoutMap'
   | 'mirrorLayoutMap'
   | 'doorTrimMap'
   | 'savedColors'
@@ -82,6 +83,7 @@ export const PROJECT_CONFIG_SNAPSHOT_REPLACE_KEY_ORDER = Object.freeze([
   'individualColors',
   'doorSpecialMap',
   'doorStyleMap',
+  'grooveLayoutMap',
   'mirrorLayoutMap',
   'doorTrimMap',
   'savedColors',

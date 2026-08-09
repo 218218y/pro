@@ -1,6 +1,7 @@
 import {
   buildDoorVisualLookupKeys,
   stripDoorVisualSurfaceSuffix,
+  toCanonicalDoorVisualMapKey,
 } from './door_visual_key_contracts_shared.js';
 import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
@@ -36,6 +37,10 @@ export function toCanonicalGroovesMapKey(input: unknown): string {
 
 export function toCanonicalGrooveLinesCountMapKey(input: unknown): string {
   return toCanonicalDoorGrooveTargetKey(input);
+}
+
+export function toCanonicalGrooveLayoutMapKey(input: unknown): string {
+  return toCanonicalDoorVisualMapKey(toCanonicalDoorGrooveTargetKey(input));
 }
 
 export function isCanonicalGroovesMapKey(input: unknown): input is string {

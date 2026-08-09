@@ -22,6 +22,7 @@ import type {
   DrawerDividersMap,
   GroovesMap,
   GrooveLinesCountMap,
+  GrooveLayoutMap,
   HandlesMap,
   HingeMap,
   IndividualColorsMap,
@@ -53,6 +54,7 @@ export interface SavedModelLike extends UnknownRecord {
 
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
+  grooveLayoutMap?: GrooveLayoutMap;
   splitDoorsMap?: SplitDoorsMap;
   splitDoorsBottomMap?: SplitDoorsBottomMap;
   removedDoorsMap?: RemovedDoorsMap;

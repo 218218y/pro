@@ -51,6 +51,10 @@ export function resolveDoorActionHoverModeState(args: DoorActionHoverArgs): Door
     isHandleHoverMode && isManualHandlePositionMode(modeOpts?.handlePlacement);
   const isHingeHoverMode = args.isHingeEditMode === true;
   const isFacePreviewMode = isHandleHoverMode || isHingeHoverMode;
+  const grooveUi = args.isGrooveEditMode ? args.readUi(args.App) : null;
+  const isGrooveLayoutPlacementMode =
+    args.isGrooveEditMode &&
+    (grooveUi?.grooveManualEnabled === true || grooveUi?.currentGrooveOrientation === 'horizontal');
 
   if (
     (!args.isGrooveEditMode &&
@@ -71,11 +75,17 @@ export function resolveDoorActionHoverModeState(args: DoorActionHoverArgs): Door
     isManualHandlePositionMode: isManualHandlePlacementMode,
     isHingeHoverMode,
     isFacePreviewMode,
+    isGrooveLayoutPlacementMode,
   };
 }
 
 export function shouldApplyGenericDoorActionHoverMarkerFinish(modeState: DoorActionHoverModeState): boolean {
-  return !modeState.isPaintHoverMode && !modeState.isTrimHoverMode && !modeState.isFacePreviewMode;
+  return (
+    !modeState.isPaintHoverMode &&
+    !modeState.isTrimHoverMode &&
+    !modeState.isFacePreviewMode &&
+    !modeState.isGrooveLayoutPlacementMode
+  );
 }
 
 function hasDoorLeafMetrics(userData: UnknownRecord | null): boolean {

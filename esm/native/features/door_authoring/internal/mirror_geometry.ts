@@ -20,7 +20,7 @@ import {
   readMirrorLayoutList,
   DEFAULT_REMOVE_TOLERANCE_M,
   type MirrorDraftInput,
-} from './mirror_contracts.js';
+} from './surface_layout_contracts.js';
 
 export type MirrorRect = {
   minX: number;

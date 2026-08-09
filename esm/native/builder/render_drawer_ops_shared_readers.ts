@@ -37,6 +37,7 @@ export function readDrawerConfig(value: unknown): DrawerConfig {
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),
     curtainMap: readObjectMap(value.curtainMap),
     mirrorLayoutMap: readObjectMap(value.mirrorLayoutMap),
+    grooveLayoutMap: readObjectMap(value.grooveLayoutMap),
     isMultiColorMode: value.isMultiColorMode === true,
     isLibraryMode: value.isLibraryMode === true,
   };

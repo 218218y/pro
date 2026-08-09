@@ -23,6 +23,8 @@ import type {
   DoorStyleMap,
   MirrorLayoutList,
   MirrorLayoutMap,
+  GrooveLayoutList,
+  GrooveLayoutMap,
   DoorTrimMap,
 } from './maps';
 import type { ActionMetaLike } from './kernel';
@@ -86,6 +88,7 @@ export type BuilderDoorVisualOptions = {
   adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;
+  grooveLayout?: GrooveLayoutList | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
   renderPolicy?: BuilderContentsRenderPolicy;
 };
@@ -687,6 +690,7 @@ export interface BuilderDoorMapsConfigLike extends UnknownRecord {
   splitDoorsBottomMap?: SplitDoorsBottomMap | null;
   groovesMap?: GroovesMap | null;
   grooveLinesCountMap?: GrooveLinesCountMap | null;
+  grooveLayoutMap?: GrooveLayoutMap | null;
   removedDoorsMap?: RemovedDoorsMap | null;
   roundedFrameSideShelvesMap?: RoundedFrameSideShelvesMap | null;
   curtainMap?: CurtainMap | null;

@@ -66,6 +66,7 @@ const ALLOWED_CANONICAL_ONLY_HELPERS = [
   'isCanonicalSplitPositionMapKey',
   'isCanonicalSplitDoorsBottomMapKey',
   'readCanonicalMirrorLayoutMap',
+  'readCanonicalGrooveLayoutMap',
 ];
 
 function readSource(relPath) {
@@ -195,6 +196,18 @@ test('runtime storage normalizers keep visual maps canonical-only without alias 
       ])
     ),
     { d1_full: [{ widthCm: 55, heightCm: 88, faceSign: -1 }] }
+  );
+
+  const grooveLayoutMap = normalizeKnownMapSnapshot('grooveLayoutMap', {
+    d1_full: [{ widthCm: '40', heightCm: '70', orientation: 'horizontal' }],
+    d1: [{ widthCm: 55 }],
+    d1_mid2_accent_top: [{ widthCm: 22 }],
+  });
+  assert.deepEqual(
+    { ...grooveLayoutMap },
+    {
+      d1_full: [{ widthCm: 40, heightCm: 70, orientation: 'horizontal' }],
+    }
   );
 
   const doorTrimMap = normalizeKnownMapSnapshot('doorTrimMap', {

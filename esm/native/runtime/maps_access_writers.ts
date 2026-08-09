@@ -59,6 +59,14 @@ export function patchDoorGrooveLinesCountEntries(
   return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLinesCountMap', entries, meta);
 }
 
+export function patchDoorGrooveLayoutEntries(
+  App: unknown,
+  entries: readonly VisualKeyedWriterEntry[],
+  meta?: ActionMetaLike
+): boolean {
+  return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLayoutMap', entries, meta);
+}
+
 export function replaceDoorGrooveLinesCountMap(
   App: unknown,
   nextMap: unknown,

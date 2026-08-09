@@ -1,15 +1,15 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-09T04:28:40.247Z
+Generated at: 2026-08-09T12:07:33.190Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **168**
+- Total categorized occurrences: **167**
 - Files with occurrences: **91**
 - Category counts:
   - `runtime-default`: **31**
-  - `domain-default`: **101**
+  - `domain-default`: **100**
   - `error-message-default`: **0**
   - `framework-default`: **2**
   - `browser-adapter`: **6**
@@ -58,13 +58,13 @@ Generated at: 2026-08-09T04:28:40.247Z
 - `esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts` - **2** (domain-default: 2)
 - `esm/native/builder/render_adapter.ts` - **2** (domain-default: 2)
 - `esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts` - **2** (project-migration: 2)
-- `esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts` - **2** (domain-default: 2)
 - `esm/native/builder/render_interior_sketch_module_geometry.ts` - **2** (domain-default: 2)
 - `esm/native/builder/render_preview_sketch_pipeline_shared.ts` - **2** (domain-default: 2)
 - `esm/native/builder/room_visual_apply.ts` - **2** (domain-default: 2)
 - `esm/native/builder/visuals_and_contents_door_visual_cache.ts` - **2** (domain-default: 2)
 - `esm/native/runtime/browser_env_timers.ts` - **2** (domain-default: 2)
 - `esm/native/runtime/data_attrs.ts` - **2** (runtime-default: 2)
+- `esm/native/runtime/platform_access_ops.ts` - **2** (runtime-default: 2)
 
 ## Allowlist check
 

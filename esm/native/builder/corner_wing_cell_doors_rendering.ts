@@ -12,6 +12,7 @@ import {
   resolveEffectiveDoorStyle,
   isRemoveDoorModeFromSnapshot,
 } from '../features/door_authoring/api.js';
+import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
   readCurtainType,
@@ -138,12 +139,17 @@ export function processCornerDoorVisual(
     false,
     mirrorLayout,
     groovePartId,
-    special === 'glass' || adhesiveGlassKind
-      ? {
-          ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
-          ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
-        }
-      : null
+    {
+      grooveLayout:
+        readGrooveLayoutListForPart({
+          map: ctx.readMap('grooveLayoutMap'),
+          partId: id,
+          scopedPartId: groovePartId,
+          preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
+        })?.layouts || null,
+      ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
+      ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+    }
   );
   vis.position.set(args.meshOffset, 0, 0);
   args.group.add(vis);

@@ -110,6 +110,7 @@ test('segmented sketch door rebuild retags the full visual subtree with the cano
     doorStyleMap: {},
     groovesMap: {},
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
     isDoorRemoved: () => false,
   };
 
@@ -177,6 +178,7 @@ test('segmented sketch door rebuild replays door trim visuals per surviving spli
       ],
     },
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
     isDoorRemoved: () => false,
   };
 
@@ -242,6 +244,7 @@ test('segmented sketch mirror rebuild reuses canonical mirror material path and 
     doorStyleMap: {},
     groovesMap: {},
     resolveMirrorLayout: partId => [{ partId }],
+    resolveGrooveLayout: () => null,
     isDoorRemoved: () => false,
   };
 
@@ -297,6 +300,7 @@ test('segmented sketch door rebuild resolves per-segment style/material/removal 
     doorStyleMap: { d7_top: 'double_profile', d7_bot: 'profile' },
     groovesMap: {},
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
     isDoorRemoved: (partId: string) => partId === 'd7_top',
   };
 

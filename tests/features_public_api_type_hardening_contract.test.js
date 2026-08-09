@@ -155,6 +155,27 @@ test('door authoring facade exposes only audited public symbols', () => {
     },
     {
       reason:
+        'Manual groove authoring shares one sizing, placement, lookup, and orientation contract across canvas services and render builders',
+      symbols: [
+        'DEFAULT_GROOVE_ORIENTATION',
+        'GrooveDraftInput',
+        'GrooveLayoutHitMatch',
+        'GrooveLayoutListLookup',
+        'GrooveLayoutRect',
+        'ResolvedGroovePlacement',
+        'buildGrooveLayoutFromHit',
+        'findGrooveLayoutMatchInRect',
+        'readCanonicalGrooveLayoutMap',
+        'readGrooveLayoutEntry',
+        'readGrooveLayoutList',
+        'readGrooveLayoutListForPart',
+        'readGrooveOrientation',
+        'resolveGroovePlacementInRect',
+        'resolveGroovePlacementListInRect',
+      ],
+    },
+    {
+      reason:
         'Door visual map readers and owner-alias cleanup are authoring-map operations; pure key parsing lives in shared instead',
       symbols: [
         'buildDoorVisualOwnerAliasKeys',

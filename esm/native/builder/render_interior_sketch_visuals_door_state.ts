@@ -1,10 +1,14 @@
-import type { MirrorLayoutList } from '../../../types';
+import type { GrooveLayoutList, MirrorLayoutList } from '../../../types';
 import type { InteriorOpsCallable } from './render_interior_ops_contracts.js';
 import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.js';
 
 import { isCallable, readNullableStringMap, readUnknownMap } from './render_interior_sketch_shared.js';
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
-import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import {
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutListForPart,
+} from './door_visual_lookup_state.js';
 import { requireInteriorSketchConfigSnapshot } from './render_interior_sketch_input_contract.js';
 
 export function resolveSketchFrontVisualState(
@@ -16,11 +20,13 @@ export function resolveSketchFrontVisualState(
   curtainType: string | null;
   adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
+  grooveLayout: GrooveLayoutList | null;
 } {
   const cfg = requireInteriorSketchConfigSnapshot(input.cfgSnapshot, 'render_interior_sketch.visualState');
   const doorSpecialMap = readNullableStringMap(cfg?.doorSpecialMap);
   const curtainMap = readUnknownMap(cfg?.curtainMap);
   const mirrorLayoutMap = readUnknownMap(cfg?.mirrorLayoutMap);
+  const grooveLayoutMap = readUnknownMap(cfg?.grooveLayoutMap);
   const getPartColorValue = input.getPartColorValue;
 
   let isMirror = false;
@@ -68,6 +74,7 @@ export function resolveSketchFrontVisualState(
     curtainType: isGlass ? curtainType : null,
     ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     mirrorLayout: mirrorLayout.length ? mirrorLayout : null,
+    grooveLayout: readGrooveLayoutListForPart({ map: grooveLayoutMap, partId })?.layouts || null,
   };
 }
 
@@ -80,6 +87,7 @@ export function resolveSketchBoxDoorVisualState(
   curtainType: string | null;
   adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
+  grooveLayout: GrooveLayoutList | null;
 } {
   return resolveSketchFrontVisualState(input, partId);
 }

@@ -51,20 +51,19 @@ test('free box door hinge preview also sits in front of the outside door face', 
   assert.match(src, /const previewDoorZ[\s\S]*contentKind === 'door_hinge'/);
 });
 
-test('sketch box groove render matches the regular flat-door stripe recipe on the outer face', () => {
+test('sketch box groove render delegates to the canonical door groove renderer on the outer face', () => {
   const src = [
     read('esm/native/builder/render_interior_sketch_ops.ts'),
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
     sketchBoxFrontsBundle(),
   ].join('\n');
-  assert.match(src, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
-  assert.match(src, /normalizeGrooveLinesCount\(boxDoor\.grooveLinesCount\) \?\?/);
-  assert.match(src, /resolveGrooveLinesCount\(App, doorW, undefined, doorPid\);/);
-  assert.match(src, /const grooveStripW = classicDims\.grooveStripWidthM;/);
-  assert.match(
-    src,
-    /const grooveStripH = Math\.max\(classicDims\.grooveHeightMinM, doorH - classicDims\.grooveHeightClearanceM\);/
-  );
-  assert.match(src, /const grooveZ = doorD \/ 2 \+ classicDims\.grooveSurfaceOffsetM;/);
-  assert.match(src, /applySketchBoxPickMeta\(mesh, doorPid, moduleKeyStr, bid, \{ door: true \}\);/);
+  assert.match(src, /hasGrooves: groovesEnabled && boxDoor\.groove === true,/);
+  assert.match(src, /const grooveSurfaceGroup = new THREE\.Group\(\);/);
+  assert.match(src, /grooveSurfaceGroup\.position\?\.set\?\.\(slabLocalX, 0, 0\);/);
+  assert.match(src, /appendGrooveStrips\(\{/);
+  assert.match(src, /groovePartId: doorPid,/);
+  assert.match(src, /zOffset: doorD \/ 2,/);
+  assert.match(src, /linesCountOverride: boxDoor\.grooveLinesCount,/);
+  assert.match(src, /grooveLayout: args\.grooveLayout \?\? null,/);
+  assert.match(src, /applySketchBoxPickMeta\(node as never, doorPid, moduleKeyStr, bid, \{ door: true \}\);/);
 });

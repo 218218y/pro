@@ -72,6 +72,10 @@ export function normalizeCurrentProjectData(data: ProjectDataLike, nowISO?: stri
   data.doorStyleMap = normalizeKnownProjectConfigMap('doorStyleMap', data.doorStyleMap) as NonNullable<
     ProjectDataLike['doorStyleMap']
   >;
+  data.grooveLayoutMap = normalizeKnownProjectConfigMap(
+    'grooveLayoutMap',
+    data.grooveLayoutMap
+  ) as NonNullable<ProjectDataLike['grooveLayoutMap']>;
   data.mirrorLayoutMap = normalizeKnownProjectConfigMap(
     'mirrorLayoutMap',
     data.mirrorLayoutMap

@@ -115,6 +115,10 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       currentCurtainChoice: 'none',
       currentMirrorDraftHeightCm: '',
       currentMirrorDraftWidthCm: '',
+      grooveManualEnabled: false,
+      currentGrooveDraftHeightCm: '',
+      currentGrooveDraftWidthCm: '',
+      currentGrooveOrientation: 'vertical',
       currentFloorType: 'parquet',
       // Default wall color should match the "אפור גרפיט" preset.
       lastSelectedWallColor: '#37474f',
@@ -181,6 +185,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       cornerConfiguration: {},
       groovesMap: {},
       grooveLinesCountMap: {},
+      grooveLayoutMap: {},
       splitDoorsMap: {},
       removedDoorsMap: {},
       roundedFrameSideShelvesMap: {},

@@ -82,6 +82,7 @@ export function appendSketchBoxDoorVisuals(args: {
       doorD,
       boxDoor,
       groovesEnabled,
+      grooveLayout: doorVisualState.grooveLayout,
     });
   }
 }

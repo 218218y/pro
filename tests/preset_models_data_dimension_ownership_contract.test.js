@@ -15,8 +15,8 @@ const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
 const publicBarrelSpecifier = '../features/dimensions/index.js';
 const policySymbol = 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY';
 const rawMarker = '// Built-in saved-model presets are stored as current-schema project snapshots.';
-const rawTailSha256 = '3a69155424cca6cfa2d6b40e209989b750e97bf22d66284ed8a98975a7e86b32';
-const rawSemanticSha256 = '41420b1975124247e0ad27a6818486cddd03d86bd1939fb59851839df4df6c6e';
+const rawTailSha256 = '68e85dd0dc76ca607df8e10053c32de3d4a62397474576216ff659ae32026834';
+const rawSemanticSha256 = '64aa4247aab2eeea2b47a1fe409019000a8a1b1add3554b4b5bbfce41659697c';
 const expectedRecordIds = Object.freeze([
   'model_1765891752929',
   'model_1765891929674',
@@ -440,7 +440,7 @@ test('Preset Models Data preserves consumer-local derivation and exact width mul
 test('Preset Models Data raw tail, semantic AST, record count, IDs, and order remain immutable', () => {
   const source = read(consumerRel);
   const facts = rawFacts(source, createSourceFile(consumerRel, source));
-  assert.equal(facts.tail.split(/\r\n|\r|\n/u).length, 823);
+  assert.equal(facts.tail.split(/\r\n|\r|\n/u).length, 829);
   assert.equal(sha256(facts.tail), rawTailSha256);
   assert.equal(facts.semanticHash, rawSemanticSha256);
   assert.deepEqual(facts.ids, expectedRecordIds);

@@ -1,4 +1,4 @@
-export type { MirrorDraftInput } from './mirror_contracts.js';
+export type { MirrorDraftInput } from './surface_layout_contracts.js';
 export {
   DEFAULT_CENTER_NORM,
   DEFAULT_FACE_SIGN,
@@ -14,7 +14,7 @@ export {
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   readMirrorLayoutMap,
-} from './mirror_contracts.js';
+} from './surface_layout_contracts.js';
 
 export type {
   MirrorRect,

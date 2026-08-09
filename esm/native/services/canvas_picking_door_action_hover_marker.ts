@@ -8,6 +8,7 @@ import {
   tryHandleDoorPaintHoverPreview,
   tryHandleDoorTrimHoverPreview,
   tryHandleDoorManualHandleHoverPreview,
+  tryHandleDoorGrooveLayoutHoverPreview,
 } from './canvas_picking_door_action_hover_preview.js';
 import { getMode } from '../kernel/api.js';
 import {
@@ -86,6 +87,22 @@ export function tryHandleDoorActionHoverMarkerRoute(args: DoorActionHoverPreview
   const { local, localHit, hgWp, wq, zOff } = runtime;
 
   try {
+    if (modeState.isGrooveLayoutPlacementMode) {
+      return tryHandleDoorGrooveLayoutHoverPreview({
+        App,
+        hit,
+        doorMarker,
+        markerUd,
+        local,
+        localHit,
+        wq,
+        wardrobeGroup,
+        scopedHitDoorPid,
+        canonDoorPartKeyForMaps,
+        readUi,
+      });
+    }
+
     if (modeState.isTrimHoverMode) {
       return tryHandleDoorTrimHoverPreview({
         App,

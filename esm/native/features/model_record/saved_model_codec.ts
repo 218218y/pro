@@ -158,6 +158,18 @@ function isMirrorLayoutMap(value: unknown): boolean {
   return isRecordWithValues(value, entry => Array.isArray(entry) && entry.every(isMirrorLayoutEntry));
 }
 
+function isGrooveLayoutEntry(value: unknown): boolean {
+  if (!isRecordValue(value)) return false;
+  for (const key of ['widthCm', 'heightCm', 'centerXNorm', 'centerYNorm']) {
+    if (!hasValidOptionalField(value, key, entry => entry === null || isFiniteNumber(entry))) return false;
+  }
+  return hasValidOptionalField(value, 'orientation', entry => entry === 'vertical' || entry === 'horizontal');
+}
+
+function isGrooveLayoutMap(value: unknown): boolean {
+  return isRecordWithValues(value, entry => Array.isArray(entry) && entry.every(isGrooveLayoutEntry));
+}
+
 function isDoorTrimEntry(value: unknown): boolean {
   if (!isRecordValue(value)) return false;
   return (
@@ -322,6 +334,7 @@ export function validateSavedModel(value: unknown): value is SavedModelLike {
     !hasValidOptionalField(value, 'grooveLinesCountMap', isGrooveLinesCountMap) ||
     !hasValidOptionalField(value, 'hingeMap', isHingeMap) ||
     !hasValidOptionalField(value, 'doorStyleMap', isDoorStyleMap) ||
+    !hasValidOptionalField(value, 'grooveLayoutMap', isGrooveLayoutMap) ||
     !hasValidOptionalField(value, 'mirrorLayoutMap', isMirrorLayoutMap) ||
     !hasValidOptionalField(value, 'doorTrimMap', isDoorTrimMap)
   ) {

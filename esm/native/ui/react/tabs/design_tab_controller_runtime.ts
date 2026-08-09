@@ -1,6 +1,12 @@
-import type { AppContainer } from '../../../../../types';
+import type { AppContainer, GrooveOrientation } from '../../../../../types';
 
-import { runHistoryBatch, setCfgScalar, setUiCorniceType, setUiDoorStyle } from '../actions/store_actions.js';
+import {
+  runHistoryBatch,
+  setCfgScalar,
+  setUiCorniceType,
+  setUiDoorStyle,
+  setUiScalarSoft,
+} from '../actions/store_actions.js';
 import {
   applyStructuralConfigMutation,
   applyStructuralUiMutation,
@@ -30,6 +36,10 @@ export type DesignTabControllerRuntime = {
   setHasCornice: (checked: boolean) => void;
   setGrooveLinesCount: (count: number) => void;
   resetGrooveLinesCount: () => void;
+  toggleGrooveManual: () => void;
+  setGrooveDraftHeightCm: (value: string) => void;
+  setGrooveDraftWidthCm: (value: string) => void;
+  setGrooveOrientation: (orientation: GrooveOrientation) => void;
   toggleRoundedFrameSideShelves: () => void;
 };
 
@@ -168,6 +178,28 @@ export function createDesignTabControllerRuntime(
           );
         },
         createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
+      );
+    },
+
+    toggleGrooveManual() {
+      const cfg = readStoreStateMaybe(app);
+      const ui = cfg && typeof cfg === 'object' ? (cfg as { ui?: Record<string, unknown> }).ui : null;
+      setUiScalarSoft(app, 'grooveManualEnabled', !(ui?.grooveManualEnabled === true));
+    },
+
+    setGrooveDraftHeightCm(value: string) {
+      setUiScalarSoft(app, 'currentGrooveDraftHeightCm', String(value ?? ''));
+    },
+
+    setGrooveDraftWidthCm(value: string) {
+      setUiScalarSoft(app, 'currentGrooveDraftWidthCm', String(value ?? ''));
+    },
+
+    setGrooveOrientation(orientation: GrooveOrientation) {
+      setUiScalarSoft(
+        app,
+        'currentGrooveOrientation',
+        orientation === 'horizontal' ? 'horizontal' : 'vertical'
       );
     },
 

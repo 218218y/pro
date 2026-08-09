@@ -43,6 +43,10 @@ export interface UiState extends UnknownRecord {
   hasCornice?: boolean;
   corniceType?: string;
   currentCurtainChoice?: string;
+  grooveManualEnabled?: boolean;
+  currentGrooveDraftHeightCm?: string;
+  currentGrooveDraftWidthCm?: string;
+  currentGrooveOrientation?: 'vertical' | 'horizontal';
 
   // Interior tab
   currentLayoutType?: unknown;

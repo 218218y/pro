@@ -113,6 +113,17 @@ export function seedUiEphemeralDefaults(app: AppContainer): true {
     return patch;
   });
 
+  seedUiDefaultSection(app, 'boot:uiDefaults:grooveDraft', ui => {
+    const patch: UiSlicePatch = {};
+    if (typeof ui.grooveManualEnabled !== 'boolean') patch.grooveManualEnabled = false;
+    if (typeof ui.currentGrooveDraftHeightCm !== 'string') patch.currentGrooveDraftHeightCm = '';
+    if (typeof ui.currentGrooveDraftWidthCm !== 'string') patch.currentGrooveDraftWidthCm = '';
+    if (ui.currentGrooveOrientation !== 'vertical' && ui.currentGrooveOrientation !== 'horizontal') {
+      patch.currentGrooveOrientation = 'vertical';
+    }
+    return patch;
+  });
+
   return true;
 }
 

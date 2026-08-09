@@ -6,6 +6,7 @@ import {
   hasMirrorSurfaceOnFace,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
+import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
   CORNER_SHELF_GROUP_PART_ID,
@@ -200,12 +201,13 @@ export function emitCornerWingExternalDrawers(
       false,
       mirrorLayout,
       id,
-      isGlass || adhesiveGlassKind
-        ? {
-            ...(isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
-            ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
-          }
-        : null
+      {
+        grooveLayout:
+          readGrooveLayoutListForPart({ map: runtime.readMap('grooveLayoutMap'), partId: id })?.layouts ||
+          null,
+        ...(isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
+        ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+      }
     );
     dVis.position.set(0, 0, 0);
 

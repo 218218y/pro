@@ -5,6 +5,7 @@ import type {
   DoorTrimEntry,
   DoorTrimMap,
   GroovesMap,
+  GrooveLayoutMap,
   GrooveLinesCountMap,
   HandlesMap,
   HingeMap,
@@ -31,7 +32,10 @@ import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map
 import { isCanonicalDoorVisualMapKey } from '../../../shared/door_visual_key_contracts_shared.js';
 import { isCanonicalDoorTrimTargetKey } from '../../../shared/door_trim_key_contracts_shared.js';
 import { normalizeDoorTrimEntryValueList } from '../../../shared/door_trim_value_contracts_shared.js';
-import { readCanonicalMirrorLayoutMap } from '../../../shared/mirror_layout_contracts_shared.js';
+import {
+  readCanonicalGrooveLayoutMap,
+  readCanonicalMirrorLayoutMap,
+} from '../../../shared/surface_layout_contracts_shared.js';
 
 function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -246,6 +250,10 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
 
 export function readMirrorLayoutConfigMap(value: unknown): MirrorLayoutMap {
   return readCanonicalMirrorLayoutMap(value);
+}
+
+export function readGrooveLayoutConfigMap(value: unknown): GrooveLayoutMap {
+  return readCanonicalGrooveLayoutMap(value);
 }
 
 function readDoorTrimConfigList(value: unknown): DoorTrimEntry[] {

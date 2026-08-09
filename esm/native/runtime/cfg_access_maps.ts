@@ -9,6 +9,7 @@ import {
   readIndividualColorsMapSnapshot,
   readMapRecord,
   readMirrorLayoutMapSnapshot,
+  readGrooveLayoutMapSnapshot,
 } from './cfg_access_shared.js';
 import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
@@ -101,5 +102,15 @@ export function setCfgMirrorLayoutMap(
 ): MapsByName['mirrorLayoutMap'] {
   return readMirrorLayoutMapSnapshot(
     setCfgVisualKeyedMapFromOwner(App, 'mirrorLayoutMap', readMirrorLayoutMapSnapshot(next), meta)
+  );
+}
+
+export function setCfgGrooveLayoutMap(
+  App: unknown,
+  next: unknown,
+  meta?: ActionMetaLike
+): MapsByName['grooveLayoutMap'] {
+  return readGrooveLayoutMapSnapshot(
+    setCfgVisualKeyedMapFromOwner(App, 'grooveLayoutMap', readGrooveLayoutMapSnapshot(next), meta)
   );
 }

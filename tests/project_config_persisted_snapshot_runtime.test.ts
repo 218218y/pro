@@ -21,6 +21,10 @@ test('project config comparable patch canonicalizes only provided branches and d
       d1: [{ widthCm: '99', heightCm: 99 }],
       d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
     },
+    grooveLayoutMap: {
+      d1: [{ widthCm: 99 }],
+      d1_full: [{ widthCm: '40', heightCm: 70, orientation: 'horizontal' }],
+    },
     customMeta: sourceCustomMeta,
   } as never);
 
@@ -29,6 +33,12 @@ test('project config comparable patch canonicalizes only provided branches and d
   assert.equal('cornerConfiguration' in patch, false);
   assert.deepEqual({ ...patch.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal('d1' in (patch.mirrorLayoutMap || {}), false);
+  assert.deepEqual(
+    { ...patch.grooveLayoutMap },
+    {
+      d1_full: [{ widthCm: 40, heightCm: 70, orientation: 'horizontal' }],
+    }
+  );
   assert.notEqual(patch.savedNotes, sourceNotes);
   assert.notEqual(patch.customMeta, sourceCustomMeta);
 
@@ -65,6 +75,10 @@ test('project config persisted snapshot readers share a canonical branch list an
         d1: [{ widthCm: '99', heightCm: 99 }],
         d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
       },
+      grooveLayoutMap: {
+        d1: [{ widthCm: 99 }],
+        d1_full: [{ widthCm: '40', heightCm: 70, orientation: 'horizontal' }],
+      },
       doorTrimMap: {
         d1: [{ axis: 'horizontal', color: 'black' }],
         d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
@@ -91,6 +105,12 @@ test('project config persisted snapshot readers share a canonical branch list an
   assert.deepEqual({ ...persisted.roundedFrameSideShelvesMap }, { body_left: true, body_right: false });
   assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal('d1' in (persisted.mirrorLayoutMap || {}), false);
+  assert.deepEqual(
+    { ...persisted.grooveLayoutMap },
+    {
+      d1_full: [{ widthCm: 40, heightCm: 70, orientation: 'horizontal' }],
+    }
+  );
   assert.equal(Array.isArray(persisted.doorTrimMap.d1_full), true);
   assert.equal(persisted.doorTrimMap.d1_full[0].axis, 'vertical');
   assert.equal(persisted.doorTrimMap.d1_full[0].color, 'gold');

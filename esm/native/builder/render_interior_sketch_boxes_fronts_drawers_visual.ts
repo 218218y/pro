@@ -125,14 +125,13 @@ function createSketchBoxExternalDrawerFrontVisual(
       false,
       frontVisualState.mirrorLayout,
       opPlan.partId,
-      frontVisualState.isGlass || frontVisualState.adhesiveGlassKind
-        ? {
-            ...(frontVisualState.isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
-            ...(frontVisualState.adhesiveGlassKind
-              ? { adhesiveGlassKind: frontVisualState.adhesiveGlassKind }
-              : null),
-          }
-        : null
+      {
+        grooveLayout: frontVisualState.grooveLayout,
+        ...(frontVisualState.isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
+        ...(frontVisualState.adhesiveGlassKind
+          ? { adhesiveGlassKind: frontVisualState.adhesiveGlassKind }
+          : null),
+      }
     );
   } catch {
     return null;

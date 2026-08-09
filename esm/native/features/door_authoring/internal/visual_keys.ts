@@ -1,4 +1,4 @@
-import { readMirrorLayoutList } from './mirror_contracts.js';
+import { readMirrorLayoutList } from './surface_layout_contracts.js';
 
 import type { MirrorLayoutList } from '../../../../../types';
 import {

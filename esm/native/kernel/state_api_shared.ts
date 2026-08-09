@@ -19,6 +19,7 @@ export const PROJECT_CONFIG_REPLACE_KEYS: Record<string, true> = {
   cornerConfiguration: true,
   groovesMap: true,
   grooveLinesCountMap: true,
+  grooveLayoutMap: true,
   splitDoorsMap: true,
   splitDoorsBottomMap: true,
   removedDoorsMap: true,

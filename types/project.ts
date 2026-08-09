@@ -14,6 +14,7 @@ import type {
   DoorStyleMap,
   GroovesMap,
   GrooveLinesCountMap,
+  GrooveLayoutMap,
   HandlesMap,
   HingeMap,
   IndividualColorsMap,
@@ -144,6 +145,7 @@ export interface ProjectMapsLike extends UnknownRecord {
   curtainMap?: CurtainMap;
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
+  grooveLayoutMap?: GrooveLayoutMap;
   individualColors?: IndividualColorsMap;
   doorSpecialMap?: DoorSpecialMap;
   doorStyleMap?: DoorStyleMap;

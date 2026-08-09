@@ -31,6 +31,7 @@ import type {
   DoorSpecialMap,
   DoorStyleMap,
   MirrorLayoutMap,
+  GrooveLayoutMap,
   DoorTrimMap,
 } from './maps';
 import type {
@@ -86,6 +87,7 @@ export interface ProjectDataLike extends UnknownRecord {
   curtainMap?: CurtainMap;
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
+  grooveLayoutMap?: GrooveLayoutMap;
   individualColors?: IndividualColorsMap;
   doorSpecialMap?: DoorSpecialMap;
   doorStyleMap?: DoorStyleMap;
@@ -315,6 +317,7 @@ export interface ConfigStateLike extends UnknownRecord {
   // Various maps
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
+  grooveLayoutMap?: GrooveLayoutMap;
   splitDoorsMap?: SplitDoorsMap;
   splitDoorsBottomMap?: SplitDoorsBottomMap;
   removedDoorsMap?: RemovedDoorsMap;

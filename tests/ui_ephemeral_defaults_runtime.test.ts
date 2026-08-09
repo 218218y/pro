@@ -26,7 +26,7 @@ test('ui ephemeral defaults runtime: seeds only missing UI-only defaults through
   });
 
   assert.equal(seedUiEphemeralDefaults(App), true);
-  assert.equal(calls.length, 6);
+  assert.equal(calls.length, 7);
   assert.deepEqual(calls[0].patch, {
     currentLayoutType: 'shelves',
     currentGridDivisions: 6,
@@ -44,6 +44,13 @@ test('ui ephemeral defaults runtime: seeds only missing UI-only defaults through
     currentHandleToolEdgeVariant: 'short',
   });
   assert.equal(calls[3].meta.source, 'boot:uiDefaults:handleTool');
+  assert.deepEqual(calls[6].patch, {
+    grooveManualEnabled: false,
+    currentGrooveDraftHeightCm: '',
+    currentGrooveDraftWidthCm: '',
+    currentGrooveOrientation: 'vertical',
+  });
+  assert.equal(calls[6].meta.source, 'boot:uiDefaults:grooveDraft');
   assert.equal(isUiEphemeralDefaultsSeeded(App), true);
 });
 
@@ -65,6 +72,10 @@ test('ui ephemeral defaults runtime: reports soft patch owner rejection without 
           currentCurtainChoice: 'none',
           currentMirrorDraftHeightCm: '',
           currentMirrorDraftWidthCm: '',
+          grooveManualEnabled: false,
+          currentGrooveDraftHeightCm: '',
+          currentGrooveDraftWidthCm: '',
+          currentGrooveOrientation: 'vertical',
         },
         config: {},
         runtime: {},

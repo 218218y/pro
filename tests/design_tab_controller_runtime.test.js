@@ -29,6 +29,8 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
         setUiCorniceType:
           stubs.setUiCorniceType || ((...args) => stubs.calls?.push(['setUiCorniceType', ...args])),
         setUiDoorStyle: stubs.setUiDoorStyle || ((...args) => stubs.calls?.push(['setUiDoorStyle', ...args])),
+        setUiScalarSoft:
+          stubs.setUiScalarSoft || ((...args) => stubs.calls?.push(['setUiScalarSoft', ...args])),
       };
     }
     if (specifier === '../actions/structural_build_refresh_actions.js') {
@@ -165,6 +167,30 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
       ['groovesEnabled', true],
     ])
   );
+});
+
+test('[design-tab-controller-runtime] keeps manual groove drafts and orientation in ephemeral UI state', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    readStoreStateMaybe: () => ({ ui: { grooveManualEnabled: false } }),
+  });
+  const controller = mod.createDesignTabControllerRuntime({ app, setFeatureToggle: () => undefined });
+
+  controller.toggleGrooveManual();
+  controller.setGrooveDraftHeightCm('80');
+  controller.setGrooveDraftWidthCm('35,5');
+  controller.setGrooveOrientation('horizontal');
+  controller.setGrooveOrientation('vertical');
+
+  assert.deepEqual(calls, [
+    ['setUiScalarSoft', app, 'grooveManualEnabled', true],
+    ['setUiScalarSoft', app, 'currentGrooveDraftHeightCm', '80'],
+    ['setUiScalarSoft', app, 'currentGrooveDraftWidthCm', '35,5'],
+    ['setUiScalarSoft', app, 'currentGrooveOrientation', 'horizontal'],
+    ['setUiScalarSoft', app, 'currentGrooveOrientation', 'vertical'],
+  ]);
 });
 
 test('[design-tab-controller-runtime] freezes groove line counts through semantic map writer', () => {

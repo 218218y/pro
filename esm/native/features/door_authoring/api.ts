@@ -1,5 +1,25 @@
 export { isRemoveDoorModeFromSnapshot, resolveRemoveDoorsEnabledFromSnapshots } from './internal/removal.js';
 
+export type {
+  GrooveDraftInput,
+  GrooveLayoutHitMatch,
+  GrooveLayoutListLookup,
+  GrooveLayoutRect,
+  ResolvedGroovePlacement,
+} from './internal/surface_layout_contracts.js';
+export {
+  DEFAULT_GROOVE_ORIENTATION,
+  buildGrooveLayoutFromHit,
+  findGrooveLayoutMatchInRect,
+  readCanonicalGrooveLayoutMap,
+  readGrooveLayoutEntry,
+  readGrooveLayoutList,
+  readGrooveLayoutListForPart,
+  readGrooveOrientation,
+  resolveGroovePlacementInRect,
+  resolveGroovePlacementListInRect,
+} from './internal/surface_layout_contracts.js';
+
 export type { DoorStyleOverrideValue } from './internal/style.js';
 
 export type { AdhesiveGlassKind } from './internal/special_glass.js';

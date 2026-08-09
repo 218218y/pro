@@ -15,7 +15,11 @@ import {
 } from '../features/door_authoring/api.js';
 import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
-import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import {
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutListForPart,
+} from './door_visual_lookup_state.js';
 import { resolveSketchGroovesEnabledFromBuildContext } from './render_interior_sketch_grooves_visibility.js';
 
 import {
@@ -54,6 +58,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   const curtainMap = asRecord(readKey(cfg, 'curtainMap'));
   const specialMap = asRecord(readKey(cfg, 'doorSpecialMap'));
   const mirrorLayoutMap = asRecord(readKey(cfg, 'mirrorLayoutMap'));
+  const grooveLayoutMap = asRecord(readKey(cfg, 'grooveLayoutMap'));
   const doorStyleMap = readDoorStyleMap(readKey(cfg, 'doorStyleMap'));
   const isDoorRemoved = makeDoorRemovalChecker(cfg);
   const handlesMap = asRecord(readKey(cfg, 'handlesMap'));
@@ -82,6 +87,8 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   };
   const resolveMirrorLayout = (partId: string): unknown =>
     readDoorVisualMirrorLayout(mirrorLayoutMap, partId);
+  const resolveGrooveLayout = (partId: string): unknown =>
+    readGrooveLayoutListForPart({ map: grooveLayoutMap, partId })?.layouts || null;
   const resolveHandleColor = (partId: string): string =>
     resolveConfiguredHandleColor(readKey(cfg, 'handlesMap'), partId);
   const stripSuffix = (partId: string): string => partId.replace(/_(top|mid\d*|bot|full)$/, '');
@@ -125,6 +132,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     groovesEnabled,
     doorTrimMap,
     resolveMirrorLayout,
+    resolveGrooveLayout,
     isDoorRemoved,
   };
 }

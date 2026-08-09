@@ -1,4 +1,5 @@
 import type { FrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
+import type { GrooveOrientation } from '../../../../../types';
 import type { DesignTabColorManagerModel } from './use_design_tab_color_manager.js';
 import type {
   DesignTabCorniceType,
@@ -25,6 +26,10 @@ export type DesignTabDoorFeaturesSectionModel = {
   groovesEnabled: boolean;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
+  grooveManualEnabled: boolean;
+  grooveDraftHeightCm: string;
+  grooveDraftWidthCm: string;
+  grooveOrientation: GrooveOrientation;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
   roundedFrameSideShelvesVisible: boolean;
@@ -37,6 +42,10 @@ export type DesignTabDoorFeaturesSectionModel = {
   toggleGrooveEdit: () => void;
   setGrooveLinesCount: (count: number) => void;
   resetGrooveLinesCount: () => void;
+  toggleGrooveManual: () => void;
+  setGrooveDraftHeightCm: (value: string) => void;
+  setGrooveDraftWidthCm: (value: string) => void;
+  setGrooveOrientation: (orientation: GrooveOrientation) => void;
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
   toggleRemoveDoorEdit: () => void;
@@ -83,4 +92,8 @@ export type DesignTabControllerState = {
   corniceType: DesignTabCorniceType;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
+  grooveManualEnabled: boolean;
+  grooveDraftHeightCm: string;
+  grooveDraftWidthCm: string;
+  grooveOrientation: GrooveOrientation;
 } & DesignTabModeStateSummary;

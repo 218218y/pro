@@ -99,6 +99,7 @@ function createBaseRuntime(overrides: Partial<Record<string, unknown>> = {}) {
     doorStyleMap: {},
     groovesMap: {},
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
     isDoorRemoved: () => false,
     ...overrides,
   };

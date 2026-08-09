@@ -238,6 +238,8 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
     errors.push('"doorStyleMap" must be an object');
   if (data.mirrorLayoutMap && typeof data.mirrorLayoutMap !== 'object')
     errors.push('"mirrorLayoutMap" must be an object');
+  if (data.grooveLayoutMap && typeof data.grooveLayoutMap !== 'object')
+    errors.push('"grooveLayoutMap" must be an object');
   if (data.doorTrimMap && typeof data.doorTrimMap !== 'object')
     errors.push('"doorTrimMap" must be an object');
   if (data.groovesMap && typeof data.groovesMap !== 'object') errors.push('"groovesMap" must be an object');

@@ -26,7 +26,13 @@ import {
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 
-import type { AppContainer, MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
+import type {
+  AppContainer,
+  GrooveLayoutList,
+  MirrorLayoutList,
+  Object3DLike,
+  ThreeLike,
+} from '../../../types/index.js';
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
 
@@ -48,6 +54,7 @@ type AdhesiveGlassDoorVisualArgs = {
   hasGrooves?: boolean;
   groovePartId?: string | null;
   grooveLinesCount?: number | null;
+  grooveLayout?: GrooveLayoutList | null;
   tagDoorVisualPart?: TagDoorVisualPartFn | null;
 };
 
@@ -367,6 +374,7 @@ function buildStyledDoorFrame(args: AdhesiveGlassDoorVisualArgs & { style: 'prof
     hasGrooves: args.hasGrooves === true,
     groovePartId: args.groovePartId ?? null,
     grooveLinesCount: args.grooveLinesCount ?? null,
+    grooveLayout: args.grooveLayout ?? null,
     isSketch: args.isSketch,
     zSign: args.zSign,
   } as const;
@@ -415,6 +423,7 @@ export function createAdhesiveGlassDoorVisual(args: AdhesiveGlassDoorVisualArgs)
     targetH: args.h,
     zOffset: (depthLayout.baseDoorThick / 2) * args.zSign,
     linesCountOverride: args.grooveLinesCount ?? null,
+    grooveLayout: args.grooveLayout ?? null,
   });
 
   for (let i = 0; i < placements.length; i += 1) {

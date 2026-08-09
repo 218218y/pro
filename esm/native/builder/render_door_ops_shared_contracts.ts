@@ -48,6 +48,7 @@ export type SlidingDoorConfig = {
   doorStyleMap?: ReturnType<typeof readDoorStyleMap>;
   curtainMap?: Record<string, unknown>;
   mirrorLayoutMap?: Record<string, unknown>;
+  grooveLayoutMap?: Record<string, unknown>;
   doorTrimMap?: Record<string, unknown>;
   handlesMap?: Record<string, unknown>;
   isMultiColorMode?: boolean;

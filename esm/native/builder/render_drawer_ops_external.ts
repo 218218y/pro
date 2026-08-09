@@ -6,6 +6,7 @@ import {
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
 } from '../../shared/dimensions/external_drawer_policy.js';
 import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
+import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
 import {
   isRecord,
@@ -134,11 +135,13 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           false,
           drawerVisualState.mirrorLayout,
           partId,
-          drawerVisualState.isGlass
-            ? { glassFrameStyle: effectiveDrawerFrameStyle }
-            : drawerVisualState.adhesiveGlassKind
+          {
+            grooveLayout: readGrooveLayoutListForPart({ map: cfg.grooveLayoutMap, partId })?.layouts || null,
+            ...(drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : null),
+            ...(drawerVisualState.adhesiveGlassKind
               ? { adhesiveGlassKind: drawerVisualState.adhesiveGlassKind }
-              : null
+              : null),
+          }
         );
       } else {
         visual = new THREE.Mesh(

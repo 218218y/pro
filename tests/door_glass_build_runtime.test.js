@@ -149,7 +149,7 @@ test('hinged door build keeps explicit glass visuals instead of normalizing them
   assert.equal(calls.length, 1);
   assert.equal(calls[0][4], 'glass');
   assert.equal(calls[0][7], 'white');
-  assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
+  assert.deepEqual(calls[0][13], { grooveLayout: null, glassFrameStyle: 'profile' });
 });
 
 test('split hinged glass doors inherit the full-door glass frame style instead of falling back to full-glass flat style', () => {
@@ -214,9 +214,9 @@ test('split hinged glass doors inherit the full-door glass frame style instead o
   assert.equal(didApply, true);
   assert.equal(calls.length, 2);
   assert.equal(calls[0][4], 'glass');
-  assert.deepEqual(calls[0][13], { glassFrameStyle: 'profile' });
+  assert.deepEqual(calls[0][13], { grooveLayout: null, glassFrameStyle: 'profile' });
   assert.equal(calls[1][4], 'glass');
-  assert.deepEqual(calls[1][13], { glassFrameStyle: 'profile' });
+  assert.deepEqual(calls[1][13], { grooveLayout: null, glassFrameStyle: 'profile' });
 });
 
 test('hinged door build writes only canonical door ids into runtime userData', () => {
@@ -302,7 +302,7 @@ test('external drawer build treats glass specials like real glass fronts, keeps 
   assert.equal(calls[0][4], 'glass');
   assert.equal(calls[0][6], false);
   assert.equal(calls[0][7], 'purple');
-  assert.deepEqual(calls[0][13], { glassFrameStyle: 'double_profile' });
+  assert.deepEqual(calls[0][13], { grooveLayout: null, glassFrameStyle: 'double_profile' });
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0][8], { omitFrontPanel: true });
   assert.equal(wardrobeGroup.children.length, 1);

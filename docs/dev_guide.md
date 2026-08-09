@@ -118,12 +118,14 @@ Do not run `npm run e2e:smoke` by default. Use browser/E2E smoke only for browse
 - UI updates go through `App.actions.*`, especially `App.actions.ui.patch(...)` for simple UI state updates.
 - Action-only controls, such as export or file dialogs, should not be modeled as persistent UI state unless there is real state to preserve.
 - UI should consume public service/API seams rather than importing deep runtime internals.
+- Groove tool drafts (manual width/height and current orientation) are ephemeral UI state. Applied groove placement is persisted only in the canonical `grooveLayoutMap`; `groovesMap` remains a boolean toggle map.
 
 ## Build/render rules
 
 - Kernel derives build state from the canonical store or explicit overrides.
 - Builder/render operations should receive explicit deps/context.
 - Avoid duplicate builds, duplicate writes, and rerenders that do not reflect semantic state changes.
+- Groove hover, click placement, and rendered strips must share the groove-surface rectangle emitted by the door visual. Do not infer a second rectangle from outer door bounds, especially for profile doors.
 
 ## Install rules
 

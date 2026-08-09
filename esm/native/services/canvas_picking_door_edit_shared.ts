@@ -8,10 +8,24 @@ import {
   PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY,
   readPendingGrooveLinesCountMap,
 } from '../runtime/groove_lines_access.js';
-import { readDoorTrimMap } from '../features/door_authoring/api.js';
+import {
+  buildGrooveLayoutFromHit,
+  findGrooveLayoutMatchInRect,
+  readDoorTrimMap,
+  readGrooveLayoutListForPart,
+  resolveGroovePlacementInRect,
+} from '../features/door_authoring/api.js';
 import { toCanonicalGrooveLinesCountMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
+
+export {
+  buildGrooveLayoutFromHit,
+  findGrooveLayoutMatchInRect,
+  normalizeKnownMapSnapshot,
+  readGrooveLayoutListForPart,
+  resolveGroovePlacementInRect,
+};
 
 export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown): T | null {
   return readRecord<T>(value);

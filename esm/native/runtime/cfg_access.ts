@@ -13,6 +13,7 @@ export {
   setCfgHandlesMap,
   setCfgHingeMap,
   setCfgIndividualColors,
+  setCfgGrooveLayoutMap,
   setCfgMirrorLayoutMap,
 } from './cfg_access_maps.js';
 export {

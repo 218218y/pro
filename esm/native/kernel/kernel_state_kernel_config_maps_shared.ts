@@ -120,6 +120,7 @@ export function createKernelStateKernelConfigMapsTools(
           : sanitizeCornerConfigurationForPatch(value, value);
       case 'groovesMap':
       case 'grooveLinesCountMap':
+      case 'grooveLayoutMap':
       case 'splitDoorsMap':
       case 'splitDoorsBottomMap':
       case 'removedDoorsMap':

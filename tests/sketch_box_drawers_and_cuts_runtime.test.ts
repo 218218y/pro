@@ -130,6 +130,7 @@ function createFocusedDoorCutHarness(args: {
     groovesMap: {},
     doorTrimMap: {},
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
     isDoorRemoved: () => false,
   } as never;
   const suppressedHandlePartIds: string[][] = [];

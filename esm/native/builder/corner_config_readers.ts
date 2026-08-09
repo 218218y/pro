@@ -18,6 +18,7 @@ const CORNER_CONFIG_MAP_NAMES = [
   'drawerDividersMap',
   'groovesMap',
   'grooveLinesCountMap',
+  'grooveLayoutMap',
   'removedDoorsMap',
   'roundedFrameSideShelvesMap',
   'curtainMap',

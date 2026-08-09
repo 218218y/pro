@@ -37,6 +37,7 @@ export {
   isSimpleWritableMapName,
   isVisualKeyedMapName,
   patchDoorGrooveLinesCountEntries,
+  patchDoorGrooveLayoutEntries,
   patchDoorGrooveMapEntries,
   replaceCurtainMap,
   replaceDoorSpecialMap,

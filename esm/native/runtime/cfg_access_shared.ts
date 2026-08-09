@@ -19,7 +19,10 @@ import type {
 } from '../../../types';
 import type { RootStoreLike } from '../../../types/backend_store';
 
-import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
+import {
+  readCanonicalGrooveLayoutMap,
+  readCanonicalMirrorLayoutMap,
+} from '../../shared/surface_layout_contracts_shared.js';
 import { assertStore } from './assert.js';
 
 export type RootStateLike = UnknownRecord & { config?: ConfigSnapshotLike };
@@ -150,6 +153,10 @@ export function readDoorSpecialMapSnapshot(value: unknown): MapsByName['doorSpec
 
 export function readMirrorLayoutMapSnapshot(value: unknown): MapsByName['mirrorLayoutMap'] {
   return readCanonicalMirrorLayoutMap(value);
+}
+
+export function readGrooveLayoutMapSnapshot(value: unknown): MapsByName['grooveLayoutMap'] {
+  return readCanonicalGrooveLayoutMap(value);
 }
 
 function getAppLike(App: unknown): ConfigAccessAppLike | null {

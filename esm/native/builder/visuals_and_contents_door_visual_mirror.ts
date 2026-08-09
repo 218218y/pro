@@ -18,6 +18,7 @@ import { __asCanvas, __markMirrorTracked } from './visuals_and_contents_shared.j
 import type {
   AppContainer,
   BuilderMirrorReflectorProfile,
+  GrooveLayoutList,
   MirrorLayoutList,
   Object3DLike,
   ThreeLike,
@@ -42,6 +43,7 @@ type MirrorDoorVisualArgs = {
   hasGrooves?: boolean;
   groovePartId?: string | null;
   grooveLinesCount?: number | null;
+  grooveLayout?: GrooveLayoutList | null;
   tagDoorVisualPart?: TagDoorVisualPartFn | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
 };
@@ -219,6 +221,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     targetH: h,
     zOffset: (depthLayout.baseDoorThick / 2) * zSign,
     linesCountOverride: args.grooveLinesCount ?? null,
+    grooveLayout: args.grooveLayout ?? null,
   });
 
   // Sketch-only: a subtle diagonal pattern overlay to distinguish mirrors.

@@ -115,6 +115,43 @@ test('door visual grooves honor an explicit local groove-line count before profi
   );
 });
 
+test('horizontal manual grooves render across the selected rectangle and expose the same hover surface', () => {
+  const THREE = createThree();
+  const visualGroup = new THREE.Group();
+  appendGrooveStrips({
+    App: {} as never,
+    THREE: THREE as never,
+    visualGroup: visualGroup as never,
+    tagDoorVisualPart() {},
+    hasGrooves: true,
+    isSketch: false,
+    groovePartId: 'd1_full',
+    zSign: 1,
+    targetW: 1,
+    targetH: 2,
+    zOffset: 0.02,
+    linesCountOverride: 2,
+    grooveLayout: [
+      { widthCm: 40, heightCm: 60, centerXNorm: 0.75, centerYNorm: 0.25, orientation: 'horizontal' },
+    ],
+  });
+
+  assert.equal(visualGroup.children.length, 2);
+  const [first, second] = visualGroup.children as FakeMesh[];
+  assert.equal(first.position.x, second.position.x);
+  assert.notEqual(first.position.y, second.position.y);
+  assert.equal(
+    (first.geometry as FakeBoxGeometry).args[0] > (first.geometry as FakeBoxGeometry).args[1],
+    true
+  );
+  assert.deepEqual(visualGroup.userData.__wpGrooveSurfaceRect, {
+    minX: -0.5,
+    maxX: 0.5,
+    minY: -1,
+    maxY: 1,
+  });
+});
+
 test('styled sketch-box profile doors forward the stored per-box groove count into createDoorVisual', () => {
   const calls: unknown[][] = [];
   const doorGroup = new FakeGroup();
@@ -171,11 +208,12 @@ test('styled sketch-box profile doors forward the stored per-box groove count in
       isGlass: false,
       curtainType: null,
       mirrorLayout: null,
+      grooveLayout: null,
     },
   });
 
   assert.equal(calls.length, 1);
-  assert.deepEqual(calls[0][13], { grooveLinesCount: 7.8 });
+  assert.deepEqual(calls[0][13], { grooveLinesCount: 7.8, grooveLayout: null });
   assert.equal(doorGroup.children[0], createdVisual);
 });
 
@@ -233,10 +271,11 @@ test('styled sketch-box profile doors hide stored grooves when the global groove
       isGlass: false,
       curtainType: null,
       mirrorLayout: null,
+      grooveLayout: null,
     },
   });
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0][5], false);
-  assert.deepEqual(calls[0][13], { grooveLinesCount: 4 });
+  assert.deepEqual(calls[0][13], { grooveLinesCount: 4, grooveLayout: null });
 });

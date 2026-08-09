@@ -16,7 +16,7 @@ import {
 import { readRemovedFrameSideShelfState } from '../../../features/part_identity/api.js';
 import { readUiRawIntFromSnapshot } from '../selectors/ui_raw_selectors.js';
 
-import type { UnknownRecord } from '../../../../../types';
+import type { GrooveOrientation, UnknownRecord } from '../../../../../types';
 
 export type DesignTabCfgState = {
   wardrobeType: string;
@@ -39,6 +39,10 @@ export type DesignTabUiState = {
   frontColorShelfInheritanceMode: 'all' | 'brace';
   isChestMode: boolean;
   groovesEnabled: boolean;
+  grooveManualEnabled: boolean;
+  grooveDraftHeightCm: string;
+  grooveDraftWidthCm: string;
+  grooveOrientation: GrooveOrientation;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
   hasCornice: boolean;
@@ -68,6 +72,10 @@ function readBoolean(value: unknown): boolean {
 
 function normalizeFrontColorShelfInheritanceMode(value: unknown): 'all' | 'brace' {
   return value === 'all' ? 'all' : 'brace';
+}
+
+function readDraftString(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 }
 
 export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {
@@ -100,6 +108,10 @@ export function readDesignTabUiState(ui: unknown): DesignTabUiState {
     ),
     isChestMode: readBoolean(rec?.isChestMode),
     groovesEnabled: readBoolean(rec?.groovesEnabled),
+    grooveManualEnabled: readBoolean(rec?.grooveManualEnabled),
+    grooveDraftHeightCm: readDraftString(rec?.currentGrooveDraftHeightCm),
+    grooveDraftWidthCm: readDraftString(rec?.currentGrooveDraftWidthCm),
+    grooveOrientation: rec?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical',
     splitDoors: readBoolean(rec?.splitDoors),
     removeDoorsEnabled: readBoolean(rec?.removeDoorsEnabled),
     hasCornice: readBoolean(rec?.hasCornice),

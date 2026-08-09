@@ -4,6 +4,7 @@ export const VISUAL_KEYED_MAP_NAMES = [
   'doorTrimMap',
   'groovesMap',
   'grooveLinesCountMap',
+  'grooveLayoutMap',
   'removedDoorsMap',
   'splitDoorsMap',
   'splitDoorsBottomMap',

@@ -28,6 +28,7 @@ import {
   readThreeLike,
   resolveHandleType,
   resolveMirrorLayout,
+  resolveGrooveLayout,
   resolveSlidingDoorVisualState,
 } from './render_door_ops_shared.js';
 
@@ -179,6 +180,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
             } as const)
           : null;
         const doorVisualOptions = {
+          grooveLayout: resolveGrooveLayout(cfg, slideID),
           ...(visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null),
           ...(visualState.adhesiveGlassKind ? { adhesiveGlassKind: visualState.adhesiveGlassKind } : null),
           ...(mirrorReflectorProfile ? { mirrorReflectorProfile } : null),

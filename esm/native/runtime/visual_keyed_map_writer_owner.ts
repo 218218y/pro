@@ -5,6 +5,7 @@ import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 import type { VisualKeyedMapName } from './visual_keyed_map_names.js';
 import {
+  toCanonicalGrooveLayoutMapKey,
   toCanonicalGrooveLinesCountMapKey,
   toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
@@ -13,7 +14,7 @@ import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_ke
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 type GrooveContractMapName = 'groovesMap' | 'grooveLinesCountMap';
-type CanonicalVisualPatchMapName = GrooveContractMapName | 'doorTrimMap';
+type CanonicalVisualPatchMapName = GrooveContractMapName | 'grooveLayoutMap' | 'doorTrimMap';
 
 export type VisualKeyedOwnerPatchMapName =
   | CanonicalVisualPatchMapName
@@ -30,6 +31,7 @@ function readGrooveContractMapKey(mapName: GrooveContractMapName, key: unknown):
 
 function readCanonicalVisualPatchKey(mapName: CanonicalVisualPatchMapName, key: unknown): string {
   if (mapName === 'doorTrimMap') return toCanonicalDoorTrimTargetKey(key);
+  if (mapName === 'grooveLayoutMap') return toCanonicalGrooveLayoutMapKey(key);
   return readGrooveContractMapKey(mapName, key);
 }
 

@@ -138,6 +138,7 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
     'individualColors',
     'doorSpecialMap',
     'doorStyleMap',
+    'grooveLayoutMap',
     'handlesMap',
     'hingeMap',
     'curtainMap',

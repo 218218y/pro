@@ -76,6 +76,7 @@ function _normalizeCfgContainers(cfg: ConfigStateLike): ConfigStateLike {
 
   cfg.groovesMap = normalizeKnownMapSnapshot('groovesMap', cfg.groovesMap);
   cfg.grooveLinesCountMap = normalizeKnownMapSnapshot('grooveLinesCountMap', cfg.grooveLinesCountMap);
+  cfg.grooveLayoutMap = normalizeKnownMapSnapshot('grooveLayoutMap', cfg.grooveLayoutMap);
   cfg.splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', cfg.splitDoorsMap);
   cfg.splitDoorsBottomMap = normalizeKnownMapSnapshot('splitDoorsBottomMap', cfg.splitDoorsBottomMap);
   cfg.removedDoorsMap = normalizeKnownMapSnapshot('removedDoorsMap', cfg.removedDoorsMap);

@@ -18,7 +18,11 @@ import {
   normalizeSavedColorObjectsSnapshot,
   normalizeSavedColorsSnapshot,
 } from './maps_access_normalizers_collections.js';
-import { normalizeDoorTrimMap, normalizeMirrorLayoutMap } from './maps_access_normalizers_visuals.js';
+import {
+  normalizeDoorTrimMap,
+  normalizeGrooveLayoutMap,
+  normalizeMirrorLayoutMap,
+} from './maps_access_normalizers_visuals.js';
 
 const KNOWN_MAP_NORMALIZERS = {
   handlesMap: normalizeHandlesMap,
@@ -28,6 +32,7 @@ const KNOWN_MAP_NORMALIZERS = {
   drawerDividersMap: normalizeToggleMap,
   groovesMap: normalizeGroovesMap,
   grooveLinesCountMap: normalizeNullablePositiveIntMap,
+  grooveLayoutMap: normalizeGrooveLayoutMap,
   removedDoorsMap: normalizeRemovedDoorsMap,
   roundedFrameSideShelvesMap: normalizeToggleMap,
   curtainMap: normalizeNullableStringMap,

@@ -1,6 +1,9 @@
 import type { DoorTrimEntry, DoorTrimMap, MapsByName } from '../../../types';
 
-import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
+import {
+  readCanonicalGrooveLayoutMap,
+  readCanonicalMirrorLayoutMap,
+} from '../../shared/surface_layout_contracts_shared.js';
 import { isCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
 import { normalizeDoorTrimEntryValueList } from '../../shared/door_trim_value_contracts_shared.js';
 import { asRecord } from './maps_access_shared.js';
@@ -8,6 +11,10 @@ import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
 
 export function normalizeMirrorLayoutMap(value: unknown): MapsByName['mirrorLayoutMap'] {
   return readCanonicalMirrorLayoutMap(value);
+}
+
+export function normalizeGrooveLayoutMap(value: unknown): MapsByName['grooveLayoutMap'] {
+  return readCanonicalGrooveLayoutMap(value);
 }
 
 function normalizeDoorTrimList(value: unknown): DoorTrimEntry[] {

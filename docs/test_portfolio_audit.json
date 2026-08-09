@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-09T05:03:00.145Z",
+  "generatedAt": "2026-08-09T12:07:39.057Z",
   "totals": {
-    "tests": 1234,
-    "unitRunnerTests": 1226,
+    "tests": 1236,
+    "unitRunnerTests": 1228,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 35,
     "packageTestReferences": 40,
@@ -20,8 +20,8 @@
   },
   "categories": {
     "contract": 407,
-    "runtime-unit": 328,
-    "integration": 460,
+    "runtime-unit": 329,
+    "integration": 461,
     "persistence-ingress": 24,
     "e2e-smoke": 9,
     "perf-smoke": 6
@@ -3851,6 +3851,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_door_action_hover_preview_groove_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/canvas_picking_door_action_hover_preview_paint_runtime.test.ts",
       "category": "integration"
     },
@@ -5477,6 +5481,10 @@
     {
       "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
       "category": "contract"
+    },
+    {
+      "file": "tests/groove_layout_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/groove_lines_count_runtime.test.ts",

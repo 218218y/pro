@@ -1,6 +1,6 @@
-import type { ReactElement } from 'react';
+import type { ChangeEvent, ReactElement } from 'react';
 
-import { Button, ModeToggleButton, ToggleRow } from '../components/index.js';
+import { Button, ModeToggleButton, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
 import type { DoorFeaturesSectionProps } from './design_tab_sections_contracts.js';
 
 export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactElement | null {
@@ -32,6 +32,63 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
           >
             {model.grooveActive ? 'סיום עריכה' : 'הוסף/הסר חריטה'}
           </ModeToggleButton>
+
+          <ModeToggleButton
+            active={model.grooveManualEnabled}
+            icon={<i className="fas fa-ruler-combined" aria-hidden="true" />}
+            onClick={model.toggleGrooveManual}
+            className="wp-r-mt-2"
+            data-testid="design-groove-manual-button"
+          >
+            חריטה ידנית
+          </ModeToggleButton>
+
+          {model.grooveManualEnabled ? (
+            <div
+              className="wp-tool-card wp-tool-card--curtain wp-r-mt-2"
+              data-testid="design-groove-manual-fields"
+            >
+              <div className="wp-section-title">מידות חריטה</div>
+              <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
+                <GrooveDraftField
+                  id="wp-r-groove-draft-height"
+                  label="גובה (ס״מ)"
+                  resetLabel="איפוס גובה החריטה"
+                  value={model.grooveDraftHeightCm}
+                  onChange={model.setGrooveDraftHeightCm}
+                />
+                <GrooveDraftField
+                  id="wp-r-groove-draft-width"
+                  label="רוחב (ס״מ)"
+                  resetLabel="איפוס רוחב החריטה"
+                  value={model.grooveDraftWidthCm}
+                  onChange={model.setGrooveDraftWidthCm}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          <div className="wp-r-mt-2" data-testid="design-groove-orientation-controls">
+            <div className="wp-r-label wp-r-label--center">כיוון החריטה</div>
+            <OptionButtonGroup columns={2} density="compact" label="כיוון החריטה">
+              <OptionButton
+                density="compact"
+                selected={model.grooveOrientation === 'vertical'}
+                onClick={() => model.setGrooveOrientation('vertical')}
+                testId="design-groove-orientation-vertical"
+              >
+                חריטה עומדת
+              </OptionButton>
+              <OptionButton
+                density="compact"
+                selected={model.grooveOrientation === 'horizontal'}
+                onClick={() => model.setGrooveOrientation('horizontal')}
+                testId="design-groove-orientation-horizontal"
+              >
+                חריטה שוכבת
+              </OptionButton>
+            </OptionButtonGroup>
+          </div>
 
           {showGrooveLinesControls ? (
             <div className="wp-r-mt-2 wp-r-groove-lines-block">
@@ -192,6 +249,46 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
           ) : null}
         </>
       ) : null}
+    </div>
+  );
+}
+
+function GrooveDraftField(props: {
+  id: string;
+  label: string;
+  resetLabel: string;
+  value: string;
+  onChange: (value: string) => void;
+}): ReactElement {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => props.onChange(event.target.value);
+  return (
+    <div className="wp-r-mirror-draft-field">
+      <label className="wp-r-label wp-r-label--center wp-r-mirror-draft-label" htmlFor={props.id}>
+        {props.label}
+      </label>
+      <div className="wp-r-mirror-draft-input-row">
+        <Button
+          variant="light"
+          inline
+          className="wp-r-groove-reset-btn wp-r-mirror-draft-reset-btn wp-r-styled-tooltip hint-bottom"
+          data-tooltip={props.resetLabel}
+          aria-label={props.resetLabel}
+          onClick={() => props.onChange('')}
+        >
+          <i className="fas fa-undo-alt" aria-hidden="true" />
+        </Button>
+        <input
+          id={props.id}
+          name={props.id}
+          type="text"
+          inputMode="decimal"
+          className="form-control wp-r-mirror-draft-input"
+          placeholder="אוטומטי"
+          value={props.value}
+          aria-label={props.label}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 }

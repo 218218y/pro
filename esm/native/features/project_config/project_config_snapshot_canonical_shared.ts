@@ -20,6 +20,7 @@ export const KNOWN_PROJECT_CONFIG_MAP_KEYS = new Set([
   'individualColors',
   'doorSpecialMap',
   'doorStyleMap',
+  'grooveLayoutMap',
   'mirrorLayoutMap',
   'handlesMap',
   'hingeMap',
@@ -41,6 +42,7 @@ export type PersistedProjectConfigBranchKey =
   | 'individualColors'
   | 'doorSpecialMap'
   | 'doorStyleMap'
+  | 'grooveLayoutMap'
   | 'mirrorLayoutMap'
   | 'doorTrimMap'
   | 'handlesMap'
@@ -70,6 +72,7 @@ export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjec
   'individualColors',
   'doorSpecialMap',
   'doorStyleMap',
+  'grooveLayoutMap',
   'mirrorLayoutMap',
   'doorTrimMap',
   'handlesMap',

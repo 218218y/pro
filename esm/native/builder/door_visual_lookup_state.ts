@@ -1,1 +1,6 @@
-export { readDoorVisualMapValue, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
+export {
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutListForPart,
+  resolveGroovePlacementListInRect,
+} from '../features/door_authoring/api.js';

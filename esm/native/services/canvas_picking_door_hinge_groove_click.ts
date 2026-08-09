@@ -1,4 +1,4 @@
-import type { AppContainer, DoorVisualEntryLike } from '../../../types';
+import type { AppContainer, DoorVisualEntryLike, GrooveLayoutEntry, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
@@ -8,6 +8,7 @@ import {
   normalizeKnownMapSnapshot,
   patchDoorGrooveLinesCountEntries,
   patchDoorGrooveMapEntries,
+  patchDoorGrooveLayoutEntries,
   toggleGrooveKey,
   writeHinge,
 } from '../runtime/maps_access.js';
@@ -22,11 +23,20 @@ import {
   readGrooveLinesCountOverride,
   resolvePendingGrooveLinesCount,
 } from '../runtime/groove_lines_access.js';
-import { readDoorPartIdFromHitObject, readDoorWidthFromHitObject } from './canvas_picking_door_shared.js';
+import {
+  readDoorPartIdFromHitObject,
+  readDoorWidthFromHitObject,
+  readGrooveSurfaceRectFromUserData,
+  readPointXYZ,
+  resolveGrooveSurfaceOwnerByPartId,
+} from './canvas_picking_door_shared.js';
 import { readCanvasDoorSplitNodeOwnBounds } from './canvas_picking_door_split_bounds_shared.js';
 import {
   asRecord,
+  buildGrooveLayoutFromHit,
+  findGrooveLayoutMatchInRect,
   readGrooveLinesCountMap,
+  readGrooveLayoutListForPart,
   writePendingGrooveLinesCountForPart,
 } from './canvas_picking_door_edit_shared.js';
 import {
@@ -61,6 +71,7 @@ import {
   __wp_canonDoorPartKeyForMaps,
   __wp_scopeCornerPartKeyForStack,
   __wp_historyBatch,
+  __wp_ui,
 } from './canvas_picking_core_helpers.js';
 
 export interface CanvasDoorHingeClickArgs {
@@ -120,7 +131,141 @@ export interface CanvasDoorGrooveClickArgs {
   activeStack: 'top' | 'bottom';
   foundModuleStack: 'top' | 'bottom';
   doorHitY?: number | null;
+  doorHitPoint?: UnknownRecord | null;
   doorHitObject: unknown;
+  doorHitGroup?: UnknownRecord | null;
+}
+
+function readGrooveLayoutToolState(App: AppContainer): {
+  usesLayoutPlacement: boolean;
+  manual: boolean;
+  widthCm: unknown;
+  heightCm: unknown;
+  orientation: 'vertical' | 'horizontal';
+} {
+  const ui = __wp_ui(App);
+  const manual = ui.grooveManualEnabled === true;
+  const orientation = ui.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical';
+  return {
+    usesLayoutPlacement: manual || orientation === 'horizontal',
+    manual,
+    widthCm: ui.currentGrooveDraftWidthCm,
+    heightCm: ui.currentGrooveDraftHeightCm,
+    orientation,
+  };
+}
+
+function handleCanvasDoorGrooveLayoutClick(args: {
+  App: AppContainer;
+  targetId: string;
+  doorHitPoint?: UnknownRecord | null;
+  doorHitObject: unknown;
+  doorHitGroup?: UnknownRecord | null;
+  foundModuleStack: 'top' | 'bottom';
+  grooveLinesCount: number | null;
+}): boolean | null {
+  const tool = readGrooveLayoutToolState(args.App);
+  if (!tool.usesLayoutPlacement) return null;
+
+  const surfaceOwner = resolveGrooveSurfaceOwnerByPartId(
+    (asRecord(args.doorHitObject) || asRecord(args.doorHitGroup)) as UnknownRecord | null,
+    args.targetId
+  );
+  const surfaceUserData = asRecord(surfaceOwner?.userData);
+  const surfaceRect = readGrooveSurfaceRectFromUserData(surfaceUserData);
+  const hitPoint = asRecord(args.doorHitPoint) as (UnknownRecord & { clone?: () => unknown }) | null;
+  const localHitVector = hitPoint && typeof hitPoint.clone === 'function' ? hitPoint.clone() : null;
+  if (
+    !surfaceOwner ||
+    !surfaceRect ||
+    !readPointXYZ(localHitVector) ||
+    typeof surfaceOwner.worldToLocal !== 'function'
+  ) {
+    __wp_toast(args.App, 'לא ניתן לזהות בבטחה את אזור החריטה בדלת זו', 'error');
+    return true;
+  }
+
+  if (!localHitVector) {
+    __wp_toast(args.App, 'לא ניתן למקם את החריטה בדלת זו', 'error');
+    return true;
+  }
+  try {
+    surfaceOwner.worldToLocal(localHitVector as { x: number; y: number; z: number });
+  } catch {
+    __wp_toast(args.App, 'לא ניתן למקם את החריטה בדלת זו', 'error');
+    return true;
+  }
+  const localHit = readPointXYZ(localHitVector);
+  if (!localHit) return true;
+
+  const currentLookup = readGrooveLayoutListForPart({
+    map: __wp_map(args.App, 'grooveLayoutMap'),
+    partId: args.targetId,
+  });
+  const currentLayouts = currentLookup?.layouts || [];
+  const removeMatch = findGrooveLayoutMatchInRect({
+    rect: surfaceRect,
+    layouts: currentLayouts,
+    hitX: localHit.x,
+    hitY: localHit.y,
+  });
+  const groovesMap = normalizeKnownMapSnapshot('groovesMap', __wp_map(args.App, 'groovesMap'));
+  const hasCanonicalFullVertical =
+    !currentLayouts.length && readDoorGrooveVisualMapFlag(groovesMap, args.targetId) === true;
+  const nextLayouts = currentLayouts.map(layout => ({ ...layout }));
+  let nextGrooveOn = true;
+
+  if (removeMatch) {
+    nextLayouts.splice(removeMatch.index, 1);
+    nextGrooveOn = nextLayouts.length > 0;
+  } else if (hasCanonicalFullVertical && tool.orientation === 'vertical') {
+    nextGrooveOn = false;
+  } else {
+    const layout = buildGrooveLayoutFromHit({
+      rect: surfaceRect,
+      hitX: localHit.x,
+      hitY: localHit.y,
+      draft: {
+        widthCm: tool.manual ? tool.widthCm : null,
+        heightCm: tool.manual ? tool.heightCm : null,
+        orientation: tool.orientation,
+      },
+    });
+    if (layout) nextLayouts.push(layout);
+  }
+
+  const grooveKey = toCanonicalGroovesMapKey(args.targetId);
+  const layoutPatchValue: GrooveLayoutEntry[] | null = nextLayouts.length ? nextLayouts : null;
+  const structuralMeta = createCanvasPickingDoorAuthoringStructuralMeta('groove:layout:click');
+  const refreshMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta(
+    args.App,
+    'groove:layout:click',
+    structuralMeta
+  );
+  __wp_historyBatch(args.App, structuralMeta, () => {
+    const sketchTarget = parseSketchBoxDoorTarget(args.targetId);
+    if (sketchTarget && !isSketchBoxDoorSegmentPartId(args.targetId)) {
+      patchSketchBoxDoor(
+        args.App,
+        sketchTarget,
+        args.foundModuleStack,
+        current =>
+          current && current.enabled !== false
+            ? {
+                ...current,
+                groove: nextGrooveOn,
+                grooveLinesCount: nextGrooveOn ? args.grooveLinesCount : null,
+              }
+            : current,
+        { source: 'groove:layout:click' }
+      );
+    }
+    patchDoorGrooveLayoutEntries(args.App, [{ key: args.targetId, value: layoutPatchValue }], refreshMeta);
+    patchDoorGrooveMapEntries(args.App, [{ key: grooveKey, value: nextGrooveOn }], refreshMeta);
+    return undefined;
+  });
+  requestDoorAuthoringImmediateRefresh(args.App, 'groove:layout:click');
+  return true;
 }
 
 type GrooveHitNode = {
@@ -245,7 +390,17 @@ function resolveSketchBoxSegmentTargetFromHitY(args: {
 }
 
 export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): boolean {
-  const { App, effectiveDoorId, foundPartId, activeStack, foundModuleStack, doorHitObject, doorHitY } = args;
+  const {
+    App,
+    effectiveDoorId,
+    foundPartId,
+    activeStack,
+    foundModuleStack,
+    doorHitObject,
+    doorHitY,
+    doorHitPoint,
+    doorHitGroup,
+  } = args;
   const doorHitRecord = asRecord(doorHitObject);
   const targetIdRaw = readDoorPartIdFromHitObject(doorHitRecord) || effectiveDoorId || foundPartId;
   const targetId = resolveSketchBoxSegmentTargetFromHitY({
@@ -258,6 +413,23 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
   const clickedDoorWidth = readDoorWidthFromHitObject(doorHitRecord);
   const grooveLinesCountForClick = resolvePendingGrooveLinesCount(App, clickedDoorWidth, undefined, targetId);
   const explicitGrooveLinesCountForClick = readGrooveLinesCountOverride(App);
+
+  if (targetId && blocksOutsideGrooveForPart(App, targetId)) {
+    toastOutsideGrooveBlocked(App);
+    return true;
+  }
+  if (targetId) {
+    const layoutHandled = handleCanvasDoorGrooveLayoutClick({
+      App,
+      targetId,
+      doorHitPoint,
+      doorHitObject,
+      doorHitGroup,
+      foundModuleStack,
+      grooveLinesCount: grooveLinesCountForClick,
+    });
+    if (layoutHandled !== null) return layoutHandled;
+  }
 
   const sketchTarget = parseSketchBoxDoorTarget(targetId || effectiveDoorId || foundPartId);
   const isSketchBoxSegmentTarget = isSketchBoxDoorSegmentPartId(targetId || effectiveDoorId || foundPartId);

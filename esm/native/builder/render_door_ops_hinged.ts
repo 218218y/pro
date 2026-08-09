@@ -18,6 +18,7 @@ import {
   readThreeLike,
   resolveHandleType,
   resolveMirrorLayout,
+  resolveGrooveLayout,
   resolveDoorVisualStyle,
 } from './render_door_ops_shared.js';
 
@@ -141,6 +142,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
           doorOp.style === 'glass' ? resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId) : null;
         const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
         const doorVisualOptions = {
+          grooveLayout: resolveGrooveLayout(cfg, partId),
           ...(glassFrameStyle ? { glassFrameStyle } : null),
           ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
         };

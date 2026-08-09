@@ -135,6 +135,7 @@ export function createDoorVisual(
       hasGrooves: hasOutsideGrooves,
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
     } as const;
 
     if ((style === 'profile' || style === 'double_profile') && hasExplicitMirrorLayout(mirrorLayout)) {
@@ -174,6 +175,7 @@ export function createDoorVisual(
           hasGrooves: hasOutsideGrooves,
           groovePartId,
           grooveLinesCount: options?.grooveLinesCount ?? null,
+          grooveLayout: options?.grooveLayout ?? null,
           mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
         });
       }
@@ -199,6 +201,7 @@ export function createDoorVisual(
           hasGrooves: hasOutsideGrooves,
           groovePartId,
           grooveLinesCount: options?.grooveLinesCount ?? null,
+          grooveLayout: options?.grooveLayout ?? null,
           mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
         });
       }
@@ -219,6 +222,7 @@ export function createDoorVisual(
       hasGrooves: hasOutsideGrooves,
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
       tagDoorVisualPart,
       mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
     });
@@ -257,6 +261,7 @@ export function createDoorVisual(
       hasGrooves,
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
       isSketch,
       zSign,
     });
@@ -276,6 +281,7 @@ export function createDoorVisual(
       hasGrooves,
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
       isSketch,
       zSign,
     });
@@ -295,6 +301,7 @@ export function createDoorVisual(
       hasGrooves,
       groovePartId,
       grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
       isSketch,
       zSign,
     });

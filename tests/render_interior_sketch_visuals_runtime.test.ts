@@ -26,6 +26,7 @@ test('render interior sketch visuals resolve mirror state ahead of curtain and k
     isGlass: false,
     curtainType: null,
     mirrorLayout,
+    grooveLayout: null,
   });
 });
 
@@ -48,6 +49,7 @@ test('render interior sketch visuals fall back to glass + curtain from part colo
     isGlass: true,
     curtainType: 'linen',
     mirrorLayout: null,
+    grooveLayout: null,
   });
 });
 

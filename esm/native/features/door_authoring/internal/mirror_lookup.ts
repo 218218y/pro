@@ -7,7 +7,7 @@ import {
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   isRecord,
-} from './mirror_contracts.js';
+} from './surface_layout_contracts.js';
 import {
   distanceFromPointToRect,
   placementRect,

@@ -57,6 +57,7 @@ export function installKernelStateKernelConfigApplySurface(
       if (cfg.cornerConfiguration !== undefined) setValue('cornerConfiguration', cfg.cornerConfiguration);
       if (cfg.groovesMap !== undefined) setValue('groovesMap', cfg.groovesMap);
       if (cfg.grooveLinesCountMap !== undefined) setValue('grooveLinesCountMap', cfg.grooveLinesCountMap);
+      if (cfg.grooveLayoutMap !== undefined) setValue('grooveLayoutMap', cfg.grooveLayoutMap);
       if (cfg.splitDoorsMap !== undefined) setValue('splitDoorsMap', cfg.splitDoorsMap);
       if (cfg.splitDoorsBottomMap !== undefined) setValue('splitDoorsBottomMap', cfg.splitDoorsBottomMap);
       if (cfg.removedDoorsMap !== undefined) setValue('removedDoorsMap', cfg.removedDoorsMap);

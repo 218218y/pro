@@ -18,6 +18,7 @@ import {
   readDoorTrimConfigMap,
   readGrooveLinesCountMap,
   readGroovesMap,
+  readGrooveLayoutConfigMap,
   readHandlesMap,
   readHingeMap,
   readIndividualColorsMap,
@@ -50,6 +51,7 @@ export interface PersistedProjectConfigSnapshot {
   individualColors: NonNullable<ProjectDataLike['individualColors']>;
   doorSpecialMap: NonNullable<ProjectDataLike['doorSpecialMap']>;
   doorStyleMap: NonNullable<ProjectDataLike['doorStyleMap']>;
+  grooveLayoutMap: NonNullable<ProjectDataLike['grooveLayoutMap']>;
   mirrorLayoutMap: NonNullable<ProjectDataLike['mirrorLayoutMap']>;
   doorTrimMap: NonNullable<ProjectDataLike['doorTrimMap']>;
   handlesMap: NonNullable<ProjectDataLike['handlesMap']>;
@@ -145,6 +147,7 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
   individualColors: canonicalConfig => readIndividualColorsMap(canonicalConfig.individualColors),
   doorSpecialMap: canonicalConfig => readDoorSpecialMap(canonicalConfig.doorSpecialMap),
   doorStyleMap: canonicalConfig => readDoorStyleMap(canonicalConfig.doorStyleMap),
+  grooveLayoutMap: canonicalConfig => readGrooveLayoutConfigMap(canonicalConfig.grooveLayoutMap),
   mirrorLayoutMap: canonicalConfig => readMirrorLayoutConfigMap(canonicalConfig.mirrorLayoutMap),
   doorTrimMap: canonicalConfig => readDoorTrimConfigMap(canonicalConfig.doorTrimMap),
   handlesMap: canonicalConfig => readHandlesMap(canonicalConfig.handlesMap),
@@ -182,6 +185,7 @@ function readComparableProjectConfigSnapshot(
     individualColors: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.individualColors(canonicalConfig),
     doorSpecialMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.doorSpecialMap(canonicalConfig),
     doorStyleMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.doorStyleMap(canonicalConfig),
+    grooveLayoutMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.grooveLayoutMap(canonicalConfig),
     mirrorLayoutMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.mirrorLayoutMap(canonicalConfig),
     doorTrimMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.doorTrimMap(canonicalConfig),
     handlesMap: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.handlesMap(canonicalConfig),

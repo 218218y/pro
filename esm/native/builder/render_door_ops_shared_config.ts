@@ -1,4 +1,4 @@
-import type { MirrorLayoutList } from '../../../types';
+import type { GrooveLayoutList, MirrorLayoutList } from '../../../types';
 import {
   readDoorStyleMap,
   resolveAdhesiveGlassKind,
@@ -13,7 +13,11 @@ import type {
   SlidingUiState,
 } from './render_door_ops_shared_contracts.js';
 import { isRecord, readCurtainType } from './render_door_ops_shared_core.js';
-import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import {
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutListForPart,
+} from './door_visual_lookup_state.js';
 
 function readObjectMap(value: unknown): Record<string, unknown> | undefined {
   return isRecord(value) ? value : undefined;
@@ -43,6 +47,7 @@ export function readDoorConfig(value: unknown): SlidingDoorConfig {
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),
     curtainMap: readObjectMap(value.curtainMap),
     mirrorLayoutMap: readObjectMap(value.mirrorLayoutMap),
+    grooveLayoutMap: readObjectMap(value.grooveLayoutMap),
     doorTrimMap: readObjectMap(value.doorTrimMap),
     handlesMap: readObjectMap(value.handlesMap),
     isMultiColorMode: value.isMultiColorMode === true,
@@ -73,6 +78,11 @@ export function resolveMirrorLayout(cfg: SlidingDoorConfig, partId: string): Mir
   const map = cfg.mirrorLayoutMap;
   if (!map || typeof partId !== 'string' || !partId) return null;
   return readDoorVisualMirrorLayout(map, partId);
+}
+
+export function resolveGrooveLayout(cfg: SlidingDoorConfig, partId: string): GrooveLayoutList | null {
+  const resolved = readGrooveLayoutListForPart({ map: cfg.grooveLayoutMap, partId });
+  return resolved?.layouts || null;
 }
 
 export function resolveSlidingDoorVisualState(

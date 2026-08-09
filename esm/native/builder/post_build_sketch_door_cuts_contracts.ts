@@ -48,6 +48,7 @@ export type SketchDoorCutsRuntime = {
   groovesEnabled?: boolean;
   doorTrimMap?: ValueRecord | null;
   resolveMirrorLayout: (partId: string) => unknown;
+  resolveGrooveLayout: (partId: string) => unknown;
   isDoorRemoved: (partId: string) => boolean;
 };
 

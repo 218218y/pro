@@ -28,6 +28,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
     curtainType: string | null;
     adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
     mirrorLayout: unknown;
+    grooveLayout: import('../../../types').GrooveLayoutList | null;
   };
 }): void {
   const { renderArgs, doorGroup, layout, materials, visualRoute, THREE, addOutlines, doorVisualState } = args;
@@ -61,6 +62,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
         ? { glassFrameStyle: visualRoute.effectiveDoorStyle }
         : {
             grooveLinesCount: boxDoor.grooveLinesCount ?? null,
+            grooveLayout: doorVisualState.grooveLayout,
             ...(doorVisualState.adhesiveGlassKind
               ? { adhesiveGlassKind: doorVisualState.adhesiveGlassKind }
               : {}),
@@ -92,7 +94,10 @@ export function appendSketchBoxDoorCoreVisual(args: {
       false,
       null,
       doorPid,
-      { grooveLinesCount: boxDoor.grooveLinesCount ?? null }
+      {
+        grooveLinesCount: boxDoor.grooveLinesCount ?? null,
+        grooveLayout: doorVisualState.grooveLayout,
+      }
     );
     const styledVisualObj = readObject<InteriorGroupLike>(styledVisual) || asMesh(styledVisual);
     if (styledVisualObj) {

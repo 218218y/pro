@@ -39,6 +39,7 @@ export type StyledDoorVisualArgs = {
   hasGrooves: boolean;
   groovePartId?: string | null;
   grooveLinesCount?: number | null;
+  grooveLayout?: import('../../../types/index.js').GrooveLayoutList | null;
   isSketch: boolean;
   zSign: number;
 };

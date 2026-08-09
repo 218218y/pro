@@ -51,6 +51,10 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         grooveActive: true,
         grooveLinesCount: '8',
         grooveLinesCountIsAuto: false,
+        grooveManualEnabled: true,
+        grooveDraftHeightCm: '80',
+        grooveDraftWidthCm: '35',
+        grooveOrientation: 'horizontal',
         splitDoors: true,
         splitActive: false,
         splitIsCustom: false,
@@ -62,6 +66,10 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
         resetGrooveLinesCount: noop,
+        toggleGrooveManual: noop,
+        setGrooveDraftHeightCm: noop,
+        setGrooveDraftWidthCm: noop,
+        setGrooveOrientation: noop,
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
@@ -132,6 +140,14 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /הסר\/החזר דלת/);
   assert.match(hingedHtml, /מדפים מעוגלים/);
   assert.match(hingedHtml, /design-rounded-frame-side-shelves-button/);
+  assert.match(hingedHtml, /design-groove-manual-button/);
+  assert.match(hingedHtml, /wp-r-groove-draft-height/);
+  assert.match(hingedHtml, /wp-r-groove-draft-width/);
+  assert.match(hingedHtml, /design-groove-orientation-vertical/);
+  assert.match(hingedHtml, /design-groove-orientation-horizontal/);
+  assert.match(hingedHtml, /חריטה ידנית/);
+  assert.match(hingedHtml, /חריטה עומדת/);
+  assert.match(hingedHtml, /חריטה שוכבת/);
   assert.match(hingedHtml, /type="number"/);
   assert.doesNotMatch(slidingHtml, /דלתות חתוכות \(Split\)/);
   assert.match(slidingHtml, /הסרת דלתות או דפנות/);
@@ -149,6 +165,10 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         grooveActive: false,
         grooveLinesCount: '6',
         grooveLinesCountIsAuto: false,
+        grooveManualEnabled: false,
+        grooveDraftHeightCm: '',
+        grooveDraftWidthCm: '',
+        grooveOrientation: 'vertical',
         splitDoors: true,
         splitActive: true,
         splitIsCustom: false,
@@ -160,6 +180,10 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
         resetGrooveLinesCount: noop,
+        toggleGrooveManual: noop,
+        setGrooveDraftHeightCm: noop,
+        setGrooveDraftWidthCm: noop,
+        setGrooveOrientation: noop,
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,

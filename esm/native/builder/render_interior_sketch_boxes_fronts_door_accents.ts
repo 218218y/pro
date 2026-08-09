@@ -1,7 +1,7 @@
 import { SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY } from '../../shared/dimensions/sketch_box_classic_door_visual_policy.js';
-import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
+import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 
-import type { AppContainer } from '../../../types/index.js';
+import type { AppContainer, GrooveLayoutList } from '../../../types/index.js';
 import type {
   InteriorGroupLike,
   InteriorTHREESurface,
@@ -25,6 +25,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
   doorH: number;
   doorD: number;
   boxDoor: { groove?: unknown; grooveLinesCount?: unknown };
+  grooveLayout?: GrooveLayoutList | null;
   groovesEnabled?: boolean;
 }): void {
   const {
@@ -49,17 +50,9 @@ export function appendClassicDoorAccentAndGrooves(args: {
     opacity: 0.2,
     depthWrite: false,
   });
-  const grooveMat = new THREE.MeshBasicMaterial({
-    color: 0x1f1f1f,
-    transparent: true,
-    opacity: 0.22,
-    depthWrite: false,
-  });
   try {
     const accentMaterial = asMaterial(accentMat);
     if (accentMaterial) accentMaterial.__keepMaterial = true;
-    const grooveMaterial = asMaterial(grooveMat);
-    if (grooveMaterial) grooveMaterial.__keepMaterial = true;
   } catch {
     // builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents
   }
@@ -109,40 +102,30 @@ export function appendClassicDoorAccentAndGrooves(args: {
     0
   );
 
-  if (groovesEnabled && boxDoor.groove === true) {
-    const grooveFillMat = new THREE.MeshStandardMaterial({
-      color: 0x000000,
-      roughness: 0.9,
-    });
-    try {
-      const grooveFillMaterial = asMaterial(grooveFillMat);
-      if (grooveFillMaterial) grooveFillMaterial.__keepMaterial = true;
-    } catch {
-      // builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents
-    }
-    const grooveCount =
-      normalizeGrooveLinesCount(boxDoor.grooveLinesCount) ??
-      resolveGrooveLinesCount(App, doorW, undefined, doorPid);
-    const grooveGap = doorW / (grooveCount + 1);
-    const grooveStripW = classicDims.grooveStripWidthM;
-    const grooveStripH = Math.max(classicDims.grooveHeightMinM, doorH - classicDims.grooveHeightClearanceM);
-    const grooveDepth = classicDims.grooveDepthM;
-    const grooveZ = doorD / 2 + classicDims.grooveSurfaceOffsetM;
-    for (let grooveIndex = 1; grooveIndex <= grooveCount; grooveIndex++) {
-      const grooveX = -doorW / 2 + grooveIndex * grooveGap;
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(grooveStripW, grooveStripH, grooveDepth),
-        grooveFillMat
-      );
-      mesh.position?.set?.(slabLocalX + grooveX, 0, grooveZ);
-      mesh.renderOrder = 4;
-      applySketchBoxPickMeta(mesh, doorPid, moduleKeyStr, bid, { door: true });
-      mesh.userData = {
-        ...readObject<InteriorValueRecord>(mesh.userData),
-        __wpSketchBoxDoorId: doorId,
-        __wpSketchFreePlacement: isFreePlacement === true,
-      };
-      doorGroup.add?.(mesh);
-    }
-  }
+  const grooveSurfaceGroup = new THREE.Group();
+  grooveSurfaceGroup.position?.set?.(slabLocalX, 0, 0);
+  applySketchBoxPickMeta(grooveSurfaceGroup, doorPid, moduleKeyStr, bid, { door: true });
+  grooveSurfaceGroup.userData = {
+    ...readObject<InteriorValueRecord>(grooveSurfaceGroup.userData),
+    __wpSketchBoxDoorId: doorId,
+    __wpSketchFreePlacement: isFreePlacement === true,
+  };
+  doorGroup.add?.(grooveSurfaceGroup);
+  appendGrooveStrips({
+    App,
+    THREE: THREE as never,
+    visualGroup: grooveSurfaceGroup as never,
+    tagDoorVisualPart(node) {
+      applySketchBoxPickMeta(node as never, doorPid, moduleKeyStr, bid, { door: true });
+    },
+    hasGrooves: groovesEnabled && boxDoor.groove === true,
+    isSketch: true,
+    groovePartId: doorPid,
+    zSign: 1,
+    targetW: doorW,
+    targetH: doorH,
+    zOffset: doorD / 2,
+    linesCountOverride: boxDoor.grooveLinesCount,
+    grooveLayout: args.grooveLayout ?? null,
+  });
 }

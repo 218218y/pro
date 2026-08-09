@@ -24,6 +24,7 @@ export type SketchSegmentVisualFlags = {
   segmentAdhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
   segmentCurtain: string | null;
   segmentMirrorLayout: unknown;
+  segmentGrooveLayout: unknown;
 };
 
 function readGrooveBooleanValue(value: unknown): boolean {
@@ -118,8 +119,15 @@ export function resolveSketchSegmentVisualFlags(args: {
   sourceUserData?: ValueRecord | null;
 }): SketchSegmentVisualFlags {
   const { runtime, segmentPartId } = args;
-  const { resolveCurtain, resolveSpecial, doorStyle, doorStyleMap, groovesMap, resolveMirrorLayout } =
-    runtime;
+  const {
+    resolveCurtain,
+    resolveSpecial,
+    doorStyle,
+    doorStyleMap,
+    groovesMap,
+    resolveMirrorLayout,
+    resolveGrooveLayout,
+  } = runtime;
   const sourceUserData = asRecord(args.sourceUserData);
   const segmentCurtain = resolveCurtain(segmentPartId);
   const segmentSpecial = resolveSpecial(segmentPartId, segmentCurtain);
@@ -140,6 +148,7 @@ export function resolveSketchSegmentVisualFlags(args: {
     segmentAdhesiveGlassKind,
     segmentCurtain,
     segmentMirrorLayout: resolveMirrorLayout(segmentPartId),
+    segmentGrooveLayout: resolveGrooveLayout(segmentPartId),
   };
 }
 
@@ -186,11 +195,11 @@ export function createSegmentVisual(args: {
         false,
         flags.segmentMirrorLayout,
         segmentPartId,
-        flags.segmentIsGlass
-          ? { glassFrameStyle: flags.effectiveDoorStyle }
-          : flags.segmentAdhesiveGlassKind
-            ? { adhesiveGlassKind: flags.segmentAdhesiveGlassKind }
-            : null
+        {
+          grooveLayout: flags.segmentGrooveLayout,
+          ...(flags.segmentIsGlass ? { glassFrameStyle: flags.effectiveDoorStyle } : null),
+          ...(flags.segmentAdhesiveGlassKind ? { adhesiveGlassKind: flags.segmentAdhesiveGlassKind } : null),
+        }
       );
     } catch {
       visual = null;

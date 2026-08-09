@@ -30,6 +30,7 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
     hasGrooves,
     groovePartId,
     grooveLinesCount,
+    grooveLayout,
     isSketch,
     zSign,
   } = args;
@@ -206,6 +207,7 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetH: innerH,
     zOffset: centerFaceZ,
     linesCountOverride: grooveLinesCount,
+    grooveLayout,
   });
   return visualGroup;
 }

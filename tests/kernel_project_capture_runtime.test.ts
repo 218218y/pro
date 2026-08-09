@@ -277,6 +277,7 @@ test('kernel project capture payload preserves exact persisted key order and ser
     'cornerConfiguration',
     'groovesMap',
     'grooveLinesCountMap',
+    'grooveLayoutMap',
     'splitDoorsMap',
     'splitDoorsBottomMap',
     'removedDoorsMap',
@@ -382,10 +383,10 @@ test('kernel project capture payload preserves exact persisted key order and ser
   }
 
   const serialized = JSON.stringify(payload);
-  assert.equal(serialized.length, 2000);
+  assert.equal(serialized.length, 2021);
   assert.equal(
     createHash('sha256').update(serialized).digest('hex'),
-    '403b37551d02614895c1c976a9e5d50850541479c58c4dbf50c05532b219a2ed'
+    'c01e3a7202691bf93150501bcb1c9d5888ebf7d67a7281985120f16567db4436'
   );
 });
 

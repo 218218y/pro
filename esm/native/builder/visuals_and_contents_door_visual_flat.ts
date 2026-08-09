@@ -16,6 +16,7 @@ export function createFlatDoorVisual(args: StyledDoorVisualArgs) {
     hasGrooves,
     groovePartId,
     grooveLinesCount,
+    grooveLayout,
     isSketch,
     zSign,
   } = args;
@@ -37,6 +38,7 @@ export function createFlatDoorVisual(args: StyledDoorVisualArgs) {
     targetH: h,
     zOffset: (thickness / 2) * zSign,
     linesCountOverride: grooveLinesCount,
+    grooveLayout,
   });
   return visualGroup;
 }

@@ -9,6 +9,7 @@ import {
   readDoorStyleMap as normalizeDoorStyleMap,
   readDoorTrimConfigMap,
   readGroovesMap,
+  readGrooveLayoutConfigMap,
   readMirrorLayoutConfigMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
@@ -136,6 +137,7 @@ const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer>
   individualColors: normalizeNullableStringMap,
   doorSpecialMap: normalizeNullableStringMap,
   doorStyleMap: normalizeDoorStyleMap,
+  grooveLayoutMap: readGrooveLayoutConfigMap,
   mirrorLayoutMap: readMirrorLayoutConfigMap,
   doorTrimMap: readDoorTrimConfigMap,
 };

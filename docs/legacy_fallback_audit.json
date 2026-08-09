@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-09T04:28:40.247Z",
+  "generatedAt": "2026-08-09T12:07:33.190Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 168,
+    "totalOccurrences": 167,
     "totalFiles": 91,
     "byCategory": {
       "runtime-default": 31,
-      "domain-default": 101,
+      "domain-default": 100,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 6,
@@ -110,9 +110,9 @@
         }
       },
       "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "domain-default": 2
+          "domain-default": 1
         }
       },
       "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts": {
@@ -737,13 +737,6 @@
         }
       },
       {
-        "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
-        "total": 2,
-        "categories": {
-          "domain-default": 2
-        }
-      },
-      {
         "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
         "total": 2,
         "categories": {
@@ -780,6 +773,13 @@
       },
       {
         "file": "esm/native/runtime/data_attrs.ts",
+        "total": 2,
+        "categories": {
+          "runtime-default": 2
+        }
+      },
+      {
+        "file": "esm/native/runtime/platform_access_ops.ts",
         "total": 2,
         "categories": {
           "runtime-default": 2
@@ -994,14 +994,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
-      "line": 64,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts",
-      "line": 121,
+      "line": 57,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated door accents"
@@ -1155,7 +1148,7 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
-      "line": 79,
+      "line": 81,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-cache-write-fallback: mirror-canvas caching is an optimization and must not block visual creation"

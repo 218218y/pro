@@ -101,6 +101,21 @@ function createApp() {
   return { App, state, buildRequests, feedbackToasts };
 }
 
+class GrooveTestVector3 {
+  x = 0;
+  y = 0;
+  z = 0;
+  set(x: number, y: number, z: number) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  }
+  clone() {
+    return new GrooveTestVector3().set(this.x, this.y, this.z);
+  }
+}
+
 test('door authoring burst refresh stays debounced for coalesced structural edits', () => {
   const { App, buildRequests } = createApp();
 
@@ -163,6 +178,56 @@ test('regular door groove click toggles the groove and requests an immediate reb
   assert.equal(buildRequests[0].meta.source, 'groove:click');
   assert.equal(buildRequests[0].meta.immediate, true);
   assert.equal(buildRequests[0].meta.force, false);
+});
+
+test('manual horizontal groove click persists the exact sized surface placement and removes it on a second click', () => {
+  const { App, state, buildRequests } = createApp();
+  state.ui.grooveManualEnabled = true;
+  state.ui.currentGrooveDraftWidthCm = '40';
+  state.ui.currentGrooveDraftHeightCm = '60';
+  state.ui.currentGrooveOrientation = 'horizontal';
+  const grooveSurface = {
+    userData: {
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+  const click = () =>
+    handleCanvasDoorGrooveClick({
+      App,
+      effectiveDoorId: 'd1_left',
+      foundPartId: null,
+      activeStack: 'top',
+      foundModuleStack: 'top',
+      doorHitPoint: new GrooveTestVector3().set(0.2, 0.3, 0.02),
+      doorHitObject: grooveSurface,
+      doorHitGroup: grooveSurface,
+    });
+
+  assert.equal(click(), true);
+  assert.deepEqual(state.config.grooveLayoutMap.d1_left, [
+    {
+      widthCm: 40,
+      heightCm: 60,
+      centerXNorm: 0.7,
+      centerYNorm: 0.65,
+      orientation: 'horizontal',
+    },
+  ]);
+  assert.equal(state.config.groovesMap.groove_d1_left, true);
+
+  assert.equal(click(), true);
+  assert.equal(state.config.grooveLayoutMap.d1_left, undefined);
+  assert.equal(state.config.groovesMap.groove_d1_left, false);
+  assert.equal(buildRequests.length, 2);
+  assert.equal(
+    buildRequests.every(request => request.meta.source === 'groove:layout:click'),
+    true
+  );
 });
 
 test('regular door groove click allows outside grooves when the mirror is only on the inside face', () => {
@@ -1011,6 +1076,7 @@ test('free sketch-box segmented door groove clicks preserve explicit off state a
     doorStyleMap: {},
     groovesMap: state.config.groovesMap,
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
   };
   const sourceUserData = { __wpSketchBoxDoor: true, __wpSketchBoxDoorGroove: true };
   assert.equal(
@@ -1054,6 +1120,7 @@ test('sketch-box segmented door visual flags inherit whole-door groove until a s
     doorStyleMap: {},
     groovesMap: {},
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
   };
 
   const sourceUserData = { __wpSketchBoxDoor: true, __wpSketchBoxDoorGroove: true };
@@ -1077,6 +1144,7 @@ test('sketch-box segmented door visual flags hide inherited grooves when global 
     groovesMap: {},
     groovesEnabled: false,
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
   };
 
   const sourceUserData = { __wpSketchBoxDoor: true, __wpSketchBoxDoorGroove: true };
@@ -1099,6 +1167,7 @@ test('sketch-box segmented door visual flags do not inherit box-door groove onto
     doorStyleMap: {},
     groovesMap: { [`groove_${base}_top`]: true },
     resolveMirrorLayout: () => null,
+    resolveGrooveLayout: () => null,
   };
 
   const sourceUserData = { __wpSketchBoxDoor: true, __wpSketchBoxDoorGroove: true };

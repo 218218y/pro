@@ -109,7 +109,15 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
     /const doorSlab = new THREE\.Mesh\(new THREE\.BoxGeometry\(doorW, doorH, doorD\), materials\.doorMat\)/
   );
   assert.match(render, /shouldUseClassicAccents: !isSpecialVisual/);
-  assert.match(render, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
+  assert.match(
+    render,
+    /import \{ appendGrooveStrips \} from '\.\/visuals_and_contents_door_visual_grooves\.js';/
+  );
+  assert.match(
+    render,
+    /appendGrooveStrips\(\{[\s\S]*hasGrooves: groovesEnabled && boxDoor\.groove === true,[\s\S]*grooveLayout: args\.grooveLayout \?\? null,/
+  );
+  assert.doesNotMatch(render, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
   assert.match(render, /addAccent\(`\$\{doorPid\}_accent_top`/);
   assert.doesNotMatch(render, /const handlePid = `\$\{doorPid\}_handle`/);
   assert.match(

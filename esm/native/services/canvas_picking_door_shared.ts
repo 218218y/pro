@@ -170,6 +170,58 @@ export function resolveMirrorPlacementOwnerByPartId(
   );
 }
 
+export function readGrooveSurfaceRectFromUserData(
+  userData: UnknownRecord | null
+): { minX: number; maxX: number; minY: number; maxY: number } | null {
+  const rect = asDoorRecord(userData?.__wpGrooveSurfaceRect);
+  if (!rect) return null;
+  const minX = Number(rect.minX);
+  const maxX = Number(rect.maxX);
+  const minY = Number(rect.minY);
+  const maxY = Number(rect.maxY);
+  return Number.isFinite(minX) && Number.isFinite(maxX) && Number.isFinite(minY) && Number.isFinite(maxY)
+    ? { minX, maxX, minY, maxY }
+    : null;
+}
+
+export function resolveGrooveSurfaceOwnerByPartId(
+  doorHitObject: UnknownRecord | null,
+  targetPartId: string | null | undefined
+): DoorHitNode | null {
+  const root = asDoorRecord<DoorHitNode>(doorHitObject);
+  if (!root) return null;
+  const targetId = typeof targetPartId === 'string' && targetPartId ? String(targetPartId) : '';
+  let firstOwner: DoorHitNode | null = null;
+  const match = (node: DoorHitNode): DoorHitNode | null => {
+    const userData = asDoorRecord(node.userData);
+    if (!readGrooveSurfaceRectFromUserData(userData)) return null;
+    if (!firstOwner) firstOwner = node;
+    const ownerPartId =
+      typeof userData?.__wpGrooveSurfacePartId === 'string'
+        ? String(userData.__wpGrooveSurfacePartId)
+        : readDoorNodePartId(node);
+    return !targetId || ownerPartId === targetId ? node : null;
+  };
+
+  const descendants: DoorHitNode[] = [root];
+  let visited = 0;
+  while (descendants.length && visited < 500) {
+    visited += 1;
+    const current = descendants.shift();
+    if (!current) continue;
+    const resolved = match(current);
+    if (resolved) return resolved;
+    const children = Array.isArray(current.children) ? current.children : [];
+    for (const child of children) {
+      const next = asDoorRecord<DoorHitNode>(child);
+      if (next) descendants.push(next);
+    }
+  }
+
+  const ancestor = walkDoorHitNode(root, match);
+  return ancestor || firstOwner;
+}
+
 export function readPointXYZ(value: unknown): { x: number; y: number; z: number } | null {
   const rec = asDoorRecord(value);
   if (!rec) return null;

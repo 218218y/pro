@@ -8,6 +8,7 @@ import {
   isRemoveDoorModeFromSnapshot,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
+import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
 import type {
@@ -93,12 +94,17 @@ export function pushCornerConnectorDoorSegmentVisual(
     true,
     mirrorLayout,
     scopedPartId,
-    special === 'glass' || adhesiveGlassKind
-      ? {
-          ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
-          ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
-        }
-      : null
+    {
+      grooveLayout:
+        readGrooveLayoutListForPart({
+          map: ctx.readMap('grooveLayoutMap'),
+          partId,
+          scopedPartId,
+          preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
+        })?.layouts || null,
+      ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
+      ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+    }
   );
   vis.position.set(state.meshOffset, 0, 0);
   hinge.add(vis);
