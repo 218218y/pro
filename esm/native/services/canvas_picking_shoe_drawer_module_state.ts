@@ -21,6 +21,11 @@ function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
 
+function readDrawerId(value: unknown): string {
+  if (typeof value === 'string') return value;
+  return typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
+}
+
 function readTopLevelSketchExternalDrawers(value: unknown): unknown[] {
   const cfg = asRecord(value);
   const sketchExtras = asRecord(cfg?.sketchExtras);
@@ -38,7 +43,7 @@ export function readModuleShoeDrawerState(
     const rec = asRecord(item);
     if (!rec) continue;
     sketchDrawers.push({
-      id: rec.id == null ? '' : String(rec.id),
+      id: readDrawerId(rec.id),
       drawerHeightM: readSketchDrawerHeightMFromItem(rec, defaultSketchHeightM),
     });
   }
