@@ -43,35 +43,35 @@
     }
   },
   "esbuild": {
-    "version": "0.28.1",
+    "version": "0.28.2",
     "package": {
       "lockPath": "node_modules/esbuild",
       "installPath": "node_modules/esbuild",
-      "file": "vendor/offline/esbuild/esbuild-0.28.1.tgz",
-      "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz",
-      "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw=="
+      "file": "vendor/offline/esbuild/esbuild-0.28.2.tgz",
+      "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz",
+      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA=="
     },
     "platforms": {
       "linux-x64": {
         "lockPath": "node_modules/@esbuild/linux-x64",
         "installPath": "node_modules/@esbuild/linux-x64",
-        "file": "vendor/offline/esbuild/linux-x64-0.28.1.tgz",
-        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.1.tgz",
-        "integrity": "sha512-u/anNYF2mmVOEDwLtnQ1wOr3EZ9sTNGLWrsYGYwHWzGA3Si84IOkHXlbWTD1NB+9/1lcnweYKO54uhxZydNzfA==",
+        "file": "vendor/offline/esbuild/linux-x64-0.28.2.tgz",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.2.tgz",
+        "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ==",
         "executable": "bin/esbuild",
-        "binarySha256": "0c6588b092a2c291a72bab90659f3c9e0e25e0fe59c9ac12b4dae4d945e5548c"
+        "binarySha256": "e1698a3d5c6c0798fee4fd3b5cc816651f460c63d390a7a26ea4beb0b1884100"
       }
     },
     "launcher": "bin/esbuild"
   },
   "tsx": {
-    "version": "4.23.10",
+    "version": "4.23.11",
     "package": {
       "lockPath": "node_modules/tsx",
       "installPath": "node_modules/tsx",
-      "file": "vendor/offline/tsx/tsx-4.23.10.tgz",
-      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.10.tgz",
-      "integrity": "sha512-0Vb9eKU47njkxv/6B8CRZRDsxNDT/Pz+BIU+M5jw7xL3TdzAjSxlZUxu0xFL/kLpaG3sHZ0LH2wbK1T1yo7CUQ=="
+      "file": "vendor/offline/tsx/tsx-4.23.11.tgz",
+      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.11.tgz",
+      "integrity": "sha512-Ry2oTEUnhBdeEdWIztY8kf3/nBGnPnjMLVGL0YfdRXMORuPER5NlKmayqxtxRxwB1xBN+RivRaJfe7PM1rtiyw=="
     },
     "esbuildRange": "~0.28.0",
     "executable": "dist/cli.mjs"
@@ -173,21 +173,21 @@
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.0.3",
+            "version": "1.0.5",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.3.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.3.tgz",
-            "integrity": "sha512-OlI657a5XXvKGFX7kNeIzJ8rO7IXt87Mqu2H8rXE46viAuOfum/JA7ysX7+eBhxNKznT+RCZh418mndlcFX3+w=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.5.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.5.tgz",
+            "integrity": "sha512-GaPlicMtnvgPr5SowFRprkEJicDSrV3qCq17U4jiF5u0kNORZo3IbdN2Bk4SfcZJAMYFHbMVJ81O3w21CYxazg=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.0.3",
+            "version": "1.0.5",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.3.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.3.tgz",
-            "integrity": "sha512-jtfzAHFp+FRaR7zGT4jyCe6wUgAG/dVb5A4Apd8FY9jKarntDfUAlJXscugiH7ZF5kKnu7/lHFk9LaDPcrGEVQ=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.5.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.5.tgz",
+            "integrity": "sha512-iQIPy+Uey0expZTOszLri5n8rY7x4WUpMaY82mcXNIgbil30iHvc01OsiizhZC1KQHTK90RFMFWSpwFU+ON3aA=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -458,12 +458,12 @@
           },
           {
             "name": "nanoid",
-            "version": "3.3.17",
+            "version": "3.3.18",
             "lockPath": "node_modules/nanoid",
             "installPath": "node_modules/nanoid",
-            "file": "vendor/offline/vite/nanoid-3.3.17.tgz",
-            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.17.tgz",
-            "integrity": "sha512-xQLf0A3HOMlgHq0n247/LRuAOYmB7dXJ/DvAxGvsSBij45XtBSmQycu+F8ODbHwns/XyFZagyL1+J0Offw1E0g=="
+            "file": "vendor/offline/vite/nanoid-3.3.18.tgz",
+            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+            "integrity": "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w=="
           },
           {
             "name": "picocolors",
@@ -761,12 +761,12 @@
           },
           {
             "name": "eslint",
-            "version": "10.8.0",
+            "version": "10.8.1",
             "lockPath": "node_modules/eslint",
             "installPath": "node_modules/eslint",
-            "file": "vendor/offline/eslint/eslint-10.8.0.tgz",
-            "url": "https://registry.npmjs.org/eslint/-/eslint-10.8.0.tgz",
-            "integrity": "sha512-nuKKvN+oIBO0koN7Tm7dlkmnkc21mtt0QJLwAKzjLq14y6lRTdVG36MZHJ8eQHwdJMwZbQNMlPOYedMq/oVJvQ=="
+            "file": "vendor/offline/eslint/eslint-10.8.1.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.8.1.tgz",
+            "integrity": "sha512-wqA7W2jbsC/BnV9Iv1UZpKVFkO1AdNoSmYW8NWG4HNOBbkAMvIqDZ27pI2f07dqn583NcIC44ckjAcOXDL1QbQ=="
           },
           {
             "name": "eslint-scope",
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "b697500b51e8ecb15d6bded459b91b0fce2716ca0fed3c896ded6035360970d5"
+    "lockfileSha256": "24f73d0f6e82c0167c7a11b73b962c264e7297f53103ee871616ab223ca0f5f8"
   }
 }
