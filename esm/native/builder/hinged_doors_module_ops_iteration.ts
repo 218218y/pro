@@ -78,6 +78,14 @@ export function createHingedDoorIterationState(
     isLeftHinge = false;
   }
 
+  const carcassBoundaryX = isLeftHinge ? ctx.currentX : ctx.currentX + ctx.modWidth;
+  const rawCarcassMountFaceX = carcassBoundaryX - pivotX;
+  const nominalCarcassMountFaceX = (isLeftHinge ? 1 : -1) * (ctx.woodThick / 2);
+  const carcassMountFaceX =
+    Number.isFinite(rawCarcassMountFaceX) && Math.abs(rawCarcassMountFaceX) <= ctx.woodThick + 1e-6
+      ? rawCarcassMountFaceX
+      : nominalCarcassMountFaceX;
+
   const topSplitEnabled = ctx.splitDoors
     ? ctx.isBottomStack
       ? ctx.isDoorSplitExplicitOn(ctx.cfg.splitDoorsMap, currentDoorId)
@@ -94,6 +102,7 @@ export function createHingedDoorIterationState(
     meshOffsetX,
     isLeftHinge,
     doorWidth,
+    carcassMountFaceX,
     topSplitEnabled,
     bottomSplitEnabled,
     shouldSplitThisDoor: ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled),

@@ -69,6 +69,7 @@ export type HingedDoorIterationState = {
   meshOffsetX: number;
   isLeftHinge: boolean;
   doorWidth: number;
+  carcassMountFaceX: number;
   topSplitEnabled: boolean;
   bottomSplitEnabled: boolean;
   shouldSplitThisDoor: boolean;

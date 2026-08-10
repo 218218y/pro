@@ -2,7 +2,10 @@ import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_
 import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
-import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
+import {
+  attachHiddenCarcassMountFaceX,
+  attachHiddenModuleDoors,
+} from './hinged_doors_module_ops_metadata.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -62,6 +65,7 @@ export function pushHingedDoorSegment(
     },
     ctx.moduleDoors
   );
+  attachHiddenCarcassMountFaceX(op, state.carcassMountFaceX);
   ctx.opsList.push(op);
 }
 

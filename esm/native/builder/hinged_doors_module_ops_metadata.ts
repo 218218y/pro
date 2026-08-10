@@ -8,3 +8,14 @@ export function attachHiddenModuleDoors<T extends object>(op: T, moduleDoors: un
   });
   return op;
 }
+
+export function attachHiddenCarcassMountFaceX<T extends object>(op: T, value: unknown): T {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return op;
+  Object.defineProperty(op, 'carcassMountFaceX', {
+    value,
+    enumerable: false,
+    configurable: true,
+    writable: true,
+  });
+  return op;
+}

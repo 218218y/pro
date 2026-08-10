@@ -22,33 +22,35 @@ export const HINGED_DOOR_HARDWARE_RENDER_POLICY = Object.freeze({
   standardEdgeInsetM: meters(0.1),
   shortDoorInsetRatio: 0.25,
 
-  // Door side: circular concealed cup + one short connector toward the carcass.
+  // Door side: the 35 mm cup, its visible collar, and one short connector that
+  // terminates exactly on the door rotation axis. This keeps the moving half
+  // attached to the fixed half while the door opens.
   cupCenterFromHingeEdgeM: meters(0.0215),
   cupRadiusM: meters(0.0175),
   cupVisibleDepthM: meters(0.0045),
   cupRadialSegments: 20,
   cupCollarRadiusM: meters(0.0205),
   cupCollarDepthM: meters(0.0022),
-  doorConnectorCenterFromPivotM: meters(0.01825),
-  doorConnectorLengthM: meters(0.0065),
-  doorConnectorHeightM: meters(0.0095),
-  doorConnectorDepthM: meters(0.012),
+  doorConnectorCupOverlapM: meters(0.002),
+  doorConnectorHeightM: meters(0.007),
+  doorConnectorDepthM: meters(0.006),
 
-  // Carcass side: vertical mounting plate, two raised links and a short tongue
-  // that overlaps the door connector by about 1 mm in the closed position.
-  carcassPlateCenterFromPivotM: meters(0.011),
+  // Carcass side: the plate sits directly on the side-panel face. Two raised
+  // link blocks sit on top of the plate; the fixed connector runs from those
+  // blocks to the same rotation-axis point used by the door connector.
+  nominalCarcassMountFaceFromPivotM: meters(0.009),
   carcassPlateThicknessM: meters(0.0032),
   carcassPlateHeightM: meters(0.047),
   carcassPlateDepthM: meters(0.03),
-  carcassLinkBlockCenterFromPivotM: meters(0.0065),
-  carcassLinkBlockWidthM: meters(0.011),
-  carcassLinkBlockHeightM: meters(0.007),
+  carcassPlateFrontInsetM: meters(0.0015),
+  carcassLinkBlockWidthM: meters(0.006),
+  carcassLinkBlockHeightM: meters(0.009),
   carcassLinkBlockDepthM: meters(0.014),
-  carcassLinkBlockCenterYOffsetM: meters(0.006),
-  carcassConnectorCenterFromPivotM: meters(0.01375),
-  carcassConnectorLengthM: meters(0.0045),
+  carcassLinkBlockCenterYOffsetM: meters(0.005),
+  carcassLinkFrontInsetM: meters(0.0025),
+  carcassConnectorBlockOverlapM: meters(0.0015),
   carcassConnectorHeightM: meters(0.0065),
-  carcassConnectorDepthM: meters(0.012),
+  carcassConnectorDepthM: meters(0.007),
 
   // Calibrated nickel finish, aligned with the project's existing nickel hardware palette.
   metalColorHex: 0xe5e9ef,

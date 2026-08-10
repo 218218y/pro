@@ -60,7 +60,14 @@ test('render_door_ops_shared parses sliding and hinged op payloads with sane fal
   });
   assert.equal(readSlidingDoorOp({ width: 'bad', height: 2 }, 0), null);
 
-  assert.deepEqual(readHingedDoorOp({ width: 0.6, height: 2.1, partId: 'd7_full', isMirror: true }), {
+  const hinged = readHingedDoorOp({
+    width: 0.6,
+    height: 2.1,
+    partId: 'd7_full',
+    isMirror: true,
+    carcassMountFaceX: 0.006,
+  });
+  assert.deepEqual(hinged, {
     x: 0,
     y: 0,
     z: 0,
@@ -81,6 +88,9 @@ test('render_door_ops_shared parses sliding and hinged op payloads with sane fal
     handleAbsY: undefined,
     allowHandle: undefined,
   });
+  assert.ok(hinged);
+  assert.ok(Math.abs(Number(hinged?.carcassMountFaceX) - 0.006) < 1e-12);
+  assert.equal(Object.keys(hinged ?? {}).includes('carcassMountFaceX'), false);
 });
 
 test('render_door_ops_shared rail palette + door factory keep behavior canonical', () => {

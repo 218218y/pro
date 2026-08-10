@@ -85,6 +85,15 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     handleAbsY: readRenderOpNumber(value.handleAbsY) ?? undefined,
     allowHandle: value.allowHandle === false ? false : undefined,
   };
+  const carcassMountFaceX = readRenderOpNumber(value.carcassMountFaceX);
+  if (carcassMountFaceX != null) {
+    Object.defineProperty(op, 'carcassMountFaceX', {
+      value: carcassMountFaceX,
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
+  }
   const moduleDoors = readRenderOpNumber(value.moduleDoors);
   if (moduleDoors != null) {
     Object.defineProperty(op, 'moduleDoors', {

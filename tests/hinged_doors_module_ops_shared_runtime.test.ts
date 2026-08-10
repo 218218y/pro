@@ -99,6 +99,46 @@ test('hinged_doors_module_ops_shared computes iteration overrides and clamps lon
   assert.equal(clampHandleAbsY(ctx!, 1.95, 0.02, 2.0, 'd3_full'), 1.8);
 });
 
+test('hinged_doors_module_ops_shared carries the exact carcass face relative to the door pivot as hidden render metadata', () => {
+  const opsList: unknown[] = [];
+  const ctx = createHingedDoorModuleOpsContext({
+    cfg: { wardrobeType: 'hinged' },
+    moduleIndex: 1,
+    modulesLength: 3,
+    moduleDoors: 1,
+    modWidth: 0.5,
+    currentX: 0.1,
+    effectiveBottomY: 0.018,
+    startY: 0,
+    woodThick: 0.018,
+    cabinetBodyHeight: 2.4,
+    D: 0.55,
+    opsList,
+    hingedDoorPivotMap: {
+      5: { pivotX: 0.094, meshOffsetX: 0.25, isLeftHinge: true, doorWidth: 0.506 },
+    },
+  });
+
+  assert.ok(ctx);
+  const state = createHingedDoorIterationState(ctx!, 0, 5);
+  assert.ok(Math.abs(state.carcassMountFaceX - 0.006) < 1e-12);
+
+  pushHingedDoorSegment(ctx!, state, {
+    partId: 'd5_top',
+    segH: 0.9,
+    segY: 1.3,
+    curtainVal: null,
+    grooveFlag: false,
+    handleAbsY: 1.2,
+    allowHandle: true,
+    colorVal: null,
+  });
+
+  const emitted = opsList[0] as Record<string, unknown>;
+  assert.ok(Math.abs(Number(emitted.carcassMountFaceX) - 0.006) < 1e-12);
+  assert.equal(Object.keys(emitted).includes('carcassMountFaceX'), false);
+});
+
 test('hinged_doors_module_ops_shared does not parse string drawer counts for handle lift', () => {
   const ctx = createHingedDoorModuleOpsContext({
     cfg: {

@@ -6,7 +6,10 @@ import {
 import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
-import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
+import {
+  attachHiddenCarcassMountFaceX,
+  attachHiddenModuleDoors,
+} from './hinged_doors_module_ops_metadata.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -76,5 +79,6 @@ export function appendFullHingedDoorOps(
     },
     ctx.moduleDoors
   );
+  attachHiddenCarcassMountFaceX(op, state.carcassMountFaceX);
   ctx.opsList.push(op);
 }

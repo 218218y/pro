@@ -172,8 +172,6 @@ test('hinged door render emits two realistic hinge assemblies at 100 mm edge ins
     firstCarcassHalfMeshes.map((mesh: any) => mesh.userData.__wpHingeComponent),
     ['carcassPlate', 'carcassLinkUpper', 'carcassLinkLower', 'carcassConnector']
   );
-  assert.ok(firstDoorHalfMeshes.every((mesh: any) => mesh.position.x > 0));
-  assert.ok(firstCarcassHalfMeshes.every((mesh: any) => mesh.position.x > 0));
   assert.equal(doorHalves[0].userData.__keepMaterialSubtree, true);
   assert.equal(carcassHalves[0].userData.__keepMaterialSubtree, true);
   assert.ok(firstDoorHalfMeshes.every((mesh: any) => mesh.userData.__keepMaterial === true));
@@ -182,23 +180,23 @@ test('hinged door render emits two realistic hinge assemblies at 100 mm edge ins
     (firstDoorHalfMeshes[1].material as any).color,
     HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex
   );
+  assert.equal(
+    (firstDoorHalfMeshes[0].material as any).color,
+    HINGED_DOOR_HARDWARE_RENDER_POLICY.accentColorHex
+  );
   assert.equal(HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex, 0xe5e9ef);
   assert.equal(HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness, 0.28);
 
-  const doorConnector = firstDoorHalfMeshes.find(
-    (mesh: any) => mesh.userData.__wpHingeComponent === 'doorConnector'
-  );
-  const carcassConnector = firstCarcassHalfMeshes.find(
-    (mesh: any) => mesh.userData.__wpHingeComponent === 'carcassConnector'
-  );
-  assert.ok(doorConnector && carcassConnector);
-  const doorConnectorLength = Number(doorConnector.geometry.args[0]);
-  const carcassConnectorLength = Number(carcassConnector.geometry.args[0]);
-  const doorInnerX = doorConnector.position.x - doorConnectorLength / 2;
-  const carcassOuterX = carcassConnector.position.x + carcassConnectorLength / 2;
+  const doorConnector = firstDoorHalfMeshes[2];
+  const carcassConnector = firstCarcassHalfMeshes[3];
+  assert.equal(doorConnector.userData.__wpConnectorStartX, 0);
+  assert.equal(doorConnector.userData.__wpConnectorStartZ, 0);
+  assert.equal(carcassConnector.userData.__wpConnectorStartX, 0);
+  assert.equal(carcassConnector.userData.__wpConnectorStartZ, 0);
+  assert.ok(doorConnector.userData.__wpConnectorEndX > 0);
+  assert.ok(carcassConnector.userData.__wpConnectorEndX > 0);
   assert.ok(
-    carcassOuterX - doorInnerX >= 0.0009,
-    'carcass and door connector bars should overlap enough to hide any visible air gap'
+    doorConnector.userData.__wpConnectorEndX <= HINGED_DOOR_HARDWARE_RENDER_POLICY.cupCenterFromHingeEdgeM
   );
 });
 
@@ -235,8 +233,64 @@ test('right-hinged door mounts carcass hardware on the inner side of the right p
   assert.ok(
     Math.abs(
       carcassHalves[0].children[0].position.x +
-        HINGED_DOOR_HARDWARE_RENDER_POLICY.carcassPlateCenterFromPivotM
+        (HINGED_DOOR_HARDWARE_RENDER_POLICY.nominalCarcassMountFaceFromPivotM +
+          HINGED_DOOR_HARDWARE_RENDER_POLICY.carcassPlateThicknessM / 2)
     ) < 1e-12
+  );
+});
+
+test('carcass plate mounts directly on the supplied panel face and both connectors meet on the rotation axis', () => {
+  const { THREE, wardrobeGroup, applyHingedDoorsOps } = createHarness();
+
+  applyHingedDoorsOps({
+    App: {},
+    THREE,
+    ops: [
+      {
+        partId: 'd_direct_mount',
+        width: 0.45,
+        height: 1.8,
+        y: 0.9,
+        z: 0.6,
+        pivotX: 0.12,
+        meshOffsetX: 0.225,
+        isLeftHinge: true,
+        carcassMountFaceX: 0.006,
+      },
+    ],
+    cfg: {},
+    getPartMaterial: () => ({ kind: 'wood' }),
+  });
+
+  const doorGroup = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'd_direct_mount');
+  const doorHalf = hardwareChildren(doorGroup, 'door')[0];
+  const carcassHalf = hardwareChildren(wardrobeGroup, 'carcass')[0];
+  const byName = (root: any, name: string) =>
+    root.children.find((mesh: any) => mesh.userData.__wpHingeComponent === name);
+
+  const plate = byName(carcassHalf, 'carcassPlate');
+  const upper = byName(carcassHalf, 'carcassLinkUpper');
+  const lower = byName(carcassHalf, 'carcassLinkLower');
+  const doorConnector = byName(doorHalf, 'doorConnector');
+  const carcassConnector = byName(carcassHalf, 'carcassConnector');
+
+  const plateInnerFaceX = plate.position.x - HINGED_DOOR_HARDWARE_RENDER_POLICY.carcassPlateThicknessM / 2;
+  assert.ok(Math.abs(plateInnerFaceX - 0.006) < 1e-12);
+  assert.ok(upper.position.x > plate.position.x);
+  assert.ok(lower.position.x > plate.position.x);
+  assert.ok(upper.position.y > 0);
+  assert.ok(lower.position.y < 0);
+
+  // Both connector start points are exactly the door group's Y-axis rotation origin.
+  // A point at local x=0,z=0 remains fixed under any rotation.y, so the hinge cannot
+  // detach merely because the door opens.
+  assert.deepEqual(
+    [doorConnector.userData.__wpConnectorStartX, doorConnector.userData.__wpConnectorStartZ],
+    [0, 0]
+  );
+  assert.deepEqual(
+    [carcassConnector.userData.__wpConnectorStartX, carcassConnector.userData.__wpConnectorStartZ],
+    [0, 0]
   );
 });
 
