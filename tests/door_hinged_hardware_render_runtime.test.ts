@@ -162,8 +162,16 @@ test('hinged door render emits two realistic hinge assemblies at 100 mm edge ins
 
   const firstDoorHalfMeshes = doorHalves[0].children;
   const firstCarcassHalfMeshes = carcassHalves[0].children;
-  assert.equal(firstDoorHalfMeshes.length, 7);
-  assert.equal(firstCarcassHalfMeshes.length, 3);
+  assert.equal(firstDoorHalfMeshes.length, 3);
+  assert.equal(firstCarcassHalfMeshes.length, 4);
+  assert.deepEqual(
+    firstDoorHalfMeshes.map((mesh: any) => mesh.userData.__wpHingeComponent),
+    ['doorCup', 'doorCupCollar', 'doorConnector']
+  );
+  assert.deepEqual(
+    firstCarcassHalfMeshes.map((mesh: any) => mesh.userData.__wpHingeComponent),
+    ['carcassPlate', 'carcassLinkUpper', 'carcassLinkLower', 'carcassConnector']
+  );
   assert.ok(firstDoorHalfMeshes.every((mesh: any) => mesh.position.x > 0));
   assert.ok(firstCarcassHalfMeshes.every((mesh: any) => mesh.position.x > 0));
   assert.equal(doorHalves[0].userData.__keepMaterialSubtree, true);
@@ -171,18 +179,27 @@ test('hinged door render emits two realistic hinge assemblies at 100 mm edge ins
   assert.ok(firstDoorHalfMeshes.every((mesh: any) => mesh.userData.__keepMaterial === true));
   assert.ok(firstCarcassHalfMeshes.every((mesh: any) => mesh.userData.__keepMaterial === true));
   assert.equal(
-    (firstDoorHalfMeshes[0].material as any).color,
+    (firstDoorHalfMeshes[1].material as any).color,
     HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex
   );
   assert.equal(HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex, 0xe5e9ef);
   assert.equal(HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness, 0.28);
 
-  const bridgeArm = firstDoorHalfMeshes[5];
-  const bridgeLength = Number(bridgeArm.geometry.args[0]);
-  const bridgeInnerX = bridgeArm.position.x - bridgeLength / 2;
-  const bridgeOuterX = bridgeArm.position.x + bridgeLength / 2;
-  assert.ok(bridgeInnerX < 0, 'narrow bridge should extend inward past the hinge pivot');
-  assert.ok(Math.abs(bridgeOuterX - 0.0205) < 1e-12, 'bridge outer end should remain unchanged');
+  const doorConnector = firstDoorHalfMeshes.find(
+    (mesh: any) => mesh.userData.__wpHingeComponent === 'doorConnector'
+  );
+  const carcassConnector = firstCarcassHalfMeshes.find(
+    (mesh: any) => mesh.userData.__wpHingeComponent === 'carcassConnector'
+  );
+  assert.ok(doorConnector && carcassConnector);
+  const doorConnectorLength = Number(doorConnector.geometry.args[0]);
+  const carcassConnectorLength = Number(carcassConnector.geometry.args[0]);
+  const doorInnerX = doorConnector.position.x - doorConnectorLength / 2;
+  const carcassOuterX = carcassConnector.position.x + carcassConnectorLength / 2;
+  assert.ok(
+    carcassOuterX - doorInnerX >= 0.0009,
+    'carcass and door connector bars should overlap enough to hide any visible air gap'
+  );
 });
 
 test('right-hinged door mounts carcass hardware on the inner side of the right panel', () => {
