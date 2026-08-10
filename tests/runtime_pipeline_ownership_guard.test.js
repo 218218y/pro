@@ -10,20 +10,38 @@ function lineCount(source) {
   return source.split(/\r\n|\r|\n/).length;
 }
 
-test('runtime pipeline ownership keeps planar reflector render-pass failure-safe', () => {
+test('runtime pipeline ownership keeps planar reflector lifecycle and render-pass failure-safe', () => {
   const runtime = read('esm/native/runtime/planar_reflector_runtime.ts');
   const contracts = read('esm/native/runtime/planar_reflector_contracts.ts');
+  const refresh = read('esm/native/runtime/planar_reflector_refresh_runtime.ts');
+  const state = read('esm/native/runtime/planar_reflector_state.ts');
+  const warmCache = read('esm/native/runtime/planar_reflector_warm_cache.ts');
   const renderPass = read('esm/native/runtime/planar_reflector_render_pass.ts');
 
-  assert.match(runtime, /from '\.\/planar_reflector_contracts\.js';/);
+  assert.match(runtime, /from '\.\/planar_reflector_refresh_runtime\.js';/);
+  assert.match(runtime, /from '\.\/planar_reflector_warm_cache\.js';/);
+  assert.match(runtime, /from '\.\/planar_reflector_state\.js';/);
+  assert.doesNotMatch(runtime, /from '\.\/planar_reflector_render_pass\.js';/);
+  assert.doesNotMatch(runtime, /const renderResult = renderPlanarReflectorSurface\(/);
+
   assert.match(
-    runtime,
+    refresh,
     /import \{ renderPlanarReflectorSurface \} from '\.\/planar_reflector_render_pass\.js';/
   );
-  assert.match(runtime, /const renderResult = renderPlanarReflectorSurface\(/);
+  assert.match(refresh, /const renderResult = renderPlanarReflectorSurface\(/);
+  assert.match(refresh, /PLANAR_REFLECTOR_FAILURE_BACKOFF_BASE_MS = 16/);
+  assert.match(refresh, /PLANAR_REFLECTOR_FAILURE_BACKOFF_MAX_MS = 256/);
+
+  assert.match(warmCache, /PLANAR_WARM_CACHE_RENDER_SLOT = '__mirrorPlanarWarmCache'/);
+  assert.match(warmCache, /PLANAR_WARM_CACHE_MAX_ENTRIES = 64/);
+  assert.doesNotMatch(warmCache, /renderPlanarReflectorSurface/);
+
+  assert.match(state, /export function readPlanarReflectorState/);
+  assert.match(renderPass, /from '\.\/planar_reflector_state\.js';/);
+  assert.doesNotMatch(renderPass, /userData\?\.__wpPlanarReflector/);
+
   assert.doesNotMatch(runtime, /function runPlanarReflectorRendererPass/);
   assert.doesNotMatch(runtime, /renderer-surface-incomplete|clip-plane-degenerate|render-exception/);
-
   assert.match(renderPass, /export function runPlanarReflectorRendererPass/);
   assert.match(renderPass, /export function renderPlanarReflectorSurface/);
   assert.match(renderPass, /finally \{[\s\S]*restorePlanarReflectorSurfacesAfterInternalPass/);
@@ -31,6 +49,8 @@ test('runtime pipeline ownership keeps planar reflector render-pass failure-safe
   assert.match(renderPass, /rendererShadowMap\.autoUpdate = previousShadowAutoUpdate/);
   assert.match(renderPass, /xr\.enabled = previousXrEnabled/);
 
+  assert.match(contracts, /export type PlanarReflectorState = \{/);
+  assert.doesNotMatch(contracts, /PlanarReflectorState = UnknownRecord &/);
   assert.match(contracts, /export type PlanarReflectorRenderFailureReason/);
   assert.match(contracts, /'renderer-surface-incomplete'/);
   assert.match(contracts, /'render-exception'/);

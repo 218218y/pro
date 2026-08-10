@@ -57,6 +57,17 @@ const PART_HOVER_PREVIEW_CLIENT_FORBIDDEN_IDENTIFIERS = new Set([
   'setSketchPlacementPreview',
 ]);
 
+const PLANAR_REFLECTOR_INSTALL_RUNTIME = 'esm/native/runtime/planar_reflector_runtime.ts';
+const PLANAR_REFLECTOR_REFRESH_RUNTIME = 'esm/native/runtime/planar_reflector_refresh_runtime.ts';
+const PLANAR_REFLECTOR_WARM_CACHE_RUNTIME = 'esm/native/runtime/planar_reflector_warm_cache.ts';
+const PLANAR_REFLECTOR_RENDER_PASS = 'esm/native/runtime/planar_reflector_render_pass.ts';
+const PLANAR_REFLECTOR_LIFECYCLE_MODULES = new Set([
+  PLANAR_REFLECTOR_INSTALL_RUNTIME,
+  PLANAR_REFLECTOR_REFRESH_RUNTIME,
+  PLANAR_REFLECTOR_WARM_CACHE_RUNTIME,
+  PLANAR_REFLECTOR_RENDER_PASS,
+]);
+
 const TYPED_IR_FORBIDDEN_IDENTIFIERS = new Map([
   ['esm/native/builder/core_carcass_shell.ts', new Set(['MutableRecord'])],
   ['esm/native/builder/render_ops.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
@@ -467,6 +478,76 @@ function collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectPlanarReflectorLifecycleViolations(rel, sourceFile, astApi) {
+  if (!PLANAR_REFLECTOR_LIFECYCLE_MODULES.has(rel)) return [];
+
+  const failures = [];
+  for (const item of collectStaticModuleSpecifiers(sourceFile, astApi)) {
+    const target = getImportTargetRel(rel, item.specifier);
+    const sourceTarget = target && target.endsWith('.js') ? `${target.slice(0, -3)}.ts` : target;
+    if (rel === PLANAR_REFLECTOR_INSTALL_RUNTIME && sourceTarget === PLANAR_REFLECTOR_RENDER_PASS) {
+      failures.push(
+        makeViolation(
+          'lint-architecture/planar-reflector:lifecycle-ownership',
+          rel,
+          lineOf(sourceFile, item.node, astApi),
+          'Planar reflector installation must delegate progressive rendering to planar_reflector_refresh_runtime instead of importing the render pass directly.'
+        )
+      );
+    }
+    if (
+      rel === PLANAR_REFLECTOR_WARM_CACHE_RUNTIME &&
+      (sourceTarget === PLANAR_REFLECTOR_RENDER_PASS || /\/config_selectors\.(?:js|ts)$/.test(target || ''))
+    ) {
+      failures.push(
+        makeViolation(
+          'lint-architecture/planar-reflector:lifecycle-ownership',
+          rel,
+          lineOf(sourceFile, item.node, astApi),
+          'Planar reflector warm-cache ownership must remain independent from render-pass and configuration policy.'
+        )
+      );
+    }
+  }
+
+  const forbiddenIdentifiers =
+    rel === PLANAR_REFLECTOR_INSTALL_RUNTIME
+      ? new Set([
+          'renderPlanarReflectorSurface',
+          'PLANAR_WARM_CACHE_RENDER_SLOT',
+          'PLANAR_REFLECTOR_FAILURE_BACKOFF_BASE_MS',
+          'PLANAR_REFLECTOR_FAILURE_BACKOFF_MAX_MS',
+        ])
+      : rel === PLANAR_REFLECTOR_RENDER_PASS
+        ? new Set(['__wpPlanarReflector'])
+        : null;
+
+  if (!forbiddenIdentifiers) return failures;
+  const reported = new Set();
+  walkAst(
+    sourceFile,
+    node => {
+      if (!astApi.isIdentifier(node)) return;
+      const name = String(node.text || '');
+      if (!forbiddenIdentifiers.has(name) || reported.has(name)) return;
+      reported.add(name);
+      failures.push(
+        makeViolation(
+          'lint-architecture/planar-reflector:lifecycle-ownership',
+          rel,
+          lineOf(sourceFile, node, astApi),
+          rel === PLANAR_REFLECTOR_RENDER_PASS
+            ? 'Planar reflector render pass must read reflector state through planar_reflector_state instead of parsing mirror metadata directly.'
+            : `Planar reflector installation owner must not reclaim lifecycle responsibility for ${name}.`
+        )
+      );
+    },
+    { astApi }
+  );
+
+  return failures;
+}
+
 function collectBrowserGlobalViolations(rel, sourceFile, astApi) {
   if (!isBrowserGlobalScope(rel) || isBrowserGlobalException(rel)) return [];
   const failures = [];
@@ -567,6 +648,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
     ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
     ...collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi),
     ...collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi),
+    ...collectPlanarReflectorLifecycleViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),
   ];

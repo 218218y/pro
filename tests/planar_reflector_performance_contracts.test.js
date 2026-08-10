@@ -11,6 +11,10 @@ const contractsSource = readFirstExisting(
   ['../esm/native/runtime/planar_reflector_contracts.ts'],
   import.meta.url
 );
+const refreshSource = readFirstExisting(
+  ['../esm/native/runtime/planar_reflector_refresh_runtime.ts'],
+  import.meta.url
+);
 const schedulerSource = [
   readFirstExisting(['../esm/native/platform/render_loop_mirror_shared.ts'], import.meta.url),
   readFirstExisting(['../esm/native/platform/render_loop_mirror_planar_scheduler.ts'], import.meta.url),
@@ -33,7 +37,9 @@ test('planar mirror refresh supports budgeted progressive batches', () => {
   assert.match(contractsSource, /startIndex\?: number \| null/);
   assert.match(contractsSource, /completedCycle: boolean/);
   assert.match(contractsSource, /nextIndex: number/);
-  assert.match(runtimeSource, /planar-reflector-budget-deferred/);
+  assert.match(refreshSource, /planar-reflector-budget-deferred/);
+  assert.match(refreshSource, /renderPlanarReflectorSurface/);
+  assert.match(runtimeSource, /refreshTrackedPlanarMirrorSurfacesNow/);
 });
 
 test('render loop keeps planar reflector motion live with motion-synchronous batches', () => {

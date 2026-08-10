@@ -2,6 +2,10 @@ import type { UnknownRecord } from '../../../types/index.js';
 
 import type { PlanarReflectorRenderResult, PlanarReflectorState } from './planar_reflector_contracts.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
+import {
+  readPlanarReflectorRecord as readRecord,
+  readPlanarReflectorState,
+} from './planar_reflector_state.js';
 
 type HiddenPlanarReflectorSurface = { object: UnknownRecord; visible: unknown };
 
@@ -14,10 +18,6 @@ type PlanarReflectorRendererPassArgs = {
   virtualCamera: UnknownRecord;
   renderTarget: unknown;
 };
-
-function readRecord(value: unknown): UnknownRecord | null {
-  return value !== null && typeof value === 'object' ? (value as UnknownRecord) : null;
-}
 
 function readFn<T extends (...args: never[]) => unknown>(obj: UnknownRecord | null, key: string): T | null {
   const value = obj?.[key];
@@ -42,12 +42,6 @@ function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): u
 
 function call4(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown, d: unknown): unknown {
   return typeof fn === 'function' ? Reflect.apply(fn, ctx, [a, b, c, d]) : undefined;
-}
-
-function readPlanarReflectorState(mirror: unknown): PlanarReflectorState | null {
-  const userData = readRecord(readRecord(mirror)?.userData);
-  const state = readRecord(userData?.__wpPlanarReflector);
-  return state ? (state as PlanarReflectorState) : null;
 }
 
 function hidePlanarReflectorSurfacesForInternalPass(App: unknown): HiddenPlanarReflectorSurface[] {

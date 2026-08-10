@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-10T08:53:43.877Z
+Generated: 2026-08-10T09:47:22.272Z
 
 ## Summary
 
@@ -19,7 +19,7 @@ Generated: 2026-08-10T08:53:43.877Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 141
+- Cross-kind contract overlap targets: 142
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -125,8 +125,9 @@ Generated: 2026-08-10T08:53:43.877Z
 - `esm/native/runtime/maps_access_writers.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/runtime/maps_access.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/runtime/planar_reflector_contracts.ts` — contract / ownership — `tests/planar_reflector_performance_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
-- `esm/native/runtime/planar_reflector_render_pass.ts` — contract / ownership — `tests/planar_reflector_quality_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
-- `esm/native/runtime/planar_reflector_runtime.ts` — contract / ownership — `tests/planar_reflector_performance_contracts.test.js`, `tests/planar_reflector_quality_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
+- `esm/native/runtime/planar_reflector_refresh_runtime.ts` — contract / ownership — `tests/planar_reflector_performance_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
+- `esm/native/runtime/planar_reflector_render_pass.ts` — contract / ownership — `tests/planar_reflector_quality_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`, `tests/wp_lint_architecture_contracts_runtime.test.js`
+- `esm/native/runtime/planar_reflector_runtime.ts` — contract / ownership — `tests/planar_reflector_performance_contracts.test.js`, `tests/planar_reflector_quality_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`, `tests/wp_lint_architecture_contracts_runtime.test.js`
 - `esm/native/runtime/simple_writable_map_writer_owner.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/services/api_runtime_base_surface.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/preset_models_dimension_defaults_owner_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/structure_tab_auto_width_policy_ownership_contract.test.js`
 - `esm/native/services/api_state_surface.ts` — contract / ownership — `tests/store_backend_family_guard.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`

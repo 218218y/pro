@@ -1,6 +1,6 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
-export type PlanarReflectorState = UnknownRecord & {
+export type PlanarReflectorState = {
   renderTarget: UnknownRecord;
   virtualCamera: UnknownRecord;
   textureMatrix: UnknownRecord;
@@ -26,6 +26,13 @@ export type PlanarReflectorState = UnknownRecord & {
   lastFailureReason?: PlanarReflectorRenderFailureReason;
   lastFailureAtMs?: number;
   retryAfterMs?: number;
+};
+
+export type PlanarReflectorMirrorStats = {
+  mirrorCount: number;
+  planarCount: number;
+  cubeCount: number;
+  explicitCubeCount: number;
 };
 
 export type PlanarMirrorRefreshResult = {

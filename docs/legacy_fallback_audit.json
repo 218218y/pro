@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-10T09:01:42.496Z",
+  "generatedAt": "2026-08-10T09:47:22.089Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 542,
-    "totalFiles": 212,
+    "totalOccurrences": 544,
+    "totalFiles": 213,
     "byCategory": {
-      "runtime-default": 56,
-      "domain-default": 386,
+      "runtime-default": 57,
+      "domain-default": 387,
       "error-message-default": 42,
       "framework-default": 2,
       "browser-adapter": 18,
@@ -599,6 +599,13 @@
         "categories": {
           "domain-default": 6,
           "runtime-default": 5
+        }
+      },
+      "esm/native/runtime/planar_reflector_refresh_runtime.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 1,
+          "runtime-default": 1
         }
       },
       "esm/native/runtime/planar_reflector_runtime.ts": {
@@ -3285,8 +3292,22 @@
       "text": "const stableWidth = widthFromHit ?? widthFromPart ?? fallbackWidth ?? targetDistributionSpanM;"
     },
     {
+      "file": "esm/native/runtime/planar_reflector_refresh_runtime.ts",
+      "line": 24,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "function clampNumber(value: unknown, fallback: number, min: number, max: number): number {"
+    },
+    {
+      "file": "esm/native/runtime/planar_reflector_refresh_runtime.ts",
+      "line": 25,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "const numeric = typeof value === 'number' && Number.isFinite(value) ? value : fallback;"
+    },
+    {
       "file": "esm/native/runtime/planar_reflector_runtime.ts",
-      "line": 563,
+      "line": 397,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// compatibility-boundary: keep the retired square-size config key readable during the config-key transition."

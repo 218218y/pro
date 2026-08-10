@@ -156,6 +156,30 @@ test('lint architecture contracts keep part-hover preview clients behind the typ
   );
 });
 
+test('lint architecture contracts keep planar reflector lifecycle ownership separated', () => {
+  const installFailures = auditLintArchitectureSource(
+    'esm/native/runtime/planar_reflector_runtime.ts',
+    `import { renderPlanarReflectorSurface } from './planar_reflector_render_pass.js';
+     export function install() { return renderPlanarReflectorSurface; }`
+  );
+  assert.deepEqual(
+    installFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/planar-reflector:lifecycle-ownership',
+      'lint-architecture/planar-reflector:lifecycle-ownership',
+    ]
+  );
+
+  const renderPassFailures = auditLintArchitectureSource(
+    'esm/native/runtime/planar_reflector_render_pass.ts',
+    `export function read(mirror) { return mirror.userData.__wpPlanarReflector; }`
+  );
+  assert.deepEqual(
+    renderPassFailures.map(failure => failure.rule),
+    ['lint-architecture/planar-reflector:lifecycle-ownership']
+  );
+});
+
 test('lint architecture contract has no unbaselined or stale violations in the current tree', () => {
   const report = collectLintArchitectureReport();
   assert.equal(report.unbaselinedViolations.length, 0);
