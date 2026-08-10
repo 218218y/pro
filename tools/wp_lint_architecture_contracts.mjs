@@ -34,6 +34,27 @@ const CORNER_CORNICE_PLAN_FORBIDDEN_IDENTIFIERS = new Set([
   'BoxGeometry',
 ]);
 
+const PART_HOVER_PREVIEW_PROTOCOL_MODULE =
+  'esm/native/services/canvas_picking_part_hover_preview_protocol.ts';
+const PART_HOVER_PREVIEW_CLIENT_MODULES = new Set([
+  'esm/native/services/canvas_picking_generic_paint_hover_flow.ts',
+  'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts',
+  'esm/native/services/canvas_picking_removable_part_hover.ts',
+]);
+const PART_HOVER_PREVIEW_PROTOCOL_FORBIDDEN_IDENTIFIERS = new Set([
+  'AppContainer',
+  'UnknownRecord',
+  'THREE',
+  'setSketchPlacementPreview',
+]);
+const PART_HOVER_PREVIEW_CLIENT_FORBIDDEN_IDENTIFIERS = new Set([
+  'UnknownRecord',
+  'THREE',
+  'getThreeMaybe',
+  'createPreviewOpsArgs',
+  'setSketchPlacementPreview',
+]);
+
 const TYPED_IR_FORBIDDEN_IDENTIFIERS = new Map([
   ['esm/native/builder/core_carcass_shell.ts', new Set(['MutableRecord'])],
   ['esm/native/builder/render_ops.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
@@ -402,6 +423,40 @@ function collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi) {
+  const forbidden =
+    rel === PART_HOVER_PREVIEW_PROTOCOL_MODULE
+      ? PART_HOVER_PREVIEW_PROTOCOL_FORBIDDEN_IDENTIFIERS
+      : PART_HOVER_PREVIEW_CLIENT_MODULES.has(rel)
+        ? PART_HOVER_PREVIEW_CLIENT_FORBIDDEN_IDENTIFIERS
+        : null;
+  if (!forbidden) return [];
+
+  const failures = [];
+  const reported = new Set();
+  walkAst(
+    sourceFile,
+    node => {
+      if (!astApi.isIdentifier(node)) return;
+      const name = String(node.text || '');
+      if (!forbidden.has(name) || reported.has(name)) return;
+      reported.add(name);
+      failures.push(
+        makeViolation(
+          'lint-architecture/preview-protocol:part-hover',
+          rel,
+          lineOf(sourceFile, node, astApi),
+          rel === PART_HOVER_PREVIEW_PROTOCOL_MODULE
+            ? `Part-hover preview protocol must remain transport-agnostic and cannot depend on ${name}.`
+            : `Part-hover preview clients must use the canonical preview runtime instead of ${name}.`
+        )
+      );
+    },
+    { astApi }
+  );
+  return failures;
+}
+
 function collectBrowserGlobalViolations(rel, sourceFile, astApi) {
   if (!isBrowserGlobalScope(rel) || isBrowserGlobalException(rel)) return [];
   const failures = [];
@@ -501,6 +556,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
     ...collectCapabilityBoundaryViolations(rel, sourceFile, astApi),
     ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
     ...collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi),
+    ...collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),
   ];

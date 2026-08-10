@@ -189,11 +189,3 @@ export function __getSketchPlacementPreviewFns(App: AppContainer): {
     : null;
   return { hidePreview, setPreview };
 }
-
-export function __readPreviewSetSketchPlacementPreview(
-  previewRo: UnknownRecord | null | undefined
-): ((args: UnknownRecord) => unknown) | null {
-  const ro = __readRecord(previewRo);
-  const candidate = ro ? ro.setSketchPlacementPreview : null;
-  return typeof candidate === 'function' ? (args: UnknownRecord) => candidate(args) : null;
-}

@@ -1,11 +1,7 @@
-import type { AppContainer, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../types';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
-import { getThreeMaybe } from '../runtime/three_access.js';
 
-export type PreviewOpsArgs = SketchPlacementPreviewArgsLike &
-  UnknownRecord & { App: AppContainer; THREE: unknown; __reason?: string };
-
-export type PaintPreviewGroupBox = {
+type PaintPreviewGroupBoxBase = {
   centerX: number;
   centerY: number;
   centerZ: number;
@@ -15,9 +11,11 @@ export type PaintPreviewGroupBox = {
   woodThick: number;
   anchor: UnknownRecord;
   anchorParent: UnknownRecord;
-  kind?: string;
-  previewObjects?: UnknownRecord[];
 };
+
+export type PaintPreviewGroupBox =
+  | (PaintPreviewGroupBoxBase & { kind?: 'box'; previewObjects?: never })
+  | (PaintPreviewGroupBoxBase & { kind: 'object_boxes'; previewObjects: UnknownRecord[] });
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
@@ -25,10 +23,6 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function asRecordMap(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
-}
-
-export function createPreviewOpsArgs(App: AppContainer, extra: UnknownRecord = {}): PreviewOpsArgs {
-  return { App, THREE: getThreeMaybe(App), ...extra };
 }
 
 function isRaycasterLike(value: unknown): value is RaycasterLike {

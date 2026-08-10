@@ -109,6 +109,27 @@ test('lint architecture contracts keep corner cornice planners on plan-first typ
   );
 });
 
+test('lint architecture contracts keep part-hover preview clients behind the typed protocol runtime', () => {
+  const protocolFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_part_hover_preview_protocol.ts',
+    `import type { AppContainer, UnknownRecord } from '../../../types';
+     export type Bad = { App: AppContainer; payload: UnknownRecord };`
+  );
+  assert.deepEqual(
+    protocolFailures.map(failure => failure.rule),
+    ['lint-architecture/preview-protocol:part-hover', 'lint-architecture/preview-protocol:part-hover']
+  );
+
+  const clientFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_generic_paint_hover_flow.ts',
+    `export function run(previewRo) { return previewRo.setSketchPlacementPreview; }`
+  );
+  assert.deepEqual(
+    clientFailures.map(failure => failure.rule),
+    ['lint-architecture/preview-protocol:part-hover']
+  );
+});
+
 test('lint architecture contract has no unbaselined or stale violations in the current tree', () => {
   const report = collectLintArchitectureReport();
   assert.equal(report.unbaselinedViolations.length, 0);

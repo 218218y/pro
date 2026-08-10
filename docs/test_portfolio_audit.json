@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T07:43:26.941Z",
+  "generatedAt": "2026-08-10T08:13:01.544Z",
   "totals": {
-    "tests": 1238,
-    "unitRunnerTests": 1229,
+    "tests": 1239,
+    "unitRunnerTests": 1230,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -21,7 +21,7 @@
   "categories": {
     "contract": 405,
     "runtime-unit": 332,
-    "integration": 461,
+    "integration": 462,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -3452,6 +3452,10 @@
     },
     {
       "file": "tests/canvas_picking_paint_meta_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_part_hover_preview_protocol_runtime.test.ts",
       "category": "integration"
     },
     {

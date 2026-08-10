@@ -51,6 +51,14 @@ const genericPaintHoverShared = readFileSync(
   'esm/native/services/canvas_picking_generic_paint_hover_shared.ts',
   'utf8'
 );
+const partHoverPreviewProtocol = readFileSync(
+  'esm/native/services/canvas_picking_part_hover_preview_protocol.ts',
+  'utf8'
+);
+const partHoverPreviewRuntime = readFileSync(
+  'esm/native/services/canvas_picking_part_hover_preview_runtime.ts',
+  'utf8'
+);
 const genericPaintHoverTarget = readFileSync(
   'esm/native/services/canvas_picking_generic_paint_hover_target.ts',
   'utf8'
@@ -161,8 +169,11 @@ test('generic part paint hover resolves shared paint groups and previews grouped
     genericPaintHoverFlow,
     /const isGroupedShellPreview = effectiveKeys\.length > 1 && !isCornicePreview;/
   );
-  assert.match(genericPaintHoverFlow, /fillFront: !isGroupedShellPreview && !isCornicePreview,/);
-  assert.match(genericPaintHoverFlow, /fillBack: !isGroupedShellPreview && !isCornicePreview,/);
+  assert.match(genericPaintHoverFlow, /fillFaces: !isGroupedShellPreview && !isCornicePreview,/);
+  assert.match(partHoverPreviewRuntime, /fillFront: command\.fillFront,/);
+  assert.match(partHoverPreviewRuntime, /fillBack: command\.fillBack,/);
+  assert.match(genericPaintHoverFlow, /createPartHoverPreviewRuntime\(/);
+  assert.doesNotMatch(genericPaintHoverFlow, /setSketchPlacementPreview/);
   assert.match(genericPaintHoverShared, /export function __readPaintHoverOp\(/);
   assert.match(genericPaintHoverFlow, /const op = __readPaintHoverOp\(colors, effectiveKeys, selection\);/);
 });
@@ -219,7 +230,9 @@ test('corner and pentagon cornice hover now follows the shared paint group by pr
     genericPaintHoverPreviewBounds,
     /export function resolvePaintPreviewGroupBoxFromObjects\(args: \{/
   );
-  assert.match(genericPaintHoverFlow, /previewObjects: previewGroup\.previewObjects,/);
+  assert.match(genericPaintHoverFlow, /kind: 'object_boxes', previewObjects: previewGroup\.previewObjects/);
+  assert.match(partHoverPreviewProtocol, /kind: 'object_boxes';/);
+  assert.match(partHoverPreviewProtocol, /previewObjects: readonly unknown\[\];/);
   assert.match(
     renderPreviewSketchOpsNorm,
     /const readPreviewObjectList = \(value: unknown\): PreviewMeshLike\[\] => \{/

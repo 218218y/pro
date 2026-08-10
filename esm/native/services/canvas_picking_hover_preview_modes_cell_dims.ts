@@ -1,15 +1,11 @@
-import { getThreeMaybe } from '../runtime/three_access.js';
 import {
   CELL_DIMENSION_MATCH_POLICY,
   CELL_DIMENSION_PREVIEW_POLICY,
 } from '../../shared/dimensions/cell_dimension_policy.js';
 import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
-import {
-  __callMaybe,
-  __readPreviewSetSketchPlacementPreview,
-  __withAppThree,
-  type CellDimsHoverPreviewArgs,
-} from './canvas_picking_hover_preview_modes_shared.js';
+import { type CellDimsHoverPreviewArgs } from './canvas_picking_hover_preview_modes_shared.js';
+import { createPartHoverPreviewRuntime } from './canvas_picking_part_hover_preview_runtime.js';
+import type { PartHoverPreviewCommand } from './canvas_picking_part_hover_preview_protocol.js';
 import { resolveCellDimsTargetBox } from './canvas_picking_hover_preview_modes_cell_dims_target.js';
 import { resolveCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { resolveCellDimsFreeBoxHoverTarget } from './canvas_picking_cell_dims_free_box_hover.js';
@@ -31,17 +27,23 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       measureObjectLocalBox,
       getCellDimsHoverOp,
     } = args;
-    const THREE = getThreeMaybe(App);
-    const setPreview = __readPreviewSetSketchPlacementPreview(previewRo);
+    const previewRuntime = createPartHoverPreviewRuntime({
+      App,
+      hideLayoutPreview,
+      hideSketchPreview,
+      previewRo,
+    });
     const freeBoxTarget = resolveCellDimsFreeBoxHoverTarget({ App, ndcX, ndcY, raycaster, mouse });
     const target =
       freeBoxTarget?.target ||
       resolveCellDimsPostClickHoverTarget({ App, ndcX, ndcY, measureObjectLocalBox }) ||
       resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
-    if (!target || !setPreview) {
-      __callMaybe(hideSketchPreview, __withAppThree(App, THREE));
-      __callMaybe(hideLayoutPreview, __withAppThree(App, THREE));
-      return false;
+    if (!target || !previewRuntime.canShow) {
+      return previewRuntime.apply({
+        type: 'clear',
+        clearScope: 'layout-and-sketch',
+        reason: !target ? 'cell-dims-target-not-resolved' : 'cell-dims-preview-unavailable',
+      });
     }
 
     const draft = readCellDimsDraft(App);
@@ -49,19 +51,22 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
     const applyH = target.isBottom ? null : draft.applyH;
     const hexCellMode = draft.hexCellMode === true;
     if (!hexCellMode && applyW == null && applyH == null && applyD == null) {
-      __callMaybe(hideSketchPreview, __withAppThree(App, THREE));
-      __callMaybe(hideLayoutPreview, __withAppThree(App, THREE));
-      return false;
+      return previewRuntime.apply({
+        type: 'clear',
+        clearScope: 'layout-and-sketch',
+        reason: 'cell-dims-draft-empty',
+      });
     }
-
-    __callMaybe(hideLayoutPreview, __withAppThree(App, THREE));
 
     const selectorBox =
       freeBoxTarget?.selectorBox ||
       (target.hitSelectorObj ? measureObjectLocalBox(App, target.hitSelectorObj) : null);
     if (!selectorBox || !(selectorBox.width > 0) || !(selectorBox.height > 0) || !(selectorBox.depth > 0)) {
-      __callMaybe(hideSketchPreview, __withAppThree(App, THREE));
-      return false;
+      return previewRuntime.apply({
+        type: 'clear',
+        clearScope: 'layout-and-sketch',
+        reason: 'cell-dims-selector-box-invalid',
+      });
     }
 
     const previewTargetBox = resolveCellDimsTargetBox(
@@ -87,13 +92,12 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       previewTargetBox
     );
 
-    setPreview({
-      App,
-      THREE,
-      anchor: target.hitSelectorObj,
-      ...(freeBoxTarget?.anchorParent ? { anchorParent: freeBoxTarget.anchorParent } : {}),
+    const command: PartHoverPreviewCommand = {
       kind: 'box',
+      anchor: target.hitSelectorObj,
+      anchorParent: freeBoxTarget?.anchorParent || null,
       fillFront: true,
+      fillBack: false,
       overlayThroughScene: true,
       x: Number(previewTargetBox.centerX),
       y: Number(previewTargetBox.centerY),
@@ -115,8 +119,13 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
         )
       ),
       op,
+    };
+    return previewRuntime.apply({
+      type: 'show',
+      clearScope: 'layout',
+      reason: 'cell-dims-target-resolved',
+      command,
     });
-    return true;
   } catch {
     return false;
   }

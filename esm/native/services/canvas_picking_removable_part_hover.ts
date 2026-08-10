@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, SketchPlacementPreviewArgsLike } from '../../../types';
 
 import { __wp_map, __wp_isRemoved } from './canvas_picking_core_helpers.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
@@ -7,11 +7,12 @@ import {
   asMouseVectorLike,
   asRaycasterLike,
   asRecordMap,
-  createPreviewOpsArgs,
 } from './canvas_picking_generic_paint_hover_shared.js';
 import { resolveNonDoorHoverTargetFromObject } from './canvas_picking_generic_paint_hover_target.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
 import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/part_identity/api.js';
+import { createPartHoverPreviewRuntime } from './canvas_picking_part_hover_preview_runtime.js';
+import type { PartHoverPreviewCommand } from './canvas_picking_part_hover_preview_protocol.js';
 
 function isRemoved(App: AppContainer, partId: string): boolean {
   try {
@@ -29,9 +30,9 @@ export function tryHandleCanvasRemovablePartHover(args: {
   isRemoveDoorMode: boolean;
   raycaster: unknown;
   mouse: unknown;
-  hideLayoutPreview?: ((args: UnknownRecord) => unknown) | null;
-  hideSketchPreview?: ((args: UnknownRecord) => unknown) | null;
-  previewRo?: UnknownRecord | null;
+  hideLayoutPreview?: ((args: SketchPlacementPreviewArgsLike) => unknown) | null;
+  hideSketchPreview?: ((args: SketchPlacementPreviewArgsLike) => unknown) | null;
+  previewRo?: unknown;
 }): boolean {
   const {
     App,
@@ -46,11 +47,13 @@ export function tryHandleCanvasRemovablePartHover(args: {
   } = args;
   if (!isRemoveDoorMode) return false;
 
-  const setPreview =
-    previewRo && typeof previewRo.setSketchPlacementPreview === 'function'
-      ? previewRo.setSketchPlacementPreview
-      : null;
-  if (typeof setPreview !== 'function') return false;
+  const previewRuntime = createPartHoverPreviewRuntime({
+    App,
+    hideLayoutPreview,
+    hideSketchPreview,
+    previewRo,
+  });
+  if (!previewRuntime.canShow) return false;
 
   const raycasterLike = asRaycasterLike(raycaster);
   const mouseLike = asMouseVectorLike(mouse);
@@ -86,31 +89,30 @@ export function tryHandleCanvasRemovablePartHover(args: {
   });
   if (!previewGroup) return false;
 
-  try {
-    if (typeof hideLayoutPreview === 'function') hideLayoutPreview(createPreviewOpsArgs(App));
-    if (typeof hideSketchPreview === 'function') hideSketchPreview(createPreviewOpsArgs(App));
-  } catch {
-    // hover preview should never interrupt picking
-  }
+  const common = {
+    anchor: previewGroup.anchor,
+    anchorParent: previewGroup.anchorParent,
+    x: previewGroup.centerX,
+    y: previewGroup.centerY,
+    z: previewGroup.centerZ,
+    w: previewGroup.width,
+    boxH: previewGroup.height,
+    d: previewGroup.depth,
+    woodThick: previewGroup.woodThick,
+    fillFront: true,
+    fillBack: true,
+    overlayThroughScene: false,
+    op: isRemoved(App, partId) ? ('add' as const) : ('remove' as const),
+  };
+  const command: PartHoverPreviewCommand =
+    previewGroup.kind === 'object_boxes'
+      ? { ...common, kind: 'object_boxes', previewObjects: previewGroup.previewObjects }
+      : { ...common, kind: 'box' };
 
-  setPreview(
-    createPreviewOpsArgs(App, {
-      anchor: previewGroup.anchor,
-      anchorParent: previewGroup.anchorParent,
-      kind: previewGroup.kind || 'box',
-      previewObjects: previewGroup.previewObjects,
-      fillFront: true,
-      fillBack: true,
-      overlayThroughScene: false,
-      x: previewGroup.centerX,
-      y: previewGroup.centerY,
-      z: previewGroup.centerZ,
-      w: previewGroup.width,
-      boxH: previewGroup.height,
-      d: previewGroup.depth,
-      woodThick: previewGroup.woodThick,
-      op: isRemoved(App, partId) ? 'add' : 'remove',
-    })
-  );
-  return true;
+  return previewRuntime.apply({
+    type: 'show',
+    clearScope: 'layout-and-sketch',
+    reason: 'removable-part-target-resolved',
+    command,
+  });
 }
