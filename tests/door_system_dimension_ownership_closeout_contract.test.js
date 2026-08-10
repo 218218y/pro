@@ -42,6 +42,7 @@ const focusedInventories = new Map([
       ownerRel,
     ],
   ],
+  ['HINGED_DOOR_HARDWARE_RENDER_POLICY', ['esm/native/builder/render_door_ops_hinged.ts', ownerRel]],
   [
     'HINGED_DOOR_MOUNT_POLICY',
     [
@@ -363,6 +364,7 @@ test('Door System owner imports only canonical dependencies and aggregates direc
     ['sameModuleLeafGapMaxM', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapMaxM'],
     ['sameModuleLeafGapWoodDivisor', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapWoodDivisor'],
     ['sameModuleLeafGapSpanRatioMax', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapSpanRatioMax'],
+    ['hardware', 'HINGED_DOOR_HARDWARE_RENDER_POLICY'],
     ['split', 'HINGED_DOOR_SPLIT_POLICY'],
   ]);
 

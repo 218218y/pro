@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-10T04:35:36.263Z
+Generated: 2026-08-10T14:00:06.264Z
 
 ## Summary
 
 - Catalog groups: 43
 - Package script bindings owned by the catalog: 43
-- Catalog test-file references: 454
+- Catalog test-file references: 455
 - Direct package.json test-file references still remaining: 38
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -29,7 +29,7 @@ Generated: 2026-08-10T04:35:36.263Z
 | `cloud-sync-sync-ops`               | `test:cloud-sync-surfaces:sync-ops`            | focused | serial-tsx | tsx         |    13 | services/cloud-sync/sync-ops                                         |
 | `cloud-sync-tabs-ui`                | `test:cloud-sync-surfaces:tabs-ui`             | focused | tsx-test   | tsx         |     5 | ui/cloud-sync-tabs                                                   |
 | `domain-surfaces`                   | `test:domain-surfaces`                         | focused | serial-tsx | tsx         |    15 | kernel/domain-api, ui/actions, ui/feedback                           |
-| `door-build-surfaces`               | `test:door-build-surfaces`                     | focused | serial-tsx | tsx         |    11 | builder/doors, builder/post-build                                    |
+| `door-build-surfaces`               | `test:door-build-surfaces`                     | focused | serial-tsx | tsx         |    12 | builder/doors, builder/post-build                                    |
 | `mirror-runtime`                    | `test:mirror-runtime`                          | focused | tsx-test   | tsx         |     6 | platform/render-loop, runtime/planar-reflector                       |
 | `no-main-surfaces`                  | `test:no-main-surfaces`                        | focused | serial-tsx | tsx         |     5 | builder/no-main, services/canvas-picking                             |
 | `order-pdf-export-builders`         | `test:order-pdf-surfaces:export-builders`      | focused | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |

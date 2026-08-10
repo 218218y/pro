@@ -108,7 +108,7 @@ test('inset hinged regular internal divider reaches the front frame like the out
   );
 });
 
-test('overlay hinged regular internal divider keeps the existing shorter internal depth', () => {
+test('overlay hinged regular internal divider matches the outer carcass side depth', () => {
   const calls: unknown[][] = [];
   const runtime = {
     cfg: { wardrobeType: 'hinged', doorMountMode: 'overlay' },
@@ -137,8 +137,145 @@ test('overlay hinged regular internal divider keeps the existing shorter interna
   createInterDivider(runtime, state, 0, frame);
 
   assert.equal(calls.length, 1);
-  closeTo(Number(calls[0][2]), frame.moduleInternalDepth, 'overlay divider depth should stay unchanged');
-  closeTo(Number(calls[0][5]), frame.moduleInternalZ, 'overlay divider z should stay unchanged');
+  const depth = Number(calls[0][2]);
+  const z = Number(calls[0][5]);
+  closeTo(
+    depth,
+    runtime.D - CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM,
+    'overlay divider depth should match the outer carcass side'
+  );
+  closeTo(z + depth / 2, runtime.D / 2, 'overlay divider front face should reach the cabinet front plane');
+  closeTo(
+    z - depth / 2,
+    -runtime.D / 2 + CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM,
+    'overlay divider should keep the same rear clearance as the outer carcass side'
+  );
+});
+
+test('sliding wardrobe regular internal divider stays at shelf depth behind the door tracks', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: { wardrobeType: 'sliding' },
+    D: 0.6,
+    woodThick: 0.018,
+    depthReduction: 0.075,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 1 }],
+    moduleCfgList: [{}, {}],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5 } as any;
+  const frame = {
+    modWidth: 0.5,
+    moduleInternalDepth: 0.525,
+    moduleInternalZ: -0.0325,
+    moduleTotalDepth: 0.6,
+  } as any;
+
+  createInterDivider(runtime, state, 0, frame);
+
+  assert.equal(calls.length, 1);
+  const depth = Number(calls[0][2]);
+  const z = Number(calls[0][5]);
+  closeTo(depth, frame.moduleInternalDepth, 'sliding divider depth should match the shelf volume');
+  closeTo(z, frame.moduleInternalZ, 'sliding divider z should match the shelf volume');
+  assert.ok(
+    z + depth / 2 < runtime.D / 2,
+    'sliding divider front face must stay behind the outer carcass front/door track plane'
+  );
+});
+
+test('sliding depth-stepped divider halves each keep their matching internal shelf depth', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: { wardrobeType: 'sliding' },
+    D: 0.7,
+    woodThick: 0.018,
+    depthReduction: 0.075,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 1 }],
+    moduleCfgList: [{}, { specialDims: { depthCm: 55, baseDepthCm: 70 } }],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5 } as any;
+  const frame = {
+    modWidth: 0.5,
+    moduleInternalDepth: 0.625,
+    moduleInternalZ: -0.0325,
+    moduleTotalDepth: 0.7,
+  } as any;
+
+  createInterDivider(runtime, state, 0, frame);
+
+  assert.equal(calls.length, 2);
+  const left = calls.find(call => call[7] === 'divider_inter_depthL_0');
+  const right = calls.find(call => call[7] === 'divider_inter_depthR_0');
+  assert.ok(left);
+  assert.ok(right);
+  closeTo(Number(left[2]), frame.moduleInternalDepth);
+  closeTo(Number(left[5]), frame.moduleInternalZ);
+  closeTo(Number(right[2]), 0.55 - runtime.depthReduction);
+  closeTo(Number(right[5]), -runtime.D / 2 + (0.55 - runtime.depthReduction) / 2 + 0.005);
+});
+
+test('regular depth-stepped divider halves each reach the front of their matching module depth', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: { wardrobeType: 'hinged', doorMountMode: 'overlay' },
+    D: 0.7,
+    woodThick: 0.018,
+    depthReduction: 0.03,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 1 }],
+    moduleCfgList: [{}, { specialDims: { depthCm: 55, baseDepthCm: 70 } }],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5 } as any;
+  const frame = {
+    modWidth: 0.5,
+    moduleInternalDepth: 0.67,
+    moduleInternalZ: -0.01,
+    moduleTotalDepth: 0.7,
+  } as any;
+
+  createInterDivider(runtime, state, 0, frame);
+
+  assert.equal(calls.length, 2);
+  const left = calls.find(call => call[7] === 'divider_inter_depthL_0');
+  const right = calls.find(call => call[7] === 'divider_inter_depthR_0');
+  assert.ok(left);
+  assert.ok(right);
+
+  const leftDepth = Number(left[2]);
+  const leftZ = Number(left[5]);
+  closeTo(leftZ + leftDepth / 2, -runtime.D / 2 + 0.7);
+  closeTo(leftZ - leftDepth / 2, -runtime.D / 2 + CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM);
+
+  const rightDepth = Number(right[2]);
+  const rightZ = Number(right[5]);
+  closeTo(rightZ + rightDepth / 2, -runtime.D / 2 + 0.55);
+  closeTo(rightZ - rightDepth / 2, -runtime.D / 2 + CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM);
 });
 
 test('hex-cell horizontal boards extend the frame without overlapping the carcass rectangle', () => {
@@ -427,7 +564,7 @@ test('lower overlay divider detects an intact right-side front closure in the ne
   closeTo(z + depth / 2, runtime.D / 2, 'divider should reach the front next to the right closure');
 });
 
-test('explicit right-door removal keeps the overlay divider at its normal internal depth', () => {
+test('explicit right-door removal does not shorten the full-depth overlay divider', () => {
   const calls: unknown[][] = [];
   const runtime = {
     cfg: {
@@ -462,6 +599,8 @@ test('explicit right-door removal keeps the overlay divider at its normal intern
   createInterDivider(runtime, state, 0, frame, null);
 
   assert.equal(calls.length, 1);
-  closeTo(Number(calls[0][2]), frame.moduleInternalDepth);
-  closeTo(Number(calls[0][5]), frame.moduleInternalZ);
+  const depth = Number(calls[0][2]);
+  const z = Number(calls[0][5]);
+  closeTo(z + depth / 2, runtime.D / 2);
+  closeTo(z - depth / 2, -runtime.D / 2 + CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM);
 });

@@ -2,7 +2,14 @@ import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import { HINGED_DOOR_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import {
+  HINGED_DOOR_HARDWARE_RENDER_POLICY,
+  HINGED_DOOR_RENDER_POLICY,
+} from '../../shared/dimensions/door_system_policy.js';
+import {
+  appendHingedDoorHardware,
+  createHingedDoorHardwareRenderState,
+} from './render_hinged_door_hardware.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   isFunction,
@@ -58,6 +65,11 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const isRemoveDoorMode = args?.isRemoveDoorMode === true;
     const isDoorRemoved = isFunction(args?.isDoorRemoved) ? args.isDoorRemoved : null;
     const wpStackArg = typeof args?.__wpStack === 'string' ? String(args.__wpStack) : undefined;
+    const hingeHardwareState = createHingedDoorHardwareRenderState(
+      THREE,
+      HINGED_DOOR_HARDWARE_RENDER_POLICY,
+      hingedDims.visualThicknessM
+    );
 
     for (let i = 0; i < ops.length; i++) {
       const doorOp = readHingedDoorOp(ops[i]);
@@ -205,6 +217,13 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       }
 
       wardrobeGroup.add(group);
+      appendHingedDoorHardware({
+        THREE,
+        wardrobeGroup,
+        doorGroup: group,
+        doorOp,
+        state: hingeHardwareState,
+      });
       const doorsArray = __doors(App);
       if (Array.isArray(doorsArray)) {
         doorsArray.push({

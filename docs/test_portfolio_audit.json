@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-10T10:54:21.580Z",
+  "generatedAt": "2026-08-10T14:00:06.414Z",
   "totals": {
-    "tests": 1238,
-    "unitRunnerTests": 1229,
+    "tests": 1239,
+    "unitRunnerTests": 1230,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
-    "catalogTestReferences": 454,
-    "totalTestReferences": 492,
+    "catalogTestReferences": 455,
+    "totalTestReferences": 493,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 43,
     "catalogScriptBindings": 43,
@@ -16,12 +16,12 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 137
+    "contractOverlapTargets": 136
   },
   "categories": {
     "contract": 402,
     "runtime-unit": 334,
-    "integration": 462,
+    "integration": 463,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -92,20 +92,6 @@
         },
         {
           "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/builder/carcass_pipeline.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",
           "kind": "contract"
         }
       ]
@@ -4468,6 +4454,10 @@
     },
     {
       "file": "tests/door_glass_profile_visual_runtime.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/door_hinged_hardware_render_runtime.test.ts",
       "category": "integration"
     },
     {

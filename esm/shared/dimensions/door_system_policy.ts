@@ -18,6 +18,59 @@ export const HINGED_DOOR_MOUNT_POLICY = Object.freeze({
   sameModuleLeafGapSpanRatioMax: 0.1,
 });
 
+export const HINGED_DOOR_HARDWARE_RENDER_POLICY = Object.freeze({
+  standardEdgeInsetM: meters(0.1),
+  shortDoorInsetRatio: 0.25,
+  doorPlateCenterFromHingeEdgeM: meters(0.029),
+  doorPlateWidthM: meters(0.058),
+  doorPlateHeightM: meters(0.013),
+  doorPlateDepthM: meters(0.0032),
+  cupCenterFromHingeEdgeM: meters(0.0215),
+  cupRadiusM: meters(0.0175),
+  cupVisibleDepthM: meters(0.0045),
+  cupRadialSegments: 20,
+  cupCollarRadiusM: meters(0.0205),
+  cupCollarDepthM: meters(0.0022),
+  cupPadWidthM: meters(0.04),
+  cupPadHeightM: meters(0.022),
+  cupPadDepthM: meters(0.0018),
+  mainArmCenterFromPivotM: meters(0.023),
+  mainArmLengthM: meters(0.034),
+  mainArmHeightM: meters(0.011),
+  mainArmDepthM: meters(0.012),
+  // Keep the outer end fixed while extending the narrow bridge 6 mm inward
+  // so the door-side arm visually reaches the fixed hinge body in top view.
+  bridgeArmCenterFromPivotM: meters(0.0095),
+  bridgeArmLengthM: meters(0.022),
+  bridgeArmHeightM: meters(0.0095),
+  bridgeArmDepthM: meters(0.014),
+  knuckleCenterFromPivotM: meters(0.0065),
+  knuckleRadiusM: meters(0.0048),
+  knuckleHeightM: meters(0.022),
+  knuckleRadialSegments: 14,
+  carcassPlateCenterFromPivotM: meters(0.011),
+  carcassPlateThicknessM: meters(0.0032),
+  carcassPlateHeightM: meters(0.047),
+  carcassPlateDepthM: meters(0.03),
+  receiverBlockCenterFromPivotM: meters(0.0065),
+  receiverBlockWidthM: meters(0.011),
+  receiverBlockHeightM: meters(0.016),
+  receiverBlockDepthM: meters(0.014),
+  receiverArmCenterFromPivotM: meters(0.01),
+  receiverArmLengthM: meters(0.013),
+  receiverArmHeightM: meters(0.0065),
+  receiverArmDepthM: meters(0.012),
+  // Calibrated nickel finish, aligned with the project's existing nickel hardware palette.
+  metalColorHex: 0xe5e9ef,
+  accentColorHex: 0xc8ced7,
+  metalEmissiveHex: 0x20242b,
+  accentEmissiveHex: 0x171b21,
+  metalEmissiveIntensity: 0.16,
+  accentEmissiveIntensity: 0.1,
+  metalness: 0.28,
+  roughness: 0.2,
+});
+
 export const HINGED_DOOR_SPLIT_GEOMETRY_POLICY = Object.freeze({
   minSegmentHeightM: meters(0.12),
   renderMinSegmentHeightM: meters(0.1),
@@ -99,6 +152,7 @@ export const HINGED_DOOR_SYSTEM_POLICY = Object.freeze({
   sameModuleLeafGapMaxM: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapMaxM,
   sameModuleLeafGapWoodDivisor: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapWoodDivisor,
   sameModuleLeafGapSpanRatioMax: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapSpanRatioMax,
+  hardware: HINGED_DOOR_HARDWARE_RENDER_POLICY,
   split: HINGED_DOOR_SPLIT_POLICY,
 });
 

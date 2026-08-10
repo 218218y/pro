@@ -48,7 +48,6 @@ const expectedCorniceInventory = Object.freeze({
 });
 
 const expectedShellInventory = Object.freeze({
-  'esm/native/builder/carcass_pipeline.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/core_carcass_shell.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),

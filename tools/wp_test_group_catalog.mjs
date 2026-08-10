@@ -569,6 +569,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/door_trim_targets_click_runtime.test.ts',
       'tests/door_trim_visuals_cache_runtime.test.ts',
       'tests/door_style_overrides_runtime.test.js',
+      'tests/door_hinged_hardware_render_runtime.test.ts',
       'tests/door_glass_build_runtime.test.js',
       'tests/door_glass_profile_visual_runtime.test.js',
       'tests/door_mirror_visual_depth_runtime.test.js',

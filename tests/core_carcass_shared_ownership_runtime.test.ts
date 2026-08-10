@@ -79,6 +79,7 @@ test('Core Carcass Shared preserves shell constants, Material fallback, module f
     'isDepthStepped',
     'removedLeftFrameSide',
     'removedRightFrameSide',
+    'stackSplitDividerY',
   ]);
 
   const stepped = prepareCarcassInput({

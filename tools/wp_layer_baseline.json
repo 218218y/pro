@@ -224,11 +224,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 193,
-      "maxImportCount": 213,
+      "maxImportCount": 212,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
       "maxValueImporterCount": 193,
-      "maxValueImportCount": 213,
+      "maxValueImportCount": 212,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Builder consumes environment-neutral construction, dimension, identity, and visual policy tokens."
