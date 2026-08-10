@@ -1,9 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "checkJs": true,
-    "strict": false,
-    "noImplicitAny": false,
+    "strict": true,
+    "noImplicitAny": true,
     "skipLibCheck": true
   },
   "include": ["esm/native/ui/**/*.ts", "types/**/*.d.ts", "types/**/*.ts", "lean_types/**/*.d.ts"],

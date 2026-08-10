@@ -31,7 +31,7 @@ test('verify lane state parses multiple lane names plus print/dry-run/no-dedupe 
   });
 });
 
-test('verify lane catalog lists stable lane names, flattens nested aliases, and dedupes multi-lane plans canonically', () => {
+test('verify lane catalog uses one canonical project typecheck and dedupes multi-lane plans', () => {
   const names = listVerifyLaneNames();
   assert.ok(names.includes('builder-surfaces'));
   assert.ok(names.includes('overlay-export-family-core'));
@@ -39,37 +39,24 @@ test('verify lane catalog lists stable lane names, flattens nested aliases, and 
 
   assert.deepEqual(flattenVerifyLaneScripts('overlay-export-family-core'), [
     'test:export-overlay-errors-family-contracts',
-    'typecheck:platform',
-    'typecheck:services',
-    'typecheck:runtime',
+    'typecheck',
     'contract:layers',
     'contract:api',
   ]);
 
   assert.deepEqual(flattenVerifyLanePlan(['public-surfaces', 'builder-surfaces']).scripts, [
     'test:public-surfaces',
-    'typecheck:runtime',
-    'typecheck:services',
-    'typecheck:kernel',
-    'typecheck:ui',
+    'typecheck',
     'contract:layers',
     'contract:api',
     'test:builder-surfaces',
-    'typecheck:builder',
   ]);
 });
 
 test('verify lane planner reports the canonical script order for single and multi-lane runs', () => {
   assert.deepEqual(planVerifyLaneRun({ laneName: 'overlay-export-family-core' }), {
     laneNames: ['overlay-export-family-core'],
-    scripts: [
-      'test:export-overlay-errors-family-contracts',
-      'typecheck:platform',
-      'typecheck:services',
-      'typecheck:runtime',
-      'contract:layers',
-      'contract:api',
-    ],
+    scripts: ['test:export-overlay-errors-family-contracts', 'typecheck', 'contract:layers', 'contract:api'],
   });
 
   assert.deepEqual(planVerifyLaneRun({ laneName: 'perf-smoke' }), {
@@ -79,14 +66,10 @@ test('verify lane planner reports the canonical script order for single and mult
 
   assert.deepEqual(planVerifyLaneRun({ laneNames: ['public-surfaces', 'builder-surfaces'] }).scripts, [
     'test:public-surfaces',
-    'typecheck:runtime',
-    'typecheck:services',
-    'typecheck:kernel',
-    'typecheck:ui',
+    'typecheck',
     'contract:layers',
     'contract:api',
     'test:builder-surfaces',
-    'typecheck:builder',
   ]);
 });
 
@@ -107,9 +90,7 @@ test('verify lane flow runs flattened scripts in order', () => {
   assert.deepEqual(calls, out.scripts);
   assert.deepEqual(calls, [
     'test:export-overlay-errors-family-contracts',
-    'typecheck:platform',
-    'typecheck:services',
-    'typecheck:runtime',
+    'typecheck',
     'contract:layers',
     'contract:api',
   ]);
@@ -132,14 +113,10 @@ test('verify lane flow dedupes overlapping scripts across multiple lanes by defa
   assert.deepEqual(calls, out.scripts);
   assert.deepEqual(calls, [
     'test:public-surfaces',
-    'typecheck:runtime',
-    'typecheck:services',
-    'typecheck:kernel',
-    'typecheck:ui',
+    'typecheck',
     'contract:layers',
     'contract:api',
     'test:builder-surfaces',
-    'typecheck:builder',
   ]);
 });
 

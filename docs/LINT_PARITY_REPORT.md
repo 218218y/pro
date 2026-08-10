@@ -6,14 +6,14 @@ Stage 9 finalizes the TypeScript 7 quality path: TypeScript 7.0.2 is active, TS-
 
 ## Gate comparison
 
-| Gate              | Command                                               | Blocking? | Role                                                                                 | Stage 9 status                                                                     |
-| ----------------- | ----------------------------------------------------- | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| lint modern       | `npm run lint:modern`                                 | yes       | Canonical lint gate combining strict JS ESLint, Oxlint syntax, and custom contracts. | blocking primary gate                                                              |
-| lint JS-only      | `npm run lint:js:strict`                              | yes       | ESLint coverage for JS/tools/tests/config, including `no-undef`.                     | strict blocking JS gate with 0 warnings; TS/TSX stays outside ESLint               |
-| oxlint syntax     | `npm run lint:ts-modern:syntax`                       | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types` TS/TSX.          | blocking; current syntax diagnostics are 0                                         |
-| oxlint type-aware | `npm run lint:ts-modern:type-aware`                   | yes       | Semantic lint lane through `oxlint-tsgolint`.                                        | blocking; current type-aware diagnostics are 0                                     |
-| typecheck         | `npm run typecheck:runtime && npm run typecheck:dist` | yes       | TypeScript compiler contracts and TS/JS check lanes.                                 | canonical for type correctness on TypeScript 7.0.2                                 |
-| custom contracts  | `npm run lint:contracts`                              | yes       | Project-owned quality rules that survive parser/linter swaps.                        | matrix/parity docs, modern readiness, and lint architecture contracts are blocking |
+| Gate              | Command                             | Blocking? | Role                                                                                 | Stage 9 status                                                                     |
+| ----------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| lint modern       | `npm run lint:modern`               | yes       | Canonical lint gate combining strict JS ESLint, Oxlint syntax, and custom contracts. | blocking primary gate                                                              |
+| lint JS-only      | `npm run lint:js:strict`            | yes       | ESLint coverage for JS/tools/tests/config, including `no-undef`.                     | strict blocking JS gate with 0 warnings; TS/TSX stays outside ESLint               |
+| oxlint syntax     | `npm run lint:ts-modern:syntax`     | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types` TS/TSX.          | blocking; current syntax diagnostics are 0                                         |
+| oxlint type-aware | `npm run lint:ts-modern:type-aware` | yes       | Semantic lint lane through `oxlint-tsgolint`.                                        | blocking; current type-aware diagnostics are 0                                     |
+| typecheck         | `npm run typecheck`                 | yes       | Whole-project strict TypeScript compiler gate.                                       | canonical for type correctness on TypeScript 7.0.2                                 |
+| custom contracts  | `npm run lint:contracts`            | yes       | Project-owned quality rules that survive parser/linter swaps.                        | matrix/parity docs, modern readiness, and lint architecture contracts are blocking |
 
 ## Rule parity
 
@@ -32,18 +32,18 @@ Stage 9 finalizes the TypeScript 7 quality path: TypeScript 7.0.2 is active, TS-
 
 ## Modern lint readiness
 
-| Rule                    | Future owner                           | Blocking command                                                                         | Ready? | Notes                                                                                                    |
-| ----------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------- |
-| `eqeqeq`                | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
-| `no-const-assign`       | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
-| `no-dupe-keys`          | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
-| `no-redeclare`          | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
-| `no-restricted-globals` | custom lint contracts                  | `npm run lint:contracts`                                                                 | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
-| `no-restricted-imports` | custom lint contracts                  | `npm run lint:contracts`                                                                 | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
-| `no-restricted-syntax`  | custom lint contracts                  | `npm run lint:contracts`                                                                 | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
-| `no-undef`              | ESLint JS/tools + TypeScript typecheck | `npm run lint:js:strict; TS/TSX via npm run typecheck:runtime && npm run typecheck:dist` | yes    | Not a TS/TSX ESLint blocker: ESLint keeps JS/tools globals, while TS/TSX relies on TypeScript typecheck. |
-| `no-unreachable`        | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
-| `no-unused-vars`        | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                                                          | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| Rule                    | Future owner                           | Blocking command                                       | Ready? | Notes                                                                                                    |
+| ----------------------- | -------------------------------------- | ------------------------------------------------------ | ------ | -------------------------------------------------------------------------------------------------------- |
+| `eqeqeq`                | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| `no-const-assign`       | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| `no-dupe-keys`          | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| `no-redeclare`          | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| `no-restricted-globals` | custom lint contracts                  | `npm run lint:contracts`                               | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
+| `no-restricted-imports` | custom lint contracts                  | `npm run lint:contracts`                               | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
+| `no-restricted-syntax`  | custom lint contracts                  | `npm run lint:contracts`                               | yes    | Owned by project lint contracts; architecture baseline must stay at 0.                                   |
+| `no-undef`              | ESLint JS/tools + TypeScript typecheck | `npm run lint:js:strict; TS/TSX via npm run typecheck` | yes    | Not a TS/TSX ESLint blocker: ESLint keeps JS/tools globals, while TS/TSX relies on TypeScript typecheck. |
+| `no-unreachable`        | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
+| `no-unused-vars`        | Oxlint syntax                          | `npm run lint:ts-modern:syntax`                        | yes    | Owned by the blocking Oxlint syntax lane at 0 diagnostics.                                               |
 
 ## Architecture contract baseline
 

@@ -38,13 +38,10 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /run: npm run format:check/);
   assert.match(ci, /run: npm run check:refactor-guardrails/);
   assert.match(ci, /run: npm run lint/);
-  assert.match(ci, /name: TypeScript \(\$\{\{ matrix\.shard \}\}\)/);
-  assert.match(ci, /shard: boot-data/);
-  assert.match(ci, /shard: kernel-platform/);
-  assert.match(ci, /shard: runtime-browser/);
-  assert.match(ci, /shard: product-ui/);
-  assert.match(ci, /run: node tools\/wp_typecheck_parallel\.mjs --workers 2 --modes/);
-  assert.match(ci, /name: typecheck-diagnostics-\$\{\{ matrix\.shard \}\}/);
+  assert.match(ci, /name: TypeScript/);
+  assert.doesNotMatch(ci, /shard: boot-data|shard: kernel-platform|shard: runtime-browser|shard: product-ui/);
+  assert.match(ci, /name: Run canonical TypeScript checks\n        run: npm run typecheck:all/);
+  assert.match(ci, /name: typecheck-diagnostics/);
   assert.match(ci, /run: npm run contract:layers/);
   assert.match(ci, /run: npm run contract:api/);
   assert.match(runtimeTestsSection, /name: Runtime tests \(\$\{\{ matrix\.shard \}\}\/3\)/);

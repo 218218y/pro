@@ -41,21 +41,13 @@ function runCoreCloseout({ projectRoot, childEnv }) {
     label: `node --test ${contractTests.join(' ')}`,
   });
 
-  const typechecks = [
-    'typecheck:builder',
-    'typecheck:runtime',
-    'typecheck:services',
-    'typecheck:platform',
-    'typecheck:kernel',
-  ];
-  for (const scriptName of typechecks) npmRun({ projectRoot, childEnv, scriptName });
+  npmRun({ projectRoot, childEnv, scriptName: 'typecheck' });
   npmRun({ projectRoot, childEnv, scriptName: 'contract:layers' });
   npmRun({ projectRoot, childEnv, scriptName: 'contract:api' });
 }
 
 function runFullCloseout({ projectRoot, childEnv }) {
-  npmRun({ projectRoot, childEnv, scriptName: 'typecheck:ui' });
-  runVerifyLane({ projectRoot, childEnv, laneName: 'ui-dist-probe' });
+  npmRun({ projectRoot, childEnv, scriptName: 'typecheck:ui-lean' });
   runVerifyLanePlan({
     projectRoot,
     childEnv,
@@ -85,7 +77,7 @@ function main() {
 
   if (!depsReady) {
     const msg =
-      '[WardrobePro] phase-close verify: node_modules is incomplete; skipping dependency-backed closeout steps (typecheck:ui, typecheck:dist, and broad verify:* packs).';
+      '[WardrobePro] phase-close verify: node_modules is incomplete; skipping dependency-backed closeout steps (typecheck:ui-lean and broad verify:* packs).';
     if (flags.requireDeps || flags.full) {
       console.error(msg);
       process.exit(1);

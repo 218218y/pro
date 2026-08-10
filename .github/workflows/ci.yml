@@ -149,22 +149,10 @@ jobs:
           retention-days: 7
 
   typecheck:
-    name: TypeScript (${{ matrix.shard }})
+    name: TypeScript
     runs-on: ubuntu-latest
     timeout-minutes: 25
     if: github.event_name != 'workflow_dispatch' || inputs.run_typecheck
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - shard: boot-data
-            modes: boot,strict-boot,data,io,js
-          - shard: kernel-platform
-            modes: kernel,strict-kernel,platform,strict-platform
-          - shard: runtime-browser
-            modes: runtime,strict-runtime,adapters-browser,strict-adapters-browser
-          - shard: product-ui
-            modes: services,strict-services,builder,ui,strict-ui,strictcore
 
     steps:
       - name: Checkout
@@ -179,14 +167,14 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run TypeScript checks
-        run: node tools/wp_typecheck_parallel.mjs --workers 2 --modes "${{ matrix.modes }}"
+      - name: Run canonical TypeScript checks
+        run: npm run typecheck:all
 
       - name: Upload TypeScript diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: typecheck-diagnostics-${{ matrix.shard }}
+          name: typecheck-diagnostics
           path: |
             .artifacts/**
           if-no-files-found: warn

@@ -336,18 +336,12 @@ General:
 
 Treat `npm run test`, `npm run gate`, `npm run verify`, and `npm run typecheck:all` as broad lanes, not mandatory closeout for every small or medium fix.
 
-Targeted typecheck commands:
+Typecheck commands:
 
-- `npm run typecheck:boot`
-- `npm run typecheck:kernel`
-- `npm run typecheck:platform`
-- `npm run typecheck:builder`
-- `npm run typecheck:ui`
-- `npm run typecheck:data`
-- `npm run typecheck:io`
-- `npm run typecheck:services`
-- `npm run typecheck:runtime`
-- `npm run typecheck:adapters-browser`
+- `npm run typecheck` — canonical whole-project strict TypeScript gate.
+- `npm run typecheck:ui-lean` — dependency-light UI portability gate against `lean_types`.
+- `npm run typecheck:all` — runs both canonical gates.
+- `npm run typecheck:changed` — selects only the canonical gate(s) affected by changed files.
 
 UI/browser smoke when relevant:
 

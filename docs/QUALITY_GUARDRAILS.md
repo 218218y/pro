@@ -61,12 +61,12 @@ npm run check:refactor-guardrails
 - Source-shape or hash checks require a documented reason that the invariant cannot be expressed structurally or behaviorally. Do not retain a hash merely because it existed in an earlier refactor proof.
 - Identity-only composition owners are compared by exported symbol provenance. Reordering or regrouping equivalent `export { ... } from ...` statements is allowed; aliases, copied values, added logic, wrong provenance, or consumer bypasses are not.
 - Reusable contract engines must have mutation tests proving both sides of the boundary: harmless representation changes still pass, while ownership and behavior drift still fail.
-- The first migrated family is the ten Dimension Composition owners declared in `tools/wp_dimension_composition_contract_manifest.mjs` and enforced through `tools/wp_declarative_contract_engine.mjs`; the existing primary/secondary/remaining test entry points remain stable CI facades over that canonical manifest.
+- The first migrated family is the ten Dimension Composition owners declared in `tools/wp_dimension_composition_contract_manifest.mjs` and enforced through `tools/wp_declarative_contract_engine.mjs`; the former primary/secondary/remaining facades were removed, leaving one canonical contract-engine test and one runtime-identity test.
 
 Focused checks:
 
 ```bash
-node --test tests/wp_declarative_contract_engine_runtime.test.js tests/dimension_composition_owner_primary_contract.test.js tests/dimension_composition_owner_secondary_contract.test.js tests/dimension_composition_owner_remaining_contract.test.js
+node --test tests/wp_declarative_contract_engine_runtime.test.js
 npm run test:offline:dimension-composition-runtime
 ```
 

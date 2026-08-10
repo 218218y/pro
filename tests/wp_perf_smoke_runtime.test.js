@@ -81,9 +81,7 @@ test('perf smoke planner resolves verify lanes and dedupes script overlap', () =
   assert.deepEqual(plan.scriptNames, [
     'contract:api',
     'test:export-overlay-errors-family-contracts',
-    'typecheck:platform',
-    'typecheck:services',
-    'typecheck:runtime',
+    'typecheck',
     'contract:layers',
     'test:ui-react-import-hardening-contracts',
     'test:ui-react-jsx-hardening-contracts',

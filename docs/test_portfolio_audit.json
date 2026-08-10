@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-10T04:16:11.995Z",
+  "generatedAt": "2026-08-10T04:35:36.372Z",
   "totals": {
-    "tests": 1240,
-    "unitRunnerTests": 1231,
+    "tests": 1235,
+    "unitRunnerTests": 1226,
     "e2eTests": 9,
-    "nonTestRuntimeFiles": 38,
-    "packageTestReferences": 40,
+    "nonTestRuntimeFiles": 36,
+    "packageTestReferences": 38,
     "catalogTestReferences": 454,
-    "totalTestReferences": 494,
+    "totalTestReferences": 492,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 43,
     "catalogScriptBindings": 43,
@@ -19,8 +19,8 @@
     "contractOverlapTargets": 140
   },
   "categories": {
-    "contract": 408,
-    "runtime-unit": 331,
+    "contract": 405,
+    "runtime-unit": 329,
     "integration": 461,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
@@ -4477,27 +4477,7 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/dimension_composition_owner_primary_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/dimension_composition_owner_primary_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/dimension_composition_owner_remaining_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/dimension_composition_owner_remaining_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
-      "file": "tests/dimension_composition_owner_secondary_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/dimension_composition_owner_secondary_runtime.test.ts",
+      "file": "tests/dimension_composition_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

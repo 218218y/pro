@@ -3,9 +3,12 @@ import { spawnSync } from 'node:child_process';
 import { createLocalTypeScriptNotFoundMessage, resolveTypeScriptTool } from './wp_typescript_resolver.js';
 
 export function createTypecheckHelpText() {
-  return ['Usage:', '  node tools/wp_typecheck.js --all', '  node tools/wp_typecheck.js --mode runtime'].join(
-    '\n'
-  );
+  return [
+    'Usage:',
+    '  node tools/wp_typecheck.js --all',
+    '  node tools/wp_typecheck.js --mode project',
+    '  node tools/wp_typecheck.js --mode ui-lean',
+  ].join('\n');
 }
 
 export function printTypecheckHeader(title, log = console.log) {

@@ -1,57 +1,15 @@
 import path from 'node:path';
 import fs from 'node:fs';
 
-export const MODE_TO_CONFIG = {
+// The whole-project strict config is the canonical correctness gate.
+// ui-lean is intentionally separate because it compiles UI .ts files against
+// the dependency-light lean_types ambient surface rather than normal package types.
+export const MODE_TO_CONFIG = Object.freeze({
   project: 'tsconfig.json',
-  app: 'tsconfig.checkjs.app.json',
-  boot: 'tsconfig.checkjs.boot.json',
-  'strict-boot': 'tsconfig.checkjs.strict-boot.json',
-  data: 'tsconfig.checkjs.data.json',
-  io: 'tsconfig.checkjs.io.json',
-  services: 'tsconfig.checkjs.services.json',
-  js: 'tsconfig.checkjs.json',
-  kernel: 'tsconfig.checkjs.kernel.json',
-  platform: 'tsconfig.checkjs.platform.json',
-  builder: 'tsconfig.checkjs.builder.json',
-  ui: 'tsconfig.checkjs.ui.json',
-  runtime: 'tsconfig.checkjs.runtime.json',
-  'adapters-browser': 'tsconfig.checkjs.adapters-browser.json',
-  dist: 'tsconfig.dist.json',
-  'ui-lean': 'tsconfig.checkjs.ui-lean.json',
-  strictcore: 'tsconfig.checkjs.strictcore.json',
-  'strict-runtime': 'tsconfig.checkjs.strict-runtime.json',
-  'strict-adapters-browser': 'tsconfig.checkjs.strict-adapters-browser.json',
-  'strict-kernel': 'tsconfig.checkjs.strict-kernel.json',
-  'strict-services': 'tsconfig.checkjs.strict-services.json',
-  'strict-platform': 'tsconfig.checkjs.strict-platform.json',
-  'strict-ui': 'tsconfig.checkjs.strict-ui.json',
-};
+  'ui-lean': 'tsconfig.ui-lean.json',
+});
 
-export const MODE_TO_EXTRA_ARGS = {
-  dist: ['--noEmit'],
-};
-
-export const DEFAULT_ALL_MODES = [
-  'boot',
-  'strict-boot',
-  'data',
-  'io',
-  'services',
-  'js',
-  'kernel',
-  'platform',
-  'builder',
-  'ui',
-  'runtime',
-  'adapters-browser',
-  'strictcore',
-  'strict-runtime',
-  'strict-adapters-browser',
-  'strict-kernel',
-  'strict-services',
-  'strict-platform',
-  'strict-ui',
-];
+export const DEFAULT_ALL_MODES = Object.freeze(['project', 'ui-lean']);
 
 export function parseTypecheckArgs(argv) {
   const flags = new Set(argv.filter(arg => arg.startsWith('--')));
@@ -83,11 +41,6 @@ export function isKnownTypecheckMode(mode) {
 
 export function resolveTypecheckConfigPath(root, mode) {
   return path.join(root, MODE_TO_CONFIG[mode]);
-}
-
-export function resolveTypecheckExtraArgs(mode) {
-  const extraArgs = MODE_TO_EXTRA_ARGS[mode];
-  return Array.isArray(extraArgs) ? extraArgs.slice() : [];
 }
 
 export function resolveTypecheckBuildInfoPath(root, mode) {

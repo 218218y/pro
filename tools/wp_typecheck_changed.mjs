@@ -3,49 +3,42 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_ALL_MODES } from './wp_typecheck_state.js';
 import { runTypecheckModesInParallel } from './wp_typecheck_parallel.mjs';
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const LAYER_MODES = Object.freeze({
-  boot: ['boot', 'strict-boot'],
-  builder: ['builder'],
-  data: ['data'],
-  io: ['io'],
-  kernel: ['kernel', 'strict-kernel'],
-  platform: ['platform', 'strict-platform'],
-  runtime: ['runtime', 'strict-runtime'],
-  services: ['services', 'strict-services'],
-  ui: ['ui', 'strict-ui'],
-});
-
 export function resolveTypecheckModesForFiles(files) {
-  const modes = new Set();
+  let project = false;
+  let uiLean = false;
+
   for (const rawFile of files) {
     const file = String(rawFile).replace(/\\/gu, '/');
-    if (/^(?:types\/|esm\/native\/shared\/|esm\/shared\/|tsconfig)/u.test(file)) {
-      return [...DEFAULT_ALL_MODES];
-    }
-    if (/^esm\/entry_|^esm\/main\./u.test(file)) {
-      modes.add('boot');
-      modes.add('strict-boot');
+
+    if (file === 'tsconfig.json') {
+      project = true;
+      uiLean = true;
       continue;
     }
-    const adapterMatch = file.match(/^esm\/native\/adapters\/([^/]+)/u);
-    if (adapterMatch?.[1] === 'browser') {
-      modes.add('adapters-browser');
-      modes.add('strict-adapters-browser');
+    if (file === 'tsconfig.ui-lean.json' || file.startsWith('lean_types/')) {
+      uiLean = true;
       continue;
     }
-    const layerMatch = file.match(/^esm\/native\/([^/]+)\//u);
-    if (layerMatch && Object.hasOwn(LAYER_MODES, layerMatch[1])) {
-      for (const mode of LAYER_MODES[layerMatch[1]]) modes.add(mode);
+    if (file.startsWith('types/')) {
+      project = true;
+      uiLean = true;
       continue;
     }
-    if (/^esm\/.+\.(?:js|mjs|ts|tsx)$/u.test(file)) return [...DEFAULT_ALL_MODES];
+    if (/^esm\/native\/ui\/.*\.ts$/u.test(file)) {
+      project = true;
+      uiLean = true;
+      continue;
+    }
+    if (/^(?:esm\/.*\.(?:ts|tsx|mjs|js)|wp_logo_data\.js|tsconfig(?:\.[^/]+)?\.json)$/u.test(file)) {
+      project = true;
+    }
   }
-  return [...modes];
+
+  return [project ? 'project' : null, uiLean ? 'ui-lean' : null].filter(Boolean);
 }
 
 function git(args) {
@@ -85,7 +78,7 @@ async function main() {
     const files = [...new Set(listChangedFiles(args.base))];
     const modes = resolveTypecheckModesForFiles(files);
     if (!modes.length) {
-      console.log('[WP Typecheck Changed] No changed TypeScript source layers require checking.');
+      console.log('[WP Typecheck Changed] No changed TypeScript surfaces require checking.');
       return;
     }
     console.log(`[WP Typecheck Changed] ${files.length} changed files select: ${modes.join(', ')}`);

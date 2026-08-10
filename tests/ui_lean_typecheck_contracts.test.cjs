@@ -9,8 +9,8 @@ function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
-test('ui lean typecheck config stays scoped to no-deps UI .ts surfaces', () => {
-  const raw = read('tsconfig.checkjs.ui-lean.json');
+test('ui lean typecheck config stays strict and scoped to no-deps UI .ts surfaces', () => {
+  const raw = read('tsconfig.ui-lean.json');
   const cfg = JSON.parse(raw);
   assert.deepEqual(cfg.include, [
     'esm/native/ui/**/*.ts',
@@ -21,6 +21,8 @@ test('ui lean typecheck config stays scoped to no-deps UI .ts surfaces', () => {
   assert.ok(JSON.stringify(cfg.exclude).includes('ui/**/*.tsx'));
   assert.ok(!JSON.stringify(cfg.include).includes('ui/**/*.tsx'));
   assert.equal(cfg.compilerOptions.skipLibCheck, true);
+  assert.equal(cfg.compilerOptions.strict, true);
+  assert.equal(cfg.compilerOptions.noImplicitAny, true);
 });
 
 test('ui lean react shim exports jsx runtime and react-dom client seams', () => {

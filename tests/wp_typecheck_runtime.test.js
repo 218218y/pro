@@ -11,7 +11,6 @@ import {
   MODE_TO_CONFIG,
   parseTypecheckArgs,
   resolveTypecheckBuildInfoPath,
-  resolveTypecheckExtraArgs,
   resolveTypecheckIncrementalArgs,
   resolveTypecheckConfigPath,
   resolveTypecheckModes,
@@ -27,9 +26,9 @@ function tempDir() {
 }
 
 test('typecheck args parsing preserves help/mode/all semantics', () => {
-  assert.deepEqual(parseTypecheckArgs(['--mode', 'runtime']), {
+  assert.deepEqual(parseTypecheckArgs(['--mode', 'project']), {
     help: false,
-    mode: 'runtime',
+    mode: 'project',
     runAll: false,
     unknownOptions: [],
   });
@@ -40,42 +39,40 @@ test('typecheck args parsing preserves help/mode/all semantics', () => {
     runAll: true,
     unknownOptions: [],
   });
-  assert.deepEqual(parseTypecheckArgs(['--mode', 'runtime', '--badflag']).unknownOptions, ['--badflag']);
+  assert.deepEqual(parseTypecheckArgs(['--mode', 'project', '--badflag']).unknownOptions, ['--badflag']);
 
-  assert.equal(resolveTypecheckModes({ runAll: false, mode: 'services' })[0], 'services');
-  assert.ok(resolveTypecheckModes({ runAll: true, mode: null }).includes('strict-runtime'));
-  assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode runtime/);
+  assert.deepEqual(resolveTypecheckModes({ runAll: false, mode: 'project' }), ['project']);
+  assert.deepEqual(resolveTypecheckModes({ runAll: true, mode: null }), ['project', 'ui-lean']);
+  assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode project/);
+  assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode ui-lean/);
 });
 
-test('typecheck parallel and changed-file routing stay bounded and layer-aware', () => {
-  assert.deepEqual(parseTypecheckParallelArgs(['--workers', '3', '--modes', 'services,strict-services']), {
+test('typecheck parallel and changed-file routing stay bounded and surface-aware', () => {
+  assert.deepEqual(parseTypecheckParallelArgs(['--workers', '3', '--modes', 'project,ui-lean']), {
     help: false,
     workers: '3',
-    modes: ['services', 'strict-services'],
+    modes: ['project', 'ui-lean'],
   });
-  assert.equal(resolveTypecheckWorkerCount({ requested: '20', modeCount: 3, cpuCount: 8 }), 3);
-  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/services/example.ts']), [
-    'services',
-    'strict-services',
-  ]);
-  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/adapters/browser/example.ts']), [
-    'adapters-browser',
-    'strict-adapters-browser',
-  ]);
+  assert.equal(resolveTypecheckWorkerCount({ requested: '20', modeCount: 2, cpuCount: 8 }), 2);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/services/example.ts']), ['project']);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/ui/example.ts']), ['project', 'ui-lean']);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/ui/example.tsx']), ['project']);
   assert.deepEqual(resolveTypecheckModesForFiles(['types/app.ts']), [...DEFAULT_ALL_MODES]);
+  assert.deepEqual(resolveTypecheckModesForFiles(['lean_types/react_lean_shim.d.ts']), ['ui-lean']);
+  assert.deepEqual(resolveTypecheckModesForFiles(['README.md']), []);
 });
 
-test('typecheck incremental cache paths are isolated per config and can be disabled explicitly', () => {
+test('typecheck incremental cache paths are isolated per canonical config and can be disabled explicitly', () => {
   const root = tempDir();
-  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'services', {}), [
+  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'project', {}), [
     '--incremental',
     '--tsBuildInfoFile',
-    resolveTypecheckBuildInfoPath(root, 'services'),
+    resolveTypecheckBuildInfoPath(root, 'project'),
   ]);
-  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'services', { WP_TYPECHECK_INCREMENTAL: '0' }), []);
+  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'project', { WP_TYPECHECK_INCREMENTAL: '0' }), []);
   assert.notEqual(
-    resolveTypecheckBuildInfoPath(root, 'services'),
-    resolveTypecheckBuildInfoPath(root, 'strict-services')
+    resolveTypecheckBuildInfoPath(root, 'project'),
+    resolveTypecheckBuildInfoPath(root, 'ui-lean')
   );
 });
 
@@ -241,7 +238,7 @@ test('TypeScript resolver rejects a Windows install that exposes only the unsafe
 
 test('typecheck flow runs Windows package bin through node instead of tsc.cmd', () => {
   const root = tempDir();
-  const configPath = resolveTypecheckConfigPath(root, 'boot');
+  const configPath = resolveTypecheckConfigPath(root, 'project');
   const packageBin = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
   const cmdShim = path.join(root, 'node_modules', '.bin', 'tsc.cmd');
   fs.writeFileSync(configPath, '{"compilerOptions":{}}\n', 'utf8');
@@ -256,7 +253,7 @@ test('typecheck flow runs Windows package bin through node instead of tsc.cmd', 
     node: 'C:\\Program Files\\nodejs\\node.exe',
     platform: 'win32',
     runAll: false,
-    mode: 'boot',
+    mode: 'project',
     spawnImpl(cmd, args, options) {
       invocations.push({ cmd, args, cwd: options.cwd });
       return { status: 0 };
@@ -272,12 +269,12 @@ test('typecheck flow runs Windows package bin through node instead of tsc.cmd', 
 
 test('typecheck flow rejects unknown options and CI system tsc fallback', () => {
   const root = tempDir();
-  fs.writeFileSync(resolveTypecheckConfigPath(root, 'runtime'), '{"compilerOptions":{}}\n', 'utf8');
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'project'), '{"compilerOptions":{}}\n', 'utf8');
 
   const unknown = runTypecheckFlow({
     root,
     runAll: false,
-    mode: 'runtime',
+    mode: 'project',
     unknownOptions: ['--badflag'],
   });
   assert.equal(unknown.ok, false);
@@ -287,7 +284,7 @@ test('typecheck flow rejects unknown options and CI system tsc fallback', () => 
   const blocked = runTypecheckFlow({
     root,
     runAll: false,
-    mode: 'runtime',
+    mode: 'project',
     env: { WP_ALLOW_SYSTEM_TSC: '1', CI: '1' },
     spawnImpl() {
       return { status: 0 };
@@ -300,7 +297,7 @@ test('typecheck flow rejects unknown options and CI system tsc fallback', () => 
 
 test('typecheck flow runs matching config and reports success', () => {
   const root = tempDir();
-  fs.writeFileSync(resolveTypecheckConfigPath(root, 'runtime'), '{"compilerOptions":{}}\n', 'utf8');
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'project'), '{"compilerOptions":{}}\n', 'utf8');
   fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
   fs.writeFileSync(path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'), '// stub\n', 'utf8');
 
@@ -310,7 +307,7 @@ test('typecheck flow runs matching config and reports success', () => {
     root,
     node: '/usr/bin/node',
     runAll: false,
-    mode: 'runtime',
+    mode: 'project',
     log: msg => logs.push(msg),
     spawnImpl(cmd, args, options) {
       invocations.push({ cmd, args, cwd: options.cwd, stdio: options.stdio });
@@ -323,24 +320,22 @@ test('typecheck flow runs matching config and reports success', () => {
   assert.equal(invocations[0].cmd, '/usr/bin/node');
   assert.equal(invocations[0].args[0], path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'));
   assert.equal(invocations[0].args[1], '-p');
-  assert.equal(invocations[0].args[2], resolveTypecheckConfigPath(root, 'runtime'));
+  assert.equal(invocations[0].args[2], resolveTypecheckConfigPath(root, 'project'));
   assert.ok(logs.some(line => /typecheck completed successfully/i.test(line)));
 });
 
-test('typecheck dist mode preserves noEmit while using local TypeScript', () => {
+test('ui-lean is the only alternate typecheck mode and carries no hidden compiler arguments', () => {
   const root = tempDir();
-  fs.writeFileSync(resolveTypecheckConfigPath(root, 'dist'), '{"compilerOptions":{}}\n', 'utf8');
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'ui-lean'), '{"compilerOptions":{}}\n', 'utf8');
   fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
   fs.writeFileSync(path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'), '// stub\n', 'utf8');
-
-  assert.deepEqual(resolveTypecheckExtraArgs('dist'), ['--noEmit']);
 
   const invocations = [];
   const result = runTypecheckFlow({
     root,
     node: '/usr/bin/node',
     runAll: false,
-    mode: 'dist',
+    mode: 'ui-lean',
     spawnImpl(cmd, args) {
       invocations.push({ cmd, args });
       return { status: 0 };
@@ -348,12 +343,13 @@ test('typecheck dist mode preserves noEmit while using local TypeScript', () => 
   });
 
   assert.equal(result.ok, true);
-  assert.equal(invocations[0].args.at(-1), '--noEmit');
+  assert.equal(invocations[0].args.includes('--noEmit'), false);
+  assert.equal(invocations[0].args.includes(resolveTypecheckConfigPath(root, 'ui-lean')), true);
 });
 
-test('typecheck flow skips missing configs for --all and errors for unknown or missing single mode', () => {
+test('typecheck flow skips missing canonical configs for --all and errors for unknown or missing single mode', () => {
   const root = tempDir();
-  fs.writeFileSync(resolveTypecheckConfigPath(root, 'boot'), '{"compilerOptions":{}}\n', 'utf8');
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'project'), '{"compilerOptions":{}}\n', 'utf8');
   fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
   fs.writeFileSync(path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'), '// stub\n', 'utf8');
 
@@ -369,7 +365,7 @@ test('typecheck flow skips missing configs for --all and errors for unknown or m
     },
   });
   assert.equal(allResult.ok, true);
-  assert.ok(warnings.includes(createSkippedMissingConfigMessage(MODE_TO_CONFIG['strict-boot'])));
+  assert.ok(warnings.includes(createSkippedMissingConfigMessage(MODE_TO_CONFIG['ui-lean'])));
 
   const unknownMode = runTypecheckFlow({
     root,
@@ -382,27 +378,41 @@ test('typecheck flow skips missing configs for --all and errors for unknown or m
   assert.equal(unknownMode.ok, false);
   assert.match(unknownMode.errorMessage, /Unknown mode/);
 
+  const missingRoot = tempDir();
+  fs.mkdirSync(path.join(missingRoot, 'node_modules', 'typescript', 'lib'), { recursive: true });
+  fs.writeFileSync(
+    path.join(missingRoot, 'node_modules', 'typescript', 'lib', 'tsc.js'),
+    '// stub\n',
+    'utf8'
+  );
   const missingConfig = runTypecheckFlow({
-    root,
+    root: missingRoot,
+    node: '/usr/bin/node',
     runAll: false,
-    mode: 'services',
+    mode: 'ui-lean',
     spawnImpl() {
       return { status: 0 };
     },
   });
   assert.equal(missingConfig.ok, false);
-  assert.equal(missingConfig.errorMessage, createMissingConfigMessage(MODE_TO_CONFIG.services));
+  assert.equal(missingConfig.errorMessage, createMissingConfigMessage(MODE_TO_CONFIG['ui-lean']));
 });
 
-test('package typecheck scripts route through wp_typecheck instead of direct tsc', () => {
+test('package exposes only canonical project, all, changed, ui-lean, and offline typecheck entry points', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
   const typecheckScripts = Object.entries(pkg.scripts).filter(([name]) => name.startsWith('typecheck'));
-  assert.ok(typecheckScripts.length > 0);
-  for (const [name, script] of typecheckScripts) {
-    if (name === 'typecheck:wp') continue;
+  assert.deepEqual(typecheckScripts.map(([name]) => name).sort(), [
+    'typecheck',
+    'typecheck:all',
+    'typecheck:changed',
+    'typecheck:offline',
+    'typecheck:offline:all',
+    'typecheck:ui-lean',
+  ]);
+  for (const [, script] of typecheckScripts) {
     assert.match(
       script,
-      /(?:node tools\/|python tools\/run_offline_node24\.py .*tools\/)(?:wp_typecheck\.js|wp_typecheck_parallel\.mjs|wp_typecheck_changed\.mjs)|npm run typecheck:all/
+      /(?:node tools\/|python tools\/run_offline_node24\.py .*tools\/)(?:wp_typecheck\.js|wp_typecheck_parallel\.mjs|wp_typecheck_changed\.mjs)/
     );
     assert.doesNotMatch(script, /\btsc\b/);
   }

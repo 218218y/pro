@@ -87,7 +87,7 @@ python tools/selftest_offline_esbuild.py
 # Optional TSX runtime-test slice (reuses the offline esbuild packages)
 python tools/verify_offline_repair_vendor.py --tsx-only
 python tools/bootstrap_offline_tsx.py
-python tools/run_offline_tsx_tests.py tests/dimension_composition_owner_primary_runtime.test.ts
+python tools/run_offline_tsx_tests.py tests/dimension_composition_runtime.test.ts
 
 # Optional exact TypeScript 7 compiler slice
 python tools/verify_offline_repair_vendor.py --typescript-only

@@ -110,9 +110,9 @@ const GATES = [
   },
   {
     gate: 'typecheck',
-    command: 'npm run typecheck:runtime && npm run typecheck:dist',
+    command: 'npm run typecheck',
     blocker: 'yes',
-    role: 'TypeScript compiler contracts and TS/JS check lanes.',
+    role: 'Whole-project strict TypeScript compiler gate.',
     status: 'canonical for type correctness on TypeScript 7.0.2',
   },
   {

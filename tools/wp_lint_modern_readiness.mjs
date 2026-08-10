@@ -21,7 +21,7 @@ const ALLOWED_TARGETS = new Set([
 const UNDECIDED_TARGETS = new Set(['manual-review', 'under-review', 'todo', 'tbd', 'candidate']);
 const OXLINT_SYNTAX_COMMAND = 'npm run lint:ts-modern:syntax';
 const CUSTOM_CONTRACT_COMMAND = 'npm run lint:contracts';
-const TYPECHECK_COMMAND = 'npm run typecheck:runtime && npm run typecheck:dist';
+const TYPECHECK_COMMAND = 'npm run typecheck';
 const JS_ESLINT_COMMAND = 'npm run lint:js:strict';
 
 const CUSTOM_CONTRACT_RULES = new Set([
@@ -74,7 +74,7 @@ function isLintJsStrictSeparated(pkg) {
 }
 
 function isTypecheckGateWired(pkg) {
-  return Boolean(getScript(pkg, 'typecheck:runtime') && getScript(pkg, 'typecheck:dist'));
+  return Boolean(getScript(pkg, 'typecheck'));
 }
 
 function futureOwnerForRow(row) {
@@ -148,7 +148,7 @@ function evaluateRow(row, context) {
   }
 
   if (target === 'replace-by-tsc' && !context.typecheckWired) {
-    issues.push('replace-by-tsc requires typecheck:runtime and typecheck:dist scripts');
+    issues.push('replace-by-tsc requires the canonical typecheck script');
   }
 
   if (target === 'keep-eslint') {

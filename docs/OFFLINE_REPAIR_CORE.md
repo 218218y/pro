@@ -413,16 +413,11 @@ Canonical project checks through offline Node 24 and TypeScript 7:
 
 ```bash
 npm run typecheck:offline
-npm run typecheck:offline:dist
 npm run typecheck:offline:all
 npm run test:offline:declaration-snapshot
 ```
 
-Direct compiler usage:
-
-```bash
-python tools/run_offline_typescript.py -p tsconfig.dist.json --noEmit
-```
+The `typecheck:offline:all` lane also runs the strict `ui-lean` portability config. `tsconfig.dist.json` remains a build configuration and is validated by the dist build pipeline rather than a duplicate typecheck lane.
 
 Do not set `WP_ALLOW_SYSTEM_TSC=1` for these checks. A system compiler such as TypeScript 5.8.3 is not a valid
 replacement for the repository-pinned TypeScript 7.0.2 compiler, and declaration snapshots must not be
