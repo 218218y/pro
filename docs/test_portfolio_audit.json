@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T07:03:32.048Z",
+  "generatedAt": "2026-08-10T07:43:26.941Z",
   "totals": {
-    "tests": 1237,
-    "unitRunnerTests": 1228,
+    "tests": 1238,
+    "unitRunnerTests": 1229,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -16,11 +16,11 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 140
+    "contractOverlapTargets": 141
   },
   "categories": {
     "contract": 405,
-    "runtime-unit": 331,
+    "runtime-unit": 332,
     "integration": 461,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
@@ -305,13 +305,9 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_connector_cornice_profile.ts",
+      "target": "esm/native/builder/corner_connector_cornice_plan.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/builder_corner_typed_surface_contracts.test.js",
-          "kind": "contract"
-        },
         {
           "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
@@ -341,15 +337,15 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_connector_cornice_wave.ts",
+      "target": "esm/native/builder/corner_cornice_render.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/builder_corner_typed_surface_contracts.test.js",
-          "kind": "contract"
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
         },
         {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -419,13 +415,31 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "target": "esm/native/builder/corner_wing_cornice_plan.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
         {
           "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
         },
+        {
+          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
         {
           "file": "tests/corner_wing_cornice_ownership_contract.test.js",
           "kind": "ownership"
@@ -440,10 +454,6 @@
       "target": "esm/native/builder/corner_wing_cornice_wave.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
         {
           "file": "tests/corner_wing_cornice_ownership_contract.test.js",
           "kind": "ownership"
@@ -4267,6 +4277,10 @@
     {
       "file": "tests/corner_connector_shell_base_ownership_contract.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/corner_cornice_ir_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/corner_dimension_defaults_pilot_runtime.test.ts",

@@ -9,6 +9,11 @@ import {
 } from '../esm/native/builder/corner_connector_cornice_shared.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { CARCASS_CORNICE_RENDER_POLICY } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
+import {
+  buildCornerConnectorProfileCornicePlan,
+  buildCornerConnectorWaveCornicePlan,
+} from '../esm/native/builder/corner_connector_cornice_plan.ts';
+import { collectCornerCorniceIrViolations } from '../esm/native/builder/corner_cornice_ir.ts';
 
 const THREE = createFakeThreeRuntime();
 
@@ -68,19 +73,29 @@ function makeConnectorParams(args: {
       adjacentMainBodyHeight: args.adjacentMainBodyHeight,
       adjacentWingBodyHeight: args.adjacentWingBodyHeight,
     },
-    helpers: {
-      readNumFrom: (obj: unknown, key: string, defaultValue: number) => {
-        const rec = obj && typeof obj === 'object' ? (obj as AnyRecord) : null;
-        const value = rec ? rec[key] : undefined;
-        return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-      },
-      asRecord: (value: unknown): AnyRecord =>
-        value && typeof value === 'object' ? (value as AnyRecord) : {},
-      reportErrorThrottled: () => undefined,
-    },
+    helpers: { reportErrorThrottled: () => undefined },
     cornerGroup,
   };
 }
+
+test('pentagon planners emit valid typed IR before Three.js rendering', () => {
+  for (const type of ['classic', 'wave'] as const) {
+    const { ctx, locals } = makeConnectorParams({
+      type,
+      connectorBodyHeight: 2.4,
+      adjacentWingBodyHeight: 2.1,
+      adjacentMainBodyHeight: 2.0,
+    });
+    const plan =
+      type === 'wave'
+        ? buildCornerConnectorWaveCornicePlan(ctx as never, locals as never)
+        : buildCornerConnectorProfileCornicePlan(ctx as never, locals as never);
+    assert.equal(plan.owner, 'connector');
+    assert.equal(plan.mode, type === 'wave' ? 'wave' : 'profile');
+    assert.ok(plan.operations.length >= 3);
+    assert.deepEqual(collectCornerCorniceIrViolations(plan), []);
+  }
+});
 
 test('pentagon wave cornice adds exposed side return on the main-cabinet seam when the pentagon is taller', () => {
   const { ctx, locals, helpers, cornerGroup } = makeConnectorParams({

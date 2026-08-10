@@ -208,7 +208,7 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       mx,
       L,
     },
-    helpers: { readNumFrom, asRecord, reportErrorThrottled },
+    helpers: { reportErrorThrottled },
   });
 
   __applyStableShadowsToModule(cornerGroup);

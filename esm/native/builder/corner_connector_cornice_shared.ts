@@ -5,7 +5,6 @@
 
 import { CARCASS_CORNICE_COMMON_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import { CORNER_CONNECTOR_CORNICE_HIT_POLICY } from '../../shared/dimensions/corner_system_policy.js';
-import type { BufferAttrLike } from './corner_geometry_plan.js';
 import type { UnknownRecord } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
 
@@ -21,34 +20,14 @@ export type NodeLike = {
   renderOrder?: number;
 };
 export type GroupLike = NodeLike & { add(obj: unknown): void };
-export type ShapeLike = { moveTo(x: number, y: number): void; lineTo(x: number, y: number): void };
-export type Vector3Like = {
-  x: number;
-  z: number;
-  applyEuler?(value: unknown): Vector3Like;
-  normalize?(): Vector3Like;
-  lengthSq?(): number;
-  dot?(value: unknown): number;
-};
-export type ExtrudeGeometryLike = {
-  computeVertexNormals?(): void;
-  translate?(x: number, y: number, z: number): void;
-  getAttribute?(name: string): unknown;
-};
 export type ThreeConnectorCorniceLike = {
-  Shape: new () => ShapeLike;
-  ExtrudeGeometry: new (
-    shape: unknown,
-    options: { depth: number; bevelEnabled: boolean; steps?: number }
-  ) => ExtrudeGeometryLike;
-  Mesh: new (geometry: unknown, material: unknown) => NodeLike;
-  Vector3: new (x: number, y: number, z: number) => Vector3Like;
   MeshBasicMaterial: new (params: {
     transparent?: boolean;
     opacity?: number;
     side?: unknown;
   }) => UnknownRecord & { depthWrite?: boolean; colorWrite?: boolean };
   BoxGeometry: new (width: number, height: number, depth: number) => unknown;
+  Mesh: new (geometry: unknown, material: unknown) => NodeLike;
   DoubleSide?: unknown;
 };
 export type CornerConnectorCorniceCtx = {
@@ -83,8 +62,6 @@ export type CornerConnectorCorniceLocals = {
   adjacentMainBodyHeight?: number | null;
 };
 export type CornerConnectorCorniceHelpers = {
-  readNumFrom: (obj: unknown, key: string, defaultValue: number) => number;
-  asRecord: (value: unknown) => UnknownRecord;
   reportErrorThrottled: (app: unknown, error: unknown, meta: ThrottleOpts) => void;
 };
 export type CornerConnectorCorniceFlowParams = {
@@ -105,35 +82,6 @@ export function resolveCornerConnectorCorniceTopY(ctx: {
 }): number {
   const bodyHeight = Number.isFinite(ctx.wingH) && ctx.wingH > 0 ? ctx.wingH : 0;
   return ctx.startY + bodyHeight + positiveConnectorTopPlatformHeight(ctx);
-}
-
-export function isUnknownRecord(value: unknown): value is UnknownRecord {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
-}
-
-export function asRecord(value: unknown): UnknownRecord | null {
-  return isUnknownRecord(value) ? value : null;
-}
-
-export function hasCorniceExtrusionSupport(THREE: unknown): THREE is ThreeConnectorCorniceLike {
-  const rec = asRecord(THREE);
-  return (
-    !!rec &&
-    typeof rec.Shape === 'function' &&
-    typeof rec.ExtrudeGeometry === 'function' &&
-    typeof rec.Mesh === 'function'
-  );
-}
-
-export function isBufferAttrLike(value: unknown): value is BufferAttrLike {
-  const rec = asRecord(value);
-  return (
-    !!rec && typeof rec.count === 'number' && typeof rec.getX === 'function' && typeof rec.setZ === 'function'
-  );
-}
-
-export function readBufferAttribute(value: unknown): BufferAttrLike | null {
-  return isBufferAttrLike(value) ? value : null;
 }
 
 export type CornerConnectorCorniceSideReturn = {

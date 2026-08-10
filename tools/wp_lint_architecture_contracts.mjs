@@ -18,6 +18,22 @@ const CAPABILITY_ONLY_MODULES = new Set([
   'esm/native/services/viewer_measurement_tool_resolution.ts',
   'esm/native/services/viewer_measurement_tool_point_resolution.ts',
 ]);
+
+const CORNER_CORNICE_PLAN_MODULES = new Set([
+  'esm/native/builder/corner_wing_cornice_plan.ts',
+  'esm/native/builder/corner_connector_cornice_plan.ts',
+  'esm/native/builder/corner_cornice_profile_plan.ts',
+]);
+const CORNER_CORNICE_PLAN_FORBIDDEN_IDENTIFIERS = new Set([
+  'MutableRecord',
+  'UnknownRecord',
+  'THREE',
+  'Mesh',
+  'Shape',
+  'ExtrudeGeometry',
+  'BoxGeometry',
+]);
+
 const TYPED_IR_FORBIDDEN_IDENTIFIERS = new Map([
   ['esm/native/builder/core_carcass_shell.ts', new Set(['MutableRecord'])],
   ['esm/native/builder/render_ops.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
@@ -361,6 +377,31 @@ function collectTypedIrBoundaryViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi) {
+  if (!CORNER_CORNICE_PLAN_MODULES.has(rel)) return [];
+  const failures = [];
+  const reported = new Set();
+  walkAst(
+    sourceFile,
+    node => {
+      if (!astApi.isIdentifier(node)) return;
+      const name = String(node.text || '');
+      if (!CORNER_CORNICE_PLAN_FORBIDDEN_IDENTIFIERS.has(name) || reported.has(name)) return;
+      reported.add(name);
+      failures.push(
+        makeViolation(
+          'lint-architecture/typed-ir:corner-cornice',
+          rel,
+          lineOf(sourceFile, node, astApi),
+          `Corner cornice planners must emit corner_cornice_ir operations before rendering and cannot depend on ${name}.`
+        )
+      );
+    },
+    { astApi }
+  );
+  return failures;
+}
+
 function collectBrowserGlobalViolations(rel, sourceFile, astApi) {
   if (!isBrowserGlobalScope(rel) || isBrowserGlobalException(rel)) return [];
   const failures = [];
@@ -459,6 +500,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
     ...collectImportBoundaryViolations(rel, sourceFile, astApi),
     ...collectCapabilityBoundaryViolations(rel, sourceFile, astApi),
     ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
+    ...collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),
   ];

@@ -212,7 +212,6 @@ export function emitCornerWingExtension(ctx: CornerOpsEmitContext): void {
       __wingBackPanelCenterZ,
       cornerCells,
     },
-    helpers: { cfgSnapshot, readMap: readCornerMap, isRecord, asRecord, readNumFrom },
   });
 
   // Enable stable shadows for the corner wing body (exclude doors/drawers).

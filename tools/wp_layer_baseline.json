@@ -1266,7 +1266,7 @@
     {
       "from": "builder",
       "to": "shared",
-      "fromFile": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "fromFile": "esm/native/builder/corner_wing_cornice_plan.ts",
       "statement": {
         "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
         "kind": "value",
@@ -1274,22 +1274,8 @@
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",
-      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
-      "id": "dimension-owner-builder-corner-wing-cornice-profile-141ca7976eb7"
-    },
-    {
-      "from": "builder",
-      "to": "shared",
-      "fromFile": "esm/native/builder/corner_wing_cornice_wave.ts",
-      "statement": {
-        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
-        "kind": "value",
-        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
-        "syntax": "static-import"
-      },
-      "owner": "dimension-reviewed-ownership",
-      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
-      "id": "dimension-owner-builder-corner-wing-cornice-wave-63c474b902db"
+      "reason": "The corner-wing cornice planner is the canonical deterministic geometry owner and consumes the focused shell dimension policy directly; the former profile/wave render wrappers no longer own geometry policy.",
+      "id": "dimension-owner-builder-corner-wing-cornice-plan-shell-policy"
     },
     {
       "from": "builder",

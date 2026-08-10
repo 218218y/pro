@@ -172,12 +172,14 @@ test('corner and pentagon cornice hover now follows the shared paint group by pr
     readFileSync('esm/native/builder/corner_wing_cornice_emit.ts', 'utf8'),
     readFileSync('esm/native/builder/corner_wing_cornice_wave.ts', 'utf8'),
     readFileSync('esm/native/builder/corner_wing_cornice_profile.ts', 'utf8'),
+    readFileSync('esm/native/builder/corner_wing_cornice_plan.ts', 'utf8'),
   ].join('\n');
   const connectorCornice = [
     readFileSync('esm/native/builder/corner_connector_cornice_emit.ts', 'utf8'),
     readFileSync('esm/native/builder/corner_connector_cornice_shared.ts', 'utf8'),
     readFileSync('esm/native/builder/corner_connector_cornice_wave.ts', 'utf8'),
     readFileSync('esm/native/builder/corner_connector_cornice_profile.ts', 'utf8'),
+    readFileSync('esm/native/builder/corner_connector_cornice_plan.ts', 'utf8'),
   ].join('\n');
   assert.match(
     genericPaintHoverShared,
@@ -239,11 +241,15 @@ test('corner and pentagon cornice hover now follows the shared paint group by pr
     renderPreviewSketchPipelineObjectBoxes,
     /if \(typeof helperQuat\?\.copy === 'function'\) helperQuat\.copy\(quat\);/
   );
+  const cornerCorniceRender = readFileSync('esm/native/builder/corner_cornice_render.ts', 'utf8');
   assert.match(wingCornice, /partId: 'corner_cornice_front'/);
   assert.match(wingCornice, /partId: 'corner_cornice_side_left'/);
   assert.match(wingCornice, /partId: 'corner_cornice_side_right'/);
-  assert.match(connectorCornice, /getCornerMat\('corner_cornice_front', baseCorniceMat\)/);
-  assert.match(connectorCornice, /m\.userData = \{ partId: 'corner_cornice_front' \};/);
+  assert.match(connectorCornice, /partId: 'corner_cornice_front'/);
+  assert.match(connectorCornice, /partId: args\.side\.partId/);
+  assert.match(cornerCorniceRender, /runtime\.getCornerMat\('corner_cornice', runtime\.bodyMat\)/);
+  assert.match(cornerCorniceRender, /runtime\.getCornerMat\(op\.partId, base\)/);
+  assert.match(cornerCorniceRender, /mesh\.userData = \{ partId: op\.partId \};/);
 });
 
 test('paint door hover is suppressed when a closer non-door part blocks the ray, so side-frame paint does not preview inner door faces', () => {

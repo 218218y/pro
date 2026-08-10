@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T07:03:31.891Z",
+  "generatedAt": "2026-08-10T07:43:26.768Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 542,
@@ -80,7 +80,7 @@
           "domain-default": 1
         }
       },
-      "esm/native/builder/corner_connector_cornice_wave.ts": {
+      "esm/native/builder/corner_connector_cornice_plan.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -152,7 +152,7 @@
           "domain-default": 1
         }
       },
-      "esm/native/builder/corner_wing_cornice_wave.ts": {
+      "esm/native/builder/corner_wing_cornice_plan.ts": {
         "total": 1,
         "categories": {
           "domain-default": 1
@@ -1731,11 +1731,11 @@
       "text": "// builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails."
     },
     {
-      "file": "esm/native/builder/corner_connector_cornice_wave.ts",
-      "line": 66,
+      "file": "esm/native/builder/corner_connector_cornice_plan.ts",
+      "line": 210,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
-      "text": "Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)"
+      "text": "Math.min(WAVE.frameThicknessMaxM, ctx.woodThick || WAVE.fallbackWoodThicknessM)"
     },
     {
       "file": "esm/native/builder/corner_connector_door_emit_policy.ts",
@@ -1892,11 +1892,11 @@
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
     },
     {
-      "file": "esm/native/builder/corner_wing_cornice_wave.ts",
-      "line": 55,
+      "file": "esm/native/builder/corner_wing_cornice_plan.ts",
+      "line": 328,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
-      "text": "Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)"
+      "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, ctx.woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
     },
     {
       "file": "esm/native/builder/corner_wing_hex_cell_geometry.ts",

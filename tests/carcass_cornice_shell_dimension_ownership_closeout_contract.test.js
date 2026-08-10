@@ -32,15 +32,15 @@ const sourceFileCache = new Map();
 const analysisCache = new Map();
 
 const expectedCorniceInventory = Object.freeze({
-  'esm/native/builder/corner_connector_cornice_profile.ts': Object.freeze([
+  'esm/native/builder/corner_connector_cornice_plan.ts': Object.freeze([
     'CARCASS_CORNICE_ANGLE_POLICY',
     'CARCASS_CORNICE_RENDER_POLICY',
   ]),
   'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze(['CARCASS_CORNICE_COMMON_POLICY']),
-  'esm/native/builder/corner_connector_cornice_wave.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_cornice_profile_plan.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_cornice_render.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
-  'esm/native/builder/corner_wing_cornice_profile.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
-  'esm/native/builder/corner_wing_cornice_wave.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_cornice_plan.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/native/builder/core_carcass_cornice.ts': Object.freeze([
     'CARCASS_CORNICE_ANGLE_POLICY',
     'CARCASS_CORNICE_RENDER_POLICY',
@@ -53,8 +53,7 @@ const expectedShellInventory = Object.freeze({
   'esm/native/builder/core_carcass_shell.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
-  'esm/native/builder/corner_wing_cornice_profile.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
-  'esm/native/builder/corner_wing_cornice_wave.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
+  'esm/native/builder/corner_wing_cornice_plan.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/module_loop_pipeline_hex_cell.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/module_loop_pipeline_module_depth.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([

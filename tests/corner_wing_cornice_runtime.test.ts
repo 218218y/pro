@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { createFakeThreeRuntime } from './_fake_three_runtime.ts';
 
 import { applyCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_emit.ts';
-import {
-  positiveCorniceTopPlatformHeight,
-  readCornicePoints,
-  readCorniceRuntimeNumber,
-} from '../esm/native/builder/corner_wing_cornice_contracts.ts';
+import { positiveCorniceTopPlatformHeight } from '../esm/native/builder/corner_wing_cornice_contracts.ts';
 import { shouldBuildSegmentedCornerWingCornice } from '../esm/native/builder/corner_wing_cornice_path.ts';
+import {
+  buildCornerWingProfileCornicePlan,
+  buildCornerWingWaveCornicePlan,
+} from '../esm/native/builder/corner_wing_cornice_plan.ts';
+import { collectCornerCorniceIrViolations } from '../esm/native/builder/corner_cornice_ir.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { CARCASS_CORNICE_RENDER_POLICY } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
 import type { CornerCell } from '../esm/native/builder/corner_geometry_plan.ts';
@@ -115,27 +116,29 @@ function childRotationY(child: unknown): number {
   return Number((child as { rotation?: { y?: unknown } }).rotation?.y || 0);
 }
 
-test('corner wing cornice profile readers reject string-encoded internal segment numbers', () => {
-  assert.equal(readCorniceRuntimeNumber('0.42', 7), 7);
-  assert.equal(readCorniceRuntimeNumber(0.42, 7), 0.42);
-
-  const points = readCornicePoints(
-    [
-      { x: 0, y: 0 },
-      { x: '0.1', y: 0.03 },
-      { x: 0.2, y: '0.05' },
-      { x: 0.25, y: 0.06 },
-    ],
-    (obj, key, defaultValue) => {
-      const value = obj && typeof obj === 'object' ? (obj as Record<string, unknown>)[key] : undefined;
-      return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-    }
-  );
-
-  assert.deepEqual(points, [
-    { x: 0, y: 0 },
-    { x: 0.25, y: 0.06 },
-  ]);
+test('corner wing planners emit valid typed IR before Three.js rendering', () => {
+  for (const type of ['classic', 'wave'] as const) {
+    const { params } = makeCorniceParams(type);
+    params.locals.cornerCells = [
+      makeCornerCell({ idx: 0, startX: 0, width: 0.6, depth: 0.45, hasActiveDepth: true }),
+      makeCornerCell({
+        idx: 1,
+        startX: 0.6,
+        width: 0.6,
+        depth: 0.72,
+        hasActiveSpecialDims: true,
+        hex: { sideDepthM: 0.5, doorDepthM: 0.72, doorWidthM: 0.3 },
+      }),
+    ];
+    const plan =
+      type === 'wave'
+        ? buildCornerWingWaveCornicePlan(params.ctx as never, params.locals as never)
+        : buildCornerWingProfileCornicePlan(params.ctx as never, params.locals as never);
+    assert.equal(plan.owner, 'wing');
+    assert.equal(plan.mode, type === 'wave' ? 'wave' : 'profile');
+    assert.ok(plan.operations.length >= 3);
+    assert.deepEqual(collectCornerCorniceIrViolations(plan), []);
+  }
 });
 
 test('corner wing classic cornice builds with real THREE prototype objects when connector exists', () => {

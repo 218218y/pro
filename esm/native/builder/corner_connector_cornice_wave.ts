@@ -1,195 +1,22 @@
-import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,
 } from './corner_connector_cornice_shared.js';
-import {
-  hasCorniceExtrusionSupport,
-  resolveCornerConnectorCorniceSideReturns,
-  resolveCornerConnectorCorniceTopY,
-} from './corner_connector_cornice_shared.js';
-
-function connectorPathSegmentLength(a: { x: number; z: number }, b: { x: number; z: number }): number {
-  const dx = b.x - a.x;
-  const dz = b.z - a.z;
-  const len = Math.sqrt(dx * dx + dz * dz);
-  return Number.isFinite(len) ? len : 0;
-}
-
-function connectorProfileRotationForPath(a: { x: number; z: number }, b: { x: number; z: number }): number {
-  return Math.atan2(-(b.x - a.x), -(b.z - a.z));
-}
-
-function inwardConnectorCenterForPath(args: {
-  a: { x: number; z: number };
-  b: { x: number; z: number };
-  interiorX: number;
-  interiorZ: number;
-  inset: number;
-}): { x: number; z: number } {
-  const { a, b, interiorX, interiorZ, inset } = args;
-  const midX = (a.x + b.x) / 2;
-  const midZ = (a.z + b.z) / 2;
-  const len = connectorPathSegmentLength(a, b);
-  if (!(len > 0) || !(inset > 0)) return { x: midX, z: midZ };
-  let nx = -(b.z - a.z) / len;
-  let nz = (b.x - a.x) / len;
-  const toInteriorX = interiorX - midX;
-  const toInteriorZ = interiorZ - midZ;
-  if (nx * toInteriorX + nz * toInteriorZ > 0) {
-    nx = -nx;
-    nz = -nz;
-  }
-  return { x: midX - nx * inset, z: midZ - nz * inset };
-}
+import { buildCornerConnectorWaveCornicePlan } from './corner_connector_cornice_plan.js';
+import { renderCornerCornicePlan } from './corner_cornice_render.js';
 
 export function applyCornerConnectorWaveCornice(args: {
   ctx: CornerConnectorCorniceCtx;
   locals: CornerConnectorCorniceLocals;
 }): void {
   const { ctx, locals } = args;
-  const { THREE, woodThick, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
-  const { pts, cornerGroup, interiorX, interiorZ } = locals;
-
-  // WAVE fascia on the visible front diagonal only:
-  // - bottom sits on the roof plane
-  // - inner face flush to the diagonal cabinet front
-  // - only the TOP edge is wavy (peaks at ends + center)
-  const corniceCommon = CARCASS_CORNICE_RENDER_POLICY.common;
-  const corniceWave = CARCASS_CORNICE_RENDER_POLICY.wave;
-  const topY = resolveCornerConnectorCorniceTopY(ctx);
-  const epsY = corniceCommon.yLiftM;
-  const yPlace = topY + epsY;
-
-  const frameT = Math.max(
-    corniceWave.frameThicknessMinM,
-    Math.min(corniceWave.frameThicknessMaxM, woodThick || corniceWave.fallbackWoodThicknessM)
-  );
-  const maxH = corniceWave.maxHeightM;
-  const cycles = corniceWave.cycles;
-
-  // Visible diagonal edge (doors face): pts[2] -> pts[3]
-  const a = pts[2];
-  const b = pts[3];
-  const dx = b.x - a.x;
-  const dz = b.z - a.z;
-  const segLen = Math.sqrt(dx * dx + dz * dz);
-  if (Number.isFinite(segLen) && segLen > corniceCommon.minSegmentLengthM) {
-    const ang = Math.atan2(dz, dx);
-    const midX = (a.x + b.x) / 2;
-    const midZ = (a.z + b.z) / 2;
-
-    const amp = Math.min(
-      Math.max(segLen * corniceWave.amplitudeRatio, corniceWave.amplitudeMinM),
-      corniceWave.amplitudeMaxM
-    );
-    const halfL = segLen / 2;
-
-    // Sampling resolution: ~2cm, clamped.
-    const samples = Math.max(
-      corniceWave.sampleCountMin,
-      Math.min(corniceWave.sampleCountMax, Math.round(segLen / corniceWave.sampleSpacingM))
-    );
-
-    if (hasCorniceExtrusionSupport(THREE)) {
-      const shape = new THREE.Shape();
-      shape.moveTo(-halfL, 0);
-      shape.lineTo(halfL, 0);
-
-      // Trace the top edge back to the left with a smooth cosine wave.
-      for (let i = samples; i >= 0; i--) {
-        const u = i / samples; // 0..1
-        const xPos = -halfL + u * segLen;
-        const theta = 2 * Math.PI * cycles * u;
-        const dip = (amp * (1 - Math.cos(theta))) / 2; // 0 at peaks, amp at trough
-        const yTop = maxH - dip;
-        shape.lineTo(xPos, yTop);
-      }
-
-      shape.lineTo(-halfL, 0);
-
-      const geo = new THREE.ExtrudeGeometry(shape, { depth: frameT, bevelEnabled: false, steps: 1 });
-      if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
-
-      const baseCorniceMat = getCornerMat('corner_cornice', bodyMat);
-      const corniceMat = getCornerMat('corner_cornice_front', baseCorniceMat);
-      const m = new THREE.Mesh(geo, corniceMat);
-
-      // Align EXACTLY like the pentagon doors mount:
-      // - local +X along the diagonal
-      // - local Z is the diagonal normal (sign decided below)
-      // NOTE: we avoid setRotationFromMatrix with a possibly left-handed basis
-      // (can collapse to a wrong yaw on some diagonals).
-      m.rotation.y = -ang;
-
-      // Decide which side is outside (toward the room) using the known interior point.
-      let outwardZSign: 1 | -1 = 1;
-      const plusZVec = new THREE.Vector3(0, 0, 1);
-      if (typeof plusZVec.applyEuler === 'function') plusZVec.applyEuler(m.rotation);
-      if (typeof plusZVec.normalize === 'function') plusZVec.normalize();
-      const insideV = new THREE.Vector3(interiorX - midX, 0, interiorZ - midZ);
-      if (
-        typeof insideV.lengthSq === 'function' &&
-        insideV.lengthSq() > corniceWave.minInteriorNormalLengthSq &&
-        typeof insideV.normalize === 'function'
-      )
-        insideV.normalize();
-
-      const n1 = new THREE.Vector3(-dz / segLen, 0, dx / segLen);
-      const n2 = new THREE.Vector3(dz / segLen, 0, -dx / segLen);
-      const d1 = typeof n1.dot === 'function' ? n1.dot(insideV) : 0;
-      const d2 = typeof n2.dot === 'function' ? n2.dot(insideV) : 0;
-      const outwardN = d1 <= d2 ? n1 : n2;
-      if (typeof outwardN.normalize === 'function') outwardN.normalize();
-      outwardZSign = typeof plusZVec.dot === 'function' && plusZVec.dot(outwardN) >= 0 ? 1 : -1;
-
-      // Thickness must go INSIDE the cabinet (not outward):
-      // - if mount-local +Z is outward => shift geometry to z in [-frameT, 0]
-      // - if mount-local +Z is inward  => keep geometry at z in [0, frameT]
-      const zShift = outwardZSign === 1 ? -frameT : 0;
-
-      // Tiny inward inset to avoid z-fighting with the diagonal face.
-      const zInset = corniceWave.connectorInsetM;
-      const zInsetSigned = (outwardZSign === 1 ? -1 : 1) * zInset;
-
-      m.position.set(midX, yPlace, midZ);
-      // Apply local-Z shift in PARENT coordinates (diagonal normal), not on world Z.
-      const zLocal = zShift + zInsetSigned;
-      m.position.x += plusZVec.x * zLocal;
-      m.position.z += plusZVec.z * zLocal;
-
-      m.userData = { partId: 'corner_cornice_front' };
-      if (!__sketchMode) {
-        m.castShadow = true;
-        m.receiveShadow = true;
-      }
-      addOutlines(m);
-      cornerGroup.add(m);
-    }
-  }
-
-  const exposedSides = resolveCornerConnectorCorniceSideReturns({ ctx, locals });
-  for (const side of exposedSides) {
-    const sideLen = connectorPathSegmentLength(side.a, side.b);
-    if (!(Number.isFinite(sideLen) && sideLen > corniceCommon.minSegmentLengthM)) continue;
-    const center = inwardConnectorCenterForPath({
-      a: side.a,
-      b: side.b,
-      interiorX,
-      interiorZ,
-      inset: frameT / 2,
-    });
-    const baseCorniceMat = getCornerMat('corner_cornice', bodyMat);
-    const sideMat = getCornerMat(side.partId, baseCorniceMat);
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(frameT, maxH, sideLen), sideMat);
-    mesh.rotation.y = connectorProfileRotationForPath(side.a, side.b);
-    mesh.position.set(center.x, yPlace + maxH / 2, center.z);
-    mesh.userData = { partId: side.partId };
-    if (!__sketchMode) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    }
-    addOutlines(mesh);
-    cornerGroup.add(mesh);
-  }
+  const plan = buildCornerConnectorWaveCornicePlan(ctx, locals);
+  renderCornerCornicePlan(plan, {
+    THREE: ctx.THREE,
+    group: locals.cornerGroup,
+    bodyMat: ctx.bodyMat,
+    getCornerMat: ctx.getCornerMat,
+    addOutlines: ctx.addOutlines,
+    sketchMode: ctx.__sketchMode,
+  });
 }

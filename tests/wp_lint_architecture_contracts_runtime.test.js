@@ -98,6 +98,17 @@ test('lint architecture contracts keep carcass shell geometry on the canonical t
   );
 });
 
+test('lint architecture contracts keep corner cornice planners on plan-first typed IR', () => {
+  const failures = auditLintArchitectureSource(
+    'esm/native/builder/corner_wing_cornice_plan.ts',
+    `export const leaked: UnknownRecord = {};`
+  );
+  assert.deepEqual(
+    failures.map(failure => failure.rule),
+    ['lint-architecture/typed-ir:corner-cornice']
+  );
+});
+
 test('lint architecture contract has no unbaselined or stale violations in the current tree', () => {
   const report = collectLintArchitectureReport();
   assert.equal(report.unbaselinedViolations.length, 0);
