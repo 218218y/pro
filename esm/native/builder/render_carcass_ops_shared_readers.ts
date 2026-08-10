@@ -1,9 +1,9 @@
 import { isCarcassCornicePlan, isCarcassCorniceSegment } from './carcass_cornice_ir.js';
+import { isCarcassBackPanelOp, isCarcassBoardOp } from './carcass_shell_ir.js';
 
 import type {
   AnyMap,
   AppContainer,
-  BackPanelSeg,
   BoardOp,
   CorniceOp,
   CorniceSegment,
@@ -38,20 +38,6 @@ function __readApp(v: unknown): AppContainer | undefined {
 function __isBaseOp(value: unknown): value is PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp {
   const rec = __asRecord(value);
   return !!(rec && (rec.kind === 'plinth' || rec.kind === 'legs' || rec.kind === 'leg_platforms'));
-}
-
-function __isBackPanelSegRecord(value: unknown): value is BackPanelSeg {
-  const rec = __asRecord(value);
-  return !!(
-    rec &&
-    rec.kind === 'back_panel' &&
-    typeof rec.width === 'number' &&
-    typeof rec.height === 'number' &&
-    typeof rec.depth === 'number' &&
-    typeof rec.x === 'number' &&
-    typeof rec.y === 'number' &&
-    typeof rec.z === 'number'
-  );
 }
 
 function __isCorniceOp(value: unknown): value is CorniceOp {
@@ -92,9 +78,14 @@ export function __asOps(v: unknown) {
   return rec
     ? {
         base: __isBaseOp(rec.base) ? rec.base : null,
-        boards: rec.boards,
-        backPanels: rec.backPanels,
-        backPanel: __isBackPanelSegRecord(rec.backPanel) ? rec.backPanel : null,
+        boards: Array.isArray(rec.boards) && rec.boards.every(isCarcassBoardOp) ? rec.boards : null,
+        backPanels:
+          rec.backPanels === null
+            ? null
+            : Array.isArray(rec.backPanels) && rec.backPanels.every(isCarcassBackPanelOp)
+              ? rec.backPanels
+              : null,
+        backPanel: isCarcassBackPanelOp(rec.backPanel) ? rec.backPanel : null,
         cornice: __isCorniceOp(rec.cornice) ? rec.cornice : null,
       }
     : null;
@@ -136,8 +127,7 @@ export function __isLegPlatformSegment(value: unknown): value is LegPlatformSegm
 }
 
 export function __isBoardOp(value: unknown): value is BoardOp {
-  const rec = __asRecord(value);
-  return !!(rec && rec.kind === 'board');
+  return isCarcassBoardOp(value);
 }
 
 export function __isLegPosition(value: unknown): value is { x?: number; z?: number } | null | undefined {

@@ -8,7 +8,6 @@ export type {
   ModuleHitBoxArgs,
   DrawerShadowPlaneArgs,
   HandleMeshOpts,
-  BackPanelSeg,
   RenderOpsBag,
 } from './render_ops_shared_contracts.js';
 
@@ -21,7 +20,6 @@ export {
   __moduleHitBoxArgs,
   __drawerShadowPlaneArgs,
   __number,
-  __isBackPanelSeg,
   __app,
   __three,
 } from './render_ops_shared_args.js';

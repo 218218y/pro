@@ -324,14 +324,14 @@ test('cornice paint keeps classic group paint while wave fascia click, hover, re
   );
   const carcassFlowNorm = normalizeWhitespace(carcassFlow);
   assert.match(carcassFlowNorm, /const segMat = corniceMat \|\| ctx\.bodyMat;/);
-  assert.match(carcassFlowNorm, /const segmentArgs = \{ THREE, seg, segMat, getPartMaterial, segPid \};/);
   assert.match(
     carcassFlowNorm,
-    /function resolveCorniceSegmentMaterial\(args: Pick<CorniceSegmentMeshArgs, 'segMat' \| 'getPartMaterial' \| 'segPid'>\)/
+    /createWaveFrontSegment\(\{ THREE, seg, segMat, getPartMaterial, segPid \}\)/
   );
+  assert.match(carcassFlowNorm, /createWaveSideSegment\(\{ THREE, seg, segMat, getPartMaterial, segPid \}\)/);
   assert.match(
     carcassFlowNorm,
-    /const overrideMat = args\.getPartMaterial && args\.segPid \? args\.getPartMaterial\(args\.segPid\) : null;/
+    /createProfileSegment\(\{ THREE, seg, segMat, getPartMaterial, segPid, profile: seg\.profile, segLen: seg\.length \}, runtime\)/
   );
   assert.match(materialsApplyNorm, /export function readPartColorEntry\(args: \{/);
   assert.match(materialsApplyNorm, /partId === 'cornice_wave_front'/);

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T06:32:35.290Z",
+  "generatedAt": "2026-08-10T07:03:31.891Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 542,
@@ -1648,24 +1648,24 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 232,
+      "line": 239,
       "term": "fallbackBackPanel",
       "category": "domain-default",
-      "text": "fallbackBackPanel: MutableRecord"
+      "text": "fallbackBackPanel: CarcassBackPanelOp"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 237,
+      "line": 252,
       "term": "fallbackBackPanel",
       "category": "domain-default",
-      "text": "const single = { ...fallbackBackPanel };"
+      "text": "...fallbackBackPanel,"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 263,
+      "line": 270,
       "term": "fallbackBackPanel",
       "category": "domain-default",
-      "text": "const seg: MutableRecord = { ...fallbackBackPanel };"
+      "text": "...fallbackBackPanel,"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
@@ -2551,7 +2551,7 @@
     },
     {
       "file": "esm/native/builder/render_ops.ts",
-      "line": 190,
+      "line": 188,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// Signature kept for compatibility: (type, doorWidth, doorHeight, isLeftHinge) -> THREE.Group|null"

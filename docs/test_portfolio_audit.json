@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T06:32:35.442Z",
+  "generatedAt": "2026-08-10T07:03:32.048Z",
   "totals": {
-    "tests": 1236,
-    "unitRunnerTests": 1227,
+    "tests": 1237,
+    "unitRunnerTests": 1228,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -20,7 +20,7 @@
   },
   "categories": {
     "contract": 405,
-    "runtime-unit": 330,
+    "runtime-unit": 331,
     "integration": 461,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
@@ -213,6 +213,10 @@
         {
           "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
+        },
+        {
+          "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
+          "kind": "contract"
         }
       ]
     },
@@ -3615,6 +3619,10 @@
     {
       "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/carcass_shell_ir_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/cell_dimension_layout_ownership_contract.test.js",

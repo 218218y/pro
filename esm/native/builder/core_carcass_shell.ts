@@ -1,7 +1,7 @@
 // Builder core carcass shell board and back-panel assembly.
 
 import { __asNum } from './core_pure_shared.js';
-import type { MutableRecord } from './core_pure_shared.js';
+import type { CarcassBackPanelOp, CarcassBoardOp, CarcassShellPlan } from './carcass_shell_ir.js';
 import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import {
   CARCASS_BACK_INSET_Z,
@@ -11,11 +11,7 @@ import {
 
 const SHELL_DIMENSIONS = CARCASS_SHELL_DIMENSIONS;
 
-export type CarcassShellResult = {
-  boards: MutableRecord[];
-  backPanel: MutableRecord;
-  backPanels: MutableRecord[] | null;
-};
+export type CarcassShellResult = CarcassShellPlan;
 
 export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellResult {
   const {
@@ -38,7 +34,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
   );
   const floorCeilZ = (CARCASS_BACK_INSET_Z - CARCASS_FRONT_INSET_Z) / 2;
 
-  const boards: MutableRecord[] = [];
+  const boards: CarcassBoardOp[] = [];
   if (
     isDepthStepped &&
     moduleWidths &&
@@ -50,6 +46,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
   } else {
     boards.push({
       kind: 'board',
+      role: 'floor',
       partId: 'body_floor',
       width: totalW - 2 * woodThick - SHELL_DIMENSIONS.floorCeilWidthClearanceM,
       height: woodThick,
@@ -60,7 +57,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     });
   }
 
-  const backPanel: MutableRecord = {
+  const backPanel: CarcassBackPanelOp = {
     kind: 'back_panel',
     width: totalW - SHELL_DIMENSIONS.backPanelWidthClearanceM,
     height: cabinetBodyHeight,
@@ -70,7 +67,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     z: -D / 2 + SHELL_DIMENSIONS.backPanelZM,
   };
 
-  let backPanels: MutableRecord[] | null = null;
+  let backPanels: CarcassBackPanelOp[] | null = null;
 
   if (isStepped && moduleWidths && moduleHeightsRaw) {
     backPanels = [];
@@ -112,6 +109,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     boards.push(
       {
         kind: 'board',
+        role: 'ceiling',
         partId: 'body_ceil',
         width: totalW - 2 * woodThick - SHELL_DIMENSIONS.floorCeilWidthClearanceM,
         height: woodThick,
@@ -122,6 +120,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
       },
       {
         kind: 'board',
+        role: 'left-side',
         partId: 'body_left',
         width: woodThick,
         height: cabinetBodyHeight,
@@ -132,6 +131,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
       },
       {
         kind: 'board',
+        role: 'right-side',
         partId: 'body_right',
         width: woodThick,
         height: cabinetBodyHeight,
@@ -199,57 +199,63 @@ function resolveBackPanelSegmentBounds(args: {
   return { leftBoundary, rightBoundary };
 }
 
-function applyBackPanelSegmentBounds(seg: MutableRecord, bounds: BackPanelSegmentBounds): void {
+function resolveBackPanelSegmentGeometry(
+  bounds: BackPanelSegmentBounds
+): Pick<CarcassBackPanelOp, 'width' | 'x'> {
   const rawWidth = bounds.rightBoundary - bounds.leftBoundary;
-  seg.width = Math.max(
-    SHELL_DIMENSIONS.boardMinDimensionM,
-    rawWidth - SHELL_DIMENSIONS.backPanelSegmentWidthClearanceM
-  );
-  seg.x = (bounds.leftBoundary + bounds.rightBoundary) / 2;
+  return {
+    width: Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      rawWidth - SHELL_DIMENSIONS.backPanelSegmentWidthClearanceM
+    ),
+    x: (bounds.leftBoundary + bounds.rightBoundary) / 2,
+  };
 }
 
-function markBackPanelAsWood(seg: MutableRecord, partId: string): void {
-  seg.partId = partId;
-  seg.material = 'wood';
-  seg.__wpWoodBackPanel = true;
+function markBackPanelAsWood(seg: CarcassBackPanelOp, partId: string): CarcassBackPanelOp {
+  return {
+    ...seg,
+    partId,
+    material: 'wood',
+    __wpWoodBackPanel: true,
+  };
 }
 
 function applyRemovedFrameSideBackPanelIdentity(
   prepared: PreparedCarcassInput,
-  backPanels: MutableRecord[]
+  backPanels: CarcassBackPanelOp[]
 ): void {
   if (!hasRemovedFrameSide(prepared)) return;
   const modulesLength = backPanels.length;
   if (!(modulesLength > 0)) return;
   for (let i = 0; i < modulesLength; i += 1) {
     const partId = readRemovedBackPanelPartId(prepared, i, modulesLength);
-    if (partId) markBackPanelAsWood(backPanels[i], partId);
+    if (partId) backPanels[i] = markBackPanelAsWood(backPanels[i], partId);
   }
 }
 
 function buildRemovedFrameSideBackPanelSegments(
   prepared: PreparedCarcassInput,
-  fallbackBackPanel: MutableRecord
-): MutableRecord[] {
+  fallbackBackPanel: CarcassBackPanelOp
+): CarcassBackPanelOp[] {
   const { totalW, woodThick, moduleWidths } = prepared;
   if (!moduleWidths || !moduleWidths.length) {
     const partId = readRemovedBackPanelPartId(prepared, 0, 1);
-    const single = { ...fallbackBackPanel };
-    applyBackPanelSegmentBounds(
-      single,
-      resolveBackPanelSegmentBounds({
-        prepared,
-        moduleIndex: 0,
-        modulesLength: 1,
-        internalLeft: -prepared.totalW / 2 + prepared.woodThick,
-        moduleWidth: Math.max(0, prepared.totalW - 2 * prepared.woodThick),
-      })
-    );
-    if (partId) markBackPanelAsWood(single, partId);
-    return [single];
+    const bounds = resolveBackPanelSegmentBounds({
+      prepared,
+      moduleIndex: 0,
+      modulesLength: 1,
+      internalLeft: -prepared.totalW / 2 + prepared.woodThick,
+      moduleWidth: Math.max(0, prepared.totalW - 2 * prepared.woodThick),
+    });
+    const single: CarcassBackPanelOp = {
+      ...fallbackBackPanel,
+      ...resolveBackPanelSegmentGeometry(bounds),
+    };
+    return [partId ? markBackPanelAsWood(single, partId) : single];
   }
 
-  const backPanels: MutableRecord[] = [];
+  const backPanels: CarcassBackPanelOp[] = [];
   let internalLeft = -totalW / 2 + woodThick;
   for (let i = 0; i < moduleWidths.length; i += 1) {
     const width = moduleWidths[i];
@@ -260,11 +266,12 @@ function buildRemovedFrameSideBackPanelSegments(
       internalLeft,
       moduleWidth: width,
     });
-    const seg: MutableRecord = { ...fallbackBackPanel };
-    applyBackPanelSegmentBounds(seg, bounds);
+    const baseSegment: CarcassBackPanelOp = {
+      ...fallbackBackPanel,
+      ...resolveBackPanelSegmentGeometry(bounds),
+    };
     const partId = readRemovedBackPanelPartId(prepared, i, moduleWidths.length);
-    if (partId) markBackPanelAsWood(seg, partId);
-    backPanels.push(seg);
+    backPanels.push(partId ? markBackPanelAsWood(baseSegment, partId) : baseSegment);
     internalLeft += width + (i < moduleWidths.length - 1 ? woodThick : 0);
   }
   return backPanels;
@@ -277,7 +284,7 @@ type DepthSteppedFloorParams = {
   startY: number;
   moduleWidths: number[];
   moduleDepths: number[];
-  boards: MutableRecord[];
+  boards: CarcassBoardOp[];
 };
 
 function appendDepthSteppedFloorBoards(params: DepthSteppedFloorParams): void {
@@ -300,6 +307,7 @@ function appendDepthSteppedFloorBoards(params: DepthSteppedFloorParams): void {
 
     boards.push({
       kind: 'board',
+      role: 'floor',
       partId: 'body_floor',
       width: floorW,
       height: woodThick,
@@ -326,8 +334,8 @@ type SteppedShellParams = {
   isDepthStepped: boolean;
   removedLeftFrameSide: boolean;
   removedRightFrameSide: boolean;
-  boards: MutableRecord[];
-  backPanels: MutableRecord[];
+  boards: CarcassBoardOp[];
+  backPanels: CarcassBackPanelOp[];
 };
 
 function appendSteppedShell(params: SteppedShellParams): void {
@@ -359,6 +367,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
 
   boards.push({
     kind: 'board',
+    role: 'left-side',
     partId: 'body_left',
     width: woodThick,
     height: bodyHeights[0],
@@ -370,6 +379,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
 
   boards.push({
     kind: 'board',
+    role: 'right-side',
     partId: 'body_right',
     width: woodThick,
     height: bodyHeights[bodyHeights.length - 1],
@@ -398,6 +408,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
 
     boards.push({
       kind: 'board',
+      role: 'ceiling',
       partId: 'body_ceil',
       width: ceilW,
       height: woodThick,
@@ -414,14 +425,14 @@ function appendSteppedShell(params: SteppedShellParams): void {
       internalLeft,
       moduleWidth: w,
     });
-    const seg: MutableRecord = {
+    const seg: CarcassBackPanelOp = {
       kind: 'back_panel',
+      ...resolveBackPanelSegmentGeometry(bounds),
       height: Math.max(SHELL_DIMENSIONS.boardMinDimensionM, h),
       depth: SHELL_DIMENSIONS.backPanelThicknessM,
       y: startY + h / 2,
       z: -D / 2 + SHELL_DIMENSIONS.backPanelZM,
     };
-    applyBackPanelSegmentBounds(seg, bounds);
 
     backPanels.push(seg);
 
@@ -437,7 +448,7 @@ type DepthSteppedShellParams = {
   cabinetBodyHeight: number;
   moduleWidths: number[];
   moduleDepths: number[];
-  boards: MutableRecord[];
+  boards: CarcassBoardOp[];
 };
 
 function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
@@ -450,6 +461,7 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
   boards.push(
     {
       kind: 'board',
+      role: 'left-side',
       partId: 'body_left',
       width: woodThick,
       height: cabinetBodyHeight,
@@ -460,6 +472,7 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
     },
     {
       kind: 'board',
+      role: 'right-side',
       partId: 'body_right',
       width: woodThick,
       height: cabinetBodyHeight,
@@ -488,6 +501,7 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
 
     boards.push({
       kind: 'board',
+      role: 'ceiling',
       partId: 'body_ceil',
       width: ceilW,
       height: woodThick,

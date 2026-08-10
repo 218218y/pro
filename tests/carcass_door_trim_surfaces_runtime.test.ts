@@ -67,11 +67,7 @@ test('carcass rendering tags side/top boards as trim surfaces and renders config
       },
     },
   } as never;
-  const { applyCarcassBaseOps } = createApplyCarcassBaseOps({
-    isBackPanelSeg(value: unknown) {
-      return !!value && typeof value === 'object';
-    },
-  });
+  const { applyCarcassBaseOps } = createApplyCarcassBaseOps();
 
   applyCarcassBaseOps(
     {

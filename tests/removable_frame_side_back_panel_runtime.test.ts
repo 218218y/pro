@@ -48,28 +48,6 @@ class Mesh {
   }
 }
 
-function isBackPanelSeg(value: unknown): value is {
-  kind: 'back_panel';
-  width: number;
-  height: number;
-  depth: number;
-  x: number;
-  y: number;
-  z: number;
-} {
-  const rec = value as Record<string, unknown> | null;
-  return !!(
-    rec &&
-    rec.kind === 'back_panel' &&
-    typeof rec.width === 'number' &&
-    typeof rec.height === 'number' &&
-    typeof rec.depth === 'number' &&
-    typeof rec.x === 'number' &&
-    typeof rec.y === 'number' &&
-    typeof rec.z === 'number'
-  );
-}
-
 function readPanelEdges(seg: Record<string, unknown>): { left: number; right: number } {
   const x = Number(seg.x);
   const width = Number(seg.width);
@@ -173,7 +151,7 @@ test('wood back-panel render ops register the segment as body and use its part m
   const added: unknown[] = [];
   const outlined: unknown[] = [];
   const registered: Array<{ partId: string; kind: string }> = [];
-  const { applyCarcassBaseOps } = createApplyCarcassBaseOps({ isBackPanelSeg });
+  const { applyCarcassBaseOps } = createApplyCarcassBaseOps();
 
   applyCarcassBaseOps(
     {

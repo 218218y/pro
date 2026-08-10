@@ -4,6 +4,7 @@ import { prepareCarcassInput, type PreparedCarcassInput } from './core_carcass_s
 import { buildCarcassShell } from './core_carcass_shell.js';
 import { buildCarcassCornice } from './core_carcass_cornice.js';
 import type { CarcassCornicePlan } from './carcass_cornice_ir.js';
+import type { CarcassBackPanelOp, CarcassBoardOp } from './carcass_shell_ir.js';
 
 export function computeCarcassOps(input: unknown) {
   const prepared = prepareCarcassInput(input);
@@ -14,9 +15,9 @@ export function computeCarcassOps(input: unknown) {
 
 function buildCarcassResult(
   prepared: PreparedCarcassInput,
-  boards: unknown[],
-  backPanels: unknown[] | null,
-  backPanel: unknown,
+  boards: CarcassBoardOp[],
+  backPanels: CarcassBackPanelOp[] | null,
+  backPanel: CarcassBackPanelOp,
   cornice: CarcassCornicePlan | null
 ) {
   return {

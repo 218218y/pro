@@ -57,19 +57,6 @@ export type HandleMeshOpts = Omit<BuilderHandleMeshOptionsLike, 'THREE'> & { THR
 export type AddGroupLike = { add: BoundUnknownMethod<[obj: unknown]> };
 export type TraversableLike = { traverse: BoundUnknownMethod<[fn: (value: unknown) => void], void> };
 
-export type BackPanelSeg = {
-  kind: 'back_panel';
-  width: number;
-  height: number;
-  depth: number;
-  x: number;
-  y: number;
-  z: number;
-  partId?: unknown;
-  material?: unknown;
-  __wpWoodBackPanel?: unknown;
-};
-
 export type RenderOpsBag = AnyMap & {
   __matCache?: CommonMatsCache;
 };

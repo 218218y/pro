@@ -11,18 +11,12 @@ import {
   __asFinite,
   __asString,
   __backPanelMaterial,
-  __isBoardOp,
   __isLegPlatformSegment,
   __isLegPosition,
   __isPlinthSegment,
   __isRecord,
   __readArray,
-  __readUnknownArray,
 } from './render_carcass_ops_shared.js';
-
-type RenderCarcassBaseDeps = {
-  isBackPanelSeg: (value: unknown) => value is BackPanelSeg;
-};
 
 function readRecord(value: unknown): AnyMap | null {
   return __isRecord(value) ? value : null;
@@ -76,11 +70,14 @@ function appendCarcassDoorTrimVisuals(args: {
   });
 }
 
-export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
-  const { isBackPanelSeg } = deps;
-
+export function createApplyCarcassBaseOps() {
   function applyCarcassBaseOps(
-    ops: { base?: unknown; boards?: unknown; backPanels?: unknown; backPanel?: BackPanelSeg | null },
+    ops: {
+      base?: unknown;
+      boards?: BoardOp[] | null;
+      backPanels?: BackPanelSeg[] | null;
+      backPanel?: BackPanelSeg | null;
+    },
     runtime: RenderCarcassRuntime
   ): void {
     applyBaseSupport(ops.base, runtime);
@@ -193,9 +190,9 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
     }
   }
 
-  function applyBoards(boardsIn: unknown, runtime: RenderCarcassRuntime): void {
+  function applyBoards(boardsIn: BoardOp[] | null | undefined, runtime: RenderCarcassRuntime): void {
     const { THREE, ctx, getPartMaterial, sketchMode, addOutlines, wardrobeGroup, reg, App } = runtime;
-    const boards = __readArray(boardsIn, __isBoardOp) || [];
+    const boards = boardsIn || [];
     const doorTrimMap = readDoorTrimMapForCarcass(App);
     for (let b = 0; b < boards.length; b += 1) {
       const bd = boards[b];
@@ -220,7 +217,7 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
   }
 
   function applyBackPanels(
-    backPanelsIn: unknown,
+    backPanelsIn: BackPanelSeg[] | null | undefined,
     backPanel: BackPanelSeg | null | undefined,
     runtime: RenderCarcassRuntime
   ): void {
@@ -248,12 +245,10 @@ export function createApplyCarcassBaseOps(deps: RenderCarcassBaseDeps) {
       }
       wardrobeGroup.add(mesh);
     };
-    const backPanels = __readUnknownArray(backPanelsIn);
+    const backPanels = backPanelsIn;
     if (backPanels && backPanels.length) {
       for (let bp = 0; bp < backPanels.length; bp += 1) {
-        const seg = backPanels[bp];
-        if (!isBackPanelSeg(seg)) continue;
-        addBackPanel(seg);
+        addBackPanel(backPanels[bp]);
       }
       return;
     }

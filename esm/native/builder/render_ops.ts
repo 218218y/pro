@@ -22,7 +22,6 @@ import {
   __drawerShadowPlaneArgs,
   __drawers,
   __handleMeshOpts,
-  __isBackPanelSeg,
   __isFn,
   __markSplitHoverPickablesDirty,
   __matCache,
@@ -166,7 +165,6 @@ const __carcassOps = createBuilderRenderCarcassOps({
   ops: __ops,
   wardrobeGroup: __wardrobeGroup,
   three: __three,
-  isBackPanelSeg: __isBackPanelSeg,
   reg: __reg,
   renderOpsHandleCatch: __renderOpsHandleCatch,
 });

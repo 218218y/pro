@@ -1,20 +1,10 @@
 import type { AppContainer, Object3DLike, UnknownCallable } from '../../../types';
 import type { CarcassCornicePlan, CarcassCorniceSegment, CorniceProfilePoint } from './carcass_cornice_ir.js';
+import type { CarcassBackPanelOp, CarcassBoardOp } from './carcass_shell_ir.js';
 
 export type AnyMap = Record<string, unknown>;
 
-export type BackPanelSeg = {
-  kind: 'back_panel';
-  width: number;
-  height: number;
-  depth: number;
-  x: number;
-  y: number;
-  z: number;
-  partId?: unknown;
-  material?: unknown;
-  __wpWoodBackPanel?: unknown;
-};
+export type BackPanelSeg = CarcassBackPanelOp;
 
 export type GroupLike = Object3DLike;
 
@@ -122,16 +112,7 @@ export type LegPlatformsBaseOp = {
   platforms?: unknown;
 };
 
-export type BoardOp = {
-  kind: 'board';
-  width: number;
-  height: number;
-  depth: number;
-  x: number;
-  y: number;
-  z: number;
-  partId?: unknown;
-};
+export type BoardOp = CarcassBoardOp;
 
 export type ProfilePoint = CorniceProfilePoint;
 export type CorniceSegment = CarcassCorniceSegment;
@@ -139,8 +120,8 @@ export type CorniceOp = CarcassCornicePlan;
 
 export type CarcassOps = {
   base?: PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp | null;
-  boards?: unknown;
-  backPanels?: unknown;
+  boards?: BoardOp[] | null;
+  backPanels?: BackPanelSeg[] | null;
   backPanel?: BackPanelSeg | null;
   cornice?: CorniceOp | null;
 };
@@ -150,7 +131,6 @@ export type RenderCarcassOpsDeps = {
   ops: (App: AppContainer) => unknown;
   wardrobeGroup: (App: AppContainer) => unknown;
   three: (THREE: unknown) => unknown;
-  isBackPanelSeg: (v: unknown) => v is BackPanelSeg;
   reg: (App: AppContainer, partId: unknown, obj: unknown, kind: unknown) => void;
   renderOpsHandleCatch: (
     App: AppContainer | null | undefined,

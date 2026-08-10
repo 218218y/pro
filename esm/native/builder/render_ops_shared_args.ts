@@ -4,7 +4,6 @@ import { asRecord } from '../runtime/record.js';
 import type {
   AnyMap,
   AppContainer,
-  BackPanelSeg,
   BoardArgs,
   DrawerShadowPlaneArgs,
   HandleMeshOpts,
@@ -136,20 +135,6 @@ export function __drawerShadowPlaneArgs(x: unknown): DrawerShadowPlaneArgs {
 
 export function __number(x: unknown, defaultValue = 0): number {
   return typeof x === 'number' && Number.isFinite(x) ? x : defaultValue;
-}
-
-export function __isBackPanelSeg(v: unknown): v is BackPanelSeg {
-  const r = __asObject<AnyMap>(v);
-  if (!r) return false;
-  if (r.kind !== 'back_panel') return false;
-  return (
-    typeof r.width === 'number' &&
-    typeof r.height === 'number' &&
-    typeof r.depth === 'number' &&
-    typeof r.x === 'number' &&
-    typeof r.y === 'number' &&
-    typeof r.z === 'number'
-  );
 }
 
 export function __app(ctx: unknown): AppContainer {

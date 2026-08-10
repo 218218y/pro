@@ -77,6 +77,27 @@ test('lint architecture contracts keep viewer measurement geometry behind capabi
   );
 });
 
+test('lint architecture contracts keep carcass shell geometry on the canonical typed IR boundary', () => {
+  const shellFailures = auditLintArchitectureSource(
+    'esm/native/builder/core_carcass_shell.ts',
+    `import type { MutableRecord } from './core_pure_shared.js';
+     export const boards: MutableRecord[] = [];`
+  );
+  assert.deepEqual(
+    shellFailures.map(failure => failure.rule),
+    ['lint-architecture/typed-ir:carcass-shell']
+  );
+
+  const renderFailures = auditLintArchitectureSource(
+    'esm/native/builder/render_carcass_ops.ts',
+    `export function install(deps) { return deps.isBackPanelSeg; }`
+  );
+  assert.deepEqual(
+    renderFailures.map(failure => failure.rule),
+    ['lint-architecture/typed-ir:carcass-shell']
+  );
+});
+
 test('lint architecture contract has no unbaselined or stale violations in the current tree', () => {
   const report = collectLintArchitectureReport();
   assert.equal(report.unbaselinedViolations.length, 0);

@@ -135,3 +135,81 @@ test('render_carcass miter cap stripping ignores string-encoded geometry index d
   assert.equal(setIndexCalled, false);
   assert.deepEqual(state.indices, ['0', '1', '0', '2', '3', '2']);
 });
+
+test('typed cornice segment renderers preserve per-segment paint material overrides', async () => {
+  const { createFakeThreeRuntime } = await import('./_fake_three_runtime.ts');
+  const { createWaveFrontSegment, createWaveSideSegment, createProfileSegment } =
+    await import('../esm/native/builder/render_carcass_ops_cornice_segments.ts');
+
+  const THREE = createFakeThreeRuntime();
+  const getPartMaterial = (partId: string) => `paint:${partId}`;
+  const baseArgs = {
+    THREE: THREE as never,
+    segMat: 'cornice-base',
+    getPartMaterial,
+  };
+
+  const waveFront = createWaveFrontSegment({
+    ...baseArgs,
+    segPid: 'cornice_wave_front',
+    seg: {
+      kind: 'cornice_wave_front',
+      partId: 'cornice_wave_front',
+      width: 1,
+      depth: 0.02,
+      heightMax: 0.1,
+      waveAmp: 0.02,
+      waveCycles: 2,
+      x: 0,
+      y: 0,
+      z: 0,
+    },
+  });
+  const waveSide = createWaveSideSegment({
+    ...baseArgs,
+    segPid: 'cornice_wave_side_left',
+    seg: {
+      kind: 'cornice_wave_side',
+      partId: 'cornice_wave_side_left',
+      width: 0.02,
+      height: 0.1,
+      depth: 0.5,
+      x: 0,
+      y: 0,
+      z: 0,
+    },
+  });
+  const profile = createProfileSegment(
+    {
+      ...baseArgs,
+      segPid: 'cornice_color',
+      seg: {
+        kind: 'cornice_profile_seg',
+        partId: 'cornice_color',
+        length: 1,
+        profile: [
+          { x: 0, y: 0 },
+          { x: 0.02, y: 0.08 },
+        ],
+        rotationY: 0,
+        flipX: false,
+        x: 0,
+        y: 0,
+        z: 0,
+      },
+      profile: [
+        { x: 0, y: 0 },
+        { x: 0.02, y: 0.08 },
+      ],
+      segLen: 1,
+    },
+    {
+      THREE: THREE as never,
+      renderOpsHandleCatch: () => undefined,
+    } as never
+  );
+
+  assert.equal((waveFront as { material?: unknown } | null)?.material, 'paint:cornice_wave_front');
+  assert.equal((waveSide as { material?: unknown } | null)?.material, 'paint:cornice_wave_side_left');
+  assert.equal((profile as { material?: unknown } | null)?.material, 'paint:cornice_color');
+});

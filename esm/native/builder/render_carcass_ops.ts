@@ -18,9 +18,7 @@ export function createBuilderRenderCarcassOps(deps: RenderCarcassOpsDeps) {
   const __three = deps.three;
   const __renderOpsHandleCatch = deps.renderOpsHandleCatch;
 
-  const { applyCarcassBaseOps } = createApplyCarcassBaseOps({
-    isBackPanelSeg: deps.isBackPanelSeg,
-  });
+  const { applyCarcassBaseOps } = createApplyCarcassBaseOps();
   const { applyCarcassCorniceOps } = createApplyCarcassCorniceOps();
 
   function applyCarcassOps(opsIn: unknown, ctxIn: unknown) {

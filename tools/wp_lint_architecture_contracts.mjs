@@ -18,6 +18,13 @@ const CAPABILITY_ONLY_MODULES = new Set([
   'esm/native/services/viewer_measurement_tool_resolution.ts',
   'esm/native/services/viewer_measurement_tool_point_resolution.ts',
 ]);
+const TYPED_IR_FORBIDDEN_IDENTIFIERS = new Map([
+  ['esm/native/builder/core_carcass_shell.ts', new Set(['MutableRecord'])],
+  ['esm/native/builder/render_ops.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
+  ['esm/native/builder/render_ops_shared.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
+  ['esm/native/builder/render_ops_shared_args.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
+  ['esm/native/builder/render_carcass_ops.ts', new Set(['__isBackPanelSeg', 'isBackPanelSeg'])],
+]);
 
 export const DEFAULT_BASELINE_PATH = path.join(__dirname, 'wp_lint_architecture_baseline.json');
 
@@ -325,6 +332,35 @@ function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectTypedIrBoundaryViolations(rel, sourceFile, astApi) {
+  const forbidden = TYPED_IR_FORBIDDEN_IDENTIFIERS.get(rel);
+  if (!forbidden) return [];
+
+  const failures = [];
+  const reported = new Set();
+  walkAst(
+    sourceFile,
+    node => {
+      if (!astApi.isIdentifier(node)) return;
+      const name = String(node.text || '');
+      if (!forbidden.has(name) || reported.has(name)) return;
+      reported.add(name);
+      failures.push(
+        makeViolation(
+          'lint-architecture/typed-ir:carcass-shell',
+          rel,
+          lineOf(sourceFile, node, astApi),
+          name === 'MutableRecord'
+            ? 'Carcass shell geometry must use carcass_shell_ir typed operations instead of MutableRecord.'
+            : 'Carcass render flow must use the canonical carcass_shell_ir back-panel guard instead of an injected duplicate guard.'
+        )
+      );
+    },
+    { astApi }
+  );
+  return failures;
+}
+
 function collectBrowserGlobalViolations(rel, sourceFile, astApi) {
   if (!isBrowserGlobalScope(rel) || isBrowserGlobalException(rel)) return [];
   const failures = [];
@@ -422,6 +458,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
   return [
     ...collectImportBoundaryViolations(rel, sourceFile, astApi),
     ...collectCapabilityBoundaryViolations(rel, sourceFile, astApi),
+    ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),
   ];
