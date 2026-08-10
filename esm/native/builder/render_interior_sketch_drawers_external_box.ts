@@ -18,9 +18,10 @@ export function addSketchExternalDrawerBoxAndConnector(
   stack: SketchExternalDrawerStackPlan,
   opPlan: SketchExternalDrawerOpPlan,
   groupNode: InteriorGroupLike
-): void {
-  addSketchExternalDrawerBox(context, stack, opPlan, groupNode);
+): InteriorGroupLike | null {
+  const drawerBox = addSketchExternalDrawerBox(context, stack, opPlan, groupNode);
   addSketchExternalDrawerConnector(context, stack, opPlan, groupNode);
+  return drawerBox;
 }
 
 function addSketchExternalDrawerBox(
@@ -28,7 +29,7 @@ function addSketchExternalDrawerBox(
   stack: SketchExternalDrawerStackPlan,
   opPlan: SketchExternalDrawerOpPlan,
   groupNode: InteriorGroupLike
-): void {
+): InteriorGroupLike | null {
   const hasDivider = hasSketchDrawerDivider({
     input: context.input,
     partId: opPlan.partId,
@@ -50,7 +51,7 @@ function addSketchExternalDrawerBox(
         opPlan.boxMat
       );
   const drawerBoxObj = readObject<InteriorGroupLike>(drawerBox) ?? null;
-  if (!drawerBoxObj) return;
+  if (!drawerBoxObj) return null;
 
   drawerBoxObj.position?.set?.(0, 0, opPlan.boxOffsetZ);
   applySketchModulePickMetaDeep(drawerBoxObj, opPlan.boxPartId, context.moduleKeyStr, {
@@ -82,6 +83,7 @@ function addSketchExternalDrawerBox(
   }
 
   groupNode.add?.(drawerBoxObj);
+  return drawerBoxObj;
 }
 
 function addSketchExternalDrawerConnector(

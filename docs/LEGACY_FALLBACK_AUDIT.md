@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-10T17:25:21.937Z
+Generated at: 2026-08-10T21:24:46.888Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **544**
-- Files with occurrences: **213**
+- Total categorized occurrences: **548**
+- Files with occurrences: **214**
 - Reviewed compatibility seams under growth ratchet: **27**
 - Category counts:
   - `runtime-default`: **57**
-  - `domain-default`: **387**
+  - `domain-default`: **391**
   - `error-message-default`: **42**
   - `framework-default`: **2**
   - `browser-adapter`: **18**
@@ -68,8 +68,8 @@ Generated at: 2026-08-10T17:25:21.937Z
 - `esm/native/builder/visuals_and_contents_door_visual.ts` - **4** (domain-default: 4)
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **4** (runtime-default: 4)
 - `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
+- `esm/native/services/canvas_picking_door_layout_alignment.ts` - **4** (domain-default: 4)
 - `esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts` - **4** (domain-default: 4)
-- `esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

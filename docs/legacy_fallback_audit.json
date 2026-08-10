@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-10T17:25:21.937Z",
+  "generatedAt": "2026-08-10T21:24:46.888Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 544,
-    "totalFiles": 213,
+    "totalOccurrences": 548,
+    "totalFiles": 214,
     "byCategory": {
       "runtime-default": 57,
-      "domain-default": 387,
+      "domain-default": 391,
       "error-message-default": 42,
       "framework-default": 2,
       "browser-adapter": 18,
@@ -710,6 +710,12 @@
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/services/canvas_picking_door_layout_alignment.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
         }
       },
       "esm/native/services/canvas_picking_door_shared.ts": {
@@ -1510,14 +1516,14 @@
         }
       },
       {
-        "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
+        "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
         }
       },
       {
-        "file": "esm/native/services/cloud_sync_owner_gateway_conflict_resolution.ts",
+        "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -2152,21 +2158,21 @@
     },
     {
       "file": "esm/native/builder/render_drawer_ops_external.ts",
-      "line": 85,
+      "line": 92,
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: drawerBoxBaseMat,"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
-      "line": 79,
+      "line": 87,
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: bodyMat || drawerBoxBaseMat,"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
-      "line": 90,
+      "line": 98,
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: drawerBoxBaseMat,"
@@ -3146,14 +3152,14 @@
     },
     {
       "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 75,
+      "line": 78,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
     },
     {
       "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 75,
+      "line": 78,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
@@ -3605,6 +3611,34 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// hover-identity-scan-fallback: malformed preview metadata is skipped during optional hover cleanup"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
+      "line": 279,
+      "term": "fallbackMirrorLayoutShapeMatches",
+      "category": "domain-default",
+      "text": "function fallbackMirrorLayoutShapeMatches(currentLayout: unknown, otherLayout: unknown): boolean {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
+      "line": 372,
+      "term": "fallbackMirrorLayoutShapeMatches",
+      "category": "domain-default",
+      "text": "if (!fallbackMirrorLayoutShapeMatches(args.currentLayout, otherLayout)) continue;"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
+      "line": 427,
+      "term": "fallbackGrooveShapeMatches",
+      "category": "domain-default",
+      "text": "function fallbackGrooveShapeMatches(args: {"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
+      "line": 536,
+      "term": "fallbackGrooveShapeMatches",
+      "category": "domain-default",
+      "text": "!fallbackGrooveShapeMatches({"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",

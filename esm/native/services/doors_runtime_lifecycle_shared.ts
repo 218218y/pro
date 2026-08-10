@@ -23,6 +23,14 @@ export function doorKey(d: DoorVisualEntryLike, idx: number, App?: AppLike): str
   return `idx:${idx}`;
 }
 
+export function readDoorRuntimeEntries(App: AppLike) {
+  return getDoorsArray(App);
+}
+
+export function readDrawerRuntimeEntries(App: AppLike) {
+  return getDrawersArray(App);
+}
+
 export function drawerKey(d: DrawerVisualEntryLike, idx: number, App?: AppLike): string {
   try {
     const directId = formatIdentityValue(readIdentityValue(d?.id ?? d?.drawerId));

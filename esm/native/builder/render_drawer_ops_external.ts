@@ -59,6 +59,12 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     const drawerDividersMap = cfg.drawerDividersMap || {};
     const wpStackRaw = args ? args.__wpStack : undefined;
     const wpStackArg = typeof wpStackRaw === 'string' ? String(wpStackRaw) : undefined;
+    const fixedRunnerHardware = new THREE.Group();
+    fixedRunnerHardware.userData = {
+      ...fixedRunnerHardware.userData,
+      __ignoreRaycast: true,
+      __wpDrawerRunnerHardwareContainer: true,
+    };
 
     for (let i = 0; i < drawers.length; i++) {
       const drawerOp = readExternalDrawerOp(drawers[i]);
@@ -246,20 +252,18 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       const openPos = new THREE.Vector3(drawerOp.open?.x || 0, drawerOp.open?.y || 0, drawerOp.open?.z || 0);
       group.position.copy(closedPos);
 
-      if (drawerOp.kind !== 'shoe') {
-        appendDrawerRunnerVisuals({
-          THREE,
-          runnerType: cfg.drawerRunnerType,
-          fixedParent: wardrobeGroup,
-          movingParent: group,
-          drawerWidthM: drawerOp.boxW,
-          drawerHeightM: drawerOp.boxH,
-          drawerDepthM: drawerOp.boxD,
-          drawerLocalCenterZM: drawerOp.boxOffsetZ || 0,
-          closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
-          ownerPartId: partId,
-        });
-      }
+      appendDrawerRunnerVisuals({
+        THREE,
+        runnerType: cfg.drawerRunnerType,
+        fixedParent: fixedRunnerHardware,
+        movingParent: drawerBox,
+        drawerWidthM: drawerOp.boxW,
+        drawerHeightM: drawerOp.boxH,
+        drawerDepthM: drawerOp.boxD,
+        drawerLocalCenterZM: drawerOp.boxOffsetZ || 0,
+        closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
+        ownerPartId: partId,
+      });
 
       wardrobeGroup.add(group);
       const drawersArray = __drawers(App);
@@ -275,6 +279,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       }
     }
 
+    if (fixedRunnerHardware.children.length > 0) wardrobeGroup.add(fixedRunnerHardware);
     return true;
   };
 }

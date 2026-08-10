@@ -65,6 +65,15 @@ class FakeMeshStandardMaterial {
   }
 }
 
+function collectRunnerRoles(node: unknown): string[] {
+  if (!node || typeof node !== 'object') return [];
+  const objectNode = node as { userData?: Record<string, unknown>; children?: unknown[] };
+  const ownRole = objectNode.userData?.__wpDrawerRunnerHardware
+    ? [String(objectNode.userData.__wpDrawerRunnerRole)]
+    : [];
+  return ownRole.concat((objectNode.children || []).flatMap(child => collectRunnerRoles(child)));
+}
+
 function createExternalDrawerArgs() {
   const mirrorMat = { id: 'mirror-mat' };
   let mirrorCalls = 0;
@@ -276,6 +285,31 @@ test('render sketch shoe drawer from sketch uses one shoe drawer with its custom
   assert.equal(drawers[0]?.group.userData.__wpShoeDrawer, true);
   assert.ok(renderedHeight > 0.25 && renderedHeight <= 0.275);
   assert.ok(Math.abs(Number(drawers[0]?.group.userData.__wpFaceMinY) - args.effectiveBottomY) < 1e-9);
+  const roles = collectRunnerRoles(args.group);
+  assert.ok(roles.some(role => role.startsWith('roller-fixed-')));
+  assert.ok(roles.some(role => role.startsWith('roller-moving-')));
+});
+
+test('render sketch shoe drawer follows the external Blum runner selection', () => {
+  const { args } = createExternalDrawerArgs();
+  args.input.cfgSnapshot.drawerRunnerType = 'blum';
+  args.extDrawers = [
+    { id: 'shoe-blum', count: 0, hasShoeDrawer: true, yNormC: 0, yNorm: 0, yAnchor: 'bottom' },
+  ];
+
+  applySketchExternalDrawers(args);
+
+  const roles = collectRunnerRoles(args.group);
+  assert.deepEqual(roles.filter(role => role.startsWith('blum-fixed-')).sort(), [
+    'blum-fixed-runner-left',
+    'blum-fixed-runner-right',
+  ]);
+  assert.ok(roles.some(role => role === 'blum-moving-runner-left'));
+  assert.ok(roles.some(role => role === 'blum-locking-device-right'));
+  assert.equal(
+    roles.some(role => role.startsWith('roller-')),
+    false
+  );
 });
 
 test('render sketch external drawers reject string-encoded live stack positions', () => {

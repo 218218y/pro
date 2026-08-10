@@ -20,6 +20,13 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
   const context = createSketchExternalDrawerRenderContext(args);
   if (!context) return;
 
+  const fixedRunnerHardware = new context.THREE.Group();
+  fixedRunnerHardware.userData = {
+    ...fixedRunnerHardware.userData,
+    __ignoreRaycast: true,
+    __wpDrawerRunnerHardwareContainer: true,
+  };
+
   try {
     for (let i = 0; i < context.extDrawers.length; i++) {
       const stack = createSketchExternalDrawerStackPlan(context, context.extDrawers[i], i);
@@ -48,13 +55,13 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
 
         const groupNode = createSketchExternalDrawerGroupNode(context, stack, opPlan);
         addSketchExternalDrawerFrontVisual(context, stack, opPlan, groupNode);
-        addSketchExternalDrawerBoxAndConnector(context, stack, opPlan, groupNode);
-        if (opPlan.op.kind !== 'shoe') {
+        const drawerBoxNode = addSketchExternalDrawerBoxAndConnector(context, stack, opPlan, groupNode);
+        if (drawerBoxNode)
           appendDrawerRunnerVisuals({
             THREE: context.THREE,
             runnerType: readDrawerRunnerTypeFromConfig(context.input.cfgSnapshot),
-            fixedParent: context.group,
-            movingParent: groupNode,
+            fixedParent: fixedRunnerHardware,
+            movingParent: drawerBoxNode,
             drawerWidthM: opPlan.boxW,
             drawerHeightM: opPlan.boxH,
             drawerDepthM: opPlan.boxD,
@@ -62,7 +69,6 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
             closedPosition: { x: opPlan.px, y: opPlan.py, z: opPlan.pz },
             ownerPartId: opPlan.partId,
           });
-        }
         applySketchModulePickMetaDeep(
           groupNode,
           opPlan.partId,
@@ -86,4 +92,6 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
       throttleMs: 5000,
     });
   }
+
+  if ((fixedRunnerHardware.children?.length || 0) > 0) context.group.add?.(fixedRunnerHardware);
 }

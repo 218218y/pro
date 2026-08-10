@@ -1,22 +1,20 @@
 import type { AppContainer, GrooveLayoutEntry, UnknownRecord } from '../../../types';
-import { buildDoorVisualLookupKeys } from '../../shared/door_visual_key_contracts_shared.js';
 import {
+  buildDoorVisualLookupKeys,
+  computeAutoGrooveLinesCount,
+  normalizeGrooveLinesCount,
   readDoorVisualMapValue,
   readDoorVisualMirrorLayout,
   readGrooveLayoutList,
   readGrooveLayoutListForPart,
+  readGrooveLinesCountForPart,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   resolveGroovePlacementInRect,
   resolveMirrorPlacementInRect,
-} from '../features/door_authoring/api.js';
-import {
-  computeAutoGrooveLinesCount,
-  normalizeGrooveLinesCount,
-  readGrooveLinesCountForPart,
-} from '../runtime/groove_lines_access.js';
-import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
+} from './canvas_picking_door_edit_shared.js';
 import { __wp_isDrawerLikePartId } from './canvas_picking_core_helpers.js';
+import { readDoorRuntimeEntries, readDrawerRuntimeEntries } from './doors_runtime_lifecycle_shared.js';
 import {
   readGrooveSurfaceRectFromUserData,
   readMirrorPlacementRectFromUserData,
@@ -135,8 +133,8 @@ function collectDoorSceneCandidates(App: AppContainer): DoorSceneCandidate[] {
       });
     }
   };
-  pushEntries(getDoorsArray(App) as unknown[], 'door');
-  pushEntries(getDrawersArray(App) as unknown[], 'drawer');
+  pushEntries(readDoorRuntimeEntries(App) as unknown[], 'door');
+  pushEntries(readDrawerRuntimeEntries(App) as unknown[], 'drawer');
   return out;
 }
 

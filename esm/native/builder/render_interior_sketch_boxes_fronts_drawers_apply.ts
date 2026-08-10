@@ -20,6 +20,13 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
   const context = createSketchBoxExternalDrawersContext(args);
   if (!context) return;
 
+  const fixedRunnerHardware = new context.THREE.Group();
+  fixedRunnerHardware.userData = {
+    ...fixedRunnerHardware.userData,
+    __ignoreRaycast: true,
+    __wpDrawerRunnerHardwareContainer: true,
+  };
+
   for (let drawerIndex = 0; drawerIndex < context.boxExtDrawers.length; drawerIndex++) {
     const stack = createSketchBoxExternalDrawerStackPlan(
       context,
@@ -58,13 +65,13 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
 
       const groupNode = createSketchBoxExternalDrawerGroupNode(context, stack, opPlan);
       addSketchBoxExternalDrawerFrontVisual(context, opPlan, groupNode);
-      addSketchBoxExternalDrawerBoxAndConnector(context, opPlan, groupNode);
-      if (opPlan.isRegularExternalDrawer) {
+      const drawerBoxNode = addSketchBoxExternalDrawerBoxAndConnector(context, opPlan, groupNode);
+      if (drawerBoxNode) {
         appendDrawerRunnerVisuals({
           THREE: context.THREE,
           runnerType: readDrawerRunnerTypeFromConfig(context.input.cfgSnapshot),
-          fixedParent: context.group,
-          movingParent: groupNode,
+          fixedParent: fixedRunnerHardware,
+          movingParent: drawerBoxNode,
           drawerWidthM: opPlan.boxW,
           drawerHeightM: opPlan.boxH,
           drawerDepthM: opPlan.boxD,
@@ -83,4 +90,6 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
       registerSketchBoxExternalDrawerMotionEntry(context, opPlan, groupNode);
     }
   }
+
+  if ((fixedRunnerHardware.children?.length || 0) > 0) context.group.add?.(fixedRunnerHardware);
 }

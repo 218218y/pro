@@ -5,6 +5,8 @@ import {
 } from './door_visual_key_contracts_shared.js';
 import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
+export { buildDoorVisualLookupKeys };
+
 const DOOR_GROOVE_MAP_PREFIX = 'groove_';
 const DOOR_GROOVE_DECORATION_SUFFIX_RE = /_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i;
 

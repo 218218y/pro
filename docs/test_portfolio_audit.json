@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T17:25:22.098Z",
+  "generatedAt": "2026-08-10T21:24:47.483Z",
   "totals": {
-    "tests": 1240,
-    "unitRunnerTests": 1231,
+    "tests": 1241,
+    "unitRunnerTests": 1232,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -21,7 +21,7 @@
   "categories": {
     "contract": 403,
     "runtime-unit": 334,
-    "integration": 463,
+    "integration": 464,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -4641,6 +4641,10 @@
     {
       "file": "tests/doors_transient_meta_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/drawer_runner_visuals_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/drawer_runtime_access_cleanup_guard.test.js",

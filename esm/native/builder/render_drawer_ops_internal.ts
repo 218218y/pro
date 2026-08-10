@@ -50,6 +50,12 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
     const addFoldedClothes = readAddFoldedClothes(args?.addFoldedClothes);
 
     const emittedCassetteStacks = new Set<string>();
+    const fixedRunnerHardware = new THREE.Group();
+    fixedRunnerHardware.userData = {
+      ...fixedRunnerHardware.userData,
+      __ignoreRaycast: true,
+      __wpDrawerRunnerHardwareContainer: true,
+    };
 
     for (let i = 0; i < ops.length; i++) {
       const drawerOp = readInternalDrawerOp(ops[i]);
@@ -138,7 +144,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       appendDrawerRunnerVisuals({
         THREE,
         runnerType: INTERNAL_DRAWER_RUNNER_TYPE,
-        fixedParent: drawerGroup,
+        fixedParent: fixedRunnerHardware,
         movingParent: intBox,
         drawerWidthM: drawerOp.width,
         drawerHeightM: drawerOp.height,
@@ -182,6 +188,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       }
     }
 
+    if (fixedRunnerHardware.children.length > 0) drawerGroup.add(fixedRunnerHardware);
     return true;
   };
 }

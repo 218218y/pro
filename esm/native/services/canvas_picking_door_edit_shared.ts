@@ -6,25 +6,49 @@ import { readRootState } from '../runtime/root_state_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import {
   PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY,
+  computeAutoGrooveLinesCount,
+  normalizeGrooveLinesCount,
+  readGrooveLinesCountForPart,
   readPendingGrooveLinesCountMap,
+  resolvePendingGrooveLinesCount,
 } from '../runtime/groove_lines_access.js';
 import {
   buildGrooveLayoutFromHit,
   findGrooveLayoutMatchInRect,
   readDoorTrimMap,
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutList,
   readGrooveLayoutListForPart,
+  readMirrorLayoutFaceSign,
+  readMirrorLayoutList,
   resolveGroovePlacementInRect,
+  resolveMirrorPlacementInRect,
 } from '../features/door_authoring/api.js';
-import { toCanonicalGrooveLinesCountMapKey } from '../../shared/door_groove_key_contracts_shared.js';
+import {
+  buildDoorVisualLookupKeys,
+  toCanonicalGrooveLinesCountMapKey,
+} from '../../shared/door_groove_key_contracts_shared.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 
 export {
+  buildDoorVisualLookupKeys,
   buildGrooveLayoutFromHit,
+  computeAutoGrooveLinesCount,
   findGrooveLayoutMatchInRect,
+  normalizeGrooveLinesCount,
   normalizeKnownMapSnapshot,
+  readDoorVisualMapValue,
+  readDoorVisualMirrorLayout,
+  readGrooveLayoutList,
   readGrooveLayoutListForPart,
+  readGrooveLinesCountForPart,
+  readMirrorLayoutFaceSign,
+  readMirrorLayoutList,
   resolveGroovePlacementInRect,
+  resolveMirrorPlacementInRect,
+  resolvePendingGrooveLinesCount,
 };
 
 export function asRecord<T extends UnknownRecord = UnknownRecord>(value: unknown): T | null {

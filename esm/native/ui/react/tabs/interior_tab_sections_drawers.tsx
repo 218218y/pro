@@ -336,7 +336,7 @@ export function InteriorExternalDrawersSection(
 export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionProps): ReactElement {
   return (
     <div className="wp-r-external-drawer-runner" data-testid="interior-drawer-runner-card">
-      <div className="wp-r-external-drawer-runner-title">🛞 מסילות למגירות חיצוניות רגילות</div>
+      <div className="wp-r-external-drawer-runner-title">🛞 מסילות למגירות חיצוניות</div>
 
       <div className="wp-row wp-gap-8 wp-mt-8">
         <OptionBtn
@@ -358,7 +358,7 @@ export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionPr
       </div>
 
       <div className="wp-hint wp-mt-8">
-        הבחירה חלה רק על מגירות חיצוניות רגילות. מגירות פנימיות נשארות תמיד עם מסילה רגילה.
+        הבחירה חלה על כל המגירות החיצוניות, כולל מגירת נעליים. מגירות פנימיות נשארות תמיד עם מסילה רגילה.
       </div>
     </div>
   );

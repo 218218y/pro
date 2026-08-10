@@ -1,11 +1,11 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { resolvePendingGrooveLinesCount } from '../runtime/groove_lines_access.js';
 import {
   buildGrooveLayoutFromHit,
   findGrooveLayoutMatchInRect,
   normalizeKnownMapSnapshot,
   readGrooveLayoutListForPart,
   resolveGroovePlacementInRect,
+  resolvePendingGrooveLinesCount,
 } from './canvas_picking_door_edit_shared.js';
 import {
   readGrooveSurfaceRectFromUserData,

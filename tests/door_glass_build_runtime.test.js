@@ -83,6 +83,12 @@ function createThreeStub() {
   };
 }
 
+function collectRunnerRoles(node) {
+  if (!node || typeof node !== 'object') return [];
+  const ownRole = node.userData?.__wpDrawerRunnerHardware ? [String(node.userData.__wpDrawerRunnerRole)] : [];
+  return ownRole.concat((node.children || []).flatMap(child => collectRunnerRoles(child)));
+}
+
 function createDoorVisualSpy(calls) {
   return (...args) => {
     calls.push(args);
@@ -305,11 +311,63 @@ test('external drawer build treats glass specials like real glass fronts, keeps 
   assert.deepEqual(calls[0][13], { grooveLayout: null, glassFrameStyle: 'double_profile' });
   assert.equal(drawerBoxCalls.length, 1);
   assert.deepEqual(drawerBoxCalls[0][8], { omitFrontPanel: true });
-  assert.equal(wardrobeGroup.children.length, 1);
+  const drawerGroups = wardrobeGroup.children.filter(child => child.userData?.__wpType === 'extDrawer');
+  const runnerHardwareGroups = wardrobeGroup.children.filter(
+    child => child.userData?.__wpDrawerRunnerHardwareContainer === true
+  );
+  assert.equal(drawerGroups.length, 1);
+  assert.equal(runnerHardwareGroups.length, 1);
   assert.equal(
-    wardrobeGroup.children[0].children.length,
+    drawerGroups[0].children.length,
     2,
     'glass drawer should not keep a wood connector behind the glass'
+  );
+});
+
+test('standard shoe drawer uses the selected external Blum runner hardware', () => {
+  const THREE = createThreeStub();
+  const wardrobeGroup = new THREE.Group();
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => input.App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup,
+    __reg: () => undefined,
+    __drawers: () => [],
+    getMirrorMaterial: () => null,
+  });
+
+  const didApply = renderDrawerOps.applyExternalDrawersOps({
+    App: {},
+    THREE,
+    ops: {
+      drawers: [
+        {
+          kind: 'shoe',
+          partId: 'shoe_drawer_1',
+          visualW: 0.6,
+          visualH: 0.2,
+          boxW: 0.56,
+          boxH: 0.14,
+          boxD: 0.48,
+        },
+      ],
+    },
+    cfg: { drawerRunnerType: 'blum' },
+    bodyMat: { kind: 'body' },
+    createInternalDrawerBox: () => new THREE.Group(),
+  });
+
+  assert.equal(didApply, true);
+  const roles = collectRunnerRoles(wardrobeGroup);
+  assert.deepEqual(roles.filter(role => role.startsWith('blum-fixed-')).sort(), [
+    'blum-fixed-runner-left',
+    'blum-fixed-runner-right',
+  ]);
+  assert.ok(roles.includes('blum-moving-runner-left'));
+  assert.ok(roles.includes('blum-locking-device-right'));
+  assert.equal(
+    roles.some(role => role.startsWith('roller-')),
+    false
   );
 });
 

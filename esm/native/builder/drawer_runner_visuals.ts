@@ -1,4 +1,4 @@
-import type { DrawerRunnerType, UnknownRecord } from '../../../types/index.js';
+import type { UnknownRecord } from '../../../types/index.js';
 import {
   BLUM_TANDEM_DRAWER_RUNNER_POLICY,
   ROLLER_DRAWER_RUNNER_POLICY,
@@ -17,7 +17,7 @@ type RunnerObjectLike = {
 type RunnerThreeLike = {
   Mesh: new (geometry: unknown, material: unknown) => RunnerObjectLike;
   BoxGeometry: new (width?: number, height?: number, depth?: number) => unknown;
-  CylinderGeometry: new (
+  CylinderGeometry?: new (
     radiusTop?: number,
     radiusBottom?: number,
     height?: number,
@@ -28,7 +28,7 @@ type RunnerThreeLike = {
 
 type AppendDrawerRunnerVisualsArgs = {
   THREE: RunnerThreeLike;
-  runnerType: DrawerRunnerType | unknown;
+  runnerType: unknown;
   fixedParent: RunnerObjectLike;
   movingParent: RunnerObjectLike;
   drawerWidthM: number;
@@ -56,8 +56,8 @@ function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials {
 
   const materials: RunnerMaterials = {
     // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
-    rollerSteel: new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 }),
-    rollerWheel: new THREE.MeshStandardMaterial({ color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 }),
+    rollerSteel: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.66, metalness: 0.02 }),
+    rollerWheel: new THREE.MeshStandardMaterial({ color: 0xf3f3ef, roughness: 0.88, metalness: 0.0 }),
     // TANDEM runner bodies are zinc/steel; the front locking device is Blum orange.
     blumSteel: new THREE.MeshStandardMaterial({ color: 0x8f969b, roughness: 0.36, metalness: 0.82 }),
     blumInner: new THREE.MeshStandardMaterial({ color: 0xb7bdc1, roughness: 0.3, metalness: 0.88 }),
@@ -69,7 +69,7 @@ function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials {
 
 function markHardware(obj: RunnerObjectLike, ownerPartId: string, role: string): void {
   obj.userData = {
-    ...(obj.userData || {}),
+    ...obj.userData,
     __ignoreRaycast: true,
     __wpDrawerRunnerHardware: true,
     __wpDrawerRunnerOwnerPartId: ownerPartId,
@@ -102,9 +102,14 @@ function addWheel(args: {
   position: [number, number, number];
   ownerPartId: string;
   role: string;
-}): RunnerObjectLike {
+}): RunnerObjectLike | null {
+  const CylinderGeometry = args.THREE.CylinderGeometry;
+  // Runtime THREE always provides CylinderGeometry. Lightweight/headless render
+  // adapters may intentionally expose only BoxGeometry; rails should still render
+  // instead of making unrelated drawer rendering fail because a wheel primitive is absent.
+  if (typeof CylinderGeometry !== 'function') return null;
   const wheel = new args.THREE.Mesh(
-    new args.THREE.CylinderGeometry(args.radius, args.radius, args.width, 20),
+    new CylinderGeometry(args.radius, args.radius, args.width, 20),
     args.material
   );
   if (wheel.rotation) wheel.rotation.z = Math.PI / 2;

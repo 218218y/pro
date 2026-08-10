@@ -55,9 +55,16 @@ const fakeThree = {
 };
 
 function drawerChildren(parent: FakeGroup): FakeGroup[] {
-  return parent.children.filter(
-    child => !(child as FakeGroup)?.userData?.__wpDrawerRunnerHardware
-  ) as FakeGroup[];
+  return parent.children.filter(child => {
+    const userData = (child as FakeGroup)?.userData;
+    return !userData?.__wpDrawerRunnerHardware && !userData?.__wpDrawerRunnerHardwareContainer;
+  }) as FakeGroup[];
+}
+
+function runnerHardwareContainer(parent: FakeGroup): FakeGroup | undefined {
+  return parent.children.find(
+    child => (child as FakeGroup)?.userData?.__wpDrawerRunnerHardwareContainer === true
+  ) as FakeGroup | undefined;
 }
 
 function runnerRoles(parent: FakeGroup): string[] {
@@ -144,7 +151,9 @@ test('internal drawers keep roller hardware even when external drawer selection 
   });
 
   assert.equal(result, true);
-  const fixedRoles = runnerRoles(wardrobeGroup);
+  const fixedHardware = runnerHardwareContainer(wardrobeGroup);
+  assert.ok(fixedHardware);
+  const fixedRoles = runnerRoles(fixedHardware);
   assert.equal(fixedRoles.length, 6);
   assert.ok(fixedRoles.every(role => role.startsWith('roller-fixed-')));
   assert.ok(fixedRoles.every(role => !role.startsWith('blum-')));

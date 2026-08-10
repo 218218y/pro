@@ -918,6 +918,11 @@ test('sketch box shoe drawer keeps its sketch-controlled custom height', () => {
   ) as FakeNode[];
   assert.equal(drawerGroups.length, 1);
   assert.ok(Number(drawerGroups[0]?.userData.__doorHeight) > 0.25);
+  const runnerRoles = collectSketchNodes(wardrobeGroup)
+    .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
+    .map(node => String(node.userData.__wpDrawerRunnerRole));
+  assert.ok(runnerRoles.some(role => role.startsWith('roller-fixed-')));
+  assert.ok(runnerRoles.some(role => role.startsWith('roller-moving-')));
 });
 
 test('sketch box external drawers emit an individually paintable brace shelf above each stack', () => {

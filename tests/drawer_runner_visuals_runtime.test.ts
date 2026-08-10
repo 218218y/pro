@@ -157,6 +157,14 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
     2,
     'drawer member should have one rear plastic wheel per side'
   );
+  const rollerRails = [...fixed.children, ...moving.children].filter(
+    child => child.geometry instanceof FakeBoxGeometry
+  );
+  assert.ok(rollerRails.length > 0);
+  for (const rail of rollerRails) {
+    assert.equal(rail.material.params.color, 0xffffff, 'roller steel should use a white coating');
+    assert.equal(rail.material.params.metalness, 0.02, 'white roller coating should not read as nickel');
+  }
   assertHardwareMetadata(fixed, 'drawer:test');
   assertHardwareMetadata(moving, 'drawer:test');
 });

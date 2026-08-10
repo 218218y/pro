@@ -19,11 +19,11 @@ const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const ownerSymbol = 'PROJECT_CAPTURE_DIMENSION_POLICY';
 const ownerSpecifier = '../../shared/dimensions/project_capture_dimension_policy.js';
-const consumerBodySha256 = '9bc8a35e8ef86ec62b8bd981161bad938bfafad2207837f49c825548012fca63';
+const consumerBodySha256 = 'ac0d4af0bc52063e8e93038328f5eabfcc3047581fcebdb2fc8ceb43b1d40623';
 const persistedDoorsSha256 = 'd0b63e533964a4559b69d2224217dfc4f9b9c098714256503bdf9502d88f2fa3';
 const buildPayloadSha256 = '7c851afd1075aa85fe0dbca53d7c3d7d82a26c4cdab5334e5baaa29301309db4';
 const returnObjectSha256 = '62121f215ced9cc93aff08e0adcf891e936e5ad0d2fa401312001b3ae58347c7';
-const consumerLiteralSha256 = '517c74b64ba1bc22310d01455d22f9225df5f2e4dae5078fed001c30d605ee31';
+const consumerLiteralSha256 = '200e521113412564f80f2ed51e6f188f94c4746aff5941765654c2429f1441d3';
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({
     specifier: './door_mount_thickness_policy.js',
