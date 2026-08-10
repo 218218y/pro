@@ -22,22 +22,20 @@ export const HINGED_DOOR_HARDWARE_RENDER_POLICY = Object.freeze({
   standardEdgeInsetM: meters(0.1),
   shortDoorInsetRatio: 0.25,
 
-  // Door side: the 35 mm cup, its visible collar, and one short connector that
-  // terminates exactly on the door rotation axis. This keeps the moving half
-  // attached to the fixed half while the door opens.
+  // Door side: only the 35 mm cup and its visible collar move with the leaf.
+  // The fixed carcass connector is aimed at the near cup edge at the real open angle.
   cupCenterFromHingeEdgeM: meters(0.0215),
   cupRadiusM: meters(0.0175),
   cupVisibleDepthM: meters(0.0045),
   cupRadialSegments: 20,
   cupCollarRadiusM: meters(0.0205),
   cupCollarDepthM: meters(0.0022),
-  doorConnectorCupOverlapM: meters(0.002),
-  doorConnectorHeightM: meters(0.007),
-  doorConnectorDepthM: meters(0.006),
+  carcassConnectorCupOverlapM: meters(0.002),
+  carcassConnectorOpenAngleRad: Math.PI / 2.1,
 
   // Carcass side: the plate sits directly on the side-panel face. Two raised
-  // link blocks sit on top of the plate; the fixed connector runs from those
-  // blocks to the same rotation-axis point used by the door connector.
+  // link blocks sit on top of it; the fixed connector points outward/front toward
+  // the door cup's near edge at the normal open angle.
   nominalCarcassMountFaceFromPivotM: meters(0.009),
   carcassPlateThicknessM: meters(0.0032),
   carcassPlateHeightM: meters(0.047),

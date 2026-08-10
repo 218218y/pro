@@ -10,9 +10,8 @@ type HingedDoorHardwarePolicy = {
   cupRadialSegments: number;
   cupCollarRadiusM: number;
   cupCollarDepthM: number;
-  doorConnectorCupOverlapM: number;
-  doorConnectorHeightM: number;
-  doorConnectorDepthM: number;
+  carcassConnectorCupOverlapM: number;
+  carcassConnectorOpenAngleRad: number;
   nominalCarcassMountFaceFromPivotM: number;
   carcassPlateThicknessM: number;
   carcassPlateHeightM: number;
@@ -48,13 +47,7 @@ type HingedDoorHardwareRenderState = {
 };
 
 type HingeComponentName =
-  | 'doorCup'
-  | 'doorCupCollar'
-  | 'doorConnector'
-  | 'carcassPlate'
-  | 'carcassLinkUpper'
-  | 'carcassLinkLower'
-  | 'carcassConnector';
+  'doorCup' | 'doorCupCollar' | 'carcassPlate' | 'carcassLinkUpper' | 'carcassLinkLower' | 'carcassConnector';
 
 function disableHardwarePicking(obj: Object3DLike): void {
   obj.raycast = () => undefined;
@@ -219,29 +212,31 @@ function appendDoorMountedHalf(args: {
   cupCollar.position.set(hingeDirection * policy.cupCenterFromHingeEdgeM, 0, cupCollarZ);
   doorHalf.add(cupCollar);
 
-  // The moving connector ends on the actual door rotation axis (0,0,0).
-  // Its other end overlaps the cup collar. Because one endpoint is exactly on
-  // the rotation axis, the two hinge halves cannot visually detach as the leaf opens.
-  const nearCupX =
+  // Keep the door half visually clean: the cup and collar are the only moving
+  // hardware pieces. A moving bar here would swing into the gap between closed
+  // leaves and point away from the fixed carcass arm while the door opens.
+  doorGroup.add(doorHalf);
+}
+
+function resolveOpenCupNearEdgeTarget(args: {
+  policy: HingedDoorHardwarePolicy;
+  hingeDirection: number;
+  cupRearZ: number;
+}): { x: number; z: number } {
+  const { policy, hingeDirection, cupRearZ } = args;
+  const nearCupLocalX =
     hingeDirection *
     Math.max(
       0.0005,
-      policy.cupCenterFromHingeEdgeM - policy.cupCollarRadiusM + policy.doorConnectorCupOverlapM
+      policy.cupCenterFromHingeEdgeM - policy.cupCollarRadiusM + policy.carcassConnectorCupOverlapM
     );
-  const doorConnector = makeConnectorMeshBetween({
-    THREE,
-    material: state.material,
-    component: 'doorConnector',
-    height: policy.doorConnectorHeightM,
-    depth: policy.doorConnectorDepthM,
-    startX: 0,
-    startZ: 0,
-    endX: nearCupX,
-    endZ: cupCollarZ,
-  });
-  if (doorConnector) doorHalf.add(doorConnector);
-
-  doorGroup.add(doorHalf);
+  const angle = -hingeDirection * policy.carcassConnectorOpenAngleRad;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return {
+    x: nearCupLocalX * cos + cupRearZ * sin,
+    z: -nearCupLocalX * sin + cupRearZ * cos,
+  };
 }
 
 function resolveCarcassMountFaceX(
@@ -307,20 +302,29 @@ function appendCarcassMountedHalf(args: {
   linkLower.position.set(linkCenterX, -policy.carcassLinkBlockCenterYOffsetM, linkZ);
   carcassHalf.add(linkLower);
 
-  // The fixed connector terminates on the exact same rotation-axis point as
-  // doorConnector. It reaches slightly into the two raised link blocks so the
-  // carcass assembly is also visibly continuous.
+  // The fixed connector starts on the raised carcass links and points outward
+  // toward the near edge of the door cup at the project's real open angle.
+  // This makes its dominant direction front/outward (Z), with only a small X
+  // offset away from the panel, instead of projecting into the gap between doors.
   const linkTouchX = plateOpeningFaceX + hingeDirection * policy.carcassConnectorBlockOverlapM;
+  const openCupTarget = resolveOpenCupNearEdgeTarget({
+    policy,
+    hingeDirection,
+    // Aim at the rear/hinge-side rim of the cup. At the open angle this point
+    // sits just farther from the panel than the raised carcass links, producing
+    // the requested slight outward X lean while the dominant motion stays frontward in Z.
+    cupRearZ: doorBackZ - policy.cupVisibleDepthM - 0.0002,
+  });
   const carcassConnector = makeConnectorMeshBetween({
     THREE,
     material: state.material,
     component: 'carcassConnector',
     height: policy.carcassConnectorHeightM,
     depth: policy.carcassConnectorDepthM,
-    startX: 0,
-    startZ: 0,
-    endX: linkTouchX,
-    endZ: linkZ,
+    startX: linkTouchX,
+    startZ: linkZ,
+    endX: openCupTarget.x,
+    endZ: openCupTarget.z,
   });
   if (carcassConnector) carcassHalf.add(carcassConnector);
 
