@@ -3,7 +3,7 @@
 import path from 'node:path';
 import { createSanitizedChildEnv } from './wp_node_child_env.js';
 import { fileExists, npmRun, resolveProjectRoot, runCmd } from './wp_verify_shared.js';
-import { runVerifyLane, runVerifyLanePlan } from './wp_verify_lane_flow.js';
+import { runVerifyLanePlan } from './wp_verify_lane_flow.js';
 
 function parseArgs(argv) {
   const flags = new Set(argv || []);

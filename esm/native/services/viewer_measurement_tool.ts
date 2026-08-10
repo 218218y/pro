@@ -15,6 +15,10 @@ import { runPlatformActivityRenderTouch } from '../runtime/platform_access.js';
 import { getWardrobeGroup, readRenderCacheValue, writeRenderCacheValue } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
+import {
+  createViewerMeasurementGeometryRuntime,
+  type ViewerMeasurementGeometryRuntime,
+} from './viewer_measurement_geometry_runtime.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
@@ -606,12 +610,13 @@ function removeOverlayStateObjects(state: MeasurementOverlayState | null): void 
 
 function renderPointDraftOverlay(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   draft: PointMeasurementDraft;
   hitState?: CanvasPickingClickHitState | null;
   includePreview: boolean;
   pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, draft, hitState, includePreview, pointer } = args;
+  const { App, geometryRuntime, draft, hitState, includePreview, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
@@ -630,7 +635,7 @@ function renderPointDraftOverlay(args: {
 
   if (includePreview) {
     const localEnd = readPointMeasurementPointerLocalPoint({
-      App,
+      runtime: geometryRuntime,
       hitState,
       wardrobeGroup,
       plane: draft.plane,
@@ -680,21 +685,22 @@ function renderPointDraftOverlay(args: {
 
 function beginPointMeasurementDraft(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   hitState?: CanvasPickingClickHitState | null;
   pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, hitState, pointer } = args;
+  const { App, geometryRuntime, hitState, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   if (!THREE || !wardrobeGroup) return false;
 
   const draft = hitState
-    ? resolvePointMeasurementStart({ App, THREE, hitState, wardrobeGroup })
-    : resolvePointMeasurementStartFromPointer({ App, THREE, wardrobeGroup, pointer });
+    ? resolvePointMeasurementStart({ runtime: geometryRuntime, THREE, hitState, wardrobeGroup })
+    : resolvePointMeasurementStartFromPointer({ runtime: geometryRuntime, THREE, wardrobeGroup, pointer });
   if (!draft) return false;
 
-  if (!renderPointDraftOverlay({ App, draft, includePreview: false })) return false;
+  if (!renderPointDraftOverlay({ App, geometryRuntime, draft, includePreview: false })) return false;
 
   try {
     getUiFeedbackServiceMaybe(App)?.updateEditStateToast?.(
@@ -709,11 +715,12 @@ function beginPointMeasurementDraft(args: {
 
 function renderPointMeasurement(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   draft: PointMeasurementDraft;
   hitState?: CanvasPickingClickHitState | null;
   pointer?: PointMeasurementPointerContext | null;
 }): boolean {
-  const { App, draft, hitState, pointer } = args;
+  const { App, geometryRuntime, draft, hitState, pointer } = args;
   applyMeasurementToolCursor(App, 'points');
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
@@ -721,7 +728,7 @@ function renderPointMeasurement(args: {
   if (!THREE || !wardrobeGroup || !addDimensionLine) return false;
 
   const localEnd = readPointMeasurementPointerLocalPoint({
-    App,
+    runtime: geometryRuntime,
     hitState,
     wardrobeGroup,
     plane: draft.plane,
@@ -732,7 +739,7 @@ function renderPointMeasurement(args: {
   const plane = draft.plane;
   const resolved = resolvePointMeasurementEnd({ THREE, draft, localEnd });
   if (!resolved || !(resolved.length > MIN_MEASURABLE_EDGE_M)) {
-    return beginPointMeasurementDraft({ App, hitState, pointer });
+    return beginPointMeasurementDraft({ App, geometryRuntime, hitState, pointer });
   }
 
   const objects: Object3DLike[] = [];
@@ -789,13 +796,14 @@ function exitPointMeasurementOnEmptyClick(App: AppContainer): boolean {
 
 function tryHandleViewerPointMeasurementClick(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   hitState: CanvasPickingClickHitState | null;
   ndcX?: number;
   ndcY?: number;
   raycaster?: RaycasterLike | null;
   mouse?: MouseVectorLike | null;
 }): boolean {
-  const { App, hitState } = args;
+  const { App, geometryRuntime, hitState } = args;
   const pointer: PointMeasurementPointerContext = {
     ndcX: args.ndcX,
     ndcY: args.ndcY,
@@ -809,22 +817,22 @@ function tryHandleViewerPointMeasurementClick(args: {
   if (!isActionableMeasurementHitState(hitState)) {
     if (draft) {
       clearViewerMeasurementOverlay(App, false);
-      if (!renderPointMeasurement({ App, draft, hitState: null, pointer })) touchRender(App);
+      if (!renderPointMeasurement({ App, geometryRuntime, draft, hitState: null, pointer })) touchRender(App);
       return true;
     }
     clearViewerMeasurementOverlay(App, false);
-    if (beginPointMeasurementDraft({ App, hitState: null, pointer })) return true;
+    if (beginPointMeasurementDraft({ App, geometryRuntime, hitState: null, pointer })) return true;
     return exitPointMeasurementOnEmptyClick(App);
   }
 
   if (!draft) {
     clearViewerMeasurementOverlay(App, false);
-    if (!beginPointMeasurementDraft({ App, hitState, pointer })) touchRender(App);
+    if (!beginPointMeasurementDraft({ App, geometryRuntime, hitState, pointer })) touchRender(App);
     return true;
   }
 
   clearViewerMeasurementOverlay(App, false);
-  if (!renderPointMeasurement({ App, draft, hitState, pointer })) touchRender(App);
+  if (!renderPointMeasurement({ App, geometryRuntime, draft, hitState, pointer })) touchRender(App);
   return true;
 }
 
@@ -837,8 +845,9 @@ export function tryHandleViewerMeasurementHover(args: {
   mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
+  const geometryRuntime = createViewerMeasurementGeometryRuntime(App);
   if (getViewerMeasurementToolMode(App) !== 'points') {
-    return tryHandleViewerPartMeasurementHover({ App, hitState });
+    return tryHandleViewerPartMeasurementHover({ App, geometryRuntime, hitState });
   }
   clearViewerMeasurementHoverOverlay(App, false);
   applyMeasurementToolCursor(App, 'points');
@@ -850,6 +859,7 @@ export function tryHandleViewerMeasurementHover(args: {
   if (
     !renderPointDraftOverlay({
       App,
+      geometryRuntime,
       draft,
       hitState,
       includePreview: true,
@@ -869,15 +879,22 @@ export function tryHandleViewerMeasurementHover(args: {
 
 function renderPartMeasurementHoverOverlay(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   target: unknown;
   hitState: CanvasPickingClickHitState;
 }): boolean {
-  const { App, target, hitState } = args;
+  const { App, geometryRuntime, target, hitState } = args;
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   if (!THREE || !wardrobeGroup) return false;
 
-  const resolution = resolveViewerMeasurementResolution({ App, THREE, hitState, wardrobeGroup, target });
+  const resolution = resolveViewerMeasurementResolution({
+    runtime: geometryRuntime,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    target,
+  });
   if (!resolution) return false;
 
   const committedState = readOverlayState(App);
@@ -909,9 +926,10 @@ function renderPartMeasurementHoverOverlay(args: {
 
 function tryHandleViewerPartMeasurementHover(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   hitState: CanvasPickingClickHitState | null;
 }): boolean {
-  const { App, hitState } = args;
+  const { App, geometryRuntime, hitState } = args;
   applyMeasurementToolCursor(App, 'part');
   if (!hitState) return clearViewerMeasurementHoverOverlay(App, true);
 
@@ -920,7 +938,7 @@ function tryHandleViewerPartMeasurementHover(args: {
     if (!target) return clearViewerMeasurementHoverOverlay(App, true);
 
     clearViewerMeasurementHoverOverlay(App, false);
-    if (!renderPartMeasurementHoverOverlay({ App, target, hitState })) {
+    if (!renderPartMeasurementHoverOverlay({ App, geometryRuntime, target, hitState })) {
       touchRender(App);
       return false;
     }
@@ -939,17 +957,24 @@ function tryHandleViewerPartMeasurementHover(args: {
 
 function renderMeasurementOverlay(args: {
   App: AppContainer;
+  geometryRuntime: ViewerMeasurementGeometryRuntime;
   target: unknown;
   hitState: CanvasPickingClickHitState;
 }): boolean {
-  const { App, target, hitState } = args;
+  const { App, geometryRuntime, target, hitState } = args;
   clearViewerMeasurementHoverOverlay(App, false);
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   const addDimensionLine = readAddDimensionLine(App);
   if (!THREE || !wardrobeGroup || !addDimensionLine) return false;
 
-  const resolution = resolveViewerMeasurementResolution({ App, THREE, hitState, wardrobeGroup, target });
+  const resolution = resolveViewerMeasurementResolution({
+    runtime: geometryRuntime,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    target,
+  });
   if (!resolution) return false;
   const { box, plane, measurementKey } = resolution;
   const objects: Object3DLike[] = [];
@@ -970,11 +995,13 @@ export function tryHandleViewerMeasurementClick(args: {
   mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
+  const geometryRuntime = createViewerMeasurementGeometryRuntime(App);
 
   try {
     if (getViewerMeasurementToolMode(App) === 'points') {
       return tryHandleViewerPointMeasurementClick({
         App,
+        geometryRuntime,
         hitState,
         ndcX: args.ndcX,
         ndcY: args.ndcY,
@@ -1001,7 +1028,7 @@ export function tryHandleViewerMeasurementClick(args: {
       touchRender(App);
       return true;
     }
-    if (!renderMeasurementOverlay({ App, target, hitState })) touchRender(App);
+    if (!renderMeasurementOverlay({ App, geometryRuntime, target, hitState })) touchRender(App);
   } catch (err) {
     __wp_reportPickingIssue(App, err, {
       where: 'viewerMeasurement',

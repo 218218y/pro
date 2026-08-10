@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { FRONT_Z_EPSILON_M } from '../esm/native/services/viewer_measurement_tool_contracts.ts';
+import { createViewerMeasurementGeometryRuntime } from '../esm/native/services/viewer_measurement_geometry_runtime.ts';
 import {
   resolvePointMeasurementStart,
   resolvePointMeasurementStartFromPointer,
@@ -255,7 +256,7 @@ test('resolveViewerMeasurementResolution resolves a shelf-bounded module cavity 
   };
 
   const resolution = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 1, z: 0 } }),
     wardrobeGroup: wardrobeGroup as any,
@@ -309,13 +310,13 @@ test('resolveViewerMeasurementResolution gives sibling cavities distinct measure
   };
 
   const lower = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 0.25, z: 0 } }),
     wardrobeGroup: wardrobeGroup as any,
   });
   const middle = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 1, z: 0 } }),
     wardrobeGroup: wardrobeGroup as any,
@@ -379,7 +380,7 @@ test('resolveViewerMeasurementResolution ignores hidden shelves as cavity bounda
   };
 
   const resolution = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 0.75, z: 0 } }),
     wardrobeGroup: wardrobeGroup as any,
@@ -465,7 +466,7 @@ test('resolveViewerMeasurementResolution measures profile door visual branches a
 
   const hitPoint = { x: 0, y: 0, z: -0.01 };
   const resolution = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: {
       ...makeHitState({
@@ -517,7 +518,7 @@ test('resolveViewerMeasurementResolution returns a basis plane for corner pentag
   wardrobeGroup.add(door);
 
   const resolution = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: slab, point: { x: 0, y: 1, z: 0.02 } }),
     wardrobeGroup: wardrobeGroup as any,
@@ -561,13 +562,13 @@ test('resolveViewerMeasurementResolution preserves target keys for part and poin
     });
 
     const resolution = resolveViewerMeasurementResolution({
-      App,
+      runtime: createViewerMeasurementGeometryRuntime(App),
       THREE,
       hitState,
       wardrobeGroup: wardrobeGroup as any,
     });
     const pointStart = resolvePointMeasurementStart({
-      App,
+      runtime: createViewerMeasurementGeometryRuntime(App),
       THREE,
       hitState,
       wardrobeGroup: wardrobeGroup as any,
@@ -592,7 +593,7 @@ test('resolveViewerMeasurementResolution keeps thin-depth fronts measurable', ()
   wardrobeGroup.add(front);
 
   const resolution = resolveViewerMeasurementResolution({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({ target: front, point: { x: 0, y: 1, z: 0.0005 } }),
     wardrobeGroup: wardrobeGroup as any,
@@ -689,7 +690,7 @@ test('resolvePointMeasurementStartFromPointer ignores non-structural objects for
   wardrobeGroup.add(selector);
 
   const draft = resolvePointMeasurementStartFromPointer({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     wardrobeGroup: wardrobeGroup as any,
     pointer: {
@@ -725,7 +726,7 @@ test('resolvePointMeasurementStartFromPointer supports thin-front-only aggregate
   wardrobeGroup.add(thinFront);
 
   const draft = resolvePointMeasurementStartFromPointer({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     wardrobeGroup: wardrobeGroup as any,
     pointer: {
@@ -771,7 +772,7 @@ test('resolvePointMeasurementStart uses the shared visible-occlusion policy for 
     wardrobeGroup.add(sidePanel);
     wardrobeGroup.add(externalDoor);
     return resolvePointMeasurementStart({
-      App,
+      runtime: createViewerMeasurementGeometryRuntime(App),
       THREE,
       hitState: makeHitState({
         target: sidePanel,
@@ -829,7 +830,7 @@ test('resolvePointMeasurementStart uses one aggregate-derived sign for front-pla
   wardrobeGroup.add(shiftedFront);
 
   const draft = resolvePointMeasurementStart({
-    App,
+    runtime: createViewerMeasurementGeometryRuntime(App),
     THREE,
     hitState: makeHitState({
       target: sidePanel,
@@ -843,4 +844,54 @@ test('resolvePointMeasurementStart uses one aggregate-derived sign for front-pla
   assert.equal(draft.plane.kind, 'front');
   assert.equal(draft.plane.normalSign, -1);
   assertClose(draft.plane.normalValue, -0.29 - FRONT_Z_EPSILON_M);
+});
+
+test('viewer measurement resolution core runs on injected geometry capabilities without AppContainer', () => {
+  const THREE = createFakeThree() as any;
+  const wardrobeGroup = createGroup();
+  const target = createMesh({
+    width: 0.8,
+    height: 1.6,
+    depth: 0.45,
+    y: 0.8,
+    userData: { partId: 'capability_panel' },
+  });
+  wardrobeGroup.add(target);
+  const calls = { camera: 0, measure: 0, project: 0 };
+  const runtime = {
+    getCamera() {
+      calls.camera += 1;
+      return { position: new FakeVector3(0, 1, 3) };
+    },
+    getInternalGridMap() {
+      return Object.create(null);
+    },
+    measureObjectLocalBox(value: unknown) {
+      calls.measure += 1;
+      assert.equal(value, target);
+      return { centerX: 0, centerY: 0.8, centerZ: 0, width: 0.8, height: 1.6, depth: 0.45 };
+    },
+    projectWorldPointToLocal(value: unknown) {
+      calls.project += 1;
+      const point = value as { x?: number; y?: number; z?: number } | null;
+      if (!point) return null;
+      return { x: Number(point.x || 0), y: Number(point.y || 0), z: Number(point.z || 0) };
+    },
+  };
+
+  const hitState = makeHitState({ target, point: { x: 0.1, y: 0.8, z: 0.22 } });
+  const resolution = resolveViewerMeasurementResolution({
+    runtime,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    target,
+  });
+
+  assert.ok(resolution);
+  assert.equal(resolution.box.width, 0.8);
+  assert.equal(resolution.box.height, 1.6);
+  assert.ok(calls.measure > 0);
+  assert.ok(calls.camera > 0);
+  assert.ok(calls.project > 0);
 });

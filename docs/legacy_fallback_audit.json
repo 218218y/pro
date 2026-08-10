@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-09T20:37:46.157Z",
+  "generatedAt": "2026-08-10T06:03:50.039Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 543,
@@ -4062,105 +4062,105 @@
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 744,
+      "line": 742,
       "term": "fallbackBox",
       "category": "domain-default",
-      "text": "const fallbackBox = selectorBox || readMeasuredBox(App, target, wardrobeGroup);"
+      "text": "const fallbackBox = selectorBox || readMeasuredBox(runtime, target, wardrobeGroup);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 751,
+      "line": 749,
       "term": "fallbackBottomY",
       "category": "domain-default",
       "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 751,
+      "line": 749,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 752,
+      "line": 750,
       "term": "fallbackTopY",
       "category": "domain-default",
       "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 752,
+      "line": 750,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 753,
+      "line": 751,
       "term": "fallbackBottomY",
       "category": "domain-default",
       "text": "const bottomY = readFiniteNumber(gridInfo, 'effectiveBottomY') ?? fallbackBottomY;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 754,
+      "line": 752,
       "term": "fallbackTopY",
       "category": "domain-default",
       "text": "const topY = readFiniteNumber(gridInfo, 'effectiveTopY') ?? fallbackTopY;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 755,
+      "line": 753,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const innerW = readFiniteNumber(gridInfo, 'innerW') ?? Math.max(0, fallbackBox?.width ?? 0);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 756,
+      "line": 754,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalCenterX = readFiniteNumber(gridInfo, 'internalCenterX') ?? fallbackBox?.centerX ?? 0;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 757,
+      "line": 755,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalDepth = readFiniteNumber(gridInfo, 'internalDepth') ?? Math.max(0, fallbackBox?.depth ?? 0);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 758,
+      "line": 756,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalZ = readFiniteNumber(gridInfo, 'internalZ') ?? fallbackBox?.centerZ ?? 0;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 155,
+      "line": 159,
       "term": "fallback",
       "category": "domain-default",
       "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 163,
+      "line": 167,
       "term": "fallback",
       "category": "domain-default",
       "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 336,
+      "line": 340,
       "term": "fallback",
       "category": "domain-default",
       "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 343,
+      "line": 347,
       "term": "fallback",
       "category": "domain-default",
       "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"

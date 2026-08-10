@@ -1,7 +1,7 @@
-import type { AppContainer, Object3DLike } from '../../../types';
+import type { Object3DLike } from '../../../types';
 
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
-import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
+import type { ViewerMeasurementGeometryRuntime } from './viewer_measurement_geometry_runtime.js';
 import {
   FRONT_Z_EPSILON_M,
   MIN_MEASURABLE_EDGE_M,
@@ -45,14 +45,14 @@ import {
 } from './viewer_measurement_tool_resolution.js';
 
 function readHitLocalPoint(
-  App: AppContainer,
+  runtime: ViewerMeasurementGeometryRuntime,
   hitState: CanvasPickingClickHitState | null | undefined,
   wardrobeGroup: Object3DLike
 ): { x: number; y: number; z: number } | null {
   if (!hitState) return null;
   const candidates = [hitState.primaryHitPoint, hitState.doorHitPoint, hitState.intersects?.[0]?.point];
   for (let i = 0; i < candidates.length; i += 1) {
-    const point = __wp_projectWorldPointToLocal(App, candidates[i], wardrobeGroup);
+    const point = runtime.projectWorldPointToLocal(candidates[i], wardrobeGroup);
     if (point) return point;
   }
   return null;
@@ -88,11 +88,11 @@ function resolvePointFrontPlaneNormalSourceBox(args: {
 }
 
 function readObjectLocalPlanePoint(
-  App: AppContainer,
+  runtime: ViewerMeasurementGeometryRuntime,
   value: unknown,
   wardrobeGroup: Object3DLike
 ): LocalPlanePoint | null {
-  const point = __wp_projectWorldPointToLocal(App, value, wardrobeGroup);
+  const point = runtime.projectWorldPointToLocal(value, wardrobeGroup);
   if (!point) return null;
   const x = readCoordinateAxis(point, 'x');
   const y = readCoordinateAxis(point, 'y');
@@ -101,17 +101,17 @@ function readObjectLocalPlanePoint(
 }
 
 function readRayPlaneLocalPoint(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   plane: MeasurementPlane;
   wardrobeGroup: Object3DLike;
   pointer?: PointMeasurementPointerContext | null;
 }): LocalPlanePoint | null {
-  const { App, plane, wardrobeGroup, pointer } = args;
+  const { runtime, plane, wardrobeGroup, pointer } = args;
   const raycaster = pointer?.raycaster as RaycasterWithRay | null | undefined;
   const ray = raycaster?.ray;
   const originWorld = ray?.origin;
   const directionWorld = ray?.direction;
-  const originLocal = readObjectLocalPlanePoint(App, originWorld, wardrobeGroup);
+  const originLocal = readObjectLocalPlanePoint(runtime, originWorld, wardrobeGroup);
   if (!originLocal || !directionWorld) return null;
 
   const directionEndWorld = {
@@ -119,7 +119,7 @@ function readRayPlaneLocalPoint(args: {
     y: (originWorld?.y ?? 0) + (directionWorld.y ?? 0),
     z: (originWorld?.z ?? 0) + (directionWorld.z ?? 0),
   };
-  const directionEndLocal = readObjectLocalPlanePoint(App, directionEndWorld, wardrobeGroup);
+  const directionEndLocal = readObjectLocalPlanePoint(runtime, directionEndWorld, wardrobeGroup);
   if (!directionEndLocal) return null;
 
   const directionLocal = {
@@ -145,16 +145,16 @@ function readRayPlaneLocalPoint(args: {
 }
 
 export function readPointMeasurementPointerLocalPoint(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   hitState?: CanvasPickingClickHitState | null;
   wardrobeGroup: Object3DLike;
   plane: MeasurementPlane;
   pointer?: PointMeasurementPointerContext | null;
 }): LocalPlanePoint | null {
-  const { App, hitState, wardrobeGroup, plane, pointer } = args;
+  const { runtime, hitState, wardrobeGroup, plane, pointer } = args;
   return (
-    readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer }) ||
-    readHitLocalPoint(App, hitState, wardrobeGroup)
+    readRayPlaneLocalPoint({ runtime, plane, wardrobeGroup, pointer }) ||
+    readHitLocalPoint(runtime, hitState, wardrobeGroup)
   );
 }
 
@@ -168,7 +168,7 @@ function shouldSkipAggregateWardrobeBoundsObject(value: unknown): boolean {
 }
 
 function readAggregateWardrobeBoundsBox(
-  App: AppContainer,
+  runtime: ViewerMeasurementGeometryRuntime,
   wardrobeGroup: Object3DLike
 ): LocalMeasurementBox | null {
   let minX = Infinity;
@@ -187,7 +187,7 @@ function readAggregateWardrobeBoundsBox(
   };
   const visit = (obj: Object3DLike): void => {
     if (!obj || obj === wardrobeGroup || shouldSkipAggregateWardrobeBoundsObject(obj)) return;
-    const box = readMeasuredBox(App, obj, wardrobeGroup);
+    const box = readMeasuredBox(runtime, obj, wardrobeGroup);
     if (box) includeBox(box);
   };
 
@@ -222,24 +222,24 @@ function readAggregateWardrobeBoundsBox(
 }
 
 function readPointMeasurementBoundsBox(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   targetBox: LocalMeasurementBox;
   wardrobeGroup: Object3DLike;
 }): LocalMeasurementBox {
-  return readAggregateWardrobeBoundsBox(args.App, args.wardrobeGroup) || args.targetBox;
+  return readAggregateWardrobeBoundsBox(args.runtime, args.wardrobeGroup) || args.targetBox;
 }
 
 function readCameraLocalPoint(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
 }): LocalPlanePoint | null {
-  const cameraWorld = readCameraWorldPosition({ App: args.App, THREE: args.THREE });
-  return cameraWorld ? readObjectLocalPlanePoint(args.App, cameraWorld, args.wardrobeGroup) : null;
+  const cameraWorld = readCameraWorldPosition({ runtime: args.runtime, THREE: args.THREE });
+  return cameraWorld ? readObjectLocalPlanePoint(args.runtime, cameraWorld, args.wardrobeGroup) : null;
 }
 
 function isCameraMostlyViewingWardrobeFront(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
   boundsBox: LocalMeasurementBox;
@@ -253,7 +253,7 @@ function isCameraMostlyViewingWardrobeFront(args: {
 }
 
 function shouldUseWardrobeFrontPlaneForPointStart(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
@@ -265,7 +265,7 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
   frontPlaneSign: number;
 }): boolean {
   const {
-    App,
+    runtime,
     THREE,
     hitState,
     wardrobeGroup,
@@ -277,7 +277,7 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
     frontPlaneSign,
   } = args;
   if (forceInteriorFront) return false;
-  if (!isCameraMostlyViewingWardrobeFront({ App, THREE, wardrobeGroup, boundsBox })) return false;
+  if (!isCameraMostlyViewingWardrobeFront({ runtime, THREE, wardrobeGroup, boundsBox })) return false;
 
   if (resolvedPlane.kind === 'front') {
     return (
@@ -286,7 +286,7 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
     );
   }
 
-  const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
+  const localPoint = readHitLocalPoint(runtime, hitState, wardrobeGroup);
   const hitZ = localPoint ? readCoordinateAxis(localPoint, 'z') : null;
   if (hitZ == null) return false;
 
@@ -301,20 +301,20 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
 }
 
 export function resolvePointMeasurementStart(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
 }): PointMeasurementDraft | null {
-  const { App, THREE, hitState, wardrobeGroup } = args;
-  const resolution = resolveViewerMeasurementResolution({ App, THREE, hitState, wardrobeGroup });
+  const { runtime, THREE, hitState, wardrobeGroup } = args;
+  const resolution = resolveViewerMeasurementResolution({ runtime, THREE, hitState, wardrobeGroup });
   if (!resolution) return null;
   const { target, box, plane, shouldMeasureInterior, targetKey } = resolution;
-  const boundsBox = readPointMeasurementBoundsBox({ App, targetBox: box, wardrobeGroup });
+  const boundsBox = readPointMeasurementBoundsBox({ runtime, targetBox: box, wardrobeGroup });
   const frontPlaneSign =
-    readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? plane.normalSign;
+    readCameraAxisSign({ runtime, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? plane.normalSign;
   const shouldUseFrontPlane = shouldUseWardrobeFrontPlaneForPointStart({
-    App,
+    runtime,
     THREE,
     hitState,
     wardrobeGroup,
@@ -337,7 +337,7 @@ export function resolvePointMeasurementStart(args: {
     : shouldUseFrontPlane
       ? createMeasurementPlaneForBox(boundsBox, 'front', frontPlaneSign, frontPlaneNormalSourceBox || box)
       : createMeasurementPlaneForBox(boundsBox, plane.kind, plane.normalSign, box);
-  const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
+  const localPoint = readHitLocalPoint(runtime, hitState, wardrobeGroup);
   if (!localPoint) return null;
   const point = snapPointToMeasurementPlaneEdges(THREE, boundedPlane, localPoint).point;
   return {
@@ -348,13 +348,13 @@ export function resolvePointMeasurementStart(args: {
 }
 
 export function resolvePointMeasurementStartFromPointer(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
   pointer?: PointMeasurementPointerContext | null;
 }): PointMeasurementDraft | null {
-  const { App, THREE, wardrobeGroup, pointer } = args;
-  const boundsBox = readAggregateWardrobeBoundsBox(App, wardrobeGroup);
+  const { runtime, THREE, wardrobeGroup, pointer } = args;
+  const boundsBox = readAggregateWardrobeBoundsBox(runtime, wardrobeGroup);
   if (!boundsBox) return null;
 
   const candidates: Array<{ plane: MeasurementPlane; clamp: PointClampResult }> = [];
@@ -362,9 +362,10 @@ export function resolvePointMeasurementStartFromPointer(args: {
   for (let i = 0; i < kinds.length; i += 1) {
     const kind = kinds[i];
     const axes = measurementPlaneAxes(kind);
-    const sign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: axes.normal }) ?? 1;
+    const sign =
+      readCameraAxisSign({ runtime, THREE, wardrobeGroup, box: boundsBox, axis: axes.normal }) ?? 1;
     const plane = createMeasurementPlaneForBox(boundsBox, kind, sign);
-    const localPoint = readRayPlaneLocalPoint({ App, plane, wardrobeGroup, pointer });
+    const localPoint = readRayPlaneLocalPoint({ runtime, plane, wardrobeGroup, pointer });
     if (!localPoint) continue;
     const clamp = snapPointToMeasurementPlaneEdges(THREE, plane, localPoint);
     if (clamp.outsideDistance <= computePointEdgeClampTolerance(plane)) candidates.push({ plane, clamp });

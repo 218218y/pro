@@ -43,6 +43,7 @@ Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for spl
 - `check:private-owner-imports` is the data-driven cross-family guard. Deliberate facade families and public/boot entries require an explicit justification; the remaining reviewed single-consumer identity wrappers are listed with their exact importer in `tools/wp_identity_facade_inventory.json`. New wrappers, stale entries, and importer drift fail with readable path-level diagnostics rather than an opaque topology hash.
 - Ownership guard tests are useful, but they are not enough by themselves. Every risky split should also keep behavior/runtime coverage for the public operation that the facade exposes.
 - Historical stage proofs must not be retained after the current invariant has a canonical owner. Capability-named behavior tests and registered architecture contracts are the durable control plane.
+- Capability-isolated geometry cores must receive narrow runtime capabilities instead of `AppContainer` or direct runtime/projection access. Viewer Measurement resolution is the reference pilot: camera, grid-map, local-box measurement, and world-to-local projection are owned by `ViewerMeasurementGeometryRuntime`, while the feature boundary owns adapter construction.
 
 Relevant checks:
 

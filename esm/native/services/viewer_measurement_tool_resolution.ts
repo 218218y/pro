@@ -1,14 +1,12 @@
-import type { AppContainer, Object3DLike, UnknownRecord } from '../../../types';
+import type { Object3DLike, UnknownRecord } from '../../../types';
 import type { Vector3Like } from '../../../types/three_like.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
-import { getInternalGridMap } from '../runtime/cache_access.js';
-import { getCamera } from '../runtime/render_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
+import type { ViewerMeasurementGeometryRuntime } from './viewer_measurement_geometry_runtime.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { readCanvasPickingMaterialHitPolicy } from './canvas_picking_transparent_hit_policy.js';
-import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import {
   FRONT_Z_EPSILON_M,
   MIN_MEASURABLE_EDGE_M,
@@ -339,11 +337,11 @@ function readVectorPosition(value: unknown): { x: number; y: number; z: number }
 }
 
 export function readCameraWorldPosition(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
 }): Vector3Like | null {
-  const { App, THREE } = args;
-  const camera = getCamera(App);
+  const { runtime, THREE } = args;
+  const camera = runtime.getCamera();
   const cameraRec = isRecord(camera) ? camera : null;
   if (!cameraRec) return null;
 
@@ -367,14 +365,14 @@ export function readCameraWorldPosition(args: {
 }
 
 function readClosestHitFaceSign(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
   box: LocalMeasurementBox;
   axis: MeasurementAxis;
 }): number | null {
-  const { App, hitState, wardrobeGroup, box, axis } = args;
-  const localHit = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
+  const { runtime, hitState, wardrobeGroup, box, axis } = args;
+  const localHit = runtime.projectWorldPointToLocal(hitState.primaryHitPoint, wardrobeGroup);
   const hitValue = readCoordinateAxis(localHit, axis);
   if (hitValue == null) return null;
 
@@ -389,15 +387,15 @@ function readClosestHitFaceSign(args: {
 }
 
 export function readCameraAxisSign(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
   box: LocalMeasurementBox;
   axis: MeasurementAxis;
 }): number | null {
-  const { App, THREE, wardrobeGroup, box, axis } = args;
-  const cameraWorld = readCameraWorldPosition({ App, THREE });
-  const cameraLocal = cameraWorld ? __wp_projectWorldPointToLocal(App, cameraWorld, wardrobeGroup) : null;
+  const { runtime, THREE, wardrobeGroup, box, axis } = args;
+  const cameraWorld = readCameraWorldPosition({ runtime, THREE });
+  const cameraLocal = cameraWorld ? runtime.projectWorldPointToLocal(cameraWorld, wardrobeGroup) : null;
   const cameraValue = readCoordinateAxis(cameraLocal, axis);
   if (cameraValue == null) return null;
   return cameraValue >= getBoxCenterAxis(box, axis) ? 1 : -1;
@@ -418,7 +416,7 @@ function readShapePlaneSign(
 }
 
 function resolveViewerMeasurementPlane(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
@@ -426,19 +424,19 @@ function resolveViewerMeasurementPlane(args: {
   forceInteriorFront: boolean;
   target?: unknown;
 }): MeasurementPlane {
-  const { App, THREE, hitState, wardrobeGroup, box, forceInteriorFront, target } = args;
+  const { runtime, THREE, hitState, wardrobeGroup, box, forceInteriorFront, target } = args;
   if (!forceInteriorFront && target) {
     const cornerDoor = readCornerPentDoorMeasurementBox({ target, wardrobeGroup });
     if (cornerDoor) return cornerDoor.plane;
   }
   const kind = inferMeasurementPlaneKind(box, forceInteriorFront);
   const axes = measurementPlaneAxes(kind);
-  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box, axis: axes.normal });
+  const cameraSign = readCameraAxisSign({ runtime, THREE, wardrobeGroup, box, axis: axes.normal });
   const targetFrontSign =
     !forceInteriorFront && axes.normal === 'z' && target ? readDoorOrDrawerFrontFaceSign(target) : null;
   const hitSign = forceInteriorFront
     ? null
-    : readClosestHitFaceSign({ App, hitState, wardrobeGroup, box, axis: axes.normal });
+    : readClosestHitFaceSign({ runtime, hitState, wardrobeGroup, box, axis: axes.normal });
   const shapeSign = forceInteriorFront ? null : readShapePlaneSign(box, axes.normal, kind);
   const normalSign = forceInteriorFront
     ? (cameraSign ?? 1)
@@ -731,19 +729,19 @@ export function hasVisibleFrontPlaneOcclusion(args: {
 }
 
 function readModuleInteriorBox(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   target: unknown;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
 }): LocalMeasurementBox | null {
-  const { App, target, hitState, wardrobeGroup } = args;
+  const { runtime, target, hitState, wardrobeGroup } = args;
   if (hitState.foundModuleIndex == null) return null;
 
   const selectorTarget = isModuleSelector(target) ? target : findModuleSelectorTarget(hitState);
-  const selectorBox = selectorTarget ? readMeasuredBox(App, selectorTarget, wardrobeGroup) : null;
-  const fallbackBox = selectorBox || readMeasuredBox(App, target, wardrobeGroup);
+  const selectorBox = selectorTarget ? readMeasuredBox(runtime, selectorTarget, wardrobeGroup) : null;
+  const fallbackBox = selectorBox || readMeasuredBox(runtime, target, wardrobeGroup);
 
-  const grid = getInternalGridMap(App, hitState.foundModuleStack === 'bottom');
+  const grid = runtime.getInternalGridMap(hitState.foundModuleStack === 'bottom');
   const moduleKey = formatIdentityValue(readIdentityValue(hitState.foundModuleIndex));
   const info = isRecord(grid) && moduleKey ? grid[moduleKey] : null;
   const gridInfo = isRecord(info) ? info : null;
@@ -760,7 +758,7 @@ function readModuleInteriorBox(args: {
     return selectorBox;
   }
 
-  const hitLocal = __wp_projectWorldPointToLocal(App, hitState.primaryHitPoint, wardrobeGroup);
+  const hitLocal = runtime.projectWorldPointToLocal(hitState.primaryHitPoint, wardrobeGroup);
   const hitY = hitLocal && Number.isFinite(hitLocal.y) ? Number(hitLocal.y) : hitState.primaryHitY;
   if (typeof hitY !== 'number' || !Number.isFinite(hitY)) {
     return {
@@ -791,7 +789,7 @@ function readModuleInteriorBox(args: {
     if (isViewerMeasurementHiddenObject(obj)) return;
     if (isBackPanelLike(obj) || isMeasurementPassiveFittingObject(obj)) return;
 
-    const box = __wp_measureObjectLocalBox(App, obj, wardrobeGroup);
+    const box = runtime.measureObjectLocalBox(obj, wardrobeGroup);
     if (!box) return;
     const minY = box.centerY - box.height / 2;
     const maxY = box.centerY + box.height / 2;
@@ -852,11 +850,11 @@ function readModuleInteriorBox(args: {
 }
 
 export function readMeasuredBox(
-  App: AppContainer,
+  runtime: ViewerMeasurementGeometryRuntime,
   target: unknown,
   wardrobeGroup: Object3DLike
 ): LocalMeasurementBox | null {
-  const measured = __wp_measureObjectLocalBox(App, target, wardrobeGroup);
+  const measured = runtime.measureObjectLocalBox(target, wardrobeGroup);
   if (!measured) return null;
   const { centerX, centerY, centerZ, width, height, depth } = measured;
   if (
@@ -875,13 +873,13 @@ export function readMeasuredBox(
 }
 
 export function resolveViewerMeasurementResolution(args: {
-  App: AppContainer;
+  runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
   target?: unknown;
 }): ViewerMeasurementResolution | null {
-  const { App, THREE, hitState, wardrobeGroup } = args;
+  const { runtime, THREE, hitState, wardrobeGroup } = args;
   const target = args.target ?? resolveViewerMeasurementTarget(hitState);
   if (!target) return null;
 
@@ -891,15 +889,15 @@ export function resolveViewerMeasurementResolution(args: {
     ? null
     : readCornerPentDoorMeasurementBox({ target, wardrobeGroup });
   const box =
-    (shouldMeasureInterior ? readModuleInteriorBox({ App, target, hitState, wardrobeGroup }) : null) ||
+    (shouldMeasureInterior ? readModuleInteriorBox({ runtime, target, hitState, wardrobeGroup }) : null) ||
     cornerDoorMeasurement?.box ||
-    readMeasuredBox(App, target, wardrobeGroup);
+    readMeasuredBox(runtime, target, wardrobeGroup);
   if (!box) return null;
 
   const plane =
     cornerDoorMeasurement?.plane ||
     resolveViewerMeasurementPlane({
-      App,
+      runtime,
       THREE,
       hitState,
       wardrobeGroup,

@@ -14,6 +14,10 @@ const SOURCE_EXT_RE = /\.(?:js|mjs|ts|tsx|mts)$/;
 const IGNORED_DIRS = new Set(['.git', 'dist', 'libs', 'node_modules']);
 const APP_BAG_PROPS = new Set(['maps', 'cache', 'tools', 'uiFeedback', 'cfg']);
 const RESTRICTED_BROWSER_GLOBALS = new Set(['window', 'globalThis', 'document', 'navigator', 'location']);
+const CAPABILITY_ONLY_MODULES = new Set([
+  'esm/native/services/viewer_measurement_tool_resolution.ts',
+  'esm/native/services/viewer_measurement_tool_point_resolution.ts',
+]);
 
 export const DEFAULT_BASELINE_PATH = path.join(__dirname, 'wp_lint_architecture_baseline.json');
 
@@ -278,6 +282,49 @@ function collectImportBoundaryViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
+  if (!CAPABILITY_ONLY_MODULES.has(rel)) return [];
+  const failures = [];
+
+  for (const item of collectStaticModuleSpecifiers(sourceFile, astApi)) {
+    const target = getImportTargetRel(rel, item.specifier);
+    if (!target) continue;
+    if (/^esm\/native\/runtime\//.test(target) || /canvas_picking_local_helpers(?:\.|_)/.test(target)) {
+      failures.push(
+        makeViolation(
+          'lint-architecture/capability-boundary:viewer-measurement-runtime',
+          rel,
+          lineOf(sourceFile, item.node, astApi),
+          `Viewer measurement geometry core must use ViewerMeasurementGeometryRuntime instead of importing ${item.specifier}.`
+        )
+      );
+    }
+  }
+
+  let appContainerNode = null;
+  walkAst(
+    sourceFile,
+    node => {
+      if (appContainerNode) return;
+      if (!astApi.isIdentifier(node) || String(node.text || '') !== 'AppContainer') return;
+      appContainerNode = node;
+    },
+    { astApi }
+  );
+  if (appContainerNode) {
+    failures.push(
+      makeViolation(
+        'lint-architecture/capability-boundary:viewer-measurement-app-container',
+        rel,
+        lineOf(sourceFile, appContainerNode, astApi),
+        'Viewer measurement geometry core must depend on ViewerMeasurementGeometryRuntime, not AppContainer.'
+      )
+    );
+  }
+
+  return failures;
+}
+
 function collectBrowserGlobalViolations(rel, sourceFile, astApi) {
   if (!isBrowserGlobalScope(rel) || isBrowserGlobalException(rel)) return [];
   const failures = [];
@@ -374,6 +421,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
   const sourceFile = createSourceFile(rel, text, { astApi });
   return [
     ...collectImportBoundaryViolations(rel, sourceFile, astApi),
+    ...collectCapabilityBoundaryViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),
   ];

@@ -56,6 +56,27 @@ test('lint architecture contracts block new restricted imports, globals, and App
   );
 });
 
+test('lint architecture contracts keep viewer measurement geometry behind capability DI', () => {
+  const source = `
+    import type { AppContainer } from '../../../types';
+    import { getCamera } from '../runtime/render_access.js';
+    export function resolve(App: AppContainer) {
+      return getCamera(App);
+    }
+  `;
+  const failures = auditLintArchitectureSource(
+    'esm/native/services/viewer_measurement_tool_resolution.ts',
+    source
+  );
+  assert.deepEqual(
+    failures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:viewer-measurement-runtime',
+      'lint-architecture/capability-boundary:viewer-measurement-app-container',
+    ]
+  );
+});
+
 test('lint architecture contract has no unbaselined or stale violations in the current tree', () => {
   const report = collectLintArchitectureReport();
   assert.equal(report.unbaselinedViolations.length, 0);
