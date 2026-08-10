@@ -2,6 +2,7 @@ import {
   CORNER_WING_BODY_POLICY,
   CORNER_CONNECTOR_DOOR_RENDER_POLICY,
   CORNER_WING_CELL_POLICY,
+  CORNER_WING_PANEL_POLICY,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
 import { getCornerHexDoorDepth } from './corner_wing_hex_cell_geometry.js';
@@ -66,6 +67,20 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
     const rawCarcassMountFaceX = carcassBoundaryX - pivotX;
     if (Number.isFinite(rawCarcassMountFaceX) && Math.abs(rawCarcassMountFaceX) <= ctx.woodThick + 1e-6) {
       carcassMountFaceX = rawCarcassMountFaceX;
+    }
+
+    // The two outer corner-wing side panels are not centered on the logical
+    // cell boundary. The connector-side panel grows inward from the first
+    // boundary (plus a tiny anti-z-fighting inset), while the far side panel
+    // grows inward from the last boundary. Mount the fixed hinge plate on the
+    // actual opening-facing wood surface instead of burying it inside the side.
+    const cellIndex = cell ? ctx.cornerCells.indexOf(cell) : -1;
+    const isFirstCell = cellIndex === 0;
+    const isLastCell = cellIndex >= 0 && cellIndex === ctx.cornerCells.length - 1;
+    if (isLeftHinge && isFirstCell) {
+      carcassMountFaceX = ctx.woodThick + CORNER_WING_PANEL_POLICY.noZFightAttachInsetM;
+    } else if (!isLeftHinge && isLastCell) {
+      carcassMountFaceX = -ctx.woodThick;
     }
   }
   const totalDoorH = effectiveTopLimit - doorBottomY - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;

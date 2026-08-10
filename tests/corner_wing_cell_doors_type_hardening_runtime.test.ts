@@ -100,10 +100,35 @@ test('corner wing door state ignores string-encoded internal cell geometry scala
     'door center should be derived from numeric startX/width only'
   );
   assert.ok(
-    Math.abs(state.carcassMountFaceX) < 1e-12,
-    'corner leaf should mount its fixed hinge half on the actual cell boundary'
+    Math.abs(state.carcassMountFaceX - 0.0192) < 1e-12,
+    'connector-side corner leaf should mount on the visible inner face of the shifted side panel'
   );
   assert.equal(Number(state.effectiveTopLimit.toFixed(6)), Number((0.1 + 2.4 - 0.018 / 2).toFixed(6)));
+});
+
+test('corner wing far-side leaf mounts on the visible inner face of the outer side panel', () => {
+  const cell = {
+    key: 'corner-cell-0',
+    startX: 0.2,
+    width: 0.8,
+    centerX: 0.6,
+    depth: 0.55,
+    bodyHeight: 2.1,
+    effectiveBottomY: 0.2,
+    drawerHeightTotal: 0,
+    doorsInCell: 1,
+    doorStart: 0,
+    cfg: null,
+  };
+  const ctx = makeDoorContext({ cornerCells: [cell], doorCount: 1 });
+
+  const state = createCornerWingDoorState(ctx, 0);
+
+  assert.equal(state.isLeftHinge, false);
+  assert.ok(
+    Math.abs(state.carcassMountFaceX + 0.018) < 1e-12,
+    'far-side corner leaf should mount on the visible inner face of the outer side panel'
+  );
 });
 
 test('corner wing door state ignores string hex door width and falls back to rectangular cell span', () => {

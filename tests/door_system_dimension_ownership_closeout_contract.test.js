@@ -42,7 +42,16 @@ const focusedInventories = new Map([
       ownerRel,
     ],
   ],
-  ['HINGED_DOOR_HARDWARE_RENDER_POLICY', ['esm/native/builder/render_door_ops_hinged.ts', ownerRel]],
+  [
+    'HINGED_DOOR_HARDWARE_RENDER_POLICY',
+    [
+      'esm/native/builder/corner_connector_door_emit_context.ts',
+      'esm/native/builder/corner_wing_cell_doors_context.ts',
+      'esm/native/builder/render_door_ops_hinged.ts',
+      'esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts',
+      ownerRel,
+    ],
+  ],
   [
     'HINGED_DOOR_MOUNT_POLICY',
     [

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T10:54:21.417Z",
+  "generatedAt": "2026-08-10T17:25:21.937Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 544,
@@ -1858,35 +1858,35 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
-      "line": 69,
+      "line": 79,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "fallbackDoorW: ctx.activeWidth / locals.doorCount,"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_contracts.ts",
-      "line": 63,
+      "line": 64,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "fallbackDoorW: number;"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 49,
+      "line": 50,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 53,
+      "line": 54,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 149,
+      "line": 176,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.fallbackDoorW;"
@@ -2222,7 +2222,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
-      "line": 73,
+      "line": 113,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output"

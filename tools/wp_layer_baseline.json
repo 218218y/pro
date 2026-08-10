@@ -2922,6 +2922,48 @@
       "owner": "interior-sketch-tools-dimension-composition",
       "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
       "id": "dimension-composition-ui-react-tabs-interior-tab-helpers-sketch-tools-208e597bb387"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_door_emit_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_HARDWARE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
+      "id": "dimension-owner-builder-corner-connector-door-hardware-20260810"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_HARDWARE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
+      "id": "dimension-owner-builder-corner-wing-door-hardware-20260810"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_HARDWARE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
+      "id": "dimension-owner-builder-sketch-box-door-hardware-20260810"
     }
   ]
 }

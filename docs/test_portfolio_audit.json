@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T14:00:06.414Z",
+  "generatedAt": "2026-08-10T17:25:22.098Z",
   "totals": {
-    "tests": 1239,
-    "unitRunnerTests": 1230,
+    "tests": 1240,
+    "unitRunnerTests": 1231,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -16,10 +16,10 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 136
+    "contractOverlapTargets": 139
   },
   "categories": {
-    "contract": 402,
+    "contract": 403,
     "runtime-unit": 334,
     "integration": 463,
     "persistence-ingress": 24,
@@ -305,6 +305,28 @@
       ]
     },
     {
+      "target": "esm/native/builder/corner_connector_door_emit_context.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/builder/corner_cornice_render.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -361,6 +383,40 @@
         {
           "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/corner_door_paint_material_refresh_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/corner_door_trim_scoped_lookup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/corner_stack_split_scope_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "kind": "contract"
         }
       ]
     },
@@ -535,6 +591,10 @@
         {
           "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
           "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_hardware_route_contract.test.js",
+          "kind": "contract"
         }
       ]
     },
@@ -552,6 +612,10 @@
         },
         {
           "file": "tests/groove_create_door_visual_forwarding_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_hardware_route_contract.test.js",
           "kind": "contract"
         },
         {
@@ -603,6 +667,44 @@
         {
           "file": "tests/sketch_box_rod_preview_pair_ownership_contract.test.js",
           "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_door_hardware_route_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_door_z_clearance_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_doors_and_ui_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_double_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_hover_and_groove_fix_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_box_segment_doors_fix_guard.test.cjs",
+          "kind": "contract"
         }
       ]
     },
@@ -4787,6 +4889,10 @@
     {
       "file": "tests/hex_cell_drawer_constraints_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/hinged_door_hardware_route_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/hinged_doors_module_ops_full_runtime.test.ts",
