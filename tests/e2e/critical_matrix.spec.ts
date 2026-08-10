@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { PLAYWRIGHT_CRITICAL_MATRIX_PROFILES } from '../../tools/wp_playwright_matrix_profiles.js';
 import {
   collectRuntimeIssues,
   expectNoRuntimeIssues,
@@ -16,38 +17,51 @@ import {
 } from './helpers/critical_matrix';
 
 test.describe('Targeted critical browser matrix', () => {
-  test('shell, authoring and deterministic scene geometry stay valid @critical @matrix', async ({
-    page,
-  }, testInfo) => {
-    const issues = collectRuntimeIssues(page);
-    await gotoSmokeApp(page);
+  for (const profile of PLAYWRIGHT_CRITICAL_MATRIX_PROFILES) {
+    test.describe(profile.name, () => {
+      test.use({
+        viewport: profile.viewport,
+        deviceScaleFactor: profile.deviceScaleFactor,
+        hasTouch: profile.hasTouch,
+        contextOptions: {
+          reducedMotion: profile.reducedMotion,
+        },
+      });
 
-    await expectCriticalMatrixBrowserProfile(page, testInfo);
-    await expectPrimaryViewportGeometry(page);
+      test('shell, authoring and deterministic scene geometry stay valid @critical @matrix', async ({
+        page,
+      }) => {
+        const issues = collectRuntimeIssues(page);
+        await gotoSmokeApp(page);
 
-    for (const tab of ['structure', 'design', 'interior', 'settings'] as const) {
-      await openMainTab(page, tab);
-    }
+        await expectCriticalMatrixBrowserProfile(page, profile.name);
+        await expectPrimaryViewportGeometry(page);
 
-    const baseline = await readSceneGeometrySnapshot(page);
-    expectHealthySceneGeometry(baseline);
-    const repeatedBaseline = await readSceneGeometrySnapshot(page);
-    expect(repeatedBaseline.fingerprint).toBe(baseline.fingerprint);
+        for (const tab of ['structure', 'design', 'interior', 'settings'] as const) {
+          await openMainTab(page, tab);
+        }
 
-    const { width } = await readStructureDimensions(page);
-    const nextWidth = Math.max(90, Math.round(width) + 7);
-    await setStructureDimension(page, 'width', nextWidth);
+        const baseline = await readSceneGeometrySnapshot(page);
+        expectHealthySceneGeometry(baseline);
+        const repeatedBaseline = await readSceneGeometrySnapshot(page);
+        expect(repeatedBaseline.fingerprint).toBe(baseline.fingerprint);
 
-    await expect
-      .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint, {
-        message: 'a real structure edit should produce a new deterministic scene fingerprint',
-      })
-      .not.toBe(baseline.fingerprint);
+        const { width } = await readStructureDimensions(page);
+        const nextWidth = Math.max(90, Math.round(width) + 7);
+        await setStructureDimension(page, 'width', nextWidth);
 
-    const afterAuthoring = await readSceneGeometrySnapshot(page);
-    expectHealthySceneGeometry(afterAuthoring);
-    expect(afterAuthoring.fingerprint).not.toBe(baseline.fingerprint);
+        await expect
+          .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint, {
+            message: 'a real structure edit should produce a new deterministic scene fingerprint',
+          })
+          .not.toBe(baseline.fingerprint);
 
-    expectNoRuntimeIssues(issues);
-  });
+        const afterAuthoring = await readSceneGeometrySnapshot(page);
+        expectHealthySceneGeometry(afterAuthoring);
+        expect(afterAuthoring.fingerprint).not.toBe(baseline.fingerprint);
+
+        expectNoRuntimeIssues(issues);
+      });
+    });
+  }
 });

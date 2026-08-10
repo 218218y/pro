@@ -33,9 +33,10 @@ single-profile browser scenario (`e2e:cloud-sync-reconnect`); it is intentionall
 layout/device profiles because its risk is connectivity lifecycle rather than responsive rendering.
 
 The Playwright config runs a small app-shell warmup setup project before the smoke workers. The regular
-`chromium` project excludes `critical_matrix.spec.ts`; only the five named matrix projects own that file.
-Keep the setup focused on booting `index_pro.html` and waiting for canonical shell/canvas readiness; do not
-add product scenarios there.
+`chromium` project excludes `critical_matrix.spec.ts`; one dedicated `matrix` project owns its five profile
+cases. Those cases stay in one non-fully-parallel file so they reuse one browser worker instead of starting
+several cold Three.js browser processes at once. Keep the setup focused on booting `index_pro.html` and
+waiting for canonical shell/canvas readiness; do not add product scenarios there.
 
 ## What belongs in E2E
 

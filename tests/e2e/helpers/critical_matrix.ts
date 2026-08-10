@@ -1,4 +1,4 @@
-import { expect, type Page, type TestInfo } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { getPlaywrightCriticalMatrixProfile } from '../../../tools/wp_playwright_matrix_profiles.js';
 
@@ -26,6 +26,7 @@ type BrowserProfileSnapshot = {
   height: number;
   deviceScaleFactor: number;
   maxTouchPoints: number;
+  coarsePointer: boolean;
   reducedMotion: boolean;
   portrait: boolean;
 };
@@ -50,15 +51,16 @@ export function expectHealthySceneGeometry(snapshot: SceneGeometrySnapshot): voi
   expect(snapshot.summary.invalidNumberCount).toBe(0);
 }
 
-export async function expectCriticalMatrixBrowserProfile(page: Page, testInfo: TestInfo): Promise<void> {
-  const expected = getPlaywrightCriticalMatrixProfile(testInfo.project.name);
-  if (!expected) throw new Error(`Unknown critical matrix project: ${testInfo.project.name}`);
+export async function expectCriticalMatrixBrowserProfile(page: Page, profileName: string): Promise<void> {
+  const expected = getPlaywrightCriticalMatrixProfile(profileName);
+  if (!expected) throw new Error(`Unknown critical matrix profile: ${profileName}`);
 
   const actual = await page.evaluate<BrowserProfileSnapshot>(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
     deviceScaleFactor: window.devicePixelRatio,
     maxTouchPoints: navigator.maxTouchPoints,
+    coarsePointer: window.matchMedia('(pointer: coarse)').matches,
     reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     portrait: window.matchMedia('(orientation: portrait)').matches,
   }));
@@ -66,7 +68,8 @@ export async function expectCriticalMatrixBrowserProfile(page: Page, testInfo: T
   expect(actual.width).toBe(expected.viewport.width);
   expect(actual.height).toBe(expected.viewport.height);
   expect(actual.deviceScaleFactor).toBe(expected.deviceScaleFactor);
-  expect(actual.maxTouchPoints > 0).toBe(expected.hasTouch);
+  expect(actual.coarsePointer).toBe(expected.hasTouch);
+  if (expected.hasTouch) expect(actual.maxTouchPoints).toBeGreaterThan(0);
   expect(actual.reducedMotion).toBe(expected.reducedMotion === 'reduce');
   expect(actual.portrait).toBe(expected.viewport.height > expected.viewport.width);
 }
