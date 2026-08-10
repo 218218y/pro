@@ -4,16 +4,23 @@
 // guards. Keep geometry validation here so board/back-panel structure is not
 // re-discovered through loose records at render time.
 
-export const CARCASS_SHELL_BOARD_PART_IDS = ['body_floor', 'body_ceil', 'body_left', 'body_right'] as const;
+export const CARCASS_SHELL_BOARD_PART_IDS = [
+  'body_floor',
+  'body_ceil',
+  'body_left',
+  'body_right',
+  'body_stack_split_divider',
+] as const;
 
 export type CarcassShellBoardPartId = (typeof CARCASS_SHELL_BOARD_PART_IDS)[number];
-export type CarcassShellBoardRole = 'floor' | 'ceiling' | 'left-side' | 'right-side';
+export type CarcassShellBoardRole = 'floor' | 'ceiling' | 'left-side' | 'right-side' | 'stack-divider';
 
 const BOARD_ROLE_PART_ID = {
   floor: 'body_floor',
   ceiling: 'body_ceil',
   'left-side': 'body_left',
   'right-side': 'body_right',
+  'stack-divider': 'body_stack_split_divider',
 } as const satisfies Record<CarcassShellBoardRole, CarcassShellBoardPartId>;
 
 export type CarcassBoardOp = {

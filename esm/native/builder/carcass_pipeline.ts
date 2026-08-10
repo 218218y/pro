@@ -14,12 +14,9 @@ import type {
 import { asRecord } from '../runtime/record.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { computeCarcassOps } from './pure_api.js';
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
-import { CARCASS_BACK_INSET_Z, CARCASS_FRONT_INSET_Z } from './core_carcass_shared.js';
 import {
   readCarcassPipelineIntegerOr,
   readCarcassPipelineNumberOr,
-  readOptionalCarcassPipelineNumber,
   readRequiredCarcassPipelineNumber,
 } from './carcass_pipeline_number_contracts.js';
 
@@ -122,37 +119,6 @@ function applyPartIdPrefixToCarcassOps(carcassOps: CarcassOpsLike, prefix: strin
   prefixBackPanel(carcassOps.backPanel);
   const backPanels = Array.isArray(carcassOps.backPanels) ? carcassOps.backPanels : [];
   for (let i = 0; i < backPanels.length; i++) prefixBackPanel(backPanels[i]);
-}
-
-function appendStackSplitDividerBoardIfNeeded(
-  carcassOps: CarcassOpsLike,
-  args: Required<Pick<ApplyCarcassAndGetCabinetMetricsArgs, 'totalW' | 'D' | 'woodThick'>> & {
-    stackSplitDividerY?: number | null;
-  }
-): void {
-  const dividerTopY = readOptionalCarcassPipelineNumber(args.stackSplitDividerY);
-  if (dividerTopY == null || dividerTopY <= args.woodThick) return;
-
-  const boards = Array.isArray(carcassOps.boards) ? carcassOps.boards : null;
-  if (!boards) return;
-
-  const dividerDepth = Math.max(
-    CARCASS_SHELL_DIMENSIONS.boardMinDepthM,
-    args.D - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
-  );
-  boards.push({
-    kind: 'board',
-    partId: 'body_stack_split_divider',
-    width: Math.max(
-      CARCASS_SHELL_DIMENSIONS.boardMinDimensionM,
-      args.totalW - 2 * args.woodThick - CARCASS_SHELL_DIMENSIONS.floorCeilWidthClearanceM
-    ),
-    height: args.woodThick,
-    depth: dividerDepth,
-    x: 0,
-    y: dividerTopY - args.woodThick / 2,
-    z: (CARCASS_BACK_INSET_Z - CARCASS_FRONT_INSET_Z) / 2,
-  });
 }
 
 function readApplyCarcassOps(renderOps: RenderOpsLike | null): RenderOpsLike['applyCarcassOps'] | null {
@@ -263,6 +229,7 @@ export function applyCarcassAndGetCabinetMetrics(
     moduleCfgList: safeArgs.moduleCfgList,
     moduleConfigs: safeArgs.moduleConfigs,
     frameSidePartIdPrefix: safeArgs.frameSidePartIdPrefix,
+    stackSplitDividerY: safeArgs.stackSplitDividerY,
     cfg: cfgObj,
   });
 
@@ -271,13 +238,6 @@ export function applyCarcassAndGetCabinetMetrics(
   }
 
   const carcassOps = carcassOpsRaw;
-
-  appendStackSplitDividerBoardIfNeeded(carcassOps, {
-    totalW: totalWn,
-    D: Dn,
-    woodThick: woodThickN,
-    stackSplitDividerY: safeArgs.stackSplitDividerY,
-  });
 
   if (safeArgs.partIdPrefix && typeof safeArgs.partIdPrefix === 'string') {
     applyPartIdPrefixToCarcassOps(carcassOps, safeArgs.partIdPrefix);

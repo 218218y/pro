@@ -66,8 +66,9 @@ export function notifyStackSplitFrameTopologyTransition(args: StackSplitFrameFee
 
   try {
     args.showToast(message, 'info');
-  } catch {
+  } catch (error) {
     // Feedback is best-effort and must never make a successful wardrobe build fail.
+    void error;
   }
   return message;
 }

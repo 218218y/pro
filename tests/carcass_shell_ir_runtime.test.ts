@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { computeCarcassOps } from '../esm/native/builder/core_carcass_compute.ts';
+import { applyCarcassAndGetCabinetMetrics } from '../esm/native/builder/carcass_pipeline.ts';
 import {
   collectCarcassShellIrViolations,
   isCarcassBackPanelOp,
@@ -98,6 +99,46 @@ test('carcass shell typed IR stays valid across stepped, depth, and removed-side
       scenario.name
     );
   }
+});
+
+test('unified stack-split divider is emitted inside typed shell IR and keeps the full frame renderable', () => {
+  const result = applyCarcassAndGetCabinetMetrics({
+    App: {},
+    THREE: null,
+    totalW: BASE.totalW,
+    D: BASE.D,
+    H: BASE.H,
+    woodThick: BASE.woodThick,
+    doorsCount: BASE.doorsCount,
+    baseType: '',
+    hasCornice: false,
+    stackSplitDividerY: 0.9,
+    renderCarcass: false,
+  });
+
+  const ops = result.carcassOps as Record<string, unknown>;
+  const boards = ops.boards as Array<Record<string, unknown>>;
+  assert.equal(boards.length, 5);
+  assert.deepEqual(
+    boards.map(board => board.role),
+    ['floor', 'ceiling', 'left-side', 'right-side', 'stack-divider']
+  );
+  const divider = boards.find(board => board.role === 'stack-divider');
+  assert.ok(divider);
+  assert.equal(divider.partId, 'body_stack_split_divider');
+  assert.equal(isCarcassBoardOp(divider), true);
+
+  const shell = {
+    boards,
+    backPanel: ops.backPanel,
+    backPanels: ops.backPanels,
+  };
+  assert.equal(isCarcassShellPlan(shell), true);
+  assert.deepEqual(collectCarcassShellIrViolations(shell), []);
+
+  const rendered = __asOps({ ...ops, cornice: null });
+  assert.ok(rendered);
+  assert.equal(rendered.boards?.length, 5);
 });
 
 test('carcass shell board roles remain valid after stack-split part-id prefixing', () => {

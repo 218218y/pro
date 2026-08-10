@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T09:47:22.089Z",
+  "generatedAt": "2026-08-10T10:54:21.417Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 544,
@@ -1655,21 +1655,21 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 239,
+      "line": 268,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "fallbackBackPanel: CarcassBackPanelOp"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 252,
+      "line": 281,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 270,
+      "line": 299,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"
@@ -4329,28 +4329,28 @@
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 146,
+      "line": 147,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "function readTransitionMeta(opts: ModeTransitionOptsLike, fallbackSource: string): ActionMetaLike {"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 147,
+      "line": 148,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "const source = typeof opts.source === 'string' && opts.source ? opts.source : fallbackSource;"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 165,
+      "line": 166,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "fallbackSource: string"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 168,
+      "line": 169,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "const meta = readTransitionMeta(opts, fallbackSource);"

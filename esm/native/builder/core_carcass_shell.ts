@@ -147,7 +147,36 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     backPanels = buildRemovedFrameSideBackPanelSegments(prepared, backPanel);
   }
 
+  appendStackSplitDividerBoardIfNeeded(prepared, boards);
+
   return { boards, backPanel, backPanels };
+}
+
+function appendStackSplitDividerBoardIfNeeded(
+  prepared: PreparedCarcassInput,
+  boards: CarcassBoardOp[]
+): void {
+  const dividerTopY = prepared.stackSplitDividerY;
+  if (dividerTopY == null || dividerTopY <= prepared.woodThick) return;
+
+  const dividerDepth = Math.max(
+    SHELL_DIMENSIONS.boardMinDepthM,
+    prepared.D - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
+  );
+  boards.push({
+    kind: 'board',
+    role: 'stack-divider',
+    partId: 'body_stack_split_divider',
+    width: Math.max(
+      SHELL_DIMENSIONS.boardMinDimensionM,
+      prepared.totalW - 2 * prepared.woodThick - SHELL_DIMENSIONS.floorCeilWidthClearanceM
+    ),
+    height: prepared.woodThick,
+    depth: dividerDepth,
+    x: 0,
+    y: dividerTopY - prepared.woodThick / 2,
+    z: (CARCASS_BACK_INSET_Z - CARCASS_FRONT_INSET_Z) / 2,
+  });
 }
 
 function hasRemovedFrameSide(prepared: PreparedCarcassInput): boolean {

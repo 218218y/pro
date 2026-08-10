@@ -57,6 +57,7 @@ export type PreparedCarcassInput = {
   isDepthStepped: boolean;
   removedLeftFrameSide: boolean;
   removedRightFrameSide: boolean;
+  stackSplitDividerY: number | null;
 };
 
 export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
@@ -146,6 +147,10 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   }
 
   const cabinetBodyHeight = H - baseHeight;
+  const stackSplitDividerY =
+    typeof inp.stackSplitDividerY === 'number' && Number.isFinite(inp.stackSplitDividerY)
+      ? inp.stackSplitDividerY
+      : null;
 
   if (baseLegPlatformEnabled && _asObject(base)?.kind === 'legs') {
     attachBaseLegPlatformOps({
@@ -254,6 +259,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     isDepthStepped,
     removedLeftFrameSide: isRemovedFrameSideOn(cfg, 'left', inp.frameSidePartIdPrefix),
     removedRightFrameSide: isRemovedFrameSideOn(cfg, 'right', inp.frameSidePartIdPrefix),
+    stackSplitDividerY,
   };
 }
 

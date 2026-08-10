@@ -89,3 +89,27 @@ test('stack-split frame feedback reports structural dimension split and does not
   assert.match(toasts[0]?.[0] || '', /שינוי במידות או במבנה/);
   assert.match(toasts[1]?.[0] || '', /חזר למסגרת אחת/);
 });
+
+test('stack-split frame feedback remains fail-soft when the toast transport throws', () => {
+  const App = {} as any;
+  const showToast = () => {
+    throw new Error('toast transport unavailable');
+  };
+
+  assert.doesNotThrow(() => {
+    notifyStackSplitFrameTopologyTransition({
+      App,
+      stackSplitActive: false,
+      stackSplitUnifiedFrame: false,
+      removablePartInteractionActive: false,
+      showToast,
+    });
+    notifyStackSplitFrameTopologyTransition({
+      App,
+      stackSplitActive: true,
+      stackSplitUnifiedFrame: false,
+      removablePartInteractionActive: true,
+      showToast,
+    });
+  });
+});
