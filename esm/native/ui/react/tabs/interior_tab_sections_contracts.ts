@@ -56,7 +56,14 @@ export type InteriorExternalDrawersSectionProps = {
   extCounts: number[];
   enterExtDrawer: (type: ExtDrawerType, count?: number) => void;
   exitExtDrawer: () => void;
+  drawerRunnerType: DrawerRunnerType;
+  setDrawerRunnerType: (type: DrawerRunnerType) => void;
   sketchControls?: EmbeddedSketchExternalDrawersControlsProps;
+};
+
+export type InteriorDrawerRunnerSectionProps = {
+  drawerRunnerType: DrawerRunnerType;
+  setDrawerRunnerType: (type: DrawerRunnerType) => void;
 };
 
 export type InteriorInternalDrawersSectionProps = {
@@ -65,11 +72,6 @@ export type InteriorInternalDrawersSectionProps = {
   setInternalDrawersEnabled: (enabled: boolean) => void;
   toggleIntDrawerMode: () => void;
   sketchControls?: EmbeddedSketchInternalDrawersControlsProps;
-};
-
-export type InteriorDrawerRunnerSectionProps = {
-  drawerRunnerType: DrawerRunnerType;
-  setDrawerRunnerType: (type: DrawerRunnerType) => void;
 };
 
 export type InteriorDividerSectionProps = {

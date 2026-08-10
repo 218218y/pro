@@ -65,3 +65,10 @@ test('internal drawer render preserves the focused contents and front-depth form
   );
   assert.match(source, /return depth\s*\/\s*2\s*\+\s*Math\.max\(0,\s*accentFrontLift\)/u);
 });
+
+test('internal drawer runners are pinned to roller hardware independently of external selection', () => {
+  const source = read(consumerRel);
+
+  assert.match(source, /runnerType:\s*INTERNAL_DRAWER_RUNNER_TYPE/u);
+  assert.doesNotMatch(source, /runnerType:\s*cfg\.drawerRunnerType/u);
+});

@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { resolvePendingGrooveLinesCount } from '../runtime/groove_lines_access.js';
 import {
   buildGrooveLayoutFromHit,
   findGrooveLayoutMatchInRect,
@@ -16,6 +17,7 @@ import {
   __asObject,
   __positionDoorMarker,
   __readMapRecord,
+  __styleMirrorGuidePreview,
   type DoorHoverHit,
   type MarkerLike,
   type MarkerUserDataLike,
@@ -25,6 +27,11 @@ import {
   type SetSketchPreviewFn,
   type TransformNodeLike,
 } from './canvas_picking_door_action_hover_preview_shared.js';
+import {
+  resolveDoorLayoutAlignmentGuideWidth,
+  resolveGrooveLayoutHoverAlignment,
+} from './canvas_picking_door_layout_alignment.js';
+import type { DoorHitNode } from './canvas_picking_door_shared.js';
 import {
   buildRectClearanceMeasurementEntries,
   markCenteredRectClearanceMeasurements,
@@ -64,9 +71,10 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
   const ui = args.readUi(args.App);
   const manual = ui?.grooveManualEnabled === true;
   const orientation = ui?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical';
+  const grooveLayoutMap = __readMapRecord(args.App, 'grooveLayoutMap');
   const layouts =
     readGrooveLayoutListForPart({
-      map: __readMapRecord(args.App, 'grooveLayoutMap'),
+      map: grooveLayoutMap,
       partId: partKey,
     })?.layouts || [];
   const removeMatch = findGrooveLayoutMatchInRect({
@@ -105,6 +113,25 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
   const zSign = Number(userData?.__wpGrooveSurfaceZSign) === -1 ? -1 : 1;
   const surfaceZ = typeof userData?.__wpGrooveSurfaceZ === 'number' ? Number(userData.__wpGrooveSurfaceZ) : 0;
   const showCenteredMeasurements = !sameOrientationRemoveMatch && hasSizedDraft;
+  const distributionSpan = placement.orientation === 'horizontal' ? placement.heightM : placement.widthM;
+  const currentLinesCount = resolvePendingGrooveLinesCount(args.App, distributionSpan, undefined, partKey);
+  const grooveAlignment =
+    showCenteredMeasurements && nextLayout
+      ? resolveGrooveLayoutHoverAlignment({
+          App: args.App,
+          currentPartId: partKey,
+          currentRoot: __asObject<DoorHitNode>(args.hit.hitDoorGroup),
+          currentOwner: __asObject<DoorHitNode>(surfaceOwner),
+          currentRect: rect,
+          currentLayout: nextLayout,
+          currentPlacement: placement,
+          currentLinesCount,
+          grooveLayoutMap,
+          scratch: args.localHit,
+        })
+      : { hasVerticalAlignment: false, hasHorizontalAlignment: false };
+  const hasAlignedGrooveNeighbor =
+    grooveAlignment.hasVerticalAlignment || grooveAlignment.hasHorizontalAlignment;
   const clearanceTextScale = 0.9;
   const { horizontalLabelOutset, verticalLabelOutset } =
     resolveCellMeasurementLabelOutsets(clearanceTextScale);
@@ -131,12 +158,12 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
       textScale: clearanceTextScale,
     }),
     {
-      centerX: showCenteredMeasurements && placementIsCenteredX,
-      centerY: showCenteredMeasurements && placementIsCenteredY,
+      centerX: showCenteredMeasurements && (placementIsCenteredX || grooveAlignment.hasHorizontalAlignment),
+      centerY: showCenteredMeasurements && (placementIsCenteredY || grooveAlignment.hasVerticalAlignment),
     }
   );
   if (args.setSketchPreview && showCenteredMeasurements && clearanceMeasurements.length) {
-    args.setSketchPreview({
+    const guidePreview = args.setSketchPreview({
       App: args.App,
       THREE: args.THREE,
       anchor: surfaceOwner,
@@ -151,12 +178,21 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
       woodThick: 0.004,
       op: 'add',
       showPrimaryBody: false,
-      showCenterXGuide: false,
-      showCenterYGuide: false,
-      guideWidth: Math.max(0.0001, rect.maxX - rect.minX),
+      showCenterXGuide: grooveAlignment.hasVerticalAlignment,
+      showCenterYGuide: grooveAlignment.hasHorizontalAlignment,
+      guideWidth: hasAlignedGrooveNeighbor
+        ? resolveDoorLayoutAlignmentGuideWidth(rect)
+        : Math.max(0.0001, rect.maxX - rect.minX),
       guideHeight: Math.max(0.0001, rect.maxY - rect.minY),
+      guideHorizontalX: placement.centerX,
+      guideHorizontalY: placement.centerY,
+      guideVerticalX: placement.centerX,
+      guideVerticalY: (rect.minY + rect.maxY) / 2,
       clearanceMeasurements,
     });
+    if (guidePreview && hasAlignedGrooveNeighbor) {
+      __styleMirrorGuidePreview(guidePreview, { isCentered: true });
+    }
   }
 
   __positionDoorMarker({
@@ -174,7 +210,8 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
     args.doorMarker.material =
       sameOrientationRemoveMatch || willRemoveFullVertical
         ? args.markerUd.__matRemove || args.markerUd.__matGroove
-        : showCenteredMeasurements && placementIsCenteredX && placementIsCenteredY
+        : showCenteredMeasurements &&
+            (hasAlignedGrooveNeighbor || (placementIsCenteredX && placementIsCenteredY))
           ? args.markerUd.__matCenter || args.markerUd.__matAdd || args.markerUd.__matGroove
           : args.markerUd.__matAdd || args.markerUd.__matGroove;
   }

@@ -40,13 +40,31 @@ class FakeMesh extends FakeGroup {
 }
 
 class FakeBoxGeometry {}
+class FakeCylinderGeometry {}
+class FakeMaterial {
+  constructor(public params: Record<string, unknown>) {}
+}
 
 const fakeThree = {
   Group: FakeGroup,
   Mesh: FakeMesh,
   Vector3: FakeVector3,
   BoxGeometry: FakeBoxGeometry,
+  CylinderGeometry: FakeCylinderGeometry,
+  MeshStandardMaterial: FakeMaterial,
 };
+
+function drawerChildren(parent: FakeGroup): FakeGroup[] {
+  return parent.children.filter(
+    child => !(child as FakeGroup)?.userData?.__wpDrawerRunnerHardware
+  ) as FakeGroup[];
+}
+
+function runnerRoles(parent: FakeGroup): string[] {
+  return parent.children
+    .filter(child => (child as FakeGroup)?.userData?.__wpDrawerRunnerHardware)
+    .map(child => String((child as FakeGroup).userData.__wpDrawerRunnerRole));
+}
 
 function assertNear(actual: unknown, expected: number, message?: string): void {
   assert.equal(typeof actual, 'number', message);
@@ -105,6 +123,40 @@ test('internal drawer render fails closed when required inputs are unavailable',
   );
 });
 
+test('internal drawers keep roller hardware even when external drawer selection is Blum', () => {
+  const wardrobeGroup = new FakeGroup();
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => (input as { App: never }).App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup as never,
+    __reg: () => undefined,
+    __drawers: () => [],
+    getMirrorMaterial: () => null,
+  });
+
+  const result = renderDrawerOps.applyInternalDrawersOps({
+    App: {},
+    THREE: fakeThree,
+    ops: [{ partId: 'drawer_roller_only', width: 0.5, height: 0.2, depth: 0.4 }],
+    wardrobeGroup,
+    createInternalDrawerBox: () => new FakeGroup(),
+    cfg: { drawerRunnerType: 'blum' },
+  });
+
+  assert.equal(result, true);
+  const fixedRoles = runnerRoles(wardrobeGroup);
+  assert.equal(fixedRoles.length, 6);
+  assert.ok(fixedRoles.every(role => role.startsWith('roller-fixed-')));
+  assert.ok(fixedRoles.every(role => !role.startsWith('blum-')));
+
+  const drawer = drawerChildren(wardrobeGroup)[0];
+  assert.ok(drawer);
+  const movingRoles = runnerRoles(drawer);
+  assert.equal(movingRoles.length, 6);
+  assert.ok(movingRoles.every(role => role.startsWith('roller-moving-')));
+  assert.ok(movingRoles.every(role => !role.startsWith('blum-')));
+});
+
 test('internal drawer contents receive the explicit build render policy', () => {
   const wardrobeGroup = new FakeGroup();
   const drawers: unknown[] = [];
@@ -122,12 +174,7 @@ test('internal drawer contents receive the explicit build render policy', () => 
 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
-    THREE: {
-      Group: FakeGroup,
-      Mesh: FakeMesh,
-      Vector3: FakeVector3,
-      BoxGeometry: FakeBoxGeometry,
-    },
+    THREE: fakeThree,
     ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: () => new FakeGroup(),
@@ -145,7 +192,7 @@ test('internal drawer contents receive the explicit build render policy', () => 
   assertNear(contentsCall[1], -0.2 / 2 + INTERNAL_DRAWER_CONTENTS_POLICY.contentsBottomInsetM);
   assert.equal(contentsCall[2], 0);
   assertNear(contentsCall[3], 0.5 - INTERNAL_DRAWER_CONTENTS_POLICY.contentsWidthClearanceM);
-  assert.equal(contentsCall[4], wardrobeGroup.children[0]);
+  assert.equal(contentsCall[4], drawerChildren(wardrobeGroup)[0]);
   assertNear(contentsCall[5], Math.max(0, 0.2 - INTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM));
   assert.equal(contentsCall[6], 0.4);
   const policy = contentsCall[7] as Record<string, any>;
@@ -175,12 +222,7 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
-    THREE: {
-      Group: FakeGroup,
-      Mesh: FakeMesh,
-      Vector3: FakeVector3,
-      BoxGeometry: FakeBoxGeometry,
-    },
+    THREE: fakeThree,
     ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: (...args: unknown[]) => {
@@ -200,7 +242,7 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
   assert.equal(boxCalls.length, 1);
   assert.equal(boxCalls[0]?.[3], whiteMat);
   assert.equal(boxCalls[0]?.[4], whiteMat);
-  const internalDrawer = wardrobeGroup.children[0] as FakeGroup;
+  const internalDrawer = drawerChildren(wardrobeGroup)[0] as FakeGroup;
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
   assert.equal(internalDrawer.userData.drawerId, 'drawer_1');
   assert.equal(internalDrawer.userData.__wpDrawerBox, true);
@@ -233,12 +275,7 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
-    THREE: {
-      Group: FakeGroup,
-      Mesh: FakeMesh,
-      Vector3: FakeVector3,
-      BoxGeometry: FakeBoxGeometry,
-    },
+    THREE: fakeThree,
     ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: (...args: unknown[]) => {
@@ -258,7 +295,7 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
   assert.equal(boxCalls.length, 1);
   assert.equal(boxCalls[0]?.[3], boxPaint);
   assert.equal(boxCalls[0]?.[4], boxPaint);
-  const internalDrawer = wardrobeGroup.children[0] as FakeGroup;
+  const internalDrawer = drawerChildren(wardrobeGroup)[0] as FakeGroup;
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
 });
 
@@ -311,12 +348,11 @@ test('internal drawer render preserves valid-op creation, positions, front depth
 
   assert.equal(result, true);
   assert.equal(boxCalls.length, 2);
-  assert.equal(wardrobeGroup.children.length, 2);
+  assert.equal(drawerChildren(wardrobeGroup).length, 2);
   assert.equal(registrations.length, 2);
   assert.equal(drawers.length, 2);
 
-  const firstGroup = wardrobeGroup.children[0] as FakeGroup;
-  const secondGroup = wardrobeGroup.children[1] as FakeGroup;
+  const [firstGroup, secondGroup] = drawerChildren(wardrobeGroup);
   assert.equal(
     firstGroup.userData.__frontMaxZ,
     0.4 / 2 +
@@ -390,12 +426,7 @@ test('internal drawer cassette panels use shelf paint identity and render once p
 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
-    THREE: {
-      Group: FakeGroup,
-      Mesh: FakeMesh,
-      Vector3: FakeVector3,
-      BoxGeometry: FakeBoxGeometry,
-    },
+    THREE: fakeThree,
     ops: [
       {
         partId: 'stack_1_lower',

@@ -3232,6 +3232,19 @@ body.wp-ui-react .btn-cancel:hover {
   font-size: 0.72rem;
 }
 
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-r-external-drawer-runner {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.32);
+}
+
+#reactSidebarRoot .tab-content[data-tab='interior'] .wp-r-external-drawer-runner-title {
+  margin-bottom: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary, #334155);
+}
+
 #reactSidebarRoot .wp-r-embedded-sketch-drawers {
   margin-top: 10px;
   padding-top: 8px;

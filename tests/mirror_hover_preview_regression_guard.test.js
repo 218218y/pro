@@ -22,9 +22,16 @@ test('[mirror-hover] sized drafts keep sized preview and center highlights stay 
   assert.match(hoverPreview, /buildRectClearanceMeasurementEntries/);
   assert.match(hoverPreview, /markCenteredRectClearanceMeasurements/);
   assert.match(hoverPreview, /const showCenteredMeasurements = !removeMatch && hasSizedDraft;/);
-  assert.match(hoverPreview, /centerX: showCenteredMeasurements && !!center\.snappedX/);
-  assert.match(hoverPreview, /centerY: showCenteredMeasurements && !!center\.snappedY/);
-  assert.match(hoverPreview, /showCenterXGuide: false/);
-  assert.match(hoverPreview, /showCenterYGuide: false/);
-  assert.match(hoverPreview, /: hasSizedDraft && center\.isCentered/);
+  assert.match(hoverPreview, /resolveMirrorLayoutHoverAlignment\(/);
+  assert.match(
+    hoverPreview,
+    /centerX: showCenteredMeasurements && \(!!center\.snappedX \|\| mirrorAlignment\.hasHorizontalAlignment\)/
+  );
+  assert.match(
+    hoverPreview,
+    /centerY: showCenteredMeasurements && \(!!center\.snappedY \|\| mirrorAlignment\.hasVerticalAlignment\)/
+  );
+  assert.match(hoverPreview, /showCenterXGuide: mirrorAlignment\.hasVerticalAlignment/);
+  assert.match(hoverPreview, /showCenterYGuide: mirrorAlignment\.hasHorizontalAlignment/);
+  assert.match(hoverPreview, /: hasSizedDraft && \(center\.isCentered \|\| hasAlignedMirrorNeighbor\)/);
 });

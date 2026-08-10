@@ -25,9 +25,15 @@ import {
   __readMirrorDraft,
   __readPointXYZ,
   __resolveMirrorFaceSignFromLocalPoint,
+  __styleMirrorGuidePreview,
   type DoorPaintHoverPreviewArgs,
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
+import {
+  resolveDoorLayoutAlignmentGuideWidth,
+  resolveMirrorLayoutHoverAlignment,
+} from './canvas_picking_door_layout_alignment.js';
+import type { DoorHitNode } from './canvas_picking_door_shared.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
   buildRectClearanceMeasurementEntries,
@@ -171,6 +177,24 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     previewHeight = Math.max(0.01, placement.mirrorHeightM);
     zOff = 0.02 * (placement.faceSign === -1 ? -1 : 1);
     const showCenteredMeasurements = !removeMatch && hasSizedDraft;
+    const mirrorAlignment =
+      showCenteredMeasurements && nextLayout && normalizedPaintSelection === 'mirror'
+        ? resolveMirrorLayoutHoverAlignment({
+            App,
+            currentPartId: partKey,
+            currentRoot: __asObject<DoorHitNode>(hit.hitDoorGroup),
+            currentOwner: __asObject<DoorHitNode>(mirrorOwnerGroup),
+            currentRect: mirrorRect,
+            currentLayout: nextLayout,
+            currentPlacement: placement,
+            mirrorLayoutMap,
+            doorSpecialMap,
+            paintSelection: normalizedPaintSelection,
+            scratch: localHit,
+          })
+        : { hasVerticalAlignment: false, hasHorizontalAlignment: false };
+    const hasAlignedMirrorNeighbor =
+      mirrorAlignment.hasVerticalAlignment || mirrorAlignment.hasHorizontalAlignment;
     const clearanceTextScale = 0.9;
     const { horizontalLabelOutset, verticalLabelOutset } =
       resolveCellMeasurementLabelOutsets(clearanceTextScale);
@@ -197,8 +221,8 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
         textScale: clearanceTextScale,
       }),
       {
-        centerX: showCenteredMeasurements && !!center.snappedX,
-        centerY: showCenteredMeasurements && !!center.snappedY,
+        centerX: showCenteredMeasurements && (!!center.snappedX || mirrorAlignment.hasHorizontalAlignment),
+        centerY: showCenteredMeasurements && (!!center.snappedY || mirrorAlignment.hasVerticalAlignment),
       }
     );
     if (setSketchPreview && clearanceMeasurements.length) {
@@ -217,17 +241,26 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
         woodThick: 0.004,
         op: 'add',
         showPrimaryBody: false,
-        showCenterXGuide: false,
-        showCenterYGuide: false,
-        guideWidth: Math.max(0.0001, mirrorRect.maxX - mirrorRect.minX),
+        showCenterXGuide: mirrorAlignment.hasVerticalAlignment,
+        showCenterYGuide: mirrorAlignment.hasHorizontalAlignment,
+        guideWidth: hasAlignedMirrorNeighbor
+          ? resolveDoorLayoutAlignmentGuideWidth(mirrorRect)
+          : Math.max(0.0001, mirrorRect.maxX - mirrorRect.minX),
         guideHeight: Math.max(0.0001, mirrorRect.maxY - mirrorRect.minY),
+        guideHorizontalX: placement.centerX,
+        guideHorizontalY: placement.centerY,
+        guideVerticalX: placement.centerX,
+        guideVerticalY: (mirrorRect.minY + mirrorRect.maxY) / 2,
         clearanceMeasurements,
       };
-      setSketchPreview(guidePreviewArgs);
+      const guidePreview = setSketchPreview(guidePreviewArgs);
+      if (guidePreview && hasAlignedMirrorNeighbor) {
+        __styleMirrorGuidePreview(guidePreview, { isCentered: true });
+      }
     }
     previewMaterial = willRemoveMirror
       ? markerUd.__matRemove || markerUd.__matGroove || baseMarkerMaterial
-      : hasSizedDraft && center.isCentered
+      : hasSizedDraft && (center.isCentered || hasAlignedMirrorNeighbor)
         ? markerUd.__matCenter ||
           markerUd.__matMirror ||
           markerUd.__matAdd ||

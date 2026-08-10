@@ -5,6 +5,7 @@ import { appendDrawerRunnerVisuals } from '../esm/native/builder/drawer_runner_v
 import { readConfigScalarOrDefault } from '../esm/native/runtime/config_selectors.ts';
 import {
   DEFAULT_DRAWER_RUNNER_TYPE,
+  INTERNAL_DRAWER_RUNNER_TYPE,
   normalizeDrawerRunnerType,
 } from '../esm/native/builder/drawer_runner_policy.ts';
 
@@ -107,6 +108,7 @@ function append(args: { type?: unknown; depth?: number } = {}): {
 
 test('[drawer-runner-visuals-runtime] roller is the canonical default', () => {
   assert.equal(DEFAULT_DRAWER_RUNNER_TYPE, 'roller');
+  assert.equal(INTERNAL_DRAWER_RUNNER_TYPE, 'roller');
   assert.equal(normalizeDrawerRunnerType(undefined), 'roller');
   assert.equal(normalizeDrawerRunnerType('invalid'), 'roller');
   assert.equal(normalizeDrawerRunnerType('blum'), 'blum');

@@ -5,7 +5,6 @@ import { useApp } from '../hooks.js';
 import { TabPanel } from '../components/index.js';
 import {
   InteriorDividerSection,
-  InteriorDrawerRunnerSection,
   InteriorExternalDrawersSection,
   InteriorHandlesSection,
   InteriorInternalDrawersSection,
@@ -42,6 +41,8 @@ function InteriorTabInner(props: { active: boolean }) {
                 extCounts={state.extCounts}
                 enterExtDrawer={workflows.enterExtDrawer}
                 exitExtDrawer={workflows.exitExtDrawer}
+                drawerRunnerType={state.drawerRunnerType}
+                setDrawerRunnerType={workflows.setDrawerRunnerType}
                 sketchControls={{
                   isSketchToolActive: state.isSketchToolActive,
                   manualToolRaw: state.manualToolRaw,
@@ -77,11 +78,6 @@ function InteriorTabInner(props: { active: boolean }) {
                   enterSketchIntDrawersTool: workflows.enterSketchIntDrawersTool,
                   exitManual: workflows.exitManual,
                 }}
-              />
-
-              <InteriorDrawerRunnerSection
-                drawerRunnerType={state.drawerRunnerType}
-                setDrawerRunnerType={workflows.setDrawerRunnerType}
               />
             </>
           ) : null}

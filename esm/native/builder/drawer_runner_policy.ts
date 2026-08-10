@@ -2,10 +2,13 @@ import type { DrawerRunnerType } from '../../../types/index.js';
 
 /**
  * Drawer runner selection is a cabinet-wide construction choice for ordinary
- * external drawers and internal drawers. Shoe drawers keep their dedicated
- * hardware path and are intentionally excluded.
+ * external drawers. Internal drawers always use the simple roller runner, and
+ * shoe drawers keep their dedicated hardware path.
  */
 export const DEFAULT_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'roller';
+
+/** Internal drawers intentionally do not participate in the external runner selector. */
+export const INTERNAL_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'roller';
 
 export function normalizeDrawerRunnerType(value: unknown): DrawerRunnerType {
   return value === 'blum' ? 'blum' : DEFAULT_DRAWER_RUNNER_TYPE;
