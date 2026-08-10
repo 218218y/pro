@@ -440,6 +440,67 @@ test('viewer part measurement labels identify cavity targets by stack and module
   assert.equal(resolveViewerMeasurementPartLabel(hitState), 'תא תחתון 2');
 });
 
+test('viewer part measurement labels hide technical ids across doors, chest, corner and drawer families', () => {
+  const labelPart = (
+    partId: string,
+    userData: Record<string, unknown> = {},
+    stack: 'top' | 'bottom' = 'top'
+  ) => {
+    const part = createMesh({
+      width: 0.5,
+      height: 0.5,
+      depth: 0.02,
+      userData: { partId, ...userData },
+    });
+    return resolveViewerMeasurementPartLabel({
+      ...createPartHit(part, partId, { x: 0, y: 0.25, z: 0.01 }),
+      foundModuleStack: stack,
+    });
+  };
+
+  assert.equal(labelPart('d1000_full', { __wpStack: 'bottom' }, 'bottom'), 'דלת תחתונה 1');
+  assert.equal(labelPart('d1001_bot', { __wpStack: 'bottom' }, 'bottom'), 'דלת תחתונה 2');
+  assert.equal(labelPart('d1_bot'), 'דלת 1');
+  assert.equal(labelPart('d1_mid2'), 'דלת 1');
+  assert.equal(labelPart('d1_top'), 'דלת 1');
+
+  assert.equal(labelPart('chest_floor'), 'תחתית השידה');
+  assert.equal(labelPart('chest_ceil'), 'גג השידה');
+  assert.equal(labelPart('chest_left'), 'דופן שמאלית של השידה');
+  assert.equal(labelPart('chest_right'), 'דופן ימנית של השידה');
+  assert.equal(labelPart('chest_back'), 'גב השידה');
+  assert.equal(labelPart('chest_drawer_0'), 'מגירת שידה 1');
+  assert.equal(labelPart('drawer_box__chest_drawer_0'), 'ארגז מגירת שידה 1');
+
+  assert.equal(labelPart('corner_floor'), 'תחתית הארון הפינתי');
+  assert.equal(labelPart('corner_wing_ceil'), 'גג הארון הפינתי');
+  assert.equal(labelPart('corner_floor_c0'), 'תחתית תא פינתי 1');
+  assert.equal(labelPart('corner_cell_top_c0'), 'גג תא פינתי 1');
+  assert.equal(labelPart('corner_pent_floor'), 'תחתית ארון הפנטגון');
+  assert.equal(labelPart('corner_pent_ceil'), 'גג ארון הפנטגון');
+  assert.equal(labelPart('corner_pent_back_back'), 'גב אחורי של ארון הפנטגון');
+
+  assert.equal(
+    labelPart('module_shelf_0_gexternal_drawers', {
+      moduleIndex: 0,
+      __wpShelfIndex: 'external_drawers',
+      __wpShelfVariant: 'regular',
+      __wpShelfIsBrace: true,
+      __wpShelfGroupPartId: 'all_shelves',
+    }),
+    'מדף מעל מגירות בתא 1'
+  );
+  assert.equal(
+    labelPart('corner_pent_int_shelf_180', {
+      __wpShelfIndex: 'corner_pent_int_shelf_180',
+      __wpShelfGroupPartId: 'corner_shelves',
+    }),
+    'מדף פנטגון 1'
+  );
+  assert.equal(labelPart('div_int_sketch_0_42_lower', { kind: 'internal_drawer' }), 'מגירה פנימית תחתונה');
+  assert.equal(labelPart('divider_inter_0', { kind: 'divider' }), 'מחיצה פנימית 1');
+});
+
 test('viewer part measurement hover previews the exact selectable part without committing dimensions', () => {
   const wardrobe = createGroup();
   const door = createMesh({

@@ -9,6 +9,7 @@ import {
 } from './viewer_measurement_tool_resolution.js';
 
 const HUMAN_LABEL_KEYS = ['partLabel', 'displayLabel', 'label', 'title'] as const;
+const STACK_SPLIT_LOWER_DOOR_ID_START = 1000;
 
 type LabelContext = {
   partId: string;
@@ -105,8 +106,22 @@ function displayIndex(raw: string | null, zeroBased = false): string | null {
   return String(Math.max(0, Math.trunc(numeric)) + (zeroBased ? 1 : 0));
 }
 
+function displayNumericIndex(raw: string | null, zeroBased = false): string | null {
+  if (!raw || !/^\d+$/u.test(raw)) return null;
+  return displayIndex(raw, zeroBased);
+}
+
 function withOrdinal(label: string, ordinal: string | null): string {
   return ordinal ? `${label} ${ordinal}` : label;
+}
+
+function unscopedPartId(partId: string): string {
+  return partId.startsWith('lower_') ? partId.slice('lower_'.length) : partId;
+}
+
+function oneBasedIndexFromZeroBasedSuffix(partId: string, pattern: RegExp): string | null {
+  const match = partId.match(pattern);
+  return displayIndex(match?.[1] ?? null, true);
 }
 
 function moduleLabel(ctx: LabelContext): string {
@@ -123,7 +138,8 @@ function moduleLabel(ctx: LabelContext): string {
   return ctx.lowerStack ? `תא תחתון ${index}` : `תא ${index}`;
 }
 
-function doorOrdinal(partId: string): string | null {
+function doorOrdinal(ctx: LabelContext): string | null {
+  const partId = unscopedPartId(ctx.partId);
   const patterns = [
     /(?:^|_)door_(\d+)(?:_|$)/u,
     /(?:^|_)d(\d+)(?:_|$)/u,
@@ -132,19 +148,38 @@ function doorOrdinal(partId: string): string | null {
   ];
   for (const pattern of patterns) {
     const match = partId.match(pattern);
-    if (match?.[1]) return displayIndex(match[1]);
+    if (!match?.[1]) continue;
+    const numeric = Number(match[1]);
+    if (
+      ctx.lowerStack &&
+      /^d\d+(?:_|$)/u.test(partId) &&
+      Number.isInteger(numeric) &&
+      numeric >= STACK_SPLIT_LOWER_DOOR_ID_START
+    ) {
+      return String(numeric - STACK_SPLIT_LOWER_DOOR_ID_START + 1);
+    }
+    return displayIndex(match[1]);
   }
   return null;
 }
 
 function drawerOrdinal(partId: string): string | null {
+  const basePartId = unscopedPartId(partId);
+  const chestIndex = oneBasedIndexFromZeroBasedSuffix(basePartId, /^chest_drawer_(\d+)(?:_|$)/u);
+  if (chestIndex) return chestIndex;
+
+  if (basePartId.includes('shoe')) return null;
+
+  const regularExternalMatch = basePartId.match(/(?:^|_)draw_(\d+)(?:_|$)/u);
+  if (regularExternalMatch?.[1]) return displayIndex(regularExternalMatch[1]);
+
   const matches = [...partId.matchAll(/(?:^|_)(\d+)(?=_|$)/gu)];
   const raw = matches.at(-1)?.[1] ?? null;
   return displayIndex(raw);
 }
 
 function shelfOrdinal(ctx: LabelContext): string | null {
-  const direct = displayIndex(ctx.shelfIndex);
+  const direct = displayNumericIndex(ctx.shelfIndex);
   if (direct) return direct;
   const match =
     ctx.partId.match(/(?:^|_)g(\d+)(?:_|$)/u) ?? ctx.partId.match(/(?:^|_)shelf_(?:[^_]+_)?(\d+)(?:_|$)/u);
@@ -152,7 +187,59 @@ function shelfOrdinal(ctx: LabelContext): string | null {
 }
 
 function resolveCarcassLabel(ctx: LabelContext): string | null {
-  const { partId, kind } = ctx;
+  const { kind } = ctx;
+  const partId = unscopedPartId(ctx.partId);
+
+  if (partId === 'chest_floor') return 'תחתית השידה';
+  if (partId === 'chest_ceil') return 'גג השידה';
+  if (partId === 'chest_left') return 'דופן שמאלית של השידה';
+  if (partId === 'chest_right') return 'דופן ימנית של השידה';
+  if (partId === 'chest_back') return 'גב השידה';
+  if (partId === 'chest_commode_back') return 'לוח גב למראת השידה';
+
+  if (partId === 'corner_stack_mid_floor' || partId === 'corner_stack_mid_floor_blind') {
+    return 'רצפת ביניים בארון הפינתי';
+  }
+  const cornerMidFloorCellIndex = oneBasedIndexFromZeroBasedSuffix(
+    partId,
+    /^corner_stack_mid_floor_c(\d+)$/u
+  );
+  if (cornerMidFloorCellIndex) return `רצפת ביניים בתא פינתי ${cornerMidFloorCellIndex}`;
+
+  if (partId === 'corner_floor' || partId === 'corner_floor_blind') {
+    return ctx.lowerStack ? 'תחתית הארון הפינתי התחתון' : 'תחתית הארון הפינתי';
+  }
+  const cornerFloorCellIndex = oneBasedIndexFromZeroBasedSuffix(partId, /^corner_floor_c(\d+)$/u);
+  if (cornerFloorCellIndex) {
+    return ctx.lowerStack
+      ? `תחתית תא פינתי תחתון ${cornerFloorCellIndex}`
+      : `תחתית תא פינתי ${cornerFloorCellIndex}`;
+  }
+  if (partId === 'corner_wing_ceil') {
+    return ctx.lowerStack ? 'גג הארון הפינתי התחתון' : 'גג הארון הפינתי';
+  }
+  const cornerTopCellIndex = oneBasedIndexFromZeroBasedSuffix(partId, /^corner_cell_top_c(\d+)$/u);
+  if (cornerTopCellIndex) {
+    return ctx.lowerStack ? `גג תא פינתי תחתון ${cornerTopCellIndex}` : `גג תא פינתי ${cornerTopCellIndex}`;
+  }
+  if (partId === 'corner_wing_side_left') {
+    return ctx.lowerStack ? 'דופן שמאלית של הארון הפינתי התחתון' : 'דופן שמאלית של הארון הפינתי';
+  }
+  if (partId === 'corner_wing_side_right') {
+    return ctx.lowerStack ? 'דופן ימנית של הארון הפינתי התחתון' : 'דופן ימנית של הארון הפינתי';
+  }
+
+  if (partId === 'corner_pent_floor') {
+    return ctx.lowerStack ? 'תחתית ארון הפנטגון התחתון' : 'תחתית ארון הפנטגון';
+  }
+  if (partId === 'corner_pent_ceil') {
+    return ctx.lowerStack ? 'גג ארון הפנטגון התחתון' : 'גג ארון הפנטגון';
+  }
+  if (partId === 'corner_pent_attach_wing') return 'דופן פנטגון בצד הארון הפינתי';
+  if (partId === 'corner_pent_attach_main') return 'דופן פנטגון בצד הארון הראשי';
+  if (partId === 'corner_pent_back_side') return 'גב צדדי של ארון הפנטגון';
+  if (partId === 'corner_pent_back_back') return 'גב אחורי של ארון הפנטגון';
+
   if (/(?:^|_)body_floor$/u.test(partId) || partId.includes('cabinet_floor')) {
     return ctx.lowerStack ? 'תחתית הארון התחתון' : 'תחתית הארון';
   }
@@ -181,8 +268,31 @@ function resolveCarcassLabel(ctx: LabelContext): string | null {
 
 function resolveShelfLabel(ctx: LabelContext): string | null {
   if (!isViewerMeasurementShelfPartId(ctx.partId)) return null;
+  const basePartId = unscopedPartId(ctx.partId);
+
+  const cornerDrawerShelfCell = oneBasedIndexFromZeroBasedSuffix(
+    basePartId,
+    /^corner_shelf_over_drawers_c(\d+)$/u
+  );
+  if (cornerDrawerShelfCell) {
+    return ctx.lowerStack
+      ? `מדף מעל מגירות בתא פינתי תחתון ${cornerDrawerShelfCell}`
+      : `מדף מעל מגירות בתא פינתי ${cornerDrawerShelfCell}`;
+  }
+
+  if (basePartId === 'corner_pent_int_shelf_180') return 'מדף פנטגון 1';
+  if (basePartId === 'corner_pent_int_shelf_210') return 'מדף פנטגון 2';
+
+  const pentLeftShelf = basePartId.match(/^corner_pent_int_left_shelf_(\d+)$/u);
+  if (pentLeftShelf?.[1]) return withOrdinal('מדף שמאלי בפנטגון', displayIndex(pentLeftShelf[1]));
+
+  if (basePartId.includes('external_drawers')) {
+    const cell = moduleLabel(ctx);
+    return ctx.moduleIndex != null ? `מדף מעל מגירות ב${cell}` : 'מדף מעל מגירות';
+  }
+
   const ordinal = shelfOrdinal(ctx);
-  const base = ctx.partId.includes('shoe')
+  const base = basePartId.includes('shoe')
     ? 'מדף נעליים'
     : ctx.shelfIsBrace
       ? 'מדף קושרת'
@@ -192,7 +302,7 @@ function resolveShelfLabel(ctx: LabelContext): string | null {
           ? 'מדף כפול'
           : ctx.shelfIsRounded
             ? 'מדף מעוגל'
-            : ctx.partId.startsWith('corner_') || ctx.partId.includes('_corner_')
+            : basePartId.startsWith('corner_') || basePartId.includes('_corner_')
               ? 'מדף פינתי'
               : 'מדף';
   const label = withOrdinal(base, ordinal);
@@ -215,14 +325,23 @@ function resolveDoorLabel(ctx: LabelContext): string | null {
   if (!isViewerMeasurementDoorOrDrawerPartId(partId) || isDrawerLikePartId(partId, kind)) {
     return null;
   }
-  const ordinal = doorOrdinal(partId);
-  const base = partId.includes('corner')
-    ? 'דלת פינתית'
-    : partId.includes('sliding') || partId.includes('slide')
-      ? 'דלת הזזה'
-      : ctx.lowerStack
-        ? 'דלת תחתונה'
-        : 'דלת';
+  const basePartId = unscopedPartId(partId);
+  const ordinal = doorOrdinal(ctx);
+  const base = basePartId.includes('corner_pent_door')
+    ? ctx.lowerStack
+      ? 'דלת פנטגון תחתונה'
+      : 'דלת פנטגון'
+    : basePartId.includes('corner_door')
+      ? ctx.lowerStack
+        ? 'דלת פינתית תחתונה'
+        : 'דלת פינתית'
+      : basePartId.includes('sliding') || basePartId.includes('slide')
+        ? ctx.lowerStack
+          ? 'דלת הזזה תחתונה'
+          : 'דלת הזזה'
+        : ctx.lowerStack
+          ? 'דלת תחתונה'
+          : 'דלת';
   return withOrdinal(base, ordinal);
 }
 
@@ -230,15 +349,32 @@ function resolveDrawerLabel(ctx: LabelContext): string | null {
   const { partId, kind } = ctx;
   if (partId.startsWith('drawer_box__')) {
     const ownerPartId = partId.slice('drawer_box__'.length);
-    return withOrdinal('ארגז מגירה', drawerOrdinal(ownerPartId || partId));
+    const owner = ownerPartId || partId;
+    if (owner.includes('int_drawer') || owner.startsWith('div_int_')) {
+      if (owner.endsWith('_lower')) return 'ארגז מגירה פנימית תחתונה';
+      if (owner.endsWith('_upper')) return 'ארגז מגירה פנימית עליונה';
+      return withOrdinal('ארגז מגירה פנימית', drawerOrdinal(owner));
+    }
+    if (owner.includes('chest_drawer')) return withOrdinal('ארגז מגירת שידה', drawerOrdinal(owner));
+    if (owner.includes('shoe')) return 'ארגז מגירת נעליים';
+    return withOrdinal('ארגז מגירה', drawerOrdinal(owner));
   }
   if (!isDrawerLikePartId(partId, kind)) return null;
+
+  if (partId.startsWith('div_int_')) {
+    if (partId.endsWith('_lower')) return 'מגירה פנימית תחתונה';
+    if (partId.endsWith('_upper')) return 'מגירה פנימית עליונה';
+  }
+
   const ordinal = drawerOrdinal(partId);
   const base = partId.includes('shoe')
     ? 'מגירת נעליים'
-    : partId.includes('internal') || partId.includes('int_drawer')
+    : partId.includes('internal') || partId.includes('int_drawer') || partId.startsWith('div_int_')
       ? 'מגירה פנימית'
-      : partId.includes('external') || partId.includes('ext_drawer')
+      : partId.includes('external') ||
+          partId.includes('ext_drawer') ||
+          kind.includes('extdrawer') ||
+          kind.includes('external')
         ? 'מגירה חיצונית'
         : partId.includes('chest')
           ? 'מגירת שידה'
@@ -249,8 +385,12 @@ function resolveDrawerLabel(ctx: LabelContext): string | null {
 function resolveInteriorLabel(ctx: LabelContext): string | null {
   const { partId, kind } = ctx;
   if (kind === 'shelf_pin') return 'תומך מדף';
-  if (partId.includes('divider') || partId.startsWith('div_int_') || kind.includes('divider')) {
-    return withOrdinal('מחיצה פנימית', drawerOrdinal(partId));
+  if (
+    !isDrawerLikePartId(partId, kind) &&
+    (partId.includes('divider') || partId.startsWith('div_int_') || kind.includes('divider'))
+  ) {
+    const dividerIndex = oneBasedIndexFromZeroBasedSuffix(unscopedPartId(partId), /^divider_inter_(\d+)$/u);
+    return withOrdinal('מחיצה פנימית', dividerIndex);
   }
   if (
     partId.includes('hanging') ||
@@ -265,13 +405,29 @@ function resolveInteriorLabel(ctx: LabelContext): string | null {
 }
 
 function resolveAdornmentLabel(ctx: LabelContext): string | null {
-  const { partId, kind } = ctx;
+  const { kind } = ctx;
+  const partId = unscopedPartId(ctx.partId);
   if (partId.includes('cornice') || kind.includes('cornice')) {
-    return partId.includes('wave') ? 'קרניז גל' : 'קרניז';
+    const base = partId.includes('wave') ? 'קרניז גל' : 'קרניז';
+    if (partId.includes('corner_pent')) return `${base} של ארון הפנטגון`;
+    if (partId.includes('corner')) return `${base} של הארון הפינתי`;
+    return base;
   }
-  if (partId.includes('plinth') || kind.includes('plinth')) return 'צוקל';
-  if (partId.includes('leg_platform') || partId.includes('platform')) return 'במת רגליים';
+  if (partId.includes('plinth') || kind.includes('plinth')) {
+    if (partId.startsWith('chest_')) return 'צוקל השידה';
+    if (partId.includes('corner_pent')) return 'צוקל ארון הפנטגון';
+    if (partId.includes('corner')) return 'צוקל הארון הפינתי';
+    return 'צוקל';
+  }
+  if (partId.includes('leg_platform') || partId.includes('platform')) {
+    if (partId.endsWith('_bottom')) return 'במת רגליים תחתונה';
+    if (partId.endsWith('_top')) return 'במת רגליים עליונה';
+    return 'במת רגליים';
+  }
   if (/(?:^|_)leg(?:_|$)/u.test(partId) || kind === 'leg') return 'רגל הארון';
+  if (kind === 'chest_caster_wheel') return 'גלגל השידה';
+  if (kind === 'chest_caster_plate') return 'תושבת גלגל של השידה';
+  if (kind === 'chest_caster_fork') return 'מזלג גלגל של השידה';
   if (partId.includes('handle') || kind.includes('handle')) return 'ידית';
   if (partId.includes('mirror') || kind.includes('mirror')) return 'מראה';
   if (partId.includes('glass') || kind.includes('glass')) return 'זכוכית';
