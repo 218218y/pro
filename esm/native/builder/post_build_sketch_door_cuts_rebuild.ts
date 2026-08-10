@@ -12,6 +12,11 @@ import { maybeAttachSegmentHandle } from './post_build_sketch_door_cuts_rebuild_
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
 import {
+  appendHingedDoorHardware,
+  detachHingedDoorHardwareForDoor,
+  readHingedDoorHardwareRuntimeContext,
+} from './render_hinged_door_hardware.js';
+import {
   applySegmentPosition,
   applySketchSegmentPickMeta,
   buildSketchSegmentUserData,
@@ -42,6 +47,48 @@ function resolveOriginalDoorHandleAbsY(ud: Record<string, unknown>, doorCenterAb
   return doorCenterAbsY;
 }
 
+function appendSketchSegmentHinges(args: {
+  runtime: RebuildSketchSegmentedDoorArgs['runtime'];
+  doorGroup: RebuildSketchSegmentedDoorArgs['g'];
+  hardwareContext: ReturnType<typeof readHingedDoorHardwareRuntimeContext>;
+  segmentPartId: string;
+  segmentHeight: number;
+  segmentCenterLocalY: number;
+  width: number;
+  isLeftHinge: boolean;
+}): void {
+  const { runtime, doorGroup, hardwareContext, segmentPartId, segmentHeight, segmentCenterLocalY } = args;
+  const wardrobeGroup = doorGroup.parent;
+  if (!hardwareContext || !wardrobeGroup || !(segmentHeight > 0)) return;
+  const pivotX = readGeometryUserDataNumber(doorGroup.position?.x) ?? 0;
+  const centerY = readGeometryUserDataNumber(doorGroup.position?.y) ?? 0;
+  const centerZ = readGeometryUserDataNumber(doorGroup.position?.z) ?? 0;
+
+  appendHingedDoorHardware({
+    THREE: runtime.THREE,
+    wardrobeGroup,
+    doorGroup,
+    doorOp: {
+      x: 0,
+      y: centerY,
+      z: centerZ,
+      width: args.width,
+      height: segmentHeight,
+      partId: segmentPartId,
+      isLeftHinge: args.isLeftHinge,
+      isRemoved: false,
+      isMirror: false,
+      hasGroove: false,
+      pivotX,
+      ...(hardwareContext.carcassMountFaceX != null
+        ? { carcassMountFaceX: hardwareContext.carcassMountFaceX }
+        : null),
+    },
+    state: hardwareContext.state,
+    localCenterY: segmentCenterLocalY,
+  });
+}
+
 export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs): void {
   const { runtime, g, ud, visibleSegments, basePartId } = args;
   const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
@@ -64,6 +111,14 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
     readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness') ??
     MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const suppressedHandlePartIds: string[] = [];
+  const hardwareContext = readHingedDoorHardwareRuntimeContext(g);
+  const wardrobeGroup = g.parent;
+  if (hardwareContext && wardrobeGroup) {
+    // Hardware was rendered against the original uncut leaf. Remove both the
+    // moving and fixed halves before replacing the leaf with visible segments;
+    // shared hinge materials/geometries remain alive in hardwareContext.state.
+    detachHingedDoorHardwareForDoor({ wardrobeGroup, doorGroup: g });
+  }
 
   removeAllChildren(g);
   ud.__wpSketchCustomHandles = true;
@@ -166,6 +221,16 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       faceSign: 1,
     });
     g.add(visualObj);
+    appendSketchSegmentHinges({
+      runtime,
+      doorGroup: g,
+      hardwareContext,
+      segmentPartId,
+      segmentHeight: segmentVisualHeight,
+      segmentCenterLocalY: segCenterLocalY,
+      width: segmentVisualWidth,
+      isLeftHinge,
+    });
 
     const handleResult = maybeAttachSegmentHandle({
       runtime,

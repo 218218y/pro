@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 
 import { rebuildSketchSegmentedDoor } from '../esm/native/builder/post_build_sketch_door_cuts_shared.ts';
 import { applyDoorHandles } from '../esm/native/builder/handles_apply_doors.ts';
+import {
+  appendHingedDoorHardware,
+  bindHingedDoorHardwareRuntimeContext,
+  createHingedDoorHardwareRenderState,
+} from '../esm/native/builder/render_hinged_door_hardware.ts';
+import {
+  HINGED_DOOR_HARDWARE_RENDER_POLICY,
+  HINGED_DOOR_RENDER_POLICY,
+} from '../esm/shared/dimensions/door_system_policy.ts';
 import { HANDLE_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
@@ -77,6 +86,18 @@ const FakeTHREE = {
       this.depth = depth;
     }
   },
+  CylinderGeometry: class FakeCylinderGeometry {
+    radiusTop: number;
+    radiusBottom: number;
+    height: number;
+    radialSegments: number;
+    constructor(radiusTop: number, radiusBottom: number, height: number, radialSegments: number) {
+      this.radiusTop = radiusTop;
+      this.radiusBottom = radiusBottom;
+      this.height = height;
+      this.radialSegments = radialSegments;
+    }
+  },
 };
 
 function createBaseRuntime(overrides: Partial<Record<string, unknown>> = {}) {
@@ -104,6 +125,149 @@ function createBaseRuntime(overrides: Partial<Record<string, unknown>> = {}) {
     ...overrides,
   };
 }
+
+function hardwareGroups(parent: FakeNode, role: 'door' | 'carcass'): FakeNode[] {
+  return parent.children.filter(
+    child => child.userData.__wpDoorHingeHardware === true && child.userData.__wpHingeRole === role
+  );
+}
+
+function installInitialHinges(args: {
+  wardrobeGroup: FakeGroup;
+  doorGroup: FakeGroup;
+  partId: string;
+  width: number;
+  height: number;
+  isLeftHinge: boolean;
+  carcassMountFaceX?: number;
+}): void {
+  const state = createHingedDoorHardwareRenderState(
+    FakeTHREE as any,
+    HINGED_DOOR_HARDWARE_RENDER_POLICY,
+    HINGED_DOOR_RENDER_POLICY.visualThicknessM
+  );
+  assert.ok(state);
+  const doorOp = {
+    x: 0,
+    y: args.doorGroup.position.y,
+    z: args.doorGroup.position.z,
+    width: args.width,
+    height: args.height,
+    partId: args.partId,
+    isLeftHinge: args.isLeftHinge,
+    isRemoved: false,
+    isMirror: false,
+    hasGroove: false,
+    pivotX: args.doorGroup.position.x,
+    ...(args.carcassMountFaceX != null ? { carcassMountFaceX: args.carcassMountFaceX } : null),
+  };
+  bindHingedDoorHardwareRuntimeContext({ doorGroup: args.doorGroup as any, state, doorOp });
+  appendHingedDoorHardware({
+    THREE: FakeTHREE as any,
+    wardrobeGroup: args.wardrobeGroup as any,
+    doorGroup: args.doorGroup as any,
+    doorOp,
+    state,
+  });
+}
+
+test('segmented sketch door rebuild replaces original hinges with two hinges on every visible leaf around a middle external-drawer cut', () => {
+  const wardrobeGroup = new FakeGroup();
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'd40_full',
+    __doorWidth: 0.9,
+    __doorHeight: 2,
+    __doorMeshOffsetX: 0.45,
+    __hingeLeft: true,
+  };
+  doorGroup.position.set(-0.45, 1, 0.6);
+  wardrobeGroup.add(doorGroup);
+  installInitialHinges({
+    wardrobeGroup,
+    doorGroup,
+    partId: 'd40_full',
+    width: 0.9,
+    height: 2,
+    isLeftHinge: true,
+    carcassMountFaceX: 0.006,
+  });
+
+  assert.equal(hardwareGroups(doorGroup, 'door').length, 2);
+  assert.equal(hardwareGroups(wardrobeGroup, 'carcass').length, 2);
+  assert.equal(Object.keys(doorGroup.userData).includes('__wpHingeHardwareRuntimeContext'), false);
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: doorGroup as any,
+    ud: doorGroup.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.8 },
+      { yMin: 1.2, yMax: 2 },
+    ],
+    basePartId: 'd40_full',
+  });
+
+  const movingHinges = hardwareGroups(doorGroup, 'door');
+  const fixedHinges = hardwareGroups(wardrobeGroup, 'carcass');
+  assert.equal(movingHinges.length, 4);
+  assert.equal(fixedHinges.length, 4);
+  assert.equal(fixedHinges.filter(hinge => hinge.userData.__wpHingeOwnerPartId === 'd40_bot').length, 2);
+  assert.equal(fixedHinges.filter(hinge => hinge.userData.__wpHingeOwnerPartId === 'd40_top').length, 2);
+  assert.equal(
+    fixedHinges.some(hinge => hinge.userData.__wpHingeOwnerPartId === 'd40_full'),
+    false
+  );
+  assert.ok(
+    fixedHinges.every(hinge => hinge.position.y < 0.8 || hinge.position.y > 1.2),
+    'no fixed hinge may remain inside the external-drawer cut'
+  );
+  assert.ok(
+    movingHinges.every(hinge => {
+      const absoluteY = doorGroup.position.y + hinge.position.y;
+      return absoluteY < 0.8 || absoluteY > 1.2;
+    }),
+    'no moving hinge may remain inside the external-drawer cut'
+  );
+});
+
+test('segmented sketch door rebuild moves the lower hinge above a bottom external-drawer cut', () => {
+  const wardrobeGroup = new FakeGroup();
+  const doorGroup = new FakeGroup();
+  doorGroup.userData = {
+    partId: 'd41_full',
+    __doorWidth: 0.9,
+    __doorHeight: 2,
+    __doorMeshOffsetX: -0.45,
+    __hingeLeft: false,
+  };
+  doorGroup.position.set(0.45, 1, 0.6);
+  wardrobeGroup.add(doorGroup);
+  installInitialHinges({
+    wardrobeGroup,
+    doorGroup,
+    partId: 'd41_full',
+    width: 0.9,
+    height: 2,
+    isLeftHinge: false,
+    carcassMountFaceX: -0.006,
+  });
+
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: doorGroup as any,
+    ud: doorGroup.userData,
+    visibleSegments: [{ yMin: 0.45, yMax: 2 }],
+    basePartId: 'd41_full',
+  });
+
+  const movingHinges = hardwareGroups(doorGroup, 'door');
+  const fixedHinges = hardwareGroups(wardrobeGroup, 'carcass');
+  assert.equal(movingHinges.length, 2);
+  assert.equal(fixedHinges.length, 2);
+  assert.ok(fixedHinges.every(hinge => hinge.position.y > 0.45));
+  assert.ok(movingHinges.every(hinge => doorGroup.position.y + hinge.position.y > 0.45));
+});
 
 test('segmented sketch door rebuild clamps handle placement per segment and tags handle part ids', () => {
   const doorGroup = new FakeGroup();

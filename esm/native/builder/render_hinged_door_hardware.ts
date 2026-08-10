@@ -35,7 +35,7 @@ type HingedDoorHardwarePolicy = {
   roughness: number;
 };
 
-type HingedDoorHardwareRenderState = {
+export type HingedDoorHardwareRenderState = {
   material: unknown;
   accentMaterial: unknown;
   cupGeometry: unknown;
@@ -57,13 +57,20 @@ function tagHardwareObject(
   obj: Object3DLike,
   partId: string,
   hingeIndex: number,
-  role: 'door' | 'carcass'
+  role: 'door' | 'carcass',
+  ownerDoorGroup: Object3DLike
 ): void {
   obj.userData.__wpDoorHingeHardware = true;
   obj.userData.__wpHingeOwnerPartId = partId;
   obj.userData.__wpHingeIndex = hingeIndex;
   obj.userData.__wpHingeRole = role;
   obj.userData.__keepMaterialSubtree = true;
+  Object.defineProperty(obj.userData, '__wpHingeOwnerDoorGroup', {
+    value: ownerDoorGroup,
+    enumerable: false,
+    configurable: true,
+    writable: true,
+  });
 }
 
 function tagHardwareComponent(obj: Object3DLike, component: HingeComponentName): void {
@@ -109,6 +116,65 @@ function makeConnectorMeshBetween(args: {
   mesh.userData.__wpConnectorEndX = endX;
   mesh.userData.__wpConnectorEndZ = endZ;
   return mesh;
+}
+
+export type HingedDoorHardwareRuntimeContext = {
+  state: HingedDoorHardwareRenderState;
+  carcassMountFaceX?: number;
+};
+
+const HINGE_HARDWARE_RUNTIME_CONTEXT_KEY = '__wpHingeHardwareRuntimeContext';
+
+export function bindHingedDoorHardwareRuntimeContext(args: {
+  doorGroup: Object3DLike;
+  state: HingedDoorHardwareRenderState | null;
+  doorOp: HingedDoorOpLike;
+}): void {
+  const { doorGroup, state, doorOp } = args;
+  if (!state) return;
+  const context: HingedDoorHardwareRuntimeContext = { state };
+  if (typeof doorOp.carcassMountFaceX === 'number' && Number.isFinite(doorOp.carcassMountFaceX)) {
+    context.carcassMountFaceX = doorOp.carcassMountFaceX;
+  }
+  Object.defineProperty(doorGroup.userData, HINGE_HARDWARE_RUNTIME_CONTEXT_KEY, {
+    value: context,
+    enumerable: false,
+    configurable: true,
+    writable: true,
+  });
+}
+
+export function readHingedDoorHardwareRuntimeContext(
+  doorGroup: Object3DLike
+): HingedDoorHardwareRuntimeContext | null {
+  const value = doorGroup.userData?.[HINGE_HARDWARE_RUNTIME_CONTEXT_KEY];
+  if (!value || typeof value !== 'object') return null;
+  const context = value as Partial<HingedDoorHardwareRuntimeContext>;
+  return context.state ? (context as HingedDoorHardwareRuntimeContext) : null;
+}
+
+function removeHardwareChildrenForDoor(parent: Object3DLike, ownerDoorGroup: Object3DLike): number {
+  const children = Array.isArray(parent.children) ? parent.children.slice() : [];
+  let removed = 0;
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index] as Object3DLike | null;
+    if (!child?.userData?.__wpDoorHingeHardware) continue;
+    if (child.userData.__wpHingeOwnerDoorGroup !== ownerDoorGroup) continue;
+    parent.remove(child);
+    removed += 1;
+  }
+  return removed;
+}
+
+export function detachHingedDoorHardwareForDoor(args: {
+  wardrobeGroup: Object3DLike;
+  doorGroup: Object3DLike;
+}): number {
+  const { wardrobeGroup, doorGroup } = args;
+  return (
+    removeHardwareChildrenForDoor(doorGroup, doorGroup) +
+    removeHardwareChildrenForDoor(wardrobeGroup, doorGroup)
+  );
 }
 
 export function resolveHingedDoorHardwareCenterOffsets(
@@ -194,7 +260,7 @@ function appendDoorMountedHalf(args: {
   const doorBackZ = -state.doorThicknessM / 2;
 
   const doorHalf = new THREE.Group();
-  tagHardwareObject(doorHalf, doorOp.partId, hingeIndex, 'door');
+  tagHardwareObject(doorHalf, doorOp.partId, hingeIndex, 'door', doorGroup);
   doorHalf.position.set(0, localY, 0);
 
   const cup = makeHardwareMesh(THREE, state.cupGeometry, state.accentMaterial, 'doorCup');
@@ -252,12 +318,13 @@ function resolveCarcassMountFaceX(
 function appendCarcassMountedHalf(args: {
   THREE: ThreeLike;
   wardrobeGroup: Object3DLike;
+  doorGroup: Object3DLike;
   doorOp: HingedDoorOpLike;
   state: HingedDoorHardwareRenderState;
   localY: number;
   hingeIndex: number;
 }): void {
-  const { THREE, wardrobeGroup, doorOp, state, localY, hingeIndex } = args;
+  const { THREE, wardrobeGroup, doorGroup, doorOp, state, localY, hingeIndex } = args;
   const policy = state.policy;
   const hingeDirection = doorOp.isLeftHinge ? 1 : -1;
   const doorBackZ = -state.doorThicknessM / 2;
@@ -267,7 +334,7 @@ function appendCarcassMountedHalf(args: {
   const mountFaceX = resolveCarcassMountFaceX(doorOp, policy, hingeDirection);
 
   const carcassHalf = new THREE.Group();
-  tagHardwareObject(carcassHalf, doorOp.partId, hingeIndex, 'carcass');
+  tagHardwareObject(carcassHalf, doorOp.partId, hingeIndex, 'carcass', doorGroup);
   carcassHalf.position.set(pivotX, doorCenterY + localY, doorCenterZ);
 
   // The plate starts exactly on the carcass face and grows only toward the
@@ -337,17 +404,20 @@ export function appendHingedDoorHardware(args: {
   doorGroup: Object3DLike;
   doorOp: HingedDoorOpLike;
   state: HingedDoorHardwareRenderState | null;
+  localCenterY?: number;
 }): number {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state } = args;
   if (!state) return 0;
 
   const offsets = resolveHingedDoorHardwareCenterOffsets(doorOp.height, state.policy);
   if (!offsets) return 0;
+  const localCenterY =
+    typeof args.localCenterY === 'number' && Number.isFinite(args.localCenterY) ? args.localCenterY : 0;
 
   for (let hingeIndex = 0; hingeIndex < offsets.length; hingeIndex++) {
-    const localY = offsets[hingeIndex];
+    const localY = localCenterY + offsets[hingeIndex];
     appendDoorMountedHalf({ THREE, doorGroup, doorOp, state, localY, hingeIndex });
-    appendCarcassMountedHalf({ THREE, wardrobeGroup, doorOp, state, localY, hingeIndex });
+    appendCarcassMountedHalf({ THREE, wardrobeGroup, doorGroup, doorOp, state, localY, hingeIndex });
   }
 
   return offsets.length;
