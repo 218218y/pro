@@ -1,5 +1,5 @@
 import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
-import type { MirrorLayoutList } from '../../../types';
+import type { MirrorLayoutList, Object3DLike, ThreeLike } from '../../../types';
 import {
   hasMirrorSurfaceOnFace,
   readMirrorLayoutListForPart,
@@ -10,6 +10,7 @@ import {
 } from '../features/door_authoring/api.js';
 import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { attachHingedDoorHardware } from './render_hinged_door_hardware.js';
 
 import type {
   CornerConnectorDoorContext,
@@ -131,6 +132,29 @@ export function pushCornerConnectorDoorSegmentVisual(
   hingeUserData.__wpDoorOpenDirSign = ctx.outwardZSign;
 
   ctx.mount.add(hinge);
+  if (ctx.hingeHardwareState) {
+    attachHingedDoorHardware({
+      THREE: ctx.THREE as unknown as ThreeLike,
+      wardrobeGroup: ctx.mount as unknown as Object3DLike,
+      doorGroup: hinge as unknown as Object3DLike,
+      doorOp: {
+        x: 0,
+        y: segY,
+        z: ctx.zOut * ctx.outwardZSign,
+        width: ctx.doorW,
+        height: segH,
+        partId: scopedPartId,
+        isLeftHinge: state.hingeSide === 'left',
+        isRemoved: false,
+        isMirror: false,
+        hasGroove: false,
+        pivotX: state.pivotX,
+        carcassMountFaceX: 0,
+      },
+      state: ctx.hingeHardwareState,
+      frontSign: ctx.outwardZSign,
+    });
+  }
   appendCornerConnectorRenderEntry(ctx, hinge, state.hingeSide);
 }
 

@@ -9,6 +9,13 @@ import { consumeSketchBoxDoorMotionSeed } from './render_interior_sketch_pick_me
 import { resolveSketchBoxDoorLayout } from './render_interior_sketch_boxes_fronts_door_layout.js';
 import { appendSketchBoxDoorVisuals } from './render_interior_sketch_boxes_fronts_door_visuals.js';
 import { resolveSketchFreeBoxSharedHandleAbsY } from './render_interior_sketch_boxes_fronts_door_handle_policy.js';
+import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import type { Object3DLike, ThreeLike } from '../../../types';
+import {
+  attachHingedDoorHardware,
+  createHingedDoorHardwareRenderState,
+  type HingedDoorHardwareRenderState,
+} from './render_hinged_door_hardware.js';
 
 export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): void {
   const { frontsArgs } = args;
@@ -31,6 +38,18 @@ export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): 
 
   const boxDoorPlacementsBySegment = indexSketchBoxDoorPlacementsBySegment(boxDoorPlacements);
   const sharedHandleAbsY = resolveSketchFreeBoxSharedHandleAbsY(args);
+  const hingeHardwareByThickness = new Map<number, HingedDoorHardwareRenderState | null>();
+  const readHingeHardwareState = (doorThicknessM: number): HingedDoorHardwareRenderState | null => {
+    const cached = hingeHardwareByThickness.get(doorThicknessM);
+    if (cached !== undefined) return cached;
+    const state = createHingedDoorHardwareRenderState(
+      THREE as unknown as ThreeLike,
+      HINGED_DOOR_HARDWARE_RENDER_POLICY,
+      doorThicknessM
+    );
+    hingeHardwareByThickness.set(doorThicknessM, state);
+    return state;
+  };
 
   for (let doorIndex = 0; doorIndex < boxDoorPlacements.length; doorIndex++) {
     const placement = boxDoorPlacements[doorIndex] || null;
@@ -57,6 +76,27 @@ export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): 
       renderArgs: args,
       doorGroup,
       layout,
+    });
+
+    attachHingedDoorHardware({
+      THREE: THREE as unknown as ThreeLike,
+      wardrobeGroup: group as unknown as Object3DLike,
+      doorGroup: doorGroup as unknown as Object3DLike,
+      doorOp: {
+        x: 0,
+        y: layout.doorCenterY,
+        z: layout.doorZ,
+        width: layout.doorW,
+        height: layout.doorH,
+        partId: layout.doorPid,
+        isLeftHinge: layout.hingeLeft,
+        isRemoved: false,
+        isMirror: false,
+        hasGroove: false,
+        pivotX: layout.pivotX,
+        carcassMountFaceX: layout.carcassMountFaceX,
+      },
+      state: readHingeHardwareState(layout.doorD),
     });
 
     if (Array.isArray(doorsArray)) {

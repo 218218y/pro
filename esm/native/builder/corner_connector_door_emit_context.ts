@@ -3,6 +3,9 @@ import {
   CORNER_CONNECTOR_DOOR_RENDER_POLICY,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
+import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import type { ThreeLike } from '../../../types';
+import { createHingedDoorHardwareRenderState } from './render_hinged_door_hardware.js';
 
 import type { CornerConnectorDoorContext } from './corner_connector_door_emit_contracts.js';
 import type { CornerConnectorDoorFlowParams } from './corner_connector_door_emit_flow_contracts.js';
@@ -111,6 +114,12 @@ export function createCornerConnectorDoorContextInternal(
   const outwardN = (d1 <= d2 ? n1 : n2).normalize();
   const outwardZSign: 1 | -1 = plusZ.dot(outwardN) >= 0 ? 1 : -1;
 
+  const hingeHardwareState = createHingedDoorHardwareRenderState(
+    THREE as unknown as ThreeLike,
+    HINGED_DOOR_HARDWARE_RENDER_POLICY,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM
+  );
+
   const render: ValueRecord | null = readCornerConnectorRenderRecord(App, asRecord);
   const cfg0: ValueRecord = cfgSnapshot;
   const doorTrimMap = readDoorTrimMap(cfg0.doorTrimMap);
@@ -196,6 +205,7 @@ export function createCornerConnectorDoorContextInternal(
     splitLineY,
     bottomLineY,
     render,
+    hingeHardwareState,
   };
 }
 

@@ -7,8 +7,7 @@ import {
   HINGED_DOOR_RENDER_POLICY,
 } from '../../shared/dimensions/door_system_policy.js';
 import {
-  appendHingedDoorHardware,
-  bindHingedDoorHardwareRuntimeContext,
+  attachHingedDoorHardware,
   createHingedDoorHardwareRenderState,
 } from './render_hinged_door_hardware.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
@@ -218,12 +217,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       }
 
       wardrobeGroup.add(group);
-      bindHingedDoorHardwareRuntimeContext({
-        doorGroup: group,
-        state: hingeHardwareState,
-        doorOp,
-      });
-      appendHingedDoorHardware({
+      attachHingedDoorHardware({
         THREE,
         wardrobeGroup,
         doorGroup: group,

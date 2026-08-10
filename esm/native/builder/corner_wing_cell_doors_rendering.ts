@@ -4,6 +4,7 @@
 // split/full emitters can focus on segment sizing only.
 
 import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import type { Object3DLike, ThreeLike } from '../../../types';
 import {
   hasMirrorSurfaceOnFace,
   readMirrorLayoutListForPart,
@@ -14,6 +15,7 @@ import {
 } from '../features/door_authoring/api.js';
 import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { attachHingedDoorHardware } from './render_hinged_door_hardware.js';
 import {
   readCurtainType,
   type GroupLike,
@@ -35,6 +37,44 @@ export type CornerWingDoorSegmentArgs = {
 
 function isValueRecord(value: unknown): value is ValueRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+export function appendCornerDoorHingeHardware(args: {
+  ctx: CornerWingDoorContext;
+  state: CornerWingDoorState;
+  group: GroupLike;
+  partId: string;
+  doorHeight: number;
+  centerY: number;
+  centerZ: number;
+}): void {
+  const { ctx, state, group, doorHeight, centerY, centerZ } = args;
+  if (!(doorHeight > 0) || !ctx.hingeHardwareState) return;
+  const scopedPartId =
+    typeof group.userData.partId === 'string' && group.userData.partId
+      ? String(group.userData.partId)
+      : args.partId;
+
+  attachHingedDoorHardware({
+    THREE: ctx.THREE as unknown as ThreeLike,
+    wardrobeGroup: ctx.wingGroup as unknown as Object3DLike,
+    doorGroup: group as unknown as Object3DLike,
+    doorOp: {
+      x: 0,
+      y: centerY,
+      z: centerZ,
+      width: state.doorW,
+      height: doorHeight,
+      partId: scopedPartId,
+      isLeftHinge: state.isLeftHinge,
+      isRemoved: false,
+      isMirror: false,
+      hasGroove: false,
+      pivotX: state.pivotX,
+      carcassMountFaceX: state.carcassMountFaceX,
+    },
+    state: ctx.hingeHardwareState,
+  });
 }
 
 export function appendCornerDoorRenderEntry(

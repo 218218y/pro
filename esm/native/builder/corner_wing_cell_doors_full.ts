@@ -9,6 +9,7 @@ import {
 // full-height and segmented door policy in the same file.
 
 import {
+  appendCornerDoorHingeHardware,
   appendCornerDoorRenderEntry,
   clampHandleAbsY,
   createCornerDoorGroup,
@@ -45,6 +46,17 @@ export function appendCornerWingFullDoor(ctx: CornerWingDoorContext, state: Corn
   });
 
   ctx.wingGroup.add(group);
+  if (added) {
+    appendCornerDoorHingeHardware({
+      ctx,
+      state,
+      group,
+      partId: fullId,
+      doorHeight: fullH,
+      centerY: fullY,
+      centerZ: CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + state.doorZShift,
+    });
+  }
   if (added || isRemovedDoor) {
     appendCornerDoorRenderEntry(ctx, group, state.chosenDirection);
   }

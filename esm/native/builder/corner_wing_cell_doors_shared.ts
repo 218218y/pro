@@ -13,6 +13,7 @@ export {
   defaultHandleAbsYForPart,
 } from './corner_wing_cell_doors_state.js';
 export {
+  appendCornerDoorHingeHardware,
   appendCornerDoorRenderEntry,
   createCornerDoorGroup,
   processCornerDoorVisual,

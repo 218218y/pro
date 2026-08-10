@@ -1,10 +1,13 @@
 import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import type { ThreeLike } from '../../../types';
 // Corner wing door context creation.
 //
 // Keep stack-scoped map access, hinge defaults, and trim readers out of the
 // public wing-door owner so downstream door flows receive one canonical context.
 
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
+import { createHingedDoorHardwareRenderState } from './render_hinged_door_hardware.js';
 import {
   requireCreateDoorVisual,
   requireGroupLike,
@@ -20,9 +23,16 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
 
   if (!(locals.doorCount > 0)) return null;
 
+  const THREE = requireThreeCornerCellLike(ctx.THREE);
+  const hingeHardwareState = createHingedDoorHardwareRenderState(
+    THREE as unknown as ThreeLike,
+    HINGED_DOOR_HARDWARE_RENDER_POLICY,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM
+  );
+
   return {
     App: ctx.App,
-    THREE: requireThreeCornerCellLike(ctx.THREE),
+    THREE,
     wingGroup: requireGroupLike(ctx.wingGroup, 'wingGroup'),
     doorStyle: typeof ctx.doorStyle === 'string' ? ctx.doorStyle : '',
     splitDoors: !!ctx.splitDoors,
@@ -68,5 +78,6 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
     splitBottomMap0: helpers.readMap('splitDoorsBottomMap'),
     fallbackDoorW: ctx.activeWidth / locals.doorCount,
     splitGap: CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitGapM,
+    hingeHardwareState,
   };
 }

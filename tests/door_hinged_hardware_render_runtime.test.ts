@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createApplyHingedDoorsOps } from '../esm/native/builder/render_door_ops_hinged.ts';
+import {
+  attachHingedDoorHardware,
+  createHingedDoorHardwareRenderState,
+  readHingedDoorHardwareRuntimeContext,
+} from '../esm/native/builder/render_hinged_door_hardware.ts';
 import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 
 function createThreeStub() {
@@ -441,4 +446,51 @@ test('removed hinged door does not leave either door-side or carcass-side hinge 
   assert.ok(removedGroup);
   assert.equal(hardwareChildren(removedGroup, 'door').length, 0);
   assert.equal(hardwareChildren(wardrobeGroup, 'carcass').length, 0);
+});
+
+test('hinge hardware mirrors its door-back geometry for a negative front direction and preserves that direction for later segmented rebuilds', () => {
+  const THREE = createThreeStub();
+  const mount = new THREE.Group();
+  const doorGroup = new THREE.Group();
+  mount.add(doorGroup);
+  doorGroup.position.set(0, 0.9, -0.3);
+  const state = createHingedDoorHardwareRenderState(THREE as any, HINGED_DOOR_HARDWARE_RENDER_POLICY, 0.018);
+
+  attachHingedDoorHardware({
+    THREE: THREE as any,
+    wardrobeGroup: mount as any,
+    doorGroup: doorGroup as any,
+    doorOp: {
+      x: 0,
+      y: 0.9,
+      z: -0.3,
+      width: 0.45,
+      height: 1.8,
+      partId: 'corner_pent_door_1_full',
+      isLeftHinge: true,
+      isRemoved: false,
+      isMirror: false,
+      hasGroove: false,
+      pivotX: 0,
+      carcassMountFaceX: 0,
+    },
+    state,
+    frontSign: -1,
+  });
+
+  const doorHalf = hardwareChildren(doorGroup, 'door')[0];
+  const carcassHalf = hardwareChildren(mount, 'carcass')[0];
+  const cup = doorHalf.children.find((mesh: any) => mesh.userData.__wpHingeComponent === 'doorCup');
+  const plate = carcassHalf.children.find((mesh: any) => mesh.userData.__wpHingeComponent === 'carcassPlate');
+  const connector = carcassHalf.children.find(
+    (mesh: any) => mesh.userData.__wpHingeComponent === 'carcassConnector'
+  );
+
+  assert.ok(cup.position.z > 0, 'door-side cup must sit behind a -Z-facing leaf');
+  assert.ok(plate.position.z > 0, 'carcass plate must mirror to the interior side of a -Z-facing front');
+  assert.ok(
+    connector.userData.__wpConnectorEndZ < connector.userData.__wpConnectorStartZ,
+    'fixed connector must point outward in -Z for a negative-facing front'
+  );
+  assert.equal(readHingedDoorHardwareRuntimeContext(doorGroup as any)?.frontSign, -1);
 });

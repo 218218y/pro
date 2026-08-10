@@ -141,6 +141,13 @@ export function resolveSketchBoxDoorLayout(args: {
     : doorFrontZ + doorD / 2 + doorBackClearanceZ;
   const pivotX = hingeLeft ? doorFaceLeft : doorFaceRight;
   const slabLocalX = hingeLeft ? doorW / 2 : -doorW / 2;
+  const carcassBoundaryX = hingeLeft ? segmentLeft : segmentRight;
+  const rawCarcassMountFaceX = carcassBoundaryX - pivotX;
+  const nominalCarcassMountFaceX = (hingeLeft ? 1 : -1) * (woodThick / 2);
+  const carcassMountFaceX =
+    Number.isFinite(rawCarcassMountFaceX) && Math.abs(rawCarcassMountFaceX) <= woodThick + 1e-6
+      ? rawCarcassMountFaceX
+      : nominalCarcassMountFaceX;
 
   const boxDoorGrooveOn = boxDoor.groove === true;
   const boxDoorGrooveLinesCount = boxDoor.grooveLinesCount ?? null;
@@ -169,6 +176,7 @@ export function resolveSketchBoxDoorLayout(args: {
     doorCenterY,
     pivotX,
     slabLocalX,
+    carcassMountFaceX,
     sharedDoorUserData: {
       __wpSketchBoxDoorId: doorId,
       __wpSketchFreePlacement: isFreePlacement === true,

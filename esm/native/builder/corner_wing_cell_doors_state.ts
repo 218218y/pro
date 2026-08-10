@@ -57,6 +57,17 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   const isLeftHinge = chosenDirection === 'left';
   const pivotX = dX + (isLeftHinge ? -doorW / 2 : doorW / 2);
   const meshOffset = isLeftHinge ? doorW / 2 : -doorW / 2;
+  const cellStartX = readCellNumber(ctx, cell, 'startX');
+  const cellWidth = readCellNumber(ctx, cell, 'width');
+  const nominalCarcassMountFaceX = (isLeftHinge ? 1 : -1) * (ctx.woodThick / 2);
+  let carcassMountFaceX = nominalCarcassMountFaceX;
+  if (cellStartX != null && cellWidth != null) {
+    const carcassBoundaryX = isLeftHinge ? cellStartX : cellStartX + cellWidth;
+    const rawCarcassMountFaceX = carcassBoundaryX - pivotX;
+    if (Number.isFinite(rawCarcassMountFaceX) && Math.abs(rawCarcassMountFaceX) <= ctx.woodThick + 1e-6) {
+      carcassMountFaceX = rawCarcassMountFaceX;
+    }
+  }
   const totalDoorH = effectiveTopLimit - doorBottomY - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const topSplitEnabled = ctx.splitDoors && isSplit(ctx, doorBaseId);
   const bottomSplitEnabled = ctx.splitDoors && isSplitBottom(ctx, doorBaseId);
@@ -84,6 +95,7 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
     isLeftHinge,
     pivotX,
     meshOffset,
+    carcassMountFaceX,
     totalDoorH,
     topSplitEnabled,
     bottomSplitEnabled,

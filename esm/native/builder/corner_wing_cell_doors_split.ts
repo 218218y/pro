@@ -11,6 +11,7 @@ import {
 // per-door iteration and the full-door path can stay isolated.
 
 import {
+  appendCornerDoorHingeHardware,
   appendCornerDoorRenderEntry,
   clampHandleAbsY,
   createCornerDoorGroup,
@@ -197,6 +198,17 @@ function pushSegment(
   });
 
   ctx.wingGroup.add(group);
+  if (added) {
+    appendCornerDoorHingeHardware({
+      ctx,
+      state,
+      group,
+      partId,
+      doorHeight: segH,
+      centerY: segY,
+      centerZ: CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + state.doorZShift,
+    });
+  }
   if (added || isRemovedDoor) {
     appendCornerDoorRenderEntry(ctx, group, state.chosenDirection);
   }

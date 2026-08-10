@@ -28,6 +28,7 @@ export type ResolvedSketchBoxDoorLayout = {
   doorCenterY: number;
   pivotX: number;
   slabLocalX: number;
+  carcassMountFaceX: number;
   sharedDoorUserData: InteriorValueRecord;
   groupUserData: InteriorValueRecord;
 };

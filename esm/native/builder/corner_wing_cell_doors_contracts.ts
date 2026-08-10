@@ -4,6 +4,7 @@
 // surface while dedicated modules own context creation and derived door state.
 
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
+import type { HingedDoorHardwareRenderState } from './render_hinged_door_hardware.js';
 import type {
   CornerCell,
   CornerCellCfg,
@@ -62,6 +63,7 @@ export type CornerWingDoorContext = {
   splitBottomMap0: ValueRecord;
   fallbackDoorW: number;
   splitGap: number;
+  hingeHardwareState: HingedDoorHardwareRenderState | null;
 };
 
 export type CornerWingDoorState = {
@@ -85,6 +87,7 @@ export type CornerWingDoorState = {
   isLeftHinge: boolean;
   pivotX: number;
   meshOffset: number;
+  carcassMountFaceX: number;
   totalDoorH: number;
   topSplitEnabled: boolean;
   bottomSplitEnabled: boolean;

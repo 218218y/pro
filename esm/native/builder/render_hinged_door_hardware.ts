@@ -121,6 +121,7 @@ function makeConnectorMeshBetween(args: {
 export type HingedDoorHardwareRuntimeContext = {
   state: HingedDoorHardwareRenderState;
   carcassMountFaceX?: number;
+  frontSign: 1 | -1;
 };
 
 const HINGE_HARDWARE_RUNTIME_CONTEXT_KEY = '__wpHingeHardwareRuntimeContext';
@@ -129,10 +130,14 @@ export function bindHingedDoorHardwareRuntimeContext(args: {
   doorGroup: Object3DLike;
   state: HingedDoorHardwareRenderState | null;
   doorOp: HingedDoorOpLike;
+  frontSign?: number;
 }): void {
   const { doorGroup, state, doorOp } = args;
   if (!state) return;
-  const context: HingedDoorHardwareRuntimeContext = { state };
+  const context: HingedDoorHardwareRuntimeContext = {
+    state,
+    frontSign: args.frontSign === -1 ? -1 : 1,
+  };
   if (typeof doorOp.carcassMountFaceX === 'number' && Number.isFinite(doorOp.carcassMountFaceX)) {
     context.carcassMountFaceX = doorOp.carcassMountFaceX;
   }
@@ -253,11 +258,13 @@ function appendDoorMountedHalf(args: {
   state: HingedDoorHardwareRenderState;
   localY: number;
   hingeIndex: number;
+  frontSign?: number;
 }): void {
   const { THREE, doorGroup, doorOp, state, localY, hingeIndex } = args;
   const policy = state.policy;
   const hingeDirection = doorOp.isLeftHinge ? 1 : -1;
-  const doorBackZ = -state.doorThicknessM / 2;
+  const frontSign = args.frontSign === -1 ? -1 : 1;
+  const doorBackZ = (-frontSign * state.doorThicknessM) / 2;
 
   const doorHalf = new THREE.Group();
   tagHardwareObject(doorHalf, doorOp.partId, hingeIndex, 'door', doorGroup);
@@ -268,13 +275,13 @@ function appendDoorMountedHalf(args: {
   cup.position.set(
     hingeDirection * policy.cupCenterFromHingeEdgeM,
     0,
-    doorBackZ - policy.cupVisibleDepthM / 2 - 0.0002
+    doorBackZ - frontSign * (policy.cupVisibleDepthM / 2 + 0.0002)
   );
   doorHalf.add(cup);
 
   const cupCollar = makeHardwareMesh(THREE, state.cupCollarGeometry, state.material, 'doorCupCollar');
   cupCollar.rotation.x = Math.PI / 2;
-  const cupCollarZ = doorBackZ - policy.cupCollarDepthM / 2 + 0.0002;
+  const cupCollarZ = doorBackZ - frontSign * (policy.cupCollarDepthM / 2 - 0.0002);
   cupCollar.position.set(hingeDirection * policy.cupCenterFromHingeEdgeM, 0, cupCollarZ);
   doorHalf.add(cupCollar);
 
@@ -288,8 +295,10 @@ function resolveOpenCupNearEdgeTarget(args: {
   policy: HingedDoorHardwarePolicy;
   hingeDirection: number;
   cupRearZ: number;
+  frontSign: 1 | -1;
 }): { x: number; z: number } {
-  const { policy, hingeDirection, cupRearZ } = args;
+  const { policy, hingeDirection, cupRearZ, frontSign } = args;
+  const canonicalCupRearZ = cupRearZ * frontSign;
   const nearCupLocalX =
     hingeDirection *
     Math.max(
@@ -300,8 +309,8 @@ function resolveOpenCupNearEdgeTarget(args: {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   return {
-    x: nearCupLocalX * cos + cupRearZ * sin,
-    z: -nearCupLocalX * sin + cupRearZ * cos,
+    x: nearCupLocalX * cos + canonicalCupRearZ * sin,
+    z: frontSign * (-nearCupLocalX * sin + canonicalCupRearZ * cos),
   };
 }
 
@@ -323,11 +332,13 @@ function appendCarcassMountedHalf(args: {
   state: HingedDoorHardwareRenderState;
   localY: number;
   hingeIndex: number;
+  frontSign?: number;
 }): void {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state, localY, hingeIndex } = args;
   const policy = state.policy;
   const hingeDirection = doorOp.isLeftHinge ? 1 : -1;
-  const doorBackZ = -state.doorThicknessM / 2;
+  const frontSign: 1 | -1 = args.frontSign === -1 ? -1 : 1;
+  const doorBackZ = (-frontSign * state.doorThicknessM) / 2;
   const pivotX = doorOp.pivotX || 0;
   const doorCenterY = doorOp.y || 0;
   const doorCenterZ = doorOp.z || 0;
@@ -340,7 +351,7 @@ function appendCarcassMountedHalf(args: {
   // The plate starts exactly on the carcass face and grows only toward the
   // cabinet opening; nothing sits between the wood face and carcassPlate.
   const plateCenterX = mountFaceX + hingeDirection * (policy.carcassPlateThicknessM / 2);
-  const plateZ = doorBackZ - policy.carcassPlateDepthM / 2 - policy.carcassPlateFrontInsetM;
+  const plateZ = doorBackZ - frontSign * (policy.carcassPlateDepthM / 2 + policy.carcassPlateFrontInsetM);
   const plate = makeHardwareMesh(THREE, state.carcassPlateGeometry, state.material, 'carcassPlate');
   plate.position.set(plateCenterX, 0, plateZ);
   carcassHalf.add(plate);
@@ -349,7 +360,7 @@ function appendCarcassMountedHalf(args: {
   // one above the other. Neither block is underneath the mounting plate.
   const plateOpeningFaceX = mountFaceX + hingeDirection * policy.carcassPlateThicknessM;
   const linkCenterX = plateOpeningFaceX + hingeDirection * (policy.carcassLinkBlockWidthM / 2);
-  const linkZ = doorBackZ - policy.carcassLinkBlockDepthM / 2 - policy.carcassLinkFrontInsetM;
+  const linkZ = doorBackZ - frontSign * (policy.carcassLinkBlockDepthM / 2 + policy.carcassLinkFrontInsetM);
 
   const linkUpper = makeHardwareMesh(
     THREE,
@@ -380,7 +391,8 @@ function appendCarcassMountedHalf(args: {
     // Aim at the rear/hinge-side rim of the cup. At the open angle this point
     // sits just farther from the panel than the raised carcass links, producing
     // the requested slight outward X lean while the dominant motion stays frontward in Z.
-    cupRearZ: doorBackZ - policy.cupVisibleDepthM - 0.0002,
+    cupRearZ: doorBackZ - frontSign * (policy.cupVisibleDepthM + 0.0002),
+    frontSign,
   });
   const carcassConnector = makeConnectorMeshBetween({
     THREE,
@@ -398,6 +410,24 @@ function appendCarcassMountedHalf(args: {
   wardrobeGroup.add(carcassHalf);
 }
 
+export function attachHingedDoorHardware(args: {
+  THREE: ThreeLike;
+  wardrobeGroup: Object3DLike;
+  doorGroup: Object3DLike;
+  doorOp: HingedDoorOpLike;
+  state: HingedDoorHardwareRenderState | null;
+  localCenterY?: number;
+  frontSign?: number;
+}): number {
+  bindHingedDoorHardwareRuntimeContext({
+    doorGroup: args.doorGroup,
+    state: args.state,
+    doorOp: args.doorOp,
+    frontSign: args.frontSign,
+  });
+  return appendHingedDoorHardware(args);
+}
+
 export function appendHingedDoorHardware(args: {
   THREE: ThreeLike;
   wardrobeGroup: Object3DLike;
@@ -405,6 +435,7 @@ export function appendHingedDoorHardware(args: {
   doorOp: HingedDoorOpLike;
   state: HingedDoorHardwareRenderState | null;
   localCenterY?: number;
+  frontSign?: number;
 }): number {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state } = args;
   if (!state) return 0;
@@ -416,8 +447,25 @@ export function appendHingedDoorHardware(args: {
 
   for (let hingeIndex = 0; hingeIndex < offsets.length; hingeIndex++) {
     const localY = localCenterY + offsets[hingeIndex];
-    appendDoorMountedHalf({ THREE, doorGroup, doorOp, state, localY, hingeIndex });
-    appendCarcassMountedHalf({ THREE, wardrobeGroup, doorGroup, doorOp, state, localY, hingeIndex });
+    appendDoorMountedHalf({
+      THREE,
+      doorGroup,
+      doorOp,
+      state,
+      localY,
+      hingeIndex,
+      frontSign: args.frontSign,
+    });
+    appendCarcassMountedHalf({
+      THREE,
+      wardrobeGroup,
+      doorGroup,
+      doorOp,
+      state,
+      localY,
+      hingeIndex,
+      frontSign: args.frontSign,
+    });
   }
 
   return offsets.length;

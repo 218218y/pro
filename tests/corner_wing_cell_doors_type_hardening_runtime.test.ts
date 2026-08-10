@@ -99,6 +99,10 @@ test('corner wing door state ignores string-encoded internal cell geometry scala
     0.6,
     'door center should be derived from numeric startX/width only'
   );
+  assert.ok(
+    Math.abs(state.carcassMountFaceX) < 1e-12,
+    'corner leaf should mount its fixed hinge half on the actual cell boundary'
+  );
   assert.equal(Number(state.effectiveTopLimit.toFixed(6)), Number((0.1 + 2.4 - 0.018 / 2).toFixed(6)));
 });
 
