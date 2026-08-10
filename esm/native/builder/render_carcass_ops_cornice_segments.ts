@@ -1,5 +1,10 @@
-import type { ProfilePoint, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
-import { __asFinite } from './render_carcass_ops_shared.js';
+import type { RenderCarcassRuntime } from './render_carcass_ops_shared.js';
+import type {
+  CorniceProfilePoint,
+  CorniceProfileSegment,
+  CorniceWaveFrontSegment,
+  CorniceWaveSideSegment,
+} from './carcass_cornice_ir.js';
 import type { CorniceSegmentMeshArgs } from './render_carcass_ops_cornice_types.js';
 import { applyMiterTrims, computeCorniceVertexNormals } from './render_carcass_ops_cornice_miter.js';
 
@@ -10,21 +15,11 @@ function resolveCorniceSegmentMaterial(
   return overrideMat || args.segMat;
 }
 
-export function createWaveFrontSegment(args: CorniceSegmentMeshArgs) {
+export function createWaveFrontSegment(args: CorniceSegmentMeshArgs<CorniceWaveFrontSegment>) {
   const { THREE, seg } = args;
   const segMat = resolveCorniceSegmentMaterial(args);
-  const w = __asFinite(seg.width);
-  const d = __asFinite(seg.depth);
-  const hMax = __asFinite(seg.heightMax);
-  const ampRaw = __asFinite(seg.waveAmp);
-  const cyclesRaw = __asFinite(seg.waveCycles);
-  const cycles = Number.isFinite(cyclesRaw) ? Math.max(1, Math.round(cyclesRaw)) : 2;
-  if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(d) || d <= 0 || !Number.isFinite(hMax) || hMax <= 0) {
-    return null;
-  }
-  const amp = Number.isFinite(ampRaw)
-    ? Math.max(0, Math.min(hMax * 0.8, ampRaw))
-    : Math.min(0.04, hMax * 0.35);
+  const { width: w, depth: d, heightMax: hMax, waveAmp: ampRaw, waveCycles: cycles } = seg;
+  const amp = Math.max(0, Math.min(hMax * 0.8, ampRaw));
 
   const ShapeCtor = THREE.Shape;
   const ExtrudeGeometryCtor = THREE.ExtrudeGeometry;
@@ -48,15 +43,10 @@ export function createWaveFrontSegment(args: CorniceSegmentMeshArgs) {
   return new THREE.Mesh(geo, segMat);
 }
 
-export function createWaveSideSegment(args: CorniceSegmentMeshArgs) {
+export function createWaveSideSegment(args: CorniceSegmentMeshArgs<CorniceWaveSideSegment>) {
   const { THREE, seg } = args;
   const segMat = resolveCorniceSegmentMaterial(args);
-  const w = __asFinite(seg.width);
-  const h = __asFinite(seg.height);
-  const d = __asFinite(seg.depth);
-  if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0 || !Number.isFinite(d) || d <= 0) {
-    return null;
-  }
+  const { width: w, height: h, depth: d } = seg;
   const ShapeCtor = THREE.Shape;
   const ExtrudeGeometryCtor = THREE.ExtrudeGeometry;
   if (!ShapeCtor || !ExtrudeGeometryCtor) return null;
@@ -73,18 +63,17 @@ export function createWaveSideSegment(args: CorniceSegmentMeshArgs) {
 }
 
 export function createProfileSegment(
-  args: CorniceSegmentMeshArgs & {
-    profile: ProfilePoint[];
+  args: CorniceSegmentMeshArgs<CorniceProfileSegment> & {
+    profile: CorniceProfilePoint[];
     segLen: number;
   },
   runtime: RenderCarcassRuntime
 ) {
   const { THREE, seg, profile, segLen } = args;
   const segMat = resolveCorniceSegmentMaterial(args);
-  const p0 = profile[0] || {};
-  const x0 = __asFinite(p0.x);
-  const y0 = __asFinite(p0.y);
-  if (!Number.isFinite(x0) || !Number.isFinite(y0)) return null;
+  const p0 = profile[0];
+  if (!p0) return null;
+  const { x: x0, y: y0 } = p0;
 
   const ShapeCtor = THREE.Shape;
   const ExtrudeGeometryCtor = THREE.ExtrudeGeometry;
@@ -93,11 +82,9 @@ export function createProfileSegment(
   const shape = new ShapeCtor();
   shape.moveTo(x0, y0);
   for (let pi = 1; pi < profile.length; pi++) {
-    const p = profile[pi] || {};
-    const px = __asFinite(p.x);
-    const py = __asFinite(p.y);
-    if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
-    shape.lineTo(px, py);
+    const p = profile[pi];
+    if (!p) continue;
+    shape.lineTo(p.x, p.y);
   }
   shape.lineTo(x0, y0);
 

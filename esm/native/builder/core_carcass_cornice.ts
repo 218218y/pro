@@ -4,7 +4,15 @@ import {
   CARCASS_CORNICE_ANGLE_POLICY,
   CARCASS_CORNICE_RENDER_POLICY,
 } from '../../shared/dimensions/carcass_cornice_render_policy.js';
-import type { MutableRecord } from './core_pure_shared.js';
+import type {
+  CarcassCorniceMode,
+  CarcassCornicePlan,
+  CarcassCorniceSegment,
+  CorniceProfilePoint,
+  CorniceProfileSegment,
+  CorniceWaveFrontSegment,
+  CorniceWaveSideSegment,
+} from './carcass_cornice_ir.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 import { resolveHexCellGeometry, type HexCellGeometry } from '../features/hex_cell/index.js';
 
@@ -35,7 +43,7 @@ const PROFILE_CAP_RISE = CORNICE_PROFILE.capRiseM;
 const PROFILE_CAP_OUT = CORNICE_PROFILE.capOutM;
 const PROFILE_TOP_LIP_OUT = CORNICE_PROFILE.topLipOutM;
 
-export function buildCarcassCornice(prepared: PreparedCarcassInput): MutableRecord | null {
+export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCornicePlan | null {
   const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType, baseLegTopPlatformHeight } =
     prepared;
   if (!hasCornice) return null;
@@ -154,11 +162,11 @@ function hasHexCorniceFootprint(prepared: PreparedCarcassInput): boolean {
 function buildSegmentedCornice(
   prepared: PreparedCarcassInput,
   corniceTypeNorm: string
-): MutableRecord | null {
+): CarcassCornicePlan | null {
   const runs = buildCorniceRuns(prepared);
   if (!runs.length) return null;
 
-  const segments: MutableRecord[] = [];
+  const segments: CarcassCorniceSegment[] = [];
   for (let i = 0; i < runs.length; i++) {
     const run = runs[i];
     const section: CorniceSectionParams = {
@@ -596,7 +604,7 @@ function resolveProfileSideEndZ(args: {
   return Math.max(args.defaultEndZ - PROFILE_OVERHANG_Z, z);
 }
 
-function buildWaveCornice(params: CorniceParams): MutableRecord {
+function buildWaveCornice(params: CorniceParams): CarcassCornicePlan {
   const { D, woodThick, topY } = params;
   const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildWaveCorniceSection({
@@ -621,7 +629,9 @@ function waveSidePaintPart(side: CorniceSideClosure, exteriorPartId: string): st
   return side.internal ? 'cornice_wave_front' : exteriorPartId;
 }
 
-function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] {
+function buildWaveCorniceSection(
+  params: CorniceSectionParams
+): Array<CorniceWaveFrontSegment | CorniceWaveSideSegment> {
   const { left, right, globalD, depth, woodThick, topY, frontPath, leftSide, rightSide } = params;
   const sectionW = Math.max(CORNICE_COMMON.minBoxDimensionM, right - left);
   const yPlace = topY + CORNICE_Y_EPS;
@@ -637,7 +647,7 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
   const rightInset = rightSide == null ? 0 : frameT;
   const renderPath = trimCornicePath(frontPath, leftInset, rightInset);
 
-  const segments: MutableRecord[] = [];
+  const segments: Array<CorniceWaveFrontSegment | CorniceWaveSideSegment> = [];
   for (let i = 0; i < renderPath.length; i++) {
     const pathSeg = renderPath[i];
     const len = cornicePathSegmentLength(pathSeg);
@@ -707,7 +717,7 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
   return segments;
 }
 
-function buildProfileCornice(params: CorniceParams): MutableRecord {
+function buildProfileCornice(params: CorniceParams): CarcassCornicePlan {
   const { D, topY, woodThick } = params;
   const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildProfileCorniceSection({
@@ -728,7 +738,7 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
   });
 }
 
-function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord[] {
+function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfileSegment[] {
   const { left, right, globalD, depth, topY, frontPath, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
   const leftOverhang = leftSide != null && !leftSide.internal ? PROFILE_OVERHANG_X : 0;
@@ -743,7 +753,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
 
   const renderPath = extendCornicePath(sourcePath, startExtension, endExtension);
   const useOuterMiter = shouldUseOuterMiterForPath(renderPath);
-  const segments: MutableRecord[] = [];
+  const segments: CorniceProfileSegment[] = [];
   for (let i = 0; i < renderPath.length; i++) {
     const pathSeg = renderPath[i];
     const len = cornicePathSegmentLength(pathSeg);
@@ -896,14 +906,14 @@ function buildProfileCorniceSection(params: CorniceSectionParams): MutableRecord
   return segments;
 }
 
-function makeInternalBoundaryCorniceProfile(overhang: number): MutableRecord[] {
+function makeInternalBoundaryCorniceProfile(overhang: number): CorniceProfilePoint[] {
   return makeCorniceProfile(overhang).map(point => ({
     ...point,
     x: Math.max(0, typeof point.x === 'number' && Number.isFinite(point.x) ? point.x : 0),
   }));
 }
 
-function makeCorniceProfile(overhang: number): MutableRecord[] {
+function makeCorniceProfile(overhang: number): CorniceProfilePoint[] {
   const oh = Math.max(CORNICE_PROFILE.minOverhangM, overhang);
   const step1Base = Math.max(0, PROFILE_STEP1_OUT);
   const slopeBase = Math.max(0, PROFILE_SLOPE_OUT);
@@ -947,11 +957,11 @@ function makeCorniceProfile(overhang: number): MutableRecord[] {
 }
 
 type CorniceEnvelopeParams = {
-  mode: string;
-  segments: MutableRecord[];
+  mode: CarcassCorniceMode;
+  segments: CarcassCorniceSegment[];
 };
 
-function buildCorniceEnvelope(params: CorniceEnvelopeParams): MutableRecord {
+function buildCorniceEnvelope(params: CorniceEnvelopeParams): CarcassCornicePlan {
   const { mode, segments } = params;
   return {
     kind: 'cornice',

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-10T06:03:50.039Z",
+  "generatedAt": "2026-08-10T06:32:35.290Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 543,
-    "totalFiles": 213,
+    "totalOccurrences": 542,
+    "totalFiles": 212,
     "byCategory": {
       "runtime-default": 56,
-      "domain-default": 387,
+      "domain-default": 386,
       "error-message-default": 42,
       "framework-default": 2,
       "browser-adapter": 18,
@@ -234,12 +234,6 @@
         "total": 2,
         "categories": {
           "domain-default": 2
-        }
-      },
-      "esm/native/builder/render_carcass_ops_cornice_apply.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
         }
       },
       "esm/native/builder/render_carcass_ops_cornice_finalize.ts": {
@@ -1577,77 +1571,77 @@
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 203,
+      "line": 211,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 204,
+      "line": 212,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 295,
+      "line": 303,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 298,
+      "line": 306,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const edgeDepth = Math.max(prepared.woodThick, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 299,
+      "line": 307,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "const fallbackZ = backZ + edgeDepth;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 305,
+      "line": 313,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 326,
+      "line": 334,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: path.length ? path : [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 577,
+      "line": 585,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "fallbackZ: number"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 579,
+      "line": 587,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "if (!seg) return fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 583,
+      "line": 591,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "return Number.isFinite(z) ? z : fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 630,
+      "line": 640,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
@@ -2136,13 +2130,6 @@
       "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
     },
     {
-      "file": "esm/native/builder/render_carcass_ops_cornice_apply.ts",
-      "line": 106,
-      "term": "fallbackY",
-      "category": "domain-default",
-      "text": "{ x, y, z: Number.isFinite(z) ? z : 0, flipX, rotY, segPid, fallbackY: h / 2 },"
-    },
-    {
       "file": "esm/native/builder/render_carcass_ops_cornice_finalize.ts",
       "line": 14,
       "term": "fallbackY",
@@ -2151,7 +2138,7 @@
     },
     {
       "file": "esm/native/builder/render_carcass_ops_cornice_types.ts",
-      "line": 21,
+      "line": 22,
       "term": "fallbackY",
       "category": "domain-default",
       "text": "fallbackY?: number;"

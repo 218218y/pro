@@ -1,11 +1,12 @@
 import type { Object3DLike } from '../../../types';
+import type { CarcassCorniceSegment } from './carcass_cornice_ir.js';
 import type { RenderCarcassRuntime } from './render_carcass_ops_shared.js';
 
 export type CorniceThreeRuntime = NonNullable<RenderCarcassRuntime['THREE']>;
 
-export interface CorniceSegmentMeshArgs {
+export interface CorniceSegmentMeshArgs<TSegment extends CarcassCorniceSegment = CarcassCorniceSegment> {
   THREE: CorniceThreeRuntime;
-  seg: import('./render_carcass_ops_shared.js').CorniceSegment;
+  seg: TSegment;
   segMat: unknown;
   getPartMaterial?: RenderCarcassRuntime['getPartMaterial'];
   segPid?: string;

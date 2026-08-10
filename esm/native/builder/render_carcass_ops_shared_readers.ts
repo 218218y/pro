@@ -1,3 +1,5 @@
+import { isCarcassCornicePlan, isCarcassCorniceSegment } from './carcass_cornice_ir.js';
+
 import type {
   AnyMap,
   AppContainer,
@@ -53,8 +55,7 @@ function __isBackPanelSegRecord(value: unknown): value is BackPanelSeg {
 }
 
 function __isCorniceOp(value: unknown): value is CorniceOp {
-  const rec = __asRecord(value);
-  return !!(rec && rec.kind === 'cornice');
+  return isCarcassCornicePlan(value);
 }
 
 export function __readUnknownArray(v: unknown): unknown[] | null {
@@ -116,7 +117,14 @@ export function __isFn(v: unknown): v is UnknownCallable {
 }
 
 function __isProfilePoint(value: unknown): value is ProfilePoint {
-  return __isRecord(value);
+  const rec = __asRecord(value);
+  return !!(
+    rec &&
+    typeof rec.x === 'number' &&
+    Number.isFinite(rec.x) &&
+    typeof rec.y === 'number' &&
+    Number.isFinite(rec.y)
+  );
 }
 
 export function __isPlinthSegment(value: unknown): value is PlinthSegment {
@@ -137,7 +145,7 @@ export function __isLegPosition(value: unknown): value is { x?: number; z?: numb
 }
 
 export function __isCorniceSegment(value: unknown): value is CorniceSegment {
-  return __isRecord(value);
+  return isCarcassCorniceSegment(value);
 }
 
 export function __profilePoints(v: unknown): ProfilePoint[] | null {

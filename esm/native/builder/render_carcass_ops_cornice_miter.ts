@@ -1,10 +1,6 @@
-import type {
-  CorniceSegment,
-  ExtrudeGeometryLike,
-  ProfilePoint,
-  RenderCarcassRuntime,
-} from './render_carcass_ops_shared.js';
-import { __asFinite, __asString, __stripMiterCaps } from './render_carcass_ops_shared.js';
+import type { ExtrudeGeometryLike, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
+import { __stripMiterCaps } from './render_carcass_ops_shared.js';
+import type { CorniceProfilePoint, CorniceProfileSegment } from './carcass_cornice_ir.js';
 
 type CorniceMiterMode = 'inner_trim' | 'outer_extend';
 
@@ -12,8 +8,8 @@ function readGeometryAttrNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : NaN;
 }
 
-function readCorniceMiterMode(seg: CorniceSegment): CorniceMiterMode {
-  return __asString(seg.miterMode) === 'outer_extend' ? 'outer_extend' : 'inner_trim';
+function readCorniceMiterMode(seg: CorniceProfileSegment): CorniceMiterMode {
+  return seg.miterMode === 'outer_extend' ? 'outer_extend' : 'inner_trim';
 }
 
 function clamp01(value: number): number {
@@ -22,13 +18,13 @@ function clamp01(value: number): number {
 
 export function applyMiterTrims(
   geo: ExtrudeGeometryLike,
-  profile: ProfilePoint[],
+  profile: CorniceProfilePoint[],
   segLen: number,
-  seg: CorniceSegment,
+  seg: CorniceProfileSegment,
   runtime: RenderCarcassRuntime
 ): void {
-  const miterStartTrim = __asFinite(seg.miterStartTrim);
-  const miterEndTrim = __asFinite(seg.miterEndTrim);
+  const miterStartTrim = seg.miterStartTrim ?? 0;
+  const miterEndTrim = seg.miterEndTrim ?? 0;
   const miterMode = readCorniceMiterMode(seg);
   if (
     !(Number.isFinite(miterStartTrim) && miterStartTrim > 0) &&
@@ -39,9 +35,8 @@ export function applyMiterTrims(
 
   let xOuter = -Infinity;
   for (let pi = 0; pi < profile.length; pi++) {
-    const p = profile[pi] || {};
-    const px = __asFinite(p.x);
-    if (Number.isFinite(px)) xOuter = Math.max(xOuter, px);
+    const p = profile[pi];
+    if (p) xOuter = Math.max(xOuter, p.x);
   }
   if (!Number.isFinite(xOuter) || xOuter <= 0) xOuter = 0.001;
 
@@ -53,9 +48,8 @@ export function applyMiterTrims(
   const profileBaseY = (() => {
     let minPositiveY = Infinity;
     for (let pi = 0; pi < profile.length; pi++) {
-      const p = profile[pi] || {};
-      const py = __asFinite(p.y);
-      if (Number.isFinite(py) && py > 0) minPositiveY = Math.min(minPositiveY, py);
+      const p = profile[pi];
+      if (p && p.y > 0) minPositiveY = Math.min(minPositiveY, p.y);
     }
     return Number.isFinite(minPositiveY) ? minPositiveY + 1e-6 : 1e-6;
   })();

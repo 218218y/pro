@@ -1,12 +1,4 @@
 import type { CorniceOp, CorniceSegment, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
-import {
-  __asBool,
-  __asFinite,
-  __asString,
-  __isCorniceSegment,
-  __profilePoints,
-  __readArray,
-} from './render_carcass_ops_shared.js';
 import { finalizeCorniceMesh } from './render_carcass_ops_cornice_finalize.js';
 import {
   createProfileSegment,
@@ -22,11 +14,11 @@ export function createApplyCarcassCorniceOps() {
     if (!cornice || cornice.kind !== 'cornice') return;
 
     const { ctx, getPartMaterial } = runtime;
-    const pid = __asString(cornice.partId, 'cornice_color');
+    const pid = cornice.partId || 'cornice_color';
     const corniceMat = (getPartMaterial ? getPartMaterial(pid) : null) || ctx.corniceMat || ctx.bodyMat;
-    const segments = __readArray(cornice.segments, __isCorniceSegment);
+    const segments = cornice.segments;
 
-    if (!segments || !segments.length) return;
+    if (!segments.length) return;
 
     for (let si = 0; si < segments.length; si++) {
       applyCorniceSegment(segments[si], pid, corniceMat, runtime);
@@ -45,65 +37,34 @@ export function applyCorniceSegment(
   runtime: RenderCarcassRuntime
 ): void {
   const { THREE, ctx, getPartMaterial } = runtime;
-  if (!seg || typeof seg !== 'object') return;
+  if (!seg) return;
 
-  const x = __asFinite(seg.x);
-  const y = __asFinite(seg.y);
-  const z = __asFinite(seg.z);
-  const segPid = __asString(seg.partId, pid);
+  const segPid = seg.partId || pid;
   const segMat = corniceMat || ctx.bodyMat;
-  const segmentArgs = { THREE, seg, segMat, getPartMaterial, segPid };
-  const profile = __profilePoints(seg.profile);
-  const segLen = __asFinite(seg.length);
-  const rotY = __asFinite(seg.rotationY);
-  const flipX = __asBool(seg.flipX);
-  const kind = __asString(seg.kind);
+  const rotY = seg.rotationY ?? 0;
+  const flipX = seg.flipX === true;
 
-  if (
-    kind === 'cornice_wave_front' &&
-    typeof THREE.Shape === 'function' &&
-    typeof THREE.ExtrudeGeometry === 'function'
-  ) {
-    const mesh = createWaveFrontSegment(segmentArgs);
+  if (seg.kind === 'cornice_wave_front') {
+    if (typeof THREE.Shape !== 'function' || typeof THREE.ExtrudeGeometry !== 'function') return;
+    const mesh = createWaveFrontSegment({ THREE, seg, segMat, getPartMaterial, segPid });
     if (!mesh) return;
-    finalizeCorniceMesh(mesh, { x, y, z, flipX, rotY, segPid }, runtime);
+    finalizeCorniceMesh(mesh, { x: seg.x, y: seg.y, z: seg.z, flipX, rotY, segPid }, runtime);
     return;
   }
 
-  if (
-    kind === 'cornice_wave_side' &&
-    typeof THREE.Shape === 'function' &&
-    typeof THREE.ExtrudeGeometry === 'function'
-  ) {
-    const mesh = createWaveSideSegment(segmentArgs);
+  if (seg.kind === 'cornice_wave_side') {
+    if (typeof THREE.Shape !== 'function' || typeof THREE.ExtrudeGeometry !== 'function') return;
+    const mesh = createWaveSideSegment({ THREE, seg, segMat, getPartMaterial, segPid });
     if (!mesh) return;
-    finalizeCorniceMesh(mesh, { x, y, z, flipX, rotY, segPid }, runtime);
+    finalizeCorniceMesh(mesh, { x: seg.x, y: seg.y, z: seg.z, flipX, rotY, segPid }, runtime);
     return;
   }
 
-  if (
-    profile &&
-    profile.length >= 2 &&
-    Number.isFinite(segLen) &&
-    segLen > 0 &&
-    typeof THREE.Shape === 'function' &&
-    typeof THREE.ExtrudeGeometry === 'function'
-  ) {
-    const mesh = createProfileSegment({ ...segmentArgs, profile, segLen }, runtime);
-    if (!mesh) return;
-    finalizeCorniceMesh(mesh, { x, y, z, flipX, rotY, segPid }, runtime);
-    return;
-  }
-
-  const w = __asFinite(seg.width);
-  const h = __asFinite(seg.height);
-  const d = __asFinite(seg.depth);
-  if (!Number.isFinite(w) || !Number.isFinite(h) || !Number.isFinite(d)) return;
-
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), segMat);
-  finalizeCorniceMesh(
-    mesh,
-    { x, y, z: Number.isFinite(z) ? z : 0, flipX, rotY, segPid, fallbackY: h / 2 },
+  if (typeof THREE.Shape !== 'function' || typeof THREE.ExtrudeGeometry !== 'function') return;
+  const mesh = createProfileSegment(
+    { THREE, seg, segMat, getPartMaterial, segPid, profile: seg.profile, segLen: seg.length },
     runtime
   );
+  if (!mesh) return;
+  finalizeCorniceMesh(mesh, { x: seg.x, y: seg.y, z: seg.z, flipX, rotY, segPid }, runtime);
 }

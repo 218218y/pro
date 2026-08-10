@@ -1,4 +1,5 @@
 import type { AppContainer, Object3DLike, UnknownCallable } from '../../../types';
+import type { CarcassCornicePlan, CarcassCorniceSegment, CorniceProfilePoint } from './carcass_cornice_ir.js';
 
 export type AnyMap = Record<string, unknown>;
 
@@ -132,34 +133,9 @@ export type BoardOp = {
   partId?: unknown;
 };
 
-export type ProfilePoint = { x?: unknown; y?: unknown };
-
-export type CorniceSegment = {
-  kind?: unknown;
-  x?: unknown;
-  y?: unknown;
-  z?: unknown;
-  partId?: unknown;
-  profile?: unknown;
-  length?: unknown;
-  rotationY?: unknown;
-  flipX?: unknown;
-  width?: unknown;
-  depth?: unknown;
-  height?: unknown;
-  heightMax?: unknown;
-  waveAmp?: unknown;
-  waveCycles?: unknown;
-  miterStartTrim?: unknown;
-  miterEndTrim?: unknown;
-  miterMode?: unknown;
-};
-
-export type CorniceOp = {
-  kind: 'cornice';
-  partId?: unknown;
-  segments?: unknown;
-};
+export type ProfilePoint = CorniceProfilePoint;
+export type CorniceSegment = CarcassCorniceSegment;
+export type CorniceOp = CarcassCornicePlan;
 
 export type CarcassOps = {
   base?: PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp | null;

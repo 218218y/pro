@@ -36,11 +36,23 @@ test('render_carcass shared normalizes context and ops through focused readers',
     boards: [{ kind: 'board', width: 1, height: 2, depth: 3, x: 0, y: 0, z: 0 }],
     backPanels: [{ kind: 'back_panel', width: 1, height: 2, depth: 0.1, x: 0, y: 0, z: 0 }],
     backPanel: { kind: 'back_panel', width: 1, height: 2, depth: 0.1, x: 0, y: 0, z: 0 },
-    cornice: { kind: 'cornice', segments: [] },
+    cornice: { kind: 'cornice', mode: 'wave_frame', partId: 'cornice_color', segments: [] },
   });
   assert.equal(ops?.base?.kind, 'plinth');
   assert.equal(ops?.backPanel?.kind, 'back_panel');
   assert.equal(ops?.cornice?.kind, 'cornice');
+
+  const malformedCornice = __asOps({
+    cornice: {
+      kind: 'cornice',
+      mode: 'wave_frame',
+      partId: 'cornice_color',
+      segments: [
+        { kind: 'cornice_profile_seg', x: 0, y: 0, z: 0, length: 1, profile: [], rotationY: 0, flipX: false },
+      ],
+    },
+  });
+  assert.equal(malformedCornice?.cornice, null, 'renderer boundary should reject invalid typed cornice IR');
 
   const topOnlyPlatformOps = __asOps({
     base: {
