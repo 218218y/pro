@@ -30,6 +30,8 @@ import {
   inspectCanvasPickingClickNdc,
 } from './canvas_picking_access.js';
 import { asRecord } from './record.js';
+import { getWardrobeGroup } from './render_access.js';
+import { createSceneGeometrySnapshot } from './scene_geometry_debug.js';
 import { getStoreSurfaceMaybe } from './store_surface_access.js';
 
 type StoreWithDebug = PublicStoreLike & {
@@ -285,6 +287,11 @@ export function createDebugConsoleSurface(App: AppContainer): WardrobeProDebugCo
       },
       inspectNdc(x: number, y: number) {
         return inspectCanvasPickingClickNdc(App, normalizeNdc(x), normalizeNdc(y));
+      },
+    },
+    scene: {
+      getGeometrySnapshot() {
+        return createSceneGeometrySnapshot(getWardrobeGroup(App));
       },
     },
   };

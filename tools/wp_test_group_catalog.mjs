@@ -671,6 +671,8 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     files: [
       'tests/perf_runtime_surface_runtime.test.ts',
       'tests/observability_surface_prod_runtime.test.ts',
+      'tests/scene_geometry_debug_runtime.test.ts',
+      'tests/wp_playwright_matrix_profiles_runtime.test.js',
       'tests/project_ui_action_events_runtime.test.ts',
       'tests/wp_browser_perf_support_runtime.test.js',
       'tests/export_actions_runtime.test.ts',

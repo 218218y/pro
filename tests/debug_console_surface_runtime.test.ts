@@ -94,3 +94,52 @@ test('debug console surface runtime: canvas helpers route through canonical canv
   assert.deepEqual(clickCalls, [[1, -1]]);
   assert.deepEqual(hoverCalls, [[0.25, -0.5]]);
 });
+
+test('debug console surface runtime: scene helper exposes deterministic wardrobe geometry without App', () => {
+  const panel: any = {
+    name: 'panel',
+    visible: true,
+    parent: null,
+    children: [],
+    position: { x: 0, y: 1, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    userData: { partId: 'body_top' },
+    isMesh: true,
+    geometry: {
+      attributes: {
+        position: {
+          array: new Float32Array([-1, 0, -1, 1, 0, 1]),
+          itemSize: 3,
+          count: 2,
+        },
+      },
+    },
+    add() {},
+    remove() {},
+  };
+  const wardrobeGroup: any = {
+    name: 'App.render.wardrobeGroup',
+    visible: true,
+    parent: null,
+    children: [panel],
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    userData: {},
+    add() {},
+    remove() {},
+  };
+  panel.parent = wardrobeGroup;
+
+  const surface = createDebugConsoleSurface({ render: { wardrobeGroup } } as any);
+  const snapshot = surface.scene.getGeometrySnapshot();
+
+  assert.ok(snapshot);
+  assert.equal(snapshot.summary.nodeCount, 2);
+  assert.equal(snapshot.summary.geometryCount, 1);
+  assert.equal(snapshot.summary.vertexCount, 2);
+  assert.deepEqual(snapshot.partIds, ['body_top']);
+  assert.deepEqual(snapshot.violations, []);
+  assert.match(snapshot.fingerprint, /^scene-v1-[0-9a-f]{8}$/u);
+});

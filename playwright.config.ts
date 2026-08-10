@@ -1,9 +1,24 @@
 import { defineConfig } from '@playwright/test';
 import { resolvePlaywrightChromiumLaunchOptions } from './tools/wp_playwright_browser_support.js';
+import { PLAYWRIGHT_CRITICAL_MATRIX_PROFILES } from './tools/wp_playwright_matrix_profiles.js';
 import { resolveNpmRunCommandString } from './tools/wp_npm_spawn_support.js';
 
 const { launchOptions } = resolvePlaywrightChromiumLaunchOptions();
 const webServerCommand = resolveNpmRunCommandString('start:e2e');
+const setupTestMatch = /.*\.setup\.ts/;
+const criticalMatrixTestMatch = /critical_matrix\.spec\.ts/;
+
+const criticalMatrixProjects = PLAYWRIGHT_CRITICAL_MATRIX_PROFILES.map(profile => ({
+  name: profile.name,
+  dependencies: ['setup'],
+  testMatch: criticalMatrixTestMatch,
+  use: {
+    viewport: profile.viewport,
+    deviceScaleFactor: profile.deviceScaleFactor,
+    hasTouch: profile.hasTouch,
+    reducedMotion: profile.reducedMotion,
+  },
+}));
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -15,13 +30,14 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /.*\.setup\.ts/,
+      testMatch: setupTestMatch,
     },
     {
       name: 'chromium',
       dependencies: ['setup'],
-      testIgnore: /.*\.setup\.ts/,
+      testIgnore: [setupTestMatch, criticalMatrixTestMatch],
     },
+    ...criticalMatrixProjects,
   ],
   use: {
     baseURL: 'http://127.0.0.1:5175',

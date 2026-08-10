@@ -255,12 +255,38 @@ export interface WardrobeProDebugCanvasConsoleSurface {
   inspectNdc: (x: number, y: number) => WardrobeProDebugCanvasHitInfo | null;
 }
 
+export interface WardrobeProDebugSceneGeometrySummary {
+  nodeCount: number;
+  visibleNodeCount: number;
+  meshCount: number;
+  geometryCount: number;
+  partNodeCount: number;
+  uniquePartCount: number;
+  vertexCount: number;
+  invalidNumberCount: number;
+  maxDepth: number;
+}
+
+export interface WardrobeProDebugSceneGeometrySnapshot {
+  version: 1;
+  fingerprint: string;
+  rootName: string;
+  summary: WardrobeProDebugSceneGeometrySummary;
+  partIds: string[];
+  violations: string[];
+}
+
+export interface WardrobeProDebugSceneConsoleSurface {
+  getGeometrySnapshot: () => WardrobeProDebugSceneGeometrySnapshot | null;
+}
+
 /** Browser-only debug helpers attached at runtime for manual inspection. */
 export interface WardrobeProDebugConsoleSurface {
   store: WardrobeProDebugStoreConsoleSurface;
   build: WardrobeProDebugBuildConsoleSurface;
   render: WardrobeProDebugRenderConsoleSurface;
   canvas: WardrobeProDebugCanvasConsoleSurface;
+  scene: WardrobeProDebugSceneConsoleSurface;
   [k: string]: unknown;
 }
 

@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-09T20:39:33.950Z",
+  "generatedAt": "2026-08-09T21:03:07.164Z",
   "totals": {
-    "tests": 1236,
-    "unitRunnerTests": 1228,
-    "e2eTests": 8,
-    "nonTestRuntimeFiles": 35,
+    "tests": 1239,
+    "unitRunnerTests": 1230,
+    "e2eTests": 9,
+    "nonTestRuntimeFiles": 36,
     "packageTestReferences": 40,
-    "catalogTestReferences": 452,
-    "totalTestReferences": 492,
+    "catalogTestReferences": 454,
+    "totalTestReferences": 494,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 43,
     "catalogScriptBindings": 43,
@@ -20,10 +20,10 @@
   },
   "categories": {
     "contract": 407,
-    "runtime-unit": 329,
+    "runtime-unit": 331,
     "integration": 461,
     "persistence-ingress": 24,
-    "e2e-smoke": 9,
+    "e2e-smoke": 10,
     "perf-smoke": 6
   },
   "failures": {
@@ -5281,6 +5281,10 @@
       "category": "e2e-smoke"
     },
     {
+      "file": "tests/e2e/critical_matrix.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
       "file": "tests/e2e/html_sanitize_security.spec.ts",
       "category": "e2e-smoke"
     },
@@ -7097,6 +7101,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/scene_geometry_debug_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/scene_view_access_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -8171,6 +8179,10 @@
     {
       "file": "tests/wp_perf_smoke_runtime.test.js",
       "category": "perf-smoke"
+    },
+    {
+      "file": "tests/wp_playwright_matrix_profiles_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/wp_playwright_preflight_runtime.test.js",

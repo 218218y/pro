@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-09T05:03:00.003Z
+Generated: 2026-08-09T21:03:07.016Z
 
 ## Summary
 
 - Catalog groups: 43
 - Package script bindings owned by the catalog: 43
-- Catalog test-file references: 452
+- Catalog test-file references: 454
 - Direct package.json test-file references still remaining: 40
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -40,7 +40,7 @@ Generated: 2026-08-09T05:03:00.003Z
 | `order-pdf-pdf-render`              | `test:order-pdf-surfaces:pdf-render`           | focused | tsx-test   | tsx         |     5 | ui/order-pdf/pdf-runtime                                             |
 | `order-pdf-sketch`                  | `test:order-pdf-surfaces:sketch`               | focused | tsx-test   | tsx         |     6 | ui/order-pdf/sketch                                                  |
 | `overlay-export-family-runtime`     | `test:overlay-export-family-runtime`           | focused | tsx-test   | tsx         |     9 | ui/overlays, ui/export                                               |
-| `perf-e2e-runtime-core`             | `test:perf-e2e-runtime-core`                   | focused | tsx-test   | tsx         |     7 | runtime/perf, ui/action-events                                       |
+| `perf-e2e-runtime-core`             | `test:perf-e2e-runtime-core`                   | focused | tsx-test   | tsx         |     9 | runtime/perf, ui/action-events                                       |
 | `perf-toolchain-core`               | `test:perf-toolchain-core`                     | focused | node-test  | node        |     6 | toolchain/performance, toolchain/verification                        |
 | `project-surfaces`                  | `test:project-surfaces`                        | primary | tsx-test   | tsx         |    18 | io/project, ui/project-session                                       |
 | `public-surfaces`                   | `test:public-surfaces`                         | primary | tsx-test   | tsx         |    20 | public-api, platform/browser, services/models                        |

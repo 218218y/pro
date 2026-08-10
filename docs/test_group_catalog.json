@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-09T05:03:00.003Z",
+  "generatedAt": "2026-08-09T21:03:07.016Z",
   "summary": {
     "groups": 43,
     "scriptBindings": 43,
-    "catalogFileReferences": 452,
+    "catalogFileReferences": 454,
     "directPackageTestReferences": 40,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -619,10 +619,12 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 7,
+      "fileCount": 9,
       "files": [
         "tests/perf_runtime_surface_runtime.test.ts",
         "tests/observability_surface_prod_runtime.test.ts",
+        "tests/scene_geometry_debug_runtime.test.ts",
+        "tests/wp_playwright_matrix_profiles_runtime.test.js",
         "tests/project_ui_action_events_runtime.test.ts",
         "tests/wp_browser_perf_support_runtime.test.js",
         "tests/export_actions_runtime.test.ts",

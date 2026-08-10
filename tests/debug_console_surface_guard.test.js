@@ -32,10 +32,13 @@ test('debug console surface is installed without exposing global App', () => {
   assert.match(debugSurface, /hoverNdc\(x: number, y: number\): boolean/);
   assert.match(debugSurface, /inspectCanvasPickingClickNdc/);
   assert.match(debugSurface, /inspectNdc\(x: number, y: number\)/);
+  assert.match(debugSurface, /createSceneGeometrySnapshot\(getWardrobeGroup\(App\)\)/);
+  assert.match(debugSurface, /getGeometrySnapshot\(\)/);
   assert.match(domGlobals, /__WP_DEBUG__\?: WardrobeProDebugConsoleSurface;/);
   assert.match(debugSurface, /build:\s*\{/);
   assert.match(debugSurface, /render:\s*\{/);
   assert.match(debugSurface, /canvas:\s*\{/);
+  assert.match(debugSurface, /scene:\s*\{/);
 
   assert.doesNotMatch(debugSurface, /window\.App|globalThis\.App/);
 });

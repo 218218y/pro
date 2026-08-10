@@ -10,6 +10,8 @@ Do not run full `npm run e2e:smoke` after every Codex fix. Run it when the chang
 npm run e2e:smoke:list
 npm run e2e:critical:list
 npm run e2e:critical
+npm run e2e:matrix:list
+npm run e2e:matrix
 npm run e2e:smoke
 npm run e2e:cloud-sync-reconnect
 npm run e2e:canvas-pointer-parity
@@ -19,14 +21,21 @@ npm run perf:browser
 
 `npm run e2e:smoke:preflight` checks the Playwright/browser environment before running the suite.
 
-`npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It runs only the
-five `@critical` journeys: app boot/navigation, real authoring/build follow-through, save/load roundtrip,
-canvas pointer preview/commit parity, and the order-PDF overlay lifecycle. The full smoke suite remains
-available manually and for broader release validation.
+`npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It keeps the five
+canonical Chromium `@critical` journeys (app boot/navigation, real authoring/build follow-through,
+save/load roundtrip, canvas pointer preview/commit parity, and the order-PDF overlay lifecycle) and also
+runs one targeted `@matrix` journey across five profiles: desktop, XS portrait, XS landscape, touch+DPR2,
+and reduced motion. The matrix journey verifies shell interaction, a real structure edit, and deterministic
+scene-geometry invariants. It does **not** multiply the rest of the smoke suite across devices.
 
-The Playwright config runs a small app-shell warmup setup project before the parallel smoke workers.
-Keep that setup focused on booting `index_pro.html` and waiting for the canonical shell/canvas readiness;
-do not add product scenarios there.
+`npm run e2e:matrix` runs only that five-profile matrix. Cloud Sync offline/reconnect remains a dedicated
+single-profile browser scenario (`e2e:cloud-sync-reconnect`); it is intentionally not duplicated across
+layout/device profiles because its risk is connectivity lifecycle rather than responsive rendering.
+
+The Playwright config runs a small app-shell warmup setup project before the smoke workers. The regular
+`chromium` project excludes `critical_matrix.spec.ts`; only the five named matrix projects own that file.
+Keep the setup focused on booting `index_pro.html` and waiting for canonical shell/canvas readiness; do not
+add product scenarios there.
 
 ## What belongs in E2E
 
@@ -47,6 +56,17 @@ Keep E2E focused on critical journeys:
 `tests/e2e/authoring_builds.spec.ts` is the canonical browser smoke for real user edits that must trigger
 actual build/render work. Keep it focused on high-value authoring modes rather than exhaustive option matrices:
 structure/design/interior edits, corner/chest/library/sliding modes, stack-split, and cell-dim overrides.
+
+`tests/e2e/critical_matrix.spec.ts` is the only device/profile multiplication point. Its profile definitions
+live in `tools/wp_playwright_matrix_profiles.js`, so Playwright configuration and E2E assertions share one
+source of truth.
+
+The debug build exposes `__WP_DEBUG__.scene.getGeometrySnapshot()` without exposing the application
+container. The snapshot is deterministic: it scans only the canonical wardrobe group, sorts scene entries,
+rounds geometry-relevant transforms, inspects BufferGeometry position data/local bounds, and reports a stable
+fingerprint plus violations. Matrix tests require zero non-finite transforms/vertex values and prove that a
+real structure edit changes the fingerprint. This gives browser-level geometry evidence without fragile
+pixel screenshots.
 
 Release artifact cleanliness is guarded outside browser E2E by `npm run check:release-clean`,
 `npm run check:release-observability-clean`, and by the pre-release `npm run verify` bundle lane. Tests stay
