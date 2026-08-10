@@ -16,6 +16,12 @@ function normalizeGrooveLinesCount(value: unknown): number | null {
     : null;
 }
 
+function normalizeDrawerRunnerType(settings: Record<string, unknown>): void {
+  const value = settings.drawerRunnerType;
+  if (value === 'roller' || value === 'blum') return;
+  if (typeof value !== 'undefined') delete settings.drawerRunnerType;
+}
+
 function normalizeGlobalHandleType(settings: Record<string, unknown>): void {
   const value = settings.globalHandleType;
   if (value === 'edge' || value === 'none' || value === 'standard') return;
@@ -84,6 +90,7 @@ export function normalizeCurrentProjectData(data: ProjectDataLike, nowISO?: stri
     ProjectDataLike['doorTrimMap']
   >;
 
+  normalizeDrawerRunnerType(settings);
   normalizeGlobalHandleType(settings);
 
   data.__schema = PROJECT_SCHEMA_ID;

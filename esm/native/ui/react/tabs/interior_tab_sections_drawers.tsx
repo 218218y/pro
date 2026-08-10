@@ -27,6 +27,7 @@ import type {
   EmbeddedSketchExternalDrawersControlsProps,
   EmbeddedSketchInternalDrawersControlsProps,
   InteriorDividerSectionProps,
+  InteriorDrawerRunnerSectionProps,
   InteriorExternalDrawersSectionProps,
   InteriorInternalDrawersSectionProps,
 } from './interior_tab_sections_contracts.js';
@@ -409,6 +410,37 @@ export function InteriorInternalDrawersSection(props: InteriorInternalDrawersSec
         <InlineNotice>הפעל כדי לבחור מיקום מגירות פנימיות בתוך התאים.</InlineNotice>
       )}
     </>
+  );
+}
+
+export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionProps): ReactElement {
+  return (
+    <div className="wp-tool-card wp-tool-card--drawer-runner" data-testid="interior-drawer-runner-card">
+      <InteriorToolCardHeader title="🛞 מסילות למגירות" />
+
+      <div className="wp-row wp-gap-8">
+        <OptionBtn
+          className="wp-flex-1"
+          selected={props.drawerRunnerType === 'roller'}
+          onClick={() => props.setDrawerRunnerType('roller')}
+          testId="interior-drawer-runner-roller-button"
+        >
+          מסילה רגילה
+        </OptionBtn>
+        <OptionBtn
+          className="wp-flex-1"
+          selected={props.drawerRunnerType === 'blum'}
+          onClick={() => props.setDrawerRunnerType('blum')}
+          testId="interior-drawer-runner-blum-button"
+        >
+          Blum
+        </OptionBtn>
+      </div>
+
+      <div className="wp-hint wp-mt-8">
+        רגילה: מסילת צד עם גלגל פלסטיק. Blum: TANDEM נסתרת מתחת למגירה. הבחירה חלה על מגירות רגילות ופנימיות.
+      </div>
+    </div>
   );
 }
 

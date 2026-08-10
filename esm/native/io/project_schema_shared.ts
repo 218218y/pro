@@ -19,6 +19,10 @@ import {
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 export { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
+export function normalizeProjectDrawerRunnerType(value: unknown): 'roller' | 'blum' {
+  return value === 'blum' ? 'blum' : 'roller';
+}
+
 export function readProjectDataRecord(value: unknown): ProjectDataLike | null {
   return isObjectRecord(value) ? value : null;
 }

@@ -18,3 +18,6 @@ export type BoardMaterial = 'sandwich' | 'melamine';
 
 /** Hinged-door mounting mode: regular overlay vs inset/flush inside the side frame. */
 export type DoorMountMode = 'overlay' | 'inset';
+
+/** Drawer runner construction used by ordinary external/internal drawers. */
+export type DrawerRunnerType = 'roller' | 'blum';

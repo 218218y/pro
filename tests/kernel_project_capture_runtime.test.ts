@@ -14,6 +14,7 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   const cfgSource: Record<string, unknown> = {
     wardrobeType: 'hinged',
     doorMountMode: 'inset',
+    drawerRunnerType: 'blum',
     overlayFrameThicknessCm: '2.4',
     overlayShelfThicknessCm: 1.2,
     insetFrameThicknessCm: 3.6,
@@ -65,6 +66,7 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   const snapshot = capture('persist') as Record<string, any>;
 
   assert.equal(snapshot.settings.doorMountMode, 'inset');
+  assert.equal(snapshot.settings.drawerRunnerType, 'blum');
   assert.equal(Object.prototype.hasOwnProperty.call(snapshot.settings, 'overlayFrameThicknessCm'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(snapshot.settings, 'insetFrameThicknessCm'), false);
   assert.equal(snapshot.overlayFrameThicknessCm, 2.4);
@@ -324,6 +326,7 @@ test('kernel project capture payload preserves exact persisted key order and ser
     'structureSelection',
     'wardrobeType',
     'doorMountMode',
+    'drawerRunnerType',
     'boardMaterial',
     'isManualWidth',
     'singleDoorPos',
@@ -383,10 +386,10 @@ test('kernel project capture payload preserves exact persisted key order and ser
   }
 
   const serialized = JSON.stringify(payload);
-  assert.equal(serialized.length, 2021);
+  assert.equal(serialized.length, 2049);
   assert.equal(
     createHash('sha256').update(serialized).digest('hex'),
-    'c01e3a7202691bf93150501bcb1c9d5888ebf7d67a7281985120f16567db4436'
+    '5769859ebed68f0a53929c7b98d5c10cf43f79e00633e2aab3a1db17dd68316e'
   );
 });
 

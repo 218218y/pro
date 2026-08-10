@@ -7,7 +7,7 @@ import {
   useModeSelectorShallow,
   useUiSelectorShallow,
 } from '../hooks.js';
-import { selectHasInternalDrawersData } from '../selectors/config_selectors.js';
+import { selectDrawerRunnerType, selectHasInternalDrawersData } from '../selectors/config_selectors.js';
 import {
   useInteriorTabLocalState,
   type InteriorTabLocalStateModel,
@@ -34,6 +34,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
   const ui = useUiSelectorShallow(readInteriorTabUiSnapshot);
   const handleCfg = useCfgSelectorShallow<InteriorHandleCfgView>(readInteriorTabHandleCfgSnapshot);
   const hasIntDrawerData = useCfgSelector(selectHasInternalDrawersData);
+  const drawerRunnerType = useCfgSelector(selectDrawerRunnerType);
   const isChestMode = !!ui.isChestMode;
   const wardrobeType = useCfgSelector(cfg =>
     String(cfg.wardrobeType || 'hinged') === 'sliding' ? 'sliding' : 'hinged'
@@ -110,6 +111,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       extDrawerType: coreState.extDrawerType,
       extDrawerCount: coreState.extDrawerCount,
       internalDrawersEnabled: coreState.internalDrawersEnabled,
+      drawerRunnerType,
       handleControlEnabled: coreState.handleControlEnabled,
       globalHandleType: coreState.globalHandleType,
       handleToolType: coreState.handleToolType,
@@ -125,7 +127,7 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       showGridControls: coreState.showGridControls,
       showShelfVariantControls: coreState.showShelfVariantControls,
     }),
-    [coreState, wardrobeType, isChestMode, hasIntDrawerData, localState]
+    [coreState, wardrobeType, isChestMode, hasIntDrawerData, drawerRunnerType, localState]
   );
 
   return {

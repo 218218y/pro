@@ -7,6 +7,7 @@
 
 import type {
   ConfigStateLike,
+  DrawerRunnerType,
   HingeMap,
   ModuleConfigLike,
   ProjectPreChestStateLike,
@@ -142,6 +143,11 @@ export function selectBoardMaterial(cfg: ConfigStateLike): 'sandwich' | 'melamin
 export function selectDoorMountMode(cfg: ConfigStateLike): 'overlay' | 'inset' {
   const v = readConfigScalarOrDefault(cfg, 'doorMountMode');
   return v === 'inset' ? 'inset' : 'overlay';
+}
+
+export function selectDrawerRunnerType(cfg: ConfigStateLike): DrawerRunnerType {
+  const v = readConfigScalarOrDefault(cfg, 'drawerRunnerType');
+  return v === 'blum' ? 'blum' : 'roller';
 }
 
 export function selectDoorMountThicknessControls(cfg: ConfigStateLike) {

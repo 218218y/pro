@@ -155,6 +155,13 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
       errors.push('settings.boardMaterial must be sandwich or melamine');
     }
     if (
+      hasOwn(settings, 'drawerRunnerType') &&
+      settings.drawerRunnerType !== 'roller' &&
+      settings.drawerRunnerType !== 'blum'
+    ) {
+      errors.push('settings.drawerRunnerType must be roller or blum');
+    }
+    if (
       hasOwn(settings, 'globalHandleType') &&
       settings.globalHandleType !== 'standard' &&
       settings.globalHandleType !== 'edge' &&

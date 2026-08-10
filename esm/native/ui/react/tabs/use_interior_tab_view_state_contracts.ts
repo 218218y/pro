@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 
-import type { AppContainer, ModeActionOptsLike } from '../../../../../types';
+import type { AppContainer, DrawerRunnerType, ModeActionOptsLike } from '../../../../../types';
 import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
@@ -52,6 +52,7 @@ export type InteriorTabViewState = {
   extDrawerType: ExtDrawerType;
   extDrawerCount: number;
   internalDrawersEnabled: boolean;
+  drawerRunnerType: DrawerRunnerType;
   handleControlEnabled: boolean;
   globalHandleType: HandleType;
   handleToolType: HandleType;

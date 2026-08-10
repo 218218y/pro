@@ -4,7 +4,7 @@
 // without restricting the migration. We keep a fallback signature to allow
 // older/dynamic keys where necessary.
 
-import type { BoardMaterial, DoorMountMode, HandleType, WardrobeType } from './domain';
+import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
 import type { SavedColorLike } from './build';
 import type { ModulesConfigurationLike, CornerConfigurationLike } from './modules_configuration';
 import type { IndividualColorsMap } from './maps';
@@ -22,6 +22,7 @@ export type ConfigScalarKey =
   | 'grooveLinesCount'
   | 'boardMaterial'
   | 'doorMountMode'
+  | 'drawerRunnerType'
   | 'overlayFrameThicknessCm'
   | 'overlayShelfThicknessCm'
   | 'insetFrameThicknessCm'
@@ -53,6 +54,7 @@ export type ConfigScalarValueMap = {
   grooveLinesCount: number | null;
   boardMaterial: BoardMaterial | '';
   doorMountMode: DoorMountMode | '';
+  drawerRunnerType: DrawerRunnerType;
   overlayFrameThicknessCm: number | null;
   overlayShelfThicknessCm: number | null;
   insetFrameThicknessCm: number | null;

@@ -70,6 +70,22 @@ test('project io default snapshot rematerializes saved module lists before expor
   assert.equal(snap.cornerConfiguration.layout, 'shelves');
 });
 
+test('drawer runner selection defaults to roller and survives project save/load snapshots', () => {
+  const defaultSnap = buildDefaultProjectDataSnapshot({
+    ui: { raw: { width: 180, height: 240, depth: 60, doors: 2 } },
+    config: { wardrobeType: 'hinged' },
+  } as never);
+  assert.equal(defaultSnap.settings.drawerRunnerType, 'roller');
+  assert.equal(buildProjectConfigSnapshot(defaultSnap).drawerRunnerType, 'roller');
+
+  const blumSnap = buildDefaultProjectDataSnapshot({
+    ui: { raw: { width: 180, height: 240, depth: 60, doors: 2 } },
+    config: { wardrobeType: 'hinged', drawerRunnerType: 'blum' },
+  } as never);
+  assert.equal(blumSnap.settings.drawerRunnerType, 'blum');
+  assert.equal(buildProjectConfigSnapshot(blumSnap).drawerRunnerType, 'blum');
+});
+
 test('project save finalizer canonicalizes captured module lists from raw payload snapshots', () => {
   const finalized = finalizeProjectForSavePayload(
     canonicalProjectSource({

@@ -7,6 +7,10 @@ import {
   readMirrorLayoutConfigMap,
 } from '../features/project_config/api.js';
 import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/project_capture_dimension_policy.js';
+
+function normalizeCapturedDrawerRunnerType(value: unknown): 'roller' | 'blum' {
+  return value === 'blum' ? 'blum' : 'roller';
+}
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 import { asString } from './kernel_shared.js';
@@ -117,6 +121,7 @@ function buildProjectCaptureSettings(
     structureSelection: asString(uiRec.structureSelect, ''),
     wardrobeType: cfgRec.wardrobeType !== undefined ? asString(cfgRec.wardrobeType, 'hinged') : 'hinged',
     doorMountMode: cfgRec.doorMountMode === 'inset' ? 'inset' : 'overlay',
+    drawerRunnerType: normalizeCapturedDrawerRunnerType(cfgRec.drawerRunnerType),
     boardMaterial:
       cfgRec.boardMaterial !== undefined ? asString(cfgRec.boardMaterial, 'sandwich') : 'sandwich',
     isManualWidth: cfgRec.isManualWidth !== undefined ? !!cfgRec.isManualWidth : false,

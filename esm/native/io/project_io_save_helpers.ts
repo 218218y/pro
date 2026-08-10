@@ -7,6 +7,7 @@ import type {
 } from '../../../types/index.js';
 
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from './project_schema.js';
+import { normalizeProjectDrawerRunnerType } from './project_schema_shared.js';
 import { validateProjectData } from './project_schema_validation.js';
 import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/api.js';
 import {
@@ -202,6 +203,7 @@ export function buildDefaultProjectDataSnapshot(
       structureSelection: ui.structureSelect || '',
       wardrobeType: cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged',
       doorMountMode: cfg.doorMountMode === 'inset' ? 'inset' : 'overlay',
+      drawerRunnerType: normalizeProjectDrawerRunnerType(cfg.drawerRunnerType),
       isManualWidth: readBoolean(cfg.isManualWidth),
       singleDoorPos: ui.singleDoorPos || 'left',
       globalHandleType: cfg.globalHandleType || 'standard',

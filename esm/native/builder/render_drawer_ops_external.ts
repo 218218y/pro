@@ -1,5 +1,6 @@
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
 import {
   EXTERNAL_DRAWER_CONTENTS_POLICY,
@@ -244,6 +245,21 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       );
       const openPos = new THREE.Vector3(drawerOp.open?.x || 0, drawerOp.open?.y || 0, drawerOp.open?.z || 0);
       group.position.copy(closedPos);
+
+      if (drawerOp.kind !== 'shoe') {
+        appendDrawerRunnerVisuals({
+          THREE,
+          runnerType: cfg.drawerRunnerType,
+          fixedParent: wardrobeGroup,
+          movingParent: group,
+          drawerWidthM: drawerOp.boxW,
+          drawerHeightM: drawerOp.boxH,
+          drawerDepthM: drawerOp.boxD,
+          drawerLocalCenterZM: drawerOp.boxOffsetZ || 0,
+          closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
+          ownerPartId: partId,
+        });
+      }
 
       wardrobeGroup.add(group);
       const drawersArray = __drawers(App);

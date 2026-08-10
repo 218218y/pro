@@ -5,6 +5,7 @@ import type {
   BuilderOutlineFn,
 } from '../../../types';
 import { readDoorStyleMap } from '../features/door_authoring/api.js';
+import { readDrawerRunnerTypeFromConfig } from './drawer_runner_policy.js';
 import { isFunction, isRecord, readObject3D } from './render_drawer_ops_shared_guards.js';
 import type {
   DrawerConfig,
@@ -28,7 +29,7 @@ function readStringNullableMap(value: unknown): Record<string, string | null | u
 }
 
 export function readDrawerConfig(value: unknown): DrawerConfig {
-  if (!isRecord(value)) return {};
+  if (!isRecord(value)) return { drawerRunnerType: 'roller' };
   return {
     groovesMap: readObjectMap(value.groovesMap),
     doorTrimMap: readObjectMap(value.doorTrimMap),
@@ -40,6 +41,7 @@ export function readDrawerConfig(value: unknown): DrawerConfig {
     grooveLayoutMap: readObjectMap(value.grooveLayoutMap),
     isMultiColorMode: value.isMultiColorMode === true,
     isLibraryMode: value.isLibraryMode === true,
+    drawerRunnerType: readDrawerRunnerTypeFromConfig(value),
   };
 }
 

@@ -15,6 +15,7 @@ test('current project schema accepts canonical maps without mutating their persi
       depth: 60,
       doors: 4,
       globalHandleType: 'standard',
+      drawerRunnerType: 'blum',
     },
     toggles: {
       showContents: false,
@@ -51,6 +52,7 @@ test('current project schema accepts canonical maps without mutating their persi
   assert.deepEqual(out.groovesMap, {});
   assert.equal(out.grooveLinesCount, 3);
   assert.equal(out.settings.globalHandleType, 'standard');
+  assert.equal(out.settings.drawerRunnerType, 'blum');
   assert.equal(out.__validation.ok, true);
 });
 
@@ -115,4 +117,26 @@ test('current project schema rejects missing schema metadata and old payload env
   assert.equal(normalizeProjectData({ project: currentData }), null);
   assert.equal(normalizeProjectData({ payload: currentData }), null);
   assert.equal(normalizeProjectData({ ...currentData, __version: PROJECT_SCHEMA_VERSION - 1 }), null);
+});
+
+test('current project schema rejects invalid drawer runner values', () => {
+  const data: any = {
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
+    settings: {
+      wardrobeType: 'hinged',
+      width: 240,
+      height: 240,
+      depth: 60,
+      doors: 4,
+      drawerRunnerType: 'ball-bearing',
+    },
+    toggles: {
+      showContents: false,
+      showHanger: false,
+      showDimensions: false,
+    },
+  };
+
+  assert.equal(normalizeProjectData(data, '2026-08-10T00:00:00.000Z'), null);
 });

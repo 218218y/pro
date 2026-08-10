@@ -29,6 +29,7 @@ export function readExternalDrawerOp(value: unknown): ExternalDrawerOpLike | nul
     return null;
   }
   return {
+    kind: typeof value.kind === 'string' ? value.kind : undefined,
     partId,
     grooveKey: typeof value.grooveKey === 'string' ? value.grooveKey : undefined,
     dividerKey: typeof value.dividerKey === 'string' ? value.dividerKey : undefined,

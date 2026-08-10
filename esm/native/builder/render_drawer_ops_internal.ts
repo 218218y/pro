@@ -1,6 +1,7 @@
 import { CHEST_MODE_DRAWER_BOX_RENDER_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
 import { INTERNAL_DRAWER_CONTENTS_POLICY } from '../../shared/dimensions/internal_drawer_policy.js';
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
+import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
 import { emitSketchInternalDrawerCassettePanels } from './render_interior_sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
@@ -132,6 +133,20 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       );
 
       intBox.position.copy(closedPos);
+
+      appendDrawerRunnerVisuals({
+        THREE,
+        runnerType: cfg.drawerRunnerType,
+        fixedParent: drawerGroup,
+        movingParent: intBox,
+        drawerWidthM: drawerOp.width,
+        drawerHeightM: drawerOp.height,
+        drawerDepthM: drawerOp.depth,
+        drawerLocalCenterZM: 0,
+        closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
+        ownerPartId: partId,
+      });
+
       drawerGroup.add(intBox);
 
       const drawersArray = __drawers(App);

@@ -10,6 +10,7 @@ import { asRecord as asUnknownRecord } from './record.js';
 
 export type BoardMaterialValue = ConfigScalarValueMap['boardMaterial'];
 export type DoorMountModeValue = ConfigScalarValueMap['doorMountMode'];
+export type DrawerRunnerTypeValue = ConfigScalarValueMap['drawerRunnerType'];
 export type WardrobeTypeValue = ConfigScalarValueMap['wardrobeType'];
 export type GlobalHandleTypeValue = ConfigScalarValueMap['globalHandleType'];
 export type ConfigScalarState = ConfigStateLike & { [K in ConfigScalarKey]?: ConfigScalarValueMap[K] };
@@ -64,6 +65,7 @@ export const DEFAULTS: ConfigScalarDefaults = {
   grooveLinesCount: null,
   boardMaterial: 'sandwich',
   doorMountMode: 'overlay',
+  drawerRunnerType: 'roller',
   overlayFrameThicknessCm: null,
   overlayShelfThicknessCm: null,
   insetFrameThicknessCm: null,
@@ -77,6 +79,10 @@ export function isBoardMaterialKey(key: ConfigScalarKey): key is 'boardMaterial'
 
 export function isDoorMountModeKey(key: ConfigScalarKey): key is 'doorMountMode' {
   return key === 'doorMountMode';
+}
+
+export function isDrawerRunnerTypeKey(key: ConfigScalarKey): key is 'drawerRunnerType' {
+  return key === 'drawerRunnerType';
 }
 
 export function isWardrobeTypeKey(key: ConfigScalarKey): key is 'wardrobeType' {
@@ -155,6 +161,14 @@ export function normalizeDoorMountMode(value: unknown, defaultValue: DoorMountMo
   return s === 'inset' || s === 'overlay' ? s : defaultValue;
 }
 
+export function normalizeDrawerRunnerType(
+  value: unknown,
+  defaultValue: DrawerRunnerTypeValue
+): DrawerRunnerTypeValue {
+  const s = typeof value === 'string' ? value.trim() : '';
+  return s === 'roller' || s === 'blum' ? s : defaultValue;
+}
+
 export function normalizeWardrobeType(value: unknown, defaultValue: WardrobeTypeValue): WardrobeTypeValue {
   const s = typeof value === 'string' ? value.trim() : '';
   return s === 'hinged' || s === 'sliding' ? s : defaultValue;
@@ -194,6 +208,10 @@ export function readBoardMaterialDefault(value: unknown): BoardMaterialValue {
 
 export function readDoorMountModeDefault(value: unknown): DoorMountModeValue {
   return normalizeDoorMountMode(value, 'overlay');
+}
+
+export function readDrawerRunnerTypeDefault(value: unknown): DrawerRunnerTypeValue {
+  return normalizeDrawerRunnerType(value, 'roller');
 }
 
 export function readWardrobeTypeDefault(value: unknown): WardrobeTypeValue {

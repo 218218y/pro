@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../../../types';
+import type { AppContainer, DrawerRunnerType, UnknownRecord } from '../../../../../types';
 import type {
   DoorTrimUiAxis,
   DoorTrimUiColor,
@@ -56,6 +56,7 @@ export type InteriorTabWorkflowController = {
   toggleDividerMode: () => void;
   toggleIntDrawerMode: () => void;
   setInternalDrawersEnabled: (on: boolean) => void;
+  setDrawerRunnerType: (type: DrawerRunnerType) => void;
   setHandleControlEnabled: (on: boolean) => void;
   setGlobalEdgeHandleVariant: (variant: EdgeHandleVariant) => void;
   setHandleModeEdgeVariant: (variant: EdgeHandleVariant) => void;

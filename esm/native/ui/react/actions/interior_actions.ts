@@ -1,6 +1,6 @@
 // React UI actions: interior tools (layout/manual/drawers/dividers)
 
-import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../../types';
+import type { AppContainer, ActionMetaLike, DrawerRunnerType, UnknownRecord } from '../../../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 import { getPrimaryMode, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
@@ -11,10 +11,14 @@ import {
   setUiFlag,
   setUiGridDivisionsState,
   setUiGridShelfVariantState,
+  setCfgScalar,
 } from './store_actions.js';
 import { getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
-import { applyStructuralUiMutation } from './structural_build_refresh_actions.js';
+import {
+  applyStructuralConfigMutation,
+  applyStructuralUiMutation,
+} from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -70,6 +74,15 @@ function toast(app: AppContainer, msg: string, kind?: string): void {
     fb.toast(msg, kind);
   } catch (error) {
     reportInteriorActionFailure(app, 'toast', error);
+  }
+}
+
+function getConfigSnap(app: AppContainer): UnknownRecord {
+  try {
+    const st = readStoreStateMaybe(app);
+    return readRecord(isRecord(st) ? st.config : null) || emptyRecord();
+  } catch {
+    return emptyRecord();
   }
 }
 
@@ -237,6 +250,35 @@ export function enterExtDrawerMode(app: AppContainer, drawerType: unknown, count
     cursor: 'alias',
     toast: 'בחירת מגירה: לחץ על תא להצבה',
   });
+}
+
+export function setDrawerRunnerType(
+  app: AppContainer,
+  value: DrawerRunnerType,
+  source = 'react:interior:drawerRunnerType'
+): void {
+  const next = value;
+  const cfgSnap = getConfigSnap(app);
+  const current: DrawerRunnerType = cfgSnap.drawerRunnerType === 'blum' ? 'blum' : 'roller';
+  if (current === next) return;
+
+  try {
+    const m = interactiveStructuralMetaOverrides(app, source);
+    applyStructuralConfigMutation(
+      app,
+      source,
+      { drawerRunnerType: next },
+      meta => {
+        setCfgScalar(app, 'drawerRunnerType', next, meta);
+      },
+      {
+        buildTiming: INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS.buildTiming,
+        metaOverrides: m,
+      }
+    );
+  } catch (error) {
+    reportInteriorActionFailure(app, 'drawerRunnerType.write', error);
+  }
 }
 
 export function toggleDividerMode(app: AppContainer): void {

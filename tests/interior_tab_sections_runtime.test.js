@@ -12,6 +12,7 @@ import { InteriorLayoutSketchToolsPanel } from '../esm/native/ui/react/tabs/inte
 import {
   InteriorExternalDrawersSection,
   InteriorInternalDrawersSection,
+  InteriorDrawerRunnerSection,
   InteriorDividerSection,
 } from '../esm/native/ui/react/tabs/interior_tab_sections_drawers.js';
 import { InteriorHandlesSection } from '../esm/native/ui/react/tabs/interior_tab_sections_handles.js';
@@ -256,7 +257,16 @@ test('[interior-tab-sections-runtime] InteriorTab hides layout and drawer sectio
   assert.match(src, /<InteriorLayoutSection/);
   assert.match(src, /<InteriorExternalDrawersSection/);
   assert.match(src, /<InteriorInternalDrawersSection/);
+  assert.match(src, /<InteriorDrawerRunnerSection/);
   assert.match(src, /<InteriorDividerSection/);
+  assert.ok(
+    src.indexOf('<InteriorDrawerRunnerSection') > src.indexOf('<InteriorInternalDrawersSection'),
+    'expected drawer runner selector after drawer controls'
+  );
+  assert.ok(
+    src.indexOf('<InteriorDrawerRunnerSection') < src.indexOf('<InteriorDividerSection'),
+    'expected drawer runner selector before drawer divider controls'
+  );
   assert.match(src, /<InteriorHandlesSection/);
 });
 test('[interior-tab-sections-runtime] layout section renders canonical layout/manual controls with the sketch-division toggle', () => {
@@ -586,6 +596,30 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(internalHtml, /סיום עריכה/);
   assert.doesNotMatch(internalHtml, /מגירות פנימיות לפי סקיצה/);
   assert.match(internalHtml, /גובה מגירה פנימית/);
+
+  const runnerCalls = [];
+  const rollerRunnerHtml = renderToStaticMarkup(
+    React.createElement(InteriorDrawerRunnerSection, {
+      drawerRunnerType: 'roller',
+      setDrawerRunnerType: value => runnerCalls.push(value),
+    })
+  );
+  assert.match(rollerRunnerHtml, /מסילות למגירות/);
+  assert.match(rollerRunnerHtml, /מסילה רגילה/);
+  assert.match(rollerRunnerHtml, /Blum/);
+  assert.match(rollerRunnerHtml, /TANDEM/);
+  assert.match(rollerRunnerHtml, /data-testid="interior-drawer-runner-roller-button"/);
+  assert.match(rollerRunnerHtml, /data-testid="interior-drawer-runner-blum-button"/);
+  assert.match(rollerRunnerHtml, /data-testid="interior-drawer-runner-roller-button" aria-pressed="true"/);
+
+  const runnerTree = InteriorDrawerRunnerSection({
+    drawerRunnerType: 'roller',
+    setDrawerRunnerType: value => runnerCalls.push(value),
+  });
+  findElementByTestId(runnerTree, 'interior-drawer-runner-blum-button').props.onClick();
+  findElementByTestId(runnerTree, 'interior-drawer-runner-roller-button').props.onClick();
+  assert.deepEqual(runnerCalls, ['blum', 'roller']);
+
   const dividerHtml = renderToStaticMarkup(
     React.createElement(InteriorDividerSection, { isDividerMode: false, toggleDividerMode: noop })
   );

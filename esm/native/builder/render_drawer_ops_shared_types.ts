@@ -1,6 +1,7 @@
 import type {
   AppContainer,
   BuilderGetMirrorMaterialFn,
+  DrawerRunnerType,
   DrawerVisualEntryLike,
   UnknownCallable,
 } from '../../../types';
@@ -35,9 +36,11 @@ export type DrawerConfig = {
   grooveLayoutMap?: Record<string, unknown>;
   isMultiColorMode?: boolean;
   isLibraryMode?: boolean;
+  drawerRunnerType: DrawerRunnerType;
 };
 
 export type ExternalDrawerOpLike = {
+  kind?: string;
   partId: string;
   grooveKey?: string;
   dividerKey?: string;

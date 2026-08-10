@@ -151,6 +151,7 @@ export function createKernelStateKernelConfigMapsTools(
       case 'wardrobeType':
       case 'boardMaterial':
       case 'doorMountMode':
+      case 'drawerRunnerType':
       case 'globalHandleType':
         return typeof value === 'string' ? value : '';
       case 'customUploadedDataURL':

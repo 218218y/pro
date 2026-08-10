@@ -1,4 +1,5 @@
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type { DrawerRunnerType } from '../../../../../types';
 
 import type { EdgeHandleVariant, ExtDrawerType, HandleType, HandleUiColor } from './interior_tab_helpers.js';
 
@@ -64,6 +65,11 @@ export type InteriorInternalDrawersSectionProps = {
   setInternalDrawersEnabled: (enabled: boolean) => void;
   toggleIntDrawerMode: () => void;
   sketchControls?: EmbeddedSketchInternalDrawersControlsProps;
+};
+
+export type InteriorDrawerRunnerSectionProps = {
+  drawerRunnerType: DrawerRunnerType;
+  setDrawerRunnerType: (type: DrawerRunnerType) => void;
 };
 
 export type InteriorDividerSectionProps = {

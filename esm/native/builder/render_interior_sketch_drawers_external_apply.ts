@@ -13,6 +13,8 @@ import { registerSketchExternalDrawerMotionEntry } from './render_interior_sketc
 import { emitExternalDrawerBraceShelf } from './external_drawer_shelf.js';
 import { createSketchExternalDrawerBraceShelfPartId } from '../features/part_identity/api.js';
 import { resolveSketchExternalDrawerStackKey } from './render_interior_sketch_drawers_shared.js';
+import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
+import { readDrawerRunnerTypeFromConfig } from './drawer_runner_policy.js';
 
 export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs): void {
   const context = createSketchExternalDrawerRenderContext(args);
@@ -47,6 +49,20 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
         const groupNode = createSketchExternalDrawerGroupNode(context, stack, opPlan);
         addSketchExternalDrawerFrontVisual(context, stack, opPlan, groupNode);
         addSketchExternalDrawerBoxAndConnector(context, stack, opPlan, groupNode);
+        if (opPlan.op.kind !== 'shoe') {
+          appendDrawerRunnerVisuals({
+            THREE: context.THREE,
+            runnerType: readDrawerRunnerTypeFromConfig(context.input.cfgSnapshot),
+            fixedParent: context.group,
+            movingParent: groupNode,
+            drawerWidthM: opPlan.boxW,
+            drawerHeightM: opPlan.boxH,
+            drawerDepthM: opPlan.boxD,
+            drawerLocalCenterZM: opPlan.boxOffsetZ,
+            closedPosition: { x: opPlan.px, y: opPlan.py, z: opPlan.pz },
+            ownerPartId: opPlan.partId,
+          });
+        }
         applySketchModulePickMetaDeep(
           groupNode,
           opPlan.partId,

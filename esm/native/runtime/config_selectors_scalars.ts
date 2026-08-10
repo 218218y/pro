@@ -15,17 +15,20 @@ import {
   isBoardMaterialKey,
   isBooleanConfigKey,
   isGlobalHandleTypeKey,
+  isDrawerRunnerTypeKey,
   isNullableNumberConfigKey,
   isNullableStringConfigKey,
   isWardrobeTypeKey,
   normalizeBoardMaterial,
   normalizeBoolean,
   normalizeGlobalHandleType,
+  normalizeDrawerRunnerType,
   normalizeNullableConfigNumber,
   normalizeWardrobeType,
   pickDefaultScalar,
   readBoardMaterialDefault,
   readGlobalHandleTypeDefault,
+  readDrawerRunnerTypeDefault,
   readScalarValue,
   readWardrobeTypeDefault,
 } from './config_selectors_shared.js';
@@ -108,6 +111,10 @@ export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (
 
   if (isGlobalHandleTypeKey(key)) {
     return normalizeGlobalHandleType(value, readGlobalHandleTypeDefault(def));
+  }
+
+  if (isDrawerRunnerTypeKey(key)) {
+    return normalizeDrawerRunnerType(value, readDrawerRunnerTypeDefault(def));
   }
 
   if (isBooleanConfigKey(key)) {

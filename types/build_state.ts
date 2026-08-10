@@ -4,7 +4,7 @@
 import type { UnknownRecord } from './common';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
-import type { BoardMaterial, DoorMountMode, HandleType, WardrobeType } from './domain';
+import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
 import type { UiRawInputsLike } from './ui_raw';
 import type { UiState } from './ui_state';
 import type {
@@ -306,6 +306,7 @@ export interface ConfigStateLike extends UnknownRecord {
   isManualWidth?: boolean;
   boardMaterial?: BoardMaterial | '';
   doorMountMode?: DoorMountMode | '';
+  drawerRunnerType?: DrawerRunnerType;
 
   // Uploaded assets
   customUploadedDataURL?: string | null;

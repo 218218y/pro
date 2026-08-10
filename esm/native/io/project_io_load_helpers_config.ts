@@ -13,6 +13,7 @@ import {
   readProjectToggles,
 } from './project_io_load_helpers_shared.js';
 import { asObjectRecord } from './project_payload_shared.js';
+import { normalizeProjectDrawerRunnerType } from './project_schema_shared.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/dimensions/door_mount_thickness_policy.js';
 
 function buildComparableLoadConfigSnapshot(
@@ -61,6 +62,7 @@ export function buildProjectConfigSnapshot(
     savedColors: normalizeSavedColorObjectsSnapshot(persistedConfig.savedColors),
     wardrobeType: settings.wardrobeType || 'hinged',
     doorMountMode: settings.doorMountMode === 'inset' ? 'inset' : 'overlay',
+    drawerRunnerType: normalizeProjectDrawerRunnerType(settings.drawerRunnerType),
     overlayFrameThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.overlayFrameThicknessCm),
     overlayShelfThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.overlayShelfThicknessCm),
     insetFrameThicknessCm: readLoadedDoorMountThicknessCm(persistedConfig.insetFrameThicknessCm),

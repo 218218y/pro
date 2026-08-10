@@ -48,6 +48,10 @@ function normalizeDoorMountMode(value: unknown): 'overlay' | 'inset' | '' {
   return value === 'overlay' || value === 'inset' ? value : '';
 }
 
+function normalizeDrawerRunnerType(value: unknown): 'roller' | 'blum' | '' {
+  return value === 'roller' || value === 'blum' ? value : '';
+}
+
 function normalizeGlobalHandleType(value: unknown): 'standard' | 'edge' | 'none' | '' {
   return value === 'standard' || value === 'edge' || value === 'none' ? value : '';
 }
@@ -76,6 +80,7 @@ const PROJECT_CONFIG_SCALAR_NORMALIZERS: Record<string, ProjectConfigScalarNorma
   wardrobeType: normalizeWardrobeType,
   boardMaterial: normalizeBoardMaterial,
   doorMountMode: normalizeDoorMountMode,
+  drawerRunnerType: normalizeDrawerRunnerType,
   overlayFrameThicknessCm: normalizeDoorMountThicknessCm,
   overlayShelfThicknessCm: normalizeDoorMountThicknessCm,
   insetFrameThicknessCm: normalizeDoorMountThicknessCm,

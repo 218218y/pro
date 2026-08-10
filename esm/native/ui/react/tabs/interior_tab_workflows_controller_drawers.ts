@@ -5,6 +5,7 @@ import {
   enterManualLayoutMode as interiorEnterManualLayoutMode,
   toggleDividerMode as interiorToggleDividerMode,
   setInternalDrawersEnabled as interiorSetInternalDrawersEnabled,
+  setDrawerRunnerType as interiorSetDrawerRunnerType,
 } from '../actions/interior_actions.js';
 import {
   isSketchInternalDrawersTool,
@@ -35,6 +36,7 @@ type InteriorTabDrawersWorkflowController = Pick<
   | 'toggleDividerMode'
   | 'toggleIntDrawerMode'
   | 'setInternalDrawersEnabled'
+  | 'setDrawerRunnerType'
 >;
 
 export function createInteriorTabDrawersWorkflowController(
@@ -62,6 +64,10 @@ export function createInteriorTabDrawersWorkflowController(
         return;
       }
       interiorEnterManualLayoutMode(app, mkSketchInternalDrawersTool(state.sketchIntDrawerHeightCm));
+    },
+
+    setDrawerRunnerType(type) {
+      interiorSetDrawerRunnerType(app, type);
     },
 
     setInternalDrawersEnabled(on: boolean) {

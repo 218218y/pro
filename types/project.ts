@@ -7,7 +7,7 @@
 
 import type { UnknownRecord } from './common';
 import type { SavedNote } from './notes';
-import type { BoardMaterial, DoorMountMode, HandleType, WardrobeType } from './domain';
+import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
 import type {
   CurtainMap,
   DoorSpecialMap,
@@ -63,6 +63,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   wardrobeType?: WardrobeType;
   boardMaterial?: BoardMaterial;
   doorMountMode?: DoorMountMode;
+  drawerRunnerType?: DrawerRunnerType;
 
   stackSplitEnabled?: boolean;
   stackSplitDecorativeSeparatorEnabled?: boolean;

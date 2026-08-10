@@ -5,6 +5,7 @@ import type {
   CornerConfigurationLike,
   BoardMaterial,
   DoorMountMode,
+  DrawerRunnerType,
   HandleType,
   WardrobeType,
 } from '../../../types';
@@ -137,6 +138,16 @@ export function setCfgDoorMountMode(
 ): DoorMountMode | undefined {
   if (value !== 'overlay' && value !== 'inset') return undefined;
   void cfgSetScalar(App, 'doorMountMode', value, meta);
+  return value;
+}
+
+export function setCfgDrawerRunnerType(
+  App: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): DrawerRunnerType | undefined {
+  if (value !== 'roller' && value !== 'blum') return undefined;
+  void cfgSetScalar(App, 'drawerRunnerType', value, meta);
   return value;
 }
 
