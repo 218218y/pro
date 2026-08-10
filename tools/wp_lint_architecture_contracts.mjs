@@ -17,7 +17,9 @@ const RESTRICTED_BROWSER_GLOBALS = new Set(['window', 'globalThis', 'document', 
 const CAPABILITY_ONLY_MODULES = new Set([
   'esm/native/services/viewer_measurement_tool_resolution.ts',
   'esm/native/services/viewer_measurement_tool_point_resolution.ts',
+  'esm/native/services/viewer_measurement_tool_flow.ts',
 ]);
+const VIEWER_MEASUREMENT_FACADE_MODULE = 'esm/native/services/viewer_measurement_tool.ts';
 
 const CORNER_CORNICE_PLAN_MODULES = new Set([
   'esm/native/builder/corner_wing_cornice_plan.ts',
@@ -327,7 +329,9 @@ function collectImportBoundaryViolations(rel, sourceFile, astApi) {
 }
 
 function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
-  if (!CAPABILITY_ONLY_MODULES.has(rel)) return [];
+  const isCapabilityCore = CAPABILITY_ONLY_MODULES.has(rel);
+  const isFacade = rel === VIEWER_MEASUREMENT_FACADE_MODULE;
+  if (!isCapabilityCore && !isFacade) return [];
   const failures = [];
 
   for (const item of collectStaticModuleSpecifiers(sourceFile, astApi)) {
@@ -336,14 +340,20 @@ function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
     if (/^esm\/native\/runtime\//.test(target) || /canvas_picking_local_helpers(?:\.|_)/.test(target)) {
       failures.push(
         makeViolation(
-          'lint-architecture/capability-boundary:viewer-measurement-runtime',
+          isFacade
+            ? 'lint-architecture/capability-boundary:viewer-measurement-facade-runtime'
+            : 'lint-architecture/capability-boundary:viewer-measurement-runtime',
           rel,
           lineOf(sourceFile, item.node, astApi),
-          `Viewer measurement geometry core must use ViewerMeasurementGeometryRuntime instead of importing ${item.specifier}.`
+          isFacade
+            ? `Viewer measurement public facade must construct ViewerMeasurementFeatureRuntime instead of importing ${item.specifier}.`
+            : `Viewer measurement capability core must consume injected runtime capabilities instead of importing ${item.specifier}.`
         )
       );
     }
   }
+
+  if (!isCapabilityCore) return failures;
 
   let appContainerNode = null;
   walkAst(
@@ -361,7 +371,7 @@ function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
         'lint-architecture/capability-boundary:viewer-measurement-app-container',
         rel,
         lineOf(sourceFile, appContainerNode, astApi),
-        'Viewer measurement geometry core must depend on ViewerMeasurementGeometryRuntime, not AppContainer.'
+        'Viewer measurement capability core must depend on injected runtime capabilities, not AppContainer.'
       )
     );
   }

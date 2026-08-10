@@ -77,6 +77,32 @@ test('lint architecture contracts keep viewer measurement geometry behind capabi
   );
 });
 
+test('lint architecture contracts keep viewer measurement flow and facade on the feature runtime boundary', () => {
+  const flowFailures = auditLintArchitectureSource(
+    'esm/native/services/viewer_measurement_tool_flow.ts',
+    `import type { AppContainer } from '../../../types';
+     import { getWardrobeGroup } from '../runtime/render_access.js';
+     export function run(App: AppContainer) { return getWardrobeGroup(App); }`
+  );
+  assert.deepEqual(
+    flowFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:viewer-measurement-runtime',
+      'lint-architecture/capability-boundary:viewer-measurement-app-container',
+    ]
+  );
+
+  const facadeFailures = auditLintArchitectureSource(
+    'esm/native/services/viewer_measurement_tool.ts',
+    `import { getWardrobeGroup } from '../runtime/render_access.js';
+     export function run(App) { return getWardrobeGroup(App); }`
+  );
+  assert.deepEqual(
+    facadeFailures.map(failure => failure.rule),
+    ['lint-architecture/capability-boundary:viewer-measurement-facade-runtime']
+  );
+});
+
 test('lint architecture contracts keep carcass shell geometry on the canonical typed IR boundary', () => {
   const shellFailures = auditLintArchitectureSource(
     'esm/native/builder/core_carcass_shell.ts',

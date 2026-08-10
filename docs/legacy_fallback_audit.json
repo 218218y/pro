@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T07:43:26.768Z",
+  "generatedAt": "2026-08-10T09:01:42.496Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 542,
@@ -891,16 +891,16 @@
           "domain-default": 4
         }
       },
+      "esm/native/services/viewer_measurement_tool_flow.ts": {
+        "total": 4,
+        "categories": {
+          "domain-default": 4
+        }
+      },
       "esm/native/services/viewer_measurement_tool_resolution.ts": {
         "total": 11,
         "categories": {
           "domain-default": 11
-        }
-      },
-      "esm/native/services/viewer_measurement_tool.ts": {
-        "total": 4,
-        "categories": {
-          "domain-default": 4
         }
       },
       "esm/native/services/viewport_runtime_support.ts": {
@@ -4048,6 +4048,34 @@
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
+      "file": "esm/native/services/viewer_measurement_tool_flow.ts",
+      "line": 71,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_flow.ts",
+      "line": 79,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_flow.ts",
+      "line": 251,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
+      "file": "esm/native/services/viewer_measurement_tool_flow.ts",
+      "line": 258,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
+    },
+    {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
       "line": 742,
       "term": "fallbackBox",
@@ -4123,34 +4151,6 @@
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalZ = readFiniteNumber(gridInfo, 'internalZ') ?? fallbackBox?.centerZ ?? 0;"
-    },
-    {
-      "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 159,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
-    },
-    {
-      "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 167,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
-    },
-    {
-      "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 340,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
-    },
-    {
-      "file": "esm/native/services/viewer_measurement_tool.ts",
-      "line": 347,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// measurement-visual-fallback: overlay metadata and resource cleanup are best-effort after measurement state commits"
     },
     {
       "file": "esm/native/services/viewport_runtime_support.ts",

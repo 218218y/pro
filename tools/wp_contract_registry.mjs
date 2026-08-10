@@ -743,15 +743,22 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     id: 'services:viewer-measurement-tool',
     publicFacade: 'esm/native/services/viewer_measurement_tool.ts',
     privateOwners: [
+      'esm/native/services/viewer_measurement_geometry_runtime.ts',
       'esm/native/services/viewer_measurement_tool_contracts.ts',
+      'esm/native/services/viewer_measurement_tool_flow.ts',
       'esm/native/services/viewer_measurement_tool_geometry.ts',
       'esm/native/services/viewer_measurement_tool_point_geometry.ts',
       'esm/native/services/viewer_measurement_tool_point_resolution.ts',
       'esm/native/services/viewer_measurement_tool_resolution.ts',
+      'esm/native/services/viewer_measurement_tool_runtime.ts',
       'esm/native/services/viewer_measurement_part_label.ts',
     ],
-    behaviorTests: ['tests/viewer_measurement_tool_runtime.test.ts'],
-    justification: 'Viewer measurement lifecycle is a supported service facade.',
+    behaviorTests: [
+      'tests/viewer_measurement_tool_runtime.test.ts',
+      'tests/viewer_measurement_tool_capability_runtime.test.ts',
+    ],
+    justification:
+      'Viewer measurement lifecycle is a supported facade with private capability-flow/runtime owners.',
   }),
   topology({
     id: 'services:drawer-cross-family',
