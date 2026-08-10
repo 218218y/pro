@@ -66,11 +66,13 @@ npm run check:refactor-guardrails
 - Identity-only composition owners are compared by exported symbol provenance. Reordering or regrouping equivalent `export { ... } from ...` statements is allowed; aliases, copied values, added logic, wrong provenance, or consumer bypasses are not.
 - Reusable contract engines must have mutation tests proving both sides of the boundary: harmless representation changes still pass, while ownership and behavior drift still fail.
 - The first migrated family is the ten Dimension Composition owners declared in `tools/wp_dimension_composition_contract_manifest.mjs` and enforced through `tools/wp_declarative_contract_engine.mjs`; the former primary/secondary/remaining facades were removed, leaving one canonical contract-engine test and one runtime-identity test.
+- The second migrated family is the Wardrobe Dimension static-policy set declared in `tools/wp_dimension_policy_contract_manifest.mjs`: Structure Tab auto-width, Platform startup defaults, Preset Models defaults, and Wardrobe Sanitization. The same engine now validates frozen projection shape, source provenance, exact consumer inventory, and member-only policy usage. Three source/hash-heavy ownership files were removed; resolver and sanitizer semantics are guarded by direct behavior matrices instead of AST/body fingerprints.
 
 Focused checks:
 
 ```bash
 node --test tests/wp_declarative_contract_engine_runtime.test.js
+node --test tests/wardrobe_default_resolution_owner_contract.test.js
 npm run test:offline:dimension-composition-runtime
 ```
 

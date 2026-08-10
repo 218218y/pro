@@ -26,6 +26,7 @@ export type ModeConstantsLike = {
   MANUAL_LAYOUT?: unknown;
   BRACE_SHELVES?: unknown;
   DIVIDER?: unknown;
+  REMOVE_DOOR?: unknown;
 };
 
 export type DrawerToolsLike = Pick<

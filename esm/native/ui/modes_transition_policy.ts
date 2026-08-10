@@ -12,6 +12,7 @@ import {
   clearDrawerRebuildIntent,
   captureBuilderOutlineBinding,
   refreshBuilderAfterDoorOps,
+  requestBuilderStructuralRefresh,
   resetAllEditModesViaService,
   reportError,
   patchViaActions,
@@ -241,6 +242,25 @@ function scheduleRemoveDoorRefresh(App: AppLike, nextMode: string): void {
   }
 }
 
+function scheduleRemoveDoorExitTopologyRefresh(App: AppLike, previousMode: string): void {
+  try {
+    const removeDoorModeId = getModesMap().REMOVE_DOOR || 'remove_door';
+    if (previousMode !== removeDoorModeId) return;
+    getBrowserTimers(App).setTimeout(() => {
+      requestBuilderStructuralRefresh(App, {
+        source: 'ui.exitPrimaryMode:removeDoor',
+        reason: 'removeDoor:restoreStackFrameTopology',
+        immediate: true,
+        force: true,
+        triggerRender: true,
+        updateShadows: true,
+      });
+    }, 0);
+  } catch (err) {
+    modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:removeDoorExitRefresh', err);
+  }
+}
+
 export function togglePrimaryModeImpl(App: AppLike, mode: string, opts: ModeActionOptsLike): void {
   if (!App || typeof App !== 'object') return;
   const NONE = getModesMap().NONE ?? 'none';
@@ -303,6 +323,10 @@ export function enterPrimaryModeImpl(
   applyEnterExitChrome(App, opts);
   if (shouldClearDividerDrawerOnEnter(currentMode, nextMode)) {
     clearDividerDrawerOpenId(App, prevDrawerOpenId);
+  }
+  const removeDoorModeId = getModesMap().REMOVE_DOOR || 'remove_door';
+  if (currentMode === removeDoorModeId && nextMode !== removeDoorModeId) {
+    scheduleRemoveDoorExitTopologyRefresh(App, currentMode);
   }
   scheduleRemoveDoorRefresh(App, nextMode);
 }
@@ -389,5 +413,6 @@ export function exitPrimaryModeImpl(
     clearDividerDrawerOpenId(App, prevDrawerOpenId);
   }
   applyEnterExitChrome(App, opts);
+  if (shouldExit) scheduleRemoveDoorExitTopologyRefresh(App, currentMode);
   safeRestoreScrollTop(App, scrollPos);
 }

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-10T09:47:22.272Z",
+  "generatedAt": "2026-08-10T10:14:32.934Z",
   "totals": {
-    "tests": 1240,
-    "unitRunnerTests": 1231,
+    "tests": 1237,
+    "unitRunnerTests": 1228,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -16,10 +16,10 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 142
+    "contractOverlapTargets": 137
   },
   "categories": {
-    "contract": 405,
+    "contract": 402,
     "runtime-unit": 333,
     "integration": 462,
     "persistence-ingress": 24,
@@ -42,24 +42,6 @@
     "missingFromUnitRunner": []
   },
   "contractOverlapTargets": [
-    {
-      "target": "esm/entry_pro_main_boot_support.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/app_boot_browser_project_family_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/runtime_config_platform_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
     {
       "target": "esm/native/builder/build_flow_plan_inputs.ts",
       "kinds": ["contract", "ownership"],
@@ -707,20 +689,6 @@
       ]
     },
     {
-      "target": "esm/native/builder/state_sanitize_pipeline.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/builder_service_access_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
       "target": "esm/native/builder/visuals_chest_mode_build.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -795,10 +763,6 @@
         {
           "file": "tests/preset_models_data_dimension_ownership_contract.test.js",
           "kind": "ownership"
-        },
-        {
-          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-          "kind": "contract"
         }
       ]
     },
@@ -853,20 +817,6 @@
       ]
     },
     {
-      "target": "esm/native/features/order_pdf_dimension_support.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/order_pdf_dimension_support_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
       "target": "esm/native/features/project_config/project_config_map_readers.ts",
       "kinds": ["contract", "source-guard"],
       "owners": [
@@ -890,24 +840,6 @@
         },
         {
           "file": "tests/library_preset_dimension_owner_contract.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/features/structure_tab_dimension_support.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
           "kind": "contract"
         }
       ]
@@ -1259,28 +1191,12 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/retired_dimension_import_paths_contract.test.js",
           "kind": "contract"
         },
         {
           "file": "tests/runtime_platform_core_family_contracts.test.js",
           "kind": "contract"
-        },
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -1473,16 +1389,8 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/retired_dimension_import_paths_contract.test.js",
           "kind": "contract"
-        },
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -1517,20 +1425,12 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/project_io_contracts.test.js",
           "kind": "contract"
         },
         {
           "file": "tests/retired_dimension_import_paths_contract.test.js",
           "kind": "contract"
-        },
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
         },
         {
           "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
@@ -2641,20 +2541,6 @@
       ]
     },
     {
-      "target": "esm/shared/dimensions/preset_models_dimension_defaults_policy.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/library_preset_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
       "target": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
       "kinds": ["ownership", "source-guard"],
       "owners": [
@@ -2665,20 +2551,6 @@
         {
           "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
           "kind": "ownership"
-        }
-      ]
-    },
-    {
-      "target": "esm/shared/dimensions/structure_tab_auto_width_policy.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
-          "kind": "contract"
         }
       ]
     },
@@ -2695,10 +2567,6 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
           "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
           "kind": "ownership"
         },
@@ -2708,10 +2576,6 @@
         },
         {
           "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2755,9 +2619,27 @@
         {
           "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
           "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/wardrobe_layout_comparison_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
         },
         {
-          "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_default_resolution_owner_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -5877,10 +5759,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/preset_stack_runtime_hardening.test.ts",
       "category": "runtime-unit"
     },
@@ -7149,10 +7027,6 @@
       "category": "integration"
     },
     {
-      "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/structure_tab_aux_sections_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -7506,10 +7380,6 @@
     },
     {
       "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
       "category": "contract"
     },
     {

@@ -9,7 +9,6 @@ const FALLBACK_BYTES_PER_COST = 32 * 1024;
 // fallback below until a later profile proves that they are outliers too.
 export const KNOWN_SLOW_TEST_COSTS = Object.freeze({
   'tests/wardrobe_dimension_guide_owner_contract.test.js': 213.781,
-  'tests/wardrobe_sanitization_policy_ownership_contract.test.js': 165.318,
   'tests/library_preset_dimension_ownership_closeout_contract.test.js': 162.152,
   'tests/order_pdf_dimension_support_ownership_contract.test.js': 104.858,
   'tests/interior_fittings_dimension_ownership_closeout_contract.test.js': 100.846,

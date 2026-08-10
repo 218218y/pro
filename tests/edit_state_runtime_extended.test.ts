@@ -624,3 +624,94 @@ test('native mode exit does not publish a false transition when both canonical e
   assert.deepEqual(changes, []);
   assert.deepEqual(doorOps, []);
 });
+
+test('leaving remove-door mode schedules a structural rebuild so temporary stack-split interaction frames can converge', () => {
+  const timers = createFakeTimers();
+  const buildRequests: Array<Record<string, unknown>> = [];
+  const state = {
+    ui: { removeDoorsEnabled: true },
+    config: {},
+    runtime: { globalClickMode: true },
+    mode: { primary: 'remove_door', opts: {} as Record<string, unknown> },
+    meta: {},
+  };
+  const App: any = {
+    actions: {
+      mode: {
+        set(nextPrimary: string, opts: Record<string, unknown>) {
+          state.mode.primary = nextPrimary;
+          state.mode.opts = { ...(opts || {}) };
+          return true;
+        },
+      },
+    },
+    services: {
+      builder: {
+        requestBuild(_uiOverride: unknown, meta: Record<string, unknown>) {
+          buildRequests.push({ ...(meta || {}) });
+          return true;
+        },
+      },
+      platform: {
+        triggerRender() {
+          return true;
+        },
+      },
+      uiFeedback: {
+        updateEditStateToast() {
+          return true;
+        },
+      },
+    },
+    deps: {
+      browser: {
+        document: { body: { style: {} }, activeElement: null },
+        setTimeout: timers.setTimeout,
+        clearTimeout: timers.clearTimeout,
+      },
+    },
+    store: {
+      getState: () => state,
+    },
+  };
+
+  exitPrimaryModeImpl(App, 'remove_door', {}, () => undefined);
+
+  assert.equal(state.mode.primary, 'none');
+  assert.equal(buildRequests.length, 0);
+  timers.flush();
+
+  assert.equal(buildRequests.length, 1);
+  assert.equal(buildRequests[0]?.source, 'ui.exitPrimaryMode:removeDoor');
+  assert.equal(buildRequests[0]?.reason, 'removeDoor:restoreStackFrameTopology');
+  assert.equal(buildRequests[0]?.immediate, true);
+  assert.equal(buildRequests[0]?.force, true);
+});
+
+test('resetting edit state from remove-door mode schedules the same topology-convergence rebuild', () => {
+  const { App } = createAppForReset('remove_door');
+  const timers = createFakeTimers();
+  const buildRequests: Array<Record<string, unknown>> = [];
+  const app = App as any;
+
+  app.deps.browser.setTimeout = timers.setTimeout;
+  app.deps.browser.clearTimeout = timers.clearTimeout;
+  app.services.builder = {
+    requestBuild(_uiOverride: unknown, meta: Record<string, unknown>) {
+      buildRequests.push({ ...(meta || {}) });
+      return true;
+    },
+  };
+
+  const result = resetAllEditModesWithResult(app);
+
+  assert.equal(result.ok, true);
+  assert.equal(buildRequests.length, 0);
+  timers.flush();
+
+  assert.equal(buildRequests.length, 1);
+  assert.equal(buildRequests[0]?.source, 'services/edit_state:resetRemoveDoor');
+  assert.equal(buildRequests[0]?.reason, 'removeDoor:restoreStackFrameTopology');
+  assert.equal(buildRequests[0]?.immediate, true);
+  assert.equal(buildRequests[0]?.force, true);
+});

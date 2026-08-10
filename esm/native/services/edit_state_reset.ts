@@ -11,8 +11,9 @@ import {
 } from '../runtime/doors_access.js';
 import { setModePrimary } from '../runtime/mode_write_access.js';
 import { getUiFeedbackServiceMaybe } from '../runtime/service_access.js';
-import { getDocumentMaybe, MODES } from '../runtime/api.js';
+import { getBrowserTimers, getDocumentMaybe, MODES } from '../runtime/api.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { requestBuilderStructuralRefresh } from '../runtime/builder_service_access.js';
 
 import {
   type AppLike,
@@ -163,6 +164,35 @@ function renderResetState(app: AppContainer, tracker: EditStateResetTracker): vo
   );
 }
 
+function scheduleRemoveDoorTopologyRefresh(
+  app: AppContainer,
+  prev: string,
+  modes: ReturnType<typeof getModes>
+): void {
+  const removeDoorMode =
+    typeof modes.REMOVE_DOOR === 'string' && modes.REMOVE_DOOR ? modes.REMOVE_DOOR : 'remove_door';
+  if (prev !== removeDoorMode) return;
+
+  try {
+    getBrowserTimers(app).setTimeout(() => {
+      try {
+        requestBuilderStructuralRefresh(app, {
+          source: 'services/edit_state:resetRemoveDoor',
+          reason: 'removeDoor:restoreStackFrameTopology',
+          immediate: true,
+          force: true,
+          triggerRender: true,
+          updateShadows: true,
+        });
+      } catch (error) {
+        reportEditStateNonFatal(app, 'reset.removeDoorTopologyRefresh', error);
+      }
+    }, 0);
+  } catch (error) {
+    reportEditStateNonFatal(app, 'reset.removeDoorTopologyRefresh.schedule', error);
+  }
+}
+
 function resetDoorsRuntime(
   app: AppContainer,
   prev: string,
@@ -246,6 +276,7 @@ export function resetAllEditModesWithResult(App: AppLike): EditStateResetResult 
   renderResetState(app, tracker);
   exitNotesDrawMode(app, tracker);
   resetDoorsRuntime(app, prev, prevOpenDrawerId, modes, noneMode, tracker);
+  scheduleRemoveDoorTopologyRefresh(app, prev, modes);
 
   const failedOps = Object.freeze([...tracker.failedOps]);
   return Object.freeze({ ok: failedOps.length === 0, failedOps });
