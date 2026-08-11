@@ -90,3 +90,22 @@ test('appendFullHingedDoorOps keeps mirrors groove-free even when full-door groo
   assert.equal(ctx.opsList[0].isMirror, true);
   assert.equal(ctx.opsList[0].hasGroove, false);
 });
+
+test('appendFullHingedDoorOps keeps an explicit placed groove enabled beside a sized mirror', () => {
+  const ctx = createCtx({
+    cfg: {
+      groovesMap: { groove_d9_full: true },
+      grooveLayoutMap: { d9_full: [{ widthCm: 20, heightCm: 40, centerXNorm: 0.8 }] },
+      mirrorLayoutMap: { d9_full: [{ widthCm: 20, heightCm: 40, centerXNorm: 0.2 }] },
+    },
+    grooveValSafe: () => true,
+    resolveSpecialForPart: () => 'mirror',
+  });
+  const state = createState({ sourceKey: 'd9_full' });
+
+  appendFullHingedDoorOps(ctx, state);
+
+  assert.equal(ctx.opsList.length, 1);
+  assert.equal(ctx.opsList[0].isMirror, true);
+  assert.equal(ctx.opsList[0].hasGroove, true);
+});

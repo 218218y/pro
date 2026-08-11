@@ -176,9 +176,13 @@ export function emitCornerWingExternalDrawers(
     const mirrorLayout = runtime.readMirrorLayout(id);
     const hasOutsideMirrorSurface =
       (isMirror || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+    const grooveLayout =
+      readGrooveLayoutListForPart({ map: runtime.readMap('grooveLayoutMap'), partId: id })?.layouts || null;
+    const hasPlacedGrooveLayout = !!grooveLayout?.length;
+    const overlayBlocksGrooves = hasOutsideMirrorSurface && (!isMirror || !hasPlacedGrooveLayout);
     const hasGroove =
       runtime.groovesEnabled &&
-      !hasOutsideMirrorSurface &&
+      !overlayBlocksGrooves &&
       !isGlass &&
       !!runtime.readScopedReaderAny(runtime.getGroove, id);
     const doorStyleMap = runtime.readMap('doorStyleMap');
@@ -216,9 +220,7 @@ export function emitCornerWingExternalDrawers(
       mirrorLayout,
       id,
       {
-        grooveLayout:
-          readGrooveLayoutListForPart({ map: runtime.readMap('grooveLayoutMap'), partId: id })?.layouts ||
-          null,
+        grooveLayout,
         ...(isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
         ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
       }

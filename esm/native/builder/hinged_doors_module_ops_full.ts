@@ -4,7 +4,7 @@ import {
   toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
-import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import { readDoorVisualMirrorLayout, readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { clampHandleAbsY } from './hinged_doors_module_ops_shared.js';
 import {
   attachHiddenCarcassMountFaceX,
@@ -50,10 +50,13 @@ export function appendFullHingedDoorOps(
   const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
   const hasAdhesiveGlass = !!adhesiveGlassKind;
   const doorGrooveOn = readFullDoorGrooveEnabled(ctx, state);
+  const hasPlacedGrooveLayout =
+    (readGrooveLayoutListForPart({ map: ctx.cfg.grooveLayoutMap, partId: colorKey })?.layouts.length ?? 0) >
+    0;
   const hasGroove =
     ctx.isGroovesEnabled &&
     doorGrooveOn &&
-    !((isMirror || hasAdhesiveGlass) && hasOutsideMirrorSurface(ctx, colorKey));
+    !(hasOutsideMirrorSurface(ctx, colorKey) && (hasAdhesiveGlass || (isMirror && !hasPlacedGrooveLayout)));
   const style = special === 'glass' ? 'glass' : null;
   const fullDoorTopY = ctx.doorBottomY + doorHeight;
   const fullHandleAbsY = clampHandleAbsY(ctx, ctx.globalHandleAbsY, ctx.doorBottomY, fullDoorTopY, colorKey);

@@ -1,5 +1,6 @@
 import {
   hasMirrorSurfaceOnFace,
+  readGrooveLayoutList,
   readMirrorLayoutFaceSign,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
@@ -155,7 +156,8 @@ export function createDoorVisual(
 
   if (isMirror) {
     const hasOutsideMirrorSurface = hasMirrorSurfaceOnFace(mirrorLayout, zSign, zSign);
-    const hasOutsideGrooves = hasGrooves && !hasOutsideMirrorSurface;
+    const hasPlacedGrooveLayout = readGrooveLayoutList(options?.grooveLayout).length > 0;
+    const hasOutsideGrooves = hasGrooves && (!hasOutsideMirrorSurface || hasPlacedGrooveLayout);
     if (style === 'profile' || style === 'double_profile') {
       if (hasExplicitMirrorLayout(mirrorLayout)) {
         return createStyledMirrorDoorVisual({

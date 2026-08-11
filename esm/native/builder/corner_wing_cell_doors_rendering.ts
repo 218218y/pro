@@ -156,10 +156,19 @@ export function processCornerDoorVisual(
   const frontSign = args.frontSign === -1 ? -1 : 1;
   const hasOutsideMirrorSurface =
     (isMirror || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, frontSign, frontSign);
-  const hasGroove =
-    ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, id);
   const rawVisualPartId = args.groovePartId ?? id;
   const groovePartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(rawVisualPartId) : rawVisualPartId;
+  const grooveLayout =
+    readGrooveLayoutListForPart({
+      map: ctx.readMap('grooveLayoutMap'),
+      partId: id,
+      scopedPartId: groovePartId,
+      preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
+    })?.layouts || null;
+  const hasPlacedGrooveLayout = !!grooveLayout?.length;
+  const overlayBlocksGrooves = hasOutsideMirrorSurface && (!isMirror || !hasPlacedGrooveLayout);
+  const hasGroove =
+    ctx.groovesEnabled && !overlayBlocksGrooves && !!readScopedReaderAny(ctx, ctx.getGroove, id);
 
   const cfgRecord = ctx.cfg0;
   const doorStyleMap = isValueRecord(cfgRecord.doorStyleMap) ? cfgRecord.doorStyleMap : undefined;
@@ -180,13 +189,7 @@ export function processCornerDoorVisual(
     mirrorLayout,
     groovePartId,
     {
-      grooveLayout:
-        readGrooveLayoutListForPart({
-          map: ctx.readMap('grooveLayoutMap'),
-          partId: id,
-          scopedPartId: groovePartId,
-          preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
-        })?.layouts || null,
+      grooveLayout,
       ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
       ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     }

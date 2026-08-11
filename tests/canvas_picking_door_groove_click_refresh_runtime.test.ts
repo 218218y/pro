@@ -491,6 +491,89 @@ test('regular door groove click allows outside grooves when the mirror is only o
   assert.equal(buildRequests.length, 1);
 });
 
+test('manual sized groove can be placed beside a sized outside mirror without overlap', () => {
+  const { App, state, buildRequests, feedbackToasts } = createApp();
+  state.config.isMultiColorMode = true;
+  state.config.doorSpecialMap = { d1_left: 'mirror' };
+  state.config.mirrorLayoutMap = {
+    d1_left: [{ widthCm: 30, heightCm: 60, centerXNorm: 0.2, centerYNorm: 0.5 }],
+  };
+  state.ui.grooveManualEnabled = true;
+  state.ui.currentGrooveDraftWidthCm = 20;
+  state.ui.currentGrooveDraftHeightCm = 40;
+  state.ui.currentGrooveOrientation = 'vertical';
+  const grooveSurface = {
+    userData: {
+      partId: 'd1_left',
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_left',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitPoint: new GrooveTestVector3().set(0.3, 0.6, 0.02),
+    doorHitObject: grooveSurface,
+    doorHitGroup: grooveSurface,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_left, true);
+  assert.equal(state.config.grooveLayoutMap.d1_left.length, 1);
+  assert.equal(feedbackToasts.length, 0);
+  assert.equal(buildRequests.length, 1);
+});
+
+test('manual sized groove is blocked only when its placed region overlaps the outside mirror', () => {
+  const { App, state, buildRequests, feedbackToasts } = createApp();
+  state.config.isMultiColorMode = true;
+  state.config.doorSpecialMap = { d1_left: 'mirror' };
+  state.config.mirrorLayoutMap = {
+    d1_left: [{ widthCm: 30, heightCm: 60, centerXNorm: 0.2, centerYNorm: 0.5 }],
+  };
+  state.ui.grooveManualEnabled = true;
+  state.ui.currentGrooveDraftWidthCm = 20;
+  state.ui.currentGrooveDraftHeightCm = 40;
+  state.ui.currentGrooveOrientation = 'vertical';
+  const grooveSurface = {
+    userData: {
+      partId: 'd1_left',
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd1_left',
+      __wpGrooveSurfaceRect: { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 },
+    },
+    worldToLocal(point: GrooveTestVector3) {
+      return point;
+    },
+  };
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_left',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitPoint: new GrooveTestVector3().set(-0.3, 0, 0.02),
+    doorHitObject: grooveSurface,
+    doorHitGroup: grooveSurface,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_left, undefined);
+  assert.equal(state.config.grooveLayoutMap, undefined);
+  assert.equal(feedbackToasts.length, 1);
+  assert.match(feedbackToasts[0].message, /חופף למראה/);
+  assert.equal(buildRequests.length, 0);
+});
+
 test('regular door groove click still blocks when the mirror is on the outside face', () => {
   const { App, state, buildRequests, feedbackToasts } = createApp();
   state.config.isMultiColorMode = true;

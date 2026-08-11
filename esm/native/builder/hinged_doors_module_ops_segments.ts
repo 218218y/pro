@@ -1,6 +1,6 @@
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
-import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
+import { readDoorVisualMirrorLayout, readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
 import {
   attachHiddenCarcassMountFaceX,
@@ -38,10 +38,16 @@ export function pushHingedDoorSegment(
   const isMirror = special === 'mirror';
   const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
   const hasAdhesiveGlass = !!adhesiveGlassKind;
+  const hasPlacedGrooveLayout =
+    (readGrooveLayoutListForPart({ map: ctx.cfg.grooveLayoutMap, partId: args.partId })?.layouts.length ??
+      0) > 0;
   const hasGroove =
     ctx.isGroovesEnabled &&
     !!args.grooveFlag &&
-    !((isMirror || hasAdhesiveGlass) && hasOutsideMirrorSurface(ctx, args.partId));
+    !(
+      hasOutsideMirrorSurface(ctx, args.partId) &&
+      (hasAdhesiveGlass || (isMirror && !hasPlacedGrooveLayout))
+    );
   const style = special === 'glass' ? 'glass' : null;
   const op = attachHiddenModuleDoors(
     {

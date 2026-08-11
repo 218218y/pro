@@ -1,7 +1,11 @@
 import type { AppContainer, DoorVisualEntryLike, GrooveLayoutEntry, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
-import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
+import {
+  doesGrooveLayoutOverlapMirrorOnFace,
+  hasMirrorSurfaceOnFace,
+  readDoorVisualMirrorLayout,
+} from '../features/door_authoring/api.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import {
@@ -248,6 +252,30 @@ function handleCanvasDoorGrooveLayoutClick(args: {
     return resolvePendingGrooveLinesCount(args.App, distributionSpan, undefined, args.targetId);
   };
 
+  const isPureRemoval =
+    (removeMatch && removeMatch.placement.orientation === tool.orientation) ||
+    (hasCanonicalFullVertical && tool.orientation === 'vertical');
+  if (!isPureRemoval && __wp_isMultiMode(args.App)) {
+    const matType = __wp_colorGet(args.App, args.targetId);
+    if (matType === 'glass') {
+      toastOutsideGrooveBlocked(args.App);
+      return true;
+    }
+    if (
+      matType === 'mirror' &&
+      doesGrooveLayoutOverlapMirrorOnFace({
+        rect: surfaceRect,
+        grooveLayout: nextLayout,
+        mirrorLayouts: readDoorVisualMirrorLayout(__wp_map(args.App, 'mirrorLayoutMap'), args.targetId),
+        faceSign: 1,
+        defaultSurfaceFaceSign: 1,
+      })
+    ) {
+      __wp_toast(args.App, 'לא ניתן למקם חריטה באזור שחופף למראה', 'error');
+      return true;
+    }
+  }
+
   if (removeMatch && removeMatch.placement.orientation !== tool.orientation) {
     nextLayouts.splice(removeMatch.index, 1);
     nextGrooveLinesCount = resolveNextGrooveLinesCount(nextLayout);
@@ -459,10 +487,6 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
   const grooveLinesCountForClick = resolvePendingGrooveLinesCount(App, clickedDoorWidth, undefined, targetId);
   const explicitGrooveLinesCountForClick = readGrooveLinesCountOverride(App);
 
-  if (targetId && blocksOutsideGrooveForPart(App, targetId)) {
-    toastOutsideGrooveBlocked(App);
-    return true;
-  }
   if (targetId) {
     const layoutHandled = handleCanvasDoorGrooveLayoutClick({
       App,
@@ -473,6 +497,10 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
       foundModuleStack,
     });
     if (layoutHandled !== null) return layoutHandled;
+    if (blocksOutsideGrooveForPart(App, targetId)) {
+      toastOutsideGrooveBlocked(App);
+      return true;
+    }
   }
 
   const sketchTarget = parseSketchBoxDoorTarget(targetId || effectiveDoorId || foundPartId);

@@ -99,10 +99,13 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
     effectiveDrawerFrameStyleRaw === 'glass' ? 'profile' : effectiveDrawerFrameStyleRaw;
   const effectiveDrawerStyle = drawerVisualState.isGlass ? 'glass' : effectiveDrawerFrameStyle;
   const hasAdhesiveGlass = !!drawerVisualState.adhesiveGlassKind;
+  const grooveLayout =
+    readGrooveLayoutListForPart({ map: cfg.grooveLayoutMap, partId: args.drawerId })?.layouts || null;
+  const hasPlacedGrooveLayout = !!grooveLayout?.length;
   const hasGroove =
     !!args.isGroovesEnabled &&
     !drawerVisualState.isGlass &&
-    !drawerVisualState.isMirror &&
+    (!drawerVisualState.isMirror || hasPlacedGrooveLayout) &&
     !hasAdhesiveGlass &&
     !!cfg.groovesMap &&
     cfg.groovesMap[toCanonicalGroovesMapKey(args.drawerId)] === true;
@@ -122,8 +125,7 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
     drawerVisualState.mirrorLayout,
     args.drawerId,
     {
-      grooveLayout:
-        readGrooveLayoutListForPart({ map: cfg.grooveLayoutMap, partId: args.drawerId })?.layouts || null,
+      grooveLayout,
       ...(drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : {}),
       ...(drawerVisualState.adhesiveGlassKind
         ? { adhesiveGlassKind: drawerVisualState.adhesiveGlassKind }

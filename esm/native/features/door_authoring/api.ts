@@ -74,6 +74,8 @@ export {
   resolveDoorTrimSurfaceLogicalPoint,
 } from './internal/trim.js';
 
+export { doesGrooveLayoutOverlapMirrorOnFace } from './internal/groove_mirror_conflict.js';
+
 export {
   DEFAULT_FACE_SIGN,
   buildMirrorLayoutFromHit,

@@ -70,8 +70,17 @@ export function pushCornerConnectorDoorSegmentVisual(
   const hasOutsideMirrorSurface =
     (isMirror || hasAdhesiveGlass) &&
     hasMirrorSurfaceOnFace(mirrorLayout, ctx.outwardZSign, ctx.outwardZSign);
+  const grooveLayout =
+    readGrooveLayoutListForPart({
+      map: ctx.readMap('grooveLayoutMap'),
+      partId,
+      scopedPartId,
+      preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
+    })?.layouts || null;
+  const hasPlacedGrooveLayout = !!grooveLayout?.length;
+  const overlayBlocksGrooves = hasOutsideMirrorSurface && (!isMirror || !hasPlacedGrooveLayout);
   const hasGroove =
-    ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
+    ctx.groovesEnabled && !overlayBlocksGrooves && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
   const style = special === 'glass' ? 'glass' : null;
   const effectiveFrameStyle = resolveEffectiveDoorStyle(ctx.doorStyle, readDoorStyleMap(ctx.cfg0), partId);
 
@@ -96,13 +105,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     mirrorLayout,
     scopedPartId,
     {
-      grooveLayout:
-        readGrooveLayoutListForPart({
-          map: ctx.readMap('grooveLayoutMap'),
-          partId,
-          scopedPartId,
-          preferScopedOnly: ctx.stackSplitEnabled && ctx.stackKey === 'bottom',
-        })?.layouts || null,
+      grooveLayout,
       ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
       ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     }
