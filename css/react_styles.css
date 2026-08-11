@@ -1617,7 +1617,6 @@
   .type-option {
   flex: 1;
   text-align: center;
-  padding: 15px;
   border: 2px solid var(--border-color, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   cursor: pointer;
@@ -1637,6 +1636,17 @@
   gap: 8px;
   appearance: none;
   -webkit-appearance: none;
+}
+
+/* Layout cards own the regular choice-button size, but explicit OptionButton
+ * densities must remain authoritative. In particular, drawer-runner controls
+ * use `micro` in both Interior and Sketch and must not inherit the legacy 15px
+ * layout padding. */
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .type-option:not(.wp-r-option-button--micro) {
+  padding: 15px;
 }
 
 #reactSidebarRoot

@@ -630,6 +630,11 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
     runnerCss,
     /\.wp-r-option-button--micro\s*\{[\s\S]*?min-height:\s*34px;[\s\S]*?padding-block:\s*6px;/
   );
+  assert.match(
+    runnerCss,
+    /\.wp-tool-card--layout\s+\.type-option:not\(\.wp-r-option-button--micro\)\s*\{[\s\S]*?padding:\s*15px;/
+  );
+  assert.doesNotMatch(runnerCss, /\.wp-tool-card--layout\s+\.type-option\s*\{[^}]*padding:\s*15px;/);
   const embeddedRunnerSection = findElementByTypeName(externalRunnerTree, 'InteriorDrawerRunnerSection');
   assert.ok(embeddedRunnerSection, 'expected runner controls at the end of the external drawer card');
   const embeddedRunnerTree = embeddedRunnerSection.type(embeddedRunnerSection.props);
