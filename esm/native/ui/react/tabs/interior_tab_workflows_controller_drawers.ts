@@ -94,7 +94,14 @@ export function createInteriorTabDrawersWorkflowController(
       // post-build visual sync cannot snap a door-opening animation to its final open transform.
       if (!enabled) {
         clearInteriorDrawerModeBootstrap(app);
-        if (isSketchInternalDrawerEditing) exitPrimaryMode(app, modeIds.manualLayout, CLOSE_DOORS_OPTS);
+        if (isSketchInternalDrawerEditing) {
+          // Disabling internal drawers also changes build-visible structure. Rebuild while the doors
+          // are still logically open, then leave edit mode so the normal door-close transition can
+          // animate from the freshly rebuilt open visuals instead of being snapped closed post-build.
+          interiorSetInternalDrawersEnabled(app, false, 'react:interior:sketchIntDrawersToggle', 'immediate');
+          exitPrimaryMode(app, modeIds.manualLayout, CLOSE_DOORS_OPTS);
+          return;
+        }
       }
 
       interiorSetInternalDrawersEnabled(

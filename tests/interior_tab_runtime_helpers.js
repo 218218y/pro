@@ -104,6 +104,9 @@ export function loadInteriorTabWorkflowControllerModule(calls, options = {}) {
             Number(height) === 22 ? `sketch_ext_drawers:${count}` : `sketch_ext_drawers:${count}@${height}`,
           mkSketchInternalDrawersTool: (height = 16.5) =>
             Number(height) === 16.5 ? 'sketch_int_drawers' : `sketch_int_drawers@${height}`,
+          isSketchInternalDrawersTool: value =>
+            typeof value === 'string' &&
+            (value === 'sketch_int_drawers' || value.startsWith('sketch_int_drawers@')),
           mkSketchShelfTool: (variant, depth) =>
             depth ? `sketch_shelf:${variant}@${depth}` : `sketch_shelf:${variant}`,
           mkSketchStorageTool: height => `sketch_storage:${height}`,

@@ -79,6 +79,29 @@ test('[interior-workflows-controller] stale drawer bootstrap callback is ignored
   assert.equal(calls.filter(entry => entry[0] === 'toggleIntDrawerMode').length, 0);
 });
 
+test('[interior-workflows-controller] disabling drawers from sketch edit rebuilds before door-close exit', () => {
+  const { calls, controller } = createInteriorWorkflowControllerHarness({
+    internalDrawersEnabled: true,
+    isManualLayoutMode: true,
+    modeOpts: { manualTool: 'sketch_int_drawers' },
+  });
+
+  controller.setInternalDrawersEnabled(false);
+
+  const structuralToggleIndex = calls.findIndex(entry => entry[0] === 'setInternalDrawersEnabled');
+  const exitIndex = calls.findIndex(entry => entry[0] === 'exitPrimaryMode');
+
+  assert.ok(structuralToggleIndex >= 0);
+  assert.ok(exitIndex > structuralToggleIndex);
+  assert.deepEqual(calls[structuralToggleIndex].slice(2), [
+    false,
+    'react:interior:sketchIntDrawersToggle',
+    'immediate',
+  ]);
+  assert.equal(calls[exitIndex][2], 'manual_layout');
+  assert.equal(JSON.stringify(calls[exitIndex][3]), JSON.stringify({ closeDoors: true }));
+});
+
 test('[interior-workflows-controller] disabling drawers clears pending bootstrap and same trim color stays no-op', () => {
   const timers = createFakeTimers();
   const { calls, colorCalls, controller } = createInteriorWorkflowControllerHarness(
