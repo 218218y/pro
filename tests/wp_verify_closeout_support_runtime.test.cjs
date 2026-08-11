@@ -79,9 +79,10 @@ test('closeout lanes keep stable ids and include critical families', () => {
     'cloud-sync-panel-snapshots',
     'cloud-sync-sync-ops',
     'cloud-sync-tabs-ui',
-    'e2e-list',
     'e2e-preflight',
+    'e2e-list',
     'e2e-smoke-run',
+    'browser-perf',
   ]);
 });
 
@@ -146,6 +147,13 @@ test('closeout profiles stay stable and Order PDF remains fully catalog-backed',
     'overlay-export-core',
   ]);
   assert.equal(CLOSEOUT_PROFILES['cloud-sync'].includes('cloud-sync-tabs-ui'), true);
+  assert.deepEqual(CLOSEOUT_PROFILES['browser-evidence'], [
+    'e2e-preflight',
+    'e2e-list',
+    'e2e-smoke-run',
+    'browser-perf',
+  ]);
+  assert.equal(CLOSEOUT_PROFILES.default.includes('browser-perf'), true);
 });
 
 test('normalize args collects profiles categories lane ids skips log dir and state options', () => {
@@ -355,12 +363,16 @@ test('state file resolves to explicit flag or default artifact path', () => {
   assert.equal(resolveStateFile({}), STATE_JSON_PATH);
 });
 
-test('dependency-blocked lanes inherit environment-blocked from preflight', () => {
-  const lane = CLOSEOUT_LANES.find(entry => entry.id === 'e2e-smoke-run');
-  const result = runLane(lane, { priorResults: [{ id: 'e2e-preflight', status: 'environment-blocked' }] });
-  assert.equal(result.status, 'environment-blocked');
-  assert.equal(result.blockedBy, 'e2e-preflight');
-  assert.match(result.stderr, /dependency e2e-preflight/);
+test('browser-dependent lanes inherit environment-blocked from preflight', () => {
+  for (const laneId of ['e2e-list', 'e2e-smoke-run', 'browser-perf']) {
+    const lane = CLOSEOUT_LANES.find(entry => entry.id === laneId);
+    const result = runLane(lane, {
+      priorResults: [{ id: 'e2e-preflight', status: 'environment-blocked' }],
+    });
+    assert.equal(result.status, 'environment-blocked');
+    assert.equal(result.blockedBy, 'e2e-preflight');
+    assert.match(result.stderr, /dependency e2e-preflight/);
+  }
 });
 
 test('report paths stay under docs and state path stays under artifacts', () => {

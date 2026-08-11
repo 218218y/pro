@@ -238,14 +238,6 @@ const CLOSEOUT_LANES = [
     args: ['run', 'test:cloud-sync-surfaces:tabs-ui'],
   },
   {
-    id: 'e2e-list',
-    label: 'Playwright smoke suite listing',
-    command: 'npm',
-    args: ['run', 'e2e:smoke:list'],
-    category: 'e2e',
-    expected: 'pass',
-  },
-  {
     id: 'e2e-preflight',
     label: 'Playwright browser preflight',
     command: 'npm',
@@ -254,11 +246,29 @@ const CLOSEOUT_LANES = [
     expected: 'environment-ok',
   },
   {
+    id: 'e2e-list',
+    label: 'Playwright smoke suite listing',
+    command: 'npm',
+    args: ['run', 'e2e:smoke:list'],
+    category: 'e2e',
+    expected: 'pass',
+    dependsOn: ['e2e-preflight'],
+  },
+  {
     id: 'e2e-smoke-run',
     label: 'Playwright smoke run',
     command: 'npm',
     args: ['run', 'e2e:smoke'],
     category: 'e2e',
+    expected: 'pass',
+    dependsOn: ['e2e-preflight'],
+  },
+  {
+    id: 'browser-perf',
+    label: 'Browser performance evidence',
+    command: 'npm',
+    args: ['run', 'perf:browser'],
+    category: 'perf',
     expected: 'pass',
     dependsOn: ['e2e-preflight'],
   },
@@ -279,6 +289,7 @@ const CLOSEOUT_PROFILES = {
   sketch: CLOSEOUT_LANES.filter(lane => lane.id.startsWith('sketch-')).map(lane => lane.id),
   'cloud-sync': CLOSEOUT_LANES.filter(lane => lane.id.startsWith('cloud-sync-')).map(lane => lane.id),
   e2e: CLOSEOUT_LANES.filter(lane => lane.category === 'e2e').map(lane => lane.id),
+  'browser-evidence': ['e2e-preflight', 'e2e-list', 'e2e-smoke-run', 'browser-perf'],
 };
 
 function nowIso() {

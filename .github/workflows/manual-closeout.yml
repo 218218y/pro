@@ -15,6 +15,7 @@ on:
           - sketch
           - cloud-sync
           - e2e
+          - browser-evidence
           - verify
           - default
 
@@ -53,8 +54,11 @@ jobs:
       - name: Publish closeout summary
         if: success() || failure()
         run: |
-          if [ -f docs/FINAL_VERIFICATION_SUMMARY.md ]; then
+          if [ "${{ inputs.profile }}" = "default" ] && [ -f docs/FINAL_VERIFICATION_SUMMARY.md ]; then
             cat docs/FINAL_VERIFICATION_SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Closeout profile: ${{ inputs.profile }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Focused profiles publish diagnostics/state artifacts instead of reusing a checked-in final summary." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Upload closeout diagnostics
         if: success() || failure()

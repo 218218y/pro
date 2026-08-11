@@ -9,6 +9,7 @@ const ALLOWED_PROFILES = Object.freeze([
   'sketch',
   'cloud-sync',
   'e2e',
+  'browser-evidence',
   'verify',
   'default',
 ]);
@@ -35,15 +36,9 @@ function createCloseoutArgs({
     );
   }
 
-  const args = [
-    'tools/wp_verify_closeout.cjs',
-    '--profile',
-    normalizedProfile,
-    '--write',
-    '--log-dir',
-    logDir,
-  ];
+  const args = ['tools/wp_verify_closeout.cjs', '--profile', normalizedProfile, '--log-dir', logDir];
 
+  if (normalizedProfile === 'default') args.push('--write-final');
   if (normalizeBoolean(appendState)) args.push('--append-state');
   if (normalizeBoolean(stopOnFail)) args.push('--stop-on-fail');
 

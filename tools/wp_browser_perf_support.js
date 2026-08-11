@@ -1,4 +1,7 @@
-import { createBrowserPerfUxTargetSummary } from './wp_browser_perf_ux_targets.js';
+import {
+  createBrowserPerfUxTargetSummary,
+  evaluateBrowserPerfUxEvidence,
+} from './wp_browser_perf_ux_targets.js';
 import {
   happyPathMetricsWithoutErrors,
   requiredProjectActions,
@@ -3435,22 +3438,21 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     : Array.isArray(baseline?.requiredBrowserMetrics)
       ? baseline.requiredBrowserMetrics
       : [];
-  const normalizedRequiredBrowserMetrics = new Set(
-    requiredBrowserMetrics.map(item => String(item || '').trim()).filter(Boolean)
+  const normalizedRequiredBrowserMetrics = Array.from(
+    new Set(
+      requiredBrowserMetrics
+        .map(item =>
+          String(item || '')
+            .trim()
+            .toLowerCase()
+        )
+        .filter(Boolean)
+    )
   );
   const browserMetricBudget =
     baseline && typeof baseline === 'object' ? baseline.browserMetricBudget || {} : {};
   const browserMetrics = result.windowBrowserMetrics || {};
-  if (normalizedRequiredBrowserMetrics.has('inp')) {
-    const inpValue = Number(browserMetrics.inp?.valueMs || 0);
-    const inpEntryCount = Number(browserMetrics.inp?.entryCount || 0);
-    const inpSource = browserMetrics.inp?.source || 'none';
-    if (inpValue <= 0 || inpEntryCount < 1 || inpSource === 'none') {
-      failures.push(
-        'Required INP measurement missing; Event Timing or first-input produced no usable interaction'
-      );
-    }
-  }
+  failures.push(...evaluateBrowserPerfUxEvidence(browserMetrics, normalizedRequiredBrowserMetrics));
   if (
     browserMetricBudget.maxCls != null &&
     Number(browserMetrics.cls?.value || 0) > browserMetricBudget.maxCls

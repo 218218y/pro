@@ -45,6 +45,7 @@ import {
 import { resolvePlaywrightChromiumLaunchOptions } from './wp_playwright_browser_support.js';
 import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
 import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
+import { BROWSER_PERF_REQUIRED_UX_METRICS } from './wp_browser_perf_ux_targets.js';
 
 const projectRoot = process.cwd();
 const baseUrl = 'http://127.0.0.1:5175';
@@ -59,8 +60,6 @@ const textureFixturePath = path.join(
   projectRoot,
   '.artifacts/browser-perf/fixtures/cabinet-variant-texture.png'
 );
-
-const REQUIRED_BROWSER_METRICS = Object.freeze(['inp']);
 
 const USER_JOURNEYS = Object.freeze({
   bootAndShell: 'boot-and-shell',
@@ -3299,7 +3298,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     writeJson(
       baselinePath,
       createBrowserPerfBaseline(result, {
-        requiredBrowserMetrics: REQUIRED_BROWSER_METRICS,
+        requiredBrowserMetrics: BROWSER_PERF_REQUIRED_UX_METRICS,
         requiredRuntimeMetrics,
         requiredRuntimeMetricMinimumCounts,
         requiredProjectActions,
@@ -3311,7 +3310,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   if (enforce) {
     const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')) : null;
     const failures = evaluateBrowserPerfBaseline(result, baseline, {
-      requiredBrowserMetrics: REQUIRED_BROWSER_METRICS,
+      requiredBrowserMetrics: BROWSER_PERF_REQUIRED_UX_METRICS,
       requiredRuntimeMetrics,
       requiredRuntimeMetricMinimumCounts,
       happyPathMetricsWithoutErrors,

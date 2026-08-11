@@ -11,15 +11,45 @@ export const BROWSER_PERF_UX_TARGETS = Object.freeze({
   inp: Object.freeze({ max: 200, unit: 'ms' }),
 });
 
+export const BROWSER_PERF_REQUIRED_UX_METRICS = Object.freeze(Object.keys(BROWSER_PERF_UX_TARGETS));
+
 function readFiniteNonNegative(value) {
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
+function readSupportedEntryTypes(browserMetrics) {
+  return new Set(
+    Array.isArray(browserMetrics?.supportedEntryTypes)
+      ? browserMetrics.supportedEntryTypes
+          .map(value =>
+            String(value || '')
+              .trim()
+              .toLowerCase()
+          )
+          .filter(Boolean)
+      : []
+  );
+}
+
+function hasObserverCapability(browserMetrics, entryType) {
+  return browserMetrics?.observerSupported === true && readSupportedEntryTypes(browserMetrics).has(entryType);
+}
+
 function readMetricValue(browserMetrics, metricName) {
   if (!browserMetrics || typeof browserMetrics !== 'object') return null;
-  if (metricName === 'cls') return readFiniteNonNegative(browserMetrics.cls?.value);
-  if (metricName === 'lcp') return readFiniteNonNegative(browserMetrics.lcp?.valueMs);
+  if (metricName === 'cls') {
+    const value = readFiniteNonNegative(browserMetrics.cls?.value);
+    const entryCount = readFiniteNonNegative(browserMetrics.cls?.entryCount);
+    const evidencePresent =
+      (entryCount != null && entryCount >= 1) || hasObserverCapability(browserMetrics, 'layout-shift');
+    return value != null && evidencePresent ? value : null;
+  }
+  if (metricName === 'lcp') {
+    const value = readFiniteNonNegative(browserMetrics.lcp?.valueMs);
+    const entryCount = readFiniteNonNegative(browserMetrics.lcp?.entryCount);
+    return value != null && entryCount != null && entryCount >= 1 ? value : null;
+  }
   if (metricName === 'inp') {
     const value = readFiniteNonNegative(browserMetrics.inp?.valueMs);
     const entryCount = readFiniteNonNegative(browserMetrics.inp?.entryCount);
@@ -48,4 +78,27 @@ export function createBrowserPerfUxTargetSummary(browserMetrics, targets = BROWS
     });
   }
   return Object.freeze(summary);
+}
+
+export function evaluateBrowserPerfUxEvidence(
+  browserMetrics,
+  requiredMetrics = BROWSER_PERF_REQUIRED_UX_METRICS
+) {
+  const targetSummary = createBrowserPerfUxTargetSummary(browserMetrics);
+  const failures = [];
+  for (const metricName of requiredMetrics || []) {
+    const normalizedName = String(metricName || '')
+      .trim()
+      .toLowerCase();
+    if (!normalizedName) continue;
+    const item = targetSummary[normalizedName];
+    if (!item) {
+      failures.push(`Required browser UX metric is unknown: ${normalizedName}`);
+      continue;
+    }
+    if (item.status === 'unmeasured') {
+      failures.push(`Required browser UX evidence missing: ${normalizedName.toUpperCase()}`);
+    }
+  }
+  return failures;
 }

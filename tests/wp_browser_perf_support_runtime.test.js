@@ -52,8 +52,10 @@ import {
   summarizeBrowserPerfResult,
 } from '../tools/wp_browser_perf_support.js';
 import {
+  BROWSER_PERF_REQUIRED_UX_METRICS,
   BROWSER_PERF_UX_TARGETS,
   createBrowserPerfUxTargetSummary,
+  evaluateBrowserPerfUxEvidence,
 } from '../tools/wp_browser_perf_ux_targets.js';
 
 let perfEntrySequence = 0;
@@ -176,11 +178,14 @@ test('browser UX targets stay fixed and advisory independently from regression b
     lcp: { max: 2500, unit: 'ms' },
     inp: { max: 200, unit: 'ms' },
   });
+  assert.deepEqual(BROWSER_PERF_REQUIRED_UX_METRICS, ['cls', 'lcp', 'inp']);
 
   const metrics = {
+    observerSupported: true,
+    supportedEntryTypes: ['layout-shift', 'largest-contentful-paint', 'event'],
     cls: { value: 0.04, entryCount: 2 },
     lcp: { valueMs: 3200, entryCount: 1 },
-    inp: { valueMs: 180, entryCount: 2, source: 'event-timing' },
+    inp: { valueMs: 180, entryCount: 2, source: 'event' },
   };
   const targetSummary = createBrowserPerfUxTargetSummary(metrics);
   assert.equal(targetSummary.cls.status, 'met');
@@ -215,10 +220,54 @@ test('browser UX targets stay fixed and advisory independently from regression b
   assert.match(summary, /LCP: missed, value=3200ms, target<=2500ms, gap=700ms/);
 });
 
-test('browser UX target summary treats missing usable INP evidence as unmeasured, never as a pass', () => {
-  const missing = createBrowserPerfUxTargetSummary({ inp: { valueMs: 0, entryCount: 0, source: 'none' } });
+test('browser UX target summary treats unsupported or missing browser evidence as unmeasured, never as a pass', () => {
+  const missingMetrics = {
+    observerSupported: true,
+    supportedEntryTypes: ['layout-shift', 'largest-contentful-paint', 'event'],
+    cls: { value: 0, entryCount: 0 },
+    lcp: { valueMs: 0, entryCount: 0 },
+    inp: { valueMs: 0, entryCount: 0, source: 'none' },
+  };
+  const missing = createBrowserPerfUxTargetSummary(missingMetrics);
+  assert.equal(missing.cls.status, 'met');
+  assert.equal(missing.cls.value, 0);
+  assert.equal(missing.lcp.status, 'unmeasured');
+  assert.equal(missing.lcp.value, null);
   assert.equal(missing.inp.status, 'unmeasured');
   assert.equal(missing.inp.value, null);
+
+  const unsupportedMetrics = {
+    observerSupported: false,
+    supportedEntryTypes: [],
+    cls: { value: 0, entryCount: 0 },
+    lcp: { valueMs: 0, entryCount: 0 },
+    inp: { valueMs: 0, entryCount: 0, source: 'none' },
+  };
+  const unsupported = createBrowserPerfUxTargetSummary(unsupportedMetrics);
+  assert.equal(unsupported.cls.status, 'unmeasured');
+  assert.equal(unsupported.lcp.status, 'unmeasured');
+  assert.equal(unsupported.inp.status, 'unmeasured');
+
+  const entryBacked = createBrowserPerfUxTargetSummary({
+    observerSupported: false,
+    supportedEntryTypes: [],
+    cls: { value: 0.02, entryCount: 1 },
+    lcp: { valueMs: 1200, entryCount: 1 },
+    inp: { valueMs: 120, entryCount: 1, source: 'first-input' },
+  });
+  assert.equal(entryBacked.cls.status, 'met');
+  assert.equal(entryBacked.lcp.status, 'met');
+  assert.equal(entryBacked.inp.status, 'met');
+
+  assert.deepEqual(evaluateBrowserPerfUxEvidence(missingMetrics), [
+    'Required browser UX evidence missing: LCP',
+    'Required browser UX evidence missing: INP',
+  ]);
+  assert.deepEqual(evaluateBrowserPerfUxEvidence(unsupportedMetrics), [
+    'Required browser UX evidence missing: CLS',
+    'Required browser UX evidence missing: LCP',
+    'Required browser UX evidence missing: INP',
+  ]);
 });
 
 test('browser perf support rebuilds exact browser metrics from all captured entries', () => {
@@ -1941,19 +1990,27 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   );
   assert.ok(inpFailures.some(item => /INP exceeded budget \(240ms > 200ms\)/.test(item)));
 
-  const missingInpFailures = evaluateBrowserPerfBaseline(
+  const missingBrowserEvidenceFailures = evaluateBrowserPerfBaseline(
     {
       ...result,
-      windowBrowserMetrics: { inp: { valueMs: 0, entryCount: 0, source: 'none' } },
+      windowBrowserMetrics: {
+        observerSupported: true,
+        supportedEntryTypes: ['layout-shift', 'largest-contentful-paint', 'event'],
+        cls: { value: 0, entryCount: 0 },
+        lcp: { valueMs: 0, entryCount: 0 },
+        inp: { valueMs: 0, entryCount: 0, source: 'none' },
+      },
     },
-    baseline20({ requiredBrowserMetrics: ['inp'] })
+    baseline20({ requiredBrowserMetrics: ['cls', 'lcp', 'inp'] })
   );
   assert.ok(
-    missingInpFailures.some(item =>
-      /Required INP measurement missing; Event Timing or first-input produced no usable interaction/.test(
-        item
-      )
-    )
+    missingBrowserEvidenceFailures.some(item => /Required browser UX evidence missing: LCP/.test(item))
+  );
+  assert.ok(
+    missingBrowserEvidenceFailures.some(item => /Required browser UX evidence missing: INP/.test(item))
+  );
+  assert.ok(
+    !missingBrowserEvidenceFailures.some(item => /Required browser UX evidence missing: CLS/.test(item))
   );
 });
 

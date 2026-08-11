@@ -18,6 +18,7 @@ test('closeout profile runner exposes the supported manual profiles', () => {
     'sketch',
     'cloud-sync',
     'e2e',
+    'browser-evidence',
     'verify',
     'default',
   ]);
@@ -28,7 +29,6 @@ test('closeout profile runner builds canonical arguments for safe workflow usage
     'tools/wp_verify_closeout.cjs',
     '--profile',
     'order-pdf',
-    '--write',
     '--log-dir',
     '.artifacts/closeout-logs',
     '--append-state',
@@ -44,12 +44,21 @@ test('closeout profile runner builds canonical arguments for safe workflow usage
       'tools/wp_verify_closeout.cjs',
       '--profile',
       'sketch',
-      '--write',
       '--log-dir',
       '.artifacts/custom-closeout-logs',
       '--stop-on-fail',
     ]
   );
+});
+
+test('closeout profile runner writes a final report only for the complete default profile', () => {
+  const args = createCloseoutArgs({ profile: 'default' });
+  assert.equal(args.includes('--write-final'), true);
+  assert.equal(args.includes('--write'), false);
+
+  const focusedArgs = createCloseoutArgs({ profile: 'browser-evidence' });
+  assert.equal(focusedArgs.includes('--write-final'), false);
+  assert.equal(focusedArgs.includes('--write'), false);
 });
 
 test('closeout profile runner rejects invalid profiles instead of falling back to default', () => {

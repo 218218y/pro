@@ -146,5 +146,10 @@ test('manual closeout workflow exposes only runner-approved profiles', () => {
 
   assert.match(manualCloseout, /type: choice/);
   assert.match(manualCloseout, /run: node tools\/wp_run_closeout_profile\.cjs "\$\{\{ inputs\.profile \}\}"/);
+  assert.match(
+    manualCloseout,
+    /if \[ "\$\{\{ inputs\.profile \}\}" = "default" \] && \[ -f docs\/FINAL_VERIFICATION_SUMMARY\.md \]; then/
+  );
+  assert.match(manualCloseout, /Focused profiles publish diagnostics\/state artifacts/);
   assert.deepEqual(optionMatches, ALLOWED_PROFILES);
 });
