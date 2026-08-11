@@ -14,6 +14,12 @@ import {
   isTsgolintVersionAlignedWithTypeScript,
   isVersionWithinBounds,
 } from '../tools/wp_toolchain_version_policy.mjs';
+import {
+  parseBoundedSemverRange,
+  parseOxcManifestRange,
+  versionSatisfiesBoundedRange,
+  versionSatisfiesOxcPolicy,
+} from '../tools/wp_oxc_version_policy.mjs';
 
 test('Node runtime policy is exact, aligned, and clean on the active toolchain', () => {
   const pinned = parsePinnedNodeVersion(fs.readFileSync('.node-version', 'utf8'));
@@ -63,13 +69,16 @@ test('toolchain version policy allows bounded compatible updates', () => {
     assert.equal(row.resolvedWithinApprovedRange, true);
   }
 
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const activeOxcPolicy = parseOxcManifestRange(pkg.devDependencies['oxc-parser']);
+  assert.ok(activeOxcPolicy);
   const expectedRanges = {
     typescript: '7.0.2',
     '@types/node': '^22.20.1',
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
     'oxlint-tsgolint': '7.0.2001',
-    'oxc-parser': '>=0.143.0 <0.144.0',
+    'oxc-parser': pkg.devDependencies['oxc-parser'],
   };
   assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
   assert.deepEqual(
@@ -87,20 +96,39 @@ test('toolchain version policy allows bounded compatible updates', () => {
   );
   const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
   const activeOxcVersion = byName.get('oxc-parser').resolvedVersion;
-  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.143.0', '0.144.0'), true);
-  assert.match(offlineManifest.ast.version, /^0\.(?:142|143)\.\d+$/u);
-  assert.equal(offlineManifest.ast.compatibleProjectRange, '>=0.142.0 <0.144.0');
-  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.142.0', '0.144.0'), true);
-  assert.equal(isVersionWithinBounds(offlineManifest.ast.version, '0.142.0', '0.144.0'), true);
+  assert.equal(versionSatisfiesOxcPolicy(activeOxcVersion, activeOxcPolicy), true);
+  const offlineCompatibility = parseBoundedSemverRange(offlineManifest.ast.compatibleProjectRange);
+  assert.ok(offlineCompatibility);
+  assert.equal(offlineCompatibility.maxExclusiveVersion, activeOxcPolicy.maxExclusiveVersion);
+  assert.equal(versionSatisfiesBoundedRange(activeOxcVersion, offlineCompatibility), true);
+  assert.equal(versionSatisfiesBoundedRange(offlineManifest.ast.version, offlineCompatibility), true);
+});
+
+test('Oxc policy derives each 0.x patch line without a hard-coded minor', () => {
+  assert.deepEqual(parseOxcManifestRange('^0.145.3'), {
+    manifestRange: '^0.145.3',
+    minVersion: '0.145.3',
+    maxExclusiveVersion: '0.146.0',
+    boundedRange: '>=0.145.3 <0.146.0',
+  });
+  assert.deepEqual(parseOxcManifestRange('>=0.146.0 <0.147.0'), {
+    manifestRange: '>=0.146.0 <0.147.0',
+    minVersion: '0.146.0',
+    maxExclusiveVersion: '0.147.0',
+    boundedRange: '>=0.146.0 <0.147.0',
+  });
+  assert.equal(parseOxcManifestRange('^1.0.0'), null);
+  assert.equal(parseOxcManifestRange('^0.145'), null);
+  assert.equal(parseOxcManifestRange('>=0.145.0 <0.147.0'), null);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
   assert.equal(isVersionWithinBounds('7.0.2', '7.0.2', '7.1.0'), true);
   assert.equal(isVersionWithinBounds('7.0.99', '7.0.2', '7.1.0'), true);
   assert.equal(isVersionWithinBounds('7.1.0', '7.0.2', '7.1.0'), false);
-  assert.equal(isVersionWithinBounds('0.142.0', '0.142.0', '0.144.0'), true);
-  assert.equal(isVersionWithinBounds('0.143.9', '0.142.0', '0.144.0'), true);
-  assert.equal(isVersionWithinBounds('0.144.0', '0.142.0', '0.144.0'), false);
+  assert.equal(isVersionWithinBounds('0.144.0', '0.144.0', '0.145.0'), true);
+  assert.equal(isVersionWithinBounds('0.144.9', '0.144.0', '0.145.0'), true);
+  assert.equal(isVersionWithinBounds('0.145.0', '0.144.0', '0.145.0'), false);
   assert.equal(isVersionWithinBounds('latest', '1.0.0', '2.0.0'), false);
 });
 
@@ -132,15 +160,15 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
 
   assert.equal(
     scripts['deps:update:sync-generated'],
-    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
+    'npm run vendor:offline:packages:refresh && npm run toolchain:version-policy:report'
   );
   assert.equal(
     scripts['vendor:offline:packages:refresh'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all && npm run vendor:offline:oxc:refresh'
   );
   assert.equal(
     scripts['vendor:offline:packages:check'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check && npm run vendor:offline:oxc:check'
   );
   assert.equal(
     scripts['vendor:offline:tsx-tests:check-plan'],
@@ -156,7 +184,7 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
   assert.match(scripts['deps:update:recommended'] || '', /npm update .*oxc-parser/u);
   assert.equal(
     scripts['deps:update:oxc'],
-    'npm update oxc-parser && npm run deps:update:sync-generated && npm run deps:update:oxc:verify'
+    'npm install --save-dev oxc-parser@0 && npm run deps:update:sync-generated && npm run deps:update:oxc:verify'
   );
   assert.match(scripts['deps:update:oxc:verify'] || '', /wp_ast_adapter_runtime\.test\.js/u);
   assert.match(scripts['deps:update:oxc:verify'] || '', /offline_repair_toolchain_contracts\.test\.js/u);

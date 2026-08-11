@@ -6,7 +6,7 @@ The full project toolchain is intentionally large. Most focused architecture and
 smaller trusted set:
 
 - repository-pinned Node `24.18.0`;
-- active project parser `oxc-parser 0.143.x` from `package-lock.json`;
+- active project `oxc-parser` from `package-lock.json`, constrained by the narrow 0.x patch-line range in `package.json`;
 - signed offline Oxc bundle whose exact version is declared in `vendor/offline/manifest.json`;
 - matching offline `@oxc-project/types`;
 - the matching Linux x64 glibc native Oxc parser binding;
@@ -21,7 +21,7 @@ smaller trusted set:
 - optionally, lockfile-pinned Oxlint plus its GNU/Linux x64 binding and the matching `oxlint-tsgolint`
   type-aware backend.
 
-The standard `npm run vendor:offline:packages:refresh` command refreshes the focused toolchain plus all lock-derived workspace profiles (`tsx-tests`, `vite-build`, and `eslint-js-strict`), so a dependency update cannot leave the runtime profile stale.
+The standard `npm run vendor:offline:packages:refresh` command refreshes the focused npm toolchain, all lock-derived workspace profiles (`tsx-tests`, `vite-build`, and `eslint-js-strict`), **and the Oxc AST vendor**. Oxc is intentionally implemented by its dedicated synchronizer, but it is part of the standard aggregate refresh/check commands so a dependency update cannot leave the parser vendor stale.
 
 The bootstrap extracts only explicitly listed archives. The workspace profile is resolved ahead of time from
 `package-lock.json`; installation itself does not invoke npm, resolve packages, run lifecycle scripts, install
@@ -152,31 +152,31 @@ Use the repository command rather than editing the version and generated policy 
 npm run deps:update:oxc
 ```
 
-The active parser is bounded to `>=0.143.0 <0.144.0`, so reviewed `0.143.x` patches may advance while `0.144.0` remains blocked pending a new AST compatibility review. The signed `0.142.x` offline bundle remains valid through the explicitly reviewed `>=0.142.0 <0.144.0` bridge because both parser lines pass the same AST adapter contract; it can still be synchronized to the exact active lockfile version with:
+For Oxc 0.x, the package manifest itself defines one narrow patch line (for example `^0.144.0`, normalized by the tooling to `>=0.144.0 <0.145.0`). `npm run deps:update:oxc` may advance the manifest to the latest Oxc 0.x minor, then the normal synchronization flow derives the new policy window instead of relying on a hard-coded version in tests or tooling. A major Oxc line is still rejected and requires an explicit policy change.
+
+The signed offline fallback may temporarily be older than the active parser. Its compatibility bridge in `vendor/offline/manifest.json` must contain both versions and must share the **current active upper bound**; this lets CI distinguish an intentionally retained emergency fallback from a stale pre-update range. The normal refresh replaces that fallback with the exact active lockfile graph and narrows the bridge to the active patch line:
 
 ```bash
 npm run vendor:offline:oxc:refresh
 npm run vendor:offline:oxc:check
 ```
 
-The refresh command downloads only the official npm tarballs recorded in `package-lock.json`, verifies their SHA-512 integrity and embedded package name/version, updates `vendor/offline/manifest.json`, and removes superseded Oxc archives only after the new bundle is complete.
+The refresh command resolves Oxc dependencies using npm's actual lockfile layout, including nested dependencies such as `node_modules/oxc-parser/node_modules/@oxc-project/types`. It downloads only the official npm tarballs recorded in `package-lock.json`, verifies SHA-512 integrity plus embedded package name/version, updates `vendor/offline/manifest.json` atomically, and removes superseded Oxc archives only after the new bundle is complete.
 
-### Direct 0.142.0 archive URLs
+For a manual/offline transfer, print the exact current URLs and destination filenames instead of copying version-specific URLs from documentation:
 
-For manual download of the current Linux x64 glibc bundle:
-
-```text
-https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.142.0.tgz
-https://registry.npmjs.org/@oxc-project/types/-/types-0.142.0.tgz
-https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.142.0.tgz
+```bash
+npm run vendor:offline:packages:downloads
+# or only the Oxc slice:
+node tools/wp_refresh_offline_oxc_vendor.mjs --print-downloads
 ```
 
-Place them under `vendor/offline/ast/` without renaming them, then run `npm run vendor:offline:oxc:adopt`. The command verifies the downloaded archives against `package-lock.json`, updates the manifest and removes the superseded files without downloading them again.
+Place the three Oxc archives under the printed `vendor/offline/ast/` paths without renaming them, then run `npm run vendor:offline:oxc:adopt`. The command verifies the archives against the active lockfile graph and updates the manifest without downloading them again.
 
 ## Synchronize lockfile-backed offline packages
 
 The npm-backed slices (`esbuild`, `tsx`, `prettier`, `typescript`, `oxlint` with its type-aware backend,
-Vite, and ESLint) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
+Vite, ESLint, and the separately handled Oxc AST slice) are synchronized from `package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
 command first adopts a correctly named archive that is already present, otherwise it downloads the official
 npm tarball. It verifies SHA-512 integrity, embedded package name/version, native executable layout, and the
 esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Verified downloads are cached

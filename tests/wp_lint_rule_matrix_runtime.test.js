@@ -9,6 +9,7 @@ import {
   collectLintRuleMatrix,
   createFormattedLintRuleMatrixMarkdown,
 } from '../tools/wp_lint_rule_matrix.mjs';
+import { parseOxcManifestRange } from '../tools/wp_oxc_version_policy.mjs';
 
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
@@ -94,7 +95,7 @@ test('package promotes modern lint without retired aliases', () => {
   assert.equal(pkg.devDependencies.eslint, '^10.8.0');
   assert.equal(pkg.devDependencies.oxlint, '^1.75.0');
   assert.equal(pkg.devDependencies['oxlint-tsgolint'], '7.0.2001');
-  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.143.0 <0.144.0');
+  assert.ok(parseOxcManifestRange(pkg.devDependencies['oxc-parser']));
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
     pkg.scripts['lint:modern'],

@@ -7,17 +7,22 @@ import path from 'node:path';
 import process from 'node:process';
 import zlib from 'node:zlib';
 
+import {
+  parseBoundedSemverRange,
+  parseOxcManifestRange,
+  resolveOxcLockGraph,
+  versionSatisfiesBoundedRange,
+  versionSatisfiesOxcPolicy,
+} from './wp_oxc_version_policy.mjs';
+
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, 'vendor', 'offline', 'manifest.json');
 const AST_DIR = path.join(ROOT, 'vendor', 'offline', 'ast');
 const CHECK_ONLY = process.argv.includes('--check');
 const ADOPT_EXISTING = process.argv.includes('--adopt-existing');
-if (CHECK_ONLY && ADOPT_EXISTING) fail('use either --check or --adopt-existing, not both');
-const EXPECTED_LOCK_PATHS = Object.freeze([
-  'node_modules/oxc-parser',
-  'node_modules/@oxc-project/types',
-  'node_modules/@oxc-parser/binding-linux-x64-gnu',
-]);
+const PRINT_DOWNLOADS = process.argv.includes('--print-downloads');
+const selectedModes = [CHECK_ONLY, ADOPT_EXISTING, PRINT_DOWNLOADS].filter(Boolean).length;
+if (selectedModes > 1) fail('use only one of --check, --adopt-existing, or --print-downloads');
 
 function fail(message) {
   throw new Error(`[offline-oxc-vendor] ${message}`);
@@ -25,27 +30,6 @@ function fail(message) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
-
-function parseBoundedRange(range) {
-  const match = /^>=(\d+\.\d+\.\d+) <(\d+\.\d+\.\d+)$/u.exec(range);
-  if (!match) fail(`unsupported compatibility range: ${range}`);
-  return { min: match[1], maxExclusive: match[2] };
-}
-
-function compareVersions(left, right) {
-  const leftParts = left.split('.').map(Number);
-  const rightParts = right.split('.').map(Number);
-  if (leftParts.length !== 3 || rightParts.length !== 3) fail('versions must use x.y.z');
-  for (let index = 0; index < 3; index += 1) {
-    if (leftParts[index] !== rightParts[index]) return leftParts[index] - rightParts[index];
-  }
-  return 0;
-}
-
-function rangeAccepts(version, range) {
-  const bounds = parseBoundedRange(range);
-  return compareVersions(version, bounds.min) >= 0 && compareVersions(version, bounds.maxExclusive) < 0;
 }
 
 function sha512Integrity(buffer) {
@@ -87,7 +71,7 @@ function targetFromLock(packages, lockPath) {
   }
   const fileName = new URL(entry.resolved).pathname.split('/').at(-1);
   if (!fileName?.endsWith('.tgz')) fail(`${lockPath} has an invalid tarball URL`);
-  const packageName = lockPath.slice('node_modules/'.length);
+  const packageName = lockPath.slice(lockPath.lastIndexOf('node_modules/') + 'node_modules/'.length);
   return {
     lockPath,
     installPath: lockPath,
@@ -101,10 +85,22 @@ function targetFromLock(packages, lockPath) {
 }
 
 function buildTargets(lock) {
-  const targets = EXPECTED_LOCK_PATHS.map(lockPath => targetFromLock(lock.packages, lockPath));
-  const versions = new Set(targets.map(target => target.version));
-  if (versions.size !== 1) fail(`Oxc package versions are not aligned: ${[...versions].join(', ')}`);
-  return { version: targets[0].version, targets };
+  const graph = resolveOxcLockGraph(lock);
+  const targets = graph.lockPaths.map(lockPath => targetFromLock(lock.packages, lockPath));
+  return { version: graph.version, targets, graph };
+}
+
+function activeOxcPolicy() {
+  const pkg = readJson(path.join(ROOT, 'package.json'));
+  const manifestRange = pkg.devDependencies?.['oxc-parser'];
+  const policy = parseOxcManifestRange(manifestRange);
+  if (!policy) {
+    fail(
+      `package.json oxc-parser must use a single 0.x patch-line range such as ^0.144.0 ` +
+        `or >=0.144.0 <0.145.0; found ${manifestRange ?? 'missing'}`
+    );
+  }
+  return policy;
 }
 
 function download(url, redirectsLeft = 5) {
@@ -163,27 +159,67 @@ function findManifestEntry(ast, lockPath) {
 function checkCurrentBundle(manifest, lock) {
   const ast = manifest.ast;
   if (!ast || typeof ast !== 'object') fail('manifest has no ast definition');
-  const activeVersion = lock.packages['node_modules/oxc-parser']?.version;
-  if (!activeVersion) fail('package-lock.json has no active oxc-parser');
-  if (!rangeAccepts(activeVersion, ast.compatibleProjectRange)) {
-    fail(`active oxc-parser ${activeVersion} is outside ${ast.compatibleProjectRange}`);
-  }
-  if (!rangeAccepts(ast.version, ast.compatibleProjectRange)) {
-    fail(`offline Oxc ${ast.version} is outside ${ast.compatibleProjectRange}`);
+  const policy = activeOxcPolicy();
+  const { version: activeVersion, targets: activeTargets } = buildTargets(lock);
+  if (!versionSatisfiesOxcPolicy(activeVersion, policy)) {
+    fail(`active oxc-parser ${activeVersion} is outside ${policy.boundedRange}`);
   }
 
-  for (const lockPath of EXPECTED_LOCK_PATHS) {
-    const entry = findManifestEntry(ast, lockPath);
-    if (!entry) fail(`manifest is missing ${lockPath}`);
+  const compatibility = parseBoundedSemverRange(ast.compatibleProjectRange);
+  if (!compatibility)
+    fail(`invalid manifest Oxc compatibility range: ${ast.compatibleProjectRange ?? 'missing'}`);
+  if (compatibility.maxExclusiveVersion !== policy.maxExclusiveVersion) {
+    fail(
+      `manifest Oxc compatibility upper bound ${compatibility.maxExclusiveVersion} is stale; ` +
+        `package.json requires ${policy.maxExclusiveVersion}`
+    );
+  }
+  if (!versionSatisfiesBoundedRange(activeVersion, compatibility)) {
+    fail(`active oxc-parser ${activeVersion} is outside ${compatibility.boundedRange}`);
+  }
+  if (!versionSatisfiesBoundedRange(ast.version, compatibility)) {
+    fail(`offline Oxc ${ast.version} is outside ${compatibility.boundedRange}`);
+  }
+
+  const entries = [...(ast.packages ?? []), ...Object.values(ast.bindings ?? {})];
+  const expectedPackageNames = new Set([
+    'oxc-parser',
+    '@oxc-project/types',
+    '@oxc-parser/binding-linux-x64-gnu',
+  ]);
+  const actualPackageNames = new Set();
+  for (const entry of entries) {
+    const lockPath = entry.lockPath;
+    if (typeof lockPath !== 'string' || !lockPath.includes('node_modules/')) {
+      fail(`manifest AST entry has an invalid lockPath: ${lockPath ?? 'missing'}`);
+    }
+    const packageName = lockPath.slice(lockPath.lastIndexOf('node_modules/') + 'node_modules/'.length);
+    actualPackageNames.add(packageName);
     if (!entry.file || !entry.url || !entry.integrity) fail(`manifest entry is incomplete: ${lockPath}`);
     const archivePath = path.join(ROOT, entry.file);
     if (!fs.existsSync(archivePath)) fail(`missing archive: ${entry.file}`);
     verifyArchive(fs.readFileSync(archivePath), {
       ...entry,
-      packageName: lockPath.slice('node_modules/'.length),
+      packageName,
       version: ast.version,
       fileName: path.basename(entry.file),
     });
+  }
+  for (const packageName of expectedPackageNames) {
+    if (!actualPackageNames.has(packageName)) fail(`manifest is missing offline ${packageName}`);
+  }
+  if (actualPackageNames.size !== expectedPackageNames.size) {
+    fail(`manifest AST package set is unexpected: ${[...actualPackageNames].join(', ')}`);
+  }
+
+  if (ast.version === activeVersion) {
+    for (const target of activeTargets) {
+      const entry = findManifestEntry(ast, target.lockPath);
+      if (!entry) fail(`manifest exact Oxc bundle is missing ${target.lockPath}`);
+      if (entry.url !== target.url || entry.integrity !== target.integrity) {
+        fail(`manifest exact Oxc bundle does not match package-lock.json for ${target.lockPath}`);
+      }
+    }
   }
 
   console.log(
@@ -191,11 +227,11 @@ function checkCurrentBundle(manifest, lock) {
   );
 }
 
-function updateManifest(manifest, version, targets) {
+function updateManifest(manifest, version, targets, graph, policy) {
   const byLockPath = new Map(targets.map(target => [target.lockPath, target]));
-  const parser = byLockPath.get('node_modules/oxc-parser');
-  const types = byLockPath.get('node_modules/@oxc-project/types');
-  const binding = byLockPath.get('node_modules/@oxc-parser/binding-linux-x64-gnu');
+  const parser = byLockPath.get(graph.parserPath);
+  const types = byLockPath.get(graph.typesPath);
+  const binding = byLockPath.get(graph.bindingPath);
   const toManifestEntry = target => ({
     lockPath: target.lockPath,
     installPath: target.installPath,
@@ -207,6 +243,7 @@ function updateManifest(manifest, version, targets) {
   manifest.ast = {
     ...manifest.ast,
     version,
+    compatibleProjectRange: policy.boundedRange,
     packages: [toManifestEntry(parser), toManifestEntry(types)],
     bindings: {
       'linux-x64': toManifestEntry(binding),
@@ -228,9 +265,10 @@ function removeSupersededArchives(keepNames) {
 }
 
 async function refresh(manifest, lock, { adoptExisting = false } = {}) {
-  const { version, targets } = buildTargets(lock);
-  if (!rangeAccepts(version, manifest.ast.compatibleProjectRange)) {
-    fail(`active oxc-parser ${version} is outside ${manifest.ast.compatibleProjectRange}`);
+  const policy = activeOxcPolicy();
+  const { version, targets, graph } = buildTargets(lock);
+  if (!versionSatisfiesOxcPolicy(version, policy)) {
+    fail(`active oxc-parser ${version} is outside package.json policy ${policy.boundedRange}`);
   }
 
   fs.mkdirSync(AST_DIR, { recursive: true });
@@ -254,7 +292,7 @@ async function refresh(manifest, lock, { adoptExisting = false } = {}) {
     for (const target of targets) {
       fs.copyFileSync(path.join(staging, target.fileName), path.join(AST_DIR, target.fileName));
     }
-    const nextManifest = updateManifest(structuredClone(manifest), version, targets);
+    const nextManifest = updateManifest(structuredClone(manifest), version, targets, graph, policy);
     const temporaryManifest = `${MANIFEST_PATH}.tmp-${process.pid}`;
     fs.writeFileSync(temporaryManifest, `${JSON.stringify(nextManifest, null, 2)}\n`);
     fs.copyFileSync(temporaryManifest, MANIFEST_PATH);
@@ -271,6 +309,16 @@ async function main() {
   const lock = readJson(path.join(ROOT, 'package-lock.json'));
   if (CHECK_ONLY) {
     checkCurrentBundle(manifest, lock);
+    return;
+  }
+  if (PRINT_DOWNLOADS) {
+    const policy = activeOxcPolicy();
+    const { version, targets } = buildTargets(lock);
+    if (!versionSatisfiesOxcPolicy(version, policy)) {
+      fail(`active oxc-parser ${version} is outside package.json policy ${policy.boundedRange}`);
+    }
+    console.log(`[offline-oxc-vendor] Oxc ${version}`);
+    for (const target of targets) console.log(`${target.url} -> ${target.file}`);
     return;
   }
   await refresh(manifest, lock, { adoptExisting: ADOPT_EXISTING });

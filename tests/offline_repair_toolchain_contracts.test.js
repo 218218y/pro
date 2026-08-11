@@ -7,6 +7,14 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 
+import {
+  parseBoundedSemverRange,
+  parseOxcManifestRange,
+  resolveDependencyLockPath,
+  resolveOxcLockGraph,
+  versionSatisfiesBoundedRange,
+} from '../tools/wp_oxc_version_policy.mjs';
+
 const root = process.cwd();
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
 const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -180,25 +188,49 @@ test('offline AST fallback is signed independently and compatible with the activ
   const activeParser = lock.packages['node_modules/oxc-parser'];
   const activeVersion = activeParser.version;
 
-  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.143.0 <0.144.0');
+  const policy = parseOxcManifestRange(pkg.devDependencies['oxc-parser']);
+  assert.ok(policy);
+  const graph = resolveOxcLockGraph(lock);
   assert.equal(lock.packages[''].devDependencies['oxc-parser'], pkg.devDependencies['oxc-parser']);
-  assert.equal(isVersionInBoundedRange(activeVersion, '>=0.143.0 <0.144.0'), true);
-  assert.match(ast.version, /^0\.(?:142|143)\.\d+$/u);
-  assert.equal(ast.compatibleProjectRange, '>=0.142.0 <0.144.0');
-  assert.equal(isVersionInBoundedRange(activeVersion, ast.compatibleProjectRange), true);
-  assert.equal(isVersionInBoundedRange(ast.version, ast.compatibleProjectRange), true);
-  assert.equal(lock.packages['node_modules/@oxc-project/types'].version, activeVersion);
+  const compatibility = parseBoundedSemverRange(ast.compatibleProjectRange);
+  assert.ok(compatibility);
+  assert.equal(isVersionInBoundedRange(activeVersion, policy.boundedRange), true);
+  assert.equal(compatibility.maxExclusiveVersion, policy.maxExclusiveVersion);
+  assert.equal(versionSatisfiesBoundedRange(activeVersion, compatibility), true);
+  assert.equal(versionSatisfiesBoundedRange(ast.version, compatibility), true);
+  assert.equal(lock.packages[graph.typesPath].version, activeVersion);
+  if (lock.packages['node_modules/@oxc-project/types']?.version !== activeVersion) {
+    assert.notEqual(
+      graph.typesPath,
+      'node_modules/@oxc-project/types',
+      'Oxc types must resolve from the parser nesting when the root package is a different version'
+    );
+  }
   assert.equal(activeParser.dependencies['@oxc-project/types'], `^${activeVersion}`);
   for (const [packageName, expectedVersion] of Object.entries(activeParser.optionalDependencies)) {
     assert.equal(expectedVersion, activeVersion, `${packageName} must match the active parser`);
+    const resolvedPath = resolveDependencyLockPath(lock.packages, graph.parserPath, packageName);
     assert.equal(
-      lock.packages[`node_modules/${packageName}`]?.version,
+      lock.packages[resolvedPath]?.version,
       activeVersion,
-      `${packageName} lock entry must match the active parser`
+      `${packageName} resolved lock entry must match the active parser`
     );
   }
 
-  for (const entry of [...ast.packages, ...Object.values(ast.bindings)]) {
+  const astEntries = [...ast.packages, ...Object.values(ast.bindings)];
+  assert.deepEqual(
+    astEntries
+      .map(entry =>
+        entry.lockPath.slice(entry.lockPath.lastIndexOf('node_modules/') + 'node_modules/'.length)
+      )
+      .sort(),
+    ['@oxc-parser/binding-linux-x64-gnu', '@oxc-project/types', 'oxc-parser'].sort()
+  );
+  if (ast.version === activeVersion) {
+    assert.deepEqual(astEntries.map(entry => entry.lockPath).sort(), graph.lockPaths.toSorted());
+    for (const entry of astEntries) assertLockEntry(entry, ast.version, lock.packages);
+  }
+  for (const entry of astEntries) {
     assert.match(entry.file, new RegExp(ast.version.replaceAll('.', '\\.'), 'u'));
     assert.match(entry.url, new RegExp(ast.version.replaceAll('.', '\\.'), 'u'));
     assert.match(entry.integrity, /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
@@ -223,7 +255,13 @@ test('offline Oxc vendor refresh command validates the checked-in bundle without
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /offline 0\.(?:142|143)\.\d+; active 0\.143\.\d+/u);
+  assert.match(
+    result.stdout,
+    new RegExp(
+      `offline ${escapeRegex(readJson('vendor/offline/manifest.json').ast.version)}; active ${escapeRegex(readJson('package-lock.json').packages['node_modules/oxc-parser'].version)}`,
+      'u'
+    )
+  );
 });
 
 test('offline npm vendor synchronizer adopts lockfile packages and cleans superseded archives', () => {
@@ -234,19 +272,19 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
 
   assert.equal(
     pkg.scripts['vendor:offline:packages:refresh'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all && npm run vendor:offline:oxc:refresh'
   );
   assert.equal(
     pkg.scripts['vendor:offline:packages:adopt'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all --adopt-existing'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --adopt-existing && npm run vendor:offline:oxc:adopt'
   );
   assert.equal(
     pkg.scripts['vendor:offline:packages:check'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check && npm run vendor:offline:oxc:check'
   );
   assert.equal(
     pkg.scripts['vendor:offline:packages:downloads'],
-    'node tools/wp_refresh_offline_npm_vendor.mjs --all --print-downloads'
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --print-downloads && node tools/wp_refresh_offline_oxc_vendor.mjs --print-downloads'
   );
   assert.equal(
     pkg.scripts['vendor:offline:tsx:adopt'],
@@ -255,7 +293,7 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
   assert.equal(
     pkg.scripts['deps:update:sync-generated'],
-    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
+    'npm run vendor:offline:packages:refresh && npm run toolchain:version-policy:report'
   );
   assert.doesNotMatch(
     pkg.scripts['deps:update:sync-generated'],
@@ -1120,22 +1158,23 @@ import tempfile
 sys.path.insert(0, str(Path.cwd() / "tools"))
 import bootstrap_offline_repair_core as core
 
-assert core._bounded_range_accepts("0.142.0", ">=0.142.0 <0.144.0")
-assert core._bounded_range_accepts("0.143.9", ">=0.142.0 <0.144.0")
-assert not core._bounded_range_accepts("0.144.0", ">=0.142.0 <0.144.0")
+assert core._bounded_range_accepts("0.144.0", ">=0.144.0 <0.145.0")
+assert core._bounded_range_accepts("0.144.9", ">=0.144.0 <0.145.0")
+assert not core._bounded_range_accepts("0.145.0", ">=0.144.0 <0.145.0")
 
 manifest = core.load_manifest()
+upper_boundary = manifest["ast"]["compatibleProjectRange"].split(" <", 1)[1]
 offline_boundary_manifest = deepcopy(manifest)
-offline_boundary_manifest["ast"]["version"] = "0.144.0"
+offline_boundary_manifest["ast"]["version"] = upper_boundary
 try:
     core.validate_manifest_against_project(offline_boundary_manifest)
 except core.OfflineCoreError as error:
-    assert "Offline AST version 0.144.0" in str(error)
+    assert f"Offline AST version {upper_boundary}" in str(error)
 else:
     raise AssertionError("incompatible offline fallback was accepted")
 
 lock = json.loads(core.LOCK_PATH.read_text(encoding="utf-8"))
-lock["packages"]["node_modules/oxc-parser"]["version"] = "0.144.0"
+lock["packages"]["node_modules/oxc-parser"]["version"] = upper_boundary
 with tempfile.TemporaryDirectory() as temp_dir:
     original_lock_path = core.LOCK_PATH
     test_lock_path = Path(temp_dir) / "package-lock.json"
@@ -1144,7 +1183,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     try:
         core.validate_manifest_against_project(manifest)
     except core.OfflineCoreError as error:
-        assert "Project oxc-parser 0.144.0" in str(error)
+        assert f"Project oxc-parser {upper_boundary}" in str(error)
     else:
         raise AssertionError("incompatible active parser was accepted")
     finally:

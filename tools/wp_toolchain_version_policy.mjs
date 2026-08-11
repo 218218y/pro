@@ -5,19 +5,31 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { readNodeRuntimePolicy } from './wp_node_runtime_policy.mjs';
+import {
+  parseBoundedSemverRange,
+  parseOxcManifestRange,
+  versionSatisfiesBoundedRange,
+  versionSatisfiesOxcPolicy,
+} from './wp_oxc_version_policy.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/TOOLCHAIN_VERSION_POLICY.md';
 
-const APPROVED_DEV_DEP_RANGES = Object.freeze({
+const STATIC_APPROVED_DEV_DEP_RANGES = Object.freeze({
   typescript: '7.0.2',
   '@types/node': '^22.20.1',
   eslint: '^10.8.0',
   oxlint: '^1.75.0',
   'oxlint-tsgolint': '7.0.2001',
-  'oxc-parser': '>=0.143.0 <0.144.0',
+});
+
+const INITIAL_OXC_MANIFEST_RANGE = readJson('package.json').devDependencies?.['oxc-parser'] ?? null;
+const INITIAL_OXC_POLICY = parseOxcManifestRange(INITIAL_OXC_MANIFEST_RANGE);
+const APPROVED_DEV_DEP_RANGES = Object.freeze({
+  ...STATIC_APPROVED_DEV_DEP_RANGES,
+  'oxc-parser': INITIAL_OXC_POLICY?.manifestRange ?? INITIAL_OXC_MANIFEST_RANGE,
 });
 
 const TOOLCHAIN_DEV_DEPS = [
@@ -71,11 +83,12 @@ const TOOLCHAIN_DEV_DEPS = [
   {
     name: 'oxc-parser',
     approvedRange: APPROVED_DEV_DEP_RANGES['oxc-parser'],
-    minVersion: '0.143.0',
-    maxExclusiveVersion: '0.144.0',
+    minVersion: INITIAL_OXC_POLICY?.minVersion ?? null,
+    maxExclusiveVersion: INITIAL_OXC_POLICY?.maxExclusiveVersion ?? null,
+    dynamicOxcPatchLine: true,
     role: 'Internal AST adapter parser used by production contracts and code-analysis tools.',
     updatePolicy:
-      'Allow reviewed 0.143.x patch releases. The separately signed offline fallback may remain on 0.142.x while both lines pass the same AST adapter contract.',
+      'Allow the active Oxc 0.x patch line declared by package.json. Moving to the next Oxc minor updates the reviewed patch window during dependency synchronization, then the AST adapter and offline vendor contracts must pass.',
   },
 ];
 
@@ -166,20 +179,36 @@ function collectToolchainVersionPolicy() {
     const packageJsonRange = devDependencies[item.name] || null;
     const lockRootRange = lockRootDevDependencies[item.name] || null;
     const resolvedVersion = lock.packages?.[`node_modules/${item.name}`]?.version || null;
-    const manifestRangeApproved = packageJsonRange === item.approvedRange;
+    const dynamicOxcPolicy = item.dynamicOxcPatchLine ? parseOxcManifestRange(packageJsonRange) : null;
+    const approvedRange = item.dynamicOxcPatchLine
+      ? (dynamicOxcPolicy?.manifestRange ?? packageJsonRange)
+      : item.approvedRange;
+    const minVersion = item.dynamicOxcPatchLine ? (dynamicOxcPolicy?.minVersion ?? null) : item.minVersion;
+    const maxExclusiveVersion = item.dynamicOxcPatchLine
+      ? (dynamicOxcPolicy?.maxExclusiveVersion ?? null)
+      : item.maxExclusiveVersion;
+    const manifestRangeApproved = item.dynamicOxcPatchLine
+      ? Boolean(dynamicOxcPolicy)
+      : packageJsonRange === approvedRange;
     const lockRangeMatchesManifest = packageJsonRange === lockRootRange;
     const resolvedWithinApprovedRange = item.exactResolvedVersion
       ? resolvedVersion === item.exactResolvedVersion
-      : isVersionWithinBounds(resolvedVersion, item.minVersion, item.maxExclusiveVersion);
+      : item.dynamicOxcPatchLine
+        ? versionSatisfiesOxcPolicy(resolvedVersion, dynamicOxcPolicy)
+        : isVersionWithinBounds(resolvedVersion, minVersion, maxExclusiveVersion);
     const allowedResolvedSpec = item.exactResolvedVersion
       ? `=${item.exactResolvedVersion}`
-      : `>=${item.minVersion} <${item.maxExclusiveVersion}`;
+      : (dynamicOxcPolicy?.boundedRange ?? `>=${minVersion} <${maxExclusiveVersion}`);
 
     if (!packageJsonRange) violations.push(`${item.name} is missing from package.json devDependencies.`);
     if (packageJsonRange && !manifestRangeApproved) {
-      violations.push(
-        `${item.name} must use approved range ${item.approvedRange}; found ${packageJsonRange}.`
-      );
+      if (item.dynamicOxcPatchLine) {
+        violations.push(
+          `${item.name} must use a single Oxc 0.x patch-line range such as ^0.144.0 or >=0.144.0 <0.145.0; found ${packageJsonRange}.`
+        );
+      } else {
+        violations.push(`${item.name} must use approved range ${approvedRange}; found ${packageJsonRange}.`);
+      }
     }
     if (!lockRootRange) violations.push(`${item.name} is missing from package-lock root devDependencies.`);
     if (packageJsonRange && lockRootRange && !lockRangeMatchesManifest) {
@@ -205,6 +234,9 @@ function collectToolchainVersionPolicy() {
 
     rows.push({
       ...item,
+      approvedRange,
+      minVersion,
+      maxExclusiveVersion,
       packageJsonRange,
       lockRootRange,
       resolvedVersion,
@@ -237,11 +269,44 @@ function collectToolchainVersionPolicy() {
     }
   }
 
+  const oxcRow = rows.find(row => row.name === 'oxc-parser');
+  const offlineManifest = readJson('vendor/offline/manifest.json');
+  const offlineAst = offlineManifest.ast;
+  const oxcOfflineCompatibility = parseBoundedSemverRange(offlineAst?.compatibleProjectRange);
+  if (!offlineAst || typeof offlineAst !== 'object') {
+    violations.push('offline Oxc manifest definition is missing.');
+  } else if (!oxcOfflineCompatibility) {
+    violations.push(
+      `offline Oxc compatibility range is invalid: ${offlineAst.compatibleProjectRange ?? 'missing'}.`
+    );
+  } else if (oxcRow?.maxExclusiveVersion) {
+    if (oxcOfflineCompatibility.maxExclusiveVersion !== oxcRow.maxExclusiveVersion) {
+      violations.push(
+        `offline Oxc compatibility upper bound ${oxcOfflineCompatibility.maxExclusiveVersion} does not match active policy ${oxcRow.maxExclusiveVersion}.`
+      );
+    }
+    if (
+      oxcRow.resolvedVersion &&
+      !versionSatisfiesBoundedRange(oxcRow.resolvedVersion, oxcOfflineCompatibility)
+    ) {
+      violations.push(
+        `active oxc-parser ${oxcRow.resolvedVersion} is outside offline compatibility ${oxcOfflineCompatibility.boundedRange}.`
+      );
+    }
+    if (!offlineAst.version || !versionSatisfiesBoundedRange(offlineAst.version, oxcOfflineCompatibility)) {
+      violations.push(
+        `offline Oxc ${offlineAst.version ?? 'missing'} is outside compatibility ${oxcOfflineCompatibility.boundedRange}.`
+      );
+    }
+  }
+
   return {
     rows,
-    approvedRanges: APPROVED_DEV_DEP_RANGES,
+    approvedRanges: Object.fromEntries(rows.map(row => [row.name, row.approvedRange])),
     nodeRuntimePolicy,
     tsgolintTypeScriptAligned,
+    oxcOfflineVersion: offlineAst?.version ?? null,
+    oxcOfflineCompatibility,
     forbiddenPackages: FORBIDDEN_PACKAGES.map(item => item.name),
     forbiddenPackageLabels: FORBIDDEN_PACKAGES.map(item => item.label),
     violations,
@@ -275,7 +340,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The active `oxc-parser` uses a narrow reviewed patch window; its signed offline fallback is validated independently against the same AST adapter contract. This permits reviewed refreshes where safe without weakening major-version or compatibility boundaries. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
+    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The active `oxc-parser` uses a narrow 0.x patch-line window derived from its package manifest; the offline vendor synchronizer adopts that same window and exact lockfile graph. This permits routine Oxc minor refreshes without leaving stale hard-coded policy behind, while compatibility is still enforced by the AST adapter and offline vendor contracts. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
     '',
     '## Bounded toolchain ranges',
     '',
@@ -317,14 +382,14 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '- A dependency refresh must run the toolchain policy, lint, typecheck, build, and relevant runtime/contract tests.',
     '- Major releases and versions outside the documented windows still require an explicit compatibility review.',
     '- `oxlint-tsgolint` must encode the resolved TypeScript major, minor, and patch plus its three-digit tsgolint revision.',
-    '- Update the active parser with `npm run deps:update:oxc`; the command refreshes the lockfile, generated policy report, and focused AST contracts.',
-    "- The signed offline AST fallback may remain on an older version only while both versions stay inside `vendor/offline/manifest.json`'s reviewed compatibility window and pass the same adapter contract.",
+    '- Update the active parser with `npm run deps:update:oxc`; the command advances the Oxc manifest range, refreshes the exact offline Oxc lock graph, regenerates policy docs, and runs focused AST contracts.',
+    '- `vendor:offline:packages:refresh` refreshes the general npm offline vendor and the Oxc AST vendor together; CI check mode remains non-mutating and strict.',
     '',
     '## Current status',
     '',
     policy.violations.length
       ? 'Not ready:'
-      : 'Ready: all toolchain manifest ranges are approved, resolved lock versions are inside their compatibility windows, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
+      : 'Ready: all toolchain manifest ranges are approved, resolved lock versions are inside their compatibility windows, the offline Oxc compatibility bridge matches the active parser window, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
     ...policy.violations.map(v => `- ${v}`),
     ''
   );
