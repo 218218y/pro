@@ -100,6 +100,18 @@ class FakeMaterial {
 class FakeMeshStandardMaterial extends FakeMaterial {}
 class FakeMeshBasicMaterial extends FakeMaterial {}
 
+function descendants(node: FakeObject3D): FakeObject3D[] {
+  const out: FakeObject3D[] = [];
+  const stack = [...node.children] as FakeObject3D[];
+  while (stack.length) {
+    const next = stack.shift();
+    if (!next) continue;
+    out.push(next);
+    stack.push(...(next.children as FakeObject3D[]));
+  }
+  return out;
+}
+
 function createChestCfg(overrides: Record<string, unknown> = {}) {
   return {
     showDimensions: true,
@@ -1600,4 +1612,37 @@ test('visuals chest mode wheels base creates four compact casters without leg pl
       CHEST_CASTER_RENDER_POLICY.forkDepthM,
     ])
   );
+});
+
+test('visuals chest mode always renders regular roller runners without exposing the external Blum selector', () => {
+  const { App, wardrobeGroup } = createChestApp();
+  buildChestOnly(App, {
+    renderPolicy: App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'nickel',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({ drawerRunnerType: 'blum' }),
+  });
+
+  const roles = descendants(wardrobeGroup)
+    .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
+    .map(node => String(node.userData?.__wpDrawerRunnerRole));
+  assert.ok(roles.some(role => role === 'roller-fixed-web-left'));
+  assert.ok(roles.some(role => role === 'roller-moving-web-right'));
+  assert.equal(
+    roles.some(role => role.startsWith('blum-')),
+    false
+  );
+
+  const hardwareContainer = wardrobeGroup.children.find(
+    child => child?.userData?.__wpChestDrawerRunnerHardware === true
+  );
+  assert.ok(hardwareContainer, 'expected fixed chest runner hardware to stay outside moving drawer groups');
 });

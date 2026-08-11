@@ -5,6 +5,7 @@ import {
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
   EXTERNAL_DRAWER_MOTION_POLICY,
   EXTERNAL_DRAWER_SIZE_POLICY,
+  resolveExternalDrawerGeometry,
 } from './external_drawer_policy.js';
 import {
   INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
@@ -198,6 +199,8 @@ export const CORNER_WING_CELL_POLICY = Object.freeze({
   minAbsDepthWoodMultiplier: 4,
   minBodyWoodMultiplier: 2,
 });
+
+export const resolveCornerWingExternalDrawerGeometry = resolveExternalDrawerGeometry;
 
 export const CORNER_WING_DRAWER_POLICY = Object.freeze({
   shoeHeightM: EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM,

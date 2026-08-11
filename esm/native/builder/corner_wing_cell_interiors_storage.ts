@@ -1,4 +1,7 @@
-import { CORNER_WING_DRAWER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import {
+  CORNER_WING_DRAWER_POLICY,
+  resolveCornerWingExternalDrawerGeometry,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
   resolveEffectiveDoorStyle,
@@ -8,6 +11,8 @@ import {
 } from '../features/door_authoring/api.js';
 import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
+import { readDrawerRunnerTypeFromConfig } from './drawer_runner_policy.js';
 import {
   CORNER_SHELF_GROUP_PART_ID,
   makeDrawerBoxPartId,
@@ -106,6 +111,13 @@ export function emitCornerWingExternalDrawers(
   const regDrawerHeight = CORNER_WING_DRAWER_POLICY.externalRegularHeightM;
   const scopeExtDrawerKey = (id: string): string =>
     runtime.__stackKey === 'bottom' ? runtime.__stackScopePartKey(id) : id;
+  const fixedRunnerHardware = new runtime.THREE.Group();
+  fixedRunnerHardware.userData = {
+    ...fixedRunnerHardware.userData,
+    __ignoreRaycast: true,
+    __wpDrawerRunnerHardwareContainer: true,
+    __wpCornerExternalDrawerRunnerHardware: true,
+  };
 
   const shelfOverDrawersPartId = scopeExtDrawerKey(`corner_shelf_over_drawers_c${cell.idx}`);
   const shelfOverDrawers = new runtime.THREE.Mesh(
@@ -137,14 +149,16 @@ export function emitCornerWingExternalDrawers(
   const addExtDrawer = (yPos: number, height: number, idRaw: string, divIdRaw: string) => {
     const id = scopeExtDrawerKey(idRaw);
     const divId = scopeExtDrawerKey(divIdRaw);
-    const dW = Math.max(
-      CORNER_WING_DRAWER_POLICY.internalMinWidthM,
-      cellW - CORNER_WING_DRAWER_POLICY.externalVisualWidthClearanceM
-    );
-    const boxW = Math.max(
-      CORNER_WING_DRAWER_POLICY.internalMinWidthM,
-      cellW - CORNER_WING_DRAWER_POLICY.externalBoxWidthClearanceM
-    );
+    const geometry = resolveCornerWingExternalDrawerGeometry({
+      externalWidthM: cellW,
+      depthM: cellD,
+      woodThicknessM: runtime.woodThick,
+      frontZM: 0,
+      drawerHeightM: height,
+      doorMountMode: runtime.__cfg.doorMountMode === 'inset' ? 'inset' : 'overlay',
+    });
+    const dW = Math.max(CORNER_WING_DRAWER_POLICY.internalMinWidthM, geometry.visualW);
+    const boxW = Math.max(CORNER_WING_DRAWER_POLICY.internalMinWidthM, geometry.boxW);
     const divMap = runtime.readMap('drawerDividersMap');
     const hasDivider = !!(divMap && (divMap[divId] || divMap[id]));
     const woodMat = runtime.getCornerMat(id, runtime.frontMat);
@@ -181,16 +195,16 @@ export function emitCornerWingExternalDrawers(
     dGroup.userData.__wpStack = runtime.__stackKey;
     dGroup.userData.__wpType = 'extDrawer';
     dGroup.userData.__doorWidth = dW;
-    dGroup.userData.__doorHeight = height;
+    dGroup.userData.__doorHeight = geometry.visualH;
     dGroup.userData.__wpFaceOffsetX = 0;
     dGroup.userData.__wpFaceOffsetY = 0;
-    dGroup.userData.__wpFrontZ = cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM);
-    dGroup.userData.__wpFrontThickness = runtime.woodThick;
+    dGroup.userData.__wpFrontZ = cellRuntime.__z(geometry.zClosed);
+    dGroup.userData.__wpFrontThickness = geometry.visualT;
 
     const dVis = runtime.createDoorVisual(
       dW,
-      height,
-      runtime.woodThick,
+      geometry.visualH,
+      geometry.visualT,
       isMirror ? runtime.__getMirrorMat() : woodMat,
       isGlass ? 'glass' : effectiveFrameStyle,
       hasGroove,
@@ -211,13 +225,11 @@ export function emitCornerWingExternalDrawers(
     );
     dVis.position.set(0, 0, 0);
 
-    const drawerBoxDepth = Math.max(
-      CORNER_WING_DRAWER_POLICY.internalMinDepthM,
-      cellD - CORNER_WING_DRAWER_POLICY.externalBoxDepthBackClearanceM
-    );
+    const drawerBoxDepth = Math.max(CORNER_WING_DRAWER_POLICY.internalMinDepthM, geometry.boxD);
+    const drawerBoxHeight = Math.max(CORNER_WING_DRAWER_POLICY.internalMinHeightM, geometry.boxH);
     const dBox = runtime.createInternalDrawerBox(
       boxW,
-      height - CORNER_WING_DRAWER_POLICY.externalBoxHeightClearanceM,
+      drawerBoxHeight,
       drawerBoxDepth,
       drawerBoxMat,
       drawerBoxMat,
@@ -226,7 +238,7 @@ export function emitCornerWingExternalDrawers(
       false,
       isGlass ? { omitFrontPanel: true } : null
     );
-    dBox.position.set(0, 0, -cellD / 2 + CORNER_WING_DRAWER_POLICY.externalBoxOffsetZM);
+    dBox.position.set(0, 0, geometry.boxOffsetZ);
     dBox.userData = {
       ...dBox.userData,
       partId: drawerBoxPartId,
@@ -236,10 +248,31 @@ export function emitCornerWingExternalDrawers(
       __wpDrawerBox: true,
       __wpDrawerOwnerPartId: id,
       __doorWidth: boxW,
-      __doorHeight: height - CORNER_WING_DRAWER_POLICY.externalBoxHeightClearanceM,
+      __doorHeight: drawerBoxHeight,
     };
 
     dGroup.add(dBox);
+
+    if (!isGlass) {
+      const connector = new runtime.THREE.Mesh(
+        new runtime.THREE.BoxGeometry(geometry.connectW, geometry.connectH, geometry.connectD),
+        drawerBoxMat
+      );
+      connector.position.set(0, 0, geometry.connectZ);
+      connector.userData = {
+        partId: drawerBoxPartId,
+        drawerId: id,
+        moduleIndex: cellKey,
+        __wpStack: runtime.__stackKey,
+        __wpDrawerBox: true,
+        __wpDrawerOwnerPartId: id,
+        __wpDrawerConnector: true,
+        __doorWidth: geometry.connectW,
+        __doorHeight: geometry.connectH,
+      };
+      dGroup.add(connector);
+    }
+
     dGroup.add(dVis);
     appendDoorTrimVisuals({
       App: runtime.App,
@@ -253,22 +286,28 @@ export function emitCornerWingExternalDrawers(
         preferScopedOnly: runtime.__stackSplitEnabled && runtime.__stackKey === 'bottom' && id !== idRaw,
       }),
       doorWidth: dW,
-      doorHeight: height,
-      frontZ: runtime.woodThick / 2 + 0.0015,
+      doorHeight: geometry.visualH,
+      frontZ: geometry.visualT / 2 + 0.0015,
       faceSign: 1,
     });
 
-    const closed = new runtime.THREE.Vector3(
-      cellCenterX,
-      yPos,
-      cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM)
-    );
-    const open = new runtime.THREE.Vector3(
-      cellCenterX,
-      yPos,
-      cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalOpenOffsetZM)
-    );
+    const closed = new runtime.THREE.Vector3(cellCenterX, yPos, cellRuntime.__z(geometry.zClosed));
+    const open = new runtime.THREE.Vector3(cellCenterX, yPos, cellRuntime.__z(geometry.zOpen));
     dGroup.position.copy(closed);
+
+    appendDrawerRunnerVisuals({
+      THREE: runtime.THREE,
+      runnerType: readDrawerRunnerTypeFromConfig(runtime.__cfg),
+      fixedParent: fixedRunnerHardware,
+      movingParent: dBox,
+      drawerWidthM: boxW,
+      drawerHeightM: drawerBoxHeight,
+      drawerDepthM: drawerBoxDepth,
+      drawerLocalCenterZM: geometry.boxOffsetZ,
+      closedPosition: { x: cellCenterX, y: yPos, z: cellRuntime.__z(geometry.zClosed) },
+      ownerPartId: id,
+    });
+
     runtime.wingGroup.add(dGroup);
     if (runtime.render) {
       runtime.ensureRenderArray(runtime.render, 'drawersArray').push({
@@ -304,6 +343,9 @@ export function emitCornerWingExternalDrawers(
       );
     }
   }
+
+  const fixedRunnerChildren = (fixedRunnerHardware as unknown as { children?: unknown[] }).children;
+  if ((fixedRunnerChildren?.length || 0) > 0) runtime.wingGroup.add(fixedRunnerHardware);
 
   const shadowPlane = new runtime.THREE.Mesh(
     new runtime.THREE.BoxGeometry(

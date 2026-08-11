@@ -47,6 +47,8 @@ import { readChestModeCfgSnapshotFromOpts } from './visuals_chest_mode_config.js
 import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
 import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
+import { DEFAULT_DRAWER_RUNNER_TYPE } from './drawer_runner_policy.js';
 import {
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
@@ -298,6 +300,13 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const gap = CHEST_DRAWER_GEOMETRY_POLICY.drawerGapM;
   const drawerFrontH = singleDrawerTotalH - gap;
   const drawerWidth = totalW - 2 * thick - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM;
+  const fixedRunnerHardware = new THREE.Group();
+  fixedRunnerHardware.userData = {
+    ...fixedRunnerHardware.userData,
+    __ignoreRaycast: true,
+    __wpDrawerRunnerHardwareContainer: true,
+    __wpChestDrawerRunnerHardware: true,
+  };
 
   for (let i = 0; i < drawersCount; i++) {
     const yCenter = startY + i * singleDrawerTotalH + singleDrawerTotalH / 2;
@@ -398,6 +407,19 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     };
     drawerGroup.add(connMesh);
 
+    appendDrawerRunnerVisuals({
+      THREE,
+      runnerType: DEFAULT_DRAWER_RUNNER_TYPE,
+      fixedParent: fixedRunnerHardware,
+      movingParent: boxMesh,
+      drawerWidthM: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
+      drawerHeightM: boxH,
+      drawerDepthM: boxD,
+      drawerLocalCenterZM: 0,
+      closedPosition: { x: 0, y: yCenter, z: 0 },
+      ownerPartId: drawerId,
+    });
+
     drawerGroup.position.set(0, yCenter, 0);
     wardrobeGroup.add(drawerGroup);
 
@@ -409,6 +431,8 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       dividerKey: drawerId,
     });
   }
+
+  if ((fixedRunnerHardware.children?.length || 0) > 0) wardrobeGroup.add(fixedRunnerHardware);
 
   if (inputs.chestCommodeEnabled) {
     const panelW = Math.max(

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 import { emitCornerWingExternalDrawers } from '../esm/native/builder/corner_wing_cell_interiors_storage.ts';
+import { resolveExternalDrawerGeometry } from '../esm/shared/dimensions/external_drawer_policy.ts';
 
 class PositionStub {
   x = 0;
@@ -55,6 +56,13 @@ class BoxGeometryStub {
   }
 }
 
+class CylinderGeometryStub {
+  args: unknown[];
+  constructor(...args: unknown[]) {
+    this.args = args;
+  }
+}
+
 class MeshStandardMaterialStub {
   params: unknown;
   __keepMaterial?: boolean;
@@ -90,6 +98,7 @@ function makeRuntime(options?: {
   boxOverride?: unknown;
   stackKey?: 'top' | 'bottom';
   doorTrimMap?: Record<string, unknown>;
+  drawerRunnerType?: 'roller' | 'blum';
 }) {
   const whiteMat = { name: 'white' };
   const bodyMat = { name: 'body-main-painted' };
@@ -102,11 +111,12 @@ function makeRuntime(options?: {
   const runtime = {
     App: {},
     ctx: {},
-    __cfg: { isMultiColorMode: true },
+    __cfg: { isMultiColorMode: true, drawerRunnerType: options?.drawerRunnerType || 'roller' },
     THREE: {
       Group: GroupStub,
       Mesh: MeshStub,
       BoxGeometry: BoxGeometryStub,
+      CylinderGeometry: CylinderGeometryStub,
       MeshStandardMaterial: MeshStandardMaterialStub,
       Vector3: Vector3Stub,
     },
@@ -255,4 +265,60 @@ test('corner regular external drawer build appends configured door-trim visuals 
   assert.equal(trim?.userData.partId, 'corner_c0_draw_1');
   assert.equal(trim?.userData.__wpDoorTrimId, 'trim-corner-drawer');
   assert.equal(trim?.position.z > 0, true);
+});
+
+test('corner external drawers reuse regular drawer connector geometry and close the box-to-front gap', () => {
+  const setup = makeRuntime();
+  emitCornerWingExternalDrawers(setup.runtime as any, setup.cellRuntime as any);
+
+  const drawerGroup = descendants(setup.wingGroup).find(
+    node => node.userData?.partId === 'corner_c0_draw_1' && node.userData?.__wpType === 'extDrawer'
+  );
+  assert.ok(drawerGroup);
+  const connector = descendants(drawerGroup as Object3DStub).find(
+    node => node.userData?.__wpDrawerConnector === true
+  ) as MeshStub | undefined;
+  assert.ok(connector, 'expected the same connector board used by regular external drawers');
+
+  const geometry = resolveExternalDrawerGeometry({
+    externalWidthM: 0.62,
+    depthM: 0.58,
+    woodThicknessM: 0.018,
+    frontZM: 0,
+    drawerHeightM: 0.22,
+    doorMountMode: 'overlay',
+  });
+  assert.deepEqual((connector?.geometry as BoxGeometryStub).args, [
+    geometry.connectW,
+    geometry.connectH,
+    geometry.connectD,
+  ]);
+  assert.equal(connector?.position.z, geometry.connectZ);
+});
+
+test('corner external drawers render roller or Blum hardware from the external runner selector', () => {
+  for (const drawerRunnerType of ['roller', 'blum'] as const) {
+    const setup = makeRuntime({ drawerRunnerType });
+    emitCornerWingExternalDrawers(setup.runtime as any, setup.cellRuntime as any);
+    const roles = descendants(setup.wingGroup)
+      .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
+      .map(node => String(node.userData?.__wpDrawerRunnerRole));
+
+    assert.ok(roles.length > 0, `expected ${drawerRunnerType} hardware in corner external drawers`);
+    if (drawerRunnerType === 'roller') {
+      assert.ok(roles.some(role => role === 'roller-fixed-web-left'));
+      assert.ok(roles.some(role => role === 'roller-moving-web-right'));
+      assert.equal(
+        roles.some(role => role.startsWith('blum-')),
+        false
+      );
+    } else {
+      assert.ok(roles.some(role => role === 'blum-fixed-runner-left'));
+      assert.ok(roles.some(role => role === 'blum-locking-device-right'));
+      assert.equal(
+        roles.some(role => role.startsWith('roller-')),
+        false
+      );
+    }
+  }
 });

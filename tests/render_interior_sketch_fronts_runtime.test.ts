@@ -208,7 +208,17 @@ test('render sketch box fronts reuses one mirror material across mirrored extern
   assert.notEqual(doorVisualCalls[1]?.baseMat, mirrorMat);
   assert.equal((App.render?.drawersArray || []).length, 2);
   assert.equal(shelfBoards.length, 2);
-  assert.equal(group.children.length, 4);
+  const semanticChildren = group.children.filter(
+    child => child?.userData?.__wpDrawerRunnerHardwareContainer !== true
+  );
+  const runnerHardware = group.children.find(
+    child => child?.userData?.__wpDrawerRunnerHardwareContainer === true
+  );
+  assert.equal(semanticChildren.length, 4);
+  assert.ok(
+    runnerHardware,
+    'expected external drawer runners to live in a separate static hardware container'
+  );
 });
 
 test('render sketch box fronts reject string-encoded live external drawer positions', () => {

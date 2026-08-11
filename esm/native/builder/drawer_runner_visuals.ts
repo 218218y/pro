@@ -16,14 +16,14 @@ type RunnerObjectLike = {
 
 type RunnerThreeLike = {
   Mesh: new (geometry: unknown, material: unknown) => RunnerObjectLike;
-  BoxGeometry: new (width?: number, height?: number, depth?: number) => unknown;
+  BoxGeometry: new (width: number, height: number, depth: number) => unknown;
   CylinderGeometry?: new (
-    radiusTop?: number,
-    radiusBottom?: number,
-    height?: number,
-    radialSegments?: number
+    radiusTop: number,
+    radiusBottom: number,
+    height: number,
+    radialSegments: number
   ) => unknown;
-  MeshStandardMaterial: new (params: UnknownRecord) => unknown;
+  MeshStandardMaterial?: new (params: UnknownRecord) => unknown;
 };
 
 type AppendDrawerRunnerVisualsArgs = {
@@ -49,19 +49,21 @@ type RunnerMaterials = {
 
 const materialCache = new WeakMap<object, RunnerMaterials>();
 
-function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials {
+function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
+  const Material = THREE.MeshStandardMaterial;
+  if (typeof Material !== 'function') return null;
   const cacheKey = THREE as unknown as object;
   const cached = materialCache.get(cacheKey);
   if (cached) return cached;
 
   const materials: RunnerMaterials = {
     // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
-    rollerSteel: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.66, metalness: 0.02 }),
-    rollerWheel: new THREE.MeshStandardMaterial({ color: 0xf3f3ef, roughness: 0.88, metalness: 0.0 }),
+    rollerSteel: new Material({ color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 }),
+    rollerWheel: new Material({ color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 }),
     // TANDEM runner bodies are zinc/steel; the front locking device is Blum orange.
-    blumSteel: new THREE.MeshStandardMaterial({ color: 0x8f969b, roughness: 0.36, metalness: 0.82 }),
-    blumInner: new THREE.MeshStandardMaterial({ color: 0xb7bdc1, roughness: 0.3, metalness: 0.88 }),
-    blumLock: new THREE.MeshStandardMaterial({ color: 0xe86f13, roughness: 0.5, metalness: 0.05 }),
+    blumSteel: new Material({ color: 0x8f969b, roughness: 0.36, metalness: 0.82 }),
+    blumInner: new Material({ color: 0xb7bdc1, roughness: 0.3, metalness: 0.88 }),
+    blumLock: new Material({ color: 0xe86f13, roughness: 0.5, metalness: 0.05 }),
   };
   materialCache.set(cacheKey, materials);
   return materials;
@@ -292,6 +294,7 @@ export function appendDrawerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs): 
     return;
   }
   const materials = getRunnerMaterials(args.THREE);
+  if (!materials) return;
   const runnerType = normalizeDrawerRunnerType(args.runnerType);
   if (runnerType === 'blum') appendBlumRunnerVisuals(args, materials);
   else appendRollerRunnerVisuals(args, materials);

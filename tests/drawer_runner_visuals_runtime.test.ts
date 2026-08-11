@@ -162,8 +162,21 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
   );
   assert.ok(rollerRails.length > 0);
   for (const rail of rollerRails) {
-    assert.equal(rail.material.params.color, 0xffffff, 'roller steel should use a white coating');
-    assert.equal(rail.material.params.metalness, 0.02, 'white roller coating should not read as nickel');
+    assert.equal(
+      rail.material.params.color,
+      0xf2f2ee,
+      'roller steel should use the restored off-white coating'
+    );
+    assert.equal(
+      rail.material.params.roughness,
+      0.55,
+      'roller steel should preserve the previous visible finish'
+    );
+    assert.equal(
+      rail.material.params.metalness,
+      0.25,
+      'roller steel should preserve the previous visible contrast'
+    );
   }
   assertHardwareMetadata(fixed, 'drawer:test');
   assertHardwareMetadata(moving, 'drawer:test');
