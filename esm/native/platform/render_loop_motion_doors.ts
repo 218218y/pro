@@ -10,7 +10,10 @@ import type { AppContainer } from '../../../types';
 import { getBuildUIFromPlatform, getDimsMFromPlatform } from '../runtime/platform_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
-import { shouldForceSketchFreeBoxDoorsOpen } from '../runtime/doors_runtime_support.js';
+import {
+  resolveHingedDoorSharedPivotMotionX,
+  shouldForceSketchFreeBoxDoorsOpen,
+} from '../runtime/doors_runtime_support.js';
 import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
 import { shouldHoldSketchFreeBoxDoorsDuringClose } from '../runtime/sketch_free_box_motion_state.js';
 import { resolveSlidingDoorTrackOpenPosition } from '../runtime/sliding_door_motion.js';
@@ -107,6 +110,8 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       if (inv) targetRot = -targetRot;
 
       g.rotation.y += (targetRot - g.rotation.y) * 0.1;
+      const targetX = resolveHingedDoorSharedPivotMotionX(d, doors, g.rotation.y);
+      if (targetX !== null) g.position.x = targetX;
       if (hasNumberMotionRemaining(g.rotation.y, targetRot, ROTATION_SETTLED_EPSILON)) {
         hasActiveDoorMotion = true;
       }

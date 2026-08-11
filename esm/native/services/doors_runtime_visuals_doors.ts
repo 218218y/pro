@@ -10,6 +10,7 @@ import {
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
   reportDoorsRuntimeNonFatal,
+  resolveHingedDoorSharedPivotMotionX,
   shouldForceSketchFreeBoxDoorsOpen,
 } from './doors_runtime_shared.js';
 import {
@@ -102,6 +103,8 @@ export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): vo
       }
 
       door.group.rotation.y = open ? baseRot * openDirSign : 0;
+      const targetX = resolveHingedDoorSharedPivotMotionX(door, doors, door.group.rotation.y);
+      if (targetX !== null) door.group.position.x = targetX;
       continue;
     }
 
@@ -250,6 +253,8 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
       }
 
       door.group.rotation.y = baseRot;
+      const targetX = resolveHingedDoorSharedPivotMotionX(door, doors, baseRot);
+      if (targetX !== null) door.group.position.x = targetX;
       continue;
     }
 

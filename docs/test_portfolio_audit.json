@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T04:19:23.420Z",
+  "generatedAt": "2026-08-11T09:33:48.280Z",
   "totals": {
     "tests": 1241,
     "unitRunnerTests": 1232,
@@ -16,7 +16,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 139
+    "contractOverlapTargets": 141
   },
   "categories": {
     "contract": 403,
@@ -1345,6 +1345,32 @@
       ]
     },
     {
+      "target": "esm/native/runtime/doors_runtime_support.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/local_internal_drawers_local_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_free_box_internal_drawers_open_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/runtime/maps_access_normalizers_visuals.ts",
       "kinds": ["contract", "source-guard"],
       "owners": [
@@ -2188,6 +2214,36 @@
         },
         {
           "file": "tests/platform_runtime_access_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/doors_runtime_visuals_doors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/export_overlay_errors_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/local_internal_drawers_local_doors_guard.test.cjs",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/platform_runtime_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/sketch_free_box_internal_drawers_open_guard.test.js",
           "kind": "contract"
         }
       ]

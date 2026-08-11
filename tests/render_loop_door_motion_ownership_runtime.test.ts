@@ -2,15 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { updateRenderLoopDoorMotions } from '../esm/native/platform/render_loop_motion_doors.ts';
+import { forceUpdatePerState } from '../esm/native/services/doors_runtime_visuals_doors.ts';
 import * as composedDoorMotionDimensions from '../esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 import type { MotionFrameState } from '../esm/native/platform/render_loop_motion_shared.ts';
 import { resolveSlidingDoorTrackOpenPosition } from '../esm/native/runtime/sliding_door_motion.ts';
-import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
+import {
+  HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY,
+  ensureHingedDoorClosedPivotX,
+  resolveHingedDoorSharedPivotMotionX,
+} from '../esm/native/runtime/doors_runtime_support.ts';
+import {
+  HINGED_DOOR_RENDER_POLICY,
+  SLIDING_DOOR_CONSTRUCTION_POLICY,
+} from '../esm/shared/dimensions/door_system_policy.ts';
 import { cmToM } from '../esm/shared/dimensions/units.ts';
 import { WARDROBE_DEFAULTS } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 
 type TestGroup = {
   visible?: boolean;
+  parent?: object | null;
   position: { x: number; y: number; z: number };
   rotation: { y: number };
   userData: Record<string, unknown>;
@@ -277,4 +287,150 @@ test('hinged motion preserves left/right, Corner Pent direction, and invert-swin
   closeTo(right.group.rotation.y, step, 'right hinge');
   closeTo(cornerPent.group.rotation.y, -step, 'Corner Pent open direction');
   closeTo(inverted.group.rotation.y, -step, 'inverted swing');
+});
+
+test('shared-divider opposite hinges gain lateral throw without changing their closed positions', () => {
+  const parent = {};
+  const leftLeaf = {
+    type: 'hinged',
+    hingeSide: 'right',
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: -0.24 },
+    },
+  } as TestDoor;
+  const rightLeaf = {
+    type: 'hinged',
+    hingeSide: 'left',
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: 0.24 },
+    },
+  } as TestDoor;
+  const doors = [leftLeaf, rightLeaf] as never;
+
+  assert.equal(ensureHingedDoorClosedPivotX(leftLeaf as never), 0);
+  assert.equal(ensureHingedDoorClosedPivotX(rightLeaf as never), 0);
+  assert.equal(resolveHingedDoorSharedPivotMotionX(leftLeaf as never, doors, 0), 0);
+  assert.equal(resolveHingedDoorSharedPivotMotionX(rightLeaf as never, doors, 0), 0);
+
+  const leftOpenX = resolveHingedDoorSharedPivotMotionX(leftLeaf as never, doors, Math.PI / 2);
+  const rightOpenX = resolveHingedDoorSharedPivotMotionX(rightLeaf as never, doors, -Math.PI / 2);
+  assert.equal(leftOpenX, -HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY.lateralThrowPerLeafM);
+  assert.equal(rightOpenX, HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY.lateralThrowPerLeafM);
+  assert.ok(
+    (rightOpenX ?? 0) - (leftOpenX ?? 0) > HINGED_DOOR_RENDER_POLICY.visualThicknessM,
+    'full-open motion frames must clear the rendered door thickness'
+  );
+});
+
+test('shared-pivot clearance ignores unrelated, disjoint, removed, and opposite-plane leaves', () => {
+  const parentA = {};
+  const parentB = {};
+  const current = {
+    type: 'hinged',
+    hingeSide: 'right',
+    group: {
+      parent: parentA,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: -0.24 },
+    },
+  } as TestDoor;
+
+  const makeOther = (overrides: Partial<TestDoor['group']> = {}, userData: Record<string, unknown> = {}) =>
+    ({
+      type: 'hinged',
+      hingeSide: 'left',
+      group: {
+        parent: parentA,
+        position: { x: 0, y: 1, z: 0.31 },
+        rotation: { y: 0 },
+        userData: { __doorHeight: 2, __doorMeshOffsetX: 0.24, ...userData },
+        ...overrides,
+      },
+    }) as TestDoor;
+
+  const differentParent = makeOther({ parent: parentB });
+  assert.equal(
+    resolveHingedDoorSharedPivotMotionX(current as never, [current, differentParent] as never, Math.PI / 2),
+    0
+  );
+
+  const disjointHeight = makeOther({ position: { x: 0, y: 3.1, z: 0.31 } });
+  assert.equal(
+    resolveHingedDoorSharedPivotMotionX(current as never, [current, disjointHeight] as never, Math.PI / 2),
+    0
+  );
+
+  const removed = makeOther({}, { __wpDoorRemoved: true });
+  assert.equal(
+    resolveHingedDoorSharedPivotMotionX(current as never, [current, removed] as never, Math.PI / 2),
+    0
+  );
+
+  const inverted = makeOther({}, { __invertSwing: true });
+  assert.equal(
+    resolveHingedDoorSharedPivotMotionX(current as never, [current, inverted] as never, Math.PI / 2),
+    0
+  );
+});
+
+test('shared-divider pair keeps the normal opening angle, clears progressively, and restores exact X on close', () => {
+  const parent = {};
+  const leftLeaf = {
+    type: 'hinged',
+    hingeSide: 'right',
+    isOpen: true,
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: -0.24 },
+    },
+  } as TestDoor;
+  const rightLeaf = {
+    type: 'hinged',
+    hingeSide: 'left',
+    isOpen: true,
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: 0.24 },
+    },
+  } as TestDoor;
+  const App = makeApp([leftLeaf, rightLeaf]);
+
+  updateRenderLoopDoorMotions(App, frame({ doorsShouldBeOpen: true }));
+  const step = (Math.PI / 2.1) * 0.1;
+  closeTo(leftLeaf.group.rotation.y, step, 'right hinge keeps normal opening step');
+  closeTo(rightLeaf.group.rotation.y, -step, 'left hinge keeps normal opening step');
+  assert.ok(leftLeaf.group.position.x < 0);
+  assert.ok(rightLeaf.group.position.x > 0);
+  assert.ok(rightLeaf.group.position.x - leftLeaf.group.position.x > 0);
+
+  forceUpdatePerState({
+    runtime: { globalClickMode: false },
+    render: { doorsArray: [leftLeaf, rightLeaf], drawersArray: [] },
+  } as never);
+  assert.ok(leftLeaf.group.position.x < 0);
+  assert.ok(rightLeaf.group.position.x > 0);
+  closeTo(leftLeaf.group.rotation.y, Math.PI / 2.1, 'right hinge full angle');
+  closeTo(rightLeaf.group.rotation.y, -Math.PI / 2.1, 'left hinge full angle');
+
+  leftLeaf.isOpen = false;
+  rightLeaf.isOpen = false;
+  forceUpdatePerState({
+    runtime: { globalClickMode: false },
+    render: { doorsArray: [leftLeaf, rightLeaf], drawersArray: [] },
+  } as never);
+  assert.equal(leftLeaf.group.position.x, 0);
+  assert.equal(rightLeaf.group.position.x, 0);
+  assert.equal(leftLeaf.group.rotation.y, 0);
+  assert.equal(rightLeaf.group.rotation.y, 0);
 });

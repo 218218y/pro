@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-11T04:19:23.420Z
+Generated: 2026-08-11T09:33:48.280Z
 
 ## Summary
 
@@ -19,7 +19,7 @@ Generated: 2026-08-11T04:19:23.420Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 139
+- Cross-kind contract overlap targets: 141
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -119,6 +119,7 @@ Generated: 2026-08-11T04:19:23.420Z
 - `esm/native/runtime/cfg_access_maps.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access_scalars.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
+- `esm/native/runtime/doors_runtime_support.ts` — contract / ownership — `tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
 - `esm/native/runtime/maps_access_normalizers_visuals.ts` — contract / source-guard — `tests/door_trim_type_hardening_guard.test.cjs`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
 - `esm/native/runtime/maps_access_writers.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/runtime/maps_access.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
@@ -163,6 +164,7 @@ Generated: 2026-08-11T04:19:23.420Z
 - `esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts` — contract / ownership — `tests/canvas_picking_manual_layout_sketch_shared_helpers_guard.test.cjs`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/sketch_box_module_defaults_and_free_click_guard.test.js`
 - `esm/native/services/canvas_picking_split_hover_preview_line.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/platform_runtime_access_contracts.test.js`
+- `esm/native/services/doors_runtime_visuals_doors.ts` — contract / ownership — `tests/drawer_runtime_access_cleanup_guard.test.js`, `tests/export_overlay_errors_family_contracts.test.js`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/platform_runtime_access_contracts.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`
 - `esm/native/services/doors_runtime_visuals_shared.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/export_overlay_errors_family_contracts.test.js`, `tests/platform_runtime_access_contracts.test.js`
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_modes.ts` — contract / ownership — `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx` — contract / ownership — `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
