@@ -672,6 +672,7 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
       'esm/native/features/door_authoring/internal/mirror.ts',
       'esm/native/features/door_authoring/internal/mirror_geometry.ts',
       'esm/native/features/door_authoring/internal/mirror_lookup.ts',
+      'esm/native/features/door_authoring/internal/groove_mirror_conflict.ts',
       'esm/native/features/door_authoring/internal/surface_layout_contracts.ts',
     ],
     behaviorTests: ['tests/canvas_picking_door_authoring_meta_runtime.test.ts'],

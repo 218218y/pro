@@ -3,12 +3,10 @@ import {
   normalizeMirrorFaceSign,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
-} from './surface_layout_contracts.js';
-import { resolveMirrorPlacementInRect } from './mirror_geometry.js';
-import {
   resolveGroovePlacementInRect,
   type GrooveLayoutRect,
-} from '../../../../shared/groove_layout_contracts_shared.js';
+} from './surface_layout_contracts.js';
+import { resolveMirrorPlacementInRect } from './mirror_geometry.js';
 
 type SurfaceRect = GrooveLayoutRect;
 

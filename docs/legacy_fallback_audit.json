@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T04:19:23.268Z",
+  "generatedAt": "2026-08-11T06:57:23.317Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 548,
@@ -2844,28 +2844,28 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 58,
+      "line": 59,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "fallbackFaceSign: number"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 63,
+      "line": 64,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) !== -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 70,
+      "line": 71,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "function hasInsideFullMirrorLayout(mirrorLayout: MirrorLayoutList | null, fallbackFaceSign: number): boolean {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 74,
+      "line": 75,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) === -1) {"

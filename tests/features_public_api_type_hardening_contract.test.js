@@ -155,6 +155,11 @@ test('door authoring facade exposes only audited public symbols', () => {
     },
     {
       reason:
+        'Groove placement validation needs one canonical mirror-overlap rule across the canvas authoring boundary',
+      symbols: ['doesGrooveLayoutOverlapMirrorOnFace'],
+    },
+    {
+      reason:
         'Manual groove authoring shares one sizing, placement, lookup, and orientation contract across canvas services and render builders',
       symbols: [
         'DEFAULT_GROOVE_ORIENTATION',
