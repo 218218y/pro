@@ -210,6 +210,21 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
     2,
     'expected a left/right front locking-device pair'
   );
+
+  for (const rail of fixed.children) {
+    assert.equal(rail.material.params.color, 0xe5e9ef, 'fixed Blum runners should use light nickel');
+  }
+  for (const rail of moving.children.filter(child =>
+    String(child.userData.__wpDrawerRunnerRole).startsWith('blum-moving-runner')
+  )) {
+    assert.equal(rail.material.params.color, 0xd8dde4, 'moving Blum runners should stay light nickel');
+  }
+  for (const lock of moving.children.filter(child =>
+    String(child.userData.__wpDrawerRunnerRole).startsWith('blum-locking-device')
+  )) {
+    assert.equal(lock.material.params.color, 0xb8c0c8, 'Blum locking devices should use darker nickel');
+  }
+
   assertHardwareMetadata(fixed, 'drawer:test');
   assertHardwareMetadata(moving, 'drawer:test');
 });

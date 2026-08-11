@@ -356,10 +356,6 @@ export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionPr
           Blum
         </OptionBtn>
       </div>
-
-      <div className="wp-hint wp-mt-8">
-        הבחירה חלה על כל המגירות החיצוניות, כולל מגירת נעליים. מגירות פנימיות נשארות תמיד עם מסילה רגילה.
-      </div>
     </div>
   );
 }

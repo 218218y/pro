@@ -610,8 +610,9 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(externalRunnerHtml, /מסילות למגירות חיצוניות/);
   assert.match(externalRunnerHtml, /מסילה רגילה/);
   assert.match(externalRunnerHtml, /Blum/);
-  assert.match(externalRunnerHtml, /כולל מגירת נעליים/);
-  assert.match(externalRunnerHtml, /מגירות פנימיות נשארות תמיד עם מסילה רגילה/);
+  assert.doesNotMatch(externalRunnerHtml, /הבחירה חלה על כל המגירות/);
+  assert.doesNotMatch(externalRunnerHtml, /כולל מגירת נעליים/);
+  assert.doesNotMatch(externalRunnerHtml, /מגירות פנימיות נשארות תמיד עם מסילה רגילה/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-blum-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button" aria-pressed="true"/);
