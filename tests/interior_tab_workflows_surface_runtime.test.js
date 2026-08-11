@@ -106,10 +106,10 @@ test('[interior-workflows-controller] sketch internal drawer tool auto-enables d
   disabledHarness.controller.enterSketchIntDrawersTool(24);
 
   assert.deepEqual(
-    disabledHarness.calls.map(entry => [entry[0], entry[2], entry[3]]),
+    disabledHarness.calls.map(entry => [entry[0], entry[2], entry[3], entry[4]]),
     [
-      ['setInternalDrawersEnabled', true, 'react:interior:sketchIntDrawersTool:autoEnable'],
-      ['enterManualLayoutMode', 'sketch_int_drawers@24', undefined],
+      ['setInternalDrawersEnabled', true, 'react:interior:sketchIntDrawersTool:autoEnable', 'immediate'],
+      ['enterManualLayoutMode', 'sketch_int_drawers@24', undefined, undefined],
     ]
   );
 

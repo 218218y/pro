@@ -87,19 +87,24 @@ export function createInteriorTabDrawersWorkflowController(
         return;
       }
 
+      const shouldBootstrapEditor =
+        enabled && !state.internalDrawersEnabled && !state.hasIntDrawerData && !isSketchInternalDrawerEditing;
+
+      // Auto-edit opens the doors on the bootstrap tick. Finish the structural rebuild first so
+      // post-build visual sync cannot snap a door-opening animation to its final open transform.
       if (!enabled) {
         clearInteriorDrawerModeBootstrap(app);
         if (isSketchInternalDrawerEditing) exitPrimaryMode(app, modeIds.manualLayout, CLOSE_DOORS_OPTS);
       }
 
-      interiorSetInternalDrawersEnabled(app, enabled);
+      interiorSetInternalDrawersEnabled(
+        app,
+        enabled,
+        'react:interior:sketchIntDrawersToggle',
+        shouldBootstrapEditor ? 'immediate' : 'coalesced'
+      );
 
-      if (
-        enabled &&
-        !state.internalDrawersEnabled &&
-        !state.hasIntDrawerData &&
-        !isSketchInternalDrawerEditing
-      ) {
+      if (shouldBootstrapEditor) {
         scheduleInteriorDrawerModeBootstrap(app);
       }
     },

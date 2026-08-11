@@ -30,7 +30,10 @@ test('[interior-workflows-controller] drawer bootstrap stays single-flight and c
   controller.setInternalDrawersEnabled(true);
   controller.setInternalDrawersEnabled(true);
 
-  assert.equal(calls.filter(entry => entry[0] === 'setInternalDrawersEnabled').length, 2);
+  const enableCalls = calls.filter(entry => entry[0] === 'setInternalDrawersEnabled');
+  assert.equal(enableCalls.length, 2);
+  assert.equal(enableCalls[0][4], 'immediate');
+  assert.equal(enableCalls[1][4], 'immediate');
   assert.equal(timers.handles.length, 1);
 
   controller.toggleIntDrawerMode();

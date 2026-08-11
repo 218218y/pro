@@ -118,6 +118,31 @@ test('[interior-actions] internal drawer toggle routes through coalesced structu
   );
 });
 
+test('[interior-actions] auto-edit internal drawer enable can complete its structural build immediately', () => {
+  const { api, calls, store, app } = loadInteriorActionsHarness();
+
+  api.setInternalDrawersEnabled(app, true, 'react:interior:sketchIntDrawersToggle:autoEdit', 'immediate');
+
+  assert.equal(store.ui.internalDrawersEnabled, true);
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyStructuralUiMutation' &&
+        entry[1] === 'react:interior:sketchIntDrawersToggle:autoEdit' &&
+        entry[3]?.buildTiming === 'immediate'
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'setUiFlag' &&
+        entry[1] === 'internalDrawersEnabled' &&
+        entry[2] === true &&
+        entry[3]?.immediate === true
+    )
+  );
+});
+
 test('[interior-actions] internal drawer toggle keeps semantic no-op quiet', () => {
   const { api, calls, store, app } = loadInteriorActionsHarness({ internalDrawersEnabled: true });
 

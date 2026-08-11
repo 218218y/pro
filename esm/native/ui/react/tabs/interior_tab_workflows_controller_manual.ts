@@ -159,7 +159,13 @@ export function createInteriorTabManualWorkflowController(
 
     enterSketchIntDrawersTool(drawerHeightCm: number) {
       if (!state.internalDrawersEnabled) {
-        interiorSetInternalDrawersEnabled(app, true, 'react:interior:sketchIntDrawersTool:autoEnable');
+        // This direct path enters edit mode immediately after enabling, so its rebuild must finish first.
+        interiorSetInternalDrawersEnabled(
+          app,
+          true,
+          'react:interior:sketchIntDrawersTool:autoEnable',
+          'immediate'
+        );
       }
       activateManualToolId(mkSketchInternalDrawersTool(drawerHeightCm));
     },

@@ -18,6 +18,7 @@ import { readStoreStateMaybe } from '../../../services/api.js';
 import {
   applyStructuralConfigMutation,
   applyStructuralUiMutation,
+  type StructuralMutationBuildTiming,
 } from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
@@ -48,7 +49,7 @@ function readInteriorChoice(value: unknown, defaultValue: string): string {
   return typeof value === 'string' && value ? value : defaultValue;
 }
 
-const INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
+const INTERIOR_DRAWERS_TOGGLE_BUILD_TIMING: StructuralMutationBuildTiming = 'coalesced';
 
 function interactiveStructuralMetaOverrides(app: AppContainer, source: string): ActionMetaLike {
   const interactiveImmediate = getMetaActionFn<(source: string) => ActionMetaLike>(
@@ -272,7 +273,7 @@ export function setDrawerRunnerType(
         setCfgScalar(app, 'drawerRunnerType', next, meta);
       },
       {
-        buildTiming: INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS.buildTiming,
+        buildTiming: INTERIOR_DRAWERS_TOGGLE_BUILD_TIMING,
         metaOverrides: m,
       }
     );
@@ -313,7 +314,8 @@ export function toggleIntDrawerMode(app: AppContainer): void {
 export function setInternalDrawersEnabled(
   app: AppContainer,
   on: unknown,
-  source = 'react:interior:sketchIntDrawersToggle'
+  source = 'react:interior:sketchIntDrawersToggle',
+  buildTiming: StructuralMutationBuildTiming = INTERIOR_DRAWERS_TOGGLE_BUILD_TIMING
 ): void {
   const enabled = !!on;
   const uiSnap = getUiSnap(app);
@@ -330,7 +332,7 @@ export function setInternalDrawersEnabled(
         setUiFlag(app, 'internalDrawersEnabled', enabled, meta);
       },
       {
-        buildTiming: INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS.buildTiming,
+        buildTiming,
         metaOverrides: m,
       }
     );
