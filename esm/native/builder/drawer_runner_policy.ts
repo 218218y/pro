@@ -1,14 +1,10 @@
 import type { DrawerRunnerType } from '../../../types/index.js';
 
 /**
- * Drawer runner selection is a cabinet-wide construction choice for external
- * drawers, including shoe drawers. Internal drawers always use the simple roller
- * runner and intentionally do not participate in this selector.
+ * Drawer runner selection is a cabinet-wide construction choice for drawers,
+ * including external, shoe, and internal drawers.
  */
 export const DEFAULT_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'roller';
-
-/** Internal drawers intentionally do not participate in the external runner selector. */
-export const INTERNAL_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'roller';
 
 export function normalizeDrawerRunnerType(value: unknown): DrawerRunnerType {
   return value === 'blum' ? 'blum' : DEFAULT_DRAWER_RUNNER_TYPE;
@@ -65,3 +61,28 @@ export const BLUM_TANDEM_DRAWER_RUNNER_POLICY = Object.freeze({
   visualLockFrontInsetM: 0.018,
   minVisualLengthM: 0.18,
 });
+
+/**
+ * Internal drawer cassettes need a small physical gap around concealed Blum
+ * hardware. The visual locking device is the lowest runner component, so this
+ * policy derives the required lift from the same dimensions used by the runner
+ * renderer instead of duplicating a magic offset in layout code.
+ */
+export const INTERNAL_DRAWER_RUNNER_CLEARANCE_POLICY = Object.freeze({
+  minimumHardwareGapM: 0.0015,
+});
+
+export function resolveDrawerRunnerUnderDrawerDepthM(value: unknown): number {
+  if (normalizeDrawerRunnerType(value) !== 'blum') return 0;
+  return (
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualRailHeightM / 2 +
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualLockHeightM
+  );
+}
+
+export function resolveInternalDrawerBottomLiftM(value: unknown, baselineLiftM = 0): number {
+  const baseline = Number.isFinite(baselineLiftM) && baselineLiftM > 0 ? baselineLiftM : 0;
+  const runnerUnderhang = resolveDrawerRunnerUnderDrawerDepthM(value);
+  if (!(runnerUnderhang > 0)) return baseline;
+  return Math.max(baseline, runnerUnderhang + INTERNAL_DRAWER_RUNNER_CLEARANCE_POLICY.minimumHardwareGapM);
+}

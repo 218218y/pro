@@ -8,6 +8,7 @@ import {
 } from '../esm/native/builder/render_interior_sketch_boxes_contents_depth.ts';
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
+import { resolveInternalDrawerBottomLiftM } from '../esm/native/builder/drawer_runner_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -201,6 +202,25 @@ test('render sketch box contents emits paired internal drawer ops with clamped s
   assert.ok(payload.ops[0].depth > 0.05);
   assert.equal(typeof payload.addFoldedClothes, 'function');
   assert.equal(payload.showContentsEnabled, true);
+});
+
+test('render sketch box internal Blum drawers reserve under-runner clearance above the cassette bottom', () => {
+  const { args, drawerRuns } = createBaseArgs();
+  args.args.input.cfgSnapshot.drawerRunnerType = 'blum';
+  args.shell.box = {
+    shelves: [],
+    storageBarriers: [],
+    rods: [],
+    drawers: [{ id: 'blum-clearance', yNormC: 0.5 }],
+  };
+
+  renderSketchBoxContents(args);
+
+  assert.equal(drawerRuns.length, 1);
+  const payload: any = drawerRuns[0];
+  const lower = payload.ops[0];
+  const lowerBottomLift = lower.y - lower.height / 2 - lower.cassetteBaseY;
+  assert.ok(Math.abs(lowerBottomLift - resolveInternalDrawerBottomLiftM('blum', 0.002)) < 1e-9);
 });
 
 test('render sketch box shelves emit folded contents inside divider-aware shelf spans', () => {

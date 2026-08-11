@@ -9,6 +9,7 @@ import {
 } from '../esm/native/features/part_identity/api.ts';
 import { DRAWER_SKETCH_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
 import { EXTERNAL_DRAWER_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
+import { resolveInternalDrawerBottomLiftM } from '../esm/native/builder/drawer_runner_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -436,6 +437,43 @@ test('render sketch internal drawers keeps the default sketch height independent
   assert.equal(ops.length, 2);
   assert.ok(Math.abs(ops[0]!.height - 0.165) < 1e-9);
   assert.ok(Math.abs(ops[1]!.height - 0.165) < 1e-9);
+});
+
+test('render sketch internal Blum drawers lift the lower drawer clear of the cassette bottom', () => {
+  const common = {
+    drawers: [{ id: 'runner-clearance', yNormC: 0.5 }],
+    moduleIndex: 1,
+    moduleKeyStr: 'module_1',
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    spanH: 1,
+    woodThick: 0.02,
+    innerW: 0.8,
+    internalDepth: 0.5,
+    internalCenterX: 0,
+    internalZ: -0.1,
+  };
+  const rollerOps = buildSketchInternalDrawerOps({
+    ...common,
+    input: { cfgSnapshot: { drawerRunnerType: 'roller' } },
+  });
+  const blumOps = buildSketchInternalDrawerOps({
+    ...common,
+    input: { cfgSnapshot: { drawerRunnerType: 'blum' } },
+  });
+
+  assert.equal(rollerOps.length, 2);
+  assert.equal(blumOps.length, 2);
+  const rollerLower = rollerOps[0]!;
+  const blumLower = blumOps[0]!;
+  const blumUpper = blumOps[1]!;
+  const rollerBottomLift = rollerLower.y - rollerLower.height / 2 - rollerLower.cassetteBaseY!;
+  const blumBottomLift = blumLower.y - blumLower.height / 2 - blumLower.cassetteBaseY!;
+
+  assert.ok(Math.abs(rollerBottomLift - 0.002) < 1e-9);
+  assert.ok(Math.abs(blumBottomLift - resolveInternalDrawerBottomLiftM('blum', 0.002)) < 1e-9);
+  assert.ok(blumBottomLift > rollerBottomLift);
+  assert.equal(blumUpper.y, rollerOps[1]!.y, 'upper drawer placement should remain stable');
 });
 
 test('render sketch internal drawers skips exact custom-height stacks that do not fit', () => {

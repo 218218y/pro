@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T06:57:23.317Z",
+  "generatedAt": "2026-08-11T08:39:51.166Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 548,
@@ -1682,42 +1682,42 @@
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 307,
+      "line": 308,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "const fallbackMinX = -internalWidthForDoors / 2 + doorWidth / 2;"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 308,
+      "line": 309,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "const fallbackMaxX = internalWidthForDoors / 2 - doorWidth / 2;"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 314,
+      "line": 315,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "minX: fallbackMinX,"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 315,
+      "line": 316,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "maxX: fallbackMaxX,"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 328,
+      "line": 329,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "minX: __asNum(sp.minX, fallbackMinX),"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 329,
+      "line": 330,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "maxX: __asNum(sp.maxX, fallbackMaxX),"
@@ -2165,14 +2165,14 @@
     },
     {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
-      "line": 87,
+      "line": 86,
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: bodyMat || drawerBoxBaseMat,"
     },
     {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
-      "line": 98,
+      "line": 97,
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: drawerBoxBaseMat,"

@@ -130,40 +130,50 @@ test('internal drawer render fails closed when required inputs are unavailable',
   );
 });
 
-test('internal drawers keep roller hardware even when external drawer selection is Blum', () => {
-  const wardrobeGroup = new FakeGroup();
-  const renderDrawerOps = createBuilderRenderDrawerOps({
-    __app: input => (input as { App: never }).App,
-    __ops: () => undefined,
-    __wardrobeGroup: () => wardrobeGroup as never,
-    __reg: () => undefined,
-    __drawers: () => [],
-    getMirrorMaterial: () => null,
-  });
+test('internal drawers follow the cabinet drawer runner selection', () => {
+  for (const drawerRunnerType of ['roller', 'blum'] as const) {
+    const wardrobeGroup = new FakeGroup();
+    const renderDrawerOps = createBuilderRenderDrawerOps({
+      __app: input => (input as { App: never }).App,
+      __ops: () => undefined,
+      __wardrobeGroup: () => wardrobeGroup as never,
+      __reg: () => undefined,
+      __drawers: () => [],
+      getMirrorMaterial: () => null,
+    });
 
-  const result = renderDrawerOps.applyInternalDrawersOps({
-    App: {},
-    THREE: fakeThree,
-    ops: [{ partId: 'drawer_roller_only', width: 0.5, height: 0.2, depth: 0.4 }],
-    wardrobeGroup,
-    createInternalDrawerBox: () => new FakeGroup(),
-    cfg: { drawerRunnerType: 'blum' },
-  });
+    const result = renderDrawerOps.applyInternalDrawersOps({
+      App: {},
+      THREE: fakeThree,
+      ops: [{ partId: `drawer_${drawerRunnerType}`, width: 0.5, height: 0.2, depth: 0.4 }],
+      wardrobeGroup,
+      createInternalDrawerBox: () => new FakeGroup(),
+      cfg: { drawerRunnerType },
+    });
 
-  assert.equal(result, true);
-  const fixedHardware = runnerHardwareContainer(wardrobeGroup);
-  assert.ok(fixedHardware);
-  const fixedRoles = runnerRoles(fixedHardware);
-  assert.equal(fixedRoles.length, 6);
-  assert.ok(fixedRoles.every(role => role.startsWith('roller-fixed-')));
-  assert.ok(fixedRoles.every(role => !role.startsWith('blum-')));
+    assert.equal(result, true);
+    const fixedHardware = runnerHardwareContainer(wardrobeGroup);
+    assert.ok(fixedHardware);
+    const fixedRoles = runnerRoles(fixedHardware);
+    const drawer = drawerChildren(wardrobeGroup)[0];
+    assert.ok(drawer);
+    const movingRoles = runnerRoles(drawer);
 
-  const drawer = drawerChildren(wardrobeGroup)[0];
-  assert.ok(drawer);
-  const movingRoles = runnerRoles(drawer);
-  assert.equal(movingRoles.length, 6);
-  assert.ok(movingRoles.every(role => role.startsWith('roller-moving-')));
-  assert.ok(movingRoles.every(role => !role.startsWith('blum-')));
+    if (drawerRunnerType === 'blum') {
+      assert.deepEqual(fixedRoles.sort(), ['blum-fixed-runner-left', 'blum-fixed-runner-right']);
+      assert.deepEqual(movingRoles.sort(), [
+        'blum-locking-device-left',
+        'blum-locking-device-right',
+        'blum-moving-runner-left',
+        'blum-moving-runner-right',
+      ]);
+    } else {
+      assert.equal(fixedRoles.length, 6);
+      assert.ok(fixedRoles.every(role => role.startsWith('roller-fixed-')));
+      assert.equal(movingRoles.length, 6);
+      assert.ok(movingRoles.every(role => role.startsWith('roller-moving-')));
+    }
+  }
 });
 
 test('internal drawer contents receive the explicit build render policy', () => {

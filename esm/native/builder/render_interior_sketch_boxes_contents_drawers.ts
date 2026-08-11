@@ -21,6 +21,7 @@ import {
 } from '../features/sketch_drawer_sizing.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
+import { readDrawerRunnerTypeFromConfig, resolveInternalDrawerBottomLiftM } from './drawer_runner_policy.js';
 import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
@@ -246,9 +247,13 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         Math.max(drawerDims.internalDepthMinM, usableContentDepth - drawerDims.internalDepthClearanceM)
       );
       const drawerClosedZ = resolveSketchBoxUsableContentCenterZ(shell, usableContentDepth);
-      const drawerBottomLift = Math.min(
+      const baselineDrawerBottomLift = Math.min(
         drawerDims.internalBottomLiftMaxM,
         woodThick * drawerDims.internalBottomLiftWoodRatio
+      );
+      const drawerBottomLift = resolveInternalDrawerBottomLiftM(
+        readDrawerRunnerTypeFromConfig(input.cfgSnapshot),
+        baselineDrawerBottomLift
       );
       for (let stackIndex = 0; stackIndex < 2; stackIndex++) {
         const drawerSlot = stackIndex === 0 ? 'lower' : 'upper';

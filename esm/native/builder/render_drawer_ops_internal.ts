@@ -1,7 +1,6 @@
 import { CHEST_MODE_DRAWER_BOX_RENDER_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
 import { INTERNAL_DRAWER_CONTENTS_POLICY } from '../../shared/dimensions/internal_drawer_policy.js';
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
-import { INTERNAL_DRAWER_RUNNER_TYPE } from './drawer_runner_policy.js';
 import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
 import { emitSketchInternalDrawerCassettePanels } from './render_interior_sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
@@ -143,7 +142,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 
       appendDrawerRunnerVisuals({
         THREE,
-        runnerType: INTERNAL_DRAWER_RUNNER_TYPE,
+        runnerType: cfg.drawerRunnerType,
         fixedParent: fixedRunnerHardware,
         movingParent: intBox,
         drawerWidthM: drawerOp.width,

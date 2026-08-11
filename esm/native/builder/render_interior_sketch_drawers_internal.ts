@@ -20,6 +20,7 @@ import {
 } from '../features/sketch_drawer_sizing.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import { hasSketchDrawerDivider } from './render_interior_sketch_drawer_dividers.js';
+import { readDrawerRunnerTypeFromConfig, resolveInternalDrawerBottomLiftM } from './drawer_runner_policy.js';
 import {
   buildSketchExternalDrawerCollisionRanges,
   sketchStackRangeOverlaps,
@@ -227,9 +228,13 @@ export function buildSketchInternalDrawerOps(args: {
     const stackPartId = moduleKeyStr
       ? `div_int_sketch_${moduleKeyStr}_${drawerId}`
       : `div_int_sketch_${drawerId}`;
-    const drawerBottomLift = Math.min(
+    const baselineDrawerBottomLift = Math.min(
       DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalBottomLiftMaxM,
       woodThick * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalBottomLiftWoodRatio
+    );
+    const drawerBottomLift = resolveInternalDrawerBottomLiftM(
+      readDrawerRunnerTypeFromConfig(input.cfgSnapshot),
+      baselineDrawerBottomLift
     );
 
     for (let j = 0; j < 2; j++) {

@@ -336,7 +336,7 @@ export function InteriorExternalDrawersSection(
 export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionProps): ReactElement {
   return (
     <div className="wp-r-external-drawer-runner" data-testid="interior-drawer-runner-card">
-      <div className="wp-r-external-drawer-runner-title">🛞 מסילות למגירות חיצוניות</div>
+      <div className="wp-r-external-drawer-runner-title">🛞 מסילות למגירות</div>
 
       <div className="wp-row wp-gap-8 wp-mt-8">
         <OptionBtn

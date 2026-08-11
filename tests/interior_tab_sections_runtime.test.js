@@ -607,7 +607,8 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
     setDrawerRunnerType: value => runnerCalls.push(value),
   });
   const externalRunnerHtml = renderToStaticMarkup(externalRunnerTree);
-  assert.match(externalRunnerHtml, /מסילות למגירות חיצוניות/);
+  assert.match(externalRunnerHtml, /מסילות למגירות/);
+  assert.doesNotMatch(externalRunnerHtml, /מסילות למגירות חיצוניות/);
   assert.match(externalRunnerHtml, /מסילה רגילה/);
   assert.match(externalRunnerHtml, /Blum/);
   assert.doesNotMatch(externalRunnerHtml, /הבחירה חלה על כל המגירות/);

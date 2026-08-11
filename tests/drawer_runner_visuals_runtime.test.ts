@@ -4,9 +4,12 @@ import assert from 'node:assert/strict';
 import { appendDrawerRunnerVisuals } from '../esm/native/builder/drawer_runner_visuals.ts';
 import { readConfigScalarOrDefault } from '../esm/native/runtime/config_selectors.ts';
 import {
+  BLUM_TANDEM_DRAWER_RUNNER_POLICY,
   DEFAULT_DRAWER_RUNNER_TYPE,
-  INTERNAL_DRAWER_RUNNER_TYPE,
+  INTERNAL_DRAWER_RUNNER_CLEARANCE_POLICY,
   normalizeDrawerRunnerType,
+  resolveDrawerRunnerUnderDrawerDepthM,
+  resolveInternalDrawerBottomLiftM,
 } from '../esm/native/builder/drawer_runner_policy.ts';
 
 type Position = { x: number; y: number; z: number; set(x: number, y: number, z: number): void };
@@ -113,10 +116,22 @@ function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number } = 
 
 test('[drawer-runner-visuals-runtime] roller is the canonical default', () => {
   assert.equal(DEFAULT_DRAWER_RUNNER_TYPE, 'roller');
-  assert.equal(INTERNAL_DRAWER_RUNNER_TYPE, 'roller');
   assert.equal(normalizeDrawerRunnerType(undefined), 'roller');
   assert.equal(normalizeDrawerRunnerType('invalid'), 'roller');
   assert.equal(normalizeDrawerRunnerType('blum'), 'blum');
+});
+
+test('[drawer-runner-visuals-runtime] internal Blum clearance is derived from concealed hardware geometry', () => {
+  const expectedUnderhang =
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualRailHeightM / 2 +
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualLockHeightM;
+  assert.equal(resolveDrawerRunnerUnderDrawerDepthM('roller'), 0);
+  assert.equal(resolveDrawerRunnerUnderDrawerDepthM('blum'), expectedUnderhang);
+  assert.equal(resolveInternalDrawerBottomLiftM('roller', 0.002), 0.002);
+  assert.equal(
+    resolveInternalDrawerBottomLiftM('blum', 0.002),
+    expectedUnderhang + INTERNAL_DRAWER_RUNNER_CLEARANCE_POLICY.minimumHardwareGapM
+  );
 });
 
 test('[drawer-runner-visuals-runtime] canonical config scalar reader rejects invalid runner values', () => {
