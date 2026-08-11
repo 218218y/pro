@@ -10,7 +10,8 @@ import {
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
   reportDoorsRuntimeNonFatal,
-  resolveHingedDoorSharedPivotMotionX,
+  resolveHingedDoorMotionFrameX,
+  resolveHingedDoorTargetRotationY,
   shouldForceSketchFreeBoxDoorsOpen,
 } from './doors_runtime_shared.js';
 import {
@@ -71,39 +72,9 @@ export function forceUpdatePerState(App: AppLike, opts?: SyncVisualsOptions): vo
     const open = !!door.isOpen;
 
     if (door.type === 'hinged') {
-      let baseRot = door.hingeSide === 'left' ? -Math.PI / 2.1 : Math.PI / 2.1;
-      let openDirSign = 1;
-
-      try {
-        const group = door.group;
-        const userData = getGroupUserData(group);
-        const partId = userData && userData.partId != null ? String(userData.partId) : '';
-        const isCornerPent =
-          !!(
-            userData &&
-            (userData.__wpCornerPentDoor || userData.__wpCornerPentDoorPair === 'corner_pent_pair')
-          ) ||
-          (partId && partId.startsWith('corner_pent_door'));
-
-        if (isCornerPent && userData) {
-          const dir = Number(userData.__wpDoorOpenDirSign);
-          if (dir === 1 || dir === -1) {
-            openDirSign = dir;
-          } else {
-            const zSign = Number(userData.__wpDoorOpenZSign);
-            if (zSign === 1 || zSign === -1) openDirSign = zSign;
-            else {
-              const handleSign = Number(userData.__handleZSign);
-              if (handleSign === 1 || handleSign === -1) openDirSign = -handleSign;
-            }
-          }
-        }
-      } catch (_e) {
-        reportDoorsRuntimeNonFatal(App, 'L615', _e);
-      }
-
-      door.group.rotation.y = open ? baseRot * openDirSign : 0;
-      const targetX = resolveHingedDoorSharedPivotMotionX(door, doors, door.group.rotation.y);
+      const targetRotationY = resolveHingedDoorTargetRotationY(door, open);
+      door.group.rotation.y = targetRotationY;
+      const targetX = resolveHingedDoorMotionFrameX(door, doors, targetRotationY);
       if (targetX !== null) door.group.position.x = targetX;
       continue;
     }
@@ -215,45 +186,9 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
         targetOpen = true;
       }
 
-      let baseRot = targetOpen ? (door.hingeSide === 'left' ? -Math.PI / 2.1 : Math.PI / 2.1) : 0;
-
-      try {
-        const userData = getGroupUserData(group);
-        const isCornerPent =
-          (partId && partId.startsWith('corner_pent_door')) ||
-          !!(
-            userData &&
-            (userData.__wpCornerPentDoor || userData.__wpCornerPentDoorPair === 'corner_pent_pair')
-          );
-
-        if (isCornerPent && targetOpen && userData) {
-          let openDirSign = 1;
-          const dir = Number(userData.__wpDoorOpenDirSign);
-          if (dir === 1 || dir === -1) {
-            openDirSign = dir;
-          } else {
-            const zSign = Number(userData.__wpDoorOpenZSign);
-            if (zSign === 1 || zSign === -1) openDirSign = zSign;
-            else {
-              const handleSign = Number(userData.__handleZSign);
-              if (handleSign === 1 || handleSign === -1) openDirSign = handleSign;
-            }
-          }
-          baseRot *= openDirSign;
-        }
-      } catch (_e) {
-        reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.cornerPentSign', _e);
-      }
-
-      try {
-        const invert = !!door.invertSwing || !!getGroupUserData(group)?.__invertSwing;
-        if (invert) baseRot = -baseRot;
-      } catch (_e) {
-        reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.invertSwing', _e);
-      }
-
-      door.group.rotation.y = baseRot;
-      const targetX = resolveHingedDoorSharedPivotMotionX(door, doors, baseRot);
+      const targetRotationY = resolveHingedDoorTargetRotationY(door, targetOpen);
+      door.group.rotation.y = targetRotationY;
+      const targetX = resolveHingedDoorMotionFrameX(door, doors, targetRotationY);
       if (targetX !== null) door.group.position.x = targetX;
       continue;
     }

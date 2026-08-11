@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { updateRenderLoopDoorMotions } from '../esm/native/platform/render_loop_motion_doors.ts';
-import { forceUpdatePerState } from '../esm/native/services/doors_runtime_visuals_doors.ts';
+import { forceUpdatePerState, syncVisualsNow } from '../esm/native/services/doors_runtime_visuals_doors.ts';
 import * as composedDoorMotionDimensions from '../esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 import type { MotionFrameState } from '../esm/native/platform/render_loop_motion_shared.ts';
 import { resolveSlidingDoorTrackOpenPosition } from '../esm/native/runtime/sliding_door_motion.ts';
 import {
+  HINGED_DOOR_KINEMATICS_POLICY,
   HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY,
   ensureHingedDoorClosedPivotX,
   resolveHingedDoorSharedPivotMotionX,
+  resolveHingedDoorTargetRotationY,
 } from '../esm/native/runtime/doors_runtime_support.ts';
 import {
   HINGED_DOOR_RENDER_POLICY,
@@ -287,6 +289,135 @@ test('hinged motion preserves left/right, Corner Pent direction, and invert-swin
   closeTo(right.group.rotation.y, step, 'right hinge');
   closeTo(cornerPent.group.rotation.y, -step, 'Corner Pent open direction');
   closeTo(inverted.group.rotation.y, -step, 'inverted swing');
+});
+
+test('hinged snap, sync, and animated routes share one canonical Corner Pent + invert target', () => {
+  const makeDoor = () =>
+    ({
+      type: 'hinged',
+      hingeSide: 'right',
+      isOpen: true,
+      invertSwing: true,
+      group: {
+        position: { x: 0, y: 1, z: 0.31 },
+        rotation: { y: 0 },
+        userData: {
+          __wpCornerPentDoor: true,
+          __handleZSign: 1,
+          __doorHeight: 2,
+          __doorMeshOffsetX: -0.24,
+        },
+      },
+    }) as TestDoor;
+
+  const canonical = makeDoor();
+  const expected = HINGED_DOOR_KINEMATICS_POLICY.openAngleRad;
+  closeTo(
+    resolveHingedDoorTargetRotationY(canonical as never, true),
+    expected,
+    'canonical Corner Pent handle fallback + invert'
+  );
+
+  const snapped = makeDoor();
+  forceUpdatePerState({
+    runtime: { globalClickMode: false },
+    render: { doorsArray: [snapped], drawersArray: [] },
+  } as never);
+  closeTo(snapped.group.rotation.y, expected, 'force-update target parity');
+
+  const synced = makeDoor();
+  syncVisualsNow(
+    {
+      runtime: { globalClickMode: true },
+      render: { doorsArray: [synced], drawersArray: [] },
+    } as never,
+    { open: true, includeDrawers: false }
+  );
+  closeTo(synced.group.rotation.y, expected, 'sync target parity');
+
+  const animated = makeDoor();
+  updateRenderLoopDoorMotions(makeApp([animated]), frame({ doorsShouldBeOpen: true }));
+  closeTo(animated.group.rotation.y, expected * 0.1, 'animated target parity');
+});
+
+test('hinged motion sign metadata stays fail-safe for non-primitive values', () => {
+  const malformed = {
+    type: 'hinged',
+    hingeSide: 'right',
+    group: {
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: {
+        __wpCornerPentDoor: true,
+        __wpDoorOpenDirSign: Symbol('invalid-sign'),
+        __wpDoorOpenZSign: { value: -1 },
+        __handleZSign: [],
+      },
+    },
+  } as TestDoor;
+  closeTo(
+    resolveHingedDoorTargetRotationY(malformed as never, true),
+    HINGED_DOOR_KINEMATICS_POLICY.openAngleRad,
+    'malformed signs fall back without coercion or throwing'
+  );
+
+  const primitiveString = {
+    ...malformed,
+    group: {
+      ...malformed.group,
+      userData: { __wpCornerPentDoor: true, __wpDoorOpenDirSign: '-1' },
+    },
+  } as TestDoor;
+  closeTo(
+    resolveHingedDoorTargetRotationY(primitiveString as never, true),
+    -HINGED_DOOR_KINEMATICS_POLICY.openAngleRad,
+    'primitive sign strings preserve the previous metadata contract'
+  );
+});
+
+test('shared-pivot clearance is derived from projected slab thickness across the opening sweep', () => {
+  const parent = {};
+  const leftLeaf = {
+    type: 'hinged',
+    hingeSide: 'right',
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: -0.24 },
+    },
+  } as TestDoor;
+  const rightLeaf = {
+    type: 'hinged',
+    hingeSide: 'left',
+    group: {
+      parent,
+      position: { x: 0, y: 1, z: 0.31 },
+      rotation: { y: 0 },
+      userData: { __doorHeight: 2, __doorMeshOffsetX: 0.24 },
+    },
+  } as TestDoor;
+  const doors = [leftLeaf, rightLeaf] as never;
+
+  for (let step = 0; step <= 10; step++) {
+    const angle = (HINGED_DOOR_KINEMATICS_POLICY.openAngleRad * step) / 10;
+    const leftX = resolveHingedDoorSharedPivotMotionX(leftLeaf as never, doors, angle) ?? 0;
+    const rightX = resolveHingedDoorSharedPivotMotionX(rightLeaf as never, doors, -angle) ?? 0;
+    const frameSeparation = rightX - leftX;
+    const projectedSlabOverlap = HINGED_DOOR_RENDER_POLICY.visualThicknessM * Math.sin(angle);
+    const projectedRequiredClearance =
+      HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY.pairClearanceM * Math.sin(angle);
+
+    closeTo(
+      frameSeparation,
+      projectedSlabOverlap + projectedRequiredClearance,
+      `geometry-derived clearance at sweep step ${step}`
+    );
+    assert.ok(
+      frameSeparation + 1e-12 >= projectedSlabOverlap,
+      `motion frames must clear projected slab thickness at sweep step ${step}`
+    );
+  }
 });
 
 test('shared-divider opposite hinges gain lateral throw without changing their closed positions', () => {

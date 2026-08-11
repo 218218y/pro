@@ -11,6 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/door_system_policy.ts';
 
 const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
+const runtimeDoorMotionPolicyAccessRel = 'esm/native/runtime/door_motion_policy_access.ts';
 const identityReexportOwners = new Set([
   'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
   'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
@@ -39,6 +40,7 @@ const focusedInventories = new Map([
     [
       'esm/native/builder/hinged_doors_module_ops_context.ts',
       'esm/native/builder/render_door_ops_hinged.ts',
+      'esm/native/runtime/door_motion_policy_access.ts',
       ownerRel,
     ],
   ],
@@ -49,6 +51,7 @@ const focusedInventories = new Map([
       'esm/native/builder/corner_wing_cell_doors_context.ts',
       'esm/native/builder/render_door_ops_hinged.ts',
       'esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts',
+      'esm/native/runtime/door_motion_policy_access.ts',
       ownerRel,
     ],
   ],
@@ -99,7 +102,7 @@ const focusedInventories = new Map([
       'esm/native/builder/sliding_doors_pipeline.ts',
       'esm/native/platform/render_loop_motion_doors.ts',
       renderLoopDoorMotionOwnerRel,
-      'esm/native/runtime/sliding_door_motion.ts',
+      'esm/native/runtime/door_motion_policy_access.ts',
       'esm/native/services/doors_runtime_visuals_shared.ts',
       ownerRel,
       'esm/shared/dimensions/front_reveal_frame_policy.ts',
@@ -108,7 +111,11 @@ const focusedInventories = new Map([
   ['SLIDING_DOOR_HANDLE_RENDER_POLICY', ['esm/native/builder/render_door_ops_sliding.ts', ownerRel]],
   [
     'SLIDING_DOOR_MOTION_POLICY',
-    ['esm/native/builder/render_door_ops_sliding.ts', 'esm/native/runtime/sliding_door_motion.ts', ownerRel],
+    [
+      'esm/native/builder/render_door_ops_sliding.ts',
+      'esm/native/runtime/door_motion_policy_access.ts',
+      ownerRel,
+    ],
   ],
 ]);
 
@@ -145,14 +152,6 @@ function identifierName(node) {
   return null;
 }
 
-function memberPath(node) {
-  if (node?.type === 'Identifier') return node.name;
-  if (node?.type !== 'MemberExpression') return null;
-  const objectPath = memberPath(node.object);
-  const propertyName = identifierName(node.property);
-  return objectPath && propertyName ? `${objectPath}.${propertyName}` : null;
-}
-
 function resolveModuleTarget(fromFile, specifier) {
   if (typeof specifier !== 'string') return null;
   let absolute;
@@ -171,30 +170,6 @@ function findVariableDeclarator(sourceFile, name) {
     if (node?.type === 'VariableDeclarator' && identifierName(node.id) === name) result = node;
   });
   return result;
-}
-
-function frozenObjectProperties(node) {
-  assert.equal(node?.type, 'CallExpression');
-  assert.equal(memberPath(node.callee), 'Object.freeze');
-  assert.equal(node.arguments?.length, 1);
-  assert.equal(node.arguments[0]?.type, 'ObjectExpression');
-  return node.arguments[0].properties ?? [];
-}
-
-function frozenProperties(sourceFile, name) {
-  const declaration = findVariableDeclarator(sourceFile, name);
-  assert.ok(declaration, `missing ${name}`);
-  assert.equal(declaration.parent?.kind, 'const');
-  assert.equal(declaration.parent?.parent?.type, 'ExportNamedDeclaration');
-  return frozenObjectProperties(declaration.init);
-}
-
-function propertyNames(properties) {
-  return properties.map(property => identifierName(property.key));
-}
-
-function projectionPairs(properties) {
-  return properties.map(property => [identifierName(property.key), memberPath(property.value)]);
 }
 
 function importedConsumers(symbol) {
@@ -319,6 +294,55 @@ test('Door System focused-owner inventory is exact, reviewed, and alias-free', (
   }
 });
 
+test('Door motion runtime scalar seam consumes focused owners without exposing an identity facade', () => {
+  const accessAbsolute = path.join(root, runtimeDoorMotionPolicyAccessRel);
+  const source = sourceFor(accessAbsolute);
+  const analysis = analysisFor(accessAbsolute);
+
+  assert.deepEqual(
+    analysis.imports.map(({ specifier, kind, syntax, importedSymbols }) => ({
+      specifier,
+      kind,
+      syntax,
+      importedSymbols,
+    })),
+    [
+      {
+        specifier: '../../shared/dimensions/door_system_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: [
+          'HINGED_DOOR_HARDWARE_RENDER_POLICY',
+          'HINGED_DOOR_RENDER_POLICY',
+          'SLIDING_DOOR_CONSTRUCTION_POLICY',
+          'SLIDING_DOOR_MOTION_POLICY',
+        ],
+      },
+    ]
+  );
+  assert.equal(
+    analysis.imports.some(dependency => dependency.syntax.endsWith('re-export')),
+    false
+  );
+  assert.match(
+    source,
+    /HINGED_DOOR_OPEN_ANGLE_RAD\s*=\s*HINGED_DOOR_HARDWARE_RENDER_POLICY\.carcassConnectorOpenAngleRad/u
+  );
+  assert.match(source, /HINGED_DOOR_VISUAL_THICKNESS_M\s*=\s*HINGED_DOOR_RENDER_POLICY\.visualThicknessM/u);
+  assert.match(
+    source,
+    /SLIDING_DOOR_DEFAULT_COUNT\s*=\s*SLIDING_DOOR_CONSTRUCTION_POLICY\.defaultDoorsCount/u
+  );
+  assert.match(
+    source,
+    /SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M\s*=\s*SLIDING_DOOR_MOTION_POLICY\.runtimeOpenEpsilonXM/u
+  );
+  assert.match(
+    source,
+    /SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M[\s\S]*?SLIDING_DOOR_MOTION_POLICY\.runtimeStackZStepDefaultM/u
+  );
+});
+
 test('Door System owner imports only canonical dependencies and aggregates direct focused projections', () => {
   const source = read(ownerRel);
   const sourceFile = sourceFileFor(ownerAbsolute);
@@ -355,58 +379,16 @@ test('Door System owner imports only canonical dependencies and aggregates direc
   assert.deepEqual(analysis.forbiddenModuleSyntax, []);
   assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
 
-  const geometryFields = propertyNames(frozenProperties(sourceFile, 'HINGED_DOOR_SPLIT_GEOMETRY_POLICY'));
-  const authoringFields = propertyNames(frozenProperties(sourceFile, 'HINGED_DOOR_SPLIT_AUTHORING_POLICY'));
-  assert.deepEqual(projectionPairs(frozenProperties(sourceFile, 'HINGED_DOOR_SPLIT_POLICY')), [
-    ...geometryFields.map(field => [field, `HINGED_DOOR_SPLIT_GEOMETRY_POLICY.${field}`]),
-    ...authoringFields.map(field => [field, `HINGED_DOOR_SPLIT_AUTHORING_POLICY.${field}`]),
-  ]);
-
-  assert.deepEqual(projectionPairs(frozenProperties(sourceFile, 'HINGED_DOOR_SYSTEM_POLICY')), [
-    ['visualWidthClearanceM', 'HINGED_DOOR_RENDER_POLICY.visualWidthClearanceM'],
-    ['visualHeightClearanceM', 'HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM'],
-    ['visualThicknessM', 'HINGED_DOOR_RENDER_POLICY.visualThicknessM'],
-    ['insetFrameThicknessM', 'HINGED_DOOR_MOUNT_POLICY.insetFrameThicknessM'],
-    ['insetRevealM', 'HINGED_DOOR_MOUNT_POLICY.insetRevealM'],
-    ['frontTrimZOffsetM', 'HINGED_DOOR_RENDER_POLICY.frontTrimZOffsetM'],
-    ['opFrontZOffsetM', 'HINGED_DOOR_RENDER_POLICY.opFrontZOffsetM'],
-    ['sameModuleLeafGapMaxM', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapMaxM'],
-    ['sameModuleLeafGapWoodDivisor', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapWoodDivisor'],
-    ['sameModuleLeafGapSpanRatioMax', 'HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapSpanRatioMax'],
-    ['hardware', 'HINGED_DOOR_HARDWARE_RENDER_POLICY'],
-    ['split', 'HINGED_DOOR_SPLIT_POLICY'],
-  ]);
-
-  const constructionFields = propertyNames(frozenProperties(sourceFile, 'SLIDING_DOOR_CONSTRUCTION_POLICY'));
-  const handleFields = propertyNames(frozenProperties(sourceFile, 'SLIDING_DOOR_HANDLE_RENDER_POLICY'));
-  const motionFields = propertyNames(frozenProperties(sourceFile, 'SLIDING_DOOR_MOTION_POLICY'));
-  assert.deepEqual(projectionPairs(frozenProperties(sourceFile, 'SLIDING_DOOR_SYSTEM_POLICY')), [
-    ...constructionFields.map(field => [field, `SLIDING_DOOR_CONSTRUCTION_POLICY.${field}`]),
-    ...handleFields.map(field => [field, `SLIDING_DOOR_HANDLE_RENDER_POLICY.${field}`]),
-    ...motionFields.map(field => [field, `SLIDING_DOOR_MOTION_POLICY.${field}`]),
-  ]);
-  assert.deepEqual(projectionPairs(frozenProperties(sourceFile, 'DOOR_SYSTEM_DIMENSIONS')), [
-    ['hinged', 'HINGED_DOOR_SYSTEM_POLICY'],
-    ['sliding', 'SLIDING_DOOR_SYSTEM_POLICY'],
-  ]);
-
-  for (const aggregateName of [
+  for (const retiredAggregateName of [
     'HINGED_DOOR_SPLIT_POLICY',
     'HINGED_DOOR_SYSTEM_POLICY',
     'SLIDING_DOOR_SYSTEM_POLICY',
     'DOOR_SYSTEM_DIMENSIONS',
   ]) {
-    const declaration = findVariableDeclarator(sourceFile, aggregateName);
-    const forbiddenNodes = [];
-    walkAst(declaration.init, node => {
-      if (
-        node?.type === 'SpreadElement' ||
-        (node?.type === 'Literal' && typeof node.value === 'number') ||
-        (node?.type === 'CallExpression' && node !== declaration.init)
-      ) {
-        forbiddenNodes.push(node.type);
-      }
-    });
-    assert.deepEqual(forbiddenNodes, [], aggregateName);
+    assert.equal(
+      findVariableDeclarator(sourceFile, retiredAggregateName),
+      null,
+      `${retiredAggregateName} must stay retired instead of rebuilding a compatibility aggregate`
+    );
   }
 });

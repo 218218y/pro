@@ -1,7 +1,8 @@
 import {
-  SLIDING_DOOR_CONSTRUCTION_POLICY,
-  SLIDING_DOOR_MOTION_POLICY,
-} from '../../shared/dimensions/door_system_policy.js';
+  SLIDING_DOOR_DEFAULT_COUNT,
+  SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M,
+  SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M,
+} from './door_motion_policy_access.js';
 
 export type SlidingDoorMotionEntryLike = {
   total?: unknown;
@@ -30,8 +31,8 @@ function readFinite(value: unknown, defaultValue: number): number {
 }
 
 function readDoorCount(door: SlidingDoorMotionEntryLike): number {
-  const raw = Math.round(readFinite(door.total, SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount));
-  return raw > 0 ? raw : SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount;
+  const raw = Math.round(readFinite(door.total, SLIDING_DOOR_DEFAULT_COUNT));
+  return raw > 0 ? raw : SLIDING_DOOR_DEFAULT_COUNT;
 }
 
 function readDoorIndex(door: SlidingDoorMotionEntryLike, doorsCount: number): number {
@@ -81,11 +82,11 @@ export function resolveSlidingDoorWideOpenPosition(
   const doorsCount = readDoorCount(door);
   const idx = readDoorIndex(door, doorsCount);
   const leftCount = Math.floor(doorsCount / 2);
-  const epsX = SLIDING_DOOR_MOTION_POLICY.runtimeOpenEpsilonXM;
+  const epsX = SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M;
   const sideX = totalW / 2 + doorW / 2 + epsX;
   const onLeft = idx < leftCount;
   const stackPos = Number(onLeft ? idx : doorsCount - 1 - idx);
-  const zStep = readFinite(door.stackZStep, SLIDING_DOOR_MOTION_POLICY.runtimeStackZStepDefaultM);
+  const zStep = readFinite(door.stackZStep, SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M);
   return {
     finalX: onLeft ? -sideX : sideX,
     finalZ: outerZ - stackPos * zStep,

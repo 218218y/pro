@@ -97,30 +97,24 @@ test('group-backed closeout lanes delegate to canonical test-group package facad
   }
 });
 
-test('overlay export closeout lane stays direct and grouped', () => {
+test('overlay export closeout lane stays direct and uses a live canonical typecheck mode', async () => {
+  const { MODE_TO_CONFIG } = await import('../tools/wp_typecheck_state.js');
   const lane = CLOSEOUT_LANES.find(entry => entry.id === 'overlay-export-core');
   assert.ok(lane);
   assert.equal(Array.isArray(lane.steps), true);
   assert.deepEqual(
     lane.steps.map(step => step.label),
-    [
-      'overlay/export contracts',
-      'typecheck platform',
-      'typecheck services',
-      'typecheck runtime',
-      'layer contracts',
-      'public api contracts',
-    ]
+    ['overlay/export contracts', 'typecheck project', 'layer contracts', 'public api contracts']
   );
   const typecheckSteps = lane.steps.filter(step => step.label.startsWith('typecheck '));
-  assert.deepEqual(
-    typecheckSteps.map(step => [step.command, step.args.slice(0, 2)]),
-    [
-      ['node', ['tools/wp_typecheck.js', '--mode']],
-      ['node', ['tools/wp_typecheck.js', '--mode']],
-      ['node', ['tools/wp_typecheck.js', '--mode']],
-    ]
-  );
+  assert.deepEqual(typecheckSteps, [
+    {
+      label: 'typecheck project',
+      command: 'node',
+      args: ['tools/wp_typecheck.js', '--mode', 'project'],
+    },
+  ]);
+  assert.equal(Object.hasOwn(MODE_TO_CONFIG, typecheckSteps[0].args[2]), true);
 });
 
 test('closeout profiles stay stable and Order PDF remains fully catalog-backed', () => {

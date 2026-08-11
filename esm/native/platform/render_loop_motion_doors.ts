@@ -3,7 +3,6 @@ import {
   WARDROBE_DEFAULTS,
   cmToM,
 } from '../../shared/dimensions/render_loop_door_motion_dimension_policy.js';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 import type { AppContainer } from '../../../types';
 
@@ -11,7 +10,8 @@ import { getBuildUIFromPlatform, getDimsMFromPlatform } from '../runtime/platfor
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
 import {
-  resolveHingedDoorSharedPivotMotionX,
+  resolveHingedDoorMotionFrameX,
+  resolveHingedDoorTargetRotationY,
   shouldForceSketchFreeBoxDoorsOpen,
 } from '../runtime/doors_runtime_support.js';
 import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
@@ -82,37 +82,11 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
     }
 
     if (d.type === 'hinged') {
-      let targetRot = targetOpen ? (d.hingeSide === 'left' ? -Math.PI / 2.1 : Math.PI / 2.1) : 0;
-
-      const ud = readMotionUserData(g);
-      const pid = formatIdentityValue(readIdentityValue(ud?.partId));
-      const isCornerPent =
-        !!(ud && (ud.__wpCornerPentDoor || ud.__wpCornerPentDoorPair === 'corner_pent_pair')) ||
-        (pid && pid.startsWith('corner_pent_door'));
-
-      if (isCornerPent && ud) {
-        let openDirSign = 1;
-        const vDir = Number(ud['__wpDoorOpenDirSign']);
-        if (vDir === 1 || vDir === -1) {
-          openDirSign = vDir;
-        } else {
-          const vZ = Number(ud['__wpDoorOpenZSign']);
-          if (vZ === 1 || vZ === -1) openDirSign = vZ;
-          else {
-            const vH = Number(ud['__handleZSign']);
-            if (vH === 1 || vH === -1) openDirSign = -vH;
-          }
-        }
-        targetRot *= openDirSign;
-      }
-
-      const inv = !!d.invertSwing || !!readMotionUserData(g)['__invertSwing'];
-      if (inv) targetRot = -targetRot;
-
-      g.rotation.y += (targetRot - g.rotation.y) * 0.1;
-      const targetX = resolveHingedDoorSharedPivotMotionX(d, doors, g.rotation.y);
+      const targetRotationY = resolveHingedDoorTargetRotationY(d, targetOpen);
+      g.rotation.y += (targetRotationY - g.rotation.y) * 0.1;
+      const targetX = resolveHingedDoorMotionFrameX(d, doors, g.rotation.y);
       if (targetX !== null) g.position.x = targetX;
-      if (hasNumberMotionRemaining(g.rotation.y, targetRot, ROTATION_SETTLED_EPSILON)) {
+      if (hasNumberMotionRemaining(g.rotation.y, targetRotationY, ROTATION_SETTLED_EPSILON)) {
         hasActiveDoorMotion = true;
       }
       continue;

@@ -97,55 +97,6 @@ export const HINGED_DOOR_SPLIT_AUTHORING_POLICY = Object.freeze({
   hoverMarkerHeightClearanceM: meters(0.001),
 });
 
-export const HINGED_DOOR_SPLIT_POLICY = Object.freeze({
-  minSegmentHeightM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM,
-  renderMinSegmentHeightM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM,
-  splitGapM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM,
-  duplicateCutToleranceMinM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMinM,
-  duplicateCutToleranceMaxM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMaxM,
-  duplicateCutToleranceHeightRatio: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceHeightRatio,
-  storageLiftM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM,
-  bottomClampOffsetM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM,
-  topClampOffsetM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM,
-  minHeightForSplitM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minHeightForSplitM,
-  hoverMinDoorHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMinDoorHeightM,
-  hoverDefaultDoorWidthM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverDefaultDoorWidthM,
-  hoverRegionMinHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverRegionMinHeightM,
-  hoverStandardLineMinHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverStandardLineMinHeightM,
-  hoverStandardLineMaxHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverStandardLineMaxHeightM,
-  hoverStandardLineHeightRatio: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverStandardLineHeightRatio,
-  hoverCustomEdgePadM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomEdgePadM,
-  hoverCustomRemoveToleranceMinM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomRemoveToleranceMinM,
-  hoverCustomRemoveToleranceMaxM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomRemoveToleranceMaxM,
-  hoverCustomRemoveToleranceRatio: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomRemoveToleranceRatio,
-  hoverCustomMarkerMinHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomMarkerMinHeightM,
-  hoverCustomMarkerMaxHeightM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomMarkerMaxHeightM,
-  hoverCustomMarkerHeightRatio: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomMarkerHeightRatio,
-  hoverCustomAlignmentToleranceMinM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomAlignmentToleranceMinM,
-  hoverCustomAlignmentToleranceMaxM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomAlignmentToleranceMaxM,
-  hoverCustomAlignmentToleranceHeightRatio:
-    HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomAlignmentToleranceHeightRatio,
-  hoverMarkerZOffsetM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerZOffsetM,
-  hoverMarkerScaleMinM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerScaleMinM,
-  hoverMarkerWidthClearanceM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerWidthClearanceM,
-  hoverMarkerHeightClearanceM: HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerHeightClearanceM,
-});
-
-export const HINGED_DOOR_SYSTEM_POLICY = Object.freeze({
-  visualWidthClearanceM: HINGED_DOOR_RENDER_POLICY.visualWidthClearanceM,
-  visualHeightClearanceM: HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM,
-  visualThicknessM: HINGED_DOOR_RENDER_POLICY.visualThicknessM,
-  insetFrameThicknessM: HINGED_DOOR_MOUNT_POLICY.insetFrameThicknessM,
-  insetRevealM: HINGED_DOOR_MOUNT_POLICY.insetRevealM,
-  frontTrimZOffsetM: HINGED_DOOR_RENDER_POLICY.frontTrimZOffsetM,
-  opFrontZOffsetM: HINGED_DOOR_RENDER_POLICY.opFrontZOffsetM,
-  sameModuleLeafGapMaxM: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapMaxM,
-  sameModuleLeafGapWoodDivisor: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapWoodDivisor,
-  sameModuleLeafGapSpanRatioMax: HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapSpanRatioMax,
-  hardware: HINGED_DOOR_HARDWARE_RENDER_POLICY,
-  split: HINGED_DOOR_SPLIT_POLICY,
-});
-
 export const SLIDING_DOOR_CONSTRUCTION_POLICY = Object.freeze({
   defaultDoorsCount: WARDROBE_DEFAULTS.byType.sliding.doorsCount,
   overlapM: meters(0.03),
@@ -182,41 +133,4 @@ export const SLIDING_DOOR_MOTION_POLICY = Object.freeze({
   runtimeStackZStepDefaultM: meters(0.055),
   runtimeStackZStepMinM: meters(0.03),
   runtimeStackZStepGapM: meters(0.006),
-});
-
-export const SLIDING_DOOR_SYSTEM_POLICY = Object.freeze({
-  defaultDoorsCount: SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount,
-  overlapM: SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM,
-  railHeightM: SLIDING_DOOR_CONSTRUCTION_POLICY.railHeightM,
-  railDepthM: SLIDING_DOOR_CONSTRUCTION_POLICY.railDepthM,
-  railBackInsetM: SLIDING_DOOR_CONSTRUCTION_POLICY.railBackInsetM,
-  shellClearanceMinM: SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceMinM,
-  shellClearanceMaxM: SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceMaxM,
-  shellClearanceWoodDivisor: SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceWoodDivisor,
-  doorTopOverlapMaxM: SLIDING_DOOR_CONSTRUCTION_POLICY.doorTopOverlapMaxM,
-  doorTopOverlapRailInsetM: SLIDING_DOOR_CONSTRUCTION_POLICY.doorTopOverlapRailInsetM,
-  doorHeightMinM: SLIDING_DOOR_CONSTRUCTION_POLICY.doorHeightMinM,
-  railLineOffsetYExtraM: SLIDING_DOOR_CONSTRUCTION_POLICY.railLineOffsetYExtraM,
-  railTrackLaneDivisor: SLIDING_DOOR_CONSTRUCTION_POLICY.railTrackLaneDivisor,
-  trackOuterOffsetM: SLIDING_DOOR_CONSTRUCTION_POLICY.trackOuterOffsetM,
-  trackInnerLaneGapM: SLIDING_DOOR_CONSTRUCTION_POLICY.trackInnerLaneGapM,
-  visualThicknessM: SLIDING_DOOR_CONSTRUCTION_POLICY.visualThicknessM,
-  trimFrontZM: SLIDING_DOOR_CONSTRUCTION_POLICY.trimFrontZM,
-  handleProfileZOffsetM: SLIDING_DOOR_HANDLE_RENDER_POLICY.handleProfileZOffsetM,
-  standardHandleProfileWidthM: SLIDING_DOOR_HANDLE_RENDER_POLICY.standardHandleProfileWidthM,
-  standardHandleProfileDepthM: SLIDING_DOOR_HANDLE_RENDER_POLICY.standardHandleProfileDepthM,
-  standardHandleProfileInsetM: SLIDING_DOOR_HANDLE_RENDER_POLICY.standardHandleProfileInsetM,
-  standardHandleProfileFrontZM: SLIDING_DOOR_HANDLE_RENDER_POLICY.standardHandleProfileFrontZM,
-  edgeHandleWidthM: SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleWidthM,
-  edgeHandleDepthM: SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleDepthM,
-  edgeHandleInsetM: SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleInsetM,
-  runtimeOpenEpsilonXM: SLIDING_DOOR_MOTION_POLICY.runtimeOpenEpsilonXM,
-  runtimeStackZStepDefaultM: SLIDING_DOOR_MOTION_POLICY.runtimeStackZStepDefaultM,
-  runtimeStackZStepMinM: SLIDING_DOOR_MOTION_POLICY.runtimeStackZStepMinM,
-  runtimeStackZStepGapM: SLIDING_DOOR_MOTION_POLICY.runtimeStackZStepGapM,
-});
-
-export const DOOR_SYSTEM_DIMENSIONS = Object.freeze({
-  hinged: HINGED_DOOR_SYSTEM_POLICY,
-  sliding: SLIDING_DOOR_SYSTEM_POLICY,
 });

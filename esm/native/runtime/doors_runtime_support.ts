@@ -32,10 +32,14 @@ export {
 } from './doors_runtime_support_entries.js';
 
 export {
+  HINGED_DOOR_KINEMATICS_POLICY,
   HINGED_DOOR_SHARED_PIVOT_MOTION_POLICY,
   ensureHingedDoorClosedPivotX,
+  readHingedDoorMotionMetadata,
+  resolveHingedDoorMotionFrameX,
   resolveHingedDoorSharedPivotMotionX,
-} from './hinged_door_shared_pivot_motion.js';
+  resolveHingedDoorTargetRotationY,
+} from './hinged_door_kinematics.js';
 
 export {
   getModeSlice,

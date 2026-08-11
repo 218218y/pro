@@ -363,6 +363,7 @@ export interface DoorVisualEntryLike extends UnknownRecord {
   minX?: number;
   maxX?: number;
   noGlobalOpen?: boolean;
+  invertSwing?: boolean;
   slidingOpenMode?: 'wide' | 'track';
   slidingTrackOpenSide?: 'left' | 'right';
 }
