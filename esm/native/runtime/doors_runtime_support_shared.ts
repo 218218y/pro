@@ -23,18 +23,12 @@ export type ModeSliceLike = {
 
 export type DoorUserDataLike = UnknownRecord & {
   partId?: string | number;
-  __wpDoorOpenDirSign?: unknown;
-  __wpDoorOpenZSign?: unknown;
-  __handleZSign?: unknown;
-  __wpCornerPentDoor?: unknown;
-  __wpCornerPentDoorPair?: unknown;
   __wpCornerPentFront?: unknown;
   __wpCornerPentagon?: unknown;
   __wpSketchExtDrawer?: unknown;
   __wpSketchBoxDoor?: unknown;
   __wpSketchFreePlacement?: unknown;
   noGlobalOpen?: unknown;
-  __invertSwing?: unknown;
   __wpType?: unknown;
   moduleIndex?: unknown;
 };

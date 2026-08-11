@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T08:39:51.166Z",
+  "generatedAt": "2026-08-11T13:41:27.781Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 548,
@@ -1864,7 +1864,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
-      "line": 79,
+      "line": 77,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "fallbackDoorW: ctx.activeWidth / locals.doorCount,"
@@ -2228,7 +2228,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
-      "line": 113,
+      "line": 108,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output"

@@ -1,17 +1,14 @@
-import { HINGED_DOOR_OPEN_ANGLE_RAD, HINGED_DOOR_VISUAL_THICKNESS_M } from './door_motion_policy_access.js';
-import type { DoorVisualEntryLike, Object3DLike, UnknownRecord } from '../../../types';
+import {
+  HINGED_DOOR_OPEN_ANGLE_RAD,
+  HINGED_DOOR_VISUAL_THICKNESS_M,
+  readRuntimeHingedDoorMotionMetadata,
+  type RuntimeHingedDoorMotionMetadata,
+} from './door_motion_policy_access.js';
+import type { DoorVisualEntryLike, Object3DLike } from '../../../types';
 
 type MotionSign = 1 | -1;
 
-export type HingedDoorMotionMetadata = Readonly<{
-  partId: string;
-  isCornerPent: boolean;
-  openDirectionSign: MotionSign;
-  invertSwing: boolean;
-  removed: boolean;
-  heightM: number | null;
-  meshOffsetXM: number | null;
-}>;
+export type HingedDoorMotionMetadata = RuntimeHingedDoorMotionMetadata;
 
 const SHARED_PIVOT_PAIR_CLEARANCE_M = 0.002;
 
@@ -45,53 +42,10 @@ function readFinite(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-function readSign(value: unknown): MotionSign | null {
-  if (value === 1 || value === '1') return 1;
-  if (value === -1 || value === '-1') return -1;
-  return null;
-}
-
-function readUserData(group: Object3DLike | null | undefined): UnknownRecord | null {
-  const userData = group?.userData;
-  return userData && typeof userData === 'object' ? userData : null;
-}
-
-function readPartId(userData: UnknownRecord | null): string {
-  const value = userData?.partId;
-  return typeof value === 'string' ? value : '';
-}
-
-function resolveOpenDirectionSign(userData: UnknownRecord | null): MotionSign {
-  if (!userData) return 1;
-
-  const explicitDirection = readSign(userData.__wpDoorOpenDirSign);
-  if (explicitDirection !== null) return explicitDirection;
-
-  const zDirection = readSign(userData.__wpDoorOpenZSign);
-  if (zDirection !== null) return zDirection;
-
-  const handleZSign = readSign(userData.__handleZSign);
-  return handleZSign === null ? 1 : handleZSign === 1 ? -1 : 1;
-}
-
 export function readHingedDoorMotionMetadata(
   door: DoorVisualEntryLike | null | undefined
 ): HingedDoorMotionMetadata {
-  const userData = readUserData(door?.group);
-  const partId = readPartId(userData);
-  const isCornerPent =
-    !!(userData && (userData.__wpCornerPentDoor || userData.__wpCornerPentDoorPair === 'corner_pent_pair')) ||
-    partId.startsWith('corner_pent_door');
-
-  return {
-    partId,
-    isCornerPent,
-    openDirectionSign: resolveOpenDirectionSign(userData),
-    invertSwing: !!door?.invertSwing || !!userData?.__invertSwing,
-    removed: userData?.__wpDoorRemoved === true,
-    heightM: readFinite(userData?.__doorHeight),
-    meshOffsetXM: readFinite(userData?.__doorMeshOffsetX),
-  };
+  return readRuntimeHingedDoorMotionMetadata(door?.group?.userData, door?.invertSwing === true);
 }
 
 function readHingeSide(door: DoorVisualEntryLike | null | undefined): 'left' | 'right' | null {

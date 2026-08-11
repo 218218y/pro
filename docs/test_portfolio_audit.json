@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-11T09:33:48.280Z",
+  "generatedAt": "2026-08-11T14:01:37.561Z",
   "totals": {
-    "tests": 1241,
-    "unitRunnerTests": 1232,
+    "tests": 1243,
+    "unitRunnerTests": 1234,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
-    "catalogTestReferences": 455,
-    "totalTestReferences": 493,
+    "catalogTestReferences": 457,
+    "totalTestReferences": 495,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 43,
     "catalogScriptBindings": 43,
@@ -16,10 +16,10 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 141
+    "contractOverlapTargets": 145
   },
   "categories": {
-    "contract": 403,
+    "contract": 405,
     "runtime-unit": 334,
     "integration": 464,
     "persistence-ingress": 24,
@@ -305,23 +305,31 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_connector_door_emit_context.ts",
+      "target": "esm/native/builder/corner_connector_door_emit_visuals.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "file": "tests/corner_door_trim_scoped_lookup_guard.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/builder_surface_family_contracts.test.js",
+          "file": "tests/corner_stack_split_scope_guard.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "file": "tests/door_removal_visibility_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_hardware_route_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
           "kind": "ownership"
         },
         {
-          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "file": "tests/mirror_layout_family_guard.test.js",
           "kind": "contract"
         }
       ]
@@ -387,15 +395,11 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "target": "esm/native/builder/corner_wing_cell_doors_rendering.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
         {
           "file": "tests/builder_corner_typed_surface_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/builder_surface_family_contracts.test.js",
           "kind": "contract"
         },
         {
@@ -411,11 +415,19 @@
           "kind": "contract"
         },
         {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "file": "tests/door_removal_visibility_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_hardware_route_contract.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
           "kind": "ownership"
         },
         {
-          "file": "tests/door_trim_type_hardening_guard.test.cjs",
+          "file": "tests/mirror_layout_family_guard.test.js",
           "kind": "contract"
         }
       ]
@@ -484,6 +496,20 @@
         },
         {
           "file": "tests/paint_hover_generic_parts_guard.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/builder/hinged_door_motion_metadata.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
           "kind": "contract"
         }
       ]
@@ -595,6 +621,10 @@
         {
           "file": "tests/hinged_door_hardware_route_contract.test.js",
           "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
+          "kind": "ownership"
         }
       ]
     },
@@ -671,16 +701,12 @@
       ]
     },
     {
-      "target": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
+      "target": "esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
           "kind": "ownership"
-        },
-        {
-          "file": "tests/hinged_door_hardware_route_contract.test.js",
-          "kind": "contract"
         },
         {
           "file": "tests/sketch_box_door_special_paint_apply_guard.test.js",
@@ -1345,6 +1371,20 @@
       ]
     },
     {
+      "target": "esm/native/runtime/door_motion_policy_access.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/runtime/doors_runtime_support.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -1367,6 +1407,20 @@
         {
           "file": "tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs",
           "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/hinged_door_kinematics.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
+          "kind": "ownership"
         }
       ]
     },
@@ -2231,6 +2285,10 @@
           "kind": "contract"
         },
         {
+          "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
           "file": "tests/local_internal_drawers_local_doors_guard.test.cjs",
           "kind": "contract"
         },
@@ -2785,6 +2843,20 @@
         {
           "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/door_motion_contracts_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
+          "kind": "contract"
         }
       ]
     }
@@ -4952,6 +5024,14 @@
     },
     {
       "file": "tests/hinged_door_hardware_route_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/hinged_door_motion_metadata_ownership_contract.test.js",
       "category": "contract"
     },
     {

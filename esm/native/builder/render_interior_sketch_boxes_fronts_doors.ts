@@ -9,13 +9,12 @@ import { consumeSketchBoxDoorMotionSeed } from './render_interior_sketch_pick_me
 import { resolveSketchBoxDoorLayout } from './render_interior_sketch_boxes_fronts_door_layout.js';
 import { appendSketchBoxDoorVisuals } from './render_interior_sketch_boxes_fronts_door_visuals.js';
 import { resolveSketchFreeBoxSharedHandleAbsY } from './render_interior_sketch_boxes_fronts_door_handle_policy.js';
-import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import type { Object3DLike, ThreeLike } from '../../../types';
 import {
   attachHingedDoorHardware,
-  createHingedDoorHardwareRenderState,
   type HingedDoorHardwareRenderState,
 } from './render_hinged_door_hardware.js';
+import { createBuilderHingedDoorHardwareRenderState } from './hinged_door_motion_metadata.js';
 
 export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): void {
   const { frontsArgs } = args;
@@ -42,11 +41,7 @@ export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): 
   const readHingeHardwareState = (doorThicknessM: number): HingedDoorHardwareRenderState | null => {
     const cached = hingeHardwareByThickness.get(doorThicknessM);
     if (cached !== undefined) return cached;
-    const state = createHingedDoorHardwareRenderState(
-      THREE as unknown as ThreeLike,
-      HINGED_DOOR_HARDWARE_RENDER_POLICY,
-      doorThicknessM
-    );
+    const state = createBuilderHingedDoorHardwareRenderState(THREE as unknown as ThreeLike, doorThicknessM);
     hingeHardwareByThickness.set(doorThicknessM, state);
     return state;
   };

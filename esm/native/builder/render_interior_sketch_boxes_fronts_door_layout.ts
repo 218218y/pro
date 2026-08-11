@@ -16,6 +16,7 @@ import {
   resolveSketchBoxInsetReveal,
 } from './render_interior_sketch_boxes_door_geometry.js';
 import { resolveSketchFreeBoxDoorHandleAbsY } from './render_interior_sketch_boxes_fronts_door_handle_policy.js';
+import { createBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metadata.js';
 
 export function resolveSketchBoxDoorLayout(args: {
   renderArgs: RenderSketchBoxDoorFrontsArgs;
@@ -184,7 +185,14 @@ export function resolveSketchBoxDoorLayout(args: {
       __wpSketchBoxDoorGrooveLinesCount: boxDoorGrooveLinesCount,
     },
     groupUserData: {
-      partId: doorPid,
+      ...createBuilderHingedDoorMotionMetadata({
+        partId: doorPid,
+        widthM: doorW,
+        heightM: doorH,
+        meshOffsetXM: slabLocalX,
+        handleZSign: 1,
+        noGlobalOpen: true,
+      }),
       __wpSketchBoxId: bid,
       __wpSketchBoxDoorId: doorId,
       __wpSketchModuleKey: moduleKeyStr,
@@ -193,14 +201,9 @@ export function resolveSketchBoxDoorLayout(args: {
       __wpSketchBoxDoorGroove: boxDoorGrooveOn,
       __wpSketchBoxDoorGrooveLinesCount: boxDoorGrooveLinesCount,
       __wpSketchBoxDoubleDoor: isCenterDoubleDoorPair,
-      __doorWidth: doorW,
-      __doorHeight: doorH,
-      __doorMeshOffsetX: slabLocalX,
       __wpFaceOffsetX: slabLocalX,
       __hingeLeft: hingeLeft,
-      __handleZSign: 1,
       ...(handleAbsY != null ? { __handleAbsY: handleAbsY } : {}),
-      noGlobalOpen: true,
     },
   };
 }

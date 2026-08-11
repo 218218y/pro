@@ -10,6 +10,7 @@ import {
   isSketchExtDrawersEditActive,
   isSketchIntDrawersEditActive,
   reportDoorsRuntimeNonFatal,
+  readHingedDoorMotionMetadata,
   resolveHingedDoorMotionFrameX,
   resolveHingedDoorTargetRotationY,
   shouldForceSketchFreeBoxDoorsOpen,
@@ -19,7 +20,6 @@ import {
   readInteriorManualTool,
   isSlidingDoorTrackOpenMode,
   reportSlidingDoorZFailure,
-  resolveDoorPartId,
   resolveSlidingDoorClosedState,
   resolveSlidingDoorTrackOpenPosition,
 } from './doors_runtime_visuals_shared.js';
@@ -144,21 +144,11 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
     if (door.type === 'hinged') {
       let targetOpen = !!isOpen;
       const group = door.group;
-      const partId = resolveDoorPartId(group);
-
       let noGlobal = !!door.noGlobalOpen;
       let userData = null;
       try {
         userData = getGroupUserData(group);
-        if (!noGlobal && userData) {
-          noGlobal = !!(
-            userData.noGlobalOpen ||
-            userData.__wpCornerPentDoor ||
-            userData.__wpCornerPentDoorPair === 'corner_pent_pair' ||
-            userData.__wpCornerPentFront === true ||
-            userData.__wpCornerPentagon === true
-          );
-        }
+        if (!noGlobal) noGlobal = readHingedDoorMotionMetadata(door).noGlobalOpen;
       } catch (_e) {
         reportDoorsRuntimeNonFatal(App, 'syncVisualsNow.noGlobalOpen', _e);
       }
@@ -166,9 +156,6 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
       const allowSketchFreeBoxOpen = shouldForceSketchFreeBoxDoorsOpen(manualTool, userData, {
         interiorDoorEditActive,
       });
-
-      if (!allowSketchFreeBoxOpen && !noGlobal && partId && partId.startsWith('corner_pent_door'))
-        noGlobal = true;
 
       if (noGlobal) {
         targetOpen = allowSketchFreeBoxOpen && isOpen ? true : !!door.isOpen;

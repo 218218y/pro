@@ -4,6 +4,7 @@
 // split/full emitters can focus on segment sizing only.
 
 import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import { createBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metadata.js';
 import type { Object3DLike, ThreeLike } from '../../../types';
 import {
   hasMirrorSurfaceOnFace,
@@ -103,17 +104,19 @@ export function createCornerDoorGroup(
   const group = new ctx.THREE.Group();
   const scopedPartId = ctx.stackKey === 'bottom' ? ctx.stackScopePartKey(partId) : partId;
   group.userData = {
-    partId: scopedPartId,
+    ...createBuilderHingedDoorMotionMetadata({
+      partId: scopedPartId,
+      removed: isRemovedDoor,
+      widthM: state.doorW,
+      heightM: doorHeight,
+      meshOffsetXM: state.meshOffset,
+    }),
     __wpSourcePartId: partId,
     moduleIndex: state.cellKey,
     __wpStack: ctx.stackKey,
-    __doorWidth: state.doorW,
-    __doorHeight: doorHeight,
     __hingeLeft: state.isLeftHinge,
-    __doorMeshOffsetX: state.meshOffset,
     __handleAbsY: handleAbsY,
     __wpFrontThickness: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
-    __wpDoorRemoved: isRemovedDoor,
   };
   return group;
 }

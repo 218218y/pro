@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-11T04:19:23.302Z",
+  "generatedAt": "2026-08-11T13:41:06.180Z",
   "summary": {
     "groups": 43,
     "scriptBindings": 43,
-    "catalogFileReferences": 455,
+    "catalogFileReferences": 457,
     "directPackageTestReferences": 38,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -398,13 +398,15 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 12,
+      "fileCount": 14,
       "files": [
         "tests/door_trim_center_contract_runtime.test.ts",
         "tests/door_trim_targets_click_runtime.test.ts",
         "tests/door_trim_visuals_cache_runtime.test.ts",
         "tests/door_style_overrides_runtime.test.js",
         "tests/door_hinged_hardware_render_runtime.test.ts",
+        "tests/hinged_door_motion_metadata_contract_runtime.test.ts",
+        "tests/hinged_door_motion_metadata_ownership_contract.test.js",
         "tests/door_glass_build_runtime.test.js",
         "tests/door_glass_profile_visual_runtime.test.js",
         "tests/door_mirror_visual_depth_runtime.test.js",

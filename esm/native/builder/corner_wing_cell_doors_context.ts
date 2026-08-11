@@ -1,5 +1,4 @@
 import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
-import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import type { ThreeLike } from '../../../types';
 // Corner wing door context creation.
 //
@@ -7,7 +6,7 @@ import type { ThreeLike } from '../../../types';
 // public wing-door owner so downstream door flows receive one canonical context.
 
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
-import { createHingedDoorHardwareRenderState } from './render_hinged_door_hardware.js';
+import { createBuilderHingedDoorHardwareRenderState } from './hinged_door_motion_metadata.js';
 import {
   requireCreateDoorVisual,
   requireGroupLike,
@@ -24,9 +23,8 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
   if (!(locals.doorCount > 0)) return null;
 
   const THREE = requireThreeCornerCellLike(ctx.THREE);
-  const hingeHardwareState = createHingedDoorHardwareRenderState(
+  const hingeHardwareState = createBuilderHingedDoorHardwareRenderState(
     THREE as unknown as ThreeLike,
-    HINGED_DOOR_HARDWARE_RENDER_POLICY,
     CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM
   );
 

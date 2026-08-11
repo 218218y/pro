@@ -51,6 +51,10 @@ import {
   rankRuntimeStatusTransitions,
   summarizeBrowserPerfResult,
 } from '../tools/wp_browser_perf_support.js';
+import {
+  BROWSER_PERF_UX_TARGETS,
+  createBrowserPerfUxTargetSummary,
+} from '../tools/wp_browser_perf_ux_targets.js';
 
 let perfEntrySequence = 0;
 
@@ -165,6 +169,57 @@ function baseline20(overrides = {}) {
     ...overrides,
   };
 }
+
+test('browser UX targets stay fixed and advisory independently from regression budgets', () => {
+  assert.deepEqual(BROWSER_PERF_UX_TARGETS, {
+    cls: { max: 0.1, unit: 'score' },
+    lcp: { max: 2500, unit: 'ms' },
+    inp: { max: 200, unit: 'ms' },
+  });
+
+  const metrics = {
+    cls: { value: 0.04, entryCount: 2 },
+    lcp: { valueMs: 3200, entryCount: 1 },
+    inp: { valueMs: 180, entryCount: 2, source: 'event-timing' },
+  };
+  const targetSummary = createBrowserPerfUxTargetSummary(metrics);
+  assert.equal(targetSummary.cls.status, 'met');
+  assert.equal(targetSummary.lcp.status, 'missed');
+  assert.equal(targetSummary.lcp.gap, 700);
+  assert.equal(targetSummary.inp.status, 'met');
+
+  const regressionFailures = evaluateBrowserPerfBaseline(
+    { userFlow: {}, runtimeIssues: { pageErrors: [], consoleErrors: [] }, windowBrowserMetrics: metrics },
+    baseline20({ browserMetricBudget: { maxCls: 0.1, maxLcpMs: 4000, maxInpMs: 300 } })
+  );
+  assert.deepEqual(regressionFailures, []);
+
+  const summary = summarizeBrowserPerfResult(
+    {
+      userFlow: {},
+      userFlowSteps: [],
+      runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
+      projectActionEvents: [],
+      windowPerfEntries: [],
+      windowBrowserMetrics: metrics,
+    },
+    {
+      requiredRuntimeMetrics: [],
+      requiredRuntimeMetricMinimumCounts: {},
+      requiredProjectActions: [],
+      requiredUserJourneys: [],
+      requiredUserJourneyMinimumStepCounts: {},
+    }
+  );
+  assert.match(summary, /UX target status \(advisory\)/);
+  assert.match(summary, /LCP: missed, value=3200ms, target<=2500ms, gap=700ms/);
+});
+
+test('browser UX target summary treats missing usable INP evidence as unmeasured, never as a pass', () => {
+  const missing = createBrowserPerfUxTargetSummary({ inp: { valueMs: 0, entryCount: 0, source: 'none' } });
+  assert.equal(missing.inp.status, 'unmeasured');
+  assert.equal(missing.inp.value, null);
+});
 
 test('browser perf support rebuilds exact browser metrics from all captured entries', () => {
   const longTasks = Array.from({ length: 20 }, (_, index) =>

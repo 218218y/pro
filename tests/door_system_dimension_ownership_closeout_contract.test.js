@@ -12,6 +12,7 @@ const ownerRel = 'esm/shared/dimensions/door_system_policy.ts';
 
 const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 const runtimeDoorMotionPolicyAccessRel = 'esm/native/runtime/door_motion_policy_access.ts';
+const sharedDoorMotionContractRel = 'esm/shared/door_motion_contracts_shared.ts';
 const identityReexportOwners = new Set([
   'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
   'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
@@ -40,20 +41,13 @@ const focusedInventories = new Map([
     [
       'esm/native/builder/hinged_doors_module_ops_context.ts',
       'esm/native/builder/render_door_ops_hinged.ts',
-      'esm/native/runtime/door_motion_policy_access.ts',
       ownerRel,
+      sharedDoorMotionContractRel,
     ],
   ],
   [
     'HINGED_DOOR_HARDWARE_RENDER_POLICY',
-    [
-      'esm/native/builder/corner_connector_door_emit_context.ts',
-      'esm/native/builder/corner_wing_cell_doors_context.ts',
-      'esm/native/builder/render_door_ops_hinged.ts',
-      'esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts',
-      'esm/native/runtime/door_motion_policy_access.ts',
-      ownerRel,
-    ],
+    ['esm/native/builder/hinged_door_motion_metadata.ts', ownerRel, sharedDoorMotionContractRel],
   ],
   [
     'HINGED_DOOR_MOUNT_POLICY',
@@ -102,20 +96,16 @@ const focusedInventories = new Map([
       'esm/native/builder/sliding_doors_pipeline.ts',
       'esm/native/platform/render_loop_motion_doors.ts',
       renderLoopDoorMotionOwnerRel,
-      'esm/native/runtime/door_motion_policy_access.ts',
       'esm/native/services/doors_runtime_visuals_shared.ts',
       ownerRel,
+      sharedDoorMotionContractRel,
       'esm/shared/dimensions/front_reveal_frame_policy.ts',
     ],
   ],
   ['SLIDING_DOOR_HANDLE_RENDER_POLICY', ['esm/native/builder/render_door_ops_sliding.ts', ownerRel]],
   [
     'SLIDING_DOOR_MOTION_POLICY',
-    [
-      'esm/native/builder/render_door_ops_sliding.ts',
-      'esm/native/runtime/door_motion_policy_access.ts',
-      ownerRel,
-    ],
+    ['esm/native/builder/render_door_ops_sliding.ts', ownerRel, sharedDoorMotionContractRel],
   ],
 ]);
 
@@ -308,14 +298,16 @@ test('Door motion runtime scalar seam consumes focused owners without exposing a
     })),
     [
       {
-        specifier: '../../shared/dimensions/door_system_policy.js',
+        specifier: '../../shared/door_motion_contracts_shared.js',
         kind: 'value',
         syntax: 'static-import',
         importedSymbols: [
-          'HINGED_DOOR_HARDWARE_RENDER_POLICY',
-          'HINGED_DOOR_RENDER_POLICY',
-          'SLIDING_DOOR_CONSTRUCTION_POLICY',
-          'SLIDING_DOOR_MOTION_POLICY',
+          'HINGED_DOOR_OPEN_ANGLE_RAD',
+          'HINGED_DOOR_VISUAL_THICKNESS_M',
+          'SLIDING_DOOR_DEFAULT_COUNT',
+          'SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M',
+          'SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M',
+          'readHingedDoorMotionMetadataSnapshot',
         ],
       },
     ]
@@ -324,23 +316,18 @@ test('Door motion runtime scalar seam consumes focused owners without exposing a
     analysis.imports.some(dependency => dependency.syntax.endsWith('re-export')),
     false
   );
+  assert.match(source, /HINGED_DOOR_OPEN_ANGLE_RAD\s*=\s*SHARED_HINGED_DOOR_OPEN_ANGLE_RAD/u);
+  assert.match(source, /HINGED_DOOR_VISUAL_THICKNESS_M\s*=\s*SHARED_HINGED_DOOR_VISUAL_THICKNESS_M/u);
+  assert.match(source, /SLIDING_DOOR_DEFAULT_COUNT\s*=\s*SHARED_SLIDING_DOOR_DEFAULT_COUNT/u);
   assert.match(
     source,
-    /HINGED_DOOR_OPEN_ANGLE_RAD\s*=\s*HINGED_DOOR_HARDWARE_RENDER_POLICY\.carcassConnectorOpenAngleRad/u
-  );
-  assert.match(source, /HINGED_DOOR_VISUAL_THICKNESS_M\s*=\s*HINGED_DOOR_RENDER_POLICY\.visualThicknessM/u);
-  assert.match(
-    source,
-    /SLIDING_DOOR_DEFAULT_COUNT\s*=\s*SLIDING_DOOR_CONSTRUCTION_POLICY\.defaultDoorsCount/u
+    /SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M\s*=\s*SHARED_SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M/u
   );
   assert.match(
     source,
-    /SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M\s*=\s*SLIDING_DOOR_MOTION_POLICY\.runtimeOpenEpsilonXM/u
+    /SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M\s*=\s*SHARED_SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M/u
   );
-  assert.match(
-    source,
-    /SLIDING_DOOR_RUNTIME_STACK_Z_STEP_DEFAULT_M[\s\S]*?SLIDING_DOOR_MOTION_POLICY\.runtimeStackZStepDefaultM/u
-  );
+  assert.match(source, /return readHingedDoorMotionMetadataSnapshot\(userData, entryInvertSwing\);/u);
 });
 
 test('Door System owner imports only canonical dependencies and aggregates direct focused projections', () => {

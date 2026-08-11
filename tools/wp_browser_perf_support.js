@@ -1,3 +1,4 @@
+import { createBrowserPerfUxTargetSummary } from './wp_browser_perf_ux_targets.js';
 import {
   happyPathMetricsWithoutErrors,
   requiredProjectActions,
@@ -3063,10 +3064,27 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     }
   }
   const browserMetrics = result.windowBrowserMetrics || {};
+  const browserUxTargetSummary = createBrowserPerfUxTargetSummary(browserMetrics);
   lines.push('', '## Browser responsiveness metrics', '');
   lines.push(
     `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, INP=${formatMs(Number(browserMetrics.inp?.valueMs) || 0)} (${Number(browserMetrics.inp?.interactionCount) || 0} interactions, source=${browserMetrics.inp?.source || 'none'}), Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
   );
+  lines.push('', '### UX target status (advisory)', '');
+  lines.push(
+    '- These product UX targets are fixed independently from the generated regression baseline; baseline regeneration cannot widen them.'
+  );
+  for (const metricName of ['cls', 'lcp', 'inp']) {
+    const item = browserUxTargetSummary[metricName];
+    if (!item) continue;
+    const valueText =
+      item.value == null ? 'unmeasured' : item.unit === 'ms' ? formatMs(item.value) : String(item.value);
+    const targetText = item.unit === 'ms' ? formatMs(item.max) : String(item.max);
+    const gapText =
+      item.status === 'missed' ? `, gap=${item.unit === 'ms' ? formatMs(item.gap) : String(item.gap)}` : '';
+    lines.push(
+      `- ${metricName.toUpperCase()}: ${item.status}, value=${valueText}, target<=${targetText}${gapText}`
+    );
+  }
   lines.push('', '## Runtime perf summary', '');
   lines.push(`Required metrics present: ${presentRequiredMetrics.length}/${requiredMetrics.length}`);
   lines.push('', '### Required metric coverage', '');

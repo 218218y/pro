@@ -1,16 +1,16 @@
 # Test portfolio audit
 
-Generated: 2026-08-11T09:33:48.280Z
+Generated: 2026-08-11T14:01:37.561Z
 
 ## Summary
 
-- Test files classified: 1241
-- Canonical unit/runtime runner files: 1232
+- Test files classified: 1243
+- Canonical unit/runtime runner files: 1234
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 36
 - Package script test references: 38
-- Catalog test references: 455
-- Total explicit test references: 493
+- Catalog test references: 457
+- Total explicit test references: 495
 - Oversized direct package test lanes: 0
 - Catalog groups: 43
 - Catalog-backed package scripts: 43
@@ -19,11 +19,11 @@ Generated: 2026-08-11T09:33:48.280Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 141
+- Cross-kind contract overlap targets: 145
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   403 |
+| contract            |   405 |
 | runtime-unit        |   334 |
 | integration         |   464 |
 | persistence-ingress |    24 |
@@ -63,26 +63,27 @@ Generated: 2026-08-11T09:33:48.280Z
 - `esm/native/builder/core_storage_compute_external_drawers.ts` — contract / ownership — `tests/core_storage_compute_decomposition_contracts.test.js`, `tests/external_drawer_geometry_ownership_contract.test.js`, `tests/external_drawer_ops_contracts_runtime.test.ts`
 - `esm/native/builder/corner_connector_cornice_plan.ts` — contract / ownership — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`
 - `esm/native/builder/corner_connector_cornice_shared.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`
-- `esm/native/builder/corner_connector_door_emit_context.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/door_trim_type_hardening_guard.test.cjs`
+- `esm/native/builder/corner_connector_door_emit_visuals.ts` — contract / ownership — `tests/corner_door_trim_scoped_lookup_guard.test.js`, `tests/corner_stack_split_scope_guard.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/mirror_layout_family_guard.test.js`
 - `esm/native/builder/corner_cornice_render.ts` — contract / ownership — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/corner_wing_cornice_ownership_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`
 - `esm/native/builder/corner_state_normalize_layout.ts` — contract / ownership — `tests/carcass_base_dimension_ownership_closeout_contract.test.js`, `tests/door_removal_visibility_contracts.test.js`
 - `esm/native/builder/corner_wing_carcass_shell_floor_base.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_base_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/corner_wing_carcass_shell_metrics.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`
-- `esm/native/builder/corner_wing_cell_doors_context.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/corner_door_paint_material_refresh_guard.test.js`, `tests/corner_door_trim_scoped_lookup_guard.test.js`, `tests/corner_stack_split_scope_guard.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/door_trim_type_hardening_guard.test.cjs`
+- `esm/native/builder/corner_wing_cell_doors_rendering.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/corner_door_paint_material_refresh_guard.test.js`, `tests/corner_door_trim_scoped_lookup_guard.test.js`, `tests/corner_stack_split_scope_guard.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/mirror_layout_family_guard.test.js`
 - `esm/native/builder/corner_wing_cell_layouts.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/interior_fittings_builder_pair_ownership_contract.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/corner_wing_cornice_plan.ts` — contract / ownership — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/corner_wing_cornice_ownership_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`, `tests/wp_lint_architecture_contracts_runtime.test.js`
 - `esm/native/builder/corner_wing_cornice_profile.ts` — contract / ownership — `tests/corner_wing_cornice_ownership_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`
 - `esm/native/builder/corner_wing_cornice_wave.ts` — contract / ownership — `tests/corner_wing_cornice_ownership_contract.test.js`, `tests/paint_hover_generic_parts_guard.test.js`
+- `esm/native/builder/hinged_door_motion_metadata.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_door_motion_metadata_contract_runtime.test.ts`
 - `esm/native/builder/hinged_doors_module_ops_full.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_doors_type_hardening_guard.test.js`
 - `esm/native/builder/hinged_doors_module_ops_split.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_doors_type_hardening_guard.test.js`
 - `esm/native/builder/module_loop_pipeline_module_depth.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/carcass_interior_dimension_ownership_closeout_contract.test.js`, `tests/hinged_doors_type_hardening_guard.test.js`, `tests/module_depth_ownership_contract.test.js`, `tests/module_depth_ownership_runtime.test.ts`
 - `esm/native/builder/module_loop_pipeline_runtime.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/hinged_doors_type_hardening_guard.test.js`, `tests/module_depth_ownership_runtime.test.ts`
-- `esm/native/builder/render_door_ops_hinged.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/canvas_picking_door_style_override_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/groove_create_door_visual_forwarding_guard.test.cjs`, `tests/hinged_door_hardware_route_contract.test.js`
+- `esm/native/builder/render_door_ops_hinged.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/canvas_picking_door_style_override_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/groove_create_door_visual_forwarding_guard.test.cjs`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`
 - `esm/native/builder/render_door_ops_sliding.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/groove_create_door_visual_forwarding_guard.test.cjs`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/planar_reflector_quality_contracts.test.js`, `tests/sliding_wardrobe_regression_guard.test.js`
 - `esm/native/builder/render_interior_custom_ops_layout.ts` — contract / ownership — `tests/interior_ops_numeric_contracts_runtime.test.ts`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/sketch_box_divider_segments_guard.test.cjs`
 - `esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts` — contract / ownership — `tests/sketch_box_divider_segments_guard.test.cjs`, `tests/sketch_box_rod_preview_pair_ownership_contract.test.js`
-- `esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/sketch_box_door_special_paint_apply_guard.test.js`, `tests/sketch_box_door_z_clearance_guard.test.cjs`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_double_doors_guard.test.cjs`, `tests/sketch_box_hover_and_groove_fix_guard.test.cjs`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`
+- `esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts` — contract / ownership — `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/sketch_box_door_special_paint_apply_guard.test.js`, `tests/sketch_box_door_z_clearance_guard.test.cjs`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_double_doors_guard.test.cjs`, `tests/sketch_box_hover_and_groove_fix_guard.test.cjs`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`
 - `esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts` — contract / ownership — `tests/external_drawer_geometry_ownership_contract.test.js`, `tests/external_drawer_ops_contracts_runtime.test.ts`
 - `esm/native/builder/render_interior_sketch_drawers_external_plan.ts` — contract / ownership — `tests/corner_sketch_ext_drawers_alignment_guard.test.js`, `tests/external_drawer_geometry_ownership_contract.test.js`, `tests/external_drawer_ops_contracts_runtime.test.ts`
 - `esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts` — contract / ownership — `tests/carcass_base_dimension_ownership_closeout_contract.test.js`, `tests/sketch_box_door_special_paint_apply_guard.test.js`, `tests/sketch_box_module_defaults_and_free_click_guard.test.js`
@@ -119,7 +120,9 @@ Generated: 2026-08-11T09:33:48.280Z
 - `esm/native/runtime/cfg_access_maps.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access_scalars.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access.ts` — contract / ownership — `tests/visual_maps_writer_ownership_source_guard.test.js`, `tests/zustand_store_contracts.test.js`
+- `esm/native/runtime/door_motion_policy_access.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_door_motion_metadata_contract_runtime.test.ts`
 - `esm/native/runtime/doors_runtime_support.ts` — contract / ownership — `tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
+- `esm/native/runtime/hinged_door_kinematics.ts` — contract / ownership — `tests/hinged_door_motion_metadata_contract_runtime.test.ts`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`
 - `esm/native/runtime/maps_access_normalizers_visuals.ts` — contract / source-guard — `tests/door_trim_type_hardening_guard.test.cjs`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
 - `esm/native/runtime/maps_access_writers.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/runtime/maps_access.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
@@ -164,7 +167,7 @@ Generated: 2026-08-11T09:33:48.280Z
 - `esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts` — contract / ownership — `tests/canvas_picking_manual_layout_sketch_shared_helpers_guard.test.cjs`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/sketch_box_module_defaults_and_free_click_guard.test.js`
 - `esm/native/services/canvas_picking_split_hover_preview_line.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/platform_runtime_access_contracts.test.js`
-- `esm/native/services/doors_runtime_visuals_doors.ts` — contract / ownership — `tests/drawer_runtime_access_cleanup_guard.test.js`, `tests/export_overlay_errors_family_contracts.test.js`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/platform_runtime_access_contracts.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`
+- `esm/native/services/doors_runtime_visuals_doors.ts` — contract / ownership — `tests/drawer_runtime_access_cleanup_guard.test.js`, `tests/export_overlay_errors_family_contracts.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/platform_runtime_access_contracts.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`
 - `esm/native/services/doors_runtime_visuals_shared.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/export_overlay_errors_family_contracts.test.js`, `tests/platform_runtime_access_contracts.test.js`
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_modes.ts` — contract / ownership — `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx` — contract / ownership — `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
@@ -191,6 +194,7 @@ Generated: 2026-08-11T09:33:48.280Z
 - `esm/shared/dimensions/wardrobe_default_resolution_policy.ts` — contract / ownership — `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
 - `esm/shared/dimensions/wardrobe_defaults.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/default_state_dimension_ownership_contract.test.js`, `tests/default_state_dimension_ownership_runtime.test.ts`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/no_main_sketch_dimension_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`
 - `esm/shared/dimensions/wardrobe_layout_comparison_policy.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
+- `esm/shared/door_motion_contracts_shared.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/hinged_door_motion_metadata_contract_runtime.test.ts`
 
 ## Policy
 

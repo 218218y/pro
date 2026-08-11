@@ -10,6 +10,7 @@ import {
 } from '../features/door_authoring/api.js';
 import { readGrooveLayoutListForPart } from './door_visual_lookup_state.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import { createBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metadata.js';
 import { attachHingedDoorHardware } from './render_hinged_door_hardware.js';
 
 import type {
@@ -35,21 +36,24 @@ export function pushCornerConnectorDoorSegmentVisual(
 
   hinge.position.set(state.pivotX, segY, ctx.zOut * ctx.outwardZSign);
   hinge.userData = {
-    partId: scopedPartId,
+    ...createBuilderHingedDoorMotionMetadata({
+      partId: scopedPartId,
+      cornerPent: true,
+      cornerPentPair: true,
+      openDirectionSign: ctx.outwardZSign,
+      handleZSign: ctx.outwardZSign,
+      removed: isRemovedDoor,
+      noGlobalOpen: true,
+      widthM: ctx.doorW,
+      heightM: segH,
+      meshOffsetXM: state.meshOffset,
+    }),
     __wpSourcePartId: partId,
     moduleIndex: 'corner_pentagon',
-    __wpCornerPentDoor: true,
-    __wpCornerPentDoorPair: 'corner_pent_pair',
-    noGlobalOpen: true,
-    __doorWidth: ctx.doorW,
-    __doorHeight: segH,
-    __doorMeshOffsetX: state.meshOffset,
     __wpFrontThickness: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
     __hingeLeft: state.hingeSide === 'left',
     __handleAbsY: handleAbsY,
     __wpStack: ctx.stackKey,
-    __wpDoorRemoved: isRemovedDoor,
-    __handleZSign: ctx.outwardZSign,
   };
 
   if (isRemovedDoor) {
@@ -130,9 +134,6 @@ export function pushCornerConnectorDoorSegmentVisual(
     faceSign: ctx.outwardZSign,
   });
   ctx.addOutlines(vis);
-
-  const hingeUserData = ctx.asRecord(hinge.userData);
-  hingeUserData.__wpDoorOpenDirSign = ctx.outwardZSign;
 
   ctx.mount.add(hinge);
   if (ctx.hingeHardwareState) {

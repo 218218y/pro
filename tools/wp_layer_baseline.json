@@ -2926,7 +2926,7 @@
     {
       "from": "builder",
       "to": "shared",
-      "fromFile": "esm/native/builder/corner_connector_door_emit_context.ts",
+      "fromFile": "esm/native/builder/hinged_door_motion_metadata.ts",
       "statement": {
         "toFile": "esm/shared/dimensions/door_system_policy.ts",
         "kind": "value",
@@ -2934,36 +2934,22 @@
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",
-      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
-      "id": "dimension-owner-builder-corner-connector-door-hardware-20260810"
+      "reason": "The canonical hinged-door builder seam owns hinge hardware policy consumption so standard, corner, and sketch doors cannot drift across separate policy reads.",
+      "id": "dimension-owner-builder-hinged-door-hardware-seam-20260811"
     },
     {
       "from": "builder",
       "to": "shared",
-      "fromFile": "esm/native/builder/corner_wing_cell_doors_context.ts",
+      "fromFile": "esm/native/builder/hinged_door_motion_metadata.ts",
       "statement": {
-        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "toFile": "esm/shared/door_motion_contracts_shared.ts",
         "kind": "value",
-        "importedSymbols": ["HINGED_DOOR_HARDWARE_RENDER_POLICY"],
+        "importedSymbols": ["createHingedDoorMotionMetadataPatch"],
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",
-      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
-      "id": "dimension-owner-builder-corner-wing-door-hardware-20260810"
-    },
-    {
-      "from": "builder",
-      "to": "shared",
-      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
-      "statement": {
-        "toFile": "esm/shared/dimensions/door_system_policy.ts",
-        "kind": "value",
-        "importedSymbols": ["HINGED_DOOR_HARDWARE_RENDER_POLICY"],
-        "syntax": "static-import"
-      },
-      "owner": "dimension-reviewed-ownership",
-      "reason": "This door-rendering route intentionally consumes the canonical hinge hardware dimension policy so corner and free-box doors use the same hardware geometry as standard hinged doors; a wrapper would only hide the ownership without reducing coupling.",
-      "id": "dimension-owner-builder-sketch-box-door-hardware-20260810"
+      "reason": "The canonical hinged-door builder seam is the single builder writer for motion metadata consumed across builder, runtime, and services.",
+      "id": "dimension-owner-builder-hinged-door-motion-metadata-seam-20260811"
     }
   ]
 }

@@ -1,15 +1,14 @@
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
+import {
+  createBuilderHingedDoorHardwareRenderState,
+  createBuilderHingedDoorMotionMetadata,
+  patchBuilderHingedDoorMotionMetadata,
+} from './hinged_door_motion_metadata.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import {
-  HINGED_DOOR_HARDWARE_RENDER_POLICY,
-  HINGED_DOOR_RENDER_POLICY,
-} from '../../shared/dimensions/door_system_policy.js';
-import {
-  attachHingedDoorHardware,
-  createHingedDoorHardwareRenderState,
-} from './render_hinged_door_hardware.js';
+import { HINGED_DOOR_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { attachHingedDoorHardware } from './render_hinged_door_hardware.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   isFunction,
@@ -65,11 +64,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const isRemoveDoorMode = args?.isRemoveDoorMode === true;
     const isDoorRemoved = isFunction(args?.isDoorRemoved) ? args.isDoorRemoved : null;
     const wpStackArg = typeof args?.__wpStack === 'string' ? String(args.__wpStack) : undefined;
-    const hingeHardwareState = createHingedDoorHardwareRenderState(
-      THREE,
-      HINGED_DOOR_HARDWARE_RENDER_POLICY,
-      hingedDims.visualThicknessM
-    );
+    const hingeHardwareState = createBuilderHingedDoorHardwareRenderState(THREE, hingedDims.visualThicknessM);
 
     for (let i = 0; i < ops.length; i++) {
       const doorOp = readHingedDoorOp(ops[i]);
@@ -83,14 +78,16 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
 
       const group = new THREE.Group();
       group.userData = {
-        partId,
+        ...createBuilderHingedDoorMotionMetadata({
+          partId,
+          widthM: doorOp.width,
+          heightM: doorOp.height,
+          meshOffsetXM: doorOp.meshOffsetX || 0,
+        }),
         moduleIndex: doorOp.moduleIndex,
         __wpModuleDoors: doorOp.moduleDoors,
         __wpStack: wpStackArg,
-        __doorWidth: doorOp.width,
-        __doorHeight: doorOp.height,
         __hingeLeft: doorOp.isLeftHinge,
-        __doorMeshOffsetX: doorOp.meshOffsetX || 0,
         __wpDoorId: doorIdNum,
       };
       __reg(App, partId, group, 'hingedDoor');
@@ -100,7 +97,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       if (!removed && removeDoorsEnabled && isDoorRemoved) {
         removed = !!isDoorRemoved(partId);
       }
-      group.userData.__wpDoorRemoved = !!(removeDoorsEnabled && removed);
+      patchBuilderHingedDoorMotionMetadata(group.userData, { removed: !!(removeDoorsEnabled && removed) });
 
       if (removeDoorsEnabled && removed) {
         if (isRemoveDoorMode) {
