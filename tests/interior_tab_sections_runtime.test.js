@@ -619,8 +619,17 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-blum-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button" aria-pressed="true"/);
+  assert.match(externalRunnerHtml, /wp-r-ext-drawer-type-row/);
   assert.match(externalRunnerHtml, /type-option--micro/);
   assert.match(externalRunnerHtml, /wp-r-option-button--micro/);
+
+  const runnerCss = fs.readFileSync(path.resolve('css/react_styles.css'), 'utf8');
+  assert.match(runnerCss, /\.wp-r-ext-drawer-type-row\s*>\s*\.type-option\s*\{[\s\S]*?padding:\s*15px;/);
+  assert.doesNotMatch(runnerCss, /\.wp-tool-card--extdrawer\s+\.type-option\s*\{[\s\S]*?padding:\s*15px;/);
+  assert.match(
+    runnerCss,
+    /\.wp-r-option-button--micro\s*\{[\s\S]*?min-height:\s*34px;[\s\S]*?padding-block:\s*6px;/
+  );
   const embeddedRunnerSection = findElementByTypeName(externalRunnerTree, 'InteriorDrawerRunnerSection');
   assert.ok(embeddedRunnerSection, 'expected runner controls at the end of the external drawer card');
   const embeddedRunnerTree = embeddedRunnerSection.type(embeddedRunnerSection.props);

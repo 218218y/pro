@@ -219,7 +219,7 @@ export function InteriorExternalDrawersSection(
         exitButtonTestId="interior-external-drawers-exit-button"
       />
 
-      <div className="wp-row wp-gap-8 wp-mb-10">
+      <div className="wp-row wp-gap-8 wp-mb-10 wp-r-ext-drawer-type-row">
         <OptionBtn
           className="type-option--iconrow wp-flex-1"
           selected={

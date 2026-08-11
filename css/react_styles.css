@@ -2033,10 +2033,16 @@
 }
 
 /* --------------------------------------------------------------------------
- * Interior tab: External drawers buttons – match current tall top-button controls
+ * Interior tab: External drawer TYPE buttons – match the tall top controls.
+ * Keep this scope on the dedicated type row so nested controls (runner selector,
+ * embedded sketch actions) retain their own canonical density.
  * -------------------------------------------------------------------------- */
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option {
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--extdrawer
+  .wp-r-ext-drawer-type-row
+  > .type-option {
   flex: 1;
   text-align: center;
   padding: 15px;
@@ -2061,24 +2067,40 @@
   -webkit-appearance: none;
 }
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option:hover {
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--extdrawer
+  .wp-r-ext-drawer-type-row
+  > .type-option:hover {
   border-color: #cbd5e1;
   transform: translateY(-2px);
 }
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option.selected {
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--extdrawer
+  .wp-r-ext-drawer-type-row
+  > .type-option.selected {
   border-color: var(--primary, #3b82f6);
   background: rgba(59, 130, 246, 0.05);
   color: var(--primary, #3b82f6);
   box-shadow: var(--shadow-sm);
 }
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option--compact {
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--extdrawer
+  .wp-r-ext-drawer-type-row
+  > .type-option--compact {
   padding: 10px 12px;
   font-size: 0.9rem;
 }
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--extdrawer .type-option--iconrow {
+#reactSidebarRoot
+  .tab-content[data-tab='interior']
+  .wp-tool-card--extdrawer
+  .wp-r-ext-drawer-type-row
+  > .type-option--iconrow {
   gap: 8px;
   min-height: 42px;
 }
