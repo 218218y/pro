@@ -73,6 +73,11 @@ function markHardware(obj: RunnerObjectLike, ownerPartId: string, role: string):
   obj.userData = {
     ...obj.userData,
     __ignoreRaycast: true,
+    // Runner hardware owns its finish independently from the drawer-box paint target.
+    // Moving members intentionally live under drawerBox so they travel with the drawer;
+    // without this flag materials_apply would inherit drawer_box__* from the parent and
+    // recolor the rail whenever the box is painted as an individual part.
+    __keepMaterial: true,
     __wpDrawerRunnerHardware: true,
     __wpDrawerRunnerOwnerPartId: ownerPartId,
     __wpDrawerRunnerRole: role,

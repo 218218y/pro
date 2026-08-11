@@ -77,6 +77,44 @@ test('materials apply traversal keeps hidden selector/invisible meshes on their 
   assert.equal(keepMaterialFlagMesh.material, keepMaterialViaMaterialFlag);
 });
 
+test('materials apply traversal never recolors moving drawer-runner hardware inherited from a painted drawer box', () => {
+  const boxPaint = { color: 'drawer-box-special-paint' };
+  const runnerFinish = { color: 'runner-factory-finish' };
+  const movingRunner = {
+    isMesh: true,
+    material: runnerFinish,
+    userData: {
+      __wpDrawerRunnerHardware: true,
+      __keepMaterial: true,
+    },
+    children: [],
+  } as any;
+  const drawerBox = {
+    isMesh: true,
+    material: { stale: 'drawer-box' },
+    userData: { partId: 'drawer_box__drawer_1', __wpDrawerBox: true },
+    children: [movingRunner],
+  } as any;
+
+  const changed = applyMaterialsToWardrobeTree({
+    wardrobeGroup: drawerBox,
+    getPartMat: partId => {
+      assert.equal(partId, 'drawer_box__drawer_1');
+      return boxPaint;
+    },
+    readPartId: value => (typeof value === 'string' ? value : null),
+    readStackKey: () => null,
+  });
+
+  assert.equal(changed, true);
+  assert.equal(drawerBox.material, boxPaint, 'drawer box itself should receive the selected part paint');
+  assert.equal(
+    movingRunner.material,
+    runnerFinish,
+    'moving runner must retain its dedicated hardware finish even under the painted drawer box'
+  );
+});
+
 test('materials apply traversal inherits canonical part ids through the tree and skips kept subtrees', () => {
   const assignedMaterials: string[] = [];
   const rootMaterial = { root: true };

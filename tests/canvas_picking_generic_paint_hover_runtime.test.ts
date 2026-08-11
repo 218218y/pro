@@ -452,7 +452,13 @@ test('generic paint hover previews drawer boxes with their real panel objects', 
   (foldedContent as any).userData = {};
   (foldedContent as any).userData.__kind = 'folded_cloth_item';
   foldedContent.parent = drawerBox;
-  drawerBox.children.push(sidePanel, foldedContent);
+  const movingRunner = createBoxObject('unused', { width: 0.012, height: 0.035, depth: 0.42, x: -0.29 });
+  (movingRunner as any).userData = {
+    __wpDrawerRunnerHardware: true,
+    __keepMaterial: true,
+  };
+  movingRunner.parent = drawerBox;
+  drawerBox.children.push(sidePanel, foldedContent, movingRunner);
   drawerGroup.children.push(drawerBox);
   wardrobeGroup.children.push(drawerGroup);
 

@@ -81,6 +81,11 @@ function assertHardwareMetadata(parent: FakeParent, ownerPartId: string): void {
   for (const child of parent.children) {
     assert.equal(child.userData.__wpDrawerRunnerHardware, true);
     assert.equal(child.userData.__ignoreRaycast, true);
+    assert.equal(
+      child.userData.__keepMaterial,
+      true,
+      'drawer runner finish must stay independent from inherited drawer-box paint'
+    );
     assert.equal(child.userData.__wpDrawerRunnerOwnerPartId, ownerPartId);
   }
 }

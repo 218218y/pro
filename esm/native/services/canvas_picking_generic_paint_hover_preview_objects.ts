@@ -181,6 +181,7 @@ function appendScenePartObjectsByKeySet(
   if (
     effectivePartId &&
     matchesPaintPreviewPartKey(effectivePartId, partKeySet, objectStackKey) &&
+    userData?.__wpDrawerRunnerHardware !== true &&
     !isSkippedPaintPreviewKind(kind) &&
     __readObjectLocalGeometryBox(obj)
   ) {
