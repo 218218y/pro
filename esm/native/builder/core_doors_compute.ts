@@ -39,10 +39,10 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const hingeMap: UnknownRecord = _asObject(inp.hingeMap) || {};
 
   // Door-to-wall alignment policy (hinged doors):
-  // - Outer wardrobe sides: doors overlap HALF of the thickness (nice flush look).
-  // - Regular INTERNAL dividers: use a smaller overlap (about ONE THIRD) so a subtle
-  //   center reveal remains visible and the middle doors don't look like a single slab.
-  // - Custom-geometry boundaries (double full-depth walls): keep HALF overlap for
+  // - Standard structural boundaries (outer sides and regular internal dividers) use
+  //   the same HALF-thickness overlay. Keeping the boundary overlay identical is what
+  //   preserves equal leaf widths in symmetric layouts such as the standard 4-door wardrobe.
+  // - Custom-geometry boundaries (double full-depth walls) also keep HALF overlap for
   //   best alignment with the added full-depth partitions.
   // - When custom per-cell geometry is applied, the module loop may add TWO full-depth
   //   partitions at the boundary (one per module). The right module effectively has an
@@ -70,7 +70,7 @@ export function computeHingedDoorPivotMap(input: unknown) {
 
   // Overlays (in meters).
   const OVERLAY_OUTER = woodThick / 2;
-  const OVERLAY_INNER = woodThick / 3;
+  const OVERLAY_INNER = woodThick / 2;
   const OVERLAY_SPECIAL = woodThick / 2;
   const INSET_REVEAL = HINGED_DOOR_MOUNT_POLICY.insetRevealM;
 
@@ -127,7 +127,8 @@ export function computeHingedDoorPivotMap(input: unknown) {
 
       // Door overlays on vertical walls.
       // - Outer wardrobe sides: woodThick/2.
-      // - Regular internal dividers: woodThick/3 (leaves a small reveal).
+      // - Regular internal dividers: woodThick/2, matching the outer sides so
+      //   symmetric modules produce exactly equal door leaves.
       // - Special boundaries (per-cell dims): woodThick/2.
       if (!isInsetDoorMount && hexDoorWidthM == null && di === 0) {
         const isOuterLeft = mi === 0;

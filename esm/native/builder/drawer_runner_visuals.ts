@@ -1,5 +1,4 @@
 import type { UnknownRecord } from '../../../types/index.js';
-import { NICKEL_METAL_FINISH } from '../features/metal_finish_palette.js';
 import {
   BLUM_TANDEM_DRAWER_RUNNER_POLICY,
   ROLLER_DRAWER_RUNNER_POLICY,
@@ -50,6 +49,12 @@ type RunnerMaterials = {
 
 const materialCache = new WeakMap<object, RunnerMaterials>();
 
+// Drawer-runner finishes are render-only hardware policy owned by the builder layer.
+// Keep them local instead of creating a builder -> features dependency for visual-only tokens.
+const BLUM_FIXED_RUNNER_FINISH = { color: 0xe5e9ef, roughness: 0.2, metalness: 0.28 } as const;
+const BLUM_MOVING_RUNNER_FINISH = { color: 0xd8dde4, roughness: 0.24, metalness: 0.32 } as const;
+const BLUM_LOCKING_DEVICE_FINISH = { color: 0xb8c0c8, roughness: 0.3, metalness: 0.32 } as const;
+
 function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
   const Material = THREE.MeshStandardMaterial;
   if (typeof Material !== 'function') return null;
@@ -61,16 +66,11 @@ function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
     // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
     rollerSteel: new Material({ color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 }),
     rollerWheel: new Material({ color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 }),
-    // Blum hardware follows the application's calibrated light-nickel family.
     // Keep the moving member subtly distinct for depth, while the front locking
     // device is deliberately a slightly darker nickel instead of the old orange.
-    blumSteel: new Material({
-      color: NICKEL_METAL_FINISH.hex,
-      roughness: NICKEL_METAL_FINISH.roughness,
-      metalness: NICKEL_METAL_FINISH.metalness,
-    }),
-    blumInner: new Material({ color: 0xd8dde4, roughness: 0.24, metalness: 0.32 }),
-    blumLock: new Material({ color: 0xb8c0c8, roughness: 0.3, metalness: 0.32 }),
+    blumSteel: new Material(BLUM_FIXED_RUNNER_FINISH),
+    blumInner: new Material(BLUM_MOVING_RUNNER_FINISH),
+    blumLock: new Material(BLUM_LOCKING_DEVICE_FINISH),
   };
   materialCache.set(cacheKey, materials);
   return materials;

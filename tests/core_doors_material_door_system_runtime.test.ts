@@ -99,7 +99,7 @@ test('hinged same-module gaps preserve the wood-divisor, maximum, span-ratio, an
   assertApprox(insetDoor.doorWidth, insetWidth - reveal * 2);
 });
 
-test('hinged module boundaries preserve internal and special overlays, wall compensation, overrides, and Hex width', () => {
+test('hinged module boundaries preserve symmetric standard overlays, wall compensation, overrides, and Hex width', () => {
   const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const moduleWidth = 0.5;
   const input = {
@@ -111,8 +111,8 @@ test('hinged module boundaries preserve internal and special overlays, wall comp
   const regular = computeHingedDoorPivotMap(input);
   const firstModuleStart = -input.totalW / 2 + woodThick;
   const secondModuleStart = firstModuleStart + moduleWidth + woodThick;
-  assertApprox(regular[1]?.doorWidth ?? Number.NaN, moduleWidth + woodThick / 2 + woodThick / 3);
-  assertApprox(regular[2]?.doorLeftEdge ?? Number.NaN, secondModuleStart - woodThick / 3);
+  assertApprox(regular[1]?.doorWidth ?? Number.NaN, moduleWidth + woodThick / 2 + woodThick / 2);
+  assertApprox(regular[2]?.doorLeftEdge ?? Number.NaN, secondModuleStart - woodThick / 2);
   assert.equal(regular[1]?.isLeftHinge, true);
   assert.equal(regular[2]?.isLeftHinge, false);
 
@@ -147,6 +147,39 @@ test('hinged module boundaries preserve internal and special overlays, wall comp
   const hexModuleStart = -1 / 2 + woodThick;
   assertApprox(hexDoor.doorLeftEdge, hexModuleStart + (hexModuleWidth - hexDoorWidth) / 2);
   assertApprox(hexDoor.doorWidth, hexDoorWidth);
+});
+
+test('standard four-door overlay wardrobe keeps all four leaves exactly equal and mirrored', () => {
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  const totalW = 1.6;
+  const segmentWidth = totalW / 2;
+  const moduleInternalWidth = segmentWidth - woodThick - woodThick / 2;
+  const map = computeHingedDoorPivotMap({
+    totalW,
+    woodThick,
+    moduleInternalWidths: [moduleInternalWidth, moduleInternalWidth],
+    modulesStructure: [{ doors: 2 }, { doors: 2 }],
+  });
+
+  const doors = [map[1], map[2], map[3], map[4]];
+  for (const door of doors) assert.ok(door);
+
+  const width = doors[0]!.doorWidth;
+  for (const door of doors.slice(1)) assertApprox(door!.doorWidth, width);
+
+  const leftOuter = doors[0]!;
+  const leftInner = doors[1]!;
+  const rightInner = doors[2]!;
+  const rightOuter = doors[3]!;
+
+  assertApprox(leftOuter.doorLeftEdge, -(rightOuter.doorLeftEdge + rightOuter.doorWidth));
+  assertApprox(leftInner.doorLeftEdge, -(rightInner.doorLeftEdge + rightInner.doorWidth));
+  assertApprox(leftInner.pivotX, 0);
+  assertApprox(rightInner.pivotX, 0);
+  assert.equal(leftOuter.isLeftHinge, true);
+  assert.equal(leftInner.isLeftHinge, false);
+  assert.equal(rightInner.isLeftHinge, true);
+  assert.equal(rightOuter.isLeftHinge, false);
 });
 
 test('sliding specs preserve focused defaults, lane patterns, positions, and track divisor', () => {
