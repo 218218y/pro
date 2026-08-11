@@ -15,6 +15,24 @@ const coreDocs = [
   'docs/supabase_cloud_sync_setup.md',
   'docs/supabase_cloud_sync.sql',
   'docs/REFACTOR_NEXT_STAGE_PLAN.md',
+  'docs/QUALITY_GUARDRAILS.md',
+  'docs/ARCHITECTURE_OWNERSHIP_MAP.md',
+];
+
+const mutableMetricDocs = [
+  'docs/REFACTOR_NEXT_STAGE_PLAN.md',
+  'docs/QUALITY_GUARDRAILS.md',
+  'docs/ARCHITECTURE_OWNERSHIP_MAP.md',
+];
+const manualMutableMetricPatterns = [
+  { label: 'statement-free catch count', pattern: /\b\d+\s+statement-free catches\b/giu },
+  { label: 'private-owner count', pattern: /\b\d+\s+private owners\b/giu },
+  { label: 'identity-facade count', pattern: /\b\d+\s+identity facades\b/giu },
+  { label: 'classified-test-file count', pattern: /\b\d+\s+classified test files\b/giu },
+  {
+    label: 'compatibility current-state count',
+    pattern: /\b\d+\s+(?:reviewed |growth-ratcheted )?compatibility (?:seams|occurrences)\b/giu,
+  },
 ];
 
 function walk(target, files = []) {
@@ -49,6 +67,7 @@ function findDocRefs(text) {
 const scannedFiles = scanRoots.flatMap(target => walk(target));
 const missingCoreDocs = coreDocs.filter(file => !fs.existsSync(path.join(repoRoot, file)));
 const missingRefs = [];
+const manualMutableMetricSnapshots = [];
 
 for (const file of scannedFiles) {
   const refs = findDocRefs(read(file));
@@ -59,7 +78,18 @@ for (const file of scannedFiles) {
   }
 }
 
-if (!missingCoreDocs.length && !missingRefs.length) {
+for (const file of mutableMetricDocs) {
+  if (!fs.existsSync(path.join(repoRoot, file))) continue;
+  const text = read(file);
+  for (const { label, pattern } of manualMutableMetricPatterns) {
+    pattern.lastIndex = 0;
+    for (const match of text.matchAll(pattern)) {
+      manualMutableMetricSnapshots.push({ file, label, value: match[0] });
+    }
+  }
+}
+
+if (!missingCoreDocs.length && !missingRefs.length && !manualMutableMetricSnapshots.length) {
   console.log('[docs-control-plane-audit] PASS');
   console.log(`- scanned_files: ${scannedFiles.length}`);
   console.log(`- core_docs: ${coreDocs.length}`);
@@ -74,5 +104,12 @@ if (missingCoreDocs.length) {
 if (missingRefs.length) {
   console.error('- missing_refs:');
   for (const entry of missingRefs) console.error(`  - ${entry.file} -> ${entry.ref}`);
+}
+if (manualMutableMetricSnapshots.length) {
+  console.error('- manual_mutable_metric_snapshots:');
+  for (const entry of manualMutableMetricSnapshots) {
+    console.error(`  - ${entry.file}: ${entry.label}: ${entry.value}`);
+  }
+  console.error('  - use docs/MODERNIZATION_STATE.md for mutable current-state counts');
 }
 process.exit(1);

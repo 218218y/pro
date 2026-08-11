@@ -59,6 +59,15 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
     },
   }),
   Object.freeze({
+    id: 'modernization-state',
+    lifecycle: 'source-derived',
+    json: 'docs/modernization_state.json',
+    markdown: 'docs/MODERNIZATION_STATE.md',
+    command({ json, markdown }) {
+      return ['tools/wp_modernization_state_report.mjs', '--json-out', json, '--md-out', markdown];
+    },
+  }),
+  Object.freeze({
     id: 'test-groups',
     lifecycle: 'source-derived',
     json: 'docs/test_group_catalog.json',

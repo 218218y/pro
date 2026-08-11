@@ -19,6 +19,7 @@ test('generated report catalog classifies source-derived reports separately from
       'css-style',
       'features-public-api',
       'legacy-fallbacks',
+      'modernization-state',
       'test-groups',
       'test-portfolio',
     ]
@@ -27,6 +28,7 @@ test('generated report catalog classifies source-derived reports separately from
     GENERATED_REPORT_CATALOG.map(report => report.lifecycle),
     [
       'release-evidence',
+      'source-derived',
       'source-derived',
       'source-derived',
       'source-derived',
@@ -52,6 +54,7 @@ test('generated report default selection excludes release evidence while explici
       'css-style',
       'features-public-api',
       'legacy-fallbacks',
+      'modernization-state',
       'test-groups',
       'test-portfolio',
     ]

@@ -524,6 +524,12 @@ test('[overlay-export-family] error overlay and viewport runtime keep low-level 
     ],
     'error overlay owner'
   );
+  assertLacksAll(
+    assert,
+    errorOverlay,
+    [/\bopts\.doc\b/, /\bopts\.win\b/],
+    'retired fatal-overlay document/window aliases'
+  );
   assertMatchesAll(
     assert,
     errorOverlaySupport,

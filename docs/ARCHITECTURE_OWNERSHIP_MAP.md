@@ -65,6 +65,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_layer_contract_support.mjs`, `tools/wp_public_api_contract.js`        |
 | Docs control plane             | `tools/wp_docs_control_plane_audit.mjs`                                                                       |
 | Generated audit report catalog | `tools/wp_generated_report_contract.mjs`                                                                      |
+| Modernization current state    | `tools/wp_modernization_state_report.mjs` -> `docs/MODERNIZATION_STATE.*`                                     |
 | Named test-group catalog       | `tools/wp_test_group_catalog.mjs` + `tools/wp_test_group.mjs`                                                 |
 | Runtime test sharding          | `tools/wp_test_state.js` + `tools/wp_test_shard_policy.js`                                                    |
 | Multi-store profile contract   | `tools/wp_site_profile_contract.mjs` + `tools/wp_site_profiles.mjs`                                           |

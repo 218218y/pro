@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-11T14:01:37.561Z",
+  "generatedAt": "2026-08-11T14:47:03.771Z",
   "totals": {
-    "tests": 1243,
-    "unitRunnerTests": 1234,
+    "tests": 1244,
+    "unitRunnerTests": 1235,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -20,7 +20,7 @@
   },
   "categories": {
     "contract": 405,
-    "runtime-unit": 334,
+    "runtime-unit": 335,
     "integration": 464,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
@@ -7697,6 +7697,10 @@
     {
       "file": "tests/wp_lint_vendor_policy_runtime.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/wp_modernization_state_report_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/wp_npm_spawn_support_runtime.test.js",

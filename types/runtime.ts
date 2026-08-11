@@ -159,8 +159,6 @@ export interface RuntimeActionsAccessLike extends UnknownRecord {
 export interface FatalOverlayShowOptionsLike extends UnknownRecord {
   document?: Document | null;
   window?: Window | null;
-  doc?: Document | null;
-  win?: Window | null;
   title?: string;
   description?: string;
   error?: unknown;

@@ -30,14 +30,10 @@ type FatalOverlayOpts = FatalOverlayShowOptionsLike;
 
 export type FatalOverlayController = WardrobeProFatalOverlayController;
 
-/**
- * Show (or update) a fatal error overlay.
- *
- * Compatibility note: some callers still pass `opts.doc` / `opts.win`.
- */
+/** Show (or update) a fatal error overlay. */
 export function showFatalOverlay(opts: FatalOverlayOpts): FatalOverlayController | null {
-  const doc = (opts.document || opts.doc) ?? null;
-  const win = (opts.window || opts.win) ?? null;
+  const doc = opts.document ?? null;
+  const win = opts.window ?? null;
 
   const title = safeFatalOverlayText((opts && opts.title) || 'שגיאה');
   const description = safeFatalOverlayText((opts && opts.description) || '');

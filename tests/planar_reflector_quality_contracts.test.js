@@ -36,6 +36,7 @@ test('planar reflector shader follows Three.js color pipeline with a mild neutra
 
 test('planar reflector render target is anti-aliased and aspect-aware', () => {
   assert.match(source, /MIRROR_REFLECTOR_LONG_EDGE/);
+  assert.doesNotMatch(source, /MIRROR_REFLECTOR_SIZE/);
   assert.match(source, /MIRROR_REFLECTOR_MIN_EDGE/);
   assert.match(source, /MIRROR_REFLECTOR_MULTISAMPLE/);
   assert.match(source, /samples: resolveReflectorMultisample\(App\)/);
