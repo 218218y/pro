@@ -22,6 +22,7 @@ import {
 } from './interior_tab_sketch_drawer_height_field.js';
 import type { InteriorSketchDrawersSectionProps } from './interior_layout_sketch_section_types.js';
 import { INTERIOR_EXT_COUNTS } from './interior_tab_local_state_shared.js';
+import { InteriorDrawerRunnerSection } from './interior_tab_sections_drawers.js';
 
 export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSectionProps): ReactElement {
   const { isSketchExtDrawersControlsOpen } = props;
@@ -222,6 +223,12 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           }}
         />
       </div>
+
+      <InteriorDrawerRunnerSection
+        drawerRunnerType={props.drawerRunnerType}
+        setDrawerRunnerType={props.setDrawerRunnerType}
+        testIdPrefix="sketch"
+      />
 
       {props.isSketchToolActive ? (
         <ModeToggleButton

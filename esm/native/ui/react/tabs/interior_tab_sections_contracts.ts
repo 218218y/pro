@@ -64,6 +64,7 @@ export type InteriorExternalDrawersSectionProps = {
 export type InteriorDrawerRunnerSectionProps = {
   drawerRunnerType: DrawerRunnerType;
   setDrawerRunnerType: (type: DrawerRunnerType) => void;
+  testIdPrefix?: string;
 };
 
 export type InteriorInternalDrawersSectionProps = {

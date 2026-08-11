@@ -101,6 +101,7 @@ function createLayoutProps(overrides = {}) {
     sketchExtDrawerHeightDraft: '22',
     sketchIntDrawerHeightCm: 16.5,
     sketchIntDrawerHeightDraft: '16.5',
+    drawerRunnerType: 'roller',
     sketchShelfDepthByVariant: { regular: 30, double: 30, glass: 28, brace: 45 },
     sketchShelfDepthDraftByVariant: { regular: '30', double: '30', glass: '28', brace: '45' },
     isDoorTrimMode: false,
@@ -163,6 +164,7 @@ function createLayoutProps(overrides = {}) {
     setSketchExtDrawerHeightDraft: setStateNoop,
     setSketchIntDrawerHeightCm: setStateNoop,
     setSketchIntDrawerHeightDraft: setStateNoop,
+    setDrawerRunnerType: noop,
     setSketchShelfDepthByVariant: setStateNoop,
     setSketchShelfDepthDraftByVariant: setStateNoop,
     setDoorTrimPanelOpen: setStateNoop,
@@ -617,6 +619,8 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-blum-button"/);
   assert.match(externalRunnerHtml, /data-testid="interior-drawer-runner-roller-button" aria-pressed="true"/);
+  assert.match(externalRunnerHtml, /type-option--micro/);
+  assert.match(externalRunnerHtml, /wp-r-option-button--micro/);
   const embeddedRunnerSection = findElementByTypeName(externalRunnerTree, 'InteriorDrawerRunnerSection');
   assert.ok(embeddedRunnerSection, 'expected runner controls at the end of the external drawer card');
   const embeddedRunnerTree = embeddedRunnerSection.type(embeddedRunnerSection.props);
@@ -749,6 +753,7 @@ test('[interior-tab-sections-runtime] shoe drawers and sketch mode switch in bot
 
 test('[interior-tab-sections-runtime] sketch tab external drawers expose regular/shoe selection with type-aware height', () => {
   const calls = [];
+  const runnerCalls = [];
   const panelTree = InteriorLayoutSketchToolsPanel(
     createLayoutProps({
       isSketchToolActive: true,
@@ -763,6 +768,8 @@ test('[interior-tab-sections-runtime] sketch tab external drawers expose regular
       setSketchExtDrawerHeightDraft: value => calls.push(['draft', value]),
       setSketchExtDrawersPanelOpen: value => calls.push(['panel', value]),
       enterSketchExtDrawersTool: (...args) => calls.push(['enterSketch', ...args]),
+      drawerRunnerType: 'blum',
+      setDrawerRunnerType: value => runnerCalls.push(value),
     })
   );
   const drawersSection = findElementByTypeName(panelTree, 'InteriorSketchDrawersSection');
@@ -774,6 +781,21 @@ test('[interior-tab-sections-runtime] sketch tab external drawers expose regular
   assert.ok(regularButton);
   assert.equal(regularButton.props.selected, true);
   assert.equal(shoeButton.props.selected, false);
+
+  const runnerSection = findElementByTypeName(drawersTree, 'InteriorDrawerRunnerSection');
+  assert.ok(runnerSection, 'expected sketch drawer runner controls after the drawer controls');
+  assert.equal(runnerSection.props.testIdPrefix, 'sketch');
+  const runnerTree = runnerSection.type(runnerSection.props);
+  const sketchRollerButton = findElementByTestId(runnerTree, 'sketch-drawer-runner-roller-button');
+  const sketchBlumButton = findElementByTestId(runnerTree, 'sketch-drawer-runner-blum-button');
+  assert.ok(sketchRollerButton);
+  assert.ok(sketchBlumButton);
+  assert.equal(sketchRollerButton.props.density, 'micro');
+  assert.equal(sketchBlumButton.props.density, 'micro');
+  assert.equal(sketchBlumButton.props.selected, true);
+  sketchRollerButton.props.onClick();
+  sketchBlumButton.props.onClick();
+  assert.deepEqual(runnerCalls, ['roller', 'blum']);
 
   shoeButton.props.onClick();
   assert.deepEqual(calls, [
@@ -800,8 +822,36 @@ test('[interior-tab-sections-runtime] sketch tab external drawers expose regular
   );
   assert.match(shoeHtml, /data-testid="interior-sketch-external-drawers-shoe-button"/);
   assert.match(shoeHtml, /data-testid="interior-sketch-external-drawers-regular-button"/);
+  assert.match(shoeHtml, /data-testid="sketch-drawer-runner-card"/);
+  assert.match(shoeHtml, /data-testid="sketch-drawer-runner-roller-button"/);
+  assert.match(shoeHtml, /data-testid="sketch-drawer-runner-blum-button"/);
+  assert.doesNotMatch(shoeHtml, /data-testid="interior-drawer-runner-card"/);
+  assert.ok(
+    shoeHtml.indexOf('data-testid="sketch-drawer-runner-card"') >
+      shoeHtml.indexOf('מגירות פנימיות לפי סקיצה'),
+    'expected runner controls after the sketch drawer area'
+  );
+  assert.ok(
+    shoeHtml.indexOf('סיים מצב עריכה') > shoeHtml.indexOf('data-testid="sketch-drawer-runner-card"'),
+    'expected the shared finish-edit action after the runner controls'
+  );
   assert.match(shoeHtml, /value="20"/);
   assert.match(shoeHtml, /wp-r-ext-drawer-count-row hidden/);
+
+  const css = fs.readFileSync(path.resolve('css/react_styles.css'), 'utf8');
+  assert.match(
+    css,
+    /:is\(\.tab-content\[data-tab='interior'\], \.tab-content\[data-tab='sketch'\]\)[\s\S]*?\.wp-r-external-drawer-runner/
+  );
+});
+
+test('[interior-tab-sections-runtime] sketch layout props share the canonical drawer-runner state and workflow', () => {
+  const src = fs.readFileSync(
+    path.resolve('esm/native/ui/react/tabs/interior_layout_section_props.ts'),
+    'utf8'
+  );
+  assert.match(src, /drawerRunnerType:\s*state\.drawerRunnerType/);
+  assert.match(src, /setDrawerRunnerType:\s*workflows\.setDrawerRunnerType/);
 });
 
 test('interior handles section keeps advanced controls open when handle editing has ended', () => {

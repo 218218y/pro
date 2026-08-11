@@ -1,5 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 
+import type { DrawerRunnerType } from '../../../../../types';
+
 import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/finish_palette/api.js';
 import type { HandleFinishColor, HandleFinishPresetColor } from '../../../features/finish_palette/api.js';
 import type {
@@ -136,6 +138,7 @@ export type InteriorLayoutSectionProps = {
   sketchExtDrawerHeightDraft: string;
   sketchIntDrawerHeightCm: number;
   sketchIntDrawerHeightDraft: string;
+  drawerRunnerType: DrawerRunnerType;
   sketchShelfDepthByVariant: Record<string, number | ''>;
   sketchShelfDepthDraftByVariant: Record<string, string>;
   isDoorTrimMode: boolean;
@@ -191,6 +194,7 @@ export type InteriorLayoutSectionProps = {
   setSketchExtDrawerHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchIntDrawerHeightCm: Dispatch<SetStateAction<number>>;
   setSketchIntDrawerHeightDraft: Dispatch<SetStateAction<string>>;
+  setDrawerRunnerType: (type: DrawerRunnerType) => void;
   setSketchShelfDepthByVariant: Dispatch<SetStateAction<Record<string, number | ''>>>;
   setSketchShelfDepthDraftByVariant: Dispatch<SetStateAction<Record<string, string>>>;
   setDoorTrimPanelOpen: Dispatch<SetStateAction<boolean>>;

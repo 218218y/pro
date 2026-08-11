@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 
 import { InlineNotice } from '../components/InlineNotice.js';
 import { ToggleRow } from '../components/ToggleRow.js';
-import { ModeToggleButton } from '../components/index.js';
+import { ModeToggleButton, OptionButton } from '../components/index.js';
 import {
   CountBtn,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
@@ -334,27 +334,35 @@ export function InteriorExternalDrawersSection(
 }
 
 export function InteriorDrawerRunnerSection(props: InteriorDrawerRunnerSectionProps): ReactElement {
+  const testIdPrefix = props.testIdPrefix || 'interior';
+
   return (
-    <div className="wp-r-external-drawer-runner" data-testid="interior-drawer-runner-card">
+    <div className="wp-r-external-drawer-runner" data-testid={`${testIdPrefix}-drawer-runner-card`}>
       <div className="wp-r-external-drawer-runner-title">🛞 מסילות למגירות</div>
 
       <div className="wp-row wp-gap-8 wp-mt-8">
-        <OptionBtn
+        <OptionButton
           className="wp-flex-1"
+          density="micro"
           selected={props.drawerRunnerType === 'roller'}
           onClick={() => props.setDrawerRunnerType('roller')}
-          testId="interior-drawer-runner-roller-button"
+          testId={`${testIdPrefix}-drawer-runner-roller-button`}
+          preventDefault
+          stopPropagation
         >
           מסילה רגילה
-        </OptionBtn>
-        <OptionBtn
+        </OptionButton>
+        <OptionButton
           className="wp-flex-1"
+          density="micro"
           selected={props.drawerRunnerType === 'blum'}
           onClick={() => props.setDrawerRunnerType('blum')}
-          testId="interior-drawer-runner-blum-button"
+          testId={`${testIdPrefix}-drawer-runner-blum-button`}
+          preventDefault
+          stopPropagation
         >
           Blum
-        </OptionBtn>
+        </OptionButton>
       </div>
     </div>
   );
