@@ -42,9 +42,16 @@ function runPreview(
     drawersArray?: unknown[];
     markerCenter?: boolean;
     returnPreview?: boolean;
+    draftWidthCm?: unknown;
+    draftHeightCm?: unknown;
+    orientation?: 'horizontal' | 'vertical';
+    currentSurface?: typeof surface;
+    currentPartId?: string;
   } = {}
 ) {
   const previewCalls: Record<string, unknown>[] = [];
+  const currentSurface = options.currentSurface || surface;
+  const currentPartId = options.currentPartId || 'd1_left';
   const marker = {
     visible: false,
     material: 'base',
@@ -76,8 +83,8 @@ function runPreview(
     App: App as never,
     THREE: {},
     hit: {
-      hitDoorPid: 'd1_left',
-      hitDoorGroup: surface as never,
+      hitDoorPid: currentPartId,
+      hitDoorGroup: currentSurface as never,
       hitY: 0.3,
       hitPoint: { x: hitPoint.x, y: hitPoint.y, z: 0.02, set() {} } as never,
       wardrobeGroup: {
@@ -100,13 +107,13 @@ function runPreview(
         return point;
       },
     },
-    scopedHitDoorPid: 'd1_left',
+    scopedHitDoorPid: currentPartId,
     canonDoorPartKeyForMaps: id => id,
     readUi: () => ({
       grooveManualEnabled: true,
-      currentGrooveDraftWidthCm: '40',
-      currentGrooveDraftHeightCm: '60',
-      currentGrooveOrientation: 'horizontal',
+      currentGrooveDraftWidthCm: 'draftWidthCm' in options ? options.draftWidthCm : '40',
+      currentGrooveDraftHeightCm: 'draftHeightCm' in options ? options.draftHeightCm : '60',
+      currentGrooveOrientation: options.orientation || 'horizontal',
     }),
     setSketchPreview: args => {
       previewCalls.push(args);
@@ -264,6 +271,203 @@ test('manual groove hover keeps the cross-door guide long when only the height m
   assert.equal(matched.previewCalls[0].showCenterYGuide, false);
   assert.ok(Number(matched.previewCalls[0].guideWidth) > 3);
   assert.equal(matched.marker.material, 'center');
+});
+
+test('manual groove hover treats full width as the same layout across different door widths', () => {
+  const narrowerSurface = {
+    userData: {
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd2_right',
+      __wpGrooveSurfaceRect: { minX: -0.43, maxX: 0.43, minY: -1, maxY: 1 },
+      __wpGrooveSurfaceZ: 0.02,
+      __wpGrooveSurfaceZSign: 1,
+    },
+    worldToLocal(point: Vec3) {
+      return point;
+    },
+    localToWorld(point: Vec3) {
+      return point;
+    },
+    getWorldQuaternion(target: unknown) {
+      return target;
+    },
+  };
+
+  const matched = runPreview(
+    {
+      d2_right: [
+        {
+          heightCm: 60,
+          centerYNorm: 0.6525,
+          orientation: 'horizontal',
+          linesCount: 12,
+        },
+      ],
+    },
+    { x: 0.2, y: 0.3 },
+    {
+      doorsArray: [
+        { partId: 'd1_left', group: surface, hingeSide: 'left' },
+        { partId: 'd2_right', group: narrowerSurface, hingeSide: 'right' },
+      ],
+      markerCenter: true,
+      returnPreview: true,
+      draftWidthCm: null,
+      draftHeightCm: '60',
+    }
+  );
+
+  assert.equal(matched.handled, true);
+  assert.equal(matched.previewCalls.length, 1);
+  assert.equal(matched.previewCalls[0].showCenterXGuide, true);
+  assert.equal(matched.previewCalls[0].showCenterYGuide, true);
+  assert.ok(Number(matched.previewCalls[0].guideWidth) > 3);
+  assert.equal(matched.marker.material, 'center');
+});
+
+test('manual groove full-width symmetry marks every door instead of pairing outer and inner surface widths', () => {
+  const createSurface = (partId: string, widthM: number) => ({
+    userData: {
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: partId,
+      __wpGrooveSurfaceRect: { minX: -widthM / 2, maxX: widthM / 2, minY: -1, maxY: 1 },
+      __wpGrooveSurfaceZ: 0.02,
+      __wpGrooveSurfaceZSign: 1,
+    },
+    worldToLocal(point: Vec3) {
+      return point;
+    },
+    localToWorld(point: Vec3) {
+      return point;
+    },
+    getWorldQuaternion(target: unknown) {
+      return target;
+    },
+  });
+  const outerRight = createSurface('d1_full', 1);
+  const innerRight = createSurface('d2_full', 0.98);
+  const innerLeft = createSurface('d3_full', 0.98);
+  const outerLeft = createSurface('d4_full', 1);
+  const doorsArray = [
+    { partId: 'd1_full', group: outerRight, hingeSide: 'left' },
+    { partId: 'd2_full', group: innerRight, hingeSide: 'right' },
+    { partId: 'd3_full', group: innerLeft, hingeSide: 'left' },
+    { partId: 'd4_full', group: outerLeft, hingeSide: 'right' },
+  ];
+  const grooveLayoutMap = {
+    d1_full: [
+      {
+        heightCm: 60,
+        centerYNorm: 0.65,
+        orientation: 'horizontal',
+        linesCount: 12,
+      },
+    ],
+  };
+
+  for (const [currentPartId, currentSurface] of [
+    ['d2_full', innerRight],
+    ['d3_full', innerLeft],
+    ['d4_full', outerLeft],
+  ] as const) {
+    const matched = runPreview(
+      grooveLayoutMap,
+      { x: 0, y: 0.3 },
+      {
+        doorsArray,
+        markerCenter: true,
+        returnPreview: true,
+        draftWidthCm: null,
+        draftHeightCm: '60',
+        orientation: 'horizontal',
+        currentPartId,
+        currentSurface,
+      }
+    );
+
+    assert.equal(matched.handled, true, currentPartId);
+    assert.equal(matched.previewCalls.length, 1, currentPartId);
+    assert.equal(matched.previewCalls[0].showCenterXGuide, true, currentPartId);
+    assert.equal(matched.previewCalls[0].showCenterYGuide, true, currentPartId);
+    assert.equal(matched.marker.material, 'center', currentPartId);
+  }
+});
+
+test('manual groove hover keeps full-width auto grooves symmetric when door widths produce different line counts', () => {
+  const narrowerSurface = {
+    userData: {
+      __wpGrooveSurface: true,
+      __wpGrooveSurfacePartId: 'd2_right',
+      __wpGrooveSurfaceRect: { minX: -0.43, maxX: 0.43, minY: -1, maxY: 1 },
+      __wpGrooveSurfaceZ: 0.02,
+      __wpGrooveSurfaceZSign: 1,
+    },
+    worldToLocal(point: Vec3) {
+      return point;
+    },
+    localToWorld(point: Vec3) {
+      return point;
+    },
+    getWorldQuaternion(target: unknown) {
+      return target;
+    },
+  };
+
+  const matched = runPreview(
+    {
+      d2_right: [
+        {
+          heightCm: 60,
+          centerYNorm: 0.6525,
+          orientation: 'vertical',
+          linesCount: 17,
+        },
+      ],
+    },
+    { x: 0.2, y: 0.3 },
+    {
+      doorsArray: [
+        { partId: 'd1_left', group: surface, hingeSide: 'left' },
+        { partId: 'd2_right', group: narrowerSurface, hingeSide: 'right' },
+      ],
+      markerCenter: true,
+      returnPreview: true,
+      draftWidthCm: null,
+      draftHeightCm: '60',
+      orientation: 'vertical',
+    }
+  );
+
+  assert.equal(matched.previewCalls[0].showCenterXGuide, true);
+  assert.equal(matched.marker.material, 'center');
+
+  const explicitCountMismatch = runPreview(
+    {
+      d2_right: [
+        {
+          heightCm: 60,
+          centerYNorm: 0.6525,
+          orientation: 'vertical',
+          linesCount: 18,
+        },
+      ],
+    },
+    { x: 0.2, y: 0.3 },
+    {
+      doorsArray: [
+        { partId: 'd1_left', group: surface, hingeSide: 'left' },
+        { partId: 'd2_right', group: narrowerSurface, hingeSide: 'right' },
+      ],
+      markerCenter: true,
+      returnPreview: true,
+      draftWidthCm: null,
+      draftHeightCm: '60',
+      orientation: 'vertical',
+    }
+  );
+
+  assert.equal(explicitCountMismatch.previewCalls[0].showCenterXGuide, false);
+  assert.equal(explicitCountMismatch.marker.material, 'add');
 });
 
 test('manual groove hover does not compare a door layout against a drawer layout', () => {

@@ -875,6 +875,95 @@ test('mirror by-size hover uses manual-handle-style tolerance and guides for a s
   );
 });
 
+test('mirror by-size hover treats full width as symmetric across different door surface widths', () => {
+  const currentOwner = createIdentityDoorOwner({
+    partId: 'd4_left',
+    __doorWidth: 1,
+    __doorHeight: 2,
+  });
+  const otherOwner = createIdentityDoorOwner({
+    partId: 'd5_right',
+    __doorWidth: 0.86,
+    __doorHeight: 2,
+  });
+  const mirrorLayoutMap = {
+    d5_right: [
+      {
+        heightCm: 40,
+        centerYNorm: 0.8025,
+      },
+    ],
+  };
+  const marker: Record<string, unknown> = {
+    visible: false,
+    material: 'base',
+    userData: {
+      __matAdd: 'add',
+      __matRemove: 'remove',
+      __matGroove: 'groove',
+      __matMirror: 'mirror',
+      __matCenter: 'center',
+    },
+    position: { copy() {} },
+    quaternion: { copy() {} },
+    scale: { set() {} },
+  };
+  const previewCalls: Record<string, unknown>[] = [];
+  const App = {
+    render: {
+      doorsArray: [
+        { partId: 'd4_left', group: currentOwner, hingeSide: 'left' },
+        { partId: 'd5_right', group: otherOwner, hingeSide: 'right' },
+      ],
+      drawersArray: [],
+    },
+    maps: {
+      getMap(name: string) {
+        if (name === 'mirrorLayoutMap') return mirrorLayoutMap;
+        if (name === 'doorSpecialMap') return { d5_right: 'mirror' };
+        return {};
+      },
+    },
+  };
+
+  const handled = tryHandleDoorPaintHoverPreview({
+    App: App as never,
+    THREE: { Vector3: Vec3, Quaternion: Quat },
+    hit: {
+      hitDoorPid: 'd4_left',
+      hitDoorGroup: currentOwner as never,
+      hitPoint: { x: 0.2, y: 0.6, z: 0.1, set() {} } as never,
+    },
+    groupRec: currentOwner as never,
+    userData: currentOwner.userData as never,
+    wardrobeGroup: {
+      worldToLocal(target: Vec3) {
+        return target;
+      },
+    } as never,
+    doorMarker: marker as never,
+    markerUd: marker.userData as never,
+    local: new Vec3() as never,
+    localHit: new Vec3() as never,
+    wq: new Quat() as never,
+    zOff: 0.02,
+    scopedHitDoorPid: 'd4_left',
+    canonDoorPartKeyForMaps: (id: string) => id,
+    normalizedPaintSelection: 'mirror',
+    setSketchPreview(previewArgs: Record<string, unknown>) {
+      previewCalls.push(previewArgs);
+      return {};
+    },
+    readUi: () => ({ currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: 40 }) as never,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.equal(previewCalls[0].showCenterXGuide, true);
+  assert.equal(previewCalls[0].showCenterYGuide, true);
+  assert.equal(marker.material, 'center');
+});
+
 test('mirror by-size hover keeps the cross-door guide long when only the height matches', () => {
   const currentOwner = createIdentityDoorOwner({
     partId: 'd4_left',

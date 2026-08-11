@@ -160,6 +160,18 @@ function isSameSizeM(a: number, b: number): boolean {
   return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= SIZE_TOLERANCE_M;
 }
 
+function layoutDimensionMatches(args: {
+  currentSizeCm: number | null | undefined;
+  otherSizeCm: number | null | undefined;
+  currentResolvedSizeM: number;
+  otherResolvedSizeM: number;
+}): boolean {
+  const currentUsesFullSpan = args.currentSizeCm == null;
+  const otherUsesFullSpan = args.otherSizeCm == null;
+  if (currentUsesFullSpan || otherUsesFullSpan) return currentUsesFullSpan && otherUsesFullSpan;
+  return isSameSizeM(args.currentResolvedSizeM, args.otherResolvedSizeM);
+}
+
 function projectLocalYToWorld(args: {
   group: DoorHitNode | null;
   scratch: ReusableVectorLike;
@@ -195,6 +207,8 @@ function comparePlacementAlignment(args: {
   otherPlacement: LayoutPlacement;
   otherOwner: DoorHitNode | null;
   otherHingeSide: 'left' | 'right' | null;
+  forceVerticalAlignment?: boolean;
+  forceHorizontalAlignment?: boolean;
   scratch: ReusableVectorLike;
 }): DoorLayoutHoverAlignment {
   const currentWorldY = projectLocalYToWorld({
@@ -210,6 +224,7 @@ function comparePlacementAlignment(args: {
     y: args.otherPlacement.centerY,
   });
   const hasVerticalAlignment =
+    args.forceVerticalAlignment === true ||
     (currentWorldY != null && otherWorldY != null && isAlignedDistance(currentWorldY, otherWorldY)) ||
     isAlignedNorm(args.currentPlacement.centerYNorm, args.otherPlacement.centerYNorm);
 
@@ -224,9 +239,10 @@ function comparePlacementAlignment(args: {
     hingeSide: args.otherHingeSide,
   });
   const hasHorizontalAlignment =
-    currentOpeningDistance != null && otherOpeningDistance != null
+    args.forceHorizontalAlignment === true ||
+    (currentOpeningDistance != null && otherOpeningDistance != null
       ? isAlignedDistance(currentOpeningDistance, otherOpeningDistance)
-      : isAlignedNorm(args.currentPlacement.centerXNorm, args.otherPlacement.centerXNorm);
+      : isAlignedNorm(args.currentPlacement.centerXNorm, args.otherPlacement.centerXNorm));
 
   return { hasVerticalAlignment, hasHorizontalAlignment };
 }
@@ -254,14 +270,26 @@ function resolveCandidateGrooveOwner(candidate: DoorSceneCandidate): DoorHitNode
   return resolveGrooveSurfaceOwnerByPartId(candidate.group, candidate.partId);
 }
 
-function mirrorPlacementsHaveSameShape(
-  current: ReturnType<typeof resolveMirrorPlacementInRect>,
-  other: ReturnType<typeof resolveMirrorPlacementInRect>
-): boolean {
+function mirrorPlacementsHaveSameShape(args: {
+  currentLayout: ReturnType<typeof readMirrorLayoutList>[number];
+  currentPlacement: ReturnType<typeof resolveMirrorPlacementInRect>;
+  otherLayout: ReturnType<typeof readMirrorLayoutList>[number];
+  otherPlacement: ReturnType<typeof resolveMirrorPlacementInRect>;
+}): boolean {
   return (
-    isSameSizeM(current.mirrorWidthM, other.mirrorWidthM) &&
-    isSameSizeM(current.mirrorHeightM, other.mirrorHeightM) &&
-    current.faceSign === other.faceSign
+    layoutDimensionMatches({
+      currentSizeCm: args.currentLayout.widthCm,
+      otherSizeCm: args.otherLayout.widthCm,
+      currentResolvedSizeM: args.currentPlacement.mirrorWidthM,
+      otherResolvedSizeM: args.otherPlacement.mirrorWidthM,
+    }) &&
+    layoutDimensionMatches({
+      currentSizeCm: args.currentLayout.heightCm,
+      otherSizeCm: args.otherLayout.heightCm,
+      currentResolvedSizeM: args.currentPlacement.mirrorHeightM,
+      otherResolvedSizeM: args.otherPlacement.mirrorHeightM,
+    }) &&
+    args.currentPlacement.faceSign === args.otherPlacement.faceSign
   );
 }
 
@@ -310,6 +338,8 @@ export function resolveMirrorLayoutHoverAlignment(args: {
 }): DoorLayoutHoverAlignment {
   const alignment = emptyAlignment();
   if (!args.currentLayout || !args.mirrorLayoutMap) return alignment;
+  const currentLayout = readMirrorLayoutList(args.currentLayout)[0] || null;
+  if (!currentLayout) return alignment;
   const candidates = collectDoorSceneCandidates(args.App);
   const currentSceneCandidate = candidates.find(candidate =>
     isSameDoorVisualHost(args.currentPartId, candidate.partId)
@@ -337,11 +367,20 @@ export function resolveMirrorLayoutHoverAlignment(args: {
     const otherRect = readMirrorPlacementRectFromUserData(asRecord(otherOwner?.userData));
     if (!otherOwner || !otherRect) continue;
     for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
+      const otherLayout = otherLayouts[layoutIndex];
       const otherPlacement = resolveMirrorPlacementInRect({
         rect: otherRect,
-        layout: otherLayouts[layoutIndex],
+        layout: otherLayout,
       });
-      if (!mirrorPlacementsHaveSameShape(args.currentPlacement, otherPlacement)) continue;
+      if (
+        !mirrorPlacementsHaveSameShape({
+          currentLayout,
+          currentPlacement: args.currentPlacement,
+          otherLayout,
+          otherPlacement,
+        })
+      )
+        continue;
       mergeAlignment(
         alignment,
         comparePlacementAlignment({
@@ -353,6 +392,8 @@ export function resolveMirrorLayoutHoverAlignment(args: {
           otherPlacement: toMirrorPlacement(otherPlacement),
           otherOwner,
           otherHingeSide: candidate.hingeSide,
+          forceVerticalAlignment: currentLayout.heightCm == null && otherLayout.heightCm == null,
+          forceHorizontalAlignment: currentLayout.widthCm == null && otherLayout.widthCm == null,
           scratch: args.scratch,
         })
       );
@@ -370,8 +411,6 @@ export function resolveMirrorLayoutHoverAlignment(args: {
     for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
       const otherLayout = otherLayouts[layoutIndex];
       if (!fallbackMirrorLayoutShapeMatches(args.currentLayout, otherLayout)) continue;
-      const currentLayout = readMirrorLayoutList(args.currentLayout)[0];
-      if (!currentLayout) continue;
       const currentX = currentLayout.centerXNorm ?? 0.5;
       const currentY = currentLayout.centerYNorm ?? 0.5;
       const otherX = otherLayout.centerXNorm ?? 0.5;
@@ -384,17 +423,57 @@ export function resolveMirrorLayoutHoverAlignment(args: {
   return alignment;
 }
 
-function groovePlacementsHaveSameShape(args: {
+function grooveLineCountsMatchForLayout(args: {
+  currentLayout: GrooveLayoutEntry;
   currentPlacement: ReturnType<typeof resolveGroovePlacementInRect>;
   currentLinesCount: number;
+  otherLayout: GrooveLayoutEntry;
+  otherPlacement: ReturnType<typeof resolveGroovePlacementInRect>;
+  otherLinesCount: number;
+}): boolean {
+  if (args.currentLinesCount === args.otherLinesCount) return true;
+  if (args.currentPlacement.orientation !== args.otherPlacement.orientation) return false;
+
+  const orientation = args.currentPlacement.orientation;
+  const currentDistributionUsesFullSpan =
+    orientation === 'horizontal' ? args.currentLayout.heightCm == null : args.currentLayout.widthCm == null;
+  const otherDistributionUsesFullSpan =
+    orientation === 'horizontal' ? args.otherLayout.heightCm == null : args.otherLayout.widthCm == null;
+  if (!currentDistributionUsesFullSpan || !otherDistributionUsesFullSpan) return false;
+
+  const currentDistributionSpan =
+    orientation === 'horizontal' ? args.currentPlacement.heightM : args.currentPlacement.widthM;
+  const otherDistributionSpan =
+    orientation === 'horizontal' ? args.otherPlacement.heightM : args.otherPlacement.widthM;
+  return (
+    args.currentLinesCount === computeAutoGrooveLinesCount(currentDistributionSpan) &&
+    args.otherLinesCount === computeAutoGrooveLinesCount(otherDistributionSpan)
+  );
+}
+
+function groovePlacementsHaveSameShape(args: {
+  currentLayout: GrooveLayoutEntry;
+  currentPlacement: ReturnType<typeof resolveGroovePlacementInRect>;
+  currentLinesCount: number;
+  otherLayout: GrooveLayoutEntry;
   otherPlacement: ReturnType<typeof resolveGroovePlacementInRect>;
   otherLinesCount: number;
 }): boolean {
   return (
-    isSameSizeM(args.currentPlacement.widthM, args.otherPlacement.widthM) &&
-    isSameSizeM(args.currentPlacement.heightM, args.otherPlacement.heightM) &&
+    layoutDimensionMatches({
+      currentSizeCm: args.currentLayout.widthCm,
+      otherSizeCm: args.otherLayout.widthCm,
+      currentResolvedSizeM: args.currentPlacement.widthM,
+      otherResolvedSizeM: args.otherPlacement.widthM,
+    }) &&
+    layoutDimensionMatches({
+      currentSizeCm: args.currentLayout.heightCm,
+      otherSizeCm: args.otherLayout.heightCm,
+      currentResolvedSizeM: args.currentPlacement.heightM,
+      otherResolvedSizeM: args.otherPlacement.heightM,
+    }) &&
     args.currentPlacement.orientation === args.otherPlacement.orientation &&
-    args.currentLinesCount === args.otherLinesCount
+    grooveLineCountsMatchForLayout(args)
   );
 }
 
@@ -496,8 +575,10 @@ export function resolveGrooveLayoutHoverAlignment(args: {
       });
       if (
         !groovePlacementsHaveSameShape({
+          currentLayout: args.currentLayout,
           currentPlacement: args.currentPlacement,
           currentLinesCount: args.currentLinesCount,
+          otherLayout,
           otherPlacement,
           otherLinesCount,
         })
@@ -514,6 +595,8 @@ export function resolveGrooveLayoutHoverAlignment(args: {
           otherPlacement: toGroovePlacement(otherPlacement),
           otherOwner,
           otherHingeSide: candidate.hingeSide,
+          forceVerticalAlignment: args.currentLayout.heightCm == null && otherLayout.heightCm == null,
+          forceHorizontalAlignment: args.currentLayout.widthCm == null && otherLayout.widthCm == null,
           scratch: args.scratch,
         })
       );
