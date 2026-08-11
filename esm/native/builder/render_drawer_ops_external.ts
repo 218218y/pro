@@ -260,7 +260,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         drawerWidthM: drawerOp.boxW,
         drawerHeightM: drawerOp.boxH,
         drawerDepthM: drawerOp.boxD,
-        drawerLocalCenterZM: drawerOp.boxOffsetZ || 0,
+        drawerBoxOffsetZM: drawerOp.boxOffsetZ || 0,
         closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
         ownerPartId: partId,
       });

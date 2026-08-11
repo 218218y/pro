@@ -149,7 +149,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         drawerWidthM: drawerOp.width,
         drawerHeightM: drawerOp.height,
         drawerDepthM: drawerOp.depth,
-        drawerLocalCenterZM: 0,
+        drawerBoxOffsetZM: 0,
         closedPosition: { x: closedPos.x, y: closedPos.y, z: closedPos.z },
         ownerPartId: partId,
       });

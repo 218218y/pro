@@ -34,7 +34,7 @@ type AppendDrawerRunnerVisualsArgs = {
   drawerWidthM: number;
   drawerHeightM: number;
   drawerDepthM: number;
-  drawerLocalCenterZM?: number;
+  drawerBoxOffsetZM?: number;
   closedPosition: DrawerRunnerPosition;
   ownerPartId: string;
 };
@@ -131,13 +131,20 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
   const length = resolveRunnerLength(args.drawerDepthM, policy.endInsetM, policy.minVisualLengthM);
   if (!(length > 0)) return;
 
-  const localZ = Number.isFinite(args.drawerLocalCenterZM) ? args.drawerLocalCenterZM || 0 : 0;
+  // movingParent is the drawer box itself, so moving hardware is always expressed
+  // in drawer-box-local coordinates. drawerBoxOffsetZM is only the box center
+  // offset inside the closed drawer group and is needed to place cabinet-fixed
+  // hardware in the fixed parent's coordinate space. Applying it to moving
+  // hardware as well would double the offset and push the rail through the back.
+  const drawerBoxOffsetZ = Number.isFinite(args.drawerBoxOffsetZM) ? args.drawerBoxOffsetZM || 0 : 0;
+  const movingLocalZ = 0;
+  const fixedCenterZ = args.closedPosition.z + drawerBoxOffsetZ;
   const railY = -args.drawerHeightM / 2 + policy.profileHeightM / 2 + 0.003;
   const webT = policy.visualWebThicknessM;
   const flangeW = policy.visualFlangeWidthM;
   const flangeT = policy.visualFlangeThicknessM;
-  const frontWheelZ = localZ + length / 2 - policy.visualWheelRadiusM * 1.35;
-  const rearWheelZ = localZ - length / 2 + policy.visualWheelRadiusM * 1.35;
+  const frontWheelZ = fixedCenterZ + length / 2 - policy.visualWheelRadiusM * 1.35;
+  const rearWheelZ = movingLocalZ - length / 2 + policy.visualWheelRadiusM * 1.35;
 
   for (const side of [-1, 1] as const) {
     // Drawer member: attached directly to the drawer side.
@@ -148,7 +155,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       parent: args.movingParent,
       material: materials.rollerSteel,
       size: [webT, policy.profileHeightM, length],
-      position: [movingWebX, railY, localZ],
+      position: [movingWebX, railY, movingLocalZ],
       ownerPartId: args.ownerPartId,
       role: `roller-moving-web-${side < 0 ? 'left' : 'right'}`,
     });
@@ -157,7 +164,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       parent: args.movingParent,
       material: materials.rollerSteel,
       size: [flangeW, flangeT, length],
-      position: [movingFlangeX, railY - policy.profileHeightM / 2 + flangeT / 2, localZ],
+      position: [movingFlangeX, railY - policy.profileHeightM / 2 + flangeT / 2, movingLocalZ],
       ownerPartId: args.ownerPartId,
       role: `roller-moving-flange-${side < 0 ? 'left' : 'right'}`,
     });
@@ -170,11 +177,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       parent: args.fixedParent,
       material: materials.rollerSteel,
       size: [webT, policy.profileHeightM, length],
-      position: [
-        args.closedPosition.x + fixedWebLocalX,
-        args.closedPosition.y + railY,
-        args.closedPosition.z + localZ,
-      ],
+      position: [args.closedPosition.x + fixedWebLocalX, args.closedPosition.y + railY, fixedCenterZ],
       ownerPartId: args.ownerPartId,
       role: `roller-fixed-web-${side < 0 ? 'left' : 'right'}`,
     });
@@ -186,7 +189,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       position: [
         args.closedPosition.x + fixedFlangeLocalX,
         args.closedPosition.y + railY + policy.profileHeightM / 2 - flangeT / 2,
-        args.closedPosition.z + localZ,
+        fixedCenterZ,
       ],
       ownerPartId: args.ownerPartId,
       role: `roller-fixed-flange-${side < 0 ? 'left' : 'right'}`,
@@ -199,11 +202,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       material: materials.rollerWheel,
       radius: policy.visualWheelRadiusM,
       width: policy.visualWheelWidthM,
-      position: [
-        args.closedPosition.x + wheelX,
-        args.closedPosition.y + railY,
-        args.closedPosition.z + frontWheelZ,
-      ],
+      position: [args.closedPosition.x + wheelX, args.closedPosition.y + railY, frontWheelZ],
       ownerPartId: args.ownerPartId,
       role: `roller-fixed-front-wheel-${side < 0 ? 'left' : 'right'}`,
     });
@@ -232,10 +231,12 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
   );
   if (!(length > 0)) return;
 
-  const localZ = Number.isFinite(args.drawerLocalCenterZM) ? args.drawerLocalCenterZM || 0 : 0;
+  const drawerBoxOffsetZ = Number.isFinite(args.drawerBoxOffsetZM) ? args.drawerBoxOffsetZM || 0 : 0;
+  const movingLocalZ = 0;
+  const fixedCenterZ = args.closedPosition.z + drawerBoxOffsetZ;
   const railY = -args.drawerHeightM / 2 - policy.visualRailHeightM / 2;
   const innerY = railY + (policy.visualRailHeightM - policy.visualInnerRailHeightM) / 2;
-  const frontZ = localZ + length / 2;
+  const frontZ = movingLocalZ + length / 2;
 
   for (const side of [-1, 1] as const) {
     const railX = side * (args.drawerWidthM / 2 - policy.visualSideInsetM);
@@ -246,11 +247,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       parent: args.fixedParent,
       material: materials.blumSteel,
       size: [policy.visualRailWidthM, policy.visualRailHeightM, length],
-      position: [
-        args.closedPosition.x + railX,
-        args.closedPosition.y + railY,
-        args.closedPosition.z + localZ,
-      ],
+      position: [args.closedPosition.x + railX, args.closedPosition.y + railY, fixedCenterZ],
       ownerPartId: args.ownerPartId,
       role: `blum-fixed-runner-${side < 0 ? 'left' : 'right'}`,
     });
@@ -261,7 +258,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       parent: args.movingParent,
       material: materials.blumInner,
       size: [policy.visualInnerRailWidthM, policy.visualInnerRailHeightM, length * 0.9],
-      position: [railX, innerY, localZ + length * 0.025],
+      position: [railX, innerY, movingLocalZ + length * 0.025],
       ownerPartId: args.ownerPartId,
       role: `blum-moving-runner-${side < 0 ? 'left' : 'right'}`,
     });

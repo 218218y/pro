@@ -75,7 +75,7 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
           drawerWidthM: opPlan.boxW,
           drawerHeightM: opPlan.boxH,
           drawerDepthM: opPlan.boxD,
-          drawerLocalCenterZM: opPlan.boxOffsetZ,
+          drawerBoxOffsetZM: opPlan.boxOffsetZ,
           closedPosition: { x: opPlan.px, y: opPlan.py, z: opPlan.pz },
           ownerPartId: opPlan.partId,
         });

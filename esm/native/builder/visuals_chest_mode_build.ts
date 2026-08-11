@@ -415,7 +415,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       drawerWidthM: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
       drawerHeightM: boxH,
       drawerDepthM: boxD,
-      drawerLocalCenterZM: 0,
+      drawerBoxOffsetZM: 0,
       closedPosition: { x: 0, y: yCenter, z: 0 },
       ownerPartId: drawerId,
     });

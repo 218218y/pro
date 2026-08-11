@@ -303,7 +303,7 @@ export function emitCornerWingExternalDrawers(
       drawerWidthM: boxW,
       drawerHeightM: drawerBoxHeight,
       drawerDepthM: drawerBoxDepth,
-      drawerLocalCenterZM: geometry.boxOffsetZ,
+      drawerBoxOffsetZM: geometry.boxOffsetZ,
       closedPosition: { x: cellCenterX, y: yPos, z: cellRuntime.__z(geometry.zClosed) },
       ownerPartId: id,
     });

@@ -85,7 +85,7 @@ function assertHardwareMetadata(parent: FakeParent, ownerPartId: string): void {
   }
 }
 
-function append(args: { type?: unknown; depth?: number } = {}): {
+function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number } = {}): {
   fixed: FakeParent;
   moving: FakeParent;
 } {
@@ -99,7 +99,7 @@ function append(args: { type?: unknown; depth?: number } = {}): {
     drawerWidthM: 0.56,
     drawerHeightM: 0.18,
     drawerDepthM: args.depth ?? 0.45,
-    drawerLocalCenterZM: 0.01,
+    drawerBoxOffsetZM: args.boxOffsetZ ?? 0.01,
     closedPosition: { x: 1.2, y: 0.7, z: -0.35 },
     ownerPartId: 'drawer:test',
   });
@@ -207,6 +207,60 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
   );
   assertHardwareMetadata(fixed, 'drawer:test');
   assertHardwareMetadata(moving, 'drawer:test');
+});
+
+test('[drawer-runner-visuals-runtime] drawer-box offset only moves fixed hardware, never moving hardware inside the box', () => {
+  for (const type of ['roller', 'blum'] as const) {
+    const base = append({ type, boxOffsetZ: -0.28 });
+    const shifted = append({ type, boxOffsetZ: -0.08 });
+
+    const movingBase = new Map(
+      base.moving.children.map(child => [String(child.userData.__wpDrawerRunnerRole), child.position.z])
+    );
+    const movingShifted = new Map(
+      shifted.moving.children.map(child => [String(child.userData.__wpDrawerRunnerRole), child.position.z])
+    );
+    assert.deepEqual(
+      movingShifted,
+      movingBase,
+      `${type} moving hardware must stay in drawer-box-local coordinates when the box offset changes`
+    );
+
+    const fixedBase = new Map(
+      base.fixed.children.map(child => [String(child.userData.__wpDrawerRunnerRole), child.position.z])
+    );
+    const fixedShifted = new Map(
+      shifted.fixed.children.map(child => [String(child.userData.__wpDrawerRunnerRole), child.position.z])
+    );
+    for (const [role, baseZ] of fixedBase) {
+      const shiftedZ = fixedShifted.get(role);
+      assert.equal(typeof shiftedZ, 'number');
+      assert.ok(
+        Math.abs((shiftedZ as number) - baseZ - 0.2) < 1e-12,
+        `${type} ${role} should follow the drawer-box center offset exactly once`
+      );
+    }
+  }
+});
+
+test('[drawer-runner-visuals-runtime] moving rails stay inside the drawer depth when the drawer box is offset far behind its front', () => {
+  const depth = 0.5;
+  for (const type of ['roller', 'blum'] as const) {
+    const { moving } = append({ type, depth, boxOffsetZ: -0.295 });
+    const railBoxes = moving.children.filter(
+      child =>
+        child.geometry instanceof FakeBoxGeometry &&
+        !String(child.userData.__wpDrawerRunnerRole).includes('locking-device')
+    );
+    assert.ok(railBoxes.length > 0);
+    for (const rail of railBoxes) {
+      const geometry = rail.geometry as FakeBoxGeometry;
+      const front = rail.position.z + geometry.depth / 2;
+      const back = rail.position.z - geometry.depth / 2;
+      assert.ok(front <= depth / 2 + Number.EPSILON, `${type} moving rail must not pass the box front`);
+      assert.ok(back >= -depth / 2 - Number.EPSILON, `${type} moving rail must not pass the box back`);
+    }
+  }
 });
 
 test('[drawer-runner-visuals-runtime] simplified runner geometry never exceeds a shallow drawer depth', () => {
