@@ -1,6 +1,9 @@
 import { getDoorsArray } from '../runtime/render_access.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { readCanvasDoorSplitEffectiveNodeBounds } from './canvas_picking_door_split_bounds_shared.js';
+import {
+  readCanvasDoorSplitEffectiveNodeBounds,
+  readCanvasDoorSplitVisibleSegments,
+} from './canvas_picking_door_split_bounds_shared.js';
 import {
   readSplitPosListFromMap,
   splitBottomKey as __splitBottomKey,
@@ -73,6 +76,33 @@ export function readCanvasDoorSplitBounds(
     });
     return null;
   }
+}
+
+export function readCanvasDoorSketchVisibleSegments(
+  App: AppContainer,
+  doorBaseKey: string
+): CanvasDoorSplitBounds[] {
+  const base = String(doorBaseKey || '');
+  if (!base) return [];
+
+  const segments: CanvasDoorSplitBounds[] = [];
+  const doorsArray = getDoorsArray(App);
+  for (let i = 0; i < doorsArray.length; i++) {
+    const g = doorsArray[i] && doorsArray[i].group;
+    if (!g) continue;
+    const pid = formatIdentityValue(readIdentityValue(g.userData?.partId));
+    if (!pid) continue;
+    const candidateBase = __wp_getSplitHoverDoorBaseKey(pid) || pid;
+    if (candidateBase !== base) continue;
+    if (g.userData?.__wpSketchSegmentedDoor !== true) continue;
+    const visible = readCanvasDoorSplitVisibleSegments({ App, root: g, baseKey: base });
+    for (let j = 0; j < visible.length; j++) {
+      segments.push({ minY: visible[j].minY, maxY: visible[j].maxY });
+    }
+  }
+
+  segments.sort((a, b) => a.minY - b.minY || a.maxY - b.maxY);
+  return segments;
 }
 
 export function createCanvasDoorSplitKeyState(doorBaseKey: string): {

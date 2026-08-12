@@ -5,6 +5,8 @@
 import { getDrawersArray } from '../runtime/render_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getMirrorMaterial } from './render_ops.js';
+import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   DRAWER_SKETCH_DOOR_CUT_POLICY,
   DRAWER_SKETCH_SIZING_POLICY,
@@ -49,6 +51,14 @@ type SketchModuleDrawerStackCollection = {
   bounds: SketchModuleDrawerStackBounds[];
   hasRuntimeModuleDrawers: { top: boolean; bottom: boolean };
 };
+
+function readSketchModuleDoorManualSplitPosList(cfg: ValueRecord, partId: string): number[] {
+  const basePartId = resolveDoorSplitAuthoringBaseKey(partId);
+  if (!basePartId) return [];
+  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  if (!splitMap || !isSplitEnabledInMap(splitMap, basePartId, false)) return [];
+  return readSplitPosListFromMap(splitMap, basePartId);
+}
 
 function normalizeSketchModuleCutKey(value: unknown, stackKey: 'top' | 'bottom'): string | null {
   const key = readStringOrNull(value);
@@ -177,13 +187,13 @@ export function applySketchExternalDrawerDoorCuts(args: {
     .filter(item => item.stackKey === stackKey)
     .map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }));
   let stacksByModule = groupSketchDrawerStackBounds(runtimeBounds);
+  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  const runtimeDrawerOwnerBlocksConfigFallback =
+    !stacksByModule.size && runtimeStackCollection.hasRuntimeModuleDrawers[stackKey];
 
-  if (!stacksByModule.size && runtimeStackCollection.hasRuntimeModuleDrawers[stackKey]) return;
-
-  if (!stacksByModule.size && allowConfigDerivedCuts) {
+  if (!stacksByModule.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback) {
     const layoutRec = readCtxLayoutSurface(ctx);
     const moduleCfgList = asArray(readKey(layoutRec, 'moduleCfgList'));
-    if (!moduleCfgList.length) return;
     const gridMap = getInternalGridMap(App, stackKey === 'bottom');
     const configDerivedBounds: Array<SketchDrawerStackBounds & { key: string }> = [];
     for (let i = 0; i < moduleCfgList.length; i++) {
@@ -205,10 +215,9 @@ export function applySketchExternalDrawerDoorCuts(args: {
       }
     }
     stacksByModule = groupSketchDrawerStackBounds(configDerivedBounds);
-    if (!stacksByModule.size) return;
   }
 
-  if (!stacksByModule.size) return;
+  if (!stacksByModule.size && !splitMap) return;
 
   const runtime = createSketchDoorCutsRuntime({
     App,
@@ -238,12 +247,11 @@ export function applySketchExternalDrawerDoorCuts(args: {
         stackKey
       );
       if (!moduleKey) return null;
-      const stacks = stacksByModule.get(moduleKey);
-      if (!stacks || !stacks.length) return null;
-      return {
-        stacks,
-        basePartId: typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`,
-      };
+      const stacks = stacksByModule.get(moduleKey) || [];
+      const basePartId = typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`;
+      const splitPosList = readSketchModuleDoorManualSplitPosList(cfg, basePartId);
+      if (!stacks.length && !splitPosList.length) return null;
+      return { stacks, basePartId, splitPosList };
     },
   });
 }

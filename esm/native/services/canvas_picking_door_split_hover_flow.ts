@@ -7,6 +7,7 @@ import {
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
 import { validateCanvasDoorCustomSplitAdd } from './canvas_picking_door_split_click_custom.js';
+import { resolveCanvasDoorStandardSplitTarget } from './canvas_picking_door_split_standard_target.js';
 import {
   resolveCanvasDoorCustomSplitRemoveTarget,
   resolveCanvasDoorCustomSplitRemoveTolerance,
@@ -144,17 +145,26 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
       activeMarker.visible = false;
       return false;
     }
-    const threshold = minY + (maxY - minY) / 3;
-    const isBottom = hitY <= threshold;
-    const regionMinY = isBottom ? minY : threshold;
-    const regionMaxY = isBottom ? threshold : maxY;
+    const standardTarget = resolveCanvasDoorStandardSplitTarget({
+      App,
+      doorBaseKey,
+      bounds: { minY, maxY },
+      hitY,
+    });
+    const isBottom = standardTarget.isBottomRegion;
+    const slotBounds = isBottom ? standardTarget.bottomBounds : standardTarget.topBounds;
+    const slotMinY = Number(slotBounds.minY);
+    const slotMaxY = Number(slotBounds.maxY);
+    const slotThreshold = slotMinY + (slotMaxY - slotMinY) / 3;
+    const regionMinY = isBottom ? slotMinY : slotThreshold;
+    const regionMaxY = isBottom ? slotThreshold : slotMaxY;
     regionH = Math.max(splitHoverDims.hoverRegionMinHeightM, regionMaxY - regionMinY);
     regionCenterY = (regionMinY + regionMaxY) / 2;
     material = isBottom ? marker?.userData?.__matBottom : marker?.userData?.__matTop;
     standardLineY = getRegularSplitPreviewLineY({
       App,
       hitDoorGroup: hit.hitDoorGroup,
-      bounds: { minY, maxY },
+      bounds: slotBounds,
       isBottomRegion: isBottom,
     });
     standardLineH = Math.max(

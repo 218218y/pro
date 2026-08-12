@@ -112,6 +112,33 @@ function createBoxExternalDrawerGroup() {
   return drawer;
 }
 
+function createModuleExternalDrawerGroup(args: { yMin: number; yMax: number; drawerId: string }) {
+  const drawer = new FakeGroup();
+  drawer.position.set(0, (args.yMin + args.yMax) / 2, 0);
+  drawer.userData = {
+    partId: `sketch_ext_drawers_0_${args.drawerId}`,
+    __wpSketchExtDrawer: true,
+    __wpSketchExtDrawerId: args.drawerId,
+    __wpSketchModuleKey: '0',
+    __wpStack: 'top',
+    __doorWidth: 1,
+    __doorHeight: args.yMax - args.yMin,
+    __wpFaceMinY: args.yMin,
+    __wpFaceMaxY: args.yMax,
+  };
+  return drawer;
+}
+
+function getWorldY(node: FakeNode): number {
+  let y = 0;
+  let current: FakeNode | null = node;
+  while (current) {
+    y += current.position.y;
+    current = current.parent;
+  }
+  return y;
+}
+
 function createCtx() {
   return {
     layout: {
@@ -227,4 +254,138 @@ test('module sketch door cuts still use config-derived cuts when no runtime draw
 
   assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
   assert.ok(doorGroup.children.length > 0);
+});
+
+test('module sketch drawer door cuts replay stored split positions against the surviving door above bottom drawers', () => {
+  const App: Record<string, unknown> = {};
+  const doorGroup = createDoorGroup();
+  getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
+  getDrawersArray(App).push({
+    group: createModuleExternalDrawerGroup({ yMin: 0, yMax: 0.4, drawerId: 'bottom-stack' }),
+  } as any);
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: createCtx() as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d0: true,
+        splitpos_d0: [0.25],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  const segments = doorGroup.children.filter(child => child.userData?.__wpSketchDoorSegment === true);
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+  assert.equal(segments.length, 2);
+  const bounds = segments
+    .map(child => {
+      const h = Number(child.userData.__doorHeight || 0);
+      const y = getWorldY(child);
+      return { minY: y - h / 2, maxY: y + h / 2 };
+    })
+    .sort((a, b) => a.minY - b.minY);
+  assert.ok(bounds[0].minY > 0.4, `visible door should start above the drawer cut, got ${bounds[0].minY}`);
+  assert.ok(
+    bounds[0].maxY > 0.79 && bounds[0].maxY < 0.82,
+    `split should use the surviving-door quarter, got ${bounds[0].maxY}`
+  );
+});
+
+test('module sketch drawer door cuts combine middle drawer gaps with lower and upper stored split positions', () => {
+  const App: Record<string, unknown> = {};
+  const doorGroup = createDoorGroup();
+  getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
+  getDrawersArray(App).push({
+    group: createModuleExternalDrawerGroup({ yMin: 0.8, yMax: 1.2, drawerId: 'middle-stack' }),
+  } as any);
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: createCtx() as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d0: true,
+        splitpos_d0: [0.2, 0.8],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  const segments = doorGroup.children.filter(child => child.userData?.__wpSketchDoorSegment === true);
+  assert.equal(segments.length, 4);
+  const bounds = segments
+    .map(child => {
+      const h = Number(child.userData.__doorHeight || 0);
+      const y = getWorldY(child);
+      return { minY: y - h / 2, maxY: y + h / 2 };
+    })
+    .sort((a, b) => a.minY - b.minY);
+
+  assert.ok(
+    bounds[0].maxY < 0.41,
+    `lower split should remain below the middle drawers, got ${bounds[0].maxY}`
+  );
+  assert.ok(
+    bounds[1].maxY < 0.8,
+    `lower surviving leaf must stop before the drawer gap, got ${bounds[1].maxY}`
+  );
+  assert.ok(
+    bounds[2].minY > 1.2,
+    `upper surviving leaf must start after the drawer gap, got ${bounds[2].minY}`
+  );
+  assert.ok(
+    bounds[2].maxY < 1.61,
+    `upper split should remain above the middle drawers, got ${bounds[2].maxY}`
+  );
+});
+
+test('module sketch drawer door cuts replay stored split positions against the surviving door below top drawers', () => {
+  const App: Record<string, unknown> = {};
+  const doorGroup = createDoorGroup();
+  getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
+  getDrawersArray(App).push({
+    group: createModuleExternalDrawerGroup({ yMin: 1.6, yMax: 2, drawerId: 'top-stack' }),
+  } as any);
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: createCtx() as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d0: true,
+        splitpos_d0: [2 / 3],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  const segments = doorGroup.children.filter(child => child.userData?.__wpSketchDoorSegment === true);
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+  assert.equal(segments.length, 2);
+  const bounds = segments
+    .map(child => {
+      const h = Number(child.userData.__doorHeight || 0);
+      const y = getWorldY(child);
+      return { minY: y - h / 2, maxY: y + h / 2 };
+    })
+    .sort((a, b) => a.minY - b.minY);
+  assert.ok(bounds[1].maxY < 1.6, `visible door should stop below the drawer cut, got ${bounds[1].maxY}`);
+  assert.ok(
+    bounds[0].maxY > 1.05 && bounds[0].maxY < 1.08,
+    `split should use the surviving-door upper slot, got ${bounds[0].maxY}`
+  );
 });

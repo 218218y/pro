@@ -6,6 +6,7 @@ import {
   mergeSplitCuts,
 } from '../esm/native/builder/hinged_doors_module_ops_split_policy.ts';
 import { appendSplitHingedDoorOps } from '../esm/native/builder/hinged_doors_module_ops_split.ts';
+import { createHingedDoorIterationState } from '../esm/native/builder/hinged_doors_module_ops_iteration.ts';
 
 function createCtx(overrides: Record<string, unknown> = {}) {
   const base = {
@@ -146,4 +147,36 @@ test('hinged door split append emits canonical multi-cut segment ids and bottom 
   assert.equal(ctx.opsList[1].hasGroove, true);
   assert.ok(Math.abs(ctx.opsList[0].y - 0.2485) < 1e-9);
   assert.ok(Math.abs(ctx.opsList[3].handleAbsY - 1.603) < 1e-9);
+});
+
+test('module door split emission defers to the sketch door-cut pass when sketch external drawers own the leaf', () => {
+  const ctx = createCtx({
+    configRecord: {
+      sketchExtras: {
+        extDrawers: [{ count: 2, yNormC: 0.5 }],
+      },
+    },
+    isDoorSplitSafe: () => true,
+    isDoorSplitBottomSafe: () => true,
+  });
+
+  const state = createHingedDoorIterationState(ctx, 0, 5);
+  assert.equal(state.topSplitEnabled, true);
+  assert.equal(state.bottomSplitEnabled, true);
+  assert.equal(state.shouldSplitThisDoor, false);
+});
+
+test('module door split emission also defers when a sketch box contains external drawers', () => {
+  const ctx = createCtx({
+    configRecord: {
+      sketchExtras: {
+        boxes: [{ regularExtDrawers: [{ count: 1 }] }],
+      },
+    },
+    isDoorSplitSafe: () => true,
+  });
+
+  const state = createHingedDoorIterationState(ctx, 0, 5);
+  assert.equal(state.topSplitEnabled, true);
+  assert.equal(state.shouldSplitThisDoor, false);
 });

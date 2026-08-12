@@ -5,6 +5,28 @@ import type {
   HingedDoorModuleOpsContext,
 } from './hinged_doors_module_ops_contracts.js';
 
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function hasSketchExternalDrawerDoorCuts(configRecord: unknown): boolean {
+  const config = readRecord(configRecord);
+  const sketchExtras = readRecord(config?.sketchExtras);
+  if (!sketchExtras) return false;
+  if (Array.isArray(sketchExtras.extDrawers) && sketchExtras.extDrawers.length > 0) return true;
+
+  const boxes = Array.isArray(sketchExtras.boxes) ? sketchExtras.boxes : [];
+  for (let i = 0; i < boxes.length; i += 1) {
+    const box = readRecord(boxes[i]);
+    if (!box) continue;
+    if (Array.isArray(box.extDrawers) && box.extDrawers.length > 0) return true;
+    if (Array.isArray(box.regularExtDrawers) && box.regularExtDrawers.length > 0) return true;
+  }
+  return false;
+}
+
 export function appendDrawerShadowPlane(ctx: HingedDoorModuleOpsContext): void {
   try {
     const ro = ctx.App && typeof ctx.App === 'object' ? getBuilderRenderOps(ctx.App) : null;
@@ -93,6 +115,7 @@ export function createHingedDoorIterationState(
     : false;
   const bottomSplitEnabled =
     ctx.splitDoors && ctx.isDoorSplitBottomSafe(ctx.cfg.splitDoorsBottomMap, currentDoorId);
+  const deferSplitToSketchDoorCutPass = hasSketchExternalDrawerDoorCuts(ctx.configRecord);
 
   return {
     currentDoorId,
@@ -105,7 +128,8 @@ export function createHingedDoorIterationState(
     carcassMountFaceX,
     topSplitEnabled,
     bottomSplitEnabled,
-    shouldSplitThisDoor: ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled),
+    shouldSplitThisDoor:
+      ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled) && !deferSplitToSketchDoorCutPass,
     sourceKey: `d${currentDoorId}_full`,
     topKey: `d${currentDoorId}_top`,
     midKey: `d${currentDoorId}_mid`,

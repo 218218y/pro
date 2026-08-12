@@ -1183,3 +1183,177 @@ test('custom split hover alignment tolerance is tighter than same-door duplicate
     false
   );
 });
+
+test('regular split click on module doors rebuilt by sketch drawers stores split position against the visible leaf', () => {
+  const partId = 'd1_full';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: { partId, __doorHeight: 3, __wpSketchSegmentedDoor: true },
+    position: { y: 1.5 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const visibleDoorAboveDrawers = {
+    userData: {
+      partId,
+      __doorHeight: 2,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0.5 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  doorGroup.children.push(visibleDoorAboveDrawers);
+  wardrobeGroup.children.push(doorGroup);
+
+  const { App, maps } = createSplitClickApp({ doorsArray: [{ group: doorGroup }] });
+  (App as any).render.wardrobeGroup = wardrobeGroup;
+
+  assert.deepEqual(readCanvasDoorSplitBounds(App, 'd1'), { minY: 1, maxY: 3 });
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 1.2,
+      doorHitGroup: visibleDoorAboveDrawers,
+    }),
+    true
+  );
+
+  assert.deepEqual(maps.splitDoorsMap.splitpos_d1, [0.25]);
+  assert.equal(maps.splitDoorsMap.split_d1, true);
+  assert.equal(maps.splitDoorsBottomMap.splitb_d1, true);
+});
+
+test('regular split slots on module doors with middle sketch drawers use the lower and upper surviving leaves', () => {
+  const partId = 'd2_full';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: { partId, __doorHeight: 3, __wpSketchSegmentedDoor: true },
+    position: { y: 1.5 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const bottomLeaf = {
+    userData: {
+      partId: 'd2_bot',
+      __doorHeight: 1,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: -1 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  const topLeaf = {
+    userData: {
+      partId: 'd2_top',
+      __doorHeight: 1,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 1 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  doorGroup.children.push(bottomLeaf, topLeaf);
+  wardrobeGroup.children.push(doorGroup);
+
+  const { App, maps } = createSplitClickApp({ doorsArray: [{ group: doorGroup }] });
+  (App as any).render.wardrobeGroup = wardrobeGroup;
+
+  assert.deepEqual(readCanvasDoorSplitBounds(App, 'd2'), { minY: 0, maxY: 3 });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: 'd2_bot',
+      foundModuleStack: 'top',
+      doorHitY: 0.2,
+      doorHitGroup: bottomLeaf,
+    }),
+    true
+  );
+  assert.ok(Math.abs(Number((maps.splitDoorsMap.splitpos_d2 as number[])[0]) - 1 / 9) < 1e-9);
+  assert.equal(maps.splitDoorsBottomMap.splitb_d2, true);
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: 'd2_top',
+      foundModuleStack: 'top',
+      doorHitY: 2.8,
+      doorHitGroup: topLeaf,
+    }),
+    true
+  );
+  const stored = maps.splitDoorsMap.splitpos_d2 as number[];
+  assert.equal(stored.length, 2);
+  assert.ok(Math.abs(Number(stored[0]) - 1 / 9) < 1e-9);
+  assert.ok(Math.abs(Number(stored[1]) - 8 / 9) < 1e-9);
+});
+
+test('regular split slots remain stable after a sketch-managed door has already been rebuilt by a fixed split', () => {
+  const partId = 'd3_full';
+  const wardrobeGroup = { children: [] as unknown[] };
+  const doorGroup = {
+    userData: { partId, __doorHeight: 3, __wpSketchSegmentedDoor: true },
+    position: { y: 1.5 },
+    parent: wardrobeGroup,
+    children: [] as unknown[],
+  };
+  const lowerSegment = {
+    userData: {
+      partId: 'd3_bot',
+      __doorHeight: 1.33,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 0.165 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  const upperSegment = {
+    userData: {
+      partId: 'd3_top',
+      __doorHeight: 0.664,
+      __doorWidth: 0.8,
+      __wpSketchDoorSegment: true,
+      __wpSketchDoorLeaf: true,
+    },
+    position: { y: 1.168 },
+    parent: doorGroup,
+    children: [] as unknown[],
+  };
+  doorGroup.children.push(lowerSegment, upperSegment);
+  wardrobeGroup.children.push(doorGroup);
+
+  const { App, maps } = createSplitClickApp({
+    doorsArray: [{ group: doorGroup }],
+    maps: {
+      splitDoorsMap: { split_d3: true, splitpos_d3: [2 / 3] },
+      splitDoorsBottomMap: { splitb_d3: false },
+    },
+  });
+  (App as any).render.wardrobeGroup = wardrobeGroup;
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: 'd3_top',
+      foundModuleStack: 'top',
+      doorHitY: 2.8,
+      doorHitGroup: upperSegment,
+    }),
+    true
+  );
+
+  assert.equal(maps.splitDoorsMap.split_d3, false);
+  assert.equal(maps.splitDoorsMap.splitpos_d3, undefined);
+});

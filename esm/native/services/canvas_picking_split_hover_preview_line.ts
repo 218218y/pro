@@ -58,11 +58,24 @@ function readSplitHoverPreviewModuleConfig(args: {
   return null;
 }
 
-function isSketchBoxSplitPreviewDoor(hitDoorGroup: HitObjectLike): boolean {
+function isSketchManagedSplitPreviewDoor(hitDoorGroup: HitObjectLike): boolean {
   try {
-    const ud = __wp_asRecord(hitDoorGroup?.userData);
-    const partId = typeof ud?.partId === 'string' ? String(ud.partId) : '';
-    return /^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId);
+    let current = __wp_asRecord(hitDoorGroup);
+    const seen = new Set<UnknownRecord>();
+    while (current && !seen.has(current)) {
+      seen.add(current);
+      const ud = __wp_asRecord(current.userData);
+      const partId = typeof ud?.partId === 'string' ? String(ud.partId) : '';
+      if (/^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(partId)) return true;
+      if (
+        ud?.__wpSketchSegmentedDoor === true ||
+        ud?.__wpSketchDoorSegment === true ||
+        ud?.__wpSketchDoorLeaf === true
+      )
+        return true;
+      current = __wp_asRecord(current.parent);
+    }
+    return false;
   } catch {
     return false;
   }
@@ -168,7 +181,7 @@ export function __wp_getRegularSplitPreviewLineY(args: {
   const span = maxY - minY;
   if (!Number.isFinite(minY) || !Number.isFinite(maxY) || !(span > 0.05)) return null;
 
-  if (isSketchBoxSplitPreviewDoor(hitDoorGroup)) {
+  if (isSketchManagedSplitPreviewDoor(hitDoorGroup)) {
     return resolveBoundsLocalRegularSplitPreviewLineY({ bounds, isBottomRegion });
   }
 

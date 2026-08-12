@@ -4,6 +4,7 @@ import type {
 } from './canvas_picking_door_split_click_contracts.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { __wp_getRegularSplitPreviewLineY } from './canvas_picking_core_helpers.js';
+import { resolveCanvasDoorStandardSplitTarget } from './canvas_picking_door_split_standard_target.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
@@ -23,24 +24,32 @@ function isCanvasDoorSplitBottomClick(bounds: CanvasDoorSplitBounds | null, hitY
   return !!(bounds && typeof hitY === 'number' && hitY <= bounds.minY + (bounds.maxY - bounds.minY) / 3);
 }
 
-function isSketchBoxDoorSplitBaseKey(doorBaseKey: string): boolean {
-  return /^sketch_box(?:_free)?_.+_door(?:_|$)/i.test(String(doorBaseKey || ''));
-}
-
 function clampCanvasDoorSplitNumber(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function resolveSketchBoxStandardSplitLineNorm(args: {
+function resolveSketchManagedStandardSplitLineNorm(args: {
   click: CanvasDoorSplitClickArgs;
-  bounds: CanvasDoorSplitBounds;
+  overallBounds: CanvasDoorSplitBounds;
+  lineBounds: CanvasDoorSplitBounds;
   isBottomRegion: boolean;
 }): number | null {
-  const { click, bounds, isBottomRegion } = args;
-  const minY = Number(bounds.minY);
-  const maxY = Number(bounds.maxY);
-  const height = maxY - minY;
-  if (!Number.isFinite(minY) || !Number.isFinite(maxY) || !(height > 0.05)) return null;
+  const { click, overallBounds, lineBounds, isBottomRegion } = args;
+  const lineMinY = Number(lineBounds.minY);
+  const lineMaxY = Number(lineBounds.maxY);
+  const lineHeight = lineMaxY - lineMinY;
+  const overallMinY = Number(overallBounds.minY);
+  const overallMaxY = Number(overallBounds.maxY);
+  const overallHeight = overallMaxY - overallMinY;
+  if (
+    !Number.isFinite(lineMinY) ||
+    !Number.isFinite(lineMaxY) ||
+    !(lineHeight > 0.05) ||
+    !Number.isFinite(overallMinY) ||
+    !Number.isFinite(overallMaxY) ||
+    !(overallHeight > 0.05)
+  )
+    return null;
 
   let lineY: number | null = null;
   try {
@@ -48,7 +57,7 @@ function resolveSketchBoxStandardSplitLineNorm(args: {
       lineY = __wp_getRegularSplitPreviewLineY({
         App: click.App,
         hitDoorGroup: click.doorHitGroup as never,
-        bounds,
+        bounds: lineBounds,
         isBottomRegion,
       });
     }
@@ -58,20 +67,20 @@ function resolveSketchBoxStandardSplitLineNorm(args: {
 
   if (!Number.isFinite(Number(lineY))) {
     if (isBottomRegion) {
-      lineY = minY + Math.min(height / 3, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM);
+      lineY = lineMinY + Math.min(lineHeight / 3, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM);
     } else {
-      lineY = minY + (4 * height) / 6;
+      lineY = lineMinY + (4 * lineHeight) / 6;
     }
   }
 
   const padBottom = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM;
   const padTop = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM;
-  const clampedY = clampCanvasDoorSplitNumber(Number(lineY), minY + padBottom, maxY - padTop);
+  const clampedY = clampCanvasDoorSplitNumber(Number(lineY), lineMinY + padBottom, lineMaxY - padTop);
   if (!Number.isFinite(clampedY)) return null;
-  return clampCanvasDoorSplitNumber((clampedY - minY) / height, 0, 1);
+  return clampCanvasDoorSplitNumber((clampedY - overallMinY) / overallHeight, 0, 1);
 }
 
-function readSketchBoxStandardSplitToleranceNorm(bounds: CanvasDoorSplitBounds): number {
+function readSketchManagedStandardSplitToleranceNorm(bounds: CanvasDoorSplitBounds): number {
   const minY = Number(bounds.minY);
   const maxY = Number(bounds.maxY);
   const height = maxY - minY;
@@ -85,7 +94,7 @@ function readSketchBoxStandardSplitToleranceNorm(bounds: CanvasDoorSplitBounds):
   );
 }
 
-function hasSketchBoxStandardSplitSlot(args: {
+function hasSketchManagedStandardSplitSlot(args: {
   prev: readonly number[];
   norm: number | null;
   tolNorm: number;
@@ -101,7 +110,7 @@ function hasSketchBoxStandardSplitSlot(args: {
   return false;
 }
 
-function pushUniqueSketchBoxStandardSplitNorm(args: {
+function pushUniqueSketchManagedStandardSplitNorm(args: {
   list: number[];
   norm: number | null;
   tolNorm: number;
@@ -115,7 +124,7 @@ function pushUniqueSketchBoxStandardSplitNorm(args: {
   list.push(value);
 }
 
-function resolveSketchBoxStandardSplitToggle(args: {
+function resolveSketchManagedStandardSplitToggle(args: {
   App: CanvasDoorSplitClickArgs['App'];
   doorBaseKey: string;
   bounds: CanvasDoorSplitBounds;
@@ -125,46 +134,63 @@ function resolveSketchBoxStandardSplitToggle(args: {
 }): { nextList: number[]; changedToSplit: boolean; nextBottomSplit: boolean } {
   const { App, doorBaseKey, bounds, topNorm, bottomNorm, isBottomRegion } = args;
   const prev = readCanvasDoorSplitPosList(App, doorBaseKey);
-  const tolNorm = readSketchBoxStandardSplitToleranceNorm(bounds);
+  const tolNorm = readSketchManagedStandardSplitToleranceNorm(bounds);
 
-  let topActive = hasSketchBoxStandardSplitSlot({ prev, norm: topNorm, tolNorm });
+  let topActive = hasSketchManagedStandardSplitSlot({ prev, norm: topNorm, tolNorm });
   let bottomActive =
     isCanvasDoorSplitBottomEnabled(App, doorBaseKey) ||
-    hasSketchBoxStandardSplitSlot({ prev, norm: bottomNorm, tolNorm });
+    hasSketchManagedStandardSplitSlot({ prev, norm: bottomNorm, tolNorm });
 
   if (isBottomRegion) bottomActive = !bottomActive;
   else topActive = !topActive;
 
   const nextList: number[] = [];
-  if (bottomActive) pushUniqueSketchBoxStandardSplitNorm({ list: nextList, norm: bottomNorm, tolNorm });
-  if (topActive) pushUniqueSketchBoxStandardSplitNorm({ list: nextList, norm: topNorm, tolNorm });
+  if (bottomActive) pushUniqueSketchManagedStandardSplitNorm({ list: nextList, norm: bottomNorm, tolNorm });
+  if (topActive) pushUniqueSketchManagedStandardSplitNorm({ list: nextList, norm: topNorm, tolNorm });
   nextList.sort((a, b) => a - b);
 
   return {
     nextList,
     changedToSplit: nextList.length > 0,
     nextBottomSplit:
-      bottomActive && hasSketchBoxStandardSplitSlot({ prev: nextList, norm: bottomNorm, tolNorm }),
+      bottomActive && hasSketchManagedStandardSplitSlot({ prev: nextList, norm: bottomNorm, tolNorm }),
   };
 }
 
-function handleSketchBoxStandardSplitClick(args: {
+function handleSketchManagedStandardSplitClick(args: {
   click: CanvasDoorSplitClickArgs;
   doorBaseKey: string;
   bounds: CanvasDoorSplitBounds | null;
   hitY: number | null;
 }): boolean {
   const { click, doorBaseKey, bounds, hitY } = args;
-  if (!isSketchBoxDoorSplitBaseKey(doorBaseKey)) return false;
-  if (!bounds) return true;
+  if (!bounds) return false;
 
-  const isBottomRegion = isCanvasDoorSplitBottomClick(bounds, hitY);
-  const topNorm = resolveSketchBoxStandardSplitLineNorm({ click, bounds, isBottomRegion: false });
-  const bottomNorm = resolveSketchBoxStandardSplitLineNorm({ click, bounds, isBottomRegion: true });
+  const target = resolveCanvasDoorStandardSplitTarget({
+    App: click.App,
+    doorBaseKey,
+    bounds,
+    hitY,
+  });
+  if (!target.isSketchManaged) return false;
+
+  const isBottomRegion = target.isBottomRegion;
+  const topNorm = resolveSketchManagedStandardSplitLineNorm({
+    click,
+    overallBounds: bounds,
+    lineBounds: target.topBounds,
+    isBottomRegion: false,
+  });
+  const bottomNorm = resolveSketchManagedStandardSplitLineNorm({
+    click,
+    overallBounds: bounds,
+    lineBounds: target.bottomBounds,
+    isBottomRegion: true,
+  });
   const clickedNorm = isBottomRegion ? bottomNorm : topNorm;
   if (!Number.isFinite(Number(clickedNorm))) return true;
   const { splitKey, splitBottomKey } = createCanvasDoorSplitKeyState(doorBaseKey);
-  const { nextList, changedToSplit, nextBottomSplit } = resolveSketchBoxStandardSplitToggle({
+  const { nextList, changedToSplit, nextBottomSplit } = resolveSketchManagedStandardSplitToggle({
     App: click.App,
     doorBaseKey,
     bounds,
@@ -175,33 +201,33 @@ function handleSketchBoxStandardSplitClick(args: {
 
   runCanvasDoorSplitHistoryBatch(
     click.App,
-    isBottomRegion ? 'splitDoorsBottom:click:sketchBox' : 'splitDoors:click:sketchBox',
+    isBottomRegion ? 'splitDoorsBottom:click:sketchManaged' : 'splitDoors:click:sketchManaged',
     () => {
       callCanvasDoorSplitBottomAction({
         App: click.App,
         key: splitBottomKey,
         next: nextBottomSplit,
-        source: 'splitDoors:click:sketchBox',
-        op: 'splitBottom.sketchBoxStandard.missingDomainApi',
+        source: 'splitDoors:click:sketchManaged',
+        op: 'splitBottom.sketchManagedStandard.missingDomainApi',
       });
       callCanvasDoorSplitAction({
         App: click.App,
         key: splitKey,
         next: changedToSplit,
-        source: 'splitDoors:click:sketchBox',
-        op: 'split.sketchBoxStandard.missingDomainApi',
+        source: 'splitDoors:click:sketchManaged',
+        op: 'split.sketchManagedStandard.missingDomainApi',
       });
       writeCanvasDoorSplitPosList({
         App: click.App,
         doorBaseKey,
         nextList,
-        source: 'splitDoors:click:sketchBox',
+        source: 'splitDoors:click:sketchManaged',
       });
       return undefined;
     }
   );
   try {
-    requestDoorAuthoringBurstRefresh(click.App, 'splitDoors:click:sketchBox');
+    requestDoorAuthoringBurstRefresh(click.App, 'splitDoors:click:sketchManaged');
   } catch (error) {
     __wp_reportPickingIssue(click.App, error, {
       where: 'canvasPicking',
@@ -232,7 +258,7 @@ export function handleCanvasDoorToggleSplitClick(args: {
     referenceY: doorHitY,
   });
 
-  if (handleSketchBoxStandardSplitClick({ click, doorBaseKey, bounds, hitY: splitHitY })) return true;
+  if (handleSketchManagedStandardSplitClick({ click, doorBaseKey, bounds, hitY: splitHitY })) return true;
 
   if (isCanvasDoorSplitBottomClick(bounds, splitHitY)) {
     const next = !isCanvasDoorSplitBottomEnabled(App, doorBaseKey);

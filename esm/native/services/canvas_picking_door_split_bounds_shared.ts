@@ -93,16 +93,16 @@ function isSketchSegmentDoorLeaf(userData: UnknownRecord | null, baseKey: string
   return userData.__wpSketchDoorSegment === true || userData.__wpSketchDoorLeaf === true;
 }
 
-export function readCanvasDoorSplitVisibleSegmentBounds(args: {
+export function readCanvasDoorSplitVisibleSegments(args: {
   App: AppContainer;
   root: unknown;
   baseKey: string;
-}): CanvasDoorSplitEffectiveBounds | null {
+}): CanvasDoorSplitEffectiveBounds[] {
   const { App, root, baseKey } = args;
   const rootRec = __wp_asRecord(root) as SplitBoundsNode | null;
-  if (!rootRec || !baseKey) return null;
+  if (!rootRec || !baseKey) return [];
 
-  let bounds: CanvasDoorSplitEffectiveBounds | null = null;
+  const segments: CanvasDoorSplitEffectiveBounds[] = [];
   const stack = Array.isArray(rootRec.children) ? rootRec.children.slice() : [];
   const seen = new Set<UnknownRecord>();
   while (stack.length) {
@@ -111,10 +111,25 @@ export function readCanvasDoorSplitVisibleSegmentBounds(args: {
     seen.add(curr);
     const ud = __wp_asRecord(curr.userData);
     if (isSketchSegmentDoorLeaf(ud, baseKey)) {
-      bounds = mergeBounds(bounds, readCanvasDoorSplitNodeOwnBounds(App, curr));
+      const ownBounds = readCanvasDoorSplitNodeOwnBounds(App, curr);
+      if (isBoundsUsable(ownBounds)) segments.push(ownBounds);
     }
     const children = Array.isArray(curr.children) ? curr.children : [];
     for (let i = 0; i < children.length; i += 1) stack.push(children[i]);
+  }
+  segments.sort((a, b) => a.minY - b.minY || a.maxY - b.maxY);
+  return segments;
+}
+
+export function readCanvasDoorSplitVisibleSegmentBounds(args: {
+  App: AppContainer;
+  root: unknown;
+  baseKey: string;
+}): CanvasDoorSplitEffectiveBounds | null {
+  const segments = readCanvasDoorSplitVisibleSegments(args);
+  let bounds: CanvasDoorSplitEffectiveBounds | null = null;
+  for (let i = 0; i < segments.length; i += 1) {
+    bounds = mergeBounds(bounds, segments[i]);
   }
   return bounds;
 }
