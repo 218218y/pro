@@ -453,6 +453,20 @@ test('manual free-box route removes regular external drawers before stale hover 
   assert.deepEqual(regularIds, ['sbrd-2']);
 });
 
+function createSketchExternalDrawerHit(moduleKey = 2, drawerId = 'sed-1') {
+  return {
+    type: 'Mesh',
+    userData: {
+      partId: `sketch_ext_drawers_${moduleKey}_${drawerId}_1`,
+      moduleIndex: String(moduleKey),
+      __wpSketchModuleKey: String(moduleKey),
+      __wpSketchExtDrawer: true,
+      __wpSketchExtDrawerId: drawerId,
+    },
+    parent: null,
+  };
+}
+
 function createSketchInternalDrawerHit(moduleKey = 2, drawerId = 'sid-1') {
   return {
     type: 'Mesh',
@@ -503,6 +517,121 @@ function createManualRouteHitState(drawerGroup: Record<string, unknown>) {
     primaryHitY: null,
   };
 }
+
+test('manual sketch external drawer route respects an add hover above an existing sketch external drawer', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      extDrawers: [{ id: 'sed-1', yNormC: 0.35, count: 3 }],
+    },
+  };
+  const drawerGroup = createSketchExternalDrawerHit(2, 'sed-1');
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: 'sketch_ext_drawers:3',
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'ext_drawers',
+          op: 'add',
+          yCenter: 1.2,
+          drawerCount: 3,
+        },
+      },
+    },
+    store: {
+      getState: () => ({ mode: { opts: { manualTool: 'sketch_ext_drawers:3' } } }),
+    },
+  } as never;
+  let patched = false;
+
+  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: null as never,
+    mouse: null as never,
+    modeState: createManualRouteState(),
+    hitState: createManualRouteHitState(drawerGroup),
+    moduleRefs: {
+      __activeModuleKey: 2,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => cfg as never,
+      __patchConfigForKey: (_key, patchFn) => {
+        patched = true;
+        patchFn(cfg as never);
+      },
+      __getActiveConfigRef: () => cfg as never,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  const drawers = (((cfg.sketchExtras as any).extDrawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, false);
+  assert.equal(patched, false);
+  assert.deepEqual(drawers, ['sed-1']);
+});
+
+test('manual sketch external drawer route still removes the exact drawer selected by a remove hover', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      extDrawers: [
+        { id: 'sed-1', yNormC: 0.35, count: 3 },
+        { id: 'sed-2', yNormC: 0.7, count: 3 },
+      ],
+    },
+  };
+  const drawerGroup = createSketchExternalDrawerHit(2, 'sed-1');
+  const App = {
+    render: {
+      cache: {
+        __lastSketchHover: {
+          ts: Date.now(),
+          tool: 'sketch_ext_drawers:3',
+          hostModuleKey: 2,
+          hostIsBottom: false,
+          kind: 'ext_drawers',
+          op: 'remove',
+          removeKind: 'sketch',
+          removeId: 'sed-1',
+        },
+      },
+    },
+    store: {
+      getState: () => ({ mode: { opts: { manualTool: 'sketch_ext_drawers:3' } } }),
+    },
+  } as never;
+  let patchMeta: Record<string, unknown> | null = null;
+
+  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: null as never,
+    mouse: null as never,
+    modeState: createManualRouteState(),
+    hitState: createManualRouteHitState(drawerGroup),
+    moduleRefs: {
+      __activeModuleKey: 2,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => cfg as never,
+      __patchConfigForKey: (_key, patchFn, meta) => {
+        patchMeta = { ...meta };
+        patchFn(cfg as never);
+      },
+      __getActiveConfigRef: () => cfg as never,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  const drawers = (((cfg.sketchExtras as any).extDrawers as any[]) || []).map(item => item.id);
+  assert.equal(handled, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.removeExternalDrawerByHit', immediate: true });
+  assert.deepEqual(drawers, ['sed-2']);
+});
 
 test('manual sketch external drawer route removes an internal sketch drawer when the active hover is the same drawer', () => {
   const cfg: Record<string, unknown> = {

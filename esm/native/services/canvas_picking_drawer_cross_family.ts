@@ -2,6 +2,7 @@ export {
   findDirectCrossDrawerHitInIntersects,
   sameModuleKey,
   tryRemoveSketchExternalDrawerByDirectHit,
+  tryRemoveSketchExternalDrawerByHoverAwareDirectHit,
   tryRemoveSketchInternalDrawerByDirectHit,
   tryRemoveSketchInternalDrawerByMatchingHoverDirectHit,
 } from './canvas_picking_drawer_cross_family_direct_hit.js';

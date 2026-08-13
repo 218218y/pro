@@ -4,7 +4,7 @@ import {
 } from './canvas_picking_click_manual_sketch_free_flow.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
 import {
-  tryRemoveSketchExternalDrawerByDirectHit,
+  tryRemoveSketchExternalDrawerByHoverAwareDirectHit,
   tryRemoveSketchInternalDrawerByMatchingHoverDirectHit,
 } from './canvas_picking_drawer_cross_family.js';
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
@@ -34,10 +34,14 @@ export function tryHandleCanvasPickingManualOrEmptyRoute(args: CanvasPickingClic
     const manualToolKey = typeof manualTool === 'string' ? manualTool : '';
     if (manualToolKey.startsWith('sketch_ext_drawers:')) {
       if (
-        tryRemoveSketchExternalDrawerByDirectHit({
+        tryRemoveSketchExternalDrawerByHoverAwareDirectHit({
           App,
           intersects: hitState.intersects || [],
           activeModuleKey: args.moduleRefs.__activeModuleKey,
+          isBottom: args.moduleRefs.__isBottomStack,
+          tool: manualToolKey,
+          hover: __wp_readSketchHover(App),
+          toModuleKey: __wp_toModuleKey,
           patchConfigForKey: args.moduleRefs.__patchConfigForKey,
           source: 'sketch.removeExternalDrawerByHit',
         })

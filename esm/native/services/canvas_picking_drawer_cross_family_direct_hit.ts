@@ -93,6 +93,30 @@ export function findDirectCrossDrawerHitInIntersects(
   return null;
 }
 
+function readMatchingRecentSketchDrawerHover(args: {
+  hover: UnknownRecord | null;
+  tool: string;
+  moduleKey: ModuleKey | 'corner' | null;
+  isBottom: boolean;
+  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null;
+  now?: number;
+  maxAgeMs?: number;
+}): UnknownRecord | null {
+  const hover = args.hover;
+  if (!hover || !args.tool) return null;
+  if (readCrossDrawerString(hover.tool) !== args.tool) return null;
+  const kind = readCrossDrawerString(hover.kind);
+  if (kind !== 'drawers' && kind !== 'ext_drawers') return null;
+  const hoverHost = readSketchHoverHostIdentity(hover, args.toModuleKey);
+  if (!hoverHost) return null;
+  if (hoverHost.moduleKey !== args.moduleKey || hoverHost.isBottom !== !!args.isBottom) return null;
+
+  const timestamp = typeof hover.ts === 'number' ? hover.ts : Number(hover.ts);
+  if (!Number.isFinite(timestamp)) return null;
+  if ((args.now ?? Date.now()) - timestamp > (args.maxAgeMs ?? 900)) return null;
+  return hover;
+}
+
 function isMatchingRecentSketchInternalRemoveHover(args: {
   hover: UnknownRecord | null;
   tool: string;
@@ -103,19 +127,14 @@ function isMatchingRecentSketchInternalRemoveHover(args: {
   now?: number;
   maxAgeMs?: number;
 }): boolean {
-  const hover = args.hover;
-  if (!hover || !args.tool || !args.drawerId) return false;
-  if (readCrossDrawerString(hover.tool) !== args.tool) return false;
-  if (readCrossDrawerString(hover.kind) !== 'drawers') return false;
-  if (readCrossDrawerString(hover.op) !== 'remove') return false;
-  if (readCrossDrawerString(hover.removeId) !== args.drawerId) return false;
-  const hoverHost = readSketchHoverHostIdentity(hover, args.toModuleKey);
-  if (!hoverHost) return false;
-  if (hoverHost.moduleKey !== args.moduleKey || hoverHost.isBottom !== !!args.isBottom) return false;
-
-  const timestamp = typeof hover.ts === 'number' ? hover.ts : Number(hover.ts);
-  if (!Number.isFinite(timestamp)) return false;
-  return (args.now ?? Date.now()) - timestamp <= (args.maxAgeMs ?? 900);
+  if (!args.drawerId) return false;
+  const hover = readMatchingRecentSketchDrawerHover(args);
+  return !!(
+    hover &&
+    readCrossDrawerString(hover.kind) === 'drawers' &&
+    readCrossDrawerString(hover.op) === 'remove' &&
+    readCrossDrawerString(hover.removeId) === args.drawerId
+  );
 }
 
 export function tryRemoveSketchExternalDrawerByDirectHit(args: {
@@ -130,6 +149,52 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
 
   const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
   if (!plan || plan.kind !== 'remove-sketch-external-drawer') return false;
+  const changed = commitCrossDrawerRemovePlan({
+    plan,
+    patchConfigForKey: args.patchConfigForKey,
+    source: args.source,
+  });
+  if (!changed) return false;
+
+  restoreShoeDrawerBaseIfNoShoeDrawersRemain(args.App, `${args.source}:autoBaseRestore`);
+  return true;
+}
+
+export function tryRemoveSketchExternalDrawerByHoverAwareDirectHit(args: {
+  App: AppContainer;
+  intersects: RaycastHitLike[];
+  activeModuleKey: ModuleKey | 'corner' | null;
+  isBottom: boolean;
+  tool: string;
+  hover: UnknownRecord | null;
+  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null;
+  patchConfigForKey: PatchConfigForKeyFn;
+  source: string;
+}): boolean {
+  const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_external');
+  if (!hit) return false;
+
+  const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
+  if (!plan || plan.kind !== 'remove-sketch-external-drawer') return false;
+
+  const hover = readMatchingRecentSketchDrawerHover({
+    hover: args.hover,
+    tool: args.tool,
+    moduleKey: plan.moduleKey,
+    isBottom: args.isBottom,
+    toModuleKey: args.toModuleKey,
+  });
+  if (
+    hover &&
+    !(
+      readCrossDrawerString(hover.kind) === 'ext_drawers' &&
+      readCrossDrawerString(hover.op) === 'remove' &&
+      readCrossDrawerString(hover.removeId) === plan.target.drawerId
+    )
+  ) {
+    return false;
+  }
+
   const changed = commitCrossDrawerRemovePlan({
     plan,
     patchConfigForKey: args.patchConfigForKey,
