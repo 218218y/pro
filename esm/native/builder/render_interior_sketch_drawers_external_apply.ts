@@ -63,6 +63,7 @@ export function applySketchExternalDrawers(args: ApplySketchExternalDrawersArgs)
             fixedParent: fixedRunnerHardware,
             movingParent: drawerBoxNode,
             drawerWidthM: opPlan.boxW,
+            mountingWidthM: context.outerW,
             drawerHeightM: opPlan.boxH,
             drawerDepthM: opPlan.boxD,
             drawerBoxOffsetZM: opPlan.boxOffsetZ,

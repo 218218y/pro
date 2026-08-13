@@ -73,6 +73,7 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
           fixedParent: fixedRunnerHardware,
           movingParent: drawerBoxNode,
           drawerWidthM: opPlan.boxW,
+          mountingWidthM: stack.outerW,
           drawerHeightM: opPlan.boxH,
           drawerDepthM: opPlan.boxD,
           drawerBoxOffsetZM: opPlan.boxOffsetZ,

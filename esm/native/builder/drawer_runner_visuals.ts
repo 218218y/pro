@@ -32,6 +32,7 @@ type AppendDrawerRunnerVisualsArgs = {
   fixedParent: RunnerObjectLike;
   movingParent: RunnerObjectLike;
   drawerWidthM: number;
+  mountingWidthM: number;
   drawerHeightM: number;
   drawerDepthM: number;
   drawerBoxOffsetZM?: number;
@@ -181,9 +182,12 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       role: `roller-moving-flange-${side < 0 ? 'left' : 'right'}`,
     });
 
-    // Cabinet member: its outer face lands on the 12.5 mm installation plane.
-    const fixedWebLocalX = side * (args.drawerWidthM / 2 + policy.sideClearanceM - webT / 2);
-    const fixedFlangeLocalX = side * (args.drawerWidthM / 2 + policy.sideClearanceM - flangeW / 2);
+    // Cabinet member: anchor the outer face to the actual cabinet-side mounting
+    // plane. The old implementation inferred that plane from drawer width + the
+    // nominal 12.5 mm planning clearance, which made the runner float whenever
+    // the rendered drawer-box clearance differed from that nominal value.
+    const fixedWebLocalX = side * (args.mountingWidthM / 2 - webT / 2);
+    const fixedFlangeLocalX = side * (args.mountingWidthM / 2 - flangeW / 2);
     addBox({
       THREE: args.THREE,
       parent: args.fixedParent,
@@ -207,7 +211,9 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       role: `roller-fixed-flange-${side < 0 ? 'left' : 'right'}`,
     });
 
-    const wheelX = side * (args.drawerWidthM / 2 + policy.sideClearanceM / 2);
+    // Keep the wheel inside the real gap between the drawer side and cabinet
+    // wall instead of centering it in an assumed 12.5 mm gap.
+    const wheelX = side * ((args.drawerWidthM + args.mountingWidthM) / 4);
     addWheel({
       THREE: args.THREE,
       parent: args.fixedParent,
@@ -251,15 +257,27 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
   const frontZ = movingLocalZ + length / 2;
 
   for (const side of [-1, 1] as const) {
-    const railX = side * (args.drawerWidthM / 2 - policy.visualSideInsetM);
+    // TANDEM is side-fastened to the cabinet and concealed beneath the drawer.
+    // Use Blum's 21 mm cabinet-side envelope for the fixed body and place its
+    // outer face exactly on the real mounting plane. This is intentionally based
+    // on mountingWidthM rather than the drawer width, because the application's
+    // generic drawer boxes can have larger visual clearances than Blum's machining
+    // dimensions.
+    const fixedRailWidth = Math.min(policy.cabinetRunnerEnvelopeWidthM, args.mountingWidthM / 2);
+    const fixedRailX = side * (args.mountingWidthM / 2 - fixedRailWidth / 2);
+    // The moving member belongs under the drawer bottom; keeping its outer face
+    // flush with the drawer side gives it a real support surface instead of an
+    // arbitrary inset into the drawer bottom.
+    const movingRailX = side * (args.drawerWidthM / 2 - policy.visualInnerRailWidthM / 2);
+    const lockX = side * (args.drawerWidthM / 2 - policy.visualLockWidthM / 2);
 
     // Fixed cabinet-mounted body of the concealed runner.
     addBox({
       THREE: args.THREE,
       parent: args.fixedParent,
       material: materials.blumSteel,
-      size: [policy.visualRailWidthM, policy.visualRailHeightM, length],
-      position: [args.closedPosition.x + railX, args.closedPosition.y + railY, fixedCenterZ],
+      size: [fixedRailWidth, policy.visualRailHeightM, length],
+      position: [args.closedPosition.x + fixedRailX, args.closedPosition.y + railY, fixedCenterZ],
       ownerPartId: args.ownerPartId,
       role: `blum-fixed-runner-${side < 0 ? 'left' : 'right'}`,
     });
@@ -270,7 +288,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       parent: args.movingParent,
       material: materials.blumInner,
       size: [policy.visualInnerRailWidthM, policy.visualInnerRailHeightM, length * 0.9],
-      position: [railX, innerY, movingLocalZ + length * 0.025],
+      position: [movingRailX, innerY, movingLocalZ + length * 0.025],
       ownerPartId: args.ownerPartId,
       role: `blum-moving-runner-${side < 0 ? 'left' : 'right'}`,
     });
@@ -282,7 +300,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       material: materials.blumLock,
       size: [policy.visualLockWidthM, policy.visualLockHeightM, policy.visualLockDepthM],
       position: [
-        railX,
+        lockX,
         railY - policy.visualLockHeightM / 2,
         frontZ - policy.visualLockFrontInsetM - policy.visualLockDepthM / 2,
       ],
@@ -295,6 +313,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
 export function appendDrawerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs): void {
   if (
     !(args.drawerWidthM > 0) ||
+    !(args.mountingWidthM >= args.drawerWidthM) ||
     !(args.drawerHeightM > 0) ||
     !(args.drawerDepthM > 0) ||
     !args.fixedParent ||

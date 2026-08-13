@@ -48,6 +48,7 @@ export type ExternalDrawerOpLike = {
   visualH: number;
   visualT?: number;
   boxW: number;
+  runnerMountWidth: number;
   boxH: number;
   boxD: number;
   boxOffsetZ?: number;
@@ -67,6 +68,7 @@ export type InternalDrawerOpLike = {
   partId: string;
   stackPartId?: string;
   width: number;
+  runnerMountWidth: number;
   height: number;
   depth: number;
   moduleIndex?: unknown;

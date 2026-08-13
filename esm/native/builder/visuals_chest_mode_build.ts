@@ -413,6 +413,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       fixedParent: fixedRunnerHardware,
       movingParent: boxMesh,
       drawerWidthM: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
+      mountingWidthM: totalW - 2 * thick,
       drawerHeightM: boxH,
       drawerDepthM: boxD,
       drawerBoxOffsetZM: 0,

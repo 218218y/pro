@@ -1,6 +1,7 @@
 import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   resolveSketchInternalDrawerCassetteDrawerWidth,
+  resolveSketchInternalDrawerCassetteRunnerMountWidth,
   resolveSketchInternalDrawerCassetteRange,
 } from '../features/sketch_internal_drawer_cassette.js';
 import type { RenderSketchBoxContentsArgs } from './render_interior_sketch_boxes_shared.js';
@@ -242,6 +243,12 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
         clearanceM: drawerDims.internalWidthClearanceM,
         minWidthM: drawerDims.internalWidthMinM,
       });
+      const runnerMountWidth = resolveSketchInternalDrawerCassetteRunnerMountWidth({
+        outerWidth: span.innerW,
+        woodThick,
+        clearanceM: drawerDims.internalWidthClearanceM,
+        minWidthM: drawerDims.internalWidthMinM,
+      });
       const depth = Math.min(
         usableContentDepth,
         Math.max(drawerDims.internalDepthMinM, usableContentDepth - drawerDims.internalDepthClearanceM)
@@ -271,6 +278,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
           moduleIndex: moduleKeyForUd,
           slotIndex: 0,
           width,
+          runnerMountWidth,
           height: singleDrawerH,
           depth,
           x: span.innerCenterX,

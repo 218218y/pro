@@ -146,6 +146,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         fixedParent: fixedRunnerHardware,
         movingParent: intBox,
         drawerWidthM: drawerOp.width,
+        mountingWidthM: drawerOp.runnerMountWidth,
         drawerHeightM: drawerOp.height,
         drawerDepthM: drawerOp.depth,
         drawerBoxOffsetZM: 0,

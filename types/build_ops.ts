@@ -107,6 +107,7 @@ export type ExternalDrawerOpLike = UnknownRecord & {
   visualH: number;
   visualT: number;
   boxW: number;
+  runnerMountWidth: number;
   boxH: number;
   boxD: number;
   boxOffsetZ: number;

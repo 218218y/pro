@@ -303,6 +303,7 @@ export function emitCornerWingExternalDrawers(
       fixedParent: fixedRunnerHardware,
       movingParent: dBox,
       drawerWidthM: boxW,
+      mountingWidthM: cellW,
       drawerHeightM: drawerBoxHeight,
       drawerDepthM: drawerBoxDepth,
       drawerBoxOffsetZM: geometry.boxOffsetZ,

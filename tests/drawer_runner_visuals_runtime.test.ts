@@ -93,7 +93,7 @@ function assertHardwareMetadata(parent: FakeParent, ownerPartId: string): void {
   }
 }
 
-function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number } = {}): {
+function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number; mountingWidth?: number } = {}): {
   fixed: FakeParent;
   moving: FakeParent;
 } {
@@ -105,6 +105,7 @@ function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number } = 
     fixedParent: fixed,
     movingParent: moving,
     drawerWidthM: 0.56,
+    mountingWidthM: args.mountingWidth ?? 0.604,
     drawerHeightM: 0.18,
     drawerDepthM: args.depth ?? 0.45,
     drawerBoxOffsetZM: args.boxOffsetZ ?? 0.01,
@@ -177,6 +178,22 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
     2,
     'drawer member should have one rear plastic wheel per side'
   );
+  const rightFixedWeb = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'roller-fixed-web-right'
+  );
+  const rightMovingWeb = moving.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'roller-moving-web-right'
+  );
+  assert.ok(rightFixedWeb?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightMovingWeb?.geometry instanceof FakeBoxGeometry);
+  assert.ok(
+    Math.abs(rightFixedWeb.position.x + rightFixedWeb.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
+    'roller cabinet member outer face must touch the actual cabinet side'
+  );
+  assert.ok(
+    Math.abs(rightMovingWeb.position.x - rightMovingWeb.geometry.width / 2 - 0.56 / 2) < 1e-12,
+    'roller moving member inner face must touch the drawer side'
+  );
   const rollerRails = [...fixed.children, ...moving.children].filter(
     child => child.geometry instanceof FakeBoxGeometry
   );
@@ -218,6 +235,27 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
   for (const rail of fixed.children) {
     assert.ok(rail.position.y < 0.7 - 0.18 / 2, 'fixed TANDEM runner should be below the closed drawer');
   }
+  const rightFixedRunner = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-fixed-runner-right'
+  );
+  const rightMovingRunner = moving.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-moving-runner-right'
+  );
+  assert.ok(rightFixedRunner?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightMovingRunner?.geometry instanceof FakeBoxGeometry);
+  assert.equal(
+    rightFixedRunner.geometry.width,
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.cabinetRunnerEnvelopeWidthM,
+    "fixed TANDEM body should use Blum's 21 mm cabinet-side planning envelope"
+  );
+  assert.ok(
+    Math.abs(rightFixedRunner.position.x + rightFixedRunner.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
+    'fixed TANDEM body outer face must touch the actual cabinet side'
+  );
+  assert.ok(
+    Math.abs(rightMovingRunner.position.x + rightMovingRunner.geometry.width / 2 - 0.56 / 2) < 1e-12,
+    'moving TANDEM member outer face must stay flush with the drawer side under the drawer'
+  );
   assert.equal(
     moving.children.filter(child =>
       String(child.userData.__wpDrawerRunnerRole).startsWith('blum-locking-device')

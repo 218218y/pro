@@ -50,6 +50,7 @@ export type SketchInternalDrawerOp = InteriorValueRecord & {
   moduleIndex: string | number;
   slotIndex: number;
   width: number;
+  runnerMountWidth: number;
   height: number;
   depth: number;
   x: number;

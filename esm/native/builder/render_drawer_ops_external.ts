@@ -258,6 +258,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         fixedParent: fixedRunnerHardware,
         movingParent: drawerBox,
         drawerWidthM: drawerOp.boxW,
+        mountingWidthM: drawerOp.runnerMountWidth,
         drawerHeightM: drawerOp.boxH,
         drawerDepthM: drawerOp.boxD,
         drawerBoxOffsetZM: drawerOp.boxOffsetZ || 0,

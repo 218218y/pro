@@ -50,11 +50,13 @@ export const BLUM_TANDEM_DRAWER_RUNNER_POLICY = Object.freeze({
   nominalLengthMinM: 0.25,
   nominalLengthMaxM: 0.6,
   drawerLengthFromNominalReductionM: 0.01,
-  visualRailWidthM: 0.018,
+  // Blum planning gives a 21 mm lateral runner envelope from the cabinet side.
+  // Model the fixed body with that real mounting envelope instead of an arbitrary
+  // narrower bar that can float between the drawer and cabinet side.
+  cabinetRunnerEnvelopeWidthM: 0.021,
   visualRailHeightM: 0.009,
   visualInnerRailWidthM: 0.011,
   visualInnerRailHeightM: 0.004,
-  visualSideInsetM: 0.012,
   visualLockWidthM: 0.028,
   visualLockHeightM: 0.009,
   visualLockDepthM: 0.034,

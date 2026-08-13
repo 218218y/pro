@@ -132,13 +132,24 @@ export function resolveSketchInternalDrawerCassetteFrameOuterWidth(args: {
   return Math.max(0, outerWidth - sideFillerWidth * 2);
 }
 
+export function resolveSketchInternalDrawerCassetteRunnerMountWidth(args: {
+  outerWidth: number;
+  woodThick?: unknown;
+  clearanceM?: number;
+  minWidthM?: number;
+}): number {
+  const { woodThick } = resolveCassetteDrawerWidthInputs(args);
+  const frameOuterWidth = resolveSketchInternalDrawerCassetteFrameOuterWidth(args);
+  return Math.max(0, frameOuterWidth - woodThick * 2);
+}
+
 export function resolveSketchInternalDrawerCassetteDrawerWidth(args: {
   outerWidth: number;
   woodThick?: unknown;
   clearanceM?: number;
   minWidthM?: number;
 }): number {
-  const { woodThick, clearanceM, minWidthM } = resolveCassetteDrawerWidthInputs(args);
-  const frameOuterWidth = resolveSketchInternalDrawerCassetteFrameOuterWidth(args);
-  return Math.max(minWidthM, frameOuterWidth - woodThick * 2 - clearanceM);
+  const { clearanceM, minWidthM } = resolveCassetteDrawerWidthInputs(args);
+  const runnerMountWidth = resolveSketchInternalDrawerCassetteRunnerMountWidth(args);
+  return Math.max(minWidthM, runnerMountWidth - clearanceM);
 }

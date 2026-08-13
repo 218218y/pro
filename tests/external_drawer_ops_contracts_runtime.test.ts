@@ -138,6 +138,8 @@ test('external drawer core preserves shoe-first ordering, sizing, and regular dr
   assert.equal(secondRegular?.closed.y, 0.12 + 0.02 + 0.19 + 0.24 + 0.24 / 2);
   assert.equal(shoe?.visualH, 0.19 - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM);
   assert.equal(shoe?.boxH, 0.19 - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM);
+  assert.equal(shoe?.runnerMountWidth, 0.9);
+  assert.equal(firstRegular?.runnerMountWidth, 0.9);
   assert.equal(firstRegular?.visualH, 0.24 - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM);
   assert.equal(firstRegular?.boxH, 0.24 - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM);
 
