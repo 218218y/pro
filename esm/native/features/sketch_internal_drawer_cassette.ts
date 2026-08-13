@@ -132,7 +132,7 @@ export function resolveSketchInternalDrawerCassetteFrameOuterWidth(args: {
   return Math.max(0, outerWidth - sideFillerWidth * 2);
 }
 
-export function resolveSketchInternalDrawerCassetteRunnerMountWidth(args: {
+function resolveSketchInternalDrawerCassetteRunnerMountWidth(args: {
   outerWidth: number;
   woodThick?: unknown;
   clearanceM?: number;

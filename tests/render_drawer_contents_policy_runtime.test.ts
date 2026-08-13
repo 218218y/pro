@@ -89,7 +89,7 @@ test('internal drawer render fails closed when required inputs are unavailable',
       __drawers: () => [],
       getMirrorMaterial: () => null,
     });
-  const op = { partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 };
+  const op = { partId: 'drawer_1', width: 0.5, runnerMountWidth: 0.53, height: 0.2, depth: 0.4 };
   const createInternalDrawerBox = () => new FakeGroup();
 
   assert.equal(
@@ -145,7 +145,15 @@ test('internal drawers follow the cabinet drawer runner selection', () => {
     const result = renderDrawerOps.applyInternalDrawersOps({
       App: {},
       THREE: fakeThree,
-      ops: [{ partId: `drawer_${drawerRunnerType}`, width: 0.5, height: 0.2, depth: 0.4 }],
+      ops: [
+        {
+          partId: `drawer_${drawerRunnerType}`,
+          width: 0.5,
+          runnerMountWidth: 0.53,
+          height: 0.2,
+          depth: 0.4,
+        },
+      ],
       wardrobeGroup,
       createInternalDrawerBox: () => new FakeGroup(),
       cfg: { drawerRunnerType },
@@ -194,7 +202,7 @@ test('internal drawer contents receive the explicit build render policy', () => 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
     THREE: fakeThree,
-    ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
+    ops: [{ partId: 'drawer_1', width: 0.5, runnerMountWidth: 0.53, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: () => new FakeGroup(),
     addOutlines,
@@ -242,7 +250,7 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
     THREE: fakeThree,
-    ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
+    ops: [{ partId: 'drawer_1', width: 0.5, runnerMountWidth: 0.53, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: (...args: unknown[]) => {
       boxCalls.push(args);
@@ -295,7 +303,7 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
   const result = renderDrawerOps.applyInternalDrawersOps({
     App: {},
     THREE: fakeThree,
-    ops: [{ partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 }],
+    ops: [{ partId: 'drawer_1', width: 0.5, runnerMountWidth: 0.53, height: 0.2, depth: 0.4 }],
     wardrobeGroup,
     createInternalDrawerBox: (...args: unknown[]) => {
       boxCalls.push(args);
@@ -339,6 +347,7 @@ test('internal drawer render preserves valid-op creation, positions, front depth
       {
         partId: 'drawer_explicit_open',
         width: 0.5,
+        runnerMountWidth: 0.53,
         height: 0.2,
         depth: 0.4,
         x: 0.1,
@@ -346,10 +355,11 @@ test('internal drawer render preserves valid-op creation, positions, front depth
         z: 0.3,
         openZ: 0.9,
       },
-      { partId: '', width: 0.5, height: 0.2, depth: 0.4 },
+      { partId: '', width: 0.5, runnerMountWidth: 0.53, height: 0.2, depth: 0.4 },
       {
         partId: 'drawer_fallback_open',
         width: 0.45,
+        runnerMountWidth: 0.48,
         height: 0.18,
         depth: 0,
         x: -0.1,
@@ -412,6 +422,7 @@ test('internal drawer contents floor the available height at zero', () => {
       {
         partId: 'drawer_short',
         width: 0.2,
+        runnerMountWidth: 0.23,
         height: INTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM / 2,
         depth: 0.31,
       },
@@ -451,6 +462,7 @@ test('internal drawer cassette panels use shelf paint identity and render once p
         partId: 'stack_1_lower',
         stackPartId: 'stack_1',
         width: 0.5,
+        runnerMountWidth: 0.53,
         height: 0.165,
         depth: 0.4,
         cassetteBaseY: 0.42,
@@ -465,6 +477,7 @@ test('internal drawer cassette panels use shelf paint identity and render once p
         partId: 'stack_1_upper',
         stackPartId: 'stack_1',
         width: 0.5,
+        runnerMountWidth: 0.53,
         height: 0.165,
         depth: 0.4,
         cassetteBaseY: 0.42,

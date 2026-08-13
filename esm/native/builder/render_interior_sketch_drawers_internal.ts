@@ -2,7 +2,7 @@ import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   resolveSketchInternalDrawerCassetteDrawerWidth,
-  resolveSketchInternalDrawerCassetteRunnerMountWidth,
+  resolveSketchInternalDrawerCassetteFrameOuterWidth,
   resolveSketchInternalDrawerCassetteRange,
 } from '../features/sketch_internal_drawer_cassette.js';
 import type {
@@ -168,12 +168,16 @@ export function buildSketchInternalDrawerOps(args: {
     clearanceM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM,
     minWidthM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM,
   });
-  const runnerMountWidth = resolveSketchInternalDrawerCassetteRunnerMountWidth({
-    outerWidth: innerW,
-    woodThick,
-    clearanceM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM,
-    minWidthM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM,
-  });
+  const runnerMountWidth = Math.max(
+    0,
+    resolveSketchInternalDrawerCassetteFrameOuterWidth({
+      outerWidth: innerW,
+      woodThick,
+      clearanceM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM,
+      minWidthM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM,
+    }) -
+      woodThick * 2
+  );
   const depth = Math.max(
     DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM,
     internalDepth - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthClearanceM

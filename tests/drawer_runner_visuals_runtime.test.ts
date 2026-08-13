@@ -252,9 +252,35 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
     Math.abs(rightFixedRunner.position.x + rightFixedRunner.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
     'fixed TANDEM body outer face must touch the actual cabinet side'
   );
+  const fixedInnerLocalX = rightFixedRunner.position.x - 1.2 - rightFixedRunner.geometry.width / 2;
+  const fixedOuterLocalX = rightFixedRunner.position.x - 1.2 + rightFixedRunner.geometry.width / 2;
+  const movingInnerLocalX = rightMovingRunner.position.x - rightMovingRunner.geometry.width / 2;
+  const movingOuterLocalX = rightMovingRunner.position.x + rightMovingRunner.geometry.width / 2;
+  const nestedOverlap =
+    Math.min(fixedOuterLocalX, movingOuterLocalX) - Math.max(fixedInnerLocalX, movingInnerLocalX);
   assert.ok(
-    Math.abs(rightMovingRunner.position.x + rightMovingRunner.geometry.width / 2 - 0.56 / 2) < 1e-12,
-    'moving TANDEM member outer face must stay flush with the drawer side under the drawer'
+    movingInnerLocalX < 0.56 / 2,
+    'moving TANDEM member must retain a real support reach beneath the drawer'
+  );
+  assert.ok(
+    movingOuterLocalX > fixedInnerLocalX,
+    'moving TANDEM member must enter the fixed runner envelope instead of sitting beside it'
+  );
+  assert.ok(
+    nestedOverlap + 1e-12 >= BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingNestedOverlapM,
+    'closed TANDEM members must keep the configured telescoping overlap'
+  );
+  assert.ok(
+    rightMovingRunner.geometry.width > BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingUnderDrawerReachM,
+    'wide generic drawer clearance should widen only the coupled moving span enough to bridge into the fixed runner'
+  );
+  const rightLock = moving.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-locking-device-right'
+  );
+  assert.ok(rightLock);
+  assert.ok(
+    Math.abs(rightLock.position.x - rightMovingRunner.position.x) < 1e-12,
+    'front locking device must stay centered on the coupled runner span'
   );
   assert.equal(
     moving.children.filter(child =>
@@ -280,6 +306,35 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
 
   assertHardwareMetadata(fixed, 'drawer:test');
   assertHardwareMetadata(moving, 'drawer:test');
+});
+
+test('[drawer-runner-visuals-runtime] Blum moving member does not over-widen when the drawer already sits inside the real planning envelope', () => {
+  const { fixed, moving } = append({ type: 'blum', mountingWidth: 0.574 });
+  const rightFixedRunner = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-fixed-runner-right'
+  );
+  const rightMovingRunner = moving.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-moving-runner-right'
+  );
+  assert.ok(rightFixedRunner?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightMovingRunner?.geometry instanceof FakeBoxGeometry);
+
+  const fixedInnerLocalX = rightFixedRunner.position.x - 1.2 - rightFixedRunner.geometry.width / 2;
+  const movingInnerLocalX = rightMovingRunner.position.x - rightMovingRunner.geometry.width / 2;
+  const movingOuterLocalX = rightMovingRunner.position.x + rightMovingRunner.geometry.width / 2;
+  const nestedOverlap = movingOuterLocalX - Math.max(fixedInnerLocalX, movingInnerLocalX);
+
+  assert.ok(Math.abs(movingOuterLocalX - 0.56 / 2) < 1e-12);
+  assert.ok(
+    Math.abs(
+      rightMovingRunner.geometry.width - BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingUnderDrawerReachM
+    ) < 1e-12,
+    'a naturally overlapping TANDEM layout should keep the nominal under-drawer moving profile'
+  );
+  assert.ok(
+    nestedOverlap + 1e-12 >= BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingNestedOverlapM,
+    'the nominal profile must still remain nested in the fixed runner'
+  );
 });
 
 test('[drawer-runner-visuals-runtime] drawer-box offset only moves fixed hardware, never moving hardware inside the box', () => {

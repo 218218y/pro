@@ -40,8 +40,10 @@ export const ROLLER_DRAWER_RUNNER_POLICY = Object.freeze({
  * Blum TANDEM 560H reference constraints for wooden drawers. The runner is
  * concealed below the drawer and uses left/right locking devices at the front.
  * Blum specifies 11–16 mm drawer-side thickness and SKW = LW - 42 mm for the
- * internal drawer width. The remaining dimensions here only describe the
- * simplified 3D silhouette; they are not advertised as machining dimensions.
+ * internal drawer width. The 21 mm value below is the cabinet-side planning
+ * envelope shown by Blum, not a claim that the real runner is a solid 21 mm bar.
+ * The remaining values describe the simplified 3D silhouette and the minimum
+ * visual nesting needed to represent the telescoping runner correctly.
  */
 export const BLUM_TANDEM_DRAWER_RUNNER_POLICY = Object.freeze({
   drawerSideThicknessMinM: 0.011,
@@ -50,12 +52,16 @@ export const BLUM_TANDEM_DRAWER_RUNNER_POLICY = Object.freeze({
   nominalLengthMinM: 0.25,
   nominalLengthMaxM: 0.6,
   drawerLengthFromNominalReductionM: 0.01,
-  // Blum planning gives a 21 mm lateral runner envelope from the cabinet side.
-  // Model the fixed body with that real mounting envelope instead of an arbitrary
-  // narrower bar that can float between the drawer and cabinet side.
+  // Blum planning gives a 21 mm lateral space requirement at the cabinet side.
+  // The simplified fixed visual occupies this envelope so its outer face can stay
+  // anchored to the real cabinet mounting plane.
   cabinetRunnerEnvelopeWidthM: 0.021,
   visualRailHeightM: 0.009,
-  visualInnerRailWidthM: 0.011,
+  // The real TANDEM runner telescopes inside itself. In the simplified model the
+  // moving member must reach beneath the drawer and remain nested inside the
+  // fixed envelope in the closed position. These are visual, not machining, values.
+  visualMovingUnderDrawerReachM: 0.011,
+  visualMovingNestedOverlapM: 0.011,
   visualInnerRailHeightM: 0.004,
   visualLockWidthM: 0.028,
   visualLockHeightM: 0.009,

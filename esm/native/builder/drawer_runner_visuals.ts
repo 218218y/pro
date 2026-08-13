@@ -258,18 +258,33 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
 
   for (const side of [-1, 1] as const) {
     // TANDEM is side-fastened to the cabinet and concealed beneath the drawer.
-    // Use Blum's 21 mm cabinet-side envelope for the fixed body and place its
-    // outer face exactly on the real mounting plane. This is intentionally based
-    // on mountingWidthM rather than the drawer width, because the application's
-    // generic drawer boxes can have larger visual clearances than Blum's machining
-    // dimensions.
-    const fixedRailWidth = Math.min(policy.cabinetRunnerEnvelopeWidthM, args.mountingWidthM / 2);
-    const fixedRailX = side * (args.mountingWidthM / 2 - fixedRailWidth / 2);
-    // The moving member belongs under the drawer bottom; keeping its outer face
-    // flush with the drawer side gives it a real support surface instead of an
-    // arbitrary inset into the drawer bottom.
-    const movingRailX = side * (args.drawerWidthM / 2 - policy.visualInnerRailWidthM / 2);
-    const lockX = side * (args.drawerWidthM / 2 - policy.visualLockWidthM / 2);
+    // Keep the fixed visual anchored to the actual cabinet mounting plane. Blum's
+    // 21 mm figure is a planning envelope; the box is a deliberate simplified
+    // silhouette of the runner assembly, not a literal solid profile.
+    const cabinetPlaneAbsX = args.mountingWidthM / 2;
+    const drawerSideAbsX = args.drawerWidthM / 2;
+    const fixedRailWidth = Math.min(policy.cabinetRunnerEnvelopeWidthM, cabinetPlaneAbsX);
+    const fixedInnerAbsX = cabinetPlaneAbsX - fixedRailWidth;
+    const fixedRailX = side * (cabinetPlaneAbsX - fixedRailWidth / 2);
+
+    // The previous model stopped the moving member at the drawer side. That can
+    // place it beside the fixed member whenever the application's generic drawer
+    // clearance is wider than Blum's real drawer machining envelope. A telescopic
+    // runner must instead be nested in the fixed member when closed. Preserve a
+    // real under-drawer reach, bridge only the actual gap, and then overlap the
+    // fixed envelope by the visual nesting depth.
+    const movingInnerAbsX = Math.max(0, drawerSideAbsX - policy.visualMovingUnderDrawerReachM);
+    const nestedOverlap = Math.min(policy.visualMovingNestedOverlapM, fixedRailWidth);
+    const movingOuterAbsX = Math.min(
+      cabinetPlaneAbsX,
+      Math.max(drawerSideAbsX, fixedInnerAbsX + nestedOverlap)
+    );
+    const movingRailWidth = Math.max(0, movingOuterAbsX - movingInnerAbsX);
+    const movingRailX = side * ((movingInnerAbsX + movingOuterAbsX) / 2);
+    // The front locking device is attached to the drawer and engages the runner.
+    // Center it on the same coupled span so it cannot visually float beside the
+    // runner when the generic drawer-box clearance is wider than Blum's own.
+    const lockX = movingRailX;
 
     // Fixed cabinet-mounted body of the concealed runner.
     addBox({
@@ -287,7 +302,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       THREE: args.THREE,
       parent: args.movingParent,
       material: materials.blumInner,
-      size: [policy.visualInnerRailWidthM, policy.visualInnerRailHeightM, length * 0.9],
+      size: [movingRailWidth, policy.visualInnerRailHeightM, length * 0.9],
       position: [movingRailX, innerY, movingLocalZ + length * 0.025],
       ownerPartId: args.ownerPartId,
       role: `blum-moving-runner-${side < 0 ? 'left' : 'right'}`,

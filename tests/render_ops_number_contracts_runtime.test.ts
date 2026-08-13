@@ -49,16 +49,45 @@ test('door op readers reject string encoded required dimensions and ignore strin
 
 test('drawer op readers reject string encoded required dimensions and ignore string encoded optional geometry', () => {
   assert.equal(
-    readExternalDrawerOp({ partId: 'ext_1', visualW: '0.6', visualH: 0.2, boxW: 0.5, boxH: 0.12, boxD: 0.4 }),
+    readExternalDrawerOp({
+      partId: 'ext_1',
+      visualW: '0.6',
+      visualH: 0.2,
+      boxW: 0.5,
+      runnerMountWidth: 0.544,
+      boxH: 0.12,
+      boxD: 0.4,
+    }),
     null
   );
-  assert.equal(readInternalDrawerOp({ partId: 'int_1', width: 0.5, height: '0.2', depth: 0.4 }), null);
+  assert.equal(
+    readInternalDrawerOp({ partId: 'int_1', width: 0.5, runnerMountWidth: 0.53, height: '0.2', depth: 0.4 }),
+    null
+  );
+  assert.equal(
+    readExternalDrawerOp({
+      partId: 'ext_missing_mount',
+      visualW: 0.6,
+      visualH: 0.2,
+      boxW: 0.5,
+      boxH: 0.12,
+      boxD: 0.4,
+    }),
+    null,
+    'external drawer ops must carry the real runner mounting width instead of reconstructing it from a policy fallback'
+  );
+  assert.equal(
+    readInternalDrawerOp({ partId: 'int_missing_mount', width: 0.5, height: 0.2, depth: 0.4 }),
+    null,
+    'internal drawer ops must carry the real runner mounting width instead of reconstructing it from a policy fallback'
+  );
 
   const external = readExternalDrawerOp({
     partId: 'ext_2',
     visualW: 0.6,
     visualH: 0.2,
     boxW: 0.5,
+    runnerMountWidth: 0.544,
     boxH: 0.12,
     boxD: 0.4,
     boxOffsetZ: '0.03',
@@ -71,6 +100,7 @@ test('drawer op readers reject string encoded required dimensions and ignore str
   const internal = readInternalDrawerOp({
     partId: 'int_2',
     width: 0.5,
+    runnerMountWidth: 0.53,
     height: 0.2,
     depth: 0.4,
     cassetteBaseY: '0.42',

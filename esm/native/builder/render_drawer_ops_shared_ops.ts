@@ -1,5 +1,3 @@
-import { EXTERNAL_DRAWER_BOX_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
-import { INTERNAL_DRAWER_LAYOUT_POLICY } from '../../shared/dimensions/internal_drawer_policy.js';
 import { isRecord, readFinite, readOptionalFinite } from './render_drawer_ops_shared_guards.js';
 import type { ExternalDrawerOpLike, InternalDrawerOpLike } from './render_drawer_ops_shared_types.js';
 
@@ -18,10 +16,7 @@ export function readExternalDrawerOp(value: unknown): ExternalDrawerOpLike | nul
   const visualW = readFinite(value.visualW, Number.NaN);
   const visualH = readFinite(value.visualH, Number.NaN);
   const boxW = readFinite(value.boxW, Number.NaN);
-  const runnerMountWidth = readFinite(
-    value.runnerMountWidth,
-    boxW + EXTERNAL_DRAWER_BOX_POLICY.boxWidthClearanceM
-  );
+  const runnerMountWidth = readFinite(value.runnerMountWidth, Number.NaN);
   const boxH = readFinite(value.boxH, Number.NaN);
   const boxD = readFinite(value.boxD, Number.NaN);
   if (
@@ -30,6 +25,7 @@ export function readExternalDrawerOp(value: unknown): ExternalDrawerOpLike | nul
     !Number.isFinite(visualH) ||
     !Number.isFinite(boxW) ||
     !Number.isFinite(runnerMountWidth) ||
+    runnerMountWidth < boxW ||
     !Number.isFinite(boxH) ||
     !Number.isFinite(boxD)
   ) {
@@ -65,16 +61,14 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
   if (!isRecord(value)) return null;
   const partId = typeof value.partId === 'string' ? value.partId : '';
   const width = readFinite(value.width, Number.NaN);
-  const runnerMountWidth = readFinite(
-    value.runnerMountWidth,
-    width + INTERNAL_DRAWER_LAYOUT_POLICY.widthClearanceM
-  );
+  const runnerMountWidth = readFinite(value.runnerMountWidth, Number.NaN);
   const height = readFinite(value.height, Number.NaN);
   const depth = readFinite(value.depth, Number.NaN);
   if (
     !partId ||
     !Number.isFinite(width) ||
     !Number.isFinite(runnerMountWidth) ||
+    runnerMountWidth < width ||
     !Number.isFinite(height) ||
     !Number.isFinite(depth)
   )
