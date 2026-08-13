@@ -8,7 +8,15 @@ import {
   setRenderSlot,
 } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
-import { getDrawerModuleKey, vecCopy } from '../runtime/doors_runtime_support.js';
+import {
+  clearDividerDrawerDoorHoldForDrawer,
+  doorsRuntimeNow,
+  getDividerDrawerBlockingDoors,
+  getDrawerModuleKey,
+  readDividerDrawerClearanceStartedAt,
+  resolveDividerDrawerClearanceTarget,
+  vecCopy,
+} from '../runtime/doors_runtime_support.js';
 import { drawerVisualMatchesId, isExplicitExternalDrawerVisual } from '../runtime/drawer_visual_identity.js';
 import {
   getSketchFreeBoxMotionScopeFromEntry,
@@ -135,6 +143,15 @@ export function updateRenderLoopDrawerMotions(
 ): boolean {
   let hasActiveDrawerMotion = false;
   const wardrobeType = readConfigScalarOrDefaultFromApp(App, 'wardrobeType');
+  const dividerDrawerClearanceTarget = resolveDividerDrawerClearanceTarget(App, frame.forcedOpenDrawerId);
+  const dividerDrawerClearanceStartedAt = readDividerDrawerClearanceStartedAt(App);
+  const dividerDrawerHasBlockingDoors =
+    !!dividerDrawerClearanceTarget &&
+    getDividerDrawerBlockingDoors(App, dividerDrawerClearanceTarget).length > 0;
+  const dividerDrawerClearanceReady =
+    !dividerDrawerHasBlockingDoors ||
+    dividerDrawerClearanceStartedAt <= 0 ||
+    doorsRuntimeNow() - dividerDrawerClearanceStartedAt > frame.delayTime;
 
   try {
     const prev = !!getRenderSlot<boolean>(App, '__wpSketchDbgPrevSketch');
@@ -231,16 +248,19 @@ export function updateRenderLoopDrawerMotions(
       frame.forcedOpenDrawerId != null &&
       drawerVisualMatchesId(d, frame.forcedOpenDrawerId)
     ) {
-      shouldOpen = true;
+      shouldOpen = !isInternal || dividerDrawerClearanceReady;
     }
 
     if (!group) continue;
     const target = shouldOpen ? d.open : d.closed;
+    let drawerMotionActive = false;
     if (forceClosedByInteriorEdit && target === d.closed) {
       vecCopy(group.position, d.closed);
-    } else if (moveDrawerGroupPosition(group, target)) {
-      hasActiveDrawerMotion = true;
+    } else {
+      drawerMotionActive = moveDrawerGroupPosition(group, target);
+      if (drawerMotionActive) hasActiveDrawerMotion = true;
     }
+    if (target === d.closed && !drawerMotionActive) clearDividerDrawerDoorHoldForDrawer(App, d);
     syncDrawerDividerMotionPreview(App, d);
 
     if (frame.sketchEditActive && isInternal && target === d.closed) {

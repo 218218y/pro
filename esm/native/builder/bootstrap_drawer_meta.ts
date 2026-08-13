@@ -1,6 +1,12 @@
 import { guardVoid, MODES } from '../runtime/api.js';
 import { getDrawersArray } from '../runtime/render_access.js';
-import { consumeDrawerRebuildIntent, getDrawerService } from '../runtime/doors_access.js';
+import {
+  clearDividerDrawerClearanceStarted,
+  consumeDrawerRebuildIntent,
+  getDividerDrawerBlockingDoors,
+  getDrawerService,
+  markDividerDrawerClearanceStarted,
+} from '../runtime/doors_access.js';
 import { runPlatformWakeupFollowThrough } from '../runtime/platform_access.js';
 import { getTools } from '../runtime/service_access.js';
 import { drawerVisualMatchesId, readDrawerVisualPrimaryId } from '../runtime/drawer_visual_identity.js';
@@ -138,11 +144,13 @@ export function runRebuildDrawerMeta(App: AppContainer, rawSnapshot: BuilderDraw
   const keepDrawerForcedOpen =
     !!drawer && snapshot.primaryMode === readDividerModeKey() && drawerMatchesId(drawer, forcedOpenId);
   if (!drawer) {
+    clearDividerDrawerClearanceStarted(App);
     if (sameDrawerId(forcedOpenId, targetId)) setForcedDrawerOpenId(App, targetId, null);
     return;
   }
 
   if (!keepDrawerForcedOpen) {
+    clearDividerDrawerClearanceStarted(App);
     if (sameDrawerId(forcedOpenId, targetId)) setForcedDrawerOpenId(App, targetId, null);
     closeDrawerEntry(App, drawer, targetId);
     wakeupDrawerFollowThrough(App, targetId);
@@ -152,5 +160,7 @@ export function runRebuildDrawerMeta(App: AppContainer, rawSnapshot: BuilderDraw
   closeOtherDrawers(App, drawerEntries, targetId);
   setForcedDrawerOpenId(App, targetId, targetId);
   drawer.isOpen = true;
+  if (getDividerDrawerBlockingDoors(App, drawer).length > 0) markDividerDrawerClearanceStarted(App);
+  else clearDividerDrawerClearanceStarted(App);
   wakeupDrawerFollowThrough(App, targetId);
 }

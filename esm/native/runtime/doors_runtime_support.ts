@@ -51,3 +51,11 @@ export {
   isSketchIntDrawersEditActive,
   shouldForceSketchFreeBoxDoorsOpen,
 } from './doors_runtime_support_modes.js';
+export {
+  clearDividerDrawerDoorHoldForDrawer,
+  doorBlocksDividerDrawer,
+  getDividerDrawerBlockingDoors,
+  readDividerDrawerClearanceStartedAt,
+  resolveDividerDrawerClearanceTarget,
+  resolveDividerDrawerDoorClearanceTarget,
+} from './divider_drawer_door_clearance.js';

@@ -69,7 +69,7 @@ export function getActionsNamespace(App: AppLike): ActionsNamespaceLike | null {
 }
 
 export function getModeConst(
-  key: 'NONE' | 'LAYOUT' | 'MANUAL_LAYOUT' | 'BRACE_SHELVES' | 'EXT_DRAWER',
+  key: 'NONE' | 'LAYOUT' | 'MANUAL_LAYOUT' | 'BRACE_SHELVES' | 'EXT_DRAWER' | 'DIVIDER',
   defaultMode: string
 ): string {
   const modes = readRecord(MODES);

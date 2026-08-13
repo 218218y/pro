@@ -50,3 +50,15 @@ export {
   setHardCloseUntil,
   setHardCloseForMs,
 } from './doors_access_doors.js';
+export {
+  clearDividerDrawerClearanceStarted,
+  clearDividerDrawerDoorHold,
+  clearDividerDrawerDoorHoldForDrawer,
+  doorBlocksDividerDrawer,
+  getDividerDrawerBlockingDoors,
+  holdDividerDrawerDoorClearanceForClose,
+  markDividerDrawerClearanceStarted,
+  readDividerDrawerClearanceStartedAt,
+  resolveDividerDrawerClearanceTarget,
+  resolveDividerDrawerDoorClearanceTarget,
+} from './divider_drawer_door_clearance.js';

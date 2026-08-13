@@ -10,6 +10,8 @@ import {
   closeAllLocal,
   closeDrawerById,
   clearDrawerRebuildIntent,
+  clearDividerDrawerClearanceStarted,
+  holdDividerDrawerDoorClearanceForClose,
   captureBuilderOutlineBinding,
   refreshBuilderAfterDoorOps,
   requestBuilderStructuralRefresh,
@@ -22,7 +24,6 @@ import {
   readConfigLooseScalarFromApp,
   readConfigStateFromApp,
 } from '../services/api.js';
-
 import type {
   ActionMetaLike,
   ModeActionOptsLike,
@@ -206,6 +207,8 @@ function readDividerDrawerOpenId(App: AppLike, currentMode: string): string | nu
 
 function clearDividerDrawerOpenId(App: AppLike, prevDrawerOpenId: string | null): void {
   try {
+    holdDividerDrawerDoorClearanceForClose(App, prevDrawerOpenId);
+    clearDividerDrawerClearanceStarted(App);
     clearDrawerRebuildIntent(App);
     if (prevDrawerOpenId) closeDrawerById(App, prevDrawerOpenId, { snap: false });
     const tools = getTools(App);

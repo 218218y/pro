@@ -10,6 +10,8 @@ import { getBuildUIFromPlatform, getDimsMFromPlatform } from '../runtime/platfor
 import { getDoorsArray } from '../runtime/render_access.js';
 import { readFiniteNumber, readFiniteNumberOrNull } from '../runtime/render_runtime_primitives.js';
 import {
+  doorBlocksDividerDrawer,
+  resolveDividerDrawerDoorClearanceTarget,
   resolveHingedDoorMotionFrameX,
   resolveHingedDoorTargetRotationY,
   shouldForceSketchFreeBoxDoorsOpen,
@@ -40,6 +42,7 @@ function shouldHideOpenSlidingDoorsForFrame(frame: MotionFrameState): boolean {
 export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFrameState): boolean {
   let hasActiveDoorMotion = false;
   const doors = getDoorsArray(App);
+  const dividerDrawerClearanceTarget = resolveDividerDrawerDoorClearanceTarget(App, frame.forcedOpenDrawerId);
   const hideOpenSlidingDoors = shouldHideOpenSlidingDoorsForFrame(frame);
   for (let i = 0; i < doors.length; i++) {
     const d = asDoorMotion(doors[i]);
@@ -70,6 +73,10 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
 
     if (frame.globalClickMode && d.noGlobalOpen) {
       targetOpen = allowSketchFreeBoxOpen && frame.doorsShouldBeOpen ? true : !!d.isOpen;
+    }
+
+    if (dividerDrawerClearanceTarget && doorBlocksDividerDrawer(d, dividerDrawerClearanceTarget)) {
+      targetOpen = true;
     }
 
     const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(d);

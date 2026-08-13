@@ -2,10 +2,15 @@ import type { AppContainer, DrawerVisualEntryLike } from '../../../types';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getTools } from '../runtime/service_access.js';
 import { getDrawersArray } from '../runtime/render_access.js';
-import { setDoorsOpenViaService, setDrawerRebuildIntent } from '../runtime/doors_access.js';
+import {
+  clearDividerDrawerClearanceStarted,
+  clearDividerDrawerDoorHold,
+  getDividerDrawerBlockingDoors,
+  markDividerDrawerClearanceStarted,
+  setDrawerRebuildIntent,
+} from '../runtime/doors_access.js';
 import { toggleDivider } from '../runtime/maps_access.js';
 import { toggleDividerViaActions } from '../runtime/actions_access_mutations.js';
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import { createCanvasPickingDrawerDividerStructuralMeta } from './canvas_picking_drawer_mode_divider_meta.js';
 import { hasPartId, readDrawerIsInternal } from './canvas_picking_drawer_mode_flow_shared.js';
 
@@ -52,6 +57,7 @@ export function tryHandleDrawerDividerModeClick(args: {
   if (!isDrawerDividerDirectDrawerHit(primaryHitObject, clickedDrawer)) return true;
 
   const dividerKey = clickedDrawer && clickedDrawer.dividerKey ? clickedDrawer.dividerKey : targetDrawerId;
+  clearDividerDrawerDoorHold(App);
   const explicitIsInternal = readDrawerIsInternal(clickedDrawer);
   const isInternal =
     explicitIsInternal != null
@@ -59,8 +65,11 @@ export function tryHandleDrawerDividerModeClick(args: {
       : clickedDrawer
         ? String(clickedDrawer.id).includes('int')
         : String(targetDrawerId).includes('int');
-  const globalClickMode = !!readRuntimeScalarOrDefaultFromApp(App, 'globalClickMode', true);
-  if (!globalClickMode) setDoorsOpenViaService(App, isInternal);
+  if (isInternal && clickedDrawer && getDividerDrawerBlockingDoors(App, clickedDrawer).length > 0) {
+    markDividerDrawerClearanceStarted(App);
+  } else {
+    clearDividerDrawerClearanceStarted(App);
+  }
 
   const tools = getTools(App);
   if (typeof tools.setDrawersOpenId === 'function') tools.setDrawersOpenId(targetDrawerId);

@@ -85,6 +85,8 @@ export {
   snapDrawersToTargetsViaService,
   getDoorEditHoldActive,
   clearDrawerRebuildIntent,
+  clearDividerDrawerClearanceStarted,
+  holdDividerDrawerDoorClearanceForClose,
   getSuppressGlobalToggleUntil,
   setSuppressGlobalToggleUntil,
   suppressGlobalToggleForMs,
