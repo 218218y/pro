@@ -196,6 +196,7 @@ export interface DrawerRuntimeAccessLike extends UnknownRecord {
   snapAfterBuildId?: string | number | null;
   openAfterBuildId?: string | number | null;
   rebuildIntentVersion?: number;
+  preserveMotionAfterBuild?: boolean;
 }
 
 export interface DoorsRuntimeAccessLike extends UnknownRecord {

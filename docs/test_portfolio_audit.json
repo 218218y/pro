@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-13T04:03:54.438Z",
+  "generatedAt": "2026-08-13T17:00:54.902Z",
   "totals": {
-    "tests": 1244,
-    "unitRunnerTests": 1235,
+    "tests": 1245,
+    "unitRunnerTests": 1236,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 38,
@@ -21,7 +21,7 @@
   "categories": {
     "contract": 405,
     "runtime-unit": 335,
-    "integration": 464,
+    "integration": 465,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -4637,6 +4637,10 @@
     {
       "file": "tests/display_text_shared_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/divider_drawer_door_clearance_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/dom_access_runtime.test.ts",

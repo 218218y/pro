@@ -6,6 +6,7 @@ import {
   getDividerDrawerBlockingDoors,
   getDrawerService,
   markDividerDrawerClearanceStarted,
+  restoreDividerDrawerRebuildMotion,
 } from '../runtime/doors_access.js';
 import { runPlatformWakeupFollowThrough } from '../runtime/platform_access.js';
 import { getTools } from '../runtime/service_access.js';
@@ -160,7 +161,11 @@ export function runRebuildDrawerMeta(App: AppContainer, rawSnapshot: BuilderDraw
   closeOtherDrawers(App, drawerEntries, targetId);
   setForcedDrawerOpenId(App, targetId, targetId);
   drawer.isOpen = true;
-  if (getDividerDrawerBlockingDoors(App, drawer).length > 0) markDividerDrawerClearanceStarted(App);
-  else clearDividerDrawerClearanceStarted(App);
+  const preserveMotion = snapshot.intent?.preserveMotion === true;
+  if (preserveMotion) restoreDividerDrawerRebuildMotion(App, targetId, snapshot.intent?.motion);
+  if (!preserveMotion) {
+    if (getDividerDrawerBlockingDoors(App, drawer).length > 0) markDividerDrawerClearanceStarted(App);
+    else clearDividerDrawerClearanceStarted(App);
+  }
   wakeupDrawerFollowThrough(App, targetId);
 }

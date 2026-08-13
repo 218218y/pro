@@ -11,6 +11,7 @@ import {
 } from '../esm/native/runtime/canvas_interaction_flags.ts';
 import { createCanvasPointerInteractionOps } from '../esm/native/ui/interactions/canvas_interactions_pointer.ts';
 import { tryHandleDrawerDividerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_divider.ts';
+import { getDrawerRebuildIntentSnapshot } from '../esm/native/runtime/doors_access.ts';
 
 function createDomEl() {
   const captures: number[] = [];
@@ -339,6 +340,75 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
     { x: 0, y: 0, hasDivider: true },
     { x: 0, y: 0, hasDivider: false },
   ]);
+});
+
+test('repeated divider click on the already-selected drawer preserves the live motion session', () => {
+  const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };
+  const openedDrawers: unknown[] = [];
+  let openId: unknown = null;
+  const App = createApp(false);
+  const config: Record<string, any> = { drawerDividersMap: Object.create(null) };
+  App.store = {
+    getState() {
+      return { config, ui: {}, runtime: {}, mode: { opts: {} }, meta: {} };
+    },
+    setConfig(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      for (const [mapName, nextMap] of Object.entries(patch)) {
+        if (mapName === '__replace') continue;
+        App.maps[mapName] = nextMap;
+      }
+      return patch;
+    },
+    patch(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      return patch;
+    },
+  };
+  App.render = {
+    drawersArray: [
+      {
+        id: 'int_4',
+        dividerKey: 'div:int_4',
+        isInternal: true,
+        isOpen: false,
+        group: drawerGroup,
+        closed: { x: 0, y: 0, z: 0 },
+        open: { x: 0, y: 0, z: 1 },
+      },
+    ],
+  };
+  App.maps = { drawerDividersMap: config.drawerDividersMap };
+  App.services = {
+    tools: {
+      getDrawersOpenId() {
+        return openId;
+      },
+      setDrawersOpenId(id: unknown) {
+        openedDrawers.push(id);
+        openId = id;
+      },
+    },
+  };
+
+  const click = () =>
+    tryHandleDrawerDividerModeClick({
+      App,
+      isDividerEditMode: true,
+      foundDrawerId: 'int_4',
+      foundPartId: 'int_4',
+      primaryHitObject: drawerGroup as any,
+    });
+
+  assert.equal(click(), true);
+  const firstIntent = getDrawerRebuildIntentSnapshot(App);
+  assert.notEqual(firstIntent?.preserveMotion, true);
+  assert.deepEqual(openedDrawers, ['int_4']);
+
+  assert.equal(click(), true);
+  const secondIntent = getDrawerRebuildIntentSnapshot(App);
+  assert.equal(secondIntent?.preserveMotion, true);
+  assert.deepEqual(openedDrawers, ['int_4']);
 });
 
 test('drawer divider mode ignores a drawer found behind a clicked door', () => {

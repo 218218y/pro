@@ -51,6 +51,7 @@ export {
   setHardCloseForMs,
 } from './doors_access_doors.js';
 export {
+  captureDividerDrawerRebuildMotion,
   clearDividerDrawerClearanceStarted,
   clearDividerDrawerDoorHold,
   clearDividerDrawerDoorHoldForDrawer,
@@ -59,6 +60,7 @@ export {
   holdDividerDrawerDoorClearanceForClose,
   markDividerDrawerClearanceStarted,
   readDividerDrawerClearanceStartedAt,
+  restoreDividerDrawerRebuildMotion,
   resolveDividerDrawerClearanceTarget,
   resolveDividerDrawerDoorClearanceTarget,
 } from './divider_drawer_door_clearance.js';

@@ -418,9 +418,27 @@ export type BuilderCalculateModuleStructureFn = (
   wardrobeType: unknown,
   app?: unknown
 ) => ModulesStructureItemLike[];
+export type BuilderDrawerRebuildVec3Snapshot = Readonly<{
+  x: number;
+  y: number;
+  z: number;
+}>;
+export type BuilderDrawerRebuildDoorMotionSnapshot = Readonly<{
+  key: string;
+  index: number;
+  position: BuilderDrawerRebuildVec3Snapshot;
+  rotationY: number | null;
+  visible: boolean | null;
+}>;
+export type BuilderDrawerRebuildMotionSnapshot = Readonly<{
+  drawerOffset: BuilderDrawerRebuildVec3Snapshot | null;
+  blockingDoors: readonly BuilderDrawerRebuildDoorMotionSnapshot[];
+}>;
 export type BuilderDrawerRebuildIntentSnapshot = Readonly<{
   targetId: string | number;
   version: number;
+  preserveMotion?: boolean;
+  motion?: BuilderDrawerRebuildMotionSnapshot | null;
 }>;
 export type BuilderDrawerRebuildSnapshot = Readonly<{
   primaryMode: string;

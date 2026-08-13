@@ -1,5 +1,8 @@
-import type { UnknownRecord } from '../../../types';
-import type { BuilderDrawerRebuildIntentSnapshot } from '../../../types';
+import type {
+  BuilderDrawerRebuildIntentSnapshot,
+  BuilderDrawerRebuildMotionSnapshot,
+  UnknownRecord,
+} from '../../../types';
 
 import { asRecord } from './record.js';
 import {
@@ -60,13 +63,19 @@ export function setDrawerMetaEntry(App: unknown, drawerId: unknown, value: unkno
   }
 }
 
-export function setDrawerRebuildIntent(App: unknown, drawerId: unknown): unknown {
+export function setDrawerRebuildIntent(
+  App: unknown,
+  drawerId: unknown,
+  opts?: Readonly<{ preserveMotion?: boolean; motion?: BuilderDrawerRebuildMotionSnapshot | null }>
+): unknown {
   const targetId = drawerId == null ? null : typeof drawerId === 'number' ? drawerId : asKey(drawerId);
   const runtime = initDrawerRuntime(App);
   const currentVersion = Number(runtime.rebuildIntentVersion);
   runtime.rebuildIntentVersion = currentVersion >= Number.MAX_SAFE_INTEGER ? 1 : currentVersion + 1;
   runtime.snapAfterBuildId = targetId;
   runtime.openAfterBuildId = targetId;
+  runtime.preserveMotionAfterBuild = opts?.preserveMotion === true;
+  runtime.rebuildMotionSnapshot = runtime.preserveMotionAfterBuild ? (opts?.motion ?? null) : null;
   return targetId;
 }
 
@@ -74,6 +83,8 @@ export function clearDrawerRebuildIntent(App: unknown): void {
   const runtime = initDrawerRuntime(App);
   runtime.snapAfterBuildId = null;
   runtime.openAfterBuildId = null;
+  runtime.preserveMotionAfterBuild = false;
+  runtime.rebuildMotionSnapshot = null;
 }
 
 export function getDrawerRebuildIntent(App: unknown): unknown {
@@ -88,10 +99,14 @@ export function getDrawerRebuildIntentSnapshot(App: unknown): BuilderDrawerRebui
   const targetId = getDrawerRebuildIntent(App);
   if (!runtime || (typeof targetId !== 'string' && typeof targetId !== 'number')) return null;
   const version = Number(runtime.rebuildIntentVersion);
-  return Object.freeze({
+  const preserveMotion = runtime.preserveMotionAfterBuild === true;
+  const base = {
     targetId,
     version: Number.isSafeInteger(version) && version >= 0 ? version : 0,
-  });
+  };
+  if (!preserveMotion) return Object.freeze(base);
+  const motion = runtime.rebuildMotionSnapshot as BuilderDrawerRebuildMotionSnapshot | null | undefined;
+  return Object.freeze({ ...base, preserveMotion: true, motion: motion ?? null });
 }
 
 function sameRebuildIntent(

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { runRebuildDrawerMeta } from '../esm/native/builder/bootstrap_drawer_meta.ts';
 import {
+  captureDividerDrawerRebuildMotion,
   getDrawerRebuildIntentSnapshot,
   setDrawerRebuildIntent,
 } from '../esm/native/runtime/doors_access.ts';
@@ -170,6 +171,83 @@ test('drawer rebuild intent can mark an external drawer open by divider alias af
   assert.equal(otherDrawer.group.position.x, 8);
   assert.deepEqual(setOpenIdCalls, ['div_ext_1_1']);
   assert.equal(state.runtime.drawersOpenId, 'div_ext_1_1');
+});
+
+test('repeated external-divider rebuild restores the live drawer offset instead of restarting from closed', () => {
+  const { App, drawer, state } = createApp('divider', 'div_ext_1_1');
+  drawer.id = 'd1_draw_1';
+  drawer.dividerKey = 'div_ext_1_1';
+  drawer.isInternal = false;
+  drawer.closed = { x: 0, y: 0, z: 0 };
+  drawer.open = { x: 0, y: 0, z: 7 };
+  drawer.group.position.copy({ x: 0, y: 0, z: 6.4 });
+
+  setDrawerRebuildIntent(App, 'div_ext_1_1', {
+    preserveMotion: true,
+    motion: captureDividerDrawerRebuildMotion(App, drawer),
+  });
+  const snapshot = captureDrawerRebuildSnapshot(App, state);
+
+  drawer.group.position.copy({ x: 0, y: 0, z: 0 });
+  runRebuildDrawerMeta(App, snapshot);
+
+  assert.equal(drawer.isOpen, true);
+  assert.equal(drawer.group.position.z, 6.4);
+});
+
+test('repeated internal-divider rebuild restores both drawer and blocking-door live transforms', () => {
+  const { App, drawer, state } = createApp('divider', 'int_4');
+  drawer.group.userData = { moduleIndex: 1, __doorWidth: 1.2, __doorHeight: 0.4 };
+  drawer.closed = { x: 0, y: 0, z: 0 };
+  drawer.open = { x: 0, y: 0, z: 5 };
+  drawer.group.position.copy({ x: 0, y: 0, z: 4.6 });
+
+  const oldDoor = {
+    type: 'hinged',
+    hingeSide: 'left',
+    group: {
+      name: 'door_module_1_left',
+      position: makePosition({ x: 0.25, y: 0, z: 0 }),
+      rotation: { x: 0, y: 1.07, z: 0 },
+      visible: true,
+      userData: { moduleIndex: 1, partId: 'door_1_left', __doorWidth: 1.2, __doorHeight: 2 },
+    },
+  };
+  (App as any).render.doorsArray = [oldDoor];
+
+  setDrawerRebuildIntent(App, 'int_4', {
+    preserveMotion: true,
+    motion: captureDividerDrawerRebuildMotion(App, drawer),
+  });
+  const snapshot = captureDrawerRebuildSnapshot(App, state);
+
+  const rebuiltDrawer = {
+    ...drawer,
+    group: {
+      position: makePosition({ x: 0, y: 0, z: 0 }),
+      userData: { moduleIndex: 1, __doorWidth: 1.2, __doorHeight: 0.4 },
+    },
+    closed: { x: 0, y: 0, z: 0 },
+    open: { x: 0, y: 0, z: 5 },
+    isOpen: false,
+  };
+  const rebuiltDoor = {
+    ...oldDoor,
+    group: {
+      ...oldDoor.group,
+      position: makePosition({ x: 0, y: 0, z: 0 }),
+      rotation: { x: 0, y: 0, z: 0 },
+    },
+  };
+  (App as any).render.drawersArray = [rebuiltDrawer];
+  (App as any).render.doorsArray = [rebuiltDoor];
+
+  runRebuildDrawerMeta(App, snapshot);
+
+  assert.equal(rebuiltDrawer.isOpen, true);
+  assert.equal(rebuiltDrawer.group.position.z, 4.6);
+  assert.equal(rebuiltDoor.group.position.x, 0.25);
+  assert.equal(rebuiltDoor.group.rotation.y, 1.07);
 });
 
 test('rapid rebuild finalization cannot consume a newer forced-open intent, including the same drawer id', () => {

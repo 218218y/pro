@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-13T04:03:51.936Z",
+  "generatedAt": "2026-08-13T17:00:51.560Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 548,
-    "totalFiles": 213,
+    "totalOccurrences": 549,
+    "totalFiles": 214,
     "byCategory": {
       "runtime-default": 57,
-      "domain-default": 393,
+      "domain-default": 394,
       "error-message-default": 42,
       "framework-default": 2,
       "browser-adapter": 18,
@@ -584,6 +584,12 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
+        }
+      },
+      "esm/native/runtime/divider_drawer_door_clearance.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/runtime/doors_runtime_support_entries.ts": {
@@ -3187,6 +3193,13 @@
       "text": "// DOM-attribute-probe-fallback: malformed element-like objects are treated as lacking the attribute."
     },
     {
+      "file": "esm/native/runtime/divider_drawer_door_clearance.ts",
+      "line": 179,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// the reliable fallback; comparing unrelated local coordinates would create false misses."
+    },
+    {
       "file": "esm/native/runtime/doors_runtime_support_entries.ts",
       "line": 113,
       "term": "fallback",
@@ -4357,28 +4370,28 @@
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 147,
+      "line": 148,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "function readTransitionMeta(opts: ModeTransitionOptsLike, fallbackSource: string): ActionMetaLike {"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 148,
+      "line": 149,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "const source = typeof opts.source === 'string' && opts.source ? opts.source : fallbackSource;"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 166,
+      "line": 167,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "fallbackSource: string"
     },
     {
       "file": "esm/native/ui/modes_transition_policy.ts",
-      "line": 169,
+      "line": 170,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "const meta = readTransitionMeta(opts, fallbackSource);"

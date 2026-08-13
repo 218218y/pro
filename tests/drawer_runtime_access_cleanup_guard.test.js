@@ -56,7 +56,10 @@ test('[drawer-runtime-access] runtime helper exposes canonical drawer service/ru
 
 test('[drawer-runtime-access] hot-path callers go through runtime/doors_access helpers', () => {
   assert.match(canvasClickRaw, /tryHandleCanvasDrawerModeClick\(\{/);
-  assert.match(drawerModeRaw, /setDrawerRebuildIntent\(App, targetDrawerId\)/);
+  assert.match(
+    drawerModeRaw,
+    /setDrawerRebuildIntent\(App, targetDrawerId, \{[\s\S]*preserveMotion: sameDrawerSession,[\s\S]*motion: rebuildMotion,[\s\S]*\}\)/
+  );
   assert.match(bootstrapDrawerMetaRaw, /consumeDrawerRebuildIntent\(App, snapshot\.intent\)/);
   assert.doesNotMatch(bootstrapDrawerMetaRaw, /readModeStateFromApp/);
   assert.doesNotMatch(bootstrapDrawerMetaRaw, /getDrawersOpenId/);
