@@ -5,8 +5,6 @@
 import { getDrawersArray } from '../runtime/render_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getMirrorMaterial } from './render_ops.js';
-import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
-import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   DRAWER_SKETCH_DOOR_CUT_POLICY,
   DRAWER_SKETCH_SIZING_POLICY,
@@ -29,6 +27,7 @@ import {
   readKey,
   type ValueRecord,
 } from './post_build_extras_shared.js';
+import { readSketchDoorManualSplitSelection } from './post_build_sketch_door_cuts_apply.js';
 import {
   readGeometryUserDataNumber,
   readGeometryUserDataNumberKey,
@@ -51,14 +50,6 @@ type SketchModuleDrawerStackCollection = {
   bounds: SketchModuleDrawerStackBounds[];
   hasRuntimeModuleDrawers: { top: boolean; bottom: boolean };
 };
-
-function readSketchModuleDoorManualSplitPosList(cfg: ValueRecord, partId: string): number[] {
-  const basePartId = resolveDoorSplitAuthoringBaseKey(partId);
-  if (!basePartId) return [];
-  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
-  if (!splitMap || !isSplitEnabledInMap(splitMap, basePartId, false)) return [];
-  return readSplitPosListFromMap(splitMap, basePartId);
-}
 
 function normalizeSketchModuleCutKey(value: unknown, stackKey: 'top' | 'bottom'): string | null {
   const key = readStringOrNull(value);
@@ -248,8 +239,10 @@ export function applySketchExternalDrawerDoorCuts(args: {
       );
       if (!moduleKey) return null;
       const stacks = stacksByModule.get(moduleKey) || [];
-      const basePartId = typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`;
-      const splitPosList = readSketchModuleDoorManualSplitPosList(cfg, basePartId);
+      const { basePartId, splitPosList } = readSketchDoorManualSplitSelection(
+        cfg,
+        typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`
+      );
       if (!stacks.length && !splitPosList.length) return null;
       return { stacks, basePartId, splitPosList };
     },

@@ -3,13 +3,12 @@
 // Owns sketch-box stack-bound collection and segmented door rebuild routing.
 
 import { getDrawersArray } from '../runtime/render_access.js';
-import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
-import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';
 
 import { asRecord, getDrawerEntryGroup, readKey, type ValueRecord } from './post_build_extras_shared.js';
+import { readSketchDoorManualSplitSelection } from './post_build_sketch_door_cuts_apply.js';
 import {
   readGeometryUserDataNumber,
   readGeometryUserDataNumberKey,
@@ -25,14 +24,6 @@ import {
 } from './post_build_sketch_door_cuts_shared.js';
 
 type SketchBoxDrawerStackBounds = SketchDrawerStackBounds & { key: string };
-
-function readSketchBoxDoorManualSplitPosList(cfg: ValueRecord, basePartId: string): number[] {
-  if (!basePartId) return [];
-  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
-  if (!splitMap) return [];
-  if (!isSplitEnabledInMap(splitMap, basePartId, false)) return [];
-  return readSplitPosListFromMap(splitMap, basePartId);
-}
 
 function collectSketchBoxExternalDrawerStackBounds(App: AppContainer): SketchBoxDrawerStackBounds[] {
   const drawersArr = getDrawersArray(App);
@@ -129,10 +120,10 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       const moduleKey = readStringOrNull(ud.__wpSketchModuleKey);
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
       const stacks = boxStacks.get(boxKey) || [];
-      const basePartId = resolveDoorSplitAuthoringBaseKey(
+      const { basePartId, splitPosList } = readSketchDoorManualSplitSelection(
+        cfg,
         typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
       );
-      const splitPosList = readSketchBoxDoorManualSplitPosList(cfg, basePartId);
       if (!stacks.length && !splitPosList.length) return null;
       return { stacks, basePartId, splitPosList };
     },

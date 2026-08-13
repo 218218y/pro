@@ -3,10 +3,12 @@
 // Owns door-loop selection and interval application for segmented sketch-door rebuild flows.
 
 import { getDoorsArray } from '../runtime/render_access.js';
+import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
 
-import { asRecord, getDoorEntryGroup, readKey } from './post_build_extras_shared.js';
+import { asRecord, getDoorEntryGroup, readKey, type ValueRecord } from './post_build_extras_shared.js';
 import type {
   ApplySketchDrawerDoorCutsArgs,
   SketchDrawerCutSegment,
@@ -107,6 +109,29 @@ function resolveSketchDoorManualSplitBounds(args: {
     return { yMin: doorMin, yMax: doorMax };
   }
   return { yMin, yMax };
+}
+
+export type SketchDoorManualSplitSelection = {
+  basePartId: string;
+  splitPosList: number[];
+};
+
+export function readSketchDoorManualSplitSelection(
+  cfg: ValueRecord,
+  partId: unknown
+): SketchDoorManualSplitSelection {
+  const basePartId = resolveDoorSplitAuthoringBaseKey(partId);
+  if (!basePartId) return { basePartId: '', splitPosList: [] };
+
+  const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  if (!splitMap || !isSplitEnabledInMap(splitMap, basePartId, false)) {
+    return { basePartId, splitPosList: [] };
+  }
+
+  return {
+    basePartId,
+    splitPosList: readSplitPosListFromMap(splitMap, basePartId),
+  };
 }
 
 export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): void {

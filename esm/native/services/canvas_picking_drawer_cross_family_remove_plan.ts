@@ -1,8 +1,11 @@
 import type { ModuleConfigLike, UnknownRecord } from '../../../types';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
+import {
+  readCrossDrawerString,
+  sameCrossDrawerIdentity,
+} from './canvas_picking_drawer_cross_family_hit_identity.js';
 import type {
   CrossDrawerHit,
   SketchExternalDrawerListKind,
@@ -40,10 +43,6 @@ export type CrossDrawerRemovePlan =
 
 type BoxExternalDrawerListKey = 'extDrawers' | typeof SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY;
 
-function readString(value: unknown): string {
-  return formatIdentityValue(readIdentityValue(value));
-}
-
 function readSketchExtras(cfg: UnknownRecord): UnknownRecord | null {
   const current = cfg.sketchExtras;
   return current && typeof current === 'object' && !Array.isArray(current)
@@ -61,7 +60,7 @@ function removeListItemById(list: UnknownRecord[], id: string): boolean {
   let matchIndex = -1;
   for (let i = 0; i < list.length; i++) {
     const item = list[i];
-    if (readString(item && typeof item === 'object' ? item.id : '') !== id) continue;
+    if (readCrossDrawerString(item && typeof item === 'object' ? item.id : '') !== id) continue;
     if (matchIndex >= 0) return false;
     matchIndex = i;
   }
@@ -92,9 +91,7 @@ function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown
 }
 
 export function sameCrossDrawerModuleKey(a: unknown, b: unknown): boolean {
-  const left = readIdentityValue(a);
-  const right = readIdentityValue(b);
-  return left != null && right != null && formatIdentityValue(left) === formatIdentityValue(right);
+  return sameCrossDrawerIdentity(a, b);
 }
 
 export function resolveCrossDrawerRemovePlan(args: {
@@ -117,8 +114,8 @@ export function resolveCrossDrawerRemovePlan(args: {
   if (moduleKey == null) return null;
 
   if (hit.family === 'sketch_external') {
-    const drawerId = readString(hit.sketchExtDrawerId);
-    const boxId = readString(hit.sketchBoxId);
+    const drawerId = readCrossDrawerString(hit.sketchExtDrawerId);
+    const boxId = readCrossDrawerString(hit.sketchBoxId);
     if (!drawerId) return null;
     if (boxId) {
       if (!hit.sketchExternalListKind) return null;
@@ -141,7 +138,7 @@ export function resolveCrossDrawerRemovePlan(args: {
   }
 
   if (hit.family === 'sketch_internal') {
-    const partId = readString(hit.partId);
+    const partId = readCrossDrawerString(hit.partId);
     const drawerId = readSketchInternalDrawerIdFromPartId(partId, moduleKey);
     if (!partId || !drawerId) return null;
     return {
@@ -153,7 +150,7 @@ export function resolveCrossDrawerRemovePlan(args: {
   }
 
   if (hit.family === 'standard_external') {
-    const partId = readString(hit.partId);
+    const partId = readCrossDrawerString(hit.partId);
     if (!partId) return null;
     return {
       kind: 'remove-standard-external-drawer',
@@ -181,7 +178,7 @@ export function removeSketchExternalDrawerTargetFromConfig(
     return removeListItemById(readArray(extra, 'extDrawers'), target.drawerId);
   }
   const boxes = readArray(extra, 'boxes');
-  const matchingBoxes = boxes.filter(box => readString(box?.id) === target.boxId);
+  const matchingBoxes = boxes.filter(box => readCrossDrawerString(box?.id) === target.boxId);
   if (matchingBoxes.length !== 1) return false;
   const listKey: BoxExternalDrawerListKey =
     target.listKind === 'regular-external' ? SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY : 'extDrawers';

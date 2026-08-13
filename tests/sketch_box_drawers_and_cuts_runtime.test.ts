@@ -1173,6 +1173,7 @@ test('sketch box drawers and external drawers source use divider-aware spans', a
 
 test('sketch box external drawer cuts rebuild segmented box doors from drawer runtime bounds', async () => {
   const boxSrc = await readSourceFiles(['../esm/native/builder/post_build_sketch_door_cuts_box.ts']);
+  const applyOwnerSrc = await readSourceFiles(['../esm/native/builder/post_build_sketch_door_cuts_apply.ts']);
   const src = await readSourceFiles([
     '../esm/native/builder/post_build_sketch_door_cuts.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
@@ -1185,8 +1186,9 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
     src,
     /function collectSketchBoxExternalDrawerStackBounds\(App: AppContainer\): SketchBoxDrawerStackBounds\[]/
   );
-  assert.match(boxSrc, /shared\/door_visual_key_contracts_shared\.js/);
-  assert.match(boxSrc, /resolveDoorSplitAuthoringBaseKey/);
+  assert.match(applyOwnerSrc, /shared\/door_visual_key_contracts_shared\.js/);
+  assert.match(applyOwnerSrc, /resolveDoorSplitAuthoringBaseKey/);
+  assert.match(boxSrc, /readSketchDoorManualSplitSelection/);
   assert.doesNotMatch(boxSrc, /readSketchBoxDoorBasePartId/);
   assert.match(src, /ud\.__wpSketchExtDrawer !== true/);
   assert.match(
@@ -1294,10 +1296,17 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
   assert.match(cutsSrc, /stackKey\?: 'top' \| 'bottom';/);
   assert.match(cutsSrc, /allowConfigDerivedCuts\?: boolean;/);
   assert.match(cutsSrc, /const allowConfigDerivedCuts = args\.allowConfigDerivedCuts !== false;/);
-  assert.match(cutsSrc, /if \(!stacksByModule\.size && allowConfigDerivedCuts\) \{/);
   assert.match(
     cutsSrc,
-    /if \(!stacksByModule\.size\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
+    /const runtimeDrawerOwnerBlocksConfigFallback =[\s\S]*runtimeStackCollection\.hasRuntimeModuleDrawers\[stackKey\]/
+  );
+  assert.match(
+    cutsSrc,
+    /if \(!stacksByModule\.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback\) \{/
+  );
+  assert.match(
+    cutsSrc,
+    /if \(!stacksByModule\.size && !splitMap\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
   );
 });
 

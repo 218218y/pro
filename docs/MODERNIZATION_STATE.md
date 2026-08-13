@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-11T14:47:03.596Z
+Generated at: 2026-08-13T04:03:54.271Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -21,8 +21,8 @@ Generated at: 2026-08-11T14:47:03.596Z
 
 ## Compatibility debt
 
-- Categorized occurrences: **546**
-- Files with categorized occurrences: **212**
+- Categorized occurrences: **548**
+- Files with categorized occurrences: **213**
 - Growth-ratcheted compatibility occurrences: **25** across **16** files
 - Project migration: **1**
 - External API compatibility: **4**
@@ -34,7 +34,7 @@ Generated at: 2026-08-11T14:47:03.596Z
 
 - Registered topology families: **41**
 - Private owners: **243**
-- Guarded private-owner import sites: **499**
+- Guarded private-owner import sites: **500**
 - Identity facades: **143**
 - Explicitly inventoried identity facades: **122**
 

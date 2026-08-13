@@ -27,6 +27,12 @@ export function readCrossDrawerString(value: unknown): string {
   return formatIdentityValue(readIdentityValue(value));
 }
 
+export function sameCrossDrawerIdentity(a: unknown, b: unknown): boolean {
+  const left = readIdentityValue(a);
+  const right = readIdentityValue(b);
+  return left != null && right != null && formatIdentityValue(left) === formatIdentityValue(right);
+}
+
 function stripSketchInternalDrawerSlotSuffix(partId: string): string {
   return partId.replace(/_(?:lower|upper)$/u, '');
 }

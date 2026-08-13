@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T14:47:03.596Z",
+  "generatedAt": "2026-08-13T04:03:54.271Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -14,8 +14,8 @@
     "files": 281
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 546,
-    "filesWithOccurrences": 212,
+    "totalCategorizedOccurrences": 548,
+    "filesWithOccurrences": 213,
     "guardedOccurrences": 25,
     "guardedFiles": 16,
     "projectMigration": 1,
@@ -27,7 +27,7 @@
   "ownership": {
     "registeredFamilies": 41,
     "privateOwners": 243,
-    "guardedImportSites": 499,
+    "guardedImportSites": 500,
     "identityFacades": 143,
     "explicitlyInventoriedIdentityFacades": 122
   },
