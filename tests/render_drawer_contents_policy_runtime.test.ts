@@ -168,7 +168,12 @@ test('internal drawers follow the cabinet drawer runner selection', () => {
     const movingRoles = runnerRoles(drawer);
 
     if (drawerRunnerType === 'blum') {
-      assert.deepEqual(fixedRoles.sort(), ['blum-fixed-runner-left', 'blum-fixed-runner-right']);
+      assert.deepEqual(fixedRoles.sort(), [
+        'blum-fixed-runner-left',
+        'blum-fixed-runner-right',
+        'blum-fixed-wall-web-left',
+        'blum-fixed-wall-web-right',
+      ]);
       assert.deepEqual(movingRoles.sort(), [
         'blum-locking-device-left',
         'blum-locking-device-right',
@@ -176,7 +181,7 @@ test('internal drawers follow the cabinet drawer runner selection', () => {
         'blum-moving-runner-right',
       ]);
     } else {
-      assert.equal(fixedRoles.length, 6);
+      assert.equal(fixedRoles.length, 8);
       assert.ok(fixedRoles.every(role => role.startsWith('roller-fixed-')));
       assert.equal(movingRoles.length, 6);
       assert.ok(movingRoles.every(role => role.startsWith('roller-moving-')));

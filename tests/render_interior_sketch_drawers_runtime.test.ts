@@ -304,6 +304,8 @@ test('render sketch shoe drawer follows the external Blum runner selection', () 
   assert.deepEqual(roles.filter(role => role.startsWith('blum-fixed-')).sort(), [
     'blum-fixed-runner-left',
     'blum-fixed-runner-right',
+    'blum-fixed-wall-web-left',
+    'blum-fixed-wall-web-right',
   ]);
   assert.ok(roles.some(role => role === 'blum-moving-runner-left'));
   assert.ok(roles.some(role => role === 'blum-locking-device-right'));

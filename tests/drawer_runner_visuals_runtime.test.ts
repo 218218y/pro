@@ -267,7 +267,15 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
 test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below the drawer and locks at the moving front', () => {
   const { fixed, moving } = append({ type: 'blum' });
 
-  assert.deepEqual(roles(fixed).sort(), ['blum-fixed-runner-left', 'blum-fixed-runner-right'].sort());
+  assert.deepEqual(
+    roles(fixed).sort(),
+    [
+      'blum-fixed-runner-left',
+      'blum-fixed-runner-right',
+      'blum-fixed-wall-web-left',
+      'blum-fixed-wall-web-right',
+    ].sort()
+  );
   assert.deepEqual(
     roles(moving).sort(),
     [
@@ -277,16 +285,26 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
       'blum-moving-runner-right',
     ].sort()
   );
-  for (const rail of fixed.children) {
-    assert.ok(rail.position.y < 0.7 - 0.18 / 2, 'fixed TANDEM runner should be below the closed drawer');
+  const fixedRunnerBodies = fixed.children.filter(child =>
+    String(child.userData.__wpDrawerRunnerRole).startsWith('blum-fixed-runner')
+  );
+  for (const rail of fixedRunnerBodies) {
+    assert.ok(
+      rail.position.y < 0.7 - 0.18 / 2,
+      'fixed TANDEM horizontal runner should stay below the closed drawer'
+    );
   }
   const rightFixedRunner = fixed.children.find(
     child => child.userData.__wpDrawerRunnerRole === 'blum-fixed-runner-right'
+  );
+  const rightFixedWallWeb = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'blum-fixed-wall-web-right'
   );
   const rightMovingRunner = moving.children.find(
     child => child.userData.__wpDrawerRunnerRole === 'blum-moving-runner-right'
   );
   assert.ok(rightFixedRunner?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightFixedWallWeb?.geometry instanceof FakeBoxGeometry);
   assert.ok(rightMovingRunner?.geometry instanceof FakeBoxGeometry);
   const cabinetPlaneLocalX = 0.604 / 2;
   const drawerSideLocalX = 0.56 / 2;
@@ -308,6 +326,29 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
   assert.ok(
     Math.abs(rightFixedRunner.position.x + rightFixedRunner.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
     'fixed TANDEM body outer face must touch the actual cabinet side'
+  );
+  assert.ok(
+    Math.abs(rightFixedWallWeb.position.x + rightFixedWallWeb.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
+    'fixed TANDEM wall web outer face must stay flush with the cabinet mounting plane'
+  );
+  assert.ok(
+    Math.abs(
+      rightFixedWallWeb.geometry.height -
+        rightFixedRunner.geometry.width *
+          BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualFixedWallRiseHeightToRailWidthRatio
+    ) < 1e-12,
+    'fixed TANDEM wall web rise should track the horizontal rail width'
+  );
+  assert.equal(
+    rightFixedWallWeb.geometry.width,
+    BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualFixedWallWebThicknessM,
+    'fixed TANDEM wall web should use the independently tunable wall thickness'
+  );
+  const fixedRunnerBottomY = rightFixedRunner.position.y - rightFixedRunner.geometry.height / 2;
+  const fixedWallBottomY = rightFixedWallWeb.position.y - rightFixedWallWeb.geometry.height / 2;
+  assert.ok(
+    Math.abs(fixedRunnerBottomY - fixedWallBottomY) < 1e-12,
+    'fixed TANDEM wall web and horizontal rail should share one bottom edge to form an L-profile'
   );
   const fixedInnerLocalX = rightFixedRunner.position.x - 1.2 - rightFixedRunner.geometry.width / 2;
   const fixedOuterLocalX = rightFixedRunner.position.x - 1.2 + rightFixedRunner.geometry.width / 2;

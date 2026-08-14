@@ -364,6 +364,8 @@ test('standard shoe drawer uses the selected external Blum runner hardware', () 
   assert.deepEqual(roles.filter(role => role.startsWith('blum-fixed-')).sort(), [
     'blum-fixed-runner-left',
     'blum-fixed-runner-right',
+    'blum-fixed-wall-web-left',
+    'blum-fixed-wall-web-right',
   ]);
   assert.ok(roles.includes('blum-moving-runner-left'));
   assert.ok(roles.includes('blum-locking-device-right'));

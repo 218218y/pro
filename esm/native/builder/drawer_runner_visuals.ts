@@ -287,6 +287,13 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     );
     const fixedInnerAbsX = cabinetPlaneAbsX - fixedRailWidth;
     const fixedRailX = side * (cabinetPlaneAbsX - fixedRailWidth / 2);
+    const fixedWallWebThickness = Math.min(policy.visualFixedWallWebThicknessM, fixedRailWidth);
+    const fixedWallRiseHeight = fixedRailWidth * policy.visualFixedWallRiseHeightToRailWidthRatio;
+    const fixedWallX = side * (cabinetPlaneAbsX - fixedWallWebThickness / 2);
+    // The horizontal rail occupies the bottom of the L-profile. Align the wall web's
+    // bottom with the rail bottom, then let it rise along the cabinet side.
+    const fixedRailBottomY = railY - policy.visualRailHeightM / 2;
+    const fixedWallY = fixedRailBottomY + fixedWallRiseHeight / 2;
 
     // The previous model stopped the moving member at the drawer side. That can
     // place it beside the fixed member whenever the application's generic drawer
@@ -315,6 +322,15 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
       position: [args.closedPosition.x + fixedRailX, args.closedPosition.y + railY, fixedCenterZ],
       ownerPartId: args.ownerPartId,
       role: `blum-fixed-runner-${side < 0 ? 'left' : 'right'}`,
+    });
+    addBox({
+      THREE: args.THREE,
+      parent: args.fixedParent,
+      material: materials.blumSteel,
+      size: [fixedWallWebThickness, fixedWallRiseHeight, length],
+      position: [args.closedPosition.x + fixedWallX, args.closedPosition.y + fixedWallY, fixedCenterZ],
+      ownerPartId: args.ownerPartId,
+      role: `blum-fixed-wall-web-${side < 0 ? 'left' : 'right'}`,
     });
 
     // Telescoping member that travels with the drawer.
