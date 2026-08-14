@@ -181,10 +181,10 @@ class FakeMatrix4D {
 
 test('handles finalization warns about unusually small cut doors without blocking the build', () => {
   const { App } = createApp();
-  const toasts: Array<[string, string | undefined]> = [];
+  const acknowledgements: Array<[string, string]> = [];
   App.services.uiFeedback = {
-    toast(message: string, kind?: string) {
-      toasts.push([message, kind]);
+    acknowledge(title: string, message: string) {
+      acknowledgements.push([title, message]);
     },
   };
 
@@ -228,10 +228,10 @@ test('handles finalization warns about unusually small cut doors without blockin
   });
 
   assert.equal(App.render.doorsArray.length, 3, 'the warning must not reject or mutate the built doors');
-  assert.equal(toasts.length, 1);
-  assert.equal(toasts[0]?.[1], 'info');
-  assert.match(toasts[0]?.[0] ?? '', /דלת קטנה באופן חריג/);
-  assert.match(toasts[0]?.[0] ?? '', /הבנייה הושלמה/);
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]?.[0], 'בנייה חריגה שדורשת בדיקה');
+  assert.match(acknowledgements[0]?.[1] ?? '', /דלת קטנה באופן חריג/);
+  assert.match(acknowledgements[0]?.[1] ?? '', /הבנייה הושלמה/);
 
   applyHandles({
     App,
@@ -240,7 +240,7 @@ test('handles finalization warns about unusually small cut doors without blockin
     removeDoorsEnabled: false,
     triggerRender: false,
   });
-  assert.equal(toasts.length, 1, 'an unchanged build must not repeat the same warning');
+  assert.equal(acknowledgements.length, 1, 'an unchanged build must not repeat the same warning');
 
   smallCutDoor.userData.__doorHeight = 0.13;
   applyHandles({
@@ -258,15 +258,15 @@ test('handles finalization warns about unusually small cut doors without blockin
     removeDoorsEnabled: false,
     triggerRender: false,
   });
-  assert.equal(toasts.length, 2, 'a repaired then reintroduced anomaly must be reported again');
+  assert.equal(acknowledgements.length, 2, 'a repaired then reintroduced anomaly must be reported again');
 });
 
 test('handles finalization reads the construction height of sketch drawer-cut door leaves', () => {
   const { App } = createApp();
-  const toasts: Array<[string, string | undefined]> = [];
+  const acknowledgements: Array<[string, string]> = [];
   App.services.uiFeedback = {
-    toast(message: string, kind?: string) {
-      toasts.push([message, kind]);
+    acknowledge(title: string, message: string) {
+      acknowledgements.push([title, message]);
     },
   };
 
@@ -321,9 +321,9 @@ test('handles finalization reads the construction height of sketch drawer-cut do
     triggerRender: false,
   });
 
-  assert.equal(toasts.length, 1);
-  assert.equal(toasts[0]?.[1], 'info');
-  assert.match(toasts[0]?.[0] ?? '', /מגירות חיצוניות/);
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]?.[0], 'בנייה חריגה שדורשת בדיקה');
+  assert.match(acknowledgements[0]?.[1] ?? '', /מגירות חיצוניות/);
 });
 
 test('handles apply uses stored manual positions when placing external drawer handles', () => {

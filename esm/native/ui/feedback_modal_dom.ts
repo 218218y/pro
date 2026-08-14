@@ -50,6 +50,7 @@ export function getCustomModalEls(App: AppContainer): CustomModalEls {
 
 export function closeCustomModal(App: AppContainer, opts?: { cancelled?: boolean }): void {
   const state = ensureModalState(App);
+  if (opts?.cancelled === true && state.mode === 'acknowledge') return;
   const els = getCustomModalEls(App);
   if (!els.modal) return;
   const promptCancelCb = opts?.cancelled === true && state.mode === 'prompt' ? state.onPrompt : null;
@@ -61,7 +62,13 @@ export function closeCustomModal(App: AppContainer, opts?: { cancelled?: boolean
     __uiFeedbackReportNonFatal(App, 'modal.close', err);
   }
 
+  state.mode = null;
+  state.onPrompt = null;
+  state.onConfirm = null;
+  state.onCancel = null;
+
   getBrowserTimers(App).setTimeout(() => {
+    if (ensureModalState(App).mode !== null) return;
     try {
       if (els.msgEl) els.msgEl.classList.add('hidden');
     } catch (err) {
@@ -73,16 +80,19 @@ export function closeCustomModal(App: AppContainer, opts?: { cancelled?: boolean
       __uiFeedbackReportNonFatal(App, 'modal.showInput', err);
     }
     try {
-      if (els.confirmBtn) els.confirmBtn.className = 'btn btn-save';
+      if (els.confirmBtn) {
+        els.confirmBtn.className = 'btn btn-save';
+        els.confirmBtn.textContent = 'אישור';
+      }
     } catch (err) {
       __uiFeedbackReportNonFatal(App, 'modal.resetConfirmClass', err);
     }
+    try {
+      if (els.cancelBtn) els.cancelBtn.classList.remove('hidden');
+    } catch (err) {
+      __uiFeedbackReportNonFatal(App, 'modal.resetCancelVisibility', err);
+    }
   }, 300);
-
-  state.mode = null;
-  state.onPrompt = null;
-  state.onConfirm = null;
-  state.onCancel = null;
 
   try {
     if (typeof promptCancelCb === 'function') promptCancelCb(null);
@@ -137,5 +147,24 @@ export function openConfirmViaWindow(
     } catch (cancelErr) {
       __uiFeedbackReportNonFatal(App, 'confirm.window.cancel', cancelErr);
     }
+  }
+}
+
+export function openAcknowledgeViaWindow(
+  App: AppContainer,
+  message: unknown,
+  onAcknowledge?: UiFeedbackConfirmCallback | null
+): boolean {
+  const doc = getDocumentMaybe(App);
+  if (!doc) return false;
+  try {
+    const win = doc.defaultView;
+    if (!win || typeof win.alert !== 'function') return false;
+    win.alert(readFeedbackText(message));
+    if (typeof onAcknowledge === 'function') onAcknowledge();
+    return true;
+  } catch (err) {
+    __uiFeedbackReportNonFatal(App, 'acknowledge.window', err);
+    return false;
   }
 }

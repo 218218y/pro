@@ -106,6 +106,19 @@ function __wp_toast(App: AppContainer, message: string, type?: string): unknown 
   return undefined;
 }
 
+function __wp_acknowledge(App: AppContainer, title: string, message: string): unknown {
+  try {
+    return getUiFeedback(App).acknowledge(title, message);
+  } catch (err) {
+    __wp_reportPickingIssue(App, err, {
+      where: 'canvasPicking.ui',
+      op: 'acknowledge.feedback',
+      throttleMs: 1000,
+    });
+  }
+  return undefined;
+}
+
 function __wp_getCanvasPickingRuntime(App: AppContainer): UnknownRecord {
   return ensureCanvasPickingRuntime(App);
 }
@@ -121,5 +134,6 @@ export {
   __wp_isMultiMode,
   __wp_triggerRender,
   __wp_toast,
+  __wp_acknowledge,
   __wp_getCanvasPickingRuntime,
 };

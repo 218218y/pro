@@ -1,5 +1,6 @@
 import type {
   AppContainer,
+  UiFeedbackAcknowledgeCallback,
   UiFeedbackConfirmCallback,
   UiFeedbackEditToastFn,
   UiFeedbackNamespaceLike,
@@ -22,7 +23,7 @@ import {
   markUiFeedbackInstalled,
   setModeToastSyncUnsub,
 } from '../services/api.js';
-import { openCustomConfirm, openCustomPrompt } from './feedback_modal.js';
+import { openCustomAcknowledge, openCustomConfirm, openCustomPrompt } from './feedback_modal.js';
 import { showToast, updateEditStateToast } from './feedback_toast.js';
 
 function isLiveCleanupHandle(value: unknown): boolean {
@@ -56,6 +57,8 @@ function hasStableUiFeedbackSurface(value: UiFeedbackNamespaceLike): value is Ui
     typeof value.openCustomPrompt === 'function' &&
     typeof value.confirm === 'function' &&
     typeof value.openCustomConfirm === 'function' &&
+    typeof value.acknowledge === 'function' &&
+    typeof value.openCustomAcknowledge === 'function' &&
     typeof value.updateEditStateToast === 'function'
   );
 }
@@ -121,6 +124,15 @@ function fillUiFeedbackSurface(App: AppContainer, fb: UiFeedbackNamespaceLike): 
   const confirm = chooseInstalledCallable(fb.confirm, fb.openCustomConfirm, confirmImpl);
   if (fb.confirm !== confirm) fb.confirm = confirm;
   if (fb.openCustomConfirm !== confirm) fb.openCustomConfirm = confirm;
+
+  const acknowledgeImpl = (
+    title: unknown,
+    msg: unknown,
+    onAcknowledge?: UiFeedbackAcknowledgeCallback | null
+  ) => openCustomAcknowledge(App, title, msg, onAcknowledge);
+  const acknowledge = chooseInstalledCallable(fb.acknowledge, fb.openCustomAcknowledge, acknowledgeImpl);
+  if (fb.acknowledge !== acknowledge) fb.acknowledge = acknowledge;
+  if (fb.openCustomAcknowledge !== acknowledge) fb.openCustomAcknowledge = acknowledge;
 
   const editToastImpl: UiFeedbackEditToastFn = (text: string | null, isActive: boolean) =>
     updateEditStateToast(App, text, isActive);

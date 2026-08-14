@@ -95,6 +95,7 @@ test('ui feedback install heals a damaged surface without replacing canonical me
   const toastRef = feedback?.toast;
   const confirmRef = feedback?.confirm;
   const promptRef = feedback?.prompt;
+  const acknowledgeRef = feedback?.acknowledge;
 
   assert.equal(typeof runtime?.modeToastSyncUnsub, 'function');
   assert.equal(subscribeCalls, 1);
@@ -102,6 +103,7 @@ test('ui feedback install heals a damaged surface without replacing canonical me
   delete feedback?.showToast;
   delete feedback?.openCustomPrompt;
   delete feedback?.openCustomConfirm;
+  delete feedback?.openCustomAcknowledge;
   delete feedback?.updateEditStateToast;
   runtime!.modeToastSyncUnsub = null;
 
@@ -114,6 +116,8 @@ test('ui feedback install heals a damaged surface without replacing canonical me
   assert.equal(repaired?.openCustomPrompt, promptRef);
   assert.equal(repaired?.confirm, confirmRef);
   assert.equal(repaired?.openCustomConfirm, confirmRef);
+  assert.equal(repaired?.acknowledge, acknowledgeRef);
+  assert.equal(repaired?.openCustomAcknowledge, acknowledgeRef);
   assert.equal(typeof repaired?.updateEditStateToast, 'function');
   assert.equal(typeof runtime?.modeToastSyncUnsub, 'function');
   assert.equal(subscribeCalls, 2);

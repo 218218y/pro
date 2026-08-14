@@ -18,7 +18,7 @@ export type ModalState =
     }
   | {
       open: true;
-      mode: 'prompt' | 'confirm';
+      mode: 'prompt' | 'confirm' | 'acknowledge';
       title: string;
       message: string;
       value: string;
@@ -28,6 +28,7 @@ export type UiFeedbackHost = {
   toast: (msg: unknown, kind?: unknown) => void;
   prompt: (title: string, defaultValue: string, cb?: ((v: unknown) => void) | null) => void;
   confirm: (title: string, message: string, onYes?: (() => void) | null, onNo?: (() => void) | null) => void;
+  acknowledge: (title: string, message: string, onAcknowledge?: (() => void) | null) => void;
 };
 
 export type AppUiFeedbackSlot = {

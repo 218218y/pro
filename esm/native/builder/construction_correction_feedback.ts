@@ -13,6 +13,7 @@ type ConstructionCorrectionFeedbackCache = {
 type NotifyConstructionCorrectionOptions = {
   scope: string;
   completePass?: boolean;
+  title: string;
   buildMessage: (count: number) => string | null;
 };
 
@@ -65,9 +66,9 @@ function notifyConstructionCorrection(
   if (!message) return;
 
   try {
-    getUiFeedback(App).toast(message, 'info');
+    getUiFeedback(App).acknowledge(options.title, message);
   } catch (_e) {
-    // Feedback is best-effort only; the visual correction or completed build must remain authoritative.
+    // Feedback is best-effort only; the completed correction/build must remain authoritative.
   }
 }
 
@@ -92,6 +93,7 @@ export function notifyHandleFitSuppressions(
 ): void {
   notifyConstructionCorrection(App, partIds, {
     ...options,
+    title: 'שינוי אוטומטי בבנייה',
     buildMessage: buildSuppressedHandleMessage,
   });
 }
@@ -100,6 +102,7 @@ export function notifyUnusuallySmallDoorSegments(App: unknown, partIds: readonly
   notifyConstructionCorrection(App, partIds, {
     scope: 'unusually-small-door-segments',
     completePass: true,
+    title: 'בנייה חריגה שדורשת בדיקה',
     buildMessage: buildUnusuallySmallDoorMessage,
   });
 }

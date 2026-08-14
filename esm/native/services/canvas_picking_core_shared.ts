@@ -42,6 +42,7 @@ export {
   __wp_isMultiMode,
   __wp_triggerRender,
   __wp_toast,
+  __wp_acknowledge,
   __wp_getCanvasPickingRuntime,
 } from './canvas_picking_core_runtime.js';
 

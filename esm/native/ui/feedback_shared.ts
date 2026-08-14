@@ -72,7 +72,7 @@ export type StoreSubscriptionLike = {
 };
 
 export interface CustomModalState {
-  mode: 'prompt' | 'confirm' | null;
+  mode: 'prompt' | 'confirm' | 'acknowledge' | null;
   onPrompt: UiFeedbackPromptCallback | null;
   onConfirm: UiFeedbackConfirmCallback | null;
   onCancel?: UiFeedbackConfirmCallback | null;

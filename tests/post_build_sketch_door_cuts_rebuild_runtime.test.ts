@@ -610,7 +610,7 @@ test('segmented sketch door rebuild disposes detached non-cached subtree resourc
 });
 
 test('segmented sketch door rebuild suppresses handles whose real footprint cannot fit', () => {
-  const toasts: Array<[string, string | undefined]> = [];
+  const acknowledgements: Array<[string, string]> = [];
   const doorGroup = new FakeGroup();
   doorGroup.userData = {
     partId: 'd44_full',
@@ -624,8 +624,8 @@ test('segmented sketch door rebuild suppresses handles whose real footprint cann
     App: {
       services: {
         uiFeedback: {
-          toast: (message: string, type?: string) => {
-            toasts.push([message, type]);
+          acknowledge: (title: string, message: string) => {
+            acknowledgements.push([title, message]);
           },
         },
       },
@@ -651,13 +651,13 @@ test('segmented sketch door rebuild suppresses handles whose real footprint cann
     doorGroup.children.some(child => child.userData.__kind === 'handle'),
     false
   );
-  assert.equal(toasts.length, 1);
-  assert.match(toasts[0]![0], /ידית הוסרה/);
-  assert.equal(toasts[0]![1], 'info');
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]![0], 'שינוי אוטומטי בבנייה');
+  assert.match(acknowledgements[0]![1], /ידית הוסרה/);
 });
 
-test('segmented sketch door rebuild reports all suppressed segment handles through one shared toast', () => {
-  const toasts: Array<[string, string | undefined]> = [];
+test('segmented sketch door rebuild reports all suppressed segment handles through one acknowledgement', () => {
+  const acknowledgements: Array<[string, string]> = [];
   const doorGroup = new FakeGroup();
   doorGroup.userData = {
     partId: 'd45_full',
@@ -671,8 +671,8 @@ test('segmented sketch door rebuild reports all suppressed segment handles throu
     App: {
       services: {
         uiFeedback: {
-          toast: (message: string, type?: string) => {
-            toasts.push([message, type]);
+          acknowledge: (title: string, message: string) => {
+            acknowledgements.push([title, message]);
           },
         },
       },
@@ -702,21 +702,21 @@ test('segmented sketch door rebuild reports all suppressed segment handles throu
     doorGroup.children.some(child => child.userData.__kind === 'handle'),
     false
   );
-  assert.equal(toasts.length, 1);
-  assert.match(toasts[0]![0], /הוסרו 3 ידיות/);
-  assert.equal(toasts[0]![1], 'info');
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]![0], 'שינוי אוטומטי בבנייה');
+  assert.match(acknowledgements[0]![1], /הוסרו 3 ידיות/);
 });
 
 test('segmented sketch handle suppressions are not reported again during generic handle refresh', () => {
-  const toasts: Array<[string, string | undefined]> = [];
+  const acknowledgements: Array<[string, string]> = [];
   const App: any = {
     deps: { THREE: FakeTHREE },
     render: { doorsArray: [] },
     services: {
       builder: {},
       uiFeedback: {
-        toast: (message: string, type?: string) => {
-          toasts.push([message, type]);
+        acknowledge: (title: string, message: string) => {
+          acknowledgements.push([title, message]);
         },
       },
     },
@@ -784,9 +784,9 @@ test('segmented sketch handle suppressions are not reported again during generic
     doorGroup.children.some(child => child.userData.__kind === 'handle'),
     false
   );
-  assert.equal(toasts.length, 1);
-  assert.match(toasts[0]![0], /הוסרו 2 ידיות/);
-  assert.equal(toasts[0]![1], 'info');
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]![0], 'שינוי אוטומטי בבנייה');
+  assert.match(acknowledgements[0]![1], /הוסרו 2 ידיות/);
 });
 
 test('handle refresh rebuilds custom sketch box segmented-door handles from current handle config', () => {

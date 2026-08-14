@@ -61,6 +61,7 @@ export function ensureCustomModalBindings(App: AppContainer): void {
   };
 
   const handleCancel = () => {
+    if (state.mode === 'acknowledge') return;
     closeCustomModal(App, { cancelled: true });
   };
 

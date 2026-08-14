@@ -135,8 +135,8 @@ test('removed frame side brace helpers require runtime numeric indexes and canon
   assert.deepEqual(Object.keys(braceFromShelfSet), ['2']);
 });
 
-test('removing a frame side shows the user that adjacent shelves became brace shelves', () => {
-  const toasts: Array<{ message: string; type: string | undefined }> = [];
+test('removing a frame side requires acknowledgement that adjacent shelves became brace shelves', () => {
+  const acknowledgements: Array<{ title: string; message: string }> = [];
   const removedDoorsMap: Record<string, unknown> = {};
   const App = {
     maps: {
@@ -146,8 +146,8 @@ test('removing a frame side shows the user that adjacent shelves became brace sh
     },
     services: {
       uiFeedback: {
-        toast(message: string, type?: string) {
-          toasts.push({ message, type });
+        acknowledge(title: string, message: string) {
+          acknowledgements.push({ title, message });
         },
       },
     },
@@ -163,9 +163,9 @@ test('removing a frame side shows the user that adjacent shelves became brace sh
   assert.equal(handleCanvasRemovablePartRemoveClick({ App, partId: 'body_left' }), true);
 
   assert.equal(removedDoorsMap.removed_body_left, true);
-  assert.equal(toasts.length, 1);
-  assert.equal(toasts[0]?.type, 'info');
-  assert.match(toasts[0]?.message || '', /המדפים בתא השמאלי הפכו למדפי קושרת/);
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]?.title, 'שינוי מבני בארון');
+  assert.match(acknowledgements[0]?.message || '', /המדפים בתא השמאלי הפכו למדפי קושרת/);
 });
 
 test('removing a lower frame side writes the lower scoped removal key', () => {
@@ -178,7 +178,7 @@ test('removing a lower frame side writes the lower scoped removal key', () => {
     },
     services: {
       uiFeedback: {
-        toast() {
+        acknowledge() {
           return undefined;
         },
       },
@@ -198,7 +198,7 @@ test('removing a lower frame side writes the lower scoped removal key', () => {
 });
 
 test('removing a sketch-box side stores a removable side key and explains brace shelf conversion', () => {
-  const toasts: Array<{ message: string; type: string | undefined }> = [];
+  const acknowledgements: Array<{ title: string; message: string }> = [];
   const removedDoorsMap: Record<string, unknown> = {};
   const App = {
     maps: {
@@ -208,8 +208,8 @@ test('removing a sketch-box side stores a removable side key and explains brace 
     },
     services: {
       uiFeedback: {
-        toast(message: string, type?: string) {
-          toasts.push({ message, type });
+        acknowledge(title: string, message: string) {
+          acknowledgements.push({ title, message });
         },
       },
     },
@@ -228,10 +228,10 @@ test('removing a sketch-box side stores a removable side key and explains brace 
   );
 
   assert.equal(removedDoorsMap.removed_sketch_box_free_0_sbf_1_side_right, true);
-  assert.equal(toasts.length, 1);
-  assert.equal(toasts[0]?.type, 'info');
-  assert.match(toasts[0]?.message || '', /דופן הקופסא הוסרה/);
-  assert.match(toasts[0]?.message || '', /הפכו למדפי קושרת/);
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]?.title, 'שינוי מבני בארון');
+  assert.match(acknowledgements[0]?.message || '', /דופן הקופסא הוסרה/);
+  assert.match(acknowledgements[0]?.message || '', /הפכו למדפי קושרת/);
 });
 
 function createRemovableSideGuardApp(

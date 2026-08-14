@@ -158,8 +158,21 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
     []
   );
 
+  const acknowledge = useCallback((title: string, message: string, onAcknowledge?: (() => void) | null) => {
+    confirmCbRef.current = typeof onAcknowledge === 'function' ? onAcknowledge : null;
+    confirmCancelCbRef.current = null;
+    promptCbRef.current = null;
+    setModal({
+      open: true,
+      mode: 'acknowledge',
+      title,
+      message,
+      value: '',
+    });
+  }, []);
+
   useEffect(() => {
-    const host = { toast, prompt, confirm };
+    const host = { toast, prompt, confirm, acknowledge };
     const previous = setReactFeedbackHost(app, host);
     return () => {
       try {
@@ -168,10 +181,11 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
         reportOverlayAppNonFatal(app, 'feedback-host:unregister', err);
       }
     };
-  }, [app, confirm, prompt, toast]);
+  }, [acknowledge, app, confirm, prompt, toast]);
 
   const close = useCallback(
     (opts?: { cancelled?: boolean }) => {
+      if (opts?.cancelled === true && modal.mode === 'acknowledge') return;
       const shouldCancel = opts?.cancelled === true && modal.open;
       const promptCancelCb = shouldCancel && modal.mode === 'prompt' ? promptCbRef.current : null;
       const confirmCancelCb = shouldCancel && modal.mode === 'confirm' ? confirmCancelCbRef.current : null;
@@ -226,6 +240,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
         if (!modal.open) return;
         if (event.key === 'Escape') {
           event.preventDefault();
+          if (modal.mode === 'acknowledge') return;
           close({ cancelled: true });
           return;
         }
@@ -280,7 +295,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
               {modal.title}
             </div>
 
-            {modal.open && modal.mode === 'confirm' ? (
+            {modal.open && (modal.mode === 'confirm' || modal.mode === 'acknowledge') ? (
               <p id="modalMessage" className="modal-message">
                 {modal.message}
               </p>
@@ -325,11 +340,13 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
                 variant={modal.open && modal.mode === 'confirm' ? 'danger' : 'save'}
                 onClick={confirmOk}
               >
-                אישור
+                {modal.open && modal.mode === 'acknowledge' ? 'קראתי והבנתי' : 'אישור'}
               </Button>
-              <Button id="modalCancelBtn" variant="cancel" onClick={() => close({ cancelled: true })}>
-                ביטול
-              </Button>
+              {modal.open && modal.mode === 'acknowledge' ? null : (
+                <Button id="modalCancelBtn" variant="cancel" onClick={() => close({ cancelled: true })}>
+                  ביטול
+                </Button>
+              )}
             </div>
           </div>
         </div>,

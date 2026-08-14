@@ -6,6 +6,7 @@
 
 import type {
   ToolsNamespaceLike,
+  UiFeedbackAcknowledgeFn,
   UiFeedbackConfirmFn,
   UiFeedbackEditToastFn,
   UiFeedbackNamespaceLike,
@@ -50,7 +51,13 @@ export function ensureUiFeedbackService(App: unknown): UiFeedbackNamespaceLike {
   return ensureUiFeedbackNamespace(App);
 }
 
-export type { UiFeedbackToastFn, UiFeedbackPromptFn, UiFeedbackConfirmFn, UiFeedbackEditToastFn };
+export type {
+  UiFeedbackToastFn,
+  UiFeedbackPromptFn,
+  UiFeedbackConfirmFn,
+  UiFeedbackAcknowledgeFn,
+  UiFeedbackEditToastFn,
+};
 export type UiFeedbackStable = UiFeedbackStableLike;
 
 export function getTools(App: unknown): ToolsNamespaceLike {

@@ -229,6 +229,7 @@ export interface StorageNamespaceLike extends UnknownRecord {
 export type UiFeedbackToastKind = string;
 export type UiFeedbackPromptCallback = (value: string | null) => void;
 export type UiFeedbackConfirmCallback = () => void;
+export type UiFeedbackAcknowledgeCallback = () => void;
 export type UiFeedbackToastFn = (msg: string, kind?: UiFeedbackToastKind) => void;
 export type UiFeedbackPromptFn = (title: string, defaultValue: string, cb: UiFeedbackPromptCallback) => void;
 export type UiFeedbackConfirmFn = (
@@ -236,6 +237,11 @@ export type UiFeedbackConfirmFn = (
   message: string,
   onYes: UiFeedbackConfirmCallback,
   onNo?: UiFeedbackConfirmCallback | null
+) => void;
+export type UiFeedbackAcknowledgeFn = (
+  title: string,
+  message: string,
+  onAcknowledge?: UiFeedbackAcknowledgeCallback | null
 ) => void;
 export type UiFeedbackEditToastFn = (text: string | null, isActive: boolean) => unknown;
 
@@ -248,10 +254,11 @@ export interface UiFeedbackReactLike extends UnknownRecord {
     callback: UiFeedbackConfirmCallback,
     onCancel?: UiFeedbackConfirmCallback | null
   ) => void;
+  acknowledge?: UiFeedbackAcknowledgeFn;
 }
 
 export interface UiFeedbackModalStateLike extends UnknownRecord {
-  mode?: 'prompt' | 'confirm' | null;
+  mode?: 'prompt' | 'confirm' | 'acknowledge' | null;
   onPrompt?: UiFeedbackPromptCallback | null;
   onConfirm?: UiFeedbackConfirmCallback | null;
   onCancel?: UiFeedbackConfirmCallback | null;
@@ -278,6 +285,8 @@ export interface UiFeedbackNamespaceLike extends UnknownRecord {
   prompt?: UiFeedbackPromptFn;
   openCustomConfirm?: UiFeedbackConfirmFn;
   confirm?: UiFeedbackConfirmFn;
+  openCustomAcknowledge?: UiFeedbackAcknowledgeFn;
+  acknowledge?: UiFeedbackAcknowledgeFn;
   updateEditStateToast?: UiFeedbackEditToastFn;
   [k: string]: unknown;
 }
@@ -289,6 +298,8 @@ export interface UiFeedbackStableLike extends UiFeedbackNamespaceLike {
   openCustomPrompt: UiFeedbackPromptFn;
   confirm: UiFeedbackConfirmFn;
   openCustomConfirm: UiFeedbackConfirmFn;
+  acknowledge: UiFeedbackAcknowledgeFn;
+  openCustomAcknowledge: UiFeedbackAcknowledgeFn;
   updateEditStateToast: UiFeedbackEditToastFn;
 }
 

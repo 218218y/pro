@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { openCustomPrompt } from '../esm/native/ui/feedback_modal.ts';
+import { openCustomAcknowledge, openCustomPrompt } from '../esm/native/ui/feedback_modal.ts';
 
 type Listener = (event?: Event | unknown) => void;
 
@@ -293,5 +293,36 @@ test('custom prompt rebinds handlers after modal DOM is remounted', () => {
     next.cancelBtn.click();
 
     assert.deepEqual(seen, [null, null]);
+  });
+});
+
+test('important acknowledgements require the explicit button and are shown sequentially', () => {
+  withFakeHtmlGlobals(() => {
+    const { App, doc, elements } = createAppHarness();
+    const seen: string[] = [];
+
+    openCustomAcknowledge(App, 'ראשון', 'שינוי ראשון', () => seen.push('first'));
+    openCustomAcknowledge(App, 'שני', 'שינוי שני', () => seen.push('second'));
+
+    assert.equal(elements.modal.classList.contains('open'), true);
+    assert.equal(elements.title.textContent, 'ראשון');
+    assert.equal(doc.getElementById('modalMessage')?.textContent, 'שינוי ראשון');
+    assert.equal(elements.confirmBtn.textContent, 'קראתי והבנתי');
+    assert.equal(elements.cancelBtn.classList.contains('hidden'), true);
+
+    elements.cancelBtn.click();
+    elements.input.dispatchKey('Escape');
+    assert.equal(elements.modal.classList.contains('open'), true);
+    assert.deepEqual(seen, []);
+
+    elements.confirmBtn.click();
+    assert.deepEqual(seen, ['first']);
+    assert.equal(elements.modal.classList.contains('open'), true);
+    assert.equal(elements.title.textContent, 'שני');
+    assert.equal(doc.getElementById('modalMessage')?.textContent, 'שינוי שני');
+
+    elements.confirmBtn.click();
+    assert.deepEqual(seen, ['first', 'second']);
+    assert.equal(elements.modal.classList.contains('open'), false);
   });
 });

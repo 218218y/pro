@@ -31,6 +31,7 @@ export {
   __wp_getApp,
   __wp_triggerRender,
   __wp_toast,
+  __wp_acknowledge,
   __wp_getCanvasPickingRuntime,
   __wp_ensurePickingRefs,
   __wp_raycastReuse,

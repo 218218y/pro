@@ -23,6 +23,7 @@ function isUiFeedbackModalState(value: unknown): value is UiFeedbackModalStateLi
     !!rec &&
     (rec.mode === 'prompt' ||
       rec.mode === 'confirm' ||
+      rec.mode === 'acknowledge' ||
       rec.mode === null ||
       typeof rec.mode === 'undefined') &&
     (rec.onPrompt == null || isPromptCallback(rec.onPrompt)) &&

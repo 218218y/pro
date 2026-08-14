@@ -12,10 +12,10 @@ import {
   createCanvasPickingDoorAuthoringStructuralMeta,
 } from './canvas_picking_door_authoring_meta.js';
 import {
+  __wp_acknowledge,
   __wp_reportPickingIssue,
   __wp_isRemoved,
   __wp_historyBatch,
-  __wp_toast,
 } from './canvas_picking_core_helpers.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
@@ -26,6 +26,10 @@ import {
 export interface CanvasRemovablePartRemoveClickArgs {
   App: AppContainer;
   partId: string | null | undefined;
+}
+
+function acknowledgeBraceShelfConversion(App: AppContainer, message: string): void {
+  __wp_acknowledge(App, 'שינוי מבני בארון', message);
 }
 
 export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRemoveClickArgs): boolean {
@@ -89,10 +93,10 @@ export function handleCanvasRemovablePartRemoveClick(args: CanvasRemovablePartRe
   const sketchBoxSide = readRemovableSketchBoxSideFromPartId(partId);
   if (nextRemoved && frameSide) {
     const cellLabel = frameSide === 'left' ? 'השמאלי' : 'הימני';
-    __wp_toast(App, `הדופן הוסרה — המדפים בתא ${cellLabel} הפכו למדפי קושרת.`, 'info');
+    acknowledgeBraceShelfConversion(App, `הדופן הוסרה — המדפים בתא ${cellLabel} הפכו למדפי קושרת.`);
   } else if (nextRemoved && sketchBoxSide) {
     const cellLabel = sketchBoxSide.side === 'left' ? 'השמאלי' : 'הימני';
-    __wp_toast(App, `דופן הקופסא הוסרה — המדפים בצד ${cellLabel} הפכו למדפי קושרת.`, 'info');
+    acknowledgeBraceShelfConversion(App, `דופן הקופסא הוסרה — המדפים בצד ${cellLabel} הפכו למדפי קושרת.`);
   }
 
   requestDoorAuthoringBurstRefresh(App, 'removeParts:smart');

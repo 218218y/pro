@@ -576,6 +576,14 @@ requirePattern(
   'esm/native/ui/react/overlay_feedback_host.tsx',
   /id="modalCancelBtn"[\s\S]*variant="cancel"[\s\S]*onClick=\{\(\) => close\(\{ cancelled: true \}\)\}[\s\S]*ביטול/
 );
+requirePattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /modal\.mode === 'acknowledge' \? 'קראתי והבנתי' : 'אישור'/
+);
+requirePattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /modal\.open && modal\.mode === 'acknowledge' \? null : \([\s\S]*id="modalCancelBtn"/
+);
 forbidPattern(
   'esm/native/ui/react/overlay_feedback_host.tsx',
   /className=\{modal\.open && modal\.mode === 'confirm' \? 'btn btn-danger' : 'btn btn-save'\}/

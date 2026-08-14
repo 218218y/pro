@@ -8,6 +8,7 @@ test('captured uiFeedback wrappers upgrade to mounted canonical react feedback h
   const seen: Array<string> = [];
   let confirmed = false;
   let cancelled = false;
+  let acknowledged = false;
 
   const App = {
     services: {
@@ -24,6 +25,10 @@ test('captured uiFeedback wrappers upgrade to mounted canonical react feedback h
             callback();
             if (onCancel) seen.push('confirm:cancel-hook-ready');
           },
+          acknowledge(title: string, message: string, callback?: (() => void) | null) {
+            seen.push(`acknowledge:${title}:${message}`);
+            callback?.();
+          },
         },
       },
     },
@@ -32,6 +37,7 @@ test('captured uiFeedback wrappers upgrade to mounted canonical react feedback h
   const feedbackBeforeInstall = getUiFeedback(App);
   const capturedToast = feedbackBeforeInstall.toast;
   const capturedConfirm = feedbackBeforeInstall.confirm;
+  const capturedAcknowledge = feedbackBeforeInstall.acknowledge;
 
   installUiFeedback(App);
 
@@ -46,16 +52,26 @@ test('captured uiFeedback wrappers upgrade to mounted canonical react feedback h
       cancelled = true;
     }
   );
+  capturedAcknowledge('לתשומת לבך', 'הארון השתנה', () => {
+    acknowledged = true;
+  });
 
   assert.equal(confirmed, true);
   assert.equal(cancelled, false);
-  assert.deepEqual(seen, ['toast:info:שלום', 'confirm:שמירה:להמשיך?', 'confirm:cancel-hook-ready']);
+  assert.equal(acknowledged, true);
+  assert.deepEqual(seen, [
+    'toast:info:שלום',
+    'confirm:שמירה:להמשיך?',
+    'confirm:cancel-hook-ready',
+    'acknowledge:לתשומת לבך:הארון השתנה',
+  ]);
 });
 
 test('empty uiFeedback defaults do not recurse across aliases before install', () => {
   let promptValue: string | null = 'unset';
   let confirmed = false;
   let cancelled = false;
+  let acknowledged = false;
 
   const App = {
     services: {},
@@ -75,6 +91,7 @@ test('empty uiFeedback defaults do not recurse across aliases before install', (
             confirm() {
               return true;
             },
+            alert() {},
           },
         },
         window: {
@@ -94,6 +111,7 @@ test('empty uiFeedback defaults do not recurse across aliases before install', (
           confirm() {
             return true;
           },
+          alert() {},
         },
       },
     },
@@ -114,10 +132,14 @@ test('empty uiFeedback defaults do not recurse across aliases before install', (
       cancelled = true;
     }
   );
+  feedback.openCustomAcknowledge('title', 'important', () => {
+    acknowledged = true;
+  });
 
   assert.equal(promptValue, 'typed');
   assert.equal(confirmed, true);
   assert.equal(cancelled, false);
+  assert.equal(acknowledged, true);
 });
 
 test('empty uiFeedback defaults forward cancel callback when confirm is declined', () => {

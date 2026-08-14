@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T09:05:13.292Z",
+  "generatedAt": "2026-08-14T09:36:05.346Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 549,
@@ -3516,28 +3516,28 @@
     },
     {
       "file": "esm/native/runtime/ui_feedback_stable.ts",
-      "line": 202,
+      "line": 231,
       "term": "fallback",
       "category": "domain-default",
       "text": "// metadata-best-effort: stub tagging is advisory and must not affect the fallback callable."
     },
     {
       "file": "esm/native/runtime/ui_feedback_stable.ts",
-      "line": 215,
+      "line": 244,
       "term": "fallback",
       "category": "domain-default",
       "text": "// console-fallback-isolation: logging failure must not make the toast stub throw."
     },
     {
       "file": "esm/native/runtime/ui_feedback_stable.ts",
-      "line": 232,
+      "line": 261,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// browser-dialog-fallback: prompt access/callback failure falls through to the explicit null result."
     },
     {
       "file": "esm/native/runtime/ui_feedback_stable.ts",
-      "line": 256,
+      "line": 285,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// browser-dialog-fallback: confirm access/callback failure falls through to the negative path."
