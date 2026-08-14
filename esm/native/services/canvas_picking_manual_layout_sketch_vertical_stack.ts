@@ -65,6 +65,12 @@ export function parseSketchIntDrawerHeightM(tool: string): number {
   return parseSketchInternalDrawersTool(tool)?.drawerHeightM ?? DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M;
 }
 
+export function resolveSketchVerticalStackCollisionGapM(value?: number): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
+    : DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM;
+}
+
 export function resolveSketchVerticalStackPlacement(args: {
   desiredCenterY: number;
   selectedStackH: number;
@@ -81,10 +87,7 @@ export function resolveSketchVerticalStackPlacement(args: {
   centerY: number;
   range: VerticalOccupancyRange | null;
 } {
-  const gap =
-    typeof args.gap === 'number' && Number.isFinite(args.gap) && args.gap >= 0
-      ? args.gap
-      : DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM;
+  const gap = resolveSketchVerticalStackCollisionGapM(args.gap);
   const pointerCenterY = args.clampCenter(args.desiredCenterY, args.selectedStackH);
   const relocateOnCollision = args.relocateOnCollision !== false;
   const sameStacks = Array.isArray(args.sameStacks) ? args.sameStacks.filter(Boolean) : [];
@@ -354,6 +357,7 @@ export function buildSketchExternalDrawerBlockers<T extends Record<string, unkno
         centerY: clampedCenterY,
         minY: clampedCenterY - stackH / 2,
         maxY: clampedCenterY + stackH / 2,
+        kind: 'sketch_ext_drawers',
       });
     })
     .filter((item): item is VerticalOccupancyRange => !!item)

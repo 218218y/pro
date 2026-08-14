@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
 import {
+  buildManualLayoutSketchExternalDrawerBlockers,
   buildManualLayoutSketchInternalDrawerBlockers,
   resolveManualLayoutSketchExternalDrawerPlacement,
+  resolveManualLayoutSketchInternalDrawerPlacement,
 } from '../esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts';
 import { commitSketchModuleExternalDrawers } from '../esm/native/services/canvas_picking_sketch_module_stack_commit_ext_drawers.ts';
 import { resolveSketchFreeStackContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts';
@@ -18,6 +20,8 @@ import {
   isSketchExternalShoeDrawerItem,
   parseSketchExternalDrawersTool,
 } from '../esm/native/features/sketch_drawer_sizing.ts';
+import { resolveSketchInternalDrawerCassetteRange } from '../esm/native/features/sketch_internal_drawer_cassette.ts';
+import { DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
 
 test('shoe sketch external drawer tool keeps the regular encoding backward-compatible and owns a 20cm default', () => {
   assert.equal(createSketchExternalDrawersTool(3, 22), 'sketch_ext_drawers:3');
@@ -39,6 +43,74 @@ test('shoe sketch external drawer tool keeps the regular encoding backward-compa
     drawerHeightCm: 27.5,
     drawerHeightM: 0.275,
   });
+});
+
+test('separately added regular sketch external drawers use the same vertical spacing as one multi-drawer stack', () => {
+  const drawerHeightM = 0.22;
+  const existingCenterY = 0.5;
+  const placement = resolveManualLayoutSketchExternalDrawerPlacement({
+    desiredCenterY: 0.7,
+    selectedDrawerCount: 1,
+    drawerType: 'regular',
+    drawerHeightM,
+    bottomY: 0,
+    topY: 2,
+    pad: 0.004,
+    extDrawers: [{ id: 'existing', count: 1, drawerHeightM }],
+    readCenterY: () => existingCenterY,
+    blockers: [],
+  });
+
+  assert.equal(placement.op, 'add');
+  const existingTopY = existingCenterY + drawerHeightM / 2;
+  const addedBottomY = placement.yCenter - placement.stackH / 2;
+  assert.ok(Math.abs(addedBottomY - existingTopY) < 1e-12);
+});
+
+test('internal sketch drawer placement reserves the full cassette before an adjacent external drawer stack', () => {
+  const bottomY = 0;
+  const topY = 2.4;
+  const totalHeight = topY - bottomY;
+  const pad = 0.0036;
+  const woodThick = 0.018;
+  const externalCenterY = 0.5;
+  const externalDrawers = [{ id: 'external', count: 1, drawerHeightM: 0.22 }];
+  const readCenterY = (item: Record<string, unknown>) => (item.id === 'external' ? externalCenterY : null);
+  const externalBlockers = buildManualLayoutSketchExternalDrawerBlockers({
+    extDrawers: externalDrawers,
+    bottomY,
+    topY,
+    pad,
+    readCenterY,
+  });
+
+  const placement = resolveManualLayoutSketchInternalDrawerPlacement({
+    desiredCenterY: 0.7,
+    bottomY,
+    topY,
+    totalHeight,
+    pad,
+    drawerHeightM: 0.2,
+    drawers: [],
+    readCenterY,
+    woodThick,
+    blockers: externalBlockers,
+  });
+
+  assert.equal(placement.op, 'add');
+  const cassette = resolveSketchInternalDrawerCassetteRange({
+    baseY: placement.yCenter - placement.stackH / 2,
+    stackH: placement.stackH,
+    woodThick,
+  });
+  assert.ok(externalBlockers[0]);
+  assert.ok(
+    Math.abs(
+      cassette.minY -
+        externalBlockers[0]!.maxY -
+        DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM
+    ) < 1e-12
+  );
 });
 
 test('shoe sketch external drawer placement is fixed to the target bottom while keeping custom height', () => {

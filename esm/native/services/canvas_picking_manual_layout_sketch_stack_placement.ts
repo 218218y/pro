@@ -1,6 +1,7 @@
 import {
   buildSketchExternalDrawerBlockers,
   buildSketchInternalDrawerBlockers,
+  resolveSketchVerticalStackCollisionGapM,
   resolveSketchVerticalStackPlacement,
   type VerticalOccupancyRange,
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
@@ -140,19 +141,41 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
     if (!(hi > lo)) return Math.max(args.bottomY + args.pad, Math.min(args.topY - args.pad, centerY));
     return Math.max(lo, Math.min(hi, centerY));
   };
+  const baseCollisionGapM = resolveSketchVerticalStackCollisionGapM(args.gap);
+  const selectedCassettePaddingM =
+    typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) && args.woodThick > 0
+      ? args.woodThick
+      : args.pad;
+  const sameStacks = buildManualLayoutSketchInternalDrawerBlockers({
+    drawers: args.drawers,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    pad: args.pad,
+    woodThick: args.woodThick,
+    readCenterY: args.readCenterY,
+  }).map(stack => ({
+    ...stack,
+    // Existing internal blockers already include their cassette. Add only the
+    // selected cassette skin so independently-added stacks can physically touch
+    // without their cassette frames overlapping.
+    collisionGapM: selectedCassettePaddingM,
+  }));
+  const blockers = (args.blockers || []).map(stack =>
+    stack.kind === 'sketch_ext_drawers'
+      ? {
+          ...stack,
+          // External blockers represent drawer fronts only. Reserve the selected
+          // internal cassette skin in addition to the normal cross-stack gap.
+          collisionGapM: baseCollisionGapM + selectedCassettePaddingM,
+        }
+      : stack
+  );
   const placement = resolveSketchVerticalStackPlacement({
     desiredCenterY: args.desiredCenterY,
     selectedStackH: stackH,
     clampCenter,
-    sameStacks: buildManualLayoutSketchInternalDrawerBlockers({
-      drawers: args.drawers,
-      bottomY: args.bottomY,
-      topY: args.topY,
-      pad: args.pad,
-      woodThick: args.woodThick,
-      readCenterY: args.readCenterY,
-    }),
-    blockers: args.blockers,
+    sameStacks,
+    blockers,
     gap: args.gap,
     relocateOnCollision: false,
     snapToAvailableSlot: true,
@@ -223,7 +246,7 @@ export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
       topY: args.topY,
       pad: args.pad,
       readCenterY: args.readCenterY,
-    }),
+    }).map(stack => ({ ...stack, collisionGapM: 0 })),
     blockers: buildManualLayoutSketchExternalDrawerBlockers({
       extDrawers: otherTypeItems,
       bottomY: args.bottomY,

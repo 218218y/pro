@@ -70,6 +70,7 @@ export function resolveSketchBoxDrawersPreview(
     drawerHeightM: args.drawerHeightM,
     drawers: localDrawers,
     readCenterY,
+    woodThick,
     blockers: placementCollision.blockers,
   });
   if (placement.op === 'blocked') {
@@ -82,6 +83,7 @@ export function resolveSketchBoxDrawersPreview(
       drawerHeightM: args.drawerHeightM,
       drawers: localDrawers,
       readCenterY,
+      woodThick,
       blockers: withoutInternalDrawerReplaceableShelfBlockers(placementCollision.blockers),
     });
   }
