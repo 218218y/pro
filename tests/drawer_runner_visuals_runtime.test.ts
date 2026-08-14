@@ -5,6 +5,7 @@ import { appendDrawerRunnerVisuals } from '../esm/native/builder/drawer_runner_v
 import { readConfigScalarOrDefault } from '../esm/native/runtime/config_selectors.ts';
 import {
   BLUM_TANDEM_DRAWER_RUNNER_POLICY,
+  ROLLER_DRAWER_RUNNER_POLICY,
   DEFAULT_DRAWER_RUNNER_TYPE,
   INTERNAL_DRAWER_RUNNER_CLEARANCE_POLICY,
   normalizeDrawerRunnerType,
@@ -144,7 +145,7 @@ test('[drawer-runner-visuals-runtime] canonical config scalar reader rejects inv
 test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving drawer hardware', () => {
   const { fixed, moving } = append({ type: 'roller' });
 
-  assert.equal(fixed.children.length, 6);
+  assert.equal(fixed.children.length, 8);
   assert.equal(moving.children.length, 6);
   assert.deepEqual(
     roles(fixed).sort(),
@@ -153,6 +154,8 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
       'roller-fixed-flange-right',
       'roller-fixed-front-wheel-left',
       'roller-fixed-front-wheel-right',
+      'roller-fixed-lower-flange-left',
+      'roller-fixed-lower-flange-right',
       'roller-fixed-web-left',
       'roller-fixed-web-right',
     ].sort()
@@ -184,8 +187,20 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
   const rightMovingWeb = moving.children.find(
     child => child.userData.__wpDrawerRunnerRole === 'roller-moving-web-right'
   );
+  const rightFixedUpperFlange = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'roller-fixed-flange-right'
+  );
+  const rightFixedLowerFlange = fixed.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'roller-fixed-lower-flange-right'
+  );
+  const rightMovingLowerFlange = moving.children.find(
+    child => child.userData.__wpDrawerRunnerRole === 'roller-moving-flange-right'
+  );
   assert.ok(rightFixedWeb?.geometry instanceof FakeBoxGeometry);
   assert.ok(rightMovingWeb?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightFixedUpperFlange?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightFixedLowerFlange?.geometry instanceof FakeBoxGeometry);
+  assert.ok(rightMovingLowerFlange?.geometry instanceof FakeBoxGeometry);
   assert.ok(
     Math.abs(rightFixedWeb.position.x + rightFixedWeb.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
     'roller cabinet member outer face must touch the actual cabinet side'
@@ -193,6 +208,36 @@ test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving
   assert.ok(
     Math.abs(rightMovingWeb.position.x - rightMovingWeb.geometry.width / 2 - 0.56 / 2) < 1e-12,
     'roller moving member inner face must touch the drawer side'
+  );
+  assert.equal(
+    rightFixedUpperFlange.geometry.width,
+    ROLLER_DRAWER_RUNNER_POLICY.visualFixedFlangeWidthM,
+    'fixed upper lip should use the independently tunable cabinet-side width'
+  );
+  assert.equal(
+    rightFixedLowerFlange.geometry.width,
+    ROLLER_DRAWER_RUNNER_POLICY.visualFixedFlangeWidthM,
+    'fixed lower lip should match the fixed upper lip width'
+  );
+  assert.equal(
+    rightMovingLowerFlange.geometry.width,
+    ROLLER_DRAWER_RUNNER_POLICY.visualMovingFlangeWidthM,
+    'moving lower lip should use its independent drawer-side width'
+  );
+  assert.ok(
+    Math.abs(
+      rightFixedUpperFlange.position.x + rightFixedUpperFlange.geometry.width / 2 - (1.2 + 0.604 / 2)
+    ) < 1e-12,
+    'fixed roller lips must stay anchored at the cabinet wall while extending inward'
+  );
+  assert.ok(
+    Math.abs(rightMovingLowerFlange.position.x - rightMovingLowerFlange.geometry.width / 2 - 0.56 / 2) <
+      1e-12,
+    'moving roller lower lip must stay anchored at the drawer side while extending toward the wall'
+  );
+  assert.ok(
+    rightFixedUpperFlange.position.y > rightFixedLowerFlange.position.y,
+    'cabinet-fixed roller member should expose both upper and lower inward lips'
   );
   const rollerRails = [...fixed.children, ...moving.children].filter(
     child => child.geometry instanceof FakeBoxGeometry
@@ -243,10 +288,22 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
   );
   assert.ok(rightFixedRunner?.geometry instanceof FakeBoxGeometry);
   assert.ok(rightMovingRunner?.geometry instanceof FakeBoxGeometry);
-  assert.equal(
-    rightFixedRunner.geometry.width,
-    BLUM_TANDEM_DRAWER_RUNNER_POLICY.cabinetRunnerEnvelopeWidthM,
-    "fixed TANDEM body should use Blum's 21 mm cabinet-side planning envelope"
+  const cabinetPlaneLocalX = 0.604 / 2;
+  const drawerSideLocalX = 0.56 / 2;
+  const targetFixedInnerLocalX = Math.max(
+    0,
+    drawerSideLocalX - BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualFixedUnderDrawerReachM
+  );
+  const expectedFixedWidth = Math.min(
+    cabinetPlaneLocalX,
+    Math.max(
+      BLUM_TANDEM_DRAWER_RUNNER_POLICY.cabinetRunnerEnvelopeWidthM,
+      cabinetPlaneLocalX - targetFixedInnerLocalX
+    )
+  );
+  assert.ok(
+    Math.abs(rightFixedRunner.geometry.width - expectedFixedWidth) < 1e-12,
+    'fixed TANDEM body should bridge the real side gap and continue beneath the drawer'
   );
   assert.ok(
     Math.abs(rightFixedRunner.position.x + rightFixedRunner.geometry.width / 2 - (1.2 + 0.604 / 2)) < 1e-12,
@@ -263,16 +320,22 @@ test('[drawer-runner-visuals-runtime] Blum TANDEM runner stays concealed below t
     'moving TANDEM member must retain a real support reach beneath the drawer'
   );
   assert.ok(
-    movingOuterLocalX > fixedInnerLocalX,
-    'moving TANDEM member must enter the fixed runner envelope instead of sitting beside it'
+    fixedInnerLocalX <= movingInnerLocalX + 1e-12,
+    'fixed TANDEM body must reach at least as far under the drawer as the moving member'
+  );
+  assert.ok(
+    fixedOuterLocalX + 1e-12 >= movingOuterLocalX,
+    'fixed TANDEM body must laterally cover the moving member in the closed position'
   );
   assert.ok(
     nestedOverlap + 1e-12 >= BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingNestedOverlapM,
     'closed TANDEM members must keep the configured telescoping overlap'
   );
   assert.ok(
-    rightMovingRunner.geometry.width > BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingUnderDrawerReachM,
-    'wide generic drawer clearance should widen only the coupled moving span enough to bridge into the fixed runner'
+    Math.abs(
+      rightMovingRunner.geometry.width - BLUM_TANDEM_DRAWER_RUNNER_POLICY.visualMovingUnderDrawerReachM
+    ) < 1e-12,
+    'once the fixed body bridges the real side gap, the moving member should keep only its intended under-drawer reach'
   );
   const rightLock = moving.children.find(
     child => child.userData.__wpDrawerRunnerRole === 'blum-locking-device-right'

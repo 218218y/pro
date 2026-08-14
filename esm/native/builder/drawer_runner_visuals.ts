@@ -154,7 +154,8 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
   const fixedCenterZ = args.closedPosition.z + drawerBoxOffsetZ;
   const railY = -args.drawerHeightM / 2 + policy.profileHeightM / 2 + 0.003;
   const webT = policy.visualWebThicknessM;
-  const flangeW = policy.visualFlangeWidthM;
+  const fixedFlangeW = policy.visualFixedFlangeWidthM;
+  const movingFlangeW = policy.visualMovingFlangeWidthM;
   const flangeT = policy.visualFlangeThicknessM;
   const frontWheelZ = fixedCenterZ + length / 2 - policy.visualWheelRadiusM * 1.35;
   const rearWheelZ = movingLocalZ - length / 2 + policy.visualWheelRadiusM * 1.35;
@@ -162,7 +163,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
   for (const side of [-1, 1] as const) {
     // Drawer member: attached directly to the drawer side.
     const movingWebX = side * (args.drawerWidthM / 2 + webT / 2);
-    const movingFlangeX = side * (args.drawerWidthM / 2 + flangeW / 2);
+    const movingFlangeX = side * (args.drawerWidthM / 2 + movingFlangeW / 2);
     addBox({
       THREE: args.THREE,
       parent: args.movingParent,
@@ -176,7 +177,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       THREE: args.THREE,
       parent: args.movingParent,
       material: materials.rollerSteel,
-      size: [flangeW, flangeT, length],
+      size: [movingFlangeW, flangeT, length],
       position: [movingFlangeX, railY - policy.profileHeightM / 2 + flangeT / 2, movingLocalZ],
       ownerPartId: args.ownerPartId,
       role: `roller-moving-flange-${side < 0 ? 'left' : 'right'}`,
@@ -187,7 +188,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     // nominal 12.5 mm planning clearance, which made the runner float whenever
     // the rendered drawer-box clearance differed from that nominal value.
     const fixedWebLocalX = side * (args.mountingWidthM / 2 - webT / 2);
-    const fixedFlangeLocalX = side * (args.mountingWidthM / 2 - flangeW / 2);
+    const fixedFlangeLocalX = side * (args.mountingWidthM / 2 - fixedFlangeW / 2);
     addBox({
       THREE: args.THREE,
       parent: args.fixedParent,
@@ -201,7 +202,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       THREE: args.THREE,
       parent: args.fixedParent,
       material: materials.rollerSteel,
-      size: [flangeW, flangeT, length],
+      size: [fixedFlangeW, flangeT, length],
       position: [
         args.closedPosition.x + fixedFlangeLocalX,
         args.closedPosition.y + railY + policy.profileHeightM / 2 - flangeT / 2,
@@ -209,6 +210,19 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
       ],
       ownerPartId: args.ownerPartId,
       role: `roller-fixed-flange-${side < 0 ? 'left' : 'right'}`,
+    });
+    addBox({
+      THREE: args.THREE,
+      parent: args.fixedParent,
+      material: materials.rollerSteel,
+      size: [fixedFlangeW, flangeT, length],
+      position: [
+        args.closedPosition.x + fixedFlangeLocalX,
+        args.closedPosition.y + railY - policy.profileHeightM / 2 + flangeT / 2,
+        fixedCenterZ,
+      ],
+      ownerPartId: args.ownerPartId,
+      role: `roller-fixed-lower-flange-${side < 0 ? 'left' : 'right'}`,
     });
 
     // Keep the wheel inside the real gap between the drawer side and cabinet
@@ -259,11 +273,18 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
   for (const side of [-1, 1] as const) {
     // TANDEM is side-fastened to the cabinet and concealed beneath the drawer.
     // Keep the fixed visual anchored to the actual cabinet mounting plane. Blum's
-    // 21 mm figure is a planning envelope; the box is a deliberate simplified
-    // silhouette of the runner assembly, not a literal solid profile.
+    // 21 mm figure is the minimum planning envelope, not a literal solid width.
+    // The simplified body bridges the actual cabinet-to-drawer gap and continues
+    // beneath the drawer by the configured visual reach so it fully nests over
+    // the moving member in the closed position.
     const cabinetPlaneAbsX = args.mountingWidthM / 2;
     const drawerSideAbsX = args.drawerWidthM / 2;
-    const fixedRailWidth = Math.min(policy.cabinetRunnerEnvelopeWidthM, cabinetPlaneAbsX);
+    const movingInnerAbsX = Math.max(0, drawerSideAbsX - policy.visualMovingUnderDrawerReachM);
+    const fixedTargetInnerAbsX = Math.max(0, drawerSideAbsX - policy.visualFixedUnderDrawerReachM);
+    const fixedRailWidth = Math.min(
+      cabinetPlaneAbsX,
+      Math.max(policy.cabinetRunnerEnvelopeWidthM, cabinetPlaneAbsX - fixedTargetInnerAbsX)
+    );
     const fixedInnerAbsX = cabinetPlaneAbsX - fixedRailWidth;
     const fixedRailX = side * (cabinetPlaneAbsX - fixedRailWidth / 2);
 
@@ -273,7 +294,6 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     // runner must instead be nested in the fixed member when closed. Preserve a
     // real under-drawer reach, bridge only the actual gap, and then overlap the
     // fixed envelope by the visual nesting depth.
-    const movingInnerAbsX = Math.max(0, drawerSideAbsX - policy.visualMovingUnderDrawerReachM);
     const nestedOverlap = Math.min(policy.visualMovingNestedOverlapM, fixedRailWidth);
     const movingOuterAbsX = Math.min(
       cabinetPlaneAbsX,

@@ -28,7 +28,12 @@ export const ROLLER_DRAWER_RUNNER_POLICY = Object.freeze({
   sideClearanceM: 0.0125,
   profileHeightM: 0.035,
   visualWebThicknessM: 0.0018,
-  visualFlangeWidthM: 0.0065,
+  // Cabinet-fixed upper/lower lips extend 9 mm inward from the cabinet wall.
+  // Tune this value to move both fixed lips farther toward / away from the drawer.
+  visualFixedFlangeWidthM: 0.009,
+  // Drawer-mounted lower lip extends 8 mm outward from the drawer side toward the wall.
+  // Keep this independent from the fixed lips so the interlock can be tuned cleanly.
+  visualMovingFlangeWidthM: 0.008,
   visualFlangeThicknessM: 0.0018,
   visualWheelRadiusM: 0.0075,
   visualWheelWidthM: 0.0055,
@@ -56,6 +61,10 @@ export const BLUM_TANDEM_DRAWER_RUNNER_POLICY = Object.freeze({
   // The simplified fixed visual occupies this envelope so its outer face can stay
   // anchored to the real cabinet mounting plane.
   cabinetRunnerEnvelopeWidthM: 0.021,
+  // The simplified fixed body bridges the actual side gap and continues 11 mm
+  // beneath the drawer. With the matching moving reach below, the fixed body
+  // fully covers the moving member laterally instead of nesting only halfway.
+  visualFixedUnderDrawerReachM: 0.011,
   visualRailHeightM: 0.009,
   // The real TANDEM runner telescopes inside itself. In the simplified model the
   // moving member must reach beneath the drawer and remain nested inside the
