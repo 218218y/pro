@@ -26,6 +26,10 @@ import { resolveBuildStateOrThrow } from './build_state_resolver.js';
 import { finalizeStackSplitUpperShift } from './build_stack_split_pipeline.js';
 import { makeBoardCreator } from './board_factory.js';
 import { buildChestModeIfNeeded } from './chest_mode_pipeline.js';
+import {
+  beginConstructionCorrectionFeedback,
+  completeConstructionCorrectionFeedback,
+} from './construction_correction_feedback.js';
 import { makeHandleTypeResolver } from './doors_state_utils.js';
 import {
   bindEdgeHandleDefaultNoneReader,
@@ -220,6 +224,8 @@ export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlo
     syncNoMainWorkspaceMetrics: input => syncNoMainSketchWorkspaceMetrics({ App, ...input }),
     renderNoMainSketchHost: input => maybeRenderNoMainSketchHost({ App, ...input }),
     finalizeStackSplitUpperShift: input => finalizeStackSplitUpperShift({ App, ...input }),
+    beginConstructionCorrectionFeedback: () => beginConstructionCorrectionFeedback(App),
+    completeConstructionCorrectionFeedback: publish => completeConstructionCorrectionFeedback(App, publish),
     reportBuildFailure: (label, error, showToast) => {
       reportError(App, error, { where: label, fatal: true });
       try {

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  beginConstructionCorrectionFeedback,
+  completeConstructionCorrectionFeedback,
   notifyHandleFitSuppressions,
   notifyUnusuallySmallDoorSegments,
 } from '../esm/native/builder/construction_correction_feedback.ts';
@@ -97,4 +99,55 @@ test('construction correction feedback clearly reports small cut doors without r
   notifyUnusuallySmallDoorSegments(App, ['d1_bot']);
   assert.equal(acknowledgements.length, 2, 'cleared anomalies can be reported again if they return');
   assert.match(acknowledgements[1]?.[1] ?? '', /דלת קטנה באופן חריג/);
+});
+
+test('construction correction feedback publishes one combined acknowledgement per successful build', () => {
+  const acknowledgements: Array<[string, string]> = [];
+  const App = {
+    services: {
+      runtimeCache: {},
+      uiFeedback: {
+        acknowledge(title: string, message: string) {
+          acknowledgements.push([title, message]);
+        },
+      },
+    },
+  };
+
+  beginConstructionCorrectionFeedback(App);
+  notifyHandleFitSuppressions(App, ['door-a'], {
+    scope: 'standard-door-handles',
+    completePass: true,
+  });
+  notifyHandleFitSuppressions(App, ['door-b'], {
+    scope: 'sketch-segment-door-handles',
+    completePass: true,
+  });
+  notifyUnusuallySmallDoorSegments(App, ['door-b']);
+
+  assert.equal(acknowledgements.length, 0, 'feedback waits for the canonical build boundary');
+  completeConstructionCorrectionFeedback(App, true);
+
+  assert.equal(acknowledgements.length, 1);
+  assert.equal(acknowledgements[0]?.[0], 'סיכום שינויים חשובים בבנייה');
+  assert.match(acknowledgements[0]?.[1] ?? '', /הוסרו 2 ידיות/);
+  assert.match(acknowledgements[0]?.[1] ?? '', /דלת קטנה באופן חריג/);
+  assert.match(acknowledgements[0]?.[1] ?? '', /\n\n2\./);
+
+  beginConstructionCorrectionFeedback(App);
+  notifyHandleFitSuppressions(App, ['door-c'], {
+    scope: 'standard-door-handles',
+    completePass: true,
+  });
+  completeConstructionCorrectionFeedback(App, false);
+  assert.equal(acknowledgements.length, 1, 'feedback from a failed build is discarded');
+
+  beginConstructionCorrectionFeedback(App);
+  notifyHandleFitSuppressions(App, ['door-c'], {
+    scope: 'standard-door-handles',
+    completePass: true,
+  });
+  completeConstructionCorrectionFeedback(App, true);
+  assert.equal(acknowledgements.length, 2, 'a discarded build does not consume future feedback');
+  assert.match(acknowledgements[1]?.[1] ?? '', /ידית הוסרה/);
 });

@@ -31,6 +31,8 @@ function createPrepared() {
         orchestrationCalls.push(`finalize-report:${String((error as Error).message)}`),
       reportSecondaryFailure: (_label: string, error: unknown, context: { operation: string }) =>
         orchestrationCalls.push(`secondary:${context.operation}:${String((error as Error).message)}`),
+      beginConstructionCorrectionFeedback() {},
+      completeConstructionCorrectionFeedback(_publish: boolean) {},
       finalizeBestEffort: () => orchestrationCalls.push('bestEffort'),
     },
     label: 'native/builder/test',
@@ -85,6 +87,47 @@ test('build wardrobe flow runtime: successful execute finalizes canonical build 
 
   assert.equal(result, buildCtx);
   assert.deepEqual(calls, ['finalize:ctx']);
+});
+
+test('build wardrobe flow runtime batches correction feedback across execute and finalize', () => {
+  const prepared = createPrepared();
+  const calls: string[] = [];
+  prepared.orchestration.beginConstructionCorrectionFeedback = () => calls.push('feedback.begin');
+  prepared.orchestration.completeConstructionCorrectionFeedback = (publish: boolean) =>
+    calls.push(`feedback.complete:${String(publish)}`);
+
+  runPreparedBuildWardrobeFlow(prepared, {
+    execute: () => {
+      calls.push('execute');
+      return { id: 'ctx' } as any;
+    },
+    finalizeBuild: () => {
+      calls.push('finalize');
+    },
+  });
+
+  assert.deepEqual(calls, ['feedback.begin', 'execute', 'finalize', 'feedback.complete:true']);
+});
+
+test('build wardrobe flow runtime discards batched correction feedback when finalization fails', () => {
+  const prepared = createPrepared();
+  const calls: string[] = [];
+  prepared.orchestration.beginConstructionCorrectionFeedback = () => calls.push('feedback.begin');
+  prepared.orchestration.completeConstructionCorrectionFeedback = (publish: boolean) =>
+    calls.push(`feedback.complete:${String(publish)}`);
+
+  assert.throws(
+    () =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => ({ id: 'ctx' }) as any,
+        finalizeBuild: () => {
+          throw new Error('finalize failed');
+        },
+      }),
+    /finalize failed/
+  );
+
+  assert.deepEqual(calls, ['feedback.begin', 'feedback.complete:false']);
 });
 
 test('build wardrobe flow runtime: build failure still runs best-effort finalize and rethrows original error', () => {

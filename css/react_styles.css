@@ -4967,6 +4967,7 @@ body.wp-ui-react .modal-message {
   color: #64748b;
   margin-bottom: 20px;
   font-size: 0.95rem;
+  white-space: pre-line;
 }
 
 body.wp-ui-react .modal-input {

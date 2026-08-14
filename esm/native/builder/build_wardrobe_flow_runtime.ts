@@ -78,30 +78,36 @@ export function runPreparedBuildWardrobeFlow(
   prepared: PreparedBuildWardrobeFlow,
   options: BuildWardrobeRuntimeOptions
 ): BuildContextLike | null {
+  const { orchestration } = prepared;
   let buildCtx: BuildContextLike | null = null;
   let didBuildThrow = false;
   let buildError: unknown;
   let didFinalizeThrow = false;
   let finalizeError: unknown;
 
+  orchestration.beginConstructionCorrectionFeedback();
   try {
-    buildCtx = options.execute(prepared);
-  } catch (error) {
-    didBuildThrow = true;
-    buildError = error;
-    const reportFailure = options.reportBuildFailure || reportBuildWardrobeFailure;
-    reportBuildFailureSafely(prepared, error, reportFailure);
-  } finally {
     try {
-      finalizePreparedBuildWardrobeFlow(prepared, buildCtx, options);
+      buildCtx = options.execute(prepared);
     } catch (error) {
-      didFinalizeThrow = true;
-      finalizeError = error;
-      reportFinalizeFailureSafely(prepared, error);
+      didBuildThrow = true;
+      buildError = error;
+      const reportFailure = options.reportBuildFailure || reportBuildWardrobeFailure;
+      reportBuildFailureSafely(prepared, error, reportFailure);
+    } finally {
+      try {
+        finalizePreparedBuildWardrobeFlow(prepared, buildCtx, options);
+      } catch (error) {
+        didFinalizeThrow = true;
+        finalizeError = error;
+        reportFinalizeFailureSafely(prepared, error);
+      }
     }
-  }
 
-  if (didBuildThrow) throw buildError;
-  if (didFinalizeThrow) throw finalizeError;
-  return buildCtx;
+    if (didBuildThrow) throw buildError;
+    if (didFinalizeThrow) throw finalizeError;
+    return buildCtx;
+  } finally {
+    orchestration.completeConstructionCorrectionFeedback(!didBuildThrow && !didFinalizeThrow);
+  }
 }
