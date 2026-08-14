@@ -5,7 +5,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
 
-import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
+import {
+  HINGED_DOOR_RENDER_POLICY,
+  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+} from '../esm/shared/dimensions/door_system_policy.ts';
+import { EXTERNAL_DRAWER_FRONT_RENDER_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
@@ -1050,7 +1054,7 @@ test('sketch box external drawers keep custom height and skip stacks that do not
   assert.equal(drawerGroups.length, 0);
 });
 
-test('sketch external drawer cut envelope matches drawer front envelope', async () => {
+test('sketch external drawer cut envelope matches the regular external-drawer to door reveal contract', async () => {
   const src = await readSourceFiles([
     '../esm/native/builder/post_build_sketch_door_cuts.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
@@ -1058,11 +1062,30 @@ test('sketch external drawer cut envelope matches drawer front envelope', async 
   ]);
   const tokens = await readSourceFiles(['../esm/shared/dimensions/drawer_sketch_policy.ts']);
   const mod = await import('../esm/native/builder/post_build_extras_pipeline.ts');
-  assert.match(tokens, /externalDoorCutFrontInsetM:\s*meters\(0\.004\),/);
-  assert.match(tokens, /externalDoorCutSurroundingGapM:\s*meters\(0\.006\),/);
+
+  const regularDrawerToDoorVisualGap =
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.doorTopGapM +
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM / 2 +
+    HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM / 2;
+  const sketchDrawerToDoorVisualGap =
+    DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutSurroundingGapM +
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM / 2;
+
+  assert.equal(
+    DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutFrontInsetM,
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM / 2
+  );
+  assert.equal(sketchDrawerToDoorVisualGap, regularDrawerToDoorVisualGap);
+  assert.match(
+    tokens,
+    /externalDoorCutFrontInsetM:\s*EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.visualHeightClearanceM \/ 2,/
+  );
+  assert.match(
+    tokens,
+    /externalDoorCutSurroundingGapM:\s*EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.doorTopGapM \+\s*EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.visualHeightClearanceM \/ 2,/
+  );
   assert.match(src, /const frontInset = DRAWER_SKETCH_DOOR_CUT_POLICY\.externalDoorCutFrontInsetM;/);
   assert.match(src, /const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY\.externalDoorCutSurroundingGapM;/);
-  assert.doesNotMatch(src, /const surroundingGap = 0\.006;/);
   assert.match(src, /const faceMinY = baseY \+ frontInset - surroundingGap;/);
   assert.match(src, /const faceMaxY = baseY \+ stackH - frontInset \+ surroundingGap;/);
   assert.equal(typeof mod.applyPostBuildExtras, 'function');

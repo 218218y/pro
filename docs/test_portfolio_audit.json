@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T17:00:54.902Z",
+  "generatedAt": "2026-08-14T07:12:48.678Z",
   "totals": {
     "tests": 1245,
     "unitRunnerTests": 1236,
@@ -16,7 +16,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 145
+    "contractOverlapTargets": 146
   },
   "categories": {
     "contract": 405,
@@ -2752,6 +2752,32 @@
         },
         {
           "file": "tests/sketch_box_preview_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/shared/dimensions/stack_split_policy.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_flow_plan_inputs_dimension_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/external_drawer_ops_contracts_runtime.test.ts",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
           "kind": "ownership"
         }
       ]

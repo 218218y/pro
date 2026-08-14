@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-13T17:00:54.902Z
+Generated: 2026-08-14T07:12:48.678Z
 
 ## Summary
 
@@ -19,7 +19,7 @@ Generated: 2026-08-13T17:00:54.902Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 145
+- Cross-kind contract overlap targets: 146
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -191,6 +191,7 @@ Generated: 2026-08-13T17:00:54.902Z
 - `esm/shared/dimensions/external_drawer_policy.ts` — contract / ownership — `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/ext_drawers_hover_preview_guard.test.js`, `tests/external_drawer_geometry_ownership_contract.test.js`, `tests/external_drawer_ops_contracts_runtime.test.ts`
 - `esm/shared/dimensions/library_preset_policy.ts` — contract / ownership — `tests/library_preset_dimension_owner_contract.test.js`, `tests/library_preset_dimension_ownership_closeout_contract.test.js`, `tests/library_preset_flow_layout_ownership_contract.test.js`, `tests/library_preset_module_defaults_ownership_contract.test.js`
 - `esm/shared/dimensions/sketch_box_geometry_policy.ts` — ownership / source-guard — `tests/interior_sketch_box_validation_source_guard.test.js`, `tests/sketch_box_preview_ownership_closeout_contract.test.js`
+- `esm/shared/dimensions/stack_split_policy.ts` — contract / ownership — `tests/build_flow_plan_inputs_dimension_ownership_contract.test.js`, `tests/default_state_dimension_ownership_runtime.test.ts`, `tests/external_drawer_ops_contracts_runtime.test.ts`, `tests/library_preset_flow_layout_ownership_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`
 - `esm/shared/dimensions/wardrobe_default_resolution_policy.ts` — contract / ownership — `tests/library_preset_module_defaults_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
 - `esm/shared/dimensions/wardrobe_defaults.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/default_state_dimension_ownership_contract.test.js`, `tests/default_state_dimension_ownership_runtime.test.ts`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/no_main_sketch_dimension_ownership_contract.test.js`, `tests/order_pdf_dimension_support_ownership_contract.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wardrobe_default_resolution_owner_contract.test.js`
 - `esm/shared/dimensions/wardrobe_layout_comparison_policy.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/wardrobe_default_resolution_owner_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T17:00:51.560Z",
+  "generatedAt": "2026-08-14T07:12:45.990Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 549,
@@ -2382,35 +2382,35 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "line": 189,
+      "line": 198,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "line": 193,
+      "line": 202,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "line": 197,
+      "line": 206,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxD) ?? fallbackGeom.boxD"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "line": 199,
+      "line": 208,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "boxOffsetZ: readRenderOpNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
-      "line": 203,
+      "line": 212,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "connectorZ: readRenderOpNumber(op.connectZ) ?? fallbackGeom.connectZ,"

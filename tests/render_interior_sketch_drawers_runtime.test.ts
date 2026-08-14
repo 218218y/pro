@@ -8,7 +8,10 @@ import {
   createSketchExternalDrawerBraceShelfPartId,
 } from '../esm/native/features/part_identity/api.ts';
 import { DRAWER_SKETCH_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
-import { EXTERNAL_DRAWER_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
+import {
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_POLICY,
+} from '../esm/shared/dimensions/external_drawer_policy.ts';
 import { resolveInternalDrawerBottomLiftM } from '../esm/native/builder/drawer_runner_policy.ts';
 
 class FakeVector3 {
@@ -230,10 +233,13 @@ test('render sketch external drawer fronts flush their outer edge to adjacent fu
 
   assert.ok(Math.abs(Number(bottomGroup.userData.__wpFaceMinY) - args.effectiveBottomY) < 1e-9);
   assert.ok(Math.abs(Number(topGroup.userData.__wpFaceMaxY) - expectedDoorFaceTopY) < 1e-9);
-  assert.ok(Math.abs(Number(bottomGroup.userData.__doorHeight) - 0.216) < 1e-9);
-  assert.ok(Math.abs(Number(topGroup.userData.__doorHeight) - 0.226) < 1e-9);
-  assert.ok(Math.abs(bottomVisual.position.y - -0.002) < 1e-9);
-  assert.ok(Math.abs(topVisual.position.y - 0.007) < 1e-9);
+  const frontGap = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM;
+  assert.ok(Math.abs(Number(bottomGroup.userData.__doorHeight) - (0.22 - frontGap / 2)) < 1e-9);
+  assert.ok(
+    Math.abs(Number(topGroup.userData.__doorHeight) - (0.22 - frontGap / 2 + args.woodThick / 2)) < 1e-9
+  );
+  assert.ok(Math.abs(bottomVisual.position.y - -frontGap / 4) < 1e-9);
+  assert.ok(Math.abs(topVisual.position.y - (args.woodThick / 4 + frontGap / 4)) < 1e-9);
 });
 
 test('render sketch drawers reuses one mirror material across mirrored external drawer fronts', () => {
@@ -260,8 +266,9 @@ test('render sketch external drawers honors per-stack custom drawer height', () 
   assert.equal(drawers.length, 2);
   const firstGroup = drawers[0]?.group as FakeGroup;
   const secondGroup = drawers[1]?.group as FakeGroup;
-  assert.ok(Math.abs(Number(firstGroup.userData.__doorHeight) - 0.292) < 1e-9);
-  assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - 0.292) < 1e-9);
+  const expectedFaceHeight = 0.3 - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM;
+  assert.ok(Math.abs(Number(firstGroup.userData.__doorHeight) - expectedFaceHeight) < 1e-9);
+  assert.ok(Math.abs(Number(secondGroup.userData.__doorHeight) - expectedFaceHeight) < 1e-9);
 });
 
 test('render sketch shoe drawer from sketch uses one shoe drawer with its custom height', () => {
@@ -332,7 +339,12 @@ test('render sketch external drawers do not parse string-encoded live count or h
 
   const drawers = App.render?.drawersArray || [];
   assert.equal(drawers.length, 1);
-  assert.ok(Math.abs(Number(drawers[0]?.group.userData.__doorHeight) - 0.212) < 1e-9);
+  assert.ok(
+    Math.abs(
+      Number(drawers[0]?.group.userData.__doorHeight) -
+        (EXTERNAL_DRAWER_POLICY.regularHeightM - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM)
+    ) < 1e-9
+  );
 });
 
 test('render sketch external drawers emit one individually paintable brace shelf per stack', () => {

@@ -83,8 +83,10 @@ export const DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY = Object.freeze({
 });
 
 export const DRAWER_SKETCH_DOOR_CUT_POLICY = Object.freeze({
-  externalDoorCutFrontInsetM: meters(0.004),
-  externalDoorCutSurroundingGapM: meters(0.006),
+  externalDoorCutFrontInsetM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM / 2,
+  externalDoorCutSurroundingGapM:
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.doorTopGapM +
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM / 2,
   doorCutHorizontalOverlapMinM: meters(0.005),
   doorCutNoOpToleranceM: meters(0.002),
   doorCutIntervalMinHeightM: meters(0.01),
