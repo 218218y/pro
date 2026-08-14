@@ -382,7 +382,7 @@ function assertCompatibleVerificationState(payload, options) {
     return assertVerificationPayload(payload, options);
   } catch (error) {
     throw new Error(
-      `${error.message}\n[verification-manifest] state cannot be resumed safely; reset it with npm run verify:closeout:state:reset`
+      `${error.message}\n[verification-manifest] state cannot be resumed safely; reset it with node tools/wp_verify_closeout.cjs --reset-state`
     );
   }
 }

@@ -5,7 +5,7 @@ import {
   evaluatePerfSmokeBaseline,
   readJsonFile,
   resolvePerfSmokePlan,
-  runPerfSmokeScript,
+  runPerfSmokeTask,
   summarizePerfSmokeRun,
   writeJsonFile,
   writeTextFile,
@@ -31,8 +31,8 @@ export function runPerfSmokeFlow({ projectRoot, args, env = process.env, runners
   });
   const paths = resolvePerfSmokePaths(args || {}, projectRoot);
   const results = [];
-  const runScript =
-    typeof runners.runPerfSmokeScript === 'function' ? runners.runPerfSmokeScript : runPerfSmokeScript;
+  const runTask =
+    typeof runners.runPerfSmokeTask === 'function' ? runners.runPerfSmokeTask : runPerfSmokeTask;
 
   if (args?.dryRun) {
     return {
@@ -47,8 +47,8 @@ export function runPerfSmokeFlow({ projectRoot, args, env = process.env, runners
     };
   }
 
-  for (const scriptName of plan.scriptNames) {
-    const result = runScript({ projectRoot, childEnv, scriptName });
+  for (const task of plan.tasks) {
+    const result = runTask({ projectRoot, childEnv, task });
     results.push(result);
     if (!result.ok) {
       const summary = summarizePerfSmokeRun({ laneNames: plan.laneNames, results });
@@ -56,7 +56,7 @@ export function runPerfSmokeFlow({ projectRoot, args, env = process.env, runners
       const markdown = createPerfSmokeMarkdownReport({ summary });
       writeTextFile(paths.mdOutPath, markdown);
       throw createPerfSmokeError(
-        `[WP Perf Smoke] npm run ${scriptName} failed.`,
+        `[WP Perf Smoke] ${result.scriptName} failed.`,
         result.exitCode,
         result.error
       );

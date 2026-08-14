@@ -6,12 +6,13 @@ Tool-owned report target for the perf smoke baseline.
 - Report target: `docs/PERF_AND_STABILITY_BASELINE.md`
 - Latest run artifacts: `.artifacts/perf-smoke/latest.json`, `.artifacts/perf-smoke/latest.md`
 
-- Generated: 2026-08-03T11:17:02.714Z
+- Generated: 2026-08-14T10:45:16.312Z
 - Profile: default
 - Verify lanes: perf-toolchain-core, ui-react-jsx-hardening-core
-- Node: v24.18.0
-- Total runtime: 6.28s
+- Node: v22.16.0
+- Total runtime: 4.63s
 - Total budget: 9.04s
+- Budget result: pass
 
 ## Definition of Done
 
@@ -22,14 +23,14 @@ Tool-owned report target for the perf smoke baseline.
 
 ## Script timings
 
-| Script                                   | Actual | Budget | Status |
-| ---------------------------------------- | -----: | -----: | ------ |
-| test:perf-toolchain-core                 |  221ms |  1.05s | ok     |
-| test:ui-react-import-hardening-contracts |  143ms |  1.00s | ok     |
-| test:ui-react-jsx-hardening-contracts    |  125ms |  1.00s | ok     |
-| test:ui-type-hardening-contracts         |  114ms |  1.00s | ok     |
-| contract:layers                          |  4.71s |  7.11s | ok     |
-| contract:api                             |  967ms |  2.06s | ok     |
+| Script                                         | Actual | Budget | Status |
+| ---------------------------------------------- | -----: | -----: | ------ |
+| test-group:perf-toolchain-core                 |  220ms |  1.05s | ok     |
+| test-group:ui-react-import-hardening-contracts |  103ms |  1.00s | ok     |
+| test-group:ui-react-jsx-hardening-contracts    |  102ms |  1.00s | ok     |
+| test-group:ui-type-hardening-contracts         |   96ms |  1.00s | ok     |
+| npm:contract:layers                            |  3.86s |  7.11s | ok     |
+| npm:contract:api                               |  249ms |  2.06s | ok     |
 
 ## Re-run commands
 

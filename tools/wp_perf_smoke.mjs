@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { formatVerifyTask } from './wp_verify_lane_catalog.js';
 import { createPerfSmokeHelpText, parsePerfSmokeArgs } from './wp_perf_smoke_state.js';
 import { resolvePerfSmokeProjectRoot } from './wp_perf_smoke_shared.js';
 import { runPerfSmokeFlow } from './wp_perf_smoke_flow.js';
@@ -10,7 +11,7 @@ function printPlan(plan) {
       plan.laneNames.length ? plan.laneNames.join(', ') : 'none'
     }`
   );
-  for (const scriptName of plan.scriptNames) console.log(` - ${scriptName}`);
+  for (const task of plan.tasks) console.log(` - ${formatVerifyTask(task)}`);
 }
 
 function main() {

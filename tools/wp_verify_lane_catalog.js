@@ -1,174 +1,256 @@
+function testGroup(name) {
+  return Object.freeze({ kind: 'test-group', name });
+}
+
+function packageScript(name) {
+  return Object.freeze({ kind: 'package-script', name });
+}
+
 export const VERIFY_LANE_CATALOG = Object.freeze({
-  'app-boot-project-family-core': [
-    'test:app-boot-project-family-core',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'browser-feedback-family-core': [
-    'test:browser-feedback-family-contracts',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'builder-support-surfaces': [
-    'test:builder-support-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'builder-surface-family-core': [
-    'test:builder-surface-family-core',
-    'test:builder-surfaces',
-    'test:builder-support-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'builder-surfaces': ['test:builder-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'canonical-access-surfaces': [
-    'test:canonical-access-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'canvas-family': [
-    'test:visual-surface-family-contracts',
-    'test:canvas-interaction-surfaces',
-    'test:canvas-surfaces',
-    'test:sketch-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'canvas-interaction-surfaces': [
-    'test:canvas-interaction-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'canvas-surfaces': ['test:canvas-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'cloud-sync-family-core': [
-    'test:cloud-sync-family-contracts',
-    'test:cloud-sync-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'cloud-sync-surfaces': ['test:cloud-sync-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'domain-surfaces': ['test:domain-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'door-build-surfaces': ['test:door-build-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'export-overlay-errors-family-core': [
-    'test:export-overlay-errors-family-contracts',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'layout-tab-family': [
-    'test:structure-tab-family-contracts',
-    'test:tab-surfaces',
-    'test:builder-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'no-main-surfaces': ['test:no-main-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'order-pdf-surfaces': ['test:order-pdf-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'overlay-export-family': [
-    'test:export-overlay-errors-family-contracts',
-    'test:overlay-export-family-runtime',
-    'test:order-pdf-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'overlay-export-family-core': ['verify:export-overlay-errors-family-core'],
-  'perf-smoke': ['perf:smoke'],
-  'perf-toolchain-core': ['test:perf-toolchain-core'],
-  'project-surfaces': ['test:project-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'public-surfaces': ['test:public-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'render-family': [
-    'test:visual-surface-family-contracts',
-    'test:render-surfaces',
-    'test:builder-support-surfaces',
-    'test:sketch-surfaces',
-    'test:tab-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'render-surfaces': ['test:render-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'residual-families-core': ['test:residual-families-core', 'typecheck', 'contract:layers', 'contract:api'],
-  'runtime-access-surfaces': ['test:runtime-access-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'runtime-platform-core-family-core': [
-    'test:runtime-platform-core-family-core',
-    'test:state-config-kernel-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'runtime-surface-family-core': [
-    'test:runtime-surface-family-core',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'service-canonical-surfaces': [
-    'test:service-canonical-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'sketch-surfaces': ['test:sketch-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'state-config-kernel-surfaces': [
-    'test:state-config-kernel-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'structure-tab-family-core': [
-    'test:structure-tab-family-core',
-    'test:tab-surfaces',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
-  'tab-surfaces': ['test:tab-surfaces', 'typecheck', 'contract:layers', 'contract:api'],
-  'toolchain-surfaces': ['test:toolchain-surfaces'],
-  'ui-dist-probe': ['typecheck'],
-  'ui-lean-core': ['test:ui-lean-contracts', 'typecheck:ui-lean', 'contract:layers', 'contract:api'],
-  'ui-portable-core': [
-    'test:ui-portable-typecheck-contracts',
-    'typecheck',
-    'typecheck:ui-lean',
-    'contract:layers',
-    'contract:api',
-  ],
-  'ui-react-import-hardening-core': [
-    'test:ui-react-import-hardening-contracts',
-    'test:ui-type-hardening-contracts',
-    'contract:layers',
-    'contract:api',
-  ],
-  'ui-react-jsx-hardening-core': [
-    'test:ui-react-import-hardening-contracts',
-    'test:ui-react-jsx-hardening-contracts',
-    'test:ui-type-hardening-contracts',
-    'contract:layers',
-    'contract:api',
-  ],
-  'ui-type-hardening-core': [
-    'test:ui-type-hardening-contracts',
-    'test:export-overlay-errors-family-contracts',
-    'contract:layers',
-    'contract:api',
-  ],
-  'visual-surface-family-core': [
-    'test:visual-surface-family-contracts',
-    'typecheck',
-    'contract:layers',
-    'contract:api',
-  ],
+  'app-boot-project-family-core': Object.freeze([
+    testGroup('app-boot-project-family-core'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'browser-feedback-family-core': Object.freeze([
+    testGroup('browser-feedback-family-contracts'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'builder-support-surfaces': Object.freeze([
+    testGroup('builder-support-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'builder-surface-family-core': Object.freeze([
+    testGroup('builder-surface-family-core'),
+    testGroup('builder-surfaces'),
+    testGroup('builder-support-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'builder-surfaces': Object.freeze([
+    testGroup('builder-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'canonical-access-surfaces': Object.freeze([
+    testGroup('canonical-access-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'canvas-family': Object.freeze([
+    testGroup('visual-surface-family-contracts'),
+    testGroup('canvas-interaction-surfaces'),
+    testGroup('canvas-surfaces'),
+    testGroup('sketch-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'canvas-interaction-surfaces': Object.freeze([
+    testGroup('canvas-interaction-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'canvas-surfaces': Object.freeze([
+    testGroup('canvas-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'cloud-sync-family-core': Object.freeze([
+    testGroup('cloud-sync-family-contracts'),
+    testGroup('cloud-sync-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'cloud-sync-surfaces': Object.freeze([
+    testGroup('cloud-sync-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'domain-surfaces': Object.freeze([
+    testGroup('domain-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'door-build-surfaces': Object.freeze([
+    testGroup('door-build-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'export-overlay-errors-family-core': Object.freeze([
+    testGroup('export-overlay-errors-family-contracts'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'layout-tab-family': Object.freeze([
+    testGroup('structure-tab-family-contracts'),
+    testGroup('tab-surfaces'),
+    testGroup('builder-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'no-main-surfaces': Object.freeze([
+    testGroup('no-main-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'order-pdf-surfaces': Object.freeze([
+    testGroup('order-pdf-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'overlay-export-family': Object.freeze([
+    testGroup('export-overlay-errors-family-contracts'),
+    testGroup('overlay-export-family-runtime'),
+    testGroup('order-pdf-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'perf-smoke': Object.freeze([packageScript('perf:smoke')]),
+  'perf-toolchain-core': Object.freeze([testGroup('perf-toolchain-core')]),
+  'project-surfaces': Object.freeze([
+    testGroup('project-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'public-surfaces': Object.freeze([
+    testGroup('public-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'render-family': Object.freeze([
+    testGroup('visual-surface-family-contracts'),
+    testGroup('render-surfaces'),
+    testGroup('builder-support-surfaces'),
+    testGroup('sketch-surfaces'),
+    testGroup('tab-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'render-surfaces': Object.freeze([
+    testGroup('render-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'residual-families-core': Object.freeze([
+    testGroup('residual-families-core'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'runtime-access-surfaces': Object.freeze([
+    testGroup('runtime-access-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'runtime-platform-core-family-core': Object.freeze([
+    testGroup('runtime-platform-core-family-core'),
+    testGroup('state-config-kernel-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'runtime-surface-family-core': Object.freeze([
+    testGroup('runtime-surface-family-core'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'service-canonical-surfaces': Object.freeze([
+    testGroup('service-canonical-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'sketch-surfaces': Object.freeze([
+    testGroup('sketch-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'state-config-kernel-surfaces': Object.freeze([
+    testGroup('state-config-kernel-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'structure-tab-family-core': Object.freeze([
+    testGroup('structure-tab-family-core'),
+    testGroup('tab-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'tab-surfaces': Object.freeze([
+    testGroup('tab-surfaces'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'toolchain-surfaces': Object.freeze([testGroup('toolchain-surfaces')]),
+  'ui-dist-probe': Object.freeze([packageScript('typecheck')]),
+  'ui-lean-core': Object.freeze([
+    testGroup('ui-lean-contracts'),
+    packageScript('typecheck:ui-lean'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'ui-portable-core': Object.freeze([
+    testGroup('ui-portable-typecheck-contracts'),
+    packageScript('typecheck'),
+    packageScript('typecheck:ui-lean'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'ui-react-import-hardening-core': Object.freeze([
+    testGroup('ui-react-import-hardening-contracts'),
+    testGroup('ui-type-hardening-contracts'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'ui-react-jsx-hardening-core': Object.freeze([
+    testGroup('ui-react-import-hardening-contracts'),
+    testGroup('ui-react-jsx-hardening-contracts'),
+    testGroup('ui-type-hardening-contracts'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'ui-type-hardening-core': Object.freeze([
+    testGroup('ui-type-hardening-contracts'),
+    testGroup('export-overlay-errors-family-contracts'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
+  'visual-surface-family-core': Object.freeze([
+    testGroup('visual-surface-family-contracts'),
+    packageScript('typecheck'),
+    packageScript('contract:layers'),
+    packageScript('contract:api'),
+  ]),
 });
 
 export function listVerifyLaneNames() {
@@ -176,39 +258,31 @@ export function listVerifyLaneNames() {
 }
 
 export function normalizeVerifyLaneName(name) {
-  const value = typeof name === 'string' ? name.trim() : '';
-  if (!value) return '';
-  return value.startsWith('verify:') ? value.slice('verify:'.length) : value;
+  return typeof name === 'string' ? name.trim() : '';
 }
 
-export function readVerifyLaneScripts(laneName) {
+export function readVerifyLaneTasks(laneName) {
   const normalized = normalizeVerifyLaneName(laneName);
-  const scripts = VERIFY_LANE_CATALOG[normalized];
-  return Array.isArray(scripts) ? scripts.slice() : null;
+  const tasks = VERIFY_LANE_CATALOG[normalized];
+  return Array.isArray(tasks) ? tasks.map(task => ({ ...task })) : null;
 }
 
-export function flattenVerifyLaneScripts(laneName, seen = new Set()) {
+export function verifyTaskKey(task) {
+  return `${task.kind}:${task.name}`;
+}
+
+export function formatVerifyTask(task) {
+  if (task.kind === 'test-group') return `test-group:${task.name}`;
+  if (task.kind === 'package-script') return `npm:${task.name}`;
+  return `${task.kind}:${task.name}`;
+}
+
+export function flattenVerifyLaneTasks(laneName) {
   const normalized = normalizeVerifyLaneName(laneName);
   if (!normalized) throw new Error('[WardrobePro] verify lane name is required.');
-  if (seen.has(normalized)) {
-    throw new Error(
-      `[WardrobePro] verify lane recursion detected: ${Array.from(seen).concat(normalized).join(' -> ')}`
-    );
-  }
-  const scripts = readVerifyLaneScripts(normalized);
-  if (!scripts) throw new Error(`[WardrobePro] unknown verify lane: ${normalized}`);
-  seen.add(normalized);
-  const out = [];
-  for (const scriptName of scripts) {
-    if (typeof scriptName !== 'string' || !scriptName.trim()) continue;
-    if (scriptName.startsWith('verify:')) {
-      out.push(...flattenVerifyLaneScripts(scriptName, seen));
-      continue;
-    }
-    out.push(scriptName);
-  }
-  seen.delete(normalized);
-  return out;
+  const tasks = readVerifyLaneTasks(normalized);
+  if (!tasks) throw new Error(`[WardrobePro] unknown verify lane: ${normalized}`);
+  return tasks;
 }
 
 export function flattenVerifyLanePlan(laneNames, { dedupe = true } = {}) {
@@ -218,18 +292,19 @@ export function flattenVerifyLanePlan(laneNames, { dedupe = true } = {}) {
     throw new Error('[WardrobePro] at least one verify lane name is required.');
   }
 
-  const scripts = [];
-  const seenScripts = new Set();
+  const tasks = [];
+  const seenTasks = new Set();
   for (const laneName of normalizedLaneNames) {
-    for (const scriptName of flattenVerifyLaneScripts(laneName)) {
-      if (dedupe && seenScripts.has(scriptName)) continue;
-      scripts.push(scriptName);
-      seenScripts.add(scriptName);
+    for (const task of flattenVerifyLaneTasks(laneName)) {
+      const key = verifyTaskKey(task);
+      if (dedupe && seenTasks.has(key)) continue;
+      tasks.push(task);
+      seenTasks.add(key);
     }
   }
 
   return {
     laneNames: normalizedLaneNames,
-    scripts,
+    tasks,
   };
 }

@@ -1,16 +1,17 @@
 {
-  "generatedAt": "2026-08-14T10:14:33.687Z",
+  "generatedAt": "2026-08-14T10:44:16.362Z",
   "totals": {
-    "tests": 1245,
-    "unitRunnerTests": 1236,
+    "tests": 1242,
+    "unitRunnerTests": 1233,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
-    "packageTestReferences": 38,
-    "catalogTestReferences": 457,
+    "packageTestReferences": 16,
+    "catalogTestReferences": 479,
     "totalTestReferences": 495,
     "oversizedDirectPackageTestScripts": 0,
-    "catalogGroups": 43,
-    "catalogScriptBindings": 43,
+    "catalogGroups": 66,
+    "genericTestGroupRunner": "test:group",
+    "legacyTestGroupPackageFacades": 0,
     "primaryCatalogGroups": 5,
     "directRepositoryLayerScanTests": 0,
     "retiredLayerLedgerAccessTests": 0,
@@ -19,7 +20,7 @@
     "contractOverlapTargets": 146
   },
   "categories": {
-    "contract": 405,
+    "contract": 402,
     "runtime-unit": 335,
     "integration": 465,
     "persistence-ingress": 24,
@@ -30,7 +31,8 @@
     "missingTestRefs": [],
     "duplicateCatalogRefs": [],
     "invalidCatalogDefinitions": [],
-    "staleCatalogScriptBindings": [],
+    "testGroupRunnerIssues": [],
+    "legacyTestGroupPackageFacades": [],
     "oversizedDirectPackageTestScripts": [],
     "contractRegistry": [],
     "historicalArchitectureProofs": [],
@@ -4325,10 +4327,6 @@
       "category": "integration"
     },
     {
-      "file": "tests/cloud_sync_verify_split_contracts.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/cloudflare_pages_domains_runtime.test.js",
       "category": "runtime-unit"
     },
@@ -5853,10 +5851,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/order_pdf_verify_split_contracts.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/overlay_feedback_host_timers_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -7143,10 +7137,6 @@
     {
       "file": "tests/sketch_tab_no_main_toggle_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/sketch_verify_split_contracts.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/sliding_door_track_open_runtime.test.ts",

@@ -303,7 +303,7 @@ const TOOLCHAIN_FAMILIES = [
         path: 'tools/wp_verify_lane_catalog.js',
         requiredNeedles: [
           'export const VERIFY_LANE_CATALOG = Object.freeze({',
-          'export function flattenVerifyLaneScripts(',
+          'export function flattenVerifyLaneTasks(',
           'export function flattenVerifyLanePlan(',
         ],
         forbiddenNeedles: ['export function parseVerifyLaneArgs('],
@@ -334,7 +334,7 @@ const TOOLCHAIN_FAMILIES = [
     entry: 'tools/wp_perf_smoke.mjs',
     maxLines: 90,
     imports: ['./wp_perf_smoke_state.js', './wp_perf_smoke_shared.js', './wp_perf_smoke_flow.js'],
-    forbiddenEntryNeedles: ['function createPerfSmokeBaseline(', 'function runPerfSmokeScript('],
+    forbiddenEntryNeedles: ['function createPerfSmokeBaseline(', 'function runPerfSmokeTask('],
     modules: [
       {
         path: 'tools/wp_perf_smoke_state.js',
@@ -353,11 +353,7 @@ const TOOLCHAIN_FAMILIES = [
       },
       {
         path: 'tools/wp_perf_smoke_flow.js',
-        requiredNeedles: [
-          'export function runPerfSmokeFlow(',
-          'createPerfSmokeBaseline',
-          'runPerfSmokeScript',
-        ],
+        requiredNeedles: ['export function runPerfSmokeFlow(', 'createPerfSmokeBaseline', 'runPerfSmokeTask'],
         forbiddenNeedles: ['export function createPerfSmokeHelpText('],
       },
     ],

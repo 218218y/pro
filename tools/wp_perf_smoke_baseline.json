@@ -13,32 +13,32 @@
   },
   "scripts": [
     {
-      "name": "test:perf-toolchain-core",
+      "name": "test-group:perf-toolchain-core",
       "baselineMs": 221,
       "maxMs": 1049
     },
     {
-      "name": "test:ui-react-import-hardening-contracts",
+      "name": "test-group:ui-react-import-hardening-contracts",
       "baselineMs": 143,
       "maxMs": 1000
     },
     {
-      "name": "test:ui-react-jsx-hardening-contracts",
+      "name": "test-group:ui-react-jsx-hardening-contracts",
       "baselineMs": 125,
       "maxMs": 1000
     },
     {
-      "name": "test:ui-type-hardening-contracts",
+      "name": "test-group:ui-type-hardening-contracts",
       "baselineMs": 114,
       "maxMs": 1000
     },
     {
-      "name": "contract:layers",
+      "name": "npm:contract:layers",
       "baselineMs": 4713,
       "maxMs": 7113
     },
     {
-      "name": "contract:api",
+      "name": "npm:contract:api",
       "baselineMs": 967,
       "maxMs": 2056
     }

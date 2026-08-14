@@ -96,12 +96,12 @@ test('GitHub CI keeps the monolithic verify flow as a manual release gate only',
     ci,
     /name: Audit high severity release dependencies\n        run: npm run audit:release\n\n      - name: Run full release verification gate/
   );
-  assert.equal(pkg.scripts['gate:full'], 'npm run verify:gate');
+  assert.equal(pkg.scripts['gate:full'], 'node tools/wp_verify.js --gate');
 
   const monolithicRuns = ci
     .split('\n')
     .map(line => line.trim())
-    .filter(line => /^run: npm run (verify|verify:gate|gate:full)\b/.test(line));
+    .filter(line => /^run: npm run (verify|gate:full)\b/.test(line));
 
   assert.deepEqual(monolithicRuns, ['run: npm run gate:full']);
 });

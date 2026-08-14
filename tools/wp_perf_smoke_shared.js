@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { planVerifyLaneRun } from './wp_verify_lane_flow.js';
-import { normalizeVerifyLaneName } from './wp_verify_lane_catalog.js';
+import { formatVerifyTask, normalizeVerifyLaneName, verifyTaskKey } from './wp_verify_lane_catalog.js';
 import { createSanitizedChildEnv } from './wp_node_child_env.js';
 import { header, resolveProjectRoot } from './wp_verify_shared.js';
 
@@ -22,14 +22,7 @@ const DEFAULT_BASELINE_POLICY = Object.freeze({
   totalSlackMs: 1500,
 });
 
-const DIRECT_NODE_PERF_SCRIPTS = new Set([
-  'test:perf-toolchain-core',
-  'test:ui-react-import-hardening-contracts',
-  'test:ui-react-jsx-hardening-contracts',
-  'test:ui-type-hardening-contracts',
-  'contract:layers',
-  'contract:api',
-]);
+const DIRECT_NODE_PERF_SCRIPTS = new Set(['contract:layers', 'contract:api']);
 
 const SAFE_DIRECT_NODE_ARG = /^[A-Za-z0-9_./:@=\\-]+$/;
 
@@ -96,28 +89,28 @@ export function resolvePerfSmokePlan({ laneNames = [], scriptNames = [], dedupe 
     .filter(Boolean);
   const normalizedScriptNames = normalizePlanInputs(scriptNames);
 
-  const scripts = [];
-  const seenScripts = new Set();
+  const tasks = [];
+  const seenTasks = new Set();
+  const appendTask = task => {
+    const key = verifyTaskKey(task);
+    if (dedupe && seenTasks.has(key)) return;
+    tasks.push(task);
+    seenTasks.add(key);
+  };
 
   for (const scriptName of normalizedScriptNames) {
-    if (dedupe && seenScripts.has(scriptName)) continue;
-    scripts.push(scriptName);
-    seenScripts.add(scriptName);
+    appendTask({ kind: 'package-script', name: scriptName });
   }
 
   const requestedLaneNames = normalizedLaneNames.length
     ? normalizedLaneNames
     : DEFAULT_PERF_SMOKE_LANES.slice();
   const lanePlan = planVerifyLaneRun({ laneNames: requestedLaneNames, dedupe });
-  for (const scriptName of lanePlan.scripts) {
-    if (dedupe && seenScripts.has(scriptName)) continue;
-    scripts.push(scriptName);
-    seenScripts.add(scriptName);
-  }
+  for (const task of lanePlan.tasks) appendTask(task);
 
   return {
     laneNames: lanePlan.laneNames,
-    scriptNames: scripts,
+    tasks,
   };
 }
 
@@ -132,8 +125,19 @@ export function resolveDirectPerfSmokeInvocation(projectRoot, scriptName) {
   return { command: process.execPath, args };
 }
 
-function runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync }) {
-  const direct = resolveDirectPerfSmokeInvocation(projectRoot, scriptName);
+function runTaskSpawn({ projectRoot, childEnv, task, spawnImpl = spawnSync }) {
+  if (task.kind === 'test-group') {
+    return spawnImpl(process.execPath, ['tools/wp_test_group.mjs', task.name], {
+      stdio: 'inherit',
+      cwd: projectRoot,
+      env: childEnv,
+      shell: false,
+    });
+  }
+  if (task.kind !== 'package-script') {
+    return { status: 1, error: new Error(`[WP Perf Smoke] unsupported task kind: ${task.kind}`) };
+  }
+  const direct = resolveDirectPerfSmokeInvocation(projectRoot, task.name);
   if (direct) {
     return spawnImpl(direct.command, direct.args, {
       stdio: 'inherit',
@@ -144,14 +148,14 @@ function runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSy
   }
   if (process.platform === 'win32') {
     const comspec = process.env.ComSpec || 'cmd.exe';
-    return spawnImpl(comspec, ['/d', '/s', '/c', 'npm', 'run', scriptName], {
+    return spawnImpl(comspec, ['/d', '/s', '/c', 'npm', 'run', task.name], {
       stdio: 'inherit',
       cwd: projectRoot,
       env: childEnv,
       shell: false,
     });
   }
-  return spawnImpl('npm', ['run', scriptName], {
+  return spawnImpl('npm', ['run', task.name], {
     stdio: 'inherit',
     cwd: projectRoot,
     env: childEnv,
@@ -159,14 +163,15 @@ function runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSy
   });
 }
 
-export function runPerfSmokeScript({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync }) {
-  header(`[WP Perf Smoke] npm run ${scriptName}`);
+export function runPerfSmokeTask({ projectRoot, childEnv, task, spawnImpl = spawnSync }) {
+  const taskName = formatVerifyTask(task);
+  header(`[WP Perf Smoke] ${taskName}`);
   const startNs = process.hrtime.bigint();
-  const result = runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl });
+  const result = runTaskSpawn({ projectRoot, childEnv, task, spawnImpl });
   const durationMs = Number((process.hrtime.bigint() - startNs) / 1000000n);
   const exitCode = typeof result.status === 'number' ? result.status : 1;
   return {
-    scriptName,
+    scriptName: taskName,
     durationMs,
     ok: !result.error && exitCode === 0,
     exitCode,

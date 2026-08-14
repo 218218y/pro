@@ -1,19 +1,20 @@
 # Test portfolio audit
 
-Generated: 2026-08-14T10:14:33.687Z
+Generated: 2026-08-14T10:44:16.362Z
 
 ## Summary
 
-- Test files classified: 1245
-- Canonical unit/runtime runner files: 1236
+- Test files classified: 1242
+- Canonical unit/runtime runner files: 1233
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 36
-- Package script test references: 38
-- Catalog test references: 457
+- Package script test references: 16
+- Catalog test references: 479
 - Total explicit test references: 495
 - Oversized direct package test lanes: 0
-- Catalog groups: 43
-- Catalog-backed package scripts: 43
+- Catalog groups: 66
+- Generic catalog runner: test:group
+- Legacy per-group package facades: 0
 - Primary non-overlapping portfolio groups: 5
 - Tests directly invoking the repository layer graph: 0
 - Tests reading retired layer-ledger fields: 0
@@ -23,7 +24,7 @@ Generated: 2026-08-14T10:14:33.687Z
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   405 |
+| contract            |   402 |
 | runtime-unit        |   335 |
 | integration         |   465 |
 | persistence-ingress |    24 |
@@ -37,7 +38,8 @@ Generated: 2026-08-14T10:14:33.687Z
 | No stale package/catalog test references                           |        0 |
 | Test groups contain no duplicate file membership                   |        0 |
 | Test-group catalog definitions are valid                           |        0 |
-| Catalog script bindings match package.json facades                 |        0 |
+| Generic test-group runner is canonical                             |        0 |
+| Per-group package facades stay retired                             |        0 |
 | Direct package test lanes contain at most 4 files                  |        0 |
 | Contract registry is valid and wired once                          |        0 |
 | Historical stage/wave/checkpoint proof files are retired           |        0 |
@@ -199,4 +201,4 @@ Generated: 2026-08-14T10:14:33.687Z
 
 ## Policy
 
-This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Large named test lanes must live in the catalog rather than package.json. Current behavior, persistence ingress, and architecture invariants remain first-class categories.
+This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Named test ownership and aggregate test sequences must live in the catalog; package.json exposes only the generic test-group runner rather than per-group facades. Current behavior, persistence ingress, and architecture invariants remain first-class categories.

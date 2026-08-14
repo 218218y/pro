@@ -6,9 +6,10 @@ import path from 'node:path';
 
 import {
   listTestGroupNames,
-  listTestGroupScriptBindings,
   readTestGroup,
   readTestGroupFiles,
+  resolveTestGroupFiles,
+  resolveTestGroupLeafNames,
   validateTestGroupCatalog,
 } from '../tools/wp_test_group_catalog.mjs';
 import { parseTestGroupArgs, resolveTestGroupPlan } from '../tools/wp_test_group.mjs';
@@ -41,39 +42,30 @@ test('test group catalog owns focused runtime membership and metadata', () => {
   for (const file of group.files) assert.equal(fs.existsSync(file), true, `${file} should exist`);
 });
 
-test('test group reads return defensive owner, file, and serial-policy copies', () => {
+test('test group reads return defensive owner, file, group, and serial-policy copies', () => {
   const first = readTestGroup('tab-surfaces');
   const second = readTestGroup('tab-surfaces');
   first.files.pop();
   first.owners.pop();
+  first.groups.push('not-real');
   first.serialPolicy.batchSize = 99;
   assert.notEqual(first.files.length, second.files.length);
   assert.notEqual(first.owners.length, second.owners.length);
+  assert.notEqual(first.groups.length, second.groups.length);
   assert.equal(second.serialPolicy.batchSize, 1);
+
   const firstFiles = readTestGroupFiles('mirror-runtime');
   const secondFiles = readTestGroupFiles('mirror-runtime');
   firstFiles.pop();
   assert.notEqual(firstFiles.length, secondFiles.length);
 });
 
-test('test group catalog validates runners, primary ownership, and unique script bindings', () => {
+test('test group catalog validates runners, primary ownership, and sequence topology', () => {
   assert.deepEqual(validateTestGroupCatalog(), []);
-  const bindings = listTestGroupScriptBindings();
-  const groupNames = listTestGroupNames();
-  assert.equal(bindings.length, groupNames.length);
-  assert.deepEqual(bindings.map(binding => binding.groupName).sort(), groupNames);
-  assert.equal(new Set(bindings.map(binding => binding.script)).size, bindings.length);
-  for (const binding of bindings) {
-    assert.equal(
-      packageJson.scripts[binding.script],
-      `node tools/wp_test_group.mjs ${binding.groupName}`,
-      `${binding.script} must stay a short facade over its canonical catalog group`
-    );
-  }
+  assert.ok(listTestGroupNames().length > 60);
 
   const invalidCatalog = {
     alpha: {
-      script: 'test:alpha',
       description: 'alpha',
       kind: 'runtime-portfolio',
       owners: ['alpha'],
@@ -81,9 +73,9 @@ test('test group catalog validates runners, primary ownership, and unique script
       runner: 'tsx-test',
       portfolioRole: 'primary',
       files: ['tests/example_runtime.test.ts'],
+      groups: [],
     },
     beta: {
-      script: 'test:beta',
       description: 'beta',
       kind: 'runtime-portfolio',
       owners: ['beta'],
@@ -91,11 +83,45 @@ test('test group catalog validates runners, primary ownership, and unique script
       runner: 'tsx-test',
       portfolioRole: 'primary',
       files: ['tests/example_runtime.test.ts'],
+      groups: [],
     },
   };
   assert.ok(
     validateTestGroupCatalog(invalidCatalog).some(issue => issue.code === 'primary-portfolio-overlap')
   );
+
+  const cyclicCatalog = {
+    alpha: {
+      description: 'alpha',
+      kind: 'group-sequence',
+      owners: ['alpha'],
+      environment: 'tsx',
+      runner: 'group-sequence',
+      portfolioRole: 'focused',
+      files: [],
+      groups: ['beta'],
+    },
+    beta: {
+      description: 'beta',
+      kind: 'group-sequence',
+      owners: ['beta'],
+      environment: 'tsx',
+      runner: 'group-sequence',
+      portfolioRole: 'focused',
+      files: [],
+      groups: ['alpha'],
+    },
+  };
+  assert.ok(validateTestGroupCatalog(cyclicCatalog).some(issue => issue.code === 'group-sequence-cycle'));
+});
+
+test('package.json exposes one generic catalog runner and no per-group package facades', () => {
+  assert.equal(packageJson.scripts['test:group'], 'node tools/wp_test_group.mjs');
+  const legacyFacades = Object.entries(packageJson.scripts).filter(
+    ([script, command]) =>
+      script !== 'test:group' && /^node tools\/wp_test_group\.mjs\s+\S+/u.test(String(command).trim())
+  );
+  assert.deepEqual(legacyFacades, []);
 });
 
 test('test group runner validates args and missing files before spawning', () => {
@@ -121,7 +147,6 @@ test('mirror runtime group owns the typed mirror verification lane', () => {
   assert.deepEqual(group.owners, ['platform/render-loop', 'runtime/planar-reflector']);
   assert.ok(group.files.includes('tests/render_loop_mirror_driver_runtime.test.ts'));
   assert.ok(group.files.includes('tests/planar_reflector_render_pass_runtime.test.ts'));
-  assert.equal(packageJson.scripts['test:mirror-runtime'], 'node tools/wp_test_group.mjs mirror-runtime');
   const plan = resolveTestGroupPlan({ groupName: 'mirror-runtime' });
   assertCanonicalTsxPlan(plan, group);
   assert.equal(plan.kind, 'runtime-integration');
@@ -133,28 +158,66 @@ test('order PDF overlay core uses the central catalog instead of a package file 
   assert.equal(group.runner, 'tsx-test');
   assert.deepEqual(group.owners, ['ui/order-pdf']);
   assert.ok(group.files.includes('tests/order_pdf_overlay_editor_mode_state_runtime.test.ts'));
-  assert.equal(
-    packageJson.scripts['test:order-pdf-surfaces:overlay-core'],
-    'node tools/wp_test_group.mjs order-pdf-overlay-core'
-  );
   const plan = resolveTestGroupPlan({ groupName: 'order-pdf-overlay-core' });
   assertCanonicalTsxPlan(plan, group);
   assert.equal(plan.files.length, 10);
 });
 
-test('major portfolio lanes are short package facades backed by one catalog', () => {
+test('aggregate suites compose canonical child groups without duplicating file inventories', () => {
   const expected = {
-    'tab-surfaces': 'test:tab-surfaces',
-    'canvas-surfaces': 'test:canvas-surfaces',
-    'structure-tab-family-core': 'test:structure-tab-family-core',
-    'project-surfaces': 'test:project-surfaces',
-    'toolchain-surfaces': 'test:toolchain-surfaces',
-    'public-surfaces': 'test:public-surfaces',
+    'order-pdf-surfaces': [
+      'order-pdf-overlay-core',
+      'order-pdf-pdf-render',
+      'order-pdf-sketch',
+      'order-pdf-export-overlay',
+      'order-pdf-export-builders',
+      'order-pdf-export-capture',
+      'order-pdf-export-text',
+    ],
+    'sketch-surfaces': [
+      'sketch-manual-hover',
+      'sketch-box-hover',
+      'sketch-free-boxes',
+      'sketch-render-visuals',
+    ],
+    'cloud-sync-panel': [
+      'cloud-sync-panel-install',
+      'cloud-sync-panel-controller',
+      'cloud-sync-panel-subscriptions',
+      'cloud-sync-panel-snapshots',
+    ],
+    'cloud-sync-surfaces': [
+      'cloud-sync-lifecycle',
+      'cloud-sync-main-row',
+      'cloud-sync-panel',
+      'cloud-sync-sync-ops',
+      'cloud-sync-tabs-ui',
+    ],
   };
-  for (const [groupName, scriptName] of Object.entries(expected)) {
+
+  for (const [groupName, childGroups] of Object.entries(expected)) {
     const group = readTestGroup(groupName);
-    assert.equal(group.script, scriptName);
-    assert.equal(packageJson.scripts[scriptName], `node tools/wp_test_group.mjs ${groupName}`);
+    assert.equal(group.runner, 'group-sequence');
+    assert.deepEqual(group.files, []);
+    assert.deepEqual(group.groups, childGroups);
+    assert.ok(resolveTestGroupLeafNames(groupName).length >= childGroups.length);
+    assert.ok(resolveTestGroupFiles(groupName).length > 0);
+    const plan = resolveTestGroupPlan({ groupName });
+    assert.equal(plan.command, null);
+    assert.deepEqual(plan.groups, childGroups);
+  }
+});
+
+test('major portfolio lanes remain catalog-owned without package-script mirrors', () => {
+  for (const groupName of [
+    'tab-surfaces',
+    'canvas-surfaces',
+    'structure-tab-family-core',
+    'project-surfaces',
+    'toolchain-surfaces',
+    'public-surfaces',
+  ]) {
+    const group = readTestGroup(groupName);
     assert.ok(group.files.length >= 14, `${groupName} should own a meaningful lane`);
   }
 });

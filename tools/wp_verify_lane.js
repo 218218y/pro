@@ -3,6 +3,7 @@
 import { createSanitizedChildEnv } from './wp_node_child_env.js';
 import { resolveProjectRoot } from './wp_verify_shared.js';
 import { planVerifyLaneRun, runVerifyLanePlan } from './wp_verify_lane_flow.js';
+import { formatVerifyTask } from './wp_verify_lane_catalog.js';
 import { createVerifyLaneHelpText, parseVerifyLaneArgs } from './wp_verify_lane_state.js';
 
 function main() {
@@ -32,7 +33,7 @@ function main() {
     console.log(
       `[WardrobePro] verify lane${plan.laneNames.length > 1 ? 's' : ''}: ${plan.laneNames.join(', ')}`
     );
-    for (const scriptName of plan.scripts) console.log(` - ${scriptName}`);
+    for (const task of plan.tasks) console.log(` - ${formatVerifyTask(task)}`);
     if (flags.dryRun) return;
   }
 

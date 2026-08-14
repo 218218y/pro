@@ -18,6 +18,7 @@ import {
   resolveDirectPerfSmokeInvocation,
 } from '../tools/wp_perf_smoke_shared.js';
 import { runPerfSmokeFlow } from '../tools/wp_perf_smoke_flow.js';
+import { formatVerifyTask } from '../tools/wp_verify_lane_catalog.js';
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -73,19 +74,19 @@ test('perf smoke help text advertises default lanes and baseline flags', () => {
 
 test('perf smoke planner resolves verify lanes and dedupes script overlap', () => {
   const plan = resolvePerfSmokePlan({
-    laneNames: ['overlay-export-family-core', 'ui-react-jsx-hardening-core'],
+    laneNames: ['export-overlay-errors-family-core', 'ui-react-jsx-hardening-core'],
     scriptNames: ['contract:api'],
     dedupe: true,
   });
-  assert.deepEqual(plan.laneNames, ['overlay-export-family-core', 'ui-react-jsx-hardening-core']);
-  assert.deepEqual(plan.scriptNames, [
-    'contract:api',
-    'test:export-overlay-errors-family-contracts',
-    'typecheck',
-    'contract:layers',
-    'test:ui-react-import-hardening-contracts',
-    'test:ui-react-jsx-hardening-contracts',
-    'test:ui-type-hardening-contracts',
+  assert.deepEqual(plan.laneNames, ['export-overlay-errors-family-core', 'ui-react-jsx-hardening-core']);
+  assert.deepEqual(plan.tasks.map(formatVerifyTask), [
+    'npm:contract:api',
+    'test-group:export-overlay-errors-family-contracts',
+    'npm:typecheck',
+    'npm:contract:layers',
+    'test-group:ui-react-import-hardening-contracts',
+    'test-group:ui-react-jsx-hardening-contracts',
+    'test-group:ui-type-hardening-contracts',
   ]);
 });
 
@@ -103,8 +104,8 @@ test('perf smoke baseline evaluation detects regressions and profile drift', () 
     profileName: 'default',
     laneNames: ['toolchain-surfaces'],
     scripts: [
-      { scriptName: 'test:toolchain-surfaces', durationMs: 1200, ok: true, exitCode: 0 },
-      { scriptName: 'contract:api', durationMs: 900, ok: true, exitCode: 0 },
+      { scriptName: 'test-group:toolchain-surfaces', durationMs: 1200, ok: true, exitCode: 0 },
+      { scriptName: 'npm:contract:api', durationMs: 900, ok: true, exitCode: 0 },
     ],
     totalDurationMs: 2100,
   };
@@ -124,8 +125,8 @@ test('perf smoke baseline evaluation detects regressions and profile drift', () 
     {
       ...summary,
       scripts: [
-        { scriptName: 'test:toolchain-surfaces', durationMs: 1201, ok: true, exitCode: 0 },
-        { scriptName: 'contract:api', durationMs: 901, ok: true, exitCode: 0 },
+        { scriptName: 'test-group:toolchain-surfaces', durationMs: 1201, ok: true, exitCode: 0 },
+        { scriptName: 'npm:contract:api', durationMs: 901, ok: true, exitCode: 0 },
       ],
       totalDurationMs: 2102,
     },
@@ -153,7 +154,7 @@ test('perf smoke markdown report keeps durable tool-owned baseline anchors', () 
     profileName: 'default',
     laneNames: ['perf-toolchain-core'],
     nodeVersion: 'v24.18.0',
-    scripts: [{ scriptName: 'test:perf-toolchain-core', durationMs: 575, ok: true, exitCode: 0 }],
+    scripts: [{ scriptName: 'test-group:perf-toolchain-core', durationMs: 575, ok: true, exitCode: 0 }],
     totalDurationMs: 575,
   };
   const baseline = createPerfSmokeBaseline(summary);
@@ -191,7 +192,8 @@ test('perf smoke flow updates baseline, writes outputs, and enforces budgets thr
     projectRoot,
     args,
     runners: {
-      runPerfSmokeScript({ scriptName }) {
+      runPerfSmokeTask({ task }) {
+        const scriptName = formatVerifyTask(task);
         runs.push(scriptName);
         return { scriptName, durationMs: 1000 + runs.length, ok: true, exitCode: 0 };
       },
@@ -217,7 +219,8 @@ test('perf smoke flow updates baseline, writes outputs, and enforces budgets thr
       '--enforce',
     ]),
     runners: {
-      runPerfSmokeScript({ scriptName }) {
+      runPerfSmokeTask({ task }) {
+        const scriptName = formatVerifyTask(task);
         return { scriptName, durationMs: 1000, ok: true, exitCode: 0 };
       },
     },
@@ -241,7 +244,8 @@ test('perf smoke flow updates baseline, writes outputs, and enforces budgets thr
           '--enforce',
         ]),
         runners: {
-          runPerfSmokeScript({ scriptName }) {
+          runPerfSmokeTask({ task }) {
+            const scriptName = formatVerifyTask(task);
             return { scriptName, durationMs: 100000, ok: true, exitCode: 0 };
           },
         },

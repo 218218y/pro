@@ -58,7 +58,7 @@ Use browser/E2E only when the changed surface needs browser proof or touches a u
 
 Do not replace the cost policy with alphabetical round-robin or three hand-maintained file lists. When repeated CI runs show a durable imbalance, profile the full Node 24 runtime suite, update only measured outliers in `KNOWN_SLOW_TEST_COSTS`, and keep the fallback for unprofiled files. Machine-specific absolute times may vary; the tracked values are relative scheduling costs.
 
-Use concern-specific `test:*` scripts and verify lanes for targeted local validation. Do not rebuild the required CI runtime lane by stitching those scripts together, because many of them intentionally overlap.
+Use `npm run test:group -- <group-name>` and `npm run verify:lane -- <lane-name>` for catalog-backed targeted validation. Keep dedicated package scripts only for genuinely distinct execution environments or workflows, such as offline vendor self-tests. Do not rebuild the required CI runtime lane by stitching focused groups together, because many of them intentionally overlap.
 
 ## Portfolio audit lane
 
@@ -79,11 +79,11 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 - named test groups must not contain duplicate or missing files.
 - repository-wide Layer Contract collection must remain behind the one cached central fixture.
 
-Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Direct `test:*` commands are capped at four test-file references; a fifth file means the lane needs a catalog owner rather than a longer shell string. Each group declares its package-script binding, verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
+Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Direct `test:*` commands are capped at four test-file references; a fifth file means the lane needs a catalog owner rather than a longer shell string. Each leaf group declares verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. Aggregate suites declare `runner: group-sequence` plus canonical child groups instead of duplicating files. `tools/wp_test_group.mjs` validates the catalog before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
 
 Use `portfolioRole: primary` only for non-overlapping top-level portfolio ownership. Use `focused` for targeted suites that intentionally reuse files from broader lanes, and `architecture` for long-lived guard collections. Primary overlap is a control-plane error; focused overlap is explicit and allowed.
 
-Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; focused Structure Tab, Mirror, Sketch Box, Order PDF, Cloud Sync, and Sketch families; and the builder, runtime-access, domain, render, door-build, state/config, canonical-access, overlay/export, service, performance, and no-main lanes that previously lived as long package commands. Package scripts remain short facades and do not duplicate those file lists or serial policies. Architecture ownership lives in the contract registry, not in a second test group that reruns tests already reached by `npm test`.
+Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; focused Structure Tab, Mirror, Sketch Box, Order PDF, Cloud Sync, and Sketch families; and the builder, runtime-access, domain, render, door-build, state/config, canonical-access, overlay/export, service, performance, and no-main lanes that previously lived as long package commands. `package.json` exposes only the generic `test:group` entry for these catalog lanes; it does not mirror group names as package-script facades or duplicate their file lists and serial policies. Architecture ownership lives in the contract registry, not in a second test group that reruns tests already reached by `npm test`.
 
 The generated catalog can be inspected with:
 

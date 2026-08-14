@@ -1,64 +1,89 @@
 # Test group catalog
 
-Generated: 2026-08-14T10:14:33.145Z
+Generated: 2026-08-14T10:44:16.232Z
 
 ## Summary
 
-- Catalog groups: 43
-- Package script bindings owned by the catalog: 43
-- Catalog test-file references: 457
-- Direct package.json test-file references still remaining: 38
+- Catalog groups: 66
+- Generic package runner: `test:group`
+- Catalog-owned direct test-file references: 479
+- Resolved file references across aggregate sequences: 126
+- Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
-- Package binding issues: 0
+- Generic runner issues: 0
+- Legacy per-group package facades: 0
 
 ## Groups
 
-| Group                               | Script                                         | Role    | Runner     | Environment | Files | Owners                                                               |
-| ----------------------------------- | ---------------------------------------------- | ------- | ---------- | ----------- | ----: | -------------------------------------------------------------------- |
-| `builder-support-surfaces`          | `test:builder-support-surfaces`                | focused | serial-tsx | tsx         |    24 | builder/support, services/materials, services/scene-view             |
-| `builder-surfaces`                  | `test:builder-surfaces`                        | focused | tsx-test   | tsx         |     6 | builder/public-surface                                               |
-| `canonical-access-surfaces`         | `test:canonical-access-surfaces`               | focused | tsx-test   | tsx         |    11 | runtime/access, services/access                                      |
-| `canvas-interaction-surfaces`       | `test:canvas-interaction-surfaces`             | focused | serial-tsx | tsx         |    14 | services/canvas-picking                                              |
-| `canvas-surfaces`                   | `test:canvas-surfaces`                         | primary | tsx-test   | tsx         |    14 | services/canvas-picking                                              |
-| `cloud-sync-lifecycle`              | `test:cloud-sync-surfaces:lifecycle`           | focused | serial-tsx | tsx         |    16 | services/cloud-sync/lifecycle                                        |
-| `cloud-sync-main-row`               | `test:cloud-sync-surfaces:main-row`            | focused | serial-tsx | tsx         |     8 | services/cloud-sync/main-row                                         |
-| `cloud-sync-panel-controller`       | `test:cloud-sync-surfaces:panel-controller`    | focused | tsx-test   | tsx         |     2 | ui/cloud-sync-panel                                                  |
-| `cloud-sync-panel-install`          | `test:cloud-sync-surfaces:panel-install`       | focused | tsx-test   | tsx         |     2 | ui/cloud-sync-panel                                                  |
-| `cloud-sync-panel-snapshots`        | `test:cloud-sync-surfaces:panel-snapshots`     | focused | tsx-test   | tsx         |     3 | ui/cloud-sync-panel                                                  |
-| `cloud-sync-panel-subscriptions`    | `test:cloud-sync-surfaces:panel-subscriptions` | focused | tsx-test   | tsx         |     3 | ui/cloud-sync-panel                                                  |
-| `cloud-sync-sync-ops`               | `test:cloud-sync-surfaces:sync-ops`            | focused | serial-tsx | tsx         |    13 | services/cloud-sync/sync-ops                                         |
-| `cloud-sync-tabs-ui`                | `test:cloud-sync-surfaces:tabs-ui`             | focused | tsx-test   | tsx         |     5 | ui/cloud-sync-tabs                                                   |
-| `domain-surfaces`                   | `test:domain-surfaces`                         | focused | serial-tsx | tsx         |    15 | kernel/domain-api, ui/actions, ui/feedback                           |
-| `door-build-surfaces`               | `test:door-build-surfaces`                     | focused | serial-tsx | tsx         |    14 | builder/doors, builder/post-build                                    |
-| `mirror-runtime`                    | `test:mirror-runtime`                          | focused | tsx-test   | tsx         |     6 | platform/render-loop, runtime/planar-reflector                       |
-| `no-main-surfaces`                  | `test:no-main-surfaces`                        | focused | serial-tsx | tsx         |     5 | builder/no-main, services/canvas-picking                             |
-| `order-pdf-export-builders`         | `test:order-pdf-surfaces:export-builders`      | focused | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |
-| `order-pdf-export-capture`          | `test:order-pdf-surfaces:export-capture`       | focused | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |
-| `order-pdf-export-overlay`          | `test:order-pdf-surfaces:export-overlay`       | focused | tsx-test   | tsx         |     3 | ui/order-pdf/export-overlay                                          |
-| `order-pdf-export-text`             | `test:order-pdf-surfaces:export-text`          | focused | tsx-test   | tsx         |     2 | ui/export/order-pdf                                                  |
-| `order-pdf-overlay-core`            | `test:order-pdf-surfaces:overlay-core`         | focused | tsx-test   | tsx         |    10 | ui/order-pdf                                                         |
-| `order-pdf-pdf-render`              | `test:order-pdf-surfaces:pdf-render`           | focused | tsx-test   | tsx         |     5 | ui/order-pdf/pdf-runtime                                             |
-| `order-pdf-sketch`                  | `test:order-pdf-surfaces:sketch`               | focused | tsx-test   | tsx         |     6 | ui/order-pdf/sketch                                                  |
-| `overlay-export-family-runtime`     | `test:overlay-export-family-runtime`           | focused | tsx-test   | tsx         |     9 | ui/overlays, ui/export                                               |
-| `perf-e2e-runtime-core`             | `test:perf-e2e-runtime-core`                   | focused | tsx-test   | tsx         |     9 | runtime/perf, ui/action-events                                       |
-| `perf-toolchain-core`               | `test:perf-toolchain-core`                     | focused | node-test  | node        |     6 | toolchain/performance, toolchain/verification                        |
-| `project-surfaces`                  | `test:project-surfaces`                        | primary | tsx-test   | tsx         |    18 | io/project, ui/project-session                                       |
-| `public-surfaces`                   | `test:public-surfaces`                         | primary | tsx-test   | tsx         |    20 | public-api, platform/browser, services/models                        |
-| `render-surfaces`                   | `test:render-surfaces`                         | focused | tsx-test   | tsx         |    14 | runtime/render, services/scene-view                                  |
-| `runtime-access-surfaces`           | `test:runtime-access-surfaces`                 | focused | serial-tsx | tsx         |    17 | runtime/access, platform/access, state/history                       |
-| `runtime-platform-core-family-core` | `test:runtime-platform-core-family-core`       | focused | node-test  | node        |     7 | runtime, platform, kernel                                            |
-| `service-canonical-surfaces`        | `test:service-canonical-surfaces`              | focused | tsx-test   | tsx         |     8 | services/public-surface                                              |
-| `sketch-box-content-protocol`       | `test:sketch-box-content-protocol`             | focused | tsx-test   | tsx         |    13 | services/canvas-picking, features/sketch-box                         |
-| `sketch-box-hover`                  | `test:sketch-surfaces:box-hover`               | focused | tsx-test   | tsx         |     6 | services/canvas-picking/sketch-box                                   |
-| `sketch-free-boxes`                 | `test:sketch-surfaces:free-boxes`              | focused | tsx-test   | tsx         |     9 | services/canvas-picking/sketch-free-boxes                            |
-| `sketch-manual-hover`               | `test:sketch-surfaces:manual-hover`            | focused | tsx-test   | tsx         |    10 | services/canvas-picking/manual-layout                                |
-| `sketch-render-visuals`             | `test:sketch-surfaces:render-visuals`          | focused | tsx-test   | tsx         |     7 | builder/render-sketch                                                |
-| `state-config-kernel-surfaces`      | `test:state-config-kernel-surfaces`            | focused | serial-tsx | tsx         |     8 | kernel/state, runtime/config                                         |
-| `structure-tab-family-core`         | `test:structure-tab-family-core`               | focused | serial-tsx | tsx         |    22 | ui/structure-tab, ui/interior-tab                                    |
-| `tab-surfaces`                      | `test:tab-surfaces`                            | primary | serial-tsx | tsx         |    51 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |
-| `toolchain-surfaces`                | `test:toolchain-surfaces`                      | primary | node-test  | node        |    26 | toolchain                                                            |
-| `verification-control-plane`        | `test:verification-control-plane`              | focused | node-test  | node        |     4 | toolchain/verification                                               |
+| Group                                       | Role         | Runner         | Environment | Direct files | Resolved files | Child groups | Owners                                                               |
+| ------------------------------------------- | ------------ | -------------- | ----------- | -----------: | -------------: | -----------: | -------------------------------------------------------------------- |
+| `app-boot-browser-project-family-contracts` | architecture | node-test      | node        |            1 |              1 |            0 | boot, io/project                                                     |
+| `app-boot-project-family-core`              | architecture | node-test      | node        |            3 |              3 |            0 | boot, io/project, platform/runtime-config                            |
+| `browser-feedback-family-contracts`         | architecture | node-test      | node        |            1 |              1 |            0 | platform/browser-feedback                                            |
+| `builder-support-surfaces`                  | focused      | serial-tsx     | tsx         |           24 |             24 |            0 | builder/support, services/materials, services/scene-view             |
+| `builder-surface-family-core`               | architecture | node-test      | node        |            1 |              1 |            0 | builder                                                              |
+| `builder-surfaces`                          | focused      | tsx-test       | tsx         |            6 |              6 |            0 | builder/public-surface                                               |
+| `canonical-access-surfaces`                 | focused      | tsx-test       | tsx         |           11 |             11 |            0 | runtime/access, services/access                                      |
+| `canvas-interaction-surfaces`               | focused      | serial-tsx     | tsx         |           14 |             14 |            0 | services/canvas-picking                                              |
+| `canvas-surfaces`                           | primary      | tsx-test       | tsx         |           14 |             14 |            0 | services/canvas-picking                                              |
+| `cloud-sync-family-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | services/cloud-sync                                                  |
+| `cloud-sync-lifecycle`                      | focused      | serial-tsx     | tsx         |           16 |             16 |            0 | services/cloud-sync/lifecycle                                        |
+| `cloud-sync-main-row`                       | focused      | serial-tsx     | tsx         |            8 |              8 |            0 | services/cloud-sync/main-row                                         |
+| `cloud-sync-panel`                          | focused      | group-sequence | tsx         |            0 |             10 |            4 | ui/cloud-sync                                                        |
+| `cloud-sync-panel-controller`               | focused      | tsx-test       | tsx         |            2 |              2 |            0 | ui/cloud-sync-panel                                                  |
+| `cloud-sync-panel-install`                  | focused      | tsx-test       | tsx         |            2 |              2 |            0 | ui/cloud-sync-panel                                                  |
+| `cloud-sync-panel-snapshots`                | focused      | tsx-test       | tsx         |            3 |              3 |            0 | ui/cloud-sync-panel                                                  |
+| `cloud-sync-panel-subscriptions`            | focused      | tsx-test       | tsx         |            3 |              3 |            0 | ui/cloud-sync-panel                                                  |
+| `cloud-sync-surfaces`                       | focused      | group-sequence | tsx         |            0 |             52 |            5 | services/cloud-sync, ui/cloud-sync                                   |
+| `cloud-sync-sync-ops`                       | focused      | serial-tsx     | tsx         |           13 |             13 |            0 | services/cloud-sync/sync-ops                                         |
+| `cloud-sync-tabs-ui`                        | focused      | tsx-test       | tsx         |            5 |              5 |            0 | ui/cloud-sync-tabs                                                   |
+| `domain-codecs`                             | focused      | tsx-test       | tsx         |            1 |              1 |            0 | shared/domain-codecs                                                 |
+| `domain-surfaces`                           | focused      | serial-tsx     | tsx         |           15 |             15 |            0 | kernel/domain-api, ui/actions, ui/feedback                           |
+| `door-build-surfaces`                       | focused      | serial-tsx     | tsx         |           14 |             14 |            0 | builder/doors, builder/post-build                                    |
+| `export-overlay-errors-family-contracts`    | architecture | node-test      | node        |            1 |              1 |            0 | ui/overlays, ui/export                                               |
+| `mirror-runtime`                            | focused      | tsx-test       | tsx         |            6 |              6 |            0 | platform/render-loop, runtime/planar-reflector                       |
+| `no-main-surfaces`                          | focused      | serial-tsx     | tsx         |            5 |              5 |            0 | builder/no-main, services/canvas-picking                             |
+| `order-pdf-export-builders`                 | focused      | tsx-test       | tsx         |            3 |              3 |            0 | ui/export/order-pdf                                                  |
+| `order-pdf-export-capture`                  | focused      | tsx-test       | tsx         |            3 |              3 |            0 | ui/export/order-pdf                                                  |
+| `order-pdf-export-overlay`                  | focused      | tsx-test       | tsx         |            3 |              3 |            0 | ui/order-pdf/export-overlay                                          |
+| `order-pdf-export-text`                     | focused      | tsx-test       | tsx         |            2 |              2 |            0 | ui/export/order-pdf                                                  |
+| `order-pdf-overlay-core`                    | focused      | tsx-test       | tsx         |           10 |             10 |            0 | ui/order-pdf                                                         |
+| `order-pdf-pdf-render`                      | focused      | tsx-test       | tsx         |            5 |              5 |            0 | ui/order-pdf/pdf-runtime                                             |
+| `order-pdf-sketch`                          | focused      | tsx-test       | tsx         |            6 |              6 |            0 | ui/order-pdf/sketch                                                  |
+| `order-pdf-surfaces`                        | focused      | group-sequence | tsx         |            0 |             32 |            7 | ui/order-pdf, ui/export/order-pdf                                    |
+| `overlay-export-family-runtime`             | focused      | tsx-test       | tsx         |            9 |              9 |            0 | ui/overlays, ui/export                                               |
+| `perf-e2e-runtime-core`                     | focused      | tsx-test       | tsx         |            9 |              9 |            0 | runtime/perf, ui/action-events                                       |
+| `perf-toolchain-core`                       | focused      | node-test      | node        |            6 |              6 |            0 | toolchain/performance, toolchain/verification                        |
+| `project-migration-selector-hardening`      | focused      | tsx-test       | tsx         |            1 |              1 |            0 | io/project                                                           |
+| `project-surfaces`                          | primary      | tsx-test       | tsx         |           18 |             18 |            0 | io/project, ui/project-session                                       |
+| `public-surfaces`                           | primary      | tsx-test       | tsx         |           20 |             20 |            0 | public-api, platform/browser, services/models                        |
+| `render-surfaces`                           | focused      | tsx-test       | tsx         |           14 |             14 |            0 | runtime/render, services/scene-view                                  |
+| `residual-families-core`                    | architecture | node-test      | node        |            2 |              2 |            0 | builder, ui/export                                                   |
+| `runtime-access-surfaces`                   | focused      | serial-tsx     | tsx         |           17 |             17 |            0 | runtime/access, platform/access, state/history                       |
+| `runtime-platform-core-family-contracts`    | architecture | node-test      | node        |            1 |              1 |            0 | runtime, platform                                                    |
+| `runtime-platform-core-family-core`         | focused      | node-test      | node        |            7 |              7 |            0 | runtime, platform, kernel                                            |
+| `runtime-surface-family-core`               | architecture | node-test      | node        |            1 |              1 |            0 | runtime                                                              |
+| `service-canonical-surfaces`                | focused      | tsx-test       | tsx         |            8 |              8 |            0 | services/public-surface                                              |
+| `sketch-box-content-protocol`               | focused      | tsx-test       | tsx         |           13 |             13 |            0 | services/canvas-picking, features/sketch-box                         |
+| `sketch-box-hover`                          | focused      | tsx-test       | tsx         |            6 |              6 |            0 | services/canvas-picking/sketch-box                                   |
+| `sketch-free-boxes`                         | focused      | tsx-test       | tsx         |            9 |              9 |            0 | services/canvas-picking/sketch-free-boxes                            |
+| `sketch-manual-hover`                       | focused      | tsx-test       | tsx         |           10 |             10 |            0 | services/canvas-picking/manual-layout                                |
+| `sketch-render-visuals`                     | focused      | tsx-test       | tsx         |            7 |              7 |            0 | builder/render-sketch                                                |
+| `sketch-surfaces`                           | focused      | group-sequence | tsx         |            0 |             32 |            4 | services/canvas-picking, features/sketch-box                         |
+| `state-config-kernel-surfaces`              | focused      | serial-tsx     | tsx         |            8 |              8 |            0 | kernel/state, runtime/config                                         |
+| `structure-tab-family-contracts`            | architecture | node-test      | node        |            1 |              1 |            0 | ui/structure-tab                                                     |
+| `structure-tab-family-core`                 | focused      | serial-tsx     | tsx         |           22 |             22 |            0 | ui/structure-tab, ui/interior-tab                                    |
+| `tab-surfaces`                              | primary      | serial-tsx     | tsx         |           51 |             51 |            0 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |
+| `toolchain-surfaces`                        | primary      | node-test      | node        |           26 |             26 |            0 | toolchain                                                            |
+| `ui-lean-contracts`                         | architecture | node-test      | node        |            1 |              1 |            0 | ui/types                                                             |
+| `ui-order-pdf-lean-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | ui/order-pdf/types                                                   |
+| `ui-portable-typecheck-contracts`           | architecture | node-test      | node        |            1 |              1 |            0 | ui/types                                                             |
+| `ui-react-import-hardening-contracts`       | architecture | node-test      | node        |            1 |              1 |            0 | ui/react                                                             |
+| `ui-react-jsx-hardening-contracts`          | architecture | node-test      | node        |            1 |              1 |            0 | ui/react                                                             |
+| `ui-type-hardening-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | ui/types                                                             |
+| `verification-control-plane`                | focused      | node-test      | node        |            4 |              4 |            0 | toolchain/verification                                               |
+| `visual-surface-family-contracts`           | architecture | node-test      | node        |            1 |              1 |            0 | builder/render, ui/visuals                                           |
 
 ## Policy
 
-Large or ownership-significant test lanes belong in this catalog rather than as repeated file lists in package.json. Primary portfolio groups must not overlap each other. Focused and architecture groups may intentionally reuse tests while preserving a clear owner, environment, runner, and serial execution policy.
+Named test ownership lives only in this catalog. package.json exposes one generic `test:group` runner; it must not mirror every catalog entry as a package-script facade. Aggregate suites are `group-sequence` entries that compose canonical child groups without duplicating their file inventories. Primary portfolio groups must not overlap each other; focused and architecture groups may intentionally reuse tests.

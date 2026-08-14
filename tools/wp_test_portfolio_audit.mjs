@@ -252,7 +252,8 @@ export function buildReport() {
       totalTestReferences: refs.length,
       oversizedDirectPackageTestScripts: oversizedDirectPackageTestScripts.length,
       catalogGroups: groupCatalogReport.summary.groups,
-      catalogScriptBindings: groupCatalogReport.summary.scriptBindings,
+      genericTestGroupRunner: groupCatalogReport.summary.genericRunnerScript,
+      legacyTestGroupPackageFacades: groupCatalogReport.summary.legacyFacadeIssues,
       primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
       directRepositoryLayerScanTests: directRepositoryLayerScanTests.length,
       retiredLayerLedgerAccessTests: retiredLayerLedgerAccessTests.length,
@@ -265,7 +266,8 @@ export function buildReport() {
       missingTestRefs,
       duplicateCatalogRefs,
       invalidCatalogDefinitions: groupCatalogReport.failures.catalogIssues,
-      staleCatalogScriptBindings: groupCatalogReport.failures.bindingIssues,
+      testGroupRunnerIssues: groupCatalogReport.failures.runnerIssues,
+      legacyTestGroupPackageFacades: groupCatalogReport.failures.legacyFacadeIssues,
       oversizedDirectPackageTestScripts,
       contractRegistry: contractRegistryReport.failures,
       historicalArchitectureProofs,
@@ -294,7 +296,8 @@ function renderMarkdown(report) {
     `- Total explicit test references: ${report.totals.totalTestReferences}`,
     `- Oversized direct package test lanes: ${report.totals.oversizedDirectPackageTestScripts}`,
     `- Catalog groups: ${report.totals.catalogGroups}`,
-    `- Catalog-backed package scripts: ${report.totals.catalogScriptBindings}`,
+    `- Generic catalog runner: ${report.totals.genericTestGroupRunner}`,
+    `- Legacy per-group package facades: ${report.totals.legacyTestGroupPackageFacades}`,
     `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
     `- Tests directly invoking the repository layer graph: ${report.totals.directRepositoryLayerScanTests}`,
     `- Tests reading retired layer-ledger fields: ${report.totals.retiredLayerLedgerAccessTests}`,
@@ -314,7 +317,8 @@ function renderMarkdown(report) {
     `| Test-group catalog definitions are valid | ${report.failures.invalidCatalogDefinitions.length} |`
   );
   lines.push(
-    `| Catalog script bindings match package.json facades | ${report.failures.staleCatalogScriptBindings.length} |`
+    `| Generic test-group runner is canonical | ${report.failures.testGroupRunnerIssues.length} |`,
+    `| Per-group package facades stay retired | ${report.failures.legacyTestGroupPackageFacades.length} |`
   );
   lines.push(
     `| Direct package test lanes contain at most ${MAX_DIRECT_TEST_REFS_PER_PACKAGE_SCRIPT} files | ${report.failures.oversizedDirectPackageTestScripts.length} |`
@@ -364,7 +368,7 @@ function renderMarkdown(report) {
   lines.push(
     '## Policy',
     '',
-    'This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Large named test lanes must live in the catalog rather than package.json. Current behavior, persistence ingress, and architecture invariants remain first-class categories.',
+    'This audit maps the current test portfolio. It blocks stale references, direct repository-wide layer scans, retired layer-ledger access, and reintroduction of stage/wave/checkpoint proof files. Named test ownership and aggregate test sequences must live in the catalog; package.json exposes only the generic test-group runner rather than per-group facades. Current behavior, persistence ingress, and architecture invariants remain first-class categories.',
     ''
   );
   return lines.join('\n');

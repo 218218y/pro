@@ -83,7 +83,7 @@ npm run test:offline:dimension-composition-runtime
 - Validate release evidence explicitly with `npm run check:verification-summary`. Its JSON is the source of truth, its Markdown is derived from that JSON, and validation fails when its schema, source-tree digest, lane-catalog digest, per-lane digest, selection, summary, or final status is stale. Focused profiles may pass independently but cannot write this pair; final-report eligibility requires every default closeout lane to complete with a clean `passed` status.
 - A closeout state file may be resumed only against the exact source and lane catalog that created it. After source or control-plane changes, reset the state instead of merging old results into a new run.
 - Report comparison is semantic: volatile `generatedAt` lines/fields are ignored, while changed counts, inventories, policies, source identities, or violations fail the check.
-- Large named test groups belong in `tools/wp_test_group_catalog.mjs`; package scripts should remain short facades over `tools/wp_test_group.mjs`. A direct `test:*` package command may name at most four test files; larger lanes must declare owners, runner, environment, portfolio role, serial policy, and membership in the catalog.
+- Named test groups and aggregate suite composition belong in `tools/wp_test_group_catalog.mjs`. `package.json` exposes one generic `test:group` runner instead of mirroring every group as a package-script facade. A direct `test:*` package command may name at most four test files; larger lanes must declare owners, runner, environment, portfolio role, serial policy, and membership in the catalog. Aggregate suites use `group-sequence` and reference child groups rather than copying their file inventories.
 - A closeout lane that exactly matches a canonical test group must reference that group through `testGroupId`; duplicating the same file list directly is a control-plane error. Build, perf, mixed-contract, and E2E lanes remain direct when they are not test groups.
 - Exact duplicate package commands are not allowed. Do not preserve aliases such as a second “strict” name when both names execute the same lane.
 - Every `sites/*/site.profile.mjs` participates in one cross-profile contract. Store ids, local-storage namespaces, signed-room gateway configuration, realtime channel prefixes, required assets, release status, and deployment URLs must be validated together. Browser profiles must not select database tables.
@@ -96,7 +96,7 @@ Relevant checks:
 npm run check:docs-control-plane
 npm run check:generated-reports
 npm run check:verification-summary
-npm run verify:closeout:control-plane
+npm run verify:closeout -- --profile control-plane
 npm run verify:closeout:release
 npm run report:generated
 npm run check:script-duplicates

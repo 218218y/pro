@@ -86,15 +86,15 @@ test('closeout lanes keep stable ids and include critical families', () => {
   ]);
 });
 
-test('group-backed closeout lanes delegate to canonical test-group package facades', async () => {
+test('group-backed closeout lanes execute canonical test groups directly', async () => {
   const { TEST_GROUP_CATALOG } = await import('../tools/wp_test_group_catalog.mjs');
   const groupBackedLanes = CLOSEOUT_LANES.filter(lane => lane.testGroupId);
   assert.ok(groupBackedLanes.length > 0);
   for (const lane of groupBackedLanes) {
     const group = TEST_GROUP_CATALOG[lane.testGroupId];
     assert.ok(group, `${lane.id} should reference an existing test group`);
-    assert.equal(lane.command, 'npm');
-    assert.deepEqual(lane.args, ['run', group.script]);
+    assert.equal(lane.command, 'node');
+    assert.deepEqual(lane.args, ['tools/wp_test_group.mjs', lane.testGroupId]);
   }
 });
 

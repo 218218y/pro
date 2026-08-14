@@ -1,30 +1,80 @@
 {
-  "generatedAt": "2026-08-14T10:14:33.145Z",
+  "generatedAt": "2026-08-14T10:44:16.232Z",
   "summary": {
-    "groups": 43,
-    "scriptBindings": 43,
-    "catalogFileReferences": 457,
-    "directPackageTestReferences": 38,
+    "groups": 66,
+    "genericRunnerScript": "test:group",
+    "catalogFileReferences": 479,
+    "sequenceResolvedFileReferences": 126,
+    "directPackageTestReferences": 16,
     "catalogIssues": 0,
-    "bindingIssues": 0,
+    "runnerIssues": 0,
+    "legacyFacadeIssues": 0,
     "portfolioRoles": {
-      "focused": 38,
+      "architecture": 17,
+      "focused": 44,
       "primary": 5
     },
     "runners": {
+      "node-test": 21,
       "serial-tsx": 12,
-      "tsx-test": 27,
-      "node-test": 4
+      "tsx-test": 29,
+      "group-sequence": 4
     }
   },
   "failures": {
     "catalogIssues": [],
-    "bindingIssues": []
+    "runnerIssues": [],
+    "legacyFacadeIssues": []
   },
   "groups": [
     {
+      "name": "app-boot-browser-project-family-contracts",
+      "description": "Browser/project boot family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["boot", "io/project"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/app_boot_browser_project_family_contracts.test.js"]
+    },
+    {
+      "name": "app-boot-project-family-core",
+      "description": "Boot, project IO, and runtime-config family contracts.",
+      "kind": "architecture-contract",
+      "owners": ["boot", "io/project", "platform/runtime-config"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
+      "files": [
+        "tests/app_boot_browser_project_family_contracts.test.js",
+        "tests/project_io_contracts.test.js",
+        "tests/runtime_config_platform_contracts.test.js"
+      ]
+    },
+    {
+      "name": "browser-feedback-family-contracts",
+      "description": "Browser feedback family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["platform/browser-feedback"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/browser_feedback_family_contracts.test.js"]
+    },
+    {
       "name": "builder-support-surfaces",
-      "script": "test:builder-support-surfaces",
       "description": "Builder support, materials, maps, library presets, scene view, doors, and corner runtime surfaces.",
       "kind": "builder-runtime-integration",
       "owners": ["builder/support", "services/materials", "services/scene-view"],
@@ -36,7 +86,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 24,
+      "childGroups": [],
+      "directFileCount": 24,
+      "resolvedFileCount": 24,
       "files": [
         "tests/materials_apply_traversal_runtime.test.ts",
         "tests/materials_factory_render_seams_runtime.test.ts",
@@ -65,8 +117,21 @@
       ]
     },
     {
+      "name": "builder-surface-family-core",
+      "description": "Builder surface family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["builder"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/builder_surface_family_contracts.test.js"]
+    },
+    {
       "name": "builder-surfaces",
-      "script": "test:builder-surfaces",
       "description": "Builder public surface, dependency access, registry, scheduler, store access, and visibility.",
       "kind": "builder-runtime-integration",
       "owners": ["builder/public-surface"],
@@ -74,7 +139,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 6,
+      "childGroups": [],
+      "directFileCount": 6,
+      "resolvedFileCount": 6,
       "files": [
         "tests/builder_public_surface_runtime.test.ts",
         "tests/builder_deps_access_runtime.test.ts",
@@ -86,7 +153,6 @@
     },
     {
       "name": "canonical-access-surfaces",
-      "script": "test:canonical-access-surfaces",
       "description": "Canonical application, browser, builder, camera, canvas, and Cloud Sync access surfaces.",
       "kind": "runtime-integration",
       "owners": ["runtime/access", "services/access"],
@@ -94,7 +160,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 11,
+      "childGroups": [],
+      "directFileCount": 11,
+      "resolvedFileCount": 11,
       "files": [
         "tests/actions_access_binding_runtime.test.ts",
         "tests/actions_surface_access_runtime.test.ts",
@@ -111,7 +179,6 @@
     },
     {
       "name": "canvas-interaction-surfaces",
-      "script": "test:canvas-interaction-surfaces",
       "description": "Canvas hit, hover, door action, paint, selector, and projection interaction surfaces.",
       "kind": "service-runtime-integration",
       "owners": ["services/canvas-picking"],
@@ -123,7 +190,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 14,
+      "childGroups": [],
+      "directFileCount": 14,
+      "resolvedFileCount": 14,
       "files": [
         "tests/canvas_picking_cell_dims_corner_cell_runtime.test.ts",
         "tests/canvas_picking_cell_dims_linear_runtime.test.ts",
@@ -143,7 +212,6 @@
     },
     {
       "name": "canvas-surfaces",
-      "script": "test:canvas-surfaces",
       "description": "Canvas hover, preview, routing, and sketch module interaction surfaces.",
       "kind": "runtime-portfolio",
       "owners": ["services/canvas-picking"],
@@ -151,7 +219,9 @@
       "runner": "tsx-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 14,
+      "childGroups": [],
+      "directFileCount": 14,
+      "resolvedFileCount": 14,
       "files": [
         "tests/canvas_picking_hover_preview_modes_runtime.test.ts",
         "tests/canvas_picking_hover_flow_runtime.test.ts",
@@ -170,8 +240,21 @@
       ]
     },
     {
+      "name": "cloud-sync-family-contracts",
+      "description": "Cloud Sync family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["services/cloud-sync"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/cloud_sync_family_contracts.test.js"]
+    },
+    {
       "name": "cloud-sync-lifecycle",
-      "script": "test:cloud-sync-surfaces:lifecycle",
       "description": "Cloud Sync lifecycle, recovery, configuration, and action contracts.",
       "kind": "service-runtime-integration",
       "owners": ["services/cloud-sync/lifecycle"],
@@ -185,7 +268,9 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.lifecycle.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.lifecycle.timings.json"
       },
-      "fileCount": 16,
+      "childGroups": [],
+      "directFileCount": 16,
+      "resolvedFileCount": 16,
       "files": [
         "tests/cloud_sync_panel_actions_runtime.test.js",
         "tests/cloud_sync_action_feedback_runtime.test.ts",
@@ -207,7 +292,6 @@
     },
     {
       "name": "cloud-sync-main-row",
-      "script": "test:cloud-sync-surfaces:main-row",
       "description": "Cloud Sync main-row writes, mutation commands, status, and owner context.",
       "kind": "service-runtime-integration",
       "owners": ["services/cloud-sync/main-row"],
@@ -221,7 +305,9 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.main-row.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.main-row.timings.json"
       },
-      "fileCount": 8,
+      "childGroups": [],
+      "directFileCount": 8,
+      "resolvedFileCount": 8,
       "files": [
         "tests/cloud_sync_main_row_payload_dedupe_runtime.test.ts",
         "tests/cloud_sync_main_row_runtime.test.ts",
@@ -234,8 +320,26 @@
       ]
     },
     {
+      "name": "cloud-sync-panel",
+      "description": "Cloud Sync panel install, controller, subscription, and snapshot suite.",
+      "kind": "group-sequence",
+      "owners": ["ui/cloud-sync"],
+      "environment": "tsx",
+      "runner": "group-sequence",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [
+        "cloud-sync-panel-install",
+        "cloud-sync-panel-controller",
+        "cloud-sync-panel-subscriptions",
+        "cloud-sync-panel-snapshots"
+      ],
+      "directFileCount": 0,
+      "resolvedFileCount": 10,
+      "files": []
+    },
+    {
       "name": "cloud-sync-panel-controller",
-      "script": "test:cloud-sync-surfaces:panel-controller",
       "description": "Cloud Sync panel controller failure and fallback contracts.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/cloud-sync-panel"],
@@ -243,7 +347,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 2,
+      "childGroups": [],
+      "directFileCount": 2,
+      "resolvedFileCount": 2,
       "files": [
         "tests/cloud_sync_panel_api_controller_fallback_runtime.test.ts",
         "tests/cloud_sync_panel_api_failures_runtime.test.ts"
@@ -251,7 +357,6 @@
     },
     {
       "name": "cloud-sync-panel-install",
-      "script": "test:cloud-sync-surfaces:panel-install",
       "description": "Cloud Sync panel API installation and surface healing contracts.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/cloud-sync-panel"],
@@ -259,7 +364,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 2,
+      "childGroups": [],
+      "directFileCount": 2,
+      "resolvedFileCount": 2,
       "files": [
         "tests/cloud_sync_panel_api_install_healing_runtime.test.ts",
         "tests/cloud_sync_panel_api_surface_runtime.test.ts"
@@ -267,7 +374,6 @@
     },
     {
       "name": "cloud-sync-panel-snapshots",
-      "script": "test:cloud-sync-surfaces:panel-snapshots",
       "description": "Cloud Sync panel snapshot controller, dedupe, and fallback contracts.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/cloud-sync-panel"],
@@ -275,7 +381,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 3,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
       "files": [
         "tests/cloud_sync_panel_snapshot_controller_runtime.test.ts",
         "tests/cloud_sync_panel_snapshot_dedupe_runtime.test.ts",
@@ -284,7 +392,6 @@
     },
     {
       "name": "cloud-sync-panel-subscriptions",
-      "script": "test:cloud-sync-surfaces:panel-subscriptions",
       "description": "Cloud Sync panel subscription and singleflight contracts.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/cloud-sync-panel"],
@@ -292,7 +399,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 3,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
       "files": [
         "tests/cloud_sync_panel_api_singleflight_runtime.test.ts",
         "tests/cloud_sync_panel_api_subscriptions_runtime.test.ts",
@@ -300,8 +409,27 @@
       ]
     },
     {
+      "name": "cloud-sync-surfaces",
+      "description": "Complete Cloud Sync lifecycle, panel, sync, and tabs suite.",
+      "kind": "group-sequence",
+      "owners": ["services/cloud-sync", "ui/cloud-sync"],
+      "environment": "tsx",
+      "runner": "group-sequence",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [
+        "cloud-sync-lifecycle",
+        "cloud-sync-main-row",
+        "cloud-sync-panel",
+        "cloud-sync-sync-ops",
+        "cloud-sync-tabs-ui"
+      ],
+      "directFileCount": 0,
+      "resolvedFileCount": 52,
+      "files": []
+    },
+    {
       "name": "cloud-sync-sync-ops",
-      "script": "test:cloud-sync-surfaces:sync-ops",
       "description": "Cloud Sync pull, push, signed gateway, room, merge, sketch, and support operations.",
       "kind": "service-runtime-integration",
       "owners": ["services/cloud-sync/sync-ops"],
@@ -315,7 +443,9 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.sync-ops.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.sync-ops.timings.json"
       },
-      "fileCount": 13,
+      "childGroups": [],
+      "directFileCount": 13,
+      "resolvedFileCount": 13,
       "files": [
         "tests/cloud_sync_pull_coalescer_runtime.test.ts",
         "tests/cloud_sync_realtime_support_runtime.test.ts",
@@ -334,7 +464,6 @@
     },
     {
       "name": "cloud-sync-tabs-ui",
-      "script": "test:cloud-sync-surfaces:tabs-ui",
       "description": "Cloud Sync tab gates, pin commands, timers, and UI action controllers.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/cloud-sync-tabs"],
@@ -342,7 +471,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 5,
+      "childGroups": [],
+      "directFileCount": 5,
+      "resolvedFileCount": 5,
       "files": [
         "tests/cloud_sync_sync_pin_command_runtime.test.ts",
         "tests/cloud_sync_tabs_gate_command_runtime.test.ts",
@@ -352,8 +483,21 @@
       ]
     },
     {
+      "name": "domain-codecs",
+      "description": "Canonical persistence/domain codec runtime behavior.",
+      "kind": "runtime-integration",
+      "owners": ["shared/domain-codecs"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/canonical_domain_codecs_runtime.test.ts"]
+    },
+    {
       "name": "domain-surfaces",
-      "script": "test:domain-surfaces",
       "description": "Domain API, store actions, action access, and UI feedback runtime surfaces.",
       "kind": "runtime-integration",
       "owners": ["kernel/domain-api", "ui/actions", "ui/feedback"],
@@ -365,7 +509,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 15,
+      "childGroups": [],
+      "directFileCount": 15,
+      "resolvedFileCount": 15,
       "files": [
         "tests/domain_api_install_state_runtime.test.ts",
         "tests/domain_api_surface_sections_runtime.test.ts",
@@ -386,7 +532,6 @@
     },
     {
       "name": "door-build-surfaces",
-      "script": "test:door-build-surfaces",
       "description": "Door trim, styles, glass, mirrors, dimensions, reveal frames, and post-build cut surfaces.",
       "kind": "builder-runtime-integration",
       "owners": ["builder/doors", "builder/post-build"],
@@ -398,7 +543,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 14,
+      "childGroups": [],
+      "directFileCount": 14,
+      "resolvedFileCount": 14,
       "files": [
         "tests/door_trim_center_contract_runtime.test.ts",
         "tests/door_trim_targets_click_runtime.test.ts",
@@ -417,8 +564,21 @@
       ]
     },
     {
+      "name": "export-overlay-errors-family-contracts",
+      "description": "Overlay/export/error family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["ui/overlays", "ui/export"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/export_overlay_errors_family_contracts.test.js"]
+    },
+    {
       "name": "mirror-runtime",
-      "script": "test:mirror-runtime",
       "description": "Mirror scheduling, planar rendering, recovery, and performance contracts.",
       "kind": "runtime-integration",
       "owners": ["platform/render-loop", "runtime/planar-reflector"],
@@ -426,7 +586,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 6,
+      "childGroups": [],
+      "directFileCount": 6,
+      "resolvedFileCount": 6,
       "files": [
         "tests/render_loop_mirror_driver_runtime.test.ts",
         "tests/planar_reflector_incremental_rebuild_runtime.test.ts",
@@ -438,7 +600,6 @@
     },
     {
       "name": "no-main-surfaces",
-      "script": "test:no-main-surfaces",
       "description": "No-main sketch/modules, projection, canonical snapshots, and wardrobe build context surfaces.",
       "kind": "runtime-integration",
       "owners": ["builder/no-main", "services/canvas-picking"],
@@ -450,7 +611,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 5,
+      "childGroups": [],
+      "directFileCount": 5,
+      "resolvedFileCount": 5,
       "files": [
         "tests/no_main_sketch_workspace_runtime.test.ts",
         "tests/no_main_modules_runtime.test.ts",
@@ -461,7 +624,6 @@
     },
     {
       "name": "order-pdf-export-builders",
-      "script": "test:order-pdf-surfaces:export-builders",
       "description": "Order-PDF export builder composition, draft generation, and sketch-annotation behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/export/order-pdf"],
@@ -469,7 +631,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 3,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
       "files": [
         "tests/export_order_pdf_builder_draft_runtime.test.ts",
         "tests/export_order_pdf_builder_runtime.test.ts",
@@ -478,7 +642,6 @@
     },
     {
       "name": "order-pdf-export-capture",
-      "script": "test:order-pdf-surfaces:export-capture",
       "description": "Order-PDF export capture cache, viewport capture, and export operation behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/export/order-pdf"],
@@ -486,7 +649,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 3,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
       "files": [
         "tests/export_order_pdf_capture_cache_runtime.test.ts",
         "tests/export_order_pdf_capture_runtime.test.ts",
@@ -495,7 +660,6 @@
     },
     {
       "name": "order-pdf-export-overlay",
-      "script": "test:order-pdf-surfaces:export-overlay",
       "description": "Order-PDF overlay export operations, command routing, and single-flight behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/order-pdf/export-overlay"],
@@ -503,7 +667,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 3,
+      "childGroups": [],
+      "directFileCount": 3,
+      "resolvedFileCount": 3,
       "files": [
         "tests/order_pdf_overlay_export_ops_runtime.test.ts",
         "tests/order_pdf_overlay_export_commands_runtime.test.ts",
@@ -512,7 +678,6 @@
     },
     {
       "name": "order-pdf-export-text",
-      "script": "test:order-pdf-surfaces:export-text",
       "description": "Order-PDF export text derivation and sketch-annotation serialization behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/export/order-pdf"],
@@ -520,7 +685,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 2,
+      "childGroups": [],
+      "directFileCount": 2,
+      "resolvedFileCount": 2,
       "files": [
         "tests/export_order_pdf_sketch_annotations_runtime.test.ts",
         "tests/export_order_pdf_text_runtime.test.ts"
@@ -528,7 +695,6 @@
     },
     {
       "name": "order-pdf-overlay-core",
-      "script": "test:order-pdf-surfaces:overlay-core",
       "description": "Core order-PDF overlay state, commands, interactions, and text behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/order-pdf"],
@@ -536,7 +702,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 10,
+      "childGroups": [],
+      "directFileCount": 10,
+      "resolvedFileCount": 10,
       "files": [
         "tests/order_pdf_overlay_controller_actions_runtime.test.ts",
         "tests/order_pdf_overlay_draft_action_feedback_runtime.test.ts",
@@ -552,7 +720,6 @@
     },
     {
       "name": "order-pdf-pdf-render",
-      "script": "test:order-pdf-surfaces:pdf-render",
       "description": "Order-PDF import, PDF.js rendering, cleanup, and image-PDF text-layout behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/order-pdf/pdf-runtime"],
@@ -560,7 +727,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 5,
+      "childGroups": [],
+      "directFileCount": 5,
+      "resolvedFileCount": 5,
       "files": [
         "tests/order_pdf_overlay_pdf_import_runtime.test.ts",
         "tests/order_pdf_overlay_pdf_render_canvas_runtime.test.ts",
@@ -571,7 +740,6 @@
     },
     {
       "name": "order-pdf-sketch",
-      "script": "test:order-pdf-surfaces:sketch",
       "description": "Order-PDF sketch editor persistence, placement, panel, preview-session, and shortcut behavior.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/order-pdf/sketch"],
@@ -579,7 +747,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 6,
+      "childGroups": [],
+      "directFileCount": 6,
+      "resolvedFileCount": 6,
       "files": [
         "tests/order_pdf_history_shortcuts_runtime.test.ts",
         "tests/order_pdf_sketch_draft_persistence_runtime.test.ts",
@@ -590,8 +760,29 @@
       ]
     },
     {
+      "name": "order-pdf-surfaces",
+      "description": "Complete Order PDF focused surface suite.",
+      "kind": "group-sequence",
+      "owners": ["ui/order-pdf", "ui/export/order-pdf"],
+      "environment": "tsx",
+      "runner": "group-sequence",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [
+        "order-pdf-overlay-core",
+        "order-pdf-pdf-render",
+        "order-pdf-sketch",
+        "order-pdf-export-overlay",
+        "order-pdf-export-builders",
+        "order-pdf-export-capture",
+        "order-pdf-export-text"
+      ],
+      "directFileCount": 0,
+      "resolvedFileCount": 32,
+      "files": []
+    },
+    {
       "name": "overlay-export-family-runtime",
-      "script": "test:overlay-export-family-runtime",
       "description": "Overlay notes, export canvas, viewport, and workflow runtime surfaces.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/overlays", "ui/export"],
@@ -599,7 +790,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 9,
+      "childGroups": [],
+      "directFileCount": 9,
+      "resolvedFileCount": 9,
       "files": [
         "tests/overlay_quick_actions_dock_controller_runtime.test.ts",
         "tests/notes_overlay_editor_async_runtime.test.ts",
@@ -614,7 +807,6 @@
     },
     {
       "name": "perf-e2e-runtime-core",
-      "script": "test:perf-e2e-runtime-core",
       "description": "Runtime performance instrumentation and action-flow observability contracts.",
       "kind": "runtime-integration",
       "owners": ["runtime/perf", "ui/action-events"],
@@ -622,7 +814,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 9,
+      "childGroups": [],
+      "directFileCount": 9,
+      "resolvedFileCount": 9,
       "files": [
         "tests/perf_runtime_surface_runtime.test.ts",
         "tests/observability_surface_prod_runtime.test.ts",
@@ -637,7 +831,6 @@
     },
     {
       "name": "perf-toolchain-core",
-      "script": "test:perf-toolchain-core",
       "description": "Performance smoke and verification toolchain contracts.",
       "kind": "toolchain-contract",
       "owners": ["toolchain/performance", "toolchain/verification"],
@@ -645,7 +838,9 @@
       "runner": "node-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 6,
+      "childGroups": [],
+      "directFileCount": 6,
+      "resolvedFileCount": 6,
       "files": [
         "tests/wp_perf_smoke_runtime.test.js",
         "tests/wp_toolchain_family_contracts.test.js",
@@ -656,8 +851,21 @@
       ]
     },
     {
+      "name": "project-migration-selector-hardening",
+      "description": "Project migration runtime selector hardening behavior.",
+      "kind": "runtime-integration",
+      "owners": ["io/project"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/project_migration_runtime_selector_hardening_runtime.test.ts"]
+    },
+    {
       "name": "project-surfaces",
-      "script": "test:project-surfaces",
       "description": "Project actions, schema, ingress, persistence, and canonical snapshot surfaces.",
       "kind": "runtime-portfolio",
       "owners": ["io/project", "ui/project-session"],
@@ -665,7 +873,9 @@
       "runner": "tsx-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 18,
+      "childGroups": [],
+      "directFileCount": 18,
+      "resolvedFileCount": 18,
       "files": [
         "tests/project_actions_runtime.test.ts",
         "tests/project_session_commands_runtime.test.ts",
@@ -689,7 +899,6 @@
     },
     {
       "name": "public-surfaces",
-      "script": "test:public-surfaces",
       "description": "Stable public service, browser, model, project, and backup surfaces.",
       "kind": "runtime-portfolio",
       "owners": ["public-api", "platform/browser", "services/models"],
@@ -697,7 +906,9 @@
       "runner": "tsx-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 20,
+      "childGroups": [],
+      "directFileCount": 20,
+      "resolvedFileCount": 20,
       "files": [
         "tests/public_service_surface_runtime.test.ts",
         "tests/boot_entry_access_runtime.test.ts",
@@ -723,7 +934,6 @@
     },
     {
       "name": "render-surfaces",
-      "script": "test:render-surfaces",
       "description": "Render access, scene operations, motion, effects, room design, and render installation surfaces.",
       "kind": "runtime-integration",
       "owners": ["runtime/render", "services/scene-view"],
@@ -731,7 +941,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 14,
+      "childGroups": [],
+      "directFileCount": 14,
+      "resolvedFileCount": 14,
       "files": [
         "tests/render_access_runtime_seams.test.ts",
         "tests/render_access_runtime_state.test.ts",
@@ -750,8 +962,24 @@
       ]
     },
     {
+      "name": "residual-families-core",
+      "description": "Residual builder and overlay/export family contracts.",
+      "kind": "architecture-contract",
+      "owners": ["builder", "ui/export"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 2,
+      "resolvedFileCount": 2,
+      "files": [
+        "tests/builder_surface_family_contracts.test.js",
+        "tests/export_overlay_errors_family_contracts.test.js"
+      ]
+    },
+    {
       "name": "runtime-access-surfaces",
-      "script": "test:runtime-access-surfaces",
       "description": "Runtime access, platform, edit state, errors, history, and storage command surfaces.",
       "kind": "runtime-integration",
       "owners": ["runtime/access", "platform/access", "state/history"],
@@ -763,7 +991,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 17,
+      "childGroups": [],
+      "directFileCount": 17,
+      "resolvedFileCount": 17,
       "files": [
         "tests/cfg_history_platform_runtime_pack.test.ts",
         "tests/zustand_cfg_access_canonical_first.test.ts",
@@ -785,8 +1015,21 @@
       ]
     },
     {
+      "name": "runtime-platform-core-family-contracts",
+      "description": "Runtime/platform core family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["runtime", "platform"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/runtime_platform_core_family_contracts.test.js"]
+    },
+    {
       "name": "runtime-platform-core-family-core",
-      "script": "test:runtime-platform-core-family-core",
       "description": "Runtime, platform, kernel, history, snapshot, and configuration architecture contracts.",
       "kind": "architecture-contract",
       "owners": ["runtime", "platform", "kernel"],
@@ -794,7 +1037,9 @@
       "runner": "node-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 7,
+      "childGroups": [],
+      "directFileCount": 7,
+      "resolvedFileCount": 7,
       "files": [
         "tests/runtime_platform_core_family_contracts.test.js",
         "tests/platform_runtime_access_contracts.test.js",
@@ -806,8 +1051,21 @@
       ]
     },
     {
+      "name": "runtime-surface-family-core",
+      "description": "Runtime surface family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["runtime"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/runtime_surface_family_contracts.test.js"]
+    },
+    {
       "name": "service-canonical-surfaces",
-      "script": "test:service-canonical-surfaces",
       "description": "Canonical service namespaces, installation healing, camera, scene view, Three doors, and errors.",
       "kind": "service-runtime-integration",
       "owners": ["services/public-surface"],
@@ -815,7 +1073,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 8,
+      "childGroups": [],
+      "directFileCount": 8,
+      "resolvedFileCount": 8,
       "files": [
         "tests/services_namespace_runtime.test.ts",
         "tests/service_access_legacy_root_runtime.test.ts",
@@ -829,7 +1089,6 @@
     },
     {
       "name": "sketch-box-content-protocol",
-      "script": "test:sketch-box-content-protocol",
       "description": "Versioned fail-closed preview/commit commands for all sketch-box mutations.",
       "kind": "runtime-integration",
       "owners": ["services/canvas-picking", "features/sketch-box"],
@@ -837,7 +1096,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 13,
+      "childGroups": [],
+      "directFileCount": 13,
+      "resolvedFileCount": 13,
       "files": [
         "tests/canvas_picking_sketch_box_content_command_runtime.test.ts",
         "tests/canvas_picking_sketch_structural_command_runtime.test.ts",
@@ -856,7 +1117,6 @@
     },
     {
       "name": "sketch-box-hover",
-      "script": "test:sketch-surfaces:box-hover",
       "description": "Sketch box hover, doors, overlap, click, and visual contracts.",
       "kind": "service-runtime-integration",
       "owners": ["services/canvas-picking/sketch-box"],
@@ -864,7 +1124,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 6,
+      "childGroups": [],
+      "directFileCount": 6,
+      "resolvedFileCount": 6,
       "files": [
         "tests/canvas_picking_sketch_box_runtime_runtime.test.ts",
         "tests/canvas_picking_sketch_box_door_preview_runtime.test.ts",
@@ -876,7 +1138,6 @@
     },
     {
       "name": "sketch-free-boxes",
-      "script": "test:sketch-surfaces:free-boxes",
       "description": "Sketch free-box preview, commit, attachment, removal, and room-floor contracts.",
       "kind": "service-runtime-integration",
       "owners": ["services/canvas-picking/sketch-free-boxes"],
@@ -884,7 +1145,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 9,
+      "childGroups": [],
+      "directFileCount": 9,
+      "resolvedFileCount": 9,
       "files": [
         "tests/canvas_picking_sketch_free_surface_preview_runtime.test.ts",
         "tests/canvas_picking_sketch_free_box_content_preview_runtime.test.ts",
@@ -899,7 +1162,6 @@
     },
     {
       "name": "sketch-manual-hover",
-      "script": "test:sketch-surfaces:manual-hover",
       "description": "Sketch manual-layout host, hover intent, matching, routing, and preview contracts.",
       "kind": "service-runtime-integration",
       "owners": ["services/canvas-picking/manual-layout"],
@@ -907,7 +1169,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 10,
+      "childGroups": [],
+      "directFileCount": 10,
+      "resolvedFileCount": 10,
       "files": [
         "tests/sketch_manual_tool_host_runtime.test.ts",
         "tests/canvas_picking_layout_edit_flow_manual_runtime.test.ts",
@@ -923,7 +1187,6 @@
     },
     {
       "name": "sketch-render-visuals",
-      "script": "test:sketch-surfaces:render-visuals",
       "description": "Sketch render input, visuals, fronts, layout geometry, support, and visual state.",
       "kind": "builder-runtime-integration",
       "owners": ["builder/render-sketch"],
@@ -931,7 +1194,9 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 7,
+      "childGroups": [],
+      "directFileCount": 7,
+      "resolvedFileCount": 7,
       "files": [
         "tests/render_interior_sketch_input_contract_runtime.test.ts",
         "tests/render_interior_sketch_visuals_runtime.test.ts",
@@ -943,8 +1208,26 @@
       ]
     },
     {
+      "name": "sketch-surfaces",
+      "description": "Complete Sketch focused surface suite.",
+      "kind": "group-sequence",
+      "owners": ["services/canvas-picking", "features/sketch-box"],
+      "environment": "tsx",
+      "runner": "group-sequence",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "childGroups": [
+        "sketch-manual-hover",
+        "sketch-box-hover",
+        "sketch-free-boxes",
+        "sketch-render-visuals"
+      ],
+      "directFileCount": 0,
+      "resolvedFileCount": 32,
+      "files": []
+    },
+    {
       "name": "state-config-kernel-surfaces",
-      "script": "test:state-config-kernel-surfaces",
       "description": "State API configuration, kernel config, React selectors, and runtime config validation.",
       "kind": "runtime-integration",
       "owners": ["kernel/state", "runtime/config"],
@@ -956,7 +1239,9 @@
         "heartbeatMs": 10000,
         "timeoutMs": 120000
       },
-      "fileCount": 8,
+      "childGroups": [],
+      "directFileCount": 8,
+      "resolvedFileCount": 8,
       "files": [
         "tests/state_api_config_namespace_canonical_runtime.test.ts",
         "tests/state_api_install_support_noop_runtime.test.ts",
@@ -969,8 +1254,21 @@
       ]
     },
     {
+      "name": "structure-tab-family-contracts",
+      "description": "Structure tab family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["ui/structure-tab"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/structure_tab_family_contracts.test.js"]
+    },
+    {
       "name": "structure-tab-family-core",
-      "script": "test:structure-tab-family-core",
       "description": "Focused structure/interior tab family contracts and saved-model workflows.",
       "kind": "ui-runtime-integration",
       "owners": ["ui/structure-tab", "ui/interior-tab"],
@@ -982,7 +1280,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 22,
+      "childGroups": [],
+      "directFileCount": 22,
+      "resolvedFileCount": 22,
       "files": [
         "tests/structure_tab_family_contracts.test.js",
         "tests/structure_tab_actions_controller_runtime.test.js",
@@ -1010,7 +1310,6 @@
     },
     {
       "name": "tab-surfaces",
-      "script": "test:tab-surfaces",
       "description": "Structure, design, visual settings, and interior tab runtime surfaces.",
       "kind": "ui-runtime-portfolio",
       "owners": ["ui/structure-tab", "ui/design-tab", "ui/settings-visual", "ui/interior-tab"],
@@ -1022,7 +1321,9 @@
         "heartbeatMs": 0,
         "timeoutMs": 0
       },
-      "fileCount": 51,
+      "childGroups": [],
+      "directFileCount": 51,
+      "resolvedFileCount": 51,
       "files": [
         "tests/structure_tab_actions_controller_runtime.test.js",
         "tests/structure_tab_aux_sections_runtime.test.ts",
@@ -1079,7 +1380,6 @@
     },
     {
       "name": "toolchain-surfaces",
-      "script": "test:toolchain-surfaces",
       "description": "Build, release, lint, test, typecheck, and verification toolchain contracts.",
       "kind": "toolchain-portfolio",
       "owners": ["toolchain"],
@@ -1087,7 +1387,9 @@
       "runner": "node-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 26,
+      "childGroups": [],
+      "directFileCount": 26,
+      "resolvedFileCount": 26,
       "files": [
         "tests/wp_toolchain_family_contracts.test.js",
         "tests/wp_build_dist_runtime.test.js",
@@ -1118,8 +1420,91 @@
       ]
     },
     {
+      "name": "ui-lean-contracts",
+      "description": "UI lean typecheck control-plane contracts.",
+      "kind": "type-contract",
+      "owners": ["ui/types"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_lean_typecheck_contracts.test.cjs"]
+    },
+    {
+      "name": "ui-order-pdf-lean-contracts",
+      "description": "Order PDF lean typecheck contracts.",
+      "kind": "type-contract",
+      "owners": ["ui/order-pdf/types"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_order_pdf_lean_contracts.test.cjs"]
+    },
+    {
+      "name": "ui-portable-typecheck-contracts",
+      "description": "Portable UI typecheck contracts.",
+      "kind": "type-contract",
+      "owners": ["ui/types"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_portable_typecheck_contracts.test.cjs"]
+    },
+    {
+      "name": "ui-react-import-hardening-contracts",
+      "description": "React import hardening contracts for UI modules.",
+      "kind": "type-contract",
+      "owners": ["ui/react"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_react_import_hardening_contracts.test.js"]
+    },
+    {
+      "name": "ui-react-jsx-hardening-contracts",
+      "description": "React JSX import hardening contracts for UI modules.",
+      "kind": "type-contract",
+      "owners": ["ui/react"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_react_jsx_import_hardening_contracts.test.js"]
+    },
+    {
+      "name": "ui-type-hardening-contracts",
+      "description": "UI PDF interoperability type-hardening contracts.",
+      "kind": "type-contract",
+      "owners": ["ui/types"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/ui_pdf_interop_type_hardening_contracts.test.js"]
+    },
+    {
       "name": "verification-control-plane",
-      "script": "test:verification-control-plane",
       "description": "Verification manifest, closeout state, and generated-report contracts.",
       "kind": "control-plane-contract",
       "owners": ["toolchain/verification"],
@@ -1127,13 +1512,29 @@
       "runner": "node-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 4,
+      "childGroups": [],
+      "directFileCount": 4,
+      "resolvedFileCount": 4,
       "files": [
         "tests/wp_verification_manifest_runtime.test.cjs",
         "tests/wp_verify_closeout_support_runtime.test.cjs",
         "tests/wp_generated_report_contract_runtime.test.js",
         "tests/wp_verification_summary_contract_runtime.test.js"
       ]
+    },
+    {
+      "name": "visual-surface-family-contracts",
+      "description": "Visual surface family architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["builder/render", "ui/visuals"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/visual_surface_family_contracts.test.js"]
     }
   ]
 }

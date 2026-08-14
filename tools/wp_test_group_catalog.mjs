@@ -3,7 +3,7 @@
 // and architecture guards read one source of truth.
 
 const TEST_FILE_RE = /^tests\/.+\.(?:test|spec)\.(?:js|cjs|mjs|ts|tsx)$/u;
-const TEST_GROUP_RUNNERS = new Set(['node-test', 'tsx-test', 'serial-tsx']);
+const TEST_GROUP_RUNNERS = new Set(['node-test', 'tsx-test', 'serial-tsx', 'group-sequence']);
 const TEST_GROUP_ENVIRONMENTS = new Set(['node', 'tsx']);
 const TEST_GROUP_PORTFOLIO_ROLES = new Set(['primary', 'focused', 'architecture']);
 
@@ -16,14 +16,192 @@ function defineTestGroup(definition) {
   return Object.freeze({
     ...definition,
     owners: Object.freeze([...definition.owners]),
-    files: Object.freeze([...definition.files]),
+    files: Object.freeze([...(definition.files || [])]),
+    groups: Object.freeze([...(definition.groups || [])]),
     ...(definition.serialPolicy ? { serialPolicy: freezeSerialPolicy(definition.serialPolicy) } : null),
   });
 }
 
 export const TEST_GROUP_CATALOG = Object.freeze({
+  'app-boot-browser-project-family-contracts': defineTestGroup({
+    description: 'Browser/project boot family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['boot', 'io/project'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/app_boot_browser_project_family_contracts.test.js'],
+  }),
+  'app-boot-project-family-core': defineTestGroup({
+    description: 'Boot, project IO, and runtime-config family contracts.',
+    kind: 'architecture-contract',
+    owners: ['boot', 'io/project', 'platform/runtime-config'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: [
+      'tests/app_boot_browser_project_family_contracts.test.js',
+      'tests/project_io_contracts.test.js',
+      'tests/runtime_config_platform_contracts.test.js',
+    ],
+  }),
+  'browser-feedback-family-contracts': defineTestGroup({
+    description: 'Browser feedback family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['platform/browser-feedback'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/browser_feedback_family_contracts.test.js'],
+  }),
+  'builder-surface-family-core': defineTestGroup({
+    description: 'Builder surface family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['builder'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/builder_surface_family_contracts.test.js'],
+  }),
+  'cloud-sync-family-contracts': defineTestGroup({
+    description: 'Cloud Sync family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['services/cloud-sync'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/cloud_sync_family_contracts.test.js'],
+  }),
+  'export-overlay-errors-family-contracts': defineTestGroup({
+    description: 'Overlay/export/error family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['ui/overlays', 'ui/export'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/export_overlay_errors_family_contracts.test.js'],
+  }),
+  'residual-families-core': defineTestGroup({
+    description: 'Residual builder and overlay/export family contracts.',
+    kind: 'architecture-contract',
+    owners: ['builder', 'ui/export'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: [
+      'tests/builder_surface_family_contracts.test.js',
+      'tests/export_overlay_errors_family_contracts.test.js',
+    ],
+  }),
+  'runtime-platform-core-family-contracts': defineTestGroup({
+    description: 'Runtime/platform core family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['runtime', 'platform'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/runtime_platform_core_family_contracts.test.js'],
+  }),
+  'runtime-surface-family-core': defineTestGroup({
+    description: 'Runtime surface family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['runtime'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/runtime_surface_family_contracts.test.js'],
+  }),
+  'structure-tab-family-contracts': defineTestGroup({
+    description: 'Structure tab family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['ui/structure-tab'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/structure_tab_family_contracts.test.js'],
+  }),
+  'ui-lean-contracts': defineTestGroup({
+    description: 'UI lean typecheck control-plane contracts.',
+    kind: 'type-contract',
+    owners: ['ui/types'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_lean_typecheck_contracts.test.cjs'],
+  }),
+  'ui-order-pdf-lean-contracts': defineTestGroup({
+    description: 'Order PDF lean typecheck contracts.',
+    kind: 'type-contract',
+    owners: ['ui/order-pdf/types'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_order_pdf_lean_contracts.test.cjs'],
+  }),
+  'ui-portable-typecheck-contracts': defineTestGroup({
+    description: 'Portable UI typecheck contracts.',
+    kind: 'type-contract',
+    owners: ['ui/types'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_portable_typecheck_contracts.test.cjs'],
+  }),
+  'ui-react-import-hardening-contracts': defineTestGroup({
+    description: 'React import hardening contracts for UI modules.',
+    kind: 'type-contract',
+    owners: ['ui/react'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_react_import_hardening_contracts.test.js'],
+  }),
+  'ui-react-jsx-hardening-contracts': defineTestGroup({
+    description: 'React JSX import hardening contracts for UI modules.',
+    kind: 'type-contract',
+    owners: ['ui/react'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_react_jsx_import_hardening_contracts.test.js'],
+  }),
+  'ui-type-hardening-contracts': defineTestGroup({
+    description: 'UI PDF interoperability type-hardening contracts.',
+    kind: 'type-contract',
+    owners: ['ui/types'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/ui_pdf_interop_type_hardening_contracts.test.js'],
+  }),
+  'visual-surface-family-contracts': defineTestGroup({
+    description: 'Visual surface family architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['builder/render', 'ui/visuals'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/visual_surface_family_contracts.test.js'],
+  }),
+  'project-migration-selector-hardening': defineTestGroup({
+    description: 'Project migration runtime selector hardening behavior.',
+    kind: 'runtime-integration',
+    owners: ['io/project'],
+    environment: 'tsx',
+    runner: 'tsx-test',
+    portfolioRole: 'focused',
+    files: ['tests/project_migration_runtime_selector_hardening_runtime.test.ts'],
+  }),
+  'domain-codecs': defineTestGroup({
+    description: 'Canonical persistence/domain codec runtime behavior.',
+    kind: 'runtime-integration',
+    owners: ['shared/domain-codecs'],
+    environment: 'tsx',
+    runner: 'tsx-test',
+    portfolioRole: 'focused',
+    files: ['tests/canonical_domain_codecs_runtime.test.ts'],
+  }),
   'mirror-runtime': defineTestGroup({
-    script: 'test:mirror-runtime',
     description: 'Mirror scheduling, planar rendering, recovery, and performance contracts.',
     kind: 'runtime-integration',
     owners: ['platform/render-loop', 'runtime/planar-reflector'],
@@ -40,7 +218,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'sketch-box-content-protocol': defineTestGroup({
-    script: 'test:sketch-box-content-protocol',
     description: 'Versioned fail-closed preview/commit commands for all sketch-box mutations.',
     kind: 'runtime-integration',
     owners: ['services/canvas-picking', 'features/sketch-box'],
@@ -64,7 +241,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-overlay-core': defineTestGroup({
-    script: 'test:order-pdf-surfaces:overlay-core',
     description: 'Core order-PDF overlay state, commands, interactions, and text behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf'],
@@ -85,7 +261,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-pdf-render': defineTestGroup({
-    script: 'test:order-pdf-surfaces:pdf-render',
     description: 'Order-PDF import, PDF.js rendering, cleanup, and image-PDF text-layout behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf/pdf-runtime'],
@@ -101,7 +276,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-sketch': defineTestGroup({
-    script: 'test:order-pdf-surfaces:sketch',
     description:
       'Order-PDF sketch editor persistence, placement, panel, preview-session, and shortcut behavior.',
     kind: 'ui-runtime-integration',
@@ -119,7 +293,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-export-overlay': defineTestGroup({
-    script: 'test:order-pdf-surfaces:export-overlay',
     description: 'Order-PDF overlay export operations, command routing, and single-flight behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf/export-overlay'],
@@ -133,7 +306,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-export-builders': defineTestGroup({
-    script: 'test:order-pdf-surfaces:export-builders',
     description: 'Order-PDF export builder composition, draft generation, and sketch-annotation behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
@@ -147,7 +319,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-export-capture': defineTestGroup({
-    script: 'test:order-pdf-surfaces:export-capture',
     description: 'Order-PDF export capture cache, viewport capture, and export operation behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
@@ -161,7 +332,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'order-pdf-export-text': defineTestGroup({
-    script: 'test:order-pdf-surfaces:export-text',
     description: 'Order-PDF export text derivation and sketch-annotation serialization behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
@@ -174,7 +344,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-lifecycle': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:lifecycle',
     description: 'Cloud Sync lifecycle, recovery, configuration, and action contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/lifecycle'],
@@ -208,7 +377,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-main-row': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:main-row',
     description: 'Cloud Sync main-row writes, mutation commands, status, and owner context.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/main-row'],
@@ -234,7 +402,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-panel-install': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:panel-install',
     description: 'Cloud Sync panel API installation and surface healing contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
@@ -247,7 +414,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-panel-controller': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:panel-controller',
     description: 'Cloud Sync panel controller failure and fallback contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
@@ -260,7 +426,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-panel-subscriptions': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:panel-subscriptions',
     description: 'Cloud Sync panel subscription and singleflight contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
@@ -274,7 +439,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-panel-snapshots': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:panel-snapshots',
     description: 'Cloud Sync panel snapshot controller, dedupe, and fallback contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
@@ -288,7 +452,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-sync-ops': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:sync-ops',
     description: 'Cloud Sync pull, push, signed gateway, room, merge, sketch, and support operations.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/sync-ops'],
@@ -319,7 +482,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'cloud-sync-tabs-ui': defineTestGroup({
-    script: 'test:cloud-sync-surfaces:tabs-ui',
     description: 'Cloud Sync tab gates, pin commands, timers, and UI action controllers.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-tabs'],
@@ -335,7 +497,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'sketch-manual-hover': defineTestGroup({
-    script: 'test:sketch-surfaces:manual-hover',
     description: 'Sketch manual-layout host, hover intent, matching, routing, and preview contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/manual-layout'],
@@ -356,7 +517,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'sketch-box-hover': defineTestGroup({
-    script: 'test:sketch-surfaces:box-hover',
     description: 'Sketch box hover, doors, overlap, click, and visual contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/sketch-box'],
@@ -373,7 +533,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'sketch-free-boxes': defineTestGroup({
-    script: 'test:sketch-surfaces:free-boxes',
     description: 'Sketch free-box preview, commit, attachment, removal, and room-floor contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/sketch-free-boxes'],
@@ -393,7 +552,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'sketch-render-visuals': defineTestGroup({
-    script: 'test:sketch-surfaces:render-visuals',
     description: 'Sketch render input, visuals, fronts, layout geometry, support, and visual state.',
     kind: 'builder-runtime-integration',
     owners: ['builder/render-sketch'],
@@ -411,7 +569,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'builder-support-surfaces': defineTestGroup({
-    script: 'test:builder-support-surfaces',
     description:
       'Builder support, materials, maps, library presets, scene view, doors, and corner runtime surfaces.',
     kind: 'builder-runtime-integration',
@@ -448,7 +605,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'runtime-access-surfaces': defineTestGroup({
-    script: 'test:runtime-access-surfaces',
     description: 'Runtime access, platform, edit state, errors, history, and storage command surfaces.',
     kind: 'runtime-integration',
     owners: ['runtime/access', 'platform/access', 'state/history'],
@@ -477,7 +633,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'canvas-interaction-surfaces': defineTestGroup({
-    script: 'test:canvas-interaction-surfaces',
     description: 'Canvas hit, hover, door action, paint, selector, and projection interaction surfaces.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking'],
@@ -503,7 +658,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'domain-surfaces': defineTestGroup({
-    script: 'test:domain-surfaces',
     description: 'Domain API, store actions, action access, and UI feedback runtime surfaces.',
     kind: 'runtime-integration',
     owners: ['kernel/domain-api', 'ui/actions', 'ui/feedback'],
@@ -530,7 +684,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'render-surfaces': defineTestGroup({
-    script: 'test:render-surfaces',
     description:
       'Render access, scene operations, motion, effects, room design, and render installation surfaces.',
     kind: 'runtime-integration',
@@ -556,7 +709,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'door-build-surfaces': defineTestGroup({
-    script: 'test:door-build-surfaces',
     description: 'Door trim, styles, glass, mirrors, dimensions, reveal frames, and post-build cut surfaces.',
     kind: 'builder-runtime-integration',
     owners: ['builder/doors', 'builder/post-build'],
@@ -582,7 +734,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'state-config-kernel-surfaces': defineTestGroup({
-    script: 'test:state-config-kernel-surfaces',
     description: 'State API configuration, kernel config, React selectors, and runtime config validation.',
     kind: 'runtime-integration',
     owners: ['kernel/state', 'runtime/config'],
@@ -602,7 +753,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'canonical-access-surfaces': defineTestGroup({
-    script: 'test:canonical-access-surfaces',
     description: 'Canonical application, browser, builder, camera, canvas, and Cloud Sync access surfaces.',
     kind: 'runtime-integration',
     owners: ['runtime/access', 'services/access'],
@@ -624,7 +774,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'overlay-export-family-runtime': defineTestGroup({
-    script: 'test:overlay-export-family-runtime',
     description: 'Overlay notes, export canvas, viewport, and workflow runtime surfaces.',
     kind: 'ui-runtime-integration',
     owners: ['ui/overlays', 'ui/export'],
@@ -644,7 +793,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'service-canonical-surfaces': defineTestGroup({
-    script: 'test:service-canonical-surfaces',
     description:
       'Canonical service namespaces, installation healing, camera, scene view, Three doors, and errors.',
     kind: 'service-runtime-integration',
@@ -664,7 +812,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'perf-e2e-runtime-core': defineTestGroup({
-    script: 'test:perf-e2e-runtime-core',
     description: 'Runtime performance instrumentation and action-flow observability contracts.',
     kind: 'runtime-integration',
     owners: ['runtime/perf', 'ui/action-events'],
@@ -684,7 +831,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'runtime-platform-core-family-core': defineTestGroup({
-    script: 'test:runtime-platform-core-family-core',
     description: 'Runtime, platform, kernel, history, snapshot, and configuration architecture contracts.',
     kind: 'architecture-contract',
     owners: ['runtime', 'platform', 'kernel'],
@@ -702,7 +848,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'builder-surfaces': defineTestGroup({
-    script: 'test:builder-surfaces',
     description:
       'Builder public surface, dependency access, registry, scheduler, store access, and visibility.',
     kind: 'builder-runtime-integration',
@@ -720,7 +865,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'no-main-surfaces': defineTestGroup({
-    script: 'test:no-main-surfaces',
     description:
       'No-main sketch/modules, projection, canonical snapshots, and wardrobe build context surfaces.',
     kind: 'runtime-integration',
@@ -738,7 +882,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'perf-toolchain-core': defineTestGroup({
-    script: 'test:perf-toolchain-core',
     description: 'Performance smoke and verification toolchain contracts.',
     kind: 'toolchain-contract',
     owners: ['toolchain/performance', 'toolchain/verification'],
@@ -755,7 +898,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'tab-surfaces': defineTestGroup({
-    script: 'test:tab-surfaces',
     description: 'Structure, design, visual settings, and interior tab runtime surfaces.',
     kind: 'ui-runtime-portfolio',
     owners: ['ui/structure-tab', 'ui/design-tab', 'ui/settings-visual', 'ui/interior-tab'],
@@ -818,7 +960,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'canvas-surfaces': defineTestGroup({
-    script: 'test:canvas-surfaces',
     description: 'Canvas hover, preview, routing, and sketch module interaction surfaces.',
     kind: 'runtime-portfolio',
     owners: ['services/canvas-picking'],
@@ -843,7 +984,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'structure-tab-family-core': defineTestGroup({
-    script: 'test:structure-tab-family-core',
     description: 'Focused structure/interior tab family contracts and saved-model workflows.',
     kind: 'ui-runtime-integration',
     owners: ['ui/structure-tab', 'ui/interior-tab'],
@@ -877,7 +1017,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'project-surfaces': defineTestGroup({
-    script: 'test:project-surfaces',
     description: 'Project actions, schema, ingress, persistence, and canonical snapshot surfaces.',
     kind: 'runtime-portfolio',
     owners: ['io/project', 'ui/project-session'],
@@ -906,7 +1045,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'verification-control-plane': defineTestGroup({
-    script: 'test:verification-control-plane',
     description: 'Verification manifest, closeout state, and generated-report contracts.',
     kind: 'control-plane-contract',
     owners: ['toolchain/verification'],
@@ -921,7 +1059,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'toolchain-surfaces': defineTestGroup({
-    script: 'test:toolchain-surfaces',
     description: 'Build, release, lint, test, typecheck, and verification toolchain contracts.',
     kind: 'toolchain-portfolio',
     owners: ['toolchain'],
@@ -958,7 +1095,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     ],
   }),
   'public-surfaces': defineTestGroup({
-    script: 'test:public-surfaces',
     description: 'Stable public service, browser, model, project, and backup surfaces.',
     kind: 'runtime-portfolio',
     owners: ['public-api', 'platform/browser', 'services/models'],
@@ -988,6 +1124,61 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/settings_backup_file_read_diagnostics_runtime.test.ts',
     ],
   }),
+  'order-pdf-surfaces': defineTestGroup({
+    description: 'Complete Order PDF focused surface suite.',
+    kind: 'group-sequence',
+    owners: ['ui/order-pdf', 'ui/export/order-pdf'],
+    environment: 'tsx',
+    runner: 'group-sequence',
+    portfolioRole: 'focused',
+    groups: [
+      'order-pdf-overlay-core',
+      'order-pdf-pdf-render',
+      'order-pdf-sketch',
+      'order-pdf-export-overlay',
+      'order-pdf-export-builders',
+      'order-pdf-export-capture',
+      'order-pdf-export-text',
+    ],
+  }),
+  'sketch-surfaces': defineTestGroup({
+    description: 'Complete Sketch focused surface suite.',
+    kind: 'group-sequence',
+    owners: ['services/canvas-picking', 'features/sketch-box'],
+    environment: 'tsx',
+    runner: 'group-sequence',
+    portfolioRole: 'focused',
+    groups: ['sketch-manual-hover', 'sketch-box-hover', 'sketch-free-boxes', 'sketch-render-visuals'],
+  }),
+  'cloud-sync-panel': defineTestGroup({
+    description: 'Cloud Sync panel install, controller, subscription, and snapshot suite.',
+    kind: 'group-sequence',
+    owners: ['ui/cloud-sync'],
+    environment: 'tsx',
+    runner: 'group-sequence',
+    portfolioRole: 'focused',
+    groups: [
+      'cloud-sync-panel-install',
+      'cloud-sync-panel-controller',
+      'cloud-sync-panel-subscriptions',
+      'cloud-sync-panel-snapshots',
+    ],
+  }),
+  'cloud-sync-surfaces': defineTestGroup({
+    description: 'Complete Cloud Sync lifecycle, panel, sync, and tabs suite.',
+    kind: 'group-sequence',
+    owners: ['services/cloud-sync', 'ui/cloud-sync'],
+    environment: 'tsx',
+    runner: 'group-sequence',
+    portfolioRole: 'focused',
+    groups: [
+      'cloud-sync-lifecycle',
+      'cloud-sync-main-row',
+      'cloud-sync-panel',
+      'cloud-sync-sync-ops',
+      'cloud-sync-tabs-ui',
+    ],
+  }),
 });
 
 export function listTestGroupNames() {
@@ -1002,6 +1193,7 @@ export function readTestGroup(name) {
     ...group,
     owners: Array.from(group.owners),
     files: Array.from(group.files),
+    groups: Array.from(group.groups),
     ...(group.serialPolicy ? { serialPolicy: { ...group.serialPolicy } } : null),
   };
 }
@@ -1011,27 +1203,61 @@ export function readTestGroupFiles(name) {
   return group ? group.files : null;
 }
 
-export function listTestGroupScriptBindings() {
-  return Object.entries(TEST_GROUP_CATALOG)
-    .map(([groupName, definition]) => ({ groupName, script: definition.script }))
-    .sort((left, right) => left.script.localeCompare(right.script));
+export function readTestGroupChildren(name) {
+  const group = readTestGroup(name);
+  return group ? group.groups : null;
+}
+
+export function resolveTestGroupLeafNames(name, catalog = TEST_GROUP_CATALOG, stack = []) {
+  const normalized = typeof name === 'string' ? name.trim() : '';
+  const group = catalog[normalized];
+  if (!group) throw new Error(`[WardrobePro] unknown test group: ${normalized || '<empty>'}`);
+  if (stack.includes(normalized)) {
+    throw new Error(`[WardrobePro] test group recursion detected: ${stack.concat(normalized).join(' -> ')}`);
+  }
+  if (group.runner !== 'group-sequence') return [normalized];
+  return group.groups.flatMap(child => resolveTestGroupLeafNames(child, catalog, stack.concat(normalized)));
+}
+
+export function resolveTestGroupFiles(name, catalog = TEST_GROUP_CATALOG) {
+  return resolveTestGroupLeafNames(name, catalog).flatMap(groupName => Array.from(catalog[groupName].files));
+}
+
+function validateSequenceGraph(catalog, issues) {
+  const visit = (groupName, stack) => {
+    const definition = catalog[groupName];
+    if (!definition || definition.runner !== 'group-sequence') return;
+    if (stack.includes(groupName)) {
+      issues.push({
+        code: 'group-sequence-cycle',
+        group: groupName,
+        message: `group sequence recursion detected: ${stack.concat(groupName).join(' -> ')}`,
+      });
+      return;
+    }
+    for (const child of definition.groups || []) {
+      if (!catalog[child]) {
+        issues.push({
+          code: 'unknown-child-group',
+          group: groupName,
+          child,
+          message: `group sequence references unknown child group: ${child}`,
+        });
+        continue;
+      }
+      visit(child, stack.concat(groupName));
+    }
+  };
+  for (const groupName of Object.keys(catalog)) visit(groupName, []);
 }
 
 export function validateTestGroupCatalog(catalog = TEST_GROUP_CATALOG) {
   const issues = [];
-  const scripts = new Map();
   const primaryOwners = new Map();
 
   for (const [groupName, definition] of Object.entries(catalog)) {
     const add = (code, message, extra = {}) => issues.push({ code, group: groupName, message, ...extra });
     if (!groupName.trim()) add('invalid-group-name', 'group name must be non-empty');
-    if (typeof definition?.script !== 'string' || !definition.script.startsWith('test:')) {
-      add('invalid-script', 'script must be a test:* package script name');
-    } else if (scripts.has(definition.script)) {
-      add('duplicate-script-binding', `script is already owned by ${scripts.get(definition.script)}`);
-    } else {
-      scripts.set(definition.script, groupName);
-    }
     if (typeof definition?.description !== 'string' || !definition.description.trim()) {
       add('missing-description', 'description must be non-empty');
     }
@@ -1058,6 +1284,30 @@ export function validateTestGroupCatalog(catalog = TEST_GROUP_CATALOG) {
       definition?.environment !== 'tsx'
     ) {
       add('runner-environment-mismatch', `${definition.runner} requires environment=tsx`);
+    }
+
+    if (definition?.runner === 'group-sequence') {
+      if (!Array.isArray(definition.groups) || definition.groups.length === 0) {
+        add('missing-child-groups', 'group-sequence requires at least one child group');
+      }
+      if (Array.isArray(definition.files) && definition.files.length > 0) {
+        add('unexpected-files', 'group-sequence must not own test files directly');
+      }
+      if (definition.serialPolicy) {
+        add('unexpected-serial-policy', 'serialPolicy is not valid for group-sequence');
+      }
+      const seenChildren = new Set();
+      for (const child of definition.groups || []) {
+        if (seenChildren.has(child)) {
+          add('duplicate-child-group', 'child group is listed more than once', { child });
+        }
+        seenChildren.add(child);
+      }
+      continue;
+    }
+
+    if (Array.isArray(definition?.groups) && definition.groups.length > 0) {
+      add('unexpected-child-groups', 'only group-sequence may reference child groups');
     }
     if (!Array.isArray(definition?.files) || definition.files.length === 0) {
       add('missing-files', 'files must contain at least one test file');
@@ -1095,5 +1345,6 @@ export function validateTestGroupCatalog(catalog = TEST_GROUP_CATALOG) {
     }
   }
 
+  validateSequenceGraph(catalog, issues);
   return issues;
 }

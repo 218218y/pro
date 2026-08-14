@@ -44,6 +44,24 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
     );
   }
 
+  if (group.runner === 'group-sequence') {
+    return {
+      groupName,
+      description: group.description,
+      kind: group.kind,
+      owners: group.owners,
+      environment: group.environment,
+      runner: group.runner,
+      portfolioRole: group.portfolioRole,
+      serialPolicy: undefined,
+      command: null,
+      args: [],
+      spawnOptions: {},
+      files: [],
+      groups: group.groups,
+    };
+  }
+
   const missingFiles = group.files.filter(file => !fs.existsSync(path.resolve(projectRoot, file)));
   if (missingFiles.length) {
     throw new Error(
@@ -71,7 +89,6 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
 
   return {
     groupName,
-    script: group.script,
     description: group.description,
     kind: group.kind,
     owners: group.owners,
@@ -83,10 +100,11 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
     args,
     spawnOptions,
     files: group.files,
+    groups: [],
   };
 }
 
-export function runTestGroupPlan(plan, { projectRoot = process.cwd(), childEnv = process.env } = {}) {
+function spawnPlan(plan, { projectRoot, childEnv }) {
   const result = spawnSync(plan.command, plan.args, {
     cwd: projectRoot,
     env: childEnv,
@@ -94,8 +112,25 @@ export function runTestGroupPlan(plan, { projectRoot = process.cwd(), childEnv =
     ...(plan.spawnOptions ?? {}),
   });
   if (result.error) throw result.error;
-  if (result.status !== 0) process.exitCode = result.status ?? 1;
   return result.status ?? 1;
+}
+
+export function runTestGroupPlan(plan, { projectRoot = process.cwd(), childEnv = process.env } = {}) {
+  if (plan.runner === 'group-sequence') {
+    for (const childGroupName of plan.groups) {
+      const childPlan = resolveTestGroupPlan({ projectRoot, groupName: childGroupName });
+      const status = runTestGroupPlan(childPlan, { projectRoot, childEnv });
+      if (status !== 0) {
+        process.exitCode = status;
+        return status;
+      }
+    }
+    return 0;
+  }
+
+  const status = spawnPlan(plan, { projectRoot, childEnv });
+  if (status !== 0) process.exitCode = status;
+  return status;
 }
 
 function helpText() {
@@ -108,6 +143,23 @@ function helpText() {
   ].join('\n');
 }
 
+function printPlan(plan) {
+  console.log(`[WardrobePro] test group: ${plan.groupName}`);
+  console.log(`- ${plan.description}`);
+  console.log(`- kind: ${plan.kind}`);
+  console.log(`- portfolio role: ${plan.portfolioRole}`);
+  console.log(`- environment: ${plan.environment}`);
+  console.log(`- runner: ${plan.runner}`);
+  console.log(`- owners: ${plan.owners.join(', ')}`);
+  if (plan.serialPolicy) {
+    console.log(
+      `- serial policy: batch=${plan.serialPolicy.batchSize}, heartbeat=${plan.serialPolicy.heartbeatMs}ms, timeout=${plan.serialPolicy.timeoutMs}ms`
+    );
+  }
+  for (const groupName of plan.groups) console.log(`- group: ${groupName}`);
+  for (const file of plan.files) console.log(`- ${file}`);
+}
+
 function main() {
   const flags = parseTestGroupArgs();
   if (flags.list || !flags.groupName) {
@@ -117,22 +169,7 @@ function main() {
   }
 
   const plan = resolveTestGroupPlan({ groupName: flags.groupName });
-  if (flags.print || flags.dryRun) {
-    console.log(`[WardrobePro] test group: ${plan.groupName}`);
-    console.log(`- script: ${plan.script}`);
-    console.log(`- ${plan.description}`);
-    console.log(`- kind: ${plan.kind}`);
-    console.log(`- portfolio role: ${plan.portfolioRole}`);
-    console.log(`- environment: ${plan.environment}`);
-    console.log(`- runner: ${plan.runner}`);
-    console.log(`- owners: ${plan.owners.join(', ')}`);
-    if (plan.serialPolicy) {
-      console.log(
-        `- serial policy: batch=${plan.serialPolicy.batchSize}, heartbeat=${plan.serialPolicy.heartbeatMs}ms, timeout=${plan.serialPolicy.timeoutMs}ms`
-      );
-    }
-    for (const file of plan.files) console.log(`- ${file}`);
-  }
+  if (flags.print || flags.dryRun) printPlan(plan);
   if (!flags.dryRun) runTestGroupPlan(plan);
 }
 

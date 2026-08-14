@@ -16,7 +16,7 @@ This folder is intentionally compact. Keep only living architecture guidance, se
 
 ## Tool-owned report targets
 
-These files are kept because repository scripts may write to them. They must describe the current repository state, not historic closeout state. `npm run check:generated-reports` regenerates ordinary audit pairs in isolation and validates the stateful final-verification pair against its versioned manifest; timestamps are ignored, stale metrics or source identities are not. Use `npm run report:generated` to refresh ordinary reports only after the final-verification report is current. Focused `verify:closeout:*` profiles report their own success but cannot write `FINAL_VERIFICATION_SUMMARY.*`; only `npm run verify:closeout:release`, or a complete clean state finalized with `verify:closeout:state:finalize`, may write that release proof.
+These files are kept because repository scripts may write to them. They must describe the current repository state, not historic closeout state. `npm run check:generated-reports` regenerates ordinary audit pairs in isolation and validates the stateful final-verification pair against its versioned manifest; timestamps are ignored, stale metrics or source identities are not. Use `npm run report:generated` to refresh ordinary reports only after the final-verification report is current. Focused closeout profiles run through `npm run verify:closeout -- --profile <name>` and report their own success but cannot write `FINAL_VERIFICATION_SUMMARY.*`; only `npm run verify:closeout:release`, or a complete compatible checkpoint finalized with `npm run verify:closeout -- --from-state --write-final`, may write that release proof.
 
 - `PERF_AND_STABILITY_BASELINE.md`
 - `BROWSER_PERF_AND_E2E_BASELINE.md`
