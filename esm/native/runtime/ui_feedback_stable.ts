@@ -21,7 +21,6 @@ type CallableLike = (...args: never[]) => unknown;
 type UiFeedbackToastKey = 'toast' | 'showToast';
 type UiFeedbackPromptKey = 'prompt' | 'openCustomPrompt';
 type UiFeedbackConfirmKey = 'confirm' | 'openCustomConfirm';
-type UiFeedbackAcknowledgeKey = 'acknowledge' | 'openCustomAcknowledge';
 
 function isCallable<T extends CallableLike>(value: unknown): value is T {
   return typeof value === 'function';
@@ -171,7 +170,6 @@ function wrapConfirmFn(
 
 function wrapAcknowledgeFn(
   owner: UiFeedbackNamespaceLike,
-  keys: readonly UiFeedbackAcknowledgeKey[],
   base: UiFeedbackAcknowledgeFn
 ): UiFeedbackAcknowledgeFn {
   const wrapped: UiFeedbackAcknowledgeFn = (
@@ -179,7 +177,7 @@ function wrapAcknowledgeFn(
     message: string,
     onAcknowledge?: (() => void) | null
   ) => {
-    const current = readCurrentCallable(owner, keys, wrapped, 'acknowledge');
+    const current = readCurrentCallable(owner, ['acknowledge'], wrapped, 'acknowledge');
     Reflect.apply(current || base, owner, [title, message, onAcknowledge]);
   };
   return copyStubMeta(markWrapperGroup(wrapped, 'acknowledge'), base);
@@ -208,11 +206,8 @@ function readConfirmFn(
   return asUiFeedbackConfirmFn(owner[key]);
 }
 
-function readAcknowledgeFn(
-  owner: UiFeedbackNamespaceLike,
-  key: UiFeedbackAcknowledgeKey
-): UiFeedbackAcknowledgeFn | null {
-  return asUiFeedbackAcknowledgeFn(owner[key]);
+function readAcknowledgeFn(owner: UiFeedbackNamespaceLike): UiFeedbackAcknowledgeFn | null {
+  return asUiFeedbackAcknowledgeFn(owner.acknowledge);
 }
 
 function readEditToastFn(owner: UiFeedbackNamespaceLike): UiFeedbackEditToastFn | null {
@@ -297,8 +292,7 @@ function buildConfirmBase(App: unknown, feedback: UiFeedbackNamespaceLike): UiFe
 function buildAcknowledgeBase(App: unknown, feedback: UiFeedbackNamespaceLike): UiFeedbackAcknowledgeFn {
   const confirmBase = buildConfirmBase(App, feedback);
   return (
-    readAcknowledgeFn(feedback, 'acknowledge') ||
-    readAcknowledgeFn(feedback, 'openCustomAcknowledge') ||
+    readAcknowledgeFn(feedback) ||
     markStub(function (title: string, message: string, onAcknowledge?: (() => void) | null) {
       confirmBase(
         title,
@@ -330,7 +324,6 @@ export function ensureUiFeedbackStable(
   const confirmBase = buildConfirmBase(App, feedback);
   const openCustomConfirmBase = readConfirmFn(feedback, 'openCustomConfirm') || confirmBase;
   const acknowledgeBase = buildAcknowledgeBase(App, feedback);
-  const openCustomAcknowledgeBase = readAcknowledgeFn(feedback, 'openCustomAcknowledge') || acknowledgeBase;
   const editToastBase = buildEditToastBase(feedback);
 
   const toast = wrapToastFn(feedback, ['toast', 'showToast'], toastBase);
@@ -339,12 +332,7 @@ export function ensureUiFeedbackStable(
   const openCustomPrompt = wrapPromptFn(feedback, ['openCustomPrompt', 'prompt'], openCustomPromptBase);
   const confirm = wrapConfirmFn(feedback, ['confirm', 'openCustomConfirm'], confirmBase);
   const openCustomConfirm = wrapConfirmFn(feedback, ['openCustomConfirm', 'confirm'], openCustomConfirmBase);
-  const acknowledge = wrapAcknowledgeFn(feedback, ['acknowledge', 'openCustomAcknowledge'], acknowledgeBase);
-  const openCustomAcknowledge = wrapAcknowledgeFn(
-    feedback,
-    ['openCustomAcknowledge', 'acknowledge'],
-    openCustomAcknowledgeBase
-  );
+  const acknowledge = wrapAcknowledgeFn(feedback, acknowledgeBase);
   const updateEditStateToast = wrapEditToastFn(feedback, editToastBase);
 
   return Object.assign(feedback, {
@@ -355,7 +343,6 @@ export function ensureUiFeedbackStable(
     confirm,
     openCustomConfirm,
     acknowledge,
-    openCustomAcknowledge,
     updateEditStateToast,
   });
 }

@@ -58,7 +58,6 @@ function hasStableUiFeedbackSurface(value: UiFeedbackNamespaceLike): value is Ui
     typeof value.confirm === 'function' &&
     typeof value.openCustomConfirm === 'function' &&
     typeof value.acknowledge === 'function' &&
-    typeof value.openCustomAcknowledge === 'function' &&
     typeof value.updateEditStateToast === 'function'
   );
 }
@@ -130,9 +129,8 @@ function fillUiFeedbackSurface(App: AppContainer, fb: UiFeedbackNamespaceLike): 
     msg: unknown,
     onAcknowledge?: UiFeedbackAcknowledgeCallback | null
   ) => openCustomAcknowledge(App, title, msg, onAcknowledge);
-  const acknowledge = chooseInstalledCallable(fb.acknowledge, fb.openCustomAcknowledge, acknowledgeImpl);
+  const acknowledge = chooseInstalledCallable(fb.acknowledge, null, acknowledgeImpl);
   if (fb.acknowledge !== acknowledge) fb.acknowledge = acknowledge;
-  if (fb.openCustomAcknowledge !== acknowledge) fb.openCustomAcknowledge = acknowledge;
 
   const editToastImpl: UiFeedbackEditToastFn = (text: string | null, isActive: boolean) =>
     updateEditStateToast(App, text, isActive);

@@ -132,7 +132,7 @@ test('empty uiFeedback defaults do not recurse across aliases before install', (
       cancelled = true;
     }
   );
-  feedback.openCustomAcknowledge('title', 'important', () => {
+  feedback.acknowledge('title', 'important', () => {
     acknowledged = true;
   });
 

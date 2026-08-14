@@ -285,7 +285,6 @@ export interface UiFeedbackNamespaceLike extends UnknownRecord {
   prompt?: UiFeedbackPromptFn;
   openCustomConfirm?: UiFeedbackConfirmFn;
   confirm?: UiFeedbackConfirmFn;
-  openCustomAcknowledge?: UiFeedbackAcknowledgeFn;
   acknowledge?: UiFeedbackAcknowledgeFn;
   updateEditStateToast?: UiFeedbackEditToastFn;
   [k: string]: unknown;
@@ -299,7 +298,6 @@ export interface UiFeedbackStableLike extends UiFeedbackNamespaceLike {
   confirm: UiFeedbackConfirmFn;
   openCustomConfirm: UiFeedbackConfirmFn;
   acknowledge: UiFeedbackAcknowledgeFn;
-  openCustomAcknowledge: UiFeedbackAcknowledgeFn;
   updateEditStateToast: UiFeedbackEditToastFn;
 }
 
