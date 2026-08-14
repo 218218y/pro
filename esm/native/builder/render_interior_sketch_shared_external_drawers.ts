@@ -68,6 +68,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   containerMaxY: number;
   flushTargetMinY?: number;
   flushTargetMaxY?: number;
+  allowFlushBottom?: boolean;
   epsilon?: number;
 }): SketchExternalDrawerFaceVerticalAlignment {
   const visualHRaw = toFiniteNumber(args.visualH);
@@ -89,6 +90,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   const containerMinY = toFiniteNumber(args.containerMinY);
   const containerMaxY = toFiniteNumber(args.containerMaxY);
   const flushBottom =
+    args.allowFlushBottom !== false &&
     isBottomDrawer &&
     stackMinY != null &&
     containerMinY != null &&

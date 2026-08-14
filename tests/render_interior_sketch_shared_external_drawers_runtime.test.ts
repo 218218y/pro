@@ -32,3 +32,22 @@ test('sketch external drawer vertical alignment ignores string runtime bounds', 
   assert.equal(aligned.minY, 0.3);
   assert.equal(aligned.maxY, 0.7);
 });
+
+test('sketch external drawer vertical alignment can preserve the natural bottom reveal beside another drawer stack', () => {
+  const aligned = resolveSketchExternalDrawerFaceVerticalAlignment({
+    drawerIndex: 0,
+    drawerCount: 1,
+    centerY: 0.61,
+    visualH: 0.218,
+    stackMinY: 0.5,
+    stackMaxY: 0.72,
+    containerMinY: 0.5,
+    containerMaxY: 1.8,
+    allowFlushBottom: false,
+  });
+
+  assert.equal(aligned.flushBottom, false);
+  assert.ok(Math.abs(aligned.height - 0.218) < 1e-12);
+  assert.ok(Math.abs(aligned.minY - 0.501) < 1e-12);
+  assert.ok(Math.abs(aligned.maxY - 0.719) < 1e-12);
+});

@@ -146,6 +146,10 @@ export function createSketchExternalDrawerOpPlan(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
     readRenderOpNumber(op.visualH) ?? fallbackGeom.visualH
   );
+  const moduleStartY = toFiniteNumber(context.input.startY);
+  const standardDrawerStackBaseY = moduleStartY != null ? moduleStartY + context.woodThick : null;
+  const hasStandardExternalDrawers =
+    standardDrawerStackBaseY != null && context.effectiveBottomY > standardDrawerStackBaseY;
   const faceVertical = resolveSketchExternalDrawerFaceVerticalAlignment({
     drawerIndex: opIndex,
     drawerCount: stack.drawerOps.length || stack.drawerCount,
@@ -156,6 +160,11 @@ export function createSketchExternalDrawerOpPlan(
     containerMinY: context.effectiveBottomY,
     containerMaxY: context.effectiveTopY,
     flushTargetMaxY: context.doorFaceTopY,
+    // `effectiveBottomY` sits immediately above the standard external-drawer
+    // stack when one exists. In that case the sketch drawer must keep its
+    // normal half-reveal at the bottom, exactly like two regular drawer fronts,
+    // instead of stretching down to the logical stack boundary.
+    allowFlushBottom: !hasStandardExternalDrawers,
   });
 
   return {

@@ -7,12 +7,18 @@ import { createModuleDoorSpanResolver } from '../esm/native/builder/module_loop_
 import { createSketchBoxExternalDrawerOpPlan } from '../esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts';
 import { createSketchExternalDrawerOpPlan } from '../esm/native/builder/render_interior_sketch_drawers_external_plan.ts';
 import { DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
+import { STACK_SPLIT_POLICY } from '../esm/shared/dimensions/stack_split_policy.ts';
 import {
   EXTERNAL_DRAWER_BOX_POLICY,
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
   EXTERNAL_DRAWER_SIZE_POLICY,
   resolveExternalDrawerGeometry,
 } from '../esm/shared/dimensions/external_drawer_policy.ts';
+
+test('external drawer fronts use the shared 2mm front seam policy', () => {
+  assert.equal(EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM, STACK_SPLIT_POLICY.seam.gapM);
+  assert.equal(EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM, 0.002);
+});
 
 function assertApprox(actual: number, expected: number, message?: string): void {
   assert.ok(Math.abs(actual - expected) <= 1e-12, message ?? `${actual} ≈ ${expected}`);
@@ -295,4 +301,41 @@ test('both external drawer plans preserve focused fallback geometry and explicit
     assert.equal(plan.connectorD, explicitOp.connectD);
     assert.equal(plan.connectorZ, explicitOp.connectZ);
   }
+});
+
+test('module sketch drawer above standard external drawers preserves the same front reveal as regular drawers', () => {
+  const drawerH = 0.22;
+  const boundaryY = 0.5;
+  const gap = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM;
+  const context = {
+    outerW: 0.8,
+    outerD: 0.55,
+    woodThick: 0.018,
+    frontZ: 0.275,
+    input: { startY: 0.042, cfgSnapshot: { extDrawersCount: 2 } },
+    internalCenterX: 0,
+    visualT: 0.02,
+    effectiveBottomY: boundaryY,
+    effectiveTopY: 1.5,
+    doorFaceTopY: 1.5,
+    resolvePartMaterial: () => null,
+    resolveDrawerBoxMaterial: () => null,
+  } as never;
+  const stack = {
+    drawerH,
+    centerY: boundaryY + drawerH / 2,
+    drawerCount: 1,
+    drawerOps: [{}],
+    baseY: boundaryY,
+    stackH: drawerH,
+    keyPrefix: 'sketch_',
+  } as never;
+
+  const plan = createSketchExternalDrawerOpPlan(context, stack, {}, 0);
+  assert.ok(plan);
+  assertApprox(plan.visualH, drawerH - gap);
+  assertApprox(plan.faceMinY, boundaryY + gap / 2);
+
+  const standardTopFaceMaxY = boundaryY - gap / 2;
+  assertApprox(plan.faceMinY - standardTopFaceMaxY, gap);
 });

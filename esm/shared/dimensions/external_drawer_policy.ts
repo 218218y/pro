@@ -38,7 +38,7 @@ export const EXTERNAL_DRAWER_FRONT_RENDER_POLICY = Object.freeze({
   doorTopGapM: STACK_SPLIT_POLICY.seam.gapM,
   visualWidthClearanceM: meters(0.004),
   visualThicknessM: meters(0.02),
-  visualHeightClearanceM: meters(0.008),
+  visualHeightClearanceM: STACK_SPLIT_POLICY.seam.gapM,
 });
 
 export const EXTERNAL_DRAWER_BOX_POLICY = Object.freeze({
