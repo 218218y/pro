@@ -5,6 +5,7 @@ import type {
   ColorsActionsLike,
   ConfigActionsNamespaceLike,
   SavedColorLike,
+  ConfigStateLike,
 } from '../../../types';
 
 import { setCfgMultiColorMode } from '../runtime/cfg_access.js';
@@ -29,7 +30,7 @@ interface InstallDomainApiColorsSectionArgs {
   select: UnknownRecord & { colors: ColorsSelect };
   colorsActions: ColorsActionsLike;
   configActions: ConfigActionsNamespaceLike;
-  _cfg: () => UnknownRecord;
+  _cfg: () => ConfigStateLike;
   _map: (mapName: unknown) => UnknownRecord;
   _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
 }

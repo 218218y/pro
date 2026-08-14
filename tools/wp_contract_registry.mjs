@@ -721,12 +721,11 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     publicFacade: 'esm/native/runtime/ui_raw_selectors.ts',
     privateOwners: [
       'esm/native/runtime/ui_raw_selectors_shared.ts',
-      'esm/native/runtime/ui_raw_selectors_snapshot.ts',
       'esm/native/runtime/ui_raw_selectors_canonical.ts',
       'esm/native/runtime/ui_raw_selectors_store.ts',
     ],
     behaviorTests: ['tests/project_migration_runtime_selector_hardening_runtime.test.ts'],
-    justification: 'Canonical and tolerant ui.raw reads share one runtime entry.',
+    justification: 'Canonical ui.raw snapshot and store reads share one runtime entry.',
   }),
   topology({
     id: 'runtime:runtime-selectors',

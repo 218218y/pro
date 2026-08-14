@@ -11,6 +11,7 @@
 
 import type {
   AppContainer,
+  ConfigStateLike,
   BuilderMaterialSnapshotLike,
   RenderOpsLike,
   ThreeLike,
@@ -33,7 +34,7 @@ type MaterialFactory = (
 type MaterialResolverArgs = {
   App: AppContainer;
   THREE: ThreeLike;
-  cfg?: UnknownRecord;
+  cfg?: ConfigStateLike;
   materialSnapshot: BuilderMaterialSnapshotLike;
   getMaterial: MaterialFactory;
   globalFrontMat: unknown;
@@ -56,7 +57,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
 
   const App = args.App;
   const THREE = args.THREE;
-  const cfg = _asObj(args.cfg) || {};
+  const cfg = args.cfg || {};
   const getMaterial = args.getMaterial;
   const globalFrontMat = args.globalFrontMat;
   const materialSnapshot = args.materialSnapshot;

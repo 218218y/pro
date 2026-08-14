@@ -1,4 +1,11 @@
-import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  ConfigStateLike,
+  ModuleConfigLike,
+  UiRawInputsLike,
+  UiStateLike,
+  UnknownRecord,
+} from '../../../types';
 
 export interface CanvasCellDimsClickArgs {
   App: AppContainer;
@@ -14,9 +21,9 @@ export interface CanvasCellDimsClickArgs {
 export interface CanvasCellDimsResolvedDrafts {
   App: AppContainer;
   isBottomStack?: boolean;
-  ui: UnknownRecord;
-  cfg: UnknownRecord;
-  raw: UnknownRecord;
+  ui: UiStateLike;
+  cfg: ConfigStateLike;
+  raw: UiRawInputsLike;
   applyW: number | null;
   applyH: number | null;
   applyD: number | null;

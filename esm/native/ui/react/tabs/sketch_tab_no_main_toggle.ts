@@ -2,6 +2,7 @@ import type {
   ActionMetaLike,
   AppContainer,
   MetaActionsNamespaceLike,
+  UiStateLike,
   UnknownRecord,
 } from '../../../../../types';
 import { UI_RAW_SCALAR_KEYS } from '../../../../../types/ui_raw.js';
@@ -172,8 +173,8 @@ function createRestoreSnapshot(ui: UnknownRecord, config: UnknownRecord): Sketch
   };
 }
 
-function readRestoreSnapshot(ui: UnknownRecord): SketchNoMainRestoreSnapshot | null {
-  const snap = readRecord(ui[SKETCH_NO_MAIN_RESTORE_KEY]);
+function readRestoreSnapshot(ui: UiStateLike): SketchNoMainRestoreSnapshot | null {
+  const snap = readRecord(ui.noMainSketchRestoreSnapshot);
   if (!snap || snap.version !== 1) return null;
   const restoreUi = readRecord(snap.ui);
   const restoreConfig = readRecord(snap.config);
@@ -474,12 +475,12 @@ function applyNoMainBatch(args: {
   });
 }
 
-export function hasSketchNoMainRestoreSnapshot(ui: UnknownRecord | null | undefined): boolean {
+export function hasSketchNoMainRestoreSnapshot(ui: UiStateLike | null | undefined): boolean {
   return !!(ui && readRestoreSnapshot(ui));
 }
 
 export function isSketchNoMainWardrobeActive(args: {
-  ui: UnknownRecord | null | undefined;
+  ui: UiStateLike | null | undefined;
   wardrobeType: string;
 }): boolean {
   const ui = readRecord(args.ui) || {};

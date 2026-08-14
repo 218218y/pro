@@ -1,9 +1,9 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UiStateLike, UnknownRecord } from '../../../types';
 import type { SpecialDimsRecord } from '../features/special_dims/index.js';
 
 export interface CornerCellHeightDepthContext {
   App: AppContainer;
-  ui: UnknownRecord;
+  ui: UiStateLike;
   stackKey: 'top' | 'bottom';
   nextCornerCfg: UnknownRecord;
   cellIdx: number;

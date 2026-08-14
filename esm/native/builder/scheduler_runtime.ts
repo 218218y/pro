@@ -1,6 +1,6 @@
 import type {
   AppContainer,
-  UnknownRecord,
+  UiSnapshotLike,
   BuildRequestOptsLike,
   BuilderSchedulerDepsLike,
   BuilderSchedulerStateSummaryLike,
@@ -328,7 +328,7 @@ export function runPendingBuildRuntime(App: AppContainer, reason: string, forceB
 
 export function requestBuildRuntime(
   App: AppContainer,
-  uiOverride: UnknownRecord | null,
+  uiOverride: UiSnapshotLike | null,
   opts?: BuildRequestOptsLike
 ): unknown {
   const A = assertApp(App, 'native/builder/scheduler.requestBuild');

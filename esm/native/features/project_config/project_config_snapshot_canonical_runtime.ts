@@ -58,7 +58,7 @@ export type CanonicalComparableProjectConfigPatch = UnknownRecord &
   CanonicalProjectConfigStructuralPatch<UnknownRecord>;
 
 export function canonicalizeComparableProjectConfigSnapshot(
-  source: UnknownRecord | null | undefined,
+  source: unknown,
   options?: ProjectConfigSnapshotCanonicalizationOptions
 ): CanonicalComparableProjectConfigSnapshot {
   const src = asProjectConfigRecord(source);
@@ -70,7 +70,7 @@ export function canonicalizeComparableProjectConfigSnapshot(
 }
 
 export function canonicalizeComparableProjectConfigPatch(
-  patchLike: UnknownRecord | null | undefined,
+  patchLike: unknown,
   options?: ProjectConfigSnapshotCanonicalizationOptions
 ): CanonicalComparableProjectConfigPatch {
   const src = asProjectConfigRecord(patchLike);

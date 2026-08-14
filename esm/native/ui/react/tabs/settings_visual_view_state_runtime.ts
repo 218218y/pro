@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../../../types';
+import type { ConfigStateLike, RuntimeStateLike, UiStateLike } from '../../../../../types';
 
 import type { SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
 import { DEFAULT_WALL_COLOR } from './settings_visual_shared_contracts.js';
@@ -31,7 +31,7 @@ export type SettingsVisualRuntimeState = {
   globalClickRt: boolean;
 };
 
-export function readSettingsVisualCfgState(cfg: UnknownRecord): SettingsVisualCfgState {
+export function readSettingsVisualCfgState(cfg: ConfigStateLike): SettingsVisualCfgState {
   return {
     showDimensions: !!cfg.showDimensions,
     mirrorReflectorEnabled:
@@ -40,7 +40,7 @@ export function readSettingsVisualCfgState(cfg: UnknownRecord): SettingsVisualCf
 }
 
 export function readSettingsVisualFloorStyleId(
-  ui: UnknownRecord,
+  ui: UiStateLike,
   floorType: SettingsVisualFloorType
 ): string | null {
   const map = asRecord(ui.lastSelectedFloorStyleIdByType);
@@ -48,17 +48,17 @@ export function readSettingsVisualFloorStyleId(
   return typeof byType === 'string' && byType ? byType : null;
 }
 
-export function readSettingsVisualWallColor(ui: UnknownRecord): string {
+export function readSettingsVisualWallColor(ui: UiStateLike): string {
   return typeof ui.lastSelectedWallColor === 'string' && ui.lastSelectedWallColor
     ? ui.lastSelectedWallColor
     : DEFAULT_WALL_COLOR;
 }
 
-export function readSettingsVisualLightingPreset(ui: UnknownRecord): string {
+export function readSettingsVisualLightingPreset(ui: UiStateLike): string {
   return typeof ui.lastLightPreset === 'string' && ui.lastLightPreset ? ui.lastLightPreset : 'default';
 }
 
-export function readSettingsVisualUiState(ui: UnknownRecord): SettingsVisualUiState {
+export function readSettingsVisualUiState(ui: UiStateLike): SettingsVisualUiState {
   const floorType = getFloorTypeFromUi(ui);
   return {
     showContents: !!ui.showContents,
@@ -78,7 +78,7 @@ export function readSettingsVisualUiState(ui: UnknownRecord): SettingsVisualUiSt
   };
 }
 
-export function readSettingsVisualRuntimeState(rt: UnknownRecord): SettingsVisualRuntimeState {
+export function readSettingsVisualRuntimeState(rt: RuntimeStateLike): SettingsVisualRuntimeState {
   return {
     globalClickRt: !!rt.globalClickMode,
   };

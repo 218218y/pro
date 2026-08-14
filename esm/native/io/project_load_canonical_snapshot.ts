@@ -6,7 +6,7 @@ import type {
   UiRawScalarValueMap,
   UnknownRecord,
 } from '../../../types/index.js';
-import { cloneUiRawInputs, UI_RAW_SCALAR_KEYS } from '../../../types/ui_raw.js';
+import { UI_RAW_SCALAR_KEYS } from '../../../types/ui_raw.js';
 
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotFromProjectLoad } from './project_io_load_helpers_config.js';
 
@@ -156,7 +156,6 @@ export function buildCanonicalProjectConfigSnapshot(
 export type ProjectUiRawCanonicalizationResult = {
   ui: UnknownRecord;
   raw: UiRawInputsLike;
-  normalizedKeys: UiRawScalarKey[];
   droppedKeys: UiRawScalarKey[];
 };
 
@@ -229,29 +228,25 @@ function writeRawScalar<K extends UiRawScalarKey>(
 
 export function canonicalizeProjectUiSnapshot(ui: unknown): ProjectUiRawCanonicalizationResult {
   const source = cloneUiSnapshot(ui);
-  const raw = cloneUiRawInputs(source.raw);
-  const normalizedKeys: UiRawScalarKey[] = [];
+  const sourceRaw = isRecord(source.raw) ? source.raw : {};
+  const raw: UiRawInputsLike = {};
   const droppedKeys: UiRawScalarKey[] = [];
 
   for (const key of UI_RAW_SCALAR_KEYS) {
-    if (!hasOwn(raw as UnknownRecord, key) || typeof raw[key] === 'undefined') continue;
+    if (!hasOwn(sourceRaw, key) || typeof sourceRaw[key] === 'undefined') continue;
 
-    const previousRawValue = raw[key];
-    const canonicalRawValue = readRawScalar(key, previousRawValue);
+    const canonicalRawValue = readRawScalar(key, sourceRaw[key]);
     if (typeof canonicalRawValue === 'undefined') {
-      delete raw[key];
       droppedKeys.push(key);
       continue;
     }
 
     writeRawScalar(raw, key, canonicalRawValue);
-    if (!Object.is(previousRawValue, canonicalRawValue)) normalizedKeys.push(key);
   }
 
   return {
     ui: { ...source, raw },
     raw,
-    normalizedKeys,
     droppedKeys,
   };
 }

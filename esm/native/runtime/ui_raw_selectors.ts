@@ -1,23 +1,8 @@
-// UI raw selectors public facade (ESM)
+// Canonical ui.raw selectors public facade (ESM)
 //
-// Purpose:
-// - Keep the public `ui.raw` selector contract stable.
-// - Route tolerant snapshot reads, canonical-only reads, and store adapters to
-//   focused owners so tolerant snapshot policy cannot leak into live/build paths.
-//
-// Notes:
-// - No DOM access.
-// - Fail-soft except for explicit canonical assertions.
+// Store/runtime/build consumers read only the closed `ui.raw` contract. Project ingress
+// validates the current schema before state reaches these selectors.
 
-export type { EssentialUiDimKey, MutableUiSnapshotLike } from './ui_raw_selectors_shared.js';
-export {
-  ensureUiRawDimsFromSnapshot,
-  hasEssentialUiDimsFromSnapshot,
-  readUiRawDimsCmFromSnapshot,
-  readUiRawIntFromSnapshot,
-  readUiRawNumberFromSnapshot,
-  readUiRawScalarFromSnapshot,
-} from './ui_raw_selectors_snapshot.js';
 export {
   assertCanonicalUiRawDims,
   hasCanonicalEssentialUiRawDimsFromSnapshot,

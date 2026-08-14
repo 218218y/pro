@@ -99,7 +99,6 @@ export function buildProjectUiSnapshot(
       height: settings.height,
       depth: settings.depth,
       cornerWidth: settings.cornerWidth,
-      cornerSide,
       chestCommodeMirrorHeightCm,
       chestCommodeMirrorWidthCm,
       chestCommodeMirrorWidthManual,
@@ -110,8 +109,6 @@ export function buildProjectUiSnapshot(
       stackSplitLowerDepthManual: lowerDepthManual,
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
-      structureSelect: settings.structureSelection,
-      singleDoorPos: settings.singleDoorPos || 'left',
     },
     projectName: readLoadedProjectName(rec, currentProjectName),
     doors: settings.doors,
@@ -121,10 +118,11 @@ export function buildProjectUiSnapshot(
     cornerWidth: settings.cornerWidth,
     cornerSide,
 
-    wardrobeType: settings.wardrobeType || 'hinged',
     baseType: settings.baseType,
     [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]:
-      typeof settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'string'
+      settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'plinth' ||
+      settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'legs' ||
+      settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'none'
         ? settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]
         : null,
     baseLegStyle: settings.baseLegStyle,
@@ -140,7 +138,6 @@ export function buildProjectUiSnapshot(
     doorStyle: settings.doorStyle,
 
     corniceType: String(settings.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
-    isManualWidth: !!settings.isManualWidth,
 
     colorChoice: settings.color,
     color: settings.color,
@@ -189,10 +186,8 @@ export function buildProjectUiSnapshot(
     typeof cornerDepth === 'number' ? cornerDepth : typeof rawDepth === 'number' ? rawDepth : undefined;
 
   const chestCount = chestSettings.drawersCount;
-  if (typeof chestCount === 'number') {
-    uiState.chestDrawersCount = chestCount;
-    const raw = asRecord(uiState.raw);
-    if (raw) raw.chestDrawersCount = chestCount;
+  if (typeof chestCount === 'number' && uiState.raw) {
+    uiState.raw.chestDrawersCount = chestCount;
   }
 
   return { uiState, savedNotes };

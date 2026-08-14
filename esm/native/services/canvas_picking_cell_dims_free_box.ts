@@ -1,4 +1,4 @@
-import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import type { AppContainer, ModuleConfigLike, UiStateLike, UnknownRecord } from '../../../types';
 
 import {
   SKETCH_BOX_FREE_VERTICAL_POLICY,
@@ -42,7 +42,7 @@ export type CanvasFreeBoxCellDimsArgs = {
   foundPartId: string | null;
   isBottomStack?: boolean;
   hitUserData?: UnknownRecord | null;
-  ui?: UnknownRecord | null;
+  ui?: UiStateLike | null;
   applyW: number | null;
   applyH: number | null;
   applyD: number | null;

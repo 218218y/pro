@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UiStateLike, UnknownRecord } from '../../../types';
 import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
 import {
   normalizeDoorTrimAxis,
@@ -13,9 +13,9 @@ import {
 import type { ReadUiFn } from './canvas_picking_door_action_hover_preview_contracts.js';
 import { __asObject } from './canvas_picking_door_action_hover_preview_contracts.js';
 
-function __readUiString(ui: UnknownRecord | null, key: string): string {
-  const value = ui && typeof ui[key] === 'string' ? String(ui[key]) : '';
-  return value.trim();
+function __readUiString(ui: UiStateLike | null, key: keyof UiStateLike): string {
+  const value = ui?.[key];
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function __readPositiveDraftCm(value: unknown): number | null {
@@ -47,9 +47,7 @@ export function __hasMirrorSizedDraft(readUi: ReadUiFn, App: AppContainer): bool
 
 export function __readCurtainChoice(readUi: ReadUiFn, App: AppContainer): string {
   const ui = readUi(App);
-  const current = __readUiString(ui, 'currentCurtainChoice');
-  const savedChoice = __readUiString(ui, 'curtainChoice');
-  return current || savedChoice || 'none';
+  return __readUiString(ui, 'currentCurtainChoice') || 'none';
 }
 
 export function __readMapRecord(App: AppContainer, key: string): UnknownRecord {

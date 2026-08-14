@@ -1,6 +1,5 @@
 import type { ConfigStateLike, RootStateLike } from '../../../types';
 
-import { getConfigRootMaybe } from '../runtime/app_roots_access.js';
 import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
 import { readCloudSyncRowWithPullActivity } from './cloud_sync_remote_read_support.js';
 import type { CreateCloudSyncMainRowRemoteOpsArgs } from './cloud_sync_main_row_remote_shared.js';
@@ -26,13 +25,7 @@ function readAppConfig(App: CreateCloudSyncMainRowRemoteOpsArgs['App']): ConfigS
     reportMainRowPullFailure(App, 'cloudSync.mainRow.pull.readStoreConfig', error);
   }
 
-  try {
-    const configRoot = getConfigRootMaybe<ConfigStateLike>(App);
-    return isRecord(configRoot) ? configRoot : null;
-  } catch (error) {
-    reportMainRowPullFailure(App, 'cloudSync.mainRow.pull.readBootConfig', error);
-    return null;
-  }
+  return null;
 }
 
 function payloadArrayHasItems(payload: Record<string, unknown>, key: string): boolean {
@@ -40,7 +33,7 @@ function payloadArrayHasItems(payload: Record<string, unknown>, key: string): bo
   return Array.isArray(value) && value.length > 0;
 }
 
-function configArrayIsEmpty(config: Record<string, unknown>, key: string): boolean {
+function configArrayIsEmpty(config: ConfigStateLike, key: 'savedColors' | 'colorSwatchesOrder'): boolean {
   const value = config[key];
   return !Array.isArray(value) || value.length <= 0;
 }

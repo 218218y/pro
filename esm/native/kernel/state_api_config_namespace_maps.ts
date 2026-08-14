@@ -19,7 +19,7 @@ interface StateApiConfigNamespaceMapsContext {
   configNs: ConfigActionsNamespaceLike;
   normMeta: (meta: unknown, source: string) => ActionMetaLike;
   safeCall: (fn: () => unknown) => unknown;
-  commitConfigPatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  commitConfigPatch: Parameters<typeof commitConfigWrite>[0];
 }
 
 export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceMapsContext): void {

@@ -70,15 +70,12 @@ function toStr(x: unknown, def = ''): string {
   return typeof x === 'string' ? x : def;
 }
 
-function readUiRawPreferredString(
+function readUiStructureString(
   ui: UiStateLike | null | undefined,
-  key: string,
+  key: 'singleDoorPos' | 'structureSelect',
   defaultValue = ''
 ): string {
-  const uiRec = asRecord<UnknownRecord>(ui);
-  const raw = asRecord<UnknownRecord>(uiRec?.raw);
-  if (raw && Object.prototype.hasOwnProperty.call(raw, key)) return toStr(raw[key], defaultValue);
-  return toStr(uiRec?.[key], defaultValue);
+  return toStr(ui?.[key], defaultValue);
 }
 
 function toDoorCount(m: ModuleLike | null | undefined): number {
@@ -209,8 +206,8 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   const calculateModuleStructure = args.calculateModuleStructure;
 
   const wardrobeType = toStr(cfg.wardrobeType, 'hinged');
-  const singleDoorPos = readUiRawPreferredString(ui, 'singleDoorPos');
-  const structureSelect = readUiRawPreferredString(ui, 'structureSelect');
+  const singleDoorPos = readUiStructureString(ui, 'singleDoorPos');
+  const structureSelect = readUiStructureString(ui, 'structureSelect');
   const computeCanonicalModules = (): ModuleLike[] => {
     if (doorsCount > 0 && !singleDoorPos) {
       // Fail-fast: this is required for odd doors.

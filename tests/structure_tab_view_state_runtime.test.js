@@ -10,14 +10,14 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
     if (spec === '../selectors/ui_raw_selectors.js') {
       return {
         readUiRawIntFromSnapshot: (ui, key, fallback) => {
-          const value = ui[key];
+          const value = ui?.raw?.[key];
           return Number.isFinite(Number(value)) ? Math.round(Number(value)) : fallback;
         },
         readUiRawNumberFromSnapshot: (ui, key, fallback) => {
-          const value = ui[key];
+          const value = ui?.raw?.[key];
           return Number.isFinite(Number(value)) ? Number(value) : fallback;
         },
-        readUiRawScalarFromSnapshot: (ui, key) => ui[key],
+        readUiRawScalarFromSnapshot: (ui, key) => ui?.raw?.[key],
       };
     }
     if (spec === './structure_tab_library_helpers.js') {
@@ -132,38 +132,43 @@ const {
 } = moduleExports;
 
 test('structure tab view-state runtime normalizes base ui state', () => {
-  const state = readStructureTabBaseUiState({
-    width: '180',
-    height: '245',
-    depth: '64',
-    doors: '5',
-    chestDrawersCount: '7',
-    chestCommodeMirrorHeightCm: '110',
-    chestCommodeMirrorWidthCm: '180',
-    chestCommodeMirrorWidthManual: true,
-    chestCommodeEnabled: true,
-    baseType: 'legs',
-    baseLegStyle: 'square',
-    baseLegColor: 'gold',
-    baseLegPlatformMode: 'plain',
-    baseLegPlatformSideMode: 'flush',
-    baseLegPlatformSideOverhangCm: '4.5',
-    baseLegPlatformFrontOverhangCm: '7',
-    basePlinthHeightCm: '14.5',
-    baseLegHeightCm: '18',
-    baseLegWidthCm: '5.5',
-    slidingTracksColor: 'black',
-    structureSelect: '[2,3]',
-    singleDoorPos: 'center-left',
-    hingeDirection: 1,
-    cornerMode: true,
-    cornerSide: 'left',
-    cornerWidth: '140',
-    cornerDoors: '4',
-    cornerHeight: '250',
-    cornerDepth: '70',
-    isChestMode: 1,
-  });
+  const state = readStructureTabBaseUiState(
+    {
+      raw: {
+        width: 180,
+        height: 245,
+        depth: 64,
+        doors: 5,
+        chestDrawersCount: 7,
+        chestCommodeMirrorHeightCm: 110,
+        chestCommodeMirrorWidthCm: 180,
+        chestCommodeMirrorWidthManual: true,
+      },
+      chestCommodeEnabled: true,
+      baseType: 'legs',
+      baseLegStyle: 'square',
+      baseLegColor: 'gold',
+      baseLegPlatformMode: 'plain',
+      baseLegPlatformSideMode: 'flush',
+      baseLegPlatformSideOverhangCm: '4.5',
+      baseLegPlatformFrontOverhangCm: '7',
+      basePlinthHeightCm: '14.5',
+      baseLegHeightCm: '18',
+      baseLegWidthCm: '5.5',
+      slidingTracksColor: 'black',
+      structureSelect: '[2,3]',
+      singleDoorPos: 'center-left',
+      hingeDirection: 1,
+      cornerMode: true,
+      cornerSide: 'left',
+      cornerWidth: '140',
+      cornerDoors: '4',
+      cornerHeight: '250',
+      cornerDepth: '70',
+      isChestMode: 1,
+    },
+    'hinged'
+  );
   assert.equal(state.width, 180);
   assert.equal(state.depth, 64);
   assert.equal(state.baseType, 'legs');
@@ -261,9 +266,11 @@ test('structure tab view-state runtime normalizes cell dims and record helpers',
   const cellDims = readStructureTabCellDimsState({
     cellDimsPanelOpen: true,
     cellDimsHexPanelOpen: true,
-    cellDimsWidth: '45.5',
-    cellDimsHeight: '',
-    cellDimsDepth: null,
+    raw: {
+      cellDimsWidth: 45.5,
+      cellDimsHeight: null,
+      cellDimsDepth: null,
+    },
   });
   assert.equal(cellDims.cellDimsPanelOpen, true);
   assert.equal(cellDims.cellDimsHexPanelOpen, true);

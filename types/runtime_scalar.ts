@@ -1,8 +1,6 @@
-// Typed runtime scalar keys and their value types.
-//
-// Goal:
-// - Provide a safe, typed surface for the most common runtime toggles.
-// - Keep migration incremental (runtime slice still allows arbitrary keys).
+// Canonical typed runtime scalar writes.
+
+import type { RuntimeStateLike } from './build';
 
 export type RuntimeScalarKey =
   | 'sketchMode'
@@ -24,23 +22,7 @@ export type RuntimeScalarKey =
   | 'wardrobeDoorsCount';
 
 export type RuntimeScalarValueMap = {
-  sketchMode: boolean;
-  globalClickMode: boolean;
-  doorsOpen: boolean;
-  doorsLastToggleTime: number;
-  drawersOpenId: string | number | null;
-  restoring: boolean;
-  systemReady: boolean;
-  roomDesignActive: boolean;
-  notesPicking: boolean;
-  failFast: boolean;
-  verboseConsoleErrors: boolean;
-  verboseConsoleErrorsDedupeMs: number;
-  debug: boolean;
-  wardrobeWidthM: number | null;
-  wardrobeHeightM: number | null;
-  wardrobeDepthM: number | null;
-  wardrobeDoorsCount: number | null;
+  [K in RuntimeScalarKey]-?: Exclude<RuntimeStateLike[K], undefined>;
 };
 
 export type RuntimeScalarValue<K extends RuntimeScalarKey> = RuntimeScalarValueMap[K];

@@ -8,6 +8,8 @@
 
 import type { RootStateLike } from '../../../types';
 import { DEFAULT_FRONT_COLOR_SHELF_INHERITANCE_MODE } from '../../shared/front_color_shelf_inheritance_shared.js';
+import { CORNER_CONNECTOR_LAYOUT_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import { CM_PER_METER } from '../../shared/dimensions/units.js';
 
 import {
   BASE_LEG_DIMENSIONS,
@@ -64,6 +66,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       cornerDoors: DEFAULT_CORNER_DOORS,
       cornerHeight: DEFAULT_HEIGHT,
       cornerDepth: HINGED_DEFAULT_DEPTH,
+      cornerCabinetWallLenCm: CORNER_CONNECTOR_LAYOUT_POLICY.defaultWallLengthM * CM_PER_METER,
       baseType: 'plinth',
       baseLegStyle: 'tapered',
       baseLegColor: 'black',
@@ -84,6 +87,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       // Split wardrobe into 2 stacked units (lower has base + custom depth, upper has no base).
       stackSplitEnabled: false,
       stackSplitDecorativeSeparatorEnabled: false,
+      libraryUpperDoorsHidden: false,
       showContents: false,
 
       // View/UI toggles (defaults must match index_pro.html "checked" states)

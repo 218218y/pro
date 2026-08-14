@@ -343,10 +343,7 @@ function stripCornerSketchExternalDrawers(value: unknown): StripSketchExternalDr
   return next ? { value: next, changed: true } : { value, changed: false };
 }
 
-function buildSlidingSketchExternalDrawersCleanupPatch(
-  cfg: UnknownRecord | null | undefined,
-  next: WardrobeType
-): UnknownRecord {
+function buildSlidingSketchExternalDrawersCleanupPatch(cfg: unknown, next: WardrobeType): UnknownRecord {
   if (next !== 'sliding') return {};
   const rec = asRecord(cfg);
   if (!rec) return {};
@@ -405,7 +402,7 @@ function patchWardrobeTypeCanonicalState(
   actions: ActionsNamespaceLike,
   _metaNoBuild: MetaNoBuildFn,
   source: string,
-  configPatch: UnknownRecord,
+  configPatch: unknown,
   uiPatch: UiStateLike,
   meta?: ActionMetaLike | UnknownRecord | null
 ): boolean {
@@ -413,7 +410,7 @@ function patchWardrobeTypeCanonicalState(
   return patchViaActions(
     App,
     {
-      config: withWardrobeTypeProfileStructuralReplaceKeys({ ...configPatch }),
+      config: withWardrobeTypeProfileStructuralReplaceKeys({ ...asRecord(configPatch) }),
       ui: { ...uiPatch },
       runtime: createWardrobeTypeOpenStateResetPatch(),
     },
@@ -477,7 +474,7 @@ function restoreWardrobeTypeProfile(
     App,
     function () {
       setCfgWardrobeType(App, next, restoreMeta);
-      const cfgNoType = cfgPatch;
+      const cfgNoType = { ...asRecord(cfgPatch) };
       delete cfgNoType.wardrobeType;
       for (const key of Object.keys(cfgNoType)) {
         if (key === 'modulesConfiguration') {

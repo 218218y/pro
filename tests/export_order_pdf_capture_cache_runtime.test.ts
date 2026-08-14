@@ -62,7 +62,6 @@ test('order pdf capture cache reuses sketch base assets while signature is uncha
     config: { carcass: { color: 'white' } },
     runtime: {},
     mode: {},
-    build: { signature: [2, 2, 1] },
   });
   const draft = { includeRenderSketch: true, includeOpenClosed: true, orderNumber: '55' };
   const signature = buildOrderPdfCompositeCaptureSignature(app as never, draft);
@@ -104,7 +103,7 @@ test('order pdf capture cache reuses sketch base assets while signature is uncha
   assert.equal(calls.annotate, 2);
 });
 
-test('order pdf capture cache ignores pdf editor draft changes but invalidates on build/config changes', () => {
+test('order pdf capture cache ignores editor/runtime ephemera but invalidates on canonical config changes', () => {
   clearOrderPdfCompositeCaptureCache();
   const baseState = {
     ui: {
@@ -124,7 +123,6 @@ test('order pdf capture cache ignores pdf editor draft changes but invalidates o
     config: { carcass: { color: 'white' } },
     runtime: { sketchMode: true, doorsOpen: true },
     mode: {},
-    build: { signature: [2, 2, 1] },
     meta: { version: 12, updatedAt: 400 },
   };
   const appA = makeApp(baseState);
@@ -168,7 +166,6 @@ test('order pdf capture cache signature ignores sketch-only annotation changes',
     config: { carcass: { color: 'white' } },
     runtime: {},
     mode: {},
-    build: { signature: [2, 2, 1] },
   });
   const draftA = {
     includeRenderSketch: true,

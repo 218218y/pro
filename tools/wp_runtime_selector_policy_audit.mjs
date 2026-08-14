@@ -156,7 +156,6 @@ function requireNoTolerantPublicUiRawExports(rel, source) {
 
 const loaderRel = 'esm/native/io/project_io_orchestrator_project_load.ts';
 const uiSelectorsRel = 'esm/native/runtime/ui_raw_selectors.ts';
-const uiSnapshotSelectorsRel = 'esm/native/runtime/ui_raw_selectors_snapshot.ts';
 const uiCanonicalSelectorsRel = 'esm/native/runtime/ui_raw_selectors_canonical.ts';
 const uiStoreSelectorsRel = 'esm/native/runtime/ui_raw_selectors_store.ts';
 const canonicalSnapshotRel = 'esm/native/io/project_load_canonical_snapshot.ts';
@@ -166,7 +165,6 @@ const stateSurfaceRel = 'esm/native/services/api_state_surface.ts';
 
 const loader = read(loaderRel);
 const uiSelectors = read(uiSelectorsRel);
-const uiSnapshotSelectors = read(uiSnapshotSelectorsRel);
 const uiCanonicalSelectors = read(uiCanonicalSelectorsRel);
 const uiStoreSelectors = read(uiStoreSelectorsRel);
 const canonicalSnapshot = read(canonicalSnapshotRel);
@@ -267,13 +265,6 @@ requireIncludes(
   'runtime must expose canonical ui.raw dimension batch reader for live/build code'
 );
 requireFunctionIncludes(
-  uiSnapshotSelectorsRel,
-  uiSnapshotSelectors,
-  'readUiRawScalarFromSnapshot',
-  'readUiDirectScalar(ui, key)',
-  'legacy snapshot reader may be tolerant, but that tolerance must stay isolated in the non-canonical reader'
-);
-requireFunctionIncludes(
   uiCanonicalSelectorsRel,
   uiCanonicalSelectors,
   'readUiRawScalarFromCanonicalSnapshot',
@@ -332,6 +323,7 @@ requireFunctionNotIncludes(
 
 requirePublicUiRawExports(coreApiRel, coreApi);
 requirePublicUiRawExports(stateSurfaceRel, stateSurface);
+requireNoTolerantPublicUiRawExports(uiSelectorsRel, uiSelectors);
 requireNoTolerantPublicUiRawExports(coreApiRel, coreApi);
 requireNoTolerantPublicUiRawExports(stateSurfaceRel, stateSurface);
 
@@ -378,7 +370,7 @@ requireNotIncludes(
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
-  'canonical ui.raw batch readers fail fast for old top-level-only snapshots before and after project ingress canonicalization',
+  'canonical ui.raw batch readers reject top-level-only snapshots before and after project ingress canonicalization',
   'runtime selector tests must cover canonical batch readers against old ui.* fallback regression'
 );
 requireIncludes(
@@ -396,13 +388,13 @@ requireIncludes(
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
-  'tolerant store-level ui.raw readers are not exposed through public surfaces',
+  'retired store-level ui.raw readers are absent from public surfaces',
   'runtime selector tests must lock removal of tolerant store-level ui.raw public readers'
 );
 requireIncludes(
   runtimeSelectorTestRel,
   runtimeSelectorTest,
-  'tolerant snapshot-level ui.raw readers are not exposed through core/services public surfaces',
+  'retired tolerant snapshot-level ui.raw readers are absent from runtime/core/services surfaces',
   'runtime selector tests must lock removal of tolerant snapshot-level ui.raw public readers'
 );
 

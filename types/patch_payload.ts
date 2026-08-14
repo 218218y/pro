@@ -5,7 +5,7 @@
 //   raw root/config payload contracts.
 // - Public actions.patch uses ActionRootPatchPayload / PublicPatchPayload.
 // - Raw root/config patch types live in backend_patch_payload.ts.
-// - Keep slices open-ended (index signatures) so migration can be incremental.
+// - Slice patches are partial views of the closed canonical store contracts.
 
 import type { UnknownRecord } from './common';
 import type { HandleType } from './domain';
@@ -16,13 +16,11 @@ import type { UiRawInputsLike } from './ui_raw';
 export interface UiSlicePatch extends Partial<UiStateLike> {
   __snapshot?: boolean;
   __capturedAt?: number;
-  // Keep `raw` patching ergonomic: allow partial raw updates without forcing full UiRawInputsLike typing.
-  raw?: Partial<UiRawInputsLike> | UnknownRecord;
+  raw?: Partial<UiRawInputsLike>;
 }
 
 /** Runtime slice patch (transient flags and session state). */
 export interface RuntimeSlicePatch extends Partial<RuntimeStateLike> {
-  // Keep permissive during migration.
   paintColor?: string | null;
   handlesType?: HandleType;
   interiorManualTool?: string | null;

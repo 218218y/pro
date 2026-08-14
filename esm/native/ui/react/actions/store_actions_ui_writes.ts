@@ -1,5 +1,5 @@
 import type { ActionMetaLike, AppContainer, UiRawScalarKey, UiRawScalarValueMap } from '../../../../../types';
-import { buildUiRawScalarPatchFromRecord } from '../../../../../types/ui_raw.js';
+import { buildUiRawScalarPatchFromRecord, UI_RAW_SCALAR_KEYS } from '../../../../../types/ui_raw.js';
 
 import {
   patchUi as patchUiApi,
@@ -56,7 +56,7 @@ function setUiFlag(app: AppContainer, key: string, on: unknown, meta?: ActionMet
 
 function applyUiRawScalarPatch(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
   const rec = buildUiRawScalarPatchFromRecord(patch);
-  const keys = Object.keys(rec);
+  const keys = UI_RAW_SCALAR_KEYS.filter(key => Object.prototype.hasOwnProperty.call(rec, key));
   if (!keys.length) return;
   if (keys.length === 1) {
     const key = keys[0];

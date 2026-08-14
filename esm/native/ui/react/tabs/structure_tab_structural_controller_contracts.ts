@@ -1,4 +1,4 @@
-import type { AppContainer, MetaActionsNamespaceLike, UnknownRecord } from '../../../../../types';
+import type { AppContainer, MetaActionsNamespaceLike, UiStateLike } from '../../../../../types';
 import type {
   BaseLegColor,
   BaseLegPlatformMode,
@@ -8,10 +8,7 @@ import type {
 
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
-export type StructureUiPartial = UnknownRecord & {
-  structureSelect?: unknown;
-  singleDoorPos?: unknown;
-};
+export type StructureUiPartial = Partial<UiStateLike>;
 
 export type StructureTabStructuralController = {
   commitStructural: (partial: StructureUiPartial, source: string) => void;

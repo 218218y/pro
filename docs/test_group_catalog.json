@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-14T10:44:16.232Z",
+  "generatedAt": "2026-08-14T15:37:10.571Z",
   "summary": {
     "groups": 66,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 479,
+    "catalogFileReferences": 480,
     "sequenceResolvedFileReferences": 126,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
@@ -1038,14 +1038,15 @@
       "portfolioRole": "focused",
       "serialPolicy": null,
       "childGroups": [],
-      "directFileCount": 7,
-      "resolvedFileCount": 7,
+      "directFileCount": 8,
+      "resolvedFileCount": 8,
       "files": [
         "tests/runtime_platform_core_family_contracts.test.js",
         "tests/platform_runtime_access_contracts.test.js",
         "tests/kernel_di_and_owner_contracts.test.js",
         "tests/kernel_history_runtime_contracts.test.js",
         "tests/kernel_snapshot_capture_contracts.test.js",
+        "tests/canonical_strict_state_contracts.test.js",
         "tests/statekernel_audit_contracts.test.js",
         "tests/runtime_config_platform_contracts.test.js"
       ]

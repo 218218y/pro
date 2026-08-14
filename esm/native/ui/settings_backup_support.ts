@@ -1,4 +1,4 @@
-import type { ActionMetaLike, AppContainer } from '../../../types';
+import type { ActionMetaLike, AppContainer, ConfigStateLike } from '../../../types';
 import { getCfg } from './store_access.js';
 import {
   assertApp,
@@ -82,7 +82,7 @@ export function sanitizePresetCollections(
 }
 
 function readCurrentExportColorSwatchesOrder(
-  cfg: Record<string, unknown> | null,
+  cfg: ConfigStateLike | null,
   storedOrder: unknown,
   savedColors: unknown
 ): SettingsBackupIdList {

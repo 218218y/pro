@@ -29,9 +29,7 @@ type ModuleDrawerCfg = {
   extDrawers?: unknown;
 };
 
-export type HingedDoorPipelineCfg = BuilderDoorMapsConfigLike & {
-  [key: string]: unknown;
-};
+export type HingedDoorPipelineCfg = BuilderDoorMapsConfigLike;
 
 type ModuleConfigRecord = {
   layout?: unknown;

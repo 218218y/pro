@@ -1,6 +1,6 @@
 import type {
   AppContainer,
-  UnknownRecord,
+  UiSnapshotLike,
   BuildRequestOptsLike,
   BuilderSchedulerDepsLike,
   BuilderSchedulerPublicLike,
@@ -17,7 +17,11 @@ import { cancelBuilderWait, ensureSchedulerState, readPlanState } from './schedu
 import { ensureSchedulerDebouncedRunner } from './scheduler_runtime.js';
 
 type SchedulerInstallCallbacks = {
-  requestBuild: (App: AppContainer, uiOverride: UnknownRecord | null, opts?: BuildRequestOptsLike) => unknown;
+  requestBuild: (
+    App: AppContainer,
+    uiOverride: UiSnapshotLike | null,
+    opts?: BuildRequestOptsLike
+  ) => unknown;
   runPendingBuild: (App: AppContainer, reason: string, forceBuild?: boolean) => unknown;
   getBuildDebugStats: (App: AppContainer) => BuilderDebugStatsLike;
   resetBuildDebugStats: (App: AppContainer) => BuilderDebugStatsLike;
@@ -33,7 +37,7 @@ type SchedulerInstallContext = {
 };
 
 type SchedulerInstallRefs = {
-  requestBuild: (uiOverride?: UnknownRecord | null, opts?: BuildRequestOptsLike) => unknown;
+  requestBuild: (uiOverride?: UiSnapshotLike | null, opts?: BuildRequestOptsLike) => unknown;
   runPendingBuild: (reason?: string, forceBuild?: boolean) => unknown;
   getBuildDebugStats: () => BuilderDebugStatsLike;
   resetBuildDebugStats: () => BuilderDebugStatsLike;
@@ -127,7 +131,7 @@ function ensureSchedulerInstallRefs(
   if (current) return current;
 
   const refs: SchedulerInstallRefs = {
-    requestBuild(uiOverride?: UnknownRecord | null, opts?: BuildRequestOptsLike) {
+    requestBuild(uiOverride?: UiSnapshotLike | null, opts?: BuildRequestOptsLike) {
       return context.callbacks.requestBuild(context.app, uiOverride || null, opts);
     },
     runPendingBuild(reason?: string, forceBuild?: boolean) {

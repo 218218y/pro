@@ -7,7 +7,7 @@ import type {
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
-import { buildUiRawScalarPatch } from '../../../types/ui_raw.js';
+import { buildUiRawScalarPatchFromRecord, isUiRawScalarKey } from '../../../types/ui_raw.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { asMeta, asUiPatch, buildUiScalarPatch, normMeta, shallowCloneObj } from './state_api_shared.js';
@@ -252,8 +252,8 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
       const mergedMeta = normMeta(meta, 'actions:setUiRawScalar');
       return safeCall(() => {
         const k = String(key == null ? '' : key);
-        if (!k || typeof value === 'function') return undefined;
-        return uiNs.patch?.({ raw: buildUiRawScalarPatch(k, value) }, mergedMeta);
+        if (!isUiRawScalarKey(k) || typeof value === 'function') return undefined;
+        return uiNs.patch?.({ raw: buildUiRawScalarPatchFromRecord({ [k]: value }) }, mergedMeta);
       });
     };
   }

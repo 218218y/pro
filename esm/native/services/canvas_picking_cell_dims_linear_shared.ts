@@ -3,7 +3,6 @@ import type { CanvasLinearCellDimsArgs } from './canvas_picking_cell_dims_contra
 import type { ModulesConfigBucketKey } from '../features/modules_configuration/modules_config_api.js';
 
 import { getUiFeedback } from '../runtime/service_access.js';
-import { readRootState } from '../runtime/root_state_access.js';
 
 export type ModuleShape = UnknownRecord & { doors?: unknown; specialDims?: unknown };
 export type FeedbackShape = { updateEditStateToast?: (message: string, sticky?: boolean) => unknown };
@@ -87,16 +86,8 @@ export function readModulesStructureFromRootState(state: unknown): unknown[] | n
   return readArray(build?.modulesStructure);
 }
 
-export function readModulesStructureFromCfg(cfg: UnknownRecord): unknown[] | null {
-  return readArray(cfg.modulesStructure);
-}
-
 export function readToastFn(App: AppContainer): FeedbackShape['updateEditStateToast'] | null {
   const feedback = asRecord(getUiFeedback(App));
   const fn = feedback ? feedback.updateEditStateToast : null;
   return typeof fn === 'function' ? (message, sticky) => fn(message, sticky) : null;
-}
-
-export function readBuildModulesStructure(App: AppContainer): unknown[] | null {
-  return readModulesStructureFromRootState(readRootState(App));
 }

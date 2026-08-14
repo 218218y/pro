@@ -5,7 +5,7 @@
 
 import type {
   AppContainer,
-  UnknownRecord,
+  UiSnapshotLike,
   BuildRequestOptsLike,
   BuilderSchedulerDepsLike,
   BuilderSchedulerStateSummaryLike,
@@ -33,7 +33,7 @@ export function _runPendingBuild(App: AppContainer, reason: string, forceBuild =
 
 export function requestBuild(
   App: AppContainer,
-  uiOverride: UnknownRecord | null,
+  uiOverride: UiSnapshotLike | null,
   opts?: BuildRequestOptsLike
 ): unknown {
   return requestBuildRuntime(App, uiOverride, opts);

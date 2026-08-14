@@ -5,7 +5,6 @@ import type { UnknownRecord } from './common';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
 import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
-import type { UiRawInputsLike } from './ui_raw';
 import type { UiState } from './ui_state';
 import type {
   CornerConfigurationLike,
@@ -116,116 +115,13 @@ export interface ProjectLoadOpts extends UnknownRecord {
 
 // --- Core state shapes (minimal; evolve gradually) -------------------------
 
-export interface UiStateLike extends UiState {
-  // Core structural inputs (often under ui.raw)
-  raw?: UiRawInputsLike | null;
+export type UiStateLike = UiState;
 
-  // Sidebar/navigation
-  activeTab?: UiState['activeTab'];
-
-  // Builder UI values
-  projectName?: string;
-  doorStyle?: string;
-  singleDoorPos?: string;
-  structureSelect?: string;
-  baseType?: string;
-  baseLegStyle?: string;
-  baseLegColor?: string;
-  baseLegPlatformMode?: string;
-  baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number;
-  baseLegPlatformFrontOverhangCm?: number;
-  stackSplitDecorativeSeparatorSideOverhangCm?: number;
-  stackSplitDecorativeSeparatorFrontOverhangCm?: number;
-  basePlinthHeightCm?: number;
-  baseLegHeightCm?: number;
-  baseLegWidthCm?: number;
-  slidingTracksColor?: string;
-  corniceType?: string;
-  color?: string;
-  doors?: number;
-  width?: number;
-  height?: number;
-  depth?: number;
-
-  // Corner wardrobe inputs
-  cornerWidth?: number;
-  cornerDoors?: number;
-  cornerHeight?: number;
-  cornerDepth?: number;
-
-  // Corner wardrobe orientation
-  cornerSide?: string;
-
-  // Feature toggles
-  groovesEnabled?: boolean;
-  splitDoors?: boolean;
-  internalDrawersEnabled?: boolean;
-  hasCornice?: boolean;
-  stackSplitEnabled?: boolean;
-
-  // View toggles
-  showHanger?: boolean;
-  showContents?: boolean;
-  showDimensions?: boolean;
-  globalClickMode?: boolean;
-  sketchMode?: boolean;
-  darkMode?: boolean;
-  lightingControl?: boolean;
-
-  // Mode toggles
-  notesEnabled?: boolean;
-  multiColorEnabled?: boolean;
-  handleControl?: boolean;
-  hingeDirection?: boolean;
-  removeDoorsEnabled?: boolean;
-  cornerMode?: boolean;
-  isChestMode?: boolean;
-
-  // Color / UI state
-  colorChoice?: string;
-  customColor?: string;
-
-  // Ephemeral UI-only selections
-  currentLayoutType?: string;
-  currentGridDivisions?: number;
-  currentExtDrawerType?: string;
-  currentExtDrawerCount?: number;
-  currentHandleToolType?: string;
-  currentHandleToolColor?: string;
-  currentHandleToolEdgeVariant?: string;
-  perCellGridMap?: UnknownRecord;
-  activeGridCellId?: string | number | null;
-  currentCurtainChoice?: string;
-  currentFloorType?: string;
-  lastSelectedWallColor?: string;
-  lastSelectedFloorStyleIdByType?: UnknownRecord;
-  lastLightPreset?: string;
-
-  [k: string]: unknown;
-}
-
-export interface UiSnapshotLike extends UnknownRecord {
-  // Common UI flags used across wiring + builder.
-  cornerMode?: boolean;
-  handleControl?: boolean;
-  showHanger?: boolean;
-  showContents?: boolean;
-
-  // Sketch/lighting controls used by 3D runtime.
-  sketchMode?: boolean;
-  lightingControl?: boolean;
-  lightAmb?: number | string;
-  lightDir?: number | string;
-  lightX?: number | string;
-  lightY?: number | string;
-  lightZ?: number | string;
-
-  // Frequently-present legacy nesting.
-  raw?: UiRawInputsLike | null;
+export interface UiSnapshotLike extends UiState {
+  // Builder-only metadata; never persisted into the canonical store.ui slice.
+  __activeId?: string;
+  forceBuild?: boolean;
   view?: UnknownRecord;
-
-  [k: string]: unknown;
 }
 
 export interface BuildModuleSpecialDimsSummaryLike extends UnknownRecord {
@@ -247,44 +143,42 @@ export interface BuildCornerSnapshotLike extends CornerConfigurationLike {
   modulesConfiguration?: ModuleConfigLike[];
 }
 
-export interface RuntimeStateLike extends UnknownRecord {
-  // Mode/state flags
+export interface WardrobeTypeProfileSnapshotLike {
+  cfg: ConfigStateLike;
+  ui: UiStateLike;
+}
+
+export type WardrobeTypeProfileMapLike = Partial<Record<WardrobeType, WardrobeTypeProfileSnapshotLike>>;
+
+export interface RuntimeStateLike {
   sketchMode?: boolean;
   globalClickMode?: boolean;
-
-  // Doors/drawers runtime
   doorsOpen?: boolean;
   doorsLastToggleTime?: number;
   drawersOpenId?: string | number | null;
-
-  // Boot/session flags
   restoring?: boolean;
   systemReady?: boolean;
-
-  // UX/runtime toggles
   roomDesignActive?: boolean;
   notesPicking?: boolean;
-
-  // Transient selections
+  failFast?: boolean;
+  verboseConsoleErrors?: boolean;
+  verboseConsoleErrorsDedupeMs?: number;
+  debug?: boolean;
   paintColor?: string | null;
   handlesType?: HandleType;
   interiorManualTool?: string | null;
-
-  // Derived dimensions (meters)
   wardrobeWidthM?: number | null;
   wardrobeHeightM?: number | null;
   wardrobeDepthM?: number | null;
   wardrobeDoorsCount?: number | null;
-
-  [k: string]: unknown;
+  wardrobeTypeProfiles?: WardrobeTypeProfileMapLike | null;
 }
 
-export interface ConfigStateLike extends UnknownRecord {
-  // Snapshot markers used by builder consumers.
+export interface ConfigStateLike {
+  // Snapshot markers used only by explicit snapshot/config owner flows.
   __snapshot?: boolean;
   __capturedAt?: number;
 
-  // Containers normalized in builder/build_state_resolver.
   modulesConfiguration?: ModulesConfigurationLike;
   stackSplitLowerModulesConfiguration?: ModulesConfigurationLike;
   savedColors?: SavedColorLike[];
@@ -296,7 +190,6 @@ export interface ConfigStateLike extends UnknownRecord {
   mirrorLayoutMap?: MirrorLayoutMap;
   cornerConfiguration?: CornerConfigurationLike;
 
-  // Domain config flags
   isLibraryMode?: boolean;
   wardrobeType?: WardrobeType;
   globalHandleType?: HandleType;
@@ -307,15 +200,15 @@ export interface ConfigStateLike extends UnknownRecord {
   boardMaterial?: BoardMaterial | '';
   doorMountMode?: DoorMountMode | '';
   drawerRunnerType?: DrawerRunnerType;
+  overlayFrameThicknessCm?: number | null;
+  overlayShelfThicknessCm?: number | null;
+  insetFrameThicknessCm?: number | null;
+  insetShelfThicknessCm?: number | null;
 
-  // Uploaded assets
   customUploadedDataURL?: string | null;
   grooveLinesCount?: number | null;
+  preChestState?: ProjectPreChestStateLike | ConfigStateLike | null;
 
-  // Legacy/pre-mode capture
-  preChestState?: ProjectPreChestStateLike | ConfigStateLike;
-
-  // Various maps
   groovesMap?: GroovesMap;
   grooveLinesCountMap?: GrooveLinesCountMap;
   grooveLayoutMap?: GrooveLayoutMap;
@@ -328,8 +221,6 @@ export interface ConfigStateLike extends UnknownRecord {
   hingeMap?: HingeMap;
   curtainMap?: CurtainMap;
   doorTrimMap?: DoorTrimMap;
-
-  [k: string]: unknown;
 }
 
 export interface ModeStateLike extends UnknownRecord {

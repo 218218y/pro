@@ -12,7 +12,10 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-function buildLocalBottomHingeMap(args: { cfg: UnknownRecord; lowerDoorIdOffset: number }): UnknownRecord {
+function buildLocalBottomHingeMap(args: {
+  cfg: BuilderDoorMapsConfigLike;
+  lowerDoorIdOffset: number;
+}): UnknownRecord {
   const c = readRecord(args.cfg);
   const rawHingeMap = c ? readRecord(c.hingeMap) : null;
   const out: UnknownRecord = {};
@@ -47,7 +50,7 @@ function buildBottomModuleCustomFlags(
 }
 
 export function buildShiftedBottomHingedPivotMap(args: {
-  cfg: UnknownRecord;
+  cfg: BuilderDoorMapsConfigLike;
   bottomModules: unknown[];
   bottomTotalW: number;
   woodThick: number;

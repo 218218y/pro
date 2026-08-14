@@ -198,7 +198,7 @@ test('[structure-structural-controller] commit + normalization + raw flows run t
 
   assert.ok(calls.some(entry => entry[0] === 'setUiStructureSelect' && entry[2] === 'default'));
   assert.ok(
-    calls.some(entry => entry[0] === 'applyUiRawScalarPatch' && entry[2].structureSelect === 'default')
+    !calls.some(entry => entry[0] === 'applyUiRawScalarPatch' && entry[2].structureSelect === 'default')
   );
   assert.ok(calls.some(entry => entry[0] === 'applyUiSoftScalarPatch' && entry[2].width === 180));
   assert.ok(
@@ -403,8 +403,8 @@ test('[structure-structural-controller] commitStructural collapses to a canonica
       entry =>
         entry[0] === 'patchViaActions:applied' &&
         entry[2].ui.structureSelect === 'default' &&
-        entry[2].ui.raw.structureSelect === 'default' &&
-        entry[2].ui.width === 180
+        entry[2].ui.width === 180 &&
+        !Object.prototype.hasOwnProperty.call(entry[2].ui, 'raw')
     )
   );
   assert.ok(!calls.some(entry => entry[0] === 'setUiStructureSelect'));
@@ -414,13 +414,13 @@ test('[structure-structural-controller] commitStructural collapses to a canonica
       entry =>
         entry[0] === 'recomputeFromUi:viaApp' &&
         entry[2].structureSelect === 'default' &&
-        entry[2].raw.structureSelect === 'default' &&
-        entry[2].width === 180
+        entry[2].width === 180 &&
+        !Object.prototype.hasOwnProperty.call(entry[2], 'raw')
     )
   );
 });
 
-test('[structure-structural-controller] structural commits mirror raw fields for saved-model builds', () => {
+test('[structure-structural-controller] structural commits keep structure strings in canonical ui fields only', () => {
   const calls = [];
   const mod = loadStructureStructuralControllerModule(calls, {
     applyStructureTemplateRecomputeBatch: args => {
@@ -438,8 +438,7 @@ test('[structure-structural-controller] structural commits mirror raw fields for
   assert.ok(batch);
   assert.equal(batch.uiPatch.structureSelect, '[1,2,1]');
   assert.equal(batch.uiPatch.singleDoorPos, 'center-left');
-  assert.equal(batch.uiPatch.raw.structureSelect, '[1,2,1]');
-  assert.equal(batch.uiPatch.raw.singleDoorPos, 'center-left');
+  assert.equal(Object.prototype.hasOwnProperty.call(batch.uiPatch, 'raw'), false);
   assert.equal(JSON.stringify(batch.statePatch), JSON.stringify({ ui: batch.uiPatch }));
 });
 

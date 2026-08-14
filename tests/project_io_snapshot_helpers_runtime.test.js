@@ -91,7 +91,7 @@ test('[project-io-snapshots] project load helpers shape canonical config/ui snap
   assert.equal(uiState.raw.width, 240);
   assert.equal(uiState.raw.height, 260);
   assert.equal(uiState.raw.depth, 62);
-  assert.equal(uiState.raw.cornerSide, 'left');
+  assert.equal('cornerSide' in uiState.raw, false);
   assert.equal(uiState.raw.stackSplitLowerDepth, 55);
   assert.equal(uiState.raw.stackSplitLowerWidth, 180);
   assert.equal(uiState.raw.stackSplitLowerDoors, 4);
@@ -112,8 +112,8 @@ test('[project-io-snapshots] project load helpers preserve runtime UI ephemera a
     cloudFlags: captureProjectLoadSourceFlags({ meta: { source: 'cloudSketch.restore' } }),
     resetPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'react:header:resetDefault', preserveAutosave: true } }),
     regularLoadPreservesAutosave: shouldPreserveProjectAutosaveOnLoad({ meta: { source: 'project.load' } }),
-    canonicalPrevUiMode: captureProjectPrevUiMode({ isChestMode: true, cornerMode: true, cornerSide: 'left', raw: { cornerSide: 'right' } }),
-    retiredPrevUiAliases: captureProjectPrevUiMode({ isChestMode: 1, isCornerMode: true, raw: { cornerSide: 'left' } }),
+    canonicalPrevUiMode: captureProjectPrevUiMode({ isChestMode: true, cornerMode: true, cornerSide: 'left' }),
+    invalidPrevUiMode: captureProjectPrevUiMode({ isChestMode: 1, cornerMode: 'yes', cornerSide: 'invalid' }),
     preserved: preserveUiEphemeral(
       { projectName: 'Imported project' },
       { activeTab: 'notes', selectedModelId: 'm-42', site2TabsGateOpen: true, site2TabsGateUntil: 1234, site2TabsGateBy: 'tester', autosaveInfo: { timestamp: 42, dateString: 'saved' } }
@@ -136,7 +136,7 @@ test('[project-io-snapshots] project load helpers preserve runtime UI ephemera a
     prevCornerMode: true,
     prevCornerSide: 'left',
   });
-  assert.deepEqual(result.retiredPrevUiAliases, {
+  assert.deepEqual(result.invalidPrevUiMode, {
     prevChestMode: false,
     prevCornerMode: false,
     prevCornerSide: 'right',

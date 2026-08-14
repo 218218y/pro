@@ -24,35 +24,25 @@ function readTopModulesStructureDoorCount(modulesStructure: unknown, index: numb
   return readDoorsCount(list[index], 2);
 }
 
-function hasOwn(record: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(record, key);
-}
-
-function readUiRawPreferredValue(uiSnapshot: unknown, key: string): unknown {
+function readCanonicalUiRawDoors(uiSnapshot: unknown, defaultValue: number): number {
   const ui = isRecord(uiSnapshot) ? uiSnapshot : {};
   const raw = isRecord(ui.raw) ? ui.raw : {};
-  return hasOwn(raw, key) ? raw[key] : ui[key];
+  return toIntMin(raw.doors, defaultValue, 0);
 }
 
-function readUiRawPreferredInt(uiSnapshot: unknown, key: string, defaultValue: number, min: number): number {
-  const value = readUiRawPreferredValue(uiSnapshot, key);
-  const parsed = toIntMin(value, defaultValue, min);
-  if (Number.isFinite(parsed)) return parsed;
-  return defaultValue;
-}
-
-function readUiRawPreferredString(uiSnapshot: unknown, key: string, defaultValue = ''): string {
-  const value = readUiRawPreferredValue(uiSnapshot, key);
-  return typeof value === 'string' ? value : defaultValue;
+function readUiStructureString(uiSnapshot: unknown, key: 'singleDoorPos' | 'structureSelect'): string {
+  const ui = isRecord(uiSnapshot) ? uiSnapshot : {};
+  const value = ui[key];
+  return typeof value === 'string' ? value : '';
 }
 
 export function resolveTopModulesStructureFromUiConfig(
   uiSnapshot: unknown,
   cfgSnapshot: unknown
 ): TopModuleStructureLike[] {
-  const doorsCount = readUiRawPreferredInt(uiSnapshot, 'doors', 2, 0);
-  const singleDoorPos = readUiRawPreferredString(uiSnapshot, 'singleDoorPos', '');
-  const structureSelect = readUiRawPreferredString(uiSnapshot, 'structureSelect', '');
+  const doorsCount = readCanonicalUiRawDoors(uiSnapshot, 2);
+  const singleDoorPos = readUiStructureString(uiSnapshot, 'singleDoorPos');
+  const structureSelect = readUiStructureString(uiSnapshot, 'structureSelect');
   const cfg = isRecord(cfgSnapshot) ? cfgSnapshot : {};
   const wardrobeType = cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
 

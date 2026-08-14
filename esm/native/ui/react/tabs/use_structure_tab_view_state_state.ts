@@ -40,6 +40,16 @@ function readLibraryUpperDoorsHiddenPreference(value: unknown, defaultValue: boo
 }
 
 export function useStructureTabViewStateState(app: AppContainer): StructureTabViewState {
+  const { wardrobeType, isManualWidth, preChestState, isLibraryMode, hingeMap } = useCfgSelectorShallow(
+    cfg => ({
+      wardrobeType: selectWardrobeType(cfg),
+      isManualWidth: selectIsManualWidth(cfg),
+      preChestState: selectPreChestState(cfg),
+      isLibraryMode: selectIsLibraryMode(cfg),
+      hingeMap: selectHingeMap(cfg),
+    })
+  );
+
   const {
     width,
     height,
@@ -71,17 +81,8 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     cornerHeight,
     cornerDepth,
     isChestMode,
-  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui));
+  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui, wardrobeType));
 
-  const { wardrobeType, isManualWidth, preChestState, isLibraryMode, hingeMap } = useCfgSelectorShallow(
-    cfg => ({
-      wardrobeType: selectWardrobeType(cfg),
-      isManualWidth: selectIsManualWidth(cfg),
-      preChestState: selectPreChestState(cfg),
-      isLibraryMode: selectIsLibraryMode(cfg),
-      hingeMap: selectHingeMap(cfg),
-    })
-  );
   const { primaryMode } = useModeSelectorShallow(mode => ({ primaryMode: String(mode.primary || 'none') }));
 
   const hingeModeId = getModeConst(app, 'HINGE', 'hinge');

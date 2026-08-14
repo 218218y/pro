@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../../../types';
+import type { UiStateLike } from '../../../../../types';
 import type {
   BaseLegColor,
   BaseLegPlatformMode,
@@ -110,4 +110,4 @@ export type StructureTabSelectionArgs = {
 
 export type StructureTabCellDimKey =
   'cellDimsWidth' | 'cellDimsHeight' | 'cellDimsDepth' | 'cellDimsHexProtrusion' | 'cellDimsHexDoorWidth';
-export type StructureTabUiSnapshot = UnknownRecord;
+export type StructureTabUiSnapshot = UiStateLike;

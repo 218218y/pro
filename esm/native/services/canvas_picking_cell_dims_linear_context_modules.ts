@@ -8,8 +8,6 @@ import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import {
   asModuleShape,
   readString,
-  readBuildModulesStructure,
-  readModulesStructureFromCfg,
   readCanonicalNumberOr,
   readCanonicalPositiveNumberOr,
   readCanonicalIntOr,
@@ -25,9 +23,9 @@ export interface ResolvedLinearModules {
 }
 
 function readBottomScalar(
-  raw: Record<string, unknown>,
-  valueKey: string,
-  manualKey: string,
+  raw: CanvasLinearCellDimsArgs['raw'],
+  valueKey: 'stackSplitLowerWidth' | 'stackSplitLowerDepth',
+  manualKey: 'stackSplitLowerWidthManual' | 'stackSplitLowerDepthManual',
   defaultValue: number
 ): number {
   return raw[manualKey] === true ? readCanonicalPositiveNumberOr(raw[valueKey], defaultValue) : defaultValue;
@@ -38,7 +36,7 @@ export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
   totalH: number;
   totalD: number;
 } {
-  const raw = (args.raw || {}) as Record<string, unknown>;
+  const raw = args.raw || {};
   const totalWTop = readCanonicalNumberOr(args.raw.width, 0);
   const totalHTop = readCanonicalNumberOr(args.raw.height, 0);
   const totalDTop = readCanonicalNumberOr(args.raw.depth, 0);
@@ -52,37 +50,29 @@ export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
 }
 
 function resolveDoorsCount(args: CanvasLinearCellDimsArgs): number {
-  const { ui, raw } = args;
-  const topDoors = readCanonicalIntOr(raw.doors, readCanonicalIntOr(ui.doors, 0));
+  const { raw } = args;
+  const topDoors = readCanonicalIntOr(raw.doors, 0);
   if (!args.isBottomStack) return topDoors;
   return raw.stackSplitLowerDoorsManual === true
     ? readCanonicalIntOr(raw.stackSplitLowerDoors, topDoors)
     : topDoors;
 }
 
-function hasOwn(record: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(record, key);
-}
-
-function readRawPreferredValue(
-  ui: Record<string, unknown>,
-  raw: Record<string, unknown>,
-  key: string
-): unknown {
-  return hasOwn(raw, key) ? raw[key] : ui[key];
-}
-
 function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
-  const rawValue = readRawPreferredValue(args.ui, args.raw, 'singleDoorPos');
-  const value = typeof rawValue === 'string' ? rawValue : args.isBottomStack ? 'center' : 'left';
+  const value =
+    typeof args.ui.singleDoorPos === 'string'
+      ? args.ui.singleDoorPos
+      : args.isBottomStack
+        ? 'center'
+        : 'left';
   if (!args.isBottomStack) return value;
   return value || 'center';
 }
 
-function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: number): unknown {
-  const structureSelect = readRawPreferredValue(args.ui, args.raw, 'structureSelect');
+function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: number): string {
+  const structureSelect = typeof args.ui.structureSelect === 'string' ? args.ui.structureSelect : '';
   if (!args.isBottomStack) return structureSelect;
-  const topDoors = readCanonicalIntOr(args.raw.doors, readCanonicalIntOr(args.ui.doors, doorsCount));
+  const topDoors = readCanonicalIntOr(args.raw.doors, doorsCount);
   return doorsCount !== topDoors ? '' : structureSelect;
 }
 
@@ -142,17 +132,7 @@ export function resolveLinearModules(args: CanvasLinearCellDimsArgs): ResolvedLi
     }
   }
 
-  if (!Array.isArray(modules) || !modules.length) {
-    const buildStruct = args.isBottomStack ? null : readBuildModulesStructure(App);
-    const cfgStruct = args.isBottomStack ? null : readModulesStructureFromCfg(cfg);
-    modules = cfgModules.length
-      ? cfgModules
-      : Array.isArray(buildStruct) && buildStruct.length
-        ? buildStruct
-        : Array.isArray(cfgStruct)
-          ? cfgStruct
-          : [];
-  }
+  if (!Array.isArray(modules) || !modules.length) modules = cfgModules;
 
   let moduleCount = Array.isArray(modules) ? modules.length : 0;
   if (!moduleCount) {

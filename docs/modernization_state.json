@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T10:44:16.188Z",
+  "generatedAt": "2026-08-14T15:37:10.522Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -26,14 +26,14 @@
   },
   "ownership": {
     "registeredFamilies": 41,
-    "privateOwners": 243,
-    "guardedImportSites": 500,
+    "privateOwners": 242,
+    "guardedImportSites": 497,
     "identityFacades": 143,
     "explicitlyInventoriedIdentityFacades": 122
   },
   "tests": {
-    "classifiedFiles": 1242,
-    "unitRuntimeFiles": 1233,
+    "classifiedFiles": 1243,
+    "unitRuntimeFiles": 1234,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

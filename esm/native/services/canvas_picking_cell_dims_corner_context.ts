@@ -4,7 +4,13 @@ import {
 } from '../../shared/dimensions/corner_system_policy.js';
 import { CM_PER_METER } from '../../shared/dimensions/units.js';
 import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  ConfigStateLike,
+  UiRawInputsLike,
+  UiStateLike,
+  UnknownRecord,
+} from '../../../types';
 import type { CanvasCornerCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
 import { __wp_reportPickingIssue, __asInt } from './canvas_picking_core_helpers.js';
 import { readCornerConfigurationSnapshotForStack } from '../features/modules_configuration/corner_cells_api.js';
@@ -52,7 +58,7 @@ function readPositiveSpecialDimCm(sd: unknown, key: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function readCornerDoorsCount(ui: UnknownRecord, raw: UnknownRecord): number {
+function readCornerDoorsCount(ui: UiStateLike, raw: UiRawInputsLike): number {
   const doors = readCanonicalIntOr(
     ui.cornerDoors,
     readCanonicalIntOr(raw.cornerDoors, WARDROBE_DEFAULTS.corner.doorsCount)
@@ -60,7 +66,7 @@ function readCornerDoorsCount(ui: UnknownRecord, raw: UnknownRecord): number {
   return Number.isFinite(doors) && doors > 0 ? doors : WARDROBE_DEFAULTS.corner.doorsCount;
 }
 
-function resolveAutoCornerWidthForDoors(ui: UnknownRecord, raw: UnknownRecord): number {
+function resolveAutoCornerWidthForDoors(ui: UiStateLike, raw: UiRawInputsLike): number {
   const doors = readCornerDoorsCount(ui, raw);
   const perDoor = WARDROBE_DEFAULTS.byType.hinged.perDoorWidthCm;
   return Math.max(perDoor, doors * perDoor);
@@ -83,9 +89,9 @@ function hasTopCornerWidthSpecialDims(cfg: unknown): boolean {
 }
 
 function resolveBottomCornerWidthBase(args: {
-  ui: UnknownRecord;
-  raw: UnknownRecord;
-  cfg: UnknownRecord;
+  ui: UiStateLike;
+  raw: UiRawInputsLike;
+  cfg: ConfigStateLike;
   topCornerWidthBase: number;
 }): number {
   if (hasTopCornerWidthSpecialDims(args.cfg)) return resolveAutoCornerWidthForDoors(args.ui, args.raw);

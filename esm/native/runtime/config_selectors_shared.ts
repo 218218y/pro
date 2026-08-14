@@ -70,7 +70,6 @@ export const DEFAULTS: ConfigScalarDefaults = {
   overlayShelfThicknessCm: null,
   insetFrameThicknessCm: null,
   insetShelfThicknessCm: null,
-  dirty: false,
 };
 
 export function isBoardMaterialKey(key: ConfigScalarKey): key is 'boardMaterial' {
@@ -96,19 +95,13 @@ export function isGlobalHandleTypeKey(key: ConfigScalarKey): key is 'globalHandl
 export function isBooleanConfigKey(
   key: ConfigScalarKey
 ): key is
-  | 'isLibraryMode'
-  | 'isMultiColorMode'
-  | 'showDimensions'
-  | 'MIRROR_REFLECTOR_ENABLED'
-  | 'isManualWidth'
-  | 'dirty' {
+  'isLibraryMode' | 'isMultiColorMode' | 'showDimensions' | 'MIRROR_REFLECTOR_ENABLED' | 'isManualWidth' {
   return (
     key === 'isLibraryMode' ||
     key === 'isMultiColorMode' ||
     key === 'showDimensions' ||
     key === 'MIRROR_REFLECTOR_ENABLED' ||
-    key === 'isManualWidth' ||
-    key === 'dirty'
+    key === 'isManualWidth'
   );
 }
 

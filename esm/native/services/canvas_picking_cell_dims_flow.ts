@@ -3,7 +3,7 @@
 // Extracted from canvas_picking_click_flow.ts to keep the click owner focused on
 // routing while preserving the canonical cell-dims click behavior in one helper.
 
-import type { UnknownRecord } from '../../../types';
+import type { UiRawInputsLike } from '../../../types';
 import type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../../shared/dimensions/wardrobe_layout_comparison_policy.js';
 
@@ -21,7 +21,6 @@ import {
   __wp_toast,
   __wp_toModuleKey,
 } from './canvas_picking_core_helpers.js';
-import { asRecord } from '../runtime/record.js';
 import { rememberCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
 
@@ -41,7 +40,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
   try {
     const ui = __wp_ui(App);
     const cfg = __wp_cfg(App);
-    const raw = asRecord<UnknownRecord>(ui?.raw) || {};
+    const raw: UiRawInputsLike = ui.raw ?? {};
 
     const draftW = __asNum(raw.cellDimsWidth, NaN);
     const draftH = __asNum(raw.cellDimsHeight, NaN);

@@ -79,12 +79,12 @@ function resolveTopModulesUiSnapshot(
   return buildUiSnapshotForModuleSignature(uiSnapshot, signature);
 }
 
-function readProjectConfigSource<T extends UnknownRecord>(source: T | null | undefined): T {
-  return asProjectConfigRecord(source) as T;
+function readProjectConfigSource<T extends object>(source: T | null | undefined): T & UnknownRecord {
+  return asProjectConfigRecord(source) as T & UnknownRecord;
 }
 
-export function omitStructuralProjectConfigKeys<T extends UnknownRecord>(
-  source: T
+export function omitStructuralProjectConfigKeys<T extends object>(
+  source: T & UnknownRecord
 ): Omit<T, ProjectConfigStructuralKey> {
   const {
     modulesConfiguration: _modulesConfiguration,
@@ -92,7 +92,7 @@ export function omitStructuralProjectConfigKeys<T extends UnknownRecord>(
     cornerConfiguration: _cornerConfiguration,
     ...rest
   } = source;
-  return rest;
+  return rest as Omit<T, ProjectConfigStructuralKey>;
 }
 
 function resolveUiSnapshot(
@@ -145,13 +145,10 @@ export interface CanonicalProjectConfigLists {
 
 export type ProjectConfigStructuralKey = keyof CanonicalProjectConfigLists;
 
-export type CanonicalProjectConfigStructuralSnapshot<T extends UnknownRecord> = Omit<
-  T,
-  ProjectConfigStructuralKey
-> &
+export type CanonicalProjectConfigStructuralSnapshot<T extends object> = Omit<T, ProjectConfigStructuralKey> &
   CanonicalProjectConfigLists;
 
-export type CanonicalProjectConfigStructuralPatch<T extends UnknownRecord> = Partial<
+export type CanonicalProjectConfigStructuralPatch<T extends object> = Partial<
   Omit<T, ProjectConfigStructuralKey>
 > &
   Partial<CanonicalProjectConfigLists>;
@@ -184,7 +181,7 @@ export function canonicalizeProjectConfigStructuralLists(
   };
 }
 
-export function canonicalizeProjectConfigStructuralSnapshot<T extends UnknownRecord>(
+export function canonicalizeProjectConfigStructuralSnapshot<T extends object>(
   source: T | null | undefined,
   options?: ProjectConfigListsCanonicalizationOptions
 ): CanonicalProjectConfigStructuralSnapshot<T> {
@@ -195,7 +192,7 @@ export function canonicalizeProjectConfigStructuralSnapshot<T extends UnknownRec
   };
 }
 
-export function canonicalizeProjectConfigStructuralPatch<T extends UnknownRecord>(
+export function canonicalizeProjectConfigStructuralPatch<T extends object>(
   snapshot: T | null | undefined,
   options?: ProjectConfigListsCanonicalizationOptions
 ): CanonicalProjectConfigStructuralPatch<T> {

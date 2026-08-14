@@ -1,4 +1,4 @@
-import type { AppContainer, GrooveOrientation } from '../../../../../types';
+import type { AppContainer, ConfigStateLike, GrooveOrientation, UiStateLike } from '../../../../../types';
 
 import {
   runHistoryBatch,
@@ -68,23 +68,18 @@ function freezeExistingGrooveLinesCount(app: AppContainer): void {
   );
 }
 
-function readCurrentUiString(app: AppContainer, key: string): string {
+function readCurrentUiString(app: AppContainer, key: keyof UiStateLike): string {
   try {
-    const state = readStoreStateMaybe(app);
-    const ui = state && typeof state === 'object' ? (state as { ui?: Record<string, unknown> }).ui : null;
-    const value = ui && typeof ui === 'object' ? ui[key] : '';
+    const value = readStoreStateMaybe(app)?.ui?.[key];
     return typeof value === 'string' ? value : '';
   } catch {
     return '';
   }
 }
 
-function readCurrentConfigRecord(app: AppContainer): Record<string, unknown> {
+function readCurrentConfigRecord(app: AppContainer): ConfigStateLike {
   try {
-    const state = readStoreStateMaybe(app);
-    const config =
-      state && typeof state === 'object' ? (state as { config?: Record<string, unknown> }).config : null;
-    return config && typeof config === 'object' ? config : {};
+    return readStoreStateMaybe(app)?.config ?? {};
   } catch {
     return {};
   }
@@ -182,8 +177,7 @@ export function createDesignTabControllerRuntime(
     },
 
     toggleGrooveManual() {
-      const cfg = readStoreStateMaybe(app);
-      const ui = cfg && typeof cfg === 'object' ? (cfg as { ui?: Record<string, unknown> }).ui : null;
+      const ui = readStoreStateMaybe(app)?.ui;
       setUiScalarSoft(app, 'grooveManualEnabled', !(ui?.grooveManualEnabled === true));
     },
 

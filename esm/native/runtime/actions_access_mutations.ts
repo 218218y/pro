@@ -39,8 +39,9 @@ function asRecord(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
 }
 
-function getDefinedPatchKeys(patch: UnknownRecord): string[] {
-  return Object.keys(asRecord(patch) || {}).filter(key => typeof patch[key] !== 'undefined');
+function getDefinedPatchKeys(patch: unknown): string[] {
+  const record = asRecord(patch) || {};
+  return Object.keys(record).filter(key => typeof record[key] !== 'undefined');
 }
 
 function callSlicePatchAction(
@@ -220,7 +221,10 @@ export function patchViaActions(App: unknown, patch: UnknownRecord, meta?: Actio
     return true;
   }
 
-  const fn = getActionFn<(patch: UnknownRecord, meta?: ActionMetaLike) => unknown>(App, 'patch');
+  const fn = getActionFn<(patch: ReturnType<typeof readPatchPayload>, meta?: ActionMetaLike) => unknown>(
+    App,
+    'patch'
+  );
   if (typeof fn !== 'function') return false;
   fn(canonicalPatch, meta);
   return true;

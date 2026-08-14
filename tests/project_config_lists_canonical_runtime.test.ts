@@ -44,10 +44,9 @@ test('project config canonicalization: structural list helper reconciles sparse 
 
 test('project config canonicalization: full structural snapshot seeds detached full corner defaults when requested', () => {
   const uiSnapshot = buildStructureUiSnapshotFromUiState({
-    doors: 5,
     singleDoorPos: 'right',
     structureSelect: '',
-    raw: { doors: 5, singleDoorPos: 'right', structureSelect: '' },
+    raw: { doors: 5 },
   });
   const cfgSeed: any = { wardrobeType: 'hinged', cornerConfiguration: {} };
 

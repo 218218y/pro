@@ -45,7 +45,7 @@ export function createDomainApiInstallHelpers(
     } catch (error) {
       domainApiReportNonFatal(App, 'captureConfigSnapshot', error, { throttleMs: 2000 });
     }
-    return readConfig();
+    return asDomainObject(readConfig()) || {};
   };
 
   const createMeta = (
@@ -57,7 +57,7 @@ export function createDomainApiInstallHelpers(
     const name = typeof mapName === 'string' ? mapName : '';
     const fromRuntime = readMap(App, name);
     if (fromRuntime) return fromRuntime;
-    const cfg = readConfig();
+    const cfg = asDomainObject(readConfig());
     const value = cfg ? cfg[name] : null;
     return asDomainObject(value) || {};
   };

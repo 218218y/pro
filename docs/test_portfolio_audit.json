@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-14T10:44:16.362Z",
+  "generatedAt": "2026-08-14T15:37:10.699Z",
   "totals": {
-    "tests": 1242,
-    "unitRunnerTests": 1233,
+    "tests": 1243,
+    "unitRunnerTests": 1234,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
-    "catalogTestReferences": 479,
-    "totalTestReferences": 495,
+    "catalogTestReferences": 480,
+    "totalTestReferences": 496,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 66,
     "genericTestGroupRunner": "test:group",
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 146
   },
   "categories": {
-    "contract": 402,
+    "contract": 403,
     "runtime-unit": 335,
     "integration": 465,
     "persistence-ingress": 24,
@@ -3289,6 +3289,10 @@
     {
       "file": "tests/canonical_domain_codecs_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/canonical_strict_state_contracts.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/canonical_write_access_runtime.test.js",

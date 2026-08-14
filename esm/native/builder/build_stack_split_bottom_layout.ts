@@ -8,7 +8,7 @@ import type {
   BuilderCalculateModuleStructureFn,
   ModuleConfigLike,
   UiStateLike,
-  UnknownRecord,
+  ConfigStateLike,
 } from '../../../types';
 import { toStr } from './build_stack_split_contracts.js';
 
@@ -32,7 +32,7 @@ export function makeBottomUi(args: {
 }
 
 export function computeBottomModulesCount(args: {
-  cfg: UnknownRecord;
+  cfg: ConfigStateLike;
   uiBottom: UiStateLike;
   bottomDoorsCount: number;
   calculateModuleStructure: BuilderCalculateModuleStructureFn | null;
@@ -53,7 +53,7 @@ export function computeBottomModulesCount(args: {
 
 export function buildBottomModuleConfigSeed(args: {
   App: AppContainer;
-  cfg: UnknownRecord;
+  cfg: ConfigStateLike;
   bottomModulesCount: number;
 }): ModuleConfigLike[] {
   const rawLowerCfg = readModulesConfigurationListFromConfigSnapshot(

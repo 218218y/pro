@@ -286,7 +286,7 @@ npm run e2e:cloud-sync-reconnect
 - Project compatibility belongs at project ingress, not inside the live runtime/build path.
 - Project files must already use the current top-level schema metadata; old persisted shapes are rejected at project ingress.
 - After load/import canonicalization, runtime and builder paths should read canonical state only.
-- Tolerant compatibility readers may remain for staged migration, but new live paths should prefer canonical readers/assertions.
+- Runtime/build state has no tolerant direct `ui.*` dimension reader; current-schema project ingress must provide canonical `ui.raw` before commit.
 - Real project import fixtures under `tests/fixtures/project_import/` guard current-schema ingress, canonical `ui.raw` validation, config replace-owned branches, and map cleanup behavior.
 - Project load preparation is side-effect free. Canonical UI, config, runtime, and meta state enter the store through one transaction commit; history baseline is part of the critical finalize boundary, and a critical failure rolls state and history back to their exact pre-load snapshots.
 - Camera, lighting, notes, build scheduling, notifications, and telemetry run only after the critical state/history commit succeeds.

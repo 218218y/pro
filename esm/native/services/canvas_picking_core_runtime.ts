@@ -4,7 +4,7 @@
 // bridges, and runtime scratch access. Low-level coercion/reporting helpers live
 // in canvas_picking_core_support.ts.
 
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, ConfigStateLike, UiStateLike, UnknownRecord } from '../../../types';
 import { getUiFeedback } from '../runtime/service_access.js';
 import { runPlatformRenderFollowThrough } from '../runtime/platform_access.js';
 import { ensureCanvasPickingRuntime } from '../runtime/canvas_picking_runtime_slot.js';
@@ -34,7 +34,7 @@ function __wp_primaryMode(App: AppContainer): string {
   return NONE;
 }
 
-function __wp_ui(App: AppContainer): UnknownRecord {
+function __wp_ui(App: AppContainer): UiStateLike {
   try {
     return getUi(App) || {};
   } catch (err) {
@@ -43,7 +43,7 @@ function __wp_ui(App: AppContainer): UnknownRecord {
   }
 }
 
-function __wp_cfg(App: AppContainer): UnknownRecord {
+function __wp_cfg(App: AppContainer): ConfigStateLike {
   try {
     return getCfg(App) || {};
   } catch (err) {

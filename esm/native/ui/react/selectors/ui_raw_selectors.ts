@@ -16,7 +16,7 @@ import type { UiRawInputsLike, UiRawScalarKey, UiRawScalarValueMap } from '../..
 import { cloneUiRawInputs } from '../../../../../types/ui_raw.js';
 
 type RecordLike = Record<string, unknown>;
-type UiSnapshotLike = RecordLike & Partial<UiRawScalarValueMap> & { raw?: unknown };
+type UiSnapshotLike = RecordLike & { raw?: unknown };
 type UiRawScalarReaderMap = {
   [K in UiRawScalarKey]: (source: unknown) => UiRawScalarValueMap[K] | undefined;
 };
@@ -117,10 +117,8 @@ export function readUiRawScalarFromSnapshot<K extends UiRawScalarKey>(
     const u = asUiSnapshot(ui);
     if (!u) return undefined;
     const raw = getRawFromUiSnapshot(u);
-    if (Object.prototype.hasOwnProperty.call(raw, key)) {
-      return readUiRawValue(raw, key);
-    }
-    return readUiRawValue(u, key);
+    if (!Object.prototype.hasOwnProperty.call(raw, key)) return undefined;
+    return readUiRawValue(raw, key);
   } catch {
     return undefined;
   }

@@ -17,7 +17,6 @@ import { createLibraryTopModuleConfig } from '../features/library_preset/library
 import { snapshotStoreValueEqual } from './kernel_snapshot_store_shared.js';
 import {
   asModulesStructureList,
-  asRecordOrEmpty,
   cloneJsonRecord,
   cloneModuleConfig,
   readDoorsCount,
@@ -27,8 +26,8 @@ import {
 
 export interface DomainApiModulesCornerRecomputeRuntime {
   modulesActions: ModulesActionsLike;
-  cfg: UnknownRecord;
-  ui: UnknownRecord;
+  cfg: ConfigStateLike;
+  ui: UiStateLike;
   currentModules: UnknownRecord[];
   currentModulesStructure: number[];
   modulesStructure: { doors: number }[];
@@ -40,12 +39,11 @@ export interface DomainApiModulesCornerRecomputeRuntime {
   meta: ActionMetaLike;
 }
 
-function readUiRawPreferredString(ui: UnknownRecord, key: string, defaultValue = ''): string {
-  const raw = asRecordOrEmpty(ui.raw);
-  if (Object.prototype.hasOwnProperty.call(raw, key)) {
-    const value = raw[key];
-    return typeof value === 'string' ? value : defaultValue;
-  }
+function readUiStructureString(
+  ui: UiStateLike,
+  key: 'singleDoorPos' | 'structureSelect',
+  defaultValue = ''
+): string {
   const value = ui[key];
   return typeof value === 'string' ? value : defaultValue;
 }
@@ -62,11 +60,11 @@ export function createDomainApiModulesCornerRecomputeRuntime(args: {
 }): DomainApiModulesCornerRecomputeRuntime {
   const { modulesActions, _cfg, _ui, _isRecord, _meta, uiOverride, meta, opts } = args;
   const options: ModulesRecomputeFromUiOptionsLike = _isRecord(opts) ? opts : {};
-  const cfg = asRecordOrEmpty(_cfg());
-  const ui = asRecordOrEmpty(uiOverride ?? _ui());
+  const cfg = _cfg();
+  const ui = _isRecord(uiOverride) ? (uiOverride as UiStateLike) : _ui();
   const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 2);
-  const singlePos = readUiRawPreferredString(ui, 'singleDoorPos');
-  const structVal = readUiRawPreferredString(ui, 'structureSelect');
+  const singlePos = readUiStructureString(ui, 'singleDoorPos');
+  const structVal = readUiStructureString(ui, 'structureSelect');
   const wardrobeType = cfg?.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
   const modulesStructure = asModulesStructureList(
     calculateModuleStructurePure(doorsCount, singlePos, structVal, wardrobeType) || []

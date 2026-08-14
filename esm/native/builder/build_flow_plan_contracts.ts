@@ -1,6 +1,7 @@
 import type {
   UiRawInputsLike,
   UiStateLike,
+  ConfigStateLike,
   BuilderCalculateModuleStructureFn,
   BuilderDoorStateAccessorsLike,
   BuilderOutlineFn,
@@ -8,7 +9,6 @@ import type {
   BuildStateLike,
   ModuleConfigLike,
   ThreeLike,
-  UnknownRecord,
 } from '../../../types';
 import type { GetMaterialFn } from './build_flow_readers.js';
 
@@ -170,8 +170,8 @@ export type BuildFlowPlanLayoutMetrics = Pick<
 >;
 
 export type BuildFlowPlanInputsArgs = {
-  ui: UnknownRecord;
-  cfg: UnknownRecord;
+  ui: UiStateLike;
+  cfg: ConfigStateLike;
   widthCm: number;
   heightCm: number;
   depthCm: number;
@@ -183,8 +183,8 @@ export type BuildFlowPlanInputsArgs = {
 export type BuildFlowPlanMaterialsArgs = {
   App: AppContainer;
   THREE: ThreeLike;
-  ui: UnknownRecord;
-  cfg: UnknownRecord;
+  ui: UiStateLike;
+  cfg: ConfigStateLike;
   sketchMode: boolean;
   toStr: Stringifier;
   getMaterialFn: GetMaterialFn;
@@ -193,8 +193,8 @@ export type BuildFlowPlanMaterialsArgs = {
 export type BuildFlowPlanLayoutArgs = {
   App: AppContainer;
   state: BuildStateLike;
-  cfg: UnknownRecord;
-  ui: UnknownRecord;
+  cfg: ConfigStateLike;
+  ui: UiStateLike;
   totalW: number;
   woodThick: number;
   doorsCount: number;

@@ -699,8 +699,9 @@ export interface BuilderDoorStateAccessorsLike extends UnknownRecord {
   grooveVal: BuilderGrooveResolver;
 }
 
-export interface BuilderDoorMapsConfigLike extends UnknownRecord {
+export interface BuilderDoorMapsConfigLike {
   wardrobeType?: string | null;
+  doorMountMode?: 'overlay' | 'inset' | '' | null;
   globalHandleType?: string | null;
   hingeMap?: HingeMap | null;
   handlesMap?: HandlesMap | null;
@@ -747,7 +748,7 @@ export interface BuildRequestOptsLike extends UnknownRecord {
 }
 
 export interface BuilderSchedulerDepsLike extends UnknownRecord {
-  getBuildState?: ((uiOverride: UnknownRecord | null) => BuildStateLike) | null;
+  getBuildState?: ((uiOverride: UiSnapshotLike | null) => BuildStateLike) | null;
   createBuildPlan?: ((state: BuildStateLike) => BuildPlanLike) | null;
   debounce?: BuilderDebounceFn | null;
   getActiveElementId?: (() => string) | null;

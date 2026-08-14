@@ -202,7 +202,7 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     [
       /roomActions\.setWardrobeType =/,
       /roomActions\.setManualWidth =/,
-      /const PROFILE_UI_RAW_KEYS = \[/,
+      /const PROFILE_UI_KEYS = \[/,
       /export function installRoomWardrobeTypeSurface\(/,
       /export function installRoomManualWidthSurface\(/,
     ],

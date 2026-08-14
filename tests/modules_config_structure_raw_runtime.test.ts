@@ -31,17 +31,17 @@ test('top-module materialization prefers canonical ui.raw doors over stale mirro
   assert.equal(list[2].layout, 'shelves');
 });
 
-test('top-module structure resolution prefers canonical ui.raw structure controls over stale mirrored ui fields', () => {
+test('top-module structure resolution reads structure controls only from canonical ui fields', () => {
   const structure = resolveTopModulesStructureFromUiConfig(
     {
       doors: 3,
-      singleDoorPos: 'left',
-      structureSelect: '[1,1,1]',
+      singleDoorPos: 'right',
+      structureSelect: '[2,1]',
       raw: {
         doors: 3,
-        singleDoorPos: 'right',
-        structureSelect: '[2,1]',
-      },
+        singleDoorPos: 'left',
+        structureSelect: '[1,1,1]',
+      } as never,
     },
     { wardrobeType: 'hinged' }
   );

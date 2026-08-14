@@ -9,7 +9,6 @@ import type {
   ConfigStateLike,
   ThreeLike,
   UiStateLike,
-  UnknownRecord,
 } from '../../../types';
 import type {
   NoMainSketchRenderInput,
@@ -53,10 +52,10 @@ export type BuildFlowOrchestrationContext = Readonly<{
   resolveState: (stateOrOverride: unknown) => BuildStateResolvedLike;
   resetCaches: () => void;
   captureOpenState: () => void;
-  publishBuildUi: (ui: UiStateLike | UnknownRecord) => void;
+  publishBuildUi: (ui: UiStateLike) => void;
   sanitizeDimensions: (
-    ui: UiStateLike | UnknownRecord,
-    cfg: ConfigStateLike | UnknownRecord
+    ui: UiStateLike,
+    cfg: ConfigStateLike
   ) => ReturnType<typeof sanitizeBuildDimsAndSyncRuntime>;
   readWardrobeChildCount: () => number;
   prepareScene: (input: PrepareBuildSceneInput) => PrepareBuildSceneResult;

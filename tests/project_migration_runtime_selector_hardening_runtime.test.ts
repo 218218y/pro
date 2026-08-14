@@ -11,7 +11,6 @@ import {
   readCanonicalUiRawDimsCmFromSnapshot,
   readCanonicalUiRawIntFromSnapshot,
   readCanonicalUiRawNumberFromSnapshot,
-  readUiRawNumberFromSnapshot,
   readUiRawScalarFromCanonicalSnapshot,
 } from '../esm/native/runtime/ui_raw_selectors.ts';
 
@@ -45,10 +44,9 @@ test('project UI raw canonical snapshot preserves typed scalars and drops values
     false,
     'invalid typed scalar raw values should not survive canonical project ingress'
   );
-  assert.equal(canonicalized.raw.customExperimentalKey, 'keep-me');
+  assert.equal(Object.prototype.hasOwnProperty.call(canonicalized.raw, 'customExperimentalKey'), false);
 
   assert.deepEqual([...canonicalized.droppedKeys].sort(), ['height', 'stackSplitLowerWidthManual']);
-  assert.deepEqual(canonicalized.normalizedKeys, []);
   assert.equal(Object.prototype.hasOwnProperty.call(canonicalized, 'filledKeys'), false);
 
   assert.equal(readUiRawScalarFromCanonicalSnapshot(canonicalSnapshot, 'width'), 180.5);
@@ -96,7 +94,7 @@ test('canonical runtime selector stays raw-only and project ingress does not mat
   );
 });
 
-test('canonical ui.raw batch readers fail fast for old top-level-only snapshots before and after project ingress canonicalization', () => {
+test('canonical ui.raw batch readers reject top-level-only snapshots before and after project ingress canonicalization', () => {
   const oldSnapshot = {
     width: '160',
     height: '240',
@@ -105,7 +103,6 @@ test('canonical ui.raw batch readers fail fast for old top-level-only snapshots 
     chestDrawersCount: '7',
   };
 
-  assert.equal(readUiRawNumberFromSnapshot(oldSnapshot, 'width', 999), 160);
   assert.equal(readCanonicalUiRawNumberFromSnapshot(oldSnapshot, 'width', 999), 999);
   assert.equal(readCanonicalUiRawIntFromSnapshot(oldSnapshot, 'doors', 9), 9);
   assert.throws(
@@ -144,12 +141,11 @@ test('canonical ui.raw readers are exposed through public core and state surface
   }
 });
 
-test('tolerant snapshot-level ui.raw readers are not exposed through core/services public surfaces', () => {
+test('retired tolerant snapshot-level ui.raw readers are absent from runtime/core/services surfaces', () => {
   const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
   const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');
   const facade = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
-  const snapshotOwner = readFileSync('esm/native/runtime/ui_raw_selectors_snapshot.ts', 'utf8');
-  const retiredPublicReaders = [
+  const retiredReaders = [
     'readUiRawScalarFromSnapshot',
     'hasEssentialUiDimsFromSnapshot',
     'ensureUiRawDimsFromSnapshot',
@@ -158,23 +154,14 @@ test('tolerant snapshot-level ui.raw readers are not exposed through core/servic
     'readUiRawDimsCmFromSnapshot',
   ];
 
-  for (const source of [coreApi, stateSurface]) {
-    for (const symbol of retiredPublicReaders) {
-      assert.doesNotMatch(source, new RegExp(`\\b${symbol}\\b`), `${symbol} should not be public`);
+  for (const source of [facade, coreApi, stateSurface]) {
+    for (const symbol of retiredReaders) {
+      assert.doesNotMatch(source, new RegExp(`\\b${symbol}\\b`), `${symbol} must stay retired`);
     }
-  }
-
-  for (const symbol of retiredPublicReaders) {
-    assert.match(facade, new RegExp(`\\b${symbol}\\b`), `${symbol} should remain on the runtime facade`);
-    assert.match(
-      snapshotOwner,
-      new RegExp(`\\b${symbol}\\b`),
-      `${symbol} should remain owned by the tolerant snapshot selector`
-    );
   }
 });
 
-test('tolerant store-level ui.raw readers are not exposed through public surfaces', () => {
+test('retired store-level ui.raw readers are absent from public surfaces', () => {
   const facade = readFileSync('esm/native/runtime/ui_raw_selectors.ts', 'utf8');
   const coreApi = readFileSync('esm/native/core/api.ts', 'utf8');
   const stateSurface = readFileSync('esm/native/services/api_state_surface.ts', 'utf8');

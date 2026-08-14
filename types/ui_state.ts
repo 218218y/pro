@@ -1,42 +1,42 @@
-// UI slice typed spine (React-facing)
+// Canonical UI slice state.
 //
-// Goal:
-// - Provide a stable, typed surface for the UI slice as consumed by React.
-// - Keep this focused on high-value fields and allow extension via an index signature.
-//
-// Notes:
-// - This does NOT attempt to fully type every UI key in the legacy system.
-// - Prefer UnknownRecord over loose record bags to prevent `any` bleed into React.
+// This is the closed, store-owned UI state contract. External/project payloads
+// may be permissive at their parsing boundary, but values admitted into
+// store.ui must be represented here explicitly.
 
 import type { UnknownRecord } from './common';
 import type { UiRawInputsLike } from './ui_raw';
 
-export interface UiState extends UnknownRecord {
-  // Core structural inputs (often stored under ui.raw)
-  raw?: UiRawInputsLike | UnknownRecord | null;
+export type ShoeDrawerAutoBasePreviousType = 'plinth' | 'legs' | 'none' | null;
 
-  // Navigation
+export interface UiState {
+  // Canonical builder-driving structural inputs.
+  raw?: UiRawInputsLike | null;
+
+  // Navigation / project identity.
   activeTab?: string;
-
-  // Common UI scalars used by React tabs
   projectName?: string;
   selectedModelId?: string;
-  // Common builder scalars mirrored on the UI slice
+
+  // Compatibility-free top-level UI presentation values. Structural build
+  // essentials remain owned by ui.raw; these fields are presentation mirrors
+  // only where the current UI explicitly consumes them.
   width?: number;
   height?: number;
   depth?: number;
   doors?: number;
   color?: string;
 
-  // Site2 tabs gate (remote controlled)
+  // Site2 remote tabs gate state (the site variant itself is App.config-owned).
   site2TabsGateOpen?: boolean;
   site2TabsGateUntil?: number | null;
   site2TabsGateBy?: string;
 
-  // Design tab
+  // Design tab.
   doorStyle?: string;
   colorChoice?: string;
   frontColorShelfInheritanceMode?: string;
+  customColor?: string;
   groovesEnabled?: boolean;
   splitDoors?: boolean;
   removeDoorsEnabled?: boolean;
@@ -47,8 +47,10 @@ export interface UiState extends UnknownRecord {
   currentGrooveDraftHeightCm?: string;
   currentGrooveDraftWidthCm?: string;
   currentGrooveOrientation?: 'vertical' | 'horizontal';
+  currentMirrorDraftHeightCm?: string | number;
+  currentMirrorDraftWidthCm?: string | number;
 
-  // Interior tab
+  // Interior tab.
   currentLayoutType?: unknown;
   currentGridDivisions?: unknown;
   currentGridShelfVariant?: unknown;
@@ -59,25 +61,27 @@ export interface UiState extends UnknownRecord {
   currentHandleToolType?: unknown;
   currentHandleToolColor?: unknown;
   currentHandleToolEdgeVariant?: unknown;
+  perCellGridMap?: UnknownRecord;
+  activeGridCellId?: string | number | null;
 
-  // Notes overlay
+  // Notes / view toggles.
   notesEnabled?: boolean;
+  showHanger?: boolean;
+  showContents?: boolean;
+  showDimensions?: boolean;
 
-  // Autosave UI hint (small object stamped by autosave service)
+  // Autosave UI hint.
   autosaveInfo?: {
     timestamp?: number;
     dateString?: string;
   };
 
-  // View toggles
-  showHanger?: boolean;
-  showContents?: boolean;
-
   // Sketch tab: temporary restore point used while the main wardrobe is hidden.
   noMainSketchRestoreSnapshot?: unknown;
 
-  // Structure tab
+  // Structure tab.
   baseType?: string;
+  shoeDrawerAutoBasePreviousType?: ShoeDrawerAutoBasePreviousType;
   baseLegStyle?: string;
   baseLegColor?: string;
   baseLegPlatformMode?: string;
@@ -86,6 +90,7 @@ export interface UiState extends UnknownRecord {
   baseLegPlatformFrontOverhangCm?: number;
   basePlinthHeightCm?: number;
   baseLegHeightCm?: number;
+  baseLegWidthCm?: number;
   slidingTracksColor?: string;
   structureSelect?: string;
   singleDoorPos?: string;
@@ -93,31 +98,36 @@ export interface UiState extends UnknownRecord {
   isChestMode?: boolean;
   chestCommodeEnabled?: boolean;
   chestCommodeMirrorWidthManual?: boolean;
+  libraryUpperDoorsHidden?: boolean;
 
-  // Corner
+  // Corner.
   cornerMode?: boolean;
   cornerSide?: string;
   cornerWidth?: number;
   cornerDoors?: number;
   cornerHeight?: number;
   cornerDepth?: number;
+  cornerCabinetWallLenCm?: number;
 
-  // Stack split
+  // Stack split.
   stackSplitEnabled?: boolean;
+  stackSplitDecorativeSeparatorEnabled?: boolean;
   stackSplitDecorativeSeparatorSideOverhangCm?: number;
   stackSplitDecorativeSeparatorFrontOverhangCm?: number;
 
-  // Per-cell dimensions / hex-cell panel disclosure state
+  // Per-cell dimensions / hex-cell panel disclosure state.
   cellDimsPanelOpen?: boolean;
   cellDimsHexPanelOpen?: boolean;
 
-  // View/mode toggles occasionally mirrored on ui
+  // View/mode toggles.
   sketchMode?: boolean;
   globalClickMode?: boolean;
   darkMode?: boolean;
+  multiColorEnabled?: boolean;
 
-  // Settings visual controls / room design
+  // Settings visual controls / room design.
   lightingControl?: boolean;
+  currentFloorType?: string;
   lastSelectedFloorStyleIdByType?: UnknownRecord;
   lastSelectedWallColor?: string;
   lastLightPreset?: string;
@@ -127,7 +137,7 @@ export interface UiState extends UnknownRecord {
   lightY?: number | string;
   lightZ?: number | string;
 
-  // PDF editor (order pdf in-place editor)
+  // PDF editor (order pdf in-place editor).
   orderPdfEditorOpen?: boolean;
   orderPdfEditorZoom?: number;
   orderPdfEditorDraft?: unknown;

@@ -1,4 +1,11 @@
-import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  ConfigStateLike,
+  ModuleConfigLike,
+  UiRawInputsLike,
+  UiStateLike,
+  UnknownRecord,
+} from '../../../types';
 import type { SpecialDimsRecord } from '../features/special_dims/index.js';
 
 export type CornerConfigShape = UnknownRecord & {
@@ -11,9 +18,9 @@ export interface CornerCellDimsContext {
   App: AppContainer;
   stackKey: 'top' | 'bottom';
   isBottomStack: boolean;
-  ui: UnknownRecord;
-  cfg: UnknownRecord;
-  raw: UnknownRecord;
+  ui: UiStateLike;
+  cfg: ConfigStateLike;
+  raw: UiRawInputsLike;
   applyW: number | null;
   applyH: number | null;
   applyD: number | null;

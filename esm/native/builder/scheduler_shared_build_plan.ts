@@ -1,4 +1,4 @@
-import type { AppContainer, BuildPlanLike, BuildStateLike, UnknownRecord } from '../../../types/index.js';
+import type { AppContainer, BuildPlanLike, BuildStateLike, UiSnapshotLike } from '../../../types/index.js';
 
 import { reportError } from '../runtime/api.js';
 import { getBuildStateMaybe } from './store_access.js';
@@ -13,7 +13,7 @@ import { ensureSchedulerState } from './scheduler_shared_state.js';
 
 export function getBuildStateForScheduler(
   App: AppContainer,
-  uiOverride: UnknownRecord | null
+  uiOverride: UiSnapshotLike | null
 ): BuildStateLike {
   const fromCanonical = getBuildStateMaybe(App, uiOverride);
   if (fromCanonical && typeof fromCanonical === 'object') return fromCanonical;
@@ -28,7 +28,10 @@ export function getBuildStateForScheduler(
   throw new Error('[WardrobePro] builder getBuildState seam is missing (actions/store seam not installed?)');
 }
 
-export function getBuildPlanForScheduler(App: AppContainer, uiOverride: UnknownRecord | null): BuildPlanLike {
+export function getBuildPlanForScheduler(
+  App: AppContainer,
+  uiOverride: UiSnapshotLike | null
+): BuildPlanLike {
   const s = ensureSchedulerState(App);
   const state = getBuildStateForScheduler(App, uiOverride);
 

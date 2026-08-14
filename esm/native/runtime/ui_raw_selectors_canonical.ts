@@ -1,6 +1,6 @@
 // Canonical-only ui.raw readers (ESM)
 //
-// Live runtime/build paths should use this owner after project ingress migration.
+// Live runtime/build paths use this owner after current-schema project ingress validation.
 // It reads only `ui.raw`, never direct `ui.*` scalar fields.
 
 import type { UiRawInputsLike, UiRawScalarKey, UiRawScalarValueMap } from '../../../types/index.js';
@@ -48,7 +48,7 @@ function missingCanonicalEssentialUiRawDims(ui: unknown): Array<'doors' | 'width
 
 /**
  * Read a canonical `ui.raw` scalar without direct `ui.*` scalar reads.
- * Use this on live runtime/build paths after project load has migrated persisted shapes.
+ * Use this on live runtime/build paths after project ingress has validated the current schema.
  */
 export function readUiRawScalarFromCanonicalSnapshot<K extends UiRawScalarKey>(
   ui: unknown,
@@ -82,7 +82,7 @@ export function assertCanonicalUiRawDims(ui: unknown, context = 'ui.raw'): UiRaw
 
 /**
  * Canonical-only numeric reader for runtime/build paths.
- * Direct `ui.*` scalar reads belong at project ingress before this helper runs.
+ * Build-driving dimensions are owned only by `ui.raw`.
  */
 export function readCanonicalUiRawNumberFromSnapshot(
   ui: unknown,
@@ -96,7 +96,7 @@ export function readCanonicalUiRawNumberFromSnapshot(
 
 /**
  * Canonical-only integer reader for runtime/build paths.
- * Direct `ui.*` scalar reads belong at project ingress before this helper runs.
+ * Build-driving dimensions are owned only by `ui.raw`.
  */
 export function readCanonicalUiRawIntFromSnapshot(
   ui: unknown,
@@ -110,7 +110,7 @@ export function readCanonicalUiRawIntFromSnapshot(
 
 /**
  * Canonical-only batch dimensions reader for runtime/build paths.
- * It fails fast when essential ui.raw dimensions are absent, keeping migration at project ingress.
+ * It fails fast when essential ui.raw dimensions are absent from the current state contract.
  */
 export function readCanonicalUiRawDimsCmFromSnapshot(
   ui: unknown,

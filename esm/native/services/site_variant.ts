@@ -1,6 +1,5 @@
-import type { AppContainer, ConfigStateLike } from '../../../types';
+import type { AppContainer } from '../../../types';
 import { getDocumentMaybe, getLocationSearchMaybe, getWindowMaybe } from '../runtime/api.js';
-import { readConfigStateFromApp } from '../runtime/root_state_access.js';
 
 export type SiteVariant = 'main' | 'site2';
 
@@ -23,16 +22,11 @@ function readQueryParam(App: AppContainer, key: string): string | null {
 
 function readVariantFromConfig(App: AppContainer): SiteVariant | null {
   try {
-    const cfg: ConfigStateLike = readConfigStateFromApp(App);
-
-    const v0 = asString(cfg.siteVariant);
-    if (v0 && v0.toLowerCase() === 'site2') return 'site2';
-    if (v0 && v0.toLowerCase() === 'main') return 'main';
-
-    if (cfg.site2 === true) return 'site2';
-
-    const v1 = asString(cfg.site);
-    if (v1 && (v1 === '2' || v1.toLowerCase() === 'site2')) return 'site2';
+    const value = asString(App.config?.siteVariant);
+    if (!value) return null;
+    const normalized = value.toLowerCase();
+    if (normalized === 'site2') return 'site2';
+    if (normalized === 'main') return 'main';
   } catch {
     // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
   }

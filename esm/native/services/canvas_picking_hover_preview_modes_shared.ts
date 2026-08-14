@@ -1,4 +1,9 @@
-import type { AppContainer, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  UiStateLike,
+  SketchPlacementPreviewArgsLike,
+  UnknownRecord,
+} from '../../../types';
 import type {
   HitObjectLike,
   MouseVectorLike,
@@ -45,7 +50,7 @@ export type DrawerHoverPreviewTarget = {
 };
 
 export type HidePreviewFn = ((args: UnknownRecord) => unknown) | null | undefined;
-export type ReadUiFn = (App: AppContainer) => UnknownRecord;
+export type ReadUiFn = (App: AppContainer) => UiStateLike;
 export type InteriorHoverResolverFn = (
   App: AppContainer,
   raycaster: RaycasterLike,

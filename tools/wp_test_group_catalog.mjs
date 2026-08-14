@@ -843,6 +843,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/kernel_di_and_owner_contracts.test.js',
       'tests/kernel_history_runtime_contracts.test.js',
       'tests/kernel_snapshot_capture_contracts.test.js',
+      'tests/canonical_strict_state_contracts.test.js',
       'tests/statekernel_audit_contracts.test.js',
       'tests/runtime_config_platform_contracts.test.js',
     ],

@@ -104,20 +104,22 @@ function readMetaPatch(payload: unknown): MetaSlicePatch {
   return asRecord(payload) ?? {};
 }
 
-function getSlicePatchReader<N extends SlicePatchNamespace>(
-  namespace: N
-): (payload: unknown) => SlicePatchValueMap[N] {
+export function readSlicePatchValue<N extends SlicePatchNamespace>(
+  namespace: N,
+  payload: unknown
+): SlicePatchValueMap[N];
+export function readSlicePatchValue(namespace: SlicePatchNamespace, payload: unknown): SlicePatchValue {
   switch (namespace) {
     case 'ui':
-      return readUiPatch;
+      return readUiPatch(payload);
     case 'runtime':
-      return readRuntimePatch;
+      return readRuntimePatch(payload);
     case 'mode':
-      return readModePatch;
+      return readModePatch(payload);
     case 'config':
-      return readConfigPatch;
+      return readConfigPatch(payload);
     case 'meta':
-      return readMetaPatch;
+      return readMetaPatch(payload);
   }
 }
 
@@ -127,13 +129,6 @@ export function getAllSliceNamespaces(): SlicePatchNamespace[] {
 
 export function isSlicePatchNamespace(key: unknown): key is SlicePatchNamespace {
   return key === 'ui' || key === 'runtime' || key === 'mode' || key === 'config' || key === 'meta';
-}
-
-export function readSlicePatchValue<N extends SlicePatchNamespace>(
-  namespace: N,
-  payload: unknown
-): SlicePatchValueMap[N] {
-  return getSlicePatchReader(namespace)(payload);
 }
 
 const DEFAULT_SLICE_STORE_WRITERS: Record<SlicePatchNamespace, SliceStoreWriter> = {
@@ -213,9 +208,18 @@ export function toRootPatchPayload<N extends SlicePatchNamespace>(
   namespace: N,
   payload: SlicePatchValue<N>
 ): PatchPayload {
-  const next: PatchPayload = {};
-  next[namespace] = payload;
-  return next;
+  switch (namespace) {
+    case 'ui':
+      return { ui: readSlicePatchValue('ui', payload) };
+    case 'runtime':
+      return { runtime: readSlicePatchValue('runtime', payload) };
+    case 'mode':
+      return { mode: readSlicePatchValue('mode', payload) };
+    case 'config':
+      return { config: readSlicePatchValue('config', payload) };
+    case 'meta':
+      return { meta: readSlicePatchValue('meta', payload) };
+  }
 }
 
 export function readPatchPayload(patchObj: unknown): PatchPayload {
@@ -226,7 +230,7 @@ export function readPatchPayload(patchObj: unknown): PatchPayload {
     if (typeof patch[namespace] === 'undefined') continue;
     const value = readSlicePatchValue(namespace, patch[namespace]);
     if (!hasOwnKeys(value)) continue;
-    next[namespace] = value;
+    Object.assign(next, toRootPatchPayload(namespace, value));
   }
   return next;
 }
@@ -260,7 +264,7 @@ export function readSingleSlicePatchRoute(patchObj: unknown): SlicePatchRoute | 
   const directRoute = readSingleSlicePatchRouteFromRecord(patch);
   if (directRoute) return directRoute;
 
-  return readSingleSlicePatchRouteFromRecord(readPatchPayload(patch));
+  return readSingleSlicePatchRouteFromRecord(asRecord(readPatchPayload(patch)) ?? {});
 }
 
 export function callDedicatedMetaStoreWriter(

@@ -4,6 +4,9 @@ import type {
   UnknownRecord,
   ActionMetaLike,
   UiSlicePatch,
+  RuntimeSlicePatch,
+  ModeSlicePatch,
+  MetaSlicePatch,
 } from '../../../types';
 import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
 
@@ -78,10 +81,10 @@ export type StateApiInstallSupport = {
     ...args: readonly unknown[]
   ) => unknown;
   commitUiPatch: (patch: UiSlicePatch, meta: ActionMetaLike) => unknown;
-  commitRuntimePatch: (patch: UnknownRecord, meta: ActionMetaLike) => unknown;
-  commitModePatch: (patch: UnknownRecord, meta: ActionMetaLike) => unknown;
+  commitRuntimePatch: (patch: RuntimeSlicePatch, meta: ActionMetaLike) => unknown;
+  commitModePatch: (patch: ModeSlicePatch, meta: ActionMetaLike) => unknown;
   commitConfigPatch: (patch: ConfigSlicePatch, meta: ActionMetaLike) => unknown;
-  commitMetaPatch: (patch: UnknownRecord, meta: ActionMetaLike) => unknown;
+  commitMetaPatch: (patch: MetaSlicePatch, meta: ActionMetaLike) => unknown;
   commitMetaTouch: (meta?: ActionMetaLike) => unknown;
   dispatchCanonicalPatch: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
   readRootSnapshot: () => RootStateLike | null;
@@ -174,33 +177,32 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
   prevSlice: unknown,
   patchIn: SlicePatchValueMap[N]
 ): SlicePatchValueMap[N] | null {
-  const patch = asObj<SlicePatchValueMap[N]>(patchIn);
-  if (!patch || !Object.keys(patch).length) return null;
+  const patchRecord = asObj<UnknownRecord>(patchIn);
+  if (!patchRecord || !Object.keys(patchRecord).length) return null;
 
-  if (patch.__snapshot === true) {
-    const equal =
-      namespace === 'ui' ? uiSnapshotValueEqual(prevSlice, patch) : snapshotStoreValueEqual(prevSlice, patch);
-    return equal ? null : patch;
+  if (namespace === 'ui' && patchRecord.__snapshot === true) {
+    const patch = readSlicePatchValue(namespace, patchRecord);
+    return uiSnapshotValueEqual(prevSlice, patch) ? null : patch;
   }
 
   const prevRec = asObj<UnknownRecord>(prevSlice) || {};
   const next: UnknownRecord = {};
   const replaceRec =
-    namespace === 'config' ? readConfigReplaceRecord(readSlicePatchValue('config', patch)) : null;
+    namespace === 'config' ? readConfigReplaceRecord(readSlicePatchValue('config', patchRecord)) : null;
   const nextReplace: UnknownRecord | null = replaceRec ? {} : null;
 
-  const patchKeys = namespace === 'config' ? readConfigPatchDataKeys(patch) : Object.keys(patch);
+  const patchKeys = namespace === 'config' ? readConfigPatchDataKeys(patchRecord) : Object.keys(patchRecord);
 
   for (const key of patchKeys) {
     if (replaceRec && replaceRec[key]) {
-      const nextValue = patch[key];
+      const nextValue = patchRecord[key];
       if (!snapshotStoreValueEqual(prevRec[key], nextValue)) {
         next[key] = nextValue;
         if (nextReplace) nextReplace[key] = true;
       }
       continue;
     }
-    const diff = diffComparableValue(prevRec[key], patch[key]);
+    const diff = diffComparableValue(prevRec[key], patchRecord[key]);
     if (typeof diff !== 'undefined') next[key] = diff;
   }
 
@@ -295,16 +297,16 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
   const commitUiPatch = (patch: UiSlicePatch, meta: ActionMetaLike): unknown =>
     commitFilteredSlicePatch('ui', patch, meta);
 
-  const commitRuntimePatch = (patch: UnknownRecord, meta: ActionMetaLike): unknown =>
+  const commitRuntimePatch = (patch: RuntimeSlicePatch, meta: ActionMetaLike): unknown =>
     commitFilteredSlicePatch('runtime', patch, meta);
 
-  const commitModePatch = (patch: UnknownRecord, meta: ActionMetaLike): unknown =>
+  const commitModePatch = (patch: ModeSlicePatch, meta: ActionMetaLike): unknown =>
     commitFilteredSlicePatch('mode', patch, meta);
 
   const commitConfigPatch = (patch: ConfigSlicePatch, meta: ActionMetaLike): unknown =>
     commitFilteredSlicePatch('config', patch, meta);
 
-  const commitMetaPatch = (patch: UnknownRecord, meta: ActionMetaLike): unknown =>
+  const commitMetaPatch = (patch: MetaSlicePatch, meta: ActionMetaLike): unknown =>
     commitFilteredSlicePatch('meta', patch, meta);
 
   const commitMetaTouch = (meta?: ActionMetaLike): unknown =>
@@ -320,7 +322,7 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
       const patch = payload[namespace];
       if (typeof patch === 'undefined') continue;
       const filtered = filterSlicePatchAgainstRoot(root, namespace, patch);
-      if (filtered) filteredPayload[namespace] = filtered;
+      if (filtered) Object.assign(filteredPayload, { [namespace]: filtered });
     }
 
     const filteredKeys = Object.keys(filteredPayload);

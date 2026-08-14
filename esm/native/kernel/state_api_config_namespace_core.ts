@@ -5,6 +5,7 @@ import type {
   ModulesGeometrySnapshotLike,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import type { RootStoreLike } from '../../../types/backend_store';
 
 import {
@@ -32,7 +33,7 @@ interface StateApiConfigNamespaceCoreContext {
   normMeta: (meta: unknown, source: string) => ActionMetaLike;
   safeCall: (fn: () => unknown) => unknown;
   shallowCloneObj: (v: unknown) => UnknownRecord;
-  commitConfigPatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  commitConfigPatch: (patch: ConfigSlicePatch, meta: ActionMetaLike) => unknown;
   projectConfigReplaceKeys: Record<string, true>;
   modulesGeometryReplaceKeys: Record<string, true>;
 }

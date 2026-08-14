@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T10:14:21.580Z",
+  "generatedAt": "2026-08-14T15:37:07.761Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 549,
@@ -2004,7 +2004,7 @@
     },
     {
       "file": "esm/native/builder/module_layout_pipeline.ts",
-      "line": 235,
+      "line": 232,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// compatibility-boundary: callers without the calculator may still reuse a door-count-current"
@@ -4090,28 +4090,28 @@
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 37,
+      "line": 31,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 53,
+      "line": 47,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 65,
+      "line": 59,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 87,
+      "line": 81,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
@@ -5049,14 +5049,14 @@
     },
     {
       "file": "esm/native/ui/react/selectors/root_selectors.ts",
-      "line": 18,
+      "line": 10,
       "term": "fallbackDoors",
       "category": "domain-default",
       "text": "export function readModulesCountFromRootSnapshot(state: RootStateLike, fallbackDoors: number): number {"
     },
     {
       "file": "esm/native/ui/react/selectors/root_selectors.ts",
-      "line": 25,
+      "line": 12,
       "term": "fallbackDoors",
       "category": "domain-default",
       "text": "return arr.length || Math.max(0, Math.round(Number(fallbackDoors) / 2) || 0);"
@@ -5105,28 +5105,28 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 229,
+      "line": 232,
       "term": "fallbackPatternLabel",
       "category": "domain-default",
       "text": "const fallbackPatternLabel = args.doors % 2 === 0 ? 'ברירת מחדל (זוגות)' : 'ברירת מחדל';"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 231,
+      "line": 234,
       "term": "fallbackPatternLabel",
       "category": "domain-default",
       "text": "{ label: fallbackPatternLabel, structure: 'default' },"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 233,
+      "line": 236,
       "term": "fallbackStruct",
       "category": "domain-default",
       "text": "const fallbackStruct = patterns.length ? JSON.stringify(patterns[0].structure) : '\"default\"';"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 235,
+      "line": 238,
       "term": "fallbackStruct",
       "category": "domain-default",
       "text": "args.structureSelectRaw && args.structureSelectRaw.trim() ? args.structureSelectRaw : fallbackStruct;"

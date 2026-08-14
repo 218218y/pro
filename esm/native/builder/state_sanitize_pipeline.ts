@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, ConfigStateLike, UiSnapshotLike, UnknownRecord } from '../../../types';
 
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { coerceFiniteInt, coerceFiniteNumber } from '../runtime/num_coerce.js';
@@ -58,15 +58,15 @@ function _toInt(v: unknown, fb: number): number {
  *
  * @param {{
  *   App: AppContainer | null | undefined,
- *   ui: UnknownRecord | null | undefined,
- *   cfg: UnknownRecord | null | undefined,
+ *   ui: UiSnapshotLike | null | undefined,
+ *   cfg: ConfigStateLike | null | undefined,
  * }} args
  * @returns {SanitizedDims}
  */
 export function sanitizeBuildDimsAndSyncRuntime(args: {
   App: AppContainer | null | undefined;
-  ui: UnknownRecord | null | undefined;
-  cfg: UnknownRecord | null | undefined;
+  ui: UiSnapshotLike | null | undefined;
+  cfg: ConfigStateLike | null | undefined;
 }): SanitizedDims {
   const App = args && args.App;
   const ui = (args && args.ui) || {};
@@ -92,8 +92,7 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const rawWidth = _toNum(raw.width, WARDROBE_SANITIZATION_POLICY.defaults.widthCm);
   const rawHeight = _toNum(raw.height, WARDROBE_SANITIZATION_POLICY.defaults.heightCm);
   const rawDepth = _toNum(raw.depth, defaultDepth);
-  // Prefer raw['doors'] but fall back to ui.doors (some loaders/flows persist only the normalized field).
-  const rawDoors = _toInt(raw['doors'] != null ? raw['doors'] : ui.doors, defaultDoors);
+  const rawDoors = _toInt(raw.doors, defaultDoors);
   const rawChestDrawers = _toInt(
     raw.chestDrawersCount,
     WARDROBE_SANITIZATION_POLICY.defaults.chestDrawersCount

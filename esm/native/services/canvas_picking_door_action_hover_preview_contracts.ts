@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UiStateLike, UnknownRecord } from '../../../types';
 
 export type ReusableVectorLike = {
   x: number;
@@ -58,7 +58,7 @@ export type DoorHoverHit = {
   hitPoint: ReusableVectorLike | null;
 };
 
-export type ReadUiFn = (App: AppContainer) => UnknownRecord | null;
+export type ReadUiFn = (App: AppContainer) => UiStateLike | null;
 
 export type SetSketchPreviewFn = ((args: UnknownRecord) => unknown) | null | undefined;
 

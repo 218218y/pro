@@ -387,7 +387,8 @@ test('room wardrobe type runtime: saved wardrobe profiles are canonicalized and 
 
   const h = createHarness({
     ui: {
-      raw: { width: 200, height: 240, depth: 55, doors: 5, singleDoorPos: 'right' },
+      raw: { width: 200, height: 240, depth: 55, doors: 5 },
+      singleDoorPos: 'right',
     },
     config: {
       wardrobeType: 'hinged',
@@ -594,8 +595,8 @@ test('room wardrobe type runtime: saving wardrobe profile keeps valid nested ui 
         height: 240,
         depth: 55,
         doors: 5,
-        lastSelectedFloorStyleIdByType: liveFloorStyles,
       },
+      lastSelectedFloorStyleIdByType: liveFloorStyles,
     },
     config: { wardrobeType: 'hinged' },
   });
@@ -603,7 +604,7 @@ test('room wardrobe type runtime: saving wardrobe profile keeps valid nested ui 
   h.actions.room.setWardrobeType('sliding');
 
   const savedUi = h.state.runtime.wardrobeTypeProfiles.hinged.ui as AnyRec;
-  const savedFloorStyles = (savedUi.raw?.lastSelectedFloorStyleIdByType || {}) as AnyRec;
+  const savedFloorStyles = (savedUi.lastSelectedFloorStyleIdByType || {}) as AnyRec;
 
   assert.equal(savedFloorStyles.wood.label, 'oak');
   assert.equal(savedFloorStyles.wood.nested.tone, 'warm');

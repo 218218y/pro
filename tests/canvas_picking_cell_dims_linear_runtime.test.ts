@@ -363,7 +363,7 @@ test('linear cell-dims applies lower-stack width/depth through lower configurati
   assert.match(calls.toasts[0]?.message || '', /הוחל על תא 2/);
 });
 
-test('linear cell-dims resolves hinged module signature from ui.raw before stale mirrored ui fields', () => {
+test('linear cell-dims keeps structure controls in ui while ui.raw owns the canonical doors count', () => {
   const { App, state, calls } = createAppHarness();
   state.ui.doors = 3;
   state.ui.singleDoorPos = 'left';
@@ -394,13 +394,13 @@ test('linear cell-dims resolves hinged module signature from ui.raw before stale
 
   assert.equal(calls.snapshots.length, 1);
   const snapshot = calls.snapshots[0].snapshot;
-  assert.equal(snapshot.modulesConfiguration.length, 2);
+  assert.equal(snapshot.modulesConfiguration.length, 3);
   assert.deepEqual(
     snapshot.modulesConfiguration.map((entry: any) => entry.doors),
-    [2, 1]
+    [1, 1, 1]
   );
   assert.deepEqual(snapshot.modulesConfiguration[0].specialDims, {
-    baseWidthCm: 200,
+    baseWidthCm: 100,
     widthCm: 210,
   });
 });

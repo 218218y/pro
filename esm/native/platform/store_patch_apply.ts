@@ -88,14 +88,15 @@ export function isReplacePatchValueEqual(prev: unknown, next: unknown): boolean 
   return false;
 }
 
-function applySnapshotOrMergeRecordSlice(
-  prevSlice: UnknownRecord,
+function applySnapshotOrMergeRecordSlice<T extends object>(
+  prevSlice: T,
   patchSlice: unknown,
   allowSnapshot = false
-): UnknownRecord {
+): T {
   const input = asPatchRecord(patchSlice);
   const isSnapshot = allowSnapshot && input.__snapshot === true;
-  return isSnapshot ? input : deepMerge(prevSlice, input);
+  const merged = isSnapshot ? input : deepMerge(asPatchRecord(prevSlice), input);
+  return merged as T;
 }
 
 export function toUiSlicePatch(patch: unknown): UiSlicePatch {

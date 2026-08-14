@@ -1,16 +1,16 @@
 # Test portfolio audit
 
-Generated: 2026-08-14T10:44:16.362Z
+Generated: 2026-08-14T15:37:10.699Z
 
 ## Summary
 
-- Test files classified: 1242
-- Canonical unit/runtime runner files: 1233
+- Test files classified: 1243
+- Canonical unit/runtime runner files: 1234
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 36
 - Package script test references: 16
-- Catalog test references: 479
-- Total explicit test references: 495
+- Catalog test references: 480
+- Total explicit test references: 496
 - Oversized direct package test lanes: 0
 - Catalog groups: 66
 - Generic catalog runner: test:group
@@ -24,7 +24,7 @@ Generated: 2026-08-14T10:44:16.362Z
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   402 |
+| contract            |   403 |
 | runtime-unit        |   335 |
 | integration         |   465 |
 | persistence-ingress |    24 |

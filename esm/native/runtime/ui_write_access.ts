@@ -75,10 +75,11 @@ function filterUiPatchAgainstCurrentState(App: unknown, patch: UiSlicePatch): Ui
 
   const currentUi = readUiStateFromApp(App);
   const currentUiRecord = asRecord(currentUi) ?? {};
-  const filtered: UiSlicePatch = {};
+  const patchRecord = asRecord(patch) ?? {};
+  const filtered: Record<string, unknown> = {};
 
-  for (const key of Object.keys(patch)) {
-    const nextValue = patch[key];
+  for (const key of Object.keys(patchRecord)) {
+    const nextValue = patchRecord[key];
     if (key === 'raw') {
       const nextRaw = filterRawUiPatch(nextValue, currentUi);
       if (nextRaw) filtered.raw = nextRaw;
@@ -88,7 +89,7 @@ function filterUiPatchAgainstCurrentState(App: unknown, patch: UiSlicePatch): Ui
     filtered[key] = nextValue;
   }
 
-  return filtered;
+  return asUiPatch(filtered);
 }
 
 function readCurrentUiValue(App: unknown, key: string): unknown {

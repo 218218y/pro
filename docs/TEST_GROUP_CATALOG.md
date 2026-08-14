@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-14T10:44:16.232Z
+Generated: 2026-08-14T15:37:10.571Z
 
 ## Summary
 
 - Catalog groups: 66
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 479
+- Catalog-owned direct test-file references: 480
 - Resolved file references across aggregate sequences: 126
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
@@ -61,7 +61,7 @@ Generated: 2026-08-14T10:44:16.232Z
 | `residual-families-core`                    | architecture | node-test      | node        |            2 |              2 |            0 | builder, ui/export                                                   |
 | `runtime-access-surfaces`                   | focused      | serial-tsx     | tsx         |           17 |             17 |            0 | runtime/access, platform/access, state/history                       |
 | `runtime-platform-core-family-contracts`    | architecture | node-test      | node        |            1 |              1 |            0 | runtime, platform                                                    |
-| `runtime-platform-core-family-core`         | focused      | node-test      | node        |            7 |              7 |            0 | runtime, platform, kernel                                            |
+| `runtime-platform-core-family-core`         | focused      | node-test      | node        |            8 |              8 |            0 | runtime, platform, kernel                                            |
 | `runtime-surface-family-core`               | architecture | node-test      | node        |            1 |              1 |            0 | runtime                                                              |
 | `service-canonical-surfaces`                | focused      | tsx-test       | tsx         |            8 |              8 |            0 | services/public-surface                                              |
 | `sketch-box-content-protocol`               | focused      | tsx-test       | tsx         |           13 |             13 |            0 | services/canvas-picking, features/sketch-box                         |

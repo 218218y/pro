@@ -28,37 +28,33 @@ test('project canonical snapshot boundary audit passes', () => {
   assert.deepEqual(runProjectMigrationBoundaryAudit().failures, []);
 });
 
-test('project canonical snapshot owner normalizes raw values without old direct-dimension materialization', () => {
+test('project canonical snapshot owner filters raw values without top-level dimension materialization', () => {
   const source = readSource('esm/native/io/project_load_canonical_snapshot.ts');
   const body = exportedFunctionBody(source, 'canonicalizeProjectUiSnapshot');
 
   assert.match(source, /export function canonicalizeProjectUiSnapshot/);
-  assert.match(body, /cloneUiRawInputs\(source\.raw\)/);
+  assert.match(body, /const sourceRaw = isRecord\(source\.raw\) \? source\.raw : \{\};/);
   assert.match(body, /for \(const key of UI_RAW_SCALAR_KEYS\)/);
-  assert.match(body, /hasOwn\(raw as UnknownRecord, key\)/);
+  assert.match(body, /hasOwn\(sourceRaw, key\)/);
   assert.match(body, /droppedKeys\.push\(key\)/);
   assert.doesNotMatch(source, /filledKeys/);
   assert.doesNotMatch(body, /source\[key\]/);
 });
 
-test('canonical ui.raw selector is raw-only and old fail-soft helpers remain quarantined', () => {
+test('canonical ui.raw selector is raw-only and the tolerant snapshot owner is retired', () => {
   const facade = readSource('esm/native/runtime/ui_raw_selectors.ts');
   const source = readSource('esm/native/runtime/ui_raw_selectors_canonical.ts');
-  const tolerantSource = readSource('esm/native/runtime/ui_raw_selectors_snapshot.ts');
   const canonicalBody = exportedFunctionBody(source, 'readUiRawScalarFromCanonicalSnapshot');
   const assertBody = exportedFunctionBody(source, 'assertCanonicalUiRawDims');
 
-  assert.doesNotMatch(canonicalBody, /readUiDirectScalar/);
   assert.match(canonicalBody, /getRawFromUiSnapshot\(ui\)/);
   assert.match(canonicalBody, /hasOwnProperty\.call\(raw, key\)/);
   assert.match(canonicalBody, /readCanonicalUiScalarValue\(key, raw\[key\]\)/);
   assert.match(source, /function missingCanonicalEssentialUiRawDims\(ui: unknown\)/);
   assert.match(assertBody, /missingCanonicalEssentialUiRawDims\(ui\)/);
-  assert.doesNotMatch(source, /missingEssentialUiRawDims/);
-  assert.doesNotMatch(source, /readUiScalarValue/);
-  assert.match(tolerantSource, /export function ensureUiRawDimsFromSnapshot/);
   assert.match(facade, /readUiRawScalarFromCanonicalSnapshot/);
-  assert.match(facade, /ensureUiRawDimsFromSnapshot/);
+  assert.doesNotMatch(facade, /ensureUiRawDimsFromSnapshot|readUiRawScalarFromSnapshot/);
+  assert.equal(fs.existsSync('esm/native/runtime/ui_raw_selectors_snapshot.ts'), false);
 });
 
 test('project load route canonicalizes then asserts canonical ui.raw before commit', () => {

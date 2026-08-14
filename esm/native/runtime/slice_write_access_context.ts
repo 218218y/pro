@@ -10,7 +10,7 @@ import { getActions } from './actions_access_core.js';
 import { isActionStubFn } from './actions_access_shared.js';
 import { getStoreRootMaybe } from './app_roots_access.js';
 import { asRecord } from './slice_write_access_shared.js';
-import type { SlicePatchNamespace } from './slice_write_access_shared.js';
+import type { SlicePatchNamespace, SlicePatchValue } from './slice_write_access_shared.js';
 
 export type SliceWriteStoreLike = Partial<
   Pick<RootStoreLike, 'patch' | 'setUi' | 'setRuntime' | 'setModePatch' | 'setConfig' | 'setMeta'>
@@ -23,7 +23,7 @@ export type SliceWriteAppLike = {
 };
 
 export type SliceNamespaceSurface = UnknownRecord & {
-  patch?: (payload: UnknownRecord, meta?: ActionMetaLike) => unknown;
+  patch?: (payload: SlicePatchValue, meta?: ActionMetaLike) => unknown;
   touch?: (meta?: ActionMetaLike) => unknown;
 };
 

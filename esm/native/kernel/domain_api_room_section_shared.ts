@@ -7,11 +7,13 @@ import type {
   RoomActionsLike,
   RuntimeStateLike,
   UiStateLike,
+  UiRawInputsLike,
   UnknownRecord,
   WardrobeType,
 } from '../../../types';
 
 import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
+import { cloneUiRawInputs } from '../../../types/ui_raw.js';
 
 export type MetaNoBuildFn = (
   actions: ActionsNamespaceLike,
@@ -51,7 +53,7 @@ export interface InstallDomainApiRoomSectionArgs {
   _cfg: () => ConfigStateLike;
   _ui: () => UiStateLike;
   _rt: () => RuntimeStateLike;
-  _captureConfigSnapshot: () => ConfigStateLike;
+  _captureConfigSnapshot: () => UnknownRecord;
   _ensureObj: (x: unknown) => UnknownRecord;
   _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   _metaNoBuild: MetaNoBuildFn;
@@ -59,7 +61,7 @@ export interface InstallDomainApiRoomSectionArgs {
   _domainApiReportNonFatal: ReportFn;
 }
 
-export const PROFILE_UI_RAW_KEYS = [
+export const PROFILE_UI_KEYS = [
   'doorStyle',
   'singleDoorPos',
   'structureSelect',
@@ -103,7 +105,7 @@ export const PROFILE_UI_RAW_KEYS = [
   'lastSelectedWallColor',
   'lastSelectedFloorStyleIdByType',
   'lastLightPreset',
-] satisfies readonly string[];
+] as const satisfies readonly (keyof UiStateLike)[];
 
 function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : null;
@@ -262,9 +264,9 @@ export function cloneUiStateSnapshot(
 
 export function pickUiForWardrobeTypeProfile(uiIn: unknown): UiStateLike {
   const ui0 = readUiStateSnapshot(uiIn);
-  const raw0 = asRecord(ui0.raw) || {};
+  const raw0 = cloneUiRawInputs(ui0.raw);
 
-  const outRaw: UnknownRecord = {};
+  const outRaw: UiRawInputsLike = {};
   const out: UiStateLike = { raw: outRaw };
 
   if (raw0.width !== undefined) outRaw.width = raw0.width;
@@ -279,9 +281,9 @@ export function pickUiForWardrobeTypeProfile(uiIn: unknown): UiStateLike {
     outRaw.chestCommodeMirrorWidthCm = raw0.chestCommodeMirrorWidthCm;
   }
 
-  for (const key of PROFILE_UI_RAW_KEYS) {
-    if (raw0[key] !== undefined) outRaw[key] = raw0[key];
-    if (ui0[key] !== undefined) out[key] = ui0[key];
+  for (const key of PROFILE_UI_KEYS) {
+    const value = ui0[key];
+    if (value !== undefined) Object.assign(out, { [key]: value });
   }
 
   if (ui0.currentFloorType !== undefined) out.currentFloorType = ui0.currentFloorType;

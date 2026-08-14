@@ -25,10 +25,10 @@ function normalizeStructureString(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-function readUiDoorsScalar(value: unknown): unknown {
+function readCanonicalUiDoorsScalar(value: unknown): unknown {
   const uiRec = asProjectConfigRecord(value);
   const raw = asProjectConfigRecord(uiRec.raw);
-  return Object.prototype.hasOwnProperty.call(raw, 'doors') ? raw.doors : uiRec.doors;
+  return raw.doors;
 }
 
 export function buildStructureUiSnapshotFromValues(ctx: {
@@ -40,10 +40,9 @@ export function buildStructureUiSnapshotFromValues(ctx: {
   const singleDoorPos = normalizeStructureString(ctx.singleDoorPos);
   const structureSelect = normalizeStructureString(ctx.structureSelection);
   return {
-    doors,
     singleDoorPos,
     structureSelect,
-    raw: { doors, singleDoorPos, structureSelect },
+    raw: { doors },
   };
 }
 
@@ -70,12 +69,10 @@ export function buildStructureUiSnapshotFromUiState(
   ui: UiStateLike | UnknownRecord | null | undefined
 ): UnknownRecord {
   const uiRec = asProjectConfigRecord(ui);
-  const raw = asProjectConfigRecord(uiRec.raw);
   return buildStructureUiSnapshotFromValues({
-    doors: typeof uiRec.doors !== 'undefined' ? uiRec.doors : readUiDoorsScalar(uiRec),
-    singleDoorPos: typeof uiRec.singleDoorPos === 'string' ? uiRec.singleDoorPos : raw.singleDoorPos,
-    structureSelection:
-      typeof uiRec.structureSelect === 'string' ? uiRec.structureSelect : raw.structureSelect,
+    doors: readCanonicalUiDoorsScalar(uiRec),
+    singleDoorPos: uiRec.singleDoorPos,
+    structureSelection: uiRec.structureSelect,
   });
 }
 
@@ -86,10 +83,9 @@ export function buildStructureUiSnapshotFromUiAndRaw(
   const uiRec = asProjectConfigRecord(ui);
   const rawRec = asProjectConfigRecord(raw);
   return buildStructureUiSnapshotFromValues({
-    doors: readUiDoorsScalar(uiRec),
-    singleDoorPos: typeof uiRec.singleDoorPos === 'string' ? uiRec.singleDoorPos : rawRec.singleDoorPos,
-    structureSelection:
-      typeof uiRec.structureSelect === 'string' ? uiRec.structureSelect : rawRec.structureSelect,
+    doors: rawRec.doors,
+    singleDoorPos: uiRec.singleDoorPos,
+    structureSelection: uiRec.structureSelect,
   });
 }
 

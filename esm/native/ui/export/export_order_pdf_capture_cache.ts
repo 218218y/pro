@@ -104,17 +104,8 @@ function sanitizeRuntimeCaptureState(value: unknown): UnknownRecord {
   return runtime;
 }
 
-function sanitizeBuildCaptureState(value: unknown): UnknownRecord | null {
-  const build = asUnknownRecord(value);
-  if (!build) return null;
-  const next: UnknownRecord = {};
-  if (Array.isArray(build.signature)) next.signature = build.signature;
-  if (Array.isArray(build.modulesStructure)) next.modulesStructure = build.modulesStructure;
-  return Object.keys(next).length ? next : null;
-}
-
 function readOrderPdfCompositeCaptureState(App: AppContainer): UnknownRecord {
-  const state = readStoreStateMaybe<UnknownRecord>(App);
+  const state = readStoreStateMaybe(App);
   if (!state) return {};
   const captureState: UnknownRecord = {
     ui: sanitizeUiCaptureState(state.ui),
@@ -122,8 +113,6 @@ function readOrderPdfCompositeCaptureState(App: AppContainer): UnknownRecord {
     mode: cloneRecord(state.mode),
     runtime: sanitizeRuntimeCaptureState(state.runtime),
   };
-  const build = sanitizeBuildCaptureState(state.build);
-  if (build) captureState.build = build;
   return captureState;
 }
 

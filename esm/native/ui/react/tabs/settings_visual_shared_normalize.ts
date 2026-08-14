@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../../../types';
+import type { UiStateLike, UnknownRecord } from '../../../../../types';
 
 import type { FloorStyle, SettingsVisualFloorType, WallColor } from './settings_visual_shared_contracts.js';
 
@@ -60,7 +60,7 @@ export function normalizeWallColor(value: unknown): WallColor | null {
   };
 }
 
-export function getFloorTypeFromUi(ui: UnknownRecord): SettingsVisualFloorType {
+export function getFloorTypeFromUi(ui: UiStateLike): SettingsVisualFloorType {
   const value = ui.currentFloorType;
   return value === 'parquet' || value === 'tiles' || value === 'none' ? value : 'parquet';
 }

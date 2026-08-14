@@ -1,14 +1,6 @@
-// Typed config scalar keys and their value types.
-//
-// Goal: bring type-safety to the most common `setCfgScalar(key, value)` calls
-// without restricting the migration. We keep a fallback signature to allow
-// older/dynamic keys where necessary.
+// Canonical typed config scalar writes.
 
-import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
-import type { SavedColorLike } from './build';
-import type { ModulesConfigurationLike, CornerConfigurationLike } from './modules_configuration';
-import type { IndividualColorsMap } from './maps';
-import type { ProjectPreChestStateLike, ProjectSavedNotesLike } from './project';
+import type { ConfigStateLike } from './build';
 
 export type ConfigScalarKey =
   | 'wardrobeType'
@@ -27,7 +19,6 @@ export type ConfigScalarKey =
   | 'overlayShelfThicknessCm'
   | 'insetFrameThicknessCm'
   | 'insetShelfThicknessCm'
-  // Common persisted collections (treated as scalars in the write contract)
   | 'modulesConfiguration'
   | 'stackSplitLowerModulesConfiguration'
   | 'cornerConfiguration'
@@ -35,44 +26,10 @@ export type ConfigScalarKey =
   | 'colorSwatchesOrder'
   | 'savedNotes'
   | 'individualColors'
-  | 'preChestState'
-  // Dimensions (some flows store these under config; keep typed where possible)
-  | 'width'
-  | 'height'
-  | 'depth'
-  | 'dirty';
+  | 'preChestState';
 
 export type ConfigScalarValueMap = {
-  wardrobeType: WardrobeType;
-  globalHandleType: HandleType;
-  isLibraryMode: boolean;
-  isMultiColorMode: boolean;
-  showDimensions: boolean;
-  MIRROR_REFLECTOR_ENABLED: boolean;
-  isManualWidth: boolean;
-  customUploadedDataURL: string | null;
-  grooveLinesCount: number | null;
-  boardMaterial: BoardMaterial | '';
-  doorMountMode: DoorMountMode | '';
-  drawerRunnerType: DrawerRunnerType;
-  overlayFrameThicknessCm: number | null;
-  overlayShelfThicknessCm: number | null;
-  insetFrameThicknessCm: number | null;
-  insetShelfThicknessCm: number | null;
-
-  modulesConfiguration: ModulesConfigurationLike;
-  stackSplitLowerModulesConfiguration: ModulesConfigurationLike;
-  cornerConfiguration: CornerConfigurationLike;
-  savedColors: SavedColorLike[];
-  colorSwatchesOrder: string[];
-  savedNotes: ProjectSavedNotesLike;
-  individualColors: IndividualColorsMap;
-  preChestState: ProjectPreChestStateLike;
-
-  width: number;
-  height: number;
-  depth: number;
-  dirty: boolean;
+  [K in ConfigScalarKey]-?: Exclude<ConfigStateLike[K], undefined>;
 };
 
 export type ConfigScalarValue<K extends ConfigScalarKey> = ConfigScalarValueMap[K];

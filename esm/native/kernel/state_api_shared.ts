@@ -100,15 +100,11 @@ export function asConfigPatch(patch: unknown): ConfigSlicePatch {
 }
 
 export function buildUiScalarPatch(key: string, value: unknown): UiSlicePatch {
-  const patch: UiSlicePatch = {};
-  patch[key] = value;
-  return patch;
+  return asUiPatch({ [key]: value });
 }
 
 export function buildRuntimeScalarPatch(key: string, value: unknown): RuntimeSlicePatch {
-  const patch: RuntimeSlicePatch = {};
-  patch[key] = value;
-  return patch;
+  return asRuntimePatch({ [key]: value });
 }
 
 export function hasOnlyUiSlice(payload: PatchPayload): boolean {

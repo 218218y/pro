@@ -18,6 +18,7 @@ import { emitExternalDrawerBraceShelf } from './external_drawer_shelf.js';
 import type {
   UnknownRecord,
   AppContainer,
+  ConfigStateLike,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
   BuilderCreateBoardFn,
@@ -38,7 +39,7 @@ type MutableExternalDrawerOpLike = ExternalDrawerOpLike & {
 type ApplyExternalDrawersForModuleParams = {
   App?: AppContainer;
   THREE?: ThreeLike;
-  cfg?: UnknownRecord | null;
+  cfg?: ConfigStateLike | null;
   config?: UnknownRecord | null;
   moduleIndex?: number;
   startDoorId?: number;

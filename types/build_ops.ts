@@ -17,6 +17,7 @@ import type {
   BuilderCallable,
   BuilderGetMaterialFactoryFn,
   BuilderOutlineBindingFactory,
+  BuilderDoorMapsConfigLike,
   NullableBuilderCallable,
 } from './build_builder';
 
@@ -46,7 +47,7 @@ export type HingedDoorOpLike = UnknownRecord & {
 
 export type ApplyHingedDoorsArgsLike = UnknownRecord & {
   THREE: ThreeLike;
-  cfg?: UnknownRecord;
+  cfg?: BuilderDoorMapsConfigLike;
   ops: HingedDoorOpLike[];
 };
 
@@ -92,7 +93,7 @@ export type SlidingDoorOpsLike = UnknownRecord & {
 
 export type ApplySlidingDoorsArgsLike = UnknownRecord & {
   THREE: ThreeLike;
-  cfg?: UnknownRecord;
+  cfg?: BuilderDoorMapsConfigLike;
   ops: SlidingDoorOpsLike;
 };
 
@@ -127,7 +128,7 @@ export type ExternalDrawersOpsLike = UnknownRecord & {
 
 export type ApplyExternalDrawersArgsLike = UnknownRecord & {
   THREE: ThreeLike;
-  cfg?: UnknownRecord;
+  cfg?: BuilderDoorMapsConfigLike;
   config?: UnknownRecord;
   ops: ExternalDrawersOpsLike;
 };

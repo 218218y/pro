@@ -2,11 +2,9 @@
 //
 // Purpose:
 // - Provide a stable, typed map for the most common `ui.raw.*` keys.
-// - Keep the surface permissive (index signature) for legacy/experimental keys.
+// - Keep the store-owned raw surface closed; unknown external keys are filtered at parsing boundaries.
 
-import type { UnknownRecord } from './common';
-
-export interface UiRawInputsLike extends UnknownRecord {
+export interface UiRawInputsLike {
   // Core structural dims (cm)
   width?: number | null;
   height?: number | null;
@@ -41,9 +39,6 @@ export interface UiRawInputsLike extends UnknownRecord {
   cellDimsHexMode?: boolean;
   cellDimsHexProtrusion?: number | null;
   cellDimsHexDoorWidth?: number | null;
-
-  // Allow legacy/experimental keys without churn.
-  [k: string]: unknown;
 }
 
 // Scalar keys we intentionally type-check at call sites.
@@ -80,34 +75,7 @@ export type UiRawNumericKey =
 export type UiRawScalarKey = UiRawNumericKey | UiRawBooleanKey;
 
 export type UiRawScalarValueMap = {
-  width: number | null;
-  height: number | null;
-  depth: number | null;
-  doors: number | null;
-  chestDrawersCount: number | null;
-  chestCommodeMirrorHeightCm: number | null;
-  chestCommodeMirrorWidthCm: number | null;
-  chestCommodeMirrorWidthManual: boolean;
-
-  stackSplitLowerHeight: number | null;
-  stackSplitLowerDepth: number | null;
-  stackSplitLowerWidth: number | null;
-  stackSplitLowerDoors: number | null;
-  stackSplitLowerDepthManual: boolean;
-  stackSplitLowerWidthManual: boolean;
-  stackSplitLowerDoorsManual: boolean;
-
-  cornerWidth: number | null;
-  cornerHeight: number | null;
-  cornerDepth: number | null;
-  cornerDoors: number | null;
-
-  cellDimsWidth: number | null;
-  cellDimsHeight: number | null;
-  cellDimsDepth: number | null;
-  cellDimsHexMode: boolean;
-  cellDimsHexProtrusion: number | null;
-  cellDimsHexDoorWidth: number | null;
+  [K in UiRawScalarKey]-?: Exclude<UiRawInputsLike[K], undefined>;
 };
 
 export const UI_RAW_BOOLEAN_KEYS: readonly UiRawBooleanKey[] = [
@@ -163,33 +131,54 @@ function isObjectRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
 
+function readCanonicalRawValue<K extends UiRawScalarKey>(
+  source: Record<string, unknown>,
+  key: K
+): UiRawScalarValueMap[K] | undefined {
+  const value = source[key];
+  if (isUiRawBooleanKey(key)) {
+    return (typeof value === 'boolean' ? value : undefined) as UiRawScalarValueMap[K] | undefined;
+  }
+  return (value === null || (typeof value === 'number' && Number.isFinite(value)) ? value : undefined) as
+    UiRawScalarValueMap[K] | undefined;
+}
+
+function writeCanonicalRawValue<K extends UiRawScalarKey>(
+  target: UiRawInputsLike,
+  key: K,
+  value: UiRawScalarValueMap[K]
+): void {
+  target[key] = value;
+}
+
 export function asUiRawInputs(raw: unknown): UiRawInputsLike {
-  return isObjectRecord(raw) ? { ...raw } : {};
+  if (!isObjectRecord(raw)) return {};
+  const next: UiRawInputsLike = {};
+  for (const key of UI_RAW_SCALAR_KEYS) {
+    const value = readCanonicalRawValue(raw, key);
+    if (typeof value !== 'undefined') writeCanonicalRawValue(next, key, value);
+  }
+  return next;
 }
 
 export function cloneUiRawInputs(raw: unknown): UiRawInputsLike {
-  return { ...asUiRawInputs(raw) };
+  return asUiRawInputs(raw);
 }
 
-export type BuildUiRawScalarPatch = {
-  <K extends UiRawScalarKey>(key: K, value: UiRawScalarValueMap[K]): UiRawInputsLike;
-  (key: string, value: unknown): UiRawInputsLike;
-};
+export type BuildUiRawScalarPatch = <K extends UiRawScalarKey>(
+  key: K,
+  value: UiRawScalarValueMap[K]
+) => UiRawInputsLike;
 
-export const buildUiRawScalarPatch: BuildUiRawScalarPatch = (
-  key: string,
-  value: unknown
+export const buildUiRawScalarPatch: BuildUiRawScalarPatch = <K extends UiRawScalarKey>(
+  key: K,
+  value: UiRawScalarValueMap[K]
 ): UiRawInputsLike => {
-  const k = key.trim();
-  if (!k) return {};
   const patch: UiRawInputsLike = {};
-  patch[k] = value;
+  writeCanonicalRawValue(patch, key, value);
   return patch;
 };
 
 export function buildUiRawScalarPatchFromRecord(patch: unknown): UiRawInputsLike {
-  if (!isObjectRecord(patch)) return {};
-  const next: UiRawInputsLike = {};
-  for (const key of Object.keys(patch)) next[key] = patch[key];
-  return next;
+  return asUiRawInputs(patch);
 }

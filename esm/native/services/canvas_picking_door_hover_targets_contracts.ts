@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UiStateLike, UnknownRecord } from '../../../types';
 import type { CanvasPickingHitIdentity } from './canvas_picking_hit_identity.js';
 import type {
   HitObjectLike,
@@ -105,7 +105,7 @@ export type IsViewportRootFn = (App: AppContainer, node: unknown) => boolean;
 export type StrFn = (App: AppContainer, value: unknown) => string;
 export type IsDoorLikePartIdFn = (partId: string) => boolean;
 export type IsDoorOrDrawerLikePartIdFn = (partId: string) => boolean;
-export type ReadUiFn = (App: AppContainer) => UnknownRecord | null;
+export type ReadUiFn = (App: AppContainer) => UiStateLike | null;
 export type GetCanvasPickingRuntimeFn = (App: AppContainer) => PickingRuntimeLike;
 export type IsRemovedFn = (App: AppContainer, id: string) => boolean;
 export type IsSegmentedDoorBaseIdFn = (id: string) => boolean;
