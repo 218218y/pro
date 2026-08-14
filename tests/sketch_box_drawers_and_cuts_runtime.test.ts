@@ -1100,7 +1100,9 @@ test('custom segmented sketch door handles are refreshed by the generic handles 
     '../esm/native/builder/handles_apply_drawers.ts',
   ]);
   assert.match(src, /__wpSketchCustomHandles === true/);
-  assert.match(src, /refreshSketchSegmentedDoorHandles\(runtime, g, __sk, suppressedPartIds\)/);
+  assert.match(src, /const leaves = collectSketchSegmentHandleLeaves\(g\);/);
+  assert.match(src, /collectUnusuallySmallSketchDoorPartIds\(leaves, unusuallySmallDoorPartIds\);/);
+  assert.match(src, /refreshSketchSegmentedDoorHandles\(runtime, g, __sk, leaves, suppressedPartIds\)/);
 });
 
 test('generic drawer handles target only root drawer groups so sketch profile fronts do not get a second handle', async () => {

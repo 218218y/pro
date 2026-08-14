@@ -167,15 +167,17 @@ export function markSketchSegmentDoorMetrics(args: {
   partId: string;
   width: number;
   height: number;
+  constructionHeight: number;
   hingeLeft: boolean;
   thickness: number;
   handleAbsY: number | null;
 }): ValueRecord {
-  const { node, partId, width, height, hingeLeft, thickness, handleAbsY } = args;
+  const { node, partId, width, height, constructionHeight, hingeLeft, thickness, handleAbsY } = args;
   const userData = asRecord(node.userData) || {};
   userData.partId = partId;
   userData.__doorWidth = width;
   userData.__doorHeight = height;
+  userData.__wpDoorConstructionHeight = constructionHeight;
   userData.__doorMeshOffsetX = 0;
   userData.__doorRectMinX = -width / 2;
   userData.__doorRectMaxX = width / 2;
@@ -197,12 +199,13 @@ export function createRemovedDoorRestoreTarget(args: {
   runtime: SketchDoorCutsRuntime;
   width: number;
   height: number;
+  constructionHeight: number;
   thickness: number;
   partId: string;
   hingeLeft: boolean;
   handleAbsY: number | null;
 }): SketchDoorNode {
-  const { runtime, width, height, thickness, partId, hingeLeft, handleAbsY } = args;
+  const { runtime, width, height, constructionHeight, thickness, partId, hingeLeft, handleAbsY } = args;
   const { THREE } = runtime;
   const target = asSketchDoorNode(
     new THREE.Mesh(
@@ -229,6 +232,7 @@ export function createRemovedDoorRestoreTarget(args: {
     partId,
     width,
     height,
+    constructionHeight,
     hingeLeft,
     thickness,
     handleAbsY,
@@ -243,6 +247,7 @@ export function buildSketchSegmentUserData(args: {
   partId: string;
   width: number;
   height: number;
+  constructionHeight: number;
   hingeLeft: boolean;
   thickness: number;
   handleAbsY: number | null;
@@ -255,6 +260,7 @@ export function buildSketchSegmentUserData(args: {
     partId,
     width,
     height,
+    constructionHeight,
     hingeLeft,
     thickness,
     handleAbsY,
@@ -267,6 +273,7 @@ export function buildSketchSegmentUserData(args: {
     partId,
     width,
     height,
+    constructionHeight,
     hingeLeft,
     thickness,
     handleAbsY,

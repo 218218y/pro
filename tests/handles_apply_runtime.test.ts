@@ -179,6 +179,153 @@ class FakeMatrix4D {
   }
 }
 
+test('handles finalization warns about unusually small cut doors without blocking the build', () => {
+  const { App } = createApp();
+  const toasts: Array<[string, string | undefined]> = [];
+  App.services.uiFeedback = {
+    toast(message: string, kind?: string) {
+      toasts.push([message, kind]);
+    },
+  };
+
+  const smallCutDoor = new FakeGroup3D();
+  smallCutDoor.userData = {
+    partId: 'd1_bot',
+    __doorWidth: 0.6,
+    __doorHeight: 0.08,
+  };
+  const exactMinimumCutDoor = new FakeGroup3D();
+  exactMinimumCutDoor.userData = {
+    partId: 'd2_top',
+    __doorWidth: 0.6,
+    __doorHeight: 0.12,
+  };
+  const naturallyShortFullDoor = new FakeGroup3D();
+  naturallyShortFullDoor.userData = {
+    partId: 'd3_full',
+    __doorWidth: 0.6,
+    __doorHeight: 0.05,
+  };
+  App.render.doorsArray = [
+    { group: smallCutDoor, type: 'hinged' },
+    { group: exactMinimumCutDoor, type: 'hinged' },
+    { group: naturallyShortFullDoor, type: 'hinged' },
+  ];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'none', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(App.render.doorsArray.length, 3, 'the warning must not reject or mutate the built doors');
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.[1], 'info');
+  assert.match(toasts[0]?.[0] ?? '', /דלת קטנה באופן חריג/);
+  assert.match(toasts[0]?.[0] ?? '', /הבנייה הושלמה/);
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+  assert.equal(toasts.length, 1, 'an unchanged build must not repeat the same warning');
+
+  smallCutDoor.userData.__doorHeight = 0.13;
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+  smallCutDoor.userData.__doorHeight = 0.08;
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+  assert.equal(toasts.length, 2, 'a repaired then reintroduced anomaly must be reported again');
+});
+
+test('handles finalization reads the construction height of sketch drawer-cut door leaves', () => {
+  const { App } = createApp();
+  const toasts: Array<[string, string | undefined]> = [];
+  App.services.uiFeedback = {
+    toast(message: string, kind?: string) {
+      toasts.push([message, kind]);
+    },
+  };
+
+  const sketchDoorRoot = new FakeGroup3D();
+  sketchDoorRoot.userData = {
+    partId: 'd4_full',
+    __doorWidth: 0.6,
+    __doorHeight: 1,
+    __wpSketchCustomHandles: true,
+    __wpSketchSegmentedDoor: true,
+  };
+  const smallLeaf = new FakeGroup3D();
+  smallLeaf.userData = {
+    partId: 'd4_full',
+    __wpSketchDoorLeaf: true,
+    __wpSketchDoorSegment: true,
+    __doorWidth: 0.596,
+    __doorHeight: 0.076,
+    __wpDoorConstructionHeight: 0.08,
+    __hingeLeft: true,
+    __wpDoorRemoved: false,
+  };
+  const exactMinimumLeaf = new FakeGroup3D();
+  exactMinimumLeaf.userData = {
+    partId: 'd4_top',
+    __wpSketchDoorLeaf: true,
+    __wpSketchDoorSegment: true,
+    __doorWidth: 0.596,
+    __doorHeight: 0.116,
+    __wpDoorConstructionHeight: 0.12,
+    __hingeLeft: true,
+    __wpDoorRemoved: false,
+  };
+  smallLeaf.position.y = -0.2;
+  exactMinimumLeaf.position.y = 0.2;
+  sketchDoorRoot.add(smallLeaf);
+  sketchDoorRoot.add(exactMinimumLeaf);
+  App.render.doorsArray = [{ group: sketchDoorRoot, type: 'hinged' }];
+  App.store.getState = () => ({
+    ui: { view: {} },
+    config: { globalHandleType: 'none', handlesMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+
+  applyHandles({
+    App,
+    cfgSnapshot: readConfigSnapshot(App),
+    addOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+  });
+
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.[1], 'info');
+  assert.match(toasts[0]?.[0] ?? '', /מגירות חיצוניות/);
+});
+
 test('handles apply uses stored manual positions when placing external drawer handles', () => {
   const { App } = createApp();
   const outlined: unknown[] = [];

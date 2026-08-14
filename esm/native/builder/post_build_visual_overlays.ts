@@ -6,7 +6,7 @@ import { getDoorsArray } from '../runtime/render_access.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 
 import { asRecord } from './post_build_extras_shared.js';
-import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
+import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 import {
   applyRemovedPartsAfterBuild,

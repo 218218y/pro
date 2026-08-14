@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { notifyHandleFitSuppressions } from '../esm/native/builder/handles_fit_suppression_feedback.ts';
+import {
+  notifyHandleFitSuppressions,
+  notifyUnusuallySmallDoorSegments,
+} from '../esm/native/builder/construction_correction_feedback.ts';
 
 test('handle fit suppression feedback reports set differences and permits re-suppression after a complete pass', () => {
   const toasts: Array<[string, string | undefined]> = [];
@@ -24,7 +27,7 @@ test('handle fit suppression feedback reports set differences and permits re-sup
   assert.match(toasts[0]?.[0] ?? '', /2/);
   assert.equal(toasts[0]?.[1], 'info');
   assert.deepEqual(
-    (App.services.runtimeCache as Record<string, unknown>).__wpHandleFitSuppressedPartIdsByScope,
+    (App.services.runtimeCache as Record<string, unknown>).__wpConstructionCorrectionPartIdsByScope,
     { main: ['door-a', 'door-b'] }
   );
 
@@ -64,7 +67,34 @@ test('handle fit suppression feedback keeps cumulative scope state for partial p
 
   assert.equal(toasts.length, 2);
   assert.deepEqual(
-    (App.services.runtimeCache as Record<string, unknown>).__wpHandleFitSuppressedPartIdsByScope,
+    (App.services.runtimeCache as Record<string, unknown>).__wpConstructionCorrectionPartIdsByScope,
     { partial: ['door-a', 'door-b'] }
   );
+});
+
+test('construction correction feedback clearly reports small cut doors without repeating unchanged state', () => {
+  const toasts: Array<[string, string | undefined]> = [];
+  const App = {
+    services: {
+      runtimeCache: {},
+      uiFeedback: {
+        toast(message: string, type?: string) {
+          toasts.push([message, type]);
+        },
+      },
+    },
+  };
+
+  notifyUnusuallySmallDoorSegments(App, ['d2_top', 'd1_bot', 'd1_bot']);
+  notifyUnusuallySmallDoorSegments(App, ['d1_bot', 'd2_top']);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.[1], 'info');
+  assert.match(toasts[0]?.[0] ?? '', /2/);
+  assert.match(toasts[0]?.[0] ?? '', /מקטעי דלת קטנים באופן חריג/);
+  assert.match(toasts[0]?.[0] ?? '', /הבנייה הושלמה/);
+
+  notifyUnusuallySmallDoorSegments(App, []);
+  notifyUnusuallySmallDoorSegments(App, ['d1_bot']);
+  assert.equal(toasts.length, 2, 'cleared anomalies can be reported again if they return');
+  assert.match(toasts[1]?.[0] ?? '', /דלת קטנה באופן חריג/);
 });

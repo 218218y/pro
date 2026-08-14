@@ -10,7 +10,7 @@ import { readDoorTrimListForPart } from '../features/door_authoring/api.js';
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
 import { maybeAttachSegmentHandle } from './post_build_sketch_door_cuts_rebuild_handles.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
+import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import {
   appendHingedDoorHardware,
   detachHingedDoorHardwareForDoor,
@@ -127,6 +127,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
 
   for (let segIndex = 0; segIndex < visibleSegments.length; segIndex++) {
     const seg = visibleSegments[segIndex];
+    const segmentConstructionHeight = seg.yMax - seg.yMin;
     const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
     if (!(segHeight > SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM)) continue;
     const segCenterLocalY = (seg.yMin + seg.yMax) / 2 - centerY;
@@ -156,6 +157,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
         runtime,
         width: segmentVisualWidth,
         height: segmentVisualHeight,
+        constructionHeight: segmentConstructionHeight,
         thickness,
         partId: segmentPartId,
         hingeLeft: isLeftHinge,
@@ -167,6 +169,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
         partId: segmentPartId,
         width: segmentVisualWidth,
         height: segmentVisualHeight,
+        constructionHeight: segmentConstructionHeight,
         hingeLeft: isLeftHinge,
         thickness,
         handleAbsY: segmentHandleAbsY,
@@ -201,6 +204,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       partId: segmentPartId,
       width: segmentVisualWidth,
       height: segmentVisualHeight,
+      constructionHeight: segmentConstructionHeight,
       hingeLeft: isLeftHinge,
       thickness,
       handleAbsY: segmentHandleAbsY,

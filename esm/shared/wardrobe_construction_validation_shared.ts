@@ -1,5 +1,7 @@
 import { EXTERNAL_DRAWER_SIZE_POLICY } from './dimensions/external_drawer_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from './dimensions/door_system_policy.js';
 import { EDGE_HANDLE_SIZE_POLICY, STANDARD_HANDLE_RENDER_POLICY } from './dimensions/handle_policy.js';
+import { resolveDoorVisualSegmentIdentity } from './door_visual_key_contracts_shared.js';
 
 const FIT_EPSILON_M = 1e-9;
 
@@ -39,6 +41,12 @@ export type DoorHandleFitResult = {
   handleHeightM: number;
   minCenterYM: number;
   maxCenterYM: number;
+};
+
+export type DoorSegmentConstructionSizeInput = {
+  partId: unknown;
+  doorHeightM: unknown;
+  isSketchSegment: unknown;
 };
 
 function readFiniteNumber(value: unknown): number | null {
@@ -146,4 +154,16 @@ export function clampDoorHandleLocalCenterYToFit(input: DoorHandleFitInput): num
   if (y < fit.minCenterYM) return fit.minCenterYM;
   if (y > fit.maxCenterYM) return fit.maxCenterYM;
   return y;
+}
+
+export function isUnusuallySmallDoorSegment(input: DoorSegmentConstructionSizeInput): boolean {
+  const doorHeightM =
+    typeof input.doorHeightM === 'number' && Number.isFinite(input.doorHeightM) ? input.doorHeightM : null;
+  if (doorHeightM == null || !(doorHeightM > 0)) return false;
+
+  const isCutSegment =
+    input.isSketchSegment === true || resolveDoorVisualSegmentIdentity(input.partId).isSegment;
+  if (!isCutSegment) return false;
+
+  return doorHeightM < HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM - FIT_EPSILON_M;
 }

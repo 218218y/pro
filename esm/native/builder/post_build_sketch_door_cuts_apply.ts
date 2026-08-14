@@ -18,7 +18,7 @@ import {
   subtractSketchDrawerIntervals,
 } from './post_build_sketch_door_cuts_intervals.js';
 import { rebuildSketchSegmentedDoor } from './post_build_sketch_door_cuts_rebuild.js';
-import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
+import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import {
   readGeometryUserDataNumber,
   readGeometryUserDataNumberKey,

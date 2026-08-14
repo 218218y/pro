@@ -5,6 +5,7 @@ import {
   clampDoorHandleLocalCenterYToFit,
   getDoorHandleFootprintHeightM,
   getExternalDrawerStackHeightM,
+  isUnusuallySmallDoorSegment,
   resolveDoorHandleVerticalFit,
   resolveExternalDrawerFitFromBody,
   resolveExternalDrawerFitFromBounds,
@@ -128,5 +129,52 @@ test('door handle footprint and vertical clamp boundaries preserve canonical dim
       localCenterYM: 0,
     }),
     null
+  );
+});
+
+test('door segment size validation uses the canonical cut minimum and only applies to cut leaves', () => {
+  assert.equal(
+    isUnusuallySmallDoorSegment({
+      partId: 'd1_bot',
+      doorHeightM: 0.12,
+      isSketchSegment: false,
+    }),
+    false,
+    'the exact canonical 12cm cut boundary remains valid'
+  );
+  assert.equal(
+    isUnusuallySmallDoorSegment({
+      partId: 'd1_bot',
+      doorHeightM: 0.12 - 2e-9,
+      isSketchSegment: false,
+    }),
+    true
+  );
+  assert.equal(
+    isUnusuallySmallDoorSegment({
+      partId: 'd2_full',
+      doorHeightM: 0.05,
+      isSketchSegment: false,
+    }),
+    false,
+    'a naturally short full door is not misclassified as a cut remnant'
+  );
+  assert.equal(
+    isUnusuallySmallDoorSegment({
+      partId: 'd3_full',
+      doorHeightM: 0.08,
+      isSketchSegment: true,
+    }),
+    true,
+    'a one-leaf sketch drawer cut is still a cut remnant even when it keeps the full-door id'
+  );
+  assert.equal(
+    isUnusuallySmallDoorSegment({
+      partId: 'd4_top',
+      doorHeightM: '0.08',
+      isSketchSegment: false,
+    }),
+    false,
+    'runtime geometry must not accept string-encoded dimensions'
   );
 });

@@ -6,12 +6,16 @@ import {
 } from '../../shared/dimensions/handle_policy.js';
 import {
   clampDoorHandleLocalCenterYToFit,
+  isUnusuallySmallDoorSegment,
   resolveDoorHandleVerticalFit,
 } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
-import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
+import {
+  notifyHandleFitSuppressions,
+  notifyUnusuallySmallDoorSegments,
+} from './construction_correction_feedback.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import type { NodeLike } from './handles_shared.js';
 import {
@@ -29,6 +33,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
   if (!Array.isArray(doorsArray)) return;
   const standardSuppressedPartIds: string[] = [];
   const suppressedPartIds: string[] = [];
+  const unusuallySmallDoorPartIds: string[] = [];
 
   for (const d of doorsArray) {
     const g = d && d.group;
@@ -37,7 +42,9 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 
     const __sk = g.userData && g.userData.__wpStack === 'bottom' ? 'bottom' : 'top';
     if (g.userData.__wpSketchCustomHandles === true) {
-      refreshSketchSegmentedDoorHandles(runtime, g, __sk, suppressedPartIds);
+      const leaves = collectSketchSegmentHandleLeaves(g);
+      collectUnusuallySmallSketchDoorPartIds(leaves, unusuallySmallDoorPartIds);
+      refreshSketchSegmentedDoorHandles(runtime, g, __sk, leaves, suppressedPartIds);
       continue;
     }
 
@@ -46,11 +53,16 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     const id = g.userData.partId;
     if (removeDoorsEnabled && isDoorRemovedV7(id)) continue;
 
+    const doorW = readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ?? 0;
+    const doorH = readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ?? 0;
+    const partId = formatIdentityValue(readIdentityValue(id));
+    if (partId && isUnusuallySmallDoorSegment({ partId, doorHeightM: doorH, isSketchSegment: false })) {
+      unusuallySmallDoorPartIds.push(partId);
+    }
+
     const hType = getHandleType(id, __sk);
     if (!hType || hType === 'none') continue;
 
-    const doorW = readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ?? 0;
-    const doorH = readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ?? 0;
     const isLeftHinge = !!g.userData.__hingeLeft;
     const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : undefined;
 
@@ -93,6 +105,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
 
   notifySuppressedStandardDoorHandles(App, standardSuppressedPartIds);
   notifySuppressedSketchSegmentDoorHandles(App, suppressedPartIds);
+  notifyUnusuallySmallDoorSegments(App, unusuallySmallDoorPartIds);
 }
 
 function applyDoorHandleZFlip(group: NodeLike, handle: NodeLike): void {
@@ -117,6 +130,7 @@ type SketchSegmentHandleLeaf = {
   partId: string;
   rootWidth: number;
   height: number;
+  constructionHeight: number;
   centerLocalY: number;
   isLeftHinge: boolean;
   handleAbsY: number | null;
@@ -158,6 +172,7 @@ function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLe
           ? ud.partId
           : '';
     const height = readOptionalFinite(ud.__doorHeight);
+    const constructionHeight = readOptionalFinite(ud.__wpDoorConstructionHeight) ?? height;
     const centerLocalY = readOptionalFinite(node.position?.y);
     const effectiveRootWidth = rootWidth > 0 ? rootWidth : (readOptionalFinite(ud.__doorWidth) ?? 0);
 
@@ -167,6 +182,8 @@ function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLe
       effectiveRootWidth > 0 &&
       height != null &&
       height > 0 &&
+      constructionHeight != null &&
+      constructionHeight > 0 &&
       centerLocalY != null &&
       ud.__wpDoorRemoved !== true
     ) {
@@ -175,6 +192,7 @@ function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLe
         partId,
         rootWidth: effectiveRootWidth,
         height,
+        constructionHeight,
         centerLocalY,
         isLeftHinge: typeof ud.__hingeLeft === 'boolean' ? !!ud.__hingeLeft : fallbackHingeLeft,
         handleAbsY: readOptionalFinite(ud.__handleAbsY) ?? rootHandleAbsY,
@@ -193,6 +211,24 @@ function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLe
     return a.centerLocalY - b.centerLocalY;
   });
   return out;
+}
+
+function collectUnusuallySmallSketchDoorPartIds(
+  leaves: readonly SketchSegmentHandleLeaf[],
+  out: string[]
+): void {
+  for (let i = 0; i < leaves.length; i += 1) {
+    const leaf = leaves[i];
+    if (
+      isUnusuallySmallDoorSegment({
+        partId: leaf.partId,
+        doorHeightM: leaf.constructionHeight,
+        isSketchSegment: true,
+      })
+    ) {
+      out.push(leaf.partId);
+    }
+  }
 }
 
 function resolveSegmentManualHandleLocalY(args: {
@@ -268,12 +304,12 @@ function refreshSketchSegmentedDoorHandles(
   runtime: HandlesApplyRuntime,
   root: NodeLike,
   stackKey: 'top' | 'bottom',
+  leaves: readonly SketchSegmentHandleLeaf[],
   suppressedPartIds: string[]
 ): void {
   if (root.userData?.__wpSketchSegmentedDoor !== true) return;
 
   runtime.removeExistingHandleChildren(root);
-  const leaves = collectSketchSegmentHandleLeaves(root);
   if (!leaves.length) return;
 
   for (let i = 0; i < leaves.length; i += 1) {

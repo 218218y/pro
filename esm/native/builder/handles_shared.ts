@@ -48,6 +48,7 @@ export type HandleUserDataLike = ValueRecord & {
   __baseVisible?: boolean;
   __doorWidth?: number;
   __doorHeight?: number;
+  __wpDoorConstructionHeight?: number;
   __hingeLeft?: boolean;
   __handleZSign?: number;
   __handleAbsY?: number;

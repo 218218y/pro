@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T07:12:45.990Z",
+  "generatedAt": "2026-08-14T09:05:13.292Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 549,
@@ -1948,21 +1948,21 @@
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 107,
+      "line": 120,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-handle-visual-fallback: optional handle visual metadata must not block door rendering"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 142,
+      "line": 156,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "const fallbackHingeLeft = !!root.userData?.__hingeLeft;"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 179,
+      "line": 197,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "isLeftHinge: typeof ud.__hingeLeft === 'boolean' ? !!ud.__hingeLeft : fallbackHingeLeft,"

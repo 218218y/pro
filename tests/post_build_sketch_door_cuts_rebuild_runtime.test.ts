@@ -976,6 +976,9 @@ test('segmented sketch door rebuild preserves focused threshold, clearance, mini
   assert.ok(rendered.children.length >= 1);
   const renderedSegment = rendered.children[0];
   assert.equal(renderedSegment.userData.__wpFrontThickness, 0.03);
+  assert.ok(
+    Math.abs(renderedSegment.userData.__wpDoorConstructionHeight - (exactThresholdHeight + 1e-9)) < 1e-12
+  );
   assert.equal(
     renderedSegment.userData.__doorWidth,
     SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM
