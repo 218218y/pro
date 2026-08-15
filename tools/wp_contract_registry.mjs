@@ -740,6 +740,24 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     justification: 'Snapshot and store runtime reads share one normalized selector surface.',
   }),
   topology({
+    id: 'ui:store-actions-ui',
+    publicFacade: 'esm/native/ui/react/actions/store_actions_ui.ts',
+    privateOwners: [
+      'esm/native/ui/react/actions/store_actions_ui_contracts.ts',
+      'esm/native/ui/react/actions/store_actions_ui_runtime.ts',
+      'esm/native/ui/react/actions/store_actions_ui_writes.ts',
+      'esm/native/ui/react/actions/store_actions_ui_project.ts',
+      'esm/native/ui/react/actions/store_actions_ui_structure.ts',
+      'esm/native/ui/react/actions/store_actions_ui_render.ts',
+    ],
+    behaviorTests: [
+      'tests/store_actions_ui_runtime.test.ts',
+      'tests/store_ui_action_capability_runtime.test.ts',
+    ],
+    justification:
+      'React UI store actions keep AppContainer adaptation in one facade/runtime boundary while private write logic executes against narrow capabilities.',
+  }),
+  topology({
     id: 'services:viewer-measurement-tool',
     publicFacade: 'esm/native/services/viewer_measurement_tool.ts',
     privateOwners: [

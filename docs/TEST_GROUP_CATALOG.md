@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-15T18:33:26.903Z
+Generated: 2026-08-15T18:50:58.322Z
 
 ## Summary
 
-- Catalog groups: 66
+- Catalog groups: 67
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 480
+- Catalog-owned direct test-file references: 482
 - Resolved file references across aggregate sequences: 126
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
@@ -38,7 +38,7 @@ Generated: 2026-08-15T18:33:26.903Z
 | `cloud-sync-sync-ops`                       | focused      | serial-tsx     | tsx         |           13 |             13 |            0 | services/cloud-sync/sync-ops                                         |
 | `cloud-sync-tabs-ui`                        | focused      | tsx-test       | tsx         |            5 |              5 |            0 | ui/cloud-sync-tabs                                                   |
 | `domain-codecs`                             | focused      | tsx-test       | tsx         |            1 |              1 |            0 | shared/domain-codecs                                                 |
-| `domain-surfaces`                           | focused      | serial-tsx     | tsx         |           15 |             15 |            0 | kernel/domain-api, ui/actions, ui/feedback                           |
+| `domain-surfaces`                           | focused      | serial-tsx     | tsx         |           16 |             16 |            0 | kernel/domain-api, ui/actions, ui/feedback                           |
 | `door-build-surfaces`                       | focused      | serial-tsx     | tsx         |           14 |             14 |            0 | builder/doors, builder/post-build                                    |
 | `export-overlay-errors-family-contracts`    | architecture | node-test      | node        |            1 |              1 |            0 | ui/overlays, ui/export                                               |
 | `mirror-runtime`                            | focused      | tsx-test       | tsx         |            6 |              6 |            0 | platform/render-loop, runtime/planar-reflector                       |
@@ -75,6 +75,7 @@ Generated: 2026-08-15T18:33:26.903Z
 | `structure-tab-family-core`                 | focused      | serial-tsx     | tsx         |           22 |             22 |            0 | ui/structure-tab, ui/interior-tab                                    |
 | `tab-surfaces`                              | primary      | serial-tsx     | tsx         |           51 |             51 |            0 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |
 | `toolchain-surfaces`                        | primary      | node-test      | node        |           26 |             26 |            0 | toolchain                                                            |
+| `ui-actions-family-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | ui/actions                                                           |
 | `ui-lean-contracts`                         | architecture | node-test      | node        |            1 |              1 |            0 | ui/types                                                             |
 | `ui-order-pdf-lean-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | ui/order-pdf/types                                                   |
 | `ui-portable-typecheck-contracts`           | architecture | node-test      | node        |            1 |              1 |            0 | ui/types                                                             |

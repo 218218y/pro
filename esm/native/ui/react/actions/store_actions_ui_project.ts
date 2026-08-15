@@ -1,39 +1,44 @@
-import type { ActionMetaLike, AppContainer } from '../../../../../types';
+import type { ActionMetaLike } from '../../../../../types';
 
-import { asStringValue, getUiNamespace } from './store_actions_state.js';
+import type { StoreUiActionRuntime } from './store_actions_ui_contracts.js';
+import { asStringValue } from './store_actions_value_shared.js';
 import { setUiScalarSoft } from './store_actions_ui_writes.js';
 
-function setUiActiveTab(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiActiveTab(runtime: StoreUiActionRuntime, next: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setActiveTab === 'function') {
     uiNs.setActiveTab(asStringValue(next), meta);
     return;
   }
-  setUiScalarSoft(app, 'activeTab', asStringValue(next), meta);
+  setUiScalarSoft(runtime, 'activeTab', asStringValue(next), meta);
 }
 
-function setUiSelectedModelId(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'selectedModelId', asStringValue(value), meta);
+function setUiSelectedModelId(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'selectedModelId', asStringValue(value), meta);
 }
 
-function setUiProjectName(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'projectName', asStringValue(value), meta);
+function setUiProjectName(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'projectName', asStringValue(value), meta);
 }
 
-function setUiOrderPdfEditorOpen(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'orderPdfEditorOpen', !!on, meta);
+function setUiOrderPdfEditorOpen(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'orderPdfEditorOpen', !!on, meta);
 }
 
-function setUiOrderPdfEditorDraft(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'orderPdfEditorDraft', value, meta);
+function setUiOrderPdfEditorDraft(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalarSoft(runtime, 'orderPdfEditorDraft', value, meta);
 }
 
-function setUiOrderPdfEditorZoom(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'orderPdfEditorZoom', value, meta);
+function setUiOrderPdfEditorZoom(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'orderPdfEditorZoom', value, meta);
 }
 
-function setUiSite2TabsGateOpen(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'site2TabsGateOpen', !!on, meta);
+function setUiSite2TabsGateOpen(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'site2TabsGateOpen', !!on, meta);
 }
 
 export {

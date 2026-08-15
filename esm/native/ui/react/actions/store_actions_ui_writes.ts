@@ -1,81 +1,85 @@
-import type { ActionMetaLike, AppContainer, UiRawScalarKey, UiRawScalarValueMap } from '../../../../../types';
+import type { ActionMetaLike, UiRawScalarKey, UiRawScalarValueMap } from '../../../../../types';
 import { buildUiRawScalarPatchFromRecord, UI_RAW_SCALAR_KEYS } from '../../../../../types/ui_raw.js';
 
-import {
-  patchUi as patchUiApi,
-  patchUiSoft as patchUiSoftApi,
-  setUiRawScalar as setUiRawScalarApi,
-  setUiScalar as setUiScalarApi,
-  setUiScalarSoft as setUiScalarSoftApi,
-} from '../../../services/api.js';
-import { asBoolean, emptyRecord, getUiNamespace, readRecord } from './store_actions_state.js';
+import type { StoreUiActionRuntime } from './store_actions_ui_contracts.js';
+import { asBoolean, emptyRecord, readRecord } from './store_actions_value_shared.js';
 
 type SetUiRawScalar = {
   <K extends UiRawScalarKey>(
-    app: AppContainer,
+    runtime: StoreUiActionRuntime,
     key: K,
     value: UiRawScalarValueMap[K],
     meta?: ActionMetaLike
   ): void;
-  (app: AppContainer, key: string, value: unknown, meta?: ActionMetaLike): void;
+  (runtime: StoreUiActionRuntime, key: string, value: unknown, meta?: ActionMetaLike): void;
 };
 
 const setUiRawScalar: SetUiRawScalar = (
-  app: AppContainer,
+  runtime: StoreUiActionRuntime,
   key: string,
   value: unknown,
   meta?: ActionMetaLike
 ): void => {
-  void setUiRawScalarApi(app, key, value, meta);
+  runtime.setRawScalar(key, value, meta);
 };
 
-function patchUi(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
-  void patchUiApi(app, readRecord(patch) || emptyRecord(), meta);
+function patchUi(runtime: StoreUiActionRuntime, patch: unknown, meta?: ActionMetaLike): void {
+  runtime.patch(readRecord(patch) || emptyRecord(), meta);
 }
 
-function patchUiSoft(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
-  void patchUiSoftApi(app, readRecord(patch) || emptyRecord(), meta);
+function patchUiSoft(runtime: StoreUiActionRuntime, patch: unknown, meta?: ActionMetaLike): void {
+  runtime.patchSoft(readRecord(patch) || emptyRecord(), meta);
 }
 
-function setUiScalar(app: AppContainer, key: string, value: unknown, meta?: ActionMetaLike): void {
-  void setUiScalarApi(app, key, value, meta);
+function setUiScalar(
+  runtime: StoreUiActionRuntime,
+  key: string,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  runtime.setScalar(key, value, meta);
 }
 
-function setUiScalarSoft(app: AppContainer, key: string, value: unknown, meta?: ActionMetaLike): void {
-  void setUiScalarSoftApi(app, key, value, meta);
+function setUiScalarSoft(
+  runtime: StoreUiActionRuntime,
+  key: string,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  runtime.setScalarSoft(key, value, meta);
 }
 
-function setUiFlag(app: AppContainer, key: string, on: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiFlag(runtime: StoreUiActionRuntime, key: string, on: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setFlag === 'function') {
     uiNs.setFlag(key, asBoolean(on), meta);
     return;
   }
-  setUiScalar(app, key, !!on, meta);
+  setUiScalar(runtime, key, !!on, meta);
 }
 
-function applyUiRawScalarPatch(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
+function applyUiRawScalarPatch(runtime: StoreUiActionRuntime, patch: unknown, meta?: ActionMetaLike): void {
   const rec = buildUiRawScalarPatchFromRecord(patch);
   const keys = UI_RAW_SCALAR_KEYS.filter(key => Object.prototype.hasOwnProperty.call(rec, key));
   if (!keys.length) return;
   if (keys.length === 1) {
     const key = keys[0];
-    setUiRawScalar(app, key, rec[key], meta);
+    setUiRawScalar(runtime, key, rec[key], meta);
     return;
   }
-  patchUiSoft(app, { raw: rec }, meta);
+  patchUiSoft(runtime, { raw: rec }, meta);
 }
 
-function applyUiSoftScalarPatch(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
+function applyUiSoftScalarPatch(runtime: StoreUiActionRuntime, patch: unknown, meta?: ActionMetaLike): void {
   const rec = readRecord(patch) || emptyRecord();
   const keys = Object.keys(rec);
   if (!keys.length) return;
   if (keys.length === 1) {
     const key = keys[0];
-    setUiScalarSoft(app, key, rec[key], meta);
+    setUiScalarSoft(runtime, key, rec[key], meta);
     return;
   }
-  patchUiSoft(app, rec, meta);
+  patchUiSoft(runtime, rec, meta);
 }
 
 export {

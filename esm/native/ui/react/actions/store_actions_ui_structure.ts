@@ -1,4 +1,5 @@
-import type { ActionMetaLike, AppContainer } from '../../../../../types';
+import type { ActionMetaLike } from '../../../../../types';
+import type { StoreUiActionRuntime } from './store_actions_ui_contracts.js';
 
 import {
   normalizeBaseLegColor,
@@ -16,194 +17,243 @@ import {
   normalizeStackSplitDecorativeSeparatorSideOverhangCm,
 } from '../../../features/platform_overhang_support.js';
 import { normalizeFrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
-import { asStringValue, getUiNamespace } from './store_actions_state.js';
+import { asStringValue } from './store_actions_value_shared.js';
 import { setUiFlag, setUiRawScalar, setUiScalar, setUiScalarSoft } from './store_actions_ui_writes.js';
 
-function setUiBaseType(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiBaseType(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setBaseType === 'function') {
     uiNs.setBaseType(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'baseType', asStringValue(value), meta);
+  setUiScalar(runtime, 'baseType', asStringValue(value), meta);
 }
 
-function setUiBasePlinthHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'basePlinthHeightCm', normalizeBasePlinthHeightCm(value), meta);
+function setUiBasePlinthHeightCm(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(runtime, 'basePlinthHeightCm', normalizeBasePlinthHeightCm(value), meta);
 }
 
-function setUiBaseLegStyle(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegStyle', normalizeBaseLegStyle(value), meta);
+function setUiBaseLegStyle(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(runtime, 'baseLegStyle', normalizeBaseLegStyle(value), meta);
 }
 
-function setUiBaseLegColor(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegColor', normalizeBaseLegColor(value), meta);
+function setUiBaseLegColor(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(runtime, 'baseLegColor', normalizeBaseLegColor(value), meta);
 }
 
-function setUiBaseLegPlatformMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegPlatformMode', normalizeBaseLegPlatformMode(value), meta);
+function setUiBaseLegPlatformMode(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(runtime, 'baseLegPlatformMode', normalizeBaseLegPlatformMode(value), meta);
 }
 
-function setUiBaseLegPlatformSideMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegPlatformSideMode', normalizeBaseLegPlatformSideMode(value), meta);
+function setUiBaseLegPlatformSideMode(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(runtime, 'baseLegPlatformSideMode', normalizeBaseLegPlatformSideMode(value), meta);
 }
 
-function setUiBaseLegPlatformSideOverhangCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegPlatformSideOverhangCm', normalizeBaseLegPlatformSideOverhangCm(value), meta);
+function setUiBaseLegPlatformSideOverhangCm(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(runtime, 'baseLegPlatformSideOverhangCm', normalizeBaseLegPlatformSideOverhangCm(value), meta);
 }
 
-function setUiBaseLegPlatformFrontOverhangCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegPlatformFrontOverhangCm', normalizeBaseLegPlatformFrontOverhangCm(value), meta);
-}
-
-function setUiBaseLegHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegHeightCm', normalizeBaseLegHeightCm(value), meta);
-}
-
-function setUiBaseLegWidthCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'baseLegWidthCm', normalizeBaseLegWidthCm(value), meta);
-}
-
-function setUiHingeDirection(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
-  if (typeof uiNs.setHingeDirection === 'function') {
-    uiNs.setHingeDirection(!!on, meta);
-    return;
-  }
-  setUiScalar(app, 'hingeDirection', !!on, meta);
-}
-
-function setUiStructureSelect(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
-  if (typeof uiNs.setStructureSelect === 'function') {
-    uiNs.setStructureSelect(asStringValue(value), meta);
-    return;
-  }
-  setUiScalar(app, 'structureSelect', asStringValue(value), meta);
-}
-
-function setUiSingleDoorPos(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
-  if (typeof uiNs.setSingleDoorPos === 'function') {
-    uiNs.setSingleDoorPos(asStringValue(value), meta);
-    return;
-  }
-  setUiScalar(app, 'singleDoorPos', asStringValue(value), meta);
-}
-
-function setUiChestMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'isChestMode', !!on, meta);
-}
-
-function setUiChestCommodeEnabled(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'chestCommodeEnabled', !!on, meta);
-}
-
-function setUiCornerSide(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerSide', asStringValue(value), meta);
-}
-
-function setUiCornerWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerWidth', value, meta);
-}
-
-function setUiCornerHeight(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerHeight', value, meta);
-}
-
-function setUiCornerDepth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerDepth', value, meta);
-}
-
-function setUiDoors(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'doors', value, meta);
-}
-
-function setUiWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'width', value, meta);
-}
-
-function setUiHeight(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'height', value, meta);
-}
-
-function setUiDepth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'depth', value, meta);
-}
-
-function setUiChestDrawersCount(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'chestDrawersCount', value, meta);
-}
-
-function setUiChestCommodeMirrorHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'chestCommodeMirrorHeightCm', value, meta);
-}
-
-function setUiChestCommodeMirrorWidthCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'chestCommodeMirrorWidthCm', value, meta);
-}
-
-function setUiChestCommodeMirrorWidthManual(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'chestCommodeMirrorWidthManual', !!on, meta);
-}
-
-function setUiCellDimsWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsWidth', value, meta);
-}
-
-function setUiCellDimsHeight(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsHeight', value, meta);
-}
-
-function setUiCellDimsDepth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsDepth', value, meta);
-}
-
-function setUiCellDimsHexMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsHexMode', !!on, meta);
-}
-
-function setUiCellDimsHexProtrusion(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsHexProtrusion', value, meta);
-}
-
-function setUiCellDimsHexDoorWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'cellDimsHexDoorWidth', value, meta);
-}
-
-function setUiStackSplitLowerDoors(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerDoors', value, meta);
-}
-
-function setUiStackSplitLowerDoorsManual(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerDoorsManual', !!on, meta);
-}
-
-function setUiSlidingTracksColor(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const next = asStringValue(value);
-  if (!next) return;
-  setUiScalar(app, 'slidingTracksColor', next, meta);
-}
-
-function setUiCornerMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerMode', !!on, meta);
-}
-
-function setUiCornerDoors(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerDoors', value, meta);
-}
-
-function setUiStackSplitEnabled(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiFlag(app, 'stackSplitEnabled', !!on, meta);
-}
-
-function setUiStackSplitDecorativeSeparatorSideOverhangCm(
-  app: AppContainer,
+function setUiBaseLegPlatformFrontOverhangCm(
+  runtime: StoreUiActionRuntime,
   value: unknown,
   meta?: ActionMetaLike
 ): void {
   setUiScalar(
-    app,
+    runtime,
+    'baseLegPlatformFrontOverhangCm',
+    normalizeBaseLegPlatformFrontOverhangCm(value),
+    meta
+  );
+}
+
+function setUiBaseLegHeightCm(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(runtime, 'baseLegHeightCm', normalizeBaseLegHeightCm(value), meta);
+}
+
+function setUiBaseLegWidthCm(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalar(runtime, 'baseLegWidthCm', normalizeBaseLegWidthCm(value), meta);
+}
+
+function setUiHingeDirection(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
+  if (typeof uiNs.setHingeDirection === 'function') {
+    uiNs.setHingeDirection(!!on, meta);
+    return;
+  }
+  setUiScalar(runtime, 'hingeDirection', !!on, meta);
+}
+
+function setUiStructureSelect(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
+  if (typeof uiNs.setStructureSelect === 'function') {
+    uiNs.setStructureSelect(asStringValue(value), meta);
+    return;
+  }
+  setUiScalar(runtime, 'structureSelect', asStringValue(value), meta);
+}
+
+function setUiSingleDoorPos(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
+  if (typeof uiNs.setSingleDoorPos === 'function') {
+    uiNs.setSingleDoorPos(asStringValue(value), meta);
+    return;
+  }
+  setUiScalar(runtime, 'singleDoorPos', asStringValue(value), meta);
+}
+
+function setUiChestMode(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'isChestMode', !!on, meta);
+}
+
+function setUiChestCommodeEnabled(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'chestCommodeEnabled', !!on, meta);
+}
+
+function setUiCornerSide(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerSide', asStringValue(value), meta);
+}
+
+function setUiCornerWidth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerWidth', value, meta);
+}
+
+function setUiCornerHeight(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerHeight', value, meta);
+}
+
+function setUiCornerDepth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerDepth', value, meta);
+}
+
+function setUiDoors(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'doors', value, meta);
+}
+
+function setUiWidth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'width', value, meta);
+}
+
+function setUiHeight(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'height', value, meta);
+}
+
+function setUiDepth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'depth', value, meta);
+}
+
+function setUiChestDrawersCount(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'chestDrawersCount', value, meta);
+}
+
+function setUiChestCommodeMirrorHeightCm(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'chestCommodeMirrorHeightCm', value, meta);
+}
+
+function setUiChestCommodeMirrorWidthCm(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'chestCommodeMirrorWidthCm', value, meta);
+}
+
+function setUiChestCommodeMirrorWidthManual(
+  runtime: StoreUiActionRuntime,
+  on: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'chestCommodeMirrorWidthManual', !!on, meta);
+}
+
+function setUiCellDimsWidth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'cellDimsWidth', value, meta);
+}
+
+function setUiCellDimsHeight(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'cellDimsHeight', value, meta);
+}
+
+function setUiCellDimsDepth(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'cellDimsDepth', value, meta);
+}
+
+function setUiCellDimsHexMode(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiRawScalar(runtime, 'cellDimsHexMode', !!on, meta);
+}
+
+function setUiCellDimsHexProtrusion(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'cellDimsHexProtrusion', value, meta);
+}
+
+function setUiCellDimsHexDoorWidth(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'cellDimsHexDoorWidth', value, meta);
+}
+
+function setUiStackSplitLowerDoors(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerDoors', value, meta);
+}
+
+function setUiStackSplitLowerDoorsManual(
+  runtime: StoreUiActionRuntime,
+  on: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerDoorsManual', !!on, meta);
+}
+
+function setUiSlidingTracksColor(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const next = asStringValue(value);
+  if (!next) return;
+  setUiScalar(runtime, 'slidingTracksColor', next, meta);
+}
+
+function setUiCornerMode(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerMode', !!on, meta);
+}
+
+function setUiCornerDoors(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  setUiScalarSoft(runtime, 'cornerDoors', value, meta);
+}
+
+function setUiStackSplitEnabled(runtime: StoreUiActionRuntime, on: unknown, meta?: ActionMetaLike): void {
+  setUiFlag(runtime, 'stackSplitEnabled', !!on, meta);
+}
+
+function setUiStackSplitDecorativeSeparatorSideOverhangCm(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(
+    runtime,
     'stackSplitDecorativeSeparatorSideOverhangCm',
     normalizeStackSplitDecorativeSeparatorSideOverhangCm(value),
     meta
@@ -211,69 +261,98 @@ function setUiStackSplitDecorativeSeparatorSideOverhangCm(
 }
 
 function setUiStackSplitDecorativeSeparatorFrontOverhangCm(
-  app: AppContainer,
+  runtime: StoreUiActionRuntime,
   value: unknown,
   meta?: ActionMetaLike
 ): void {
   setUiScalar(
-    app,
+    runtime,
     'stackSplitDecorativeSeparatorFrontOverhangCm',
     normalizeStackSplitDecorativeSeparatorFrontOverhangCm(value),
     meta
   );
 }
 
-function setUiStackSplitLowerHeight(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerHeight', value, meta);
+function setUiStackSplitLowerHeight(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerHeight', value, meta);
 }
 
-function setUiStackSplitLowerDepth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerDepth', value, meta);
+function setUiStackSplitLowerDepth(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerDepth', value, meta);
 }
 
-function setUiStackSplitLowerWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerWidth', value, meta);
+function setUiStackSplitLowerWidth(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerWidth', value, meta);
 }
 
-function setUiStackSplitLowerDepthManual(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerDepthManual', !!on, meta);
+function setUiStackSplitLowerDepthManual(
+  runtime: StoreUiActionRuntime,
+  on: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerDepthManual', !!on, meta);
 }
 
-function setUiStackSplitLowerWidthManual(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
-  setUiRawScalar(app, 'stackSplitLowerWidthManual', !!on, meta);
+function setUiStackSplitLowerWidthManual(
+  runtime: StoreUiActionRuntime,
+  on: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiRawScalar(runtime, 'stackSplitLowerWidthManual', !!on, meta);
 }
 
-function setUiDoorStyle(app: AppContainer, style: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiDoorStyle(runtime: StoreUiActionRuntime, style: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setDoorStyle === 'function') {
     uiNs.setDoorStyle(asStringValue(style), meta);
     return;
   }
-  setUiScalar(app, 'doorStyle', asStringValue(style), meta);
+  setUiScalar(runtime, 'doorStyle', asStringValue(style), meta);
 }
 
-function setUiCorniceType(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiCorniceType(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setCorniceType === 'function') {
     uiNs.setCorniceType(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'corniceType', asStringValue(value), meta);
+  setUiScalar(runtime, 'corniceType', asStringValue(value), meta);
 }
 
-function setUiColorChoice(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const uiNs = getUiNamespace(app);
+function setUiColorChoice(runtime: StoreUiActionRuntime, value: unknown, meta?: ActionMetaLike): void {
+  const uiNs = runtime.readUiActions();
   if (typeof uiNs.setColorChoice === 'function') {
     uiNs.setColorChoice(asStringValue(value), meta);
     return;
   }
   const next = asStringValue(value);
   if (!next) return;
-  setUiScalar(app, 'colorChoice', next, meta);
+  setUiScalar(runtime, 'colorChoice', next, meta);
 }
 
-function setUiFrontColorShelfInheritanceMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalar(app, 'frontColorShelfInheritanceMode', normalizeFrontColorShelfInheritanceMode(value), meta);
+function setUiFrontColorShelfInheritanceMode(
+  runtime: StoreUiActionRuntime,
+  value: unknown,
+  meta?: ActionMetaLike
+): void {
+  setUiScalar(
+    runtime,
+    'frontColorShelfInheritanceMode',
+    normalizeFrontColorShelfInheritanceMode(value),
+    meta
+  );
 }
 
 export {

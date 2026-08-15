@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-08-15T18:33:26.903Z",
+  "generatedAt": "2026-08-15T18:50:58.322Z",
   "summary": {
-    "groups": 66,
+    "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 480,
+    "catalogFileReferences": 482,
     "sequenceResolvedFileReferences": 126,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
     "runnerIssues": 0,
     "legacyFacadeIssues": 0,
     "portfolioRoles": {
-      "architecture": 17,
+      "architecture": 18,
       "focused": 44,
       "primary": 5
     },
     "runners": {
-      "node-test": 21,
+      "node-test": 22,
       "serial-tsx": 12,
       "tsx-test": 29,
       "group-sequence": 4
@@ -510,8 +510,8 @@
         "timeoutMs": 0
       },
       "childGroups": [],
-      "directFileCount": 15,
-      "resolvedFileCount": 15,
+      "directFileCount": 16,
+      "resolvedFileCount": 16,
       "files": [
         "tests/domain_api_install_state_runtime.test.ts",
         "tests/domain_api_surface_sections_runtime.test.ts",
@@ -520,6 +520,7 @@
         "tests/domain_api_modules_structure_materialization_runtime.test.ts",
         "tests/domain_api_browser_ui_ops_healing_runtime.test.ts",
         "tests/store_actions_ui_runtime.test.ts",
+        "tests/store_ui_action_capability_runtime.test.ts",
         "tests/store_actions_config_runtime.test.ts",
         "tests/actions_access_binding_runtime.test.ts",
         "tests/actions_surface_access_runtime.test.ts",
@@ -1419,6 +1420,20 @@
         "tests/wp_test_group_runtime.test.js",
         "tests/wp_test_group_catalog_report_runtime.test.js"
       ]
+    },
+    {
+      "name": "ui-actions-family-contracts",
+      "description": "React UI store-action capability architecture contracts.",
+      "kind": "architecture-contract",
+      "owners": ["ui/actions"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "architecture",
+      "serialPolicy": null,
+      "childGroups": [],
+      "directFileCount": 1,
+      "resolvedFileCount": 1,
+      "files": ["tests/store_ui_action_capability_contract.test.js"]
     },
     {
       "name": "ui-lean-contracts",

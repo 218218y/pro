@@ -17,18 +17,15 @@ import {
 } from '../../../services/api.js';
 import { getStoreSurfaceMaybe } from '../../../services/api.js';
 import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
-
-function isRecord(v: unknown): v is UnknownRecord {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
-
-function readRecord(v: unknown): UnknownRecord | null {
-  return isRecord(v) ? v : null;
-}
-
-function emptyRecord(): UnknownRecord {
-  return {};
-}
+import {
+  asBoolean,
+  asNumberOrNull,
+  asStringOrNull,
+  asStringValue,
+  emptyRecord,
+  isRecord,
+  readRecord,
+} from './store_actions_value_shared.js';
 
 function readSavedNotes(value: unknown): ProjectSavedNotesLike | null {
   if (!Array.isArray(value)) return null;
@@ -103,24 +100,6 @@ function readColorsActions(value: unknown): PartialColorsActions {
 
 function readHistoryActions(value: unknown): PartialHistoryActions {
   return readRecord(value) || emptyRecord();
-}
-
-function asBoolean(v: unknown): boolean {
-  return !!v;
-}
-
-function asStringValue(v: unknown): string {
-  return typeof v === 'string' ? v : '';
-}
-
-function asStringOrNull(v: unknown): string | null {
-  const s = asStringValue(v).trim();
-  return s ? s : null;
-}
-
-function asNumberOrNull(v: unknown): number | null {
-  const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : null;
 }
 
 function getStore(app: AppContainer): StoreReader | null {

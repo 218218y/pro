@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-15T18:33:27.019Z",
+  "generatedAt": "2026-08-15T18:50:58.452Z",
   "totals": {
-    "tests": 1246,
-    "unitRunnerTests": 1237,
+    "tests": 1248,
+    "unitRunnerTests": 1239,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
-    "catalogTestReferences": 480,
-    "totalTestReferences": 496,
+    "catalogTestReferences": 482,
+    "totalTestReferences": 498,
     "oversizedDirectPackageTestScripts": 0,
-    "catalogGroups": 66,
+    "catalogGroups": 67,
     "genericTestGroupRunner": "test:group",
     "legacyTestGroupPackageFacades": 0,
     "primaryCatalogGroups": 5,
@@ -20,8 +20,8 @@
     "contractOverlapTargets": 146
   },
   "categories": {
-    "contract": 403,
-    "runtime-unit": 336,
+    "contract": 404,
+    "runtime-unit": 337,
     "integration": 467,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
@@ -7261,6 +7261,14 @@
     {
       "file": "tests/store_surface_access_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/store_ui_action_capability_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/store_ui_action_capability_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/store_zustand_core_runtime.test.ts",

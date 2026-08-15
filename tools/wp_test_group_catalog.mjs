@@ -111,6 +111,15 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     portfolioRole: 'architecture',
     files: ['tests/runtime_surface_family_contracts.test.js'],
   }),
+  'ui-actions-family-contracts': defineTestGroup({
+    description: 'React UI store-action capability architecture contracts.',
+    kind: 'architecture-contract',
+    owners: ['ui/actions'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'architecture',
+    files: ['tests/store_ui_action_capability_contract.test.js'],
+  }),
   'structure-tab-family-contracts': defineTestGroup({
     description: 'Structure tab family architecture contracts.',
     kind: 'architecture-contract',
@@ -673,6 +682,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/domain_api_modules_structure_materialization_runtime.test.ts',
       'tests/domain_api_browser_ui_ops_healing_runtime.test.ts',
       'tests/store_actions_ui_runtime.test.ts',
+      'tests/store_ui_action_capability_runtime.test.ts',
       'tests/store_actions_config_runtime.test.ts',
       'tests/actions_access_binding_runtime.test.ts',
       'tests/actions_surface_access_runtime.test.ts',

@@ -326,10 +326,6 @@
       "importer": "esm/native/ui/react/actions/store_actions.ts"
     },
     {
-      "path": "esm/native/ui/react/actions/store_actions_ui.ts",
-      "importer": "esm/native/ui/react/actions/store_actions.ts"
-    },
-    {
       "path": "esm/native/ui/react/notes/notes_overlay_controller_interactions.ts",
       "importer": "esm/native/ui/react/notes/notes_overlay_controller_runtime.tsx"
     },
