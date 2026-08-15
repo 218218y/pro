@@ -20,10 +20,6 @@ export type AutosaveInfoLike = {
 export type AutosavePayloadStorageReadResult =
   { ok: true; payload: ProjectLoadInputLike } | { ok: false; reason: 'missing-autosave' | 'invalid' };
 
-type AutosaveRefreshResultOwner = AutosaveServiceLike & {
-  forceSaveNowResult?: () => AutosaveOwnerRefreshResult;
-};
-
 const AUTOSAVE_READINESS_DETAILS = new Set<AutosaveReadinessDiagnosticDetail>([
   'system-not-ready',
   'restore-in-progress',
@@ -51,7 +47,7 @@ function asAutosaveService(value: unknown): AutosaveServiceLike | null {
 
 function callBooleanMethod(
   owner: AutosaveServiceLike | null,
-  key: 'cancelPending' | 'flushPending' | 'forceSaveNow'
+  key: 'cancelPending' | 'flushPending'
 ): boolean {
   const fn = owner ? owner[key] : null;
   if (typeof fn !== 'function') return false;
@@ -267,9 +263,9 @@ export function forceAutosaveNowResultViaService(
   App: unknown,
   reportOwnerThrow?: (error: Error) => void
 ): AutosaveRuntimeRefreshResult {
-  let service: AutosaveRefreshResultOwner | null;
+  let service: AutosaveServiceLike | null;
   try {
-    service = getAutosaveServiceMaybe(App) as AutosaveRefreshResultOwner | null;
+    service = getAutosaveServiceMaybe(App);
   } catch {
     return { ok: false, reason: 'service-unavailable' };
   }
@@ -283,17 +279,6 @@ export function forceAutosaveNowResultViaService(
       }
       const result = normalizeAutosaveOwnerRefreshResult(ownerResult);
       return result || { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
-    }
-
-    if (typeof service.forceSaveNow === 'function') {
-      // compatibility-boundary: adapt the pre-result forceSaveNow() owner surface.
-      const ownerResult = Reflect.apply(service.forceSaveNow, service, []);
-      if (ownerResult === true) return { ok: true };
-      if (ownerResult === false) {
-        return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
-      }
-      observeRejectedThenable(ownerResult);
-      return { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 
     return { ok: false, reason: 'service-unavailable' };

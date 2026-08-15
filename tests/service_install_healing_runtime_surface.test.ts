@@ -18,17 +18,17 @@ test('camera/autosave/viewport install healing preserves canonical refs and repa
   const autosave = installAutosaveService(autosaveApp) as any;
   const schedule = autosave.schedule;
   const flushPending = autosave.flushPending;
-  const forceSaveNow = autosave.forceSaveNow;
+  const forceSaveNowResult = autosave.forceSaveNowResult;
   autosave.schedule = () => undefined;
   delete autosave.flushPending;
-  autosave.forceSaveNow = () => false;
+  autosave.forceSaveNowResult = () => ({ ok: false, reason: 'storage-write-failed' });
   installAutosaveService(autosaveApp);
   assert.equal(autosave.schedule, schedule);
   assert.equal(autosave.flushPending, flushPending);
-  assert.equal(autosave.forceSaveNow, forceSaveNow);
+  assert.equal(autosave.forceSaveNowResult, forceSaveNowResult);
   assert.equal(autosave.__wpSchedule, schedule);
   assert.equal(autosave.__wpFlushPending, flushPending);
-  assert.equal(autosave.__wpForceSaveNow, forceSaveNow);
+  assert.equal(autosave.__wpForceSaveNowResult, forceSaveNowResult);
 
   const viewportApp: any = { services: { viewport: {} } };
   const viewport = installViewportRuntimeService(viewportApp) as any;
@@ -56,16 +56,16 @@ test('camera/autosave/viewport install healing adopts pre-existing healthy refs 
 
   const schedule = () => undefined;
   const flushPending = () => true;
-  const forceSaveNow = () => true;
+  const forceSaveNowResult = () => ({ ok: true as const });
   const autosaveApp: any = {
     services: {
-      autosave: { schedule, flushPending, forceSaveNow },
+      autosave: { schedule, flushPending, forceSaveNowResult },
     },
   };
   const autosave = installAutosaveService(autosaveApp) as any;
   assert.equal(autosave.schedule, schedule);
   assert.equal(autosave.flushPending, flushPending);
-  assert.equal(autosave.forceSaveNow, forceSaveNow);
+  assert.equal(autosave.forceSaveNowResult, forceSaveNowResult);
 
   const setOrbitControlsEnabled = () => true;
   const applySketchMode = () => true;

@@ -147,7 +147,7 @@ test('runtime services parity: autosave captures project snapshot + pdf draft an
   };
 
   const svc = installAutosaveService(App as any);
-  assert.equal(typeof svc.forceSaveNow, 'function');
+  assert.equal(typeof svc.forceSaveNowResult, 'function');
   assert.equal(typeof svc.flushPending, 'function');
 
   const snap = captureAutosaveSnapshot(App as any) as AnyRecord;

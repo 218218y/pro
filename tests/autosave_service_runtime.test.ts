@@ -29,7 +29,6 @@ test('autosave/project-capture runtime: canonical access helpers drive the servi
   autosave.schedule = () => calls.push('schedule');
   autosave.cancelPending = () => (calls.push('cancel'), true);
   autosave.flushPending = () => (calls.push('flush'), true);
-  autosave.forceSaveNow = () => (calls.push('force'), true);
   autosave.forceSaveNowResult = () => (calls.push('force-result'), { ok: true });
 
   assert.equal(getAutosaveServiceMaybe(App), autosave);
@@ -88,24 +87,10 @@ test('autosave access preserves safe failure reasons and rejects invalid owner r
   });
 
   App.services.autosave.forceSaveNowResult = undefined;
-  App.services.autosave.forceSaveNow = () => true;
-  assert.deepEqual(forceAutosaveNowResultViaService(App), { ok: true });
-
-  App.services.autosave.forceSaveNow = () => false;
   assert.deepEqual(forceAutosaveNowResultViaService(App), {
     ok: false,
-    reason: 'owner-rejected',
-    detail: 'legacy-owner-returned-false',
+    reason: 'service-unavailable',
   });
-
-  for (const invalidLegacyResult of [Promise.resolve(false), {}, 'yes', 1]) {
-    App.services.autosave.forceSaveNow = () => invalidLegacyResult;
-    assert.deepEqual(forceAutosaveNowResultViaService(App), {
-      ok: false,
-      reason: 'owner-rejected',
-      detail: 'owner-invalid-result',
-    });
-  }
 
   assert.deepEqual(forceAutosaveNowResultViaService({ services: {} }), {
     ok: false,
@@ -186,15 +171,6 @@ test('autosave access observes malformed rejected thenables without awaiting or 
       ),
     ]) {
       App.services.autosave.forceSaveNowResult = () => typedThenable;
-      assert.deepEqual(
-        forceAutosaveNowResultViaService(App, error => reports.push(error)),
-        expectedInvalidResult
-      );
-    }
-
-    App.services.autosave.forceSaveNowResult = undefined;
-    for (const legacyThenable of [Promise.resolve(false), Promise.reject({ sensitiveValue })]) {
-      App.services.autosave.forceSaveNow = () => legacyThenable;
       assert.deepEqual(
         forceAutosaveNowResultViaService(App, error => reports.push(error)),
         expectedInvalidResult

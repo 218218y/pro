@@ -179,13 +179,6 @@ function isLegacyRejectionLine(lineText, term) {
   return hasLegacyTerm(term) && LEGACY_REJECTION_RE.test(String(lineText || ''));
 }
 
-function isTypedAutosaveDiagnosticLabel(relPath, lineText) {
-  return (
-    relPath === 'esm/native/runtime/autosave_access.ts' &&
-    /detail:\s*['"]legacy-owner-returned-false['"]/.test(lineText)
-  );
-}
-
 function isErrorMessageDefaultLine(lineText) {
   return /(fallback\w*(Message|Reason|Error|Err)|\w+fallback\w*(Message|Reason|Error|Err)|(?:Message|Reason|Error|Err)\w*fallback\w*)/i.test(
     lineText
@@ -255,7 +248,6 @@ export function collectLegacyFallbackOccurrences({
       for (const match of lineText.matchAll(IDENTIFIER_RE)) {
         const term = match[0];
         if (!isAuditNeedleTerm(term)) continue;
-        if (isTypedAutosaveDiagnosticLabel(relPath, lineText)) continue;
         if (isNegatedCompatibilityLine(lineText, term) && !hasFallbackTerm(term) && !hasLegacyTerm(term)) {
           continue;
         }

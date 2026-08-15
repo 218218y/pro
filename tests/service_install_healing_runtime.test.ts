@@ -35,12 +35,10 @@ test('service install healing runtime: autosave reinstall preserves live refs an
   const svc = installAutosaveService(App);
   const schedule = svc.schedule;
   const flushPending = svc.flushPending;
-  const forceSaveNow = svc.forceSaveNow;
-  const forceSaveNowResult = (svc as Record<string, unknown>).forceSaveNowResult;
+  const forceSaveNowResult = svc.forceSaveNowResult;
 
   assert.equal(typeof schedule, 'function');
   assert.equal(typeof flushPending, 'function');
-  assert.equal(typeof forceSaveNow, 'function');
   assert.equal(typeof forceSaveNowResult, 'function');
   assert.equal(uiWrites.length > 0, true);
 
@@ -48,8 +46,7 @@ test('service install healing runtime: autosave reinstall preserves live refs an
   assert.equal(sameSvc, svc);
   assert.equal(sameSvc.schedule, schedule);
   assert.equal(sameSvc.flushPending, flushPending);
-  assert.equal(sameSvc.forceSaveNow, forceSaveNow);
-  assert.equal((sameSvc as Record<string, unknown>).forceSaveNowResult, forceSaveNowResult);
+  assert.equal(sameSvc.forceSaveNowResult, forceSaveNowResult);
 
   delete (svc as Record<string, unknown>).schedule;
   delete (svc as Record<string, unknown>).forceSaveNowResult;
@@ -57,8 +54,7 @@ test('service install healing runtime: autosave reinstall preserves live refs an
   assert.equal(healedSvc, svc);
   assert.equal(typeof healedSvc.schedule, 'function');
   assert.equal(healedSvc.flushPending, flushPending);
-  assert.equal(healedSvc.forceSaveNow, forceSaveNow);
-  assert.equal((healedSvc as Record<string, unknown>).forceSaveNowResult, forceSaveNowResult);
+  assert.equal(healedSvc.forceSaveNowResult, forceSaveNowResult);
 });
 
 test('service install healing runtime: appStart reinstall heals start surface and clears retired uiBoot start', () => {

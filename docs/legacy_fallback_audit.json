@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-15T18:33:24.405Z",
+  "generatedAt": "2026-08-15T21:12:25.000Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 549,
-    "totalFiles": 214,
+    "totalOccurrences": 546,
+    "totalFiles": 212,
     "byCategory": {
       "runtime-default": 57,
       "domain-default": 394,
@@ -14,7 +14,7 @@
       "legacy-rejection": 3,
       "project-migration": 1,
       "external-api-compat": 4,
-      "compat-boundary": 20,
+      "compat-boundary": 17,
       "test-fixture": 7,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -543,12 +543,6 @@
           "domain-default": 1
         }
       },
-      "esm/native/runtime/autosave_access.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
-        }
-      },
       "esm/native/runtime/browser_env_surface.ts": {
         "total": 5,
         "categories": {
@@ -565,12 +559,6 @@
         "total": 2,
         "categories": {
           "runtime-default": 2
-        }
-      },
-      "esm/native/runtime/cache_access.ts": {
-        "total": 1,
-        "categories": {
-          "compat-boundary": 1
         }
       },
       "esm/native/runtime/config_selectors_scalars.ts": {
@@ -645,9 +633,8 @@
         }
       },
       "esm/native/runtime/render_access_state_bags.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "compat-boundary": 1,
           "runtime-default": 1
         }
       },
@@ -3068,14 +3055,14 @@
     },
     {
       "file": "esm/native/runtime/api.ts",
-      "line": 260,
+      "line": 259,
       "term": "compatibility",
       "category": "domain-default",
       "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"
     },
     {
       "file": "esm/native/runtime/api.ts",
-      "line": 260,
+      "line": 259,
       "term": "chest_mode_dimensions_compatibility",
       "category": "domain-default",
       "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"
@@ -3086,13 +3073,6 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "* A direct fallback is safe only when the canonical batch surface fails before"
-    },
-    {
-      "file": "esm/native/runtime/autosave_access.ts",
-      "line": 289,
-      "term": "compatibility",
-      "category": "compat-boundary",
-      "text": "// compatibility-boundary: adapt the pre-result forceSaveNow() owner surface."
     },
     {
       "file": "esm/native/runtime/browser_env_surface.ts",
@@ -3156,13 +3136,6 @@
       "term": "fallbackFactory",
       "category": "runtime-default",
       "text": "return typeof fallbackFactory === 'function' ? fallbackFactory() : null;"
-    },
-    {
-      "file": "esm/native/runtime/cache_access.ts",
-      "line": 55,
-      "term": "compatibility",
-      "category": "compat-boundary",
-      "text": "// compatibility-boundary: clear the retired root cache alias while runtimeCache owns live state."
     },
     {
       "file": "esm/native/runtime/config_selectors_scalars.ts",
@@ -3394,13 +3367,6 @@
       "term": "fallback",
       "category": "runtime-default",
       "text": "// state-bag-attachment-fallback: return the detached bag when an exotic owner rejects assignment."
-    },
-    {
-      "file": "esm/native/runtime/render_access_state_bags.ts",
-      "line": 229,
-      "term": "compatibility",
-      "category": "compat-boundary",
-      "text": "// compatibility-boundary: clear retired root render aliases; canonical state lives in runtime services."
     },
     {
       "file": "esm/native/runtime/runtime_config_validation.ts",

@@ -3,7 +3,6 @@
 // Goal:
 // - Provide a single, stable way to access runtime cache surfaces across layers.
 // - Keep cache ownership under `App.services.runtimeCache`.
-// - Drop obsolete root `App.cache` aliases on first touch so hybrid state does not linger.
 //
 // IMPORTANT:
 // - This file lives in `runtime/` so it can be imported from builder/services/kernel/platform.
@@ -23,18 +22,10 @@ export type CacheBag = RuntimeCacheServiceLike & {
   internalGridMapSplitBottom?: CacheMapRecord;
 };
 
-type RootCacheAliasHost = UnknownRecord & {
-  cache?: unknown;
-};
-
 type InternalGridMapKey = 'internalGridMap' | 'internalGridMapSplitBottom';
 
 function asCacheBag(value: unknown): CacheBag | null {
   return asRecord<CacheBag>(value);
-}
-
-function asRootCacheAliasHost(value: unknown): RootCacheAliasHost | null {
-  return asRecord<RootCacheAliasHost>(value);
 }
 
 function createCacheMapRecord(): CacheMapRecord {
@@ -49,41 +40,18 @@ function readGridMapKey(isBottomStack?: boolean): InternalGridMapKey {
   return isBottomStack ? 'internalGridMapSplitBottom' : 'internalGridMap';
 }
 
-function dropRootCacheAlias(App: unknown): void {
-  const app = asRootCacheAliasHost(App);
-  if (!app || !('cache' in app)) return;
-  // compatibility-boundary: clear the retired root cache alias while runtimeCache owns live state.
-  try {
-    delete app.cache;
-  } catch {
-    try {
-      app.cache = undefined;
-    } catch (error) {
-      reportError(App, error, {
-        where: 'native/runtime/cache_access',
-        op: 'retiredRootAlias.clear',
-        fatal: false,
-      });
-    }
-  }
-}
-
 function ensureRuntimeCacheSlot(App: unknown): CacheBag {
   return asCacheBag(ensureServiceSlot<RuntimeCacheServiceLike>(App, 'runtimeCache')) || createCacheBag();
 }
 
 export function getRuntimeCacheServiceMaybe(App: unknown): CacheBag | null {
-  const current = asCacheBag(getServiceSlotMaybe<RuntimeCacheServiceLike>(App, 'runtimeCache'));
-  dropRootCacheAlias(App);
-  return current;
+  return asCacheBag(getServiceSlotMaybe<RuntimeCacheServiceLike>(App, 'runtimeCache'));
 }
 
 export function ensureRuntimeCacheService(App: unknown): CacheBag {
   const current = getRuntimeCacheServiceMaybe(App);
   if (current) return current;
-  const next = ensureRuntimeCacheSlot(App);
-  dropRootCacheAlias(App);
-  return next;
+  return ensureRuntimeCacheSlot(App);
 }
 
 export function getCacheBag(App: unknown): CacheBag {

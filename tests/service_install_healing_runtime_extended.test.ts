@@ -40,31 +40,31 @@ test('service install healing: autosave preserves canonical refs and heals missi
   const svc = installAutosaveService(App);
   const scheduleRef = svc.schedule;
   const flushRef = svc.flushPending;
-  const forceRef = svc.forceSaveNow;
+  const forceResultRef = svc.forceSaveNowResult;
 
   assert.equal(typeof scheduleRef, 'function');
   assert.equal(typeof flushRef, 'function');
-  assert.equal(typeof forceRef, 'function');
+  assert.equal(typeof forceResultRef, 'function');
 
   const sameSvc = installAutosaveService(App);
   assert.equal(sameSvc, svc);
   assert.equal(sameSvc.schedule, scheduleRef);
   assert.equal(sameSvc.flushPending, flushRef);
-  assert.equal(sameSvc.forceSaveNow, forceRef);
+  assert.equal(sameSvc.forceSaveNowResult, forceResultRef);
 
   delete (svc as Record<string, unknown>).flushPending;
   const healedFlush = installAutosaveService(App);
   assert.equal(healedFlush, svc);
   assert.equal(healedFlush.schedule, scheduleRef);
   assert.equal(typeof healedFlush.flushPending, 'function');
-  assert.equal(healedFlush.forceSaveNow, forceRef);
+  assert.equal(healedFlush.forceSaveNowResult, forceResultRef);
 
   delete (svc as Record<string, unknown>).schedule;
-  delete (svc as Record<string, unknown>).forceSaveNow;
+  delete (svc as Record<string, unknown>).forceSaveNowResult;
   const healedAll = installAutosaveService(App);
   assert.equal(healedAll, svc);
   assert.equal(typeof healedAll.schedule, 'function');
-  assert.equal(typeof healedAll.forceSaveNow, 'function');
+  assert.equal(typeof healedAll.forceSaveNowResult, 'function');
   assert.equal(healedAll.flushPending, healedFlush.flushPending);
 });
 

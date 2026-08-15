@@ -93,7 +93,7 @@ test('materials_factory rejects calls without a material snapshot', () => {
   );
 });
 
-test('materials_factory uses canonical render cache/meta seams without materializing compat refs on App', () => {
+test('materials_factory uses canonical render cache/meta service seams', () => {
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },
     store: makeStore({ sketchMode: true }),
@@ -108,10 +108,6 @@ test('materials_factory uses canonical render cache/meta seams without materiali
   assert.equal(renderMeta.material instanceof Map, true);
   assert.equal(renderCache.materialCache.has('sketch_white'), true);
   assert.equal(renderMeta.material.has('sketch_white'), true);
-
-  assert.equal('__wpRenderCache' in App, false);
-  assert.equal('__wpRenderMeta' in App, false);
-  assert.equal('__wpRenderMaterials' in App, false);
 });
 
 test('materials_factory keeps front color albedo canonical instead of applying display compensation', () => {

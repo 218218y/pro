@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-15T18:50:58.452Z",
+  "generatedAt": "2026-08-15T21:12:27.485Z",
   "totals": {
-    "tests": 1248,
-    "unitRunnerTests": 1239,
+    "tests": 1247,
+    "unitRunnerTests": 1238,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -23,7 +23,7 @@
     "contract": 404,
     "runtime-unit": 337,
     "integration": 467,
-    "persistence-ingress": 24,
+    "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
   },
@@ -3261,10 +3261,6 @@
     {
       "file": "tests/builder_synchronous_run_type_contract.test.js",
       "category": "contract"
-    },
-    {
-      "file": "tests/cache_access_hybrid_migration_runtime.test.js",
-      "category": "persistence-ingress"
     },
     {
       "file": "tests/cache_pruning_runtime.test.ts",

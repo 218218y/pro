@@ -262,13 +262,3 @@ test('checked legacy fallback audit fails closed on unreviewed live legacy runti
     /unreviewed legacy runtime risk/
   );
 });
-
-test('legacy fallback audit excludes the typed autosave diagnostic label from live compatibility inventory', () => {
-  const projectRoot = tempProject();
-  writeFile(
-    path.join(projectRoot, 'esm/native/runtime/autosave_access.ts'),
-    "return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };\n"
-  );
-
-  assert.deepEqual(collectLegacyFallbackOccurrences({ projectRoot, sourceRoot: 'esm' }), []);
-});

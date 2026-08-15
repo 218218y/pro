@@ -44,7 +44,6 @@ export {
   readRenderMaterialSlot,
   writeRenderMaterialSlot,
   ensureRenderMaterialSlot,
-  clearDeprecatedRenderRefs,
   ensureRenderCacheMap,
   ensureRenderMetaArray,
   ensureRenderMetaMap,

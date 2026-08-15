@@ -189,8 +189,7 @@ export type AutosaveRefreshFailureReason =
 export type AutosaveReadinessDiagnosticDetail =
   'system-not-ready' | 'restore-in-progress' | 'runtime-state-unavailable';
 
-export type AutosaveRuntimeAccessDiagnosticDetail =
-  'owner-threw' | 'owner-invalid-result' | 'legacy-owner-returned-false';
+export type AutosaveRuntimeAccessDiagnosticDetail = 'owner-threw' | 'owner-invalid-result';
 
 export type AutosaveOwnerRefreshFailure =
   | {
@@ -224,7 +223,7 @@ export interface AutosaveServiceLike extends UnknownRecord {
   schedule?: () => void;
   cancelPending?: () => boolean;
   flushPending?: () => boolean;
-  forceSaveNow?: () => boolean;
+  forceSaveNowResult?: () => AutosaveOwnerRefreshResult;
   suspend?: () => AutosaveSuspensionLike;
 }
 

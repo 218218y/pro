@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-15T19:25:59.896Z
+Generated at: 2026-08-15T21:12:27.316Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -14,19 +14,19 @@ Generated at: 2026-08-15T19:25:59.896Z
 
 ## Error observability
 
-- Statement-free catches: **518**
+- Statement-free catches: **517**
 - Bare catches: **0**
 - Vague catch comments: **0**
 - Files containing statement-free catches: **281**
 
 ## Compatibility debt
 
-- Categorized occurrences: **549**
-- Files with categorized occurrences: **214**
-- Growth-ratcheted compatibility occurrences: **25** across **16** files
+- Categorized occurrences: **546**
+- Files with categorized occurrences: **212**
+- Growth-ratcheted compatibility occurrences: **22** across **13** files
 - Project migration: **1**
 - External API compatibility: **4**
-- Explicit compatibility boundaries: **20**
+- Explicit compatibility boundaries: **17**
 - Legacy runtime risk: **0**
 - Unknown classifications: **0**
 
@@ -40,8 +40,8 @@ Generated at: 2026-08-15T19:25:59.896Z
 
 ## Test portfolio
 
-- Classified test files: **1248**
-- Unit/runtime files: **1239**
+- Classified test files: **1247**
+- Unit/runtime files: **1238**
 - Playwright E2E files: **9**
 - Canonical contracts: **21**
 - Historical architecture proof files: **0**

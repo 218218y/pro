@@ -18,7 +18,7 @@ import {
   cancelAutosaveScheduleState,
   ensureAutosaveScheduleState,
 } from './autosave_shared.js';
-import { commitAutosaveNow, commitAutosaveNowResult } from './autosave_runtime.js';
+import { commitAutosaveNowResult } from './autosave_runtime.js';
 import { flushAutosavePending, scheduleAutosave, suspendAutosaveSchedule } from './autosave_schedule.js';
 import type {
   AppContainer,
@@ -31,8 +31,6 @@ type InstallableAutosaveService = AutosaveServiceLike & {
   __wpSchedule?: () => void;
   __wpCancelPending?: () => boolean;
   __wpFlushPending?: () => boolean;
-  __wpForceSaveNow?: () => boolean;
-  forceSaveNowResult?: () => AutosaveOwnerRefreshResult;
   __wpForceSaveNowResult?: () => AutosaveOwnerRefreshResult;
   __wpSuspend?: () => AutosaveSuspensionLike;
 };
@@ -54,12 +52,6 @@ function fillAutosaveServiceSurface(
     '__wpFlushPending',
     () => () => flushAutosavePending(context.App)
   );
-  installStableSurfaceMethod(svc, 'forceSaveNow', '__wpForceSaveNow', () => {
-    return () => {
-      cancelAutosaveScheduleState(ensureAutosaveScheduleState(context.App));
-      return commitAutosaveNow(context.App);
-    };
-  });
   installStableSurfaceMethod(svc, 'forceSaveNowResult', '__wpForceSaveNowResult', () => {
     return () => {
       cancelAutosaveScheduleState(ensureAutosaveScheduleState(context.App));

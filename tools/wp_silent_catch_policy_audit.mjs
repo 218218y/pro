@@ -14,7 +14,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   io: 4,
   kernel: 9,
   platform: 38,
-  runtime: 82,
+  runtime: 81,
   services: 77,
   ui: 158,
 });
