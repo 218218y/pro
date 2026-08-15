@@ -3,6 +3,7 @@ export type { SetCfgScalar } from './store_actions_config_contracts.js';
 
 export {
   applyProjectConfigSnapshot,
+  commitUiConfigSnapshot,
   setCfgCustomUploadedDataURL,
   setCfgPreChestState,
   setCfgSavedNotes,

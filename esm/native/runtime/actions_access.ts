@@ -75,6 +75,7 @@ export {
 export {
   commitUiSnapshotViaActions,
   commitUiSnapshotViaActionsOrThrow,
+  commitUiConfigSnapshotViaActionsOrThrow,
   commitProjectLoadSnapshotViaActionsOrThrow,
   setDirtyViaActions,
   setDirtyViaActionsOrThrow,

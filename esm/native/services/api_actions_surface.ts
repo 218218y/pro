@@ -71,6 +71,7 @@ export {
   commitUiSnapshotViaActions,
   commitUiSnapshotViaActionsOrThrow,
   commitProjectLoadSnapshotViaActionsOrThrow,
+  commitUiConfigSnapshotViaActionsOrThrow,
   setDirtyViaActions,
   setDirtyViaActionsOrThrow,
   runHistoryBatchViaActions,

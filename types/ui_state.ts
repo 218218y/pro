@@ -78,6 +78,7 @@ export interface UiState {
 
   // Sketch tab: temporary restore point used while the main wardrobe is hidden.
   noMainSketchRestoreSnapshot?: unknown;
+  noMainSketchFreeExtrasSnapshot?: unknown;
 
   // Structure tab.
   baseType?: string;

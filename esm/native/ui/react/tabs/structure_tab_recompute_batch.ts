@@ -1,4 +1,9 @@
-import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../../../types';
+import type {
+  ActionMetaLike,
+  AppContainer,
+  StateSnapshotTransactionHandleLike,
+  UnknownRecord,
+} from '../../../../../types';
 
 import { getUiSnapshot, runHistoryBatch } from '../actions/store_actions.js';
 import {
@@ -20,6 +25,18 @@ export type StructurePatchRecomputeBatchArgs<TPatch extends UnknownRecord = Unkn
   uiPatch?: TPatch | null;
   statePatch?: UnknownRecord | null;
   mutate?: () => void;
+  recomputeOpts?: StructureRecomputeOpts;
+  mergeUiOverride?: StructureUiOverrideMerge;
+  buildTiming?: StructureRecomputeBuildTiming;
+  forceBuild?: boolean;
+};
+
+export type StructureSnapshotRecomputeTransactionArgs<TPatch extends UnknownRecord = UnknownRecord> = {
+  app: AppContainer;
+  source: string;
+  meta: ActionMetaLike;
+  uiPatch: TPatch;
+  prepareTransaction: () => StateSnapshotTransactionHandleLike;
   recomputeOpts?: StructureRecomputeOpts;
   mergeUiOverride?: StructureUiOverrideMerge;
   buildTiming?: StructureRecomputeBuildTiming;
@@ -126,6 +143,54 @@ export function runStructurePatchRecomputeBatch<TPatch extends UnknownRecord = U
         recomputeOpts,
         {}
       );
+    },
+    meta
+  );
+}
+
+export function runStructureSnapshotRecomputeTransaction<TPatch extends UnknownRecord = UnknownRecord>(
+  args: StructureSnapshotRecomputeTransactionArgs<TPatch>
+): void {
+  const {
+    app,
+    source,
+    meta,
+    uiPatch,
+    prepareTransaction,
+    recomputeOpts = createStructureRecomputeOpts(),
+    mergeUiOverride = mergeStructureUiOverride,
+    buildTiming,
+    forceBuild,
+  } = args;
+
+  runHistoryBatch(
+    app,
+    () => {
+      const transaction = prepareTransaction();
+      try {
+        const override = mergeUiOverride(getUiSnapshot(app), uiPatch);
+        runAppStructuralModulesRecompute(
+          app,
+          override,
+          null,
+          createStructureRecomputeBuildDefaults(source, buildTiming, forceBuild),
+          recomputeOpts,
+          {}
+        );
+        transaction.commit();
+      } catch (error) {
+        if (transaction.state === 'prepared') {
+          transaction.rollback({
+            ...meta,
+            source: `${source}:rollback`,
+            noBuild: true,
+            noHistory: true,
+            noAutosave: true,
+            silent: true,
+          });
+        }
+        throw error;
+      }
     },
     meta
   );

@@ -8,6 +8,8 @@ import type {
   ModulesGeometrySnapshotLike,
   ProjectLoadStateSnapshotLike,
   ProjectLoadTransactionHandleLike,
+  StateSnapshotTransactionHandleLike,
+  UiConfigStateSnapshotLike,
   SaveProjectAction,
   UnknownRecord,
 } from '../../../types';
@@ -105,6 +107,32 @@ export function commitProjectLoadSnapshotViaActionsOrThrow(
     );
   }
   const handle = commitProjectLoadSnapshot(snapshot, meta);
+  if (
+    !handle ||
+    handle.state !== 'prepared' ||
+    typeof handle.commit !== 'function' ||
+    typeof handle.rollback !== 'function'
+  ) {
+    throw new Error(`[WardrobePro] ${label} did not return a prepared transaction handle.`);
+  }
+  return handle;
+}
+
+export function commitUiConfigSnapshotViaActionsOrThrow(
+  App: unknown,
+  snapshot: UiConfigStateSnapshotLike,
+  meta?: ActionMetaLike,
+  label = 'actions.commitUiConfigSnapshot'
+): StateSnapshotTransactionHandleLike {
+  const commitUiConfigSnapshot = getActionFn<
+    (value: UiConfigStateSnapshotLike, actionMeta?: ActionMetaLike) => StateSnapshotTransactionHandleLike
+  >(App, 'commitUiConfigSnapshot');
+  if (typeof commitUiConfigSnapshot !== 'function') {
+    throw new Error(
+      `[WardrobePro] ${label} requires canonical actions.commitUiConfigSnapshot(snapshot, meta).`
+    );
+  }
+  const handle = commitUiConfigSnapshot(snapshot, meta);
   if (
     !handle ||
     handle.state !== 'prepared' ||

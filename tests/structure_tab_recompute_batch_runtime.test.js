@@ -160,3 +160,99 @@ test('[structure-tab-recompute-batch] unknown build force fails fast instead of 
     /Unknown structure recompute build force/
   );
 });
+
+test('[structure-tab-recompute-batch] snapshot transaction commits only after structural recompute succeeds', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const meta = { source: 'react:structure:snapshot', immediate: true, noBuild: true };
+  let transactionState = 'prepared';
+  const transaction = {
+    get state() {
+      return transactionState;
+    },
+    commit() {
+      calls.push(['commitTransaction']);
+      transactionState = 'committed';
+    },
+    rollback(rollbackMeta) {
+      calls.push(['rollbackTransaction', rollbackMeta]);
+      transactionState = 'rolled-back';
+    },
+  };
+  const mod = loadStructureTabRecomputeBatchModule({
+    calls,
+    uiSnapshot: { raw: { width: 0, doors: 0 } },
+  });
+
+  mod.runStructureSnapshotRecomputeTransaction({
+    app,
+    source: 'react:structure:snapshot',
+    meta,
+    uiPatch: { raw: { width: 0, doors: 0 } },
+    prepareTransaction: () => {
+      calls.push(['prepareTransaction']);
+      return transaction;
+    },
+  });
+
+  assert.equal(transactionState, 'committed');
+  assert.ok(calls.findIndex(entry => entry[0] === 'prepareTransaction') >= 0);
+  assert.ok(
+    calls.findIndex(entry => entry[0] === 'runAppStructuralModulesRecompute') <
+      calls.findIndex(entry => entry[0] === 'commitTransaction')
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'rollbackTransaction'),
+    false
+  );
+});
+
+test('[structure-tab-recompute-batch] snapshot transaction rolls back before rethrowing recompute failures', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const meta = { source: 'react:structure:snapshot-fail', immediate: true, noBuild: true };
+  let transactionState = 'prepared';
+  const transaction = {
+    get state() {
+      return transactionState;
+    },
+    commit() {
+      calls.push(['commitTransaction']);
+      transactionState = 'committed';
+    },
+    rollback(rollbackMeta) {
+      calls.push(['rollbackTransaction', rollbackMeta]);
+      transactionState = 'rolled-back';
+    },
+  };
+  const mod = loadStructureTabRecomputeBatchModule({
+    calls,
+    uiSnapshot: { raw: { width: 0, doors: 0 } },
+    runAppStructuralModulesRecompute: () => {
+      throw new Error('structural recompute failed');
+    },
+  });
+
+  assert.throws(
+    () =>
+      mod.runStructureSnapshotRecomputeTransaction({
+        app,
+        source: 'react:structure:snapshot-fail',
+        meta,
+        uiPatch: { raw: { width: 0, doors: 0 } },
+        prepareTransaction: () => transaction,
+      }),
+    /structural recompute failed/
+  );
+
+  assert.equal(transactionState, 'rolled-back');
+  assert.equal(
+    calls.some(entry => entry[0] === 'commitTransaction'),
+    false
+  );
+  const rollbackCall = calls.find(entry => entry[0] === 'rollbackTransaction');
+  assert.equal(rollbackCall?.[1]?.source, 'react:structure:snapshot-fail:rollback');
+  assert.equal(rollbackCall?.[1]?.noHistory, true);
+  assert.equal(rollbackCall?.[1]?.noAutosave, true);
+  assert.equal(rollbackCall?.[1]?.silent, true);
+});

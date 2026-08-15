@@ -3,27 +3,27 @@ import type {
   ActionsNamespaceLike,
   ProjectLoadStateSnapshotLike,
   ProjectLoadTransactionHandleLike,
-  RootStateLike,
   UnknownRecord,
+  RootStateLike,
 } from '../../../types';
 import type { PatchPayload } from '../../../types/backend_patch_payload';
-import type { RootStoreLike } from '../../../types/backend_store';
-
-import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
-import { asRecord, isRecord } from '../runtime/record.js';
-import { withStoreConfigMapWriteCapability } from '../runtime/store_config_map_write_capability.js';
+import { asRecord, isRecord } from './kernel_shared.js';
+import { prepareStateSnapshotTransaction } from './state_api_snapshot_transaction_owner.js';
 import { canonicalizeComparableProjectConfigPatch } from './kernel_project_config_snapshot_canonical.js';
 import { PROJECT_CONFIG_REPLACE_KEYS } from './state_api_shared.js';
 
 type ProjectLoadTransactionInstallContext = {
   actions: ActionsNamespaceLike;
-  store: RootStoreLike;
+  readRootSnapshot: () => RootStateLike | null;
+  commitSnapshotPatch: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
+  restoreRootSnapshot: (snapshot: RootStateLike, meta: ActionMetaLike) => unknown;
+  buildSnapshotConfigPatch: (patch: unknown, replaceKeys: unknown) => PatchPayload['config'];
   normMeta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   shallowCloneObj: (value: unknown) => UnknownRecord;
 };
 
 function assertProjectLoadStateSnapshot(value: unknown): ProjectLoadStateSnapshotLike {
-  const snapshot = asRecord<ProjectLoadStateSnapshotLike>(value);
+  const snapshot = asRecord(value);
   if (!snapshot || !isRecord(snapshot.ui) || !isRecord(snapshot.config)) {
     throw new Error(
       '[WardrobePro] actions.commitProjectLoadSnapshot requires complete ui and config snapshots.'
@@ -34,11 +34,25 @@ function assertProjectLoadStateSnapshot(value: unknown): ProjectLoadStateSnapsho
       '[WardrobePro] actions.commitProjectLoadSnapshot requires explicit runtime, mode, and meta patches.'
     );
   }
-  return snapshot;
+  return {
+    ui: snapshot.ui as ProjectLoadStateSnapshotLike['ui'],
+    config: snapshot.config as ProjectLoadStateSnapshotLike['config'],
+    runtime: snapshot.runtime as ProjectLoadStateSnapshotLike['runtime'],
+    mode: snapshot.mode as ProjectLoadStateSnapshotLike['mode'],
+    meta: snapshot.meta as ProjectLoadStateSnapshotLike['meta'],
+  };
 }
 
 export function installStateApiProjectLoadTransaction(ctx: ProjectLoadTransactionInstallContext): void {
-  const { actions, store, normMeta, shallowCloneObj } = ctx;
+  const {
+    actions,
+    readRootSnapshot,
+    commitSnapshotPatch,
+    restoreRootSnapshot,
+    buildSnapshotConfigPatch,
+    normMeta,
+    shallowCloneObj,
+  } = ctx;
   if (typeof actions.commitProjectLoadSnapshot === 'function') return;
 
   actions.commitProjectLoadSnapshot = function commitProjectLoadSnapshot(
@@ -46,14 +60,7 @@ export function installStateApiProjectLoadTransaction(ctx: ProjectLoadTransactio
     meta?: ActionMetaLike
   ): ProjectLoadTransactionHandleLike {
     const snapshot = assertProjectLoadStateSnapshot(value);
-    if (typeof store.patch !== 'function' || typeof store.setRoot !== 'function') {
-      throw new Error(
-        '[WardrobePro] project load transaction requires atomic store.patch and store.setRoot rollback seams.'
-      );
-    }
-
-    const previousRoot = store.getState();
-    const previous = asRecord<RootStateLike>(previousRoot);
+    const previous = readRootSnapshot();
     if (!previous) {
       throw new Error('[WardrobePro] project load transaction could not capture the current root state.');
     }
@@ -72,37 +79,20 @@ export function installStateApiProjectLoadTransaction(ctx: ProjectLoadTransactio
     });
     const payload: PatchPayload = {
       ui,
-      config: buildConfigPatchWithReplaceMetadata(config, PROJECT_CONFIG_REPLACE_KEYS),
+      config: buildSnapshotConfigPatch(config, PROJECT_CONFIG_REPLACE_KEYS),
       runtime: { ...snapshot.runtime },
       mode: { ...snapshot.mode },
       meta: { ...snapshot.meta },
     };
     const commitMeta = normMeta(meta, 'actions:commitProjectLoadSnapshot');
-    store.patch(payload, commitMeta, withStoreConfigMapWriteCapability({ forceCommit: true }));
-
-    let state: ProjectLoadTransactionHandleLike['state'] = 'prepared';
-    return {
-      get state(): ProjectLoadTransactionHandleLike['state'] {
-        return state;
-      },
-      commit(): void {
-        if (state !== 'prepared') {
-          throw new Error(`[WardrobePro] project load transaction cannot commit from ${state}.`);
-        }
-        state = 'committed';
-      },
-      rollback(rollbackMeta?: ActionMetaLike): void {
-        if (state !== 'prepared') {
-          throw new Error(`[WardrobePro] project load transaction cannot roll back from ${state}.`);
-        }
-        if (typeof store.setRoot !== 'function') {
-          throw new Error('[WardrobePro] project load transaction lost its root rollback seam.');
-        }
-        store.setRoot(previous, normMeta(rollbackMeta, 'actions:rollbackProjectLoadSnapshot'), {
-          forceCommit: true,
-        });
-        state = 'rolled-back';
-      },
-    };
+    return prepareStateSnapshotTransaction({
+      payload,
+      readRootSnapshot,
+      commitSnapshotPatch,
+      restoreRootSnapshot,
+      commitMeta,
+      label: 'project load transaction',
+      normalizeRollbackMeta: rollbackMeta => normMeta(rollbackMeta, 'actions:rollbackProjectLoadSnapshot'),
+    });
   };
 }

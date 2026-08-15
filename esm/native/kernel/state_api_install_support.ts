@@ -71,7 +71,8 @@ const INTERNAL_CANONICAL_DISPATCH_OPTS = {
 
 type WritableStoreLike = {
   getState?: () => unknown;
-  patch?: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
+  patch?: (payload: PatchPayload, meta: ActionMetaLike, opts?: unknown) => unknown;
+  setRoot?: (snapshot: RootStateLike, meta: ActionMetaLike, opts?: unknown) => unknown;
   [key: string]: unknown;
 };
 
@@ -90,6 +91,9 @@ export type StateApiInstallSupport = {
   readRootSnapshot: () => RootStateLike | null;
   readCfgSnapshot: () => UnknownRecord;
   readUiSnapshot: () => UnknownRecord;
+  commitSnapshotPatch: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
+  restoreRootSnapshot: (snapshot: RootStateLike, meta: ActionMetaLike) => unknown;
+  buildSnapshotConfigPatch: (patch: unknown, replaceKeys: unknown) => ConfigSlicePatch;
 };
 
 function isSliceRecord(value: unknown): value is UnknownRecord {
@@ -312,6 +316,23 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
   const commitMetaTouch = (meta?: ActionMetaLike): unknown =>
     touchMetaWithDedicatedWriter(App, meta, { preferStoreWriter: true, skipNamespaceTouch: true });
 
+  const commitSnapshotPatch = (payload: PatchPayload, meta: ActionMetaLike): unknown => {
+    if (typeof store.patch !== 'function') {
+      throw new Error('[WardrobePro] snapshot transaction requires canonical store.patch.');
+    }
+    return store.patch(payload, meta, withStoreConfigMapWriteCapability({ forceCommit: true }));
+  };
+
+  const restoreRootSnapshot = (snapshot: RootStateLike, meta: ActionMetaLike): unknown => {
+    if (typeof store.setRoot !== 'function') {
+      throw new Error('[WardrobePro] snapshot transaction requires canonical store.setRoot rollback.');
+    }
+    return store.setRoot(snapshot, meta, { forceCommit: true });
+  };
+
+  const buildSnapshotConfigPatch = (patch: unknown, replaceKeys: unknown): ConfigSlicePatch =>
+    attachConfigPatchReplaceMetadata(patch, replaceKeys);
+
   const dispatchCanonicalPatch = (payloadIn: PatchPayload, meta: ActionMetaLike): unknown => {
     const payload = asPatchPayload(payloadIn);
     assertNoGenericRootConfigMapPatch(payload);
@@ -353,5 +374,8 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
     readRootSnapshot,
     readCfgSnapshot,
     readUiSnapshot,
+    commitSnapshotPatch,
+    restoreRootSnapshot,
+    buildSnapshotConfigPatch,
   };
 }

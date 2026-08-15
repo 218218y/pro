@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   SKETCH_NO_MAIN_FREE_EXTRAS_KEY,
   SKETCH_NO_MAIN_RESTORE_KEY,
+  isSketchNoMainWardrobeActive,
   toggleSketchNoMainWardrobe,
 } from '../esm/native/ui/react/tabs/sketch_tab_no_main_toggle.ts';
 
@@ -18,8 +19,8 @@ function mergeUi(state: AnyRecord, patch: AnyRecord): void {
     ...state.ui,
     ...clone(patch),
     raw: {
-      ...((state.ui && state.ui.raw) || {}),
-      ...((patch && patch.raw) || {}),
+      ...state.ui?.raw,
+      ...patch?.raw,
     },
   };
 }
@@ -56,6 +57,27 @@ function createToggleApp(state: AnyRecord): AnyRecord {
     state,
     recomputeCalls: [] as AnyRecord[],
     actions: {
+      commitUiConfigSnapshot(snapshot: AnyRecord) {
+        const previous = clone(state);
+        mergeUi(state, snapshot.ui || {});
+        state.config = clone(snapshot.config || {});
+        let status: 'prepared' | 'committed' | 'rolled-back' = 'prepared';
+        return {
+          get state() {
+            return status;
+          },
+          commit() {
+            if (status !== 'prepared') throw new Error(`cannot commit from ${status}`);
+            status = 'committed';
+          },
+          rollback() {
+            if (status !== 'prepared') throw new Error(`cannot roll back from ${status}`);
+            for (const key of Object.keys(state)) delete state[key];
+            Object.assign(state, clone(previous));
+            status = 'rolled-back';
+          },
+        };
+      },
       patch(patch: AnyRecord) {
         assertNoGenericKnownConfigMapPatch(patch);
         if (patch && patch.ui) mergeUi(state, patch.ui);
@@ -482,5 +504,49 @@ test('sketch no-main restore from a loaded no-main project keeps loaded free box
   assert.deepEqual(
     state.config.modulesConfiguration[0].sketchExtras.boxes.map((entry: AnyRecord) => entry.id),
     ['loaded-no-main-free-box']
+  );
+});
+
+test('sketch no-main toggle rolls back the complete ui/config transaction when recompute fails', () => {
+  const state: AnyRecord = {
+    ui: {
+      raw: { doors: 4, width: 240, height: 220, depth: 60 },
+      structureSelect: 'main',
+      singleDoorPos: 'left',
+      stackSplitEnabled: true,
+    },
+    config: {
+      wardrobeType: 'hinged',
+      modulesConfiguration: [{ id: 'main-module', doors: 4 }],
+      handlesMap: { d1_full: 'rail' },
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: { dirty: false },
+  };
+  const before = clone(state);
+  const app = createToggleApp(state);
+  app.actions.modules.recomputeFromUi = () => {
+    throw new Error('forced recompute failure');
+  };
+
+  assert.throws(() => toggleSketchNoMainWardrobe({ app, meta }), /forced recompute failure/);
+  assert.deepEqual(state, before);
+});
+
+test('sketch no-main active detection reads canonical ui.raw and ignores retired top-level door mirrors', () => {
+  assert.equal(
+    isSketchNoMainWardrobeActive({
+      ui: { raw: { doors: 4 }, doors: 0 } as any,
+      wardrobeType: 'hinged',
+    }),
+    false
+  );
+  assert.equal(
+    isSketchNoMainWardrobeActive({
+      ui: { raw: { doors: 0 }, doors: 4 } as any,
+      wardrobeType: 'hinged',
+    }),
+    true
   );
 });

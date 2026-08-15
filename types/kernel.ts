@@ -10,7 +10,7 @@ import type { WardrobeType } from './domain';
 import type { HandlesMap, HingeMap, KnownMapName, MapsByName } from './maps';
 import type { ConfigScalarKey, ConfigScalarValueMap } from './config_scalar';
 import type { RuntimeScalarKey, RuntimeScalarValueMap } from './runtime_scalar';
-import type { SavedColorLike } from './build';
+import type { ConfigStateLike, SavedColorLike } from './build';
 import type { ProjectPreChestStateLike, ProjectSavedNotesLike } from './project';
 import type { UiRawScalarKey, UiRawScalarValueMap } from './ui_raw';
 import type {
@@ -278,12 +278,20 @@ export interface ProjectLoadStateSnapshotLike {
   meta: MetaSlicePatch;
 }
 
-export type ProjectLoadTransactionState = 'prepared' | 'committed' | 'rolled-back';
+export type StateSnapshotTransactionState = 'prepared' | 'committed' | 'rolled-back';
 
-export interface ProjectLoadTransactionHandleLike {
-  readonly state: ProjectLoadTransactionState;
+export interface StateSnapshotTransactionHandleLike {
+  readonly state: StateSnapshotTransactionState;
   commit: () => void;
   rollback: (meta?: ActionMetaLike) => void;
+}
+
+export type ProjectLoadTransactionState = StateSnapshotTransactionState;
+export type ProjectLoadTransactionHandleLike = StateSnapshotTransactionHandleLike;
+
+export interface UiConfigStateSnapshotLike {
+  ui: UiSlicePatch;
+  config: ConfigStateLike;
 }
 
 export interface ActionsNamespaceLike extends UnknownRecord {
@@ -293,6 +301,10 @@ export interface ActionsNamespaceLike extends UnknownRecord {
     snapshot: ProjectLoadStateSnapshotLike,
     meta?: ActionMetaLike
   ) => ProjectLoadTransactionHandleLike;
+  commitUiConfigSnapshot?: (
+    snapshot: UiConfigStateSnapshotLike,
+    meta?: ActionMetaLike
+  ) => StateSnapshotTransactionHandleLike;
   applyConfig?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
   setCfgScalar?: {
     <K extends ConfigScalarKey>(key: K, valueOrFn: ConfigScalarValueMap[K], meta?: ActionMetaLike): unknown;

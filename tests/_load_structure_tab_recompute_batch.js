@@ -32,7 +32,9 @@ export function loadStructureTabRecomputeBatchModule(stubs = {}) {
         },
         runAppStructuralModulesRecompute: (...args) => {
           stubs.calls?.push(['runAppStructuralModulesRecompute', ...args]);
-          return 'ok';
+          return typeof stubs.runAppStructuralModulesRecompute === 'function'
+            ? stubs.runAppStructuralModulesRecompute(...args)
+            : 'ok';
         },
       };
     }

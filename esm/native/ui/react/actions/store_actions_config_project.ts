@@ -2,14 +2,30 @@ import type {
   ActionMetaLike,
   AppContainer,
   ProjectPreChestStateLike,
+  StateSnapshotTransactionHandleLike,
+  UiConfigStateSnapshotLike,
   UnknownRecord,
 } from '../../../../../types';
 
 import {
   cfgSetScalar as cfgSetScalarApi,
+  commitUiConfigSnapshotViaActionsOrThrow,
   setCfgCustomUploadedDataURL as setCfgCustomUploadedDataURLApi,
 } from '../../../services/api.js';
 import { asStringOrNull, getConfigNamespace, readRecord, readSavedNotes } from './store_actions_state.js';
+
+function commitUiConfigSnapshot(
+  app: AppContainer,
+  snapshot: UiConfigStateSnapshotLike,
+  meta?: ActionMetaLike
+): StateSnapshotTransactionHandleLike {
+  return commitUiConfigSnapshotViaActionsOrThrow(
+    app,
+    snapshot,
+    meta,
+    'Sketch No-Main ui/config snapshot transaction'
+  );
+}
 
 function setCfgSavedNotes(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
   const normalized = readSavedNotes(next);
@@ -52,4 +68,10 @@ function applyProjectConfigSnapshot(app: AppContainer, snapshot: UnknownRecord, 
   );
 }
 
-export { applyProjectConfigSnapshot, setCfgCustomUploadedDataURL, setCfgPreChestState, setCfgSavedNotes };
+export {
+  applyProjectConfigSnapshot,
+  commitUiConfigSnapshot,
+  setCfgCustomUploadedDataURL,
+  setCfgPreChestState,
+  setCfgSavedNotes,
+};

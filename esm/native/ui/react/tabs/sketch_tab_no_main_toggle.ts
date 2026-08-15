@@ -1,92 +1,40 @@
 import type {
   ActionMetaLike,
   AppContainer,
+  ConfigStateLike,
   MetaActionsNamespaceLike,
+  ModuleConfigLike,
+  UiSlicePatch,
   UiStateLike,
   UnknownRecord,
 } from '../../../../../types';
-import { UI_RAW_SCALAR_KEYS } from '../../../../../types/ui_raw.js';
 import { WARDROBE_DEFAULTS } from '../../../../shared/dimensions/wardrobe_defaults.js';
 
-import {
-  applyProjectConfigSnapshot,
-  getConfigSnapshot,
-  getUiSnapshot,
-  patchUi,
-} from '../actions/store_actions.js';
-import { applyStructureTemplateRecomputeBatch } from './structure_tab_core_recompute.js';
+import { commitUiConfigSnapshot, getConfigSnapshot, getUiSnapshot } from '../actions/store_actions.js';
+import { applyStructureTemplateSnapshotRecomputeTransaction } from './structure_tab_core_recompute.js';
 import { createStructureTabNoBuildImmediateMeta } from './structure_tab_meta.js';
+import {
+  SKETCH_NO_MAIN_EXTRA_LIST_KEYS,
+  SKETCH_NO_MAIN_FREE_EXTRAS_KEY,
+  SKETCH_NO_MAIN_RESTORE_KEY,
+  areSketchNoMainSnapshotValuesEqual,
+  cloneSketchNoMainSnapshotValue,
+  createSketchNoMainFreeExtrasSnapshot,
+  createSketchNoMainRestoreSnapshot,
+  decodeSketchNoMainFreeExtrasSnapshot,
+  decodeSketchNoMainRestoreSnapshot,
+  fingerprintSketchNoMainSnapshotValue,
+  type SketchNoMainExtraListKey,
+  type SketchNoMainFreeExtrasSnapshot,
+  type SketchNoMainRestoreSnapshot,
+} from './sketch_tab_no_main_snapshot_codec.js';
 
-export const SKETCH_NO_MAIN_RESTORE_KEY = 'noMainSketchRestoreSnapshot';
-export const SKETCH_NO_MAIN_FREE_EXTRAS_KEY = 'noMainSketchFreeExtrasSnapshot';
+export {
+  SKETCH_NO_MAIN_FREE_EXTRAS_KEY,
+  SKETCH_NO_MAIN_RESTORE_KEY,
+} from './sketch_tab_no_main_snapshot_codec.js';
 
-type SketchNoMainRestoreSnapshot = {
-  version: 1;
-  capturedAt: number;
-  ui: UnknownRecord;
-  config: UnknownRecord;
-};
-
-type SketchNoMainFreeExtrasSnapshot = {
-  version: 1;
-  capturedAt: number;
-  sketchExtras: UnknownRecord;
-};
-
-type SketchNoMainToggleResult = { ok: true; active: boolean; restored: boolean };
-
-const STRUCTURE_UI_SNAPSHOT_KEYS = [
-  'baseType',
-  'baseLegStyle',
-  'baseLegColor',
-  'basePlinthHeightCm',
-  'baseLegHeightCm',
-  'baseLegWidthCm',
-  'colorChoice',
-  'customColor',
-  'doorStyle',
-  'frontColorShelfInheritanceMode',
-  'groovesEnabled',
-  'splitDoors',
-  'removeDoorsEnabled',
-  'hasCornice',
-  'corniceType',
-  'currentCurtainChoice',
-  'handleControl',
-  'hingeDirection',
-  'singleDoorPos',
-  'structureSelect',
-  'isChestMode',
-  'chestCommodeEnabled',
-  'chestCommodeMirrorWidthManual',
-  'cornerMode',
-  'cornerSide',
-  'cornerWidth',
-  'cornerDoors',
-  'cornerHeight',
-  'cornerDepth',
-  'stackSplitEnabled',
-  'stackSplitDecorativeSeparatorEnabled',
-  'cellDimsPanelOpen',
-  'cellDimsHexPanelOpen',
-  'showHanger',
-  'showContents',
-  'libraryUpperDoorsHidden',
-  'currentLayoutType',
-  'currentGridDivisions',
-  'currentGridShelfVariant',
-  'currentExtDrawerType',
-  'currentExtDrawerCount',
-  'currentHandleToolType',
-  'currentHandleToolColor',
-  'currentHandleToolEdgeVariant',
-  'internalDrawersEnabled',
-  'activeGridCellId',
-  'sketchMode',
-  'globalClickMode',
-] as const;
-
-const SKETCH_EXTRA_LIST_KEYS = ['boxes', 'shelves', 'storageBarriers', 'rods', 'drawers'] as const;
+export type SketchNoMainToggleResult = { ok: true; active: boolean; restored: boolean };
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -94,19 +42,6 @@ function isRecord(value: unknown): value is UnknownRecord {
 
 function readRecord(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
-}
-
-function cloneSerializable<T>(value: T): T {
-  if (value == null || typeof value !== 'object') return value;
-  try {
-    return JSON.parse(JSON.stringify(value)) as T;
-  } catch {
-    if (Array.isArray(value)) return value.map(entry => cloneSerializable(entry)) as T;
-    const rec = value as UnknownRecord;
-    const out: UnknownRecord = {};
-    for (const key of Object.keys(rec)) out[key] = cloneSerializable(rec[key]);
-    return out as T;
-  }
 }
 
 function coerceFiniteNumber(value: unknown): number | null {
@@ -120,88 +55,19 @@ function coerceFiniteInt(value: unknown): number | null {
   return n == null ? null : Math.round(n);
 }
 
-function readRawRecord(ui: UnknownRecord): UnknownRecord {
-  return readRecord(ui.raw) || {};
+function readUiRawNumber(ui: UiStateLike, key: 'height' | 'depth', defaultValue: number): number {
+  const value = coerceFiniteNumber(ui.raw?.[key]);
+  return value != null ? value : defaultValue;
 }
 
-function readUiRawNumber(ui: UnknownRecord, key: string, defaultValue: number): number {
-  const raw = readRawRecord(ui);
-  const fromRaw = coerceFiniteNumber(raw[key]);
-  if (fromRaw != null) return fromRaw;
-  const fromUi = coerceFiniteNumber(ui[key]);
-  return fromUi != null ? fromUi : defaultValue;
+function readUiRawInt(ui: UiStateLike, key: 'doors', defaultValue: number): number {
+  const value = coerceFiniteInt(ui.raw?.[key]);
+  return value != null ? value : defaultValue;
 }
 
-function readUiRawInt(ui: UnknownRecord, key: string, defaultValue: number): number {
-  const raw = readRawRecord(ui);
-  const fromRaw = coerceFiniteInt(raw[key]);
-  if (fromRaw != null) return fromRaw;
-  const fromUi = coerceFiniteInt(ui[key]);
-  return fromUi != null ? fromUi : defaultValue;
-}
-
-function pickRestoreUiSnapshot(ui: UnknownRecord): UnknownRecord {
-  const out: UnknownRecord = {};
-  const raw = readRawRecord(ui);
-  const rawOut: UnknownRecord = cloneSerializable(raw);
-
-  for (const key of UI_RAW_SCALAR_KEYS) {
-    if (!Object.prototype.hasOwnProperty.call(rawOut, key) && Object.prototype.hasOwnProperty.call(ui, key)) {
-      rawOut[key] = cloneSerializable(ui[key]);
-    }
-  }
-
-  out.raw = rawOut;
-  for (const key of STRUCTURE_UI_SNAPSHOT_KEYS) {
-    if (Object.prototype.hasOwnProperty.call(ui, key)) out[key] = cloneSerializable(ui[key]);
-  }
-  delete out[SKETCH_NO_MAIN_RESTORE_KEY];
-  delete out[SKETCH_NO_MAIN_FREE_EXTRAS_KEY];
-  return out;
-}
-
-function cloneMainWardrobeRestoreConfig(config: UnknownRecord): UnknownRecord {
-  return cloneSerializable(config);
-}
-
-function createRestoreSnapshot(ui: UnknownRecord, config: UnknownRecord): SketchNoMainRestoreSnapshot {
-  return {
-    version: 1,
-    capturedAt: Date.now(),
-    ui: pickRestoreUiSnapshot(ui),
-    config: cloneMainWardrobeRestoreConfig(config),
-  };
-}
-
-function readRestoreSnapshot(ui: UiStateLike): SketchNoMainRestoreSnapshot | null {
-  const snap = readRecord(ui.noMainSketchRestoreSnapshot);
-  if (!snap || snap.version !== 1) return null;
-  const restoreUi = readRecord(snap.ui);
-  const restoreConfig = readRecord(snap.config);
-  if (!restoreUi || !restoreConfig) return null;
-  return {
-    version: 1,
-    capturedAt: Number(snap.capturedAt) || 0,
-    ui: cloneSerializable(restoreUi),
-    config: cloneSerializable(restoreConfig),
-  };
-}
-
-function readFreeExtrasSnapshot(ui: UnknownRecord): SketchNoMainFreeExtrasSnapshot | null {
-  const snap = readRecord(ui[SKETCH_NO_MAIN_FREE_EXTRAS_KEY]);
-  if (!snap || snap.version !== 1) return null;
-  const sketchExtras = readRecord(snap.sketchExtras);
-  if (!sketchExtras) return null;
-  return {
-    version: 1,
-    capturedAt: Number(snap.capturedAt) || 0,
-    sketchExtras: cloneSerializable(sketchExtras),
-  };
-}
-
-function createDefaultMainRestoreConfig(config: UnknownRecord): UnknownRecord {
-  const restoreConfig = cloneMainWardrobeRestoreConfig({
-    ...cloneSerializable(config),
+function createDefaultMainRestoreConfig(config: ConfigStateLike): ConfigStateLike {
+  const restoreConfig = cloneSketchNoMainSnapshotValue<ConfigStateLike>({
+    ...cloneSketchNoMainSnapshotValue(config),
     wardrobeType: 'hinged',
   });
   const modules = readModulesConfiguration(restoreConfig);
@@ -209,13 +75,13 @@ function createDefaultMainRestoreConfig(config: UnknownRecord): UnknownRecord {
 
   restoreConfig.modulesConfiguration = modules.map(entry => {
     const module = readRecord(entry);
-    if (!module) return cloneSerializable(entry);
+    if (!module) return cloneSketchNoMainSnapshotValue(entry);
 
-    const nextModule = cloneSerializable(module);
+    const nextModule = cloneSketchNoMainSnapshotValue(module);
     const extras = readRecord(nextModule.sketchExtras);
     if (!extras) return nextModule;
 
-    const nextExtras = cloneSerializable(extras);
+    const nextExtras = cloneSketchNoMainSnapshotValue(extras);
     let changed = false;
 
     if (Array.isArray(extras.boxes)) {
@@ -225,7 +91,7 @@ function createDefaultMainRestoreConfig(config: UnknownRecord): UnknownRecord {
       changed = changed || boxes.length !== extras.boxes.length;
     }
 
-    for (const key of SKETCH_EXTRA_LIST_KEYS) {
+    for (const key of SKETCH_NO_MAIN_EXTRA_LIST_KEYS) {
       if (key === 'boxes') continue;
       if (!Object.prototype.hasOwnProperty.call(nextExtras, key)) continue;
       delete nextExtras[key];
@@ -241,55 +107,52 @@ function createDefaultMainRestoreConfig(config: UnknownRecord): UnknownRecord {
   return restoreConfig;
 }
 
-function createDefaultRestoreSnapshot(ui: UnknownRecord, config: UnknownRecord): SketchNoMainRestoreSnapshot {
+function createDefaultRestoreSnapshot(ui: UiStateLike, config: ConfigStateLike): SketchNoMainRestoreSnapshot {
   const defaultDoors = WARDROBE_DEFAULTS.byType.hinged.doorsCount;
   const defaultWidth = defaultDoors * WARDROBE_DEFAULTS.byType.hinged.perDoorWidthCm;
-  const restoreUi = pickRestoreUiSnapshot(ui);
-  const raw = readRecord(restoreUi.raw) || {};
-  restoreUi.raw = {
-    ...raw,
-    width: defaultWidth,
-    height: readUiRawNumber(ui, 'height', WARDROBE_DEFAULTS.heightCm),
-    depth: readUiRawNumber(ui, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm),
-    doors: defaultDoors,
+  const restoreUi: UiStateLike = {
+    ...ui,
+    raw: {
+      ...ui.raw,
+      width: defaultWidth,
+      height: readUiRawNumber(ui, 'height', WARDROBE_DEFAULTS.heightCm),
+      depth: readUiRawNumber(ui, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm),
+      doors: defaultDoors,
+    },
+    isChestMode: false,
   };
-  restoreUi.isChestMode = false;
+  return createSketchNoMainRestoreSnapshot(restoreUi, createDefaultMainRestoreConfig(config));
+}
+
+function mergeUiPatch(base: SketchNoMainRestoreSnapshot['ui'], patch: UiSlicePatch): UiSlicePatch {
   return {
-    version: 1,
-    capturedAt: Date.now(),
-    ui: restoreUi,
-    config: createDefaultMainRestoreConfig(config),
+    ...base,
+    ...patch,
+    raw: {
+      ...base.raw,
+      ...patch.raw,
+    },
   };
 }
 
-function mergeUiPatch(base: UnknownRecord, patch: UnknownRecord): UnknownRecord {
-  const out: UnknownRecord = { ...base, ...patch };
-  const baseRaw = readRecord(base.raw) || {};
-  const patchRaw = readRecord(patch.raw) || {};
-  out.raw = { ...baseRaw, ...patchRaw };
-  return out;
-}
-
-function createNoMainConfigSnapshot(config: UnknownRecord): UnknownRecord {
+function createNoMainConfigSnapshot(config: ConfigStateLike): ConfigStateLike {
   return {
-    ...cloneSerializable(config),
+    ...cloneSketchNoMainSnapshotValue(config),
     wardrobeType: 'hinged',
     isLibraryMode: false,
     stackSplitLowerModulesConfiguration: [],
   };
 }
 
-function createNoMainUiPatch(ui: UnknownRecord, restore: SketchNoMainRestoreSnapshot): UnknownRecord {
-  const raw = {
-    ...readRawRecord(ui),
-    width: 0,
-    height: readUiRawNumber(ui, 'height', WARDROBE_DEFAULTS.heightCm),
-    depth: readUiRawNumber(ui, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm),
-    doors: 0,
-  };
-
+function createNoMainUiPatch(ui: UiStateLike, restore: SketchNoMainRestoreSnapshot): UiSlicePatch {
   return {
-    raw,
+    raw: {
+      ...ui.raw,
+      width: 0,
+      height: readUiRawNumber(ui, 'height', WARDROBE_DEFAULTS.heightCm),
+      depth: readUiRawNumber(ui, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm),
+      doors: 0,
+    },
     [SKETCH_NO_MAIN_RESTORE_KEY]: restore,
     structureSelect: '',
     singleDoorPos: '',
@@ -301,11 +164,11 @@ function createNoMainUiPatch(ui: UnknownRecord, restore: SketchNoMainRestoreSnap
   };
 }
 
-function readModulesConfiguration(config: UnknownRecord): unknown[] {
+function readModulesConfiguration(config: ConfigStateLike): ModuleConfigLike[] {
   return Array.isArray(config.modulesConfiguration) ? config.modulesConfiguration : [];
 }
 
-function readSketchExtrasFromFirstModule(config: UnknownRecord): UnknownRecord | null {
+function readSketchExtrasFromFirstModule(config: ConfigStateLike): UnknownRecord | null {
   const modules = readModulesConfiguration(config);
   const first = readRecord(modules[0]);
   return first ? readRecord(first.sketchExtras) : null;
@@ -313,41 +176,29 @@ function readSketchExtrasFromFirstModule(config: UnknownRecord): UnknownRecord |
 
 function cloneSketchExtraList(value: unknown): unknown[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(entry => entry != null).map(entry => cloneSerializable(entry));
+  return value.filter(entry => entry != null).map(entry => cloneSketchNoMainSnapshotValue(entry));
 }
 
-function normalizeSketchExtraList(key: (typeof SKETCH_EXTRA_LIST_KEYS)[number], value: unknown): unknown[] {
+function normalizeSketchExtraList(key: SketchNoMainExtraListKey, value: unknown): unknown[] {
   if (key !== 'boxes') return cloneSketchExtraList(value);
-  return cloneSketchExtraList(value).filter(entry => {
-    const rec = readRecord(entry);
-    return !!rec && rec.freePlacement === true;
-  });
+  return cloneSketchExtraList(value).filter(entry => readRecord(entry)?.freePlacement === true);
 }
 
 function readSketchExtraIdentity(value: unknown): string {
   const rec = readRecord(value);
   const id = rec && typeof rec.id === 'string' ? rec.id.trim() : '';
-  if (id) return `id:${id}`;
-  try {
-    return `json:${JSON.stringify(value)}`;
-  } catch {
-    return `ref:${String(value)}`;
-  }
+  return id ? `id:${id}` : `value:${fingerprintSketchNoMainSnapshotValue(value)}`;
 }
 
-function mergeSketchExtraLists(
-  base: unknown,
-  incoming: unknown[],
-  key: (typeof SKETCH_EXTRA_LIST_KEYS)[number]
-): unknown[] {
+function mergeSketchExtraLists(base: unknown, incoming: unknown[], key: SketchNoMainExtraListKey): unknown[] {
   const out = cloneSketchExtraList(base);
   const seen = new Set(out.map(readSketchExtraIdentity));
   for (const entry of incoming) {
     const normalized = normalizeSketchExtraList(key, [entry])[0];
     if (typeof normalized === 'undefined') continue;
-    const id = readSketchExtraIdentity(normalized);
-    if (seen.has(id)) continue;
-    seen.add(id);
+    const identity = readSketchExtraIdentity(normalized);
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     out.push(normalized);
   }
   return out;
@@ -355,7 +206,7 @@ function mergeSketchExtraLists(
 
 function createSketchExtraIdentitySet(
   sketchExtras: UnknownRecord | null,
-  key: (typeof SKETCH_EXTRA_LIST_KEYS)[number]
+  key: SketchNoMainExtraListKey
 ): Set<string> {
   const list =
     key === 'boxes'
@@ -365,15 +216,15 @@ function createSketchExtraIdentitySet(
 }
 
 function createNoMainFreeExtrasSnapshotFromConfig(args: {
-  config: UnknownRecord;
-  restoreConfig?: UnknownRecord | null;
+  config: ConfigStateLike;
+  restoreConfig?: ConfigStateLike | null;
 }): SketchNoMainFreeExtrasSnapshot | null {
   const currentExtras = readSketchExtrasFromFirstModule(args.config);
   if (!currentExtras) return null;
 
   const restoreExtras = args.restoreConfig ? readSketchExtrasFromFirstModule(args.restoreConfig) : null;
-  const sketchExtras: UnknownRecord = {};
-  for (const key of SKETCH_EXTRA_LIST_KEYS) {
+  const sketchExtras: SketchNoMainFreeExtrasSnapshot['sketchExtras'] = {};
+  for (const key of SKETCH_NO_MAIN_EXTRA_LIST_KEYS) {
     const restoreIds = createSketchExtraIdentitySet(restoreExtras, key);
     const list = normalizeSketchExtraList(key, currentExtras[key]).filter(
       entry => !restoreIds.has(readSketchExtraIdentity(entry))
@@ -381,15 +232,17 @@ function createNoMainFreeExtrasSnapshotFromConfig(args: {
     if (list.length > 0) sketchExtras[key] = list;
   }
 
-  return Object.keys(sketchExtras).length > 0 ? { version: 1, capturedAt: Date.now(), sketchExtras } : null;
+  return Object.keys(sketchExtras).length > 0 ? createSketchNoMainFreeExtrasSnapshot(sketchExtras) : null;
 }
 
 function reconcileMainRestoreConfigWithActiveFreeBoxes(args: {
-  restoreConfig: UnknownRecord;
-  activeConfig: UnknownRecord;
-}): UnknownRecord {
-  const restoreConfig = cloneSerializable(args.restoreConfig);
-  const restoreModules = readModulesConfiguration(restoreConfig).map(entry => cloneSerializable(entry));
+  restoreConfig: ConfigStateLike;
+  activeConfig: ConfigStateLike;
+}): ConfigStateLike {
+  const restoreConfig = cloneSketchNoMainSnapshotValue(args.restoreConfig);
+  const restoreModules = readModulesConfiguration(restoreConfig).map(entry =>
+    cloneSketchNoMainSnapshotValue(entry)
+  );
   const restoreFirstModule = readRecord(restoreModules[0]);
   const restoreExtras = restoreFirstModule ? readRecord(restoreFirstModule.sketchExtras) : null;
   const restoreBoxes = Array.isArray(restoreExtras?.boxes) ? cloneSketchExtraList(restoreExtras.boxes) : null;
@@ -408,11 +261,11 @@ function reconcileMainRestoreConfigWithActiveFreeBoxes(args: {
       continue;
     }
 
-    const id = readSketchExtraIdentity(entry);
-    const activeEntry = activeByIdentity.get(id);
+    const identity = readSketchExtraIdentity(entry);
+    const activeEntry = activeByIdentity.get(identity);
     if (activeEntry) {
-      nextBoxes.push(cloneSerializable(activeEntry));
-      if (JSON.stringify(activeEntry) !== JSON.stringify(entry)) changed = true;
+      nextBoxes.push(cloneSketchNoMainSnapshotValue(activeEntry));
+      if (!areSketchNoMainSnapshotValuesEqual(activeEntry, entry)) changed = true;
     } else {
       changed = true;
     }
@@ -420,7 +273,7 @@ function reconcileMainRestoreConfigWithActiveFreeBoxes(args: {
 
   if (!changed) return restoreConfig;
   restoreFirstModule.sketchExtras = {
-    ...cloneSerializable(restoreExtras),
+    ...cloneSketchNoMainSnapshotValue(restoreExtras),
     boxes: nextBoxes,
   };
   restoreModules[0] = restoreFirstModule;
@@ -429,18 +282,18 @@ function reconcileMainRestoreConfigWithActiveFreeBoxes(args: {
 }
 
 function mergeFreeExtrasSnapshotIntoNoMainConfig(args: {
-  noMainConfig: UnknownRecord;
+  noMainConfig: ConfigStateLike;
   freeExtras: SketchNoMainFreeExtrasSnapshot | null;
-}): UnknownRecord {
+}): ConfigStateLike {
   if (!args.freeExtras) return args.noMainConfig;
 
-  const noMainConfig = cloneSerializable(args.noMainConfig);
-  const modules = readModulesConfiguration(noMainConfig).map(entry => cloneSerializable(entry));
+  const noMainConfig = cloneSketchNoMainSnapshotValue(args.noMainConfig);
+  const modules = readModulesConfiguration(noMainConfig).map(entry => cloneSketchNoMainSnapshotValue(entry));
   const firstModule = readRecord(modules[0]) || {};
   const baseExtras = readRecord(firstModule.sketchExtras) || {};
   const nextExtras: UnknownRecord = { ...baseExtras };
 
-  for (const key of SKETCH_EXTRA_LIST_KEYS) {
+  for (const key of SKETCH_NO_MAIN_EXTRA_LIST_KEYS) {
     const incoming = normalizeSketchExtraList(key, args.freeExtras.sketchExtras[key]);
     if (!incoming.length) continue;
     nextExtras[key] = mergeSketchExtraLists(baseExtras[key], incoming, key);
@@ -452,26 +305,38 @@ function mergeFreeExtrasSnapshotIntoNoMainConfig(args: {
   return noMainConfig;
 }
 
-function applyNoMainBatch(args: {
+function readRestoreSnapshot(ui: UiStateLike): SketchNoMainRestoreSnapshot | null {
+  return decodeSketchNoMainRestoreSnapshot(ui[SKETCH_NO_MAIN_RESTORE_KEY]);
+}
+
+function readFreeExtrasSnapshot(ui: UiStateLike): SketchNoMainFreeExtrasSnapshot | null {
+  return decodeSketchNoMainFreeExtrasSnapshot(ui[SKETCH_NO_MAIN_FREE_EXTRAS_KEY]);
+}
+
+function applyNoMainTransaction(args: {
   app: AppContainer;
   source: string;
   meta: ActionMetaLike;
-  uiPatch: UnknownRecord;
-  configSnapshot?: UnknownRecord | null;
+  uiPatch: UiSlicePatch;
+  configSnapshot: ConfigStateLike;
 }): void {
   const { app, source, meta, uiPatch, configSnapshot } = args;
-  applyStructureTemplateRecomputeBatch({
+  const recomputeUiPatch: UnknownRecord = { ...uiPatch };
+  if (uiPatch.raw) recomputeUiPatch.raw = { ...uiPatch.raw };
+  applyStructureTemplateSnapshotRecomputeTransaction({
     app,
     source,
     meta,
-    uiPatch,
-    statePatch: configSnapshot ? null : { ui: uiPatch },
-    mutate: configSnapshot
-      ? () => {
-          applyProjectConfigSnapshot(app, configSnapshot, meta);
-          patchUi(app, uiPatch, meta);
-        }
-      : undefined,
+    uiPatch: recomputeUiPatch,
+    prepareTransaction: () =>
+      commitUiConfigSnapshot(
+        app,
+        {
+          ui: uiPatch,
+          config: configSnapshot,
+        },
+        meta
+      ),
   });
 }
 
@@ -483,10 +348,9 @@ export function isSketchNoMainWardrobeActive(args: {
   ui: UiStateLike | null | undefined;
   wardrobeType: string;
 }): boolean {
-  const ui = readRecord(args.ui) || {};
   return (
     args.wardrobeType !== 'sliding' &&
-    readUiRawInt(ui, 'doors', WARDROBE_DEFAULTS.byType.hinged.doorsCount) === 0
+    readUiRawInt(args.ui || {}, 'doors', WARDROBE_DEFAULTS.byType.hinged.doorsCount) === 0
   );
 }
 
@@ -495,20 +359,20 @@ export function toggleSketchNoMainWardrobe(args: {
   meta: MetaActionsNamespaceLike;
 }): SketchNoMainToggleResult {
   const { app, meta } = args;
-  const ui = getUiSnapshot(app);
-  const config = getConfigSnapshot(app);
+  const ui = getUiSnapshot(app) as UiStateLike;
+  const config = getConfigSnapshot(app) as ConfigStateLike;
   const wardrobeType = config.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
   const active = isSketchNoMainWardrobeActive({ ui, wardrobeType });
 
   if (!active) {
-    const restore = createRestoreSnapshot(ui, config);
+    const restore = createSketchNoMainRestoreSnapshot(ui, config);
     const uiPatch = createNoMainUiPatch(ui, restore);
     const configSnapshot = mergeFreeExtrasSnapshotIntoNoMainConfig({
       noMainConfig: createNoMainConfigSnapshot(config),
       freeExtras: readFreeExtrasSnapshot(ui),
     });
     const source = 'react:sketch:noMainWardrobe:enable';
-    applyNoMainBatch({
+    applyNoMainTransaction({
       app,
       source,
       meta: createStructureTabNoBuildImmediateMeta(meta, source),
@@ -532,7 +396,7 @@ export function toggleSketchNoMainWardrobe(args: {
     [SKETCH_NO_MAIN_FREE_EXTRAS_KEY]: freeExtras,
   });
   const source = 'react:sketch:noMainWardrobe:restore';
-  applyNoMainBatch({
+  applyNoMainTransaction({
     app,
     source,
     meta: createStructureTabNoBuildImmediateMeta(meta, source),

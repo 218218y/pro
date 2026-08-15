@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-14T15:37:10.699Z",
+  "generatedAt": "2026-08-15T18:33:27.019Z",
   "totals": {
-    "tests": 1243,
-    "unitRunnerTests": 1234,
+    "tests": 1246,
+    "unitRunnerTests": 1237,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -21,8 +21,8 @@
   },
   "categories": {
     "contract": 403,
-    "runtime-unit": 335,
-    "integration": 465,
+    "runtime-unit": 336,
+    "integration": 467,
     "persistence-ingress": 24,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -7139,6 +7139,14 @@
       "category": "integration"
     },
     {
+      "file": "tests/sketch_tab_no_main_snapshot_codec_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_tab_no_main_toggle_integration_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/sketch_tab_no_main_toggle_runtime.test.ts",
       "category": "integration"
     },
@@ -7468,6 +7476,10 @@
     },
     {
       "file": "tests/ui_build_reactivity_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/ui_config_snapshot_transaction_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

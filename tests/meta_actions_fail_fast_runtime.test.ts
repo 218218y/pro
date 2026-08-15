@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import {
   applyProjectConfigSnapshotViaActionsOrThrow,
   commitUiSnapshotViaActionsOrThrow,
+  commitUiConfigSnapshotViaActionsOrThrow,
   ensureMetaActions,
   getMetaActionFn,
   patchViaActions,
@@ -79,6 +80,15 @@ test('strict action mutation helpers throw when only stubbed or missing seams ar
   assert.throws(
     () => commitUiSnapshotViaActionsOrThrow(App, { width: 120 }, { source: 'strict:ui' }),
     /actions\.commitUiSnapshot/i
+  );
+  assert.throws(
+    () =>
+      commitUiConfigSnapshotViaActionsOrThrow(
+        App,
+        { ui: { raw: {} }, config: {} },
+        { source: 'strict:ui-config' }
+      ),
+    /actions\.commitUiConfigSnapshot/i
   );
   assert.throws(
     () =>

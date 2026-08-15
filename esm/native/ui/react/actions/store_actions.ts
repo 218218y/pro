@@ -1,5 +1,6 @@
 export {
   applyProjectConfigSnapshot,
+  commitUiConfigSnapshot,
   runHistoryBatch,
   setCfgBoardMaterial,
   setCfgDoorMountMode,

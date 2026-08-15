@@ -46,6 +46,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Saved models service         | `esm/native/services/models.ts` public facade plus focused `models_*` owners                                             |
 | Cloud sync                   | `esm/native/services/cloud_sync_*` lifecycle, transport, panel, scope, and collections repository owners                 |
 | Project load transaction     | App-scoped `esm/native/io/project_load_coordinator.ts` plus transaction context over the canonical kernel state handle   |
+| UI + config snapshot commit  | `esm/native/kernel/state_api_ui_config_snapshot_transaction.ts` over `state_api_snapshot_transaction_owner.ts`           |
 | Async operation handles      | `esm/native/runtime/async_operation.ts`, exposed to consumers through their owning public facade                         |
 | Autosave/history/project I/O | focused service owners under `esm/native/services/*` and `esm/native/io/*`                                               |
 

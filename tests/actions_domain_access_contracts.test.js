@@ -105,7 +105,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
       /export \* from '\.\/actions_access_mutations\.js';/,
       /export \{[\s\S]*ensureActionsRoot,[\s\S]*\} from '\.\/actions_access_core\.js';/,
       /export \{[\s\S]*getMetaActions,[\s\S]*\} from '\.\/actions_access_domains\.js';/,
-      /export \{[\s\S]*commitUiSnapshotViaActions,[\s\S]*commitProjectLoadSnapshotViaActionsOrThrow,[\s\S]*applyProjectConfigSnapshotViaActionsOrThrow,[\s\S]*\} from '\.\/actions_access_mutations\.js';/,
+      /export \{[\s\S]*commitUiSnapshotViaActions,[\s\S]*commitUiConfigSnapshotViaActionsOrThrow,[\s\S]*commitProjectLoadSnapshotViaActionsOrThrow,[\s\S]*applyProjectConfigSnapshotViaActionsOrThrow,[\s\S]*\} from '\.\/actions_access_mutations\.js';/,
     ],
     'actionsAccessEntry'
   );
@@ -129,6 +129,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
       /export function listModulesActionFns/,
       /export function commitUiSnapshotViaActions\(/,
       /export function commitUiSnapshotViaActionsOrThrow\(/,
+      /export function commitUiConfigSnapshotViaActionsOrThrow\(/,
       /export function commitProjectLoadSnapshotViaActionsOrThrow\(/,
       /export function setDirtyViaActions\(/,
       /export function setDirtyViaActionsOrThrow\(/,
@@ -158,6 +159,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
     [
       /commitUiSnapshotViaActions/,
       /commitUiSnapshotViaActionsOrThrow/,
+      /commitUiConfigSnapshotViaActionsOrThrow/,
       /commitProjectLoadSnapshotViaActionsOrThrow/,
       /setDirtyViaActions/,
       /setDirtyViaActionsOrThrow/,

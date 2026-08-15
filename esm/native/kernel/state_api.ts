@@ -28,6 +28,7 @@ import type { SetCfgScalarFn } from './state_api_shared.js';
 import { installStateApiSurfaceNamespaces } from './state_api_surface_namespaces.js';
 import { createStateApiInstallSupport } from './state_api_install_support.js';
 import { installStateApiProjectLoadTransaction } from './state_api_project_load_transaction.js';
+import { installStateApiUiConfigSnapshotTransaction } from './state_api_ui_config_snapshot_transaction.js';
 
 export function isStateApiInstalled(app: unknown): boolean {
   const rec = asObj(app);
@@ -76,6 +77,9 @@ export function installStateApi(App: AppContainer): void {
     readRootSnapshot,
     readCfgSnapshot,
     readUiSnapshot,
+    commitSnapshotPatch,
+    restoreRootSnapshot,
+    buildSnapshotConfigPatch,
   } = createStateApiInstallSupport(App, store);
 
   const callSetCfgScalar = (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown => {
@@ -132,7 +136,20 @@ export function installStateApi(App: AppContainer): void {
 
   installStateApiProjectLoadTransaction({
     actions,
-    store,
+    readRootSnapshot,
+    commitSnapshotPatch,
+    restoreRootSnapshot,
+    buildSnapshotConfigPatch,
+    normMeta,
+    shallowCloneObj,
+  });
+
+  installStateApiUiConfigSnapshotTransaction({
+    actions,
+    readRootSnapshot,
+    commitSnapshotPatch,
+    restoreRootSnapshot,
+    buildSnapshotConfigPatch,
     normMeta,
     shallowCloneObj,
   });
