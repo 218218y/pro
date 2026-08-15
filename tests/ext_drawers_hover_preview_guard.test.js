@@ -80,10 +80,6 @@ test('[ext-drawers-hover] sketch external drawer direct hit removal now routes t
       path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts'),
       'utf8'
     ),
-    fs.readFileSync(
-      path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts'),
-      'utf8'
-    ),
   ].join('\n');
   const crossDrawer = fs.readFileSync(CROSS_DRAWER, 'utf8');
   const crossDrawerDirectHit = fs.readFileSync(CROSS_DRAWER_DIRECT_HIT, 'utf8');

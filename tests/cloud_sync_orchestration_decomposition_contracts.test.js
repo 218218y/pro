@@ -62,10 +62,6 @@ const lifecyclePollingSharedOwner = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_polling_shared.ts',
   import.meta.url
 );
-const lifecyclePollingRuntimeOwner = readSource(
-  '../esm/native/services/cloud_sync_lifecycle_support_polling_runtime.ts',
-  import.meta.url
-);
 const lifecyclePollingStartRuntimeOwner = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts',
   import.meta.url
@@ -280,8 +276,11 @@ test('[cloud-sync-orchestration] panel api install and lifecycle support stay th
     lifecyclePollingFacade,
     [
       /cloud_sync_lifecycle_support_polling_shared\.js/,
-      /cloud_sync_lifecycle_support_polling_runtime\.js/,
-      /export \{\s*stopCloudSyncPolling,\s*startCloudSyncPolling,\s*markCloudSyncRealtimeEvent,?/,
+      /cloud_sync_lifecycle_support_polling_start_runtime\.js/,
+      /cloud_sync_lifecycle_support_polling_status_runtime\.js/,
+      /export \{ startCloudSyncPolling \}/,
+      /stopCloudSyncPolling/,
+      /markCloudSyncRealtimeEvent/,
     ],
     'lifecyclePollingFacade'
   );
@@ -305,17 +304,6 @@ test('[cloud-sync-orchestration] panel api install and lifecycle support stay th
       /export function clearCloudSyncPollingTimer\(/,
     ],
     'lifecyclePollingSharedOwner'
-  );
-  assertMatchesAll(
-    assert,
-    lifecyclePollingRuntimeOwner,
-    [
-      /cloud_sync_lifecycle_support_polling_start_runtime\.js/,
-      /cloud_sync_lifecycle_support_polling_status_runtime\.js/,
-      /export \{ startCloudSyncPolling \}/,
-      /markCloudSyncRealtimeEvent/,
-    ],
-    'lifecyclePollingRuntimeOwner'
   );
   assertMatchesAll(
     assert,

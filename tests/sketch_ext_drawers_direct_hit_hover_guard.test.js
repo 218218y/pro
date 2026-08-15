@@ -10,7 +10,6 @@ const ROUTER = path.resolve(
 const WORKFLOW = [
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts'),
-  path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_contracts.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_objects.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts'),

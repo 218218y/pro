@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T18:50:58.275Z",
+  "generatedAt": "2026-08-15T19:25:59.896Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -28,8 +28,8 @@
     "registeredFamilies": 42,
     "privateOwners": 248,
     "guardedImportSites": 511,
-    "identityFacades": 142,
-    "explicitlyInventoriedIdentityFacades": 121
+    "identityFacades": 132,
+    "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
     "classifiedFiles": 1248,

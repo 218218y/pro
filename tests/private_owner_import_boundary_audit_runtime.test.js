@@ -144,3 +144,25 @@ test('private facade topology reports explicit importer drift instead of an opaq
   ]);
   assert.match(result.reviewedOneLineFacadeMismatches[0], /importer changed/);
 });
+
+test('private facade topology rejects reviewed single-target aliases instead of letting inventory bless them', () => {
+  const projectRoot = tempProject();
+  writeFile(path.join(projectRoot, 'esm/native/owner.ts'), 'export const value = 1;\n');
+  writeFile(path.join(projectRoot, 'esm/native/alias.ts'), "export { value } from './owner.js';\n");
+  writeFile(
+    path.join(projectRoot, 'esm/native/consumer.ts'),
+    "import { value } from './alias.js';\nexport const result = value;\n"
+  );
+
+  const result = runPrivateOwnerImportBoundaryAudit(projectRoot, {
+    families: [],
+    justifiedOneLineFacades: [],
+    reviewedOneLineFacades: [{ path: 'esm/native/alias.ts', importer: 'esm/native/consumer.ts' }],
+  });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.reviewedSingleTargetFacades, [
+    { file: 'esm/native/alias.ts', targets: ['esm/native/owner.ts'] },
+  ]);
+  assert.match(result.reviewedOneLineFacadeMismatches.at(-1), /must compose at least two focused targets/);
+});

@@ -8,10 +8,6 @@ const shared = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_polling_shared.ts',
   import.meta.url
 );
-const runtime = readSource(
-  '../esm/native/services/cloud_sync_lifecycle_support_polling_runtime.ts',
-  import.meta.url
-);
 const startRuntime = readSource(
   '../esm/native/services/cloud_sync_lifecycle_support_polling_start_runtime.ts',
   import.meta.url
@@ -31,8 +27,11 @@ test('cloud sync lifecycle polling keeps a thin facade over shared/start/status/
     facade,
     [
       /cloud_sync_lifecycle_support_polling_shared\.js/,
-      /cloud_sync_lifecycle_support_polling_runtime\.js/,
-      /export \{\s*stopCloudSyncPolling,\s*startCloudSyncPolling,\s*markCloudSyncRealtimeEvent,?/,
+      /cloud_sync_lifecycle_support_polling_start_runtime\.js/,
+      /cloud_sync_lifecycle_support_polling_status_runtime\.js/,
+      /export \{ startCloudSyncPolling \}/,
+      /stopCloudSyncPolling/,
+      /markCloudSyncRealtimeEvent/,
     ],
     'cloud sync lifecycle polling facade'
   );
@@ -47,28 +46,6 @@ test('cloud sync lifecycle polling keeps a thin facade over shared/start/status/
       /requestCloudSyncLifecycleRefresh\(/,
     ],
     'cloud sync lifecycle polling facade'
-  );
-
-  assertMatchesAll(
-    assert,
-    runtime,
-    [
-      /cloud_sync_lifecycle_support_polling_start_runtime\.js/,
-      /cloud_sync_lifecycle_support_polling_status_runtime\.js/,
-      /export \{ startCloudSyncPolling \}/,
-      /export \{[\s\S]*stopCloudSyncPolling,[\s\S]*markCloudSyncRealtimeEvent,[\s\S]*\}/,
-    ],
-    'cloud sync lifecycle polling runtime facade'
-  );
-  assertLacksAll(
-    assert,
-    runtime,
-    [
-      /requestCloudSyncLifecycleRefresh\(/,
-      /createCloudSyncPollingRefreshProfile\(/,
-      /export function startCloudSyncPolling\(/,
-    ],
-    'cloud sync lifecycle polling runtime facade'
   );
 
   assertMatchesAll(

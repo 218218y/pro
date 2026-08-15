@@ -144,9 +144,12 @@ function stripComments(source) {
 
 export function collectOneLineFacadeTopology(projectRoot, files, dependencySites) {
   const importersByTarget = new Map();
+  const targetsByImporter = new Map();
   for (const site of dependencySites) {
     if (!importersByTarget.has(site.target)) importersByTarget.set(site.target, new Set());
     importersByTarget.get(site.target).add(site.importer);
+    if (!targetsByImporter.has(site.importer)) targetsByImporter.set(site.importer, new Set());
+    targetsByImporter.get(site.importer).add(site.target);
   }
   const facades = [];
   for (const file of files) {
@@ -155,7 +158,8 @@ export function collectOneLineFacadeTopology(projectRoot, files, dependencySites
     if (!IDENTITY_REEXPORT_RE.test(source)) continue;
     const importers = [...(importersByTarget.get(fileRel) || [])].sort();
     if (importers.length > 1) continue;
-    facades.push({ file: fileRel, importers });
+    const targets = [...(targetsByImporter.get(fileRel) || [])].sort();
+    facades.push({ file: fileRel, importers, targets });
   }
   return facades.sort((left, right) => left.file.localeCompare(right.file));
 }
@@ -164,8 +168,31 @@ function readReviewedOneLineFacadeInventory(projectRoot) {
   const file = path.join(projectRoot, REVIEWED_ONE_LINE_FACADE_INVENTORY);
   if (!fs.existsSync(file)) return [];
   const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (Number(parsed?.schemaVersion) !== 1 || !Array.isArray(parsed?.entries)) {
-    throw new Error(`${REVIEWED_ONE_LINE_FACADE_INVENTORY}: expected schemaVersion=1 and entries[]`);
+  if (Number(parsed?.schemaVersion) !== 2 || !Array.isArray(parsed?.entries)) {
+    throw new Error(`${REVIEWED_ONE_LINE_FACADE_INVENTORY}: expected schemaVersion=2 and entries[]`);
+  }
+  const allowedCategories = new Set([
+    'api-surface',
+    'boot-entry',
+    'builder-composition',
+    'dimension-policy',
+    'domain-composition',
+    'feature-composition',
+    'internal-composition',
+    'platform-composition',
+    'runtime-composition',
+    'service-composition',
+    'ui-composition',
+  ]);
+  for (const entry of parsed.entries) {
+    const file = normalizeRel(String(entry?.path || ''));
+    const category = String(entry?.category || '').trim();
+    const reason = String(entry?.reason || '').trim();
+    if (!file || !allowedCategories.has(category) || reason.length < 24) {
+      throw new Error(
+        `${REVIEWED_ONE_LINE_FACADE_INVENTORY}: ${file || '<empty>'} requires a reviewed category and substantive reason`
+      );
+    }
   }
   return parsed.entries;
 }
@@ -263,6 +290,9 @@ export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options =
       expectedImporter: importer,
       actualImporter: actualReviewedTopology.get(file) || '',
     }));
+  const reviewedSingleTargetFacades = unregisteredOneLineFacades
+    .filter(entry => reviewedOneLineFacades.has(entry.file) && entry.targets.length < 2)
+    .map(entry => ({ file: entry.file, targets: entry.targets }));
   const reviewedOneLineFacadeMismatches = [
     ...unreviewedOneLineFacades.map(
       entry => `unreviewed identity-only facade: ${entry.file} (importer: ${entry.importers[0] || '<none>'})`
@@ -273,6 +303,10 @@ export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options =
     ...reviewedOneLineFacadeImporterDrift.map(
       entry =>
         `identity-only facade importer changed: ${entry.file} expected ${entry.expectedImporter}, current ${entry.actualImporter || '<none>'}`
+    ),
+    ...reviewedSingleTargetFacades.map(
+      entry =>
+        `reviewed identity facade must compose at least two focused targets: ${entry.file} (targets: ${entry.targets.join(', ') || '<none>'})`
     ),
   ];
 
@@ -291,6 +325,7 @@ export function runPrivateOwnerImportBoundaryAudit(projectRoot = root, options =
     unreviewedOneLineFacades,
     staleReviewedOneLineFacades,
     reviewedOneLineFacadeImporterDrift,
+    reviewedSingleTargetFacades,
     configErrors,
     missingFiles,
     violations,

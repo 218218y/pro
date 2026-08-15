@@ -24,10 +24,6 @@ test('sketch click resolution prefers scoped sketch module keys for direct hits 
       'utf8'
     ),
     await readFile(
-      new URL('../esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts', import.meta.url),
-      'utf8'
-    ),
-    await readFile(
       new URL('../esm/native/services/canvas_picking_sketch_direct_hit_workflow_objects.ts', import.meta.url),
       'utf8'
     ),

@@ -1,7 +1,7 @@
 import {
   canonicalizeComparableProjectConfigSnapshot,
   canonicalizeProjectConfigListsForLoad,
-} from './project_io_config_snapshot_canonical.js';
+} from '../features/project_config/api.js';
 import { readConfigStateProjectConfigSnapshot } from './project_config_persisted_snapshot.js';
 
 import type { ConfigStateLike, ProjectDataLike, UnknownRecord } from '../../../types/index.js';

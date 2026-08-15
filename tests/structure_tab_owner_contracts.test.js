@@ -77,7 +77,6 @@ const structureBundle = bundleSources(
     '../esm/native/ui/react/tabs/structure_tab_body_section_structure.tsx',
     '../esm/native/ui/react/tabs/structure_tab_body_section_single_door.tsx',
     '../esm/native/ui/react/tabs/structure_tab_body_section_hinge.tsx',
-    '../esm/native/ui/react/tabs/structure_tab_aux_sections.tsx',
     '../esm/native/ui/react/tabs/structure_tab_aux_sections_contracts.ts',
     '../esm/native/ui/react/tabs/structure_tab_aux_sections_corner.tsx',
     '../esm/native/ui/react/tabs/structure_tab_aux_sections_chest.tsx',
@@ -164,7 +163,9 @@ test('[contracts-structure-owner] StructureTab owner delegates sections, actions
     [
       /structure_tab_dimensions_section\.js/,
       /structure_tab_body_section\.js/,
-      /structure_tab_aux_sections\.js/,
+      /structure_tab_aux_sections_corner\.js/,
+      /structure_tab_aux_sections_chest\.js/,
+      /structure_tab_aux_sections_library\.js/,
     ],
     'structure sections barrel'
   );

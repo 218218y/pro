@@ -1,489 +1,671 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "entries": [
     {
       "path": "esm/native/builder/core_storage_compute.ts",
-      "importer": "esm/native/builder/core_pure_compute.ts"
+      "importer": "esm/native/builder/core_pure_compute.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/core_pure_compute.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/install.ts",
-      "importer": "esm/boot/boot_manifest_steps.ts"
+      "importer": "esm/boot/boot_manifest_steps.ts",
+      "category": "boot-entry",
+      "reason": "Retained boot-layer entry for esm/boot/boot_manifest_steps.ts; boot depends on the layer entry rather than focused implementation owners."
     },
     {
       "path": "esm/native/builder/post_build_sketch_door_cuts.ts",
-      "importer": "esm/native/builder/post_build_visual_overlays.ts"
+      "importer": "esm/native/builder/post_build_visual_overlays.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/post_build_visual_overlays.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/render_interior_sketch_drawers.ts",
-      "importer": "esm/native/builder/render_interior_sketch_ops_extras.ts"
+      "importer": "esm/native/builder/render_interior_sketch_ops_extras.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/render_interior_sketch_ops_extras.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/render_interior_sketch_layout_dimensions.ts",
-      "importer": "esm/native/builder/render_interior_sketch_layout.ts"
+      "importer": "esm/native/builder/render_interior_sketch_layout.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/render_interior_sketch_layout.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/render_interior_sketch_support_apply.ts",
-      "importer": "esm/native/builder/render_interior_sketch_support.ts"
+      "importer": "esm/native/builder/render_interior_sketch_support.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/render_interior_sketch_support.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/render_ops_shared.ts",
-      "importer": "esm/native/builder/render_ops.ts"
+      "importer": "esm/native/builder/render_ops.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/render_ops.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/scheduler_debug_stats_full.ts",
-      "importer": "esm/native/builder/scheduler_debug_stats.ts"
+      "importer": "esm/native/builder/scheduler_debug_stats.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/scheduler_debug_stats.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/visuals_and_contents_door_visual_styles.ts",
-      "importer": "esm/native/builder/visuals_and_contents_door_visual.ts"
+      "importer": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/visuals_and_contents_door_visual.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/visuals_chest_mode.ts",
-      "importer": "esm/native/builder/visuals_and_contents.ts"
+      "importer": "esm/native/builder/visuals_and_contents.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/visuals_and_contents.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/builder/visuals_contents.ts",
-      "importer": "esm/native/builder/visuals_and_contents.ts"
+      "importer": "esm/native/builder/visuals_and_contents.ts",
+      "category": "builder-composition",
+      "reason": "Retained Builder composition seam for esm/native/builder/visuals_and_contents.ts; it groups focused render/build owners into one coherent dependency surface."
     },
     {
       "path": "esm/native/core/api.ts",
-      "importer": "esm/native/core/install.ts"
+      "importer": "esm/native/core/install.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/core/install.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/engine/api.ts",
-      "importer": "esm/native/engine/install.ts"
+      "importer": "esm/native/engine/install.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/engine/install.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/features/library_preset/library_preset_flow.ts",
-      "importer": "esm/native/features/library_preset/library_preset.ts"
+      "importer": "esm/native/features/library_preset/library_preset.ts",
+      "category": "feature-composition",
+      "reason": "Retained feature composition seam for esm/native/features/library_preset/library_preset.ts; it presents a coherent feature contract over focused owners."
     },
     {
       "path": "esm/native/features/modules_configuration/corner_cells_snapshot.ts",
-      "importer": "esm/native/features/modules_configuration/corner_cells_api.ts"
-    },
-    {
-      "path": "esm/native/features/project_config/project_config_lists_canonical.ts",
-      "importer": "esm/native/features/project_config/api.ts"
-    },
-    {
-      "path": "esm/native/features/project_config/project_config_snapshot_canonical.ts",
-      "importer": "esm/native/features/project_config/api.ts"
-    },
-    {
-      "path": "esm/native/io/project_io_config_snapshot_canonical.ts",
-      "importer": "esm/native/io/project_io_load_helpers_config.ts"
+      "importer": "esm/native/features/modules_configuration/corner_cells_api.ts",
+      "category": "feature-composition",
+      "reason": "Retained feature composition seam for esm/native/features/modules_configuration/corner_cells_api.ts; it presents a coherent feature contract over focused owners."
     },
     {
       "path": "esm/native/kernel/install.ts",
-      "importer": "esm/boot/boot_manifest_steps.ts"
+      "importer": "esm/boot/boot_manifest_steps.ts",
+      "category": "boot-entry",
+      "reason": "Retained boot-layer entry for esm/boot/boot_manifest_steps.ts; boot depends on the layer entry rather than focused implementation owners."
     },
     {
       "path": "esm/native/platform/install.ts",
-      "importer": "esm/boot/boot_manifest_steps.ts"
+      "importer": "esm/boot/boot_manifest_steps.ts",
+      "category": "boot-entry",
+      "reason": "Retained boot-layer entry for esm/boot/boot_manifest_steps.ts; boot depends on the layer entry rather than focused implementation owners."
     },
     {
       "path": "esm/native/platform/three_geometry_cache_patch.ts",
-      "importer": "esm/native/platform/install.ts"
+      "importer": "esm/native/platform/install.ts",
+      "category": "platform-composition",
+      "reason": "Retained Platform composition seam for esm/native/platform/install.ts; it keeps platform lifecycle ownership explicit."
     },
     {
       "path": "esm/native/runtime/api_boot_render_surface.ts",
-      "importer": "esm/native/runtime/api.ts"
+      "importer": "esm/native/runtime/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/runtime/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/runtime/api_dom_surface.ts",
-      "importer": "esm/native/runtime/api.ts"
+      "importer": "esm/native/runtime/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/runtime/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/runtime/api_services_state_surface.ts",
-      "importer": "esm/native/runtime/api.ts"
+      "importer": "esm/native/runtime/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/runtime/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/runtime/builder_service_access_build.ts",
-      "importer": "esm/native/runtime/builder_service_access.ts"
+      "importer": "esm/native/runtime/builder_service_access.ts",
+      "category": "runtime-composition",
+      "reason": "Retained Runtime composition seam for esm/native/runtime/builder_service_access.ts; it keeps the runtime entry dependent on a focused surface instead of implementation fragments."
     },
     {
       "path": "esm/native/runtime/render_access_state.ts",
-      "importer": "esm/native/runtime/render_access.ts"
+      "importer": "esm/native/runtime/render_access.ts",
+      "category": "runtime-composition",
+      "reason": "Retained Runtime composition seam for esm/native/runtime/render_access.ts; it keeps the runtime entry dependent on a focused surface instead of implementation fragments."
     },
     {
       "path": "esm/native/services/api_actions_surface.ts",
-      "importer": "esm/native/services/api.ts"
+      "importer": "esm/native/services/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_feature_surface.ts",
-      "importer": "esm/native/services/api.ts"
+      "importer": "esm/native/services/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_runtime_base_surface.ts",
-      "importer": "esm/native/services/api.ts"
+      "importer": "esm/native/services/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_services_core_surface.ts",
-      "importer": "esm/native/services/api_services_surface.ts"
+      "importer": "esm/native/services/api_services_surface.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api_services_surface.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_services_platform_surface.ts",
-      "importer": "esm/native/services/api_services_surface.ts"
+      "importer": "esm/native/services/api_services_surface.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api_services_surface.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_services_ui_surface.ts",
-      "importer": "esm/native/services/api_services_surface.ts"
+      "importer": "esm/native/services/api_services_surface.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api_services_surface.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/api_state_surface.ts",
-      "importer": "esm/native/services/api.ts"
+      "importer": "esm/native/services/api.ts",
+      "category": "api-surface",
+      "reason": "Retained API composition boundary consumed by esm/native/services/api.ts; it defines the stable layer surface while focused owners remain internal."
     },
     {
       "path": "esm/native/services/canvas_picking_click_hit_flow_stack.ts",
-      "importer": "esm/native/services/canvas_picking_click_hit_flow.ts"
+      "importer": "esm/native/services/canvas_picking_click_hit_flow.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_click_hit_flow.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_door_action_hover_preview.ts",
-      "importer": "esm/native/services/canvas_picking_door_action_hover_marker.ts"
+      "importer": "esm/native/services/canvas_picking_door_action_hover_marker.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_door_action_hover_marker.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_hover_preview_modes.ts",
-      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts"
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_interior_hover_flow.ts",
-      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts"
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_manual_layout_sketch_hover_tools.ts",
-      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_sketch.ts"
+      "importer": "esm/native/services/canvas_picking_hover_flow_nonsplit_sketch.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_hover_flow_nonsplit_sketch.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_box_divider_state.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_sketch_box_dividers.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_box_doors.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_box_dividers.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_sketch_box_dividers.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_box_overlap_placement.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_box_overlap.ts"
-    },
-    {
-      "path": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_box_overlap.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_sketch_box_overlap.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts",
-      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts"
+      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_free_box_geometry.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_free_box_shared.ts"
-    },
-    {
-      "path": "esm/native/services/canvas_picking_sketch_free_box_placement_overlap.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_free_box_placement.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_free_box_shared.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_sketch_free_box_shared.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_free_box_workflow.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_free_boxes.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_sketch_free_boxes.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_sketch_module_surface_commit.ts",
-      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts"
+      "importer": "esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_split_hover_helpers.ts",
-      "importer": "esm/native/services/canvas_picking_core_helpers.ts"
+      "importer": "esm/native/services/canvas_picking_core_helpers.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_core_helpers.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/canvas_picking_toggle_flow_sketch_box.ts",
-      "importer": "esm/native/services/canvas_picking_toggle_flow.ts"
+      "importer": "esm/native/services/canvas_picking_toggle_flow.ts",
+      "category": "domain-composition",
+      "reason": "Retained Canvas Picking domain seam for esm/native/services/canvas_picking_toggle_flow.ts; it groups a coherent interaction flow across focused owners."
     },
     {
       "path": "esm/native/services/cloud_sync_coalescer.ts",
-      "importer": "esm/native/services/cloud_sync_install_support_coalescer.ts"
+      "importer": "esm/native/services/cloud_sync_install_support_coalescer.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_install_support_coalescer.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_install_lifecycle.ts",
-      "importer": "esm/native/services/cloud_sync_service_install_runtime.ts"
+      "importer": "esm/native/services/cloud_sync_service_install_runtime.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_service_install_runtime.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_install_support_publication_shared.ts",
-      "importer": "esm/native/services/cloud_sync_install_support_publication_runtime.ts"
+      "importer": "esm/native/services/cloud_sync_install_support_publication_runtime.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_install_support_publication_runtime.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_attention.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_start.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_start.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_runtime_start.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_realtime_channel.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_realtime_runtime_start.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_realtime_support_broadcast.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_realtime_support.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_realtime_support_status.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_realtime_support.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_realtime_support.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_realtime.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_setup.ts"
-    },
-    {
-      "path": "esm/native/services/cloud_sync_lifecycle_shared.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle.ts"
-    },
-    {
-      "path": "esm/native/services/cloud_sync_lifecycle_support_polling_runtime.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_support_polling.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_runtime_setup.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_runtime_setup.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle_support_polling.ts",
-      "importer": "esm/native/services/cloud_sync_lifecycle_support.ts"
+      "importer": "esm/native/services/cloud_sync_lifecycle_support.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_lifecycle_support.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_lifecycle.ts",
-      "importer": "esm/native/services/cloud_sync_install_lifecycle_runtime_setup.ts"
+      "importer": "esm/native/services/cloud_sync_install_lifecycle_runtime_setup.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_install_lifecycle_runtime_setup.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_main_row_pull.ts",
-      "importer": "esm/native/services/cloud_sync_main_row.ts"
+      "importer": "esm/native/services/cloud_sync_main_row.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_main_row.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_main_row_push.ts",
-      "importer": "esm/native/services/cloud_sync_main_row.ts"
+      "importer": "esm/native/services/cloud_sync_main_row.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_main_row.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_panel_api_install_shared.ts",
-      "importer": "esm/native/services/cloud_sync_panel_api_install.ts"
-    },
-    {
-      "path": "esm/native/services/cloud_sync_sketch_ops_floating_shared.ts",
-      "importer": "esm/native/services/cloud_sync_sketch_ops_floating.ts"
+      "importer": "esm/native/services/cloud_sync_panel_api_install.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_panel_api_install.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_sketch_ops_floating.ts",
-      "importer": "esm/native/services/cloud_sync_sketch_ops.ts"
-    },
-    {
-      "path": "esm/native/services/cloud_sync_sketch_ops_sketch_shared.ts",
-      "importer": "esm/native/services/cloud_sync_sketch_ops_sketch.ts"
+      "importer": "esm/native/services/cloud_sync_sketch_ops.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_sketch_ops.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_sketch_ops_sketch.ts",
-      "importer": "esm/native/services/cloud_sync_sketch_ops.ts"
+      "importer": "esm/native/services/cloud_sync_sketch_ops.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_sketch_ops.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_support_storage.ts",
-      "importer": "esm/native/services/cloud_sync_support.ts"
+      "importer": "esm/native/services/cloud_sync_support.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_support.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_tabs_gate_local.ts",
-      "importer": "esm/native/services/cloud_sync_tabs_gate.ts"
+      "importer": "esm/native/services/cloud_sync_tabs_gate.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_tabs_gate.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/cloud_sync_tabs_gate_remote.ts",
-      "importer": "esm/native/services/cloud_sync_tabs_gate.ts"
+      "importer": "esm/native/services/cloud_sync_tabs_gate.ts",
+      "category": "domain-composition",
+      "reason": "Retained Cloud Sync domain seam for esm/native/services/cloud_sync_tabs_gate.ts; it composes focused lifecycle/state/runtime owners without exposing implementation topology to the caller."
     },
     {
       "path": "esm/native/services/doors_runtime_lifecycle.ts",
-      "importer": "esm/native/services/doors_runtime.ts"
+      "importer": "esm/native/services/doors_runtime.ts",
+      "category": "service-composition",
+      "reason": "Retained service composition seam for esm/native/services/doors_runtime.ts; it keeps the caller on a coherent service-level contract."
     },
     {
       "path": "esm/native/services/models_registry_shared.ts",
-      "importer": "esm/native/services/models_registry.ts"
+      "importer": "esm/native/services/models_registry.ts",
+      "category": "service-composition",
+      "reason": "Retained service composition seam for esm/native/services/models_registry.ts; it keeps the caller on a coherent service-level contract."
     },
     {
       "path": "esm/native/services/render_surface_runtime_support.ts",
-      "importer": "esm/native/services/render_surface_runtime.ts"
+      "importer": "esm/native/services/render_surface_runtime.ts",
+      "category": "service-composition",
+      "reason": "Retained service composition seam for esm/native/services/render_surface_runtime.ts; it keeps the caller on a coherent service-level contract."
     },
     {
       "path": "esm/native/services/scene_view_store_sync.ts",
-      "importer": "esm/native/services/scene_view.ts"
+      "importer": "esm/native/services/scene_view.ts",
+      "category": "service-composition",
+      "reason": "Retained service composition seam for esm/native/services/scene_view.ts; it keeps the caller on a coherent service-level contract."
     },
     {
       "path": "esm/native/ui/export/export_canvas_scene_render.ts",
-      "importer": "esm/native/ui/export/export_canvas_scene.ts"
+      "importer": "esm/native/ui/export/export_canvas_scene.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/export/export_canvas_scene.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/export/export_canvas_viewport.ts",
-      "importer": "esm/native/ui/export/export_canvas_shared.ts"
+      "importer": "esm/native/ui/export/export_canvas_shared.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/export/export_canvas_shared.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/feedback.ts",
-      "importer": "esm/native/ui/ui_manifest.ts"
+      "importer": "esm/native/ui/ui_manifest.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/ui_manifest.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/project_recovery_runtime.ts",
-      "importer": "esm/native/ui/react/project_ui_action_controller_recovery.ts"
+      "importer": "esm/native/ui/react/project_ui_action_controller_recovery.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/project_ui_action_controller_recovery.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/project_session_commands.ts",
-      "importer": "esm/native/ui/react/actions/project_actions.ts"
+      "importer": "esm/native/ui/react/actions/project_actions.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/actions/project_actions.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/actions/store_actions_config.ts",
-      "importer": "esm/native/ui/react/actions/store_actions.ts"
+      "importer": "esm/native/ui/react/actions/store_actions.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/actions/store_actions.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/notes/notes_overlay_controller_interactions.ts",
-      "importer": "esm/native/ui/react/notes/notes_overlay_controller_runtime.tsx"
+      "importer": "esm/native/ui/react/notes/notes_overlay_controller_runtime.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/notes/notes_overlay_controller_runtime.tsx; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/notes/notes_overlay_controller.tsx",
-      "importer": "esm/native/ui/react/notes/NotesOverlay.tsx"
+      "importer": "esm/native/ui/react/notes/NotesOverlay.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/notes/NotesOverlay.tsx; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/pdf/order_pdf_overlay_component_runtime.ts",
-      "importer": "esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx"
+      "importer": "esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/pdf/order_pdf_overlay_controller_actions.ts",
-      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts"
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/pdf/order_pdf_overlay_controller.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/pdf/order_pdf_overlay_controller_effects.ts",
-      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts"
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_controller.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/pdf/order_pdf_overlay_controller.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/pdf/order_pdf_overlay_pdf_import.ts",
-      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_component_runtime_apis.ts"
+      "importer": "esm/native/ui/react/pdf/order_pdf_overlay_component_runtime_apis.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/pdf/order_pdf_overlay_component_runtime_apis.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/react/tabs/design_tab_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/DesignTab.view.tsx"
+      "importer": "esm/native/ui/react/tabs/DesignTab.view.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/DesignTab.view.tsx; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/interior_layout_sketch_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx"
+      "importer": "esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/interior_tab_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/InteriorTab.view.tsx"
+      "importer": "esm/native/ui/react/tabs/InteriorTab.view.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/InteriorTab.view.tsx; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/settings_visual_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/SettingsTab.tsx"
+      "importer": "esm/native/ui/react/tabs/SettingsTab.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/SettingsTab.tsx; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/structure_tab_actions_controller_runtime.ts",
-      "importer": "esm/native/ui/react/tabs/use_structure_tab_actions.ts"
-    },
-    {
-      "path": "esm/native/ui/react/tabs/structure_tab_aux_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/structure_tab_sections.tsx"
+      "importer": "esm/native/ui/react/tabs/use_structure_tab_actions.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/use_structure_tab_actions.ts; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/structure_tab_sections.tsx",
-      "importer": "esm/native/ui/react/tabs/StructureTab.view.tsx"
+      "importer": "esm/native/ui/react/tabs/StructureTab.view.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/StructureTab.view.tsx; it groups focused section/controller owners behind one view-level dependency."
     },
     {
       "path": "esm/native/ui/react/tabs/structure_tab_structure_mutations.ts",
-      "importer": "esm/native/ui/react/tabs/structure_tab_shared.ts"
+      "importer": "esm/native/ui/react/tabs/structure_tab_shared.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/tabs/structure_tab_shared.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/settings_backup.ts",
-      "importer": "esm/native/ui/react/panels/SettingsBackupPanel.tsx"
+      "importer": "esm/native/ui/react/panels/SettingsBackupPanel.tsx",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/react/panels/SettingsBackupPanel.tsx; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/native/ui/ui_boot_controller_runtime.ts",
-      "importer": "esm/native/ui/boot_main.ts"
+      "importer": "esm/native/ui/boot_main.ts",
+      "category": "ui-composition",
+      "reason": "Retained UI composition seam for esm/native/ui/boot_main.ts; it keeps the view/controller caller independent of focused implementation owners."
     },
     {
       "path": "esm/shared/dimensions/chest_mode_build_dimension_policy.ts",
-      "importer": "esm/native/builder/visuals_chest_mode_build.ts"
+      "importer": "esm/native/builder/visuals_chest_mode_build.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/visuals_chest_mode_build.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts",
-      "importer": "esm/native/builder/visuals_chest_mode_inputs.ts"
+      "importer": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/visuals_chest_mode_inputs.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/core_carcass_dimension_policy.ts",
-      "importer": "esm/native/builder/core_carcass_shared.ts"
+      "importer": "esm/native/builder/core_carcass_shared.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/core_carcass_shared.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/corner_cells_ui_defaults_dimension_policy.ts",
-      "importer": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts"
+      "importer": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/modules_configuration/corner_cells_ui_defaults.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts",
-      "importer": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts"
+      "importer": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/services/canvas_picking_interior_hover_manual_mode.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/interior_layout_presets_dimension_policy.ts",
-      "importer": "esm/native/features/interior_layout_presets/ops.ts"
+      "importer": "esm/native/features/interior_layout_presets/ops.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/interior_layout_presets/ops.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts",
-      "importer": "esm/native/builder/render_interior_rod_clearance.ts"
+      "importer": "esm/native/builder/render_interior_rod_clearance.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/render_interior_rod_clearance.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts",
-      "importer": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts"
+      "importer": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts",
-      "importer": "esm/native/features/interior_tab_defaults.ts"
+      "importer": "esm/native/features/interior_tab_defaults.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/interior_tab_defaults.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/library_preset_flow_dimension_policy.ts",
-      "importer": "esm/native/features/library_preset/library_preset_flow_shared.ts"
+      "importer": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/library_preset/library_preset_flow_shared.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts",
-      "importer": "esm/native/features/library_preset/module_defaults.ts"
+      "importer": "esm/native/features/library_preset/module_defaults.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/library_preset/module_defaults.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts",
-      "importer": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts"
+      "importer": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/services/canvas_picking_manual_layout_free_box_plans.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts",
-      "importer": "esm/native/features/modules_configuration/module_defaults.ts"
+      "importer": "esm/native/features/modules_configuration/module_defaults.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/modules_configuration/module_defaults.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/order_pdf_dimension_policy.ts",
-      "importer": "esm/native/features/order_pdf_dimension_support.ts"
+      "importer": "esm/native/features/order_pdf_dimension_support.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/order_pdf_dimension_support.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts",
-      "importer": "esm/native/builder/render_preview_interior_hover_apply.ts"
+      "importer": "esm/native/builder/render_preview_interior_hover_apply.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/render_preview_interior_hover_apply.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts",
-      "importer": "esm/native/platform/render_loop_motion_doors.ts"
+      "importer": "esm/native/platform/render_loop_motion_doors.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/platform/render_loop_motion_doors.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/runtime_default_state_dimension_policy.ts",
-      "importer": "esm/native/runtime/default_state.ts"
+      "importer": "esm/native/runtime/default_state.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/runtime/default_state.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts",
-      "importer": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts"
+      "importer": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts",
-      "importer": "esm/native/features/sketch_drawer_sizing.ts"
+      "importer": "esm/native/features/sketch_drawer_sizing.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/sketch_drawer_sizing.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts",
-      "importer": "esm/native/features/sketch_internal_drawer_cassette.ts"
+      "importer": "esm/native/features/sketch_internal_drawer_cassette.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/sketch_internal_drawer_cassette.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts",
-      "importer": "esm/native/services/canvas_picking_split_hover_preview_line.ts"
+      "importer": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/services/canvas_picking_split_hover_preview_line.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts",
-      "importer": "esm/native/builder/build_stack_split_lower_setup.ts"
+      "importer": "esm/native/builder/build_stack_split_lower_setup.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/builder/build_stack_split_lower_setup.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/stack_split_module_config_dimension_policy.ts",
-      "importer": "esm/native/features/stack_split/module_config.ts"
+      "importer": "esm/native/features/stack_split/module_config.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/stack_split/module_config.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     },
     {
       "path": "esm/shared/dimensions/structure_tab_dimension_policy.ts",
-      "importer": "esm/native/features/structure_tab_dimension_support.ts"
+      "importer": "esm/native/features/structure_tab_dimension_support.ts",
+      "category": "dimension-policy",
+      "reason": "Retained consumer-specific dimension-policy composition for esm/native/features/structure_tab_dimension_support.ts; it groups focused canonical policies without reviving the retired broad dimension facade."
     }
   ]
 }

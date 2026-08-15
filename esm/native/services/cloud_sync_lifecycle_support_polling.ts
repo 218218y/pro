@@ -7,8 +7,8 @@ export {
   type CloudSyncLifecyclePollingControlArgs,
 } from './cloud_sync_lifecycle_support_polling_shared.js';
 
+export { startCloudSyncPolling } from './cloud_sync_lifecycle_support_polling_start_runtime.js';
 export {
   stopCloudSyncPolling,
-  startCloudSyncPolling,
   markCloudSyncRealtimeEvent,
-} from './cloud_sync_lifecycle_support_polling_runtime.js';
+} from './cloud_sync_lifecycle_support_polling_status_runtime.js';

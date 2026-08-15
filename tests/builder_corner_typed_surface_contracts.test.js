@@ -48,7 +48,6 @@ const configCompounds = normalizeWhitespace(
 const directHit = normalizeWhitespace(
   [
     read('esm/native/services/canvas_picking_sketch_direct_hit_workflow.ts'),
-    read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts'),
     read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_contracts.ts'),
     read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts'),
     read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_objects.ts'),

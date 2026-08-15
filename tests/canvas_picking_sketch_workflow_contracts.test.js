@@ -92,7 +92,8 @@ test('canvas picking sketch free-box and sketch-box divider helpers stay delegat
   assert.match(freeGeometry, /canvas_picking_sketch_free_box_geometry_zone\.js/);
   assert.match(freePlacement, /canvas_picking_sketch_free_box_placement_shared\.js/);
   assert.match(freePlacement, /canvas_picking_sketch_free_box_placement_attach\.js/);
-  assert.match(freePlacement, /canvas_picking_sketch_free_box_placement_overlap\.js/);
+  assert.match(freePlacement, /canvas_picking_sketch_free_box_placement_overlap_resolve\.js/);
+  assert.match(freePlacement, /canvas_picking_sketch_free_box_placement_overlap_outside\.js/);
   assert.match(
     freeHover,
     /export function resolveSketchFreeBoxHoverPlacement\(args: ResolveSketchFreeBoxHoverPlacementArgs\): \{/

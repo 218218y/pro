@@ -799,16 +799,12 @@
       "entry": "project_config/api.js"
     },
     {
-      "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
-      "entry": "project_config/api.js"
-    },
-    {
-      "file": "esm/native/io/project_io_config_snapshot_canonical.ts",
-      "entry": "project_config/api.js"
-    },
-    {
       "file": "esm/native/io/project_io_load_helpers.ts",
       "entry": "shoe_drawer_base_constraint.js"
+    },
+    {
+      "file": "esm/native/io/project_io_load_helpers_config.ts",
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_io_load_helpers_maps.ts",

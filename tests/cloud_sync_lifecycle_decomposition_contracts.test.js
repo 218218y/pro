@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
 const facade = readSource('../esm/native/services/cloud_sync_lifecycle.ts', import.meta.url);
-const shared = readSource('../esm/native/services/cloud_sync_lifecycle_shared.ts', import.meta.url);
 const state = readSource('../esm/native/services/cloud_sync_lifecycle_state.ts', import.meta.url);
 const bindings = readSource('../esm/native/services/cloud_sync_lifecycle_bindings.ts', import.meta.url);
 const polling = readSource('../esm/native/services/cloud_sync_lifecycle_polling.ts', import.meta.url);
@@ -22,12 +21,12 @@ const runtimeDispose = readSource(
   import.meta.url
 );
 
-test('cloud sync lifecycle keeps a thin public facade over shared/runtime seams', () => {
+test('cloud sync lifecycle keeps a thin public facade over state/runtime seams', () => {
   assertMatchesAll(
     assert,
     facade,
     [
-      /cloud_sync_lifecycle_shared\.js/,
+      /cloud_sync_lifecycle_state\.js/,
       /cloud_sync_lifecycle_runtime\.js/,
       /export \{ createCloudSyncLifecycleOps \}/,
       /export type \{/,
@@ -46,20 +45,6 @@ test('cloud sync lifecycle keeps a thin public facade over shared/runtime seams'
       /markCloudSyncRealtimeEvent\(/,
     ],
     'cloud sync lifecycle facade'
-  );
-
-  assertMatchesAll(
-    assert,
-    shared,
-    [
-      /cloud_sync_lifecycle_state\.js/,
-      /cloud_sync_lifecycle_bindings\.js/,
-      /cloud_sync_lifecycle_polling\.js/,
-      /createCloudSyncLifecycleMutableState/,
-      /createCloudSyncLifecycleAddListener/,
-      /createCloudSyncLifecyclePollingTransitions/,
-    ],
-    'cloud sync lifecycle shared facade'
   );
 
   assertMatchesAll(

@@ -113,7 +113,6 @@ const lifecycle = readSource('../esm/native/services/cloud_sync_lifecycle.ts', i
 const lifecycleBundle = bundleSources(
   [
     '../esm/native/services/cloud_sync_lifecycle.ts',
-    '../esm/native/services/cloud_sync_lifecycle_shared.ts',
     '../esm/native/services/cloud_sync_lifecycle_state.ts',
     '../esm/native/services/cloud_sync_lifecycle_bindings.ts',
     '../esm/native/services/cloud_sync_lifecycle_polling.ts',
@@ -213,13 +212,11 @@ const sketchBundle = bundleSources(
     '../esm/native/services/cloud_sync_sketch_ops.ts',
     '../esm/native/services/cloud_sync_sketch_ops_shared.ts',
     '../esm/native/services/cloud_sync_sketch_ops_floating.ts',
-    '../esm/native/services/cloud_sync_sketch_ops_floating_shared.ts',
     '../esm/native/services/cloud_sync_sketch_ops_floating_state.ts',
     '../esm/native/services/cloud_sync_sketch_ops_floating_pull.ts',
     '../esm/native/services/cloud_sync_sketch_ops_floating_push.ts',
     '../esm/native/services/cloud_sync_sketch_ops_floating_runtime.ts',
     '../esm/native/services/cloud_sync_sketch_ops_sketch.ts',
-    '../esm/native/services/cloud_sync_sketch_ops_sketch_shared.ts',
     '../esm/native/services/cloud_sync_sketch_ops_sketch_state.ts',
     '../esm/native/services/cloud_sync_sketch_ops_sketch_load.ts',
     '../esm/native/services/cloud_sync_sketch_ops_sketch_pull.ts',
@@ -331,7 +328,7 @@ test('cloud sync family keeps one thin owner over canonical install/config/realt
   assertMatchesAll(
     assert,
     lifecycle,
-    [/cloud_sync_lifecycle_shared\.js/, /cloud_sync_lifecycle_runtime\.js/, /createCloudSyncLifecycleOps/],
+    [/cloud_sync_lifecycle_state\.js/, /cloud_sync_lifecycle_runtime\.js/, /createCloudSyncLifecycleOps/],
     'cloud sync lifecycle facade'
   );
   assertMatchesAll(
