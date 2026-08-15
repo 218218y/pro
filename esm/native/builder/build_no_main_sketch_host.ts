@@ -15,8 +15,6 @@ import type {
   BuilderSketchShelfLike,
   BuilderSketchStorageBarrierLike,
   ModuleConfigLike,
-  ConfigStateLike,
-  UiStateLike,
   UnknownRecord,
 } from '../../../types';
 import {
@@ -30,7 +28,7 @@ import {
 
 export type NoMainSketchWorkspaceMetricsInput = {
   enabled: boolean;
-  cfg: ConfigStateLike | null | undefined;
+  cfg: UnknownRecord | null | undefined;
   totalW: number;
   H: number;
   woodThick: number;
@@ -40,8 +38,8 @@ export type NoMainSketchWorkspaceMetricsInput = {
 
 export type NoMainSketchRenderInput = {
   THREE: unknown;
-  cfg: ConfigStateLike | null | undefined;
-  ui: UiStateLike | null | undefined;
+  cfg: UnknownRecord | null | undefined;
+  ui: UnknownRecord | null | undefined;
   totalW: number;
   H: number;
   D: number;

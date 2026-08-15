@@ -81,7 +81,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     cornerHeight,
     cornerDepth,
     isChestMode,
-  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui, wardrobeType));
+  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui));
 
   const { primaryMode } = useModeSelectorShallow(mode => ({ primaryMode: String(mode.primary || 'none') }));
 

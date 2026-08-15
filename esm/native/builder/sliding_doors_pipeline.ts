@@ -11,6 +11,7 @@ import { isBuildContext } from './build_context.js';
 import { computeSlidingDoorOps } from './pure_api.js';
 import { requireBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { assertApp } from '../runtime/api.js';
+import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
 
 import type { BuildContextLike, SlidingDoorOpLike, SlidingDoorOpsLike } from '../../../types/index.js';
 
@@ -97,7 +98,7 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     !!(ops && ops.rail && Array.isArray(ops.doors)) &&
     !!ro.applySlidingDoorsOps({
       THREE: THREE,
-      cfg: cfg,
+      cfg: asBuilderDoorMapsConfig(cfg),
       sketchMode: ctx.flags?.sketchMode === true,
       ui: ui,
       isGroovesEnabled: !!(ui && ui.groovesEnabled),

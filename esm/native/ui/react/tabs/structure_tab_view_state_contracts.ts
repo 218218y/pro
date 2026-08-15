@@ -1,4 +1,4 @@
-import type { UiStateLike } from '../../../../../types';
+import type { UiStateLike, WardrobeType } from '../../../../../types';
 import type {
   BaseLegColor,
   BaseLegPlatformMode,
@@ -110,4 +110,4 @@ export type StructureTabSelectionArgs = {
 
 export type StructureTabCellDimKey =
   'cellDimsWidth' | 'cellDimsHeight' | 'cellDimsDepth' | 'cellDimsHexProtrusion' | 'cellDimsHexDoorWidth';
-export type StructureTabUiSnapshot = UiStateLike;
+export type StructureTabUiSnapshot = UiStateLike & { wardrobeType?: WardrobeType };

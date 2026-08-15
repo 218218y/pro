@@ -7,6 +7,7 @@ import {
   advanceDoorCounterPastFrontClosure,
   renderRemovedFrameSideFrontClosure,
 } from './removed_frame_side_front_closure.js';
+import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleLoopMutableState } from './module_loop_pipeline_module_contracts.js';
@@ -170,7 +171,7 @@ export function applyModuleContents(
     App: runtime.App,
     THREE: runtime.THREE,
     __wpStack: runtime.stackKey,
-    cfg: runtime.cfg,
+    cfg: asBuilderDoorMapsConfig(runtime.cfg),
     ui: runtime.ui,
     moduleIndex: index,
     modulesLength: runtime.modules.length,

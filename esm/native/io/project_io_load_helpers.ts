@@ -109,6 +109,8 @@ export function buildProjectUiSnapshot(
       stackSplitLowerDepthManual: lowerDepthManual,
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
+      structureSelect: settings.structureSelection,
+      singleDoorPos: settings.singleDoorPos || 'left',
     },
     projectName: readLoadedProjectName(rec, currentProjectName),
     doors: settings.doors,

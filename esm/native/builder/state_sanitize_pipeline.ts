@@ -92,7 +92,7 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const rawWidth = _toNum(raw.width, WARDROBE_SANITIZATION_POLICY.defaults.widthCm);
   const rawHeight = _toNum(raw.height, WARDROBE_SANITIZATION_POLICY.defaults.heightCm);
   const rawDepth = _toNum(raw.depth, defaultDepth);
-  const rawDoors = _toInt(raw.doors, defaultDoors);
+  const rawDoors = _toInt(raw.doors != null ? raw.doors : ui.doors, defaultDoors);
   const rawChestDrawers = _toInt(
     raw.chestDrawersCount,
     WARDROBE_SANITIZATION_POLICY.defaults.chestDrawersCount

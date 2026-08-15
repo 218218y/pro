@@ -699,7 +699,7 @@ export interface BuilderDoorStateAccessorsLike extends UnknownRecord {
   grooveVal: BuilderGrooveResolver;
 }
 
-export interface BuilderDoorMapsConfigLike {
+export interface BuilderDoorMapsConfigLike extends UnknownRecord {
   wardrobeType?: string | null;
   doorMountMode?: 'overlay' | 'inset' | '' | null;
   globalHandleType?: string | null;

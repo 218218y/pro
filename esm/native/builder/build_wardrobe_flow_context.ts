@@ -12,6 +12,7 @@ import {
   resolveBuildWardrobeCarcassMetrics,
 } from './build_wardrobe_flow_context_carcass.js';
 import { resolveBuildWardrobeHingedContext } from './build_wardrobe_flow_context_hinged.js';
+import { asBuilderDoorMapsConfig, asBuilderOpenStateRecord } from './builder_config_boundary.js';
 
 import type { BuildContextLike } from '../../../types';
 import type { BuildFlowPlan } from './build_flow_plan.js';
@@ -98,7 +99,7 @@ export function prepareBuildWardrobeExecution(
   const { getHandleType, createHandleMesh } = prepared.orchestration.createHandleBindings({
     THREE,
     addOutlines,
-    cfg,
+    cfg: asBuilderDoorMapsConfig(cfg),
     doorState,
     stackKey: 'top',
   });
@@ -199,7 +200,7 @@ export function prepareBuildWardrobeExecution(
 
   prepared.orchestration.syncNoMainWorkspaceMetrics({
     enabled: plan.noMainWardrobe,
-    cfg,
+    cfg: asBuilderOpenStateRecord(cfg),
     totalW: plan.totalW,
     H: plan.carcassH,
     woodThick: plan.woodThick,

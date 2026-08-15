@@ -2,6 +2,7 @@ import { buildModulesLoop } from './module_loop_pipeline.js';
 import { applyHingedDoorOpsAfterModules } from './hinged_doors_pipeline.js';
 import { applySlidingDoorsIfNeeded } from './sliding_doors_pipeline.js';
 import { applyPostBuildExtras } from './post_build_extras_pipeline.js';
+import { asBuilderOpenStateRecord } from './builder_config_boundary.js';
 
 import type { BuildContextLike } from '../../../types';
 import type { PreparedBuildWardrobeExecution } from './build_wardrobe_flow_context.js';
@@ -26,8 +27,8 @@ export function runPreparedBuildWardrobePlan(
 
   orchestration.renderNoMainSketchHost({
     THREE,
-    cfg,
-    ui,
+    cfg: asBuilderOpenStateRecord(cfg),
+    ui: asBuilderOpenStateRecord(ui),
     totalW: plan.totalW,
     H: plan.carcassH,
     D: plan.carcassD,

@@ -22,6 +22,7 @@ import {
   createBottomHandleTypeResolver,
 } from './build_stack_split_bottom_handles.js';
 import { bindEdgeHandleDefaultNoneReader } from './edge_handle_default_none_runtime.js';
+import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
 
 import type {
   BuildStackSplitLowerUnitArgs,
@@ -162,7 +163,7 @@ export function prepareStackSplitLowerSetup(
   const lowerDoorIdStart = 1000;
   const lowerDoorIdOffset = lowerDoorIdStart - 1;
   const bottomHingedDoorPivotMap = buildShiftedBottomHingedPivotMap({
-    cfg: args.cfg,
+    cfg: asBuilderDoorMapsConfig(args.cfg),
     bottomModules,
     bottomTotalW,
     woodThick: args.woodThick,
@@ -173,7 +174,7 @@ export function prepareStackSplitLowerSetup(
   });
 
   const getHandleTypeBottom = createBottomHandleTypeResolver({
-    cfg: args.cfg,
+    cfg: asBuilderDoorMapsConfig(args.cfg),
     doorState: args.doorState,
     isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(args.App, 'bottom'),
     handleControlEnabled: args.handleControlEnabled,

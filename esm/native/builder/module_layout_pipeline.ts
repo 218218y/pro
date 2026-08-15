@@ -70,11 +70,13 @@ function toStr(x: unknown, def = ''): string {
   return typeof x === 'string' ? x : def;
 }
 
-function readUiStructureString(
+function readUiRawPreferredString(
   ui: UiStateLike | null | undefined,
   key: 'singleDoorPos' | 'structureSelect',
   defaultValue = ''
 ): string {
+  const rawValue = ui?.raw?.[key];
+  if (typeof rawValue === 'string') return rawValue;
   return toStr(ui?.[key], defaultValue);
 }
 
@@ -206,8 +208,8 @@ export function computeModulesAndLayout(args: ComputeModulesAndLayoutArgs): Comp
   const calculateModuleStructure = args.calculateModuleStructure;
 
   const wardrobeType = toStr(cfg.wardrobeType, 'hinged');
-  const singleDoorPos = readUiStructureString(ui, 'singleDoorPos');
-  const structureSelect = readUiStructureString(ui, 'structureSelect');
+  const singleDoorPos = readUiRawPreferredString(ui, 'singleDoorPos');
+  const structureSelect = readUiRawPreferredString(ui, 'structureSelect');
   const computeCanonicalModules = (): ModuleLike[] => {
     if (doorsCount > 0 && !singleDoorPos) {
       // Fail-fast: this is required for odd doors.

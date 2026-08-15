@@ -70,17 +70,18 @@ test('retired state compatibility paths cannot re-enter runtime ownership', () =
 
   const runtimeFacade = readSource('esm/native/runtime/ui_raw_selectors.ts');
   const structureSync = readSource('esm/native/ui/react/tabs/structure_tab_structural_controller_sync.ts');
-  const structureProject = readSource('esm/native/features/project_config/project_config_lists_shared.ts');
+  const projectLoad = readSource('esm/native/io/project_io_load_helpers.ts');
   const orderPdfCache = readSource('esm/native/ui/export/export_order_pdf_capture_cache.ts');
 
   assert.doesNotMatch(
     runtimeFacade,
     /readUiRawScalarFromSnapshot|ensureUiRawDimsFromSnapshot|hasEssentialUiDimsFromSnapshot/
   );
-  assert.doesNotMatch(
-    structureSync,
-    /createStructuralRawMirrorPatch|raw\.structureSelect|raw\.singleDoorPos/
-  );
-  assert.doesNotMatch(structureProject, /raw\.(?:structureSelect|singleDoorPos)/);
+  assert.doesNotMatch(structureSync, /createStructuralRawMirrorPatch/);
+  const rawTypes = readSource('types/ui_raw.ts');
+  assert.match(rawTypes, /structureSelect\?: string;/);
+  assert.match(rawTypes, /singleDoorPos\?: string;/);
+  assert.match(projectLoad, /structureSelect: settings\.structureSelection/);
+  assert.match(projectLoad, /singleDoorPos: settings\.singleDoorPos \|\| 'left'/);
   assert.doesNotMatch(orderPdfCache, /state\.build|captureState\.build/);
 });

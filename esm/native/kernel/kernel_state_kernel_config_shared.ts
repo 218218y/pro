@@ -18,7 +18,7 @@ export interface KernelStateKernelConfigContext {
   isRecord: (x: unknown) => x is UnknownRecord;
   isFn: (x: unknown) => x is UnknownCallable;
   cloneKernelValue: (App: AppContainer, v: unknown, defaultValue?: unknown) => unknown;
-  setStoreConfigPatch: (patch: ConfigSlicePatch, meta: ActionMetaLike) => boolean;
+  setStoreConfigPatch: (App: AppContainer, patch: ConfigSlicePatch, meta: ActionMetaLike) => boolean;
 }
 
 export interface KernelStateKernelConfigHelpers extends KernelStateKernelConfigContext {

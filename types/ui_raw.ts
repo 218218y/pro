@@ -11,6 +11,10 @@ export interface UiRawInputsLike {
   depth?: number | null;
   doors?: number | null;
 
+  // Structural layout controls persisted alongside build-driving raw inputs.
+  structureSelect?: string;
+  singleDoorPos?: string;
+
   // Chest mode
   chestDrawersCount?: number | null;
   chestCommodeMirrorHeightCm?: number | null;
@@ -43,6 +47,8 @@ export interface UiRawInputsLike {
 
 // Scalar keys we intentionally type-check at call sites.
 // Keep this list focused on "hot" keys that are used broadly.
+export type UiRawStringKey = 'structureSelect' | 'singleDoorPos';
+
 export type UiRawBooleanKey =
   | 'chestCommodeMirrorWidthManual'
   | 'stackSplitLowerDepthManual'
@@ -77,6 +83,8 @@ export type UiRawScalarKey = UiRawNumericKey | UiRawBooleanKey;
 export type UiRawScalarValueMap = {
   [K in UiRawScalarKey]-?: Exclude<UiRawInputsLike[K], undefined>;
 };
+
+export const UI_RAW_STRING_KEYS: readonly UiRawStringKey[] = ['structureSelect', 'singleDoorPos'];
 
 export const UI_RAW_BOOLEAN_KEYS: readonly UiRawBooleanKey[] = [
   'chestCommodeMirrorWidthManual',
@@ -113,6 +121,7 @@ export const UI_RAW_SCALAR_KEYS: readonly UiRawScalarKey[] = [...UI_RAW_NUMERIC_
 
 const UI_RAW_SCALAR_KEY_SET = new Set<string>(UI_RAW_SCALAR_KEYS);
 const UI_RAW_BOOLEAN_KEY_SET = new Set<string>(UI_RAW_BOOLEAN_KEYS);
+const UI_RAW_STRING_KEY_SET = new Set<string>(UI_RAW_STRING_KEYS);
 const UI_RAW_NUMERIC_KEY_SET = new Set<string>(UI_RAW_NUMERIC_KEYS);
 
 export function isUiRawScalarKey(key: unknown): key is UiRawScalarKey {
@@ -121,6 +130,10 @@ export function isUiRawScalarKey(key: unknown): key is UiRawScalarKey {
 
 export function isUiRawBooleanKey(key: unknown): key is UiRawBooleanKey {
   return typeof key === 'string' && UI_RAW_BOOLEAN_KEY_SET.has(key);
+}
+
+export function isUiRawStringKey(key: unknown): key is UiRawStringKey {
+  return typeof key === 'string' && UI_RAW_STRING_KEY_SET.has(key);
 }
 
 export function isUiRawNumericKey(key: unknown): key is UiRawNumericKey {
@@ -157,6 +170,10 @@ export function asUiRawInputs(raw: unknown): UiRawInputsLike {
   for (const key of UI_RAW_SCALAR_KEYS) {
     const value = readCanonicalRawValue(raw, key);
     if (typeof value !== 'undefined') writeCanonicalRawValue(next, key, value);
+  }
+  for (const key of UI_RAW_STRING_KEYS) {
+    const value = raw[key];
+    if (typeof value === 'string') next[key] = value;
   }
   return next;
 }

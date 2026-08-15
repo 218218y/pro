@@ -11,13 +11,6 @@ import {
   getRawFromUiSnapshot,
   isUiSnapshot,
 } from './ui_raw_selectors_shared.js';
-import {
-  DEFAULT_CHEST_DRAWERS_COUNT,
-  DEFAULT_HEIGHT,
-  DEFAULT_HINGED_DOORS,
-  DEFAULT_WIDTH,
-  HINGED_DEFAULT_DEPTH,
-} from '../../shared/dimensions/wardrobe_defaults.js';
 
 function readCanonicalUiScalarValue<K extends UiRawScalarKey>(
   key: K,
@@ -123,14 +116,14 @@ export function readCanonicalUiRawDimsCmFromSnapshot(
   chestDrawersCount: number;
 } {
   assertCanonicalUiRawDims(ui, context);
-  const widthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'width', DEFAULT_WIDTH);
-  const heightCm = readCanonicalUiRawNumberFromSnapshot(ui, 'height', DEFAULT_HEIGHT);
-  const depthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'depth', HINGED_DEFAULT_DEPTH);
-  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', DEFAULT_HINGED_DOORS);
-  const chestDrawersCount = readCanonicalUiRawIntFromSnapshot(
-    ui,
-    'chestDrawersCount',
-    DEFAULT_CHEST_DRAWERS_COUNT
-  );
+  // Essential dimensions are proven valid by assertCanonicalUiRawDims above, so the
+  // defensive defaults below are unreachable. Keep this low-level reader policy-free
+  // to avoid creating a runtime -> shared dimension-policy dependency.
+  const widthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'width', 0);
+  const heightCm = readCanonicalUiRawNumberFromSnapshot(ui, 'height', 0);
+  const depthCm = readCanonicalUiRawNumberFromSnapshot(ui, 'depth', 0);
+  const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 0);
+  // chestDrawersCount is optional in imported snapshots; its canonical product default is 4.
+  const chestDrawersCount = readCanonicalUiRawIntFromSnapshot(ui, 'chestDrawersCount', 4);
   return { widthCm, heightCm, depthCm, doorsCount, chestDrawersCount };
 }

@@ -1,5 +1,6 @@
 // UI raw inputs (canonical runtime helpers for builder-driving scalar fields).
 // Unknown keys and invalid scalar values are filtered at parsing boundaries.
+export const UI_RAW_STRING_KEYS = ['structureSelect', 'singleDoorPos'];
 export const UI_RAW_BOOLEAN_KEYS = [
   'chestCommodeMirrorWidthManual',
   'stackSplitLowerDepthManual',
@@ -32,12 +33,16 @@ export const UI_RAW_NUMERIC_KEYS = [
 export const UI_RAW_SCALAR_KEYS = [...UI_RAW_NUMERIC_KEYS, ...UI_RAW_BOOLEAN_KEYS];
 const UI_RAW_SCALAR_KEY_SET = new Set(UI_RAW_SCALAR_KEYS);
 const UI_RAW_BOOLEAN_KEY_SET = new Set(UI_RAW_BOOLEAN_KEYS);
+const UI_RAW_STRING_KEY_SET = new Set(UI_RAW_STRING_KEYS);
 const UI_RAW_NUMERIC_KEY_SET = new Set(UI_RAW_NUMERIC_KEYS);
 export function isUiRawScalarKey(key) {
   return typeof key === 'string' && UI_RAW_SCALAR_KEY_SET.has(key);
 }
 export function isUiRawBooleanKey(key) {
   return typeof key === 'string' && UI_RAW_BOOLEAN_KEY_SET.has(key);
+}
+export function isUiRawStringKey(key) {
+  return typeof key === 'string' && UI_RAW_STRING_KEY_SET.has(key);
 }
 export function isUiRawNumericKey(key) {
   return typeof key === 'string' && UI_RAW_NUMERIC_KEY_SET.has(key);
@@ -59,6 +64,10 @@ export function asUiRawInputs(raw) {
   for (const key of UI_RAW_SCALAR_KEYS) {
     const value = readCanonicalRawValue(raw, key);
     if (typeof value !== 'undefined') writeCanonicalRawValue(next, key, value);
+  }
+  for (const key of UI_RAW_STRING_KEYS) {
+    const value = raw[key];
+    if (typeof value === 'string') next[key] = value;
   }
   return next;
 }

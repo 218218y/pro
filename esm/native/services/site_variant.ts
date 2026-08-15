@@ -1,5 +1,6 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, ConfigStateLike } from '../../../types';
 import { getDocumentMaybe, getLocationSearchMaybe, getWindowMaybe } from '../runtime/api.js';
+import { readConfigStateFromApp } from '../runtime/root_state_access.js';
 
 export type SiteVariant = 'main' | 'site2';
 
@@ -22,7 +23,8 @@ function readQueryParam(App: AppContainer, key: string): string | null {
 
 function readVariantFromConfig(App: AppContainer): SiteVariant | null {
   try {
-    const value = asString(App.config?.siteVariant);
+    const cfg: ConfigStateLike = readConfigStateFromApp(App);
+    const value = asString(cfg.siteVariant);
     if (!value) return null;
     const normalized = value.toLowerCase();
     if (normalized === 'site2') return 'site2';

@@ -6,7 +6,7 @@ import type {
   UiRawScalarValueMap,
   UnknownRecord,
 } from '../../../types/index.js';
-import { UI_RAW_SCALAR_KEYS } from '../../../types/ui_raw.js';
+import { UI_RAW_SCALAR_KEYS, UI_RAW_STRING_KEYS } from '../../../types/ui_raw.js';
 
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotFromProjectLoad } from './project_io_load_helpers_config.js';
 
@@ -242,6 +242,11 @@ export function canonicalizeProjectUiSnapshot(ui: unknown): ProjectUiRawCanonica
     }
 
     writeRawScalar(raw, key, canonicalRawValue);
+  }
+
+  for (const key of UI_RAW_STRING_KEYS) {
+    const value = sourceRaw[key];
+    if (typeof value === 'string') raw[key] = value;
   }
 
   return {

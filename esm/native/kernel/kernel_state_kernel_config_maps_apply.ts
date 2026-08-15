@@ -106,7 +106,7 @@ export function installKernelStateKernelConfigApplySurface(
           source: meta.source != null ? String(meta.source) : 'kernel.applyKernelConfigSnapshot',
         });
         const metaFixed = metaRestore(App, base, 'kernel.applyKernelConfigSnapshot');
-        helpers.setStoreConfigPatch(patchFixed, metaFixed);
+        helpers.setStoreConfigPatch(App, patchFixed, metaFixed);
         return true;
       }
 

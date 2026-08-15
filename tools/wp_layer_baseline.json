@@ -630,11 +630,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 19,
-      "maxImportCount": 30,
+      "maxImportCount": 28,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
       "maxValueImporterCount": 19,
-      "maxValueImportCount": 29,
+      "maxValueImportCount": 27,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Runtime primitives consume environment-neutral shared normalization and policy contracts."

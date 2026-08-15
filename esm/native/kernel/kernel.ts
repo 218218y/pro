@@ -81,7 +81,7 @@ export function installKernel(App: AppContainer | null | undefined): void {
     isRecord,
     isFn,
     cloneKernelValue,
-    setStoreConfigPatch,
+    setStoreConfigPatch: (_App, patch, meta) => setStoreConfigPatch(patch, meta),
   });
 
   const editStateSystem = createKernelEditStateSystem({

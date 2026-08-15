@@ -7,6 +7,7 @@
 import { isBuildContext } from './build_context.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { requireThree } from './hinged_doors_shared.js';
+import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
 
 export { appendHingedDoorOpsForModule } from './hinged_doors_module_ops.js';
 export type { AppendHingedDoorOpsParams, HingedDoorPipelineCfg } from './hinged_doors_shared.js';
@@ -40,7 +41,7 @@ export function applyHingedDoorOpsAfterModules(ctx: unknown): boolean {
 
   ro.applyHingedDoorsOps({
     THREE: THREE,
-    cfg: cfg,
+    cfg: asBuilderDoorMapsConfig(cfg),
     sketchMode: bc.flags?.sketchMode === true,
     __wpStack: bc && bc.flags && typeof bc.flags.__wpStack === 'string' ? String(bc.flags.__wpStack) : 'top',
     ops: opsList,

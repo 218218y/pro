@@ -1,4 +1,4 @@
-import type { HingeMap, ProjectPreChestStateLike, UnknownRecord, WardrobeType } from '../../../../../types';
+import type { HingeMap, ProjectPreChestStateLike, UnknownRecord } from '../../../../../types';
 import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegColor,
@@ -95,11 +95,8 @@ function readStructureTabNumberArray(value: unknown): number[] | null {
   return Array.isArray(value) && value.every(v => typeof v === 'number' && Number.isFinite(v)) ? value : null;
 }
 
-export function readStructureTabBaseUiState(
-  ui: StructureTabUiSnapshot,
-  wardrobeType: WardrobeType
-): StructureTabBaseUiState {
-  const depth = readUiRawNumberFromSnapshot(ui, 'depth', getDefaultDepthForWardrobeType(wardrobeType));
+export function readStructureTabBaseUiState(ui: StructureTabUiSnapshot): StructureTabBaseUiState {
+  const depth = readUiRawNumberFromSnapshot(ui, 'depth', getDefaultDepthForWardrobeType(ui.wardrobeType));
   return {
     width: readUiRawNumberFromSnapshot(ui, 'width', DEFAULT_WIDTH),
     height: readUiRawNumberFromSnapshot(ui, 'height', DEFAULT_HEIGHT),
