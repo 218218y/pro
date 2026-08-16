@@ -16,6 +16,7 @@ import type { InstallDomainApiRoomSectionArgs, MetaNoBuildFn } from './domain_ap
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
+  getDefaultHeightForWardrobeType,
   getDefaultPerDoorWidthForWardrobeType,
 } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
 import {
@@ -474,6 +475,7 @@ function initWardrobeTypeDefaults(
 
   const perDoor = getDefaultPerDoorWidthForWardrobeType(next);
   rawPatch.width = doorsI * perDoor;
+  rawPatch.height = getDefaultHeightForWardrobeType(next);
   rawPatch.depth = getDefaultDepthForWardrobeType(next);
 
   const uiPatch: UiStateLike = applyWardrobeTypeBaseLegPlatformTransitionDefaults(

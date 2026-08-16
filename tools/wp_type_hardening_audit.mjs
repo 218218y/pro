@@ -166,7 +166,6 @@ const configMapOwnerCommitHelperAllowPaths = new Set([
 ]);
 
 const configReplaceMetadataBuilderAllowPaths = new Set([
-  'esm/native/kernel/domain_api_room_section_wardrobe.ts',
   'esm/native/kernel/kernel_state_kernel_config_maps_apply.ts',
   'esm/native/kernel/state_api_config_namespace_core.ts',
   'esm/native/kernel/state_api_config_namespace_maps.ts',

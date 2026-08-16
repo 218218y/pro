@@ -278,6 +278,7 @@ test('room wardrobe type runtime: first switch to sliding uses sliding defaults 
   assert.equal(h.state.config.isManualWidth, false);
   assert.equal(h.state.ui.raw.doors, 2);
   assert.equal(h.state.ui.raw.width, 160);
+  assert.equal(h.state.ui.raw.height, 240);
   assert.equal(h.state.ui.raw.depth, 60);
   assert.equal(h.recomputeCalls.length, 1);
   assert.equal((h.recomputeCalls[0]?.[1] as AnyRec)?.source, 'actions:room:setWardrobeType:recompute');
@@ -288,6 +289,33 @@ test('room wardrobe type runtime: first switch to sliding uses sliding defaults 
   assert.equal(h.state.runtime.wardrobeTypeProfiles.hinged.ui.raw.doors, 4);
   assert.equal(h.reports.length, 0);
   assert.equal(h.builderCalls.length, 0);
+});
+
+test('room wardrobe type runtime: first switch to unsaved sliding uses its own default height instead of inheriting hinged height', () => {
+  const h = createHarness({
+    ui: {
+      raw: { width: 160, height: 217, depth: 55, doors: 4 },
+    },
+    config: { wardrobeType: 'hinged', isManualWidth: false },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.ui.raw.height, 240);
+  assert.equal(h.state.runtime.wardrobeTypeProfiles.hinged.ui.raw.height, 217);
+
+  h.state.ui.raw.height = 231;
+  h.actions.room.setWardrobeType('hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.equal(h.state.ui.raw.height, 217);
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.equal(h.state.ui.raw.height, 231);
+  assert.equal(h.reports.length, 0);
 });
 
 test('room wardrobe type runtime: switching a leg-base wardrobe to sliding resets platform mode to plain', () => {
@@ -859,7 +887,7 @@ test('room wardrobe type runtime: init path uses the canonical ui/config snapsho
   assert.deepEqual(snapshot.config.removedDoorsMap, {});
   assert.deepEqual(snapshot.config.roundedFrameSideShelvesMap, {});
   assert.deepEqual(snapshot.ui, {
-    raw: { doors: 2, width: 160, depth: 60 },
+    raw: { doors: 2, width: 160, height: 240, depth: 60 },
     removeDoorsEnabled: false,
   });
   assert.equal(h.state.runtime.doorsOpen, false);
