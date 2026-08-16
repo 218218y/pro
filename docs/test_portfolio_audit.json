@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T08:49:39.152Z",
+  "generatedAt": "2026-08-16T09:17:38.125Z",
   "totals": {
     "tests": 1246,
     "unitRunnerTests": 1237,
@@ -1405,7 +1405,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1419,7 +1419,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1433,7 +1433,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1455,7 +1455,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1949,7 +1949,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2185,7 +2185,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2199,7 +2199,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2213,7 +2213,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2235,7 +2235,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2265,7 +2265,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
+          "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -6461,7 +6461,7 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/runtime_pipeline_ownership_guard.test.js",
+      "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
       "category": "contract"
     },
     {
