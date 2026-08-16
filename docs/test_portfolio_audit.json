@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-16T08:20:28.863Z",
+  "generatedAt": "2026-08-16T08:49:39.152Z",
   "totals": {
-    "tests": 1247,
-    "unitRunnerTests": 1238,
+    "tests": 1246,
+    "unitRunnerTests": 1237,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 139
   },
   "categories": {
-    "contract": 402,
+    "contract": 401,
     "runtime-unit": 337,
     "integration": 469,
     "persistence-ingress": 23,
@@ -6191,10 +6191,6 @@
     {
       "file": "tests/render_carcass_ops_shared_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/render_config_root_cleanup_guard.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/render_context_access_runtime.test.ts",

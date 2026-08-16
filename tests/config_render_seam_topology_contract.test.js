@@ -3,12 +3,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const IMPORT_CONTRACTS = [
   ['esm/native/ui/react/sidebar_shared.ts', '../../services/api.js', ['readRuntimeConfigValueFromApp']],
+  [
+    'esm/native/runtime/render_access_shared.ts',
+    './app_roots_access.js',
+    ['ensureRenderRoot', 'getRenderRootMaybe'],
+  ],
+  [
+    'esm/native/platform/runtime_config_defaults.ts',
+    '../runtime/app_roots_access.js',
+    ['ensureRuntimeConfigRoot', 'getRuntimeConfigRootMaybe'],
+  ],
+  [
+    'esm/native/ui/interactions/viewer_resize.ts',
+    '../../services/api.js',
+    ['ensureRenderNamespace', 'getRenderNamespace'],
+  ],
   [
     'esm/native/platform/render_loop_motion_frame_state.ts',
     '../runtime/runtime_config_selectors.js',
@@ -57,6 +72,24 @@ const IMPORT_CONTRACTS = [
   ],
 ];
 
+const EXPORT_CONTRACTS = [
+  {
+    file: 'esm/native/runtime/app_roots_access.ts',
+    required: [
+      'ensureRenderRoot',
+      'getRenderRootMaybe',
+      'ensureRuntimeConfigRoot',
+      'getRuntimeConfigRootMaybe',
+    ],
+    forbidden: ['ensureConfigRoot', 'getConfigRootMaybe'],
+  },
+  {
+    file: 'esm/native/platform/runtime_config_defaults.ts',
+    required: ['RUNTIME_CONFIG_DEFAULTS', 'applyRuntimeConfigDefaults'],
+    forbidden: ['CONFIG_DEFAULTS', 'applyConfigDefaults'],
+  },
+];
+
 function analyze(rel) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   const analysis = analyzeModuleDependencies(rel, source);
@@ -75,6 +108,21 @@ test('config/render seams route through canonical runtime owners', () => {
     const imported = new Set(imports.flatMap(entry => entry.importedSymbols));
     for (const symbol of symbols) {
       assert.equal(imported.has(symbol), true, `${file} must import ${symbol} from ${specifier}`);
+    }
+  }
+});
+
+test('render/runtime-config canonical owners expose only current root APIs', () => {
+  for (const contract of EXPORT_CONTRACTS) {
+    const source = fs.readFileSync(path.join(root, contract.file), 'utf8');
+    const exported = new Set(
+      collectNamedModuleExports(contract.file, source).map(entry => entry.exportedName)
+    );
+    for (const symbol of contract.required) {
+      assert.equal(exported.has(symbol), true, `${contract.file} must export ${symbol}`);
+    }
+    for (const symbol of contract.forbidden) {
+      assert.equal(exported.has(symbol), false, `${contract.file} must not export retired ${symbol}`);
     }
   }
 });
