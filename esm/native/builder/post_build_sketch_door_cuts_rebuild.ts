@@ -86,6 +86,7 @@ function appendSketchSegmentHinges(args: {
     },
     state: hardwareContext.state,
     localCenterY: segmentCenterLocalY,
+    openFrameOffsetX: hardwareContext.openFrameOffsetX,
     frontSign: hardwareContext.frontSign,
   });
 }

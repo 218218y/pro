@@ -7,9 +7,12 @@ import {
   patchBuilderHingedDoorMotionMetadata,
 } from './hinged_door_motion_metadata.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import { HINGED_DOOR_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import {
+  HINGED_DOOR_RENDER_POLICY,
+  HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY,
+} from '../../shared/dimensions/door_system_policy.js';
 import { attachHingedDoorHardware } from './render_hinged_door_hardware.js';
-import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
+import type { BuilderRenderDoorDeps, HingedDoorOpLike } from './render_door_ops_shared.js';
 import {
   isFunction,
   isRecord,
@@ -27,6 +30,65 @@ import {
   resolveGrooveLayout,
   resolveDoorVisualStyle,
 } from './render_door_ops_shared.js';
+
+type PreparedHingedDoorOp = Readonly<{
+  doorOp: HingedDoorOpLike;
+  removed: boolean;
+}>;
+
+function verticallyOverlapsForSharedPivot(a: HingedDoorOpLike, b: HingedDoorOpLike): boolean {
+  const aMinY = a.y - a.height / 2;
+  const aMaxY = a.y + a.height / 2;
+  const bMinY = b.y - b.height / 2;
+  const bMaxY = b.y + b.height / 2;
+  const overlap = Math.min(aMaxY, bMaxY) - Math.max(aMinY, bMinY);
+  return overlap > HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY.verticalOverlapToleranceM;
+}
+
+function hasOpposingSharedPivotDoor(
+  current: HingedDoorOpLike,
+  visibleDoorOps: readonly HingedDoorOpLike[]
+): boolean {
+  const pivotX = current.pivotX;
+  if (typeof pivotX !== 'number' || !Number.isFinite(pivotX)) return false;
+
+  for (const other of visibleDoorOps) {
+    if (other === current || other.isLeftHinge === current.isLeftHinge) continue;
+    const otherPivotX = other.pivotX;
+    if (typeof otherPivotX !== 'number' || !Number.isFinite(otherPivotX)) continue;
+    if (
+      Math.abs(otherPivotX - pivotX) > HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY.sharedPivotMatchToleranceM
+    ) {
+      continue;
+    }
+    if (!verticallyOverlapsForSharedPivot(current, other)) continue;
+    return true;
+  }
+  return false;
+}
+
+function resolveSharedPivotDoorBodyDirection(doorOp: HingedDoorOpLike): 1 | -1 {
+  const meshOffsetX = doorOp.meshOffsetX;
+  if (typeof meshOffsetX === 'number' && Number.isFinite(meshOffsetX) && Math.abs(meshOffsetX) > 1e-9) {
+    return meshOffsetX > 0 ? 1 : -1;
+  }
+  return doorOp.isLeftHinge ? 1 : -1;
+}
+
+function resolveHingedDoorHardwareOpenFrameOffsetX(
+  doorOp: HingedDoorOpLike,
+  visibleDoorOps: readonly HingedDoorOpLike[],
+  openAngleRad: number
+): number {
+  if (!hasOpposingSharedPivotDoor(doorOp, visibleDoorOps)) return 0;
+  const finiteOpenAngle = Number.isFinite(openAngleRad) ? Math.abs(openAngleRad) : 0;
+  const openingProgress = Math.sin(Math.min(finiteOpenAngle, Math.PI / 2));
+  return (
+    resolveSharedPivotDoorBodyDirection(doorOp) *
+    HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY.lateralThrowPerLeafM *
+    openingProgress
+  );
+}
 
 export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
   const {
@@ -65,11 +127,19 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const isDoorRemoved = isFunction(args?.isDoorRemoved) ? args.isDoorRemoved : null;
     const wpStackArg = typeof args?.__wpStack === 'string' ? String(args.__wpStack) : undefined;
     const hingeHardwareState = createBuilderHingedDoorHardwareRenderState(THREE, hingedDims.visualThicknessM);
-
+    const preparedDoorOps: PreparedHingedDoorOp[] = [];
     for (let i = 0; i < ops.length; i++) {
       const doorOp = readHingedDoorOp(ops[i]);
       if (!doorOp) continue;
+      let removed = doorOp.isRemoved;
+      if (!removed && removeDoorsEnabled && isDoorRemoved) removed = !!isDoorRemoved(doorOp.partId);
+      preparedDoorOps.push({ doorOp, removed: !!(removeDoorsEnabled && removed) });
+    }
+    const visibleDoorOps = preparedDoorOps.filter(entry => !entry.removed).map(entry => entry.doorOp);
+    const hardwareOpenAngleRad = hingeHardwareState?.policy.carcassConnectorOpenAngleRad ?? 0;
 
+    for (let i = 0; i < preparedDoorOps.length; i++) {
+      const { doorOp, removed } = preparedDoorOps[i];
       const partId = doorOp.partId;
 
       let doorIdNum: number | null = null;
@@ -93,13 +163,9 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       __reg(App, partId, group, 'hingedDoor');
       group.position.set(doorOp.pivotX || 0, doorOp.y || 0, doorOp.z || 0);
 
-      let removed = doorOp.isRemoved;
-      if (!removed && removeDoorsEnabled && isDoorRemoved) {
-        removed = !!isDoorRemoved(partId);
-      }
-      patchBuilderHingedDoorMotionMetadata(group.userData, { removed: !!(removeDoorsEnabled && removed) });
+      patchBuilderHingedDoorMotionMetadata(group.userData, { removed });
 
-      if (removeDoorsEnabled && removed) {
+      if (removed) {
         if (isRemoveDoorMode) {
           const box = new THREE.Mesh(
             new THREE.BoxGeometry(
@@ -220,6 +286,11 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         doorGroup: group,
         doorOp,
         state: hingeHardwareState,
+        openFrameOffsetX: resolveHingedDoorHardwareOpenFrameOffsetX(
+          doorOp,
+          visibleDoorOps,
+          hardwareOpenAngleRad
+        ),
       });
       const doorsArray = __doors(App);
       if (Array.isArray(doorsArray)) {

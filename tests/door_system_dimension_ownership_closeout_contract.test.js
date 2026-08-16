@@ -50,6 +50,10 @@ const focusedInventories = new Map([
     ['esm/native/builder/hinged_door_motion_metadata.ts', ownerRel, sharedDoorMotionContractRel],
   ],
   [
+    'HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY',
+    ['esm/native/builder/render_door_ops_hinged.ts', ownerRel, sharedDoorMotionContractRel],
+  ],
+  [
     'HINGED_DOOR_MOUNT_POLICY',
     [
       'esm/native/builder/core_doors_compute.ts',
@@ -305,6 +309,10 @@ test('Door motion runtime scalar seam consumes focused owners without exposing a
         syntax: 'static-import',
         importedSymbols: [
           'HINGED_DOOR_OPEN_ANGLE_RAD',
+          'HINGED_DOOR_SHARED_PIVOT_LATERAL_THROW_PER_LEAF_M',
+          'HINGED_DOOR_SHARED_PIVOT_MATCH_TOLERANCE_M',
+          'HINGED_DOOR_SHARED_PIVOT_PAIR_CLEARANCE_M',
+          'HINGED_DOOR_SHARED_PIVOT_VERTICAL_OVERLAP_TOLERANCE_M',
           'HINGED_DOOR_VISUAL_THICKNESS_M',
           'SLIDING_DOOR_DEFAULT_COUNT',
           'SLIDING_DOOR_RUNTIME_OPEN_EPSILON_X_M',
@@ -319,6 +327,22 @@ test('Door motion runtime scalar seam consumes focused owners without exposing a
     false
   );
   assert.match(source, /HINGED_DOOR_OPEN_ANGLE_RAD\s*=\s*SHARED_HINGED_DOOR_OPEN_ANGLE_RAD/u);
+  assert.match(
+    source,
+    /HINGED_DOOR_SHARED_PIVOT_MATCH_TOLERANCE_M\s*=\s*SHARED_HINGED_DOOR_SHARED_PIVOT_MATCH_TOLERANCE_M/u
+  );
+  assert.match(
+    source,
+    /HINGED_DOOR_SHARED_PIVOT_VERTICAL_OVERLAP_TOLERANCE_M\s*=\s*SHARED_HINGED_DOOR_SHARED_PIVOT_VERTICAL_OVERLAP_TOLERANCE_M/u
+  );
+  assert.match(
+    source,
+    /HINGED_DOOR_SHARED_PIVOT_PAIR_CLEARANCE_M\s*=\s*SHARED_HINGED_DOOR_SHARED_PIVOT_PAIR_CLEARANCE_M/u
+  );
+  assert.match(
+    source,
+    /HINGED_DOOR_SHARED_PIVOT_LATERAL_THROW_PER_LEAF_M\s*=\s*SHARED_HINGED_DOOR_SHARED_PIVOT_LATERAL_THROW_PER_LEAF_M/u
+  );
   assert.match(source, /HINGED_DOOR_VISUAL_THICKNESS_M\s*=\s*SHARED_HINGED_DOOR_VISUAL_THICKNESS_M/u);
   assert.match(source, /SLIDING_DOOR_DEFAULT_COUNT\s*=\s*SHARED_SLIDING_DOOR_DEFAULT_COUNT/u);
   assert.match(

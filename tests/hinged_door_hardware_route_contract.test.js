@@ -26,8 +26,9 @@ test('[hinge-hardware-routes] every non-sliding hinged-door renderer is wired to
   assert.doesNotMatch(sliding, /attachHingedDoorHardware|appendHingedDoorHardware/u);
 });
 
-test('[hinge-hardware-routes] segmented drawer rebuild preserves per-door mount face and front direction', () => {
+test('[hinge-hardware-routes] segmented drawer rebuild preserves per-door mount face, shared-pivot alignment, and front direction', () => {
   const rebuild = read('esm/native/builder/post_build_sketch_door_cuts_rebuild.ts');
   assert.match(rebuild, /hardwareContext\.carcassMountFaceX/u);
+  assert.match(rebuild, /openFrameOffsetX:\s*hardwareContext\.openFrameOffsetX/u);
   assert.match(rebuild, /frontSign:\s*hardwareContext\.frontSign/u);
 });

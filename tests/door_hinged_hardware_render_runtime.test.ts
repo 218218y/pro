@@ -8,6 +8,10 @@ import {
   readHingedDoorHardwareRuntimeContext,
 } from '../esm/native/builder/render_hinged_door_hardware.ts';
 import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
+import {
+  resolveHingedDoorMotionFrameX,
+  resolveHingedDoorTargetRotationY,
+} from '../esm/native/runtime/hinged_door_kinematics.ts';
 
 function createThreeStub() {
   class Group {
@@ -358,6 +362,80 @@ test('middle and outer hinged doors use the same carcass hinge geometry and z pl
     middle.map((half: any) => half.children.map((mesh: any) => mesh.geometry.args)),
     outer.map((half: any) => half.children.map((mesh: any) => mesh.geometry.args))
   );
+});
+
+test('shared-divider hinge connectors target the translated cup position used by middle-door collision clearance', () => {
+  const { THREE, wardrobeGroup, doors, applyHingedDoorsOps } = createHarness();
+
+  applyHingedDoorsOps({
+    App: {},
+    THREE,
+    ops: [
+      {
+        partId: 'd_middle_left',
+        width: 0.45,
+        height: 1.8,
+        y: 0.9,
+        z: 0.6,
+        pivotX: 0,
+        meshOffsetX: -0.225,
+        isLeftHinge: false,
+      },
+      {
+        partId: 'd_middle_right',
+        width: 0.45,
+        height: 1.8,
+        y: 0.9,
+        z: 0.6,
+        pivotX: 0,
+        meshOffsetX: 0.225,
+        isLeftHinge: true,
+      },
+    ],
+    cfg: {},
+    getPartMaterial: () => ({ kind: 'wood' }),
+  });
+
+  for (const door of doors) {
+    const doorGroup = door.group;
+    const partId = String(doorGroup.userData.partId);
+    const carcassHalf = hardwareChildren(wardrobeGroup, 'carcass').find(
+      (half: any) => half.userData.__wpHingeOwnerPartId === partId
+    );
+    assert.ok(carcassHalf);
+    const connector = carcassHalf.children.find(
+      (mesh: any) => mesh.userData.__wpHingeComponent === 'carcassConnector'
+    );
+    assert.ok(connector);
+
+    const targetRotationY = resolveHingedDoorTargetRotationY(door as any, true);
+    const targetFrameX = resolveHingedDoorMotionFrameX(door as any, doors as any, targetRotationY);
+    assert.notEqual(targetFrameX, null);
+
+    const hingeDirection = door.hingeSide === 'left' ? 1 : -1;
+    const nearCupLocalX =
+      hingeDirection *
+      Math.max(
+        0.0005,
+        HINGED_DOOR_HARDWARE_RENDER_POLICY.cupCenterFromHingeEdgeM -
+          HINGED_DOOR_HARDWARE_RENDER_POLICY.cupCollarRadiusM +
+          HINGED_DOOR_HARDWARE_RENDER_POLICY.carcassConnectorCupOverlapM
+      );
+    const cupRearZ = -0.018 / 2 - HINGED_DOOR_HARDWARE_RENDER_POLICY.cupVisibleDepthM - 0.0002;
+    const expectedEndX =
+      Number(targetFrameX) -
+      carcassHalf.position.x +
+      nearCupLocalX * Math.cos(targetRotationY) +
+      cupRearZ * Math.sin(targetRotationY);
+    const expectedEndZ = -nearCupLocalX * Math.sin(targetRotationY) + cupRearZ * Math.cos(targetRotationY);
+
+    assert.ok(Math.abs(Number(connector.userData.__wpConnectorEndX) - expectedEndX) < 1e-12);
+    assert.ok(Math.abs(Number(connector.userData.__wpConnectorEndZ) - expectedEndZ) < 1e-12);
+    assert.ok(
+      Math.abs(Number(readHingedDoorHardwareRuntimeContext(doorGroup)?.openFrameOffsetX)) > 0.009,
+      'shared-divider hardware must preserve the non-zero lateral frame correction'
+    );
+  }
 });
 
 test('split hinged door segments each receive their own independent pair of hinges', () => {

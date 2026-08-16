@@ -1,6 +1,9 @@
 import {
   HINGED_DOOR_OPEN_ANGLE_RAD,
-  HINGED_DOOR_VISUAL_THICKNESS_M,
+  HINGED_DOOR_SHARED_PIVOT_LATERAL_THROW_PER_LEAF_M,
+  HINGED_DOOR_SHARED_PIVOT_MATCH_TOLERANCE_M,
+  HINGED_DOOR_SHARED_PIVOT_PAIR_CLEARANCE_M,
+  HINGED_DOOR_SHARED_PIVOT_VERTICAL_OVERLAP_TOLERANCE_M,
   readRuntimeHingedDoorMotionMetadata,
   type RuntimeHingedDoorMotionMetadata,
 } from './door_motion_policy_access.js';
@@ -10,24 +13,22 @@ type MotionSign = 1 | -1;
 
 export type HingedDoorMotionMetadata = RuntimeHingedDoorMotionMetadata;
 
-const SHARED_PIVOT_PAIR_CLEARANCE_M = 0.002;
-
 const SHARED_PIVOT_POLICY = Object.freeze({
   /** Closed pivot coordinates must be effectively identical to share one divider axis. */
-  sharedPivotMatchToleranceM: 0.0015,
+  sharedPivotMatchToleranceM: HINGED_DOOR_SHARED_PIVOT_MATCH_TOLERANCE_M,
 
   /** Ignore vertically disjoint leaves/segments that happen to reuse the same X pivot. */
-  verticalOverlapToleranceM: 0.001,
+  verticalOverlapToleranceM: HINGED_DOOR_SHARED_PIVOT_VERTICAL_OVERLAP_TOLERANCE_M,
 
   /** Minimum slab-to-slab clearance at full open. */
-  pairClearanceM: SHARED_PIVOT_PAIR_CLEARANCE_M,
+  pairClearanceM: HINGED_DOOR_SHARED_PIVOT_PAIR_CLEARANCE_M,
 
   /**
    * Per-leaf full-open translation required to clear two opposing rendered slabs.
    * For symmetric leaves the projected slab overlap is `thickness * sin(angle)`;
    * translating each motion frame by half `(thickness + clearance)` removes it.
    */
-  lateralThrowPerLeafM: (HINGED_DOOR_VISUAL_THICKNESS_M + SHARED_PIVOT_PAIR_CLEARANCE_M) / 2,
+  lateralThrowPerLeafM: HINGED_DOOR_SHARED_PIVOT_LATERAL_THROW_PER_LEAF_M,
 });
 
 export const HINGED_DOOR_KINEMATICS_POLICY = Object.freeze({

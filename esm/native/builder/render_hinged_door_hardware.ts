@@ -121,6 +121,7 @@ function makeConnectorMeshBetween(args: {
 export type HingedDoorHardwareRuntimeContext = {
   state: HingedDoorHardwareRenderState;
   carcassMountFaceX?: number;
+  openFrameOffsetX?: number;
   frontSign: 1 | -1;
 };
 
@@ -130,6 +131,7 @@ export function bindHingedDoorHardwareRuntimeContext(args: {
   doorGroup: Object3DLike;
   state: HingedDoorHardwareRenderState | null;
   doorOp: HingedDoorOpLike;
+  openFrameOffsetX?: number;
   frontSign?: number;
 }): void {
   const { doorGroup, state, doorOp } = args;
@@ -140,6 +142,9 @@ export function bindHingedDoorHardwareRuntimeContext(args: {
   };
   if (typeof doorOp.carcassMountFaceX === 'number' && Number.isFinite(doorOp.carcassMountFaceX)) {
     context.carcassMountFaceX = doorOp.carcassMountFaceX;
+  }
+  if (typeof args.openFrameOffsetX === 'number' && Number.isFinite(args.openFrameOffsetX)) {
+    context.openFrameOffsetX = args.openFrameOffsetX;
   }
   Object.defineProperty(doorGroup.userData, HINGE_HARDWARE_RUNTIME_CONTEXT_KEY, {
     value: context,
@@ -295,9 +300,14 @@ function resolveOpenCupNearEdgeTarget(args: {
   policy: HingedDoorHardwarePolicy;
   hingeDirection: number;
   cupRearZ: number;
+  openFrameOffsetX?: number;
   frontSign: 1 | -1;
 }): { x: number; z: number } {
   const { policy, hingeDirection, cupRearZ, frontSign } = args;
+  const openFrameOffsetX =
+    typeof args.openFrameOffsetX === 'number' && Number.isFinite(args.openFrameOffsetX)
+      ? args.openFrameOffsetX
+      : 0;
   const canonicalCupRearZ = cupRearZ * frontSign;
   const nearCupLocalX =
     hingeDirection *
@@ -309,7 +319,7 @@ function resolveOpenCupNearEdgeTarget(args: {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   return {
-    x: nearCupLocalX * cos + canonicalCupRearZ * sin,
+    x: openFrameOffsetX + nearCupLocalX * cos + canonicalCupRearZ * sin,
     z: frontSign * (-nearCupLocalX * sin + canonicalCupRearZ * cos),
   };
 }
@@ -332,6 +342,7 @@ function appendCarcassMountedHalf(args: {
   state: HingedDoorHardwareRenderState;
   localY: number;
   hingeIndex: number;
+  openFrameOffsetX?: number;
   frontSign?: number;
 }): void {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state, localY, hingeIndex } = args;
@@ -392,6 +403,7 @@ function appendCarcassMountedHalf(args: {
     // sits just farther from the panel than the raised carcass links, producing
     // the requested slight outward X lean while the dominant motion stays frontward in Z.
     cupRearZ: doorBackZ - frontSign * (policy.cupVisibleDepthM + 0.0002),
+    openFrameOffsetX: args.openFrameOffsetX,
     frontSign,
   });
   const carcassConnector = makeConnectorMeshBetween({
@@ -417,12 +429,14 @@ export function attachHingedDoorHardware(args: {
   doorOp: HingedDoorOpLike;
   state: HingedDoorHardwareRenderState | null;
   localCenterY?: number;
+  openFrameOffsetX?: number;
   frontSign?: number;
 }): number {
   bindHingedDoorHardwareRuntimeContext({
     doorGroup: args.doorGroup,
     state: args.state,
     doorOp: args.doorOp,
+    openFrameOffsetX: args.openFrameOffsetX,
     frontSign: args.frontSign,
   });
   return appendHingedDoorHardware(args);
@@ -435,6 +449,7 @@ export function appendHingedDoorHardware(args: {
   doorOp: HingedDoorOpLike;
   state: HingedDoorHardwareRenderState | null;
   localCenterY?: number;
+  openFrameOffsetX?: number;
   frontSign?: number;
 }): number {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state } = args;
@@ -464,6 +479,7 @@ export function appendHingedDoorHardware(args: {
       state,
       localY,
       hingeIndex,
+      openFrameOffsetX: args.openFrameOffsetX,
       frontSign: args.frontSign,
     });
   }

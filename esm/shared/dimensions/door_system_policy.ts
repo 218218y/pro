@@ -18,6 +18,13 @@ export const HINGED_DOOR_MOUNT_POLICY = Object.freeze({
   sameModuleLeafGapSpanRatioMax: 0.1,
 });
 
+export const HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY = Object.freeze({
+  sharedPivotMatchToleranceM: meters(0.0015),
+  verticalOverlapToleranceM: meters(0.001),
+  pairClearanceM: meters(0.002),
+  lateralThrowPerLeafM: (HINGED_DOOR_RENDER_POLICY.visualThicknessM + meters(0.002)) / 2,
+});
+
 export const HINGED_DOOR_HARDWARE_RENDER_POLICY = Object.freeze({
   standardEdgeInsetM: meters(0.1),
   shortDoorInsetRatio: 0.25,
