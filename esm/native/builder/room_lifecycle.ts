@@ -17,8 +17,10 @@ import {
   _asObject,
   type RoomTextureParams,
   type RoomUpdateOpts,
+  __wp_triggerRender,
 } from './room_internal_shared.js';
 import { createRoomScenePrimitives } from './room_scene_primitives.js';
+import { refreshRoomArchitectureScene } from './room_architecture_scene.js';
 import {
   applyResolvedActiveRoomDesign,
   resetAppliedRoomVisualState,
@@ -69,6 +71,7 @@ export function buildRoom(forceDesign = false, passedApp: unknown) {
   roomGroupObj.name = ROOM_GROUP_OBJECT_NAME;
 
   addToScene(A, roomGroupObj);
+  refreshRoomArchitectureScene(A, T);
 
   resetAppliedRoomVisualState(A);
 
@@ -79,6 +82,14 @@ export function buildRoom(forceDesign = false, passedApp: unknown) {
   }
 
   resetRoomVisualDefaults(A);
+}
+
+export function updateRoomArchitecture(passedApp: unknown) {
+  const A = __ensureApp(passedApp);
+  const T = __ensureTHREE(A);
+  const updated = refreshRoomArchitectureScene(A, T);
+  if (updated) __wp_triggerRender(true, A);
+  return updated;
 }
 
 export function setRoomDesignActive(

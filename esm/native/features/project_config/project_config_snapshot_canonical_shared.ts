@@ -56,7 +56,8 @@ export type PersistedProjectConfigBranchKey =
   | 'overlayFrameThicknessCm'
   | 'overlayShelfThicknessCm'
   | 'insetFrameThicknessCm'
-  | 'insetShelfThicknessCm';
+  | 'insetShelfThicknessCm'
+  | 'roomArchitecture';
 
 export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjectConfigBranchKey> = [
   'modulesConfiguration',
@@ -87,6 +88,7 @@ export const PERSISTED_PROJECT_CONFIG_BRANCH_KEYS: ReadonlyArray<PersistedProjec
   'overlayShelfThicknessCm',
   'insetFrameThicknessCm',
   'insetShelfThicknessCm',
+  'roomArchitecture',
 ];
 
 export interface ProjectConfigSnapshotCanonicalizationOptions extends ProjectConfigListsCanonicalizationOptions {

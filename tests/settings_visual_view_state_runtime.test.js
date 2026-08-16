@@ -9,6 +9,32 @@ const require = requireFromTsRuntimeLoader;
 function loadSettingsVisualViewStateModule(stubs = {}) {
   const file = path.join(process.cwd(), 'esm/native/ui/react/tabs/settings_visual_view_state_runtime.ts');
   const localRequire = specifier => {
+    if (specifier === '../../../../shared/room_architecture_shared.js') {
+      return {
+        normalizeRoomArchitecture:
+          stubs.normalizeRoomArchitecture ||
+          (value => ({
+            backWall: {
+              enabled: value?.backWall?.enabled === true,
+              widthCm: value?.backWall?.widthCm ?? 400,
+              heightCm: value?.backWall?.heightCm ?? 280,
+              wardrobeOffsetLeftCm: value?.backWall?.wardrobeOffsetLeftCm ?? 50,
+            },
+            column: {
+              enabled: value?.column?.enabled === true,
+              offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
+              widthCm: value?.column?.widthCm ?? 30,
+              depthCm: value?.column?.depthCm ?? 20,
+              heightCm: value?.column?.heightCm ?? 280,
+              bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
+            },
+            surfacesHidden: value?.surfacesHidden === true,
+          })),
+      };
+    }
+    if (specifier === '../../../../shared/dimensions/wardrobe_defaults.js') {
+      return { DEFAULT_WIDTH: 240 };
+    }
     if (specifier === './settings_visual_shared_contracts.js') {
       return {
         DEFAULT_WALL_COLOR: stubs.DEFAULT_WALL_COLOR || '#37474f',
@@ -48,13 +74,33 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
 
 test('settings visual controls view-state runtime reads cfg state through canonical semantics', () => {
   const mod = loadSettingsVisualViewStateModule();
+  const defaultArchitecture = {
+    backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    column: {
+      enabled: false,
+      offsetLeftCm: 180,
+      widthCm: 30,
+      depthCm: 20,
+      heightCm: 280,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: false,
+  };
   assert.equal(
     JSON.stringify(mod.readSettingsVisualCfgState({ showDimensions: 1, savedNotes: [{}, {}] })),
-    JSON.stringify({ showDimensions: true, mirrorReflectorEnabled: true })
+    JSON.stringify({
+      showDimensions: true,
+      mirrorReflectorEnabled: true,
+      roomArchitecture: defaultArchitecture,
+    })
   );
   assert.equal(
     JSON.stringify(mod.readSettingsVisualCfgState({ showDimensions: 0, MIRROR_REFLECTOR_ENABLED: false })),
-    JSON.stringify({ showDimensions: false, mirrorReflectorEnabled: false })
+    JSON.stringify({
+      showDimensions: false,
+      mirrorReflectorEnabled: false,
+      roomArchitecture: defaultArchitecture,
+    })
   );
 });
 
@@ -85,6 +131,7 @@ test('settings visual controls view-state runtime reads ui state with canonical 
   assert.equal(
     JSON.stringify(
       mod.readSettingsVisualUiState({
+        raw: { width: '275.5' },
         currentFloorType: 'tiles',
         lastSelectedFloorStyleIdByType: { tiles: 'marble_white' },
         lastSelectedWallColor: '#abcdef',
@@ -102,6 +149,7 @@ test('settings visual controls view-state runtime reads ui state with canonical 
       })
     ),
     JSON.stringify({
+      wardrobeWidthCm: 275.5,
       showContents: true,
       showHanger: false,
       globalClickUi: false,
@@ -123,6 +171,7 @@ test('settings visual controls view-state runtime reads ui state with canonical 
 test('settings visual controls view-state runtime defaults dark mode off', () => {
   const mod = loadSettingsVisualViewStateModule();
   assert.equal(mod.readSettingsVisualUiState({}).darkMode, false);
+  assert.equal(mod.readSettingsVisualUiState({}).wardrobeWidthCm, 240);
 });
 
 test('settings visual controls view-state runtime reads runtime state booleans safely', () => {

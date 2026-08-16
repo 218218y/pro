@@ -1,5 +1,8 @@
 import { asRecord } from '../runtime/record.js';
+import { guardVoid } from '../runtime/api.js';
 import { runBuilderPostBuildFollowThrough } from '../runtime/builder_service_access_build_followthrough.js';
+import { refreshRoomArchitectureScene } from './room_architecture_scene.js';
+import { __ensureTHREE } from './room_shared_utils.js';
 
 import type {
   AppContainer,
@@ -133,6 +136,15 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
 
 export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App: AppContainer | null } {
   const resolved = resolveFinalizeBuildBestEffortArgs(args);
+  if (resolved.App) {
+    guardVoid(
+      resolved.App,
+      { where: 'builder/post_build_finalize_runtime', op: 'builder.refreshRoomArchitecture' },
+      () => {
+        refreshRoomArchitectureScene(resolved.App as AppContainer, __ensureTHREE(resolved.App));
+      }
+    );
+  }
   runBuilderPostBuildFollowThrough(resolved.App, {
     finalizeRegistry: true,
     ...(resolved.cfgSnapshot ? { cfgSnapshot: resolved.cfgSnapshot } : {}),

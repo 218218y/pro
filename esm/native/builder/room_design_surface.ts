@@ -27,6 +27,7 @@ import {
   setRoomDesignActive,
   updateFloorTexture,
   updateRoomWall,
+  updateRoomArchitecture,
 } from './room_lifecycle.js';
 
 type InstallableRoomDesignService = RoomDesignServiceState & {
@@ -35,6 +36,7 @@ type InstallableRoomDesignService = RoomDesignServiceState & {
   __wpRoomResetToDefault?: RoomDesignServiceState['resetRoomToDefault'];
   __wpRoomUpdateFloorTexture?: RoomDesignServiceState['updateFloorTexture'];
   __wpRoomUpdateWall?: RoomDesignServiceState['updateRoomWall'];
+  __wpRoomUpdateArchitecture?: RoomDesignServiceState['updateRoomArchitecture'];
   __wpRoomSetActive?: RoomDesignServiceState['setActive'];
   __wpRoomGetFloorType?: RoomDesignServiceState['__wp_room_getFloorType'];
   __wpRoomGetLastStyleId?: RoomDesignServiceState['__wp_room_getLastStyleId'];
@@ -48,6 +50,7 @@ type RoomDesignCallableKey =
   | 'resetRoomToDefault'
   | 'updateFloorTexture'
   | 'updateRoomWall'
+  | 'updateRoomArchitecture'
   | 'setActive'
   | '__wp_room_getFloorType'
   | '__wp_room_getLastStyleId'
@@ -60,6 +63,7 @@ type RoomDesignStableMethodKeyBySurfaceKey = {
   resetRoomToDefault: '__wpRoomResetToDefault';
   updateFloorTexture: '__wpRoomUpdateFloorTexture';
   updateRoomWall: '__wpRoomUpdateWall';
+  updateRoomArchitecture: '__wpRoomUpdateArchitecture';
   setActive: '__wpRoomSetActive';
   __wp_room_getFloorType: '__wpRoomGetFloorType';
   __wp_room_getLastStyleId: '__wpRoomGetLastStyleId';
@@ -86,6 +90,7 @@ const ROOM_DESIGN_CALLABLE_KEYS: readonly RoomDesignCallableKey[] = [
   'resetRoomToDefault',
   'updateFloorTexture',
   'updateRoomWall',
+  'updateRoomArchitecture',
   'setActive',
   '__wp_room_getFloorType',
   '__wp_room_getLastStyleId',
@@ -142,6 +147,10 @@ const ROOM_DESIGN_SURFACE_BINDINGS: RoomDesignSurfaceBindingMap = {
     stableKey: '__wpRoomUpdateWall',
     bind: context => (wallColor: string, opts?: RoomUpdateOpts) =>
       updateRoomWall(typeof wallColor === 'string' ? wallColor : null, _asUpdateOpts(opts), context.App),
+  },
+  updateRoomArchitecture: {
+    stableKey: '__wpRoomUpdateArchitecture',
+    bind: context => () => updateRoomArchitecture(context.App),
   },
   setActive: {
     stableKey: '__wpRoomSetActive',

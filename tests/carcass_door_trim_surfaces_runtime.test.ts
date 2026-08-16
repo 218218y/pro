@@ -44,7 +44,91 @@ class Mesh {
   }
 }
 
-const THREE = { BoxGeometry, MeshStandardMaterial, Mesh };
+class Group {
+  userData: Record<string, unknown> = {};
+  children: unknown[] = [];
+  position = {
+    last: null as [number, number, number] | null,
+    set: (x: number, y: number, z: number) => {
+      this.position.last = [x, y, z];
+    },
+  };
+
+  add(child: unknown) {
+    this.children.push(child);
+  }
+}
+
+const THREE = { BoxGeometry, MeshStandardMaterial, Mesh, Group };
+
+test('room column cuts carcass boards into real geometry around the obstacle', () => {
+  const wardrobeChildren: unknown[] = [];
+  const app = {
+    services: {},
+    store: {
+      getState() {
+        return {
+          config: {
+            roomArchitecture: {
+              backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+              column: {
+                enabled: true,
+                offsetLeftCm: 140,
+                widthCm: 30,
+                depthCm: 20,
+                heightCm: 240,
+                bottomOffsetCm: 0,
+              },
+              surfacesHidden: true,
+            },
+          },
+          ui: { raw: { width: 200, height: 240, depth: 60 } },
+          runtime: { wardrobeWidthM: 2, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+        };
+      },
+    },
+  } as never;
+  const { applyCarcassBaseOps } = createApplyCarcassBaseOps();
+
+  applyCarcassBaseOps(
+    {
+      boards: [
+        {
+          kind: 'board',
+          partId: 'body_floor',
+          width: 2,
+          height: 0.018,
+          depth: 0.6,
+          x: 0,
+          y: 0.009,
+          z: 0,
+        },
+      ],
+    },
+    {
+      App: app,
+      THREE,
+      wardrobeGroup: {
+        add(child: unknown) {
+          wardrobeChildren.push(child);
+        },
+      },
+      ctx: { bodyMat: { name: 'body' } },
+      addOutlines() {},
+      getPartMaterial: null,
+      sketchMode: false,
+      reg() {},
+      renderOpsHandleCatch() {},
+    } as never
+  );
+
+  assert.equal(wardrobeChildren.length, 1);
+  const board = wardrobeChildren[0] as Group;
+  assert.equal(board.userData.partId, 'body_floor');
+  assert.equal(board.userData.__wpRoomColumnAdjusted, true);
+  assert.equal(board.children.length, 3);
+  assert.deepEqual(board.position.last, [0, 0.009, 0]);
+});
 
 test('carcass rendering tags side/top boards as trim surfaces and renders configured trim visuals', () => {
   const wardrobeChildren: unknown[] = [];

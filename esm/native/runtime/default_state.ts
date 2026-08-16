@@ -8,6 +8,7 @@
 
 import type { RootStateLike } from '../../../types';
 import { DEFAULT_FRONT_COLOR_SHELF_INHERITANCE_MODE } from '../../shared/front_color_shelf_inheritance_shared.js';
+import { DEFAULT_ROOM_ARCHITECTURE } from '../../shared/room_architecture_shared.js';
 
 import {
   BASE_LEG_DIMENSIONS,
@@ -214,6 +215,11 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       isManualWidth: false,
       customUploadedDataURL: null,
       grooveLinesCount: null,
+      roomArchitecture: {
+        backWall: { ...DEFAULT_ROOM_ARCHITECTURE.backWall },
+        column: { ...DEFAULT_ROOM_ARCHITECTURE.column },
+        surfacesHidden: DEFAULT_ROOM_ARCHITECTURE.surfacesHidden,
+      },
     },
     mode: {
       primary: NONE,

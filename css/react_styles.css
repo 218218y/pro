@@ -2413,6 +2413,115 @@
   margin-bottom: 0;
 }
 
+#reactSidebarRoot .wp-r-room-architecture {
+  margin-top: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+}
+
+#reactSidebarRoot .wp-r-room-architecture-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-title {
+  color: var(--text-main);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-subtitle,
+#reactSidebarRoot .wp-r-room-architecture-hidden-note {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+#reactSidebarRoot .wp-r-room-dimension-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  direction: ltr;
+}
+
+#reactSidebarRoot .wp-r-room-dimension-grid > * {
+  min-width: 0;
+  direction: rtl;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-field .wp-r-label-row {
+  min-height: 32px;
+  align-items: flex-end;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-field .wp-r-input-row {
+  gap: 5px;
+}
+
+#reactSidebarRoot .wp-r-room-architecture-unit {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+#reactSidebarRoot .wp-r-room-position-block,
+#reactSidebarRoot .wp-r-room-column-block {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
+#reactSidebarRoot .wp-r-room-align-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#reactSidebarRoot .wp-r-room-align-actions > .btn {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding-inline: 6px;
+  font-size: 0.76rem;
+  white-space: normal;
+}
+
+#reactSidebarRoot .wp-r-room-column-grid {
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-room-visibility-btn {
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+#reactSidebarRoot .wp-r-room-visibility-btn i {
+  margin-inline-end: 6px;
+}
+
+@media (max-width: 380px) {
+  #reactSidebarRoot .wp-r-room-dimension-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 #reactSidebarRoot .wp-r-btn-row {
   display: flex;
   gap: 8px;

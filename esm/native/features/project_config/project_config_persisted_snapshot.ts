@@ -2,12 +2,14 @@ import type {
   ProjectDataLike,
   ProjectPreChestStateLike,
   ProjectSavedNotesLike,
+  RoomArchitectureConfigLike,
   SavedColorLike,
   UnknownRecord,
 } from '../../../../types/index.js';
 
 import { normalizeSavedColorsList } from '../../../shared/maps_access_collections_shared.js';
 import { normalizeDoorMountThicknessCm } from '../../../shared/dimensions/door_mount_thickness_policy.js';
+import { normalizeRoomArchitecture } from '../../../shared/room_architecture_shared.js';
 import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
 import { cloneModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
 import { cloneProjectJson } from '../../../shared/project_json_clone.js';
@@ -66,6 +68,7 @@ export interface PersistedProjectConfigSnapshot {
   overlayShelfThicknessCm: number | null | undefined;
   insetFrameThicknessCm: number | null | undefined;
   insetShelfThicknessCm: number | null | undefined;
+  roomArchitecture: RoomArchitectureConfigLike;
 }
 
 export interface ConfigStateProjectConfigSnapshot extends PersistedProjectConfigSnapshot {
@@ -164,6 +167,7 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
     readDoorMountThicknessCm(canonicalConfig.overlayShelfThicknessCm),
   insetFrameThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetFrameThicknessCm),
   insetShelfThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetShelfThicknessCm),
+  roomArchitecture: canonicalConfig => normalizeRoomArchitecture(canonicalConfig.roomArchitecture),
 };
 
 function readComparableProjectConfigSnapshot(
@@ -200,6 +204,7 @@ function readComparableProjectConfigSnapshot(
     overlayShelfThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.overlayShelfThicknessCm(canonicalConfig),
     insetFrameThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.insetFrameThicknessCm(canonicalConfig),
     insetShelfThicknessCm: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.insetShelfThicknessCm(canonicalConfig),
+    roomArchitecture: PERSISTED_PROJECT_CONFIG_BRANCH_READERS.roomArchitecture(canonicalConfig),
   };
 }
 

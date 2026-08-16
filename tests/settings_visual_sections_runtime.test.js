@@ -7,6 +7,22 @@ import { SettingsVisualRoomSection } from '../esm/native/ui/react/tabs/settings_
 import { SettingsVisualLightingSection } from '../esm/native/ui/react/tabs/settings_visual_sections_lighting.js';
 const noop = () => {};
 const countMatches = (source, pattern) => [...source.matchAll(pattern)].length;
+const roomArchitectureModel = {
+  roomArchitecture: {
+    backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    column: { enabled: true, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 260, bottomOffsetCm: 20 },
+    surfacesHidden: false,
+  },
+  wardrobeWidthCm: 240,
+  wardrobeOffsetRightCm: 110,
+  setBackWallEnabled: noop,
+  setBackWallDimension: noop,
+  setWardrobeOffsetRightCm: noop,
+  alignWardrobeOnWall: noop,
+  setColumnEnabled: noop,
+  setColumnDimension: noop,
+  toggleArchitectureVisibility: noop,
+};
 test('[settings-visual-sections-runtime] display section renders dark mode first', () => {
   const html = renderToStaticMarkup(
     React.createElement(SettingsVisualDisplaySection, {
@@ -55,14 +71,19 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
         setFloorType: noop,
         pickFloorStyle: noop,
         pickWallColor: noop,
+        ...roomArchitectureModel,
       },
     })
   );
   assert.match(roomHtml, /עיצוב סביבה/);
   assert.match(roomHtml, /סגנון ריצוף/);
+  assert.match(roomHtml, /קירות ומבנה החדר/);
+  assert.match(roomHtml, /קיר אחורי מאחורי הארון/);
+  assert.match(roomHtml, /עמוד בולט מהקיר/);
+  assert.match(roomHtml, /הסתר קיר ועמוד/);
   assert.match(roomHtml, /פרקט/);
   assert.match(roomHtml, /אריחים/);
-  assert.match(roomHtml, /צבע קיר \(360°\)/);
+  assert.match(roomHtml, /צבע מעטפת החדר \(360°\)/);
   assert.ok(countMatches(roomHtml, /role="button"/g) >= 7);
   const fallbackHtml = renderToStaticMarkup(
     React.createElement(SettingsVisualRoomSection, {
@@ -75,6 +96,11 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
         setFloorType: noop,
         pickFloorStyle: noop,
         pickWallColor: noop,
+        ...roomArchitectureModel,
+        roomArchitecture: {
+          ...roomArchitectureModel.roomArchitecture,
+          backWall: { ...roomArchitectureModel.roomArchitecture.backWall, enabled: false },
+        },
       },
     })
   );

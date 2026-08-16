@@ -1048,6 +1048,7 @@ export interface RoomDesignServiceLike extends UnknownRecord {
   resetRoomToDefault?: () => unknown;
   updateFloorTexture?: (style: unknown, opts?: RoomDesignUpdateOptionsLike) => unknown;
   updateRoomWall?: (wallColor: string, opts?: RoomDesignUpdateOptionsLike) => unknown;
+  updateRoomArchitecture?: () => unknown;
   setActive?: (on: boolean, meta?: ActionMetaLike) => unknown;
   __wp_room_getFloorType?: () => unknown;
   __wp_room_getLastStyleId?: (type: string) => unknown;

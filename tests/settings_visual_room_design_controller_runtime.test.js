@@ -9,9 +9,33 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
     'esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts'
   );
   const localRequire = specifier => {
+    if (specifier === '../../../../shared/room_architecture_shared.js') {
+      return {
+        patchRoomArchitecture:
+          stubs.patchRoomArchitecture ||
+          ((current, patch) => ({
+            ...current,
+            ...patch,
+            backWall: { ...current.backWall, ...(patch.backWall || {}) },
+            column: { ...current.column, ...(patch.column || {}) },
+          })),
+      };
+    }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      return {
+        applyStructuralConfigMutation:
+          stubs.applyStructuralConfigMutation ||
+          ((app, source, patch, applyDirectMutation, options) => {
+            applyDirectMutation({ source, buildTiming: options?.buildTiming });
+            return { appliedViaActions: false, requestedBuild: false };
+          }),
+      };
+    }
     if (specifier === '../actions/store_actions.js') {
       return {
         getUiSnapshot: stubs.getUiSnapshot || (() => ({})),
+        getConfigSnapshot: stubs.getConfigSnapshot || (() => ({})),
+        setCfgScalar: stubs.setCfgScalar || (() => undefined),
         setUiCurrentFloorType: stubs.setUiCurrentFloorType || (() => undefined),
         setUiLastSelectedWallColor: stubs.setUiLastSelectedWallColor || (() => undefined),
       };
@@ -59,6 +83,19 @@ test('[settings-visual-room-design-controller] delegates floor/wall flows throug
     meta,
     roomData: { floorStyles: { parquet: [{ id: 'oak-fallback' }] } },
     roomDesignRuntime: runtime,
+    roomArchitecture: {
+      backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      column: {
+        enabled: false,
+        offsetLeftCm: 180,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 280,
+        bottomOffsetCm: 0,
+      },
+      surfacesHidden: false,
+    },
+    wardrobeWidthCm: 240,
   });
 
   controller.setFloorType('parquet');
@@ -107,6 +144,19 @@ test('[settings-visual-room-design-controller] falls back cleanly when runtime a
     },
     roomData: { floorStyles: { parquet: [{ id: 'fallback-style' }] } },
     roomDesignRuntime: runtime,
+    roomArchitecture: {
+      backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      column: {
+        enabled: false,
+        offsetLeftCm: 180,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 280,
+        bottomOffsetCm: 0,
+      },
+      surfacesHidden: false,
+    },
+    wardrobeWidthCm: 240,
     reportNonFatal: (op, err) => reported.push([op, String(err && err.message ? err.message : err)]),
   });
 
@@ -124,4 +174,74 @@ test('[settings-visual-room-design-controller] falls back cleanly when runtime a
       ['settingsVisualRoomDesign:pickWallColor', 'wall'],
     ])
   );
+});
+
+test('[settings-visual-room-design-controller] persists room architecture structurally while visibility stays no-build', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  let configState = {
+    roomArchitecture: {
+      backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      column: {
+        enabled: false,
+        offsetLeftCm: 180,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 280,
+        bottomOffsetCm: 0,
+      },
+      surfacesHidden: false,
+    },
+  };
+  const mod = loadSettingsVisualRoomDesignControllerModule({
+    getConfigSnapshot: () => configState,
+    setCfgScalar: (_app, key, value, meta) => {
+      calls.push(['cfg', key, value, meta]);
+      configState = { ...configState, [key]: value };
+    },
+    applyStructuralConfigMutation: (_app, source, patch, applyDirectMutation, options) => {
+      calls.push(['mutation', source, options?.buildTiming, patch]);
+      applyDirectMutation({ source, buildTiming: options?.buildTiming });
+      return { appliedViaActions: false, requestedBuild: false };
+    },
+  });
+  const runtime = {
+    updateRoomArchitecture: () => calls.push(['refreshArchitecture']),
+  };
+  const controller = mod.createSettingsVisualRoomDesignController({
+    app,
+    meta: {
+      uiOnlyImmediate: source => ({ source, immediate: true }),
+      noBuild: (_value, source) => ({ source, build: false }),
+    },
+    roomData: { floorStyles: { parquet: [] } },
+    roomDesignRuntime: runtime,
+    roomArchitecture: configState.roomArchitecture,
+    wardrobeWidthCm: 240,
+  });
+
+  controller.setColumnEnabled(true);
+  controller.setColumnDimension('depthCm', 35);
+  controller.setBackWallDimension('widthCm', 500);
+  controller.setWardrobeOffsetRightCm(20);
+  controller.toggleArchitectureVisibility();
+  controller.toggleArchitectureVisibility();
+
+  assert.equal(configState.roomArchitecture.column.enabled, true);
+  assert.equal(configState.roomArchitecture.column.depthCm, 35);
+  assert.equal(configState.roomArchitecture.backWall.widthCm, 500);
+  assert.equal(configState.roomArchitecture.backWall.wardrobeOffsetLeftCm, 240);
+  assert.equal(configState.roomArchitecture.surfacesHidden, false);
+  assert.deepEqual(
+    calls.filter(call => call[0] === 'mutation').map(call => [call[1], call[2]]),
+    [
+      ['react:settingsVisual:roomColumnEnabled', 'immediate'],
+      ['react:settingsVisual:roomColumn:depthCm', 'coalesced'],
+      ['react:settingsVisual:roomBackWall:widthCm', 'coalesced'],
+      ['react:settingsVisual:roomBackWall:wardrobeOffsetRightCm', 'coalesced'],
+      ['react:settingsVisual:roomArchitectureVisibility', 'none'],
+      ['react:settingsVisual:roomArchitectureVisibility', 'none'],
+    ]
+  );
+  assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 6);
 });

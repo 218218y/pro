@@ -3,6 +3,7 @@ import {
   normalizeSavedColorsList,
 } from '../../../shared/maps_access_collections_shared.js';
 import { normalizeDoorMountThicknessCm } from '../../../shared/dimensions/door_mount_thickness_policy.js';
+import { normalizeRoomArchitecture } from '../../../shared/room_architecture_shared.js';
 import { cloneComparableProjectConfigValue } from './project_config_snapshot_canonical_shared.js';
 import type { ProjectConfigSnapshotCanonicalizationOptions } from './project_config_snapshot_canonical_shared.js';
 
@@ -88,6 +89,7 @@ const PROJECT_CONFIG_SCALAR_NORMALIZERS: Record<string, ProjectConfigScalarNorma
   globalHandleType: normalizeGlobalHandleType,
   customUploadedDataURL: normalizeCustomUploadedDataUrl,
   grooveLinesCount: normalizeGrooveLinesCount,
+  roomArchitecture: normalizeRoomArchitecture,
 };
 
 export function normalizeProjectConfigScalarEntry(

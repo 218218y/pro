@@ -86,6 +86,18 @@ test('project config persisted snapshot readers share a canonical branch list an
       preChestState: { dims: { width: 55 } },
       isLibraryMode: true,
       grooveLinesCount: 4.8,
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: '520', heightCm: 300, wardrobeOffsetLeftCm: '65' },
+        column: {
+          enabled: true,
+          offsetLeftCm: '210',
+          widthCm: 35,
+          depthCm: '24.5',
+          heightCm: 250,
+          bottomOffsetCm: 20,
+        },
+        surfacesHidden: true,
+      },
       customMeta: { should: 'drop' },
     } as never,
     { savedColorsMode: 'mixed' }
@@ -119,6 +131,18 @@ test('project config persisted snapshot readers share a canonical branch list an
   assert.equal('d1' in persisted.doorTrimMap, false);
   assert.equal(persisted.grooveLinesCount, 4);
   assert.equal(persisted.isLibraryMode, true);
+  assert.deepEqual(persisted.roomArchitecture, {
+    backWall: { enabled: true, widthCm: 520, heightCm: 300, wardrobeOffsetLeftCm: 65 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 210,
+      widthCm: 35,
+      depthCm: 24.5,
+      heightCm: 250,
+      bottomOffsetCm: 20,
+    },
+    surfacesHidden: true,
+  });
 });
 
 test('project config persisted snapshot readers sanitize structural and map branches even when given a loose raw snapshot', () => {

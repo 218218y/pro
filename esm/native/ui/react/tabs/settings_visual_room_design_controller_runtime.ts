@@ -1,7 +1,19 @@
-import type { AppContainer, MetaActionsNamespaceLike, UnknownRecord } from '../../../../../types';
+import type {
+  AppContainer,
+  MetaActionsNamespaceLike,
+  RoomArchitectureConfigLike,
+  UnknownRecord,
+} from '../../../../../types';
 
 import {
+  patchRoomArchitecture,
+  type RoomArchitecturePatch,
+} from '../../../../shared/room_architecture_shared.js';
+import { applyStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
+import {
   getUiSnapshot,
+  getConfigSnapshot,
+  setCfgScalar,
   setUiCurrentFloorType,
   setUiLastSelectedWallColor,
 } from '../actions/store_actions.js';
@@ -18,6 +30,16 @@ export type SettingsVisualRoomDesignController = {
   setFloorType: (type: SettingsVisualFloorType) => void;
   pickFloorStyle: (style: FloorStyle) => void;
   pickWallColor: (value: string) => void;
+  setBackWallEnabled: (enabled: boolean) => void;
+  setBackWallDimension: (key: 'widthCm' | 'heightCm' | 'wardrobeOffsetLeftCm', value: number) => void;
+  setWardrobeOffsetRightCm: (value: number) => void;
+  alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
+  setColumnEnabled: (enabled: boolean) => void;
+  setColumnDimension: (
+    key: 'offsetLeftCm' | 'widthCm' | 'depthCm' | 'heightCm' | 'bottomOffsetCm',
+    value: number
+  ) => void;
+  toggleArchitectureVisibility: () => void;
 };
 
 export type CreateSettingsVisualRoomDesignControllerArgs = {
@@ -25,6 +47,8 @@ export type CreateSettingsVisualRoomDesignControllerArgs = {
   meta: MetaActionsNamespaceLike;
   roomData: RoomDesignData;
   roomDesignRuntime: RoomDesignRuntimeLike | null;
+  roomArchitecture: RoomArchitectureConfigLike;
+  wardrobeWidthCm: number;
   reportNonFatal?: (op: string, err: unknown) => void;
 };
 
@@ -56,6 +80,42 @@ function activateRoomRuntime(args: CreateSettingsVisualRoomDesignControllerArgs,
       reportNonFatal(args, `${source}:setActive`, fallbackErr || err);
     }
   }
+}
+
+function refreshRoomArchitectureRuntime(args: CreateSettingsVisualRoomDesignControllerArgs): void {
+  try {
+    args.roomDesignRuntime?.updateRoomArchitecture?.();
+  } catch (err) {
+    reportNonFatal(args, 'settingsVisualRoomDesign:updateRoomArchitecture', err);
+  }
+}
+
+function readCurrentRoomArchitecture(
+  args: CreateSettingsVisualRoomDesignControllerArgs
+): RoomArchitectureConfigLike {
+  const liveConfig = getConfigSnapshot(args.app);
+  return patchRoomArchitecture(liveConfig.roomArchitecture ?? args.roomArchitecture, {});
+}
+
+function commitRoomArchitecture(
+  args: CreateSettingsVisualRoomDesignControllerArgs,
+  patch: RoomArchitecturePatch,
+  source: string,
+  buildTiming: 'immediate' | 'coalesced' | 'none'
+): void {
+  const next = patchRoomArchitecture(readCurrentRoomArchitecture(args), patch);
+  applyStructuralConfigMutation(
+    args.app,
+    source,
+    { roomArchitecture: next },
+    meta => setCfgScalar(args.app, 'roomArchitecture', next, meta),
+    { buildTiming }
+  );
+  refreshRoomArchitectureRuntime(args);
+}
+
+function normalizeInputNumber(value: number): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export function resolveSettingsVisualFloorStyle(
@@ -122,6 +182,73 @@ export function createSettingsVisualRoomDesignController(
       } catch (err) {
         reportNonFatal(args, 'settingsVisualRoomDesign:pickWallColor', err);
       }
+    },
+    setBackWallEnabled: (enabled: boolean) => {
+      commitRoomArchitecture(
+        args,
+        { backWall: { enabled } },
+        'react:settingsVisual:roomBackWallEnabled',
+        'immediate'
+      );
+    },
+    setBackWallDimension: (key, value) => {
+      const nextValue = normalizeInputNumber(value);
+      if (nextValue == null) return;
+      commitRoomArchitecture(
+        args,
+        { backWall: { [key]: nextValue } },
+        `react:settingsVisual:roomBackWall:${key}`,
+        'coalesced'
+      );
+    },
+    setWardrobeOffsetRightCm: value => {
+      const nextValue = normalizeInputNumber(value);
+      if (nextValue == null) return;
+      const current = readCurrentRoomArchitecture(args);
+      const left = current.backWall.widthCm - args.wardrobeWidthCm - Math.max(0, nextValue);
+      commitRoomArchitecture(
+        args,
+        { backWall: { wardrobeOffsetLeftCm: Math.max(0, left) } },
+        'react:settingsVisual:roomBackWall:wardrobeOffsetRightCm',
+        'coalesced'
+      );
+    },
+    alignWardrobeOnWall: mode => {
+      const current = readCurrentRoomArchitecture(args);
+      const available = Math.max(0, current.backWall.widthCm - args.wardrobeWidthCm);
+      const wardrobeOffsetLeftCm = mode === 'right' ? available : mode === 'center' ? available / 2 : 0;
+      commitRoomArchitecture(
+        args,
+        { backWall: { wardrobeOffsetLeftCm } },
+        `react:settingsVisual:roomBackWall:align:${mode}`,
+        'immediate'
+      );
+    },
+    setColumnEnabled: enabled => {
+      commitRoomArchitecture(
+        args,
+        { column: { enabled } },
+        'react:settingsVisual:roomColumnEnabled',
+        'immediate'
+      );
+    },
+    setColumnDimension: (key, value) => {
+      const nextValue = normalizeInputNumber(value);
+      if (nextValue == null) return;
+      commitRoomArchitecture(
+        args,
+        { column: { [key]: nextValue } },
+        `react:settingsVisual:roomColumn:${key}`,
+        'coalesced'
+      );
+    },
+    toggleArchitectureVisibility: () => {
+      commitRoomArchitecture(
+        args,
+        { surfacesHidden: !readCurrentRoomArchitecture(args).surfacesHidden },
+        'react:settingsVisual:roomArchitectureVisibility',
+        'none'
+      );
     },
   };
 }

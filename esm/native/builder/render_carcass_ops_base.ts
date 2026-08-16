@@ -8,6 +8,13 @@ import {
 } from '../features/door_authoring/api.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import {
+  axisAlignedBoxToCenterSize,
+  boxFromCenterSize,
+  intersectAxisAlignedBoxes,
+  resolveActiveRoomColumnObstacle,
+  subtractAxisAlignedBox,
+} from './room_architecture_geometry.js';
+import {
   __asFinite,
   __asString,
   __backPanelMaterial,
@@ -198,9 +205,51 @@ export function createApplyCarcassBaseOps() {
       const bd = boards[b];
       if (bd.kind !== 'board') continue;
       const mat = getPartMaterial ? getPartMaterial(__asString(bd.partId)) : ctx.bodyMat;
+      const partId = __asString(bd.partId);
+      const sourceBox = boxFromCenterSize({
+        x: bd.x,
+        y: bd.y,
+        z: bd.z,
+        width: bd.width,
+        height: bd.height,
+        depth: bd.depth,
+      });
+      const obstacle = resolveActiveRoomColumnObstacle(App);
+      const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+
+      if (intersection && obstacle) {
+        const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+        const group = new THREE.Group();
+        group.position.set(bd.x, bd.y, bd.z);
+        const sharedUserData: AnyMap = partId
+          ? { partId, __wpRoomColumnAdjusted: true }
+          : { __wpRoomColumnAdjusted: true };
+        group.userData = sharedUserData;
+        if (partId) {
+          applyDoorTrimSurfaceMetrics(group, bd, partId);
+          reg(App, partId, group, 'body');
+        }
+
+        for (let i = 0; i < pieces.length; i += 1) {
+          const piece = axisAlignedBoxToCenterSize(pieces[i]);
+          const child = new THREE.Mesh(new THREE.BoxGeometry(piece.width, piece.height, piece.depth), mat);
+          child.position.set(piece.x - bd.x, piece.y - bd.y, piece.z - bd.z);
+          child.userData = group.userData;
+          if (!sketchMode) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+          addOutlines(child);
+          group.add(child);
+        }
+
+        appendCarcassDoorTrimVisuals({ runtime, mesh: group, bd, partId, doorTrimMap });
+        wardrobeGroup.add(group);
+        continue;
+      }
+
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(bd.width, bd.height, bd.depth), mat);
       mesh.position.set(bd.x, bd.y, bd.z);
-      const partId = __asString(bd.partId);
       if (partId) {
         mesh.userData = { partId };
         applyDoorTrimSurfaceMetrics(mesh, bd, partId);
@@ -232,6 +281,48 @@ export function createApplyCarcassBaseOps() {
         woodBack && partId
           ? (getPartMaterial ? getPartMaterial(partId) : ctx.bodyMat) || ctx.bodyMat
           : material;
+      const sourceBox = boxFromCenterSize({
+        x: seg.x,
+        y: seg.y,
+        z: seg.z,
+        width: seg.width,
+        height: seg.height,
+        depth: seg.depth,
+      });
+      const obstacle = resolveActiveRoomColumnObstacle(App);
+      const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+
+      if (intersection && obstacle) {
+        const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+        const group = new THREE.Group();
+        group.position.set(seg.x, seg.y, seg.z);
+        const sharedUserData: AnyMap = {
+          ...(woodBack && partId ? { partId, kind: 'backPanel', __wpWoodBackPanel: true } : {}),
+          __wpRoomColumnAdjusted: true,
+        };
+        group.userData = sharedUserData;
+        if (woodBack && partId) reg(App, partId, group, 'body');
+
+        for (let i = 0; i < pieces.length; i += 1) {
+          const piece = axisAlignedBoxToCenterSize(pieces[i]);
+          const child = new THREE.Mesh(
+            new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
+            panelMaterial
+          );
+          child.position.set(piece.x - seg.x, piece.y - seg.y, piece.z - seg.z);
+          child.userData = sharedUserData;
+          if (woodBack && partId) addOutlines(child);
+          if (!sketchMode) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+          group.add(child);
+        }
+
+        wardrobeGroup.add(group);
+        return;
+      }
+
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(seg.width, seg.height, seg.depth), panelMaterial);
       mesh.position.set(seg.x, seg.y, seg.z);
       if (woodBack && partId) {

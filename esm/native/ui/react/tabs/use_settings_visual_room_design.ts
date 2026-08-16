@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 
-import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
+import type {
+  AppContainer,
+  MetaActionsNamespaceLike,
+  RoomArchitectureConfigLike,
+} from '../../../../../types';
 
 import type {
   FloorStyle,
@@ -19,21 +23,36 @@ export type SettingsVisualRoomDesignModel = {
   roomData: RoomDesignData;
   roomDesignRuntime: RoomDesignRuntimeLike | null;
   floorStylesForType: FloorStyle[];
+  roomArchitecture: RoomArchitectureConfigLike;
+  wardrobeWidthCm: number;
+  wardrobeOffsetRightCm: number;
   setFloorType: (type: SettingsVisualFloorType) => void;
   pickFloorStyle: (style: FloorStyle) => void;
   pickWallColor: (value: string) => void;
+  setBackWallEnabled: (enabled: boolean) => void;
+  setBackWallDimension: (key: 'widthCm' | 'heightCm' | 'wardrobeOffsetLeftCm', value: number) => void;
+  setWardrobeOffsetRightCm: (value: number) => void;
+  alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
+  setColumnEnabled: (enabled: boolean) => void;
+  setColumnDimension: (
+    key: 'offsetLeftCm' | 'widthCm' | 'depthCm' | 'heightCm' | 'bottomOffsetCm',
+    value: number
+  ) => void;
+  toggleArchitectureVisibility: () => void;
 };
 
 type UseSettingsVisualRoomDesignArgs = {
   app: AppContainer;
   meta: MetaActionsNamespaceLike;
   floorType: SettingsVisualFloorType;
+  roomArchitecture: RoomArchitectureConfigLike;
+  wardrobeWidthCm: number;
 };
 
 export function useSettingsVisualRoomDesign(
   args: UseSettingsVisualRoomDesignArgs
 ): SettingsVisualRoomDesignModel {
-  const { app, meta, floorType } = args;
+  const { app, meta, floorType, roomArchitecture, wardrobeWidthCm } = args;
 
   const roomDesignRuntime = useMemo(() => getRoomDesignRuntime(app), [app]);
   const roomData = useMemo(() => getRoomDesignData(roomDesignRuntime), [roomDesignRuntime]);
@@ -49,26 +68,54 @@ export function useSettingsVisualRoomDesign(
         meta,
         roomData,
         roomDesignRuntime,
+        roomArchitecture,
+        wardrobeWidthCm,
       }),
-    [app, meta, roomData, roomDesignRuntime]
+    [app, meta, roomData, roomDesignRuntime, roomArchitecture, wardrobeWidthCm]
   );
+
+  const wardrobeOffsetRightCm =
+    Math.round(
+      (roomArchitecture.backWall.widthCm - roomArchitecture.backWall.wardrobeOffsetLeftCm - wardrobeWidthCm) *
+        10
+    ) / 10;
 
   return useMemo(
     () => ({
       roomData,
       roomDesignRuntime,
       floorStylesForType,
+      roomArchitecture,
+      wardrobeWidthCm,
+      wardrobeOffsetRightCm,
       setFloorType: roomDesignController.setFloorType,
       pickFloorStyle: roomDesignController.pickFloorStyle,
       pickWallColor: roomDesignController.pickWallColor,
+      setBackWallEnabled: roomDesignController.setBackWallEnabled,
+      setBackWallDimension: roomDesignController.setBackWallDimension,
+      setWardrobeOffsetRightCm: roomDesignController.setWardrobeOffsetRightCm,
+      alignWardrobeOnWall: roomDesignController.alignWardrobeOnWall,
+      setColumnEnabled: roomDesignController.setColumnEnabled,
+      setColumnDimension: roomDesignController.setColumnDimension,
+      toggleArchitectureVisibility: roomDesignController.toggleArchitectureVisibility,
     }),
     [
       roomData,
       roomDesignRuntime,
       floorStylesForType,
+      roomArchitecture,
+      wardrobeWidthCm,
+      wardrobeOffsetRightCm,
       roomDesignController.setFloorType,
       roomDesignController.pickFloorStyle,
       roomDesignController.pickWallColor,
+      roomDesignController.setBackWallEnabled,
+      roomDesignController.setBackWallDimension,
+      roomDesignController.setWardrobeOffsetRightCm,
+      roomDesignController.alignWardrobeOnWall,
+      roomDesignController.setColumnEnabled,
+      roomDesignController.setColumnDimension,
+      roomDesignController.toggleArchitectureVisibility,
     ]
   );
 }

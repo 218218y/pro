@@ -24,6 +24,8 @@ export function useSettingsVisualSections(args: {
     app,
     meta,
     floorType: state.floorType,
+    roomArchitecture: state.roomArchitecture,
+    wardrobeWidthCm: state.wardrobeWidthCm,
   });
 
   const lighting = useSettingsVisualLighting({

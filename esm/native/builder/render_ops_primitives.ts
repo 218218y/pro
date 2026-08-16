@@ -7,6 +7,13 @@ import {
 import { INTERIOR_SHELF_ROUNDED_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
 import { applyShelfExposedEdgeMaterials } from './shelf_front_edge_material.js';
+import {
+  axisAlignedBoxToCenterSize,
+  boxFromCenterSize,
+  intersectAxisAlignedBoxes,
+  resolveActiveRoomColumnObstacle,
+  subtractAxisAlignedBox,
+} from './room_architecture_geometry.js';
 
 import type {
   AppContainer,
@@ -59,6 +66,7 @@ type HandleMeshOpts = Omit<BuilderHandleMeshOptionsLike, 'THREE'> & { THREE?: Re
 type AddGroupLike = { add: BoundUnknownMethod<[obj: unknown]> };
 
 type RoundedShelfSide = 'left' | 'right' | 'both';
+type AxisAlignedBoxLike = ReturnType<typeof boxFromCenterSize>;
 
 type RoundedShelfGeometryLike = {
   addGroup: (start: number, count: number, materialIndex?: number) => unknown;
@@ -618,6 +626,43 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     return new THREE.BoxGeometry(w, h, d);
   }
 
+  function bindSplitBoardRenderProperty(
+    group: AnyMap,
+    children: AnyMap[],
+    key: 'castShadow' | 'receiveShadow' | 'renderOrder',
+    initialValue: boolean | number
+  ): void {
+    let currentValue: boolean | number = initialValue;
+    Object.defineProperty(group, key, {
+      configurable: true,
+      enumerable: true,
+      get: () => currentValue,
+      set: (value: boolean | number) => {
+        currentValue = value;
+        for (const child of children) child[key] = value;
+      },
+    });
+    for (const child of children) child[key] = initialValue;
+  }
+
+  function resolveClippedBoardPieceMaterial(
+    material: unknown,
+    piece: AxisAlignedBoxLike,
+    source: AxisAlignedBoxLike
+  ): unknown {
+    if (!Array.isArray(material) || material.length < 6) return material;
+    const tolerance = 1e-7;
+    const neutral = material[2] ?? material[5] ?? material[0];
+    return [
+      Math.abs(piece.maxX - source.maxX) <= tolerance ? material[0] : neutral,
+      Math.abs(piece.minX - source.minX) <= tolerance ? material[1] : neutral,
+      Math.abs(piece.maxY - source.maxY) <= tolerance ? material[2] : neutral,
+      Math.abs(piece.minY - source.minY) <= tolerance ? material[3] : neutral,
+      Math.abs(piece.maxZ - source.maxZ) <= tolerance ? material[4] : neutral,
+      Math.abs(piece.minZ - source.minZ) <= tolerance ? material[5] : neutral,
+    ];
+  }
+
   function createHandleMesh(
     type: string,
     w: number,
@@ -713,16 +758,67 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const sketchMode = !!args.sketchMode;
     const addOutlines = args.addOutlines;
 
-    const mesh = new THREE.Mesh(createBoardGeometry(THREE, args, w, h, d), mat);
-    mesh.position.set(x, y, z);
-    if (!sketchMode) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+    const sourceBox = boxFromCenterSize({ x, y, z, width: w, height: h, depth: d });
+    const obstacle = resolveActiveRoomColumnObstacle(App);
+    const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+
+    if (!intersection) {
+      const mesh = new THREE.Mesh(createBoardGeometry(THREE, args, w, h, d), mat);
+      mesh.position.set(x, y, z);
+      if (!sketchMode) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+      if (partId) mesh.userData = { partId };
+      if (__isFn(addOutlines)) addOutlines(mesh);
+      wardrobeGroup.add(mesh);
+      return mesh;
     }
-    if (partId) mesh.userData = { partId };
-    if (__isFn(addOutlines)) addOutlines(mesh);
-    wardrobeGroup.add(mesh);
-    return mesh;
+
+    const cutObstacle = obstacle as NonNullable<typeof obstacle>;
+    let pieces = subtractAxisAlignedBox(sourceBox, cutObstacle);
+    if (args.shape === 'rounded_shelf' && intersection.maxZ < sourceBox.maxZ - 1e-7) {
+      const rearSource: AxisAlignedBoxLike = { ...sourceBox, maxZ: intersection.maxZ };
+      const frontSlab: AxisAlignedBoxLike = { ...sourceBox, minZ: intersection.maxZ };
+      pieces = [...subtractAxisAlignedBox(rearSource, cutObstacle), frontSlab];
+    }
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+    const sharedUserData: AnyMap = partId
+      ? { partId, __wpRoomColumnAdjusted: true }
+      : { __wpRoomColumnAdjusted: true };
+    group.userData = sharedUserData;
+
+    const splitChildren: AnyMap[] = [];
+    for (let i = 0; i < pieces.length; i += 1) {
+      const piece = axisAlignedBoxToCenterSize(pieces[i]);
+      const preservesRoundedFront =
+        args.shape === 'rounded_shelf' &&
+        Math.abs(piece.width - w) <= 1e-7 &&
+        Math.abs(piece.height - h) <= 1e-7 &&
+        Math.abs(pieces[i].maxZ - sourceBox.maxZ) <= 1e-7;
+      const pieceGeometry = preservesRoundedFront
+        ? createBoardGeometry(THREE, args, piece.width, piece.height, piece.depth)
+        : new THREE.BoxGeometry(piece.width, piece.height, piece.depth);
+      const pieceMaterial = resolveClippedBoardPieceMaterial(mat, pieces[i], sourceBox);
+      const child = new THREE.Mesh(pieceGeometry, pieceMaterial);
+      child.position.set(piece.x - x, piece.y - y, piece.z - z);
+      child.userData = sharedUserData;
+      if (!sketchMode) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+      if (__isFn(addOutlines)) addOutlines(child);
+      group.add(child);
+      splitChildren.push(child as unknown as AnyMap);
+    }
+
+    bindSplitBoardRenderProperty(group as unknown as AnyMap, splitChildren, 'castShadow', !sketchMode);
+    bindSplitBoardRenderProperty(group as unknown as AnyMap, splitChildren, 'receiveShadow', !sketchMode);
+    bindSplitBoardRenderProperty(group as unknown as AnyMap, splitChildren, 'renderOrder', 0);
+
+    wardrobeGroup.add(group);
+    return group;
   }
 
   function createModuleHitBox(argsIn: BuilderCreateModuleHitBoxArgsLike | null | undefined) {

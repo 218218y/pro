@@ -2,6 +2,7 @@
 // Split from ./build.ts into domain-focused seams to keep the public type surface stable while reducing monolith churn.
 
 import type { UnknownRecord } from './common';
+import type { RoomArchitectureConfigLike } from './room_architecture';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
 import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
@@ -92,6 +93,7 @@ export interface ProjectDataLike extends UnknownRecord {
   doorStyleMap?: DoorStyleMap;
   mirrorLayoutMap?: MirrorLayoutMap;
   doorTrimMap?: DoorTrimMap;
+  roomArchitecture?: RoomArchitectureConfigLike;
   orderPdfEditorDraft?: ProjectPdfDraftLike | null;
   orderPdfEditorZoom?: number;
   savedNotes?: ProjectSavedNotesLike;
@@ -221,6 +223,7 @@ export interface ConfigStateLike {
   hingeMap?: HingeMap;
   curtainMap?: CurtainMap;
   doorTrimMap?: DoorTrimMap;
+  roomArchitecture?: RoomArchitectureConfigLike;
 }
 
 export interface ModeStateLike extends UnknownRecord {

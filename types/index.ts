@@ -57,6 +57,8 @@ export * from './tools';
 export * from './maps';
 export * from './notes';
 
+export * from './room_architecture';
+
 export * from './project';
 
 export * from './models';

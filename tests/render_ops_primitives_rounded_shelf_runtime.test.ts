@@ -51,6 +51,7 @@ class FakeMesh {
   userData: AnyMap = {};
   castShadow = false;
   receiveShadow = false;
+  renderOrder = 0;
   rotation = { x: 0, y: 0, z: 0 };
   position = {
     x: 0,
@@ -88,6 +89,9 @@ class FakeMaterial {
 class FakeGroup {
   children: unknown[] = [];
   userData: AnyMap = {};
+  castShadow = false;
+  receiveShadow = false;
+  renderOrder = 0;
   rotation = { x: 0, y: 0, z: 0 };
   position = {
     x: 0,
@@ -105,7 +109,7 @@ class FakeGroup {
   }
 }
 
-function createPrimitiveHarness() {
+function createPrimitiveHarness(roomArchitecture?: AnyMap) {
   const group = new FakeGroup();
   const THREE = {
     Vector3: class {},
@@ -121,7 +125,16 @@ function createPrimitiveHarness() {
     DoubleSide: 2,
     FrontSide: 1,
   };
-  const App = { services: { builder: {} } };
+  const App = {
+    services: { builder: {} },
+    store: {
+      getState: () => ({
+        config: roomArchitecture ? { roomArchitecture } : {},
+        ui: { raw: { width: 200, height: 240, depth: 60 } },
+        runtime: { wardrobeWidthM: 2, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+      }),
+    },
+  };
   const ops = createBuilderRenderPrimitiveOps({
     __app: () => App as never,
     __ops: () => ({}),
@@ -137,6 +150,140 @@ function createPrimitiveHarness() {
   });
   return { App, THREE, group, ops };
 }
+
+test('room column cuts a real rear notch into interior boards while preserving part identity', () => {
+  const { App, THREE, group, ops } = createPrimitiveHarness({
+    backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 140,
+      widthCm: 30,
+      depthCm: 20,
+      heightCm: 240,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: true,
+  });
+
+  const board = ops.createBoard({
+    App,
+    THREE,
+    w: 1.8,
+    h: 0.018,
+    d: 0.55,
+    x: 0,
+    y: 1,
+    z: 0,
+    mat: { id: 'shelf-material' },
+    partId: 'shelf_column_test',
+  }) as FakeGroup;
+
+  assert.equal(group.children.length, 1);
+  assert.equal(group.children[0], board);
+  assert.equal(board.userData.partId, 'shelf_column_test');
+  assert.equal(board.userData.__wpRoomColumnAdjusted, true);
+  assert.equal(
+    board.children.length,
+    3,
+    'rear column notch should split the board into left/right/front pieces'
+  );
+  for (const child of board.children as FakeMesh[]) {
+    assert.equal(
+      child.userData,
+      board.userData,
+      'split pieces must preserve the canonical part identity object'
+    );
+  }
+});
+
+test('room-column split boards propagate post-create render flags to every physical segment', () => {
+  const { App, THREE, ops } = createPrimitiveHarness({
+    backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 140,
+      widthCm: 30,
+      depthCm: 20,
+      heightCm: 240,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: false,
+  });
+
+  const board = ops.createBoard({
+    App,
+    THREE,
+    w: 1.8,
+    h: 0.018,
+    d: 0.55,
+    x: 0,
+    y: 1,
+    z: 0,
+    mat: { id: 'glass-like-material' },
+    partId: 'render_flags_column_test',
+  }) as FakeGroup;
+
+  board.castShadow = false;
+  board.receiveShadow = false;
+  board.renderOrder = 7;
+
+  for (const child of board.children as FakeMesh[]) {
+    assert.equal(child.castShadow, false);
+    assert.equal(child.receiveShadow, false);
+    assert.equal(child.renderOrder, 7);
+  }
+});
+
+test('room column keeps the rounded shelf front geometry and does not paint internal notch faces as front edges', () => {
+  const { App, THREE, ops } = createPrimitiveHarness({
+    backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 140,
+      widthCm: 30,
+      depthCm: 20,
+      heightCm: 240,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: false,
+  });
+  const materials = ['right', 'left', 'top', 'bottom', 'front', 'back'];
+
+  const board = ops.createBoard({
+    App,
+    THREE,
+    w: 1.8,
+    h: 0.018,
+    d: 0.55,
+    x: 0,
+    y: 1,
+    z: 0,
+    mat: materials,
+    partId: 'rounded_column_test',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'both',
+    roundedShelfRadius: 0.12,
+    roundedShelfSegments: 8,
+  }) as FakeGroup;
+
+  assert.equal(board.children.length, 3);
+  const roundedFront = (board.children as FakeMesh[]).find(
+    child => child.geometry instanceof FakeBufferGeometry
+  );
+  assert.ok(roundedFront, 'the full-width front slab must keep the rounded shelf geometry');
+  assert.deepEqual(roundedFront.material, ['right', 'left', 'top', 'bottom', 'front', 'top']);
+
+  const rearPieces = (board.children as FakeMesh[]).filter(child => child !== roundedFront);
+  assert.equal(rearPieces.length, 2);
+  for (const child of rearPieces) {
+    const pieceMaterials = child.material as unknown[];
+    assert.equal(
+      pieceMaterials[4],
+      'top',
+      'new notch faces must use the neutral board material, not front edge banding'
+    );
+  }
+});
 
 function createRoundedShelfMesh(
   side: 'left' | 'right' | 'both',

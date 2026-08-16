@@ -29,5 +29,6 @@ export {
   setRoomDesignActive,
   updateFloorTexture,
   updateRoomWall,
+  updateRoomArchitecture,
 } from './room_lifecycle.js';
 export { installRoomDesign } from './room_design_surface.js';

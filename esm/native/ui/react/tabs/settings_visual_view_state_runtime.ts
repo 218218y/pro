@@ -1,5 +1,12 @@
-import type { ConfigStateLike, RuntimeStateLike, UiStateLike } from '../../../../../types';
+import type {
+  ConfigStateLike,
+  RoomArchitectureConfigLike,
+  RuntimeStateLike,
+  UiStateLike,
+} from '../../../../../types';
 
+import { normalizeRoomArchitecture } from '../../../../shared/room_architecture_shared.js';
+import { DEFAULT_WIDTH } from '../../../../shared/dimensions/wardrobe_defaults.js';
 import type { SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
 import { DEFAULT_WALL_COLOR } from './settings_visual_shared_contracts.js';
 import { LIGHT_PRESETS } from './settings_visual_shared_lighting.js';
@@ -8,9 +15,11 @@ import { asFiniteNumber, asRecord, getFloorTypeFromUi } from './settings_visual_
 export type SettingsVisualCfgState = {
   showDimensions: boolean;
   mirrorReflectorEnabled: boolean;
+  roomArchitecture: RoomArchitectureConfigLike;
 };
 
 export type SettingsVisualUiState = {
+  wardrobeWidthCm: number;
   showContents: boolean;
   showHanger: boolean;
   globalClickUi: boolean;
@@ -36,6 +45,7 @@ export function readSettingsVisualCfgState(cfg: ConfigStateLike): SettingsVisual
     showDimensions: !!cfg.showDimensions,
     mirrorReflectorEnabled:
       typeof cfg.MIRROR_REFLECTOR_ENABLED === 'boolean' ? !!cfg.MIRROR_REFLECTOR_ENABLED : true,
+    roomArchitecture: normalizeRoomArchitecture(cfg.roomArchitecture),
   };
 }
 
@@ -60,7 +70,9 @@ export function readSettingsVisualLightingPreset(ui: UiStateLike): string {
 
 export function readSettingsVisualUiState(ui: UiStateLike): SettingsVisualUiState {
   const floorType = getFloorTypeFromUi(ui);
+  const raw = asRecord(ui.raw);
   return {
+    wardrobeWidthCm: asFiniteNumber(raw?.width, DEFAULT_WIDTH),
     showContents: !!ui.showContents,
     showHanger: !!ui.showHanger,
     globalClickUi: typeof ui.globalClickMode === 'boolean' ? !!ui.globalClickMode : true,
