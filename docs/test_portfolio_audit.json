@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T03:56:26.236Z",
+  "generatedAt": "2026-08-16T07:04:32.789Z",
   "totals": {
     "tests": 1249,
     "unitRunnerTests": 1240,
@@ -17,7 +17,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 141
+    "contractOverlapTargets": 139
   },
   "categories": {
     "contract": 404,
@@ -791,7 +791,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -969,21 +969,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/zustand_domain_paths_contracts.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/kernel/domain_api_install_helpers.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1001,7 +987,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1019,7 +1005,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1037,7 +1023,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1055,26 +1041,12 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
           "file": "tests/zustand_parity_integration_paths_guard.test.js",
           "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/kernel/domain_api_surface_sections_map_writes.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/domain_api_surface_sections_decomposition_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -1123,7 +1095,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1145,7 +1117,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1257,7 +1229,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1267,7 +1239,7 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1281,7 +1253,7 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1295,7 +1267,7 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         },
         {
@@ -1399,7 +1371,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1413,7 +1385,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1527,7 +1499,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1555,7 +1527,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1789,7 +1761,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -1865,7 +1837,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2021,7 +1993,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+          "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -7509,7 +7481,7 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/visual_maps_writer_ownership_source_guard.test.js",
+      "file": "tests/visual_maps_writer_ownership_topology_contract.test.js",
       "category": "contract"
     },
     {
