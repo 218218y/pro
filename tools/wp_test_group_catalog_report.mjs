@@ -53,7 +53,6 @@ export function buildTestGroupCatalogReport(projectRoot = process.cwd()) {
       description: definition.description,
       kind: definition.kind,
       owners: Array.from(definition.owners),
-      environment: definition.environment,
       runner: definition.runner,
       portfolioRole: definition.portfolioRole,
       serialPolicy: definition.serialPolicy ? { ...definition.serialPolicy } : null,
@@ -125,12 +124,12 @@ export function renderTestGroupCatalogMarkdown(report) {
     '',
     '## Groups',
     '',
-    '| Group | Role | Runner | Environment | Direct files | Resolved files | Child groups | Owners |',
-    '|---|---|---|---|---:|---:|---:|---|',
+    '| Group | Role | Runner | Direct files | Resolved files | Child groups | Owners |',
+    '|---|---|---|---:|---:|---:|---|',
   ];
   for (const group of report.groups) {
     lines.push(
-      `| \`${group.name}\` | ${group.portfolioRole} | ${group.runner} | ${group.environment} | ${group.directFileCount} | ${group.resolvedFileCount} | ${group.childGroups.length} | ${group.owners.join(', ')} |`
+      `| \`${group.name}\` | ${group.portfolioRole} | ${group.runner} | ${group.directFileCount} | ${group.resolvedFileCount} | ${group.childGroups.length} | ${group.owners.join(', ')} |`
     );
   }
 

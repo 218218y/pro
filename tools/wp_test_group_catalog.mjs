@@ -4,7 +4,6 @@
 
 const TEST_FILE_RE = /^tests\/.+\.(?:test|spec)\.(?:js|cjs|mjs|ts|tsx)$/u;
 const TEST_GROUP_RUNNERS = new Set(['node-test', 'tsx-test', 'serial-tsx', 'group-sequence']);
-const TEST_GROUP_ENVIRONMENTS = new Set(['node', 'tsx']);
 const TEST_GROUP_PORTFOLIO_ROLES = new Set(['primary', 'focused', 'architecture']);
 
 function freezeSerialPolicy(policy) {
@@ -27,7 +26,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Browser/project boot family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['boot', 'io/project'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/app_boot_browser_project_family_contracts.test.js'],
@@ -36,7 +34,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Boot, project IO, and runtime-config family contracts.',
     kind: 'architecture-contract',
     owners: ['boot', 'io/project', 'platform/runtime-config'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: [
@@ -49,7 +46,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Browser feedback family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['platform/browser-feedback'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/browser_feedback_family_contracts.test.js'],
@@ -58,7 +54,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Builder surface family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['builder'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/builder_surface_family_contracts.test.js'],
@@ -67,7 +62,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['services/cloud-sync'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/cloud_sync_family_contracts.test.js'],
@@ -76,7 +70,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Overlay/export/error family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['ui/overlays', 'ui/export'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/export_overlay_errors_family_contracts.test.js'],
@@ -85,7 +78,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Residual builder and overlay/export family contracts.',
     kind: 'architecture-contract',
     owners: ['builder', 'ui/export'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: [
@@ -97,7 +89,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Runtime/platform core family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['runtime', 'platform'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/runtime_platform_core_family_contracts.test.js'],
@@ -106,7 +97,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Runtime surface family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['runtime'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/runtime_surface_family_contracts.test.js'],
@@ -115,7 +105,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'React UI store-action capability architecture contracts.',
     kind: 'architecture-contract',
     owners: ['ui/actions'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/store_ui_action_capability_contract.test.js'],
@@ -124,7 +113,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Structure tab family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['ui/structure-tab'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/structure_tab_family_contracts.test.js'],
@@ -133,7 +121,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'UI lean typecheck control-plane contracts.',
     kind: 'type-contract',
     owners: ['ui/types'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_lean_typecheck_contracts.test.cjs'],
@@ -142,7 +129,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order PDF lean typecheck contracts.',
     kind: 'type-contract',
     owners: ['ui/order-pdf/types'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_order_pdf_lean_contracts.test.cjs'],
@@ -151,7 +137,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Portable UI typecheck contracts.',
     kind: 'type-contract',
     owners: ['ui/types'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_portable_typecheck_contracts.test.cjs'],
@@ -160,7 +145,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'React import hardening contracts for UI modules.',
     kind: 'type-contract',
     owners: ['ui/react'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_react_import_hardening_contracts.test.js'],
@@ -169,7 +153,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'React JSX import hardening contracts for UI modules.',
     kind: 'type-contract',
     owners: ['ui/react'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_react_jsx_import_hardening_contracts.test.js'],
@@ -178,7 +161,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'UI PDF interoperability type-hardening contracts.',
     kind: 'type-contract',
     owners: ['ui/types'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/ui_pdf_interop_type_hardening_contracts.test.js'],
@@ -187,7 +169,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Visual surface family architecture contracts.',
     kind: 'architecture-contract',
     owners: ['builder/render', 'ui/visuals'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'architecture',
     files: ['tests/visual_surface_family_contracts.test.js'],
@@ -196,7 +177,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Project migration runtime selector hardening behavior.',
     kind: 'runtime-integration',
     owners: ['io/project'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: ['tests/project_migration_runtime_selector_hardening_runtime.test.ts'],
@@ -205,7 +185,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Canonical persistence/domain codec runtime behavior.',
     kind: 'runtime-integration',
     owners: ['shared/domain-codecs'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: ['tests/canonical_domain_codecs_runtime.test.ts'],
@@ -214,7 +193,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Mirror scheduling, planar rendering, recovery, and performance contracts.',
     kind: 'runtime-integration',
     owners: ['platform/render-loop', 'runtime/planar-reflector'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -230,7 +208,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Versioned fail-closed preview/commit commands for all sketch-box mutations.',
     kind: 'runtime-integration',
     owners: ['services/canvas-picking', 'features/sketch-box'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -253,7 +230,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Core order-PDF overlay state, commands, interactions, and text behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -273,7 +249,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order-PDF import, PDF.js rendering, cleanup, and image-PDF text-layout behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf/pdf-runtime'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -289,7 +264,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'Order-PDF sketch editor persistence, placement, panel, preview-session, and shortcut behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf/sketch'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -305,7 +279,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order-PDF overlay export operations, command routing, and single-flight behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/order-pdf/export-overlay'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -318,7 +291,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order-PDF export builder composition, draft generation, and sketch-annotation behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -331,7 +303,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order-PDF export capture cache, viewport capture, and export operation behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -344,7 +315,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Order-PDF export text derivation and sketch-annotation serialization behavior.',
     kind: 'ui-runtime-integration',
     owners: ['ui/export/order-pdf'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -356,7 +326,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync lifecycle, recovery, configuration, and action contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/lifecycle'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: {
@@ -389,7 +358,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync main-row writes, mutation commands, status, and owner context.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/main-row'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: {
@@ -414,7 +382,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync panel API installation and surface healing contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -426,7 +393,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync panel controller failure and fallback contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -438,7 +404,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync panel subscription and singleflight contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -451,7 +416,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync panel snapshot controller, dedupe, and fallback contracts.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-panel'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -464,7 +428,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync pull, push, signed gateway, room, merge, sketch, and support operations.',
     kind: 'service-runtime-integration',
     owners: ['services/cloud-sync/sync-ops'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: {
@@ -494,7 +457,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync tab gates, pin commands, timers, and UI action controllers.',
     kind: 'ui-runtime-integration',
     owners: ['ui/cloud-sync-tabs'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -509,7 +471,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Sketch manual-layout host, hover intent, matching, routing, and preview contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/manual-layout'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -529,7 +490,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Sketch box hover, doors, overlap, click, and visual contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/sketch-box'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -545,7 +505,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Sketch free-box preview, commit, attachment, removal, and room-floor contracts.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking/sketch-free-boxes'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -564,7 +523,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Sketch render input, visuals, fronts, layout geometry, support, and visual state.',
     kind: 'builder-runtime-integration',
     owners: ['builder/render-sketch'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -582,7 +540,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'Builder support, materials, maps, library presets, scene view, doors, and corner runtime surfaces.',
     kind: 'builder-runtime-integration',
     owners: ['builder/support', 'services/materials', 'services/scene-view'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -617,7 +574,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Runtime access, platform, edit state, errors, history, and storage command surfaces.',
     kind: 'runtime-integration',
     owners: ['runtime/access', 'platform/access', 'state/history'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -645,7 +601,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Canvas hit, hover, door action, paint, selector, and projection interaction surfaces.',
     kind: 'service-runtime-integration',
     owners: ['services/canvas-picking'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -671,7 +626,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Domain API, store actions, action access, and UI feedback runtime surfaces.',
     kind: 'runtime-integration',
     owners: ['kernel/domain-api', 'ui/actions', 'ui/feedback'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -699,7 +653,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'Render access, scene operations, motion, effects, room design, and render installation surfaces.',
     kind: 'runtime-integration',
     owners: ['runtime/render', 'services/scene-view'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -723,7 +676,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Door trim, styles, glass, mirrors, dimensions, reveal frames, and post-build cut surfaces.',
     kind: 'builder-runtime-integration',
     owners: ['builder/doors', 'builder/post-build'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -748,7 +700,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'State API configuration, kernel config, React selectors, and runtime config validation.',
     kind: 'runtime-integration',
     owners: ['kernel/state', 'runtime/config'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 4, heartbeatMs: 10000, timeoutMs: 120000 },
@@ -768,7 +719,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Canonical application, browser, builder, camera, canvas, and Cloud Sync access surfaces.',
     kind: 'runtime-integration',
     owners: ['runtime/access', 'services/access'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -789,7 +739,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Overlay notes, export canvas, viewport, and workflow runtime surfaces.',
     kind: 'ui-runtime-integration',
     owners: ['ui/overlays', 'ui/export'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -809,7 +758,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'Canonical service namespaces, installation healing, camera, scene view, Three doors, and errors.',
     kind: 'service-runtime-integration',
     owners: ['services/public-surface'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -827,7 +775,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Runtime performance instrumentation and action-flow observability contracts.',
     kind: 'runtime-integration',
     owners: ['runtime/perf', 'ui/action-events'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -846,7 +793,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Runtime, platform, kernel, history, snapshot, and configuration architecture contracts.',
     kind: 'architecture-contract',
     owners: ['runtime', 'platform', 'kernel'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'focused',
     files: [
@@ -865,7 +811,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'Builder public surface, dependency access, registry, scheduler, store access, and visibility.',
     kind: 'builder-runtime-integration',
     owners: ['builder/public-surface'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'focused',
     files: [
@@ -882,7 +827,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'No-main sketch/modules, projection, canonical snapshots, and wardrobe build context surfaces.',
     kind: 'runtime-integration',
     owners: ['builder/no-main', 'services/canvas-picking'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -898,7 +842,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Performance smoke and verification toolchain contracts.',
     kind: 'toolchain-contract',
     owners: ['toolchain/performance', 'toolchain/verification'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'focused',
     files: [
@@ -914,7 +857,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Structure, design, visual settings, and interior tab runtime surfaces.',
     kind: 'ui-runtime-portfolio',
     owners: ['ui/structure-tab', 'ui/design-tab', 'ui/settings-visual', 'ui/interior-tab'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'primary',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -976,7 +918,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Canvas hover, preview, routing, and sketch module interaction surfaces.',
     kind: 'runtime-portfolio',
     owners: ['services/canvas-picking'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'primary',
     files: [
@@ -1000,7 +941,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Focused structure/interior tab family contracts and saved-model workflows.',
     kind: 'ui-runtime-integration',
     owners: ['ui/structure-tab', 'ui/interior-tab'],
-    environment: 'tsx',
     runner: 'serial-tsx',
     portfolioRole: 'focused',
     serialPolicy: { batchSize: 1, heartbeatMs: 0, timeoutMs: 0 },
@@ -1033,7 +973,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Project actions, schema, ingress, persistence, and canonical snapshot surfaces.',
     kind: 'runtime-portfolio',
     owners: ['io/project', 'ui/project-session'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'primary',
     files: [
@@ -1061,7 +1000,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Verification manifest, closeout state, and generated-report contracts.',
     kind: 'control-plane-contract',
     owners: ['toolchain/verification'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'focused',
     files: [
@@ -1075,7 +1013,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Build, release, lint, test, typecheck, and verification toolchain contracts.',
     kind: 'toolchain-portfolio',
     owners: ['toolchain'],
-    environment: 'node',
     runner: 'node-test',
     portfolioRole: 'primary',
     files: [
@@ -1111,7 +1048,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Stable public service, browser, model, project, and backup surfaces.',
     kind: 'runtime-portfolio',
     owners: ['public-api', 'platform/browser', 'services/models'],
-    environment: 'tsx',
     runner: 'tsx-test',
     portfolioRole: 'primary',
     files: [
@@ -1141,7 +1077,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Complete Order PDF focused surface suite.',
     kind: 'group-sequence',
     owners: ['ui/order-pdf', 'ui/export/order-pdf'],
-    environment: 'tsx',
     runner: 'group-sequence',
     portfolioRole: 'focused',
     groups: [
@@ -1158,7 +1093,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Complete Sketch focused surface suite.',
     kind: 'group-sequence',
     owners: ['services/canvas-picking', 'features/sketch-box'],
-    environment: 'tsx',
     runner: 'group-sequence',
     portfolioRole: 'focused',
     groups: ['sketch-manual-hover', 'sketch-box-hover', 'sketch-free-boxes', 'sketch-render-visuals'],
@@ -1167,7 +1101,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Cloud Sync panel install, controller, subscription, and snapshot suite.',
     kind: 'group-sequence',
     owners: ['ui/cloud-sync'],
-    environment: 'tsx',
     runner: 'group-sequence',
     portfolioRole: 'focused',
     groups: [
@@ -1181,7 +1114,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     description: 'Complete Cloud Sync lifecycle, panel, sync, and tabs suite.',
     kind: 'group-sequence',
     owners: ['services/cloud-sync', 'ui/cloud-sync'],
-    environment: 'tsx',
     runner: 'group-sequence',
     portfolioRole: 'focused',
     groups: [
@@ -1283,20 +1215,8 @@ export function validateTestGroupCatalog(catalog = TEST_GROUP_CATALOG) {
     if (!TEST_GROUP_RUNNERS.has(definition?.runner)) {
       add('invalid-runner', `unsupported runner: ${definition?.runner}`);
     }
-    if (!TEST_GROUP_ENVIRONMENTS.has(definition?.environment)) {
-      add('invalid-environment', `unsupported environment: ${definition?.environment}`);
-    }
     if (!TEST_GROUP_PORTFOLIO_ROLES.has(definition?.portfolioRole)) {
       add('invalid-portfolio-role', `unsupported portfolio role: ${definition?.portfolioRole}`);
-    }
-    if (definition?.runner === 'node-test' && definition?.environment !== 'node') {
-      add('runner-environment-mismatch', 'node-test requires environment=node');
-    }
-    if (
-      (definition?.runner === 'tsx-test' || definition?.runner === 'serial-tsx') &&
-      definition?.environment !== 'tsx'
-    ) {
-      add('runner-environment-mismatch', `${definition.runner} requires environment=tsx`);
     }
 
     if (definition?.runner === 'group-sequence') {

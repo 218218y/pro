@@ -33,7 +33,7 @@ function assertCanonicalTsxPlan(plan, group) {
 test('test group catalog owns focused runtime membership and metadata', () => {
   const group = readTestGroup('mirror-runtime');
   assert.equal(group.runner, 'tsx-test');
-  assert.equal(group.environment, 'tsx');
+  assert.equal('environment' in group, false);
   assert.equal(group.portfolioRole, 'focused');
   assert.equal(group.kind, 'runtime-integration');
   assert.deepEqual(group.owners, ['platform/render-loop', 'runtime/planar-reflector']);
@@ -69,7 +69,6 @@ test('test group catalog validates runners, primary ownership, and sequence topo
       description: 'alpha',
       kind: 'runtime-portfolio',
       owners: ['alpha'],
-      environment: 'tsx',
       runner: 'tsx-test',
       portfolioRole: 'primary',
       files: ['tests/example_runtime.test.ts'],
@@ -79,7 +78,6 @@ test('test group catalog validates runners, primary ownership, and sequence topo
       description: 'beta',
       kind: 'runtime-portfolio',
       owners: ['beta'],
-      environment: 'tsx',
       runner: 'tsx-test',
       portfolioRole: 'primary',
       files: ['tests/example_runtime.test.ts'],
@@ -95,7 +93,6 @@ test('test group catalog validates runners, primary ownership, and sequence topo
       description: 'alpha',
       kind: 'group-sequence',
       owners: ['alpha'],
-      environment: 'tsx',
       runner: 'group-sequence',
       portfolioRole: 'focused',
       files: [],
@@ -105,7 +102,6 @@ test('test group catalog validates runners, primary ownership, and sequence topo
       description: 'beta',
       kind: 'group-sequence',
       owners: ['beta'],
-      environment: 'tsx',
       runner: 'group-sequence',
       portfolioRole: 'focused',
       files: [],
@@ -225,7 +221,7 @@ test('major portfolio lanes remain catalog-owned without package-script mirrors'
 test('serial portfolio groups resolve through the canonical serial runner policy', () => {
   const plan = resolveTestGroupPlan({ groupName: 'tab-surfaces' });
   assert.equal(plan.runner, 'serial-tsx');
-  assert.equal(plan.environment, 'tsx');
+  assert.equal('environment' in plan, false);
   assert.equal(plan.command, process.execPath);
   assert.deepEqual(plan.args.slice(0, 7), [
     'tools/wp_serial_tests.mjs',

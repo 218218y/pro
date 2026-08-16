@@ -48,6 +48,7 @@ test('test-group catalog report exposes canonical ownership and one generic pack
 
   const verificationControlPlane = report.groups.find(group => group.name === 'verification-control-plane');
   assert.equal(verificationControlPlane.runner, 'node-test');
+  assert.equal('environment' in verificationControlPlane, false);
   assert.equal(verificationControlPlane.portfolioRole, 'focused');
   assert.equal(verificationControlPlane.directFileCount, 4);
 
@@ -66,6 +67,7 @@ test('test-group catalog report exposes canonical ownership and one generic pack
   const markdown = renderTestGroupCatalogMarkdown(report);
   assert.match(markdown, /Primary portfolio groups must not overlap/i);
   assert.match(markdown, /one generic `test:group` runner/i);
+  assert.doesNotMatch(markdown, /\| Environment \|/);
   assert.doesNotMatch(markdown, /`test:tab-surfaces`/);
 });
 

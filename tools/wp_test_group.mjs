@@ -50,7 +50,6 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
       description: group.description,
       kind: group.kind,
       owners: group.owners,
-      environment: group.environment,
       runner: group.runner,
       portfolioRole: group.portfolioRole,
       serialPolicy: undefined,
@@ -92,7 +91,6 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
     description: group.description,
     kind: group.kind,
     owners: group.owners,
-    environment: group.environment,
     runner: group.runner,
     portfolioRole: group.portfolioRole,
     serialPolicy: group.serialPolicy,
@@ -148,7 +146,6 @@ function printPlan(plan) {
   console.log(`- ${plan.description}`);
   console.log(`- kind: ${plan.kind}`);
   console.log(`- portfolio role: ${plan.portfolioRole}`);
-  console.log(`- environment: ${plan.environment}`);
   console.log(`- runner: ${plan.runner}`);
   console.log(`- owners: ${plan.owners.join(', ')}`);
   if (plan.serialPolicy) {
