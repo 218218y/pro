@@ -15,7 +15,7 @@ export {
 export { installThreeCleanup } from './three_cleanup.js';
 export { installPickingPrimitives } from './picking_primitives.js';
 
-export { CONFIG_DEFAULTS, applyConfigDefaults } from './config_defaults.js';
+export { RUNTIME_CONFIG_DEFAULTS, applyRuntimeConfigDefaults } from './runtime_config_defaults.js';
 export { initRenderState } from './render_state_init.js';
 export { installRenderScheduler } from './render_scheduler.js';
 export { installLifecycleVisibility } from './lifecycle_visibility.js';

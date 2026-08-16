@@ -16,6 +16,7 @@ const refreshSource = readFirstExisting(
   import.meta.url
 );
 const schedulerSource = [
+  readFirstExisting(['../esm/native/runtime/mirror_config_access.ts'], import.meta.url),
   readFirstExisting(['../esm/native/platform/render_loop_mirror_shared.ts'], import.meta.url),
   readFirstExisting(['../esm/native/platform/render_loop_mirror_planar_scheduler.ts'], import.meta.url),
 ].join('\n');

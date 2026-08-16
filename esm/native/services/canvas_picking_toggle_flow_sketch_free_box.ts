@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { HitObjectLike } from './canvas_picking_engine.js';
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import {
   type SketchFreeBoxMotionScope,
@@ -149,7 +149,7 @@ export function toggleSketchFreeBoxOpen(
 
   recordSketchFreeBoxMotionToggle(App, scope, nextOpen, {
     hasInternalDrawers,
-    delayMs: readConfigNumberLooseFromApp(App, 'DOOR_DELAY_MS', 600),
+    delayMs: readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600),
   });
   patchSketchFreeBoxDoorOpenState(App, scope, nextOpen, preferredStack);
 

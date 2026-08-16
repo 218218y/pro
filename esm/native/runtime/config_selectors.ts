@@ -1,7 +1,7 @@
-// Config selectors + normalization helpers (ESM)
+// Persistent store.config selectors + normalization helpers (ESM)
 //
 // Purpose:
-// - Keep all store.config scalar parsing rules in one place.
+// - Keep all persistent store.config scalar parsing rules in one place.
 // - Allow older persisted values (string, '', null) without spreading checks everywhere.
 // - Provide both snapshot-based and App/store-based readers.
 //
@@ -10,8 +10,6 @@
 // - Fail-soft: never throw.
 
 export {
-  readConfigLooseScalarFromApp,
-  readConfigNumberLooseFromApp,
   readConfigScalarFromApp,
   readConfigScalarFromSnapshot,
   readConfigScalarFromStore,

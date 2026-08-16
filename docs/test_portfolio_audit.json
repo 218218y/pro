@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-15T21:12:27.485Z",
+  "generatedAt": "2026-08-15T22:07:52.404Z",
   "totals": {
-    "tests": 1247,
-    "unitRunnerTests": 1238,
+    "tests": 1248,
+    "unitRunnerTests": 1239,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
-    "catalogTestReferences": 482,
-    "totalTestReferences": 498,
+    "catalogTestReferences": 483,
+    "totalTestReferences": 499,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 67,
     "genericTestGroupRunner": "test:group",
@@ -17,10 +17,10 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 146
+    "contractOverlapTargets": 150
   },
   "categories": {
-    "contract": 404,
+    "contract": 405,
     "runtime-unit": 337,
     "integration": 467,
     "persistence-ingress": 23,
@@ -1373,6 +1373,24 @@
       ]
     },
     {
+      "target": "esm/native/runtime/config_selectors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/config_ownership_split_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/final_root_surface_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_surface_family_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/runtime/door_motion_policy_access.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -1469,6 +1487,20 @@
       ]
     },
     {
+      "target": "esm/native/runtime/mirror_config_access.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/config_ownership_split_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/planar_reflector_performance_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/runtime/planar_reflector_contracts.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -1532,6 +1564,24 @@
         },
         {
           "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/runtime_config_selectors.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/config_ownership_split_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/final_root_surface_cleanup_guard.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/runtime_surface_family_contracts.test.js",
           "kind": "contract"
         }
       ]
@@ -2271,6 +2321,20 @@
         {
           "file": "tests/platform_runtime_access_contracts.test.js",
           "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/config_compounds_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/config_ownership_split_runtime.test.ts",
+          "kind": "ownership"
         }
       ]
     },
@@ -4344,6 +4408,10 @@
     },
     {
       "file": "tests/config_map_noop_reuse_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/config_ownership_split_runtime.test.ts",
       "category": "contract"
     },
     {

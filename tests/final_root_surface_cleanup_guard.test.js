@@ -92,14 +92,20 @@ test('final root-surface cleanup routes residual runtime/build/service hotspots 
   assert.match(builderStoreAccess, /const config = getConfigActions\(App\);/);
   assert.doesNotMatch(builderStoreAccess, /asRecord\(asRecord\(App\)\?\.actions\)/);
 
-  const configSelectors = [
+  const storeConfigSelectors = [
     read('esm/native/runtime/config_selectors.ts'),
     read('esm/native/runtime/config_selectors_scalars.ts'),
     read('esm/native/runtime/config_selectors_readers.ts'),
   ].join('\n');
-  assert.match(configSelectors, /from '\.\/app_roots_access\.js';/);
-  assert.match(configSelectors, /const direct = getConfigRootMaybe<UnknownRecord>\(App\);/);
-  assert.doesNotMatch(configSelectors, /appRec\?\.config/);
+  assert.match(storeConfigSelectors, /getStoreSurfaceMaybe\(App\)/);
+  assert.doesNotMatch(storeConfigSelectors, /getRuntimeConfigRootMaybe/);
+  assert.doesNotMatch(storeConfigSelectors, /readRuntimeConfig/);
+
+  const runtimeConfigSelectors = read('esm/native/runtime/runtime_config_selectors.ts');
+  assert.match(runtimeConfigSelectors, /from '\.\/app_roots_access\.js';/);
+  assert.match(runtimeConfigSelectors, /getRuntimeConfigRootMaybe<WardrobeProRuntimeConfig>\(App\)/);
+  assert.doesNotMatch(runtimeConfigSelectors, /readConfigStateFromApp/);
+  assert.doesNotMatch(runtimeConfigSelectors, /store\.config/);
 
   const metaProfiles = read('esm/native/runtime/meta_profiles_access.ts');
   assert.match(metaProfiles, /from '\.\/actions_access_domains\.js';/);
@@ -113,10 +119,10 @@ test('final root-surface cleanup routes residual runtime/build/service hotspots 
     read('esm/native/platform/render_loop_visual_effects_floor.ts'),
     read('esm/native/platform/render_loop_visual_effects_front_overlay.ts'),
   ].join('\n');
-  assert.match(renderLoopVisuals, /from '\.\.\/runtime\/config_selectors\.js';/);
+  assert.match(renderLoopVisuals, /from '\.\.\/runtime\/runtime_config_selectors\.js';/);
   assert.match(renderLoopVisuals, /from '\.\.\/runtime\/three_access\.js';/);
   assert.match(renderLoopVisuals, /setRenderSlot\(App, '__mirrorDirty', true\);/);
-  assert.match(renderLoopVisuals, /readConfigNumberLooseFromApp\(App, 'MIRROR_MOTION_HOLD_MS', 220\)/);
+  assert.match(renderLoopVisuals, /readRuntimeConfigNumberFromApp\(App, 'MIRROR_MOTION_HOLD_MS', 220\)/);
   assert.match(
     renderLoopVisuals,
     /assertThreeViaDeps\(App, 'platform\/render_loop_visual_effects\.autoHideFloor'\)/

@@ -2,7 +2,7 @@ import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
 import { getDoorsArray } from '../runtime/render_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
-import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import { syncVisualsNow } from './doors_runtime_visuals.js';
 import {
   type AppLike,
@@ -56,7 +56,7 @@ export function setDoorsOpen(App: AppLike, open: boolean, opts?: SetDoorsOptions
     return;
   }
 
-  const delayMs = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600)) || 600;
+  const delayMs = readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600);
   const shouldDelayCloseForInternalDrawers = hasOpenInternalDrawers(App);
 
   if (!next) {

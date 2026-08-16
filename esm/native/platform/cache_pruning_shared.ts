@@ -1,11 +1,11 @@
-import type { UnknownRecord } from '../../../types';
+import type { RuntimeConfigNumberKey, UnknownRecord } from '../../../types';
 
 import {
   ensurePlatformRootSurface,
   ensurePlatformUtil,
   getPlatformUtil,
 } from '../runtime/platform_access.js';
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import { ensureRenderNamespace, getRenderSlot, setRenderSlot } from '../runtime/render_access.js';
 
 export type CacheLimitKey = 'textures' | 'materials' | 'dimLabels' | 'edges' | 'geometries';
@@ -157,7 +157,7 @@ export function ensureCachePruningSlots(app: CachePruningAppLike): void {
 }
 
 export function applyCacheLimitsFromApp(merged: CacheLimits, app: CachePruningAppLike): void {
-  const configKeys: Array<[string, CacheLimitKey]> = [
+  const configKeys: Array<[RuntimeConfigNumberKey, CacheLimitKey]> = [
     ['TEXTURE_CACHE_MAX', 'textures'],
     ['MATERIAL_CACHE_MAX', 'materials'],
     ['DIM_LABEL_CACHE_MAX', 'dimLabels'],
@@ -170,7 +170,7 @@ export function applyCacheLimitsFromApp(merged: CacheLimits, app: CachePruningAp
     ['geometries', 'geometries'],
   ];
   for (const [sourceKey, targetKey] of configKeys) {
-    const num = readConfigNumberLooseFromApp(app, sourceKey, Number.NaN);
+    const num = readRuntimeConfigNumberFromApp(app, sourceKey, Number.NaN);
     if (Number.isFinite(num)) merged[targetKey] = Math.max(0, num | 0);
   }
 }

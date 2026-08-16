@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-15T18:50:58.322Z
+Generated: 2026-08-15T22:07:52.296Z
 
 ## Summary
 
 - Catalog groups: 67
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 482
+- Catalog-owned direct test-file references: 483
 - Resolved file references across aggregate sequences: 126
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
@@ -70,7 +70,7 @@ Generated: 2026-08-15T18:50:58.322Z
 | `sketch-manual-hover`                       | focused      | tsx-test       | tsx         |           10 |             10 |            0 | services/canvas-picking/manual-layout                                |
 | `sketch-render-visuals`                     | focused      | tsx-test       | tsx         |            7 |              7 |            0 | builder/render-sketch                                                |
 | `sketch-surfaces`                           | focused      | group-sequence | tsx         |            0 |             32 |            4 | services/canvas-picking, features/sketch-box                         |
-| `state-config-kernel-surfaces`              | focused      | serial-tsx     | tsx         |            8 |              8 |            0 | kernel/state, runtime/config                                         |
+| `state-config-kernel-surfaces`              | focused      | serial-tsx     | tsx         |            9 |              9 |            0 | kernel/state, runtime/config                                         |
 | `structure-tab-family-contracts`            | architecture | node-test      | node        |            1 |              1 |            0 | ui/structure-tab                                                     |
 | `structure-tab-family-core`                 | focused      | serial-tsx     | tsx         |           22 |             22 |            0 | ui/structure-tab, ui/interior-tab                                    |
 | `tab-surfaces`                              | primary      | serial-tsx     | tsx         |           51 |             51 |            0 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |

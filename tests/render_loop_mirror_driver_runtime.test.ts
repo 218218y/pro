@@ -5,9 +5,22 @@ import { createRenderLoopMirrorDriver } from '../esm/native/platform/render_loop
 
 type AnyRecord = Record<string, unknown>;
 
-function makeApp(mirrors: AnyRecord[], config: AnyRecord = { MIRROR_REFLECTOR_ENABLED: false }) {
+function makeApp(
+  mirrors: AnyRecord[],
+  options: {
+    runtimeConfig?: AnyRecord;
+    storeConfig?: AnyRecord;
+  } = {}
+) {
+  const runtimeConfig = options.runtimeConfig ?? {};
+  const storeConfig = options.storeConfig ?? { MIRROR_REFLECTOR_ENABLED: false };
   return {
-    config,
+    config: runtimeConfig,
+    store: {
+      getState() {
+        return { config: storeConfig };
+      },
+    },
     render: {
       mirrorCubeCamera: {
         updateCalls: 0,
@@ -61,7 +74,7 @@ function createDriver(
 
 test('render loop mirror driver does not run cube updates while realistic mirror mode is enabled', () => {
   const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
-  const app = makeApp([trackedMirror], { MIRROR_REFLECTOR_ENABLED: true });
+  const app = makeApp([trackedMirror], { storeConfig: { MIRROR_REFLECTOR_ENABLED: true } });
   const slots = makeSlots({
     __mirrorLastUpdateMs: -1,
     __mirrorMotionActive: false,
@@ -385,7 +398,7 @@ test('render loop mirror driver refreshes cube fallback surfaces while realistic
     material,
     userData: { __wpMirrorSurface: true },
   };
-  const app = makeApp([fallbackMirror], { MIRROR_REFLECTOR_ENABLED: true });
+  const app = makeApp([fallbackMirror], { storeConfig: { MIRROR_REFLECTOR_ENABLED: true } });
   const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
   const slots = makeSlots({
     __mirrorLastUpdateMs: -1,
@@ -437,8 +450,8 @@ test('render loop mirror driver switches mixed realistic mirrors to one cube pat
     userData: { __wpMirrorSurface: true },
   };
   const app = makeApp([planarMirror, fallbackMirror], {
-    MIRROR_REFLECTOR_ENABLED: true,
-    MIRROR_REFLECTOR_UPDATE_MS: 1000,
+    storeConfig: { MIRROR_REFLECTOR_ENABLED: true },
+    runtimeConfig: { MIRROR_REFLECTOR_UPDATE_MS: 1000 },
   });
   const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
   const slots = makeSlots({
@@ -501,8 +514,8 @@ test('render loop keeps planar door mirrors when adhesive glass needs cube refle
     },
   };
   const app = makeApp([planarMirror, adhesiveGlass], {
-    MIRROR_REFLECTOR_ENABLED: true,
-    MIRROR_REFLECTOR_UPDATE_MS: 1000,
+    storeConfig: { MIRROR_REFLECTOR_ENABLED: true },
+    runtimeConfig: { MIRROR_REFLECTOR_UPDATE_MS: 1000 },
   });
   const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
   const slots = makeSlots({
@@ -695,9 +708,11 @@ test('render loop keeps warmed planar reflections live while motion marks mirror
     },
   };
   const app = makeApp([warmedPlanarMirror], {
-    MIRROR_REFLECTOR_ENABLED: true,
-    MIRROR_REFLECTOR_MOVE_UPDATE_MS: 0,
-    MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME: 1,
+    storeConfig: { MIRROR_REFLECTOR_ENABLED: true },
+    runtimeConfig: {
+      MIRROR_REFLECTOR_MOVE_UPDATE_MS: 0,
+      MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME: 1,
+    },
   });
   addRenderablePlanarSurfaceRuntime(app, warmedPlanarMirror);
   const slots = makeSlots({
@@ -783,9 +798,11 @@ test('render loop refreshes planar mirrors without cube-camera resources', () =>
     },
   };
   const app = makeApp([planarMirror], {
-    MIRROR_REFLECTOR_ENABLED: true,
-    MIRROR_REFLECTOR_UPDATE_MS: 0,
-    MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME: 1,
+    storeConfig: { MIRROR_REFLECTOR_ENABLED: true },
+    runtimeConfig: {
+      MIRROR_REFLECTOR_UPDATE_MS: 0,
+      MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME: 1,
+    },
   });
   addRenderablePlanarSurfaceRuntime(app, planarMirror);
   delete (app.render as AnyRecord).mirrorCubeCamera;

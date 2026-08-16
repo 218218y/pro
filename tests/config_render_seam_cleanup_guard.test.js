@@ -17,7 +17,7 @@ function stripNoise(input) {
 
 test('config/render cleanup routes targeted owners through canonical seams', () => {
   const sidebar = read('esm/native/ui/react/sidebar_shared.ts');
-  assert.match(sidebar, /readConfigLooseScalarFromApp\(app, 'site2EnabledTabs', null\)/);
+  assert.match(sidebar, /readRuntimeConfigValueFromApp\(app, 'site2EnabledTabs'\)/);
   assert.doesNotMatch(stripNoise(sidebar), /app\.config/);
 
   const motion = [
@@ -26,8 +26,8 @@ test('config/render cleanup routes targeted owners through canonical seams', () 
     read('esm/native/platform/render_loop_motion_doors.ts'),
     read('esm/native/platform/render_loop_motion_drawers.ts'),
   ].join('\n');
-  assert.match(motion, /readConfigNumberLooseFromApp\((?:A|App), 'DOOR_DELAY_MS', 600\)/);
-  assert.match(motion, /readConfigNumberLooseFromApp\((?:A|App), 'ACTIVE_STATE_MS', 4000\)/);
+  assert.match(motion, /readRuntimeConfigNumberFromApp\((?:A|App), 'DOOR_DELAY_MS', 600\)/);
+  assert.match(motion, /readRuntimeConfigNumberFromApp\((?:A|App), 'ACTIVE_STATE_MS', 4000\)/);
   assert.match(motion, /getRenderSlot<boolean>\((?:A|App), '__wpSketchDbgPrevSketch'\)/);
   assert.match(motion, /setRenderSlot\((?:A|App), '__wpSketchDbgMisalignTs', now\)/);
   assert.doesNotMatch(stripNoise(motion), /app\.config/);
@@ -39,7 +39,7 @@ test('config/render cleanup routes targeted owners through canonical seams', () 
     read('esm/native/platform/cache_pruning_runtime.ts'),
   ].join('\n');
   assert.match(cachePruning, /ensureCachePruningSlots\(root\)/);
-  assert.match(cachePruning, /readConfigNumberLooseFromApp\(app, sourceKey, Number\.NaN\)/);
+  assert.match(cachePruning, /readRuntimeConfigNumberFromApp\(app, sourceKey, Number\.NaN\)/);
   assert.match(cachePruning, /setRenderSlot\(root, 'lastPruneAt', now\)/);
   assert.doesNotMatch(stripNoise(cachePruning), /app\.render\s*=/);
   assert.doesNotMatch(stripNoise(cachePruning), /root\.config/);

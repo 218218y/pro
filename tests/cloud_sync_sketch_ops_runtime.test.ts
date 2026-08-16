@@ -253,9 +253,10 @@ test('cloud sync sketch routing is directional between main and site2 bundles', 
 
   const createApp = (siteVariant: 'main' | 'site2') =>
     ({
+      config: { siteVariant },
       store: {
         getState() {
-          return { config: { siteVariant } };
+          return { config: {} };
         },
       },
       services: {
@@ -455,9 +456,10 @@ test('cloud sync sketch push does not contaminate pull baseline across direction
 
   const ops = createCloudSyncSketchOps({
     App: {
+      config: { siteVariant: 'site2' },
       store: {
         getState() {
-          return { config: { siteVariant: 'site2' } };
+          return { config: {} };
         },
       },
       services: {
@@ -962,9 +964,10 @@ test('cloud sync site2 initial catchup ignores a fresh cleared-sketch tombstone 
   let loadCalls = 0;
   const toastCalls: string[] = [];
   const App = {
+    config: { siteVariant: 'site2' },
     store: {
       getState() {
-        return { config: { siteVariant: 'site2' } };
+        return { config: {} };
       },
     },
     services: {

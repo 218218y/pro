@@ -21,7 +21,7 @@ import {
   setHardCloseForMs,
   setHardCloseUntil,
   setModePrimary,
-  readConfigLooseScalarFromApp,
+  readRuntimeConfigNumberFromApp,
   readConfigStateFromApp,
 } from '../services/api.js';
 import type {
@@ -55,7 +55,7 @@ function getGlobalClickMode(App: AppLike): boolean {
 
 function setDoorHardCloseUntil(App: AppLike, hard: boolean): void {
   try {
-    const delayMs = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600));
+    const delayMs = readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600);
     if (hard) setHardCloseForMs(App, Number.isFinite(delayMs) ? delayMs : 600, 50);
     else setHardCloseUntil(App, 0);
   } catch (err) {

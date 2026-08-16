@@ -1,7 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { getTools } from '../runtime/service_access.js';
-import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import { setPlatformHasInternalDrawers } from '../runtime/platform_access.js';
 import {
   ensureDrawerMetaMap,
@@ -118,7 +118,7 @@ export function snapDrawersToTargets(App: AppLike): void {
   const globalClickMode = isGlobalClickMode(App);
 
   const now = doorsRuntimeNow();
-  const delayTime = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600)) || 600;
+  const delayTime = readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600);
 
   const lastToggle = getDoorsLastToggleTime(App);
   const timeSinceToggle = now - (lastToggle || 0);

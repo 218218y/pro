@@ -13,9 +13,10 @@ function createSketchHarness(siteVariant: 'main' | 'site2'): Harness {
   const loadedWidths: number[] = [];
   const toastCalls: Array<{ msg: string; type?: string }> = [];
   const App = {
+    config: { siteVariant },
     store: {
       getState() {
-        return { config: { siteVariant } };
+        return { config: {} };
       },
     },
     services: {
@@ -104,9 +105,10 @@ test('cloud sketch stale initial catchup does not block the next fresh site2 upd
   let callCount = 0;
 
   const App = {
+    config: { siteVariant: 'site2' },
     store: {
       getState() {
-        return { config: { siteVariant: 'site2' } };
+        return { config: {} };
       },
     },
     services: {

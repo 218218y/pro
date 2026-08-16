@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyConfigDefaults } from '../esm/native/platform/config_defaults.ts';
+import { applyRuntimeConfigDefaults } from '../esm/native/platform/runtime_config_defaults.ts';
 import { initRenderState } from '../esm/native/platform/render_state_init.ts';
 
 type AnyRecord = Record<string, unknown>;
@@ -13,7 +13,7 @@ test('platform config defaults populate missing keys without overwriting existin
     },
   };
 
-  const config = applyConfigDefaults(App);
+  const config = applyRuntimeConfigDefaults(App);
   assert.equal(config.DOOR_DELAY_MS, 123);
   assert.equal(config.ACTIVE_STATE_MS, 4000);
   assert.equal(config.NOTES_THROTTLE_MS, 33);

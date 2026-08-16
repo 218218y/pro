@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
 import type { AppContainer, CloudSyncServiceLike, TabId, UnknownRecord } from '../../../../types';
-import { getCloudSyncServiceMaybe, readConfigLooseScalarFromApp } from '../../services/api.js';
+import { getCloudSyncServiceMaybe, readRuntimeConfigValueFromApp } from '../../services/api.js';
 
 let deferredSidebarTabsPromise: Promise<typeof import('./tabs/DeferredSidebarTabs.js')> | null = null;
 
@@ -55,7 +55,7 @@ export function readWindowLogoDataUri(win: unknown): string {
 }
 
 function readSite2EnabledTabsValue(app: AppContainer): unknown {
-  return readConfigLooseScalarFromApp(app, 'site2EnabledTabs', null);
+  return readRuntimeConfigValueFromApp(app, 'site2EnabledTabs') ?? null;
 }
 
 export function readCloudSyncService(app: AppContainer): CloudSyncServiceLike | null {

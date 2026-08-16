@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ensureActionsRootSlot,
   ensureBrowserRoot,
-  ensureConfigRoot,
+  ensureRuntimeConfigRoot,
   ensureDepsRootSlot,
   ensureLayersRoot,
   ensurePlatformRoot,
@@ -14,7 +14,7 @@ import {
   getActionsRootMaybe,
   getBootRootMaybe,
   getBrowserRootMaybe,
-  getConfigRootMaybe,
+  getRuntimeConfigRootMaybe,
   getDepsRootSlotMaybe,
   getRenderRootMaybe,
   getStoreRootMaybe,
@@ -29,7 +29,7 @@ test('app_roots_access keeps canonical root namespaces stable and null-prototype
 
   const actions = ensureActionsRootSlot(app);
   const browser = ensureBrowserRoot(app);
-  const config = ensureConfigRoot(app);
+  const config = ensureRuntimeConfigRoot(app);
   const deps = ensureDepsRootSlot(app);
   const platform = ensurePlatformRoot(app);
   const layers = ensureLayersRoot(app);
@@ -39,11 +39,11 @@ test('app_roots_access keeps canonical root namespaces stable and null-prototype
 
   assert.equal(getActionsRootMaybe(app), actions);
   assert.equal(getBrowserRootMaybe(app), browser);
-  assert.equal(getConfigRootMaybe(app), config);
+  assert.equal(getRuntimeConfigRootMaybe(app), config);
   assert.equal(getDepsRootSlotMaybe(app), deps);
   assert.equal(ensureActionsRootSlot(app), actions);
   assert.equal(ensureBrowserRoot(app), browser);
-  assert.equal(ensureConfigRoot(app), config);
+  assert.equal(ensureRuntimeConfigRoot(app), config);
   assert.equal(ensureDepsRootSlot(app), deps);
   assert.equal(ensurePlatformRoot(app), platform);
   assert.equal(ensureLayersRoot(app), layers);
@@ -73,12 +73,12 @@ test('app_roots_access preserves pre-seeded browser/config/deps/render/store roo
   const app: Record<string, unknown> = { browser, config, deps, render, store };
 
   assert.equal(ensureBrowserRoot(app), browser);
-  assert.equal(ensureConfigRoot(app), config);
+  assert.equal(ensureRuntimeConfigRoot(app), config);
   assert.equal(ensureDepsRootSlot(app), deps);
   assert.equal(ensureRenderRoot(app), render);
   assert.equal(ensureStoreRoot(app), store);
   assert.equal(getBrowserRootMaybe(app), browser);
-  assert.equal(getConfigRootMaybe(app), config);
+  assert.equal(getRuntimeConfigRootMaybe(app), config);
   assert.equal(getDepsRootSlotMaybe(app), deps);
   assert.equal(getRenderRootMaybe(app), render);
   assert.equal(getStoreRootMaybe(app), store);

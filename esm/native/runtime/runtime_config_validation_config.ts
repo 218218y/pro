@@ -1,4 +1,8 @@
-import type { WardrobeProRuntimeConfig } from '../../../types';
+import type {
+  RuntimeConfigBooleanKey,
+  RuntimeConfigNumberKey,
+  WardrobeProRuntimeConfig,
+} from '../../../types';
 
 import {
   cloneRuntimeConfig,
@@ -11,6 +15,86 @@ import {
   type ValidateOpts,
 } from './runtime_config_validation_shared.js';
 import { validateSupabaseCloudSync } from './runtime_config_validation_supabase.js';
+
+const FINITE_NUMBER_RUNTIME_KEYS = [
+  'DOOR_DELAY_MS',
+  'ACTIVE_STATE_MS',
+  'NOTES_THROTTLE_MS',
+  'PIXEL_RATIO_MAX',
+  'MIRROR_CUBE_SIZE',
+  'AUTOSAVE_DEBOUNCE_MS',
+  'RESIZE_DEBOUNCE_MS',
+  'TEXTURE_CACHE_MAX',
+  'MATERIAL_CACHE_MAX',
+  'DIM_LABEL_CACHE_MAX',
+  'EDGES_CACHE_MAX',
+  'GEOMETRY_CACHE_MAX',
+  'textures',
+  'materials',
+  'dimLabels',
+  'edges',
+  'geometries',
+  'MIRROR_FRAME_BUDGET_MS',
+  'MIRROR_MOTION_HOLD_MS',
+  'MIRROR_MOVE_FRAME_BUDGET_MS',
+  'MIRROR_MOVE_UPDATE_MS',
+  'MIRROR_NO_MIRROR_RESCAN_MS',
+  'MIRROR_REFLECTOR_BRIGHTNESS',
+  'MIRROR_REFLECTOR_CLIP_BIAS',
+  'MIRROR_REFLECTOR_COLOR',
+  'MIRROR_REFLECTOR_EDGE_FEATHER_UV',
+  'MIRROR_REFLECTOR_LONG_EDGE',
+  'MIRROR_REFLECTOR_MAX_COUNT',
+  'MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME',
+  'MIRROR_REFLECTOR_MIN_EDGE',
+  'MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME',
+  'MIRROR_REFLECTOR_MOVE_UPDATE_MS',
+  'MIRROR_REFLECTOR_MULTISAMPLE',
+  'MIRROR_REFLECTOR_POLYGON_OFFSET_FACTOR',
+  'MIRROR_REFLECTOR_POLYGON_OFFSET_UNITS',
+  'MIRROR_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV',
+  'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M',
+  'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M',
+  'MIRROR_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M',
+  'MIRROR_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV',
+  'MIRROR_REFLECTOR_SURFACE_GAP_M',
+  'MIRROR_REFLECTOR_SURFACE_INSET_M',
+  'MIRROR_REFLECTOR_UPDATE_MS',
+  'MIRROR_UPDATE_MS',
+] as const satisfies readonly RuntimeConfigNumberKey[];
+
+const BOOLEAN_RUNTIME_KEYS = [
+  'RENDER_ANTIALIAS',
+  'RENDER_SHADOWS_ENABLED',
+  'PERSIST_EDIT_STATE',
+  'MIRROR_DISABLE_DURING_MOTION',
+] as const satisfies readonly RuntimeConfigBooleanKey[];
+
+function validateFiniteRuntimeNumbers(out: WardrobeProRuntimeConfig, issues: RuntimeConfigIssue[]): void {
+  for (const key of FINITE_NUMBER_RUNTIME_KEYS) {
+    if (typeof out[key] === 'undefined') continue;
+    const n = toFiniteNumber(out[key]);
+    if (n == null) {
+      issues.push({ kind: 'warn', path: key, message: `${key} must be a finite number` });
+      delete out[key];
+      continue;
+    }
+    out[key] = n;
+  }
+}
+
+function validateBooleanRuntimeValues(out: WardrobeProRuntimeConfig, issues: RuntimeConfigIssue[]): void {
+  for (const key of BOOLEAN_RUNTIME_KEYS) {
+    if (typeof out[key] === 'undefined') continue;
+    const value = toBool(out[key]);
+    if (value == null) {
+      issues.push({ kind: 'warn', path: key, message: `${key} must be boolean` });
+      delete out[key];
+      continue;
+    }
+    out[key] = value;
+  }
+}
 
 export function validateRuntimeConfig(
   cfgIn: unknown,
@@ -85,6 +169,9 @@ export function validateRuntimeConfig(
       out.debugBootTimings = b;
     }
   }
+
+  validateFiniteRuntimeNumbers(out, issues);
+  validateBooleanRuntimeValues(out, issues);
 
   if (typeof out.siteVariant !== 'undefined') {
     const sv = normalizeSiteVariant(out.siteVariant);

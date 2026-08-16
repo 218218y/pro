@@ -571,7 +571,7 @@ export interface AppContainer {
   // Explicit DI surface.
   deps: Namespace & Partial<Deps>;
 
-  // Public namespaces.
+  // Public runtime/boot namespaces. `config` is not the persistent store.config slice.
   config: Namespace;
   flags: Namespace;
   platform: Namespace & PlatformNamespace;

@@ -1,6 +1,6 @@
-import type { AppContainer, ConfigStateLike } from '../../../types';
+import type { AppContainer } from '../../../types';
 import { getDocumentMaybe, getLocationSearchMaybe, getWindowMaybe } from '../runtime/api.js';
-import { readConfigStateFromApp } from '../runtime/root_state_access.js';
+import { readRuntimeConfigValueFromApp } from '../runtime/runtime_config_selectors.js';
 
 export type SiteVariant = 'main' | 'site2';
 
@@ -21,18 +21,14 @@ function readQueryParam(App: AppContainer, key: string): string | null {
   }
 }
 
-function readVariantFromConfig(App: AppContainer): SiteVariant | null {
+function readVariantFromRuntimeConfig(App: AppContainer): SiteVariant | null {
   try {
-    const cfg: ConfigStateLike = readConfigStateFromApp(App);
-    const value = asString(cfg.siteVariant);
-    if (!value) return null;
-    const normalized = value.toLowerCase();
-    if (normalized === 'site2') return 'site2';
-    if (normalized === 'main') return 'main';
+    const value = readRuntimeConfigValueFromApp(App, 'siteVariant');
+    return value === 'site2' || value === 'main' ? value : null;
   } catch {
     // site-variant-probe-fallback: unreadable optional sources fall through to the next detection source
+    return null;
   }
-  return null;
 }
 
 function readVariantFromMeta(App: AppContainer): SiteVariant | null {
@@ -65,8 +61,8 @@ function readVariantFromPath(App: AppContainer): SiteVariant | null {
 
 export function getSiteVariant(App: AppContainer): SiteVariant {
   try {
-    const fromCfg = readVariantFromConfig(App);
-    if (fromCfg) return fromCfg;
+    const fromRuntimeConfig = readVariantFromRuntimeConfig(App);
+    if (fromRuntimeConfig) return fromRuntimeConfig;
 
     const v1 = readQueryParam(App, 'site');
     if (v1 && (v1 === '2' || v1.toLowerCase() === 'site2')) return 'site2';

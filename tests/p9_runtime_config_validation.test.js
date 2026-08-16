@@ -104,6 +104,36 @@ test('runtime config accepts canonical typed values', () => {
   assert.deepEqual(config.extra, { ok: true });
 });
 
+test('runtime config validates typed tuning keys without borrowing product-state semantics', () => {
+  const accepted = validateRuntimeConfig({
+    DOOR_DELAY_MS: 750,
+    ACTIVE_STATE_MS: 5000,
+    RENDER_ANTIALIAS: false,
+    PERSIST_EDIT_STATE: true,
+    MIRROR_DISABLE_DURING_MOTION: false,
+    MIRROR_REFLECTOR_MAX_COUNT: 12,
+  });
+  assert.deepEqual(accepted.issues, []);
+  assert.equal(accepted.config.DOOR_DELAY_MS, 750);
+  assert.equal(accepted.config.PERSIST_EDIT_STATE, true);
+  assert.equal(accepted.config.MIRROR_REFLECTOR_MAX_COUNT, 12);
+
+  const rejected = validateRuntimeConfig({
+    DOOR_DELAY_MS: '750',
+    PERSIST_EDIT_STATE: 'true',
+    MIRROR_DISABLE_DURING_MOTION: 1,
+    MIRROR_REFLECTOR_MAX_COUNT: Number.POSITIVE_INFINITY,
+  });
+  assert.equal(rejected.config.DOOR_DELAY_MS, undefined);
+  assert.equal(rejected.config.PERSIST_EDIT_STATE, undefined);
+  assert.equal(rejected.config.MIRROR_DISABLE_DURING_MOTION, undefined);
+  assert.equal(rejected.config.MIRROR_REFLECTOR_MAX_COUNT, undefined);
+  assert.deepEqual(
+    rejected.issues.map(issue => issue.path),
+    ['DOOR_DELAY_MS', 'MIRROR_REFLECTOR_MAX_COUNT', 'PERSIST_EDIT_STATE', 'MIRROR_DISABLE_DURING_MOTION']
+  );
+});
+
 test('runtime config rejects historical string coercions and out-of-range values', () => {
   const { config, issues } = validateRuntimeConfig({
     cacheBudgetMb: '2048',

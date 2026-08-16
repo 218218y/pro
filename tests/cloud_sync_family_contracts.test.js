@@ -450,12 +450,14 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
     assert,
     siteVariant,
     [
+      /readRuntimeConfigValueFromApp\(App, ['"]siteVariant['"]\)/,
       /meta\[name="wp-site-variant"\]/,
       /function readVariantFromPath\(App: AppContainer\): SiteVariant \| null \{/,
       /index_site2\(\?:\\\.html\)\?\$/,
     ],
     'site variant seam'
   );
+  assert.doesNotMatch(siteVariant, /readConfigStateFromApp|readConfigValueFromApp|store\.config/);
   assert.match(bootController, /resetCameraPreset\(App\)/);
   assert.doesNotMatch(bootController, /camera\.position\.set\(0, 1\.6, 2\.6\)/);
 });

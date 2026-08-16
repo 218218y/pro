@@ -1,7 +1,7 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { ensureRenderMetaArray } from '../runtime/render_access.js';
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import {
   asRecordOrNull,
   incrementRenderSlotCounter,
@@ -45,7 +45,7 @@ export function resolveTrackedMirrorState(
   const checkedAt = readFiniteSlotNumber(deps, app, '__mirrorPresenceCheckedAtMs', -1);
   const noMirrorRescanMs = Math.max(
     100,
-    readConfigNumberLooseFromApp(app, 'MIRROR_NO_MIRROR_RESCAN_MS', 1200)
+    readRuntimeConfigNumberFromApp(app, 'MIRROR_NO_MIRROR_RESCAN_MS', 1200)
   );
   const shouldCheckPresence =
     !presenceKnown ||

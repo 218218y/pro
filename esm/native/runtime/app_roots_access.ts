@@ -103,13 +103,13 @@ export function ensureBrowserRoot(App: unknown): BrowserNamespaceLike {
   return ensureAppRootSlot<BrowserNamespaceLike>(App, 'browser');
 }
 
-export function getConfigRootMaybe<TConfig extends UnknownRecord = UnknownRecord>(
+export function getRuntimeConfigRootMaybe<TConfig extends UnknownRecord = UnknownRecord>(
   App: unknown
 ): TConfig | null {
   return readAppRootSlot<TConfig>(App, 'config');
 }
 
-export function ensureConfigRoot<TConfig extends UnknownRecord = UnknownRecord>(
+export function ensureRuntimeConfigRoot<TConfig extends UnknownRecord = UnknownRecord>(
   App: unknown,
   makeRoot?: RootFactory<TConfig>
 ): TConfig {

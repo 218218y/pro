@@ -9,12 +9,14 @@ function makeApp({
   pathname,
   search = '',
   metaVariant = null,
-  config = {},
+  runtimeConfig = {},
+  storeConfig = {},
 }: {
   pathname: string;
   search?: string;
   metaVariant?: string | null;
-  config?: Record<string, unknown>;
+  runtimeConfig?: Record<string, unknown>;
+  storeConfig?: Record<string, unknown>;
 }): AnyRecord {
   const meta = metaVariant
     ? {
@@ -38,6 +40,7 @@ function makeApp({
     location: { pathname, search },
   };
   return {
+    config: runtimeConfig,
     deps: {
       browser: {
         window: win,
@@ -48,20 +51,35 @@ function makeApp({
     },
     store: {
       getState() {
-        return { config, ui: {}, runtime: {}, mode: {}, meta: {} };
+        return { config: storeConfig, ui: {}, runtime: {}, mode: {}, meta: {} };
       },
     },
   };
 }
 
 test('site variant falls back to html meta for site2 builds', () => {
-  const app = makeApp({ pathname: '/index_pro.html', metaVariant: 'site2', config: {} });
+  const app = makeApp({ pathname: '/index_pro.html', metaVariant: 'site2' });
   assert.equal(getSiteVariant(app as any), 'site2');
   assert.equal(isSite2Variant(app as any), true);
 });
 
 test('site variant falls back to site2 pathname when config is missing', () => {
-  const app = makeApp({ pathname: '/index_site2.html', config: {} });
+  const app = makeApp({ pathname: '/index_site2.html' });
   assert.equal(getSiteVariant(app as any), 'site2');
   assert.equal(isSite2Variant(app as any), true);
+});
+
+test('site variant reads runtime config and ignores the persistent store config slice', () => {
+  const runtimeWins = makeApp({
+    pathname: '/index_pro.html',
+    runtimeConfig: { siteVariant: 'site2' },
+    storeConfig: { siteVariant: 'main' },
+  });
+  assert.equal(getSiteVariant(runtimeWins as any), 'site2');
+
+  const storeOnly = makeApp({
+    pathname: '/index_pro.html',
+    storeConfig: { siteVariant: 'site2' },
+  });
+  assert.equal(getSiteVariant(storeOnly as any), 'main');
 });

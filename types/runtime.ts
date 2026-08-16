@@ -80,32 +80,86 @@ export interface WardrobeProOrderPdfConfig {
   [k: string]: unknown;
 }
 
-/** Runtime configuration surface (deps.config) loaded/injected at boot. */
-export interface WardrobeProRuntimeConfig extends WardrobeProCacheLimits {
-  /** Enables optional debug timings in boot/initialization. */
-  debugBootTimings?: boolean;
+/** Canonical runtime/boot configuration keys.
+ *
+ * These values are injected through `deps.config` and materialized on `App.config`.
+ * They are deliberately separate from the persistent `store.config` domain slice.
+ */
+export type RuntimeConfigValueMap = {
+  cacheBudgetMb: number;
+  cacheMaxItems: number;
+  debugBootTimings: boolean;
+  siteVariant: WardrobeProSiteVariant;
+  site2EnabledTabs: WardrobeProTabId[];
+  storageNamespace: string;
+  branding: WardrobeProBrandingConfig;
+  orderPdf: WardrobeProOrderPdfConfig;
+  supabaseCloudSync: WardrobeProSupabaseCloudSyncConfig;
 
-  /** Optional site variant selector. */
-  siteVariant?: WardrobeProSiteVariant;
+  DOOR_DELAY_MS: number;
+  ACTIVE_STATE_MS: number;
+  NOTES_THROTTLE_MS: number;
+  PIXEL_RATIO_MAX: number;
+  MIRROR_CUBE_SIZE: number;
+  RENDER_ANTIALIAS: boolean;
+  RENDER_SHADOWS_ENABLED: boolean;
+  AUTOSAVE_DEBOUNCE_MS: number;
+  RESIZE_DEBOUNCE_MS: number;
+  PERSIST_EDIT_STATE: boolean;
 
-  /** Site2: which tabs are allowed to show when the remote gate is OPEN. */
-  site2EnabledTabs?: WardrobeProTabId[];
+  TEXTURE_CACHE_MAX: number;
+  MATERIAL_CACHE_MAX: number;
+  DIM_LABEL_CACHE_MAX: number;
+  EDGES_CACHE_MAX: number;
+  GEOMETRY_CACHE_MAX: number;
+  textures: number;
+  materials: number;
+  dimLabels: number;
+  edges: number;
+  geometries: number;
 
-  /** Optional localStorage namespace. Keep empty for legacy Bargig builds. */
-  storageNamespace?: string;
+  MIRROR_DISABLE_DURING_MOTION: boolean;
+  MIRROR_FRAME_BUDGET_MS: number;
+  MIRROR_MOTION_HOLD_MS: number;
+  MIRROR_MOVE_FRAME_BUDGET_MS: number;
+  MIRROR_MOVE_UPDATE_MS: number;
+  MIRROR_NO_MIRROR_RESCAN_MS: number;
+  MIRROR_REFLECTOR_BRIGHTNESS: number;
+  MIRROR_REFLECTOR_CLIP_BIAS: number;
+  MIRROR_REFLECTOR_COLOR: number;
+  MIRROR_REFLECTOR_EDGE_FEATHER_UV: number;
+  MIRROR_REFLECTOR_LONG_EDGE: number;
+  MIRROR_REFLECTOR_MAX_COUNT: number;
+  MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME: number;
+  MIRROR_REFLECTOR_MIN_EDGE: number;
+  MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME: number;
+  MIRROR_REFLECTOR_MOVE_UPDATE_MS: number;
+  MIRROR_REFLECTOR_MULTISAMPLE: number;
+  MIRROR_REFLECTOR_POLYGON_OFFSET_FACTOR: number;
+  MIRROR_REFLECTOR_POLYGON_OFFSET_UNITS: number;
+  MIRROR_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV: number;
+  MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M: number;
+  MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M: number;
+  MIRROR_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M: number;
+  MIRROR_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV: number;
+  MIRROR_REFLECTOR_SURFACE_GAP_M: number;
+  MIRROR_REFLECTOR_SURFACE_INSET_M: number;
+  MIRROR_REFLECTOR_UPDATE_MS: number;
+  MIRROR_UPDATE_MS: number;
+};
 
-  /** Optional store/brand identity for multi-store releases. */
-  branding?: WardrobeProBrandingConfig;
+export type RuntimeConfigKey = keyof RuntimeConfigValueMap;
+export type RuntimeConfigValue<K extends RuntimeConfigKey> = RuntimeConfigValueMap[K];
+export type RuntimeConfigNumberKey = {
+  [K in RuntimeConfigKey]: RuntimeConfigValueMap[K] extends number ? K : never;
+}[RuntimeConfigKey];
+export type RuntimeConfigBooleanKey = {
+  [K in RuntimeConfigKey]: RuntimeConfigValueMap[K] extends boolean ? K : never;
+}[RuntimeConfigKey];
 
-  /** Optional order PDF template selection for multi-store releases. */
-  orderPdf?: WardrobeProOrderPdfConfig;
+/** Runtime configuration surface (deps.config / App.config) loaded at boot. */
+export type WardrobeProRuntimeConfig = Partial<RuntimeConfigValueMap> & UnknownRecord;
 
-  /** Cloud Sync config (preferred DI/runtime config surface). */
-  supabaseCloudSync?: WardrobeProSupabaseCloudSyncConfig;
-
-  // Allow additional config keys without churn.
-  [k: string]: unknown;
-}
 export interface DoorsSetOpenOptionsLike extends ActionMetaLike {
   touch?: boolean;
   forceUpdate?: boolean;

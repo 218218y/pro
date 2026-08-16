@@ -6,10 +6,11 @@ function read(rel) {
   return fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 }
 
-test('render/config canonical owners route hotspot files through app_roots_access + render_access seams', () => {
+test('render/runtime-config canonical owners route hotspot files through app_roots_access + render_access seams', () => {
   const appRoots = read('esm/native/runtime/app_roots_access.ts');
-  assert.match(appRoots, /getConfigRootMaybe/);
-  assert.match(appRoots, /ensureConfigRoot/);
+  assert.match(appRoots, /getRuntimeConfigRootMaybe/);
+  assert.match(appRoots, /ensureRuntimeConfigRoot/);
+  assert.doesNotMatch(appRoots, /getConfigRootMaybe|ensureConfigRoot/);
   assert.match(appRoots, /getRenderRootMaybe/);
   assert.match(appRoots, /ensureRenderRoot/);
 
@@ -19,11 +20,13 @@ test('render/config canonical owners route hotspot files through app_roots_acces
   assert.match(renderShared, /ensureRenderRoot<RenderBag>\(App, createRenderBag\)/);
   assert.doesNotMatch(renderShared, /a\.render/);
 
-  const configDefaults = read('esm/native/platform/config_defaults.ts');
+  const configDefaults = read('esm/native/platform/runtime_config_defaults.ts');
   assert.match(configDefaults, /from '\.\.\/runtime\/app_roots_access\.js';/);
-  assert.match(configDefaults, /getConfigRootMaybe\(App\)/);
-  assert.match(configDefaults, /ensureConfigRoot<UnknownRecord>\(App, cloneConfigDefaults\)/);
-  assert.doesNotMatch(configDefaults, /root\.config/);
+  assert.match(configDefaults, /getRuntimeConfigRootMaybe\(App\)/);
+  assert.match(configDefaults, /ensureRuntimeConfigRoot<UnknownRecord>\(App, cloneConfigDefaults\)/);
+  assert.match(configDefaults, /RUNTIME_CONFIG_DEFAULTS/);
+  assert.match(configDefaults, /applyRuntimeConfigDefaults/);
+  assert.doesNotMatch(configDefaults, /root\.config|\bCONFIG_DEFAULTS\b|applyConfigDefaults/);
 
   const viewerResize = read('esm/native/ui/interactions/viewer_resize.ts');
   assert.match(viewerResize, /(render_access|services\/api)\.js';/);

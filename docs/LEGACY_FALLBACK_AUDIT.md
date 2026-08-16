@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-15T21:12:25.000Z
+Generated at: 2026-08-15T22:07:49.766Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **546**
+- Total categorized occurrences: **545**
 - Files with occurrences: **212**
-- Reviewed compatibility seams under growth ratchet: **22**
+- Reviewed compatibility seams under growth ratchet: **21**
 - Category counts:
-  - `runtime-default`: **57**
-  - `domain-default`: **394**
+  - `runtime-default`: **56**
+  - `domain-default`: **395**
   - `error-message-default`: **42**
   - `framework-default`: **2**
   - `browser-adapter`: **18**
@@ -18,7 +18,7 @@ Generated at: 2026-08-15T21:12:25.000Z
   - `legacy-rejection`: **3**
   - `project-migration`: **1**
   - `external-api-compat`: **4**
-  - `compat-boundary`: **17**
+  - `compat-boundary`: **16**
   - `test-fixture`: **7**
   - `legacy-runtime-risk`: **0**
   - `unknown`: **0**

@@ -28,9 +28,10 @@ function createBrowserApp() {
         navigator: win.navigator,
       },
     },
+    config: { siteVariant: 'main' },
     store: {
       getState() {
-        return { config: { siteVariant: 'main' }, ui: {} };
+        return { config: {}, ui: {} };
       },
     },
     storeApi: {

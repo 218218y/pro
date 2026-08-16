@@ -1,6 +1,7 @@
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
-import { readConfigBoolFromApp, readConfigNumberLooseFromApp } from './config_selectors.js';
+import { readConfigBoolFromApp } from './config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from './runtime_config_selectors.js';
 import { getDoorsArray, getRenderSlot, setRenderSlot } from './render_access_surface.js';
 import { getUiFeedback } from './service_access.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
@@ -200,7 +201,7 @@ function countTrackedMirrorSurfaces(App: unknown): number {
 function resolveMaxPlanarReflectors(App: unknown): number {
   return Math.max(
     1,
-    Math.floor(readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
+    Math.floor(readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
   );
 }
 
@@ -259,13 +260,13 @@ function requiredReflectorConstructorsAvailable(THREE: ThreeLike): boolean {
 }
 
 function readColorOption(App: unknown): unknown {
-  const raw = readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_COLOR', DEFAULT_REFLECTOR_COLOR);
+  const raw = readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_COLOR', DEFAULT_REFLECTOR_COLOR);
   return Number.isFinite(raw) ? raw : DEFAULT_REFLECTOR_COLOR;
 }
 
 function readReflectorBrightness(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_BRIGHTNESS', DEFAULT_REFLECTOR_BRIGHTNESS),
+    readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_BRIGHTNESS', DEFAULT_REFLECTOR_BRIGHTNESS),
     DEFAULT_REFLECTOR_BRIGHTNESS,
     0.85,
     1.15
@@ -279,12 +280,12 @@ function resolveReflectorEdgeFeatherUv(App: unknown, mirror?: unknown): number {
   const configKey = isSlidingInnerMirrorSurface(mirror)
     ? 'MIRROR_REFLECTOR_SLIDING_INNER_EDGE_FEATHER_UV'
     : 'MIRROR_REFLECTOR_EDGE_FEATHER_UV';
-  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.04);
+  return clampNumber(readRuntimeConfigNumberFromApp(App, configKey, defaultValue), defaultValue, 0, 0.04);
 }
 
 function resolveSlidingOcclusionClearanceM(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(
+    readRuntimeConfigNumberFromApp(
       App,
       'MIRROR_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M',
       DEFAULT_REFLECTOR_SLIDING_OCCLUSION_CLEARANCE_M
@@ -297,7 +298,7 @@ function resolveSlidingOcclusionClearanceM(App: unknown): number {
 
 function resolveSlidingOcclusionFeatherUv(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(
+    readRuntimeConfigNumberFromApp(
       App,
       'MIRROR_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV',
       DEFAULT_REFLECTOR_SLIDING_OCCLUSION_FEATHER_UV
@@ -310,7 +311,7 @@ function resolveSlidingOcclusionFeatherUv(App: unknown): number {
 
 function resolveReflectorPolygonOffsetFactor(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(
+    readRuntimeConfigNumberFromApp(
       App,
       'MIRROR_REFLECTOR_POLYGON_OFFSET_FACTOR',
       DEFAULT_REFLECTOR_POLYGON_OFFSET_FACTOR
@@ -323,7 +324,7 @@ function resolveReflectorPolygonOffsetFactor(App: unknown): number {
 
 function resolveReflectorPolygonOffsetUnits(App: unknown): number {
   return clampNumber(
-    readConfigNumberLooseFromApp(
+    readRuntimeConfigNumberFromApp(
       App,
       'MIRROR_REFLECTOR_POLYGON_OFFSET_UNITS',
       DEFAULT_REFLECTOR_POLYGON_OFFSET_UNITS
@@ -393,7 +394,7 @@ function readMirrorDimensionM(mirror: Object3DLike, axis: 'width' | 'height'): n
 }
 
 function resolveConfiguredReflectorLongEdge(App: unknown): number {
-  const configuredLongEdge = readConfigNumberLooseFromApp(
+  const configuredLongEdge = readRuntimeConfigNumberFromApp(
     App,
     'MIRROR_REFLECTOR_LONG_EDGE',
     DEFAULT_REFLECTOR_LONG_EDGE
@@ -434,7 +435,7 @@ function resolveReflectorTargetSize(
     longEdge,
     Math.floor(
       clampNumber(
-        readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MIN_EDGE', DEFAULT_REFLECTOR_MIN_EDGE),
+        readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_MIN_EDGE', DEFAULT_REFLECTOR_MIN_EDGE),
         DEFAULT_REFLECTOR_MIN_EDGE,
         128,
         768
@@ -455,7 +456,7 @@ function resolveReflectorTargetSize(
 function resolveReflectorMultisample(App: unknown): number {
   return Math.floor(
     clampNumber(
-      readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MULTISAMPLE', DEFAULT_REFLECTOR_MULTISAMPLE),
+      readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_MULTISAMPLE', DEFAULT_REFLECTOR_MULTISAMPLE),
       DEFAULT_REFLECTOR_MULTISAMPLE,
       0,
       8
@@ -768,7 +769,7 @@ function resolveReflectorSurfaceGapM(App: unknown, mirror?: unknown): number {
   const configKey = isSlidingInnerMirrorSurface(mirror)
     ? 'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_GAP_M'
     : 'MIRROR_REFLECTOR_SURFACE_GAP_M';
-  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0.001, 0.02);
+  return clampNumber(readRuntimeConfigNumberFromApp(App, configKey, defaultValue), defaultValue, 0.001, 0.02);
 }
 
 function resolveReflectorSurfaceInsetM(App: unknown, mirror?: unknown, axis: 'x' | 'y' = 'x'): number {
@@ -780,7 +781,7 @@ function resolveReflectorSurfaceInsetM(App: unknown, mirror?: unknown, axis: 'x'
     isSlidingInnerMirrorSurface(mirror) && axis === 'x'
       ? 'MIRROR_REFLECTOR_SLIDING_INNER_SURFACE_INSET_X_M'
       : 'MIRROR_REFLECTOR_SURFACE_INSET_M';
-  return clampNumber(readConfigNumberLooseFromApp(App, configKey, defaultValue), defaultValue, 0, 0.06);
+  return clampNumber(readRuntimeConfigNumberFromApp(App, configKey, defaultValue), defaultValue, 0, 0.06);
 }
 
 function makeBoxReflectorSurfacePlane(args: {
@@ -1004,7 +1005,7 @@ export function installPlanarMirrorReflector(
     faceSign,
     normalSign: surfaceInstall.normalSign,
     clipBias: clampNumber(
-      readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_CLIP_BIAS', DEFAULT_REFLECTOR_CLIP_BIAS),
+      readRuntimeConfigNumberFromApp(App, 'MIRROR_REFLECTOR_CLIP_BIAS', DEFAULT_REFLECTOR_CLIP_BIAS),
       DEFAULT_REFLECTOR_CLIP_BIAS,
       0,
       0.05

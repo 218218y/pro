@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-15T18:50:58.322Z",
+  "generatedAt": "2026-08-15T22:07:52.296Z",
   "summary": {
     "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 482,
+    "catalogFileReferences": 483,
     "sequenceResolvedFileReferences": 126,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
@@ -1242,8 +1242,8 @@
         "timeoutMs": 120000
       },
       "childGroups": [],
-      "directFileCount": 8,
-      "resolvedFileCount": 8,
+      "directFileCount": 9,
+      "resolvedFileCount": 9,
       "files": [
         "tests/state_api_config_namespace_canonical_runtime.test.ts",
         "tests/state_api_install_support_noop_runtime.test.ts",
@@ -1252,6 +1252,7 @@
         "tests/kernel_state_kernel_config_runtime.test.ts",
         "tests/kernel_state_kernel_config_noop_runtime.test.ts",
         "tests/react_config_selectors_runtime.test.ts",
+        "tests/config_ownership_split_runtime.test.ts",
         "tests/p9_runtime_config_validation.test.js"
       ]
     },

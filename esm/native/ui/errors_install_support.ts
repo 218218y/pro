@@ -15,7 +15,7 @@ import {
   getUserAgentMaybe,
   runPlatformWakeupFollowThrough,
   getStoreSurfaceMaybe,
-  getConfigRootMaybe,
+  getRuntimeConfigRootMaybe,
   getBuildTagsSnapshot,
 } from '../services/api.js';
 
@@ -143,7 +143,7 @@ export function buildErrorsDebugSnapshot(App: AppContainer, err: unknown, ctx: E
     buildTags: getBuildTagsSnapshot(App),
     flags: runtimeFlags(rt),
     config: cfg || {},
-    configStatic: asObj(getConfigRootMaybe(App)) || {},
+    runtimeConfig: asObj(getRuntimeConfigRootMaybe(App)) || {},
     userAgent: '',
     mode: '',
     state: null,

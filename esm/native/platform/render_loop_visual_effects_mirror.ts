@@ -1,6 +1,6 @@
 import type { AppContainer } from '../../../types';
 
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import {
   readFiniteNumberOrNull,
   readMotionComponent,
@@ -75,7 +75,7 @@ export function updateRenderLoopMirrorMotionState(
   assignFiniteMirrorMotionPart(snap, 'ty', ty);
   assignFiniteMirrorMotionPart(snap, 'tz', tz);
 
-  const holdMs = Math.max(0, readConfigNumberLooseFromApp(App, 'MIRROR_MOTION_HOLD_MS', 220));
+  const holdMs = Math.max(0, readRuntimeConfigNumberFromApp(App, 'MIRROR_MOTION_HOLD_MS', 220));
   if (moved || doorOrDrawerAnimating) {
     deps.setRenderSlot(App, '__mirrorMotionUntilMs', nowMs + holdMs);
     markRenderLoopMirrorDirty(App, deps);

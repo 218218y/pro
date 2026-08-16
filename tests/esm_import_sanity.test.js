@@ -14,7 +14,7 @@ test('platform install module imports cleanly and exposes installers', async () 
   assert.equal(typeof mod.installPlatform, 'function');
   assert.equal(typeof mod.installRenderScheduler, 'function');
   assert.equal(typeof mod.installRenderLoopImpl, 'function');
-  assert.ok(mod.CONFIG_DEFAULTS && typeof mod.CONFIG_DEFAULTS === 'object');
+  assert.ok(mod.RUNTIME_CONFIG_DEFAULTS && typeof mod.RUNTIME_CONFIG_DEFAULTS === 'object');
 });
 
 test('builder install module imports cleanly and exposes installers', async () => {

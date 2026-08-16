@@ -1,9 +1,9 @@
-// Native ESM implementation of config defaults.
+// Native ESM implementation of runtime/boot config defaults.
 
-import type { UnknownRecord } from '../../../types';
+import type { RuntimeConfigValueMap, UnknownRecord } from '../../../types';
 
-import { ensureConfigRoot, getConfigRootMaybe } from '../runtime/app_roots_access.js';
-// Used by the ESM route to keep config defaults explicit during boot.
+import { ensureRuntimeConfigRoot, getRuntimeConfigRootMaybe } from '../runtime/app_roots_access.js';
+// Used by the ESM route to keep runtime config defaults explicit during boot.
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -14,10 +14,10 @@ function readRecord(v: unknown): UnknownRecord | null {
 }
 
 function cloneConfigDefaults(): UnknownRecord {
-  return { ...CONFIG_DEFAULTS };
+  return { ...RUNTIME_CONFIG_DEFAULTS };
 }
 
-export const CONFIG_DEFAULTS = Object.freeze({
+export const RUNTIME_CONFIG_DEFAULTS = Object.freeze({
   DOOR_DELAY_MS: 600,
   ACTIVE_STATE_MS: 4000,
   NOTES_THROTTLE_MS: 33,
@@ -27,16 +27,17 @@ export const CONFIG_DEFAULTS = Object.freeze({
   RENDER_SHADOWS_ENABLED: true,
   AUTOSAVE_DEBOUNCE_MS: 2500,
   RESIZE_DEBOUNCE_MS: 80,
-});
+} satisfies Partial<RuntimeConfigValueMap>);
 
-// Apply config defaults onto the canonical config root without overwriting existing keys.
-export function applyConfigDefaults(App: unknown, defaults: unknown = CONFIG_DEFAULTS) {
+// Apply defaults onto the canonical runtime config root without overwriting injected keys.
+export function applyRuntimeConfigDefaults(App: unknown, defaults: unknown = RUNTIME_CONFIG_DEFAULTS) {
   const defaultRec = readRecord(defaults) || cloneConfigDefaults();
   try {
     if (!App || typeof App !== 'object') return defaultRec;
 
     const configRec =
-      readRecord(getConfigRootMaybe(App)) || ensureConfigRoot<UnknownRecord>(App, cloneConfigDefaults);
+      readRecord(getRuntimeConfigRootMaybe(App)) ||
+      ensureRuntimeConfigRoot<UnknownRecord>(App, cloneConfigDefaults);
     for (const k in defaultRec) {
       if (!Object.prototype.hasOwnProperty.call(configRec, k)) {
         configRec[k] = defaultRec[k];
@@ -45,6 +46,6 @@ export function applyConfigDefaults(App: unknown, defaults: unknown = CONFIG_DEF
 
     return configRec;
   } catch (_) {
-    return readRecord(getConfigRootMaybe(App)) || defaultRec;
+    return readRecord(getRuntimeConfigRootMaybe(App)) || defaultRec;
   }
 }

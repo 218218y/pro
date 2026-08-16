@@ -191,7 +191,6 @@ export interface ConfigStateLike {
   cornerConfiguration?: CornerConfigurationLike;
 
   isLibraryMode?: boolean;
-  siteVariant?: 'main' | 'site2';
   wardrobeType?: WardrobeType;
   globalHandleType?: HandleType;
   isMultiColorMode?: boolean;

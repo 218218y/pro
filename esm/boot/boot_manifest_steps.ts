@@ -9,8 +9,8 @@ import {
   installThreeGeometryCachePatch,
   installThreeCleanup,
   installPickingPrimitives,
-  CONFIG_DEFAULTS,
-  applyConfigDefaults,
+  RUNTIME_CONFIG_DEFAULTS,
+  applyRuntimeConfigDefaults,
   initRenderState,
   installRenderScheduler,
   installLifecycleVisibility,
@@ -87,9 +87,9 @@ export const BOOT_STEPS: BootStep[] = [
   },
   { id: 'platform.assertStore', phase: 'platform', run: app => assertStore(app, 'bootSequence:platform') },
   {
-    id: 'platform.applyConfigDefaults',
+    id: 'platform.applyRuntimeConfigDefaults',
     phase: 'platform',
-    run: app => applyConfigDefaults(app, CONFIG_DEFAULTS),
+    run: app => applyRuntimeConfigDefaults(app, RUNTIME_CONFIG_DEFAULTS),
   },
   {
     id: 'platform.initRenderState',

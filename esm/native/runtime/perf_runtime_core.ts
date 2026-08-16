@@ -11,7 +11,7 @@ import type {
   PerfMetricUnit,
   PerfSpanOptions,
 } from './perf_runtime_surface_types.js';
-import { getConfigRootMaybe } from './app_roots_access.js';
+import { getRuntimeConfigRootMaybe } from './app_roots_access.js';
 import { getWindowMaybe } from './browser_env_surface.js';
 import { requestAnimationFrameMaybe } from './browser_env_timers.js';
 import { getDepMaybe } from './deps_access.js';
@@ -185,7 +185,7 @@ function getPerfRuntimeStore(App: AppContainer): PerfRuntimeStore {
   ) {
     return existing as PerfRuntimeStore;
   }
-  const configRoot = asRecord<Record<string, unknown>>(getConfigRootMaybe(App));
+  const configRoot = asRecord<Record<string, unknown>>(getRuntimeConfigRootMaybe(App));
   const depsConfig = asRecord<Record<string, unknown>>(getDepMaybe(App, 'config'));
   const entryLimit = configRoot?.perfRuntimeEntryLimit ?? depsConfig?.perfRuntimeEntryLimit;
   const created: PerfRuntimeStore = {

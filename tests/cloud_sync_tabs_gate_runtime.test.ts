@@ -51,9 +51,10 @@ function createBrowserApp(siteVariant: 'main' | 'site2'): AnyRecord {
         navigator: win.navigator,
       },
     },
+    config: { siteVariant },
     store: {
       getState() {
-        return { config: { siteVariant }, ui: {} };
+        return { config: {}, ui: {} };
       },
     },
     storeApi: {

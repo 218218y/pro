@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T21:12:27.316Z",
+  "generatedAt": "2026-08-15T22:07:52.243Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -8,19 +8,19 @@
     "testPortfolio": true
   },
   "silentCatches": {
-    "statementFree": 517,
+    "statementFree": 515,
     "bare": 0,
     "vagueComments": 0,
-    "files": 281
+    "files": 280
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 546,
+    "totalCategorizedOccurrences": 545,
     "filesWithOccurrences": 212,
-    "guardedOccurrences": 22,
-    "guardedFiles": 13,
+    "guardedOccurrences": 21,
+    "guardedFiles": 12,
     "projectMigration": 1,
     "externalApiCompat": 4,
-    "compatBoundary": 17,
+    "compatBoundary": 16,
     "legacyRuntimeRisk": 0,
     "unknown": 0
   },
@@ -32,8 +32,8 @@
     "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
-    "classifiedFiles": 1247,
-    "unitRuntimeFiles": 1238,
+    "classifiedFiles": 1248,
+    "unitRuntimeFiles": 1239,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

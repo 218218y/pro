@@ -11,7 +11,6 @@ import type {
 import { getState as __getState, getCfg as __getCfg } from '../kernel/api.js';
 import { setCfgCornerConfiguration, setCfgModulesConfiguration } from '../runtime/cfg_access.js';
 import { readConfigStateFromApp } from '../runtime/config_selectors.js';
-import { getConfigRootMaybe } from '../runtime/app_roots_access.js';
 import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
 import { metaRestore } from '../runtime/meta_profiles_access.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
@@ -75,30 +74,15 @@ export function getCfgSnapshot(App: AppContainer): ConfigStateLike | null {
 }
 
 export function getConcreteCfgSnapshot(App: AppContainer): ConfigStateLike | null {
-  let storeReadError: unknown = null;
   try {
     const root = readStoreStateMaybe<Record<string, unknown>>(App);
     const rootRecord = isRecord(root) ? root : null;
-    if (rootRecord && Object.prototype.hasOwnProperty.call(rootRecord, 'config')) {
-      const fromState = readConfigStateLike(rootRecord.config);
-      if (fromState) return fromState;
-    }
+    if (!rootRecord || !Object.prototype.hasOwnProperty.call(rootRecord, 'config')) return null;
+    return readConfigStateLike(rootRecord.config);
   } catch (error) {
-    storeReadError = error;
-  }
-
-  try {
-    const fromRoot = readConfigStateLike(getConfigRootMaybe(App));
-    if (fromRoot) return fromRoot;
-  } catch (error) {
-    reportConfigCompoundsNonFatal(App, 'readConcreteRootConfig', error);
+    reportConfigCompoundsNonFatal(App, 'readConcreteStoreConfig', error);
     return null;
   }
-
-  if (storeReadError) {
-    reportConfigCompoundsNonFatal(App, 'readConcreteStoreConfig', storeReadError);
-  }
-  return null;
 }
 
 export function getCfgNow(App: AppContainer): ConfigStateLike {

@@ -759,6 +759,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/kernel_state_kernel_config_runtime.test.ts',
       'tests/kernel_state_kernel_config_noop_runtime.test.ts',
       'tests/react_config_selectors_runtime.test.ts',
+      'tests/config_ownership_split_runtime.test.ts',
       'tests/p9_runtime_config_validation.test.js',
     ],
   }),

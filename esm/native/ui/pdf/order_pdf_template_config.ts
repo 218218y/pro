@@ -1,4 +1,4 @@
-import { readConfigLooseScalarFromApp } from '../../services/api.js';
+import { readRuntimeConfigValueFromApp } from '../../services/api.js';
 
 const DEFAULT_ORDER_PDF_TEMPLATE_URLS = ['/order_template.pdf', './order_template.pdf', 'order_template.pdf'];
 
@@ -28,7 +28,7 @@ function uniqUrls(values: string[]): string[] {
 
 export function readOrderPdfTemplateUrl(App: unknown): string {
   try {
-    const raw = readConfigLooseScalarFromApp(App, 'orderPdf', null);
+    const raw = readRuntimeConfigValueFromApp(App, 'orderPdf');
     const rec = isRecord(raw) ? raw : null;
     return asCleanUrl(rec?.templateUrl);
   } catch {

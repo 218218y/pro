@@ -160,15 +160,27 @@ const families = [
         ],
       },
       {
-        label: 'config selectors owner',
+        label: 'store config selectors owner',
         rel: '../esm/native/runtime/config_selectors.ts',
         patterns: [
           /from '\.\/config_selectors_scalars\.js';/,
           /from '\.\/config_selectors_readers\.js';/,
           /readConfigScalarOrDefaultFromApp/,
           /readConfigArrayFromSnapshot/,
-          /readConfigLooseScalarFromApp/,
         ],
+        lacksPatterns: [/readRuntimeConfig/, /readConfigLooseScalarFromApp/, /readConfigNumberLooseFromApp/],
+      },
+      {
+        label: 'runtime config selectors owner',
+        rel: '../esm/native/runtime/runtime_config_selectors.ts',
+        patterns: [
+          /from '\.\/app_roots_access\.js';/,
+          /getRuntimeConfigRootMaybe<WardrobeProRuntimeConfig>\(App\)/,
+          /readRuntimeConfigValueFromApp/,
+          /readRuntimeConfigNumberFromApp/,
+          /readRuntimeConfigBooleanFromApp/,
+        ],
+        lacksPatterns: [/readConfigStateFromApp/, /store\.config/],
       },
       {
         label: 'history system owner',

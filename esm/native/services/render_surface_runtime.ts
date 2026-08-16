@@ -8,7 +8,10 @@ import type {
 } from '../../../types';
 import { ensureRenderNamespace, ensureRenderRuntimeState, getWindowMaybe } from '../runtime/api.js';
 import { ensureRenderBag as ensureRenderCoreBag } from '../runtime/render_access_shared.js';
-import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
+import {
+  readRuntimeConfigBooleanFromApp,
+  readRuntimeConfigNumberFromApp,
+} from '../runtime/runtime_config_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 import { scheduleAdhesiveGlassStandardShaderWarmup } from '../runtime/adhesive_glass_shader_warmup.js';
 import {
@@ -69,23 +72,17 @@ function readConfigNumber(
   key: 'MIRROR_CUBE_SIZE' | 'PIXEL_RATIO_MAX',
   defaultValue: number
 ): number {
-  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
+  const value = readRuntimeConfigNumberFromApp(App, key, defaultValue);
   if (key === 'MIRROR_CUBE_SIZE') return clampNumber(value, defaultValue, 64, 1024);
   return clampNumber(value, defaultValue, 0.75, 2);
 }
 
-function readConfigBoolean(App: AppLike, key: string, defaultValue: boolean): boolean {
-  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value !== 0;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on')
-      return true;
-    if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off')
-      return false;
-  }
-  return defaultValue;
+function readConfigBoolean(
+  App: AppLike,
+  key: 'RENDER_ANTIALIAS' | 'RENDER_SHADOWS_ENABLED',
+  defaultValue: boolean
+): boolean {
+  return readRuntimeConfigBooleanFromApp(App, key, defaultValue);
 }
 
 function getRenderBag(App: AppLike): RenderBag {

@@ -1,6 +1,9 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { readConfigLooseScalarFromApp, readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import {
+  readMirrorFrameConfigFromApp,
+  readMirrorPlanarUpdateLimitFromApp,
+} from '../runtime/mirror_config_access.js';
 
 export type MirrorReportFn = (
   app: AppContainer,
@@ -114,10 +117,7 @@ export function resolveRemainingFrameBudgetMs(policy: MirrorFramePolicy): number
 }
 
 export function resolvePlanarUpdatesPerFrame(app: AppContainer, motionActive: boolean): number {
-  const raw = motionActive
-    ? readConfigNumberLooseFromApp(app, 'MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME', 8)
-    : readConfigNumberLooseFromApp(app, 'MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME', 3);
-  return Math.max(1, Math.floor(Number.isFinite(raw) ? raw : motionActive ? 8 : 3));
+  return readMirrorPlanarUpdateLimitFromApp(app, motionActive);
 }
 
 export function resolveMirrorFramePolicy(
@@ -129,20 +129,11 @@ export function resolveMirrorFramePolicy(
   const motionActive = !!deps.getRenderSlot<boolean>(app, '__mirrorMotionActive');
   const mirrorDirty = !!deps.getRenderSlot<boolean>(app, '__mirrorDirty');
 
-  const baseInterval = readConfigNumberLooseFromApp(app, 'MIRROR_UPDATE_MS', 500);
-  const moveIntervalRaw = readConfigNumberLooseFromApp(app, 'MIRROR_MOVE_UPDATE_MS', baseInterval);
-  const moveInterval = Number.isFinite(moveIntervalRaw)
-    ? Math.max(baseInterval, moveIntervalRaw)
-    : Math.max(baseInterval, 250);
-  const updateIntervalMs = motionActive ? moveInterval : baseInterval;
+  const config = readMirrorFrameConfigFromApp(app);
+  const updateIntervalMs = motionActive ? config.moveIntervalMs : config.baseIntervalMs;
 
   const frameStartMs = readFiniteSlotNumber(deps, app, '__frameStartMs', 0);
-  const idleBudgetMs = Math.max(4, readConfigNumberLooseFromApp(app, 'MIRROR_FRAME_BUDGET_MS', 16));
-  const moveBudgetMs = Math.max(
-    4,
-    readConfigNumberLooseFromApp(app, 'MIRROR_MOVE_FRAME_BUDGET_MS', Math.max(4, Math.min(idleBudgetMs, 10)))
-  );
-  const frameBudgetMs = motionActive ? moveBudgetMs : idleBudgetMs;
+  const frameBudgetMs = motionActive ? config.moveFrameBudgetMs : config.idleFrameBudgetMs;
 
   return {
     nowMs,
@@ -150,8 +141,8 @@ export function resolveMirrorFramePolicy(
     frameStartMs,
     motionActive,
     mirrorDirty,
-    cubeMirrorMode: readConfigLooseScalarFromApp(app, 'MIRROR_REFLECTOR_ENABLED', true) === false,
-    disableDuringMotion: !!readConfigLooseScalarFromApp(app, 'MIRROR_DISABLE_DURING_MOTION', true),
+    cubeMirrorMode: !config.reflectorEnabled,
+    disableDuringMotion: config.disableDuringMotion,
     updateIntervalMs,
     frameBudgetMs,
     canRunInBudget: isFrameWithinBudget(nowMs, frameStartMs, frameBudgetMs),

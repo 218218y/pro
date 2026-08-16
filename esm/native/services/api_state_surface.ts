@@ -29,8 +29,6 @@ export {
   readConfigScalarFromSnapshot,
   readConfigScalarFromStore,
   readConfigScalarFromApp,
-  readConfigLooseScalarFromApp,
-  readConfigNumberLooseFromApp,
   readConfigBoolFromSnapshot,
   readConfigBoolFromStore,
   readConfigBoolFromApp,
@@ -45,6 +43,14 @@ export {
   readConfigArrayFromSnapshot,
   readConfigMapFromSnapshot,
 } from '../runtime/config_selectors.js';
+
+// Runtime/boot config selectors (App.config only; never persistent product state)
+export {
+  readRuntimeConfigStateFromApp,
+  readRuntimeConfigValueFromApp,
+  readRuntimeConfigNumberFromApp,
+  readRuntimeConfigBooleanFromApp,
+} from '../runtime/runtime_config_selectors.js';
 
 // Runtime selectors
 export {
@@ -186,4 +192,4 @@ export {
   getStoreSelectorSubscriber,
 } from '../runtime/store_surface_access.js';
 
-export { getConfigRootMaybe } from '../runtime/app_roots_access.js';
+export { getRuntimeConfigRootMaybe } from '../runtime/app_roots_access.js';

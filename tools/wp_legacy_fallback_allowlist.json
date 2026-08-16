@@ -46,12 +46,6 @@
         "compat-boundary": 1
       }
     },
-    "esm/native/runtime/config_selectors_scalars.ts": {
-      "total": 1,
-      "categories": {
-        "compat-boundary": 1
-      }
-    },
     "esm/native/runtime/doors_runtime_support_modes.ts": {
       "total": 1,
       "categories": {

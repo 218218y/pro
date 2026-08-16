@@ -25,7 +25,7 @@ import {
 } from './doors_runtime_visuals_shared.js';
 import { getSketchFreeBoxMotionScopeFromEntry } from '../runtime/sketch_free_box_motion_identity.js';
 import { shouldHoldSketchFreeBoxDoorsDuringClose } from '../runtime/sketch_free_box_motion_state.js';
-import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import { snapDrawersToTargets } from './doors_runtime_visuals_drawers.js';
 import { setSlidingDoorHiddenForOpenState } from '../runtime/sliding_door_visibility.js';
 
@@ -134,7 +134,7 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
   const slidingHidePolicy = resolveSlidingDoorHideOpenPolicy(App, safeOpts);
   const manualTool = readInteriorManualTool(App);
   const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
-  const doorDelayMs = Number(readConfigLooseScalarFromApp(App, 'DOOR_DELAY_MS', 600)) || 600;
+  const doorDelayMs = readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600);
 
   const doors = getDoorsArray(App);
   for (let i = 0; i < doors.length; i++) {

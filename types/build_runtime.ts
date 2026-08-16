@@ -116,7 +116,7 @@ export interface ErrorsDebugSnapshotLike extends UnknownRecord {
   buildTags: UnknownRecord;
   flags: UnknownRecord;
   config: UnknownRecord;
-  configStatic?: UnknownRecord;
+  runtimeConfig?: UnknownRecord;
   userAgent: string;
   mode: string;
   state: unknown;

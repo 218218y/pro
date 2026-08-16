@@ -1,6 +1,6 @@
 import type { AppContainer, StateKernelLike, UnknownRecord } from '../../../types';
 
-import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigBooleanFromApp } from '../runtime/runtime_config_selectors.js';
 import { hasCanonicalEssentialUiRawDimsFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { asRecord } from './kernel_shared.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
@@ -46,7 +46,7 @@ export function createKernelProjectCapture(
     });
 
     const wantEditState =
-      scopeStr === 'session' && !!readConfigLooseScalarFromApp(args.App, 'PERSIST_EDIT_STATE', false);
+      scopeStr === 'session' && readRuntimeConfigBooleanFromApp(args.App, 'PERSIST_EDIT_STATE', false);
     if (wantEditState && args.stateKernel && typeof args.stateKernel.captureEditState === 'function') {
       const settings = asRecord(data.settings, {});
       settings.editState = args.stateKernel.captureEditState();

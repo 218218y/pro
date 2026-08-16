@@ -5,7 +5,7 @@ import {
   readTrackedPlanarMirrorStats,
   refreshTrackedPlanarMirrorSurfacesNow,
 } from '../runtime/render_access.js';
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import {
   addRenderSlotCounter,
   incrementRenderSlotCounter,
@@ -47,8 +47,8 @@ export function runPlanarMirrorSchedule(
 
   const planarLastUpdateMs = readFiniteSlotNumber(deps, app, '__mirrorPlanarLastUpdateMs', -1);
   const planarIntervalRaw = policy.motionActive
-    ? readConfigNumberLooseFromApp(app, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0)
-    : readConfigNumberLooseFromApp(app, 'MIRROR_REFLECTOR_UPDATE_MS', 120);
+    ? readRuntimeConfigNumberFromApp(app, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0)
+    : readRuntimeConfigNumberFromApp(app, 'MIRROR_REFLECTOR_UPDATE_MS', 120);
   const planarIntervalMs = Math.max(0, Number.isFinite(planarIntervalRaw) ? planarIntervalRaw : 160);
   const batchPending = !!deps.getRenderSlot<boolean>(app, '__mirrorPlanarBatchPending');
   const initialBatchPending = !!deps.getRenderSlot<boolean>(app, '__mirrorPlanarInitialBatchPending');

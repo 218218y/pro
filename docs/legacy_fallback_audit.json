@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-15T21:12:25.000Z",
+  "generatedAt": "2026-08-15T22:07:49.766Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 546,
+    "totalOccurrences": 545,
     "totalFiles": 212,
     "byCategory": {
-      "runtime-default": 57,
-      "domain-default": 394,
+      "runtime-default": 56,
+      "domain-default": 395,
       "error-message-default": 42,
       "framework-default": 2,
       "browser-adapter": 18,
@@ -14,7 +14,7 @@
       "legacy-rejection": 3,
       "project-migration": 1,
       "external-api-compat": 4,
-      "compat-boundary": 17,
+      "compat-boundary": 16,
       "test-fixture": 7,
       "legacy-runtime-risk": 0,
       "unknown": 0
@@ -561,13 +561,6 @@
           "runtime-default": 2
         }
       },
-      "esm/native/runtime/config_selectors_scalars.ts": {
-        "total": 2,
-        "categories": {
-          "compat-boundary": 1,
-          "runtime-default": 1
-        }
-      },
       "esm/native/runtime/data_attrs.ts": {
         "total": 2,
         "categories": {
@@ -599,6 +592,12 @@
         "categories": {
           "domain-default": 6,
           "runtime-default": 5
+        }
+      },
+      "esm/native/runtime/mirror_config_access.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/runtime/planar_reflector_refresh_runtime.ts": {
@@ -3138,20 +3137,6 @@
       "text": "return typeof fallbackFactory === 'function' ? fallbackFactory() : null;"
     },
     {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 78,
-      "term": "compatibility",
-      "category": "compat-boundary",
-      "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
-    },
-    {
-      "file": "esm/native/runtime/config_selectors_scalars.ts",
-      "line": 78,
-      "term": "fallback",
-      "category": "runtime-default",
-      "text": "// config-compatibility-fallback: fall back to the retired direct config root for loose reads."
-    },
-    {
       "file": "esm/native/runtime/data_attrs.ts",
       "line": 67,
       "term": "fallback",
@@ -3290,6 +3275,13 @@
       "term": "fallbackWidth",
       "category": "runtime-default",
       "text": "const stableWidth = widthFromHit ?? widthFromPart ?? fallbackWidth ?? targetDistributionSpanM;"
+    },
+    {
+      "file": "esm/native/runtime/mirror_config_access.ts",
+      "line": 23,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "* platform render loop from treating either config domain as a fallback for"
     },
     {
       "file": "esm/native/runtime/planar_reflector_refresh_runtime.ts",
@@ -4056,28 +4048,28 @@
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 33,
+      "line": 29,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 49,
+      "line": 45,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 61,
+      "line": 57,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"
     },
     {
       "file": "esm/native/services/site_variant.ts",
-      "line": 83,
+      "line": 79,
       "term": "fallback",
       "category": "domain-default",
       "text": "// site-variant-probe-fallback: unreadable optional sources fall through to the next detection source"

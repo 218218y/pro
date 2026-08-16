@@ -2,7 +2,6 @@ import type { ConfigStateLike, ConfigScalarKey } from '../../../types/index.js';
 
 import { readConfigStateFromStore } from './root_state_access.js';
 import { getStoreSurfaceMaybe } from './store_surface_access.js';
-import { getConfigRootMaybe } from './app_roots_access.js';
 import type {
   ConfigScalarDefaultValue,
   ReadConfigScalar,
@@ -11,7 +10,6 @@ import type {
 } from './config_selectors_shared.js';
 import {
   emptyConfigState,
-  getCfgRecord,
   isBoardMaterialKey,
   isBooleanConfigKey,
   isGlobalHandleTypeKey,
@@ -32,7 +30,6 @@ import {
   readScalarValue,
   readWardrobeTypeDefault,
 } from './config_selectors_shared.js';
-import type { UnknownRecord } from '../../../types/index.js';
 
 /**
  * Read the current store.config snapshot (store-only).
@@ -67,26 +64,6 @@ export const readConfigScalarFromApp: ReadConfigScalar = (App: unknown, key: Con
   const c = readConfigStateFromApp(App);
   return readConfigScalarFromSnapshot(c, key);
 };
-
-export function readConfigLooseScalarFromApp(App: unknown, key: string, defaultValue?: unknown): unknown {
-  if (!key) return defaultValue;
-  try {
-    const cfg = readConfigStateFromApp(App);
-    const value = getCfgRecord(cfg)[key];
-    if (!(typeof value === 'undefined' || value === null || value === '')) return value;
-  } catch {
-    // config-compatibility-fallback: fall back to the retired direct config root for loose reads.
-  }
-
-  const direct = getConfigRootMaybe<UnknownRecord>(App);
-  const value = direct?.[key];
-  return typeof value === 'undefined' || value === null || value === '' ? defaultValue : value;
-}
-
-export function readConfigNumberLooseFromApp(App: unknown, key: string, defaultValue: number): number {
-  const value = readConfigLooseScalarFromApp(App, key, defaultValue);
-  return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-}
 
 /** Convenience: read scalar keys with safe defaults (typed). */
 export const readConfigScalarOrDefault: ReadConfigScalarOrDefault = (

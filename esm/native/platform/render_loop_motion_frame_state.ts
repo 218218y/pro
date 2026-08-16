@@ -1,6 +1,6 @@
 import type { AppContainer, DrawerVisualEntryLike, UnknownRecord } from '../../../types';
 
-import { readConfigNumberLooseFromApp } from '../runtime/config_selectors.js';
+import { readRuntimeConfigNumberFromApp } from '../runtime/runtime_config_selectors.js';
 import {
   computePerfFlagsViaPlatform,
   getDimsMFromPlatform,
@@ -39,7 +39,7 @@ export function readRenderLoopMotionFrameState(App: AppContainer, report: Report
   const lastToggleTime = getDoorsLastToggleTime(App);
   const timeSinceToggle = runtimeNow - lastToggleTime;
 
-  const delayTime = readConfigNumberLooseFromApp(App, 'DOOR_DELAY_MS', 600);
+  const delayTime = readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600);
 
   const perf = asRecord<UnknownRecord>(getPlatformPerf(App), {});
   if (perf['perfFlagsDirty']) {
@@ -92,7 +92,7 @@ export function readRenderLoopMotionFrameState(App: AppContainer, report: Report
   const timeSinceAction = runtimeNow - lastAction;
   const animationDuration = hasInternalDrawers ? delayTime + 1000 : 1000;
   const isAnimating = timeSinceToggle < animationDuration;
-  const activeMs = readConfigNumberLooseFromApp(App, 'ACTIVE_STATE_MS', 4000);
+  const activeMs = readRuntimeConfigNumberFromApp(App, 'ACTIVE_STATE_MS', 4000);
   const isActiveState = isAnimating || timeSinceAction < activeMs;
   const globalClickMode = !!readRuntimeScalarOrDefaultFromApp(App, 'globalClickMode', true);
 
