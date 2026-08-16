@@ -123,6 +123,63 @@ const IMPORT_CONTRACTS = [
     '../runtime/platform_access.js',
     ['setPlatformHasInternalDrawers'],
   ],
+  [
+    'esm/native/runtime/boot_entry_access.ts',
+    './services_root_access.js',
+    ['ensureServiceSlot', 'getServiceSlotMaybe'],
+  ],
+  [
+    'esm/native/runtime/commands_access.ts',
+    './services_root_access.js',
+    ['ensureServiceSlot', 'getServiceSlotMaybe'],
+  ],
+  ['esm/native/runtime/storage_access.ts', './services_root_access.js', ['getServiceSlotMaybe']],
+  [
+    'esm/native/runtime/notes_access_services.ts',
+    './services_root_access.js',
+    ['ensureServiceSlot', 'getServiceSlotMaybe'],
+  ],
+  ['esm/native/runtime/three_access.ts', './deps_access.js', ['getDepMaybe']],
+  [
+    'esm/native/builder/build_stack_split_bottom_layout.ts',
+    '../runtime/platform_access.js',
+    ['cloneViaPlatform'],
+  ],
+  [
+    'esm/native/builder/bootstrap_drawer_meta.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformWakeupFollowThrough'],
+  ],
+  [
+    'esm/native/platform/render_scheduler.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformWakeupFollowThrough'],
+  ],
+  [
+    'esm/native/platform/lifecycle_visibility.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformWakeupFollowThrough'],
+  ],
+  [
+    'esm/native/builder/handles_apply.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformRenderFollowThrough'],
+  ],
+  [
+    'esm/native/services/canvas_picking_core_runtime.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformRenderFollowThrough'],
+  ],
+  ['esm/native/services/canvas_picking_core_raycast.ts', '../runtime/three_access.js', ['getThreeMaybe']],
+  [
+    'esm/native/services/scene_view_shared_runtime.ts',
+    '../runtime/platform_access.js',
+    ['runPlatformActivityRenderTouch'],
+  ],
+  ['esm/native/services/scene_view_shared_runtime.ts', '../runtime/three_access.js', ['getThreeMaybe']],
+  ['esm/native/ui/ui_boot_controller_viewport.ts', '../services/api.js', ['assertThreeViaDeps']],
+  ['esm/native/ui/export/export_canvas_viewport_shared.ts', '../../services/api.js', ['getThreeMaybe']],
+  ['esm/native/platform/smoke_checks_scenario.ts', '../runtime/three_access.js', ['getThreeMaybe']],
 ];
 
 const EXPORT_CONTRACTS = [
@@ -136,6 +193,106 @@ const EXPORT_CONTRACTS = [
     ['RUNTIME_CONFIG_DEFAULTS', 'applyRuntimeConfigDefaults'],
     ['CONFIG_DEFAULTS', 'applyConfigDefaults'],
   ],
+  [
+    'esm/native/runtime/services_root_access.ts',
+    ['getServicesRootMaybe', 'ensureServicesRoot', 'getServiceSlotMaybe', 'ensureServiceSlot'],
+    [],
+  ],
+  ['esm/native/runtime/commands_access.ts', ['getCommandsServiceMaybe', 'ensureCommandsService'], []],
+  [
+    'esm/native/runtime/storage_access.ts',
+    [
+      'getStorageServiceMaybe',
+      'getStorageKey',
+      'getStorageString',
+      'getStorageJSON',
+      'setStorageString',
+      'setStorageJSON',
+      'removeStorageKey',
+    ],
+    [],
+  ],
+  ['esm/native/runtime/three_access.ts', ['getThreeMaybe', 'assertThreeViaDeps'], []],
+  [
+    'esm/native/runtime/boot_entry_access.ts',
+    [
+      'getAppStartServiceMaybe',
+      'ensureAppStartService',
+      'getUiBootServiceMaybe',
+      'ensureUiBootService',
+      'clearRetiredUiBootStart',
+      'getBootStartEntry',
+    ],
+    [],
+  ],
+  [
+    'esm/native/runtime/platform_access_state.ts',
+    [
+      'getPlatformComputePerfFlags',
+      'computePerfFlagsViaPlatform',
+      'getPlatformSetAnimate',
+      'installRenderAnimateViaPlatform',
+    ],
+    [],
+  ],
+  [
+    'esm/native/runtime/platform_access_ops.ts',
+    [
+      'getPlatformReportError',
+      'triggerRenderViaPlatform',
+      'runPlatformRenderFollowThrough',
+      'runPlatformWakeupFollowThrough',
+      'runPlatformActivityRenderTouch',
+      'createCanvasViaPlatform',
+      'cloneViaPlatform',
+      'cleanGroupViaPlatform',
+      'getPlatformPruneCachesSafe',
+      'ensurePlatformHash32',
+    ],
+    [],
+  ],
+  [
+    'esm/native/runtime/notes_access_services.ts',
+    ['getUiNotesServiceMaybe', 'getNotesServiceMaybe', 'isNotesScreenDrawMode'],
+    [],
+  ],
+  [
+    'esm/native/runtime/notes_access_actions.ts',
+    ['exitNotesDrawModeViaService', 'persistNotesViaService', 'sanitizeNotesHtmlViaService'],
+    [],
+  ],
+];
+
+const REEXPORT_CONTRACTS = [
+  [
+    'esm/native/runtime/platform_access.ts',
+    [
+      './platform_access_shared.js',
+      './platform_access_state.js',
+      './platform_access_ops.js',
+      './platform_access_debug_stats.js',
+    ],
+  ],
+  [
+    'esm/native/runtime/notes_access.ts',
+    ['./notes_access_shared.js', './notes_access_services.js', './notes_access_actions.js'],
+  ],
+];
+
+const PUBLIC_API_REQUIRED_EXPORTS = [
+  'reportError',
+  'triggerRenderViaPlatform',
+  'runPlatformRenderFollowThrough',
+  'runPlatformWakeupFollowThrough',
+  'runPlatformActivityRenderTouch',
+  'createCanvasViaPlatform',
+  'ensureCommandsService',
+  'ensureServicesRoot',
+  'getStorageString',
+  'getThreeMaybe',
+  'assertThreeViaDeps',
+  'getUiNotesServiceMaybe',
+  'exitNotesDrawModeViaService',
 ];
 
 const FORBIDDEN_CALLER_CHAINS = [
@@ -208,6 +365,28 @@ function findForbiddenChains(rel, suffixes) {
   return [...found].sort();
 }
 
+function expectStarReExports(file, specifiers) {
+  const analysis = analyze(file);
+  const starExports = new Set(
+    analysis.imports
+      .filter(entry => entry.syntax === 'static-re-export' && entry.exportedSymbols.includes('*'))
+      .map(entry => entry.specifier)
+  );
+  for (const specifier of specifiers) {
+    assert.equal(starExports.has(specifier), true, `${file} must re-export ${specifier}`);
+  }
+}
+
+function collectPublicReExports(file) {
+  const analysis = analyze(file);
+  return new Set(
+    analysis.imports
+      .filter(entry => entry.syntax === 'static-re-export')
+      .flatMap(entry => entry.exportedSymbols)
+      .filter(symbol => symbol !== '*')
+  );
+}
+
 test('runtime access seams route callers through canonical owners', () => {
   const cache = new Map();
   for (const [file, specifier, symbols] of IMPORT_CONTRACTS) {
@@ -222,12 +401,19 @@ test('runtime access seams route callers through canonical owners', () => {
   }
 });
 
-test('runtime access root owners expose only the current config/render APIs', () => {
+test('runtime access owners expose the canonical config, render, platform, service, and boot APIs', () => {
   for (const [file, required, forbidden] of EXPORT_CONTRACTS) {
     const exported = new Set(collectNamedModuleExports(file, read(file)).map(entry => entry.exportedName));
     for (const symbol of required) assert.equal(exported.has(symbol), true, `${file} must export ${symbol}`);
     for (const symbol of forbidden)
       assert.equal(exported.has(symbol), false, `${file} must not export retired ${symbol}`);
+  }
+
+  for (const [file, specifiers] of REEXPORT_CONTRACTS) expectStarReExports(file, specifiers);
+
+  const publicExports = collectPublicReExports('esm/native/services/api.ts');
+  for (const symbol of PUBLIC_API_REQUIRED_EXPORTS) {
+    assert.equal(publicExports.has(symbol), true, `services/api.ts must publicly re-export ${symbol}`);
   }
 });
 

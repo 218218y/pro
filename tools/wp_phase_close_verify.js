@@ -30,7 +30,7 @@ function runCoreCloseout({ projectRoot, childEnv }) {
     'tests/builder_room_corner_canonical_contracts.test.js',
     'tests/builder_surface_family_contracts.test.js',
     'tests/models_service_contracts.test.js',
-    'tests/platform_runtime_access_contracts.test.js',
+    'tests/runtime_access_seam_topology_contract.test.js',
   ];
 
   runCmd({

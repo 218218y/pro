@@ -851,7 +851,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     portfolioRole: 'focused',
     files: [
       'tests/runtime_platform_core_family_contracts.test.js',
-      'tests/platform_runtime_access_contracts.test.js',
+      'tests/runtime_access_seam_topology_contract.test.js',
       'tests/kernel_di_and_owner_contracts.test.js',
       'tests/kernel_history_runtime_contracts.test.js',
       'tests/kernel_snapshot_capture_contracts.test.js',
