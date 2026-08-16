@@ -53,6 +53,54 @@ test('sliding track open handles three doors by moving side doors inward and the
   assert.equal(resolveSlidingDoorTrackOpenPosition(middle, 3, 1, middle.originalZ).finalX, 1);
 });
 
+test('sliding track open stops before the next same-track door when closed doors overlap', () => {
+  const overlap = 0.03;
+
+  for (const total of [3, 4]) {
+    const internalWidth = total;
+    const doorW = (internalWidth + (total - 1) * overlap) / total;
+    const minX = -internalWidth / 2 + doorW / 2;
+    const maxX = internalWidth / 2 - doorW / 2;
+    const step = (maxX - minX) / (total - 1);
+
+    for (const index of Array.from({ length: total }, (_, i) => i)) {
+      const center = (total - 1) / 2;
+      const targetIndex = index < center ? index + 1 : index > center ? index - 1 : index + 1;
+      const direction = Math.sign(targetIndex - index);
+      const sameTrackIndex = index + direction * 2;
+      if (sameTrackIndex < 0 || sameTrackIndex >= total) continue;
+
+      const door = {
+        ...makeSlidingDoor(index, total),
+        width: doorW,
+        minX,
+        maxX,
+        originalX: minX + step * index,
+      };
+      const target = resolveSlidingDoorTrackOpenPosition(door, internalWidth, doorW, door.originalZ);
+      const sameTrackX = minX + step * sameTrackIndex;
+
+      const exactCollisionLimitX = sameTrackX - direction * doorW;
+      assert.ok(
+        Math.abs(target.finalX - exactCollisionLimitX) <= 1e-12,
+        `${total} doors, door ${index + 1}: travel must stop exactly at the same-track collision limit`
+      );
+
+      if (direction > 0) {
+        assert.ok(
+          target.finalX + doorW / 2 <= sameTrackX - doorW / 2 + 1e-12,
+          `${total} doors, door ${index + 1}: right edge must not penetrate next same-track door`
+        );
+      } else {
+        assert.ok(
+          target.finalX - doorW / 2 >= sameTrackX + doorW / 2 - 1e-12,
+          `${total} doors, door ${index + 1}: left edge must not penetrate next same-track door`
+        );
+      }
+    }
+  }
+});
+
 function makeAppWithSlidingDoors(doors: any[], state: any = { runtime: { doorsOpen: true } }) {
   const App: any = {
     actions: {

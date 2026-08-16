@@ -126,8 +126,31 @@ export function resolveSlidingDoorTrackOpenPosition(
 
   const targetIndex = resolveTrackTargetIndex(door, doorsCount, idx);
   const step = (maxX - minX) / Math.max(1, doorsCount - 1);
+  let finalX = minX + step * targetIndex;
+
+  // Sliding leaves alternate between two tracks. A one-slot move therefore
+  // stacks the opened leaf over the neighbouring leaf on the other track,
+  // while the next leaf two indices away remains on the same track. Because
+  // the closed leaves intentionally overlap, using the neighbouring slot
+  // center verbatim makes the opened leaf penetrate that same-track leaf by
+  // exactly the construction overlap. Limit the travel by the same-track
+  // neighbour's closed edge instead of allowing that geometric collision.
+  const direction = Math.sign(targetIndex - idx);
+  const sameTrackNeighbourIndex = idx + direction * 2;
+  if (
+    direction !== 0 &&
+    sameTrackNeighbourIndex >= 0 &&
+    sameTrackNeighbourIndex < doorsCount &&
+    Number.isFinite(doorW) &&
+    doorW > 0
+  ) {
+    const sameTrackNeighbourX = minX + step * sameTrackNeighbourIndex;
+    const collisionLimitX = sameTrackNeighbourX - direction * doorW;
+    finalX = direction > 0 ? Math.min(finalX, collisionLimitX) : Math.max(finalX, collisionLimitX);
+  }
+
   return {
-    finalX: clamp(minX + step * targetIndex, minX, maxX),
+    finalX: clamp(finalX, minX, maxX),
     finalZ: closedZ,
   };
 }
