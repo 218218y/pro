@@ -153,3 +153,36 @@ test('manual closeout workflow exposes only runner-approved profiles', () => {
   assert.match(manualCloseout, /Focused profiles publish diagnostics\/state artifacts/);
   assert.deepEqual(optionMatches, ALLOWED_PROFILES);
 });
+
+test('GitHub Playwright lanes use the pinned runner Chromium without redundant browser downloads', () => {
+  const ci = read('.github/workflows/ci.yml');
+  const manualPlaywright = read('.github/workflows/manual-playwright-smoke.yml');
+  const e2eCriticalSection = ci.match(/^  e2e-critical:[\s\S]*?(?=^  release-gate:)/m)?.[0];
+  const e2eSmokeSection = ci.match(/^  e2e-smoke:[\s\S]*$/m)?.[0];
+
+  assert.ok(e2eCriticalSection, 'e2e-critical job is missing');
+  assert.ok(e2eSmokeSection, 'e2e-smoke job is missing');
+
+  for (const [label, workflow] of [
+    ['e2e-critical', e2eCriticalSection],
+    ['e2e-smoke', e2eSmokeSection],
+    ['manual-playwright-smoke', manualPlaywright],
+  ]) {
+    assert.match(workflow, /runs-on: ubuntu-24\.04/, `${label} must pin the validated Ubuntu runner`);
+    assert.match(
+      workflow,
+      /PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: \/usr\/bin\/chromium/,
+      `${label} must use the runner Chromium explicitly`
+    );
+    assert.match(
+      workflow,
+      /name: Verify runner Chromium\n\s+run: \|\n\s+test -x "\$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"\n\s+"\$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" --version/,
+      `${label} must fail early if the runner Chromium contract changes`
+    );
+    assert.doesNotMatch(
+      workflow,
+      /e2e:install -- chromium --with-deps|playwright install chromium/,
+      `${label} must not download an unused Playwright Chromium bundle`
+    );
+  }
+});

@@ -461,9 +461,11 @@ jobs:
 
   e2e-critical:
     name: Playwright critical PR lane
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     if: github.event_name != 'workflow_dispatch'
+    env:
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
 
     steps:
       - name: Checkout
@@ -481,8 +483,10 @@ jobs:
       - name: Sync Three.js browser mirrors
         run: npm run three:sync-libs
 
-      - name: Install Playwright Chromium
-        run: npm run e2e:install -- chromium --with-deps
+      - name: Verify runner Chromium
+        run: |
+          test -x "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
+          "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" --version
 
       - name: Run critical browser journeys
         run: npm run e2e:critical
@@ -548,9 +552,11 @@ jobs:
 
   e2e-smoke:
     name: Playwright smoke (${{ matrix.shard }}/2)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     if: github.event_name == 'workflow_dispatch' && inputs.run_e2e
+    env:
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
     strategy:
       fail-fast: false
       matrix:
@@ -572,8 +578,10 @@ jobs:
       - name: Sync Three.js browser mirrors
         run: npm run three:sync-libs
 
-      - name: Install Playwright Chromium
-        run: npm run e2e:install -- chromium --with-deps
+      - name: Verify runner Chromium
+        run: |
+          test -x "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
+          "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" --version
 
       - name: Run Playwright smoke suite
         run: npm run e2e:smoke -- --shard=${{ matrix.shard }}/2
