@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T08:02:22.054Z",
+  "generatedAt": "2026-08-16T08:20:28.863Z",
   "totals": {
     "tests": 1247,
     "unitRunnerTests": 1238,
@@ -1130,10 +1130,6 @@
       "target": "esm/native/platform/render_loop_motion_doors.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/config_render_seam_cleanup_guard.test.js",
-          "kind": "contract"
-        },
         {
           "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
@@ -4209,7 +4205,7 @@
       "category": "contract"
     },
     {
-      "file": "tests/config_render_seam_cleanup_guard.test.js",
+      "file": "tests/config_render_seam_topology_contract.test.js",
       "category": "contract"
     },
     {
