@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-16T09:17:38.125Z",
+  "generatedAt": "2026-08-16T09:42:10.618Z",
   "totals": {
-    "tests": 1246,
-    "unitRunnerTests": 1237,
+    "tests": 1244,
+    "unitRunnerTests": 1235,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 139
   },
   "categories": {
-    "contract": 401,
+    "contract": 399,
     "runtime-unit": 337,
     "integration": 469,
     "persistence-ingress": 23,
@@ -1623,11 +1623,11 @@
           "kind": "source-guard"
         },
         {
-          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+          "file": "tests/platform_runtime_access_contracts.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/platform_runtime_access_contracts.test.js",
+          "file": "tests/runtime_access_seam_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1679,7 +1679,7 @@
           "kind": "source-guard"
         },
         {
-          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
+          "file": "tests/runtime_access_seam_topology_contract.test.js",
           "kind": "contract"
         }
       ]
@@ -2128,10 +2128,6 @@
       "target": "esm/native/services/doors_runtime_visuals_doors.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
-          "kind": "contract"
-        },
         {
           "file": "tests/export_overlay_errors_family_contracts.test.js",
           "kind": "contract"
@@ -3126,10 +3122,6 @@
     },
     {
       "file": "tests/camera_motion_render_wakeup_guard.test.cjs",
-      "category": "contract"
-    },
-    {
-      "file": "tests/camera_scene_access_cleanup_guard.test.js",
       "category": "contract"
     },
     {
@@ -4205,10 +4197,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/config_render_seam_topology_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/confirmed_action_family_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -4659,10 +4647,6 @@
     {
       "file": "tests/drawer_runner_visuals_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/drawer_runtime_access_cleanup_guard.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/e2e/authoring_builds.spec.ts",
@@ -6418,6 +6402,10 @@
     },
     {
       "file": "tests/root_surface_ast_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/runtime_access_seam_topology_contract.test.js",
       "category": "contract"
     },
     {
