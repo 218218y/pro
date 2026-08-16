@@ -4,8 +4,6 @@ import { __getRoomGroupNode } from './room_shared_state.js';
 import { resolveRoomArchitectureGeometry } from './room_architecture_geometry.js';
 
 export const ROOM_ARCHITECTURE_GROUP_NAME = 'wpRoomArchitecture';
-const ROOM_BACK_WALL_MATERIAL_COLOR = 0xf2efe6;
-const ROOM_COLUMN_MATERIAL_COLOR = 0xe6e1d5;
 
 function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
@@ -36,6 +34,39 @@ function removeExistingArchitecture(roomGroup: UnknownRecord): void {
   disposeNode(existing);
 }
 
+function addArchitectureBox(args: {
+  group: UnknownRecord;
+  BoxGeometryCtor: new (w: number, h: number, d: number) => unknown;
+  MaterialCtor: new (params: UnknownRecord) => unknown;
+  MeshCtor: new (geometry: unknown, material: unknown) => UnknownRecord;
+  box: {
+    width: number;
+    height: number;
+    depth: number;
+    centerX: number;
+    centerY: number;
+    centerZ: number;
+  };
+  name: string;
+  kind: string;
+  color: string;
+  castShadow?: boolean;
+}): void {
+  const mesh = new args.MeshCtor(
+    new args.BoxGeometryCtor(args.box.width, args.box.height, args.box.depth),
+    new args.MaterialCtor({ color: args.color, roughness: 0.96, metalness: 0 })
+  );
+  const pos = asRecord(mesh.position);
+  if (typeof pos?.set === 'function') {
+    pos.set(args.box.centerX, args.box.centerY, args.box.centerZ);
+  }
+  mesh.name = args.name;
+  mesh.castShadow = args.castShadow === true;
+  mesh.receiveShadow = true;
+  mesh.userData = { __kind: args.kind, ignorePicking: true };
+  if (typeof args.group.add === 'function') args.group.add(mesh);
+}
+
 export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike): boolean {
   const roomGroup = asRecord(__getRoomGroupNode(App));
   if (!roomGroup) return false;
@@ -56,33 +87,59 @@ export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike
   group.visible = !geometry.config.surfacesHidden;
   group.userData = { __kind: 'room_architecture', ignorePicking: true };
 
-  const wall = geometry.wall;
-  const wallMesh = new MeshCtor(
-    new BoxGeometryCtor(wall.width, wall.height, wall.depth),
-    new MaterialCtor({ color: ROOM_BACK_WALL_MATERIAL_COLOR, roughness: 0.96, metalness: 0 })
-  );
-  const wallPos = asRecord(wallMesh.position);
-  if (typeof wallPos?.set === 'function') wallPos.set(wall.centerX, wall.centerY, wall.centerZ);
-  wallMesh.name = 'wpBackWall';
-  wallMesh.receiveShadow = true;
-  wallMesh.userData = { __kind: 'room_back_wall', ignorePicking: true };
-  if (typeof group.add === 'function') group.add(wallMesh);
+  const wallColor = geometry.config.wallColor;
+
+  addArchitectureBox({
+    group,
+    BoxGeometryCtor,
+    MaterialCtor,
+    MeshCtor,
+    box: geometry.wall,
+    name: 'wpBackWall',
+    kind: 'room_back_wall',
+    color: wallColor,
+  });
+
+  if (geometry.leftWall) {
+    addArchitectureBox({
+      group,
+      BoxGeometryCtor,
+      MaterialCtor,
+      MeshCtor,
+      box: geometry.leftWall,
+      name: 'wpLeftWall',
+      kind: 'room_left_wall',
+      color: wallColor,
+      castShadow: true,
+    });
+  }
+
+  if (geometry.rightWall) {
+    addArchitectureBox({
+      group,
+      BoxGeometryCtor,
+      MaterialCtor,
+      MeshCtor,
+      box: geometry.rightWall,
+      name: 'wpRightWall',
+      kind: 'room_right_wall',
+      color: wallColor,
+      castShadow: true,
+    });
+  }
 
   if (geometry.column) {
-    const column = geometry.column;
-    const columnMesh = new MeshCtor(
-      new BoxGeometryCtor(column.width, column.height, column.depth),
-      new MaterialCtor({ color: ROOM_COLUMN_MATERIAL_COLOR, roughness: 0.98, metalness: 0 })
-    );
-    const columnPos = asRecord(columnMesh.position);
-    if (typeof columnPos?.set === 'function') {
-      columnPos.set(column.centerX, column.centerY, column.centerZ);
-    }
-    columnMesh.name = 'wpWallColumn';
-    columnMesh.castShadow = true;
-    columnMesh.receiveShadow = true;
-    columnMesh.userData = { __kind: 'room_column', ignorePicking: true };
-    if (typeof group.add === 'function') group.add(columnMesh);
+    addArchitectureBox({
+      group,
+      BoxGeometryCtor,
+      MaterialCtor,
+      MeshCtor,
+      box: geometry.column,
+      name: 'wpWallColumn',
+      kind: 'room_column',
+      color: wallColor,
+      castShadow: true,
+    });
   }
 
   if (typeof roomGroup.add === 'function') roomGroup.add(group);

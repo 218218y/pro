@@ -20,6 +20,16 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               heightCm: value?.backWall?.heightCm ?? 280,
               wardrobeOffsetLeftCm: value?.backWall?.wardrobeOffsetLeftCm ?? 50,
             },
+            leftWall: {
+              enabled: value?.leftWall?.enabled === true,
+              depthCm: value?.leftWall?.depthCm ?? 300,
+              heightCm: value?.leftWall?.heightCm ?? 280,
+            },
+            rightWall: {
+              enabled: value?.rightWall?.enabled === true,
+              depthCm: value?.rightWall?.depthCm ?? 300,
+              heightCm: value?.rightWall?.heightCm ?? 280,
+            },
             column: {
               enabled: value?.column?.enabled === true,
               offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
@@ -28,6 +38,7 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               heightCm: value?.column?.heightCm ?? 280,
               bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
             },
+            wallColor: value?.wallColor ?? '#f2efe6',
             surfacesHidden: value?.surfacesHidden === true,
           })),
       };
@@ -46,6 +57,16 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               heightCm: value?.backWall?.heightCm ?? 280,
               wardrobeOffsetLeftCm: value?.backWall?.wardrobeOffsetLeftCm ?? 50,
             },
+            leftWall: {
+              enabled: value?.leftWall?.enabled === true,
+              depthCm: value?.leftWall?.depthCm ?? 300,
+              heightCm: value?.leftWall?.heightCm ?? 280,
+            },
+            rightWall: {
+              enabled: value?.rightWall?.enabled === true,
+              depthCm: value?.rightWall?.depthCm ?? 300,
+              heightCm: value?.rightWall?.heightCm ?? 280,
+            },
             column: {
               enabled: value?.column?.enabled === true,
               offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
@@ -54,6 +75,7 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               heightCm: value?.column?.heightCm ?? 280,
               bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
             },
+            wallColor: value?.wallColor ?? '#f2efe6',
             surfacesHidden: value?.surfacesHidden === true,
           })),
       };
@@ -102,6 +124,8 @@ test('settings visual controls view-state runtime reads cfg state through canoni
   const mod = loadSettingsVisualViewStateModule();
   const defaultArchitecture = {
     backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
     column: {
       enabled: false,
       offsetLeftCm: 180,
@@ -110,6 +134,7 @@ test('settings visual controls view-state runtime reads cfg state through canoni
       heightCm: 280,
       bottomOffsetCm: 0,
     },
+    wallColor: '#f2efe6',
     surfacesHidden: false,
   };
   assert.equal(

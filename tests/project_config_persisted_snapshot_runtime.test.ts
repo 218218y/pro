@@ -88,6 +88,8 @@ test('project config persisted snapshot readers share a canonical branch list an
       grooveLinesCount: 4.8,
       roomArchitecture: {
         backWall: { enabled: true, widthCm: '520', heightCm: 300, wardrobeOffsetLeftCm: '65' },
+        leftWall: { enabled: true, depthCm: '360', heightCm: 275 },
+        rightWall: { enabled: false, depthCm: 280, heightCm: '265' },
         column: {
           enabled: true,
           offsetLeftCm: '210',
@@ -96,6 +98,7 @@ test('project config persisted snapshot readers share a canonical branch list an
           heightCm: 250,
           bottomOffsetCm: 20,
         },
+        wallColor: '#E8E1D4',
         surfacesHidden: true,
       },
       customMeta: { should: 'drop' },
@@ -133,6 +136,8 @@ test('project config persisted snapshot readers share a canonical branch list an
   assert.equal(persisted.isLibraryMode, true);
   assert.deepEqual(persisted.roomArchitecture, {
     backWall: { enabled: true, widthCm: 520, heightCm: 300, wardrobeOffsetLeftCm: 65 },
+    leftWall: { enabled: true, depthCm: 360, heightCm: 275 },
+    rightWall: { enabled: false, depthCm: 280, heightCm: 265 },
     column: {
       enabled: true,
       offsetLeftCm: 210,
@@ -141,6 +146,7 @@ test('project config persisted snapshot readers share a canonical branch list an
       heightCm: 250,
       bottomOffsetCm: 20,
     },
+    wallColor: '#e8e1d4',
     surfacesHidden: true,
   });
 });

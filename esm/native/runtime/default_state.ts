@@ -26,6 +26,8 @@ import {
 
 const DEFAULT_ROOM_ARCHITECTURE = Object.freeze({
   backWall: Object.freeze({ enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 }),
+  leftWall: Object.freeze({ enabled: false, depthCm: 300, heightCm: 280 }),
+  rightWall: Object.freeze({ enabled: false, depthCm: 300, heightCm: 280 }),
   column: Object.freeze({
     enabled: false,
     offsetLeftCm: 180,
@@ -34,6 +36,7 @@ const DEFAULT_ROOM_ARCHITECTURE = Object.freeze({
     heightCm: 280,
     bottomOffsetCm: 0,
   }),
+  wallColor: '#f2efe6',
   surfacesHidden: false,
 });
 
@@ -229,7 +232,10 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       grooveLinesCount: null,
       roomArchitecture: {
         backWall: { ...DEFAULT_ROOM_ARCHITECTURE.backWall },
+        leftWall: { ...DEFAULT_ROOM_ARCHITECTURE.leftWall },
+        rightWall: { ...DEFAULT_ROOM_ARCHITECTURE.rightWall },
         column: { ...DEFAULT_ROOM_ARCHITECTURE.column },
+        wallColor: DEFAULT_ROOM_ARCHITECTURE.wallColor,
         surfacesHidden: DEFAULT_ROOM_ARCHITECTURE.surfacesHidden,
       },
     },

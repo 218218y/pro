@@ -11,12 +11,24 @@ import { normalizeDoorMountThicknessCm } from '../../../shared/dimensions/door_m
 import { cloneComparableProjectConfigValue } from './project_config_snapshot_canonical_shared.js';
 import type { ProjectConfigSnapshotCanonicalizationOptions } from './project_config_snapshot_canonical_shared.js';
 
+const DEFAULT_PROJECT_ROOM_ARCHITECTURE_WALL_COLOR = '#f2efe6';
+
 const DEFAULT_PROJECT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = Object.freeze({
   backWall: Object.freeze({
     enabled: false,
     widthCm: 400,
     heightCm: 280,
     wardrobeOffsetLeftCm: 50,
+  }),
+  leftWall: Object.freeze({
+    enabled: false,
+    depthCm: 300,
+    heightCm: 280,
+  }),
+  rightWall: Object.freeze({
+    enabled: false,
+    depthCm: 300,
+    heightCm: 280,
   }),
   column: Object.freeze({
     enabled: false,
@@ -26,6 +38,7 @@ const DEFAULT_PROJECT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = 
     heightCm: 280,
     bottomOffsetCm: 0,
   }),
+  wallColor: DEFAULT_PROJECT_ROOM_ARCHITECTURE_WALL_COLOR,
   surfacesHidden: false,
 });
 
@@ -44,6 +57,28 @@ function clampRoomArchitectureNumber(value: number, min: number, max: number): n
 
 function roundRoomArchitectureCm(value: number): number {
   return Math.round(value * 10) / 10;
+}
+
+function normalizeProjectRoomArchitectureWallColor(value: unknown, defaultColor: string): string {
+  if (typeof value !== 'string') return defaultColor;
+  const normalized = value.trim().toLowerCase();
+  return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : defaultColor;
+}
+
+function normalizeProjectRoomSideWall(
+  value: unknown,
+  defaults: RoomArchitectureConfigLike['leftWall']
+): RoomArchitectureConfigLike['leftWall'] {
+  const raw = asRoomArchitectureRecord(value) || {};
+  return {
+    enabled: raw.enabled === true,
+    depthCm: roundRoomArchitectureCm(
+      clampRoomArchitectureNumber(finiteRoomArchitectureNumber(raw.depthCm, defaults.depthCm), 20, 2000)
+    ),
+    heightCm: roundRoomArchitectureCm(
+      clampRoomArchitectureNumber(finiteRoomArchitectureNumber(raw.heightCm, defaults.heightCm), 50, 1000)
+    ),
+  };
 }
 
 export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectureConfigLike {
@@ -117,6 +152,8 @@ export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectu
       heightCm: wallHeightCm,
       wardrobeOffsetLeftCm,
     },
+    leftWall: normalizeProjectRoomSideWall(root.leftWall, defaults.leftWall),
+    rightWall: normalizeProjectRoomSideWall(root.rightWall, defaults.rightWall),
     column: {
       enabled: columnRaw.enabled === true,
       offsetLeftCm: columnOffsetLeftCm,
@@ -125,6 +162,7 @@ export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectu
       heightCm: columnHeightCm,
       bottomOffsetCm,
     },
+    wallColor: normalizeProjectRoomArchitectureWallColor(root.wallColor, defaults.wallColor),
     surfacesHidden: root.surfacesHidden === true,
   };
 }
@@ -138,6 +176,8 @@ export function patchProjectRoomArchitecture(
     ...base,
     ...patch,
     backWall: { ...base.backWall, ...patch.backWall },
+    leftWall: { ...base.leftWall, ...patch.leftWall },
+    rightWall: { ...base.rightWall, ...patch.rightWall },
     column: { ...base.column, ...patch.column },
   });
 }

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-16T16:45:20.574Z",
+  "generatedAt": "2026-08-16T17:38:33.335Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 545,
-    "totalFiles": 212,
+    "totalOccurrences": 548,
+    "totalFiles": 213,
     "byCategory": {
-      "runtime-default": 56,
+      "runtime-default": 59,
       "domain-default": 395,
       "error-message-default": 42,
       "framework-default": 2,
@@ -1286,6 +1286,12 @@
           "runtime-default": 2
         }
       },
+      "esm/shared/room_architecture_shared.ts": {
+        "total": 3,
+        "categories": {
+          "runtime-default": 3
+        }
+      },
       "esm/test_imports.mjs": {
         "total": 1,
         "categories": {
@@ -2214,7 +2220,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
-      "line": 22,
+      "line": 23,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated rod materials"
@@ -5049,14 +5055,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 79,
+      "line": 82,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "} catch (fallbackErr) {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 80,
+      "line": 83,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"
@@ -5284,6 +5290,27 @@
       "term": "fallbackWoodThicknessM",
       "category": "runtime-default",
       "text": "fallbackWoodThicknessM: SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM,"
+    },
+    {
+      "file": "esm/shared/room_architecture_shared.ts",
+      "line": 51,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "function normalizeWallColor(value: unknown, fallback: string): string {"
+    },
+    {
+      "file": "esm/shared/room_architecture_shared.ts",
+      "line": 52,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "if (typeof value !== 'string') return fallback;"
+    },
+    {
+      "file": "esm/shared/room_architecture_shared.ts",
+      "line": 54,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;"
     },
     {
       "file": "esm/test_imports.mjs",

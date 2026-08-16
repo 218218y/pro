@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { ReactElement } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, ReactElement } from 'react';
 
 import { InlineNotice, ToggleRow } from '../components/index.js';
 import type { SettingsVisualRoomSectionModel } from './use_settings_visual_controller_contracts.js';
@@ -10,6 +10,7 @@ import {
   WallColorSwatch,
   isFloorStyleSelected,
 } from './settings_visual_sections_controls.js';
+import { DEFAULT_WALL_COLORS } from './settings_visual_shared_room.js';
 
 type ArchitectureNumberFieldProps = {
   id: string;
@@ -50,7 +51,7 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
           min={props.min ?? 0}
           max={props.max}
           step="5"
-          onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const raw = event.target.value;
             setDraft(raw);
             commitDraft(raw);
@@ -71,6 +72,111 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
   );
 }
 
+function SideWallControls(props: {
+  model: SettingsVisualRoomSectionModel;
+  side: 'leftWall' | 'rightWall';
+  title: string;
+  testId: string;
+}): ReactElement {
+  const wall = props.model.roomArchitecture[props.side];
+  const idPrefix = props.side === 'leftWall' ? 'left' : 'right';
+
+  return (
+    <div className="wp-r-room-column-block">
+      <ToggleRow
+        label={props.title}
+        checked={wall.enabled}
+        onChange={enabled => props.model.setSideWallEnabled(props.side, enabled)}
+        testId={props.testId}
+      />
+      {wall.enabled ? (
+        <div className="wp-r-room-dimension-grid">
+          <ArchitectureNumberField
+            id={`wp-room-${idPrefix}-wall-depth`}
+            label="אורך הקיר לתוך החדר"
+            value={wall.depthCm}
+            min={20}
+            max={2000}
+            onChange={value => props.model.setSideWallDimension(props.side, 'depthCm', value)}
+          />
+          <ArchitectureNumberField
+            id={`wp-room-${idPrefix}-wall-height`}
+            label="גובה הקיר"
+            value={wall.heightCm}
+            min={50}
+            max={1000}
+            onChange={value => props.model.setSideWallDimension(props.side, 'heightCm', value)}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const selectedColor = props.model.roomArchitecture.wallColor.toLowerCase();
+  const customSelected = !DEFAULT_WALL_COLORS.some(color => color.val.toLowerCase() === selectedColor);
+
+  return (
+    <div className="wp-r-mt-8">
+      <div className="wp-r-label">צבע הקירות:</div>
+      <div className="color-picker-row">
+        {DEFAULT_WALL_COLORS.map(color => (
+          <WallColorSwatch
+            key={`architecture-${color.id}`}
+            value={color.val}
+            title={String(color.name || color.id)}
+            selected={selectedColor === color.val.toLowerCase()}
+            onSelect={props.model.setArchitectureWallColor}
+          />
+        ))}
+        <button
+          type="button"
+          className={'btn wp-r-room-custom-color-btn' + (customSelected ? ' is-selected' : '')}
+          onClick={() => inputRef.current?.click()}
+          title="בחירת צבע קיר מותאם"
+          aria-label="בחירת צבע קיר מותאם"
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              display: 'inline-block',
+              width: 16,
+              height: 16,
+              borderRadius: 999,
+              border: '1px solid rgba(0,0,0,0.18)',
+              background: props.model.roomArchitecture.wallColor,
+              verticalAlign: 'middle',
+              marginInlineEnd: 6,
+            }}
+          />
+          מותאם
+          <input
+            ref={inputRef}
+            id="wp-r-room-custom-wall-color"
+            name="roomCustomWallColor"
+            type="color"
+            value={props.model.roomArchitecture.wallColor}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              props.model.setArchitectureWallColor(event.target.value)
+            }
+            aria-label="בחירת צבע קיר מותאם"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              opacity: 0,
+              pointerEvents: 'none',
+            }}
+            tabIndex={-1}
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
   const model = props.model;
   const architecture = model.roomArchitecture;
@@ -85,7 +191,7 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
         <div>
           <div className="wp-r-room-architecture-title">קירות ומבנה החדר</div>
           <div className="wp-r-room-architecture-subtitle">
-            הקיר והעמוד הם חלק מההדמיה; עמוד פעיל גם מתאים את בניית הארון סביבו.
+            הקירות והעמוד הם חלק מההדמיה; עמוד פעיל גם מתאים את בניית הארון סביבו.
           </div>
         </div>
       </div>
@@ -157,6 +263,19 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
             ) : null}
           </div>
 
+          <SideWallControls
+            model={model}
+            side="leftWall"
+            title="קיר צד שמאל"
+            testId="settings-room-left-wall-toggle"
+          />
+          <SideWallControls
+            model={model}
+            side="rightWall"
+            title="קיר צד ימין"
+            testId="settings-room-right-wall-toggle"
+          />
+
           <div className="wp-r-room-column-block">
             <ToggleRow
               label="עמוד בולט מהקיר"
@@ -218,11 +337,11 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
             data-testid="settings-room-architecture-visibility"
           >
             <i className={architecture.surfacesHidden ? 'fas fa-eye' : 'fas fa-eye-slash'}></i>{' '}
-            {architecture.surfacesHidden ? 'הצג קיר ועמוד' : 'הסתר קיר ועמוד'}
+            {architecture.surfacesHidden ? 'הצג קירות ועמוד' : 'הסתר קירות ועמוד'}
           </button>
           {architecture.surfacesHidden && column.enabled ? (
             <div className="wp-r-room-architecture-hidden-note">
-              הקיר והעמוד מוסתרים רק בתצוגה. החיתוכים וההתאמות של הארון לעמוד נשארים פעילים.
+              הקירות והעמוד מוסתרים רק בתצוגה. החיתוכים וההתאמות של הארון לעמוד נשארים פעילים.
             </div>
           ) : null}
         </div>
@@ -275,6 +394,8 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
           ))}
         </div>
       </div>
+
+      <ArchitectureWallColorPicker model={model} />
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">צבע מעטפת החדר (360°):</div>

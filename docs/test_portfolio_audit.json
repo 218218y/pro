@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-16T10:06:29.319Z",
+  "generatedAt": "2026-08-16T17:38:36.040Z",
   "totals": {
-    "tests": 1242,
-    "unitRunnerTests": 1233,
+    "tests": 1243,
+    "unitRunnerTests": 1234,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 397,
-    "runtime-unit": 337,
+    "runtime-unit": 338,
     "integration": 469,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -6356,6 +6356,10 @@
     },
     {
       "file": "tests/room_actions_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/room_architecture_scene_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

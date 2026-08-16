@@ -3,7 +3,8 @@ import type { AppContainer, RoomArchitectureConfigLike, UnknownRecord } from '..
 import { CARCASS_BACK_PANEL_THICKNESS_M } from './core_carcass_shell.js';
 import { getRoomArchitectureConfig, getRuntime, getUi } from './store_access.js';
 
-export const ROOM_BACK_WALL_THICKNESS_M = 0.04;
+export const ROOM_WALL_THICKNESS_M = 0.2;
+export const ROOM_BACK_WALL_THICKNESS_M = ROOM_WALL_THICKNESS_M;
 export const ROOM_BACK_WALL_GAP_M = 0.01;
 export const ROOM_ARCHITECTURE_EPSILON_M = 0.00005;
 export const ROOM_COLUMN_LINER_THICKNESS_M = CARCASS_BACK_PANEL_THICKNESS_M;
@@ -33,19 +34,23 @@ export type RoomColumnAdjustmentGeometry = {
   linerPanels: RoomColumnLinerPanel[];
 };
 
+type RoomArchitectureWallGeometry = AxisAlignedBox & {
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  depth: number;
+};
+
 export type RoomArchitectureGeometry = {
   config: RoomArchitectureConfigLike;
   wardrobeWidthM: number;
   wardrobeHeightM: number;
   wardrobeDepthM: number;
-  wall: AxisAlignedBox & {
-    centerX: number;
-    centerY: number;
-    centerZ: number;
-    width: number;
-    height: number;
-    depth: number;
-  };
+  wall: RoomArchitectureWallGeometry;
+  leftWall: RoomArchitectureWallGeometry | null;
+  rightWall: RoomArchitectureWallGeometry | null;
   column:
     | (AxisAlignedBox & {
         centerX: number;
@@ -117,9 +122,31 @@ export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitec
     maxX: wallLeftX + wallWidthM,
     minY: 0,
     maxY: wallHeightM,
-    minZ: wallFrontZ - ROOM_BACK_WALL_THICKNESS_M,
+    minZ: wallFrontZ - ROOM_WALL_THICKNESS_M,
     maxZ: wallFrontZ,
   });
+
+  const resolveSideWall = (
+    side: 'left' | 'right',
+    config: RoomArchitectureConfigLike['leftWall']
+  ): RoomArchitectureWallGeometry | null => {
+    if (!config.enabled) return null;
+    const depthM = config.depthCm / 100;
+    const heightM = config.heightCm / 100;
+    const minX = side === 'left' ? wall.minX - ROOM_WALL_THICKNESS_M : wall.maxX;
+    const maxX = side === 'left' ? wall.minX : wall.maxX + ROOM_WALL_THICKNESS_M;
+    return withBoxMetrics({
+      minX,
+      maxX,
+      minY: 0,
+      maxY: heightM,
+      minZ: wall.minZ,
+      maxZ: wall.maxZ + depthM,
+    });
+  };
+
+  const leftWall = config.backWall.enabled ? resolveSideWall('left', config.leftWall) : null;
+  const rightWall = config.backWall.enabled ? resolveSideWall('right', config.rightWall) : null;
 
   let column: RoomArchitectureGeometry['column'] = null;
   if (config.backWall.enabled && config.column.enabled) {
@@ -141,6 +168,8 @@ export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitec
     wardrobeHeightM: wardrobe.height,
     wardrobeDepthM: wardrobe.depth,
     wall,
+    leftWall,
+    rightWall,
     column,
   };
 }
@@ -327,6 +356,77 @@ export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColu
 
 export function resolveActiveRoomColumnCutObstacle(App: AppContainer): AxisAlignedBox | null {
   return resolveRoomColumnAdjustmentGeometry(App)?.cutObstacle || null;
+}
+
+export type RoomColumnAdjustedHorizontalSpan = {
+  minX: number;
+  maxX: number;
+  centerX: number;
+  length: number;
+};
+
+export function resolveHorizontalSpanAgainstRoomColumnCut(
+  App: AppContainer,
+  args: {
+    centerX: number;
+    centerY: number;
+    centerZ: number;
+    length: number;
+    halfHeight: number;
+    halfDepth: number;
+    minUsableLength: number;
+  }
+): RoomColumnAdjustedHorizontalSpan | null {
+  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+  const sourceMinX = args.centerX - args.length / 2;
+  const sourceMaxX = args.centerX + args.length / 2;
+  const source = {
+    minX: sourceMinX,
+    maxX: sourceMaxX,
+    minY: args.centerY - args.halfHeight,
+    maxY: args.centerY + args.halfHeight,
+    minZ: args.centerZ - args.halfDepth,
+    maxZ: args.centerZ + args.halfDepth,
+  };
+
+  if (!obstacle) {
+    return {
+      minX: sourceMinX,
+      maxX: sourceMaxX,
+      centerX: args.centerX,
+      length: args.length,
+    };
+  }
+
+  const cut = intersectAxisAlignedBoxes(source, obstacle);
+  if (!cut) {
+    return {
+      minX: sourceMinX,
+      maxX: sourceMaxX,
+      centerX: args.centerX,
+      length: args.length,
+    };
+  }
+
+  const cutsLeftEdge = cut.minX <= sourceMinX + ROOM_ARCHITECTURE_EPSILON_M;
+  const cutsRightEdge = cut.maxX >= sourceMaxX - ROOM_ARCHITECTURE_EPSILON_M;
+  if (cutsLeftEdge && cutsRightEdge) return null;
+
+  // A column in the middle would split one fitting into two independent fittings.
+  // The room-column rule intentionally removes that fitting instead.
+  if (!cutsLeftEdge && !cutsRightEdge) return null;
+
+  const minX = cutsLeftEdge ? cut.maxX : sourceMinX;
+  const maxX = cutsRightEdge ? cut.minX : sourceMaxX;
+  const length = maxX - minX;
+  if (!(length >= args.minUsableLength - ROOM_ARCHITECTURE_EPSILON_M)) return null;
+
+  return {
+    minX,
+    maxX,
+    centerX: (minX + maxX) / 2,
+    length,
+  };
 }
 
 export function axisAlignedBoxToCenterSize(box: AxisAlignedBox) {

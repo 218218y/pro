@@ -5,6 +5,7 @@ import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 
 import { asMaterial, asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
+import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
 
 export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
@@ -37,23 +38,34 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       innerH: shell.sideH,
       yNorm: rod.yNorm,
     });
-    const rodLen = Math.max(
+    const sourceRodLen = Math.max(
       SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
       (rodSegment ? rodSegment.width : geometry.innerW) - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
     );
-    const rodCenterX = rodSegment ? rodSegment.centerX : geometry.centerX;
+    const sourceRodCenterX = rodSegment ? rodSegment.centerX : geometry.centerX;
+    const rodCenterZ = geometry.innerBackZ + geometry.innerD / 2;
+    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(args.args.App, {
+      centerX: sourceRodCenterX,
+      centerY: rodY,
+      centerZ: rodCenterZ,
+      length: sourceRodLen,
+      halfHeight: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      halfDepth: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      minUsableLength: INTERIOR_ROD_RENDER_POLICY.columnCutMinUsableLengthM,
+    });
+    if (!rodSpan) continue;
     const rodPid = `${boxPid}_rod_${String(rod.id ?? ri)}`;
     const rodMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
-        rodLen,
+        rodSpan.length,
         INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );
     if (rodMesh.rotation) rodMesh.rotation.z = Math.PI / 2;
-    rodMesh.position?.set?.(rodCenterX, rodY, geometry.innerBackZ + geometry.innerD / 2);
+    rodMesh.position?.set?.(rodSpan.centerX, rodY, rodCenterZ);
     rodMesh.userData = rodMesh.userData || {};
     rodMesh.userData.partId = rodPid;
     rodMesh.userData.__wpType = 'sketchRod';

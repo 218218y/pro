@@ -7,6 +7,7 @@ import {
   canSingleHangerFitBelowRod,
   resolveInteriorRodAvailableHeight,
 } from './render_interior_rod_clearance.js';
+import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
@@ -188,6 +189,20 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       config.layout === 'storage_shelf' ||
       config.layout === 'storage';
 
+    const sourceRodLength = innerW - INTERIOR_ROD_RENDER_POLICY.widthClearanceM;
+    if (!(sourceRodLength > 0)) return true;
+
+    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(App, {
+      centerX: internalCenterX,
+      centerY: yPos,
+      centerZ: internalZ,
+      length: sourceRodLength,
+      halfHeight: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      halfDepth: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      minUsableLength: INTERIOR_ROD_RENDER_POLICY.columnCutMinUsableLengthM,
+    });
+    if (!rodSpan) return true;
+
     const rodMat = resolveRodMaterial({
       THREE,
       cache: __matCache(App),
@@ -197,14 +212,14 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       new THREE.CylinderGeometry(
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
-        innerW - INTERIOR_ROD_RENDER_POLICY.widthClearanceM,
+        rodSpan.length,
         INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );
     if (!rod.position || !rod.rotation || typeof rod.position.set !== 'function') return false;
     rod.rotation.z = Math.PI / 2;
-    rod.position.set(internalCenterX, yPos, internalZ);
+    rod.position.set(rodSpan.centerX, yPos, internalZ);
     rod.userData = {
       ...rod.userData,
       __kind: 'wardrobe_rod',
@@ -230,7 +245,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
 
     const canRenderSingleHanger = canSingleHangerFitBelowRod({
       availableHeight: singleHangerAvailableHeight,
-      moduleWidth: innerW,
+      moduleWidth: rodSpan.length,
     });
 
     if (
@@ -239,7 +254,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       canRenderSingleHanger &&
       typeof addRealisticHanger === 'function'
     ) {
-      addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, {
+      addRealisticHanger(rodSpan.centerX, yPos, internalZ, group, rodSpan.length, {
         showHangerEnabled,
         sketchMode,
         addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
@@ -275,21 +290,25 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
         );
       }
 
-      addHangingClothes(
-        internalCenterX,
-        yPos,
-        internalZ,
-        innerW - INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
-        group,
-        availableHeight,
-        depthHint,
-        {
-          showContentsEnabled,
-          doorStyle,
-          sketchMode,
-          addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
-        }
-      );
+      const hangingContentsWidth =
+        rodSpan.length - INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
+      if (hangingContentsWidth > 0) {
+        addHangingClothes(
+          rodSpan.centerX,
+          yPos,
+          internalZ,
+          hangingContentsWidth,
+          group,
+          availableHeight,
+          depthHint,
+          {
+            showContentsEnabled,
+            doorStyle,
+            sketchMode,
+            addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
+          }
+        );
+      }
     }
 
     return true;

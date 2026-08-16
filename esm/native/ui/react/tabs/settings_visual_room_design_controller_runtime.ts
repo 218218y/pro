@@ -30,8 +30,11 @@ export type SettingsVisualRoomDesignController = {
   setFloorType: (type: SettingsVisualFloorType) => void;
   pickFloorStyle: (style: FloorStyle) => void;
   pickWallColor: (value: string) => void;
+  setArchitectureWallColor: (value: string) => void;
   setBackWallEnabled: (enabled: boolean) => void;
   setBackWallDimension: (key: 'widthCm' | 'heightCm' | 'wardrobeOffsetLeftCm', value: number) => void;
+  setSideWallEnabled: (side: 'leftWall' | 'rightWall', enabled: boolean) => void;
+  setSideWallDimension: (side: 'leftWall' | 'rightWall', key: 'depthCm' | 'heightCm', value: number) => void;
   setWardrobeOffsetRightCm: (value: number) => void;
   alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
   setColumnEnabled: (enabled: boolean) => void;
@@ -183,6 +186,14 @@ export function createSettingsVisualRoomDesignController(
         reportNonFatal(args, 'settingsVisualRoomDesign:pickWallColor', err);
       }
     },
+    setArchitectureWallColor: (value: string) => {
+      commitRoomArchitecture(
+        args,
+        { wallColor: value },
+        'react:settingsVisual:roomArchitecture:wallColor',
+        'none'
+      );
+    },
     setBackWallEnabled: (enabled: boolean) => {
       commitRoomArchitecture(
         args,
@@ -199,6 +210,24 @@ export function createSettingsVisualRoomDesignController(
         { backWall: { [key]: nextValue } },
         `react:settingsVisual:roomBackWall:${key}`,
         'coalesced'
+      );
+    },
+    setSideWallEnabled: (side, enabled) => {
+      commitRoomArchitecture(
+        args,
+        { [side]: { enabled } },
+        `react:settingsVisual:roomArchitecture:${side}:enabled`,
+        'none'
+      );
+    },
+    setSideWallDimension: (side, key, value) => {
+      const nextValue = normalizeInputNumber(value);
+      if (nextValue == null) return;
+      commitRoomArchitecture(
+        args,
+        { [side]: { [key]: nextValue } },
+        `react:settingsVisual:roomArchitecture:${side}:${key}`,
+        'none'
       );
     },
     setWardrobeOffsetRightCm: value => {

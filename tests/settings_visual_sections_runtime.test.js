@@ -10,13 +10,19 @@ const countMatches = (source, pattern) => [...source.matchAll(pattern)].length;
 const roomArchitectureModel = {
   roomArchitecture: {
     backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    leftWall: { enabled: true, depthCm: 320, heightCm: 270 },
+    rightWall: { enabled: true, depthCm: 280, heightCm: 260 },
     column: { enabled: true, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 260, bottomOffsetCm: 20 },
+    wallColor: '#f2efe6',
     surfacesHidden: false,
   },
   wardrobeWidthCm: 240,
   wardrobeOffsetRightCm: 110,
   setBackWallEnabled: noop,
   setBackWallDimension: noop,
+  setSideWallEnabled: noop,
+  setSideWallDimension: noop,
+  setArchitectureWallColor: noop,
   setWardrobeOffsetRightCm: noop,
   alignWardrobeOnWall: noop,
   setColumnEnabled: noop,
@@ -79,12 +85,16 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(roomHtml, /סגנון ריצוף/);
   assert.match(roomHtml, /קירות ומבנה החדר/);
   assert.match(roomHtml, /קיר אחורי מאחורי הארון/);
+  assert.match(roomHtml, /קיר צד שמאל/);
+  assert.match(roomHtml, /קיר צד ימין/);
   assert.match(roomHtml, /עמוד בולט מהקיר/);
-  assert.match(roomHtml, /הסתר קיר ועמוד/);
-  assert.equal(countMatches(roomHtml, /step="5"/g), 9);
+  assert.match(roomHtml, /הסתר קירות ועמוד/);
+  assert.equal(countMatches(roomHtml, /step="5"/g), 13);
   assert.doesNotMatch(roomHtml, /step="0\.1"/);
   assert.match(roomHtml, /פרקט/);
   assert.match(roomHtml, /אריחים/);
+  assert.match(roomHtml, /צבע הקירות/);
+  assert.match(roomHtml, /בחירת צבע קיר מותאם/);
   assert.match(roomHtml, /צבע מעטפת החדר \(360°\)/);
   assert.ok(countMatches(roomHtml, /role="button"/g) >= 7);
   const fallbackHtml = renderToStaticMarkup(

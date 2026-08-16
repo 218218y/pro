@@ -3,7 +3,6 @@ import type {
   AppContainer,
   DrawerVisualEntryLike,
   ModuleConfigLike,
-  RoomArchitectureConfigLike,
   UnknownRecord,
 } from '../../../types';
 import {
@@ -86,6 +85,24 @@ type DrawerCollisionBox = {
   maxZ: number;
 };
 
+type RoomColumnArchitectureLike = {
+  backWall: {
+    enabled: true;
+    widthCm: number;
+    heightCm: number;
+    wardrobeOffsetLeftCm: number;
+  };
+  column: {
+    enabled: true;
+    offsetLeftCm: number;
+    widthCm: number;
+    depthCm: number;
+    heightCm: number;
+    bottomOffsetCm: number;
+  };
+  surfacesHidden: boolean;
+};
+
 function readFiniteNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : NaN;
   return Number.isFinite(n) ? n : null;
@@ -104,7 +121,7 @@ function boxesOverlap(a: DrawerCollisionBox, b: DrawerCollisionBox): boolean {
   );
 }
 
-function readRoomArchitecture(value: unknown): RoomArchitectureConfigLike | null {
+function readRoomArchitecture(value: unknown): RoomColumnArchitectureLike | null {
   const root = asRecord(value);
   const backWall = asRecord(root?.backWall);
   const column = asRecord(root?.column);

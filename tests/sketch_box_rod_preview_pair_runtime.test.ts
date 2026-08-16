@@ -93,6 +93,7 @@ function renderRods(options: {
   dividers?: unknown[];
   horizontalDividers?: unknown[];
   yFromBoxNorm?: (value: unknown, halfH: number) => number | null;
+  rootState?: unknown;
 }) {
   const added: FakeMesh[] = [];
   renderSketchBoxContentRods({
@@ -130,12 +131,48 @@ function renderRods(options: {
       throw new Error('unused');
     },
     args: {
+      App: {
+        store: {
+          getState: () =>
+            options.rootState ?? {
+              ui: { raw: { width: 100, height: 240, depth: 60 } },
+              config: { roomArchitecture: { backWall: { enabled: false } } },
+              runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+            },
+        },
+      },
       group: { add: (mesh: FakeMesh) => added.push(mesh) },
       woodThick: options.woodThick ?? 0.02,
       THREE: options.three ?? undefined,
     },
   } as never);
   return added;
+}
+
+function roomArchitectureForSketchRodColumn(column: { offsetLeftCm: number; widthCm: number }) {
+  return {
+    backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    column: {
+      enabled: true,
+      offsetLeftCm: column.offsetLeftCm,
+      widthCm: column.widthCm,
+      depthCm: 45,
+      heightCm: 220,
+      bottomOffsetCm: 0,
+    },
+    wallColor: '#f2efe6',
+    surfacesHidden: false,
+  };
+}
+
+function sketchRodColumnRootState(column: { offsetLeftCm: number; widthCm: number }) {
+  return {
+    ui: { raw: { width: 100, height: 240, depth: 60 } },
+    config: { roomArchitecture: roomArchitectureForSketchRodColumn(column) },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+  };
 }
 
 function rodPreview(options: {
@@ -237,6 +274,38 @@ test('rod renderer preserves focused sizing, scoped segment, mesh metadata and m
   const clearance = createThree();
   renderRods({ rods: [{ yNorm: 0.5 }], three: clearance.THREE, innerW: 1 });
   closeTo(clearance.geometries[0].args[2], 1 - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM);
+});
+
+test('sketch-box rod renderer applies the canonical room-column trim and removal policy', () => {
+  const sideThree = createThree();
+  const sideAdded = renderRods({
+    rods: [{ id: 'side', yNorm: 0.5 }],
+    three: sideThree.THREE,
+    rootState: sketchRodColumnRootState({ offsetLeftCm: 0, widthCm: 20 }),
+  });
+  assert.equal(sideAdded.length, 1);
+  assert.ok(Number(sideAdded[0].geometry.args[2]) < 1 - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM);
+  assert.ok(Number(sideAdded[0].position.values?.[0]) > 0);
+
+  const middleThree = createThree();
+  assert.deepEqual(
+    renderRods({
+      rods: [{ id: 'middle', yNorm: 0.5 }],
+      three: middleThree.THREE,
+      rootState: sketchRodColumnRootState({ offsetLeftCm: 40, widthCm: 20 }),
+    }),
+    []
+  );
+
+  const shortThree = createThree();
+  assert.deepEqual(
+    renderRods({
+      rods: [{ id: 'short', yNorm: 0.5 }],
+      three: shortThree.THREE,
+      rootState: sketchRodColumnRootState({ offsetLeftCm: 0, widthCm: 80 }),
+    }),
+    []
+  );
 });
 
 test('rod renderer remains resilient when keep-material tagging throws', () => {

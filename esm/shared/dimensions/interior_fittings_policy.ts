@@ -44,6 +44,7 @@ export const INTERIOR_SHELF_PIN_RENDER_POLICY = Object.freeze({
 export const INTERIOR_ROD_RENDER_POLICY = Object.freeze({
   radiusM: meters(0.015),
   widthClearanceM: meters(0.04),
+  columnCutMinUsableLengthM: meters(0.2),
   radialSegments: 12,
 });
 
@@ -68,6 +69,7 @@ export const INTERIOR_ROD_CONTENT_CLEARANCE_POLICY = Object.freeze({
 export const INTERIOR_ROD_POLICY = Object.freeze({
   radiusM: INTERIOR_ROD_RENDER_POLICY.radiusM,
   widthClearanceM: INTERIOR_ROD_RENDER_POLICY.widthClearanceM,
+  columnCutMinUsableLengthM: INTERIOR_ROD_RENDER_POLICY.columnCutMinUsableLengthM,
   radialSegments: INTERIOR_ROD_RENDER_POLICY.radialSegments,
   drawerVerticalGuardM: INTERIOR_ROD_PLACEMENT_POLICY.drawerVerticalGuardM,
   minHangingHeightM: INTERIOR_ROD_PLACEMENT_POLICY.minHangingHeightM,

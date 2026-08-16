@@ -11,6 +11,7 @@ import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../esm/shared/dimensions/
 import {
   INTERIOR_PRESET_ROD_FACTORS_POLICY,
   INTERIOR_PRESET_SHELF_ROWS_POLICY,
+  INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
   INTERIOR_ROD_PLACEMENT_POLICY,
   INTERIOR_ROD_RENDER_POLICY,
   INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
@@ -75,8 +76,8 @@ function makeFakeThree() {
   return { CylinderGeometry, MeshStandardMaterial, Mesh } as any;
 }
 
-function createRodOpsHarness() {
-  const App = {} as any;
+function createRodOpsHarness(rootState?: any) {
+  const App = rootState ? ({ store: { getState: () => rootState } } as any) : ({} as any);
   const cache: Record<string, unknown> = {};
   const added: any[] = [];
   const group = {
@@ -925,4 +926,134 @@ test('rod clearance preserves nearest-blocker, same-rod tolerance, evidence, and
   assertClose(resolveInteriorRodAvailableHeight({ ...base, config: {} }), 1);
   assert.equal(resolveInteriorRodAvailableHeight({ ...base, yPos: '1' as unknown as number, config: {} }), 0);
   assert.equal(resolveInteriorRodAvailableHeight({ ...base, yPos: NaN, config: {} }), 0);
+});
+
+function roomArchitectureForRodColumn(column: { offsetLeftCm: number; widthCm: number }) {
+  return {
+    backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    column: {
+      enabled: true,
+      offsetLeftCm: column.offsetLeftCm,
+      widthCm: column.widthCm,
+      depthCm: 20,
+      heightCm: 220,
+      bottomOffsetCm: 0,
+    },
+    wallColor: '#f2efe6',
+    surfacesHidden: false,
+  };
+}
+
+test('render interior rod shortens a side-colliding rod to the room-column liner and recenters its contents', () => {
+  const THREE = makeFakeThree();
+  const roomArchitecture = roomArchitectureForRodColumn({ offsetLeftCm: 0, widthCm: 20 });
+  const rootState = {
+    ui: { raw: { width: 100, height: 240, depth: 60 } },
+    config: { roomArchitecture },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+  };
+  const { ops, added, group } = createRodOpsHarness(rootState);
+  const hangerCalls: any[] = [];
+  const clothesCalls: any[] = [];
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos: 1.4,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    localGridStep: 0.4,
+    gridDivisions: 6,
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalZ: -0.2,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+    showContentsEnabled: true,
+    doorStyle: 'flat',
+    addHangingClothes(...args: any[]) {
+      clothesCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 1);
+  const rod = added[0];
+  const length = (rod.geometry as { args: number[] }).args[2];
+  assert.ok(length < 0.76);
+  assert.ok(length >= INTERIOR_ROD_RENDER_POLICY.columnCutMinUsableLengthM);
+  assert.ok(rod.position.x > 0);
+  assert.equal(hangerCalls.length, 1);
+  assertClose(hangerCalls[0][0], rod.position.x);
+  assertClose(hangerCalls[0][4], length);
+  assert.equal(clothesCalls.length, 1);
+  assertClose(clothesCalls[0][0], rod.position.x);
+  assertClose(clothesCalls[0][3], length - INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM);
+});
+
+test('render interior rod removes the whole fitting when a room column cuts through its middle', () => {
+  const THREE = makeFakeThree();
+  const roomArchitecture = roomArchitectureForRodColumn({ offsetLeftCm: 40, widthCm: 20 });
+  const rootState = {
+    ui: { raw: { width: 100, height: 240, depth: 60 } },
+    config: { roomArchitecture },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+  };
+  const { ops, added, group } = createRodOpsHarness(rootState);
+  const hangerCalls: any[] = [];
+  const clothesCalls: any[] = [];
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos: 1.4,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    localGridStep: 0.4,
+    gridDivisions: 6,
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalZ: -0.2,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+    showContentsEnabled: true,
+    doorStyle: 'flat',
+    addHangingClothes(...args: any[]) {
+      clothesCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 0);
+  assert.equal(hangerCalls.length, 0);
+  assert.equal(clothesCalls.length, 0);
+});
+
+test('render interior rod removes a side remainder shorter than the canonical column-cut minimum', () => {
+  const THREE = makeFakeThree();
+  const roomArchitecture = roomArchitectureForRodColumn({ offsetLeftCm: 0, widthCm: 75 });
+  const rootState = {
+    ui: { raw: { width: 100, height: 240, depth: 60 } },
+    config: { roomArchitecture },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+  };
+  const { ops, added, group } = createRodOpsHarness(rootState);
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos: 1.4,
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalZ: -0.2,
+    wardrobeGroup: group,
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 0);
 });

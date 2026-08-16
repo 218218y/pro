@@ -17,6 +17,8 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
             ...current,
             ...patch,
             backWall: { ...current.backWall, ...(patch.backWall || {}) },
+            leftWall: { ...current.leftWall, ...(patch.leftWall || {}) },
+            rightWall: { ...current.rightWall, ...(patch.rightWall || {}) },
             column: { ...current.column, ...(patch.column || {}) },
           })),
       };
@@ -29,6 +31,8 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
             ...current,
             ...patch,
             backWall: { ...current.backWall, ...patch.backWall },
+            leftWall: { ...current.leftWall, ...patch.leftWall },
+            rightWall: { ...current.rightWall, ...patch.rightWall },
             column: { ...current.column, ...patch.column },
           })),
         applyStructuralConfigMutation:
@@ -93,6 +97,8 @@ test('[settings-visual-room-design-controller] delegates floor/wall flows throug
     roomDesignRuntime: runtime,
     roomArchitecture: {
       backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
       column: {
         enabled: false,
         offsetLeftCm: 180,
@@ -101,6 +107,7 @@ test('[settings-visual-room-design-controller] delegates floor/wall flows throug
         heightCm: 280,
         bottomOffsetCm: 0,
       },
+      wallColor: '#f2efe6',
       surfacesHidden: false,
     },
     wardrobeWidthCm: 240,
@@ -154,6 +161,8 @@ test('[settings-visual-room-design-controller] falls back cleanly when runtime a
     roomDesignRuntime: runtime,
     roomArchitecture: {
       backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
       column: {
         enabled: false,
         offsetLeftCm: 180,
@@ -162,6 +171,7 @@ test('[settings-visual-room-design-controller] falls back cleanly when runtime a
         heightCm: 280,
         bottomOffsetCm: 0,
       },
+      wallColor: '#f2efe6',
       surfacesHidden: false,
     },
     wardrobeWidthCm: 240,
@@ -190,6 +200,8 @@ test('[settings-visual-room-design-controller] persists room architecture struct
   let configState = {
     roomArchitecture: {
       backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
       column: {
         enabled: false,
         offsetLeftCm: 180,
@@ -198,6 +210,7 @@ test('[settings-visual-room-design-controller] persists room architecture struct
         heightCm: 280,
         bottomOffsetCm: 0,
       },
+      wallColor: '#f2efe6',
       surfacesHidden: false,
     },
   };
@@ -232,6 +245,9 @@ test('[settings-visual-room-design-controller] persists room architecture struct
   controller.setColumnDimension('depthCm', 35);
   controller.setBackWallDimension('widthCm', 500);
   controller.setWardrobeOffsetRightCm(20);
+  controller.setSideWallEnabled('leftWall', true);
+  controller.setSideWallDimension('leftWall', 'depthCm', 360);
+  controller.setArchitectureWallColor('#e8e1d4');
   controller.toggleArchitectureVisibility();
   controller.toggleArchitectureVisibility();
 
@@ -239,6 +255,9 @@ test('[settings-visual-room-design-controller] persists room architecture struct
   assert.equal(configState.roomArchitecture.column.depthCm, 35);
   assert.equal(configState.roomArchitecture.backWall.widthCm, 500);
   assert.equal(configState.roomArchitecture.backWall.wardrobeOffsetLeftCm, 240);
+  assert.equal(configState.roomArchitecture.leftWall.enabled, true);
+  assert.equal(configState.roomArchitecture.leftWall.depthCm, 360);
+  assert.equal(configState.roomArchitecture.wallColor, '#e8e1d4');
   assert.equal(configState.roomArchitecture.surfacesHidden, false);
   assert.deepEqual(
     calls.filter(call => call[0] === 'mutation').map(call => [call[1], call[2]]),
@@ -247,9 +266,12 @@ test('[settings-visual-room-design-controller] persists room architecture struct
       ['react:settingsVisual:roomColumn:depthCm', 'coalesced'],
       ['react:settingsVisual:roomBackWall:widthCm', 'coalesced'],
       ['react:settingsVisual:roomBackWall:wardrobeOffsetRightCm', 'coalesced'],
+      ['react:settingsVisual:roomArchitecture:leftWall:enabled', 'none'],
+      ['react:settingsVisual:roomArchitecture:leftWall:depthCm', 'none'],
+      ['react:settingsVisual:roomArchitecture:wallColor', 'none'],
       ['react:settingsVisual:roomArchitectureVisibility', 'none'],
       ['react:settingsVisual:roomArchitectureVisibility', 'none'],
     ]
   );
-  assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 6);
+  assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 9);
 });

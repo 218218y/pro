@@ -29,8 +29,11 @@ export type SettingsVisualRoomDesignModel = {
   setFloorType: (type: SettingsVisualFloorType) => void;
   pickFloorStyle: (style: FloorStyle) => void;
   pickWallColor: (value: string) => void;
+  setArchitectureWallColor: (value: string) => void;
   setBackWallEnabled: (enabled: boolean) => void;
   setBackWallDimension: (key: 'widthCm' | 'heightCm' | 'wardrobeOffsetLeftCm', value: number) => void;
+  setSideWallEnabled: (side: 'leftWall' | 'rightWall', enabled: boolean) => void;
+  setSideWallDimension: (side: 'leftWall' | 'rightWall', key: 'depthCm' | 'heightCm', value: number) => void;
   setWardrobeOffsetRightCm: (value: number) => void;
   alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
   setColumnEnabled: (enabled: boolean) => void;
@@ -91,8 +94,11 @@ export function useSettingsVisualRoomDesign(
       setFloorType: roomDesignController.setFloorType,
       pickFloorStyle: roomDesignController.pickFloorStyle,
       pickWallColor: roomDesignController.pickWallColor,
+      setArchitectureWallColor: roomDesignController.setArchitectureWallColor,
       setBackWallEnabled: roomDesignController.setBackWallEnabled,
       setBackWallDimension: roomDesignController.setBackWallDimension,
+      setSideWallEnabled: roomDesignController.setSideWallEnabled,
+      setSideWallDimension: roomDesignController.setSideWallDimension,
       setWardrobeOffsetRightCm: roomDesignController.setWardrobeOffsetRightCm,
       alignWardrobeOnWall: roomDesignController.alignWardrobeOnWall,
       setColumnEnabled: roomDesignController.setColumnEnabled,
@@ -109,8 +115,11 @@ export function useSettingsVisualRoomDesign(
       roomDesignController.setFloorType,
       roomDesignController.pickFloorStyle,
       roomDesignController.pickWallColor,
+      roomDesignController.setArchitectureWallColor,
       roomDesignController.setBackWallEnabled,
       roomDesignController.setBackWallDimension,
+      roomDesignController.setSideWallEnabled,
+      roomDesignController.setSideWallDimension,
       roomDesignController.setWardrobeOffsetRightCm,
       roomDesignController.alignWardrobeOnWall,
       roomDesignController.setColumnEnabled,
