@@ -32,8 +32,8 @@
     "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
-    "classifiedFiles": 1243,
-    "unitRuntimeFiles": 1234,
+    "classifiedFiles": 1242,
+    "unitRuntimeFiles": 1233,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

@@ -72,6 +72,26 @@ const IMPORT_CONTRACTS = [
     '../runtime/deps_access.js',
     ['getDepsNamespaceMaybe'],
   ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_contracts.ts',
+    '../runtime/render_access.js',
+    ['ensureRenderCacheMaps', 'ensureRenderCacheObject', 'ensureRenderMetaMaps'],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_contracts.ts',
+    '../runtime/three_access.js',
+    ['assertThreeViaDeps'],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_constructors.ts',
+    './three_geometry_cache_patch_contracts.js',
+    ['normalizePositiveInt', 'readNumber', 'round6'],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_runtime.ts',
+    './three_geometry_cache_patch_constructors.js',
+    ['installGeometryCtorPatches'],
+  ],
   ['esm/native/ui/react/overlay_top_controls.tsx', '../../services/api.js', ['moveCameraViaService']],
   [
     'esm/native/services/scene_runtime.ts',
@@ -192,6 +212,56 @@ const EXPORT_CONTRACTS = [
     'esm/native/platform/runtime_config_defaults.ts',
     ['RUNTIME_CONFIG_DEFAULTS', 'applyRuntimeConfigDefaults'],
     ['CONFIG_DEFAULTS', 'applyConfigDefaults'],
+  ],
+  [
+    'esm/native/platform/cache_pruning.ts',
+    ['installCachePruning', 'cacheTouch'],
+    ['pruneOneCache', 'collectUsedSceneResources', 'pruneCachesSafe'],
+  ],
+  ['esm/native/platform/cache_pruning_shared.ts', ['pruneOneCache', 'collectUsedSceneResources'], []],
+  ['esm/native/platform/cache_pruning_runtime.ts', ['pruneCachesSafe'], []],
+  [
+    'esm/native/platform/three_geometry_cache_patch.ts',
+    [
+      'clearThreeGeometryCacheReferences',
+      'ensureGeometryCachesInstalled',
+      'getEdgesGeometryCache',
+      'getGeometryCache',
+      'installThreeGeometryCachePatch',
+      'isThreeGeometryCachePatchEnabled',
+      'readThreeGeometryCacheStats',
+    ],
+    ['createCachedGeometryCtor', 'installGeometryCtorPatches'],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_contracts.ts',
+    ['isGeometryMap', 'normalizePositiveInt'],
+    [],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_constructors.ts',
+    ['createCachedGeometryCtor', 'installGeometryCtorPatches'],
+    [],
+  ],
+  [
+    'esm/native/platform/three_geometry_cache_patch_runtime.ts',
+    [
+      'clearThreeGeometryCacheReferences',
+      'ensureGeometryCachesInstalled',
+      'installThreeGeometryCachePatch',
+      'readThreeGeometryCacheStats',
+    ],
+    [],
+  ],
+  [
+    'esm/native/platform/install.ts',
+    [
+      'clearThreeGeometryCacheReferences',
+      'ensureGeometryCachesInstalled',
+      'installThreeGeometryCachePatch',
+      'readThreeGeometryCacheStats',
+    ],
+    [],
   ],
   [
     'esm/native/runtime/services_root_access.ts',
@@ -401,7 +471,7 @@ test('runtime access seams route callers through canonical owners', () => {
   }
 });
 
-test('runtime access owners expose the canonical config, render, platform, service, and boot APIs', () => {
+test('runtime access owners expose canonical config, render, cache, platform, service, and boot APIs', () => {
   for (const [file, required, forbidden] of EXPORT_CONTRACTS) {
     const exported = new Set(collectNamedModuleExports(file, read(file)).map(entry => entry.exportedName));
     for (const symbol of required) assert.equal(exported.has(symbol), true, `${file} must export ${symbol}`);

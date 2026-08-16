@@ -4,8 +4,8 @@ Generated: 2026-08-16T10:06:29.319Z
 
 ## Summary
 
-- Test files classified: 1243
-- Canonical unit/runtime runner files: 1234
+- Test files classified: 1242
+- Canonical unit/runtime runner files: 1233
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 36
 - Package script test references: 16
@@ -24,7 +24,7 @@ Generated: 2026-08-16T10:06:29.319Z
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   398 |
+| contract            |   397 |
 | runtime-unit        |   337 |
 | integration         |   469 |
 | persistence-ingress |    23 |

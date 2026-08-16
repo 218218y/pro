@@ -40,8 +40,8 @@ Generated at: 2026-08-16T10:07:20.822Z
 
 ## Test portfolio
 
-- Classified test files: **1243**
-- Unit/runtime files: **1234**
+- Classified test files: **1242**
+- Unit/runtime files: **1233**
 - Playwright E2E files: **9**
 - Canonical contracts: **21**
 - Historical architecture proof files: **0**

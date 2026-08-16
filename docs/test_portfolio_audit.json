@@ -1,8 +1,8 @@
 {
   "generatedAt": "2026-08-16T10:06:29.319Z",
   "totals": {
-    "tests": 1243,
-    "unitRunnerTests": 1234,
+    "tests": 1242,
+    "unitRunnerTests": 1233,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 138
   },
   "categories": {
-    "contract": 398,
+    "contract": 397,
     "runtime-unit": 337,
     "integration": 469,
     "persistence-ingress": 23,
@@ -5741,10 +5741,6 @@
     {
       "file": "tests/platform_boot_runtime_state_runtime.test.ts",
       "category": "runtime-unit"
-    },
-    {
-      "file": "tests/platform_cache_lifecycle_family_guard.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/platform_followthrough_residual_runtime.test.ts",
