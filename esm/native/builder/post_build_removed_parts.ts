@@ -84,7 +84,6 @@ export function applyRemovedPartsAfterBuild(args: {
 }): void {
   const { App, THREE, cfgSnapshot, primaryMode } = args;
   const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
-  if (cfg.wardrobeType === 'sliding') return;
 
   const removedMap = readRemovedPartsMap(cfg);
   const wardrobeGroup = asRecord(getWardrobeGroup(App));

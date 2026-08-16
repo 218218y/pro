@@ -99,13 +99,13 @@ test('[parity-paths] notes/project bundle keeps persistence + restore paths expl
   assertLacksAll(assert, notesBundle, [/cfg_access\.js/, /cfgSetMap\(/], 'notesBundle');
 });
 
-test('[parity-paths] structure/domain bundle keeps canonical width/hinge/save paths', () => {
+test('[parity-paths] structure/domain bundle keeps canonical width/hinge/snapshot paths', () => {
   assertMatchesAll(
     assert,
     structureBundle,
     [
       /setCfgModulesConfiguration\(/,
-      /setCfgWardrobeType\(/,
+      /commitUiConfigSnapshotViaActionsOrThrow\(/,
       /writeHinge\(/,
       /writeHandle\(/,
       /applyConfigNonMapPatch\(/,

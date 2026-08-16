@@ -3,24 +3,15 @@ import type {
   ActionsNamespaceLike,
   AppContainer,
   RuntimeStateLike,
+  UiSlicePatch,
   UiStateLike,
   UnknownRecord,
   WardrobeType,
 } from '../../../types';
 
-import { patchUiSoft } from '../runtime/ui_write_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
-import {
-  cfgBatch,
-  setCfgCornerConfiguration,
-  setCfgLowerModulesConfiguration,
-  setCfgManualWidth,
-  setCfgModulesConfiguration,
-  setCfgWardrobeType,
-} from '../runtime/cfg_access.js';
-import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import { runAppStructuralModulesRecompute } from '../runtime/modules_recompute_request_policy.js';
-import { patchViaActions } from '../runtime/actions_access_mutations.js';
+import { commitUiConfigSnapshotViaActionsOrThrow } from '../runtime/actions_access_mutations.js';
 import type { InstallDomainApiRoomSectionArgs, MetaNoBuildFn } from './domain_api_room_section_shared.js';
 import {
   getDefaultDepthForWardrobeType,
@@ -122,7 +113,7 @@ export function installRoomWardrobeTypeSurface(args: InstallDomainApiRoomSection
             return result;
           }
 
-          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta, _ui());
+          initWardrobeTypeDefaults(App, actions, _metaNoBuild, next, meta, _ui(), cfg0);
         } catch (_eRestoreAll) {
           _domainApiReportNonFatal(App, 'domain_api_room:setWardrobeType:restore', _eRestoreAll, {
             throttleMs: 6000,
@@ -365,19 +356,6 @@ function buildSlidingSketchExternalDrawersCleanupPatch(cfg: unknown, next: Wardr
   return patch;
 }
 
-const WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS = [
-  'modulesConfiguration',
-  'stackSplitLowerModulesConfiguration',
-  'cornerConfiguration',
-] as const;
-
-function withWardrobeTypeProfileStructuralReplaceKeys(configPatch: UnknownRecord): UnknownRecord {
-  const replaceKeys = WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS.filter(key => hasOwnKey(configPatch, key));
-  return replaceKeys.length
-    ? (buildConfigPatchWithReplaceMetadata(configPatch, replaceKeys) as UnknownRecord)
-    : configPatch;
-}
-
 function readUiTransitionScalar(uiPatch: UiStateLike, currentUi: unknown, key: string): unknown {
   if (hasOwnKey(uiPatch, key)) return (uiPatch as UnknownRecord)[key];
   const current = asRecord(currentUi);
@@ -397,25 +375,48 @@ function applyWardrobeTypeBaseLegPlatformTransitionDefaults(
     : uiPatch;
 }
 
-function patchWardrobeTypeCanonicalState(
+function commitWardrobeTypeUiConfigSnapshot(
   App: AppContainer,
   actions: ActionsNamespaceLike,
   _metaNoBuild: MetaNoBuildFn,
   source: string,
-  configPatch: unknown,
+  configSnapshot: unknown,
   uiPatch: UiStateLike,
+  recomputeReason: string,
   meta?: ActionMetaLike | UnknownRecord | null
-): boolean {
+): void {
   markWardrobeTypeOpenStateBoundary(App);
-  return patchViaActions(
+  const transitionMeta = _metaNoBuild(actions, meta, source);
+  const uiSnapshotPatch = { ...uiPatch } as UnknownRecord;
+  if (uiPatch.raw && typeof uiPatch.raw === 'object') uiSnapshotPatch.raw = { ...uiPatch.raw };
+  else delete uiSnapshotPatch.raw;
+  const transaction = commitUiConfigSnapshotViaActionsOrThrow(
     App,
     {
-      config: withWardrobeTypeProfileStructuralReplaceKeys({ ...asRecord(configPatch) }),
-      ui: { ...uiPatch },
-      runtime: createWardrobeTypeOpenStateResetPatch(),
+      ui: uiSnapshotPatch as UiSlicePatch,
+      config: { ...asRecord(configSnapshot) },
     },
-    _metaNoBuild(actions, meta, source)
+    transitionMeta,
+    source
   );
+
+  try {
+    resetWardrobeTypeRuntimeOpenState(App, actions, _metaNoBuild, `${source}:runtime`, meta);
+    triggerRoomTypeRecompute(App, recomputeReason);
+    transaction.commit();
+  } catch (error) {
+    if (transaction.state === 'prepared') {
+      transaction.rollback({
+        ...transitionMeta,
+        source: `${source}:rollback`,
+        noBuild: true,
+        noHistory: true,
+        noAutosave: true,
+        silent: true,
+      });
+    }
+    throw error;
+  }
 }
 
 function restoreWardrobeTypeProfile(
@@ -446,60 +447,16 @@ function restoreWardrobeTypeProfile(
   Object.assign(cfgPatch, buildSlidingSketchExternalDrawersCleanupPatch(cfgPatch, next));
   cfgPatch.wardrobeType = next;
 
-  if (
-    patchWardrobeTypeCanonicalState(
-      App,
-      actions,
-      _metaNoBuild,
-      'actions:room:setWardrobeType:restore',
-      cfgPatch,
-      uiPatch,
-      { immediate: true }
-    )
-  ) {
-    triggerRoomTypeRecompute(App, 'wardrobeType:restore');
-    return;
-  }
-
-  resetWardrobeTypeRuntimeOpenState(
+  commitWardrobeTypeUiConfigSnapshot(
     App,
     actions,
     _metaNoBuild,
-    'actions:room:setWardrobeType:restore:runtime',
+    'actions:room:setWardrobeType:restore',
+    cfgPatch,
+    uiPatch,
+    'wardrobeType:restore',
     { immediate: true }
   );
-
-  const restoreMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:restore');
-  cfgBatch(
-    App,
-    function () {
-      setCfgWardrobeType(App, next, restoreMeta);
-      const cfgNoType = { ...asRecord(cfgPatch) };
-      delete cfgNoType.wardrobeType;
-      for (const key of Object.keys(cfgNoType)) {
-        if (key === 'modulesConfiguration') {
-          setCfgModulesConfiguration(App, cfgNoType[key], restoreMeta);
-        } else if (key === 'stackSplitLowerModulesConfiguration') {
-          setCfgLowerModulesConfiguration(App, cfgNoType[key], restoreMeta);
-        } else if (key === 'cornerConfiguration') {
-          setCfgCornerConfiguration(App, cfgNoType[key], restoreMeta);
-        } else if (key === 'isManualWidth') {
-          setCfgManualWidth(App, cfgNoType[key], restoreMeta);
-        } else {
-          actions.setCfgScalar?.(key, cfgNoType[key], restoreMeta);
-        }
-      }
-    },
-    restoreMeta
-  );
-
-  patchUiSoft(
-    App,
-    uiPatch,
-    _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:restore:ui')
-  );
-
-  triggerRoomTypeRecompute(App, 'wardrobeType:restore');
 }
 
 function initWardrobeTypeDefaults(
@@ -508,7 +465,8 @@ function initWardrobeTypeDefaults(
   _metaNoBuild: MetaNoBuildFn,
   next: WardrobeType,
   meta: ActionMetaLike | UnknownRecord | null | undefined,
-  currentUi?: unknown
+  currentUi?: unknown,
+  currentConfig?: unknown
 ): void {
   const rawPatch: Record<string, unknown> = {};
   const doorsI = getDefaultDoorsForWardrobeType(next);
@@ -520,50 +478,30 @@ function initWardrobeTypeDefaults(
 
   const uiPatch: UiStateLike = applyWardrobeTypeBaseLegPlatformTransitionDefaults(
     next,
-    { raw: rawPatch },
+    { raw: rawPatch, removeDoorsEnabled: false },
     currentUi
   );
-  const configPatch = {
+  const configSnapshot = {
+    ...asRecord(currentConfig),
     wardrobeType: next,
     isManualWidth: false,
     modulesConfiguration: [],
     stackSplitLowerModulesConfiguration: [],
     cornerConfiguration: {},
+    removedDoorsMap: {},
+    roundedFrameSideShelvesMap: {},
   };
-  if (
-    patchWardrobeTypeCanonicalState(
-      App,
-      actions,
-      _metaNoBuild,
-      'actions:room:setWardrobeType:init',
-      configPatch,
-      uiPatch,
-      meta
-    )
-  ) {
-    triggerRoomTypeRecompute(App, 'wardrobeType:init');
-    return;
-  }
 
-  resetWardrobeTypeRuntimeOpenState(
+  commitWardrobeTypeUiConfigSnapshot(
     App,
     actions,
     _metaNoBuild,
-    'actions:room:setWardrobeType:init:runtime',
+    'actions:room:setWardrobeType:init',
+    configSnapshot,
+    uiPatch,
+    'wardrobeType:init',
     meta
   );
-
-  const m = _metaNoBuild(actions, meta, 'actions:room:setWardrobeType:init:autoWidth');
-  setCfgWardrobeType(App, next, m);
-  setCfgManualWidth(App, false, m);
-  setCfgModulesConfiguration(App, [], m);
-  setCfgLowerModulesConfiguration(App, [], m);
-  setCfgCornerConfiguration(App, {}, m);
-
-  const uiMeta = _metaNoBuild(actions, { immediate: true }, 'actions:room:setWardrobeType:init:ui');
-  patchUiSoft(App, uiPatch, uiMeta);
-
-  triggerRoomTypeRecompute(App, 'wardrobeType:init');
 }
 
 function triggerRoomTypeRecompute(App: AppContainer, reason: string): void {

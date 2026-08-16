@@ -31,6 +31,28 @@ function mergeSlice(cur: AnyRec | undefined, patch: AnyRec | undefined): AnyRec 
 }
 
 const CONFIG_REPLACE_KEY = '__replace';
+const SNAPSHOT_REPLACE_KEYS = [
+  'modulesConfiguration',
+  'stackSplitLowerModulesConfiguration',
+  'cornerConfiguration',
+  'groovesMap',
+  'grooveLinesCountMap',
+  'grooveLayoutMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
+  'drawerDividersMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+] as const;
+const KNOWN_CONFIG_MAP_KEYS = new Set(SNAPSHOT_REPLACE_KEYS.slice(3));
 
 function mergeConfigSlice(cur: AnyRec | undefined, patch: AnyRec | undefined): AnyRec {
   const base = cur && typeof cur === 'object' ? { ...cur } : {};
@@ -71,6 +93,7 @@ function createHarness(seed?: {
   const recomputeCalls: any[] = [];
   const builderCalls: any[] = [];
   const patchCalls: any[] = [];
+  const uiConfigSnapshotCalls: any[] = [];
   const reports: any[] = [];
 
   const store = {
@@ -109,8 +132,49 @@ function createHarness(seed?: {
 
   const actions: AnyRec = {
     patch: (patch: AnyRec, meta?: AnyRec) => {
+      const configPatch = patch?.config && typeof patch.config === 'object' ? patch.config : {};
+      const forbiddenMaps = Object.keys(configPatch).filter(key => KNOWN_CONFIG_MAP_KEYS.has(key));
+      if (forbiddenMaps.length) {
+        throw new Error(
+          `[WardrobePro] actions.patch cannot write known config map branches (${forbiddenMaps.join(', ')})`
+        );
+      }
       patchCalls.push([patch, meta]);
       return store.patch(patch);
+    },
+    commitUiConfigSnapshot: (snapshot: AnyRec, meta?: AnyRec) => {
+      uiConfigSnapshotCalls.push([clone(snapshot), meta]);
+      const previous = {
+        ui: structuredClone(state.ui),
+        config: structuredClone(state.config),
+      };
+      state.ui = mergeSlice(state.ui, snapshot.ui);
+      const replace = Object.fromEntries(
+        SNAPSHOT_REPLACE_KEYS.filter(key =>
+          Object.prototype.hasOwnProperty.call(snapshot.config || {}, key)
+        ).map(key => [key, true])
+      );
+      state.config = mergeConfigSlice(state.config, {
+        ...(snapshot.config || {}),
+        [CONFIG_REPLACE_KEY]: replace,
+      });
+
+      let transactionState: 'prepared' | 'committed' | 'rolled-back' = 'prepared';
+      return {
+        get state() {
+          return transactionState;
+        },
+        commit() {
+          if (transactionState !== 'prepared') throw new Error(`cannot commit from ${transactionState}`);
+          transactionState = 'committed';
+        },
+        rollback() {
+          if (transactionState !== 'prepared') throw new Error(`cannot roll back from ${transactionState}`);
+          state.ui = structuredClone(previous.ui);
+          state.config = structuredClone(previous.config);
+          transactionState = 'rolled-back';
+        },
+      };
     },
     room: {},
     ui: {
@@ -188,7 +252,16 @@ function createHarness(seed?: {
     },
   });
 
-  return { state, actions, select, recomputeCalls, builderCalls, patchCalls, reports };
+  return {
+    state,
+    actions,
+    select,
+    recomputeCalls,
+    builderCalls,
+    patchCalls,
+    uiConfigSnapshotCalls,
+    reports,
+  };
 }
 
 test('room wardrobe type runtime: first switch to sliding uses sliding defaults instead of reusing hinged door count', () => {
@@ -371,6 +444,49 @@ test('room wardrobe type runtime: restores saved target profile when switching t
   assert.equal((h.recomputeCalls[0]?.[2] as AnyRec)?.preserveTemplate, true);
   assert.equal((h.recomputeCalls[0]?.[2] as AnyRec)?.anchorSide, 'left');
   assert.equal(h.state.runtime.wardrobeTypeProfiles.hinged.ui.raw.doors, 4);
+  assert.equal(h.reports.length, 0);
+});
+
+test('room wardrobe type runtime: removed doors and sides are isolated per hinged/sliding profile', () => {
+  const hingedRemoved = {
+    removed_d1_full: true,
+    removed_body_left: true,
+  };
+  const h = createHarness({
+    ui: {
+      raw: { width: 160, height: 240, depth: 55, doors: 4 },
+      removeDoorsEnabled: true,
+    },
+    config: {
+      wardrobeType: 'hinged',
+      removedDoorsMap: hingedRemoved,
+      roundedFrameSideShelvesMap: { body_left: true },
+    },
+  });
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.deepEqual(h.state.config.removedDoorsMap, {});
+  assert.deepEqual(h.state.config.roundedFrameSideShelvesMap, {});
+  assert.equal(h.state.ui.removeDoorsEnabled, false);
+
+  h.state.config.removedDoorsMap = { removed_d2_full: true };
+  h.state.ui.removeDoorsEnabled = true;
+
+  h.actions.room.setWardrobeType('hinged');
+
+  assert.equal(h.state.config.wardrobeType, 'hinged');
+  assert.deepEqual(h.state.config.removedDoorsMap, hingedRemoved);
+  assert.deepEqual(h.state.config.roundedFrameSideShelvesMap, { body_left: true });
+  assert.equal(h.state.ui.removeDoorsEnabled, true);
+
+  h.actions.room.setWardrobeType('sliding');
+
+  assert.equal(h.state.config.wardrobeType, 'sliding');
+  assert.deepEqual(h.state.config.removedDoorsMap, { removed_d2_full: true });
+  assert.deepEqual(h.state.config.roundedFrameSideShelvesMap, {});
+  assert.equal(h.state.ui.removeDoorsEnabled, true);
   assert.equal(h.reports.length, 0);
 });
 
@@ -719,36 +835,40 @@ test('room wardrobe type runtime: same-type switches short-circuit without recom
   assert.equal(h.reports.length, 0);
 });
 
-test('room wardrobe type runtime: init path collapses wardrobe type + ui defaults into one canonical root patch', () => {
+test('room wardrobe type runtime: init path uses the canonical ui/config snapshot transaction', () => {
   const h = createHarness({
     ui: { raw: { width: 160, height: 240, depth: 55, doors: 4 } },
-    config: { wardrobeType: 'hinged', isManualWidth: true },
+    config: {
+      wardrobeType: 'hinged',
+      isManualWidth: true,
+      removedDoorsMap: { removed_d1_full: true },
+      roundedFrameSideShelvesMap: { left: true },
+    },
   });
 
   h.actions.room.setWardrobeType('sliding');
 
-  assert.equal(h.patchCalls.length, 1);
-  const [patch, meta] = h.patchCalls[0];
-  assert.deepEqual(patch.config, {
-    wardrobeType: 'sliding',
-    isManualWidth: false,
-    modulesConfiguration: [],
-    stackSplitLowerModulesConfiguration: [],
-    cornerConfiguration: {},
-    __replace: {
-      modulesConfiguration: true,
-      stackSplitLowerModulesConfiguration: true,
-      cornerConfiguration: true,
-    },
+  assert.equal(h.patchCalls.length, 0);
+  assert.equal(h.uiConfigSnapshotCalls.length, 1);
+  const [snapshot, meta] = h.uiConfigSnapshotCalls[0];
+  assert.equal(snapshot.config.wardrobeType, 'sliding');
+  assert.equal(snapshot.config.isManualWidth, false);
+  assert.deepEqual(snapshot.config.modulesConfiguration, []);
+  assert.deepEqual(snapshot.config.stackSplitLowerModulesConfiguration, []);
+  assert.deepEqual(snapshot.config.cornerConfiguration, {});
+  assert.deepEqual(snapshot.config.removedDoorsMap, {});
+  assert.deepEqual(snapshot.config.roundedFrameSideShelvesMap, {});
+  assert.deepEqual(snapshot.ui, {
+    raw: { doors: 2, width: 160, depth: 60 },
+    removeDoorsEnabled: false,
   });
-  assert.deepEqual(patch.ui, { raw: { doors: 2, width: 160, depth: 60 } });
-  assert.equal(patch.runtime.doorsOpen, false);
-  assert.equal(patch.runtime.drawersOpenId, null);
-  assert.equal(typeof patch.runtime.doorsLastToggleTime, 'number');
+  assert.equal(h.state.runtime.doorsOpen, false);
+  assert.equal(h.state.runtime.drawersOpenId, null);
+  assert.equal(typeof h.state.runtime.doorsLastToggleTime, 'number');
   assert.deepEqual(meta, { source: 'actions:room:setWardrobeType:init' });
 });
 
-test('room wardrobe type runtime: restore path collapses wardrobe type profile config + ui into one canonical root patch', () => {
+test('room wardrobe type runtime: restore path uses the canonical ui/config snapshot transaction', () => {
   const h = createHarness({
     ui: {
       raw: { width: 160, height: 240, depth: 55, doors: 4 },
@@ -770,19 +890,20 @@ test('room wardrobe type runtime: restore path collapses wardrobe type profile c
 
   h.actions.room.setWardrobeType('sliding');
 
-  assert.equal(h.patchCalls.length, 1);
-  const [patch, meta] = h.patchCalls[0];
+  assert.equal(h.patchCalls.length, 0);
+  assert.equal(h.uiConfigSnapshotCalls.length, 1);
+  const [snapshot, meta] = h.uiConfigSnapshotCalls[0];
   assert.equal(meta.source, 'actions:room:setWardrobeType:restore');
   assert.equal(meta.immediate, true);
-  assert.equal(patch.config.wardrobeType, 'sliding');
-  assert.equal(patch.config.isManualWidth, false);
-  assert.equal(patch.ui.raw.width, 240);
-  assert.equal(patch.ui.raw.depth, 60);
-  assert.equal(patch.ui.raw.doors, 3);
-  assert.equal(patch.ui.currentFloorType, 'parquet');
-  assert.equal(patch.runtime.doorsOpen, false);
-  assert.equal(patch.runtime.drawersOpenId, null);
-  assert.equal(typeof patch.runtime.doorsLastToggleTime, 'number');
+  assert.equal(snapshot.config.wardrobeType, 'sliding');
+  assert.equal(snapshot.config.isManualWidth, false);
+  assert.equal(snapshot.ui.raw.width, 240);
+  assert.equal(snapshot.ui.raw.depth, 60);
+  assert.equal(snapshot.ui.raw.doors, 3);
+  assert.equal(snapshot.ui.currentFloorType, 'parquet');
+  assert.equal(h.state.runtime.doorsOpen, false);
+  assert.equal(h.state.runtime.drawersOpenId, null);
+  assert.equal(typeof h.state.runtime.doorsLastToggleTime, 'number');
 });
 
 test('room wardrobe type runtime: switching type clears transient door and drawer open runtime', () => {

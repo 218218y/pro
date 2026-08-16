@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T22:07:49.766Z",
+  "generatedAt": "2026-08-16T14:22:01.061Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 545,
@@ -3824,7 +3824,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_removable_part_remove_constraints.ts",
-      "line": 282,
+      "line": 284,
       "term": "Legacy",
       "category": "project-migration",
       "text": "// Legacy/imported snapshots occasionally lack the freePlacement marker while the rendered part id still"
