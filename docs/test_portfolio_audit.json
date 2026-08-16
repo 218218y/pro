@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-15T22:07:52.404Z",
+  "generatedAt": "2026-08-16T03:28:11.409Z",
   "totals": {
-    "tests": 1248,
-    "unitRunnerTests": 1239,
+    "tests": 1249,
+    "unitRunnerTests": 1240,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -17,12 +17,12 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 150
+    "contractOverlapTargets": 146
   },
   "categories": {
     "contract": 405,
     "runtime-unit": 337,
-    "integration": 467,
+    "integration": 468,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -275,20 +275,6 @@
       ]
     },
     {
-      "target": "esm/native/builder/corner_connector_cornice_plan.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
       "target": "esm/native/builder/corner_connector_cornice_shared.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -299,10 +285,6 @@
         {
           "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
           "kind": "ownership"
-        },
-        {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
-          "kind": "contract"
         }
       ]
     },
@@ -332,24 +314,6 @@
         },
         {
           "file": "tests/mirror_layout_family_guard.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/builder/corner_cornice_render.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
           "kind": "contract"
         }
       ]
@@ -465,39 +429,7 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/builder/corner_wing_cornice_profile.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
-          "kind": "contract"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/builder/corner_wing_cornice_wave.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/corner_wing_cornice_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/paint_hover_generic_parts_guard.test.js",
           "kind": "contract"
         }
       ]
@@ -3467,6 +3399,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_door_paint_hover_resolution_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/canvas_picking_door_split_click_runtime.test.ts",
       "category": "integration"
     },
@@ -5955,7 +5891,7 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/paint_hover_generic_parts_guard.test.js",
+      "file": "tests/paint_hover_topology_contract.test.js",
       "category": "contract"
     },
     {
