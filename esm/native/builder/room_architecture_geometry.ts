@@ -1,12 +1,12 @@
 import type { AppContainer, RoomArchitectureConfigLike, UnknownRecord } from '../../../types/index.js';
 
-import { normalizeRoomArchitecture } from '../../shared/room_architecture_shared.js';
-import { readRootState } from '../runtime/root_state_access.js';
-import { readRuntimeStateFromApp } from '../runtime/runtime_selectors.js';
+import { CARCASS_BACK_PANEL_THICKNESS } from './core_carcass_shared.js';
+import { getRoomArchitectureConfig, getRuntime, getUi } from './store_access.js';
 
 export const ROOM_BACK_WALL_THICKNESS_M = 0.04;
 export const ROOM_BACK_WALL_GAP_M = 0.01;
 export const ROOM_ARCHITECTURE_EPSILON_M = 0.00005;
+export const ROOM_COLUMN_LINER_THICKNESS_M = CARCASS_BACK_PANEL_THICKNESS;
 
 export type AxisAlignedBox = {
   minX: number;
@@ -15,6 +15,22 @@ export type AxisAlignedBox = {
   maxY: number;
   minZ: number;
   maxZ: number;
+};
+
+export type RoomColumnLinerFace = 'left' | 'right' | 'top' | 'bottom' | 'front';
+
+export type RoomColumnLinerPanel = {
+  face: RoomColumnLinerFace;
+  box: AxisAlignedBox;
+};
+
+export type RoomColumnAdjustmentGeometry = {
+  wardrobeBox: AxisAlignedBox;
+  obstacle: AxisAlignedBox;
+  intrusion: AxisAlignedBox;
+  cutObstacle: AxisAlignedBox;
+  cutIntrusion: AxisAlignedBox;
+  linerPanels: RoomColumnLinerPanel[];
 };
 
 export type RoomArchitectureGeometry = {
@@ -60,19 +76,17 @@ function readUiRawDimensionM(root: unknown, key: 'width' | 'height' | 'depth', d
 }
 
 function resolveWardrobeDimensions(App: AppContainer): { width: number; height: number; depth: number } {
-  const runtime = asRecord(readRuntimeStateFromApp(App)) || {};
-  const root = readRootState(App);
+  const runtime = asRecord(getRuntime(App)) || {};
+  const ui = asRecord(getUi(App));
   return {
-    width: finitePositive(runtime.wardrobeWidthM) ?? readUiRawDimensionM(root, 'width', 2.4),
-    height: finitePositive(runtime.wardrobeHeightM) ?? readUiRawDimensionM(root, 'height', 2.4),
-    depth: finitePositive(runtime.wardrobeDepthM) ?? readUiRawDimensionM(root, 'depth', 0.6),
+    width: finitePositive(runtime.wardrobeWidthM) ?? readUiRawDimensionM({ ui }, 'width', 2.4),
+    height: finitePositive(runtime.wardrobeHeightM) ?? readUiRawDimensionM({ ui }, 'height', 2.4),
+    depth: finitePositive(runtime.wardrobeDepthM) ?? readUiRawDimensionM({ ui }, 'depth', 0.6),
   };
 }
 
 export function readRoomArchitectureConfigFromApp(App: AppContainer): RoomArchitectureConfigLike {
-  const root = asRecord(readRootState(App));
-  const config = asRecord(root?.config);
-  return normalizeRoomArchitecture(config?.roomArchitecture);
+  return getRoomArchitectureConfig(App);
 }
 
 function withBoxMetrics(box: AxisAlignedBox) {
@@ -200,6 +214,119 @@ export function subtractAxisAlignedBox(source: AxisAlignedBox, obstacle: AxisAli
   appendBoxIfPositive(out, { ...source, ...midXY, maxZ: cut.minZ });
   appendBoxIfPositive(out, { ...source, ...midXY, minZ: cut.maxZ });
   return out;
+}
+
+function wardrobeBoxFromGeometry(geometry: RoomArchitectureGeometry): AxisAlignedBox {
+  return {
+    minX: -geometry.wardrobeWidthM / 2,
+    maxX: geometry.wardrobeWidthM / 2,
+    minY: 0,
+    maxY: geometry.wardrobeHeightM,
+    minZ: -geometry.wardrobeDepthM / 2,
+    maxZ: geometry.wardrobeDepthM / 2,
+  };
+}
+
+function buildRoomColumnLinerPanels(args: {
+  intrusion: AxisAlignedBox;
+  cutIntrusion: AxisAlignedBox;
+}): RoomColumnLinerPanel[] {
+  const { intrusion, cutIntrusion } = args;
+  const panels: RoomColumnLinerPanel[] = [];
+
+  const add = (face: RoomColumnLinerFace, box: AxisAlignedBox): void => {
+    if (
+      box.maxX - box.minX > ROOM_ARCHITECTURE_EPSILON_M &&
+      box.maxY - box.minY > ROOM_ARCHITECTURE_EPSILON_M &&
+      box.maxZ - box.minZ > ROOM_ARCHITECTURE_EPSILON_M
+    ) {
+      panels.push({ face, box });
+    }
+  };
+
+  add('front', {
+    minX: cutIntrusion.minX,
+    maxX: cutIntrusion.maxX,
+    minY: cutIntrusion.minY,
+    maxY: cutIntrusion.maxY,
+    minZ: intrusion.maxZ,
+    maxZ: cutIntrusion.maxZ,
+  });
+  add('left', {
+    minX: cutIntrusion.minX,
+    maxX: intrusion.minX,
+    minY: cutIntrusion.minY,
+    maxY: cutIntrusion.maxY,
+    minZ: intrusion.minZ,
+    maxZ: intrusion.maxZ,
+  });
+  add('right', {
+    minX: intrusion.maxX,
+    maxX: cutIntrusion.maxX,
+    minY: cutIntrusion.minY,
+    maxY: cutIntrusion.maxY,
+    minZ: intrusion.minZ,
+    maxZ: intrusion.maxZ,
+  });
+  add('top', {
+    minX: intrusion.minX,
+    maxX: intrusion.maxX,
+    minY: intrusion.maxY,
+    maxY: cutIntrusion.maxY,
+    minZ: intrusion.minZ,
+    maxZ: intrusion.maxZ,
+  });
+  add('bottom', {
+    minX: intrusion.minX,
+    maxX: intrusion.maxX,
+    minY: cutIntrusion.minY,
+    maxY: intrusion.minY,
+    minZ: intrusion.minZ,
+    maxZ: intrusion.maxZ,
+  });
+
+  return panels;
+}
+
+export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColumnAdjustmentGeometry | null {
+  const geometry = resolveRoomArchitectureGeometry(App);
+  const obstacle =
+    geometry.config.backWall.enabled && geometry.config.column.enabled ? geometry.column : null;
+  if (!obstacle) return null;
+
+  const wardrobeBox = wardrobeBoxFromGeometry(geometry);
+  const intrusion = intersectAxisAlignedBoxes(obstacle, wardrobeBox);
+  if (!intrusion) return null;
+
+  const liner = ROOM_COLUMN_LINER_THICKNESS_M;
+  const cutObstacle: AxisAlignedBox = {
+    minX:
+      intrusion.minX > wardrobeBox.minX + ROOM_ARCHITECTURE_EPSILON_M ? obstacle.minX - liner : obstacle.minX,
+    maxX:
+      intrusion.maxX < wardrobeBox.maxX - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxX + liner : obstacle.maxX,
+    minY:
+      intrusion.minY > wardrobeBox.minY + ROOM_ARCHITECTURE_EPSILON_M ? obstacle.minY - liner : obstacle.minY,
+    maxY:
+      intrusion.maxY < wardrobeBox.maxY - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxY + liner : obstacle.maxY,
+    minZ: obstacle.minZ,
+    maxZ:
+      intrusion.maxZ < wardrobeBox.maxZ - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxZ + liner : obstacle.maxZ,
+  };
+  const cutIntrusion = intersectAxisAlignedBoxes(cutObstacle, wardrobeBox);
+  if (!cutIntrusion) return null;
+
+  return {
+    wardrobeBox,
+    obstacle,
+    intrusion,
+    cutObstacle,
+    cutIntrusion,
+    linerPanels: buildRoomColumnLinerPanels({ intrusion, cutIntrusion }),
+  };
+}
+
+export function resolveActiveRoomColumnCutObstacle(App: AppContainer): AxisAlignedBox | null {
+  return resolveRoomColumnAdjustmentGeometry(App)?.cutObstacle || null;
 }
 
 export function axisAlignedBoxToCenterSize(box: AxisAlignedBox) {

@@ -2,14 +2,14 @@ import type {
   AppContainer,
   MetaActionsNamespaceLike,
   RoomArchitectureConfigLike,
+  RoomArchitecturePatch,
   UnknownRecord,
 } from '../../../../../types';
 
 import {
-  patchRoomArchitecture,
-  type RoomArchitecturePatch,
-} from '../../../../shared/room_architecture_shared.js';
-import { applyStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
+  applyStructuralConfigMutation,
+  patchProjectRoomArchitecture,
+} from '../actions/structural_build_refresh_actions.js';
 import {
   getUiSnapshot,
   getConfigSnapshot,
@@ -94,7 +94,7 @@ function readCurrentRoomArchitecture(
   args: CreateSettingsVisualRoomDesignControllerArgs
 ): RoomArchitectureConfigLike {
   const liveConfig = getConfigSnapshot(args.app);
-  return patchRoomArchitecture(liveConfig.roomArchitecture ?? args.roomArchitecture, {});
+  return patchProjectRoomArchitecture(liveConfig.roomArchitecture ?? args.roomArchitecture, {});
 }
 
 function commitRoomArchitecture(
@@ -103,7 +103,7 @@ function commitRoomArchitecture(
   source: string,
   buildTiming: 'immediate' | 'coalesced' | 'none'
 ): void {
-  const next = patchRoomArchitecture(readCurrentRoomArchitecture(args), patch);
+  const next = patchProjectRoomArchitecture(readCurrentRoomArchitecture(args), patch);
   applyStructuralConfigMutation(
     args.app,
     source,

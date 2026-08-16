@@ -11,7 +11,7 @@ import {
   axisAlignedBoxToCenterSize,
   boxFromCenterSize,
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnObstacle,
+  resolveActiveRoomColumnCutObstacle,
   subtractAxisAlignedBox,
 } from './room_architecture_geometry.js';
 
@@ -759,7 +759,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const addOutlines = args.addOutlines;
 
     const sourceBox = boxFromCenterSize({ x, y, z, width: w, height: h, depth: d });
-    const obstacle = resolveActiveRoomColumnObstacle(App);
+    const obstacle = resolveActiveRoomColumnCutObstacle(App);
     const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
     if (!intersection) {

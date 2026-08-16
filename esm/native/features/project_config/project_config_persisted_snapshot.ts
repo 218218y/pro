@@ -9,7 +9,7 @@ import type {
 
 import { normalizeSavedColorsList } from '../../../shared/maps_access_collections_shared.js';
 import { normalizeDoorMountThicknessCm } from '../../../shared/dimensions/door_mount_thickness_policy.js';
-import { normalizeRoomArchitecture } from '../../../shared/room_architecture_shared.js';
+import { normalizeProjectRoomArchitecture } from './project_config_snapshot_canonical_scalar_runtime.js';
 import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
 import { cloneModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
 import { cloneProjectJson } from '../../../shared/project_json_clone.js';
@@ -167,7 +167,7 @@ const PERSISTED_PROJECT_CONFIG_BRANCH_READERS: {
     readDoorMountThicknessCm(canonicalConfig.overlayShelfThicknessCm),
   insetFrameThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetFrameThicknessCm),
   insetShelfThicknessCm: canonicalConfig => readDoorMountThicknessCm(canonicalConfig.insetShelfThicknessCm),
-  roomArchitecture: canonicalConfig => normalizeRoomArchitecture(canonicalConfig.roomArchitecture),
+  roomArchitecture: canonicalConfig => normalizeProjectRoomArchitecture(canonicalConfig.roomArchitecture),
 };
 
 function readComparableProjectConfigSnapshot(

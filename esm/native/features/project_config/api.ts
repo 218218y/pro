@@ -31,6 +31,10 @@ export {
   normalizeProjectConfigScalarEntry,
 } from './project_config_snapshot_canonical_runtime.js';
 export {
+  normalizeProjectRoomArchitecture,
+  patchProjectRoomArchitecture,
+} from './project_config_snapshot_canonical_scalar_runtime.js';
+export {
   cloneComparableProjectConfigValue,
   KNOWN_PROJECT_CONFIG_MAP_KEYS,
   PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,

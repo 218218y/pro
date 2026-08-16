@@ -35,6 +35,32 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
     if (specifier === '../../../../shared/dimensions/wardrobe_defaults.js') {
       return { DEFAULT_WIDTH: 240 };
     }
+    if (specifier === '../actions/structural_build_refresh_actions.js') {
+      return {
+        normalizeProjectRoomArchitecture:
+          stubs.normalizeProjectRoomArchitecture ||
+          (value => ({
+            backWall: {
+              enabled: value?.backWall?.enabled === true,
+              widthCm: value?.backWall?.widthCm ?? 400,
+              heightCm: value?.backWall?.heightCm ?? 280,
+              wardrobeOffsetLeftCm: value?.backWall?.wardrobeOffsetLeftCm ?? 50,
+            },
+            column: {
+              enabled: value?.column?.enabled === true,
+              offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
+              widthCm: value?.column?.widthCm ?? 30,
+              depthCm: value?.column?.depthCm ?? 20,
+              heightCm: value?.column?.heightCm ?? 280,
+              bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
+            },
+            surfacesHidden: value?.surfacesHidden === true,
+          })),
+      };
+    }
+    if (specifier === './structure_tab_dimension_defaults.js') {
+      return { DEFAULT_WIDTH: 240 };
+    }
     if (specifier === './settings_visual_shared_contracts.js') {
       return {
         DEFAULT_WALL_COLOR: stubs.DEFAULT_WALL_COLOR || '#37474f',

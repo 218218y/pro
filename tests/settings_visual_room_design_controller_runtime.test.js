@@ -23,6 +23,14 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
     }
     if (specifier === '../actions/structural_build_refresh_actions.js') {
       return {
+        patchProjectRoomArchitecture:
+          stubs.patchProjectRoomArchitecture ||
+          ((current, patch) => ({
+            ...current,
+            ...patch,
+            backWall: { ...current.backWall, ...patch.backWall },
+            column: { ...current.column, ...patch.column },
+          })),
         applyStructuralConfigMutation:
           stubs.applyStructuralConfigMutation ||
           ((app, source, patch, applyDirectMutation, options) => {

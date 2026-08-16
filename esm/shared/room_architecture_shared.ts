@@ -1,4 +1,4 @@
-import type { RoomArchitectureConfigLike, UnknownRecord } from '../../types/index.js';
+import type { RoomArchitectureConfigLike, RoomArchitecturePatch, UnknownRecord } from '../../types/index.js';
 
 export const DEFAULT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = Object.freeze({
   backWall: Object.freeze({
@@ -17,11 +17,6 @@ export const DEFAULT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = O
   }),
   surfacesHidden: false,
 });
-
-export type RoomArchitecturePatch = Omit<Partial<RoomArchitectureConfigLike>, 'backWall' | 'column'> & {
-  backWall?: Partial<RoomArchitectureConfigLike['backWall']>;
-  column?: Partial<RoomArchitectureConfigLike['column']>;
-};
 
 function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
@@ -101,7 +96,7 @@ export function patchRoomArchitecture(
   return normalizeRoomArchitecture({
     ...base,
     ...patch,
-    backWall: { ...base.backWall, ...(patch.backWall || {}) },
-    column: { ...base.column, ...(patch.column || {}) },
+    backWall: { ...base.backWall, ...patch.backWall },
+    column: { ...base.column, ...patch.column },
   });
 }

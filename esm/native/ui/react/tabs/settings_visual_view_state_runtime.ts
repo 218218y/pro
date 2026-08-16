@@ -5,8 +5,8 @@ import type {
   UiStateLike,
 } from '../../../../../types';
 
-import { normalizeRoomArchitecture } from '../../../../shared/room_architecture_shared.js';
-import { DEFAULT_WIDTH } from '../../../../shared/dimensions/wardrobe_defaults.js';
+import { normalizeProjectRoomArchitecture } from '../actions/structural_build_refresh_actions.js';
+import { DEFAULT_WIDTH } from './structure_tab_dimension_defaults.js';
 import type { SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
 import { DEFAULT_WALL_COLOR } from './settings_visual_shared_contracts.js';
 import { LIGHT_PRESETS } from './settings_visual_shared_lighting.js';
@@ -45,7 +45,7 @@ export function readSettingsVisualCfgState(cfg: ConfigStateLike): SettingsVisual
     showDimensions: !!cfg.showDimensions,
     mirrorReflectorEnabled:
       typeof cfg.MIRROR_REFLECTOR_ENABLED === 'boolean' ? !!cfg.MIRROR_REFLECTOR_ENABLED : true,
-    roomArchitecture: normalizeRoomArchitecture(cfg.roomArchitecture),
+    roomArchitecture: normalizeProjectRoomArchitecture(cfg.roomArchitecture),
   };
 }
 

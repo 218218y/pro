@@ -6,6 +6,7 @@
 import type {
   AppContainer,
   RootStateLike,
+  RoomArchitectureConfigLike,
   UiStateLike,
   RuntimeStateLike,
   ConfigStateLike,
@@ -14,7 +15,10 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
+import {
+  canonicalizeProjectConfigStructuralSnapshot,
+  normalizeProjectRoomArchitecture,
+} from '../features/project_config/api.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
 import { getActionNamespace } from '../runtime/actions_access_core.js';
 import { getConfigActions } from '../runtime/actions_access_domains.js';
@@ -119,6 +123,10 @@ export function getRuntime(App: AppContainer): RuntimeStateLike {
 
 export function getMeta(App: AppContainer): MetaStateLike {
   return readMetaStateFromApp(App);
+}
+
+export function getRoomArchitectureConfig(App: AppContainer): RoomArchitectureConfigLike {
+  return normalizeProjectRoomArchitecture(getCfg(App).roomArchitecture);
 }
 
 export function getBuildStateMaybe(App: AppContainer, override?: unknown): BuildStateLike | null {

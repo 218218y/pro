@@ -25,6 +25,7 @@ import type { MutableRecord } from './core_pure_shared.js';
 
 export const CARCASS_BACK_INSET_Z: number = CARCASS_SHELL_DIMENSIONS.backInsetZM;
 export const CARCASS_FRONT_INSET_Z: number = CARCASS_SHELL_DIMENSIONS.frontInsetZM;
+export const CARCASS_BACK_PANEL_THICKNESS: number = CARCASS_SHELL_DIMENSIONS.backPanelThicknessM;
 
 export type PreparedCarcassInput = {
   totalW: number;

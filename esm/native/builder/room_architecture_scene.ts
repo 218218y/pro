@@ -1,6 +1,6 @@
 import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
-import { getRoomGroup } from '../runtime/render_access.js';
+import { __getRoomGroupNode } from './room_shared_state.js';
 import { resolveRoomArchitectureGeometry } from './room_architecture_geometry.js';
 
 export const ROOM_ARCHITECTURE_GROUP_NAME = 'wpRoomArchitecture';
@@ -37,7 +37,7 @@ function removeExistingArchitecture(roomGroup: UnknownRecord): void {
 }
 
 export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike): boolean {
-  const roomGroup = asRecord(getRoomGroup(App));
+  const roomGroup = asRecord(__getRoomGroupNode(App));
   if (!roomGroup) return false;
   removeExistingArchitecture(roomGroup);
 

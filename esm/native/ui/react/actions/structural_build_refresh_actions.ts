@@ -1,7 +1,13 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
-import { KNOWN_PROJECT_CONFIG_MAP_KEYS } from '../../../features/project_config/api.js';
+import {
+  KNOWN_PROJECT_CONFIG_MAP_KEYS,
+  normalizeProjectRoomArchitecture,
+  patchProjectRoomArchitecture,
+} from '../../../features/project_config/api.js';
 import { patchViaActions, readConfigPatchDataKeys } from '../../../services/api.js';
+
+export { normalizeProjectRoomArchitecture, patchProjectRoomArchitecture };
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
 export type StructuralMutationBuildTiming = 'immediate' | 'coalesced' | 'none';

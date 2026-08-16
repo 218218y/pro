@@ -6,14 +6,16 @@ import {
   isCabinetBodyDoorTrimSurfacePartId,
   resolveCabinetBodyDoorTrimSurfaceInfo,
 } from '../features/door_authoring/api.js';
-import { readRootState } from '../runtime/root_state_access.js';
+import { getCfg } from './store_access.js';
 import {
   axisAlignedBoxToCenterSize,
   boxFromCenterSize,
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnObstacle,
+  resolveActiveRoomColumnCutObstacle,
+  resolveRoomColumnAdjustmentGeometry,
   subtractAxisAlignedBox,
 } from './room_architecture_geometry.js';
+import type { RoomColumnLinerFace } from './room_architecture_geometry.js';
 import {
   __asFinite,
   __asString,
@@ -31,10 +33,9 @@ function readRecord(value: unknown): AnyMap | null {
 
 type DoorTrimMapLike = Record<string, unknown>;
 
-function readDoorTrimMapForCarcass(App: unknown): DoorTrimMapLike {
+function readDoorTrimMapForCarcass(App: RenderCarcassRuntime['App']): DoorTrimMapLike {
   try {
-    const rootState = readRecord(readRootState(App));
-    const config = readRecord(rootState?.config);
+    const config = readRecord(getCfg(App));
     return readDoorTrimMap(config?.doorTrimMap) as DoorTrimMapLike;
   } catch {
     return readDoorTrimMap(null) as DoorTrimMapLike;
@@ -77,6 +78,25 @@ function appendCarcassDoorTrimVisuals(args: {
   });
 }
 
+const ROOM_COLUMN_LINER_VISIBLE_FACE_INDEX: Readonly<Record<RoomColumnLinerFace, number>> = Object.freeze({
+  right: 0,
+  left: 1,
+  top: 2,
+  bottom: 3,
+  front: 4,
+});
+
+function createRoomColumnLinerMaterial(runtime: RenderCarcassRuntime, face: RoomColumnLinerFace): unknown {
+  const { THREE, ctx, sketchMode } = runtime;
+  if (sketchMode) return new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+  const masonite = ctx.masoniteMat || ctx.whiteMat || ctx.bodyMat;
+  const white = ctx.whiteMat || ctx.bodyMat || ctx.masoniteMat;
+  const materials = [masonite, masonite, masonite, masonite, masonite, masonite];
+  materials[ROOM_COLUMN_LINER_VISIBLE_FACE_INDEX[face]] = white;
+  return materials;
+}
+
 export function createApplyCarcassBaseOps() {
   function applyCarcassBaseOps(
     ops: {
@@ -90,13 +110,95 @@ export function createApplyCarcassBaseOps() {
     applyBaseSupport(ops.base, runtime);
     applyBoards(ops.boards, runtime);
     applyBackPanels(ops.backPanels, ops.backPanel, runtime);
+    applyRoomColumnLiners(runtime);
+  }
+
+  function addBaseRectangularPart(args: {
+    runtime: RenderCarcassRuntime;
+    width: number;
+    height: number;
+    depth: number;
+    x: number;
+    y: number;
+    z: number;
+    material: unknown;
+    partId: string;
+    registryKind: 'plinth' | 'body';
+    obstacle: ReturnType<typeof resolveActiveRoomColumnCutObstacle>;
+  }): void {
+    const { runtime, width, height, depth, x, y, z, material, partId, registryKind, obstacle } = args;
+    const { THREE, addOutlines, wardrobeGroup, reg, App } = runtime;
+    const sourceBox = boxFromCenterSize({ x, y, z, width, height, depth });
+    const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+
+    if (!intersection || !obstacle) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+      mesh.position.set(x, y, z);
+      mesh.userData = { partId };
+      reg(App, partId, mesh, registryKind);
+      addOutlines(mesh);
+      wardrobeGroup.add(mesh);
+      return;
+    }
+
+    const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+    group.userData = { partId, __wpRoomColumnAdjusted: true };
+    reg(App, partId, group, registryKind);
+
+    for (let i = 0; i < pieces.length; i += 1) {
+      const piece = axisAlignedBoxToCenterSize(pieces[i]);
+      const child = new THREE.Mesh(new THREE.BoxGeometry(piece.width, piece.height, piece.depth), material);
+      child.position.set(piece.x - x, piece.y - y, piece.z - z);
+      child.userData = group.userData;
+      addOutlines(child);
+      group.add(child);
+    }
+
+    wardrobeGroup.add(group);
+  }
+
+  function applyRoomColumnLiners(runtime: RenderCarcassRuntime): void {
+    const { THREE, wardrobeGroup, sketchMode, App } = runtime;
+    const adjustment = resolveRoomColumnAdjustmentGeometry(App);
+    if (!adjustment || adjustment.linerPanels.length === 0) return;
+
+    const group = new THREE.Group();
+    group.userData = {
+      __kind: 'room_column_liner',
+      __wpRoomColumnLiner: true,
+      ignorePicking: true,
+    };
+
+    for (let i = 0; i < adjustment.linerPanels.length; i += 1) {
+      const panel = adjustment.linerPanels[i];
+      const piece = axisAlignedBoxToCenterSize(panel.box);
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
+        createRoomColumnLinerMaterial(runtime, panel.face)
+      );
+      mesh.position.set(piece.x, piece.y, piece.z);
+      mesh.userData = {
+        ...group.userData,
+        __wpRoomColumnLinerFace: panel.face,
+      };
+      if (!sketchMode) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+      group.add(mesh);
+    }
+
+    wardrobeGroup.add(group);
   }
 
   function applyBaseSupport(base: unknown, runtime: RenderCarcassRuntime): void {
-    const { THREE, ctx, addOutlines, wardrobeGroup, reg, App } = runtime;
+    const { THREE, ctx, addOutlines, wardrobeGroup, App } = runtime;
     const baseRec = readRecord(base);
     if (!baseRec) return;
     const baseKind = baseRec.kind;
+    const obstacle = resolveActiveRoomColumnCutObstacle(App);
 
     if (baseKind === 'plinth') {
       const pid = __asString(baseRec.partId, 'plinth_color');
@@ -114,16 +216,19 @@ export function createApplyCarcassBaseOps() {
           const z = __asFinite(seg.z);
           if (!Number.isFinite(w) || !Number.isFinite(h) || !Number.isFinite(d)) continue;
 
-          const plinthSeg = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), plMat);
-          plinthSeg.position.set(
-            Number.isFinite(x) ? x : 0,
-            Number.isFinite(y) ? y : h / 2,
-            Number.isFinite(z) ? z : 0
-          );
-          plinthSeg.userData = { partId: pid };
-          reg(App, pid, plinthSeg, 'plinth');
-          addOutlines(plinthSeg);
-          wardrobeGroup.add(plinthSeg);
+          addBaseRectangularPart({
+            runtime,
+            width: w,
+            height: h,
+            depth: d,
+            x: Number.isFinite(x) ? x : 0,
+            y: Number.isFinite(y) ? y : h / 2,
+            z: Number.isFinite(z) ? z : 0,
+            material: plMat,
+            partId: pid,
+            registryKind: 'plinth',
+            obstacle,
+          });
         }
         return;
       }
@@ -134,12 +239,19 @@ export function createApplyCarcassBaseOps() {
       const x = __asFinite(baseRec.x, 0);
       const y = __asFinite(baseRec.y, 0);
       const z = __asFinite(baseRec.z, 0);
-      const plinth = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), plMat);
-      plinth.position.set(x, y, z);
-      plinth.userData = { partId: pid };
-      reg(App, pid, plinth, 'plinth');
-      addOutlines(plinth);
-      wardrobeGroup.add(plinth);
+      addBaseRectangularPart({
+        runtime,
+        width,
+        height,
+        depth,
+        x,
+        y,
+        z,
+        material: plMat,
+        partId: pid,
+        registryKind: 'plinth',
+        obstacle,
+      });
       return;
     }
 
@@ -157,12 +269,19 @@ export function createApplyCarcassBaseOps() {
         const z = __asFinite(platform.z, 0);
         const pid = __asString(platform.partId, 'base_leg_platform');
         const platformMat = (runtime.getPartMaterial ? runtime.getPartMaterial(pid) : null) || ctx.bodyMat;
-        const platformMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), platformMat);
-        platformMesh.position.set(x, y, z);
-        platformMesh.userData = { partId: pid };
-        reg(App, pid, platformMesh, 'body');
-        addOutlines(platformMesh);
-        wardrobeGroup.add(platformMesh);
+        addBaseRectangularPart({
+          runtime,
+          width,
+          height,
+          depth,
+          x,
+          y,
+          z,
+          material: platformMat,
+          partId: pid,
+          registryKind: 'body',
+          obstacle,
+        });
       }
       if (baseKind !== 'legs' || !ctx.legMat) return;
 
@@ -189,6 +308,22 @@ export function createApplyCarcassBaseOps() {
         const px = __asFinite(p.x);
         const pz = __asFinite(p.z);
         if (!Number.isFinite(px) || !Number.isFinite(pz)) continue;
+        const legHalfWidth =
+          shape === 'square'
+            ? Math.max(0.001, __asFinite(geo?.width, 0.035)) / 2
+            : Math.max(__asFinite(geo?.topRadius, 0), __asFinite(geo?.bottomRadius, 0));
+        const legHalfDepth =
+          shape === 'square' ? Math.max(0.001, __asFinite(geo?.depth, 0.035)) / 2 : legHalfWidth;
+        const legBox = boxFromCenterSize({
+          x: px,
+          y: height / 2,
+          z: pz,
+          width: legHalfWidth * 2,
+          height,
+          depth: legHalfDepth * 2,
+        });
+        if (obstacle && intersectAxisAlignedBoxes(legBox, obstacle)) continue;
+
         const leg = new THREE.Mesh(legGeometry, ctx.legMat);
         leg.position.set(px, height / 2, pz);
         addOutlines(leg);
@@ -214,7 +349,7 @@ export function createApplyCarcassBaseOps() {
         height: bd.height,
         depth: bd.depth,
       });
-      const obstacle = resolveActiveRoomColumnObstacle(App);
+      const obstacle = resolveActiveRoomColumnCutObstacle(App);
       const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
       if (intersection && obstacle) {
@@ -289,7 +424,7 @@ export function createApplyCarcassBaseOps() {
         height: seg.height,
         depth: seg.depth,
       });
-      const obstacle = resolveActiveRoomColumnObstacle(App);
+      const obstacle = resolveActiveRoomColumnCutObstacle(App);
       const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
       if (intersection && obstacle) {

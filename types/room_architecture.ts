@@ -19,3 +19,8 @@ export interface RoomArchitectureConfigLike {
   column: RoomColumnConfigLike;
   surfacesHidden: boolean;
 }
+
+export type RoomArchitecturePatch = Omit<Partial<RoomArchitectureConfigLike>, 'backWall' | 'column'> & {
+  backWall?: Partial<RoomArchitectureConfigLike['backWall']>;
+  column?: Partial<RoomArchitectureConfigLike['column']>;
+};

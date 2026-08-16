@@ -8,7 +8,6 @@
 
 import type { RootStateLike } from '../../../types';
 import { DEFAULT_FRONT_COLOR_SHELF_INHERITANCE_MODE } from '../../shared/front_color_shelf_inheritance_shared.js';
-import { DEFAULT_ROOM_ARCHITECTURE } from '../../shared/room_architecture_shared.js';
 
 import {
   BASE_LEG_DIMENSIONS,
@@ -24,6 +23,19 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
 } from '../../shared/dimensions/runtime_default_state_dimension_policy.js';
+
+const DEFAULT_ROOM_ARCHITECTURE = Object.freeze({
+  backWall: Object.freeze({ enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 }),
+  column: Object.freeze({
+    enabled: false,
+    offsetLeftCm: 180,
+    widthCm: 30,
+    depthCm: 20,
+    heightCm: 280,
+    bottomOffsetCm: 0,
+  }),
+  surfacesHidden: false,
+});
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};
