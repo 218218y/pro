@@ -287,6 +287,7 @@ test('wardrobe default resolver keeps a small stable architecture surface and be
       symbols: [
         'getDefaultDepthForWardrobeType',
         'getDefaultDoorsForWardrobeType',
+        'getDefaultHeightForWardrobeType',
         'getDefaultPerDoorWidthForWardrobeType',
       ],
       aliases: [],

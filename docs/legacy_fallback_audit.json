@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T14:22:01.061Z",
+  "generatedAt": "2026-08-16T14:49:04.673Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 545,
@@ -4020,21 +4020,21 @@
     },
     {
       "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
-      "line": 171,
+      "line": 172,
       "term": "fallback",
       "category": "domain-default",
       "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
     },
     {
       "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
-      "line": 178,
+      "line": 179,
       "term": "fallback",
       "category": "domain-default",
       "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
     },
     {
       "file": "esm/native/services/doors_runtime_visuals_drawers.ts",
-      "line": 185,
+      "line": 186,
       "term": "fallback",
       "category": "domain-default",
       "text": "// drawer-visual-state-fallback: non-writable render metadata must not block drawer animation policy"
