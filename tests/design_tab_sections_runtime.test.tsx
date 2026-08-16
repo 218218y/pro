@@ -94,8 +94,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: false,
         removeDoorActive: false,
-        roundedFrameSideShelvesVisible: false,
-        roundedFrameSideShelvesActive: false,
+        roundedFrameSideShelvesVisible: true,
+        roundedFrameSideShelvesActive: true,
         setFeatureToggle: noop,
         toggleGrooveEdit: noop,
         setGrooveLinesCount: noop,
@@ -156,7 +156,10 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /חריטה שוכבת/);
   assert.match(hingedHtml, /type="number"/);
   assert.doesNotMatch(slidingHtml, /דלתות חתוכות \(Split\)/);
-  assert.match(slidingHtml, /הסרת דלתות או דפנות/);
+  assert.match(slidingHtml, /הסרת דלתות/);
+  assert.doesNotMatch(slidingHtml, /דפנות/);
+  assert.doesNotMatch(slidingHtml, /מדפים מעוגלים/);
+  assert.doesNotMatch(slidingHtml, /design-rounded-frame-side-shelves-button/);
   assert.equal(hiddenHtml, '');
 });
 

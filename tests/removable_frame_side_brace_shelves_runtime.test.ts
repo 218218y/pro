@@ -272,6 +272,33 @@ function createRemovableSideGuardApp(
   return { App, removedDoorsMap, toasts };
 }
 
+test('sliding wardrobe blocks frame and sketch-box side removal before mutation', () => {
+  const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp({
+    wardrobeType: 'sliding',
+    modulesConfiguration: [
+      {
+        layout: 'shelves',
+        sketchExtras: { boxes: [{ id: 'box-1', freePlacement: true }] },
+      },
+    ],
+  });
+
+  assert.equal(handleCanvasRemovablePartRemoveClick({ App, partId: 'body_left' }), true);
+  assert.equal(
+    handleCanvasRemovablePartRemoveClick({ App, partId: 'sketch_box_free_0_box-1_side_right' }),
+    true
+  );
+
+  assert.equal(removedDoorsMap.removed_body_left, undefined);
+  assert.equal(removedDoorsMap['removed_sketch_box_free_0_box-1_side_right'], undefined);
+  assert.equal(toasts.length, 2);
+  for (const toast of toasts) {
+    assert.equal(toast.type, 'error');
+    assert.match(toast.message, /בארון הזזה אי אפשר להסיר דופן/);
+    assert.match(toast.message, /ניתן להסיר דלתות בלבד/);
+  }
+});
+
 test('removing a frame side is blocked when the adjacent cell has drawers', () => {
   const { App, removedDoorsMap, toasts } = createRemovableSideGuardApp({
     modulesConfiguration: [{ layout: 'shelves', extDrawersCount: 2 }],

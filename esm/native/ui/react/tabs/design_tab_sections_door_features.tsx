@@ -220,7 +220,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
           <div className="wp-r-toggle-divider" />
 
           <ToggleRow
-            label="הסרת דלתות או דפנות"
+            label={model.wardrobeType === 'sliding' ? 'הסרת דלתות' : 'הסרת דלתות או דפנות'}
             checked={model.removeDoorsEnabled}
             onChange={checked => model.setFeatureToggle('removeDoorsEnabled', checked)}
             testId="design-remove-doors-toggle"
@@ -244,7 +244,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
               <div className="wp-r-editmode-hint">לחץ על דלת כדי להסיר או להחזיר אותה לסקיצה.</div>
 
-              {model.roundedFrameSideShelvesVisible ? (
+              {model.wardrobeType === 'hinged' && model.roundedFrameSideShelvesVisible ? (
                 <ModeToggleButton
                   active={model.roundedFrameSideShelvesActive}
                   icon={

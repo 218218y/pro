@@ -21,7 +21,9 @@ const REMOVABLE_SIDE_DOUBLE_REMOVAL_BLOCK_MESSAGE =
 const REMOVABLE_SIDE_CONTENT_BUILD_BLOCK_MESSAGE =
   'אי אפשר לבנות תלייה או מגירות בתא שדופן שלו הוסרה. החזר קודם את הדופן לתא.';
 
-export type RemovableSideRemovalBlockReason = 'fittings' | 'double-side-removal';
+const SLIDING_WARDROBE_SIDE_REMOVAL_BLOCK_MESSAGE = 'בארון הזזה אי אפשר להסיר דופן. ניתן להסיר דלתות בלבד.';
+
+export type RemovableSideRemovalBlockReason = 'sliding-wardrobe' | 'fittings' | 'double-side-removal';
 
 type ReadRemovedFn = (partId: string) => boolean;
 
@@ -317,7 +319,12 @@ export function readRemovablePartRemovalBlockReason(args: {
   hasRemoved: ReadRemovedFn;
 }): RemovableSideRemovalBlockReason | null {
   const frameSide = readRemovableFrameSideFromPartId(args.partId);
+  const sketchBoxSide = readRemovableSketchBoxSideFromPartId(args.partId);
   const cfg = readRemovablePartConfigSnapshot(args.App);
+
+  if ((frameSide || sketchBoxSide) && asRecord(cfg)?.wardrobeType === 'sliding') {
+    return 'sliding-wardrobe';
+  }
 
   if (frameSide) {
     const adjacent = readAdjacentFrameSideModule({ cfg, partId: args.partId, side: frameSide });
@@ -331,7 +338,6 @@ export function readRemovablePartRemovalBlockReason(args: {
     return null;
   }
 
-  const sketchBoxSide = readRemovableSketchBoxSideFromPartId(args.partId);
   if (sketchBoxSide) {
     const boxRecord = readSketchBoxRecordForPartId(cfg, sketchBoxSide.boxPartId);
     if (boxRecord && recordHasSideBlockingFittings(boxRecord)) return 'fittings';
@@ -349,11 +355,11 @@ export function toastRemovablePartRemovalBlock(
   App: AppContainer,
   reason: RemovableSideRemovalBlockReason
 ): void {
-  __wp_toast(
-    App,
-    reason === 'fittings'
-      ? REMOVABLE_SIDE_WITH_FITTINGS_BLOCK_MESSAGE
-      : REMOVABLE_SIDE_DOUBLE_REMOVAL_BLOCK_MESSAGE,
-    'error'
-  );
+  const message =
+    reason === 'sliding-wardrobe'
+      ? SLIDING_WARDROBE_SIDE_REMOVAL_BLOCK_MESSAGE
+      : reason === 'fittings'
+        ? REMOVABLE_SIDE_WITH_FITTINGS_BLOCK_MESSAGE
+        : REMOVABLE_SIDE_DOUBLE_REMOVAL_BLOCK_MESSAGE;
+  __wp_toast(App, message, 'error');
 }

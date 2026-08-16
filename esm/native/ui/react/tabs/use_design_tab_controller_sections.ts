@@ -99,7 +99,9 @@ export function useDesignTabControllerSections(args: {
       splitDoors: state.splitDoors,
       removeDoorsEnabled: state.removeDoorsEnabled,
       roundedFrameSideShelvesVisible:
-        state.removeDoorsEnabled && (state.leftFrameSideRemoved || state.rightFrameSideRemoved),
+        state.wardrobeType === 'hinged' &&
+        state.removeDoorsEnabled &&
+        (state.leftFrameSideRemoved || state.rightFrameSideRemoved),
       roundedFrameSideShelvesActive:
         (state.leftFrameSideRemoved || state.rightFrameSideRemoved) &&
         (!state.leftFrameSideRemoved || state.leftFrameSideShelvesRounded) &&
