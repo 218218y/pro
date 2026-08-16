@@ -1,12 +1,12 @@
 import { ensureRenderNamespace, getRenderSlot, getScene, setRenderSlot } from '../runtime/render_access.js';
 import {
-  asPlatformUtil,
   collectUsedSceneResources,
   hasCachePressure,
   isCacheMapLike,
   isRenderCacheLike,
   isRenderMetaLike,
   pruneOneCache,
+  readPlatformUtil,
   type CacheLimits,
   type CachePruningAppLike,
   type DimLabelCacheEntryLike,
@@ -69,14 +69,14 @@ function resolveCacheLimits(utilCacheLimits?: CacheLimits | null): CacheLimits {
 }
 
 export function pruneCachesSafe(
-  root: CachePruningAppLike,
+  app: CachePruningAppLike,
   rootScene: SceneObjectLike | null | undefined
 ): void {
   try {
-    const render = ensureRenderNamespace(root);
+    const render = ensureRenderNamespace(app);
     const cache = isRenderCacheLike(render.cache) ? render.cache : null;
     const meta = isRenderMetaLike(render.meta) ? render.meta : null;
-    const util = asPlatformUtil(root.platform?.util);
+    const util = readPlatformUtil(app);
     if (!cache || !meta || !util) return;
     const dimLabelCache = isCacheMapLike<DimLabelCacheEntryLike, DimLabelCacheEntryLike>(util.dimLabelCache)
       ? util.dimLabelCache
@@ -86,11 +86,11 @@ export function pruneCachesSafe(
     if (!hasCachePressure(cache, dimLabelCache, limits)) return;
 
     const now = Date.now();
-    const lastPruneAt = getRenderSlot<number>(root, 'lastPruneAt');
+    const lastPruneAt = getRenderSlot<number>(app, 'lastPruneAt');
     if (typeof lastPruneAt === 'number' && now - lastPruneAt < 800) return;
-    setRenderSlot(root, 'lastPruneAt', now);
+    setRenderSlot(app, 'lastPruneAt', now);
 
-    const rootNode = rootScene || getScene(root) || null;
+    const rootNode = rootScene || getScene(app) || null;
     const { usedMaterials, usedTextures, usedGeometries } = collectUsedSceneResources(rootNode);
 
     if (cache.textureCache && meta.texture) {

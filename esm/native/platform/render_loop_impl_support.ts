@@ -9,6 +9,7 @@ import {
   getRafScheduledAt,
   setLoopRaf,
   setRafScheduledAt,
+  setRenderSlot,
 } from '../runtime/render_access.js';
 
 export interface RenderLike extends UnknownRecord {
@@ -189,9 +190,8 @@ export function debugSketchLog(A: AppLike, ...args: readonly unknown[]): void {
     if (!isSketchDebugEnabled()) return;
     console.log('[WardrobePro][sketchdbg]', ...args);
     // Also store last payload for easy copy/paste from the console.
-    ensureRenderNamespace(A);
-    A.render.__wpSketchDbgLast = Array.from(args);
-    A.render.__wpSketchDbgLastTs = Date.now();
+    setRenderSlot(A, '__wpSketchDbgLast', Array.from(args));
+    setRenderSlot(A, '__wpSketchDbgLastTs', Date.now());
   } catch (_e) {
     // debug-state-best-effort: sketch debug capture must never affect the render loop.
   }
