@@ -411,6 +411,84 @@ test('repeated divider click on the already-selected drawer preserves the live m
   assert.deepEqual(openedDrawers, ['int_4']);
 });
 
+test('first divider click preserves a drawer that is already visually open from the global open state', () => {
+  const drawerPosition = {
+    x: 0,
+    y: 0,
+    z: 1,
+    copy(next: { x: number; y: number; z: number }) {
+      this.x = next.x;
+      this.y = next.y;
+      this.z = next.z;
+    },
+  };
+  const drawerGroup = {
+    position: drawerPosition,
+    userData: { partId: 'ext_4', drawerId: 'ext_4', __wpType: 'extDrawer' },
+  };
+  let openId: unknown = null;
+  const App = createApp(false);
+  const config: Record<string, any> = { drawerDividersMap: Object.create(null) };
+  App.store = {
+    getState() {
+      return {
+        config,
+        ui: {},
+        runtime: { globalClickMode: true, doorsOpen: true },
+        mode: { opts: {} },
+        meta: {},
+      };
+    },
+    setConfig(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      return patch;
+    },
+    patch(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      return patch;
+    },
+  };
+  App.render = {
+    drawersArray: [
+      {
+        id: 'ext_4',
+        dividerKey: 'div:ext_4',
+        isInternal: false,
+        isOpen: false,
+        group: drawerGroup,
+        closed: { x: 0, y: 0, z: 0 },
+        open: { x: 0, y: 0, z: 1 },
+      },
+    ],
+  };
+  App.maps = { drawerDividersMap: config.drawerDividersMap };
+  App.services = {
+    tools: {
+      getDrawersOpenId() {
+        return openId;
+      },
+      setDrawersOpenId(id: unknown) {
+        openId = id;
+      },
+    },
+  };
+
+  assert.equal(
+    tryHandleDrawerDividerModeClick({
+      App,
+      isDividerEditMode: true,
+      foundDrawerId: 'ext_4',
+      foundPartId: 'ext_4',
+      primaryHitObject: drawerGroup as any,
+    }),
+    true
+  );
+
+  const intent = getDrawerRebuildIntentSnapshot(App);
+  assert.equal(intent?.preserveMotion, true);
+  assert.equal(intent?.motion?.drawerOffset?.z, 1);
+});
+
 test('drawer divider mode ignores a drawer found behind a clicked door', () => {
   const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };
   const doorGroup = { userData: { partId: 'd1_full', doorId: 'd1_full' } };

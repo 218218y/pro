@@ -33,6 +33,15 @@ function isDrawerDividerDirectDrawerHit(
   return !!(drawer && drawer.group && isHitInsideObject(primaryHitObject, drawer.group));
 }
 
+function hasCapturedDrawerDisplacement(
+  motion: ReturnType<typeof captureDividerDrawerRebuildMotion>
+): boolean {
+  const offset = motion?.drawerOffset;
+  if (!offset) return false;
+  const epsilon = 1e-6;
+  return Math.abs(offset.x) > epsilon || Math.abs(offset.y) > epsilon || Math.abs(offset.z) > epsilon;
+}
+
 export function tryHandleDrawerDividerModeClick(args: {
   App: AppContainer;
   isDividerEditMode: boolean;
@@ -65,6 +74,9 @@ export function tryHandleDrawerDividerModeClick(args: {
     ? drawerVisualMatchesId(clickedDrawer, currentOpenId)
     : currentOpenId != null && String(currentOpenId) === String(targetDrawerId);
 
+  const rebuildMotion = clickedDrawer ? captureDividerDrawerRebuildMotion(App, clickedDrawer) : null;
+  const preserveMotion = sameDrawerSession || hasCapturedDrawerDisplacement(rebuildMotion);
+
   if (!sameDrawerSession) clearDividerDrawerDoorHold(App);
   const explicitIsInternal = readDrawerIsInternal(clickedDrawer);
   const isInternal =
@@ -74,7 +86,12 @@ export function tryHandleDrawerDividerModeClick(args: {
         ? String(clickedDrawer.id).includes('int')
         : String(targetDrawerId).includes('int');
   if (!sameDrawerSession) {
-    if (isInternal && clickedDrawer && getDividerDrawerBlockingDoors(App, clickedDrawer).length > 0) {
+    if (
+      !preserveMotion &&
+      isInternal &&
+      clickedDrawer &&
+      getDividerDrawerBlockingDoors(App, clickedDrawer).length > 0
+    ) {
       markDividerDrawerClearanceStarted(App);
     } else {
       clearDividerDrawerClearanceStarted(App);
@@ -84,11 +101,9 @@ export function tryHandleDrawerDividerModeClick(args: {
   if (!sameDrawerSession && typeof tools.setDrawersOpenId === 'function')
     tools.setDrawersOpenId(targetDrawerId);
   if (clickedDrawer) clickedDrawer.isOpen = true;
-  const rebuildMotion =
-    sameDrawerSession && clickedDrawer ? captureDividerDrawerRebuildMotion(App, clickedDrawer) : null;
   setDrawerRebuildIntent(App, targetDrawerId, {
-    preserveMotion: sameDrawerSession,
-    motion: rebuildMotion,
+    preserveMotion,
+    motion: preserveMotion ? rebuildMotion : null,
   });
 
   const dividerMeta = createCanvasPickingDrawerDividerStructuralMeta('divider:click');

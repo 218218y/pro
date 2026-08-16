@@ -106,7 +106,7 @@ export function installDrawerMeta(App: AppLike): void {
   }
 }
 
-export function snapDrawersToTargets(App: AppLike): void {
+export function snapDrawersToTargets(App: AppLike, preserveDrawerId: DrawerId | null = null): void {
   if (!App) return;
 
   const interiorDoorEditActive = isInteriorDoorEditModeActive(App);
@@ -136,6 +136,7 @@ export function snapDrawersToTargets(App: AppLike): void {
 
   for (const drawer of getDrawersArray(App)) {
     if (!drawer || !drawer.group || !drawer.open || !drawer.closed) continue;
+    if (preserveDrawerId != null && drawerVisualMatchesId(drawer, preserveDrawerId)) continue;
 
     const isExtDrawer = isExplicitExternalDrawerVisual(drawer);
     const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(drawer);

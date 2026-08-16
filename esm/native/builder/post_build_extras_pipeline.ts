@@ -33,9 +33,9 @@ function readAppRecord(value: unknown): Record<string, unknown> | null {
   return isUnknownRecord(value) ? value : null;
 }
 
-function hasPendingDrawerRebuildIntent(App: unknown): boolean {
+function readPendingDrawerRebuildIntentId(App: unknown): string | number | null {
   const id = getDrawerRebuildIntent(App);
-  return typeof id === 'string' || typeof id === 'number';
+  return typeof id === 'string' || typeof id === 'number' ? id : null;
 }
 
 function syncGlobalClickVisualStateAfterBuild(
@@ -46,16 +46,17 @@ function syncGlobalClickVisualStateAfterBuild(
   if (skipDoorVisualSync) return;
 
   const doorsOpen = !!readRuntimeScalarOrDefault(runtime, 'doorsOpen', false);
-  const deferDrawerMotionToRebuildIntent = hasPendingDrawerRebuildIntent(App);
+  const pendingDrawerRebuildId = readPendingDrawerRebuildIntentId(App);
+  const deferDrawerMotionToRebuildIntent = pendingDrawerRebuildId != null;
   const syncOpts = deferDrawerMotionToRebuildIntent
-    ? { open: doorsOpen, includeDrawers: false }
+    ? { open: doorsOpen, preserveDrawerId: pendingDrawerRebuildId }
     : { open: doorsOpen };
   const syncedDoorVisuals = syncDoorsVisualsNow(App, syncOpts);
   if (syncedDoorVisuals) return;
 
-  // When a divider edit is about to reopen one drawer after rebuild, the drawer
-  // must stay at its freshly-built closed transform so the render loop can animate
-  // toward the forced-open target instead of snapping during post-build sync.
+  // The canonical door owner can synchronize every unaffected drawer while leaving
+  // the divider target untouched. A missing owner cannot perform that selective snap,
+  // so keep the target safe rather than falling back to an all-drawers snap here.
   if (deferDrawerMotionToRebuildIntent) return;
 
   // When the global door-visual owner is not installed, drawer snapping is still a

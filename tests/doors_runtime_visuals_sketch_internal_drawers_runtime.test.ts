@@ -326,3 +326,69 @@ test('syncVisualsNow keeps free-box sketch doors closed while authoring a box do
 
   assert.equal(doorGroup.rotation.y, 0);
 });
+
+test('syncVisualsNow can preserve one rebuilt drawer while snapping the remaining globally-open drawers', () => {
+  const targetGroup = {
+    position: {
+      x: 0,
+      y: 0,
+      z: 0,
+      copy(next: { x: number; y: number; z: number }) {
+        Object.assign(this, next);
+      },
+    },
+    userData: {},
+  };
+  const otherGroup = {
+    position: {
+      x: 0,
+      y: 0,
+      z: 0,
+      copy(next: { x: number; y: number; z: number }) {
+        Object.assign(this, next);
+      },
+    },
+    userData: { __wpType: 'extDrawer' },
+  };
+  const app: Record<string, unknown> = {
+    store: makeStore({
+      mode: { primary: 'divider', opts: {} },
+      runtime: { globalClickMode: true, doorsOpen: true },
+      ui: {},
+      config: {},
+      meta: {},
+    }),
+    services: {
+      doors: { getOpen: () => true, lastToggleTime: 0 },
+      platform: { perf: { hasInternalDrawers: false }, dimsM: { w: 2 } },
+      config: {},
+      tools: { getDrawersOpenId: () => 'drawer-target' },
+    },
+    render: {
+      doorsArray: [],
+      drawersArray: [
+        {
+          id: 'drawer-target',
+          isInternal: false,
+          group: targetGroup,
+          closed: { x: 0, y: 0, z: 0 },
+          open: { x: 0, y: 0, z: 5 },
+          isOpen: true,
+        },
+        {
+          id: 'drawer-other',
+          isInternal: false,
+          group: otherGroup,
+          closed: { x: 0, y: 0, z: 0 },
+          open: { x: 0, y: 0, z: 7 },
+          isOpen: true,
+        },
+      ],
+    },
+  };
+
+  syncVisualsNow(app as never, { open: true, preserveDrawerId: 'drawer-target' });
+
+  assert.equal(targetGroup.position.z, 0);
+  assert.equal(otherGroup.position.z, 7);
+});

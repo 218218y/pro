@@ -174,6 +174,8 @@ export interface DoorsSyncVisualsOptionsLike extends UnknownRecord {
   open?: boolean;
   /** When true, also snap drawers (default: true). */
   includeDrawers?: boolean;
+  /** Keep one drawer at its current visual transform while the remaining drawers are synchronized. */
+  preserveDrawerId?: string | number | null;
   /** Hide open sliding doors for edit/export snapshots instead of moving them outside the cabinet. */
   slidingHideOpen?: boolean;
 }

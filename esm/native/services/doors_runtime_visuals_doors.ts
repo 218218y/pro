@@ -122,10 +122,14 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
 
   const safeOpts = opts && typeof opts === 'object' ? opts : {};
   const includeDrawers = typeof safeOpts.includeDrawers === 'boolean' ? safeOpts.includeDrawers : true;
+  const preserveDrawerId =
+    typeof safeOpts.preserveDrawerId === 'string' || typeof safeOpts.preserveDrawerId === 'number'
+      ? safeOpts.preserveDrawerId
+      : null;
 
   if (!isGlobalClickMode(App)) {
     forceUpdatePerState(App, safeOpts);
-    if (includeDrawers) snapDrawersToTargets(App);
+    if (includeDrawers) snapDrawersToTargets(App, preserveDrawerId);
     return;
   }
 
@@ -209,5 +213,5 @@ export function syncVisualsNow(App: AppLike, opts?: SyncVisualsOptions): void {
     }
   }
 
-  if (includeDrawers) snapDrawersToTargets(App);
+  if (includeDrawers) snapDrawersToTargets(App, preserveDrawerId);
 }

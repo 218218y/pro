@@ -54,7 +54,7 @@ test('post-build extras: global click mode uses drawer snap only as a narrow mis
   assert.deepEqual(calls, [{ op: 'snapDrawersToTargets' }]);
 });
 
-test('post-build extras: pending drawer rebuild intent defers drawer snapping to render-loop animation', () => {
+test('post-build extras: pending drawer rebuild intent preserves only the target while syncing other drawers', () => {
   const calls: any[] = [];
   const App: any = {
     services: {
@@ -72,7 +72,7 @@ test('post-build extras: pending drawer rebuild intent defers drawer snapping to
 
   applyPostBuildExtras(createPostBuildContext(App));
 
-  assert.deepEqual(calls, [{ op: 'syncVisualsNow', opts: { open: true, includeDrawers: false } }]);
+  assert.deepEqual(calls, [{ op: 'syncVisualsNow', opts: { open: true, preserveDrawerId: 'int_4' } }]);
 });
 
 test('post-build extras: pending drawer rebuild intent suppresses fallback drawer snap when door sync is missing', () => {
