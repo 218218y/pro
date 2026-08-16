@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-15T22:07:52.296Z",
+  "generatedAt": "2026-08-16T03:56:26.659Z",
   "summary": {
     "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 483,
+    "catalogFileReferences": 484,
     "sequenceResolvedFileReferences": 126,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
@@ -191,12 +191,13 @@
         "timeoutMs": 0
       },
       "childGroups": [],
-      "directFileCount": 14,
-      "resolvedFileCount": 14,
+      "directFileCount": 15,
+      "resolvedFileCount": 15,
       "files": [
         "tests/canvas_picking_cell_dims_corner_cell_runtime.test.ts",
         "tests/canvas_picking_cell_dims_linear_runtime.test.ts",
         "tests/canvas_picking_click_hit_flow_runtime.test.ts",
+        "tests/canvas_picking_click_mode_state_runtime.test.ts",
         "tests/canvas_picking_door_split_click_runtime.test.ts",
         "tests/canvas_picking_door_action_hover_flow_runtime.test.ts",
         "tests/canvas_picking_door_action_hover_preview_paint_runtime.test.ts",

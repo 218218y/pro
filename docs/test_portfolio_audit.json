@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-16T03:28:11.409Z",
+  "generatedAt": "2026-08-16T03:56:26.236Z",
   "totals": {
     "tests": 1249,
     "unitRunnerTests": 1240,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
-    "catalogTestReferences": 483,
-    "totalTestReferences": 499,
+    "catalogTestReferences": 484,
+    "totalTestReferences": 500,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 67,
     "genericTestGroupRunner": "test:group",
@@ -17,12 +17,12 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 146
+    "contractOverlapTargets": 141
   },
   "categories": {
-    "contract": 405,
+    "contract": 404,
     "runtime-unit": 337,
-    "integration": 468,
+    "integration": 469,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -1599,7 +1599,7 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1625,10 +1625,6 @@
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/canvas_picking_config_meta_contracts.test.js",
           "kind": "contract"
         },
@@ -1651,11 +1647,11 @@
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1689,11 +1685,11 @@
       "kinds": ["contract", "source-guard"],
       "owners": [
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1707,11 +1703,11 @@
       "kinds": ["contract", "source-guard"],
       "owners": [
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
+          "file": "tests/canvas_picking_config_meta_contracts.test.js",
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_config_meta_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1729,7 +1725,7 @@
       "kinds": ["contract", "source-guard"],
       "owners": [
         {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1755,20 +1751,6 @@
       ]
     },
     {
-      "target": "esm/native/services/canvas_picking_door_action_hover_remove.ts",
-      "kinds": ["contract", "source-guard"],
-      "owners": [
-        {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
-          "kind": "source-guard"
-        }
-      ]
-    },
-    {
       "target": "esm/native/services/canvas_picking_door_edit_flow.ts",
       "kinds": ["contract", "source-guard"],
       "owners": [
@@ -1777,7 +1759,7 @@
           "kind": "contract"
         },
         {
-          "file": "tests/canvas_picking_click_contracts.test.js",
+          "file": "tests/canvas_picking_flow_topology_contract.test.js",
           "kind": "contract"
         },
         {
@@ -1792,10 +1774,6 @@
       "owners": [
         {
           "file": "tests/actions_domain_access_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/canvas_picking_click_contracts.test.js",
           "kind": "contract"
         },
         {
@@ -1826,10 +1804,6 @@
         },
         {
           "file": "tests/builder_surface_family_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/canvas_picking_click_contracts.test.js",
           "kind": "contract"
         },
         {
@@ -1875,20 +1849,6 @@
       ]
     },
     {
-      "target": "esm/native/services/canvas_picking_door_split_hover_flow.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
       "target": "esm/native/services/canvas_picking_door_trim_click.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -1915,10 +1875,6 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/cell_dimension_layout_ownership_contract.test.js",
           "kind": "ownership"
         },
@@ -1940,10 +1896,6 @@
       "target": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
         {
           "file": "tests/cell_dimension_layout_ownership_contract.test.js",
           "kind": "ownership"
@@ -1967,10 +1919,6 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/cell_dimension_layout_ownership_contract.test.js",
           "kind": "ownership"
         },
@@ -1989,10 +1937,6 @@
       "kinds": ["contract", "ownership"],
       "owners": [
         {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
           "file": "tests/cell_dimension_layout_ownership_contract.test.js",
           "kind": "ownership"
         },
@@ -2006,20 +1950,6 @@
         },
         {
           "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/canvas_picking_hover_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/sketch_box_manual_interior_hover_final_consumer_ownership_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -2042,46 +1972,6 @@
         },
         {
           "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/services/canvas_picking_manual_layout_free_box_commit.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/canvas_picking_click_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
-      "target": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/canvas_picking_click_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/interior_storage_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/runtime_pipeline_ownership_guard.test.js",
-          "kind": "ownership"
-        },
-        {
-          "file": "tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js",
           "kind": "ownership"
         }
       ]
@@ -3343,11 +3233,11 @@
       "category": "integration"
     },
     {
-      "file": "tests/canvas_picking_click_contracts.test.js",
-      "category": "contract"
+      "file": "tests/canvas_picking_click_hit_flow_runtime.test.ts",
+      "category": "integration"
     },
     {
-      "file": "tests/canvas_picking_click_hit_flow_runtime.test.ts",
+      "file": "tests/canvas_picking_click_mode_state_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -3431,6 +3321,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_flow_topology_contract.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/canvas_picking_full_mirror_runtime.test.js",
       "category": "integration"
     },
@@ -3461,10 +3355,6 @@
     {
       "file": "tests/canvas_picking_hover_click_hit_identity_parity_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/canvas_picking_hover_contracts.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/canvas_picking_hover_flow_nonsplit_preview_runtime.test.ts",

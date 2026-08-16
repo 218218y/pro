@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-08-15T22:07:52.296Z
+Generated: 2026-08-16T03:56:26.659Z
 
 ## Summary
 
 - Catalog groups: 67
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 483
+- Catalog-owned direct test-file references: 484
 - Resolved file references across aggregate sequences: 126
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
@@ -24,7 +24,7 @@ Generated: 2026-08-15T22:07:52.296Z
 | `builder-surface-family-core`               | architecture | node-test      | node        |            1 |              1 |            0 | builder                                                              |
 | `builder-surfaces`                          | focused      | tsx-test       | tsx         |            6 |              6 |            0 | builder/public-surface                                               |
 | `canonical-access-surfaces`                 | focused      | tsx-test       | tsx         |           11 |             11 |            0 | runtime/access, services/access                                      |
-| `canvas-interaction-surfaces`               | focused      | serial-tsx     | tsx         |           14 |             14 |            0 | services/canvas-picking                                              |
+| `canvas-interaction-surfaces`               | focused      | serial-tsx     | tsx         |           15 |             15 |            0 | services/canvas-picking                                              |
 | `canvas-surfaces`                           | primary      | tsx-test       | tsx         |           14 |             14 |            0 | services/canvas-picking                                              |
 | `cloud-sync-family-contracts`               | architecture | node-test      | node        |            1 |              1 |            0 | services/cloud-sync                                                  |
 | `cloud-sync-lifecycle`                      | focused      | serial-tsx     | tsx         |           16 |             16 |            0 | services/cloud-sync/lifecycle                                        |

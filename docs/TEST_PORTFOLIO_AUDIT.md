@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-16T03:28:11.409Z
+Generated: 2026-08-16T03:56:26.236Z
 
 ## Summary
 
@@ -9,8 +9,8 @@ Generated: 2026-08-16T03:28:11.409Z
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 36
 - Package script test references: 16
-- Catalog test references: 483
-- Total explicit test references: 499
+- Catalog test references: 484
+- Total explicit test references: 500
 - Oversized direct package test lanes: 0
 - Catalog groups: 67
 - Generic catalog runner: test:group
@@ -20,13 +20,13 @@ Generated: 2026-08-16T03:28:11.409Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 146
+- Cross-kind contract overlap targets: 141
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   405 |
+| contract            |   404 |
 | runtime-unit        |   337 |
-| integration         |   468 |
+| integration         |   469 |
 | persistence-ingress |    23 |
 | e2e-smoke           |    10 |
 | perf-smoke          |     6 |
@@ -135,28 +135,23 @@ Generated: 2026-08-16T03:28:11.409Z
 - `esm/native/services/api_runtime_base_surface.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`
 - `esm/native/services/api_state_surface.ts` — contract / ownership — `tests/store_backend_family_guard.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`
 - `esm/native/services/api.ts` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/builder_service_access_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/project_io_contracts.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wp_layer_contract_runtime.test.js`
-- `esm/native/services/canvas_picking_cell_dims_flow.ts` — contract / ownership — `tests/canvas_picking_click_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
-- `esm/native/services/canvas_picking_cell_dims_linear_shared.ts` — contract / ownership — `tests/canvas_picking_cell_dims_meta_contracts.test.js`, `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`
-- `esm/native/services/canvas_picking_click_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/drawer_runtime_access_cleanup_guard.test.js`, `tests/platform_runtime_access_contracts.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/statekernel_audit_contracts.test.js`, `tests/zustand_domain_paths_contracts.test.js`
-- `esm/native/services/canvas_picking_click_route_actions.ts` — contract / source-guard — `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
-- `esm/native/services/canvas_picking_click_route.ts` — contract / source-guard — `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/drawer_runtime_access_cleanup_guard.test.js`
-- `esm/native/services/canvas_picking_door_action_hover_flow.ts` — contract / source-guard — `tests/canvas_picking_hover_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/door_trim_mirror_avoidance_guard.test.cjs`, `tests/mirror_layout_family_guard.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sliding_wardrobe_regression_guard.test.js`
-- `esm/native/services/canvas_picking_door_action_hover_remove.ts` — contract / source-guard — `tests/canvas_picking_hover_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
-- `esm/native/services/canvas_picking_door_edit_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
-- `esm/native/services/canvas_picking_door_hinge_groove_click.ts` — contract / ownership — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`, `tests/visual_maps_writer_ownership_source_guard.test.js`
-- `esm/native/services/canvas_picking_door_remove_click.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_click_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`
+- `esm/native/services/canvas_picking_cell_dims_flow.ts` — contract / ownership — `tests/canvas_picking_flow_topology_contract.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
+- `esm/native/services/canvas_picking_cell_dims_linear_shared.ts` — contract / ownership — `tests/canvas_picking_cell_dims_meta_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`
+- `esm/native/services/canvas_picking_click_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/drawer_runtime_access_cleanup_guard.test.js`, `tests/platform_runtime_access_contracts.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/statekernel_audit_contracts.test.js`, `tests/zustand_domain_paths_contracts.test.js`
+- `esm/native/services/canvas_picking_click_route_actions.ts` — contract / source-guard — `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
+- `esm/native/services/canvas_picking_click_route.ts` — contract / source-guard — `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/drawer_runtime_access_cleanup_guard.test.js`
+- `esm/native/services/canvas_picking_door_action_hover_flow.ts` — contract / source-guard — `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/door_trim_mirror_avoidance_guard.test.cjs`, `tests/mirror_layout_family_guard.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sliding_wardrobe_regression_guard.test.js`
+- `esm/native/services/canvas_picking_door_edit_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
+- `esm/native/services/canvas_picking_door_hinge_groove_click.ts` — contract / ownership — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`, `tests/visual_maps_writer_ownership_source_guard.test.js`
+- `esm/native/services/canvas_picking_door_remove_click.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`
 - `esm/native/services/canvas_picking_door_split_click_custom.ts` — contract / ownership — `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_door_split_click_toggle.ts` — contract / ownership — `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_door_split_hover_flow.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_door_trim_click.ts` — contract / ownership — `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/door_trim_mirror_avoidance_guard.test.cjs`, `tests/door_trim_type_hardening_guard.test.cjs`, `tests/visual_maps_writer_ownership_source_guard.test.js`
-- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_interior_hover_manual_mode.ts` — contract / ownership — `tests/canvas_picking_hover_contracts.test.js`, `tests/sketch_box_manual_interior_hover_final_consumer_ownership_contract.test.js`
+- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
+- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
+- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
+- `esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_local_helpers_cell_dims.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/cell_dims_hover_preview_guard.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`
-- `esm/native/services/canvas_picking_manual_layout_free_box_commit.ts` — contract / ownership — `tests/canvas_picking_click_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
-- `esm/native/services/canvas_picking_manual_layout_free_box_content.ts` — contract / ownership — `tests/canvas_picking_click_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`, `tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js`
 - `esm/native/services/canvas_picking_manual_layout_free_box_hover_protocol.ts` — contract / ownership — `tests/canvas_picking_sketch_hover_identity_contract.test.js`, `tests/runtime_pipeline_ownership_guard.test.js`
 - `esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/sketch_box_module_defaults_and_free_click_guard.test.js`
 - `esm/native/services/canvas_picking_paint_flow_apply_door_style.ts` — contract / ownership — `tests/canvas_picking_door_style_override_contracts.test.js`, `tests/canvas_picking_paint_meta_contracts.test.js`, `tests/visual_maps_writer_ownership_source_guard.test.js`

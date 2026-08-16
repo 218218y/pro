@@ -653,6 +653,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/canvas_picking_cell_dims_corner_cell_runtime.test.ts',
       'tests/canvas_picking_cell_dims_linear_runtime.test.ts',
       'tests/canvas_picking_click_hit_flow_runtime.test.ts',
+      'tests/canvas_picking_click_mode_state_runtime.test.ts',
       'tests/canvas_picking_door_split_click_runtime.test.ts',
       'tests/canvas_picking_door_action_hover_flow_runtime.test.ts',
       'tests/canvas_picking_door_action_hover_preview_paint_runtime.test.ts',
