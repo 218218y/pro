@@ -181,6 +181,30 @@ const storeConfigPatchApplyBoundaryAllowPaths = new Set([
   'esm/native/platform/store_patch_apply.ts',
 ]);
 
+const canonicalWriteConfigReplaceKeyAllowPaths = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
+const canonicalWriteConfigPatchDataKeysUiAllowPaths = new Set([
+  'esm/native/ui/react/actions/structural_build_refresh_actions.ts',
+]);
+const canonicalWriteUiRuntimePatchAllowPaths = new Set([
+  'esm/native/platform/store.ts',
+  'esm/native/kernel/kernel.ts',
+  'esm/native/kernel/state_api.ts',
+]);
+const canonicalWriteModePatchAllowPaths = new Set(canonicalWriteUiRuntimePatchAllowPaths);
+const canonicalWriteStateKernelStackMethods = [
+  'ensureModuleConfigForStack',
+  'patchModuleConfigForStack',
+  'ensureSplitLowerModuleConfig',
+  'ensureCornerConfig',
+  'ensureCornerCellConfig',
+  'ensureSplitLowerCornerConfig',
+  'ensureSplitLowerCornerCellConfig',
+  'patchModuleConfig',
+  'patchSplitLowerCornerConfig',
+  'patchSplitLowerCornerCellConfig',
+  'patchSplitLowerModuleConfig',
+];
+
 function collectRuntimeGeometryScalarUnionViolations() {
   const violations = [];
   const keyPattern = runtimeGeometryScalarKeys.join('|');
@@ -476,6 +500,127 @@ function collectStoreConfigMapWriteCapabilityViolations() {
   return violations;
 }
 
+function collectCanonicalWritePathViolations() {
+  const violations = [];
+  const usedReplaceKeyOwners = new Set();
+  const usedPatchDataKeysUiConsumers = new Set();
+  const sourceRoots = ['esm', 'tools', 'js'];
+  const replaceKeyPatterns = [
+    /\b__replace\b/g,
+    /\$\{\s*['"]__['"]\s*\}\s*replace/g,
+    /['"]__['"]\s*\+\s*['"]replace['"]/g,
+  ];
+  const rawReplaceKeyConstantPattern = /\bCONFIG_PATCH_REPLACE_KEY\b/g;
+  const localProtocolPrefixPattern = /\.startsWith\(\s*['"]__['"]\s*\)/g;
+  const configPatchDataKeysPattern = /\breadConfigPatchDataKeys\b/g;
+  const directConfigPatchPattern = /\.patch(?:\?\.)?\s*\(\s*\{\s*config\s*:/g;
+  const directUiPatchPattern = /\.patch(?:\?\.)?\s*\(\s*\{\s*ui\s*:/g;
+  const directRuntimePatchPattern = /\.patch(?:\?\.)?\s*\(\s*\{\s*runtime\s*:/g;
+  const directModePatchPattern = /\.patch(?:\?\.)?\s*\(\s*\{\s*mode\s*:/g;
+  const directSetUiPattern = /\.setUi\s*\(/g;
+  const directSetRuntimePattern = /\.setRuntime\s*\(/g;
+  const directSetModePattern = /\.setMode\s*\(/g;
+
+  for (const rootName of sourceRoots) {
+    const absRoot = path.join(root, rootName);
+    for (const abs of walk(absRoot)) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      if (rel === 'tools/wp_type_hardening_audit.mjs') continue;
+      const source = fs.readFileSync(abs, 'utf8');
+      const isTypes = rel.startsWith('types/');
+
+      if (!isTypes) {
+        const hasReplaceKeyConstruction = replaceKeyPatterns.some(pattern => {
+          pattern.lastIndex = 0;
+          return pattern.test(source);
+        });
+        if (hasReplaceKeyConstruction) {
+          if (canonicalWriteConfigReplaceKeyAllowPaths.has(rel)) usedReplaceKeyOwners.add(rel);
+          else
+            violations.push(`${rel}: config replace metadata must be built by cfg_access_patch_metadata.ts`);
+        }
+      }
+
+      if (!isTypes && rel.startsWith('esm/')) {
+        rawReplaceKeyConstantPattern.lastIndex = 0;
+        if (rawReplaceKeyConstantPattern.test(source) && !canonicalWriteConfigReplaceKeyAllowPaths.has(rel)) {
+          violations.push(`${rel}: raw config replace-key constant is owner-private`);
+        }
+      }
+
+      if (!isTypes && rel.startsWith('esm/native/')) {
+        localProtocolPrefixPattern.lastIndex = 0;
+        if (localProtocolPrefixPattern.test(source)) {
+          violations.push(
+            `${rel}: config protocol metadata must be read through cfg_access_patch_metadata helpers`
+          );
+        }
+      }
+
+      if (!isTypes && rel.startsWith('esm/native/ui/')) {
+        configPatchDataKeysPattern.lastIndex = 0;
+        if (configPatchDataKeysPattern.test(source)) {
+          if (canonicalWriteConfigPatchDataKeysUiAllowPaths.has(rel)) usedPatchDataKeysUiConsumers.add(rel);
+          else violations.push(`${rel}: readConfigPatchDataKeys UI usage is outside the approved owner`);
+        }
+      }
+
+      if (!isTypes && /\bstateKernel(?:Compat)?\b/.test(source)) {
+        const staleMethod = canonicalWriteStateKernelStackMethods.find(name => source.includes(name));
+        if (staleMethod)
+          violations.push(`${rel}: retired stateKernel.${staleMethod} stack write path remains`);
+      }
+
+      if (!isTypes) {
+        const directPatchRules = [
+          [
+            directConfigPatchPattern,
+            new Set([
+              'esm/native/kernel/state_api.ts',
+              'esm/native/runtime/cfg_access.ts',
+              'esm/native/kernel/kernel.ts',
+            ]),
+            'config',
+          ],
+          [directUiPatchPattern, canonicalWriteUiRuntimePatchAllowPaths, 'ui'],
+          [directRuntimePatchPattern, canonicalWriteUiRuntimePatchAllowPaths, 'runtime'],
+          [directModePatchPattern, canonicalWriteModePatchAllowPaths, 'mode'],
+        ];
+        for (const [pattern, allowPaths, slice] of directPatchRules) {
+          pattern.lastIndex = 0;
+          if (pattern.test(source) && !allowPaths.has(rel)) {
+            violations.push(`${rel}: direct ${slice} patch bypasses the canonical write-access owner`);
+          }
+        }
+
+        const directSetterRules = [
+          [directSetUiPattern, canonicalWriteUiRuntimePatchAllowPaths, 'setUi'],
+          [directSetRuntimePattern, canonicalWriteUiRuntimePatchAllowPaths, 'setRuntime'],
+          [directSetModePattern, canonicalWriteModePatchAllowPaths, 'setMode'],
+        ];
+        for (const [pattern, allowPaths, method] of directSetterRules) {
+          pattern.lastIndex = 0;
+          if (pattern.test(source) && !allowPaths.has(rel)) {
+            violations.push(`${rel}: direct store.${method} bypasses the canonical write-access owner`);
+          }
+        }
+      }
+    }
+  }
+
+  for (const rel of [...canonicalWriteConfigReplaceKeyAllowPaths].sort()) {
+    if (!usedReplaceKeyOwners.has(rel))
+      violations.push(`${rel}: config replace-key owner allowlist entry is unused`);
+  }
+  for (const rel of [...canonicalWriteConfigPatchDataKeysUiAllowPaths].sort()) {
+    if (!usedPatchDataKeysUiConsumers.has(rel)) {
+      violations.push(`${rel}: config patch-data-keys UI allowlist entry is unused`);
+    }
+  }
+
+  return violations;
+}
+
 function collectRawStoreBoundaryDocViolations() {
   const expectations = [
     {
@@ -634,6 +779,7 @@ violations.push(...collectConfigMapOwnerCommitHelperViolations());
 violations.push(...collectRetiredGenericConfigMapAccessViolations());
 violations.push(...collectRetiredConfigReplaceMetadataHelperViolations());
 violations.push(...collectConfigReplaceMetadataBuilderBoundaryViolations());
+violations.push(...collectCanonicalWritePathViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());
@@ -646,5 +792,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed; canonical write paths are enforced)'
 );

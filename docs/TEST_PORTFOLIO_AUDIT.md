@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-16T07:04:32.789Z
+Generated: 2026-08-16T07:44:04.309Z
 
 ## Summary
 
@@ -112,7 +112,7 @@ Generated: 2026-08-16T07:04:32.789Z
 - `esm/native/platform/render_loop_motion_doors.ts` — contract / ownership — `tests/config_render_seam_cleanup_guard.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`, `tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/local_motion_toggle_wakeup_guard.test.cjs`, `tests/render_loop_door_motion_ownership_contract.test.js`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
 - `esm/native/platform/render_loop_motion_shared.ts` — contract / ownership — `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
 - `esm/native/runtime/api.ts` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/app_container_legacy_surfaces_cleanup_guard.test.js`, `tests/chest_mode_dimensions_compatibility_ownership_contract.test.js`, `tests/export_download_dom_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/runtime_platform_core_family_contracts.test.js`
-- `esm/native/runtime/cfg_access_map_owner.ts` — contract / ownership — `tests/store_backend_family_guard.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
+- `esm/native/runtime/cfg_access_map_owner.ts` — contract / ownership — `tests/store_backend_topology_contract.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/runtime/cfg_access_maps.ts` — contract / ownership — `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access_scalars.ts` — contract / ownership — `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access.ts` — contract / ownership — `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`
@@ -131,7 +131,7 @@ Generated: 2026-08-16T07:04:32.789Z
 - `esm/native/runtime/runtime_config_selectors.ts` — contract / ownership — `tests/config_ownership_split_runtime.test.ts`, `tests/final_root_surface_cleanup_guard.test.js`, `tests/runtime_surface_family_contracts.test.js`
 - `esm/native/runtime/simple_writable_map_writer_owner.ts` — contract / ownership — `tests/runtime_platform_core_family_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/services/api_runtime_base_surface.ts` — contract / ownership — `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`
-- `esm/native/services/api_state_surface.ts` — contract / ownership — `tests/store_backend_family_guard.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
+- `esm/native/services/api_state_surface.ts` — contract / ownership — `tests/store_backend_topology_contract.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/services/api.ts` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/builder_service_access_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/project_io_contracts.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wp_layer_contract_runtime.test.js`
 - `esm/native/services/canvas_picking_cell_dims_flow.ts` — contract / ownership — `tests/canvas_picking_flow_topology_contract.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
 - `esm/native/services/canvas_picking_cell_dims_linear_shared.ts` — contract / ownership — `tests/canvas_picking_cell_dims_meta_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`
