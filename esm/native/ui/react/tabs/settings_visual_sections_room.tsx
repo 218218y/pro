@@ -49,7 +49,7 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
           value={draft}
           min={props.min ?? 0}
           max={props.max}
-          step="0.1"
+          step="5"
           onChange={(event: import('react').ChangeEvent<HTMLInputElement>) => {
             const raw = event.target.value;
             setDraft(raw);

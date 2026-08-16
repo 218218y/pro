@@ -81,6 +81,8 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(roomHtml, /קיר אחורי מאחורי הארון/);
   assert.match(roomHtml, /עמוד בולט מהקיר/);
   assert.match(roomHtml, /הסתר קיר ועמוד/);
+  assert.equal(countMatches(roomHtml, /step="5"/g), 9);
+  assert.doesNotMatch(roomHtml, /step="0\.1"/);
   assert.match(roomHtml, /פרקט/);
   assert.match(roomHtml, /אריחים/);
   assert.match(roomHtml, /צבע מעטפת החדר \(360°\)/);

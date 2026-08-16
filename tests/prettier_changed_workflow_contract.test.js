@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 function read(file) {
@@ -41,7 +43,34 @@ test('targeted prettier workflow is available for local commits', () => {
 });
 
 test('targeted prettier base scope accepts and consumes an explicit Git ref', () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-prettier-git-'));
+  const toolDir = path.join(fixtureRoot, 'tools');
+  const prettierBinDir = path.join(fixtureRoot, 'node_modules', 'prettier', 'bin');
+  fs.mkdirSync(toolDir, { recursive: true });
+  fs.mkdirSync(prettierBinDir, { recursive: true });
+  fs.copyFileSync('tools/wp_prettier_changed.mjs', path.join(toolDir, 'wp_prettier_changed.mjs'));
+  fs.writeFileSync(path.join(prettierBinDir, 'prettier.cjs'), '// fixture: existence is enough\n');
+  fs.writeFileSync(path.join(fixtureRoot, 'tracked.js'), 'export const tracked = true;\n');
+
+  const git = args =>
+    spawnSync(process.platform === 'win32' ? 'git.exe' : 'git', args, {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+    });
+  for (const args of [
+    ['init', '-q'],
+    ['config', 'user.email', 'offline-test@example.invalid'],
+    ['config', 'user.name', 'Offline Test'],
+    ['config', 'commit.gpgsign', 'false'],
+    ['add', '--', 'tracked.js'],
+    ['commit', '-qm', 'fixture'],
+  ]) {
+    const setup = git(args);
+    assert.equal(setup.status, 0, setup.stderr || setup.stdout);
+  }
+
   const result = spawnSync(process.execPath, ['tools/wp_prettier_changed.mjs', '--check', '--base', 'HEAD'], {
+    cwd: fixtureRoot,
     encoding: 'utf8',
   });
 

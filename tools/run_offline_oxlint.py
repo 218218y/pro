@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import os
 import sys
 
 import bootstrap_offline_repair_core as core
@@ -25,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"offline Oxlint error: {exc}", file=sys.stderr)
         return 2
 
-    environment = os.environ.copy()
+    environment = core.create_offline_environment(node)
     environment[manifest["oxlint"]["typeAware"]["environmentVariable"]] = str(
         type_aware_launcher
     )

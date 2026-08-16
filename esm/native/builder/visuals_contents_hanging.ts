@@ -13,6 +13,7 @@ import {
   resolveContentsOutline,
   resolveShowContents,
   seededRandom,
+  visualObjectIntersectsRoomColumnCut,
   type AppAwareAddHangingClothesFn,
 } from './visuals_contents_shared.js';
 import type { Object3DLike } from '../../../types/index.js';
@@ -303,6 +304,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   for (let i = 0; i < count; i++) {
     const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
     const hanger = createStyledHanger({ THREE, dims, xPos, rodY, rodZ });
+    if (visualObjectIntersectsRoomColumnCut(App, THREE, hanger)) continue;
     parentGroup.add(hanger);
 
     const variant = selectGarmentVariant();

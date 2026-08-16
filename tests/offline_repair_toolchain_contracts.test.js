@@ -1493,6 +1493,88 @@ test('offline TSX scripts install the lock-derived runtime profile without npx o
   assert.doesNotMatch(bootstrap, /subprocess\.(?:run|Popen)\(\s*\[\s*['"](?:npm|npx)/u);
 });
 
+test('offline npm extraction recreates npm-style bin links and repairs missing links', () => {
+  const probe = String.raw`
+from pathlib import Path
+import json
+import sys
+import tarfile
+import tempfile
+
+sys.path.insert(0, str(Path.cwd() / "tools"))
+import bootstrap_offline_repair_core as core
+
+fixture = Path(tempfile.mkdtemp(prefix="offline-bin-links-"))
+source = fixture / "source" / "package"
+(source / "bin").mkdir(parents=True)
+(source / "package.json").write_text(json.dumps({
+    "name": "offline-bin-fixture",
+    "version": "1.0.0",
+    "bin": {"offline-bin-fixture": "bin/cli.js"},
+}), encoding="utf-8")
+(source / "bin" / "cli.js").write_text("#!/usr/bin/env node\\n", encoding="utf-8")
+archive = fixture / "vendor" / "offline" / "fixture.tgz"
+archive.parent.mkdir(parents=True)
+with tarfile.open(archive, "w:gz") as bundle:
+    bundle.add(source, arcname="package")
+
+original_root = core.ROOT
+core.ROOT = fixture
+try:
+    entry = {
+        "file": "vendor/offline/fixture.tgz",
+        "installPath": "node_modules/offline-bin-fixture",
+    }
+    destination = core._install_npm_entry(entry, "1.0.0")
+    link = fixture / "node_modules" / ".bin" / "offline-bin-fixture"
+    target = destination / "bin" / "cli.js"
+    if not link.is_symlink() or link.resolve() != target.resolve():
+        raise AssertionError("initial npm bin link was not created")
+
+    link.unlink()
+    core._install_npm_entry(entry, "1.0.0")
+    if not link.is_symlink() or link.resolve() != target.resolve():
+        raise AssertionError("matching installed package did not repair its missing npm bin link")
+
+    core._remove_npm_bin_links(destination)
+    if link.exists() or link.is_symlink():
+        raise AssertionError("owned npm bin link was not cleaned before package removal")
+finally:
+    core.ROOT = original_root
+
+print("npm-bin-links-ok")
+`;
+  const result = spawnSync(process.env.PYTHON ?? 'python', ['-c', probe], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stdout.trim(), 'npm-bin-links-ok');
+});
+
+test('offline toolchain exposes one-shot chat setup and full unit-test commands', () => {
+  const pkg = readJson('package.json');
+  assert.equal(
+    pkg.scripts['setup:offline:toolchain'],
+    'python tools/bootstrap_offline_repair_core.py --with-tsx --with-prettier --with-typescript --with-oxlint && python tools/bootstrap_offline_vite.py && python tools/bootstrap_offline_eslint.py'
+  );
+  assert.equal(
+    pkg.scripts['test:offline'],
+    'python tools/run_offline_node24.py --with-typescript --with-prettier --with-tsx --with-runtime --with-oxlint --with-vite tools/wp_test.js'
+  );
+
+  const coreBootstrap = fs.readFileSync(path.join(root, 'tools/bootstrap_offline_repair_core.py'), 'utf8');
+  const nodeRunner = fs.readFileSync(path.join(root, 'tools/run_offline_node24.py'), 'utf8');
+  assert.match(coreBootstrap, /def _extract_node_package_manager\(/u);
+  assert.match(coreBootstrap, /def create_offline_environment\(/u);
+  assert.match(coreBootstrap, /node_modules.*\.bin/u);
+  assert.match(nodeRunner, /--with-vite/u);
+  assert.match(nodeRunner, /--with-eslint/u);
+  assert.match(nodeRunner, /create_offline_environment/u);
+});
+
 test('offline Python caches are ignored and bootstrap JSON parsing stays single-read', () => {
   const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
   assert.match(gitignore, /(?:^|\n)__pycache__\/(?:\n|$)/u);

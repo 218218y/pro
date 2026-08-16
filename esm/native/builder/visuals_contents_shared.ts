@@ -1,6 +1,10 @@
 import { assertApp } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
+import {
+  intersectAxisAlignedBoxes,
+  resolveActiveRoomColumnCutObstacle,
+} from './room_architecture_geometry.js';
 
 import type {
   AppContainer,
@@ -57,6 +61,34 @@ export function ensureVisualsContentsApp(passed: unknown): AppContainer {
 export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
   const App = ensureVisualsContentsApp(passedApp);
   return assertThreeViaDeps(App, 'native/builder/visuals_contents.THREE');
+}
+
+export function visualObjectIntersectsRoomColumnCut(
+  App: AppContainer,
+  THREE: ThreeLike,
+  object: unknown
+): boolean {
+  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+  if (!obstacle || !object || typeof THREE.Box3 !== 'function') return false;
+
+  try {
+    const bounds = new THREE.Box3().setFromObject(object);
+    const min = bounds?.min;
+    const max = bounds?.max;
+    const minX = typeof min?.x === 'number' && Number.isFinite(min.x) ? min.x : null;
+    const minY = typeof min?.y === 'number' && Number.isFinite(min.y) ? min.y : null;
+    const minZ = typeof min?.z === 'number' && Number.isFinite(min.z) ? min.z : null;
+    const maxX = typeof max?.x === 'number' && Number.isFinite(max.x) ? max.x : null;
+    const maxY = typeof max?.y === 'number' && Number.isFinite(max.y) ? max.y : null;
+    const maxZ = typeof max?.z === 'number' && Number.isFinite(max.z) ? max.z : null;
+    if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
+      return false;
+    }
+    return !!intersectAxisAlignedBoxes({ minX, maxX, minY, maxY, minZ, maxZ }, obstacle);
+  } catch {
+    // Detached previews and lightweight tests may not expose full THREE bounds machinery.
+    return false;
+  }
 }
 
 export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {

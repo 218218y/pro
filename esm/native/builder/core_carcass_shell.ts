@@ -11,6 +11,8 @@ import {
 
 const SHELL_DIMENSIONS = CARCASS_SHELL_DIMENSIONS;
 
+export const CARCASS_BACK_PANEL_THICKNESS_M: number = SHELL_DIMENSIONS.backPanelThicknessM;
+
 export type CarcassShellResult = CarcassShellPlan;
 
 export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellResult {

@@ -14,7 +14,7 @@ import {
   readModuleShoeDrawerState,
   removeTopLevelSketchShoeDrawers,
 } from './canvas_picking_shoe_drawer_module_state.js';
-import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
+import { __wp_cfg, __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
   applyShoeDrawerBaseAutoNoneIfNeeded,
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
@@ -27,7 +27,11 @@ import {
   type CrossDrawerRemovePlan,
 } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
-import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
+import {
+  asInternalGridInfo,
+  ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
+  shouldBlockDrawerBuildForRoomColumn,
+} from './canvas_picking_drawer_mode_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import {
   extDrawerModeHoverMatchesModule,
@@ -211,6 +215,14 @@ export function tryHandleExternalDrawerModeClick(args: {
         }
 
         if (
+          blockDrawerBuildForRoomColumn({
+            App,
+            moduleKey: targetModuleKey,
+            isBottomStack: !!args.isBottomStack,
+          })
+        )
+          return;
+        if (
           blockRemovableSideContentBuildIfModuleSideMissing({
             App,
             moduleKey: targetModuleKey,
@@ -242,6 +254,15 @@ export function tryHandleExternalDrawerModeClick(args: {
             ? normalizedDrawerCount
             : SKETCH_EXTERNAL_DRAWER_COUNT_MIN;
         const nextCount = currentCount === target ? 0 : target;
+        if (
+          nextCount > 0 &&
+          blockDrawerBuildForRoomColumn({
+            App,
+            moduleKey: targetModuleKey,
+            isBottomStack: !!args.isBottomStack,
+          })
+        )
+          return;
         if (
           nextCount > 0 &&
           blockRemovableSideContentBuildIfModuleSideMissing({
@@ -277,6 +298,25 @@ export function tryHandleExternalDrawerModeClick(args: {
     restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'extDrawers.shoe:autoBaseRestore');
   }
 
+  return true;
+}
+
+function blockDrawerBuildForRoomColumn(args: {
+  App: AppContainer;
+  moduleKey: ModuleKey | 'corner' | null;
+  isBottomStack: boolean;
+}): boolean {
+  if (
+    !shouldBlockDrawerBuildForRoomColumn({
+      App: args.App,
+      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
+      moduleKey: args.moduleKey,
+      isBottomStack: args.isBottomStack,
+    })
+  ) {
+    return false;
+  }
+  __wp_toast(args.App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
   return true;
 }
 

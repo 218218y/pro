@@ -64,6 +64,7 @@ export function createInteriorSketchPlacementSupport(
       asObject,
     }),
     addShelfPins: createShelfPinAdder({
+      App,
       group,
       THREE,
       pinGeo: placementMaterials.pinGeo,

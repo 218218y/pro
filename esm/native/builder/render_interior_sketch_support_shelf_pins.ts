@@ -1,5 +1,6 @@
 import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
+import type { AppContainer } from '../../../types/index.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -7,9 +8,15 @@ import type {
 } from './render_interior_ops_contracts.js';
 import type { SketchPlacementSupport } from './render_interior_sketch_support_contracts.js';
 
+import {
+  boxFromCenterSize,
+  intersectAxisAlignedBoxes,
+  resolveActiveRoomColumnCutObstacle,
+} from './room_architecture_geometry.js';
 import { asMaterial } from './render_interior_sketch_shared.js';
 
 export function createShelfPinAdder(args: {
+  App: AppContainer;
   group: InteriorGroupLike;
   THREE: InteriorTHREESurface | null;
   pinGeo: unknown;
@@ -18,7 +25,7 @@ export function createShelfPinAdder(args: {
   pinLen: number;
   pinEdgeOffsetDefault: number;
 }): SketchPlacementSupport['addShelfPins'] {
-  const { group, THREE, pinGeo, pinMat, pinRadius, pinLen, pinEdgeOffsetDefault } = args;
+  const { App, group, THREE, pinGeo, pinMat, pinRadius, pinLen, pinEdgeOffsetDefault } = args;
 
   return (shelfX, shelfY, shelfZ, shelfW, shelfH, shelfDepth, enabled, shelfPartId) => {
     if (!enabled) return;
@@ -37,7 +44,25 @@ export function createShelfPinAdder(args: {
     const leftEdgeX = shelfX - shelfW / 2;
     const rightEdgeX = shelfX + shelfW / 2;
 
+    const columnCutObstacle = resolveActiveRoomColumnCutObstacle(App);
     const mkPin = (x: number, z: number) => {
+      if (
+        columnCutObstacle &&
+        intersectAxisAlignedBoxes(
+          boxFromCenterSize({
+            x,
+            y: yPin,
+            z,
+            width: pinLen,
+            height: pinRadius * 2,
+            depth: pinRadius * 2,
+          }),
+          columnCutObstacle
+        )
+      ) {
+        return;
+      }
+
       const mesh = new THREE.Mesh(pinGeo, pinMat);
       if (mesh.rotation) mesh.rotation.z = Math.PI / 2;
       mesh.position?.set?.(x, yPin, z);

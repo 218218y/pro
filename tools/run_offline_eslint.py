@@ -36,6 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     return process_runner.run_isolated(
         [str(node), str(core.ROOT / "tools" / "wp_lint.js"), *lint_args],
         cwd=core.ROOT,
+        env=core.create_offline_environment(node),
     )
 
 

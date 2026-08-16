@@ -12,6 +12,8 @@ type Toast = { message: string; type: string | undefined };
 type GuardAppState = {
   config: Record<string, unknown>;
   ui?: Record<string, unknown>;
+  runtime?: Record<string, unknown>;
+  runtimeCache?: Record<string, unknown>;
   removedDoorsMap?: Record<string, unknown>;
 };
 
@@ -22,7 +24,7 @@ function createGuardApp(state: GuardAppState) {
   const App = {
     store: {
       getState() {
-        return { config: state.config, ui: state.ui || {}, runtime: {}, mode: {}, meta: {} };
+        return { config: state.config, ui: state.ui || {}, runtime: state.runtime || {}, mode: {}, meta: {} };
       },
       patch() {
         return undefined;
@@ -34,6 +36,7 @@ function createGuardApp(state: GuardAppState) {
       },
     },
     services: {
+      runtimeCache: state.runtimeCache || {},
       uiFeedback: {
         toast(message: string, type?: string) {
           toasts.push({ message, type });
@@ -183,4 +186,66 @@ test('sketch-box rod content is blocked when the same box side was removed', () 
   assert.equal(nextHover, null);
   assert.equal(box.rods, undefined);
   assertRemovedSideBuildToast(toasts);
+});
+
+test('drawer build is blocked with a clear toast when the room column cuts the target cell', () => {
+  const cfg: Record<string, unknown> = { layout: 'shelves' };
+  const roomArchitecture = {
+    backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 42.5,
+      widthCm: 15,
+      depthCm: 20,
+      heightCm: 200,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: false,
+  };
+  const { App, toasts } = createGuardApp({
+    config: { roomArchitecture, modulesConfiguration: [cfg] },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2, wardrobeDepthM: 0.6 },
+    runtimeCache: {
+      internalGridMap: {
+        0: {
+          effectiveBottomY: 0.02,
+          effectiveTopY: 1.98,
+          innerW: 0.96,
+          internalCenterX: 0,
+          internalDepth: 0.55,
+          internalZ: 0,
+          woodThick: 0.02,
+          startY: 0,
+        },
+      },
+    },
+  });
+  const hoverWrites: unknown[] = [];
+
+  assert.equal(
+    tryCommitSketchModuleStackTool({
+      App,
+      cfg,
+      tool: 'sketch_int_drawers',
+      hoverOk: false,
+      hoverRec: {},
+      bottomY: 0.02,
+      topY: 1.98,
+      totalHeight: 1.96,
+      pad: 0.02,
+      woodThick: 0.02,
+      hitYClamped: 1,
+      hoverHost: { tool: 'sketch_int_drawers', moduleKey: 0, isBottom: false },
+      writeSketchHover(_App: unknown, nextHover: unknown) {
+        hoverWrites.push(nextHover);
+      },
+    }),
+    true
+  );
+
+  assert.equal(cfg.sketchExtras, undefined);
+  assert.deepEqual(hoverWrites, [null]);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /העמוד חודר לתוך התא/);
 });

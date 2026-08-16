@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T15:23:30.883Z",
+  "generatedAt": "2026-08-16T16:45:20.574Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 545,
@@ -1647,21 +1647,21 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 268,
+      "line": 270,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "fallbackBackPanel: CarcassBackPanelOp"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 281,
+      "line": 283,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 299,
+      "line": 301,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"
@@ -2515,7 +2515,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
-      "line": 52,
+      "line": 77,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"

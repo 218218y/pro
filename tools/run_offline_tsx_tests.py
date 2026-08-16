@@ -41,6 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     return process_runner.run_isolated(
         [str(node), "tools/wp_run_tsx_tests.mjs", *test_args],
         cwd=core.ROOT,
+        env=core.create_offline_environment(node),
     )
 
 

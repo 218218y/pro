@@ -130,6 +130,68 @@ test('render interior sketch support clamps placement, emits shelf pins, and kee
   assert.equal(App.__matCache.__sketchShelfPinMat.__keepMaterial, true);
 });
 
+test('render interior sketch shelf pins omit only supports that collide with the room column liner cut', () => {
+  const added: any[] = [];
+  const state = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 19,
+          widthCm: 5,
+          depthCm: 15,
+          heightCm: 200,
+          bottomOffsetCm: 0,
+        },
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2, wardrobeDepthM: 0.6 },
+    mode: {},
+    meta: {},
+  };
+  const App: any = {
+    __matCache: {},
+    store: {
+      getState: () => state,
+      patch() {},
+    },
+  };
+  const support = createInteriorSketchPlacementSupport({
+    App,
+    group: { add: (obj: unknown) => added.push(obj) },
+    effectiveBottomY: 0.2,
+    effectiveTopY: 1.8,
+    woodThick: 0.02,
+    innerW: 0.8,
+    internalCenterX: 0,
+    matCache(currentApp: any) {
+      return currentApp.__matCache;
+    },
+    THREE: {
+      Mesh: FakeMesh,
+      MeshStandardMaterial: FakeMeshStandardMaterial,
+      MeshBasicMaterial: FakeMeshBasicMaterial,
+      CylinderGeometry: FakeCylinderGeometry,
+      BoxGeometry: FakeBoxGeometry,
+      DoubleSide: 'double-side',
+    },
+    asObject<T extends object>(value: unknown): T | null {
+      return value && typeof value === 'object' ? (value as T) : null;
+    },
+    faces: { leftX: -0.4, rightX: 0.4 },
+  });
+
+  support.addShelfPins(0, 1, 0, 0.6, 0.02, 0.5, true);
+
+  const pins = added.filter(entry => entry?.userData?.__kind === 'shelf_pin');
+  assert.equal(pins.length, 3);
+  assert.equal(pins.filter(pin => pin.position.x < 0).length, 1);
+  assert.equal(pins.filter(pin => pin.position.x > 0).length, 2);
+});
+
 test('render interior sketch support locator resolves the matching box by center span', () => {
   const locate = createSketchBoxLocator([
     { y: 0.6, halfH: 0.2, innerW: 0.5, centerX: -0.2, innerD: 0.45, innerBackZ: -0.2 },

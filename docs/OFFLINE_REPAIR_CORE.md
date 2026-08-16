@@ -79,8 +79,8 @@ TSX and esbuild remain separate focused toolchain slices. Platform filtering kee
 
 ### Optional Vite 8 build slice
 
-The Vite plan is generated from the exact lockfile entries for `vite 8.2.0` and
-`@vitejs/plugin-react 6.0.5`. Their complete required dependency closure is stored under:
+The Vite plan is generated from the exact lockfile entries for `vite` and
+`@vitejs/plugin-react`; their versions are never duplicated manually in this document. Their complete required dependency closure is stored under:
 
 ```text
 vendor/offline/vite/*.tgz
@@ -143,6 +143,10 @@ tools/bootstrap_offline_repair_core.sh
 ```
 
 The core bootstrap verifies the Node version and SHA-256, the signed offline Oxc archive URLs and SHA-512 integrity values, the reviewed compatibility window against the active lockfile parser, the extracted Node executable, and a real Oxc parse operation. The offline fallback is intentionally independent from the active npm resolution so a reviewed online patch update does not invalidate emergency repair tooling.
+
+The pinned Node archive already contains its matching npm and npx distribution. The bootstrap now extracts those files from the same SHA-256-verified archive, so this adds **no vendor archive and no ZIP weight**. Offline runners prepend `.tools/node24/bin` and the repository `node_modules/.bin` to `PATH`; a command that falls back to `npx` therefore remains on pinned Node 24 instead of silently using a system Node installation.
+
+When npm-format archives are extracted without running npm, the installer also recreates each package's declared `bin` links in the nearest `node_modules/.bin` directory (for example `tsx`, `tsgolint`, `vite`, `oxlint`, `tsc`, `eslint`, and `prettier`). Existing matching packages are rechecked on every bootstrap, so a missing or stale symlink is repaired without redownloading or re-extracting the package.
 
 ## Update the active Oxc parser
 
@@ -279,6 +283,29 @@ npm run lint:js:strict:offline
 
 The offline command reuses `tools/wp_lint.js`, so it has the same file targets, `js-only` profile, and
 `--max-warnings=0` behavior as `npm run lint:js:strict`.
+
+## One-shot Chat/offline setup and unit suite
+
+For a fresh ZIP in an offline Chat/sandbox environment, install the useful focused toolchain in one command:
+
+```bash
+npm run setup:offline:toolchain
+```
+
+This installs only archives already present in `vendor/offline`: pinned Node/npm/npx, Oxc, TSX + runtime closure,
+Prettier, TypeScript, Oxlint + `tsgolint`, Vite, and ESLint. It does not install Playwright browsers or any
+network-only tooling.
+
+Run the repository's full non-E2E unit/contract suite with the exact offline dependencies it needs:
+
+```bash
+npm run test:offline
+```
+
+The full suite builds `dist` first, so its profile intentionally includes Prettier and Vite as well as the runtime,
+TypeScript, and Oxlint slices. Browser E2E remains separate because vendoring a browser would dominate the ZIP size
+and is not required by `tools/wp_test.js`. Use `npm run vite:build:offline` or the focused runners below when only
+one tool is needed.
 
 ## Run focused Node commands
 

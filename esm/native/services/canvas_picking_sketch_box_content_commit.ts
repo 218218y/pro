@@ -9,6 +9,11 @@ import {
   type SketchStructuralCommand,
 } from './canvas_picking_sketch_structural_command.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
+import { __wp_cfg, __wp_toast } from './canvas_picking_core_helpers.js';
+import {
+  ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
+  shouldBlockDrawerBuildForRoomColumn,
+} from './canvas_picking_drawer_mode_flow_shared.js';
 import { tryCommitSketchBoxAdornment } from './canvas_picking_sketch_box_content_commit_adornments.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { tryCommitSketchBoxDoorContent } from './canvas_picking_sketch_box_content_commit_doors.js';
@@ -29,6 +34,30 @@ function isSideBlockingBoxContentKind(contentKind: string): boolean {
     contentKind === 'ext_drawers' ||
     contentKind === 'regular_ext_drawers'
   );
+}
+
+function isDrawerBoxContentKind(contentKind: string): boolean {
+  return contentKind === 'drawers' || contentKind === 'ext_drawers' || contentKind === 'regular_ext_drawers';
+}
+
+function blockDrawerBoxContentIfRoomColumnCutsCell(
+  args: CommitSketchModuleBoxContentArgs & { hoverOp: 'add' | 'remove' }
+): boolean {
+  if (args.hoverOp === 'remove' || !args.App || !isDrawerBoxContentKind(args.contentKind)) return false;
+  const store = (args.App as unknown as { store?: { getState?: unknown; patch?: unknown } }).store;
+  if (typeof store?.getState !== 'function' || typeof store.patch !== 'function') return false;
+  if (
+    !shouldBlockDrawerBuildForRoomColumn({
+      App: args.App,
+      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
+      moduleKey: args.hoverHost?.moduleKey ?? null,
+      isBottomStack: args.hoverHost?.isBottom === true,
+    })
+  ) {
+    return false;
+  }
+  __wp_toast(args.App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
+  return true;
 }
 
 function blockSideBlockingBoxContentIfSideMissing(
@@ -76,6 +105,7 @@ export function commitSketchModuleBoxContent(
   const freePlacement = command?.freePlacement ?? structuralCommand?.freePlacement;
   if (!hoverOp || freePlacement == null) return null;
 
+  if (blockDrawerBoxContentIfRoomColumnCutsCell({ ...args, hoverOp })) return null;
   if (blockSideBlockingBoxContentIfSideMissing({ ...args, hoverOp, freePlacement })) return null;
 
   const adornment = tryCommitSketchBoxAdornment({

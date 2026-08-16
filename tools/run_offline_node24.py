@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 
 import bootstrap_offline_repair_core as core
@@ -48,6 +47,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install Oxlint and its Linux type-aware backend",
     )
+    parser.add_argument(
+        "--with-vite",
+        action="store_true",
+        help="Also install the lock-derived Vite build profile and project runtime dependencies",
+    )
+    parser.add_argument(
+        "--with-eslint",
+        action="store_true",
+        help="Also install the lock-derived ESLint strict-JS profile",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -57,6 +66,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = core.load_manifest()
         key = core.platform_key()
+        workspace_profiles = []
+        if args.with_runtime or args.with_vite:
+            workspace_profiles.append("tsx-tests")
+        if args.with_vite:
+            workspace_profiles.append("vite-build")
+        if args.with_eslint:
+            workspace_profiles.append("eslint-js-strict")
         core.verify_vendor(
             manifest,
             key,
@@ -67,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
             prettier=args.with_prettier,
             typescript=args.with_typescript,
             oxlint=args.with_oxlint,
-            workspace_profile_name="tsx-tests" if args.with_runtime else None,
+            workspace_profile_names=tuple(workspace_profiles),
         )
         executable = core.install_node(manifest, key)
         if not args.node_only:
@@ -80,15 +96,18 @@ def main(argv: list[str] | None = None) -> int:
             core.install_typescript(manifest, key, executable)
         if args.with_prettier:
             core.install_prettier(manifest, executable)
-        environment = None
+        environment = core.create_offline_environment(executable)
         if args.with_oxlint:
             _, type_aware_launcher = core.install_oxlint(manifest, key, executable)
-            environment = os.environ.copy()
             environment[manifest["oxlint"]["typeAware"]["environmentVariable"]] = str(
                 type_aware_launcher
             )
-        if args.with_runtime:
+        if args.with_runtime or args.with_vite:
             core.install_workspace_profile(manifest, key, executable, "tsx-tests")
+        if args.with_vite:
+            core.install_workspace_profile(manifest, key, executable, "vite-build")
+        if args.with_eslint:
+            core.install_workspace_profile(manifest, key, executable, "eslint-js-strict")
     except core.OfflineCoreError as exc:
         print(f"offline repair core error: {exc}", file=sys.stderr)
         return 2

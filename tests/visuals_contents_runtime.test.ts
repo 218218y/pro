@@ -121,6 +121,23 @@ class FakeMeshStandardMaterial {
   }
 }
 
+class FakeBox3 {
+  min = new FakeVector3();
+  max = new FakeVector3();
+  setFromObject(obj: any) {
+    const kind = String(obj?.userData?.__kind || '');
+    const halfX = kind === 'single_hanger_group' ? 0.24 : kind === 'hanging_hanger' ? 0.012 : 0.01;
+    const halfY = kind === 'single_hanger_group' ? 0.2 : kind === 'hanging_hanger' ? 0.035 : 0.01;
+    const halfZ = kind === 'single_hanger_group' ? 0.035 : 0.02;
+    const x = Number(obj?.position?.x || 0);
+    const y = Number(obj?.position?.y || 0);
+    const z = Number(obj?.position?.z || 0);
+    this.min.set(x - halfX, y - halfY, z - halfZ);
+    this.max.set(x + halfX, y + halfY, z + halfZ);
+    return this;
+  }
+}
+
 function resolveShelfItemBoundsXY(item: any) {
   const [width, height] = item.geometry.args;
   if (item.userData.__kind === 'library_book') {
@@ -187,6 +204,7 @@ function createApp(overrides: Record<string, unknown> = {}) {
         ExtrudeGeometry: FakeExtrudeGeometry,
         MeshStandardMaterial: FakeMeshStandardMaterial,
         Shape: FakeShape,
+        Box3: FakeBox3,
       },
     },
     store: {
@@ -652,4 +670,45 @@ test('visuals_contents realistic hanger consumes the explicit showHanger flag an
   const disabledParent = new FakeGroup();
   addRealisticHanger(App, 0, 1, 0, disabledParent as any, 0.18, hangerContentsPolicy(false));
   assert.equal(disabledParent.children.length, 0);
+});
+
+test('visuals_contents removes hangers whose physical bounds collide with the room-column liner cut', () => {
+  const roomArchitecture = {
+    backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 42.5,
+      widthCm: 3,
+      depthCm: 20,
+      heightCm: 200,
+      bottomOffsetCm: 0,
+    },
+    surfacesHidden: false,
+  };
+  const { App } = createApp({
+    config: { roomArchitecture },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2, wardrobeDepthM: 0.6 },
+  });
+
+  const singleParent = new FakeGroup();
+  addRealisticHanger(App, -0.06, 1.4, -0.2, singleParent as any, 0.8, hangerContentsPolicy(true));
+  assert.equal(singleParent.children.length, 0);
+
+  const hangingParent = new FakeGroup();
+  addHangingClothes(
+    App,
+    0,
+    1.4,
+    -0.2,
+    0.16,
+    hangingParent as any,
+    1.3,
+    0.2,
+    hangingContentsPolicy('profile')
+  );
+  const hangers = hangingParent.children.filter(child => child.userData.__kind === 'hanging_hanger');
+  const clothes = hangingParent.children.filter(child => child.userData.__kind === 'hanging_cloth');
+  assert.equal(hangers.length, 3);
+  assert.equal(clothes.length, 3);
+  assert.ok(hangers.every(hanger => hanger.position.x > -0.045));
 });

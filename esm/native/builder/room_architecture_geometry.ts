@@ -1,12 +1,12 @@
 import type { AppContainer, RoomArchitectureConfigLike, UnknownRecord } from '../../../types/index.js';
 
-import { CARCASS_BACK_PANEL_THICKNESS } from './core_carcass_shared.js';
+import { CARCASS_BACK_PANEL_THICKNESS_M } from './core_carcass_shell.js';
 import { getRoomArchitectureConfig, getRuntime, getUi } from './store_access.js';
 
 export const ROOM_BACK_WALL_THICKNESS_M = 0.04;
 export const ROOM_BACK_WALL_GAP_M = 0.01;
 export const ROOM_ARCHITECTURE_EPSILON_M = 0.00005;
-export const ROOM_COLUMN_LINER_THICKNESS_M = CARCASS_BACK_PANEL_THICKNESS;
+export const ROOM_COLUMN_LINER_THICKNESS_M = CARCASS_BACK_PANEL_THICKNESS_M;
 
 export type AxisAlignedBox = {
   minX: number;

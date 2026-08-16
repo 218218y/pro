@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
-import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_cfg, __wp_toast } from './canvas_picking_core_helpers.js';
 import {
   blockRemovableSideContentBuildIfModuleSideMissing,
   blockRemovableSideContentBuildIfSketchBoxSideMissing,
@@ -17,6 +17,10 @@ import {
   parseSketchIntDrawerHeightM,
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import { readModuleShoeDrawerState } from './canvas_picking_shoe_drawer_module_state.js';
+import {
+  ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
+  shouldBlockDrawerBuildForRoomColumn,
+} from './canvas_picking_drawer_mode_flow_shared.js';
 import {
   isSketchInternalDrawersTool,
   resolveSketchExternalDrawerFit,
@@ -157,6 +161,28 @@ function blockSketchStackCommitIfRemovedFrameSide(args: {
   return true;
 }
 
+function blockSketchStackCommitIfRoomColumn(args: {
+  App: AppContainer;
+  hoverHost: ManualLayoutSketchHoverHost;
+  writeSketchHover: CommitSketchModuleStackToolArgs['writeSketchHover'];
+}): boolean {
+  const store = (args.App as unknown as { store?: { getState?: unknown; patch?: unknown } }).store;
+  if (typeof store?.getState !== 'function' || typeof store.patch !== 'function') return false;
+  if (
+    !shouldBlockDrawerBuildForRoomColumn({
+      App: args.App,
+      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
+      moduleKey: args.hoverHost.moduleKey,
+      isBottomStack: args.hoverHost.isBottom,
+    })
+  ) {
+    return false;
+  }
+  __wp_toast(args.App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
+  args.writeSketchHover(args.App, null);
+  return true;
+}
+
 function blockSketchStackCommitIfHexCell(args: {
   App: AppContainer;
   cfg: RecordMap;
@@ -246,6 +272,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     }
     if (
       command.op !== 'remove' &&
+      blockSketchStackCommitIfRoomColumn({
+        App: args.App,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
+      return true;
+    }
+    if (
+      command.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -300,6 +336,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     const command = commandHover?.command;
     if (!command || command.kind !== 'sketch-external-drawers') {
       args.writeSketchHover(args.App, null);
+      return true;
+    }
+    if (
+      command.op !== 'remove' &&
+      blockSketchStackCommitIfRoomColumn({
+        App: args.App,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
       return true;
     }
     if (
@@ -376,6 +422,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     }
     if (
       drawerStackHover?.op !== 'remove' &&
+      blockSketchStackCommitIfRoomColumn({
+        App: args.App,
+        hoverHost: args.hoverHost,
+        writeSketchHover: args.writeSketchHover,
+      })
+    ) {
+      return true;
+    }
+    if (
+      drawerStackHover?.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -440,6 +496,16 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   if (
     !isExternalRemovalIntent &&
     blockSketchStackCommitIfRemovedFrameSide({
+      App: args.App,
+      hoverHost: args.hoverHost,
+      writeSketchHover: args.writeSketchHover,
+    })
+  ) {
+    return true;
+  }
+  if (
+    !isExternalRemovalIntent &&
+    blockSketchStackCommitIfRoomColumn({
       App: args.App,
       hoverHost: args.hoverHost,
       writeSketchHover: args.writeSketchHover,

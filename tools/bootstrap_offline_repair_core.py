@@ -648,23 +648,110 @@ def _extract_node_binary(archive: Path, member_name: str, destination: Path) -> 
         destination.chmod(0o755)
 
 
+def _extract_node_package_manager(archive: Path, member_name: str, install_dir: Path) -> None:
+    member_path = _safe_relative_posix(member_name, "Node archive member")
+    if len(member_path.parts) < 3 or member_path.parts[-2:] != ("bin", "node"):
+        raise OfflineCoreError(f"Unexpected Node executable member layout: {member_name!r}")
+    archive_root = PurePosixPath(*member_path.parts[:-2])
+    npm_root = archive_root / "lib" / "node_modules" / "npm"
+    install_npm_root = install_dir / "lib" / "node_modules" / "npm"
+    install_npm_root.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        with tarfile.open(archive, mode="r:*") as bundle:
+            matched = 0
+            for member in bundle.getmembers():
+                path = PurePosixPath(member.name)
+                if path.parts[: len(npm_root.parts)] != npm_root.parts:
+                    continue
+                relative = PurePosixPath(*path.parts[len(archive_root.parts) :])
+                target = install_dir.joinpath(*relative.parts)
+                if member.isdir():
+                    target.mkdir(parents=True, exist_ok=True)
+                    continue
+                if not member.isfile():
+                    raise OfflineCoreError(
+                        f"Unsupported Node npm archive member: {member.name!r}"
+                    )
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source = bundle.extractfile(member)
+                if source is None:
+                    raise OfflineCoreError(f"Cannot read Node npm archive member: {member.name!r}")
+                with source, target.open("wb") as output:
+                    shutil.copyfileobj(source, output)
+                target.chmod(member.mode & 0o777 or 0o644)
+                matched += 1
+    except tarfile.TarError as exc:
+        raise OfflineCoreError(f"Invalid Node archive {_display_path(archive)}: {exc}") from exc
+
+    package_json = install_npm_root / "package.json"
+    if matched == 0 or not package_json.is_file():
+        raise OfflineCoreError("Node archive does not contain the bundled npm runtime")
+
+    bin_dir = install_dir / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("npm", "npx"):
+        target = install_npm_root / "bin" / f"{name}-cli.js"
+        if not target.is_file():
+            raise OfflineCoreError(f"Bundled Node {name} CLI is missing after extraction")
+        if os.name != "nt":
+            target.chmod(target.stat().st_mode | 0o111)
+        link = bin_dir / name
+        if link.exists() or link.is_symlink():
+            link.unlink()
+        link.symlink_to(os.path.relpath(target, bin_dir))
+
+
+def _verify_node_package_manager(node_executable: Path) -> bool:
+    install_dir = node_executable.parent.parent
+    npm_cli = install_dir / "lib" / "node_modules" / "npm" / "bin" / "npm-cli.js"
+    npx_cli = install_dir / "lib" / "node_modules" / "npm" / "bin" / "npx-cli.js"
+    npm_link = node_executable.parent / "npm"
+    npx_link = node_executable.parent / "npx"
+    if not all(path.is_file() for path in (npm_cli, npx_cli)):
+        return False
+    if not npm_link.is_symlink() or not npx_link.is_symlink():
+        return False
+    probe = subprocess.run(
+        [str(node_executable), str(npm_cli), "--version"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return probe.returncode == 0 and bool(probe.stdout.strip())
+
+
+def create_offline_environment(
+    node_executable: Path,
+    base: dict[str, str] | None = None,
+) -> dict[str, str]:
+    environment = dict(os.environ if base is None else base)
+    prefixes = [str(node_executable.parent), str(ROOT / "node_modules" / ".bin")]
+    current_path = environment.get("PATH", "")
+    environment["PATH"] = os.pathsep.join([*prefixes, current_path] if current_path else prefixes)
+    return environment
+
+
 def install_node(manifest: dict, key: str, *, force: bool = False) -> Path:
     node_entry, _ = selected_entries(manifest, key)
     install_dir = _root_path(manifest["node"]["installDirectory"], "Node install directory")
     executable = install_dir.joinpath(*PurePosixPath(node_entry["installedExecutable"]).parts)
     expected_version = f"v{manifest['node']['version']}"
 
+    archive = _root_path(node_entry["file"], "Node archive path")
     if executable.is_file() and not force:
         probe = subprocess.run([str(executable), "--version"], text=True, capture_output=True, check=False)
         if probe.returncode == 0 and probe.stdout.strip() == expected_version:
+            if not _verify_node_package_manager(executable):
+                _extract_node_package_manager(archive, node_entry["archiveMember"], install_dir)
             return executable
 
-    archive = _root_path(node_entry["file"], "Node archive path")
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     temp_dir = Path(tempfile.mkdtemp(prefix="node24-", dir=install_dir.parent))
     try:
         temp_executable = temp_dir.joinpath(*PurePosixPath(node_entry["installedExecutable"]).parts)
         _extract_node_binary(archive, node_entry["archiveMember"], temp_executable)
+        _extract_node_package_manager(archive, node_entry["archiveMember"], temp_dir)
         probe = subprocess.run([str(temp_executable), "--version"], text=True, capture_output=True, check=False)
         if probe.returncode != 0 or probe.stdout.strip() != expected_version:
             detail = (probe.stderr or probe.stdout).strip()
@@ -672,6 +759,8 @@ def install_node(manifest: dict, key: str, *, force: bool = False) -> Path:
                 f"Extracted Node runtime failed verification; expected {expected_version}, got "
                 f"{probe.stdout.strip() or detail or 'no output'}"
             )
+        if not _verify_node_package_manager(temp_executable):
+            raise OfflineCoreError("Extracted Node runtime failed bundled npm/npx verification")
         if install_dir.exists():
             shutil.rmtree(install_dir)
         temp_dir.replace(install_dir)
@@ -780,22 +869,125 @@ def _extract_npm_tgz(archive: Path, destination: Path) -> None:
         raise
 
 
-def _installed_package_version(destination: Path) -> str | None:
+def _read_installed_package_json(destination: Path) -> dict | None:
     package_json = destination / "package.json"
     if not package_json.is_file():
         return None
     try:
-        value = json.loads(package_json.read_text(encoding="utf-8")).get("version")
+        value = json.loads(package_json.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
+    return value if isinstance(value, dict) else None
+
+
+def _installed_package_version(destination: Path) -> str | None:
+    package = _read_installed_package_json(destination)
+    if package is None:
+        return None
+    value = package.get("version")
     return str(value) if value is not None else None
+
+
+def _package_bin_entries(destination: Path) -> dict[str, str]:
+    package = _read_installed_package_json(destination)
+    if package is None:
+        raise OfflineCoreError(f"Installed package metadata is missing: {_display_path(destination)}")
+
+    raw_bin = package.get("bin")
+    if raw_bin is None:
+        return {}
+    if isinstance(raw_bin, str):
+        package_name = package.get("name")
+        if not isinstance(package_name, str) or not package_name:
+            raise OfflineCoreError(
+                f"Package with string bin has no valid name: {_display_path(destination)}"
+            )
+        return {package_name.rsplit("/", 1)[-1]: raw_bin}
+    if isinstance(raw_bin, dict):
+        entries: dict[str, str] = {}
+        for name, relative in raw_bin.items():
+            if not isinstance(name, str) or not name or "/" in name or "\\" in name:
+                raise OfflineCoreError(
+                    f"Unsafe npm bin name in {_display_path(destination)}: {name!r}"
+                )
+            if not isinstance(relative, str):
+                raise OfflineCoreError(
+                    f"Invalid npm bin target for {name!r} in {_display_path(destination)}"
+                )
+            entries[name] = relative
+        return entries
+    raise OfflineCoreError(f"Invalid npm bin metadata in {_display_path(destination)}")
+
+
+def _package_node_modules_directory(destination: Path) -> Path:
+    for parent in destination.parents:
+        if parent.name == "node_modules":
+            return parent
+    raise OfflineCoreError(
+        f"Offline npm install path is not inside node_modules: {_display_path(destination)}"
+    )
+
+
+def _remove_npm_bin_links(destination: Path) -> None:
+    if not destination.exists():
+        return
+    bin_entries = _package_bin_entries(destination)
+    if not bin_entries:
+        return
+    bin_dir = _package_node_modules_directory(destination) / ".bin"
+    for name in bin_entries:
+        link = bin_dir / name
+        if not link.is_symlink():
+            continue
+        try:
+            resolved = (link.parent / os.readlink(link)).resolve(strict=False)
+            destination_resolved = destination.resolve()
+        except OSError:
+            continue
+        if resolved == destination_resolved or destination_resolved in resolved.parents:
+            link.unlink()
+
+
+def _sync_npm_bin_links(destination: Path) -> None:
+    bin_entries = _package_bin_entries(destination)
+    if not bin_entries:
+        return
+
+    bin_dir = _package_node_modules_directory(destination) / ".bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    for name, relative in bin_entries.items():
+        relative_path = _safe_relative_posix(relative.removeprefix("./"), f"npm bin target {name}")
+        target = destination.joinpath(*relative_path.parts)
+        if not target.is_file():
+            raise OfflineCoreError(
+                f"npm bin target is missing after extraction: {_display_path(target)}"
+            )
+        if os.name != "nt":
+            target.chmod(target.stat().st_mode | 0o111)
+
+        link = bin_dir / name
+        relative_target = os.path.relpath(target, bin_dir)
+        if link.is_symlink():
+            current_target = (link.parent / os.readlink(link)).resolve(strict=False)
+            if current_target == target.resolve():
+                continue
+            link.unlink()
+        elif link.exists():
+            raise OfflineCoreError(
+                f"Cannot create offline npm bin link because a non-symlink already exists: "
+                f"{_display_path(link)}"
+            )
+        link.symlink_to(relative_target)
 
 
 def _install_npm_entry(entry: dict, expected_version: str, *, force: bool = False) -> Path:
     archive = _root_path(entry["file"], "npm archive path")
     destination = _root_path(entry["installPath"], "npm install path")
     if not force and _installed_package_version(destination) == expected_version:
+        _sync_npm_bin_links(destination)
         return destination
+    if destination.exists():
+        _remove_npm_bin_links(destination)
     _extract_npm_tgz(archive, destination)
     actual_version = _installed_package_version(destination)
     if actual_version != expected_version:
@@ -803,6 +995,7 @@ def _install_npm_entry(entry: dict, expected_version: str, *, force: bool = Fals
             f"Extracted package version mismatch at {_display_path(destination)}; "
             f"expected {expected_version}, got {actual_version or 'missing'}"
         )
+    _sync_npm_bin_links(destination)
     return destination
 
 
@@ -862,6 +1055,7 @@ def _remove_stale_workspace_packages(
             continue
         destination = _root_path(install_path, "stale workspace install path")
         if destination.exists():
+            _remove_npm_bin_links(destination)
             shutil.rmtree(destination)
 
 
