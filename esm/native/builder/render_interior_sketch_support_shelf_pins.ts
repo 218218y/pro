@@ -8,11 +8,7 @@ import type {
 } from './render_interior_ops_contracts.js';
 import type { SketchPlacementSupport } from './render_interior_sketch_support_contracts.js';
 
-import {
-  boxFromCenterSize,
-  intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnCutObstacle,
-} from './room_architecture_geometry.js';
+import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room_architecture_geometry.js';
 import { asMaterial } from './render_interior_sketch_shared.js';
 
 export function createShelfPinAdder(args: {
@@ -44,11 +40,10 @@ export function createShelfPinAdder(args: {
     const leftEdgeX = shelfX - shelfW / 2;
     const rightEdgeX = shelfX + shelfW / 2;
 
-    const columnCutObstacle = resolveActiveRoomColumnCutObstacle(App);
     const mkPin = (x: number, z: number) => {
       if (
-        columnCutObstacle &&
-        intersectAxisAlignedBoxes(
+        intersectsActiveRoomColumnCutObstacle(
+          App,
           boxFromCenterSize({
             x,
             y: yPin,
@@ -56,8 +51,7 @@ export function createShelfPinAdder(args: {
             width: pinLen,
             height: pinRadius * 2,
             depth: pinRadius * 2,
-          }),
-          columnCutObstacle
+          })
         )
       ) {
         return;

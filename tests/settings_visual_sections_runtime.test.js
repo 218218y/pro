@@ -62,6 +62,7 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
       model: {
         roomData: {
           hasRoomDesign: true,
+          defaultWall: '#37474f',
           wallColors: [
             { id: 'wall-white', name: 'לבן', val: '#ffffff' },
             { id: 'wall-sand', name: 'חול', val: '#d9c7a6' },
@@ -95,12 +96,16 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(roomHtml, /אריחים/);
   assert.match(roomHtml, /צבע הקירות/);
   assert.match(roomHtml, /בחירת צבע קיר מותאם/);
+  assert.match(roomHtml, /בחירת צבע רצפה מותאם/);
   assert.match(roomHtml, /צבע מעטפת החדר \(360°\)/);
+  assert.match(roomHtml, /בחירת צבע מעטפת חדר מותאם/);
+  assert.equal(countMatches(roomHtml, /wp-r-room-custom-color-btn/g), 3);
+  assert.equal(countMatches(roomHtml, /wp-r-room-color-picker-row/g), 3);
   assert.ok(countMatches(roomHtml, /role="button"/g) >= 7);
   const fallbackHtml = renderToStaticMarkup(
     React.createElement(SettingsVisualRoomSection, {
       model: {
-        roomData: { hasRoomDesign: false, wallColors: [] },
+        roomData: { hasRoomDesign: false, wallColors: [], defaultWall: '#37474f' },
         floorType: 'none',
         floorStyleId: null,
         wallColor: '',

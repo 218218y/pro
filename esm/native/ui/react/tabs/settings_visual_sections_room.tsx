@@ -4,6 +4,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { InlineNotice, ToggleRow } from '../components/index.js';
 import type { SettingsVisualRoomSectionModel } from './use_settings_visual_controller_contracts.js';
 import { FLOOR_TYPE_OPTIONS } from './settings_visual_sections_contracts.js';
+import type { FloorStyle, SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
 import {
   ActionTile,
   FloorStyleSwatch,
@@ -11,6 +12,86 @@ import {
   isFloorStyleSelected,
 } from './settings_visual_sections_controls.js';
 import { DEFAULT_WALL_COLORS } from './settings_visual_shared_room.js';
+
+const CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX = 'wp_custom_floor_color_';
+
+function normalizePickerColor(value: string, fallback = '#d9d9d9'): string {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;
+}
+
+function buildCustomFloorStyle(type: SettingsVisualFloorType, value: string): FloorStyle {
+  const color = normalizePickerColor(value);
+  const id = `${CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX}${color.slice(1)}`;
+  const base: FloorStyle = { id, name: 'מותאם', color };
+  if (type === 'parquet') return { ...base, color1: color, color2: color };
+  if (type === 'tiles') {
+    return {
+      ...base,
+      color1: color,
+      color2: color,
+      lines: 'rgba(0,0,0,0.16)',
+      size: 4,
+    };
+  }
+  return base;
+}
+
+function readCustomFloorColor(styleId: string | null): string | null {
+  if (!styleId || !styleId.startsWith(CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX)) return null;
+  const hex = styleId.slice(CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX.length).toLowerCase();
+  return /^[0-9a-f]{6}$/u.test(hex) ? `#${hex}` : null;
+}
+
+function resolveFloorPickerColor(model: SettingsVisualRoomSectionModel): string {
+  const custom = readCustomFloorColor(model.floorStyleId);
+  if (custom) return custom;
+  const selectedStyle = model.floorStylesForType.find(style => style.id === model.floorStyleId);
+  return normalizePickerColor(selectedStyle?.color || selectedStyle?.color1 || '#d9d9d9');
+}
+
+function InlineCustomColorButton(props: {
+  id: string;
+  value: string;
+  selected: boolean;
+  title: string;
+  onChange: (value: string) => void;
+}): ReactElement {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const color = normalizePickerColor(props.value);
+
+  return (
+    <span className="wp-r-room-custom-color-control">
+      <button
+        type="button"
+        className={'wp-r-room-custom-color-btn' + (props.selected ? ' is-selected' : '')}
+        onClick={() => inputRef.current?.click()}
+        title={props.title}
+        aria-label={props.title}
+      >
+        <span
+          className="wp-r-room-custom-color-preview"
+          aria-hidden="true"
+          style={{ backgroundColor: color }}
+        />
+        <span>מותאם</span>
+      </button>
+      <input
+        ref={inputRef}
+        id={props.id}
+        name={props.id}
+        type="color"
+        value={color}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => props.onChange(event.target.value)}
+        aria-label={props.title}
+        className="wp-r-room-custom-color-input"
+        tabIndex={-1}
+      />
+    </span>
+  );
+}
 
 type ArchitectureNumberFieldProps = {
   id: string;
@@ -114,14 +195,13 @@ function SideWallControls(props: {
 }
 
 function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const selectedColor = props.model.roomArchitecture.wallColor.toLowerCase();
   const customSelected = !DEFAULT_WALL_COLORS.some(color => color.val.toLowerCase() === selectedColor);
 
   return (
     <div className="wp-r-mt-8">
       <div className="wp-r-label">צבע הקירות:</div>
-      <div className="color-picker-row">
+      <div className="color-picker-row wp-r-room-color-picker-row">
         {DEFAULT_WALL_COLORS.map(color => (
           <WallColorSwatch
             key={`architecture-${color.id}`}
@@ -131,47 +211,13 @@ function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionMo
             onSelect={props.model.setArchitectureWallColor}
           />
         ))}
-        <button
-          type="button"
-          className={'btn wp-r-room-custom-color-btn' + (customSelected ? ' is-selected' : '')}
-          onClick={() => inputRef.current?.click()}
+        <InlineCustomColorButton
+          id="wp-r-room-custom-wall-color"
+          value={props.model.roomArchitecture.wallColor}
+          selected={customSelected}
           title="בחירת צבע קיר מותאם"
-          aria-label="בחירת צבע קיר מותאם"
-        >
-          <span
-            aria-hidden="true"
-            style={{
-              display: 'inline-block',
-              width: 16,
-              height: 16,
-              borderRadius: 999,
-              border: '1px solid rgba(0,0,0,0.18)',
-              background: props.model.roomArchitecture.wallColor,
-              verticalAlign: 'middle',
-              marginInlineEnd: 6,
-            }}
-          />
-          מותאם
-          <input
-            ref={inputRef}
-            id="wp-r-room-custom-wall-color"
-            name="roomCustomWallColor"
-            type="color"
-            value={props.model.roomArchitecture.wallColor}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              props.model.setArchitectureWallColor(event.target.value)
-            }
-            aria-label="בחירת צבע קיר מותאם"
-            style={{
-              position: 'absolute',
-              width: 1,
-              height: 1,
-              opacity: 0,
-              pointerEvents: 'none',
-            }}
-            tabIndex={-1}
-          />
-        </button>
+          onChange={props.model.setArchitectureWallColor}
+        />
       </div>
     </div>
   );
@@ -383,7 +429,7 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">גוון רצפה:</div>
-        <div className="color-picker-row">
+        <div className="color-picker-row wp-r-room-color-picker-row">
           {model.floorStylesForType.map(style => (
             <FloorStyleSwatch
               key={style.id}
@@ -392,6 +438,13 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
               onSelect={model.pickFloorStyle}
             />
           ))}
+          <InlineCustomColorButton
+            id="wp-r-room-custom-floor-color"
+            value={resolveFloorPickerColor(model)}
+            selected={readCustomFloorColor(model.floorStyleId) !== null}
+            title="בחירת צבע רצפה מותאם"
+            onChange={value => model.pickFloorStyle(buildCustomFloorStyle(model.floorType, value))}
+          />
         </div>
       </div>
 
@@ -399,7 +452,7 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">צבע מעטפת החדר (360°):</div>
-        <div className="color-picker-row">
+        <div className="color-picker-row wp-r-room-color-picker-row">
           {model.roomData.wallColors.map(color => {
             const value = String(color.val || '');
             const selected = value && String(model.wallColor || '').toLowerCase() === value.toLowerCase();
@@ -413,6 +466,17 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
               />
             );
           })}
+          <InlineCustomColorButton
+            id="wp-r-room-custom-envelope-color"
+            value={normalizePickerColor(model.wallColor, model.roomData.defaultWall || '#37474f')}
+            selected={
+              !model.roomData.wallColors.some(
+                color => String(color.val || '').toLowerCase() === String(model.wallColor || '').toLowerCase()
+              )
+            }
+            title="בחירת צבע מעטפת חדר מותאם"
+            onChange={model.pickWallColor}
+          />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { getRoomGroup, setRoomGroup } from '../esm/native/runtime/render_access.ts';
 import {
+  __wp_room_resolveStyle,
   buildRoom,
   installRoomDesign,
   resetRoomToDefault,
@@ -19,6 +20,34 @@ type TextureRecord = {
   dispose: () => void;
   disposed: boolean;
 };
+
+test('builder room runtime: custom floor color ids resolve back into deterministic floor styles', () => {
+  assert.deepEqual(__wp_room_resolveStyle('none', 'wp_custom_floor_color_a1b2c3'), {
+    id: 'wp_custom_floor_color_a1b2c3',
+    name: 'מותאם',
+    color: '#a1b2c3',
+  });
+  assert.deepEqual(__wp_room_resolveStyle('parquet', 'wp_custom_floor_color_a1b2c3'), {
+    id: 'wp_custom_floor_color_a1b2c3',
+    name: 'מותאם',
+    color: '#a1b2c3',
+    color1: '#a1b2c3',
+    color2: '#a1b2c3',
+  });
+  assert.deepEqual(__wp_room_resolveStyle('tiles', 'wp_custom_floor_color_a1b2c3'), {
+    id: 'wp_custom_floor_color_a1b2c3',
+    name: 'מותאם',
+    color: '#a1b2c3',
+    color1: '#a1b2c3',
+    color2: '#a1b2c3',
+    lines: 'rgba(0,0,0,0.16)',
+    size: 4,
+  });
+  assert.notEqual(
+    __wp_room_resolveStyle('parquet', 'wp_custom_floor_color_nothex')?.id,
+    'wp_custom_floor_color_nothex'
+  );
+});
 
 function createCanvasContext() {
   return {

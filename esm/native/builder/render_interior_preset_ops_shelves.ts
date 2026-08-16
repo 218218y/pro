@@ -27,6 +27,7 @@ import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
 } from './removed_frame_side_brace_shelves.js';
+import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room_architecture_geometry.js';
 
 export function createAddGridShelf(args: {
   App: AppContainer;
@@ -164,6 +165,21 @@ export function createAddGridShelf(args: {
 
     const mkPin = (x: number, z: number) => {
       if (!threeSurface || !pinGeometry || !pinMaterial) return;
+      if (
+        intersectsActiveRoomColumnCutObstacle(
+          App,
+          boxFromCenterSize({
+            x,
+            y: yPin,
+            z,
+            width: pinLength,
+            height: pinRadius * 2,
+            depth: pinRadius * 2,
+          })
+        )
+      ) {
+        return;
+      }
       const mesh = new threeSurface.Mesh(pinGeometry, pinMaterial);
       if (mesh.rotation) mesh.rotation.z = Math.PI / 2;
       mesh.position?.set?.(x, yPin, z);

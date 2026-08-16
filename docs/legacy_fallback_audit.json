@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-16T17:38:33.335Z",
+  "generatedAt": "2026-08-16T18:03:23.683Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 548,
-    "totalFiles": 213,
+    "totalOccurrences": 550,
+    "totalFiles": 214,
     "byCategory": {
       "runtime-default": 59,
-      "domain-default": 395,
+      "domain-default": 396,
       "error-message-default": 42,
-      "framework-default": 2,
+      "framework-default": 3,
       "browser-adapter": 18,
       "forward-compatibility": 1,
       "legacy-rejection": 3,
@@ -1206,6 +1206,13 @@
         "total": 2,
         "categories": {
           "error-message-default": 2
+        }
+      },
+      "esm/native/ui/react/tabs/settings_visual_sections_room.tsx": {
+        "total": 2,
+        "categories": {
+          "domain-default": 1,
+          "framework-default": 1
         }
       },
       "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts": {
@@ -2521,7 +2528,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
-      "line": 77,
+      "line": 71,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"
@@ -5066,6 +5073,20 @@
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/settings_visual_sections_room.tsx",
+      "line": 18,
+      "term": "fallback",
+      "category": "framework-default",
+      "text": "function normalizePickerColor(value: string, fallback = '#d9d9d9'): string {"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/settings_visual_sections_room.tsx",
+      "line": 22,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",

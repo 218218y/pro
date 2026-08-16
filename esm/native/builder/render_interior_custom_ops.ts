@@ -135,6 +135,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const activeSlots: unknown[] = [];
 
     const addGridShelf = createAddCustomGridShelf({
+      App,
       threeSurface,
       matCache: __matCache(App),
       group,

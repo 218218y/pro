@@ -92,9 +92,9 @@ function commonInput(calls: FoldedCall[], boardCalls: BoardCall[] = []) {
   };
 }
 
-function createPresetRenderer() {
+function createPresetRenderer(appOverride?: any) {
   return createBuilderRenderInteriorPresetOps({
-    app: () => ({}),
+    app: () => appOverride || {},
     ops: () => ({}),
     wardrobeGroup: () => ({ children: [] }),
     three: value => value,
@@ -103,9 +103,9 @@ function createPresetRenderer() {
   });
 }
 
-function createCustomRenderer() {
+function createCustomRenderer(appOverride?: any) {
   return createBuilderRenderInteriorCustomOps({
-    app: args => args,
+    app: args => appOverride || args,
     ops: () => ({}),
     wardrobeGroup: () => ({ children: [] }),
     three: value => value,
@@ -113,6 +113,38 @@ function createCustomRenderer() {
     renderOpsHandleCatch: () => undefined,
     assertTHREE: () => null,
   });
+}
+
+function createShelfPinColumnApp() {
+  const state = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+        leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 0,
+          widthCm: 5,
+          depthCm: 15,
+          heightCm: 200,
+          bottomOffsetCm: 0,
+        },
+        wallColor: '#f2efe6',
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    mode: {},
+    meta: {},
+  };
+  return {
+    store: {
+      getState: () => state,
+      patch() {},
+    },
+  };
 }
 
 test('renderInteriorPresetOps passes real shelf-space clearance to folded/library contents', () => {
@@ -328,6 +360,42 @@ test('removed left frame side forces the adjacent preset module shelves to brace
   });
   assert.equal(shelf?.userData?.__wpShelfExposedSide, 'left');
   assert.equal(pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin').length, 0);
+});
+
+test('preset shelf pins omit only the support that collides with the room column liner cut', () => {
+  const pinObjects: any[] = [];
+  const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+  const renderer = createPresetRenderer(createShelfPinColumnApp());
+
+  assert.equal(
+    renderer.applyInteriorPresetOps({
+      ...commonInput([]),
+      THREE: makeMinimalThreeForPins(),
+      wardrobeGroup: group,
+      presetOps: { shelves: [1], rods: [] },
+    }),
+    true
+  );
+
+  assert.equal(pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin').length, 3);
+});
+
+test('custom shelf pins omit only the support that collides with the room column liner cut', () => {
+  const pinObjects: any[] = [];
+  const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+  const renderer = createCustomRenderer(createShelfPinColumnApp());
+
+  assert.equal(
+    renderer.applyInteriorCustomOps({
+      ...commonInput([]),
+      THREE: makeMinimalThreeForPins(),
+      wardrobeGroup: group,
+      customOps: { shelves: [1], rods: [] },
+    }),
+    true
+  );
+
+  assert.equal(pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin').length, 3);
 });
 
 test('lower stack preset shelves do not inherit top removed frame side brace policy', () => {

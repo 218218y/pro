@@ -358,6 +358,11 @@ export function resolveActiveRoomColumnCutObstacle(App: AppContainer): AxisAlign
   return resolveRoomColumnAdjustmentGeometry(App)?.cutObstacle || null;
 }
 
+export function intersectsActiveRoomColumnCutObstacle(App: AppContainer, box: AxisAlignedBox): boolean {
+  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+  return !!(obstacle && intersectAxisAlignedBoxes(box, obstacle));
+}
+
 export type RoomColumnAdjustedHorizontalSpan = {
   minX: number;
   maxX: number;

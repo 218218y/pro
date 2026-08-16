@@ -10,7 +10,7 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
-import type { BuilderCreateBoardOptions } from '../../../types';
+import type { AppContainer, BuilderCreateBoardOptions } from '../../../types';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -28,6 +28,7 @@ import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
 } from './removed_frame_side_brace_shelves.js';
+import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room_architecture_geometry.js';
 
 const PIN_RADIUS = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
 const PIN_LEN = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
@@ -42,6 +43,7 @@ function shelfHeightForVariant(variant: ShelfVariant | undefined, shelfThick: nu
 }
 
 export function createAddCustomGridShelf(args: {
+  App: AppContainer;
   threeSurface: InteriorTHREESurface | null;
   matCache: unknown;
   group: InteriorGroupLike;
@@ -83,6 +85,7 @@ export function createAddCustomGridShelf(args: {
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
 }) {
   const {
+    App,
     threeSurface,
     matCache,
     group,
@@ -149,6 +152,21 @@ export function createAddCustomGridShelf(args: {
     const zFront = frontEdge - edgeOff;
 
     const mkPin = (x: number, z: number) => {
+      if (
+        intersectsActiveRoomColumnCutObstacle(
+          App,
+          boxFromCenterSize({
+            x,
+            y: yPin,
+            z,
+            width: PIN_LEN,
+            height: PIN_RADIUS * 2,
+            depth: PIN_RADIUS * 2,
+          })
+        )
+      ) {
+        return;
+      }
       const mesh = new threeSurface.Mesh(pinGeo, pinMat);
       if (mesh.rotation) mesh.rotation.z = Math.PI / 2;
       mesh.position?.set?.(x, yPin, z);

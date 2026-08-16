@@ -2516,6 +2516,81 @@
   margin-inline-end: 6px;
 }
 
+#reactSidebarRoot .wp-r-room-color-picker-row {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+#reactSidebarRoot .wp-r-room-color-picker-row .color-dot-swatch {
+  flex: 0 0 auto;
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-control {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-btn {
+  min-width: 86px;
+  height: 38px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-sizing: border-box;
+  box-shadow: var(--wp-r-shadow-raised-soft);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-btn:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-btn:active {
+  transform: scale(0.98);
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-btn.is-selected {
+  border-color: rgba(59, 130, 246, 0.85);
+  box-shadow: var(--wp-r-shadow-ring-primary-2-strong);
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-preview {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+}
+
+#reactSidebarRoot .wp-r-room-custom-color-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 380px) {
   #reactSidebarRoot .wp-r-room-dimension-grid {
     grid-template-columns: 1fr;

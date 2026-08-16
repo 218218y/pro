@@ -146,8 +146,35 @@ export function __wp_room_setLastStyleId(type: FloorType, styleId: string | null
   patchUiSoft(A, __buildRoomLastStyleUiPatch(type, styleId), __metaUiOnly(A, 'room:setLastStyleId'));
 }
 
+const CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX = 'wp_custom_floor_color_';
+
+function resolveCustomFloorColorStyle(
+  type: FloorType,
+  styleId: string | null | undefined
+): FloorStyleEntry | null {
+  if (!styleId || !styleId.startsWith(CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX)) return null;
+  const hex = styleId.slice(CUSTOM_FLOOR_COLOR_STYLE_ID_PREFIX.length).toLowerCase();
+  if (!/^[0-9a-f]{6}$/u.test(hex)) return null;
+  const color = `#${hex}`;
+  const base: FloorStyleEntry = { id: styleId, name: 'מותאם', color };
+
+  if (type === 'parquet') return { ...base, color1: color, color2: color };
+  if (type === 'tiles') {
+    return {
+      ...base,
+      color1: color,
+      color2: color,
+      lines: 'rgba(0,0,0,0.16)',
+      size: 4,
+    };
+  }
+  return base;
+}
+
 export function __wp_room_resolveStyle(type: FloorType, styleId?: string | null): FloorStyleEntry | null {
   const t: FloorType = type || 'parquet';
+  const customStyle = resolveCustomFloorColorStyle(t, styleId);
+  if (customStyle) return customStyle;
   const styles = FLOOR_STYLES[t];
   if (!Array.isArray(styles) || !styles.length) return null;
   if (styleId) {
