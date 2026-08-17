@@ -7,6 +7,7 @@ import type { InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import type { ApplySketchRodsArgs } from './render_interior_sketch_support_contracts.js';
 
 import { asMaterial } from './render_interior_sketch_shared.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 
 function reportSketchRodSoft(
   args: Pick<ApplySketchRodsArgs, 'reportSoft'>,
@@ -78,6 +79,18 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
   mesh.userData.partId = 'all_rods';
   mesh.userData.__wpType = 'sketchRod';
   group.add?.(mesh);
+  appendInteriorRodEndSupports({
+    THREE: resolvedTHREE,
+    parent: group,
+    material: mat,
+    centerX: internalCenterX,
+    centerY: y,
+    centerZ: internalZ,
+    rodLength: len,
+    rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
+    axis: 'x',
+    ownerPartId: 'all_rods',
+  });
 }
 
 export function applySketchRods(args: ApplySketchRodsArgs): void {

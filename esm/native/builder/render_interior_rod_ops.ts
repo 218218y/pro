@@ -8,6 +8,7 @@ import {
   resolveInteriorRodAvailableHeight,
 } from './render_interior_rod_clearance.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
@@ -229,6 +230,19 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       addOutlines(rod);
     }
     group.add(rod);
+    appendInteriorRodEndSupports({
+      THREE,
+      parent: group,
+      material: rodMat,
+      centerX: rodSpan.centerX,
+      centerY: yPos,
+      centerZ: internalZ,
+      rodLength: rodSpan.length,
+      rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      axis: 'x',
+      addOutlines:
+        typeof addOutlines === 'function' ? support => addOutlines(support as InteriorObjectLike) : null,
+    });
 
     const singleHangerAvailableHeight = resolveInteriorRodAvailableHeight({
       config,

@@ -5,6 +5,7 @@
 
 import { CORNER_CONNECTOR_ATTACH_ROD_POLICY } from '../../shared/dimensions/corner_connector_interior_policy.js';
 import { CM_PER_METER, MM_PER_METER } from '../../shared/dimensions/units.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 import type {
   CornerConnectorInteriorFlowParams,
   CornerConnectorInteriorEmitters,
@@ -71,10 +72,8 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     const len = Math.sqrt(dx * dx + dz * dz);
     if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_ATTACH_ROD_POLICY.minRodLengthM) return;
 
-    const rod = new THREE.Mesh(
-      new THREE.CylinderGeometry(radius, radius, len, 16),
-      getMaterial(null, 'metal')
-    );
+    const rodMaterial = getMaterial(null, 'metal');
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 16), rodMaterial);
     // Cylinder height is along local Y; rotate so it aligns with the (dx,dz) direction in XZ.
     rod.rotation.z = Math.PI / 2;
     rod.rotation.y = -Math.atan2(dz, dx);
@@ -83,6 +82,19 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     rod.userData = { partId };
     addOutlines(rod);
     cornerGroup.add(rod);
+    appendInteriorRodEndSupports({
+      THREE,
+      parent: cornerGroup,
+      material: rodMaterial,
+      centerX: (ax + bx) / 2,
+      centerY: yPos,
+      centerZ: (az + bz) / 2,
+      rodLength: len,
+      rodRadius: radius,
+      axis: Math.abs(dx) >= Math.abs(dz) ? 'x' : 'z',
+      ownerPartId: partId,
+      addOutlines,
+    });
     // Single hanger visual (matches other rods with the global "showHanger" toggle).
     if (showHangerEnabled && emitRealisticHanger) {
       try {

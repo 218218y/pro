@@ -6,6 +6,7 @@ import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 import { asMaterial, asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 
 export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
@@ -70,5 +71,17 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     rodMesh.userData.partId = rodPid;
     rodMesh.userData.__wpType = 'sketchRod';
     group.add?.(rodMesh);
+    appendInteriorRodEndSupports({
+      THREE,
+      parent: group,
+      material: rodMat,
+      centerX: rodSpan.centerX,
+      centerY: rodY,
+      centerZ: rodCenterZ,
+      rodLength: rodSpan.length,
+      rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      axis: 'x',
+      ownerPartId: rodPid,
+    });
   }
 }

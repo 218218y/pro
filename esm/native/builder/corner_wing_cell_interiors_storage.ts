@@ -3,6 +3,7 @@ import {
   resolveCornerWingExternalDrawerGeometry,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 import {
   resolveEffectiveDoorStyle,
   readDoorTrimListForPart,
@@ -53,6 +54,19 @@ export function createCornerWingInteriorLayoutOps(
     rod.userData = { partId: `corner_rod_c${cellRuntime.cell.idx}`, moduleIndex: cellRuntime.cellKey };
     runtime.addOutlines(rod);
     runtime.wingGroup.add(rod);
+    appendInteriorRodEndSupports({
+      THREE: runtime.THREE,
+      parent: runtime.wingGroup,
+      material: rod.material,
+      centerX: cellRuntime.cellInnerCenterX,
+      centerY: yPos,
+      centerZ: cellRuntime.__fullDepthCenterZ,
+      rodLength: rodLen,
+      rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
+      axis: 'x',
+      ownerPartId: `corner_rod_c${cellRuntime.cell.idx}`,
+      addOutlines: runtime.addOutlines,
+    });
     if (runtime.showHangerEnabled) {
       runtime.addRealisticHanger(
         cellRuntime.cellInnerCenterX,
