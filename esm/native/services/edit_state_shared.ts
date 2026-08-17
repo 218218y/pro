@@ -9,7 +9,7 @@ import type {
 
 import { readCanonicalUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readUiStateFromStore, readModeStateFromStore } from '../runtime/root_state_access.js';
-import { getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
+import { getStoreSubscriber, getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
 import { asRecord } from '../runtime/record.js';
 import { getTools } from '../runtime/service_access.js';
 import { getMetaActionFn } from '../runtime/actions_access_domains.js';
@@ -56,6 +56,11 @@ export function readPreviousMode(App: AppContainer, noneMode: string): string {
     reportEditStateNonFatal(App, 'read.previousMode', error);
     return noneMode;
   }
+}
+
+export function subscribeEditStateChanges(App: AppContainer, listener: () => void): unknown {
+  const subscribe = getStoreSubscriber(App);
+  return subscribe ? subscribe(listener) : null;
 }
 
 export function asDrawerOpenId(value: unknown): string | number | null {

@@ -25,12 +25,7 @@ import {
   type RoomWallSurfaceHit,
   type RoomWallSurfacePickMeta,
 } from './room_wall_picking.js';
-import { resetAllEditModesViaService } from '../runtime/edit_state_access.js';
-import { getModeId } from '../runtime/modes_constants.js';
-import { setModePrimary } from '../runtime/mode_write_access.js';
-import { getUiFeedback } from '../runtime/service_access.js';
-import { getStoreSubscriber } from '../runtime/store_surface_access.js';
-import { getModesControllerMaybe } from '../runtime/ui_modes_runtime_access.js';
+import { resetAllEditModes, subscribeEditStateChanges } from './edit_state.js';
 
 const CACHE_DRAFT_KEY = '__wpRoomOpeningPlacementDraft';
 const CACHE_HOVER_KEY = '__wpRoomOpeningPlacementHover';
@@ -161,7 +156,16 @@ function hidePlacementPreview(App: AppContainer): void {
 }
 
 function roomOpeningModeId(): string {
-  return getModeId('ROOM_OPENING') || ROOM_OPENING_MODE_FALLBACK_ID;
+  return ROOM_OPENING_MODE_FALLBACK_ID;
+}
+
+function getRoomOpeningModesController(App: AppContainer): UnknownRecord | null {
+  const runtime = __wp_asRecord(App.services.uiModesRuntime);
+  return __wp_asRecord(runtime?.controller);
+}
+
+function getRoomOpeningFeedback(App: AppContainer): UnknownRecord | null {
+  return __wp_asRecord(App.services.uiFeedback);
 }
 
 function roomOpeningEditMessage(kind: RoomOpeningKind): string {
@@ -175,7 +179,11 @@ function isRoomOpeningPrimaryMode(App: AppContainer): boolean {
 
 function updateRoomOpeningEditToast(App: AppContainer, kind: RoomOpeningKind): void {
   try {
-    getUiFeedback(App).updateEditStateToast?.(roomOpeningEditMessage(kind), true);
+    const feedback = getRoomOpeningFeedback(App);
+    const updateToast = feedback?.updateEditStateToast;
+    if (typeof updateToast === 'function') {
+      Reflect.apply(updateToast, feedback, [roomOpeningEditMessage(kind), true]);
+    }
   } catch (error) {
     reportRoomOpeningPlacementNonFatal(App, 'updateEditToast', error);
   }
@@ -188,14 +196,12 @@ function enterRoomOpeningEditMode(App: AppContainer, kind: RoomOpeningKind): boo
     return true;
   }
 
-  const noneModeId = getModeId('NONE') || 'none';
   try {
-    const reset = resetAllEditModesViaService(App);
-    if (!reset && __wp_primaryMode(App) !== noneModeId) return false;
+    resetAllEditModes(App);
   } catch (error) {
     reportRoomOpeningPlacementNonFatal(App, 'enterEditMode.reset', error);
-    if (__wp_primaryMode(App) !== noneModeId) return false;
   }
+  if (__wp_primaryMode(App) !== 'none') return false;
 
   const opts = {
     source: 'settings:roomOpening:enter',
@@ -205,26 +211,10 @@ function enterRoomOpeningEditMode(App: AppContainer, kind: RoomOpeningKind): boo
   };
 
   try {
-    const controller = getModesControllerMaybe(App);
-    if (typeof controller?.enterPrimaryMode === 'function') {
-      controller.enterPrimaryMode(modeId, opts);
-    } else {
-      setModePrimary(
-        App,
-        modeId,
-        {},
-        {
-          source: 'settings:roomOpening:enter:fallback',
-          noBuild: true,
-          noHistory: true,
-          noAutosave: true,
-          noPersist: true,
-          noCapture: true,
-          immediate: true,
-        }
-      );
-      updateRoomOpeningEditToast(App, kind);
-    }
+    const controller = getRoomOpeningModesController(App);
+    const enterPrimaryMode = controller?.enterPrimaryMode;
+    if (typeof enterPrimaryMode !== 'function') return false;
+    Reflect.apply(enterPrimaryMode, controller, [modeId, opts]);
   } catch (error) {
     reportRoomOpeningPlacementNonFatal(App, 'enterEditMode', error);
     return false;
@@ -236,31 +226,17 @@ function exitRoomOpeningEditMode(App: AppContainer, source: string): void {
   if (!isRoomOpeningPrimaryMode(App)) return;
   const modeId = roomOpeningModeId();
   try {
-    const controller = getModesControllerMaybe(App);
-    if (typeof controller?.exitPrimaryMode === 'function') {
-      controller.exitPrimaryMode(modeId, { source });
+    const controller = getRoomOpeningModesController(App);
+    const exitPrimaryMode = controller?.exitPrimaryMode;
+    if (typeof exitPrimaryMode === 'function') {
+      Reflect.apply(exitPrimaryMode, controller, [modeId, { source }]);
       return;
     }
-    setModePrimary(
-      App,
-      getModeId('NONE') || 'none',
-      {},
-      {
-        source,
-        noBuild: true,
-        noHistory: true,
-        noAutosave: true,
-        noPersist: true,
-        noCapture: true,
-        immediate: true,
-      }
-    );
-    getUiFeedback(App).updateEditStateToast?.(null, false);
+    resetAllEditModes(App);
   } catch (error) {
     reportRoomOpeningPlacementNonFatal(App, 'exitEditMode', error);
   }
 }
-
 function disposeRoomOpeningModeWatcher(App: AppContainer): void {
   const cache = getRoomOpeningPlacementCache(App);
   const handle = cache[CACHE_MODE_UNSUB_KEY];
@@ -281,9 +257,7 @@ function ensureRoomOpeningModeWatcher(App: AppContainer): void {
   const cache = getRoomOpeningPlacementCache(App);
   if (cache[CACHE_MODE_UNSUB_KEY]) return;
   try {
-    const subscribe = getStoreSubscriber(App);
-    if (!subscribe) return;
-    cache[CACHE_MODE_UNSUB_KEY] = subscribe(() => {
+    cache[CACHE_MODE_UNSUB_KEY] = subscribeEditStateChanges(App, () => {
       if (isRoomOpeningPrimaryMode(App)) return;
       const currentCache = getRoomOpeningPlacementCache(App);
       if (currentCache[CACHE_DRAFT_KEY] == null) {
@@ -419,6 +393,9 @@ function resolveOpeningAtPoint(args: {
 function isIgnoredWardrobeRaycastObject(value: unknown): boolean {
   let node = __wp_asRecord(value);
   for (let depth = 0; node && depth < 12; depth += 1) {
+    const type = typeof node.type === 'string' ? node.type : '';
+    if (type === 'Line' || type === 'LineSegments' || type === 'Sprite') return true;
+
     const userData = __wp_asRecord(node.userData);
     if (
       userData?.__ignoreRaycast === true ||
@@ -428,6 +405,20 @@ function isIgnoredWardrobeRaycastObject(value: unknown): boolean {
     ) {
       return true;
     }
+
+    if (depth === 0) {
+      const material = __wp_asRecord(node.material);
+      if (material?.visible === false || material?.opacity === 0) return true;
+      if (Array.isArray(node.material)) {
+        const materials = node.material
+          .map(item => __wp_asRecord(item))
+          .filter((item): item is UnknownRecord => item != null);
+        if (materials.length && materials.every(item => item.visible === false || item.opacity === 0)) {
+          return true;
+        }
+      }
+    }
+
     node = __wp_asRecord(node.parent);
   }
   return false;

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-17T06:14:53.775Z",
+  "generatedAt": "2026-08-17T13:26:44.941Z",
   "totals": {
-    "tests": 1244,
-    "unitRunnerTests": 1235,
+    "tests": 1245,
+    "unitRunnerTests": 1236,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 397,
-    "runtime-unit": 338,
+    "runtime-unit": 339,
     "integration": 470,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -6365,6 +6365,10 @@
     {
       "file": "tests/room_design_service_slot_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/room_opening_placement_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/room_visual_state_runtime.test.ts",

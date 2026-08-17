@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-17T08:09:59.358Z",
+  "generatedAt": "2026-08-17T13:26:42.328Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 554,
-    "totalFiles": 215,
+    "totalOccurrences": 556,
+    "totalFiles": 216,
     "byCategory": {
       "runtime-default": 60,
-      "domain-default": 399,
+      "domain-default": 401,
       "error-message-default": 42,
       "framework-default": 3,
       "browser-adapter": 18,
@@ -894,6 +894,12 @@
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/services/room_opening_placement.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/services/site_variant.ts": {
@@ -4082,6 +4088,20 @@
       "text": "// is still a safe snapshot fallback and avoids fabricating a zero vector."
     },
     {
+      "file": "esm/native/services/room_opening_placement.ts",
+      "line": 37,
+      "term": "ROOM_OPENING_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "const ROOM_OPENING_MODE_FALLBACK_ID = 'room_opening';"
+    },
+    {
+      "file": "esm/native/services/room_opening_placement.ts",
+      "line": 159,
+      "term": "ROOM_OPENING_MODE_FALLBACK_ID",
+      "category": "domain-default",
+      "text": "return ROOM_OPENING_MODE_FALLBACK_ID;"
+    },
+    {
       "file": "esm/native/services/site_variant.ts",
       "line": 29,
       "term": "fallback",
@@ -5084,14 +5104,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 91,
+      "line": 94,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "} catch (fallbackErr) {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 92,
+      "line": 95,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"

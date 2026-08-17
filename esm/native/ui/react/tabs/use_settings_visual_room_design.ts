@@ -7,7 +7,6 @@ import type {
   RoomOpeningKind,
 } from '../../../../../types';
 
-import { getModeId } from '../../../services/api.js';
 import { useModeSelector } from '../hooks.js';
 
 import type {
@@ -21,7 +20,10 @@ import {
   getRoomDesignData,
   getRoomDesignRuntime,
 } from './settings_visual_shared_room.js';
-import { createSettingsVisualRoomDesignController } from './settings_visual_room_design_controller_runtime.js';
+import {
+  createSettingsVisualRoomDesignController,
+  ROOM_OPENING_MODE_ID,
+} from './settings_visual_room_design_controller_runtime.js';
 
 export type SettingsVisualRoomDesignModel = {
   roomData: RoomDesignData;
@@ -73,7 +75,7 @@ export function useSettingsVisualRoomDesign(
   );
 
   const openingPlacementActive = useModeSelector(
-    mode => String(mode.primary || 'none') === (getModeId('ROOM_OPENING') || 'room_opening')
+    mode => String(mode.primary || 'none') === ROOM_OPENING_MODE_ID
   );
 
   const roomDesignController = useMemo(

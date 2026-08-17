@@ -93,10 +93,34 @@ function createHarness() {
     render: { camera, roomGroup, wardrobeGroup },
     store: {
       getState: () => state,
-      patch() {},
+      patch(next: AnyRecord) {
+        if (next?.mode) state.mode = { ...state.mode, ...next.mode };
+        if (next?.config) state.config = { ...state.config, ...next.config };
+        if (next?.ui) state.ui = { ...state.ui, ...next.ui };
+        if (next?.runtime) state.runtime = { ...state.runtime, ...next.runtime };
+        notify();
+        return true;
+      },
       subscribe(listener: () => void) {
         listeners.add(listener);
         return () => listeners.delete(listener);
+      },
+    },
+    actions: {
+      mode: {
+        set(primary: string, opts: AnyRecord) {
+          state.mode.primary = primary;
+          state.mode.opts = opts || {};
+          notify();
+          return true;
+        },
+      },
+      config: {
+        setScalar(key: string, value: unknown) {
+          state.config[key] = value;
+          notify();
+          return true;
+        },
       },
     },
     services: {
@@ -288,6 +312,40 @@ test('wardrobe occludes wall placement while a truly empty click exits edit mode
   );
   assert.equal(h.state.mode.primary, 'none');
   assert.equal(isRoomOpeningPlacementActive(h.app), false);
+});
+
+test('wardrobe dimension graphics never occlude room-opening placement', () => {
+  const h = createHarness();
+  beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 });
+
+  const dimensionLine = { type: 'Line', userData: {}, parent: h.wardrobeGroup };
+  const dimensionLabel = { type: 'Sprite', userData: {}, parent: h.wardrobeGroup };
+  h.setWardrobeHits([
+    { object: dimensionLabel, point: { x: 1.8, y: 3.2, z: 1 }, distance: 2 },
+    { object: dimensionLine, point: { x: 1.8, y: 3.1, z: 1 }, distance: 3 },
+  ]);
+
+  const hover = tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0.7,
+    ndcY: 0.7,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.equal(hover?.partLabel, null);
+  assert.ok(h.getPreview(), 'dimension graphics must be ignored while the wall remains placeable');
+
+  assert.equal(
+    tryHandleRoomOpeningPlacementClick({
+      App: h.app,
+      ndcX: 0.7,
+      ndcY: 0.7,
+      raycaster: h.raycaster,
+      mouse: h.mouse,
+    }),
+    true
+  );
+  assert.equal(h.state.config.roomArchitecture.openings.length, 1);
 });
 
 test('external primary-mode exit clears the opening draft and preview immediately', () => {

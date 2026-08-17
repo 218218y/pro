@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T06:14:53.595Z",
+  "generatedAt": "2026-08-17T13:26:44.770Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -14,8 +14,8 @@
     "files": 280
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 554,
-    "filesWithOccurrences": 215,
+    "totalCategorizedOccurrences": 556,
+    "filesWithOccurrences": 216,
     "guardedOccurrences": 21,
     "guardedFiles": 12,
     "projectMigration": 1,
@@ -32,8 +32,8 @@
     "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
-    "classifiedFiles": 1244,
-    "unitRuntimeFiles": 1235,
+    "classifiedFiles": 1245,
+    "unitRuntimeFiles": 1236,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

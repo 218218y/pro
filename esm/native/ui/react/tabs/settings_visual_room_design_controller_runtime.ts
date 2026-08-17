@@ -15,6 +15,7 @@ import {
   beginRoomOpeningPlacement,
   cancelRoomOpeningPlacement,
   removeRoomOpening,
+  getModeId,
 } from '../../../services/api.js';
 import {
   getUiSnapshot,
@@ -31,6 +32,8 @@ import type {
 } from './settings_visual_shared_contracts.js';
 import { normalizeFloorStyle } from './settings_visual_shared_normalize.js';
 import { DEFAULT_FLOOR_STYLES } from './settings_visual_shared_room.js';
+
+export const ROOM_OPENING_MODE_ID = getModeId('ROOM_OPENING') || 'room_opening';
 
 export type SettingsVisualRoomDesignController = {
   setFloorType: (type: SettingsVisualFloorType) => void;

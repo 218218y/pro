@@ -5,3 +5,4 @@
 export { resetAllEditModes } from './edit_state_reset.js';
 export { syncWardrobeState } from './edit_state_sync.js';
 export { installEditStateService } from './edit_state_runtime.js';
+export { subscribeEditStateChanges } from './edit_state_shared.js';
