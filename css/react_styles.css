@@ -2517,24 +2517,20 @@
 }
 
 #reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row {
-  --wp-r-room-swatch-edge-guard: 8px;
+  --wp-r-room-swatch-edge-guard: 6px;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
   padding-inline: 0;
   box-sizing: border-box;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-padding-inline: var(--wp-r-room-swatch-edge-guard);
-  scrollbar-width: thin;
+  overflow: visible;
 }
 
 /*
- * Selected room-color swatches grow to 120%. A transformed first/last flex item
- * can otherwise be clipped by the scrollport even when the row itself has
- * padding (most visible on the RTL/right edge). Real flex spacers become part
- * of the scrollable content, so both edge swatches keep enough breathing room
- * while the custom-color control remains on the same row.
+ * Keep room color controls on one compact row without creating a horizontal
+ * scrollport. Selected swatches scale to 118%, so real flex edge guards reserve
+ * enough in-flow space for the transformed first/last swatch to stay visible.
  */
 #reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row::before,
 #reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row::after {
@@ -2545,7 +2541,11 @@
 }
 
 #reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row .color-dot-swatch {
-  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  flex: 0 0 36px;
 }
 
 #reactSidebarRoot .wp-r-room-custom-color-control {
@@ -2555,10 +2555,10 @@
 }
 
 #reactSidebarRoot .wp-r-room-custom-color-btn {
-  min-width: 86px;
-  height: 38px;
+  min-width: 78px;
+  height: 36px;
   margin: 0;
-  padding: 0 10px;
+  padding: 0 8px;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--input-bg);
@@ -2567,9 +2567,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   white-space: nowrap;
   box-sizing: border-box;
@@ -2594,9 +2594,9 @@
 }
 
 #reactSidebarRoot .wp-r-room-custom-color-preview {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.18);
   box-sizing: border-box;

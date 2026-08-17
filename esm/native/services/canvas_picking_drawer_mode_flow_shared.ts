@@ -13,6 +13,7 @@ import {
 } from '../runtime/drawer_visual_identity.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
 import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_box_geometry_box.js';
 import { __wp_measureWardrobeLocalBox } from './canvas_picking_projection_runtime_box.js';
 
@@ -121,7 +122,7 @@ function readPositiveNumber(value: unknown): number | null {
 }
 
 export function readRoomArchitectureForDrawerGuard(App: AppContainer): unknown {
-  const state = App.store?.getState?.();
+  const state = readStoreStateMaybe(App);
   return asRecord(asRecord(state)?.config)?.roomArchitecture ?? null;
 }
 
@@ -192,7 +193,7 @@ function readWardrobeDimensionM(
   // the runtime dimension cache has not been populated yet. Drawer eligibility
   // must follow the same source order; otherwise a visibly notched free box can
   // still accept drawers during the window where runtime.* dimensions are null.
-  const state = App.store?.getState?.();
+  const state = readStoreStateMaybe(App);
   const root = asRecord(state);
   const ui = asRecord(root?.ui);
   const raw = asRecord(ui?.raw);
