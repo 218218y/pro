@@ -28,68 +28,92 @@ function asMutableRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function rotateNewFreePlacementObjects(args: {
+export function wrapNewFreePlacementObjects(args: {
   renderArgs: RenderInteriorSketchBoxesArgs;
   startIndex: number;
   state: ResolvedSketchBoxState;
 }): void {
   const { renderArgs, startIndex, state } = args;
-  const group = renderArgs.group;
   if (!state.isFreePlacement || Math.abs(state.rotationY) < 1e-8) return;
+
+  const group = renderArgs.group;
   const groupRecord = asMutableRecord(group);
   const children = Array.isArray(groupRecord?.children) ? groupRecord.children : [];
   if (!children.length || startIndex >= children.length) return;
+
+  const GroupCtor = renderArgs.THREE?.Group;
+  if (typeof GroupCtor !== 'function') return;
 
   const pivotX = state.geometry.centerX;
   const pivotZ = state.geometry.centerZ;
   const along =
     typeof state.box.absX === 'number' && Number.isFinite(state.box.absX) ? state.box.absX : pivotZ;
-  const c = Math.cos(state.rotationY);
-  const sin = Math.sin(state.rotationY);
-  for (let i = startIndex; i < children.length; i += 1) {
-    const child = asMutableRecord(children[i]);
+  const wrapper = new GroupCtor();
+  const wrapperRecord = asMutableRecord(wrapper);
+  if (!wrapperRecord) return;
+
+  wrapperRecord.name = `wpSketchFreePlacementFrame_${state.boxPid}`;
+  const wrapperPosition = asMutableRecord(wrapperRecord.position);
+  if (typeof wrapperPosition?.set === 'function') {
+    Reflect.apply(wrapperPosition.set as (...args: unknown[]) => unknown, wrapperPosition, [
+      pivotX,
+      0,
+      pivotZ,
+    ]);
+  } else if (wrapperPosition) {
+    wrapperPosition.x = pivotX;
+    wrapperPosition.y = 0;
+    wrapperPosition.z = pivotZ;
+  }
+  const wrapperRotation = asMutableRecord(wrapperRecord.rotation);
+  if (wrapperRotation && typeof wrapperRotation.y === 'number') wrapperRotation.y = state.rotationY;
+  wrapperRecord.userData = {
+    ...asMutableRecord(wrapperRecord.userData),
+    __wpSketchFreePlacementWall: state.placementWall,
+    __wpSketchFreePlacementRotationY: state.rotationY,
+    __wpSketchFreePlacementPivotX: pivotX,
+    __wpSketchFreePlacementPivotZ: pivotZ,
+    __wpSketchFreePlacementAlong: along,
+    __wpSketchFreePlacementLogicalCenterZ: state.geometry.outerD / 2,
+  };
+
+  const newChildren = children.slice(startIndex);
+  for (const candidate of newChildren) {
+    const child = asMutableRecord(candidate);
     if (!child) continue;
     const position = asMutableRecord(child.position);
     const x = typeof position?.x === 'number' && Number.isFinite(position.x) ? position.x : null;
     const z = typeof position?.z === 'number' && Number.isFinite(position.z) ? position.z : null;
     if (x != null && z != null) {
-      const dx = x - pivotX;
-      const dz = z - pivotZ;
-      const nextX = pivotX + c * dx + sin * dz;
-      const nextZ = pivotZ - sin * dx + c * dz;
       if (typeof position?.set === 'function') {
-        Reflect.apply(position.set as (...args: unknown[]) => unknown, position, [nextX, position.y, nextZ]);
+        Reflect.apply(position.set as (...args: unknown[]) => unknown, position, [
+          x - pivotX,
+          position.y,
+          z - pivotZ,
+        ]);
       } else if (position) {
-        position.x = nextX;
-        position.z = nextZ;
+        position.x = x - pivotX;
+        position.z = z - pivotZ;
       }
     }
+    group.remove?.(candidate);
+    wrapper.add?.(candidate);
+  }
+  group.add?.(wrapper);
 
-    const rotation = asMutableRecord(child.rotation);
-    if (rotation && typeof rotation.y === 'number') rotation.y += state.rotationY;
-
-    const userData = asMutableRecord(child.userData) || {};
-    child.userData = {
-      ...userData,
-      __wpSketchFreePlacementWall: state.placementWall,
-      __wpSketchFreePlacementRotationY: state.rotationY,
-      __wpSketchFreePlacementPivotX: pivotX,
-      __wpSketchFreePlacementPivotZ: pivotZ,
-      __wpSketchFreePlacementAlong: along,
-      __wpSketchFreePlacementLogicalCenterZ: state.geometry.outerD / 2,
-    };
-    if (typeof child.updateMatrixWorld === 'function') {
-      try {
-        Reflect.apply(child.updateMatrixWorld as (...args: unknown[]) => unknown, child, [true]);
-      } catch (error) {
-        renderArgs.renderOpsHandleCatch(
-          renderArgs.App,
-          'applyInteriorSketchExtras.rotateFreePlacement.updateMatrixWorld',
-          error,
-          { boxId: state.boxId, placementWall: state.placementWall },
-          { failFast: false, throttleMs: 5000 }
-        );
-      }
+  if (typeof wrapperRecord.updateMatrixWorld === 'function') {
+    try {
+      Reflect.apply(wrapperRecord.updateMatrixWorld as (...args: unknown[]) => unknown, wrapperRecord, [
+        true,
+      ]);
+    } catch (error) {
+      renderArgs.renderOpsHandleCatch(
+        renderArgs.App,
+        'applyInteriorSketchExtras.wrapFreePlacement.updateMatrixWorld',
+        error,
+        { boxId: state.boxId, placementWall: state.placementWall },
+        { failFast: false, throttleMs: 5000 }
+      );
     }
   }
 }
@@ -198,7 +222,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
       args,
     });
 
-    rotateNewFreePlacementObjects({
+    wrapNewFreePlacementObjects({
       renderArgs: args,
       startIndex: startChildCount,
       state: shellResult.state,

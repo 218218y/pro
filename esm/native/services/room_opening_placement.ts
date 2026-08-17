@@ -8,9 +8,11 @@ import type {
 } from '../../../types';
 
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
+import { applyRoomArchitectureConfigSnapshot } from './canvas_picking_config_actions.js';
 import { __wp_cfg } from './canvas_picking_core_helpers.js';
 import { __wp_asRecord } from './canvas_picking_core_support.js';
 import { __getSketchPlacementPreviewFns } from './canvas_picking_hover_preview_modes_shared.js';
+import { getViewportRoomGroup, getViewportThree } from './render_surface_runtime.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
 import { findRoomWallSurfaceHit, type RoomWallSurfacePickMeta } from './room_wall_picking.js';
 
@@ -116,14 +118,15 @@ function refreshRoomArchitecture(App: AppContainer): void {
 }
 
 function commitArchitecture(App: AppContainer, next: RoomArchitectureConfigLike, source: string): boolean {
-  const configActions = __wp_asRecord(App.actions?.config);
-  const setScalar = configActions?.setScalar;
-  if (typeof setScalar !== 'function') return false;
-  Reflect.apply(setScalar, configActions, [
-    'roomArchitecture',
-    next,
-    { source, immediate: false, noBuild: true },
-  ]);
+  if (
+    !applyRoomArchitectureConfigSnapshot(App, next, {
+      source,
+      immediate: false,
+      noBuild: true,
+    })
+  ) {
+    return false;
+  }
   refreshRoomArchitecture(App);
   return true;
 }
@@ -238,12 +241,12 @@ function resolveOpeningAtPoint(args: {
 
 function setPlacementPreview(App: AppContainer, hover: RoomOpeningHoverState): void {
   try {
-    const THREE = __wp_asRecord(App.deps.THREE);
+    const THREE = __wp_asRecord(getViewportThree(App));
     const BoxGeometryCtor = THREE?.BoxGeometry as
       (new (w?: number, h?: number, d?: number) => UnknownRecord) | undefined;
     const MeshCtor = THREE?.Mesh as
       (new (geometry: unknown, material?: unknown) => UnknownRecord) | undefined;
-    const roomGroup = __wp_asRecord(App.render.roomGroup);
+    const roomGroup = __wp_asRecord(getViewportRoomGroup(App));
     const setPreview = __getSketchPlacementPreviewFns(App).setPreview;
     if (!BoxGeometryCtor || !MeshCtor || !roomGroup || typeof setPreview !== 'function') return;
 

@@ -3,6 +3,7 @@ import type { AppContainer, RoomWallId, UnknownRecord } from '../../../types';
 import { __wp_asRecord } from './canvas_picking_core_support.js';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import { raycastAtNdc } from './canvas_picking_engine.js';
+import { getViewportCamera, getViewportRoomGroup, getViewportThree } from './render_surface_runtime.js';
 
 export type RoomWallSurfacePickMeta = {
   wall: RoomWallId;
@@ -70,7 +71,7 @@ export function findRoomWallSurfaceMetaInScene(
   App: AppContainer,
   wall: RoomWallId
 ): RoomWallSurfacePickMeta | null {
-  const roomGroup = __wp_asRecord(App.render.roomGroup);
+  const roomGroup = __wp_asRecord(getViewportRoomGroup(App));
   const getObjectByName = roomGroup?.getObjectByName;
   const architecture =
     typeof getObjectByName === 'function'
@@ -95,8 +96,8 @@ export function projectRoomWorldPointToLocal(
   const py = finiteNumber(point?.y);
   const pz = finiteNumber(point?.z);
   if (px == null || py == null || pz == null) return null;
-  const roomGroup = __wp_asRecord(App.render.roomGroup);
-  const THREE = __wp_asRecord(App.deps.THREE);
+  const roomGroup = __wp_asRecord(getViewportRoomGroup(App));
+  const THREE = __wp_asRecord(getViewportThree(App));
   const Vector3Ctor = THREE?.Vector3 as
     (new (x?: number, y?: number, z?: number) => UnknownRecord) | undefined;
   if (!roomGroup || !Vector3Ctor) return { x: px, y: py, z: pz };
@@ -121,8 +122,8 @@ export function findRoomWallSurfaceHit(args: {
   mouse: MouseVectorLike;
   camera?: unknown;
 }): RoomWallSurfaceHit | null {
-  const camera = args.camera || args.App.render.camera;
-  const roomGroup = __wp_asRecord(args.App.render.roomGroup);
+  const camera = args.camera || getViewportCamera(args.App);
+  const roomGroup = __wp_asRecord(getViewportRoomGroup(args.App));
   const getObjectByName = roomGroup?.getObjectByName;
   const architecture =
     typeof getObjectByName === 'function'

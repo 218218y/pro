@@ -8,6 +8,7 @@ import type {
   ModulesGeometrySnapshotLike,
   ProjectLoadStateSnapshotLike,
   ProjectLoadTransactionHandleLike,
+  RoomArchitectureConfigLike,
   StateSnapshotTransactionHandleLike,
   UiConfigStateSnapshotLike,
   SaveProjectAction,
@@ -214,6 +215,19 @@ export function applyModulesGeometrySnapshotViaActions(
   );
   if (typeof fn !== 'function') return false;
   fn(snapshot, meta);
+  return true;
+}
+
+export function setRoomArchitectureViaActions(
+  App: unknown,
+  value: RoomArchitectureConfigLike,
+  meta?: ActionMetaLike
+): boolean {
+  const fn = getConfigActionFn<
+    (key: string, next: RoomArchitectureConfigLike, actionMeta?: ActionMetaLike) => unknown
+  >(App, 'setScalar');
+  if (typeof fn !== 'function') return false;
+  fn('roomArchitecture', value, meta);
   return true;
 }
 

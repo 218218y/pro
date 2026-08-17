@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { wrapNewFreePlacementObjects } from '../esm/native/builder/render_interior_sketch_boxes.ts';
 import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
 import {
   resolveRoomArchitectureGeometry,
@@ -8,6 +9,14 @@ import {
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import { resolveSketchFreePlacementBoxPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts';
 import { decodeSketchFreeBoxPlacementHover } from '../esm/native/services/canvas_picking_sketch_free_box_command.ts';
+import {
+  localizeSketchFreePlacementPreview,
+  readSketchFreePlacementTransform,
+} from '../esm/native/services/canvas_picking_sketch_free_box_hit.ts';
+
+function assertClose(actual: number, expected: number): void {
+  assert.ok(Math.abs(actual - expected) <= 1e-9, `${actual} must equal ${expected}`);
+}
 
 function createApp() {
   const state = {
@@ -152,4 +161,116 @@ test('side-wall free-box preview rotates into the room and persists the host wal
   if (!decoded.ok || decoded.value.kind !== 'create-free-box')
     assert.fail('expected create-free-box command');
   assert.equal(decoded.value.geometry.placementWall, 'right');
+});
+
+test('side-wall free-box contents inherit wall orientation from a parent frame without consuming door motion rotation', () => {
+  class FakeGroup {
+    name = '';
+    parent: FakeGroup | null = null;
+    children: FakeGroup[] = [];
+    userData: Record<string, unknown> = {};
+    position = {
+      x: 0,
+      y: 0,
+      z: 0,
+      set: (x: number, y: number, z: number) => Object.assign(this.position, { x, y, z }),
+    };
+    rotation = { x: 0, y: 0, z: 0 };
+    add(child: FakeGroup) {
+      child.parent?.remove(child);
+      child.parent = this;
+      this.children.push(child);
+    }
+    remove(child: FakeGroup) {
+      this.children = this.children.filter(entry => entry !== child);
+      if (child.parent === this) child.parent = null;
+    }
+    updateMatrixWorld() {}
+  }
+
+  const root = new FakeGroup();
+  const door = new FakeGroup();
+  door.name = 'door';
+  door.position.set(1.82, 1.1, 1.01);
+  door.rotation.y = 0.37;
+  const divider = new FakeGroup();
+  divider.name = 'divider';
+  divider.position.set(2.24, 1.1, 0.86);
+  root.add(door);
+  root.add(divider);
+
+  wrapNewFreePlacementObjects({
+    renderArgs: {
+      App: {},
+      group: root,
+      THREE: { Group: FakeGroup },
+      renderOpsHandleCatch: () => {},
+    } as any,
+    startIndex: 0,
+    state: {
+      box: { absX: 0.8 },
+      boxId: 'side-right',
+      boxPid: 'sketch_box_free_0_side-right',
+      isFreePlacement: true,
+      placementWall: 'right',
+      rotationY: -Math.PI / 2,
+      geometry: { centerX: 2.1, centerZ: 0.8, outerD: 0.4 },
+    } as any,
+  });
+
+  assert.equal(root.children.length, 1);
+  const frame = root.children[0];
+  assert.equal(frame.name, 'wpSketchFreePlacementFrame_sketch_box_free_0_side-right');
+  assertClose(frame.position.x, 2.1);
+  assertClose(frame.position.z, 0.8);
+  assertClose(frame.rotation.y, -Math.PI / 2);
+  assert.equal(door.parent, frame);
+  assert.equal(divider.parent, frame);
+  assertClose(door.position.x, -0.28);
+  assertClose(door.position.z, 0.21);
+  assertClose(door.rotation.y, 0.37);
+
+  door.rotation.y = 0;
+  assertClose(frame.rotation.y, -Math.PI / 2);
+  door.rotation.y = -1.2;
+  assertClose(frame.rotation.y, -Math.PI / 2);
+
+  const transform = readSketchFreePlacementTransform(door);
+  assert.ok(transform);
+  assert.equal(transform.owner, frame);
+  assert.equal(transform.wall, 'right');
+});
+
+test('side-wall content preview localizes box, front overlay and measurement coordinates into the same parent frame', () => {
+  const owner = { add() {} };
+  const transform = {
+    wall: 'right' as const,
+    rotationY: -Math.PI / 2,
+    pivotX: 2.1,
+    pivotZ: 0.8,
+    along: 0.8,
+    logicalCenterZ: 0.2,
+    owner,
+  };
+  const localized = localizeSketchFreePlacementPreview(
+    {
+      kind: 'drawers',
+      x: 0.95,
+      z: 0.38,
+      frontOverlayX: 1.1,
+      frontOverlayZ: 0.4,
+      clearanceMeasurements: [{ startX: 0.8, endX: 1.2, labelX: 1, startY: 0.4, endY: 0.8, z: 0.45 }],
+    },
+    transform
+  );
+
+  assertClose(Number(localized.x), 0.15);
+  assertClose(Number(localized.z), 0.18);
+  assertClose(Number(localized.frontOverlayX), 0.3);
+  assertClose(Number(localized.frontOverlayZ), 0.2);
+  const measurement = (localized.clearanceMeasurements as Array<Record<string, number>>)[0];
+  assertClose(measurement.startX, 0);
+  assertClose(measurement.endX, 0.4);
+  assertClose(measurement.labelX, 0.2);
+  assertClose(measurement.z, 0.25);
 });

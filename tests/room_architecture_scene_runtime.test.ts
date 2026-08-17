@@ -176,6 +176,7 @@ test('room openings resolve against their host wall and scene rendering cuts the
   assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpRightWall_piece_')));
   assert.ok(architecture.getObjectByName('wpRoomOpening_win-back_glass'));
   assert.ok(architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf'));
+  assert.equal(architecture.getObjectByName('wpRoomOpening_win-back_mullionH'), null);
 
   const windowFrameStart = architecture.getObjectByName('wpRoomOpening_win-back_frameStart');
   const windowFrameEnd = architecture.getObjectByName('wpRoomOpening_win-back_frameEnd');
@@ -198,6 +199,26 @@ test('room openings resolve against their host wall and scene rendering cuts the
     windowFrameStart.position.y - windowFrameStart.geometry.height / 2,
     windowFrameBottom.position.y + windowFrameBottom.geometry.height / 2
   );
+  const windowGlass = architecture.getObjectByName('wpRoomOpening_win-back_glass');
+  const windowMullionV = architecture.getObjectByName('wpRoomOpening_win-back_mullionV');
+  assert.ok(windowGlass && windowMullionV);
+  assertClose(
+    windowGlass.position.x - windowGlass.geometry.width / 2,
+    windowFrameStart.position.x + windowFrameStart.geometry.width / 2
+  );
+  assertClose(
+    windowGlass.position.x + windowGlass.geometry.width / 2,
+    windowFrameEnd.position.x - windowFrameEnd.geometry.width / 2
+  );
+  assertClose(
+    windowGlass.position.y + windowGlass.geometry.height / 2,
+    windowFrameTop.position.y - windowFrameTop.geometry.height / 2
+  );
+  assertClose(
+    windowGlass.position.y - windowGlass.geometry.height / 2,
+    windowFrameBottom.position.y + windowFrameBottom.geometry.height / 2
+  );
+  assertClose(windowMullionV.geometry.height, windowGlass.geometry.height);
 
   const doorFrameStart = architecture.getObjectByName('wpRoomOpening_door-right_frameStart');
   const doorFrameEnd = architecture.getObjectByName('wpRoomOpening_door-right_frameEnd');
@@ -215,6 +236,23 @@ test('room openings resolve against their host wall and scene rendering cuts the
     doorFrameStart.position.y + doorFrameStart.geometry.height / 2,
     doorFrameTop.position.y - doorFrameTop.geometry.height / 2
   );
+  const doorLeaf = architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf');
+  assert.ok(doorLeaf);
+  const leafStartReveal =
+    doorLeaf.position.z -
+    doorLeaf.geometry.depth / 2 -
+    (doorFrameStart.position.z + doorFrameStart.geometry.depth / 2);
+  const leafEndReveal =
+    doorFrameEnd.position.z -
+    doorFrameEnd.geometry.depth / 2 -
+    (doorLeaf.position.z + doorLeaf.geometry.depth / 2);
+  const leafTopReveal =
+    doorFrameTop.position.y -
+    doorFrameTop.geometry.height / 2 -
+    (doorLeaf.position.y + doorLeaf.geometry.height / 2);
+  assertClose(leafStartReveal, 0.004);
+  assertClose(leafEndReveal, 0.004);
+  assertClose(leafTopReveal, 0.004);
 
   const backPiece = architecture.children.find((child: any) => child.name.startsWith('wpBackWall_piece_'));
   const rightPiece = architecture.children.find((child: any) => child.name.startsWith('wpRightWall_piece_'));

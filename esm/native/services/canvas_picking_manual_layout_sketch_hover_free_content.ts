@@ -36,6 +36,10 @@ import {
 import { resolveSketchFreeBoxContentPreview } from './canvas_picking_sketch_free_box_content_preview.js';
 import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
 import { decodeSketchStructuralCommandHover } from './canvas_picking_sketch_structural_command.js';
+import {
+  localizeSketchFreePlacementPreview,
+  type SketchFreePlacementTransform,
+} from './canvas_picking_sketch_free_box_hit.js';
 
 type SketchPreviewArgs = UnknownRecord;
 type SketchFreeHoverContext = {
@@ -44,6 +48,7 @@ type SketchFreeHoverContext = {
   wardrobeBackZ: number;
   planeHit: LocalPoint;
   freeBoxes: UnknownRecord[];
+  placementTransform: SketchFreePlacementTransform | null;
 };
 
 type ExistingVerticalRemovalKind = Extract<SketchFreeHoverContentKind, 'shelf' | 'rod' | 'storage'>;
@@ -86,16 +91,27 @@ function isExistingStackRemovalPreview(
 function applySketchFreeContentPreview(args: {
   App: AppContainer;
   wardrobeGroup: unknown;
+  placementTransform: SketchFreePlacementTransform | null;
   setPreview: (args: SketchPreviewArgs) => unknown;
   __wp_writeSketchHover: (App: AppContainer, snap: UnknownRecord) => void;
   contentPreview: { hoverRecord: UnknownRecord; preview: UnknownRecord };
 }): void {
+  const transform = args.placementTransform;
+  const owner = transform?.owner;
+  const ownerAdd = owner && typeof owner === 'object' ? Reflect.get(owner, 'add') : null;
+  const canUseLocalSideFrame =
+    !!transform &&
+    (transform.wall === 'left' || transform.wall === 'right') &&
+    typeof ownerAdd === 'function';
+  const preview = canUseLocalSideFrame
+    ? localizeSketchFreePlacementPreview(args.contentPreview.preview, transform)
+    : args.contentPreview.preview;
   args.__wp_writeSketchHover(args.App, args.contentPreview.hoverRecord);
   args.setPreview({
     App: args.App,
     THREE: getThreeMaybe(args.App),
-    anchorParent: args.wardrobeGroup,
-    ...args.contentPreview.preview,
+    anchorParent: canUseLocalSideFrame ? owner : args.wardrobeGroup,
+    ...preview,
   });
 }
 
@@ -179,7 +195,7 @@ export function tryHandleManualLayoutSketchHoverFreeContentPreview(
   const freeContentKind = resolveSketchFreeHoverContentKind(tool);
   if (!freeContentKind) return false;
 
-  const { host, wardrobeBox, wardrobeBackZ, planeHit, freeBoxes } = context;
+  const { host, wardrobeBox, wardrobeBackZ, planeHit, freeBoxes, placementTransform } = context;
   const basePreviewArgs = {
     App,
     tool,
@@ -227,6 +243,7 @@ export function tryHandleManualLayoutSketchHoverFreeContentPreview(
       applySketchFreeContentPreview({
         App,
         wardrobeGroup,
+        placementTransform,
         setPreview,
         __wp_writeSketchHover,
         contentPreview,
@@ -244,6 +261,7 @@ export function tryHandleManualLayoutSketchHoverFreeContentPreview(
       applySketchFreeContentPreview({
         App,
         wardrobeGroup,
+        placementTransform,
         setPreview,
         __wp_writeSketchHover,
         contentPreview: verticalRemovePreview,
@@ -261,6 +279,7 @@ export function tryHandleManualLayoutSketchHoverFreeContentPreview(
   applySketchFreeContentPreview({
     App,
     wardrobeGroup,
+    placementTransform,
     setPreview,
     __wp_writeSketchHover,
     contentPreview,

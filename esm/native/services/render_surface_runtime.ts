@@ -93,6 +93,14 @@ function getRenderBag(App: AppLike): RenderBag {
 function getTHREE(App: AppLike): ThreeRuntime {
   return assertThreeViaDeps(App, 'services/render_surface_runtime.THREE');
 }
+export function getViewportThree(App: AppLike): ThreeRuntime | null {
+  try {
+    return getTHREE(App);
+  } catch (error) {
+    reportRenderSurfaceNonFatal(App, 'readTHREE', error);
+    return null;
+  }
+}
 export function getViewportRenderCore(App: AppLike): RenderCoreSurfaceLike | null {
   try {
     const render = getRenderBag(App);

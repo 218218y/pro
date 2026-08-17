@@ -9,12 +9,14 @@ import type {
   ModuleConfigLike,
   ModulesConfigurationLike,
   ModulesGeometrySnapshotLike,
+  RoomArchitectureConfigLike,
   UnknownRecord,
 } from '../../../types';
 
 import {
   applyModulesGeometrySnapshotViaActions,
   applyPaintViaActions,
+  setRoomArchitectureViaActions,
 } from '../runtime/actions_access_mutations.js';
 import {
   cfgBatch,
@@ -102,6 +104,14 @@ export interface PaintConfigSnapshotArgs {
   doorStyleMap?: DoorStyleMap;
   mirrorLayoutMap?: MirrorLayoutMap;
   meta?: ActionMetaLike;
+}
+
+export function applyRoomArchitectureConfigSnapshot(
+  App: AppContainer,
+  value: RoomArchitectureConfigLike,
+  meta?: ActionMetaLike
+): boolean {
+  return setRoomArchitectureViaActions(App, value, meta);
 }
 
 function buildModulesGeometrySnapshot(args: CellDimsConfigSnapshotArgs): ModulesGeometrySnapshotLike {

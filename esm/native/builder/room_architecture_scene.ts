@@ -282,21 +282,21 @@ function addOpeningVisuals(args: {
     addPart(
       'glass',
       alongCenter,
-      Math.max(0.02, resolved.width - frame * 1.3),
+      Math.max(0.02, resolved.width),
       centerY,
-      Math.max(0.02, resolved.height - frame * 1.3),
+      Math.max(0.02, resolved.height),
       0.012,
       0.018,
       '#dbeafe',
       { transparent: true, opacity: 0.42, roughness: 0.18, metalness: 0.05 }
     );
-    addPart('mullionV', alongCenter, frame * 0.55, centerY, Math.max(frame, resolved.height - frame));
-    addPart('mullionH', alongCenter, Math.max(frame, resolved.width - frame), centerY, frame * 0.55);
+    addPart('mullionV', alongCenter, frame * 0.55, centerY, resolved.height);
     return;
   }
 
-  const leafWidth = Math.max(0.08, resolved.width - frame * 1.5);
-  const leafHeight = Math.max(0.08, resolved.height - frame * 0.7);
+  const doorReveal = 0.004;
+  const leafWidth = Math.max(0.08, resolved.width - doorReveal * 2);
+  const leafHeight = Math.max(0.08, resolved.height - doorReveal);
   addPart('doorLeaf', alongCenter, leafWidth, bottom + leafHeight / 2, leafHeight, 0.035, 0.012, '#b98255', {
     roughness: 0.72,
   });

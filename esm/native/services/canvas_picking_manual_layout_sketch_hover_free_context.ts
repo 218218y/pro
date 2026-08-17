@@ -12,6 +12,7 @@ import type { SketchFreeHoverHost } from './canvas_picking_sketch_free_surface_p
 import {
   readSketchFreePlacementTransform,
   remapSketchFreePlacementLocalPoint,
+  type SketchFreePlacementTransform,
 } from './canvas_picking_sketch_free_box_hit.js';
 import {
   findRoomWallSurfaceHit,
@@ -53,6 +54,7 @@ export type ManualLayoutSketchHoverFreePlaneContext = {
   freeBoxSpec: UnknownRecord | null;
   placementWall: RoomWallId;
   placementSurface: RoomWallSurfacePickMeta | null;
+  placementTransform: SketchFreePlacementTransform | null;
 };
 
 function readRecordValue(obj: unknown, key: string): unknown {
@@ -94,13 +96,18 @@ function findSidePlacementTransformHit(args: {
 }): {
   wall: 'left' | 'right';
   planeHit: LocalPoint;
+  transform: SketchFreePlacementTransform;
 } | null {
   for (const hit of args.intersects) {
     const transform = readSketchFreePlacementTransform(hit?.object);
     if (!(transform?.wall === 'left' || transform?.wall === 'right') || !hit?.point) continue;
     const local = __wp_projectWorldPointToLocal(args.App, hit.point, args.wardrobeGroup);
     if (!local) continue;
-    return { wall: transform.wall, planeHit: remapSketchFreePlacementLocalPoint(local, transform) };
+    return {
+      wall: transform.wall,
+      planeHit: remapSketchFreePlacementLocalPoint(local, transform),
+      transform,
+    };
   }
   return null;
 }
@@ -220,5 +227,6 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
     freeBoxSpec: freeBoxSpec ?? null,
     placementWall,
     placementSurface,
+    placementTransform: taggedSideHit?.transform || null,
   };
 }

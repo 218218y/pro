@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { ModuleKey, ProjectWorldPointToLocalFn } from './canvas_picking_sketch_free_box_contracts.js';
@@ -12,6 +12,7 @@ export type SketchFreePlacementTransform = {
   pivotZ: number;
   along: number;
   logicalCenterZ: number;
+  owner: unknown;
 };
 
 function finiteNumber(value: unknown): number | null {
@@ -30,11 +31,11 @@ export function readSketchFreePlacementTransform(object: unknown): SketchFreePla
       const along = finiteNumber(userData?.__wpSketchFreePlacementAlong);
       const logicalCenterZ = finiteNumber(userData?.__wpSketchFreePlacementLogicalCenterZ);
       if (rotationY != null && pivotX != null && pivotZ != null && along != null && logicalCenterZ != null) {
-        return { wall, rotationY, pivotX, pivotZ, along, logicalCenterZ };
+        return { wall, rotationY, pivotX, pivotZ, along, logicalCenterZ, owner: node };
       }
     }
     if (wall === 'back') {
-      return { wall: 'back', rotationY: 0, pivotX: 0, pivotZ: 0, along: 0, logicalCenterZ: 0 };
+      return { wall: 'back', rotationY: 0, pivotX: 0, pivotZ: 0, along: 0, logicalCenterZ: 0, owner: node };
     }
     node = node && typeof node === 'object' ? Reflect.get(node, 'parent') : null;
   }
@@ -56,6 +57,45 @@ export function remapSketchFreePlacementLocalPoint(
     x: transform.along + canonicalDx,
     y: point.y,
     z: transform.logicalCenterZ + canonicalDz,
+  };
+}
+
+function shiftedNumber(value: unknown, offset: number): unknown {
+  return typeof value === 'number' && Number.isFinite(value) ? value - offset : value;
+}
+
+function localizeMeasurementEntries(value: unknown, transform: SketchFreePlacementTransform): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.map(entry => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return entry;
+    const record = entry as UnknownRecord;
+    return {
+      ...record,
+      startX: shiftedNumber(record.startX, transform.along),
+      endX: shiftedNumber(record.endX, transform.along),
+      labelX: shiftedNumber(record.labelX, transform.along),
+      z: shiftedNumber(record.z, transform.logicalCenterZ),
+    };
+  });
+}
+
+export function localizeSketchFreePlacementPreview(
+  preview: UnknownRecord,
+  transform: SketchFreePlacementTransform
+): UnknownRecord {
+  if (transform.wall === 'back') return preview;
+  return {
+    ...preview,
+    x: shiftedNumber(preview.x, transform.along),
+    z: shiftedNumber(preview.z, transform.logicalCenterZ),
+    frontOverlayX: shiftedNumber(preview.frontOverlayX, transform.along),
+    frontOverlayZ: shiftedNumber(preview.frontOverlayZ, transform.logicalCenterZ),
+    guideVerticalX: shiftedNumber(preview.guideVerticalX, transform.along),
+    guideHorizontalX: shiftedNumber(preview.guideHorizontalX, transform.along),
+    highlightX: shiftedNumber(preview.highlightX, transform.along),
+    drawerMotionClosedX: shiftedNumber(preview.drawerMotionClosedX, transform.along),
+    drawerMotionClosedZ: shiftedNumber(preview.drawerMotionClosedZ, transform.logicalCenterZ),
+    clearanceMeasurements: localizeMeasurementEntries(preview.clearanceMeasurements, transform),
   };
 }
 
