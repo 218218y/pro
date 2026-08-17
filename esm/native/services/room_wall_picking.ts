@@ -19,6 +19,7 @@ export type RoomWallSurfacePickMeta = {
 export type RoomWallSurfaceHit = {
   surface: RoomWallSurfacePickMeta;
   point: { x: number; y: number; z: number };
+  distance: number | null;
 };
 
 function finiteNumber(value: unknown): number | null {
@@ -144,7 +145,10 @@ export function findRoomWallSurfaceHit(args: {
     const surface = readRoomWallSurfacePickMeta(hit.object);
     if (!surface) continue;
     const point = projectRoomWorldPointToLocal(args.App, hit.point);
-    if (point) return { surface, point };
+    if (point) {
+      const distance = finiteNumber((hit as RaycastHitLike & { distance?: unknown }).distance);
+      return { surface, point, distance };
+    }
   }
   return null;
 }

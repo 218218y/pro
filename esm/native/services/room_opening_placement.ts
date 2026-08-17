@@ -2,26 +2,46 @@ import type {
   AppContainer,
   RoomArchitectureConfigLike,
   RoomOpeningKind,
-  RoomWallId,
   RoomWallOpeningLike,
   UnknownRecord,
 } from '../../../types';
 
-import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
+import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
+import { raycastAtNdc } from './canvas_picking_engine.js';
 import { applyRoomArchitectureConfigSnapshot } from './canvas_picking_config_actions.js';
-import { __wp_cfg } from './canvas_picking_core_helpers.js';
+import { __wp_cfg, __wp_primaryMode } from './canvas_picking_core_helpers.js';
 import { __wp_asRecord } from './canvas_picking_core_support.js';
 import { __getSketchPlacementPreviewFns } from './canvas_picking_hover_preview_modes_shared.js';
-import { getViewportRoomGroup, getViewportThree } from './render_surface_runtime.js';
+import { buildRectClearanceMeasurementEntries } from './canvas_picking_hover_clearance_measurements.js';
+import {
+  getViewportCamera,
+  getViewportRoomGroup,
+  getViewportThree,
+  getViewportWardrobeGroup,
+} from './render_surface_runtime.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
-import { findRoomWallSurfaceHit, type RoomWallSurfacePickMeta } from './room_wall_picking.js';
+import {
+  findRoomWallSurfaceHit,
+  type RoomWallSurfaceHit,
+  type RoomWallSurfacePickMeta,
+} from './room_wall_picking.js';
+import { resetAllEditModesViaService } from '../runtime/edit_state_access.js';
+import { getModeId } from '../runtime/modes_constants.js';
+import { setModePrimary } from '../runtime/mode_write_access.js';
+import { getUiFeedback } from '../runtime/service_access.js';
+import { getStoreSubscriber } from '../runtime/store_surface_access.js';
+import { getModesControllerMaybe } from '../runtime/ui_modes_runtime_access.js';
 
 const CACHE_DRAFT_KEY = '__wpRoomOpeningPlacementDraft';
 const CACHE_HOVER_KEY = '__wpRoomOpeningPlacementHover';
+const CACHE_MODE_UNSUB_KEY = '__wpRoomOpeningPlacementModeUnsub';
 const ROOM_OPENING_HOVER_KIND = 'room-opening-placement';
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
 const MIN_OPENING_SIZE_CM = 20;
 const PREVIEW_WALL_DEPTH_M = 0.205;
+const ROOM_OPENING_MODE_FALLBACK_ID = 'room_opening';
+const MEASUREMENT_WALL_FACE_OFFSET_M = 0.012;
+const WALL_OCCLUSION_EPSILON_M = 0.002;
 
 function getRoomOpeningPlacementCache(App: AppContainer): UnknownRecord {
   const current = __wp_asRecord(App.services.runtimeCache);
@@ -140,6 +160,162 @@ function hidePlacementPreview(App: AppContainer): void {
   }
 }
 
+function roomOpeningModeId(): string {
+  return getModeId('ROOM_OPENING') || ROOM_OPENING_MODE_FALLBACK_ID;
+}
+
+function roomOpeningEditMessage(kind: RoomOpeningKind): string {
+  const label = kind === 'door' ? 'דלת' : 'חלון';
+  return `מצב עריכה: מיקום ${label} — העבר את העכבר על קיר ולחץ למיקום; לחץ באזור ריק כדי לסיים`;
+}
+
+function isRoomOpeningPrimaryMode(App: AppContainer): boolean {
+  return __wp_primaryMode(App) === roomOpeningModeId();
+}
+
+function updateRoomOpeningEditToast(App: AppContainer, kind: RoomOpeningKind): void {
+  try {
+    getUiFeedback(App).updateEditStateToast?.(roomOpeningEditMessage(kind), true);
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'updateEditToast', error);
+  }
+}
+
+function enterRoomOpeningEditMode(App: AppContainer, kind: RoomOpeningKind): boolean {
+  const modeId = roomOpeningModeId();
+  if (isRoomOpeningPrimaryMode(App)) {
+    updateRoomOpeningEditToast(App, kind);
+    return true;
+  }
+
+  const noneModeId = getModeId('NONE') || 'none';
+  try {
+    const reset = resetAllEditModesViaService(App);
+    if (!reset && __wp_primaryMode(App) !== noneModeId) return false;
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'enterEditMode.reset', error);
+    if (__wp_primaryMode(App) !== noneModeId) return false;
+  }
+
+  const opts = {
+    source: 'settings:roomOpening:enter',
+    closeDoors: true,
+    cursor: 'crosshair',
+    toast: roomOpeningEditMessage(kind),
+  };
+
+  try {
+    const controller = getModesControllerMaybe(App);
+    if (typeof controller?.enterPrimaryMode === 'function') {
+      controller.enterPrimaryMode(modeId, opts);
+    } else {
+      setModePrimary(
+        App,
+        modeId,
+        {},
+        {
+          source: 'settings:roomOpening:enter:fallback',
+          noBuild: true,
+          noHistory: true,
+          noAutosave: true,
+          noPersist: true,
+          noCapture: true,
+          immediate: true,
+        }
+      );
+      updateRoomOpeningEditToast(App, kind);
+    }
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'enterEditMode', error);
+    return false;
+  }
+  return isRoomOpeningPrimaryMode(App);
+}
+
+function exitRoomOpeningEditMode(App: AppContainer, source: string): void {
+  if (!isRoomOpeningPrimaryMode(App)) return;
+  const modeId = roomOpeningModeId();
+  try {
+    const controller = getModesControllerMaybe(App);
+    if (typeof controller?.exitPrimaryMode === 'function') {
+      controller.exitPrimaryMode(modeId, { source });
+      return;
+    }
+    setModePrimary(
+      App,
+      getModeId('NONE') || 'none',
+      {},
+      {
+        source,
+        noBuild: true,
+        noHistory: true,
+        noAutosave: true,
+        noPersist: true,
+        noCapture: true,
+        immediate: true,
+      }
+    );
+    getUiFeedback(App).updateEditStateToast?.(null, false);
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'exitEditMode', error);
+  }
+}
+
+function disposeRoomOpeningModeWatcher(App: AppContainer): void {
+  const cache = getRoomOpeningPlacementCache(App);
+  const handle = cache[CACHE_MODE_UNSUB_KEY];
+  cache[CACHE_MODE_UNSUB_KEY] = null;
+  try {
+    if (typeof handle === 'function') {
+      handle();
+      return;
+    }
+    const record = __wp_asRecord(handle);
+    if (typeof record?.unsubscribe === 'function') Reflect.apply(record.unsubscribe, record, []);
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'disposeModeWatcher', error);
+  }
+}
+
+function ensureRoomOpeningModeWatcher(App: AppContainer): void {
+  const cache = getRoomOpeningPlacementCache(App);
+  if (cache[CACHE_MODE_UNSUB_KEY]) return;
+  try {
+    const subscribe = getStoreSubscriber(App);
+    if (!subscribe) return;
+    cache[CACHE_MODE_UNSUB_KEY] = subscribe(() => {
+      if (isRoomOpeningPrimaryMode(App)) return;
+      const currentCache = getRoomOpeningPlacementCache(App);
+      if (currentCache[CACHE_DRAFT_KEY] == null) {
+        disposeRoomOpeningModeWatcher(App);
+        return;
+      }
+      writeDraft(App, null);
+      hidePlacementPreview(App);
+      disposeRoomOpeningModeWatcher(App);
+    });
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'ensureModeWatcher', error);
+  }
+}
+
+function readActiveDraft(App: AppContainer): RoomOpeningPlacementDraft | null {
+  const draft = readDraft(App);
+  if (!draft) return null;
+  if (isRoomOpeningPrimaryMode(App)) return draft;
+  writeDraft(App, null);
+  hidePlacementPreview(App);
+  disposeRoomOpeningModeWatcher(App);
+  return null;
+}
+
+function finishRoomOpeningPlacement(App: AppContainer, source: string): void {
+  writeDraft(App, null);
+  hidePlacementPreview(App);
+  disposeRoomOpeningModeWatcher(App);
+  exitRoomOpeningEditMode(App, source);
+}
+
 export function beginRoomOpeningPlacement(
   App: AppContainer,
   input: { kind: RoomOpeningKind; widthCm?: number | null; heightCm?: number | null }
@@ -149,18 +325,19 @@ export function beginRoomOpeningPlacement(
   const defaultHeight = input.kind === 'door' ? 210 : 100;
   const widthCm = Math.max(MIN_OPENING_SIZE_CM, finiteNumber(input.widthCm) ?? defaultWidth);
   const heightCm = Math.max(MIN_OPENING_SIZE_CM, finiteNumber(input.heightCm) ?? defaultHeight);
+  if (!enterRoomOpeningEditMode(App, input.kind)) return false;
   writeDraft(App, { kind: input.kind, widthCm: roundCm(widthCm), heightCm: roundCm(heightCm) });
+  ensureRoomOpeningModeWatcher(App);
   hidePlacementPreview(App);
   return true;
 }
 
 export function cancelRoomOpeningPlacement(App: AppContainer): void {
-  writeDraft(App, null);
-  hidePlacementPreview(App);
+  finishRoomOpeningPlacement(App, 'settings:roomOpening:cancel');
 }
 
 export function isRoomOpeningPlacementActive(App: AppContainer): boolean {
-  return readDraft(App) != null;
+  return readActiveDraft(App) != null;
 }
 
 function resolveOpeningAtPoint(args: {
@@ -239,7 +416,106 @@ function resolveOpeningAtPoint(args: {
   };
 }
 
-function setPlacementPreview(App: AppContainer, hover: RoomOpeningHoverState): void {
+function isIgnoredWardrobeRaycastObject(value: unknown): boolean {
+  let node = __wp_asRecord(value);
+  for (let depth = 0; node && depth < 12; depth += 1) {
+    const userData = __wp_asRecord(node.userData);
+    if (
+      userData?.__ignoreRaycast === true ||
+      userData?.__wpExcludeWardrobeBounds === true ||
+      userData?.__wpViewerMeasurementOverlay === true ||
+      userData?.isModuleSelector === true
+    ) {
+      return true;
+    }
+    node = __wp_asRecord(node.parent);
+  }
+  return false;
+}
+
+type WardrobeSurfaceHit = {
+  hit: RaycastHitLike;
+  distance: number | null;
+};
+
+function readNearestWardrobeHit(args: {
+  App: AppContainer;
+  ndcX: number;
+  ndcY: number;
+  raycaster: RaycasterLike;
+  mouse: MouseVectorLike;
+}): WardrobeSurfaceHit | null {
+  const camera = getViewportCamera(args.App);
+  const wardrobeGroup = getViewportWardrobeGroup(args.App);
+  if (!camera || !wardrobeGroup) return null;
+  const hits = raycastAtNdc({
+    raycaster: args.raycaster,
+    mouse: args.mouse,
+    camera,
+    ndcX: args.ndcX,
+    ndcY: args.ndcY,
+    objects: [wardrobeGroup],
+    recursive: true,
+  });
+  for (const hit of hits) {
+    if (isIgnoredWardrobeRaycastObject(hit.object)) continue;
+    const distance = finiteNumber((hit as RaycastHitLike & { distance?: unknown }).distance);
+    return { hit, distance };
+  }
+  return null;
+}
+
+function isWallHitOccludedByWardrobe(
+  wallHit: RoomWallSurfaceHit,
+  wardrobeHit: WardrobeSurfaceHit | null
+): boolean {
+  if (!wardrobeHit) return false;
+  if (wallHit.distance == null || wardrobeHit.distance == null) return true;
+  return wardrobeHit.distance + WALL_OCCLUSION_EPSILON_M < wallHit.distance;
+}
+
+function buildWallClearanceMeasurements(hover: RoomOpeningHoverState, surface: RoomWallSurfacePickMeta) {
+  const openingWidthM = Math.max(0.0001, Number(hover.opening.widthCm) / 100);
+  const openingHeightM = Math.max(0.0001, Number(hover.opening.heightCm) / 100);
+  const openingOffsetM = Math.max(0, Number(hover.opening.offsetAlongCm) / 100);
+  const openingBottomM =
+    hover.opening.kind === 'door' ? 0 : Math.max(0, Number(hover.opening.bottomOffsetCm) / 100);
+  const targetCenterAlong = surface.startCoord + openingOffsetM + openingWidthM / 2;
+  const targetCenterY = openingBottomM + openingHeightM / 2;
+  const isBackWall = surface.axis === 'x';
+  const faceSign = isBackWall ? surface.inwardNormalZ : surface.inwardNormalX;
+  const wallFaceCoord = surface.interiorFaceCoord + faceSign * MEASUREMENT_WALL_FACE_OFFSET_M;
+
+  return buildRectClearanceMeasurementEntries({
+    containerMinX: surface.startCoord,
+    containerMaxX: surface.startCoord + surface.usableLength,
+    containerMinY: 0,
+    containerMaxY: surface.wallHeight,
+    targetCenterX: targetCenterAlong,
+    targetCenterY,
+    targetWidth: openingWidthM,
+    targetHeight: openingHeightM,
+    z: wallFaceCoord,
+    showTop: true,
+    showBottom: hover.opening.kind === 'window',
+    showLeft: true,
+    showRight: true,
+    minVerticalCm: 0.5,
+    minHorizontalCm: 0.5,
+    styleKey: 'cell',
+    textScale: 0.95,
+    faceSign,
+    viewFaceSign: faceSign,
+    labelFaceSign: faceSign,
+    surfacePlane: isBackWall ? 'xy' : 'yz',
+  });
+}
+
+function setPlacementPreview(
+  App: AppContainer,
+  hover: RoomOpeningHoverState,
+  surface: RoomWallSurfacePickMeta
+): void {
   try {
     const THREE = __wp_asRecord(getViewportThree(App));
     const BoxGeometryCtor = THREE?.BoxGeometry as
@@ -274,27 +550,11 @@ function setPlacementPreview(App: AppContainer, hover: RoomOpeningHoverState): v
       overlayThroughScene: true,
       op: hover.blockedReason ? 'blocked' : 'add',
       woodThick: 0.018,
+      clearanceMeasurements: buildWallClearanceMeasurements(hover, surface),
     });
   } catch (error) {
     reportRoomOpeningPlacementNonFatal(App, 'setPlacementPreview', error);
   }
-}
-
-function wallClearanceLabels(wall: RoomWallId): { start: string; end: string } {
-  if (wall === 'back') return { start: 'משמאל', end: 'מימין' };
-  return { start: 'מאחור', end: 'מלפנים' };
-}
-
-function formatHoverLabel(hover: RoomOpeningHoverState): string {
-  const labels = wallClearanceLabels(hover.opening.wall);
-  const title = hover.opening.kind === 'door' ? 'דלת' : 'חלון';
-  const size = `${roundCm(hover.opening.widthCm)}×${roundCm(hover.opening.heightCm)} ס״מ`;
-  const horizontal = `${labels.start}: ${hover.clearancesCm.start} ס״מ   |   ${labels.end}: ${hover.clearancesCm.end} ס״מ`;
-  const vertical =
-    hover.opening.kind === 'door'
-      ? `למעלה: ${hover.clearancesCm.top} ס״מ`
-      : `למעלה: ${hover.clearancesCm.top} ס״מ   |   למטה: ${hover.clearancesCm.bottom} ס״מ`;
-  return `${hover.blockedReason ? `⚠ ${hover.blockedReason}\n` : ''}${title} ${size}\n${horizontal}\n${vertical}`;
 }
 
 export function tryHandleRoomOpeningPlacementHover(args: {
@@ -304,7 +564,7 @@ export function tryHandleRoomOpeningPlacementHover(args: {
   raycaster: RaycasterLike;
   mouse: MouseVectorLike;
 }): RoomOpeningPlacementHoverFeedback | null {
-  const draft = readDraft(args.App);
+  const draft = readActiveDraft(args.App);
   if (!draft) return null;
   const wallHit = findRoomWallSurfaceHit(args);
   if (!wallHit) {
@@ -313,7 +573,18 @@ export function tryHandleRoomOpeningPlacementHover(args: {
     return {
       kind: ROOM_OPENING_HOVER_KIND,
       cursor: CANVAS_HOVER_CURSOR_PRESERVE,
-      partLabel: 'בחר מיקום על אחד הקירות',
+      partLabel: null,
+    };
+  }
+
+  const wardrobeHit = readNearestWardrobeHit(args);
+  if (isWallHitOccludedByWardrobe(wallHit, wardrobeHit)) {
+    getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = null;
+    hidePlacementPreview(args.App);
+    return {
+      kind: ROOM_OPENING_HOVER_KIND,
+      cursor: CANVAS_HOVER_CURSOR_PRESERVE,
+      partLabel: null,
     };
   }
 
@@ -327,11 +598,11 @@ export function tryHandleRoomOpeningPlacementHover(args: {
   });
   if (!hover) return null;
   getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = hover as unknown as UnknownRecord;
-  setPlacementPreview(args.App, hover);
+  setPlacementPreview(args.App, hover, wallHit.surface);
   return {
     kind: ROOM_OPENING_HOVER_KIND,
     cursor: CANVAS_HOVER_CURSOR_PRESERVE,
-    partLabel: formatHoverLabel(hover),
+    partLabel: null,
   };
 }
 
@@ -342,10 +613,19 @@ export function tryHandleRoomOpeningPlacementClick(args: {
   raycaster: RaycasterLike;
   mouse: MouseVectorLike;
 }): boolean {
-  const draft = readDraft(args.App);
+  const draft = readActiveDraft(args.App);
   if (!draft) return false;
   const wallHit = findRoomWallSurfaceHit(args);
-  if (!wallHit) return true;
+  const wardrobeHit = readNearestWardrobeHit(args);
+  if (!wallHit) {
+    hidePlacementPreview(args.App);
+    if (!wardrobeHit) finishRoomOpeningPlacement(args.App, 'canvas:roomOpening:emptyClick');
+    return true;
+  }
+  if (isWallHitOccludedByWardrobe(wallHit, wardrobeHit)) {
+    hidePlacementPreview(args.App);
+    return true;
+  }
   const current = readCurrentArchitecture(args.App);
   if (!current) return true;
   const hover = resolveOpeningAtPoint({
@@ -362,7 +642,9 @@ export function tryHandleRoomOpeningPlacementClick(args: {
     id: `room-opening-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
   };
   const next = withRoomOpenings(current, [...current.openings, opening]);
-  if (commitArchitecture(args.App, next, 'canvas:roomOpening:add')) cancelRoomOpeningPlacement(args.App);
+  if (commitArchitecture(args.App, next, 'canvas:roomOpening:add')) {
+    finishRoomOpeningPlacement(args.App, 'canvas:roomOpening:placed');
+  }
   return true;
 }
 

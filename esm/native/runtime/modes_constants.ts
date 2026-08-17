@@ -22,6 +22,7 @@ export const MODES: ModeMap = Object.freeze({
   EXT_DRAWER: 'ext_drawer',
   SCREEN_NOTE: 'screen_note',
   DOOR_TRIM: 'door_trim',
+  ROOM_OPENING: 'room_opening',
 });
 
 function isModeKey(key: string): key is keyof typeof MODES {

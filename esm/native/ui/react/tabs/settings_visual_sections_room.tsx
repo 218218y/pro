@@ -228,21 +228,15 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
   const [kind, setKind] = useState<'window' | 'door'>('window');
   const [widthCm, setWidthCm] = useState(120);
   const [heightCm, setHeightCm] = useState(100);
-  const [placementArmed, setPlacementArmed] = useState(false);
-  const openingCountRef = useRef(model.roomArchitecture.openings.length);
-
-  useEffect(() => {
-    const nextCount = model.roomArchitecture.openings.length;
-    if (nextCount > openingCountRef.current) setPlacementArmed(false);
-    openingCountRef.current = nextCount;
-  }, [model.roomArchitecture.openings.length]);
+  const placementArmed = model.openingPlacementActive;
 
   const selectKind = (nextKind: 'window' | 'door') => {
+    const nextWidthCm = nextKind === 'door' ? 90 : 120;
+    const nextHeightCm = nextKind === 'door' ? 210 : 100;
     setKind(nextKind);
-    setWidthCm(nextKind === 'door' ? 90 : 120);
-    setHeightCm(nextKind === 'door' ? 210 : 100);
-    setPlacementArmed(false);
-    model.cancelOpeningPlacement();
+    setWidthCm(nextWidthCm);
+    setHeightCm(nextHeightCm);
+    model.beginOpeningPlacement(nextKind, nextWidthCm, nextHeightCm);
   };
 
   const wallLabel = (wall: 'back' | 'left' | 'right') =>
@@ -277,7 +271,10 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
           value={widthCm}
           min={20}
           max={1000}
-          onChange={setWidthCm}
+          onChange={value => {
+            setWidthCm(value);
+            model.beginOpeningPlacement(kind, value, heightCm);
+          }}
         />
         <ArchitectureNumberField
           id="wp-room-opening-height"
@@ -285,7 +282,10 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
           value={heightCm}
           min={20}
           max={1000}
-          onChange={setHeightCm}
+          onChange={value => {
+            setHeightCm(value);
+            model.beginOpeningPlacement(kind, widthCm, value);
+          }}
         />
       </div>
 
@@ -293,21 +293,14 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
         <button
           type="button"
           className="btn btn-primary"
-          onClick={() => setPlacementArmed(model.beginOpeningPlacement(kind, widthCm, heightCm))}
+          onClick={() => model.beginOpeningPlacement(kind, widthCm, heightCm)}
           data-testid="settings-room-opening-place"
         >
           <i className="fas fa-crosshairs" aria-hidden="true"></i>{' '}
           {kind === 'door' ? 'מקם דלת על קיר' : 'מקם חלון על קיר'}
         </button>
         {placementArmed ? (
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              model.cancelOpeningPlacement();
-              setPlacementArmed(false);
-            }}
-          >
+          <button type="button" className="btn" onClick={model.cancelOpeningPlacement}>
             ביטול מיקום
           </button>
         ) : null}

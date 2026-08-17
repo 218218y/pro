@@ -1,0 +1,313 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import {
+  beginRoomOpeningPlacement,
+  isRoomOpeningPlacementActive,
+  tryHandleRoomOpeningPlacementClick,
+  tryHandleRoomOpeningPlacementHover,
+} from '../esm/native/services/room_opening_placement.ts';
+
+type AnyRecord = Record<string, any>;
+
+class FakeGeometry {
+  constructor(
+    public width = 1,
+    public height = 1,
+    public depth = 1
+  ) {}
+}
+
+class FakeMesh {
+  parent: unknown = null;
+  position = {
+    x: 0,
+    y: 0,
+    z: 0,
+    set: (x: number, y: number, z: number) => Object.assign(this.position, { x, y, z }),
+  };
+  scale = {
+    x: 1,
+    y: 1,
+    z: 1,
+    set: (x: number, y: number, z: number) => Object.assign(this.scale, { x, y, z }),
+  };
+  constructor(public geometry: unknown) {}
+  updateMatrixWorld() {}
+}
+
+function createHarness() {
+  const listeners = new Set<() => void>();
+  const state: AnyRecord = {
+    mode: { primary: 'none', opts: {} },
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+        leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        column: { enabled: false },
+        openings: [],
+        wallColor: '#ffffff',
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: {},
+  };
+
+  const wallSurface: AnyRecord = {
+    userData: {
+      __wpRoomWallSurface: true,
+      roomWallId: 'back',
+      roomWallAxis: 'x',
+      roomWallStartCoord: -2,
+      roomWallUsableLength: 4,
+      roomWallHeight: 2.8,
+      roomWallInteriorFaceCoord: 0,
+      roomWallInwardNormalX: 0,
+      roomWallInwardNormalZ: 1,
+    },
+    parent: null,
+  };
+  const architecture = { children: [wallSurface] };
+  wallSurface.parent = architecture;
+  const roomGroup: AnyRecord = {
+    children: [architecture],
+    getObjectByName(name: string) {
+      return name === 'wpRoomArchitecture' ? architecture : null;
+    },
+  };
+  const wardrobeGroup: AnyRecord = { userData: {}, children: [] };
+  const camera = {};
+
+  let preview: AnyRecord | null = null;
+  let hideCount = 0;
+  let lastToast: { text: string | null; active: boolean } | null = null;
+
+  const notify = () => {
+    for (const listener of [...listeners]) listener();
+  };
+
+  const app: AnyRecord = {
+    deps: { THREE: { BoxGeometry: FakeGeometry, Mesh: FakeMesh } },
+    render: { camera, roomGroup, wardrobeGroup },
+    store: {
+      getState: () => state,
+      patch() {},
+      subscribe(listener: () => void) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+    },
+    services: {
+      runtimeCache: {},
+      builder: {
+        renderOps: {
+          hideSketchPlacementPreview() {
+            hideCount += 1;
+            preview = null;
+          },
+          setSketchPlacementPreview(args: AnyRecord) {
+            preview = args;
+            return {};
+          },
+        },
+      },
+      editState: {
+        resetAllEditModes() {
+          state.mode.primary = 'none';
+          state.mode.opts = {};
+          notify();
+          return true;
+        },
+      },
+      uiModesRuntime: {
+        controller: {
+          getPrimaryMode: () => state.mode.primary,
+          enterPrimaryMode(mode: string, opts: AnyRecord) {
+            state.mode.primary = mode;
+            state.mode.opts = opts || {};
+            if (typeof opts?.toast === 'string') lastToast = { text: opts.toast, active: true };
+            notify();
+          },
+          exitPrimaryMode(expectedMode: string) {
+            if (!expectedMode || state.mode.primary === expectedMode) {
+              state.mode.primary = 'none';
+              state.mode.opts = {};
+              lastToast = { text: null, active: false };
+              notify();
+            }
+          },
+        },
+      },
+      uiFeedback: {
+        toast() {},
+        updateEditStateToast(text: string | null, active: boolean) {
+          lastToast = { text, active };
+        },
+      },
+      roomDesign: { updateRoomArchitecture() {} },
+    },
+  };
+
+  let wallHits: AnyRecord[] = [{ object: wallSurface, point: { x: 0, y: 1.4, z: 0 }, distance: 10 }];
+  let wardrobeHits: AnyRecord[] = [];
+  const raycaster = {
+    setFromCamera() {},
+    intersectObjects(objects: unknown) {
+      const list = Array.isArray(objects) ? objects : [];
+      if (list[0] === wardrobeGroup) return wardrobeHits;
+      if (list.includes(wallSurface)) return wallHits;
+      return [];
+    },
+  };
+  const mouse = { x: 0, y: 0 };
+
+  return {
+    app,
+    state,
+    wallSurface,
+    wardrobeGroup,
+    raycaster,
+    mouse,
+    notify,
+    setWallHits(next: AnyRecord[]) {
+      wallHits = next;
+    },
+    setWardrobeHits(next: AnyRecord[]) {
+      wardrobeHits = next;
+    },
+    getPreview: () => preview,
+    getHideCount: () => hideCount,
+    getLastToast: () => lastToast,
+  };
+}
+
+test('room opening placement uses primary edit mode and wall-bound sketch measurements', () => {
+  const h = createHarness();
+  assert.equal(beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 }), true);
+  assert.equal(h.state.mode.primary, 'room_opening');
+  assert.equal(isRoomOpeningPlacementActive(h.app), true);
+  assert.match(h.getLastToast()?.text || '', /מצב עריכה/u);
+  assert.match(h.getLastToast()?.text || '', /חלון/u);
+
+  const windowHover = tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.equal(windowHover?.partLabel, null);
+  const windowMeasurements = h.getPreview()?.clearanceMeasurements || [];
+  assert.equal(windowMeasurements.length, 4);
+  assert.ok(windowMeasurements.every((entry: AnyRecord) => /ס"מ/u.test(entry.label)));
+  assert.ok(
+    windowMeasurements.every((entry: AnyRecord) => entry.surfacePlane == null || entry.surfacePlane === 'xy')
+  );
+
+  assert.equal(beginRoomOpeningPlacement(h.app, { kind: 'door', widthCm: 90, heightCm: 210 }), true);
+  assert.equal(h.state.mode.primary, 'room_opening');
+  assert.match(h.getLastToast()?.text || '', /דלת/u);
+  tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.equal((h.getPreview()?.clearanceMeasurements || []).length, 3);
+
+  Object.assign(h.wallSurface.userData, {
+    roomWallId: 'right',
+    roomWallAxis: 'z',
+    roomWallStartCoord: 0,
+    roomWallUsableLength: 3,
+    roomWallHeight: 2.8,
+    roomWallInteriorFaceCoord: 2,
+    roomWallInwardNormalX: -1,
+    roomWallInwardNormalZ: 0,
+  });
+  h.setWallHits([{ object: h.wallSurface, point: { x: 2, y: 1.4, z: 1.5 }, distance: 10 }]);
+  beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 });
+  tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  const sideMeasurements = h.getPreview()?.clearanceMeasurements || [];
+  assert.equal(sideMeasurements.length, 4);
+  assert.ok(sideMeasurements.every((entry: AnyRecord) => entry.surfacePlane === 'yz'));
+  assert.ok(sideMeasurements.every((entry: AnyRecord) => Math.abs(entry.z - 1.988) < 1e-9));
+});
+
+test('wardrobe occludes wall placement while a truly empty click exits edit mode', () => {
+  const h = createHarness();
+  beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 });
+  h.setWardrobeHits([
+    { object: { userData: {}, parent: h.wardrobeGroup }, point: { x: 0, y: 1, z: 1 }, distance: 5 },
+  ]);
+  const hidesBefore = h.getHideCount();
+  const blockedHover = tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.equal(blockedHover?.partLabel, null);
+  assert.ok(h.getHideCount() > hidesBefore);
+  assert.equal(h.getPreview(), null);
+
+  assert.equal(
+    tryHandleRoomOpeningPlacementClick({
+      App: h.app,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: h.raycaster,
+      mouse: h.mouse,
+    }),
+    true
+  );
+  assert.equal(h.state.config.roomArchitecture.openings.length, 0);
+  assert.equal(h.state.mode.primary, 'room_opening');
+
+  h.setWallHits([]);
+  h.setWardrobeHits([]);
+  assert.equal(
+    tryHandleRoomOpeningPlacementClick({
+      App: h.app,
+      ndcX: 0.8,
+      ndcY: -0.8,
+      raycaster: h.raycaster,
+      mouse: h.mouse,
+    }),
+    true
+  );
+  assert.equal(h.state.mode.primary, 'none');
+  assert.equal(isRoomOpeningPlacementActive(h.app), false);
+});
+
+test('external primary-mode exit clears the opening draft and preview immediately', () => {
+  const h = createHarness();
+  beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 });
+  tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.ok(h.getPreview());
+
+  h.state.mode.primary = 'none';
+  h.notify();
+  assert.equal(h.getPreview(), null);
+  assert.equal(isRoomOpeningPlacementActive(h.app), false);
+
+  h.state.mode.primary = 'room_opening';
+  h.notify();
+  assert.equal(isRoomOpeningPlacementActive(h.app), false);
+});

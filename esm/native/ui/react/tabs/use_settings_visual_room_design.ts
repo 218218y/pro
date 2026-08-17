@@ -7,6 +7,9 @@ import type {
   RoomOpeningKind,
 } from '../../../../../types';
 
+import { getModeId } from '../../../services/api.js';
+import { useModeSelector } from '../hooks.js';
+
 import type {
   FloorStyle,
   SettingsVisualFloorType,
@@ -27,6 +30,7 @@ export type SettingsVisualRoomDesignModel = {
   roomArchitecture: RoomArchitectureConfigLike;
   wardrobeWidthCm: number;
   wardrobeOffsetRightCm: number;
+  openingPlacementActive: boolean;
   setFloorType: (type: SettingsVisualFloorType) => void;
   pickFloorStyle: (style: FloorStyle) => void;
   pickWallColor: (value: string) => void;
@@ -68,6 +72,10 @@ export function useSettingsVisualRoomDesign(
     [floorType, roomData.floorStyles]
   );
 
+  const openingPlacementActive = useModeSelector(
+    mode => String(mode.primary || 'none') === (getModeId('ROOM_OPENING') || 'room_opening')
+  );
+
   const roomDesignController = useMemo(
     () =>
       createSettingsVisualRoomDesignController({
@@ -95,6 +103,7 @@ export function useSettingsVisualRoomDesign(
       roomArchitecture,
       wardrobeWidthCm,
       wardrobeOffsetRightCm,
+      openingPlacementActive,
       setFloorType: roomDesignController.setFloorType,
       pickFloorStyle: roomDesignController.pickFloorStyle,
       pickWallColor: roomDesignController.pickWallColor,
@@ -119,6 +128,7 @@ export function useSettingsVisualRoomDesign(
       roomArchitecture,
       wardrobeWidthCm,
       wardrobeOffsetRightCm,
+      openingPlacementActive,
       roomDesignController.setFloorType,
       roomDesignController.pickFloorStyle,
       roomDesignController.pickWallColor,
