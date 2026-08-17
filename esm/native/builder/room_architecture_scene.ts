@@ -70,7 +70,7 @@ function addArchitectureBox(args: {
       color: args.color,
       roughness: 0.96,
       metalness: 0,
-      ...(args.materialParams || {}),
+      ...args.materialParams,
     })
   );
   const pos = asRecord(mesh.position);
@@ -80,7 +80,7 @@ function addArchitectureBox(args: {
   mesh.name = args.name;
   mesh.castShadow = args.castShadow === true;
   mesh.receiveShadow = true;
-  mesh.userData = { __kind: args.kind, ignorePicking: true, ...(args.userData || {}) };
+  mesh.userData = { __kind: args.kind, ignorePicking: true, ...args.userData };
   if (typeof args.group.add === 'function') args.group.add(mesh);
 }
 
@@ -272,12 +272,13 @@ function addOpeningVisuals(args: {
     );
   };
 
-  addPart('frameStart', alongCenter - resolved.width / 2, frame, centerY, resolved.height + frame * 2);
-  addPart('frameEnd', alongCenter + resolved.width / 2, frame, centerY, resolved.height + frame * 2);
-  addPart('frameTop', alongCenter, resolved.width + frame * 2, top, frame);
+  const outerFrameWidth = resolved.width + frame * 2;
+  addPart('frameStart', alongCenter - resolved.width / 2 - frame / 2, frame, centerY, resolved.height);
+  addPart('frameEnd', alongCenter + resolved.width / 2 + frame / 2, frame, centerY, resolved.height);
+  addPart('frameTop', alongCenter, outerFrameWidth, top + frame / 2, frame);
 
   if (resolved.opening.kind === 'window') {
-    addPart('frameBottom', alongCenter, resolved.width + frame * 2, bottom, frame);
+    addPart('frameBottom', alongCenter, outerFrameWidth, bottom - frame / 2, frame);
     addPart(
       'glass',
       alongCenter,

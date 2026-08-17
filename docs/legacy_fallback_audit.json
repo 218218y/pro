@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-17T03:01:16.871Z",
+  "generatedAt": "2026-08-17T06:14:51.162Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 552,
+    "totalOccurrences": 554,
     "totalFiles": 215,
     "byCategory": {
-      "runtime-default": 59,
-      "domain-default": 398,
+      "runtime-default": 60,
+      "domain-default": 399,
       "error-message-default": 42,
       "framework-default": 3,
       "browser-adapter": 18,
@@ -1300,9 +1300,10 @@
         }
       },
       "esm/shared/room_architecture_shared.ts": {
-        "total": 3,
+        "total": 5,
         "categories": {
-          "runtime-default": 3
+          "domain-default": 1,
+          "runtime-default": 4
         }
       },
       "esm/test_imports.mjs": {
@@ -1485,6 +1486,14 @@
         }
       },
       {
+        "file": "esm/shared/room_architecture_shared.ts",
+        "total": 5,
+        "categories": {
+          "domain-default": 1,
+          "runtime-default": 4
+        }
+      },
+      {
         "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
         "total": 4,
         "categories": {
@@ -1522,13 +1531,6 @@
       },
       {
         "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
         "total": 4,
         "categories": {
           "domain-default": 4
@@ -2611,84 +2613,84 @@
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 114,
+      "line": 115,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-preview-outline-fallback: optional outline mutation must not block preview visibility"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 129,
+      "line": 130,
       "term": "fallbackX",
       "category": "domain-default",
       "text": "fallbackX: number,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 130,
+      "line": 131,
       "term": "fallbackY",
       "category": "domain-default",
       "text": "fallbackY: number,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 131,
+      "line": 132,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "fallbackW: number,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 132,
+      "line": 133,
       "term": "fallbackH",
       "category": "domain-default",
       "text": "fallbackH: number,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 133,
+      "line": 134,
       "term": "fallbackT",
       "category": "domain-default",
       "text": "fallbackT: number"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 143,
+      "line": 144,
       "term": "fallbackX",
       "category": "domain-default",
       "text": "x: overlayX != null ? overlayX : fallbackX,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 144,
+      "line": 145,
       "term": "fallbackY",
       "category": "domain-default",
       "text": "y: overlayY != null ? overlayY : fallbackY,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 146,
+      "line": 147,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "w: overlayW != null ? overlayW : fallbackW,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 147,
+      "line": 148,
       "term": "fallbackH",
       "category": "domain-default",
       "text": "h: overlayH != null ? overlayH : fallbackH,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 148,
+      "line": 149,
       "term": "fallbackT",
       "category": "domain-default",
       "text": "t: overlayT != null ? overlayT : fallbackT,"
     },
     {
       "file": "esm/native/builder/render_preview_sketch_pipeline_shared.ts",
-      "line": 167,
+      "line": 168,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-preview-outline-fallback: optional outline mutation must not block preview visibility"
@@ -5082,14 +5084,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 82,
+      "line": 91,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "} catch (fallbackErr) {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 83,
+      "line": 92,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"
@@ -5334,24 +5336,38 @@
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 51,
+      "line": 59,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function normalizeWallColor(value: unknown, fallback: string): string {"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 52,
+      "line": 60,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (typeof value !== 'string') return fallback;"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 54,
+      "line": 62,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;"
+    },
+    {
+      "file": "esm/shared/room_architecture_shared.ts",
+      "line": 95,
+      "term": "fallbackId",
+      "category": "runtime-default",
+      "text": "const fallbackId = `room-opening-${i + 1}`;"
+    },
+    {
+      "file": "esm/shared/room_architecture_shared.ts",
+      "line": 97,
+      "term": "fallbackId",
+      "category": "domain-default",
+      "text": "let id = rawId || fallbackId;"
     },
     {
       "file": "esm/test_imports.mjs",

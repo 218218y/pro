@@ -2529,7 +2529,7 @@
 
 #reactSidebarRoot .wp-r-room-opening-kind-actions > .btn.is-selected {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 1px var(--accent-color) inset;
+  box-shadow: var(--wp-r-shadow-control-selected-inset);
   color: var(--text-main);
   font-weight: 700;
 }

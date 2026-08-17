@@ -1,8 +1,6 @@
 import type { AppContainer, RoomWallId, UnknownRecord } from '../../../types';
 
-import { getCamera, getRoomGroup } from '../runtime/render_access.js';
-import { asRecord } from '../runtime/record.js';
-import { getThreeMaybe } from '../runtime/three_access.js';
+import { __wp_asRecord } from './canvas_picking_core_support.js';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import { raycastAtNdc } from './canvas_picking_engine.js';
 
@@ -27,9 +25,9 @@ function finiteNumber(value: unknown): number | null {
 }
 
 export function readRoomWallSurfacePickMeta(hitObject: unknown): RoomWallSurfacePickMeta | null {
-  let node = asRecord(hitObject);
+  let node = __wp_asRecord(hitObject);
   for (let depth = 0; node && depth < 8; depth += 1) {
-    const ud = asRecord(node.userData);
+    const ud = __wp_asRecord(node.userData);
     if (ud?.__wpRoomWallSurface === true) {
       const wall = ud.roomWallId;
       const axis = ud.roomWallAxis;
@@ -63,7 +61,7 @@ export function readRoomWallSurfacePickMeta(hitObject: unknown): RoomWallSurface
         };
       }
     }
-    node = asRecord(node.parent);
+    node = __wp_asRecord(node.parent);
   }
   return null;
 }
@@ -72,18 +70,18 @@ export function findRoomWallSurfaceMetaInScene(
   App: AppContainer,
   wall: RoomWallId
 ): RoomWallSurfacePickMeta | null {
-  const roomGroup = asRecord(getRoomGroup(App));
+  const roomGroup = __wp_asRecord(App.render.roomGroup);
   const getObjectByName = roomGroup?.getObjectByName;
   const architecture =
     typeof getObjectByName === 'function'
-      ? asRecord(Reflect.apply(getObjectByName, roomGroup, ['wpRoomArchitecture']))
+      ? __wp_asRecord(Reflect.apply(getObjectByName, roomGroup, ['wpRoomArchitecture']))
       : null;
   const stack = Array.isArray(architecture?.children) ? [...architecture.children] : [];
   while (stack.length) {
     const node = stack.pop();
     const meta = readRoomWallSurfacePickMeta(node);
     if (meta?.wall === wall) return meta;
-    const rec = asRecord(node);
+    const rec = __wp_asRecord(node);
     if (Array.isArray(rec?.children)) stack.push(...rec.children);
   }
   return null;
@@ -97,8 +95,8 @@ export function projectRoomWorldPointToLocal(
   const py = finiteNumber(point?.y);
   const pz = finiteNumber(point?.z);
   if (px == null || py == null || pz == null) return null;
-  const roomGroup = asRecord(getRoomGroup(App));
-  const THREE = asRecord(getThreeMaybe(App));
+  const roomGroup = __wp_asRecord(App.render.roomGroup);
+  const THREE = __wp_asRecord(App.deps.THREE);
   const Vector3Ctor = THREE?.Vector3 as
     (new (x?: number, y?: number, z?: number) => UnknownRecord) | undefined;
   if (!roomGroup || !Vector3Ctor) return { x: px, y: py, z: pz };
@@ -123,12 +121,12 @@ export function findRoomWallSurfaceHit(args: {
   mouse: MouseVectorLike;
   camera?: unknown;
 }): RoomWallSurfaceHit | null {
-  const camera = args.camera || getCamera(args.App);
-  const roomGroup = asRecord(getRoomGroup(args.App));
+  const camera = args.camera || args.App.render.camera;
+  const roomGroup = __wp_asRecord(args.App.render.roomGroup);
   const getObjectByName = roomGroup?.getObjectByName;
   const architecture =
     typeof getObjectByName === 'function'
-      ? asRecord(Reflect.apply(getObjectByName, roomGroup, ['wpRoomArchitecture']))
+      ? __wp_asRecord(Reflect.apply(getObjectByName, roomGroup, ['wpRoomArchitecture']))
       : null;
   const children = Array.isArray(architecture?.children) ? architecture.children : [];
   if (!camera || !children.length) return null;

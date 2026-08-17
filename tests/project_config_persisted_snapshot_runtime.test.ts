@@ -98,6 +98,17 @@ test('project config persisted snapshot readers share a canonical branch list an
           heightCm: 250,
           bottomOffsetCm: 20,
         },
+        openings: [
+          {
+            id: 'window-main',
+            kind: 'window',
+            wall: 'back',
+            widthCm: 120,
+            heightCm: 100,
+            offsetAlongCm: 85,
+            bottomOffsetCm: 90,
+          },
+        ],
         wallColor: '#E8E1D4',
         surfacesHidden: true,
       },
@@ -146,6 +157,17 @@ test('project config persisted snapshot readers share a canonical branch list an
       heightCm: 250,
       bottomOffsetCm: 20,
     },
+    openings: [
+      {
+        id: 'window-main',
+        kind: 'window',
+        wall: 'back',
+        widthCm: 120,
+        heightCm: 100,
+        offsetAlongCm: 85,
+        bottomOffsetCm: 90,
+      },
+    ],
     wallColor: '#e8e1d4',
     surfacesHidden: true,
   });

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-17T02:40:10.498Z",
+  "generatedAt": "2026-08-17T06:14:53.775Z",
   "totals": {
-    "tests": 1243,
-    "unitRunnerTests": 1234,
+    "tests": 1244,
+    "unitRunnerTests": 1235,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 397,
     "runtime-unit": 338,
-    "integration": 469,
+    "integration": 470,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -6857,6 +6857,10 @@
     {
       "file": "tests/sketch_free_box_internal_drawers_open_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/sketch_free_box_side_wall_orientation_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/sketch_free_boxes_attach_runtime.test.ts",

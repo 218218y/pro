@@ -29,11 +29,12 @@ function asMutableRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function rotateNewFreePlacementObjects(args: {
-  group: RenderInteriorSketchBoxesArgs['group'];
+  renderArgs: RenderInteriorSketchBoxesArgs;
   startIndex: number;
   state: ResolvedSketchBoxState;
 }): void {
-  const { group, startIndex, state } = args;
+  const { renderArgs, startIndex, state } = args;
+  const group = renderArgs.group;
   if (!state.isFreePlacement || Math.abs(state.rotationY) < 1e-8) return;
   const groupRecord = asMutableRecord(group);
   const children = Array.isArray(groupRecord?.children) ? groupRecord.children : [];
@@ -80,8 +81,14 @@ function rotateNewFreePlacementObjects(args: {
     if (typeof child.updateMatrixWorld === 'function') {
       try {
         Reflect.apply(child.updateMatrixWorld as (...args: unknown[]) => unknown, child, [true]);
-      } catch {
-        // Transform metadata is authoritative; matrix refresh can recover during the scene render.
+      } catch (error) {
+        renderArgs.renderOpsHandleCatch(
+          renderArgs.App,
+          'applyInteriorSketchExtras.rotateFreePlacement.updateMatrixWorld',
+          error,
+          { boxId: state.boxId, placementWall: state.placementWall },
+          { failFast: false, throttleMs: 5000 }
+        );
       }
     }
   }
@@ -192,7 +199,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
     });
 
     rotateNewFreePlacementObjects({
-      group: args.group,
+      renderArgs: args,
       startIndex: startChildCount,
       state: shellResult.state,
     });

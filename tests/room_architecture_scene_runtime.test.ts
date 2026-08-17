@@ -177,6 +177,45 @@ test('room openings resolve against their host wall and scene rendering cuts the
   assert.ok(architecture.getObjectByName('wpRoomOpening_win-back_glass'));
   assert.ok(architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf'));
 
+  const windowFrameStart = architecture.getObjectByName('wpRoomOpening_win-back_frameStart');
+  const windowFrameEnd = architecture.getObjectByName('wpRoomOpening_win-back_frameEnd');
+  const windowFrameTop = architecture.getObjectByName('wpRoomOpening_win-back_frameTop');
+  const windowFrameBottom = architecture.getObjectByName('wpRoomOpening_win-back_frameBottom');
+  assert.ok(windowFrameStart && windowFrameEnd && windowFrameTop && windowFrameBottom);
+  assertClose(
+    windowFrameStart.position.x - windowFrameStart.geometry.width / 2,
+    windowFrameTop.position.x - windowFrameTop.geometry.width / 2
+  );
+  assertClose(
+    windowFrameEnd.position.x + windowFrameEnd.geometry.width / 2,
+    windowFrameTop.position.x + windowFrameTop.geometry.width / 2
+  );
+  assertClose(
+    windowFrameStart.position.y + windowFrameStart.geometry.height / 2,
+    windowFrameTop.position.y - windowFrameTop.geometry.height / 2
+  );
+  assertClose(
+    windowFrameStart.position.y - windowFrameStart.geometry.height / 2,
+    windowFrameBottom.position.y + windowFrameBottom.geometry.height / 2
+  );
+
+  const doorFrameStart = architecture.getObjectByName('wpRoomOpening_door-right_frameStart');
+  const doorFrameEnd = architecture.getObjectByName('wpRoomOpening_door-right_frameEnd');
+  const doorFrameTop = architecture.getObjectByName('wpRoomOpening_door-right_frameTop');
+  assert.ok(doorFrameStart && doorFrameEnd && doorFrameTop);
+  assertClose(
+    doorFrameStart.position.z - doorFrameStart.geometry.depth / 2,
+    doorFrameTop.position.z - doorFrameTop.geometry.depth / 2
+  );
+  assertClose(
+    doorFrameEnd.position.z + doorFrameEnd.geometry.depth / 2,
+    doorFrameTop.position.z + doorFrameTop.geometry.depth / 2
+  );
+  assertClose(
+    doorFrameStart.position.y + doorFrameStart.geometry.height / 2,
+    doorFrameTop.position.y - doorFrameTop.geometry.height / 2
+  );
+
   const backPiece = architecture.children.find((child: any) => child.name.startsWith('wpBackWall_piece_'));
   const rightPiece = architecture.children.find((child: any) => child.name.startsWith('wpRightWall_piece_'));
   assert.equal(backPiece.userData.__wpRoomWallSurface, true);

@@ -82,6 +82,38 @@ test('projection box uses cached no-main workspace metrics before raw ui default
   });
 });
 
+test('projection box keeps cached no-main workspace authoritative even when incidental scene geometry exists', () => {
+  const wardrobeGroup = new THREE.Group();
+  const incidental = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2, 1.4));
+  incidental.position.set(0, 1, 0.35);
+  wardrobeGroup.add(incidental);
+
+  const App = createApp(
+    {},
+    {
+      noMainSketchWorkspaceMetrics: {
+        centerX: 0,
+        centerY: 1.2,
+        centerZ: -0.31,
+        width: 2.2,
+        height: 2.4,
+        depth: 0.56,
+      },
+    }
+  );
+  App.deps = { THREE };
+  App.render.wardrobeGroup = wardrobeGroup;
+
+  assert.deepEqual(__wp_measureWardrobeLocalBox(App), {
+    centerX: 0,
+    centerY: 1.2,
+    centerZ: -0.31,
+    width: 2.2,
+    height: 2.4,
+    depth: 0.56,
+  });
+});
+
 test('projection box honors parentOverride by measuring through rotated corner parent frames', () => {
   const wardrobeGroup = new THREE.Group();
   const cornerWingGroup = new THREE.Group();

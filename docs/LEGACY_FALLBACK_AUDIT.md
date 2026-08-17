@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-17T02:40:07.794Z
+Generated at: 2026-08-17T06:14:51.162Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **552**
+- Total categorized occurrences: **554**
 - Files with occurrences: **215**
 - Reviewed compatibility seams under growth ratchet: **21**
 - Category counts:
-  - `runtime-default`: **59**
-  - `domain-default`: **398**
+  - `runtime-default`: **60**
+  - `domain-default`: **399**
   - `error-message-default`: **42**
   - `framework-default`: **3**
   - `browser-adapter`: **18**
@@ -63,13 +63,13 @@ Generated at: 2026-08-17T02:40:07.794Z
 - `esm/native/services/canvas_picking_hover_targets_drawer.ts` - **5** (domain-default: 5)
 - `esm/native/ui/project_session_commands_shared.ts` - **5** (error-message-default: 5)
 - `esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts` - **5** (compat-boundary: 5)
+- `esm/shared/room_architecture_shared.ts` - **5** (domain-default: 1, runtime-default: 4)
 - `esm/native/builder/render_interior_sketch_layout_geometry.ts` - **4** (domain-default: 4)
 - `esm/native/builder/render_interior_sketch_support_shelves.ts` - **4** (domain-default: 4)
 - `esm/native/builder/visuals_and_contents_door_visual.ts` - **4** (domain-default: 4)
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **4** (runtime-default: 4)
 - `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
 - `esm/native/services/canvas_picking_door_layout_alignment.ts` - **4** (domain-default: 4)
-- `esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

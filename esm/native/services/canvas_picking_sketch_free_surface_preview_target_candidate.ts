@@ -82,16 +82,21 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   });
   const partPrefix = getSketchFreeBoxPartPrefix(hostModuleKey, readRecordValue(box, 'id') ?? index);
   const localHit = findSketchFreeBoxLocalHit({ App, intersects, localParent, partPrefix });
+  const placementWall = readRecordValue(box, 'placementWall');
+  const isSideWallPlacement = placementWall === 'left' || placementWall === 'right';
   const frontPlaneZ = geo.innerBackZ + geo.innerD;
   const frontPlaneHit =
-    typeof projectPointerToLocalZPlane === 'function' ? projectPointerToLocalZPlane(frontPlaneZ) : null;
+    !isSideWallPlacement && typeof projectPointerToLocalZPlane === 'function'
+      ? projectPointerToLocalZPlane(frontPlaneZ)
+      : null;
 
   // Door-profile visuals (raised frames, miter caps, grooves) are legitimate
   // descendants of the free box and therefore share the same `partPrefix`.
   // Using their raw raycast point for content placement makes the cursor snap to
   // the decorative rail that was hit instead of the box's usable front plane.
-  // Project to the canonical box front plane whenever the caller can provide it,
-  // while still using the concrete local hit to choose which free box wins.
+  // Back-wall boxes can project to the canonical box front plane when the caller can provide it.
+  // Side-wall boxes are physically rotated after rendering, so a wardrobe-local Z projection is the
+  // wrong plane; their remapped concrete hit is already in the box's canonical logical coordinates.
   const pointerHit = frontPlaneHit || localHit;
   const planeHitX = asFiniteNumberOrNaN(planeHit.x);
   const planeHitY = asFiniteNumberOrNaN(planeHit.y);

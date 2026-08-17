@@ -1,6 +1,5 @@
 import type {
   AppContainer,
-  RootStateLike,
   RoomArchitectureConfigLike,
   RoomOpeningKind,
   RoomWallId,
@@ -8,16 +7,11 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { patchProjectRoomArchitecture } from '../features/project_config/api.js';
-import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
-import { getCacheBag } from '../runtime/cache_access.js';
-import { getConfigActionFn } from '../runtime/actions_access_domains.js';
-import { getRoomGroup } from '../runtime/render_access.js';
-import { asRecord } from '../runtime/record.js';
-import { getRoomDesignServiceMaybe } from '../runtime/room_design_access.js';
-import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
-import { getThreeMaybe } from '../runtime/three_access.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
+import { __wp_cfg } from './canvas_picking_core_helpers.js';
+import { __wp_asRecord } from './canvas_picking_core_support.js';
+import { __getSketchPlacementPreviewFns } from './canvas_picking_hover_preview_modes_shared.js';
+import { reportServiceNonFatal } from './service_error_observability.js';
 import { findRoomWallSurfaceHit, type RoomWallSurfacePickMeta } from './room_wall_picking.js';
 
 const CACHE_DRAFT_KEY = '__wpRoomOpeningPlacementDraft';
@@ -26,6 +20,14 @@ const ROOM_OPENING_HOVER_KIND = 'room-opening-placement';
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
 const MIN_OPENING_SIZE_CM = 20;
 const PREVIEW_WALL_DEPTH_M = 0.205;
+
+function getRoomOpeningPlacementCache(App: AppContainer): UnknownRecord {
+  const current = __wp_asRecord(App.services.runtimeCache);
+  if (current) return current;
+  const next: UnknownRecord = Object.create(null) as UnknownRecord;
+  App.services.runtimeCache = next;
+  return next;
+}
 
 type RoomOpeningPlacementDraft = {
   kind: RoomOpeningKind;
@@ -59,7 +61,7 @@ function roundCm(value: number): number {
 }
 
 function readDraft(App: AppContainer): RoomOpeningPlacementDraft | null {
-  const raw = asRecord(getCacheBag(App)[CACHE_DRAFT_KEY]);
+  const raw = __wp_asRecord(getRoomOpeningPlacementCache(App)[CACHE_DRAFT_KEY]);
   if (!raw || (raw.kind !== 'window' && raw.kind !== 'door')) return null;
   const widthCm = finiteNumber(raw.widthCm);
   const heightCm = finiteNumber(raw.heightCm);
@@ -75,41 +77,63 @@ function readDraft(App: AppContainer): RoomOpeningPlacementDraft | null {
 }
 
 function writeDraft(App: AppContainer, draft: RoomOpeningPlacementDraft | null): void {
-  const cache = getCacheBag(App);
+  const cache = getRoomOpeningPlacementCache(App);
   cache[CACHE_DRAFT_KEY] = draft;
   if (!draft) cache[CACHE_HOVER_KEY] = null;
 }
 
-function readCurrentArchitecture(App: AppContainer): RoomArchitectureConfigLike {
-  const state = readStoreStateMaybe<RootStateLike>(App);
-  return patchProjectRoomArchitecture(state?.config?.roomArchitecture, {});
+function readCurrentArchitecture(App: AppContainer): RoomArchitectureConfigLike | null {
+  const current = __wp_cfg(App).roomArchitecture;
+  if (!current || typeof current !== 'object') return null;
+  return {
+    ...current,
+    openings: Array.isArray(current.openings) ? current.openings : [],
+  };
+}
+
+function withRoomOpenings(
+  current: RoomArchitectureConfigLike,
+  openings: RoomWallOpeningLike[]
+): RoomArchitectureConfigLike {
+  return { ...current, openings };
+}
+
+function reportRoomOpeningPlacementNonFatal(App: AppContainer, op: string, error: unknown): void {
+  reportServiceNonFatal(
+    App,
+    error,
+    { where: 'native/services/room_opening_placement', op },
+    { consoleOutput: false }
+  );
 }
 
 function refreshRoomArchitecture(App: AppContainer): void {
   try {
-    getRoomDesignServiceMaybe(App)?.updateRoomArchitecture?.();
-  } catch {
-    // The store write remains authoritative; scene refresh can recover on the next room/build refresh.
+    App.services.roomDesign?.updateRoomArchitecture?.();
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'refreshRoomArchitecture', error);
   }
 }
 
 function commitArchitecture(App: AppContainer, next: RoomArchitectureConfigLike, source: string): boolean {
-  const setScalar = getConfigActionFn<(key: string, valueOrFn: unknown, meta?: UnknownRecord) => unknown>(
-    App,
-    'setScalar'
-  );
+  const configActions = __wp_asRecord(App.actions?.config);
+  const setScalar = configActions?.setScalar;
   if (typeof setScalar !== 'function') return false;
-  setScalar('roomArchitecture', next, { source, immediate: false, noBuild: true });
+  Reflect.apply(setScalar, configActions, [
+    'roomArchitecture',
+    next,
+    { source, immediate: false, noBuild: true },
+  ]);
   refreshRoomArchitecture(App);
   return true;
 }
 
 function hidePlacementPreview(App: AppContainer): void {
   try {
-    const hide = getBuilderRenderOps(App)?.hideSketchPlacementPreview;
+    const hide = __getSketchPlacementPreviewFns(App).hidePreview;
     if (typeof hide === 'function') hide({ App, __reason: 'roomOpeningPlacement.hide' });
-  } catch {
-    // Preview teardown is best-effort and must never break the placement state.
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'hidePlacementPreview', error);
   }
 }
 
@@ -214,23 +238,23 @@ function resolveOpeningAtPoint(args: {
 
 function setPlacementPreview(App: AppContainer, hover: RoomOpeningHoverState): void {
   try {
-    const THREE = asRecord(getThreeMaybe(App));
+    const THREE = __wp_asRecord(App.deps.THREE);
     const BoxGeometryCtor = THREE?.BoxGeometry as
       (new (w?: number, h?: number, d?: number) => UnknownRecord) | undefined;
     const MeshCtor = THREE?.Mesh as
       (new (geometry: unknown, material?: unknown) => UnknownRecord) | undefined;
-    const roomGroup = asRecord(getRoomGroup(App));
-    const setPreview = getBuilderRenderOps(App)?.setSketchPlacementPreview;
+    const roomGroup = __wp_asRecord(App.render.roomGroup);
+    const setPreview = __getSketchPlacementPreviewFns(App).setPreview;
     if (!BoxGeometryCtor || !MeshCtor || !roomGroup || typeof setPreview !== 'function') return;
 
-    const cache = getCacheBag(App);
-    let mesh = asRecord(cache.__wpRoomOpeningPreviewMesh);
+    const cache = getRoomOpeningPlacementCache(App);
+    let mesh = __wp_asRecord(cache.__wpRoomOpeningPreviewMesh);
     if (!mesh) {
       mesh = new MeshCtor(new BoxGeometryCtor(1, 1, 1));
       cache.__wpRoomOpeningPreviewMesh = mesh;
     }
-    const position = asRecord(mesh.position);
-    const scale = asRecord(mesh.scale);
+    const position = __wp_asRecord(mesh.position);
+    const scale = __wp_asRecord(mesh.scale);
     if (typeof position?.set === 'function') position.set(hover.preview.x, hover.preview.y, hover.preview.z);
     if (typeof scale?.set === 'function') scale.set(hover.preview.w, hover.preview.h, hover.preview.d);
     // Object-box preview reads matrixWorld. Assigning the logical parent without inserting
@@ -248,8 +272,8 @@ function setPlacementPreview(App: AppContainer, hover: RoomOpeningHoverState): v
       op: hover.blockedReason ? 'blocked' : 'add',
       woodThick: 0.018,
     });
-  } catch {
-    // Placement remains functional even if the visual preview cannot be shown.
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'setPlacementPreview', error);
   }
 }
 
@@ -281,7 +305,7 @@ export function tryHandleRoomOpeningPlacementHover(args: {
   if (!draft) return null;
   const wallHit = findRoomWallSurfaceHit(args);
   if (!wallHit) {
-    getCacheBag(args.App)[CACHE_HOVER_KEY] = null;
+    getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = null;
     hidePlacementPreview(args.App);
     return {
       kind: ROOM_OPENING_HOVER_KIND,
@@ -291,6 +315,7 @@ export function tryHandleRoomOpeningPlacementHover(args: {
   }
 
   const current = readCurrentArchitecture(args.App);
+  if (!current) return null;
   const hover = resolveOpeningAtPoint({
     draft,
     surface: wallHit.surface,
@@ -298,7 +323,7 @@ export function tryHandleRoomOpeningPlacementHover(args: {
     existing: current.openings,
   });
   if (!hover) return null;
-  getCacheBag(args.App)[CACHE_HOVER_KEY] = hover as unknown as UnknownRecord;
+  getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = hover as unknown as UnknownRecord;
   setPlacementPreview(args.App, hover);
   return {
     kind: ROOM_OPENING_HOVER_KIND,
@@ -319,6 +344,7 @@ export function tryHandleRoomOpeningPlacementClick(args: {
   const wallHit = findRoomWallSurfaceHit(args);
   if (!wallHit) return true;
   const current = readCurrentArchitecture(args.App);
+  if (!current) return true;
   const hover = resolveOpeningAtPoint({
     draft,
     surface: wallHit.surface,
@@ -332,7 +358,7 @@ export function tryHandleRoomOpeningPlacementClick(args: {
     ...hover.opening,
     id: `room-opening-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
   };
-  const next = patchProjectRoomArchitecture(current, { openings: [...current.openings, opening] });
+  const next = withRoomOpenings(current, [...current.openings, opening]);
   if (commitArchitecture(args.App, next, 'canvas:roomOpening:add')) cancelRoomOpeningPlacement(args.App);
   return true;
 }
@@ -341,8 +367,9 @@ export function removeRoomOpening(App: AppContainer, openingId: string): boolean
   const id = String(openingId || '').trim();
   if (!id) return false;
   const current = readCurrentArchitecture(App);
+  if (!current) return false;
   const openings = current.openings.filter(opening => opening.id !== id);
   if (openings.length === current.openings.length) return false;
-  const next = patchProjectRoomArchitecture(current, { openings });
+  const next = withRoomOpenings(current, openings);
   return commitArchitecture(App, next, 'settings:roomOpening:remove');
 }
