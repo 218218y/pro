@@ -12,6 +12,7 @@ import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_p
 import { __wp_cfg, __wp_toast } from './canvas_picking_core_helpers.js';
 import {
   ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
+  shouldBlockFreeBoxDrawerBuildForRoomColumn,
   shouldBlockDrawerBuildForRoomColumn,
 } from './canvas_picking_drawer_mode_flow_shared.js';
 import { tryCommitSketchBoxAdornment } from './canvas_picking_sketch_box_content_commit_adornments.js';
@@ -46,16 +47,21 @@ function blockDrawerBoxContentIfRoomColumnCutsCell(
   if (args.hoverOp === 'remove' || !args.App || !isDrawerBoxContentKind(args.contentKind)) return false;
   const store = (args.App as unknown as { store?: { getState?: unknown; patch?: unknown } }).store;
   if (typeof store?.getState !== 'function' || typeof store.patch !== 'function') return false;
-  if (
-    !shouldBlockDrawerBuildForRoomColumn({
-      App: args.App,
-      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
-      moduleKey: args.hoverHost?.moduleKey ?? null,
-      isBottomStack: args.hoverHost?.isBottom === true,
-    })
-  ) {
-    return false;
-  }
+  const roomArchitecture = __wp_cfg(args.App).roomArchitecture;
+  const blocked =
+    args.box.freePlacement === true
+      ? shouldBlockFreeBoxDrawerBuildForRoomColumn({
+          App: args.App,
+          roomArchitecture,
+          box: args.box,
+        })
+      : shouldBlockDrawerBuildForRoomColumn({
+          App: args.App,
+          roomArchitecture,
+          moduleKey: args.hoverHost?.moduleKey ?? null,
+          isBottomStack: args.hoverHost?.isBottom === true,
+        });
+  if (!blocked) return false;
   __wp_toast(args.App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
   return true;
 }

@@ -884,6 +884,45 @@ test('sketch box external drawers render with custom per-drawer height', () => {
   assert.ok(Math.abs(ys[1] - ys[0] - 0.3) < 1e-6);
 });
 
+test('free-box external drawer fixed runners mount on the inner side faces, not the box exterior', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+  const boxWidth = 0.78;
+  const woodThick = 0.018;
+
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      woodThick,
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'boxRunnerInside',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.0,
+            heightM: 1.2,
+            widthM: boxWidth,
+            depthM: 0.5,
+            extDrawers: [{ id: 'edRunnerInside', yNormC: 0.5, count: 1 }],
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const fixedRight = collectSketchNodes(wardrobeGroup).find(
+    node => node.userData?.__wpDrawerRunnerRole === 'roller-fixed-web-right'
+  ) as FakeMesh | undefined;
+  assert.ok(fixedRight, 'right fixed runner web should render');
+
+  const innerRightX = boxWidth / 2 - woodThick;
+  const runnerOuterX = fixedRight.position.x + fixedRight.geometry.parameters.width / 2;
+  assert.ok(
+    Math.abs(runnerOuterX - innerRightX) < 1e-9,
+    `fixed runner should terminate at the inner side face (${innerRightX}), got ${runnerOuterX}`
+  );
+});
+
 test('sketch box shoe drawer keeps its sketch-controlled custom height', () => {
   const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
 

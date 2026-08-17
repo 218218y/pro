@@ -6,7 +6,7 @@ export function resolveSketchFreeBoxGeometry(args: {
   wardrobeDepth: number;
   backZ: number;
   centerX: number;
-  woodThick: number;
+  woodThick?: number | null;
   widthM?: number | null;
   depthM?: number | null;
 }): {

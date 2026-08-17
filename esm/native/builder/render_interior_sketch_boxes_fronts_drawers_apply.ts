@@ -73,7 +73,10 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
           fixedParent: fixedRunnerHardware,
           movingParent: drawerBoxNode,
           drawerWidthM: opPlan.boxW,
-          mountingWidthM: stack.outerW,
+          // The drawer front spans the box's outer face, but fixed runners mount
+          // to the INSIDE faces of the box side panels. Using outerW here puts
+          // the cabinet-mounted rail on the visible exterior of a free box.
+          mountingWidthM: stack.shelfInnerW,
           drawerHeightM: opPlan.boxH,
           drawerDepthM: opPlan.boxD,
           drawerBoxOffsetZM: opPlan.boxOffsetZ,

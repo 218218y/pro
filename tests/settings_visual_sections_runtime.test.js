@@ -170,10 +170,17 @@ test('[settings-visual-sections-runtime] lighting section renders presets and ca
   assert.doesNotMatch(disabledHtml, /עוצמת אור סביבתי/);
 });
 
-test('[settings-visual-sections-runtime] room color rows reserve inline gutter for selected swatch scaling', () => {
+test('[settings-visual-sections-runtime] room color rows reserve real scroll-content guards for selected swatch scaling', () => {
   const css = readFileSync(new URL('../css/react_styles.css', import.meta.url), 'utf8');
   const roomRowRule = css.match(/#reactSidebarRoot \.wp-r-room-color-picker-row \{[\s\S]*?\n\}/u)?.[0] || '';
-  assert.match(roomRowRule, /padding-inline:\s*5px;/u);
+  const guardRule =
+    css.match(
+      /#reactSidebarRoot \.wp-r-room-color-picker-row::before,[\s\S]*?#reactSidebarRoot \.wp-r-room-color-picker-row::after \{[\s\S]*?\n\}/u
+    )?.[0] || '';
+  assert.match(roomRowRule, /--wp-r-room-swatch-edge-guard:\s*8px;/u);
+  assert.match(roomRowRule, /padding-inline:\s*0;/u);
   assert.match(roomRowRule, /box-sizing:\s*border-box;/u);
-  assert.match(roomRowRule, /scroll-padding-inline:\s*5px;/u);
+  assert.match(roomRowRule, /scroll-padding-inline:\s*var\(--wp-r-room-swatch-edge-guard\);/u);
+  assert.match(guardRule, /content:\s*'';/u);
+  assert.match(guardRule, /flex:\s*0 0 var\(--wp-r-room-swatch-edge-guard\);/u);
 });

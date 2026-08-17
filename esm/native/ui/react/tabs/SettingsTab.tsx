@@ -147,9 +147,8 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
             </div>
           </Section>
 
-          <SettingsVisualDisplaySection model={visualController.displaySection} />
-
           <SettingsVisualRoomSection model={visualController.roomSection} />
+          <SettingsVisualDisplaySection model={visualController.displaySection} />
           <SettingsVisualLightingSection model={visualController.lightingSection} />
           <CloudSyncPanel />
           <SettingsBackupPanel />

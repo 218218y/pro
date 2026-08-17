@@ -5,6 +5,7 @@ import { tryHandleCanvasLayoutEditClick } from '../esm/native/services/canvas_pi
 import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_external.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 import { withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
 type Toast = { message: string; type: string | undefined };
@@ -248,4 +249,136 @@ test('drawer build is blocked with a clear toast when the room column cuts the t
   assert.equal(toasts.length, 1);
   assert.equal(toasts[0]?.type, 'error');
   assert.match(toasts[0]?.message || '', /העמוד חודר לתוך התא/);
+});
+
+test('free-box internal and external drawers are blocked when the room column cuts the free box itself', () => {
+  const box: Record<string, unknown> = {
+    id: 'free-column-box',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    widthM: 0.8,
+    heightM: 1,
+    depthM: 0.5,
+  };
+  const cfg: Record<string, unknown> = { sketchExtras: { boxes: [box] } };
+  const roomArchitecture = {
+    backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 115,
+      widthCm: 10,
+      depthCm: 25,
+      heightCm: 180,
+      bottomOffsetCm: 10,
+    },
+    surfacesHidden: false,
+  };
+  const { App, toasts } = createGuardApp({
+    config: { roomArchitecture, modulesConfiguration: [cfg] },
+    runtime: { wardrobeWidthM: 2.4, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    // Deliberately keep the host module clear of the center column. The guard
+    // must use the free-box envelope, not the host module's grid cell.
+    runtimeCache: {
+      internalGridMap: {
+        0: {
+          effectiveBottomY: 0.02,
+          effectiveTopY: 2.38,
+          innerW: 0.5,
+          internalCenterX: -0.9,
+          internalDepth: 0.55,
+          internalZ: 0,
+        },
+      },
+    },
+  });
+
+  commitSketchModuleBoxContent({
+    App,
+    cfg,
+    box,
+    boxId: 'free-column-box',
+    contentKind: 'drawers',
+    hoverMode: 'free-toggle',
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 0, isBottom: false },
+    hoverRec: withSketchBoxContentCommand(
+      {},
+      {
+        kind: 'internal-drawers',
+        boxId: 'free-column-box',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.4,
+        drawerHeightM: 0.18,
+        drawerH: 0.18,
+        stackH: 0.38,
+        drawerGap: 0.02,
+      }
+    ),
+  });
+
+  commitSketchModuleBoxContent({
+    App,
+    cfg,
+    box,
+    boxId: 'free-column-box',
+    contentKind: 'ext_drawers',
+    hoverMode: 'free-toggle',
+    hoverHost: { tool: 'sketch_ext_drawers:3', moduleKey: 0, isBottom: false },
+    hoverRec: withSketchBoxContentCommand(
+      {},
+      {
+        kind: 'sketch-external-drawers',
+        boxId: 'free-column-box',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.35,
+        drawerHeightM: 0.2,
+        drawerH: 0.2,
+        stackH: 0.6,
+        drawerCount: 3,
+      }
+    ),
+  });
+
+  commitSketchModuleBoxContent({
+    App,
+    cfg,
+    box,
+    boxId: 'free-column-box',
+    contentKind: 'regular_ext_drawers',
+    hoverMode: 'free-toggle',
+    hoverHost: { tool: 'sketch_regular_ext_drawers:3', moduleKey: 0, isBottom: false },
+    hoverRec: withSketchBoxContentCommand(
+      {},
+      {
+        kind: 'regular-external-drawers',
+        boxId: 'free-column-box',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.35,
+        drawerCount: 3,
+        hasShoeDrawer: false,
+        drawerHeightM: 0.2,
+      }
+    ),
+  });
+
+  assert.equal(box.drawers, undefined);
+  assert.equal(box.extDrawers, undefined);
+  assert.equal(toasts.length, 3);
+  assert.ok(toasts.every(toast => toast.type === 'error'));
+  assert.ok(toasts.every(toast => /העמוד חודר לתוך התא/.test(toast.message)));
 });

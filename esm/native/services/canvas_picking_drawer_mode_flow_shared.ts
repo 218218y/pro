@@ -13,6 +13,8 @@ import {
 } from '../runtime/drawer_visual_identity.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_box_geometry_box.js';
+import { __wp_measureWardrobeLocalBox } from './canvas_picking_projection_runtime_box.js';
 
 export type ModuleKey = number | 'corner' | `corner:${number}`;
 
@@ -103,6 +105,11 @@ type RoomColumnArchitectureLike = {
   surfacesHidden: boolean;
 };
 
+type RoomColumnCutContext = {
+  wardrobe: DrawerCollisionBox;
+  cutObstacle: DrawerCollisionBox;
+};
+
 function readFiniteNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : NaN;
   return Number.isFinite(n) ? n : null;
@@ -174,6 +181,66 @@ function readWardrobeDimensionM(
   return readPositiveNumber(readRuntimeScalarOrDefaultFromApp(App, key, null));
 }
 
+function resolveRoomColumnCutContext(
+  App: AppContainer,
+  roomArchitecture: unknown
+): RoomColumnCutContext | null {
+  const architecture = readRoomArchitecture(roomArchitecture);
+  if (!architecture) return null;
+
+  const wardrobeWidthM = readWardrobeDimensionM(App, 'wardrobeWidthM');
+  const wardrobeHeightM = readWardrobeDimensionM(App, 'wardrobeHeightM');
+  const wardrobeDepthM = readWardrobeDimensionM(App, 'wardrobeDepthM');
+  if (wardrobeWidthM == null || wardrobeHeightM == null || wardrobeDepthM == null) return null;
+
+  const wallLeftX = -wardrobeWidthM / 2 - architecture.backWall.wardrobeOffsetLeftCm / 100;
+  const wallFrontZ = -wardrobeDepthM / 2 - ROOM_COLUMN_BACK_WALL_GAP_M;
+  const obstacle: DrawerCollisionBox = {
+    minX: wallLeftX + architecture.column.offsetLeftCm / 100,
+    maxX: wallLeftX + (architecture.column.offsetLeftCm + architecture.column.widthCm) / 100,
+    minY: architecture.column.bottomOffsetCm / 100,
+    maxY: (architecture.column.bottomOffsetCm + architecture.column.heightCm) / 100,
+    minZ: wallFrontZ,
+    maxZ: wallFrontZ + architecture.column.depthCm / 100,
+  };
+  const wardrobe: DrawerCollisionBox = {
+    minX: -wardrobeWidthM / 2,
+    maxX: wardrobeWidthM / 2,
+    minY: 0,
+    maxY: wardrobeHeightM,
+    minZ: -wardrobeDepthM / 2,
+    maxZ: wardrobeDepthM / 2,
+  };
+  if (!boxesOverlap(obstacle, wardrobe)) return null;
+
+  return {
+    wardrobe,
+    cutObstacle: {
+      minX:
+        obstacle.minX > wardrobe.minX + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+          ? obstacle.minX - ROOM_COLUMN_LINER_THICKNESS_M
+          : obstacle.minX,
+      maxX:
+        obstacle.maxX < wardrobe.maxX - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+          ? obstacle.maxX + ROOM_COLUMN_LINER_THICKNESS_M
+          : obstacle.maxX,
+      minY:
+        obstacle.minY > wardrobe.minY + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+          ? obstacle.minY - ROOM_COLUMN_LINER_THICKNESS_M
+          : obstacle.minY,
+      maxY:
+        obstacle.maxY < wardrobe.maxY - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+          ? obstacle.maxY + ROOM_COLUMN_LINER_THICKNESS_M
+          : obstacle.maxY,
+      minZ: obstacle.minZ,
+      maxZ:
+        obstacle.maxZ < wardrobe.maxZ - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+          ? obstacle.maxZ + ROOM_COLUMN_LINER_THICKNESS_M
+          : obstacle.maxZ,
+    },
+  };
+}
+
 /**
  * Service-side build guard for drawers. It mirrors the physical room-column
  * collision envelope used by the builder without importing the builder layer.
@@ -185,13 +252,8 @@ export function shouldBlockDrawerBuildForRoomColumn(args: {
   isBottomStack: boolean;
 }): boolean {
   if (args.moduleKey == null) return false;
-  const architecture = readRoomArchitecture(args.roomArchitecture);
-  if (!architecture) return false;
-
-  const wardrobeWidthM = readWardrobeDimensionM(args.App, 'wardrobeWidthM');
-  const wardrobeHeightM = readWardrobeDimensionM(args.App, 'wardrobeHeightM');
-  const wardrobeDepthM = readWardrobeDimensionM(args.App, 'wardrobeDepthM');
-  if (wardrobeWidthM == null || wardrobeHeightM == null || wardrobeDepthM == null) return false;
+  const roomColumn = resolveRoomColumnCutContext(args.App, args.roomArchitecture);
+  if (!roomColumn) return false;
 
   const grid = getInternalGridMap(args.App, args.isBottomStack);
   const info = asInternalGridInfo(grid[String(args.moduleKey)] ?? grid[args.moduleKey as keyof typeof grid]);
@@ -213,49 +275,6 @@ export function shouldBlockDrawerBuildForRoomColumn(args: {
     return false;
   }
 
-  const wallLeftX = -wardrobeWidthM / 2 - architecture.backWall.wardrobeOffsetLeftCm / 100;
-  const wallFrontZ = -wardrobeDepthM / 2 - ROOM_COLUMN_BACK_WALL_GAP_M;
-  const obstacle: DrawerCollisionBox = {
-    minX: wallLeftX + architecture.column.offsetLeftCm / 100,
-    maxX: wallLeftX + (architecture.column.offsetLeftCm + architecture.column.widthCm) / 100,
-    minY: architecture.column.bottomOffsetCm / 100,
-    maxY: (architecture.column.bottomOffsetCm + architecture.column.heightCm) / 100,
-    minZ: wallFrontZ,
-    maxZ: wallFrontZ + architecture.column.depthCm / 100,
-  };
-  const wardrobe: DrawerCollisionBox = {
-    minX: -wardrobeWidthM / 2,
-    maxX: wardrobeWidthM / 2,
-    minY: 0,
-    maxY: wardrobeHeightM,
-    minZ: -wardrobeDepthM / 2,
-    maxZ: wardrobeDepthM / 2,
-  };
-  if (!boxesOverlap(obstacle, wardrobe)) return false;
-
-  const cutObstacle: DrawerCollisionBox = {
-    minX:
-      obstacle.minX > wardrobe.minX + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-        ? obstacle.minX - ROOM_COLUMN_LINER_THICKNESS_M
-        : obstacle.minX,
-    maxX:
-      obstacle.maxX < wardrobe.maxX - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-        ? obstacle.maxX + ROOM_COLUMN_LINER_THICKNESS_M
-        : obstacle.maxX,
-    minY:
-      obstacle.minY > wardrobe.minY + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-        ? obstacle.minY - ROOM_COLUMN_LINER_THICKNESS_M
-        : obstacle.minY,
-    maxY:
-      obstacle.maxY < wardrobe.maxY - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-        ? obstacle.maxY + ROOM_COLUMN_LINER_THICKNESS_M
-        : obstacle.maxY,
-    minZ: obstacle.minZ,
-    maxZ:
-      obstacle.maxZ < wardrobe.maxZ - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-        ? obstacle.maxZ + ROOM_COLUMN_LINER_THICKNESS_M
-        : obstacle.maxZ,
-  };
   const cell: DrawerCollisionBox = {
     minX: internalCenterX - innerW / 2,
     maxX: internalCenterX + innerW / 2,
@@ -264,5 +283,55 @@ export function shouldBlockDrawerBuildForRoomColumn(args: {
     minZ: internalZ - internalDepth / 2,
     maxZ: internalZ + internalDepth / 2,
   };
-  return boxesOverlap(cutObstacle, cell);
+  return boxesOverlap(roomColumn.cutObstacle, cell);
+}
+
+/**
+ * Free-placement sketch boxes are independent enclosures. Their host wardrobe
+ * cell may be clear even while the box itself is physically notched by the
+ * room column, so drawer eligibility must use the rendered free-box envelope.
+ */
+export function shouldBlockFreeBoxDrawerBuildForRoomColumn(args: {
+  App: AppContainer;
+  roomArchitecture: unknown;
+  box: unknown;
+}): boolean {
+  const roomColumn = resolveRoomColumnCutContext(args.App, args.roomArchitecture);
+  if (!roomColumn) return false;
+
+  const box = asRecord(args.box);
+  if (!box || box.freePlacement !== true) return false;
+  const centerX = readFiniteNumber(box.absX);
+  const centerY = readFiniteNumber(box.absY);
+  const heightM = readPositiveNumber(box.heightM);
+  if (centerX == null || centerY == null || heightM == null) return false;
+
+  const wardrobeBox = __wp_measureWardrobeLocalBox(args.App);
+  const measuredWidth = readPositiveNumber(wardrobeBox?.width);
+  const measuredDepth = readPositiveNumber(wardrobeBox?.depth);
+  const measuredCenterZ = readFiniteNumber(wardrobeBox?.centerZ);
+  const wardrobeWidth = measuredWidth ?? roomColumn.wardrobe.maxX - roomColumn.wardrobe.minX;
+  const wardrobeDepth = measuredDepth ?? roomColumn.wardrobe.maxZ - roomColumn.wardrobe.minZ;
+  const wardrobeBackZ =
+    measuredDepth != null && measuredCenterZ != null
+      ? measuredCenterZ - measuredDepth / 2
+      : roomColumn.wardrobe.minZ;
+
+  const geometry = resolveSketchFreeBoxGeometry({
+    wardrobeWidth,
+    wardrobeDepth,
+    backZ: wardrobeBackZ,
+    centerX,
+    widthM: readPositiveNumber(box.widthM),
+    depthM: readPositiveNumber(box.depthM),
+  });
+  const freeBox: DrawerCollisionBox = {
+    minX: geometry.centerX - geometry.outerW / 2,
+    maxX: geometry.centerX + geometry.outerW / 2,
+    minY: centerY - heightM / 2,
+    maxY: centerY + heightM / 2,
+    minZ: geometry.centerZ - geometry.outerD / 2,
+    maxZ: geometry.centerZ + geometry.outerD / 2,
+  };
+  return boxesOverlap(roomColumn.cutObstacle, freeBox);
 }
