@@ -230,6 +230,10 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       addOutlines(rod);
     }
     group.add(rod);
+    const sourceRodMinX = internalCenterX - sourceRodLength / 2;
+    const sourceRodMaxX = internalCenterX + sourceRodLength / 2;
+    const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
+    const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
     appendInteriorRodEndSupports({
       THREE,
       parent: group,
@@ -240,6 +244,8 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       rodLength: rodSpan.length,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
+      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : internalCenterX - innerW / 2,
+      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : internalCenterX + innerW / 2,
       addOutlines:
         typeof addOutlines === 'function' ? support => addOutlines(support as InteriorObjectLike) : null,
     });

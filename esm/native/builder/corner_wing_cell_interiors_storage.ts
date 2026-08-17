@@ -64,6 +64,8 @@ export function createCornerWingInteriorLayoutOps(
       rodLength: rodLen,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
+      negativeMountCoord: cellRuntime.cellInnerCenterX - cellRuntime.cellInnerW / 2,
+      positiveMountCoord: cellRuntime.cellInnerCenterX + cellRuntime.cellInnerW / 2,
       ownerPartId: `corner_rod_c${cellRuntime.cell.idx}`,
       addOutlines: runtime.addOutlines,
     });

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-17T13:26:44.941Z",
+  "generatedAt": "2026-08-17T15:47:19.265Z",
   "totals": {
-    "tests": 1245,
-    "unitRunnerTests": 1236,
+    "tests": 1246,
+    "unitRunnerTests": 1237,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 36,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 397,
-    "runtime-unit": 339,
+    "runtime-unit": 340,
     "integration": 470,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -4960,6 +4960,10 @@
     },
     {
       "file": "tests/interior_pipeline_shared_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/interior_rod_support_visuals_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

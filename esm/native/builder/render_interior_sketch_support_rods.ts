@@ -89,6 +89,8 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
     rodLength: len,
     rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
     axis: 'x',
+    negativeMountCoord: internalCenterX - innerW / 2,
+    positiveMountCoord: internalCenterX + innerW / 2,
     ownerPartId: 'all_rods',
   });
 }

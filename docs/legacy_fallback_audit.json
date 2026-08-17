@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T15:03:49.565Z",
+  "generatedAt": "2026-08-17T15:51:37.151Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 556,
@@ -2241,7 +2241,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
-      "line": 23,
+      "line": 24,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated rod materials"

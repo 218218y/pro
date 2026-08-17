@@ -7,11 +7,10 @@
 export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
   cupInnerClearanceM: 0.001,
   cupTubeRadiusM: 0.002,
-  mountProjectionM: 0.02,
+  cupProjectionMinM: 0.012,
+  defaultMountGapM: 0.02,
   mountPlateRadiusM: 0.024,
   mountPlateThicknessM: 0.003,
-  mountArmHeightM: 0.004,
-  mountArmDepthM: 0.01,
   cupRadialSegments: 8,
   cupTubularSegments: 24,
   mountPlateRadialSegments: 20,
@@ -22,6 +21,12 @@ type RodAxis = 'x' | 'z';
 type RodSupportObjectLike = Record<string, unknown> & {
   position?: { set?: (x: number, y: number, z: number) => unknown };
   rotation?: { x?: number; y?: number; z?: number };
+  scale?: {
+    x?: number;
+    y?: number;
+    z?: number;
+    set?: (x: number, y: number, z: number) => unknown;
+  };
   userData?: Record<string, unknown>;
 };
 
@@ -39,7 +44,6 @@ type RodSupportThreeLike = {
     height: number,
     radialSegments: number
   ) => unknown;
-  BoxGeometry?: new (width: number, height: number, depth: number) => unknown;
   Mesh?: new (geometry: unknown, material: unknown) => RodSupportObjectLike;
 };
 
@@ -57,6 +61,8 @@ export type AppendInteriorRodEndSupportsArgs = {
   rodLength: number;
   rodRadius: number;
   axis?: RodAxis;
+  negativeMountCoord?: number | null;
+  positiveMountCoord?: number | null;
   addOutlines?: ((obj: RodSupportObjectLike) => unknown) | null;
   ownerPartId?: string | null;
 };
@@ -81,6 +87,21 @@ function markRodSupportHardware(
 function setMeshPosition(mesh: RodSupportObjectLike, x: number, y: number, z: number): boolean {
   if (!mesh.position || typeof mesh.position.set !== 'function') return false;
   mesh.position.set(x, y, z);
+  return true;
+}
+
+function stretchCupAlongRodAxis(
+  mesh: RodSupportObjectLike,
+  projectionM: number,
+  tubeRadiusM: number
+): boolean {
+  if (!mesh.scale) return false;
+  const axialScale = projectionM / (2 * tubeRadiusM);
+  if (!(axialScale > 0) || !Number.isFinite(axialScale)) return false;
+  // TorusGeometry lies in local XY, so its local Z is the normal to the half-ring.
+  // Stretching only that local axis turns the half-ring into the projecting metal cup.
+  if (typeof mesh.scale.set === 'function') mesh.scale.set(1, 1, axialScale);
+  else mesh.scale.z = axialScale;
   return true;
 }
 
@@ -111,12 +132,19 @@ function addHardwareMesh(args: {
   args.parent.add?.(args.mesh);
 }
 
+function readMountCoord(value: number | null | undefined, rodEndCoord: number, sign: -1 | 1): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : rodEndCoord + sign * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.defaultMountGapM;
+}
+
 /**
  * Adds the two fixed end supports for a rendered hanging rod.
  *
- * The support is intentionally render-only hardware: a U-shaped half-ring cups
- * the rod from below, a short metal arm reaches the side surface, and a round
- * mounting plate visually fixes the assembly to that surface.
+ * Each support is intentionally render-only hardware. A round plate sits flush
+ * against the mounting surface and a U-shaped half-ring projects directly from
+ * that plate into the cabinet to cradle the rod. There is deliberately no
+ * intermediate arm between the plate and the cup.
  */
 export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsArgs): number {
   const { THREE, parent } = args;
@@ -126,8 +154,7 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
     typeof parent.add !== 'function' ||
     typeof THREE.Mesh !== 'function' ||
     typeof THREE.TorusGeometry !== 'function' ||
-    typeof THREE.CylinderGeometry !== 'function' ||
-    typeof THREE.BoxGeometry !== 'function'
+    typeof THREE.CylinderGeometry !== 'function'
   ) {
     return 0;
   }
@@ -150,13 +177,17 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
   const axis: RodAxis = args.axis === 'z' ? 'z' : 'x';
   const policy = INTERIOR_ROD_SUPPORT_VISUAL_POLICY;
   const cupMajorRadius = rodRadius + policy.cupInnerClearanceM + policy.cupTubeRadiusM;
-  const cupOuterRadius = cupMajorRadius + policy.cupTubeRadiusM;
   let added = 0;
 
   for (const sign of [-1, 1] as const) {
     const side = sign < 0 ? 'negative' : 'positive';
-    const endX = axis === 'x' ? centerX + sign * (rodLength / 2) : centerX;
-    const endZ = axis === 'z' ? centerZ + sign * (rodLength / 2) : centerZ;
+    const rodEndCoord = axis === 'x' ? centerX + sign * (rodLength / 2) : centerZ + sign * (rodLength / 2);
+    const requestedMountCoord = sign < 0 ? args.negativeMountCoord : args.positiveMountCoord;
+    const mountCoord = readMountCoord(requestedMountCoord, rodEndCoord, sign);
+    const mountGapM = Math.abs(mountCoord - rodEndCoord);
+    const cupProjectionM = Math.max(policy.cupProjectionMinM, mountGapM);
+    const inwardSign = -sign;
+    const cupCenterCoord = mountCoord + inwardSign * (cupProjectionM / 2);
 
     const cup = new THREE.Mesh(
       new THREE.TorusGeometry(
@@ -169,30 +200,12 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
       args.material
     );
     rotateCupOpenUpward(cup, axis);
-    if (setMeshPosition(cup, endX, centerY, endZ)) {
+    const cupReady = stretchCupAlongRodAxis(cup, cupProjectionM, policy.cupTubeRadiusM);
+    const cupX = axis === 'x' ? cupCenterCoord : centerX;
+    const cupZ = axis === 'z' ? cupCenterCoord : centerZ;
+    if (cupReady && setMeshPosition(cup, cupX, centerY, cupZ)) {
       addHardwareMesh({
         mesh: cup,
-        parent,
-        side,
-        ownerPartId: args.ownerPartId,
-        addOutlines: args.addOutlines,
-      });
-      added += 1;
-    }
-
-    const armLength = policy.mountProjectionM;
-    const arm = new THREE.Mesh(
-      axis === 'x'
-        ? new THREE.BoxGeometry(armLength, policy.mountArmHeightM, policy.mountArmDepthM)
-        : new THREE.BoxGeometry(policy.mountArmDepthM, policy.mountArmHeightM, armLength),
-      args.material
-    );
-    const armX = axis === 'x' ? endX + sign * (armLength / 2) : endX;
-    const armZ = axis === 'z' ? endZ + sign * (armLength / 2) : endZ;
-    const armY = centerY - cupOuterRadius - policy.mountArmHeightM / 2;
-    if (setMeshPosition(arm, armX, armY, armZ)) {
-      addHardwareMesh({
-        mesh: arm,
         parent,
         side,
         ownerPartId: args.ownerPartId,
@@ -211,9 +224,9 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
       args.material
     );
     rotatePlateToRodAxis(plate, axis);
-    const plateOffset = policy.mountProjectionM - policy.mountPlateThicknessM / 2;
-    const plateX = axis === 'x' ? endX + sign * plateOffset : endX;
-    const plateZ = axis === 'z' ? endZ + sign * plateOffset : endZ;
+    const plateCenterCoord = mountCoord + inwardSign * (policy.mountPlateThicknessM / 2);
+    const plateX = axis === 'x' ? plateCenterCoord : centerX;
+    const plateZ = axis === 'z' ? plateCenterCoord : centerZ;
     if (setMeshPosition(plate, plateX, centerY, plateZ)) {
       addHardwareMesh({
         mesh: plate,

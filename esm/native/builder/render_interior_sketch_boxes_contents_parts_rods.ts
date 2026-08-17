@@ -71,6 +71,11 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     rodMesh.userData.partId = rodPid;
     rodMesh.userData.__wpType = 'sketchRod';
     group.add?.(rodMesh);
+    const sourceRodMinX = sourceRodCenterX - sourceRodLen / 2;
+    const sourceRodMaxX = sourceRodCenterX + sourceRodLen / 2;
+    const mountSpanWidth = rodSegment ? rodSegment.width : geometry.innerW;
+    const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
+    const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
     appendInteriorRodEndSupports({
       THREE,
       parent: group,
@@ -81,6 +86,8 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       rodLength: rodSpan.length,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
+      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : sourceRodCenterX - mountSpanWidth / 2,
+      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : sourceRodCenterX + mountSpanWidth / 2,
       ownerPartId: rodPid,
     });
   }

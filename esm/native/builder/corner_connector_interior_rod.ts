@@ -82,6 +82,10 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     rod.userData = { partId };
     addOutlines(rod);
     cornerGroup.add(rod);
+    const rodAxis = Math.abs(dx) >= Math.abs(dz) ? 'x' : 'z';
+    const startCoord = rodAxis === 'x' ? ax : az;
+    const endCoord = rodAxis === 'x' ? bx : bz;
+    const supportInset = Math.max(0, endInset);
     appendInteriorRodEndSupports({
       THREE,
       parent: cornerGroup,
@@ -91,7 +95,9 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
       centerZ: (az + bz) / 2,
       rodLength: len,
       rodRadius: radius,
-      axis: Math.abs(dx) >= Math.abs(dz) ? 'x' : 'z',
+      axis: rodAxis,
+      negativeMountCoord: Math.min(startCoord, endCoord) - supportInset,
+      positiveMountCoord: Math.max(startCoord, endCoord) + supportInset,
       ownerPartId: partId,
       addOutlines,
     });
