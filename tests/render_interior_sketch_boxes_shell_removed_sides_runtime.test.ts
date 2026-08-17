@@ -210,3 +210,106 @@ test('free-placement sketch-box hex shell renders diagonal carcass panels and fu
   assert.equal(freeBoxDimensionEntries[0].depth, state.fullDepth);
   assertNearlyEqual(freeBoxDimensionEntries[0].centerZ, state.backZ + state.fullDepth / 2);
 });
+
+test('free-placement sketch box adds its own masonite liner around a room-column cut', () => {
+  const { renderArgs, state } = createFrameHarness();
+  const added: any[] = [];
+
+  class Group {
+    children: any[] = [];
+    userData: Record<string, unknown> = {};
+    add(obj: unknown) {
+      this.children.push(obj);
+    }
+  }
+  class BoxGeometry {
+    parameters: Record<string, number>;
+    constructor(width: number, height: number, depth: number) {
+      this.parameters = { width, height, depth };
+    }
+  }
+  class Material {
+    constructor(public params: Record<string, unknown>) {}
+  }
+  class Mesh {
+    userData: Record<string, unknown> = {};
+    castShadow = false;
+    receiveShadow = false;
+    position = {
+      set: (x: number, y: number, z: number) => {
+        this.userData.__position = { x, y, z };
+      },
+    };
+    constructor(
+      public geometry: unknown,
+      public material: unknown
+    ) {}
+  }
+
+  const roomState = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 200, heightCm: 300, wardrobeOffsetLeftCm: 0 },
+        leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 15,
+          widthCm: 10,
+          depthCm: 20,
+          heightCm: 300,
+          bottomOffsetCm: 0,
+        },
+        wallColor: '#f2efe6',
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    mode: {},
+    meta: {},
+  };
+  const App = { store: { getState: () => roomState, patch() {} } };
+
+  state.geometry.centerX = -0.2;
+  state.geometry.outerW = 0.8;
+  state.geometry.innerW = 0.8 - 2 * renderArgs.woodThick;
+  state.geometry.centerZ = 0;
+  state.geometry.outerD = 0.5;
+  state.geometry.innerBackZ = -0.25 + renderArgs.woodThick;
+  state.geometry.innerD = 0.5 - 2 * renderArgs.woodThick;
+
+  renderArgs.App = App;
+  renderArgs.group = { add: (obj: unknown) => added.push(obj) };
+  renderArgs.input.sketchMode = false;
+  renderArgs.input.addOutlines = () => {};
+  renderArgs.isFn = (value: unknown): value is (...args: unknown[]) => unknown => typeof value === 'function';
+  renderArgs.THREE = {
+    Group,
+    BoxGeometry,
+    Mesh,
+    MeshBasicMaterial: Material,
+    MeshStandardMaterial: Material,
+  };
+  renderArgs.masoniteMat = { id: 'masonite' };
+  renderArgs.whiteMat = { id: 'white' };
+
+  renderSketchBoxShellFrame({ state, renderArgs });
+
+  const linerGroup = added.find(entry => entry?.userData?.__kind === 'sketch_box_room_column_liner');
+  assert.ok(linerGroup, 'free box should own a liner group instead of leaving the column cut open');
+  assert.equal(linerGroup.userData.__wpRoomColumnLiner, true);
+  assert.equal(linerGroup.userData.__wpSketchBoxId, state.boxId);
+  const faces = linerGroup.children.map((mesh: any) => mesh.userData.__wpRoomColumnLinerFace).sort();
+  assert.deepEqual(faces, ['front', 'left', 'right']);
+
+  const front = linerGroup.children.find((mesh: any) => mesh.userData.__wpRoomColumnLinerFace === 'front');
+  assert.ok(front);
+  assert.equal(Array.isArray(front.material), true);
+  assert.equal(
+    front.material[4],
+    renderArgs.whiteMat,
+    'the visible inner face must use the white masonite side'
+  );
+  assert.equal(front.material[0], renderArgs.masoniteMat);
+});

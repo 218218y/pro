@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SettingsVisualDisplaySection } from '../esm/native/ui/react/tabs/settings_visual_sections_display.js';
@@ -167,4 +168,12 @@ test('[settings-visual-sections-runtime] lighting section renders presets and ca
   );
   assert.doesNotMatch(disabledHtml, /type="range"/);
   assert.doesNotMatch(disabledHtml, /עוצמת אור סביבתי/);
+});
+
+test('[settings-visual-sections-runtime] room color rows reserve inline gutter for selected swatch scaling', () => {
+  const css = readFileSync(new URL('../css/react_styles.css', import.meta.url), 'utf8');
+  const roomRowRule = css.match(/#reactSidebarRoot \.wp-r-room-color-picker-row \{[\s\S]*?\n\}/u)?.[0] || '';
+  assert.match(roomRowRule, /padding-inline:\s*5px;/u);
+  assert.match(roomRowRule, /box-sizing:\s*border-box;/u);
+  assert.match(roomRowRule, /scroll-padding-inline:\s*5px;/u);
 });

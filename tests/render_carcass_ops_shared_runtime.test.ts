@@ -213,3 +213,119 @@ test('typed cornice segment renderers preserve per-segment paint material overri
   assert.equal((waveSide as { material?: unknown } | null)?.material, 'paint:cornice_wave_side_left');
   assert.equal((profile as { material?: unknown } | null)?.material, 'paint:cornice_color');
 });
+
+test('room column trims only the colliding rear span of wave side cornice', async () => {
+  const { resolveCorniceSegmentsAgainstRoomColumnCut } =
+    await import('../esm/native/builder/render_carcass_ops_cornice_apply.ts');
+  const state = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 200, heightCm: 300, wardrobeOffsetLeftCm: 0 },
+        leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 0,
+          widthCm: 10,
+          depthCm: 20,
+          heightCm: 300,
+          bottomOffsetCm: 0,
+        },
+        wallColor: '#f2efe6',
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    mode: {},
+    meta: {},
+  };
+  const App = { store: { getState: () => state, patch() {} } } as any;
+  const leftSide = {
+    kind: 'cornice_wave_side',
+    partId: 'cornice_wave_side_left',
+    width: 0.04,
+    height: 0.1,
+    depth: 0.6,
+    x: -0.5,
+    y: 2.45,
+    z: 0,
+  } as const;
+  const rightSide = { ...leftSide, partId: 'cornice_wave_side_right', x: 0.5 } as const;
+
+  const leftAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(leftSide, { App });
+  const rightAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(rightSide, { App });
+
+  assert.equal(leftAdjusted.length, 1);
+  assert.equal(leftAdjusted[0]?.kind, 'cornice_wave_side');
+  if (leftAdjusted[0]?.kind === 'cornice_wave_side') {
+    assert.ok(leftAdjusted[0].depth < leftSide.depth);
+    assert.ok(leftAdjusted[0].z > leftSide.z);
+    assert.ok(leftAdjusted[0].z - leftAdjusted[0].depth / 2 > -0.11);
+  }
+  assert.deepEqual(rightAdjusted, [rightSide]);
+});
+
+test('room column trims profile side cornice without cutting the front fascia', async () => {
+  const { resolveCorniceSegmentsAgainstRoomColumnCut } =
+    await import('../esm/native/builder/render_carcass_ops_cornice_apply.ts');
+  const state = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 200, heightCm: 300, wardrobeOffsetLeftCm: 0 },
+        leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 0,
+          widthCm: 10,
+          depthCm: 20,
+          heightCm: 300,
+          bottomOffsetCm: 0,
+        },
+        wallColor: '#f2efe6',
+        surfacesHidden: false,
+      },
+    },
+    ui: {},
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    mode: {},
+    meta: {},
+  };
+  const App = { store: { getState: () => state, patch() {} } } as any;
+  const profileSide = {
+    kind: 'cornice_profile_seg',
+    partId: 'cornice_color',
+    length: 0.6,
+    profile: [
+      { x: -0.015, y: 0 },
+      { x: 0.06, y: 0.1 },
+    ],
+    rotationY: 0,
+    flipX: true,
+    miterEndTrim: 0.02,
+    x: -0.5,
+    y: 2.4006,
+    z: 0,
+  } as const;
+  const front = {
+    ...profileSide,
+    length: 1,
+    rotationY: -Math.PI / 2,
+    flipX: false,
+    x: 0,
+    z: 0.3,
+  } as const;
+
+  const adjustedSide = resolveCorniceSegmentsAgainstRoomColumnCut(profileSide, { App });
+  const adjustedFront = resolveCorniceSegmentsAgainstRoomColumnCut(front, { App });
+
+  assert.equal(adjustedSide.length, 1);
+  assert.equal(adjustedSide[0]?.kind, 'cornice_profile_seg');
+  if (adjustedSide[0]?.kind === 'cornice_profile_seg') {
+    assert.ok(adjustedSide[0].length < profileSide.length);
+    assert.ok(adjustedSide[0].z > profileSide.z);
+    assert.equal(adjustedSide[0].miterEndTrim, profileSide.miterEndTrim);
+  }
+  assert.deepEqual(adjustedFront, [front]);
+});

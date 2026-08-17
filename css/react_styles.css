@@ -2520,8 +2520,11 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  padding-inline: 5px;
+  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: hidden;
+  scroll-padding-inline: 5px;
   scrollbar-width: thin;
 }
 

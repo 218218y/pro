@@ -5,6 +5,12 @@ import type {
 } from './render_interior_sketch_boxes_shared.js';
 
 import { asMesh, toFiniteNumber } from './render_interior_sketch_shared.js';
+import {
+  axisAlignedBoxToCenterSize,
+  boxFromCenterSize,
+  resolveRoomColumnLinerPanelsForBox,
+} from './room_architecture_geometry.js';
+import type { RoomColumnLinerFace } from './room_architecture_geometry.js';
 import { applySketchBoxPickMeta } from './render_interior_sketch_pick_meta.js';
 import { renderSketchFreeBoxDimensions } from './render_interior_sketch_layout.js';
 import { renderSketchBoxCarcassAdornment } from './render_interior_sketch_visuals.js';
@@ -112,6 +118,103 @@ function addSketchBoxOutlines(renderArgs: RenderInteriorSketchBoxesArgs, mesh: u
   } catch {
     // Outlines are decorative and must not block the structural mesh.
   }
+}
+
+const ROOM_COLUMN_LINER_VISIBLE_FACE_INDEX: Readonly<Record<RoomColumnLinerFace, number>> = Object.freeze({
+  right: 0,
+  left: 1,
+  top: 2,
+  bottom: 3,
+  front: 4,
+});
+
+function resolveSketchBoxRoomColumnLinerMaterials(renderArgs: RenderInteriorSketchBoxesArgs): {
+  backing: unknown;
+  white: unknown;
+  sketchMode: boolean;
+} | null {
+  const THREE = renderArgs.THREE;
+  if (!THREE) return null;
+  const sketchMode = renderArgs.input.sketchMode === true;
+
+  if (sketchMode) {
+    const white = renderArgs.whiteMat || new THREE.MeshBasicMaterial({ color: 0xffffff });
+    return { backing: white, white, sketchMode };
+  }
+
+  const backing =
+    renderArgs.masoniteMat || new THREE.MeshStandardMaterial({ color: 0x6d4c41, roughness: 0.9 });
+  const white = renderArgs.whiteMat || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+  return { backing, white, sketchMode };
+}
+
+function renderFreeSketchBoxRoomColumnLiners(args: {
+  state: ResolvedSketchBoxState;
+  renderArgs: RenderInteriorSketchBoxesArgs;
+}): void {
+  const { state, renderArgs } = args;
+  const THREE = renderArgs.THREE;
+  if (!state.isFreePlacement || !THREE) return;
+
+  const panels = resolveRoomColumnLinerPanelsForBox(
+    renderArgs.App,
+    boxFromCenterSize({
+      x: state.geometry.centerX,
+      y: state.centerY,
+      z: state.geometry.centerZ,
+      width: state.geometry.outerW,
+      height: state.height,
+      depth: state.geometry.outerD,
+    })
+  );
+  if (!panels.length) return;
+
+  const materials = resolveSketchBoxRoomColumnLinerMaterials(renderArgs);
+  if (!materials) return;
+
+  const linerGroup = new THREE.Group();
+  linerGroup.userData = {
+    __kind: 'sketch_box_room_column_liner',
+    __wpRoomColumnLiner: true,
+    __wpSketchBoxId: state.boxId,
+    __wpSketchFreePlacement: true,
+    ignorePicking: true,
+  };
+
+  for (let i = 0; i < panels.length; i += 1) {
+    const panel = panels[i];
+    const piece = axisAlignedBoxToCenterSize(panel.box);
+    const material = materials.sketchMode
+      ? materials.white
+      : (() => {
+          const faceMaterials = [
+            materials.backing,
+            materials.backing,
+            materials.backing,
+            materials.backing,
+            materials.backing,
+            materials.backing,
+          ];
+          faceMaterials[ROOM_COLUMN_LINER_VISIBLE_FACE_INDEX[panel.face]] = materials.white;
+          return faceMaterials;
+        })();
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
+      material
+    ) as InteriorMeshLike;
+    mesh.position?.set?.(piece.x, piece.y, piece.z);
+    mesh.userData = {
+      ...linerGroup.userData,
+      __wpRoomColumnLinerFace: panel.face,
+    };
+    if (!materials.sketchMode) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    }
+    linerGroup.add?.(mesh);
+  }
+
+  renderArgs.group.add?.(linerGroup);
 }
 
 function createSketchBoxHexHorizontalCapMesh(args: {
@@ -352,6 +455,7 @@ export function renderSketchBoxShellFrame(args: {
   applySketchBoxPickMeta(boxRightMesh, rightSidePartId || boxPid, moduleKeyStr, boxId);
   applySketchBoxPickMeta(boxBackMesh, boxPid, moduleKeyStr, boxId);
   addSketchBoxHexDiagonalPanels({ state, renderArgs });
+  renderFreeSketchBoxRoomColumnLiners({ state, renderArgs });
 
   if (THREE) {
     renderSketchBoxCarcassAdornment({

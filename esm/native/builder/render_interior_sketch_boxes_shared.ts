@@ -60,6 +60,8 @@ export type RenderInteriorSketchBoxesArgs = {
   currentShelfMat: unknown;
   currentBraceShelfMat?: unknown;
   bodyMat: unknown;
+  masoniteMat?: unknown;
+  whiteMat?: unknown;
   getPartMaterial?: InteriorOpsCallable;
   getPartColorValue?: InteriorOpsCallable;
   createDoorVisual?: InteriorOpsCallable | null;

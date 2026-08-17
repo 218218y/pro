@@ -16,6 +16,7 @@ export function renderInteriorSketchOwnedBoxes(args: {
 }): RenderSketchBoxAbsEntry[] {
   const { owner, resolved, resolvedThree, placementPlan } = args;
   const placementSupport = placementPlan.placementSupport;
+  const materialCache = owner.matCache(resolved.App);
 
   return renderInteriorSketchBoxes({
     App: resolved.App,
@@ -37,6 +38,8 @@ export function renderInteriorSketchOwnedBoxes(args: {
     currentShelfMat: resolved.currentShelfMat,
     currentBraceShelfMat: resolved.currentBraceShelfMat,
     bodyMat: resolved.bodyMat,
+    masoniteMat: materialCache.masoniteMat,
+    whiteMat: resolved.input.whiteMat || materialCache.whiteMat,
     getPartMaterial: resolved.getPartMaterial,
     getPartColorValue: resolved.getPartColorValue,
     createDoorVisual: resolved.createDoorVisual,

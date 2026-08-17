@@ -317,6 +317,38 @@ function buildRoomColumnLinerPanels(args: {
   return panels;
 }
 
+function buildRoomColumnCutObstacle(args: {
+  obstacle: AxisAlignedBox;
+  intrusion: AxisAlignedBox;
+  enclosureBox: AxisAlignedBox;
+}): AxisAlignedBox {
+  const { obstacle, intrusion, enclosureBox } = args;
+  const liner = ROOM_COLUMN_LINER_THICKNESS_M;
+  return {
+    minX:
+      intrusion.minX > enclosureBox.minX + ROOM_ARCHITECTURE_EPSILON_M
+        ? obstacle.minX - liner
+        : obstacle.minX,
+    maxX:
+      intrusion.maxX < enclosureBox.maxX - ROOM_ARCHITECTURE_EPSILON_M
+        ? obstacle.maxX + liner
+        : obstacle.maxX,
+    minY:
+      intrusion.minY > enclosureBox.minY + ROOM_ARCHITECTURE_EPSILON_M
+        ? obstacle.minY - liner
+        : obstacle.minY,
+    maxY:
+      intrusion.maxY < enclosureBox.maxY - ROOM_ARCHITECTURE_EPSILON_M
+        ? obstacle.maxY + liner
+        : obstacle.maxY,
+    minZ: obstacle.minZ,
+    maxZ:
+      intrusion.maxZ < enclosureBox.maxZ - ROOM_ARCHITECTURE_EPSILON_M
+        ? obstacle.maxZ + liner
+        : obstacle.maxZ,
+  };
+}
+
 export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColumnAdjustmentGeometry | null {
   const geometry = resolveRoomArchitectureGeometry(App);
   const obstacle =
@@ -327,20 +359,11 @@ export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColu
   const intrusion = intersectAxisAlignedBoxes(obstacle, wardrobeBox);
   if (!intrusion) return null;
 
-  const liner = ROOM_COLUMN_LINER_THICKNESS_M;
-  const cutObstacle: AxisAlignedBox = {
-    minX:
-      intrusion.minX > wardrobeBox.minX + ROOM_ARCHITECTURE_EPSILON_M ? obstacle.minX - liner : obstacle.minX,
-    maxX:
-      intrusion.maxX < wardrobeBox.maxX - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxX + liner : obstacle.maxX,
-    minY:
-      intrusion.minY > wardrobeBox.minY + ROOM_ARCHITECTURE_EPSILON_M ? obstacle.minY - liner : obstacle.minY,
-    maxY:
-      intrusion.maxY < wardrobeBox.maxY - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxY + liner : obstacle.maxY,
-    minZ: obstacle.minZ,
-    maxZ:
-      intrusion.maxZ < wardrobeBox.maxZ - ROOM_ARCHITECTURE_EPSILON_M ? obstacle.maxZ + liner : obstacle.maxZ,
-  };
+  const cutObstacle = buildRoomColumnCutObstacle({
+    obstacle,
+    intrusion,
+    enclosureBox: wardrobeBox,
+  });
   const cutIntrusion = intersectAxisAlignedBoxes(cutObstacle, wardrobeBox);
   if (!cutIntrusion) return null;
 
@@ -356,6 +379,23 @@ export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColu
 
 export function resolveActiveRoomColumnCutObstacle(App: AppContainer): AxisAlignedBox | null {
   return resolveRoomColumnAdjustmentGeometry(App)?.cutObstacle || null;
+}
+
+export function resolveRoomColumnLinerPanelsForBox(
+  App: AppContainer,
+  enclosureBox: AxisAlignedBox
+): RoomColumnLinerPanel[] {
+  const adjustment = resolveRoomColumnAdjustmentGeometry(App);
+  if (!adjustment) return [];
+
+  // Free-box boards are cut by createBoard() with this same canonical cut obstacle.
+  // Derive the liner from that exact cut so the liner can never overlap uncut wood
+  // or leave a gap because a second enclosure-relative obstacle was calculated here.
+  const intrusion = intersectAxisAlignedBoxes(adjustment.obstacle, enclosureBox);
+  const cutIntrusion = intersectAxisAlignedBoxes(adjustment.cutObstacle, enclosureBox);
+  if (!intrusion || !cutIntrusion) return [];
+
+  return buildRoomColumnLinerPanels({ intrusion, cutIntrusion });
 }
 
 export function intersectsActiveRoomColumnCutObstacle(App: AppContainer, box: AxisAlignedBox): boolean {
