@@ -240,6 +240,19 @@ export function createSketchBoxExternalDrawerOpPlan(
     flushTargetMinY: stack.faceFlushTargetMinY,
     flushTargetMaxY: stack.faceFlushTargetMaxY,
   });
+  const rawBoxW = Math.max(
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
+    readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW
+  );
+  // External drawer fronts may span the shell's outer face, but the moving
+  // drawer box must still fit between the shell's inner mounting faces. Keep
+  // the ordinary geometry unchanged when it already fits; only clamp malformed
+  // or inconsistent spans so runner hardware is not silently dropped and
+  // the drawer box cannot pierce through a sketch-box side panel.
+  const boxW =
+    Number.isFinite(stack.shelfInnerW) && stack.shelfInnerW > 0
+      ? Math.min(rawBoxW, stack.shelfInnerW)
+      : rawBoxW;
 
   return {
     op,
@@ -269,10 +282,7 @@ export function createSketchBoxExternalDrawerOpPlan(
       DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
       readRenderOpNumber(op.visualT) ?? context.visualT
     ),
-    boxW: Math.max(
-      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
-      readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW
-    ),
+    boxW,
     boxH: Math.max(
       DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
       readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH

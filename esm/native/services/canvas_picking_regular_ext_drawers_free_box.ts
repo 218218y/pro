@@ -38,7 +38,7 @@ import {
   __wp_resolveSketchBoxVerticalSegments,
   __wp_writeSketchHover,
 } from './canvas_picking_local_helpers.js';
-import { __wp_cfg, __wp_toModuleKey, __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_toModuleKey, __wp_toast } from './canvas_picking_core_helpers.js';
 import {
   applyShoeDrawerBaseAutoNoneIfNeeded,
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
@@ -47,10 +47,6 @@ import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_fr
 import { resolveSketchBoxStackPreviewContext } from './canvas_picking_sketch_box_stack_preview_context.js';
 import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
-import {
-  ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
-  shouldBlockDrawerBuildForRoomColumn,
-} from './canvas_picking_drawer_mode_flow_shared.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import type {
   ExtDrawersHoverPreviewArgs,
@@ -370,19 +366,6 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
   )
     return false;
   const command = decoded.value.command;
-  if (
-    command.op === 'add' &&
-    shouldBlockDrawerBuildForRoomColumn({
-      App,
-      roomArchitecture: __wp_cfg(App).roomArchitecture,
-      moduleKey: host.moduleKey,
-      isBottomStack: host.isBottom,
-    })
-  ) {
-    __wp_toast(App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
-    __wp_clearSketchHover(App);
-    return true;
-  }
   const addingShoeDrawer = command.op === 'add' && command.hasShoeDrawer;
   const removingShoeDrawer = command.op === 'remove' && !command.hasShoeDrawer;
   const commit = commitSketchFreePlacementHoverRecord({
@@ -394,6 +377,10 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
     contentSource: 'extDrawers.freeBoxRegular',
   });
   if (!commit.committed) return false;
+  if (commit.blockedByRoomColumn) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
   if (addingShoeDrawer) {
     applyShoeDrawerBaseAutoNoneIfNeeded(App, 'extDrawers.freeBoxRegular.shoe:autoBaseNone');
   } else if (removingShoeDrawer) {

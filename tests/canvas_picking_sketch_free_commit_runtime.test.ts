@@ -517,6 +517,93 @@ test('sketch-free stack tools commit existing vertical-content removal hovers be
   assert.deepEqual(boxes[0]?.shelves, []);
 });
 
+test('sketch-free drawer commit consumes a room-column collision without mutating the free box', () => {
+  const box: Record<string, unknown> = {
+    id: 'free-column-blocked',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    widthM: 0.8,
+    depthM: 0.5,
+    heightM: 1,
+  };
+  const cfg: Record<string, unknown> = { sketchExtras: { boxes: [box] } };
+  const toasts: Array<{ message: string; type?: string }> = [];
+  const state = {
+    config: {
+      roomArchitecture: {
+        backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+        column: {
+          enabled: true,
+          offsetLeftCm: 115,
+          widthCm: 10,
+          depthCm: 25,
+          heightCm: 180,
+          bottomOffsetCm: 10,
+        },
+        surfacesHidden: false,
+      },
+    },
+    ui: { raw: { width: 240, height: 240, depth: 60 } },
+    runtime: { wardrobeWidthM: null, wardrobeHeightM: null, wardrobeDepthM: null },
+    mode: {},
+    meta: {},
+  };
+  const App = {
+    store: {
+      getState: () => state,
+      patch: () => undefined,
+    },
+    actions: {
+      modules: {
+        patchForStack: (
+          _side: string,
+          _moduleKey: unknown,
+          patcher: (cfgRef: Record<string, unknown>) => void
+        ) => patcher(cfg),
+      },
+    },
+    services: {
+      uiFeedback: {
+        toast(message: string, type?: string) {
+          toasts.push({ message, type });
+        },
+      },
+    },
+  } as never;
+
+  const result = commitSketchFreePlacementHoverRecord({
+    App,
+    host: { moduleKey: 2, isBottom: false },
+    hoverRec: withSketchBoxContentCommand(
+      { tool: 'sketch_int_drawers', moduleKey: 2 },
+      {
+        kind: 'internal-drawers',
+        boxId: 'free-column-blocked',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.4,
+        drawerHeightM: 0.18,
+        drawerH: 0.18,
+        stackH: 0.38,
+        drawerGap: 0.02,
+      }
+    ) as never,
+    freeBoxContentKind: 'drawers',
+    floorY: 0,
+  });
+
+  assert.deepEqual(result, { committed: true, nextHover: null, blockedByRoomColumn: true });
+  assert.equal(box.drawers, undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /העמוד חודר לתוך התא/);
+});
+
 test('sketch-free regular external drawers can add a shoe drawer without falling back to module drawers', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

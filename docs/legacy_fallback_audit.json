@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-16T18:03:23.683Z",
+  "generatedAt": "2026-08-17T02:40:07.794Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 550,
-    "totalFiles": 214,
+    "totalOccurrences": 552,
+    "totalFiles": 215,
     "byCategory": {
       "runtime-default": 59,
-      "domain-default": 396,
+      "domain-default": 398,
       "error-message-default": 42,
       "framework-default": 3,
       "browser-adapter": 18,
@@ -729,6 +729,12 @@
         }
       },
       "esm/native/services/canvas_picking_door_trim_targets.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
+        }
+      },
+      "esm/native/services/canvas_picking_drawer_mode_flow_shared.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
@@ -2297,35 +2303,35 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "line": 274,
+      "line": 245,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "line": 278,
+      "line": 288,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "line": 282,
+      "line": 292,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "readRenderOpNumber(op.boxD) ?? fallbackGeom.boxD"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "line": 284,
+      "line": 294,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "boxOffsetZ: readRenderOpNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
-      "line": 288,
+      "line": 298,
       "term": "fallbackGeom",
       "category": "domain-default",
       "text": "connectorZ: readRenderOpNumber(op.connectZ) ?? fallbackGeom.connectZ,"
@@ -3687,6 +3693,20 @@
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "if (fallbackPartId && group) return { partId: fallbackPartId, group };"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_mode_flow_shared.ts",
+      "line": 186,
+      "term": "fallbackM",
+      "category": "domain-default",
+      "text": "fallbackM: number"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_drawer_mode_flow_shared.ts",
+      "line": 203,
+      "term": "fallbackM",
+      "category": "domain-default",
+      "text": "return fallbackM > 0 ? fallbackM : null;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts",

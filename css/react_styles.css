@@ -2516,7 +2516,7 @@
   margin-inline-end: 6px;
 }
 
-#reactSidebarRoot .wp-r-room-color-picker-row {
+#reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row {
   --wp-r-room-swatch-edge-guard: 8px;
   flex-wrap: nowrap;
   align-items: center;
@@ -2530,21 +2530,21 @@
 }
 
 /*
- * Selected room-color swatches grow to 118%. A transformed first/last flex item
+ * Selected room-color swatches grow to 120%. A transformed first/last flex item
  * can otherwise be clipped by the scrollport even when the row itself has
  * padding (most visible on the RTL/right edge). Real flex spacers become part
  * of the scrollable content, so both edge swatches keep enough breathing room
  * while the custom-color control remains on the same row.
  */
-#reactSidebarRoot .wp-r-room-color-picker-row::before,
-#reactSidebarRoot .wp-r-room-color-picker-row::after {
+#reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row::before,
+#reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row::after {
   content: '';
   flex: 0 0 var(--wp-r-room-swatch-edge-guard);
   width: var(--wp-r-room-swatch-edge-guard);
   height: 1px;
 }
 
-#reactSidebarRoot .wp-r-room-color-picker-row .color-dot-swatch {
+#reactSidebarRoot .control-section .color-picker-row.wp-r-room-color-picker-row .color-dot-swatch {
   flex: 0 0 auto;
 }
 

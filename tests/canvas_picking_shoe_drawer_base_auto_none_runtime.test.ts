@@ -194,6 +194,66 @@ test('free-box regular external shoe drawer commit also auto-selects base none',
   assert.equal(boxes[0]?.regularExtDrawers?.[0]?.hasShoeDrawer, true);
 });
 
+test('free-box shoe drawer blocked by a room column does not auto-change the cabinet base', () => {
+  const { App, state, calls } = createAppHarness('plinth');
+  state.ui.raw = { width: 240, height: 240, depth: 60 };
+  state.runtime = { wardrobeWidthM: null, wardrobeHeightM: null, wardrobeDepthM: null };
+  state.config.roomArchitecture = {
+    backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 115,
+      widthCm: 10,
+      depthCm: 25,
+      heightCm: 180,
+      bottomOffsetCm: 10,
+    },
+    surfacesHidden: false,
+  };
+  state.config.sketchExtras = {
+    boxes: [
+      {
+        id: 'free-shoe-column-box',
+        freePlacement: true,
+        absX: 0,
+        absY: 1,
+        widthM: 0.8,
+        depthM: 0.5,
+        heightM: 1,
+        regularExtDrawers: [],
+      },
+    ],
+  };
+  App.render.cache.__lastSketchHover = withSketchBoxContentCommand(
+    { ts: Date.now(), tool: 'ext_drawers_regular_free_box', hostModuleKey: 2, hostIsBottom: false },
+    {
+      kind: 'regular-external-drawers',
+      boxId: 'free-shoe-column-box',
+      freePlacement: true,
+      blockedReason: null,
+      op: 'add',
+      removeId: null,
+      contentXNorm: 0.5,
+      boxYNorm: 0.5,
+      boxBaseYNorm: 0,
+      drawerCount: 0,
+      hasShoeDrawer: true,
+      drawerHeightM: 0.2,
+    }
+  );
+
+  const handled = tryCommitSketchBoxRegularExternalDrawersHover(App);
+
+  assert.equal(handled, true);
+  assert.equal(state.ui.baseType, 'plinth');
+  assert.equal(calls.uiPatches.length, 0);
+  assert.equal(calls.toasts.length, 1);
+  assert.equal(calls.toasts[0]?.type, 'error');
+  assert.match(calls.toasts[0]?.message || '', /העמוד חודר לתוך התא/);
+  const boxes = (state.config.sketchExtras.boxes || []) as Array<Record<string, any>>;
+  assert.deepEqual(boxes[0]?.regularExtDrawers, []);
+});
+
 test('auto-base helper restores the previous forced base only after all shoe drawers are gone', () => {
   const { App, state, calls } = createAppHarness('none');
   state.ui[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] = 'plinth';

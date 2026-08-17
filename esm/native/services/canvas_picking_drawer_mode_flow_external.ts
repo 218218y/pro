@@ -14,7 +14,7 @@ import {
   readModuleShoeDrawerState,
   removeTopLevelSketchShoeDrawers,
 } from './canvas_picking_shoe_drawer_module_state.js';
-import { __wp_cfg, __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
+import { __wp_toast, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
   applyShoeDrawerBaseAutoNoneIfNeeded,
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
@@ -29,6 +29,7 @@ import {
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import {
   asInternalGridInfo,
+  readRoomArchitectureForDrawerGuard,
   ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
   shouldBlockDrawerBuildForRoomColumn,
 } from './canvas_picking_drawer_mode_flow_shared.js';
@@ -309,7 +310,7 @@ function blockDrawerBuildForRoomColumn(args: {
   if (
     !shouldBlockDrawerBuildForRoomColumn({
       App: args.App,
-      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
+      roomArchitecture: readRoomArchitectureForDrawerGuard(args.App),
       moduleKey: args.moduleKey,
       isBottomStack: args.isBottomStack,
     })

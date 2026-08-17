@@ -382,3 +382,65 @@ test('free-box internal and external drawers are blocked when the room column cu
   assert.ok(toasts.every(toast => toast.type === 'error'));
   assert.ok(toasts.every(toast => /העמוד חודר לתוך התא/.test(toast.message)));
 });
+
+test('free-box drawer guard follows builder ui.raw dimension fallback when runtime dimensions are not populated', () => {
+  const box: Record<string, unknown> = {
+    id: 'free-column-ui-raw',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    widthM: 0.8,
+    heightM: 1,
+    depthM: 0.5,
+  };
+  const cfg: Record<string, unknown> = { sketchExtras: { boxes: [box] } };
+  const roomArchitecture = {
+    backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+    column: {
+      enabled: true,
+      offsetLeftCm: 115,
+      widthCm: 10,
+      depthCm: 25,
+      heightCm: 180,
+      bottomOffsetCm: 10,
+    },
+    surfacesHidden: false,
+  };
+  const { App, toasts } = createGuardApp({
+    config: { roomArchitecture, modulesConfiguration: [cfg] },
+    ui: { raw: { width: 240, height: 240, depth: 60 } },
+    runtime: { wardrobeWidthM: null, wardrobeHeightM: null, wardrobeDepthM: null },
+  });
+  commitSketchModuleBoxContent({
+    App,
+    cfg,
+    box,
+    boxId: 'free-column-ui-raw',
+    contentKind: 'drawers',
+    hoverMode: 'free-toggle',
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 0, isBottom: false },
+    hoverRec: withSketchBoxContentCommand(
+      {},
+      {
+        kind: 'internal-drawers',
+        boxId: 'free-column-ui-raw',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.4,
+        drawerHeightM: 0.18,
+        drawerH: 0.18,
+        stackH: 0.38,
+        drawerGap: 0.02,
+      }
+    ),
+  });
+
+  assert.equal(box.drawers, undefined);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'error');
+  assert.match(toasts[0]?.message || '', /העמוד חודר לתוך התא/);
+});

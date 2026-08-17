@@ -120,6 +120,11 @@ function readPositiveNumber(value: unknown): number | null {
   return n != null && n > 0 ? n : null;
 }
 
+export function readRoomArchitectureForDrawerGuard(App: AppContainer): unknown {
+  const state = App.store?.getState?.();
+  return asRecord(asRecord(state)?.config)?.roomArchitecture ?? null;
+}
+
 function boxesOverlap(a: DrawerCollisionBox, b: DrawerCollisionBox): boolean {
   return (
     Math.min(a.maxX, b.maxX) - Math.max(a.minX, b.minX) > ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M &&
@@ -176,9 +181,26 @@ function readRoomArchitecture(value: unknown): RoomColumnArchitectureLike | null
 
 function readWardrobeDimensionM(
   App: AppContainer,
-  key: 'wardrobeWidthM' | 'wardrobeHeightM' | 'wardrobeDepthM'
+  key: 'wardrobeWidthM' | 'wardrobeHeightM' | 'wardrobeDepthM',
+  uiRawKey: 'width' | 'height' | 'depth',
+  fallbackM: number
 ): number | null {
-  return readPositiveNumber(readRuntimeScalarOrDefaultFromApp(App, key, null));
+  const runtimeValue = readPositiveNumber(readRuntimeScalarOrDefaultFromApp(App, key, null));
+  if (runtimeValue != null) return runtimeValue;
+
+  // Builder room-architecture geometry falls back to ui.raw dimensions whenever
+  // the runtime dimension cache has not been populated yet. Drawer eligibility
+  // must follow the same source order; otherwise a visibly notched free box can
+  // still accept drawers during the window where runtime.* dimensions are null.
+  const state = App.store?.getState?.();
+  const root = asRecord(state);
+  const ui = asRecord(root?.ui);
+  const raw = asRecord(ui?.raw);
+  const rawValue = raw?.[uiRawKey];
+  const rawCm = readPositiveNumber(rawValue) ?? readPositiveNumber(Number(rawValue));
+  if (rawCm != null) return rawCm / 100;
+
+  return fallbackM > 0 ? fallbackM : null;
 }
 
 function resolveRoomColumnCutContext(
@@ -188,9 +210,9 @@ function resolveRoomColumnCutContext(
   const architecture = readRoomArchitecture(roomArchitecture);
   if (!architecture) return null;
 
-  const wardrobeWidthM = readWardrobeDimensionM(App, 'wardrobeWidthM');
-  const wardrobeHeightM = readWardrobeDimensionM(App, 'wardrobeHeightM');
-  const wardrobeDepthM = readWardrobeDimensionM(App, 'wardrobeDepthM');
+  const wardrobeWidthM = readWardrobeDimensionM(App, 'wardrobeWidthM', 'width', 2.4);
+  const wardrobeHeightM = readWardrobeDimensionM(App, 'wardrobeHeightM', 'height', 2.4);
+  const wardrobeDepthM = readWardrobeDimensionM(App, 'wardrobeDepthM', 'depth', 0.6);
   if (wardrobeWidthM == null || wardrobeHeightM == null || wardrobeDepthM == null) return null;
 
   const wallLeftX = -wardrobeWidthM / 2 - architecture.backWall.wardrobeOffsetLeftCm / 100;

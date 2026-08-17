@@ -9,8 +9,9 @@ import {
   type SketchStructuralCommand,
 } from './canvas_picking_sketch_structural_command.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
-import { __wp_cfg, __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_toast } from './canvas_picking_core_helpers.js';
 import {
+  readRoomArchitectureForDrawerGuard,
   ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
   shouldBlockFreeBoxDrawerBuildForRoomColumn,
   shouldBlockDrawerBuildForRoomColumn,
@@ -45,9 +46,7 @@ function blockDrawerBoxContentIfRoomColumnCutsCell(
   args: CommitSketchModuleBoxContentArgs & { hoverOp: 'add' | 'remove' }
 ): boolean {
   if (args.hoverOp === 'remove' || !args.App || !isDrawerBoxContentKind(args.contentKind)) return false;
-  const store = (args.App as unknown as { store?: { getState?: unknown; patch?: unknown } }).store;
-  if (typeof store?.getState !== 'function' || typeof store.patch !== 'function') return false;
-  const roomArchitecture = __wp_cfg(args.App).roomArchitecture;
+  const roomArchitecture = readRoomArchitectureForDrawerGuard(args.App);
   const blocked =
     args.box.freePlacement === true
       ? shouldBlockFreeBoxDrawerBuildForRoomColumn({

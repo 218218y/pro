@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
-import { __wp_cfg, __wp_toast } from './canvas_picking_core_helpers.js';
+import { __wp_toast } from './canvas_picking_core_helpers.js';
 import {
   blockRemovableSideContentBuildIfModuleSideMissing,
   blockRemovableSideContentBuildIfSketchBoxSideMissing,
@@ -18,6 +18,7 @@ import {
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import { readModuleShoeDrawerState } from './canvas_picking_shoe_drawer_module_state.js';
 import {
+  readRoomArchitectureForDrawerGuard,
   ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
   shouldBlockDrawerBuildForRoomColumn,
 } from './canvas_picking_drawer_mode_flow_shared.js';
@@ -166,12 +167,10 @@ function blockSketchStackCommitIfRoomColumn(args: {
   hoverHost: ManualLayoutSketchHoverHost;
   writeSketchHover: CommitSketchModuleStackToolArgs['writeSketchHover'];
 }): boolean {
-  const store = (args.App as unknown as { store?: { getState?: unknown; patch?: unknown } }).store;
-  if (typeof store?.getState !== 'function' || typeof store.patch !== 'function') return false;
   if (
     !shouldBlockDrawerBuildForRoomColumn({
       App: args.App,
-      roomArchitecture: __wp_cfg(args.App).roomArchitecture,
+      roomArchitecture: readRoomArchitectureForDrawerGuard(args.App),
       moduleKey: args.hoverHost.moduleKey,
       isBottomStack: args.hoverHost.isBottom,
     })

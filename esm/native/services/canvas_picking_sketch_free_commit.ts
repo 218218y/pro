@@ -14,6 +14,12 @@ import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
+import { __wp_toast } from './canvas_picking_core_helpers.js';
+import {
+  readRoomArchitectureForDrawerGuard,
+  ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE,
+  shouldBlockFreeBoxDrawerBuildForRoomColumn,
+} from './canvas_picking_drawer_mode_flow_shared.js';
 import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import {
   createSketchFreeBoxPlacementCommandEnvelope,
@@ -42,7 +48,11 @@ type CommitSketchFreePlacementHoverRecordArgs = {
 };
 
 export type CommitSketchFreePlacementHoverRecordResult =
-  { committed: false } | { committed: true; nextHover: RecordMap | null };
+  { committed: false } | { committed: true; nextHover: RecordMap | null; blockedByRoomColumn?: true };
+
+function isDrawerFreeBoxContentKind(contentKind: string): boolean {
+  return contentKind === 'drawers' || contentKind === 'ext_drawers' || contentKind === 'regular_ext_drawers';
+}
 
 function readRecordString(record: unknown, key: string): string | null {
   const value = asRecord(record)?.[key];
@@ -74,10 +84,25 @@ function commitSketchFreePlacementContent(args: {
   contentKind: string;
   hoverRec: RecordMap;
   floorY: number;
-}): { found: boolean; nextHover: RecordMap | null } {
+}): { found: boolean; nextHover: RecordMap | null; blockedByRoomColumn?: true } {
   const boxes = ensureSketchModuleBoxes(args.cfg);
   const box = findSketchModuleBoxById(boxes, args.boxId, { freePlacement: true });
   if (!box) return { found: false, nextHover: null };
+
+  const decoded = decodeSketchBoxContentCommandHover(args.hoverRec);
+  if (
+    decoded.ok &&
+    decoded.value.command.op === 'add' &&
+    isDrawerFreeBoxContentKind(args.contentKind) &&
+    shouldBlockFreeBoxDrawerBuildForRoomColumn({
+      App: args.App,
+      roomArchitecture: readRoomArchitectureForDrawerGuard(args.App),
+      box,
+    })
+  ) {
+    __wp_toast(args.App, ROOM_COLUMN_DRAWER_ADD_BLOCKED_MESSAGE, 'error');
+    return { found: true, nextHover: null, blockedByRoomColumn: true };
+  }
 
   return {
     found: true,
@@ -172,6 +197,7 @@ export function commitSketchFreePlacementHoverRecord(
     }
 
     let nextHover: RecordMap | null = null;
+    let blockedByRoomColumn = false;
     const outcome = commitCanvasModuleStructuralPatch({
       App: args.App,
       stack,
@@ -187,12 +213,17 @@ export function commitSketchFreePlacementHoverRecord(
           floorY,
         });
         if (!result.found) return false;
+        if (result.blockedByRoomColumn) {
+          blockedByRoomColumn = true;
+          return false;
+        }
         nextHover = result.nextHover;
         return true;
       },
       meta: createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree'),
       op: 'sketchFree.content',
     });
+    if (blockedByRoomColumn) return { committed: true, nextHover: null, blockedByRoomColumn: true };
     return outcome.committed && outcome.changed ? { committed: true, nextHover } : { committed: false };
   }
 
