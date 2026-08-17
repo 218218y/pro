@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-17T16:56:08.720Z",
+  "generatedAt": "2026-08-17T17:24:46.657Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 556,
-    "totalFiles": 216,
+    "totalOccurrences": 558,
+    "totalFiles": 217,
     "byCategory": {
       "runtime-default": 60,
-      "domain-default": 401,
+      "domain-default": 403,
       "error-message-default": 42,
       "framework-default": 3,
       "browser-adapter": 18,
@@ -180,6 +180,12 @@
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/builder/interior_rod_support_visuals.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/builder/materials_factory_texture_runtime.ts": {
@@ -1986,6 +1992,20 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
+    },
+    {
+      "file": "esm/native/builder/interior_rod_support_visuals.ts",
+      "line": 185,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "function resolveRodSupportHardwareMaterial(THREE: RodSupportThreeLike, fallbackMaterial: unknown): unknown {"
+    },
+    {
+      "file": "esm/native/builder/interior_rod_support_visuals.ts",
+      "line": 186,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "if (typeof THREE.MeshStandardMaterial !== 'function') return fallbackMaterial;"
     },
     {
       "file": "esm/native/builder/materials_factory_texture_runtime.ts",

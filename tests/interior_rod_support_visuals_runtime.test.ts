@@ -7,6 +7,7 @@ import {
   resolveInteriorRodSupportInsertionDepth,
 } from '../esm/native/builder/interior_rod_support_visuals.ts';
 import { INTERIOR_ROD_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
+import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 
 class TorusGeometry {
   args: unknown[];
@@ -19,6 +20,13 @@ class CylinderGeometry {
   args: unknown[];
   constructor(...args: unknown[]) {
     this.args = args;
+  }
+}
+
+class MeshStandardMaterial {
+  params: Record<string, unknown>;
+  constructor(params: Record<string, unknown> = {}) {
+    this.params = params;
   }
 }
 
@@ -54,7 +62,7 @@ class Mesh {
   }
 }
 
-const THREE = { TorusGeometry, CylinderGeometry, Mesh };
+const THREE = { TorusGeometry, CylinderGeometry, MeshStandardMaterial, Mesh };
 
 function closeTo(actual: number, expected: number, message?: string): void {
   assert.ok(Math.abs(actual - expected) <= 1e-9, message ?? `${actual} must equal ${expected}`);
@@ -97,7 +105,6 @@ test('rod support visual mounts a half-round wall plate, projecting U-cup, and s
   assert.equal(count, 6);
   assert.equal(added.length, 6);
   assert.equal(outlined.length, 6);
-  assert.ok(added.every(mesh => mesh.material === material));
   assert.ok(added.every(mesh => mesh.userData.__wpRodSupportHardware === true));
   assert.ok(added.every(mesh => mesh.userData.__ignoreRaycast === true));
   assert.ok(added.every(mesh => mesh.userData.__wpRodOwnerPartId === 'rod-a'));
@@ -111,6 +118,16 @@ test('rod support visual mounts a half-round wall plate, projecting U-cup, and s
   assert.ok(cups.every(mesh => mesh.geometry instanceof TorusGeometry));
   assert.ok(plates.every(mesh => mesh.geometry instanceof CylinderGeometry));
   assert.ok(rodExtensions.every(mesh => mesh.geometry instanceof CylinderGeometry));
+  assert.ok(cups.every(mesh => mesh.material instanceof MeshStandardMaterial));
+  assert.ok(plates.every(mesh => mesh.material instanceof MeshStandardMaterial));
+  assert.ok(rodExtensions.every(mesh => mesh.material === material));
+  assert.deepEqual((cups[0].material as MeshStandardMaterial).params, {
+    color: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex,
+    metalness: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness,
+    roughness: HINGED_DOOR_HARDWARE_RENDER_POLICY.roughness,
+    emissive: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveHex,
+    emissiveIntensity: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveIntensity,
+  });
 
   const expectedLeftEnd = centerX - rodLength / 2;
   const expectedRightEnd = centerX + rodLength / 2;
@@ -123,9 +140,17 @@ test('rod support visual mounts a half-round wall plate, projecting U-cup, and s
   closeTo(cups[1].position.x, positiveMountCoord - rightGap / 2);
   closeTo(cups[0].position.y, centerY);
   closeTo(cups[0].position.z, centerZ);
-  assert.equal(cups[0].rotation.z, Math.PI, 'the half ring must open upward');
+  assert.equal(
+    cups[0].rotation.z,
+    (Math.PI * 3) / 4,
+    'the three-quarter ring mouth must stay centered upward'
+  );
   assert.equal(cups[0].rotation.y, Math.PI / 2, 'the cup plane must be perpendicular to the X rod');
-  assert.equal((cups[0].geometry as TorusGeometry).args[4], Math.PI, 'the cup must be a half ring');
+  assert.equal(
+    (cups[0].geometry as TorusGeometry).args[4],
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupArcLengthRad,
+    'the cup must cover roughly three quarters of the rod circle'
+  );
   closeTo(
     cups[0].scale.z,
     leftGap / (2 * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupTubeRadiusM),
@@ -148,8 +173,11 @@ test('rod support visual mounts a half-round wall plate, projecting U-cup, and s
     positiveMountCoord - INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateThicknessM / 2
   );
   assert.equal(plates[0].rotation.z, Math.PI / 2);
-  assert.equal((plates[0].geometry as CylinderGeometry).args[6], Math.PI);
-  assert.equal((plates[0].geometry as CylinderGeometry).args[7], Math.PI);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[6], (Math.PI * 3) / 4);
+  assert.equal(
+    (plates[0].geometry as CylinderGeometry).args[7],
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateArcLengthRad
+  );
 });
 
 test('rod support visual uses the real mount gap and rotates the same hardware for a Z-axis rod', () => {
@@ -180,11 +208,14 @@ test('rod support visual uses the real mount gap and rotates the same hardware f
   closeTo(cups[0].position.z, negativeMountCoord + 0.015);
   closeTo(cups[1].position.z, positiveMountCoord - 0.015);
   closeTo(cups[0].scale.z, 0.03 / (2 * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupTubeRadiusM));
-  assert.equal(cups[0].rotation.z, Math.PI);
+  assert.equal(cups[0].rotation.z, (Math.PI * 3) / 4);
   assert.equal(cups[0].rotation.y, 0);
   assert.equal(plates[0].rotation.x, Math.PI / 2);
-  assert.equal((plates[0].geometry as CylinderGeometry).args[6], -Math.PI / 2);
-  assert.equal((plates[0].geometry as CylinderGeometry).args[7], Math.PI);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[6], (-Math.PI * 3) / 4);
+  assert.equal(
+    (plates[0].geometry as CylinderGeometry).args[7],
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateArcLengthRad
+  );
   closeTo((rodExtensions[0].geometry as CylinderGeometry).args[2] as number, 0.018);
   closeTo(rodExtensions[0].position.z, centerZ - rodLength / 2 - 0.009);
   closeTo(rodExtensions[1].position.z, centerZ + rodLength / 2 + 0.009);

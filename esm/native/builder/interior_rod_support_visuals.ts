@@ -4,6 +4,8 @@
 // state: every final rod renderer calls this helper immediately after emitting a
 // rod, so rebuilding/removing the rod also removes its supports.
 
+import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+
 export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
   cupInnerClearanceM: 0.001,
   cupTubeRadiusM: 0.002,
@@ -13,6 +15,12 @@ export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
   mountPlateThicknessM: 0.003,
   rodInsertionRatioOfMountGap: 0.6,
   rodInsertionVisibleLipMinM: 0.004,
+  cupArcLengthRad: Math.PI * 1.5,
+  cupOpenGapAngleRad: Math.PI / 2,
+  cupOpenGapCenterAngleRad: Math.PI / 2,
+  mountPlateArcLengthRad: Math.PI * 1.5,
+  mountPlateOpenGapAngleRad: Math.PI / 2,
+  mountPlateOpenGapCenterAngleRad: Math.PI / 2,
   cupRadialSegments: 8,
   cupTubularSegments: 24,
   mountPlateRadialSegments: 20,
@@ -33,7 +41,16 @@ type RodSupportObjectLike = Record<string, unknown> & {
   userData?: Record<string, unknown>;
 };
 
+type RodSupportMeshStandardMaterialLike = Record<string, unknown> & {
+  color?: number;
+  metalness?: number;
+  roughness?: number;
+  emissive?: number;
+  emissiveIntensity?: number;
+};
+
 type RodSupportThreeLike = {
+  MeshStandardMaterial?: new (params: RodSupportMeshStandardMaterialLike) => unknown;
   TorusGeometry?: new (
     radius?: number,
     tube?: number,
@@ -114,11 +131,18 @@ function stretchCupAlongRodAxis(
   return true;
 }
 
+function resolveThreeQuarterArcStart(gapCenterAngleRad: number, gapAngleRad: number): number {
+  return gapCenterAngleRad + gapAngleRad / 2;
+}
+
 function rotateCupOpenUpward(mesh: RodSupportObjectLike, axis: RodAxis): void {
   if (!mesh.rotation) return;
-  // TorusGeometry starts as an upper semicircle in its local XY plane.
-  // Rotate it 180deg around local Z so it becomes a lower U-shaped cup.
-  mesh.rotation.z = Math.PI;
+  // TorusGeometry starts at local +X and sweeps counterclockwise in its local XY plane.
+  // Rotate the 270deg arc so the missing 90deg mouth stays centered upward.
+  mesh.rotation.z = resolveThreeQuarterArcStart(
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupOpenGapCenterAngleRad,
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupOpenGapAngleRad
+  );
   if (axis === 'x') mesh.rotation.y = Math.PI / 2;
 }
 
@@ -130,9 +154,11 @@ function rotateCylinderToRodAxis(mesh: RodSupportObjectLike, axis: RodAxis): voi
 }
 
 function resolveMountPlateThetaStart(axis: RodAxis): number {
-  // Keep only the lower half of the wall plate, with its flat diameter through
-  // the rod centerline and the rounded half below the projecting cup.
-  return axis === 'x' ? Math.PI : -Math.PI / 2;
+  const start = resolveThreeQuarterArcStart(
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateOpenGapCenterAngleRad,
+    INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateOpenGapAngleRad
+  );
+  return axis === 'x' ? start : start - (Math.PI * 3) / 2;
 }
 
 function addHardwareMesh(args: {
@@ -152,6 +178,25 @@ function readMountCoord(value: number | null | undefined, rodEndCoord: number, s
   return typeof value === 'number' && Number.isFinite(value)
     ? value
     : rodEndCoord + sign * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.defaultMountGapM;
+}
+
+const rodSupportHardwareMaterialCache = new WeakMap<object, unknown>();
+
+function resolveRodSupportHardwareMaterial(THREE: RodSupportThreeLike, fallbackMaterial: unknown): unknown {
+  if (typeof THREE.MeshStandardMaterial !== 'function') return fallbackMaterial;
+
+  const cached = rodSupportHardwareMaterialCache.get(THREE as object);
+  if (cached) return cached;
+
+  const material = new THREE.MeshStandardMaterial({
+    color: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex,
+    metalness: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness,
+    roughness: HINGED_DOOR_HARDWARE_RENDER_POLICY.roughness,
+    emissive: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveHex,
+    emissiveIntensity: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveIntensity,
+  });
+  rodSupportHardwareMaterialCache.set(THREE as object, material);
+  return material;
 }
 
 export function resolveInteriorRodSupportInsertionDepth(mountGapM: number): number {
@@ -202,6 +247,7 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
   const axis: RodAxis = args.axis === 'z' ? 'z' : 'x';
   const policy = INTERIOR_ROD_SUPPORT_VISUAL_POLICY;
   const cupMajorRadius = rodRadius + policy.cupInnerClearanceM + policy.cupTubeRadiusM;
+  const supportMaterial = resolveRodSupportHardwareMaterial(THREE, args.material);
   let added = 0;
 
   for (const sign of [-1, 1] as const) {
@@ -220,9 +266,9 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         policy.cupTubeRadiusM,
         policy.cupRadialSegments,
         policy.cupTubularSegments,
-        Math.PI
+        policy.cupArcLengthRad
       ),
-      args.material
+      supportMaterial
     );
     rotateCupOpenUpward(cup, axis);
     const cupReady = stretchCupAlongRodAxis(cup, cupProjectionM, policy.cupTubeRadiusM);
@@ -272,9 +318,9 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         1,
         false,
         resolveMountPlateThetaStart(axis),
-        Math.PI
+        policy.mountPlateArcLengthRad
       ),
-      args.material
+      supportMaterial
     );
     rotateCylinderToRodAxis(plate, axis);
     const plateCenterCoord = mountCoord + inwardSign * (policy.mountPlateThicknessM / 2);
