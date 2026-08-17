@@ -350,6 +350,111 @@ test('wardrobe dimension graphics never occlude room-opening placement', () => {
   assert.equal(h.state.config.roomArchitecture.openings.length, 1);
 });
 
+test('active opening mode directly hovers and removes an existing opening of the same kind', () => {
+  const h = createHarness();
+  h.state.config.roomArchitecture.openings = [
+    {
+      id: 'window-existing',
+      kind: 'window',
+      wall: 'back',
+      widthCm: 120,
+      heightCm: 100,
+      offsetAlongCm: 140,
+      bottomOffsetCm: 90,
+    },
+    {
+      id: 'door-existing',
+      kind: 'door',
+      wall: 'back',
+      widthCm: 90,
+      heightCm: 210,
+      offsetAlongCm: 20,
+      bottomOffsetCm: 0,
+    },
+  ];
+
+  const windowTarget: AnyRecord = {
+    type: 'Mesh',
+    parent: h.architecture,
+    userData: {
+      __wpRoomMeasurementTarget: true,
+      roomOpeningId: 'window-existing',
+      roomOpeningKind: 'window',
+    },
+  };
+  const doorTarget: AnyRecord = {
+    type: 'Mesh',
+    parent: h.architecture,
+    userData: {
+      __wpRoomMeasurementTarget: true,
+      roomOpeningId: 'door-existing',
+      roomOpeningKind: 'door',
+    },
+  };
+  h.architecture.children.push(windowTarget, doorTarget);
+
+  beginRoomOpeningPlacement(h.app, { kind: 'window', widthCm: 120, heightCm: 100 });
+  h.setWallHits([
+    { object: windowTarget, point: { x: 0, y: 1.4, z: 0.01 }, distance: 4 },
+    { object: h.wallSurface, point: { x: 0, y: 1.4, z: 0 }, distance: 10 },
+  ]);
+  const windowHover = tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: 0,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.ok(windowHover);
+  assert.equal(h.getPreview()?.op, 'remove');
+  assert.deepEqual(h.getPreview()?.previewObjects, [windowTarget]);
+
+  assert.equal(
+    tryHandleRoomOpeningPlacementClick({
+      App: h.app,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: h.raycaster,
+      mouse: h.mouse,
+    }),
+    true
+  );
+  assert.deepEqual(
+    h.state.config.roomArchitecture.openings.map((opening: AnyRecord) => opening.id),
+    ['door-existing']
+  );
+  assert.equal(h.state.mode.primary, 'room_opening', 'removal keeps the edit tool active');
+
+  beginRoomOpeningPlacement(h.app, { kind: 'door', widthCm: 90, heightCm: 210 });
+  h.setWallHits([
+    { object: doorTarget, point: { x: -1, y: 1, z: 0.01 }, distance: 4 },
+    { object: h.wallSurface, point: { x: -1, y: 1, z: 0 }, distance: 10 },
+  ]);
+  const doorHover = tryHandleRoomOpeningPlacementHover({
+    App: h.app,
+    ndcX: -0.2,
+    ndcY: 0,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.ok(doorHover);
+  assert.equal(h.getPreview()?.op, 'remove');
+  assert.deepEqual(h.getPreview()?.previewObjects, [doorTarget]);
+
+  assert.equal(
+    tryHandleRoomOpeningPlacementClick({
+      App: h.app,
+      ndcX: -0.2,
+      ndcY: 0,
+      raycaster: h.raycaster,
+      mouse: h.mouse,
+    }),
+    true
+  );
+  assert.equal(h.state.config.roomArchitecture.openings.length, 0);
+  assert.equal(h.state.mode.primary, 'room_opening');
+});
+
 test('room measurement picking exposes walls and openings as canonical measurement hit targets', () => {
   const h = createHarness();
   const measurementTarget: AnyRecord = {

@@ -21,6 +21,7 @@ import {
 } from './render_surface_runtime.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
 import { isIgnoredRoomWardrobeObstacleObject } from './room_wardrobe_obstacle_policy.js';
+import { findRoomOpeningTargetHit } from './room_architecture_picking.js';
 import {
   findRoomWallSurfaceHit,
   type RoomWallSurfaceHit,
@@ -423,13 +424,20 @@ function readNearestWardrobeHit(args: {
   return null;
 }
 
+function isDistanceOccludedByWardrobe(
+  targetDistance: number | null,
+  wardrobeHit: WardrobeSurfaceHit | null
+): boolean {
+  if (!wardrobeHit) return false;
+  if (targetDistance == null || wardrobeHit.distance == null) return true;
+  return wardrobeHit.distance + WALL_OCCLUSION_EPSILON_M < targetDistance;
+}
+
 function isWallHitOccludedByWardrobe(
   wallHit: RoomWallSurfaceHit,
   wardrobeHit: WardrobeSurfaceHit | null
 ): boolean {
-  if (!wardrobeHit) return false;
-  if (wallHit.distance == null || wardrobeHit.distance == null) return true;
-  return wardrobeHit.distance + WALL_OCCLUSION_EPSILON_M < wallHit.distance;
+  return isDistanceOccludedByWardrobe(wallHit.distance, wardrobeHit);
 }
 
 function buildWallClearanceMeasurements(hover: RoomOpeningHoverState, surface: RoomWallSurfacePickMeta) {
@@ -515,6 +523,34 @@ function setPlacementPreview(
   }
 }
 
+function setOpeningRemovalPreview(App: AppContainer, target: UnknownRecord): void {
+  try {
+    const THREE = __wp_asRecord(getViewportThree(App));
+    const setPreview = __getSketchPlacementPreviewFns(App).setPreview;
+    const anchorParent = __wp_asRecord(target.parent) || __wp_asRecord(getViewportRoomGroup(App));
+    if (!THREE || !anchorParent || typeof setPreview !== 'function') return;
+    setPreview({
+      App,
+      THREE,
+      anchor: target,
+      anchorParent,
+      kind: 'object_boxes',
+      previewObjects: [target],
+      overlayThroughScene: true,
+      op: 'remove',
+      woodThick: 0.018,
+    });
+  } catch (error) {
+    reportRoomOpeningPlacementNonFatal(App, 'setOpeningRemovalPreview', error);
+  }
+}
+
+function readOpeningIdFromTarget(target: UnknownRecord): string | null {
+  const userData = __wp_asRecord(target.userData);
+  const rawId = userData?.roomOpeningId;
+  return typeof rawId === 'string' && rawId.trim() ? rawId.trim() : null;
+}
+
 export function tryHandleRoomOpeningPlacementHover(args: {
   App: AppContainer;
   ndcX: number;
@@ -524,6 +560,18 @@ export function tryHandleRoomOpeningPlacementHover(args: {
 }): RoomOpeningPlacementHoverFeedback | null {
   const draft = readActiveDraft(args.App);
   if (!draft) return null;
+  const wardrobeHit = readNearestWardrobeHit(args);
+  const openingHit = findRoomOpeningTargetHit({ ...args, kind: draft.kind });
+  if (openingHit && !isDistanceOccludedByWardrobe(openingHit.distance, wardrobeHit)) {
+    getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = null;
+    setOpeningRemovalPreview(args.App, openingHit.target);
+    return {
+      kind: ROOM_OPENING_HOVER_KIND,
+      cursor: CANVAS_HOVER_CURSOR_PRESERVE,
+      partLabel: null,
+    };
+  }
+
   const wallHit = findRoomWallSurfaceHit(args);
   if (!wallHit) {
     getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = null;
@@ -535,7 +583,6 @@ export function tryHandleRoomOpeningPlacementHover(args: {
     };
   }
 
-  const wardrobeHit = readNearestWardrobeHit(args);
   if (isWallHitOccludedByWardrobe(wallHit, wardrobeHit)) {
     getRoomOpeningPlacementCache(args.App)[CACHE_HOVER_KEY] = null;
     hidePlacementPreview(args.App);
@@ -573,8 +620,17 @@ export function tryHandleRoomOpeningPlacementClick(args: {
 }): boolean {
   const draft = readActiveDraft(args.App);
   if (!draft) return false;
-  const wallHit = findRoomWallSurfaceHit(args);
   const wardrobeHit = readNearestWardrobeHit(args);
+  const openingHit = findRoomOpeningTargetHit({ ...args, kind: draft.kind });
+  if (openingHit && !isDistanceOccludedByWardrobe(openingHit.distance, wardrobeHit)) {
+    const openingId = readOpeningIdFromTarget(openingHit.target);
+    if (openingId && removeRoomOpeningById(args.App, openingId, 'canvas:roomOpening:remove')) {
+      hidePlacementPreview(args.App);
+    }
+    return true;
+  }
+
+  const wallHit = findRoomWallSurfaceHit(args);
   if (!wallHit) {
     hidePlacementPreview(args.App);
     if (!wardrobeHit) finishRoomOpeningPlacement(args.App, 'canvas:roomOpening:emptyClick');
@@ -606,13 +662,16 @@ export function tryHandleRoomOpeningPlacementClick(args: {
   return true;
 }
 
-export function removeRoomOpening(App: AppContainer, openingId: string): boolean {
+function removeRoomOpeningById(App: AppContainer, openingId: string, source: string): boolean {
   const id = String(openingId || '').trim();
   if (!id) return false;
   const current = readCurrentArchitecture(App);
   if (!current) return false;
   const openings = current.openings.filter(opening => opening.id !== id);
   if (openings.length === current.openings.length) return false;
-  const next = withRoomOpenings(current, openings);
-  return commitArchitecture(App, next, 'settings:roomOpening:remove');
+  return commitArchitecture(App, withRoomOpenings(current, openings), source);
+}
+
+export function removeRoomOpening(App: AppContainer, openingId: string): boolean {
+  return removeRoomOpeningById(App, openingId, 'settings:roomOpening:remove');
 }

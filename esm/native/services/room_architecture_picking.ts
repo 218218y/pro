@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, RoomOpeningKind, UnknownRecord } from '../../../types';
 
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import { raycastAtNdc } from './canvas_picking_engine.js';
@@ -95,6 +95,23 @@ export function findRoomDoorTargetHit(args: {
     ...args,
     predicate: userData =>
       userData.__wpRoomDoorMovable === true && typeof userData.roomOpeningId === 'string',
+  });
+}
+
+export function findRoomOpeningTargetHit(args: {
+  App: AppContainer;
+  ndcX: number;
+  ndcY: number;
+  raycaster: RaycasterLike;
+  mouse: MouseVectorLike;
+  kind: RoomOpeningKind;
+}): RoomArchitectureTargetHit | null {
+  return findRoomArchitectureTargetHit({
+    ...args,
+    predicate: userData =>
+      userData.__wpRoomMeasurementTarget === true &&
+      typeof userData.roomOpeningId === 'string' &&
+      userData.roomOpeningKind === args.kind,
   });
 }
 

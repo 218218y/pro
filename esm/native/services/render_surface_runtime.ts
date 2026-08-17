@@ -6,7 +6,12 @@ import type {
   RenderCameraControlsLike,
   RenderCoreSurfaceLike,
 } from '../../../types';
-import { ensureRenderNamespace, ensureRenderRuntimeState, getWindowMaybe } from '../runtime/api.js';
+import {
+  ensureRenderNamespace,
+  ensureRenderRuntimeState,
+  getBrowserTimers,
+  getWindowMaybe,
+} from '../runtime/api.js';
 import { ensureRenderBag as ensureRenderCoreBag } from '../runtime/render_access_shared.js';
 import {
   readRuntimeConfigBooleanFromApp,
@@ -93,6 +98,10 @@ function getRenderBag(App: AppLike): RenderBag {
 function getTHREE(App: AppLike): ThreeRuntime {
   return assertThreeViaDeps(App, 'services/render_surface_runtime.THREE');
 }
+export function getViewportAnimationTimers(App: AppLike): ReturnType<typeof getBrowserTimers> {
+  return getBrowserTimers(App);
+}
+
 export function getViewportThree(App: AppLike): ThreeRuntime | null {
   try {
     return getTHREE(App);

@@ -6,13 +6,26 @@ import { __wp_asRecord } from './canvas_picking_core_support.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
 import { runPlatformActivityRenderTouch } from './api_services_surface.js';
 import { findRoomDoorTargetHit, readRoomArchitectureGroup } from './room_architecture_picking.js';
-import { getViewportRoomGroup, getViewportWardrobeGroup } from './render_surface_runtime.js';
+import {
+  getViewportAnimationTimers,
+  getViewportRoomGroup,
+  getViewportWardrobeGroup,
+} from './render_surface_runtime.js';
 import { isIgnoredRoomWardrobeObstacleObject } from './room_wardrobe_obstacle_policy.js';
 
 const MAX_DOOR_OPEN_ANGLE_RAD = Math.PI / 2;
 const DOOR_SWEEP_STEP_RAD = Math.PI / 180;
 const DOOR_COLLISION_CLEARANCE_M = 0.012;
 const DOOR_OPEN_EPSILON_RAD = Math.PI / 360;
+const DOOR_ANIMATION_LERP = 0.1;
+const DOOR_ANIMATION_SETTLED_EPSILON_RAD = 0.001;
+
+type RoomDoorAnimationState = {
+  frameId: number | null;
+  targetAngleRad: number;
+};
+
+const roomDoorAnimationStates = new WeakMap<object, Map<string, RoomDoorAnimationState>>();
 
 export type RoomDoorSweepSpec = {
   hingeX: number;
@@ -297,6 +310,72 @@ function readCurrentDoorAngle(nodes: readonly UnknownRecord[]): number {
   return 0;
 }
 
+function getDoorAnimationStateMap(App: AppContainer): Map<string, RoomDoorAnimationState> {
+  const existing = roomDoorAnimationStates.get(App);
+  if (existing) return existing;
+  const next = new Map<string, RoomDoorAnimationState>();
+  roomDoorAnimationStates.set(App, next);
+  return next;
+}
+
+function clearDoorAnimationState(
+  App: AppContainer,
+  openingId: string,
+  expectedState: RoomDoorAnimationState
+): void {
+  const states = roomDoorAnimationStates.get(App);
+  if (!states || states.get(openingId) !== expectedState) return;
+  states.delete(openingId);
+  if (!states.size) roomDoorAnimationStates.delete(App);
+}
+
+function animateDoorAngle(App: AppContainer, openingId: string, targetAngleRad: number): void {
+  const timers = getViewportAnimationTimers(App);
+  const states = getDoorAnimationStateMap(App);
+  const previous = states.get(openingId);
+  if (previous?.frameId != null) timers.cancelAnimationFrame(previous.frameId);
+
+  const state: RoomDoorAnimationState = { frameId: null, targetAngleRad };
+  states.set(openingId, state);
+
+  const renderFrame = (): void => {
+    runPlatformActivityRenderTouch(App, {
+      updateShadows: true,
+      ensureRenderLoopAfterTrigger: true,
+    });
+  };
+
+  const step = (): void => {
+    if (roomDoorAnimationStates.get(App)?.get(openingId) !== state) return;
+    const nodes = collectDoorMovableNodes(App, openingId);
+    if (!nodes.length) {
+      clearDoorAnimationState(App, openingId, state);
+      return;
+    }
+
+    const currentAngle = readCurrentDoorAngle(nodes);
+    const delta = state.targetAngleRad - currentAngle;
+    if (Math.abs(delta) <= DOOR_ANIMATION_SETTLED_EPSILON_RAD) {
+      applyDoorAngle(nodes, state.targetAngleRad);
+      renderFrame();
+      clearDoorAnimationState(App, openingId, state);
+      return;
+    }
+
+    applyDoorAngle(nodes, currentAngle + delta * DOOR_ANIMATION_LERP);
+    renderFrame();
+    state.frameId = timers.requestAnimationFrame(step);
+  };
+
+  state.frameId = timers.requestAnimationFrame(step);
+}
+
+function shouldOpenDoorForToggle(App: AppContainer, openingId: string, currentAngleRad: number): boolean {
+  const activeTarget = roomDoorAnimationStates.get(App)?.get(openingId)?.targetAngleRad;
+  if (activeTarget != null) return Math.abs(activeTarget) <= DOOR_OPEN_EPSILON_RAD;
+  return Math.abs(currentAngleRad) <= DOOR_OPEN_EPSILON_RAD;
+}
+
 export function tryHandleRoomDoorToggleClick(args: {
   App: AppContainer;
   ndcX: number;
@@ -314,15 +393,11 @@ export function tryHandleRoomDoorToggleClick(args: {
   if (!nodes.length) return false;
   const currentAngle = readCurrentDoorAngle(nodes);
   let nextAngle = 0;
-  if (Math.abs(currentAngle) <= DOOR_OPEN_EPSILON_RAD) {
+  if (shouldOpenDoorForToggle(args.App, openingId, currentAngle)) {
     const spec = readDoorSweepSpec(hit.target) || readDoorSweepSpec(nodes[0]);
     if (!spec) return false;
     nextAngle = resolveRoomDoorMaxOpenAngleRad(spec, readObstacleBoxes(args.App));
   }
-  applyDoorAngle(nodes, nextAngle);
-  runPlatformActivityRenderTouch(args.App, {
-    updateShadows: true,
-    ensureRenderLoopAfterTrigger: true,
-  });
+  animateDoorAngle(args.App, openingId, nextAngle);
   return true;
 }

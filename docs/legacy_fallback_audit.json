@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T14:35:44.835Z",
+  "generatedAt": "2026-08-17T15:03:49.565Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 556,
@@ -4089,14 +4089,14 @@
     },
     {
       "file": "esm/native/services/room_opening_placement.ts",
-      "line": 38,
+      "line": 39,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "const ROOM_OPENING_MODE_FALLBACK_ID = 'room_opening';"
     },
     {
       "file": "esm/native/services/room_opening_placement.ts",
-      "line": 160,
+      "line": 161,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "return ROOM_OPENING_MODE_FALLBACK_ID;"

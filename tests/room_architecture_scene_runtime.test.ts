@@ -319,6 +319,31 @@ test('room openings resolve against their host wall and scene rendering cuts the
     scale: { x: 1, y: 1, z: 1 },
   };
   (App.render as any).wardrobeGroup = wardrobeGroup;
+  let nextFrameId = 1;
+  const pendingFrames = new Map<number, FrameRequestCallback>();
+  (App as any).deps = {
+    browser: {
+      requestAnimationFrame(callback: FrameRequestCallback) {
+        const id = nextFrameId++;
+        pendingFrames.set(id, callback);
+        return id;
+      },
+      cancelAnimationFrame(id: number) {
+        pendingFrames.delete(id);
+      },
+    },
+  };
+  const runNextDoorFrame = () => {
+    const next = pendingFrames.entries().next();
+    assert.equal(next.done, false, 'door animation must have a pending animation frame');
+    const [id, callback] = next.value;
+    pendingFrames.delete(id);
+    callback(id * 16.67);
+  };
+  const flushDoorAnimation = () => {
+    for (let i = 0; i < 180 && pendingFrames.size; i += 1) runNextDoorFrame();
+    assert.equal(pendingFrames.size, 0, 'door animation must settle');
+  };
   const doorRaycaster = {
     setFromCamera() {},
     intersectObjects() {
@@ -335,8 +360,14 @@ test('room openings resolve against their host wall and scene rendering cuts the
     }),
     true
   );
-  assertClose(doorLeaf.rotation.y, -Math.PI / 2);
+  assertClose(doorLeaf.rotation.y, 0);
+  assert.equal(pendingFrames.size, 1);
+  runNextDoorFrame();
+  assert.ok(doorLeaf.rotation.y < 0 && doorLeaf.rotation.y > -Math.PI / 2);
   assert.ok(doorLeaf.position.x < closedDoorX, 'right-wall door must swing inward into the room');
+  flushDoorAnimation();
+  assertClose(doorLeaf.rotation.y, -Math.PI / 2);
+
   assert.equal(
     tryHandleRoomDoorToggleClick({
       App,
@@ -347,6 +378,10 @@ test('room openings resolve against their host wall and scene rendering cuts the
     }),
     true
   );
+  assertClose(doorLeaf.rotation.y, -Math.PI / 2);
+  runNextDoorFrame();
+  assert.ok(doorLeaf.rotation.y > -Math.PI / 2 && doorLeaf.rotation.y < 0);
+  flushDoorAnimation();
   assertClose(doorLeaf.rotation.y, 0);
   assertClose(doorLeaf.position.x, closedDoorX);
   assertClose(doorLeaf.position.z, closedDoorZ);
@@ -382,6 +417,10 @@ test('room openings resolve against their host wall and scene rendering cuts the
     }),
     true
   );
+  assertClose(doorLeaf.rotation.y, 0);
+  runNextDoorFrame();
+  assert.ok(doorLeaf.rotation.y < 0);
+  flushDoorAnimation();
   assert.ok(doorLeaf.rotation.y < 0);
   assert.ok(Math.abs(doorLeaf.rotation.y) < Math.PI / 2);
 
