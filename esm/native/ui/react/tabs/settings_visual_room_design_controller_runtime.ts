@@ -11,12 +11,7 @@ import {
   applyStructuralConfigMutation,
   patchProjectRoomArchitecture,
 } from '../actions/structural_build_refresh_actions.js';
-import {
-  beginRoomOpeningPlacement,
-  cancelRoomOpeningPlacement,
-  removeRoomOpening,
-  getModeId,
-} from '../../../services/api.js';
+import { beginRoomOpeningPlacement, removeRoomOpening, getModeId } from '../../../services/api.js';
 import {
   getUiSnapshot,
   getConfigSnapshot,
@@ -53,7 +48,6 @@ export type SettingsVisualRoomDesignController = {
   ) => void;
   toggleArchitectureVisibility: () => void;
   beginOpeningPlacement: (kind: RoomOpeningKind, widthCm: number, heightCm: number) => boolean;
-  cancelOpeningPlacement: () => void;
   removeOpening: (openingId: string) => boolean;
 };
 
@@ -293,7 +287,6 @@ export function createSettingsVisualRoomDesignController(
     },
     beginOpeningPlacement: (kind, widthCm, heightCm) =>
       beginRoomOpeningPlacement(args.app, { kind, widthCm, heightCm }),
-    cancelOpeningPlacement: () => cancelRoomOpeningPlacement(args.app),
     removeOpening: openingId => removeRoomOpening(args.app, openingId),
   };
 }

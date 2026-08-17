@@ -50,7 +50,6 @@ export type SettingsVisualRoomDesignModel = {
   ) => void;
   toggleArchitectureVisibility: () => void;
   beginOpeningPlacement: (kind: RoomOpeningKind, widthCm: number, heightCm: number) => boolean;
-  cancelOpeningPlacement: () => void;
   removeOpening: (openingId: string) => boolean;
 };
 
@@ -120,7 +119,6 @@ export function useSettingsVisualRoomDesign(
       setColumnDimension: roomDesignController.setColumnDimension,
       toggleArchitectureVisibility: roomDesignController.toggleArchitectureVisibility,
       beginOpeningPlacement: roomDesignController.beginOpeningPlacement,
-      cancelOpeningPlacement: roomDesignController.cancelOpeningPlacement,
       removeOpening: roomDesignController.removeOpening,
     }),
     [
@@ -145,7 +143,6 @@ export function useSettingsVisualRoomDesign(
       roomDesignController.setColumnDimension,
       roomDesignController.toggleArchitectureVisibility,
       roomDesignController.beginOpeningPlacement,
-      roomDesignController.cancelOpeningPlacement,
       roomDesignController.removeOpening,
     ]
   );

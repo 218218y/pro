@@ -20,6 +20,7 @@ const roomArchitectureModel = {
   },
   wardrobeWidthCm: 240,
   wardrobeOffsetRightCm: 110,
+  openingPlacementActive: false,
   setBackWallEnabled: noop,
   setBackWallDimension: noop,
   setSideWallEnabled: noop,
@@ -30,7 +31,6 @@ const roomArchitectureModel = {
   setColumnEnabled: noop,
   setColumnDimension: noop,
   beginOpeningPlacement: () => true,
-  cancelOpeningPlacement: noop,
   removeOpening: noop,
   toggleArchitectureVisibility: noop,
 };
@@ -95,7 +95,11 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(roomHtml, /קיר צד ימין/);
   assert.match(roomHtml, /עמוד בולט מהקיר/);
   assert.match(roomHtml, /חלונות ודלתות/);
-  assert.match(roomHtml, /מקם חלון על קיר/);
+  assert.match(roomHtml, /settings-room-opening-window/);
+  assert.match(roomHtml, /settings-room-opening-door/);
+  assert.doesNotMatch(roomHtml, /מקם חלון על קיר/);
+  assert.doesNotMatch(roomHtml, /מקם דלת על קיר/);
+  assert.doesNotMatch(roomHtml, /ביטול מיקום/);
   assert.match(roomHtml, /הסתר קירות ועמוד/);
   assert.equal(countMatches(roomHtml, /step="5"/g), 15);
   assert.doesNotMatch(roomHtml, /step="0\.1"/);
@@ -109,6 +113,30 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.equal(countMatches(roomHtml, /wp-r-room-custom-color-btn/g), 3);
   assert.equal(countMatches(roomHtml, /wp-r-room-color-picker-row/g), 3);
   assert.ok(countMatches(roomHtml, /role="button"/g) >= 7);
+
+  const activeOpeningHtml = renderToStaticMarkup(
+    React.createElement(SettingsVisualRoomSection, {
+      model: {
+        roomData: {
+          hasRoomDesign: true,
+          defaultWall: '#37474f',
+          wallColors: [],
+        },
+        floorType: 'none',
+        floorStyleId: null,
+        wallColor: '#ffffff',
+        floorStylesForType: [],
+        setFloorType: noop,
+        pickFloorStyle: noop,
+        pickWallColor: noop,
+        ...roomArchitectureModel,
+        openingPlacementActive: true,
+      },
+    })
+  );
+  assert.match(activeOpeningHtml, /settings-room-opening-window/);
+  assert.match(activeOpeningHtml, /aria-pressed="true"/);
+  assert.match(activeOpeningHtml, /fa-check/);
   const fallbackHtml = renderToStaticMarkup(
     React.createElement(SettingsVisualRoomSection, {
       model: {

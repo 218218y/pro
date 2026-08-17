@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 
-import { InlineNotice, ToggleRow } from '../components/index.js';
+import { InlineNotice, ModeToggleButton, ToggleRow } from '../components/index.js';
 import type { SettingsVisualRoomSectionModel } from './use_settings_visual_controller_contracts.js';
 import { FLOOR_TYPE_OPTIONS } from './settings_visual_sections_contracts.js';
 import type { FloorStyle, SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
@@ -246,22 +246,32 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
     <div className="wp-r-room-openings-block" data-testid="settings-room-openings">
       <div className="wp-r-label">חלונות ודלתות:</div>
       <div className="wp-r-room-opening-kind-actions" role="group" aria-label="סוג הפתח להוספה">
-        <button
-          type="button"
-          className={`btn${kind === 'window' ? ' is-selected' : ''}`}
+        <ModeToggleButton
+          active={placementArmed && kind === 'window'}
+          icon={
+            <i
+              className={placementArmed && kind === 'window' ? 'fas fa-check' : 'fas fa-border-all'}
+              aria-hidden="true"
+            />
+          }
           onClick={() => selectKind('window')}
-          aria-pressed={kind === 'window'}
+          data-testid="settings-room-opening-window"
         >
-          <i className="fas fa-border-all" aria-hidden="true"></i> חלון
-        </button>
-        <button
-          type="button"
-          className={`btn${kind === 'door' ? ' is-selected' : ''}`}
+          חלון
+        </ModeToggleButton>
+        <ModeToggleButton
+          active={placementArmed && kind === 'door'}
+          icon={
+            <i
+              className={placementArmed && kind === 'door' ? 'fas fa-check' : 'fas fa-door-open'}
+              aria-hidden="true"
+            />
+          }
           onClick={() => selectKind('door')}
-          aria-pressed={kind === 'door'}
+          data-testid="settings-room-opening-door"
         >
-          <i className="fas fa-door-open" aria-hidden="true"></i> דלת
-        </button>
+          דלת
+        </ModeToggleButton>
       </div>
 
       <div className="wp-r-room-dimension-grid wp-r-room-opening-size-grid">
@@ -287,23 +297,6 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
             model.beginOpeningPlacement(kind, widthCm, value);
           }}
         />
-      </div>
-
-      <div className="wp-r-room-opening-placement-actions">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => model.beginOpeningPlacement(kind, widthCm, heightCm)}
-          data-testid="settings-room-opening-place"
-        >
-          <i className="fas fa-crosshairs" aria-hidden="true"></i>{' '}
-          {kind === 'door' ? 'מקם דלת על קיר' : 'מקם חלון על קיר'}
-        </button>
-        {placementArmed ? (
-          <button type="button" className="btn" onClick={model.cancelOpeningPlacement}>
-            ביטול מיקום
-          </button>
-        ) : null}
       </div>
 
       {placementArmed ? (

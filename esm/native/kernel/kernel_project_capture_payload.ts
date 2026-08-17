@@ -5,6 +5,7 @@ import {
   readDoorTrimConfigMap,
   readGrooveLayoutConfigMap,
   readMirrorLayoutConfigMap,
+  normalizeProjectRoomArchitecture,
 } from '../features/project_config/api.js';
 import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/project_capture_dimension_policy.js';
 
@@ -329,6 +330,7 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
         ? canonicalCfg.grooveLinesCount
         : null,
     isLibraryMode: canonicalCfg.isLibraryMode === true,
+    roomArchitecture: normalizeProjectRoomArchitecture(canonicalCfg.roomArchitecture),
     savedNotes: cloneProjectCaptureValue(savedNotes, []),
     projectName: asString(uiRec.projectName, ''),
   };

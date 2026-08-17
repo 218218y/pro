@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T13:26:42.328Z",
+  "generatedAt": "2026-08-17T14:00:30.180Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 556,
@@ -5104,14 +5104,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 94,
+      "line": 88,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "} catch (fallbackErr) {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 95,
+      "line": 89,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"

@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { createKernelProjectCapture } from '../esm/native/kernel/kernel_project_capture.ts';
 import { buildKernelProjectCaptureData } from '../esm/native/kernel/kernel_project_capture_payload.ts';
 import { cloneProjectCaptureValue } from '../esm/native/kernel/kernel_project_capture_shared.ts';
+import { buildProjectConfigSnapshot } from '../esm/native/io/project_io_load_helpers_config.ts';
 import { DEFAULT_HINGED_DOORS } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 
 test('kernel project capture canonicalizes config lists and detaches mutable snapshot slices', () => {
@@ -19,7 +20,27 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     overlayShelfThicknessCm: 1.2,
     insetFrameThicknessCm: 3.6,
     insetShelfThicknessCm: '2.1',
-    modulesConfiguration: [{ layout: 'drawers', doors: '2' }, null, { customData: { storage: true } }],
+    modulesConfiguration: [
+      { layout: 'drawers', doors: '2' },
+      null,
+      {
+        customData: { storage: true },
+        sketchExtras: {
+          boxes: [
+            {
+              id: 'side-free-box',
+              x: 1.2,
+              y: 0.8,
+              z: 0.4,
+              w: 0.8,
+              h: 1.2,
+              d: 0.45,
+              placementWall: 'right',
+            },
+          ],
+        },
+      },
+    ],
     stackSplitLowerModulesConfiguration: [{ extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
     groovesMap: { groove_d1: true, g1: true, drop: 1n },
@@ -36,6 +57,32 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     },
     preChestState: { dims: { width: 55 }, createdAt: new Date('2024-01-02T03:04:05.000Z') },
     savedColors: ['oak', { id: 'c2', value: '#abc' }, { id: '' }, 1n],
+    roomArchitecture: {
+      backWall: { enabled: true, widthCm: 520, heightCm: 290, wardrobeOffsetLeftCm: 35 },
+      leftWall: { enabled: true, depthCm: 340, heightCm: 285 },
+      rightWall: { enabled: true, depthCm: 360, heightCm: 290 },
+      column: {
+        enabled: true,
+        offsetLeftCm: 210,
+        widthCm: 42,
+        depthCm: 28,
+        heightCm: 250,
+        bottomOffsetCm: 15,
+      },
+      openings: [
+        {
+          id: 'room-window-1',
+          kind: 'window',
+          wall: 'right',
+          widthCm: 110,
+          heightCm: 95,
+          offsetAlongCm: 80,
+          bottomOffsetCm: 105,
+        },
+      ],
+      wallColor: '#e9e4d8',
+      surfacesHidden: false,
+    },
   };
 
   const capture = createKernelProjectCapture({
@@ -85,10 +132,15 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   assert.equal(snapshot.cornerConfiguration.layout, 'shelves');
   assert.ok(Array.isArray(snapshot.cornerConfiguration.modulesConfiguration));
 
+  (
+    ((cfgSource.modulesConfiguration as Record<string, any>[])[2].sketchExtras as Record<string, any>)
+      .boxes as Record<string, any>[]
+  )[0].placementWall = 'back';
   cfgSource.modulesConfiguration = [{ layout: 'mutated', doors: 99 }];
   cfgSource.stackSplitLowerModulesConfiguration = [{ extDrawersCount: 9 }];
   (cfgSource.groovesMap as Record<string, unknown>).groove_d1 = false;
   (cfgSource.roundedFrameSideShelvesMap as Record<string, unknown>).body_left = false;
+  ((cfgSource.roomArchitecture as Record<string, any>).rightWall as Record<string, unknown>).depthCm = 999;
   ((savedNotesSource[0].blocks as Record<string, unknown>[])[0] as Record<string, unknown>).text = 'mutated';
   ((cfgSource.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width = 99;
 
@@ -117,6 +169,22 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   assert.equal(
     ((snapshot.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width,
     55
+  );
+  assert.equal(snapshot.roomArchitecture.backWall.widthCm, 520);
+  assert.equal(snapshot.roomArchitecture.rightWall.enabled, true);
+  assert.equal(snapshot.roomArchitecture.column.depthCm, 28);
+  assert.equal(snapshot.roomArchitecture.openings[0].wall, 'right');
+  assert.equal(snapshot.modulesConfiguration[2].sketchExtras.boxes[0].placementWall, 'right');
+
+  const restoredConfig = buildProjectConfigSnapshot(snapshot);
+  assert.equal(restoredConfig.roomArchitecture?.backWall.widthCm, 520);
+  assert.equal(restoredConfig.roomArchitecture?.rightWall.depthCm, 360);
+  assert.equal(restoredConfig.roomArchitecture?.column.enabled, true);
+  assert.equal(restoredConfig.roomArchitecture?.openings[0]?.id, 'room-window-1');
+  assert.equal(
+    (restoredConfig.modulesConfiguration?.[2] as Record<string, any>)?.sketchExtras?.boxes?.[0]
+      ?.placementWall,
+    'right'
   );
 });
 
@@ -301,6 +369,7 @@ test('kernel project capture payload preserves exact persisted key order and ser
     'insetShelfThicknessCm',
     'grooveLinesCount',
     'isLibraryMode',
+    'roomArchitecture',
     'savedNotes',
     'projectName',
   ]);
@@ -386,10 +455,10 @@ test('kernel project capture payload preserves exact persisted key order and ser
   }
 
   const serialized = JSON.stringify(payload);
-  assert.equal(serialized.length, 2049);
+  assert.equal(serialized.length, 2436);
   assert.equal(
     createHash('sha256').update(serialized).digest('hex'),
-    '5769859ebed68f0a53929c7b98d5c10cf43f79e00633e2aab3a1db17dd68316e'
+    'cb8f81c8bbedf6a5fe32c01daf870a11940b384e588a168ee87e8a46bb5a824b'
   );
 });
 
