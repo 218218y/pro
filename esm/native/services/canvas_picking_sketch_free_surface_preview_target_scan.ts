@@ -40,10 +40,19 @@ export function findSketchFreeHoverTargetBox(args: {
   const planeHitY = asNumberOrNull(planeHit.y);
   if (planeHitX == null || planeHitY == null) return null;
   let bestDist = Infinity;
+  let bestRayHitIndex = Infinity;
   let bestTarget: SketchFreeBoxTarget | null = null;
   for (let i = 0; i < freeBoxes.length; i++) {
     const candidate = resolveSketchFreeHoverTargetCandidate({ ...args, box: freeBoxes[i], index: i });
-    if (!candidate || candidate.dist >= bestDist) continue;
+    if (!candidate) continue;
+    if (candidate.rayHitIndex != null) {
+      if (candidate.rayHitIndex >= bestRayHitIndex) continue;
+      bestRayHitIndex = candidate.rayHitIndex;
+      bestDist = candidate.dist;
+      bestTarget = candidate.target;
+      continue;
+    }
+    if (Number.isFinite(bestRayHitIndex) || candidate.dist >= bestDist) continue;
     bestDist = candidate.dist;
     bestTarget = candidate.target;
   }

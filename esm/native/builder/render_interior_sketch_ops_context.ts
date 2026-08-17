@@ -17,6 +17,7 @@ export function createBuilderRenderInteriorSketchOpsContext(
     ops: deps.ops,
     wardrobeGroup: deps.wardrobeGroup,
     doors: deps.doors,
+    drawers: typeof deps.drawers === 'function' ? deps.drawers : () => [],
     markSplitHoverPickablesDirty:
       typeof deps.markSplitHoverPickablesDirty === 'function' ? deps.markSplitHoverPickablesDirty : null,
     isFn: deps.isFn,

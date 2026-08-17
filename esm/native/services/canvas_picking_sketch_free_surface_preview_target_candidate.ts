@@ -22,8 +22,31 @@ import {
 
 export type SketchFreeBoxTargetCandidate = {
   dist: number;
+  rayHitIndex: number | null;
   target: SketchFreeBoxTarget;
 };
+
+function rayObjectMatchesPartPrefix(object: unknown, partPrefix: string): boolean {
+  let node = object && typeof object === 'object' ? object : null;
+  for (let depth = 0; node && depth < 12; depth += 1) {
+    const userData = Reflect.get(node, 'userData') as unknown;
+    if (userData && typeof userData === 'object' && !Array.isArray(userData)) {
+      const partIdValue = Reflect.get(userData, 'partId') as unknown;
+      const partId = typeof partIdValue === 'string' ? partIdValue : '';
+      if (partId && (partId === partPrefix || partId.startsWith(`${partPrefix}_`))) return true;
+    }
+    const parent = Reflect.get(node, 'parent') as unknown;
+    node = parent && typeof parent === 'object' ? parent : null;
+  }
+  return false;
+}
+
+function findRayHitIndexForPartPrefix(intersects: RaycastHitLike[], partPrefix: string): number | null {
+  for (let i = 0; i < intersects.length; i += 1) {
+    if (rayObjectMatchesPartPrefix(intersects[i]?.object, partPrefix)) return i;
+  }
+  return null;
+}
 
 export function resolveSketchFreeHoverTargetCandidate(args: {
   App: AppContainer;
@@ -81,6 +104,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     depthM: depthM != null && depthM > 0 ? depthM : null,
   });
   const partPrefix = getSketchFreeBoxPartPrefix(hostModuleKey, readRecordValue(box, 'id') ?? index);
+  const rayHitIndex = findRayHitIndexForPartPrefix(intersects, partPrefix);
   const localHit = findSketchFreeBoxLocalHit({ App, intersects, localParent, partPrefix });
   const placementWall = readRecordValue(box, 'placementWall');
   const isSideWallPlacement = placementWall === 'left' || placementWall === 'right';
@@ -128,6 +152,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   if (dx > geo.outerW / 2 + tolX || hitY < minHitY || hitY > maxHitY) return null;
   return {
     dist: localHit ? -1 : dx + Math.abs(hitY - centerY),
+    rayHitIndex,
     target: {
       boxId: readRecordIdentity(box, 'id') || '',
       partPrefix,

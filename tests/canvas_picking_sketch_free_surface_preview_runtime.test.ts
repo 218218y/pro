@@ -88,6 +88,51 @@ test('sketch free surface target scan prefers the candidate with a box-local hit
   assert.ok(Math.abs(Number(target?.pointerX) - 0.61) < 1e-9);
 });
 
+test('sketch free surface target scan follows nearest ray intersection instead of free-box array order', () => {
+  const frontBox = {
+    id: 'front-box',
+    freePlacement: true,
+    absX: 0.2,
+    absY: 1,
+    heightM: 0.8,
+    widthM: 0.7,
+  };
+  const fartherBox = {
+    id: 'farther-box',
+    freePlacement: true,
+    absX: 0.2,
+    absY: 1,
+    heightM: 0.8,
+    widthM: 0.7,
+  };
+  const target = findSketchFreeHoverTargetBox({
+    App: {} as never,
+    tool: 'sketch_box_divider',
+    contentKind: 'divider',
+    hostModuleKey: 0,
+    // Deliberately reverse model order relative to the ray order.
+    freeBoxes: [fartherBox as any, frontBox as any],
+    planeHit: { x: 0.2, y: 1 },
+    wardrobeBox: wardrobeBox as any,
+    wardrobeBackZ: -0.3,
+    intersects: [
+      {
+        object: { parent: { userData: { partId: 'prefix:front-box_side_left' } } },
+        point: { x: 0.21, y: 1, z: 0 },
+      },
+      { object: { userData: { partId: 'prefix:farther-box_side_left' } }, point: { x: 0.19, y: 1, z: 0 } },
+    ] as any,
+    localParent: null,
+    resolveSketchFreeBoxGeometry: resolveSketchFreeBoxGeometry as never,
+    getSketchFreeBoxPartPrefix: (_moduleKey, boxId) => `prefix:${String(boxId)}`,
+    findSketchFreeBoxLocalHit: ({ partPrefix }) =>
+      partPrefix === 'prefix:front-box' ? ({ x: 0.21, y: 1 } as any) : ({ x: 0.19, y: 1 } as any),
+  });
+
+  assert.ok(target);
+  assert.equal(target?.boxId, 'front-box');
+});
+
 test('sketch free divider target scan projects fallback pointer to the box front plane', () => {
   const box = {
     id: 'front-plane-box',

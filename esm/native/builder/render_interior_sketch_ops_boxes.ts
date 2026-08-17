@@ -56,6 +56,7 @@ export function renderInteriorSketchOwnedBoxes(args: {
     asObject: owner.asObject,
     ops: resolved.renderOps,
     doorsArray: owner.doors(resolved.App),
+    drawersArray: owner.drawers(resolved.App),
     markSplitHoverPickablesDirty: owner.markSplitHoverPickablesDirty ?? undefined,
     renderOpsHandleCatch: owner.renderOpsHandleCatch,
     applyInternalDrawersOps: owner.applyInternalDrawersOps,

@@ -94,6 +94,7 @@ export type RenderInteriorSketchBoxesArgs = {
   asObject: <T extends object = InteriorValueRecord>(x: unknown) => T | null;
   ops: InteriorValueRecord | null;
   doorsArray: unknown[];
+  drawersArray: unknown[];
   markSplitHoverPickablesDirty?: (App: AppContainer) => void;
   renderOpsHandleCatch: (
     App: AppContainer | null | undefined,

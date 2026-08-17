@@ -150,6 +150,7 @@ const __interiorSketchOps = createBuilderRenderInteriorSketchOps({
   ops: __ops,
   wardrobeGroup: __wardrobeGroup,
   doors: __doors,
+  drawers: __drawers,
   markSplitHoverPickablesDirty: __markSplitHoverPickablesDirty,
   isFn: __isFn,
   asObject: __asObject,

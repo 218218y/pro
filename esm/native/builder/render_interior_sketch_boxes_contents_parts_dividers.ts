@@ -21,6 +21,25 @@ function resolveDividerCenterZ(args: {
   return frontZ - dividerDepth / 2;
 }
 
+function resolvePersistedDividerFrontZ(args: {
+  shell: RenderSketchBoxStaticContentsArgs['shell'];
+  frontZ?: unknown;
+}): unknown {
+  const frontZ = toFiniteNumber(args.frontZ);
+  if (frontZ == null) return undefined;
+  if (args.shell.placementWall === 'back') return frontZ;
+
+  // Side-wall free boxes persist divider depth in the same canonical frame used
+  // by hover: Z=0 is the back of the box and +Z points toward its front. The
+  // builder creates the box in wardrobe-local coordinates first and only then
+  // reparents/rotates it into the room-wall frame. Translate the persisted
+  // canonical front plane into that pre-wrap builder frame before creating the
+  // divider, otherwise the value is interpreted as an absolute wardrobe Z and
+  // the divider is emitted behind the side wall.
+  const physicalBackZ = args.shell.geometry.centerZ - args.shell.geometry.outerD / 2;
+  return physicalBackZ + frontZ;
+}
+
 export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell } = args;
   const boxDividers = Array.isArray(args.boxDividers) ? args.boxDividers : [];
@@ -73,7 +92,9 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
     const dividerCenterZ = resolveDividerCenterZ({
       defaultCenterZ,
       dividerDepth,
-      frontZ: shell.isFreePlacement ? divider.frontZ : undefined,
+      frontZ: shell.isFreePlacement
+        ? resolvePersistedDividerFrontZ({ shell, frontZ: divider.frontZ })
+        : undefined,
     });
     createBoard(
       Math.max(0.0001, column ? column.width : geometry.innerW),
@@ -105,7 +126,9 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
     const dividerCenterZ = resolveDividerCenterZ({
       defaultCenterZ,
       dividerDepth,
-      frontZ: shell.isFreePlacement ? divider.frontZ : undefined,
+      frontZ: shell.isFreePlacement
+        ? resolvePersistedDividerFrontZ({ shell, frontZ: divider.frontZ })
+        : undefined,
     });
     const row =
       divider.yNorm != null && verticalSegments.length

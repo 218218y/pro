@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T06:14:51.162Z",
+  "generatedAt": "2026-08-17T08:09:59.358Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 554,
@@ -2585,7 +2585,7 @@
     },
     {
       "file": "esm/native/builder/render_ops.ts",
-      "line": 188,
+      "line": 189,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// Signature kept for compatibility: (type, doorWidth, doorHeight, isLeftHinge) -> THREE.Group|null"

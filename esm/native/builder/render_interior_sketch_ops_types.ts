@@ -34,6 +34,7 @@ export type RenderInteriorSketchOpsContext = {
   ops: RenderInteriorSketchOpsDeps['ops'];
   wardrobeGroup: RenderInteriorSketchOpsDeps['wardrobeGroup'];
   doors: RenderInteriorSketchOpsDeps['doors'];
+  drawers: (App: AppContainer) => unknown[];
   markSplitHoverPickablesDirty: RenderInteriorSketchOpsDeps['markSplitHoverPickablesDirty'] | null;
   isFn: (value: unknown) => value is UnknownCallable;
   asObject: RenderInteriorSketchOpsDeps['asObject'];

@@ -28,6 +28,38 @@ function asMutableRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+function isDescendantOf(node: unknown, ancestor: unknown): boolean {
+  let current = node && typeof node === 'object' ? node : null;
+  for (let depth = 0; current && depth < 16; depth += 1) {
+    if (current === ancestor) return true;
+    const record = asMutableRecord(current);
+    current = record?.parent && typeof record.parent === 'object' ? record.parent : null;
+  }
+  return false;
+}
+
+function localizeMotionVector(value: unknown, pivotX: number, pivotZ: number): void {
+  const record = asMutableRecord(value);
+  if (!record) return;
+  if (typeof record.x === 'number' && Number.isFinite(record.x)) record.x -= pivotX;
+  if (typeof record.z === 'number' && Number.isFinite(record.z)) record.z -= pivotZ;
+}
+
+function localizeWrappedDrawerMotion(args: {
+  drawersArray?: unknown[] | null;
+  wrapper: unknown;
+  pivotX: number;
+  pivotZ: number;
+}): void {
+  const drawersArray = Array.isArray(args.drawersArray) ? args.drawersArray : [];
+  for (const drawer of drawersArray) {
+    const record = asMutableRecord(drawer);
+    if (!record || !isDescendantOf(record.group, args.wrapper)) continue;
+    localizeMotionVector(record.closed, args.pivotX, args.pivotZ);
+    localizeMotionVector(record.open, args.pivotX, args.pivotZ);
+  }
+}
+
 export function wrapNewFreePlacementObjects(args: {
   renderArgs: RenderInteriorSketchBoxesArgs;
   startIndex: number;
@@ -100,6 +132,18 @@ export function wrapNewFreePlacementObjects(args: {
     wrapper.add?.(candidate);
   }
   group.add?.(wrapper);
+
+  // Drawer bodies are animated after the build from the canonical `closed` / `open`
+  // vectors stored in render state. Reparenting the geometry without localizing those
+  // vectors makes the next motion tick write the old wardrobe-local coordinates back
+  // onto the moving drawer. Fixed runner hardware stays correctly inside the wrapper,
+  // which is why the bug visibly left only the rails in the side-wall box.
+  localizeWrappedDrawerMotion({
+    drawersArray: renderArgs.drawersArray,
+    wrapper,
+    pivotX,
+    pivotZ,
+  });
 
   if (typeof wrapperRecord.updateMatrixWorld === 'function') {
     try {

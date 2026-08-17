@@ -149,6 +149,7 @@ export type RenderInteriorSketchOpsDeps = {
   ops: (App: AppContainer) => InteriorValueRecord;
   wardrobeGroup: (App: AppContainer) => InteriorGroupLike | null;
   doors: (App: AppContainer) => unknown[];
+  drawers?: (App: AppContainer) => unknown[];
   markSplitHoverPickablesDirty?: (App: AppContainer) => void;
   isFn: (v: unknown) => v is UnknownCallable;
   asObject: <T extends object = InteriorValueRecord>(x: unknown) => T | null;

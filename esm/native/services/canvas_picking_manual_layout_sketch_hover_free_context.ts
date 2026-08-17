@@ -89,20 +89,36 @@ function filterFreeBoxesForWall(boxes: UnknownRecord[], wall: RoomWallId): Unkno
   return boxes.filter(box => normalizePlacementWall(readRecordValue(box, 'placementWall')) === wall);
 }
 
-function findSidePlacementTransformHit(args: {
+function isSketchFreePlacementRayObject(object: unknown): boolean {
+  let node = object && typeof object === 'object' ? object : null;
+  for (let depth = 0; node && depth < 12; depth += 1) {
+    const userData = asRecord(Reflect.get(node, 'userData'));
+    const partId = typeof userData?.partId === 'string' ? userData.partId : '';
+    if (partId === 'sketch_box_free' || partId.startsWith('sketch_box_free_')) return true;
+    node = Reflect.get(node, 'parent');
+    if (!(node && typeof node === 'object')) node = null;
+  }
+  return false;
+}
+
+function findDirectFreePlacementHit(args: {
   App: AppContainer;
   wardrobeGroup: unknown;
   intersects: RaycastHitLike[];
 }): {
-  wall: 'left' | 'right';
-  planeHit: LocalPoint;
-  transform: SketchFreePlacementTransform;
+  wall: RoomWallId;
+  planeHit: LocalPoint | null;
+  transform: SketchFreePlacementTransform | null;
 } | null {
   for (const hit of args.intersects) {
+    if (!isSketchFreePlacementRayObject(hit?.object)) continue;
     const transform = readSketchFreePlacementTransform(hit?.object);
-    if (!(transform?.wall === 'left' || transform?.wall === 'right') || !hit?.point) continue;
+    if (!(transform?.wall === 'left' || transform?.wall === 'right')) {
+      return { wall: 'back', planeHit: null, transform: null };
+    }
+    if (!hit?.point) return { wall: transform.wall, planeHit: null, transform };
     const local = __wp_projectWorldPointToLocal(args.App, hit.point, args.wardrobeGroup);
-    if (!local) continue;
+    if (!local) return { wall: transform.wall, planeHit: null, transform };
     return {
       wall: transform.wall,
       planeHit: remapSketchFreePlacementLocalPoint(local, transform),
@@ -162,14 +178,23 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
   const measuredWardrobeBox = __wp_measureWardrobeLocalBox(App);
   if (!(host && measuredWardrobeBox)) return null;
 
-  const taggedSideHit = findSidePlacementTransformHit({ App, wardrobeGroup, intersects });
+  // `intersects` is ordered from the camera outward. Resolve the first free box
+  // hit regardless of which wall owns it. Previously this scan skipped back-wall
+  // boxes and kept walking until it found any side-wall transform farther along
+  // the ray, so a side box behind the cursor could steal hover from the box that
+  // was actually under the pointer.
+  const directFreePlacementHit = findDirectFreePlacementHit({ App, wardrobeGroup, intersects });
+  const taggedSideHit =
+    directFreePlacementHit?.wall === 'left' || directFreePlacementHit?.wall === 'right'
+      ? directFreePlacementHit
+      : null;
   const directWallHit =
-    !taggedSideHit && isWallRaycaster(raycaster) && isWallMouse(mouse)
+    !directFreePlacementHit && isWallRaycaster(raycaster) && isWallMouse(mouse)
       ? findRoomWallSurfaceHit({ App, ndcX, ndcY, camera, raycaster, mouse })
       : null;
   const directSideHit =
     directWallHit?.surface.wall === 'left' || directWallHit?.surface.wall === 'right' ? directWallHit : null;
-  const placementWall: RoomWallId = taggedSideHit?.wall || directSideHit?.surface.wall || 'back';
+  const placementWall: RoomWallId = directFreePlacementHit?.wall || directSideHit?.surface.wall || 'back';
   const placementSurface =
     placementWall === 'back'
       ? null
@@ -187,7 +212,7 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
   let planeHit: LocalPoint | null = null;
   let workspaceBackZ = wardrobeBackZ;
 
-  if (placementSurface && (taggedSideHit || directSideHit)) {
+  if (placementSurface && (taggedSideHit?.planeHit || directSideHit)) {
     wardrobeBox = buildSideWallWorkspace(measuredWardrobeBox, placementSurface);
     workspaceBackZ = 0;
     planeHit = taggedSideHit?.planeHit || {
