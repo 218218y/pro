@@ -4,7 +4,7 @@
 // state: every final rod renderer calls this helper immediately after emitting a
 // rod, so rebuilding/removing the rod also removes its supports.
 
-import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { BUILDER_HINGED_DOOR_HARDWARE_METAL_FINISH } from './hinged_door_motion_metadata.js';
 
 export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
   cupInnerClearanceM: 0.001,
@@ -188,13 +188,7 @@ function resolveRodSupportHardwareMaterial(THREE: RodSupportThreeLike, fallbackM
   const cached = rodSupportHardwareMaterialCache.get(THREE as object);
   if (cached) return cached;
 
-  const material = new THREE.MeshStandardMaterial({
-    color: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex,
-    metalness: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness,
-    roughness: HINGED_DOOR_HARDWARE_RENDER_POLICY.roughness,
-    emissive: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveHex,
-    emissiveIntensity: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveIntensity,
-  });
+  const material = new THREE.MeshStandardMaterial(BUILDER_HINGED_DOOR_HARDWARE_METAL_FINISH);
   rodSupportHardwareMaterialCache.set(THREE as object, material);
   return material;
 }

@@ -34,6 +34,14 @@ export function patchBuilderHingedDoorMotionMetadata(
   Object.assign(target, createHingedDoorMotionMetadataPatch(input));
 }
 
+export const BUILDER_HINGED_DOOR_HARDWARE_METAL_FINISH = Object.freeze({
+  color: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalColorHex,
+  metalness: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalness,
+  roughness: HINGED_DOOR_HARDWARE_RENDER_POLICY.roughness,
+  emissive: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveHex,
+  emissiveIntensity: HINGED_DOOR_HARDWARE_RENDER_POLICY.metalEmissiveIntensity,
+});
+
 /** Canonical builder-side creation of hardware state from the shared hinge policy. */
 export function createBuilderHingedDoorHardwareRenderState(
   THREE: ThreeLike,
