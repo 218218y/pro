@@ -5,10 +5,7 @@
 
 import { CORNER_CONNECTOR_ATTACH_ROD_POLICY } from '../../shared/dimensions/corner_connector_interior_policy.js';
 import { CM_PER_METER, MM_PER_METER } from '../../shared/dimensions/units.js';
-import {
-  appendInteriorRodEndSupports,
-  resolveInteriorRodSupportInsertionDepth,
-} from './interior_rod_support_visuals.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 import type {
   CornerConnectorInteriorFlowParams,
   CornerConnectorInteriorEmitters,
@@ -75,45 +72,32 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     const len = Math.sqrt(dx * dx + dz * dz);
     if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_ATTACH_ROD_POLICY.minRodLengthM) return;
 
-    const rodAxis = Math.abs(dx) >= Math.abs(dz) ? 'x' : 'z';
-    const startCoord = rodAxis === 'x' ? ax : az;
-    const endCoord = rodAxis === 'x' ? bx : bz;
-    const supportInset = Math.max(0, endInset);
-    const negativeMountCoord = Math.min(startCoord, endCoord) - supportInset;
-    const positiveMountCoord = Math.max(startCoord, endCoord) + supportInset;
-    const negativeInsertionM = resolveInteriorRodSupportInsertionDepth(supportInset);
-    const positiveInsertionM = resolveInteriorRodSupportInsertionDepth(supportInset);
-    const invLen = 1 / len;
-    const dirX = dx * invLen;
-    const dirZ = dz * invLen;
-    const rodStartX = ax - dirX * negativeInsertionM;
-    const rodStartZ = az - dirZ * negativeInsertionM;
-    const rodEndX = bx + dirX * positiveInsertionM;
-    const rodEndZ = bz + dirZ * positiveInsertionM;
-    const mountedLen = Math.sqrt((rodEndX - rodStartX) ** 2 + (rodEndZ - rodStartZ) ** 2);
-
     const rodMaterial = getMaterial(null, 'metal');
-    const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, mountedLen, 16), rodMaterial);
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 16), rodMaterial);
     // Cylinder height is along local Y; rotate so it aligns with the (dx,dz) direction in XZ.
     rod.rotation.z = Math.PI / 2;
     rod.rotation.y = -Math.atan2(dz, dx);
 
-    rod.position.set((rodStartX + rodEndX) / 2, yPos, (rodStartZ + rodEndZ) / 2);
+    rod.position.set((ax + bx) / 2, yPos, (az + bz) / 2);
     rod.userData = { partId };
     addOutlines(rod);
     cornerGroup.add(rod);
+    const rodAxis = Math.abs(dx) >= Math.abs(dz) ? 'x' : 'z';
+    const startCoord = rodAxis === 'x' ? ax : az;
+    const endCoord = rodAxis === 'x' ? bx : bz;
+    const supportInset = Math.max(0, endInset);
     appendInteriorRodEndSupports({
       THREE,
       parent: cornerGroup,
       material: rodMaterial,
-      centerX: (rodStartX + rodEndX) / 2,
+      centerX: (ax + bx) / 2,
       centerY: yPos,
-      centerZ: (rodStartZ + rodEndZ) / 2,
-      rodLength: mountedLen,
+      centerZ: (az + bz) / 2,
+      rodLength: len,
       rodRadius: radius,
       axis: rodAxis,
-      negativeMountCoord,
-      positiveMountCoord,
+      negativeMountCoord: Math.min(startCoord, endCoord) - supportInset,
+      positiveMountCoord: Math.max(startCoord, endCoord) + supportInset,
       ownerPartId: partId,
       addOutlines,
     });

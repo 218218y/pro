@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   appendInteriorRodEndSupports,
   INTERIOR_ROD_SUPPORT_VISUAL_POLICY,
-  resolveInteriorRodMountedAxisSpan,
+  resolveInteriorRodSupportInsertionDepth,
 } from '../esm/native/builder/interior_rod_support_visuals.ts';
 import { INTERIOR_ROD_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 
@@ -60,46 +60,14 @@ function closeTo(actual: number, expected: number, message?: string): void {
   assert.ok(Math.abs(actual - expected) <= 1e-9, message ?? `${actual} must equal ${expected}`);
 }
 
-test('mounted rod span extends the rod well into both support cups while preserving a front lip', () => {
-  const mounted = resolveInteriorRodMountedAxisSpan({
-    centerCoord: 1.2,
-    rodLength: 0.76,
-    negativeMountCoord: 0.8,
-    positiveMountCoord: 1.6,
-  });
-
-  assert.ok(mounted);
-  if (!mounted) return;
-  closeTo(mounted.negativeMountGapM, 0.02);
-  closeTo(mounted.positiveMountGapM, 0.02);
-  closeTo(mounted.negativeInsertionM, 0.012);
-  closeTo(mounted.positiveInsertionM, 0.012);
-  closeTo(mounted.minCoord, 0.808);
-  closeTo(mounted.maxCoord, 1.592);
-  closeTo(mounted.centerCoord, 1.2);
-  closeTo(mounted.rodLength, 0.784);
+test('rod support insertion extends visibly into the cup while preserving a mounting lip', () => {
+  closeTo(resolveInteriorRodSupportInsertionDepth(0.02), 0.012);
+  closeTo(resolveInteriorRodSupportInsertionDepth(0.03), 0.018);
+  closeTo(resolveInteriorRodSupportInsertionDepth(0), 0);
+  closeTo(resolveInteriorRodSupportInsertionDepth(Number.NaN), 0);
 });
 
-test('mounted rod span never invents insertion when an end already sits at its mount surface', () => {
-  const mounted = resolveInteriorRodMountedAxisSpan({
-    centerCoord: 0,
-    rodLength: 0.5,
-    negativeMountCoord: -0.25,
-    positiveMountCoord: 0.28,
-  });
-
-  assert.ok(mounted);
-  if (!mounted) return;
-  closeTo(mounted.negativeMountGapM, 0);
-  closeTo(mounted.positiveMountGapM, 0.03);
-  closeTo(mounted.negativeInsertionM, 0);
-  closeTo(mounted.positiveInsertionM, 0.018);
-  closeTo(mounted.minCoord, -0.25);
-  closeTo(mounted.maxCoord, 0.268);
-  closeTo(mounted.rodLength, 0.518);
-});
-
-test('rod support visual mounts a round plate on each wall with a projecting U-cup and no arm', () => {
+test('rod support visual mounts a half-round wall plate, projecting U-cup, and seated rod continuation', () => {
   const added: Mesh[] = [];
   const outlined: Mesh[] = [];
   const material = { id: 'rod-metal' };
@@ -126,18 +94,23 @@ test('rod support visual mounts a round plate on each wall with a projecting U-c
     addOutlines: obj => outlined.push(obj as Mesh),
   });
 
-  assert.equal(count, 4);
-  assert.equal(added.length, 4);
-  assert.equal(outlined.length, 4);
+  assert.equal(count, 6);
+  assert.equal(added.length, 6);
+  assert.equal(outlined.length, 6);
   assert.ok(added.every(mesh => mesh.material === material));
   assert.ok(added.every(mesh => mesh.userData.__wpRodSupportHardware === true));
   assert.ok(added.every(mesh => mesh.userData.__ignoreRaycast === true));
   assert.ok(added.every(mesh => mesh.userData.__wpRodOwnerPartId === 'rod-a'));
 
-  const cups = added.filter(mesh => mesh.geometry instanceof TorusGeometry);
-  const plates = added.filter(mesh => mesh.geometry instanceof CylinderGeometry);
+  const cups = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'cup');
+  const plates = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'mount_plate');
+  const rodExtensions = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'rod_extension');
   assert.equal(cups.length, 2);
   assert.equal(plates.length, 2);
+  assert.equal(rodExtensions.length, 2);
+  assert.ok(cups.every(mesh => mesh.geometry instanceof TorusGeometry));
+  assert.ok(plates.every(mesh => mesh.geometry instanceof CylinderGeometry));
+  assert.ok(rodExtensions.every(mesh => mesh.geometry instanceof CylinderGeometry));
 
   const expectedLeftEnd = centerX - rodLength / 2;
   const expectedRightEnd = centerX + rodLength / 2;
@@ -159,6 +132,13 @@ test('rod support visual mounts a round plate on each wall with a projecting U-c
     'the half-ring itself must project from the wall to the rod'
   );
 
+  const expectedInsertion = resolveInteriorRodSupportInsertionDepth(leftGap);
+  closeTo((rodExtensions[0].geometry as CylinderGeometry).args[2] as number, expectedInsertion);
+  closeTo((rodExtensions[1].geometry as CylinderGeometry).args[2] as number, expectedInsertion);
+  closeTo(rodExtensions[0].position.x, expectedLeftEnd - expectedInsertion / 2);
+  closeTo(rodExtensions[1].position.x, expectedRightEnd + expectedInsertion / 2);
+  assert.equal(rodExtensions[0].rotation.z, Math.PI / 2);
+
   closeTo(
     plates[0].position.x,
     negativeMountCoord + INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateThicknessM / 2
@@ -168,6 +148,8 @@ test('rod support visual mounts a round plate on each wall with a projecting U-c
     positiveMountCoord - INTERIOR_ROD_SUPPORT_VISUAL_POLICY.mountPlateThicknessM / 2
   );
   assert.equal(plates[0].rotation.z, Math.PI / 2);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[6], Math.PI);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[7], Math.PI);
 });
 
 test('rod support visual uses the real mount gap and rotates the same hardware for a Z-axis rod', () => {
@@ -191,15 +173,21 @@ test('rod support visual uses the real mount gap and rotates the same hardware f
     positiveMountCoord,
   });
 
-  assert.equal(count, 4);
-  const cups = added.filter(mesh => mesh.geometry instanceof TorusGeometry);
-  const plates = added.filter(mesh => mesh.geometry instanceof CylinderGeometry);
+  assert.equal(count, 6);
+  const cups = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'cup');
+  const plates = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'mount_plate');
+  const rodExtensions = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'rod_extension');
   closeTo(cups[0].position.z, negativeMountCoord + 0.015);
   closeTo(cups[1].position.z, positiveMountCoord - 0.015);
   closeTo(cups[0].scale.z, 0.03 / (2 * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupTubeRadiusM));
   assert.equal(cups[0].rotation.z, Math.PI);
   assert.equal(cups[0].rotation.y, 0);
   assert.equal(plates[0].rotation.x, Math.PI / 2);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[6], -Math.PI / 2);
+  assert.equal((plates[0].geometry as CylinderGeometry).args[7], Math.PI);
+  closeTo((rodExtensions[0].geometry as CylinderGeometry).args[2] as number, 0.018);
+  closeTo(rodExtensions[0].position.z, centerZ - rodLength / 2 - 0.009);
+  closeTo(rodExtensions[1].position.z, centerZ + rodLength / 2 + 0.009);
 });
 
 test('rod support visual keeps a useful cup projection when a clipped rod ends directly at its mount surface', () => {
@@ -222,13 +210,16 @@ test('rod support visual keeps a useful cup projection when a clipped rod ends d
     positiveMountCoord: centerX + rodLength / 2 + 0.02,
   });
 
-  const cups = added.filter(mesh => mesh.geometry instanceof TorusGeometry);
+  const cups = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'cup');
   closeTo(cups[0].position.x, rodLeftEnd + INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupProjectionMinM / 2);
   closeTo(
     cups[0].scale.z,
     INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupProjectionMinM /
       (2 * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.cupTubeRadiusM)
   );
+  const rodExtensions = added.filter(mesh => mesh.userData.__wpRodSupportRole === 'rod_extension');
+  assert.equal(rodExtensions.length, 1, 'the end already at its mount surface must not grow an extension');
+  assert.equal(rodExtensions[0].userData.__wpRodSupportSide, 'positive');
 });
 
 test('rod support visual never emits orphan hardware when the rod geometry is not valid', () => {

@@ -6,10 +6,7 @@ import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 import { asMaterial, asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
-import {
-  appendInteriorRodEndSupports,
-  resolveInteriorRodMountedAxisSpan,
-} from './interior_rod_support_visuals.js';
+import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 
 export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
@@ -64,24 +61,17 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     const mountSpanWidth = rodSegment ? rodSegment.width : geometry.innerW;
     const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
     const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
-    const mountedRodSpan = resolveInteriorRodMountedAxisSpan({
-      centerCoord: rodSpan.centerX,
-      rodLength: rodSpan.length,
-      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : sourceRodCenterX - mountSpanWidth / 2,
-      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : sourceRodCenterX + mountSpanWidth / 2,
-    });
-    if (!mountedRodSpan) continue;
     const rodMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
-        mountedRodSpan.rodLength,
+        rodSpan.length,
         INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );
     if (rodMesh.rotation) rodMesh.rotation.z = Math.PI / 2;
-    rodMesh.position?.set?.(mountedRodSpan.centerCoord, rodY, rodCenterZ);
+    rodMesh.position?.set?.(rodSpan.centerX, rodY, rodCenterZ);
     rodMesh.userData = rodMesh.userData || {};
     rodMesh.userData.partId = rodPid;
     rodMesh.userData.__wpType = 'sketchRod';
@@ -90,14 +80,14 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       THREE,
       parent: group,
       material: rodMat,
-      centerX: mountedRodSpan.centerCoord,
+      centerX: rodSpan.centerX,
       centerY: rodY,
       centerZ: rodCenterZ,
-      rodLength: mountedRodSpan.rodLength,
+      rodLength: rodSpan.length,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
-      negativeMountCoord: mountedRodSpan.negativeMountCoord,
-      positiveMountCoord: mountedRodSpan.positiveMountCoord,
+      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : sourceRodCenterX - mountSpanWidth / 2,
+      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : sourceRodCenterX + mountSpanWidth / 2,
       ownerPartId: rodPid,
     });
   }

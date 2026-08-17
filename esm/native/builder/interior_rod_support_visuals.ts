@@ -19,6 +19,7 @@ export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
 });
 
 type RodAxis = 'x' | 'z';
+type RodSupportRole = 'cup' | 'mount_plate' | 'rod_extension';
 
 type RodSupportObjectLike = Record<string, unknown> & {
   position?: { set?: (x: number, y: number, z: number) => unknown };
@@ -44,7 +45,11 @@ type RodSupportThreeLike = {
     radiusTop: number,
     radiusBottom: number,
     height: number,
-    radialSegments: number
+    radialSegments: number,
+    heightSegments?: number,
+    openEnded?: boolean,
+    thetaStart?: number,
+    thetaLength?: number
   ) => unknown;
   Mesh?: new (geometry: unknown, material: unknown) => RodSupportObjectLike;
 };
@@ -69,29 +74,10 @@ export type AppendInteriorRodEndSupportsArgs = {
   ownerPartId?: string | null;
 };
 
-export type ResolveInteriorRodMountedAxisSpanArgs = {
-  centerCoord: number;
-  rodLength: number;
-  negativeMountCoord?: number | null;
-  positiveMountCoord?: number | null;
-};
-
-export type InteriorRodMountedAxisSpan = {
-  centerCoord: number;
-  rodLength: number;
-  minCoord: number;
-  maxCoord: number;
-  negativeMountCoord: number;
-  positiveMountCoord: number;
-  negativeMountGapM: number;
-  positiveMountGapM: number;
-  negativeInsertionM: number;
-  positiveInsertionM: number;
-};
-
 function markRodSupportHardware(
   mesh: RodSupportObjectLike,
   side: 'negative' | 'positive',
+  role: RodSupportRole,
   ownerPartId: string | null | undefined
 ): void {
   mesh.userData = {
@@ -99,6 +85,7 @@ function markRodSupportHardware(
     __kind: 'wardrobe_rod_support',
     __wpRodSupportHardware: true,
     __wpRodSupportSide: side,
+    __wpRodSupportRole: role,
     __wpMeasurementIgnoreInteriorBoundary: true,
     __ignoreRaycast: true,
     __keepMaterial: true,
@@ -135,21 +122,28 @@ function rotateCupOpenUpward(mesh: RodSupportObjectLike, axis: RodAxis): void {
   if (axis === 'x') mesh.rotation.y = Math.PI / 2;
 }
 
-function rotatePlateToRodAxis(mesh: RodSupportObjectLike, axis: RodAxis): void {
+function rotateCylinderToRodAxis(mesh: RodSupportObjectLike, axis: RodAxis): void {
   if (!mesh.rotation) return;
   // CylinderGeometry's height axis is local Y.
   if (axis === 'x') mesh.rotation.z = Math.PI / 2;
   else mesh.rotation.x = Math.PI / 2;
 }
 
+function resolveMountPlateThetaStart(axis: RodAxis): number {
+  // Keep only the lower half of the wall plate, with its flat diameter through
+  // the rod centerline and the rounded half below the projecting cup.
+  return axis === 'x' ? Math.PI : -Math.PI / 2;
+}
+
 function addHardwareMesh(args: {
   mesh: RodSupportObjectLike;
   parent: RodSupportParentLike;
   side: 'negative' | 'positive';
+  role: RodSupportRole;
   ownerPartId?: string | null;
   addOutlines?: ((obj: RodSupportObjectLike) => unknown) | null;
 }): void {
-  markRodSupportHardware(args.mesh, args.side, args.ownerPartId);
+  markRodSupportHardware(args.mesh, args.side, args.role, args.ownerPartId);
   if (typeof args.addOutlines === 'function') args.addOutlines(args.mesh);
   args.parent.add?.(args.mesh);
 }
@@ -168,45 +162,14 @@ export function resolveInteriorRodSupportInsertionDepth(mountGapM: number): numb
   return Math.min(preferred, maxAllowed);
 }
 
-export function resolveInteriorRodMountedAxisSpan(
-  args: ResolveInteriorRodMountedAxisSpanArgs
-): InteriorRodMountedAxisSpan | null {
-  const centerCoord = Number(args.centerCoord);
-  const rodLength = Number(args.rodLength);
-  if (!Number.isFinite(centerCoord) || !(rodLength > 0) || !Number.isFinite(rodLength)) return null;
-
-  const minCoord = centerCoord - rodLength / 2;
-  const maxCoord = centerCoord + rodLength / 2;
-  const negativeMountCoord = readMountCoord(args.negativeMountCoord, minCoord, -1);
-  const positiveMountCoord = readMountCoord(args.positiveMountCoord, maxCoord, 1);
-  const negativeMountGapM = Math.max(0, minCoord - negativeMountCoord);
-  const positiveMountGapM = Math.max(0, positiveMountCoord - maxCoord);
-  const negativeInsertionM = resolveInteriorRodSupportInsertionDepth(negativeMountGapM);
-  const positiveInsertionM = resolveInteriorRodSupportInsertionDepth(positiveMountGapM);
-  const mountedMinCoord = minCoord - negativeInsertionM;
-  const mountedMaxCoord = maxCoord + positiveInsertionM;
-
-  return {
-    centerCoord: (mountedMinCoord + mountedMaxCoord) / 2,
-    rodLength: mountedMaxCoord - mountedMinCoord,
-    minCoord: mountedMinCoord,
-    maxCoord: mountedMaxCoord,
-    negativeMountCoord,
-    positiveMountCoord,
-    negativeMountGapM,
-    positiveMountGapM,
-    negativeInsertionM,
-    positiveInsertionM,
-  };
-}
-
 /**
  * Adds the two fixed end supports for a rendered hanging rod.
  *
- * Each support is intentionally render-only hardware. A round plate sits flush
- * against the mounting surface and a U-shaped half-ring projects directly from
- * that plate into the cabinet to cradle the rod. There is deliberately no
- * intermediate arm between the plate and the cup.
+ * Each support is intentionally render-only hardware. A half-round plate sits
+ * flush against the mounting surface and a U-shaped half-ring projects directly
+ * from that plate into the cabinet to cradle the rod. A short cylindrical rod
+ * continuation overlaps into the cup so the visible rod is seated inside the
+ * support without changing the canonical rod span used by layout/collision logic.
  */
 export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsArgs): number {
   const { THREE, parent } = args;
@@ -270,10 +233,34 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         mesh: cup,
         parent,
         side,
+        role: 'cup',
         ownerPartId: args.ownerPartId,
         addOutlines: args.addOutlines,
       });
       added += 1;
+    }
+
+    const rodInsertionM = resolveInteriorRodSupportInsertionDepth(mountGapM);
+    if (rodInsertionM > 0) {
+      const rodExtension = new THREE.Mesh(
+        new THREE.CylinderGeometry(rodRadius, rodRadius, rodInsertionM, policy.cupTubularSegments),
+        args.material
+      );
+      rotateCylinderToRodAxis(rodExtension, axis);
+      const extensionCenterCoord = rodEndCoord + sign * (rodInsertionM / 2);
+      const extensionX = axis === 'x' ? extensionCenterCoord : centerX;
+      const extensionZ = axis === 'z' ? extensionCenterCoord : centerZ;
+      if (setMeshPosition(rodExtension, extensionX, centerY, extensionZ)) {
+        addHardwareMesh({
+          mesh: rodExtension,
+          parent,
+          side,
+          role: 'rod_extension',
+          ownerPartId: args.ownerPartId,
+          addOutlines: args.addOutlines,
+        });
+        added += 1;
+      }
     }
 
     const plate = new THREE.Mesh(
@@ -281,11 +268,15 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         policy.mountPlateRadiusM,
         policy.mountPlateRadiusM,
         policy.mountPlateThicknessM,
-        policy.mountPlateRadialSegments
+        policy.mountPlateRadialSegments,
+        1,
+        false,
+        resolveMountPlateThetaStart(axis),
+        Math.PI
       ),
       args.material
     );
-    rotatePlateToRodAxis(plate, axis);
+    rotateCylinderToRodAxis(plate, axis);
     const plateCenterCoord = mountCoord + inwardSign * (policy.mountPlateThicknessM / 2);
     const plateX = axis === 'x' ? plateCenterCoord : centerX;
     const plateZ = axis === 'z' ? plateCenterCoord : centerZ;
@@ -294,6 +285,7 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         mesh: plate,
         parent,
         side,
+        role: 'mount_plate',
         ownerPartId: args.ownerPartId,
         addOutlines: args.addOutlines,
       });
