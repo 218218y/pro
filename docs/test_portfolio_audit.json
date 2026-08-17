@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-17T17:24:49.407Z",
+  "generatedAt": "2026-08-17T19:05:53.325Z",
   "totals": {
-    "tests": 1246,
-    "unitRunnerTests": 1237,
+    "tests": 1241,
+    "unitRunnerTests": 1232,
     "e2eTests": 9,
-    "nonTestRuntimeFiles": 36,
+    "nonTestRuntimeFiles": 37,
     "packageTestReferences": 16,
     "catalogTestReferences": 484,
     "totalTestReferences": 500,
@@ -17,10 +17,10 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 138
+    "contractOverlapTargets": 137
   },
   "categories": {
-    "contract": 397,
+    "contract": 392,
     "runtime-unit": 340,
     "integration": 470,
     "persistence-ingress": 23,
@@ -159,10 +159,6 @@
           "kind": "contract"
         },
         {
-          "file": "tests/core_carcass_shared_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
           "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
           "kind": "ownership"
         }
@@ -219,10 +215,6 @@
         {
           "file": "tests/builder_service_access_contracts.test.js",
           "kind": "contract"
-        },
-        {
-          "file": "tests/core_module_layout_ownership_contract.test.js",
-          "kind": "ownership"
         },
         {
           "file": "tests/core_module_layout_ownership_runtime.test.ts",
@@ -769,20 +761,6 @@
       ]
     },
     {
-      "target": "esm/native/builder/visuals_chest_mode_inputs.ts",
-      "kinds": ["contract", "ownership"],
-      "owners": [
-        {
-          "file": "tests/builder_surface_family_contracts.test.js",
-          "kind": "contract"
-        },
-        {
-          "file": "tests/chest_mode_inputs_ownership_contract.test.js",
-          "kind": "ownership"
-        }
-      ]
-    },
-    {
       "target": "esm/native/core/api.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
@@ -1145,10 +1123,6 @@
         {
           "file": "tests/local_motion_toggle_wakeup_guard.test.cjs",
           "kind": "contract"
-        },
-        {
-          "file": "tests/render_loop_door_motion_ownership_contract.test.js",
-          "kind": "ownership"
         },
         {
           "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
@@ -2643,10 +2617,6 @@
           "kind": "ownership"
         },
         {
-          "file": "tests/default_state_dimension_ownership_contract.test.js",
-          "kind": "ownership"
-        },
-        {
           "file": "tests/default_state_dimension_ownership_runtime.test.ts",
           "kind": "ownership"
         },
@@ -3643,10 +3613,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/chest_mode_inputs_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/chest_mode_width_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -4187,10 +4153,6 @@
       "category": "contract"
     },
     {
-      "file": "tests/core_carcass_shared_ownership_contract.test.js",
-      "category": "contract"
-    },
-    {
       "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
       "category": "contract"
     },
@@ -4208,10 +4170,6 @@
     },
     {
       "file": "tests/core_engine_entrypoints_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/core_module_layout_ownership_contract.test.js",
       "category": "contract"
     },
     {
@@ -4368,10 +4326,6 @@
     },
     {
       "file": "tests/debug_console_surface_runtime.test.ts",
-      "category": "contract"
-    },
-    {
-      "file": "tests/default_state_dimension_ownership_contract.test.js",
       "category": "contract"
     },
     {
@@ -6245,10 +6199,6 @@
     {
       "file": "tests/render_interior_sketch_visuals_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/render_loop_door_motion_ownership_contract.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",

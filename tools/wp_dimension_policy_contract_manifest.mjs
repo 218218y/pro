@@ -170,4 +170,22 @@ export const DIMENSION_STATIC_POLICY_CONTRACTS = deepFreeze([
       },
     ],
   },
+  {
+    id: 'wardrobe-module-layout-policy',
+    owner: 'esm/shared/dimensions/wardrobe_layout_policy.ts',
+    exportName: 'WARDROBE_MODULE_LAYOUT_POLICY',
+    sources: [],
+    shape: object({
+      minSegmentWidthCm: { literal: 1 },
+      boundaryFullThicknessMultiplier: { literal: 1 },
+      boundarySharedThicknessMultiplier: { literal: 0.5 },
+    }),
+    consumers: [
+      {
+        file: 'esm/native/builder/core_layout_compute.ts',
+        symbols: ['WARDROBE_MODULE_LAYOUT_POLICY'],
+        access: 'member-only',
+      },
+    ],
+  },
 ]);

@@ -412,6 +412,75 @@ export const DIMENSION_COMPOSITION_CONTRACT_LANES = deepFreeze({
         },
       ],
     },
+    {
+      id: 'render-loop-door-motion-dimension-consolidation',
+      consumer: 'esm/native/platform/render_loop_motion_doors.ts',
+      owner: 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts',
+      symbols: ['SLIDING_DOOR_CONSTRUCTION_POLICY', 'WARDROBE_DEFAULTS', 'cmToM'],
+      sources: [
+        {
+          file: 'esm/shared/dimensions/door_system_policy.ts',
+          symbols: ['SLIDING_DOOR_CONSTRUCTION_POLICY'],
+        },
+        {
+          file: 'esm/shared/dimensions/units.ts',
+          symbols: ['cmToM'],
+        },
+        {
+          file: 'esm/shared/dimensions/wardrobe_defaults.ts',
+          symbols: ['WARDROBE_DEFAULTS'],
+        },
+      ],
+    },
+    {
+      id: 'runtime-default-state-dimension-consolidation',
+      consumer: 'esm/native/runtime/default_state.ts',
+      owner: 'esm/shared/dimensions/runtime_default_state_dimension_policy.ts',
+      symbols: [
+        'BASE_LEG_DIMENSIONS',
+        'BASE_PLINTH_POLICY',
+        'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
+        'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+        'DEFAULT_CHEST_DRAWERS_COUNT',
+        'DEFAULT_CORNER_DOORS',
+        'DEFAULT_CORNER_WIDTH',
+        'DEFAULT_HEIGHT',
+        'DEFAULT_HINGED_DOORS',
+        'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+        'DEFAULT_WIDTH',
+        'HINGED_DEFAULT_DEPTH',
+      ],
+      sources: [
+        {
+          file: 'esm/shared/dimensions/base_leg_policy.ts',
+          symbols: ['BASE_LEG_DIMENSIONS'],
+        },
+        {
+          file: 'esm/shared/dimensions/base_plinth_policy.ts',
+          symbols: ['BASE_PLINTH_POLICY'],
+        },
+        {
+          file: 'esm/shared/dimensions/chest_mode_policy.ts',
+          symbols: ['CHEST_MODE_ACTIVE_DEFAULTS_POLICY', 'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY'],
+        },
+        {
+          file: 'esm/shared/dimensions/stack_split_policy.ts',
+          symbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+        },
+        {
+          file: 'esm/shared/dimensions/wardrobe_defaults.ts',
+          symbols: [
+            'DEFAULT_CHEST_DRAWERS_COUNT',
+            'DEFAULT_CORNER_DOORS',
+            'DEFAULT_CORNER_WIDTH',
+            'DEFAULT_HEIGHT',
+            'DEFAULT_HINGED_DOORS',
+            'DEFAULT_WIDTH',
+            'HINGED_DEFAULT_DEPTH',
+          ],
+        },
+      ],
+    },
   ],
 });
 

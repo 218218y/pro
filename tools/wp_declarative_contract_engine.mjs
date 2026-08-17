@@ -439,7 +439,7 @@ export function validateStaticPolicyContractDefinition(contract) {
   if (typeof contract?.exportName !== 'string' || !contract.exportName) {
     addViolation(violations, id, 'manifest', 'missing-export-name');
   }
-  if (!Array.isArray(contract?.sources) || contract.sources.length === 0) {
+  if (!Array.isArray(contract?.sources)) {
     addViolation(violations, id, 'manifest', 'missing-sources');
   }
   validateStaticPolicyShapeDefinition(contract?.shape, 'shape', violations, id);
