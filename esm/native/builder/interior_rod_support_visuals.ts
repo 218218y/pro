@@ -11,6 +11,8 @@ export const INTERIOR_ROD_SUPPORT_VISUAL_POLICY = Object.freeze({
   defaultMountGapM: 0.02,
   mountPlateRadiusM: 0.024,
   mountPlateThicknessM: 0.003,
+  rodInsertionRatioOfMountGap: 0.6,
+  rodInsertionVisibleLipMinM: 0.004,
   cupRadialSegments: 8,
   cupTubularSegments: 24,
   mountPlateRadialSegments: 20,
@@ -65,6 +67,26 @@ export type AppendInteriorRodEndSupportsArgs = {
   positiveMountCoord?: number | null;
   addOutlines?: ((obj: RodSupportObjectLike) => unknown) | null;
   ownerPartId?: string | null;
+};
+
+export type ResolveInteriorRodMountedAxisSpanArgs = {
+  centerCoord: number;
+  rodLength: number;
+  negativeMountCoord?: number | null;
+  positiveMountCoord?: number | null;
+};
+
+export type InteriorRodMountedAxisSpan = {
+  centerCoord: number;
+  rodLength: number;
+  minCoord: number;
+  maxCoord: number;
+  negativeMountCoord: number;
+  positiveMountCoord: number;
+  negativeMountGapM: number;
+  positiveMountGapM: number;
+  negativeInsertionM: number;
+  positiveInsertionM: number;
 };
 
 function markRodSupportHardware(
@@ -136,6 +158,46 @@ function readMountCoord(value: number | null | undefined, rodEndCoord: number, s
   return typeof value === 'number' && Number.isFinite(value)
     ? value
     : rodEndCoord + sign * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.defaultMountGapM;
+}
+
+export function resolveInteriorRodSupportInsertionDepth(mountGapM: number): number {
+  if (!(mountGapM > 0) || !Number.isFinite(mountGapM)) return 0;
+
+  const preferred = mountGapM * INTERIOR_ROD_SUPPORT_VISUAL_POLICY.rodInsertionRatioOfMountGap;
+  const maxAllowed = Math.max(0, mountGapM - INTERIOR_ROD_SUPPORT_VISUAL_POLICY.rodInsertionVisibleLipMinM);
+  return Math.min(preferred, maxAllowed);
+}
+
+export function resolveInteriorRodMountedAxisSpan(
+  args: ResolveInteriorRodMountedAxisSpanArgs
+): InteriorRodMountedAxisSpan | null {
+  const centerCoord = Number(args.centerCoord);
+  const rodLength = Number(args.rodLength);
+  if (!Number.isFinite(centerCoord) || !(rodLength > 0) || !Number.isFinite(rodLength)) return null;
+
+  const minCoord = centerCoord - rodLength / 2;
+  const maxCoord = centerCoord + rodLength / 2;
+  const negativeMountCoord = readMountCoord(args.negativeMountCoord, minCoord, -1);
+  const positiveMountCoord = readMountCoord(args.positiveMountCoord, maxCoord, 1);
+  const negativeMountGapM = Math.max(0, minCoord - negativeMountCoord);
+  const positiveMountGapM = Math.max(0, positiveMountCoord - maxCoord);
+  const negativeInsertionM = resolveInteriorRodSupportInsertionDepth(negativeMountGapM);
+  const positiveInsertionM = resolveInteriorRodSupportInsertionDepth(positiveMountGapM);
+  const mountedMinCoord = minCoord - negativeInsertionM;
+  const mountedMaxCoord = maxCoord + positiveInsertionM;
+
+  return {
+    centerCoord: (mountedMinCoord + mountedMaxCoord) / 2,
+    rodLength: mountedMaxCoord - mountedMinCoord,
+    minCoord: mountedMinCoord,
+    maxCoord: mountedMaxCoord,
+    negativeMountCoord,
+    positiveMountCoord,
+    negativeMountGapM,
+    positiveMountGapM,
+    negativeInsertionM,
+    positiveInsertionM,
+  };
 }
 
 /**

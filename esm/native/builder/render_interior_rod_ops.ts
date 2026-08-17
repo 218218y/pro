@@ -8,7 +8,10 @@ import {
   resolveInteriorRodAvailableHeight,
 } from './render_interior_rod_clearance.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
-import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
+import {
+  appendInteriorRodEndSupports,
+  resolveInteriorRodMountedAxisSpan,
+} from './interior_rod_support_visuals.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
@@ -204,6 +207,18 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     });
     if (!rodSpan) return true;
 
+    const sourceRodMinX = internalCenterX - sourceRodLength / 2;
+    const sourceRodMaxX = internalCenterX + sourceRodLength / 2;
+    const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
+    const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
+    const mountedRodSpan = resolveInteriorRodMountedAxisSpan({
+      centerCoord: rodSpan.centerX,
+      rodLength: rodSpan.length,
+      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : internalCenterX - innerW / 2,
+      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : internalCenterX + innerW / 2,
+    });
+    if (!mountedRodSpan) return false;
+
     const rodMat = resolveRodMaterial({
       THREE,
       cache: __matCache(App),
@@ -213,14 +228,14 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       new THREE.CylinderGeometry(
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
-        rodSpan.length,
+        mountedRodSpan.rodLength,
         INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );
     if (!rod.position || !rod.rotation || typeof rod.position.set !== 'function') return false;
     rod.rotation.z = Math.PI / 2;
-    rod.position.set(rodSpan.centerX, yPos, internalZ);
+    rod.position.set(mountedRodSpan.centerCoord, yPos, internalZ);
     rod.userData = {
       ...rod.userData,
       __kind: 'wardrobe_rod',
@@ -230,22 +245,18 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       addOutlines(rod);
     }
     group.add(rod);
-    const sourceRodMinX = internalCenterX - sourceRodLength / 2;
-    const sourceRodMaxX = internalCenterX + sourceRodLength / 2;
-    const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
-    const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
     appendInteriorRodEndSupports({
       THREE,
       parent: group,
       material: rodMat,
-      centerX: rodSpan.centerX,
+      centerX: mountedRodSpan.centerCoord,
       centerY: yPos,
       centerZ: internalZ,
-      rodLength: rodSpan.length,
+      rodLength: mountedRodSpan.rodLength,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
-      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : internalCenterX - innerW / 2,
-      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : internalCenterX + innerW / 2,
+      negativeMountCoord: mountedRodSpan.negativeMountCoord,
+      positiveMountCoord: mountedRodSpan.positiveMountCoord,
       addOutlines:
         typeof addOutlines === 'function' ? support => addOutlines(support as InteriorObjectLike) : null,
     });

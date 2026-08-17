@@ -7,7 +7,10 @@ import type { InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import type { ApplySketchRodsArgs } from './render_interior_sketch_support_contracts.js';
 
 import { asMaterial } from './render_interior_sketch_shared.js';
-import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
+import {
+  appendInteriorRodEndSupports,
+  resolveInteriorRodMountedAxisSpan,
+} from './interior_rod_support_visuals.js';
 
 function reportSketchRodSoft(
   args: Pick<ApplySketchRodsArgs, 'reportSoft'>,
@@ -59,10 +62,18 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
     INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.depthHintMinM,
     innerW - INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM
   );
+  const mountedRodSpan = resolveInteriorRodMountedAxisSpan({
+    centerCoord: internalCenterX,
+    rodLength: len,
+    negativeMountCoord: internalCenterX - innerW / 2,
+    positiveMountCoord: internalCenterX + innerW / 2,
+  });
+  if (!mountedRodSpan) return;
+
   const geo = new resolvedTHREE.CylinderGeometry(
     INTERIOR_ROD_RENDER_POLICY.radiusM,
     INTERIOR_ROD_RENDER_POLICY.radiusM,
-    len,
+    mountedRodSpan.rodLength,
     INTERIOR_ROD_RENDER_POLICY.radialSegments
   );
   const mat = new resolvedTHREE.MeshStandardMaterial({
@@ -74,7 +85,7 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
   if (matRec) matRec.__keepMaterial = true;
   const mesh = new resolvedTHREE.Mesh(geo, mat);
   if (mesh.rotation) mesh.rotation.z = Math.PI / 2;
-  mesh.position?.set?.(internalCenterX, y, internalZ);
+  mesh.position?.set?.(mountedRodSpan.centerCoord, y, internalZ);
   mesh.userData = mesh.userData || {};
   mesh.userData.partId = 'all_rods';
   mesh.userData.__wpType = 'sketchRod';
@@ -83,14 +94,14 @@ function applySketchRod(args: ApplySketchRodsArgs, y: number): void {
     THREE: resolvedTHREE,
     parent: group,
     material: mat,
-    centerX: internalCenterX,
+    centerX: mountedRodSpan.centerCoord,
     centerY: y,
     centerZ: internalZ,
-    rodLength: len,
+    rodLength: mountedRodSpan.rodLength,
     rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
     axis: 'x',
-    negativeMountCoord: internalCenterX - innerW / 2,
-    positiveMountCoord: internalCenterX + innerW / 2,
+    negativeMountCoord: mountedRodSpan.negativeMountCoord,
+    positiveMountCoord: mountedRodSpan.positiveMountCoord,
     ownerPartId: 'all_rods',
   });
 }

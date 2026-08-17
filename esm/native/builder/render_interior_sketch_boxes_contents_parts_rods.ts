@@ -6,7 +6,10 @@ import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 import { asMaterial, asRecordArray } from './render_interior_sketch_shared.js';
 import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
-import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
+import {
+  appendInteriorRodEndSupports,
+  resolveInteriorRodMountedAxisSpan,
+} from './interior_rod_support_visuals.js';
 
 export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsArgs): void {
   const { shell, boxDividers, boxHorizontalDividers, yFromBoxNorm } = args;
@@ -56,38 +59,45 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     });
     if (!rodSpan) continue;
     const rodPid = `${boxPid}_rod_${String(rod.id ?? ri)}`;
-    const rodMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        INTERIOR_ROD_RENDER_POLICY.radiusM,
-        INTERIOR_ROD_RENDER_POLICY.radiusM,
-        rodSpan.length,
-        INTERIOR_ROD_RENDER_POLICY.radialSegments
-      ),
-      rodMat
-    );
-    if (rodMesh.rotation) rodMesh.rotation.z = Math.PI / 2;
-    rodMesh.position?.set?.(rodSpan.centerX, rodY, rodCenterZ);
-    rodMesh.userData = rodMesh.userData || {};
-    rodMesh.userData.partId = rodPid;
-    rodMesh.userData.__wpType = 'sketchRod';
-    group.add?.(rodMesh);
     const sourceRodMinX = sourceRodCenterX - sourceRodLen / 2;
     const sourceRodMaxX = sourceRodCenterX + sourceRodLen / 2;
     const mountSpanWidth = rodSegment ? rodSegment.width : geometry.innerW;
     const rodWasCutAtNegativeEnd = rodSpan.minX > sourceRodMinX + 1e-6;
     const rodWasCutAtPositiveEnd = rodSpan.maxX < sourceRodMaxX - 1e-6;
+    const mountedRodSpan = resolveInteriorRodMountedAxisSpan({
+      centerCoord: rodSpan.centerX,
+      rodLength: rodSpan.length,
+      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : sourceRodCenterX - mountSpanWidth / 2,
+      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : sourceRodCenterX + mountSpanWidth / 2,
+    });
+    if (!mountedRodSpan) continue;
+    const rodMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        mountedRodSpan.rodLength,
+        INTERIOR_ROD_RENDER_POLICY.radialSegments
+      ),
+      rodMat
+    );
+    if (rodMesh.rotation) rodMesh.rotation.z = Math.PI / 2;
+    rodMesh.position?.set?.(mountedRodSpan.centerCoord, rodY, rodCenterZ);
+    rodMesh.userData = rodMesh.userData || {};
+    rodMesh.userData.partId = rodPid;
+    rodMesh.userData.__wpType = 'sketchRod';
+    group.add?.(rodMesh);
     appendInteriorRodEndSupports({
       THREE,
       parent: group,
       material: rodMat,
-      centerX: rodSpan.centerX,
+      centerX: mountedRodSpan.centerCoord,
       centerY: rodY,
       centerZ: rodCenterZ,
-      rodLength: rodSpan.length,
+      rodLength: mountedRodSpan.rodLength,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
-      negativeMountCoord: rodWasCutAtNegativeEnd ? rodSpan.minX : sourceRodCenterX - mountSpanWidth / 2,
-      positiveMountCoord: rodWasCutAtPositiveEnd ? rodSpan.maxX : sourceRodCenterX + mountSpanWidth / 2,
+      negativeMountCoord: mountedRodSpan.negativeMountCoord,
+      positiveMountCoord: mountedRodSpan.positiveMountCoord,
       ownerPartId: rodPid,
     });
   }

@@ -3,7 +3,10 @@ import {
   resolveCornerWingExternalDrawerGeometry,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
-import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
+import {
+  appendInteriorRodEndSupports,
+  resolveInteriorRodMountedAxisSpan,
+} from './interior_rod_support_visuals.js';
 import {
   resolveEffectiveDoorStyle,
   readDoorTrimListForPart,
@@ -40,17 +43,25 @@ export function createCornerWingInteriorLayoutOps(
       CORNER_WING_DRAWER_POLICY.rodMinLengthM,
       cellRuntime.cellInnerW - CORNER_WING_DRAWER_POLICY.rodWidthClearanceM
     );
+    const mountedRodSpan = resolveInteriorRodMountedAxisSpan({
+      centerCoord: cellRuntime.cellInnerCenterX,
+      rodLength: rodLen,
+      negativeMountCoord: cellRuntime.cellInnerCenterX - cellRuntime.cellInnerW / 2,
+      positiveMountCoord: cellRuntime.cellInnerCenterX + cellRuntime.cellInnerW / 2,
+    });
+    if (!mountedRodSpan) return;
+
     const rod = new runtime.THREE.Mesh(
       new runtime.THREE.CylinderGeometry(
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
-        rodLen,
+        mountedRodSpan.rodLength,
         INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       runtime.getMaterial(null, 'metal')
     );
     rod.rotation.z = Math.PI / 2;
-    rod.position.set(cellRuntime.cellInnerCenterX, yPos, cellRuntime.__fullDepthCenterZ);
+    rod.position.set(mountedRodSpan.centerCoord, yPos, cellRuntime.__fullDepthCenterZ);
     rod.userData = { partId: `corner_rod_c${cellRuntime.cell.idx}`, moduleIndex: cellRuntime.cellKey };
     runtime.addOutlines(rod);
     runtime.wingGroup.add(rod);
@@ -58,14 +69,14 @@ export function createCornerWingInteriorLayoutOps(
       THREE: runtime.THREE,
       parent: runtime.wingGroup,
       material: rod.material,
-      centerX: cellRuntime.cellInnerCenterX,
+      centerX: mountedRodSpan.centerCoord,
       centerY: yPos,
       centerZ: cellRuntime.__fullDepthCenterZ,
-      rodLength: rodLen,
+      rodLength: mountedRodSpan.rodLength,
       rodRadius: INTERIOR_ROD_RENDER_POLICY.radiusM,
       axis: 'x',
-      negativeMountCoord: cellRuntime.cellInnerCenterX - cellRuntime.cellInnerW / 2,
-      positiveMountCoord: cellRuntime.cellInnerCenterX + cellRuntime.cellInnerW / 2,
+      negativeMountCoord: mountedRodSpan.negativeMountCoord,
+      positiveMountCoord: mountedRodSpan.positiveMountCoord,
       ownerPartId: `corner_rod_c${cellRuntime.cell.idx}`,
       addOutlines: runtime.addOutlines,
     });

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   appendInteriorRodEndSupports,
   INTERIOR_ROD_SUPPORT_VISUAL_POLICY,
+  resolveInteriorRodMountedAxisSpan,
 } from '../esm/native/builder/interior_rod_support_visuals.ts';
 import { INTERIOR_ROD_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 
@@ -58,6 +59,45 @@ const THREE = { TorusGeometry, CylinderGeometry, Mesh };
 function closeTo(actual: number, expected: number, message?: string): void {
   assert.ok(Math.abs(actual - expected) <= 1e-9, message ?? `${actual} must equal ${expected}`);
 }
+
+test('mounted rod span extends the rod well into both support cups while preserving a front lip', () => {
+  const mounted = resolveInteriorRodMountedAxisSpan({
+    centerCoord: 1.2,
+    rodLength: 0.76,
+    negativeMountCoord: 0.8,
+    positiveMountCoord: 1.6,
+  });
+
+  assert.ok(mounted);
+  if (!mounted) return;
+  closeTo(mounted.negativeMountGapM, 0.02);
+  closeTo(mounted.positiveMountGapM, 0.02);
+  closeTo(mounted.negativeInsertionM, 0.012);
+  closeTo(mounted.positiveInsertionM, 0.012);
+  closeTo(mounted.minCoord, 0.808);
+  closeTo(mounted.maxCoord, 1.592);
+  closeTo(mounted.centerCoord, 1.2);
+  closeTo(mounted.rodLength, 0.784);
+});
+
+test('mounted rod span never invents insertion when an end already sits at its mount surface', () => {
+  const mounted = resolveInteriorRodMountedAxisSpan({
+    centerCoord: 0,
+    rodLength: 0.5,
+    negativeMountCoord: -0.25,
+    positiveMountCoord: 0.28,
+  });
+
+  assert.ok(mounted);
+  if (!mounted) return;
+  closeTo(mounted.negativeMountGapM, 0);
+  closeTo(mounted.positiveMountGapM, 0.03);
+  closeTo(mounted.negativeInsertionM, 0);
+  closeTo(mounted.positiveInsertionM, 0.018);
+  closeTo(mounted.minCoord, -0.25);
+  closeTo(mounted.maxCoord, 0.268);
+  closeTo(mounted.rodLength, 0.518);
+});
 
 test('rod support visual mounts a round plate on each wall with a projecting U-cup and no arm', () => {
   const added: Mesh[] = [];
