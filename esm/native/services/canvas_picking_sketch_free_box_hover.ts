@@ -12,6 +12,7 @@ export function resolveSketchFreeBoxHoverPlacement(args: ResolveSketchFreeBoxHov
   op: 'add' | 'remove';
   removeId: string | null;
   snapToCenter: boolean;
+  placementWall: 'back' | 'left' | 'right';
 } | null {
   const context = createSketchFreeBoxHoverContext(args);
   if (!context) return null;

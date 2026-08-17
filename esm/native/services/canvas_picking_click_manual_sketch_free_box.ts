@@ -11,6 +11,7 @@ import {
 import { asRecord } from '../runtime/record.js';
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import { cmToM } from '../../shared/dimensions/units.js';
+import { findRoomWallSurfaceHit } from './room_wall_picking.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -69,6 +70,7 @@ type TryHandleCanvasManualSketchFreeBoxArgs = {
     App: AppContainer;
     planeX: number;
     planeY: number;
+    placementWall?: 'back' | 'left' | 'right';
     boxH: number;
     widthOverrideM?: number | null;
     depthOverrideM?: number | null;
@@ -76,13 +78,15 @@ type TryHandleCanvasManualSketchFreeBoxArgs = {
     wardrobeBackZ: number;
     freeBoxes: unknown[];
   }) => {
-    op: 'add' | 'move' | 'remove';
+    op: 'add' | 'remove';
     previewX: number;
     previewY: number;
     previewH: number;
     previewW: number;
     previewD: number;
     removeId?: string | null;
+    placementWall: 'back' | 'left' | 'right';
+    snapToCenter: boolean;
   } | null;
 };
 
@@ -138,45 +142,71 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
     const widthOverrideM = widthCm != null ? cmToM(widthCm) : null;
     const depthOverrideM = depthCm != null ? cmToM(depthCm) : null;
 
-    if (camera && wardrobeGroup && wardrobeBox && Number.isFinite(wardrobeBackZ) && raycaster && mouse) {
-      const planeHit = __wp_intersectScreenWithLocalZPlane({
-        App,
-        raycaster,
-        mouse,
-        camera,
-        ndcX,
-        ndcY,
-        localParent: wardrobeGroup,
-        planeZ: wardrobeBackZ,
-      });
+    if (camera && wardrobeGroup && wardrobeBox && raycaster && mouse) {
+      const wallHit = findRoomWallSurfaceHit({ App, ndcX, ndcY, camera, raycaster, mouse });
+      const placementWall =
+        wallHit?.surface.wall === 'left' || wallHit?.surface.wall === 'right' ? wallHit.surface.wall : 'back';
+      const placementWardrobeBox: SelectorLocalBox =
+        placementWall === 'back'
+          ? wardrobeBox
+          : {
+              centerX: Number(wallHit?.surface.startCoord) + Number(wallHit?.surface.usableLength) / 2,
+              centerY: Number(wallHit?.surface.wallHeight) / 2,
+              centerZ: 0,
+              width: Number(wallHit?.surface.usableLength),
+              height: Number(wallHit?.surface.wallHeight),
+              depth: Number(wardrobeBox.depth) || 0,
+            };
+      const placementBackZ = placementWall === 'back' ? wardrobeBackZ : 0;
+      const planeHit =
+        placementWall === 'back' && Number.isFinite(wardrobeBackZ)
+          ? __wp_intersectScreenWithLocalZPlane({
+              App,
+              raycaster,
+              mouse,
+              camera,
+              ndcX,
+              ndcY,
+              localParent: wardrobeGroup,
+              planeZ: wardrobeBackZ,
+            })
+          : wallHit
+            ? { x: Number(wallHit.point.z), y: Number(wallHit.point.y), z: 0 }
+            : null;
       if (planeHit) {
         const planeX = readFiniteNumber(planeHit.x);
         const planeY = readFiniteNumber(planeHit.y);
         if (planeX == null || planeY == null) return false;
         const cfgRef = __wp_readInteriorModuleConfigRef(App, host.moduleKey, host.isBottom);
         const extra = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
-        const boxes = readRecordList(extra, 'boxes');
+        const boxes = readRecordList(extra, 'boxes').filter(box => {
+          const wall = readRecordValue(box, 'placementWall');
+          const normalized = wall === 'left' || wall === 'right' ? wall : 'back';
+          return normalized === placementWall;
+        });
         const hoverPlacement = __wp_resolveSketchFreeBoxHoverPlacement({
           App,
           planeX,
           planeY,
+          placementWall,
           boxH,
           widthOverrideM,
           depthOverrideM,
-          wardrobeBox,
-          wardrobeBackZ,
+          wardrobeBox: placementWardrobeBox,
+          wardrobeBackZ: placementBackZ,
           freeBoxes: boxes,
         });
         if (hoverPlacement) {
           const nextHover = createSketchFreePlacementBoxHoverRecord({
             tool,
             host,
-            op: hoverPlacement.op === 'move' ? 'add' : hoverPlacement.op,
+            op: hoverPlacement.op,
             previewX: hoverPlacement.previewX,
             previewY: hoverPlacement.previewY,
             previewH: hoverPlacement.previewH,
             previewW: hoverPlacement.previewW,
             previewD: hoverPlacement.previewD,
+            placementWall: hoverPlacement.placementWall,
             removeId: hoverPlacement.op === 'remove' ? hoverPlacement.removeId : null,
           });
           if (nextHover) hoverRec = nextHover;

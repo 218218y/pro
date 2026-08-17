@@ -88,6 +88,8 @@ export function renderSketchBoxShell(args: {
     boxId,
     boxPid,
     isFreePlacement,
+    placementWall: geometryResolved.placementWall,
+    rotationY: geometryResolved.rotationY,
     height,
     halfH,
     centerY: geometryResolved.centerY,

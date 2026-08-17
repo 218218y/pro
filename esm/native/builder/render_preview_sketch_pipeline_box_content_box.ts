@@ -111,7 +111,12 @@ export function applyBoxVolumeSketchPlacementPreview(ctx: SketchPlacementPreview
       overlayThroughScene ? 10022 : 10001,
       overlayThroughScene ? 10023 : 10002
     );
-    if (typeof ctx.shelfA.position?.set === 'function') ctx.shelfA.position.set(ctx.x, ctx.y, frontZ);
+    const dz = frontZ - ctx.z;
+    const markerX = ctx.x + Math.sin(ctx.rotationY) * dz;
+    const markerZ = ctx.z + Math.cos(ctx.rotationY) * dz;
+    if (typeof ctx.shelfA.position?.set === 'function') ctx.shelfA.position.set(markerX, ctx.y, markerZ);
+    const markerRotation = ctx.asObject(ctx.shelfA.rotation);
+    if (markerRotation && typeof markerRotation.y === 'number') markerRotation.y = ctx.rotationY;
     if (typeof ctx.shelfA.scale?.set === 'function') {
       ctx.shelfA.scale.set(markerT, Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, boxH), markerT);
     }

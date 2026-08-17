@@ -9,6 +9,8 @@ import type {
   LocalPoint,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
+import type { RaycastHitLike } from './canvas_picking_engine.js';
+import type { RoomWallSurfacePickMeta } from './room_wall_picking.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import {
   resolveSketchFreePlacementBoxPreview,
@@ -23,12 +25,15 @@ type ManualLayoutSketchHoverFreeBoxContext = {
   planeHit: LocalPoint;
   freeBoxes: UnknownRecord[];
   freeBoxSpec: UnknownRecord | null;
+  placementWall: 'back' | 'left' | 'right';
+  placementSurface: RoomWallSurfacePickMeta | null;
 };
 
 type ManualLayoutSketchHoverFreeBoxArgs = {
   App: AppContainer;
   tool: string;
   wardrobeGroup: unknown;
+  intersects: RaycastHitLike[];
   context: ManualLayoutSketchHoverFreeBoxContext;
   setPreview: ((args: SketchPreviewArgs) => unknown) | null;
   __wp_resolveSketchFreeBoxHoverPlacement: (
@@ -54,6 +59,7 @@ export function tryHandleManualLayoutSketchHoverFreePlacementPreview(
     App,
     tool,
     wardrobeGroup,
+    intersects,
     context,
     setPreview,
     __wp_resolveSketchFreeBoxHoverPlacement,
@@ -65,7 +71,16 @@ export function tryHandleManualLayoutSketchHoverFreePlacementPreview(
 
   if (!setPreview || !context.freeBoxSpec) return false;
 
-  const { host, wardrobeBox, wardrobeBackZ, planeHit, freeBoxes, freeBoxSpec } = context;
+  const {
+    host,
+    wardrobeBox,
+    wardrobeBackZ,
+    planeHit,
+    freeBoxes,
+    freeBoxSpec,
+    placementWall,
+    placementSurface,
+  } = context;
   const heightCm = readNumber(freeBoxSpec, 'heightCm');
   const widthCm = readNumber(freeBoxSpec, 'widthCm');
   const depthCm = readNumber(freeBoxSpec, 'depthCm');
@@ -80,7 +95,9 @@ export function tryHandleManualLayoutSketchHoverFreePlacementPreview(
     wardrobeBox,
     wardrobeBackZ,
     freeBoxes,
-    intersects: [],
+    intersects,
+    placementWall,
+    placementSurface,
     localParent: wardrobeGroup,
     resolveSketchFreeBoxHoverPlacement: __wp_resolveSketchFreeBoxHoverPlacement,
     resolveSketchFreeBoxGeometry: __wp_resolveSketchFreeBoxGeometry,

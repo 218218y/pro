@@ -3,6 +3,7 @@ import type {
   MetaActionsNamespaceLike,
   RoomArchitectureConfigLike,
   RoomArchitecturePatch,
+  RoomOpeningKind,
   UnknownRecord,
 } from '../../../../../types';
 
@@ -10,6 +11,11 @@ import {
   applyStructuralConfigMutation,
   patchProjectRoomArchitecture,
 } from '../actions/structural_build_refresh_actions.js';
+import {
+  beginRoomOpeningPlacement,
+  cancelRoomOpeningPlacement,
+  removeRoomOpening,
+} from '../../../services/api.js';
 import {
   getUiSnapshot,
   getConfigSnapshot,
@@ -43,6 +49,9 @@ export type SettingsVisualRoomDesignController = {
     value: number
   ) => void;
   toggleArchitectureVisibility: () => void;
+  beginOpeningPlacement: (kind: RoomOpeningKind, widthCm: number, heightCm: number) => boolean;
+  cancelOpeningPlacement: () => void;
+  removeOpening: (openingId: string) => boolean;
 };
 
 export type CreateSettingsVisualRoomDesignControllerArgs = {
@@ -279,5 +288,9 @@ export function createSettingsVisualRoomDesignController(
         'none'
       );
     },
+    beginOpeningPlacement: (kind, widthCm, heightCm) =>
+      beginRoomOpeningPlacement(args.app, { kind, widthCm, heightCm }),
+    cancelOpeningPlacement: () => cancelRoomOpeningPlacement(args.app),
+    removeOpening: openingId => removeRoomOpening(args.app, openingId),
   };
 }

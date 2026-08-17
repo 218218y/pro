@@ -68,6 +68,7 @@ type CreateSketchFreePlacementBoxHoverRecordArgs = {
   previewH: number;
   previewW: number;
   previewD: number;
+  placementWall?: 'back' | 'left' | 'right';
   removeId?: string | null;
   ts?: number;
 };
@@ -135,7 +136,7 @@ function commitSketchFreePlacementBox(args: {
     return true;
   }
 
-  const { centerX, centerY, heightM, widthM, depthM } = args.command.geometry;
+  const { centerX, centerY, heightM, widthM, depthM, placementWall } = args.command.geometry;
   list.push({
     id: createRandomId('sbf'),
     freePlacement: true,
@@ -144,6 +145,7 @@ function commitSketchFreePlacementBox(args: {
     heightM,
     widthM,
     depthM,
+    placementWall: placementWall === 'left' || placementWall === 'right' ? placementWall : 'back',
   });
   return true;
 }
@@ -164,6 +166,9 @@ export function createSketchFreePlacementBoxHoverRecord(
             heightM: args.previewH,
             widthM: args.previewW,
             depthM: args.previewD,
+            ...(args.placementWall === 'left' || args.placementWall === 'right'
+              ? { placementWall: args.placementWall }
+              : {}),
           },
         };
   if (!command) return null;

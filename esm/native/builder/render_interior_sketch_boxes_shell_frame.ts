@@ -154,7 +154,7 @@ function renderFreeSketchBoxRoomColumnLiners(args: {
 }): void {
   const { state, renderArgs } = args;
   const THREE = renderArgs.THREE;
-  if (!state.isFreePlacement || !THREE) return;
+  if (!state.isFreePlacement || state.placementWall !== 'back' || !THREE) return;
 
   const panels = resolveRoomColumnLinerPanelsForBox(
     renderArgs.App,

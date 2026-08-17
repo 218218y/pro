@@ -4,6 +4,7 @@ import type {
   AppContainer,
   MetaActionsNamespaceLike,
   RoomArchitectureConfigLike,
+  RoomOpeningKind,
 } from '../../../../../types';
 
 import type {
@@ -42,6 +43,9 @@ export type SettingsVisualRoomDesignModel = {
     value: number
   ) => void;
   toggleArchitectureVisibility: () => void;
+  beginOpeningPlacement: (kind: RoomOpeningKind, widthCm: number, heightCm: number) => boolean;
+  cancelOpeningPlacement: () => void;
+  removeOpening: (openingId: string) => boolean;
 };
 
 type UseSettingsVisualRoomDesignArgs = {
@@ -104,6 +108,9 @@ export function useSettingsVisualRoomDesign(
       setColumnEnabled: roomDesignController.setColumnEnabled,
       setColumnDimension: roomDesignController.setColumnDimension,
       toggleArchitectureVisibility: roomDesignController.toggleArchitectureVisibility,
+      beginOpeningPlacement: roomDesignController.beginOpeningPlacement,
+      cancelOpeningPlacement: roomDesignController.cancelOpeningPlacement,
+      removeOpening: roomDesignController.removeOpening,
     }),
     [
       roomData,
@@ -125,6 +132,9 @@ export function useSettingsVisualRoomDesign(
       roomDesignController.setColumnEnabled,
       roomDesignController.setColumnDimension,
       roomDesignController.toggleArchitectureVisibility,
+      roomDesignController.beginOpeningPlacement,
+      roomDesignController.cancelOpeningPlacement,
+      roomDesignController.removeOpening,
     ]
   );
 }

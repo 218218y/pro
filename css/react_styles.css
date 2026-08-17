@@ -2506,6 +2506,75 @@
   margin-top: 10px;
 }
 
+#reactSidebarRoot .wp-r-room-openings-block {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
+#reactSidebarRoot .wp-r-room-opening-kind-actions,
+#reactSidebarRoot .wp-r-room-opening-placement-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+
+#reactSidebarRoot .wp-r-room-opening-kind-actions > .btn,
+#reactSidebarRoot .wp-r-room-opening-placement-actions > .btn {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+#reactSidebarRoot .wp-r-room-opening-kind-actions > .btn.is-selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px var(--accent-color) inset;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+#reactSidebarRoot .wp-r-room-opening-size-grid {
+  margin-top: 9px;
+}
+
+#reactSidebarRoot .wp-r-room-opening-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-r-room-opening-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--panel-bg);
+}
+
+#reactSidebarRoot .wp-r-room-opening-list-item > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  color: var(--text-main);
+  font-size: 0.76rem;
+}
+
+#reactSidebarRoot .wp-r-room-opening-list-item span {
+  color: var(--text-secondary);
+}
+
+#reactSidebarRoot .wp-r-room-opening-remove {
+  flex: 0 0 auto;
+  width: 32px;
+  min-width: 32px;
+  margin: 0;
+  padding: 6px;
+}
+
 #reactSidebarRoot .wp-r-room-visibility-btn {
   width: 100%;
   margin-top: 12px;
@@ -4915,6 +4984,7 @@ body.wp-ui-react .wp-r-floating-tooltip.wp-viewer-measurement-part-tooltip.is-be
 
 body.wp-ui-react .wp-viewer-measurement-part-tooltip .wp-r-floating-tooltip-title {
   margin-bottom: 0;
+  white-space: pre-line;
   color: #f8fafc;
   font-size: 0.96rem;
   letter-spacing: 0.01em;

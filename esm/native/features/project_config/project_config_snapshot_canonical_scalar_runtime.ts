@@ -1,6 +1,9 @@
 import type {
   RoomArchitectureConfigLike,
   RoomArchitecturePatch,
+  RoomOpeningKind,
+  RoomWallId,
+  RoomWallOpeningLike,
   UnknownRecord,
 } from '../../../../types/index.js';
 import {
@@ -38,6 +41,7 @@ const DEFAULT_PROJECT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = 
     heightCm: 280,
     bottomOffsetCm: 0,
   }),
+  openings: Object.freeze([]) as unknown as RoomWallOpeningLike[],
   wallColor: DEFAULT_PROJECT_ROOM_ARCHITECTURE_WALL_COLOR,
   surfacesHidden: false,
 });
@@ -79,6 +83,60 @@ function normalizeProjectRoomSideWall(
       clampRoomArchitectureNumber(finiteRoomArchitectureNumber(raw.heightCm, defaults.heightCm), 50, 1000)
     ),
   };
+}
+
+function normalizeProjectRoomOpeningKind(value: unknown): RoomOpeningKind | null {
+  return value === 'window' || value === 'door' ? value : null;
+}
+
+function normalizeProjectRoomWallId(value: unknown): RoomWallId | null {
+  return value === 'back' || value === 'left' || value === 'right' ? value : null;
+}
+
+function normalizeProjectRoomOpenings(value: unknown): RoomWallOpeningLike[] {
+  if (!Array.isArray(value)) return [];
+  const out: RoomWallOpeningLike[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < value.length; i += 1) {
+    const raw = asRoomArchitectureRecord(value[i]);
+    if (!raw) continue;
+    const kind = normalizeProjectRoomOpeningKind(raw.kind);
+    const wall = normalizeProjectRoomWallId(raw.wall);
+    if (!kind || !wall) continue;
+    const rawId = typeof raw.id === 'string' ? raw.id.trim() : '';
+    let id = rawId || `room-opening-${i + 1}`;
+    if (seen.has(id)) id = `${id}-${i + 1}`;
+    seen.add(id);
+    out.push({
+      id,
+      kind,
+      wall,
+      widthCm: roundRoomArchitectureCm(
+        clampRoomArchitectureNumber(
+          finiteRoomArchitectureNumber(raw.widthCm, kind === 'door' ? 90 : 120),
+          20,
+          1000
+        )
+      ),
+      heightCm: roundRoomArchitectureCm(
+        clampRoomArchitectureNumber(
+          finiteRoomArchitectureNumber(raw.heightCm, kind === 'door' ? 210 : 100),
+          20,
+          1000
+        )
+      ),
+      offsetAlongCm: roundRoomArchitectureCm(
+        clampRoomArchitectureNumber(finiteRoomArchitectureNumber(raw.offsetAlongCm, 0), 0, 2000)
+      ),
+      bottomOffsetCm:
+        kind === 'door'
+          ? 0
+          : roundRoomArchitectureCm(
+              clampRoomArchitectureNumber(finiteRoomArchitectureNumber(raw.bottomOffsetCm, 90), 0, 1000)
+            ),
+    });
+  }
+  return out;
 }
 
 export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectureConfigLike {
@@ -162,6 +220,7 @@ export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectu
       heightCm: columnHeightCm,
       bottomOffsetCm,
     },
+    openings: normalizeProjectRoomOpenings(root.openings),
     wallColor: normalizeProjectRoomArchitectureWallColor(root.wallColor, defaults.wallColor),
     surfacesHidden: root.surfacesHidden === true,
   };
@@ -179,6 +238,7 @@ export function patchProjectRoomArchitecture(
     leftWall: { ...base.leftWall, ...patch.leftWall },
     rightWall: { ...base.rightWall, ...patch.rightWall },
     column: { ...base.column, ...patch.column },
+    openings: patch.openings ?? base.openings,
   });
 }
 

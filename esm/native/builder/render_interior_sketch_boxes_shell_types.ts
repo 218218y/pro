@@ -1,3 +1,4 @@
+import type { RoomWallId } from '../../../types';
 import type {
   RenderInteriorSketchBoxesArgs,
   RenderSketchBoxGeometry,
@@ -24,6 +25,8 @@ export type ResolvedSketchBoxShellGeometry = {
   centerY: number;
   geometry: RenderSketchBoxGeometry;
   absEntry: RenderSketchBoxShellResult['absEntry'];
+  placementWall: RoomWallId;
+  rotationY: number;
 };
 
 export type ResolveSketchBoxMaterialArgs = {

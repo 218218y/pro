@@ -1,5 +1,5 @@
 type ViewerMeasurementHoverFeedback = {
-  kind: 'viewer-measurement';
+  kind: 'viewer-measurement' | 'room-opening-placement';
   cursor: '__wp_canvas_hover_cursor_preserve';
   partLabel: string | null;
 };
@@ -11,6 +11,7 @@ type MeasurementTooltipState = {
 
 const tooltipByCanvas = new WeakMap<HTMLElement, MeasurementTooltipState>();
 const VIEWER_MEASUREMENT_HOVER_KIND = 'viewer-measurement';
+const ROOM_OPENING_PLACEMENT_HOVER_KIND = 'room-opening-placement';
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -23,10 +24,11 @@ function readPartLabel(value: unknown): string | null {
 
 export function readViewerMeasurementHoverFeedback(value: unknown): ViewerMeasurementHoverFeedback | null {
   if (!isRecord(value)) return null;
-  if (value.kind !== VIEWER_MEASUREMENT_HOVER_KIND) return null;
+  if (value.kind !== VIEWER_MEASUREMENT_HOVER_KIND && value.kind !== ROOM_OPENING_PLACEMENT_HOVER_KIND)
+    return null;
   if (value.cursor !== CANVAS_HOVER_CURSOR_PRESERVE) return null;
   return {
-    kind: VIEWER_MEASUREMENT_HOVER_KIND,
+    kind: value.kind,
     cursor: CANVAS_HOVER_CURSOR_PRESERVE,
     partLabel: readPartLabel(value.partLabel),
   };

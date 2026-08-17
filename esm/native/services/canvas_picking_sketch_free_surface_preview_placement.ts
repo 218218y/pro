@@ -9,6 +9,7 @@ import type {
 } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_picking_sketch_box_dividers.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
+import type { RoomWallSurfacePickMeta } from './room_wall_picking.js';
 import {
   type LocalPoint,
   type RecordMap,
@@ -29,6 +30,8 @@ export function resolveSketchFreePlacementBoxPreview(args: {
   freeBoxes: RecordMap[];
   intersects: RaycastHitLike[];
   localParent: unknown;
+  placementWall?: 'back' | 'left' | 'right';
+  placementSurface?: RoomWallSurfacePickMeta | null;
   resolveSketchFreeBoxHoverPlacement: (
     args: ResolveSketchFreeBoxHoverPlacementArgs
   ) => ResolveSketchFreeBoxHoverPlacementResult | null;
@@ -49,6 +52,8 @@ export function resolveSketchFreePlacementBoxPreview(args: {
     freeBoxes,
     intersects,
     localParent,
+    placementWall,
+    placementSurface,
     resolveSketchFreeBoxHoverPlacement,
     resolveSketchFreeBoxGeometry,
     readSketchBoxDividers,
@@ -57,6 +62,8 @@ export function resolveSketchFreePlacementBoxPreview(args: {
     widthOverrideM,
     depthOverrideM,
   } = args;
+  const resolvedPlacementWall =
+    placementWall === 'left' || placementWall === 'right' ? placementWall : 'back';
   const hoverPlacement = resolveSketchFreeBoxHoverPlacement({
     App,
     planeX: Number(planeHit.x),
@@ -70,6 +77,7 @@ export function resolveSketchFreePlacementBoxPreview(args: {
     hostModuleKey: host.moduleKey,
     intersects,
     localParent,
+    placementWall: resolvedPlacementWall,
   });
   if (!hoverPlacement) return null;
   const { hoverRecord, removeBox } = resolveSketchFreePlacementHoverPreviewState({
@@ -79,17 +87,28 @@ export function resolveSketchFreePlacementBoxPreview(args: {
     freeBoxes,
   });
   if (!hoverRecord) return null;
-  const frontOverlay = resolveSketchFreePlacementRemoveOverlay({
-    hoverPlacement,
-    removeBox,
-    wardrobeWidth: Number(wardrobeBox.width) || 0,
-    wardrobeDepth: Number(wardrobeBox.depth) || 0,
-    wardrobeBackZ,
-    resolveSketchFreeBoxGeometry,
-    readSketchBoxDividers,
-    resolveSketchBoxSegments,
-  });
-  const previewZ = wardrobeBackZ + hoverPlacement.previewD / 2;
+  const frontOverlay =
+    resolvedPlacementWall === 'back'
+      ? resolveSketchFreePlacementRemoveOverlay({
+          hoverPlacement,
+          removeBox,
+          wardrobeWidth: Number(wardrobeBox.width) || 0,
+          wardrobeDepth: Number(wardrobeBox.depth) || 0,
+          wardrobeBackZ,
+          resolveSketchFreeBoxGeometry,
+          readSketchBoxDividers,
+          resolveSketchBoxSegments,
+        })
+      : null;
+  const sideWall = resolvedPlacementWall === 'left' || resolvedPlacementWall === 'right';
+  if (sideWall && !placementSurface) return null;
+  const previewX = sideWall
+    ? Number(placementSurface?.interiorFaceCoord) +
+      (Number(placementSurface?.inwardNormalX) * hoverPlacement.previewD) / 2
+    : hoverPlacement.previewX;
+  const previewZ = sideWall ? hoverPlacement.previewX : wardrobeBackZ + hoverPlacement.previewD / 2;
+  const rotationY =
+    resolvedPlacementWall === 'left' ? Math.PI / 2 : resolvedPlacementWall === 'right' ? -Math.PI / 2 : 0;
   return {
     hoverRecord,
     preview: {
@@ -97,7 +116,7 @@ export function resolveSketchFreePlacementBoxPreview(args: {
       fillFront: !!frontOverlay,
       fillBack: true,
       snapToCenter: hoverPlacement.snapToCenter,
-      x: hoverPlacement.previewX,
+      x: previewX,
       y: hoverPlacement.previewY,
       z: previewZ,
       w: hoverPlacement.previewW,
@@ -105,6 +124,7 @@ export function resolveSketchFreePlacementBoxPreview(args: {
       woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
       boxH: hoverPlacement.previewH,
       op: hoverPlacement.op,
+      rotationY,
       frontOverlayX: frontOverlay ? frontOverlay.x : undefined,
       frontOverlayY: frontOverlay ? frontOverlay.y : undefined,
       frontOverlayZ: frontOverlay ? frontOverlay.z : undefined,

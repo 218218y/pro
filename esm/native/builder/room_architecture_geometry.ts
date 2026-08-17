@@ -1,4 +1,10 @@
-import type { AppContainer, RoomArchitectureConfigLike, UnknownRecord } from '../../../types/index.js';
+import type {
+  AppContainer,
+  RoomArchitectureConfigLike,
+  RoomWallId,
+  RoomWallOpeningLike,
+  UnknownRecord,
+} from '../../../types/index.js';
 
 import { CARCASS_BACK_PANEL_THICKNESS_M } from './core_carcass_shell.js';
 import { getRoomArchitectureConfig, getRuntime, getUi } from './store_access.js';
@@ -34,13 +40,44 @@ export type RoomColumnAdjustmentGeometry = {
   linerPanels: RoomColumnLinerPanel[];
 };
 
-type RoomArchitectureWallGeometry = AxisAlignedBox & {
+export type RoomArchitectureWallGeometry = AxisAlignedBox & {
   centerX: number;
   centerY: number;
   centerZ: number;
   width: number;
   height: number;
   depth: number;
+};
+
+export type RoomWallSurfaceGeometry = {
+  wall: RoomWallId;
+  box: RoomArchitectureWallGeometry;
+  usableLength: number;
+  height: number;
+  axis: 'x' | 'z';
+  startCoord: number;
+  interiorFaceCoord: number;
+  inwardNormalX: -1 | 0 | 1;
+  inwardNormalZ: -1 | 0 | 1;
+};
+
+export type ResolvedRoomOpeningGeometry = {
+  opening: RoomWallOpeningLike;
+  surface: RoomWallSurfaceGeometry;
+  cut: AxisAlignedBox;
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  bottom: number;
+  offsetAlong: number;
+  clearancesCm: {
+    start: number;
+    end: number;
+    top: number;
+    bottom: number;
+  };
 };
 
 export type RoomArchitectureGeometry = {
@@ -172,6 +209,129 @@ export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitec
     rightWall,
     column,
   };
+}
+
+export function resolveRoomWallSurface(
+  geometry: RoomArchitectureGeometry,
+  wall: RoomWallId
+): RoomWallSurfaceGeometry | null {
+  if (!geometry.config.backWall.enabled) return null;
+  if (wall === 'back') {
+    return {
+      wall,
+      box: geometry.wall,
+      usableLength: geometry.wall.width,
+      height: geometry.wall.height,
+      axis: 'x',
+      startCoord: geometry.wall.minX,
+      interiorFaceCoord: geometry.wall.maxZ,
+      inwardNormalX: 0,
+      inwardNormalZ: 1,
+    };
+  }
+
+  const box = wall === 'left' ? geometry.leftWall : geometry.rightWall;
+  if (!box) return null;
+  const usableLength = Math.max(0, box.maxZ - geometry.wall.maxZ);
+  return {
+    wall,
+    box,
+    usableLength,
+    height: box.height,
+    axis: 'z',
+    startCoord: geometry.wall.maxZ,
+    interiorFaceCoord: wall === 'left' ? box.maxX : box.minX,
+    inwardNormalX: wall === 'left' ? 1 : -1,
+    inwardNormalZ: 0,
+  };
+}
+
+function resolveOpeningDimensions(
+  opening: RoomWallOpeningLike,
+  surface: RoomWallSurfaceGeometry
+): { width: number; height: number; bottom: number; offsetAlong: number } | null {
+  if (
+    !(surface.usableLength > ROOM_ARCHITECTURE_EPSILON_M) ||
+    !(surface.height > ROOM_ARCHITECTURE_EPSILON_M)
+  ) {
+    return null;
+  }
+  const requestedWidth = finitePositive(opening.widthCm) != null ? opening.widthCm / 100 : 0;
+  const requestedHeight = finitePositive(opening.heightCm) != null ? opening.heightCm / 100 : 0;
+  if (!(requestedWidth > 0) || !(requestedHeight > 0)) return null;
+
+  const width = Math.min(requestedWidth, surface.usableLength);
+  const height = Math.min(requestedHeight, surface.height);
+  const maxOffset = Math.max(0, surface.usableLength - width);
+  const rawOffset = Number.isFinite(opening.offsetAlongCm) ? opening.offsetAlongCm / 100 : 0;
+  const offsetAlong = Math.min(maxOffset, Math.max(0, rawOffset));
+  const requestedBottom = opening.kind === 'door' ? 0 : Math.max(0, opening.bottomOffsetCm / 100);
+  const bottom = Math.min(Math.max(0, surface.height - height), requestedBottom);
+  return { width, height, bottom, offsetAlong };
+}
+
+export function resolveRoomOpeningGeometry(
+  geometry: RoomArchitectureGeometry,
+  opening: RoomWallOpeningLike
+): ResolvedRoomOpeningGeometry | null {
+  const surface = resolveRoomWallSurface(geometry, opening.wall);
+  if (!surface) return null;
+  const dims = resolveOpeningDimensions(opening, surface);
+  if (!dims) return null;
+  const { width, height, bottom, offsetAlong } = dims;
+  const start = surface.startCoord + offsetAlong;
+  const end = start + width;
+  const minY = bottom;
+  const maxY = bottom + height;
+
+  const cut: AxisAlignedBox =
+    surface.axis === 'x'
+      ? {
+          minX: start,
+          maxX: end,
+          minY,
+          maxY,
+          minZ: surface.box.minZ - ROOM_ARCHITECTURE_EPSILON_M,
+          maxZ: surface.box.maxZ + ROOM_ARCHITECTURE_EPSILON_M,
+        }
+      : {
+          minX: surface.box.minX - ROOM_ARCHITECTURE_EPSILON_M,
+          maxX: surface.box.maxX + ROOM_ARCHITECTURE_EPSILON_M,
+          minY,
+          maxY,
+          minZ: start,
+          maxZ: end,
+        };
+
+  return {
+    opening,
+    surface,
+    cut,
+    centerX: surface.axis === 'x' ? (start + end) / 2 : surface.box.centerX,
+    centerY: (minY + maxY) / 2,
+    centerZ: surface.axis === 'z' ? (start + end) / 2 : surface.box.centerZ,
+    width,
+    height,
+    bottom,
+    offsetAlong,
+    clearancesCm: {
+      start: Math.round(offsetAlong * 1000) / 10,
+      end: Math.round(Math.max(0, surface.usableLength - offsetAlong - width) * 1000) / 10,
+      top: Math.round(Math.max(0, surface.height - bottom - height) * 1000) / 10,
+      bottom: Math.round(bottom * 1000) / 10,
+    },
+  };
+}
+
+export function resolveRoomOpeningsGeometry(App: AppContainer): ResolvedRoomOpeningGeometry[] {
+  const geometry = resolveRoomArchitectureGeometry(App);
+  const openings = Array.isArray(geometry.config.openings) ? geometry.config.openings : [];
+  const out: ResolvedRoomOpeningGeometry[] = [];
+  for (const opening of openings) {
+    const resolved = resolveRoomOpeningGeometry(geometry, opening);
+    if (resolved) out.push(resolved);
+  }
+  return out;
 }
 
 export function resolveActiveRoomColumnObstacle(App: AppContainer): AxisAlignedBox | null {

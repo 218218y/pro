@@ -223,6 +223,130 @@ function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionMo
   );
 }
 
+function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
+  const { model } = props;
+  const [kind, setKind] = useState<'window' | 'door'>('window');
+  const [widthCm, setWidthCm] = useState(120);
+  const [heightCm, setHeightCm] = useState(100);
+  const [placementArmed, setPlacementArmed] = useState(false);
+  const openingCountRef = useRef(model.roomArchitecture.openings.length);
+
+  useEffect(() => {
+    const nextCount = model.roomArchitecture.openings.length;
+    if (nextCount > openingCountRef.current) setPlacementArmed(false);
+    openingCountRef.current = nextCount;
+  }, [model.roomArchitecture.openings.length]);
+
+  const selectKind = (nextKind: 'window' | 'door') => {
+    setKind(nextKind);
+    setWidthCm(nextKind === 'door' ? 90 : 120);
+    setHeightCm(nextKind === 'door' ? 210 : 100);
+    setPlacementArmed(false);
+    model.cancelOpeningPlacement();
+  };
+
+  const wallLabel = (wall: 'back' | 'left' | 'right') =>
+    wall === 'back' ? 'קיר אחורי' : wall === 'left' ? 'קיר שמאלי' : 'קיר ימני';
+
+  return (
+    <div className="wp-r-room-openings-block" data-testid="settings-room-openings">
+      <div className="wp-r-label">חלונות ודלתות:</div>
+      <div className="wp-r-room-opening-kind-actions" role="group" aria-label="סוג הפתח להוספה">
+        <button
+          type="button"
+          className={`btn${kind === 'window' ? ' is-selected' : ''}`}
+          onClick={() => selectKind('window')}
+          aria-pressed={kind === 'window'}
+        >
+          <i className="fas fa-border-all" aria-hidden="true"></i> חלון
+        </button>
+        <button
+          type="button"
+          className={`btn${kind === 'door' ? ' is-selected' : ''}`}
+          onClick={() => selectKind('door')}
+          aria-pressed={kind === 'door'}
+        >
+          <i className="fas fa-door-open" aria-hidden="true"></i> דלת
+        </button>
+      </div>
+
+      <div className="wp-r-room-dimension-grid wp-r-room-opening-size-grid">
+        <ArchitectureNumberField
+          id="wp-room-opening-width"
+          label={kind === 'door' ? 'רוחב הדלת' : 'רוחב החלון'}
+          value={widthCm}
+          min={20}
+          max={1000}
+          onChange={setWidthCm}
+        />
+        <ArchitectureNumberField
+          id="wp-room-opening-height"
+          label={kind === 'door' ? 'גובה הדלת' : 'גובה החלון'}
+          value={heightCm}
+          min={20}
+          max={1000}
+          onChange={setHeightCm}
+        />
+      </div>
+
+      <div className="wp-r-room-opening-placement-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => setPlacementArmed(model.beginOpeningPlacement(kind, widthCm, heightCm))}
+          data-testid="settings-room-opening-place"
+        >
+          <i className="fas fa-crosshairs" aria-hidden="true"></i>{' '}
+          {kind === 'door' ? 'מקם דלת על קיר' : 'מקם חלון על קיר'}
+        </button>
+        {placementArmed ? (
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              model.cancelOpeningPlacement();
+              setPlacementArmed(false);
+            }}
+          >
+            ביטול מיקום
+          </button>
+        ) : null}
+      </div>
+
+      {placementArmed ? (
+        <InlineNotice className="wp-r-mt-8">
+          העבר את העכבר על הקיר האחורי, הימני או השמאלי. התצוגה המקדימה והמידות יתעדכנו לפי הקיר; לחיצה תקבע
+          את {kind === 'door' ? 'הדלת' : 'החלון'} במקום.
+        </InlineNotice>
+      ) : null}
+
+      {model.roomArchitecture.openings.length ? (
+        <div className="wp-r-room-opening-list" aria-label="פתחים קיימים">
+          {model.roomArchitecture.openings.map(opening => (
+            <div className="wp-r-room-opening-list-item" key={opening.id}>
+              <div>
+                <strong>{opening.kind === 'door' ? 'דלת' : 'חלון'}</strong>
+                <span>
+                  {wallLabel(opening.wall)} · {opening.widthCm}×{opening.heightCm} ס״מ
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn wp-r-room-opening-remove"
+                onClick={() => model.removeOpening(opening.id)}
+                aria-label={`הסר ${opening.kind === 'door' ? 'דלת' : 'חלון'}`}
+                title="הסרת הפתח"
+              >
+                <i className="fas fa-trash-alt" aria-hidden="true"></i>
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
   const model = props.model;
   const architecture = model.roomArchitecture;
@@ -243,7 +367,7 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
       </div>
 
       <ToggleRow
-        label="קיר אחורי מאחורי הארון"
+        label="הוספת קירות"
         checked={wall.enabled}
         onChange={model.setBackWallEnabled}
         testId="settings-room-back-wall-toggle"
@@ -375,6 +499,8 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
               </div>
             ) : null}
           </div>
+
+          <RoomOpeningsControls model={model} />
 
           <button
             type="button"

@@ -1,13 +1,24 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, RoomWallId, UnknownRecord } from '../../../types';
 import type {
   IntersectScreenWithLocalZPlaneArgs,
   LocalPoint,
   ModuleKey,
   SelectorLocalBox,
 } from './canvas_picking_manual_layout_sketch_contracts.js';
+import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 
 import { asRecord } from '../runtime/record.js';
 import type { SketchFreeHoverHost } from './canvas_picking_sketch_free_surface_preview.js';
+import {
+  readSketchFreePlacementTransform,
+  remapSketchFreePlacementLocalPoint,
+} from './canvas_picking_sketch_free_box_hit.js';
+import {
+  findRoomWallSurfaceHit,
+  findRoomWallSurfaceMetaInScene,
+  type RoomWallSurfacePickMeta,
+} from './room_wall_picking.js';
+import { __wp_projectWorldPointToLocal } from './canvas_picking_projection_runtime_plane.js';
 
 type InteriorModuleConfigRefLike = UnknownRecord;
 
@@ -19,6 +30,7 @@ type ResolveManualLayoutSketchHoverFreePlaneContextArgs = {
   wardrobeGroup: unknown;
   raycaster: unknown;
   mouse: unknown;
+  intersects?: RaycastHitLike[];
   __wp_parseSketchBoxToolSpec: (tool: string) => UnknownRecord | null;
   __wp_pickSketchFreeBoxHost: (App: AppContainer) => SketchFreeHoverHost | null;
   __wp_measureWardrobeLocalBox: (App: AppContainer) => SelectorLocalBox | null;
@@ -39,6 +51,8 @@ export type ManualLayoutSketchHoverFreePlaneContext = {
   planeHit: LocalPoint;
   freeBoxes: UnknownRecord[];
   freeBoxSpec: UnknownRecord | null;
+  placementWall: RoomWallId;
+  placementSurface: RoomWallSurfacePickMeta | null;
 };
 
 function readRecordValue(obj: unknown, key: string): unknown {
@@ -65,6 +79,54 @@ function isIntersectPlaneRaycaster(value: unknown): value is IntersectScreenWith
   return !!value && typeof value === 'object' && typeof Reflect.get(value, 'setFromCamera') === 'function';
 }
 
+function normalizePlacementWall(value: unknown): RoomWallId {
+  return value === 'left' || value === 'right' ? value : 'back';
+}
+
+function filterFreeBoxesForWall(boxes: UnknownRecord[], wall: RoomWallId): UnknownRecord[] {
+  return boxes.filter(box => normalizePlacementWall(readRecordValue(box, 'placementWall')) === wall);
+}
+
+function findSidePlacementTransformHit(args: {
+  App: AppContainer;
+  wardrobeGroup: unknown;
+  intersects: RaycastHitLike[];
+}): {
+  wall: 'left' | 'right';
+  planeHit: LocalPoint;
+} | null {
+  for (const hit of args.intersects) {
+    const transform = readSketchFreePlacementTransform(hit?.object);
+    if (!(transform?.wall === 'left' || transform?.wall === 'right') || !hit?.point) continue;
+    const local = __wp_projectWorldPointToLocal(args.App, hit.point, args.wardrobeGroup);
+    if (!local) continue;
+    return { wall: transform.wall, planeHit: remapSketchFreePlacementLocalPoint(local, transform) };
+  }
+  return null;
+}
+
+function isWallRaycaster(value: unknown): value is RaycasterLike {
+  return isIntersectPlaneRaycaster(value);
+}
+
+function isWallMouse(value: unknown): value is MouseVectorLike {
+  return isIntersectPlaneMouse(value);
+}
+
+function buildSideWallWorkspace(
+  original: SelectorLocalBox,
+  surface: RoomWallSurfacePickMeta
+): SelectorLocalBox {
+  return {
+    centerX: surface.startCoord + surface.usableLength / 2,
+    centerY: surface.wallHeight / 2,
+    centerZ: 0,
+    width: surface.usableLength,
+    height: surface.wallHeight,
+    depth: Number(original.depth) || 0,
+  };
+}
+
 export function resolveManualLayoutSketchHoverFreePlaneContext(
   args: ResolveManualLayoutSketchHoverFreePlaneContextArgs
 ): ManualLayoutSketchHoverFreePlaneContext | null {
@@ -77,6 +139,7 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
     wardrobeGroup,
     raycaster,
     mouse,
+    intersects = [],
     __wp_parseSketchBoxToolSpec,
     __wp_pickSketchFreeBoxHost,
     __wp_measureWardrobeLocalBox,
@@ -89,18 +152,48 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
   if (requireBoxSpec && !freeBoxSpec) return null;
 
   const host = __wp_pickSketchFreeBoxHost(App);
-  const wardrobeBox = __wp_measureWardrobeLocalBox(App);
+  const measuredWardrobeBox = __wp_measureWardrobeLocalBox(App);
+  if (!(host && measuredWardrobeBox)) return null;
+
+  const taggedSideHit = findSidePlacementTransformHit({ App, wardrobeGroup, intersects });
+  const directWallHit =
+    !taggedSideHit && isWallRaycaster(raycaster) && isWallMouse(mouse)
+      ? findRoomWallSurfaceHit({ App, ndcX, ndcY, camera, raycaster, mouse })
+      : null;
+  const directSideHit =
+    directWallHit?.surface.wall === 'left' || directWallHit?.surface.wall === 'right' ? directWallHit : null;
+  const placementWall: RoomWallId = taggedSideHit?.wall || directSideHit?.surface.wall || 'back';
+  const placementSurface =
+    placementWall === 'back'
+      ? null
+      : taggedSideHit
+        ? findRoomWallSurfaceMetaInScene(App, placementWall)
+        : directSideHit?.surface || null;
+
   const wardrobeBackZ =
-    wardrobeBox && Number.isFinite(wardrobeBox.centerZ) && Number.isFinite(wardrobeBox.depth)
-      ? Number(wardrobeBox.centerZ) - Number(wardrobeBox.depth) / 2
+    placementWall === 'back' &&
+    Number.isFinite(measuredWardrobeBox.centerZ) &&
+    Number.isFinite(measuredWardrobeBox.depth)
+      ? Number(measuredWardrobeBox.centerZ) - Number(measuredWardrobeBox.depth) / 2
       : NaN;
-  const planeHit =
-    host &&
-    wardrobeBox &&
+  let wardrobeBox = measuredWardrobeBox;
+  let planeHit: LocalPoint | null = null;
+  let workspaceBackZ = wardrobeBackZ;
+
+  if (placementSurface && (taggedSideHit || directSideHit)) {
+    wardrobeBox = buildSideWallWorkspace(measuredWardrobeBox, placementSurface);
+    workspaceBackZ = 0;
+    planeHit = taggedSideHit?.planeHit || {
+      x: Number(directSideHit?.point.z),
+      y: Number(directSideHit?.point.y),
+      z: 0,
+    };
+  } else if (
     Number.isFinite(wardrobeBackZ) &&
     isIntersectPlaneRaycaster(raycaster) &&
-    isIntersectPlaneMouse(mouse) &&
-    __wp_intersectScreenWithLocalZPlane({
+    isIntersectPlaneMouse(mouse)
+  ) {
+    planeHit = __wp_intersectScreenWithLocalZPlane({
       App,
       raycaster,
       mouse,
@@ -110,19 +203,22 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
       localParent: wardrobeGroup,
       planeZ: wardrobeBackZ,
     });
+  }
 
-  if (!(host && wardrobeBox && planeHit && Number.isFinite(wardrobeBackZ))) return null;
+  if (!(planeHit && Number.isFinite(workspaceBackZ))) return null;
 
   const cfgRef = __wp_readInteriorModuleConfigRef(App, host.moduleKey, host.isBottom);
   const extra = asRecord(readRecordValue(cfgRef, 'sketchExtras'));
-  const freeBoxes = readRecordArray(extra, 'boxes');
+  const freeBoxes = filterFreeBoxesForWall(readRecordArray(extra, 'boxes'), placementWall);
 
   return {
     host,
     wardrobeBox,
-    wardrobeBackZ,
+    wardrobeBackZ: workspaceBackZ,
     planeHit,
     freeBoxes,
     freeBoxSpec: freeBoxSpec ?? null,
+    placementWall,
+    placementSurface,
   };
 }

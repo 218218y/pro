@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ROOM_WALL_THICKNESS_M,
   resolveRoomArchitectureGeometry,
+  resolveRoomOpeningGeometry,
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import {
   ROOM_ARCHITECTURE_GROUP_NAME,
@@ -30,6 +31,7 @@ function createRootState(overrides: Record<string, unknown> = {}) {
           heightCm: 280,
           bottomOffsetCm: 0,
         },
+        openings: [],
         wallColor: '#e8e1d4',
         surfacesHidden: false,
       },
@@ -67,6 +69,121 @@ test('room architecture uses house-wall thickness and resolves left/right side w
   assert.ok(swapped.rightWall);
   assert.equal(swapped.rightWall?.minX, swapped.wall.maxX);
   assertClose(swapped.rightWall?.maxZ ?? Number.NaN, swapped.wall.maxZ + 2.8);
+});
+
+test('room openings resolve against their host wall and scene rendering cuts the wall before adding visuals', () => {
+  class FakeGroup {
+    name = '';
+    visible = true;
+    userData: Record<string, unknown> = {};
+    children: any[] = [];
+    add(child: any) {
+      this.children.push(child);
+    }
+    remove(child: any) {
+      this.children = this.children.filter(entry => entry !== child);
+    }
+    getObjectByName(name: string): any {
+      for (const child of this.children) {
+        if (child?.name === name) return child;
+        const nested = child?.getObjectByName?.(name);
+        if (nested) return nested;
+      }
+      return null;
+    }
+  }
+  class FakeBoxGeometry {
+    constructor(
+      public width: number,
+      public height: number,
+      public depth: number
+    ) {}
+    dispose() {}
+  }
+  class FakeMaterial {
+    constructor(public params: Record<string, unknown>) {}
+    dispose() {}
+  }
+  class FakeMesh {
+    name = '';
+    castShadow = false;
+    receiveShadow = false;
+    userData: Record<string, unknown> = {};
+    position = {
+      x: 0,
+      y: 0,
+      z: 0,
+      set: (x: number, y: number, z: number) => Object.assign(this.position, { x, y, z }),
+    };
+    constructor(
+      public geometry: unknown,
+      public material: unknown
+    ) {}
+  }
+
+  const roomGroup = new FakeGroup();
+  const rootState = createRootState();
+  (rootState.config as any).roomArchitecture.rightWall.enabled = true;
+  (rootState.config as any).roomArchitecture.openings = [
+    {
+      id: 'win-back',
+      kind: 'window',
+      wall: 'back',
+      widthCm: 120,
+      heightCm: 100,
+      offsetAlongCm: 70,
+      bottomOffsetCm: 90,
+    },
+    {
+      id: 'door-right',
+      kind: 'door',
+      wall: 'right',
+      widthCm: 90,
+      heightCm: 210,
+      offsetAlongCm: 80,
+      bottomOffsetCm: 0,
+    },
+  ];
+  const App = createApp(rootState, roomGroup);
+  const roomGeometry = resolveRoomArchitectureGeometry(App);
+  const backWindow = resolveRoomOpeningGeometry(
+    roomGeometry,
+    (rootState.config as any).roomArchitecture.openings[0]
+  );
+  const rightDoor = resolveRoomOpeningGeometry(
+    roomGeometry,
+    (rootState.config as any).roomArchitecture.openings[1]
+  );
+  assert.ok(backWindow);
+  assert.ok(rightDoor);
+  assert.equal(backWindow.surface.wall, 'back');
+  assert.equal(rightDoor.surface.wall, 'right');
+  assertClose(backWindow.clearancesCm.bottom, 90);
+  assertClose(rightDoor.clearancesCm.bottom, 0);
+
+  const THREE = {
+    Group: FakeGroup,
+    BoxGeometry: FakeBoxGeometry,
+    MeshStandardMaterial: FakeMaterial,
+    Mesh: FakeMesh,
+  } as any;
+  assert.equal(refreshRoomArchitectureScene(App, THREE), true);
+  const architecture = roomGroup.getObjectByName(ROOM_ARCHITECTURE_GROUP_NAME);
+  assert.ok(architecture);
+  assert.equal(architecture.getObjectByName('wpBackWall'), null);
+  assert.equal(architecture.getObjectByName('wpRightWall'), null);
+  assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpBackWall_piece_')));
+  assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpRightWall_piece_')));
+  assert.ok(architecture.getObjectByName('wpRoomOpening_win-back_glass'));
+  assert.ok(architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf'));
+
+  const backPiece = architecture.children.find((child: any) => child.name.startsWith('wpBackWall_piece_'));
+  const rightPiece = architecture.children.find((child: any) => child.name.startsWith('wpRightWall_piece_'));
+  assert.equal(backPiece.userData.__wpRoomWallSurface, true);
+  assert.equal(backPiece.userData.roomWallAxis, 'x');
+  assert.equal(rightPiece.userData.__wpRoomWallSurface, true);
+  assert.equal(rightPiece.userData.roomWallAxis, 'z');
+  assert.equal(rightPiece.userData.roomWallInwardNormalX, -1);
 });
 
 test('room architecture scene renders enabled wall boxes with the persisted wall color', () => {

@@ -9,7 +9,15 @@ import {
 
 export type SketchFreePlacementPreviewOp = Pick<
   ResolveSketchFreeBoxHoverPlacementResult,
-  'op' | 'previewX' | 'previewY' | 'previewH' | 'previewW' | 'previewD' | 'snapToCenter' | 'removeId'
+  | 'op'
+  | 'previewX'
+  | 'previewY'
+  | 'previewH'
+  | 'previewW'
+  | 'previewD'
+  | 'snapToCenter'
+  | 'removeId'
+  | 'placementWall'
 >;
 
 export type SketchFreePlacementHoverPreviewState = {
@@ -33,6 +41,7 @@ export function resolveSketchFreePlacementHoverPreviewState(args: {
     previewH: hoverPlacement.previewH,
     previewW: hoverPlacement.previewW,
     previewD: hoverPlacement.previewD,
+    placementWall: hoverPlacement.placementWall,
     removeId: hoverPlacement.removeId,
   });
   const removeBox =

@@ -121,23 +121,6 @@ function resolveManualLayoutFreeBoxTarget(args: {
   const { camera, wardrobeGroup } = __wp_getViewportRoots(App);
   if (!camera || !wardrobeGroup) return null;
 
-  const context = resolveManualLayoutSketchHoverFreePlaneContext({
-    App,
-    tool,
-    ndcX,
-    ndcY,
-    camera,
-    wardrobeGroup,
-    raycaster,
-    mouse,
-    __wp_parseSketchBoxToolSpec,
-    __wp_pickSketchFreeBoxHost: pickSketchFreeBoxHost,
-    __wp_measureWardrobeLocalBox,
-    __wp_intersectScreenWithLocalZPlane,
-    __wp_readInteriorModuleConfigRef,
-  });
-  if (!context) return null;
-
   const intersects = __wp_raycastReuse({
     App,
     raycaster,
@@ -148,6 +131,24 @@ function resolveManualLayoutFreeBoxTarget(args: {
     objects: [wardrobeGroup],
     recursive: true,
   });
+
+  const context = resolveManualLayoutSketchHoverFreePlaneContext({
+    App,
+    tool,
+    ndcX,
+    ndcY,
+    camera,
+    wardrobeGroup,
+    raycaster,
+    mouse,
+    intersects,
+    __wp_parseSketchBoxToolSpec,
+    __wp_pickSketchFreeBoxHost: pickSketchFreeBoxHost,
+    __wp_measureWardrobeLocalBox,
+    __wp_intersectScreenWithLocalZPlane,
+    __wp_readInteriorModuleConfigRef,
+  });
+  if (!context) return null;
 
   const target = findSketchFreeHoverTargetBox({
     App,

@@ -20,21 +20,36 @@ export interface RoomColumnConfigLike {
   bottomOffsetCm: number;
 }
 
+export type RoomWallId = 'back' | 'left' | 'right';
+export type RoomOpeningKind = 'window' | 'door';
+
+export interface RoomWallOpeningLike {
+  id: string;
+  kind: RoomOpeningKind;
+  wall: RoomWallId;
+  widthCm: number;
+  heightCm: number;
+  offsetAlongCm: number;
+  bottomOffsetCm: number;
+}
+
 export interface RoomArchitectureConfigLike {
   backWall: RoomBackWallConfigLike;
   leftWall: RoomSideWallConfigLike;
   rightWall: RoomSideWallConfigLike;
   column: RoomColumnConfigLike;
+  openings: RoomWallOpeningLike[];
   wallColor: string;
   surfacesHidden: boolean;
 }
 
 export type RoomArchitecturePatch = Omit<
   Partial<RoomArchitectureConfigLike>,
-  'backWall' | 'leftWall' | 'rightWall' | 'column'
+  'backWall' | 'leftWall' | 'rightWall' | 'column' | 'openings'
 > & {
   backWall?: Partial<RoomArchitectureConfigLike['backWall']>;
   leftWall?: Partial<RoomArchitectureConfigLike['leftWall']>;
   rightWall?: Partial<RoomArchitectureConfigLike['rightWall']>;
   column?: Partial<RoomArchitectureConfigLike['column']>;
+  openings?: RoomWallOpeningLike[];
 };

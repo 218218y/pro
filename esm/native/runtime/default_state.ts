@@ -36,6 +36,7 @@ const DEFAULT_ROOM_ARCHITECTURE = Object.freeze({
     heightCm: 280,
     bottomOffsetCm: 0,
   }),
+  openings: Object.freeze([]),
   wallColor: '#f2efe6',
   surfacesHidden: false,
 });
@@ -235,6 +236,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
         leftWall: { ...DEFAULT_ROOM_ARCHITECTURE.leftWall },
         rightWall: { ...DEFAULT_ROOM_ARCHITECTURE.rightWall },
         column: { ...DEFAULT_ROOM_ARCHITECTURE.column },
+        openings: [],
         wallColor: DEFAULT_ROOM_ARCHITECTURE.wallColor,
         surfacesHidden: DEFAULT_ROOM_ARCHITECTURE.surfacesHidden,
       },

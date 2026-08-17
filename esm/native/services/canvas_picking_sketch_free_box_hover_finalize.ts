@@ -23,6 +23,7 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
   op: 'add' | 'remove';
   removeId: string | null;
   snapToCenter: boolean;
+  placementWall: 'back' | 'left' | 'right';
 } {
   const { context, removePlacement, attachPlacement } = args;
   if (removePlacement) {
@@ -35,6 +36,7 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
       op: 'remove',
       removeId: removePlacement.removeId,
       snapToCenter: false,
+      placementWall: context.placementWall,
     };
   }
 
@@ -103,5 +105,6 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
       !!attachPlacement &&
       Math.abs(previewX - attachPlacement.previewX) <= 0.0001 &&
       Math.abs(previewY - attachPlacement.previewY) <= 0.0001,
+    placementWall: context.placementWall,
   };
 }

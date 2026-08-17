@@ -102,6 +102,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
   const w = rawW ?? 0;
   const h = rawH ?? 0;
   const d = rawD ?? 0;
+  const rotationY = readPreviewNumber(input.rotationY) ?? 0;
   const woodThick = readPreviewPositiveNumberOr(input.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   const hasFinitePlacement = rawX != null && rawY != null && rawZ != null && rawW != null && rawD != null;
 
@@ -185,7 +186,15 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     setVisible(mesh, true);
     resetMeshOrientation(mesh);
     applyPreviewStyle(mesh, material, lineMaterial, renderOrder, outlineRenderOrder);
-    if (typeof mesh.position?.set === 'function') mesh.position.set(px, py, pz);
+    const dx = px - x;
+    const dz = pz - z;
+    const cosY = Math.cos(rotationY);
+    const sinY = Math.sin(rotationY);
+    const rotatedX = x + cosY * dx + sinY * dz;
+    const rotatedZ = z - sinY * dx + cosY * dz;
+    if (typeof mesh.position?.set === 'function') mesh.position.set(rotatedX, py, rotatedZ);
+    const rotation = asObject(mesh.rotation);
+    if (rotation && typeof rotation.y === 'number') rotation.y = rotationY;
     if (typeof mesh.scale?.set === 'function') {
       mesh.scale.set(Math.max(0.0001, sx), Math.max(0.0001, sy), Math.max(0.0001, sz));
     }
@@ -232,6 +241,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
     w,
     h,
     d,
+    rotationY,
     woodThick,
     hasFinitePlacement,
     setVisible,

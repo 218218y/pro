@@ -1,4 +1,4 @@
-import type { AppContainer, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
+import type { AppContainer, RoomWallId, SketchPlacementPreviewArgsLike, UnknownRecord } from '../../../types';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import type {
   SketchBoxDividerState,
@@ -51,6 +51,7 @@ export interface SketchModuleBoxContentLike extends UnknownRecord {
 export interface SketchModuleBoxLike extends UnknownRecord {
   id?: string | number | null;
   freePlacement?: boolean;
+  placementWall?: RoomWallId | null;
   yNorm?: number | null;
   heightM?: number | null;
   widthM?: number | null;
@@ -267,6 +268,7 @@ export type ResolveSketchFreeBoxHoverPlacementArgs = {
   App: AppContainer;
   planeX: number;
   planeY: number;
+  placementWall?: RoomWallId;
   boxH: number;
   widthOverrideM?: number | null;
   depthOverrideM?: number | null;
@@ -287,4 +289,5 @@ export type ResolveSketchFreeBoxHoverPlacementResult = {
   op: 'add' | 'remove';
   removeId: string | null;
   snapToCenter: boolean;
+  placementWall: RoomWallId;
 };

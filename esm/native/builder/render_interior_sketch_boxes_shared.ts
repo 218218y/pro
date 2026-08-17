@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownCallable } from '../../../types';
+import type { AppContainer, RoomWallId, UnknownCallable } from '../../../types';
 
 import type { HexCellGeometry } from '../features/hex_cell/index.js';
 
@@ -120,6 +120,8 @@ export type ResolvedSketchBoxState = {
   boxId: string;
   boxPid: string;
   isFreePlacement: boolean;
+  placementWall: RoomWallId;
+  rotationY: number;
   height: number;
   halfH: number;
   centerY: number;

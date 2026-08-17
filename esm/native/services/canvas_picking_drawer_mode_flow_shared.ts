@@ -324,6 +324,7 @@ export function shouldBlockFreeBoxDrawerBuildForRoomColumn(args: {
 
   const box = asRecord(args.box);
   if (!box || box.freePlacement !== true) return false;
+  if (box.placementWall === 'left' || box.placementWall === 'right') return false;
   const centerX = readFiniteNumber(box.absX);
   const centerY = readFiniteNumber(box.absY);
   const heightM = readPositiveNumber(box.heightM);

@@ -1,3 +1,4 @@
+import type { RoomWallId } from '../../../types';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import {
@@ -19,6 +20,7 @@ export type SketchFreeBoxHoverContext = {
   wardrobeBackZ: number;
   wardrobeBox: ResolveSketchFreeBoxHoverPlacementArgs['wardrobeBox'];
   freeBoxes: unknown[];
+  placementWall: RoomWallId;
   previewX: number;
   previewY: number;
   previewW: number;
@@ -39,7 +41,14 @@ export function createSketchFreeBoxHoverContext(
   const boxH = asFiniteNumberOrNaN(args.boxH);
   const wardrobeBackZ = asFiniteNumberOrNaN(args.wardrobeBackZ);
   const wardrobeBox = args.wardrobeBox;
-  const freeBoxes = Array.isArray(args.freeBoxes) ? args.freeBoxes : [];
+  const placementWall: RoomWallId =
+    args.placementWall === 'left' || args.placementWall === 'right' ? args.placementWall : 'back';
+  const freeBoxes = (Array.isArray(args.freeBoxes) ? args.freeBoxes : []).filter(value => {
+    if (!value || typeof value !== 'object') return false;
+    const wall = Reflect.get(value, 'placementWall');
+    const normalized = wall === 'left' || wall === 'right' ? wall : 'back';
+    return normalized === placementWall;
+  });
   if (
     !Number.isFinite(planeX) ||
     !Number.isFinite(planeY) ||
@@ -91,8 +100,9 @@ export function createSketchFreeBoxHoverContext(
   const previewW = previewGeo.outerW;
   const previewD = previewGeo.outerD;
   const previewH = boxH;
-  const noMainWardrobeSketchMode = isNoMainWardrobeSketchMode(args.App);
+  const noMainWardrobeSketchMode = placementWall !== 'back' || isNoMainWardrobeSketchMode(args.App);
   const blocksFreeAddUnderWardrobe =
+    placementWall === 'back' &&
     !noMainWardrobeSketchMode &&
     isSketchFreeBoxUnderWardrobeColumn({
       planeX,
@@ -108,6 +118,7 @@ export function createSketchFreeBoxHoverContext(
     wardrobeBackZ,
     wardrobeBox,
     freeBoxes,
+    placementWall,
     previewX,
     previewY,
     previewW,

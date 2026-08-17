@@ -96,3 +96,10 @@ export {
   setViewerMeasurementToolMode,
   tryHandleViewerMeasurementClick,
 } from './viewer_measurement_tool.js';
+
+export {
+  beginRoomOpeningPlacement,
+  cancelRoomOpeningPlacement,
+  isRoomOpeningPlacementActive,
+  removeRoomOpening,
+} from './room_opening_placement.js';

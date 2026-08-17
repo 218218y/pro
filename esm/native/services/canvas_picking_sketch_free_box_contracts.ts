@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, RoomWallId } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { SketchModuleBoxLike } from './canvas_picking_manual_layout_sketch_contracts.js';
 
@@ -20,6 +20,7 @@ export type ResolveSketchFreeBoxHoverPlacementArgs = {
   App: AppContainer;
   planeX: number;
   planeY: number;
+  placementWall?: RoomWallId;
   boxH: number;
   widthOverrideM?: number | null;
   depthOverrideM?: number | null;

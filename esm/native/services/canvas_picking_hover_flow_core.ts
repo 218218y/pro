@@ -23,6 +23,7 @@ import { tryHandleCanvasNonSplitHover } from './canvas_picking_hover_flow_nonspl
 import { tryHandleCanvasSplitHover } from './canvas_picking_hover_flow_split.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
+import { tryHandleRoomOpeningPlacementHover } from './room_opening_placement.js';
 import {
   getViewerMeasurementToolMode,
   resolveViewerMeasurementPartLabel,
@@ -100,6 +101,14 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
   if (!__wpRaycaster || !__wpMouse) return false;
   syncCanvasPickingViewportMatrices(App);
   try {
+    const roomOpeningFeedback = tryHandleRoomOpeningPlacementHover({
+      App,
+      ndcX,
+      ndcY,
+      raycaster: __wpRaycaster,
+      mouse: __wpMouse,
+    });
+    if (roomOpeningFeedback) return roomOpeningFeedback as unknown as boolean;
     const __pm = __wp_primaryMode(App);
     const __isSplitEditMode = __pm === (getModeId('SPLIT') || 'split');
     const __isGrooveEditMode = __pm === (getModeId('GROOVE') || 'groove');

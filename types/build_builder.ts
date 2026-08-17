@@ -28,6 +28,7 @@ import type {
   DoorTrimMap,
 } from './maps';
 import type { ActionMetaLike } from './kernel';
+import type { RoomWallId } from './room_architecture';
 import type { BuildStateLike, ConfigStateLike, UiSnapshotLike } from './build_state';
 import type {
   BuilderContentsSurfaceLike,
@@ -185,6 +186,7 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   fillFront?: BuilderPreviewBool;
   fillBack?: BuilderPreviewBool;
   overlayThroughScene?: BuilderPreviewBool;
+  rotationY?: BuilderPreviewScalar;
   faceSign?: BuilderPreviewScalar;
   viewFaceSign?: BuilderPreviewScalar;
   labelFaceSign?: BuilderPreviewScalar;
@@ -275,6 +277,7 @@ export interface BuilderSketchBoxDoorLike extends UnknownRecord {
 export interface BuilderSketchBoxLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   freePlacement?: boolean | null;
+  placementWall?: RoomWallId | null;
   heightM?: BuilderSketchScalar;
   hM?: BuilderSketchScalar;
   widthM?: BuilderSketchScalar;

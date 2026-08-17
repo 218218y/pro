@@ -1,4 +1,4 @@
-import type { UnknownRecord } from '../../../types';
+import type { RoomWallId, UnknownRecord } from '../../../types';
 import { asRecord } from '../runtime/record.js';
 
 export const SKETCH_FREE_BOX_COMMAND_VERSION = 1 as const;
@@ -10,6 +10,7 @@ export type SketchFreeBoxGeometry = {
   heightM: number;
   widthM: number;
   depthM: number;
+  placementWall?: RoomWallId;
 };
 
 export type SketchFreeBoxPlacementCommand =
@@ -53,7 +54,7 @@ const HOVER_FIELDS = new Set([
 const ENVELOPE_FIELDS = new Set(['version', 'command']);
 const CREATE_COMMAND_FIELDS = new Set(['kind', 'geometry']);
 const REMOVE_COMMAND_FIELDS = new Set(['kind', 'boxId']);
-const GEOMETRY_FIELDS = new Set(['centerX', 'centerY', 'heightM', 'widthM', 'depthM']);
+const GEOMETRY_FIELDS = new Set(['centerX', 'centerY', 'heightM', 'widthM', 'depthM', 'placementWall']);
 
 function hasOnlyFields(record: UnknownRecord, allowed: ReadonlySet<string>): boolean {
   return Object.keys(record).every(key => allowed.has(key));
@@ -99,7 +100,14 @@ function readGeometry(value: unknown): SketchFreeBoxGeometry | null {
   const widthM = readPositive(record.widthM);
   const depthM = readPositive(record.depthM);
   if (centerX == null || centerY == null || heightM == null || widthM == null || depthM == null) return null;
-  return { centerX, centerY, heightM, widthM, depthM };
+  const placementWall =
+    record.placementWall === 'left' || record.placementWall === 'right' || record.placementWall === 'back'
+      ? record.placementWall
+      : null;
+  if (record.placementWall != null && !placementWall) return null;
+  return placementWall
+    ? { centerX, centerY, heightM, widthM, depthM, placementWall }
+    : { centerX, centerY, heightM, widthM, depthM };
 }
 
 function decodeCommand(value: unknown): SketchFreeBoxPlacementCommand | null {

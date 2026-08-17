@@ -4,6 +4,7 @@ import {
   resolveSketchBoxGeometry,
   resolveSketchFreeBoxGeometry,
 } from './render_interior_sketch_layout.js';
+import { resolveRoomArchitectureGeometry, resolveRoomWallSurface } from './room_architecture_geometry.js';
 
 import type {
   ResolvedSketchBoxShellGeometry,
@@ -52,6 +53,61 @@ export function resolveSketchBoxShellGeometry(
     const absX = readFiniteNumber(box.absX);
     const absY = readFiniteNumber(box.absY);
     if (absX == null || absY == null) return null;
+    const placementWall =
+      box.placementWall === 'left' || box.placementWall === 'right' ? box.placementWall : 'back';
+    const pad = resolveSketchBoxPlacementClampPad(woodThick);
+
+    if (placementWall !== 'back') {
+      const roomGeometry = resolveRoomArchitectureGeometry(renderArgs.App);
+      const surface = resolveRoomWallSurface(roomGeometry, placementWall);
+      if (!surface) return null;
+
+      const sizing = resolveSketchFreeBoxGeometry({
+        wardrobeWidth: surface.usableLength,
+        wardrobeDepth: freeWardrobeBox
+          ? (readPositiveNumber(freeWardrobeBox.depth) ?? internalDepth)
+          : internalDepth,
+        backZ: 0,
+        centerX: 0,
+        woodThick,
+        widthM,
+        depthM,
+      });
+      const halfAlong = sizing.outerW / 2;
+      const minAlong = surface.startCoord + halfAlong;
+      const maxAlong = surface.startCoord + surface.usableLength - halfAlong;
+      const alongCenter =
+        maxAlong >= minAlong
+          ? Math.max(minAlong, Math.min(maxAlong, absX))
+          : surface.startCoord + surface.usableLength / 2;
+      const centerY = clampSketchFreeBoxCenterY({
+        centerY: absY,
+        boxH: height,
+        wardrobeCenterY: surface.height / 2,
+        wardrobeHeight: surface.height,
+        pad,
+      });
+      const pivotX = surface.interiorFaceCoord + surface.inwardNormalX * (sizing.outerD / 2);
+      const geometry = resolveSketchFreeBoxGeometry({
+        wardrobeWidth: surface.usableLength,
+        wardrobeDepth: freeWardrobeBox
+          ? (readPositiveNumber(freeWardrobeBox.depth) ?? internalDepth)
+          : internalDepth,
+        backZ: alongCenter - sizing.outerD / 2,
+        centerX: pivotX,
+        woodThick,
+        widthM: sizing.outerW,
+        depthM: sizing.outerD,
+      });
+      return {
+        centerY,
+        geometry,
+        absEntry: null,
+        placementWall,
+        rotationY: placementWall === 'left' ? Math.PI / 2 : -Math.PI / 2,
+      };
+    }
+
     const freeCenterY = freeWardrobeBox ? readFiniteNumber(freeWardrobeBox.centerY) : null;
     const freeCenterZ = freeWardrobeBox ? readFiniteNumber(freeWardrobeBox.centerZ) : null;
     const freeWidth = freeWardrobeBox ? readPositiveNumber(freeWardrobeBox.width) : null;
@@ -77,7 +133,7 @@ export function resolveSketchBoxShellGeometry(
             boxH: height,
             wardrobeCenterY: freeCenterY,
             wardrobeHeight: freeHeight,
-            pad: resolveSketchBoxPlacementClampPad(woodThick),
+            pad,
           })
         : absY;
     const geometry = resolveSketchFreeBoxGeometry({
@@ -89,7 +145,7 @@ export function resolveSketchBoxShellGeometry(
       widthM,
       depthM,
     });
-    return { centerY, geometry, absEntry: null };
+    return { centerY, geometry, absEntry: null, placementWall: 'back', rotationY: 0 };
   }
 
   const yNorm = readFiniteNumber(box.yNorm);
@@ -114,6 +170,8 @@ export function resolveSketchBoxShellGeometry(
   return {
     centerY,
     geometry,
+    placementWall: 'back',
+    rotationY: 0,
     absEntry: {
       y: centerY,
       halfH,
