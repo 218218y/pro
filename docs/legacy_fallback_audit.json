@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T14:00:30.180Z",
+  "generatedAt": "2026-08-17T14:35:44.835Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 556,
@@ -4089,14 +4089,14 @@
     },
     {
       "file": "esm/native/services/room_opening_placement.ts",
-      "line": 37,
+      "line": 38,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "const ROOM_OPENING_MODE_FALLBACK_ID = 'room_opening';"
     },
     {
       "file": "esm/native/services/room_opening_placement.ts",
-      "line": 159,
+      "line": 160,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "return ROOM_OPENING_MODE_FALLBACK_ID;"
@@ -4159,77 +4159,77 @@
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 742,
+      "line": 806,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const fallbackBox = selectorBox || readMeasuredBox(runtime, target, wardrobeGroup);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 749,
+      "line": 813,
       "term": "fallbackBottomY",
       "category": "domain-default",
       "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 749,
+      "line": 813,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 750,
+      "line": 814,
       "term": "fallbackTopY",
       "category": "domain-default",
       "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 750,
+      "line": 814,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const fallbackTopY = fallbackBox ? fallbackBox.centerY + fallbackBox.height / 2 : null;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 751,
+      "line": 815,
       "term": "fallbackBottomY",
       "category": "domain-default",
       "text": "const bottomY = readFiniteNumber(gridInfo, 'effectiveBottomY') ?? fallbackBottomY;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 752,
+      "line": 816,
       "term": "fallbackTopY",
       "category": "domain-default",
       "text": "const topY = readFiniteNumber(gridInfo, 'effectiveTopY') ?? fallbackTopY;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 753,
+      "line": 817,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const innerW = readFiniteNumber(gridInfo, 'innerW') ?? Math.max(0, fallbackBox?.width ?? 0);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 754,
+      "line": 818,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalCenterX = readFiniteNumber(gridInfo, 'internalCenterX') ?? fallbackBox?.centerX ?? 0;"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 755,
+      "line": 819,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalDepth = readFiniteNumber(gridInfo, 'internalDepth') ?? Math.max(0, fallbackBox?.depth ?? 0);"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
-      "line": 756,
+      "line": 820,
       "term": "fallbackBox",
       "category": "domain-default",
       "text": "const internalZ = readFiniteNumber(gridInfo, 'internalZ') ?? fallbackBox?.centerZ ?? 0;"

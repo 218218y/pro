@@ -26,6 +26,7 @@ import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_fl
 import { tryHandleRoomOpeningPlacementHover } from './room_opening_placement.js';
 import {
   getViewerMeasurementToolMode,
+  resolveViewerMeasurementHitState,
   resolveViewerMeasurementPartLabel,
   tryHandleViewerMeasurementHover,
   VIEWER_MEASUREMENT_MODE_ID,
@@ -133,7 +134,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      tryHandleViewerMeasurementHover({
+      const measurementHitState = resolveViewerMeasurementHitState({
         App,
         hitState,
         ndcX,
@@ -141,8 +142,19 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
+      tryHandleViewerMeasurementHover({
+        App,
+        hitState,
+        preResolvedHitState: measurementHitState,
+        ndcX,
+        ndcY,
+        raycaster: __wpRaycaster,
+        mouse: __wpMouse,
+      });
       const partLabel =
-        getViewerMeasurementToolMode(App) === 'part' ? resolveViewerMeasurementPartLabel(hitState) : null;
+        getViewerMeasurementToolMode(App) === 'part'
+          ? resolveViewerMeasurementPartLabel(measurementHitState)
+          : null;
       return {
         kind: VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND,
         cursor: CANVAS_HOVER_CURSOR_PRESERVE,

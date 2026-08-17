@@ -148,3 +148,52 @@ test('hover flow measurement mode returns the canonical part label with cursor p
     partLabel: 'דופן שמאלית',
   });
 });
+
+test('hover flow measurement mode recognizes room wall targets through the room measurement picking seam', () => {
+  const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
+  const roomTarget = {
+    type: 'Mesh',
+    children: [],
+    parent: null as any,
+    material: { visible: true, opacity: 0 },
+    userData: {
+      __wpRoomMeasurementTarget: true,
+      partId: 'room_wall_back',
+      partLabel: 'קיר אחורי',
+      __wpRoomMeasurementULength: 4,
+      __wpRoomMeasurementHeight: 2.8,
+      __wpRoomMeasurementThickness: 0.004,
+      __wpRoomMeasurementUX: 1,
+      __wpRoomMeasurementUZ: 0,
+      __wpRoomMeasurementNormalX: 0,
+      __wpRoomMeasurementNormalZ: 1,
+    },
+  };
+  const architecture = { children: [roomTarget] };
+  roomTarget.parent = architecture;
+  const raycaster = {
+    setFromCamera() {},
+    intersectObjects(objects: unknown) {
+      const list = Array.isArray(objects) ? objects : [];
+      if (list.includes(roomTarget)) {
+        return [{ object: roomTarget, point: { x: 0.4, y: 1.1, z: 0.006 }, distance: 4 }];
+      }
+      return [];
+    },
+  };
+  const App = createApp(wardrobeGroup, raycaster, 'measure');
+  App.render.roomGroup = {
+    children: [architecture],
+    getObjectByName(name: string) {
+      return name === 'wpRoomArchitecture' ? architecture : null;
+    },
+  };
+
+  const feedback = __coreHandleCanvasHoverNDC(App, 0.15, -0.25) as unknown;
+
+  assert.deepEqual(feedback, {
+    kind: 'viewer-measurement',
+    cursor: '__wp_canvas_hover_cursor_preserve',
+    partLabel: 'קיר אחורי',
+  });
+});

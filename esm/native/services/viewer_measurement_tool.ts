@@ -11,6 +11,7 @@ import {
   tryHandleViewerMeasurementHoverWithRuntime,
 } from './viewer_measurement_tool_flow.js';
 import { createViewerMeasurementFeatureRuntime } from './viewer_measurement_tool_runtime.js';
+import { resolveViewerMeasurementHitStateWithRoom } from './viewer_measurement_room_target.js';
 
 export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
@@ -32,6 +33,17 @@ export function clearViewerMeasurementOverlay(App: AppContainer, render = true):
   clearViewerMeasurementOverlayWithRuntime(createViewerMeasurementFeatureRuntime(App), render);
 }
 
+export function resolveViewerMeasurementHitState(args: {
+  App: AppContainer;
+  hitState: CanvasPickingClickHitState | null;
+  ndcX?: number;
+  ndcY?: number;
+  raycaster?: RaycasterLike | null;
+  mouse?: MouseVectorLike | null;
+}): CanvasPickingClickHitState | null {
+  return resolveViewerMeasurementHitStateWithRoom(args);
+}
+
 export function tryHandleViewerMeasurementHover(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
@@ -39,10 +51,15 @@ export function tryHandleViewerMeasurementHover(args: {
   ndcY?: number;
   raycaster?: RaycasterLike | null;
   mouse?: MouseVectorLike | null;
+  preResolvedHitState?: CanvasPickingClickHitState | null;
 }): boolean {
+  const hitState =
+    args.preResolvedHitState === undefined
+      ? resolveViewerMeasurementHitStateWithRoom(args)
+      : args.preResolvedHitState;
   return tryHandleViewerMeasurementHoverWithRuntime({
     runtime: createViewerMeasurementFeatureRuntime(args.App),
-    hitState: args.hitState,
+    hitState,
     ndcX: args.ndcX,
     ndcY: args.ndcY,
     raycaster: args.raycaster,
@@ -58,9 +75,10 @@ export function tryHandleViewerMeasurementClick(args: {
   raycaster?: RaycasterLike | null;
   mouse?: MouseVectorLike | null;
 }): boolean {
+  const hitState = resolveViewerMeasurementHitStateWithRoom(args);
   return tryHandleViewerMeasurementClickWithRuntime({
     runtime: createViewerMeasurementFeatureRuntime(args.App),
-    hitState: args.hitState,
+    hitState,
     ndcX: args.ndcX,
     ndcY: args.ndcY,
     raycaster: args.raycaster,

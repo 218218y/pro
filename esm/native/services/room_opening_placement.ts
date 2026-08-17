@@ -20,6 +20,7 @@ import {
   getViewportWardrobeGroup,
 } from './render_surface_runtime.js';
 import { reportServiceNonFatal } from './service_error_observability.js';
+import { isIgnoredRoomWardrobeObstacleObject } from './room_wardrobe_obstacle_policy.js';
 import {
   findRoomWallSurfaceHit,
   type RoomWallSurfaceHit,
@@ -390,40 +391,6 @@ function resolveOpeningAtPoint(args: {
   };
 }
 
-function isIgnoredWardrobeRaycastObject(value: unknown): boolean {
-  let node = __wp_asRecord(value);
-  for (let depth = 0; node && depth < 12; depth += 1) {
-    const type = typeof node.type === 'string' ? node.type : '';
-    if (type === 'Line' || type === 'LineSegments' || type === 'Sprite') return true;
-
-    const userData = __wp_asRecord(node.userData);
-    if (
-      userData?.__ignoreRaycast === true ||
-      userData?.__wpExcludeWardrobeBounds === true ||
-      userData?.__wpViewerMeasurementOverlay === true ||
-      userData?.isModuleSelector === true
-    ) {
-      return true;
-    }
-
-    if (depth === 0) {
-      const material = __wp_asRecord(node.material);
-      if (material?.visible === false || material?.opacity === 0) return true;
-      if (Array.isArray(node.material)) {
-        const materials = node.material
-          .map(item => __wp_asRecord(item))
-          .filter((item): item is UnknownRecord => item != null);
-        if (materials.length && materials.every(item => item.visible === false || item.opacity === 0)) {
-          return true;
-        }
-      }
-    }
-
-    node = __wp_asRecord(node.parent);
-  }
-  return false;
-}
-
 type WardrobeSurfaceHit = {
   hit: RaycastHitLike;
   distance: number | null;
@@ -449,7 +416,7 @@ function readNearestWardrobeHit(args: {
     recursive: true,
   });
   for (const hit of hits) {
-    if (isIgnoredWardrobeRaycastObject(hit.object)) continue;
+    if (isIgnoredRoomWardrobeObstacleObject(hit.object)) continue;
     const distance = finiteNumber((hit as RaycastHitLike & { distance?: unknown }).distance);
     return { hit, distance };
   }

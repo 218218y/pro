@@ -41,6 +41,7 @@ import {
   readCameraWorldPosition,
   readMeasuredBox,
   readUserData,
+  isRoomMeasurementTarget,
   resolveViewerMeasurementResolution,
 } from './viewer_measurement_tool_resolution.js';
 
@@ -310,6 +311,16 @@ export function resolvePointMeasurementStart(args: {
   const resolution = resolveViewerMeasurementResolution({ runtime, THREE, hitState, wardrobeGroup });
   if (!resolution) return null;
   const { target, box, plane, shouldMeasureInterior, targetKey } = resolution;
+  if (isRoomMeasurementTarget(target)) {
+    const localPoint = readHitLocalPoint(runtime, hitState, wardrobeGroup);
+    if (!localPoint) return null;
+    const point = snapPointToMeasurementPlaneEdges(THREE, plane, localPoint).point;
+    return {
+      point: { x: point.x, y: point.y, z: point.z },
+      plane,
+      targetKey,
+    };
+  }
   const boundsBox = readPointMeasurementBoundsBox({ runtime, targetBox: box, wardrobeGroup });
   const frontPlaneSign =
     readCameraAxisSign({ runtime, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? plane.normalSign;

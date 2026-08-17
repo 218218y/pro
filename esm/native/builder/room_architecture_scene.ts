@@ -15,6 +15,10 @@ import type { RoomWallId } from '../../../types/index.js';
 
 export const ROOM_ARCHITECTURE_GROUP_NAME = 'wpRoomArchitecture';
 
+const ROOM_MEASUREMENT_PROXY_DEPTH_M = 0.004;
+const ROOM_MEASUREMENT_WALL_OFFSET_M = 0.006;
+const ROOM_MEASUREMENT_OPENING_OFFSET_M = 0.018;
+
 function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
@@ -63,7 +67,7 @@ function addArchitectureBox(args: {
   castShadow?: boolean;
   userData?: UnknownRecord;
   materialParams?: UnknownRecord;
-}): void {
+}): UnknownRecord {
   const mesh = new args.MeshCtor(
     new args.BoxGeometryCtor(args.box.width, args.box.height, args.box.depth),
     new args.MaterialCtor({
@@ -82,6 +86,7 @@ function addArchitectureBox(args: {
   mesh.receiveShadow = true;
   mesh.userData = { __kind: args.kind, ignorePicking: true, ...args.userData };
   if (typeof args.group.add === 'function') args.group.add(mesh);
+  return mesh;
 }
 
 type ArchitectureBoxFactoryArgs = {
@@ -102,8 +107,8 @@ function addAxisAlignedArchitectureBox(
     userData?: UnknownRecord;
     materialParams?: UnknownRecord;
   }
-): void {
-  addArchitectureBox({
+): UnknownRecord {
+  return addArchitectureBox({
     ...factory,
     box: (() => {
       const sized = axisAlignedBoxToCenterSize(box);
@@ -147,6 +152,80 @@ function wallSurfaceUserData(geometry: RoomArchitectureGeometry, wall: RoomWallI
     roomWallInwardNormalX: surface.inwardNormalX,
     roomWallInwardNormalZ: surface.inwardNormalZ,
   };
+}
+
+function roomWallPartLabel(wall: RoomWallId): string {
+  if (wall === 'back') return 'קיר אחורי';
+  return wall === 'left' ? 'קיר שמאלי' : 'קיר ימני';
+}
+
+function roomMeasurementTargetData(args: {
+  partId: string;
+  partLabel: string;
+  uAxis: 'x' | 'z';
+  uLength: number;
+  height: number;
+  normalX: -1 | 0 | 1;
+  normalZ: -1 | 0 | 1;
+  roomOpeningId?: string;
+  roomOpeningKind?: string;
+}): UnknownRecord {
+  return {
+    __wpRoomMeasurementTarget: true,
+    __wpRoomMeasurementUAxis: args.uAxis,
+    __wpRoomMeasurementULength: args.uLength,
+    __wpRoomMeasurementHeight: args.height,
+    __wpRoomMeasurementThickness: ROOM_MEASUREMENT_PROXY_DEPTH_M,
+    __wpRoomMeasurementUX: args.uAxis === 'x' ? 1 : 0,
+    __wpRoomMeasurementUZ: args.uAxis === 'z' ? 1 : 0,
+    __wpRoomMeasurementNormalX: args.normalX,
+    __wpRoomMeasurementNormalZ: args.normalZ,
+    __wpRoomMeasurementBaseNormalX: args.normalX,
+    __wpRoomMeasurementBaseNormalZ: args.normalZ,
+    partId: args.partId,
+    partLabel: args.partLabel,
+    ...(args.roomOpeningId ? { roomOpeningId: args.roomOpeningId } : {}),
+    ...(args.roomOpeningKind ? { roomOpeningKind: args.roomOpeningKind } : {}),
+  };
+}
+
+function addWallMeasurementTarget(args: {
+  factory: ArchitectureBoxFactoryArgs;
+  geometry: RoomArchitectureGeometry;
+  wall: RoomWallId;
+}): void {
+  const surface = resolveRoomWallSurface(args.geometry, args.wall);
+  if (!surface) return;
+  const alongCenter = surface.startCoord + surface.usableLength / 2;
+  const normalOffset = ROOM_MEASUREMENT_WALL_OFFSET_M;
+  const centerX =
+    surface.axis === 'x' ? alongCenter : surface.interiorFaceCoord + surface.inwardNormalX * normalOffset;
+  const centerZ =
+    surface.axis === 'z' ? alongCenter : surface.interiorFaceCoord + surface.inwardNormalZ * normalOffset;
+  addArchitectureBox({
+    ...args.factory,
+    box: {
+      width: surface.axis === 'x' ? surface.usableLength : ROOM_MEASUREMENT_PROXY_DEPTH_M,
+      height: surface.height,
+      depth: surface.axis === 'z' ? surface.usableLength : ROOM_MEASUREMENT_PROXY_DEPTH_M,
+      centerX,
+      centerY: surface.height / 2,
+      centerZ,
+    },
+    name: `wpRoomMeasurementWall_${args.wall}`,
+    kind: 'room_measurement_target',
+    color: '#ffffff',
+    userData: roomMeasurementTargetData({
+      partId: `room_wall_${args.wall}`,
+      partLabel: roomWallPartLabel(args.wall),
+      uAxis: surface.axis,
+      uLength: surface.usableLength,
+      height: surface.height,
+      normalX: surface.inwardNormalX,
+      normalZ: surface.inwardNormalZ,
+    }),
+    materialParams: { transparent: true, opacity: 0, depthWrite: false, colorWrite: false },
+  });
 }
 
 function addWallWithOpenings(args: {
@@ -248,9 +327,10 @@ function addOpeningVisuals(args: {
     normalSize = frameDepth,
     normalOffset = visualOffset,
     color = frameColor,
-    materialParams?: UnknownRecord
-  ) => {
-    addAxisAlignedArchitectureBox(
+    materialParams?: UnknownRecord,
+    extraUserData?: UnknownRecord
+  ): UnknownRecord => {
+    return addAxisAlignedArchitectureBox(
       factory,
       openingVisualBox({
         resolved,
@@ -266,7 +346,7 @@ function addOpeningVisuals(args: {
         kind: 'room_opening_visual',
         color,
         castShadow: true,
-        userData: openingData,
+        userData: { ...openingData, ...extraUserData },
         materialParams,
       }
     );
@@ -291,41 +371,148 @@ function addOpeningVisuals(args: {
       { transparent: true, opacity: 0.42, roughness: 0.18, metalness: 0.05 }
     );
     addPart('mullionV', alongCenter, frame * 0.55, centerY, resolved.height);
+    addPart(
+      'measurementTarget',
+      alongCenter,
+      resolved.width,
+      centerY,
+      resolved.height,
+      ROOM_MEASUREMENT_PROXY_DEPTH_M,
+      ROOM_MEASUREMENT_OPENING_OFFSET_M,
+      '#ffffff',
+      { transparent: true, opacity: 0, depthWrite: false, colorWrite: false },
+      roomMeasurementTargetData({
+        partId: `room_window_${resolved.opening.id}`,
+        partLabel: 'חלון',
+        uAxis: resolved.surface.axis,
+        uLength: resolved.width,
+        height: resolved.height,
+        normalX: resolved.surface.inwardNormalX,
+        normalZ: resolved.surface.inwardNormalZ,
+        roomOpeningId: resolved.opening.id,
+        roomOpeningKind: 'window',
+      })
+    );
     return;
   }
 
   const doorReveal = 0.004;
   const leafWidth = Math.max(0.08, resolved.width - doorReveal * 2);
   const leafHeight = Math.max(0.08, resolved.height - doorReveal);
-  addPart('doorLeaf', alongCenter, leafWidth, bottom + leafHeight / 2, leafHeight, 0.035, 0.012, '#b98255', {
-    roughness: 0.72,
-  });
-  addPart(
-    'doorPanel',
-    alongCenter,
-    Math.max(0.05, leafWidth * 0.72),
-    bottom + leafHeight * 0.54,
-    Math.max(0.08, leafHeight * 0.56),
-    0.012,
-    0.036,
-    '#c99668',
-    { roughness: 0.76 }
+  const openingStartAlong = resolved.surface.startCoord + resolved.offsetAlong;
+  const hingeAlong = openingStartAlong + doorReveal;
+  const hingeNormalOffset = 0.012;
+  const hingeX =
+    resolved.surface.axis === 'x'
+      ? hingeAlong
+      : resolved.surface.interiorFaceCoord + resolved.surface.inwardNormalX * hingeNormalOffset;
+  const hingeZ =
+    resolved.surface.axis === 'z'
+      ? hingeAlong
+      : resolved.surface.interiorFaceCoord + resolved.surface.inwardNormalZ * hingeNormalOffset;
+  const doorDirectionX = resolved.surface.axis === 'x' ? 1 : 0;
+  const doorDirectionZ = resolved.surface.axis === 'z' ? 1 : 0;
+  const targetAngleSign =
+    doorDirectionZ * resolved.surface.inwardNormalX - doorDirectionX * resolved.surface.inwardNormalZ >= 0
+      ? 1
+      : -1;
+  const movableData = {
+    __wpRoomDoorMovable: true,
+    __wpRoomDoorHingeX: hingeX,
+    __wpRoomDoorHingeZ: hingeZ,
+    __wpRoomDoorLeafWidth: leafWidth,
+    __wpRoomDoorLeafHeight: leafHeight,
+    __wpRoomDoorBottom: bottom,
+    __wpRoomDoorDirectionX: doorDirectionX,
+    __wpRoomDoorDirectionZ: doorDirectionZ,
+    __wpRoomDoorTargetAngleSign: targetAngleSign,
+  };
+  const tagMovable = (mesh: UnknownRecord): UnknownRecord => {
+    const position = asRecord(mesh.position);
+    mesh.userData = {
+      ...asRecord(mesh.userData),
+      ...movableData,
+      __wpRoomDoorClosedX: Number(position?.x) || 0,
+      __wpRoomDoorClosedZ: Number(position?.z) || 0,
+      __wpRoomDoorClosedRotationY: Number(asRecord(mesh.rotation)?.y) || 0,
+      __wpRoomDoorCurrentAngleRad: 0,
+    };
+    return mesh;
+  };
+
+  tagMovable(
+    addPart(
+      'doorLeaf',
+      alongCenter,
+      leafWidth,
+      bottom + leafHeight / 2,
+      leafHeight,
+      0.035,
+      0.012,
+      '#b98255',
+      { roughness: 0.72 },
+      { partLabel: 'דלת' }
+    )
+  );
+  tagMovable(
+    addPart(
+      'doorPanel',
+      alongCenter,
+      Math.max(0.05, leafWidth * 0.72),
+      bottom + leafHeight * 0.54,
+      Math.max(0.08, leafHeight * 0.56),
+      0.012,
+      0.036,
+      '#c99668',
+      { roughness: 0.76 },
+      { partLabel: 'דלת' }
+    )
   );
   const handleAlong = alongCenter + leafWidth * 0.34;
-  addPart(
-    'doorHandle',
-    handleAlong,
-    0.025,
-    bottom + Math.min(1.02, leafHeight * 0.48),
-    0.025,
-    0.055,
-    0.07,
-    '#c0c5cb',
-    {
-      roughness: 0.38,
-      metalness: 0.72,
-    }
+  tagMovable(
+    addPart(
+      'doorHandle',
+      handleAlong,
+      0.025,
+      bottom + Math.min(1.02, leafHeight * 0.48),
+      0.025,
+      0.055,
+      0.07,
+      '#c0c5cb',
+      { roughness: 0.38, metalness: 0.72 },
+      { partLabel: 'ידית דלת' }
+    )
   );
+
+  const measurementProxy = tagMovable(
+    addPart(
+      'measurementTarget',
+      alongCenter,
+      leafWidth,
+      bottom + leafHeight / 2,
+      leafHeight,
+      ROOM_MEASUREMENT_PROXY_DEPTH_M,
+      ROOM_MEASUREMENT_OPENING_OFFSET_M,
+      '#ffffff',
+      { transparent: true, opacity: 0, depthWrite: false, colorWrite: false },
+      roomMeasurementTargetData({
+        partId: `room_door_${resolved.opening.id}`,
+        partLabel: 'דלת',
+        uAxis: resolved.surface.axis,
+        uLength: leafWidth,
+        height: leafHeight,
+        normalX: resolved.surface.inwardNormalX,
+        normalZ: resolved.surface.inwardNormalZ,
+        roomOpeningId: resolved.opening.id,
+        roomOpeningKind: 'door',
+      })
+    )
+  );
+  const proxyUserData = asRecord(measurementProxy.userData);
+  if (proxyUserData) {
+    proxyUserData.__wpRoomMeasurementBaseUX = doorDirectionX;
+    proxyUserData.__wpRoomMeasurementBaseUZ = doorDirectionZ;
+  }
 }
 
 export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike): boolean {
@@ -364,6 +551,10 @@ export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike
   if (geometry.rightWall) {
     addWallWithOpenings({ factory, geometry, wall: 'right', color: wallColor, castShadow: true, openings });
   }
+
+  addWallMeasurementTarget({ factory, geometry, wall: 'back' });
+  if (geometry.leftWall) addWallMeasurementTarget({ factory, geometry, wall: 'left' });
+  if (geometry.rightWall) addWallMeasurementTarget({ factory, geometry, wall: 'right' });
 
   for (const opening of openings) addOpeningVisuals({ factory, resolved: opening });
 

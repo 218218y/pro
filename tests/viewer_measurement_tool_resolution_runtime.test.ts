@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { FRONT_Z_EPSILON_M } from '../esm/native/services/viewer_measurement_tool_contracts.ts';
+import { resolveViewerMeasurementPartLabel } from '../esm/native/services/viewer_measurement_part_label.ts';
 import { createViewerMeasurementGeometryRuntime } from '../esm/native/services/viewer_measurement_geometry_runtime.ts';
 import {
   resolvePointMeasurementStart,
@@ -894,4 +895,77 @@ test('viewer measurement resolution core runs on injected geometry capabilities 
   assert.ok(calls.measure > 0);
   assert.ok(calls.camera > 0);
   assert.ok(calls.project > 0);
+
+  const roomTarget = createMesh({
+    width: 0.004,
+    height: 2.8,
+    depth: 3.2,
+    x: -2,
+    y: 1.4,
+    z: 1.6,
+    userData: {
+      __wpRoomMeasurementTarget: true,
+      __wpRoomMeasurementULength: 3.2,
+      __wpRoomMeasurementHeight: 2.8,
+      __wpRoomMeasurementThickness: 0.004,
+      __wpRoomMeasurementUX: 0,
+      __wpRoomMeasurementUZ: 1,
+      __wpRoomMeasurementNormalX: 1,
+      __wpRoomMeasurementNormalZ: 0,
+      partId: 'room_wall_left',
+      partLabel: 'קיר שמאלי',
+    },
+  });
+  const roomRuntime = {
+    getCamera() {
+      return { position: new FakeVector3(0, 1, 3) };
+    },
+    getInternalGridMap() {
+      return Object.create(null);
+    },
+    measureObjectLocalBox(value: unknown) {
+      assert.equal(value, roomTarget);
+      return { centerX: -2, centerY: 1.4, centerZ: 1.6, width: 0.004, height: 2.8, depth: 3.2 };
+    },
+    projectWorldPointToLocal(value: unknown) {
+      const point = value as { x?: number; y?: number; z?: number } | null;
+      if (!point) return null;
+      return { x: Number(point.x || 0), y: Number(point.y || 0), z: Number(point.z || 0) };
+    },
+  };
+  const roomHitState = makeHitState({
+    target: roomTarget,
+    point: { x: -2, y: 1.2, z: 0.8 },
+    hitIdentity: { partId: 'room_wall_left' },
+  });
+  roomHitState.foundPartId = 'room_wall_left';
+  roomHitState.hitUserData = roomTarget.userData;
+  const roomResolution = resolveViewerMeasurementResolution({
+    runtime: roomRuntime,
+    THREE,
+    hitState: roomHitState,
+    wardrobeGroup,
+    target: roomTarget,
+  });
+  assert.ok(roomResolution);
+  assert.equal(roomResolution.targetKey, 'room_wall_left');
+  assert.equal(roomResolution.plane.kind, 'side');
+  assert.ok(roomResolution.plane.basis);
+  assertClose(roomResolution.plane.uLength, 3.2);
+  assertClose(roomResolution.plane.vLength, 2.8);
+  assertClose(roomResolution.plane.basis?.u.z ?? Number.NaN, 1);
+  assert.equal(resolveViewerMeasurementPartLabel(roomHitState, roomTarget), 'קיר שמאלי');
+
+  const roomDraft = resolvePointMeasurementStart({
+    runtime: roomRuntime,
+    THREE,
+    hitState: roomHitState,
+    wardrobeGroup,
+  });
+  assert.ok(roomDraft);
+  assert.equal(roomDraft.targetKey, 'room_wall_left');
+  assertClose(roomDraft.plane.uMin, -1.6);
+  assertClose(roomDraft.plane.uMax, 1.6);
+  assertClose(roomDraft.plane.vMin, -1.4);
+  assertClose(roomDraft.plane.vMax, 1.4);
 });

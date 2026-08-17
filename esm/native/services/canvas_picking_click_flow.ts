@@ -14,6 +14,7 @@ import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
 import { tryHandleViewerMeasurementClick } from './viewer_measurement_tool.js';
 import { tryHandleRoomOpeningPlacementClick } from './room_opening_placement.js';
+import { tryHandleRoomDoorToggleClick } from './room_door_interaction.js';
 
 export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY: number): void {
   const { raycaster: __wpRaycaster, mouse: __wpMouse } = __wp_ensurePickingRefs(App);
@@ -32,6 +33,18 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
 
   if (
     tryHandleRoomOpeningPlacementClick({
+      App,
+      ndcX,
+      ndcY,
+      raycaster: __wpRaycaster,
+      mouse: __wpMouse,
+    })
+  ) {
+    return;
+  }
+
+  if (
+    tryHandleRoomDoorToggleClick({
       App,
       ndcX,
       ndcY,

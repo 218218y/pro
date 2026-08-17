@@ -10,6 +10,11 @@ import {
   ROOM_ARCHITECTURE_GROUP_NAME,
   refreshRoomArchitectureScene,
 } from '../esm/native/builder/room_architecture_scene.ts';
+import {
+  doesRoomDoorSweepCollide,
+  resolveRoomDoorMaxOpenAngleRad,
+  tryHandleRoomDoorToggleClick,
+} from '../esm/native/services/room_door_interaction.ts';
 
 function assertClose(actual: number, expected: number): void {
   assert.ok(Math.abs(actual - expected) <= 1e-9, `${actual} must equal ${expected}`);
@@ -36,6 +41,7 @@ function createRootState(overrides: Record<string, unknown> = {}) {
         surfacesHidden: false,
       },
     },
+    mode: { primary: 'none', opts: {} },
     runtime: { wardrobeWidthM: 2.4, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
     ...overrides,
   };
@@ -43,7 +49,7 @@ function createRootState(overrides: Record<string, unknown> = {}) {
 
 function createApp(rootState: ReturnType<typeof createRootState>, roomGroup?: any) {
   return {
-    store: { getState: () => rootState },
+    store: { getState: () => rootState, patch() {} },
     render: roomGroup ? { roomGroup } : {},
   } as any;
 }
@@ -78,7 +84,15 @@ test('room openings resolve against their host wall and scene rendering cuts the
     userData: Record<string, unknown> = {};
     children: any[] = [];
     add(child: any) {
+      child.parent = this;
       this.children.push(child);
+    }
+    traverse(fn: (value: any) => void) {
+      const visit = (value: any) => {
+        fn(value);
+        for (const child of value.children || []) visit(child);
+      };
+      visit(this);
     }
     remove(child: any) {
       this.children = this.children.filter(entry => entry !== child);
@@ -115,6 +129,8 @@ test('room openings resolve against their host wall and scene rendering cuts the
       z: 0,
       set: (x: number, y: number, z: number) => Object.assign(this.position, { x, y, z }),
     };
+    rotation = { x: 0, y: 0, z: 0 };
+    updateMatrixWorld() {}
     constructor(
       public geometry: unknown,
       public material: unknown
@@ -253,6 +269,121 @@ test('room openings resolve against their host wall and scene rendering cuts the
   assertClose(leafStartReveal, 0.004);
   assertClose(leafEndReveal, 0.004);
   assertClose(leafTopReveal, 0.004);
+  assert.equal(doorLeaf.userData.__wpRoomDoorMovable, true);
+  assert.equal(doorLeaf.userData.__wpRoomDoorDirectionX, 0);
+  assert.equal(doorLeaf.userData.__wpRoomDoorDirectionZ, 1);
+  assert.equal(doorLeaf.userData.__wpRoomDoorTargetAngleSign, -1);
+
+  const wallMeasurement = architecture.getObjectByName('wpRoomMeasurementWall_back');
+  const windowMeasurement = architecture.getObjectByName('wpRoomOpening_win-back_measurementTarget');
+  const doorMeasurement = architecture.getObjectByName('wpRoomOpening_door-right_measurementTarget');
+  assert.ok(wallMeasurement && windowMeasurement && doorMeasurement);
+  assert.equal(wallMeasurement.userData.partLabel, 'קיר אחורי');
+  assert.equal(windowMeasurement.userData.partLabel, 'חלון');
+  assert.equal(doorMeasurement.userData.partLabel, 'דלת');
+  assert.equal(doorMeasurement.userData.__wpRoomMeasurementTarget, true);
+  assert.equal(doorMeasurement.userData.__wpRoomDoorMovable, true);
+
+  const rightDoorSpec = {
+    hingeX: doorLeaf.userData.__wpRoomDoorHingeX as number,
+    hingeZ: doorLeaf.userData.__wpRoomDoorHingeZ as number,
+    leafWidth: doorLeaf.userData.__wpRoomDoorLeafWidth as number,
+    leafHeight: doorLeaf.userData.__wpRoomDoorLeafHeight as number,
+    bottom: doorLeaf.userData.__wpRoomDoorBottom as number,
+    directionX: doorLeaf.userData.__wpRoomDoorDirectionX as number,
+    directionZ: doorLeaf.userData.__wpRoomDoorDirectionZ as number,
+    targetAngleSign: doorLeaf.userData.__wpRoomDoorTargetAngleSign as 1 | -1,
+    thickness: 0.035,
+  };
+  assertClose(resolveRoomDoorMaxOpenAngleRad(rightDoorSpec, []), -Math.PI / 2);
+  const swingObstacle = {
+    minX: rightDoorSpec.hingeX - 0.52,
+    maxX: rightDoorSpec.hingeX - 0.28,
+    minY: 0,
+    maxY: 2.2,
+    minZ: rightDoorSpec.hingeZ + 0.28,
+    maxZ: rightDoorSpec.hingeZ + 0.52,
+  };
+  assert.equal(doesRoomDoorSweepCollide(rightDoorSpec, [swingObstacle], -Math.PI / 4), true);
+  const limitedAngle = resolveRoomDoorMaxOpenAngleRad(rightDoorSpec, [swingObstacle]);
+  assert.ok(limitedAngle < 0 && Math.abs(limitedAngle) < Math.PI / 2);
+
+  const closedDoorX = doorLeaf.position.x;
+  const closedDoorZ = doorLeaf.position.z;
+  (App.render as any).camera = {};
+  const wardrobeGroup = {
+    children: [] as any[],
+    parent: roomGroup,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+  };
+  (App.render as any).wardrobeGroup = wardrobeGroup;
+  const doorRaycaster = {
+    setFromCamera() {},
+    intersectObjects() {
+      return [{ object: doorLeaf, point: { x: closedDoorX, y: 1, z: closedDoorZ }, distance: 2 }];
+    },
+  } as any;
+  assert.equal(
+    tryHandleRoomDoorToggleClick({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: doorRaycaster,
+      mouse: { x: 0, y: 0 },
+    }),
+    true
+  );
+  assertClose(doorLeaf.rotation.y, -Math.PI / 2);
+  assert.ok(doorLeaf.position.x < closedDoorX, 'right-wall door must swing inward into the room');
+  assert.equal(
+    tryHandleRoomDoorToggleClick({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: doorRaycaster,
+      mouse: { x: 0, y: 0 },
+    }),
+    true
+  );
+  assertClose(doorLeaf.rotation.y, 0);
+  assertClose(doorLeaf.position.x, closedDoorX);
+  assertClose(doorLeaf.position.z, closedDoorZ);
+
+  const freeBoxObstacle = {
+    type: 'Mesh',
+    parent: wardrobeGroup,
+    children: [],
+    userData: { __wpSketchFreeBox: true },
+    geometry: {
+      parameters: {
+        width: swingObstacle.maxX - swingObstacle.minX,
+        height: swingObstacle.maxY - swingObstacle.minY,
+        depth: swingObstacle.maxZ - swingObstacle.minZ,
+      },
+    },
+    position: {
+      x: (swingObstacle.minX + swingObstacle.maxX) / 2,
+      y: (swingObstacle.minY + swingObstacle.maxY) / 2,
+      z: (swingObstacle.minZ + swingObstacle.maxZ) / 2,
+    },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+  };
+  wardrobeGroup.children.push(freeBoxObstacle);
+  assert.equal(
+    tryHandleRoomDoorToggleClick({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      raycaster: doorRaycaster,
+      mouse: { x: 0, y: 0 },
+    }),
+    true
+  );
+  assert.ok(doorLeaf.rotation.y < 0);
+  assert.ok(Math.abs(doorLeaf.rotation.y) < Math.PI / 2);
 
   const backPiece = architecture.children.find((child: any) => child.name.startsWith('wpBackWall_piece_'));
   const rightPiece = architecture.children.find((child: any) => child.name.startsWith('wpRightWall_piece_'));
@@ -340,9 +471,13 @@ test('room architecture scene renders enabled wall boxes with the persisted wall
   assert.ok(architectureGroup);
   assert.deepEqual(
     architectureGroup.children.map((child: any) => child.name),
-    ['wpBackWall', 'wpLeftWall']
+    ['wpBackWall', 'wpLeftWall', 'wpRoomMeasurementWall_back', 'wpRoomMeasurementWall_left']
   );
-  assert.ok(architectureGroup.children.every((child: any) => child.material.params.color === '#e8e1d4'));
+  assert.ok(
+    architectureGroup.children
+      .filter((child: any) => !child.userData.__wpRoomMeasurementTarget)
+      .every((child: any) => child.material.params.color === '#e8e1d4')
+  );
 
   (rootState.config as any).roomArchitecture.rightWall.enabled = true;
   (rootState.config as any).roomArchitecture.surfacesHidden = true;
@@ -351,6 +486,13 @@ test('room architecture scene renders enabled wall boxes with the persisted wall
   assert.equal(refreshed.visible, false);
   assert.deepEqual(
     refreshed.children.map((child: any) => child.name),
-    ['wpBackWall', 'wpLeftWall', 'wpRightWall']
+    [
+      'wpBackWall',
+      'wpLeftWall',
+      'wpRightWall',
+      'wpRoomMeasurementWall_back',
+      'wpRoomMeasurementWall_left',
+      'wpRoomMeasurementWall_right',
+    ]
   );
 });

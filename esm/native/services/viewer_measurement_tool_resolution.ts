@@ -54,6 +54,15 @@ export function readUserData(value: unknown): UnknownRecord | null {
   return ud;
 }
 
+export function isRoomMeasurementTarget(value: unknown): boolean {
+  let current = asMeasurableObject(value);
+  while (current) {
+    if (readUserData(current)?.__wpRoomMeasurementTarget === true) return true;
+    current = asMeasurableObject(current.parent);
+  }
+  return false;
+}
+
 function readFiniteNumber(value: unknown, key: string): number | null {
   const rec = isRecord(value) ? value : null;
   const raw = rec ? rec[key] : null;
@@ -464,6 +473,61 @@ function resolveViewerMeasurementPlane(args: {
   };
 }
 
+function readRoomMeasurementPlane(target: unknown, box: LocalMeasurementBox): MeasurementPlane | null {
+  const userData = readUserData(target);
+  if (userData?.__wpRoomMeasurementTarget !== true) return null;
+  const uLength = readFiniteNumber(userData, '__wpRoomMeasurementULength');
+  const height = readFiniteNumber(userData, '__wpRoomMeasurementHeight');
+  const thickness = readFiniteNumber(userData, '__wpRoomMeasurementThickness');
+  const uX = readFiniteNumber(userData, '__wpRoomMeasurementUX');
+  const uZ = readFiniteNumber(userData, '__wpRoomMeasurementUZ');
+  const normalX = readFiniteNumber(userData, '__wpRoomMeasurementNormalX');
+  const normalZ = readFiniteNumber(userData, '__wpRoomMeasurementNormalZ');
+  if (
+    uLength == null ||
+    height == null ||
+    thickness == null ||
+    uX == null ||
+    uZ == null ||
+    normalX == null ||
+    normalZ == null ||
+    !(uLength > MIN_MEASURABLE_EDGE_M) ||
+    !(height > MIN_MEASURABLE_EDGE_M) ||
+    !(thickness > 0)
+  ) {
+    return null;
+  }
+  const u = normalizeBasisVector({ x: uX, y: 0, z: uZ });
+  const normal = normalizeBasisVector({ x: normalX, y: 0, z: normalZ });
+  if (!u || !normal) return null;
+  const normalAxis: MeasurementAxis = Math.abs(normal.x) >= Math.abs(normal.z) ? 'x' : 'z';
+  const uAxis: MeasurementAxis = Math.abs(u.x) >= Math.abs(u.z) ? 'x' : 'z';
+  const normalMin = -thickness / 2;
+  const normalMax = thickness / 2;
+  return {
+    kind: normalAxis === 'x' ? 'side' : 'front',
+    normalAxis,
+    normalSign: 1,
+    normalValue: normalMax + FRONT_Z_EPSILON_M,
+    uAxis,
+    vAxis: 'y',
+    uMin: -uLength / 2,
+    uMax: uLength / 2,
+    vMin: -height / 2,
+    vMax: height / 2,
+    uLength,
+    vLength: height,
+    basis: {
+      center: { x: box.centerX, y: box.centerY, z: box.centerZ },
+      u,
+      v: { x: 0, y: 1, z: 0 },
+      normal,
+      normalMin,
+      normalMax,
+    },
+  };
+}
+
 function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown): string | null {
   const ud = readUserData(target);
   const identity = hitState.hitIdentity;
@@ -857,6 +921,7 @@ export function readMeasuredBox(
   const measured = runtime.measureObjectLocalBox(target, wardrobeGroup);
   if (!measured) return null;
   const { centerX, centerY, centerZ, width, height, depth } = measured;
+  const isRoomTarget = isRoomMeasurementTarget(target);
   if (
     !Number.isFinite(centerX) ||
     !Number.isFinite(centerY) ||
@@ -864,7 +929,7 @@ export function readMeasuredBox(
     !Number.isFinite(width) ||
     !Number.isFinite(height) ||
     !Number.isFinite(depth) ||
-    width < MIN_MEASURABLE_EDGE_M ||
+    (isRoomTarget ? width <= 0 : width < MIN_MEASURABLE_EDGE_M) ||
     height < MIN_MEASURABLE_EDGE_M
   ) {
     return null;
@@ -895,6 +960,7 @@ export function resolveViewerMeasurementResolution(args: {
   if (!box) return null;
 
   const plane =
+    readRoomMeasurementPlane(target, box) ||
     cornerDoorMeasurement?.plane ||
     resolveViewerMeasurementPlane({
       runtime,

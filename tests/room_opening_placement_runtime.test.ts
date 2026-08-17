@@ -7,6 +7,7 @@ import {
   tryHandleRoomOpeningPlacementClick,
   tryHandleRoomOpeningPlacementHover,
 } from '../esm/native/services/room_opening_placement.ts';
+import { resolveViewerMeasurementHitStateWithRoom } from '../esm/native/services/viewer_measurement_room_target.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -191,6 +192,7 @@ function createHarness() {
     app,
     state,
     wallSurface,
+    architecture,
     wardrobeGroup,
     raycaster,
     mouse,
@@ -346,6 +348,42 @@ test('wardrobe dimension graphics never occlude room-opening placement', () => {
     true
   );
   assert.equal(h.state.config.roomArchitecture.openings.length, 1);
+});
+
+test('room measurement picking exposes walls and openings as canonical measurement hit targets', () => {
+  const h = createHarness();
+  const measurementTarget: AnyRecord = {
+    type: 'Mesh',
+    parent: h.architecture,
+    userData: {
+      __wpRoomMeasurementTarget: true,
+      partId: 'room_wall_back',
+      partLabel: 'קיר אחורי',
+      __wpRoomMeasurementULength: 4,
+      __wpRoomMeasurementHeight: 2.8,
+      __wpRoomMeasurementThickness: 0.004,
+      __wpRoomMeasurementUX: 1,
+      __wpRoomMeasurementUZ: 0,
+      __wpRoomMeasurementNormalX: 0,
+      __wpRoomMeasurementNormalZ: 1,
+    },
+  };
+  h.architecture.children.push(measurementTarget);
+  h.setWallHits([{ object: measurementTarget, point: { x: 0.7, y: 1.1, z: 0.006 }, distance: 4 }]);
+
+  const hitState = resolveViewerMeasurementHitStateWithRoom({
+    App: h.app,
+    hitState: null,
+    ndcX: 0.2,
+    ndcY: -0.1,
+    raycaster: h.raycaster,
+    mouse: h.mouse,
+  });
+  assert.ok(hitState);
+  assert.equal(hitState.foundPartId, 'room_wall_back');
+  assert.equal(hitState.primaryHitObject, measurementTarget);
+  assert.equal(hitState.hitUserData?.partLabel, 'קיר אחורי');
+  assert.equal(hitState.hitIdentity?.partId, 'room_wall_back');
 });
 
 test('external primary-mode exit clears the opening draft and preview immediately', () => {
