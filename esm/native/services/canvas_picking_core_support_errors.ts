@@ -16,6 +16,18 @@ export function __wp_reportPickingIssue(
   App: AppContainer,
   err: unknown,
   meta: { op: string; where?: string; throttleMs?: number },
+  opts: { failFast: true }
+): never;
+export function __wp_reportPickingIssue(
+  App: AppContainer,
+  err: unknown,
+  meta: { op: string; where?: string; throttleMs?: number },
+  opts?: { failFast?: boolean }
+): void;
+export function __wp_reportPickingIssue(
+  App: AppContainer,
+  err: unknown,
+  meta: { op: string; where?: string; throttleMs?: number },
   opts: { failFast?: boolean } = {}
 ): void {
   const where = meta && meta.where ? String(meta.where) : 'canvasPicking';

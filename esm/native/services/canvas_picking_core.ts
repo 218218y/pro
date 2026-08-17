@@ -25,7 +25,6 @@ export function handleCanvasClickNDC(ndcX: number, ndcY: number, app: unknown): 
       { where: 'canvasPicking', op: 'click', throttleMs: 500 },
       { failFast: true }
     );
-    return;
   }
 }
 

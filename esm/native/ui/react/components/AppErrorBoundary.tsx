@@ -36,7 +36,7 @@ function tryReloadViaDi(app: unknown): void {
 }
 
 export class AppErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  override state: State = { error: null };
 
   static getDerivedStateFromError(error: unknown): State {
     return { error };
@@ -54,7 +54,7 @@ export class AppErrorBoundary extends Component<Props, State> {
     }
   }
 
-  render() {
+  override render() {
     const { error } = this.state;
     if (!error) return this.props.children;
 

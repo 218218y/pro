@@ -58,7 +58,7 @@ function tryRecoverOrReload(app: unknown, error: unknown): void {
 }
 
 export class LazyErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  override state: State = { error: null };
 
   static getDerivedStateFromError(error: unknown): State {
     return { error };
@@ -77,7 +77,7 @@ export class LazyErrorBoundary extends Component<Props, State> {
     }
   }
 
-  render() {
+  override render() {
     const { error } = this.state;
     if (!error) return this.props.children;
 

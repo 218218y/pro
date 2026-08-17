@@ -93,6 +93,7 @@ export function useNotesOverlayPaletteLayout(args: NotesOverlayPaletteLayoutArgs
       });
     } catch (__wpErr) {
       notesOverlayReportNonFatal(spec.reportKey, __wpErr);
+      return undefined;
     }
   }, [
     doc,
