@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T17:24:46.657Z",
+  "generatedAt": "2026-08-17T19:59:02.093Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 558,
@@ -902,7 +902,7 @@
           "domain-default": 1
         }
       },
-      "esm/native/services/room_opening_placement.ts": {
+      "esm/native/services/room_opening_placement_app_capabilities.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
@@ -4108,15 +4108,15 @@
       "text": "// is still a safe snapshot fallback and avoids fabricating a zero vector."
     },
     {
-      "file": "esm/native/services/room_opening_placement.ts",
-      "line": 39,
+      "file": "esm/native/services/room_opening_placement_app_capabilities.ts",
+      "line": 32,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "const ROOM_OPENING_MODE_FALLBACK_ID = 'room_opening';"
     },
     {
-      "file": "esm/native/services/room_opening_placement.ts",
-      "line": 161,
+      "file": "esm/native/services/room_opening_placement_app_capabilities.ts",
+      "line": 103,
       "term": "ROOM_OPENING_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "return ROOM_OPENING_MODE_FALLBACK_ID;"
