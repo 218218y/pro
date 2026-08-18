@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-18T09:51:29.906Z",
+  "generatedAt": "2026-08-18T10:58:48.582Z",
   "totals": {
-    "tests": 1242,
-    "unitRunnerTests": 1233,
+    "tests": 1243,
+    "unitRunnerTests": 1234,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 37,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 392,
-    "runtime-unit": 341,
+    "runtime-unit": 342,
     "integration": 470,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -6999,6 +6999,10 @@
     {
       "file": "tests/store_backend_topology_contract.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/store_commit_pipeline_ingress_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/store_patch_apply_structure_materialization_runtime.test.ts",

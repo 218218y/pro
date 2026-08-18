@@ -959,15 +959,15 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
-      "file": "esm/native/platform/store_patch_apply.ts",
+      "file": "esm/native/platform/store_feature_config_boundary.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
-      "file": "esm/native/platform/store_patch_apply.ts",
+      "file": "esm/native/platform/store_feature_config_boundary.ts",
       "entry": "modules_configuration/corner_cells_api.js"
     },
     {
-      "file": "esm/native/platform/store_shared.ts",
+      "file": "esm/native/platform/store_feature_config_boundary.ts",
       "entry": "project_config/api.js"
     },
     {

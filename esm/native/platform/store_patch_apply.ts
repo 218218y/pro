@@ -12,22 +12,16 @@ import {
   storeValueEqual,
   type UnknownRecord,
 } from './store_shared.js';
-import {
-  sanitizeModulesConfigurationListLight,
-  sanitizeModulesConfigurationListForPatch,
-  type ModulesConfigBucketKey,
-  type PatchModulesConfigurationListOptions,
-} from '../features/modules_configuration/modules_config_api.js';
-import {
-  sanitizeCornerConfigurationListsOnly,
-  sanitizeCornerConfigurationForPatch,
-} from '../features/modules_configuration/corner_cells_api.js';
 import { extractConfigPatchWriteMetadata } from '../runtime/cfg_access.js';
 import {
   assertStoreConfigMapWriteAllowed,
   type StoreConfigMapWriteOptions,
 } from '../runtime/store_config_map_write_capability.js';
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
+import {
+  canonicalizeStoreProjectConfigSnapshot,
+  sanitizeStoreCornerConfiguration,
+  sanitizeStoreModulesConfigurationEntry,
+} from './store_feature_config_boundary.js';
 
 /**
  * Structural deep merge used by PATCH slices.
@@ -165,32 +159,6 @@ function buildComparableCfgSnapshot(baseCfg: UnknownRecord, patchLike?: UnknownR
   return patchLike ? Object.assign({}, baseCfg, patchLike) : Object.assign({}, baseCfg);
 }
 
-function getModulesSanitizeOptions(
-  bucket: ModulesConfigBucketKey,
-  cfgSnapshot: UnknownRecord,
-  uiSnapshot: unknown
-): PatchModulesConfigurationListOptions | undefined {
-  if (bucket !== 'modulesConfiguration') return undefined;
-  return { uiSnapshot, cfgSnapshot };
-}
-
-function sanitizeComparableModulesEntry(
-  bucket: ModulesConfigBucketKey,
-  value: unknown,
-  prevValue: unknown,
-  useLight: boolean,
-  cfgSnapshot: UnknownRecord,
-  uiSnapshot: unknown
-): unknown {
-  if (useLight) return sanitizeModulesConfigurationListLight(bucket, value, prevValue);
-  return sanitizeModulesConfigurationListForPatch(
-    bucket,
-    value,
-    prevValue,
-    getModulesSanitizeOptions(bucket, cfgSnapshot, uiSnapshot)
-  );
-}
-
 export function applyStoreConfigPatch(
   prevConfig: unknown,
   configPatch: unknown,
@@ -204,12 +172,7 @@ export function applyStoreConfigPatch(
 
   if (snapshot) {
     const detached = cloneMutableStoreValue(clean);
-    const canonical = canonicalizeProjectConfigStructuralSnapshot(detached, {
-      uiSnapshot,
-      cfgSnapshot: detached,
-      cornerMode: 'auto',
-      topMode: 'materialize',
-    });
+    const canonical = canonicalizeStoreProjectConfigSnapshot(detached, uiSnapshot);
     return storeValueEqual(prevRec, canonical) ? (prevConfig as RootStateLike['config']) : canonical;
   }
 
@@ -226,7 +189,7 @@ export function applyStoreConfigPatch(
       clean.modulesConfiguration
     );
     const nextMods = clean.modulesConfiguration;
-    const sanitized = sanitizeComparableModulesEntry(
+    const sanitized = sanitizeStoreModulesConfigurationEntry(
       'modulesConfiguration',
       nextMods,
       prevMods,
@@ -246,7 +209,7 @@ export function applyStoreConfigPatch(
       clean.stackSplitLowerModulesConfiguration
     );
     const nextLower = clean.stackSplitLowerModulesConfiguration;
-    const sanitized = sanitizeComparableModulesEntry(
+    const sanitized = sanitizeStoreModulesConfigurationEntry(
       'stackSplitLowerModulesConfiguration',
       nextLower,
       prevLower,
@@ -265,9 +228,7 @@ export function applyStoreConfigPatch(
   if (hasOwn(clean, 'cornerConfiguration')) {
     const nextCorner = clean.cornerConfiguration;
     const prevCorner = readSanitizePrev('cornerConfiguration', prevRec.cornerConfiguration, nextCorner);
-    const sanitized = useLight
-      ? sanitizeCornerConfigurationListsOnly(nextCorner, prevCorner)
-      : sanitizeCornerConfigurationForPatch(nextCorner, prevCorner);
+    const sanitized = sanitizeStoreCornerConfiguration(nextCorner, prevCorner, useLight);
     clean.cornerConfiguration = storeValueEqual(prevRec.cornerConfiguration, sanitized)
       ? prevRec.cornerConfiguration
       : sanitized;

@@ -5,7 +5,7 @@ import {
   isPlainRecord,
   shallowCloneRecord,
 } from './store_contract.js';
-import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
+import { canonicalizeStoreProjectConfigSnapshot } from './store_feature_config_boundary.js';
 
 export type UnknownRecord = Record<string, unknown>;
 export type RootSliceValue = RootStateLike[RootSliceKey];
@@ -275,12 +275,7 @@ export function recordDebugPatchStat(
 export function normalizeExternalRootState(input: unknown, getNoneMode: () => string): RootStateLike {
   const root = ensureRootStateContract(input, getNoneMode);
   const cfgSeed = shallowCloneRecord(asRecordOrEmpty(root.config));
-  root.config = canonicalizeProjectConfigStructuralSnapshot(cfgSeed, {
-    uiSnapshot: root.ui,
-    cfgSnapshot: cfgSeed,
-    cornerMode: 'auto',
-    topMode: 'materialize',
-  });
+  root.config = canonicalizeStoreProjectConfigSnapshot(cfgSeed, root.ui);
   return root;
 }
 

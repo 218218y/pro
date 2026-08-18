@@ -10,6 +10,7 @@ const MODULES = {
   commit: 'esm/native/platform/store_commit_pipeline.ts',
   changeSet: 'esm/native/platform/store_change_set.ts',
   patch: 'esm/native/platform/store_patch_apply.ts',
+  featureBoundary: 'esm/native/platform/store_feature_config_boundary.ts',
   subscriptions: 'esm/native/platform/store_subscriptions.ts',
   capability: 'esm/native/runtime/store_config_map_write_capability.ts',
   mapOwner: 'esm/native/runtime/cfg_access_map_owner.ts',
@@ -133,6 +134,32 @@ test('store backend keeps orchestration, commit, patch, and subscription ownersh
   expectImports(MODULES.patch, '../runtime/store_config_map_write_capability.js', [
     'assertStoreConfigMapWriteAllowed',
   ]);
+  expectImports(MODULES.patch, './store_feature_config_boundary.js', [
+    'canonicalizeStoreProjectConfigSnapshot',
+    'sanitizeStoreCornerConfiguration',
+    'sanitizeStoreModulesConfigurationEntry',
+  ]);
+  expectNoImport(MODULES.patch, '../features/project_config/api.js');
+  expectNoImport(MODULES.patch, '../features/modules_configuration/modules_config_api.js');
+  expectNoImport(MODULES.patch, '../features/modules_configuration/corner_cells_api.js');
+
+  expectExports(MODULES.featureBoundary, [
+    'canonicalizeStoreProjectConfigSnapshot',
+    'sanitizeStoreCornerConfiguration',
+    'sanitizeStoreModulesConfigurationEntry',
+  ]);
+  expectImports(MODULES.featureBoundary, '../features/project_config/api.js', [
+    'canonicalizeProjectConfigStructuralSnapshot',
+  ]);
+  expectImports(MODULES.featureBoundary, '../features/modules_configuration/modules_config_api.js', [
+    'sanitizeModulesConfigurationListLight',
+    'sanitizeModulesConfigurationListForPatch',
+  ]);
+  expectImports(MODULES.featureBoundary, '../features/modules_configuration/corner_cells_api.js', [
+    'sanitizeCornerConfigurationListsOnly',
+    'sanitizeCornerConfigurationForPatch',
+  ]);
+  expectNoImport('esm/native/platform/store_shared.ts', '../features/project_config/api.js');
 
   expectExports(MODULES.subscriptions, ['createSelectorRegistryEntry', 'createListenerRegistry']);
 
@@ -141,6 +168,7 @@ test('store backend keeps orchestration, commit, patch, and subscription ownersh
     MODULES.commit,
     MODULES.changeSet,
     MODULES.patch,
+    MODULES.featureBoundary,
     MODULES.subscriptions,
   ]) {
     expectCleanModuleSyntax(file);
