@@ -242,10 +242,28 @@ export function readCanvasModuleConfigForStack(args: {
   const ensureForStack = getModulesActionFn<
     (stack: string, moduleKey: ModuleStackPatchKey) => ModuleConfigLike | null
   >(args.App, 'ensureForStack');
-  if (typeof ensureForStack !== 'function') return null;
+  if (typeof ensureForStack !== 'function') {
+    reportStructuralCommitFailure(
+      args.App,
+      `${args.op}.readerUnavailable`,
+      new Error('[WardrobePro][canvasPicking] actions.modules.ensureForStack is unavailable.'),
+      2000
+    );
+    return null;
+  }
   try {
     const cfg = ensureForStack(args.stack, args.moduleKey);
-    return cfg && typeof cfg === 'object' && !Array.isArray(cfg) ? cfg : null;
+    if (cfg == null) return null;
+    if (typeof cfg !== 'object' || Array.isArray(cfg)) {
+      reportStructuralCommitFailure(
+        args.App,
+        `${args.op}.invalidConfig`,
+        new Error('[WardrobePro][canvasPicking] structural reader returned an invalid config.'),
+        2000
+      );
+      return null;
+    }
+    return cfg;
   } catch (error) {
     reportStructuralCommitFailure(args.App, `${args.op}.readConfig`, error, 2000);
     return null;

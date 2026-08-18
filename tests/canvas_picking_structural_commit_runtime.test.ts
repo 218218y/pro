@@ -267,3 +267,45 @@ test('structural read reports canonical read failures and returns null', () => {
     true
   );
 });
+
+test('structural read reports a missing canonical reader instead of failing silently', () => {
+  const cfg = { sketchExtras: { boxes: [] } };
+  const { App, diagnostics } = createApp(cfg);
+  delete App.actions.modules.ensureForStack;
+
+  const result = withoutConsoleWarn(() =>
+    readCanvasModuleConfigForStack({
+      App,
+      stack: 'top',
+      moduleKey: 0,
+      op: 'test.readUnavailable',
+    })
+  );
+
+  assert.equal(result, null);
+  assert.equal(
+    diagnostics.some(entry => entry.context.op === 'test.readUnavailable.readerUnavailable'),
+    true
+  );
+});
+
+test('structural read reports malformed non-null configs instead of treating them as a normal miss', () => {
+  const cfg = { sketchExtras: { boxes: [] } };
+  const { App, diagnostics } = createApp(cfg);
+  App.actions.modules.ensureForStack = () => [];
+
+  const result = withoutConsoleWarn(() =>
+    readCanvasModuleConfigForStack({
+      App,
+      stack: 'top',
+      moduleKey: 0,
+      op: 'test.invalidRead',
+    })
+  );
+
+  assert.equal(result, null);
+  assert.equal(
+    diagnostics.some(entry => entry.context.op === 'test.invalidRead.invalidConfig'),
+    true
+  );
+});

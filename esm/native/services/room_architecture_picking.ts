@@ -2,7 +2,7 @@ import type { AppContainer, RoomOpeningKind, UnknownRecord } from '../../../type
 
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import { raycastAtNdc } from './canvas_picking_engine.js';
-import { __wp_asRecord } from './canvas_picking_core_support.js';
+import { __wp_asRecord, __wp_reportPickingIssue } from './canvas_picking_core_support.js';
 import { getViewportCamera, getViewportRoomGroup } from './render_surface_runtime.js';
 
 const ROOM_ARCHITECTURE_GROUP_NAME = 'wpRoomArchitecture';
@@ -58,6 +58,13 @@ function findRoomArchitectureTargetHit(args: {
     ndcY: args.ndcY,
     objects: children,
     recursive: true,
+    onFailure: failure => {
+      __wp_reportPickingIssue(args.App, failure.error, {
+        where: 'roomArchitecturePicking',
+        op: `targetHit.${failure.phase}`,
+        throttleMs: 1000,
+      });
+    },
   });
   for (const hit of hits) {
     const target = findTaggedAncestor(hit.object, args.predicate);

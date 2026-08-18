@@ -21,6 +21,13 @@ export type RaycastHitLike = {
   point?: { x?: number; y?: number; z?: number } | null;
 };
 
+export type RaycastFailure = {
+  phase: 'intersectObjects';
+  error: unknown;
+};
+
+export type RaycastFailureReporter = (failure: RaycastFailure) => void;
+
 export type RaycasterLike = {
   setFromCamera: (mouse: MouseVectorLike, camera: unknown) => void;
   intersectObjects: (
@@ -39,8 +46,9 @@ export function raycastAtNdc(args: {
   objects: unknown;
   recursive?: boolean;
   scratch?: RaycastHitLike[] | null;
+  onFailure?: RaycastFailureReporter;
 }): RaycastHitLike[] {
-  const { raycaster, mouse, camera, ndcX, ndcY, objects, recursive = true, scratch = null } = args;
+  const { raycaster, mouse, camera, ndcX, ndcY, objects, recursive = true, scratch = null, onFailure } = args;
 
   // Defensive: keep engine side-effect surface minimal.
   // We only mutate the provided `mouse` object (expected by THREE.Raycaster).
@@ -53,7 +61,11 @@ export function raycastAtNdc(args: {
   try {
     const out = raycaster.intersectObjects(objects, recursive, scratch || undefined);
     return Array.isArray(out) ? out : scratch || [];
-  } catch {
+  } catch (error) {
+    // Never expose partially populated hits after a failed raycast. THREE may have
+    // already written into the optional target before throwing.
+    if (scratch) scratch.length = 0;
+    onFailure?.({ phase: 'intersectObjects', error });
     return scratch || [];
   }
 }

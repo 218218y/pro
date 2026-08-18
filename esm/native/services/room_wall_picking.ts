@@ -1,6 +1,6 @@
 import type { AppContainer, RoomWallId, UnknownRecord } from '../../../types';
 
-import { __wp_asRecord } from './canvas_picking_core_support.js';
+import { __wp_asRecord, __wp_reportPickingIssue } from './canvas_picking_core_support.js';
 import type { MouseVectorLike, RaycastHitLike, RaycasterLike } from './canvas_picking_engine.js';
 import { raycastAtNdc } from './canvas_picking_engine.js';
 import { getViewportCamera, getViewportRoomGroup, getViewportThree } from './render_surface_runtime.js';
@@ -140,6 +140,13 @@ export function findRoomWallSurfaceHit(args: {
     ndcY: args.ndcY,
     objects: children,
     recursive: true,
+    onFailure: failure => {
+      __wp_reportPickingIssue(args.App, failure.error, {
+        where: 'roomWallPicking',
+        op: `surfaceHit.${failure.phase}`,
+        throttleMs: 1000,
+      });
+    },
   });
   for (const hit of hits) {
     const surface = readRoomWallSurfacePickMeta(hit.object);

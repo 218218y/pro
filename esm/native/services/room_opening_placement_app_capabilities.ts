@@ -229,6 +229,9 @@ function readNearestWardrobeObstacle(
     ndcY: args.ndcY,
     objects: [wardrobeGroup],
     recursive: true,
+    onFailure: failure => {
+      reportRoomOpeningPlacementNonFatal(App, `wardrobeObstacleRaycast.${failure.phase}`, failure.error);
+    },
   });
   for (const hit of hits) {
     if (isIgnoredRoomWardrobeObstacleObject(hit.object)) continue;

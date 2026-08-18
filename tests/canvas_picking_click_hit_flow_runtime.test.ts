@@ -25,6 +25,16 @@ function createRaycaster(intersects: any[]) {
   };
 }
 
+function withoutConsoleWarn<T>(fn: () => T): T {
+  const previous = console.warn;
+  console.warn = () => undefined;
+  try {
+    return fn();
+  } finally {
+    console.warn = previous;
+  }
+}
+
 function createApp(overrides: Record<string, unknown> = {}) {
   const state = {
     ui: { stackSplitEnabled: false },
@@ -358,4 +368,60 @@ test('hover eligibility treats transparent material arrays as restore targets on
     }),
     false
   );
+});
+
+test('click hit flow reports raycast failures and never exposes partially written hits', () => {
+  const diagnostics: Array<{ error: unknown; context: Record<string, unknown> }> = [];
+  const wardrobeGroup = {
+    type: 'Group',
+    userData: { partId: 'wardrobe-root' },
+    children: [] as unknown[],
+    parent: null,
+  };
+  const partialObject = {
+    type: 'Mesh',
+    material: { visible: true, opacity: 1 },
+    userData: { partId: 'must-not-surface' },
+    parent: wardrobeGroup,
+  };
+  wardrobeGroup.children.push(partialObject);
+
+  const raycastError = new Error('raycast-failed-after-partial-write');
+  const raycaster = {
+    setFromCamera() {},
+    intersectObjects(_objects: unknown, _recursive?: boolean, optionalTarget?: any[]) {
+      optionalTarget?.push({ object: partialObject, point: { x: 0, y: 0.5, z: 0 } });
+      throw raycastError;
+    },
+  };
+  const App = createApp({
+    app: { render: { camera: {}, scene: {}, wardrobeGroup } },
+    services: {
+      errors: {
+        report(error: unknown, context: Record<string, unknown>) {
+          diagnostics.push({ error, context });
+        },
+      },
+    },
+  });
+
+  const hitState = withoutConsoleWarn(() =>
+    resolveCanvasPickingClickHitState({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      isRemoveDoorMode: false,
+      raycaster,
+      mouse: { x: 0, y: 0 },
+    })
+  );
+
+  assert.ok(hitState);
+  assert.deepEqual(hitState?.intersects, []);
+  assert.equal(hitState?.foundPartId, null);
+  assert.equal(hitState?.primaryHitObject, null);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0]?.error, raycastError);
+  assert.equal(diagnostics[0]?.context.where, 'canvasPicking.raycast');
+  assert.equal(diagnostics[0]?.context.op, 'raycastReuse.intersectObjects');
 });

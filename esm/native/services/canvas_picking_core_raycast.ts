@@ -111,6 +111,13 @@ function __wp_raycastReuse(args: {
     objects,
     recursive,
     scratch,
+    onFailure: failure => {
+      __wp_reportPickingIssue(App, failure.error, {
+        where: 'canvasPicking.raycast',
+        op: `raycastReuse.${failure.phase}`,
+        throttleMs: 1000,
+      });
+    },
   });
 }
 
