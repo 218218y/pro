@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { readRendererLightingDefaults } from '../esm/native/runtime/render_access.ts';
 import { applyViewMode } from '../esm/native/services/scene_view_lighting.ts';
+import { initLights } from '../esm/native/services/scene_view_lighting_runtime.ts';
 import { LIGHT_PRESETS } from '../esm/native/ui/react/tabs/settings_visual_shared_lighting.ts';
 import {
   NORMAL_AMBIENT_DEFAULT,
@@ -10,6 +11,8 @@ import {
   NORMAL_EXPOSURE,
   SKETCH_AMBIENT_DEFAULT,
 } from '../esm/native/services/scene_view_lighting_shared.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import { VIEWPORT_DIRECTIONAL_SHADOW_PRESET } from '../esm/shared/visual_lighting_tokens.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -111,6 +114,84 @@ function makeApp() {
   };
   return { App, state, floor, smartFloor, renderCalls };
 }
+
+test('scene view initializes cabinet-scale directional shadows with contact-safe bias', () => {
+  class LightBase {
+    name = '';
+    intensity: number;
+    position = {
+      x: 0,
+      y: 0,
+      z: 0,
+      set(x: number, y: number, z: number) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+      },
+    };
+    constructor(_color?: number, intensity = 0) {
+      this.intensity = intensity;
+    }
+  }
+  class AmbientLight extends LightBase {}
+  class DirectionalLight extends LightBase {
+    castShadow = false;
+    shadow = {
+      mapSize: { width: 0, height: 0 },
+      camera: { near: 0, far: 0, left: 0, right: 0, top: 0, bottom: 0 },
+      bias: 0,
+      normalBias: 0,
+      radius: 0,
+    };
+  }
+
+  const added: unknown[] = [];
+  const App: AnyRecord = {
+    deps: { THREE: { AmbientLight, DirectionalLight } },
+    render: {
+      scene: {
+        add(node: unknown) {
+          added.push(node);
+        },
+      },
+      ambLightObj: null,
+      dirLightObj: null,
+    },
+  };
+
+  initLights(App as any);
+
+  const directional = App.render.dirLightObj as AnyRecord;
+  const preset = VIEWPORT_DIRECTIONAL_SHADOW_PRESET;
+  assert.equal(added.length, 2);
+  assert.equal(directional.castShadow, true);
+  assert.equal(directional.shadow.mapSize.width, preset.mapSize);
+  assert.equal(directional.shadow.mapSize.height, preset.mapSize);
+  assert.equal(directional.shadow.camera.left, -preset.cameraHalfExtent);
+  assert.equal(directional.shadow.camera.right, preset.cameraHalfExtent);
+  assert.equal(directional.shadow.camera.top, preset.cameraHalfExtent);
+  assert.equal(directional.shadow.camera.bottom, -preset.cameraHalfExtent);
+  assert.equal(directional.shadow.bias, preset.bias);
+  assert.equal(directional.shadow.normalBias, preset.normalBias);
+  assert.equal(directional.shadow.radius, preset.radius);
+
+  const projectedTexelMeters = (preset.cameraHalfExtent * 2) / preset.mapSize;
+  assert.ok(projectedTexelMeters < 0.007, `expected <7 mm/texel, got ${projectedTexelMeters} m`);
+
+  const normalizedDepthRangeMeters = preset.cameraFar - preset.cameraNear;
+  const depthBiasWorldMeters = Math.abs(preset.bias) * normalizedDepthRangeMeters;
+  const worstCaseContactOffsetMeters = depthBiasWorldMeters + Math.abs(preset.normalBias);
+  const boardThicknessMeters = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  assert.ok(
+    worstCaseContactOffsetMeters < boardThicknessMeters * 0.1,
+    `shadow bias must stay below 10% of board thickness; got ${worstCaseContactOffsetMeters} m`
+  );
+  assert.ok(
+    Math.abs(preset.normalBias) < boardThicknessMeters * 0.05,
+    `normalBias must stay well below board thickness; got ${preset.normalBias} m`
+  );
+  assert.ok(preset.radius <= 1, `contact-shadow filter radius must stay <=1 texel, got ${preset.radius}`);
+});
 
 test('scene view normal lighting matches the default advanced-lighting preset', () => {
   assert.equal(LIGHT_PRESETS.default.amb, NORMAL_AMBIENT_DEFAULT);

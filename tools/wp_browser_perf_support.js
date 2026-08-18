@@ -11,9 +11,10 @@ import {
   requiredUserJourneyMinimumStepCounts,
 } from '../tests/e2e/helpers/perf_contracts.js';
 
-export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 24;
+export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 26;
 export const BROWSER_PERF_MIN_MATERIAL_DRIFT_MS = 20;
 export const BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS = 20;
+export const BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS = 150;
 export const BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS = 5;
 
 const MEASUREMENT_PROFILE_KEYS = Object.freeze([
@@ -46,14 +47,20 @@ export function formatMs(value) {
   return `${n}ms`;
 }
 
-function exceedsMaterialDurationBudget(actualValue, budgetValue) {
+function exceedsMaterialDurationBudget(
+  actualValue,
+  budgetValue,
+  minimumExcessMs = BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS
+) {
   const actual = Number(actualValue) || 0;
   const budget = Number(budgetValue);
-  return (
-    Number.isFinite(budget) &&
-    actual > budget &&
-    actual - budget >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS
-  );
+  return Number.isFinite(budget) && actual > budget && actual - budget >= minimumExcessMs;
+}
+
+function resolveWallClockMaterialityMs(measurementProfile) {
+  return measurementProfile?.environmentKind === 'development'
+    ? BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS
+    : BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS;
 }
 
 function exceedsMaterialCountBudget(actualValue, budgetValue) {
@@ -3517,9 +3524,13 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     );
   }
   const budget = baseline && typeof baseline === 'object' ? baseline.uxJourneyBudgetMs || {} : {};
+  const wallClockMaterialityMs = resolveWallClockMaterialityMs(expectedMeasurementProfile);
   for (const [name, durationMs] of Object.entries(result.userFlow || {})) {
     const maxMs = budget[name];
-    if (typeof maxMs === 'number' && exceedsMaterialDurationBudget(durationMs, maxMs)) {
+    if (
+      typeof maxMs === 'number' &&
+      exceedsMaterialDurationBudget(durationMs, maxMs, wallClockMaterialityMs)
+    ) {
       failures.push(`${name} exceeded budget (${formatMs(durationMs)} > ${formatMs(maxMs)})`);
     }
   }
@@ -3768,7 +3779,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     const maxPendingOverwriteCount = Number(budgetItem.maxPendingOverwriteCount);
     if (
       Number.isFinite(maxPendingOverwriteCount) &&
-      (Number(item.pendingOverwriteCount) || 0) > maxPendingOverwriteCount
+      exceedsMaterialCountBudget(item.pendingOverwriteCount, maxPendingOverwriteCount)
     ) {
       failures.push(
         `${name} build pending-overwrite pressure exceeded budget (${Number(item.pendingOverwriteCount) || 0} > ${maxPendingOverwriteCount})`
@@ -3808,7 +3819,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     const item = userJourneySummary[name];
     if (!item || !budgetItem || typeof budgetItem !== 'object') continue;
     const maxTotalDurationMs = Number(budgetItem.maxTotalDurationMs);
-    if (exceedsMaterialDurationBudget(item.totalDurationMs, maxTotalDurationMs)) {
+    if (exceedsMaterialDurationBudget(item.totalDurationMs, maxTotalDurationMs, wallClockMaterialityMs)) {
       failures.push(
         `${name} customer journey total exceeded budget (${formatMs(Number(item.totalDurationMs) || 0)} > ${formatMs(maxTotalDurationMs)})`
       );

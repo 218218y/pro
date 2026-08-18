@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 
-import { InlineNotice, ModeToggleButton, ToggleRow } from '../components/index.js';
+import { InlineNotice, ModeToggleButton, OptionButton, ToggleRow } from '../components/index.js';
 import type { SettingsVisualRoomSectionModel } from './use_settings_visual_controller_contracts.js';
 import { FLOOR_TYPE_OPTIONS } from './settings_visual_sections_contracts.js';
 import type { FloorStyle, SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
@@ -99,11 +99,25 @@ type ArchitectureNumberFieldProps = {
   value: number;
   min?: number;
   max?: number;
+  step?: number;
   onChange: (value: number) => void;
 };
 
+function isAlignedToStep(value: number, step: number): boolean {
+  if (!Number.isFinite(value) || !Number.isFinite(step) || step <= 0) return false;
+  const ratio = value / step;
+  return Math.abs(ratio - Math.round(ratio)) < 1e-9;
+}
+
 function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElement {
   const [draft, setDraft] = useState(String(props.value));
+  const logicalMin = props.min ?? 0;
+  const step = props.step ?? 5;
+  // HTML number inputs use `min` as the step origin. A logical min such as 1 with
+  // step=5 therefore creates the sequence 1, 6, 11, ... 26, 31, 36. When the
+  // logical bound is not on the requested step grid, enforce it in our commit
+  // path instead of letting it redefine the browser's step origin.
+  const nativeMin = isAlignedToStep(logicalMin, step) ? logicalMin : undefined;
 
   useEffect(() => {
     setDraft(String(props.value));
@@ -113,7 +127,9 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
     if (!raw.trim()) return false;
     const value = Number(raw);
     if (!Number.isFinite(value)) return false;
-    props.onChange(value);
+    const boundedValue = Math.min(props.max ?? Number.POSITIVE_INFINITY, Math.max(logicalMin, value));
+    if (boundedValue !== value) setDraft(String(boundedValue));
+    props.onChange(boundedValue);
     return true;
   };
 
@@ -129,9 +145,10 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
           type="number"
           className="wp-r-input"
           value={draft}
-          min={props.min ?? 0}
+          min={nativeMin}
+          aria-valuemin={logicalMin}
           max={props.max}
-          step="5"
+          step={step}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const raw = event.target.value;
             setDraft(raw);
@@ -333,6 +350,20 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
   );
 }
 
+type WardrobeWallAlignment = 'left' | 'center' | 'right';
+
+function resolveWardrobeWallAlignment(model: SettingsVisualRoomSectionModel): WardrobeWallAlignment | null {
+  const wall = model.roomArchitecture.backWall;
+  const availableCm = wall.widthCm - model.wardrobeWidthCm;
+  const toleranceCm = 0.11;
+  if (availableCm < -toleranceCm) return null;
+  if (availableCm <= toleranceCm) return 'center';
+  if (Math.abs(wall.wardrobeOffsetLeftCm) <= toleranceCm) return 'left';
+  if (Math.abs(model.wardrobeOffsetRightCm) <= toleranceCm) return 'right';
+  if (Math.abs(wall.wardrobeOffsetLeftCm - model.wardrobeOffsetRightCm) <= toleranceCm) return 'center';
+  return null;
+}
+
 function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
   const model = props.model;
   const architecture = model.roomArchitecture;
@@ -340,6 +371,7 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
   const column = architecture.column;
   const wallMax = Math.max(50, wall.widthCm);
   const wallHeightMax = Math.max(50, wall.heightCm);
+  const wardrobeWallAlignment = resolveWardrobeWallAlignment(model);
 
   return (
     <div className="wp-r-room-architecture" data-testid="settings-room-architecture">
@@ -383,15 +415,27 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
           <div className="wp-r-room-position-block">
             <div className="wp-r-label">מיקום הארון על הקיר:</div>
             <div className="wp-r-room-align-actions" role="group" aria-label="יישור הארון על הקיר">
-              <button type="button" className="btn" onClick={() => model.alignWardrobeOnWall('left')}>
+              <OptionButton
+                selected={wardrobeWallAlignment === 'left'}
+                density="micro"
+                onClick={() => model.alignWardrobeOnWall('left')}
+              >
                 צמוד שמאל
-              </button>
-              <button type="button" className="btn" onClick={() => model.alignWardrobeOnWall('center')}>
+              </OptionButton>
+              <OptionButton
+                selected={wardrobeWallAlignment === 'center'}
+                density="micro"
+                onClick={() => model.alignWardrobeOnWall('center')}
+              >
                 מרכז
-              </button>
-              <button type="button" className="btn" onClick={() => model.alignWardrobeOnWall('right')}>
+              </OptionButton>
+              <OptionButton
+                selected={wardrobeWallAlignment === 'right'}
+                density="micro"
+                onClick={() => model.alignWardrobeOnWall('right')}
+              >
                 צמוד ימין
-              </button>
+              </OptionButton>
             </div>
             <div className="wp-r-room-dimension-grid wp-r-room-offset-grid">
               <ArchitectureNumberField

@@ -394,6 +394,9 @@ export function createPerfSmokeMarkdownReport({ summary, baseline = null, evalua
   lines.push(
     `- A timing must exceed its headroom by at least ${formatDurationMs(minimumMaterialExcessMs)} before it is classified as a material regression.`
   );
+  lines.push(
+    '- A pure quantitative regression candidate receives one clean confirmation run and fails only when the profile remains over budget.'
+  );
   lines.push('');
   return `${lines.join('\n')}\n`;
 }

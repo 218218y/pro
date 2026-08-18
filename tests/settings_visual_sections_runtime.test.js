@@ -103,6 +103,10 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(roomHtml, /הסתר קירות ועמוד/);
   assert.equal(countMatches(roomHtml, /step="5"/g), 15);
   assert.doesNotMatch(roomHtml, /step="0\.1"/);
+  const columnWidthInput = roomHtml.match(/<input[^>]*id="wp-room-column-width"[^>]*>/)?.[0] || '';
+  assert.match(columnWidthInput, /aria-valuemin="1"/);
+  assert.match(columnWidthInput, /step="5"/);
+  assert.doesNotMatch(columnWidthInput, /\smin="1"/);
   assert.match(roomHtml, /פרקט/);
   assert.match(roomHtml, /אריחים/);
   assert.match(roomHtml, /צבע הקירות/);
@@ -113,6 +117,38 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.equal(countMatches(roomHtml, /wp-r-room-custom-color-btn/g), 3);
   assert.equal(countMatches(roomHtml, /wp-r-room-color-picker-row/g), 3);
   assert.ok(countMatches(roomHtml, /role="button"/g) >= 7);
+
+  const renderWallAlignment = (wardrobeOffsetLeftCm, wardrobeOffsetRightCm) =>
+    renderToStaticMarkup(
+      React.createElement(SettingsVisualRoomSection, {
+        model: {
+          roomData: { hasRoomDesign: true, defaultWall: '#37474f', wallColors: [] },
+          floorType: 'none',
+          floorStyleId: null,
+          wallColor: '#ffffff',
+          floorStylesForType: [],
+          setFloorType: noop,
+          pickFloorStyle: noop,
+          pickWallColor: noop,
+          ...roomArchitectureModel,
+          wardrobeOffsetRightCm,
+          roomArchitecture: {
+            ...roomArchitectureModel.roomArchitecture,
+            backWall: {
+              ...roomArchitectureModel.roomArchitecture.backWall,
+              wardrobeOffsetLeftCm,
+            },
+          },
+        },
+      })
+    );
+  const leftAlignedHtml = renderWallAlignment(0, 160);
+  const centerAlignedHtml = renderWallAlignment(80, 80);
+  const rightAlignedHtml = renderWallAlignment(160, 0);
+  assert.match(leftAlignedHtml, /<button[^>]*aria-pressed="true"[^>]*>צמוד שמאל<\/button>/);
+  assert.match(centerAlignedHtml, /<button[^>]*aria-pressed="true"[^>]*>מרכז<\/button>/);
+  assert.match(rightAlignedHtml, /<button[^>]*aria-pressed="true"[^>]*>צמוד ימין<\/button>/);
+  assert.match(leftAlignedHtml, /type-option[^"]*selected[^"]*active/);
 
   const activeOpeningHtml = renderToStaticMarkup(
     React.createElement(SettingsVisualRoomSection, {

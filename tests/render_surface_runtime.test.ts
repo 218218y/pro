@@ -224,6 +224,7 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
   const renderer = surface.renderer as AnyRecord;
   assert.equal(renderer.pixelRatio, 1.5);
   assert.equal(renderer.shadowMap.enabled, true);
+  assert.equal(renderer.shadowMap.type, 'pcf');
   assert.equal(renderer.rendererOpts.antialias, true);
 
   const core = getViewportRenderCore(App as any);
@@ -263,6 +264,20 @@ test('render surface runtime owns viewport creation and camera pose helpers', ()
 
   assert.equal(stampMirrorLastUpdate(App as any, 1234), true);
   assert.equal((App.render as AnyRecord).__mirrorLastUpdateMs, 1234);
+});
+
+test('render surface shadow setup uses the supported PCF shadow-map mode', () => {
+  const THREE = makeThreeStub();
+  const App: AnyRecord = {
+    deps: { THREE },
+    browser: { getWindow: () => makeWindowStub(1) },
+  };
+
+  const surface = createViewportSurface(App as any, {
+    container: { clientWidth: 640, clientHeight: 480, appendChild: () => undefined },
+  });
+
+  assert.equal((surface.renderer as AnyRecord).shadowMap.type, 'pcf');
 });
 
 test('render surface runtime defaults preserve the restored high-quality WebGL profile', () => {

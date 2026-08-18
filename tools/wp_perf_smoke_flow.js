@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+
 import {
   createPerfSmokeBaseline,
   createPerfSmokeChildEnv,
@@ -12,12 +14,35 @@ import {
 } from './wp_perf_smoke_shared.js';
 import { resolvePerfSmokePaths } from './wp_perf_smoke_state.js';
 
+export const PERF_SMOKE_CONFIRMATION_FLAG = '--confirm-regression';
+
 function createPerfSmokeError(message, exitCode = 1, cause = null) {
   const err = new Error(message);
   err.exitCode = exitCode;
   err.verifyHandled = true;
   if (cause) err.cause = cause;
   return err;
+}
+
+function isPurePerfBudgetFailure(evaluation) {
+  const failures = Array.isArray(evaluation?.failures) ? evaluation.failures : [];
+  return (
+    failures.length > 0 &&
+    failures.every(failure => failure?.kind === 'script-budget' || failure?.kind === 'total-budget')
+  );
+}
+
+export function runPerfSmokeConfirmation({
+  argv = process.argv.slice(1),
+  projectRoot = process.cwd(),
+  env = process.env,
+  spawnImpl = spawnSync,
+} = {}) {
+  return spawnImpl(process.execPath, [...argv, PERF_SMOKE_CONFIRMATION_FLAG], {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    env,
+  });
 }
 
 export function runPerfSmokeFlow({ projectRoot, args, env = process.env, runners = {} } = {}) {
@@ -90,7 +115,10 @@ export function runPerfSmokeFlow({ projectRoot, args, env = process.env, runners
         const markdown = createPerfSmokeMarkdownReport({ summary, baseline, evaluation });
         writeJsonFile(paths.jsonOutPath, summary);
         writeTextFile(paths.mdOutPath, markdown);
-        throw createPerfSmokeError('[WP Perf Smoke] performance budget regression detected.', 1);
+        const error = createPerfSmokeError('[WP Perf Smoke] performance budget regression detected.', 1);
+        error.performanceBudgetFailure = isPurePerfBudgetFailure(evaluation);
+        error.performanceBudgetFailures = evaluation.failures.slice();
+        throw error;
       }
     }
   }

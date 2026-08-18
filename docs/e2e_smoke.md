@@ -30,6 +30,9 @@ artifact uses instrumentation so the lane can collect runtime phases and Event T
 release minification, hashing, HTML, CSS, vendor, and static-serving path rather than Vite module transformation.
 Numeric browser-budget candidates receive one clean confirmation run and fail only when reproduced; correctness
 errors and missing/invalid evidence fail immediately without retry.
+Wall-clock journey materiality is profile-specific: the Vite dev lane requires a 150ms absolute excess to
+filter module-transform and development-server jitter, while release and runtime-code budgets retain the 20ms
+threshold. This does not relax the static release UX contract.
 
 `npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It keeps the five
 canonical Chromium `@critical` journeys (app boot/navigation, real authoring/build follow-through,

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   BROWSER_PERF_BASELINE_SCHEMA_VERSION,
+  BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS,
   BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS,
   BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS,
   BROWSER_PERF_MIN_MATERIAL_DRIFT_MS,
@@ -303,6 +304,51 @@ test('browser regression budgets separate dev variance and interaction wait from
   );
   assert.equal(releaseBaseline.browserMetricBudget.maxInpMs, 200);
   assert.equal(BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS, 20);
+  assert.equal(BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS, 150);
+});
+
+test('browser wall-clock materiality absorbs Vite variance without weakening release budgets', () => {
+  const createResult = measurementProfile => ({
+    measurementProfile,
+    userFlow: { 'settings.open': 1077 },
+    userFlowSteps: [
+      {
+        name: 'settings.open',
+        durationMs: 1077,
+        journey: 'boot-and-shell',
+      },
+    ],
+    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    windowBrowserMetrics: {},
+  });
+  const createBaseline = measurementProfile =>
+    currentBaseline({
+      measurementProfile,
+      uxJourneyBudgetMs: { 'settings.open': 942 },
+      userJourneyBudget: {
+        'boot-and-shell': {
+          maxStepCount: 1,
+          maxTotalDurationMs: 942,
+          maxCommitCount: 0,
+          maxSelectorNotifyCount: 0,
+          maxTotalSourceMs: 0,
+        },
+      },
+    });
+
+  const devFailures = evaluateBrowserPerfBaseline(
+    createResult(DEV_MEASUREMENT_PROFILE),
+    createBaseline(DEV_MEASUREMENT_PROFILE)
+  );
+  assert.ok(!devFailures.some(item => /settings\.open exceeded budget/.test(item)));
+  assert.ok(!devFailures.some(item => /customer journey total exceeded budget/.test(item)));
+
+  const releaseFailures = evaluateBrowserPerfBaseline(
+    createResult(RELEASE_MEASUREMENT_PROFILE),
+    createBaseline(RELEASE_MEASUREMENT_PROFILE)
+  );
+  assert.ok(releaseFailures.some(item => /settings\.open exceeded budget/.test(item)));
+  assert.ok(releaseFailures.some(item => /customer journey total exceeded budget/.test(item)));
 });
 
 test('browser UX target summary treats unsupported or missing browser evidence as unmeasured, never as a pass', () => {
@@ -2074,7 +2120,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   };
 
   const schemaFailures = evaluateBrowserPerfBaseline(result, { ...currentBaseline(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 24, got 18\)/.test(item)));
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 26, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,
@@ -2918,6 +2964,27 @@ test('browser perf support baseline evaluation enforces build pressure budgets',
     []
   );
 
+  const timingJitter = {
+    ...clean,
+    windowBuildFlowPressureSummary: {
+      'cabinet-build-variants.option-burst': {
+        ...clean.windowBuildFlowPressureSummary['cabinet-build-variants.option-burst'],
+        pendingOverwriteCount: 10,
+      },
+    },
+  };
+  const timingJitterFailures = evaluateBrowserPerfBaseline(timingJitter, baseline, {
+    requiredRuntimeMetrics: [],
+    requiredRuntimeMetricMinimumCounts: {},
+    requiredProjectActions: [],
+    requiredUserJourneys: [],
+    requiredUserJourneyMinimumStepCounts: {},
+    happyPathMetricsWithoutErrors: [],
+  });
+  assert.ok(
+    !timingJitterFailures.some(item => /build pending-overwrite pressure exceeded budget/.test(item))
+  );
+
   const noisy = {
     ...clean,
     windowBuildFlowPressureSummary: {
@@ -2929,7 +2996,7 @@ test('browser perf support baseline evaluation enforces build pressure budgets',
         debouncedRequestCount: 16,
         executeImmediateCount: 1,
         executeDebouncedCount: 12,
-        pendingOverwriteCount: 9,
+        pendingOverwriteCount: 11,
         suppressedRequestCount: 7,
         suppressedExecuteCount: 2,
         debounceCount: 11,

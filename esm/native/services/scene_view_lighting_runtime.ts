@@ -31,6 +31,7 @@ import {
   updateCornerAutoLightShadowRefresh,
 } from './scene_view_lighting_shared.js';
 import { applyRendererLightingMode } from './scene_view_lighting_renderer.js';
+import { VIEWPORT_DIRECTIONAL_SHADOW_PRESET } from '../../shared/visual_lighting_tokens.js';
 
 function applyLightingControlUi(App: AppContainer, ui: UiSnapshotLike): void {
   const ambient = asAmbientLight(getAmbientLight(App));
@@ -102,18 +103,19 @@ export function initLights(App: AppContainer): void {
 
     directional.castShadow = true;
     if (directional.shadow) {
-      directional.shadow.mapSize.width = 1024;
-      directional.shadow.mapSize.height = 1024;
-      directional.shadow.camera.near = 0.1;
-      directional.shadow.camera.far = 50;
-      directional.shadow.camera.left = -10;
-      directional.shadow.camera.right = 10;
-      directional.shadow.camera.top = 10;
-      directional.shadow.camera.bottom = -10;
+      const shadowPreset = VIEWPORT_DIRECTIONAL_SHADOW_PRESET;
+      directional.shadow.mapSize.width = shadowPreset.mapSize;
+      directional.shadow.mapSize.height = shadowPreset.mapSize;
+      directional.shadow.camera.near = shadowPreset.cameraNear;
+      directional.shadow.camera.far = shadowPreset.cameraFar;
+      directional.shadow.camera.left = -shadowPreset.cameraHalfExtent;
+      directional.shadow.camera.right = shadowPreset.cameraHalfExtent;
+      directional.shadow.camera.top = shadowPreset.cameraHalfExtent;
+      directional.shadow.camera.bottom = -shadowPreset.cameraHalfExtent;
       try {
-        directional.shadow.bias = -0.00025;
-        directional.shadow.normalBias = 0.02;
-        directional.shadow.radius = 2;
+        directional.shadow.bias = shadowPreset.bias;
+        directional.shadow.normalBias = shadowPreset.normalBias;
+        directional.shadow.radius = shadowPreset.radius;
       } catch (err) {
         reportSceneViewNonFatal(App, 'sceneView.lighting.initLights.shadowConfig', err);
       }

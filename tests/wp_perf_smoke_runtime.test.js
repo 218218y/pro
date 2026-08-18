@@ -17,7 +17,11 @@ import {
   resolvePerfSmokePlan,
   resolveDirectPerfSmokeInvocation,
 } from '../tools/wp_perf_smoke_shared.js';
-import { runPerfSmokeFlow } from '../tools/wp_perf_smoke_flow.js';
+import {
+  PERF_SMOKE_CONFIRMATION_FLAG,
+  runPerfSmokeConfirmation,
+  runPerfSmokeFlow,
+} from '../tools/wp_perf_smoke_flow.js';
 import { formatVerifyTask } from '../tools/wp_verify_lane_catalog.js';
 
 function escapeRegExp(value) {
@@ -97,6 +101,29 @@ test('perf smoke resolves the stable Node-only profile directly and keeps other 
     args: ['tools/wp_layer_contract.js'],
   });
   assert.equal(resolveDirectPerfSmokeInvocation(process.cwd(), 'build:dist'), null);
+});
+
+test('perf smoke confirmation reuses the canonical entrypoint with one hidden confirmation flag', () => {
+  let invocation = null;
+  const result = runPerfSmokeConfirmation({
+    argv: ['tools/wp_perf_smoke.mjs', '--enforce'],
+    projectRoot: '/tmp/wardrobepro-perf-smoke',
+    env: { WP_TEST: '1' },
+    spawnImpl(command, args, options) {
+      invocation = { command, args, options };
+      return { status: 0 };
+    },
+  });
+  assert.equal(result.status, 0);
+  assert.deepEqual(invocation, {
+    command: process.execPath,
+    args: ['tools/wp_perf_smoke.mjs', '--enforce', PERF_SMOKE_CONFIRMATION_FLAG],
+    options: {
+      cwd: '/tmp/wardrobepro-perf-smoke',
+      stdio: 'inherit',
+      env: { WP_TEST: '1' },
+    },
+  });
 });
 
 test('perf smoke baseline evaluation detects regressions and profile drift', () => {
@@ -263,6 +290,12 @@ test('perf smoke flow updates baseline, writes outputs, and enforces budgets thr
           },
         },
       }),
-    /performance budget regression detected/
+    error => {
+      assert.match(error.message, /performance budget regression detected/u);
+      assert.equal(error.performanceBudgetFailure, true);
+      assert.ok(error.performanceBudgetFailures.some(item => item.kind === 'script-budget'));
+      assert.ok(error.performanceBudgetFailures.some(item => item.kind === 'total-budget'));
+      return true;
+    }
   );
 });
