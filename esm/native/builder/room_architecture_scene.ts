@@ -6,7 +6,7 @@ import {
   resolveRoomArchitectureGeometry,
   resolveRoomOpeningGeometry,
   resolveRoomWallSurface,
-  subtractAxisAlignedBox,
+  subtractAxisAlignedBoxAlongWall,
   type AxisAlignedBox,
   type ResolvedRoomOpeningGeometry,
   type RoomArchitectureGeometry,
@@ -253,7 +253,9 @@ function addWallWithOpenings(args: {
   let pieces: AxisAlignedBox[] = [source];
   for (const opening of wallOpenings) {
     const next: AxisAlignedBox[] = [];
-    for (const piece of pieces) next.push(...subtractAxisAlignedBox(piece, opening.cut));
+    for (const piece of pieces) {
+      next.push(...subtractAxisAlignedBoxAlongWall(piece, opening.cut, opening.surface.axis));
+    }
     pieces = next;
   }
   for (let i = 0; i < pieces.length; i += 1) {

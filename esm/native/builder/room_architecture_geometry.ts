@@ -394,23 +394,57 @@ function appendBoxIfPositive(out: AxisAlignedBox[], box: AxisAlignedBox): void {
   }
 }
 
-/** Exact decomposition of A \\ B for axis-aligned rectangular prisms. */
-export function subtractAxisAlignedBox(source: AxisAlignedBox, obstacle: AxisAlignedBox): AxisAlignedBox[] {
+/** Exact decomposition of A \ B for axis-aligned rectangular prisms. */
+type AxisAlignedBoxAxis = 'x' | 'y' | 'z';
+
+type AxisAlignedBoxBounds = readonly [keyof AxisAlignedBox, keyof AxisAlignedBox];
+
+const AXIS_ALIGNED_BOX_BOUNDS: Readonly<Record<AxisAlignedBoxAxis, AxisAlignedBoxBounds>> = Object.freeze({
+  x: Object.freeze(['minX', 'maxX'] as const),
+  y: Object.freeze(['minY', 'maxY'] as const),
+  z: Object.freeze(['minZ', 'maxZ'] as const),
+});
+
+function subtractAxisAlignedBoxInOrder(
+  source: AxisAlignedBox,
+  obstacle: AxisAlignedBox,
+  axisOrder: readonly [AxisAlignedBoxAxis, AxisAlignedBoxAxis, AxisAlignedBoxAxis]
+): AxisAlignedBox[] {
   const cut = intersectAxisAlignedBoxes(source, obstacle);
   if (!cut) return [source];
 
   const out: AxisAlignedBox[] = [];
-  appendBoxIfPositive(out, { ...source, maxX: cut.minX });
-  appendBoxIfPositive(out, { ...source, minX: cut.maxX });
-
-  const midX = { minX: cut.minX, maxX: cut.maxX };
-  appendBoxIfPositive(out, { ...source, ...midX, maxY: cut.minY });
-  appendBoxIfPositive(out, { ...source, ...midX, minY: cut.maxY });
-
-  const midXY = { ...midX, minY: cut.minY, maxY: cut.maxY };
-  appendBoxIfPositive(out, { ...source, ...midXY, maxZ: cut.minZ });
-  appendBoxIfPositive(out, { ...source, ...midXY, minZ: cut.maxZ });
+  let remainder: AxisAlignedBox = { ...source };
+  for (const axis of axisOrder) {
+    const [minKey, maxKey] = AXIS_ALIGNED_BOX_BOUNDS[axis];
+    appendBoxIfPositive(out, { ...remainder, [maxKey]: cut[minKey] } as AxisAlignedBox);
+    appendBoxIfPositive(out, { ...remainder, [minKey]: cut[maxKey] } as AxisAlignedBox);
+    remainder = {
+      ...remainder,
+      [minKey]: cut[minKey],
+      [maxKey]: cut[maxKey],
+    } as AxisAlignedBox;
+  }
   return out;
+}
+
+export function subtractAxisAlignedBox(source: AxisAlignedBox, obstacle: AxisAlignedBox): AxisAlignedBox[] {
+  return subtractAxisAlignedBoxInOrder(source, obstacle, ['x', 'y', 'z']);
+}
+
+/**
+ * Exact wall-opening decomposition, partitioned along the wall before height.
+ * This keeps full-height side pieces intact so opening-height seams do not span
+ * the entire wall on Z-aligned side walls.
+ */
+export function subtractAxisAlignedBoxAlongWall(
+  source: AxisAlignedBox,
+  obstacle: AxisAlignedBox,
+  wallAxis: RoomWallSurfaceGeometry['axis']
+): AxisAlignedBox[] {
+  return wallAxis === 'x'
+    ? subtractAxisAlignedBoxInOrder(source, obstacle, ['x', 'y', 'z'])
+    : subtractAxisAlignedBoxInOrder(source, obstacle, ['z', 'y', 'x']);
 }
 
 function wardrobeBoxFromGeometry(geometry: RoomArchitectureGeometry): AxisAlignedBox {

@@ -5,6 +5,7 @@ import {
   ROOM_WALL_THICKNESS_M,
   resolveRoomArchitectureGeometry,
   resolveRoomOpeningGeometry,
+  subtractAxisAlignedBoxAlongWall,
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import {
   ROOM_ARCHITECTURE_GROUP_NAME,
@@ -53,6 +54,47 @@ function createApp(rootState: ReturnType<typeof createRootState>, roomGroup?: an
     render: roomGroup ? { roomGroup } : {},
   } as any;
 }
+
+test('side-wall opening subtraction keeps horizontal seams local to the opening span', () => {
+  const sideWall = { minX: 0, maxX: 0.2, minY: 0, maxY: 2.6, minZ: 0, maxZ: 2.8 };
+  const throughWallX = { minX: -0.001, maxX: 0.201 };
+
+  const doorPieces = subtractAxisAlignedBoxAlongWall(
+    sideWall,
+    { ...throughWallX, minY: 0, maxY: 2.1, minZ: 0.8, maxZ: 1.7 },
+    'z'
+  );
+  assert.equal(doorPieces.length, 3);
+  const doorTopPiece = doorPieces.find(piece => Math.abs(piece.minY - 2.1) <= 1e-9);
+  assert.ok(doorTopPiece);
+  assertClose(doorTopPiece.minZ, 0.8);
+  assertClose(doorTopPiece.maxZ, 1.7);
+  assert.ok(
+    !doorPieces.some(
+      piece =>
+        Math.abs(piece.minY - 2.1) <= 1e-9 &&
+        Math.abs(piece.minZ - sideWall.minZ) <= 1e-9 &&
+        Math.abs(piece.maxZ - sideWall.maxZ) <= 1e-9
+    ),
+    'door head must not create a full-length horizontal wall seam'
+  );
+
+  const windowPieces = subtractAxisAlignedBoxAlongWall(
+    sideWall,
+    { ...throughWallX, minY: 0.9, maxY: 1.9, minZ: 0.35, maxZ: 1.55 },
+    'z'
+  );
+  assert.equal(windowPieces.length, 4);
+  const windowBottomPiece = windowPieces.find(
+    piece => Math.abs(piece.maxY - 0.9) <= 1e-9 && piece.maxY < sideWall.maxY
+  );
+  const windowTopPiece = windowPieces.find(piece => Math.abs(piece.minY - 1.9) <= 1e-9);
+  assert.ok(windowBottomPiece && windowTopPiece);
+  for (const piece of [windowBottomPiece, windowTopPiece]) {
+    assertClose(piece.minZ, 0.35);
+    assertClose(piece.maxZ, 1.55);
+  }
+});
 
 test('room architecture uses house-wall thickness and resolves left/right side walls independently', () => {
   const rootState = createRootState();
@@ -209,6 +251,21 @@ test('room openings resolve against their host wall and scene rendering cuts the
   assert.equal(architecture.getObjectByName('wpRightWall'), null);
   assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpBackWall_piece_')));
   assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpRightWall_piece_')));
+  const rightWallPieces = architecture.children.filter((child: any) =>
+    child.name.startsWith('wpRightWall_piece_')
+  );
+  const rightDoorHeadPiece = rightWallPieces.find(
+    (child: any) => Math.abs(child.position.y - (rightDoor.surface.height + rightDoor.height) / 2) <= 1e-9
+  );
+  assert.ok(rightDoorHeadPiece);
+  assertClose(rightDoorHeadPiece.geometry.depth, rightDoor.width);
+  assertClose(rightDoorHeadPiece.position.z, rightDoor.centerZ);
+  assert.ok(
+    rightWallPieces
+      .filter((child: any) => child !== rightDoorHeadPiece)
+      .every((child: any) => Math.abs(child.geometry.height - rightDoor.surface.height) <= 1e-9),
+    'side pieces beside a door opening must stay full-height instead of creating a wall-wide head seam'
+  );
   assert.ok(architecture.getObjectByName('wpRoomOpening_win-back_glass'));
   assert.ok(architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf'));
   assert.equal(architecture.getObjectByName('wpRoomOpening_win-back_mullionH'), null);
