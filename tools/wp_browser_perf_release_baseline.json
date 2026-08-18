@@ -1,6 +1,6 @@
 {
   "version": 26,
-  "generatedAt": "2026-08-18T08:26:56.883Z",
+  "generatedAt": "2026-08-18T08:50:12.596Z",
   "measurementProfile": {
     "id": "release",
     "label": "Release static UX",
@@ -11,42 +11,42 @@
     "pagePath": "/index.html"
   },
   "uxJourneyBudgetMs": {
-    "boot.app-shell": 3705,
-    "export.settings-tab.open": 907,
-    "settings.visual.global-click.roundtrip": 774,
-    "header.sketch-mode.roundtrip": 812,
-    "viewer.notes.draw-mode.roundtrip": 774,
-    "viewer.notes.visibility.roundtrip": 790,
-    "viewer.contents.visibility.roundtrip": 1316,
-    "cabinet-core.configure": 3435,
-    "cabinet-core.mixed-edit-burst": 7190,
-    "cabinet-build-variants.profile-texture.configure": 2410,
-    "cabinet-build-variants.authoring-matrix": 5861,
-    "cabinet-build-variants.structure-material-door-burst": 7379,
-    "cabinet-build-variants.option-burst": 3694,
-    "cabinet-door-drawer-authoring.configure": 3970,
-    "cabinet-door-drawer-authoring.mode-burst": 7883,
-    "cabinet-door-drawer-authoring.layout-persistence-roundtrip": 3785,
-    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": 7651,
+    "boot.app-shell": 3501,
+    "export.settings-tab.open": 824,
+    "settings.visual.global-click.roundtrip": 678,
+    "header.sketch-mode.roundtrip": 701,
+    "viewer.notes.draw-mode.roundtrip": 664,
+    "viewer.notes.visibility.roundtrip": 500,
+    "viewer.contents.visibility.roundtrip": 940,
+    "cabinet-core.configure": 2350,
+    "cabinet-core.mixed-edit-burst": 6929,
+    "cabinet-build-variants.profile-texture.configure": 2489,
+    "cabinet-build-variants.authoring-matrix": 5790,
+    "cabinet-build-variants.structure-material-door-burst": 7442,
+    "cabinet-build-variants.option-burst": 3496,
+    "cabinet-door-drawer-authoring.configure": 4041,
+    "cabinet-door-drawer-authoring.mode-burst": 8157,
+    "cabinet-door-drawer-authoring.layout-persistence-roundtrip": 3708,
+    "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": 8171,
     "tab.settings.open": 500,
-    "export.snapshot.download": 820,
+    "export.snapshot.download": 894,
     "export.copy.clipboard": 500,
-    "export.render-sketch.clipboard": 553,
-    "export.dual.clipboard": 500,
-    "settings-backup.roundtrip": 7215,
+    "export.render-sketch.clipboard": 624,
+    "export.dual.clipboard": 514,
+    "settings-backup.roundtrip": 7180,
     "cloud-sync.floating.toggle-on": 500,
-    "cloud-sync.floating.toggle-off": 500,
-    "order-pdf.open-close.initial": 1557,
-    "project.save-load.roundtrip": 1529,
-    "project.reset-default.confirmed": 1228,
-    "export.clipboard.pressure": 2055,
-    "order-pdf.reopen.pressure": 893,
-    "project.restore-last-session": 8149,
-    "project.persistence-recovery.burst": 13271,
+    "cloud-sync.floating.toggle-off": 859,
+    "order-pdf.open-close.initial": 1491,
+    "project.save-load.roundtrip": 1754,
+    "project.reset-default.confirmed": 1206,
+    "export.clipboard.pressure": 2469,
+    "order-pdf.reopen.pressure": 1016,
+    "project.restore-last-session": 8082,
+    "project.persistence-recovery.burst": 14157,
     "project.load.invalid-keeps-state": 500,
-    "project.load.recovery-sequence": 1376,
-    "project.restore-last-session.missing-autosave": 22891,
-    "settings-backup.invalid-import-keeps-state": 9891
+    "project.load.recovery-sequence": 1552,
+    "project.restore-last-session.missing-autosave": 22893,
+    "settings-backup.invalid-import-keeps-state": 10452
   },
   "runtimeUxBudgetMs": {
     "boot.browser.setup": 100,
@@ -63,7 +63,7 @@
     "ui.header.sketch.toggle": 100,
     "viewer.notes.drawMode.toggle": 100,
     "viewer.notes.visibility.toggle": 100,
-    "viewer.contents.visibility.toggle": 563,
+    "viewer.contents.visibility.toggle": 268,
     "structure.dimensions.width.commit": 100,
     "structure.dimensions.height.commit": 100,
     "structure.dimensions.depth.commit": 100,
@@ -84,12 +84,12 @@
     "project.save.commit": 100,
     "project.load.readFile": 100,
     "project.load.parse": 100,
-    "project.load.apply": 167,
-    "project.load": 174,
-    "export.snapshot": 128,
+    "project.load.apply": 125,
+    "project.load": 130,
+    "export.snapshot": 207,
     "export.copy": 100,
-    "export.renderSketch": 199,
-    "export.dual": 123,
+    "export.renderSketch": 241,
+    "export.dual": 119,
     "settingsBackup.export": 100,
     "settingsBackup.import.readFile": 100,
     "settingsBackup.import.parse": 100,
@@ -98,28 +98,28 @@
     "cloudSync.floatingSync.toggle": 100,
     "orderPdf.open": 100,
     "orderPdf.close": 100,
-    "project.resetDefault": 529,
-    "project.restoreLastSession": 561
+    "project.resetDefault": 656,
+    "project.restoreLastSession": 540
   },
   "runtimeCodeExecutionBudgetMs": {
     "boot.browser.setup": 50,
     "boot.react.mount.reactSidebarRoot": 50,
     "boot.react.mount.reactOverlayRoot": 50,
     "settingsVisual.globalClick.toggle": 50,
-    "ui.header.sketch.toggle": 72,
+    "ui.header.sketch.toggle": 51,
     "viewer.notes.drawMode.toggle": 50,
     "viewer.notes.visibility.toggle": 50,
-    "viewer.contents.visibility.toggle": 548,
+    "viewer.contents.visibility.toggle": 253,
     "structure.dimensions.width.commit": 50,
     "structure.dimensions.height.commit": 50,
     "structure.dimensions.depth.commit": 50,
     "design.savedColor.add.prepare": 50,
     "design.savedColor.add.order": 50,
     "design.savedColor.storage.commit": 50,
-    "design.savedColor.add.storage": 50,
+    "design.savedColor.add.storage": 52,
     "design.savedColor.add.patch": 50,
-    "design.savedColor.add.mutation": 50,
-    "design.savedColor.add": 50,
+    "design.savedColor.add.mutation": 61,
+    "design.savedColor.add": 62,
     "design.savedColor.delete.prepare": 50,
     "design.savedColor.delete.order": 50,
     "design.savedColor.delete.storage": 50,
@@ -132,23 +132,23 @@
     "project.save": 50,
     "project.load.readFile": 50,
     "project.load.parse": 50,
-    "project.load.apply": 152,
-    "project.load": 159,
-    "export.snapshot": 113,
-    "export.copy": 52,
-    "export.renderSketch": 184,
-    "export.dual": 108,
+    "project.load.apply": 110,
+    "project.load": 115,
+    "export.snapshot": 192,
+    "export.copy": 61,
+    "export.renderSketch": 226,
+    "export.dual": 104,
     "settingsBackup.export": 50,
     "settingsBackup.import.readFile": 50,
     "settingsBackup.import.parse": 50,
     "settingsBackup.import.collections.commit": 50,
     "settingsBackup.import.commit": 50,
-    "settingsBackup.import": 50,
+    "settingsBackup.import": 53,
     "cloudSync.floatingSync.toggle": 50,
     "orderPdf.open": 50,
     "orderPdf.close": 50,
-    "project.resetDefault": 514,
-    "project.restoreLastSession": 546
+    "project.resetDefault": 641,
+    "project.restoreLastSession": 525
   },
   "runtimeDriftBudgetPct": {
     "settingsVisual.globalClick.toggle": 45,
@@ -195,14 +195,14 @@
   },
   "runtimeDomainCodeExecutionBudgetMs": {
     "boot": 150,
-    "project": 8105,
-    "export": 1769,
-    "other": 1985,
-    "structure": 360,
-    "design": 1529,
+    "project": 8424,
+    "export": 2413,
+    "other": 1152,
+    "structure": 275,
+    "design": 1684,
     "cloud-sync": 150,
     "order-pdf": 150,
-    "settings-backup": 526,
+    "settings-backup": 593,
     "render": 150
   },
   "runtimeDomainDriftBudgetPct": {
@@ -221,39 +221,39 @@
     "maxCls": 0.1,
     "maxLcpMs": 2500,
     "maxInpMs": 200,
-    "maxLongTaskCount": 127,
-    "maxLongTaskTotalMs": 12121,
-    "maxLongTaskP95Ms": 222,
-    "maxRenderSettleP95Ms": 77
+    "maxLongTaskCount": 114,
+    "maxLongTaskTotalMs": 10554,
+    "maxLongTaskP95Ms": 239,
+    "maxRenderSettleP95Ms": 74
   },
   "runtimeRecoveryDebtBudgetMs": {
     "boot.react.mounted.reactSidebarRoot": 40,
     "boot.react.mounted.reactOverlayRoot": 40,
     "project.save.dispatched": 40,
-    "project.load": 71,
-    "settingsBackup.import": 64,
-    "project.restoreLastSession": 513
+    "project.load": 104,
+    "settingsBackup.import": 68,
+    "project.restoreLastSession": 578
   },
   "runtimeRecoveryHangoverBudget": {
     "project.load": {
-      "maxP95HangoverRatio": 1.15,
-      "maxMaxHangoverRatio": 1.2,
+      "maxP95HangoverRatio": 1.35,
+      "maxMaxHangoverRatio": 1.31,
       "maxP95HangoverDeltaMs": 15,
       "maxMaxHangoverDeltaMs": 20,
       "maxLingeringSettlingCount": 1
     },
     "settingsBackup.import": {
-      "maxP95HangoverRatio": 1.19,
-      "maxMaxHangoverRatio": 1.2,
-      "maxP95HangoverDeltaMs": 15,
-      "maxMaxHangoverDeltaMs": 20,
-      "maxLingeringSettlingCount": 1
+      "maxP95HangoverRatio": 1.93,
+      "maxMaxHangoverRatio": 1.85,
+      "maxP95HangoverDeltaMs": 24,
+      "maxMaxHangoverDeltaMs": 28,
+      "maxLingeringSettlingCount": 2
     },
     "project.restoreLastSession": {
-      "maxP95HangoverRatio": 1.61,
-      "maxMaxHangoverRatio": 1.55,
-      "maxP95HangoverDeltaMs": 56,
-      "maxMaxHangoverDeltaMs": 58,
+      "maxP95HangoverRatio": 1.7,
+      "maxMaxHangoverRatio": 1.64,
+      "maxP95HangoverDeltaMs": 84,
+      "maxMaxHangoverDeltaMs": 84,
       "maxLingeringSettlingCount": 1
     }
   },
@@ -271,7 +271,7 @@
     "header.sketch-mode.roundtrip": {
       "maxCommitCount": 9,
       "maxSelectorNotifyCount": 20,
-      "maxTotalSourceMs": 133
+      "maxTotalSourceMs": 76
     },
     "viewer.notes.draw-mode.roundtrip": {
       "maxCommitCount": 6,
@@ -286,57 +286,57 @@
     "viewer.contents.visibility.roundtrip": {
       "maxCommitCount": 6,
       "maxSelectorNotifyCount": 20,
-      "maxTotalSourceMs": 640
+      "maxTotalSourceMs": 301
     },
     "cabinet-core.configure": {
-      "maxCommitCount": 24,
+      "maxCommitCount": 23,
       "maxSelectorNotifyCount": 46,
-      "maxTotalSourceMs": 66
+      "maxTotalSourceMs": 40
     },
     "cabinet-core.mixed-edit-burst": {
-      "maxCommitCount": 53,
-      "maxSelectorNotifyCount": 120,
-      "maxTotalSourceMs": 96
+      "maxCommitCount": 51,
+      "maxSelectorNotifyCount": 114,
+      "maxTotalSourceMs": 72
     },
     "cabinet-build-variants.profile-texture.configure": {
-      "maxCommitCount": 15,
-      "maxSelectorNotifyCount": 43,
+      "maxCommitCount": 17,
+      "maxSelectorNotifyCount": 44,
       "maxTotalSourceMs": 30
     },
     "cabinet-build-variants.authoring-matrix": {
-      "maxCommitCount": 60,
+      "maxCommitCount": 62,
       "maxSelectorNotifyCount": 139,
-      "maxTotalSourceMs": 114
+      "maxTotalSourceMs": 110
     },
     "cabinet-build-variants.structure-material-door-burst": {
-      "maxCommitCount": 90,
+      "maxCommitCount": 89,
       "maxSelectorNotifyCount": 198,
-      "maxTotalSourceMs": 226
+      "maxTotalSourceMs": 202
     },
     "cabinet-build-variants.option-burst": {
       "maxCommitCount": 29,
       "maxSelectorNotifyCount": 69,
-      "maxTotalSourceMs": 43
+      "maxTotalSourceMs": 35
     },
     "cabinet-door-drawer-authoring.configure": {
       "maxCommitCount": 41,
       "maxSelectorNotifyCount": 131,
-      "maxTotalSourceMs": 88
+      "maxTotalSourceMs": 91
     },
     "cabinet-door-drawer-authoring.mode-burst": {
       "maxCommitCount": 68,
       "maxSelectorNotifyCount": 195,
-      "maxTotalSourceMs": 208
+      "maxTotalSourceMs": 183
     },
     "cabinet-door-drawer-authoring.layout-persistence-roundtrip": {
       "maxCommitCount": 26,
       "maxSelectorNotifyCount": 69,
-      "maxTotalSourceMs": 36
+      "maxTotalSourceMs": 39
     },
     "cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip": {
       "maxCommitCount": 45,
       "maxSelectorNotifyCount": 147,
-      "maxTotalSourceMs": 40
+      "maxTotalSourceMs": 61
     },
     "tab.settings.open": {
       "maxCommitCount": 6,
@@ -366,7 +366,7 @@
     "settings-backup.roundtrip": {
       "maxCommitCount": 23,
       "maxSelectorNotifyCount": 62,
-      "maxTotalSourceMs": 30
+      "maxTotalSourceMs": 36
     },
     "cloud-sync.floating.toggle-on": {
       "maxCommitCount": 6,
@@ -396,7 +396,7 @@
     "export.clipboard.pressure": {
       "maxCommitCount": 35,
       "maxSelectorNotifyCount": 62,
-      "maxTotalSourceMs": 35
+      "maxTotalSourceMs": 40
     },
     "order-pdf.reopen.pressure": {
       "maxCommitCount": 11,
@@ -409,9 +409,9 @@
       "maxTotalSourceMs": 30
     },
     "project.persistence-recovery.burst": {
-      "maxCommitCount": 53,
+      "maxCommitCount": 57,
       "maxSelectorNotifyCount": 136,
-      "maxTotalSourceMs": 84
+      "maxTotalSourceMs": 114
     },
     "project.load.invalid-keeps-state": {
       "maxCommitCount": 6,
@@ -431,7 +431,7 @@
     "settings-backup.invalid-import-keeps-state": {
       "maxCommitCount": 29,
       "maxSelectorNotifyCount": 87,
-      "maxTotalSourceMs": 33
+      "maxTotalSourceMs": 40
     }
   },
   "buildPressureBudget": {
@@ -479,8 +479,8 @@
     },
     "cabinet-core.configure": {
       "maxRequestCount": 11,
-      "maxExecuteCount": 10,
-      "maxPendingOverwriteCount": 1,
+      "maxExecuteCount": 7,
+      "maxPendingOverwriteCount": 4,
       "maxSuppressedRequestCount": 1,
       "maxDebounceCount": 8
     },
@@ -500,15 +500,15 @@
     },
     "cabinet-build-variants.authoring-matrix": {
       "maxRequestCount": 28,
-      "maxExecuteCount": 17,
-      "maxPendingOverwriteCount": 10,
+      "maxExecuteCount": 18,
+      "maxPendingOverwriteCount": 9,
       "maxSuppressedRequestCount": 1,
       "maxDebounceCount": 20
     },
     "cabinet-build-variants.structure-material-door-burst": {
       "maxRequestCount": 40,
-      "maxExecuteCount": 31,
-      "maxPendingOverwriteCount": 7,
+      "maxExecuteCount": 25,
+      "maxPendingOverwriteCount": 13,
       "maxSuppressedRequestCount": 1,
       "maxDebounceCount": 25
     },
@@ -528,8 +528,8 @@
     },
     "cabinet-door-drawer-authoring.mode-burst": {
       "maxRequestCount": 20,
-      "maxExecuteCount": 14,
-      "maxPendingOverwriteCount": 6,
+      "maxExecuteCount": 15,
+      "maxPendingOverwriteCount": 4,
       "maxSuppressedRequestCount": 1,
       "maxDebounceCount": 11
     },
@@ -647,8 +647,8 @@
     },
     "project.persistence-recovery.burst": {
       "maxRequestCount": 23,
-      "maxExecuteCount": 13,
-      "maxPendingOverwriteCount": 10,
+      "maxExecuteCount": 18,
+      "maxPendingOverwriteCount": 4,
       "maxSuppressedRequestCount": 1,
       "maxDebounceCount": 15
     },
@@ -683,64 +683,64 @@
   },
   "userJourneyBudget": {
     "boot-and-shell": {
-      "maxTotalDurationMs": 4151,
+      "maxTotalDurationMs": 3865,
       "maxCommitCount": 8,
       "maxSelectorNotifyCount": 20,
       "maxTotalSourceMs": 35
     },
     "cabinet-core-authoring": {
-      "maxTotalDurationMs": 13378,
-      "maxCommitCount": 88,
-      "maxSelectorNotifyCount": 187,
-      "maxTotalSourceMs": 845
+      "maxTotalDurationMs": 10904,
+      "maxCommitCount": 86,
+      "maxSelectorNotifyCount": 181,
+      "maxTotalSourceMs": 423
     },
     "cabinet-build-variants": {
-      "maxTotalDurationMs": 18383,
-      "maxCommitCount": 174,
-      "maxSelectorNotifyCount": 419,
-      "maxTotalSourceMs": 342
+      "maxTotalDurationMs": 18255,
+      "maxCommitCount": 175,
+      "maxSelectorNotifyCount": 420,
+      "maxTotalSourceMs": 311
     },
     "cabinet-door-drawer-authoring": {
-      "maxTotalDurationMs": 22328,
+      "maxTotalDurationMs": 23116,
       "maxCommitCount": 160,
       "maxSelectorNotifyCount": 512,
-      "maxTotalSourceMs": 310
+      "maxTotalSourceMs": 312
     },
     "export-authoring": {
-      "maxTotalDurationMs": 3070,
+      "maxTotalDurationMs": 3869,
       "maxCommitCount": 52,
       "maxSelectorNotifyCount": 96,
-      "maxTotalSourceMs": 45
+      "maxTotalSourceMs": 58
     },
     "settings-backup-resilience": {
-      "maxTotalDurationMs": 16645,
+      "maxTotalDurationMs": 17172,
       "maxCommitCount": 46,
       "maxSelectorNotifyCount": 141,
-      "maxTotalSourceMs": 50
+      "maxTotalSourceMs": 62
     },
     "cloud-sync-controls": {
-      "maxTotalDurationMs": 483,
+      "maxTotalDurationMs": 821,
       "maxCommitCount": 8,
       "maxSelectorNotifyCount": 20,
       "maxTotalSourceMs": 35
     },
     "order-pdf-lifecycle": {
-      "maxTotalDurationMs": 1990,
+      "maxTotalDurationMs": 2047,
       "maxCommitCount": 17,
       "maxSelectorNotifyCount": 41,
       "maxTotalSourceMs": 35
     },
     "project-roundtrip": {
-      "maxTotalDurationMs": 23216,
-      "maxCommitCount": 73,
+      "maxTotalDurationMs": 24238,
+      "maxCommitCount": 77,
       "maxSelectorNotifyCount": 218,
-      "maxTotalSourceMs": 100
+      "maxTotalSourceMs": 129
     },
     "project-recovery-proveout": {
-      "maxTotalDurationMs": 23887,
+      "maxTotalDurationMs": 24096,
       "maxCommitCount": 31,
       "maxSelectorNotifyCount": 96,
-      "maxTotalSourceMs": 38
+      "maxTotalSourceMs": 44
     }
   },
   "userJourneyDiagnosisBudget": {
@@ -752,12 +752,12 @@
     "cabinet-core-authoring": {
       "maxBurstyStepCount": 7,
       "maxRepeatedSourceCount": 4,
-      "maxDominantSourceSharePct": 95
+      "maxDominantSourceSharePct": 90
     },
     "cabinet-build-variants": {
       "maxBurstyStepCount": 7,
       "maxRepeatedSourceCount": 6,
-      "maxDominantSourceSharePct": 79
+      "maxDominantSourceSharePct": 74
     },
     "cabinet-door-drawer-authoring": {
       "maxBurstyStepCount": 7,
@@ -767,12 +767,12 @@
     "export-authoring": {
       "maxBurstyStepCount": 3,
       "maxRepeatedSourceCount": 6,
-      "maxDominantSourceSharePct": 82
+      "maxDominantSourceSharePct": 90
     },
     "settings-backup-resilience": {
       "maxBurstyStepCount": 4,
       "maxRepeatedSourceCount": 6,
-      "maxDominantSourceSharePct": 63
+      "maxDominantSourceSharePct": 64
     },
     "cloud-sync-controls": {
       "maxBurstyStepCount": 2,
@@ -782,17 +782,17 @@
     "order-pdf-lifecycle": {
       "maxBurstyStepCount": 2,
       "maxRepeatedSourceCount": 4,
-      "maxDominantSourceSharePct": 80
+      "maxDominantSourceSharePct": 81
     },
     "project-roundtrip": {
       "maxBurstyStepCount": 7,
       "maxRepeatedSourceCount": 4,
-      "maxDominantSourceSharePct": 69
+      "maxDominantSourceSharePct": 73
     },
     "project-recovery-proveout": {
       "maxBurstyStepCount": 4,
       "maxRepeatedSourceCount": 6,
-      "maxDominantSourceSharePct": 65
+      "maxDominantSourceSharePct": 62
     }
   },
   "requiredBrowserMetrics": [
