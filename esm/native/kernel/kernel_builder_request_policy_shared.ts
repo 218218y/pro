@@ -1,8 +1,6 @@
-import type { UnknownRecord } from '../../../types';
+import type { ActionMetaLike } from '../../../types';
 
-import { asRecord } from '../runtime/record.js';
-
-export type KernelBuilderRequestMeta = UnknownRecord | null | undefined;
+export type KernelBuilderRequestMeta = ActionMetaLike | null | undefined;
 
 export type KernelBuilderRequestPolicyOpts = {
   source?: string;
@@ -12,7 +10,7 @@ export type KernelBuilderRequestPolicyOpts = {
 };
 
 export type ResolvedKernelBuilderRequestPolicy = {
-  metaRecord: UnknownRecord | null;
+  metaRecord: ActionMetaLike | null;
   source: string;
   reason: string;
   immediate: boolean;
@@ -32,7 +30,7 @@ export function readKernelBuilderRequestSource(
   meta: KernelBuilderRequestMeta,
   defaultSource = 'kernel'
 ): string {
-  const metaRecord = asRecord<UnknownRecord>(meta) || {};
+  const metaRecord = meta || {};
   return (
     readKernelBuilderRequestString(metaRecord.source) ||
     readKernelBuilderRequestString(metaRecord.reason) ||
@@ -41,7 +39,7 @@ export function readKernelBuilderRequestSource(
 }
 
 export function readKernelBuilderRequestForce(meta: KernelBuilderRequestMeta, defaultForce = false): boolean {
-  const metaRecord = asRecord<UnknownRecord>(meta) || {};
+  const metaRecord = meta || {};
   return (
     readKernelBuilderRequestBoolean(metaRecord.force) ??
     readKernelBuilderRequestBoolean(metaRecord.forceBuild) ??
@@ -53,7 +51,7 @@ export function readKernelBuilderRequestImmediate(
   meta: KernelBuilderRequestMeta,
   defaultImmediate = false
 ): boolean {
-  const metaRecord = asRecord<UnknownRecord>(meta) || {};
+  const metaRecord = meta || {};
   return readKernelBuilderRequestBoolean(metaRecord.immediate) ?? defaultImmediate;
 }
 
@@ -61,7 +59,7 @@ export function shouldRequestKernelBuilderBuild(
   meta: KernelBuilderRequestMeta,
   defaultForce = false
 ): boolean {
-  const metaRecord = asRecord<UnknownRecord>(meta) || {};
+  const metaRecord = meta || {};
   const force = readKernelBuilderRequestForce(metaRecord, defaultForce);
   if (force) return true;
   return !readKernelBuilderRequestBoolean(metaRecord.noBuild);
@@ -71,7 +69,7 @@ export function resolveKernelBuilderRequestPolicy(
   meta: KernelBuilderRequestMeta,
   opts?: KernelBuilderRequestPolicyOpts | null
 ): ResolvedKernelBuilderRequestPolicy {
-  const metaRecord = asRecord<UnknownRecord>(meta) || null;
+  const metaRecord = meta || null;
   const source = readKernelBuilderRequestSource(metaRecord, opts?.source || 'kernel');
   const reason = opts?.reason || source;
   const immediate = readKernelBuilderRequestImmediate(metaRecord, !!opts?.immediate);

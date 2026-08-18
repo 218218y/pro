@@ -55,23 +55,35 @@ const libraryPresetIndexUrl = '../esm/native/features/library_preset/index.ts';
 
 test('[react-hotspots] grouped shallow selectors remain the canonical pattern in sidebar/interior/order-pdf', () => {
   assert.match(sidebarApp, /useUiSelectorShallow\(/);
-  assert.match(sidebarApp, /const localSite2GateState = useUiSelectorShallow\(selectSite2GateState\)/);
   assert.match(
     sidebarApp,
-    /useUiSelectorShallow\(ui => \(\{[\s\S]*open:\s*selectSite2GateState\(ui\)\.open,[\s\S]*storeActive:\s*selectActiveTabId\(ui\)[\s\S]*\}\)\)/
+    /const localSite2GateState = useUiSelectorShallow\(selectSite2GateState, 'navigation'\)/
+  );
+  assert.match(
+    sidebarApp,
+    /useUiSelectorShallow\(\s*ui => \(\{[\s\S]*open:\s*selectSite2GateState\(ui\)\.open,[\s\S]*storeActive:\s*selectActiveTabId\(ui\)[\s\S]*\}\),\s*\['navigation', 'appearance'\]\s*\)/
   );
   assert.doesNotMatch(sidebarApp, /const gateUntilRaw = useUiSelector\(/);
   assert.doesNotMatch(sidebarApp, /const storeActive = useUiSelector\(/);
 
-  assert.match(interiorTab, /useUiSelectorShallow(?:<[^>]+>)?\(readInteriorTabUiSnapshot\)/);
-  assert.match(interiorTab, /useCfgSelectorShallow(?:<[^>]+>)?\(readInteriorTabHandleCfgSnapshot\)/);
+  assert.match(interiorTab, /useUiSelectorShallow(?:<[^>]+>)?\(readInteriorTabUiSnapshot, 'interior'\)/);
+  assert.match(
+    interiorTab,
+    /useCfgSelectorShallow(?:<[^>]+>)?\(readInteriorTabHandleCfgSnapshot,\s*\[\s*'interior',\s*'appearance',?\s*\]\s*\)/
+  );
   assert.match(interiorTab, /useModeSelectorShallow(?:<[^>]+>)?\(readInteriorTabModeSnapshot\)/);
-  assert.match(interiorTab, /const hasIntDrawerData = useCfgSelector\(selectHasInternalDrawersData\)/);
+  assert.match(
+    interiorTab,
+    /const hasIntDrawerData = useCfgSelector\(selectHasInternalDrawersData, undefined, 'interior'\)/
+  );
   assert.doesNotMatch(interiorTab, /const ui = useUiSelector\(x => x as AnyRecord\)/);
   assert.doesNotMatch(interiorTab, /const cfg = useCfgSelector\(x => x as AnyRecord\)/);
   assert.doesNotMatch(interiorTab, /const mode = useModeSelector\(x => x as AnyRecord\)/);
 
-  assert.match(orderPdfOverlay, /const \{ open, draftFromUi, zoomFromUi \} = useUiSelectorShallow\(ui => \{/);
+  assert.match(
+    orderPdfOverlay,
+    /const \{ open, draftFromUi, zoomFromUi \} = useUiSelectorShallow\(\s*ui => \{/
+  );
   assert.match(orderPdfOverlay, /draftFromUi:\s*(?:(?:\(ui as AnyRecord\))|ui)\.orderPdfEditorDraft/);
   assert.match(orderPdfOverlay, /zoomFromUi:\s*typeof z === 'number'/);
   assert.doesNotMatch(orderPdfOverlay, /const open = useUiSelector\(/);
@@ -82,7 +94,7 @@ test('[react-hotspots] grouped shallow selectors remain the canonical pattern in
 test('[react-hotspots] StructureTab, DesignTab, and SettingsVisual keep grouped selector boundaries', () => {
   assert.match(
     structureTabControls,
-    /const \{ wardrobeType, boardMaterial, doorMountMode \} = useCfgSelectorShallow\(cfg => \(\{/
+    /const \{ wardrobeType, boardMaterial, doorMountMode \} = useCfgSelectorShallow\(\s*cfg => \(\{[\s\S]*?doorMountMode: selectDoorMountMode\(cfg\),[\s\S]*?\}\),\s*'structure'\s*\)/
   );
   assert.doesNotMatch(structureTabControls, /const wardrobeType = useCfgSelector\(/);
   assert.doesNotMatch(structureTabControls, /const boardMaterial = useCfgSelector\(/);
@@ -105,8 +117,14 @@ test('[react-hotspots] StructureTab, DesignTab, and SettingsVisual keep grouped 
   assert.doesNotMatch(structureTab, /const cellDimsWidth = useUiSelector\(/);
 
   assert.match(designTab, /useDesignTabController\(/);
-  assert.match(designController, /useCfgSelectorShallow\(cfg => readDesignTabCfgState\(cfg\)\)/);
-  assert.match(designController, /useUiSelectorShallow\(ui => readDesignTabUiState\(ui\)\)/);
+  assert.match(
+    designController,
+    /useCfgSelectorShallow\(cfg => readDesignTabCfgState\(cfg\), \['appearance', 'structure'\]\)/
+  );
+  assert.match(
+    designController,
+    /useUiSelectorShallow\(ui => readDesignTabUiState\(ui\), \['appearance', 'structure'\]\)/
+  );
   assert.match(
     designController,
     /(?:const \{ primaryMode, splitVariant \} =\s*useModeSelectorShallow\(mode => |const modeState = useModeSelectorShallow\(mode => )/
@@ -116,11 +134,17 @@ test('[react-hotspots] StructureTab, DesignTab, and SettingsVisual keep grouped 
   assert.doesNotMatch(designController, /const savedColorsRaw = useCfgSelector\(/);
   assert.doesNotMatch(designController, /const colorSwatchesOrderRaw = useCfgSelector\(/);
 
-  assert.match(designMultiColor, /const enabled = useCfgSelector\(selectIsMultiColorMode\);/);
-  assert.match(designMultiColor, /const savedRaw = useCfgSelector\(selectSavedColors\);/);
   assert.match(
     designMultiColor,
-    /const curtainChoiceRaw = useUiSelector\(ui =>[\s\S]*typeof ui\.currentCurtainChoice === 'string'[\s\S]*\? ui\.currentCurtainChoice : 'none'[\s\S]*\);/
+    /const enabled = useCfgSelector\(selectIsMultiColorMode, undefined, 'appearance'\);/
+  );
+  assert.match(
+    designMultiColor,
+    /const savedRaw = useCfgSelector\(selectSavedColors, undefined, 'appearance'\);/
+  );
+  assert.match(
+    designMultiColor,
+    /const curtainChoiceRaw = useUiSelector\([\s\S]*typeof ui\.currentCurtainChoice === 'string'[\s\S]*\? ui\.currentCurtainChoice[\s\S]*: 'none',[\s\S]*undefined,[\s\S]*'appearance'[\s\S]*\);/
   );
   assert.match(
     designMultiColor,
@@ -130,9 +154,18 @@ test('[react-hotspots] StructureTab, DesignTab, and SettingsVisual keep grouped 
   assert.doesNotMatch(designMultiColor, /String\(ui\.currentCurtainChoice/);
   assert.doesNotMatch(designMultiColor, /String\(mode\.primary/);
 
-  assert.match(settingsVisual, /useCfgSelectorShallow\(cfg => readSettingsVisualCfgState\(cfg\)\)/);
-  assert.match(settingsVisual, /useUiSelectorShallow\(ui => readSettingsVisualUiState\(ui\)\)/);
-  assert.match(settingsVisual, /useRuntimeSelectorShallow\(rt => readSettingsVisualRuntimeState\(rt\)\)/);
+  assert.match(
+    settingsVisual,
+    /useCfgSelectorShallow\(\s*cfg => readSettingsVisualCfgState\(cfg\),\s*\['visibility', 'appearance', 'room'\]\s*\)/
+  );
+  assert.match(
+    settingsVisual,
+    /useUiSelectorShallow\(\s*ui => readSettingsVisualUiState\(ui\),\s*\['structure', 'visibility', 'interaction', 'appearance', 'room'\]\s*\)/
+  );
+  assert.match(
+    settingsVisual,
+    /useRuntimeSelectorShallow\(rt => readSettingsVisualRuntimeState\(rt\), 'interaction'\)/
+  );
   assert.doesNotMatch(settingsVisual, /const lightAmb = useUiSelector\(/);
   assert.doesNotMatch(settingsVisual, /const globalClickRt = useRuntimeSelector\(/);
   assert.doesNotMatch(settingsVisual, /selectSavedNotesCount\(cfg\),/);

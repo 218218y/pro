@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-18T13:50:11.037Z",
+  "generatedAt": "2026-08-18T14:38:21.916Z",
   "totals": {
-    "tests": 1244,
-    "unitRunnerTests": 1235,
+    "tests": 1246,
+    "unitRunnerTests": 1237,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 37,
     "packageTestReferences": 16,
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 137
   },
   "categories": {
-    "contract": 392,
+    "contract": 394,
     "runtime-unit": 343,
     "integration": 470,
     "persistence-ingress": 23,
@@ -2679,6 +2679,14 @@
     {
       "file": "tests/action_feedback_release_regressions.test.js",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/action_meta_contract_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/action_meta_contract_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/actions_access_binding_runtime.test.ts",

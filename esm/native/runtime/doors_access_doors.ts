@@ -3,6 +3,7 @@ import type {
   DoorsCaptureLocalOpenOptionsLike,
   DoorsCloseDrawerOptionsLike,
   DoorsReleaseEditHoldOptionsLike,
+  DoorsSetOpenOptionsLike,
   DoorsSyncVisualsOptionsLike,
 } from '../../../types';
 
@@ -40,11 +41,14 @@ export function getDoorsLastToggleTime(App: unknown): number {
   return readDoorsRuntimeNumber(App, 'lastToggleTime', 0);
 }
 
-export function setDoorsOpenViaService(App: unknown, open: boolean, meta?: ActionMetaLike): boolean {
+export function setDoorsOpenViaService(App: unknown, open: boolean, opts?: DoorsSetOpenOptionsLike): boolean {
   try {
-    const setOpen = getDoorsMethod<(open: boolean, meta?: ActionMetaLike) => unknown>(App, 'setOpen');
+    const setOpen = getDoorsMethod<(open: boolean, opts?: DoorsSetOpenOptionsLike) => unknown>(
+      App,
+      'setOpen'
+    );
     if (setOpen) {
-      setOpen(!!open, asRecord<ActionMetaLike>(meta) || undefined);
+      setOpen(!!open, asRecord<DoorsSetOpenOptionsLike>(opts) || undefined);
       return true;
     }
   } catch (error) {

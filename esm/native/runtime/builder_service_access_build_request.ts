@@ -1,4 +1,4 @@
-import type { UiSnapshotLike, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, UiSnapshotLike, UnknownRecord } from '../../../types';
 
 import { asRecord } from './record.js';
 import { reportError } from './errors.js';
@@ -27,21 +27,21 @@ function requestBuilderBuildInternal(
   return requestBuilderBuildRuntime(App, uiOverride, meta);
 }
 
-export function requestBuilderImmediateBuild(App: unknown, meta?: UnknownRecord | null): boolean {
+export function requestBuilderImmediateBuild(App: unknown, meta?: ActionMetaLike | null): boolean {
   return requestBuilderBuild(App, resolveBuilderBuildProfileMeta(meta, { immediate: true, force: false }));
 }
 
-export function requestBuilderForcedBuild(App: unknown, meta?: UnknownRecord | null): boolean {
+export function requestBuilderForcedBuild(App: unknown, meta?: ActionMetaLike | null): boolean {
   return requestBuilderBuild(App, resolveBuilderBuildProfileMeta(meta, { immediate: true, force: true }));
 }
 
-export function requestBuilderDebouncedBuild(App: unknown, meta?: UnknownRecord | null): boolean {
+export function requestBuilderDebouncedBuild(App: unknown, meta?: ActionMetaLike | null): boolean {
   return requestBuilderBuild(App, resolveBuilderBuildProfileMeta(meta, { immediate: false, force: false }));
 }
 
 export function requestBuilderBuildFromActionMeta(
   App: unknown,
-  meta?: UnknownRecord | null,
+  meta?: ActionMetaLike | null,
   defaults?: BuilderBuildProfileOpts | null
 ): boolean {
   return requestBuilderBuild(App, resolveBuilderBuildProfileMeta(meta, defaults));
@@ -50,7 +50,7 @@ export function requestBuilderBuildFromActionMeta(
 export function requestBuilderBuildWithUiFromActionMeta(
   App: unknown,
   uiOverride: unknown,
-  meta?: UnknownRecord | null,
+  meta?: ActionMetaLike | null,
   defaults?: BuilderBuildProfileOpts | null
 ): boolean {
   return requestBuilderBuildWithUi(App, uiOverride, resolveBuilderBuildProfileMeta(meta, defaults));

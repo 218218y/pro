@@ -9,8 +9,14 @@
 // - Always returns a NEW object (never mutates input).
 // - Defaults are applied only when the caller did not specify a field.
 
-import type { ActionMetaLike, MetaActionsNamespaceLike, UnknownRecord } from '../../../types';
-import { asRecord as asUnknownRecord, cloneRecord } from './record.js';
+import type {
+  ActionMetaLike,
+  CanonicalActionMetaLike,
+  MetaActionsNamespaceLike,
+  UnknownRecord,
+} from '../../../types';
+import { asRecord as asUnknownRecord } from './record.js';
+import { normalizeCanonicalActionMeta } from './action_meta_contract.js';
 import {
   META_PROFILE_DEFAULTS_INTERACTIVE as DEFAULTS_INTERACTIVE,
   META_PROFILE_DEFAULTS_NO_BUILD as DEFAULTS_NO_BUILD,
@@ -23,7 +29,7 @@ import {
 import { getMetaActions } from './actions_access_domains.js';
 import { reportError } from './errors.js';
 
-type MetaProfileDefaults = ActionMetaLike;
+type MetaProfileDefaults = CanonicalActionMetaLike;
 type MetaProfileCall = (meta?: ActionMetaLike, source?: string) => ActionMetaLike;
 
 function mergeLocal(meta: unknown, defaults: MetaProfileDefaults, defaultSource?: string): ActionMetaLike {
@@ -32,7 +38,7 @@ function mergeLocal(meta: unknown, defaults: MetaProfileDefaults, defaultSource?
 
 function toMetaArg(meta: ActionMetaLike | UnknownRecord | undefined): ActionMetaLike | undefined {
   if (!meta) return undefined;
-  return { ...cloneRecord(meta) };
+  return normalizeCanonicalActionMeta(meta);
 }
 
 function isMetaNamespaceLike(value: unknown): value is MetaActionsNamespaceLike {
@@ -91,11 +97,11 @@ export function metaMerge(
 ): ActionMetaLike {
   const metaNs = metaNsFromApp(App);
   const src = source || 'meta:merge';
-  const localDefaults: MetaProfileDefaults = defaults ? { ...cloneRecord(defaults) } : {};
+  const localDefaults: MetaProfileDefaults = normalizeCanonicalActionMeta(defaults);
 
   if (metaNs && typeof metaNs.merge === 'function') {
     try {
-      return metaNs.merge(toMetaArg(meta), defaults, src);
+      return metaNs.merge(toMetaArg(meta), normalizeCanonicalActionMeta(defaults), src);
     } catch (error) {
       reportMetaProfileOwnerRejection(App, `meta.${src || 'merge'}.ownerRejected`, error);
     }

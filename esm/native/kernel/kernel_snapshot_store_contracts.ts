@@ -8,20 +8,7 @@ export interface KernelBuildStateLike extends UnknownRecord {
   build: UnknownRecord;
 }
 
-export interface KernelSnapshotStoreMetaLike extends UnknownRecord {
-  source?: string;
-  reason?: string;
-  immediate?: boolean;
-  noBuild?: boolean;
-  noAutosave?: boolean;
-  noPersist?: boolean;
-  noHistory?: boolean;
-  noCapture?: boolean;
-  force?: boolean;
-  forceBuild?: boolean;
-  silent?: boolean;
-  captureConfig?: boolean;
-}
+export interface KernelSnapshotStoreMetaLike extends ActionMetaLike {}
 
 export interface KernelSnapshotStoreSyncOpts extends KernelSnapshotStoreMetaLike {
   override?: UnknownRecord | null;

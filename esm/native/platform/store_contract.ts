@@ -7,6 +7,8 @@ import type {
 } from '../../../types';
 import type { PatchPayload } from '../../../types/backend_patch_payload';
 
+import { normalizeStoreActionMetaInput } from './store_action_meta_contract.js';
+
 export const ROOT_STORE_SLICE_KEYS: readonly RootSliceKey[] = ['ui', 'config', 'runtime', 'mode', 'meta'];
 
 type MutableRootMeta = RootMetaStateLike & UnknownRecord;
@@ -137,7 +139,7 @@ function isInternalNoHistorySource(src: string): boolean {
 /** Normalize meta once at the canonical store boundary (instead of patching many call sites). */
 export function normalizeActionMeta(meta: unknown): ActionMetaLike | undefined {
   if (!isPlainRecord(meta)) return undefined;
-  const out: ActionMetaLike = shallowCloneRecord(meta);
+  const out = normalizeStoreActionMetaInput(meta);
   const src = typeof out.source === 'string' ? out.source : '';
 
   // Root invariant for history stability: actions that are intentionally excluded

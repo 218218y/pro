@@ -41,7 +41,7 @@ test('meta profile access reports installed owner rejection before using local c
   assert.equal(reports[0].ctx.fatal, false);
 });
 
-test('meta merge reports installed owner rejection and preserves caller defaults locally', () => {
+test('meta merge reports installed owner rejection and preserves canonical caller/default fields locally', () => {
   const reports: Array<{ error: unknown; ctx: any }> = [];
   const App: any = {
     actions: {
@@ -58,9 +58,16 @@ test('meta merge reports installed owner rejection and preserves caller defaults
     },
   };
 
-  const meta = metaMerge(App, { existing: true }, { noHistory: true }, 'save:commit');
+  const meta = metaMerge(
+    App,
+    { noPersist: true, existing: true, extensions: { existing: true } },
+    { noHistory: true },
+    'save:commit'
+  );
 
-  assert.equal(meta.existing, true);
+  assert.equal(meta.noPersist, true);
+  assert.equal(meta.existing, undefined);
+  assert.deepEqual(meta.extensions, { existing: true });
   assert.equal(meta.noHistory, true);
   assert.equal(meta.source, 'save:commit');
   assert.equal(reports.length, 1);

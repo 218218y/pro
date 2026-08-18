@@ -1,8 +1,14 @@
 // Native ESM conversion (TypeScript)
 // Stage 117 - kernel native
 
-import type { AppContainer, ActionMetaLike, MetaActionsNamespaceLike, UnknownRecord } from '../../../types';
-import { asRecord as asUnknownRecord } from '../runtime/record.js';
+import type {
+  ActionMetaLike,
+  AppContainer,
+  CanonicalActionMetaLike,
+  MetaActionsNamespaceLike,
+  UnknownRecord,
+} from '../../../types';
+import { mergeCanonicalActionMeta } from '../runtime/action_meta_contract.js';
 import { ensureActionsRoot, ensureActionNamespace } from '../runtime/actions_access_core.js';
 
 type MetaInput = ActionMetaLike | UnknownRecord | undefined;
@@ -12,37 +18,33 @@ type ConfigMetaNamespaceLike = MetaActionsNamespaceLike & {
 
 type MetaMergeFn = (meta?: MetaInput, defaults?: ActionMetaLike, defaultSource?: string) => ActionMetaLike;
 
-function asRecord(value: unknown): UnknownRecord {
-  return asUnknownRecord(value) || {};
-}
-
-const CFG_META_DEFAULTS: ActionMetaLike = { silent: false };
-const CFG_META_EMPTY: ActionMetaLike = {};
-const CFG_META_UI_ONLY: ActionMetaLike = {
+const CFG_META_DEFAULTS = { silent: false } satisfies CanonicalActionMetaLike;
+const CFG_META_EMPTY = {} satisfies CanonicalActionMetaLike;
+const CFG_META_UI_ONLY = {
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
   uiOnly: true,
-};
-const CFG_META_RESTORE: ActionMetaLike = {
+} satisfies CanonicalActionMetaLike;
+const CFG_META_RESTORE = {
   silent: true,
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
-};
-const CFG_META_NO_HISTORY: ActionMetaLike = { noHistory: true, noCapture: true };
-const CFG_META_NO_BUILD: ActionMetaLike = { noBuild: true };
-const CFG_META_TRANSIENT: ActionMetaLike = {
+} satisfies CanonicalActionMetaLike;
+const CFG_META_NO_HISTORY = { noHistory: true, noCapture: true } satisfies CanonicalActionMetaLike;
+const CFG_META_NO_BUILD = { noBuild: true } satisfies CanonicalActionMetaLike;
+const CFG_META_TRANSIENT = {
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
-};
+} satisfies CanonicalActionMetaLike;
 
 /**
  * Install kernel cfg-meta helpers.
@@ -69,24 +71,16 @@ export function installCfgMeta(App: AppContainer): void {
       defaults?: ActionMetaLike,
       defaultSource?: string
     ): ActionMetaLike {
-      const metaRecord = asRecord(meta);
-      const defaultsRecord = asRecord(defaults);
-      const out: ActionMetaLike = Object.assign({}, asRecord(metaNs.CFG_META_DEFAULTS), defaultsRecord);
-      for (const key of Object.keys(metaRecord)) out[key] = metaRecord[key];
-      if (defaultSource && !out.source) out.source = defaultSource;
-      return out;
+      const profileDefaults = mergeCanonicalActionMeta(defaults, metaNs.CFG_META_DEFAULTS);
+      return mergeCanonicalActionMeta(meta, profileDefaults, defaultSource);
     };
 
   const cfgMetaMerge: MetaMergeFn =
     typeof metaNs.merge === 'function'
       ? metaNs.merge
       : (meta?: MetaInput, defaults?: ActionMetaLike, defaultSource?: string) => {
-          const metaRecord = asRecord(meta);
-          const defaultsRecord = asRecord(defaults);
-          const out: ActionMetaLike = Object.assign({}, asRecord(metaNs.CFG_META_DEFAULTS), defaultsRecord);
-          for (const key of Object.keys(metaRecord)) out[key] = metaRecord[key];
-          if (defaultSource && !out.source) out.source = defaultSource;
-          return out;
+          const profileDefaults = mergeCanonicalActionMeta(defaults, metaNs.CFG_META_DEFAULTS);
+          return mergeCanonicalActionMeta(meta, profileDefaults, defaultSource);
         };
 
   metaNs.interactive =

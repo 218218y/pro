@@ -103,7 +103,7 @@ export function readLowerCornerCfg(ctx: StateApiStackRouterContext): UnknownReco
 }
 
 export function quietMeta(ctx: StateApiStackRouterContext, source: string): ActionMetaLike {
-  return ctx.mergeMeta(undefined, { silent: true, coalesce: true }, source);
+  return ctx.mergeMeta(undefined, { silent: true }, source);
 }
 
 export function topCornerCellNormalizeOptions(ctx: StateApiStackRouterContext) {

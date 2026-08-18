@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 
 export type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -15,7 +15,11 @@ export type ManualLayoutSketchDirectHitContext = {
   hitY0: number;
   pad: number;
   intersects: RaycastHitLike[];
-  __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: UnknownRecord) => void, meta: UnknownRecord) => unknown;
+  __patchConfigForKey: (
+    mk: ModuleKey,
+    patchFn: (cfg: UnknownRecord) => void,
+    meta: ActionMetaLike
+  ) => unknown;
   __wp_isViewportRoot: (App: AppContainer, obj: unknown) => boolean;
   __hoverOk: boolean;
   __hoverKind: string;

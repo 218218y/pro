@@ -5,51 +5,48 @@
 // - Avoid duplicating profile literals in multiple runtime helper modules.
 // - Provide tiny pure helpers that never touch App/store/actions directly.
 
-import type { ActionMetaLike } from '../../../types/index.js';
+import type { ActionMetaLike, CanonicalActionMetaLike } from '../../../types/index.js';
 
-import { cloneRecord } from './record.js';
+import { mergeCanonicalActionMeta } from './action_meta_contract.js';
 
-export const META_PROFILE_DEFAULTS_UI_ONLY: ActionMetaLike = {
+export const META_PROFILE_DEFAULTS_UI_ONLY = {
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
   uiOnly: true,
-};
+} satisfies CanonicalActionMetaLike;
 
-export const META_PROFILE_DEFAULTS_RESTORE: ActionMetaLike = {
+export const META_PROFILE_DEFAULTS_RESTORE = {
   silent: true,
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
-};
+} satisfies CanonicalActionMetaLike;
 
-export const META_PROFILE_DEFAULTS_INTERACTIVE: ActionMetaLike = { silent: false };
-export const META_PROFILE_DEFAULTS_NO_HISTORY: ActionMetaLike = { noHistory: true, noCapture: true };
-export const META_PROFILE_DEFAULTS_NO_BUILD: ActionMetaLike = { noBuild: true };
-export const META_PROFILE_DEFAULTS_TRANSIENT: ActionMetaLike = {
+export const META_PROFILE_DEFAULTS_INTERACTIVE = { silent: false } satisfies CanonicalActionMetaLike;
+export const META_PROFILE_DEFAULTS_NO_HISTORY = {
+  noHistory: true,
+  noCapture: true,
+} satisfies CanonicalActionMetaLike;
+export const META_PROFILE_DEFAULTS_NO_BUILD = { noBuild: true } satisfies CanonicalActionMetaLike;
+export const META_PROFILE_DEFAULTS_TRANSIENT = {
   noBuild: true,
   noAutosave: true,
   noPersist: true,
   noHistory: true,
   noCapture: true,
-};
+} satisfies CanonicalActionMetaLike;
 
 export function mergeMetaProfileDefaults(
   meta: unknown,
-  defaults?: ActionMetaLike,
+  defaults?: CanonicalActionMetaLike,
   defaultSource?: string
 ): ActionMetaLike {
-  const out: ActionMetaLike = { ...cloneRecord(meta) };
-  const defaultsRecord = cloneRecord(defaults);
-  for (const key of Object.keys(defaultsRecord)) {
-    if (typeof out[key] === 'undefined') out[key] = defaultsRecord[key];
-  }
-  if (defaultSource && typeof out.source !== 'string') out.source = defaultSource;
-  return out;
+  return mergeCanonicalActionMeta(meta, defaults, defaultSource);
 }
 
 export function buildMetaUiOnlyImmediate(source?: string): ActionMetaLike {

@@ -48,12 +48,7 @@ export type ModulesRecomputeBuildRequestPolicy = {
   skipBuild?: boolean;
 };
 
-type ModulesRecomputeMetaLike = ActionMetaLike | null | undefined;
-type ModulesRecomputeOptionsLike =
-  ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null | undefined;
-
-type ModulesRecomputeSingleArgumentLike =
-  ActionMetaLike | ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null | undefined;
+type ModulesRecomputeInputLike = unknown;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object';
@@ -69,8 +64,8 @@ function readModulesRecomputeRecordBoolean(value: unknown, key: string): boolean
 }
 
 function readModulesRecomputeBuildForce(
-  meta?: ModulesRecomputeMetaLike,
-  options?: ModulesRecomputeOptionsLike
+  meta?: ModulesRecomputeInputLike,
+  options?: ModulesRecomputeInputLike
 ): boolean {
   return (
     readModulesRecomputeRecordBoolean(options, 'forceRebuild') === true ||
@@ -81,11 +76,11 @@ function readModulesRecomputeBuildForce(
   );
 }
 
-function hasExplicitSkipBuild(options?: ModulesRecomputeSingleArgumentLike): boolean {
+function hasExplicitSkipBuild(options?: ModulesRecomputeInputLike): boolean {
   return readModulesRecomputeRecordBoolean(options, 'skipBuild') === true;
 }
 
-function hasExplicitNoBuild(meta?: ModulesRecomputeSingleArgumentLike): boolean {
+function hasExplicitNoBuild(meta?: ModulesRecomputeInputLike): boolean {
   return readModulesRecomputeRecordBoolean(meta, 'noBuild') === true;
 }
 
@@ -95,8 +90,8 @@ function resolveModulesRecomputePolicyArgs(args: {
   secondary?: ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null;
 }): {
   hasSeparateMeta: boolean;
-  meta: ModulesRecomputeMetaLike;
-  options: ModulesRecomputeOptionsLike;
+  meta: ModulesRecomputeInputLike;
+  options: ModulesRecomputeInputLike;
 } {
   return {
     hasSeparateMeta: args.hasSeparateMeta,
@@ -124,7 +119,7 @@ export function createModulesRecomputeBuildRequestPolicy(
 }
 
 export function shouldSkipModulesRecomputeBuild(
-  metaOrOptions?: ModulesRecomputeSingleArgumentLike,
+  metaOrOptions?: ModulesRecomputeInputLike,
   maybeOptions?: ModulesRecomputeFromUiOptionsLike | ModulesRecomputeBuildRequestPolicy | null
 ): boolean {
   const hasSeparateMeta = arguments.length > 1;

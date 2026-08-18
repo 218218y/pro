@@ -10,7 +10,7 @@ test('doors transient meta fallback stays aligned with the shared contract', () 
     assert,
     contract,
     [
-      /export const META_PROFILE_DEFAULTS_TRANSIENT: ActionMetaLike = \{[\s\S]*noBuild: true,[\s\S]*noAutosave: true,[\s\S]*noPersist: true,[\s\S]*noHistory: true,[\s\S]*noCapture: true,[\s\S]*\};/,
+      /export const META_PROFILE_DEFAULTS_TRANSIENT = \{[\s\S]*noBuild: true,[\s\S]*noAutosave: true,[\s\S]*noPersist: true,[\s\S]*noHistory: true,[\s\S]*noCapture: true,[\s\S]*\} satisfies CanonicalActionMetaLike;/,
       /export function buildMetaUiOnlyImmediate\(source\?: string\): ActionMetaLike \{[\s\S]*META_PROFILE_DEFAULTS_UI_ONLY[\s\S]*\}/,
     ],
     'meta_profiles_contract'

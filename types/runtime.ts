@@ -232,7 +232,7 @@ export interface FatalOverlayHideOptionsLike extends UnknownRecord {
 export interface DoorsServiceAccessLike extends UnknownRecord {
   getOpen?: () => unknown;
   getLastToggleTime?: () => unknown;
-  setOpen?: (open: boolean, meta?: ActionMetaLike) => unknown;
+  setOpen?: (open: boolean, opts?: DoorsSetOpenOptionsLike) => unknown;
   toggle?: (meta?: ActionMetaLike) => unknown;
   releaseEditHold?: (opts?: DoorsReleaseEditHoldOptionsLike) => unknown;
   closeDrawerById?: (drawerId: string | number, opts?: DoorsCloseDrawerOptionsLike) => unknown;

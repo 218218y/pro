@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
 
 import { requestKernelBuilderBuild } from './kernel_builder_request_policy.js';
 import { scheduleAutosaveViaService } from '../runtime/autosave_access.js';
@@ -23,11 +23,11 @@ export function createKernelStateKernelConfigBatchFlags(): KernelStateKernelConf
   };
 }
 
-export function readKernelConfigPatchSource(meta: UnknownRecord, defaultSource = 'config'): string {
+export function readKernelConfigPatchSource(meta: ActionMetaLike, defaultSource = 'config'): string {
   return typeof meta.source === 'string' ? meta.source : defaultSource;
 }
 
-export function readKernelConfigPatchForce(meta: UnknownRecord): boolean {
+export function readKernelConfigPatchForce(meta: ActionMetaLike): boolean {
   return Boolean(meta.forceBuild) || Boolean(meta.force);
 }
 
@@ -44,7 +44,7 @@ export function ensureKernelStateKernelConfigBatchFlags(
 export function mergeKernelStateKernelConfigBatchMeta(
   batch: UnknownRecord | null,
   source: string,
-  meta: UnknownRecord,
+  meta: ActionMetaLike,
   force: boolean
 ): boolean {
   if (!batch || Number(batch.depth ?? 0) <= 0) return false;
@@ -67,7 +67,7 @@ export function mergeKernelStateKernelConfigBatchMeta(
 
 export function requestKernelStateKernelConfigBuild(
   App: AppContainer,
-  meta: UnknownRecord,
+  meta: ActionMetaLike,
   source: string,
   force: boolean
 ): void {
@@ -81,7 +81,7 @@ export function requestKernelStateKernelConfigBuild(
 export function commitKernelStateKernelConfigPatch(
   kernelConfigState: UnknownRecord | null | undefined,
   source: string,
-  meta: UnknownRecord,
+  meta: ActionMetaLike,
   force: boolean
 ): void {
   if (!kernelConfigState || typeof kernelConfigState.commit !== 'function') return;
@@ -96,7 +96,7 @@ export function commitKernelStateKernelConfigPatch(
   });
 }
 
-export function scheduleKernelStateKernelConfigAutosave(App: AppContainer, meta: UnknownRecord): void {
+export function scheduleKernelStateKernelConfigAutosave(App: AppContainer, meta: ActionMetaLike): void {
   if (meta.noAutosave || meta.noPersist) return;
   scheduleAutosaveViaService(App);
 }

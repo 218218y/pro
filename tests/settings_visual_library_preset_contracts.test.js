@@ -320,9 +320,9 @@ test('settings visual controls owner stays thin and delegates notes, room, light
       /useSettingsVisualRoomDesign\(/,
       /useSettingsVisualLighting\(/,
       /createSettingsVisualDisplayController\(/,
-      /useCfgSelectorShallow\(cfg => readSettingsVisualCfgState\(cfg\)\)/,
-      /useUiSelectorShallow\(ui => readSettingsVisualUiState\(ui\)\)/,
-      /useRuntimeSelectorShallow\(rt => readSettingsVisualRuntimeState\(rt\)\)/,
+      /useCfgSelectorShallow\(\s*cfg => readSettingsVisualCfgState\(cfg\),\s*\['visibility', 'appearance', 'room'\]\s*\)/,
+      /useUiSelectorShallow\(\s*ui => readSettingsVisualUiState\(ui\),\s*\['structure', 'visibility', 'interaction', 'appearance', 'room'\]\s*\)/,
+      /useRuntimeSelectorShallow\(rt => readSettingsVisualRuntimeState\(rt\), 'interaction'\)/,
       /displayController\.syncGlobalClickState\(/,
     ],
     'renderController'

@@ -102,7 +102,7 @@ test('[kernel-snapshot-store] snapshot/store seam stays typed and publicly compa
     snapshotStore,
     [
       /export interface KernelBuildStateLike extends UnknownRecord/,
-      /export interface KernelSnapshotStoreMetaLike extends UnknownRecord/,
+      /export interface KernelSnapshotStoreMetaLike extends ActionMetaLike/,
       /export interface KernelSnapshotStoreSyncOpts extends KernelSnapshotStoreMetaLike/,
       /export interface KernelSnapshotStoreSystem/,
       /export function createKernelSnapshotStoreSystem\(/,

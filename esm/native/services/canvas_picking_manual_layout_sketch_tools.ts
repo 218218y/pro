@@ -1,6 +1,6 @@
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type {
   LocalPoint,
@@ -20,7 +20,7 @@ import { tryApplyManualLayoutSketchModeClick } from './canvas_picking_manual_lay
 type PatchConfigForKeyFn = (
   mk: ModuleKey | 'corner' | null,
   patchFn: (cfg: UnknownRecord) => void,
-  meta: UnknownRecord
+  meta: ActionMetaLike
 ) => unknown;
 
 type ManualLayoutSketchToolClickArgs = {

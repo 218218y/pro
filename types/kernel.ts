@@ -19,25 +19,59 @@ import type {
   ModulesConfigurationLike,
 } from './modules_configuration';
 
-export interface ActionMetaLike extends UnknownRecord {
+/**
+ * Closed vocabulary for behavior-changing action metadata.
+ *
+ * New store/build/history behavior flags must be declared here first. This type
+ * intentionally has no string index signature so high-value boundaries can use
+ * it for excess-property checking.
+ */
+export interface CanonicalActionMetaLike {
   source?: string;
+  reason?: string;
+
   silent?: boolean;
+  immediate?: boolean;
   noBuild?: boolean;
   noAutosave?: boolean;
   noPersist?: boolean;
   noHistory?: boolean;
   noCapture?: boolean;
+  forceBuild?: boolean;
 
-  // History coalescing (optional).
+  /** Legacy builder alias. New code should prefer forceBuild. */
+  force?: boolean;
+  uiOnly?: boolean;
+  captureConfig?: boolean;
+  noStorageWrite?: boolean;
+
+  // History coalescing.
   coalesceKey?: string;
   coalesceMs?: number;
+  coalesceAcrossIdle?: boolean;
 
-  // Debug/perf traces (optional).
+  // Project load/reset policy.
+  resetDefault?: boolean;
+  preserveAutosave?: boolean;
+  preserveAutosaveOnLoad?: boolean;
+  autosavePolicy?: 'preserve-existing';
+
+  // Debug/perf traces. Diagnostic payloads belong in the nested bag instead of
+  // inventing new top-level behavior flags.
   traceStorePatch?: boolean;
   debugName?: string;
-
-  [k: string]: unknown;
+  diagnostics?: UnknownRecord;
+  extensions?: UnknownRecord;
 }
+
+export type CanonicalActionMetaFieldKind =
+  'boolean' | 'string' | 'finite-number' | 'preserve-existing' | 'record';
+
+export type CanonicalActionMetaSchemaLike = {
+  [K in keyof CanonicalActionMetaLike]-?: CanonicalActionMetaFieldKind;
+};
+
+export interface ActionMetaLike extends CanonicalActionMetaLike {}
 
 export interface MetaActionsNamespaceLike extends UnknownRecord {
   // Meta profiles (installed by kernel/state_api.ts).

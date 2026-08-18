@@ -22,7 +22,7 @@ const metaProfiles = fs.readFileSync(
 test('[meta-contract] runtime meta helpers share a canonical fallback contract', () => {
   assert.match(
     contract,
-    /export const META_PROFILE_DEFAULTS_TRANSIENT: ActionMetaLike = \{[\s\S]*noBuild: true,[\s\S]*noAutosave: true,[\s\S]*noPersist: true,[\s\S]*noHistory: true,[\s\S]*noCapture: true,[\s\S]*\};/
+    /export const META_PROFILE_DEFAULTS_TRANSIENT = \{[\s\S]*noBuild: true,[\s\S]*noAutosave: true,[\s\S]*noPersist: true,[\s\S]*noHistory: true,[\s\S]*noCapture: true,[\s\S]*\} satisfies CanonicalActionMetaLike;/
   );
   assert.match(
     contract,

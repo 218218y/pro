@@ -1,4 +1,10 @@
-import type { ActionEnvelope, ActionMetaLike, DispatchOptionsLike, RootStateLike } from '../../../types';
+import type {
+  ActionEnvelope,
+  ActionMetaLike,
+  DispatchOptionsLike,
+  RootStateLike,
+  StoreLastActionLike,
+} from '../../../types';
 import type { PatchPayload } from '../../../types/backend_patch_payload';
 import type { StoreApi as ZustandStoreApi } from 'zustand/vanilla';
 
@@ -91,14 +97,14 @@ function stampLastActionAndMeta(args: {
   actionMeta: ActionMetaLike | undefined;
   silent: boolean;
   changeSet: StoreChangeSet;
-}): ActionMetaLike {
+}): StoreLastActionLike {
   const { nextState, type, actionMeta, silent, changeSet } = args;
 
   const m = cloneMetaForWrite(nextState);
   m.version = (Number(m.version) | 0) + 1;
   m.updatedAt = Date.now();
 
-  const stamped: ActionMetaLike = {
+  const stamped: StoreLastActionLike = {
     type: type || '',
     source: readRecordString(actionMeta, 'source'),
     immediate: readRecordBoolean(actionMeta, 'immediate'),
@@ -159,8 +165,9 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
       payload,
       meta: actionMeta,
     });
-    notifySelectorSubscribers(stampedMeta, createCommitNotificationChangeSet(changeSet));
-    if (!silent) notify(stampedMeta);
+    const notificationMeta: ActionMetaLike = { ...stampedMeta };
+    notifySelectorSubscribers(notificationMeta, createCommitNotificationChangeSet(changeSet));
+    if (!silent) notify(notificationMeta);
     return zustandApi.getState();
   }
 

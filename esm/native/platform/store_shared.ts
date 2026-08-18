@@ -5,6 +5,7 @@ import {
   isPlainRecord,
   shallowCloneRecord,
 } from './store_contract.js';
+import { mergeStoreActionMetaInput } from './store_action_meta_contract.js';
 import { canonicalizeStoreProjectConfigSnapshot } from './store_feature_config_boundary.js';
 
 export type UnknownRecord = Record<string, unknown>;
@@ -23,7 +24,7 @@ export type StoreDebugState = {
 
 const DEFAULT_HELPER_META: Record<
   'ui' | 'runtime' | 'config' | 'mode' | 'meta' | 'dirty',
-  Partial<ActionMetaLike> & { source: string }
+  ActionMetaLike & { source: string }
 > = {
   ui: { source: 'ui', noBuild: true, noHistory: true, noAutosave: true, noPersist: true, noCapture: true },
   runtime: {
@@ -119,20 +120,9 @@ export function deleteOwn(obj: UnknownRecord, key: string): void {
   }
 }
 
-export function normalizeHelperMeta(kind: keyof typeof DEFAULT_HELPER_META, meta: unknown): UnknownRecord {
+export function normalizeHelperMeta(kind: keyof typeof DEFAULT_HELPER_META, meta: unknown): ActionMetaLike {
   const base = DEFAULT_HELPER_META[kind];
-  const baseRec = shallowCloneRecord(base);
-  const out = shallowCloneRecord(asRecordOrEmpty(meta));
-
-  if (!out.source) out.source = base.source;
-
-  for (const k in baseRec) {
-    if (!hasOwn(baseRec, k)) continue;
-    if (k === 'source') continue;
-    if (typeof out[k] === 'undefined') out[k] = baseRec[k];
-  }
-
-  return out;
+  return mergeStoreActionMetaInput(meta, base, base.source);
 }
 
 export function arrayShallowEqual(a: unknown[], b: unknown[]): boolean {

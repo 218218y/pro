@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { ActionMetaLike, AppContainer } from '../../../types';
 import type {
   SketchBoxGeometryArgs,
   SketchBoxGeometry,
@@ -36,7 +36,7 @@ type ManualLayoutSketchClickModeFlowArgs = {
   __hoverKind: string;
   __hoverOp: string;
   __hoverRec: RecordMap;
-  __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: RecordMap) => void, meta: RecordMap) => unknown;
+  __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: RecordMap) => void, meta: ActionMetaLike) => unknown;
   __resolveSketchBoxPlacementMetrics: () => SketchBoxPlacementMetrics;
   __wp_parseSketchBoxToolSpec: (tool: string) => RecordMap | null;
   __wp_resolveSketchBoxGeometry: (args: SketchBoxGeometryArgs) => SketchBoxGeometry;

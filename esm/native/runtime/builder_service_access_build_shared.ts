@@ -162,7 +162,7 @@ export function readBuilderBuildProfileFlag(value: unknown): boolean | undefined
 }
 
 export function resolveBuilderBuildProfileMeta(
-  meta?: UnknownRecord | null,
+  meta?: unknown,
   defaults?: BuilderBuildProfileOpts | null
 ): BuildRequestMeta {
   const metaRec = asRecord<UnknownRecord>(meta) || {};

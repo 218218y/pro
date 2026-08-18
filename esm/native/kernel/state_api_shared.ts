@@ -1,5 +1,6 @@
 import type {
   ActionMetaLike,
+  CanonicalActionMetaLike,
   ActionsNamespaceLike,
   ModeSlicePatch,
   RuntimeSlicePatch,
@@ -8,7 +9,12 @@ import type {
 } from '../../../types';
 import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
 
-import { asRecord, cloneRecord, isRecord } from '../runtime/record.js';
+import {
+  asRecord,
+  isRecord,
+  mergeCanonicalActionMeta,
+  normalizeCanonicalActionMeta,
+} from '../runtime/action_meta_contract.js';
 
 export type MetaNs = NonNullable<ActionsNamespaceLike['meta']>;
 export type SetCfgScalarFn = NonNullable<ActionsNamespaceLike['setCfgScalar']>;
@@ -49,7 +55,7 @@ export const MODULES_GEOMETRY_REPLACE_KEYS: Record<string, true> = {
 };
 
 export function cloneMetaObject(meta: ActionMetaLike | UnknownRecord | null | undefined): ActionMetaLike {
-  return cloneRecord(meta);
+  return normalizeCanonicalActionMeta(meta);
 }
 
 export function asMeta(meta: ActionMetaLike | UnknownRecord | null | undefined): ActionMetaLike {
@@ -67,16 +73,10 @@ export function normMeta(
 
 export function mergeMetaWithDefaults(
   meta: ActionMetaLike | UnknownRecord | null | undefined,
-  defaults: ActionMetaLike,
+  defaults: CanonicalActionMetaLike,
   defaultSource: string
 ): ActionMetaLike {
-  const next = cloneMetaObject(meta);
-  if (defaultSource && !next.source) next.source = defaultSource;
-  for (const key in defaults) {
-    if (!Object.prototype.hasOwnProperty.call(defaults, key)) continue;
-    if (typeof next[key] === 'undefined') next[key] = defaults[key];
-  }
-  return next;
+  return mergeCanonicalActionMeta(meta, defaults, defaultSource);
 }
 
 export function asPatchPayload(payload: unknown): PatchPayload {

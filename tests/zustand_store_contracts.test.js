@@ -175,7 +175,7 @@ test('[zustand-store] selector subscriptions and typed meta hooks remain require
   assert.match(storeSrc, /const selectorListeners = createListenerRegistry<SelectorRegistryEntry>\(\)/);
   assert.match(
     normalizeWhitespace(`${storeTs}\n${storeCommitPipelineTs}`),
-    /notifySelectorSubscribers\(stampedMeta, createCommitNotificationChangeSet\(changeSet\)\)/
+    /const notificationMeta: ActionMetaLike = \{ \.\.\.stampedMeta \};[\s\S]*notifySelectorSubscribers\(notificationMeta, createCommitNotificationChangeSet\(changeSet\)\)/
   );
   assert.match(storeSrc, /subscribeSelector,?/);
   assert.match(storeSrc, /function getDebugStats\(\): StoreDebugStats/);

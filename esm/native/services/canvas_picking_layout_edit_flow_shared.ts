@@ -1,4 +1,10 @@
-import type { AppContainer, ModuleConfigLike, ModuleSavedDimsLike, UnknownRecord } from '../../../types';
+import type {
+  ActionMetaLike,
+  AppContainer,
+  ModuleConfigLike,
+  ModuleSavedDimsLike,
+  UnknownRecord,
+} from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 
 export type ModuleKey = number | 'corner' | `corner:${number}`;
@@ -15,7 +21,7 @@ export type LayoutConfigRecordLike = ModuleConfigLike & {
 export type PatchConfigForKeyFn = (
   mk: ModuleKey | 'corner' | null,
   patchFn: (cfg: LayoutConfigRecordLike) => void,
-  meta: UnknownRecord
+  meta: ActionMetaLike
 ) => unknown;
 
 export type GridInfoLike = {

@@ -79,17 +79,17 @@ export function installKernelHistoryLifecycle(
     const currentJson = historySystem.getCurrentSnapshot();
     if (currentJson === historySystem.lastSavedJSON) return;
 
-    const o = args.isRecord(opts) ? opts : null;
-    const coalesceKey = o && typeof o.coalesceKey === 'string' ? String(o.coalesceKey || '') : '';
-    const coalesceMsRaw = o ? o.coalesceMs : undefined;
-    const coalesceMsParsed =
-      typeof coalesceMsRaw === 'number' ? coalesceMsRaw : parseInt(String(coalesceMsRaw || ''), 10);
-    const coalesceMs = Number.isFinite(coalesceMsParsed) && coalesceMsParsed > 0 ? coalesceMsParsed : 1200;
+    const o = opts || null;
+    const coalesceKey = o?.coalesceKey || '';
+    const coalesceMs =
+      typeof o?.coalesceMs === 'number' && Number.isFinite(o.coalesceMs) && o.coalesceMs > 0
+        ? o.coalesceMs
+        : 1200;
     const now = Date.now();
 
     const lastKey = typeof historySystem._lastCoalesceKey === 'string' ? historySystem._lastCoalesceKey : '';
     const lastAt = typeof historySystem._lastCoalesceAt === 'number' ? historySystem._lastCoalesceAt : 0;
-    const coalesceAcrossIdle = !!(o && o.coalesceAcrossIdle === true);
+    const coalesceAcrossIdle = o?.coalesceAcrossIdle === true;
     const canCoalesce =
       !!coalesceKey && coalesceKey === lastKey && (coalesceAcrossIdle || now - lastAt < coalesceMs);
 
@@ -109,7 +109,7 @@ export function installKernelHistoryLifecycle(
       historySystem.undoStack.pop();
     }
 
-    const keepRedo = !!(o && o.keepRedo === true);
+    const keepRedo = o?.keepRedo === true;
     if (!keepRedo) historySystem.redoStack = [];
 
     historySystem.updateButtons();

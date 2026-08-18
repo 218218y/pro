@@ -56,8 +56,11 @@ export function _asRecord(x: unknown): AnyObj {
   return _asObject(x) || {};
 }
 
-export function _asActionMeta(meta: unknown, fallbackSource: string): ActionMetaLike {
-  return _asObject<ActionMetaLike>(meta) || { source: fallbackSource };
+export function _asActionMeta(
+  meta: ActionMetaLike | null | undefined,
+  fallbackSource: string
+): ActionMetaLike {
+  return meta ? { ...meta } : { source: fallbackSource };
 }
 
 export function _asUpdateOpts(opts: unknown): RoomUpdateOpts {

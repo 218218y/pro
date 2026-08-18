@@ -24,6 +24,7 @@ import {
   readCanonicalMirrorLayoutMap,
 } from '../../shared/surface_layout_contracts_shared.js';
 import { assertStore } from './assert.js';
+import { mergeCanonicalActionMeta, normalizeCanonicalActionMeta } from './action_meta_contract.js';
 
 export type RootStateLike = UnknownRecord & { config?: ConfigSnapshotLike };
 export type ScalarUpdaterFn<K extends ConfigScalarKey = ConfigScalarKey> = (
@@ -51,7 +52,7 @@ export function asRecord(value: unknown): UnknownRecord | null {
 }
 
 export function readActionMeta(value: unknown): ActionMetaLike | null {
-  return asRecord(value);
+  return asRecord(value) ? normalizeCanonicalActionMeta(value) : null;
 }
 
 function readConfigAccessAppLike(App: unknown): ConfigAccessAppLike | null {
@@ -211,12 +212,5 @@ export function normMeta(App: unknown, meta: unknown, defaults: ActionMetaLike):
     }
   }
 
-  const metaRecord = asRecord(meta);
-  const merged: ConfigSnapshotLike = metaRecord ? { ...metaRecord } : {};
-  for (const key of Object.keys(defaults)) {
-    if (typeof merged[key] === 'undefined') merged[key] = defaults[key];
-  }
-  if (!merged.source) merged.source = defaults.source || 'config';
-  const normalized = readActionMeta(merged);
-  return normalized ? normalized : defaults;
+  return mergeCanonicalActionMeta(meta, defaults, defaults.source || 'config');
 }

@@ -186,7 +186,7 @@ export function mergeSnapshotOnPrev(
   return out;
 }
 
-export function buildStoreMeta(source: string, meta: UnknownRecord): ActionMetaLike {
+export function buildStoreMeta(source: string, meta: ActionMetaLike): ActionMetaLike {
   const out: ActionMetaLike = {
     source,
     immediate: !!meta.immediate,

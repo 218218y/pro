@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T13:50:05.926Z",
+  "generatedAt": "2026-08-18T14:55:13.721Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 558,
@@ -2730,17 +2730,17 @@
     },
     {
       "file": "esm/native/builder/room_shared_utils.ts",
-      "line": 59,
+      "line": 61,
       "term": "fallbackSource",
       "category": "domain-default",
-      "text": "export function _asActionMeta(meta: unknown, fallbackSource: string): ActionMetaLike {"
+      "text": "fallbackSource: string"
     },
     {
       "file": "esm/native/builder/room_shared_utils.ts",
-      "line": 60,
+      "line": 63,
       "term": "fallbackSource",
       "category": "domain-default",
-      "text": "return _asObject<ActionMetaLike>(meta) || { source: fallbackSource };"
+      "text": "return meta ? { ...meta } : { source: fallbackSource };"
     },
     {
       "file": "esm/native/builder/room_visual_apply.ts",
@@ -3038,28 +3038,28 @@
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 147,
+      "line": 142,
       "term": "fallbackSource",
       "category": "runtime-default",
       "text": "function readMetaSource(meta: ActionMetaLike | null | undefined, fallbackSource: string): string {"
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 148,
+      "line": 143,
       "term": "fallbackSource",
       "category": "runtime-default",
       "text": "return typeof meta?.source === 'string' && meta.source ? meta.source : fallbackSource;"
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 157,
+      "line": 152,
       "term": "fallbackSource",
       "category": "runtime-default",
       "text": "fallbackSource: string,"
     },
     {
       "file": "esm/native/kernel/domain_api_modules_corner_recompute_policy.ts",
-      "line": 162,
+      "line": 157,
       "term": "fallbackSource",
       "category": "runtime-default",
       "text": "source: readMetaSource(meta, fallbackSource),"
@@ -3080,14 +3080,14 @@
     },
     {
       "file": "esm/native/platform/store_contract.ts",
-      "line": 88,
+      "line": 90,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "* Keep this stable: it is the compatibility boundary between the app and the store backend."
     },
     {
       "file": "esm/native/platform/store_shared.ts",
-      "line": 196,
+      "line": 186,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// clock-capability-fallback: Date.now remains the canonical fallback when performance.now is unavailable."

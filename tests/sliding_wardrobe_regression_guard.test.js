@@ -39,7 +39,7 @@ const interiorSectionsNorm = normalizeWhitespace(interiorSections);
 test('sliding wardrobe hides external drawers controls in Interior tab', () => {
   assert.match(
     interiorTabNorm,
-    /const wardrobeType = useCfgSelector\(cfg => String\(cfg\.wardrobeType \|\| 'hinged'\) === 'sliding' \? 'sliding' : 'hinged'\)/
+    /const wardrobeType = useCfgSelector\(cfg => \(String\(cfg\.wardrobeType \|\| 'hinged'\) === 'sliding' \? 'sliding' : 'hinged'\), undefined, 'interior'\)/
   );
   assert.match(
     interiorTabNorm,

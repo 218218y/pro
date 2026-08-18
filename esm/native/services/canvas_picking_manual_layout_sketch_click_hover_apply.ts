@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { ActionMetaLike, AppContainer } from '../../../types';
 import {
   commitSketchModuleBoxContent,
   ensureSketchModuleBoxes,
@@ -44,7 +44,7 @@ type ManualLayoutSketchClickHoverApplyArgs = {
   __gridInfo: RecordMap | null;
   __hoverRec: RecordMap;
   __hoverOk: boolean;
-  __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: RecordMap) => void, meta: RecordMap) => unknown;
+  __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: RecordMap) => void, meta: ActionMetaLike) => unknown;
   __wp_clearSketchHover: (App: AppContainer) => void;
 };
 

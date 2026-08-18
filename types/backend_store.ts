@@ -21,26 +21,26 @@ export interface BackendStoreLike<S = RootStateLike> extends PublicStoreLike<S>,
    */
   patch: (
     payload: StorePatchPayload | UnknownRecord,
-    meta?: ActionMetaLike | UnknownRecord,
+    meta?: ActionMetaLike,
     opts?: DispatchOptionsLike
   ) => unknown;
 
   /** Rare backend root replacement helper. Snapshot/parity tooling only; not for UI/service/domain callers. */
-  setRoot?: (nextRoot: unknown, meta?: ActionMetaLike | UnknownRecord, opts?: DispatchOptionsLike) => unknown;
+  setRoot?: (nextRoot: unknown, meta?: ActionMetaLike, opts?: DispatchOptionsLike) => unknown;
 
   // Optional backend convenience methods (present in platform store builds).
-  setMode?: (primary: unknown, opts?: ModeActionOptsLike, meta?: ActionMetaLike | UnknownRecord) => void;
-  setRuntime?: (patch: RuntimeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  setMeta?: (patch: MetaSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  setDirty?: (isDirty: boolean, meta?: ActionMetaLike | UnknownRecord) => void;
-  setUi?: (patch: UiSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
+  setMode?: (primary: unknown, opts?: ModeActionOptsLike, meta?: ActionMetaLike) => void;
+  setRuntime?: (patch: RuntimeSlicePatch | UnknownRecord, meta?: ActionMetaLike) => void;
+  setMeta?: (patch: MetaSlicePatch | UnknownRecord, meta?: ActionMetaLike) => void;
+  setDirty?: (isDirty: boolean, meta?: ActionMetaLike) => void;
+  setUi?: (patch: UiSlicePatch | UnknownRecord, meta?: ActionMetaLike) => void;
   /** Backend-only convenience writer. Not for UI/service/domain callers. */
   setConfig?: (
     patch: ConfigSlicePatch | UnknownRecord,
-    meta?: ActionMetaLike | UnknownRecord,
+    meta?: ActionMetaLike,
     opts?: DispatchOptionsLike | UnknownRecord
   ) => void;
-  setModePatch?: (patch: ModeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
+  setModePatch?: (patch: ModeSlicePatch | UnknownRecord, meta?: ActionMetaLike) => void;
 }
 
 /** Backend-only alias retained for internal platform/runtime/kernel owners. */
