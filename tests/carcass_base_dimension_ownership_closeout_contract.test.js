@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
+import { DIMENSION_COMPOSITION_CONTRACTS } from '../tools/wp_dimension_composition_contract_manifest.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
@@ -14,13 +15,8 @@ const plinthOwnerRel = 'esm/shared/dimensions/base_plinth_policy.ts';
 const legOwnerRel = 'esm/shared/dimensions/base_leg_policy.ts';
 const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
 const chestOwnerRel = 'esm/shared/dimensions/chest_structural_policy.ts';
-const runtimeDefaultStateOwnerRel = 'esm/shared/dimensions/runtime_default_state_dimension_policy.ts';
-const identityReexportOwners = new Set([
-  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
-  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts',
-  'esm/shared/dimensions/core_carcass_dimension_policy.ts',
-  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
-]);
+const declarativeCompositionOwners = new Set(DIMENSION_COMPOSITION_CONTRACTS.map(contract => contract.owner));
+
 const facadeAbsolute = path.join(root, facadeRel);
 
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -35,47 +31,33 @@ const sourceFileCache = new Map();
 const analysisCache = new Map();
 
 const expectedPlinthInventory = Object.freeze({
-  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
     'basePlinthCentimetersToMeters',
     'basePlinthMetersToCentimeters',
   ]),
-  [runtimeDefaultStateOwnerRel]: Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
 });
 
 const expectedLegInventory = Object.freeze({
-  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
-  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
     'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
   ]),
-  [runtimeDefaultStateOwnerRel]: Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
 });
 
 const expectedPlatformInventory = Object.freeze({
-  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
-    'BASE_PLATFORM_RENDER_POLICY',
-  ]),
-  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
-    'BASE_PLATFORM_RENDER_POLICY',
-  ]),
-  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
@@ -204,32 +186,15 @@ function ownerInventory(ownerRel) {
     const [dependency] = dependencies;
     assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import from ${ownerRel}`);
     const fileRel = rel(file);
-    const approvedCompositionReexport =
-      identityReexportOwners.has(fileRel) ||
-      (fileRel === runtimeDefaultStateOwnerRel &&
-        ((ownerRel === plinthOwnerRel &&
-          dependency.importedSymbols.length === 1 &&
-          dependency.importedSymbols[0] === 'BASE_PLINTH_POLICY') ||
-          (ownerRel === legOwnerRel &&
-            dependency.importedSymbols.length === 1 &&
-            dependency.importedSymbols[0] === 'BASE_LEG_DIMENSIONS')));
+    if (declarativeCompositionOwners.has(fileRel)) continue;
     assert.equal(
       dependency.syntax,
-      approvedCompositionReexport ? 'static-re-export' : 'static-import',
-      `${fileRel} must use its reviewed statement form from ${ownerRel}`
+      'static-import',
+      `${fileRel} must use a direct static import from ${ownerRel}`
     );
     result[fileRel] = dependency.importedSymbols;
 
     for (const binding of dependency.bindings) {
-      if (approvedCompositionReexport) {
-        assert.equal(binding.localName, null, `${fileRel} must not create a local owner alias`);
-        assert.equal(
-          binding.importedName === binding.exportedName,
-          true,
-          `${fileRel} must preserve ${binding.importedName} identity`
-        );
-        continue;
-      }
       assert.equal(
         binding.importedName === binding.localName,
         true,

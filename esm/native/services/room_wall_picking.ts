@@ -106,7 +106,12 @@ export function projectRoomWorldPointToLocal(
   try {
     const worldToLocal = roomGroup.worldToLocal;
     if (typeof worldToLocal === 'function') Reflect.apply(worldToLocal, roomGroup, [pointLocal]);
-  } catch {
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'roomWallPicking',
+      op: 'projectWorldPointToLocal',
+      throttleMs: 1000,
+    });
     return null;
   }
   const x = finiteNumber(pointLocal.x);

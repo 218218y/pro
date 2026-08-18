@@ -8,6 +8,7 @@ import {
   tryHandleRoomOpeningPlacementHover,
 } from '../esm/native/services/room_opening_placement.ts';
 import { resolveViewerMeasurementHitStateWithRoom } from '../esm/native/services/viewer_measurement_room_target.ts';
+import { projectRoomWorldPointToLocal } from '../esm/native/services/room_wall_picking.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -511,4 +512,46 @@ test('external primary-mode exit clears the opening draft and preview immediatel
   h.state.mode.primary = 'room_opening';
   h.notify();
   assert.equal(isRoomOpeningPlacementActive(h.app), false);
+});
+
+test('room wall projection failures remain fail-soft but report the picking failure', t => {
+  t.mock.method(console, 'warn', () => {});
+  const reports: Array<{ error: unknown; context: unknown }> = [];
+  class ThrowingVector3 {
+    x: number;
+    y: number;
+    z: number;
+
+    constructor(x = 0, y = 0, z = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+  }
+  const App = {
+    deps: { THREE: { Vector3: ThrowingVector3 } },
+    render: {
+      roomGroup: {
+        worldToLocal() {
+          throw new Error('worldToLocal failed');
+        },
+      },
+    },
+    services: {
+      errors: {
+        report(error: unknown, context: unknown) {
+          reports.push({ error, context });
+        },
+      },
+    },
+  } as never;
+
+  assert.equal(projectRoomWorldPointToLocal(App, { x: 1, y: 2, z: 3 }), null);
+  assert.equal(reports.length, 1);
+  assert.match(String((reports[0]?.error as Error | undefined)?.message || ''), /worldToLocal failed/u);
+  assert.deepEqual(reports[0]?.context, {
+    where: 'roomWallPicking',
+    op: 'projectWorldPointToLocal',
+    source: 'canvas_picking_core',
+  });
 });

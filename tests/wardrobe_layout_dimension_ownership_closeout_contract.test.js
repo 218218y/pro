@@ -8,7 +8,6 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const moduleOwnerRel = 'esm/shared/dimensions/wardrobe_layout_policy.ts';
 const comparisonOwnerRel = 'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 const defaultResolutionOwnerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const cellOwnerRel = 'esm/shared/dimensions/cell_dimension_policy.ts';
@@ -24,7 +23,7 @@ const leafRels = Object.freeze([
   helperRel,
   'esm/native/services/canvas_picking_cell_dims_linear_width.ts',
 ]);
-const ownerModuleRels = Object.freeze([moduleOwnerRel, comparisonOwnerRel, cellOwnerRel]);
+const ownerModuleRels = Object.freeze([comparisonOwnerRel, cellOwnerRel]);
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const esmSourceFiles = listSourceFiles(path.join(root, 'esm'));
@@ -85,15 +84,7 @@ function focusedOwnerConsumers(symbol) {
     .sort((left, right) => left.file.localeCompare(right.file));
 }
 
-test('Wardrobe Layout focused owners are exact, narrow, import-free modules', () => {
-  assert.equal(
-    read(moduleOwnerRel).replace(/\r\n/gu, '\n').trim(),
-    `export const WARDROBE_MODULE_LAYOUT_POLICY = Object.freeze({
-  minSegmentWidthCm: 1,
-  boundaryFullThicknessMultiplier: 1,
-  boundarySharedThicknessMultiplier: 0.5,
-});`
-  );
+test('Wardrobe Layout comparison and cell owners stay exact, narrow, import-free modules', () => {
   assert.equal(
     read(comparisonOwnerRel).replace(/\r\n/gu, '\n').trim(),
     `export const WARDROBE_LAYOUT_COMPARISON_POLICY = Object.freeze({
@@ -144,7 +135,6 @@ export const CELL_DIMENSION_PREVIEW_POLICY = Object.freeze({
 
 test('focused-owner production inventory is exact and policy objects are not aliased', () => {
   const expected = new Map([
-    ['WARDROBE_MODULE_LAYOUT_POLICY', ['esm/native/builder/core_layout_compute.ts']],
     ['WARDROBE_LAYOUT_COMPARISON_POLICY', [clickCompositionRel, defaultResolutionOwnerRel]],
     ['CELL_DIMENSION_MATCH_POLICY', [previewCompositionRel]],
     ['CELL_DIMENSION_PREVIEW_POLICY', [previewCompositionRel]],

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T19:59:08.346Z",
+  "generatedAt": "2026-08-18T03:48:25.286Z",
   "totals": {
     "tests": 1242,
     "unitRunnerTests": 1233,
@@ -223,10 +223,6 @@
         {
           "file": "tests/core_pure_number_contracts_runtime.test.ts",
           "kind": "contract"
-        },
-        {
-          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -739,10 +735,6 @@
         {
           "file": "tests/chest_mode_build_ownership_contract.test.js",
           "kind": "ownership"
-        },
-        {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
         }
       ]
     },
@@ -1108,10 +1100,6 @@
       "target": "esm/native/platform/render_loop_motion_doors.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
-        {
-          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
-        },
         {
           "file": "tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs",
           "kind": "contract"

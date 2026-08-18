@@ -6,27 +6,17 @@ import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
+import { DIMENSION_COMPOSITION_CONTRACTS } from '../tools/wp_dimension_composition_contract_manifest.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/door_system_policy.ts';
 
-const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 const runtimeDoorMotionPolicyAccessRel = 'esm/native/runtime/door_motion_policy_access.ts';
 const sharedDoorMotionContractRel = 'esm/shared/door_motion_contracts_shared.ts';
-const identityReexportOwners = new Set([
-  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
-  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
-]);
-const identityCompositionRoutes = new Map([
-  [
-    'esm/native/builder/visuals_chest_mode_build.ts',
-    'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
-  ],
-  [
-    'esm/native/services/canvas_picking_split_hover_preview_line.ts',
-    'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
-  ],
-]);
+const declarativeCompositionOwners = new Set(DIMENSION_COMPOSITION_CONTRACTS.map(contract => contract.owner));
+const declarativeCompositionOwnerTargets = new Set(
+  [...declarativeCompositionOwners].map(owner => path.normalize(path.join(root, owner)).toLowerCase())
+);
 const ownerAbsolute = path.join(root, ownerRel);
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -59,8 +49,6 @@ const focusedInventories = new Map([
       'esm/native/builder/core_doors_compute.ts',
       'esm/native/builder/hinged_doors_module_ops_context.ts',
       'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts',
-      'esm/native/builder/visuals_chest_mode_build.ts',
-      'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
       'esm/shared/dimensions/door_mount_thickness_policy.ts',
       ownerRel,
       'esm/shared/dimensions/external_drawer_policy.ts',
@@ -78,8 +66,6 @@ const focusedInventories = new Map([
       'esm/native/services/canvas_picking_door_split_click_custom.ts',
       'esm/native/services/canvas_picking_door_split_click_toggle.ts',
       'esm/native/services/canvas_picking_door_split_standard_target.ts',
-      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
-      'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
       'esm/shared/wardrobe_construction_validation_shared.ts',
       ownerRel,
     ],
@@ -100,8 +86,6 @@ const focusedInventories = new Map([
       'esm/native/builder/core_doors_compute.ts',
       'esm/native/builder/render_door_ops_sliding.ts',
       'esm/native/builder/sliding_doors_pipeline.ts',
-      'esm/native/platform/render_loop_motion_doors.ts',
-      renderLoopDoorMotionOwnerRel,
       'esm/native/services/doors_runtime_visuals_shared.ts',
       ownerRel,
       sharedDoorMotionContractRel,
@@ -184,109 +168,38 @@ function importedConsumers(symbol) {
     .sort((left, right) => left.file.localeCompare(right.file));
 }
 
-test('Door System focused-owner inventory is exact, reviewed, and alias-free', () => {
+test('Door System focused-owner inventory delegates declarative composition routes to the contract engine', () => {
   for (const [symbol, expectedFiles] of focusedInventories) {
-    const consumers = importedConsumers(symbol);
+    const consumers = importedConsumers(symbol).filter(
+      consumer =>
+        !declarativeCompositionOwners.has(consumer.file) &&
+        !declarativeCompositionOwnerTargets.has(consumer.target)
+    );
     assert.deepEqual(
       [ownerRel, ...consumers.map(consumer => consumer.file)].sort(),
       [...expectedFiles].sort(),
       symbol
     );
-    const compositionConsumers = consumers.filter(consumer => consumer.file === renderLoopDoorMotionOwnerRel);
-    const platformConsumers = consumers.filter(
-      consumer => consumer.file === 'esm/native/platform/render_loop_motion_doors.ts'
-    );
-    const identityCompositionConsumers = consumers.filter(consumer =>
-      identityCompositionRoutes.has(consumer.file)
-    );
-    const directConsumers = consumers.filter(
-      consumer =>
-        consumer.file !== renderLoopDoorMotionOwnerRel &&
-        consumer.file !== 'esm/native/platform/render_loop_motion_doors.ts' &&
-        !identityCompositionRoutes.has(consumer.file)
-    );
-    const usesDoorMotionComposition = symbol === 'SLIDING_DOOR_CONSTRUCTION_POLICY';
-
     assert.equal(
-      directConsumers.every(consumer => consumer.target === path.normalize(ownerAbsolute).toLowerCase()),
+      consumers.every(consumer => consumer.target === path.normalize(ownerAbsolute).toLowerCase()),
       true,
       `${symbol} direct consumers must target the focused owner module`
     );
     assert.equal(
-      directConsumers.every(consumer => {
-        const identityReexport = identityReexportOwners.has(consumer.file);
-        return (
-          consumer.kind === 'value' &&
-          consumer.syntax === (identityReexport ? 'static-re-export' : 'static-import')
-        );
-      }),
+      consumers.every(consumer => consumer.kind === 'value' && consumer.syntax === 'static-import'),
       true,
-      `${symbol} direct consumers must use their reviewed static statement form`
+      `${symbol} direct consumers must use static value imports`
     );
     assert.equal(
-      directConsumers.every(consumer => {
-        const identityReexport = identityReexportOwners.has(consumer.file);
-        return (
-          consumer.bindings.length === 1 &&
-          consumer.bindings[0].importedName === symbol &&
-          consumer.bindings[0].localName === (identityReexport ? null : symbol) &&
-          consumer.bindings[0].exportedName === (identityReexport ? symbol : null)
-        );
-      }),
+      consumers.every(consumer =>
+        consumer.bindings.every(
+          binding =>
+            binding.importedName === symbol && binding.localName === symbol && binding.exportedName === null
+        )
+      ),
       true,
-      `${symbol} direct consumers must preserve the binding identity without aliases`
+      `${symbol} direct consumers must preserve binding identity without aliases`
     );
-
-    const expectedIdentityCompositionConsumer = [...identityCompositionRoutes.entries()].find(
-      ([consumerFile]) => consumers.some(consumer => consumer.file === consumerFile)
-    );
-    assert.equal(identityCompositionConsumers.length, expectedIdentityCompositionConsumer ? 1 : 0, symbol);
-    if (expectedIdentityCompositionConsumer) {
-      const [consumerFile, identityOwnerFile] = expectedIdentityCompositionConsumer;
-      const [identityConsumer] = identityCompositionConsumers;
-      assert.equal(identityConsumer.file, consumerFile, symbol);
-      assert.equal(
-        identityConsumer.target,
-        path.normalize(path.join(root, identityOwnerFile)).toLowerCase(),
-        symbol
-      );
-      assert.equal(identityConsumer.kind, 'value', symbol);
-      assert.equal(identityConsumer.syntax, 'static-import', symbol);
-      assert.deepEqual(identityConsumer.bindings, [
-        { importedName: symbol, localName: symbol, exportedName: null },
-      ]);
-    }
-
-    assert.equal(compositionConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);
-    assert.equal(platformConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);
-    if (usesDoorMotionComposition) {
-      const [compositionConsumer] = compositionConsumers;
-      assert.equal(compositionConsumer.target, path.normalize(ownerAbsolute).toLowerCase());
-      assert.equal(compositionConsumer.kind, 'value');
-      assert.equal(compositionConsumer.syntax, 'static-re-export');
-      assert.deepEqual(compositionConsumer.bindings, [
-        {
-          importedName: symbol,
-          localName: null,
-          exportedName: symbol,
-        },
-      ]);
-
-      const [platformConsumer] = platformConsumers;
-      assert.equal(
-        platformConsumer.target,
-        path.normalize(path.join(root, renderLoopDoorMotionOwnerRel)).toLowerCase()
-      );
-      assert.equal(platformConsumer.kind, 'value');
-      assert.equal(platformConsumer.syntax, 'static-import');
-      assert.deepEqual(platformConsumer.bindings, [
-        {
-          importedName: symbol,
-          localName: symbol,
-          exportedName: null,
-        },
-      ]);
-    }
   }
 });
 
