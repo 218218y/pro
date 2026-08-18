@@ -108,7 +108,11 @@ function createHarness(overrides?: {
       _cfg: () => rootState.config as any,
       _ui: () => rootState.ui as any,
       _rt: () => rootState.runtime as any,
-      _meta: (meta, source) => ({ ...(meta || {}), installVersion: env.installVersion, source }),
+      _meta: (meta, source) => ({
+        ...(meta || {}),
+        extensions: { installVersion: env.installVersion },
+        source,
+      }),
       _map: mapName => ({ ...(env.maps[String(mapName)] || {}) }),
       _num: value => (typeof value === 'number' ? value : null),
     });
@@ -396,7 +400,7 @@ test('domain api surface sections reinstall heals drifted public slots and keeps
     {
       mapName: 'splitDoorsMap',
       nextMap: { split_d21: false, split_d22: true },
-      meta: { source: 'actions:doors:setSplit', installVersion: 2 },
+      meta: { source: 'actions:doors:setSplit', extensions: { installVersion: 2 } },
     },
   ]);
 });
@@ -443,7 +447,7 @@ test('domain api surface sections keep canonical public roots alive across root 
     {
       mapName: 'splitDoorsMap',
       nextMap: { split_d31: false, split_d32: true },
-      meta: { source: 'actions:doors:setSplit', installVersion: 2 },
+      meta: { source: 'actions:doors:setSplit', extensions: { installVersion: 2 } },
     },
   ]);
 });
@@ -472,7 +476,7 @@ test('domain api surface sections runtime door and drawer actions require the ca
       patch: { doorsOpen: true, doorsLastToggleTime: 4242 },
       meta: {
         source: 'actions:doors:setOpen',
-        installVersion: 1,
+        extensions: { installVersion: 1 },
         noBuild: true,
         noAutosave: true,
         noPersist: true,
@@ -484,7 +488,7 @@ test('domain api surface sections runtime door and drawer actions require the ca
       patch: { drawersOpenId: 'drawer-7' },
       meta: {
         source: 'actions:drawers:setOpenId',
-        installVersion: 1,
+        extensions: { installVersion: 1 },
         noBuild: true,
         noAutosave: true,
         noPersist: true,

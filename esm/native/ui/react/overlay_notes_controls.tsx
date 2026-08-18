@@ -125,7 +125,7 @@ export function ViewerNotesControls(): ReactElement {
       app,
       'viewer.contents.visibility.toggle',
       () => {
-        setUiShowContents(app, next, { source: 'react:viewerContentsControls:visibility', immediate: true });
+        setUiShowContents(app, next, { source: 'react:viewerContentsControls:visibility', immediate: false });
       },
       { detail: { checked: next } }
     );

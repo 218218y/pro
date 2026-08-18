@@ -34,7 +34,7 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(controls, /data-testid="viewer-measurement-mode-points-button"/);
   assert.match(
     controls,
-    /setUiShowContents\(app, next, \{ source: 'react:viewerContentsControls:visibility', immediate: true \}\)/
+    /setUiShowContents\(app, next, \{ source: 'react:viewerContentsControls:visibility', immediate: false \}\)/
   );
   assert.doesNotMatch(controls, /setUiShowContents\(app, next, meta\.uiOnlyImmediate/);
   assert.ok(
