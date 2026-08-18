@@ -10,6 +10,7 @@ import {
   classifyRuntimeMetricDomain,
   createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
+  createBrowserPerfSessionArtifactCaptureState,
   createPerfDomainSummary,
   createPerfSummaryFromEntries,
   createProjectActionSummary,
@@ -55,6 +56,7 @@ import {
   rankRuntimeRecoveryHangover,
   rankRuntimeStatusTransitions,
   summarizeBrowserPerfResult,
+  takeBrowserPerfSessionArtifactDelta,
 } from '../tools/wp_browser_perf_support.js';
 import {
   BROWSER_PERF_REQUIRED_UX_METRICS,
@@ -401,6 +403,24 @@ test('browser UX target summary treats unsupported or missing browser evidence a
   ]);
 });
 
+test('browser perf session artifact capture appends only new items per session and resets safely', () => {
+  const state = createBrowserPerfSessionArtifactCaptureState();
+  const first = [{ id: 'a' }, { id: 'b' }];
+  const second = [...first, { id: 'c' }];
+
+  assert.deepEqual(takeBrowserPerfSessionArtifactDelta(state.entryOffsets, 'session-a', first), first);
+  assert.deepEqual(takeBrowserPerfSessionArtifactDelta(state.entryOffsets, 'session-a', second), [
+    { id: 'c' },
+  ]);
+  assert.deepEqual(takeBrowserPerfSessionArtifactDelta(state.entryOffsets, 'session-b', first), first);
+
+  state.eventOffsets.set('session-a:events', 5);
+  assert.deepEqual(
+    takeBrowserPerfSessionArtifactDelta(state.eventOffsets, 'session-a:events', [{ id: 'reset' }]),
+    [{ id: 'reset' }]
+  );
+});
+
 test('browser perf support rebuilds exact browser metrics from all captured entries', () => {
   const longTasks = Array.from({ length: 20 }, (_, index) =>
     perfEntry('browser.longTask', 0, 'ok', {
@@ -472,7 +492,7 @@ test('browser perf support rebuilds exact browser metrics from all captured entr
   assert.deepEqual(metrics.cls, { value: 0.09, entryCount: 2, lastUpdatedAt: 0 });
   assert.equal(metrics.lcp.valueMs, 1200);
   assert.deepEqual(metrics.inp, {
-    valueMs: 140,
+    valueMs: 180,
     interactionCount: 50,
     observedInteractionCount: 12,
     entryCount: 2,
@@ -487,6 +507,59 @@ test('browser perf support rebuilds exact browser metrics from all captured entr
   assert.equal(metrics.longTasks.maxMs, 20);
   assert.equal(metrics.renderSettle.count, 2);
   assert.equal(metrics.renderSettle.p95Ms, 32);
+});
+
+test('browser perf support keeps document-scoped duration budgets stable across reload sessions', () => {
+  const sessionA = [
+    perfEntry('browser.longTask', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: 70,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-a',
+    }),
+    perfEntry('browser.longTask', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: 90,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-a',
+    }),
+    perfEntry('browser.inp', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: 220,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-a',
+    }),
+  ];
+  const sessionB = [
+    perfEntry('browser.longTask', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: 60,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-b',
+    }),
+    perfEntry('browser.inp', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: 140,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-b',
+    }),
+  ];
+
+  const metrics = createBrowserMetricSummaryFromEntries([...sessionA, ...sessionB], {
+    observerSupported: true,
+    inp: { interactionCount: 12, observedInteractionCount: 10, source: 'event' },
+  });
+
+  assert.equal(metrics.longTasks.count, 2);
+  assert.equal(metrics.longTasks.totalMs, 160);
+  assert.equal(metrics.longTasks.maxMs, 90);
+  assert.equal(metrics.longTasks.p95Ms, 90);
+  assert.equal(metrics.inp.valueMs, 220);
 });
 
 test('browser perf support summarizes runtime issues and perf metrics canonically', () => {

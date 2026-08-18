@@ -1086,6 +1086,23 @@ import {
     assert.match(browserPerfSmoke, /installPerfEntryCapture\(page\)/);
     assert.match(browserPerfSmoke, /wardrobepro:perf-entry/);
     assert.match(browserPerfSmoke, /__WP_BROWSER_PERF_ENTRIES__/);
+    assert.match(browserPerfSmoke, /SESSION_ARTIFACT_CAPTURE_STATE/);
+    assert.match(
+      browserPerfSmoke,
+      /takeBrowserPerfSessionArtifactDelta\([\s\S]*captureState\.entryOffsets,[\s\S]*sessionId,[\s\S]*capture\?\.entries[\s\S]*\)\.map\([\s\S]*browserSessionId: sessionId/
+    );
+    assert.match(
+      browserPerfSmoke,
+      /takeBrowserPerfSessionArtifactDelta\([\s\S]*captureState\.eventOffsets,[\s\S]*eventSessionId,[\s\S]*capture\?\.events[\s\S]*\)/
+    );
+    assert.match(browserPerfSmoke, /browserMetricsBySession\.set\(sessionId, capture\.browserMetrics\)/);
+    assert.match(browserPerfSmoke, /__WP_PROJECT_ACTION_EVENTS_GENERATION__/);
+    assert.match(browserPerfSmoke, /eventSessionId: `\$\{sessionId\}:project-actions:\$\{eventGeneration\}`/);
+    assert.match(browserPerfSmoke, /const sessionId = String\(timeOrigin\)/);
+    assert.match(
+      browserPerfSmoke,
+      /seedAutosaveStorage\(page, savedProjectPath\);[\s\S]*?await page\.reload\(\{ waitUntil: 'domcontentloaded' \}\);[\s\S]*?await installProjectActionRecorder\(page\)/
+    );
     assert.match(browserPerfSmoke, /withMergedSavedColorValues\(/);
     assert.match(browserPerfSmoke, /#room=\$\{encodeURIComponent\(browserPerfRoomId\)\}&roomToken=/);
     assert.doesNotMatch(browserPerfSmoke, /index_pro\.html\?room=/);

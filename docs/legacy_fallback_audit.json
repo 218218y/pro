@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T14:55:13.721Z",
+  "generatedAt": "2026-08-18T19:42:48.299Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 558,
@@ -4648,14 +4648,14 @@
     },
     {
       "file": "esm/native/ui/react/actions/sketch_actions.ts",
-      "line": 23,
+      "line": 21,
       "term": "fallbackSource",
       "category": "domain-default",
-      "text": "fallbackSource: string"
+      "text": "function readStructuralActionSource(value: ActionMetaLike | undefined, fallbackSource: string): string {"
     },
     {
       "file": "esm/native/ui/react/actions/sketch_actions.ts",
-      "line": 25,
+      "line": 22,
       "term": "fallbackSource",
       "category": "domain-default",
       "text": "return typeof value?.source === 'string' && value.source.trim() ? value.source : fallbackSource;"

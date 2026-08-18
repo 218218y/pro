@@ -4,7 +4,7 @@ import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../..
 
 import { getMetaActionFn, readStoreStateMaybe, reportError } from '../../../services/api.js';
 import { setRuntimeSketchMode, setUiSketchModeMirror } from './store_actions.js';
-import { applyImmediateStructuralRuntimeMutation } from './structural_build_refresh_actions.js';
+import { applyStructuralRuntimeMutation } from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -18,10 +18,7 @@ function emptyRecord(): UnknownRecord {
   return {};
 }
 
-function readImmediateStructuralActionSource(
-  value: ActionMetaLike | undefined,
-  fallbackSource: string
-): string {
+function readStructuralActionSource(value: ActionMetaLike | undefined, fallbackSource: string): string {
   return typeof value?.source === 'string' && value.source.trim() ? value.source : fallbackSource;
 }
 
@@ -48,19 +45,22 @@ function getUiOnlyImmediateMeta(app: AppContainer, source: string): ActionMetaLi
 }
 
 export function toggleSketchMode(app: AppContainer, meta?: ActionMetaLike): void {
-  const source = readImmediateStructuralActionSource(meta, 'react:sketch');
+  const source = readStructuralActionSource(meta, 'react:sketch');
   const cur = getRuntimeSketchMode(app);
   const next = !cur;
 
   try {
-    applyImmediateStructuralRuntimeMutation(
+    applyStructuralRuntimeMutation(
       app,
       source,
       { sketchMode: !!next },
       actionMeta => {
         setRuntimeSketchMode(app, !!next, actionMeta);
       },
-      meta
+      {
+        buildTiming: 'coalesced',
+        metaOverrides: meta,
+      }
     );
   } catch (error) {
     reportError(app, error, {

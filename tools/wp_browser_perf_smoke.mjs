@@ -21,6 +21,7 @@ import {
 import {
   createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
+  createBrowserPerfSessionArtifactCaptureState,
   createPerfDomainSummary,
   createPerfSummaryFromEntries,
   createRepeatedMetricPressureSummary,
@@ -33,6 +34,7 @@ import {
   createUserJourneyDiagnosisSummary,
   createUserJourneySummary,
   rankStoreDebugSources,
+  takeBrowserPerfSessionArtifactDelta,
   createRuntimeOutcomeCoverageSummary,
   createRuntimeRecoveryDebtSummary,
   createRuntimeRecoveryHangoverSummary,
@@ -469,6 +471,8 @@ async function installProjectActionRecorder(page) {
   await page.evaluate(() => {
     const win = window;
     win.__WP_PROJECT_ACTION_EVENTS__ = [];
+    win.__WP_PROJECT_ACTION_EVENTS_GENERATION__ =
+      Math.max(0, Number(win.__WP_PROJECT_ACTION_EVENTS_GENERATION__) || 0) + 1;
     if (win.__WP_PROJECT_ACTION_RECORDER_INSTALLED__) return;
     window.addEventListener('wardrobepro:project-action', event => {
       const detail = (event && event.detail) || {};
@@ -525,9 +529,13 @@ function mergeRuntimeDiagnostics(existing, incoming, limit = 60) {
 function mergeBrowserMetrics(existing, incoming) {
   const before = existing && typeof existing === 'object' ? existing : {};
   const next = incoming && typeof incoming === 'object' ? incoming : {};
+  // Browser-duration budgets describe one document's responsiveness. A perf scenario
+  // may intentionally reload the page (for recovery coverage), so summing document
+  // totals would make the metric scale with navigation count rather than product cost.
+  // Keep the worst observed document for count/total/p95 while preserving the global max.
   const mergeDurationMetric = (left, right) => ({
-    count: (Number(left?.count) || 0) + (Number(right?.count) || 0),
-    totalMs: (Number(left?.totalMs) || 0) + (Number(right?.totalMs) || 0),
+    count: Math.max(Number(left?.count) || 0, Number(right?.count) || 0),
+    totalMs: Math.max(Number(left?.totalMs) || 0, Number(right?.totalMs) || 0),
     maxMs: Math.max(Number(left?.maxMs) || 0, Number(right?.maxMs) || 0),
     p95Ms: Math.max(Number(left?.p95Ms) || 0, Number(right?.p95Ms) || 0),
     lastUpdatedAt: Math.max(Number(left?.lastUpdatedAt) || 0, Number(right?.lastUpdatedAt) || 0),
@@ -573,19 +581,72 @@ function mergeBrowserMetrics(existing, incoming) {
   };
 }
 
+const SESSION_ARTIFACT_CAPTURE_STATE = Symbol('browserPerfSessionArtifactCaptureState');
+
+function getSessionArtifactCaptureState(result) {
+  const existing = result && result[SESSION_ARTIFACT_CAPTURE_STATE];
+  if (existing && existing.entryOffsets instanceof Map && existing.eventOffsets instanceof Map) {
+    return existing;
+  }
+  const created = createBrowserPerfSessionArtifactCaptureState();
+  Object.defineProperty(result, SESSION_ARTIFACT_CAPTURE_STATE, {
+    configurable: false,
+    enumerable: false,
+    writable: false,
+    value: created,
+  });
+  return created;
+}
+
+function mergeCapturedBrowserMetrics(captureState) {
+  let merged = null;
+  for (const metrics of captureState.browserMetricsBySession.values()) {
+    merged = mergeBrowserMetrics(merged, metrics);
+  }
+  return merged || {};
+}
+
 async function captureSessionArtifacts(page, result) {
-  const [entries, events, diagnostics, browserMetrics] = await Promise.all([
+  const [capture, diagnostics] = await Promise.all([
     page.evaluate(() => {
       const captured = window.__WP_BROWSER_PERF_ENTRIES__;
-      return Array.isArray(captured) ? captured.slice() : window.__WP_PERF__?.getEntries?.() || [];
+      const entries = Array.isArray(captured) ? captured.slice() : window.__WP_PERF__?.getEntries?.() || [];
+      const events = Array.isArray(window.__WP_PROJECT_ACTION_EVENTS__)
+        ? window.__WP_PROJECT_ACTION_EVENTS__.slice()
+        : [];
+      const timeOrigin = Number(window.performance?.timeOrigin) || 0;
+      const eventGeneration = Math.max(0, Number(window.__WP_PROJECT_ACTION_EVENTS_GENERATION__) || 0);
+      const sessionId = String(timeOrigin);
+      return {
+        sessionId,
+        eventSessionId: `${sessionId}:project-actions:${eventGeneration}`,
+        entries,
+        events,
+        browserMetrics: window.__WP_PERF__?.getBrowserMetrics?.() || null,
+      };
     }),
-    page.evaluate(() => window.__WP_PROJECT_ACTION_EVENTS__ || []),
     page.evaluate(() => window.__WP_PERF__?.getErrorHistory?.() || []),
-    page.evaluate(() => window.__WP_PERF__?.getBrowserMetrics?.() || null),
   ]);
+  const captureState = getSessionArtifactCaptureState(result);
+  const sessionId = String(capture?.sessionId || 'unknown-session');
+  const entries = takeBrowserPerfSessionArtifactDelta(
+    captureState.entryOffsets,
+    sessionId,
+    capture?.entries
+  ).map(entry => (entry && typeof entry === 'object' ? { ...entry, browserSessionId: sessionId } : entry));
+  const eventSessionId = String(capture?.eventSessionId || `${sessionId}:project-actions:0`);
+  const events = takeBrowserPerfSessionArtifactDelta(
+    captureState.eventOffsets,
+    eventSessionId,
+    capture?.events
+  );
+
   result.windowPerfEntries.push(...entries);
   result.projectActionEvents.push(...events);
-  result.windowBrowserMetrics = mergeBrowserMetrics(result.windowBrowserMetrics, browserMetrics);
+  if (capture?.browserMetrics && typeof capture.browserMetrics === 'object') {
+    captureState.browserMetricsBySession.set(sessionId, capture.browserMetrics);
+    result.windowBrowserMetrics = mergeCapturedBrowserMetrics(captureState);
+  }
   if (Array.isArray(diagnostics)) {
     const bucket = result.runtimeIssues || (result.runtimeIssues = {});
     bucket.diagnostics = mergeRuntimeDiagnostics(bucket.diagnostics, diagnostics, 60);
@@ -2925,7 +2986,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       async () => {
         if (!savedProjectPath) throw new Error('Saved project file missing before restore-last-session');
         await seedAutosaveStorage(page, savedProjectPath);
-        await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
+        // Recovery must exercise a fresh document; same-URL navigation may reuse the active document.
+        await page.reload({ waitUntil: 'domcontentloaded' });
         await installProjectActionRecorder(page);
         await waitForBootReadiness(page, result);
         await openMainTab(page, 'structure');

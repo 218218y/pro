@@ -54,16 +54,13 @@ function loadSketchActionsHarness(initialRuntime = {}, options = {}) {
           return meta;
         };
         return {
-          applyImmediateStructuralRuntimeMutation: (
-            _app,
-            sourceName,
-            patch,
-            applyDirectMutation,
-            overrides
-          ) => {
-            calls.push(['applyImmediateStructuralRuntimeMutation', sourceName, patch, overrides]);
+          applyStructuralRuntimeMutation: (_app, sourceName, patch, applyDirectMutation, mutationOptions) => {
+            calls.push(['applyStructuralRuntimeMutation', sourceName, patch, mutationOptions]);
             if (options.rejectStructuralMutation) throw new Error('structural mutation rejected');
-            applyDirectMutation(buildMeta(sourceName, overrides));
+            const overrides = mutationOptions?.metaOverrides || {};
+            const meta = buildMeta(sourceName, overrides);
+            meta.immediate = mutationOptions?.buildTiming !== 'coalesced';
+            applyDirectMutation(meta);
             return { appliedViaActions: false, requestedBuild: false };
           },
         };
@@ -75,7 +72,7 @@ function loadSketchActionsHarness(initialRuntime = {}, options = {}) {
   return { api, calls, diagnostics, store, app };
 }
 
-test('[sketch-actions] sketch mode runtime write routes through immediate structural runtime mutation', () => {
+test('[sketch-actions] sketch mode runtime write routes through coalesced structural runtime mutation', () => {
   const { api, calls, store, app } = loadSketchActionsHarness();
 
   api.toggleSketchMode(app, { source: ' custom:sketch ', noBuild: true, trace: 'kept' });
@@ -85,11 +82,14 @@ test('[sketch-actions] sketch mode runtime write routes through immediate struct
   assert.ok(
     calls.some(
       entry =>
-        entry[0] === 'applyImmediateStructuralRuntimeMutation' &&
+        entry[0] === 'applyStructuralRuntimeMutation' &&
         entry[1] === ' custom:sketch ' &&
         JSON.stringify(entry[2]) === JSON.stringify({ sketchMode: true }) &&
         JSON.stringify(entry[3]) ===
-          JSON.stringify({ source: ' custom:sketch ', noBuild: true, trace: 'kept' })
+          JSON.stringify({
+            buildTiming: 'coalesced',
+            metaOverrides: { source: ' custom:sketch ', noBuild: true, trace: 'kept' },
+          })
     )
   );
   assert.ok(
@@ -98,7 +98,7 @@ test('[sketch-actions] sketch mode runtime write routes through immediate struct
         entry[0] === 'setRuntimeSketchMode' &&
         entry[1] === true &&
         JSON.stringify(entry[2]) ===
-          JSON.stringify({ source: 'custom:sketch', trace: 'kept', immediate: true, noBuild: false })
+          JSON.stringify({ source: 'custom:sketch', trace: 'kept', immediate: false, noBuild: false })
     )
   );
   assert.ok(

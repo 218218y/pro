@@ -104,7 +104,6 @@ export function createTakeSnapshotWorkflow(
 
     try {
       const finalCanvas = await createSnapshotCanvas(true);
-      finalCanvas.toDataURL();
       triggerDownload(finalCanvas);
       _toast(App, 'התמונה נשמרה בהצלחה', 'success');
     } catch (err) {

@@ -27,6 +27,22 @@ const MEASUREMENT_PROFILE_KEYS = Object.freeze([
   'pagePath',
 ]);
 
+export function createBrowserPerfSessionArtifactCaptureState() {
+  return {
+    entryOffsets: new Map(),
+    eventOffsets: new Map(),
+    browserMetricsBySession: new Map(),
+  };
+}
+
+export function takeBrowserPerfSessionArtifactDelta(offsets, sessionId, items) {
+  const list = Array.isArray(items) ? items : [];
+  const previous = Number(offsets?.get?.(sessionId));
+  const offset = Number.isInteger(previous) && previous >= 0 && previous <= list.length ? previous : 0;
+  offsets?.set?.(sessionId, list.length);
+  return list.slice(offset);
+}
+
 export function normalizeBrowserPerfMeasurementProfile(value) {
   if (!value || typeof value !== 'object') return null;
   const normalized = {};
@@ -134,6 +150,9 @@ function normalizePerfEntry(entry) {
     ...(typeof entry.phase === 'string' && entry.phase ? { phase: entry.phase } : {}),
     ...(Number.isFinite(entry.metricValue) ? { metricValue: Number(entry.metricValue) } : {}),
     ...(typeof entry.metricUnit === 'string' ? { metricUnit: entry.metricUnit } : {}),
+    ...(typeof entry.browserSessionId === 'string' && entry.browserSessionId
+      ? { browserSessionId: entry.browserSessionId }
+      : {}),
     error:
       typeof entry.error === 'string' && entry.error.trim()
         ? entry.error.trim()
@@ -209,14 +228,39 @@ export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
       .map(entry => entry.metricValue)
       .filter(Number.isFinite)
       .map(Number);
+  const durationSummaryBySession = (predicate, readDuration) => {
+    const groups = new Map();
+    for (const entry of normalizedEntries) {
+      if (!predicate(entry)) continue;
+      const sessionId =
+        typeof entry.browserSessionId === 'string' && entry.browserSessionId
+          ? entry.browserSessionId
+          : 'legacy-session';
+      const bucket = groups.get(sessionId) || [];
+      bucket.push(readDuration(entry));
+      groups.set(sessionId, bucket);
+    }
+    const summaries = Array.from(groups.values()).map(createDurationSummary);
+    if (!summaries.length) return createDurationSummary([]);
+    return {
+      count: Math.max(...summaries.map(item => item.count)),
+      totalMs: roundDuration(Math.max(...summaries.map(item => item.totalMs))),
+      avgMs: roundDuration(Math.max(...summaries.map(item => item.avgMs))),
+      p95Ms: roundDuration(Math.max(...summaries.map(item => item.p95Ms))),
+      maxMs: roundDuration(Math.max(...summaries.map(item => item.maxMs))),
+      samplesMs: summaries.flatMap(item => item.samplesMs),
+    };
+  };
   const clsValues = metricValues('browser.cls');
   const lcpValues = metricValues('browser.lcp');
   const inpValues = metricValues('browser.inp');
-  const longTaskSummary = createDurationSummary(metricValues('browser.longTask'));
-  const renderSettleSummary = createDurationSummary(
-    normalizedEntries
-      .filter(entry => entry.kind === 'render-settle' && entry.name === 'render.settle')
-      .map(entry => entry.uxTotalMs)
+  const longTaskSummary = durationSummaryBySession(
+    entry => entry.kind === 'browser-metric' && entry.name === 'browser.longTask',
+    entry => entry.metricValue
+  );
+  const renderSettleSummary = durationSummaryBySession(
+    entry => entry.kind === 'render-settle' && entry.name === 'render.settle',
+    entry => entry.uxTotalMs
   );
   const source = metadata && typeof metadata === 'object' ? metadata : {};
   return {
@@ -237,8 +281,10 @@ export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
       lastUpdatedAt: roundDuration(Number(source.lcp?.lastUpdatedAt) || 0),
     },
     inp: {
+      // A scenario may span multiple documents. Report the worst observed document
+      // rather than whichever document happened to be captured last.
       valueMs: inpValues.length
-        ? roundDuration(inpValues[inpValues.length - 1])
+        ? roundDuration(Math.max(...inpValues))
         : roundDuration(Number(source.inp?.valueMs) || 0),
       interactionCount: Math.max(0, Math.floor(Number(source.inp?.interactionCount) || 0)),
       observedInteractionCount: Math.max(0, Math.floor(Number(source.inp?.observedInteractionCount) || 0)),

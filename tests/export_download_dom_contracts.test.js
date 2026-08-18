@@ -8,6 +8,10 @@ import { readFirstExisting } from './_read_src.js';
 const runtimeApi = readSource('../esm/native/runtime/api.ts', import.meta.url);
 const servicesApi = readServicesApiPublicSurface(import.meta.url);
 const browserDownload = readSource('../esm/native/runtime/browser_download.ts', import.meta.url);
+const exportSnapshot = readSource(
+  '../esm/native/ui/export/export_canvas_workflow_snapshot.ts',
+  import.meta.url
+);
 const exportCanvas = bundleSources(
   [
     '../esm/native/ui/export_canvas.ts',
@@ -211,6 +215,7 @@ test('[export-download-dom] export and PDF flows use shared delivery seams inste
     'exportCanvas'
   );
   assertLacksAll(assert, exportCanvas, [/URL\.createObjectURL/, /createElement\('a'\)/], 'exportCanvas');
+  assertLacksAll(assert, exportSnapshot, [/finalCanvas\.toDataURL\(/], 'exportSnapshotSingleSerialization');
 
   assertMatchesAll(
     assert,
