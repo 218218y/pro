@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T19:59:02.093Z",
+  "generatedAt": "2026-08-18T09:10:00.650Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 558,
@@ -5138,14 +5138,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_sections_room.tsx",
-      "line": 18,
+      "line": 19,
       "term": "fallback",
       "category": "framework-default",
       "text": "function normalizePickerColor(value: string, fallback = '#d9d9d9'): string {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_sections_room.tsx",
-      "line": 22,
+      "line": 23,
       "term": "fallback",
       "category": "domain-default",
       "text": "return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;"
