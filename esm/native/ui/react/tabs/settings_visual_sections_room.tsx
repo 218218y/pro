@@ -3,6 +3,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 
 import { InlineNotice, ModeToggleButton, OptionButton, ToggleRow } from '../components/index.js';
 import type { SettingsVisualRoomSectionModel } from './use_settings_visual_controller_contracts.js';
+import type { SettingsVisualRoomDesignModel } from './use_settings_visual_room_design.js';
 import { FLOOR_TYPE_OPTIONS } from './settings_visual_sections_contracts.js';
 import type { FloorStyle, SettingsVisualFloorType } from './settings_visual_shared_contracts.js';
 import {
@@ -171,7 +172,7 @@ function ArchitectureNumberField(props: ArchitectureNumberFieldProps): ReactElem
 }
 
 function SideWallControls(props: {
-  model: SettingsVisualRoomSectionModel;
+  model: SettingsVisualRoomDesignModel;
   side: 'leftWall' | 'rightWall';
   title: string;
   testId: string;
@@ -240,7 +241,7 @@ function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionMo
   );
 }
 
-function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
+function RoomOpeningsControls(props: { model: SettingsVisualRoomDesignModel }): ReactElement {
   const { model } = props;
   const [kind, setKind] = useState<'window' | 'door'>('window');
   const [widthCm, setWidthCm] = useState(120);
@@ -352,7 +353,7 @@ function RoomOpeningsControls(props: { model: SettingsVisualRoomSectionModel }):
 
 type WardrobeWallAlignment = 'left' | 'center' | 'right';
 
-function resolveWardrobeWallAlignment(model: SettingsVisualRoomSectionModel): WardrobeWallAlignment | null {
+function resolveWardrobeWallAlignment(model: SettingsVisualRoomDesignModel): WardrobeWallAlignment | null {
   const wall = model.roomArchitecture.backWall;
   const availableCm = wall.widthCm - model.wardrobeWidthCm;
   const toleranceCm = 0.11;
@@ -364,7 +365,7 @@ function resolveWardrobeWallAlignment(model: SettingsVisualRoomSectionModel): Wa
   return null;
 }
 
-function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel }): ReactElement {
+export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesignModel }): ReactElement {
   const model = props.model;
   const architecture = model.roomArchitecture;
   const wall = architecture.backWall;
@@ -532,15 +533,16 @@ function RoomArchitectureControls(props: { model: SettingsVisualRoomSectionModel
 
           <RoomOpeningsControls model={model} />
 
-          <button
-            type="button"
-            className="btn wp-r-room-visibility-btn"
+          <OptionButton
+            selected={architecture.surfacesHidden}
+            density="micro"
+            className="wp-r-room-visibility-btn"
             onClick={model.toggleArchitectureVisibility}
-            data-testid="settings-room-architecture-visibility"
+            testId="settings-room-architecture-visibility"
+            icon={<i className="fas fa-eye-slash" aria-hidden="true" />}
           >
-            <i className={architecture.surfacesHidden ? 'fas fa-eye' : 'fas fa-eye-slash'}></i>{' '}
-            {architecture.surfacesHidden ? 'הצג קירות ועמוד' : 'הסתר קירות ועמוד'}
-          </button>
+            הסתר קירות ועמוד
+          </OptionButton>
           {architecture.surfacesHidden && column.enabled ? (
             <div className="wp-r-room-architecture-hidden-note">
               הקירות והעמוד מוסתרים רק בתצוגה. החיתוכים וההתאמות של הארון לעמוד נשארים פעילים.
@@ -564,8 +566,6 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
           ונחבר אותו.
         </InlineNotice>
       ) : null}
-
-      <RoomArchitectureControls model={model} />
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">סגנון ריצוף:</div>

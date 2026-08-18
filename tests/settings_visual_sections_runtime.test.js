@@ -4,7 +4,10 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SettingsVisualDisplaySection } from '../esm/native/ui/react/tabs/settings_visual_sections_display.js';
-import { SettingsVisualRoomSection } from '../esm/native/ui/react/tabs/settings_visual_sections_room.js';
+import {
+  RoomArchitectureControls,
+  SettingsVisualRoomSection,
+} from '../esm/native/ui/react/tabs/settings_visual_sections_room.js';
 import { SettingsVisualLightingSection } from '../esm/native/ui/react/tabs/settings_visual_sections_lighting.js';
 const noop = () => {};
 const countMatches = (source, pattern) => [...source.matchAll(pattern)].length;
@@ -89,21 +92,45 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   );
   assert.match(roomHtml, /עיצוב סביבה/);
   assert.match(roomHtml, /סגנון ריצוף/);
-  assert.match(roomHtml, /קירות ומבנה החדר/);
-  assert.match(roomHtml, /הוספת קירות/);
-  assert.match(roomHtml, /קיר צד שמאל/);
-  assert.match(roomHtml, /קיר צד ימין/);
-  assert.match(roomHtml, /עמוד בולט מהקיר/);
-  assert.match(roomHtml, /חלונות ודלתות/);
-  assert.match(roomHtml, /settings-room-opening-window/);
-  assert.match(roomHtml, /settings-room-opening-door/);
-  assert.doesNotMatch(roomHtml, /מקם חלון על קיר/);
-  assert.doesNotMatch(roomHtml, /מקם דלת על קיר/);
-  assert.doesNotMatch(roomHtml, /ביטול מיקום/);
-  assert.match(roomHtml, /הסתר קירות ועמוד/);
-  assert.equal(countMatches(roomHtml, /step="5"/g), 15);
-  assert.doesNotMatch(roomHtml, /step="0\.1"/);
-  const columnWidthInput = roomHtml.match(/<input[^>]*id="wp-room-column-width"[^>]*>/)?.[0] || '';
+  assert.doesNotMatch(roomHtml, /קירות ומבנה החדר/);
+  assert.doesNotMatch(roomHtml, /הוספת קירות/);
+  assert.doesNotMatch(roomHtml, /הסתר קירות ועמוד/);
+
+  const architectureHtml = renderToStaticMarkup(
+    React.createElement(RoomArchitectureControls, { model: roomArchitectureModel })
+  );
+  assert.match(architectureHtml, /קירות ומבנה החדר/);
+  assert.match(architectureHtml, /הוספת קירות/);
+  assert.match(architectureHtml, /קיר צד שמאל/);
+  assert.match(architectureHtml, /קיר צד ימין/);
+  assert.match(architectureHtml, /עמוד בולט מהקיר/);
+  assert.match(architectureHtml, /חלונות ודלתות/);
+  assert.match(architectureHtml, /settings-room-opening-window/);
+  assert.match(architectureHtml, /settings-room-opening-door/);
+  assert.doesNotMatch(architectureHtml, /מקם חלון על קיר/);
+  assert.doesNotMatch(architectureHtml, /מקם דלת על קיר/);
+  assert.doesNotMatch(architectureHtml, /ביטול מיקום/);
+  assert.match(architectureHtml, /הסתר קירות ועמוד/);
+  assert.match(
+    architectureHtml,
+    /<button[^>]*data-testid="settings-room-architecture-visibility"[^>]*aria-pressed="false"[^>]*class="[^"]*type-option[^"]*"/
+  );
+  const hiddenArchitectureHtml = renderToStaticMarkup(
+    React.createElement(RoomArchitectureControls, {
+      model: {
+        ...roomArchitectureModel,
+        roomArchitecture: { ...roomArchitectureModel.roomArchitecture, surfacesHidden: true },
+      },
+    })
+  );
+  assert.match(
+    hiddenArchitectureHtml,
+    /<button[^>]*data-testid="settings-room-architecture-visibility"[^>]*aria-pressed="true"[^>]*class="[^"]*selected active[^"]*"/
+  );
+  assert.match(hiddenArchitectureHtml, />הסתר קירות ועמוד<\/button>/);
+  assert.equal(countMatches(architectureHtml, /step="5"/g), 15);
+  assert.doesNotMatch(architectureHtml, /step="0\.1"/);
+  const columnWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-column-width"[^>]*>/)?.[0] || '';
   assert.match(columnWidthInput, /aria-valuemin="1"/);
   assert.match(columnWidthInput, /step="5"/);
   assert.doesNotMatch(columnWidthInput, /\smin="1"/);
@@ -120,16 +147,8 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
 
   const renderWallAlignment = (wardrobeOffsetLeftCm, wardrobeOffsetRightCm) =>
     renderToStaticMarkup(
-      React.createElement(SettingsVisualRoomSection, {
+      React.createElement(RoomArchitectureControls, {
         model: {
-          roomData: { hasRoomDesign: true, defaultWall: '#37474f', wallColors: [] },
-          floorType: 'none',
-          floorStyleId: null,
-          wallColor: '#ffffff',
-          floorStylesForType: [],
-          setFloorType: noop,
-          pickFloorStyle: noop,
-          pickWallColor: noop,
           ...roomArchitectureModel,
           wardrobeOffsetRightCm,
           roomArchitecture: {
@@ -151,20 +170,8 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(leftAlignedHtml, /type-option[^"]*selected[^"]*active/);
 
   const activeOpeningHtml = renderToStaticMarkup(
-    React.createElement(SettingsVisualRoomSection, {
+    React.createElement(RoomArchitectureControls, {
       model: {
-        roomData: {
-          hasRoomDesign: true,
-          defaultWall: '#37474f',
-          wallColors: [],
-        },
-        floorType: 'none',
-        floorStyleId: null,
-        wallColor: '#ffffff',
-        floorStylesForType: [],
-        setFloorType: noop,
-        pickFloorStyle: noop,
-        pickWallColor: noop,
         ...roomArchitectureModel,
         openingPlacementActive: true,
       },

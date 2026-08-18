@@ -15,6 +15,9 @@ import { createInteriorLayoutSectionProps } from './interior_layout_section_prop
 import { isSketchNoMainWardrobeActive, toggleSketchNoMainWardrobe } from './sketch_tab_no_main_toggle.js';
 import { useInteriorTabViewState } from './use_interior_tab_view_state.js';
 import { useInteriorTabWorkflows } from './use_interior_tab_workflows.js';
+import { RoomArchitectureControls } from './settings_visual_sections_room.js';
+import { useSettingsVisualRoomDesign } from './use_settings_visual_room_design.js';
+import { useSettingsVisualState } from './use_settings_visual_controller_state.js';
 
 const SKETCH_BOX_CELL_DIMS_TEST_IDS = {
   section: 'sketch-box-cell-dims-section',
@@ -38,6 +41,14 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
   const app = useApp();
   const meta = useMeta();
   const feedback = useUiFeedback();
+  const settingsVisualState = useSettingsVisualState();
+  const roomArchitectureModel = useSettingsVisualRoomDesign({
+    app,
+    meta,
+    floorType: settingsVisualState.floorType,
+    roomArchitecture: settingsVisualState.roomArchitecture,
+    wardrobeWidthCm: settingsVisualState.wardrobeWidthCm,
+  });
   const state = useInteriorTabViewState(app);
   const workflows = useInteriorTabWorkflows(app, state);
   const structureState = useStructureTabViewState();
@@ -77,6 +88,8 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
   return (
     <TabPanel tabId="sketch" active={props.active}>
       <div className="wp-react-inner">
+        <RoomArchitectureControls model={roomArchitectureModel} />
+
         <div className="control-section">
           <span className="section-title">סקיצה</span>
           <div className="wp-sketch-no-main-row">

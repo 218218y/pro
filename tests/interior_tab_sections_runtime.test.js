@@ -232,6 +232,16 @@ function createSketchInternalDrawerControls(overrides = {}) {
   };
 }
 
+test('[interior-tab-sections-runtime] SketchTabView renders room architecture controls before sketch tools', () => {
+  const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
+  const roomArchitectureIndex = src.indexOf('<RoomArchitectureControls model={roomArchitectureModel} />');
+  const sketchSectionIndex = src.indexOf('<span className="section-title">סקיצה</span>');
+  assert.ok(roomArchitectureIndex >= 0, 'expected room architecture controls in SketchTabView');
+  assert.ok(
+    sketchSectionIndex > roomArchitectureIndex,
+    'expected room architecture controls at the top of the sketch tab'
+  );
+});
 test('[interior-tab-sections-runtime] SketchTabView marks the sketch tool card active only from real edit modes', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
   assert.doesNotMatch(src, /wp-tool-card wp-tool-card--layout is-active/);
