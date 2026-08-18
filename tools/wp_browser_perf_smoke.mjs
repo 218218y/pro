@@ -47,16 +47,24 @@ import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
 import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
 import {
   areBrowserPerfFailuresConfirmationEligible,
+  assertBrowserPerfStepNameAvailable,
+  BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV,
   BROWSER_PERF_CONFIRMATION_FLAG,
   createBrowserPerfMeasurementProfile,
+  filterReproducedBrowserPerfFailures,
+  parseBrowserPerfConfirmationCandidates,
   parseBrowserPerfTarget,
   resolveBrowserPerfTargetPaths,
+  serializeBrowserPerfConfirmationCandidates,
 } from './wp_browser_perf_targets.js';
 import { BROWSER_PERF_REQUIRED_UX_METRICS } from './wp_browser_perf_ux_targets.js';
 
 const projectRoot = process.cwd();
 const measurementTarget = parseBrowserPerfTarget();
 const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
+const confirmationCandidateIdentities = confirmationRun
+  ? parseBrowserPerfConfirmationCandidates(process.env[BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV])
+  : [];
 const measurementProfile = createBrowserPerfMeasurementProfile(measurementTarget);
 const targetPaths = resolveBrowserPerfTargetPaths(projectRoot, measurementTarget);
 const baseUrl = measurementTarget.baseUrl;
@@ -159,11 +167,14 @@ function runRequiredNpmScript(scriptName) {
   }
 }
 
-function runRegressionConfirmation() {
+function runRegressionConfirmation(failures) {
   return spawnSync(process.execPath, [...process.argv.slice(1), BROWSER_PERF_CONFIRMATION_FLAG], {
     cwd: projectRoot,
     stdio: 'inherit',
-    env: process.env,
+    env: {
+      ...process.env,
+      [BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV]: serializeBrowserPerfConfirmationCandidates(failures),
+    },
   });
 }
 
@@ -421,6 +432,7 @@ async function waitForBootReadiness(page, result, timeoutMs = BOOT_READY_TIMEOUT
 async function withStep(result, page, name, run, meta = {}) {
   if (!Array.isArray(result.windowStoreDebugFlowSteps)) result.windowStoreDebugFlowSteps = [];
   if (!Array.isArray(result.windowBuildDebugFlowSteps)) result.windowBuildDebugFlowSteps = [];
+  assertBrowserPerfStepNameAvailable(result.userFlow, name);
   const beforeStoreDebug = await readStoreDebugStats(page);
   const beforeBuildDebug = await readBuildDebugStats(page);
   const startedAt = Date.now();
@@ -2188,7 +2200,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     await withStep(
       result,
       page,
-      'tab.settings.open',
+      'export.settings-tab.open',
       async () => {
         await openMainTab(page, 'settings');
       },
@@ -3417,7 +3429,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   }
   if (enforce) {
     const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')) : null;
-    const failures = evaluateBrowserPerfBaseline(result, baseline, {
+    const evaluatedFailures = evaluateBrowserPerfBaseline(result, baseline, {
       measurementProfile,
       requiredBrowserMetrics: BROWSER_PERF_REQUIRED_UX_METRICS,
       requiredRuntimeMetrics,
@@ -3427,11 +3439,14 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       requiredRuntimeOutcomeCoverage,
       requiredRuntimeRecoverySequences,
     });
+    const failures = confirmationRun
+      ? filterReproducedBrowserPerfFailures(evaluatedFailures, confirmationCandidateIdentities)
+      : evaluatedFailures;
     if (failures.length) {
       if (!confirmationRun && areBrowserPerfFailuresConfirmationEligible(failures)) {
         for (const failure of failures) console.warn('[browser-perf][candidate]', failure);
         console.warn('[browser-perf] quantitative regression candidate; running one clean confirmation');
-        const confirmation = runRegressionConfirmation();
+        const confirmation = runRegressionConfirmation(failures);
         if (confirmation.status === 0) {
           console.log('[browser-perf] regression candidate was not reproduced by the confirmation run');
           return;

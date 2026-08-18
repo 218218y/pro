@@ -229,6 +229,14 @@ test('final report eligibility requires a complete clean default closeout', () =
   assert.deepEqual(validateFinalReportEligibility(fullPayload), []);
   assert.doesNotThrow(() => assertFinalSelectionEligible(requiredLaneIds));
 
+  const whitespacePayload = structuredClone(fullPayload);
+  whitespacePayload.results[0].stdout = 'stdout evidence with spaces  \nstdout evidence with tab\t\n';
+  whitespacePayload.results[0].stderr = 'stderr evidence with spaces \n';
+  const markdown = buildMarkdownReport(whitespacePayload);
+  assert.doesNotMatch(markdown, /[ \t]+$/mu);
+  assert.match(markdown, /stdout evidence with spaces\n/u);
+  assert.match(markdown, /stderr evidence with spaces\n/u);
+
   const focusedPayload = createCloseoutPayload({
     runId: 'focused-closeout-001',
     requestedLaneIds: CLOSEOUT_PROFILES['control-plane'],
@@ -376,6 +384,49 @@ test('browser-dependent lanes inherit environment-blocked from preflight', () =>
     assert.equal(result.blockedBy, 'e2e-preflight');
     assert.match(result.stderr, /dependency e2e-preflight/);
   }
+});
+
+test('closeout lane logs replace stale streams and grouped-step evidence', () => {
+  const logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-closeout-logs-'));
+  const staleLane = {
+    id: 'stale-log-probe',
+    label: 'stale log probe',
+    category: 'toolchain',
+    expected: 'pass',
+    command: process.execPath,
+    args: ['-e', "console.error('old stderr')"],
+  };
+  assert.equal(runLane(staleLane, { logDir }).status, 'passed');
+  assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), /old stderr/u);
+
+  const groupedLane = {
+    ...staleLane,
+    command: undefined,
+    args: undefined,
+    steps: [
+      {
+        label: 'grouped success',
+        command: process.execPath,
+        args: ['-e', "console.log('grouped stdout')"],
+      },
+    ],
+  };
+  assert.equal(runLane(groupedLane, { logDir }).status, 'passed');
+  assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.steps.json'), 'utf8'), /grouped success/u);
+  assert.equal(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), '');
+
+  const cleanLane = {
+    id: groupedLane.id,
+    label: groupedLane.label,
+    category: groupedLane.category,
+    expected: 'pass',
+    command: process.execPath,
+    args: ['-e', "console.log('fresh stdout')"],
+  };
+  assert.equal(runLane(cleanLane, { logDir }).status, 'passed');
+  assert.equal(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), '');
+  assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.stdout.log'), 'utf8'), /fresh stdout/u);
+  assert.equal(fs.existsSync(path.join(logDir, 'stale-log-probe.steps.json')), false);
 });
 
 test('report paths stay under docs and state path stays under artifacts', () => {

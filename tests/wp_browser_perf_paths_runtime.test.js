@@ -11,10 +11,16 @@ import {
 } from '../tools/wp_browser_perf_paths.js';
 import {
   areBrowserPerfFailuresConfirmationEligible,
+  assertBrowserPerfStepNameAvailable,
+  BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV,
   BROWSER_PERF_CONFIRMATION_FLAG,
+  browserPerfFailureIdentity,
   createBrowserPerfMeasurementProfile,
+  filterReproducedBrowserPerfFailures,
   parseBrowserPerfTarget,
+  parseBrowserPerfConfirmationCandidates,
   resolveBrowserPerfTargetPaths,
+  serializeBrowserPerfConfirmationCandidates,
 } from '../tools/wp_browser_perf_targets.js';
 
 test('browser perf baseline path always resolves to the browser-specific baseline', () => {
@@ -72,6 +78,7 @@ test('browser perf package commands expose independent dev and release lanes', (
 
 test('browser perf confirmation is limited to quantitative budget candidates', () => {
   assert.equal(BROWSER_PERF_CONFIRMATION_FLAG, '--confirm-regression');
+  assert.equal(BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV, 'WP_BROWSER_PERF_CONFIRMATION_CANDIDATES');
   assert.equal(
     areBrowserPerfFailuresConfirmationEligible([
       'project.restoreLastSession code-execution p95 exceeded budget (575ms > 512ms)',
@@ -88,4 +95,53 @@ test('browser perf confirmation is limited to quantitative budget candidates', (
     false
   );
   assert.equal(areBrowserPerfFailuresConfirmationEligible([]), false);
+});
+
+test('browser perf confirmation fails only for the same reproduced budget family', () => {
+  const candidates = [
+    'export.snapshot code-execution p95 exceeded budget (150ms > 107ms)',
+    'Long Task count exceeded budget (110 > 95)',
+  ];
+  const serialized = serializeBrowserPerfConfirmationCandidates(candidates);
+  const identities = parseBrowserPerfConfirmationCandidates(serialized);
+
+  assert.deepEqual(identities, [
+    'export.snapshot code-execution p95 exceeded budget',
+    'Long Task count exceeded budget',
+  ]);
+  assert.equal(
+    browserPerfFailureIdentity('Long Task count exceeded budget (98 > 95)'),
+    'Long Task count exceeded budget'
+  );
+  assert.deepEqual(
+    filterReproducedBrowserPerfFailures(
+      [
+        'structure runtime domain code total exceeded budget (248ms > 211ms)',
+        'export.snapshot code-execution p95 exceeded budget (140ms > 107ms)',
+        'Required browser UX evidence missing: INP',
+      ],
+      identities
+    ),
+    [
+      'export.snapshot code-execution p95 exceeded budget (140ms > 107ms)',
+      'Required browser UX evidence missing: INP',
+    ]
+  );
+  assert.throws(
+    () => serializeBrowserPerfConfirmationCandidates(['Required browser UX evidence missing: INP']),
+    /must be quantitative budget failures/u
+  );
+  assert.throws(() => parseBrowserPerfConfirmationCandidates('{'), /not valid JSON/u);
+});
+
+test('browser perf user-flow step names are unique stable identities', () => {
+  assert.equal(
+    assertBrowserPerfStepNameAvailable({}, 'export.settings-tab.open'),
+    'export.settings-tab.open'
+  );
+  assert.throws(
+    () => assertBrowserPerfStepNameAvailable({ 'tab.settings.open': 42 }, 'tab.settings.open'),
+    /duplicate user-flow step name/u
+  );
+  assert.throws(() => assertBrowserPerfStepNameAvailable({}, '  '), /step name is required/u);
 });

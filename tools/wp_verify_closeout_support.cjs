@@ -515,10 +515,13 @@ function writeLaneLogs(logDir, laneResult) {
   ensureDir(logDir);
   const safeId = laneResult.id.replace(/[^a-z0-9._-]+/gi, '_');
   const base = path.join(logDir, safeId);
-  if (laneResult.stdout) fs.writeFileSync(`${base}.stdout.log`, `${laneResult.stdout}\n`, 'utf8');
-  if (laneResult.stderr) fs.writeFileSync(`${base}.stderr.log`, `${laneResult.stderr}\n`, 'utf8');
+  fs.writeFileSync(`${base}.stdout.log`, laneResult.stdout ? `${laneResult.stdout}\n` : '', 'utf8');
+  fs.writeFileSync(`${base}.stderr.log`, laneResult.stderr ? `${laneResult.stderr}\n` : '', 'utf8');
+  const stepsPath = `${base}.steps.json`;
   if (Array.isArray(laneResult.steps) && laneResult.steps.length > 0) {
-    fs.writeFileSync(`${base}.steps.json`, `${JSON.stringify(laneResult.steps, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(stepsPath, `${JSON.stringify(laneResult.steps, null, 2)}\n`, 'utf8');
+  } else {
+    fs.rmSync(stepsPath, { force: true });
   }
 }
 
@@ -761,6 +764,10 @@ function formatStatusIcon(status) {
   return '[FAIL]';
 }
 
+function normalizeMarkdownEvidenceText(value) {
+  return String(value || '').replace(/[ \t]+$/gmu, '');
+}
+
 function formatLaneResultMd(result) {
   const commandText = result.command ? [result.command, ...(result.args || [])].join(' ') : '(grouped steps)';
   const lines = [
@@ -781,8 +788,12 @@ function formatLaneResultMd(result) {
       );
     }
   }
-  if (result.stderr) lines.push('', '#### stderr', '', '```text', result.stderr, '```');
-  if (result.stdout) lines.push('', '#### stdout', '', '```text', result.stdout, '```');
+  if (result.stderr) {
+    lines.push('', '#### stderr', '', '```text', normalizeMarkdownEvidenceText(result.stderr), '```');
+  }
+  if (result.stdout) {
+    lines.push('', '#### stdout', '', '```text', normalizeMarkdownEvidenceText(result.stdout), '```');
+  }
   return lines.join('\n').replace(/\n+$/u, '\n');
 }
 

@@ -1,6 +1,15 @@
 import path from 'node:path';
 
 export const BROWSER_PERF_CONFIRMATION_FLAG = '--confirm-regression';
+export const BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV = 'WP_BROWSER_PERF_CONFIRMATION_CANDIDATES';
+
+export function browserPerfFailureIdentity(failure) {
+  if (typeof failure !== 'string') return null;
+  const marker = ' exceeded budget (';
+  const markerIndex = failure.indexOf(marker);
+  if (markerIndex < 0) return null;
+  return failure.slice(0, markerIndex + ' exceeded budget'.length);
+}
 
 export function areBrowserPerfFailuresConfirmationEligible(failures) {
   return (
@@ -8,6 +17,52 @@ export function areBrowserPerfFailuresConfirmationEligible(failures) {
     failures.length > 0 &&
     failures.every(failure => (typeof failure === 'string' ? failure.includes(' exceeded budget (') : false))
   );
+}
+
+export function serializeBrowserPerfConfirmationCandidates(failures) {
+  if (!areBrowserPerfFailuresConfirmationEligible(failures)) {
+    throw new Error('[browser-perf] confirmation candidates must be quantitative budget failures');
+  }
+  return JSON.stringify(
+    Array.from(new Set(failures.map(browserPerfFailureIdentity).filter(Boolean))).sort((left, right) =>
+      left.localeCompare(right)
+    )
+  );
+}
+
+export function parseBrowserPerfConfirmationCandidates(value) {
+  if (typeof value !== 'string' || !value.trim()) return [];
+  let parsed;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('[browser-perf] confirmation candidate payload is not valid JSON');
+  }
+  if (!Array.isArray(parsed) || parsed.some(item => typeof item !== 'string' || !item.trim())) {
+    throw new Error('[browser-perf] confirmation candidate payload must be a string array');
+  }
+  return Array.from(new Set(parsed.map(item => item.trim()))).sort((left, right) =>
+    left.localeCompare(right)
+  );
+}
+
+export function filterReproducedBrowserPerfFailures(failures, candidateIdentities) {
+  if (!Array.isArray(failures)) return [];
+  if (!Array.isArray(candidateIdentities) || candidateIdentities.length === 0) return failures.slice();
+  const candidates = new Set(candidateIdentities);
+  return failures.filter(failure => {
+    const identity = browserPerfFailureIdentity(failure);
+    return identity === null || candidates.has(identity);
+  });
+}
+
+export function assertBrowserPerfStepNameAvailable(userFlow, name) {
+  const normalizedName = typeof name === 'string' ? name.trim() : '';
+  if (!normalizedName) throw new Error('[browser-perf] user-flow step name is required');
+  if (userFlow && typeof userFlow === 'object' && Object.hasOwn(userFlow, normalizedName)) {
+    throw new Error(`[browser-perf] duplicate user-flow step name: ${normalizedName}`);
+  }
+  return normalizedName;
 }
 
 const DEV_TARGET = Object.freeze({

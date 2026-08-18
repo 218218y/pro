@@ -6,13 +6,12 @@ Tool-owned report target for the perf smoke baseline.
 - Report target: `docs/PERF_AND_STABILITY_BASELINE.md`
 - Latest run artifacts: `.artifacts/perf-smoke/latest.json`, `.artifacts/perf-smoke/latest.md`
 
-- Generated: 2026-08-14T10:45:16.312Z
+- Generated: 2026-08-18T07:28:33.838Z
 - Profile: default
 - Verify lanes: perf-toolchain-core, ui-react-jsx-hardening-core
-- Node: v22.16.0
-- Total runtime: 4.63s
-- Total budget: 9.04s
-- Budget result: pass
+- Node: v24.18.0
+- Total runtime: 6.99s
+- Total budget: 9.89s
 
 ## Definition of Done
 
@@ -25,12 +24,12 @@ Tool-owned report target for the perf smoke baseline.
 
 | Script                                         | Actual | Budget | Status |
 | ---------------------------------------------- | -----: | -----: | ------ |
-| test-group:perf-toolchain-core                 |  220ms |  1.05s | ok     |
-| test-group:ui-react-import-hardening-contracts |  103ms |  1.00s | ok     |
-| test-group:ui-react-jsx-hardening-contracts    |  102ms |  1.00s | ok     |
-| test-group:ui-type-hardening-contracts         |   96ms |  1.00s | ok     |
-| npm:contract:layers                            |  3.86s |  7.11s | ok     |
-| npm:contract:api                               |  249ms |  2.06s | ok     |
+| test-group:perf-toolchain-core                 |  279ms |  1.13s | ok     |
+| test-group:ui-react-import-hardening-contracts |  216ms |  1.04s | ok     |
+| test-group:ui-react-jsx-hardening-contracts    |  195ms |  1.01s | ok     |
+| test-group:ui-type-hardening-contracts         |  181ms |  1.00s | ok     |
+| npm:contract:layers                            |  4.95s |  7.44s | ok     |
+| npm:contract:api                               |  1.17s |  2.33s | ok     |
 
 ## Re-run commands
 
@@ -43,3 +42,4 @@ npm run perf:smoke:update-baseline
 
 - This profile is meant to catch obvious verify/test/runtime cost regressions before deeper refactors.
 - Budgets intentionally include slack so the check is useful without becoming flaky on normal machine variance.
+- A timing must exceed its headroom by at least 100ms before it is classified as a material regression.

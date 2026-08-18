@@ -125,16 +125,29 @@ test('perf smoke baseline evaluation detects regressions and profile drift', () 
     {
       ...summary,
       scripts: [
-        { scriptName: 'test-group:toolchain-surfaces', durationMs: 1201, ok: true, exitCode: 0 },
-        { scriptName: 'npm:contract:api', durationMs: 901, ok: true, exitCode: 0 },
+        { scriptName: 'test-group:toolchain-surfaces', durationMs: 1300, ok: true, exitCode: 0 },
+        { scriptName: 'npm:contract:api', durationMs: 900, ok: true, exitCode: 0 },
       ],
-      totalDurationMs: 2102,
+      totalDurationMs: 2200,
     },
     baseline
   );
   assert.equal(fail.ok, false);
   assert.ok(fail.failures.some(item => item.kind === 'script-budget'));
   assert.ok(fail.failures.some(item => item.kind === 'total-budget'));
+
+  const immaterial = evaluatePerfSmokeBaseline(
+    {
+      ...summary,
+      scripts: [
+        { scriptName: 'test-group:toolchain-surfaces', durationMs: 1299, ok: true, exitCode: 0 },
+        { scriptName: 'npm:contract:api', durationMs: 900, ok: true, exitCode: 0 },
+      ],
+      totalDurationMs: 2199,
+    },
+    baseline
+  );
+  assert.deepEqual(immaterial.failures, []);
 
   const drift = evaluatePerfSmokeBaseline(
     {

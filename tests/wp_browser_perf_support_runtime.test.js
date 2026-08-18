@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   BROWSER_PERF_BASELINE_SCHEMA_VERSION,
+  BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS,
   BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS,
   BROWSER_PERF_MIN_MATERIAL_DRIFT_MS,
   classifyRuntimeMetricDomain,
@@ -1544,6 +1545,31 @@ test('browser perf support summarizes runtime recovery hangover canonically and 
   assert.ok(
     failures.some(item => /project\.load runtime recovery hangover max delta exceeded budget/.test(item))
   );
+
+  const hangoverBudget = baseline.runtimeRecoveryHangoverBudget['project.load'];
+  const ratioOnly = {
+    ...clean,
+    windowPerfRecoveryHangoverSummary: {
+      'project.load': {
+        ...summary['project.load'],
+        p95HangoverRatio: 99,
+        maxHangoverRatio: 99,
+        p95HangoverDeltaMs: hangoverBudget.maxP95HangoverDeltaMs,
+        maxHangoverDeltaMs: hangoverBudget.maxMaxHangoverDeltaMs,
+      },
+    },
+  };
+  const ratioOnlyFailures = evaluateBrowserPerfBaseline(ratioOnly, baseline, {
+    requiredRuntimeMetrics: [],
+    requiredRuntimeMetricMinimumCounts: {},
+    requiredProjectActions: [],
+    requiredUserJourneys: [],
+    requiredUserJourneyMinimumStepCounts: {},
+    happyPathMetricsWithoutErrors: [],
+  });
+  assert.ok(
+    !ratioOnlyFailures.some(item => /runtime recovery hangover (?:p95|max) ratio exceeded budget/.test(item))
+  );
 });
 
 test('browser perf support summarizes runtime recovery debt canonically and baseline evaluation enforces debt budgets', () => {
@@ -2027,6 +2053,7 @@ test('browser perf support baseline evaluation enforces runtime issues, required
 });
 
 test('browser perf support rejects old baselines and enforces UX and code budgets independently', () => {
+  assert.equal(BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS, 5);
   const result = {
     userFlow: {},
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
@@ -2047,7 +2074,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   };
 
   const schemaFailures = evaluateBrowserPerfBaseline(result, { ...currentBaseline(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 23, got 18\)/.test(item)));
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 24, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,
@@ -2063,11 +2090,22 @@ test('browser perf support rejects old baselines and enforces UX and code budget
     result,
     currentBaseline({
       runtimeUxBudgetMs: { 'project.save': 600 },
-      runtimeCodeExecutionBudgetMs: { 'project.save': 10 },
+      runtimeCodeExecutionBudgetMs: { 'project.save': 0 },
     })
   );
   assert.ok(!codeFailures.some(item => /project\.save UX p95 exceeded budget/.test(item)));
   assert.ok(codeFailures.some(item => /project\.save code-execution p95 exceeded budget/.test(item)));
+
+  const immaterialCodeFailures = evaluateBrowserPerfBaseline(
+    result,
+    currentBaseline({
+      runtimeUxBudgetMs: { 'project.save': 600 },
+      runtimeCodeExecutionBudgetMs: { 'project.save': 1 },
+    })
+  );
+  assert.ok(
+    !immaterialCodeFailures.some(item => /project\.save code-execution p95 exceeded budget/.test(item))
+  );
 
   const inpFailures = evaluateBrowserPerfBaseline(
     {
@@ -2088,6 +2126,23 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   assert.ok(
     longTaskTotalFailures.some(item => /Long Task total exceeded budget \(180ms > 150ms\)/.test(item))
   );
+
+  const immaterialLongTaskCountFailures = evaluateBrowserPerfBaseline(
+    {
+      ...result,
+      windowBrowserMetrics: { longTasks: { count: 104 } },
+    },
+    currentBaseline({ browserMetricBudget: { maxLongTaskCount: 100 } })
+  );
+  assert.ok(!immaterialLongTaskCountFailures.some(item => /Long Task count exceeded budget/.test(item)));
+  const materialLongTaskCountFailures = evaluateBrowserPerfBaseline(
+    {
+      ...result,
+      windowBrowserMetrics: { longTasks: { count: 105 } },
+    },
+    currentBaseline({ browserMetricBudget: { maxLongTaskCount: 100 } })
+  );
+  assert.ok(materialLongTaskCountFailures.some(item => /Long Task count exceeded budget/.test(item)));
 
   const missingBrowserEvidenceFailures = evaluateBrowserPerfBaseline(
     {
@@ -3104,6 +3159,44 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     maxRepeatedSourceCount: 3,
     maxDominantSourceSharePct: 84,
   });
+
+  const clampedDiagnosis = createUserJourneyDiagnosisSummary(
+    {
+      'tiny-source-journey': {
+        stepCount: 1,
+        totalDurationMs: 10,
+        totalSourceMs: 0.4,
+        commitCount: 1,
+        selectorNotifyCount: 1,
+        steps: ['tiny-source-step'],
+        topSources: ['PATCH:test:ui'],
+      },
+    },
+    {
+      'tiny-source-step': {
+        durationMs: 10,
+        commitCount: 1,
+        selectorNotifyCount: 1,
+        totalSourceMs: 0.4,
+      },
+    },
+    {
+      'tiny-source-journey': {
+        'PATCH:test:ui': {
+          key: 'PATCH:test:ui',
+          count: 1,
+          totalMs: 0.9,
+          stepCount: 1,
+          steps: ['tiny-source-step'],
+        },
+      },
+    }
+  );
+  assert.equal(clampedDiagnosis['tiny-source-journey'].dominantSourceSharePct, 100);
+  assert.equal(
+    createUserJourneyDiagnosisBudget(clampedDiagnosis)['tiny-source-journey'].maxDominantSourceSharePct,
+    100
+  );
 });
 
 test('browser perf support baseline evaluation enforces journey diagnosis budgets', () => {

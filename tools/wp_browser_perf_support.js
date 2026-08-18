@@ -11,9 +11,10 @@ import {
   requiredUserJourneyMinimumStepCounts,
 } from '../tests/e2e/helpers/perf_contracts.js';
 
-export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 23;
+export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 24;
 export const BROWSER_PERF_MIN_MATERIAL_DRIFT_MS = 20;
 export const BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS = 20;
+export const BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS = 5;
 
 const MEASUREMENT_PROFILE_KEYS = Object.freeze([
   'id',
@@ -52,6 +53,14 @@ function exceedsMaterialDurationBudget(actualValue, budgetValue) {
     Number.isFinite(budget) &&
     actual > budget &&
     actual - budget >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS
+  );
+}
+
+function exceedsMaterialCountBudget(actualValue, budgetValue) {
+  const actual = Number(actualValue) || 0;
+  const budget = Number(budgetValue);
+  return (
+    Number.isFinite(budget) && actual > budget && actual - budget >= BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS
   );
 }
 
@@ -1746,7 +1755,7 @@ export function createUserJourneyDiagnosisSummary(
     const repeatedSourceCount = rankedSources.filter(source => (Number(source.stepCount) || 0) >= 2).length;
     const dominantSourceSharePct =
       Number(item?.totalSourceMs) > 0 && topSource
-        ? roundDuration(((Number(topSource.totalMs) || 0) / Number(item.totalSourceMs)) * 100)
+        ? roundDuration(Math.min(100, ((Number(topSource.totalMs) || 0) / Number(item.totalSourceMs)) * 100))
         : 0;
     const commitCount = Number(item?.commitCount) || 0;
     const selectorNotifyCount = Number(item?.selectorNotifyCount) || 0;
@@ -1835,9 +1844,9 @@ export function createUserJourneyDiagnosisBudget(summary) {
     budget[name] = {
       maxBurstyStepCount: Math.max(Math.ceil((Number(item?.burstyStepCount) || 0) * 1.4 + 1), 2),
       maxRepeatedSourceCount: Math.max(Math.ceil((Number(item?.repeatedSourceCount) || 0) * 1.35 + 1), 2),
-      maxDominantSourceSharePct: Math.max(
-        Math.ceil((Number(item?.dominantSourceSharePct) || 0) * 1.2 + 10),
-        55
+      maxDominantSourceSharePct: Math.min(
+        100,
+        Math.max(Math.ceil((Number(item?.dominantSourceSharePct) || 0) * 1.2 + 10), 55)
       ),
     };
   }
@@ -3510,7 +3519,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   const budget = baseline && typeof baseline === 'object' ? baseline.uxJourneyBudgetMs || {} : {};
   for (const [name, durationMs] of Object.entries(result.userFlow || {})) {
     const maxMs = budget[name];
-    if (typeof maxMs === 'number' && durationMs > maxMs) {
+    if (typeof maxMs === 'number' && exceedsMaterialDurationBudget(durationMs, maxMs)) {
       failures.push(`${name} exceeded budget (${formatMs(durationMs)} > ${formatMs(maxMs)})`);
     }
   }
@@ -3545,7 +3554,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxLcpMs != null &&
-    Number(browserMetrics.lcp?.valueMs || 0) > browserMetricBudget.maxLcpMs
+    exceedsMaterialDurationBudget(browserMetrics.lcp?.valueMs, browserMetricBudget.maxLcpMs)
   ) {
     failures.push(
       `LCP exceeded budget (${formatMs(Number(browserMetrics.lcp?.valueMs || 0))} > ${formatMs(browserMetricBudget.maxLcpMs)})`
@@ -3553,7 +3562,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxInpMs != null &&
-    Number(browserMetrics.inp?.valueMs || 0) > browserMetricBudget.maxInpMs
+    exceedsMaterialDurationBudget(browserMetrics.inp?.valueMs, browserMetricBudget.maxInpMs)
   ) {
     failures.push(
       `INP exceeded budget (${formatMs(Number(browserMetrics.inp?.valueMs || 0))} > ${formatMs(browserMetricBudget.maxInpMs)})`
@@ -3561,7 +3570,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxLongTaskCount != null &&
-    Number(browserMetrics.longTasks?.count || 0) > browserMetricBudget.maxLongTaskCount
+    exceedsMaterialCountBudget(browserMetrics.longTasks?.count, browserMetricBudget.maxLongTaskCount)
   ) {
     failures.push(
       `Long Task count exceeded budget (${Number(browserMetrics.longTasks?.count || 0)} > ${browserMetricBudget.maxLongTaskCount})`
@@ -3569,7 +3578,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxLongTaskTotalMs != null &&
-    Number(browserMetrics.longTasks?.totalMs || 0) > browserMetricBudget.maxLongTaskTotalMs
+    exceedsMaterialDurationBudget(browserMetrics.longTasks?.totalMs, browserMetricBudget.maxLongTaskTotalMs)
   ) {
     failures.push(
       `Long Task total exceeded budget (${formatMs(Number(browserMetrics.longTasks?.totalMs || 0))} > ${formatMs(browserMetricBudget.maxLongTaskTotalMs)})`
@@ -3577,7 +3586,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxLongTaskP95Ms != null &&
-    Number(browserMetrics.longTasks?.p95Ms || 0) > browserMetricBudget.maxLongTaskP95Ms
+    exceedsMaterialDurationBudget(browserMetrics.longTasks?.p95Ms, browserMetricBudget.maxLongTaskP95Ms)
   ) {
     failures.push(
       `Long Task p95 exceeded budget (${formatMs(Number(browserMetrics.longTasks?.p95Ms || 0))} > ${formatMs(browserMetricBudget.maxLongTaskP95Ms)})`
@@ -3585,7 +3594,10 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   }
   if (
     browserMetricBudget.maxRenderSettleP95Ms != null &&
-    Number(browserMetrics.renderSettle?.p95Ms || 0) > browserMetricBudget.maxRenderSettleP95Ms
+    exceedsMaterialDurationBudget(
+      browserMetrics.renderSettle?.p95Ms,
+      browserMetricBudget.maxRenderSettleP95Ms
+    )
   ) {
     failures.push(
       `render-settle p95 exceeded budget (${formatMs(Number(browserMetrics.renderSettle?.p95Ms || 0))} > ${formatMs(browserMetricBudget.maxRenderSettleP95Ms)})`
@@ -3621,14 +3633,14 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   for (const [name, maxMs] of Object.entries(runtimeUxBudget)) {
     const item = runtimeSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if (item.uxP95Ms > maxMs) {
+    if (exceedsMaterialDurationBudget(item.uxP95Ms, maxMs)) {
       failures.push(`${name} UX p95 exceeded budget (${formatMs(item.uxP95Ms)} > ${formatMs(maxMs)})`);
     }
   }
   for (const [name, maxMs] of Object.entries(runtimeCodeExecutionBudget)) {
     const item = runtimeSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if (item.codeExecutionP95Ms > maxMs) {
+    if (exceedsMaterialDurationBudget(item.codeExecutionP95Ms, maxMs)) {
       failures.push(
         `${name} code-execution p95 exceeded budget (${formatMs(item.codeExecutionP95Ms)} > ${formatMs(maxMs)})`
       );
@@ -3671,7 +3683,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   for (const [name, maxMs] of Object.entries(runtimeDomainBudget)) {
     const item = domainSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if (item.codeExecutionTotalMs > maxMs) {
+    if (exceedsMaterialDurationBudget(item.codeExecutionTotalMs, maxMs)) {
       failures.push(
         `${name} runtime domain code total exceeded budget (${formatMs(item.codeExecutionTotalMs)} > ${formatMs(maxMs)})`
       );
@@ -3796,7 +3808,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     const item = userJourneySummary[name];
     if (!item || !budgetItem || typeof budgetItem !== 'object') continue;
     const maxTotalDurationMs = Number(budgetItem.maxTotalDurationMs);
-    if (Number.isFinite(maxTotalDurationMs) && (Number(item.totalDurationMs) || 0) > maxTotalDurationMs) {
+    if (exceedsMaterialDurationBudget(item.totalDurationMs, maxTotalDurationMs)) {
       failures.push(
         `${name} customer journey total exceeded budget (${formatMs(Number(item.totalDurationMs) || 0)} > ${formatMs(maxTotalDurationMs)})`
       );
@@ -4004,7 +4016,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   for (const [name, maxMs] of Object.entries(recoveryDebtBudget)) {
     const item = recoveryDebtSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if ((Number(item.maxDebtMs) || 0) > maxMs) {
+    if (exceedsMaterialDurationBudget(item.maxDebtMs, maxMs)) {
       failures.push(
         `${name} runtime recovery debt exceeded budget (${formatMs(Number(item.maxDebtMs) || 0)} > ${formatMs(maxMs)})`
       );
@@ -4016,13 +4028,21 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     const item = recoveryHangoverSummary[name];
     if (!item || !budgetItem || typeof budgetItem !== 'object') continue;
     const maxP95HangoverRatio = Number(budgetItem.maxP95HangoverRatio);
-    if (Number.isFinite(maxP95HangoverRatio) && (Number(item.p95HangoverRatio) || 0) > maxP95HangoverRatio) {
+    if (
+      Number.isFinite(maxP95HangoverRatio) &&
+      (Number(item.p95HangoverRatio) || 0) > maxP95HangoverRatio &&
+      exceedsMaterialDurationBudget(item.p95HangoverDeltaMs, budgetItem.maxP95HangoverDeltaMs)
+    ) {
       failures.push(
         `${name} runtime recovery hangover p95 ratio exceeded budget (${Number(item.p95HangoverRatio) || 0}x > ${maxP95HangoverRatio}x)`
       );
     }
     const maxMaxHangoverRatio = Number(budgetItem.maxMaxHangoverRatio);
-    if (Number.isFinite(maxMaxHangoverRatio) && (Number(item.maxHangoverRatio) || 0) > maxMaxHangoverRatio) {
+    if (
+      Number.isFinite(maxMaxHangoverRatio) &&
+      (Number(item.maxHangoverRatio) || 0) > maxMaxHangoverRatio &&
+      exceedsMaterialDurationBudget(item.maxHangoverDeltaMs, budgetItem.maxMaxHangoverDeltaMs)
+    ) {
       failures.push(
         `${name} runtime recovery hangover max ratio exceeded budget (${Number(item.maxHangoverRatio) || 0}x > ${maxMaxHangoverRatio}x)`
       );

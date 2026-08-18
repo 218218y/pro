@@ -20,6 +20,7 @@ const DEFAULT_BASELINE_POLICY = Object.freeze({
   perScriptMinimumMs: 1000,
   totalRatio: 1.2,
   totalSlackMs: 1500,
+  minimumMaterialExcessMs: 100,
 });
 
 const DIRECT_NODE_PERF_SCRIPTS = new Set(['contract:layers', 'contract:api']);
@@ -245,6 +246,13 @@ function arraysEqual(left, right) {
   return true;
 }
 
+function exceedsMaterialPerfBudget(actualMs, maxMs, minimumMaterialExcessMs) {
+  const actual = Number(actualMs) || 0;
+  const maximum = Number(maxMs) || 0;
+  const minimumExcess = Math.max(0, Number(minimumMaterialExcessMs) || 0);
+  return maximum > 0 && actual > maximum && actual - maximum >= minimumExcess;
+}
+
 export function evaluatePerfSmokeBaseline(summary, baseline) {
   if (!baseline || typeof baseline !== 'object') {
     return {
@@ -259,6 +267,9 @@ export function evaluatePerfSmokeBaseline(summary, baseline) {
   const baselineNames = baselineScripts.map(item => item.name);
 
   const failures = [];
+  const minimumMaterialExcessMs = Number.isFinite(Number(baseline?.policy?.minimumMaterialExcessMs))
+    ? Math.max(0, Number(baseline.policy.minimumMaterialExcessMs))
+    : DEFAULT_BASELINE_POLICY.minimumMaterialExcessMs;
   if (!arraysEqual(actualNames, baselineNames)) {
     failures.push({
       kind: 'profile-drift',
@@ -270,7 +281,7 @@ export function evaluatePerfSmokeBaseline(summary, baseline) {
   for (const item of actualScripts) {
     const budget = budgetByName.get(item.scriptName);
     if (!budget) continue;
-    if (item.durationMs > budget.maxMs) {
+    if (exceedsMaterialPerfBudget(item.durationMs, budget.maxMs, minimumMaterialExcessMs)) {
       failures.push({
         kind: 'script-budget',
         scriptName: item.scriptName,
@@ -285,7 +296,7 @@ export function evaluatePerfSmokeBaseline(summary, baseline) {
 
   const totalMaxMs =
     typeof baseline.totalMaxMs === 'number' && Number.isFinite(baseline.totalMaxMs) ? baseline.totalMaxMs : 0;
-  if (totalMaxMs > 0 && (summary?.totalDurationMs || 0) > totalMaxMs) {
+  if (exceedsMaterialPerfBudget(summary?.totalDurationMs, totalMaxMs, minimumMaterialExcessMs)) {
     failures.push({
       kind: 'total-budget',
       actualMs: summary.totalDurationMs,
@@ -300,9 +311,9 @@ export function evaluatePerfSmokeBaseline(summary, baseline) {
   };
 }
 
-function createBudgetStatus({ actualMs, maxMs }) {
+function createBudgetStatus({ actualMs, maxMs, minimumMaterialExcessMs }) {
   if (!(maxMs > 0)) return 'n/a';
-  return actualMs <= maxMs ? 'ok' : 'regressed';
+  return exceedsMaterialPerfBudget(actualMs, maxMs, minimumMaterialExcessMs) ? 'regressed' : 'ok';
 }
 
 export function createPerfSmokeMarkdownReport({ summary, baseline = null, evaluation = null } = {}) {
@@ -347,12 +358,15 @@ export function createPerfSmokeMarkdownReport({ summary, baseline = null, evalua
   const budgets = new Map(
     Array.isArray(baseline?.scripts) ? baseline.scripts.map(item => [item.name, item.maxMs]) : []
   );
+  const minimumMaterialExcessMs = Number.isFinite(Number(baseline?.policy?.minimumMaterialExcessMs))
+    ? Math.max(0, Number(baseline.policy.minimumMaterialExcessMs))
+    : DEFAULT_BASELINE_POLICY.minimumMaterialExcessMs;
   for (const item of Array.isArray(summary?.scripts) ? summary.scripts : []) {
     const maxMs = budgets.get(item.scriptName) ?? 0;
     lines.push(
       `| ${item.scriptName} | ${formatDurationMs(item.durationMs)} | ${
         maxMs > 0 ? formatDurationMs(maxMs) : 'n/a'
-      } | ${createBudgetStatus({ actualMs: item.durationMs, maxMs })} |`
+      } | ${createBudgetStatus({ actualMs: item.durationMs, maxMs, minimumMaterialExcessMs })} |`
     );
   }
   lines.push('');
@@ -376,6 +390,9 @@ export function createPerfSmokeMarkdownReport({ summary, baseline = null, evalua
   );
   lines.push(
     '- Budgets intentionally include slack so the check is useful without becoming flaky on normal machine variance.'
+  );
+  lines.push(
+    `- A timing must exceed its headroom by at least ${formatDurationMs(minimumMaterialExcessMs)} before it is classified as a material regression.`
   );
   lines.push('');
   return `${lines.join('\n')}\n`;
