@@ -31,6 +31,7 @@ const storeCommitPipelineTs = readFirstExisting(
   ['../esm/native/platform/store_commit_pipeline.ts'],
   import.meta.url
 );
+const storeChangeSetTs = readFirstExisting(['../esm/native/platform/store_change_set.ts'], import.meta.url);
 const storePatchApplyTs = readFirstExisting(['../esm/native/platform/store_patch_apply.ts'], import.meta.url);
 const storeSubscriptionsTs = readFirstExisting(
   ['../esm/native/platform/store_subscriptions.ts'],
@@ -114,7 +115,12 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
   assert.match(storeTs, /from '\.\/store_commit_pipeline\.js';/);
   assert.match(storeTs, /from '\.\/store_subscriptions\.js';/);
   assert.match(storeContractTs, /export function ensureRootStateContract\(/);
+  assert.match(storeContractTs, /export function cloneMutableStoreValue<T>\(/);
+  assert.match(storeSharedTs, /export function normalizeExternalRootState\(/);
   assert.match(storeCommitPipelineTs, /export function createStoreCommitPipeline\(/);
+  assert.match(storeChangeSetTs, /export function createPatchChangeSet\(/);
+  assert.match(storeChangeSetTs, /export function createReplaceChangeSet\(/);
+  assert.match(storeChangeSetTs, /export function hasStoreChanges\(/);
   assert.match(
     storePatchApplyTs,
     /export function isReplacePatchValueEqual\(prev: unknown, next: unknown\): boolean/
@@ -138,9 +144,13 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
     storeCommitPipelineTs,
     /forceCommit: readRecordBoolean\(meta, 'force'\) \|\| readRecordBoolean\(meta, 'forceBuild'\)/
   );
-  assert.match(storeCommitPipelineTs, /if \(!forceCommit && isNoopPatchedRoot\(current, nextRoot\)\) \{/);
+  assert.match(storeCommitPipelineTs, /let changeSet = createPatchChangeSet\(current, nextRoot\);/);
+  assert.match(storeCommitPipelineTs, /if \(!forceCommit && !hasStoreChanges\(changeSet\)\) \{/);
   assert.match(storeCommitPipelineTs, /function shouldAutoMarkConfigDirty\(/);
-  assert.match(storeCommitPipelineTs, /return didConfigSliceSemanticallyChange\(current, nextRoot\);/);
+  assert.match(storeCommitPipelineTs, /return configChanged;/);
+  assert.doesNotMatch(storeCommitPipelineTs, /ensureRootState\(next/);
+  assert.match(storePatchApplyTs, /cloneMutableStoreValue\(sv\)/);
+  assert.match(storePatchApplyTs, /canonicalizeProjectConfigStructuralSnapshot\(detached, \{/);
   assert.match(storeCommitPipelineTs, /debugState\.noopSkipCount \+= 1;/);
   assert.match(storeCommitPipelineTs, /return current;/);
 });

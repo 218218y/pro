@@ -74,10 +74,6 @@ export function asRecordOrEmpty(v: unknown): UnknownRecord {
   return asRecordOrNull(v) || {};
 }
 
-function asModeSlice(v: unknown): RootStateLike['mode'] | null {
-  return asRecordOrNull(v);
-}
-
 export function readRecordString(v: unknown, key: string): string {
   const rec = asRecordOrNull(v);
   const value = rec ? rec[key] : undefined;
@@ -269,39 +265,22 @@ export function recordDebugPatchStat(
   debugState.sources[key] = entry;
 }
 
-type EnsureRootStateOpts = {
-  preserveSourceSliceRefs?: boolean;
-};
-
-export function ensureRootState(
-  input: unknown,
-  getNoneMode: () => string,
-  opts: EnsureRootStateOpts = {}
-): RootStateLike {
+/**
+ * Normalize an external/root snapshot before it becomes canonical store state.
+ *
+ * This is intentionally an ingress-only operation. Internal PATCH commits must
+ * preserve structural sharing in their slice patchers instead of re-normalizing
+ * the entire root after every mutation.
+ */
+export function normalizeExternalRootState(input: unknown, getNoneMode: () => string): RootStateLike {
   const root = ensureRootStateContract(input, getNoneMode);
-  const src = asRecordOrEmpty(input);
-  const preserveSourceSliceRefs = opts.preserveSourceSliceRefs !== false;
-
-  const srcUi = asRecordOrNull(src.ui);
-  if (preserveSourceSliceRefs && srcUi && storeValueEqual(root.ui, srcUi)) root.ui = srcUi;
-
-  const srcRuntime = asRecordOrNull(src.runtime);
-  if (preserveSourceSliceRefs && srcRuntime && storeValueEqual(root.runtime, srcRuntime))
-    root.runtime = srcRuntime;
-
-  const srcMode = asModeSlice(src.mode);
-  if (preserveSourceSliceRefs && srcMode && storeValueEqual(root.mode, srcMode)) root.mode = srcMode;
-
   const cfgSeed = shallowCloneRecord(asRecordOrEmpty(root.config));
-  const cfg = canonicalizeProjectConfigStructuralSnapshot(cfgSeed, {
+  root.config = canonicalizeProjectConfigStructuralSnapshot(cfgSeed, {
     uiSnapshot: root.ui,
     cfgSnapshot: cfgSeed,
     cornerMode: 'auto',
     topMode: 'materialize',
   });
-
-  const srcConfig = asRecordOrNull(src.config);
-  root.config = preserveSourceSliceRefs && srcConfig && storeValueEqual(cfg, srcConfig) ? srcConfig : cfg;
   return root;
 }
 

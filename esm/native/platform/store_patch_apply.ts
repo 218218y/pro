@@ -1,15 +1,15 @@
 import type { ActionMetaLike, RootStateLike, UiSlicePatch } from '../../../types';
 import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
-import { ensureRootMetaRecord, shallowCloneRecord } from './store_contract.js';
+import { cloneMutableStoreValue, shallowCloneRecord } from './store_contract.js';
 import {
   asPatchRecord,
   asRecordOrEmpty,
   asRecordOrNull,
-  arrayShallowEqual,
   cloneRecordInput,
   deleteOwn,
   hasOwn,
   isObj,
+  storeValueEqual,
   type UnknownRecord,
 } from './store_shared.js';
 import {
@@ -27,6 +27,7 @@ import {
   assertStoreConfigMapWriteAllowed,
   type StoreConfigMapWriteOptions,
 } from '../runtime/store_config_map_write_capability.js';
+import { canonicalizeProjectConfigStructuralSnapshot } from '../features/project_config/api.js';
 
 /**
  * Structural deep merge used by PATCH slices.
@@ -52,7 +53,7 @@ function deepMerge(dst: unknown, src: unknown): UnknownRecord {
     if (isObj(sv)) {
       nextVal = deepMerge(prev, sv);
     } else if (Array.isArray(sv)) {
-      nextVal = Array.isArray(prev) && arrayShallowEqual(prev, sv) ? prev : sv.slice();
+      nextVal = Array.isArray(prev) && storeValueEqual(prev, sv) ? prev : cloneMutableStoreValue(sv);
     } else {
       nextVal = sv;
     }
@@ -68,24 +69,8 @@ function deepMerge(dst: unknown, src: unknown): UnknownRecord {
   return out || {};
 }
 
-function shallowRecordEqual(a: UnknownRecord, b: UnknownRecord): boolean {
-  if (a === b) return true;
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-  if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i += 1) {
-    const key = aKeys[i];
-    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
-    if (!Object.is(a[key], b[key])) return false;
-  }
-  return true;
-}
-
 export function isReplacePatchValueEqual(prev: unknown, next: unknown): boolean {
-  if (Object.is(prev, next)) return true;
-  if (Array.isArray(prev) && Array.isArray(next)) return arrayShallowEqual(prev, next);
-  if (isObj(prev) && isObj(next)) return shallowRecordEqual(prev, next);
-  return false;
+  return storeValueEqual(prev, next);
 }
 
 function applySnapshotOrMergeRecordSlice<T extends object>(
@@ -95,7 +80,11 @@ function applySnapshotOrMergeRecordSlice<T extends object>(
 ): T {
   const input = asPatchRecord(patchSlice);
   const isSnapshot = allowSnapshot && input.__snapshot === true;
-  const merged = isSnapshot ? input : deepMerge(asPatchRecord(prevSlice), input);
+  if (isSnapshot) {
+    if (storeValueEqual(prevSlice, input)) return prevSlice;
+    return cloneMutableStoreValue(input) as T;
+  }
+  const merged = deepMerge(asPatchRecord(prevSlice), input);
   return merged as T;
 }
 
@@ -147,9 +136,9 @@ export function applyModePatchSlice(
   }
 
   if (hasOpts) {
-    const normalizedOpts = shallowCloneRecord(asRecordOrEmpty(input.opts));
+    const normalizedOpts = cloneMutableStoreValue(asRecordOrEmpty(input.opts));
     const prevOpts = asRecordOrEmpty(prevModeRec.opts);
-    const sameOpts = shallowRecordEqual(prevOpts, normalizedOpts);
+    const sameOpts = storeValueEqual(prevOpts, normalizedOpts);
     if (!sameOpts) {
       next = next || shallowCloneRecord(base);
       next.opts = normalizedOpts;
@@ -212,6 +201,18 @@ export function applyStoreConfigPatch(
   assertStoreConfigMapWriteAllowed(configPatch, 'applyStoreConfigPatch', opts);
   const { clean, replace, snapshot } = cleanConfigPatchInput(configPatch);
   const prevRec = asRecordOrEmpty(prevConfig);
+
+  if (snapshot) {
+    const detached = cloneMutableStoreValue(clean);
+    const canonical = canonicalizeProjectConfigStructuralSnapshot(detached, {
+      uiSnapshot,
+      cfgSnapshot: detached,
+      cornerMode: 'auto',
+      topMode: 'materialize',
+    });
+    return storeValueEqual(prevRec, canonical) ? (prevConfig as RootStateLike['config']) : canonical;
+  }
+
   const useLight = !!(actionMeta && actionMeta.noHistory === true && actionMeta.noAutosave === true);
   const isReplaceKey = (key: string): boolean => !!(replace && hasOwn(replace, key) && replace[key]);
   const readSanitizePrev = (key: string, previousValue: unknown, nextValue: unknown): unknown =>
@@ -225,7 +226,7 @@ export function applyStoreConfigPatch(
       clean.modulesConfiguration
     );
     const nextMods = clean.modulesConfiguration;
-    clean.modulesConfiguration = sanitizeComparableModulesEntry(
+    const sanitized = sanitizeComparableModulesEntry(
       'modulesConfiguration',
       nextMods,
       prevMods,
@@ -233,6 +234,9 @@ export function applyStoreConfigPatch(
       comparableCfgSnapshot,
       uiSnapshot
     );
+    clean.modulesConfiguration = storeValueEqual(prevRec.modulesConfiguration, sanitized)
+      ? prevRec.modulesConfiguration
+      : sanitized;
   }
 
   if (hasOwn(clean, 'stackSplitLowerModulesConfiguration')) {
@@ -242,7 +246,7 @@ export function applyStoreConfigPatch(
       clean.stackSplitLowerModulesConfiguration
     );
     const nextLower = clean.stackSplitLowerModulesConfiguration;
-    clean.stackSplitLowerModulesConfiguration = sanitizeComparableModulesEntry(
+    const sanitized = sanitizeComparableModulesEntry(
       'stackSplitLowerModulesConfiguration',
       nextLower,
       prevLower,
@@ -250,17 +254,24 @@ export function applyStoreConfigPatch(
       comparableCfgSnapshot,
       uiSnapshot
     );
+    clean.stackSplitLowerModulesConfiguration = storeValueEqual(
+      prevRec.stackSplitLowerModulesConfiguration,
+      sanitized
+    )
+      ? prevRec.stackSplitLowerModulesConfiguration
+      : sanitized;
   }
 
   if (hasOwn(clean, 'cornerConfiguration')) {
     const nextCorner = clean.cornerConfiguration;
     const prevCorner = readSanitizePrev('cornerConfiguration', prevRec.cornerConfiguration, nextCorner);
-    clean.cornerConfiguration = useLight
+    const sanitized = useLight
       ? sanitizeCornerConfigurationListsOnly(nextCorner, prevCorner)
       : sanitizeCornerConfigurationForPatch(nextCorner, prevCorner);
+    clean.cornerConfiguration = storeValueEqual(prevRec.cornerConfiguration, sanitized)
+      ? prevRec.cornerConfiguration
+      : sanitized;
   }
-
-  if (snapshot) return clean;
 
   let base = asRecordOrEmpty(prevConfig);
   let baseCloned = false;
@@ -281,7 +292,7 @@ export function applyStoreConfigPatch(
         base = cloneRecordInput(base);
         baseCloned = true;
       }
-      base[rk] = nextVal;
+      base[rk] = cloneMutableStoreValue(nextVal);
       deleteOwn(clean, rk);
     }
   }
@@ -289,8 +300,7 @@ export function applyStoreConfigPatch(
   return deepMerge(base, clean);
 }
 
-export function applyMetaPatch(prevState: RootStateLike, patchMeta: unknown): RootStateLike['meta'] {
-  const prevMeta = ensureRootMetaRecord(prevState);
+export function applyMetaPatch(prevMeta: RootStateLike['meta'], patchMeta: unknown): RootStateLike['meta'] {
   const patch = asPatchRecord(patchMeta);
   if (!hasOwn(patch, 'dirty')) return prevMeta;
   const nextDirty = !!patch.dirty;

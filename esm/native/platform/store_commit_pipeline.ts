@@ -8,14 +8,13 @@ import {
   asRecordOrEmpty,
   cloneMetaForWrite,
   collectPayloadSlices,
+  normalizeExternalRootState,
   normalizeHelperMeta,
   nowMs,
   readRecordBoolean,
   readRecordNumber,
   readRecordString,
   recordDebugPatchStat,
-  storeMetaValueEqual,
-  storeValueEqual,
   type StoreDebugState,
   type UnknownRecord,
 } from './store_shared.js';
@@ -29,7 +28,12 @@ import {
   toModeSlicePatch,
   toUiSlicePatch,
 } from './store_patch_apply.js';
-import { ensureRootState } from './store_shared.js';
+import {
+  createPatchChangeSet,
+  createReplaceChangeSet,
+  hasStoreChanges,
+  type StoreChangeSet,
+} from './store_change_set.js';
 import {
   assertStoreConfigMapWriteAllowed,
   type StoreConfigMapWriteOptions,
@@ -55,33 +59,6 @@ type CommitControlFlags = {
   forceCommit: boolean;
 };
 
-function isRootSemanticallyEqual(current: RootStateLike, nextRoot: RootStateLike): boolean {
-  return (
-    storeValueEqual(current.ui, nextRoot.ui) &&
-    storeValueEqual(current.config, nextRoot.config) &&
-    storeValueEqual(current.runtime, nextRoot.runtime) &&
-    storeValueEqual(current.mode, nextRoot.mode) &&
-    storeMetaValueEqual(current.meta, nextRoot.meta)
-  );
-}
-
-function isNoopPatchedRoot(current: RootStateLike, nextRoot: RootStateLike): boolean {
-  if (
-    current.ui === nextRoot.ui &&
-    current.config === nextRoot.config &&
-    current.runtime === nextRoot.runtime &&
-    current.mode === nextRoot.mode &&
-    current.meta === nextRoot.meta
-  ) {
-    return true;
-  }
-  return isRootSemanticallyEqual(current, nextRoot);
-}
-
-function isNoopReplacedRoot(current: RootStateLike, nextRoot: RootStateLike): boolean {
-  return isRootSemanticallyEqual(current, nextRoot);
-}
-
 function readCommitControlFlags(meta: ActionMetaLike | undefined, opts?: DispatchOpts): CommitControlFlags {
   return {
     silent: !!(opts?.silent || readRecordBoolean(meta, 'silent')),
@@ -94,38 +71,32 @@ function hasExplicitMetaDirtyPatch(payload: PatchPayload): boolean {
   return Object.prototype.hasOwnProperty.call(metaPatch, 'dirty');
 }
 
-function didConfigSliceSemanticallyChange(current: RootStateLike, nextRoot: RootStateLike): boolean {
-  return current.config !== nextRoot.config;
-}
-
 function shouldAutoMarkConfigDirty(args: {
-  current: RootStateLike;
-  nextRoot: RootStateLike;
+  configChanged: boolean;
   payload: PatchPayload;
   meta: ActionMetaLike | undefined;
   silent: boolean;
 }): boolean {
-  const { current, nextRoot, payload, meta, silent } = args;
+  const { configChanged, payload, meta, silent } = args;
   if (!asRecordOrEmpty(payload).config) return false;
   if (hasExplicitMetaDirtyPatch(payload)) return false;
   if (silent || readRecordBoolean(meta, 'noPersist')) return false;
-  return didConfigSliceSemanticallyChange(current, nextRoot);
+  return configChanged;
 }
 
 function stampLastActionAndMeta(args: {
   nextState: RootStateLike;
   type: string;
-  payload: unknown;
   actionMeta: ActionMetaLike | undefined;
   silent: boolean;
+  changeSet: StoreChangeSet;
 }): ActionMetaLike {
-  const { nextState, type, payload, actionMeta, silent } = args;
+  const { nextState, type, actionMeta, silent, changeSet } = args;
 
   const m = cloneMetaForWrite(nextState);
   m.version = (Number(m.version) | 0) + 1;
   m.updatedAt = Date.now();
 
-  const payloadSlices = collectPayloadSlices(payload);
   const stamped: ActionMetaLike = {
     type: type || '',
     source: readRecordString(actionMeta, 'source'),
@@ -140,11 +111,11 @@ function stampLastActionAndMeta(args: {
     noCapture: readRecordBoolean(actionMeta, 'noCapture'),
     coalesceKey: readRecordString(actionMeta, 'coalesceKey'),
     coalesceMs: readRecordNumber(actionMeta, 'coalesceMs'),
-    affectsConfig: payloadSlices.includes('config'),
-    affectsUi: payloadSlices.includes('ui'),
-    affectsRuntime: payloadSlices.includes('runtime'),
-    affectsMode: payloadSlices.includes('mode'),
-    affectsMeta: payloadSlices.includes('meta'),
+    affectsConfig: changeSet.config,
+    affectsUi: changeSet.ui,
+    affectsRuntime: changeSet.runtime,
+    affectsMode: changeSet.mode,
+    affectsMeta: changeSet.meta,
     silent: !!silent,
     ts: m.updatedAt,
   };
@@ -170,9 +141,16 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     type: string,
     payload: unknown,
     actionMeta: ActionMetaLike | undefined,
-    silent: boolean
+    silent: boolean,
+    changeSet: StoreChangeSet
   ): RootStateLike {
-    const stampedMeta = stampLastActionAndMeta({ nextState, type, payload, actionMeta, silent });
+    const stampedMeta = stampLastActionAndMeta({
+      nextState,
+      type,
+      actionMeta,
+      silent,
+      changeSet,
+    });
     debugState.commitCount += 1;
     zustandApi.setState(nextState, true);
     setLastActionEnvelope({
@@ -189,13 +167,14 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     const meta = normalizeActionMeta(metaIn);
     const { silent, forceCommit } = readCommitControlFlags(meta, opts2);
     const t0 = nowMs();
-    const nextRoot = ensureRootState(nextRootIn, getNoneMode, { preserveSourceSliceRefs: false });
+    const nextRoot = normalizeExternalRootState(nextRootIn, getNoneMode);
     const current = zustandApi.getState();
-    if (!forceCommit && isNoopReplacedRoot(current, nextRoot)) {
+    const changeSet = createReplaceChangeSet(current, nextRoot);
+    if (!forceCommit && !hasStoreChanges(changeSet)) {
       debugState.noopSkipCount += 1;
       return current;
     }
-    const out = commitNextState(nextRoot, 'SET', nextRootIn, meta, silent);
+    const out = commitNextState(nextRoot, 'SET', nextRootIn, meta, silent, changeSet);
     recordDebugPatchStat(debugState, 'SET', nextRootIn, meta, nowMs() - t0, tracePatchThresholdMs);
     return out;
   }
@@ -214,43 +193,52 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
 
     const payload = sanitizePatchPayloadForStore(payloadIn);
     const current = zustandApi.getState();
-    const next: RootStateLike = { ...current };
     const pld = asRecordOrEmpty(payload);
-
-    if (pld.ui) {
-      next.ui = applyUiPatchSlice(current.ui, pld.ui);
-    }
+    const nextUi = pld.ui ? applyUiPatchSlice(current.ui, pld.ui) : current.ui;
+    let nextConfig = current.config;
+    const nextMode = pld.mode ? applyModePatchSlice(current.mode, pld.mode, getNoneMode) : current.mode;
+    const nextRuntime =
+      pld.runtime && typeof pld.runtime === 'object'
+        ? applyRuntimePatchSlice(current.runtime, pld.runtime)
+        : current.runtime;
+    const nextMeta =
+      pld.meta && typeof pld.meta === 'object' ? applyMetaPatch(current.meta, pld.meta) : current.meta;
 
     if (pld.config && typeof pld.config === 'object') {
       assertStoreConfigMapWriteAllowed(pld.config, configApiName, opts2);
-      next.config = applyStoreConfigPatch(current.config, pld.config, meta, next.ui, opts2);
+      nextConfig = applyStoreConfigPatch(current.config, pld.config, meta, nextUi, opts2);
     }
 
-    if (pld.mode) {
-      next.mode = applyModePatchSlice(current.mode, pld.mode, getNoneMode);
-    }
+    const nextRoot: RootStateLike = {
+      ...current,
+      ui: nextUi,
+      config: nextConfig,
+      runtime: nextRuntime,
+      mode: nextMode,
+      meta: nextMeta,
+    };
+    let changeSet = createPatchChangeSet(current, nextRoot);
 
-    if (pld.runtime && typeof pld.runtime === 'object') {
-      next.runtime = applyRuntimePatchSlice(current.runtime, pld.runtime);
-    }
-
-    if (pld.meta && typeof pld.meta === 'object') {
-      next.meta = applyMetaPatch(current, pld.meta);
-    }
-
-    const nextRoot = ensureRootState(next, getNoneMode);
-
-    if (shouldAutoMarkConfigDirty({ current, nextRoot, payload, meta, silent })) {
+    if (
+      shouldAutoMarkConfigDirty({
+        configChanged: changeSet.config,
+        payload,
+        meta,
+        silent,
+      }) &&
+      nextRoot.meta.dirty !== true
+    ) {
       const nextMeta = cloneMetaForWrite(nextRoot);
       nextMeta.dirty = true;
+      changeSet = createPatchChangeSet(current, nextRoot);
     }
 
-    if (!forceCommit && isNoopPatchedRoot(current, nextRoot)) {
+    if (!forceCommit && !hasStoreChanges(changeSet)) {
       debugState.noopSkipCount += 1;
       return current;
     }
 
-    const out = commitNextState(nextRoot, 'PATCH', payload, meta, silent);
+    const out = commitNextState(nextRoot, 'PATCH', payload, meta, silent, changeSet);
     const dt = nowMs() - t0;
     recordDebugPatchStat(debugState, 'PATCH', payload, meta, dt, tracePatchThresholdMs);
 

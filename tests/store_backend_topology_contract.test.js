@@ -8,6 +8,7 @@ import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/w
 const MODULES = {
   store: 'esm/native/platform/store.ts',
   commit: 'esm/native/platform/store_commit_pipeline.ts',
+  changeSet: 'esm/native/platform/store_change_set.ts',
   patch: 'esm/native/platform/store_patch_apply.ts',
   subscriptions: 'esm/native/platform/store_subscriptions.ts',
   capability: 'esm/native/runtime/store_config_map_write_capability.ts',
@@ -94,7 +95,7 @@ test('store backend keeps orchestration, commit, patch, and subscription ownersh
     'applyStoreConfigPatch',
     'createListenerRegistry',
   ]);
-  expectImports(MODULES.store, './store_shared.js', ['ensureRootState']);
+  expectImports(MODULES.store, './store_shared.js', ['normalizeExternalRootState']);
   expectImports(MODULES.store, './store_commit_pipeline.js', ['createStoreCommitPipeline']);
   expectImports(MODULES.store, './store_subscriptions.js', [
     'createListenerRegistry',
@@ -112,6 +113,13 @@ test('store backend keeps orchestration, commit, patch, and subscription ownersh
   expectImports(MODULES.commit, '../runtime/store_config_map_write_capability.js', [
     'assertStoreConfigMapWriteAllowed',
   ]);
+  expectImports(MODULES.commit, './store_change_set.js', [
+    'createPatchChangeSet',
+    'createReplaceChangeSet',
+    'hasStoreChanges',
+  ]);
+
+  expectExports(MODULES.changeSet, ['createPatchChangeSet', 'createReplaceChangeSet', 'hasStoreChanges']);
 
   expectExports(MODULES.patch, [
     'isReplacePatchValueEqual',
@@ -128,7 +136,13 @@ test('store backend keeps orchestration, commit, patch, and subscription ownersh
 
   expectExports(MODULES.subscriptions, ['createSelectorRegistryEntry', 'createListenerRegistry']);
 
-  for (const file of [MODULES.store, MODULES.commit, MODULES.patch, MODULES.subscriptions]) {
+  for (const file of [
+    MODULES.store,
+    MODULES.commit,
+    MODULES.changeSet,
+    MODULES.patch,
+    MODULES.subscriptions,
+  ]) {
     expectCleanModuleSyntax(file);
   }
 });

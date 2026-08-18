@@ -11,16 +11,12 @@ export const ROOT_STORE_SLICE_KEYS: readonly RootSliceKey[] = ['ui', 'config', '
 
 type MutableRootMeta = RootMetaStateLike & UnknownRecord;
 
-function cloneMutableUnknownValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(entry => cloneMutableUnknownValue(entry));
+export function cloneMutableStoreValue<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(entry => cloneMutableStoreValue(entry)) as T;
   if (!isPlainRecord(value)) return value;
   const out: UnknownRecord = {};
-  for (const key of Object.keys(value)) out[key] = cloneMutableUnknownValue(value[key]);
-  return out;
-}
-
-function cloneMutableRootValue<T>(value: T): T {
-  return cloneMutableUnknownValue(value) as T;
+  for (const key of Object.keys(value)) out[key] = cloneMutableStoreValue(value[key]);
+  return out as T;
 }
 
 function readPlainRecord(value: unknown): UnknownRecord | null {
@@ -38,7 +34,7 @@ export function shallowCloneRecord<T extends UnknownRecord>(o: T): T {
 }
 
 function ensureMetaDefaults(metaIn: unknown): MutableRootMeta {
-  const meta = cloneMutableRootValue(readPlainRecord(metaIn) || {});
+  const meta = cloneMutableStoreValue(readPlainRecord(metaIn) || {});
   const dirty = typeof meta.dirty === 'boolean' ? meta.dirty : false;
   const version = typeof meta.version === 'number' ? meta.version : 0;
   const updatedAt = typeof meta.updatedAt === 'number' ? meta.updatedAt : 0;
@@ -61,17 +57,17 @@ function normalizeModeRecord(modeIn: unknown, NONE: string): RootStateLike['mode
   if (!mode) return { primary: NONE, opts: {} };
   if (isCanonicalModeStateLike(mode, NONE)) {
     return {
-      ...cloneMutableRootValue(mode),
-      opts: cloneMutableRootValue(mode.opts),
+      ...cloneMutableStoreValue(mode),
+      opts: cloneMutableStoreValue(mode.opts),
     };
   }
 
   const primary =
     typeof mode.primary === 'string' && String(mode.primary).trim() ? String(mode.primary) : NONE;
-  const opts = isPlainRecord(mode.opts) ? cloneMutableRootValue(mode.opts) : {};
+  const opts = isPlainRecord(mode.opts) ? cloneMutableStoreValue(mode.opts) : {};
 
   return {
-    ...cloneMutableRootValue(mode),
+    ...cloneMutableStoreValue(mode),
     primary,
     opts,
   };
@@ -96,10 +92,10 @@ export function ensureRootStateContract(input: unknown, getNoneMode: () => strin
   const NONE = typeof getNoneMode === 'function' ? getNoneMode() : 'none';
 
   return {
-    ...cloneMutableRootValue(src),
-    ui: isPlainRecord(src.ui) ? cloneMutableRootValue(src.ui) : {},
-    config: isPlainRecord(src.config) ? cloneMutableRootValue(src.config) : {},
-    runtime: isPlainRecord(src.runtime) ? cloneMutableRootValue(src.runtime) : {},
+    ...cloneMutableStoreValue(src),
+    ui: isPlainRecord(src.ui) ? cloneMutableStoreValue(src.ui) : {},
+    config: isPlainRecord(src.config) ? cloneMutableStoreValue(src.config) : {},
+    runtime: isPlainRecord(src.runtime) ? cloneMutableStoreValue(src.runtime) : {},
     mode: normalizeModeRecord(src.mode, NONE),
     meta: ensureMetaDefaults(src.meta),
   };

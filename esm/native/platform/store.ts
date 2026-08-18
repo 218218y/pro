@@ -16,8 +16,8 @@ import {
   asRecordOrEmpty,
   cloneDebugSources,
   createEmptyDebugState,
-  ensureRootState,
   isObj,
+  normalizeExternalRootState,
   objectIs,
   type StoreDebugState,
   type UnknownRecord,
@@ -72,7 +72,7 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
       : 12;
 
   const zustandApi: ZustandRootApi = createZustandVanillaStore<RootStateLike>(function init() {
-    return ensureRootState(initialState, getNoneMode);
+    return normalizeExternalRootState(initialState, getNoneMode);
   });
 
   const listeners = createListenerRegistry<StoreListener>();
