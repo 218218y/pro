@@ -77,6 +77,25 @@ test('room architecture uses house-wall thickness and resolves left/right side w
   assertClose(swapped.rightWall?.maxZ ?? Number.NaN, swapped.wall.maxZ + 2.8);
 });
 
+test('room architecture never lets side walls overlap the wardrobe body', () => {
+  const rootState = createRootState();
+  (rootState.config as any).roomArchitecture.backWall.widthCm = 200;
+  (rootState.config as any).roomArchitecture.backWall.wardrobeOffsetLeftCm = 50;
+  (rootState.config as any).roomArchitecture.leftWall.enabled = true;
+  (rootState.config as any).roomArchitecture.rightWall.enabled = true;
+
+  const geometry = resolveRoomArchitectureGeometry(createApp(rootState));
+  const wardrobeHalfWidthM = geometry.wardrobeWidthM / 2;
+
+  assertClose(geometry.wall.width, geometry.wardrobeWidthM);
+  assertClose(geometry.wall.minX, -wardrobeHalfWidthM);
+  assertClose(geometry.wall.maxX, wardrobeHalfWidthM);
+  assert.ok(geometry.leftWall);
+  assert.ok(geometry.rightWall);
+  assert.ok((geometry.leftWall?.maxX ?? Number.POSITIVE_INFINITY) <= -wardrobeHalfWidthM);
+  assert.ok((geometry.rightWall?.minX ?? Number.NEGATIVE_INFINITY) >= wardrobeHalfWidthM);
+});
+
 test('room openings resolve against their host wall and scene rendering cuts the wall before adding visuals', () => {
   class FakeGroup {
     name = '';

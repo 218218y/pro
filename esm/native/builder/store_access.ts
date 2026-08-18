@@ -17,6 +17,7 @@ import type {
 
 import {
   canonicalizeProjectConfigStructuralSnapshot,
+  constrainProjectRoomArchitectureToWardrobeWidth,
   normalizeProjectRoomArchitecture,
 } from '../features/project_config/api.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
@@ -30,6 +31,8 @@ import {
   readRuntimeStateFromApp,
   readUiStateFromApp,
 } from '../runtime/root_state_access.js';
+
+export { constrainProjectRoomArchitectureToWardrobeWidth };
 
 type BuilderActionSurface = {
   getBuildState?: (uiOverride?: unknown) => unknown;

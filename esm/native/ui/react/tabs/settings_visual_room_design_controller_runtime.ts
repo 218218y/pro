@@ -9,6 +9,7 @@ import type {
 
 import {
   applyStructuralConfigMutation,
+  constrainProjectRoomArchitectureToWardrobeWidth,
   patchProjectRoomArchitecture,
 } from '../actions/structural_build_refresh_actions.js';
 import { beginRoomOpeningPlacement, removeRoomOpening, getModeId } from '../../../services/api.js';
@@ -103,7 +104,10 @@ function readCurrentRoomArchitecture(
   args: CreateSettingsVisualRoomDesignControllerArgs
 ): RoomArchitectureConfigLike {
   const liveConfig = getConfigSnapshot(args.app);
-  return patchProjectRoomArchitecture(liveConfig.roomArchitecture ?? args.roomArchitecture, {});
+  return constrainProjectRoomArchitectureToWardrobeWidth(
+    patchProjectRoomArchitecture(liveConfig.roomArchitecture ?? args.roomArchitecture, {}),
+    args.wardrobeWidthCm
+  );
 }
 
 function commitRoomArchitecture(
@@ -112,7 +116,10 @@ function commitRoomArchitecture(
   source: string,
   buildTiming: 'immediate' | 'coalesced' | 'none'
 ): void {
-  const next = patchProjectRoomArchitecture(readCurrentRoomArchitecture(args), patch);
+  const next = constrainProjectRoomArchitectureToWardrobeWidth(
+    patchProjectRoomArchitecture(readCurrentRoomArchitecture(args), patch),
+    args.wardrobeWidthCm
+  );
   applyStructuralConfigMutation(
     args.app,
     source,

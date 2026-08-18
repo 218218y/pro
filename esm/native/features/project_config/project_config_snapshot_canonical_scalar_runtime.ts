@@ -226,6 +226,38 @@ export function normalizeProjectRoomArchitecture(value: unknown): RoomArchitectu
   };
 }
 
+export function constrainProjectRoomArchitectureToWardrobeWidth(
+  config: RoomArchitectureConfigLike,
+  wardrobeWidthCm: number
+): RoomArchitectureConfigLike {
+  const resolvedWardrobeWidthCm = roundRoomArchitectureCm(
+    Math.max(0, finiteRoomArchitectureNumber(wardrobeWidthCm, 0))
+  );
+  if (!(resolvedWardrobeWidthCm > 0)) return config;
+
+  const wallWidthCm = roundRoomArchitectureCm(Math.max(config.backWall.widthCm, resolvedWardrobeWidthCm));
+  const maxWardrobeOffsetLeftCm = Math.max(0, wallWidthCm - resolvedWardrobeWidthCm);
+  const wardrobeOffsetLeftCm = roundRoomArchitectureCm(
+    clampRoomArchitectureNumber(config.backWall.wardrobeOffsetLeftCm, 0, maxWardrobeOffsetLeftCm)
+  );
+
+  if (
+    wallWidthCm === config.backWall.widthCm &&
+    wardrobeOffsetLeftCm === config.backWall.wardrobeOffsetLeftCm
+  ) {
+    return config;
+  }
+
+  return {
+    ...config,
+    backWall: {
+      ...config.backWall,
+      widthCm: wallWidthCm,
+      wardrobeOffsetLeftCm,
+    },
+  };
+}
+
 export function patchProjectRoomArchitecture(
   current: unknown,
   patch: RoomArchitecturePatch

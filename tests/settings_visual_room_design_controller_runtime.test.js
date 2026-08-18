@@ -25,6 +25,19 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
     }
     if (specifier === '../actions/structural_build_refresh_actions.js') {
       return {
+        constrainProjectRoomArchitectureToWardrobeWidth:
+          stubs.constrainProjectRoomArchitectureToWardrobeWidth ||
+          ((config, wardrobeWidthCm) => {
+            const wallWidthCm = Math.max(config.backWall.widthCm, wardrobeWidthCm);
+            const wardrobeOffsetLeftCm = Math.min(
+              config.backWall.wardrobeOffsetLeftCm,
+              Math.max(0, wallWidthCm - wardrobeWidthCm)
+            );
+            return {
+              ...config,
+              backWall: { ...config.backWall, widthCm: wallWidthCm, wardrobeOffsetLeftCm },
+            };
+          }),
         patchProjectRoomArchitecture:
           stubs.patchProjectRoomArchitecture ||
           ((current, patch) => ({
@@ -274,4 +287,52 @@ test('[settings-visual-room-design-controller] persists room architecture struct
     ]
   );
   assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 9);
+});
+
+test('[settings-visual-room-design-controller] keeps the full wardrobe body inside the back wall', () => {
+  const app = { id: 'app' };
+  let configState = {
+    roomArchitecture: {
+      backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: true, depthCm: 300, heightCm: 280 },
+      column: {
+        enabled: false,
+        offsetLeftCm: 180,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 280,
+        bottomOffsetCm: 0,
+      },
+      openings: [],
+      wallColor: '#f2efe6',
+      surfacesHidden: false,
+    },
+  };
+  const mod = loadSettingsVisualRoomDesignControllerModule({
+    getConfigSnapshot: () => configState,
+    setCfgScalar: (_app, key, value) => {
+      configState = { ...configState, [key]: value };
+    },
+  });
+  const controller = mod.createSettingsVisualRoomDesignController({
+    app,
+    meta: {
+      uiOnlyImmediate: source => ({ source, immediate: true }),
+      noBuild: (_value, source) => ({ source, build: false }),
+    },
+    roomData: { floorStyles: { parquet: [] } },
+    roomDesignRuntime: null,
+    roomArchitecture: configState.roomArchitecture,
+    wardrobeWidthCm: 240,
+  });
+
+  controller.setBackWallDimension('widthCm', 200);
+  assert.equal(configState.roomArchitecture.backWall.widthCm, 240);
+  assert.equal(configState.roomArchitecture.backWall.wardrobeOffsetLeftCm, 0);
+
+  controller.setBackWallDimension('widthCm', 300);
+  controller.setBackWallDimension('wardrobeOffsetLeftCm', 100);
+  assert.equal(configState.roomArchitecture.backWall.widthCm, 300);
+  assert.equal(configState.roomArchitecture.backWall.wardrobeOffsetLeftCm, 60);
 });

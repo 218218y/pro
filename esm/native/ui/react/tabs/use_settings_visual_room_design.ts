@@ -8,6 +8,7 @@ import type {
 } from '../../../../../types';
 
 import { useModeSelector } from '../hooks.js';
+import { constrainProjectRoomArchitectureToWardrobeWidth } from '../actions/structural_build_refresh_actions.js';
 
 import type {
   FloorStyle,
@@ -65,6 +66,10 @@ export function useSettingsVisualRoomDesign(
   args: UseSettingsVisualRoomDesignArgs
 ): SettingsVisualRoomDesignModel {
   const { app, meta, floorType, roomArchitecture, wardrobeWidthCm } = args;
+  const constrainedRoomArchitecture = useMemo(
+    () => constrainProjectRoomArchitectureToWardrobeWidth(roomArchitecture, wardrobeWidthCm),
+    [roomArchitecture, wardrobeWidthCm]
+  );
 
   const roomDesignRuntime = useMemo(() => getRoomDesignRuntime(app), [app]);
   const roomData = useMemo(() => getRoomDesignData(roomDesignRuntime), [roomDesignRuntime]);
@@ -84,15 +89,17 @@ export function useSettingsVisualRoomDesign(
         meta,
         roomData,
         roomDesignRuntime,
-        roomArchitecture,
+        roomArchitecture: constrainedRoomArchitecture,
         wardrobeWidthCm,
       }),
-    [app, meta, roomData, roomDesignRuntime, roomArchitecture, wardrobeWidthCm]
+    [app, meta, roomData, roomDesignRuntime, constrainedRoomArchitecture, wardrobeWidthCm]
   );
 
   const wardrobeOffsetRightCm =
     Math.round(
-      (roomArchitecture.backWall.widthCm - roomArchitecture.backWall.wardrobeOffsetLeftCm - wardrobeWidthCm) *
+      (constrainedRoomArchitecture.backWall.widthCm -
+        constrainedRoomArchitecture.backWall.wardrobeOffsetLeftCm -
+        wardrobeWidthCm) *
         10
     ) / 10;
 
@@ -101,7 +108,7 @@ export function useSettingsVisualRoomDesign(
       roomData,
       roomDesignRuntime,
       floorStylesForType,
-      roomArchitecture,
+      roomArchitecture: constrainedRoomArchitecture,
       wardrobeWidthCm,
       wardrobeOffsetRightCm,
       openingPlacementActive,
@@ -125,7 +132,7 @@ export function useSettingsVisualRoomDesign(
       roomData,
       roomDesignRuntime,
       floorStylesForType,
-      roomArchitecture,
+      constrainedRoomArchitecture,
       wardrobeWidthCm,
       wardrobeOffsetRightCm,
       openingPlacementActive,

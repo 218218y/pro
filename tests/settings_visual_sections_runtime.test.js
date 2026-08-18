@@ -130,6 +130,15 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(hiddenArchitectureHtml, />הסתר קירות ועמוד<\/button>/);
   assert.equal(countMatches(architectureHtml, /step="5"/g), 15);
   assert.doesNotMatch(architectureHtml, /step="0\.1"/);
+  const wallWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-wall-width"[^>]*>/)?.[0] || '';
+  const leftOffsetInput =
+    architectureHtml.match(/<input[^>]*id="wp-room-wardrobe-left-offset"[^>]*>/)?.[0] || '';
+  const rightOffsetInput =
+    architectureHtml.match(/<input[^>]*id="wp-room-wardrobe-right-offset"[^>]*>/)?.[0] || '';
+  assert.match(wallWidthInput, /aria-valuemin="240"/);
+  assert.match(wallWidthInput, /min="240"/);
+  assert.match(leftOffsetInput, /max="160"/);
+  assert.match(rightOffsetInput, /max="160"/);
   const columnWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-column-width"[^>]*>/)?.[0] || '';
   assert.match(columnWidthInput, /aria-valuemin="1"/);
   assert.match(columnWidthInput, /step="5"/);

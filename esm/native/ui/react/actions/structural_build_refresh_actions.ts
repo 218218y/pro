@@ -1,13 +1,18 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
 import {
+  constrainProjectRoomArchitectureToWardrobeWidth,
   KNOWN_PROJECT_CONFIG_MAP_KEYS,
   normalizeProjectRoomArchitecture,
   patchProjectRoomArchitecture,
 } from '../../../features/project_config/api.js';
 import { patchViaActions, readConfigPatchDataKeys } from '../../../services/api.js';
 
-export { normalizeProjectRoomArchitecture, patchProjectRoomArchitecture };
+export {
+  constrainProjectRoomArchitectureToWardrobeWidth,
+  normalizeProjectRoomArchitecture,
+  patchProjectRoomArchitecture,
+};
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
 export type StructuralMutationBuildTiming = 'immediate' | 'coalesced' | 'none';

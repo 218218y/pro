@@ -31,6 +31,7 @@ export {
   normalizeProjectConfigScalarEntry,
 } from './project_config_snapshot_canonical_runtime.js';
 export {
+  constrainProjectRoomArchitectureToWardrobeWidth,
   normalizeProjectRoomArchitecture,
   patchProjectRoomArchitecture,
 } from './project_config_snapshot_canonical_scalar_runtime.js';

@@ -371,6 +371,8 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
   const wall = architecture.backWall;
   const column = architecture.column;
   const wallMax = Math.max(50, wall.widthCm);
+  const wallMin = Math.max(50, model.wardrobeWidthCm);
+  const wardrobeOffsetMax = Math.max(0, wall.widthCm - model.wardrobeWidthCm);
   const wallHeightMax = Math.max(50, wall.heightCm);
   const wardrobeWallAlignment = resolveWardrobeWallAlignment(model);
 
@@ -399,7 +401,7 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
               id="wp-room-wall-width"
               label="רוחב הקיר"
               value={wall.widthCm}
-              min={50}
+              min={wallMin}
               max={2000}
               onChange={value => model.setBackWallDimension('widthCm', value)}
             />
@@ -444,7 +446,7 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
                 label="מרחק משמאל"
                 value={wall.wardrobeOffsetLeftCm}
                 min={0}
-                max={wallMax}
+                max={wardrobeOffsetMax}
                 onChange={value => model.setBackWallDimension('wardrobeOffsetLeftCm', value)}
               />
               <ArchitectureNumberField
@@ -452,16 +454,10 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
                 label="מרחק מימין"
                 value={model.wardrobeOffsetRightCm}
                 min={0}
-                max={wallMax}
+                max={wardrobeOffsetMax}
                 onChange={model.setWardrobeOffsetRightCm}
               />
             </div>
-            {model.wardrobeOffsetRightCm < 0 ? (
-              <InlineNotice className="wp-r-mt-8">
-                רוחב הקיר קטן מרוחב הארון ב־{Math.abs(model.wardrobeOffsetRightCm).toFixed(1)} ס״מ. הגדל את
-                רוחב הקיר כדי למקם את הארון כולו בתוכו.
-              </InlineNotice>
-            ) : null}
           </div>
 
           <SideWallControls

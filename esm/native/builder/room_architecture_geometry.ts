@@ -7,7 +7,12 @@ import type {
 } from '../../../types/index.js';
 
 import { CARCASS_BACK_PANEL_THICKNESS_M } from './core_carcass_shell.js';
-import { getRoomArchitectureConfig, getRuntime, getUi } from './store_access.js';
+import {
+  constrainProjectRoomArchitectureToWardrobeWidth,
+  getRoomArchitectureConfig,
+  getRuntime,
+  getUi,
+} from './store_access.js';
 
 export const ROOM_WALL_THICKNESS_M = 0.2;
 export const ROOM_BACK_WALL_THICKNESS_M = ROOM_WALL_THICKNESS_M;
@@ -147,8 +152,11 @@ function withBoxMetrics(box: AxisAlignedBox) {
 }
 
 export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitectureGeometry {
-  const config = readRoomArchitectureConfigFromApp(App);
   const wardrobe = resolveWardrobeDimensions(App);
+  const config = constrainProjectRoomArchitectureToWardrobeWidth(
+    readRoomArchitectureConfigFromApp(App),
+    wardrobe.width * 100
+  );
   const wallWidthM = config.backWall.widthCm / 100;
   const wallHeightM = config.backWall.heightCm / 100;
   const offsetLeftM = config.backWall.wardrobeOffsetLeftCm / 100;
