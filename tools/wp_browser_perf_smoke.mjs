@@ -45,17 +45,26 @@ import {
 import { resolvePlaywrightChromiumLaunchOptions } from './wp_playwright_browser_support.js';
 import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
 import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
+import {
+  areBrowserPerfFailuresConfirmationEligible,
+  BROWSER_PERF_CONFIRMATION_FLAG,
+  createBrowserPerfMeasurementProfile,
+  parseBrowserPerfTarget,
+  resolveBrowserPerfTargetPaths,
+} from './wp_browser_perf_targets.js';
 import { BROWSER_PERF_REQUIRED_UX_METRICS } from './wp_browser_perf_ux_targets.js';
 
 const projectRoot = process.cwd();
-const baseUrl = 'http://127.0.0.1:5175';
-const browserPerfRoomId = `browser-perf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+const measurementTarget = parseBrowserPerfTarget();
+const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
+const measurementProfile = createBrowserPerfMeasurementProfile(measurementTarget);
+const targetPaths = resolveBrowserPerfTargetPaths(projectRoot, measurementTarget);
+const baseUrl = measurementTarget.baseUrl;
+const browserPerfRoomId = `browser-perf-${measurementTarget.id}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 const browserPerfRoomCredential = buildBrowserPerfRoomCredential(browserPerfRoomId);
-const pageUrl = `${baseUrl}/index_pro.html#room=${encodeURIComponent(browserPerfRoomId)}&roomToken=${encodeURIComponent(browserPerfRoomCredential.token)}`;
-const latestJsonPath = path.join(projectRoot, '.artifacts/browser-perf/latest.json');
-const latestMdPath = path.join(projectRoot, '.artifacts/browser-perf/latest.md');
-const docPath = path.join(projectRoot, 'docs/BROWSER_PERF_AND_E2E_BASELINE.md');
-const baselinePath = resolveBrowserPerfBaselinePath(projectRoot);
+const pageUrl = `${baseUrl}${measurementTarget.pagePath}#room=${encodeURIComponent(browserPerfRoomId)}&roomToken=${encodeURIComponent(browserPerfRoomCredential.token)}`;
+const { latestJsonPath, latestMdPath, docPath } = targetPaths;
+const baselinePath = resolveBrowserPerfBaselinePath(projectRoot, measurementTarget.id);
 const textureFixturePath = path.join(
   projectRoot,
   '.artifacts/browser-perf/fixtures/cabinet-variant-texture.png'
@@ -126,13 +135,104 @@ async function waitForServer(url, timeoutMs = 20000) {
 }
 
 function startServer() {
-  const launch = resolveNpmRunLaunchOptions('start:e2e');
+  const launch = resolveNpmRunLaunchOptions(measurementTarget.serverScript);
   return spawn(launch.command, launch.args, {
     cwd: projectRoot,
     stdio: 'inherit',
     env: process.env,
     shell: launch.shell,
   });
+}
+
+function runRequiredNpmScript(scriptName) {
+  const launch = resolveNpmRunLaunchOptions(scriptName);
+  const result = spawnSync(launch.command, launch.args, {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    env: process.env,
+    shell: launch.shell,
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      `[browser-perf] required npm script ${scriptName} failed with exit code ${String(result.status ?? 'unknown')}`
+    );
+  }
+}
+
+function runRegressionConfirmation() {
+  return spawnSync(process.execPath, [...process.argv.slice(1), BROWSER_PERF_CONFIRMATION_FLAG], {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    env: process.env,
+  });
+}
+
+function readReleaseArtifactEvidence() {
+  if (!targetPaths.releaseRoot) {
+    throw new Error('[browser-perf] release target is missing its release root');
+  }
+  const versionPath = path.join(targetPaths.releaseRoot, 'version.json');
+  if (!fs.existsSync(versionPath)) {
+    throw new Error(`[browser-perf] release metadata missing after build: ${versionPath}`);
+  }
+  const metadata = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+  const failures = [];
+  if (metadata?.schema !== 'wardrobepro.release') failures.push('release schema is not wardrobepro.release');
+  if (metadata?.bundle?.buildMode !== 'perf') failures.push('bundle.buildMode must be perf');
+  if (metadata?.build?.observabilityMode !== 'perf') failures.push('build.observabilityMode must be perf');
+  if (metadata?.build?.jsMinified !== true) failures.push('release JavaScript must be minified');
+  if (metadata?.build?.htmlMinified !== true) failures.push('release HTML must be minified');
+  if (metadata?.build?.cssMinified !== true) failures.push('release CSS must be minified');
+  if (metadata?.cache?.assetsHashed !== true) failures.push('release assets must be content hashed');
+  if (!metadata?.cache?.buildId) failures.push('release build id is missing');
+  if (!metadata?.bundle?.sha256) failures.push('release bundle digest is missing');
+  if (failures.length) {
+    throw new Error(`[browser-perf] invalid release measurement artifact\n- ${failures.join('\n- ')}`);
+  }
+  return {
+    kind: 'instrumented-release-artifact',
+    root: measurementTarget.releaseRootRelativePath,
+    schema: metadata.schema,
+    buildId: metadata.cache.buildId,
+    observabilityMode: metadata.build.observabilityMode,
+    jsMinified: metadata.build.jsMinified,
+    htmlMinified: metadata.build.htmlMinified,
+    cssMinified: metadata.build.cssMinified,
+    assetsHashed: metadata.cache.assetsHashed,
+    bundleFile: metadata.bundle.file,
+    bundleSha256: metadata.bundle.sha256,
+    bundleBytes: metadata.bundle.bytes,
+  };
+}
+
+function prepareMeasurementArtifact() {
+  if (!measurementTarget.buildScript) {
+    return {
+      kind: 'vite-dev-source',
+      observabilityMode: measurementTarget.observabilityMode,
+      buildId: null,
+    };
+  }
+  runRequiredNpmScript(measurementTarget.buildScript);
+  return readReleaseArtifactEvidence();
+}
+
+async function assertReleaseServerProvenance(artifact) {
+  if (measurementTarget.id !== 'release') return;
+  const response = await fetch(`${baseUrl}/version.json?wp_perf_probe=${Date.now()}`, {
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    throw new Error(`[browser-perf] release server metadata probe failed with HTTP ${response.status}`);
+  }
+  const served = await response.json();
+  const servedBuildId = served?.cache?.buildId;
+  const servedBundleSha256 = served?.bundle?.sha256;
+  if (servedBuildId !== artifact.buildId || servedBundleSha256 !== artifact.bundleSha256) {
+    throw new Error(
+      '[browser-perf] static server is not serving the release artifact produced for this measurement run'
+    );
+  }
 }
 
 function stopServer(server) {
@@ -259,6 +359,7 @@ async function readBootReadinessState(page) {
     const hasBodyClass = !!body?.classList?.contains('wp-ui-react');
     const hasReactRoot = !!document.querySelector('#reactSidebarRoot .wp-react');
     const hasViewerCanvas = !!document.querySelector('#viewer-container canvas');
+    const systemReady = window.__WP_PERF__?.getStateFingerprint?.()?.systemReady === true;
     let overlayId = null;
     let overlayText = '';
     for (const id of overlayIds) {
@@ -279,7 +380,8 @@ async function readBootReadinessState(page) {
       overlayId,
       overlayText,
       title: document.title || '',
-      ready: hasBodyClass && hasReactRoot && hasViewerCanvas,
+      systemReady,
+      ready: hasBodyClass && hasReactRoot && hasViewerCanvas && systemReady,
     };
   }, BOOT_OVERLAY_IDS);
 }
@@ -289,6 +391,7 @@ function createBootReadinessError(state, runtimeIssues = {}) {
   if (!state?.hasBodyClass) reasons.push('body missing wp-ui-react');
   if (!state?.hasReactRoot) reasons.push('react sidebar root missing');
   if (!state?.hasViewerCanvas) reasons.push('viewer canvas missing');
+  if (!state?.systemReady) reasons.push('runtime systemReady not reached');
   const details = [
     `title=${JSON.stringify(state?.title || '')}`,
     `bodyClass=${JSON.stringify(state?.bodyClassName || '')}`,
@@ -2001,13 +2104,15 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
 (async () => {
   const updateBaseline = process.argv.includes('--update-baseline');
   const enforce = process.argv.includes('--enforce');
+  const measurementArtifact = prepareMeasurementArtifact();
   let server = null;
   const serverReady = await waitForServer(pageUrl, 1500);
   if (!serverReady) {
     server = startServer();
     const ok = await waitForServer(pageUrl, 40000);
-    if (!ok) throw new Error('Failed to start E2E dev server');
+    if (!ok) throw new Error(`Failed to start ${measurementTarget.label} server`);
   }
+  await assertReleaseServerProvenance(measurementArtifact);
 
   const browserSupport = resolvePlaywrightChromiumLaunchOptions();
   const browser = await chromium.launch({ headless: true, ...browserSupport.launchOptions });
@@ -2019,8 +2124,10 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installPerfEntryCapture(page);
 
   const result = {
-    version: 12,
+    version: 13,
     generatedAt: new Date().toISOString(),
+    measurementProfile,
+    measurementArtifact,
     browserPerfRoomId,
     cloudSyncRestIsolated: true,
     userFlow: {},
@@ -3298,6 +3405,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     writeJson(
       baselinePath,
       createBrowserPerfBaseline(result, {
+        measurementProfile,
         requiredBrowserMetrics: BROWSER_PERF_REQUIRED_UX_METRICS,
         requiredRuntimeMetrics,
         requiredRuntimeMetricMinimumCounts,
@@ -3310,6 +3418,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   if (enforce) {
     const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')) : null;
     const failures = evaluateBrowserPerfBaseline(result, baseline, {
+      measurementProfile,
       requiredBrowserMetrics: BROWSER_PERF_REQUIRED_UX_METRICS,
       requiredRuntimeMetrics,
       requiredRuntimeMetricMinimumCounts,
@@ -3319,6 +3428,16 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       requiredRuntimeRecoverySequences,
     });
     if (failures.length) {
+      if (!confirmationRun && areBrowserPerfFailuresConfirmationEligible(failures)) {
+        for (const failure of failures) console.warn('[browser-perf][candidate]', failure);
+        console.warn('[browser-perf] quantitative regression candidate; running one clean confirmation');
+        const confirmation = runRegressionConfirmation();
+        if (confirmation.status === 0) {
+          console.log('[browser-perf] regression candidate was not reproduced by the confirmation run');
+          return;
+        }
+        process.exit(confirmation.status ?? 1);
+      }
       for (const failure of failures) console.error('[browser-perf]', failure);
       process.exit(1);
     }

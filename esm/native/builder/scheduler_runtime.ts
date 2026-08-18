@@ -73,7 +73,11 @@ function clearPendingBuildState(state: BuilderSchedulerStateInternalLike): void 
   state.pendingScheduleVersion = 0;
 }
 
-function clearScheduledDebouncedRun(state: BuilderSchedulerStateInternalLike): void {
+function clearScheduledDebouncedRun(
+  state: BuilderSchedulerStateInternalLike,
+  cancelPendingCallback = false
+): void {
+  if (cancelPendingCallback) state.buildWardrobeDebounced?.cancel?.();
   state.debouncedRunScheduled = false;
   state.debouncedRunVersion = 0;
 }
@@ -393,7 +397,7 @@ export function requestBuildRuntime(
         schedulePendingBuildDebounced(s, A, requestReason, rerunPendingBuild, true);
         return;
       }
-      clearScheduledDebouncedRun(s);
+      clearScheduledDebouncedRun(s, true);
       return executePendingBuild(
         A,
         s,
@@ -468,7 +472,7 @@ export function flushSchedulerRuntime(App: AppContainer): unknown {
   const A = assertApp(App, 'native/builder/scheduler.flush');
   const s = ensureSchedulerState(A);
   cancelBuilderWait(A);
-  clearScheduledDebouncedRun(s);
+  clearScheduledDebouncedRun(s, true);
   return runPendingBuildRuntime(A, 'flush');
 }
 

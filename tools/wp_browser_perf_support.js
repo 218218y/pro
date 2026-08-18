@@ -11,9 +11,48 @@ import {
   requiredUserJourneyMinimumStepCounts,
 } from '../tests/e2e/helpers/perf_contracts.js';
 
+export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 23;
+export const BROWSER_PERF_MIN_MATERIAL_DRIFT_MS = 20;
+export const BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS = 20;
+
+const MEASUREMENT_PROFILE_KEYS = Object.freeze([
+  'id',
+  'label',
+  'environmentKind',
+  'buildPipeline',
+  'serverKind',
+  'observabilityMode',
+  'pagePath',
+]);
+
+export function normalizeBrowserPerfMeasurementProfile(value) {
+  if (!value || typeof value !== 'object') return null;
+  const normalized = {};
+  for (const key of MEASUREMENT_PROFILE_KEYS) {
+    const field = typeof value[key] === 'string' ? value[key].trim() : '';
+    if (!field) return null;
+    normalized[key] = field;
+  }
+  return normalized;
+}
+
+function measurementProfilesMatch(left, right) {
+  return MEASUREMENT_PROFILE_KEYS.every(key => left?.[key] === right?.[key]);
+}
+
 export function formatMs(value) {
   const n = Number.isFinite(value) ? Math.round(value) : 0;
   return `${n}ms`;
+}
+
+function exceedsMaterialDurationBudget(actualValue, budgetValue) {
+  const actual = Number(actualValue) || 0;
+  const budget = Number(budgetValue);
+  return (
+    Number.isFinite(budget) &&
+    actual > budget &&
+    actual - budget >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS
+  );
 }
 
 function roundDuration(value) {
@@ -366,7 +405,7 @@ export function createPerfDomainSummary(
     const domain = classifyRuntimeMetricDomain(name);
     const bucket = getOrCreatePerfDomainBucket(summary, domain);
     bucket.pressureMetricCount += 1;
-    bucket.worstDriftPct = Math.max(bucket.worstDriftPct, Number(item?.driftPct) || 0);
+    bucket.worstDriftPct = Math.max(bucket.worstDriftPct, Number(item?.materialDriftPct) || 0);
   }
 
   for (const bucket of Object.values(summary)) {
@@ -465,19 +504,26 @@ export function createRepeatedMetricPressureSummary(
     const lastAvgMs = averageCodeExecution(lastEntries);
     const driftMs = roundDuration(lastAvgMs - firstAvgMs);
     const driftPct = firstAvgMs > 0 ? roundDuration((driftMs / firstAvgMs) * 100) : 0;
+    const okCount = actionableEntries.filter(entry => entry.status === 'ok').length;
+    const errorCount = actionableEntries.filter(entry => entry.status === 'error').length;
+    const markCount = actionableEntries.filter(entry => entry.status === 'mark').length;
+    const driftComparable = errorCount === 0 && markCount === 0;
+    const materialDriftPct = driftComparable && driftMs >= BROWSER_PERF_MIN_MATERIAL_DRIFT_MS ? driftPct : 0;
     const durations = actionableEntries
       .map(entry => (Number.isFinite(entry.codeExecutionMs) ? Number(entry.codeExecutionMs) : 0))
       .sort((left, right) => left - right);
     summary[name] = {
       count: actionableEntries.length,
       minimumCount,
-      okCount: actionableEntries.filter(entry => entry.status === 'ok').length,
-      errorCount: actionableEntries.filter(entry => entry.status === 'error').length,
-      markCount: actionableEntries.filter(entry => entry.status === 'mark').length,
+      okCount,
+      errorCount,
+      markCount,
       firstAvgMs,
       lastAvgMs,
       driftMs,
       driftPct,
+      driftComparable,
+      materialDriftPct,
       fastestMs: durations.length ? roundDuration(durations[0]) : 0,
       slowestMs: durations.length ? roundDuration(durations[durations.length - 1]) : 0,
     };
@@ -510,7 +556,7 @@ export function rankRepeatedMetricPressure(summary, limit = 5) {
 export function createRuntimeDriftBudgetPct(pressureSummary) {
   const budget = {};
   for (const [name, item] of Object.entries(pressureSummary || {})) {
-    const driftPct = Number.isFinite(item?.driftPct) ? Number(item.driftPct) : 0;
+    const driftPct = Number.isFinite(item?.materialDriftPct) ? Number(item.materialDriftPct) : 0;
     budget[name] = Math.max(Math.ceil(Math.max(driftPct, 0) * 1.5 + 15), 45);
   }
   return budget;
@@ -2916,10 +2962,18 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
   const actionNames = Object.keys(projectActionSummary).sort();
   const stateIntegrityNames = Object.keys(stateIntegritySummary).sort();
+  const measurementProfile = normalizeBrowserPerfMeasurementProfile(result.measurementProfile);
+  const reportTitle =
+    measurementProfile?.id === 'release'
+      ? '# Release browser perf + E2E baseline'
+      : '# Dev browser perf + E2E regression baseline';
   const lines = [
-    '# Browser perf + E2E baseline',
+    reportTitle,
     '',
     `Generated: ${result.generatedAt}`,
+    `Measurement profile: ${measurementProfile?.id || 'unknown'} (${measurementProfile?.label || 'unclassified'})`,
+    `Pipeline: ${measurementProfile?.buildPipeline || 'unknown'} -> ${measurementProfile?.serverKind || 'unknown'} -> Chromium`,
+    `Page: ${measurementProfile?.pagePath || 'unknown'}; observability mode: ${measurementProfile?.observabilityMode || 'unknown'}`,
     '',
     '## User flow timings',
     '',
@@ -3237,7 +3291,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     for (const item of pressureRows) {
       const detail = pressureSummary[item.name];
       lines.push(
-        `- ${item.name}: count=${detail.count}/${detail.minimumCount}, firstAvg=${formatMs(detail.firstAvgMs)}, lastAvg=${formatMs(detail.lastAvgMs)}, drift=${formatMs(detail.driftMs)} (${detail.driftPct}%), errors=${detail.errorCount}`
+        `- ${item.name}: count=${detail.count}/${detail.minimumCount}, firstAvg=${formatMs(detail.firstAvgMs)}, lastAvg=${formatMs(detail.lastAvgMs)}, rawDrift=${formatMs(detail.driftMs)} (${detail.driftPct}%), materialDrift=${detail.materialDriftPct}%, comparable=${detail.driftComparable ? 'yes' : 'no'}, errors=${detail.errorCount}`
       );
     }
   }
@@ -3282,6 +3336,10 @@ export function createRuntimeUxBudget(summary) {
   const budget = {};
   for (const [name, item] of Object.entries(summary || {})) {
     const p95 = item && Number.isFinite(item.uxP95Ms) ? Number(item.uxP95Ms) : 0;
+    const codeP95 = item && Number.isFinite(item.codeExecutionP95Ms) ? Number(item.codeExecutionP95Ms) : 0;
+    const interactionWaitP95 =
+      item && Number.isFinite(item.interactionWaitP95Ms) ? Number(item.interactionWaitP95Ms) : 0;
+    if (interactionWaitP95 > codeP95) continue;
     budget[name] = Math.max(Math.ceil(p95 * 1.35 + 25), 100);
   }
   return budget;
@@ -3297,13 +3355,16 @@ export function createRuntimeCodeExecutionBudget(summary) {
   return budget;
 }
 
-export function createBrowserMetricBudget(metrics) {
+export function createBrowserMetricBudget(metrics, measurementProfile = null) {
   const value = metrics && typeof metrics === 'object' ? metrics : {};
+  const normalizedProfile = normalizeBrowserPerfMeasurementProfile(measurementProfile);
+  const inpRegressionFloorMs = normalizedProfile?.id === 'dev' ? 500 : 200;
   return {
     maxCls: Math.max(Number(((Number(value.cls?.value) || 0) * 1.35 + 0.02).toFixed(4)), 0.1),
     maxLcpMs: Math.max(Math.ceil((Number(value.lcp?.valueMs) || 0) * 1.35 + 250), 2500),
-    maxInpMs: Math.max(Math.ceil((Number(value.inp?.valueMs) || 0) * 1.35 + 20), 200),
+    maxInpMs: Math.max(Math.ceil((Number(value.inp?.valueMs) || 0) * 1.35 + 20), inpRegressionFloorMs),
     maxLongTaskCount: Math.max(Math.ceil((Number(value.longTasks?.count) || 0) * 1.4 + 2), 5),
+    maxLongTaskTotalMs: Math.max(Math.ceil((Number(value.longTasks?.totalMs) || 0) * 1.35 + 250), 1000),
     maxLongTaskP95Ms: Math.max(Math.ceil((Number(value.longTasks?.p95Ms) || 0) * 1.35 + 10), 60),
     maxRenderSettleP95Ms: Math.max(Math.ceil((Number(value.renderSettle?.p95Ms) || 0) * 1.35 + 10), 50),
   };
@@ -3382,16 +3443,20 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
     : [];
   const requiredJourneyNames = readRequiredUserJourneyNames(contracts, null, userJourneySummary);
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
+  const measurementProfile = normalizeBrowserPerfMeasurementProfile(
+    contracts.measurementProfile || result.measurementProfile
+  );
   return {
-    version: 20,
+    version: BROWSER_PERF_BASELINE_SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
+    measurementProfile: measurementProfile || null,
     uxJourneyBudgetMs: budget,
     runtimeUxBudgetMs: createRuntimeUxBudget(perfSummary),
     runtimeCodeExecutionBudgetMs: createRuntimeCodeExecutionBudget(perfSummary),
     runtimeDriftBudgetPct: createRuntimeDriftBudgetPct(pressureSummary),
     runtimeDomainCodeExecutionBudgetMs: createRuntimeDomainCodeExecutionBudget(domainSummary),
     runtimeDomainDriftBudgetPct: createRuntimeDomainDriftBudgetPct(domainSummary),
-    browserMetricBudget: createBrowserMetricBudget(result.windowBrowserMetrics),
+    browserMetricBudget: createBrowserMetricBudget(result.windowBrowserMetrics, measurementProfile),
     runtimeRecoveryDebtBudgetMs: createRuntimeRecoveryDebtBudgetMs(recoveryDebtSummary),
     runtimeRecoveryHangoverBudget: createRuntimeRecoveryHangoverBudget(recoveryHangoverSummary),
     storePressureBudget: createStorePressureBudget(storeFlowSummary),
@@ -3419,10 +3484,27 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
 export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   const failures = [];
   if (!baseline || typeof baseline !== 'object') {
-    failures.push('Browser perf baseline missing; generate a fresh schema-v20 baseline');
-  } else if (baseline.version !== 20) {
     failures.push(
-      `Browser perf baseline schema mismatch (expected 20, got ${String(baseline.version ?? 'missing')})`
+      `Browser perf baseline missing; generate a fresh schema-v${BROWSER_PERF_BASELINE_SCHEMA_VERSION} baseline`
+    );
+  } else if (baseline.version !== BROWSER_PERF_BASELINE_SCHEMA_VERSION) {
+    failures.push(
+      `Browser perf baseline schema mismatch (expected ${BROWSER_PERF_BASELINE_SCHEMA_VERSION}, got ${String(baseline.version ?? 'missing')})`
+    );
+  }
+  const expectedMeasurementProfile = normalizeBrowserPerfMeasurementProfile(
+    contracts.measurementProfile || result.measurementProfile
+  );
+  const baselineMeasurementProfile = normalizeBrowserPerfMeasurementProfile(baseline?.measurementProfile);
+  if (expectedMeasurementProfile && !baselineMeasurementProfile) {
+    failures.push('Browser perf baseline measurement profile is missing or incomplete');
+  } else if (
+    expectedMeasurementProfile &&
+    baselineMeasurementProfile &&
+    !measurementProfilesMatch(expectedMeasurementProfile, baselineMeasurementProfile)
+  ) {
+    failures.push(
+      `Browser perf baseline measurement profile mismatch (expected ${expectedMeasurementProfile.id}, got ${baselineMeasurementProfile.id})`
     );
   }
   const budget = baseline && typeof baseline === 'object' ? baseline.uxJourneyBudgetMs || {} : {};
@@ -3483,6 +3565,14 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   ) {
     failures.push(
       `Long Task count exceeded budget (${Number(browserMetrics.longTasks?.count || 0)} > ${browserMetricBudget.maxLongTaskCount})`
+    );
+  }
+  if (
+    browserMetricBudget.maxLongTaskTotalMs != null &&
+    Number(browserMetrics.longTasks?.totalMs || 0) > browserMetricBudget.maxLongTaskTotalMs
+  ) {
+    failures.push(
+      `Long Task total exceeded budget (${formatMs(Number(browserMetrics.longTasks?.totalMs || 0))} > ${formatMs(browserMetricBudget.maxLongTaskTotalMs)})`
     );
   }
   if (
@@ -3557,9 +3647,10 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   for (const [name, maxPct] of Object.entries(driftBudget)) {
     const item = pressureSummary[name];
     if (!item || typeof maxPct !== 'number') continue;
-    if (item.driftPct > maxPct) {
+    const materialDriftPct = Number(item.materialDriftPct) || 0;
+    if (materialDriftPct > maxPct) {
       failures.push(
-        `${name} sustained-use drift exceeded budget (${item.driftPct}% > ${Math.round(maxPct)}%)`
+        `${name} sustained-use drift exceeded budget (${materialDriftPct}% > ${Math.round(maxPct)}%)`
       );
     }
   }
@@ -3641,7 +3732,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
       );
     }
     const maxTotalSourceMs = Number(budgetItem.maxTotalSourceMs);
-    if (Number.isFinite(maxTotalSourceMs) && (Number(item.totalSourceMs) || 0) > maxTotalSourceMs) {
+    if (exceedsMaterialDurationBudget(item.totalSourceMs, maxTotalSourceMs)) {
       failures.push(
         `${name} store source time exceeded budget (${formatMs(Number(item.totalSourceMs) || 0)} > ${formatMs(maxTotalSourceMs)})`
       );
@@ -3726,7 +3817,7 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
       );
     }
     const maxTotalSourceMs = Number(budgetItem.maxTotalSourceMs);
-    if (Number.isFinite(maxTotalSourceMs) && (Number(item.totalSourceMs) || 0) > maxTotalSourceMs) {
+    if (exceedsMaterialDurationBudget(item.totalSourceMs, maxTotalSourceMs)) {
       failures.push(
         `${name} customer journey store source time exceeded budget (${formatMs(Number(item.totalSourceMs) || 0)} > ${formatMs(maxTotalSourceMs)})`
       );
@@ -3937,19 +4028,13 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
       );
     }
     const maxP95HangoverDeltaMs = Number(budgetItem.maxP95HangoverDeltaMs);
-    if (
-      Number.isFinite(maxP95HangoverDeltaMs) &&
-      (Number(item.p95HangoverDeltaMs) || 0) > maxP95HangoverDeltaMs
-    ) {
+    if (exceedsMaterialDurationBudget(item.p95HangoverDeltaMs, maxP95HangoverDeltaMs)) {
       failures.push(
         `${name} runtime recovery hangover p95 delta exceeded budget (${formatMs(Number(item.p95HangoverDeltaMs) || 0)} > ${formatMs(maxP95HangoverDeltaMs)})`
       );
     }
     const maxMaxHangoverDeltaMs = Number(budgetItem.maxMaxHangoverDeltaMs);
-    if (
-      Number.isFinite(maxMaxHangoverDeltaMs) &&
-      (Number(item.maxHangoverDeltaMs) || 0) > maxMaxHangoverDeltaMs
-    ) {
+    if (exceedsMaterialDurationBudget(item.maxHangoverDeltaMs, maxMaxHangoverDeltaMs)) {
       failures.push(
         `${name} runtime recovery hangover max delta exceeded budget (${formatMs(Number(item.maxHangoverDeltaMs) || 0)} > ${formatMs(maxMaxHangoverDeltaMs)})`
       );

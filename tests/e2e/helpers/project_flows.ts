@@ -81,6 +81,8 @@ export type BuildDebugReasonStats = {
   executeImmediateNonForceCount: number;
   executeDebouncedForceCount: number;
   executeDebouncedNonForceCount: number;
+  staleDebouncedTimerFireCount: number;
+  staleBuilderWaitWakeupCount: number;
   executeSuccessCount: number;
   executeFailureCount: number;
   executeDurationTotalMs: number;
@@ -533,6 +535,13 @@ export async function expectAppShellReady(page: Page): Promise<void> {
   ).toBeVisible({
     timeout: SMOKE_APP_SHELL_TIMEOUT_MS,
   });
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => window.__WP_PERF__?.getStateFingerprint?.()?.systemReady === true),
+      { timeout: SMOKE_APP_SHELL_TIMEOUT_MS }
+    )
+    .toBe(true);
   await waitForTwoAnimationFrames(page);
 }
 
@@ -2439,6 +2448,8 @@ function normalizeBuildDebugReasonStats(value: unknown): BuildDebugReasonStats {
     executeImmediateNonForceCount: normalizeDebugCount(rec.executeImmediateNonForceCount),
     executeDebouncedForceCount: normalizeDebugCount(rec.executeDebouncedForceCount),
     executeDebouncedNonForceCount: normalizeDebugCount(rec.executeDebouncedNonForceCount),
+    staleDebouncedTimerFireCount: normalizeDebugCount(rec.staleDebouncedTimerFireCount),
+    staleBuilderWaitWakeupCount: normalizeDebugCount(rec.staleBuilderWaitWakeupCount),
     executeSuccessCount: normalizeDebugCount(rec.executeSuccessCount),
     executeFailureCount: normalizeDebugCount(rec.executeFailureCount),
     executeDurationTotalMs: normalizeDebugDuration(rec.executeDurationTotalMs),
@@ -2599,6 +2610,14 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
         0,
         (next?.executeDebouncedNonForceCount || 0) - (prev?.executeDebouncedNonForceCount || 0)
       ),
+      staleDebouncedTimerFireCount: Math.max(
+        0,
+        (next?.staleDebouncedTimerFireCount || 0) - (prev?.staleDebouncedTimerFireCount || 0)
+      ),
+      staleBuilderWaitWakeupCount: Math.max(
+        0,
+        (next?.staleBuilderWaitWakeupCount || 0) - (prev?.staleBuilderWaitWakeupCount || 0)
+      ),
       executeSuccessCount: Math.max(0, (next?.executeSuccessCount || 0) - (prev?.executeSuccessCount || 0)),
       executeFailureCount: Math.max(0, (next?.executeFailureCount || 0) - (prev?.executeFailureCount || 0)),
       executeDurationTotalMs: durationDelta.totalMs,
@@ -2610,6 +2629,8 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
     if (
       delta.requestCount > 0 ||
       delta.executeCount > 0 ||
+      delta.staleDebouncedTimerFireCount > 0 ||
+      delta.staleBuilderWaitWakeupCount > 0 ||
       delta.executeSuccessCount > 0 ||
       delta.executeFailureCount > 0 ||
       delta.executeDurationSamplesMs.length > 0

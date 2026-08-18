@@ -113,6 +113,13 @@ async function mutateAwayFromCanonical(page: Page, targets: CanonicalAuthoringTa
 }
 
 function expectMeaningfulBuildAndRenderDelta(name: string, delta: BuildAndRenderDelta): void {
+  const staleReasons = Object.entries(delta.build.reasons)
+    .filter(([, stats]) => stats.staleDebouncedTimerFireCount > 0 || stats.staleBuilderWaitWakeupCount > 0)
+    .map(([reason, stats]) => ({
+      reason,
+      debounced: stats.staleDebouncedTimerFireCount,
+      builderWait: stats.staleBuilderWaitWakeupCount,
+    }));
   expect(delta.build.requestCount, `${name}: expected a real build request`).toBeGreaterThanOrEqual(1);
   expect(delta.build.executeCount, `${name}: expected a real build execution`).toBeGreaterThanOrEqual(1);
   expect(
@@ -125,7 +132,7 @@ function expectMeaningfulBuildAndRenderDelta(name: string, delta: BuildAndRender
   ).not.toBe('');
   expect(
     delta.build.staleDebouncedTimerFireCount + delta.build.staleBuilderWaitWakeupCount,
-    `${name}: stale builder wakeups should stay at zero`
+    `${name}: stale builder wakeups should stay at zero (debounced=${delta.build.staleDebouncedTimerFireCount}, builderWait=${delta.build.staleBuilderWaitWakeupCount}, reasons=${JSON.stringify(staleReasons)})`
   ).toBe(0);
   expect(
     delta.render.renderRequestCount,

@@ -718,6 +718,57 @@ test('builder scheduler runtime: fallback debounce keeps only one queued timer a
   assert.equal(timers.getPendingCount(), 0);
 });
 
+test('builder scheduler runtime: an immediate build cancels the pending fallback debounce timer', () => {
+  const buildCalls: any[] = [];
+  let signature = 'sig:fallback:pending';
+  const timers = createTimerHarness();
+  const App: any = {
+    services: {
+      builder: {
+        buildWardrobe(state: unknown) {
+          buildCalls.push(state);
+          return state;
+        },
+      },
+    },
+    actions: {
+      builder: {
+        getBuildState() {
+          return { ui: { panel: 'demo' }, build: { signature } };
+        },
+      },
+    },
+    deps: {
+      browser: {
+        setTimeout: (fn: () => void) => timers.setTimeout(fn),
+        clearTimeout: (id: number | undefined) => timers.clearTimeout(id),
+      },
+    },
+    boot: { isReady: () => true },
+  };
+
+  installBuilderScheduler(App, {
+    getBuildState() {
+      return { ui: { panel: 'demo' }, build: { signature } } as any;
+    },
+  });
+
+  requestBuild(App, null, { reason: 'typing:debounced' });
+  assert.equal(timers.getPendingCount(), 1);
+
+  signature = 'sig:fallback:immediate';
+  requestBuild(App, null, { reason: 'typing:immediate', immediate: true });
+
+  assert.equal(buildCalls.length, 1);
+  assert.equal(timers.getClearTimeoutCount(), 1);
+  assert.equal(timers.getPendingCount(), 0);
+  timers.flushAll();
+
+  const stats = getBuildDebugStats(App);
+  assert.equal(stats.executeCount, 1);
+  assert.equal(stats.staleDebouncedTimerFireCount, 0);
+});
+
 test('builder scheduler runtime: already-satisfied debounced requests are suppressed before rearming debounce churn', () => {
   const harness = createSchedulerHarness('sig:settled');
 

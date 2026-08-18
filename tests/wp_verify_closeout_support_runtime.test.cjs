@@ -83,6 +83,7 @@ test('closeout lanes keep stable ids and include critical families', () => {
     'e2e-list',
     'e2e-smoke-run',
     'browser-perf',
+    'browser-perf-release',
   ]);
 });
 
@@ -152,8 +153,10 @@ test('closeout profiles stay stable and Order PDF remains fully catalog-backed',
     'e2e-list',
     'e2e-smoke-run',
     'browser-perf',
+    'browser-perf-release',
   ]);
   assert.equal(CLOSEOUT_PROFILES.default.includes('browser-perf'), true);
+  assert.equal(CLOSEOUT_PROFILES.default.includes('browser-perf-release'), true);
 });
 
 test('normalize args collects profiles categories lane ids skips log dir and state options', () => {
@@ -364,7 +367,7 @@ test('state file resolves to explicit flag or default artifact path', () => {
 });
 
 test('browser-dependent lanes inherit environment-blocked from preflight', () => {
-  for (const laneId of ['e2e-list', 'e2e-smoke-run', 'browser-perf']) {
+  for (const laneId of ['e2e-list', 'e2e-smoke-run', 'browser-perf', 'browser-perf-release']) {
     const lane = CLOSEOUT_LANES.find(entry => entry.id === laneId);
     const result = runLane(lane, {
       priorResults: [{ id: 'e2e-preflight', status: 'environment-blocked' }],

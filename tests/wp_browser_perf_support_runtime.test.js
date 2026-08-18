@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  BROWSER_PERF_BASELINE_SCHEMA_VERSION,
+  BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS,
+  BROWSER_PERF_MIN_MATERIAL_DRIFT_MS,
   classifyRuntimeMetricDomain,
   createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
@@ -141,9 +144,30 @@ function perfSummary({
   };
 }
 
-function baseline20(overrides = {}) {
+const DEV_MEASUREMENT_PROFILE = Object.freeze({
+  id: 'dev',
+  label: 'Vite dev regression',
+  environmentKind: 'development',
+  buildPipeline: 'vite-dev',
+  serverKind: 'vite-dev-server',
+  observabilityMode: 'debug',
+  pagePath: '/index_pro.html',
+});
+
+const RELEASE_MEASUREMENT_PROFILE = Object.freeze({
+  id: 'release',
+  label: 'Release static UX',
+  environmentKind: 'release',
+  buildPipeline: 'wp_release:perf',
+  serverKind: 'static-release-server',
+  observabilityMode: 'perf',
+  pagePath: '/index.html',
+});
+
+function currentBaseline(overrides = {}) {
   return {
-    version: 20,
+    version: BROWSER_PERF_BASELINE_SCHEMA_VERSION,
+    measurementProfile: DEV_MEASUREMENT_PROFILE,
     uxJourneyBudgetMs: {},
     runtimeUxBudgetMs: {},
     runtimeCodeExecutionBudgetMs: {},
@@ -195,7 +219,7 @@ test('browser UX targets stay fixed and advisory independently from regression b
 
   const regressionFailures = evaluateBrowserPerfBaseline(
     { userFlow: {}, runtimeIssues: { pageErrors: [], consoleErrors: [] }, windowBrowserMetrics: metrics },
-    baseline20({ browserMetricBudget: { maxCls: 0.1, maxLcpMs: 4000, maxInpMs: 300 } })
+    currentBaseline({ browserMetricBudget: { maxCls: 0.1, maxLcpMs: 4000, maxInpMs: 300 } })
   );
   assert.deepEqual(regressionFailures, []);
 
@@ -218,6 +242,66 @@ test('browser UX targets stay fixed and advisory independently from regression b
   );
   assert.match(summary, /UX target status \(advisory\)/);
   assert.match(summary, /LCP: missed, value=3200ms, target<=2500ms, gap=700ms/);
+});
+
+test('browser regression baselines are bound to one measurement profile', () => {
+  const result = {
+    measurementProfile: RELEASE_MEASUREMENT_PROFILE,
+    userFlow: {},
+    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    windowBrowserMetrics: {},
+  };
+  const failures = evaluateBrowserPerfBaseline(result, currentBaseline());
+  assert.deepEqual(failures, [
+    'Browser perf baseline measurement profile mismatch (expected release, got dev)',
+  ]);
+});
+
+test('browser regression budgets separate dev variance and interaction wait from app execution', () => {
+  const result = {
+    measurementProfile: DEV_MEASUREMENT_PROFILE,
+    userFlow: {},
+    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    windowBrowserMetrics: { inp: { valueMs: 120 } },
+    windowPerfSummary: {
+      'sync.action': perfSummary({
+        uxP95Ms: 40,
+        codeExecutionP95Ms: 40,
+        interactionWaitP95Ms: 0,
+      }),
+      'modal.action': perfSummary({
+        uxP95Ms: 640,
+        codeExecutionP95Ms: 20,
+        interactionWaitP95Ms: 620,
+      }),
+    },
+  };
+  const devBaseline = createBrowserPerfBaseline(result, {
+    measurementProfile: DEV_MEASUREMENT_PROFILE,
+    requiredRuntimeMetrics: [],
+    requiredRuntimeMetricMinimumCounts: {},
+    requiredProjectActions: [],
+    requiredUserJourneys: [],
+    requiredUserJourneyMinimumStepCounts: {},
+  });
+  assert.equal(devBaseline.browserMetricBudget.maxInpMs, 500);
+  assert.equal(typeof devBaseline.runtimeUxBudgetMs['sync.action'], 'number');
+  assert.equal(devBaseline.runtimeUxBudgetMs['modal.action'], undefined);
+  assert.equal(typeof devBaseline.runtimeCodeExecutionBudgetMs['modal.action'], 'number');
+
+  const releaseBaseline = createBrowserPerfBaseline(
+    { ...result, measurementProfile: RELEASE_MEASUREMENT_PROFILE },
+    {
+      measurementProfile: RELEASE_MEASUREMENT_PROFILE,
+      requiredRuntimeMetrics: [],
+      requiredRuntimeMetricMinimumCounts: {},
+      requiredProjectActions: [],
+      requiredUserJourneys: [],
+      requiredUserJourneyMinimumStepCounts: {},
+    }
+  );
+  assert.equal(releaseBaseline.browserMetricBudget.maxInpMs, 200);
+  assert.equal(BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS, 20);
 });
 
 test('browser UX target summary treats unsupported or missing browser evidence as unmeasured, never as a pass', () => {
@@ -1108,10 +1192,14 @@ test('browser perf support summarizes repeated-action pressure and ranks drift-h
     lastAvgMs: 26,
     driftMs: 14,
     driftPct: 116.67,
+    driftComparable: false,
+    materialDriftPct: 0,
     fastestMs: 10,
     slowestMs: 30,
   });
   assert.equal(pressure['orderPdf.open'].driftPct, 8);
+  assert.equal(pressure['orderPdf.open'].materialDriftPct, 0);
+  assert.equal(BROWSER_PERF_MIN_MATERIAL_DRIFT_MS, 20);
 
   const ranked = rankRepeatedMetricPressure(pressure, 2);
   assert.deepEqual(
@@ -1433,12 +1521,12 @@ test('browser perf support summarizes runtime recovery hangover canonically and 
       perfEntry('project.load', 10, 'ok'),
       perfEntry('project.load', 10, 'ok'),
       perfEntry('project.load', 4, 'error'),
-      perfEntry('project.load', 50, 'ok'),
-      perfEntry('project.load', 48, 'ok'),
+      perfEntry('project.load', 80, 'ok'),
+      perfEntry('project.load', 78, 'ok'),
       perfEntry('project.load', 11, 'ok'),
       perfEntry('project.load', 5, 'error'),
-      perfEntry('project.load', 52, 'ok'),
-      perfEntry('project.load', 49, 'ok'),
+      perfEntry('project.load', 82, 'ok'),
+      perfEntry('project.load', 79, 'ok'),
       perfEntry('project.load', 12, 'ok'),
     ],
   };
@@ -1958,12 +2046,12 @@ test('browser perf support rejects old baselines and enforces UX and code budget
     },
   };
 
-  const schemaFailures = evaluateBrowserPerfBaseline(result, { ...baseline20(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 20, got 18\)/.test(item)));
+  const schemaFailures = evaluateBrowserPerfBaseline(result, { ...currentBaseline(), version: 18 });
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 23, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,
-    baseline20({
+    currentBaseline({
       runtimeUxBudgetMs: { 'project.save': 400 },
       runtimeCodeExecutionBudgetMs: { 'project.save': 50 },
     })
@@ -1973,7 +2061,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
 
   const codeFailures = evaluateBrowserPerfBaseline(
     result,
-    baseline20({
+    currentBaseline({
       runtimeUxBudgetMs: { 'project.save': 600 },
       runtimeCodeExecutionBudgetMs: { 'project.save': 10 },
     })
@@ -1986,9 +2074,20 @@ test('browser perf support rejects old baselines and enforces UX and code budget
       ...result,
       windowBrowserMetrics: { inp: { valueMs: 240 } },
     },
-    baseline20({ browserMetricBudget: { maxInpMs: 200 } })
+    currentBaseline({ browserMetricBudget: { maxInpMs: 200 } })
   );
   assert.ok(inpFailures.some(item => /INP exceeded budget \(240ms > 200ms\)/.test(item)));
+
+  const longTaskTotalFailures = evaluateBrowserPerfBaseline(
+    {
+      ...result,
+      windowBrowserMetrics: { longTasks: { count: 2, totalMs: 180, p95Ms: 90 } },
+    },
+    currentBaseline({ browserMetricBudget: { maxLongTaskTotalMs: 150 } })
+  );
+  assert.ok(
+    longTaskTotalFailures.some(item => /Long Task total exceeded budget \(180ms > 150ms\)/.test(item))
+  );
 
   const missingBrowserEvidenceFailures = evaluateBrowserPerfBaseline(
     {
@@ -2001,7 +2100,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
         inp: { valueMs: 0, entryCount: 0, source: 'none' },
       },
     },
-    baseline20({ requiredBrowserMetrics: ['cls', 'lcp', 'inp'] })
+    currentBaseline({ requiredBrowserMetrics: ['cls', 'lcp', 'inp'] })
   );
   assert.ok(
     missingBrowserEvidenceFailures.some(item => /Required browser UX evidence missing: LCP/.test(item))
@@ -2056,7 +2155,7 @@ test('browser perf support groups runtime metrics into stable domains and ranks 
     maxCodeExecutionP95Ms: 30,
     maxCodeExecutionMs: 30,
     pressureMetricCount: 1,
-    worstDriftPct: 76.19,
+    worstDriftPct: 0,
     requiredMetricCount: 1,
     presentRequiredMetricCount: 1,
     missingRequiredMetricCount: 0,
@@ -3352,7 +3451,7 @@ test('browser perf support baseline evaluation enforces customer journey budgets
         selectorListenerCount: 4,
         sourceCount: 3,
         slowSourceCount: 2,
-        totalSourceMs: 122,
+        totalSourceMs: 145,
         topSources: ['PATCH:actions.design.savedColor:design'],
       },
     },
@@ -3483,6 +3582,29 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
     []
   );
 
+  const timerNoise = {
+    ...clean,
+    windowStoreFlowPressureSummary: {
+      'project.save-load.roundtrip': {
+        ...clean.windowStoreFlowPressureSummary['project.save-load.roundtrip'],
+        totalSourceMs: 75,
+      },
+    },
+  };
+  const timerNoiseFailures = evaluateBrowserPerfBaseline(timerNoise, baseline, {
+    requiredRuntimeMetrics: ['project.load'],
+    requiredRuntimeDomains: ['project'],
+    requiredRuntimeMetricMinimumCounts: { 'project.load': 1 },
+    requiredProjectActions: [],
+    requiredUserJourneys: [],
+    requiredUserJourneyMinimumStepCounts: {},
+    happyPathMetricsWithoutErrors: [],
+  });
+  assert.equal(
+    timerNoiseFailures.some(item => /store source time exceeded budget/.test(item)),
+    false
+  );
+
   const bloated = {
     ...clean,
     windowStoreFlowPressureSummary: {
@@ -3494,7 +3616,7 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
         selectorListenerCount: 4,
         sourceCount: 2,
         slowSourceCount: 1,
-        totalSourceMs: 70,
+        totalSourceMs: 90,
         topSources: ['PATCH:actions.project.save:config+meta'],
       },
     },

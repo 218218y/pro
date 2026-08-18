@@ -7,6 +7,9 @@ coverage/
 # Release evidence is written and validated only by the closeout control plane.
 docs/FINAL_VERIFICATION_SUMMARY.json
 docs/FINAL_VERIFICATION_SUMMARY.md
+# Browser performance baselines are written by measured runs through JSON.stringify.
+tools/wp_browser_perf_smoke_baseline.json
+tools/wp_browser_perf_release_baseline.json
 tools/three_addons/
 *.zip
 **/*.min.js

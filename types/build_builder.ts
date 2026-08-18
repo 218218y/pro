@@ -508,7 +508,10 @@ export interface BuilderMirrorMaterialArgsLike extends BuilderRenderCommonArgsLi
   materialSnapshot: BuilderMaterialSnapshotLike;
 }
 export type BuilderGetMirrorMaterialFn = (args: BuilderMirrorMaterialArgsLike) => unknown;
-export type BuilderDebouncedBuildFn = () => unknown;
+export type BuilderDebouncedBuildFn = {
+  (): unknown;
+  cancel?: () => void;
+};
 export type BuilderDebounceFn<T extends BuilderCallable = BuilderCallable> = (fn: T, ms?: number) => T;
 export type BuilderGetMaterialFn = (
   color: unknown,

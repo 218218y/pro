@@ -9,12 +9,15 @@ function read(rel) {
 test('debug console surface is installed without exposing global App', () => {
   const entry = read('esm/entry_pro_main.ts');
   const browserBoot = read('esm/entry_pro_main_browser_boot.ts');
+  const releaseMain = read('esm/release_main.ts');
   const debugSurface = read('esm/native/runtime/debug_console_surface.ts');
   const observabilitySurface = read('esm/native/runtime/observability_surface_full.ts');
   const domGlobals = read('types/dom_globals.d.ts');
 
   assert.match(entry, /runBrowserBootSetup/);
   assert.match(browserBoot, /installObservabilityForBuild\(bootApp, bootWindow\)/);
+  assert.match(releaseMain, /installObservabilityForBuild\(app, win\)/);
+  assert.match(releaseMain, /startPerfSpan\(app, 'boot\.browser\.setup'\)/);
   assert.match(observabilitySurface, /export function installObservabilityForBuild\(/);
   assert.match(observabilitySurface, /installDebugConsoleSurface\(App, win\)/);
   assert.match(debugSurface, /Object\.defineProperty\(win, '__WP_DEBUG__'/);

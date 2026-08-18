@@ -61,21 +61,21 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 
 ## Tests/tools
 
-| Surface                        | Canonical owner                                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_layer_contract_support.mjs`, `tools/wp_public_api_contract.js`        |
-| Docs control plane             | `tools/wp_docs_control_plane_audit.mjs`                                                                       |
-| Generated audit report catalog | `tools/wp_generated_report_contract.mjs`                                                                      |
-| Modernization current state    | `tools/wp_modernization_state_report.mjs` -> `docs/MODERNIZATION_STATE.*`                                     |
-| Named test-group catalog       | `tools/wp_test_group_catalog.mjs` + `tools/wp_test_group.mjs`                                                 |
-| Runtime test sharding          | `tools/wp_test_state.js` + `tools/wp_test_shard_policy.js`                                                    |
-| Multi-store profile contract   | `tools/wp_site_profile_contract.mjs` + `tools/wp_site_profiles.mjs`                                           |
-| Verification manifest          | `tools/wp_verification_manifest.cjs`                                                                          |
-| Closeout execution/state       | `tools/wp_verify_closeout*.cjs`                                                                               |
-| Closeout report contract       | `tools/wp_verification_summary_contract.mjs` -> `docs/FINAL_VERIFICATION_SUMMARY.*`                           |
-| Perf smoke report target       | `tools/wp_perf_smoke*.mjs` -> `docs/PERF_AND_STABILITY_BASELINE.md`                                           |
-| Browser perf report target     | `tools/wp_browser_perf_smoke.mjs` -> `docs/BROWSER_PERF_AND_E2E_BASELINE.md`                                  |
-| Script duplicate report target | `tools/wp_script_duplicate_audit.mjs` -> `docs/SCRIPT_DUPLICATE_AUDIT.md`, `docs/script_duplicate_audit.json` |
+| Surface                        | Canonical owner                                                                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_layer_contract_support.mjs`, `tools/wp_public_api_contract.js`                             |
+| Docs control plane             | `tools/wp_docs_control_plane_audit.mjs`                                                                                            |
+| Generated audit report catalog | `tools/wp_generated_report_contract.mjs`                                                                                           |
+| Modernization current state    | `tools/wp_modernization_state_report.mjs` -> `docs/MODERNIZATION_STATE.*`                                                          |
+| Named test-group catalog       | `tools/wp_test_group_catalog.mjs` + `tools/wp_test_group.mjs`                                                                      |
+| Runtime test sharding          | `tools/wp_test_state.js` + `tools/wp_test_shard_policy.js`                                                                         |
+| Multi-store profile contract   | `tools/wp_site_profile_contract.mjs` + `tools/wp_site_profiles.mjs`                                                                |
+| Verification manifest          | `tools/wp_verification_manifest.cjs`                                                                                               |
+| Closeout execution/state       | `tools/wp_verify_closeout*.cjs`                                                                                                    |
+| Closeout report contract       | `tools/wp_verification_summary_contract.mjs` -> `docs/FINAL_VERIFICATION_SUMMARY.*`                                                |
+| Perf smoke report target       | `tools/wp_perf_smoke*.mjs` -> `docs/PERF_AND_STABILITY_BASELINE.md`                                                                |
+| Browser perf report targets    | `tools/wp_browser_perf_smoke.mjs` -> dev `docs/BROWSER_PERF_AND_E2E_BASELINE.md` + release `docs/RELEASE_BROWSER_PERF_BASELINE.md` |
+| Script duplicate report target | `tools/wp_script_duplicate_audit.mjs` -> `docs/SCRIPT_DUPLICATE_AUDIT.md`, `docs/script_duplicate_audit.json`                      |
 
 ## Rule of thumb
 

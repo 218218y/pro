@@ -265,9 +265,18 @@ const CLOSEOUT_LANES = [
   },
   {
     id: 'browser-perf',
-    label: 'Browser performance evidence',
+    label: 'Browser dev regression performance evidence',
     command: 'npm',
     args: ['run', 'perf:browser'],
+    category: 'perf',
+    expected: 'pass',
+    dependsOn: ['e2e-preflight'],
+  },
+  {
+    id: 'browser-perf-release',
+    label: 'Browser release UX performance evidence',
+    command: 'npm',
+    args: ['run', 'perf:browser:release'],
     category: 'perf',
     expected: 'pass',
     dependsOn: ['e2e-preflight'],
@@ -289,7 +298,7 @@ const CLOSEOUT_PROFILES = {
   sketch: CLOSEOUT_LANES.filter(lane => lane.id.startsWith('sketch-')).map(lane => lane.id),
   'cloud-sync': CLOSEOUT_LANES.filter(lane => lane.id.startsWith('cloud-sync-')).map(lane => lane.id),
   e2e: CLOSEOUT_LANES.filter(lane => lane.category === 'e2e').map(lane => lane.id),
-  'browser-evidence': ['e2e-preflight', 'e2e-list', 'e2e-smoke-run', 'browser-perf'],
+  'browser-evidence': ['e2e-preflight', 'e2e-list', 'e2e-smoke-run', 'browser-perf', 'browser-perf-release'],
 };
 
 function nowIso() {

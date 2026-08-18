@@ -1,4 +1,4 @@
-import type { AppContainer, TimeoutHandleLike } from '../../../types/index.js';
+import type { AppContainer, BuilderDebouncedBuildFn, TimeoutHandleLike } from '../../../types/index.js';
 
 import { getBrowserTimers, reportError } from '../runtime/api.js';
 import { readDebounceDep } from './scheduler_shared_deps.js';
@@ -34,7 +34,7 @@ function createDebouncedRunner(
   fn: () => void,
   ms: number,
   opts?: DebouncedRunnerOpts | null
-): () => void {
+): BuilderDebouncedBuildFn {
   const fire = () => {
     const state = ensureSchedulerState(App);
     if (!state.debouncedRunScheduled) return;
@@ -46,15 +46,20 @@ function createDebouncedRunner(
   if (typeof debounce === 'function') {
     s.debouncedUsesTimerDeadline = false;
     const debounced = debounce(fire, ms);
-    return () => {
+    const runner: BuilderDebouncedBuildFn = () => {
       Reflect.apply(debounced, undefined, []);
     };
+    runner.cancel = () => {
+      const cancel = (debounced as { cancel?: unknown }).cancel;
+      if (typeof cancel === 'function') Reflect.apply(cancel, debounced, []);
+    };
+    return runner;
   }
 
   s.debouncedUsesTimerDeadline = true;
   let pendingHandle: TimeoutHandleLike | undefined;
   const handleVersions = new Map<TimeoutHandleLike, number>();
-  return () => {
+  const runner: BuilderDebouncedBuildFn = () => {
     const scheduledVersion = readSchedulerVersion(
       typeof opts?.readScheduledVersion === 'function' ? opts.readScheduledVersion() : 0
     );
@@ -88,13 +93,21 @@ function createDebouncedRunner(
     pendingHandle = nextHandle;
     if (nextHandle !== undefined) handleVersions.set(nextHandle, scheduledVersion);
   };
+  runner.cancel = () => {
+    if (pendingHandle === undefined) return;
+    const handle = pendingHandle;
+    pendingHandle = undefined;
+    handleVersions.delete(handle);
+    clearTimeoutHandle(getBrowserTimers(App).clearTimeout, handle);
+  };
+  return runner;
 }
 
 export function makeDebouncedBuild(
   App: AppContainer,
   runPendingBuild: (reason: string) => void,
   opts?: DebouncedRunnerOpts | null
-): () => void {
+): BuilderDebouncedBuildFn {
   return createDebouncedRunner(App, () => runPendingBuild('debounced'), 60, opts);
 }
 

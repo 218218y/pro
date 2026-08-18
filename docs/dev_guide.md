@@ -105,6 +105,7 @@ npm run e2e:smoke:list
 npm run e2e:smoke
 npm run perf:smoke
 npm run perf:browser
+npm run perf:browser:release
 ```
 
 For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
@@ -114,6 +115,12 @@ Source-derived audit reports are checked with `npm run check:generated-reports`.
 Use `npm run gate` for broad shared-surface changes, high-risk architecture changes, explicit user requests, or when targeted checks are not enough evidence. Use `npm run gate:full` only before release-style handoff or when explicitly requested.
 
 Do not run `npm run e2e:smoke` by default. Use browser/E2E smoke only for browser boot, UI interaction, Playwright-covered user journeys, canvas pointer behavior, cloud-sync reconnect behavior, or explicit request.
+
+Browser performance has two deliberately separate environments. `npm run perf:browser` is the Vite-dev
+regression lane and uses only the dev baseline. `npm run perf:browser:release` builds a minified, content-hashed
+release artifact in observability mode `perf`, serves that artifact statically, verifies the served build id and
+bundle digest, and compares it only with the release baseline. Fixed product UX targets remain independent from
+both generated regression baselines, so regenerating a baseline cannot widen the desired UX envelope.
 
 ## UI/state rules
 

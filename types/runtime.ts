@@ -437,6 +437,7 @@ export interface WardrobeProBrowserPerfMetrics {
 }
 
 export interface WardrobeProPerfStateFingerprint {
+  systemReady: boolean;
   projectName: string;
   savedColorCount: number;
   savedColorValues: string[];

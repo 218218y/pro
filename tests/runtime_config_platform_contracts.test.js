@@ -120,7 +120,9 @@ test('[runtime-config-platform] legacy injected config globals stay deleted and 
   assert.equal(hits.length, 0, `forbidden Window-global config tokens remain:\n${hits.join('\n')}`);
 
   assert.match(releaseMain, /validateReactBootDeps\(deps, 'release_main'\)/);
+  assert.match(releaseMain, /validateReactBrowserBootDeps\(/);
   assert.match(entryBootSupport, /validateReactBootDeps\(deps, 'entry_pro_main'\)/);
+  assert.match(runtimeBootConfig, /Injected browser window and document are required/);
   assert.match(runtimeBootConfig, /if \(issues\.length\) \{/);
   assert.match(runtimeBootConfig, /Invalid runtime configuration/);
   assert.doesNotMatch(releaseMain, /catch\s*\{\s*\/\/ ignore/);

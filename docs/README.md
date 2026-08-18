@@ -20,6 +20,7 @@ These files are kept because repository scripts may write to them. They must des
 
 - `PERF_AND_STABILITY_BASELINE.md`
 - `BROWSER_PERF_AND_E2E_BASELINE.md`
+- `RELEASE_BROWSER_PERF_BASELINE.md`
 - `FINAL_VERIFICATION_SUMMARY.md`
 - `FINAL_VERIFICATION_SUMMARY.json`
 - `SCRIPT_DUPLICATE_AUDIT.md`

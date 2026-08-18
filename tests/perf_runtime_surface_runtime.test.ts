@@ -90,7 +90,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
               { extDrawersCount: 1, sketchExtras: { drawers: [{ id: 'sid-lower-1' }] } },
             ],
           },
-          runtime: {},
+          runtime: { systemReady: true },
           mode: {},
           meta: { version: 1, updatedAt: 1, dirty: false },
         };
@@ -189,6 +189,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.equal(storeDebug, null);
   assert.equal(surface.getStoreDebugStats?.(), null);
   assert.deepEqual(getPerfStateFingerprint(app), {
+    systemReady: true,
     projectName: 'Browser Perf Project',
     savedColorCount: 2,
     savedColorValues: ['#123456', '#abcdef'],

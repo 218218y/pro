@@ -13,8 +13,12 @@ import { boot as bootCore, createApp as createAppCore } from './main.js';
 import { runBrowserBootRuntime } from './boot/boot_browser_runtime.js';
 import { bootReactUi } from './native/ui/react/boot_react_ui.js';
 
-import { getBrowserDocumentFromDeps, getBrowserWindowFromDeps } from './native/runtime/runtime_globals.js';
-import { validateReactBootDeps } from './native/runtime/runtime_boot_config.js';
+import { validateReactBootDeps, validateReactBrowserBootDeps } from './native/runtime/runtime_boot_config.js';
+import {
+  endPerfSpan,
+  installObservabilityForBuild,
+  startPerfSpan,
+} from './native/runtime/observability_surface.js';
 
 import type { AppContainer, Deps } from '../types';
 
@@ -33,21 +37,23 @@ export function createApp(opts: { deps: Deps }): AppContainer {
 }
 
 export async function boot(opts: { deps: Deps }): Promise<AppContainer> {
-  const deps = requireReleaseDeps(opts.deps);
-  const doc = getBrowserDocumentFromDeps(deps);
-  const win = getBrowserWindowFromDeps(deps);
-  if (!win || !doc) {
-    throw new Error('[WardrobePro][release] Injected browser window and document are required.');
-  }
+  const { deps, document: doc, window: win } = validateReactBrowserBootDeps(opts.deps, 'release_main');
 
   const app = await bootCore({ deps });
-  await runBrowserBootRuntime({
-    app,
-    window: win,
-    document: doc,
-    mountReactUi,
-    startBootUi: true,
-  });
-
-  return app;
+  installObservabilityForBuild(app, win);
+  const perfSpanId = startPerfSpan(app, 'boot.browser.setup');
+  try {
+    await runBrowserBootRuntime({
+      app,
+      window: win,
+      document: doc,
+      mountReactUi,
+      startBootUi: true,
+    });
+    endPerfSpan(app, perfSpanId);
+    return app;
+  } catch (error) {
+    endPerfSpan(app, perfSpanId, { status: 'error', error });
+    throw error;
+  }
 }

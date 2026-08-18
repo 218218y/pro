@@ -17,9 +17,19 @@ npm run e2e:cloud-sync-reconnect
 npm run e2e:canvas-pointer-parity
 npm run e2e:smoke:headed
 npm run perf:browser
+npm run perf:browser:release
 ```
 
 `npm run e2e:smoke:preflight` checks the Playwright/browser environment before running the suite.
+
+`npm run perf:browser` measures the full instrumented journey against the Vite-dev regression baseline.
+`npm run perf:browser:release` first produces a minified/content-hashed release through the canonical release
+packager in `perf` observability mode, serves only that folder from the local static server, verifies the served
+release metadata, and then runs the same journey against an independent release regression baseline. The release
+artifact uses instrumentation so the lane can collect runtime phases and Event Timing, but otherwise follows the
+release minification, hashing, HTML, CSS, vendor, and static-serving path rather than Vite module transformation.
+Numeric browser-budget candidates receive one clean confirmation run and fail only when reproduced; correctness
+errors and missing/invalid evidence fail immediately without retry.
 
 `npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It keeps the five
 canonical Chromium `@critical` journeys (app boot/navigation, real authoring/build follow-through,
