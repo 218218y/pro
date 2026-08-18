@@ -26,12 +26,12 @@ import {
   NORMAL_AMBIENT_DEFAULT,
   NORMAL_DIR_DEFAULT,
   SKETCH_AMBIENT_DEFAULT,
+  VIEWPORT_DIRECTIONAL_SHADOW_PRESET,
   type SceneViewUpdateLightsOpts,
   type SceneViewUpdateModeOpts,
   updateCornerAutoLightShadowRefresh,
 } from './scene_view_lighting_shared.js';
 import { applyRendererLightingMode } from './scene_view_lighting_renderer.js';
-import { VIEWPORT_DIRECTIONAL_SHADOW_PRESET } from '../../shared/visual_lighting_tokens.js';
 
 function applyLightingControlUi(App: AppContainer, ui: UiSnapshotLike): void {
   const ambient = asAmbientLight(getAmbientLight(App));

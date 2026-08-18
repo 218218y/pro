@@ -3,6 +3,7 @@ import type { AppContainer } from '../../../types';
 import { getRenderSlot, getShadowMap, setRenderSlot } from '../runtime/render_access.js';
 import { reportSceneViewNonFatal } from './scene_view_shared.js';
 import {
+  VIEWPORT_DIRECTIONAL_SHADOW_PRESET,
   VIEWPORT_NORMAL_EXPOSURE,
   VIEWPORT_NORMAL_LIGHTING_PRESET,
   VIEWPORT_SKETCH_AMBIENT_INTENSITY,
@@ -12,6 +13,7 @@ export const NORMAL_EXPOSURE = VIEWPORT_NORMAL_EXPOSURE;
 export const NORMAL_AMBIENT_DEFAULT = VIEWPORT_NORMAL_LIGHTING_PRESET.amb;
 export const NORMAL_DIR_DEFAULT = VIEWPORT_NORMAL_LIGHTING_PRESET.dir;
 export const SKETCH_AMBIENT_DEFAULT = VIEWPORT_SKETCH_AMBIENT_INTENSITY;
+export { VIEWPORT_DIRECTIONAL_SHADOW_PRESET };
 
 export type SceneViewUpdateLightsOpts = {
   updateShadows?: boolean;

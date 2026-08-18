@@ -10,9 +10,9 @@ import {
   NORMAL_DIR_DEFAULT,
   NORMAL_EXPOSURE,
   SKETCH_AMBIENT_DEFAULT,
+  VIEWPORT_DIRECTIONAL_SHADOW_PRESET,
 } from '../esm/native/services/scene_view_lighting_shared.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
-import { VIEWPORT_DIRECTIONAL_SHADOW_PRESET } from '../esm/shared/visual_lighting_tokens.ts';
 
 type AnyRecord = Record<string, unknown>;
 
