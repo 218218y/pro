@@ -78,12 +78,15 @@ function formatThicknessInputValue(value: number): string {
 
 export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: boolean } = {}) {
   const app = useApp();
-  const { wardrobeType, boardMaterial, doorMountMode } = useCfgSelectorShallow(cfg => ({
-    wardrobeType: selectWardrobeType(cfg),
-    boardMaterial: selectBoardMaterial(cfg),
-    doorMountMode: selectDoorMountMode(cfg),
-  }));
-  const doorMountThickness = useCfgSelectorShallow(selectDoorMountThicknessControls);
+  const { wardrobeType, boardMaterial, doorMountMode } = useCfgSelectorShallow(
+    cfg => ({
+      wardrobeType: selectWardrobeType(cfg),
+      boardMaterial: selectBoardMaterial(cfg),
+      doorMountMode: selectDoorMountMode(cfg),
+    }),
+    'structure'
+  );
+  const doorMountThickness = useCfgSelectorShallow(selectDoorMountThicknessControls, 'structure');
 
   return (
     <div

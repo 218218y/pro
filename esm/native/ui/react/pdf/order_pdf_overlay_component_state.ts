@@ -32,14 +32,17 @@ export type OrderPdfOverlayComponentRefs = OrderPdfOverlayControllerRefs & {
 };
 
 export function useOrderPdfOverlayComponentUiState(): OrderPdfOverlayControllerUi {
-  const { open, draftFromUi, zoomFromUi } = useUiSelectorShallow(ui => {
-    const z = ui.orderPdfEditorZoom;
-    return {
-      open: !!ui.orderPdfEditorOpen,
-      draftFromUi: ui.orderPdfEditorDraft,
-      zoomFromUi: typeof z === 'number' && Number.isFinite(z) ? z : 1,
-    };
-  });
+  const { open, draftFromUi, zoomFromUi } = useUiSelectorShallow(
+    ui => {
+      const z = ui.orderPdfEditorZoom;
+      return {
+        open: !!ui.orderPdfEditorOpen,
+        draftFromUi: ui.orderPdfEditorDraft,
+        zoomFromUi: typeof z === 'number' && Number.isFinite(z) ? z : 1,
+      };
+    },
+    ['navigation', 'project-data']
+  );
 
   const [draft, setDraft] = useState<OrderPdfDraft | null>(null);
   const [zoom, setZoom] = useState<number>(zoomFromUi);

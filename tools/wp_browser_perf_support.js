@@ -679,6 +679,12 @@ function normalizeStoreDebugStats(stats) {
     selectorListenerCount: Number.isFinite(stats?.selectorListenerCount)
       ? Math.max(0, Math.floor(Number(stats.selectorListenerCount)))
       : 0,
+    selectorFilteredCount: Number.isFinite(stats?.selectorFilteredCount)
+      ? Math.max(0, Math.floor(Number(stats.selectorFilteredCount)))
+      : 0,
+    selectorEvaluationCount: Number.isFinite(stats?.selectorEvaluationCount)
+      ? Math.max(0, Math.floor(Number(stats.selectorEvaluationCount)))
+      : 0,
     selectorNotifyCount: Number.isFinite(stats?.selectorNotifyCount)
       ? Math.max(0, Math.floor(Number(stats.selectorNotifyCount)))
       : 0,
@@ -721,6 +727,8 @@ function subtractStoreDebugStats(after, before) {
     commitCount: Math.max(0, next.commitCount - prev.commitCount),
     noopSkipCount: Math.max(0, next.noopSkipCount - prev.noopSkipCount),
     noBuildCount: Math.max(0, next.noBuildCount - prev.noBuildCount),
+    selectorFilteredCount: Math.max(0, next.selectorFilteredCount - prev.selectorFilteredCount),
+    selectorEvaluationCount: Math.max(0, next.selectorEvaluationCount - prev.selectorEvaluationCount),
     selectorNotifyCount: Math.max(0, next.selectorNotifyCount - prev.selectorNotifyCount),
     selectorListenerCount: next.selectorListenerCount,
     sources,
@@ -745,6 +753,8 @@ export function createStoreDebugSummary(stats) {
     noopSkipCount: normalized.noopSkipCount,
     noBuildCount: normalized.noBuildCount,
     selectorListenerCount: normalized.selectorListenerCount,
+    selectorFilteredCount: normalized.selectorFilteredCount,
+    selectorEvaluationCount: normalized.selectorEvaluationCount,
     selectorNotifyCount: normalized.selectorNotifyCount,
     sourceCount: sourceRows.length,
     slowSourceCount,
@@ -798,6 +808,8 @@ export function createStoreFlowPressureSummary(steps) {
       commitCount: delta.commitCount,
       noopSkipCount: delta.noopSkipCount,
       noBuildCount: delta.noBuildCount,
+      selectorFilteredCount: delta.selectorFilteredCount,
+      selectorEvaluationCount: delta.selectorEvaluationCount,
       selectorNotifyCount: delta.selectorNotifyCount,
       selectorListenerCount: delta.selectorListenerCount,
       sourceCount: Object.keys(delta.sources).length,
@@ -819,15 +831,25 @@ export function rankStoreFlowPressure(summary, limit = 5) {
       commitCount: Number(item?.commitCount) || 0,
       noopSkipCount: Number(item?.noopSkipCount) || 0,
       noBuildCount: Number(item?.noBuildCount) || 0,
+      selectorFilteredCount: Number(item?.selectorFilteredCount) || 0,
+      selectorEvaluationCount: Number(item?.selectorEvaluationCount) || 0,
       selectorNotifyCount: Number(item?.selectorNotifyCount) || 0,
       sourceCount: Number(item?.sourceCount) || 0,
       slowSourceCount: Number(item?.slowSourceCount) || 0,
       totalSourceMs: Number(item?.totalSourceMs) || 0,
       topSources: Array.isArray(item?.topSources) ? item.topSources.slice() : [],
     }))
-    .filter(item => item.commitCount > 0 || item.selectorNotifyCount > 0 || item.totalSourceMs > 0)
+    .filter(
+      item =>
+        item.commitCount > 0 ||
+        item.selectorEvaluationCount > 0 ||
+        item.selectorNotifyCount > 0 ||
+        item.totalSourceMs > 0
+    )
     .sort((left, right) => {
       if (right.commitCount !== left.commitCount) return right.commitCount - left.commitCount;
+      if (right.selectorEvaluationCount !== left.selectorEvaluationCount)
+        return right.selectorEvaluationCount - left.selectorEvaluationCount;
       if (right.selectorNotifyCount !== left.selectorNotifyCount)
         return right.selectorNotifyCount - left.selectorNotifyCount;
       if (right.totalSourceMs !== left.totalSourceMs) return right.totalSourceMs - left.totalSourceMs;
@@ -843,6 +865,10 @@ export function createStorePressureBudget(summary) {
   for (const [name, item] of Object.entries(summary || {})) {
     budget[name] = {
       maxCommitCount: Math.max(Math.ceil((Number(item?.commitCount) || 0) * 1.5 + 3), 6),
+      maxSelectorEvaluationCount: Math.max(
+        Math.ceil((Number(item?.selectorEvaluationCount) || 0) * 1.35 + 12),
+        20
+      ),
       maxSelectorNotifyCount: Math.max(Math.ceil((Number(item?.selectorNotifyCount) || 0) * 1.35 + 10), 20),
       maxTotalSourceMs: Math.max(Math.ceil((Number(item?.totalSourceMs) || 0) * 1.5 + 15), 30),
     };
@@ -1740,14 +1766,19 @@ export function createUserJourneyDiagnosisSummary(
       .filter(step => step.name);
     const burstyStepRows = stepRows.filter(step => {
       const commitCount = Number(step.commitCount) || 0;
+      const selectorEvaluationCount = Number(step.selectorEvaluationCount) || 0;
       const selectorNotifyCount = Number(step.selectorNotifyCount) || 0;
+      const selectorPressure = selectorEvaluationCount > 0 ? selectorEvaluationCount : selectorNotifyCount;
       const totalSourceMs = Number(step.totalSourceMs) || 0;
-      return commitCount >= 6 || selectorNotifyCount >= 18 || totalSourceMs >= 20;
+      return commitCount >= 6 || selectorPressure >= 18 || totalSourceMs >= 20;
     });
     const topStep =
       stepRows.slice().sort((left, right) => {
         if ((right.commitCount || 0) !== (left.commitCount || 0))
           return (right.commitCount || 0) - (left.commitCount || 0);
+        if ((right.selectorEvaluationCount || 0) !== (left.selectorEvaluationCount || 0)) {
+          return (right.selectorEvaluationCount || 0) - (left.selectorEvaluationCount || 0);
+        }
         if ((right.selectorNotifyCount || 0) !== (left.selectorNotifyCount || 0)) {
           return (right.selectorNotifyCount || 0) - (left.selectorNotifyCount || 0);
         }
@@ -1765,15 +1796,18 @@ export function createUserJourneyDiagnosisSummary(
         ? roundDuration(Math.min(100, ((Number(topSource.totalMs) || 0) / Number(item.totalSourceMs)) * 100))
         : 0;
     const commitCount = Number(item?.commitCount) || 0;
+    const selectorFilteredCount = Number(item?.selectorFilteredCount) || 0;
+    const selectorEvaluationCount = Number(item?.selectorEvaluationCount) || 0;
     const selectorNotifyCount = Number(item?.selectorNotifyCount) || 0;
+    const selectorPressure = selectorEvaluationCount > 0 ? selectorEvaluationCount : selectorNotifyCount;
     const totalDurationMs = Number(item?.totalDurationMs) || 0;
     let primaryBottleneck = 'balanced';
     if (
-      commitCount >= Math.max(10, selectorNotifyCount * 0.5) &&
+      commitCount >= Math.max(10, selectorPressure * 0.5) &&
       commitCount >= (Number(item?.stepCount) || 0) * 2
     ) {
       primaryBottleneck = 'store-churn';
-    } else if (selectorNotifyCount >= Math.max(20, commitCount * 1.75)) {
+    } else if (selectorPressure >= Math.max(20, commitCount * 1.75)) {
       primaryBottleneck = 'selector-fanout';
     } else if (dominantSourceSharePct >= 45 && (Number(topSource?.stepCount) || 0) >= 2) {
       primaryBottleneck = 'source-hotspot';
@@ -1789,11 +1823,15 @@ export function createUserJourneyDiagnosisSummary(
       totalDurationMs: roundDuration(totalDurationMs),
       totalSourceMs: roundDuration(Number(item?.totalSourceMs) || 0),
       commitCount,
+      selectorFilteredCount,
+      selectorEvaluationCount,
       selectorNotifyCount,
       ...(topStep
         ? {
             topStepName: topStep.name,
             topStepCommitCount: Number(topStep.commitCount) || 0,
+            topStepSelectorFilteredCount: Number(topStep.selectorFilteredCount) || 0,
+            topStepSelectorEvaluationCount: Number(topStep.selectorEvaluationCount) || 0,
             topStepSelectorNotifyCount: Number(topStep.selectorNotifyCount) || 0,
             topStepTotalSourceMs: roundDuration(Number(topStep.totalSourceMs) || 0),
           }
@@ -1824,6 +1862,8 @@ export function rankUserJourneyDiagnosis(summary, limit = 5) {
       totalDurationMs: Number(item?.totalDurationMs) || 0,
       totalSourceMs: Number(item?.totalSourceMs) || 0,
       commitCount: Number(item?.commitCount) || 0,
+      selectorFilteredCount: Number(item?.selectorFilteredCount) || 0,
+      selectorEvaluationCount: Number(item?.selectorEvaluationCount) || 0,
       selectorNotifyCount: Number(item?.selectorNotifyCount) || 0,
       topStepName: item?.topStepName || null,
       topSourceKey: item?.topSourceKey || null,
@@ -1930,6 +1970,8 @@ export function createUserJourneySummary(steps, storeFlowSummary = {}, fallbackF
         averageStepMs: 0,
         maxStepDurationMs: 0,
         commitCount: 0,
+        selectorFilteredCount: 0,
+        selectorEvaluationCount: 0,
         selectorNotifyCount: 0,
         totalSourceMs: 0,
         slowSourceCount: 0,
@@ -1944,6 +1986,8 @@ export function createUserJourneySummary(steps, storeFlowSummary = {}, fallbackF
     bucket.totalDurationMs = roundDuration(bucket.totalDurationMs + step.durationMs);
     bucket.maxStepDurationMs = Math.max(bucket.maxStepDurationMs, step.durationMs);
     bucket.commitCount += Number(pressure?.commitCount) || 0;
+    bucket.selectorFilteredCount += Number(pressure?.selectorFilteredCount) || 0;
+    bucket.selectorEvaluationCount += Number(pressure?.selectorEvaluationCount) || 0;
     bucket.selectorNotifyCount += Number(pressure?.selectorNotifyCount) || 0;
     bucket.totalSourceMs = roundDuration(bucket.totalSourceMs + (Number(pressure?.totalSourceMs) || 0));
     bucket.slowSourceCount += Number(pressure?.slowSourceCount) || 0;
@@ -1980,6 +2024,8 @@ export function rankUserJourneys(summary, limit = 5) {
       averageStepMs: Number(item?.averageStepMs) || 0,
       maxStepDurationMs: Number(item?.maxStepDurationMs) || 0,
       commitCount: Number(item?.commitCount) || 0,
+      selectorFilteredCount: Number(item?.selectorFilteredCount) || 0,
+      selectorEvaluationCount: Number(item?.selectorEvaluationCount) || 0,
       selectorNotifyCount: Number(item?.selectorNotifyCount) || 0,
       totalSourceMs: Number(item?.totalSourceMs) || 0,
       slowSourceCount: Number(item?.slowSourceCount) || 0,
@@ -1988,6 +2034,9 @@ export function rankUserJourneys(summary, limit = 5) {
     .filter(item => item.stepCount > 0)
     .sort((left, right) => {
       if (right.commitCount !== left.commitCount) return right.commitCount - left.commitCount;
+      if (right.selectorEvaluationCount !== left.selectorEvaluationCount) {
+        return right.selectorEvaluationCount - left.selectorEvaluationCount;
+      }
       if (right.selectorNotifyCount !== left.selectorNotifyCount) {
         return right.selectorNotifyCount - left.selectorNotifyCount;
       }
@@ -2006,6 +2055,10 @@ export function createUserJourneyBudget(summary) {
     budget[name] = {
       maxTotalDurationMs: Math.max(Math.ceil((Number(item?.totalDurationMs) || 0) * 1.35 + 40), 150),
       maxCommitCount: Math.max(Math.ceil((Number(item?.commitCount) || 0) * 1.4 + 4), 8),
+      maxSelectorEvaluationCount: Math.max(
+        Math.ceil((Number(item?.selectorEvaluationCount) || 0) * 1.35 + 14),
+        24
+      ),
       maxSelectorNotifyCount: Math.max(Math.ceil((Number(item?.selectorNotifyCount) || 0) * 1.35 + 12), 20),
       maxTotalSourceMs: Math.max(Math.ceil((Number(item?.totalSourceMs) || 0) * 1.4 + 20), 35),
     };
@@ -3186,13 +3239,13 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   }
   lines.push('', '## Store write pressure', '');
   lines.push(
-    `Store commits: ${Number(storeDebugSummary.commitCount) || 0}, no-op skips: ${Number(storeDebugSummary.noopSkipCount) || 0}, noBuild commits: ${Number(storeDebugSummary.noBuildCount) || 0}, selector notifications: ${Number(storeDebugSummary.selectorNotifyCount) || 0}, tracked sources: ${Number(storeDebugSummary.sourceCount) || 0}, slow sources: ${Number(storeDebugSummary.slowSourceCount) || 0}, total source time: ${formatMs(Number(storeDebugSummary.totalSourceMs) || 0)}`
+    `Store commits: ${Number(storeDebugSummary.commitCount) || 0}, no-op skips: ${Number(storeDebugSummary.noopSkipCount) || 0}, noBuild commits: ${Number(storeDebugSummary.noBuildCount) || 0}, selector filtered: ${Number(storeDebugSummary.selectorFilteredCount) || 0}, selector evaluations: ${Number(storeDebugSummary.selectorEvaluationCount) || 0}, selector notifications: ${Number(storeDebugSummary.selectorNotifyCount) || 0}, tracked sources: ${Number(storeDebugSummary.sourceCount) || 0}, slow sources: ${Number(storeDebugSummary.slowSourceCount) || 0}, total source time: ${formatMs(Number(storeDebugSummary.totalSourceMs) || 0)}`
   );
   if (storeFlowRows.length) {
     lines.push('', '### Store-heavy user-flow steps', '');
     for (const item of storeFlowRows) {
       lines.push(
-        `- ${item.name}: commits=${item.commitCount}, selectorNotify=${item.selectorNotifyCount}, sourceTime=${formatMs(item.totalSourceMs)}, duration=${formatMs(item.durationMs)}, topSources=${item.topSources.join(', ') || 'none'}`
+        `- ${item.name}: commits=${item.commitCount}, selectorFiltered=${item.selectorFilteredCount}, selectorEval=${item.selectorEvaluationCount}, selectorNotify=${item.selectorNotifyCount}, sourceTime=${formatMs(item.totalSourceMs)}, duration=${formatMs(item.durationMs)}, topSources=${item.topSources.join(', ') || 'none'}`
       );
     }
   }
@@ -3264,7 +3317,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   } else {
     for (const item of userJourneyRows) {
       lines.push(
-        `- ${item.name}: steps=${item.stepCount}, total=${formatMs(item.totalDurationMs)}, avgStep=${formatMs(item.averageStepMs)}, maxStep=${formatMs(item.maxStepDurationMs)}, commits=${item.commitCount}, selectorNotify=${item.selectorNotifyCount}, sourceTime=${formatMs(item.totalSourceMs)}, topSources=${item.topSources.join(', ') || 'none'}`
+        `- ${item.name}: steps=${item.stepCount}, total=${formatMs(item.totalDurationMs)}, avgStep=${formatMs(item.averageStepMs)}, maxStep=${formatMs(item.maxStepDurationMs)}, commits=${item.commitCount}, selectorFiltered=${item.selectorFilteredCount}, selectorEval=${item.selectorEvaluationCount}, selectorNotify=${item.selectorNotifyCount}, sourceTime=${formatMs(item.totalSourceMs)}, topSources=${item.topSources.join(', ') || 'none'}`
       );
     }
   }
@@ -3745,6 +3798,15 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
         `${name} store commit burst exceeded budget (${Number(item.commitCount) || 0} > ${maxCommitCount})`
       );
     }
+    const maxSelectorEvaluationCount = Number(budgetItem.maxSelectorEvaluationCount);
+    if (
+      Number.isFinite(maxSelectorEvaluationCount) &&
+      (Number(item.selectorEvaluationCount) || 0) > maxSelectorEvaluationCount
+    ) {
+      failures.push(
+        `${name} selector evaluation burst exceeded budget (${Number(item.selectorEvaluationCount) || 0} > ${maxSelectorEvaluationCount})`
+      );
+    }
     const maxSelectorNotifyCount = Number(budgetItem.maxSelectorNotifyCount);
     if (
       Number.isFinite(maxSelectorNotifyCount) &&
@@ -3828,6 +3890,15 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     if (Number.isFinite(maxCommitCount) && (Number(item.commitCount) || 0) > maxCommitCount) {
       failures.push(
         `${name} customer journey store commits exceeded budget (${Number(item.commitCount) || 0} > ${maxCommitCount})`
+      );
+    }
+    const maxSelectorEvaluationCount = Number(budgetItem.maxSelectorEvaluationCount);
+    if (
+      Number.isFinite(maxSelectorEvaluationCount) &&
+      (Number(item.selectorEvaluationCount) || 0) > maxSelectorEvaluationCount
+    ) {
+      failures.push(
+        `${name} customer journey selector evaluations exceeded budget (${Number(item.selectorEvaluationCount) || 0} > ${maxSelectorEvaluationCount})`
       );
     }
     const maxSelectorNotifyCount = Number(budgetItem.maxSelectorNotifyCount);

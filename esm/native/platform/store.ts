@@ -23,6 +23,7 @@ import {
   type UnknownRecord,
 } from './store_shared.js';
 import { createStoreCommitPipeline } from './store_commit_pipeline.js';
+import type { StoreChangeSet } from './store_change_set.js';
 import {
   createListenerRegistry,
   createSelectorRegistryEntry,
@@ -94,6 +95,8 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
       noopSkipCount: debugState.noopSkipCount,
       noBuildCount: debugState.noBuildCount,
       selectorListenerCount: debugState.selectorListenerCount,
+      selectorFilteredCount: debugState.selectorFilteredCount,
+      selectorEvaluationCount: debugState.selectorEvaluationCount,
       selectorNotifyCount: debugState.selectorNotifyCount,
       sources: cloneDebugSources(debugState.sources),
     };
@@ -103,6 +106,8 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
     debugState.commitCount = 0;
     debugState.noopSkipCount = 0;
     debugState.noBuildCount = 0;
+    debugState.selectorFilteredCount = 0;
+    debugState.selectorEvaluationCount = 0;
     debugState.selectorNotifyCount = 0;
     debugState.sources = {};
   }
@@ -129,11 +134,17 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
     });
   }
 
-  function notifySelectorSubscribers(actionMeta?: ActionMetaLike): void {
+  function notifySelectorSubscribers(
+    actionMeta: ActionMetaLike | undefined,
+    changeSet: StoreChangeSet
+  ): void {
     const current = zustandApi.getState();
     selectorListeners.forEach(function callSelectorListener(entry) {
       if (!entry || typeof entry.notify !== 'function') return;
-      if (typeof entry.shouldNotify === 'function' && !entry.shouldNotify(actionMeta)) return;
+      if (typeof entry.shouldNotify === 'function' && !entry.shouldNotify(changeSet)) {
+        debugState.selectorFilteredCount += 1;
+        return;
+      }
       entry.notify(current, actionMeta);
     });
   }
@@ -154,6 +165,11 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
       equalityFn,
       slice: opts3.slice,
       slices: opts3.slices,
+      domain: opts3.domain,
+      domains: opts3.domains,
+      onEvaluate() {
+        debugState.selectorEvaluationCount += 1;
+      },
       onNotify() {
         debugState.selectorNotifyCount += 1;
       },

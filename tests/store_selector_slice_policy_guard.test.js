@@ -31,15 +31,27 @@ function relPath(abs) {
   return path.relative(repoRoot, abs).replace(/\\/g, '/');
 }
 
-test('[store-selector-slices] direct React root selectors declare precise slices or intentional all', () => {
+test('[store-selector-domains] React selectors declare slice and semantic domain ownership', () => {
   const hooks = normalize(read('esm/native/ui/react/hooks.tsx'));
   assert.match(
     hooks,
-    /function readSelectorSliceOpts\(selectorSlice: SelectorSliceHint\): \{ slice\?: StoreSelectorSliceKey; slices\?: readonly StoreSelectorSliceKey\[]; \}/
+    /function readSelectorDomainOpts\(selectorDomain: SelectorDomainHint\): \{ domain\?: StoreSelectorDomainKey; domains\?: readonly StoreSelectorDomainKey\[]; \}/
   );
   assert.match(
     hooks,
-    /export function useStoreSelectorShallow<T extends object \| unknown\[]>\(\s*selector: \(state: RootStateLike\) => T, selectorSlice: SelectorSliceHint = 'all'\s*\): T/
+    /export function useStoreSelectorShallow<T extends object \| unknown\[]>\( selector: \(state: RootStateLike\) => T, selectorSlice: SelectorSliceHint = 'all', selectorDomain: SelectorDomainHint = 'all' \): T/
+  );
+  assert.match(
+    hooks,
+    /export function useUiSelector<T>\( selector: \(ui: UiState\) => T, equalityFn: EqualityFn<T> \| undefined, selectorDomain: SelectorDomainHint \): T/
+  );
+  assert.match(
+    hooks,
+    /export function useCfgSelector<T>\( selector: \(cfg: ConfigStateLike\) => T, equalityFn: EqualityFn<T> \| undefined, selectorDomain: SelectorDomainHint \): T/
+  );
+  assert.match(
+    hooks,
+    /export function useRuntimeSelector<T>\( selector: \(rt: RuntimeStateLike\) => T, equalityFn: EqualityFn<T> \| undefined, selectorDomain: SelectorDomainHint \): T/
   );
 
   const sketchTab = normalize(read('esm/native/ui/react/tabs/SketchTab.view.tsx'));
@@ -48,20 +60,18 @@ test('[store-selector-slices] direct React root selectors declare precise slices
   const noMainSelectorEnd = sketchTab.indexOf('const sketchCardActive =', noMainSelectorStart);
   const noMainSelectorCall = sketchTab.slice(noMainSelectorStart, noMainSelectorEnd);
   assert.notEqual(noMainSelectorStart, -1, 'Sketch tab must keep the no-main state selector explicit');
-  assert.notEqual(
-    noMainSelectorEnd,
-    -1,
-    'Sketch tab no-main selector must remain a standalone selector call'
-  );
-  assert.match(noMainSelectorCall, /rootState => \{/);
-  assert.match(noMainSelectorCall, /SKETCH_NO_MAIN_SELECTOR_SLICES/);
+  assert.notEqual(noMainSelectorEnd, -1, 'Sketch tab no-main selector must remain standalone');
+  assert.match(noMainSelectorCall, /SKETCH_NO_MAIN_SELECTOR_SLICES, 'structure'/);
 
   const structureState = normalize(read('esm/native/ui/react/tabs/use_structure_tab_view_state_state.ts'));
   assert.match(structureState, /reads the optional root build snapshot when present/);
-  assert.match(
-    structureState,
-    /useStoreSelector\(st => readModulesCountFromRootSnapshot\(st, doors\), undefined, 'all'\)/
-  );
+  const modulesSelectorStart = structureState.indexOf('const modulesCount = useStoreSelector(');
+  const modulesSelectorEnd = structureState.indexOf('const defaultCellWidth', modulesSelectorStart);
+  const modulesSelectorCall = structureState.slice(modulesSelectorStart, modulesSelectorEnd);
+  assert.notEqual(modulesSelectorStart, -1);
+  assert.notEqual(modulesSelectorEnd, -1);
+  assert.match(modulesSelectorCall, /readModulesCountFromRootSnapshot\(st, doors\)/);
+  assert.match(modulesSelectorCall, /undefined, 'all', 'structure'/);
 
   const reactFiles = listFiles(path.join(repoRoot, 'esm/native/ui/react'), ['.ts', '.tsx']);
   const directRootSelectorFiles = reactFiles
@@ -76,19 +86,23 @@ test('[store-selector-slices] direct React root selectors declare precise slices
   ]);
 });
 
-test('[store-selector-slices] direct service subscribeSelector usage declares slices', () => {
+test('[store-selector-domains] direct service subscriptions declare slice and semantic domains', () => {
   const cloudShowContents = normalize(read('esm/native/services/cloud_sync_show_contents_ops.ts'));
-  assert.match(cloudShowContents, /subscribeSelector\( .* \{ fireImmediately: false, slice: 'ui' \} \)/);
+  assert.match(cloudShowContents, /fireImmediately: false, slice: 'ui', domain: 'visibility'/);
 
   const sceneView = normalize(read('esm/native/services/scene_view_store_sync_runtime.ts'));
-  assert.match(
-    sceneView,
-    /subscribeSelector\( selectSceneViewModeValue, .* \{ equalityFn: areSceneViewModeValuesEqual, slice: 'runtime' \} \)/
-  );
-  assert.match(
-    sceneView,
-    /subscribeSelector\( selectSceneViewLightsValue, .* \{ equalityFn: areSceneViewLightValuesEqual, slices: \['runtime', 'ui'\] \} \)/
-  );
+  const modeStart = sceneView.indexOf('const modeUnsub = subscribeSelector(');
+  const lightsStart = sceneView.indexOf('const lightsUnsub = subscribeSelector(');
+  const syncStart = sceneView.indexOf('syncState.installed = true', lightsStart);
+  assert.notEqual(modeStart, -1);
+  assert.notEqual(lightsStart, -1);
+  assert.notEqual(syncStart, -1);
+  const modeCall = sceneView.slice(modeStart, lightsStart);
+  const lightsCall = sceneView.slice(lightsStart, syncStart);
+  assert.match(modeCall, /slice: 'runtime'/);
+  assert.match(modeCall, /domain: 'interaction'/);
+  assert.match(lightsCall, /slices: \['runtime', 'ui'\]/);
+  assert.match(lightsCall, /domains: \['interaction', 'room', 'structure'\]/);
 
   const serviceFiles = listFiles(path.join(repoRoot, 'esm/native/services'), ['.ts', '.tsx']);
   const directSubscribeFiles = serviceFiles

@@ -15,6 +15,8 @@ export type StoreDebugState = {
   noopSkipCount: number;
   noBuildCount: number;
   selectorListenerCount: number;
+  selectorFilteredCount: number;
+  selectorEvaluationCount: number;
   selectorNotifyCount: number;
   sources: StoreDebugSourceStatsMap;
 };
@@ -223,6 +225,8 @@ export function createEmptyDebugState(): StoreDebugState {
     noopSkipCount: 0,
     noBuildCount: 0,
     selectorListenerCount: 0,
+    selectorFilteredCount: 0,
+    selectorEvaluationCount: 0,
     selectorNotifyCount: 0,
     sources: {},
   };

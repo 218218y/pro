@@ -20,7 +20,7 @@ export function useStructureTabSavedModelsCommandState(): SavedModelsCommandHook
   const meta = useMeta();
   const fb: SavedModelsFeedbackLike = useUiFeedback();
   const modelsApi = useMemo(() => getModelsService(app), [app]);
-  const selectedId = useUiSelector(selectSelectedModelId);
+  const selectedId = useUiSelector(selectSelectedModelId, undefined, 'project-data');
 
   const [models, setModels] = useState<SavedModelLike[]>([]);
   const [presetModelsOpen, setPresetModelsOpen] = useState(false);

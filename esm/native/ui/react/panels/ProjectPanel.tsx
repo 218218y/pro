@@ -13,7 +13,7 @@ import { useProjectPanelActions } from './project_panel_actions.js';
 export function ProjectPanel(): ReactElement {
   const app = useApp();
   const meta: MetaActionsNamespaceLike = useMeta();
-  const projectName = useUiSelector(selectProjectName);
+  const projectName = useUiSelector(selectProjectName, undefined, 'project-data');
   const [draft, setDraft] = useState<string>(projectName);
   const isFocused = useRef(false);
   const reactId = useId();
@@ -49,7 +49,7 @@ export function ProjectPanel(): ReactElement {
   };
 
   // Canonical autosave: stored under App.services.storage and surfaced into ui.autosaveInfo by the autosave service.
-  const autosaveInfoFromUi = useUiSelector(selectAutosaveInfo);
+  const autosaveInfoFromUi = useUiSelector(selectAutosaveInfo, undefined, 'project-data');
   const [autosaveInfoFromStorage, setAutosaveInfoFromStorage] = useState<{
     timestamp?: number;
     dateString?: string;

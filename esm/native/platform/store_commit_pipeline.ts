@@ -29,6 +29,7 @@ import {
   toUiSlicePatch,
 } from './store_patch_apply.js';
 import {
+  createCommitNotificationChangeSet,
   createPatchChangeSet,
   createReplaceChangeSet,
   hasStoreChanges,
@@ -50,7 +51,7 @@ type StoreCommitPipelineDeps = {
   tracePatchThresholdMs: number;
   debugState: StoreDebugState;
   notify: (actionMeta?: ActionMetaLike) => void;
-  notifySelectorSubscribers: (actionMeta?: ActionMetaLike) => void;
+  notifySelectorSubscribers: (actionMeta: ActionMetaLike | undefined, changeSet: StoreChangeSet) => void;
   setLastActionEnvelope: (action: ActionEnvelope<string, unknown> | null) => void;
 };
 
@@ -158,7 +159,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
       payload,
       meta: actionMeta,
     });
-    notifySelectorSubscribers(stampedMeta);
+    notifySelectorSubscribers(stampedMeta, createCommitNotificationChangeSet(changeSet));
     if (!silent) notify(stampedMeta);
     return zustandApi.getState();
   }

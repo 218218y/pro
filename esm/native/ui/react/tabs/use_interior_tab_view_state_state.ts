@@ -31,13 +31,18 @@ export type UseInteriorTabViewStateStateResult = {
 };
 
 export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabViewStateStateResult {
-  const ui = useUiSelectorShallow(readInteriorTabUiSnapshot);
-  const handleCfg = useCfgSelectorShallow<InteriorHandleCfgView>(readInteriorTabHandleCfgSnapshot);
-  const hasIntDrawerData = useCfgSelector(selectHasInternalDrawersData);
-  const drawerRunnerType = useCfgSelector(selectDrawerRunnerType);
+  const ui = useUiSelectorShallow(readInteriorTabUiSnapshot, 'interior');
+  const handleCfg = useCfgSelectorShallow<InteriorHandleCfgView>(readInteriorTabHandleCfgSnapshot, [
+    'interior',
+    'appearance',
+  ]);
+  const hasIntDrawerData = useCfgSelector(selectHasInternalDrawersData, undefined, 'interior');
+  const drawerRunnerType = useCfgSelector(selectDrawerRunnerType, undefined, 'interior');
   const isChestMode = !!ui.isChestMode;
-  const wardrobeType = useCfgSelector(cfg =>
-    String(cfg.wardrobeType || 'hinged') === 'sliding' ? 'sliding' : 'hinged'
+  const wardrobeType = useCfgSelector(
+    cfg => (String(cfg.wardrobeType || 'hinged') === 'sliding' ? 'sliding' : 'hinged'),
+    undefined,
+    'interior'
   );
   const mode = useModeSelectorShallow<InteriorModeView>(readInteriorTabModeSnapshot);
   const modeConsts = useMemo(() => readInteriorTabModeConsts(app), [app]);

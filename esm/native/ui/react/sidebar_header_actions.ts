@@ -117,7 +117,7 @@ export function useSidebarHeaderActions(): SidebarHeaderActionsState {
   const isSite2 = useMemo(() => isSite2Variant(app), [app]);
   const cloudSync = useMemo(() => readCloudSyncService(app) || undefined, [app]);
 
-  const localSite2GateState = useUiSelectorShallow(selectSite2GateState);
+  const localSite2GateState = useUiSelectorShallow(selectSite2GateState, 'navigation');
   const {
     open: site2GateOpen,
     until: site2GateUntil,
@@ -126,7 +126,11 @@ export function useSidebarHeaderActions(): SidebarHeaderActionsState {
 
   const enabledTabs = useMemo(() => getSite2EnabledTabs(app), [app]);
   const hasAnyTabsConfigured = enabledTabs.length > 0;
-  const sketch = useRuntimeSelector(rt => !!readRuntimeScalarOrDefault(rt, 'sketchMode', false));
+  const sketch = useRuntimeSelector(
+    rt => !!readRuntimeScalarOrDefault(rt, 'sketchMode', false),
+    undefined,
+    'interaction'
+  );
 
   const logoSrc = useMemo(() => {
     try {

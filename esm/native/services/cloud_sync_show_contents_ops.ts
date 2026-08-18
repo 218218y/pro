@@ -236,7 +236,7 @@ function bindShowContentsStoreSync(
       if (isCloudSyncShowContentsMeta(actionMeta)) return;
       queueShowContentsPush(deps, state, pushNow, !!enabled);
     },
-    { fireImmediately: false, slice: 'ui' }
+    { fireImmediately: false, slice: 'ui', domain: 'visibility' }
   );
 }
 

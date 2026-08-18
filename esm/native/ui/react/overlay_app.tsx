@@ -25,7 +25,7 @@ function useOverlayFeedbackBridge(pdfOpen: boolean): OverlayFeedbackHostBridge {
 }
 
 export function ReactOverlayApp() {
-  const pdfOpen = useUiSelector(ui => !!ui.orderPdfEditorOpen);
+  const pdfOpen = useUiSelector(ui => !!ui.orderPdfEditorOpen, undefined, 'navigation');
   const feedbackBridge = useOverlayFeedbackBridge(pdfOpen);
 
   return (

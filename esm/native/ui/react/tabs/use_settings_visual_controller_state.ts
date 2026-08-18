@@ -7,9 +7,15 @@ import {
 } from './settings_visual_view_state_runtime.js';
 
 export function useSettingsVisualState(): SettingsVisualControllerState {
-  const cfgState = useCfgSelectorShallow(cfg => readSettingsVisualCfgState(cfg));
-  const uiState = useUiSelectorShallow(ui => readSettingsVisualUiState(ui));
-  const runtimeState = useRuntimeSelectorShallow(rt => readSettingsVisualRuntimeState(rt));
+  const cfgState = useCfgSelectorShallow(
+    cfg => readSettingsVisualCfgState(cfg),
+    ['visibility', 'appearance', 'room']
+  );
+  const uiState = useUiSelectorShallow(
+    ui => readSettingsVisualUiState(ui),
+    ['structure', 'visibility', 'interaction', 'appearance', 'room']
+  );
+  const runtimeState = useRuntimeSelectorShallow(rt => readSettingsVisualRuntimeState(rt), 'interaction');
 
   return {
     ...cfgState,

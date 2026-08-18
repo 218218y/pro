@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-18T10:58:48.582Z",
+  "generatedAt": "2026-08-18T13:50:11.037Z",
   "totals": {
-    "tests": 1243,
-    "unitRunnerTests": 1234,
+    "tests": 1244,
+    "unitRunnerTests": 1235,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 37,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 392,
-    "runtime-unit": 342,
+    "runtime-unit": 343,
     "integration": 470,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -7043,6 +7043,10 @@
     {
       "file": "tests/store_zustand_runtime_workflows.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/store_zustand_selector_domains_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/store_zustand_selector_slices_runtime.test.ts",

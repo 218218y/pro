@@ -1,4 +1,13 @@
-import type { ActionMetaLike, RootStateLike, RootSliceKey, StoreSelectorSliceKey } from '../../../types';
+import type {
+  ActionMetaLike,
+  RootStateLike,
+  StoreChangeDomainKey,
+  StoreSelectorDomainKey,
+  StoreSelectorSliceKey,
+} from '../../../types';
+
+import type { StoreChangeSet } from './store_change_set.js';
+import { storeChangeSetTouchesDomain, storeChangeSetTouchesSlice } from './store_change_set.js';
 
 export type StoreListener = (state: RootStateLike, actionMeta?: ActionMetaLike) => void;
 export type StoreSelector<T> = (state: RootStateLike) => T;
@@ -9,23 +18,32 @@ export type StoreSelectorOpts<T> = {
   fireImmediately?: boolean;
   slice?: StoreSelectorSliceKey;
   slices?: readonly StoreSelectorSliceKey[];
+  domain?: StoreSelectorDomainKey;
+  domains?: readonly StoreSelectorDomainKey[];
 };
 export type SelectorRegistryEntry = {
   slices: readonly StoreSelectorSliceKey[];
+  domains: readonly StoreSelectorDomainKey[];
   prime: (state: RootStateLike) => boolean;
   fireCurrent: (actionMeta?: ActionMetaLike) => void;
-  shouldNotify: (actionMeta?: ActionMetaLike) => boolean;
+  shouldNotify: (changeSet: StoreChangeSet) => boolean;
   notify: (state: RootStateLike, actionMeta?: ActionMetaLike) => void;
 };
 
 const ALL_SELECTOR_SLICE: StoreSelectorSliceKey = 'all';
-const AFFECTS_FLAG_BY_SLICE: Record<RootSliceKey, string> = {
-  ui: 'affectsUi',
-  config: 'affectsConfig',
-  runtime: 'affectsRuntime',
-  mode: 'affectsMode',
-  meta: 'affectsMeta',
-};
+const ALL_SELECTOR_DOMAIN = 'all' as const;
+const STORE_CHANGE_DOMAINS: readonly StoreChangeDomainKey[] = [
+  'structure',
+  'interior',
+  'appearance',
+  'room',
+  'visibility',
+  'interaction',
+  'navigation',
+  'project-data',
+  'runtime-lifecycle',
+  'meta',
+];
 
 function isSelectorSliceKey(value: unknown): value is StoreSelectorSliceKey {
   return (
@@ -37,6 +55,10 @@ function isSelectorSliceKey(value: unknown): value is StoreSelectorSliceKey {
     value === 'root' ||
     value === 'all'
   );
+}
+
+function isSelectorDomainKey(value: unknown): value is StoreSelectorDomainKey {
+  return value === ALL_SELECTOR_DOMAIN || STORE_CHANGE_DOMAINS.includes(value as StoreChangeDomainKey);
 }
 
 function normalizeSelectorSlices(opts: {
@@ -60,52 +82,62 @@ function normalizeSelectorSlices(opts: {
   return out.length ? out : [ALL_SELECTOR_SLICE];
 }
 
-function readActionMetaRecord(actionMeta: ActionMetaLike | undefined): Record<string, unknown> | null {
-  return actionMeta && typeof actionMeta === 'object' && !Array.isArray(actionMeta)
-    ? (actionMeta as Record<string, unknown>)
-    : null;
+function normalizeSelectorDomains(opts: {
+  domain?: StoreSelectorDomainKey;
+  domains?: readonly StoreSelectorDomainKey[];
+}): readonly StoreSelectorDomainKey[] {
+  const rawDomains: unknown[] = [];
+  if (typeof opts.domain !== 'undefined') rawDomains.push(opts.domain);
+  if (Array.isArray(opts.domains)) rawDomains.push(...opts.domains);
+  if (!rawDomains.length) return [ALL_SELECTOR_DOMAIN];
+
+  const out: StoreSelectorDomainKey[] = [];
+  for (const raw of rawDomains) {
+    if (!isSelectorDomainKey(raw)) {
+      throw new Error(`[WardrobePro][store] Invalid selector domain: ${String(raw)}`);
+    }
+    if (raw === ALL_SELECTOR_DOMAIN) return [ALL_SELECTOR_DOMAIN];
+    if (!out.includes(raw)) out.push(raw);
+  }
+
+  return out.length ? out : [ALL_SELECTOR_DOMAIN];
 }
 
-function hasAffectsSignals(meta: Record<string, unknown>): boolean {
-  return (
-    typeof meta.affectsUi === 'boolean' ||
-    typeof meta.affectsConfig === 'boolean' ||
-    typeof meta.affectsRuntime === 'boolean' ||
-    typeof meta.affectsMode === 'boolean' ||
-    typeof meta.affectsMeta === 'boolean'
+function slicesAllowChange(slices: readonly StoreSelectorSliceKey[], changeSet: StoreChangeSet): boolean {
+  if (slices.includes(ALL_SELECTOR_SLICE)) return true;
+  return slices.some(
+    slice => slice !== 'root' && slice !== 'all' && storeChangeSetTouchesSlice(changeSet, slice)
   );
 }
 
-function shouldNotifySelectorSlice(
-  slice: StoreSelectorSliceKey,
-  actionMeta: ActionMetaLike | undefined
-): boolean {
-  if (slice === 'root' || slice === 'all') return true;
-
-  const meta = readActionMetaRecord(actionMeta);
-  if (!meta) return true;
-
-  const actionType = typeof meta.type === 'string' ? meta.type : '';
-  if (actionType === 'SET') return true;
-  if (!hasAffectsSignals(meta)) return true;
-
-  if (slice === 'meta') return true;
-  return meta[AFFECTS_FLAG_BY_SLICE[slice]] === true;
+function domainsAllowChange(domains: readonly StoreSelectorDomainKey[], changeSet: StoreChangeSet): boolean {
+  if (domains.includes(ALL_SELECTOR_DOMAIN)) return true;
+  // A new/unclassified state field must never be silently filtered out.
+  if (changeSet.broad) return true;
+  return domains.some(domain => {
+    if (domain === ALL_SELECTOR_DOMAIN) return true;
+    return storeChangeSetTouchesDomain(changeSet, domain);
+  });
 }
 
 export function createSelectorRegistryEntry<T>(args: {
   selector: StoreSelector<T>;
   listener: StoreSelectorListener<T>;
   equalityFn: StoreSelectorEqualityFn<T>;
+  onEvaluate: () => void;
   onNotify: () => void;
   slice?: StoreSelectorSliceKey;
   slices?: readonly StoreSelectorSliceKey[];
+  domain?: StoreSelectorDomainKey;
+  domains?: readonly StoreSelectorDomainKey[];
 }): SelectorRegistryEntry {
   let cached: { value: T } | null = null;
   const slices = normalizeSelectorSlices({ slice: args.slice, slices: args.slices });
+  const domains = normalizeSelectorDomains({ domain: args.domain, domains: args.domains });
 
   return {
     slices,
+    domains,
     prime(state) {
       try {
         cached = { value: args.selector(state) };
@@ -123,15 +155,13 @@ export function createSelectorRegistryEntry<T>(args: {
         // observer-isolation: a listener failure must not corrupt subscription state.
       }
     },
-    shouldNotify(actionMeta) {
-      for (const slice of slices) {
-        if (shouldNotifySelectorSlice(slice, actionMeta)) return true;
-      }
-      return false;
+    shouldNotify(changeSet) {
+      return slicesAllowChange(slices, changeSet) && domainsAllowChange(domains, changeSet);
     },
     notify(state, actionMeta) {
       let nextValue: T;
       try {
+        args.onEvaluate();
         nextValue = args.selector(state);
       } catch {
         return;

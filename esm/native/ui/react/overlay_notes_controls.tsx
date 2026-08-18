@@ -71,8 +71,8 @@ export function ViewerNotesControls(): ReactElement {
   const app = useApp();
   const meta = useMeta();
   const fb = useUiFeedback();
-  const notesEnabled = useUiSelector(ui => !!ui.notesEnabled);
-  const showContents = useUiSelector(ui => !!ui.showContents);
+  const notesEnabled = useUiSelector(ui => !!ui.notesEnabled, undefined, ['project-data', 'visibility']);
+  const showContents = useUiSelector(ui => !!ui.showContents, undefined, 'visibility');
   const measurementModeId = getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID;
   const primaryMode = useModeSelector(mode => String(mode.primary || 'none'));
   const measurementMode = primaryMode === measurementModeId;

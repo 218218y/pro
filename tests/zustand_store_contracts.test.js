@@ -33,6 +33,10 @@ const storeCommitPipelineTs = readFirstExisting(
 );
 const storeChangeSetTs = readFirstExisting(['../esm/native/platform/store_change_set.ts'], import.meta.url);
 const storePatchApplyTs = readFirstExisting(['../esm/native/platform/store_patch_apply.ts'], import.meta.url);
+const storeFeatureConfigBoundaryTs = readFirstExisting(
+  ['../esm/native/platform/store_feature_config_boundary.ts'],
+  import.meta.url
+);
 const storeSubscriptionsTs = readFirstExisting(
   ['../esm/native/platform/store_subscriptions.ts'],
   import.meta.url
@@ -121,6 +125,13 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
   assert.match(storeChangeSetTs, /export function createPatchChangeSet\(/);
   assert.match(storeChangeSetTs, /export function createReplaceChangeSet\(/);
   assert.match(storeChangeSetTs, /export function hasStoreChanges\(/);
+  assert.match(storeChangeSetTs, /domains: readonly StoreChangeDomainKey\[\]/);
+  assert.match(storeChangeSetTs, /changedKeys: StoreChangedKeys/);
+  assert.match(storeChangeSetTs, /broad: boolean/);
+  assert.match(storeSubscriptionsTs, /domain\?: StoreSelectorDomainKey/);
+  assert.match(storeSubscriptionsTs, /domains\?: readonly StoreSelectorDomainKey\[\]/);
+  assert.match(storeSharedTs, /selectorFilteredCount: number/);
+  assert.match(storeSharedTs, /selectorEvaluationCount: number/);
   assert.match(
     storePatchApplyTs,
     /export function isReplacePatchValueEqual\(prev: unknown, next: unknown\): boolean/
@@ -150,7 +161,11 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
   assert.match(storeCommitPipelineTs, /return configChanged;/);
   assert.doesNotMatch(storeCommitPipelineTs, /ensureRootState\(next/);
   assert.match(storePatchApplyTs, /cloneMutableStoreValue\(sv\)/);
-  assert.match(storePatchApplyTs, /canonicalizeProjectConfigStructuralSnapshot\(detached, \{/);
+  assert.match(storePatchApplyTs, /canonicalizeStoreProjectConfigSnapshot\(detached, uiSnapshot\)/);
+  assert.match(
+    storeFeatureConfigBoundaryTs,
+    /return canonicalizeProjectConfigStructuralSnapshot\(cfgSnapshot, \{/
+  );
   assert.match(storeCommitPipelineTs, /debugState\.noopSkipCount \+= 1;/);
   assert.match(storeCommitPipelineTs, /return current;/);
 });
@@ -160,7 +175,7 @@ test('[zustand-store] selector subscriptions and typed meta hooks remain require
   assert.match(storeSrc, /const selectorListeners = createListenerRegistry<SelectorRegistryEntry>\(\)/);
   assert.match(
     normalizeWhitespace(`${storeTs}\n${storeCommitPipelineTs}`),
-    /notifySelectorSubscribers\(stampedMeta\)/
+    /notifySelectorSubscribers\(stampedMeta, createCommitNotificationChangeSet\(changeSet\)\)/
   );
   assert.match(storeSrc, /subscribeSelector,?/);
   assert.match(storeSrc, /function getDebugStats\(\): StoreDebugStats/);

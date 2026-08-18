@@ -31,20 +31,31 @@ export type {
 
 export function MultiColorPanel(props: { embedded?: boolean } = {}) {
   const app = useApp();
-  const enabled = useCfgSelector(selectIsMultiColorMode);
-  const savedRaw = useCfgSelector(selectSavedColors);
-  const curtainChoiceRaw = useUiSelector(ui =>
-    typeof ui.currentCurtainChoice === 'string' && ui.currentCurtainChoice ? ui.currentCurtainChoice : 'none'
+  const enabled = useCfgSelector(selectIsMultiColorMode, undefined, 'appearance');
+  const savedRaw = useCfgSelector(selectSavedColors, undefined, 'appearance');
+  const curtainChoiceRaw = useUiSelector(
+    ui =>
+      typeof ui.currentCurtainChoice === 'string' && ui.currentCurtainChoice
+        ? ui.currentCurtainChoice
+        : 'none',
+    undefined,
+    'appearance'
   );
-  const mirrorDraftHeight = useUiSelector(ui =>
-    typeof ui.currentMirrorDraftHeightCm === 'string' || typeof ui.currentMirrorDraftHeightCm === 'number'
-      ? ui.currentMirrorDraftHeightCm.toString()
-      : ''
+  const mirrorDraftHeight = useUiSelector(
+    ui =>
+      typeof ui.currentMirrorDraftHeightCm === 'string' || typeof ui.currentMirrorDraftHeightCm === 'number'
+        ? ui.currentMirrorDraftHeightCm.toString()
+        : '',
+    undefined,
+    'appearance'
   );
-  const mirrorDraftWidth = useUiSelector(ui =>
-    typeof ui.currentMirrorDraftWidthCm === 'string' || typeof ui.currentMirrorDraftWidthCm === 'number'
-      ? ui.currentMirrorDraftWidthCm.toString()
-      : ''
+  const mirrorDraftWidth = useUiSelector(
+    ui =>
+      typeof ui.currentMirrorDraftWidthCm === 'string' || typeof ui.currentMirrorDraftWidthCm === 'number'
+        ? ui.currentMirrorDraftWidthCm.toString()
+        : '',
+    undefined,
+    'appearance'
   );
   const primaryMode = useModeSelector(mode =>
     typeof mode.primary === 'string' && mode.primary ? mode.primary : 'none'

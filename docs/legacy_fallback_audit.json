@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T10:58:43.677Z",
+  "generatedAt": "2026-08-18T13:50:05.926Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 558,
@@ -3087,14 +3087,14 @@
     },
     {
       "file": "esm/native/platform/store_shared.ts",
-      "line": 194,
+      "line": 196,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// clock-capability-fallback: Date.now remains the canonical fallback when performance.now is unavailable."
     },
     {
       "file": "esm/native/platform/store_subscriptions.ts",
-      "line": 154,
+      "line": 184,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// selector-equality-fallback: if equality probing fails, notify conservatively as changed."

@@ -11,8 +11,8 @@ import {
 import type { DesignTabControllerState } from './use_design_tab_controller_contracts.js';
 
 export function useDesignTabControllerState(): DesignTabControllerState {
-  const cfgState = useCfgSelectorShallow(cfg => readDesignTabCfgState(cfg));
-  const uiState = useUiSelectorShallow(ui => readDesignTabUiState(ui));
+  const cfgState = useCfgSelectorShallow(cfg => readDesignTabCfgState(cfg), ['appearance', 'structure']);
+  const uiState = useUiSelectorShallow(ui => readDesignTabUiState(ui), ['appearance', 'structure']);
   const modeState = useModeSelectorShallow(mode => readDesignTabModeState(mode));
 
   const { grooveLinesCount, grooveLinesCountIsAuto, grooveLinesCountAutoBaseline } = useMemo(

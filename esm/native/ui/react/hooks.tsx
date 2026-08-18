@@ -9,6 +9,7 @@ import type {
   ConfigStateLike,
   RuntimeStateLike,
   ModeStateLike,
+  StoreSelectorDomainKey,
   StoreSelectorSliceKey,
   UnknownRecord,
 } from '../../../../types';
@@ -31,6 +32,8 @@ type SelectorStoreApi = {
       fireImmediately?: boolean;
       slice?: StoreSelectorSliceKey;
       slices?: readonly StoreSelectorSliceKey[];
+      domain?: StoreSelectorDomainKey;
+      domains?: readonly StoreSelectorDomainKey[];
     }
   ) => (() => void) | void;
 };
@@ -39,6 +42,7 @@ const AppCtx = createContext<AppContainer | null>(null);
 
 type EqualityFn<T> = (a: T, b: T) => boolean;
 type SelectorSliceHint = StoreSelectorSliceKey | readonly StoreSelectorSliceKey[];
+type SelectorDomainHint = StoreSelectorDomainKey | readonly StoreSelectorDomainKey[];
 
 function objectIs<T>(a: T, b: T): boolean {
   return Object.is(a, b);
@@ -91,6 +95,17 @@ function readSelectorSliceOpts(selectorSlice: SelectorSliceHint): {
   slices?: readonly StoreSelectorSliceKey[];
 } {
   return isSelectorSliceArray(selectorSlice) ? { slices: selectorSlice } : { slice: selectorSlice };
+}
+
+function isSelectorDomainArray(value: SelectorDomainHint): value is readonly StoreSelectorDomainKey[] {
+  return Array.isArray(value);
+}
+
+function readSelectorDomainOpts(selectorDomain: SelectorDomainHint): {
+  domain?: StoreSelectorDomainKey;
+  domains?: readonly StoreSelectorDomainKey[];
+} {
+  return isSelectorDomainArray(selectorDomain) ? { domains: selectorDomain } : { domain: selectorDomain };
 }
 
 export function AppProvider(props: { app: AppContainer; children: ReactNode }) {
@@ -169,7 +184,8 @@ function getZustandApiFromApp(app: AppContainer): SelectorStoreApi {
 export function useStoreSelector<T>(
   selector: (state: RootStateLike) => T,
   equalityFn?: EqualityFn<T>,
-  selectorSlice: SelectorSliceHint = 'all'
+  selectorSlice: SelectorSliceHint = 'all',
+  selectorDomain: SelectorDomainHint = 'all'
 ): T {
   const app = useApp();
   // Memoize the store surface so useSyncExternalStore doesn't resubscribe on every render.
@@ -221,56 +237,80 @@ export function useStoreSelector<T>(
         {
           equalityFn: (a: T, b: T) => eqRef.current(a, b),
           ...readSelectorSliceOpts(selectorSlice),
+          ...readSelectorDomainOpts(selectorDomain),
         }
       );
       return typeof unsub === 'function' ? unsub : () => undefined;
     },
-    [api, selectorSlice]
+    [api, selectorDomain, selectorSlice]
   );
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 export function useStoreSelectorShallow<T extends object | unknown[]>(
   selector: (state: RootStateLike) => T,
-  selectorSlice: SelectorSliceHint = 'all'
+  selectorSlice: SelectorSliceHint = 'all',
+  selectorDomain: SelectorDomainHint = 'all'
 ): T {
-  return useStoreSelector(selector, (a, b) => shallowEqual(a, b), selectorSlice);
+  return useStoreSelector(selector, (a, b) => shallowEqual(a, b), selectorSlice, selectorDomain);
 }
 
-export function useUiSelector<T>(selector: (ui: UiState) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.ui), equalityFn, 'ui');
+export function useUiSelector<T>(
+  selector: (ui: UiState) => T,
+  equalityFn: EqualityFn<T> | undefined,
+  selectorDomain: SelectorDomainHint
+): T {
+  return useStoreSelector(st => selector(st.ui), equalityFn, 'ui', selectorDomain);
 }
 
-export function useUiSelectorShallow<T extends object | unknown[]>(selector: (ui: UiState) => T): T {
-  return useUiSelector(selector, (a, b) => shallowEqual(a, b));
+export function useUiSelectorShallow<T extends object | unknown[]>(
+  selector: (ui: UiState) => T,
+  selectorDomain: SelectorDomainHint
+): T {
+  return useUiSelector(selector, (a, b) => shallowEqual(a, b), selectorDomain);
 }
 
-export function useCfgSelector<T>(selector: (cfg: ConfigStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.config), equalityFn, 'config');
+export function useCfgSelector<T>(
+  selector: (cfg: ConfigStateLike) => T,
+  equalityFn: EqualityFn<T> | undefined,
+  selectorDomain: SelectorDomainHint
+): T {
+  return useStoreSelector(st => selector(st.config), equalityFn, 'config', selectorDomain);
 }
 
 export function useCfgSelectorShallow<T extends object | unknown[]>(
-  selector: (cfg: ConfigStateLike) => T
+  selector: (cfg: ConfigStateLike) => T,
+  selectorDomain: SelectorDomainHint
 ): T {
-  return useCfgSelector(selector, (a, b) => shallowEqual(a, b));
+  return useCfgSelector(selector, (a, b) => shallowEqual(a, b), selectorDomain);
 }
 
-export function useRuntimeSelector<T>(selector: (rt: RuntimeStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.runtime), equalityFn, 'runtime');
+export function useRuntimeSelector<T>(
+  selector: (rt: RuntimeStateLike) => T,
+  equalityFn: EqualityFn<T> | undefined,
+  selectorDomain: SelectorDomainHint
+): T {
+  return useStoreSelector(st => selector(st.runtime), equalityFn, 'runtime', selectorDomain);
 }
 
 export function useRuntimeSelectorShallow<T extends object | unknown[]>(
-  selector: (rt: RuntimeStateLike) => T
+  selector: (rt: RuntimeStateLike) => T,
+  selectorDomain: SelectorDomainHint
 ): T {
-  return useRuntimeSelector(selector, (a, b) => shallowEqual(a, b));
+  return useRuntimeSelector(selector, (a, b) => shallowEqual(a, b), selectorDomain);
 }
 
-export function useModeSelector<T>(selector: (mode: ModeStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.mode), equalityFn, 'mode');
+export function useModeSelector<T>(
+  selector: (mode: ModeStateLike) => T,
+  equalityFn?: EqualityFn<T>,
+  selectorDomain: SelectorDomainHint = 'interaction'
+): T {
+  return useStoreSelector(st => selector(st.mode), equalityFn, 'mode', selectorDomain);
 }
 
 export function useModeSelectorShallow<T extends object | unknown[]>(
-  selector: (mode: ModeStateLike) => T
+  selector: (mode: ModeStateLike) => T,
+  selectorDomain: SelectorDomainHint = 'interaction'
 ): T {
-  return useModeSelector(selector, (a, b) => shallowEqual(a, b));
+  return useModeSelector(selector, (a, b) => shallowEqual(a, b), selectorDomain);
 }

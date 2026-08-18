@@ -24,11 +24,26 @@ export interface StoreDebugStats {
   noopSkipCount: number;
   noBuildCount: number;
   selectorListenerCount: number;
+  selectorFilteredCount: number;
+  selectorEvaluationCount: number;
   selectorNotifyCount: number;
   sources: Record<string, StoreSourceDebugStat>;
 }
 
+export type StoreChangeDomainKey =
+  | 'structure'
+  | 'interior'
+  | 'appearance'
+  | 'room'
+  | 'visibility'
+  | 'interaction'
+  | 'navigation'
+  | 'project-data'
+  | 'runtime-lifecycle'
+  | 'meta';
+
 export type StoreSelectorSliceKey = RootSliceKey | 'root' | 'all';
+export type StoreSelectorDomainKey = StoreChangeDomainKey | 'all';
 
 export type TimeoutHandleLike = ReturnType<typeof setTimeout>;
 export type IntervalHandleLike = ReturnType<typeof setInterval>;
@@ -83,6 +98,8 @@ export interface PublicStoreLike<S = RootStateLike> {
       fireImmediately?: boolean;
       slice?: StoreSelectorSliceKey;
       slices?: readonly StoreSelectorSliceKey[];
+      domain?: StoreSelectorDomainKey;
+      domains?: readonly StoreSelectorDomainKey[];
     }
   ) => () => void;
 

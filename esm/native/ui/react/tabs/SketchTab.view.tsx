@@ -58,15 +58,19 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
     editModeMessage: 'מצב עריכה: הקלד מידות ואז לחץ על קופסא חופשית כדי להחיל',
     hexModeMessage: 'מצב עריכה: לחץ על קופסא חופשית כדי להגדיר צורה משושה',
   });
-  const noMainState = useStoreSelectorShallow(rootState => {
-    const wardrobeType = selectWardrobeType(rootState.config);
-    const doors = readUiRawIntFromSnapshot(rootState.ui, 'doors', 4);
-    return {
-      wardrobeType,
-      active: isSketchNoMainWardrobeActive({ ui: rootState.ui, wardrobeType }),
-      doors,
-    };
-  }, SKETCH_NO_MAIN_SELECTOR_SLICES);
+  const noMainState = useStoreSelectorShallow(
+    rootState => {
+      const wardrobeType = selectWardrobeType(rootState.config);
+      const doors = readUiRawIntFromSnapshot(rootState.ui, 'doors', 4);
+      return {
+        wardrobeType,
+        active: isSketchNoMainWardrobeActive({ ui: rootState.ui, wardrobeType }),
+        doors,
+      };
+    },
+    SKETCH_NO_MAIN_SELECTOR_SLICES,
+    'structure'
+  );
   const sketchCardActive = state.isDoorTrimMode || (!state.isChestMode && state.isSketchToolActive);
 
   const handleNoMainToggle = useCallback(() => {

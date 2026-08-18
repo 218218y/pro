@@ -70,11 +70,14 @@ export function useSidebarViewState(): SidebarViewState {
     open: site2GateOpen,
     storeActive,
     darkMode,
-  } = useUiSelectorShallow(ui => ({
-    open: selectSite2GateState(ui).open,
-    storeActive: selectActiveTabId(ui),
-    darkMode: typeof ui.darkMode === 'boolean' ? ui.darkMode : false,
-  }));
+  } = useUiSelectorShallow(
+    ui => ({
+      open: selectSite2GateState(ui).open,
+      storeActive: selectActiveTabId(ui),
+      darkMode: typeof ui.darkMode === 'boolean' ? ui.darkMode : false,
+    }),
+    ['navigation', 'appearance']
+  );
   const gateOpen = isSite2 ? site2GateOpen : true;
   const enabledTabs = useMemo(() => (isSite2 ? getSite2EnabledTabs(app) : []), [isSite2, app]);
   const enabledSet = useMemo(() => new Set(enabledTabs), [enabledTabs]);

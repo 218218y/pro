@@ -518,6 +518,8 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
       noopSkipCount: 2,
       noBuildCount: 3,
       selectorListenerCount: 4,
+      selectorFilteredCount: 27,
+      selectorEvaluationCount: 33,
       selectorNotifyCount: 18,
       sourceCount: 2,
       slowSourceCount: 1,
@@ -546,6 +548,8 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         commitCount: 8,
         noopSkipCount: 2,
         noBuildCount: 2,
+        selectorFilteredCount: 22,
+        selectorEvaluationCount: 26,
         selectorNotifyCount: 16,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -687,9 +691,13 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         totalDurationMs: 440,
         totalSourceMs: 36,
         commitCount: 8,
+        selectorFilteredCount: 22,
+        selectorEvaluationCount: 26,
         selectorNotifyCount: 16,
         topStepName: 'project.save-load.roundtrip',
         topStepCommitCount: 8,
+        topStepSelectorFilteredCount: 22,
+        topStepSelectorEvaluationCount: 26,
         topStepSelectorNotifyCount: 16,
         topStepTotalSourceMs: 36,
         topSourceKey: 'PATCH:actions.project.save:config+meta',
@@ -894,12 +902,12 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Store write pressure/);
   assert.match(
     md,
-    /Store commits: 9, no-op skips: 2, noBuild commits: 3, selector notifications: 18, tracked sources: 2, slow sources: 1, total source time: 36ms/
+    /Store commits: 9, no-op skips: 2, noBuild commits: 3, selector filtered: 27, selector evaluations: 33, selector notifications: 18, tracked sources: 2, slow sources: 1, total source time: 36ms/
   );
   assert.match(md, /Store-heavy user-flow steps/);
   assert.match(
     md,
-    /project\.save-load\.roundtrip: commits=8, selectorNotify=16, sourceTime=36ms, duration=440ms, topSources=PATCH:actions\.project\.save:config\+meta/
+    /project\.save-load\.roundtrip: commits=8, selectorFiltered=22, selectorEval=26, selectorNotify=16, sourceTime=36ms, duration=440ms, topSources=PATCH:actions\.project\.save:config\+meta/
   );
   assert.match(md, /Top store sources/);
   assert.match(md, /Builder scheduling pressure/);
@@ -926,7 +934,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Customer journeys/);
   assert.match(
     md,
-    /project-roundtrip: steps=1, total=440ms, avgStep=440ms, maxStep=440ms, commits=8, selectorNotify=16, sourceTime=36ms/
+    /project-roundtrip: steps=1, total=440ms, avgStep=440ms, maxStep=440ms, commits=8, selectorFiltered=22, selectorEval=26, selectorNotify=16, sourceTime=36ms/
   );
   assert.match(md, /Journey diagnosis/);
   assert.match(
@@ -2278,6 +2286,8 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
     noopSkipCount: 2,
     noBuildCount: 3,
     selectorListenerCount: 4,
+    selectorFilteredCount: 27,
+    selectorEvaluationCount: 33,
     selectorNotifyCount: 18,
     sources: {
       'PATCH:actions.project.save:config+meta': {
@@ -2310,6 +2320,8 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
     noopSkipCount: 2,
     noBuildCount: 3,
     selectorListenerCount: 4,
+    selectorFilteredCount: 27,
+    selectorEvaluationCount: 33,
     selectorNotifyCount: 18,
     sourceCount: 2,
     slowSourceCount: 1,
@@ -2334,6 +2346,8 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
         noopSkipCount: 0,
         noBuildCount: 1,
         selectorListenerCount: 4,
+        selectorFilteredCount: 5,
+        selectorEvaluationCount: 7,
         selectorNotifyCount: 2,
         sources: {},
       },
@@ -2345,6 +2359,8 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
     commitCount: 8,
     noopSkipCount: 2,
     noBuildCount: 2,
+    selectorFilteredCount: 22,
+    selectorEvaluationCount: 26,
     selectorNotifyCount: 16,
     selectorListenerCount: 4,
     sourceCount: 2,
@@ -2359,6 +2375,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
   const budget = createStorePressureBudget(flowSummary);
   assert.deepEqual(budget['project.save-load.roundtrip'], {
     maxCommitCount: 15,
+    maxSelectorEvaluationCount: 48,
     maxSelectorNotifyCount: 32,
     maxTotalSourceMs: 69,
   });
@@ -3027,6 +3044,8 @@ test('browser perf support groups user journeys and creates journey budgets cano
       durationMs: 380,
       commitCount: 6,
       noopSkipCount: 1,
+      selectorFilteredCount: 18,
+      selectorEvaluationCount: 30,
       selectorNotifyCount: 14,
       selectorListenerCount: 4,
       sourceCount: 2,
@@ -3038,6 +3057,8 @@ test('browser perf support groups user journeys and creates journey budgets cano
       durationMs: 620,
       commitCount: 18,
       noopSkipCount: 0,
+      selectorFilteredCount: 25,
+      selectorEvaluationCount: 70,
       selectorNotifyCount: 44,
       selectorListenerCount: 4,
       sourceCount: 3,
@@ -3049,6 +3070,8 @@ test('browser perf support groups user journeys and creates journey budgets cano
       durationMs: 410,
       commitCount: 7,
       noopSkipCount: 0,
+      selectorFilteredCount: 10,
+      selectorEvaluationCount: 20,
       selectorNotifyCount: 12,
       selectorListenerCount: 4,
       sourceCount: 2,
@@ -3073,6 +3096,8 @@ test('browser perf support groups user journeys and creates journey budgets cano
     averageStepMs: 500,
     maxStepDurationMs: 620,
     commitCount: 24,
+    selectorFilteredCount: 43,
+    selectorEvaluationCount: 100,
     selectorNotifyCount: 58,
     totalSourceMs: 99,
     slowSourceCount: 2,
@@ -3091,6 +3116,7 @@ test('browser perf support groups user journeys and creates journey budgets cano
   assert.deepEqual(budget['cabinet-core-authoring'], {
     maxTotalDurationMs: 1390,
     maxCommitCount: 38,
+    maxSelectorEvaluationCount: 149,
     maxSelectorNotifyCount: 91,
     maxTotalSourceMs: 159,
   });
@@ -3101,9 +3127,18 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     {
       name: 'cabinet-core.configure',
       journey: 'cabinet-core-authoring',
-      before: { commitCount: 0, selectorNotifyCount: 0, selectorListenerCount: 4, sources: {} },
+      before: {
+        commitCount: 0,
+        selectorFilteredCount: 0,
+        selectorEvaluationCount: 0,
+        selectorNotifyCount: 0,
+        selectorListenerCount: 4,
+        sources: {},
+      },
       after: {
         commitCount: 6,
+        selectorFilteredCount: 18,
+        selectorEvaluationCount: 30,
         selectorNotifyCount: 14,
         selectorListenerCount: 4,
         sources: {
@@ -3125,6 +3160,8 @@ test('browser perf support summarizes repeated journey store sources and diagnos
       journey: 'cabinet-core-authoring',
       before: {
         commitCount: 6,
+        selectorFilteredCount: 18,
+        selectorEvaluationCount: 30,
         selectorNotifyCount: 14,
         selectorListenerCount: 4,
         sources: {
@@ -3142,6 +3179,8 @@ test('browser perf support summarizes repeated journey store sources and diagnos
       },
       after: {
         commitCount: 24,
+        selectorFilteredCount: 43,
+        selectorEvaluationCount: 100,
         selectorNotifyCount: 58,
         selectorListenerCount: 4,
         sources: {
@@ -3206,9 +3245,13 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     totalDurationMs: 1000,
     totalSourceMs: 80,
     commitCount: 24,
+    selectorFilteredCount: 43,
+    selectorEvaluationCount: 100,
     selectorNotifyCount: 58,
     topStepName: 'cabinet-core.mixed-edit-burst',
     topStepCommitCount: 18,
+    topStepSelectorFilteredCount: 25,
+    topStepSelectorEvaluationCount: 70,
     topStepSelectorNotifyCount: 44,
     topStepTotalSourceMs: 62,
     topSourceKey: 'PATCH:actions.structure.dimensions:config',
@@ -3540,6 +3583,8 @@ test('browser perf support baseline evaluation enforces customer journey budgets
         durationMs: 380,
         commitCount: 6,
         noopSkipCount: 1,
+        selectorFilteredCount: 18,
+        selectorEvaluationCount: 30,
         selectorNotifyCount: 14,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -3551,6 +3596,8 @@ test('browser perf support baseline evaluation enforces customer journey budgets
         durationMs: 620,
         commitCount: 18,
         noopSkipCount: 0,
+        selectorFilteredCount: 25,
+        selectorEvaluationCount: 70,
         selectorNotifyCount: 44,
         selectorListenerCount: 4,
         sourceCount: 3,
@@ -3596,6 +3643,8 @@ test('browser perf support baseline evaluation enforces customer journey budgets
         durationMs: 520,
         commitCount: 10,
         noopSkipCount: 1,
+        selectorFilteredCount: 28,
+        selectorEvaluationCount: 70,
         selectorNotifyCount: 22,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -3607,6 +3656,8 @@ test('browser perf support baseline evaluation enforces customer journey budgets
         durationMs: 980,
         commitCount: 34,
         noopSkipCount: 0,
+        selectorFilteredCount: 46,
+        selectorEvaluationCount: 120,
         selectorNotifyCount: 76,
         selectorListenerCount: 4,
         sourceCount: 3,
@@ -3627,6 +3678,7 @@ test('browser perf support baseline evaluation enforces customer journey budgets
   });
   assert.ok(failures.some(item => /customer journey total exceeded budget/.test(item)));
   assert.ok(failures.some(item => /customer journey store commits exceeded budget/.test(item)));
+  assert.ok(failures.some(item => /customer journey selector evaluations exceeded budget/.test(item)));
   assert.ok(failures.some(item => /customer journey selector notifications exceeded budget/.test(item)));
   assert.ok(failures.some(item => /customer journey store source time exceeded budget/.test(item)));
 });
@@ -3712,6 +3764,8 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
         durationMs: 440,
         commitCount: 8,
         noopSkipCount: 2,
+        selectorFilteredCount: 22,
+        selectorEvaluationCount: 26,
         selectorNotifyCount: 16,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -3772,6 +3826,8 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
         durationMs: 440,
         commitCount: 16,
         noopSkipCount: 2,
+        selectorFilteredCount: 40,
+        selectorEvaluationCount: 60,
         selectorNotifyCount: 33,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -3791,6 +3847,7 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
     happyPathMetricsWithoutErrors: [],
   });
   assert.ok(failures.some(item => /store commit burst exceeded budget/.test(item)));
+  assert.ok(failures.some(item => /selector evaluation burst exceeded budget/.test(item)));
   assert.ok(failures.some(item => /selector notification burst exceeded budget/.test(item)));
   assert.ok(failures.some(item => /store source time exceeded budget/.test(item)));
 });

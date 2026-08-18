@@ -47,7 +47,8 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
       preChestState: selectPreChestState(cfg),
       isLibraryMode: selectIsLibraryMode(cfg),
       hingeMap: selectHingeMap(cfg),
-    })
+    }),
+    'structure'
   );
 
   const {
@@ -81,7 +82,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     cornerHeight,
     cornerDepth,
     isChestMode,
-  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui));
+  } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui), 'structure');
 
   const { primaryMode } = useModeSelectorShallow(mode => ({ primaryMode: String(mode.primary || 'none') }));
 
@@ -102,7 +103,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     stackSplitLowerDepthManualRaw,
     stackSplitLowerWidthManualRaw,
     stackSplitLowerDoorsManualRaw,
-  } = useUiSelectorShallow(ui => readStructureTabStackSplitUiState(ui, { depth, width, doors }));
+  } = useUiSelectorShallow(ui => readStructureTabStackSplitUiState(ui, { depth, width, doors }), 'structure');
 
   const {
     stackSplitLowerDepthManual,
@@ -137,12 +138,17 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     ]
   );
 
-  const hasAnyCellDimsOverrides = useCfgSelector(selectHasAnyCellDimsOverrides);
-  const { libraryUpperDoorsHiddenRaw } = useUiSelectorShallow(ui => ({
-    libraryUpperDoorsHiddenRaw: ui.libraryUpperDoorsHidden,
-  }));
-  const libraryUpperDoorsEffectivelyRemoved = useCfgSelector(cfg =>
-    selectLibraryUpperDoorsRemoved(cfg, doors)
+  const hasAnyCellDimsOverrides = useCfgSelector(selectHasAnyCellDimsOverrides, undefined, 'structure');
+  const { libraryUpperDoorsHiddenRaw } = useUiSelectorShallow(
+    ui => ({
+      libraryUpperDoorsHiddenRaw: ui.libraryUpperDoorsHidden,
+    }),
+    'structure'
+  );
+  const libraryUpperDoorsEffectivelyRemoved = useCfgSelector(
+    cfg => selectLibraryUpperDoorsRemoved(cfg, doors),
+    undefined,
+    'structure'
   );
   const libraryUpperDoorsHidden = useMemo(
     () =>
@@ -151,7 +157,12 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
   );
   // This selector reads the optional root build snapshot when present; keep it broad until build is
   // promoted to a formal store slice.
-  const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors), undefined, 'all');
+  const modulesCount = useStoreSelector(
+    st => readModulesCountFromRootSnapshot(st, doors),
+    undefined,
+    'all',
+    'structure'
+  );
 
   const defaultCellWidth = useMemo(
     () => readStructureTabDefaultCellWidth({ modulesCount, width }),
@@ -167,7 +178,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     cellDimsHexMode,
     cellDimsHexProtrusion,
     cellDimsHexDoorWidth,
-  } = useUiSelectorShallow(ui => readStructureTabCellDimsState(ui));
+  } = useUiSelectorShallow(ui => readStructureTabCellDimsState(ui), 'structure');
 
   const {
     patterns,

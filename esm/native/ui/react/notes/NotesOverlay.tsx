@@ -53,15 +53,19 @@ export function ReactNotesOverlay(): ReactElement | null {
   const fb = useUiFeedback();
   const App: NotesOverlayApp = app;
 
-  const notesEnabled = useUiSelector(ui => !!ui.notesEnabled);
+  const notesEnabled = useUiSelector(ui => !!ui.notesEnabled, undefined, ['project-data', 'visibility']);
   const [editMode, setEditMode] = useState<boolean>(false);
   const frozenSavedNotesRef = useRef<unknown[]>([]);
-  const savedNotesRaw = useCfgSelector(cfg => {
-    if (editMode) return frozenSavedNotesRef.current;
-    const next = selectSavedNotes(cfg);
-    frozenSavedNotesRef.current = next;
-    return next;
-  });
+  const savedNotesRaw = useCfgSelector(
+    cfg => {
+      if (editMode) return frozenSavedNotesRef.current;
+      const next = selectSavedNotes(cfg);
+      frozenSavedNotesRef.current = next;
+      return next;
+    },
+    undefined,
+    'project-data'
+  );
 
   const doc = useMemo(() => getDocumentMaybe(App), [App]);
   const viewerContainer = useMemo(() => getElementByIdHtml(doc, 'viewer-container'), [doc]);
