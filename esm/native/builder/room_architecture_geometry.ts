@@ -432,19 +432,178 @@ export function subtractAxisAlignedBox(source: AxisAlignedBox, obstacle: AxisAli
   return subtractAxisAlignedBoxInOrder(source, obstacle, ['x', 'y', 'z']);
 }
 
+type WallOpeningRect = Readonly<{
+  minU: number;
+  maxU: number;
+  minY: number;
+  maxY: number;
+}>;
+
+export type RoomWallOpeningMeshData = Readonly<{
+  positions: number[];
+  normals: number[];
+}>;
+
+type Vec3Tuple = readonly [number, number, number];
+
+function appendUniqueCoordinate(values: number[], value: number): void {
+  if (!values.some(existing => Math.abs(existing - value) <= ROOM_ARCHITECTURE_EPSILON_M)) {
+    values.push(value);
+  }
+}
+
+function pushOrientedQuad(
+  positions: number[],
+  normals: number[],
+  corners: readonly [Vec3Tuple, Vec3Tuple, Vec3Tuple, Vec3Tuple],
+  normal: Vec3Tuple
+): void {
+  const [p0, p1, p2, p3] = corners;
+  const ux = p1[0] - p0[0];
+  const uy = p1[1] - p0[1];
+  const uz = p1[2] - p0[2];
+  const vx = p2[0] - p0[0];
+  const vy = p2[1] - p0[1];
+  const vz = p2[2] - p0[2];
+  const crossX = uy * vz - uz * vy;
+  const crossY = uz * vx - ux * vz;
+  const crossZ = ux * vy - uy * vx;
+  const sameDirection = crossX * normal[0] + crossY * normal[1] + crossZ * normal[2] >= 0;
+  const ordered = sameDirection ? ([p0, p1, p2, p0, p2, p3] as const) : ([p0, p3, p2, p0, p2, p1] as const);
+  for (const point of ordered) {
+    positions.push(point[0], point[1], point[2]);
+    normals.push(normal[0], normal[1], normal[2]);
+  }
+}
+
 /**
- * Exact wall-opening decomposition, partitioned along the wall before height.
- * This keeps full-height side pieces intact so opening-height seams do not span
- * the entire wall on Z-aligned side walls.
+ * Builds one continuous wall surface around its rectangular openings.
+ *
+ * The wall face is tessellated only into coplanar triangles; reveal/edge faces are emitted
+ * exclusively on the real outer boundary or on an opening boundary. Unlike decomposing the
+ * wall into adjacent boxes, this creates no internal vertical/horizontal faces that can cast
+ * seams beyond the dimensions of a door or window.
  */
-export function subtractAxisAlignedBoxAlongWall(
+export function buildRoomWallOpeningMeshData(
   source: AxisAlignedBox,
-  obstacle: AxisAlignedBox,
+  cuts: readonly AxisAlignedBox[],
   wallAxis: RoomWallSurfaceGeometry['axis']
-): AxisAlignedBox[] {
-  return wallAxis === 'x'
-    ? subtractAxisAlignedBoxInOrder(source, obstacle, ['x', 'y', 'z'])
-    : subtractAxisAlignedBoxInOrder(source, obstacle, ['z', 'y', 'x']);
+): RoomWallOpeningMeshData {
+  const minU = wallAxis === 'x' ? source.minX : source.minZ;
+  const maxU = wallAxis === 'x' ? source.maxX : source.maxZ;
+  const minN = wallAxis === 'x' ? source.minZ : source.minX;
+  const maxN = wallAxis === 'x' ? source.maxZ : source.maxX;
+  const minY = source.minY;
+  const maxY = source.maxY;
+
+  const openings: WallOpeningRect[] = [];
+  const uStops = [minU, maxU];
+  const yStops = [minY, maxY];
+  for (const cut of cuts) {
+    const cutMinU = Math.max(minU, wallAxis === 'x' ? cut.minX : cut.minZ);
+    const cutMaxU = Math.min(maxU, wallAxis === 'x' ? cut.maxX : cut.maxZ);
+    const cutMinY = Math.max(minY, cut.minY);
+    const cutMaxY = Math.min(maxY, cut.maxY);
+    if (
+      cutMaxU - cutMinU <= ROOM_ARCHITECTURE_EPSILON_M ||
+      cutMaxY - cutMinY <= ROOM_ARCHITECTURE_EPSILON_M
+    ) {
+      continue;
+    }
+    openings.push({ minU: cutMinU, maxU: cutMaxU, minY: cutMinY, maxY: cutMaxY });
+    appendUniqueCoordinate(uStops, cutMinU);
+    appendUniqueCoordinate(uStops, cutMaxU);
+    appendUniqueCoordinate(yStops, cutMinY);
+    appendUniqueCoordinate(yStops, cutMaxY);
+  }
+  uStops.sort((a, b) => a - b);
+  yStops.sort((a, b) => a - b);
+
+  const solid: boolean[][] = Array.from({ length: uStops.length - 1 }, () =>
+    Array.from({ length: yStops.length - 1 }, () => true)
+  );
+  for (let uIndex = 0; uIndex < uStops.length - 1; uIndex += 1) {
+    const centerU = (uStops[uIndex] + uStops[uIndex + 1]) / 2;
+    for (let yIndex = 0; yIndex < yStops.length - 1; yIndex += 1) {
+      const centerY = (yStops[yIndex] + yStops[yIndex + 1]) / 2;
+      solid[uIndex][yIndex] = !openings.some(
+        opening =>
+          centerU > opening.minU - ROOM_ARCHITECTURE_EPSILON_M &&
+          centerU < opening.maxU + ROOM_ARCHITECTURE_EPSILON_M &&
+          centerY > opening.minY - ROOM_ARCHITECTURE_EPSILON_M &&
+          centerY < opening.maxY + ROOM_ARCHITECTURE_EPSILON_M
+      );
+    }
+  }
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const point = (u: number, y: number, n: number): Vec3Tuple => (wallAxis === 'x' ? [u, y, n] : [n, y, u]);
+  const normalU = (sign: -1 | 1): Vec3Tuple => (wallAxis === 'x' ? [sign, 0, 0] : [0, 0, sign]);
+  const normalN = (sign: -1 | 1): Vec3Tuple => (wallAxis === 'x' ? [0, 0, sign] : [sign, 0, 0]);
+
+  for (let uIndex = 0; uIndex < uStops.length - 1; uIndex += 1) {
+    const u0 = uStops[uIndex];
+    const u1 = uStops[uIndex + 1];
+    for (let yIndex = 0; yIndex < yStops.length - 1; yIndex += 1) {
+      if (!solid[uIndex][yIndex]) continue;
+      const y0 = yStops[yIndex];
+      const y1 = yStops[yIndex + 1];
+
+      pushOrientedQuad(
+        positions,
+        normals,
+        [point(u0, y0, minN), point(u1, y0, minN), point(u1, y1, minN), point(u0, y1, minN)],
+        normalN(-1)
+      );
+      pushOrientedQuad(
+        positions,
+        normals,
+        [point(u0, y0, maxN), point(u1, y0, maxN), point(u1, y1, maxN), point(u0, y1, maxN)],
+        normalN(1)
+      );
+
+      const leftIsSolid = uIndex > 0 && solid[uIndex - 1][yIndex];
+      const rightIsSolid = uIndex + 1 < solid.length && solid[uIndex + 1][yIndex];
+      const belowIsSolid = yIndex > 0 && solid[uIndex][yIndex - 1];
+      const aboveIsSolid = yIndex + 1 < solid[uIndex].length && solid[uIndex][yIndex + 1];
+
+      if (!leftIsSolid) {
+        pushOrientedQuad(
+          positions,
+          normals,
+          [point(u0, y0, minN), point(u0, y1, minN), point(u0, y1, maxN), point(u0, y0, maxN)],
+          normalU(-1)
+        );
+      }
+      if (!rightIsSolid) {
+        pushOrientedQuad(
+          positions,
+          normals,
+          [point(u1, y0, minN), point(u1, y1, minN), point(u1, y1, maxN), point(u1, y0, maxN)],
+          normalU(1)
+        );
+      }
+      if (!belowIsSolid) {
+        pushOrientedQuad(
+          positions,
+          normals,
+          [point(u0, y0, minN), point(u1, y0, minN), point(u1, y0, maxN), point(u0, y0, maxN)],
+          [0, -1, 0]
+        );
+      }
+      if (!aboveIsSolid) {
+        pushOrientedQuad(
+          positions,
+          normals,
+          [point(u0, y1, minN), point(u1, y1, minN), point(u1, y1, maxN), point(u0, y1, maxN)],
+          [0, 1, 0]
+        );
+      }
+    }
+  }
+
+  return { positions, normals };
 }
 
 function wardrobeBoxFromGeometry(geometry: RoomArchitectureGeometry): AxisAlignedBox {

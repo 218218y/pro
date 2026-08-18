@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 
 import {
   ROOM_WALL_THICKNESS_M,
+  buildRoomWallOpeningMeshData,
   resolveRoomArchitectureGeometry,
   resolveRoomOpeningGeometry,
-  subtractAxisAlignedBoxAlongWall,
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import {
   ROOM_ARCHITECTURE_GROUP_NAME,
@@ -55,44 +55,89 @@ function createApp(rootState: ReturnType<typeof createRootState>, roomGroup?: an
   } as any;
 }
 
-test('side-wall opening subtraction keeps horizontal seams local to the opening span', () => {
+test('wall opening mesh emits reveal faces only on the exact door/window boundary', () => {
   const sideWall = { minX: 0, maxX: 0.2, minY: 0, maxY: 2.6, minZ: 0, maxZ: 2.8 };
   const throughWallX = { minX: -0.001, maxX: 0.201 };
 
-  const doorPieces = subtractAxisAlignedBoxAlongWall(
+  const quads = (mesh: ReturnType<typeof buildRoomWallOpeningMeshData>) => {
+    const result: Array<{ positions: number[]; normal: number[] }> = [];
+    for (let offset = 0; offset < mesh.positions.length; offset += 18) {
+      result.push({
+        positions: mesh.positions.slice(offset, offset + 18),
+        normal: mesh.normals.slice(offset, offset + 3),
+      });
+    }
+    return result;
+  };
+  const bounds = (positions: number[]) => {
+    const xs: number[] = [];
+    const ys: number[] = [];
+    const zs: number[] = [];
+    for (let i = 0; i < positions.length; i += 3) {
+      xs.push(positions[i]);
+      ys.push(positions[i + 1]);
+      zs.push(positions[i + 2]);
+    }
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+      minZ: Math.min(...zs),
+      maxZ: Math.max(...zs),
+    };
+  };
+
+  const door = buildRoomWallOpeningMeshData(
     sideWall,
-    { ...throughWallX, minY: 0, maxY: 2.1, minZ: 0.8, maxZ: 1.7 },
+    [{ ...throughWallX, minY: 0, maxY: 2.1, minZ: 0.8, maxZ: 1.7 }],
     'z'
   );
-  assert.equal(doorPieces.length, 3);
-  const doorTopPiece = doorPieces.find(piece => Math.abs(piece.minY - 2.1) <= 1e-9);
-  assert.ok(doorTopPiece);
-  assertClose(doorTopPiece.minZ, 0.8);
-  assertClose(doorTopPiece.maxZ, 1.7);
+  const doorRevealSides = quads(door).filter(quad => Math.abs(quad.normal[2]) === 1);
+  const doorJambs = doorRevealSides
+    .map(quad => bounds(quad.positions))
+    .filter(box => Math.abs(box.minZ - 0.8) <= 1e-9 || Math.abs(box.minZ - 1.7) <= 1e-9);
+  assert.equal(doorJambs.length, 2);
+  for (const jamb of doorJambs) {
+    assertClose(jamb.minY, 0);
+    assertClose(jamb.maxY, 2.1);
+    assertClose(jamb.minX, sideWall.minX);
+    assertClose(jamb.maxX, sideWall.maxX);
+  }
   assert.ok(
-    !doorPieces.some(
-      piece =>
-        Math.abs(piece.minY - 2.1) <= 1e-9 &&
-        Math.abs(piece.minZ - sideWall.minZ) <= 1e-9 &&
-        Math.abs(piece.maxZ - sideWall.maxZ) <= 1e-9
-    ),
-    'door head must not create a full-length horizontal wall seam'
+    !doorRevealSides.some(quad => {
+      const box = bounds(quad.positions);
+      return (
+        (Math.abs(box.minZ - 0.8) <= 1e-9 || Math.abs(box.minZ - 1.7) <= 1e-9) &&
+        Math.abs(box.maxY - sideWall.maxY) <= 1e-9
+      );
+    }),
+    'door jamb faces must stop at the door head instead of continuing to full wall height'
   );
 
-  const windowPieces = subtractAxisAlignedBoxAlongWall(
+  const window = buildRoomWallOpeningMeshData(
     sideWall,
-    { ...throughWallX, minY: 0.9, maxY: 1.9, minZ: 0.35, maxZ: 1.55 },
+    [{ ...throughWallX, minY: 0.9, maxY: 1.9, minZ: 0.35, maxZ: 1.55 }],
     'z'
   );
-  assert.equal(windowPieces.length, 4);
-  const windowBottomPiece = windowPieces.find(
-    piece => Math.abs(piece.maxY - 0.9) <= 1e-9 && piece.maxY < sideWall.maxY
-  );
-  const windowTopPiece = windowPieces.find(piece => Math.abs(piece.minY - 1.9) <= 1e-9);
-  assert.ok(windowBottomPiece && windowTopPiece);
-  for (const piece of [windowBottomPiece, windowTopPiece]) {
-    assertClose(piece.minZ, 0.35);
-    assertClose(piece.maxZ, 1.55);
+  const windowQuads = quads(window);
+  const windowRevealSides = windowQuads.filter(quad => Math.abs(quad.normal[2]) === 1);
+  const windowJambs = windowRevealSides
+    .map(quad => bounds(quad.positions))
+    .filter(box => Math.abs(box.minZ - 0.35) <= 1e-9 || Math.abs(box.minZ - 1.55) <= 1e-9);
+  assert.equal(windowJambs.length, 2);
+  for (const jamb of windowJambs) {
+    assertClose(jamb.minY, 0.9);
+    assertClose(jamb.maxY, 1.9);
+  }
+  const windowHorizontalReveals = windowQuads
+    .filter(quad => Math.abs(quad.normal[1]) === 1)
+    .map(quad => bounds(quad.positions))
+    .filter(box => Math.abs(box.minY - 0.9) <= 1e-9 || Math.abs(box.minY - 1.9) <= 1e-9);
+  assert.equal(windowHorizontalReveals.length, 2);
+  for (const reveal of windowHorizontalReveals) {
+    assertClose(reveal.minZ, 0.35);
+    assertClose(reveal.maxZ, 1.55);
   }
 });
 
@@ -175,6 +220,22 @@ test('room openings resolve against their host wall and scene rendering cuts the
     ) {}
     dispose() {}
   }
+  class FakeBufferAttribute {
+    constructor(
+      public array: number[],
+      public itemSize: number
+    ) {}
+  }
+  class FakeBufferGeometry {
+    attributes: Record<string, FakeBufferAttribute> = {};
+    setAttribute(name: string, attribute: FakeBufferAttribute) {
+      this.attributes[name] = attribute;
+      return this;
+    }
+    computeBoundingBox() {}
+    computeBoundingSphere() {}
+    dispose() {}
+  }
   class FakeMaterial {
     constructor(public params: Record<string, unknown>) {}
     dispose() {}
@@ -241,30 +302,31 @@ test('room openings resolve against their host wall and scene rendering cuts the
   const THREE = {
     Group: FakeGroup,
     BoxGeometry: FakeBoxGeometry,
+    BufferGeometry: FakeBufferGeometry,
+    Float32BufferAttribute: FakeBufferAttribute,
     MeshStandardMaterial: FakeMaterial,
     Mesh: FakeMesh,
   } as any;
   assert.equal(refreshRoomArchitectureScene(App, THREE), true);
   const architecture = roomGroup.getObjectByName(ROOM_ARCHITECTURE_GROUP_NAME);
   assert.ok(architecture);
-  assert.equal(architecture.getObjectByName('wpBackWall'), null);
-  assert.equal(architecture.getObjectByName('wpRightWall'), null);
-  assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpBackWall_piece_')));
-  assert.ok(architecture.children.some((child: any) => child.name.startsWith('wpRightWall_piece_')));
-  const rightWallPieces = architecture.children.filter((child: any) =>
-    child.name.startsWith('wpRightWall_piece_')
+  const backWallMesh = architecture.getObjectByName('wpBackWall');
+  const rightWallMesh = architecture.getObjectByName('wpRightWall');
+  assert.ok(backWallMesh);
+  assert.ok(rightWallMesh);
+  assert.ok(backWallMesh.geometry instanceof FakeBufferGeometry);
+  assert.ok(rightWallMesh.geometry instanceof FakeBufferGeometry);
+  assert.ok(backWallMesh.geometry.attributes.position.array.length > 0);
+  assert.ok(rightWallMesh.geometry.attributes.position.array.length > 0);
+  assert.equal(
+    architecture.children.some((child: any) => child.name.startsWith('wpBackWall_piece_')),
+    false,
+    'a wall with openings must stay one mesh instead of adjacent box pieces'
   );
-  const rightDoorHeadPiece = rightWallPieces.find(
-    (child: any) => Math.abs(child.position.y - (rightDoor.surface.height + rightDoor.height) / 2) <= 1e-9
-  );
-  assert.ok(rightDoorHeadPiece);
-  assertClose(rightDoorHeadPiece.geometry.depth, rightDoor.width);
-  assertClose(rightDoorHeadPiece.position.z, rightDoor.centerZ);
-  assert.ok(
-    rightWallPieces
-      .filter((child: any) => child !== rightDoorHeadPiece)
-      .every((child: any) => Math.abs(child.geometry.height - rightDoor.surface.height) <= 1e-9),
-    'side pieces beside a door opening must stay full-height instead of creating a wall-wide head seam'
+  assert.equal(
+    architecture.children.some((child: any) => child.name.startsWith('wpRightWall_piece_')),
+    false,
+    'side-wall openings must not split the wall into seam-producing box pieces'
   );
   assert.ok(architecture.getObjectByName('wpRoomOpening_win-back_glass'));
   assert.ok(architecture.getObjectByName('wpRoomOpening_door-right_doorLeaf'));
@@ -500,13 +562,11 @@ test('room openings resolve against their host wall and scene rendering cuts the
   assert.ok(doorLeaf.rotation.y < 0);
   assert.ok(Math.abs(doorLeaf.rotation.y) < Math.PI / 2);
 
-  const backPiece = architecture.children.find((child: any) => child.name.startsWith('wpBackWall_piece_'));
-  const rightPiece = architecture.children.find((child: any) => child.name.startsWith('wpRightWall_piece_'));
-  assert.equal(backPiece.userData.__wpRoomWallSurface, true);
-  assert.equal(backPiece.userData.roomWallAxis, 'x');
-  assert.equal(rightPiece.userData.__wpRoomWallSurface, true);
-  assert.equal(rightPiece.userData.roomWallAxis, 'z');
-  assert.equal(rightPiece.userData.roomWallInwardNormalX, -1);
+  assert.equal(backWallMesh.userData.__wpRoomWallSurface, true);
+  assert.equal(backWallMesh.userData.roomWallAxis, 'x');
+  assert.equal(rightWallMesh.userData.__wpRoomWallSurface, true);
+  assert.equal(rightWallMesh.userData.roomWallAxis, 'z');
+  assert.equal(rightWallMesh.userData.roomWallInwardNormalX, -1);
 });
 
 test('room architecture scene renders enabled wall boxes with the persisted wall color', () => {

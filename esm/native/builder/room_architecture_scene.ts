@@ -3,10 +3,10 @@ import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/inde
 import { __getRoomGroupNode } from './room_shared_state.js';
 import {
   axisAlignedBoxToCenterSize,
+  buildRoomWallOpeningMeshData,
   resolveRoomArchitectureGeometry,
   resolveRoomOpeningGeometry,
   resolveRoomWallSurface,
-  subtractAxisAlignedBoxAlongWall,
   type AxisAlignedBox,
   type ResolvedRoomOpeningGeometry,
   type RoomArchitectureGeometry,
@@ -94,6 +94,11 @@ type ArchitectureBoxFactoryArgs = {
   BoxGeometryCtor: new (w: number, h: number, d: number) => unknown;
   MaterialCtor: new (params: UnknownRecord) => unknown;
   MeshCtor: new (geometry: unknown, material: unknown) => UnknownRecord;
+};
+
+type ArchitectureWallFactoryArgs = ArchitectureBoxFactoryArgs & {
+  BufferGeometryCtor?: new () => unknown;
+  Float32BufferAttributeCtor?: new (values: number[], itemSize: number) => unknown;
 };
 
 function addAxisAlignedArchitectureBox(
@@ -229,7 +234,7 @@ function addWallMeasurementTarget(args: {
 }
 
 function addWallWithOpenings(args: {
-  factory: ArchitectureBoxFactoryArgs;
+  factory: ArchitectureWallFactoryArgs;
   geometry: RoomArchitectureGeometry;
   wall: RoomWallId;
   color: string;
@@ -250,23 +255,37 @@ function addWallWithOpenings(args: {
     return;
   }
 
-  let pieces: AxisAlignedBox[] = [source];
-  for (const opening of wallOpenings) {
-    const next: AxisAlignedBox[] = [];
-    for (const piece of pieces) {
-      next.push(...subtractAxisAlignedBoxAlongWall(piece, opening.cut, opening.surface.axis));
-    }
-    pieces = next;
-  }
-  for (let i = 0; i < pieces.length; i += 1) {
-    addAxisAlignedArchitectureBox(args.factory, pieces[i], {
-      name: `${wallName(args.wall)}_piece_${i}`,
-      kind: wallKind(args.wall),
-      color: args.color,
-      castShadow: args.castShadow,
-      userData: wallSurfaceUserData(args.geometry, args.wall),
-    });
-  }
+  const surface = resolveRoomWallSurface(args.geometry, args.wall);
+  if (!surface) return;
+  const BufferGeometryCtor = args.factory.BufferGeometryCtor;
+  const Float32BufferAttributeCtor = args.factory.Float32BufferAttributeCtor;
+  if (!BufferGeometryCtor || !Float32BufferAttributeCtor) return;
+  const meshData = buildRoomWallOpeningMeshData(
+    source,
+    wallOpenings.map(opening => opening.cut),
+    surface.axis
+  );
+  const geometry = new BufferGeometryCtor();
+  const geometryRecord = asRecord(geometry);
+  if (typeof geometryRecord?.setAttribute !== 'function') return;
+  geometryRecord.setAttribute('position', new Float32BufferAttributeCtor(meshData.positions, 3));
+  geometryRecord.setAttribute('normal', new Float32BufferAttributeCtor(meshData.normals, 3));
+  if (typeof geometryRecord.computeBoundingBox === 'function') geometryRecord.computeBoundingBox();
+  if (typeof geometryRecord.computeBoundingSphere === 'function') geometryRecord.computeBoundingSphere();
+
+  const mesh = new args.factory.MeshCtor(
+    geometry,
+    new args.factory.MaterialCtor({ color: args.color, roughness: 0.96, metalness: 0 })
+  );
+  mesh.name = wallName(args.wall);
+  mesh.castShadow = args.castShadow === true;
+  mesh.receiveShadow = true;
+  mesh.userData = {
+    __kind: wallKind(args.wall),
+    ignorePicking: true,
+    ...wallSurfaceUserData(args.geometry, args.wall),
+  };
+  if (typeof args.factory.group.add === 'function') args.factory.group.add(mesh);
 }
 
 function openingVisualBox(args: {
@@ -528,6 +547,9 @@ export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike
   const T = asRecord(THREE);
   const GroupCtor = T?.Group as (new () => UnknownRecord) | undefined;
   const BoxGeometryCtor = T?.BoxGeometry as (new (w: number, h: number, d: number) => unknown) | undefined;
+  const BufferGeometryCtor = T?.BufferGeometry as (new () => unknown) | undefined;
+  const Float32BufferAttributeCtor = T?.Float32BufferAttribute as
+    (new (values: number[], itemSize: number) => unknown) | undefined;
   const MaterialCtor = T?.MeshStandardMaterial as (new (params: UnknownRecord) => unknown) | undefined;
   const MeshCtor = T?.Mesh as (new (geometry: unknown, material: unknown) => UnknownRecord) | undefined;
   if (!GroupCtor || !BoxGeometryCtor || !MaterialCtor || !MeshCtor) return false;
@@ -541,8 +563,16 @@ export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike
   const openings = (Array.isArray(geometry.config.openings) ? geometry.config.openings : [])
     .map(opening => resolveRoomOpeningGeometry(geometry, opening))
     .filter((entry): entry is ResolvedRoomOpeningGeometry => entry != null);
+  if (openings.length && (!BufferGeometryCtor || !Float32BufferAttributeCtor)) return false;
 
-  const factory = { group, BoxGeometryCtor, MaterialCtor, MeshCtor };
+  const factory = {
+    group,
+    BoxGeometryCtor,
+    BufferGeometryCtor,
+    Float32BufferAttributeCtor,
+    MaterialCtor,
+    MeshCtor,
+  };
 
   addWallWithOpenings({ factory, geometry, wall: 'back', color: wallColor, openings });
 
