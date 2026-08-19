@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-18T19:42:48.299Z",
+  "generatedAt": "2026-08-19T04:24:09.157Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 558,
-    "totalFiles": 217,
+    "totalOccurrences": 559,
+    "totalFiles": 218,
     "byCategory": {
       "runtime-default": 60,
-      "domain-default": 403,
+      "domain-default": 404,
       "error-message-default": 42,
       "framework-default": 3,
       "browser-adapter": 18,
@@ -222,6 +222,12 @@
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      "esm/native/builder/post_build_sketch_door_cuts_apply.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/builder/post_build_sketch_door_cuts_modules.ts": {
@@ -2141,15 +2147,22 @@
       "text": "seg = (totalWcm * doors) / fallbackDenom;"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_apply.ts",
+      "line": 137,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "// as a defensive fallback for malformed snapshots where both domains exist."
+    },
+    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 182,
+      "line": 199,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "const runtimeDrawerOwnerBlocksConfigFallback ="
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 185,
+      "line": 202,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "if (!stacksByModule.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback) {"
@@ -3696,7 +3709,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_split_click_custom.ts",
-      "line": 86,
+      "line": 99,
       "term": "fallback",
       "category": "domain-default",
       "text": "// door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state"

@@ -293,7 +293,7 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
   assert.equal(
     pkg.scripts['deps:update:sync-generated'],
-    'npm run vendor:offline:packages:refresh && npm run toolchain:version-policy:report'
+    'npm run vendor:offline:packages:refresh && npm run lint:rule-matrix && npm run toolchain:version-policy:report'
   );
   assert.doesNotMatch(
     pkg.scripts['deps:update:sync-generated'],

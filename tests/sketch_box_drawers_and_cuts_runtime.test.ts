@@ -1252,7 +1252,9 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
   );
   assert.match(applyOwnerSrc, /shared\/door_visual_key_contracts_shared\.js/);
   assert.match(applyOwnerSrc, /resolveDoorSplitAuthoringBaseKey/);
-  assert.match(boxSrc, /readSketchDoorManualSplitSelection/);
+  assert.match(boxSrc, /readSketchDoorSplitSelection/);
+  assert.match(applyOwnerSrc, /readSplitPosListFromMap/);
+  assert.match(applyOwnerSrc, /readSplitStandardPosListFromMap/);
   assert.doesNotMatch(boxSrc, /readSketchBoxDoorBasePartId/);
   assert.match(src, /ud\.__wpSketchExtDrawer !== true/);
   assert.match(
@@ -1370,8 +1372,18 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
   );
   assert.match(
     cutsSrc,
-    /if \(!stacksByModule\.size && !splitMap\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
+    /const deferredSplitModuleKeys = collectSketchModuleDeferredSplitKeys\(ctx, stackKey\);/
   );
+  assert.match(
+    cutsSrc,
+    /if \(!stacksByModule\.size && \(!splitMap \|\| !deferredSplitModuleKeys\.size\)\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
+  );
+  assert.match(
+    cutsSrc,
+    /const isCanonicalSourceDoor = partId === basePartId \|\| partId === `\$\{basePartId\}_full`;/
+  );
+  assert.match(cutsSrc, /if \(!isCanonicalSourceDoor\) return null;/);
+  assert.match(cutsSrc, /const ownsDeferredSplit = deferredSplitModuleKeys\.has\(moduleKey\);/);
 });
 
 test('free-placement sketch box inset doors reserve front depth for shelves', () => {
