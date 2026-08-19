@@ -124,7 +124,7 @@ test('[state-api] commitUiSnapshot suppresses semantically unchanged snapshots w
 test('[state-api] applyConfig suppresses unchanged canonical config patches', () => {
   const { calls, store } = createStore({
     ui: {},
-    config: { width: 220, modulesConfiguration: [{ id: 'm1' }] },
+    config: { isManualWidth: true, modulesConfiguration: [{ id: 'm1' }] },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: { dirty: false },
@@ -134,7 +134,7 @@ test('[state-api] applyConfig suppresses unchanged canonical config patches', ()
   installStateApi(App as any);
 
   (App.actions as any).applyConfig(
-    { width: 220, modulesConfiguration: [{ id: 'm1' }] },
+    { isManualWidth: true, modulesConfiguration: [{ id: 'm1' }] },
     { source: 'test:no-op-config' }
   );
 
@@ -144,8 +144,8 @@ test('[state-api] applyConfig suppresses unchanged canonical config patches', ()
 test('[state-api] root actions.patch filters unchanged slices before canonical dispatch', () => {
   const { calls, store, state } = createStore({
     ui: { activeTab: 'design', raw: { width: 200, height: 240 } },
-    config: { width: 200 },
-    runtime: { sketchMode: false, hoverId: 'a' },
+    config: { isManualWidth: false },
+    runtime: { sketchMode: false, paintColor: '#111111' },
     mode: { primary: 'none', opts: {} },
     meta: { dirty: false },
   });
@@ -157,7 +157,7 @@ test('[state-api] root actions.patch filters unchanged slices before canonical d
     {
       ui: { activeTab: 'design', raw: { width: 200 } },
       runtime: { sketchMode: true },
-      config: { width: 200 },
+      config: { isManualWidth: false },
     },
     { source: 'test:filtered-root-patch' }
   );
@@ -168,7 +168,7 @@ test('[state-api] root actions.patch filters unchanged slices before canonical d
   assert.equal((calls[0].meta as AnyRecord).source, 'test:filtered-root-patch');
   assert.equal((state.runtime as AnyRecord).sketchMode, true);
   assert.equal((state.ui as AnyRecord).activeTab, 'design');
-  assert.equal((state.config as AnyRecord).width, 200);
+  assert.equal((state.config as AnyRecord).isManualWidth, false);
 });
 
 test('[state-api] config replace-key filtering preserves unchanged entries inside replaced map branches', () => {
@@ -203,7 +203,7 @@ test('[state-api] root actions.patch keeps single runtime slices on canonical ro
   const { calls, store, state } = createStore({
     ui: { activeTab: 'design' },
     config: {},
-    runtime: { sketchMode: false, hoverId: 'keep' },
+    runtime: { sketchMode: false, paintColor: '#222222' },
     mode: { primary: 'none', opts: {} },
     meta: { dirty: false },
   });
@@ -213,7 +213,7 @@ test('[state-api] root actions.patch keeps single runtime slices on canonical ro
 
   (App.actions as any).patch(
     {
-      runtime: { sketchMode: true, hoverId: 'keep' },
+      runtime: { sketchMode: true, paintColor: '#222222' },
     },
     { source: 'test:single-runtime-route' }
   );
@@ -223,7 +223,7 @@ test('[state-api] root actions.patch keeps single runtime slices on canonical ro
   assert.deepEqual(calls[0].payload, { runtime: { sketchMode: true } });
   assert.equal((calls[0].meta as AnyRecord).source, 'test:single-runtime-route');
   assert.equal((state.runtime as AnyRecord).sketchMode, true);
-  assert.equal((state.runtime as AnyRecord).hoverId, 'keep');
+  assert.equal((state.runtime as AnyRecord).paintColor, '#222222');
 });
 
 test('[state-api] root actions.patch routes one meta slice through the dedicated meta writer instead of root patch', () => {
@@ -232,7 +232,7 @@ test('[state-api] root actions.patch routes one meta slice through the dedicated
     config: {},
     runtime: {},
     mode: { primary: 'none', opts: {} },
-    meta: { dirty: false, source: 'keep' },
+    meta: { dirty: false, version: 7 },
   });
   const App: AnyRecord = { actions: {}, store };
 
@@ -240,7 +240,7 @@ test('[state-api] root actions.patch routes one meta slice through the dedicated
 
   (App.actions as any).patch(
     {
-      meta: { dirty: true, source: 'keep' },
+      meta: { dirty: true },
     },
     { source: 'test:single-meta-route' }
   );
@@ -250,5 +250,5 @@ test('[state-api] root actions.patch routes one meta slice through the dedicated
   assert.deepEqual(calls[0].patch, { dirty: true });
   assert.equal((calls[0].meta as AnyRecord).source, 'test:single-meta-route');
   assert.equal((state.meta as AnyRecord).dirty, true);
-  assert.equal((state.meta as AnyRecord).source, 'keep');
+  assert.equal((state.meta as AnyRecord).version, 7);
 });

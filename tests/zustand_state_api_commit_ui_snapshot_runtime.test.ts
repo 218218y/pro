@@ -121,11 +121,14 @@ test('[state-api] applyConfig commits through the dedicated config writer (no le
 
   installStateApi(App as any);
 
-  (App.actions as any).applyConfig({ doors: 4, width: 220 }, { source: 'test:applyConfig' });
+  (App.actions as any).applyConfig(
+    { isManualWidth: true, grooveLinesCount: 4 },
+    { source: 'test:applyConfig' }
+  );
 
   assert.equal(calls.length, 1);
-  assert.equal((calls[0].patch as AnyRecord).doors, 4);
-  assert.equal((calls[0].patch as AnyRecord).width, 220);
+  assert.equal((calls[0].patch as AnyRecord).isManualWidth, true);
+  assert.equal((calls[0].patch as AnyRecord).grooveLinesCount, 4);
   assert.equal((calls[0].meta as AnyRecord).source, 'test:applyConfig');
   assert.equal(calls[0].via as any, undefined);
 });

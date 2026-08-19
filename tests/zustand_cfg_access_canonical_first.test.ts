@@ -109,10 +109,12 @@ test('[cfg_access] applyConfigNonMapPatch commits via actions.config.patch when 
 });
 
 test('[cfg_access] cfgSetScalar and semantic map setters operate on store-backed config', () => {
-  const App = makeAppBase({ width: 100, handlesMap: { a: 'bar' } as AnyRecord });
+  const App = makeAppBase({ grooveLinesCount: 2, handlesMap: { a: 'bar' } as AnyRecord });
 
-  cfgSetScalar(App, 'width', (prev: unknown) => Number(prev || 0) + 5, { source: 't:scalar' } as any);
-  assert.equal(cfgRead(App, 'width', 0), 105);
+  cfgSetScalar(App, 'grooveLinesCount', (prev: unknown) => Number(prev || 0) + 5, {
+    source: 't:scalar',
+  } as any);
+  assert.equal(cfgRead(App, 'grooveLinesCount', 0), 7);
 
   const out1 = setCfgHandlesMap(App, { a: 'bar', b: 'knob' }, { source: 't:setHandlesMap' } as any);
   assert.deepEqual(out1, { a: 'bar', b: 'knob' });

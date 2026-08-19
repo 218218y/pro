@@ -141,12 +141,7 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     ],
     'projectIoOperationTypes'
   );
-  assertMatchesAll(
-    assert,
-    configScalarTypes,
-    [/individualColors: IndividualColorsMap;/],
-    'configScalarTypes'
-  );
+  assertLacksAll(assert, configScalarTypes, [/individualColors: IndividualColorsMap;/], 'configScalarTypes');
 
   assertMatchesAll(
     assert,
