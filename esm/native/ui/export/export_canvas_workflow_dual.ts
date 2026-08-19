@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../../types';
+import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types';
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
 import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
@@ -14,7 +14,7 @@ import {
 
 export function createExportDualImageWorkflow(
   deps: ExportCanvasWorkflowDeps
-): (App: AppContainer) => Promise<void> {
+): (App: AppContainer) => Promise<CanvasExportDeliveryResult | void> {
   const {
     _requireApp,
     hasDom,
@@ -35,7 +35,7 @@ export function createExportDualImageWorkflow(
     restoreViewportCameraPose,
   } = deps;
 
-  return async function exportDualImage(App: AppContainer): Promise<void> {
+  return async function exportDualImage(App: AppContainer): Promise<CanvasExportDeliveryResult | void> {
     App = _requireApp(App);
     if (!hasDom(App)) return;
 
@@ -137,11 +137,12 @@ export function createExportDualImageWorkflow(
         toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
       });
       if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
+      return deliveryResult;
     } catch (err) {
       deps._reportExportRecovery(App, 'exportDualImage.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const finalCanvasWithoutLogo = await createComposite(false);
-      await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-design-open-closed.png', {
+      return await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-design-open-closed.png', {
         mode: 'clipboard',
         clipboardFailureMode: 'none',
         toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',

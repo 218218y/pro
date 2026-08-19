@@ -1,5 +1,9 @@
 // WardrobePro — Export canvas delivery shared helpers (Native ESM)
 
+import type { CanvasExportDeliveryResult } from '../../../../types';
+
+export type { CanvasExportDeliveryResult } from '../../../../types';
+
 export interface CanvasExportOptions {
   mode?: string;
   clipboardFailureMode?: string;
@@ -11,27 +15,6 @@ export interface CanvasExportOptions {
   confirmMsg?: string;
   deferSecurityEncodingFailureToast?: boolean;
 }
-
-export type CanvasExportDeliveryResult =
-  | { ok: true; delivery: 'clipboard' | 'download' }
-  | {
-      ok: false;
-      stage: 'encoding';
-      reason: 'security';
-      error: unknown;
-    }
-  | {
-      ok: false;
-      stage: 'encoding';
-      reason: 'error';
-      error: unknown;
-    }
-  | {
-      ok: false;
-      stage: 'clipboard';
-      reason: 'unavailable' | 'error';
-      message?: string;
-    };
 
 type FailedResult = { ok: false; message?: string };
 type FailedClipboardResult = { ok: false; reason: 'unavailable' | 'error'; message?: string };

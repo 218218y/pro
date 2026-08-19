@@ -18,6 +18,7 @@ function isFailureResult(
 
 export function getExportActionFailureToast(result: ExportUiActionResult): ExportActionToastInfo | null {
   if (!isFailureResult(result)) return null;
+  if (result.reason === 'delivery-failed') return null;
   if (result.reason === 'busy') {
     return { message: 'פעולת ייצוא כבר רצה כרגע', type: 'error' };
   }

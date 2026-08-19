@@ -354,10 +354,31 @@ export interface OrderPdfBuildResultLike extends UnknownRecord {
   projectName: string;
 }
 
+export type CanvasExportDeliveryResult =
+  | { ok: true; delivery: 'clipboard' | 'download' }
+  | {
+      ok: false;
+      stage: 'encoding';
+      reason: 'security';
+      error: unknown;
+    }
+  | {
+      ok: false;
+      stage: 'encoding';
+      reason: 'error';
+      error: unknown;
+    }
+  | {
+      ok: false;
+      stage: 'clipboard';
+      reason: 'unavailable' | 'error';
+      message?: string;
+    };
+
 export interface ExportCanvasWorkflowOpsLike extends UnknownRecord {
-  copyToClipboard: (app: AppContainer) => Promise<void>;
-  exportDualImage: (app: AppContainer) => Promise<void>;
-  exportRenderAndSketch: (app: AppContainer) => Promise<void>;
+  copyToClipboard: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
+  exportDualImage: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
+  exportRenderAndSketch: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
   takeSnapshot: (app: AppContainer) => Promise<void>;
 }
 

@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../../types';
+import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types';
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
 import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
@@ -15,7 +15,7 @@ import {
 
 export function createExportRenderAndSketchWorkflow(
   deps: ExportCanvasWorkflowDeps
-): (App: AppContainer) => Promise<void> {
+): (App: AppContainer) => Promise<CanvasExportDeliveryResult | void> {
   const {
     _requireApp,
     hasDom,
@@ -33,7 +33,7 @@ export function createExportRenderAndSketchWorkflow(
     applyViewportSketchMode,
   } = deps;
 
-  return async function exportRenderAndSketch(App: AppContainer): Promise<void> {
+  return async function exportRenderAndSketch(App: AppContainer): Promise<CanvasExportDeliveryResult | void> {
     App = _requireApp(App);
     if (!hasDom(App)) return;
 
@@ -160,11 +160,12 @@ export function createExportRenderAndSketchWorkflow(
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
         });
         if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
+        return deliveryResult;
       } catch (err) {
         deps._reportExportRecovery(App, 'exportRenderAndSketch.retryWithoutLogo', err, { pass: 'logo' });
         if (deps.shouldFailFast(App)) throw err;
         const finalCanvasWithoutLogo = await createComposite(false);
-        await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
+        return await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
           clipboardFailureMode: 'none',
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
@@ -173,7 +174,7 @@ export function createExportRenderAndSketchWorkflow(
     };
 
     try {
-      await runExport();
+      return await runExport();
     } finally {
       restoreExportState();
       restoreExportWall();

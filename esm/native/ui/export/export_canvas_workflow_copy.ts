@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../../types';
+import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types';
 import { syncCameraControlsForExportFrame } from './export_canvas_workflow_camera_sync.js';
 import { attachNotesSourceRect, readCanvasImageSourceRect } from './export_canvas_workflow_notes_rect.js';
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
@@ -7,7 +7,7 @@ import { drawExportHeader, fillExportCanvasBackground } from './export_canvas_wo
 
 export function createCopyToClipboardWorkflow(
   deps: ExportCanvasWorkflowDeps
-): (App: AppContainer) => Promise<void> {
+): (App: AppContainer) => Promise<CanvasExportDeliveryResult | void> {
   const {
     _requireApp,
     hasDom,
@@ -23,7 +23,7 @@ export function createCopyToClipboardWorkflow(
     _createDomCanvas,
   } = deps;
 
-  return async function copyToClipboard(App: AppContainer): Promise<void> {
+  return async function copyToClipboard(App: AppContainer): Promise<CanvasExportDeliveryResult | void> {
     App = _requireApp(App);
     if (!hasDom(App)) return;
 
@@ -86,11 +86,14 @@ export function createCopyToClipboardWorkflow(
         deferSecurityEncodingFailureToast: true,
       });
       if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
+      return deliveryResult;
     } catch (err) {
       deps._reportExportRecovery(App, 'copyToClipboard.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const canvasWithoutLogo = await createSingleCanvas(false);
-      await _handleCanvasExport(App, canvasWithoutLogo, 'wardrobe-design.png', { mode: 'clipboard' });
+      return await _handleCanvasExport(App, canvasWithoutLogo, 'wardrobe-design.png', {
+        mode: 'clipboard',
+      });
     } finally {
       restoreExportWall();
     }

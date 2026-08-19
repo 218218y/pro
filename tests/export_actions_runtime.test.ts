@@ -32,6 +32,57 @@ test('runExportUiActionWithDeps returns ok when the export action resolves', asy
   assert.deepEqual(perfEntries[0]?.detail, { kind: 'snapshot' });
 });
 
+test('runExportUiActionWithDeps preserves a blocked clipboard delivery as a failed UI action', async () => {
+  const app = createApp();
+  const deliveryResult = {
+    ok: false as const,
+    stage: 'clipboard' as const,
+    reason: 'error' as const,
+    message: 'clipboard blocked',
+  };
+  const result = await runExportUiActionWithDeps({
+    app,
+    kind: 'copy',
+    ensureModule: async () => ({
+      copyToClipboard: async () => deliveryResult,
+    }),
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    kind: 'copy',
+    reason: 'delivery-failed',
+    message: 'clipboard blocked',
+    deliveryResult,
+  });
+  assert.equal(getExportActionFailureToast(result), null, 'the delivery owner already reported the failure');
+  const perfEntries = getPerfEntries(app, 'export.copy');
+  assert.equal(perfEntries.length, 1);
+  assert.equal(perfEntries[0]?.status, 'error');
+  assert.deepEqual(perfEntries[0]?.detail, {
+    kind: 'copy',
+    reason: 'delivery-failed',
+    message: 'clipboard blocked',
+  });
+});
+
+test('runExportUiActionWithDeps preserves a successful download fallback as a successful UI action', async () => {
+  const app = createApp();
+  const deliveryResult = { ok: true as const, delivery: 'download' as const };
+  const result = await runExportUiActionWithDeps({
+    app,
+    kind: 'copy',
+    ensureModule: async () => ({
+      copyToClipboard: async () => deliveryResult,
+    }),
+  });
+
+  assert.deepEqual(result, { ok: true, kind: 'copy', deliveryResult });
+  const perfEntries = getPerfEntries(app, 'export.copy');
+  assert.equal(perfEntries.length, 1);
+  assert.equal(perfEntries[0]?.status, 'ok');
+});
+
 test('runExportUiActionWithDeps returns not-installed when the export action is missing', async () => {
   const app = createApp();
   const result = await runExportUiActionWithDeps({

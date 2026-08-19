@@ -64,6 +64,7 @@ import {
 
 import type { AppContainer } from '../../../types/app.js';
 import type {
+  CanvasExportDeliveryResult,
   ExportCanvasOptionsLike,
   ExportCanvasWorkflowOpsLike,
   ExportOrderPdfOpsLike,
@@ -214,7 +215,10 @@ function readExportAction(options: ExportCanvasOptions | Record<string, unknown>
   return String(action || mode || kind || '').toLowerCase();
 }
 
-export function exportCanvas(App: AppContainer, options?: ExportCanvasOptions | null): Promise<void> | void {
+export function exportCanvas(
+  App: AppContainer,
+  options?: ExportCanvasOptions | null
+): Promise<CanvasExportDeliveryResult | void> | void {
   App = _requireApp(App);
   options = options && typeof options === 'object' ? options : {};
 

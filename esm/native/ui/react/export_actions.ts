@@ -6,9 +6,13 @@
 // - Call export_canvas named exports directly (no installer surface dependency).
 // - Return canonical command results so UI owners do not need ad-hoc toast guesses.
 
-import type { AppContainer, UnknownRecord } from '../../../../types';
+import type { AppContainer, CanvasExportDeliveryResult, UnknownRecord } from '../../../../types';
 
-import type { ExportUiActionKind, ExportUiActionResult } from '../export_action_contracts.js';
+import {
+  isCanvasExportDeliveryResult,
+  type ExportUiActionKind,
+  type ExportUiActionResult,
+} from '../export_action_contracts.js';
 import { getExportActionFailureToast } from '../export_action_feedback.js';
 import { requestReleaseAssetRecovery } from './release_asset_recovery.js';
 import { beginAppActionFamilyFlight, type AppActionFamilyFlight } from '../action_family_singleflight.js';
@@ -30,6 +34,8 @@ type ToastFn = (msg: string, kind?: string) => void;
 
 type PromiseLikeValue = PromiseLike<unknown>;
 type ExportAction = (app: AppContainer) => unknown;
+type ExportActionCallResult = { called: false } | { called: true; value: unknown };
+type CanvasExportDeliveryFailure = Extract<CanvasExportDeliveryResult, { ok: false }>;
 
 type RunExportUiActionDeps = {
   app: AppContainer;
@@ -75,13 +81,31 @@ function isPromiseLikeValue(value: unknown): value is PromiseLikeValue {
   return !!value && (typeof value === 'object' || typeof value === 'function') && 'then' in value;
 }
 
-async function callExportAction(action: ExportAction | undefined, app: AppContainer): Promise<boolean> {
-  if (!action) return false;
+async function callExportAction(
+  action: ExportAction | undefined,
+  app: AppContainer
+): Promise<ExportActionCallResult> {
+  if (!action) return { called: false };
   const result = action(app);
-  if (isPromiseLikeValue(result)) {
-    await result;
-  }
-  return true;
+  return { called: true, value: isPromiseLikeValue(result) ? await result : result };
+}
+
+function readDeliveryFailureMessage(result: CanvasExportDeliveryFailure): string {
+  if (result.stage === 'encoding') return readErrorMessage(result.error);
+  return typeof result.message === 'string' ? result.message.trim() : '';
+}
+
+function mapCanvasDeliveryResult(kind: ExportUiActionKind, value: unknown): ExportUiActionResult | null {
+  if (!isCanvasExportDeliveryResult(value)) return null;
+  if (value.ok) return { ok: true, kind, deliveryResult: value };
+  const message = readDeliveryFailureMessage(value);
+  return {
+    ok: false,
+    kind,
+    reason: 'delivery-failed',
+    ...(message ? { message } : {}),
+    deliveryResult: value,
+  };
 }
 
 function asExportCanvasModule(mod: unknown): ExportCanvasModuleLike {
@@ -190,9 +214,12 @@ export async function runExportUiActionWithDeps(args: RunExportUiActionDeps): Pr
       try {
         const mod = await ensureModuleImpl();
         const action = pickExportAction(mod, kind);
-        if (!(await callExportAction(action, app))) {
+        const actionCall = await callExportAction(action, app);
+        if (!actionCall.called) {
           return { ok: false, kind, reason: 'not-installed' };
         }
+        const deliveryActionResult = mapCanvasDeliveryResult(kind, actionCall.value);
+        if (deliveryActionResult) return deliveryActionResult;
         return { ok: true, kind };
       } catch (error) {
         if (requestReleaseAssetRecovery(app, error, 'export-action-module')) {

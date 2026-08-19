@@ -270,7 +270,9 @@ test('dual export action waits for clipboard settlement and does not rebuild aft
   });
 
   let settled = false;
-  const action = harness.ops.exportDualImage(harness.App as never).then(() => {
+  let workflowResult: unknown;
+  const action = harness.ops.exportDualImage(harness.App as never).then(result => {
+    workflowResult = result;
     settled = true;
   });
   await new Promise<void>(resolve => setImmediate(resolve));
@@ -289,6 +291,12 @@ test('dual export action waits for clipboard settlement and does not rebuild aft
   assert.equal(harness.canvasStates[0]?.encodeCount, 1);
   assert.equal(harness.canvasStates[0]?.dataUrlCount, 0);
   assert.equal(harness.readClipboardWriteCount(), 1);
+  assert.deepEqual(workflowResult, {
+    ok: false,
+    stage: 'clipboard',
+    reason: 'error',
+    message: 'clipboard blocked',
+  });
   assert.deepEqual(
     harness.toasts.map(item => item.kind),
     ['error']
@@ -321,6 +329,51 @@ test('clipboard-unavailable delivery keeps the no-download behavior without star
   assert.deepEqual(
     toasts.map(item => item.kind),
     ['error']
+  );
+});
+
+test('clipboard-unavailable delivery reports success when the download fallback completes', async () => {
+  const created = createFakeCanvas(callback => callback(new Blob(['unused'])));
+  const toasts: Array<{ message: string; kind?: string }> = [];
+  let downloadClickCount = 0;
+  const document = {
+    querySelector: () => null,
+    createElement: () => ({
+      style: {},
+      click() {
+        downloadClickCount += 1;
+      },
+      remove() {},
+    }),
+    body: { appendChild() {} },
+  };
+  const App = {
+    browser: { getClipboardItemCtor: () => null },
+    services: {
+      uiFeedback: {
+        toast(message: string, kind?: string) {
+          toasts.push({ message, kind });
+        },
+      },
+    },
+    store: { getState: () => ({ runtime: { failFast: false } }) },
+    deps: {
+      config: {},
+      browser: { document },
+    },
+  };
+
+  const result = await _handleCanvasExport(App as never, created.canvas, 'fallback.png', {
+    mode: 'clipboard',
+  });
+
+  assert.deepEqual(result, { ok: true, delivery: 'download' });
+  assert.equal(created.state.encodeCount, 0);
+  assert.equal(created.state.dataUrlCount, 1);
+  assert.equal(downloadClickCount, 1);
+  assert.deepEqual(
+    toasts.map(item => item.kind),
+    ['info']
   );
 });
 
