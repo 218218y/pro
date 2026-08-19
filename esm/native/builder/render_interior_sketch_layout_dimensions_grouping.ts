@@ -70,8 +70,8 @@ export function groupSketchFreeBoxDimensionEntries(
   }
 
   groups.sort((a, b) => {
-    const aMinX = a.length ? a[0].minX : 0;
-    const bMinX = b.length ? b[0].minX : 0;
+    const aMinX = a[0]?.minX ?? 0;
+    const bMinX = b[0]?.minX ?? 0;
     return aMinX - bMinX;
   });
 

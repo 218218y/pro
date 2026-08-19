@@ -39,8 +39,7 @@ function __isDrawerHoverGroup(group: HitObjectLike | null, userData: UnknownReco
   const groupUserData = groupRec ? __asObject<UnknownRecord>(groupRec.userData) : null;
   if (groupUserData && groupUserData !== userData) candidates.push(groupUserData);
 
-  for (let i = 0; i < candidates.length; i += 1) {
-    const ud = candidates[i];
+  for (const ud of candidates) {
     const wpType = typeof ud.__wpType === 'string' ? String(ud.__wpType) : '';
     if (wpType === 'extDrawer') return true;
     if (ud.__wpDrawerBox === true || ud.__wpSketchExtDrawer === true) return true;

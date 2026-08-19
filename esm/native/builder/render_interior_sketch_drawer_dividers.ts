@@ -21,8 +21,8 @@ function readOwnDividerState(map: UnknownRecord | null, key: string): boolean | 
 }
 
 function readFromCandidate(map: UnknownRecord | null, keys: string[]): boolean | null {
-  for (let i = 0; i < keys.length; i++) {
-    const state = readOwnDividerState(map, keys[i]);
+  for (const key of keys) {
+    const state = readOwnDividerState(map, key);
     if (state !== null) return state;
   }
   return null;

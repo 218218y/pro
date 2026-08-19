@@ -34,7 +34,7 @@ function buildToggledDrawerCommand(args: {
 export function buildToggleHoverRecord(args: {
   hoverMode: SketchBoxToggleHoverMode;
   hoverRec: RecordMap;
-  boxId?: string | null;
+  boxId?: string | null | undefined;
   contentKind: SketchBoxToggleContentKind;
   op: 'add' | 'remove';
   removeId: string;

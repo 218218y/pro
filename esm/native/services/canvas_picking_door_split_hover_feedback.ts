@@ -14,7 +14,7 @@ import type {
 
 export type CanvasDoorCustomSplitHoverFeedbackArgs = {
   App: AppContainer;
-  setSketchPreview?: ((args: UnknownRecord) => unknown) | null;
+  setSketchPreview?: ((args: UnknownRecord) => unknown) | null | undefined;
   anchor: unknown;
   anchorParent: unknown;
   bounds: { minY: number; maxY: number };

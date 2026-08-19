@@ -73,13 +73,13 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const helper = ctx.helperMeshes[i];
     const obj = i < helperLimit ? previewObjects[i] : null;
     if (!helper || !obj) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
 
     const geomRec = ctx.readValueRecord(obj.geometry);
     if (!geomRec) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
     if (!geomRec.boundingBox && typeof geomRec.computeBoundingBox === 'function') {
@@ -99,7 +99,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const maxY = readGeometryRuntimeNumber(max?.y);
     const maxZ = readGeometryRuntimeNumber(max?.z);
     if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
 
@@ -107,7 +107,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const height0 = maxY - minY;
     const depth0 = maxZ - minZ;
     if (!(width0 > 0 && height0 > 0 && depth0 > 0)) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
 
@@ -118,7 +118,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     }
     const rel = ctx.readMatrix4(ctx.makeCtorValue(ctx.THREE, 'Matrix4'));
     if (!rel || !ctx.isFn(rel.multiplyMatrices) || !ctx.isFn(rel.decompose) || !obj.matrixWorld) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
     rel.multiplyMatrices(parentInv, obj.matrixWorld);
@@ -130,7 +130,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const quat = ctx.readQuaternion(ctx.makeCtorValue(ctx.THREE, 'Quaternion'));
     const scale = ctx.readVector3(ctx.makeCtorValue(ctx.THREE, 'Vector3', [1, 1, 1]));
     if (!center || !pos || !quat || !scale) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
     if (ctx.isFn(center.applyMatrix4)) center.applyMatrix4(rel);
@@ -153,7 +153,7 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
     const scaleYValue = readGeometryRuntimeNumber(scale.y);
     const scaleZValue = readGeometryRuntimeNumber(scale.z);
     if (scaleXValue == null || scaleYValue == null || scaleZValue == null) {
-      ctx.setVisible(helper, false);
+      ctx.setVisible(helper ?? null, false);
       continue;
     }
     const scaleX = Math.max(

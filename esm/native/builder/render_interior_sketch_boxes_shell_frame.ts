@@ -60,9 +60,11 @@ function createSketchBoxShape(
   points: SketchBoxFootprintPoint[]
 ): SketchBoxShapeLike | null {
   if (typeof THREE.Shape !== 'function' || !points.length) return null;
+  const [first, ...rest] = points;
+  if (!first) return null;
   const shape = new THREE.Shape();
-  shape.moveTo(points[0].x, points[0].z);
-  for (let i = 1; i < points.length; i += 1) shape.lineTo(points[i].x, points[i].z);
+  shape.moveTo(first.x, first.z);
+  for (const point of rest) shape.lineTo(point.x, point.z);
   if (typeof shape.closePath === 'function') shape.closePath();
   return shape;
 }
@@ -183,8 +185,7 @@ function renderFreeSketchBoxRoomColumnLiners(args: {
     ignorePicking: true,
   };
 
-  for (let i = 0; i < panels.length; i += 1) {
-    const panel = panels[i];
+  for (const panel of panels) {
     const piece = axisAlignedBoxToCenterSize(panel.box);
     const material = materials.sketchMode
       ? materials.white
@@ -477,8 +478,8 @@ export function renderSketchBoxShellFrame(args: {
       boxHeight: height,
       woodThick: renderArgs.woodThick,
       bodyMat: boxMat,
-      getPartMaterial,
-      addOutlines: input.addOutlines,
+      ...(getPartMaterial !== undefined ? { getPartMaterial } : {}),
+      ...(input.addOutlines !== undefined ? { addOutlines: input.addOutlines } : {}),
       isFreePlacement,
     });
   }

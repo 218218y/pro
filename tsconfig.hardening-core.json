@@ -23,7 +23,13 @@
     "esm/native/builder/corner_wing_extension_cells*.ts",
     "esm/native/builder/corner_wing_hex_cell_geometry.ts",
     "types/**/*.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    "esm/native/builder/render_*.ts",
+    "esm/native/builder/core_doors_compute.ts",
+    "esm/native/builder/core_layout_compute.ts",
+    "esm/native/builder/visuals_and_contents_door_visual_grooves.ts",
+    "esm/native/services/canvas_picking_cell_dims_*.ts",
+    "esm/native/services/canvas_picking_door_*.ts"
   ],
   "exclude": ["node_modules", "libs/**", "dist", "release"]
 }

@@ -12,12 +12,12 @@ import {
 
 export function readSketchBoxDividerXNorm(box: unknown): number | null {
   const dividers = readSketchBoxDividers(box);
-  return dividers.length ? dividers[0].xNorm : null;
+  return dividers[0]?.xNorm ?? null;
 }
 
 export function readSketchBoxHorizontalDividerYNorm(box: unknown): number | null {
   const dividers = readSketchBoxHorizontalDividers(box);
-  return dividers.length ? dividers[0].yNorm : null;
+  return dividers[0]?.yNorm ?? null;
 }
 
 export function readSketchBoxDividers(box: unknown): SketchBoxDividerState[] {

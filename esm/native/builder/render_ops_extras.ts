@@ -78,8 +78,7 @@ function clearDeprecatedInstalledRenderOpsExtrasDrift(renderOps: InstallableRend
   delete renderOps.__wpRenderOpsExtrasAddOutlines;
   if (renderOps.__esm_extras_v1 !== true) return;
   const keys = Object.keys(RENDER_OPS_EXTRAS_CANONICAL_KEYS) as RenderOpsExtrasCallableKey[];
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     const stableKey = RENDER_OPS_EXTRAS_CANONICAL_KEYS[key];
     if (typeof renderOps[stableKey] !== 'function') {
       delete renderOps[key];

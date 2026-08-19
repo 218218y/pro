@@ -158,8 +158,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     try {
       const removedMap = __wp_map(App, 'removedDoorsMap');
       const keys = removedMap ? Object.keys(removedMap) : [];
-      for (let i = 0; i < keys.length; i++) {
-        const raw = keys[i];
+      for (const raw of keys) {
         const pid0 = raw.indexOf('removed_') === 0 ? raw.slice(8) : raw;
         const identity = resolveRemovedDoorPartIdentity(
           __wp_scopeCornerPartKeyForStack(pid0, foundModuleStack)
@@ -184,8 +183,8 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     if (hasRemoved(clickedKey)) return true;
     if (isPart) return hasRemoved(fullId);
     if (hasRemoved(fullId)) return true;
-    for (let i = 0; i < familyPartIds.length; i++) {
-      if (hasRemoved(familyPartIds[i])) return true;
+    for (const partId of familyPartIds) {
+      if (hasRemoved(partId)) return true;
     }
     return false;
   })();
@@ -195,7 +194,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
       const fullRemoved = hasRemoved(fullId);
       if (fullRemoved) {
         del(fullId);
-        for (let i = 0; i < familyPartIds.length; i++) del(familyPartIds[i]);
+        for (const partId of familyPartIds) del(partId);
         del(clickedKey);
       } else {
         const now = hasRemoved(clickedKey);
@@ -203,11 +202,11 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
       }
     } else if (perceivedRemoved) {
       del(fullId);
-      for (let i = 0; i < familyPartIds.length; i++) del(familyPartIds[i]);
+      for (const partId of familyPartIds) del(partId);
       del(clickedKey);
     } else {
       set(fullId, true);
-      for (let i = 0; i < familyPartIds.length; i++) set(familyPartIds[i], true);
+      for (const partId of familyPartIds) set(partId, true);
       if (clickedKey !== fullId && !familyPartIds.includes(clickedKey)) set(clickedKey, true);
     }
 

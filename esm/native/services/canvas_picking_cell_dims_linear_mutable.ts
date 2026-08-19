@@ -38,7 +38,7 @@ export function buildMutableLinearModules(ctx: LinearCellDimsContext): {
 
   for (let i = 0; i < ctx.moduleCount; i++) {
     const cur = asModuleShape(nextModsCfg[i]);
-    const wantDoors = ctx.doorsPerModule[i];
+    const wantDoors = ctx.doorsPerModule[i] ?? 1;
     const curDoors = __asInt(cur.doors, wantDoors);
     if (curDoors !== wantDoors) ensureOwnModule(i).doors = wantDoors;
   }

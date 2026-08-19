@@ -90,10 +90,10 @@ export type SlidingDoorOpLike = {
   height: number;
   partId: string;
   isOuter: boolean;
-  index?: number;
-  total?: number;
-  minX?: number;
-  maxX?: number;
+  index?: number | undefined;
+  total?: number | undefined;
+  minX?: number | undefined;
+  maxX?: number | undefined;
 };
 
 export type HingedDoorOpLike = {
@@ -102,21 +102,21 @@ export type HingedDoorOpLike = {
   z: number;
   width: number;
   height: number;
-  thickness?: number;
+  thickness?: number | undefined;
   partId: string;
   isLeftHinge: boolean;
-  openAngle?: number;
+  openAngle?: number | undefined;
   isRemoved: boolean;
   isMirror: boolean;
   adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   hasGroove: boolean;
   moduleIndex?: unknown;
-  moduleDoors?: number;
-  carcassMountFaceX?: number;
-  pivotX?: number;
-  meshOffsetX?: number;
-  style?: string;
+  moduleDoors?: number | undefined;
+  carcassMountFaceX?: number | undefined;
+  pivotX?: number | undefined;
+  meshOffsetX?: number | undefined;
+  style?: string | undefined;
   curtain?: unknown;
-  handleAbsY?: number;
-  allowHandle?: boolean;
+  handleAbsY?: number | undefined;
+  allowHandle?: boolean | undefined;
 };

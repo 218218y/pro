@@ -272,7 +272,7 @@ function updateFreeBox(args: {
   const box = findSketchModuleBoxById(boxes, args.boxId, { freePlacement: true }) as SketchBoxLike | null;
   if (!box) return { changed: false, removedHex: false, appliedHex: false };
 
-  const specs: DimSpec[] = [
+  const specs: [DimSpec, DimSpec, DimSpec] = [
     {
       label: 'width',
       valueKey: 'widthM',

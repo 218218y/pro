@@ -40,9 +40,9 @@ export function renderInteriorSketchOwnedBoxes(args: {
     bodyMat: resolved.bodyMat,
     masoniteMat: materialCache.masoniteMat,
     whiteMat: resolved.input.whiteMat || materialCache.whiteMat,
-    getPartMaterial: resolved.getPartMaterial,
-    getPartColorValue: resolved.getPartColorValue,
-    createDoorVisual: resolved.createDoorVisual,
+    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
+    ...(resolved.createDoorVisual !== undefined ? { createDoorVisual: resolved.createDoorVisual } : {}),
     THREE: resolvedThree.THREE,
     addDimensionLine: resolvedThree.addDimensionLine,
     renderFreeBoxDimensionsEnabled: resolvedThree.renderFreeBoxDimensionsEnabled,
@@ -57,7 +57,9 @@ export function renderInteriorSketchOwnedBoxes(args: {
     ops: resolved.renderOps,
     doorsArray: owner.doors(resolved.App),
     drawersArray: owner.drawers(resolved.App),
-    markSplitHoverPickablesDirty: owner.markSplitHoverPickablesDirty ?? undefined,
+    ...(owner.markSplitHoverPickablesDirty
+      ? { markSplitHoverPickablesDirty: owner.markSplitHoverPickablesDirty }
+      : {}),
     renderOpsHandleCatch: owner.renderOpsHandleCatch,
     applyInternalDrawersOps: owner.applyInternalDrawersOps,
   });

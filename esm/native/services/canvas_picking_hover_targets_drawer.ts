@@ -53,8 +53,7 @@ export function resolveDrawerHoverPreviewTarget(
       recursive: true,
     });
     const drawersArray = getDrawersArray(App);
-    for (let i = 0; i < intersects.length; i++) {
-      const hit = intersects[i];
+    for (const hit of intersects) {
       const obj = asHitObject(hit?.object);
       if (!isRenderableHitObject(obj)) continue;
 

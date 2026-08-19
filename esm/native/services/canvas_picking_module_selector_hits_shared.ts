@@ -81,9 +81,9 @@ export function asRaycastHitLike(value: unknown): RaycastHitLike | null {
   const pointRec = asRecord(rec?.point);
   const point = pointRec
     ? {
-        x: typeof pointRec.x === 'number' ? pointRec.x : undefined,
-        y: typeof pointRec.y === 'number' ? pointRec.y : undefined,
-        z: typeof pointRec.z === 'number' ? pointRec.z : undefined,
+        ...(typeof pointRec.x === 'number' ? { x: pointRec.x } : {}),
+        ...(typeof pointRec.y === 'number' ? { y: pointRec.y } : {}),
+        ...(typeof pointRec.z === 'number' ? { z: pointRec.z } : {}),
       }
     : undefined;
 

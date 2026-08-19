@@ -80,9 +80,9 @@ export function readSketchBoxDoorPlacements(args: {
         innerW,
         woodThick,
         xNorm: door.xNorm,
-        horizontalDividers,
-        boxCenterY,
-        innerH,
+        ...(horizontalDividers !== undefined ? { horizontalDividers } : {}),
+        ...(boxCenterY !== undefined ? { boxCenterY } : {}),
+        ...(innerH !== undefined ? { innerH } : {}),
         yNorm: door.yNorm,
       }),
       verticalSegment:

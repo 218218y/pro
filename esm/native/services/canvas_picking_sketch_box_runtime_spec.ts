@@ -10,6 +10,7 @@ export function parseSketchBoxToolSpec(tool: string): SketchBoxToolSpec | null {
   if (!raw) return null;
 
   const [heightRaw, widthRaw = '', depthRaw = ''] = raw.split(SKETCH_BOX_DIM_SEP);
+  if (heightRaw == null) return null;
   const heightCm = Number(heightRaw.trim());
   if (!Number.isFinite(heightCm)) return null;
 

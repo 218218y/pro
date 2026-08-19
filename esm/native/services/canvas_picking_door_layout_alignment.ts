@@ -142,8 +142,8 @@ function isSameDoorVisualHost(a: string, b: string): boolean {
   if (!a || !b) return false;
   const aKeys = new Set(buildDoorVisualLookupKeys(a));
   const bKeys = buildDoorVisualLookupKeys(b);
-  for (let index = 0; index < bKeys.length; index += 1) {
-    if (aKeys.has(bKeys[index])) return true;
+  for (const key of bKeys) {
+    if (aKeys.has(key)) return true;
   }
   return false;
 }
@@ -356,8 +356,7 @@ export function resolveMirrorLayoutHoverAlignment(args: {
     readHingeSideFromNode(args.currentOwner) ||
     currentSceneCandidate?.hingeSide ||
     null;
-  for (let index = 0; index < candidates.length; index += 1) {
-    const candidate = candidates[index];
+  for (const candidate of candidates) {
     if (candidate.hostKind !== currentHostKind) continue;
     if (isSameDoorVisualHost(args.currentPartId, candidate.partId)) continue;
     if (readDoorVisualMapValue(args.doorSpecialMap, candidate.partId) !== args.paintSelection) continue;
@@ -366,8 +365,7 @@ export function resolveMirrorLayoutHoverAlignment(args: {
     const otherOwner = resolveCandidateMirrorOwner(candidate);
     const otherRect = readMirrorPlacementRectFromUserData(asRecord(otherOwner?.userData));
     if (!otherOwner || !otherRect) continue;
-    for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
-      const otherLayout = otherLayouts[layoutIndex];
+    for (const otherLayout of otherLayouts) {
       const otherPlacement = resolveMirrorPlacementInRect({
         rect: otherRect,
         layout: otherLayout,
@@ -408,8 +406,7 @@ export function resolveMirrorLayoutHoverAlignment(args: {
     if (isSameDoorVisualHost(args.currentPartId, otherPartId)) continue;
     if (readDoorVisualMapValue(args.doorSpecialMap, otherPartId) !== args.paintSelection) continue;
     const otherLayouts = readMirrorLayoutList(otherLayoutsRaw);
-    for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
-      const otherLayout = otherLayouts[layoutIndex];
+    for (const otherLayout of otherLayouts) {
       if (!fallbackMirrorLayoutShapeMatches(args.currentLayout, otherLayout)) continue;
       const currentX = currentLayout.centerXNorm ?? 0.5;
       const currentY = currentLayout.centerYNorm ?? 0.5;
@@ -554,8 +551,7 @@ export function resolveGrooveLayoutHoverAlignment(args: {
     readHingeSideFromNode(args.currentOwner) ||
     currentSceneCandidate?.hingeSide ||
     null;
-  for (let index = 0; index < candidates.length; index += 1) {
-    const candidate = candidates[index];
+  for (const candidate of candidates) {
     if (candidate.hostKind !== currentHostKind) continue;
     if (isSameDoorVisualHost(args.currentPartId, candidate.partId)) continue;
     const otherLayouts =
@@ -564,8 +560,7 @@ export function resolveGrooveLayoutHoverAlignment(args: {
     const otherOwner = resolveCandidateGrooveOwner(candidate);
     const otherRect = readGrooveSurfaceRectFromUserData(asRecord(otherOwner?.userData));
     if (!otherOwner || !otherRect) continue;
-    for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
-      const otherLayout = otherLayouts[layoutIndex];
+    for (const otherLayout of otherLayouts) {
       const otherPlacement = resolveGroovePlacementInRect({ rect: otherRect, layout: otherLayout });
       const otherLinesCount = resolveOtherGrooveLinesCount({
         App: args.App,
@@ -612,8 +607,7 @@ export function resolveGrooveLayoutHoverAlignment(args: {
     if (resolvePartIdHostKind(otherPartId) !== currentHostKind) continue;
     if (isSameDoorVisualHost(args.currentPartId, otherPartId)) continue;
     const otherLayouts = readGrooveLayoutList(otherLayoutsRaw);
-    for (let layoutIndex = 0; layoutIndex < otherLayouts.length; layoutIndex += 1) {
-      const otherLayout = otherLayouts[layoutIndex];
+    for (const otherLayout of otherLayouts) {
       const otherLinesCount = normalizeGrooveLinesCount(otherLayout.linesCount) ?? args.currentLinesCount;
       if (
         !fallbackGrooveShapeMatches({

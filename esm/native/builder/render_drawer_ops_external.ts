@@ -274,7 +274,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           closed: closedPos,
           open: openPos,
           id: partId,
-          dividerKey: dividerKey || undefined,
+          ...(dividerKey ? { dividerKey } : {}),
           isInternal: false,
         });
       }

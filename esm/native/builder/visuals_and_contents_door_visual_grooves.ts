@@ -68,8 +68,7 @@ export function appendGrooveStrips(args: {
     layouts: normalizedLayouts,
   });
   const explicitLinesCount = normalizeGrooveLinesCount(linesCountOverride);
-  for (let placementIndex = 0; placementIndex < placements.length; placementIndex += 1) {
-    const placement = placements[placementIndex];
+  for (const [placementIndex, placement] of placements.entries()) {
     const isHorizontal = placement.orientation === 'horizontal';
     const distributionSpan = isHorizontal ? placement.heightM : placement.widthM;
     const stripSpan = Math.max(

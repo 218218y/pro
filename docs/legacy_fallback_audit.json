@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T15:11:15.561Z",
+  "generatedAt": "2026-08-19T16:03:52.783Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 559,
@@ -2197,7 +2197,7 @@
     },
     {
       "file": "esm/native/builder/render_adapter.ts",
-      "line": 151,
+      "line": 153,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
@@ -3639,7 +3639,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_action_hover_remove.ts",
-      "line": 71,
+      "line": 70,
       "term": "fallback",
       "category": "domain-default",
       "text": "// hover-identity-scan-fallback: malformed preview metadata is skipped during optional hover cleanup"
@@ -3653,63 +3653,63 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 413,
+      "line": 410,
       "term": "fallbackMirrorLayoutShapeMatches",
       "category": "domain-default",
       "text": "if (!fallbackMirrorLayoutShapeMatches(args.currentLayout, otherLayout)) continue;"
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 506,
+      "line": 503,
       "term": "fallbackGrooveShapeMatches",
       "category": "domain-default",
       "text": "function fallbackGrooveShapeMatches(args: {"
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 619,
+      "line": 613,
       "term": "fallbackGrooveShapeMatches",
       "category": "domain-default",
       "text": "!fallbackGrooveShapeMatches({"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "line": 262,
+      "line": 263,
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "fallbackPartId: string,"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "line": 276,
+      "line": 277,
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "return resolveDoorTrimTarget(App, partId || fallbackPartId, current);"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "line": 281,
+      "line": 282,
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "? resolveDoorTrimTarget(App, fallbackPartId, asDoorRecord<DoorHitNode>(preferredGroup))"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "line": 286,
+      "line": 287,
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "return resolveDoorTrimTarget(App, firstTaggedPartId || fallbackPartId, firstTaggedNode);"
     },
     {
       "file": "esm/native/services/canvas_picking_door_shared.ts",
-      "line": 287,
+      "line": 288,
       "term": "fallbackPartId",
       "category": "domain-default",
       "text": "return resolveDoorTrimTarget(App, fallbackPartId);"
     },
     {
       "file": "esm/native/services/canvas_picking_door_split_click_custom.ts",
-      "line": 99,
+      "line": 97,
       "term": "fallback",
       "category": "domain-default",
       "text": "// door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state"
@@ -3765,35 +3765,35 @@
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
-      "line": 63,
+      "line": 62,
       "term": "fallbackDrawer",
       "category": "domain-default",
       "text": "let fallbackDrawer = null;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
-      "line": 71,
+      "line": 70,
       "term": "fallbackDrawer",
       "category": "domain-default",
       "text": "if (!fallbackDrawer) {"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
-      "line": 76,
+      "line": 75,
       "term": "fallbackDrawer",
       "category": "domain-default",
       "text": "fallbackDrawer = {"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
-      "line": 89,
+      "line": 88,
       "term": "fallbackDrawer",
       "category": "domain-default",
       "text": "foundDrawer = foundDrawer || fallbackDrawer;"
     },
     {
       "file": "esm/native/services/canvas_picking_hover_targets_drawer.ts",
-      "line": 110,
+      "line": 109,
       "term": "fallback",
       "category": "domain-default",
       "text": "// hover-target-scan-fallback: malformed drawer metadata disables this hover candidate only"
@@ -3856,21 +3856,21 @@
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
-      "line": 154,
+      "line": 153,
       "term": "fallback",
       "category": "domain-default",
       "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
-      "line": 192,
+      "line": 191,
       "term": "fallback",
       "category": "domain-default",
       "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"
     },
     {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_object.ts",
-      "line": 210,
+      "line": 209,
       "term": "fallback",
       "category": "domain-default",
       "text": "// projection-geometry-fallback: failed optional transforms fall through to the remaining bounds strategies"

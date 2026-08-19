@@ -57,8 +57,8 @@ export type ExternalDrawerOpLike = {
   connectH?: number;
   connectD?: number;
   connectZ?: number;
-  closed?: { x?: number; y?: number; z?: number };
-  open?: { x?: number; y?: number; z?: number };
+  closed?: { x: number | undefined; y: number | undefined; z: number | undefined };
+  open?: { x: number | undefined; y: number | undefined; z: number | undefined };
   faceW?: number;
   faceOffsetX?: number;
   frontZ?: number;

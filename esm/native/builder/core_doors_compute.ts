@@ -74,13 +74,13 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const OVERLAY_SPECIAL = woodThick / 2;
   const INSET_REVEAL = HINGED_DOOR_MOUNT_POLICY.insetRevealM;
 
-  for (let mi = 0; mi < modules.length; mi++) {
-    const mod = modules[mi];
+  for (const [mi, mod] of modules.entries()) {
     let modDoors = __asInt(mod.doors, 1);
     if (modDoors < 1) modDoors = 1;
+    const storedModuleWidth = moduleInternalWidths?.[mi];
     const modWidth =
-      moduleInternalWidths && Number.isFinite(moduleInternalWidths[mi])
-        ? moduleInternalWidths[mi]
+      typeof storedModuleWidth === 'number' && Number.isFinite(storedModuleWidth)
+        ? storedModuleWidth
         : singleUnitWidth * modDoors;
     const hexCell = moduleConfigs ? readHexCellConfig(moduleConfigs[mi]) : null;
     const hexDoorWidthCm = hexCell

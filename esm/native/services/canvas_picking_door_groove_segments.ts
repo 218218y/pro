@@ -56,8 +56,8 @@ export function readDoorGrooveVisualMapFlag(
   partId: string
 ): boolean | null {
   const keys = listDoorGrooveTargetLookupKeys(partId);
-  for (let index = 0; index < keys.length; index += 1) {
-    const flag = readDoorGrooveMapFlag(map, keys[index]);
+  for (const key of keys) {
+    const flag = readDoorGrooveMapFlag(map, key);
     if (flag !== null) return flag;
   }
   return null;
@@ -137,8 +137,7 @@ export function readDoorGrooveLinesCountForPart(
 ): number | null {
   if (!map) return null;
   const keys = listDoorGrooveTargetLookupKeys(partId);
-  for (let index = 0; index < keys.length; index += 1) {
-    const candidateKey = keys[index];
+  for (const candidateKey of keys) {
     const value = readOwnMapValue(map, candidateKey);
     if (value == null || value === '') continue;
     const n = Number(value);

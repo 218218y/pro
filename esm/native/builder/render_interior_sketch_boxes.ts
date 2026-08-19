@@ -226,11 +226,11 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
     ? args.measureWardrobeLocalBox(args.App)
     : null;
 
-  for (let boxIndex = 0; boxIndex < args.boxes.length; boxIndex++) {
+  for (const [boxIndex, box] of args.boxes.entries()) {
     const groupRecord = asMutableRecord(args.group);
     const startChildCount = Array.isArray(groupRecord?.children) ? groupRecord.children.length : 0;
     const shellResult = renderSketchBoxShell({
-      box: args.boxes[boxIndex] || null,
+      box,
       boxIndex,
       renderArgs: args,
       freeWardrobeBox,

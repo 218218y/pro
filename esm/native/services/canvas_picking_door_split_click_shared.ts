@@ -55,8 +55,8 @@ export function readCanvasDoorSplitBounds(
     let minY = Infinity;
     let maxY = -Infinity;
     const doorsArray = getDoorsArray(App);
-    for (let i = 0; i < doorsArray.length; i++) {
-      const g = doorsArray[i] && doorsArray[i].group;
+    for (const entry of doorsArray) {
+      const g = entry?.group;
       if (!g) continue;
       const pid = formatIdentityValue(readIdentityValue(g.userData?.partId));
       if (!pid) continue;
@@ -90,8 +90,8 @@ export function readCanvasDoorSketchVisibleSegments(
 
   const segments: CanvasDoorSplitBounds[] = [];
   const doorsArray = getDoorsArray(App);
-  for (let i = 0; i < doorsArray.length; i++) {
-    const g = doorsArray[i] && doorsArray[i].group;
+  for (const entry of doorsArray) {
+    const g = entry?.group;
     if (!g) continue;
     const pid = formatIdentityValue(readIdentityValue(g.userData?.partId));
     if (!pid) continue;
@@ -99,8 +99,8 @@ export function readCanvasDoorSketchVisibleSegments(
     if (candidateBase !== base) continue;
     if (g.userData?.__wpSketchSegmentedDoor !== true) continue;
     const visible = readCanvasDoorSplitVisibleSegments({ App, root: g, baseKey: base });
-    for (let j = 0; j < visible.length; j++) {
-      segments.push({ minY: visible[j].minY, maxY: visible[j].maxY });
+    for (const segment of visible) {
+      segments.push({ minY: segment.minY, maxY: segment.maxY });
     }
   }
 

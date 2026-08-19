@@ -159,12 +159,12 @@ export function resolveCanvasDoorCustomSplitRemoveTarget(args: {
   App: AppContainer;
   bounds: CanvasDoorSplitBounds;
   prevList: number[];
-  pointerY?: number | null;
-  ndcX?: number | null;
-  ndcY?: number | null;
+  pointerY?: number | null | undefined;
+  ndcX?: number | null | undefined;
+  ndcY?: number | null | undefined;
   camera?: unknown;
   hitDoorGroup?: unknown;
-  toleranceAbs?: number | null;
+  toleranceAbs?: number | null | undefined;
 }): { index: number; yAbs: number; distanceAbs: number; distanceNdc: number | null } | null {
   const { App, bounds, prevList, pointerY, ndcX, ndcY, hitDoorGroup } = args;
   const minY = Number(bounds.minY);
@@ -239,8 +239,8 @@ export type CanvasDoorCustomSplitScreenRemoveCandidate = {
 export function resolveCanvasDoorCustomSplitScreenRemoveCandidate(args: {
   App: AppContainer;
   roots: unknown;
-  ndcX?: number | null;
-  ndcY?: number | null;
+  ndcX?: number | null | undefined;
+  ndcY?: number | null | undefined;
   camera?: unknown;
   readBounds: (App: AppContainer, doorBaseKey: string) => CanvasDoorSplitBounds | null;
   readPosList: (App: AppContainer, doorBaseKey: string) => number[];
@@ -256,8 +256,8 @@ export function resolveCanvasDoorCustomSplitScreenRemoveCandidate(args: {
   let best: (CanvasDoorCustomSplitScreenRemoveCandidate & { score: number }) | null = null;
   const seen = new Set<string>();
 
-  for (let i = 0; i < roots.length; i++) {
-    const groupRec = asRecord(roots[i]);
+  for (const root of roots) {
+    const groupRec = asRecord(root);
     if (!groupRec) continue;
     const group = groupRec as HitObjectLike;
     const userData = asRecord(groupRec?.userData);

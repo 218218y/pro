@@ -41,15 +41,22 @@ function resolveCurtain(curtainMap: Record<string, unknown> | undefined, partId:
 
 export function readDoorConfig(value: unknown): SlidingDoorConfig {
   if (!isRecord(value)) return {};
+  const groovesMap = readObjectMap(value.groovesMap);
+  const doorSpecialMap = readStringNullableMap(value.doorSpecialMap);
+  const curtainMap = readObjectMap(value.curtainMap);
+  const mirrorLayoutMap = readObjectMap(value.mirrorLayoutMap);
+  const grooveLayoutMap = readObjectMap(value.grooveLayoutMap);
+  const doorTrimMap = readObjectMap(value.doorTrimMap);
+  const handlesMap = readObjectMap(value.handlesMap);
   return {
-    groovesMap: readObjectMap(value.groovesMap),
-    doorSpecialMap: readStringNullableMap(value.doorSpecialMap),
+    ...(groovesMap !== undefined ? { groovesMap } : {}),
+    ...(doorSpecialMap !== undefined ? { doorSpecialMap } : {}),
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),
-    curtainMap: readObjectMap(value.curtainMap),
-    mirrorLayoutMap: readObjectMap(value.mirrorLayoutMap),
-    grooveLayoutMap: readObjectMap(value.grooveLayoutMap),
-    doorTrimMap: readObjectMap(value.doorTrimMap),
-    handlesMap: readObjectMap(value.handlesMap),
+    ...(curtainMap !== undefined ? { curtainMap } : {}),
+    ...(mirrorLayoutMap !== undefined ? { mirrorLayoutMap } : {}),
+    ...(grooveLayoutMap !== undefined ? { grooveLayoutMap } : {}),
+    ...(doorTrimMap !== undefined ? { doorTrimMap } : {}),
+    ...(handlesMap !== undefined ? { handlesMap } : {}),
     isMultiColorMode: value.isMultiColorMode === true,
     slidingDoorHandlesEnabled: value.slidingDoorHandlesEnabled === true,
   };
@@ -57,9 +64,11 @@ export function readDoorConfig(value: unknown): SlidingDoorConfig {
 
 export function readSlidingUiState(value: unknown): SlidingUiState {
   if (!isRecord(value)) return {};
+  const slidingTracksColor =
+    typeof value.slidingTracksColor === 'string' ? value.slidingTracksColor : undefined;
   return {
     groovesEnabled: value.groovesEnabled === true,
-    slidingTracksColor: typeof value.slidingTracksColor === 'string' ? value.slidingTracksColor : undefined,
+    ...(slidingTracksColor !== undefined ? { slidingTracksColor } : {}),
   };
 }
 

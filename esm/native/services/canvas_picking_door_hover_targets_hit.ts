@@ -48,8 +48,7 @@ export function __resolveHoverHit(
     });
     if (blockingPartId) return null;
 
-    for (let i = 0; i < intersects.length; i += 1) {
-      const hit = intersects[i];
+    for (const hit of intersects) {
       if (!__isEligiblePaintIntersect({ App, hit, isViewportRoot, allowTransparentRestoreTargets })) continue;
       return __resolveHoverHitFromRaycastHit({
         App,
@@ -63,8 +62,7 @@ export function __resolveHoverHit(
     return null;
   }
 
-  for (let i = 0; i < intersects.length; i += 1) {
-    const hit = intersects[i];
+  for (const hit of intersects) {
     if (!__isEligiblePaintIntersect({ App, hit, isViewportRoot, allowTransparentRestoreTargets })) continue;
 
     const resolved = __resolveHoverHitFromRaycastHit({

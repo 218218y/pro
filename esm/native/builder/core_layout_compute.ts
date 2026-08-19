@@ -23,8 +23,8 @@ export function normalizeModulesConfiguration(
   const cfgArr = __asArray(modulesConfiguration);
 
   const out: ModuleConfig[] = Array.from({ length: ms.length });
-  for (let i = 0; i < ms.length; i++) {
-    let doors = __asInt(ms[i].doors, 1);
+  for (const [i, module] of ms.entries()) {
+    const doors = __asInt(module.doors, 1);
     const prev = cfgArr[i];
     if (!prev || typeof prev !== 'object') {
       out[i] = __defaultModuleCfg(doors);
@@ -131,8 +131,8 @@ export function computeModuleLayout(input: unknown) {
     let rem = deltaCm;
 
     const _adjust = (indices: number[]) => {
-      for (let k = 0; k < indices.length && Math.abs(rem) > 1e-6; k++) {
-        const i = indices[k];
+      for (const i of indices) {
+        if (Math.abs(rem) <= 1e-6) break;
         const cur = __asNum(moduleSegWidthsCm[i], 0);
         if (rem > 0) {
           moduleSegWidthsCm[i] = cur + rem;

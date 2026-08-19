@@ -78,8 +78,8 @@ export function scanInteriorHoverHit(args: ResolveInteriorHoverTargetArgs): Inte
   }
 
   if (hitModuleKey == null) {
-    for (let i = 0; i < intersects.length && hitModuleKey == null; i++) {
-      const hit = intersects[i];
+    for (const hit of intersects) {
+      if (hitModuleKey != null) break;
       const obj = asHitObject(hit?.object);
       if (!isRenderableHitObject(obj)) continue;
 

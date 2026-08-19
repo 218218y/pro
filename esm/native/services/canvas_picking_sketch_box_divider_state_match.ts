@@ -23,10 +23,10 @@ export function findNearestSketchBoxDivider(args: {
   innerW: number;
   woodThick: number;
   cursorX: number;
-  horizontalDividers?: SketchBoxHorizontalDividerState[];
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorY?: number | null;
+  horizontalDividers?: SketchBoxHorizontalDividerState[] | undefined;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorY?: number | null | undefined;
 }): { dividerId: string; xNorm: number; centerX: number; centered: boolean; yNorm?: number } | null {
   const dividers = Array.isArray(args.dividers) ? args.dividers : [];
   if (!dividers.length) return null;
@@ -99,10 +99,10 @@ export function findNearestSketchBoxHorizontalDivider(args: {
   innerH: number;
   woodThick: number;
   cursorY: number;
-  verticalDividers?: SketchBoxDividerState[];
-  boxCenterX?: number | null;
-  innerW?: number | null;
-  cursorX?: number | null;
+  verticalDividers?: SketchBoxDividerState[] | undefined;
+  boxCenterX?: number | null | undefined;
+  innerW?: number | null | undefined;
+  cursorX?: number | null | undefined;
 }): { dividerId: string; yNorm: number; centerY: number; centered: boolean; xNorm?: number } | null {
   const dividers = Array.isArray(args.dividers) ? args.dividers : [];
   if (!dividers.length) return null;

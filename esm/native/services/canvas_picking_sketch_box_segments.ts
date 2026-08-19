@@ -39,11 +39,11 @@ export function resolveSketchBoxVerticalSegments(args: {
   boxCenterY: number;
   innerH: number;
   woodThick: number;
-  verticalDividers?: SketchBoxDividerState[];
-  boxCenterX?: number | null;
-  innerW?: number | null;
-  cursorX?: number | null;
-  xNorm?: number | null;
+  verticalDividers?: SketchBoxDividerState[] | undefined;
+  boxCenterX?: number | null | undefined;
+  innerW?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  xNorm?: number | null | undefined;
 }): SketchBoxVerticalSegmentState[] {
   const safeInnerH = readSafeSpan(args.innerH);
   const safeCenterY = readSafeCenter(args.boxCenterY);
@@ -92,10 +92,10 @@ export function resolveSketchBoxVerticalSegments(args: {
 function filterHorizontalDividersForColumn(args: {
   dividers: SketchBoxHorizontalDividerState[];
   verticalDividers: SketchBoxDividerState[];
-  boxCenterX?: number | null;
-  innerW?: number | null;
-  cursorX?: number | null;
-  xNorm?: number | null;
+  boxCenterX?: number | null | undefined;
+  innerW?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  xNorm?: number | null | undefined;
   woodThick: number;
 }): SketchBoxHorizontalDividerState[] {
   const dividers = Array.isArray(args.dividers) ? args.dividers : [];
@@ -146,8 +146,8 @@ export function pickSketchBoxVerticalSegment(args: {
   segments: SketchBoxVerticalSegmentState[];
   boxCenterY: number;
   innerH: number;
-  cursorY?: number | null;
-  yNorm?: number | null;
+  cursorY?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): SketchBoxVerticalSegmentState | null {
   const segments = Array.isArray(args.segments) ? args.segments : [];
   if (!segments.length) return null;
@@ -173,8 +173,8 @@ function verticalDividerBelongsToSegment(args: {
   divider: SketchBoxDividerState;
   segment: SketchBoxVerticalSegmentState | null;
   verticalSegments: SketchBoxVerticalSegmentState[];
-  boxCenterY?: number | null;
-  innerH?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
 }): boolean {
   if (!args.verticalSegments.length || !args.segment) return true;
   const yNorm = normalizeSketchBoxDividerYNorm(args.divider.yNorm);
@@ -193,13 +193,13 @@ export function resolveSketchBoxSegments(args: {
   boxCenterX: number;
   innerW: number;
   woodThick: number;
-  horizontalDividers?: SketchBoxHorizontalDividerState[];
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorY?: number | null;
-  cursorX?: number | null;
-  yNorm?: number | null;
-  xNorm?: number | null;
+  horizontalDividers?: SketchBoxHorizontalDividerState[] | undefined;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  yNorm?: number | null | undefined;
+  xNorm?: number | null | undefined;
 }): SketchBoxSegmentState[] {
   const safeInnerW = readSafeSpan(args.innerW);
   const safeCenterX = readSafeCenter(args.boxCenterX);
@@ -275,8 +275,8 @@ export function pickSketchBoxSegment(args: {
   segments: SketchBoxSegmentState[];
   boxCenterX: number;
   innerW: number;
-  cursorX?: number | null;
-  xNorm?: number | null;
+  cursorX?: number | null | undefined;
+  xNorm?: number | null | undefined;
 }): SketchBoxSegmentState | null {
   const segments = Array.isArray(args.segments) ? args.segments : [];
   if (!segments.length) return null;

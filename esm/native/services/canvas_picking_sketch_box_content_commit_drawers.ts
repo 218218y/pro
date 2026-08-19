@@ -158,11 +158,14 @@ function upsertRegularExternalDrawerItem(args: {
   }
 
   const existing = findBoxContentById(args.list, args.removeId || '');
+  const xNorm = args.contentXNorm ?? (existing?.xNorm as number | null | undefined);
+  const yNormC = args.boxYNorm ?? (existing?.yNormC as number | null | undefined);
+  const yNorm = args.boxBaseYNorm ?? (existing?.yNorm as number | null | undefined);
   const item = createSketchBoxRegularExternalDrawerItem({
     id: existing?.id != null && String(existing.id) ? String(existing.id) : createRandomId('sbrd'),
-    xNorm: args.contentXNorm ?? (existing?.xNorm as number | null | undefined),
-    yNormC: args.boxYNorm ?? (existing?.yNormC as number | null | undefined),
-    yNorm: args.boxBaseYNorm ?? (existing?.yNorm as number | null | undefined),
+    ...(xNorm !== undefined ? { xNorm } : {}),
+    ...(yNormC !== undefined ? { yNormC } : {}),
+    ...(yNorm !== undefined ? { yNorm } : {}),
     count: args.drawerCount,
     hasShoeDrawer: args.hasShoeDrawer,
   }) as SketchModuleBoxContentLike;
@@ -190,7 +193,7 @@ function inferCommittedBoxDrawerAnchor(args: {
   yNorm?: number;
 }): ReturnType<typeof inferSketchStackVerticalAnchorFromNormalizedItem> {
   return inferSketchStackVerticalAnchorFromNormalizedItem({
-    item: { yNormC: args.yNormC, yNorm: args.yNorm },
+    item: { yNormC: args.yNormC, ...(args.yNorm !== undefined ? { yNorm: args.yNorm } : {}) },
     stackH: 0,
     totalHeight: 1,
   });
@@ -215,9 +218,12 @@ function buildDrawerItem(args: {
   const item: SketchModuleBoxContentLike = {
     id: createRandomId(args.idPrefix),
     yNormC,
-    yAnchor: inferCommittedBoxDrawerAnchor({ yNormC, yNorm }),
+    yAnchor: inferCommittedBoxDrawerAnchor({
+      yNormC,
+      ...(yNorm !== undefined ? { yNorm } : {}),
+    }),
   };
-  if (args.boxBaseYNorm != null) item.yNorm = yNorm;
+  if (args.boxBaseYNorm != null) item.yNorm = clampNorm(args.boxBaseYNorm, 0.5);
   writeSketchCommitOptionalDrawerXNorm(item, args.contentXNorm);
   if (args.hasShoeDrawer && args.drawerCount === 0) item.count = 0;
   else writeSketchCommitPositiveNumber(item, 'count', args.drawerCount);

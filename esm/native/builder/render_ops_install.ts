@@ -113,8 +113,7 @@ function toStableRenderOpKey(key: RenderOpsCallableKey): string {
 
 function clearDeprecatedInstalledRenderOpDrift(target: RenderOpsTarget): void {
   if (target.__esm_v1 !== true) return;
-  for (let i = 0; i < RENDER_OP_CALLABLE_KEYS.length; i += 1) {
-    const key = RENDER_OP_CALLABLE_KEYS[i];
+  for (const key of RENDER_OP_CALLABLE_KEYS) {
     const stableKey = toStableRenderOpKey(key);
     if (typeof target[stableKey] !== 'function') {
       delete target[key];
@@ -207,11 +206,11 @@ export function createBuilderRenderOpsInstall(deps: RenderOpsInstallDeps) {
       });
     }
 
-    for (let i = 0; i < MAYBE_ARGS_BOUND_RENDER_OP_KEYS.length; i += 1) {
-      installArgsRenderOp(MAYBE_ARGS_BOUND_RENDER_OP_KEYS[i]);
+    for (const key of MAYBE_ARGS_BOUND_RENDER_OP_KEYS) {
+      installArgsRenderOp(key);
     }
-    for (let i = 0; i < ARGS_BOUND_RENDER_OP_KEYS.length; i += 1) {
-      installArgsRenderOp(ARGS_BOUND_RENDER_OP_KEYS[i]);
+    for (const key of ARGS_BOUND_RENDER_OP_KEYS) {
+      installArgsRenderOp(key);
     }
 
     if (typeof builderRenderOps.createHandleMesh === 'function') {

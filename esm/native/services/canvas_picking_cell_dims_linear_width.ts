@@ -14,6 +14,7 @@ import {
   readSpecialDimsRecord,
   readBool,
   readCanonicalNumber,
+  readRequiredLinearDimension,
 } from './canvas_picking_cell_dims_linear_shared.js';
 
 export interface LinearCellDimsWidthResult {
@@ -33,7 +34,6 @@ export function applyLinearCellDimsWidthPolicy(
     idx,
     applyW,
     moduleCount,
-    doorsPerModule,
     defaultWidths,
     prevModsCfg,
     widthsCurr,
@@ -49,17 +49,20 @@ export function applyLinearCellDimsWidthPolicy(
   let nextWidthForIdx: number | null = null;
 
   if (applyW != null) {
+    if (idx < 0 || idx >= widthsCurr.length) {
+      throw new RangeError(`[WardrobePro][cellDims] Invalid width target module ${idx}`);
+    }
     setManualWidth = true;
 
     const minSpecialCellW = 20;
-    const minW = doorsPerModule.map(() => minSpecialCellW);
     const newWidths = widthsCurr.slice();
     if (Number.isFinite(tgtW) && tgtW > 0) newWidths[idx] = tgtW;
 
-    for (let i = 0; i < newWidths.length; i++) {
-      if (!Number.isFinite(newWidths[i]) || newWidths[i] <= 0) newWidths[i] = defaultWidths[i];
-      if (!Number.isFinite(newWidths[i]) || newWidths[i] <= 0) newWidths[i] = minW[i];
-      if (newWidths[i] < minW[i]) newWidths[i] = minW[i];
+    for (const [i, currentWidth] of newWidths.entries()) {
+      const defaultWidth = defaultWidths[i] ?? minSpecialCellW;
+      let nextWidth = Number.isFinite(currentWidth) && currentWidth > 0 ? currentWidth : defaultWidth;
+      if (!Number.isFinite(nextWidth) || nextWidth <= 0) nextWidth = minSpecialCellW;
+      newWidths[i] = Math.max(minSpecialCellW, nextWidth);
     }
 
     const minTotalW = 20;
@@ -67,44 +70,49 @@ export function applyLinearCellDimsWidthPolicy(
     const sumWidths = () => newWidths.reduce((a, b) => a + b, 0);
 
     let otherSum = 0;
-    for (let i = 0; i < newWidths.length; i++) if (i !== idx) otherSum += newWidths[i];
+    for (const [i, width] of newWidths.entries()) if (i !== idx) otherSum += width;
 
     const maxTargetAllowed = maxTotalW - otherSum;
     const minTargetAllowed = minTotalW - otherSum;
-    if (Number.isFinite(maxTargetAllowed)) newWidths[idx] = Math.min(newWidths[idx], maxTargetAllowed);
-    if (Number.isFinite(minTargetAllowed)) newWidths[idx] = Math.max(newWidths[idx], minTargetAllowed);
-    if (newWidths[idx] < minW[idx]) newWidths[idx] = minW[idx];
+    let selectedWidth = readRequiredLinearDimension(newWidths, idx, 'selected width');
+    if (Number.isFinite(maxTargetAllowed)) selectedWidth = Math.min(selectedWidth, maxTargetAllowed);
+    if (Number.isFinite(minTargetAllowed)) selectedWidth = Math.max(selectedWidth, minTargetAllowed);
+    newWidths[idx] = Math.max(minSpecialCellW, selectedWidth);
 
     let curTotal = sumWidths();
     if (curTotal > maxTotalW + 1e-6) {
-      let needReduce = curTotal - maxTotalW;
+      const needReduce = curTotal - maxTotalW;
       let slackSum = 0;
-      for (let i = 0; i < newWidths.length; i++) {
+      for (const [i, width] of newWidths.entries()) {
         if (i === idx) continue;
-        slackSum += Math.max(0, newWidths[i] - minW[i]);
+        slackSum += Math.max(0, width - minSpecialCellW);
       }
       if (slackSum > 1e-9) {
-        for (let i = 0; i < newWidths.length; i++) {
+        for (const [i, width] of newWidths.entries()) {
           if (i === idx) continue;
-          const slack = Math.max(0, newWidths[i] - minW[i]);
+          const slack = Math.max(0, width - minSpecialCellW);
           if (slack <= 0) continue;
           const take = Math.min(slack, needReduce * (slack / slackSum));
-          newWidths[i] -= take;
+          newWidths[i] = width - take;
         }
       }
       curTotal = sumWidths();
       if (curTotal > maxTotalW + 1e-6) {
         const over = curTotal - maxTotalW;
-        newWidths[idx] = Math.max(minW[idx], newWidths[idx] - over);
+        selectedWidth = readRequiredLinearDimension(newWidths, idx, 'selected width');
+        newWidths[idx] = Math.max(minSpecialCellW, selectedWidth - over);
       }
     }
 
     curTotal = sumWidths();
-    if (curTotal < minTotalW - 1e-6) newWidths[idx] = newWidths[idx] + (minTotalW - curTotal);
+    if (curTotal < minTotalW - 1e-6) {
+      selectedWidth = readRequiredLinearDimension(newWidths, idx, 'selected width');
+      newWidths[idx] = selectedWidth + (minTotalW - curTotal);
+    }
 
-    for (let i = 0; i < newWidths.length; i++) newWidths[i] = Math.round(newWidths[i] * 100) / 100;
+    for (const [i, width] of newWidths.entries()) newWidths[i] = Math.round(width * 100) / 100;
     nextTotalW = Math.round(sumWidths() * 100) / 100;
-    nextWidthForIdx = newWidths[idx];
+    nextWidthForIdx = readRequiredLinearDimension(newWidths, idx, 'selected width');
   } else if (
     ctx.isBottomStack ? readBool(raw, 'stackSplitLowerWidthManual') : readBool(cfg, 'isManualWidth')
   ) {
@@ -121,9 +129,11 @@ export function applyLinearCellDimsWidthPolicy(
         looksAuto = false;
         break;
       }
+      const defaultWidth = defaultWidths[i];
       if (
-        Math.abs(wcm - defaultWidths[i]) > ctx.autoWidthMatchToleranceCm ||
-        Math.abs(bwcm - defaultWidths[i]) > ctx.autoWidthMatchToleranceCm
+        defaultWidth == null ||
+        Math.abs(wcm - defaultWidth) > ctx.autoWidthMatchToleranceCm ||
+        Math.abs(bwcm - defaultWidth) > ctx.autoWidthMatchToleranceCm
       ) {
         looksAuto = false;
         break;
@@ -132,8 +142,8 @@ export function applyLinearCellDimsWidthPolicy(
 
     if (looksAuto) {
       unsetManualWidth = true;
-      for (let i = 0; i < nextModsCfg.length; i++)
-        nextModsCfg[i] = stripWidthOverridesFromConfig(nextModsCfg[i]);
+      for (const [i, moduleCfg] of nextModsCfg.entries())
+        nextModsCfg[i] = stripWidthOverridesFromConfig(moduleCfg);
     }
   }
 
@@ -145,7 +155,7 @@ export function applyLinearCellDimsWidthPolicy(
       sd,
       key: 'widthCm',
       baseKey: 'baseWidthCm',
-      baseValueCm: baseW[idx],
+      baseValueCm: readRequiredLinearDimension(baseW, idx, 'base width'),
       targetValueCm: wSet,
       toggledBack: toggledBackW,
     });

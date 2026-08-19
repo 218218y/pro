@@ -169,8 +169,8 @@ function resolveRodY(args: {
 
 function pushRodBlockers(args: { blockers: number[]; rods: RodPoint[] }): void {
   const { blockers, rods } = args;
-  for (let i = 0; i < rods.length; i += 1) {
-    const y = rods[i]?.y;
+  for (const rod of rods) {
+    const y = rod.y;
     if (Number.isFinite(y)) blockers.push(y);
   }
 }
@@ -191,12 +191,12 @@ function collectPresetBlockers(args: {
   let hasKnownPreset = false;
 
   const addShelves = (rows: readonly number[]): void => {
-    for (let i = 0; i < rows.length; i += 1) {
+    for (const index of rows) {
       pushShelfBlocker({
         blockers,
         effectiveBottomY,
         localGridStep,
-        index: rows[i],
+        index,
         shelfThick,
         shelfBlockerMode,
       });
@@ -277,11 +277,11 @@ function collectCustomBlockers(args: {
 
   const rodOps = readRecordArray(customData.rodOps);
   const explicitRodGridIndexes = new Set<number>();
-  for (let i = 0; i < rodOps.length; i += 1) {
-    const rawGridIndex = readRuntimeNumber(rodOps[i].gridIndex);
+  for (const rod of rodOps) {
+    const rawGridIndex = readRuntimeNumber(rod.gridIndex);
     if (rawGridIndex != null && rawGridIndex >= 1) explicitRodGridIndexes.add(Math.round(rawGridIndex));
     const rodY = resolveRodY({
-      rod: rodOps[i],
+      rod,
       effectiveBottomY,
       localGridStep,
     });
@@ -395,9 +395,9 @@ function collectSketchDrawerBlockers(args: {
   let hasEvidence = false;
 
   const drawers = readRecordArray(extras.drawers);
-  for (let i = 0; i < drawers.length; i += 1) {
+  for (const item of drawers) {
     const range = resolveSketchInternalDrawerRange({
-      item: drawers[i],
+      item,
       effectiveBottomY,
       effectiveTopY,
       span,
@@ -407,9 +407,9 @@ function collectSketchDrawerBlockers(args: {
   }
 
   const extDrawers = readRecordArray(extras.extDrawers);
-  for (let i = 0; i < extDrawers.length; i += 1) {
+  for (const item of extDrawers) {
     const range = resolveSketchExternalDrawerRange({
-      item: extDrawers[i],
+      item,
       effectiveBottomY,
       effectiveTopY,
       span,
@@ -448,8 +448,8 @@ function collectSketchExtraBlockers(args: {
   };
 
   const shelves = readRecordArray(extras.shelves);
-  for (let i = 0; i < shelves.length; i += 1) {
-    const y = clampNormY(shelves[i].yNorm);
+  for (const shelf of shelves) {
+    const y = clampNormY(shelf.yNorm);
     if (y != null) {
       pushShelfContentBlocker({ blockers, shelfY: y, shelfThick, shelfBlockerMode });
       hasEvidence = true;
@@ -457,8 +457,8 @@ function collectSketchExtraBlockers(args: {
   }
 
   const rods = readRecordArray(extras.rods);
-  for (let i = 0; i < rods.length; i += 1) {
-    const y = clampNormY(rods[i].yNorm);
+  for (const rod of rods) {
+    const y = clampNormY(rod.yNorm);
     if (y != null) {
       blockers.push(y);
       hasEvidence = true;
@@ -466,8 +466,7 @@ function collectSketchExtraBlockers(args: {
   }
 
   const storageBarriers = readRecordArray(extras.storageBarriers);
-  for (let i = 0; i < storageBarriers.length; i += 1) {
-    const barrier = storageBarriers[i];
+  for (const barrier of storageBarriers) {
     const baseY = clampNormY(barrier.yNorm);
     const height =
       readRuntimeNumber(barrier.heightM ?? barrier.hM) ?? INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
@@ -547,8 +546,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
 
   let blockerY = effectiveBottomY;
   const sameRodTolerance = Math.max(1e-5, Math.abs(localGridStep || 0) * 1e-4);
-  for (let i = 0; i < blockers.length; i += 1) {
-    const blocker = blockers[i];
+  for (const blocker of blockers) {
     if (!Number.isFinite(blocker)) continue;
     if (blocker < yPos - sameRodTolerance && blocker > blockerY) blockerY = blocker;
   }

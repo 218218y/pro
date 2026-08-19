@@ -93,12 +93,12 @@ export function handleCanvasDoorHingeClick(args: CanvasDoorHingeClickArgs): bool
   let hingeKey: string;
 
   if (doorIdStr.startsWith('d')) {
-    const parts = doorIdStr.split('_');
-    const doorIdRaw = parts[0].replace('d', '');
+    const [head = ''] = doorIdStr.split('_');
+    const doorIdRaw = head.replace('d', '');
     hingeKey = `door_hinge_${doorIdRaw}`;
   } else {
-    const parts = doorIdStr.split('_');
-    hingeKey = `${parts[0]}_${parts[1]}_${parts[2]}_hinge`;
+    const [first = '', second = '', third = ''] = doorIdStr.split('_');
+    hingeKey = `${first}_${second}_${third}_hinge`;
   }
 
   const doorsArray = getDoorsArray(App);
@@ -138,10 +138,10 @@ export interface CanvasDoorGrooveClickArgs {
   foundPartId: string | null;
   activeStack: 'top' | 'bottom';
   foundModuleStack: 'top' | 'bottom';
-  doorHitY?: number | null;
-  doorHitPoint?: UnknownRecord | null;
+  doorHitY?: number | null | undefined;
+  doorHitPoint?: UnknownRecord | null | undefined;
   doorHitObject: unknown;
-  doorHitGroup?: UnknownRecord | null;
+  doorHitGroup?: UnknownRecord | null | undefined;
 }
 
 function readGrooveLayoutToolState(App: AppContainer): {
@@ -166,9 +166,9 @@ function readGrooveLayoutToolState(App: AppContainer): {
 function handleCanvasDoorGrooveLayoutClick(args: {
   App: AppContainer;
   targetId: string;
-  doorHitPoint?: UnknownRecord | null;
+  doorHitPoint?: UnknownRecord | null | undefined;
   doorHitObject: unknown;
-  doorHitGroup?: UnknownRecord | null;
+  doorHitGroup?: UnknownRecord | null | undefined;
   foundModuleStack: 'top' | 'bottom';
 }): boolean | null {
   const tool = readGrooveLayoutToolState(args.App);

@@ -102,15 +102,15 @@ export function buildVerticalClearanceMeasurementEntries(args: {
   targetCenterY: number;
   targetWidth: number;
   targetHeight: number;
-  z?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
-  textScale?: number;
+  z?: number | undefined;
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center' | undefined;
+  textScale?: number | undefined;
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
-  surfacePlane?: 'xy' | 'yz' | 'xz';
-  minVerticalCm?: number;
-  verticalLineX?: number;
+  surfacePlane?: 'xy' | 'yz' | 'xz' | undefined;
+  minVerticalCm?: number | undefined;
+  verticalLineX?: number | undefined;
 }): HoverClearanceMeasurementEntry[] {
   const targetWidth = Math.max(0.0001, clampFinite(args.targetWidth, 0));
   return buildRectClearanceMeasurementEntries({
@@ -146,23 +146,23 @@ export function buildRectClearanceMeasurementEntries(args: {
   targetCenterY: number;
   targetWidth: number;
   targetHeight: number;
-  z?: number;
+  z?: number | undefined;
   showTop?: boolean;
   showBottom?: boolean;
   showLeft?: boolean;
   showRight?: boolean;
-  minVerticalCm?: number;
-  minHorizontalCm?: number;
-  horizontalLabelPlacement?: 'center' | 'outside';
-  horizontalLabelOutset?: number;
-  verticalLabelOutset?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
-  textScale?: number;
+  minVerticalCm?: number | undefined;
+  minHorizontalCm?: number | undefined;
+  horizontalLabelPlacement?: 'center' | 'outside' | undefined;
+  horizontalLabelOutset?: number | undefined;
+  verticalLabelOutset?: number | undefined;
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center' | undefined;
+  textScale?: number | undefined;
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
-  surfacePlane?: 'xy' | 'yz' | 'xz';
-  verticalLineX?: number;
+  surfacePlane?: 'xy' | 'yz' | 'xz' | undefined;
+  verticalLineX?: number | undefined;
 }): HoverClearanceMeasurementEntry[] {
   const containerMinX = clampFinite(args.containerMinX, 0);
   const containerMaxX = clampFinite(args.containerMaxX, 0);
@@ -210,7 +210,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       startY: targetMaxY,
       endX: verticalLineX,
       endY: containerMaxY,
-      z,
+      ...(z !== undefined ? { z } : {}),
       label: roundClearanceCmLabel(topClearance),
       labelX: verticalLineX,
       labelY: containerMaxY + verticalLabelOutset,
@@ -228,7 +228,7 @@ export function buildRectClearanceMeasurementEntries(args: {
       startY: containerMinY,
       endX: verticalLineX,
       endY: targetMinY,
-      z,
+      ...(z !== undefined ? { z } : {}),
       label: roundClearanceCmLabel(bottomClearance),
       labelX: verticalLineX,
       labelY: containerMinY - verticalLabelOutset,
@@ -246,9 +246,9 @@ export function buildRectClearanceMeasurementEntries(args: {
       startY: targetCenterY,
       endX: targetMinX,
       endY: targetCenterY,
-      z,
+      ...(z !== undefined ? { z } : {}),
       label: roundClearanceCmLabel(leftClearance),
-      labelX: horizontalLabelPlacement === 'outside' ? containerMinX - horizontalLabelOutset : undefined,
+      ...(horizontalLabelPlacement === 'outside' ? { labelX: containerMinX - horizontalLabelOutset } : {}),
       labelY: targetCenterY,
       styleKey,
       textScale,
@@ -264,9 +264,9 @@ export function buildRectClearanceMeasurementEntries(args: {
       startY: targetCenterY,
       endX: containerMaxX,
       endY: targetCenterY,
-      z,
+      ...(z !== undefined ? { z } : {}),
       label: roundClearanceCmLabel(rightClearance),
-      labelX: horizontalLabelPlacement === 'outside' ? containerMaxX + horizontalLabelOutset : undefined,
+      ...(horizontalLabelPlacement === 'outside' ? { labelX: containerMaxX + horizontalLabelOutset } : {}),
       labelY: targetCenterY,
       styleKey,
       textScale,
@@ -339,14 +339,14 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
   targetWidth: number;
   targetHeight: number;
   neighbors?: VerticalClearanceNeighborRange[];
-  z?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
-  textScale?: number;
-  minVerticalCm?: number;
+  z?: number | undefined;
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center' | undefined;
+  textScale?: number | undefined;
+  minVerticalCm?: number | undefined;
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
-  measurementSideSign?: number;
+  measurementSideSign?: number | undefined;
 }): HoverClearanceMeasurementEntry[] {
   const targetCenterX = clampFinite(args.targetCenterX, 0);
   const targetCenterY = clampFinite(args.targetCenterY, 0);
@@ -409,7 +409,7 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
         startY: targetMaxY,
         endX: neighborLineX,
         endY: above.minY,
-        z,
+        ...(z !== undefined ? { z } : {}),
         label: roundClearanceCmLabel(gap),
         labelX: neighborLineX,
         labelY: above.minY,
@@ -429,7 +429,7 @@ export function buildStackAwareVerticalClearanceMeasurementEntries(args: {
         startY: below.maxY,
         endX: neighborLineX,
         endY: targetMinY,
-        z,
+        ...(z !== undefined ? { z } : {}),
         label: roundClearanceCmLabel(gap),
         labelX: neighborLineX,
         labelY: below.maxY,
@@ -476,14 +476,14 @@ export function buildStackAwareHorizontalClearanceMeasurementEntries(args: {
   targetWidth: number;
   targetHeight: number;
   neighbors?: HorizontalClearanceNeighborRange[];
-  z?: number;
-  styleKey?: 'default' | 'cell' | 'neighbor' | 'center';
-  textScale?: number;
-  minHorizontalCm?: number;
+  z?: number | undefined;
+  styleKey?: 'default' | 'cell' | 'neighbor' | 'center' | undefined;
+  textScale?: number | undefined;
+  minHorizontalCm?: number | undefined;
   faceSign?: unknown;
   viewFaceSign?: unknown;
   labelFaceSign?: unknown;
-  measurementSideSign?: number;
+  measurementSideSign?: number | undefined;
   overallLineY?: number;
   neighborLineY?: number;
   overallLabelOutsetX?: number;
@@ -561,7 +561,7 @@ export function buildStackAwareHorizontalClearanceMeasurementEntries(args: {
       startY: opts.y,
       endX,
       endY: opts.y,
-      z,
+      ...(z !== undefined ? { z } : {}),
       label: roundClearanceCmLabel(gap),
       labelX,
       labelY: opts.y,

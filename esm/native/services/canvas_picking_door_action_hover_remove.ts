@@ -41,8 +41,8 @@ function readDoorActionHoverFamilyPartIds(args: {
 
   try {
     const doorsArray = getDoorsArray(hoverArgs.App);
-    for (let i = 0; i < doorsArray.length; i++) {
-      const g = doorsArray[i] && doorsArray[i].group;
+    for (const entry of doorsArray) {
+      const g = entry?.group;
       if (!g || !g.userData) continue;
       const gUserData = __asObject<UnknownRecord>(g.userData);
       const pidRaw = formatIdentityValue(readIdentityValue(gUserData?.partId));
@@ -59,8 +59,7 @@ function readDoorActionHoverFamilyPartIds(args: {
   try {
     const removedMap = __asObject<UnknownRecord>(__wp_map(hoverArgs.App, 'removedDoorsMap'));
     const keys = removedMap ? Object.keys(removedMap) : [];
-    for (let i = 0; i < keys.length; i++) {
-      const raw = keys[i];
+    for (const raw of keys) {
       const pid0 = raw.indexOf('removed_') === 0 ? raw.slice(8) : raw;
       const identity = resolveRemovedDoorPartIdentity(__scopeCornerHoverPartKey(pid0, state.hitDoorStack));
       const pid = identity.partId;
@@ -97,8 +96,8 @@ export function readDoorActionHoverWillRestore(args: {
     if (hoverArgs.isRemoved(hoverArgs.App, clickedKey)) return true;
     if (isPart) return hoverArgs.isRemoved(hoverArgs.App, fullId);
     if (hoverArgs.isRemoved(hoverArgs.App, fullId)) return true;
-    for (let i = 0; i < familyPartIds.length; i++) {
-      if (hoverArgs.isRemoved(hoverArgs.App, familyPartIds[i])) return true;
+    for (const partId of familyPartIds) {
+      if (hoverArgs.isRemoved(hoverArgs.App, partId)) return true;
     }
     return false;
   } catch {

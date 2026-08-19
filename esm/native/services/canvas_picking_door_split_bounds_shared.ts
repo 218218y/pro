@@ -128,8 +128,8 @@ export function readCanvasDoorSplitVisibleSegmentBounds(args: {
 }): CanvasDoorSplitEffectiveBounds | null {
   const segments = readCanvasDoorSplitVisibleSegments(args);
   let bounds: CanvasDoorSplitEffectiveBounds | null = null;
-  for (let i = 0; i < segments.length; i += 1) {
-    bounds = mergeBounds(bounds, segments[i]);
+  for (const segment of segments) {
+    bounds = mergeBounds(bounds, segment);
   }
   return bounds;
 }

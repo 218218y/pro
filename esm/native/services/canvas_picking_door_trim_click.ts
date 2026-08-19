@@ -29,7 +29,7 @@ export interface CanvasDoorTrimClickArgs {
   foundPartId: string | null;
   doorHitPoint: UnknownRecord | null;
   doorHitObject: UnknownRecord | null;
-  doorHitGroup?: UnknownRecord | null;
+  doorHitGroup?: UnknownRecord | null | undefined;
 }
 
 export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolean {

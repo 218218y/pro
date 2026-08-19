@@ -146,8 +146,7 @@ export function __wp_measureObjectLocalBox(
           let localMaxX = -Infinity;
           let localMaxY = -Infinity;
           let localMaxZ = -Infinity;
-          for (let i = 0; i < corners.length; i++) {
-            const corner = corners[i];
+          for (const corner of corners) {
             try {
               worldToLocal(corner);
             } catch {

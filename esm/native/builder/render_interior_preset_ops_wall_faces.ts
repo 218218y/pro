@@ -56,12 +56,13 @@ export function computePresetModuleInnerFaces(args: {
 
   const pickBestWall = (list: InteriorWallMesh[]): InteriorWallMesh | null => {
     if (!Array.isArray(list) || list.length === 0) return null;
-    if (list.length === 1) return list[0];
+    if (list.length === 1) return list[0] ?? null;
 
-    let best = list[0];
+    const first = list[0];
+    if (!first) return null;
+    let best = first;
     let bestScore = Infinity;
-    for (let i = 0; i < list.length; i += 1) {
-      const node = list[i];
+    for (const node of list) {
       const isMesh = !!(node && node.isMesh && node.geometry);
       let width = NaN;
       try {
@@ -186,8 +187,7 @@ export function computePresetModuleInnerFaces(args: {
   let bestLeftDistance = Infinity;
   let bestRightDistance = Infinity;
 
-  for (let i = 0; i < walls.length; i += 1) {
-    const mesh = walls[i];
+  for (const mesh of walls) {
     const maxX = faceXFromMesh(mesh, true);
     const minX = faceXFromMesh(mesh, false);
 

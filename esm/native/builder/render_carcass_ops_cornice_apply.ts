@@ -138,8 +138,8 @@ export function createApplyCarcassCorniceOps() {
 
     if (!segments.length) return;
 
-    for (let si = 0; si < segments.length; si++) {
-      const adjustedSegments = resolveCorniceSegmentsAgainstRoomColumnCut(segments[si], runtime);
+    for (const segment of segments) {
+      const adjustedSegments = resolveCorniceSegmentsAgainstRoomColumnCut(segment, runtime);
       for (let ai = 0; ai < adjustedSegments.length; ai++) {
         applyCorniceSegment(adjustedSegments[ai], pid, corniceMat, runtime);
       }

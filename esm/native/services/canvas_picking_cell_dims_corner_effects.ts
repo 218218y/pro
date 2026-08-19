@@ -19,11 +19,9 @@ function readFeedbackShape(value: unknown): FeedbackShape | null {
   const rec = asRecord(value);
   if (!rec) return null;
   const fn = rec.updateEditStateToast;
+  if (typeof fn !== 'function') return {};
   return {
-    updateEditStateToast:
-      typeof fn === 'function'
-        ? (message: string, sticky?: boolean) => Reflect.apply(fn, rec, [message, sticky])
-        : undefined,
+    updateEditStateToast: (message: string, sticky?: boolean) => Reflect.apply(fn, rec, [message, sticky]),
   };
 }
 

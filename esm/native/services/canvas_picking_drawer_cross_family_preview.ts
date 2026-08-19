@@ -218,8 +218,7 @@ export function resolveInternalCrossDrawerStackPreview(args: {
       ? args.drawerGap
       : DRAWER_SKETCH_SIZING_POLICY.internalGapM;
 
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
+  for (const box of boxes) {
     minX = Math.min(minX, box.centerX - box.width / 2);
     maxX = Math.max(maxX, box.centerX + box.width / 2);
     minY = Math.min(minY, box.centerY - box.height / 2);
@@ -235,11 +234,13 @@ export function resolveInternalCrossDrawerStackPreview(args: {
 
   if (boxes.length > 1) {
     const measuredGaps: number[] = [];
-    for (let i = 1; i < boxes.length; i++) {
-      const previous = boxes[i - 1];
-      const current = boxes[i];
-      const gap = current.centerY - current.height / 2 - (previous.centerY + previous.height / 2);
-      if (Number.isFinite(gap) && gap >= 0) measuredGaps.push(gap);
+    let previous = boxes[0];
+    if (previous) {
+      for (const current of boxes.slice(1)) {
+        const gap = current.centerY - current.height / 2 - (previous.centerY + previous.height / 2);
+        if (Number.isFinite(gap) && gap >= 0) measuredGaps.push(gap);
+        previous = current;
+      }
     }
     if (measuredGaps.length) drawerGap = Math.max(0, Math.min(...measuredGaps));
   }
@@ -267,7 +268,7 @@ function readModuleKeyFromUserData(userData: UnknownRecord | null): string {
 
 function readStandardExternalRegularDoorPrefix(partId: string): string {
   const match = partId.match(/^(d\d+)_draw_\d+$/);
-  return match ? match[1] : '';
+  return match?.[1] ?? '';
 }
 
 function isStandardExternalShoe(partId: string): boolean {
@@ -393,8 +394,7 @@ export function resolveExternalCrossDrawerStackPreview(args: {
   let maxY = -Infinity;
   let maxFrontZ = -Infinity;
   let maxDepth = 0;
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
+  for (const box of boxes) {
     minX = Math.min(minX, box.centerX - box.width / 2);
     maxX = Math.max(maxX, box.centerX + box.width / 2);
     minY = Math.min(minY, box.centerY - box.height / 2);

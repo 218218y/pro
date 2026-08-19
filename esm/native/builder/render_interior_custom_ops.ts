@@ -153,8 +153,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       currentShelfMat,
       currentBraceShelfMat,
       moduleKey,
-      getPartMaterial: input.getPartMaterial,
-      getPartColorValue: input.getPartColorValue,
+      ...(input.getPartMaterial !== undefined ? { getPartMaterial: input.getPartMaterial } : {}),
+      ...(input.getPartColorValue !== undefined ? { getPartColorValue: input.getPartColorValue } : {}),
       braceSet,
       braceMetrics: {
         regularDepth,

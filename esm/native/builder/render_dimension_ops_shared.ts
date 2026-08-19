@@ -134,8 +134,7 @@ function asFiniteNumberArray(v: unknown): number[] | null {
 function maxCm(values: number[] | null): number {
   if (!values || !values.length) return 0;
   let max = 0;
-  for (let i = 0; i < values.length; i++) {
-    const v = values[i];
+  for (const v of values) {
     if (Number.isFinite(v) && v > max) max = v;
   }
   return max;

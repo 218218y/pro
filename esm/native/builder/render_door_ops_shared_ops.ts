@@ -38,7 +38,6 @@ export function readSlidingDoorOp(value: unknown, index: number): SlidingDoorOpL
     maxX: readRenderOpNumber(value.maxX) ?? undefined,
   };
 }
-
 export function readSlidingRail(value: unknown): SlidingRailLike | null {
   if (!isRecord(value)) return null;
   const rail = {

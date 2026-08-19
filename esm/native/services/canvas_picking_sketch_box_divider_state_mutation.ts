@@ -66,9 +66,9 @@ export function removeSketchBoxDividerState(
   }
   let bestIdx = -1;
   let bestDist = Infinity;
-  for (let i = 0; i < dividers.length; i++) {
-    const dy = yNorm == null || dividers[i].yNorm == null ? 0 : Math.abs((dividers[i].yNorm ?? 0) - yNorm);
-    const dx = Math.abs(dividers[i].xNorm - norm);
+  for (const [i, divider] of dividers.entries()) {
+    const dy = yNorm == null || divider.yNorm == null ? 0 : Math.abs(divider.yNorm - yNorm);
+    const dx = Math.abs(divider.xNorm - norm);
     const dist = dx + dy * 3;
     if (dist < bestDist) {
       bestDist = dist;
@@ -129,9 +129,9 @@ export function removeSketchBoxHorizontalDividerState(
   }
   let bestIdx = -1;
   let bestDist = Infinity;
-  for (let i = 0; i < dividers.length; i++) {
-    const dy = Math.abs(dividers[i].yNorm - norm);
-    const dx = xNorm == null || dividers[i].xNorm == null ? 0 : Math.abs((dividers[i].xNorm ?? 0) - xNorm);
+  for (const [i, divider] of dividers.entries()) {
+    const dy = Math.abs(divider.yNorm - norm);
+    const dx = xNorm == null || divider.xNorm == null ? 0 : Math.abs(divider.xNorm - xNorm);
     const dist = dy + dx * 3;
     if (dist < bestDist) {
       bestDist = dist;

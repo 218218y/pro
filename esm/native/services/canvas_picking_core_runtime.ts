@@ -92,7 +92,10 @@ function __wp_isMultiMode(App: AppContainer): boolean {
 }
 
 function __wp_triggerRender(App: AppContainer, updateShadows?: boolean): void {
-  runPlatformRenderFollowThrough(App, { updateShadows, ensureRenderLoop: false });
+  runPlatformRenderFollowThrough(App, {
+    ...(updateShadows !== undefined ? { updateShadows } : {}),
+    ensureRenderLoop: false,
+  });
 }
 
 function __wp_toast(App: AppContainer, message: string, type?: string): unknown {

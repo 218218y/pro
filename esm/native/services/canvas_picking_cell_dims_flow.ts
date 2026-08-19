@@ -92,8 +92,8 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       App,
       moduleKey: freeBoxHoverModuleKey,
       isBottom: __isBottomStack,
-      ndcX,
-      ndcY,
+      ...(ndcX !== undefined ? { ndcX } : {}),
+      ...(ndcY !== undefined ? { ndcY } : {}),
       freeBoxId: freeBoxHoverId,
     });
 

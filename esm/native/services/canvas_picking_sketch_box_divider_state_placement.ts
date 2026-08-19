@@ -16,9 +16,9 @@ type AxisPlacementArgs = {
   boxCenter: number;
   innerSpan: number;
   woodThick: number;
-  cursor?: number | null;
-  dividerNorm?: number | null;
-  enableCenterSnap?: boolean;
+  cursor?: number | null | undefined;
+  dividerNorm?: number | null | undefined;
+  enableCenterSnap?: boolean | undefined;
 };
 
 function resolveAxisDividerPlacement(args: AxisPlacementArgs): {
@@ -76,9 +76,9 @@ export function resolveSketchBoxDividerPlacement(args: {
   boxCenterX: number;
   innerW: number;
   woodThick: number;
-  cursorX?: number | null;
-  dividerXNorm?: number | null;
-  enableCenterSnap?: boolean;
+  cursorX?: number | null | undefined;
+  dividerXNorm?: number | null | undefined;
+  enableCenterSnap?: boolean | undefined;
 }): { xNorm: number; centerX: number; centered: boolean } {
   const p = resolveAxisDividerPlacement({
     boxCenter: args.boxCenterX,
@@ -95,9 +95,9 @@ export function resolveSketchBoxHorizontalDividerPlacement(args: {
   boxCenterY: number;
   innerH: number;
   woodThick: number;
-  cursorY?: number | null;
-  dividerYNorm?: number | null;
-  enableCenterSnap?: boolean;
+  cursorY?: number | null | undefined;
+  dividerYNorm?: number | null | undefined;
+  enableCenterSnap?: boolean | undefined;
 }): { yNorm: number; centerY: number; centered: boolean } {
   const p = resolveAxisDividerPlacement({
     boxCenter: args.boxCenterY,

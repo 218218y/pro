@@ -130,16 +130,16 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
             group,
             hingeSide: null,
             width: doorOp.width,
-            index: doorOp.index,
-            total: doorOp.total,
+            ...(doorOp.index !== undefined ? { index: doorOp.index } : {}),
+            ...(doorOp.total !== undefined ? { total: doorOp.total } : {}),
             isOuter: doorOp.isOuter,
             originalX: doorOp.x,
             originalZ: doorOp.z,
             outerZ,
             innerZ,
             stackZStep: SLIDING_DOOR_MOTION_POLICY.runtimeStackZStepMinM,
-            minX: doorOp.minX,
-            maxX: doorOp.maxX,
+            ...(doorOp.minX !== undefined ? { minX: doorOp.minX } : {}),
+            ...(doorOp.maxX !== undefined ? { maxX: doorOp.maxX } : {}),
           });
           __markSplitHoverPickablesDirty(App);
         }
@@ -178,8 +178,8 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         const mirrorReflectorProfile = visualState.isMirror
           ? ({
               slidingLane: zPos === innerZ ? 'inner' : 'outer',
-              slidingDoorIndex: doorOp.index,
-              slidingDoorTotal: doorOp.total,
+              ...(doorOp.index !== undefined ? { slidingDoorIndex: doorOp.index } : {}),
+              ...(doorOp.total !== undefined ? { slidingDoorTotal: doorOp.total } : {}),
               slidingDoorWidthM: doorOp.width,
             } as const)
           : null;
@@ -318,16 +318,16 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           group,
           hingeSide: null,
           width: doorOp.width,
-          index: doorOp.index,
-          total: doorOp.total,
+          ...(doorOp.index !== undefined ? { index: doorOp.index } : {}),
+          ...(doorOp.total !== undefined ? { total: doorOp.total } : {}),
           isOuter: doorOp.isOuter,
           originalX: doorOp.x,
           originalZ: doorOp.z,
           outerZ,
           innerZ,
           stackZStep,
-          minX: doorOp.minX,
-          maxX: doorOp.maxX,
+          ...(doorOp.minX !== undefined ? { minX: doorOp.minX } : {}),
+          ...(doorOp.maxX !== undefined ? { maxX: doorOp.maxX } : {}),
         });
         __markSplitHoverPickablesDirty(App);
       }

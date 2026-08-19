@@ -43,7 +43,7 @@ function placeFrontOverlay(
       lineMaterial,
     });
   } else {
-    ctx.setVisible(mesh, false);
+    ctx.setVisible(mesh ?? null, false);
   }
 }
 
@@ -129,13 +129,13 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
     const mesh = drawerMeshes[i];
     const drawer = i < drawerList.length ? ctx.asObject<PreviewDrawerEntry>(drawerList[i]) : null;
     if (!mesh || !drawer) {
-      ctx.setVisible(mesh, false);
+      ctx.setVisible(mesh ?? null, false);
       continue;
     }
     const py = readPreviewNumber(drawer.y);
     const ph = readPreviewPositiveNumber(drawer.h);
     if (py == null || ph == null) {
-      ctx.setVisible(mesh, false);
+      ctx.setVisible(mesh ?? null, false);
       continue;
     }
     ctx.placePreviewBoxMesh({

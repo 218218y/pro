@@ -35,7 +35,7 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
     boxH: asFiniteNumberOrNaN(args.boxH),
     wardrobeCenterY: asFiniteNumberOrNaN(args.wardrobeCenterY),
     wardrobeHeight: asFiniteNumberOrNaN(args.wardrobeHeight),
-    pad: args.pad,
+    ...(args.pad !== undefined ? { pad: args.pad } : {}),
   });
   const boxW = asFiniteNumberOrNaN(args.boxW);
   const boxH = asFiniteNumberOrNaN(args.boxH);
@@ -163,8 +163,7 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
         score: number;
       } | null = null;
 
-      for (let ci = 0; ci < candidates.length; ci++) {
-        const candidate = candidates[ci];
+      for (const candidate of candidates) {
         const candidateOverlapX = halfW + otherHalfW + gap - Math.abs(candidate.centerX - cx);
         const candidateOverlapY = halfH + otherHalfH + gap - Math.abs(candidate.centerY - cy);
         if (candidateOverlapX > overlapEps && candidateOverlapY > overlapEps) continue;

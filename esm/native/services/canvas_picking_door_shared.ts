@@ -214,8 +214,9 @@ export function resolveGrooveSurfaceOwnerByPartId(
 
   const seen = new Set<DoorHitNode>();
   let visited = 0;
-  for (let rootIndex = 0; rootIndex < searchRoots.length && visited < 1000; rootIndex += 1) {
-    const descendants: DoorHitNode[] = [searchRoots[rootIndex]];
+  for (const root of searchRoots) {
+    if (visited >= 1000) break;
+    const descendants: DoorHitNode[] = [root];
     while (descendants.length && visited < 1000) {
       const current = descendants.shift();
       if (!current || seen.has(current)) continue;

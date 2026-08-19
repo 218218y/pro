@@ -36,6 +36,14 @@ export interface LinearCellDimsContext extends CanvasLinearCellDimsArgs {
 
 export type EnsureOwnLinearModule = (i: number) => ModuleShape;
 
+export function readRequiredLinearDimension(values: readonly number[], idx: number, label: string): number {
+  const value = values[idx];
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new RangeError(`[WardrobePro][cellDims] Missing finite ${label} for module ${idx}`);
+  }
+  return value;
+}
+
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }

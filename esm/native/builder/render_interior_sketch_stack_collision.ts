@@ -59,7 +59,7 @@ export function buildSketchInternalDrawerCollisionRanges(args: {
       topY: args.topY,
       totalHeight: args.totalHeight,
       stackH: metrics.stackH,
-      pad: args.pad,
+      ...(args.pad !== undefined ? { pad: args.pad } : {}),
     });
     if (centerY == null) continue;
     const id = item.id != null && String(item.id) ? String(item.id) : String(i);
@@ -91,7 +91,7 @@ export function buildSketchExternalDrawerCollisionRanges(args: {
       topY: args.topY,
       totalHeight: args.totalHeight,
       stackH: metrics.stackH,
-      pad: args.pad,
+      ...(args.pad !== undefined ? { pad: args.pad } : {}),
     });
     if (centerY == null) continue;
     const id = item.id != null && String(item.id) ? String(item.id) : String(i);

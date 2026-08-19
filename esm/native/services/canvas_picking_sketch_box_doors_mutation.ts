@@ -20,15 +20,15 @@ import {
 type SketchBoxDoorSegmentMutationArgs = {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 };
 
 function pickTargetVerticalSegment(
@@ -48,15 +48,15 @@ function pickTargetVerticalSegment(
 export function upsertSketchBoxDoubleDoorPairForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): SketchBoxDoorState[] {
   const targetSegment = pickSketchBoxSegment({
     segments: args.segments,
@@ -100,15 +100,15 @@ export function upsertSketchBoxDoubleDoorPairForSegment(args: {
 export function removeSketchBoxDoubleDoorPairForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): boolean {
   const placements = findSketchBoxDoorsForSegment(args);
   if (!placements.length) return false;
@@ -122,15 +122,15 @@ export function removeSketchBoxDoubleDoorPairForSegment(args: {
 export function upsertSketchBoxDoorForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
   hinge?: unknown;
   doorId?: unknown;
 }): SketchBoxDoorState | null {
@@ -167,15 +167,15 @@ export function upsertSketchBoxDoorForSegment(args: {
 export function removeSketchBoxDoorForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
   doorId?: unknown;
 }): boolean {
   const doors = readSketchBoxDoors(args.box);
@@ -199,15 +199,15 @@ export function removeSketchBoxDoorForSegment(args: {
 export function toggleSketchBoxDoorHingeForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
   doorId?: unknown;
 }): SketchBoxDoorState | null {
   const doors = readSketchBoxDoors(args.box);
@@ -223,10 +223,12 @@ export function toggleSketchBoxDoorHingeForSegment(args: {
   if (target < 0) return null;
   const nextDoors = doors.slice();
   const current = nextDoors[target];
-  nextDoors[target] = {
+  if (!current) return null;
+  const next: SketchBoxDoorState = {
     ...current,
     hinge: current.hinge === 'right' ? 'left' : 'right',
   };
+  nextDoors[target] = next;
   writeSketchBoxDoors(args.box, nextDoors);
-  return nextDoors[target];
+  return next;
 }

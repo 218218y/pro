@@ -30,7 +30,7 @@ export function applyInteriorSketchOwnedStorageBarriers(
     internalZ: resolved.internalZ,
     moduleKeyStr: resolved.moduleKeyStr,
     bodyMat: resolved.bodyMat,
-    getPartMaterial: resolved.getPartMaterial,
+    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
     isFn: owner.isFn,
     createBoard: resolved.createBoard,
   });
@@ -65,7 +65,9 @@ export function applyInteriorSketchOwnedShelves(args: {
     shelfThick: resolved.shelfThick,
     effectiveTopY: resolved.effectiveTopY,
     showContentsEnabled: resolved.input.showContentsEnabled === true,
-    addFoldedClothes: resolved.input.addFoldedClothes,
+    ...(resolved.input.addFoldedClothes !== undefined
+      ? { addFoldedClothes: resolved.input.addFoldedClothes }
+      : {}),
     contentsPolicy: {
       showContentsEnabled: resolved.input.showContentsEnabled === true,
       sketchMode: resolved.input.sketchMode === true,
@@ -75,8 +77,8 @@ export function applyInteriorSketchOwnedShelves(args: {
     currentShelfMat: resolved.currentShelfMat,
     currentBraceShelfMat: resolved.currentBraceShelfMat,
     moduleKeyStr: resolved.moduleKeyStr,
-    getPartMaterial: resolved.getPartMaterial,
-    getPartColorValue: resolved.getPartColorValue,
+    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
     glassMat: placementSupport.glassMat,
     createBoard: resolved.createBoard,
     group: resolved.group,
@@ -97,7 +99,7 @@ export function applyInteriorSketchOwnedRods(args: {
   applySketchRods({
     rods: resolved.rods,
     yFromNorm: placementPlan.placementSupport.yFromNorm,
-    createRod: resolved.input.createRod,
+    ...(resolved.input.createRod !== undefined ? { createRod: resolved.input.createRod } : {}),
     isFn: owner.isFn,
     THREE: resolvedThree.THREE,
     App: resolved.App,
@@ -142,8 +144,8 @@ export function applyInteriorSketchOwnedDrawers(args: {
     bodyMat: resolved.bodyMat,
     currentBraceShelfMat: resolved.currentBraceShelfMat,
     createBoard: resolved.createBoard,
-    getPartMaterial: resolved.getPartMaterial,
-    getPartColorValue: resolved.getPartColorValue,
+    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
     moduleDoorFaceSpan: resolved.moduleDoorFaceSpan,
     isFn: owner.isFn,
     renderOpsHandleCatch: owner.renderOpsHandleCatch,
@@ -169,8 +171,8 @@ export function applyInteriorSketchOwnedDrawers(args: {
     bodyMat: resolved.bodyMat,
     currentShelfMat: resolved.currentShelfMat,
     createBoard: resolved.createBoard,
-    getPartMaterial: resolved.getPartMaterial,
-    getPartColorValue: resolved.getPartColorValue,
+    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
     applyInternalDrawersOps: owner.applyInternalDrawersOps,
     renderOpsHandleCatch: owner.renderOpsHandleCatch,
   });

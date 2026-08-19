@@ -44,8 +44,7 @@ export function resolveSketchFreeBoxHoverAttachPlacement(args: {
     (candidate): candidate is SketchFreeBoxAttachPlacement => !!candidate
   );
   candidateOrder.sort((a, b) => a.score - b.score);
-  for (let ci = 0; ci < candidateOrder.length; ci++) {
-    const attachedPlacement = candidateOrder[ci];
+  for (const attachedPlacement of candidateOrder) {
     if (
       isSketchFreeInwardSideAttachmentBlocked({
         targetCenterX: args.targetCenterX,

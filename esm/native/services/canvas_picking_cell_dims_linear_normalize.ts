@@ -48,11 +48,12 @@ export function promoteUniformLinearCellDim(
       eff.push(active ? cm : totalValue);
     }
 
-    let min = eff.length ? eff[0] : NaN;
-    let max = eff.length ? eff[0] : NaN;
-    let ok = eff.length > 0;
-    for (let i = 0; i < eff.length; i++) {
-      const value = eff[i];
+    const first = eff[0];
+    if (first == null) return { nextTotal: totalValue, promoted: false };
+    let min = first;
+    let max = first;
+    let ok = true;
+    for (const value of eff) {
       if (!Number.isFinite(value) || value <= 0) {
         ok = false;
         break;
@@ -62,7 +63,7 @@ export function promoteUniformLinearCellDim(
     }
 
     if (ok && Number.isFinite(min) && Number.isFinite(max) && Math.abs(max - min) < 0.01) {
-      const target = Math.round(eff[0] * 100) / 100;
+      const target = Math.round(first * 100) / 100;
       if (Number.isFinite(target) && target > 0) {
         for (let i = 0; i < nextModsCfg.length; i++) {
           const prevSD = readSpecialDimsRecord(nextModsCfg[i]);

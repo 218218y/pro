@@ -117,8 +117,8 @@ export function renderSketchBoxCarcassAdornment(args: {
     bodyMat,
     moduleKeyStr,
     boxId,
-    getPartMaterial,
-    addOutlines,
+    ...(getPartMaterial !== undefined ? { getPartMaterial } : {}),
+    ...(addOutlines !== undefined ? { addOutlines } : {}),
     isFreePlacement,
   });
 

@@ -3,8 +3,7 @@ import type { SketchBoxLocatorResult } from './render_interior_sketch_support_co
 
 export function createSketchBoxLocator(boxAbs: RenderSketchBoxAbsEntry[]) {
   return (y: number): SketchBoxLocatorResult | null => {
-    for (let i = 0; i < boxAbs.length; i++) {
-      const box = boxAbs[i];
+    for (const box of boxAbs) {
       if (Math.abs(y - box.y) <= box.halfH) {
         return {
           innerW: box.innerW,

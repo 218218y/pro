@@ -30,15 +30,22 @@ function readStringNullableMap(value: unknown): Record<string, string | null | u
 
 export function readDrawerConfig(value: unknown): DrawerConfig {
   if (!isRecord(value)) return { drawerRunnerType: 'roller' };
+  const groovesMap = readObjectMap(value.groovesMap);
+  const doorTrimMap = readObjectMap(value.doorTrimMap);
+  const drawerDividersMap = readObjectMap(value.drawerDividersMap);
+  const doorSpecialMap = readStringNullableMap(value.doorSpecialMap);
+  const curtainMap = readObjectMap(value.curtainMap);
+  const mirrorLayoutMap = readObjectMap(value.mirrorLayoutMap);
+  const grooveLayoutMap = readObjectMap(value.grooveLayoutMap);
   return {
-    groovesMap: readObjectMap(value.groovesMap),
-    doorTrimMap: readObjectMap(value.doorTrimMap),
-    drawerDividersMap: readObjectMap(value.drawerDividersMap),
-    doorSpecialMap: readStringNullableMap(value.doorSpecialMap),
+    ...(groovesMap !== undefined ? { groovesMap } : {}),
+    ...(doorTrimMap !== undefined ? { doorTrimMap } : {}),
+    ...(drawerDividersMap !== undefined ? { drawerDividersMap } : {}),
+    ...(doorSpecialMap !== undefined ? { doorSpecialMap } : {}),
     doorStyleMap: readDoorStyleMap(value.doorStyleMap),
-    curtainMap: readObjectMap(value.curtainMap),
-    mirrorLayoutMap: readObjectMap(value.mirrorLayoutMap),
-    grooveLayoutMap: readObjectMap(value.grooveLayoutMap),
+    ...(curtainMap !== undefined ? { curtainMap } : {}),
+    ...(mirrorLayoutMap !== undefined ? { mirrorLayoutMap } : {}),
+    ...(grooveLayoutMap !== undefined ? { grooveLayoutMap } : {}),
     isMultiColorMode: value.isMultiColorMode === true,
     isLibraryMode: value.isLibraryMode === true,
     drawerRunnerType: readDrawerRunnerTypeFromConfig(value),

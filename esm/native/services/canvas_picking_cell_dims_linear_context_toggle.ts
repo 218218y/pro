@@ -1,4 +1,5 @@
 import type { LinearCellDimsContext } from './canvas_picking_cell_dims_linear_shared.js';
+import { readRequiredLinearDimension } from './canvas_picking_cell_dims_linear_shared.js';
 
 export function applyLinearToggleBack(
   idx: number,
@@ -15,17 +16,20 @@ export function applyLinearToggleBack(
   LinearCellDimsContext,
   'tgtW' | 'tgtH' | 'tgtD' | 'didToggleBack' | 'toggledBackW' | 'toggledBackH' | 'toggledBackD'
 > {
-  const curW = widthsCurr[idx];
-  const curH = heightsCurr[idx];
-  const curD = depthsCurr[idx];
+  const curW = readRequiredLinearDimension(widthsCurr, idx, 'current width');
+  const curH = readRequiredLinearDimension(heightsCurr, idx, 'current height');
+  const curD = readRequiredLinearDimension(depthsCurr, idx, 'current depth');
+  const baseWidth = readRequiredLinearDimension(baseW, idx, 'base width');
+  const baseHeight = readRequiredLinearDimension(baseH, idx, 'base height');
+  const baseDepth = readRequiredLinearDimension(baseD, idx, 'base depth');
 
   let tgtW = applyW != null ? applyW : curW;
   let tgtH = applyH != null ? applyH : curH;
   let tgtD = applyD != null ? applyD : curD;
 
-  const isCustomW = Number.isFinite(baseW[idx]) && baseW[idx] > 0 && Math.abs(curW - baseW[idx]) > 1e-6;
-  const isCustomH = Number.isFinite(baseH[idx]) && baseH[idx] > 0 && Math.abs(curH - baseH[idx]) > 1e-6;
-  const isCustomD = Number.isFinite(baseD[idx]) && baseD[idx] > 0 && Math.abs(curD - baseD[idx]) > 1e-6;
+  const isCustomW = Number.isFinite(baseWidth) && baseWidth > 0 && Math.abs(curW - baseWidth) > 1e-6;
+  const isCustomH = Number.isFinite(baseHeight) && baseHeight > 0 && Math.abs(curH - baseHeight) > 1e-6;
+  const isCustomD = Number.isFinite(baseDepth) && baseDepth > 0 && Math.abs(curD - baseDepth) > 1e-6;
 
   const matchesTargetW = Math.abs(curW - tgtW) < 1e-6;
   const matchesTargetH = Math.abs(curH - tgtH) < 1e-6;
@@ -41,17 +45,17 @@ export function applyLinearToggleBack(
   let toggledBackH = false;
   let toggledBackD = false;
   if (applyW != null && isCustomW && matchesTargetW && !hasAnyNewChangeThisClick) {
-    tgtW = baseW[idx];
+    tgtW = baseWidth;
     didToggleBack = true;
     toggledBackW = true;
   }
   if (applyH != null && isCustomH && matchesTargetH && !hasAnyNewChangeThisClick) {
-    tgtH = baseH[idx];
+    tgtH = baseHeight;
     didToggleBack = true;
     toggledBackH = true;
   }
   if (applyD != null && isCustomD && matchesTargetD && !hasAnyNewChangeThisClick) {
-    tgtD = baseD[idx];
+    tgtD = baseDepth;
     didToggleBack = true;
     toggledBackD = true;
   }

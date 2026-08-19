@@ -66,7 +66,7 @@ export const resolveSketchBoxDividerPlacement = (args: {
     center: args.boxCenterX,
     span: args.innerW,
     woodThick: args.woodThick,
-    norm: args.dividerXNorm,
+    ...(args.dividerXNorm !== undefined ? { norm: args.dividerXNorm } : {}),
   });
   return { centerX: p.center, xNorm: p.norm, centered: p.centered };
 };
@@ -81,7 +81,7 @@ export const resolveSketchBoxHorizontalDividerPlacement = (args: {
     center: args.boxCenterY,
     span: args.innerH,
     woodThick: args.woodThick,
-    norm: args.dividerYNorm,
+    ...(args.dividerYNorm !== undefined ? { norm: args.dividerYNorm } : {}),
   });
   return { centerY: p.center, yNorm: p.norm, centered: p.centered };
 };
@@ -122,8 +122,7 @@ export const readSketchBoxDividers = (box: unknown): SketchBoxDividerState[] => 
   if (!rec) return [];
   const dividersRaw = asRecordArray<SketchDividerExtra>(rec.dividers);
   const dividers: SketchBoxDividerState[] = [];
-  for (let i = 0; i < dividersRaw.length; i++) {
-    const it = dividersRaw[i];
+  for (const [i, it] of dividersRaw.entries()) {
     const xNorm = clampUnit(it.xNorm);
     if (xNorm == null) continue;
     const frontZ = toFiniteNumber(it.frontZ);
@@ -145,8 +144,7 @@ export const readSketchBoxHorizontalDividers = (box: unknown): SketchBoxHorizont
   if (!rec) return [];
   const dividersRaw = asRecordArray<Record<string, unknown>>(rec.horizontalDividers);
   const dividers: SketchBoxHorizontalDividerState[] = [];
-  for (let i = 0; i < dividersRaw.length; i++) {
-    const it = dividersRaw[i];
+  for (const [i, it] of dividersRaw.entries()) {
     const yNorm = clampUnit(it.yNorm);
     if (yNorm == null) continue;
     const frontZ = toFiniteNumber(it.frontZ);
@@ -164,7 +162,7 @@ export const readSketchBoxHorizontalDividers = (box: unknown): SketchBoxHorizont
 
 export const readSketchBoxDividerXNorm = (box: unknown): number | null => {
   const dividers = readSketchBoxDividers(box);
-  return dividers.length ? dividers[0].xNorm : null;
+  return dividers[0]?.xNorm ?? null;
 };
 
 export const resolveSketchBoxDividerPlacements = (args: {
@@ -229,10 +227,10 @@ export const resolveSketchBoxVerticalSegments = (args: {
   const placements = resolveSketchBoxHorizontalDividerPlacements({
     dividers: filterHorizontalDividersForColumn({
       dividers: args.dividers,
-      verticalDividers: args.verticalDividers,
-      boxCenterX: args.boxCenterX,
-      innerW: args.innerW,
-      xNorm: args.xNorm,
+      ...(args.verticalDividers !== undefined ? { verticalDividers: args.verticalDividers } : {}),
+      ...(args.boxCenterX !== undefined ? { boxCenterX: args.boxCenterX } : {}),
+      ...(args.innerW !== undefined ? { innerW: args.innerW } : {}),
+      ...(args.xNorm !== undefined ? { xNorm: args.xNorm } : {}),
       woodThick: t,
     }),
     boxCenterY: cy,

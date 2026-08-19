@@ -217,8 +217,7 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
       ),
       0
     );
-    for (let i = 0; i < mergedWidthSpans.length; i++) {
-      const span = mergedWidthSpans[i];
+    for (const span of mergedWidthSpans) {
       const width = span.max - span.min;
       if (!(width > 0)) continue;
       addDimensionLine(
@@ -381,11 +380,11 @@ export const renderSketchFreeBoxDimensionOverlays = (args: {
   entries: SketchFreeBoxDimensionEntry[];
 }) => {
   const groups = groupSketchFreeBoxDimensionEntries(args.entries);
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
-    if (!group || !group.length) continue;
+  for (const group of groups) {
+    if (!group.length) continue;
     if (group.length === 1) {
       const single = group[0];
+      if (!single) continue;
       renderSketchFreeBoxDimensions({
         THREE: args.THREE,
         addDimensionLine: args.addDimensionLine,

@@ -60,8 +60,7 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
       })
     : [];
 
-  for (let hi = 0; hi < boxHorizontalDividers.length; hi++) {
-    const divider = boxHorizontalDividers[hi];
+  for (const [hi, divider] of boxHorizontalDividers.entries()) {
     const column =
       divider.xNorm != null
         ? resolveSketchBoxSegmentForContent({
@@ -108,8 +107,7 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
     );
   }
 
-  for (let di = 0; di < boxDividers.length; di++) {
-    const divider = boxDividers[di];
+  for (const [di, divider] of boxDividers.entries()) {
     const placement = resolveSketchBoxDividerPlacement({
       boxCenterX: geometry.centerX,
       innerW: geometry.innerW,

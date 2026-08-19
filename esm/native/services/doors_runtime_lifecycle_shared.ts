@@ -63,10 +63,10 @@ function setSlidingTrackSnapshotMarkers(door: DoorVisualEntryLike, open: boolean
 
   if (isSlidingDoorTrackOpenMode(rec)) {
     rec.noGlobalOpen = false;
-    rec.slidingOpenMode = undefined;
-    rec.__slidingOpenMode = undefined;
-    rec.slidingTrackOpenSide = undefined;
-    rec.__slidingTrackOpenSide = undefined;
+    delete rec.slidingOpenMode;
+    delete rec.__slidingOpenMode;
+    delete rec.slidingTrackOpenSide;
+    delete rec.__slidingTrackOpenSide;
   }
 }
 

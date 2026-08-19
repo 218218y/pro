@@ -46,7 +46,7 @@ export function computeCurrentLinearDims(
       fixedSumW += widthFixed;
     } else {
       fixedW[i] = null;
-      missingUnitsW += doorsPerModule[i];
+      missingUnitsW += doorsPerModule[i] ?? 1;
     }
   }
 
@@ -60,10 +60,10 @@ export function computeCurrentLinearDims(
 
     let wcm = fixedW[i];
     if (wcm == null) {
-      const doorsU = Math.max(1, doorsPerModule[i]);
+      const doorsU = Math.max(1, doorsPerModule[i] ?? 1);
       let seg = (remainingW * doorsU) / denomW;
       if (!Number.isFinite(seg) || seg <= 0) seg = (totalW * doorsU) / fallbackDenomW;
-      if (!Number.isFinite(seg) || seg <= 0) seg = defaultWidths[i];
+      if (!Number.isFinite(seg) || seg <= 0) seg = defaultWidths[i] ?? 0;
       wcm = seg;
     }
 
@@ -76,7 +76,7 @@ export function computeCurrentLinearDims(
     let bhcm = readCanonicalNumber(prevSD.baseHeightCm) ?? NaN;
     let bdcm = readCanonicalNumber(prevSD.baseDepthCm) ?? NaN;
 
-    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = wcm || defaultWidths[i];
+    if (!Number.isFinite(bwcm) || bwcm <= 0) bwcm = wcm || defaultWidths[i] || 0;
     if (!Number.isFinite(bhcm) || bhcm <= 0) bhcm = totalH;
     if (!Number.isFinite(bdcm) || bdcm <= 0) bdcm = totalD;
 

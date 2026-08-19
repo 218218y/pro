@@ -40,7 +40,7 @@ export function __positionDoorMarker(args: {
   const userData = __asObject<UnknownRecord>(groupRec?.userData);
   const localPoint = resolveDoorTrimSurfaceLogicalPoint({
     userData,
-    surfacePlane: args.surfacePlane,
+    ...(args.surfacePlane !== undefined ? { surfacePlane: args.surfacePlane } : {}),
     localX: centerX,
     localY: centerY,
     faceCoord: resolveMarkerLocalZ(groupRec, zOff),

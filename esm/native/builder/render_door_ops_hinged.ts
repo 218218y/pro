@@ -138,8 +138,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const visibleDoorOps = preparedDoorOps.filter(entry => !entry.removed).map(entry => entry.doorOp);
     const hardwareOpenAngleRad = hingeHardwareState?.policy.carcassConnectorOpenAngleRad ?? 0;
 
-    for (let i = 0; i < preparedDoorOps.length; i++) {
-      const { doorOp, removed } = preparedDoorOps[i];
+    for (const { doorOp, removed } of preparedDoorOps) {
       const partId = doorOp.partId;
 
       let doorIdNum: number | null = null;

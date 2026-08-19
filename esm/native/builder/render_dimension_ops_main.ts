@@ -49,8 +49,8 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     let x0 = -totalW / 2;
     const totalWcm = totalW * 100;
     let accCm = 0;
-    for (let i = 0; i < moduleWidthsCm.length; i++) {
-      let wcm = moduleWidthsCm[i];
+    for (const [i, rawWcm] of moduleWidthsCm.entries()) {
+      let wcm = rawWcm;
       if (!Number.isFinite(wcm) || wcm <= 0) continue;
       if (i === moduleWidthsCm.length - 1) {
         const remain = totalWcm - accCm;
@@ -85,8 +85,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
   if (!noMainWardrobe && moduleHeightsCm && moduleHeightsCm.length >= 1) {
     const uniq: number[] = [];
     const seen = new Set<number>();
-    for (let i = 0; i < moduleHeightsCm.length; i++) {
-      const raw = moduleHeightsCm[i];
+    for (const raw of moduleHeightsCm) {
       if (!Number.isFinite(raw) || raw <= 0) continue;
       const value = Math.round(raw);
       if (seen.has(value)) continue;
@@ -104,10 +103,10 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
         ? vec(-guide.cellHeightTextOffsetM, 0, 0)
         : vec(guide.cellHeightTextOffsetM, 0, 0);
       let prev = 0;
-      for (let i = 0; i < uniq.length; i++) {
-        const cur = uniq[i];
+      let segmentIndex = 0;
+      for (const cur of uniq) {
         if (!Number.isFinite(cur) || cur <= prev) continue;
-        const label = i === 0 ? cur.toFixed(0) : (cur - prev).toFixed(0);
+        const label = segmentIndex === 0 ? cur.toFixed(0) : (cur - prev).toFixed(0);
         addDimensionLine(
           vec(segX, prev / 100, 0),
           vec(segX, cur / 100, 0),
@@ -117,6 +116,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
           vec(0, guide.cellHeightLabelYOffsetM, 0)
         );
         prev = cur;
+        segmentIndex += 1;
       }
     }
   }
@@ -139,8 +139,7 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
   if (!noMainWardrobe && moduleDepthsCm && moduleDepthsCm.length >= 1) {
     let minDcm = Infinity;
     let maxDcm = 0;
-    for (let i = 0; i < moduleDepthsCm.length; i++) {
-      const raw = moduleDepthsCm[i];
+    for (const raw of moduleDepthsCm) {
       if (!Number.isFinite(raw) || raw <= 0) continue;
       const value = Math.round(raw);
       if (value < minDcm) minDcm = value;

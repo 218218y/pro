@@ -6,10 +6,10 @@ export interface CanvasDoorSplitClickArgs {
   effectiveDoorId: string;
   foundModuleStack: 'top' | 'bottom';
   doorHitY: number | null;
-  ndcX?: number | null;
-  ndcY?: number | null;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | null | undefined;
+  ndcY?: number | null | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
   camera?: unknown;
   doorHitGroup?: unknown;
 }

@@ -81,14 +81,18 @@ export function __readArray<T>(v: unknown, itemGuard: (value: unknown) => value 
 export function __asContext(v: unknown): RenderCarcassContext {
   const rec = __asRecord(v);
   if (!rec) return {};
+  const App = __readApp(rec.App);
+  const roomArchitecturePlan = __readRoomArchitecturePlan(rec.roomArchitecturePlan);
+  const addOutlines = __isFn(rec.addOutlines) ? __outlineFn(rec.addOutlines) : undefined;
+  const getPartMaterial = __isFn(rec.getPartMaterial)
+    ? __partMaterialFn(rec.getPartMaterial) || undefined
+    : undefined;
   return {
-    App: __readApp(rec.App),
+    ...(App !== undefined ? { App } : {}),
     THREE: rec.THREE,
-    roomArchitecturePlan: __readRoomArchitecturePlan(rec.roomArchitecturePlan),
-    addOutlines: __isFn(rec.addOutlines) ? __outlineFn(rec.addOutlines) : undefined,
-    getPartMaterial: __isFn(rec.getPartMaterial)
-      ? __partMaterialFn(rec.getPartMaterial) || undefined
-      : undefined,
+    ...(roomArchitecturePlan !== undefined ? { roomArchitecturePlan } : {}),
+    ...(addOutlines !== undefined ? { addOutlines } : {}),
+    ...(getPartMaterial !== undefined ? { getPartMaterial } : {}),
     __sketchMode: rec.__sketchMode === true,
     plinthMat: rec.plinthMat,
     legMat: rec.legMat,

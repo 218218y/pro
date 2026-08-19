@@ -346,8 +346,7 @@ function resolveSceneManualHandleAlignment(args: {
   });
   const currentHingeSide = readDoorHingeSide({ group: currentGroup });
   const candidates = collectManualHandleSceneCandidates(App);
-  for (let i = 0; i < candidates.length; i += 1) {
-    const candidate = candidates[i];
+  for (const candidate of candidates) {
     const otherGroup = candidate.group;
     if (otherGroup === currentGroup) continue;
     if (

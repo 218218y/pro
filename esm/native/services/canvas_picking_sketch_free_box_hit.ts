@@ -113,8 +113,7 @@ export function findSketchFreeBoxLocalHit(args: {
   projectWorldPointToLocal: ProjectWorldPointToLocalFn;
 }): { x: number; y: number; z: number } | null {
   const { App, intersects, localParent, partPrefix, projectWorldPointToLocal } = args;
-  for (let i = 0; i < intersects.length; i++) {
-    const hit = intersects[i];
+  for (const hit of intersects) {
     const userData = getRecordProp(hit?.object, 'userData');
     const partId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
     if (!partId || (partId !== partPrefix && !partId.startsWith(`${partPrefix}_`))) continue;

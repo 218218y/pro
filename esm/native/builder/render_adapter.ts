@@ -143,7 +143,9 @@ export function installBuilderRenderAdapter(App: AppContainer): RenderAdapterLik
   if (ra.__esm_v1) return ra;
 
   const bound = createBuilderRenderAdapter(A);
-  if (typeof ra.ensureWardrobeGroup === 'undefined') ra.ensureWardrobeGroup = bound.ensureWardrobeGroup;
+  if (typeof ra.ensureWardrobeGroup === 'undefined' && typeof bound.ensureWardrobeGroup === 'function') {
+    ra.ensureWardrobeGroup = bound.ensureWardrobeGroup;
+  }
 
   try {
     ra.__esm_v1 = true;

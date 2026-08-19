@@ -25,19 +25,19 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
   const getStoredWidth = (cfgCell: UnknownRecord): number | null =>
     readStoredWidthCm(cfgCell, App, 'cellDims.corner.width.getStoredWidth');
 
-  const doorsInCell = Array.from({ length: cellCount }, () => 1);
-  const fixedWidths: (number | null)[] = Array.from({ length: cellCount }, () => null);
+  const doorsInCell: number[] = [];
+  const fixedWidths: (number | null)[] = [];
   let fixedSum = 0;
   let missingUnits = 0;
 
   for (let ci = 0; ci < cellCount; ci++) {
     const doorsForCell = Math.min(2, Math.max(0, doorCount - ci * 2));
     const doorsUnits = Math.max(1, doorsForCell);
-    doorsInCell[ci] = doorsUnits;
+    doorsInCell.push(doorsUnits);
 
     const storedWidth = getStoredWidth(getCellCfg(ci));
+    fixedWidths.push(storedWidth);
     if (storedWidth != null) {
-      fixedWidths[ci] = storedWidth;
       fixedSum += storedWidth;
     } else {
       missingUnits += doorsUnits;
@@ -52,8 +52,8 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
   const widthsCurr: number[] = [];
   const minW: number[] = [];
 
-  for (let ci = 0; ci < cellCount; ci++) {
-    const doorsUnits = Math.max(1, doorsInCell[ci]);
+  for (const [ci, doorsUnitsRaw] of doorsInCell.entries()) {
+    const doorsUnits = Math.max(1, doorsUnitsRaw);
     const minWidth = minSpecialCellWcm;
     minW[ci] = minWidth;
 
@@ -76,8 +76,10 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
           break;
         }
       }
-      const nextV = widthsCurr[adjIdx] + delta;
-      widthsCurr[adjIdx] = Math.max(minW[adjIdx] || 5, nextV);
+      const currentWidth = widthsCurr[adjIdx];
+      if (currentWidth == null) return { cellCount, modsPrev, modsNext, getCellCfg, widthsCurr, minW };
+      const nextV = currentWidth + delta;
+      widthsCurr[adjIdx] = Math.max(minW[adjIdx] ?? 5, nextV);
     }
   } catch (_e) {
     reportCornerDimsIssue(App, _e, 'cellDims.corner.width.redistribute');

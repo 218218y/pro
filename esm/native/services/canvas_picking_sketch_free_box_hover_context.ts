@@ -67,8 +67,8 @@ export function createSketchFreeBoxHoverContext(
     backZ: wardrobeBackZ,
     centerX: planeX,
     woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
-    widthM: args.widthOverrideM,
-    depthM: args.depthOverrideM,
+    ...(args.widthOverrideM !== undefined ? { widthM: args.widthOverrideM } : {}),
+    ...(args.depthOverrideM !== undefined ? { depthM: args.depthOverrideM } : {}),
   });
   if (
     !isWithinSketchFreePlacementBounds({

@@ -75,13 +75,13 @@ function localPointToWorldY(
 
 export function resolveCanvasDoorSplitPointerWorldY(args: {
   App: AppContainer;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
   camera?: unknown;
-  ndcX?: number | null;
-  ndcY?: number | null;
+  ndcX?: number | null | undefined;
+  ndcY?: number | null | undefined;
   hitDoorGroup?: unknown;
-  referenceY?: number | null;
+  referenceY?: number | null | undefined;
 }): number | null {
   const { App, raycaster, mouse, ndcX, ndcY, hitDoorGroup, referenceY } = args;
   const reference = isFiniteNumber(referenceY) ? Number(referenceY) : null;

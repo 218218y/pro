@@ -77,8 +77,8 @@ function blockSideBlockingBoxContentIfSideMissing(
     App: args.App,
     cfg: args.cfg,
     box: args.box,
-    moduleKey: args.hoverHost?.moduleKey,
-    isBottomStack: args.hoverHost?.isBottom,
+    ...(args.hoverHost?.moduleKey !== undefined ? { moduleKey: args.hoverHost.moduleKey } : {}),
+    ...(args.hoverHost?.isBottom !== undefined ? { isBottomStack: args.hoverHost.isBottom } : {}),
     freePlacement: args.box.freePlacement === true || args.freePlacement,
   });
 }

@@ -71,8 +71,7 @@ function sanitizeCanvasDoorSplitCuts(bounds: CanvasDoorSplitBounds, normsIn: num
     if (!Number.isFinite(H) || !(H > 0)) return norms;
     const topEdge = maxY;
     const abs: number[] = [];
-    for (let i = 0; i < normsIn.length; i++) {
-      const n0 = normsIn[i];
+    for (const n0 of normsIn) {
       if (!Number.isFinite(n0)) continue;
       const n = clampNumber(n0, 0, 1);
       const y0 = clampNumber(minY + n * H, minY + padAbs, topEdge - padAbs);
@@ -82,18 +81,17 @@ function sanitizeCanvasDoorSplitCuts(bounds: CanvasDoorSplitBounds, normsIn: num
 
     const keptAbs: number[] = [];
     let prevB = minY;
-    for (let i = 0; i < abs.length; i++) {
-      const y = abs[i];
+    for (const y of abs) {
       if (y - prevB < minSegmentHeight) continue;
       if (topEdge - y < minSegmentHeight) continue;
-      const prevKept = keptAbs.length ? keptAbs[keptAbs.length - 1] : NaN;
+      const prevKept = keptAbs.at(-1) ?? NaN;
       if (Number.isFinite(prevKept) && Math.abs(prevKept - y) <= duplicateTolerance) continue;
       keptAbs.push(y);
       prevB = y;
     }
 
-    for (let i = 0; i < keptAbs.length; i++) {
-      norms.push(clampNumber((keptAbs[i] - minY) / H, 0, 1));
+    for (const y of keptAbs) {
+      norms.push(clampNumber((y - minY) / H, 0, 1));
     }
   } catch {
     // door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state
@@ -144,8 +142,7 @@ export function validateCanvasDoorCustomSplitAdd(args: {
 
   let nearestDistanceAbs: number | null = null;
   const sanitizedPrev = sanitizeCanvasDoorSplitCuts(bounds, Array.isArray(prevList) ? prevList : []);
-  for (let i = 0; i < sanitizedPrev.length; i++) {
-    const n = sanitizedPrev[i];
+  for (const n of sanitizedPrev) {
     if (!Number.isFinite(n)) continue;
     const cutY = clampNumber(minY + clampNumber(n, 0, 1) * H, minY + padAbs, maxY - padAbs);
     const distance = Math.abs(cutY - rawY);
@@ -220,8 +217,8 @@ function commitCanvasDoorCustomSplitList(args: {
 function readCanvasDoorCustomSplitScreenRoots(App: CanvasDoorSplitClickArgs['App']): unknown[] {
   const doorsArray = getDoorsArray(App);
   const roots: unknown[] = [];
-  for (let i = 0; i < doorsArray.length; i++) {
-    const entry = doorsArray[i] as { group?: unknown } | null | undefined;
+  for (const entryRaw of doorsArray) {
+    const entry = entryRaw as { group?: unknown } | null | undefined;
     if (entry?.group) roots.push(entry.group);
   }
   return roots;

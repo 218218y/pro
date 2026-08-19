@@ -39,11 +39,13 @@ function mergeSegmentsAcrossStoredSplitCuts(args: {
     HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMaxM,
     HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM * 2
   );
-  const merged: CanvasDoorSplitBounds[] = [];
-  let current = { ...segments[0] };
+  const firstSegment = segments[0];
+  if (!firstSegment) return segments;
 
-  for (let i = 1; i < segments.length; i += 1) {
-    const next = segments[i];
+  const merged: CanvasDoorSplitBounds[] = [];
+  let current: CanvasDoorSplitBounds = { ...firstSegment };
+
+  for (const next of segments.slice(1)) {
     const gapMidY = (current.maxY + next.minY) / 2;
     const isStoredSplitGap = cutYs.some(cutY => Math.abs(cutY - gapMidY) <= tolerance);
     if (isStoredSplitGap) {
@@ -79,8 +81,8 @@ export function resolveCanvasDoorStandardSplitTarget(args: {
     splitPosList: readCanvasDoorSplitStandardPosList(App, doorBaseKey),
   });
 
-  const bottomBounds = splitStableSegments.length ? splitStableSegments[0] : bounds;
-  const topBounds = splitStableSegments.length ? splitStableSegments[splitStableSegments.length - 1] : bounds;
+  const bottomBounds = splitStableSegments[0] ?? bounds;
+  const topBounds = splitStableSegments.at(-1) ?? bounds;
   const pointerY = typeof hitY === 'number' && Number.isFinite(hitY) ? hitY : null;
 
   let isBottomRegion = pointerY != null && pointerY <= bounds.minY + (bounds.maxY - bounds.minY) / 3;

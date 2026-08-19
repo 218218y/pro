@@ -156,8 +156,7 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
 
   const cassettePartId = createSketchInternalDrawerCassettePartId(args.stackPartId);
   let emitted = false;
-  for (let i = 0; i < panels.length; i += 1) {
-    const panel = panels[i];
+  for (const panel of panels) {
     const partId = cassettePartId;
     const mesh = args.createBoard(
       panel.w,

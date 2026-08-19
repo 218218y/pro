@@ -12,7 +12,11 @@ import {
   assignSpecialDimsToConfig,
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
-import { readSpecialDimsRecord, readToastFn } from './canvas_picking_cell_dims_linear_shared.js';
+import {
+  readRequiredLinearDimension,
+  readSpecialDimsRecord,
+  readToastFn,
+} from './canvas_picking_cell_dims_linear_shared.js';
 import {
   BASE_LEG_STAGE_SPECIAL_DIMS_APPLY_BLOCKED_MESSAGE,
   isBaseLegStageUiState,
@@ -46,9 +50,14 @@ export type LinearCellDimsApplyOptions = {
 function withoutLinearToggleBack(ctx: LinearCellDimsContext): LinearCellDimsContext {
   return {
     ...ctx,
-    tgtW: ctx.applyW != null ? ctx.applyW : ctx.widthsCurr[ctx.idx],
-    tgtH: ctx.applyH != null ? ctx.applyH : ctx.heightsCurr[ctx.idx],
-    tgtD: ctx.applyD != null ? ctx.applyD : ctx.depthsCurr[ctx.idx],
+    tgtW:
+      ctx.applyW != null ? ctx.applyW : readRequiredLinearDimension(ctx.widthsCurr, ctx.idx, 'current width'),
+    tgtH:
+      ctx.applyH != null
+        ? ctx.applyH
+        : readRequiredLinearDimension(ctx.heightsCurr, ctx.idx, 'current height'),
+    tgtD:
+      ctx.applyD != null ? ctx.applyD : readRequiredLinearDimension(ctx.depthsCurr, ctx.idx, 'current depth'),
     didToggleBack: false,
     toggledBackW: false,
     toggledBackH: false,
@@ -63,12 +72,12 @@ function shouldBlockLinearHeightDepthSpecialDimsByBaseLegStage(ctx: LinearCellDi
   return (
     willHeightDepthTargetCreateActiveSpecialOverride({
       targetCm: ctx.applyH,
-      baseCm: ctx.baseH[ctx.idx],
+      baseCm: readRequiredLinearDimension(ctx.baseH, ctx.idx, 'base height'),
       toggledBack: ctx.toggledBackH,
     }) ||
     willHeightDepthTargetCreateActiveSpecialOverride({
       targetCm: ctx.applyD,
-      baseCm: ctx.baseD[ctx.idx],
+      baseCm: readRequiredLinearDimension(ctx.baseD, ctx.idx, 'base depth'),
       toggledBack: ctx.toggledBackD,
     })
   );
@@ -100,7 +109,7 @@ function applySelectedLinearOverrides(
       sd,
       key: 'heightCm',
       baseKey: 'baseHeightCm',
-      baseValueCm: ctx.baseH[ctx.idx],
+      baseValueCm: readRequiredLinearDimension(ctx.baseH, ctx.idx, 'base height'),
       targetValueCm: ctx.tgtH,
       toggledBack: ctx.toggledBackH,
     });
@@ -111,7 +120,7 @@ function applySelectedLinearOverrides(
       sd,
       key: 'depthCm',
       baseKey: 'baseDepthCm',
-      baseValueCm: ctx.baseD[ctx.idx],
+      baseValueCm: readRequiredLinearDimension(ctx.baseD, ctx.idx, 'base depth'),
       targetValueCm: ctx.tgtD,
       toggledBack: ctx.toggledBackD,
     });
@@ -173,15 +182,12 @@ export function applyCanvasLinearCellDimsContextWithOptions(
       App,
       modulesConfiguration: nextModsCfg,
       modulesBucket: applyCtx.configBucket,
-      manualWidth:
-        !applyCtx.isBottomStack && (setManualWidth || unsetManualWidth)
-          ? setManualWidth
-            ? true
-            : false
-          : undefined,
-      width: !applyCtx.isBottomStack && widthChanged ? nextTotalW : undefined,
-      height: !applyCtx.isBottomStack && heightChanged ? heightPromotion.nextTotal : undefined,
-      depth: !applyCtx.isBottomStack && depthChanged ? depthPromotion.nextTotal : undefined,
+      ...(!applyCtx.isBottomStack && (setManualWidth || unsetManualWidth)
+        ? { manualWidth: setManualWidth }
+        : {}),
+      ...(!applyCtx.isBottomStack && widthChanged ? { width: nextTotalW } : {}),
+      ...(!applyCtx.isBottomStack && heightChanged ? { height: heightPromotion.nextTotal } : {}),
+      ...(!applyCtx.isBottomStack && depthChanged ? { depth: depthPromotion.nextTotal } : {}),
       meta: metaCfg,
     });
   } catch (err) {

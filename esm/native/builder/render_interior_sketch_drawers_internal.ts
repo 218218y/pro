@@ -86,12 +86,18 @@ export function buildSketchInternalDrawerRuntimeArgs(
     THREE,
     ops,
     wardrobeGroup: group,
-    createInternalDrawerBox,
-    addOutlines,
+    ...(createInternalDrawerBox !== undefined ? { createInternalDrawerBox } : {}),
+    ...(addOutlines !== undefined ? { addOutlines } : {}),
     sketchMode: input.sketchMode === true,
-    createBoard: createBoard || input.createBoard,
-    getPartMaterial: getPartMaterial || input.getPartMaterial,
-    getPartColorValue: getPartColorValue || input.getPartColorValue,
+    ...((createBoard || input.createBoard) !== undefined
+      ? { createBoard: createBoard || input.createBoard }
+      : {}),
+    ...((getPartMaterial || input.getPartMaterial) !== undefined
+      ? { getPartMaterial: getPartMaterial || input.getPartMaterial }
+      : {}),
+    ...((getPartColorValue || input.getPartColorValue) !== undefined
+      ? { getPartColorValue: getPartColorValue || input.getPartColorValue }
+      : {}),
     bodyMat,
     drawerBoxBaseMat:
       (input as InteriorValueRecord).drawerBoxBaseMat ||
@@ -100,7 +106,7 @@ export function buildSketchInternalDrawerRuntimeArgs(
     currentShelfMat: currentShelfMat ?? input.currentShelfMat,
     cfg: input.cfgSnapshot,
     showContentsEnabled,
-    addFoldedClothes,
+    ...(addFoldedClothes !== undefined ? { addFoldedClothes } : {}),
   };
 
   return {

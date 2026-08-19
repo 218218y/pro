@@ -53,7 +53,7 @@ function __readNoMainSketchWorkspaceMetrics(App: AppContainer): __ProjectionLoca
       width,
       height,
       depth,
-      backZ: backZRaw ?? undefined,
+      ...(backZRaw != null ? { backZ: backZRaw } : {}),
     };
   } catch {
     return null;

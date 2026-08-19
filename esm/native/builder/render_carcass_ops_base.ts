@@ -147,8 +147,8 @@ export function createApplyCarcassBaseOps() {
     group.userData = { partId, __wpRoomColumnAdjusted: true };
     reg(App, partId, group, registryKind);
 
-    for (let i = 0; i < pieces.length; i += 1) {
-      const piece = axisAlignedBoxToCenterSize(pieces[i]);
+    for (const pieceBox of pieces) {
+      const piece = axisAlignedBoxToCenterSize(pieceBox);
       const child = new THREE.Mesh(new THREE.BoxGeometry(piece.width, piece.height, piece.depth), material);
       child.position.set(piece.x - x, piece.y - y, piece.z - z);
       child.userData = group.userData;
@@ -171,8 +171,7 @@ export function createApplyCarcassBaseOps() {
       ignorePicking: true,
     };
 
-    for (let i = 0; i < adjustment.linerPanels.length; i += 1) {
-      const panel = adjustment.linerPanels[i];
+    for (const panel of adjustment.linerPanels) {
       const piece = axisAlignedBoxToCenterSize(panel.box);
       const mesh = new THREE.Mesh(
         new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
@@ -206,8 +205,7 @@ export function createApplyCarcassBaseOps() {
       const segments = __readArray(baseRec.segments, __isPlinthSegment);
 
       if (segments && segments.length) {
-        for (let si = 0; si < segments.length; si += 1) {
-          const seg = segments[si];
+        for (const seg of segments) {
           const w = __asFinite(seg.width);
           const h = __asFinite(seg.height);
           const d = __asFinite(seg.depth);
@@ -257,8 +255,7 @@ export function createApplyCarcassBaseOps() {
 
     if (baseKind === 'legs' || baseKind === 'leg_platforms') {
       const platforms = __readArray(baseRec.platforms, __isLegPlatformSegment) || [];
-      for (let i = 0; i < platforms.length; i += 1) {
-        const platform = platforms[i];
+      for (const platform of platforms) {
         const width = __asFinite(platform.width);
         const height = __asFinite(platform.height);
         const depth = __asFinite(platform.depth);
@@ -336,8 +333,7 @@ export function createApplyCarcassBaseOps() {
     const { THREE, ctx, getPartMaterial, sketchMode, addOutlines, wardrobeGroup, reg, App } = runtime;
     const boards = boardsIn || [];
     const doorTrimMap = readDoorTrimMapForCarcass(App);
-    for (let b = 0; b < boards.length; b += 1) {
-      const bd = boards[b];
+    for (const bd of boards) {
       if (bd.kind !== 'board') continue;
       const mat = getPartMaterial ? getPartMaterial(__asString(bd.partId)) : ctx.bodyMat;
       const partId = __asString(bd.partId);
@@ -365,8 +361,8 @@ export function createApplyCarcassBaseOps() {
           reg(App, partId, group, 'body');
         }
 
-        for (let i = 0; i < pieces.length; i += 1) {
-          const piece = axisAlignedBoxToCenterSize(pieces[i]);
+        for (const pieceBox of pieces) {
+          const piece = axisAlignedBoxToCenterSize(pieceBox);
           const child = new THREE.Mesh(new THREE.BoxGeometry(piece.width, piece.height, piece.depth), mat);
           child.position.set(piece.x - bd.x, piece.y - bd.y, piece.z - bd.z);
           child.userData = group.userData;
@@ -438,8 +434,8 @@ export function createApplyCarcassBaseOps() {
         group.userData = sharedUserData;
         if (woodBack && partId) reg(App, partId, group, 'body');
 
-        for (let i = 0; i < pieces.length; i += 1) {
-          const piece = axisAlignedBoxToCenterSize(pieces[i]);
+        for (const pieceBox of pieces) {
+          const piece = axisAlignedBoxToCenterSize(pieceBox);
           const child = new THREE.Mesh(
             new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
             panelMaterial
@@ -473,8 +469,8 @@ export function createApplyCarcassBaseOps() {
     };
     const backPanels = backPanelsIn;
     if (backPanels && backPanels.length) {
-      for (let bp = 0; bp < backPanels.length; bp += 1) {
-        addBackPanel(backPanels[bp]);
+      for (const panel of backPanels) {
+        addBackPanel(panel);
       }
       return;
     }

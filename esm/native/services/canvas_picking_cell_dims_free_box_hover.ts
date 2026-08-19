@@ -170,8 +170,7 @@ function readFreeBoxesFromModule(cfgMod: UnknownRecord | null): UnknownRecord[] 
 }
 
 function findFreeBoxById(boxes: UnknownRecord[], boxId: string): UnknownRecord | null {
-  for (let i = 0; i < boxes.length; i += 1) {
-    const rec = boxes[i];
+  for (const [i, rec] of boxes.entries()) {
     const id = formatIdentityValue(readIdentityValue(rec.id)) || formatIdentityValue(i);
     if (id === boxId) return rec;
   }
@@ -459,7 +458,7 @@ type FreeBoxDimIntent = 'add' | 'remove' | null;
 function resolveFreeBoxDimIntent(args: {
   target: InteriorHoverTarget;
   currentCm: number;
-  applyCm?: number | null;
+  applyCm: number | null | undefined;
   specialKey: 'widthCm' | 'heightCm' | 'depthCm';
   baseKey: 'baseWidthCm' | 'baseHeightCm' | 'baseDepthCm';
 }): FreeBoxDimIntent {

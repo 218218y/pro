@@ -11,7 +11,10 @@ import {
 } from '../features/hex_cell/index.js';
 import { applyCanvasLinearCellDimsContextWithOptions } from './canvas_picking_cell_dims_linear_apply.js';
 import { buildCanvasLinearCellDimsContext } from './canvas_picking_cell_dims_linear_context.js';
-import { readCanonicalNumber } from './canvas_picking_cell_dims_linear_shared.js';
+import {
+  readCanonicalNumber,
+  readRequiredLinearDimension,
+} from './canvas_picking_cell_dims_linear_shared.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 
 const EPS_CM = 1e-6;
@@ -22,9 +25,12 @@ function hasLinearHexCellDimensionChange(
   const idx = ctx.idx;
   const applyH = ctx.isBottomStack ? null : ctx.applyH;
   return (
-    (ctx.applyW != null && Math.abs(ctx.applyW - ctx.widthsCurr[idx]) > EPS_CM) ||
-    (applyH != null && Math.abs(applyH - ctx.heightsCurr[idx]) > EPS_CM) ||
-    (ctx.applyD != null && Math.abs(ctx.applyD - ctx.depthsCurr[idx]) > EPS_CM)
+    (ctx.applyW != null &&
+      Math.abs(ctx.applyW - readRequiredLinearDimension(ctx.widthsCurr, idx, 'current width')) > EPS_CM) ||
+    (applyH != null &&
+      Math.abs(applyH - readRequiredLinearDimension(ctx.heightsCurr, idx, 'current height')) > EPS_CM) ||
+    (ctx.applyD != null &&
+      Math.abs(ctx.applyD - readRequiredLinearDimension(ctx.depthsCurr, idx, 'current depth')) > EPS_CM)
   );
 }
 

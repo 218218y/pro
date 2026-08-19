@@ -28,7 +28,7 @@ export function findModuleSelectorObject(args: FindModuleSelectorObjectArgs): Hi
     const children = Array.isArray(curr.children)
       ? curr.children.map(child => asHitObject(child)).filter((child): child is HitObjectLike => !!child)
       : [];
-    for (let i = 0; i < children.length; i++) queue.push(children[i]);
+    for (const child of children) queue.push(child);
   }
 
   return null;

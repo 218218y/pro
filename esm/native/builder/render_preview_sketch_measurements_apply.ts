@@ -44,8 +44,7 @@ export function applySketchPlacementMeasurements(args: {
   measurementGroup.visible = true;
 
   let used = 0;
-  for (let i = 0; i < measurementEntries.length; i += 1) {
-    const entry = measurementEntries[i];
+  for (const entry of measurementEntries) {
     const startX = readMeasurementNumber(entry.startX);
     const startY = readMeasurementNumber(entry.startY);
     const endX = readMeasurementNumber(entry.endX);

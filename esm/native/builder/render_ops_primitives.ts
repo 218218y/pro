@@ -233,12 +233,13 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     points: RoundedShelfFootprintPoint[]
   ): RoundedShelfFootprintPoint[] {
     const normalized: RoundedShelfFootprintPoint[] = [];
-    for (let i = 0; i < points.length; i += 1) {
-      const point = points[i];
+    for (const point of points) {
       const prev = normalized[normalized.length - 1];
       if (!prev || !isSameRoundedShelfPoint(prev, point)) normalized.push(point);
     }
-    if (normalized.length > 1 && isSameRoundedShelfPoint(normalized[0], normalized[normalized.length - 1])) {
+    const first = normalized[0];
+    const last = normalized[normalized.length - 1];
+    if (normalized.length > 1 && first && last && isSameRoundedShelfPoint(first, last)) {
       normalized.pop();
     }
     return normalized;
@@ -488,14 +489,16 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
 
     const topStart = positions.length / 3;
     for (let i = 0; i < points.length; i += 1) {
+      const point = points[i];
       const next = points[(i + 1) % points.length];
+      if (!point || !next) continue;
       pushRoundedShelfPlanarTriangle(
         positions,
         normals,
         uvs,
         center,
         topY,
-        points[i],
+        point,
         topY,
         next,
         topY,
@@ -515,7 +518,9 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
 
     const bottomStart = positions.length / 3;
     for (let i = 0; i < points.length; i += 1) {
+      const point = points[i];
       const next = points[(i + 1) % points.length];
+      if (!point || !next) continue;
       pushRoundedShelfPlanarTriangle(
         positions,
         normals,
@@ -524,7 +529,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
         bottomY,
         next,
         bottomY,
-        points[i],
+        point,
         bottomY,
         0,
         -1,
@@ -544,7 +549,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     for (let i = 0; i < points.length; i += 1) {
       const a = points[i];
       const b = points[(i + 1) % points.length];
-      if (shouldOmitRoundedShelfSideFace(a, b, attachedSide, w)) continue;
+      if (!a || !b || shouldOmitRoundedShelfSideFace(a, b, attachedSide, w)) continue;
 
       const dx = b.x - a.x;
       const dz = b.z - a.z;
@@ -794,17 +799,17 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     group.userData = sharedUserData;
 
     const splitChildren: AnyMap[] = [];
-    for (let i = 0; i < pieces.length; i += 1) {
-      const piece = axisAlignedBoxToCenterSize(pieces[i]);
+    for (const pieceBox of pieces) {
+      const piece = axisAlignedBoxToCenterSize(pieceBox);
       const preservesRoundedFront =
         args.shape === 'rounded_shelf' &&
         Math.abs(piece.width - w) <= 1e-7 &&
         Math.abs(piece.height - h) <= 1e-7 &&
-        Math.abs(pieces[i].maxZ - sourceBox.maxZ) <= 1e-7;
+        Math.abs(pieceBox.maxZ - sourceBox.maxZ) <= 1e-7;
       const pieceGeometry = preservesRoundedFront
         ? createBoardGeometry(THREE, args, piece.width, piece.height, piece.depth)
         : new THREE.BoxGeometry(piece.width, piece.height, piece.depth);
-      const pieceMaterial = resolveClippedBoardPieceMaterial(mat, pieces[i], sourceBox);
+      const pieceMaterial = resolveClippedBoardPieceMaterial(mat, pieceBox, sourceBox);
       const child = new THREE.Mesh(pieceGeometry, pieceMaterial);
       child.position.set(piece.x - x, piece.y - y, piece.z - z);
       child.userData = sharedUserData;

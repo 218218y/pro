@@ -120,8 +120,8 @@ function pushUniqueSketchManagedStandardSplitNorm(args: {
   const { list, norm, tolNorm } = args;
   if (!Number.isFinite(Number(norm))) return;
   const value = clampCanvasDoorSplitNumber(Number(norm), 0, 1);
-  for (let i = 0; i < list.length; i += 1) {
-    if (Math.abs(list[i] - value) <= tolNorm) return;
+  for (const existing of list) {
+    if (Math.abs(existing - value) <= tolNorm) return;
   }
   list.push(value);
 }

@@ -12,16 +12,15 @@ import {
 export function resolveSketchBoxDoorPlacements(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
 }): SketchBoxDoorPlacement[] {
   const doors = readSketchBoxDoors(args.box);
   const out: SketchBoxDoorPlacement[] = [];
-  for (let i = 0; i < doors.length; i++) {
-    const door = doors[i];
+  for (const [i, door] of doors.entries()) {
     out.push({
       door,
       index: i,
@@ -48,15 +47,15 @@ export function resolveSketchBoxDoorPlacements(args: {
 export function findSketchBoxDoorForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): SketchBoxDoorPlacement | null {
   const targetSegment = pickSketchBoxSegment({
     segments: args.segments,
@@ -77,8 +76,7 @@ export function findSketchBoxDoorForSegment(args: {
       })
     : null;
   const placements = resolveSketchBoxDoorPlacements(args);
-  for (let i = 0; i < placements.length; i++) {
-    const placement = placements[i];
+  for (const placement of placements) {
     const segment = placement?.segment;
     const verticalSegment = placement?.verticalSegment;
     const sameColumn = !!(placement && segment && segment.index === targetSegment.index);
@@ -94,15 +92,15 @@ export function findSketchBoxDoorForSegment(args: {
 export function findSketchBoxDoorsForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): SketchBoxDoorPlacement[] {
   const targetSegment = pickSketchBoxSegment({
     segments: args.segments,
@@ -134,15 +132,15 @@ export function findSketchBoxDoorsForSegment(args: {
 export function hasSketchBoxDoubleDoorPairForSegment(args: {
   box: unknown;
   segments: SketchBoxSegmentState[];
-  verticalSegments?: SketchBoxVerticalSegmentState[];
+  verticalSegments?: SketchBoxVerticalSegmentState[] | undefined;
   boxCenterX: number;
   innerW: number;
-  boxCenterY?: number | null;
-  innerH?: number | null;
-  cursorX?: number | null;
-  cursorY?: number | null;
-  xNorm?: number | null;
-  yNorm?: number | null;
+  boxCenterY?: number | null | undefined;
+  innerH?: number | null | undefined;
+  cursorX?: number | null | undefined;
+  cursorY?: number | null | undefined;
+  xNorm?: number | null | undefined;
+  yNorm?: number | null | undefined;
 }): boolean {
   const placements = findSketchBoxDoorsForSegment(args);
   if (placements.length < 2) return false;

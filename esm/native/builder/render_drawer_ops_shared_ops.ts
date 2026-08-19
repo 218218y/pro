@@ -1,7 +1,9 @@
 import { isRecord, readFinite, readOptionalFinite } from './render_drawer_ops_shared_guards.js';
 import type { ExternalDrawerOpLike, InternalDrawerOpLike } from './render_drawer_ops_shared_types.js';
 
-function readPositionTriplet(value: unknown): { x?: number; y?: number; z?: number } | undefined {
+function readPositionTriplet(
+  value: unknown
+): { x: number | undefined; y: number | undefined; z: number | undefined } | undefined {
   if (!isRecord(value)) return undefined;
   return {
     x: readOptionalFinite(value.x),
@@ -31,29 +33,43 @@ export function readExternalDrawerOp(value: unknown): ExternalDrawerOpLike | nul
   ) {
     return null;
   }
+  const kind = typeof value.kind === 'string' ? value.kind : undefined;
+  const grooveKey = typeof value.grooveKey === 'string' ? value.grooveKey : undefined;
+  const dividerKey = typeof value.dividerKey === 'string' ? value.dividerKey : undefined;
+  const visualT = readOptionalFinite(value.visualT);
+  const boxOffsetZ = readOptionalFinite(value.boxOffsetZ);
+  const connectW = readOptionalFinite(value.connectW);
+  const connectH = readOptionalFinite(value.connectH);
+  const connectD = readOptionalFinite(value.connectD);
+  const connectZ = readOptionalFinite(value.connectZ);
+  const closed = readPositionTriplet(value.closed);
+  const open = readPositionTriplet(value.open);
+  const faceW = readOptionalFinite(value.faceW);
+  const faceOffsetX = readOptionalFinite(value.faceOffsetX);
+  const frontZ = readOptionalFinite(value.frontZ);
   return {
-    kind: typeof value.kind === 'string' ? value.kind : undefined,
+    ...(kind !== undefined ? { kind } : {}),
     partId,
-    grooveKey: typeof value.grooveKey === 'string' ? value.grooveKey : undefined,
-    dividerKey: typeof value.dividerKey === 'string' ? value.dividerKey : undefined,
+    ...(grooveKey !== undefined ? { grooveKey } : {}),
+    ...(dividerKey !== undefined ? { dividerKey } : {}),
     visualW,
     visualH,
-    visualT: readOptionalFinite(value.visualT),
+    ...(visualT !== undefined ? { visualT } : {}),
     boxW,
     runnerMountWidth,
     boxH,
     boxD,
-    boxOffsetZ: readOptionalFinite(value.boxOffsetZ),
+    ...(boxOffsetZ !== undefined ? { boxOffsetZ } : {}),
     moduleIndex: value.moduleIndex,
-    connectW: readOptionalFinite(value.connectW),
-    connectH: readOptionalFinite(value.connectH),
-    connectD: readOptionalFinite(value.connectD),
-    connectZ: readOptionalFinite(value.connectZ),
-    closed: readPositionTriplet(value.closed),
-    open: readPositionTriplet(value.open),
-    faceW: readOptionalFinite(value.faceW),
-    faceOffsetX: readOptionalFinite(value.faceOffsetX),
-    frontZ: readOptionalFinite(value.frontZ),
+    ...(connectW !== undefined ? { connectW } : {}),
+    ...(connectH !== undefined ? { connectH } : {}),
+    ...(connectD !== undefined ? { connectD } : {}),
+    ...(connectZ !== undefined ? { connectZ } : {}),
+    ...(closed !== undefined ? { closed } : {}),
+    ...(open !== undefined ? { open } : {}),
+    ...(faceW !== undefined ? { faceW } : {}),
+    ...(faceOffsetX !== undefined ? { faceOffsetX } : {}),
+    ...(frontZ !== undefined ? { frontZ } : {}),
   };
 }
 
@@ -73,36 +89,45 @@ export function readInternalDrawerOp(value: unknown): InternalDrawerOpLike | nul
     !Number.isFinite(depth)
   )
     return null;
+  const stackPartId =
+    typeof value.stackPartId === 'string' && value.stackPartId.trim() ? value.stackPartId.trim() : undefined;
+  const dividerKey = typeof value.dividerKey === 'string' ? value.dividerKey : undefined;
+  const openZ = readOptionalFinite(value.openZ);
+  const sketchBoxId =
+    typeof value.sketchBoxId === 'string' && value.sketchBoxId.trim() ? value.sketchBoxId.trim() : undefined;
+  const sketchStack =
+    value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined;
+  const cassetteBaseY = readOptionalFinite(value.cassetteBaseY);
+  const cassetteOuterWidth = readOptionalFinite(value.cassetteOuterWidth);
+  const cassetteDepth = readOptionalFinite(value.cassetteDepth);
+  const cassetteCenterX = readOptionalFinite(value.cassetteCenterX);
+  const cassetteCenterZ = readOptionalFinite(value.cassetteCenterZ);
+  const cassetteStackH = readOptionalFinite(value.cassetteStackH);
+  const cassetteWoodThick = readOptionalFinite(value.cassetteWoodThick);
   return {
     partId,
-    stackPartId:
-      typeof value.stackPartId === 'string' && value.stackPartId.trim()
-        ? value.stackPartId.trim()
-        : undefined,
+    ...(stackPartId !== undefined ? { stackPartId } : {}),
     width,
     runnerMountWidth,
     height,
     depth,
     moduleIndex: value.moduleIndex,
-    dividerKey: typeof value.dividerKey === 'string' ? value.dividerKey : undefined,
+    ...(dividerKey !== undefined ? { dividerKey } : {}),
     hasDivider: value.hasDivider === true,
     x: readFinite(value.x),
     y: readFinite(value.y),
     z: readFinite(value.z),
-    openZ: readOptionalFinite(value.openZ),
-    sketchBoxId:
-      typeof value.sketchBoxId === 'string' && value.sketchBoxId.trim()
-        ? value.sketchBoxId.trim()
-        : undefined,
+    ...(openZ !== undefined ? { openZ } : {}),
+    ...(sketchBoxId !== undefined ? { sketchBoxId } : {}),
     sketchModuleKey: value.sketchModuleKey,
     sketchFreePlacement: value.sketchFreePlacement === true,
-    sketchStack: value.sketchStack === 'bottom' ? 'bottom' : value.sketchStack === 'top' ? 'top' : undefined,
-    cassetteBaseY: readOptionalFinite(value.cassetteBaseY),
-    cassetteOuterWidth: readOptionalFinite(value.cassetteOuterWidth),
-    cassetteDepth: readOptionalFinite(value.cassetteDepth),
-    cassetteCenterX: readOptionalFinite(value.cassetteCenterX),
-    cassetteCenterZ: readOptionalFinite(value.cassetteCenterZ),
-    cassetteStackH: readOptionalFinite(value.cassetteStackH),
-    cassetteWoodThick: readOptionalFinite(value.cassetteWoodThick),
+    ...(sketchStack !== undefined ? { sketchStack } : {}),
+    ...(cassetteBaseY !== undefined ? { cassetteBaseY } : {}),
+    ...(cassetteOuterWidth !== undefined ? { cassetteOuterWidth } : {}),
+    ...(cassetteDepth !== undefined ? { cassetteDepth } : {}),
+    ...(cassetteCenterX !== undefined ? { cassetteCenterX } : {}),
+    ...(cassetteCenterZ !== undefined ? { cassetteCenterZ } : {}),
+    ...(cassetteStackH !== undefined ? { cassetteStackH } : {}),
+    ...(cassetteWoodThick !== undefined ? { cassetteWoodThick } : {}),
   };
 }
