@@ -503,10 +503,28 @@ test('browser perf support rebuilds exact browser metrics from all captured entr
   });
   assert.equal(metrics.longTasks.count, 20);
   assert.equal(metrics.longTasks.totalMs, 210);
-  assert.equal(metrics.longTasks.p95Ms, 19);
+  assert.equal(metrics.longTasks.p95Ms, 19.05);
   assert.equal(metrics.longTasks.maxMs, 20);
   assert.equal(metrics.renderSettle.count, 2);
-  assert.equal(metrics.renderSettle.p95Ms, 32);
+  assert.equal(metrics.renderSettle.p95Ms, 31.2);
+});
+
+test('browser perf support interpolates sparse long-task p95 instead of selecting one rank boundary', () => {
+  const samples = [...Array.from({ length: 21 }, () => 50), 150, 260, 715].map(metricValue =>
+    perfEntry('browser.longTask', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+      browserSessionId: 'session-a',
+    })
+  );
+
+  const metrics = createBrowserMetricSummaryFromEntries(samples, { observerSupported: true });
+
+  assert.equal(metrics.longTasks.count, 24);
+  assert.equal(metrics.longTasks.maxMs, 715);
+  assert.equal(metrics.longTasks.p95Ms, 243.5);
 });
 
 test('browser perf support keeps document-scoped duration budgets stable across reload sessions', () => {
@@ -558,7 +576,7 @@ test('browser perf support keeps document-scoped duration budgets stable across 
   assert.equal(metrics.longTasks.count, 2);
   assert.equal(metrics.longTasks.totalMs, 160);
   assert.equal(metrics.longTasks.maxMs, 90);
-  assert.equal(metrics.longTasks.p95Ms, 90);
+  assert.equal(metrics.longTasks.p95Ms, 89);
   assert.equal(metrics.inp.valueMs, 220);
 });
 
@@ -2201,7 +2219,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   };
 
   const schemaFailures = evaluateBrowserPerfBaseline(result, { ...currentBaseline(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 26, got 18\)/.test(item)));
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 27, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,

@@ -576,7 +576,7 @@ test('perf runtime observes CLS, LCP, INP, and Long Tasks through PerformanceObs
   assert.equal(metrics?.inp.source, 'event');
   assert.equal(metrics?.longTasks.count, 2);
   assert.equal(metrics?.longTasks.totalMs, 195);
-  assert.equal(metrics?.longTasks.p95Ms, 120);
+  assert.equal(metrics?.longTasks.p95Ms, 117.75);
   assert.equal(getPerfEntries(app, 'browser.cls').at(-1)?.kind, 'browser-metric');
   assert.equal(getPerfEntries(app, 'browser.longTask').length, 2);
   assert.equal(getPerfEntries(app, 'browser.inp').at(-1)?.metricValue, 120);

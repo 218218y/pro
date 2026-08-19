@@ -52,10 +52,26 @@ function roundMetric(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Number(value.toFixed(4))) : 0;
 }
 
-function percentile(sortedValues: number[], ratio: number): number {
+/**
+ * Continuous percentile estimator for browser-duration distributions.
+ *
+ * Browser long-task samples are intentionally sparse after the recent scheduling work.
+ * A nearest-rank p95 turns a 20-40 sample distribution into effectively the second-largest
+ * observation, which makes the gate jump by 100ms+ when a single task moves rank.  Linear
+ * interpolation (the common R7 / PERCENTILE.INC estimator) preserves the tail signal without
+ * making the metric depend on one order-statistic boundary.
+ */
+function browserDurationPercentile(sortedValues: number[], ratio: number): number {
   if (!sortedValues.length) return 0;
-  const index = Math.min(sortedValues.length - 1, Math.max(0, Math.ceil(sortedValues.length * ratio) - 1));
-  return sortedValues[index] || 0;
+  if (sortedValues.length === 1) return sortedValues[0] || 0;
+  const clampedRatio = Math.min(1, Math.max(0, ratio));
+  const position = (sortedValues.length - 1) * clampedRatio;
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.ceil(position);
+  const lower = sortedValues[lowerIndex] || 0;
+  const upper = sortedValues[upperIndex] || lower;
+  if (lowerIndex === upperIndex) return lower;
+  return lower + (upper - lower) * (position - lowerIndex);
 }
 
 function createBrowserMetricState(): BrowserMetricState {
@@ -466,14 +482,16 @@ export function getBrowserPerformanceMetrics(App: AppContainer): WardrobeProBrow
       count: longTaskSamples.length,
       totalMs: roundMetric(longTaskTotal),
       maxMs: longTaskSamples.length ? roundMetric(longTaskSamples.at(-1) || 0) : 0,
-      p95Ms: longTaskSamples.length ? roundMetric(percentile(longTaskSamples, 0.95)) : 0,
+      p95Ms: longTaskSamples.length ? roundMetric(browserDurationPercentile(longTaskSamples, 0.95)) : 0,
       lastUpdatedAt: roundMetric(state.longTaskLastUpdatedAt),
     },
     renderSettle: {
       count: renderSettleSamples.length,
       totalMs: roundMetric(renderSettleTotal),
       maxMs: renderSettleSamples.length ? roundMetric(renderSettleSamples.at(-1) || 0) : 0,
-      p95Ms: renderSettleSamples.length ? roundMetric(percentile(renderSettleSamples, 0.95)) : 0,
+      p95Ms: renderSettleSamples.length
+        ? roundMetric(browserDurationPercentile(renderSettleSamples, 0.95))
+        : 0,
       lastUpdatedAt: roundMetric(renderSettleLast?.endTime || 0),
     },
   };

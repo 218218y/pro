@@ -11,7 +11,7 @@ import {
   requiredUserJourneyMinimumStepCounts,
 } from '../tests/e2e/helpers/perf_contracts.js';
 
-export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 26;
+export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 27;
 export const BROWSER_PERF_MIN_MATERIAL_DRIFT_MS = 20;
 export const BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS = 20;
 export const BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS = 150;
@@ -95,6 +95,34 @@ function percentile(sortedValues, ratio) {
   if (!Array.isArray(sortedValues) || !sortedValues.length) return 0;
   const index = Math.min(sortedValues.length - 1, Math.max(0, Math.ceil(sortedValues.length * ratio) - 1));
   return sortedValues[index] || 0;
+}
+
+function browserDurationPercentile(sortedValues, ratio) {
+  if (!Array.isArray(sortedValues) || !sortedValues.length) return 0;
+  if (sortedValues.length === 1) return sortedValues[0] || 0;
+  const clampedRatio = Math.min(1, Math.max(0, Number(ratio) || 0));
+  const position = (sortedValues.length - 1) * clampedRatio;
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.ceil(position);
+  const lower = Number(sortedValues[lowerIndex]) || 0;
+  const upper = Number(sortedValues[upperIndex]);
+  const upperValue = Number.isFinite(upper) ? upper : lower;
+  if (lowerIndex === upperIndex) return lower;
+  return lower + (upperValue - lower) * (position - lowerIndex);
+}
+
+function createBrowserDurationSummary(samplesIn) {
+  const samples = normalizeDurationSamples(samplesIn);
+  const sorted = [...samples].sort((left, right) => left - right);
+  const totalMs = roundDuration(samples.reduce((sum, value) => sum + value, 0));
+  return {
+    count: samples.length,
+    totalMs,
+    avgMs: samples.length ? roundDuration(totalMs / samples.length) : 0,
+    p95Ms: sorted.length ? roundDuration(browserDurationPercentile(sorted, 0.95)) : 0,
+    maxMs: sorted.length ? roundDuration(sorted[sorted.length - 1]) : 0,
+    samplesMs: samples,
+  };
 }
 
 function normalizeDurationSamples(value) {
@@ -240,8 +268,8 @@ export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
       bucket.push(readDuration(entry));
       groups.set(sessionId, bucket);
     }
-    const summaries = Array.from(groups.values()).map(createDurationSummary);
-    if (!summaries.length) return createDurationSummary([]);
+    const summaries = Array.from(groups.values()).map(createBrowserDurationSummary);
+    if (!summaries.length) return createBrowserDurationSummary([]);
     return {
       count: Math.max(...summaries.map(item => item.count)),
       totalMs: roundDuration(Math.max(...summaries.map(item => item.totalMs))),
