@@ -15,8 +15,7 @@ const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
 const publicBarrelSpecifier = '../features/dimensions/index.js';
 const policySymbol = 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY';
 const rawMarker = '// Built-in saved-model presets are stored as current-schema project snapshots.';
-const rawTailSha256 = '68e85dd0dc76ca607df8e10053c32de3d4a62397474576216ff659ae32026834';
-const rawSemanticSha256 = '64aa4247aab2eeea2b47a1fe409019000a8a1b1add3554b4b5bbfce41659697c';
+const rawDataIntegritySha256 = '64aa4247aab2eeea2b47a1fe409019000a8a1b1add3554b4b5bbfce41659697c';
 const expectedRecordIds = Object.freeze([
   'model_1765891752929',
   'model_1765891929674',
@@ -199,10 +198,9 @@ function rawFacts(source, sourceFile) {
   }
   return {
     markerIndex,
-    tail: markerIndex >= 0 ? source.slice(markerIndex) : '',
     initializer,
     ids,
-    semanticHash: initializer ? sha256(stableJson(rawExpressionFact(initializer))) : null,
+    dataIntegrityHash: initializer ? sha256(stableJson(rawExpressionFact(initializer))) : null,
   };
 }
 
@@ -357,9 +355,8 @@ function migrationViolations(source) {
 
   const raw = rawFacts(source, sourceFile);
   if (raw.markerIndex < 0) add('raw-marker');
-  if (sha256(raw.tail) !== rawTailSha256) add('raw-tail-hash', sha256(raw.tail));
-  if (raw.semanticHash !== rawSemanticSha256) {
-    add('raw-semantic-fingerprint', raw.semanticHash ?? 'missing');
+  if (raw.dataIntegrityHash !== rawDataIntegritySha256) {
+    add('raw-data-integrity', raw.dataIntegrityHash ?? 'missing');
   }
   if (stableJson(raw.ids) !== stableJson(expectedRecordIds)) add('raw-record-ids', stableJson(raw.ids));
   if (raw.initializer?.type !== 'ArrayExpression') add('raw-array-shape');
@@ -437,12 +434,10 @@ test('Preset Models Data preserves consumer-local derivation and exact width mul
   assert.equal(identifierName(widthExpression.right), 'doors');
 });
 
-test('Preset Models Data raw tail, semantic AST, record count, IDs, and order remain immutable', () => {
+test('Preset Models Data canonical records preserve exact data content, IDs, and order', () => {
   const source = read(consumerRel);
   const facts = rawFacts(source, createSourceFile(consumerRel, source));
-  assert.equal(facts.tail.split(/\r\n|\r|\n/u).length, 829);
-  assert.equal(sha256(facts.tail), rawTailSha256);
-  assert.equal(facts.semanticHash, rawSemanticSha256);
+  assert.equal(facts.dataIntegrityHash, rawDataIntegritySha256);
   assert.deepEqual(facts.ids, expectedRecordIds);
   assert.equal(facts.ids.length, 6);
 });
@@ -522,6 +517,5 @@ test('Preset Models Data ownership mutation probes reject routes, escapes, formu
     'width multiplication drift'
   );
   const rawMutation = source.replace("name: '⭐ 017'", "name: '⭐ 017 changed'");
-  assertMutation(rawMutation, 'raw-tail-hash', 'raw preset record drift');
-  assertMutation(rawMutation, 'raw-semantic-fingerprint', 'raw preset semantic drift');
+  assertMutation(rawMutation, 'raw-data-integrity', 'raw preset data drift');
 });

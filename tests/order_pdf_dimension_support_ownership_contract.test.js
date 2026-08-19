@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
-import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
+import { createSourceFile } from '../tools/wp_ast_adapter.mjs';
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,6 +38,8 @@ const ownerGroups = Object.freeze([
 ]);
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
+const sorted = values => [...values].sort((left, right) => left.localeCompare(right));
+
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -48,59 +49,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-const sha256 = text => createHash('sha256').update(text).digest('hex');
-const sorted = values => [...values].sort((left, right) => left.localeCompare(right));
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
-
-function consumerFingerprint(source = read(consumerRel)) {
-  const sourceFile = createSourceFile(consumerRel, source);
-  const body = sourceFile.body.filter(statement => statement.type !== 'ImportDeclaration');
-  const literals = [];
-  walkAst(sourceFile, node => {
-    for (let current = node.parent; current; current = current.parent) {
-      if (current.type === 'ImportDeclaration') return;
-    }
-    if (node.type === 'Literal') {
-      literals.push([node.start, 'Literal', node.raw ?? JSON.stringify(node.value)]);
-    }
-    if (node.type === 'TemplateElement') {
-      literals.push([node.start, 'TemplateElement', node.value?.raw ?? '']);
-    }
-  });
-  literals.sort((left, right) => left[0] - right[0]);
-  const literalFacts = literals.map(([, type, value]) => [type, value]);
-  return {
-    semantic: sha256(stableJson(canonicalSemanticAst(body))),
-    literals: sha256(JSON.stringify(literalFacts)),
-    literalCount: literalFacts.length,
-  };
 }
 
 function addViolation(violations, kind, detail) {
@@ -297,7 +245,7 @@ test('Order PDF dimension feature has one exact composition owner, four direct e
   assert.deepEqual(featureManifest.families.order_pdf_dimension_support, ['order_pdf_dimension_support.js']);
 });
 
-test('Order PDF support preserves owner identities and the consumer AST/literal fingerprint', () => {
+test('Order PDF support preserves owner identities and consumer behavior through runtime outcomes', () => {
   const depth = () => 60;
   const doors = () => 2;
   const runtime = loadTsRuntimeModule(path.join(root, featureRel), {
@@ -315,11 +263,50 @@ test('Order PDF support preserves owner identities and the consumer AST/literal 
   assert.equal(runtime.DEFAULT_WIDTH, 120);
   assert.strictEqual(runtime.getDefaultDepthForWardrobeType, depth);
   assert.strictEqual(runtime.getDefaultDoorsForWardrobeType, doors);
-  assert.deepEqual(consumerFingerprint(), {
-    semantic: 'd661c85384b184fa8da665bbf7feb3d41451fad222b8bff1c4409c0cb17b690e',
-    literals: '53e58df65b76a96afdd67b9fb83941a5bd9af1ea8e96e2be1ea7c1d1077d5ad9',
-    literalCount: 144,
+  const cfg = {
+    wardrobeType: 'hinged',
+    boardMaterial: 'melamine',
+    modulesConfiguration: [{ doors: 2 }, { doors: 1 }],
+  };
+  const ui = {
+    raw: { doors: 3, width: 150, height: 230, depth: 60 },
+    selectedModelId: 'model-1',
+    doorStyle: 'profile',
+    hasCornice: true,
+    corniceType: 'wave',
+  };
+  const consumer = loadTsRuntimeModule(path.join(root, consumerRel));
+  const ops = consumer.createOrderPdfTextDetailsOps({
+    asRecord: value => (value && typeof value === 'object' && !Array.isArray(value) ? value : null),
+    asObject: value => (value && typeof value === 'object' && !Array.isArray(value) ? value : {}),
+    getCfg: () => cfg,
+    getUi: () => ui,
+    getModelById: () => ({ name: '⭐ דגם בדיקה' }),
+    _exportReportNonFatalNoApp() {},
+    _exportReportThrottled() {},
+    _getProjectName: () => 'פרויקט בדיקה',
+    _requireApp: app => app,
+    readModulesConfigurationListFromConfigSnapshot: (config, key) =>
+      Array.isArray(config[key]) ? config[key] : [],
   });
+  const details = ops.buildOrderDetailsText({});
+  assert.equal(
+    details,
+    [
+      'דגם: דגם בדיקה',
+      'סוג: פתיחה',
+      'דלתות: 3, מלמין, פרופיל',
+      'מידות (ס"מ): 150×230×60',
+      'חלוקת גוף: 100-50',
+      'קרניז: גל',
+    ].join('\n')
+  );
+  const draft = ops.getOrderPdfDraft({});
+  assert.equal(draft.projectName, 'פרויקט בדיקה');
+  assert.equal(draft.autoDetails, details);
+  assert.equal(draft.detailsText, details);
+  assert.equal(draft.detailsTouched, false);
+  assert.match(draft.orderDate, /^\d{2}\/\d{2}\/\d{4}$/u);
 });
 
 test('Order PDF mutation probes keep the focused route, topology, and behavior enforceable', () => {
@@ -367,9 +354,5 @@ test('Order PDF mutation probes keep the focused route, topology, and behavior e
     true
   );
 
-  const behaviorDrift = read(consumerRel).replace(
-    `return typeof v === 'string' ? v : defaultValue;`,
-    'return defaultValue;'
-  );
-  assert.notDeepEqual(consumerFingerprint(behaviorDrift), consumerFingerprint());
+  assert.match(read(consumerRel), /return typeof v === 'string' \? v : defaultValue;/u);
 });

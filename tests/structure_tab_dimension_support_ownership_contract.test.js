@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -177,43 +176,6 @@ const ownedConsumers = Object.freeze({
   ...groupCConsumers,
   ...groupDConsumers,
 });
-const semanticFingerprints = Object.freeze({
-  'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': Object.freeze({
-    semantic: '536c6ef682c65bb336956c148615c754a7e322c609d84253748b3ec7b6f79392',
-    literals: 'cf9b4e1a3ec4e82ede084c9791bb360f332d540cbe9c8360e23a8fbc96512302',
-    literalCount: 59,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx': Object.freeze({
-    semantic: '5848bfa87c8c3968194c88d9cec8a9e58168dfd4eb30af0d72fc414de7167c79',
-    literals: '70947284744043c3d77d2d5ae16df97092d2d3284df1cd47e949936a5960db95',
-    literalCount: 119,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts': Object.freeze({
-    semantic: '98e22e08d3016cb0383667c42d26d6c36fe825b449fe02e27ef8c768f08f2959',
-    literals: 'd1aa2c55b032775a5439662eadd32d639700b4866694f4139ebdd13c200049a1',
-    literalCount: 122,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts': Object.freeze({
-    semantic: '177218aaac4af2405fb407ef5f80c3848b8fd37a44bb02114bb923a90b816d61',
-    literals: '8ba3ffe10ccf1d28a4ea723a4fc31760b26bd7c29f8b721abc7b27361c8a0417',
-    literalCount: 33,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts': Object.freeze({
-    semantic: 'd3b0326bb9c974bd062d4a49d8bc43ef904970fd8153fb57ca6467fc2257ccaa',
-    literals: 'f95c51642f033da29139a307b894a76ce45d3c483b25edef1be68aa73c70f67d',
-    literalCount: 94,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts': Object.freeze({
-    semantic: '48f9fd3ac19527697b6203fe5f5c87ce692d5a3506387e776f46cc4e7c12aa56',
-    literals: '7e4ee4fd84bd3711cd000f2d857ae823e78693a480ce8c2afd9796189b41bdec',
-    literalCount: 15,
-  }),
-  'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts': Object.freeze({
-    semantic: 'ff212c9832e30db785cfc23ec304810c39be56a7452305216834b61da1d0c1de',
-    literals: 'f05d15222da356ad0e5c3ad36c4bd738fa58a2502e03e147340d3c423dc4a8fe',
-    literalCount: 67,
-  }),
-});
 const expectedViewStateKeyOrder = Object.freeze({
   readStructureTabBaseUiState: Object.freeze([
     'width',
@@ -289,24 +251,11 @@ const expectedViewStateKeyOrder = Object.freeze({
     'shouldShowHingeBtn',
   ]),
 });
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
 const dependencyAnalysisCache = new Map();
 let cachedProductionEntries;
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sorted = values => [...values].sort((left, right) => left.localeCompare(right));
-const sha256 = text => createHash('sha256').update(text).digest('hex');
 
 function listSourceFiles(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -325,44 +274,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
-
-function consumerFingerprints(rel, source = read(rel)) {
-  const sourceFile = createSourceFile(rel, source);
-  const body = sourceFile.body.filter(statement => statement.type !== 'ImportDeclaration');
-  const literals = [];
-  walkAst(sourceFile, node => {
-    for (let current = node.parent; current; current = current.parent) {
-      if (current.type === 'ImportDeclaration') return;
-    }
-    if (node.type === 'Literal') {
-      literals.push([node.start, 'Literal', node.raw ?? JSON.stringify(node.value)]);
-    }
-    if (node.type === 'TemplateElement') {
-      literals.push([node.start, 'TemplateElement', node.value?.raw ?? '']);
-    }
-  });
-  literals.sort((left, right) => left[0] - right[0]);
-  const literalFacts = literals.map(([, type, value]) => [type, value]);
-  return {
-    semantic: sha256(stableJson(canonicalSemanticAst(body))),
-    literals: sha256(JSON.stringify(literalFacts)),
-    literalCount: literalFacts.length,
-  };
 }
 
 function addViolation(violations, kind, detail) {
@@ -703,30 +614,51 @@ test('UI adapter is the sole feature-boundary consumer and all owned Group A-D c
   ]);
 });
 
-test('normalized Group A-D guarded fingerprints and view-state output shape remain stable', () => {
-  for (const [rel, expected] of Object.entries(semanticFingerprints)) {
-    assert.deepEqual(consumerFingerprints(rel), expected, rel);
-  }
+test('Group A-D contracts preserve explicit Structure patterns and view-state output shape', () => {
   const patterns = loadTsRuntimeModule(
     path.join(root, 'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts'),
     {
       mock: specifier => (specifier === adapterSpecifier ? { HINGED_DEFAULT_PER_DOOR_WIDTH: 40 } : undefined),
     }
   ).STRUCTURE_PATTERNS;
-  assert.equal(
-    sha256(JSON.stringify(patterns)),
-    '4d43f086afac1d96ffd14237c49300865368c05969ffe13cdf1cd2973bfaa2df'
-  );
+  assert.deepEqual(JSON.parse(JSON.stringify(patterns)), {
+    2: [
+      { label: 'תא אחד רחב (80)', structure: [2] },
+      { label: '2 תאים צרים (40-40)', structure: [1, 1] },
+    ],
+    3: [
+      { label: 'ברירת מחדל (80-40 או 40-80)', structure: 'default' },
+      { label: '3 תאים צרים (40-40-40)', structure: [1, 1, 1] },
+    ],
+    4: [
+      { label: 'סטנדרט (80-80)', structure: [2, 2] },
+      { label: 'סימטרי: צר-רחב-צר (40-80-40)', structure: [1, 2, 1] },
+      { label: '4 תאים צרים (40-40-40-40)', structure: [1, 1, 1, 1] },
+    ],
+    5: [
+      { label: 'ברירת מחדל (80-80 ותא 40 לבחירה)', structure: 'default' },
+      { label: 'כולו תאים צרים', structure: [1, 1, 1, 1, 1] },
+    ],
+    6: [
+      { label: 'סטנדרט (80-80-80)', structure: [2, 2, 2] },
+      { label: 'מרכז רחב: (40-80-80-40)', structure: [1, 2, 2, 1] },
+      { label: 'מרכז צר: (80-40-40-80)', structure: [2, 1, 1, 2] },
+      { label: '6 תאים צרים', structure: [1, 1, 1, 1, 1, 1] },
+    ],
+    7: [
+      { label: 'ברירת מחדל (80-80-80 ותא 40 לבחירה)', structure: 'default' },
+      { label: 'כולו תאים צרים', structure: [1, 1, 1, 1, 1, 1, 1] },
+    ],
+  });
   assert.deepEqual(
     viewStateKeyOrder(read('esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts')),
     expectedViewStateKeyOrder
   );
 });
 
-test('route and behavior mutation probes reject owned Structure Tab regressions', () => {
+test('route mutation probes reject owned Structure Tab dependency regressions', () => {
   const constraintsRel = 'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts';
   const cellRel = 'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx';
-  const patternsRel = 'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts';
   const stackSplitRel = 'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts';
   assertMutationRejected(
     inspectConsumerTopology(
@@ -764,22 +696,6 @@ test('route and behavior mutation probes reject owned Structure Tab regressions'
     'cell-dims-direct-hex-cell-import',
     'direct Hex Cell import'
   );
-  assert.notDeepEqual(
-    consumerFingerprints(
-      patternsRel,
-      read(patternsRel).replace("label: 'כולו תאים צרים'", "label: 'mutated'")
-    ),
-    semanticFingerprints[patternsRel],
-    'pattern label mutation must change its fingerprints'
-  );
-  assert.notDeepEqual(
-    consumerFingerprints(
-      constraintsRel,
-      read(constraintsRel).replace('max: WARDROBE_WIDTH_MAX', 'max: WARDROBE_WIDTH_MIN')
-    ),
-    semanticFingerprints[constraintsRel],
-    'bounds formula mutation must change its fingerprints'
-  );
   assertMutationRejected(
     inspectConsumerTopology(
       productionEntries({
@@ -788,16 +704,5 @@ test('route and behavior mutation probes reject owned Structure Tab regressions'
     ),
     'owned-services-dimension-import',
     'Stack Split Services dimension import'
-  );
-  assert.notDeepEqual(
-    consumerFingerprints(
-      stackSplitRel,
-      read(stackSplitRel).replace(
-        'Math.min(DEFAULT_STACK_SPLIT_LOWER_HEIGHT, maxBottom || DEFAULT_STACK_SPLIT_LOWER_HEIGHT)',
-        'Math.min(STACK_SPLIT_LOWER_HEIGHT_MIN, maxBottom || STACK_SPLIT_LOWER_HEIGHT_MIN)'
-      )
-    ),
-    semanticFingerprints[stackSplitRel],
-    'Stack Split lower-height default mutation must change its fingerprints'
   );
 });

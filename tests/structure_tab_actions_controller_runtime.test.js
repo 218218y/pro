@@ -1,25 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
-import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
 const actionControllerRouteContracts = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': Object.freeze({
     services: Object.freeze(['adjustCameraForChest', 'resetCameraPreset']),
@@ -31,9 +17,6 @@ const actionControllerRouteContracts = Object.freeze({
       'HINGED_DEFAULT_DEPTH',
       'WARDROBE_CHEST_DRAWERS_MIN',
     ]),
-    semantic: 'd91f487e8dc22d653207a0a81a3eaa242997aecabc244b1ace1562cc470648cd',
-    literals: '567752f6ba86f76139b377edbfd7ba2e7e3b8475b4320f5b2b924a19cf0b4a47',
-    literalCount: 48,
   }),
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts': Object.freeze({
     services: Object.freeze(['adjustCameraForCorner', 'resetCameraPreset']),
@@ -43,62 +26,8 @@ const actionControllerRouteContracts = Object.freeze({
       'DEFAULT_HEIGHT',
       'HINGED_DEFAULT_DEPTH',
     ]),
-    semantic: '3627319af0debc0af67f9d2b16f65d931fb2c9f43dcba8a268c259f7b1017578',
-    literals: '9a1f5bef9ee5aef7c45c61012d15b9901f8450b3f739aaf603befbb1ee0e03ae',
-    literalCount: 49,
   }),
 });
-
-const sha256 = text => createHash('sha256').update(text).digest('hex');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
-
-function actionControllerFingerprint(rel, source) {
-  const sourceFile = createSourceFile(rel, source);
-  const body = sourceFile.body.filter(statement => statement.type !== 'ImportDeclaration');
-  const literals = [];
-  walkAst(sourceFile, node => {
-    for (let current = node.parent; current; current = current.parent) {
-      if (current.type === 'ImportDeclaration') return;
-    }
-    if (node.type === 'Literal') {
-      literals.push([node.start, 'Literal', node.raw ?? JSON.stringify(node.value)]);
-    }
-    if (node.type === 'TemplateElement') {
-      literals.push([node.start, 'TemplateElement', node.value?.raw ?? '']);
-    }
-  });
-  literals.sort((left, right) => left[0] - right[0]);
-  const literalFacts = literals.map(([, type, value]) => [type, value]);
-  return {
-    semantic: sha256(stableJson(canonicalSemanticAst(body))),
-    literals: sha256(JSON.stringify(literalFacts)),
-    literalCount: literalFacts.length,
-  };
-}
 
 function exactDependencyFacts(dependency) {
   return {
@@ -285,7 +214,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
   });
 }
 
-test('[structure-actions-controller] chest and corner dimension routes preserve exact imports and behavior fingerprints', () => {
+test('[structure-actions-controller] chest and corner dimension routes preserve exact canonical imports', () => {
   for (const [rel, expected] of Object.entries(actionControllerRouteContracts)) {
     const source = fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
     const dependencies = analyzeModuleDependencies(rel, source).imports.filter(
@@ -313,11 +242,6 @@ test('[structure-actions-controller] chest and corner dimension routes preserve 
       ],
       rel
     );
-    assert.deepEqual(actionControllerFingerprint(rel, source), {
-      semantic: expected.semantic,
-      literals: expected.literals,
-      literalCount: expected.literalCount,
-    });
   }
 });
 

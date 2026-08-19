@@ -143,7 +143,7 @@
     "report:css-style": "node tools/wp_generated_report_contract.mjs --write --only=css-style",
     "check:browser-security-headers": "node --test tests/browser_security_headers_guard.test.js",
     "check:builder-context-policy": "node tools/wp_builder_context_policy_audit.mjs",
-    "check:refactor-guardrails": "npm run check:docs-control-plane && npm run check:node-runtime && npm run check:esnext-target && npm run check:generated-reports && npm run check:site-profiles && npm run check:import-cycles && npm run check:private-owner-imports && npm run check:project-import-fixtures && npm run check:project-migration-boundary && npm run check:runtime-selector-policy && npm run check:html-sinks && npm run check:browser-security-headers && npm run check:css-style && npm run check:builder-context-policy && npm run check:builder-pipeline-contract && npm run check:features-public-api && npm run check:type-hardening && npm run check:ui-option-buttons && npm run check:ui-design-system && npm run check:ui-effect-cleanup && npm run check:canvas-hit-identity && npm run check:canvas-hit-parity && npm run check:cloud-sync-timers && npm run check:cloud-sync-races && npm run check:cloud-sync-owner-decomposition && npm run check:cloud-sync-offline-reconnect && npm run check:perf-hotpaths && npm run check:silent-catches && npm run check:domain-codecs && npm run check:contract-registry && npm run check:test-portfolio",
+    "check:refactor-guardrails": "npm run check:docs-control-plane && npm run check:node-runtime && npm run check:esnext-target && npm run check:generated-reports && npm run check:site-profiles && npm run check:import-cycles && npm run check:private-owner-imports && npm run check:project-import-fixtures && npm run check:project-migration-boundary && npm run check:runtime-selector-policy && npm run check:html-sinks && npm run check:browser-security-headers && npm run check:css-style && npm run check:builder-context-policy && npm run check:builder-pipeline-contract && npm run check:features-public-api && npm run check:type-hardening && npm run check:ui-option-buttons && npm run check:ui-design-system && npm run check:ui-effect-cleanup && npm run check:canvas-hit-identity && npm run check:canvas-hit-parity && npm run check:cloud-sync-timers && npm run check:cloud-sync-races && npm run check:cloud-sync-owner-decomposition && npm run check:cloud-sync-offline-reconnect && npm run check:perf-hotpaths && npm run check:silent-catches && npm run check:domain-codecs && npm run check:source-contract-quality && npm run check:contract-registry && npm run check:test-portfolio",
     "check:features-public-api": "node tools/wp_features_public_api_contract.mjs --check-docs",
     "report:features-public-api": "node tools/wp_generated_report_contract.mjs --write --only=features-public-api",
     "check:type-hardening": "node tools/wp_type_hardening_audit.mjs",
@@ -264,7 +264,8 @@
     "deps:update:oxc": "npm install --save-dev oxc-parser@0 && npm run deps:update:sync-generated && npm run deps:update:oxc:verify",
     "deps:update:oxc:verify": "npm run toolchain:version-policy && npm run lint:modern-readiness && node --test tests/wp_ast_adapter_runtime.test.js tests/wp_toolchain_version_policy_runtime.test.js tests/offline_repair_toolchain_contracts.test.js",
     "test:offline:dimension-composition-runtime": "python tools/run_offline_tsx_tests.py tests/dimension_composition_runtime.test.ts",
-    "check:domain-codecs": "node tools/wp_domain_codec_contract.mjs"
+    "check:domain-codecs": "node tools/wp_domain_codec_contract.mjs",
+    "check:source-contract-quality": "node tools/wp_source_contract_quality_audit.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
@@ -287,7 +288,7 @@
     "eslint": "^10.8.0",
     "html-minifier-terser": "^7.2.0",
     "javascript-obfuscator": "^5.3.0",
-    "oxc-parser": "^0.146.0",
+    "oxc-parser": "^0.145.0",
     "oxlint": "^1.79.0",
     "oxlint-tsgolint": "7.0.2001",
     "prettier": "^3.8.1",

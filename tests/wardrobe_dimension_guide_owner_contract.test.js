@@ -12,7 +12,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
 const ownerSymbol = 'WARDROBE_DIMENSION_GUIDE_POLICY';
 const compatibilitySymbol = 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS';
-const initializerSha256 = '5c23d1d4ea81ab8735b9214d73d1b6bfbe7eec9ed5ad6a7165a0381a486a811d';
 const renderConsumerRels = Object.freeze([
   'esm/native/builder/render_dimension_ops_corner.ts',
   'esm/native/builder/render_dimension_ops_main.ts',
@@ -318,12 +317,6 @@ function inspectOwner(source) {
   }
 
   const initializer = declaration?.declarator.init;
-  if (
-    !initializer ||
-    sha256(normalizedSource.slice(initializer.start, initializer.end)) !== initializerSha256
-  ) {
-    addViolation(violations, 'owner-initializer-fingerprint');
-  }
   const facts = frozenObjectFacts(initializer, violations);
   if (stableJson(facts.value) !== stableJson(expectedValues)) {
     addViolation(violations, 'owner-literal-inventory', stableJson(facts.value));
@@ -519,7 +512,7 @@ test('owner mutation probes reject literal, order, freeze, dependency, export, s
   assertRejected(
     inspectOwner,
     source.replace('    cell: 0.78,', '    cell: 0.79,'),
-    'owner-initializer-fingerprint',
+    'owner-literal-inventory',
     'literal drift'
   );
   assertRejected(

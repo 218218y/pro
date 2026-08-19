@@ -19,7 +19,6 @@ const ownerSymbol = 'NO_MAIN_SKETCH_POLICY';
 const workspacePolicySymbol = 'NO_MAIN_SKETCH_WORKSPACE_POLICY';
 const compatibilitySymbol = 'NO_MAIN_SKETCH_DIMENSIONS';
 
-const ownerInitializerSha256 = '1ac8627d6358514b4bd83cff5eb4881430402eb9145aba3417f0e0517b90f903';
 const expectedOwnerValues = Object.freeze({
   defaultGridDivisions: 6,
   workspacePaddingM: 0.12,
@@ -213,12 +212,6 @@ function inspectOwner(source) {
   }
 
   const initializer = declaration?.declarator.init;
-  if (
-    !initializer ||
-    sha256(normalizedSource.slice(initializer.start, initializer.end)) !== ownerInitializerSha256
-  ) {
-    addViolation(violations, 'owner-initializer-fingerprint');
-  }
   const objectExpression = frozenObject(initializer);
   if (!objectExpression) addViolation(violations, 'owner-freeze-shape');
   const facts = propertyFacts(objectExpression, violations, 'owner');

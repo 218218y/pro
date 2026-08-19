@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -90,19 +89,6 @@ const expectedReturnKeys = Object.freeze([
   'woodThick',
   'shelfThick',
 ]);
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -344,10 +330,7 @@ test('Build Flow Plan Inputs preserves resolver identity, owner fields, and Stac
 test('Build Flow Plan Inputs preserves numeric literals, public signature, and exact return-object keys', () => {
   const source = read(consumerRel);
   const facts = sourceFacts(createSourceFile(consumerRel, source));
-  assert.equal(
-    semanticSha256(facts.numericLiterals),
-    'a9a5be310da2f28e19da4ab9022634c4499b8547561f2c17727b9f2ac3c862d2'
-  );
+  assert.deepEqual(facts.numericLiterals, [0, 0, 0, 0, 0, 0, 0, 0, 0.001, 1, 1, 1, 100, 100, 100]);
   assert.ok(facts.exportedFunction);
   assert.equal(facts.exportedFunction.parent?.type, 'ExportNamedDeclaration');
   assert.deepEqual(facts.exportedFunction.params.map(identifierName), ['args']);

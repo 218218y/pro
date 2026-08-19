@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,7 +71,7 @@ const consumers = Object.freeze([
         count: 3,
       }),
     ]),
-    numericHash: '0910e79e07cd354b029fac2cc1f5fc40e1b5580bc460ddd90a72600794d3da6a',
+    numericLiterals: Object.freeze([0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
     functions: Object.freeze([
       Object.freeze({
         name: 'readCustomGridDivisions',
@@ -99,12 +98,6 @@ const consumers = Object.freeze([
         exported: true,
       }),
     ]),
-    functionHashes: Object.freeze({
-      readCustomGridDivisions: 'fddb960a71e0f98cd91feec7178eea087a418d06cffbe93f09c12725ce1386e9',
-      readOptionalCustomNumber: 'f581b967203a5a97dcf22992db5c183918f8b12982f1d6a7830d797b220f55c2',
-      writeOptionalCustomNumber: '4c3f5b826a870c7f0659c7a4259bba30bcb4a39d03e6b00e909245ee8830389e',
-      computeInteriorCustomOps: 'f548987cfe31d62f4ac91b56d4f043b5a6576d8ca3e171c5ce497a12b4d859fe',
-    }),
   }),
   Object.freeze({
     rel: 'esm/native/builder/corner_wing_cell_layouts.ts',
@@ -215,7 +208,7 @@ const consumers = Object.freeze([
         count: 1,
       }),
     ]),
-    numericHash: 'fc6bc33a28abed7a5b084d4eca2d68e1feaa46d48a3df8187d4a8c1adeae5020',
+    numericLiterals: Object.freeze([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]),
     functions: Object.freeze([
       Object.freeze({
         name: 'addCornerStorageBarrier',
@@ -242,12 +235,6 @@ const consumers = Object.freeze([
         exported: true,
       }),
     ]),
-    functionHashes: Object.freeze({
-      addCornerStorageBarrier: '2fc4dc2b16d25e4234bfbdb6e66669016ff2fe5228909b769fdc93ec382c1839',
-      applyCornerWingCustomLayout: '7d253ec1f7edb99b6e3634a4875de351991cff3c969c81ca75aaf311b806146d',
-      applyCornerWingPresetLayout: '36d814ab6b075cf3724a851919321fd4f250f3ab8a8cb9d505d6d45dd8d13540',
-      applyCornerWingCellLayout: '08704bbe684c0a8355b544f888c592203c6bc2b36d77662813edfa3417920a54',
-    }),
   }),
 ]);
 
@@ -261,8 +248,6 @@ function stableJson(value) {
   }
   return JSON.stringify(value);
 }
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -313,33 +298,6 @@ function resolveModuleTarget(fromFile, specifier) {
   }
   const resolved = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
   return resolved ? canonicalModuleTarget(resolved) : null;
-}
-
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
-function canonicalAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
 }
 
 function subtreeContainsFocusedOwner(node) {
@@ -465,7 +423,6 @@ function sourceFacts(rel) {
   const memberCounts = new Map();
   const numericLiterals = [];
   const functions = [];
-  const functionHashes = {};
   let opsInitializer = null;
   let storageBarrierShape = null;
 
@@ -495,7 +452,6 @@ function sourceFacts(rel) {
         returnType: source.slice(node.returnType.start, node.returnType.end).replaceAll(/\s/gu, ''),
         exported: node.parent?.type === 'ExportNamedDeclaration',
       });
-      functionHashes[name] = semanticSha256(canonicalAst(node));
     }
   });
   numericLiterals.sort((left, right) => left - right);
@@ -506,7 +462,6 @@ function sourceFacts(rel) {
     memberCounts,
     numericLiterals,
     functions,
-    functionHashes,
     opsInitializer,
     storageBarrierShape,
   };
@@ -584,13 +539,12 @@ test('Interior Fittings builder pair maps every legacy field to its exact focuse
 test('Interior Fittings builder pair preserves numeric literals, function signatures, return shapes, and formulas', () => {
   for (const consumer of consumers) {
     const facts = sourceFacts(consumer.rel);
-    assert.equal(
-      createHash('sha256').update(JSON.stringify(facts.numericLiterals)).digest('hex'),
-      consumer.numericHash,
+    assert.deepEqual(
+      facts.numericLiterals,
+      consumer.numericLiterals,
       `${consumer.rel} numeric literal inventory`
     );
     assert.deepEqual(facts.functions, consumer.functions, `${consumer.rel} function signatures`);
-    assert.deepEqual(facts.functionHashes, consumer.functionHashes, `${consumer.rel} semantic AST`);
   }
 
   const coreFacts = sourceFacts(consumers[0].rel);

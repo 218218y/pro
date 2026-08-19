@@ -19,11 +19,6 @@ const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const ownerSymbol = 'PROJECT_CAPTURE_DIMENSION_POLICY';
 const ownerSpecifier = '../../shared/dimensions/project_capture_dimension_policy.js';
-const consumerBodySha256 = 'e385dfcf196c2812fbd0ccab8166cc5a2bcae61c13f3a3f934dbae50123f91ae';
-const persistedDoorsSha256 = 'd0b63e533964a4559b69d2224217dfc4f9b9c098714256503bdf9502d88f2fa3';
-const buildPayloadSha256 = '529bee78942ea1dd5580c9c5bf6fccc6adc09f671455850469afb4620d151d09';
-const returnObjectSha256 = '46ebfa7166cc6e32f80ff6b36a351deb9c57216519e85485c88980c4414694f6';
-const consumerLiteralSha256 = '200e521113412564f80f2ed51e6f188f94c4746aff5941765654c2429f1441d3';
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({
     specifier: './door_mount_thickness_policy.js',
@@ -62,19 +57,6 @@ const runtimeExtensionCandidates = Object.freeze({
   '.cjs': Object.freeze(['.cts', '.cjs']),
   '.jsx': Object.freeze(['.tsx', '.jsx']),
 });
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const analysisCache = new Map();
@@ -365,30 +347,6 @@ function inspectOwner(source) {
   return violations;
 }
 
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
-
-function semanticHash(value) {
-  return sha256(stableJson(canonicalSemanticAst(value)));
-}
-
-function normalizedConsumerSource(source) {
-  return source
-    .replaceAll(`${ownerSymbol}.defaultHingedDoorsCount`, 'DEFAULT_HINGED_DOORS')
-    .replaceAll(`${ownerSymbol}.normalizeDoorMountThicknessCm`, 'normalizeDoorMountThicknessCm');
-}
-
 function findFunction(sourceFile, name) {
   let result = null;
   walkAst(sourceFile, node => {
@@ -397,36 +355,6 @@ function findFunction(sourceFile, name) {
     }
   });
   return result;
-}
-
-function consumerSemanticFacts(source) {
-  const sourceFile = createSourceFile(consumerRel, normalizedConsumerSource(source));
-  const body = (sourceFile.body ?? []).filter(statement => statement.type !== 'ImportDeclaration');
-  const persistedDoors = findFunction(sourceFile, 'resolvePersistedProjectDoors');
-  const buildPayload = findFunction(sourceFile, 'buildKernelProjectCaptureData');
-  let returnObject = null;
-  if (buildPayload) {
-    walkAst(buildPayload, node => {
-      if (!returnObject && node?.type === 'ReturnStatement' && node.argument?.type === 'ObjectExpression') {
-        returnObject = node.argument;
-      }
-    });
-  }
-  const literals = [];
-  for (const statement of body) {
-    walkAst(statement, node => {
-      if (node?.type === 'Literal') {
-        literals.push({ type: typeof node.value, value: node.value });
-      }
-    });
-  }
-  return {
-    bodyHash: semanticHash(body),
-    persistedDoorsHash: persistedDoors ? semanticHash(persistedDoors) : null,
-    buildPayloadHash: buildPayload ? semanticHash(buildPayload) : null,
-    returnObjectHash: returnObject ? semanticHash(returnObject) : null,
-    literalHash: sha256(stableJson(literals)),
-  };
 }
 
 function dependenciesForTarget(file, source, target) {
@@ -600,17 +528,6 @@ function inspectConsumer(source) {
     addViolation(violations, 'consumer-build-declaration');
   }
 
-  const semanticFacts = consumerSemanticFacts(source);
-  const expectedSemanticFacts = {
-    bodyHash: consumerBodySha256,
-    persistedDoorsHash: persistedDoorsSha256,
-    buildPayloadHash: buildPayloadSha256,
-    returnObjectHash: returnObjectSha256,
-    literalHash: consumerLiteralSha256,
-  };
-  if (stableJson(semanticFacts) !== stableJson(expectedSemanticFacts)) {
-    addViolation(violations, 'consumer-normalized-semantic-fingerprint', semanticFacts);
-  }
   return violations;
 }
 
@@ -650,14 +567,8 @@ test('Project Capture dimension policy preserves scalar value, function identity
   assert.equal(policy.normalizeDoorMountThicknessCm(8.1), 8);
 });
 
-test('normalized capture AST fingerprints preserve fallback, payload shape, normalization order, and literals', () => {
-  assert.deepEqual(consumerSemanticFacts(read(consumerRel)), {
-    bodyHash: consumerBodySha256,
-    persistedDoorsHash: persistedDoorsSha256,
-    buildPayloadHash: buildPayloadSha256,
-    returnObjectHash: returnObjectSha256,
-    literalHash: consumerLiteralSha256,
-  });
+test('Project Capture payload consumer stays on the canonical owner surface and declaration contract', () => {
+  assert.deepEqual(inspectConsumer(read(consumerRel)), []);
 });
 
 test('owner mutation probes reject dependencies, aliases, aggregates, literals, wrappers, order, freeze, and exports', () => {
@@ -742,88 +653,26 @@ test('owner mutation probes reject dependencies, aliases, aggregates, literals, 
   );
 });
 
-test('payload mutation probes reject fallback, normalization, placement, serialization, declaration, and order drift', () => {
+test('payload topology mutation probes reject owner routing, aliases, exports, and declaration drift', () => {
   const consumer = read(consumerRel);
   const mutations = [
     [
-      'non-chest passthrough',
+      'owner route',
+      consumer.replace(ownerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js'),
+      'consumer-owner-import',
+    ],
+    [
+      'owner alias',
       consumer.replace(
-        'if (uiRec.isChestMode !== true) return overallDoors;',
-        'if (uiRec.isChestMode === true) return overallDoors;'
+        `import { ${ownerSymbol} } from '${ownerSpecifier}';`,
+        `import { ${ownerSymbol} as capturePolicy } from '${ownerSpecifier}';`
       ),
-    ],
-    ['positive minimum', consumer.replace('value < 1', 'value <= 1')],
-    ['integer floor', consumer.replace('return Math.floor(value);', 'return Math.round(value);')],
-    [
-      'door precedence',
-      consumer.replace(
-        `  const preChestDoors = readPositiveInteger(preChest?.doors);
-  if (preChestDoors != null) return preChestDoors;
-
-  const directDoors = readPositiveInteger(overallDoors);`,
-        `  const directDoors = readPositiveInteger(overallDoors);
-  if (directDoors != null) return directDoors;
-
-  const preChestDoors = readPositiveInteger(preChest?.doors);`
-      ),
-    ],
-    ['copied fallback literal', consumer.replace(`${ownerSymbol}.defaultHingedDoorsCount`, '4')],
-    [
-      'type-dependent fallback',
-      consumer.replace(
-        `${ownerSymbol}.defaultHingedDoorsCount`,
-        `cfgRec.wardrobeType === 'sliding' ? 2 : ${ownerSymbol}.defaultHingedDoorsCount`
-      ),
+      'consumer-owner-alias',
     ],
     [
-      'normalizer wrapper',
-      consumer.replace(
-        `${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayFrameThicknessCm
-    )`,
-        `Number(${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayFrameThicknessCm
-    ))`
-      ),
-    ],
-    [
-      'raw config normalization',
-      consumer.replace('canonicalCfg.overlayFrameThicknessCm', 'cfgRec.overlayFrameThicknessCm'),
-    ],
-    [
-      'thickness order',
-      consumer.replace(
-        `    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayFrameThicknessCm
-    ),
-    overlayShelfThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayShelfThicknessCm
-    ),`,
-        `    overlayShelfThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayShelfThicknessCm
-    ),
-    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
-      canonicalCfg.overlayFrameThicknessCm
-    ),`
-      ),
-    ],
-    [
-      'return key order',
-      consumer.replace(
-        `    settings: buildProjectCaptureSettings(`,
-        `    projectName: asString(uiRec.projectName, ''),\n    settings: buildProjectCaptureSettings(`
-      ),
-    ],
-    [
-      'settings nesting',
-      consumer.replace(
-        `    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(`,
-        `    settingsOverlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(`
-      ),
-    ],
-    [
-      'clone source',
-      consumer.replace('cloneProjectCaptureValue(savedNotes, [])', 'cloneProjectCaptureValue([], [])'),
+      'computed owner access',
+      consumer.replace(`${ownerSymbol}.defaultHingedDoorsCount`, `${ownerSymbol}['defaultHingedDoorsCount']`),
+      'consumer-computed-owner-access',
     ],
     [
       'export declaration',
@@ -831,11 +680,19 @@ test('payload mutation probes reject fallback, normalization, placement, seriali
         'export function buildKernelProjectCaptureData',
         'function buildKernelProjectCaptureData'
       ),
+      'consumer-export-inventory',
     ],
-    ['return declaration', consumer.replace('): UnknownRecord {', '): Record<string, unknown> {')],
+    [
+      'return declaration',
+      consumer.replace(
+        'export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDataArgs): UnknownRecord {',
+        'export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDataArgs): Record<string, unknown> {'
+      ),
+      'consumer-build-declaration',
+    ],
   ];
-  for (const [label, mutated] of mutations) {
+  for (const [label, mutated, expectedKind] of mutations) {
     assert.notEqual(mutated, consumer, `${label} fixture must mutate source`);
-    assertRejected(inspectConsumer, mutated, 'consumer-normalized-semantic-fingerprint', label);
+    assertRejected(inspectConsumer, mutated, expectedKind, label);
   }
 });

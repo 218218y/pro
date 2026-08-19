@@ -40,7 +40,7 @@ test('quick action export buttons expose structured title and detail through the
   assert.match(tooltipPlacementSource, /const TOOLTIP_DETAIL_ATTR = 'data-tooltip-detail';/);
   assert.match(
     tooltipPlacementSource,
-    /type TooltipContent = \{[\s\S]*title\?: string;[\s\S]*detail\?: string;[\s\S]*rich: boolean;/
+    /type TooltipContent = \{[\s\S]*title\?: string \| undefined;[\s\S]*detail\?: string \| undefined;[\s\S]*rich: boolean;/
   );
   assert.match(
     tooltipPlacementSource,

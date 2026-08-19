@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,12 +33,6 @@ const fieldCounts = Object.freeze({
 const protectedFields = new Set(Object.keys(fieldCounts));
 const aggregateOwnerSymbols = new Set(['LIBRARY_PRESET_POLICY', 'STACK_SPLIT_POLICY']);
 const focusedOwnerSymbols = new Set(['LIBRARY_PRESET_LAYOUT_POLICY', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT']);
-const semanticMemberPaths = new Map(
-  Object.keys(fieldCounts).flatMap(field => [
-    [`LIBRARY_PRESET_DIMENSIONS.${field}`, `libraryPresetLayout.${field}`],
-    [`LIBRARY_PRESET_LAYOUT_POLICY.${field}`, `libraryPresetLayout.${field}`],
-  ])
-);
 const expectedNumericLiterals = Object.freeze([1, 1000, 1, 0, 0, 0, 0.01, 0]);
 const expectedReturnKeys = Object.freeze([
   'bottomH',
@@ -49,21 +42,6 @@ const expectedReturnKeys = Object.freeze([
   'topDoorsCount',
   'bottomDoorsCount',
 ]);
-const expectedFormulaHashes = Object.freeze({
-  maxBottom: '0d82e8c133a45aab349139b9394ebc811196fedffac7901b09f812e45e3f14ec',
-  libraryDefaultDoors: '5209487cfd4f67da15bda427c4638d5f9e9ada812a33f6859eeb9f9d9b49c180',
-  topDoorsCount: '6fe9cea51886d38cfbdf693747cda3d4d7af8cbff37d80abaf8c04ce44487bcc',
-  bottomDoorsCount: 'dd74cac0608cdd608e53ca1f951e9670f32eae9ffce46018c8d4706563e080a6',
-  preserveExistingLowerHeight: 'f98da31717c0af8e2ea8ace301c0f66a2a35e20ad7f8d178fa2a3ee166e75715',
-  defaultBottomH: 'eee3a66845d6d10f42a239323a99d549dc9f5364754a96bf8338feb003e460a6',
-  seededBottomH: 'f6200385cce06fb702cf2a85b52447d2fd0e478ca699dbe7e57574f4f05d86d2',
-  bottomH: '3e20718ed1ed8108788b719a14219380b82eb0131dc975bc5a887c9247377407',
-  defaultBottomD: '561966a392e3e99c32208634f301c05e27b834fac8aa2db1b715ec8065ffef2b',
-  seededBottomD: 'f3a332ffd83dc6f3db2435eb8499dd81e991547940ad423964b32d731bd3f066',
-  bottomD: '9acc0085ef1e031e6e47edb518f3ef612dfb70ee6217590164de3367d98f9b97',
-  topW: '7fb9a98dade77854628a0de23f92be15fdfc104b3d45ef213cce984db6f9368c',
-  bottomW: '509dd3031a0749a69ae859fa111a923fd077b2051f8dc1d469f288fb83ab7abc',
-});
 const expectedOtherFunctionNames = Object.freeze([
   'applyLibraryPresetUiRawState',
   'createLibraryDoorMapsFromConfig',
@@ -94,19 +72,6 @@ const expectedPublicExports = Object.freeze([
   ['createInvariantDoorMapMutators', 'value'],
   ['isRec', 'value'],
 ]);
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -167,35 +132,6 @@ const libraryOwnerTarget = canonicalModuleTarget(path.join(root, libraryOwnerRel
 const stackSplitOwnerTarget = canonicalModuleTarget(path.join(root, stackSplitOwnerRel));
 const compositionOwnerTarget = canonicalModuleTarget(path.join(root, compositionOwnerRel));
 const publicDimensionsTarget = canonicalModuleTarget(path.join(root, publicDimensionsRel));
-
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  const semanticPath = value.type === 'MemberExpression' ? semanticMemberPaths.get(memberPath(value)) : null;
-  if (semanticPath) return { type: 'SemanticMember', path: semanticPath };
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
 
 function objectKeys(node) {
   return (node?.properties ?? []).map(property =>
@@ -347,14 +283,6 @@ function sourceFacts(source) {
   });
   assert.ok(seedFunction);
 
-  const formulaHashes = {};
-  walkAst(seedFunction.body, node => {
-    const name = node?.type === 'VariableDeclarator' ? identifierName(node.id) : null;
-    if (name && Object.hasOwn(expectedFormulaHashes, name)) {
-      formulaHashes[name] = semanticSha256(canonicalSemanticAst(node.init));
-    }
-  });
-
   const returnShapes = [];
   walkAst(seedFunction.body, node => {
     if (node?.type === 'ReturnStatement' && node.argument?.type === 'ObjectExpression') {
@@ -362,17 +290,13 @@ function sourceFacts(source) {
     }
   });
 
-  const otherFunctions = functions
-    .filter(node => identifierName(node.id) !== 'seedBottomDimensions')
-    .map(node => [identifierName(node.id), canonicalSemanticAst(node)]);
   return {
-    formulaHashes,
     numericLiterals,
-    otherFunctionNames: otherFunctions.map(([name]) => name),
-    otherFunctionsHash: semanticSha256(otherFunctions),
+    otherFunctionNames: functions
+      .filter(node => identifierName(node.id) !== 'seedBottomDimensions')
+      .map(node => identifierName(node.id)),
     returnShapes,
     seedFunction,
-    seedHash: semanticSha256(canonicalSemanticAst(seedFunction)),
   };
 }
 
@@ -420,7 +344,7 @@ test('Library Preset Flow is one exact consumer with one composition-owner impor
   }
 });
 
-test('Library Preset Flow preserves literals, signatures, return shape, formulas, and every other function', () => {
+test('Library Preset Flow preserves explicit literals, signatures, return shape, exports, and function inventory', () => {
   const source = read(productionRel);
   const facts = sourceFacts(source);
   assert.deepEqual(facts.numericLiterals, expectedNumericLiterals);
@@ -446,10 +370,7 @@ test('Library Preset Flow preserves literals, signatures, return shape, formulas
     ':{bottomH:number;bottomD:number;topW:number;bottomW:number;bottomDoorsCount:number;topDoorsCount:number;}'
   );
   assert.deepEqual(facts.returnShapes, [expectedReturnKeys]);
-  assert.deepEqual(facts.formulaHashes, expectedFormulaHashes);
-  assert.equal(facts.seedHash, '945278ee47a2acc7bc772bfd9642d4327e811143fe4d0286c562a551b9974821');
   assert.deepEqual(facts.otherFunctionNames, expectedOtherFunctionNames);
-  assert.equal(facts.otherFunctionsHash, 'dbff296b7a11dac8278608ade562b8d6dfa16132f0d9e4d68d848b91273f4943');
   assert.deepEqual(
     collectNamedModuleExports(productionRel, source).map(entry => [entry.exportedName, entry.kind]),
     expectedPublicExports

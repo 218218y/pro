@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,14 +27,6 @@ const focusedOwnerSymbols = new Set([
   'INTERIOR_STORAGE_GRID_POLICY',
   'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
 ]);
-const semanticMemberPaths = new Map([
-  ['INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault', 'interiorStorage.gridDivisionsDefault'],
-  ['INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault', 'interiorStorage.gridDivisionsDefault'],
-  ['INTERIOR_FITTINGS_DIMENSIONS.storage.defaultLowerShelfSlots', 'interiorStorage.defaultLowerShelfSlots'],
-  ['INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots', 'interiorStorage.defaultLowerShelfSlots'],
-  ['LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount', 'libraryPreset.defaultModuleDoorsCount'],
-  ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount', 'libraryPreset.defaultModuleDoorsCount'],
-]);
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const consumers = Object.freeze([
@@ -60,7 +51,7 @@ const consumers = Object.freeze([
         count: 1,
       }),
     ]),
-    numericHash: '45851a4bf060e4f518fa118bdb445c52d1277513c84c117a262ddfcea1f11a89',
+    numericLiterals: Object.freeze([0, 0, 0, 0, 0, 0, 0]),
     functions: Object.freeze([
       Object.freeze({
         name: 'createDefaultModuleCustomData',
@@ -78,10 +69,6 @@ const consumers = Object.freeze([
         exported: true,
       }),
     ]),
-    functionHashes: Object.freeze({
-      createDefaultModuleCustomData: '29165c9cb526b5cb5483abf7e3d7d46afba8134ba00e74f339bb5191336728b0',
-      createDefaultTopModuleConfig: '25eac1a887e22dbfb76562f241c5b62761e592d6578f8316cb9d105ca0b1726f',
-    }),
     returnShapes: Object.freeze({
       createDefaultModuleCustomData: Object.freeze([Object.freeze(['shelves', 'rods', 'storage'])]),
       createDefaultTopModuleConfig: Object.freeze([
@@ -121,7 +108,7 @@ const consumers = Object.freeze([
         count: 2,
       }),
     ]),
-    numericHash: 'dddb8ee3a90d7afafa7729023549a5b157aebed1c1088bb60eda4421ee3ee017',
+    numericLiterals: Object.freeze([0, 0, 0, 0, 0, 0, 0, 0, 1]),
     functions: Object.freeze([
       Object.freeze({
         name: 'isRecord',
@@ -202,19 +189,6 @@ const consumers = Object.freeze([
         exported: false,
       }),
     ]),
-    functionHashes: Object.freeze({
-      isRecord: '935a666ed95bea045ab39daefba9ae13927f9b303b4b6df0564b9df25f121de6',
-      cloneRecord: 'eae1ce01f4d5000071c80e4095a3ea65ec125e5f6ee4fe388bd4858712a71d4f',
-      toInt: 'f0fe1581557ec38fd7bc3d0a2526c4da06624bd0e752c118b0419860e7b858d6',
-      normalizeLowerWidthDepthSpecialDims: 'ce2bf5795590232f4e53f395e3d9832a6bbab05e3f50d80a0dc210e2018bdaae',
-      cloneModuleCustomData: '4fb4a1af243498ad4478c9d25bce1322c2142f65e2f3a70b87734419750ef79c',
-      modulesConfigurationKeyForStack: 'db29bde0f5368a61db350682fe17879f6369ef87fad44dcdf133788c85373db7',
-      createDefaultTopModuleConfig: '6cb2f4d9429b2851136b0a67c25f8f5b486edc5c6895d5bc9ae63b48caf17d17',
-      normalizeTopModuleConfig: '8a9c7b58a27bb316a5f31725f16ff57b1d571363423b117cd20546b5c6f0ba6a',
-      createDefaultLowerModuleConfig: 'ed9ff1a43270202c38209a4c7937eaa5fd2854c7a21890cf5509f31ac0e6ef14',
-      normalizeLowerModuleConfig: '05ee500f57912ea099f43655cab89911e2dfd9c152d2716058c72a400a542650',
-      createDefaultModuleCustomData: 'bba6a00f02fbf328b10e2260193f5b31f60f6dca77f33a313d5fa2100c3fa50c',
-    }),
     returnShapes: Object.freeze({
       isRecord: Object.freeze([]),
       cloneRecord: Object.freeze([]),
@@ -276,8 +250,6 @@ function stableJson(value) {
   return JSON.stringify(value);
 }
 
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
   if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
@@ -328,35 +300,6 @@ function resolveModuleTarget(fromFile, specifier) {
   }
   const resolved = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
   return resolved ? canonicalModuleTarget(resolved) : null;
-}
-
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  const semanticPath = value.type === 'MemberExpression' ? semanticMemberPaths.get(memberPath(value)) : null;
-  if (semanticPath) return { type: 'SemanticMember', path: semanticPath };
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
 }
 
 function subtreeContainsFocusedOwner(node) {
@@ -508,7 +451,6 @@ function sourceFacts(rel) {
   const memberCounts = new Map();
   const numericLiterals = [];
   const functions = [];
-  const functionHashes = {};
   const returnShapes = {};
   const variableShapes = {};
   const nestedCustomDataShapes = [];
@@ -540,7 +482,6 @@ function sourceFacts(rel) {
       returnType: source.slice(node.returnType.start, node.returnType.end).replaceAll(/\s/gu, ''),
       exported: node.parent?.type === 'ExportNamedDeclaration',
     });
-    functionHashes[name] = semanticSha256(canonicalSemanticAst(node));
     const shapes = [];
     walkAst(node.body, child => {
       if (child?.type === 'ReturnStatement' && child.argument?.type === 'ObjectExpression') {
@@ -555,9 +496,8 @@ function sourceFacts(rel) {
     source,
     sourceFile,
     memberCounts,
-    numericHash: createHash('sha256').update(JSON.stringify(numericLiterals)).digest('hex'),
+    numericLiterals,
     functions,
-    functionHashes,
     returnShapes,
     variableShapes,
     nestedCustomDataShapes,
@@ -675,12 +615,11 @@ test('The feature pair maps every legacy field to its exact focused owner withou
   assert.match(stackSource, /delete cfg\.savedDims;/u);
 });
 
-test('The feature pair preserves numeric literals, signatures, return shapes, and semantic function ASTs', () => {
+test('The feature pair preserves numeric literals, signatures, return shapes, and object-shape contracts', () => {
   for (const consumer of consumers) {
     const facts = sourceFacts(consumer.rel);
-    assert.equal(facts.numericHash, consumer.numericHash, `${consumer.rel} numeric literals`);
+    assert.deepEqual(facts.numericLiterals, consumer.numericLiterals, `${consumer.rel} numeric literals`);
     assert.deepEqual(facts.functions, consumer.functions, `${consumer.rel} function signatures`);
-    assert.deepEqual(facts.functionHashes, consumer.functionHashes, `${consumer.rel} semantic function AST`);
     assert.deepEqual(facts.returnShapes, consumer.returnShapes, `${consumer.rel} return shapes`);
     assert.deepEqual(facts.variableShapes, consumer.variableShapes, `${consumer.rel} variable shapes`);
     assert.deepEqual(

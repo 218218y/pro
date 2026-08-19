@@ -48,6 +48,7 @@ function loadTsModule(relPath, calls, cache = new Map()) {
             minMirrorWidthCm: 20,
           },
         },
+        DEFAULT_STACK_SPLIT_LOWER_HEIGHT: 80,
         STACK_SPLIT_LOWER_DEPTH_MAX: 150,
         STACK_SPLIT_LOWER_DEPTH_MIN: 20,
         STACK_SPLIT_LOWER_DOORS_MAX: 20,
@@ -396,6 +397,41 @@ test('[structure-raw-mutations] stack-split lower doors preserves 0 as a real ma
       ui: { raw: { stackSplitLowerDoors: 0, stackSplitLowerDoorsManual: true } },
     })
   );
+});
+
+test('[stack-split] enabling with no authored lower height seeds the canonical 80cm default', () => {
+  const calls = [];
+  const mod = loadTsModule(
+    'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts',
+    calls
+  );
+
+  mod.toggleStackSplitState({
+    app: { id: 'app' },
+    meta: createMeta(),
+    stackSplitEnabled: false,
+    height: 240,
+    depth: 55,
+    width: 160,
+    doors: 4,
+    wardrobeType: 'hinged',
+    stackSplitLowerHeight: 0,
+    stackSplitLowerDepth: 0,
+    stackSplitLowerWidth: 0,
+    stackSplitLowerDoors: -1,
+    stackSplitLowerDepthManual: false,
+    stackSplitLowerWidthManual: false,
+    stackSplitLowerDoorsManual: false,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(batchCall[1].source, 'react:structure:stackSplit:on');
+  assert.equal(batchCall[1].uiPatch.stackSplitEnabled, true);
+  assert.equal(batchCall[1].uiPatch.raw.stackSplitLowerHeight, 80);
+  assert.equal(batchCall[1].uiPatch.raw.stackSplitLowerDepth, 50);
+  assert.equal(batchCall[1].uiPatch.raw.stackSplitLowerWidth, 160);
+  assert.equal(batchCall[1].uiPatch.raw.stackSplitLowerDoors, 4);
 });
 
 test('[stack-split] flags reader preserves lowerDoorsCount 0', () => {

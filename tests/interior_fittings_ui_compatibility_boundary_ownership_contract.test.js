@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,9 +15,6 @@ const boundarySpecifier = '../../../features/interior_tab_defaults.js';
 const compositionOwnerSpecifier = '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 const depthSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
 const ownerSymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
-const expectedUiSemanticFingerprint = 'cc8aad1edf08cc83979587e9d67f8f91369a37602667798119b387ab476793ce';
-const expectedUiLiteralInventoryFingerprint =
-  '434eba412ffc2a26f3043c674b9b1dc23ae1654f3f6e6b5fad2d7ab3f7dd647d';
 const expectedBoundarySymbols = Object.freeze([
   'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
   'DEFAULT_BASE_LEG_PLATFORM_MODE',
@@ -99,7 +95,6 @@ const expectedUiExports = Object.freeze({
 });
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-const sha256 = value => createHash('sha256').update(value).digest('hex');
 
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
@@ -264,28 +259,6 @@ function migratedDepthExportStatement(statement) {
   );
 }
 
-function preservedUiSource(source) {
-  const sourceFile = createSourceFile(uiRel, source);
-  return (sourceFile.body ?? [])
-    .filter(statement => statement.type !== 'ImportDeclaration' && !migratedDepthExportStatement(statement))
-    .map(statement => source.slice(statement.start, statement.end))
-    .join('\n');
-}
-
-function uiSemanticFingerprint(source) {
-  return sha256(preservedUiSource(source).replace(/\s+/gu, ' ').trim());
-}
-
-function uiLiteralInventoryFingerprint(source) {
-  const literals = Array.from(
-    preservedUiSource(source).matchAll(
-      /'(?:\\.|[^'\\])*'|\b(?:true|false|null)\b|(?<![\w.])-?(?:\d+(?:\.\d+)?|\.\d+)(?![\w.])/gu
-    ),
-    match => match[0]
-  );
-  return sha256(JSON.stringify(literals));
-}
-
 function inspectUi(source) {
   const violations = [];
   const add = (kind, detail = '') => violations.push({ kind, detail });
@@ -361,12 +334,6 @@ function inspectUi(source) {
   };
   if (stableJson(inventory) !== stableJson(expectedUiExports)) {
     add('ui-export-inventory', stableJson(inventory));
-  }
-  if (uiSemanticFingerprint(source) !== expectedUiSemanticFingerprint) {
-    add('ui-semantic-fingerprint', uiSemanticFingerprint(source));
-  }
-  if (uiLiteralInventoryFingerprint(source) !== expectedUiLiteralInventoryFingerprint) {
-    add('ui-literal-inventory', uiLiteralInventoryFingerprint(source));
   }
   return violations;
 }

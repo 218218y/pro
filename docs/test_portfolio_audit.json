@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-19T18:42:08.211Z",
+  "generatedAt": "2026-08-19T19:34:32.384Z",
   "totals": {
-    "tests": 1249,
-    "unitRunnerTests": 1240,
+    "tests": 1250,
+    "unitRunnerTests": 1241,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 38,
     "packageTestReferences": 16,
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 138
   },
   "categories": {
-    "contract": 395,
+    "contract": 396,
     "runtime-unit": 344,
     "integration": 471,
     "persistence-ingress": 23,
@@ -6969,6 +6969,10 @@
     {
       "file": "tests/smoke_checks_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/source_contract_quality_audit.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/stable_surface_methods_runtime.test.ts",
