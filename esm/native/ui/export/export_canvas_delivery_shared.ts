@@ -9,7 +9,29 @@ export interface CanvasExportOptions {
   toastClipboardBlocked?: string;
   confirmTitle?: string;
   confirmMsg?: string;
+  deferSecurityEncodingFailureToast?: boolean;
 }
+
+export type CanvasExportDeliveryResult =
+  | { ok: true; delivery: 'clipboard' | 'download' }
+  | {
+      ok: false;
+      stage: 'encoding';
+      reason: 'security';
+      error: unknown;
+    }
+  | {
+      ok: false;
+      stage: 'encoding';
+      reason: 'error';
+      error: unknown;
+    }
+  | {
+      ok: false;
+      stage: 'clipboard';
+      reason: 'unavailable' | 'error';
+      message?: string;
+    };
 
 type FailedResult = { ok: false; message?: string };
 type FailedClipboardResult = { ok: false; reason: 'unavailable' | 'error'; message?: string };
@@ -22,6 +44,12 @@ export function isFailedClipboardResult(value: { ok: boolean }): value is Failed
   return value.ok === false;
 }
 
+export function isCanvasExportSecurityFailure(
+  value: CanvasExportDeliveryResult
+): value is Extract<CanvasExportDeliveryResult, { ok: false; stage: 'encoding'; reason: 'security' }> {
+  return value.ok === false && value.stage === 'encoding' && value.reason === 'security';
+}
+
 export type NormalizedCanvasExportOptions = {
   mode: string;
   clipboardFailureMode: string;
@@ -32,6 +60,7 @@ export type NormalizedCanvasExportOptions = {
   toastClipboardBlocked: string;
   confirmTitle: string;
   confirmMsg: string;
+  deferSecurityEncodingFailureToast: boolean;
 };
 
 export function normalizeCanvasExportOptions(
@@ -60,6 +89,7 @@ export function normalizeCanvasExportOptions(
         : 'הדפדפן חסם את ההעתקה ללוח',
     confirmTitle:
       typeof o.confirmTitle === 'string' && o.confirmTitle.trim() ? o.confirmTitle : 'שגיאת העתקה',
+    deferSecurityEncodingFailureToast: o.deferSecurityEncodingFailureToast === true,
     confirmMsg:
       typeof o.confirmMsg === 'string' && o.confirmMsg.trim()
         ? o.confirmMsg

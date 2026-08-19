@@ -778,6 +778,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         burstyStepCount: 1,
         repeatedSourceCount: 0,
         dominantSourceSharePct: 67,
+        dominantSourceMs: 24,
         primaryBottleneck: 'duration-heavy',
         totalDurationMs: 440,
         totalSourceMs: 36,
@@ -1030,7 +1031,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Journey diagnosis/);
   assert.match(
     md,
-    /project-roundtrip: bottleneck=duration-heavy, burstySteps=1, repeatedSources=0, dominantSourceShare=67%, topStep=project\.save-load\.roundtrip, topSource=PATCH:actions\.project\.save:config\+meta, burstyStepNames=project\.save-load\.roundtrip/
+    /project-roundtrip: bottleneck=duration-heavy, burstySteps=1, repeatedSources=0, dominantSourceShare=67%, dominantSource=24ms, topStep=project\.save-load\.roundtrip, topSource=PATCH:actions\.project\.save:config\+meta, burstyStepNames=project\.save-load\.roundtrip/
   );
   assert.match(md, /Required customer journey coverage/);
   assert.match(md, /- none required/);
@@ -2219,7 +2220,7 @@ test('browser perf support rejects old baselines and enforces UX and code budget
   };
 
   const schemaFailures = evaluateBrowserPerfBaseline(result, { ...currentBaseline(), version: 18 });
-  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 27, got 18\)/.test(item)));
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 28, got 18\)/.test(item)));
 
   const uxFailures = evaluateBrowserPerfBaseline(
     result,
@@ -3332,6 +3333,7 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     burstyStepCount: 2,
     repeatedSourceCount: 1,
     dominantSourceSharePct: 61.25,
+    dominantSourceMs: 49,
     primaryBottleneck: 'selector-fanout',
     totalDurationMs: 1000,
     totalSourceMs: 80,
@@ -3394,9 +3396,59 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     }
   );
   assert.equal(clampedDiagnosis['tiny-source-journey'].dominantSourceSharePct, 100);
+  assert.equal(clampedDiagnosis['tiny-source-journey'].dominantSourceMs, 0.9);
   assert.equal(
     createUserJourneyDiagnosisBudget(clampedDiagnosis)['tiny-source-journey'].maxDominantSourceSharePct,
     100
+  );
+});
+
+test('browser perf dominant-source ratio is blocking only when total source time is material', () => {
+  const baseline = currentBaseline({
+    userJourneyDiagnosisBudget: {
+      'project-recovery-proveout': {
+        maxBurstyStepCount: 10,
+        maxRepeatedSourceCount: 10,
+        maxDominantSourceSharePct: 62,
+      },
+    },
+  });
+  const createResult = (dominantSourceMs, totalSourceMs) => ({
+    userFlow: {},
+    userFlowSteps: [],
+    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    projectActionEvents: [],
+    windowPerfEntries: [],
+    userJourneyDiagnosisSummary: {
+      'project-recovery-proveout': {
+        stepCount: 2,
+        burstyStepCount: 0,
+        repeatedSourceCount: 1,
+        dominantSourceSharePct: Number(((dominantSourceMs / totalSourceMs) * 100).toFixed(2)),
+        dominantSourceMs,
+        totalSourceMs,
+        totalDurationMs: 100,
+        primaryBottleneck: 'source-hotspot',
+        topSourceKey: 'PATCH:project:test',
+        topSourceTotalMs: dominantSourceMs,
+        topSources: ['PATCH:project:test'],
+        burstySteps: [],
+      },
+    },
+  });
+
+  const noiseFailures = evaluateBrowserPerfBaseline(createResult(6, 9), baseline);
+  assert.equal(
+    noiseFailures.some(item => /customer journey dominant-source share exceeded budget/.test(item)),
+    false,
+    '6ms of 9ms should remain report-only because the denominator is below materiality'
+  );
+
+  const hotspotFailures = evaluateBrowserPerfBaseline(createResult(30, 40), baseline);
+  assert.equal(
+    hotspotFailures.some(item => /customer journey dominant-source share exceeded budget/.test(item)),
+    true,
+    '30ms of 40ms should remain blocking because both the ratio and total source time are material'
   );
 });
 

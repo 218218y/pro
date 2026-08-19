@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../../types';
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
+import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
 import {
   captureFrontNotesTransform,
   drawExportHeader,
@@ -152,17 +153,18 @@ export function createExportRenderAndSketchWorkflow(
 
       try {
         const finalCanvas = await createComposite(true);
-        finalCanvas.toDataURL();
-        _handleCanvasExport(App, finalCanvas, 'wardrobe-render-sketch.png', {
+        const deliveryResult = await _handleCanvasExport(App, finalCanvas, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
           clipboardFailureMode: 'none',
+          deferSecurityEncodingFailureToast: true,
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
         });
+        if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
       } catch (err) {
         deps._reportExportRecovery(App, 'exportRenderAndSketch.retryWithoutLogo', err, { pass: 'logo' });
         if (deps.shouldFailFast(App)) throw err;
         const finalCanvasWithoutLogo = await createComposite(false);
-        _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
+        await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
           clipboardFailureMode: 'none',
           toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',

@@ -2,6 +2,7 @@ import type { AppContainer } from '../../../../types';
 import { syncCameraControlsForExportFrame } from './export_canvas_workflow_camera_sync.js';
 import { attachNotesSourceRect, readCanvasImageSourceRect } from './export_canvas_workflow_notes_rect.js';
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
+import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
 import { drawExportHeader, fillExportCanvasBackground } from './export_canvas_workflow_shared.js';
 
 export function createCopyToClipboardWorkflow(
@@ -80,15 +81,16 @@ export function createCopyToClipboardWorkflow(
 
     try {
       const canvasWithLogo = await createSingleCanvas(true);
-      canvasWithLogo.toDataURL();
-      _handleCanvasExport(App, canvasWithLogo, 'wardrobe-design.png', {
+      const deliveryResult = await _handleCanvasExport(App, canvasWithLogo, 'wardrobe-design.png', {
         mode: 'clipboard',
+        deferSecurityEncodingFailureToast: true,
       });
+      if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
     } catch (err) {
       deps._reportExportRecovery(App, 'copyToClipboard.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const canvasWithoutLogo = await createSingleCanvas(false);
-      _handleCanvasExport(App, canvasWithoutLogo, 'wardrobe-design.png', { mode: 'clipboard' });
+      await _handleCanvasExport(App, canvasWithoutLogo, 'wardrobe-design.png', { mode: 'clipboard' });
     } finally {
       restoreExportWall();
     }

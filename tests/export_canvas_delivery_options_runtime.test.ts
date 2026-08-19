@@ -8,13 +8,16 @@ test('canvas export normalizes clipboard failure policy through the canonical op
   assert.equal(defaults.mode, 'clipboard');
   assert.equal(defaults.clipboardFailureMode, 'download');
   assert.equal(defaults.allowDownloadOnClipboardFailure, true);
+  assert.equal(defaults.deferSecurityEncodingFailureToast, false);
 
   const noDownload = normalizeCanvasExportOptions({
     mode: 'clipboard',
     clipboardFailureMode: 'none',
+    deferSecurityEncodingFailureToast: true,
   });
   assert.equal(noDownload.clipboardFailureMode, 'none');
   assert.equal(noDownload.allowDownloadOnClipboardFailure, false);
+  assert.equal(noDownload.deferSecurityEncodingFailureToast, true);
 });
 
 test('canvas export ignores non-canonical clipboard failure option names', () => {

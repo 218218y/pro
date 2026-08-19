@@ -11,7 +11,7 @@ import {
   requiredUserJourneyMinimumStepCounts,
 } from '../tests/e2e/helpers/perf_contracts.js';
 
-export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 27;
+export const BROWSER_PERF_BASELINE_SCHEMA_VERSION = 28;
 export const BROWSER_PERF_MIN_MATERIAL_DRIFT_MS = 20;
 export const BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS = 20;
 export const BROWSER_PERF_DEV_MIN_MATERIAL_WALL_CLOCK_EXCESS_MS = 150;
@@ -1865,10 +1865,12 @@ export function createUserJourneyDiagnosisSummary(
     const rankedSources = rankJourneyStoreSources(journeySources[name], 3);
     const topSource = rankedSources[0] || null;
     const repeatedSourceCount = rankedSources.filter(source => (Number(source.stepCount) || 0) >= 2).length;
+    const totalSourceMs = Number(item?.totalSourceMs) || 0;
     const dominantSourceSharePct =
-      Number(item?.totalSourceMs) > 0 && topSource
-        ? roundDuration(Math.min(100, ((Number(topSource.totalMs) || 0) / Number(item.totalSourceMs)) * 100))
+      totalSourceMs > 0 && topSource
+        ? roundDuration(Math.min(100, ((Number(topSource.totalMs) || 0) / totalSourceMs) * 100))
         : 0;
+    const dominantSourceMs = roundDuration(Number(topSource?.totalMs) || 0);
     const commitCount = Number(item?.commitCount) || 0;
     const selectorFilteredCount = Number(item?.selectorFilteredCount) || 0;
     const selectorEvaluationCount = Number(item?.selectorEvaluationCount) || 0;
@@ -1883,7 +1885,11 @@ export function createUserJourneyDiagnosisSummary(
       primaryBottleneck = 'store-churn';
     } else if (selectorPressure >= Math.max(20, commitCount * 1.75)) {
       primaryBottleneck = 'selector-fanout';
-    } else if (dominantSourceSharePct >= 45 && (Number(topSource?.stepCount) || 0) >= 2) {
+    } else if (
+      totalSourceMs >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS &&
+      dominantSourceSharePct >= 45 &&
+      (Number(topSource?.stepCount) || 0) >= 2
+    ) {
       primaryBottleneck = 'source-hotspot';
     } else if (totalDurationMs >= Math.max(250, (Number(item?.totalSourceMs) || 0) * 3)) {
       primaryBottleneck = 'duration-heavy';
@@ -1893,9 +1899,10 @@ export function createUserJourneyDiagnosisSummary(
       burstyStepCount: burstyStepRows.length,
       repeatedSourceCount,
       dominantSourceSharePct,
+      dominantSourceMs,
       primaryBottleneck,
       totalDurationMs: roundDuration(totalDurationMs),
-      totalSourceMs: roundDuration(Number(item?.totalSourceMs) || 0),
+      totalSourceMs: roundDuration(totalSourceMs),
       commitCount,
       selectorFilteredCount,
       selectorEvaluationCount,
@@ -1932,6 +1939,7 @@ export function rankUserJourneyDiagnosis(summary, limit = 5) {
       burstyStepCount: Number(item?.burstyStepCount) || 0,
       repeatedSourceCount: Number(item?.repeatedSourceCount) || 0,
       dominantSourceSharePct: Number(item?.dominantSourceSharePct) || 0,
+      dominantSourceMs: Number(item?.dominantSourceMs) || 0,
       primaryBottleneck: item?.primaryBottleneck || 'balanced',
       totalDurationMs: Number(item?.totalDurationMs) || 0,
       totalSourceMs: Number(item?.totalSourceMs) || 0,
@@ -3401,7 +3409,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   } else {
     for (const item of userJourneyDiagnosisRows) {
       lines.push(
-        `- ${item.name}: bottleneck=${item.primaryBottleneck}, burstySteps=${item.burstyStepCount}, repeatedSources=${item.repeatedSourceCount}, dominantSourceShare=${Math.round(item.dominantSourceSharePct)}%, topStep=${item.topStepName || 'none'}, topSource=${item.topSourceKey || 'none'}, burstyStepNames=${item.burstySteps.join(', ') || 'none'}`
+        `- ${item.name}: bottleneck=${item.primaryBottleneck}, burstySteps=${item.burstyStepCount}, repeatedSources=${item.repeatedSourceCount}, dominantSourceShare=${Math.round(item.dominantSourceSharePct)}%, dominantSource=${formatMs(item.dominantSourceMs)}, topStep=${item.topStepName || 'none'}, topSource=${item.topSourceKey || 'none'}, burstyStepNames=${item.burstySteps.join(', ') || 'none'}`
       );
     }
   }
@@ -4015,7 +4023,8 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     const maxDominantSourceSharePct = Number(budgetItem.maxDominantSourceSharePct);
     if (
       Number.isFinite(maxDominantSourceSharePct) &&
-      (Number(item.dominantSourceSharePct) || 0) > maxDominantSourceSharePct
+      (Number(item.dominantSourceSharePct) || 0) > maxDominantSourceSharePct &&
+      (Number(item.totalSourceMs) || 0) >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS
     ) {
       failures.push(
         `${name} customer journey dominant-source share exceeded budget (${Math.round(Number(item.dominantSourceSharePct) || 0)}% > ${Math.round(maxDominantSourceSharePct)}%)`

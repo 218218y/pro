@@ -27,7 +27,7 @@ test('export canvas workflow factory exposes stable user-facing workflow surface
     getExportLogoImage: () => null,
     drawExportLogo: () => undefined,
     _createDomCanvas: () => ({ getContext: () => null }),
-    _handleCanvasExport: async () => undefined,
+    _handleCanvasExport: async () => ({ ok: true, delivery: 'clipboard' }),
     triggerCanvasDownloadViaBrowser: () => undefined,
     _setDoorsOpenForExport: async () => undefined,
     _setBodyDoorStatusForNotes: async () => undefined,

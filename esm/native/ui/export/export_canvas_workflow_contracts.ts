@@ -13,6 +13,7 @@ import type {
   ViewportRuntimeApplySketchModeOptions,
 } from '../../../../types';
 import type { NotesExportTransformLike } from './export_canvas_engine.js';
+import type { CanvasExportDeliveryResult, CanvasExportOptions } from './export_canvas_delivery_shared.js';
 
 export type RenderCoreLike = { renderer: RendererLike; scene: Object3DLike };
 export type CameraControlsLike = { camera: CameraLike; controls: ControlsLike };
@@ -72,8 +73,8 @@ export type ExportCanvasWorkflowDeps = {
     app: AppContainer,
     canvas: HTMLCanvasElement,
     filename: string,
-    opts: Record<string, unknown>
-  ) => void;
+    opts: Partial<CanvasExportOptions>
+  ) => Promise<CanvasExportDeliveryResult>;
   triggerCanvasDownloadViaBrowser: (
     app: AppContainer,
     canvas: HTMLCanvasElement,

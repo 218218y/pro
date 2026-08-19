@@ -166,7 +166,7 @@ function createWorkflowHarness(initial: {
     getExportLogoImage: () => null,
     drawExportLogo: () => undefined,
     _createDomCanvas: () => canvas,
-    _handleCanvasExport: () => undefined,
+    _handleCanvasExport: async () => ({ ok: true, delivery: 'clipboard' }),
     triggerCanvasDownloadViaBrowser: () => true,
     _setDoorsOpenForExport: (_app, open) => {
       App.doorsOpen = !!open;

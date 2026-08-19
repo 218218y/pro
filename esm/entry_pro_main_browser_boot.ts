@@ -11,6 +11,7 @@ import { installBrowserCspTelemetry } from './native/adapters/browser/csp_teleme
 import { getBootReactUiCallback } from './entry_pro_main_shared.js';
 
 type BootReporter = (err: unknown, meta: { op: string; phase?: string }) => void;
+type BootReactUiCallback = NonNullable<ReturnType<typeof getBootReactUiCallback>>;
 
 type BrowserBootSetupOpts = {
   app: AppContainer;
@@ -19,22 +20,27 @@ type BrowserBootSetupOpts = {
   report: BootReporter;
 };
 
-async function mountReactUi(app: AppContainer, _w: Window, doc: Document): Promise<void> {
-  const reactMod = await import('./native/ui/react/boot_react_ui.js');
-  const bootReactUi = getBootReactUiCallback(reactMod, 'bootReactUi');
-  if (!bootReactUi) {
-    throw new Error('[WardrobePro][React] bootReactUi export is missing.');
+async function loadBootReactUi(app: AppContainer): Promise<BootReactUiCallback> {
+  const perfSpanId = startPerfSpan(app, 'boot.browser.react-module-load');
+  try {
+    const reactMod = await import('./native/ui/react/boot_react_ui.js');
+    const bootReactUi = getBootReactUiCallback(reactMod, 'bootReactUi');
+    if (!bootReactUi) {
+      throw new Error('[WardrobePro][React] bootReactUi export is missing.');
+    }
+    endPerfSpan(app, perfSpanId);
+    return bootReactUi;
+  } catch (error) {
+    endPerfSpan(app, perfSpanId, { status: 'error', error });
+    throw error;
   }
-  bootReactUi({
-    app,
-    document: doc,
-  });
 }
 
 export async function runBrowserBootSetup(opts: BrowserBootSetupOpts): Promise<void> {
   const { app: bootApp, window: bootWindow, document: bootDocument, report } = opts;
   installBrowserCspTelemetry(bootWindow, bootDocument);
   installObservabilityForBuild(bootApp, bootWindow);
+  const bootReactUi = bootWindow && bootDocument ? await loadBootReactUi(bootApp) : null;
   const perfSpanId = startPerfSpan(bootApp, 'boot.browser.setup');
   try {
     await runBrowserBootRuntime({
@@ -42,7 +48,11 @@ export async function runBrowserBootSetup(opts: BrowserBootSetupOpts): Promise<v
       window: bootWindow,
       document: bootDocument,
       report,
-      mountReactUi,
+      mountReactUi: bootReactUi
+        ? (app, _win, doc) => {
+            bootReactUi({ app, document: doc });
+          }
+        : null,
       startBootUi: true,
       installBeforeUnloadGuard: true,
     });

@@ -37,6 +37,7 @@ import {
   ].map(path => ({ path, source: readSource(path, import.meta.url) }));
 
   const entryMainOwner = readSource('../esm/entry_pro_main.ts', import.meta.url);
+  const entryBrowserBootOwner = readSource('../esm/entry_pro_main_browser_boot.ts', import.meta.url);
   const entryMainBundle = bundleSources(
     [
       '../esm/entry_pro_main.ts',
@@ -276,6 +277,22 @@ import {
       [/export default\s+/],
       'entry/runtime boot surfaces named-only'
     );
+  });
+
+  test('[app-boot-project-family] dev React module loading is measured outside browser setup', () => {
+    assert.match(entryBrowserBootOwner, /boot\.browser\.react-module-load/);
+    assert.match(entryBrowserBootOwner, /await loadBootReactUi\(bootApp\)/);
+
+    const moduleLoadIndex = entryBrowserBootOwner.indexOf('await loadBootReactUi(bootApp)');
+    const setupSpanIndex = entryBrowserBootOwner.indexOf("startPerfSpan(bootApp, 'boot.browser.setup')");
+    assert.ok(moduleLoadIndex >= 0, 'dev boot must await the React module load');
+    assert.ok(setupSpanIndex > moduleLoadIndex, 'boot.browser.setup must begin after module loading settles');
+
+    assert.match(
+      releaseMainOwner,
+      /import \{ bootReactUi \} from '.\/native\/ui\/react\/boot_react_ui\.js';/
+    );
+    assert.doesNotMatch(releaseMainOwner, /boot\.browser\.react-module-load/);
   });
 
   test('[app-boot-project-family] React shell mounts are canonical, exclusive, and fail fast', () => {
