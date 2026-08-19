@@ -723,6 +723,7 @@ import {
   ].join('\n');
   const primaryMode = readSource('../esm/native/ui/primary_mode.ts', import.meta.url);
   const projectPanel = readSource('../esm/native/ui/react/panels/ProjectPanel.tsx', import.meta.url);
+  assert.match(projectPanel, /meta\.uiOnly\(undefined, 'react:project:name'\)/);
   const sidebarHeader = readSource('../esm/native/ui/react/sidebar_header.tsx', import.meta.url);
   const cloudSyncPanel = readSource('../esm/native/ui/react/panels/CloudSyncPanel.tsx', import.meta.url);
   const quickActionsDock = readSource(
@@ -1099,10 +1100,40 @@ import {
     assert.match(browserPerfSmoke, /__WP_PROJECT_ACTION_EVENTS_GENERATION__/);
     assert.match(browserPerfSmoke, /eventSessionId: `\$\{sessionId\}:project-actions:\$\{eventGeneration\}`/);
     assert.match(browserPerfSmoke, /const sessionId = String\(timeOrigin\)/);
+    const restoreScenarioSource = browserPerfSmoke.match(
+      /async function prepareRestoreLastSessionScenario\([\s\S]*?(?=async function confirmRestoreLastSessionModalWithAutosave)/
+    )?.[0];
+    assert.ok(restoreScenarioSource, 'restore-last-session perf setup owner should stay present');
+    assert.match(
+      restoreScenarioSource,
+      /seedAutosaveStorage\(page, savedProjectPath\);[\s\S]*?await page\.reload\(\{ waitUntil: 'domcontentloaded' \}\);[\s\S]*?await installProjectActionRecorder\(page\)[\s\S]*?await restoreNameInput\.fill\(mutatedProjectName\);[\s\S]*?await restoreNameInput\.blur\(\);[\s\S]*?await expect\(restoreNameInput\)\.toHaveValue\(mutatedProjectName\);[\s\S]*?await seedAutosaveStorage\(page, savedProjectPath\);[\s\S]*?return restoreNameInput;/
+    );
+    assert.doesNotMatch(restoreScenarioSource, /waitForAutosaveProjectName\(/);
     assert.match(
       browserPerfSmoke,
-      /seedAutosaveStorage\(page, savedProjectPath\);[\s\S]*?await page\.reload\(\{ waitUntil: 'domcontentloaded' \}\);[\s\S]*?await installProjectActionRecorder\(page\)/
+      /const restoreNameInput = await prepareRestoreLastSessionScenario\([\s\S]*?savedProjectPath[\s\S]*?\);[\s\S]*?await withStep\([\s\S]*?'project\.restore-last-session'/
     );
+    assert.match(
+      browserPerfSmoke,
+      /async function waitForAutosaveProjectName\([\s\S]*?expect[\s\S]*?\.poll\([\s\S]*?readAutosaveProjectName\(page\)[\s\S]*?\.toBe\(expectedProjectName\)/
+    );
+    assert.doesNotMatch(
+      browserPerfSmoke,
+      /fillProjectNameViaActiveInput\(page, recoveryDriftName\);\s*await waitForAutosaveProjectName/
+    );
+    assert.doesNotMatch(
+      browserPerfSmoke,
+      /fillProjectNameViaActiveInput\(page, stableDriftName\);\s*await waitForAutosaveProjectName/
+    );
+    assert.doesNotMatch(
+      browserPerfSmoke,
+      /fillProjectNameViaActiveInput\(page, cleanWindowDriftName\);\s*await waitForAutosaveProjectName/
+    );
+    assert.match(
+      browserPerfSmoke,
+      /const persistenceRestoreDriftName = await mutateAwayFromSavedState\('persistence-restore-drift'\);\s*await waitForAutosaveProjectName\(page, persistenceRestoreDriftName\)/
+    );
+    assert.doesNotMatch(browserPerfSmoke, /AUTOSAVE_SETTLE_MS|waitForAutosaveToSettle/);
     assert.match(browserPerfSmoke, /withMergedSavedColorValues\(/);
     assert.match(browserPerfSmoke, /#room=\$\{encodeURIComponent\(browserPerfRoomId\)\}&roomToken=/);
     assert.doesNotMatch(browserPerfSmoke, /index_pro\.html\?room=/);

@@ -348,7 +348,6 @@ async function installCloudSyncGatewayIsolation(context) {
 const BOOT_READY_TIMEOUT_MS = 45000;
 const BOOT_READY_POLL_MS = 250;
 const BOOT_OVERLAY_IDS = ['wpFatalOverlay', 'wpBootFatalOverlay', 'wp-fatal-overlay'];
-const AUTOSAVE_SETTLE_MS = 5000;
 
 function formatRuntimeIssueLines(runtimeIssues = {}) {
   const pageErrors = Array.isArray(runtimeIssues?.pageErrors) ? runtimeIssues.pageErrors.filter(Boolean) : [];
@@ -1014,8 +1013,23 @@ async function waitForUiSettledAfterProjectAction(page) {
   );
 }
 
-async function waitForAutosaveToSettle(page) {
-  await page.waitForTimeout(AUTOSAVE_SETTLE_MS);
+async function readAutosaveProjectName(page) {
+  return await page.evaluate(() => {
+    const raw = window.localStorage.getItem('wardrobe_autosave_latest');
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return typeof parsed?.projectName === 'string' ? parsed.projectName : null;
+    } catch {
+      return null;
+    }
+  });
+}
+
+async function waitForAutosaveProjectName(page, expectedProjectName, timeoutMs = 8000) {
+  await expect
+    .poll(async () => await readAutosaveProjectName(page), { timeout: timeoutMs })
+    .toBe(expectedProjectName);
 }
 
 async function installClipboardCapture(page) {
@@ -2109,7 +2123,8 @@ async function runProjectPersistenceRecoveryBurst(
   async function mutateAwayFromSavedState(seed) {
     await openMainTab(page, 'structure');
     const nameInput = getVisibleProjectNameInput(page);
-    await nameInput.fill(`${savedName} ${seed}`);
+    const mutatedProjectName = `${savedName} ${seed}`;
+    await nameInput.fill(mutatedProjectName);
     await nameInput.blur();
     if (expectedCabinetCoreState) {
       await setStructureDimension(page, 'width', Math.max(90, Number(expectedCabinetCoreState.width) + 11));
@@ -2122,6 +2137,7 @@ async function runProjectPersistenceRecoveryBurst(
       .slice(-6)}`;
     const savedColorValue = await addSavedDesignColor(page, tempColor);
     await expect(getSavedDesignColorSwatch(page, savedColorValue)).toHaveCount(1);
+    return mutatedProjectName;
   }
 
   await mutateAwayFromSavedState('persistence-load-drift');
@@ -2135,8 +2151,8 @@ async function runProjectPersistenceRecoveryBurst(
   await openMainTab(page, 'structure');
   await expect(getVisibleProjectNameInput(page)).toHaveValue(savedName);
 
-  await mutateAwayFromSavedState('persistence-restore-drift');
-  await waitForAutosaveToSettle(page);
+  const persistenceRestoreDriftName = await mutateAwayFromSavedState('persistence-restore-drift');
+  await waitForAutosaveProjectName(page, persistenceRestoreDriftName);
   await seedAutosaveStorage(page, savedProjectPath);
   const restoreEventPromise = waitForProjectAction(page, 'restore-last-session');
   await openMainTab(page, 'structure');
@@ -2166,6 +2182,27 @@ async function importSettingsBackupFromFile(page, filePath) {
 async function seedAutosaveStorage(page, filePath) {
   const payloadText = fs.readFileSync(filePath, 'utf8');
   await page.evaluate(text => window.localStorage.setItem('wardrobe_autosave_latest', text), payloadText);
+}
+
+async function prepareRestoreLastSessionScenario(page, result, savedProjectPath) {
+  if (!savedProjectPath) throw new Error('Saved project file missing before restore-last-session');
+  await seedAutosaveStorage(page, savedProjectPath);
+  // Recovery setup must exercise a fresh document, but reload/boot/autosave preparation is not
+  // part of the restore interaction budget itself.
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await installProjectActionRecorder(page);
+  await waitForBootReadiness(page, result);
+  await openMainTab(page, 'structure');
+
+  const restoreNameInput = getVisibleProjectNameInput(page);
+  const mutatedProjectName = `Mutated ${Date.now()}`;
+  await restoreNameInput.fill(mutatedProjectName);
+  await restoreNameInput.blur();
+  await expect(restoreNameInput).toHaveValue(mutatedProjectName);
+  // Project-name commits are intentionally uiOnly/noAutosave. Keep the seeded autosave
+  // authoritative while the live UI drifts, then measure restoring that saved snapshot.
+  await seedAutosaveStorage(page, savedProjectPath);
+  return restoreNameInput;
 }
 
 async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
@@ -2979,23 +3016,13 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
 
     await captureSessionArtifacts(page, result);
 
+    const restoreNameInput = await prepareRestoreLastSessionScenario(page, result, savedProjectPath);
+
     await withStep(
       result,
       page,
       'project.restore-last-session',
       async () => {
-        if (!savedProjectPath) throw new Error('Saved project file missing before restore-last-session');
-        await seedAutosaveStorage(page, savedProjectPath);
-        // Recovery must exercise a fresh document; same-URL navigation may reuse the active document.
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        await installProjectActionRecorder(page);
-        await waitForBootReadiness(page, result);
-        await openMainTab(page, 'structure');
-        const restoreNameInput = getVisibleProjectNameInput(page);
-        await restoreNameInput.fill(`Mutated ${Date.now()}`);
-        await restoreNameInput.blur();
-        await waitForAutosaveToSettle(page);
-        await seedAutosaveStorage(page, savedProjectPath);
         const beforeCount = (await readPerfSummary(page))['project.restoreLastSession']?.count || 0;
         const restoreEventPromise = waitForProjectAction(page, 'restore-last-session');
         await openMainTab(page, 'structure');
@@ -3182,8 +3209,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
         );
 
         await seedAutosaveStorage(page, savedProjectPath);
-        await fillProjectNameViaActiveInput(page, `${changedName} Restore Recovery`);
-        await waitForAutosaveToSettle(page);
+        const recoveryDriftName = `${changedName} Restore Recovery`;
+        await fillProjectNameViaActiveInput(page, recoveryDriftName);
         await seedAutosaveStorage(page, savedProjectPath);
         const recoveryRestoreEventPromise = waitForProjectAction(page, 'restore-last-session');
         await openMainTab(page, 'structure');
@@ -3203,8 +3230,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           'A restore-last-session after a missing-autosave no-op should recover the saved project state once autosave returns'
         );
 
-        await fillProjectNameViaActiveInput(page, `${changedName} Restore Stable`);
-        await waitForAutosaveToSettle(page);
+        const stableDriftName = `${changedName} Restore Stable`;
+        await fillProjectNameViaActiveInput(page, stableDriftName);
         await seedAutosaveStorage(page, savedProjectPath);
         const stableRestoreEventPromise = waitForProjectAction(page, 'restore-last-session');
         await openMainTab(page, 'structure');
@@ -3224,8 +3251,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           'Repeated restore-last-session after recovery should remain stable and preserve the saved project state'
         );
 
-        await fillProjectNameViaActiveInput(page, `${changedName} Restore Clean Window`);
-        await waitForAutosaveToSettle(page);
+        const cleanWindowDriftName = `${changedName} Restore Clean Window`;
+        await fillProjectNameViaActiveInput(page, cleanWindowDriftName);
         await seedAutosaveStorage(page, savedProjectPath);
         const cleanRestoreEventPromise = waitForProjectAction(page, 'restore-last-session');
         await openMainTab(page, 'structure');
