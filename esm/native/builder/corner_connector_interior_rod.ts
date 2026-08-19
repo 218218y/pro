@@ -24,6 +24,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
   const {
     App,
     THREE,
+    roomArchitecturePlan,
     woodThick,
     startY,
     wingH,
@@ -106,6 +107,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
       try {
         emitRealisticHanger((ax + bx) / 2, yPos, (az + bz) / 2, cornerGroup, len, {
           showHangerEnabled: true,
+          roomArchitecturePlan,
           sketchMode: __sketchMode,
           addOutlines,
         });
@@ -150,6 +152,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
           {
             showContentsEnabled: showContentsEnabled === true,
             doorStyle,
+            roomArchitecturePlan,
             sketchMode: __sketchMode,
             addOutlines,
           }

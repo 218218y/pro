@@ -70,7 +70,8 @@ function resolveCarcassRuntime(args: ResolveCarcassRuntimeArgs): RenderCarcassRu
   const THREE = __readThreeCtorLike(args.__three(ctx.THREE));
   const App = ctx.App || args.App;
   const wardrobeGroup = App ? __readGroupLike(args.__wardrobeGroup(App)) : null;
-  if (!THREE || !App || !wardrobeGroup) return null;
+  const roomArchitecturePlan = ctx.roomArchitecturePlan;
+  if (!THREE || !App || !wardrobeGroup || !roomArchitecturePlan) return null;
 
   return {
     App,
@@ -82,5 +83,6 @@ function resolveCarcassRuntime(args: ResolveCarcassRuntimeArgs): RenderCarcassRu
     sketchMode: !!ctx.__sketchMode,
     reg: args.deps.reg,
     renderOpsHandleCatch: args.__renderOpsHandleCatch,
+    roomArchitecturePlan,
   };
 }

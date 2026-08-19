@@ -7,6 +7,7 @@ import {
   SKETCH_BOX_ROD_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 import { renderSketchBoxContentRods } from '../esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import {
   pickSketchBoxSegment,
   pickSketchBoxVerticalSegment,
@@ -96,6 +97,13 @@ function renderRods(options: {
   rootState?: unknown;
 }) {
   const added: FakeMesh[] = [];
+  const rootState = options.rootState ?? {
+    ui: { raw: { width: 100, height: 240, depth: 60 } },
+    config: { roomArchitecture: { backWall: { enabled: false } } },
+    runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+  };
+  const App = { store: { getState: () => rootState, patch() {} } };
+  const roomArchitecturePlan = createRoomArchitecturePlanFromApp(App as never);
   renderSketchBoxContentRods({
     shell: {
       box: { rods: options.rods ?? [] },
@@ -131,16 +139,8 @@ function renderRods(options: {
       throw new Error('unused');
     },
     args: {
-      App: {
-        store: {
-          getState: () =>
-            options.rootState ?? {
-              ui: { raw: { width: 100, height: 240, depth: 60 } },
-              config: { roomArchitecture: { backWall: { enabled: false } } },
-              runtime: { wardrobeWidthM: 1, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
-            },
-        },
-      },
+      App,
+      input: { roomArchitecturePlan },
       group: { add: (mesh: FakeMesh) => added.push(mesh) },
       woodThick: options.woodThick ?? 0.02,
       THREE: options.three ?? undefined,

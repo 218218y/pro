@@ -55,6 +55,7 @@ export function applyCustomInteriorLayout(
     renderedCustom =
       renderOps.applyInteriorCustomOps?.({
         THREE: input.THREE,
+        roomArchitecturePlan: input.roomArchitecturePlan,
         cfg: input.cfg,
         moduleKey: input.moduleKey,
         getPartMaterial: input.getPartMaterial,

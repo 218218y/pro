@@ -4,6 +4,7 @@ import type {
   BuilderCalculateModuleStructureFn,
   BuilderDoorStateAccessorsLike,
   ProjectSavedNotesLike,
+  RoomArchitecturePlan,
 } from '../../../types';
 import type { GetMaterialFn } from './build_flow_readers.js';
 import type { BuildFlowPlan } from './build_flow_plan.js';
@@ -36,6 +37,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
   isRemoveDoorMode: boolean;
   removeDoorsEnabled: boolean;
   notesToPreserve: ProjectSavedNotesLike | null;
+  roomArchitecturePlan: RoomArchitecturePlan;
   runSplitBuild?: typeof buildStackSplitLowerUnit;
 }): BuildWardrobeSplitMetrics {
   const {
@@ -51,6 +53,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     isRemoveDoorMode,
     removeDoorsEnabled,
     notesToPreserve,
+    roomArchitecturePlan,
     runSplitBuild = buildStackSplitLowerUnit,
   } = args;
 
@@ -174,6 +177,7 @@ export function resolveBuildWardrobeSplitMetrics(args: {
     showToast,
     calculateModuleStructure: calculateModuleStructureFn,
     notesToPreserve,
+    roomArchitecturePlan,
   };
 
   const splitBuild = runSplitBuild(splitBuildArgs);

@@ -90,6 +90,7 @@ export const buildCornerWing = (
   const emitCtx = createCornerWingEmitContext({
     App,
     THREE,
+    roomArchitecturePlan: meta.roomArchitecturePlan,
     mainW,
     mainH,
     mainD,

@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownCallable } from '../../../types';
+import type { AppContainer, RoomArchitecturePlan, UnknownCallable } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type {
   InteriorGeometryLike,
@@ -21,6 +21,7 @@ import {
 } from './render_interior_ops_index_contracts.js';
 
 export type InteriorCustomInput = InteriorValueRecord & {
+  roomArchitecturePlan?: RoomArchitecturePlan;
   THREE?: unknown;
   customOps?: InteriorValueRecord | null;
   ops?: InteriorValueRecord | null;

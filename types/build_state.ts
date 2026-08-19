@@ -2,7 +2,7 @@
 // Split from ./build.ts into domain-focused seams to keep the public type surface stable while reducing monolith churn.
 
 import type { UnknownRecord } from './common';
-import type { RoomArchitectureConfigLike } from './room_architecture';
+import type { RoomArchitectureConfigLike, RoomArchitecturePlan } from './room_architecture';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
 import type { BoardMaterial, DoorMountMode, DrawerRunnerType, HandleType, WardrobeType } from './domain';
@@ -339,6 +339,11 @@ export interface BuildCtxLayoutLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
+export interface BuildCtxRoomLike extends UnknownRecord {
+  architecturePlan?: RoomArchitecturePlan;
+  [k: string]: unknown;
+}
+
 export interface BuildCtxMaterialsLike extends UnknownRecord {
   colorHex?: string;
   useTexture?: boolean;
@@ -430,6 +435,7 @@ export interface BuildContextLike extends UnknownRecord {
   strings?: BuildCtxStringsLike;
   layout?: BuildCtxLayoutLike;
   materials?: BuildCtxMaterialsLike;
+  room?: BuildCtxRoomLike;
   create?: BuildCtxCreateFnsLike;
   resolvers?: BuildCtxResolversLike;
   hinged?: BuildCtxHingedLike;

@@ -11,6 +11,7 @@ import {
 import { INTERIOR_FITTINGS_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { createSketchInteriorHarness, FakeMaterial } from './sketch_box_runtime_helpers.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 
 class FakeVector3 {
   x = 0;
@@ -72,9 +73,19 @@ class FakeBoxGeometry {
 
 test('render interior sketch support clamps placement, emits shelf pins, and keeps brace side seams disabled', () => {
   const added: any[] = [];
-  const App: any = { __matCache: {} };
+  const App: any = {
+    __matCache: {},
+    store: {
+      getState: () => ({
+        config: {},
+        ui: { raw: { width: 240, height: 240, depth: 60 } },
+        runtime: { wardrobeWidthM: 2.4, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+      }),
+    },
+  };
   const support = createInteriorSketchPlacementSupport({
     App,
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
     group: {
       add(obj: unknown) {
         added.push(obj);
@@ -161,6 +172,7 @@ test('render interior sketch shelf pins omit only supports that collide with the
   };
   const support = createInteriorSketchPlacementSupport({
     App,
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
     group: { add: (obj: unknown) => added.push(obj) },
     effectiveBottomY: 0.2,
     effectiveTopY: 1.8,

@@ -98,6 +98,10 @@ export function applyPostBuildExtras(input: BuildContextLike) {
   }
 
   const ctx = input;
+  const roomArchitecturePlan = ctx.room?.architecturePlan;
+  if (!roomArchitecturePlan) {
+    throw new Error('[builder/post_build_extras] room architecture plan is required');
+  }
   const args = {
     App: ctx.App,
     THREE: ctx.THREE,
@@ -222,6 +226,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
     const __cornerWingMeta: BuilderCornerBuildMetaLike | null = stackSplitActive
       ? __stackKey === 'top'
         ? {
+            roomArchitecturePlan,
             stackKey: 'top',
             baseType: 'none',
             stackSplitEnabled: true,
@@ -231,6 +236,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             snapshot: cornerBuildSnapshot,
           }
         : {
+            roomArchitecturePlan,
             stackKey: 'bottom',
             stackSplitEnabled: true,
             stackSplitUnifiedFrame,
@@ -273,6 +279,7 @@ export function applyPostBuildExtras(input: BuildContextLike) {
           braceShelfMat,
         },
         {
+          roomArchitecturePlan,
           shelfThick: resolvedShelfThick,
           snapshot: cornerBuildSnapshot,
         }

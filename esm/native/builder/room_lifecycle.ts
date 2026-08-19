@@ -21,6 +21,7 @@ import {
 } from './room_internal_shared.js';
 import { createRoomScenePrimitives } from './room_scene_primitives.js';
 import { refreshRoomArchitectureScene } from './room_architecture_scene.js';
+import { createRoomArchitecturePlanFromApp } from './room_architecture_plan_adapter.js';
 import {
   applyResolvedActiveRoomDesign,
   resetAppliedRoomVisualState,
@@ -71,7 +72,7 @@ export function buildRoom(forceDesign = false, passedApp: unknown) {
   roomGroupObj.name = ROOM_GROUP_OBJECT_NAME;
 
   addToScene(A, roomGroupObj);
-  refreshRoomArchitectureScene(A, T);
+  refreshRoomArchitectureScene(A, T, createRoomArchitecturePlanFromApp(A));
 
   resetAppliedRoomVisualState(A);
 
@@ -87,7 +88,7 @@ export function buildRoom(forceDesign = false, passedApp: unknown) {
 export function updateRoomArchitecture(passedApp: unknown) {
   const A = __ensureApp(passedApp);
   const T = __ensureTHREE(A);
-  const updated = refreshRoomArchitectureScene(A, T);
+  const updated = refreshRoomArchitectureScene(A, T, createRoomArchitecturePlanFromApp(A));
   if (updated) __wp_triggerRender(true, A);
   return updated;
 }

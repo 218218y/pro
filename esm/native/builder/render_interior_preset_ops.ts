@@ -37,6 +37,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const App = __app(args);
     __ops(App);
     const input = asPresetInput(args);
+    const roomArchitecturePlan = input.roomArchitecturePlan;
+    if (!roomArchitecturePlan) return false;
 
     let THREE = input.THREE;
     if (!THREE) {
@@ -138,6 +140,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
 
     const addGridShelf = createAddGridShelf({
       App,
+      roomArchitecturePlan,
       threeSurface,
       group,
       createBoard,

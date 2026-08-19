@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createApplyCarcassBaseOps } from '../esm/native/builder/render_carcass_ops_base.ts';
 import { ROOM_COLUMN_LINER_THICKNESS_M } from '../esm/native/builder/room_architecture_geometry.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import { appendDoorTrimVisuals } from '../esm/native/builder/door_trim_visuals.ts';
 
 class BoxGeometry {
@@ -108,6 +109,7 @@ test('room column cuts carcass boards into real geometry around the obstacle', (
     },
     {
       App: app,
+      roomArchitecturePlan: createRoomArchitecturePlanFromApp(app),
       THREE,
       wardrobeGroup: {
         add(child: unknown) {
@@ -196,6 +198,7 @@ test('room column cuts plinth and leg platforms instead of leaving base boards t
     const wardrobeChildren: unknown[] = [];
     applyCarcassBaseOps({ base }, {
       App: app,
+      roomArchitecturePlan: createRoomArchitecturePlanFromApp(app),
       THREE,
       wardrobeGroup: {
         add(child: unknown) {
@@ -265,6 +268,7 @@ test('room column suppresses only legs that physically collide with the column c
     },
     {
       App: app,
+      roomArchitecturePlan: createRoomArchitecturePlanFromApp(app),
       THREE,
       wardrobeGroup: {
         add(child: unknown) {
@@ -326,6 +330,7 @@ test('room column liners cover every exposed notch face with the white masonite 
 
   applyCarcassBaseOps({}, {
     App: app,
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(app),
     THREE,
     wardrobeGroup: {
       add(child: unknown) {
@@ -408,6 +413,7 @@ test('carcass rendering tags side/top boards as trim surfaces and renders config
     },
     {
       App: app,
+      roomArchitecturePlan: createRoomArchitecturePlanFromApp(app),
       THREE,
       wardrobeGroup,
       ctx: { bodyMat: { name: 'body' } },

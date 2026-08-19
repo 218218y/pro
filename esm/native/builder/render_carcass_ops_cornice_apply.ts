@@ -4,7 +4,7 @@ import {
   intersectAxisAlignedBoxes,
   resolveActiveRoomColumnCutObstacle,
 } from './room_architecture_geometry.js';
-import type { AxisAlignedBox } from './room_architecture_geometry.js';
+import type { AxisAlignedBox } from '../../../types';
 import type { CorniceOp, CorniceSegment, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
 import { finalizeCorniceMesh } from './render_carcass_ops_cornice_finalize.js';
 import {
@@ -114,9 +114,9 @@ function trimProfileSideAgainstObstacle(
 
 export function resolveCorniceSegmentsAgainstRoomColumnCut(
   seg: CorniceSegment,
-  runtime: Pick<RenderCarcassRuntime, 'App'>
+  runtime: Pick<RenderCarcassRuntime, 'roomArchitecturePlan'>
 ): CorniceSegment[] {
-  const obstacle = resolveActiveRoomColumnCutObstacle(runtime.App);
+  const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
   if (!obstacle) return [seg];
 
   if (seg.kind === 'cornice_wave_side') return trimWaveSideAgainstObstacle(seg, obstacle);

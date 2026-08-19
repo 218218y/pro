@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {
   ROOM_WALL_THICKNESS_M,
   buildRoomWallOpeningMeshData,
-  resolveRoomArchitectureGeometry,
   resolveRoomOpeningGeometry,
 } from '../esm/native/builder/room_architecture_geometry.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import {
   ROOM_ARCHITECTURE_GROUP_NAME,
   refreshRoomArchitectureScene,
@@ -144,7 +144,7 @@ test('wall opening mesh emits reveal faces only on the exact door/window boundar
 test('room architecture uses house-wall thickness and resolves left/right side walls independently', () => {
   const rootState = createRootState();
   const App = createApp(rootState);
-  const geometry = resolveRoomArchitectureGeometry(App);
+  const geometry = createRoomArchitecturePlanFromApp(App);
 
   assert.equal(ROOM_WALL_THICKNESS_M, 0.2);
   assertClose(geometry.wall.depth, 0.2);
@@ -157,7 +157,7 @@ test('room architecture uses house-wall thickness and resolves left/right side w
 
   (rootState.config as any).roomArchitecture.leftWall.enabled = false;
   (rootState.config as any).roomArchitecture.rightWall.enabled = true;
-  const swapped = resolveRoomArchitectureGeometry(App);
+  const swapped = createRoomArchitecturePlanFromApp(App);
   assert.equal(swapped.leftWall, null);
   assert.ok(swapped.rightWall);
   assert.equal(swapped.rightWall?.minX, swapped.wall.maxX);
@@ -171,7 +171,7 @@ test('room architecture never lets side walls overlap the wardrobe body', () => 
   (rootState.config as any).roomArchitecture.leftWall.enabled = true;
   (rootState.config as any).roomArchitecture.rightWall.enabled = true;
 
-  const geometry = resolveRoomArchitectureGeometry(createApp(rootState));
+  const geometry = createRoomArchitecturePlanFromApp(createApp(rootState));
   const wardrobeHalfWidthM = geometry.wardrobeWidthM / 2;
 
   assertClose(geometry.wall.width, geometry.wardrobeWidthM);
@@ -283,7 +283,7 @@ test('room openings resolve against their host wall and scene rendering cuts the
     },
   ];
   const App = createApp(rootState, roomGroup);
-  const roomGeometry = resolveRoomArchitectureGeometry(App);
+  const roomGeometry = createRoomArchitecturePlanFromApp(App);
   const backWindow = resolveRoomOpeningGeometry(
     roomGeometry,
     (rootState.config as any).roomArchitecture.openings[0]
@@ -307,7 +307,7 @@ test('room openings resolve against their host wall and scene rendering cuts the
     MeshStandardMaterial: FakeMaterial,
     Mesh: FakeMesh,
   } as any;
-  assert.equal(refreshRoomArchitectureScene(App, THREE), true);
+  assert.equal(refreshRoomArchitectureScene(App, THREE, createRoomArchitecturePlanFromApp(App)), true);
   const architecture = roomGroup.getObjectByName(ROOM_ARCHITECTURE_GROUP_NAME);
   assert.ok(architecture);
   const backWallMesh = architecture.getObjectByName('wpBackWall');
@@ -641,7 +641,7 @@ test('room architecture scene renders enabled wall boxes with the persisted wall
     Mesh: FakeMesh,
   } as any;
 
-  assert.equal(refreshRoomArchitectureScene(App, THREE), true);
+  assert.equal(refreshRoomArchitectureScene(App, THREE, createRoomArchitecturePlanFromApp(App)), true);
   const architectureGroup = roomGroup.getObjectByName(ROOM_ARCHITECTURE_GROUP_NAME);
   assert.ok(architectureGroup);
   assert.deepEqual(
@@ -656,7 +656,7 @@ test('room architecture scene renders enabled wall boxes with the persisted wall
 
   (rootState.config as any).roomArchitecture.rightWall.enabled = true;
   (rootState.config as any).roomArchitecture.surfacesHidden = true;
-  assert.equal(refreshRoomArchitectureScene(App, THREE), true);
+  assert.equal(refreshRoomArchitectureScene(App, THREE, createRoomArchitecturePlanFromApp(App)), true);
   const refreshed = roomGroup.getObjectByName(ROOM_ARCHITECTURE_GROUP_NAME);
   assert.equal(refreshed.visible, false);
   assert.deepEqual(

@@ -14,6 +14,7 @@ import type {
   BuilderPartColorResolver,
   BuilderPartMaterialResolver,
   RenderOpsLike,
+  RoomArchitecturePlan,
 } from '../../../types';
 import {
   requireInteriorSketchConfigSnapshot,
@@ -36,6 +37,7 @@ export type InteriorLayoutConfig = ValueRecord & {
 
 export type InteriorLayoutParams = ValueRecord & {
   App?: AppContainer;
+  roomArchitecturePlan?: RoomArchitecturePlan;
   THREE?: unknown;
   cfg?: unknown;
   config?: unknown;
@@ -138,8 +140,13 @@ export function buildSketchExtrasArgs(
   if (!sketchExtras) {
     throw new TypeError('[builder/interior_pipeline.sketchExtras] sketchExtras must be an object');
   }
+  const roomArchitecturePlan = input.roomArchitecturePlan;
+  if (!roomArchitecturePlan) {
+    throw new Error('[builder/interior_pipeline.sketchExtras] roomArchitecturePlan missing');
+  }
   return {
     App,
+    roomArchitecturePlan,
     THREE: input.THREE,
     cfgSnapshot,
     wardrobeGroup: input.wardrobeGroup,

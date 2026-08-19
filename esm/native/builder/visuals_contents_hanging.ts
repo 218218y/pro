@@ -304,7 +304,7 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   for (let i = 0; i < count; i++) {
     const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
     const hanger = createStyledHanger({ THREE, dims, xPos, rodY, rodZ });
-    if (visualObjectIntersectsRoomColumnCut(App, THREE, hanger)) continue;
+    if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, hanger)) continue;
     parentGroup.add(hanger);
 
     const variant = selectGarmentVariant();

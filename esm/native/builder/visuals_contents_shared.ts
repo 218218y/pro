@@ -19,6 +19,7 @@ import type {
   BuilderHangingContentsPolicy,
   GeometryLike,
   MaterialLike,
+  RoomArchitecturePlan,
   ThreeLike,
   UnknownRecord,
 } from '../../../types/index.js';
@@ -64,11 +65,11 @@ export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
 }
 
 export function visualObjectIntersectsRoomColumnCut(
-  App: AppContainer,
+  roomArchitecturePlan: RoomArchitecturePlan,
   THREE: ThreeLike,
   object: unknown
 ): boolean {
-  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+  const obstacle = resolveActiveRoomColumnCutObstacle(roomArchitecturePlan);
   if (!obstacle || !object || typeof THREE.Box3 !== 'function') return false;
 
   try {

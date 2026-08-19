@@ -53,3 +53,110 @@ export type RoomArchitecturePatch = Omit<
   column?: Partial<RoomArchitectureConfigLike['column']>;
   openings?: RoomWallOpeningLike[];
 };
+
+export interface AxisAlignedBox {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  minZ: number;
+  maxZ: number;
+}
+
+export type RoomColumnLinerFace = 'left' | 'right' | 'top' | 'bottom' | 'front';
+
+export interface RoomColumnLinerPanel {
+  face: RoomColumnLinerFace;
+  box: AxisAlignedBox;
+}
+
+export interface RoomColumnAdjustmentGeometry {
+  wardrobeBox: AxisAlignedBox;
+  obstacle: AxisAlignedBox;
+  intrusion: AxisAlignedBox;
+  cutObstacle: AxisAlignedBox;
+  cutIntrusion: AxisAlignedBox;
+  linerPanels: readonly RoomColumnLinerPanel[];
+}
+
+export interface RoomArchitectureWallGeometry extends AxisAlignedBox {
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  depth: number;
+}
+
+export interface RoomWallSurfaceGeometry {
+  wall: RoomWallId;
+  box: RoomArchitectureWallGeometry;
+  usableLength: number;
+  height: number;
+  axis: 'x' | 'z';
+  startCoord: number;
+  interiorFaceCoord: number;
+  inwardNormalX: -1 | 0 | 1;
+  inwardNormalZ: -1 | 0 | 1;
+}
+
+export interface ResolvedRoomOpeningGeometry {
+  opening: RoomWallOpeningLike;
+  surface: RoomWallSurfaceGeometry;
+  cut: AxisAlignedBox;
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  bottom: number;
+  offsetAlong: number;
+  clearancesCm: {
+    start: number;
+    end: number;
+    top: number;
+    bottom: number;
+  };
+}
+
+export interface RoomArchitectureGeometry {
+  config: RoomArchitectureConfigLike;
+  wardrobeWidthM: number;
+  wardrobeHeightM: number;
+  wardrobeDepthM: number;
+  wall: RoomArchitectureWallGeometry;
+  leftWall: RoomArchitectureWallGeometry | null;
+  rightWall: RoomArchitectureWallGeometry | null;
+  column:
+    | (AxisAlignedBox & {
+        centerX: number;
+        centerY: number;
+        centerZ: number;
+        width: number;
+        height: number;
+        depth: number;
+      })
+    | null;
+}
+
+export interface RoomArchitecturePlanInput {
+  config: RoomArchitectureConfigLike;
+  wardrobeWidthM: number;
+  wardrobeHeightM: number;
+  wardrobeDepthM: number;
+}
+
+export interface RoomArchitecturePlan extends RoomArchitectureGeometry {
+  wardrobeBox: AxisAlignedBox;
+  wallSurfaces: Readonly<Record<RoomWallId, RoomWallSurfaceGeometry | null>>;
+  resolvedOpenings: readonly ResolvedRoomOpeningGeometry[];
+  columnAdjustment: RoomColumnAdjustmentGeometry | null;
+  activeCutObstacle: AxisAlignedBox | null;
+}
+
+export interface RoomColumnAdjustedHorizontalSpan {
+  minX: number;
+  maxX: number;
+  centerX: number;
+  length: number;
+}

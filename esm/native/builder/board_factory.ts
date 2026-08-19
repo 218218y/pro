@@ -8,6 +8,7 @@ import type {
   BuilderCreateBoardOptions,
   BuilderOutlineFn,
   ThreeLike,
+  RoomArchitecturePlan,
   UnknownRecord,
 } from '../../../types';
 
@@ -29,6 +30,7 @@ export type BoardFactoryArgs = {
   THREE: ThreeLike | null;
   sketchMode: boolean;
   addOutlines: AddOutlinesFn | null;
+  roomArchitecturePlan: RoomArchitecturePlan;
   runtime: BoardFactoryRuntime;
 };
 
@@ -55,7 +57,7 @@ function attachBoardContext(error: unknown, context: UnknownRecord): void {
 export function makeBoardCreator(args: BoardFactoryArgs | null | undefined): CreateBoardFn {
   if (!args) throw new Error('[builder/board_factory] makeBoardCreator: args missing');
 
-  const { THREE, sketchMode, addOutlines, runtime } = args;
+  const { THREE, sketchMode, addOutlines, roomArchitecturePlan, runtime } = args;
   if (!THREE) throw new Error('[builder/board_factory] makeBoardCreator: THREE missing');
   if (!runtime || typeof runtime.createBoard !== 'function') {
     throw new Error('[builder/board_factory] makeBoardCreator: runtime.createBoard missing');
@@ -85,6 +87,7 @@ export function makeBoardCreator(args: BoardFactoryArgs | null | undefined): Cre
         partId,
         sketchMode,
         addOutlines,
+        roomArchitecturePlan,
       };
       if (options?.shape) boardArgs.shape = options.shape;
       if (options?.shelfExposedSide) boardArgs.shelfExposedSide = options.shelfExposedSide;

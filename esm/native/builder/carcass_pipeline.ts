@@ -9,6 +9,7 @@ import type {
   CarcassOpsLike,
   RenderOpsLike,
   UnknownRecord,
+  RoomArchitecturePlan,
 } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
@@ -28,6 +29,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   App?: BuilderApplyCarcassContextLike['App'];
   THREE?: BuilderApplyCarcassContextLike['THREE'];
   cfg?: unknown;
+  roomArchitecturePlan?: RoomArchitecturePlan;
   totalW?: number;
   D?: number;
   H?: number;
@@ -141,9 +143,13 @@ function createApplyCarcassContext(
   plinthMat: unknown,
   corniceMat: unknown
 ): BuilderApplyCarcassContextLike {
+  if (!args.roomArchitecturePlan) {
+    throw new Error('[WardrobePro] Carcass pipeline: roomArchitecturePlan missing');
+  }
   return {
     THREE: args.THREE,
     App: app,
+    roomArchitecturePlan: args.roomArchitecturePlan,
     addOutlines: args.addOutlines,
     getPartMaterial: args.getPartMaterial,
     __sketchMode: args.__sketchMode,

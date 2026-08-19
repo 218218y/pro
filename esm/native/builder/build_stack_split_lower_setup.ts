@@ -111,6 +111,7 @@ export function prepareStackSplitLowerSetup(
     App: args.App,
     THREE: args.THREE,
     cfg: args.cfg,
+    roomArchitecturePlan: args.roomArchitecturePlan,
     totalW: bottomTotalW,
     D: bottomCarcassD,
     H: bottomH,

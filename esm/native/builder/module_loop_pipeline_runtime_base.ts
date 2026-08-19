@@ -33,6 +33,7 @@ export type ModuleLoopRuntimeBase = Pick<
   | 'THREE'
   | 'cfg'
   | 'ui'
+  | 'roomArchitecturePlan'
   | 'flags'
   | 'modules'
   | 'moduleCfgList'
@@ -62,6 +63,8 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
   const THREE = ctx.THREE || assertTHREE(App, 'builder/module_loop.runtime');
   const cfg = asConfigState(ctx.cfg);
   const ui = asUiState(ctx.ui);
+  const roomArchitecturePlan = ctx.room?.architecturePlan;
+  if (!roomArchitecturePlan) throw new Error('[builder/module_loop] Missing room architecture plan');
 
   const layout = asLayout(ctx.layout);
   const dims = asDims(ctx.dims);
@@ -125,6 +128,7 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
     THREE,
     cfg,
     ui,
+    roomArchitecturePlan,
     flags,
     modules,
     moduleCfgList,

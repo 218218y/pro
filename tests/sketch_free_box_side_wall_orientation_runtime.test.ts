@@ -4,10 +4,8 @@ import assert from 'node:assert/strict';
 import { wrapNewFreePlacementObjects } from '../esm/native/builder/render_interior_sketch_boxes.ts';
 import { renderSketchBoxContentDividers } from '../esm/native/builder/render_interior_sketch_boxes_contents_parts_dividers.ts';
 import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
-import {
-  resolveRoomArchitectureGeometry,
-  resolveRoomWallSurface,
-} from '../esm/native/builder/room_architecture_geometry.ts';
+import { resolveRoomWallSurface } from '../esm/native/builder/room_architecture_geometry.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import { resolveSketchFreePlacementBoxPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts';
 import { decodeSketchFreeBoxPlacementHover } from '../esm/native/services/canvas_picking_sketch_free_box_command.ts';
 import {
@@ -48,7 +46,7 @@ function createApp() {
 
 function resolveSideBox(wall: 'left' | 'right') {
   const App = createApp();
-  const room = resolveRoomArchitectureGeometry(App);
+  const room = createRoomArchitecturePlanFromApp(App);
   const surface = resolveRoomWallSurface(room, wall);
   assert.ok(surface);
   const along = surface.startCoord + 1.15;
@@ -68,6 +66,7 @@ function resolveSideBox(wall: 'left' | 'right') {
     height: 1,
     renderArgs: {
       App,
+      input: { roomArchitecturePlan: room },
       effectiveBottomY: 0,
       effectiveTopY: 2.4,
       spanH: 2.4,

@@ -10,7 +10,7 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
-import type { AppContainer, BuilderCreateBoardOptions } from '../../../types';
+import type { AppContainer, BuilderCreateBoardOptions, RoomArchitecturePlan } from '../../../types';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -44,6 +44,7 @@ function shelfHeightForVariant(variant: ShelfVariant | undefined, shelfThick: nu
 
 export function createAddCustomGridShelf(args: {
   App: AppContainer;
+  roomArchitecturePlan: RoomArchitecturePlan;
   threeSurface: InteriorTHREESurface | null;
   matCache: unknown;
   group: InteriorGroupLike;
@@ -86,6 +87,7 @@ export function createAddCustomGridShelf(args: {
 }) {
   const {
     App,
+    roomArchitecturePlan,
     threeSurface,
     matCache,
     group,
@@ -154,7 +156,7 @@ export function createAddCustomGridShelf(args: {
     const mkPin = (x: number, z: number) => {
       if (
         intersectsActiveRoomColumnCutObstacle(
-          App,
+          roomArchitecturePlan,
           boxFromCenterSize({
             x,
             y: yPin,

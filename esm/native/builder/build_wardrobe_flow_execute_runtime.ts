@@ -17,6 +17,10 @@ export function runPreparedBuildWardrobePlan(
   const { THREE, createInternalDrawerBox, addHangingClothes, addFoldedClothes, addRealisticHanger } = deps;
   const addOutlines = renderPolicy.addOutlines;
   const { cfgSnapshot: cfg, ui } = buildState;
+  const roomArchitecturePlan = buildCtx.room?.architecturePlan;
+  if (!roomArchitecturePlan) {
+    throw new Error('[WardrobePro] Build execution: room architecture plan missing');
+  }
 
   if (!plan.noMainWardrobe) {
     buildModulesLoop(buildCtx);
@@ -27,6 +31,7 @@ export function runPreparedBuildWardrobePlan(
 
   orchestration.renderNoMainSketchHost({
     THREE,
+    roomArchitecturePlan,
     cfg: asBuilderOpenStateRecord(cfg),
     ui: asBuilderOpenStateRecord(ui),
     totalW: plan.totalW,

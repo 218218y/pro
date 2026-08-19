@@ -11,6 +11,7 @@ import type {
   UiStateLike,
   ConfigStateLike,
   RuntimeStateLike,
+  RoomArchitecturePlan,
 } from '../../../types';
 import type { BuildFlowPlan } from './build_flow_plan.js';
 import type { GetMaterialFn } from './build_flow_readers.js';
@@ -25,6 +26,7 @@ type BuildFlowContextFactoryArgs = {
   cfg: ConfigStateLike;
   label: string;
   plan: BuildFlowPlan;
+  roomArchitecturePlan: RoomArchitecturePlan;
   widthCm: number;
   heightCm: number;
   depthCm: number;
@@ -75,6 +77,7 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
     cfg,
     label,
     plan,
+    roomArchitecturePlan,
     widthCm,
     heightCm,
     depthCm,
@@ -189,6 +192,10 @@ export function createBuildFlowContext(args: BuildFlowContextFactoryArgs): Build
       singleUnitWidth: plan.singleUnitWidth,
       moduleInternalWidths: plan.moduleInternalWidths,
       hingedDoorPivotMap: plan.hingedDoorPivotMap,
+    },
+
+    room: {
+      architecturePlan: roomArchitecturePlan,
     },
 
     materials: {

@@ -93,6 +93,10 @@ export function createStackSplitLowerBuildContext(args: {
       hingedDoorPivotMap: prepared.bottomHingedDoorPivotMap,
     },
 
+    room: {
+      architecturePlan: buildArgs.roomArchitecturePlan,
+    },
+
     materials: {
       colorHex: buildArgs.colorHex,
       useTexture: buildArgs.useTexture,
@@ -203,6 +207,7 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       braceShelfMat: buildArgs.braceShelfMat,
     },
     {
+      roomArchitecturePlan: buildArgs.roomArchitecturePlan,
       stackKey: 'bottom',
       baseType: buildArgs.baseTypeBottom,
       baseLegStyle: buildArgs.baseLegStyle,

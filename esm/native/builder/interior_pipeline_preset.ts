@@ -65,6 +65,7 @@ export function applyPresetInteriorLayout(
     renderedPreset =
       renderOps.applyInteriorPresetOps?.({
         presetOps,
+        roomArchitecturePlan: input.roomArchitecturePlan,
         cfg: input.cfg,
         moduleKey: input.moduleKey,
         getPartMaterial: input.getPartMaterial,

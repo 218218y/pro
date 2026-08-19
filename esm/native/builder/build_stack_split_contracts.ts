@@ -9,6 +9,7 @@ import type {
   ConfigStateLike,
   ModuleConfigLike,
   ProjectSavedNotesLike,
+  RoomArchitecturePlan,
   ThreeLike,
   UiStateLike,
   UnknownRecord,
@@ -109,6 +110,7 @@ export type BuildStackSplitLowerUnitArgs = {
 
   calculateModuleStructure: BuilderCalculateModuleStructureFn | null;
   notesToPreserve: ProjectSavedNotesLike | null | undefined;
+  roomArchitecturePlan: RoomArchitecturePlan;
 };
 
 export type BuildStackSplitLowerUnitResult = {

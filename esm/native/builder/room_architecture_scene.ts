@@ -1,17 +1,15 @@
-import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/index.js';
+import type {
+  AppContainer,
+  AxisAlignedBox,
+  ResolvedRoomOpeningGeometry,
+  RoomArchitecturePlan,
+  RoomWallId,
+  ThreeLike,
+  UnknownRecord,
+} from '../../../types/index.js';
 
 import { __getRoomGroupNode } from './room_shared_state.js';
-import {
-  axisAlignedBoxToCenterSize,
-  buildRoomWallOpeningMeshData,
-  resolveRoomArchitectureGeometry,
-  resolveRoomOpeningGeometry,
-  resolveRoomWallSurface,
-  type AxisAlignedBox,
-  type ResolvedRoomOpeningGeometry,
-  type RoomArchitectureGeometry,
-} from './room_architecture_geometry.js';
-import type { RoomWallId } from '../../../types/index.js';
+import { axisAlignedBoxToCenterSize, buildRoomWallOpeningMeshData } from './room_architecture_geometry.js';
 
 export const ROOM_ARCHITECTURE_GROUP_NAME = 'wpRoomArchitecture';
 
@@ -138,13 +136,13 @@ function wallName(wall: RoomWallId): string {
   return wall === 'back' ? 'wpBackWall' : wall === 'left' ? 'wpLeftWall' : 'wpRightWall';
 }
 
-function resolveWallBox(geometry: RoomArchitectureGeometry, wall: RoomWallId): AxisAlignedBox | null {
-  if (wall === 'back') return geometry.wall;
-  return wall === 'left' ? geometry.leftWall : geometry.rightWall;
+function resolveWallBox(plan: RoomArchitecturePlan, wall: RoomWallId): AxisAlignedBox | null {
+  if (wall === 'back') return plan.wall;
+  return wall === 'left' ? plan.leftWall : plan.rightWall;
 }
 
-function wallSurfaceUserData(geometry: RoomArchitectureGeometry, wall: RoomWallId): UnknownRecord {
-  const surface = resolveRoomWallSurface(geometry, wall);
+function wallSurfaceUserData(plan: RoomArchitecturePlan, wall: RoomWallId): UnknownRecord {
+  const surface = plan.wallSurfaces[wall];
   if (!surface) return { roomWallId: wall, __wpRoomWallSurface: true };
   return {
     roomWallId: wall,
@@ -196,10 +194,10 @@ function roomMeasurementTargetData(args: {
 
 function addWallMeasurementTarget(args: {
   factory: ArchitectureBoxFactoryArgs;
-  geometry: RoomArchitectureGeometry;
+  geometry: RoomArchitecturePlan;
   wall: RoomWallId;
 }): void {
-  const surface = resolveRoomWallSurface(args.geometry, args.wall);
+  const surface = args.geometry.wallSurfaces[args.wall];
   if (!surface) return;
   const alongCenter = surface.startCoord + surface.usableLength / 2;
   const normalOffset = ROOM_MEASUREMENT_WALL_OFFSET_M;
@@ -235,11 +233,11 @@ function addWallMeasurementTarget(args: {
 
 function addWallWithOpenings(args: {
   factory: ArchitectureWallFactoryArgs;
-  geometry: RoomArchitectureGeometry;
+  geometry: RoomArchitecturePlan;
   wall: RoomWallId;
   color: string;
   castShadow?: boolean;
-  openings: ResolvedRoomOpeningGeometry[];
+  openings: readonly ResolvedRoomOpeningGeometry[];
 }): void {
   const source = resolveWallBox(args.geometry, args.wall);
   if (!source) return;
@@ -255,7 +253,7 @@ function addWallWithOpenings(args: {
     return;
   }
 
-  const surface = resolveRoomWallSurface(args.geometry, args.wall);
+  const surface = args.geometry.wallSurfaces[args.wall];
   if (!surface) return;
   const BufferGeometryCtor = args.factory.BufferGeometryCtor;
   const Float32BufferAttributeCtor = args.factory.Float32BufferAttributeCtor;
@@ -536,12 +534,16 @@ function addOpeningVisuals(args: {
   }
 }
 
-export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike): boolean {
+export function refreshRoomArchitectureScene(
+  App: AppContainer,
+  THREE: ThreeLike,
+  plan: RoomArchitecturePlan
+): boolean {
   const roomGroup = asRecord(__getRoomGroupNode(App));
   if (!roomGroup) return false;
   removeExistingArchitecture(roomGroup);
 
-  const geometry = resolveRoomArchitectureGeometry(App);
+  const geometry = plan;
   if (!geometry.config.backWall.enabled) return true;
 
   const T = asRecord(THREE);
@@ -560,9 +562,7 @@ export function refreshRoomArchitectureScene(App: AppContainer, THREE: ThreeLike
   group.userData = { __kind: 'room_architecture', ignorePicking: true };
 
   const wallColor = geometry.config.wallColor;
-  const openings = (Array.isArray(geometry.config.openings) ? geometry.config.openings : [])
-    .map(opening => resolveRoomOpeningGeometry(geometry, opening))
-    .filter((entry): entry is ResolvedRoomOpeningGeometry => entry != null);
+  const openings: readonly ResolvedRoomOpeningGeometry[] = plan.resolvedOpenings;
   if (openings.length && (!BufferGeometryCtor || !Float32BufferAttributeCtor)) return false;
 
   const factory = {

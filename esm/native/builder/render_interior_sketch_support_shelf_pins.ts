@@ -1,6 +1,6 @@
 import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
-import type { AppContainer } from '../../../types/index.js';
+import type { RoomArchitecturePlan } from '../../../types/index.js';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -12,7 +12,7 @@ import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room
 import { asMaterial } from './render_interior_sketch_shared.js';
 
 export function createShelfPinAdder(args: {
-  App: AppContainer;
+  roomArchitecturePlan: RoomArchitecturePlan;
   group: InteriorGroupLike;
   THREE: InteriorTHREESurface | null;
   pinGeo: unknown;
@@ -21,7 +21,8 @@ export function createShelfPinAdder(args: {
   pinLen: number;
   pinEdgeOffsetDefault: number;
 }): SketchPlacementSupport['addShelfPins'] {
-  const { App, group, THREE, pinGeo, pinMat, pinRadius, pinLen, pinEdgeOffsetDefault } = args;
+  const { roomArchitecturePlan, group, THREE, pinGeo, pinMat, pinRadius, pinLen, pinEdgeOffsetDefault } =
+    args;
 
   return (shelfX, shelfY, shelfZ, shelfW, shelfH, shelfDepth, enabled, shelfPartId) => {
     if (!enabled) return;
@@ -43,7 +44,7 @@ export function createShelfPinAdder(args: {
     const mkPin = (x: number, z: number) => {
       if (
         intersectsActiveRoomColumnCutObstacle(
-          App,
+          roomArchitecturePlan,
           boxFromCenterSize({
             x,
             y: yPin,

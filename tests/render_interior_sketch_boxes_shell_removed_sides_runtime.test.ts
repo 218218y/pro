@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderSketchBoxShellFrame } from '../esm/native/builder/render_interior_sketch_boxes_shell_frame.ts';
+import { createRoomArchitecturePlan } from '../esm/native/builder/room_architecture_geometry.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 
 function assertNearlyEqual(actual: number | undefined, expected: number): void {
   assert.ok(actual != null, 'expected a numeric value');
@@ -10,6 +12,21 @@ function assertNearlyEqual(actual: number | undefined, expected: number): void {
     `expected ${String(actual)} to be nearly ${String(expected)}`
   );
 }
+
+const defaultRoomArchitecturePlan = createRoomArchitecturePlan({
+  config: {
+    backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    column: { enabled: false, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 280, bottomOffsetCm: 0 },
+    openings: [],
+    wallColor: '#f2efe6',
+    surfacesHidden: false,
+  },
+  wardrobeWidthM: 2.4,
+  wardrobeHeightM: 2.4,
+  wardrobeDepthM: 0.6,
+});
 
 function createFrameHarness(removedDoorsMap: Record<string, unknown> = {}) {
   const boards: Array<{
@@ -66,7 +83,7 @@ function createFrameHarness(removedDoorsMap: Record<string, unknown> = {}) {
     },
     group: {},
     moduleKeyStr: '0',
-    input: { cfgSnapshot: { removedDoorsMap } },
+    input: { cfgSnapshot: { removedDoorsMap }, roomArchitecturePlan: defaultRoomArchitecturePlan },
     getPartMaterial: null,
     THREE: null,
     addDimensionLine: null,
@@ -280,6 +297,7 @@ test('free-placement sketch box adds its own masonite liner around a room-column
   state.geometry.innerD = 0.5 - 2 * renderArgs.woodThick;
 
   renderArgs.App = App;
+  renderArgs.input.roomArchitecturePlan = createRoomArchitecturePlanFromApp(App as never);
   renderArgs.group = { add: (obj: unknown) => added.push(obj) };
   renderArgs.input.sketchMode = false;
   renderArgs.input.addOutlines = () => {};

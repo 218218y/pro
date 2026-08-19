@@ -1,18 +1,21 @@
 import type {
-  AppContainer,
+  AxisAlignedBox,
+  ResolvedRoomOpeningGeometry,
   RoomArchitectureConfigLike,
+  RoomArchitectureGeometry,
+  RoomArchitecturePlan,
+  RoomArchitecturePlanInput,
+  RoomArchitectureWallGeometry,
+  RoomColumnAdjustedHorizontalSpan,
+  RoomColumnAdjustmentGeometry,
+  RoomColumnLinerFace,
+  RoomColumnLinerPanel,
   RoomWallId,
   RoomWallOpeningLike,
-  UnknownRecord,
+  RoomWallSurfaceGeometry,
 } from '../../../types/index.js';
 
 import { CARCASS_BACK_PANEL_THICKNESS_M } from './core_carcass_shell.js';
-import {
-  constrainProjectRoomArchitectureToWardrobeWidth,
-  getRoomArchitectureConfig,
-  getRuntime,
-  getUi,
-} from './store_access.js';
 
 export const ROOM_WALL_THICKNESS_M = 0.2;
 export const ROOM_BACK_WALL_THICKNESS_M = ROOM_WALL_THICKNESS_M;
@@ -20,123 +23,36 @@ export const ROOM_BACK_WALL_GAP_M = 0.01;
 export const ROOM_ARCHITECTURE_EPSILON_M = 0.00005;
 export const ROOM_COLUMN_LINER_THICKNESS_M = CARCASS_BACK_PANEL_THICKNESS_M;
 
-export type AxisAlignedBox = {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  minZ: number;
-  maxZ: number;
-};
-
-export type RoomColumnLinerFace = 'left' | 'right' | 'top' | 'bottom' | 'front';
-
-export type RoomColumnLinerPanel = {
-  face: RoomColumnLinerFace;
-  box: AxisAlignedBox;
-};
-
-export type RoomColumnAdjustmentGeometry = {
-  wardrobeBox: AxisAlignedBox;
-  obstacle: AxisAlignedBox;
-  intrusion: AxisAlignedBox;
-  cutObstacle: AxisAlignedBox;
-  cutIntrusion: AxisAlignedBox;
-  linerPanels: RoomColumnLinerPanel[];
-};
-
-export type RoomArchitectureWallGeometry = AxisAlignedBox & {
-  centerX: number;
-  centerY: number;
-  centerZ: number;
-  width: number;
-  height: number;
-  depth: number;
-};
-
-export type RoomWallSurfaceGeometry = {
-  wall: RoomWallId;
-  box: RoomArchitectureWallGeometry;
-  usableLength: number;
-  height: number;
-  axis: 'x' | 'z';
-  startCoord: number;
-  interiorFaceCoord: number;
-  inwardNormalX: -1 | 0 | 1;
-  inwardNormalZ: -1 | 0 | 1;
-};
-
-export type ResolvedRoomOpeningGeometry = {
-  opening: RoomWallOpeningLike;
-  surface: RoomWallSurfaceGeometry;
-  cut: AxisAlignedBox;
-  centerX: number;
-  centerY: number;
-  centerZ: number;
-  width: number;
-  height: number;
-  bottom: number;
-  offsetAlong: number;
-  clearancesCm: {
-    start: number;
-    end: number;
-    top: number;
-    bottom: number;
-  };
-};
-
-export type RoomArchitectureGeometry = {
-  config: RoomArchitectureConfigLike;
-  wardrobeWidthM: number;
-  wardrobeHeightM: number;
-  wardrobeDepthM: number;
-  wall: RoomArchitectureWallGeometry;
-  leftWall: RoomArchitectureWallGeometry | null;
-  rightWall: RoomArchitectureWallGeometry | null;
-  column:
-    | (AxisAlignedBox & {
-        centerX: number;
-        centerY: number;
-        centerZ: number;
-        width: number;
-        height: number;
-        depth: number;
-      })
-    | null;
-};
-
-function asRecord(value: unknown): UnknownRecord | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
-}
-
 function finitePositive(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function readUiRawDimensionM(root: unknown, key: 'width' | 'height' | 'depth', defaultM: number): number {
-  const rootRec = asRecord(root);
-  const ui = asRecord(rootRec?.ui);
-  const raw = asRecord(ui?.raw);
-  const cm = finitePositive(raw?.[key]);
-  return cm == null ? defaultM : cm / 100;
-}
-
-function resolveWardrobeDimensions(App: AppContainer): { width: number; height: number; depth: number } {
-  const runtime = asRecord(getRuntime(App)) || {};
-  const ui = asRecord(getUi(App));
+function resolveWardrobeDimensions(input: RoomArchitecturePlanInput): {
+  width: number;
+  height: number;
+  depth: number;
+} {
   return {
-    width: finitePositive(runtime.wardrobeWidthM) ?? readUiRawDimensionM({ ui }, 'width', 2.4),
-    height: finitePositive(runtime.wardrobeHeightM) ?? readUiRawDimensionM({ ui }, 'height', 2.4),
-    depth: finitePositive(runtime.wardrobeDepthM) ?? readUiRawDimensionM({ ui }, 'depth', 0.6),
+    width: finitePositive(input.wardrobeWidthM) ?? 2.4,
+    height: finitePositive(input.wardrobeHeightM) ?? 2.4,
+    depth: finitePositive(input.wardrobeDepthM) ?? 0.6,
   };
 }
 
-export function readRoomArchitectureConfigFromApp(App: AppContainer): RoomArchitectureConfigLike {
-  return getRoomArchitectureConfig(App);
+function cloneRoomArchitectureConfig(config: RoomArchitectureConfigLike): RoomArchitectureConfigLike {
+  return {
+    backWall: { ...config.backWall },
+    leftWall: { ...config.leftWall },
+    rightWall: { ...config.rightWall },
+    column: { ...config.column },
+    openings: Array.isArray(config.openings) ? config.openings.map(opening => ({ ...opening })) : [],
+    wallColor: config.wallColor,
+    surfacesHidden: config.surfacesHidden,
+  };
 }
 
-function withBoxMetrics(box: AxisAlignedBox) {
+function withBoxMetrics(box: AxisAlignedBox): RoomArchitectureWallGeometry {
   const width = Math.max(0, box.maxX - box.minX);
   const height = Math.max(0, box.maxY - box.minY);
   const depth = Math.max(0, box.maxZ - box.minZ);
@@ -151,12 +67,9 @@ function withBoxMetrics(box: AxisAlignedBox) {
   };
 }
 
-export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitectureGeometry {
-  const wardrobe = resolveWardrobeDimensions(App);
-  const config = constrainProjectRoomArchitectureToWardrobeWidth(
-    readRoomArchitectureConfigFromApp(App),
-    wardrobe.width * 100
-  );
+function resolveRoomArchitectureGeometry(input: RoomArchitecturePlanInput): RoomArchitectureGeometry {
+  const wardrobe = resolveWardrobeDimensions(input);
+  const config = cloneRoomArchitectureConfig(input.config);
   const wallWidthM = config.backWall.widthCm / 100;
   const wallHeightM = config.backWall.heightCm / 100;
   const offsetLeftM = config.backWall.wardrobeOffsetLeftCm / 100;
@@ -173,11 +86,11 @@ export function resolveRoomArchitectureGeometry(App: AppContainer): RoomArchitec
 
   const resolveSideWall = (
     side: 'left' | 'right',
-    config: RoomArchitectureConfigLike['leftWall']
+    sideConfig: RoomArchitectureConfigLike['leftWall']
   ): RoomArchitectureWallGeometry | null => {
-    if (!config.enabled) return null;
-    const depthM = config.depthCm / 100;
-    const heightM = config.heightCm / 100;
+    if (!sideConfig.enabled) return null;
+    const depthM = sideConfig.depthCm / 100;
+    const heightM = sideConfig.heightCm / 100;
     const minX = side === 'left' ? wall.minX - ROOM_WALL_THICKNESS_M : wall.maxX;
     const maxX = side === 'left' ? wall.minX : wall.maxX + ROOM_WALL_THICKNESS_M;
     return withBoxMetrics({
@@ -331,8 +244,7 @@ export function resolveRoomOpeningGeometry(
   };
 }
 
-export function resolveRoomOpeningsGeometry(App: AppContainer): ResolvedRoomOpeningGeometry[] {
-  const geometry = resolveRoomArchitectureGeometry(App);
+function resolveRoomOpeningsGeometry(geometry: RoomArchitectureGeometry): ResolvedRoomOpeningGeometry[] {
   const openings = Array.isArray(geometry.config.openings) ? geometry.config.openings : [];
   const out: ResolvedRoomOpeningGeometry[] = [];
   for (const opening of openings) {
@@ -340,11 +252,6 @@ export function resolveRoomOpeningsGeometry(App: AppContainer): ResolvedRoomOpen
     if (resolved) out.push(resolved);
   }
   return out;
-}
-
-export function resolveActiveRoomColumnObstacle(App: AppContainer): AxisAlignedBox | null {
-  const geometry = resolveRoomArchitectureGeometry(App);
-  return geometry.config.backWall.enabled && geometry.config.column.enabled ? geometry.column : null;
 }
 
 export function intersectAxisAlignedBoxes(a: AxisAlignedBox, b: AxisAlignedBox): AxisAlignedBox | null {
@@ -710,13 +617,14 @@ function buildRoomColumnCutObstacle(args: {
   };
 }
 
-export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColumnAdjustmentGeometry | null {
-  const geometry = resolveRoomArchitectureGeometry(App);
+function buildRoomColumnAdjustmentGeometry(
+  geometry: RoomArchitectureGeometry,
+  wardrobeBox: AxisAlignedBox
+): RoomColumnAdjustmentGeometry | null {
   const obstacle =
     geometry.config.backWall.enabled && geometry.config.column.enabled ? geometry.column : null;
   if (!obstacle) return null;
 
-  const wardrobeBox = wardrobeBoxFromGeometry(geometry);
   const intrusion = intersectAxisAlignedBoxes(obstacle, wardrobeBox);
   if (!intrusion) return null;
 
@@ -738,15 +646,46 @@ export function resolveRoomColumnAdjustmentGeometry(App: AppContainer): RoomColu
   };
 }
 
-export function resolveActiveRoomColumnCutObstacle(App: AppContainer): AxisAlignedBox | null {
-  return resolveRoomColumnAdjustmentGeometry(App)?.cutObstacle || null;
+function deepFreezeRoomPlanValue<T>(value: T): T {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  for (const nested of Object.values(value as object)) deepFreezeRoomPlanValue(nested);
+  return Object.freeze(value);
+}
+
+export function createRoomArchitecturePlan(input: RoomArchitecturePlanInput): RoomArchitecturePlan {
+  const geometry = resolveRoomArchitectureGeometry(input);
+  const wardrobeBox = wardrobeBoxFromGeometry(geometry);
+  const columnAdjustment = buildRoomColumnAdjustmentGeometry(geometry, wardrobeBox);
+  const plan: RoomArchitecturePlan = {
+    ...geometry,
+    wardrobeBox,
+    wallSurfaces: {
+      back: resolveRoomWallSurface(geometry, 'back'),
+      left: resolveRoomWallSurface(geometry, 'left'),
+      right: resolveRoomWallSurface(geometry, 'right'),
+    },
+    resolvedOpenings: resolveRoomOpeningsGeometry(geometry),
+    columnAdjustment,
+    activeCutObstacle: columnAdjustment?.cutObstacle ?? null,
+  };
+  return deepFreezeRoomPlanValue(plan);
+}
+
+export function resolveRoomColumnAdjustmentGeometry(
+  plan: RoomArchitecturePlan
+): RoomColumnAdjustmentGeometry | null {
+  return plan.columnAdjustment;
+}
+
+export function resolveActiveRoomColumnCutObstacle(plan: RoomArchitecturePlan): AxisAlignedBox | null {
+  return plan.activeCutObstacle;
 }
 
 export function resolveRoomColumnLinerPanelsForBox(
-  App: AppContainer,
+  plan: RoomArchitecturePlan,
   enclosureBox: AxisAlignedBox
 ): RoomColumnLinerPanel[] {
-  const adjustment = resolveRoomColumnAdjustmentGeometry(App);
+  const adjustment = plan.columnAdjustment;
   if (!adjustment) return [];
 
   // Free-box boards are cut by createBoard() with this same canonical cut obstacle.
@@ -759,20 +698,16 @@ export function resolveRoomColumnLinerPanelsForBox(
   return buildRoomColumnLinerPanels({ intrusion, cutIntrusion });
 }
 
-export function intersectsActiveRoomColumnCutObstacle(App: AppContainer, box: AxisAlignedBox): boolean {
-  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+export function intersectsActiveRoomColumnCutObstacle(
+  plan: RoomArchitecturePlan,
+  box: AxisAlignedBox
+): boolean {
+  const obstacle = plan.activeCutObstacle;
   return !!(obstacle && intersectAxisAlignedBoxes(box, obstacle));
 }
 
-export type RoomColumnAdjustedHorizontalSpan = {
-  minX: number;
-  maxX: number;
-  centerX: number;
-  length: number;
-};
-
 export function resolveHorizontalSpanAgainstRoomColumnCut(
-  App: AppContainer,
+  plan: RoomArchitecturePlan,
   args: {
     centerX: number;
     centerY: number;
@@ -783,7 +718,7 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     minUsableLength: number;
   }
 ): RoomColumnAdjustedHorizontalSpan | null {
-  const obstacle = resolveActiveRoomColumnCutObstacle(App);
+  const obstacle = plan.activeCutObstacle;
   const sourceMinX = args.centerX - args.length / 2;
   const sourceMaxX = args.centerX + args.length / 2;
   const source = {

@@ -28,7 +28,7 @@ import type {
   DoorTrimMap,
 } from './maps';
 import type { ActionMetaLike } from './kernel';
-import type { RoomWallId } from './room_architecture';
+import type { RoomArchitecturePlan, RoomWallId } from './room_architecture';
 import type { BuildStateLike, ConfigStateLike, UiSnapshotLike } from './build_state';
 import type {
   BuilderContentsSurfaceLike,
@@ -68,6 +68,7 @@ export type BuilderContentsVisibilityPolicy = BuilderContentsRenderPolicy &
 export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
     doorStyle: string;
+    roomArchitecturePlan: RoomArchitecturePlan;
   }>;
 export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
@@ -76,6 +77,7 @@ export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
 export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &
   Readonly<{
     showHangerEnabled: boolean;
+    roomArchitecturePlan: RoomArchitecturePlan;
   }>;
 
 export type BuilderMirrorReflectorProfile = {
@@ -357,6 +359,7 @@ export interface BuilderCornerBuildSnapshotLike extends UnknownRecord {
   renderPolicy: BuilderContentsRenderPolicy;
 }
 export interface BuilderCornerBuildMetaLike extends UnknownRecord {
+  roomArchitecturePlan: RoomArchitecturePlan;
   stackKey?: 'top' | 'bottom';
   baseType?: string;
   baseLegStyle?: string;
@@ -536,6 +539,7 @@ export interface BuilderHandleMeshOptionsLike extends BuilderRenderCommonArgsLik
   edgeHandleVariant?: string | null;
 }
 export interface BuilderCreateBoardArgsLike extends BuilderRenderCommonArgsLike {
+  roomArchitecturePlan: RoomArchitecturePlan;
   w?: number;
   h?: number;
   d?: number;
@@ -586,6 +590,7 @@ export type BuilderInteriorRodCreator = (
 ) => unknown;
 export interface BuilderCreateRodConfigLike extends UnknownRecord {}
 export interface BuilderCreateRodWithContentsArgsLike extends BuilderRenderCommonArgsLike {
+  roomArchitecturePlan: RoomArchitecturePlan;
   yPos?: number;
   enableHangingClothes?: boolean;
   enableSingleHanger?: boolean;
@@ -614,6 +619,7 @@ export interface BuilderCreateRodWithContentsArgsLike extends BuilderRenderCommo
 }
 export interface BuilderApplyCarcassContextLike extends UnknownRecord {
   THREE?: ThreeLike | null;
+  roomArchitecturePlan?: RoomArchitecturePlan;
   App: AppContainer | UnknownRecord;
   addOutlines?: BuilderOutlineFn | null;
   getPartMaterial?: BuilderPartMaterialResolver;
@@ -640,6 +646,7 @@ export type BuilderPartColorResolver = (partId: string) => BuilderPartColorValue
 /** Canonical public input for RenderOps.applyInteriorSketchExtras. */
 export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
   App: AppContainer;
+  roomArchitecturePlan: RoomArchitecturePlan;
   cfgSnapshot: ConfigStateLike | UnknownRecord;
   sketchExtras: BuilderSketchExtrasLike;
   doorStyle: BuilderDoorVisualFrameStyle;

@@ -1,7 +1,13 @@
 import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
 import { applyCarcassAndGetCabinetMetrics } from './carcass_pipeline.js';
 
-import type { AppContainer, BuilderOutlineFn, ConfigStateLike, ThreeLike } from '../../../types';
+import type {
+  AppContainer,
+  BuilderOutlineFn,
+  ConfigStateLike,
+  RoomArchitecturePlan,
+  ThreeLike,
+} from '../../../types';
 import type { BuildFlowPlan } from './build_flow_plan.js';
 
 export type BuildWardrobeCarcassMetrics = {
@@ -27,6 +33,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
   THREE: ThreeLike | null;
   cfg: ConfigStateLike;
   plan: BuildFlowPlan;
+  roomArchitecturePlan: RoomArchitecturePlan;
   sketchMode: boolean;
   addOutlinesMesh: BuilderOutlineFn | null;
   applyCarcassAndGetCabinetMetricsFn?: typeof applyCarcassAndGetCabinetMetrics;
@@ -36,6 +43,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
     THREE,
     cfg,
     plan,
+    roomArchitecturePlan,
     sketchMode,
     addOutlinesMesh,
     applyCarcassAndGetCabinetMetricsFn = applyCarcassAndGetCabinetMetrics,
@@ -45,6 +53,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
     App,
     THREE,
     cfg,
+    roomArchitecturePlan,
     totalW: plan.totalW,
     D: plan.carcassD,
     H: plan.carcassH,

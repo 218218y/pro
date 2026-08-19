@@ -6,6 +6,7 @@ import type { CornerOpsEmitContext } from './corner_ops_emit_common.js';
 export function createCornerWingEmitContext(args: {
   App: CornerOpsEmitContext['App'];
   THREE: CornerOpsEmitContext['THREE'];
+  roomArchitecturePlan: CornerOpsEmitContext['roomArchitecturePlan'];
   mainW: number;
   mainH: number;
   mainD: number;
@@ -23,12 +24,26 @@ export function createCornerWingEmitContext(args: {
   };
   wingGroup: CornerOpsEmitContext['wingGroup'];
 }): CornerOpsEmitContext {
-  const { App, THREE, mainW, mainH, mainD, woodThick, startY, state, mats, services, readers, wingGroup } =
-    args;
+  const {
+    App,
+    THREE,
+    roomArchitecturePlan,
+    mainW,
+    mainH,
+    mainD,
+    woodThick,
+    startY,
+    state,
+    mats,
+    services,
+    readers,
+    wingGroup,
+  } = args;
 
   return {
     App,
     THREE,
+    roomArchitecturePlan,
     mainW,
     mainH,
     mainD,

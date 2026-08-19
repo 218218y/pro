@@ -10,7 +10,7 @@ import {
   boxFromCenterSize,
   resolveRoomColumnLinerPanelsForBox,
 } from './room_architecture_geometry.js';
-import type { RoomColumnLinerFace } from './room_architecture_geometry.js';
+import type { RoomColumnLinerFace } from '../../../types';
 import { applySketchBoxPickMeta } from './render_interior_sketch_pick_meta.js';
 import { renderSketchFreeBoxDimensions } from './render_interior_sketch_layout.js';
 import { renderSketchBoxCarcassAdornment } from './render_interior_sketch_visuals.js';
@@ -159,7 +159,7 @@ function renderFreeSketchBoxRoomColumnLiners(args: {
   if (!state.isFreePlacement || placementWall !== 'back' || !THREE) return;
 
   const panels = resolveRoomColumnLinerPanelsForBox(
-    renderArgs.App,
+    renderArgs.input.roomArchitecturePlan,
     boxFromCenterSize({
       x: state.geometry.centerX,
       y: state.centerY,

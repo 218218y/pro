@@ -9,7 +9,7 @@ import {
 } from './render_interior_rod_clearance.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
 import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
-import type { UnknownRecord } from '../../../types';
+import type { RoomArchitecturePlan, UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
   InteriorTHREESurface,
@@ -24,7 +24,12 @@ type AddRealisticHangerFn = (
   z: number,
   group: InteriorObjectLike,
   innerW: number,
-  policy: { showHangerEnabled: boolean; sketchMode: boolean; addOutlines: AddOutlinesFn | null }
+  policy: {
+    showHangerEnabled: boolean;
+    roomArchitecturePlan: RoomArchitecturePlan;
+    sketchMode: boolean;
+    addOutlines: AddOutlinesFn | null;
+  }
 ) => unknown;
 type HangingClothesDepthHint = number | boolean;
 type AddHangingClothesFn = (
@@ -38,6 +43,7 @@ type AddHangingClothesFn = (
   policy: {
     showContentsEnabled: boolean;
     doorStyle: string;
+    roomArchitecturePlan: RoomArchitecturePlan;
     sketchMode: boolean;
     addOutlines: AddOutlinesFn | null;
   }
@@ -52,6 +58,7 @@ type RodConfigLike = {
 };
 
 type RenderInteriorRodArgs = InteriorValueRecord & {
+  roomArchitecturePlan?: RoomArchitecturePlan;
   THREE?: InteriorTHREESurface | null;
   yPos?: unknown;
   enableHangingClothes?: boolean;
@@ -134,6 +141,8 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
 
   function createRodWithContents(args: unknown) {
     const safeArgs = isRodArgs(args) ? args : {};
+    const roomArchitecturePlan = safeArgs.roomArchitecturePlan;
+    if (!roomArchitecturePlan) return false;
     const App = __app(safeArgs);
     __ops(App);
 
@@ -193,7 +202,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     const sourceRodLength = innerW - INTERIOR_ROD_RENDER_POLICY.widthClearanceM;
     if (!(sourceRodLength > 0)) return true;
 
-    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(App, {
+    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(roomArchitecturePlan, {
       centerX: internalCenterX,
       centerY: yPos,
       centerZ: internalZ,
@@ -276,6 +285,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     ) {
       addRealisticHanger(rodSpan.centerX, yPos, internalZ, group, rodSpan.length, {
         showHangerEnabled,
+        roomArchitecturePlan,
         sketchMode,
         addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
       });
@@ -324,6 +334,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
           {
             showContentsEnabled,
             doorStyle,
+            roomArchitecturePlan,
             sketchMode,
             addOutlines: typeof addOutlines === 'function' ? addOutlines : null,
           }

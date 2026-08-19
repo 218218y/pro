@@ -1,11 +1,11 @@
 # Test portfolio audit
 
-Generated: 2026-08-19T05:38:29.199Z
+Generated: 2026-08-19T07:30:50.497Z
 
 ## Summary
 
-- Test files classified: 1247
-- Canonical unit/runtime runner files: 1238
+- Test files classified: 1249
+- Canonical unit/runtime runner files: 1240
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 37
 - Package script test references: 16
@@ -20,12 +20,12 @@ Generated: 2026-08-19T05:38:29.199Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 137
+- Cross-kind contract overlap targets: 138
 
 | Category            | Count |
 | ------------------- | ----: |
-| contract            |   394 |
-| runtime-unit        |   343 |
+| contract            |   395 |
+| runtime-unit        |   344 |
 | integration         |   471 |
 | persistence-ingress |    23 |
 | e2e-smoke           |    10 |
@@ -55,6 +55,7 @@ Generated: 2026-08-19T05:38:29.199Z
 - `esm/native/builder/build_flow_plan_inputs.ts` — contract / ownership — `tests/build_flow_plan_inputs_dimension_ownership_contract.test.js`, `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_interior_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/build_flow_plan.ts` — contract / ownership — `tests/build_hotpath_runtime_cleanup_contracts.test.js`, `tests/builder_corner_typed_surface_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_interior_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/build_no_main_sketch_host.ts` — contract / ownership — `tests/no_main_sketch_dimension_ownership_contract.test.js`, `tests/sketch_box_door_special_paint_apply_guard.test.js`
+- `esm/native/builder/build_wardrobe_flow_context.ts` — contract / ownership — `tests/build_hotpath_runtime_cleanup_contracts.test.js`, `tests/builder_corner_typed_surface_contracts.test.js`, `tests/builder_service_access_contracts.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/room_architecture_plan_ownership_contract.test.js`
 - `esm/native/builder/chest_mode_pipeline.ts` — contract / ownership — `tests/builder_scalar_geometry_type_hardening_contracts.test.js`, `tests/chest_mode_builder_aggregate_pair_ownership_contract.test.js`, `tests/chest_mode_builder_aggregate_pair_ownership_runtime.test.ts`, `tests/root_surface_ast_guard.test.js`
 - `esm/native/builder/core_carcass_cornice.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/wp_legacy_fallback_audit_runtime.test.js`
 - `esm/native/builder/core_carcass_shared.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_pipeline_number_contracts_runtime.test.ts`, `tests/core_carcass_shared_ownership_runtime.test.ts`

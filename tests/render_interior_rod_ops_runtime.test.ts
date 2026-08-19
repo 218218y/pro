@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorRodOps } from '../esm/native/builder/render_interior_rod_ops.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import { CARCASS_INTERIOR_GRID_POLICY } from '../esm/shared/dimensions/carcass_interior_grid_policy.ts';
 import {
   FOLDED_CLOTHES_VISUAL_POLICY,
@@ -77,7 +78,15 @@ function makeFakeThree() {
 }
 
 function createRodOpsHarness(rootState?: any) {
-  const App = rootState ? ({ store: { getState: () => rootState } } as any) : ({} as any);
+  const state =
+    rootState ??
+    ({
+      ui: { raw: { width: 240, height: 240, depth: 60 } },
+      config: {},
+      runtime: { wardrobeWidthM: 2.4, wardrobeHeightM: 2.4, wardrobeDepthM: 0.6 },
+    } as any);
+  const App = { store: { getState: () => state } } as any;
+  const roomArchitecturePlan = createRoomArchitecturePlanFromApp(App);
   const cache: Record<string, unknown> = {};
   const added: any[] = [];
   const group = {
@@ -85,7 +94,7 @@ function createRodOpsHarness(rootState?: any) {
       added.push(obj);
     },
   } as any;
-  const ops = createBuilderRenderInteriorRodOps({
+  const rawOps = createBuilderRenderInteriorRodOps({
     app: () => App,
     ops: () => ({}),
     wardrobeGroup: () => group,
@@ -95,7 +104,14 @@ function createRodOpsHarness(rootState?: any) {
     assertTHREE: () => ({}),
   });
 
-  return { ops, App, cache, added, group };
+  const ops = {
+    ...rawOps,
+    createRodWithContents(args: any) {
+      return rawOps.createRodWithContents({ ...args, roomArchitecturePlan });
+    },
+  };
+
+  return { ops, App, cache, added, group, roomArchitecturePlan };
 }
 
 test('render interior rod keeps rod material independent from base leg material', () => {

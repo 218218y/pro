@@ -14,6 +14,7 @@ export function createInteriorSketchPlacementSupport(
 ): SketchPlacementSupport {
   const {
     App,
+    roomArchitecturePlan,
     group,
     effectiveBottomY,
     effectiveTopY,
@@ -64,7 +65,7 @@ export function createInteriorSketchPlacementSupport(
       asObject,
     }),
     addShelfPins: createShelfPinAdder({
-      App,
+      roomArchitecturePlan,
       group,
       THREE,
       pinGeo: placementMaterials.pinGeo,

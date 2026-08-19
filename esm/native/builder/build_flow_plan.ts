@@ -23,6 +23,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     addOutlines,
     calculateModuleStructureFn,
     toStr,
+    roomArchitecturePlan,
   } = args;
 
   const inputs = resolveBuildFlowPlanInputs({
@@ -64,6 +65,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     THREE,
     sketchMode,
     addOutlines,
+    roomArchitecturePlan,
   });
 
   return {

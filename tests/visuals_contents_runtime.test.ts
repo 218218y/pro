@@ -19,6 +19,8 @@ import {
 } from '../esm/native/builder/visuals_contents_shared.ts';
 import { __asBufferAttribute } from '../esm/native/builder/visuals_and_contents_shared.ts';
 import { BOOK_CONTENT_VISUAL_POLICY } from '../esm/shared/dimensions/content_visual_policy.ts';
+import { createRoomArchitecturePlan } from '../esm/native/builder/room_architecture_geometry.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 
 class FakeVector3 {
   x: number;
@@ -216,6 +218,21 @@ function createApp(overrides: Record<string, unknown> = {}) {
   return { App, outlined };
 }
 
+const defaultRoomArchitecturePlan = createRoomArchitecturePlan({
+  config: {
+    backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    column: { enabled: false, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 280, bottomOffsetCm: 0 },
+    openings: [],
+    wallColor: '#f2efe6',
+    surfacesHidden: false,
+  },
+  wardrobeWidthM: 2.4,
+  wardrobeHeightM: 2.4,
+  wardrobeDepthM: 0.6,
+});
+
 function foldedContentsPolicy(
   isLibraryMode: boolean,
   showContentsEnabled = true,
@@ -229,17 +246,19 @@ function hangingContentsPolicy(
   doorStyle: string,
   showContentsEnabled = true,
   sketchMode = false,
-  addOutlines: ((mesh: unknown) => unknown) | null = null
+  addOutlines: ((mesh: unknown) => unknown) | null = null,
+  roomArchitecturePlan = defaultRoomArchitecturePlan
 ) {
-  return { showContentsEnabled, doorStyle, sketchMode, addOutlines };
+  return { showContentsEnabled, doorStyle, sketchMode, addOutlines, roomArchitecturePlan };
 }
 
 function hangerContentsPolicy(
   showHangerEnabled: boolean,
   sketchMode = false,
-  addOutlines: ((mesh: unknown) => unknown) | null = null
+  addOutlines: ((mesh: unknown) => unknown) | null = null,
+  roomArchitecturePlan = defaultRoomArchitecturePlan
 ) {
-  return { showHangerEnabled, sketchMode, addOutlines };
+  return { showHangerEnabled, sketchMode, addOutlines, roomArchitecturePlan };
 }
 
 test('visuals_contents library policy requires and reads only the explicit config snapshot', () => {
@@ -691,7 +710,15 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
   });
 
   const singleParent = new FakeGroup();
-  addRealisticHanger(App, -0.06, 1.4, -0.2, singleParent as any, 0.8, hangerContentsPolicy(true));
+  addRealisticHanger(
+    App,
+    -0.06,
+    1.4,
+    -0.2,
+    singleParent as any,
+    0.8,
+    hangerContentsPolicy(true, false, null, createRoomArchitecturePlanFromApp(App))
+  );
   assert.equal(singleParent.children.length, 0);
 
   const hangingParent = new FakeGroup();
@@ -704,7 +731,7 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
     hangingParent as any,
     1.3,
     0.2,
-    hangingContentsPolicy('profile')
+    hangingContentsPolicy('profile', true, false, null, createRoomArchitecturePlanFromApp(App))
   );
   const hangers = hangingParent.children.filter(child => child.userData.__kind === 'hanging_hanger');
   const clothes = hangingParent.children.filter(child => child.userData.__kind === 'hanging_cloth');

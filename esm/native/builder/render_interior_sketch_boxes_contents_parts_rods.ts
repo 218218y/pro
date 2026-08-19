@@ -45,7 +45,7 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
     );
     const sourceRodCenterX = rodSegment ? rodSegment.centerX : geometry.centerX;
     const rodCenterZ = geometry.innerBackZ + geometry.innerD / 2;
-    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(args.args.App, {
+    const rodSpan = resolveHorizontalSpanAgainstRoomColumnCut(args.args.input.roomArchitecturePlan, {
       centerX: sourceRodCenterX,
       centerY: rodY,
       centerZ: rodCenterZ,

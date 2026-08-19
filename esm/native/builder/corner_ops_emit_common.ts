@@ -3,7 +3,14 @@
 // Keep the shared typed snapshot/render contract here so connector/wing emitters
 // stay focused on geometry and consume the captured build mode without store reads.
 
-import type { AppContainer, Object3DLike, ThreeLike, UnknownCallable, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  Object3DLike,
+  RoomArchitecturePlan,
+  ThreeLike,
+  UnknownCallable,
+  UnknownRecord,
+} from '../../../types';
 
 type CornerWingMaterialsResult = ReturnType<typeof import('./corner_materials.js').createCornerWingMaterials>;
 
@@ -18,6 +25,7 @@ type ShadowNodeLike = Object3DLike & {
 export interface CornerOpsEmitContext extends UnknownRecord {
   App: AppContainer;
   THREE: ThreeLike;
+  roomArchitecturePlan: RoomArchitecturePlan;
   mainW: number;
   mainH: number;
   mainD: number;

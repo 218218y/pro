@@ -8,6 +8,7 @@ import type {
   BuilderFoldedContentsPolicy,
   BuilderHangerContentsPolicy,
   BuilderHangingContentsPolicy,
+  RoomArchitecturePlan,
   UnknownRecord,
 } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
@@ -69,6 +70,7 @@ export type ThreeInteriorLike = {
 export type CornerConnectorInteriorCtx = {
   App: unknown;
   THREE: ThreeInteriorLike;
+  roomArchitecturePlan: RoomArchitecturePlan;
   woodThick: number;
   shelfThick: number;
   startY: number;

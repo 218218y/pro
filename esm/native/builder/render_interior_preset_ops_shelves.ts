@@ -1,4 +1,4 @@
-import type { AppContainer, BuilderCreateBoardOptions } from '../../../types';
+import type { AppContainer, BuilderCreateBoardOptions, RoomArchitecturePlan } from '../../../types';
 import type {
   InteriorGeometryLike,
   InteriorGroupLike,
@@ -31,6 +31,7 @@ import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room
 
 export function createAddGridShelf(args: {
   App: AppContainer;
+  roomArchitecturePlan: RoomArchitecturePlan;
   threeSurface: InteriorTHREESurface | null;
   group: InteriorGroupLike;
   createBoard: InteriorOpsCallable;
@@ -66,6 +67,7 @@ export function createAddGridShelf(args: {
 }): (gridIndex: number) => void {
   const {
     App,
+    roomArchitecturePlan,
     threeSurface,
     group,
     createBoard,
@@ -167,7 +169,7 @@ export function createAddGridShelf(args: {
       if (!threeSurface || !pinGeometry || !pinMaterial) return;
       if (
         intersectsActiveRoomColumnCutObstacle(
-          App,
+          roomArchitecturePlan,
           boxFromCenterSize({
             x,
             y: yPin,

@@ -120,6 +120,6 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
 
   hangerGroup.position.set(rodX, rodY - dims.rodYOffsetM, rodZ);
   hangerGroup.rotation.y = Math.PI / dims.rotationYDivisor;
-  if (visualObjectIntersectsRoomColumnCut(App, THREE, hangerGroup)) return;
+  if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, hangerGroup)) return;
   parentGroup.add(hangerGroup);
 };

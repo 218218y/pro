@@ -1,4 +1,4 @@
-import type { AppContainer, UnknownCallable } from '../../../types';
+import type { AppContainer, RoomArchitecturePlan, UnknownCallable } from '../../../types';
 
 import type {
   InteriorGroupLike,
@@ -27,6 +27,7 @@ export type SketchBoxLocatorResult = {
 
 export type CreateInteriorSketchPlacementSupportArgs = {
   App: AppContainer;
+  roomArchitecturePlan: RoomArchitecturePlan;
   group: InteriorGroupLike;
   effectiveBottomY: number;
   effectiveTopY: number;

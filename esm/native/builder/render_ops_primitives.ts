@@ -742,6 +742,10 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const App = __app(argsIn);
     __ops(App);
     const args = __boardArgs(argsIn);
+    const roomArchitecturePlan = argsIn?.roomArchitecturePlan;
+    if (!roomArchitecturePlan) {
+      throw new Error('[builder/render_ops_primitives] createBoard: roomArchitecturePlan missing');
+    }
     const THREE = args.THREE;
     if (!THREE) return null;
     const wardrobeGroup = __wardrobeGroup(App);
@@ -759,7 +763,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const addOutlines = args.addOutlines;
 
     const sourceBox = boxFromCenterSize({ x, y, z, width: w, height: h, depth: d });
-    const obstacle = resolveActiveRoomColumnCutObstacle(App);
+    const obstacle = resolveActiveRoomColumnCutObstacle(roomArchitecturePlan);
     const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
     if (!intersection) {

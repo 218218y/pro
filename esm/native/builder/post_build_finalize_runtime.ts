@@ -2,6 +2,7 @@ import { asRecord } from '../runtime/record.js';
 import { guardVoid } from '../runtime/api.js';
 import { runBuilderPostBuildFollowThrough } from '../runtime/builder_service_access_build_followthrough.js';
 import { refreshRoomArchitectureScene } from './room_architecture_scene.js';
+import { createRoomArchitecturePlanFromApp } from './room_architecture_plan_adapter.js';
 import { __ensureTHREE } from './room_shared_utils.js';
 
 import type {
@@ -12,6 +13,7 @@ import type {
   BuilderRebuildDrawerMetaFn,
   BuilderOutlineFn,
   ConfigStateLike,
+  RoomArchitecturePlan,
 } from '../../../types/index.js';
 
 export type FinalizeBestEffortArgs = {
@@ -22,6 +24,7 @@ export type FinalizeBestEffortArgs = {
   drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot | null;
   rebuildDrawerMeta?: BuilderRebuildDrawerMetaFn | null;
   addOutlines?: BuilderOutlineFn | null;
+  roomArchitecturePlan?: RoomArchitecturePlan | null;
 };
 
 export type FinalizeBestEffortArgsLike = FinalizeBestEffortArgs & Record<string, unknown>;
@@ -105,6 +108,7 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
   drawerRebuildSnapshot: BuilderDrawerRebuildSnapshot | null;
   rebuildDrawerMeta: BuilderRebuildDrawerMetaFn | null;
   addOutlines: BuilderOutlineFn | null;
+  roomArchitecturePlan: RoomArchitecturePlan | null;
 } {
   const argsRecord = readFinalizeArgs(args);
   return {
@@ -116,6 +120,7 @@ export function resolveFinalizeBuildBestEffortArgs(args: FinalizeBestEffortArgs)
     drawerRebuildSnapshot: readDrawerRebuildSnapshot(argsRecord?.drawerRebuildSnapshot),
     rebuildDrawerMeta: readRebuildDrawerMetaArg(args),
     addOutlines: readAddOutlinesArg(args),
+    roomArchitecturePlan: args.roomArchitecturePlan ?? null,
   };
 }
 
@@ -127,6 +132,7 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
     rebuildDrawerMeta: readBuildCtxRebuildDrawerMeta(ctx.fns),
     addOutlines: readBuildCtxAddOutlines(ctx.fns),
   };
+  if (ctx.room?.architecturePlan) out.roomArchitecturePlan = ctx.room.architecturePlan;
   if (ctx.cfg) out.cfgSnapshot = ctx.cfg;
   if (typeof ctx.resolvers?.removeDoorsEnabled === 'boolean') {
     out.removeDoorsEnabled = ctx.resolvers.removeDoorsEnabled;
@@ -136,12 +142,14 @@ export function resolveFinalizeBuildContextArgs(ctx: BuildContextLike): Finalize
 
 export function runFinalizeBuildBestEffort(args: FinalizeBestEffortArgs): { App: AppContainer | null } {
   const resolved = resolveFinalizeBuildBestEffortArgs(args);
-  if (resolved.App) {
+  const app = resolved.App;
+  if (app) {
     guardVoid(
-      resolved.App,
+      app,
       { where: 'builder/post_build_finalize_runtime', op: 'builder.refreshRoomArchitecture' },
       () => {
-        refreshRoomArchitectureScene(resolved.App as AppContainer, __ensureTHREE(resolved.App));
+        const plan = resolved.roomArchitecturePlan ?? createRoomArchitecturePlanFromApp(app);
+        refreshRoomArchitectureScene(app, __ensureTHREE(app), plan);
       }
     );
   }

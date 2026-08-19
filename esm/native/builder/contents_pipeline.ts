@@ -10,6 +10,7 @@ import type {
   BuilderCreateRodWithContentsArgsLike,
   BuilderInteriorRodCreator,
   BuilderOutlineFn,
+  RoomArchitecturePlan,
 } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
@@ -22,6 +23,7 @@ function readRodConfig(value: unknown): BuilderCreateRodConfigLike | null {
 
 type MakeRodCreatorArgs = {
   App?: AppContainer | null;
+  roomArchitecturePlan: RoomArchitecturePlan;
   THREE?: BuilderCreateRodWithContentsArgsLike['THREE'];
   cfg?: unknown;
   config?: unknown;
@@ -76,6 +78,7 @@ function createRodArgs(
   return {
     App: app,
     THREE: baseArgs.THREE,
+    roomArchitecturePlan: baseArgs.roomArchitecturePlan,
     yPos,
     enableHangingClothes,
     enableSingleHanger,

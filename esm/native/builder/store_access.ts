@@ -32,7 +32,7 @@ import {
   readUiStateFromApp,
 } from '../runtime/root_state_access.js';
 
-export { constrainProjectRoomArchitectureToWardrobeWidth };
+export { constrainProjectRoomArchitectureToWardrobeWidth, normalizeProjectRoomArchitecture };
 
 type BuilderActionSurface = {
   getBuildState?: (uiOverride?: unknown) => unknown;

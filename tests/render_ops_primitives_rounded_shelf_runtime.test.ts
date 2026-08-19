@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { makeBoardCreator } from '../esm/native/builder/board_factory.ts';
 import { createBuilderRenderPrimitiveOps } from '../esm/native/builder/render_ops_primitives.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 
 type AnyMap = Record<string, any>;
 
@@ -135,7 +136,7 @@ function createPrimitiveHarness(roomArchitecture?: AnyMap) {
       }),
     },
   };
-  const ops = createBuilderRenderPrimitiveOps({
+  const rawOps = createBuilderRenderPrimitiveOps({
     __app: () => App as never,
     __ops: () => ({}),
     __commonArgs: value => value as never,
@@ -148,7 +149,14 @@ function createPrimitiveHarness(roomArchitecture?: AnyMap) {
     __wardrobeGroup: () => group,
     __matCache: () => ({}),
   });
-  return { App, THREE, group, ops };
+  const roomArchitecturePlan = createRoomArchitecturePlanFromApp(App as never);
+  const ops = {
+    ...rawOps,
+    createBoard(args: AnyMap) {
+      return rawOps.createBoard({ ...args, roomArchitecturePlan });
+    },
+  };
+  return { App, THREE, group, ops, roomArchitecturePlan };
 }
 
 test('room column cuts a real rear notch into interior boards while preserving part identity', () => {

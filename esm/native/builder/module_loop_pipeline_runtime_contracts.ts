@@ -13,6 +13,7 @@ import type {
   ConfigStateLike,
   HingedDoorOpLike,
   ModuleConfigLike,
+  RoomArchitecturePlan,
   ThreeLike,
   UiStateLike,
 } from '../../../types/index.js';
@@ -29,6 +30,7 @@ export interface ModuleLoopRuntime {
   THREE: ThreeLike;
   cfg: ConfigStateLike;
   ui: UiStateLike;
+  roomArchitecturePlan: RoomArchitecturePlan;
   flags: BuildCtxFlagsLike;
   modules: ModuleLike[];
   moduleCfgList: ModuleConfigLike[];

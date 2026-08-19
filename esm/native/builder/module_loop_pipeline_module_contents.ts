@@ -83,6 +83,7 @@ export function applyModuleContents(
 
   const createRod = makeRodCreator({
     App: runtime.App,
+    roomArchitecturePlan: runtime.roomArchitecturePlan,
     THREE: runtime.THREE,
     cfg: runtime.cfg,
     config: frame.config,
@@ -114,6 +115,7 @@ export function applyModuleContents(
 
   applyInteriorLayout({
     App: runtime.App,
+    roomArchitecturePlan: runtime.roomArchitecturePlan,
     THREE: runtime.THREE,
     cfg: runtime.cfg,
     config: frame.config,

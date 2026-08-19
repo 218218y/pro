@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 
 import { createBuilderRenderInteriorSketchOps } from '../esm/native/builder/render_interior_sketch_ops.ts';
+import { createRoomArchitecturePlan } from '../esm/native/builder/room_architecture_geometry.ts';
+import { normalizeProjectRoomArchitecture } from '../esm/native/features/project_config/api.ts';
 
 export async function readSourceFiles(paths: string[]): Promise<string> {
   return (await Promise.all(paths.map(path => readFile(new URL(path, import.meta.url), 'utf8')))).join('\n');
@@ -288,6 +290,15 @@ type HarnessOptions = {
 };
 
 export function createSketchInteriorHarness(options: HarnessOptions = {}) {
+  const wardrobeWidthM = options.bodyWidth ?? 1.4;
+  const wardrobeHeightM = options.bodyHeight ?? 2.4;
+  const wardrobeDepthM = options.bodyDepth ?? 0.6;
+  const roomArchitecturePlan = createRoomArchitecturePlan({
+    config: normalizeProjectRoomArchitecture({}),
+    wardrobeWidthM,
+    wardrobeHeightM,
+    wardrobeDepthM,
+  });
   const wardrobeGroup = new FakeGroup();
   const body = new FakeMesh(
     new FakeBoxGeometry(options.bodyWidth ?? 1.4, options.bodyHeight ?? 2.4, options.bodyDepth ?? 0.6),
@@ -340,6 +351,7 @@ export function createSketchInteriorHarness(options: HarnessOptions = {}) {
     return {
       App: {},
       THREE,
+      roomArchitecturePlan,
       cfgSnapshot: {},
       doorStyle: 'flat',
       isGroovesEnabled: true,

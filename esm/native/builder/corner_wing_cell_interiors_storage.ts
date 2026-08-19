@@ -78,6 +78,7 @@ export function createCornerWingInteriorLayoutOps(
         cellRuntime.cellInnerW,
         {
           showHangerEnabled: runtime.showHangerEnabled,
+          roomArchitecturePlan: runtime.roomArchitecturePlan,
           sketchMode: runtime.__sketchMode === true,
           addOutlines: runtime.addOutlines,
         }
@@ -100,6 +101,7 @@ export function createCornerWingInteriorLayoutOps(
         {
           showContentsEnabled: runtime.showContentsEnabled,
           doorStyle: runtime.doorStyle,
+          roomArchitecturePlan: runtime.roomArchitecturePlan,
           sketchMode: runtime.__sketchMode === true,
           addOutlines: runtime.addOutlines,
         }

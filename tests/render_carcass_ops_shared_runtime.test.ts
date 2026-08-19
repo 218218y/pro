@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
+
 import {
   __asContext,
   __asOps,
@@ -253,8 +255,12 @@ test('room column trims only the colliding rear span of wave side cornice', asyn
   } as const;
   const rightSide = { ...leftSide, partId: 'cornice_wave_side_right', x: 0.5 } as const;
 
-  const leftAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(leftSide, { App });
-  const rightAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(rightSide, { App });
+  const leftAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(leftSide, {
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
+  });
+  const rightAdjusted = resolveCorniceSegmentsAgainstRoomColumnCut(rightSide, {
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
+  });
 
   assert.equal(leftAdjusted.length, 1);
   assert.equal(leftAdjusted[0]?.kind, 'cornice_wave_side');
@@ -317,8 +323,12 @@ test('room column trims profile side cornice without cutting the front fascia', 
     z: 0.3,
   } as const;
 
-  const adjustedSide = resolveCorniceSegmentsAgainstRoomColumnCut(profileSide, { App });
-  const adjustedFront = resolveCorniceSegmentsAgainstRoomColumnCut(front, { App });
+  const adjustedSide = resolveCorniceSegmentsAgainstRoomColumnCut(profileSide, {
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
+  });
+  const adjustedFront = resolveCorniceSegmentsAgainstRoomColumnCut(front, {
+    roomArchitecturePlan: createRoomArchitecturePlanFromApp(App),
+  });
 
   assert.equal(adjustedSide.length, 1);
   assert.equal(adjustedSide[0]?.kind, 'cornice_profile_seg');

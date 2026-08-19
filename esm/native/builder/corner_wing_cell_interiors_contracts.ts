@@ -1,4 +1,4 @@
-import type { MirrorLayoutList } from '../../../types';
+import type { MirrorLayoutList, RoomArchitecturePlan } from '../../../types';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import {
   type CornerCell,
@@ -19,6 +19,7 @@ export type CornerWingInteriorRuntime = {
   locals: CornerWingCellFlowParams['locals'];
   helpers: CornerWingCellFlowParams['helpers'];
   App: CornerWingCellFlowParams['ctx']['App'];
+  roomArchitecturePlan: RoomArchitecturePlan;
   woodThick: number;
   startY: number;
   wingD: number;

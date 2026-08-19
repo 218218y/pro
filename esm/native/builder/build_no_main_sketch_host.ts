@@ -15,6 +15,7 @@ import type {
   BuilderSketchShelfLike,
   BuilderSketchStorageBarrierLike,
   ModuleConfigLike,
+  RoomArchitecturePlan,
   UnknownRecord,
 } from '../../../types';
 import {
@@ -38,6 +39,7 @@ export type NoMainSketchWorkspaceMetricsInput = {
 
 export type NoMainSketchRenderInput = {
   THREE: unknown;
+  roomArchitecturePlan: RoomArchitecturePlan;
   cfg: UnknownRecord | null | undefined;
   ui: UnknownRecord | null | undefined;
   totalW: number;
@@ -256,6 +258,7 @@ export function maybeRenderNoMainSketchHost(args: NoMainSketchRenderInput & { Ap
   const createRod = makeRodCreator({
     App: args.App,
     THREE: three,
+    roomArchitecturePlan: args.roomArchitecturePlan,
     cfg: cfg || {},
     config: moduleCfg,
     moduleIndex: 0,
@@ -287,6 +290,7 @@ export function maybeRenderNoMainSketchHost(args: NoMainSketchRenderInput & { Ap
   return applyInteriorLayout({
     App: args.App,
     THREE: args.THREE,
+    roomArchitecturePlan: args.roomArchitecturePlan,
     cfg: cfg || {},
     config: moduleCfg,
     gridDivisions: NO_MAIN_SKETCH_POLICY.defaultGridDivisions,

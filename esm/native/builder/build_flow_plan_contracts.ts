@@ -9,6 +9,7 @@ import type {
   BuildStateLike,
   ModuleConfigLike,
   ThreeLike,
+  RoomArchitecturePlan,
 } from '../../../types';
 import type { GetMaterialFn } from './build_flow_readers.js';
 
@@ -212,6 +213,7 @@ export type BuildFlowBoardFactoryInput = Readonly<{
   THREE: ThreeLike;
   sketchMode: boolean;
   addOutlines: BuilderOutlineFn | null;
+  roomArchitecturePlan: RoomArchitecturePlan;
 }>;
 
 export type BuildFlowPlanInfrastructurePorts = Readonly<{
@@ -237,5 +239,6 @@ export type BuildFlowPlanResolveArgs = BuildFlowPlanMaterialsInput &
     sketchMode: boolean;
     addOutlines: BuilderOutlineFn;
     calculateModuleStructureFn: BuilderCalculateModuleStructureFn | null;
+    roomArchitecturePlan: RoomArchitecturePlan;
     doorState?: BuilderDoorStateAccessorsLike;
   };

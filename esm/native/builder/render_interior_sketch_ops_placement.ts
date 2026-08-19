@@ -14,6 +14,7 @@ export function createInteriorSketchExtrasPlacementPlan(
 ): InteriorSketchPlacementPlan {
   const placementSupport = createInteriorSketchPlacementSupport({
     App: resolved.App,
+    roomArchitecturePlan: resolved.input.roomArchitecturePlan,
     group: resolved.group,
     effectiveBottomY: resolved.effectiveBottomY,
     effectiveTopY: resolved.effectiveTopY,

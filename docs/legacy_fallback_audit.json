@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T04:24:09.157Z",
+  "generatedAt": "2026-08-19T07:30:47.646Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 559,
@@ -1994,7 +1994,7 @@
     },
     {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
-      "line": 198,
+      "line": 205,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
@@ -2050,14 +2050,14 @@
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
-      "line": 89,
+      "line": 91,
       "term": "fallbackCenterX",
       "category": "domain-default",
       "text": "fallbackCenterX: number,"
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
-      "line": 90,
+      "line": 92,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "fallbackW: number"
@@ -2575,7 +2575,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelf_pins.ts",
-      "line": 71,
+      "line": 72,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-material-metadata-fallback: keep-material metadata is advisory for generated shelf-pin materials"

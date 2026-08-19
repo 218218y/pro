@@ -15,6 +15,7 @@ import type {
   BuildCtxHingedLike,
   BuildCtxLayoutLike,
   BuildCtxMaterialsLike,
+  BuildCtxRoomLike,
   BuildCtxResolversLike,
   BuildCtxStringsLike,
   UnknownRecord,
@@ -64,6 +65,14 @@ function ensureMaterialsSection(ctx: BuildContextLike): BuildCtxMaterialsLike {
   return next;
 }
 
+function ensureRoomSection(ctx: BuildContextLike): BuildCtxRoomLike {
+  const current = asRecord<BuildCtxRoomLike>(ctx.room);
+  if (current) return current;
+  const next: BuildCtxRoomLike = {};
+  ctx.room = next;
+  return next;
+}
+
 function ensureCreateSection(ctx: BuildContextLike): BuildCtxCreateFnsLike {
   const current = asRecord<BuildCtxCreateFnsLike>(ctx.create);
   if (current) return current;
@@ -103,6 +112,7 @@ function normalizeBuildContextSections(ctx: BuildContextLike): BuildContextLike 
   ensureStringsSection(ctx);
   ensureLayoutSection(ctx);
   ensureMaterialsSection(ctx);
+  ensureRoomSection(ctx);
   ensureCreateSection(ctx);
   ensureResolversSection(ctx);
   ensureHingedSection(ctx);

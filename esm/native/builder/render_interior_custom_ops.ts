@@ -44,6 +44,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const App = __app(args);
     __ops(App);
     const input = asCustomInput(args);
+    const roomArchitecturePlan = input.roomArchitecturePlan;
+    if (!roomArchitecturePlan) return false;
 
     let THREE = input.THREE;
     if (!THREE) {
@@ -136,6 +138,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
 
     const addGridShelf = createAddCustomGridShelf({
       App,
+      roomArchitecturePlan,
       threeSurface,
       matCache: __matCache(App),
       group,

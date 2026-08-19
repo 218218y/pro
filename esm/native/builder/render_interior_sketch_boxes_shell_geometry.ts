@@ -4,8 +4,6 @@ import {
   resolveSketchBoxGeometry,
   resolveSketchFreeBoxGeometry,
 } from './render_interior_sketch_layout.js';
-import { resolveRoomArchitectureGeometry, resolveRoomWallSurface } from './room_architecture_geometry.js';
-
 import type {
   ResolvedSketchBoxShellGeometry,
   ResolveSketchBoxShellGeometryArgs,
@@ -58,8 +56,7 @@ export function resolveSketchBoxShellGeometry(
     const pad = resolveSketchBoxPlacementClampPad(woodThick);
 
     if (placementWall !== 'back') {
-      const roomGeometry = resolveRoomArchitectureGeometry(renderArgs.App);
-      const surface = resolveRoomWallSurface(roomGeometry, placementWall);
+      const surface = renderArgs.input.roomArchitecturePlan.wallSurfaces[placementWall];
       if (!surface) return null;
 
       const sizing = resolveSketchFreeBoxGeometry({

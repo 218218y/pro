@@ -21,6 +21,7 @@ export function createCornerWingInteriorRuntime(params: CornerWingCellFlowParams
   const helpers = params.helpers;
   const {
     App,
+    roomArchitecturePlan,
     woodThick,
     startY,
     wingD,
@@ -98,6 +99,7 @@ export function createCornerWingInteriorRuntime(params: CornerWingCellFlowParams
     locals,
     helpers,
     App,
+    roomArchitecturePlan,
     woodThick,
     startY,
     wingD,

@@ -15,7 +15,7 @@ import {
   resolveRoomColumnAdjustmentGeometry,
   subtractAxisAlignedBox,
 } from './room_architecture_geometry.js';
-import type { RoomColumnLinerFace } from './room_architecture_geometry.js';
+import type { RoomColumnLinerFace } from '../../../types';
 import {
   __asFinite,
   __asString,
@@ -161,7 +161,7 @@ export function createApplyCarcassBaseOps() {
 
   function applyRoomColumnLiners(runtime: RenderCarcassRuntime): void {
     const { THREE, wardrobeGroup, sketchMode, App } = runtime;
-    const adjustment = resolveRoomColumnAdjustmentGeometry(App);
+    const adjustment = resolveRoomColumnAdjustmentGeometry(runtime.roomArchitecturePlan);
     if (!adjustment || adjustment.linerPanels.length === 0) return;
 
     const group = new THREE.Group();
@@ -198,7 +198,7 @@ export function createApplyCarcassBaseOps() {
     const baseRec = readRecord(base);
     if (!baseRec) return;
     const baseKind = baseRec.kind;
-    const obstacle = resolveActiveRoomColumnCutObstacle(App);
+    const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
 
     if (baseKind === 'plinth') {
       const pid = __asString(baseRec.partId, 'plinth_color');
@@ -349,7 +349,7 @@ export function createApplyCarcassBaseOps() {
         height: bd.height,
         depth: bd.depth,
       });
-      const obstacle = resolveActiveRoomColumnCutObstacle(App);
+      const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
       const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
       if (intersection && obstacle) {
@@ -424,7 +424,7 @@ export function createApplyCarcassBaseOps() {
         height: seg.height,
         depth: seg.depth,
       });
-      const obstacle = resolveActiveRoomColumnCutObstacle(App);
+      const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
       const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
 
       if (intersection && obstacle) {

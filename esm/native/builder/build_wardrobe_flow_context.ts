@@ -13,6 +13,7 @@ import {
 } from './build_wardrobe_flow_context_carcass.js';
 import { resolveBuildWardrobeHingedContext } from './build_wardrobe_flow_context_hinged.js';
 import { asBuilderDoorMapsConfig, asBuilderOpenStateRecord } from './builder_config_boundary.js';
+import { createRoomArchitecturePlanFromBuildSnapshot } from './room_architecture_plan_adapter.js';
 
 import type { BuildContextLike } from '../../../types';
 import type { BuildFlowPlan } from './build_flow_plan.js';
@@ -75,6 +76,12 @@ export function prepareBuildWardrobeExecution(
 
   const doorState = makeDoorStateAccessors(cfg);
   const isRemoveDoorMode = isRemoveDoorModeFromSnapshot(state.mode);
+  const roomArchitecturePlan = createRoomArchitecturePlanFromBuildSnapshot({
+    cfg,
+    widthCm,
+    heightCm,
+    depthCm,
+  });
   const plan = resolveBuildFlowPlan({
     orchestration: prepared.orchestration,
     THREE,
@@ -92,6 +99,7 @@ export function prepareBuildWardrobeExecution(
     calculateModuleStructureFn,
     toStr,
     doorState,
+    roomArchitecturePlan,
   });
 
   const removeDoorsEnabled = resolveRemoveDoorsEnabledFromSnapshots(ui, state.mode);
@@ -117,6 +125,7 @@ export function prepareBuildWardrobeExecution(
     isRemoveDoorMode,
     removeDoorsEnabled,
     notesToPreserve,
+    roomArchitecturePlan,
   });
 
   const { startY, cabinetBodyHeight, cabinetTopY, splitLineY } = resolveBuildWardrobeCarcassMetrics({
@@ -124,6 +133,7 @@ export function prepareBuildWardrobeExecution(
     THREE,
     cfg,
     plan,
+    roomArchitecturePlan,
     sketchMode,
     addOutlinesMesh,
   });
@@ -159,6 +169,7 @@ export function prepareBuildWardrobeExecution(
     cfg,
     label,
     plan,
+    roomArchitecturePlan,
     widthCm,
     heightCm,
     depthCm,

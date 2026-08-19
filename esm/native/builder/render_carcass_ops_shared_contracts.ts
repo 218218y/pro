@@ -1,4 +1,4 @@
-import type { AppContainer, Object3DLike, UnknownCallable } from '../../../types';
+import type { AppContainer, Object3DLike, RoomArchitecturePlan, UnknownCallable } from '../../../types';
 import type { CarcassCornicePlan, CarcassCorniceSegment, CorniceProfilePoint } from './carcass_cornice_ir.js';
 import type { CarcassBackPanelOp, CarcassBoardOp } from './carcass_shell_ir.js';
 
@@ -50,6 +50,7 @@ export type PartMaterialFn = (partId: string) => unknown;
 export type RenderCarcassContext = {
   App?: AppContainer;
   THREE?: unknown;
+  roomArchitecturePlan?: RoomArchitecturePlan;
   addOutlines?: OutlineFn;
   getPartMaterial?: PartMaterialFn;
   __sketchMode?: boolean;
@@ -151,6 +152,7 @@ export type RenderCarcassRuntime = {
   sketchMode: boolean;
   reg: RenderCarcassOpsDeps['reg'];
   renderOpsHandleCatch: RenderCarcassOpsDeps['renderOpsHandleCatch'];
+  roomArchitecturePlan: RoomArchitecturePlan;
 };
 
 export type { AppContainer, UnknownCallable };
