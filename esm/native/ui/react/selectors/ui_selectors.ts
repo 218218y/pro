@@ -8,8 +8,8 @@
 import type { TabId, UiState } from '../../../../../types';
 
 type AutosaveInfo = {
-  timestamp?: number;
-  dateString?: string;
+  timestamp?: number | undefined;
+  dateString?: string | undefined;
 };
 
 export function selectActiveTabId(ui: UiState): TabId {

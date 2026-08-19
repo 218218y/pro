@@ -98,7 +98,7 @@ export interface ProjectDataLike extends UnknownRecord {
   orderPdfEditorZoom?: number;
   savedNotes?: ProjectSavedNotesLike;
   preChestState?: ProjectPreChestStateLike;
-  grooveLinesCount?: number | null;
+  grooveLinesCount?: number | null | undefined;
   __validation?: ProjectSchemaValidationResult;
 
   // Allow future persisted fields without churn.

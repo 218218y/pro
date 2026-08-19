@@ -1,4 +1,4 @@
-import { type ExportNotesTransform, readMatrix16, readVec3 } from './notes_export_shared.js';
+import { type ExportNotesTransform, type Matrix16, readMatrix16, readVec3 } from './notes_export_shared.js';
 import {
   type Mat4Vec4,
   type NoteTransformRuntime,
@@ -51,7 +51,7 @@ export function createTransformRuntime(transform: ExportNotesTransform | null): 
   };
 }
 
-function mulMat4Vec4(m: number[], x: number, y: number, z: number, w: number): Mat4Vec4 {
+function mulMat4Vec4(m: Matrix16, x: number, y: number, z: number, w: number): Mat4Vec4 {
   return {
     x: m[0] * x + m[4] * y + m[8] * z + m[12] * w,
     y: m[1] * x + m[5] * y + m[9] * z + m[13] * w,

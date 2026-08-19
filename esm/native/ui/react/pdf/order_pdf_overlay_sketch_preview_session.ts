@@ -42,8 +42,8 @@ export function readOrderPdfSketchPreviewSessionCameraPose<TCameraPose>(args: {
 
 export function captureOrderPdfSketchPreviewSessionSnapshot<TCameraPose = unknown>(args: {
   readSketchMode: () => boolean;
-  readDoorsOpen?: (() => boolean) | null;
-  readCameraPose?: (() => TCameraPose | null) | null;
+  readDoorsOpen?: (() => boolean) | null | undefined;
+  readCameraPose?: (() => TCameraPose | null) | null | undefined;
 }): OrderPdfSketchPreviewSessionSnapshot<TCameraPose> {
   const readDoorsOpen = typeof args.readDoorsOpen === 'function' ? args.readDoorsOpen : null;
   const readCameraPose = typeof args.readCameraPose === 'function' ? args.readCameraPose : null;
@@ -99,9 +99,9 @@ export function restoreOrderPdfSketchPreviewSessionSnapshot<TCameraPose = unknow
   snapshot: OrderPdfSketchPreviewSessionSnapshot<TCameraPose> | null | undefined;
   readSketchMode: () => boolean;
   restoreSketchMode: (next: boolean) => void;
-  readDoorsOpen?: (() => boolean) | null;
-  restoreDoorsOpen?: ((next: boolean) => void) | null;
-  restoreCameraPose?: ((pose: TCameraPose) => void) | null;
+  readDoorsOpen?: (() => boolean) | null | undefined;
+  restoreDoorsOpen?: ((next: boolean) => void) | null | undefined;
+  restoreCameraPose?: ((pose: TCameraPose) => void) | null | undefined;
 }): void {
   const snapshot = args.snapshot;
   if (!snapshot) return;
@@ -127,10 +127,10 @@ export function restoreOrderPdfSketchPreviewSessionSnapshot<TCameraPose = unknow
 export async function runOrderPdfSketchPreviewBuildSession<T, TCameraPose = unknown>(args: {
   readSketchMode: () => boolean;
   restoreSketchMode: (next: boolean) => void;
-  readDoorsOpen?: (() => boolean) | null;
-  restoreDoorsOpen?: ((next: boolean) => void) | null;
-  readCameraPose?: (() => TCameraPose | null) | null;
-  restoreCameraPose?: ((pose: TCameraPose) => void) | null;
+  readDoorsOpen?: (() => boolean) | null | undefined;
+  restoreDoorsOpen?: ((next: boolean) => void) | null | undefined;
+  readCameraPose?: (() => TCameraPose | null) | null | undefined;
+  restoreCameraPose?: ((pose: TCameraPose) => void) | null | undefined;
   build: () => Promise<T>;
 }): Promise<T> {
   const snapshot = captureOrderPdfSketchPreviewSessionSnapshot<TCameraPose>({

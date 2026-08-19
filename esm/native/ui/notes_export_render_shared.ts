@@ -1,3 +1,5 @@
+import type { Matrix16 } from './notes_export_shared.js';
+
 export type Point2 = { x: number; y: number };
 export type Vec3 = { x: number; y: number; z: number };
 export type Mat4Vec4 = { x: number; y: number; z: number; w: number };
@@ -7,8 +9,8 @@ export type NoteTransformRuntime = {
   affine: { a: number; b: number; c: number; d: number; e: number; f: number };
   scaleTranslate: { sx: number; sy: number; dx: number; dy: number };
   planeOk: boolean;
-  prePVInv: number[] | null;
-  postPV: number[] | null;
+  prePVInv: Matrix16 | null;
+  postPV: Matrix16 | null;
   preCamPos: Vec3 | null;
   planePoint: Vec3 | null;
   planeNormal: Vec3 | null;

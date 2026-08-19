@@ -23,7 +23,7 @@ type DesignTabColorActionBase = {
   id?: string;
   name?: string;
   locked?: boolean;
-  textureName?: string;
+  textureName?: string | undefined;
   dataUrl?: string;
   message?: string;
 };
@@ -51,7 +51,7 @@ export type DesignTabColorDeleteSuccessResult = {
 export type DesignTabColorUploadTextureSuccessResult = {
   ok: true;
   kind: 'upload-texture';
-  textureName?: string;
+  textureName?: string | undefined;
   dataUrl: string;
 };
 

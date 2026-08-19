@@ -29,7 +29,7 @@ export function useOrderPdfSketchPanelState(args: { open: boolean; entries: Orde
   const [tool, setToolState] = useState<OrderPdfSketchTool>('pen');
   const [freehandTool, setFreehandTool] = useState<OrderPdfSketchFreehandTool>('pen');
   const [lastNonTextTool, setLastNonTextTool] = useState<Exclude<OrderPdfSketchTool, 'text'>>('pen');
-  const [color, setColor] = useState<string>(ORDER_PDF_SKETCH_COLOR_SWATCHES[0]);
+  const [color, setColor] = useState<string>(ORDER_PDF_SKETCH_COLOR_SWATCHES[0] ?? '#dc2626');
   const [widthsByTool, setWidthsByTool] = useState(createDefaultOrderPdfSketchStrokeToolWidths);
   const [activeKey, setActiveKey] = useState<OrderPdfSketchAnnotationPageKey>('orderPdfPage1');
   const [activePalette, setActivePalette] = useState<OrderPdfSketchPaletteKey | null>(null);

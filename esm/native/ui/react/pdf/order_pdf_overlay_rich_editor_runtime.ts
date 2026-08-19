@@ -41,7 +41,7 @@ function assignOrderPdfDraftFieldIfChanged<K extends keyof OrderPdfDraft>(args: 
 export function readOrderPdfRichEditorSnapshotFromDraft(args: {
   draft: OrderPdfDraft | null | undefined;
   textApi: Pick<OrderPdfRichEditorTextApi, 'safeStr' | 'textToHtml' | 'htmlToTextPreserveNewlines'>;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): OrderPdfRichEditorSnapshot {
   const { draft, textApi, reportNonFatal } = args;
   if (!draft) return { detailsHtml: '', notesHtml: '' };
@@ -76,7 +76,7 @@ export function syncOrderPdfDraftFromRichEditorValues(args: {
   notes?: OrderPdfRichEditorSyncValue | null;
   detailsDirty: boolean;
   textApi: OrderPdfRichEditorTextApi;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): OrderPdfDraft | null {
   const { draft, details, notes, detailsDirty, textApi, reportNonFatal } = args;
   if (!draft) return null;

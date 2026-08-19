@@ -78,8 +78,7 @@ function shallowEqual<T>(a: T, b: T): boolean {
   const aKeys = Object.keys(aRec);
   const bKeys = Object.keys(bRec);
   if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i++) {
-    const k = aKeys[i];
+  for (const k of aKeys) {
     if (!Object.prototype.hasOwnProperty.call(bRec, k)) return false;
     if (!Object.is(aRec[k], bRec[k])) return false;
   }

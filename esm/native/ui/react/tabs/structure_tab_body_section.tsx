@@ -24,7 +24,9 @@ export function StructureBodySection(props: StructureBodySectionProps): ReactEle
         baseLegWidthCm={props.baseLegWidthCm}
         isChestMode={props.isChestMode}
         isSliding={props.isSliding}
-        hideBaseTypeControls={props.hideBaseTypeControls}
+        {...(props.hideBaseTypeControls !== undefined
+          ? { hideBaseTypeControls: props.hideBaseTypeControls }
+          : {})}
         slidingTracksColor={props.slidingTracksColor}
         onSetBaseType={props.onSetBaseType}
         onSetBaseLegStyle={props.onSetBaseLegStyle}

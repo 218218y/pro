@@ -23,7 +23,7 @@ const ORDER_PDF_SKETCH_PAGE_KEYS: readonly OrderPdfSketchAnnotationPageKey[] = [
 ];
 
 export function readOrderPdfSketchAnnotationSortKey(
-  value: { createdAt?: number },
+  value: { createdAt?: number | undefined },
   defaultValue: number
 ): number {
   return typeof value.createdAt === 'number' && Number.isFinite(value.createdAt)

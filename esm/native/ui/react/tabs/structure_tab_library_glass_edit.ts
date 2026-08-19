@@ -54,7 +54,7 @@ function runGlassEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () =
 
 export function enterStructureLibraryGlassEditMode(args: {
   app: AppContainer;
-  fb?: UiFeedbackNamespaceLike | null;
+  fb?: UiFeedbackNamespaceLike | null | undefined;
   paintId: string;
   deps?: StructureLibraryGlassEditDeps;
 }): boolean {
@@ -67,7 +67,12 @@ export function enterStructureLibraryGlassEditMode(args: {
   const setCurtainChoiceImpl = deps.setCurtainChoice || setCurtainChoice;
   const enterPrimaryModeImpl = deps.enterPrimaryMode || enterPrimaryMode;
   const getToolsImpl = deps.getTools || getTools;
-  const reportNonFatal = deps.reportNonFatal || structureTabReportNonFatal;
+  const reportNonFatal: ReportNonFatalFn =
+    deps.reportNonFatal ||
+    ((op, err, dedupeMs) =>
+      dedupeMs === undefined
+        ? structureTabReportNonFatal(op, err)
+        : structureTabReportNonFatal(op, err, dedupeMs));
   const paintModeId = resolveStructureLibraryPaintModeId(deps.modes || MODES);
 
   runGlassEditStep('structureLibraryGlassEdit.setMultiEnabled', reportNonFatal, () =>

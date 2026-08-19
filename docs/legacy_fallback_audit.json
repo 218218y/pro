@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-19T17:21:54.072Z",
+  "generatedAt": "2026-08-19T18:42:05.167Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 559,
-    "totalFiles": 218,
+    "totalOccurrences": 562,
+    "totalFiles": 219,
     "byCategory": {
       "runtime-default": 60,
-      "domain-default": 404,
+      "domain-default": 406,
       "error-message-default": 42,
-      "framework-default": 3,
+      "framework-default": 4,
       "browser-adapter": 18,
       "forward-compatibility": 1,
       "legacy-rejection": 3,
@@ -1104,6 +1104,13 @@
         "total": 1,
         "categories": {
           "domain-default": 1
+        }
+      },
+      "esm/native/ui/react/components/TooltipPlacement.ts": {
+        "total": 3,
+        "categories": {
+          "domain-default": 2,
+          "framework-default": 1
         }
       },
       "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts": {
@@ -4531,7 +4538,7 @@
       "line": 30,
       "term": "fallbackMessage",
       "category": "error-message-default",
-      "text": "fallbackMessage?: string;"
+      "text": "fallbackMessage?: string | undefined;"
     },
     {
       "file": "esm/native/ui/project_load_runtime_action.ts",
@@ -4545,7 +4552,7 @@
       "line": 52,
       "term": "fallbackMessage",
       "category": "error-message-default",
-      "text": "fallbackMessage?: string;"
+      "text": "fallbackMessage?: string | undefined;"
     },
     {
       "file": "esm/native/ui/project_load_runtime_action.ts",
@@ -4693,6 +4700,27 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// recovery-best-effort: reload may be unavailable; the lazy-load fallback UI remains usable."
+    },
+    {
+      "file": "esm/native/ui/react/components/TooltipPlacement.ts",
+      "line": 338,
+      "term": "fallback",
+      "category": "framework-default",
+      "text": "const fallback = candidates[0];"
+    },
+    {
+      "file": "esm/native/ui/react/components/TooltipPlacement.ts",
+      "line": 339,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "if (!fallback) {"
+    },
+    {
+      "file": "esm/native/ui/react/components/TooltipPlacement.ts",
+      "line": 349,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "return candidates.find(candidate => candidate.hasRoom) || fallback;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
@@ -5179,14 +5207,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 233,
+      "line": 234,
       "term": "fallbackStruct",
       "category": "domain-default",
-      "text": "const fallbackStruct = patterns.length ? JSON.stringify(patterns[0].structure) : '\"default\"';"
+      "text": "const fallbackStruct = firstPattern ? JSON.stringify(firstPattern.structure) : '\"default\"';"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-      "line": 235,
+      "line": 236,
       "term": "fallbackStruct",
       "category": "domain-default",
       "text": "args.structureSelectRaw && args.structureSelectRaw.trim() ? args.structureSelectRaw : fallbackStruct;"

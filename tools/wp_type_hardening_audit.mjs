@@ -44,8 +44,30 @@ function listTypeRuntimeStubs() {
   return { tsModules, jsStubs };
 }
 
+function collectCanonicalTypeScriptStrictnessViolations() {
+  const configPath = path.join(root, 'tsconfig.json');
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch (error) {
+    return [
+      `tsconfig.json: unable to read canonical TypeScript config (${error instanceof Error ? error.message : String(error)})`,
+    ];
+  }
+  const compilerOptions = parsed && typeof parsed === 'object' ? parsed.compilerOptions : null;
+  const violations = [];
+  if (!compilerOptions || compilerOptions.noUncheckedIndexedAccess !== true) {
+    violations.push('tsconfig.json: noUncheckedIndexedAccess must stay enabled globally');
+  }
+  if (!compilerOptions || compilerOptions.exactOptionalPropertyTypes !== true) {
+    violations.push('tsconfig.json: exactOptionalPropertyTypes must stay enabled globally');
+  }
+  return violations;
+}
+
 function collectTypeRuntimeStubViolations() {
   const { tsModules, jsStubs } = listTypeRuntimeStubs();
+
   const violations = [];
   for (const moduleName of [...tsModules].sort()) {
     if (!jsStubs.has(moduleName)) {
@@ -811,6 +833,7 @@ for (const rootName of scanRoots) {
   }
 }
 
+violations.push(...collectCanonicalTypeScriptStrictnessViolations());
 violations.push(...collectTypeRuntimeStubViolations());
 violations.push(...collectTypeRuntimeExportParityViolations());
 violations.push(...collectRuntimeGeometryScalarUnionViolations());
@@ -837,5 +860,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired and runtime exports stay in parity; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed; canonical write paths are enforced)'
+  '[type-hardening-audit] ok (global indexed-access and exact-optional strictness enabled; 0 `as any` casts in esm/types; types runtime stubs are paired and runtime exports stay in parity; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed; canonical write paths are enforced)'
 );

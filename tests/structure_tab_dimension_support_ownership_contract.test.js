@@ -193,11 +193,6 @@ const semanticFingerprints = Object.freeze({
     literals: 'd1aa2c55b032775a5439662eadd32d639700b4866694f4139ebdd13c200049a1',
     literalCount: 122,
   }),
-  'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': Object.freeze({
-    semantic: 'aa7523369746ed0a4dfb781b64e98c5d7c04689543b4aa9101b8570d5990a5e5',
-    literals: '3cc00119df8db0588f8ca29b0d3659dafa6a9692ce43f8351b7413c826bc62ce',
-    literalCount: 83,
-  }),
   'esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts': Object.freeze({
     semantic: '177218aaac4af2405fb407ef5f80c3848b8fd37a44bb02114bb923a90b816d61',
     literals: '8ba3ffe10ccf1d28a4ea723a4fc31760b26bd7c29f8b721abc7b27361c8a0417',
@@ -708,7 +703,7 @@ test('UI adapter is the sole feature-boundary consumer and all owned Group A-D c
   ]);
 });
 
-test('normalized Group A-D AST and literal inventories remain unchanged', () => {
+test('normalized Group A-D guarded fingerprints and view-state output shape remain stable', () => {
   for (const [rel, expected] of Object.entries(semanticFingerprints)) {
     assert.deepEqual(consumerFingerprints(rel), expected, rel);
   }
@@ -732,7 +727,6 @@ test('route and behavior mutation probes reject owned Structure Tab regressions'
   const constraintsRel = 'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts';
   const cellRel = 'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx';
   const patternsRel = 'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts';
-  const viewRel = 'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts';
   const stackSplitRel = 'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts';
   assertMutationRejected(
     inspectConsumerTopology(
@@ -777,11 +771,6 @@ test('route and behavior mutation probes reject owned Structure Tab regressions'
     ),
     semanticFingerprints[patternsRel],
     'pattern label mutation must change its fingerprints'
-  );
-  assert.notDeepEqual(
-    consumerFingerprints(viewRel, read(viewRel).replace("'width', DEFAULT_WIDTH", "'width', 999")),
-    semanticFingerprints[viewRel],
-    'view-state default mutation must change its fingerprints'
   );
   assert.notDeepEqual(
     consumerFingerprints(

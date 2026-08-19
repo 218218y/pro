@@ -230,7 +230,8 @@ export function deriveStructureTabSelectionState(
   const patterns: StructurePattern[] = STRUCTURE_PATTERNS[args.doors] || [
     { label: fallbackPatternLabel, structure: 'default' },
   ];
-  const fallbackStruct = patterns.length ? JSON.stringify(patterns[0].structure) : '"default"';
+  const firstPattern = patterns[0];
+  const fallbackStruct = firstPattern ? JSON.stringify(firstPattern.structure) : '"default"';
   const structureSelect =
     args.structureSelectRaw && args.structureSelectRaw.trim() ? args.structureSelectRaw : fallbackStruct;
   const structureParsed = safeJsonParse(structureSelect);

@@ -39,8 +39,8 @@ export function createDoorTrimModeOpts(args: {
   axis: DoorTrimUiAxis;
   span: DoorTrimUiSpan;
   color: DoorTrimUiColor;
-  sizeCm?: number | '';
-  crossSizeCm?: number | '';
+  sizeCm?: number | '' | undefined;
+  crossSizeCm?: number | '' | undefined;
 }): UnknownRecord {
   const nextSize =
     typeof args.sizeCm === 'number' && Number.isFinite(args.sizeCm) && args.sizeCm > 0

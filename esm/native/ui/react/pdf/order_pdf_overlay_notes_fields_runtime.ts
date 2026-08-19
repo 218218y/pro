@@ -21,9 +21,9 @@ export function createOrderPdfNotesFields(args: {
   notes: unknown;
   notesHtml?: unknown;
   textApi: OrderPdfNotesTextApi;
-  reportNonFatal?: ReportNonFatal;
-  htmlToTextReportOp?: string;
-  htmlReportOp?: string;
+  reportNonFatal?: ReportNonFatal | undefined;
+  htmlToTextReportOp?: string | undefined;
+  htmlReportOp?: string | undefined;
 }): OrderPdfNotesFields {
   const { textApi, reportNonFatal } = args;
   const explicitNotes = textApi.safeStr(args.notes);
@@ -58,7 +58,7 @@ export function createOrderPdfNotesFields(args: {
 export function buildOrderPdfNotesFieldsFromUiRecord(args: {
   rec: Record<string, unknown>;
   textApi: OrderPdfNotesTextApi;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): OrderPdfNotesFields {
   return createOrderPdfNotesFields({
     notes: args.rec.notes,

@@ -71,7 +71,7 @@ export function normalizeGlobalHandleType(value: unknown): HandleType | undefine
   return undefined;
 }
 
-export function captureProjectPrevUiMode(uiState: UiStateLike | null | undefined): ProjectIoPrevUiModeLike {
+export function captureProjectPrevUiMode(uiState: unknown): ProjectIoPrevUiModeLike {
   const uiNow = asRecord(uiState) || {};
   const sideVal = uiNow.cornerSide;
   return {
@@ -105,7 +105,7 @@ export function shouldPreserveProjectAutosaveOnLoad(opts?: ProjectLoadOpts): boo
   );
 }
 
-export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | null | undefined): UiStateLike {
+export function preserveUiEphemeral(uiSnap: unknown, uiNow: unknown): UiStateLike {
   const next = (() => {
     const snap = asRecord(uiSnap);
     return snap ? { ...snap } : {};

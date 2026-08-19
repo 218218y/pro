@@ -45,7 +45,7 @@ export function getEntryProStartRuntimeOps(
 export async function showRuntimeFatalOverlay(
   ctx: RuntimeHandlerContext,
   err: unknown,
-  opts: { title: string; description: string; context?: unknown; helpHtml?: string }
+  opts: { title: string; description: string; context?: unknown; helpHtml?: string | undefined }
 ): Promise<void> {
   const { window: win, document: doc, ops } = ctx;
 

@@ -72,6 +72,6 @@ test('Sketch drawer door cuts preserve the focused split and drawer-cut formulas
   assert.match(source, /Math\.abs\(previousCut\s*-\s*cutY\)\s*<=\s*duplicateTolerance/u);
   assert.match(
     source,
-    /minHeight:\s*splitPosList\.length\s*\?\s*HINGED_DOOR_SPLIT_GEOMETRY_POLICY\.splitGapM\s*\/\s*2\s*:\s*undefined/u
+    /splitPosList\.length\s*\?\s*\{\s*minHeight:\s*HINGED_DOOR_SPLIT_GEOMETRY_POLICY\.splitGapM\s*\/\s*2\s*\}\s*:\s*\{\}/u
   );
 });

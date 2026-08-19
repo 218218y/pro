@@ -1,9 +1,9 @@
 import path from 'node:path';
 import fs from 'node:fs';
 
-// The whole-project strict config is the canonical correctness gate.
-// core-hardening incrementally enables stricter indexed/optional semantics on
-// state/runtime/platform, geometry-core, and corner-geometry owners plus their transitive dependencies.
+// The whole-project config is the canonical correctness gate and globally enforces
+// strict indexed access plus exact optional-property semantics. core-hardening remains
+// as a focused compatibility/diagnostic lane over the historically hardened core surfaces.
 // ui-lean is intentionally separate because it compiles UI .ts files against
 // the dependency-light lean_types ambient surface rather than normal package types.
 export const MODE_TO_CONFIG = Object.freeze({

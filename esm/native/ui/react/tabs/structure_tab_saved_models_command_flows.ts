@@ -154,7 +154,7 @@ function identifyWritableSavedModel(
   modelsApi: ModelsServiceLike,
   kind: Extract<SavedModelsActionKind, 'overwrite' | 'delete'>,
   id: SavedModelId
-): SavedModelsActionResult & { kind: 'overwrite' | 'delete'; model?: SavedModelLike | null } {
+): SavedModelsActionResult & { kind: 'overwrite' | 'delete'; model?: SavedModelLike | null | undefined } {
   const identified = identifyModel(modelsApi, kind, id);
   if (!identified.ok) return identified;
   if (isPresetModel(identified.model)) {

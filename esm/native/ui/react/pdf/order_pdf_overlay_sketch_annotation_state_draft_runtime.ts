@@ -116,10 +116,8 @@ export function upsertOrderPdfSketchTextBox(args: {
   });
   if (!normalizedTextBox) return draft || makeEmptyDraft();
   const existingIndex = currentTextBoxes.findIndex(entry => entry.id === normalizedTextBox.id);
-  if (
-    existingIndex >= 0 &&
-    areOrderPdfSketchTextBoxesEqual(currentTextBoxes[existingIndex], normalizedTextBox)
-  ) {
+  const existingTextBox = existingIndex >= 0 ? currentTextBoxes[existingIndex] : undefined;
+  if (existingTextBox && areOrderPdfSketchTextBoxesEqual(existingTextBox, normalizedTextBox)) {
     return draft || makeEmptyDraft();
   }
   return mutateOrderPdfAnnotationLayer({

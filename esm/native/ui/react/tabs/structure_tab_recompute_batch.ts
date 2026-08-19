@@ -22,13 +22,13 @@ export type StructurePatchRecomputeBatchArgs<TPatch extends UnknownRecord = Unkn
   app: AppContainer;
   source: string;
   meta: ActionMetaLike;
-  uiPatch?: TPatch | null;
-  statePatch?: UnknownRecord | null;
-  mutate?: () => void;
-  recomputeOpts?: StructureRecomputeOpts;
-  mergeUiOverride?: StructureUiOverrideMerge;
-  buildTiming?: StructureRecomputeBuildTiming;
-  forceBuild?: boolean;
+  uiPatch?: TPatch | null | undefined;
+  statePatch?: UnknownRecord | null | undefined;
+  mutate?: (() => void) | undefined;
+  recomputeOpts?: StructureRecomputeOpts | undefined;
+  mergeUiOverride?: StructureUiOverrideMerge | undefined;
+  buildTiming?: StructureRecomputeBuildTiming | undefined;
+  forceBuild?: boolean | undefined;
 };
 
 export type StructureSnapshotRecomputeTransactionArgs<TPatch extends UnknownRecord = UnknownRecord> = {
@@ -37,10 +37,10 @@ export type StructureSnapshotRecomputeTransactionArgs<TPatch extends UnknownReco
   meta: ActionMetaLike;
   uiPatch: TPatch;
   prepareTransaction: () => StateSnapshotTransactionHandleLike;
-  recomputeOpts?: StructureRecomputeOpts;
-  mergeUiOverride?: StructureUiOverrideMerge;
-  buildTiming?: StructureRecomputeBuildTiming;
-  forceBuild?: boolean;
+  recomputeOpts?: StructureRecomputeOpts | undefined;
+  mergeUiOverride?: StructureUiOverrideMerge | undefined;
+  buildTiming?: StructureRecomputeBuildTiming | undefined;
+  forceBuild?: boolean | undefined;
 };
 
 export const STRUCTURE_RECOMPUTE_OPTS = createStructuralModulesRecomputeOpts() as StructureRecomputeOpts;

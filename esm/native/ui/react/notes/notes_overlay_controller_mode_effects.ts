@@ -148,8 +148,10 @@ export function useNotesOverlayControllerModeEffects(args: UseNotesOverlayContro
     };
 
     return () => {
-      rt.onEnterDrawMode = prevEnter;
-      rt.onExitDrawMode = prevExit;
+      if (prevEnter === undefined) delete rt.onEnterDrawMode;
+      else rt.onEnterDrawMode = prevEnter;
+      if (prevExit === undefined) delete rt.onExitDrawMode;
+      else rt.onExitDrawMode = prevExit;
     };
   }, [App, ensureNotesRuntimeState, preExitDrawModeCommitRef, skipNextExitCleanupRef, setEditMode]);
 

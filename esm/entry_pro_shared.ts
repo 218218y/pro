@@ -11,13 +11,13 @@ export type BootFatalOverlayOpts = {
   document?: Document | null;
   window?: Window | null;
 
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   error?: unknown;
   context?: unknown;
 
-  helpHtml?: string;
-  silentConsole?: boolean;
+  helpHtml?: string | undefined;
+  silentConsole?: boolean | undefined;
 };
 
 export type BootFatalOverlayController = {

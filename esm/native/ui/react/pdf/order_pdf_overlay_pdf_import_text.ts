@@ -40,8 +40,8 @@ export type PdfTextLayerItem = {
   y: number;
   width: number;
   height: number;
-  dir?: string;
-  hasEOL?: boolean;
+  dir?: string | undefined;
+  hasEOL?: boolean | undefined;
 };
 
 function asRecord(value: unknown): UnknownRecord | null {

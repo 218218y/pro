@@ -19,7 +19,7 @@ export type StructuralMutationBuildTiming = 'immediate' | 'coalesced' | 'none';
 
 export type StructuralMutationOptions = {
   buildTiming?: StructuralMutationBuildTiming;
-  metaOverrides?: ActionMetaLike;
+  metaOverrides?: ActionMetaLike | undefined;
 };
 
 export type ApplyStructuralMutationResult = {
@@ -34,12 +34,12 @@ type ApplyStructuralMutationArgs = {
   source: string;
   slice: StructuralMutationSlice;
   patch: UnknownRecord;
-  options?: StructuralMutationOptions;
+  options?: StructuralMutationOptions | undefined;
   applyDirectMutation: (meta: ActionMetaLike) => void;
 };
 
 type ApplyImmediateStructuralMutationArgs = Omit<ApplyStructuralMutationArgs, 'options'> & {
-  metaOverrides?: ActionMetaLike;
+  metaOverrides?: ActionMetaLike | undefined;
 };
 
 function normalizeStructuralMutationSource(source: string): string {

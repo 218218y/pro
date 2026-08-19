@@ -39,7 +39,7 @@ export function StructureDimensionsMainFields(props: {
           title="החזר את הארון הראשי למה שהיה לפני הביטול"
           preventDefault
           stopPropagation
-          onClick={props.onRestoreMainWardrobe}
+          {...(props.onRestoreMainWardrobe !== undefined ? { onClick: props.onRestoreMainWardrobe } : {})}
         >
           <i className="fas fa-undo" aria-hidden="true" />
           <strong>החזרת ארון ראשי</strong>

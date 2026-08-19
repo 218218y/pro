@@ -55,7 +55,7 @@ export function resolveNotesOverlayPaletteLayout(args: {
   anchorBottom: number;
   paletteHeight: number;
   minMaxHeight: number;
-  margin?: number;
+  margin?: number | undefined;
 }): { openUp: boolean; maxHeight: number } {
   const { hostTop, hostBottom, anchorTop, anchorBottom, paletteHeight, minMaxHeight, margin = 8 } = args;
   const spaceBelow = hostBottom - anchorBottom - margin;
@@ -76,7 +76,7 @@ export function resolveNotesOverlayMeasuredPaletteLayout(args: {
   measuredCount: number;
   paletteScrollHeight: number;
   spec: NotesOverlayPaletteLayoutSpec;
-  margin?: number;
+  margin?: number | undefined;
 }): { openUp: boolean; maxHeight: number; itemCount: number; paletteHeight: number } {
   const { hostTop, hostBottom, anchorTop, anchorBottom, measuredCount, paletteScrollHeight, spec, margin } =
     args;

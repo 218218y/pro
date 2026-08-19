@@ -15,7 +15,7 @@ export type InteriorHandleCfgView = {
 
 export type InteriorModeView = {
   primary?: unknown;
-  opts?: ModeActionOptsLike;
+  opts?: ModeActionOptsLike | undefined;
 };
 
 export type InteriorUiSnapshot = {

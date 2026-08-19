@@ -42,6 +42,24 @@ export type ExportNotesSourceRect = {
 };
 
 export type Vec3Like = { x: number; y: number; z: number };
+export type Matrix16 = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
 export type NotesExportApi = UiNotesExportServiceLike & UnknownRecord;
 
 export function isRecord(x: unknown): x is UnknownRecord {
@@ -94,12 +112,10 @@ export function readVec3(value: unknown): Vec3Like | null {
   return x === null || y === null || z === null ? null : { x, y, z };
 }
 
-export function readMatrix16(value: unknown): number[] | null {
-  return Array.isArray(value) &&
-    value.length === 16 &&
-    value.every(n => typeof n === 'number' && Number.isFinite(n))
-    ? value.slice()
-    : null;
+export function readMatrix16(value: unknown): Matrix16 | null {
+  if (!Array.isArray(value) || value.length !== 16) return null;
+  if (!value.every(n => typeof n === 'number' && Number.isFinite(n))) return null;
+  return value.slice() as Matrix16;
 }
 
 type ComputedStyleCarrier = {

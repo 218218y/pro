@@ -27,7 +27,7 @@ export async function runProjectLoadActionResult(
   feedback: ProjectFeedbackLike | null | undefined,
   run: () => ProjectLoadActionResult | Promise<ProjectLoadActionResult>,
   options?: {
-    fallbackMessage?: string;
+    fallbackMessage?: string | undefined;
     clearInputTargetFrom?: unknown;
   }
 ): Promise<ProjectLoadActionResult> {
@@ -49,7 +49,7 @@ export async function runProjectLoadAction(
   feedback: ProjectFeedbackLike | null | undefined,
   eventOrFile: unknown,
   options?: {
-    fallbackMessage?: string;
+    fallbackMessage?: string | undefined;
     clearInputTargetFrom?: unknown;
   }
 ): Promise<ProjectLoadActionResult> {

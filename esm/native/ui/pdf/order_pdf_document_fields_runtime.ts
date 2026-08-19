@@ -71,8 +71,8 @@ export function resolveOrderPdfScalarFieldValues(args: {
 }
 
 export function mergeOrderPdfScalarFieldValues(args: {
-  preferred?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;
-  secondary?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null;
+  preferred?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null | undefined;
+  secondary?: Partial<Record<OrderPdfScalarFieldKey, unknown>> | null | undefined;
   defaultProjectName?: unknown;
 }): OrderPdfScalarFieldValues {
   const preferred = readOrderPdfScalarFieldValues(args.preferred);

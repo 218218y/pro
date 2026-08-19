@@ -54,7 +54,7 @@ function isValidOrderPdfSketchSurfaceSize(
 function resolveOrderPdfSketchAxisDeltas(args: {
   start: OrderPdfSketchPoint;
   end: OrderPdfSketchPoint;
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
 }) {
   const { start, end, surfaceSize } = args;
   const dx = end.x - start.x;
@@ -91,7 +91,7 @@ function shouldSnapOrderPdfShapeToEqualSides(args: { deltaXPx: number; deltaYPx:
 function buildOrderPdfResolvedDragEnd(args: {
   start: OrderPdfSketchPoint;
   end: OrderPdfSketchPoint;
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
   snapEqualSides?: boolean;
 }): OrderPdfSketchPoint {
   const { start, end, surfaceSize, snapEqualSides = false } = args;
@@ -108,7 +108,7 @@ function buildOrderPdfResolvedDragEnd(args: {
 function buildOrderPdfRectPoints(args: {
   start: OrderPdfSketchPoint;
   end: OrderPdfSketchPoint;
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
   snapEqualSides?: boolean;
 }): OrderPdfSketchPoint[] {
   const resolvedEnd = buildOrderPdfResolvedDragEnd(args);
@@ -146,7 +146,7 @@ function buildOrderPdfEllipsePoints(args: {
 function buildOrderPdfCirclePoints(args: {
   start: OrderPdfSketchPoint;
   end: OrderPdfSketchPoint;
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
   snapEqualSides?: boolean;
 }): OrderPdfSketchPoint[] {
   const resolvedEnd = buildOrderPdfResolvedDragEnd(args);
@@ -165,7 +165,7 @@ function buildOrderPdfCirclePoints(args: {
 function buildOrderPdfEllipsePathPoints(args: {
   start: OrderPdfSketchPoint;
   end: OrderPdfSketchPoint;
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
 }): OrderPdfSketchPoint[] {
   return buildOrderPdfCirclePoints({ ...args, snapEqualSides: false });
 }
@@ -182,7 +182,7 @@ function shouldRebuildOrderPdfSketchShapePoints(args: {
 export function buildOrderPdfSketchShapePoints(args: {
   tool: OrderPdfSketchStrokeTool;
   points: readonly OrderPdfSketchPoint[];
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
 }): OrderPdfSketchPoint[] {
   const { tool } = args;
   const first = args.points[0];
@@ -191,8 +191,8 @@ export function buildOrderPdfSketchShapePoints(args: {
   const normalizedPoints = args.points.map(normalizeOrderPdfSketchPoint);
   if (!isOrderPdfSketchShapeTool(tool)) return normalizedPoints;
   if (!shouldRebuildOrderPdfSketchShapePoints({ tool, points: normalizedPoints })) return normalizedPoints;
-  const normalizedFirst = normalizedPoints[0];
-  const normalizedLast = normalizedPoints[normalizedPoints.length - 1] || normalizedFirst;
+  const normalizedFirst = normalizeOrderPdfSketchPoint(first);
+  const normalizedLast = normalizeOrderPdfSketchPoint(last);
   switch (tool) {
     case 'line':
       if (Object.is(normalizedFirst.x, normalizedLast.x) && Object.is(normalizedFirst.y, normalizedLast.y)) {

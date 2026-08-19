@@ -215,14 +215,14 @@ export interface RuntimeActionsAccessLike extends UnknownRecord {
 export interface FatalOverlayShowOptionsLike extends UnknownRecord {
   document?: Document | null;
   window?: Window | null;
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   error?: unknown;
   context?: unknown;
-  helpHtml?: string;
+  helpHtml?: string | undefined;
   snapshot?: unknown;
-  allowClose?: boolean;
-  silentConsole?: boolean;
+  allowClose?: boolean | undefined;
+  silentConsole?: boolean | undefined;
 }
 
 export interface FatalOverlayHideOptionsLike extends UnknownRecord {

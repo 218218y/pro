@@ -10,10 +10,10 @@ export type ProjectRecoveryRunFn<Result> = ((app: AppContainer) => Promise<Resul
 type ProjectRecoveryActionKey = 'restore' | 'reset';
 type ProjectRecoveryActionLike = {
   ok: boolean;
-  reason?: string;
-  message?: string;
-  restoreGen?: number;
-  warnings?: unknown[];
+  reason?: string | undefined;
+  message?: string | undefined;
+  restoreGen?: number | undefined;
+  warnings?: unknown[] | undefined;
 };
 
 function reportRecoveryFeedbackFailure(App: AppContainer, error: unknown): void {

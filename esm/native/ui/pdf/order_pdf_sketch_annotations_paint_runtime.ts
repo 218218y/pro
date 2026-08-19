@@ -27,7 +27,7 @@ export type OrderPdfSketchPaintTextBoxLike = {
   height: number;
   color: string;
   fontSize: number;
-  bold?: boolean;
+  bold?: boolean | undefined;
   text: string;
 };
 
@@ -224,8 +224,7 @@ export function paintOrderPdfSketchStrokes<TStroke extends OrderPdfSketchPaintSt
     ctx.globalAlpha = 1;
     ctx.beginPath();
     ctx.moveTo(first.x * canvasWidth, first.y * canvasHeight);
-    for (let i = 1; i < points.length; i++) {
-      const point = points[i];
+    for (const point of points.slice(1)) {
       ctx.lineTo(point.x * canvasWidth, point.y * canvasHeight);
     }
 
@@ -306,7 +305,7 @@ export function paintOrderPdfSketchAnnotationLayer(args: {
   canvasWidth: number;
   canvasHeight: number;
   strokes: readonly OrderPdfSketchPaintStrokeLike[];
-  textBoxes?: readonly OrderPdfSketchPaintTextBoxLike[];
+  textBoxes?: readonly OrderPdfSketchPaintTextBoxLike[] | undefined;
 }): void {
   const { ctx, canvasWidth, canvasHeight } = args;
   const strokes = Array.isArray(args.strokes) ? args.strokes : [];

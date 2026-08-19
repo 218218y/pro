@@ -26,7 +26,7 @@ type RasterTextSpec = {
   align: 'left' | 'right';
   multiline: boolean;
   fontPx: number;
-  preparedLines?: string[];
+  preparedLines?: string[] | undefined;
 };
 
 export function buildRasterPageLayout(
@@ -93,7 +93,7 @@ export function paintRasterizedOrderTemplatePage(args: {
   draft: OrderPdfDraft;
   layout: RasterPageLayout;
   fontFamily: string;
-  detailsPreparedLines?: string[];
+  detailsPreparedLines?: string[] | undefined;
   report: OrderPdfOverlayExportOpsDeps['orderPdfOverlayReportNonFatal'];
 }): void {
   const { ctx, draft, layout, fontFamily, detailsPreparedLines, report } = args;

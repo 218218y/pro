@@ -72,7 +72,7 @@ export function buildOrderPdfStrokeFromDrawingPoints(args: {
   color: string;
   width: number;
   points: readonly OrderPdfSketchPoint[];
-  surfaceSize?: OrderPdfSketchSurfaceSize | null;
+  surfaceSize?: OrderPdfSketchSurfaceSize | null | undefined;
 }): OrderPdfSketchStroke | null {
   const { tool, color, width } = args;
   const sourcePoints = Array.isArray(args.points) ? args.points : [];
@@ -111,7 +111,7 @@ export function appendOrderPdfDrawingPointsFromClientBatch(args: {
   points: DrawingPoint[];
   events: readonly ClientPointLike[];
   rect: DrawingRect | null | undefined;
-  epsilon?: number;
+  epsilon?: number | undefined;
 }): boolean {
   const { points, events, rect, epsilon } = args;
   if (!rect || !events.length) return false;
@@ -133,7 +133,7 @@ export function updateOrderPdfDrawingPointsFromClientBatch(args: {
   points: DrawingPoint[];
   events: readonly ClientPointLike[];
   rect: DrawingRect | null | undefined;
-  epsilon?: number;
+  epsilon?: number | undefined;
 }): boolean {
   const { tool, points, events, rect, epsilon } = args;
   if (!isOrderPdfSketchShapeTool(tool)) {
@@ -152,6 +152,7 @@ export function updateOrderPdfDrawingPointsFromClientBatch(args: {
   if (!resolvedPoints.length) return false;
   const anchorPoint = resolvedPoints[0];
   const point = resolvedPoints[resolvedPoints.length - 1];
+  if (!anchorPoint || !point) return false;
   if (!points.length) {
     points.push(anchorPoint);
     if (resolvedPoints.length === 1) return true;

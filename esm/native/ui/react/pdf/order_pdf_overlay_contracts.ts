@@ -9,8 +9,8 @@ export type OrderPdfSketchPoint = {
 };
 
 export type OrderPdfSketchStroke = {
-  id?: string;
-  createdAt?: number;
+  id?: string | undefined;
+  createdAt?: number | undefined;
   tool: OrderPdfSketchStrokeTool;
   color: string;
   width: number;
@@ -26,13 +26,13 @@ export type OrderPdfSketchTextBox = {
   height: number;
   color: string;
   fontSize: number;
-  bold?: boolean;
+  bold?: boolean | undefined;
   text: string;
 };
 
 export type OrderPdfSketchAnnotationLayer = {
   strokes: OrderPdfSketchStroke[];
-  textBoxes?: OrderPdfSketchTextBox[];
+  textBoxes?: OrderPdfSketchTextBox[] | undefined;
 };
 
 export type OrderPdfSketchAnnotations = Partial<
@@ -62,22 +62,22 @@ export type OrderPdfDraft = {
   // "Details" (פרוט הזמנה) is now fully user-editable.
   // The plain-text and sanitized rich-HTML forms represent the entire details box.
   detailsText: string;
-  detailsHtml?: string;
+  detailsHtml?: string | undefined;
 
   // Used to avoid overwriting the user's edits when refreshing auto data.
   detailsTouched: boolean;
-  detailsSeed?: string;
+  detailsSeed?: string | undefined;
 
   notes: string; // הערות
   // Rich HTML for notes (optional). `notes` stays as plain text.
-  notesHtml?: string;
+  notesHtml?: string | undefined;
 
   // Which image sets to include in export (default: both).
-  includeRenderSketch?: boolean; // הדמיה/סקיצה
-  includeOpenClosed?: boolean; // פתוח/סגור
+  includeRenderSketch?: boolean | undefined; // הדמיה/סקיצה
+  includeOpenClosed?: boolean | undefined; // פתוח/סגור
 
   // Lightweight freehand annotations painted on the sketch preview pages.
-  sketchAnnotations?: OrderPdfSketchAnnotations;
+  sketchAnnotations?: OrderPdfSketchAnnotations | undefined;
 };
 
 export type InlineDetailsConfirmState = {
@@ -101,12 +101,12 @@ export type OrderPdfOverlayDraftActionReason = 'not-ready' | 'cancelled' | 'erro
 export type OrderPdfOverlayDraftActionResult = {
   ok: boolean;
   kind: OrderPdfOverlayDraftActionKind;
-  reason?: OrderPdfOverlayDraftActionReason;
-  detail?: string;
-  next?: OrderPdfDraft | null;
-  detailsDirty?: boolean;
-  confirm?: InlineDetailsConfirmState | null;
-  closeRequested?: boolean;
+  reason?: OrderPdfOverlayDraftActionReason | undefined;
+  detail?: string | undefined;
+  next?: OrderPdfDraft | null | undefined;
+  detailsDirty?: boolean | undefined;
+  confirm?: InlineDetailsConfirmState | null | undefined;
+  closeRequested?: boolean | undefined;
 };
 
 export type PdfJsVerbosityLevelLike = { ERRORS?: number; WARNINGS?: number };
@@ -135,10 +135,10 @@ export type PdfJsRenderOptionsLike = Record<string, unknown> & {
 };
 
 export type PdfJsGetDocumentOptionsLike = Record<string, unknown> & {
-  data?: Uint8Array | ArrayBuffer | null;
-  url?: string;
-  disableWorker?: boolean;
-  verbosity?: number;
+  data?: Uint8Array | ArrayBuffer | null | undefined;
+  url?: string | undefined;
+  disableWorker?: boolean | undefined;
+  verbosity?: number | undefined;
 };
 
 export type PdfJsPageLike = Record<string, unknown> & {
@@ -168,7 +168,7 @@ export type PdfJsLibLike = {
   GlobalWorkerOptions?: PdfJsGlobalWorkerOptionsLike;
   VerbosityLevel?: PdfJsVerbosityLevelLike;
   setVerbosityLevel?: (lvl: number) => void;
-  verbosity?: number;
+  verbosity?: number | undefined;
   PDFJS?: { verbosity?: number };
 };
 
@@ -181,23 +181,38 @@ export type OrderPdfOverlayActionReason = 'not-ready' | 'busy' | 'invalid-file' 
 
 export type LoadPdfActionResult =
   | { ok: true; kind: 'load-pdf'; fieldsFound: boolean }
-  | { ok: false; kind: 'load-pdf'; reason: 'busy' | 'invalid-file' | 'error'; detail?: string };
+  | { ok: false; kind: 'load-pdf'; reason: 'busy' | 'invalid-file' | 'error'; detail?: string | undefined };
 
 export type ExportInteractiveActionResult =
   | { ok: true; kind: 'export-interactive'; downloadStarted: boolean }
-  | { ok: false; kind: 'export-interactive'; reason: 'busy' | 'not-ready' | 'error'; detail?: string };
+  | {
+      ok: false;
+      kind: 'export-interactive';
+      reason: 'busy' | 'not-ready' | 'error';
+      detail?: string | undefined;
+    };
 
 export type ExportImagePdfActionResult =
   | { ok: true; kind: 'export-image-pdf'; downloadStarted: boolean }
-  | { ok: false; kind: 'export-image-pdf'; reason: 'busy' | 'not-ready' | 'error'; detail?: string };
+  | {
+      ok: false;
+      kind: 'export-image-pdf';
+      reason: 'busy' | 'not-ready' | 'error';
+      detail?: string | undefined;
+    };
 
 export type ExportGmailActionResult =
-  | { ok: true; kind: 'export-gmail'; gmailOpened: boolean; downloadStarted?: boolean }
-  | { ok: false; kind: 'export-gmail'; reason: 'busy' | 'not-ready' | 'error'; detail?: string };
+  | { ok: true; kind: 'export-gmail'; gmailOpened: boolean; downloadStarted?: boolean | undefined }
+  | { ok: false; kind: 'export-gmail'; reason: 'busy' | 'not-ready' | 'error'; detail?: string | undefined };
 
 export type ExportDownloadGmailActionResult =
-  | { ok: true; kind: 'export-download-gmail'; gmailOpened: boolean; downloadStarted?: boolean }
-  | { ok: false; kind: 'export-download-gmail'; reason: 'busy' | 'not-ready' | 'error'; detail?: string };
+  | { ok: true; kind: 'export-download-gmail'; gmailOpened: boolean; downloadStarted?: boolean | undefined }
+  | {
+      ok: false;
+      kind: 'export-download-gmail';
+      reason: 'busy' | 'not-ready' | 'error';
+      detail?: string | undefined;
+    };
 
 export type OrderPdfOverlayActionResult =
   | LoadPdfActionResult

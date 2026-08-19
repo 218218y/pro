@@ -20,11 +20,11 @@ export type SavedModelsActionFailureReason =
 
 export type SavedModelsActionBase = {
   kind: SavedModelsActionKind;
-  id?: SavedModelId;
-  name?: string;
-  locked?: boolean;
-  dir?: SavedModelsMoveDir;
-  listType?: SavedModelsListType;
+  id?: SavedModelId | undefined;
+  name?: string | undefined;
+  locked?: boolean | undefined;
+  dir?: SavedModelsMoveDir | undefined;
+  listType?: SavedModelsListType | undefined;
 };
 
 export type SavedModelsActionSuccessResult = SavedModelsActionBase & {
@@ -34,7 +34,7 @@ export type SavedModelsActionSuccessResult = SavedModelsActionBase & {
 export type SavedModelsActionFailureResult = SavedModelsActionBase & {
   ok: false;
   reason: SavedModelsActionFailureReason;
-  message?: string;
+  message?: string | undefined;
 };
 
 export type SavedModelsActionResult = SavedModelsActionSuccessResult | SavedModelsActionFailureResult;
@@ -48,7 +48,7 @@ type SavedModelsIdentifiedResult<
   K extends IdentifiableSavedModelsActionKind = IdentifiableSavedModelsActionKind,
 > = (SavedModelsActionSuccessResult | SavedModelsActionFailureResult) & {
   kind: K;
-  model?: SavedModelLike | null;
+  model?: SavedModelLike | null | undefined;
 };
 
 export function trimId(value: unknown): SavedModelId {

@@ -32,8 +32,8 @@ export function resolveOrderPdfRichTextHtml(args: {
   text: unknown;
   html: unknown;
   textApi: Pick<OrderPdfDetailsTextApi, 'safeStr' | 'textToHtml'>;
-  reportNonFatal?: ReportNonFatal;
-  reportOp?: string;
+  reportNonFatal?: ReportNonFatal | undefined;
+  reportOp?: string | undefined;
 }): string {
   const { textApi, reportNonFatal, reportOp } = args;
   const html = sanitizeHtmlByPolicy(null, textApi.safeStr(args.html), 'order-pdf-rich');
@@ -52,8 +52,8 @@ function resolveOrderPdfDetailsMarkerHtml(args: {
   detailsText: string;
   autoRegionText: string | null;
   textApi: Pick<OrderPdfDetailsTextApi, 'textToHtml' | 'buildDetailsHtmlWithMarkers'>;
-  reportNonFatal?: ReportNonFatal;
-  reportOp?: string;
+  reportNonFatal?: ReportNonFatal | undefined;
+  reportOp?: string | undefined;
 }): string {
   const { detailsText, autoRegionText, textApi, reportNonFatal, reportOp } = args;
   if (typeof autoRegionText === 'string') {
@@ -92,9 +92,9 @@ export function createOrderPdfDetailsFields(args: {
   detailsTouched?: unknown;
   autoRegionTextForMarkers?: unknown;
   textApi: Pick<OrderPdfDetailsTextApi, 'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers'>;
-  reportNonFatal?: ReportNonFatal;
-  markerReportOp?: string;
-  htmlReportOp?: string;
+  reportNonFatal?: ReportNonFatal | undefined;
+  markerReportOp?: string | undefined;
+  htmlReportOp?: string | undefined;
 }): OrderPdfDetailsFields {
   const { textApi, reportNonFatal } = args;
   const autoDetails = textApi.safeStr(args.autoDetails);
@@ -133,7 +133,7 @@ export function createOrderPdfInitialDetailsFields(args: {
     OrderPdfDetailsTextApi,
     'safeStr' | 'textToHtml' | 'buildDetailsHtmlWithMarkers' | 'normalizeForCompare'
   >;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): { fields: OrderPdfDetailsFields; detailsDirty: boolean } {
   const { textApi, reportNonFatal } = args;
   const autoDetails = textApi.safeStr(args.autoDetails);

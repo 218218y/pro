@@ -69,7 +69,8 @@ export function resolveOrderPdfSketchActiveKey(args: {
   const { entries, activeKey } = args;
   if (!entries.length) return activeKey;
   if (entries.some(entry => entry.key === activeKey)) return activeKey;
-  return entries[0].key;
+  const firstEntry = entries[0];
+  return firstEntry ? firstEntry.key : activeKey;
 }
 
 export function toggleOrderPdfSketchActivePalette(

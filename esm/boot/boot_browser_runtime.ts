@@ -8,15 +8,15 @@ type BrowserBootRuntimeOpts = {
   app: AppContainer;
   window: Window | null;
   document: Document | null;
-  report?: BrowserBootReporter;
+  report?: BrowserBootReporter | undefined;
   mountReactUi?: BrowserBootUiMount | null;
   startBootUi?: boolean;
   installBeforeUnloadGuard?: boolean;
   installDebugSurface?: BrowserBootSurfaceInstaller | null;
-  beforeUnloadMessage?: string;
-  flushServices?: unknown[];
-  getState?: () => unknown;
-  hasDirtyState?: (state: unknown) => boolean;
+  beforeUnloadMessage?: string | undefined;
+  flushServices?: unknown[] | undefined;
+  getState?: (() => unknown) | undefined;
+  hasDirtyState?: ((state: unknown) => boolean) | undefined;
 };
 
 type WindowWithBootFlag = Window & { __WP_BEFOREUNLOAD_GUARD__?: boolean };
@@ -77,11 +77,11 @@ export function hasDirtyMetaState(state: unknown): boolean {
 export function installBeforeUnloadGuardMaybe(opts: {
   app: AppContainer;
   window: Window | null;
-  report?: BrowserBootReporter;
-  beforeUnloadMessage?: string;
-  flushServices?: unknown[];
-  getState?: () => unknown;
-  hasDirtyState?: (state: unknown) => boolean;
+  report?: BrowserBootReporter | undefined;
+  beforeUnloadMessage?: string | undefined;
+  flushServices?: unknown[] | undefined;
+  getState?: (() => unknown) | undefined;
+  hasDirtyState?: ((state: unknown) => boolean) | undefined;
 }): boolean {
   const { app, window: win, report, beforeUnloadMessage, flushServices, getState, hasDirtyState } = opts;
   if (!win) return false;

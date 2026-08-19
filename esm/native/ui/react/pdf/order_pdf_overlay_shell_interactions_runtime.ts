@@ -180,7 +180,8 @@ export function trapOrderPdfOverlayTabKey(args: {
   if (!focusables.length) return false;
 
   const first = focusables[0];
-  const last = focusables[focusables.length - 1];
+  if (!first) return false;
+  const last = focusables[focusables.length - 1] || first;
   const scopeIsInlineConfirm = scope.id === 'orderPdfInlineConfirmModal';
 
   if (!inside) {

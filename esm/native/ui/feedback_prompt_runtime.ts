@@ -2,8 +2,9 @@ import { asRecord } from '../services/api.js';
 
 export type UiPromptLike = {
   openCustomPrompt?:
-    ((title: string, defaultValue: string, cb: (value: string | null) => void) => unknown) | null;
-  prompt?: ((title: string, defaultValue: string, cb: (value: string | null) => void) => unknown) | null;
+    ((title: string, defaultValue: string, cb: (value: string | null) => void) => unknown) | null | undefined;
+  prompt?:
+    ((title: string, defaultValue: string, cb: (value: string | null) => void) => unknown) | null | undefined;
 };
 
 export type UiPromptResult =

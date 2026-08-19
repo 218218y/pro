@@ -120,7 +120,7 @@ export type OrderPdfFieldSpecLike = {
   key: string;
   value: string;
   box: PdfRectLike;
-  multiline?: boolean;
+  multiline?: boolean | undefined;
   align?: unknown;
 };
 

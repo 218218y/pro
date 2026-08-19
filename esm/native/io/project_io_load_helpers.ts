@@ -24,6 +24,7 @@ import {
 } from './project_io_load_helpers_shared.js';
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotImpl } from './project_io_load_helpers_config.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
+import { asUiRawInputs } from '../../../types/ui_raw.js';
 
 export type {
   ProjectIoPrevUiModeLike,
@@ -51,7 +52,7 @@ function readLoadedProjectName(rec: UnknownRecord, currentProjectName: string): 
   return currentProjectName;
 }
 
-export function captureProjectPrevUiMode(uiState: UiStateLike | null | undefined) {
+export function captureProjectPrevUiMode(uiState: unknown) {
   return captureProjectPrevUiModeImpl(uiState);
 }
 
@@ -93,12 +94,12 @@ export function buildProjectUiSnapshot(
   const savedNotes = readSavedNotes(rec.savedNotes);
 
   const uiState: UiStateLike = {
-    raw: {
-      doors: settings.doors,
-      width: settings.width,
-      height: settings.height,
-      depth: settings.depth,
-      cornerWidth: settings.cornerWidth,
+    raw: asUiRawInputs({
+      ...(typeof settings.doors === 'number' ? { doors: settings.doors } : {}),
+      ...(typeof settings.width === 'number' ? { width: settings.width } : {}),
+      ...(typeof settings.height === 'number' ? { height: settings.height } : {}),
+      ...(typeof settings.depth === 'number' ? { depth: settings.depth } : {}),
+      ...(typeof settings.cornerWidth === 'number' ? { cornerWidth: settings.cornerWidth } : {}),
       chestCommodeMirrorHeightCm,
       chestCommodeMirrorWidthCm,
       chestCommodeMirrorWidthManual,
@@ -109,41 +110,46 @@ export function buildProjectUiSnapshot(
       stackSplitLowerDepthManual: lowerDepthManual,
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
-      structureSelect: settings.structureSelection,
+      ...(typeof settings.structureSelection === 'string'
+        ? { structureSelect: settings.structureSelection }
+        : {}),
       singleDoorPos: settings.singleDoorPos || 'left',
-    },
+    }),
     projectName: readLoadedProjectName(rec, currentProjectName),
-    doors: settings.doors,
-    width: settings.width,
-    height: settings.height,
-    depth: settings.depth,
-    cornerWidth: settings.cornerWidth,
+    ...(typeof settings.doors === 'number' ? { doors: settings.doors } : {}),
+    ...(typeof settings.width === 'number' ? { width: settings.width } : {}),
+    ...(typeof settings.height === 'number' ? { height: settings.height } : {}),
+    ...(typeof settings.depth === 'number' ? { depth: settings.depth } : {}),
+    ...(typeof settings.cornerWidth === 'number' ? { cornerWidth: settings.cornerWidth } : {}),
     cornerSide,
 
-    baseType: settings.baseType,
+    ...(typeof settings.baseType === 'string' ? { baseType: settings.baseType } : {}),
     [SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]:
       settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'plinth' ||
       settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'legs' ||
       settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY] === 'none'
         ? settings[SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY]
         : null,
-    baseLegStyle: settings.baseLegStyle,
-    baseLegColor: settings.baseLegColor,
+    ...(typeof settings.baseLegStyle === 'string' ? { baseLegStyle: settings.baseLegStyle } : {}),
+    ...(typeof settings.baseLegColor === 'string' ? { baseLegColor: settings.baseLegColor } : {}),
     baseLegPlatformMode: settings.baseLegPlatformMode === 'plain' ? 'plain' : 'stage',
     baseLegPlatformSideMode: settings.baseLegPlatformSideMode === 'flush' ? 'flush' : 'overhang',
-    basePlinthHeightCm: settings.basePlinthHeightCm,
-    baseLegHeightCm: settings.baseLegHeightCm,
-    baseLegWidthCm: settings.baseLegWidthCm,
+    ...(typeof settings.basePlinthHeightCm === 'number'
+      ? { basePlinthHeightCm: settings.basePlinthHeightCm }
+      : {}),
+    ...(typeof settings.baseLegHeightCm === 'number' ? { baseLegHeightCm: settings.baseLegHeightCm } : {}),
+    ...(typeof settings.baseLegWidthCm === 'number' ? { baseLegWidthCm: settings.baseLegWidthCm } : {}),
     slidingTracksColor: settings.slidingTracksColor === 'black' ? 'black' : 'nickel',
-    structureSelect: settings.structureSelection,
+    ...(typeof settings.structureSelection === 'string'
+      ? { structureSelect: settings.structureSelection }
+      : {}),
     singleDoorPos: settings.singleDoorPos || 'left',
-    doorStyle: settings.doorStyle,
+    ...(typeof settings.doorStyle === 'string' ? { doorStyle: settings.doorStyle } : {}),
 
     corniceType: String(settings.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
 
-    colorChoice: settings.color,
-    color: settings.color,
-    customColor: settings.customColor,
+    ...(typeof settings.color === 'string' ? { colorChoice: settings.color, color: settings.color } : {}),
+    ...(typeof settings.customColor === 'string' ? { customColor: settings.customColor } : {}),
 
     groovesEnabled: !!toggles.grooves,
     internalDrawersEnabled:
@@ -184,8 +190,10 @@ export function buildProjectUiSnapshot(
 
   const cornerDepth = settings.cornerDepth;
   const rawDepth = asRecord(uiState.raw)?.depth;
-  uiState.cornerDepth =
+  const resolvedCornerDepth =
     typeof cornerDepth === 'number' ? cornerDepth : typeof rawDepth === 'number' ? rawDepth : undefined;
+  if (typeof resolvedCornerDepth === 'number') uiState.cornerDepth = resolvedCornerDepth;
+  else delete uiState.cornerDepth;
 
   const chestCount = chestSettings.drawersCount;
   if (typeof chestCount === 'number' && uiState.raw) {
@@ -195,7 +203,7 @@ export function buildProjectUiSnapshot(
   return { uiState, savedNotes };
 }
 
-export function preserveUiEphemeral(uiSnap: UiStateLike, uiNow: UiStateLike | null | undefined): UiStateLike {
+export function preserveUiEphemeral(uiSnap: unknown, uiNow: unknown): UiStateLike {
   return preserveUiEphemeralImpl(uiSnap, uiNow);
 }
 

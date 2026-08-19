@@ -16,7 +16,8 @@ export async function readOrderPdfDraftSeedFromProjectWithDeps(args: {
   getOrderPdfDraftFn: (value: unknown) => (() => unknown) | null;
   readOrderPdfDraftSeed: (value: unknown) => OrderPdfDraftSeed;
 }): Promise<
-  { ok: true; seed: OrderPdfDraftSeed } | { ok: false; reason: 'not-ready' | 'error'; detail?: string }
+  | { ok: true; seed: OrderPdfDraftSeed }
+  | { ok: false; reason: 'not-ready' | 'error'; detail?: string | undefined }
 > {
   const { app, ensureExportApiReady, getOrderPdfDraftFn, readOrderPdfDraftSeed } = args;
   const exp = await ensureExportApiReady(app);

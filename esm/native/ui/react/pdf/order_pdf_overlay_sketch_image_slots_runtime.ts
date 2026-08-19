@@ -103,7 +103,7 @@ export function readOrderPdfSketchImageSlotEnabled(
   key: OrderPdfSketchImageSlotKey
 ): boolean {
   const spec = readOrderPdfSketchImageSlotSpec(key);
-  return resolveOrderPdfSketchImageDraftFlags(draft)[spec.draftFlag];
+  return resolveOrderPdfSketchImageDraftFlags(draft)[spec.draftFlag] !== false;
 }
 
 export function resolveOrderPdfImportedImageFlags(

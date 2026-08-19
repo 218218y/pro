@@ -62,7 +62,8 @@ export function readSavedColorList(value: unknown): SettingsBackupSavedColorEntr
     if (!id) continue;
     const prevIndex = seen.get(id);
     if (typeof prevIndex === 'number') {
-      if (shouldPreferSavedColorEntry(out[prevIndex], entry)) out[prevIndex] = entry;
+      const previous = out[prevIndex];
+      if (previous && shouldPreferSavedColorEntry(previous, entry)) out[prevIndex] = entry;
       continue;
     }
     seen.set(id, out.length);
@@ -94,13 +95,12 @@ export function mergeSavedColorLists(
   let added = 0;
   let changed = Array.isArray(currentValue) ? current.length !== currentValue.length : current.length > 0;
 
-  for (let i = 0; i < out.length; i += 1) {
-    const id = getSavedColorId(out[i]);
-    if (id) seen.set(id, i);
+  for (const [index, entry] of out.entries()) {
+    const id = getSavedColorId(entry);
+    if (id) seen.set(id, index);
   }
 
-  for (let i = 0; i < imported.length; i += 1) {
-    const entry = imported[i];
+  for (const entry of imported) {
     const id = getSavedColorId(entry);
     if (!id) continue;
     const prevIndex = seen.get(id);
@@ -111,7 +111,8 @@ export function mergeSavedColorLists(
       changed = true;
       continue;
     }
-    if (!shouldPreferSavedColorEntry(out[prevIndex], entry)) continue;
+    const previous = out[prevIndex];
+    if (!previous || !shouldPreferSavedColorEntry(previous, entry)) continue;
     out[prevIndex] = entry;
     changed = true;
   }
@@ -158,8 +159,7 @@ export function sanitizeSettingsBackupCollectionIds(
   const normalizedIds = readSettingsBackupIdList(ids);
   if (!availableIds || availableIds.size <= 0) return normalizedIds;
   const out: SettingsBackupIdList = [];
-  for (let i = 0; i < normalizedIds.length; i += 1) {
-    const id = normalizedIds[i];
+  for (const id of normalizedIds) {
     if (!availableIds.has(id)) continue;
     out.push(id);
   }
@@ -177,14 +177,12 @@ export function sanitizeColorSwatchesOrder(
   if (colorIds.size <= 0) return normalizedSecondaryOrder;
   const out: SettingsBackupIdList = [];
   const seen = new Set<string>();
-  for (let i = 0; i < normalizedOrder.length; i += 1) {
-    const id = normalizedOrder[i];
+  for (const id of normalizedOrder) {
     if (!colorIds.has(id) || seen.has(id)) continue;
     seen.add(id);
     out.push(id);
   }
-  for (let i = 0; i < normalizedSecondaryOrder.length; i += 1) {
-    const id = normalizedSecondaryOrder[i];
+  for (const id of normalizedSecondaryOrder) {
     if (!colorIds.has(id) || seen.has(id)) continue;
     seen.add(id);
     out.push(id);

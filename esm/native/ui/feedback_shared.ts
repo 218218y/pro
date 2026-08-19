@@ -24,7 +24,7 @@ export function reportUiNonFatal(
   App: unknown,
   op: string,
   err: unknown,
-  opts?: { where?: string; dedupeMs?: number; consoleOutput?: boolean }
+  opts?: { where?: string | undefined; dedupeMs?: number | undefined; consoleOutput?: boolean | undefined }
 ): void {
   const where = opts?.where || 'native/ui';
   const dedupeMs = typeof opts?.dedupeMs === 'number' ? Math.max(0, opts.dedupeMs) : 4000;
@@ -88,12 +88,12 @@ export type AppWithModalState = AppContainer & {
 };
 
 export interface CustomModalEls {
-  modal?: HTMLElement;
-  input?: HTMLInputElement;
-  confirmBtn?: HTMLButtonElement;
-  cancelBtn?: HTMLButtonElement;
-  titleEl?: HTMLElement;
-  msgEl?: HTMLElement;
+  modal?: HTMLElement | undefined;
+  input?: HTMLInputElement | undefined;
+  confirmBtn?: HTMLButtonElement | undefined;
+  cancelBtn?: HTMLButtonElement | undefined;
+  titleEl?: HTMLElement | undefined;
+  msgEl?: HTMLElement | undefined;
 }
 
 export interface EventTargetLike {

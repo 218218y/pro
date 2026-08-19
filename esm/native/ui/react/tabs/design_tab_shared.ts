@@ -18,10 +18,10 @@ export type EnterModeOptsLike = {
   closeDoors: boolean;
   cursor: string;
   toast: string;
-  modeOpts?: SplitModeOptsLike;
-  source?: string;
-  immediate?: boolean;
-  uiPatch?: UnknownRecord;
+  modeOpts?: SplitModeOptsLike | undefined;
+  source?: string | undefined;
+  immediate?: boolean | undefined;
+  uiPatch?: UnknownRecord | undefined;
 };
 
 export type DesignTabToastFn = (msg: string, kind?: string) => void;

@@ -96,9 +96,10 @@ function projectValuesEqual(left: unknown, right: unknown): boolean {
   const leftKeys = Object.keys(left).sort();
   const rightKeys = Object.keys(right).sort();
   if (leftKeys.length !== rightKeys.length) return false;
-  for (let i = 0; i < leftKeys.length; i += 1) {
-    if (leftKeys[i] !== rightKeys[i]) return false;
-    if (!projectValuesEqual(left[leftKeys[i]], right[rightKeys[i]])) return false;
+  for (const [index, leftKey] of leftKeys.entries()) {
+    const rightKey = rightKeys[index];
+    if (rightKey === undefined || leftKey !== rightKey) return false;
+    if (!projectValuesEqual(left[leftKey], right[rightKey])) return false;
   }
   return true;
 }

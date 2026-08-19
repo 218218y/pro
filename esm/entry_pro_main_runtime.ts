@@ -70,7 +70,7 @@ export async function showEntryBootOverlayFailure(
     reportOverlayFailurePreservingOriginal: EntryProMainRuntimeOps['reportOverlayFailurePreservingOriginal'];
     phase: 'loadThreeEsm' | 'boot';
     description: string;
-    helpKind?: BootFailureKind;
+    helpKind?: BootFailureKind | undefined;
   }
 ): Promise<never> {
   const failure = opts.classifyFailure(err, { phase: opts.phase });
@@ -78,7 +78,7 @@ export async function showEntryBootOverlayFailure(
     await opts.showFatalOverlayMaybe(env.window, env.document, err, {
       failure,
       description: opts.description,
-      helpKind: opts.helpKind,
+      ...(opts.helpKind !== undefined ? { helpKind: opts.helpKind } : {}),
     });
   } catch (overlayErr) {
     opts.reportOverlayFailurePreservingOriginal(

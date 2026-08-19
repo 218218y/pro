@@ -56,10 +56,9 @@ function areOrderPdfSketchStrokesEqual(a: OrderPdfSketchStroke, b: OrderPdfSketc
     return false;
   }
   if (a.points.length !== b.points.length) return false;
-  for (let i = 0; i < a.points.length; i += 1) {
-    const left = a.points[i];
-    const right = b.points[i];
-    if (!Object.is(left.x, right.x) || !Object.is(left.y, right.y)) return false;
+  for (const [index, left] of a.points.entries()) {
+    const right = b.points[index];
+    if (!right || !Object.is(left.x, right.x) || !Object.is(left.y, right.y)) return false;
   }
   return true;
 }
@@ -80,11 +79,13 @@ export function areOrderPdfSketchAnnotationsEqual(
     const rightTextBoxes = right[key]?.textBoxes || [];
     if (leftStrokes.length !== rightStrokes.length) return false;
     if (leftTextBoxes.length !== rightTextBoxes.length) return false;
-    for (let i = 0; i < leftStrokes.length; i += 1) {
-      if (!areOrderPdfSketchStrokesEqual(leftStrokes[i], rightStrokes[i])) return false;
+    for (const [index, leftStroke] of leftStrokes.entries()) {
+      const rightStroke = rightStrokes[index];
+      if (!rightStroke || !areOrderPdfSketchStrokesEqual(leftStroke, rightStroke)) return false;
     }
-    for (let i = 0; i < leftTextBoxes.length; i += 1) {
-      if (!areOrderPdfSketchTextBoxesEqual(leftTextBoxes[i], rightTextBoxes[i])) return false;
+    for (const [index, leftTextBox] of leftTextBoxes.entries()) {
+      const rightTextBox = rightTextBoxes[index];
+      if (!rightTextBox || !areOrderPdfSketchTextBoxesEqual(leftTextBox, rightTextBox)) return false;
     }
   }
 

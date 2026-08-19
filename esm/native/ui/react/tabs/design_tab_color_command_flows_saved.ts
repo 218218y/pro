@@ -54,9 +54,10 @@ export async function reorderSavedColorSwatches(
         const rebasedSaved = reorderSavedColors(current.savedColors, rebasedIds);
         const unchanged =
           rebasedSaved.length === current.savedColors.length &&
-          rebasedSaved.every(
-            (color, index) => readSavedColorId(color) === readSavedColorId(current.savedColors[index])
-          );
+          rebasedSaved.every((color, index) => {
+            const currentColor = current.savedColors[index];
+            return !!currentColor && readSavedColorId(color) === readSavedColorId(currentColor);
+          });
         return {
           colorSwatchesOrder: rebasedIds,
           ...(unchanged ? {} : { savedColors: rebasedSaved }),

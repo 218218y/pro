@@ -9,7 +9,7 @@ export type ProjectActionToastLike = {
 };
 
 export type ProjectFeedbackLike = {
-  toast?: ((message: string, type?: ToastLevel) => void) | null;
+  toast?: ((message: string, type?: ToastLevel) => void) | null | undefined;
 };
 
 export type ProjectActionErrorResult = ProjectLoadFailureResult & {

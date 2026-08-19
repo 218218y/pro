@@ -16,17 +16,17 @@ export type FileReaderLike = {
 export type ReadFileTextOptions = {
   /** Optional app container used only for diagnostics; result semantics do not depend on it. */
   app?: unknown;
-  createReader?: (() => FileReaderLike) | null;
-  unavailableMessage?: string;
-  readFailureMessage?: string;
+  createReader?: (() => FileReaderLike) | null | undefined;
+  unavailableMessage?: string | undefined;
+  readFailureMessage?: string | undefined;
 };
 
 export type ReadFileDataUrlOptions = {
   /** Optional app container used only for diagnostics; result semantics do not depend on it. */
   app?: unknown;
-  createReader?: (() => FileReaderLike) | null;
-  unavailableMessage?: string;
-  readFailureMessage?: string;
+  createReader?: (() => FileReaderLike) | null | undefined;
+  unavailableMessage?: string | undefined;
+  readFailureMessage?: string | undefined;
 };
 
 type BlobTextLike = {

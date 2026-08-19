@@ -16,7 +16,9 @@ export function extractInsertionsGreedy(
       continue;
     }
 
-    const next = m.indexOf(b[i], j);
+    const baseChar = b[i];
+    if (baseChar === undefined) break;
+    const next = m.indexOf(baseChar, j);
     if (next === -1) {
       const rest = m.slice(j);
       if (rest) out.push({ pos: i, text: rest });

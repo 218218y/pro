@@ -47,7 +47,7 @@ export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
   id: DoorStyleOverrideValue;
   paintId: string;
   label: string;
-  curtainPreset?: CurtainPreset;
+  curtainPreset?: CurtainPreset | undefined;
 }> = [
   { id: 'profile', paintId: 'glass', label: 'זכוכית', curtainPreset: 'none' },
   { id: 'flat', paintId: encodeGlassFrameStylePaintToken('flat'), label: MULTI_LABEL_GLASS_FULL },
@@ -70,10 +70,10 @@ export type MultiColorSpecialSwatchDef = {
   title: string;
   val: string;
   icon: string;
-  badge?: string;
-  curtainPreset?: CurtainPreset;
-  adhesiveGlassKind?: AdhesiveGlassKind;
-  swatchClassName?: string;
+  badge?: string | undefined;
+  curtainPreset?: CurtainPreset | undefined;
+  adhesiveGlassKind?: AdhesiveGlassKind | undefined;
+  swatchClassName?: string | undefined;
 };
 
 export const MULTI_SPECIAL_SWATCHES: ReadonlyArray<MultiColorSpecialSwatchDef> = [
@@ -111,16 +111,16 @@ export type MultiColorSwatchDot = {
   paintId: string;
   title: string;
   selected: boolean;
-  val?: string;
-  isTexture?: boolean;
-  textureData?: string | null;
-  isSpecial?: boolean;
-  icon?: string;
-  badge?: string;
-  curtainPreset?: CurtainPreset;
-  id?: string;
-  adhesiveGlassKind?: AdhesiveGlassKind;
-  swatchClassName?: string;
+  val?: string | undefined;
+  isTexture?: boolean | undefined;
+  textureData?: string | null | undefined;
+  isSpecial?: boolean | undefined;
+  icon?: string | undefined;
+  badge?: string | undefined;
+  curtainPreset?: CurtainPreset | undefined;
+  id?: string | undefined;
+  adhesiveGlassKind?: AdhesiveGlassKind | undefined;
+  swatchClassName?: string | undefined;
 };
 
 export type MultiColorPanelViewState = {

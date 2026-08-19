@@ -1,8 +1,8 @@
 export type ProjectFileFlightFields = {
-  name?: string;
-  size?: number;
-  mediaType?: string;
-  lastModified?: number;
+  name?: string | undefined;
+  size?: number | undefined;
+  mediaType?: string | undefined;
+  lastModified?: number | undefined;
 };
 
 function encodeTextField(value: string | undefined): string {

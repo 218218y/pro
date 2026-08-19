@@ -248,7 +248,7 @@ requirePattern(
 );
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
-  /<ColorSwatch[\s\S]*special=\{dot\.isSpecial\}/
+  /<ColorSwatch[\s\S]*(?:special=\{dot\.isSpecial\}|\{\s*special:\s*dot\.isSpecial\s*\})/
 );
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',

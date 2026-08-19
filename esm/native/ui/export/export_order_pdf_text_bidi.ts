@@ -24,13 +24,12 @@ export function createOrderPdfTextBidiOps() {
     const shouldAttachNeutralToNext = (buf: string, nextDir: 'rtl' | 'ltr'): boolean => {
       const t = buf.replace(/\s+$/g, '');
       if (!t) return false;
-      const last = t[t.length - 1];
+      const last = t.at(-1) ?? '';
       if (nextDir === 'ltr' && (last === '(' || last === '[' || last === '{')) return true;
       return false;
     };
 
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
+    for (const ch of line) {
       const isRtl = isRtlStrongChar(ch);
       const isLtr = !isRtl && isLtrStrongChar(ch);
 

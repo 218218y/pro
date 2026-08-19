@@ -32,8 +32,8 @@ type MulticolorUiState = { currentCurtainChoice?: string };
 
 export type MulticolorStateSummary = {
   paintActive: boolean;
-  isMultiColorMode?: boolean;
-  currentCurtainChoice?: string;
+  isMultiColorMode?: boolean | undefined;
+  currentCurtainChoice?: string | undefined;
 };
 
 function _safe(App: AppContainer, label: string, fn: () => void): void {

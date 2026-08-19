@@ -55,80 +55,80 @@ export interface ProjectFileReaderEventLike extends UnknownRecord {
 }
 
 export interface ProjectSettingsLike extends UnknownRecord {
-  width?: number;
-  height?: number;
-  depth?: number;
-  doors?: number;
+  width?: number | undefined;
+  height?: number | undefined;
+  depth?: number | undefined;
+  doors?: number | undefined;
 
-  wardrobeType?: WardrobeType;
-  boardMaterial?: BoardMaterial;
-  doorMountMode?: DoorMountMode;
-  drawerRunnerType?: DrawerRunnerType;
+  wardrobeType?: WardrobeType | undefined;
+  boardMaterial?: BoardMaterial | undefined;
+  doorMountMode?: DoorMountMode | undefined;
+  drawerRunnerType?: DrawerRunnerType | undefined;
 
-  stackSplitEnabled?: boolean;
-  stackSplitDecorativeSeparatorEnabled?: boolean;
-  stackSplitLowerHeight?: number;
-  stackSplitLowerWidth?: number;
-  stackSplitLowerDepth?: number;
-  stackSplitLowerDoors?: number;
-  stackSplitLowerWidthManual?: boolean;
-  stackSplitLowerDepthManual?: boolean;
-  stackSplitLowerDoorsManual?: boolean;
+  stackSplitEnabled?: boolean | undefined;
+  stackSplitDecorativeSeparatorEnabled?: boolean | undefined;
+  stackSplitLowerHeight?: number | undefined;
+  stackSplitLowerWidth?: number | undefined;
+  stackSplitLowerDepth?: number | undefined;
+  stackSplitLowerDoors?: number | undefined;
+  stackSplitLowerWidthManual?: boolean | undefined;
+  stackSplitLowerDepthManual?: boolean | undefined;
+  stackSplitLowerDoorsManual?: boolean | undefined;
 
-  cornerWidth?: number;
-  cornerHeight?: number;
-  cornerDepth?: number;
-  cornerDoors?: number;
-  cornerSide?: 'left' | 'right';
+  cornerWidth?: number | undefined;
+  cornerHeight?: number | undefined;
+  cornerDepth?: number | undefined;
+  cornerDoors?: number | undefined;
+  cornerSide?: 'left' | 'right' | undefined;
 
-  baseType?: string;
-  baseLegStyle?: string;
-  baseLegColor?: string;
-  baseLegPlatformMode?: string;
-  baseLegPlatformSideMode?: string;
-  baseLegPlatformSideOverhangCm?: number;
-  baseLegPlatformFrontOverhangCm?: number;
-  stackSplitDecorativeSeparatorSideOverhangCm?: number;
-  stackSplitDecorativeSeparatorFrontOverhangCm?: number;
-  basePlinthHeightCm?: number;
-  baseLegHeightCm?: number;
-  baseLegWidthCm?: number;
-  slidingTracksColor?: string;
-  structureSelection?: string;
-  singleDoorPos?: string;
-  doorStyle?: string;
-  corniceType?: string;
-  color?: string;
-  customColor?: string;
+  baseType?: string | undefined;
+  baseLegStyle?: string | undefined;
+  baseLegColor?: string | undefined;
+  baseLegPlatformMode?: string | undefined;
+  baseLegPlatformSideMode?: string | undefined;
+  baseLegPlatformSideOverhangCm?: number | undefined;
+  baseLegPlatformFrontOverhangCm?: number | undefined;
+  stackSplitDecorativeSeparatorSideOverhangCm?: number | undefined;
+  stackSplitDecorativeSeparatorFrontOverhangCm?: number | undefined;
+  basePlinthHeightCm?: number | undefined;
+  baseLegHeightCm?: number | undefined;
+  baseLegWidthCm?: number | undefined;
+  slidingTracksColor?: string | undefined;
+  structureSelection?: string | undefined;
+  singleDoorPos?: string | undefined;
+  doorStyle?: string | undefined;
+  corniceType?: string | undefined;
+  color?: string | undefined;
+  customColor?: string | undefined;
 
-  globalHandleType?: HandleType;
+  globalHandleType?: HandleType | undefined;
 }
 
 export interface ProjectTogglesLike extends UnknownRecord {
-  showContents?: boolean;
-  showHanger?: boolean;
-  showDimensions?: boolean;
-  globalClickMode?: boolean;
-  internalDrawers?: boolean;
-  notesEnabled?: boolean;
-  multiColor?: boolean;
-  grooves?: boolean;
-  chestMode?: boolean;
-  chestCommode?: boolean;
-  splitDoors?: boolean;
-  handleControl?: boolean;
-  cornerMode?: boolean;
-  removeDoors?: boolean;
-  addCornice?: boolean;
-  sketchMode?: boolean;
-  hingeDirection?: boolean;
-  lightingControl?: boolean;
+  showContents?: boolean | undefined;
+  showHanger?: boolean | undefined;
+  showDimensions?: boolean | undefined;
+  globalClickMode?: boolean | undefined;
+  internalDrawers?: boolean | undefined;
+  notesEnabled?: boolean | undefined;
+  multiColor?: boolean | undefined;
+  grooves?: boolean | undefined;
+  chestMode?: boolean | undefined;
+  chestCommode?: boolean | undefined;
+  splitDoors?: boolean | undefined;
+  handleControl?: boolean | undefined;
+  cornerMode?: boolean | undefined;
+  removeDoors?: boolean | undefined;
+  addCornice?: boolean | undefined;
+  sketchMode?: boolean | undefined;
+  hingeDirection?: boolean | undefined;
+  lightingControl?: boolean | undefined;
 
-  lightAmb?: number | string;
-  lightDir?: number | string;
-  lightX?: number | string;
-  lightY?: number | string;
-  lightZ?: number | string;
+  lightAmb?: number | string | undefined;
+  lightDir?: number | string | undefined;
+  lightX?: number | string | undefined;
+  lightY?: number | string | undefined;
+  lightZ?: number | string | undefined;
 }
 
 export interface ProjectPdfStateLike extends UnknownRecord {

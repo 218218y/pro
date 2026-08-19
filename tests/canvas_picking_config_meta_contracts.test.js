@@ -92,7 +92,7 @@ test('canvas picking config snapshots and typed meta/map surfaces stay centraliz
   assert.match(configActions, /individualColors: IndividualColorsMap;/);
   assert.match(configActions, /curtainMap: CurtainMap;/);
   assert.match(configActions, /doorSpecialMap\?: DoorSpecialMap;/);
-  assert.match(configActions, /doorStyleMap\?: DoorStyleMap;/);
+  assert.match(configActions, /doorStyleMap\?: DoorStyleMap \| undefined;/);
   assert.match(configActions, /cloneIndividualColorsMap/);
   assert.match(configActions, /cloneCurtainMap/);
   assert.match(configActions, /cloneDoorSpecialMap/);

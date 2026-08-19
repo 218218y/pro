@@ -23,9 +23,9 @@ export const PROJECT_RESET_DEFAULT_CONFIRM: ProjectSessionConfirmCopy = {
 
 type ProjectSessionConfirmedResult = {
   ok: boolean;
-  reason?: string;
-  message?: string;
-  restoreGen?: number;
+  reason?: string | undefined;
+  message?: string | undefined;
+  restoreGen?: number | undefined;
 };
 
 type ProjectSessionCommandKey = 'restore' | 'reset';

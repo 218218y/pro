@@ -84,7 +84,9 @@ export function rehydrateLineBreaksUsingLabels(text: string, labelsInOrder: stri
   if (positions.length < 2) return out;
 
   for (let i = positions.length - 1; i >= 1; i--) {
-    const p = positions[i].idx;
+    const position = positions[i];
+    if (!position) continue;
+    const p = position.idx;
     if (p > 0 && out[p - 1] !== '\n') out = out.slice(0, p) + '\n' + out.slice(p);
   }
   return out;
@@ -259,8 +261,10 @@ export function injectExtraLinesPreservingPositions(opts: {
     return { mergedAuto: normalizeNewlines(opts.mergedAuto || ''), extrasList: [] };
   }
 
-  const firstKnownIdx = known.length ? known[0].idx : -1;
-  const lastKnownIdx = known.length ? known[known.length - 1].idx : -1;
+  const firstKnown = known[0];
+  const lastKnown = known[known.length - 1];
+  const firstKnownIdx = firstKnown ? firstKnown.idx : -1;
+  const lastKnownIdx = lastKnown ? lastKnown.idx : -1;
   const extrasAfterByKey: Record<string, string[]> = {};
   const addExtra = (anchor: string, line: string) => {
     const a = anchor || '__end__';
@@ -290,8 +294,9 @@ export function injectExtraLinesPreservingPositions(opts: {
 
     let prev: { idx: number; key: string } | null = null;
     for (let i = known.length - 1; i >= 0; i--) {
-      if (known[i].idx < e.idx) {
-        prev = known[i];
+      const candidate = known[i];
+      if (candidate && candidate.idx < e.idx) {
+        prev = candidate;
         break;
       }
     }

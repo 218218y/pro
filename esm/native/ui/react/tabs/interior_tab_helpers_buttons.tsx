@@ -7,14 +7,14 @@ export function OptionBtn(props: OptionBtnProps) {
   const { selected = false, className, onClick, children, title, testId } = props;
   return (
     <OptionButton
-      title={title}
-      testId={testId}
+      {...(title !== undefined ? { title } : {})}
+      {...(testId !== undefined ? { testId } : {})}
       selected={selected}
       density="compact"
-      className={className}
+      {...(className !== undefined ? { className } : {})}
       preventDefault
       stopPropagation
-      onClick={onClick}
+      {...(onClick !== undefined ? { onClick } : {})}
     >
       {children}
     </OptionButton>

@@ -50,7 +50,7 @@ function createSelectionOffsetReader(editor: HTMLElement) {
         } else {
           const children = readChildNodes(node);
           const limit = Math.max(0, Math.min(nodeOffset, children.length));
-          for (let i = 0; i < limit; i += 1) total += subtreeLen(children[i]);
+          for (const child of children.slice(0, limit)) total += subtreeLen(child);
         }
         found = true;
         return;

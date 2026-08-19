@@ -4,18 +4,18 @@ export type SettingsVisualFloorType = 'parquet' | 'tiles' | 'none';
 
 export type FloorStyle = {
   id: string;
-  name?: string;
-  color?: string;
-  color1?: string;
-  color2?: string;
-  lines?: string;
-  size?: number;
+  name?: string | undefined;
+  color?: string | undefined;
+  color1?: string | undefined;
+  color2?: string | undefined;
+  lines?: string | undefined;
+  size?: number | undefined;
 };
 
 export type WallColor = {
   id: string;
   val: string;
-  name?: string;
+  name?: string | undefined;
 };
 
 export const DEFAULT_WALL_COLOR = '#37474f';

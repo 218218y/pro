@@ -64,6 +64,7 @@ function applyUiRawScalarPatch(runtime: StoreUiActionRuntime, patch: unknown, me
   if (!keys.length) return;
   if (keys.length === 1) {
     const key = keys[0];
+    if (!key) return;
     setUiRawScalar(runtime, key, rec[key], meta);
     return;
   }
@@ -76,6 +77,7 @@ function applyUiSoftScalarPatch(runtime: StoreUiActionRuntime, patch: unknown, m
   if (!keys.length) return;
   if (keys.length === 1) {
     const key = keys[0];
+    if (!key) return;
     setUiScalarSoft(runtime, key, rec[key], meta);
     return;
   }

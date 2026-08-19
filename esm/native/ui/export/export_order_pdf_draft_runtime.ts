@@ -61,7 +61,7 @@ export function resolveOrderPdfExportDraft(args: {
     ...scalarFields,
     notes: safeStr(normalizedDraft.notes),
     orderDetails: resolveOrderPdfDetailsTextFromDraft(normalizedDraft, args.defaultAutoDetails),
-    includeRenderSketch: imageFlags.includeRenderSketch,
-    includeOpenClosed: imageFlags.includeOpenClosed,
+    includeRenderSketch: imageFlags.includeRenderSketch !== false,
+    includeOpenClosed: imageFlags.includeOpenClosed !== false,
   };
 }

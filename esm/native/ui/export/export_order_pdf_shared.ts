@@ -30,8 +30,14 @@ export const getCtor: GetCtor = (obj: UnknownRecord, key: string) => {
   return typeof value === 'function' || (value && typeof value === 'object') ? value : null;
 };
 
-type ObjectMethodBag = { get?: (key: unknown) => unknown; set?: (key: unknown, value: unknown) => void };
-type TextCodecLike = { decodeText?: () => string; asString?: () => string };
+type ObjectMethodBag = {
+  get?: ((key: unknown) => unknown) | undefined;
+  set?: ((key: unknown, value: unknown) => void) | undefined;
+};
+type TextCodecLike = {
+  decodeText?: (() => string) | undefined;
+  asString?: (() => string) | undefined;
+};
 
 export function isCallableRecord(value: unknown): value is UnknownRecord | CallableLike {
   return !!value && (typeof value === 'object' || typeof value === 'function');

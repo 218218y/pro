@@ -300,30 +300,30 @@ export interface OrderPdfSketchPointLike extends UnknownRecord {
 }
 
 export interface OrderPdfSketchStrokeLike extends UnknownRecord {
-  id?: string;
-  createdAt?: number;
-  tool?: string;
-  color?: string;
-  width?: number;
-  points?: OrderPdfSketchPointLike[];
+  id?: string | undefined;
+  createdAt?: number | undefined;
+  tool?: string | undefined;
+  color?: string | undefined;
+  width?: number | undefined;
+  points?: OrderPdfSketchPointLike[] | undefined;
 }
 
 export interface OrderPdfSketchTextBoxLike extends UnknownRecord {
-  id?: string;
-  createdAt?: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  color?: string;
-  fontSize?: number;
-  bold?: boolean;
-  text?: string;
+  id?: string | undefined;
+  createdAt?: number | undefined;
+  x?: number | undefined;
+  y?: number | undefined;
+  width?: number | undefined;
+  height?: number | undefined;
+  color?: string | undefined;
+  fontSize?: number | undefined;
+  bold?: boolean | undefined;
+  text?: string | undefined;
 }
 
 export interface OrderPdfSketchAnnotationLayerLike extends UnknownRecord {
-  strokes?: OrderPdfSketchStrokeLike[];
-  textBoxes?: OrderPdfSketchTextBoxLike[];
+  strokes?: OrderPdfSketchStrokeLike[] | undefined;
+  textBoxes?: OrderPdfSketchTextBoxLike[] | undefined;
 }
 
 export type OrderPdfSketchAnnotationsLike = Partial<
@@ -331,21 +331,22 @@ export type OrderPdfSketchAnnotationsLike = Partial<
 >;
 
 export interface OrderPdfDraftLike extends UnknownRecord {
-  projectName?: string;
-  orderNumber?: string;
-  orderDate?: string;
-  deliveryAddress?: string;
-  phone?: string;
-  mobile?: string;
-  autoDetails?: string;
-  detailsText?: string;
-  detailsHtml?: string;
-  detailsTouched?: boolean;
-  detailsSeed?: string;
-  includeRenderSketch?: boolean;
-  includeOpenClosed?: boolean;
-  notes?: string;
-  sketchAnnotations?: OrderPdfSketchAnnotationsLike;
+  projectName?: string | undefined;
+  orderNumber?: string | undefined;
+  orderDate?: string | undefined;
+  deliveryAddress?: string | undefined;
+  phone?: string | undefined;
+  mobile?: string | undefined;
+  autoDetails?: string | undefined;
+  detailsText?: string | undefined;
+  detailsHtml?: string | undefined;
+  detailsTouched?: boolean | undefined;
+  detailsSeed?: string | undefined;
+  includeRenderSketch?: boolean | undefined;
+  includeOpenClosed?: boolean | undefined;
+  notes?: string | undefined;
+  notesHtml?: string | undefined;
+  sketchAnnotations?: OrderPdfSketchAnnotationsLike | undefined;
 }
 
 export interface OrderPdfBuildResultLike extends UnknownRecord {

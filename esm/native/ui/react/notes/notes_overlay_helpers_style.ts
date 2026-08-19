@@ -59,9 +59,9 @@ export function rgbToHex(v: string): string | null {
   }
   if (!m) return null;
 
-  const r = Math.max(0, Math.min(255, parseInt(m[1], 10)));
-  const g = Math.max(0, Math.min(255, parseInt(m[2], 10)));
-  const b = Math.max(0, Math.min(255, parseInt(m[3], 10)));
+  const r = Math.max(0, Math.min(255, parseInt(m[1] ?? '0', 10)));
+  const g = Math.max(0, Math.min(255, parseInt(m[2] ?? '0', 10)));
+  const b = Math.max(0, Math.min(255, parseInt(m[3] ?? '0', 10)));
 
   const to2 = (n: number) => n.toString(16).padStart(2, '0');
   return `#${to2(r)}${to2(g)}${to2(b)}`.toLowerCase();
@@ -86,11 +86,11 @@ export function pxToEditorFontSize(v: unknown): string | null {
   const map = [11, 13, 16, 19, 24, 32, 48];
   let best = 4;
   let bestDist = Infinity;
-  for (let i = 0; i < map.length; i++) {
-    const d = Math.abs(px - map[i]);
+  for (const [index, fontPx] of map.entries()) {
+    const d = Math.abs(px - fontPx);
     if (d < bestDist) {
       bestDist = d;
-      best = i + 1;
+      best = index + 1;
     }
   }
   return String(best);

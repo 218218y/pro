@@ -148,9 +148,9 @@ export function blurStructureDimOnWheel(e: WheelEvent<HTMLInputElement>): void {
 export function resolveStructureSpinnerPointerStep(args: {
   event: MouseEvent<HTMLInputElement>;
   draft: string;
-  placeholder?: number;
+  placeholder?: number | undefined;
   step: number;
-  bounds?: StructureDimInputBounds;
+  bounds?: StructureDimInputBounds | undefined;
 }): number | null {
   const { event, draft, placeholder, step, bounds } = args;
   if (String(draft || '').trim() || placeholder == null) return null;
@@ -180,9 +180,9 @@ export function resolveStructureSpinnerPointerStep(args: {
 export function resolveStructurePlaceholderArrowStep(args: {
   key: string;
   draft: string;
-  placeholder?: number;
+  placeholder?: number | undefined;
   step: number;
-  bounds?: StructureDimInputBounds;
+  bounds?: StructureDimInputBounds | undefined;
 }): number | null {
   const { key, draft, placeholder, step, bounds } = args;
   if ((key !== 'ArrowUp' && key !== 'ArrowDown') || String(draft || '').trim() || placeholder == null) {

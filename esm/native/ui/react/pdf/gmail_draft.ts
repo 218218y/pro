@@ -59,7 +59,7 @@ function _b64FromBytes(bytes: Uint8Array): string {
   for (let i = 0; i < bytes.length; i += chunk) {
     const part = bytes.subarray(i, i + chunk);
     let s = '';
-    for (let j = 0; j < part.length; j++) s += String.fromCharCode(part[j]);
+    for (const byte of part) s += String.fromCharCode(byte);
     binary += s;
   }
   return btoa(binary);

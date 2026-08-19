@@ -29,8 +29,8 @@ function readDesignTabReportArgs(args: ArrayLike<unknown>): {
 }
 
 type DesignTabReportNonFatalArgs =
-  | [op: string, err: unknown, throttleMs?: number]
-  | [app: AppContainer | null | undefined, op: string, err: unknown, throttleMs?: number];
+  | [op: string, err: unknown, throttleMs?: number | undefined]
+  | [app: AppContainer | null | undefined, op: string, err: unknown, throttleMs?: number | undefined];
 
 export function __designTabReportNonFatal(...args: DesignTabReportNonFatalArgs): void {
   const { app, op, err, throttleMs } = readDesignTabReportArgs(args);

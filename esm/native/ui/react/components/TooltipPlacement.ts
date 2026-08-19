@@ -44,8 +44,8 @@ type TooltipHost = {
 
 type TooltipContent = {
   text: string;
-  title?: string;
-  detail?: string;
+  title?: string | undefined;
+  detail?: string | undefined;
   rich: boolean;
 };
 
@@ -335,7 +335,18 @@ function resolveTooltipCandidate(
     getTooltipCandidate(placement, targetRect, tooltipWidth, tooltipHeight, viewportWidth, viewportHeight)
   );
 
-  return candidates.find(candidate => candidate.hasRoom) || candidates[0];
+  const fallback = candidates[0];
+  if (!fallback) {
+    return getTooltipCandidate(
+      'below',
+      targetRect,
+      tooltipWidth,
+      tooltipHeight,
+      viewportWidth,
+      viewportHeight
+    );
+  }
+  return candidates.find(candidate => candidate.hasRoom) || fallback;
 }
 
 function tooltipPlacementClass(placement: TooltipPlacement): string {

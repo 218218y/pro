@@ -85,12 +85,11 @@ export function resolveUiInstallOrder(entries: UiModuleEntry[]): UiModuleEntry[]
   const byId = new Map<string, UiModuleEntry>();
   const idx = new Map<string, number>();
 
-  for (let i = 0; i < list.length; i++) {
-    const e = list[i];
+  for (const [index, e] of list.entries()) {
     const id = e && e.id ? String(e.id) : '';
     if (!id) continue;
     byId.set(id, e);
-    idx.set(id, i);
+    idx.set(id, index);
   }
 
   // If nothing has dependencies, keep original order.
@@ -132,8 +131,7 @@ export function resolveUiInstallOrder(entries: UiModuleEntry[]): UiModuleEntry[]
     if (e) ordered.push(e);
 
     const tos = out.get(id) || [];
-    for (let k = 0; k < tos.length; k++) {
-      const to = tos[k];
+    for (const to of tos) {
       indeg.set(to, (indeg.get(to) ?? 0) - 1);
       if (indeg.get(to) === 0) {
         zeros.push(to);
@@ -149,8 +147,7 @@ export function resolveUiInstallOrder(entries: UiModuleEntry[]): UiModuleEntry[]
 
   // Preserve any entries that were missing ids (shouldn't happen; tooling will flag).
   if (ordered.length !== list.length) {
-    for (let i = 0; i < list.length; i++) {
-      const e = list[i];
+    for (const e of list) {
       const id = e && e.id ? String(e.id) : '';
       if (!id || !byId.has(id)) ordered.push(e);
     }

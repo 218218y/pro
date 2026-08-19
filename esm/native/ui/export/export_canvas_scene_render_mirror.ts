@@ -86,9 +86,9 @@ function forceMirrorEnvMapRefreshForExport(App: AppContainer): boolean {
 
       return true;
     } finally {
-      for (let i = 0; i < mirrorsToHide.length; i++) {
+      for (const mirror of mirrorsToHide) {
         try {
-          mirrorsToHide[i]['visible'] = true;
+          mirror['visible'] = true;
         } catch (e) {
           _exportReportThrottled(App, 'forceMirrorEnvMapRefresh.restoreHiddenMirrorVisibility', e, {
             throttleMs: 1500,

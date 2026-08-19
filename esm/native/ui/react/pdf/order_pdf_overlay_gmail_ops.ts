@@ -46,7 +46,7 @@ type OrderPdfOverlayGmailOpsDeps = {
 function openGmailDraftWindow(args: {
   winMaybe: Window | null;
   draftId: string;
-  draftUrl?: string | null;
+  draftUrl?: string | null | undefined;
 }): boolean {
   const { winMaybe, draftId, draftUrl } = args;
   const url = draftUrl || `https://mail.google.com/mail/#drafts/${encodeURIComponent(draftId)}`;

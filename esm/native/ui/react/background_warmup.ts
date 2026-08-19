@@ -81,8 +81,10 @@ export function scheduleReactBackgroundWarmup(app: AppContainer): Cleanup {
 
     const cleanup = idleTask(app, () => {
       if (cancelled) return;
+      const task = tasks[index];
+      if (!task) return;
       void Promise.resolve()
-        .then(() => tasks[index]())
+        .then(() => task())
         .catch(() => undefined)
         .finally(() => {
           if (cancelled) return;

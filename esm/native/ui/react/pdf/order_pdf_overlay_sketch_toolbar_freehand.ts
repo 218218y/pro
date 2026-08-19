@@ -7,5 +7,8 @@ export const FREEHAND_TOOLS: readonly FreehandToolDefinition[] = [
 ];
 
 export function resolveFreehandToolDefinition(tool: OrderPdfSketchFreehandTool): FreehandToolDefinition {
-  return FREEHAND_TOOLS.find(definition => definition.tool === tool) || FREEHAND_TOOLS[0];
+  return (
+    FREEHAND_TOOLS.find(definition => definition.tool === tool) ||
+    FREEHAND_TOOLS[0] || { tool: 'pen', label: 'עט', iconClassName: 'fas fa-pen' }
+  );
 }

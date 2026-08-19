@@ -93,7 +93,7 @@ export function paintOrderPdfTextInBox(args: {
   dir: 'rtl' | 'ltr';
   align: 'left' | 'right';
   multiline?: boolean;
-  preparedLines?: string[];
+  preparedLines?: string[] | undefined;
   report: OrderPdfOverlayReportNonFatal;
 }): void {
   const { ctx, boxPx, text, fontPx, fontFamily, dir, align, multiline, preparedLines, report } = args;
@@ -132,9 +132,8 @@ export function paintOrderPdfTextInBox(args: {
       : [String(text || '')];
   const drawLines = lines.slice(0, maxLines);
 
-  for (let i = 0; i < drawLines.length; i++) {
-    const y = y0 + i * lineH;
-    const line = drawLines[i];
+  for (const [index, line] of drawLines.entries()) {
+    const y = y0 + index * lineH;
     try {
       ctx.fillText(line, x, y);
     } catch (err) {

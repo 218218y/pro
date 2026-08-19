@@ -125,7 +125,7 @@ export function parseSketchBoxTool(tool: string): SketchBoxToolSpec | null {
   const raw = tool.slice(SKETCH_TOOL_BOX_PREFIX.length).trim();
   if (!raw) return null;
 
-  const [heightRaw, widthRaw = '', depthRaw = ''] = raw.split(SKETCH_BOX_DIM_SEP);
+  const [heightRaw = '', widthRaw = '', depthRaw = ''] = raw.split(SKETCH_BOX_DIM_SEP);
   const heightCm = Number(heightRaw.trim());
   if (!Number.isFinite(heightCm)) return null;
 

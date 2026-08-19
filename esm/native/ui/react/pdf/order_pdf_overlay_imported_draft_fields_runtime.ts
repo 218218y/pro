@@ -50,7 +50,7 @@ function readImportedRichTextAsPlainText(args: {
   text: unknown;
   html: unknown;
   reportOp: string;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): string {
   const explicitText = safeStr(args.text);
   if (explicitText) return explicitText;
@@ -68,7 +68,7 @@ export function applyOrderPdfImportedDraftFields(args: {
   baseDraft: OrderPdfDraft | null | undefined;
   extracted: OrderPdfImportedRichDraftFieldValues;
   importedTailPages?: number[] | null | undefined;
-  reportNonFatal?: ReportNonFatal;
+  reportNonFatal?: ReportNonFatal | undefined;
 }): OrderPdfDraft {
   const { extracted, importedTailPages, reportNonFatal } = args;
   const base: OrderPdfDraft = args.baseDraft || makeEmptyDraft();

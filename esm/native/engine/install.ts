@@ -28,7 +28,7 @@ const ENGINE_INSTALL_SURFACE = Object.freeze({
 type EngineApiSurface = typeof ENGINE_API_SURFACE;
 type EngineInstallSurface = typeof ENGINE_INSTALL_SURFACE;
 
-const ENGINE_LAYER_KIND: InstalledEngineLayerSurface['kind'] = 'engine';
+const ENGINE_LAYER_KIND = 'engine' as const;
 
 export type InstalledEngineLayerSurface = EngineLayerFacadeLike & {
   kind?: 'engine';

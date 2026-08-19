@@ -23,11 +23,11 @@ import {
 } from '../../services/api.js';
 
 type ExportCanvasModuleLike = {
-  takeSnapshot?: (app: AppContainer) => unknown;
-  copyToClipboard?: (app: AppContainer) => unknown;
-  exportDualImage?: (app: AppContainer) => unknown;
-  exportRenderAndSketch?: (app: AppContainer) => unknown;
-  autoZoomCamera?: (app: AppContainer) => unknown;
+  takeSnapshot?: ((app: AppContainer) => unknown) | undefined;
+  copyToClipboard?: ((app: AppContainer) => unknown) | undefined;
+  exportDualImage?: ((app: AppContainer) => unknown) | undefined;
+  exportRenderAndSketch?: ((app: AppContainer) => unknown) | undefined;
+  autoZoomCamera?: ((app: AppContainer) => unknown) | undefined;
 };
 
 type ToastFn = (msg: string, kind?: string) => void;
@@ -40,8 +40,8 @@ type CanvasExportDeliveryFailure = Extract<CanvasExportDeliveryResult, { ok: fal
 type RunExportUiActionDeps = {
   app: AppContainer;
   kind: ExportUiActionKind;
-  ensureModule?: () => Promise<ExportCanvasModuleLike>;
-  reportError?: (scope: string, error: unknown) => void;
+  ensureModule?: (() => Promise<ExportCanvasModuleLike>) | undefined;
+  reportError?: ((scope: string, error: unknown) => void) | undefined;
 };
 
 type CreateExportActionsDeps = Pick<RunExportUiActionDeps, 'ensureModule' | 'reportError'>;

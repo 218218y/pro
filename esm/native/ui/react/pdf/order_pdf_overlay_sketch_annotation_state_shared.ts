@@ -35,9 +35,10 @@ export type OrderPdfSketchAnnotationLayerSource = {
 };
 
 export type OrderPdfSketchAnnotationDraftSource = {
-  sketchAnnotations?: Partial<
-    Record<OrderPdfSketchAnnotationPageKey, OrderPdfSketchAnnotationLayerSource | null | undefined>
-  > | null;
+  sketchAnnotations?:
+    | Partial<Record<OrderPdfSketchAnnotationPageKey, OrderPdfSketchAnnotationLayerSource | null | undefined>>
+    | null
+    | undefined;
 };
 
 type UnknownRecord = Record<string, unknown>;
