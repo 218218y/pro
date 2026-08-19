@@ -39,26 +39,32 @@ type CornerCellInputLike = ValueRecord & {
 
 function readCornerHandleCfg(cfg: ValueRecord | null | undefined): CornerHandleCfgLike | null {
   if (!cfg || typeof cfg !== 'object') return null;
+  const { globalHandleType: _rawGlobalHandleType, handlesMap: _rawHandlesMap, ...rest } = cfg;
   const handlesMap = isRecord(cfg.handlesMap) ? cfg.handlesMap : null;
   return {
-    ...cfg,
-    globalHandleType: typeof cfg.globalHandleType === 'string' ? String(cfg.globalHandleType) : undefined,
+    ...rest,
+    ...(typeof cfg.globalHandleType === 'string' ? { globalHandleType: String(cfg.globalHandleType) } : {}),
     handlesMap,
   };
 }
 
 function readCornerCellInput(cellCfg: ValueRecord | null | undefined): CornerCellInputLike | null {
   if (!cellCfg || typeof cellCfg !== 'object') return null;
+  const {
+    extDrawersCount: _rawExtDrawersCount,
+    extDrawers: _rawExtDrawers,
+    extDrawersType: _rawExtDrawersType,
+    hasShoeDrawer: _rawHasShoeDrawer,
+    shoeDrawer: _rawShoeDrawer,
+    ...rest
+  } = cellCfg;
   return {
-    ...cellCfg,
-    extDrawersCount: typeof cellCfg.extDrawersCount === 'number' ? cellCfg.extDrawersCount : undefined,
-    extDrawers:
-      typeof cellCfg.extDrawers === 'number'
-        ? cellCfg.extDrawers
-        : cellCfg.extDrawers === 'shoe'
-          ? 'shoe'
-          : undefined,
-    extDrawersType: typeof cellCfg.extDrawersType === 'string' ? cellCfg.extDrawersType : undefined,
+    ...rest,
+    ...(typeof cellCfg.extDrawersCount === 'number' ? { extDrawersCount: cellCfg.extDrawersCount } : {}),
+    ...(typeof cellCfg.extDrawers === 'number' || cellCfg.extDrawers === 'shoe'
+      ? { extDrawers: cellCfg.extDrawers }
+      : {}),
+    ...(typeof cellCfg.extDrawersType === 'string' ? { extDrawersType: cellCfg.extDrawersType } : {}),
     hasShoeDrawer: cellCfg.hasShoeDrawer === true,
     shoeDrawer: cellCfg.shoeDrawer === true,
   };

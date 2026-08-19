@@ -42,15 +42,16 @@ export function buildCornerWingCells(
   );
   let cursorX = args.blindWidth;
 
-  for (let ci = 0; ci < cellCount; ci += 1) {
+  for (const [ci, width] of cellWidths.entries()) {
+    if (ci >= cellCount) break;
+    const cfgCell = cellCfgs[ci];
+    if (!cfgCell) continue;
     const doorStart = ci * CORNER_WING_CELL_POLICY.doorsPerCell;
     const doorsInCell = Math.min(CORNER_WING_CELL_POLICY.doorsPerCell, Math.max(0, doorCount - doorStart));
-    const width = cellWidths[ci];
     const startX = cursorX;
     const centerX = startX + width / 2;
     cursorX += width;
     const key = `corner:${ci}`;
-    const cfgCell = cellCfgs[ci];
     const { bodyHeight, hasActiveHeight } = resolveCornerWingCellHeight(args, cfgCell, globalAbsHeightCm);
     const drawerFit = resolveExternalDrawerFitFromBody({
       startY: args.startY,
@@ -119,14 +120,14 @@ function resolveCornerWingCellWidths(
   let fixedSum = 0;
   let missingUnits = 0;
 
-  for (let ci = 0; ci < cellCount; ci += 1) {
-    const storedWidthCm = readStoredWidthCm(cellCfgs[ci]);
+  for (const [ci, cfgCell] of cellCfgs.entries()) {
+    const storedWidthCm = readStoredWidthCm(cfgCell);
     if (typeof storedWidthCm === 'number' && Number.isFinite(storedWidthCm) && storedWidthCm > 0) {
       const widthM = storedWidthCm / 100;
       fixedWidths[ci] = widthM;
       fixedSum += widthM;
     } else {
-      missingUnits += doorsInCellList[ci];
+      missingUnits += doorsInCellList[ci] ?? 0;
     }
   }
 
@@ -136,10 +137,12 @@ function resolveCornerWingCellWidths(
   const widths: number[] = [];
 
   for (let ci = 0; ci < cellCount; ci += 1) {
-    const doorsUnits = Math.max(1, doorsInCellList[ci]);
-    const fixedWidth = fixedWidths[ci];
+    const doorsUnits = Math.max(1, doorsInCellList[ci] ?? 1);
+    const fixedWidth = fixedWidths[ci] ?? null;
     let width = fixedWidth != null ? fixedWidth : (remainingWidth * doorsUnits) / denominator;
-    if (!Number.isFinite(width) || width <= 0) width = defaultCellWidths[ci];
+    if (!Number.isFinite(width) || width <= 0) {
+      width = defaultCellWidths[ci] ?? CORNER_WING_CELL_POLICY.minWidthM;
+    }
     const minWidth =
       fixedWidth != null
         ? Math.max(CORNER_WING_CELL_POLICY.minWidthM, CORNER_WING_CELL_POLICY.minDoorUnitWidthM)
@@ -163,7 +166,10 @@ function resolveCornerWingCellWidths(
       }
     }
     if (adjustIndex < 0) adjustIndex = widths.length - 1;
-    widths[adjustIndex] = Math.max(CORNER_WING_CELL_POLICY.minWidthM, widths[adjustIndex] + delta);
+    const currentWidth = widths[adjustIndex];
+    if (currentWidth !== undefined) {
+      widths[adjustIndex] = Math.max(CORNER_WING_CELL_POLICY.minWidthM, currentWidth + delta);
+    }
   }
 
   return widths;

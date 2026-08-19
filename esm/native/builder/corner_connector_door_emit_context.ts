@@ -74,7 +74,7 @@ export function createCornerConnectorDoorContextInternal(
   const dz = b.z - a.z;
   const len = Math.sqrt(dx * dx + dz * dz);
   if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_LAYOUT_POLICY.minFrontLengthM) {
-    addEdgePanel(pts[2], pts[3], 'corner_pent_front', showFrontPanel);
+    addEdgePanel(a, b, 'corner_pent_front', showFrontPanel);
     return null;
   }
 

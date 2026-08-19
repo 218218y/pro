@@ -196,8 +196,14 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
   applyCornerConnectorCornice({
     ctx,
     locals: {
-      adjacentWingBodyHeight: resolveConnectorAdjacentWingBodyHeight(ctx),
-      adjacentMainBodyHeight: resolveConnectorAdjacentMainBodyHeight(ctx),
+      ...(() => {
+        const adjacentWingBodyHeight = resolveConnectorAdjacentWingBodyHeight(ctx);
+        return adjacentWingBodyHeight === undefined ? {} : { adjacentWingBodyHeight };
+      })(),
+      ...(() => {
+        const adjacentMainBodyHeight = resolveConnectorAdjacentMainBodyHeight(ctx);
+        return adjacentMainBodyHeight === undefined ? {} : { adjacentMainBodyHeight };
+      })(),
       pts,
       panelThick,
       backPanelThick,

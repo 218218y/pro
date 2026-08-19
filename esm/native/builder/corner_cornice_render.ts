@@ -107,13 +107,11 @@ function createProfileMesh(
   runtime: CornerCorniceRenderRuntime
 ): MeshLike | null {
   if (op.profile.length < 3 || !(op.length > 0)) return null;
-  const first = op.profile[0];
+  const [first, ...rest] = op.profile;
+  if (!first) return null;
   const shape = new three.Shape();
   shape.moveTo(first.x, first.y);
-  for (let index = 1; index < op.profile.length; index += 1) {
-    const point = op.profile[index];
-    shape.lineTo(point.x, point.y);
-  }
+  for (const point of rest) shape.lineTo(point.x, point.y);
   shape.lineTo(first.x, first.y);
 
   const geometry = new three.ExtrudeGeometry(shape, { depth: op.length, bevelEnabled: false, steps: 1 });

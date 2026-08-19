@@ -50,8 +50,7 @@ export function readSavedColors(cfgLike: unknown): SavedColorLike[] {
 
 export function findSavedColorById(cfgLike: unknown, id: string): SavedColorLike | null {
   const savedColors = readSavedColors(cfgLike);
-  for (let index = 0; index < savedColors.length; index += 1) {
-    const saved = savedColors[index];
+  for (const saved of savedColors) {
     if (saved.id === id) return saved;
   }
   return null;

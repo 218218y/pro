@@ -128,13 +128,16 @@ export function resolveCornerConnectorCorniceSideReturns(args: {
     readOptionalNeighborBodyHeight(ctx.mainH, connectorBodyHeight) ?? connectorBodyHeight
   );
 
+  const [, wingStart, wingEnd, mainEnd, mainStart] = pts;
+  if (!wingStart || !wingEnd || !mainEnd || !mainStart) return [];
+
   const out: CornerConnectorCorniceSideReturn[] = [];
   if (isConnectorTallerThanNeighbor(connectorBodyHeight, wingNeighborBodyHeight)) {
-    out.push({ side: 'wing', partId: 'corner_cornice_side_left', a: pts[1], b: pts[2] });
+    out.push({ side: 'wing', partId: 'corner_cornice_side_left', a: wingStart, b: wingEnd });
   }
   if (isConnectorTallerThanNeighbor(connectorBodyHeight, mainNeighborBodyHeight)) {
     // Use a back-to-front path so the visible miter is on the diagonal/front joint.
-    out.push({ side: 'main', partId: 'corner_cornice_side_right', a: pts[4], b: pts[3] });
+    out.push({ side: 'main', partId: 'corner_cornice_side_right', a: mainStart, b: mainEnd });
   }
   return out;
 }

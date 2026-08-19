@@ -17,6 +17,7 @@ export function createInsetPolygon(
   for (let i = 0; i < n; i++) {
     const a = polygon[i];
     const b = polygon[(i + 1) % n];
+    if (!a || !b) return null;
     const dx = b.x - a.x;
     const dz = b.z - a.z;
     const len = Math.sqrt(dx * dx + dz * dz);
@@ -42,6 +43,7 @@ export function createInsetPolygon(
   for (let i = 0; i < n; i++) {
     const prev = lines[(i - 1 + n) % n];
     const cur = lines[i];
+    if (!prev || !cur) return null;
     const det = prev.nx * cur.nz - prev.nz * cur.nx;
     if (!Number.isFinite(det) || Math.abs(det) < 1e-10) return null;
     const x = (prev.c * cur.nz - prev.nz * cur.c) / det;
@@ -57,9 +59,11 @@ export function createShapeFromPolygon(
   polygon: readonly P2[] | null | undefined
 ): unknown {
   if (!Array.isArray(polygon) || polygon.length < 3) return null;
+  const [first, ...rest] = polygon;
+  if (!first) return null;
   const shape = new THREE.Shape();
-  shape.moveTo(polygon[0].x, polygon[0].z);
-  for (let i = 1; i < polygon.length; i++) shape.lineTo(polygon[i].x, polygon[i].z);
-  shape.lineTo(polygon[0].x, polygon[0].z);
+  shape.moveTo(first.x, first.z);
+  for (const point of rest) shape.lineTo(point.x, point.z);
+  shape.lineTo(first.x, first.z);
   return shape;
 }

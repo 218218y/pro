@@ -274,8 +274,8 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         parent,
         side,
         role: 'cup',
-        ownerPartId: args.ownerPartId,
-        addOutlines: args.addOutlines,
+        ...(args.ownerPartId === undefined ? {} : { ownerPartId: args.ownerPartId }),
+        ...(args.addOutlines === undefined ? {} : { addOutlines: args.addOutlines }),
       });
       added += 1;
     }
@@ -296,8 +296,8 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
           parent,
           side,
           role: 'rod_extension',
-          ownerPartId: args.ownerPartId,
-          addOutlines: args.addOutlines,
+          ...(args.ownerPartId === undefined ? {} : { ownerPartId: args.ownerPartId }),
+          ...(args.addOutlines === undefined ? {} : { addOutlines: args.addOutlines }),
         });
         added += 1;
       }
@@ -326,8 +326,8 @@ export function appendInteriorRodEndSupports(args: AppendInteriorRodEndSupportsA
         parent,
         side,
         role: 'mount_plate',
-        ownerPartId: args.ownerPartId,
-        addOutlines: args.addOutlines,
+        ...(args.ownerPartId === undefined ? {} : { ownerPartId: args.ownerPartId }),
+        ...(args.addOutlines === undefined ? {} : { addOutlines: args.addOutlines }),
       });
       added += 1;
     }

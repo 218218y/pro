@@ -71,8 +71,11 @@ export function createCornerGrooveReader(cfgSnapshot: unknown): SnapshotReader {
     const baseId = String(partId || '');
     if (!baseId) return undefined;
     const keys = listDoorGrooveTargetLookupKeys(baseId);
-    for (let i = 0; i < keys.length; i += 1) {
-      const prefixed = readScopedSnapshotValue(key => grooves[toCanonicalGroovesMapKey(key)], keys[i]);
+    for (const key of keys) {
+      const prefixed = readScopedSnapshotValue(
+        candidate => grooves[toCanonicalGroovesMapKey(candidate)],
+        key
+      );
       if (typeof prefixed !== 'undefined') return prefixed;
     }
     return undefined;

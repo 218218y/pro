@@ -168,7 +168,10 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
 
   if (side === 'wing') {
     // attach_wing wall is pts[1] -> pts[2] (z == L). Take the middle along X.
-    const midX = (pts[1].x + pts[2].x) / 2;
+    const wingBack = pts[1];
+    const wingFront = pts[2];
+    if (!wingBack || !wingFront) return;
+    const midX = (wingBack.x + wingFront.x) / 2;
     // Move inside from the wall so the rod doesn't poke through the side panel.
     const startZ = Math.max(
       backZ + CORNER_CONNECTOR_ATTACH_ROD_POLICY.wallBackClearanceM,

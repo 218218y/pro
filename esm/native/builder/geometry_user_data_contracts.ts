@@ -73,8 +73,8 @@ export function readDoorLeafRectFromGeometryUserData(
 
   const offsetKeys = options.offsetKeys || ['__doorMeshOffsetX'];
   let offsetX = 0;
-  for (let i = 0; i < offsetKeys.length; i += 1) {
-    const candidate = readGeometryUserDataNumberKey(userData, offsetKeys[i]);
+  for (const offsetKey of offsetKeys) {
+    const candidate = readGeometryUserDataNumberKey(userData, offsetKey);
     if (candidate != null) {
       offsetX = candidate;
       break;

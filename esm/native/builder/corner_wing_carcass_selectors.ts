@@ -9,7 +9,8 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
   const { getInternalGridMap } = helpers;
 
   // Module selectors (hitboxes)
-  if (cornerCells.length > 0) {
+  const firstCornerCell = cornerCells[0];
+  if (firstCornerCell) {
     for (const cell of cornerCells) {
       const __h = Math.max(woodThick * 2, cell.bodyHeight);
       const __hd = getCornerHexHitDepth(cell);
@@ -64,7 +65,8 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
   // Internal grid map is used by pick/edit tools. In stack-split, bottom stack uses a separate map.
   const m = getInternalGridMap(App, __stackKey === 'bottom');
 
-  if (cornerCells.length > 0) {
+  const firstGridCell = cornerCells[0];
+  if (firstGridCell) {
     for (const cell of cornerCells) {
       m[cell.key] = {
         effectiveBottomY: cell.effectiveBottomY,
@@ -77,12 +79,11 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
     }
     // Keep the connector module id mapped so picking on moduleIndex:'corner' still has a grid.
     if (!m['corner']) {
-      const c0 = cornerCells[0];
       m['corner'] = {
-        effectiveBottomY: c0.effectiveBottomY,
-        effectiveTopY: c0.effectiveTopY,
-        localGridStep: c0.localGridStep,
-        gridDivisions: c0.gridDivisions,
+        effectiveBottomY: firstGridCell.effectiveBottomY,
+        effectiveTopY: firstGridCell.effectiveTopY,
+        localGridStep: firstGridCell.localGridStep,
+        gridDivisions: firstGridCell.gridDivisions,
         woodThick,
         startY,
       };
@@ -91,12 +92,11 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
     // New alias for the standalone corner connector (pentagon).
     // We reuse the first wing cell grid so pick/edit tools still behave consistently.
     if (!m['corner_pentagon']) {
-      const c0 = cornerCells[0];
       m['corner_pentagon'] = {
-        effectiveBottomY: c0.effectiveBottomY,
-        effectiveTopY: c0.effectiveTopY,
-        localGridStep: c0.localGridStep,
-        gridDivisions: c0.gridDivisions,
+        effectiveBottomY: firstGridCell.effectiveBottomY,
+        effectiveTopY: firstGridCell.effectiveTopY,
+        localGridStep: firstGridCell.localGridStep,
+        gridDivisions: firstGridCell.gridDivisions,
         woodThick,
         startY,
       };

@@ -247,7 +247,7 @@ function addWallWithOpenings(args: {
       name: wallName(args.wall),
       kind: wallKind(args.wall),
       color: args.color,
-      castShadow: args.castShadow,
+      ...(args.castShadow === undefined ? {} : { castShadow: args.castShadow }),
       userData: wallSurfaceUserData(args.geometry, args.wall),
     });
     return;
@@ -366,7 +366,7 @@ function addOpeningVisuals(args: {
         color,
         castShadow: true,
         userData: { ...openingData, ...extraUserData },
-        materialParams,
+        ...(materialParams === undefined ? {} : { materialParams }),
       }
     );
   };
@@ -565,13 +565,13 @@ export function refreshRoomArchitectureScene(
   const openings: readonly ResolvedRoomOpeningGeometry[] = plan.resolvedOpenings;
   if (openings.length && (!BufferGeometryCtor || !Float32BufferAttributeCtor)) return false;
 
-  const factory = {
+  const factory: ArchitectureWallFactoryArgs = {
     group,
     BoxGeometryCtor,
-    BufferGeometryCtor,
-    Float32BufferAttributeCtor,
     MaterialCtor,
     MeshCtor,
+    ...(BufferGeometryCtor ? { BufferGeometryCtor } : {}),
+    ...(Float32BufferAttributeCtor ? { Float32BufferAttributeCtor } : {}),
   };
 
   addWallWithOpenings({ factory, geometry, wall: 'back', color: wallColor, openings });

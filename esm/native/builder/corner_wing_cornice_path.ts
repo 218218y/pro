@@ -121,10 +121,9 @@ export function buildCornerWingCorniceRuns(
     }
   }
 
-  for (let i = 0; i < runs.length; i += 1) {
-    const run = runs[i];
-    run.leftSide = resolveCornerRunSideClosure(ctx, run, runs[i - 1], 'left', backTrimZ);
-    run.rightSide = resolveCornerRunSideClosure(ctx, run, runs[i + 1], 'right', backTrimZ);
+  for (const [index, run] of runs.entries()) {
+    run.leftSide = resolveCornerRunSideClosure(ctx, run, runs[index - 1], 'left', backTrimZ);
+    run.rightSide = resolveCornerRunSideClosure(ctx, run, runs[index + 1], 'right', backTrimZ);
   }
 
   return runs.filter(run => run.right - run.left > CORNER_CORNICE_EPS && run.frontPath.length > 0);
@@ -333,12 +332,14 @@ export function trimCornerPathStart(
   const out = path.map(seg => ({ ...seg }));
   let remaining = amount;
   while (out.length && remaining > CORNER_CORNICE_EPS) {
-    const len = cornerCornicePathSegmentLength(out[0]);
+    const first = out[0];
+    if (!first) break;
+    const len = cornerCornicePathSegmentLength(first);
     if (len <= remaining + CORNER_CORNICE_EPS) {
       remaining -= len;
       out.shift();
     } else {
-      out[0] = shiftCornerPathStart(out[0], remaining);
+      out[0] = shiftCornerPathStart(first, remaining);
       remaining = 0;
     }
   }
@@ -354,12 +355,14 @@ export function trimCornerPathEnd(
   let remaining = amount;
   while (out.length && remaining > CORNER_CORNICE_EPS) {
     const lastIndex = out.length - 1;
-    const len = cornerCornicePathSegmentLength(out[lastIndex]);
+    const last = out[lastIndex];
+    if (!last) break;
+    const len = cornerCornicePathSegmentLength(last);
     if (len <= remaining + CORNER_CORNICE_EPS) {
       remaining -= len;
       out.pop();
     } else {
-      out[lastIndex] = shiftCornerPathEnd(out[lastIndex], remaining);
+      out[lastIndex] = shiftCornerPathEnd(last, remaining);
       remaining = 0;
     }
   }
@@ -399,10 +402,13 @@ export function extendCornerCornicePath(
   endExtension: number
 ): CornerCornicePathSegment[] {
   const out = filterCornerCornicePath(path.map(seg => ({ ...seg })));
-  if (!out.length) return out;
-  out[0] = extendCornerPathStart(out[0], Math.max(0, startExtension));
+  const first = out[0];
+  if (!first) return out;
+  out[0] = extendCornerPathStart(first, Math.max(0, startExtension));
   const lastIndex = out.length - 1;
-  out[lastIndex] = extendCornerPathEnd(out[lastIndex], Math.max(0, endExtension));
+  const last = out[lastIndex];
+  if (!last) return out;
+  out[lastIndex] = extendCornerPathEnd(last, Math.max(0, endExtension));
   return filterCornerCornicePath(out);
 }
 

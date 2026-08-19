@@ -128,7 +128,7 @@ export function __buildRoomLastStyleUiPatch(type: FloorType, styleId: string | n
 
 export function __wp_triggerRender(updateShadows: boolean | undefined, passedApp: unknown) {
   const A = __ensureApp(passedApp);
-  runPlatformRenderFollowThrough(A, { updateShadows });
+  runPlatformRenderFollowThrough(A, updateShadows === undefined ? {} : { updateShadows });
 }
 
 export function __wp_room_getFloorType(passedApp: unknown): FloorType {

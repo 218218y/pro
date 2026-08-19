@@ -403,7 +403,7 @@ function appendCarcassMountedHalf(args: {
     // sits just farther from the panel than the raised carcass links, producing
     // the requested slight outward X lean while the dominant motion stays frontward in Z.
     cupRearZ: doorBackZ - frontSign * (policy.cupVisibleDepthM + 0.0002),
-    openFrameOffsetX: args.openFrameOffsetX,
+    ...(args.openFrameOffsetX === undefined ? {} : { openFrameOffsetX: args.openFrameOffsetX }),
     frontSign,
   });
   const carcassConnector = makeConnectorMeshBetween({
@@ -436,8 +436,8 @@ export function attachHingedDoorHardware(args: {
     doorGroup: args.doorGroup,
     state: args.state,
     doorOp: args.doorOp,
-    openFrameOffsetX: args.openFrameOffsetX,
-    frontSign: args.frontSign,
+    ...(args.openFrameOffsetX === undefined ? {} : { openFrameOffsetX: args.openFrameOffsetX }),
+    ...(args.frontSign === undefined ? {} : { frontSign: args.frontSign }),
   });
   return appendHingedDoorHardware(args);
 }
@@ -460,8 +460,8 @@ export function appendHingedDoorHardware(args: {
   const localCenterY =
     typeof args.localCenterY === 'number' && Number.isFinite(args.localCenterY) ? args.localCenterY : 0;
 
-  for (let hingeIndex = 0; hingeIndex < offsets.length; hingeIndex++) {
-    const localY = localCenterY + offsets[hingeIndex];
+  for (const [hingeIndex, centerOffset] of offsets.entries()) {
+    const localY = localCenterY + centerOffset;
     appendDoorMountedHalf({
       THREE,
       doorGroup,
@@ -469,7 +469,7 @@ export function appendHingedDoorHardware(args: {
       state,
       localY,
       hingeIndex,
-      frontSign: args.frontSign,
+      ...(args.frontSign === undefined ? {} : { frontSign: args.frontSign }),
     });
     appendCarcassMountedHalf({
       THREE,
@@ -479,8 +479,8 @@ export function appendHingedDoorHardware(args: {
       state,
       localY,
       hingeIndex,
-      openFrameOffsetX: args.openFrameOffsetX,
-      frontSign: args.frontSign,
+      ...(args.openFrameOffsetX === undefined ? {} : { openFrameOffsetX: args.openFrameOffsetX }),
+      ...(args.frontSign === undefined ? {} : { frontSign: args.frontSign }),
     });
   }
 

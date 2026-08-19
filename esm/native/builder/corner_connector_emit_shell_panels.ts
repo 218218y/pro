@@ -162,6 +162,9 @@ export function applyCornerConnectorShellPanels(
   const addEdgePanel = createCornerConnectorEdgePanelAdder(setup, metrics.panelThick, metrics.wallH);
   const { pts, cornerConnectorAsStandaloneCabinet, carcassBackInsetX, carcassBackInsetZ } = setup;
 
+  const [backCorner, wingBack, wingFront, mainFront, mainBack] = pts;
+  if (!backCorner || !wingBack || !wingFront || !mainFront || !mainBack) return addEdgePanel;
+
   const cornerBackPanelNoOverlapInsetX =
     metrics.backPanelThick +
     metrics.backPanelOutsideInsetX +
@@ -174,8 +177,8 @@ export function applyCornerConnectorShellPanels(
   appendCornerConnectorBackEdgePanel(
     setup,
     metrics,
-    pts[0],
-    pts[1],
+    backCorner,
+    wingBack,
     'corner_pent_back_side',
     true,
     cornerBackPanelNoOverlapInsetX,
@@ -184,20 +187,20 @@ export function applyCornerConnectorShellPanels(
   appendCornerConnectorBackEdgePanel(
     setup,
     metrics,
-    pts[4],
-    pts[0],
+    mainBack,
+    backCorner,
     'corner_pent_back_back',
     true,
     true,
     cornerBackPanelNoOverlapInsetZ
   );
 
-  addEdgePanel(pts[1], pts[2], 'corner_pent_attach_wing', true, {
+  addEdgePanel(wingBack, wingFront, 'corner_pent_attach_wing', true, {
     alignOuterFaceToFootprint: cornerConnectorAsStandaloneCabinet,
     shrinkStart: carcassBackInsetX,
     eps: CORNER_CONNECTOR_SHELL_POLICY.shellAttachPanelEpsilonM,
   });
-  addEdgePanel(pts[3], pts[4], 'corner_pent_attach_main', true, {
+  addEdgePanel(mainFront, mainBack, 'corner_pent_attach_main', true, {
     alignOuterFaceToFootprint: cornerConnectorAsStandaloneCabinet,
     shrinkEnd: carcassBackInsetZ,
     eps: CORNER_CONNECTOR_SHELL_POLICY.shellAttachPanelEpsilonM,

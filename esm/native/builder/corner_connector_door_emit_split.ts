@@ -25,8 +25,11 @@ export function appendCornerConnectorSplitDoor(
     const cuts = mergeCornerConnectorSplitCuts(ctx, mergedCuts);
     const segCount = cuts.length + 1;
     for (let segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
-      const segBottomY = segmentIndex === 0 ? ctx.doorBottomY : cuts[segmentIndex - 1] + ctx.splitGap / 2;
-      const segTopY = segmentIndex === segCount - 1 ? topEdge : cuts[segmentIndex] - ctx.splitGap / 2;
+      const previousCut = cuts[segmentIndex - 1];
+      const nextCut = cuts[segmentIndex];
+      const segBottomY =
+        segmentIndex === 0 ? ctx.doorBottomY : (previousCut ?? ctx.doorBottomY) + ctx.splitGap / 2;
+      const segTopY = segmentIndex === segCount - 1 ? topEdge : (nextCut ?? topEdge) - ctx.splitGap / 2;
       const segH = segTopY - segBottomY;
       if (!(segH > CORNER_CONNECTOR_DOOR_RENDER_POLICY.minRenderableSegmentHeightM)) continue;
       const segY = segBottomY + segH / 2;

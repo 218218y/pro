@@ -143,8 +143,8 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     targetTop: shelf1BottomY,
     shelfThick,
   });
-  for (let i = 0; i < leftShelfBottomYs.length; i++) {
-    addShelfRectMainSide(`corner_pent_int_left_shelf_${i + 1}`, leftShelfBottomYs[i]);
+  for (const [index, shelfBottomY] of leftShelfBottomYs.entries()) {
+    addShelfRectMainSide(`corner_pent_int_left_shelf_${index + 1}`, shelfBottomY);
   }
 
   // Build an inset shelf footprint so pentagon shelves stay fully INSIDE the connector carcass:

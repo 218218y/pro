@@ -476,18 +476,14 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertLacksAll(
     assert,
     roomInternalSharedOwner,
-    [
-      /runPlatformRenderFollowThrough\(A, \{ updateShadows \}\)/,
-      /triggerRenderViaPlatform\(/,
-      /ensureRenderLoopViaPlatform\(/,
-    ],
+    [/runPlatformRenderFollowThrough\(/, /triggerRenderViaPlatform\(/, /ensureRenderLoopViaPlatform\(/],
     'room internal shared canonical ownership split'
   );
 
   assertMatchesAll(
     assert,
     roomSharedStateOwner,
-    [/runPlatformRenderFollowThrough\(A, \{ updateShadows \}\)/],
+    [/runPlatformRenderFollowThrough\(A,/],
     'room shared state canonical render follow-through'
   );
   assertLacksAll(

@@ -73,7 +73,7 @@ export function createLeftShelvesContentsPlan(args: {
   const shelfBottomYs = leftShelfBottomYs.toSorted((a, b) => a - b);
   const plans: FoldedClothesSurfacePlan[] = [];
 
-  const firstStop = shelfBottomYs.length ? shelfBottomYs[0] : shelf1BottomY;
+  const firstStop = shelfBottomYs[0] ?? shelf1BottomY;
   const floorMaxHeight =
     firstStop - floorTopY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
   if (floorMaxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
@@ -94,9 +94,9 @@ export function createLeftShelvesContentsPlan(args: {
     });
   }
 
-  for (let i = 0; i < shelfBottomYs.length; i++) {
-    const topY = shelfBottomYs[i] + woodThick;
-    const nextStop = i + 1 < shelfBottomYs.length ? shelfBottomYs[i + 1] : shelf1BottomY;
+  for (const [index, shelfBottomY] of shelfBottomYs.entries()) {
+    const topY = shelfBottomY + woodThick;
+    const nextStop = shelfBottomYs[index + 1] ?? shelf1BottomY;
     const maxHeight = nextStop - topY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
     if (maxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
       plans.push({
@@ -112,7 +112,7 @@ export function createLeftShelvesContentsPlan(args: {
           Math.min(CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMaxM, maxHeight)
         ),
         maxDepth: usableDepth,
-        op: `special:leftSurface:shelf:${i + 1}`,
+        op: `special:leftSurface:shelf:${index + 1}`,
       });
     }
   }

@@ -376,14 +376,14 @@ type DepthSteppedBaseParams = {
 
 function adaptDepthSteppedBase(params: DepthSteppedBaseParams): void {
   const { totalW, D, woodThick, baseType, baseHeight, base, moduleWidths, moduleDepths } = params;
-  if (!base) return;
+  if (!base || moduleWidths.length !== moduleDepths.length) return;
 
   if (baseType === 'plinth' && _asObject(base)?.kind === 'plinth') {
     let internalLeft = -totalW / 2 + woodThick;
     const segments: MutableRecord[] = [];
-    for (let i = 0; i < moduleWidths.length; i++) {
-      const w = moduleWidths[i];
+    for (const [i, w] of moduleWidths.entries()) {
       const dm = moduleDepths[i];
+      if (dm === undefined) return;
 
       const leftBoundary = i === 0 ? -totalW / 2 : internalLeft;
       const rightBoundary = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + w + woodThick;
@@ -420,9 +420,9 @@ function adaptDepthSteppedBase(params: DepthSteppedBaseParams): void {
   if (baseType === 'legs' && _asObject(base)?.kind === 'legs') {
     let internalLeft = -totalW / 2 + woodThick;
     const spans: { left: number; right: number; depth: number }[] = [];
-    for (let i = 0; i < moduleWidths.length; i++) {
-      const w = moduleWidths[i];
+    for (const [i, w] of moduleWidths.entries()) {
       const dm = moduleDepths[i];
+      if (dm === undefined) return;
       const leftBoundary = i === 0 ? -totalW / 2 : internalLeft;
       const rightBoundary = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + w + woodThick;
       spans.push({ left: leftBoundary, right: rightBoundary, depth: dm });
@@ -432,10 +432,9 @@ function adaptDepthSteppedBase(params: DepthSteppedBaseParams): void {
     const eps = 1e-6;
     const depthAtX = (x: number): number => {
       let best: number | null = null;
-      for (let i = 0; i < spans.length; i++) {
-        const s = spans[i];
-        if (x >= s.left - eps && x <= s.right + eps) {
-          best = best == null ? s.depth : Math.min(best, s.depth);
+      for (const span of spans) {
+        if (x >= span.left - eps && x <= span.right + eps) {
+          best = best == null ? span.depth : Math.min(best, span.depth);
         }
       }
       return best == null ? D : best;

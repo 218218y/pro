@@ -20,10 +20,11 @@ export function applyCornerWingCarcassDividers(
 
   const fullT = Math.max(CORNER_CONNECTOR_SHELL_POLICY.shellBaseMinHeightM, woodThick);
   for (let ci = 1; ci < cornerCells.length; ci++) {
-    const x = cornerCells[ci].startX;
     const leftIdx = Math.max(0, ci - 1);
     const leftCell = cornerCells[leftIdx];
     const rightCell = cornerCells[ci];
+    if (!leftCell || !rightCell) continue;
+    const x = rightCell.startX;
 
     const leftNeedsOwn = !!(
       leftCell.__hasActiveSpecialDims ||

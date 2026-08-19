@@ -43,9 +43,11 @@ type ThreeHexLike = {
 
 function createShape(three: ThreeHexLike, points: P2[]): ShapeLike | null {
   if (typeof three.Shape !== 'function' || points.length <= 0) return null;
+  const [first, ...rest] = points;
+  if (!first) return null;
   const shape = new three.Shape();
-  shape.moveTo(points[0].x, points[0].z);
-  for (let i = 1; i < points.length; i += 1) shape.lineTo(points[i].x, points[i].z);
+  shape.moveTo(first.x, first.z);
+  for (const point of rest) shape.lineTo(point.x, point.z);
   if (typeof shape.closePath === 'function') shape.closePath();
   return shape;
 }
@@ -190,12 +192,12 @@ export function addCornerHexDiagonalPanels(args: {
     const glassState = resolveHexCellDiagonalGlassState({
       cfg,
       partId,
-      globalDoorStyle: ctx.doorStyle,
-      readScopedMapVal: ctx.__readScopedMapVal,
+      ...(ctx.doorStyle === undefined ? {} : { globalDoorStyle: ctx.doorStyle }),
+      ...(ctx.__readScopedMapVal === undefined ? {} : { readScopedMapVal: ctx.__readScopedMapVal }),
       doorSpecialMap: ctx.__doorSpecialMap,
     });
     const glassVisual = createHexCellDiagonalGlassVisual({
-      createDoorVisual: ctx.createDoorVisual,
+      ...(ctx.createDoorVisual === undefined ? {} : { createDoorVisual: ctx.createDoorVisual }),
       width: len,
       height: panelHeight,
       thickness: ctx.woodThick,

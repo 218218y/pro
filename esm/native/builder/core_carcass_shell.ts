@@ -259,9 +259,9 @@ function applyRemovedFrameSideBackPanelIdentity(
   if (!hasRemovedFrameSide(prepared)) return;
   const modulesLength = backPanels.length;
   if (!(modulesLength > 0)) return;
-  for (let i = 0; i < modulesLength; i += 1) {
+  for (const [i, panel] of backPanels.entries()) {
     const partId = readRemovedBackPanelPartId(prepared, i, modulesLength);
-    if (partId) backPanels[i] = markBackPanelAsWood(backPanels[i], partId);
+    if (partId) backPanels[i] = markBackPanelAsWood(panel, partId);
   }
 }
 
@@ -288,8 +288,7 @@ function buildRemovedFrameSideBackPanelSegments(
 
   const backPanels: CarcassBackPanelOp[] = [];
   let internalLeft = -totalW / 2 + woodThick;
-  for (let i = 0; i < moduleWidths.length; i += 1) {
-    const width = moduleWidths[i];
+  for (const [i, width] of moduleWidths.entries()) {
     const bounds = resolveBackPanelSegmentBounds({
       prepared,
       moduleIndex: i,
@@ -320,10 +319,11 @@ type DepthSteppedFloorParams = {
 
 function appendDepthSteppedFloorBoards(params: DepthSteppedFloorParams): void {
   const { totalW, D, woodThick, startY, moduleWidths, moduleDepths, boards } = params;
+  if (moduleWidths.length !== moduleDepths.length) return;
   let internalLeft = -totalW / 2 + woodThick;
-  for (let i = 0; i < moduleWidths.length; i++) {
-    const w = moduleWidths[i];
+  for (const [i, w] of moduleWidths.entries()) {
     const dm = moduleDepths[i];
+    if (dm === undefined) return;
     const floorLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const floorRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
     const floorW = Math.max(
@@ -390,21 +390,27 @@ function appendSteppedShell(params: SteppedShellParams): void {
   const bodyHeights = moduleHeightsRaw.map(v =>
     Math.min(cabinetBodyHeight, Math.max(woodThick * 2, __asNum(v, H) - startY))
   );
+  if (moduleWidths.length !== bodyHeights.length || moduleWidths.length === 0) return;
+  if (isDepthStepped && (!moduleDepths || moduleDepths.length !== moduleWidths.length)) return;
 
-  const leftDepth = isDepthStepped && moduleDepths ? moduleDepths[0] : D;
-  const rightDepth = isDepthStepped && moduleDepths ? moduleDepths[moduleDepths.length - 1] : D;
-  const leftZ = isDepthStepped && moduleDepths ? -D / 2 + leftDepth / 2 : 0;
-  const rightZ = isDepthStepped && moduleDepths ? -D / 2 + rightDepth / 2 : 0;
+  const firstBodyHeight = bodyHeights[0];
+  const lastBodyHeight = bodyHeights[bodyHeights.length - 1];
+  if (firstBodyHeight === undefined || lastBodyHeight === undefined) return;
+  const leftDepth = isDepthStepped ? moduleDepths?.[0] : D;
+  const rightDepth = isDepthStepped ? moduleDepths?.[moduleWidths.length - 1] : D;
+  if (leftDepth === undefined || rightDepth === undefined) return;
+  const leftZ = isDepthStepped ? -D / 2 + leftDepth / 2 : 0;
+  const rightZ = isDepthStepped ? -D / 2 + rightDepth / 2 : 0;
 
   boards.push({
     kind: 'board',
     role: 'left-side',
     partId: 'body_left',
     width: woodThick,
-    height: bodyHeights[0],
+    height: firstBodyHeight,
     depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, leftDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
     x: -totalW / 2 + woodThick / 2,
-    y: startY + bodyHeights[0] / 2,
+    y: startY + firstBodyHeight / 2,
     z: leftZ + SHELL_DIMENSIONS.sideZOffsetM,
   });
 
@@ -413,24 +419,25 @@ function appendSteppedShell(params: SteppedShellParams): void {
     role: 'right-side',
     partId: 'body_right',
     width: woodThick,
-    height: bodyHeights[bodyHeights.length - 1],
+    height: lastBodyHeight,
     depth: Math.max(SHELL_DIMENSIONS.bodyMinDepthM, rightDepth - SHELL_DIMENSIONS.sideDepthClearanceM),
     x: totalW / 2 - woodThick / 2,
-    y: startY + bodyHeights[bodyHeights.length - 1] / 2,
+    y: startY + lastBodyHeight / 2,
     z: rightZ + SHELL_DIMENSIONS.sideZOffsetM,
   });
 
   let internalLeft = -totalW / 2 + woodThick;
-  for (let i = 0; i < moduleWidths.length; i++) {
-    const w = moduleWidths[i];
+  for (const [i, w] of moduleWidths.entries()) {
     const h = bodyHeights[i];
+    if (h === undefined) return;
     const ceilLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const ceilRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
     const ceilW = Math.max(
       SHELL_DIMENSIONS.boardMinDimensionM,
       ceilRight - ceilLeft - SHELL_DIMENSIONS.floorCeilWidthClearanceM
     );
-    const ceilDm = isDepthStepped && moduleDepths ? moduleDepths[i] : D;
+    const ceilDm = isDepthStepped ? moduleDepths?.[i] : D;
+    if (ceilDm === undefined) return;
     const ceilDepth = Math.max(
       SHELL_DIMENSIONS.boardMinDepthM,
       ceilDm - (CARCASS_BACK_INSET_Z + CARCASS_FRONT_INSET_Z)
@@ -484,8 +491,10 @@ type DepthSteppedShellParams = {
 
 function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
   const { totalW, D, woodThick, startY, cabinetBodyHeight, moduleWidths, moduleDepths, boards } = params;
+  if (moduleWidths.length === 0 || moduleWidths.length !== moduleDepths.length) return;
   const leftDepth = moduleDepths[0];
   const rightDepth = moduleDepths[moduleDepths.length - 1];
+  if (leftDepth === undefined || rightDepth === undefined) return;
   const leftZ = -D / 2 + leftDepth / 2;
   const rightZ = -D / 2 + rightDepth / 2;
 
@@ -515,9 +524,9 @@ function appendDepthSteppedSidesAndCeil(params: DepthSteppedShellParams): void {
   );
 
   let internalLeft = -totalW / 2 + woodThick;
-  for (let i = 0; i < moduleWidths.length; i++) {
-    const w = moduleWidths[i];
+  for (const [i, w] of moduleWidths.entries()) {
     const dm = moduleDepths[i];
+    if (dm === undefined) return;
     const ceilLeft = i === 0 ? -totalW / 2 + woodThick : internalLeft;
     const ceilRight = i === moduleWidths.length - 1 ? totalW / 2 - woodThick : internalLeft + w + woodThick;
     const ceilW = Math.max(

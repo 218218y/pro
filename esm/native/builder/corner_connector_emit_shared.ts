@@ -101,6 +101,7 @@ function insetPoly(points: P2[], edgeInsets: number[], interiorX: number, interi
   for (let i = 0; i < n; i++) {
     const a = points[i];
     const b = points[(i + 1) % n];
+    if (!a || !b) return null;
     const dx = b.x - a.x;
     const dz = b.z - a.z;
     const len = Math.sqrt(dx * dx + dz * dz);
@@ -126,6 +127,7 @@ function insetPoly(points: P2[], edgeInsets: number[], interiorX: number, interi
   for (let i = 0; i < n; i++) {
     const prev = lines[(i - 1 + n) % n];
     const cur = lines[i];
+    if (!prev || !cur) return null;
     const det = prev.nx * cur.nz - prev.nz * cur.nx;
     if (!Number.isFinite(det) || Math.abs(det) < 1e-10) return null;
     const x = (prev.c * cur.nz - prev.nz * cur.c) / det;
@@ -137,18 +139,22 @@ function insetPoly(points: P2[], edgeInsets: number[], interiorX: number, interi
 }
 
 function shapeFromPoly(THREE: ThreeCornerConnectorLike, poly: P2[]): ShapeInputLike {
+  const [first, ...rest] = poly;
+  if (!first) return new THREE.Shape();
   const shape = new THREE.Shape();
-  shape.moveTo(poly[0].x, poly[0].z);
-  for (let i = 1; i < poly.length; i++) shape.lineTo(poly[i].x, poly[i].z);
-  shape.lineTo(poly[0].x, poly[0].z);
+  shape.moveTo(first.x, first.z);
+  for (const point of rest) shape.lineTo(point.x, point.z);
+  shape.lineTo(first.x, first.z);
   return shape;
 }
 
 function buildFootprintShape(THREE: ThreeCornerConnectorLike, points: P2[]): ShapeInputLike {
+  const [first, ...rest] = points;
+  if (!first) return new THREE.Shape();
   const shape = new THREE.Shape();
-  shape.moveTo(points[0].x, points[0].z);
-  for (let i = 1; i < points.length; i++) shape.lineTo(points[i].x, points[i].z);
-  shape.lineTo(points[0].x, points[0].z);
+  shape.moveTo(first.x, first.z);
+  for (const point of rest) shape.lineTo(point.x, point.z);
+  shape.lineTo(first.x, first.z);
   return shape;
 }
 

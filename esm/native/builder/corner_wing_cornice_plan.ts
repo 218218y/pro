@@ -151,12 +151,15 @@ function buildSegmentedProfileOperations(args: {
   for (const run of args.runs) {
     const defaultSideEndZ = run.frontPath.reduce((max, seg) => Math.max(max, seg.az, seg.bz), -Infinity);
     const sourcePath = filterCornerCornicePath(run.frontPath.map(seg => ({ ...seg })));
-    const startExtension = shouldExtendCornerExteriorProfilePath(sourcePath[0])
+    const sourceFirst = sourcePath[0];
+    const sourceLast = sourcePath[sourcePath.length - 1];
+    if (!sourceFirst || !sourceLast) continue;
+    const startExtension = shouldExtendCornerExteriorProfilePath(sourceFirst)
       ? run.leftSide != null && !run.leftSide.internal
         ? overhangX
         : 0
       : 0;
-    const endExtension = shouldExtendCornerExteriorProfilePath(sourcePath[sourcePath.length - 1])
+    const endExtension = shouldExtendCornerExteriorProfilePath(sourceLast)
       ? run.rightSide != null && !run.rightSide.internal
         ? overhangX
         : 0
@@ -164,22 +167,21 @@ function buildSegmentedProfileOperations(args: {
     const renderPath = extendCornerCornicePath(sourcePath, startExtension, endExtension);
     const useOuterMiter = shouldUseCornerOuterMiterForPath(renderPath);
 
-    for (let i = 0; i < renderPath.length; i += 1) {
-      const pathSeg = renderPath[i];
+    for (const [index, pathSeg] of renderPath.entries()) {
       const len = cornerCornicePathSegmentLength(pathSeg);
       if (len <= minDimension) continue;
-      const startJointTrim =
-        i > 0
-          ? useOuterMiter
-            ? cornerMiterExtensionForPathJoint(renderPath[i - 1], pathSeg, overhangZ, overhangZ).bStart
-            : cornerMutualPathJointMiterTrim(renderPath[i - 1], pathSeg, overhangZ)
-          : 0;
-      const endJointTrim =
-        i < renderPath.length - 1
-          ? useOuterMiter
-            ? cornerMiterExtensionForPathJoint(pathSeg, renderPath[i + 1], overhangZ, overhangZ).aEnd
-            : cornerMutualPathJointMiterTrim(pathSeg, renderPath[i + 1], overhangZ)
-          : 0;
+      const previousPathSeg = renderPath[index - 1];
+      const nextPathSeg = renderPath[index + 1];
+      const startJointTrim = previousPathSeg
+        ? useOuterMiter
+          ? cornerMiterExtensionForPathJoint(previousPathSeg, pathSeg, overhangZ, overhangZ).bStart
+          : cornerMutualPathJointMiterTrim(previousPathSeg, pathSeg, overhangZ)
+        : 0;
+      const endJointTrim = nextPathSeg
+        ? useOuterMiter
+          ? cornerMiterExtensionForPathJoint(pathSeg, nextPathSeg, overhangZ, overhangZ).aEnd
+          : cornerMutualPathJointMiterTrim(pathSeg, nextPathSeg, overhangZ)
+        : 0;
       const leftExteriorTrim =
         run.leftSide != null && !run.leftSide.internal
           ? useOuterMiter
@@ -213,13 +215,13 @@ function buildSegmentedProfileOperations(args: {
         rotationY: cornerProfileRotationForPathSegment(pathSeg),
         flipX: false,
         miterStartTrim:
-          i < renderPath.length - 1
+          nextPathSeg != null
             ? clampCornerMiterTrimForSegment(endJointTrim, len)
             : run.rightSide != null && !run.rightSide.internal
               ? clampCornerMiterTrimForSegment(rightExteriorTrim, len)
               : 0,
         miterEndTrim:
-          i > 0
+          previousPathSeg != null
             ? clampCornerMiterTrimForSegment(startJointTrim, len)
             : run.leftSide != null && !run.leftSide.internal
               ? clampCornerMiterTrimForSegment(leftExteriorTrim, len)
@@ -254,6 +256,7 @@ function appendProfileSide(args: {
   const overhangZ = CORNICE_PROFILE.overhangZM;
   const useOuterMiter = shouldUseCornerOuterMiterForPath(args.renderPath);
   const pathSeg = args.side === 'left' ? args.renderPath[0] : args.renderPath[args.renderPath.length - 1];
+  if (!pathSeg) return;
   const sideStartZ = closure.startZ;
   const sideEndZ = closure.connectorSeam
     ? args.side === 'left'
@@ -472,6 +475,7 @@ function appendWaveSide(
 ): void {
   if (closure == null || !run.frontPath.length) return;
   const frontSeg = side === 'left' ? run.frontPath[0] : run.frontPath[run.frontPath.length - 1];
+  if (!frontSeg) return;
   const sideEndZ = side === 'left' ? frontSeg.az : frontSeg.bz;
   const depth = Math.max(CORNICE_COMMON.minSegmentLengthM, Math.abs(sideEndZ - closure.startZ));
   operations.push({

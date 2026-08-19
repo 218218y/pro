@@ -186,12 +186,11 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     plane,
     frontZ: resolvedFrontZ,
     faceSign: face,
-    surfaceFaceCoord,
+    ...(surfaceFaceCoord === undefined ? {} : { surfaceFaceCoord }),
   });
   const renderOrder = readRenderOrder(groupObj);
 
-  for (let i = 0; i < resolvedTrims.length; i += 1) {
-    const { entry, placement } = resolvedTrims[i];
+  for (const { entry, placement } of resolvedTrims) {
     const material = getTrimMaterial({ App, THREE: three, color: placement.color });
     if (!material) continue;
     try {

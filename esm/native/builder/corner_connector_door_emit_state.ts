@@ -65,10 +65,9 @@ export function readCornerConnectorCustomSplitCutsYInternal(
         height * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
       )
     );
-    for (let i = 0; i < abs.length; i++) {
-      const y = abs[i];
-      const prev = out.length ? out[out.length - 1] : NaN;
-      if (Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
+    for (const y of abs) {
+      const prev = out[out.length - 1];
+      if (prev !== undefined && Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
       out.push(y);
     }
     return out;
@@ -88,8 +87,7 @@ export function mergeCornerConnectorSplitCutsInternal(
   xs.sort((a, b) => a - b);
   const kept: number[] = [];
   let prevB = ctx.doorBottomY;
-  for (let i = 0; i < xs.length; i++) {
-    const y = xs[i];
+  for (const y of xs) {
     if (y - prevB < minSegH) continue;
     if (topEdge - y < minSegH) continue;
     kept.push(y);
@@ -103,10 +101,9 @@ export function mergeCornerConnectorSplitCutsInternal(
       H * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
     )
   );
-  for (let i = 0; i < kept.length; i++) {
-    const y = kept[i];
-    const prev = out.length ? out[out.length - 1] : NaN;
-    if (Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
+  for (const y of kept) {
+    const prev = out[out.length - 1];
+    if (prev !== undefined && Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
     out.push(y);
   }
   return out;

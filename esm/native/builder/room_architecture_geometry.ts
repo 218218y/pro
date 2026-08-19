@@ -359,6 +359,17 @@ function appendUniqueCoordinate(values: number[], value: number): void {
   }
 }
 
+function adjacentIntervals(values: readonly number[]): Array<readonly [number, number]> {
+  const intervals: Array<readonly [number, number]> = [];
+  for (let index = 1; index < values.length; index += 1) {
+    const start = values[index - 1];
+    const end = values[index];
+    if (start === undefined || end === undefined) continue;
+    intervals.push([start, end]);
+  }
+  return intervals;
+}
+
 function pushOrientedQuad(
   positions: number[],
   normals: number[],
@@ -426,22 +437,21 @@ export function buildRoomWallOpeningMeshData(
   uStops.sort((a, b) => a - b);
   yStops.sort((a, b) => a - b);
 
-  const solid: boolean[][] = Array.from({ length: uStops.length - 1 }, () =>
-    Array.from({ length: yStops.length - 1 }, () => true)
-  );
-  for (let uIndex = 0; uIndex < uStops.length - 1; uIndex += 1) {
-    const centerU = (uStops[uIndex] + uStops[uIndex + 1]) / 2;
-    for (let yIndex = 0; yIndex < yStops.length - 1; yIndex += 1) {
-      const centerY = (yStops[yIndex] + yStops[yIndex + 1]) / 2;
-      solid[uIndex][yIndex] = !openings.some(
+  const uIntervals = adjacentIntervals(uStops);
+  const yIntervals = adjacentIntervals(yStops);
+  const solid: boolean[][] = uIntervals.map(([u0, u1]) => {
+    const centerU = (u0 + u1) / 2;
+    return yIntervals.map(([y0, y1]) => {
+      const centerY = (y0 + y1) / 2;
+      return !openings.some(
         opening =>
           centerU > opening.minU - ROOM_ARCHITECTURE_EPSILON_M &&
           centerU < opening.maxU + ROOM_ARCHITECTURE_EPSILON_M &&
           centerY > opening.minY - ROOM_ARCHITECTURE_EPSILON_M &&
           centerY < opening.maxY + ROOM_ARCHITECTURE_EPSILON_M
       );
-    }
-  }
+    });
+  });
 
   const positions: number[] = [];
   const normals: number[] = [];
@@ -449,13 +459,11 @@ export function buildRoomWallOpeningMeshData(
   const normalU = (sign: -1 | 1): Vec3Tuple => (wallAxis === 'x' ? [sign, 0, 0] : [0, 0, sign]);
   const normalN = (sign: -1 | 1): Vec3Tuple => (wallAxis === 'x' ? [0, 0, sign] : [sign, 0, 0]);
 
-  for (let uIndex = 0; uIndex < uStops.length - 1; uIndex += 1) {
-    const u0 = uStops[uIndex];
-    const u1 = uStops[uIndex + 1];
-    for (let yIndex = 0; yIndex < yStops.length - 1; yIndex += 1) {
-      if (!solid[uIndex][yIndex]) continue;
-      const y0 = yStops[yIndex];
-      const y1 = yStops[yIndex + 1];
+  for (const [uIndex, [u0, u1]] of uIntervals.entries()) {
+    const solidRow = solid[uIndex];
+    if (!solidRow) continue;
+    for (const [yIndex, [y0, y1]] of yIntervals.entries()) {
+      if (!solidRow[yIndex]) continue;
 
       pushOrientedQuad(
         positions,
@@ -470,10 +478,10 @@ export function buildRoomWallOpeningMeshData(
         normalN(1)
       );
 
-      const leftIsSolid = uIndex > 0 && solid[uIndex - 1][yIndex];
-      const rightIsSolid = uIndex + 1 < solid.length && solid[uIndex + 1][yIndex];
-      const belowIsSolid = yIndex > 0 && solid[uIndex][yIndex - 1];
-      const aboveIsSolid = yIndex + 1 < solid[uIndex].length && solid[uIndex][yIndex + 1];
+      const leftIsSolid = uIndex > 0 && solid[uIndex - 1]?.[yIndex] === true;
+      const rightIsSolid = solid[uIndex + 1]?.[yIndex] === true;
+      const belowIsSolid = yIndex > 0 && solidRow[yIndex - 1] === true;
+      const aboveIsSolid = solidRow[yIndex + 1] === true;
 
       if (!leftIsSolid) {
         pushOrientedQuad(

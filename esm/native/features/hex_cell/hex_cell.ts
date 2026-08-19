@@ -13,7 +13,7 @@ export type HexCellConfig = {
 export type HexCellResolvedDraft = {
   enabled: true;
   protrusionCm: number;
-  doorWidthCm: number | null;
+  doorWidthCm: number;
 };
 
 export type HexCellGeometry = {

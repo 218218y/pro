@@ -52,10 +52,11 @@ export function resolveHexCellDiagonalGlassState(args: {
 }): HexCellDiagonalGlassState | null {
   const cfg = asRecord(args.cfg) || {};
   const specialMap = typeof args.doorSpecialMap !== 'undefined' ? args.doorSpecialMap : cfg.doorSpecialMap;
+  const scopedReader = args.readScopedMapVal;
   const special = readMapValue({
     map: specialMap,
     partId: args.partId,
-    readScopedMapVal: args.readScopedMapVal,
+    ...(scopedReader === undefined ? {} : { readScopedMapVal: scopedReader }),
   });
   if (special !== 'glass') return null;
 
@@ -63,13 +64,13 @@ export function resolveHexCellDiagonalGlassState(args: {
     readMapValue({
       map: cfg.curtainMap,
       partId: args.partId,
-      readScopedMapVal: args.readScopedMapVal,
+      ...(scopedReader === undefined ? {} : { readScopedMapVal: scopedReader }),
     })
   );
   const rawFrameStyle = readMapValue({
     map: cfg.doorStyleMap,
     partId: args.partId,
-    readScopedMapVal: args.readScopedMapVal,
+    ...(scopedReader === undefined ? {} : { readScopedMapVal: scopedReader }),
   });
 
   return {

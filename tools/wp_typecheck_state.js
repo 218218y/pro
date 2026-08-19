@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 // The whole-project strict config is the canonical correctness gate.
 // core-hardening incrementally enables stricter indexed/optional semantics on
-// state/runtime/platform owners and their transitive dependencies.
+// state/runtime/platform, geometry-core, and corner-geometry owners plus their transitive dependencies.
 // ui-lean is intentionally separate because it compiles UI .ts files against
 // the dependency-light lean_types ambient surface rather than normal package types.
 export const MODE_TO_CONFIG = Object.freeze({
