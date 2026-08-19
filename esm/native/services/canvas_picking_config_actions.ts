@@ -21,16 +21,13 @@ import {
 import {
   cfgBatch,
   setCfgCurtainMap,
-  setCfgDepth,
   setCfgDoorSpecialMap,
   setCfgDoorStyleMap,
   setCfgMirrorLayoutMap,
-  setCfgHeight,
   setCfgLowerModulesConfiguration,
   setCfgIndividualColors,
   setCfgManualWidth,
   setCfgModulesConfiguration,
-  setCfgWidth,
 } from '../runtime/cfg_access.js';
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -145,9 +142,6 @@ export function applyCellDimsConfigSnapshot(args: CellDimsConfigSnapshotArgs): v
       } else {
         setCfgModulesConfiguration(App, snapshot.modulesConfiguration, meta);
         if (typeof snapshot.isManualWidth === 'boolean') setCfgManualWidth(App, snapshot.isManualWidth, meta);
-        if (typeof snapshot.width !== 'undefined') setCfgWidth(App, snapshot.width, meta);
-        if (typeof snapshot.height !== 'undefined') setCfgHeight(App, snapshot.height, meta);
-        if (typeof snapshot.depth !== 'undefined') setCfgDepth(App, snapshot.depth, meta);
       }
     },
     meta

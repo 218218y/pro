@@ -127,7 +127,11 @@ test('canvas picking config snapshots and typed meta/map surfaces stay centraliz
 
   assert.match(actionsAccess, /export function applyModulesGeometrySnapshotViaActions\(/);
   assert.match(actionsAccess, /'applyModulesGeometrySnapshot'/);
-  assert.match(kernelTypes, /export interface ModulesGeometrySnapshotLike extends (AnyRecord|UnknownRecord)/);
+  assert.match(kernelTypes, /export interface ModulesGeometrySnapshotLike \{/);
+  assert.doesNotMatch(
+    kernelTypes,
+    /export interface ModulesGeometrySnapshotLike extends (?:AnyRecord|UnknownRecord)/
+  );
   assert.match(
     kernelTypes,
     /applyModulesGeometrySnapshot\?: \(snapshot: ModulesGeometrySnapshotLike, meta\?: ActionMetaLike\) => unknown;/

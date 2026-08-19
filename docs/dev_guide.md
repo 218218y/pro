@@ -125,6 +125,7 @@ both generated regression baselines, so regenerating a baseline cannot widen the
 ## UI/state rules
 
 - UI updates go through `App.actions.*`, especially `App.actions.ui.patch(...)` for simple UI state updates.
+- Public mutation surfaces are exact contracts, not generic property bags: unknown root/slice keys and backend patch metadata are rejected before commit. Use semantic config-map/snapshot owners for map replacement or snapshot operations, and keep root `actions.patch` for intentional atomic multi-slice transactions.
 - Action-only controls, such as export or file dialogs, should not be modeled as persistent UI state unless there is real state to preserve.
 - UI should consume public service/API seams rather than importing deep runtime internals.
 - Groove tool drafts (manual width/height and current orientation) are ephemeral UI state. Applied groove placement is persisted only in the canonical `grooveLayoutMap`; `groovesMap` remains a boolean toggle map.

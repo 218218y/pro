@@ -9,6 +9,7 @@ import type {
   HandleType,
   WardrobeType,
 } from '../../../types';
+import { isConfigScalarKey } from '../../../types/config_scalar.js';
 import {
   asCornerConfiguration,
   asModulesConfiguration,
@@ -38,65 +39,60 @@ export function applyConfigNonMapPatchWithReplaceKeys(
   return patch;
 }
 
-type CfgSetScalar = {
-  <K extends ConfigScalarKey>(
-    App: unknown,
-    key: K,
-    valueOrFn: ConfigScalarValueMap[K] | ScalarUpdaterFn<K>,
-    meta?: ActionMetaLike
-  ): ConfigScalarValueMap[K] | undefined;
-  (App: unknown, key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown;
-};
-
-export const cfgSetScalar: CfgSetScalar = (
+export function cfgSetScalar<K extends ConfigScalarKey>(
   App: unknown,
-  key: unknown,
-  valueOrFn: unknown,
+  key: K,
+  valueOrFn: ConfigScalarValueMap[K] | ScalarUpdaterFn<K>,
   meta?: ActionMetaLike
-): unknown => {
+): ConfigScalarValueMap[K] | undefined {
   const k = typeof key === 'string' ? key.trim() : '';
-  if (!k) return undefined;
+  if (!isConfigScalarKey(k)) {
+    throw new Error(`[WardrobePro] cfgSetScalar rejects unknown scalar key: ${k || '<empty>'}.`);
+  }
 
   let next: unknown = valueOrFn;
   if (typeof valueOrFn === 'function') {
-    const prev = cfgRead(App, k, undefined);
-    const updater = readScalarUpdaterFn(valueOrFn);
+    const prev = cfgRead(App, k, undefined) as ConfigScalarValueMap[K] | undefined;
+    const updater = readScalarUpdaterFn<K>(valueOrFn);
     if (!updater) return undefined;
     next = updater(prev, cfgGet(App));
   }
 
   const cfgNs = getConfigNamespace(App);
   if (typeof cfgNs?.setScalar === 'function') {
-    cfgNs.setScalar(k, next, meta);
-    return next;
+    cfgNs.setScalar(k, next as ConfigScalarValueMap[K], meta);
+    return next as ConfigScalarValueMap[K];
   }
 
   applyConfigNonMapPatch(App, { [k]: next }, meta);
-  return next;
-};
+  return next as ConfigScalarValueMap[K];
+}
 
 export function setCfgModulesConfiguration(App: unknown, next: unknown, meta?: ActionMetaLike): unknown {
+  const normalized = asModulesConfiguration(next);
   const cfgNs = getConfigNamespace(App);
   if (typeof cfgNs?.setModulesConfiguration === 'function') {
-    return cfgNs.setModulesConfiguration(asModulesConfiguration(next), meta);
+    return cfgNs.setModulesConfiguration(normalized, meta);
   }
-  return cfgSetScalar(App, 'modulesConfiguration', next, meta);
+  return cfgSetScalar(App, 'modulesConfiguration', normalized, meta);
 }
 
 export function setCfgLowerModulesConfiguration(App: unknown, next: unknown, meta?: ActionMetaLike): unknown {
+  const normalized = asModulesConfiguration(next);
   const cfgNs = getConfigNamespace(App);
   if (typeof cfgNs?.setLowerModulesConfiguration === 'function') {
-    return cfgNs.setLowerModulesConfiguration(asModulesConfiguration(next), meta);
+    return cfgNs.setLowerModulesConfiguration(normalized, meta);
   }
-  return cfgSetScalar(App, 'stackSplitLowerModulesConfiguration', next, meta);
+  return cfgSetScalar(App, 'stackSplitLowerModulesConfiguration', normalized, meta);
 }
 
 export function setCfgCornerConfiguration(App: unknown, next: unknown, meta?: ActionMetaLike): unknown {
+  const normalized = asCornerConfiguration(next);
   const cfgNs = getConfigNamespace(App);
   if (typeof cfgNs?.setCornerConfiguration === 'function') {
-    return cfgNs.setCornerConfiguration(asCornerConfiguration(next), meta);
+    return cfgNs.setCornerConfiguration(normalized, meta);
   }
-  return cfgSetScalar(App, 'cornerConfiguration', next, meta);
+  return cfgSetScalar(App, 'cornerConfiguration', normalized, meta);
 }
 
 export function setCfgManualWidth(App: unknown, on: unknown, meta?: ActionMetaLike): boolean | undefined {
@@ -180,24 +176,6 @@ export function setCfgMirrorReflectorEnabled(
 export function setCfgLibraryMode(App: unknown, on: unknown, meta?: ActionMetaLike): boolean | undefined {
   const next = !!on;
   void cfgSetScalar(App, 'isLibraryMode', next, meta);
-  return next;
-}
-
-export function setCfgWidth(App: unknown, value: unknown, meta?: ActionMetaLike): number | undefined {
-  const next = typeof value === 'number' && Number.isFinite(value) ? value : Number(value || 0);
-  void cfgSetScalar(App, 'width', next, meta);
-  return next;
-}
-
-export function setCfgHeight(App: unknown, value: unknown, meta?: ActionMetaLike): number | undefined {
-  const next = typeof value === 'number' && Number.isFinite(value) ? value : Number(value || 0);
-  void cfgSetScalar(App, 'height', next, meta);
-  return next;
-}
-
-export function setCfgDepth(App: unknown, value: unknown, meta?: ActionMetaLike): number | undefined {
-  const next = typeof value === 'number' && Number.isFinite(value) ? value : Number(value || 0);
-  void cfgSetScalar(App, 'depth', next, meta);
   return next;
 }
 

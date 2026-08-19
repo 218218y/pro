@@ -183,16 +183,16 @@ test('[state-api.config] generic config patch rejects known map branches', () =>
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
 
   const out = (App.actions as any).config.patch(
-    { boardMaterial: 'walnut' },
+    { boardMaterial: 'melamine' },
     { source: 'test:generic-scalar-patch' }
   );
 
-  assert.equal(asRec(out).boardMaterial, 'walnut');
-  assert.equal(asRec(store.commits[0]?.patch).boardMaterial, 'walnut');
+  assert.equal(asRec(out).boardMaterial, 'melamine');
+  assert.equal(asRec(store.commits[0]?.patch).boardMaterial, 'melamine');
   assert.equal(asRec(store.commits[0]?.meta).source, 'test:generic-scalar-patch');
 });
 
-test('[state-api.config] generic config patch rejects known map replace keys', () => {
+test('[state-api.config] generic config patch rejects backend replace metadata entirely', () => {
   const store = createStoreStub({
     ui: {},
     config: { boardMaterial: 'oak', handlesMap: { d1_full: 'bar' } },
@@ -209,7 +209,7 @@ test('[state-api.config] generic config patch rejects known map replace keys', (
         { boardMaterial: 'walnut', __replace: { handlesMap: true } },
         { source: 'test:generic-map-replace-key' }
       ),
-    /actions\.config\.patch cannot write known config map replace keys \(handlesMap\)/
+    /actions\.config\.patch rejects unknown key\(s\): __replace/
   );
   assert.deepEqual(store.commits, []);
   assert.equal(asRec(store.getState().config).boardMaterial, 'oak');
@@ -239,10 +239,10 @@ test('[state-api.config] actions.applyConfig rejects known map branches before g
   assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
 });
 
-test('[state-api.config] actions.applyConfig rejects known map replace keys before generic patch routing', () => {
+test('[state-api.config] actions.applyConfig rejects backend replace metadata before generic patch routing', () => {
   const store = createStoreStub({
     ui: {},
-    config: { width: 100, hingeMap: { d1_full: { side: 'left' } } },
+    config: { boardMaterial: 'sandwich', hingeMap: { d1_full: { side: 'left' } } },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: {},
@@ -253,13 +253,13 @@ test('[state-api.config] actions.applyConfig rejects known map replace keys befo
   assert.throws(
     () =>
       (App.actions as any).applyConfig(
-        { width: 120, __replace: { hingeMap: true } },
+        { boardMaterial: 'melamine', __replace: { hingeMap: true } },
         { source: 'test:applyConfig-map-replace-key' }
       ),
-    /actions\.applyConfig cannot write known config map replace keys \(hingeMap\)/
+    /actions\.applyConfig rejects unknown key\(s\): __replace/
   );
   assert.deepEqual(store.commits, []);
-  assert.equal(asRec(store.getState().config).width, 100);
+  assert.equal(asRec(store.getState().config).boardMaterial, 'sandwich');
   assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
 });
 
@@ -280,7 +280,7 @@ test('[state-api.config] root actions.patch always rejects known map branches', 
         { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
         { source: 'test:root-map-patch' }
       ),
-    /actions\.patch cannot write known config map branches \(handlesMap\)/
+    /actions\.patch\.config cannot write known config map branches \(handlesMap\)/
   );
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
   assert.equal(asRec(store.getState().ui).doorStyle, undefined);
@@ -291,7 +291,7 @@ test('[state-api.config] root actions.patch always rejects known map branches', 
         { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
         { source: 'project.load' }
       ),
-    /actions\.patch cannot write known config map branches \(handlesMap\)/
+    /actions\.patch\.config cannot write known config map branches \(handlesMap\)/
   );
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
   assert.equal(asRec(store.getState().ui).doorStyle, undefined);
@@ -303,10 +303,10 @@ test('[state-api.config] root actions.patch always rejects known map branches', 
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'rail' });
 });
 
-test('[state-api.config] root actions.patch rejects known map replace keys', () => {
+test('[state-api.config] root actions.patch rejects backend replace metadata before any slice commit', () => {
   const store = createStoreStub({
     ui: {},
-    config: { width: 100, handlesMap: { d1_full: 'bar' } },
+    config: { boardMaterial: 'sandwich', handlesMap: { d1_full: 'bar' } },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: {},
@@ -317,12 +317,15 @@ test('[state-api.config] root actions.patch rejects known map replace keys', () 
   assert.throws(
     () =>
       (App.actions as any).patch(
-        { config: { width: 120, __replace: { handlesMap: true } }, ui: { doorStyle: 'profile' } },
+        {
+          config: { boardMaterial: 'melamine', __replace: { handlesMap: true } },
+          ui: { doorStyle: 'profile' },
+        },
         { source: 'test:root-map-replace-key' }
       ),
-    /actions\.patch cannot write known config map replace keys \(handlesMap\)/
+    /actions\.patch\.config rejects unknown key\(s\): __replace/
   );
-  assert.equal(asRec(store.getState().config).width, 100);
+  assert.equal(asRec(store.getState().config).boardMaterial, 'sandwich');
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
   assert.equal(asRec(store.getState().ui).doorStyle, undefined);
 });
@@ -472,10 +475,10 @@ test('[state-api.maps] setRemoved writes canonical removed-door keys and preserv
   assert.equal(readRemoved().removed_sketch_box_free_0_alpha_side_left, true);
 });
 
-test('[state-api.config] applyModulesGeometrySnapshot keeps modules structure-aware on store-backed paths', () => {
+test('[state-api.config] applyModulesGeometrySnapshot keeps dimensions as materialization context, not config state', () => {
   const store = createStoreStub({
     ui: { doors: 5, singleDoorPos: 'right', structureSelect: '', raw: { doors: 5, singleDoorPos: 'right' } },
-    config: { wardrobeType: 'hinged', wardrobeWidth: 200 },
+    config: { wardrobeType: 'hinged' },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: {},
@@ -486,7 +489,9 @@ test('[state-api.config] applyModulesGeometrySnapshot keeps modules structure-aw
   (App.actions as any).config.applyModulesGeometrySnapshot(
     {
       modulesConfiguration: [{ layout: 'shelves' }],
-      wardrobeWidth: 333,
+      width: 333,
+      height: 222,
+      depth: 61,
     },
     { source: 'test:modules-geometry' }
   );
@@ -499,8 +504,11 @@ test('[state-api.config] applyModulesGeometrySnapshot keeps modules structure-aw
     top.map(entry => entry.doors),
     [2, 2, 1]
   );
-  assert.equal(committedPatch.wardrobeWidth, 333);
-  assert.equal(asRec(store.getState().config).wardrobeWidth, 333);
+  assert.equal('width' in committedPatch, false);
+  assert.equal('height' in committedPatch, false);
+  assert.equal('depth' in committedPatch, false);
+  assert.equal('wardrobeWidth' in committedPatch, false);
+  assert.equal('width' in asRec(store.getState().config), false);
 });
 
 test('[state-api.config] captureSnapshot detaches non-structural config branches and normalizes collections', () => {

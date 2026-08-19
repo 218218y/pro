@@ -6,7 +6,8 @@
 // - Fail fast when boot/integration code provides an incomplete action contract.
 
 import type { ActionMetaLike, RuntimeActionsNamespaceLike, RuntimeSlicePatch } from '../../../types';
-import type { RuntimeScalarKey, RuntimeScalarValue } from '../../../types/runtime_scalar';
+import { isRuntimeActionScalarKey } from '../../../types/runtime_scalar.js';
+import type { RuntimeActionScalarKey, RuntimeActionScalarValue } from '../../../types/runtime_scalar';
 import { requireActionFn } from './actions_access_core.js';
 import { metaTransient } from './meta_profiles_access.js';
 import { asRecord } from './record.js';
@@ -29,28 +30,16 @@ export function patchRuntime(App: unknown, patch: unknown, meta?: ActionMetaLike
   return requireActionFn<RuntimePatchAction>(App, 'runtime.patch', 'runtime write access')(rtPatch, m);
 }
 
-type SetRuntimeScalar = {
-  <K extends RuntimeScalarKey>(
-    App: unknown,
-    key: K,
-    value: RuntimeScalarValue<K>,
-    meta?: ActionMetaLike
-  ): unknown;
-  (App: unknown, key: string, value: unknown, meta?: ActionMetaLike): unknown;
-};
-
-// NOTE: We intentionally avoid TS function overload declarations here because ESLint's
-// core `no-redeclare` rule flags overload signatures. Using a typed const preserves
-// the call-site typing without triggering lint.
-export const setRuntimeScalar: SetRuntimeScalar = (
+export function setRuntimeScalar<K extends RuntimeActionScalarKey>(
   App: unknown,
-  key: unknown,
-  value: unknown,
+  key: K,
+  value: RuntimeActionScalarValue<K>,
   meta?: ActionMetaLike
-): unknown => {
+): unknown {
   const k = typeof key === 'string' ? key : '';
-  if (!k) return undefined;
-  if (typeof value === 'function') return undefined;
+  if (!isRuntimeActionScalarKey(k)) {
+    throw new Error(`[WardrobePro] setRuntimeScalar rejects unknown scalar key: ${k || '<empty>'}.`);
+  }
 
   const m = metaTransient(App, meta, 'runtime:setScalar');
   return requireActionFn<RuntimeSetScalarAction>(App, 'runtime.setScalar', 'runtime scalar write access')(
@@ -58,7 +47,7 @@ export const setRuntimeScalar: SetRuntimeScalar = (
     value,
     m
   );
-};
+}
 
 export function setRuntimeSketchMode(App: unknown, on: unknown, meta?: ActionMetaLike): unknown {
   return setRuntimeScalar(App, 'sketchMode', !!on, meta);

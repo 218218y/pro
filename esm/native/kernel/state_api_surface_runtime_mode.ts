@@ -3,11 +3,14 @@ import type {
   AppContainer,
   ModeActionOptsLike,
   ModeActionsNamespaceLike,
+  ModeSlicePatch,
   RuntimeActionsNamespaceLike,
-  RuntimeScalarKey,
+  RuntimeActionScalarKey,
+  RuntimeActionScalarValueMap,
   RuntimeSlicePatch,
   UnknownRecord,
 } from '../../../types';
+import { isRuntimeActionScalarKey } from '../../../types/runtime_scalar.js';
 
 import {
   asMeta,
@@ -17,6 +20,7 @@ import {
   normMeta,
 } from './state_api_shared.js';
 import type { MetaNs } from './state_api_shared.js';
+import { decodePublicModePatch, decodePublicRuntimePatch } from './state_api_public_patch_contract.js';
 
 interface StateApiSurfaceRuntimeModeContext {
   App: AppContainer;
@@ -24,7 +28,7 @@ interface StateApiSurfaceRuntimeModeContext {
   runtimeNs: RuntimeActionsNamespaceLike;
   modeNs: ModeActionsNamespaceLike;
   commitRuntimePatch: (patch: RuntimeSlicePatch, meta: ActionMetaLike) => unknown;
-  commitModePatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  commitModePatch: (patch: ModeSlicePatch, meta: ActionMetaLike) => unknown;
   callStoreWriter: (
     methodName: 'setUi' | 'setRuntime' | 'setMode' | 'setModePatch' | 'setConfig' | 'setMeta',
     ...args: readonly unknown[]
@@ -55,17 +59,25 @@ export function installStateApiRuntimeModeSurface(ctx: StateApiSurfaceRuntimeMod
 
   if (typeof runtimeNs.patch !== 'function') {
     runtimeNs.patch = function patch(rtPartial?: RuntimeSlicePatch, meta?: ActionMetaLike) {
-      return commitRuntimePatch(asRuntimePatch(rtPartial), transientMeta(meta, 'actions.runtime:patch'));
+      const patch = decodePublicRuntimePatch(rtPartial, 'actions.runtime.patch');
+      return commitRuntimePatch(asRuntimePatch(patch), transientMeta(meta, 'actions.runtime:patch'));
     };
   }
   if (typeof runtimeNs.setScalar !== 'function') {
-    runtimeNs.setScalar = function setScalar<K extends RuntimeScalarKey>(
-      key: K | string,
-      value: unknown,
+    runtimeNs.setScalar = function setScalar<K extends RuntimeActionScalarKey>(
+      key: K,
+      value: RuntimeActionScalarValueMap[K],
       meta?: ActionMetaLike
     ) {
       const k = String(key == null ? '' : key);
-      if (!k || typeof value === 'function') return undefined;
+      if (!isRuntimeActionScalarKey(k)) {
+        throw new Error(
+          `[WardrobePro] actions.runtime.setScalar rejects unknown scalar key: ${k || '<empty>'}.`
+        );
+      }
+      if (typeof value === 'function') {
+        throw new TypeError('[WardrobePro] actions.runtime.setScalar does not accept function values.');
+      }
       return runtimeNs.patch?.(
         buildRuntimeScalarPatch(k, value),
         normMeta(meta, 'actions.runtime:setScalar')
@@ -93,8 +105,9 @@ export function installStateApiRuntimeModeSurface(ctx: StateApiSurfaceRuntimeMod
     };
   }
   if (typeof modeNs.patch !== 'function') {
-    modeNs.patch = function patch(modePartial?: Record<string, unknown>, meta?: ActionMetaLike) {
-      return commitModePatch(asModePatch(modePartial), transientMeta(meta, 'actions.mode:patch'));
+    modeNs.patch = function patch(modePartial?: ModeSlicePatch, meta?: ActionMetaLike) {
+      const patch = decodePublicModePatch(modePartial, 'actions.mode.patch');
+      return commitModePatch(asModePatch(patch), transientMeta(meta, 'actions.mode:patch'));
     };
   }
   if (typeof modeNs.set !== 'function') {

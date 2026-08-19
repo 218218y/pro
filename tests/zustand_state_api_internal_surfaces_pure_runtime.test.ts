@@ -12,7 +12,7 @@ function asRec(v: unknown): AnyRecord {
 function createStoreStub(root?: AnyRecord) {
   const state: AnyRecord = root || {
     ui: {},
-    config: { width: 200 },
+    config: { isManualWidth: false },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: { dirty: false },
@@ -190,7 +190,7 @@ test('[state-api] root actions.patch preserves multi-slice payloads through stor
   const calls: AnyRecord[] = [];
   const store = createStoreStub({
     ui: { activeTab: 'design' },
-    config: { width: 200 },
+    config: { isManualWidth: false },
     runtime: {},
     mode: { primary: 'none', opts: {} },
     meta: {},
@@ -217,17 +217,106 @@ test('[state-api] root actions.patch preserves multi-slice payloads through stor
   installStateApi(App as any);
 
   const out = (App.actions as any).patch(
-    { config: { width: 260 }, runtime: { sketchMode: true } },
+    { config: { isManualWidth: true }, runtime: { sketchMode: true } },
     { source: 'test:multi-slice' }
   );
 
-  assert.deepEqual(out, { config: { width: 260 }, runtime: { sketchMode: true } });
+  assert.deepEqual(out, { config: { isManualWidth: true }, runtime: { sketchMode: true } });
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0], {
     op: 'store.patch',
-    payload: { config: { width: 260 }, runtime: { sketchMode: true } },
+    payload: { config: { isManualWidth: true }, runtime: { sketchMode: true } },
     meta: { source: 'test:multi-slice' },
   });
-  assert.equal((App.store.getState() as AnyRecord).config.width, 260);
+  assert.equal((App.store.getState() as AnyRecord).config.isManualWidth, true);
   assert.equal((App.store.getState() as AnyRecord).runtime.sketchMode, true);
+});
+
+test('[state-api] public mutation surfaces reject unknown keys and backend protocol metadata before store writes', () => {
+  const calls: AnyRecord[] = [];
+  const store = createStoreStub({
+    ui: { activeTab: 'design', raw: { width: 200 } },
+    config: { isManualWidth: false, handlesMap: { d1_full: 'bar' } },
+    runtime: { sketchMode: false },
+    mode: { primary: 'none', opts: {} },
+    meta: { dirty: false },
+  });
+  const App: AnyRecord = {
+    actions: {},
+    store: {
+      ...store,
+      patch(payload: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'patch', payload, meta });
+        return store.patch(payload);
+      },
+      setUi(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'setUi', patch, meta });
+        return store.setUi(patch, meta);
+      },
+      setRuntime(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'setRuntime', patch, meta });
+        return store.setRuntime(patch, meta);
+      },
+      setModePatch(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'setModePatch', patch, meta });
+        return store.setModePatch(patch, meta);
+      },
+      setConfig(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'setConfig', patch, meta });
+        return store.setConfig(patch, meta);
+      },
+    },
+  };
+
+  installStateApi(App as any);
+  const actions = App.actions as any;
+
+  assert.throws(() => actions.patch([]), /actions\.patch must be a plain object/);
+  assert.throws(() => actions.patch(new Date()), /actions\.patch must be a plain object/);
+  assert.throws(() => actions.patch({ mysterySlice: {} }), /rejects unknown key\(s\): mysterySlice/);
+  assert.throws(() => actions.patch({ config: { width: 260 } }), /rejects unknown key\(s\): width/);
+  assert.throws(
+    () => actions.patch({ config: { __replace: { isManualWidth: true } } }),
+    /rejects unknown key\(s\): __replace/
+  );
+  assert.throws(
+    () => actions.patch({ config: { handlesMap: { d1_full: 'rail' } } }),
+    /cannot write known config map branches \(handlesMap\)/
+  );
+  assert.throws(() => actions.patch({ ui: { __snapshot: true } }), /rejects unknown key\(s\): __snapshot/);
+  assert.throws(() => actions.ui.patch({ imaginaryUiKey: true }), /rejects unknown key\(s\): imaginaryUiKey/);
+  assert.throws(
+    () => actions.ui.patch({ raw: { imaginaryDimension: 10 } }),
+    /rejects unknown key\(s\): imaginaryDimension/
+  );
+  assert.throws(
+    () => actions.ui.patch({ raw: { width: '260' } }),
+    /raw\.width must be a finite number or null/
+  );
+  assert.throws(
+    () => actions.runtime.patch({ imaginaryRuntimeFlag: true }),
+    /rejects unknown key\(s\): imaginaryRuntimeFlag/
+  );
+  assert.throws(() => actions.mode.patch({ version: 2 }), /rejects unknown key\(s\): version/);
+  assert.throws(() => actions.mode.patch({ opts: [] }), /mode\.patch\.opts must be a plain object/);
+  assert.throws(() => actions.patch({ meta: { dirty: 'yes' } }), /meta\.dirty must be boolean/);
+
+  assert.throws(() => actions.setCfgScalar('width', 260), /rejects unknown scalar key: width/);
+  assert.throws(
+    () => actions.ui.setScalar('imaginaryUiKey', true),
+    /rejects unknown scalar key: imaginaryUiKey/
+  );
+  assert.throws(
+    () => actions.ui.setRawScalar('structureSelect', 'custom'),
+    /rejects unknown raw scalar key: structureSelect/
+  );
+  assert.throws(
+    () => actions.runtime.setScalar('imaginaryRuntimeFlag', true),
+    /rejects unknown scalar key: imaginaryRuntimeFlag/
+  );
+
+  assert.equal(calls.length, 0, 'rejected public writes must not reach any store writer');
+  assert.equal(asRec(store.getState().config).isManualWidth, false);
+  assert.equal(asRec(asRec(store.getState().ui).raw).width, 200);
+  assert.equal(asRec(store.getState().runtime).sketchMode, false);
 });

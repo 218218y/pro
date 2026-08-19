@@ -8,7 +8,9 @@
 // Notes:
 // - UI layer must consume this through services/api.js (public surface), not by importing runtime/* directly.
 
-import type { ActionMetaLike, UiActionsNamespaceLike, UiSlicePatch } from '../../../types';
+import type { ActionMetaLike, UiActionsNamespaceLike, UiSlicePatch, UiStateLike } from '../../../types';
+import { isPublicUiPatchKey } from '../../../types/public_patch_keys.js';
+import { isUiRawScalarKey } from '../../../types/ui_raw.js';
 import type { UiRawScalarKey, UiRawScalarValueMap } from '../../../types/ui_raw';
 import { requireActionFn } from './actions_access_core.js';
 import { metaUiOnly } from './meta_profiles_access.js';
@@ -136,11 +138,17 @@ export const setUiScalar: SetUiScalar = (
   meta?: ActionMetaLike
 ): unknown => {
   const k = key.trim();
-  if (!k) return undefined;
+  if (!isPublicUiPatchKey(k)) {
+    throw new Error(`[WardrobePro] setUiScalar rejects unknown UI key: ${k || '<empty>'}.`);
+  }
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
 
-  return requireActionFn<UiSetScalarAction>(App, 'ui.setScalar', 'UI scalar write access')(k, value, meta);
+  return requireActionFn<UiSetScalarAction>(App, 'ui.setScalar', 'UI scalar write access')(
+    k,
+    value as UiStateLike[typeof k],
+    meta
+  );
 };
 
 type SetUiScalarSoft = {
@@ -154,14 +162,16 @@ export const setUiScalarSoft: SetUiScalarSoft = (
   meta?: ActionMetaLike
 ): unknown => {
   const k = key.trim();
-  if (!k) return undefined;
+  if (!isPublicUiPatchKey(k)) {
+    throw new Error(`[WardrobePro] setUiScalarSoft rejects unknown UI key: ${k || '<empty>'}.`);
+  }
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
 
   const m = metaUiOnly(App, meta, 'ui:setScalarSoft');
   return requireActionFn<UiSetScalarSoftAction>(App, 'ui.setScalarSoft', 'soft UI scalar write access')(
     k,
-    value,
+    value as UiStateLike[typeof k],
     m
   );
 };
@@ -187,14 +197,16 @@ export const setUiRawScalar: SetUiRawScalar = (
   meta?: ActionMetaLike
 ): unknown => {
   const k = typeof key === 'string' ? key.trim() : '';
-  if (!k) return undefined;
+  if (!isUiRawScalarKey(k)) {
+    throw new Error(`[WardrobePro] setUiRawScalar rejects unknown raw key: ${k || '<empty>'}.`);
+  }
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiRawValue(App, k), value)) return undefined;
 
   const m = metaUiOnly(App, meta, 'ui:setRawScalar');
   return requireActionFn<UiSetRawScalarAction>(App, 'ui.setRawScalar', 'UI raw scalar write access')(
     k,
-    value,
+    value as UiRawScalarValueMap[typeof k],
     m
   );
 };

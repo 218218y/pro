@@ -9,7 +9,7 @@
 
 import type { UnknownRecord } from './common';
 import type { HandleType } from './domain';
-import type { MetaStateLike, ModeStateLike, RuntimeStateLike, UiStateLike } from './build';
+import type { RuntimeStateLike, UiStateLike } from './build';
 import type { UiRawInputsLike } from './ui_raw';
 
 /** UI slice patch. Supports full snapshot replacement via __snapshot. */
@@ -26,13 +26,13 @@ export interface RuntimeSlicePatch extends Partial<RuntimeStateLike> {
   interiorManualTool?: string | null;
 }
 
-/** Mode slice patch. */
-export interface ModeSlicePatch extends Partial<ModeStateLike> {
+/** Mode slice patch. Closed at the canonical action/store boundary. */
+export interface ModeSlicePatch {
   primary?: string;
   opts?: UnknownRecord;
 }
 
-/** Meta slice patch (allow-list in store). */
-export interface MetaSlicePatch extends Partial<MetaStateLike> {
+/** Meta slice patch. The store only admits the public dirty flag. */
+export interface MetaSlicePatch {
   dirty?: boolean;
 }

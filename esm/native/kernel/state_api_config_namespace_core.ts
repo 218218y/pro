@@ -3,6 +3,7 @@ import type {
   ActionsNamespaceLike,
   ConfigActionsNamespaceLike,
   ModulesGeometrySnapshotLike,
+  ConfigNonMapPatch,
   UnknownRecord,
 } from '../../../types';
 import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
@@ -14,8 +15,8 @@ import {
 } from './kernel_project_config_snapshot_canonical.js';
 import { materializeTopModulesConfigurationFromUiConfig } from '../features/modules_configuration/modules_config_api.js';
 import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
-import { assertNoGenericKnownConfigMapPatch } from '../runtime/cfg_access_core.js';
 import { asRecord, isRecord } from '../runtime/record.js';
+import { decodePublicConfigPatch } from './state_api_public_patch_contract.js';
 import {
   asConfigPatch,
   buildConfigPatch,
@@ -75,10 +76,9 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
   };
 
   if (typeof actions.applyConfig !== 'function') {
-    actions.applyConfig = function applyConfig(cfg?: UnknownRecord, meta?: ActionMetaLike) {
+    actions.applyConfig = function applyConfig(cfg?: ConfigNonMapPatch, meta?: ActionMetaLike) {
       const m = normMeta(meta, 'actions:applyConfig');
-      const p = asRecord(cfg) ?? {};
-      assertNoGenericKnownConfigMapPatch(p, 'actions.applyConfig');
+      const p = decodePublicConfigPatch(cfg, 'actions.applyConfig');
       if (typeof configNs.patch === 'function') {
         return configNs.patch(p, m);
       }
@@ -112,9 +112,8 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
   }
 
   if (typeof configNs.patch !== 'function') {
-    configNs.patch = function patch(cfg?: UnknownRecord, meta?: ActionMetaLike) {
-      const cfgRec = asConfigPatch(cfg);
-      assertNoGenericKnownConfigMapPatch(cfgRec, 'actions.config.patch');
+    configNs.patch = function patch(cfg?: ConfigNonMapPatch, meta?: ActionMetaLike) {
+      const cfgRec = asConfigPatch(decodePublicConfigPatch(cfg, 'actions.config.patch'));
       const m = normMeta(meta, 'actions.config:patch');
       return commitConfigWrite(commitConfigPatch, cfgRec, m);
     };
@@ -154,12 +153,6 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
       };
       if (Object.prototype.hasOwnProperty.call(snap, 'isManualWidth'))
         basePatch.isManualWidth = !!snap.isManualWidth;
-      if (Object.prototype.hasOwnProperty.call(snap, 'wardrobeWidth'))
-        basePatch.wardrobeWidth = snap.wardrobeWidth;
-      if (Object.prototype.hasOwnProperty.call(snap, 'wardrobeHeight'))
-        basePatch.wardrobeHeight = snap.wardrobeHeight;
-      if (Object.prototype.hasOwnProperty.call(snap, 'wardrobeDepth'))
-        basePatch.wardrobeDepth = snap.wardrobeDepth;
 
       const patch = toConfigPatch(buildConfigPatchWithReplaceMetadata(basePatch, modulesGeometryReplaceKeys));
       const m = normMeta(meta, 'actions.config:applyModulesGeometrySnapshot');

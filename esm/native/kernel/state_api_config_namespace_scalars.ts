@@ -1,4 +1,16 @@
-import type { ActionMetaLike, ActionsNamespaceLike, ConfigActionsNamespaceLike } from '../../../types';
+import type {
+  ActionMetaLike,
+  ActionsNamespaceLike,
+  ConfigActionsNamespaceLike,
+  ConfigScalarKey,
+  ConfigScalarUpdater,
+  ConfigScalarValueMap,
+  CornerConfigurationLike,
+  ModulesConfigurationLike,
+  ProjectPreChestStateLike,
+  ProjectSavedNotesLike,
+} from '../../../types';
+import { isConfigScalarKey } from '../../../types/config_scalar.js';
 
 import { asRecord } from '../runtime/record.js';
 import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
@@ -34,8 +46,12 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
   } = ctx;
 
   if (typeof configNs.setScalar !== 'function') {
-    configNs.setScalar = function setScalar(key: string, valueOrFn: unknown, meta?: ActionMetaLike) {
-      return actions.setCfgScalar?.(String(key || ''), valueOrFn, normMeta(meta, 'actions.config:setScalar'));
+    configNs.setScalar = function setScalar<K extends ConfigScalarKey>(
+      key: K,
+      valueOrFn: ConfigScalarValueMap[K] | ConfigScalarUpdater<K>,
+      meta?: ActionMetaLike
+    ) {
+      return actions.setCfgScalar?.(key, valueOrFn, normMeta(meta, 'actions.config:setScalar'));
     };
   }
 
@@ -52,7 +68,7 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
 
   if (typeof configNs.setModulesConfiguration !== 'function') {
     configNs.setModulesConfiguration = function setModulesConfiguration(
-      next: unknown,
+      next: ModulesConfigurationLike,
       meta?: ActionMetaLike
     ) {
       const m = normMeta(meta, 'actions.config:setModulesConfiguration');
@@ -62,7 +78,7 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
 
   if (typeof configNs.setLowerModulesConfiguration !== 'function') {
     configNs.setLowerModulesConfiguration = function setLowerModulesConfiguration(
-      next: unknown,
+      next: ModulesConfigurationLike,
       meta?: ActionMetaLike
     ) {
       const m = normMeta(meta, 'actions.config:setLowerModulesConfiguration');
@@ -71,21 +87,27 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
   }
 
   if (typeof configNs.setCornerConfiguration !== 'function') {
-    configNs.setCornerConfiguration = function setCornerConfiguration(next: unknown, meta?: ActionMetaLike) {
+    configNs.setCornerConfiguration = function setCornerConfiguration(
+      next: CornerConfigurationLike,
+      meta?: ActionMetaLike
+    ) {
       const m = normMeta(meta, 'actions.config:setCornerConfiguration');
       return actions.setCfgScalar?.('cornerConfiguration', next, m);
     };
   }
 
   if (typeof configNs.setPreChestState !== 'function') {
-    configNs.setPreChestState = function setPreChestState(next: unknown, meta?: ActionMetaLike) {
+    configNs.setPreChestState = function setPreChestState(
+      next: ProjectPreChestStateLike | null,
+      meta?: ActionMetaLike
+    ) {
       const m = normMeta(meta, 'actions.config:setPreChestState');
       return actions.setCfgScalar?.('preChestState', next, m);
     };
   }
 
   if (typeof configNs.setSavedNotes !== 'function') {
-    configNs.setSavedNotes = function setSavedNotes(next: unknown, meta?: ActionMetaLike) {
+    configNs.setSavedNotes = function setSavedNotes(next: ProjectSavedNotesLike, meta?: ActionMetaLike) {
       const metaNsLocal: MetaNs | null = metaActionsNs;
       const metaIn = readActionMeta(meta);
       const m: ActionMetaLike =
@@ -99,13 +121,19 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
   }
 
   if (typeof actions.setCfgScalar !== 'function') {
-    actions.setCfgScalar = function setCfgScalar(key: string, valueOrFn: unknown, meta?: ActionMetaLike) {
+    actions.setCfgScalar = function setCfgScalar<K extends ConfigScalarKey>(
+      key: K,
+      valueOrFn: ConfigScalarValueMap[K] | ConfigScalarUpdater<K>,
+      meta?: ActionMetaLike
+    ) {
       meta = normMeta(meta, 'actions:setCfgScalar');
       const k = String(key || '');
-      if (!k) return undefined;
+      if (!isConfigScalarKey(k)) {
+        throw new Error(`[WardrobePro] actions.setCfgScalar rejects unknown scalar key: ${k || '<empty>'}.`);
+      }
       const snap = asRecord(safeCall(() => configNs.captureSnapshot?.())) || {};
       const prev = snap[k];
-      let nextVal = valueOrFn;
+      let nextVal: unknown = valueOrFn;
       if (typeof valueOrFn === 'function') {
         try {
           const resolveNextValue = readConfigScalarResolver(valueOrFn);

@@ -82,7 +82,7 @@ export function installStateApi(App: AppContainer): void {
     buildSnapshotConfigPatch,
   } = createStateApiInstallSupport(App, store);
 
-  const callSetCfgScalar = (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown => {
+  const callSetCfgScalar: SetCfgScalarFn = (key, valueOrFn, meta) => {
     const setCfgScalar = getSetCfgScalar();
     return setCfgScalar ? setCfgScalar(key, valueOrFn, meta) : undefined;
   };

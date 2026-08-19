@@ -7,20 +7,17 @@ import type {
 
 import { cfgSetScalar as cfgSetScalarApi } from '../../../services/api.js';
 
-type SetCfgScalar = {
-  <K extends ConfigScalarKey>(
-    app: AppContainer,
-    key: K,
-    value: ConfigScalarValueMap[K],
-    meta?: ActionMetaLike
-  ): void;
-  (app: AppContainer, key: string, value: unknown, meta?: ActionMetaLike): void;
-};
-
-const setCfgScalar: SetCfgScalar = (
+type SetCfgScalar = <K extends ConfigScalarKey>(
   app: AppContainer,
-  key: string,
-  value: unknown,
+  key: K,
+  value: ConfigScalarValueMap[K],
+  meta?: ActionMetaLike
+) => void;
+
+const setCfgScalar: SetCfgScalar = <K extends ConfigScalarKey>(
+  app: AppContainer,
+  key: K,
+  value: ConfigScalarValueMap[K],
   meta?: ActionMetaLike
 ): void => {
   void cfgSetScalarApi(app, key, value, meta);

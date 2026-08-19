@@ -25,9 +25,7 @@ export {
   setCfgColorSwatchesOrder,
   setCfgCornerConfiguration,
   setCfgCustomUploadedDataURL,
-  setCfgDepth,
   setCfgGlobalHandleType,
-  setCfgHeight,
   setCfgLibraryMode,
   setCfgLowerModulesConfiguration,
   setCfgManualWidth,
@@ -37,5 +35,4 @@ export {
   setCfgSavedColors,
   setCfgShowDimensions,
   setCfgWardrobeType,
-  setCfgWidth,
 } from './cfg_access_scalars.js';

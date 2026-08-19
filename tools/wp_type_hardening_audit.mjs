@@ -96,6 +96,7 @@ const rawStoreBackendTypeNames = [
   'RawPatchPayload',
   'StorePatchPayload',
   'StorePatchAction',
+  'StoreSetAction',
   'StoreBackendAction',
   'RawWardrobeProAction',
 ];
@@ -684,7 +685,7 @@ function collectPublicTypeBarrelViolations() {
     violations.push('types/index.ts: public barrel must explicitly export public patch payload types');
   }
   if (
-    /backend_actions|backend_patch_payload|backend_store|store_spine|\b(?:BackendStoreLike|StoreLike|RootStoreLike|ConfigSlicePatch|PatchPayload|RawConfigSlicePatch|RawPatchPayload|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction)\b/.test(
+    /backend_actions|backend_patch_payload|backend_store|store_spine|\b(?:BackendStoreLike|StoreLike|RootStoreLike|ConfigSlicePatch|PatchPayload|RawConfigSlicePatch|RawPatchPayload|StorePatchPayload|StorePatchAction|StoreSetAction|StoreBackendAction|RawWardrobeProAction)\b/.test(
       source
     )
   ) {

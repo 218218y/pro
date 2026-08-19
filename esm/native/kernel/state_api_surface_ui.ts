@@ -4,13 +4,18 @@ import type {
   UiActionsNamespaceLike,
   UiGridCellIdLike,
   UiRawScalarKey,
+  UiRawScalarValueMap,
+  UiStateLike,
+  PublicUiPatch,
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
-import { buildUiRawScalarPatchFromRecord, isUiRawScalarKey } from '../../../types/ui_raw.js';
+import { isPublicUiPatchKey } from '../../../types/public_patch_keys.js';
+import { isUiRawScalarKey } from '../../../types/ui_raw.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { asMeta, asUiPatch, buildUiScalarPatch, normMeta, shallowCloneObj } from './state_api_shared.js';
+import { decodePublicUiPatch } from './state_api_public_patch_contract.js';
 import type { MetaNs } from './state_api_shared.js';
 
 interface StateApiSurfaceUiContext {
@@ -23,7 +28,7 @@ interface StateApiSurfaceUiContext {
 }
 
 export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
-  const { actions, metaActionsNs, uiNs, commitUiPatch, isObj, safeCall } = ctx;
+  const { actions, metaActionsNs, uiNs, commitUiPatch, isObj } = ctx;
   const uiOnlyMeta = (
     meta: ActionMetaLike | UnknownRecord | null | undefined,
     source: string
@@ -35,13 +40,14 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   };
 
   if (typeof uiNs.patch !== 'function') {
-    uiNs.patch = function patch(uiPartial?: UiSlicePatch, meta?: ActionMetaLike) {
-      return commitUiPatch(asUiPatch(uiPartial), normMeta(meta, 'actions.ui:patch'));
+    uiNs.patch = function patch(uiPartial?: PublicUiPatch, meta?: ActionMetaLike) {
+      const patch = decodePublicUiPatch(uiPartial, 'actions.ui.patch');
+      return commitUiPatch(asUiPatch(patch), normMeta(meta, 'actions.ui:patch'));
     };
   }
   if (typeof uiNs.patchSoft !== 'function') {
-    uiNs.patchSoft = function patchSoft(uiPartial?: UiSlicePatch, meta?: ActionMetaLike) {
-      const patch = asUiPatch(uiPartial);
+    uiNs.patchSoft = function patchSoft(uiPartial?: PublicUiPatch, meta?: ActionMetaLike) {
+      const patch = asUiPatch(decodePublicUiPatch(uiPartial, 'actions.ui.patchSoft'));
       const metaIn = asMeta(meta);
       const src = typeof metaIn.source === 'string' && metaIn.source ? metaIn.source : 'actions.ui:patchSoft';
       const mm =
@@ -214,24 +220,42 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     };
   }
   if (typeof uiNs.setRawScalar !== 'function') {
-    uiNs.setRawScalar = function setRawScalar(key: string, value: unknown, meta?: ActionMetaLike) {
+    uiNs.setRawScalar = function setRawScalar<K extends UiRawScalarKey>(
+      key: K,
+      value: UiRawScalarValueMap[K],
+      meta?: ActionMetaLike
+    ) {
       const k = key.trim();
       if (!k) return undefined;
+      if (!isUiRawScalarKey(k)) {
+        throw new Error(
+          `[WardrobePro] actions.ui.setRawScalar rejects unknown raw scalar key: ${k || '<empty>'}.`
+        );
+      }
       return actions.setUiRawScalar?.(k, value, normMeta(meta, 'actions.ui:setRawScalar'));
     };
   }
   if (typeof uiNs.setScalar !== 'function') {
-    uiNs.setScalar = function setScalar(key: string, value: unknown, meta?: ActionMetaLike) {
+    uiNs.setScalar = function setScalar<K extends keyof UiStateLike>(
+      key: K,
+      value: UiStateLike[K],
+      meta?: ActionMetaLike
+    ) {
       const k = String(key == null ? '' : key);
       if (!k || typeof value === 'function') return undefined;
+      if (!isPublicUiPatchKey(k)) {
+        throw new Error(`[WardrobePro] actions.ui.setScalar rejects unknown scalar key: ${k}.`);
+      }
       return uiNs.patch?.(buildUiScalarPatch(k, value), normMeta(meta, 'actions.ui:setScalar'));
     };
   }
   if (typeof uiNs.setScalarSoft !== 'function') {
-    uiNs.setScalarSoft = function setScalarSoft(key: string, value: unknown, meta?: ActionMetaLike) {
-      const fn = uiNs['setScalar'];
-      if (typeof fn !== 'function') return undefined;
-      return fn(key, value, uiOnlyMeta(meta, 'actions.ui:setScalarSoft'));
+    uiNs.setScalarSoft = function setScalarSoft<K extends keyof UiStateLike>(
+      key: K,
+      value: UiStateLike[K],
+      meta?: ActionMetaLike
+    ) {
+      return uiNs.setScalar?.(key, value, uiOnlyMeta(meta, 'actions.ui:setScalarSoft'));
     };
   }
   if (typeof actions.commitUiSnapshot !== 'function') {
@@ -245,16 +269,21 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   }
   if (typeof actions.setUiRawScalar !== 'function') {
     actions.setUiRawScalar = function setUiRawScalar<K extends UiRawScalarKey>(
-      key: K | string,
-      value: unknown,
+      key: K,
+      value: UiRawScalarValueMap[K],
       meta?: ActionMetaLike
     ) {
       const mergedMeta = normMeta(meta, 'actions:setUiRawScalar');
-      return safeCall(() => {
-        const k = String(key == null ? '' : key);
-        if (!isUiRawScalarKey(k) || typeof value === 'function') return undefined;
-        return uiNs.patch?.({ raw: buildUiRawScalarPatchFromRecord({ [k]: value }) }, mergedMeta);
-      });
+      const k = String(key == null ? '' : key);
+      if (!isUiRawScalarKey(k)) {
+        throw new Error(
+          `[WardrobePro] actions.setUiRawScalar rejects unknown raw scalar key: ${k || '<empty>'}.`
+        );
+      }
+      if (typeof value === 'function') {
+        throw new TypeError('[WardrobePro] actions.setUiRawScalar does not accept function values.');
+      }
+      return uiNs.patch?.({ raw: { [k]: value } }, mergedMeta);
     };
   }
 }

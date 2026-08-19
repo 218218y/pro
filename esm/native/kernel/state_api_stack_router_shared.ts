@@ -4,6 +4,7 @@ import type {
   ModulesActionsLike,
   ModuleConfigLike,
   ModuleConfigPatchLike,
+  ActionsNamespaceLike,
 } from '../../../types';
 import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
@@ -29,7 +30,7 @@ export type ModuleConfigPatchFn = (draft: ModuleConfigLike, base: ModuleConfigLi
 export type CornerConfigPatchFn = (draft: UnknownRecord, base: UnknownRecord) => unknown;
 export type ModulePatchLike = ModuleConfigPatchLike | ModuleConfigPatchFn;
 export type CornerPatchLike = UnknownRecord | CornerConfigPatchFn;
-export type SetCfgScalarFn = (key: string, valueOrFn: unknown, meta?: ActionMetaLike) => unknown;
+export type SetCfgScalarFn = NonNullable<ActionsNamespaceLike['setCfgScalar']>;
 export type MergeMetaFn = (
   meta: ActionMetaLike | UnknownRecord | null | undefined,
   defaults: ActionMetaLike,
@@ -47,7 +48,7 @@ export interface StateApiStackRouterContext {
   normMeta: NormMetaFn;
   readCfgSnapshot: () => UnknownRecord;
   readUiSnapshot: () => UnknownRecord;
-  callSetCfgScalar: (key: string, valueOrFn: unknown, meta?: ActionMetaLike) => unknown;
+  callSetCfgScalar: SetCfgScalarFn;
   shallowCloneObj: (v: unknown) => UnknownRecord;
 }
 

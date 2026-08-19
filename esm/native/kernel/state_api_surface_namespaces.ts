@@ -6,6 +6,7 @@ import type {
   BuilderActionsNamespaceLike,
   ModeActionsNamespaceLike,
   ModulesActionsLike,
+  ModeSlicePatch,
   RootStateLike,
   RuntimeActionsNamespaceLike,
   RuntimeSlicePatch,
@@ -27,6 +28,7 @@ import { hasBuildStateOverride, normMeta } from './state_api_shared.js';
 import type { MetaNs } from './state_api_shared.js';
 import { installStateApiRuntimeModeSurface } from './state_api_surface_runtime_mode.js';
 import { installStateApiUiSurface } from './state_api_surface_ui.js';
+import { decodePublicActionRootPatch } from './state_api_public_patch_contract.js';
 
 export interface StateApiSurfaceNamespacesInstallContext {
   App: AppContainer;
@@ -40,7 +42,7 @@ export interface StateApiSurfaceNamespacesInstallContext {
   dispatchCanonicalPatch: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
   commitUiPatch: (patch: UiSlicePatch, meta: ActionMetaLike) => unknown;
   commitRuntimePatch: (patch: RuntimeSlicePatch, meta: ActionMetaLike) => unknown;
-  commitModePatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  commitModePatch: (patch: ModeSlicePatch, meta: ActionMetaLike) => unknown;
   callStoreWriter: (
     methodName: 'setUi' | 'setRuntime' | 'setMode' | 'setModePatch' | 'setConfig' | 'setMeta',
     ...args: readonly unknown[]
@@ -110,7 +112,7 @@ export function installStateApiSurfaceNamespaces(ctx: StateApiSurfaceNamespacesI
 
   if (typeof actions.patch !== 'function') {
     actions.patch = function patch(partial?: ActionRootPatchPayload, meta?: ActionMetaLike) {
-      const payload = partial && typeof partial === 'object' ? { ...partial } : {};
+      const payload = decodePublicActionRootPatch(partial, 'actions.patch');
       const m = normMeta(meta, 'actions:patch');
       dispatchCanonicalPatch(payload, m);
       return payload;

@@ -9,10 +9,11 @@ import type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } 
 import type { WardrobeType } from './domain';
 import type { HandlesMap, HingeMap, KnownMapName, MapsByName } from './maps';
 import type { ConfigScalarKey, ConfigScalarValueMap } from './config_scalar';
-import type { RuntimeScalarKey, RuntimeScalarValueMap } from './runtime_scalar';
-import type { ConfigStateLike, SavedColorLike } from './build';
+import type { RuntimeActionScalarKey, RuntimeActionScalarValueMap } from './runtime_scalar';
+import type { ConfigStateLike, SavedColorLike, UiStateLike } from './build';
 import type { ProjectPreChestStateLike, ProjectSavedNotesLike } from './project';
 import type { UiRawScalarKey, UiRawScalarValueMap } from './ui_raw';
+import type { PublicConfigDataKey } from './public_patch_keys';
 import type {
   CornerConfigurationLike,
   ModuleConfigLike,
@@ -102,10 +103,11 @@ export interface MetaActionsNamespaceLike extends UnknownRecord {
 export interface RuntimeActionsNamespaceLike extends UnknownRecord {
   patch?: (rtPartial: RuntimeSlicePatch, meta?: ActionMetaLike) => unknown;
 
-  setScalar?: {
-    <K extends RuntimeScalarKey>(key: K, value: RuntimeScalarValueMap[K], meta?: ActionMetaLike): unknown;
-    (key: string, value: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setScalar?: <K extends RuntimeActionScalarKey>(
+    key: K,
+    value: RuntimeActionScalarValueMap[K],
+    meta?: ActionMetaLike
+  ) => unknown;
 
   setSketchMode?: (v: boolean, meta?: ActionMetaLike) => unknown;
   setGlobalClickMode?: (v: boolean, meta?: ActionMetaLike) => unknown;
@@ -121,15 +123,20 @@ export interface RuntimeActionsNamespaceLike extends UnknownRecord {
 export type UiGridCellIdLike = string | number | null;
 
 export interface UiActionsNamespaceLike extends UnknownRecord {
-  patch?: (uiPartial: UiSlicePatch, meta?: ActionMetaLike) => unknown;
-  patchSoft?: (uiPartial: UiSlicePatch, meta?: ActionMetaLike) => unknown;
-  setScalar?: (key: string, value: unknown, meta?: ActionMetaLike) => unknown;
-  setScalarSoft?: (key: string, value: unknown, meta?: ActionMetaLike) => unknown;
+  patch?: (uiPartial: PublicUiPatch, meta?: ActionMetaLike) => unknown;
+  patchSoft?: (uiPartial: PublicUiPatch, meta?: ActionMetaLike) => unknown;
+  setScalar?: <K extends keyof UiStateLike>(key: K, value: UiStateLike[K], meta?: ActionMetaLike) => unknown;
+  setScalarSoft?: <K extends keyof UiStateLike>(
+    key: K,
+    value: UiStateLike[K],
+    meta?: ActionMetaLike
+  ) => unknown;
 
-  setRawScalar?: {
-    <K extends UiRawScalarKey>(key: K, value: UiRawScalarValueMap[K], meta?: ActionMetaLike): unknown;
-    (key: string, value: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setRawScalar?: <K extends UiRawScalarKey>(
+    key: K,
+    value: UiRawScalarValueMap[K],
+    meta?: ActionMetaLike
+  ) => unknown;
 
   setActiveTab?: (next: string, meta?: ActionMetaLike) => unknown;
   setDoorStyle?: (style: string, meta?: ActionMetaLike) => unknown;
@@ -161,19 +168,12 @@ export interface UiActionsNamespaceLike extends UnknownRecord {
 }
 
 export type ConfigSnapshotLike = UnknownRecord & Partial<ConfigScalarValueMap> & Partial<MapsByName>;
-export type ConfigNonMapReplaceMap = Record<string, boolean> & {
+export type ConfigNonMapPatch = Pick<Partial<ConfigStateLike>, PublicConfigDataKey> & {
   [K in KnownMapName]?: never;
 };
-export type ConfigNonMapPatch = UnknownRecord &
-  Omit<Partial<ConfigScalarValueMap>, KnownMapName> & {
-    [K in KnownMapName]?: never;
-  } & {
-    __replace?: ConfigNonMapReplaceMap;
-    __snapshot?: boolean;
-    __capturedAt?: number;
-  };
-export interface ActionRootPatchPayload extends UnknownRecord {
-  ui?: UiSlicePatch;
+export type PublicUiPatch = Omit<UiSlicePatch, '__snapshot' | '__capturedAt'>;
+export interface ActionRootPatchPayload {
+  ui?: PublicUiPatch;
   config?: ConfigNonMapPatch;
   runtime?: RuntimeSlicePatch;
   mode?: ModeSlicePatch;
@@ -185,7 +185,7 @@ export type ConfigScalarUpdater<K extends ConfigScalarKey = ConfigScalarKey> = (
   prev: ConfigScalarValueMap[K] | undefined,
   cfg?: ConfigSnapshotLike
 ) => ConfigScalarValueMap[K];
-export interface ModulesGeometrySnapshotLike extends UnknownRecord {
+export interface ModulesGeometrySnapshotLike {
   modulesConfiguration: ModulesConfigurationLike;
   isManualWidth?: boolean;
   width?: number | null;
@@ -201,20 +201,17 @@ export interface ConfigActionsNamespaceLike extends UnknownRecord {
     (mapName: string): UnknownRecord;
   };
   patch?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
-  setScalar?: {
-    <K extends ConfigScalarKey>(
-      key: K,
-      valueOrFn: ConfigScalarValueMap[K] | ConfigScalarUpdater<K>,
-      meta?: ActionMetaLike
-    ): unknown;
-    (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setScalar?: <K extends ConfigScalarKey>(
+    key: K,
+    valueOrFn: ConfigScalarValueMap[K] | ConfigScalarUpdater<K>,
+    meta?: ActionMetaLike
+  ) => unknown;
   setCustomUploadedDataURL?: (dataUrl: string | null, meta?: ActionMetaLike) => unknown;
   setModulesConfiguration?: (next: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
   setLowerModulesConfiguration?: (next: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;
   setCornerConfiguration?: (next: CornerConfigurationLike, meta?: ActionMetaLike) => unknown;
-  setPreChestState?: (next: ProjectPreChestStateLike, meta?: ActionMetaLike) => unknown;
-  setSavedNotes?: (next: ProjectSavedNotesLike | null, meta?: ActionMetaLike) => unknown;
+  setPreChestState?: (next: ProjectPreChestStateLike | null, meta?: ActionMetaLike) => unknown;
+  setSavedNotes?: (next: ProjectSavedNotesLike, meta?: ActionMetaLike) => unknown;
   applyProjectSnapshot?: (snapshot: UnknownRecord, meta?: ActionMetaLike) => unknown;
   applyModulesGeometrySnapshot?: (snapshot: ModulesGeometrySnapshotLike, meta?: ActionMetaLike) => unknown;
   applyPaintSnapshot?: (
@@ -340,22 +337,25 @@ export interface ActionsNamespaceLike extends UnknownRecord {
     meta?: ActionMetaLike
   ) => StateSnapshotTransactionHandleLike;
   applyConfig?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
-  setCfgScalar?: {
-    <K extends ConfigScalarKey>(key: K, valueOrFn: ConfigScalarValueMap[K], meta?: ActionMetaLike): unknown;
-    (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setCfgScalar?: <K extends ConfigScalarKey>(
+    key: K,
+    valueOrFn: ConfigScalarValueMap[K] | ConfigScalarUpdater<K>,
+    meta?: ActionMetaLike
+  ) => unknown;
 
   // UI raw scalar helper (typed hot keys) - convenience over uiPatch({ raw: { ... } }).
-  setUiRawScalar?: {
-    <K extends UiRawScalarKey>(key: K, value: UiRawScalarValueMap[K], meta?: ActionMetaLike): unknown;
-    (key: string, value: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setUiRawScalar?: <K extends UiRawScalarKey>(
+    key: K,
+    value: UiRawScalarValueMap[K],
+    meta?: ActionMetaLike
+  ) => unknown;
 
   // Runtime scalar helper (typed hot keys) - convenience over actions.runtime.patch({ ... }).
-  setRuntimeScalar?: {
-    <K extends RuntimeScalarKey>(key: K, value: RuntimeScalarValueMap[K], meta?: ActionMetaLike): unknown;
-    (key: string, value: unknown, meta?: ActionMetaLike): unknown;
-  };
+  setRuntimeScalar?: <K extends RuntimeActionScalarKey>(
+    key: K,
+    value: RuntimeActionScalarValueMap[K],
+    meta?: ActionMetaLike
+  ) => unknown;
 
   // Sub-namespaces used by some layers (optional during migration).
   meta?: MetaActionsNamespaceLike;

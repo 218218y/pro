@@ -2,6 +2,7 @@ import type {
   ActionsNamespaceLike,
   MetaSlicePatch,
   ModeSlicePatch,
+  ModulesGeometrySnapshotLike,
   PublicConfigPatch,
   PublicPatchPayload,
   PublicStoreLike,
@@ -11,7 +12,7 @@ import type {
   UiSlicePatch,
   WardrobeProAction,
 } from '../../types';
-import type { StoreBackendAction, StorePatchAction } from '../../types/backend_actions';
+import type { StoreBackendAction, StorePatchAction, StoreSetAction } from '../../types/backend_actions';
 import type { StoreLike } from '../../types/backend_store';
 
 // This fixture is typechecked by tsconfig.type-contracts.json and may also be discovered
@@ -22,21 +23,87 @@ declare const backendStore: StoreLike;
 declare const publicStore: PublicStoreLike;
 
 function assertActionsRootPatchTypeContracts() {
-  // Public actions.patch accepts normal scalar config patches.
-  actions.patch?.({ config: { width: 120 } });
-  actions.patch?.({ config: { width: 130, __replace: { width: true } } });
+  // Public actions.patch is an exact, non-map mutation contract.
+  actions.patch?.({ config: { isManualWidth: true, boardMaterial: 'melamine' } });
+  actions.patch?.({ ui: { activeTab: 'design', raw: { width: 120 } }, runtime: { sketchMode: true } });
+  actions.patch?.({ mode: { primary: 'design', opts: { source: 'fixture' } }, meta: { dirty: true } });
 
-  // The raw/backend store patch boundary remains intentionally permissive for owner commits.
-  backendStore.patch({ config: { handlesMap: { d1_full: 'rail' } } });
+  // Unknown root/config keys and backend replacement metadata are compile-time errors.
+  // @ts-expect-error root patch keys are closed
+  actions.patch?.({ mysterySlice: {} });
+
+  // @ts-expect-error wardrobe dimensions are ui.raw.*, not config fields
+  actions.patch?.({ config: { width: 120 } });
+
+  // @ts-expect-error backend replacement metadata is not part of the public config patch contract
+  actions.patch?.({ config: { __replace: { isManualWidth: true } } });
+
+  // @ts-expect-error backend snapshot metadata is not part of the public config patch contract
+  actions.patch?.({ config: { __snapshot: true } });
 
   // Public root/action patch boundaries must not accept known config maps.
   // @ts-expect-error known config maps are backend-only raw patches, not public action patches
   actions.patch?.({ config: { handlesMap: { d1_full: 'rail' } } });
 
-  // @ts-expect-error replacing known config maps is backend-only raw patch behavior
-  actions.patch?.({ config: { __replace: { handlesMap: true } } });
+  // Public UI/runtime/mode/meta slices are closed too.
+  // @ts-expect-error public UI patch cannot carry snapshot protocol metadata
+  actions.patch?.({ ui: { __snapshot: true } });
 
-  const okPatch: PatchDispatchEnvelope = { type: 'PATCH', payload: { config: { width: 120 } } };
+  // @ts-expect-error ui.raw keys are closed
+  actions.patch?.({ ui: { raw: { imaginaryDimension: 10 } } });
+
+  // @ts-expect-error ui.raw numeric values must be finite-number/null typed values at call sites
+  actions.patch?.({ ui: { raw: { width: '120' } } });
+
+  // @ts-expect-error runtime patch keys are closed
+  actions.patch?.({ runtime: { mysteryRuntimeFlag: true } });
+
+  // @ts-expect-error mode patch keys are closed
+  actions.patch?.({ mode: { version: 2 } });
+
+  // @ts-expect-error meta patch exposes dirty only
+  actions.patch?.({ meta: { version: 2 } });
+
+  // Scalar action writers expose named canonical keys rather than string+unknown escape hatches.
+  actions.setCfgScalar?.('roomArchitecture', {
+    backWall: { enabled: true, widthCm: 300, heightCm: 260, wardrobeOffsetLeftCm: 0 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 260 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 260 },
+    column: {
+      enabled: false,
+      offsetLeftCm: 0,
+      widthCm: 40,
+      depthCm: 40,
+      heightCm: 260,
+      bottomOffsetCm: 0,
+    },
+    openings: [],
+    wallColor: '#ffffff',
+    surfacesHidden: false,
+  });
+  actions.runtime?.setScalar?.('paintColor', '#fff');
+  actions.ui?.setRawScalar?.('width', 240);
+
+  // @ts-expect-error config scalar writer rejects arbitrary or wrong-domain keys
+  actions.setCfgScalar?.('width', 120);
+
+  // @ts-expect-error runtime scalar writer rejects arbitrary keys
+  actions.runtime?.setScalar?.('mysteryRuntimeFlag', true);
+
+  // @ts-expect-error raw scalar writer is intentionally numeric/boolean only
+  actions.ui?.setRawScalar?.('structureSelect', 'custom');
+
+  const okPatch: PatchDispatchEnvelope = {
+    type: 'PATCH',
+    payload: { config: { isManualWidth: true } },
+  };
+
+  const badEnvelope: PatchDispatchEnvelope = {
+    type: 'PATCH',
+    payload: { config: { isManualWidth: true } },
+    // @ts-expect-error action envelopes reject undeclared top-level fields
+    legacyExtra: true,
+  };
 
   const badPatch: PatchDispatchEnvelope = {
     type: 'PATCH',
@@ -44,49 +111,57 @@ function assertActionsRootPatchTypeContracts() {
     payload: { config: { handlesMap: { d1_full: 'rail' } } },
   };
 
-  // @ts-expect-error public action rejects raw config maps
   const badPublicAction: PublicWardrobeProAction = {
     type: 'PATCH',
+    // @ts-expect-error public action rejects raw config maps
     payload: { config: { handlesMap: { d1_full: 'rail' } } },
   };
 
-  // @ts-expect-error public wardrobe action rejects raw config maps
   const badWardrobeAction: WardrobeProAction = {
     type: 'PATCH',
+    // @ts-expect-error public wardrobe action rejects raw config maps
     payload: { config: { handlesMap: { d1_full: 'rail' } } },
   };
 
+  // The raw/backend store boundary remains intentionally capable of owner-only map/root writes.
+  backendStore.patch({ config: { handlesMap: { d1_full: 'rail' } } });
   const rawStoreAction: StorePatchAction = {
     type: 'PATCH',
     payload: { config: { handlesMap: { d1_full: 'rail' } } },
   };
-  const rawBackendAction: StoreBackendAction = {
-    type: 'PATCH',
-    payload: { config: { handlesMap: { d1_full: 'rail' } } },
-  };
+  const rawSetAction: StoreSetAction = { type: 'SET', payload: { config: { internal: true } } };
+  const rawBackendAction: StoreBackendAction = rawSetAction;
 
+  // Internal/backend slice patch shapes can still carry snapshot protocol metadata.
   const uiPatch: UiSlicePatch = { __snapshot: true };
   const runtimePatch: RuntimeSlicePatch = { paintColor: 'red' };
   const modePatch: ModeSlicePatch = { primary: 'design' };
   const metaPatch: MetaSlicePatch = { dirty: true };
 
-  const okPayload: PublicPatchPayload = { config: { width: 120 } };
-  const okReplacePayload: PublicPatchPayload = { config: { width: 130, __replace: { width: true } } };
+  const okPayload: PublicPatchPayload = { config: { isManualWidth: true } };
+  const okConfig: PublicConfigPatch = { boardMaterial: 'sandwich' };
 
-  // @ts-expect-error public patch payload aliases reject known config maps
-  const badPayload: PublicPatchPayload = { config: { handlesMap: { d1_full: 'rail' } } };
+  // @ts-expect-error public patch payload aliases reject unknown config keys
+  const badPayload: PublicPatchPayload = { config: { width: 120 } };
 
-  // @ts-expect-error public patch payload aliases reject known config map replacements
-  const badReplacePayload: PublicPatchPayload = { config: { __replace: { handlesMap: true } } };
-
-  const okConfig: PublicConfigPatch = { width: 120 };
-  const okReplaceConfig: PublicConfigPatch = { width: 130, __replace: { width: true } };
+  // @ts-expect-error public config patch aliases reject backend replacement metadata
+  const badReplaceConfig: PublicConfigPatch = { __replace: { boardMaterial: true } };
 
   // @ts-expect-error public config patch aliases reject known config maps
   const badConfig: PublicConfigPatch = { handlesMap: { d1_full: 'rail' } };
 
-  // @ts-expect-error public config patch aliases reject known config map replacements
-  const badReplaceConfig: PublicConfigPatch = { __replace: { handlesMap: true } };
+  const geometrySnapshot: ModulesGeometrySnapshotLike = {
+    modulesConfiguration: [],
+    width: 240,
+    height: 220,
+    depth: 60,
+  };
+
+  const badGeometrySnapshot: ModulesGeometrySnapshotLike = {
+    modulesConfiguration: [],
+    // @ts-expect-error modules geometry snapshot is a closed semantic command contract
+    wardrobeWidth: 240,
+  };
 
   // Public store surface stays readable/subscribable only. Raw writers are backend-only.
   publicStore.getState();
@@ -101,23 +176,24 @@ function assertActionsRootPatchTypeContracts() {
   publicStore.setRoot?.({ config: {} });
 
   void okPatch;
+  void badEnvelope;
   void badPatch;
   void badPublicAction;
   void badWardrobeAction;
   void rawStoreAction;
+  void rawSetAction;
   void rawBackendAction;
   void uiPatch;
   void runtimePatch;
   void modePatch;
   void metaPatch;
   void okPayload;
-  void okReplacePayload;
   void badPayload;
-  void badReplacePayload;
   void okConfig;
-  void okReplaceConfig;
-  void badConfig;
   void badReplaceConfig;
+  void badConfig;
+  void geometrySnapshot;
+  void badGeometrySnapshot;
 }
 
 void assertActionsRootPatchTypeContracts;
@@ -144,6 +220,12 @@ import type { StorePatchAction as PublicStorePatchAction } from '../../types';
 // @ts-expect-error backend raw action types are not public-barrel exports
 import type { StoreBackendAction as PublicStoreBackendAction } from '../../types';
 
+// @ts-expect-error backend SET action types are not public-barrel exports
+import type { StoreSetAction as PublicStoreSetAction } from '../../types';
+
+// @ts-expect-error public action surface no longer exposes a SET root-replacement action
+import type { SetAction } from '../../types';
+
 // @ts-expect-error backend raw action types are not public-barrel exports
 import type { RawWardrobeProAction } from '../../types';
 
@@ -164,6 +246,8 @@ type PublicBarrelLeakSentinel =
   | RawConfigSlicePatch
   | PublicStorePatchAction
   | PublicStoreBackendAction
+  | PublicStoreSetAction
+  | SetAction
   | RawWardrobeProAction
   | PublicStoreLikeAlias
   | RootStoreLike

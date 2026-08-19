@@ -48,7 +48,6 @@ export type {
   PatchDispatchEnvelope,
   PublicPatchAction,
   PublicWardrobeProAction,
-  SetAction,
   WardrobeProAction,
   WardrobeProActionType,
 } from './actions';

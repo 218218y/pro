@@ -27,8 +27,8 @@ import {
   readRecord,
 } from './store_actions_value_shared.js';
 
-function readSavedNotes(value: unknown): ProjectSavedNotesLike | null {
-  if (!Array.isArray(value)) return null;
+function readSavedNotes(value: unknown): ProjectSavedNotesLike {
+  if (!Array.isArray(value)) return [];
   return value.filter(isRecord);
 }
 
