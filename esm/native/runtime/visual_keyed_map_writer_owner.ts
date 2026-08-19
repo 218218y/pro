@@ -80,8 +80,7 @@ export function patchVisualKeyedMapEntriesFromOwner(
   if (!entries.length) return false;
   const nextMap = readNormalizedVisualKeyedMap(App, mapName);
 
-  for (let i = 0; i < entries.length; i += 1) {
-    const entry = entries[i];
+  for (const entry of entries) {
     const canonicalKey = readCanonicalOwnerPatchKey(mapName, entry.key);
     if (!canonicalKey) continue;
     if (entry.value == null) {

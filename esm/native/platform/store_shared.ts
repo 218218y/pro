@@ -193,6 +193,7 @@ export function cloneDebugSources(src: StoreDebugSourceStatsMap): StoreDebugSour
   for (const key in src) {
     if (!hasOwn(src, key)) continue;
     const entry = src[key];
+    if (!entry) continue;
     out[key] = {
       source: String(entry.source || ''),
       type: String(entry.type || ''),

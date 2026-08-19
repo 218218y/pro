@@ -9,6 +9,7 @@ const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 
 export function resolveTypecheckModesForFiles(files) {
   let project = false;
+  let coreHardening = false;
   let uiLean = false;
 
   for (const rawFile of files) {
@@ -16,7 +17,12 @@ export function resolveTypecheckModesForFiles(files) {
 
     if (file === 'tsconfig.json') {
       project = true;
+      coreHardening = true;
       uiLean = true;
+      continue;
+    }
+    if (file === 'tsconfig.hardening-core.json') {
+      coreHardening = true;
       continue;
     }
     if (file === 'tsconfig.ui-lean.json' || file.startsWith('lean_types/')) {
@@ -25,20 +31,27 @@ export function resolveTypecheckModesForFiles(files) {
     }
     if (file.startsWith('types/')) {
       project = true;
+      coreHardening = true;
       uiLean = true;
       continue;
     }
     if (/^esm\/native\/ui\/.*\.ts$/u.test(file)) {
       project = true;
+      coreHardening = true;
       uiLean = true;
       continue;
     }
     if (/^(?:esm\/.*\.(?:ts|tsx|mjs|js)|wp_logo_data\.js|tsconfig(?:\.[^/]+)?\.json)$/u.test(file)) {
       project = true;
+      if (/^esm\/.*\.ts$/u.test(file)) coreHardening = true;
     }
   }
 
-  return [project ? 'project' : null, uiLean ? 'ui-lean' : null].filter(Boolean);
+  return [
+    project ? 'project' : null,
+    coreHardening ? 'core-hardening' : null,
+    uiLean ? 'ui-lean' : null,
+  ].filter(Boolean);
 }
 
 function git(args) {

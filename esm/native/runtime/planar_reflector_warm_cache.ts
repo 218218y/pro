@@ -140,7 +140,7 @@ export function capturePlanarReflectorWarmCache(App: unknown): number {
     addPlanarWarmCacheEntry(bag, {
       key,
       renderTarget,
-      textureMatrix,
+      ...(textureMatrix ? { textureMatrix } : {}),
       updateCount: Math.max(1, Math.floor(Number(state.updateCount) || 1)),
     });
   }

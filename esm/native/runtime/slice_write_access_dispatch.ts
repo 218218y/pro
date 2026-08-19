@@ -111,7 +111,7 @@ export function patchSliceWithResolvedContext<N extends SlicePatchNamespace>(
       context,
       namespace,
       payload,
-      meta,
+      ...(meta !== undefined ? { meta } : {}),
       opts,
       target,
       rootPayloadReader: readRootPayload,

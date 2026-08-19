@@ -171,8 +171,7 @@ export function resolveDoorTrimPlacements(args: {
 }): Array<{ entry: DoorTrimEntry; placement: ResolvedDoorTrimPlacement }> {
   const trimList = readDoorTrimList(args.trims);
   const out: Array<{ entry: DoorTrimEntry; placement: ResolvedDoorTrimPlacement }> = [];
-  for (let i = 0; i < trimList.length; i += 1) {
-    const entry = trimList[i];
+  for (const entry of trimList) {
     out.push({
       entry,
       placement: resolveDoorTrimPlacement({ rect: args.rect, entry }),

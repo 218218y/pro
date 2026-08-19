@@ -61,9 +61,8 @@ function pickDoorEntry(App: Record<string, unknown>): DoorEntryLike | null {
     const arr = getDoorsArray(App);
     if (!arr || !arr.length) return null;
 
-    for (let i = 0; i < arr.length; i++) {
-      const door = arr[i];
-      const group = door && door.group ? door.group : null;
+    for (const door of arr) {
+      const group = door?.group ?? null;
       if (!group) continue;
 
       let ok = false;
@@ -88,9 +87,8 @@ function pickDoorEntry(App: Record<string, unknown>): DoorEntryLike | null {
       if (ok) return door;
     }
 
-    for (let i = 0; i < arr.length; i++) {
-      const door = arr[i];
-      if (door && door.group) return door;
+    for (const door of arr) {
+      if (door?.group) return door;
     }
   } catch (err) {
     reportNonFatal('pickDoorEntry', err);

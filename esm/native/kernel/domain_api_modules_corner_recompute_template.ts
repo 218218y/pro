@@ -25,21 +25,27 @@ interface PairLike {
 
 function sumDoors(sig: number[]): number {
   let sum = 0;
-  for (let i = 0; i < sig.length; i++) sum += Math.max(0, Math.round(sig[i] || 0));
+  for (const rawDoors of sig) sum += Math.max(0, Math.round(rawDoors || 0));
   return sum;
 }
 
 function makeSpans(sig: number[]): SpanLike[] {
   const spans: SpanLike[] = [];
   let cur = 0;
-  for (let i = 0; i < sig.length; i++) {
-    const width = Math.max(0, Math.round(sig[i] || 0));
+  for (const [i, rawDoors] of sig.entries()) {
+    const width = Math.max(0, Math.round(rawDoors || 0));
     const start = cur;
     const end = cur + width;
     spans.push({ i, start, end, center: start + (end - start) / 2 });
     cur = end;
   }
   return spans;
+}
+
+function requireModuleAt(modules: ModuleCfgItem[], index: number): ModuleCfgItem {
+  const module = modules[index];
+  if (!module) throw new RangeError(`Missing recomputed module at index ${index}`);
+  return module;
 }
 
 function applyPreservedTemplate(
@@ -72,10 +78,8 @@ function applyPreservedTemplate(
     const oldSpans = makeSpans(runtime.currentModulesStructure);
     const newSpans = makeSpans(newSig);
     const pairs: PairLike[] = [];
-    for (let oi = 0; oi < oldSpans.length; oi++) {
-      const oldSpan = oldSpans[oi];
-      for (let ni = 0; ni < newSpans.length; ni++) {
-        const newSpan = newSpans[ni];
+    for (const [oi, oldSpan] of oldSpans.entries()) {
+      for (const [ni, newSpan] of newSpans.entries()) {
         const overlap = Math.min(oldSpan.end, newSpan.end) - Math.max(oldSpan.start, newSpan.start);
         if (overlap > 0) {
           const dist = Math.abs(oldSpan.center - newSpan.center);
@@ -96,8 +100,8 @@ function applyPreservedTemplate(
     const assignedNewToOld: Record<number, number> = {};
     const targetPairs = oldLen <= newLen ? oldLen : newLen;
     let picked = 0;
-    for (let p = 0; p < pairs.length && picked < targetPairs; p++) {
-      const pair = pairs[p];
+    for (const pair of pairs) {
+      if (picked >= targetPairs) break;
       if (usedOld[pair.oi] || usedNew[pair.ni]) continue;
       usedOld[pair.oi] = true;
       usedNew[pair.ni] = true;
@@ -108,11 +112,12 @@ function applyPreservedTemplate(
     for (let ni = 0; ni < newLen; ni++) {
       const oi = assignedNewToOld[ni];
       if (oi == null) continue;
+      const nextModule = requireModuleAt(newModules, ni);
       newModules[ni] = clonePrevModuleOnto(
-        newModules[ni],
-        runtime.currentModules[oi],
+        nextModule,
+        runtime.currentModules[oi] ?? null,
         ni,
-        newModules[ni].doors
+        nextModule.doors
       );
     }
 
@@ -126,10 +131,13 @@ function applyPreservedTemplate(
       let u = 0;
       while (u < unassigned.length) {
         const segStart = unassigned[u];
+        if (segStart == null) break;
         let segEnd = segStart;
         while (u + 1 < unassigned.length && unassigned[u + 1] === segEnd + 1) {
           u++;
-          segEnd = unassigned[u];
+          const nextEnd = unassigned[u];
+          if (nextEnd == null) break;
+          segEnd = nextEnd;
         }
 
         const isAssigned = function (i: number): boolean {
@@ -179,11 +187,12 @@ function applyPreservedTemplate(
     for (let i = 0; i < common; i++) {
       const ni = startNew + i;
       const oi = startOld + i;
+      const nextModule = requireModuleAt(newModules, ni);
       newModules[ni] = clonePrevModuleOnto(
-        newModules[ni],
-        runtime.currentModules[oi],
+        nextModule,
+        runtime.currentModules[oi] ?? null,
         ni,
-        newModules[ni].doors
+        nextModule.doors
       );
     }
 
@@ -200,7 +209,8 @@ function applyPreservedTemplate(
   }
 
   for (let i = 0; i < common; i++) {
-    newModules[i] = clonePrevModuleOnto(newModules[i], runtime.currentModules[i], i, newModules[i].doors);
+    const nextModule = requireModuleAt(newModules, i);
+    newModules[i] = clonePrevModuleOnto(nextModule, runtime.currentModules[i] ?? null, i, nextModule.doors);
   }
 
   if (!runtime.isLibraryMode && newLen > oldLen) {
@@ -220,7 +230,8 @@ export function buildRecomputedModules(runtime: DomainApiModulesCornerRecomputeR
     for (let i = 0; i < newModules.length; i++) {
       const prev = runtime.currentModules[i];
       if (prev && typeof prev === 'object') {
-        newModules[i] = clonePrevModuleOnto(newModules[i], prev, i, newModules[i].doors);
+        const nextModule = requireModuleAt(newModules, i);
+        newModules[i] = clonePrevModuleOnto(nextModule, prev, i, nextModule.doors);
       }
     }
     return newModules;
@@ -232,10 +243,7 @@ export function buildRecomputedModules(runtime: DomainApiModulesCornerRecomputeR
   ) {
     let sameSig = true;
     for (let j = 0; j < runtime.currentModulesStructure.length; j++) {
-      if (
-        runtime.currentModulesStructure[j] !==
-        (runtime.modulesStructure[j] && runtime.modulesStructure[j].doors)
-      ) {
+      if (runtime.currentModulesStructure[j] !== runtime.modulesStructure[j]?.doors) {
         sameSig = false;
         break;
       }
@@ -244,7 +252,8 @@ export function buildRecomputedModules(runtime: DomainApiModulesCornerRecomputeR
       for (let k = 0; k < newModules.length; k++) {
         const prev = runtime.currentModules[k];
         if (prev && typeof prev === 'object') {
-          newModules[k] = clonePrevModuleOnto(newModules[k], prev, k, newModules[k].doors);
+          const nextModule = requireModuleAt(newModules, k);
+          newModules[k] = clonePrevModuleOnto(nextModule, prev, k, nextModule.doors);
         }
       }
       return newModules;

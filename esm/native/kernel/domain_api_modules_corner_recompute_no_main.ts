@@ -27,7 +27,7 @@ export function handleNoMainModulesRecompute(args: {
   if (modulesChanged) {
     const writeResult = applyModulesRecomputeWrite({
       App,
-      modulesActions,
+      ...(modulesActions !== undefined ? { modulesActions } : {}),
       nextModules: sanitizedModules,
       meta: runtime.meta,
       reason: 'noMainCleanup',

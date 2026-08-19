@@ -42,8 +42,13 @@ test('typecheck args parsing preserves help/mode/all semantics', () => {
   assert.deepEqual(parseTypecheckArgs(['--mode', 'project', '--badflag']).unknownOptions, ['--badflag']);
 
   assert.deepEqual(resolveTypecheckModes({ runAll: false, mode: 'project' }), ['project']);
-  assert.deepEqual(resolveTypecheckModes({ runAll: true, mode: null }), ['project', 'ui-lean']);
+  assert.deepEqual(resolveTypecheckModes({ runAll: true, mode: null }), [
+    'project',
+    'core-hardening',
+    'ui-lean',
+  ]);
   assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode project/);
+  assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode core-hardening/);
   assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode ui-lean/);
 });
 
@@ -54,8 +59,15 @@ test('typecheck parallel and changed-file routing stay bounded and surface-aware
     modes: ['project', 'ui-lean'],
   });
   assert.equal(resolveTypecheckWorkerCount({ requested: '20', modeCount: 2, cpuCount: 8 }), 2);
-  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/services/example.ts']), ['project']);
-  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/ui/example.ts']), ['project', 'ui-lean']);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/services/example.ts']), [
+    'project',
+    'core-hardening',
+  ]);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/ui/example.ts']), [
+    'project',
+    'core-hardening',
+    'ui-lean',
+  ]);
   assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/ui/example.tsx']), ['project']);
   assert.deepEqual(resolveTypecheckModesForFiles(['types/app.ts']), [...DEFAULT_ALL_MODES]);
   assert.deepEqual(resolveTypecheckModesForFiles(['lean_types/react_lean_shim.d.ts']), ['ui-lean']);
@@ -324,27 +336,33 @@ test('typecheck flow runs matching config and reports success', () => {
   assert.ok(logs.some(line => /typecheck completed successfully/i.test(line)));
 });
 
-test('ui-lean is the only alternate typecheck mode and carries no hidden compiler arguments', () => {
+test('alternate typecheck modes use canonical configs and carry no hidden compiler arguments', () => {
   const root = tempDir();
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'core-hardening'), '{"compilerOptions":{}}\n', 'utf8');
   fs.writeFileSync(resolveTypecheckConfigPath(root, 'ui-lean'), '{"compilerOptions":{}}\n', 'utf8');
   fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
   fs.writeFileSync(path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'), '// stub\n', 'utf8');
 
   const invocations = [];
-  const result = runTypecheckFlow({
-    root,
-    node: '/usr/bin/node',
-    runAll: false,
-    mode: 'ui-lean',
-    spawnImpl(cmd, args) {
-      invocations.push({ cmd, args });
-      return { status: 0 };
-    },
-  });
+  const runMode = mode =>
+    runTypecheckFlow({
+      root,
+      node: '/usr/bin/node',
+      runAll: false,
+      mode,
+      spawnImpl(cmd, args) {
+        invocations.push({ cmd, args });
+        return { status: 0 };
+      },
+    });
 
-  assert.equal(result.ok, true);
-  assert.equal(invocations[0].args.includes('--noEmit'), false);
-  assert.equal(invocations[0].args.includes(resolveTypecheckConfigPath(root, 'ui-lean')), true);
+  const hardenedResult = runMode('core-hardening');
+  const uiLeanResult = runMode('ui-lean');
+  assert.equal(hardenedResult.ok, true);
+  assert.equal(uiLeanResult.ok, true);
+  for (const invocation of invocations) assert.equal(invocation.args.includes('--noEmit'), false);
+  assert.equal(invocations[0].args.includes(resolveTypecheckConfigPath(root, 'core-hardening')), true);
+  assert.equal(invocations[1].args.includes(resolveTypecheckConfigPath(root, 'ui-lean')), true);
 });
 
 test('typecheck flow skips missing canonical configs for --all and errors for unknown or missing single mode', () => {

@@ -149,11 +149,13 @@ export function createSliceWriteOptions(
 ): SliceWriteOptions {
   return {
     storeWriter: opts?.storeWriter ?? getDefaultStoreWriter(namespace),
-    allowRootActionPatch: opts?.allowRootActionPatch,
-    allowRootStorePatch: opts?.allowRootStorePatch,
-    preferStoreWriter: opts?.preferStoreWriter,
-    skipNamespacePatch: opts?.skipNamespacePatch,
-    configMapWriteCapability: opts?.configMapWriteCapability,
+    ...(opts?.allowRootActionPatch !== undefined ? { allowRootActionPatch: opts.allowRootActionPatch } : {}),
+    ...(opts?.allowRootStorePatch !== undefined ? { allowRootStorePatch: opts.allowRootStorePatch } : {}),
+    ...(opts?.preferStoreWriter !== undefined ? { preferStoreWriter: opts.preferStoreWriter } : {}),
+    ...(opts?.skipNamespacePatch !== undefined ? { skipNamespacePatch: opts.skipNamespacePatch } : {}),
+    ...(opts?.configMapWriteCapability !== undefined
+      ? { configMapWriteCapability: opts.configMapWriteCapability }
+      : {}),
   };
 }
 
@@ -167,7 +169,9 @@ export function toDedicatedSliceWriteOptions(
     allowRootStorePatch: false,
     preferStoreWriter: opts?.preferStoreWriter !== false,
     skipNamespacePatch: opts?.skipNamespacePatch === true,
-    configMapWriteCapability: opts?.configMapWriteCapability,
+    ...(opts?.configMapWriteCapability !== undefined
+      ? { configMapWriteCapability: opts.configMapWriteCapability }
+      : {}),
   };
 }
 
@@ -199,8 +203,10 @@ export function toDedicatedCanonicalPatchDispatchOptions(
   return {
     allowRootActionPatch: false,
     allowRootStorePatch: false,
-    sliceOptions,
-    metaTouchOptions: opts?.metaTouchOptions ? toDedicatedMetaTouchOptions(opts.metaTouchOptions) : undefined,
+    ...(sliceOptions ? { sliceOptions } : {}),
+    ...(opts?.metaTouchOptions
+      ? { metaTouchOptions: toDedicatedMetaTouchOptions(opts.metaTouchOptions) }
+      : {}),
   };
 }
 

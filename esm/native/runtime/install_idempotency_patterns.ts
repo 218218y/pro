@@ -15,8 +15,7 @@ export function hasCallableContract<T extends UnknownRecord = UnknownRecord>(
 ): boolean {
   const record = asRecord<T>(value);
   if (!record) return false;
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (typeof record[key] !== 'function') return false;
   }
   return true;
@@ -28,8 +27,7 @@ export function hasOwnNumberSlots<T extends UnknownRecord = UnknownRecord>(
 ): boolean {
   const record = asRecord<T>(value);
   if (!record) return false;
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (!Object.prototype.hasOwnProperty.call(record, key) || typeof record[key] !== 'number') return false;
   }
   return true;

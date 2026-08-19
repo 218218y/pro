@@ -79,8 +79,10 @@ export function resolveCanonicalDispatchRoute(
     const sliceOptions =
       opts?.sliceOptions?.[route.namespace] ??
       createDefaultSliceWriteOptions(route.namespace, {
-        allowRootActionPatch: opts?.allowRootActionPatch,
-        allowRootStorePatch: opts?.allowRootStorePatch,
+        ...(opts?.allowRootActionPatch !== undefined
+          ? { allowRootActionPatch: opts.allowRootActionPatch }
+          : {}),
+        ...(opts?.allowRootStorePatch !== undefined ? { allowRootStorePatch: opts.allowRootStorePatch } : {}),
       });
     return {
       kind: 'slicePatch',

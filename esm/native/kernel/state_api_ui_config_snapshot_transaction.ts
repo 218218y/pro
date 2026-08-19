@@ -88,9 +88,10 @@ export function installStateApiUiConfigSnapshotTransaction(
       cornerMode: 'auto',
       topMode: 'materialize',
     });
+    const configPatch = buildSnapshotConfigPatch(config, PROJECT_CONFIG_REPLACE_KEYS);
     const payload: PatchPayload = {
       ui,
-      config: buildSnapshotConfigPatch(config, PROJECT_CONFIG_REPLACE_KEYS),
+      ...(configPatch !== undefined ? { config: configPatch } : {}),
     };
     const commitMeta = normMeta(meta, 'actions:commitUiConfigSnapshot');
     return prepareStateSnapshotTransaction({

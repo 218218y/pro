@@ -50,7 +50,7 @@ export function collectDrawerVisualIdentityAliases(
 
 export function readDrawerVisualPrimaryId(drawer: DrawerVisualEntryLike | null | undefined): string | null {
   const aliases = collectDrawerVisualIdentityAliases(drawer);
-  return aliases.length ? aliases[0] : null;
+  return aliases[0] ?? null;
 }
 
 export function drawerVisualMatchesId(

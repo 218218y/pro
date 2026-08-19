@@ -62,7 +62,8 @@ function unlinkWrappedHistoryStatusChangeCallback(
 ): void {
   const current = typeof hs.onStatusChange === 'function' ? hs.onStatusChange : undefined;
   if (current === wrapped) {
-    hs.onStatusChange = wrapped.__wpHistoryStatusPrev;
+    if (wrapped.__wpHistoryStatusPrev) hs.onStatusChange = wrapped.__wpHistoryStatusPrev;
+    else delete hs.onStatusChange;
     return;
   }
 

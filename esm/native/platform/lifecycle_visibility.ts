@@ -164,9 +164,9 @@ function bindLifecycleBrowserEvents(root: LifecycleRootLike, life: LifecycleHand
 
   state.cleanup = () => {
     const fns = removers.splice(0, removers.length);
-    for (let i = 0; i < fns.length; i++) {
+    for (const remove of fns) {
       try {
-        fns[i]();
+        remove();
       } catch {
         // cleanup-best-effort: one failed remover must not prevent the remaining lifecycle cleanup.
       }

@@ -205,6 +205,50 @@ const canonicalWriteStateKernelStackMethods = [
   'patchSplitLowerModuleConfig',
 ];
 
+function collectRuntimeExportNames(abs) {
+  const source = fs.readFileSync(abs, 'utf8');
+  const names = new Set();
+
+  const declarationPattern =
+    /\bexport\s+(?:declare\s+)?(?:const|let|var|function|class|enum)\s+([A-Za-z_$][\w$]*)/g;
+  for (const match of source.matchAll(declarationPattern)) names.add(match[1]);
+
+  const namedExportPattern = /\bexport\s*\{([^}]*)\}/g;
+  for (const match of source.matchAll(namedExportPattern)) {
+    for (const rawEntry of match[1].split(',')) {
+      const entry = rawEntry.trim();
+      if (!entry || entry.startsWith('type ')) continue;
+      const aliasMatch = entry.match(/^(?:[A-Za-z_$][\w$]*\s+as\s+)?([A-Za-z_$][\w$]*)$/);
+      if (aliasMatch) names.add(aliasMatch[1]);
+    }
+  }
+
+  if (/\bexport\s+default\b/.test(source)) names.add('default');
+  return names;
+}
+
+function collectTypeRuntimeExportParityViolations() {
+  const { tsModules, jsStubs } = listTypeRuntimeStubs();
+  const violations = [];
+  for (const moduleName of [...tsModules].filter(name => jsStubs.has(name)).sort()) {
+    const tsExports = collectRuntimeExportNames(path.join(root, 'types', `${moduleName}.ts`));
+    const jsExports = collectRuntimeExportNames(path.join(root, 'types', `${moduleName}.js`));
+    const missingInJs = [...tsExports].filter(name => !jsExports.has(name)).sort();
+    const extraInJs = [...jsExports].filter(name => !tsExports.has(name)).sort();
+    if (missingInJs.length) {
+      violations.push(
+        `types/${moduleName}.js is missing runtime export(s) declared by types/${moduleName}.ts: ${missingInJs.join(', ')}`
+      );
+    }
+    if (extraInJs.length) {
+      violations.push(
+        `types/${moduleName}.js exports runtime value(s) absent from types/${moduleName}.ts: ${extraInJs.join(', ')}`
+      );
+    }
+  }
+  return violations;
+}
+
 function collectRuntimeGeometryScalarUnionViolations() {
   const violations = [];
   const keyPattern = runtimeGeometryScalarKeys.join('|');
@@ -768,6 +812,7 @@ for (const rootName of scanRoots) {
 }
 
 violations.push(...collectTypeRuntimeStubViolations());
+violations.push(...collectTypeRuntimeExportParityViolations());
 violations.push(...collectRuntimeGeometryScalarUnionViolations());
 violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
@@ -792,5 +837,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed; canonical write paths are enforced)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired and runtime exports stay in parity; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed; canonical write paths are enforced)'
 );

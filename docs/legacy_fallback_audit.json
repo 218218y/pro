@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T07:30:47.646Z",
+  "generatedAt": "2026-08-19T14:32:11.739Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 559,
@@ -2974,7 +2974,7 @@
     },
     {
       "file": "esm/native/features/modules_configuration/corner_cells_patch.ts",
-      "line": 76,
+      "line": 75,
       "term": "fallback",
       "category": "domain-default",
       "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting corner-cell normalization"
@@ -3002,7 +3002,7 @@
     },
     {
       "file": "esm/native/features/modules_configuration/modules_config_patch.ts",
-      "line": 171,
+      "line": 170,
       "term": "fallback",
       "category": "domain-default",
       "text": "// plain-record-delete-fallback: non-configurable exotic properties are preserved rather than aborting patch normalization"
@@ -3093,7 +3093,7 @@
     },
     {
       "file": "esm/native/platform/store_contract.ts",
-      "line": 90,
+      "line": 93,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "* Keep this stable: it is the compatibility boundary between the app and the store backend."
@@ -3107,7 +3107,7 @@
     },
     {
       "file": "esm/native/platform/store_subscriptions.ts",
-      "line": 184,
+      "line": 190,
       "term": "fallback",
       "category": "runtime-default",
       "text": "// selector-equality-fallback: if equality probing fails, notify conservatively as changed."

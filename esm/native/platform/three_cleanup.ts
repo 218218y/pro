@@ -121,8 +121,8 @@ function disposeGeometry(geometry: unknown): void {
 }
 
 function disposeMaterialTextures(material: MaterialLike, customTexture: TextureLike | null): void {
-  for (let i = 0; i < TEXTURE_TYPES.length; i++) {
-    const texture = readTextureLike(material[TEXTURE_TYPES[i]]);
+  for (const textureType of TEXTURE_TYPES) {
+    const texture = readTextureLike(material[textureType]);
     if (!texture || texture === customTexture || typeof texture.dispose !== 'function') continue;
     try {
       texture.dispose();
@@ -146,8 +146,8 @@ function disposeMaterial(material: MaterialLike, customTexture: TextureLike | nu
 function disposeNodeResources(node: Object3DLike, customTexture: TextureLike | null): void {
   disposeGeometry(node.geometry);
   const materials = readMaterialList(node.material);
-  for (let i = 0; i < materials.length; i++) {
-    disposeMaterial(materials[i], customTexture);
+  for (const material of materials) {
+    disposeMaterial(material, customTexture);
   }
 }
 

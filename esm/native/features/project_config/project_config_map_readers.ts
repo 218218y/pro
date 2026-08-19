@@ -192,7 +192,8 @@ function parseSplitPositionList(raw: unknown): number[] {
   out.sort((a, b) => a - b);
   const deduped: number[] = [];
   for (const value of out) {
-    if (!deduped.length || Math.abs(deduped[deduped.length - 1] - value) > 1e-6) deduped.push(value);
+    const previous = deduped[deduped.length - 1];
+    if (previous === undefined || Math.abs(previous - value) > 1e-6) deduped.push(value);
   }
   return deduped;
 }

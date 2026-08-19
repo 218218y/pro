@@ -23,8 +23,7 @@ function shallowCornerRecordEqual(prev: unknown, next: unknown): boolean {
   const prevKeys = Object.keys(prevObj);
   const nextKeys = Object.keys(nextObj);
   if (prevKeys.length !== nextKeys.length) return false;
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(nextObj, key)) return false;
     if (!Object.is(prevObj[key], nextObj[key])) return false;
   }
@@ -130,7 +129,7 @@ export function patchCornerCellListAtForPatch(
 
   while (out.length <= i) out.push({});
 
-  const prevItem = out[i];
+  const prevItem = out[i] ?? {};
   const nextItem = applyCornerCellPatch(prevItem, patch);
   if (Object.is(prevItem, nextItem) && out.length === cur.length) return cur;
   out[i] = nextItem;
@@ -241,7 +240,7 @@ export function patchLowerCornerCellListAtForPatch(
 
   while (out.length <= i) out.push(createDefaultLowerModuleConfig(out.length));
 
-  const prevItem = out[i];
+  const prevItem = out[i] ?? createDefaultLowerModuleConfig(i);
   const rawNextItem = applyCornerCellPatch(prevItem, patch);
   const normalizedNextItem = normalizeLowerModuleConfigForPatch(rawNextItem, i);
   const nextItem = shallowCornerRecordEqual(rawNextItem, normalizedNextItem)

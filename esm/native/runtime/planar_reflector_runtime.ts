@@ -1023,7 +1023,7 @@ export function installPlanarMirrorReflector(
     clipPlane,
     reflectorPlane,
     q,
-    cacheKey: cacheKey || undefined,
+    ...(cacheKey ? { cacheKey } : {}),
   };
 
   const surfaceObject = readRecord(surfaceInstall.surfaceObject);

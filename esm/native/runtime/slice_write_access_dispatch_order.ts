@@ -81,11 +81,17 @@ export function resolveRootPatchDispatchTargets(
 
 export function resolveCanonicalMetaTouchOptions(opts?: CanonicalPatchDispatchOptions): MetaTouchOptions {
   const metaTouchOptions = opts?.metaTouchOptions;
+  const allowRootActionPatch = metaTouchOptions?.allowRootActionPatch ?? opts?.allowRootActionPatch;
+  const allowRootStorePatch = metaTouchOptions?.allowRootStorePatch ?? opts?.allowRootStorePatch;
   return {
-    allowRootActionPatch: metaTouchOptions?.allowRootActionPatch ?? opts?.allowRootActionPatch,
-    allowRootStorePatch: metaTouchOptions?.allowRootStorePatch ?? opts?.allowRootStorePatch,
-    preferStoreWriter: metaTouchOptions?.preferStoreWriter,
-    skipNamespaceTouch: metaTouchOptions?.skipNamespaceTouch,
+    ...(allowRootActionPatch !== undefined ? { allowRootActionPatch } : {}),
+    ...(allowRootStorePatch !== undefined ? { allowRootStorePatch } : {}),
+    ...(metaTouchOptions?.preferStoreWriter !== undefined
+      ? { preferStoreWriter: metaTouchOptions.preferStoreWriter }
+      : {}),
+    ...(metaTouchOptions?.skipNamespaceTouch !== undefined
+      ? { skipNamespaceTouch: metaTouchOptions.skipNamespaceTouch }
+      : {}),
   };
 }
 
@@ -95,8 +101,8 @@ export function resolveSliceDispatchTargets(opts: SliceWriteOptions): readonly S
   if (cached) return cached;
 
   const out = buildCanonicalDispatchTargetOrder<SliceDispatchTarget>({
-    preferPrimary: opts.preferStoreWriter,
-    skipSecondary: opts.skipNamespacePatch,
+    ...(opts.preferStoreWriter !== undefined ? { preferPrimary: opts.preferStoreWriter } : {}),
+    ...(opts.skipNamespacePatch !== undefined ? { skipSecondary: opts.skipNamespacePatch } : {}),
     primary: 'storeWriter',
     secondary: 'namespacePatch',
     tailTargets: resolveRootPatchDispatchTargets(opts),
@@ -111,8 +117,8 @@ export function resolveMetaTouchDispatchTargets(opts?: MetaTouchOptions): readon
   if (cached) return cached;
 
   const out = buildCanonicalDispatchTargetOrder<MetaTouchDispatchTarget>({
-    preferPrimary: opts?.preferStoreWriter,
-    skipSecondary: opts?.skipNamespaceTouch,
+    ...(opts?.preferStoreWriter !== undefined ? { preferPrimary: opts.preferStoreWriter } : {}),
+    ...(opts?.skipNamespaceTouch !== undefined ? { skipSecondary: opts.skipNamespaceTouch } : {}),
     primary: 'metaStoreWriter',
     secondary: 'metaTouch',
     tailTargets: resolveRootPatchDispatchTargets(opts),

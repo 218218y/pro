@@ -48,7 +48,10 @@ function ensureMetaDefaults(metaIn: unknown): MutableRootMeta {
   };
 }
 
-function isCanonicalModeStateLike(mode: UnknownRecord, _NONE: string): mode is RootStateLike['mode'] {
+function isCanonicalModeStateLike(
+  mode: UnknownRecord,
+  _NONE: string
+): mode is RootStateLike['mode'] & { primary: string; opts: UnknownRecord } {
   if (!isPlainRecord(mode.opts)) return false;
   const primary = mode.primary;
   return typeof primary === 'string' && String(primary).trim().length > 0 && String(primary) === primary;

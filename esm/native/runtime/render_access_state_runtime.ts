@@ -366,8 +366,8 @@ export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowR
     result.skippedReason = 'mirror-refresh-failed';
     return result;
   } finally {
-    for (let i = 0; i < restored.length; i += 1) {
-      restored[i].obj.visible = restored[i].visible;
+    for (const entry of restored) {
+      entry.obj.visible = entry.visible;
     }
   }
 }

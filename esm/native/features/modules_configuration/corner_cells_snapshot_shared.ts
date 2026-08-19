@@ -80,8 +80,7 @@ export function shallowRecordEqual(prev: unknown, next: unknown): boolean {
   const prevKeys = Object.keys(prev);
   const nextKeys = Object.keys(next);
   if (prevKeys.length !== nextKeys.length) return false;
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
     if (!Object.is(prev[key], next[key])) return false;
   }
@@ -105,8 +104,7 @@ export function cornerValueDeepEqual(prev: unknown, next: unknown): boolean {
   const nextKeys = Object.keys(next);
   if (prevKeys.length !== nextKeys.length) return false;
 
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
     if (!cornerValueDeepEqual(prev[key], next[key])) return false;
   }
@@ -122,8 +120,7 @@ export function shallowCornerConfigurationRefsEqual(
   const prevKeys = Object.keys(prev);
   const nextKeys = Object.keys(next);
   if (prevKeys.length !== nextKeys.length) return false;
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
     if (!Object.is(prev[key], next[key])) return false;
   }

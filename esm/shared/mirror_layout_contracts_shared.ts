@@ -110,8 +110,8 @@ export function readMirrorLayoutEntry(value: unknown): MirrorLayoutEntry | null 
 export function readMirrorLayoutList(value: unknown): MirrorLayoutList {
   if (Array.isArray(value)) {
     const out: MirrorLayoutList = [];
-    for (let i = 0; i < value.length; i += 1) {
-      const entry = readMirrorLayoutEntry(value[i]);
+    for (const valueEntry of value) {
+      const entry = readMirrorLayoutEntry(valueEntry);
       if (entry) out.push(entry);
     }
     return out;
@@ -123,7 +123,7 @@ export function readMirrorLayoutList(value: unknown): MirrorLayoutList {
 export function cloneMirrorLayoutList(value: unknown): MirrorLayoutList {
   const list = readMirrorLayoutList(value);
   const out: MirrorLayoutList = [];
-  for (let i = 0; i < list.length; i += 1) out.push(cloneMirrorLayoutEntry(list[i]));
+  for (const entry of list) out.push(cloneMirrorLayoutEntry(entry));
   return out;
 }
 
@@ -136,9 +136,8 @@ export function hasMirrorSurfaceOnFace(
   const normalizedDefaultSurfaceFaceSign = normalizeMirrorFaceSign(defaultSurfaceFaceSign, DEFAULT_FACE_SIGN);
   const list = readMirrorLayoutList(layouts);
   if (!list.length) return normalizedFaceSign === normalizedDefaultSurfaceFaceSign;
-  for (let i = 0; i < list.length; i += 1) {
-    if (readMirrorLayoutFaceSign(list[i], normalizedDefaultSurfaceFaceSign) === normalizedFaceSign)
-      return true;
+  for (const entry of list) {
+    if (readMirrorLayoutFaceSign(entry, normalizedDefaultSurfaceFaceSign) === normalizedFaceSign) return true;
   }
   return false;
 }
@@ -212,8 +211,7 @@ export function mirrorLayoutMapEquals(a: unknown, b: unknown): boolean {
   const aKeys = Object.keys(aa);
   const bKeys = Object.keys(bb);
   if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i += 1) {
-    const key = aKeys[i];
+  for (const key of aKeys) {
     if (!Object.prototype.hasOwnProperty.call(bb, key)) return false;
     if (!mirrorLayoutListEquals(aa[key], bb[key])) return false;
   }

@@ -96,10 +96,7 @@ export function needsModulesRecompute(runtime: DomainApiModulesCornerRecomputeRu
     return true;
   }
   for (let i = 0; i < runtime.currentModulesStructure.length; i++) {
-    if (
-      runtime.currentModulesStructure[i] !==
-      (runtime.modulesStructure[i] && runtime.modulesStructure[i].doors)
-    ) {
+    if (runtime.currentModulesStructure[i] !== runtime.modulesStructure[i]?.doors) {
       return true;
     }
   }
@@ -151,8 +148,10 @@ export function setDefaultModuleLayout(
   idx: number,
   layout: 'shelves' | 'hanging_top2'
 ): void {
+  const current = modules[idx];
+  if (!current) throw new RangeError(`Missing module at index ${idx}`);
   modules[idx] = cloneModuleConfig(
-    modules[idx],
+    current,
     {
       layout,
       isCustom: false,
@@ -162,5 +161,7 @@ export function setDefaultModuleLayout(
 }
 
 export function readNeighborLayout(modules: ModuleCfgItem[], idx: number): unknown {
-  return idx >= 0 && idx < modules.length ? readLayout(modules[idx]) : null;
+  if (idx < 0 || idx >= modules.length) return null;
+  const module = modules[idx];
+  return module ? readLayout(module) : null;
 }

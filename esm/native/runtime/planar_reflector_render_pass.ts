@@ -64,8 +64,9 @@ function hidePlanarReflectorSurfacesForInternalPass(App: unknown): HiddenPlanarR
 }
 
 function restorePlanarReflectorSurfacesAfterInternalPass(hidden: HiddenPlanarReflectorSurface[]): void {
-  for (let i = hidden.length - 1; i >= 0; i -= 1) {
-    const entry = hidden[i];
+  for (let index = hidden.length - 1; index >= 0; index -= 1) {
+    const entry = hidden[index];
+    if (!entry) continue;
     try {
       entry.object.visible = entry.visible;
     } catch {

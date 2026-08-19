@@ -49,7 +49,7 @@ export function installDomainApiModulesCornerRecompute(ctx: DomainApiModulesCorn
         _meta,
         uiOverride,
         meta,
-        opts,
+        ...(opts !== undefined ? { opts } : {}),
       });
 
       if (runtime.isNoMainWardrobe) {

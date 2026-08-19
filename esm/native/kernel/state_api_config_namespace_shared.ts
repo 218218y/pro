@@ -68,8 +68,7 @@ function shallowValueEqual(prev: unknown, next: unknown): boolean {
     const prevKeys = Object.keys(prevObj);
     const nextKeys = Object.keys(nextObj);
     if (prevKeys.length !== nextKeys.length) return false;
-    for (let i = 0; i < prevKeys.length; i += 1) {
-      const key = prevKeys[i];
+    for (const key of prevKeys) {
       if (!Object.prototype.hasOwnProperty.call(nextObj, key)) return false;
       if (!Object.is(prevObj[key], nextObj[key])) return false;
     }

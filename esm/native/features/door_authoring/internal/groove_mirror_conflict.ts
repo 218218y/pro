@@ -80,7 +80,9 @@ export function doesGrooveLayoutOverlapMirrorOnFace(args: {
     rect: args.rect,
     mirrorLayouts: args.mirrorLayouts,
     faceSign: args.faceSign ?? DEFAULT_FACE_SIGN,
-    defaultSurfaceFaceSign: args.defaultSurfaceFaceSign,
+    ...(args.defaultSurfaceFaceSign !== undefined
+      ? { defaultSurfaceFaceSign: args.defaultSurfaceFaceSign }
+      : {}),
   });
   if (!mirrorRects.length) return false;
 

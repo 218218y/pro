@@ -167,11 +167,13 @@ export function readFloor(value: unknown): FloorLike | null {
   const getWorldPosition = readMethod<[unknown]>(value, 'getWorldPosition');
   if (!rec || !getWorldPosition) return null;
   const updateMatrixWorld = readMethod<[boolean?]>(value, 'updateMatrixWorld') ?? undefined;
+  const visible = typeof rec.visible === 'boolean' ? rec.visible : undefined;
+  const userData = readRecord(rec.userData) ?? undefined;
   return {
-    visible: typeof rec.visible === 'boolean' ? rec.visible : undefined,
-    userData: readRecord(rec.userData) ?? undefined,
+    ...(typeof visible === 'boolean' ? { visible } : {}),
+    ...(userData ? { userData } : {}),
     getWorldPosition: (v: unknown) => getWorldPosition(v),
-    updateMatrixWorld: updateMatrixWorld ? (force?: boolean) => updateMatrixWorld(force) : undefined,
+    ...(updateMatrixWorld ? { updateMatrixWorld: (force?: boolean) => updateMatrixWorld(force) } : {}),
   };
 }
 
@@ -194,9 +196,10 @@ export function readWardrobeGroup(value: unknown): WardrobeGroupWithTraverse | n
   const rec = readRecord(value);
   const traverse = readMethod<[(obj: unknown) => void]>(value, 'traverse');
   if (!rec || !traverse) return null;
+  const uuid = typeof rec.uuid === 'string' ? rec.uuid : undefined;
   return {
     traverse: (cb: (obj: unknown) => void) => traverse(cb),
-    uuid: typeof rec.uuid === 'string' ? rec.uuid : undefined,
+    ...(uuid ? { uuid } : {}),
   };
 }
 
@@ -205,11 +208,13 @@ export function readCameraWithMotion(value: unknown): CameraWithMotion | null {
   if (!rec) return null;
   const getWorldPosition = readMethod<[unknown]>(value, 'getWorldPosition') ?? undefined;
   const updateMatrixWorld = readMethod<[boolean?]>(value, 'updateMatrixWorld') ?? undefined;
+  const position = readFiniteMotionComponent(rec.position);
+  const quaternion = readFiniteMotionComponent(rec.quaternion);
   return {
-    position: readFiniteMotionComponent(rec.position),
-    quaternion: readFiniteMotionComponent(rec.quaternion),
-    getWorldPosition: getWorldPosition ? (v: unknown) => getWorldPosition(v) : undefined,
-    updateMatrixWorld: updateMatrixWorld ? (force?: boolean) => updateMatrixWorld(force) : undefined,
+    ...(position ? { position } : {}),
+    ...(quaternion ? { quaternion } : {}),
+    ...(getWorldPosition ? { getWorldPosition: (v: unknown) => getWorldPosition(v) } : {}),
+    ...(updateMatrixWorld ? { updateMatrixWorld: (force?: boolean) => updateMatrixWorld(force) } : {}),
   };
 }
 
@@ -217,9 +222,10 @@ export function readControlsWithTarget(value: unknown): ControlsWithTarget | nul
   const rec = readRecord(value);
   if (!rec) return null;
   const handleResize = readMethod<[]>(value, 'handleResize') ?? undefined;
+  const target = readFiniteMotionComponent(rec.target);
   return {
-    target: readFiniteMotionComponent(rec.target),
-    handleResize: handleResize ? () => handleResize() : undefined,
+    ...(target ? { target } : {}),
+    ...(handleResize ? { handleResize: () => handleResize() } : {}),
   };
 }
 

@@ -112,7 +112,7 @@ export function requestBuilderStructuralRefresh(
 ): BuilderStructuralRefreshResult {
   const meta = resolveBuilderBuildProfileMeta(opts, {
     source: opts?.source || 'builder:structuralRefresh',
-    reason: opts?.reason,
+    ...(opts?.reason !== undefined ? { reason: opts.reason } : {}),
     immediate: opts?.immediate !== false,
     force: opts?.force !== false,
   });

@@ -47,7 +47,7 @@ export function readMirrorLayoutListForPart(args: {
     const key = formatIdentityValue(readIdentityValue(value));
     if (!key) return;
     const keys = buildDoorVisualLookupKeys(key);
-    for (let i = 0; i < keys.length; i += 1) pushCandidate(out, seen, keys[i]);
+    for (const candidateKey of keys) pushCandidate(out, seen, candidateKey);
   };
 
   const candidates: string[] = [];
@@ -55,8 +55,8 @@ export function readMirrorLayoutListForPart(args: {
   pushVariants(candidates, seen, args.scopedPartId);
   if (!args.preferScopedOnly) pushVariants(candidates, seen, args.partId);
 
-  for (let i = 0; i < candidates.length; i += 1) {
-    const layouts = readMirrorLayoutList(map[candidates[i]]);
+  for (const candidateKey of candidates) {
+    const layouts = readMirrorLayoutList(map[candidateKey]);
     if (layouts.length) return layouts;
   }
   return [];
@@ -77,8 +77,7 @@ export function findMirrorLayoutMatchInRect(args: {
   let best: MirrorLayoutHitMatch | null = null;
   const requestedFaceSign =
     args.faceSign == null ? null : normalizeMirrorFaceSign(args.faceSign, DEFAULT_FACE_SIGN);
-  for (let i = 0; i < layouts.length; i += 1) {
-    const layout = layouts[i];
+  for (const [i, layout] of layouts.entries()) {
     if (
       requestedFaceSign !== null &&
       readMirrorLayoutFaceSign(layout, DEFAULT_FACE_SIGN) !== requestedFaceSign

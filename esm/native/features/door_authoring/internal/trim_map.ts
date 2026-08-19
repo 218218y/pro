@@ -30,8 +30,8 @@ export function readDoorTrimEntry(value: unknown): DoorTrimEntry | null {
 export function readDoorTrimList(value: unknown): DoorTrimEntry[] {
   if (Array.isArray(value)) {
     const out: DoorTrimEntry[] = [];
-    for (let i = 0; i < value.length; i += 1) {
-      const entry = readDoorTrimEntry(value[i]);
+    for (const valueEntry of value) {
+      const entry = readDoorTrimEntry(valueEntry);
       if (entry) out.push(entry);
     }
     return out;
@@ -43,7 +43,7 @@ export function readDoorTrimList(value: unknown): DoorTrimEntry[] {
 export function cloneDoorTrimList(value: unknown): DoorTrimEntry[] {
   const list = readDoorTrimList(value);
   const out: DoorTrimEntry[] = [];
-  for (let i = 0; i < list.length; i += 1) out.push(cloneDoorTrimEntry(list[i]));
+  for (const entry of list) out.push(cloneDoorTrimEntry(entry));
   return out;
 }
 
@@ -76,8 +76,7 @@ function pushDoorTrimKeyVariants(
 ): void {
   const allowBaseKeyLookup = options?.allowBaseKeyLookup !== false;
   const keys = listDoorTrimTargetLookupKeys(value);
-  for (let index = 0; index < keys.length; index += 1) {
-    const key = keys[index];
+  for (const key of keys) {
     pushDoorTrimCandidate(out, seen, key);
     if (key.startsWith('lower_') && allowBaseKeyLookup)
       pushDoorTrimCandidate(out, seen, key.slice('lower_'.length));
@@ -99,8 +98,8 @@ export function readDoorTrimListForPart(args: {
   });
   if (!args.preferScopedOnly) pushDoorTrimKeyVariants(candidates, seen, args.partId);
 
-  for (let i = 0; i < candidates.length; i += 1) {
-    const trims = readDoorTrimList(map[candidates[i]]);
+  for (const candidate of candidates) {
+    const trims = readDoorTrimList(map[candidate]);
     if (trims.length) return trims;
   }
   return [];

@@ -163,10 +163,10 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
       selector,
       listener: fn,
       equalityFn,
-      slice: opts3.slice,
-      slices: opts3.slices,
-      domain: opts3.domain,
-      domains: opts3.domains,
+      ...(opts3.slice !== undefined ? { slice: opts3.slice } : {}),
+      ...(opts3.slices !== undefined ? { slices: opts3.slices } : {}),
+      ...(opts3.domain !== undefined ? { domain: opts3.domain } : {}),
+      ...(opts3.domains !== undefined ? { domains: opts3.domains } : {}),
       onEvaluate() {
         debugState.selectorEvaluationCount += 1;
       },

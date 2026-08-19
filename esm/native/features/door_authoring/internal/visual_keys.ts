@@ -32,9 +32,8 @@ export function readDoorVisualMapEntry(
   partId: string
 ): DoorVisualMapEntry | null {
   const keys = buildDoorVisualLookupKeys(partId);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (hasOwn(map, key)) return { key, value: map![key] };
+  for (const key of keys) {
+    if (hasOwn(map, key)) return { key, value: map?.[key] };
   }
   return null;
 }
@@ -98,11 +97,11 @@ export function readDoorVisualPrefixedMapEntry(args: {
   const key = stripDoorVisualSurfaceSuffix(String(args.partId || ''));
   if (!args.map || !key) return null;
   const keys = buildDoorVisualLookupKeys(key);
-  for (let i = 0; i < keys.length; i += 1) {
+  for (const partId of keys) {
     const entry = readDoorVisualPrefixedOwnMapEntry({
       map: args.map,
-      partId: keys[i],
-      prefix: args.prefix,
+      partId,
+      ...(args.prefix !== undefined ? { prefix: args.prefix } : {}),
     });
     if (entry) return entry;
   }
@@ -121,8 +120,7 @@ export function hasAnyDoorVisualSegmentMapEntry(args: {
   const prefixed = `${prefix}${basePartId}_`;
   const raw = `${basePartId}_`;
   const keys = Object.keys(map);
-  for (let index = 0; index < keys.length; index += 1) {
-    const key = keys[index];
+  for (const key of keys) {
     if (!key || map[key] == null) continue;
     const segmentPartId =
       prefix && key.startsWith(prefixed) ? key.slice(prefix.length) : key.startsWith(raw) ? key : '';

@@ -166,6 +166,7 @@ export function preserveUiOnlySnapshotFields(
 
 export function createKernelHistorySystemShell(existing: unknown): KernelHistorySystem {
   const seed = readKernelHistorySystemSeed(existing);
+  const onStatusChange = readHistoryStatusListener(seed.onStatusChange);
   return {
     undoStack: Array.isArray(seed.undoStack)
       ? seed.undoStack.filter((item): item is string => typeof item === 'string')
@@ -208,7 +209,7 @@ export function createKernelHistorySystemShell(existing: unknown): KernelHistory
     restoreSnapshot: () => {},
     ensureBaseline: () => {},
     init: () => {},
-    onStatusChange: readHistoryStatusListener(seed.onStatusChange),
+    ...(onStatusChange ? { onStatusChange } : {}),
     subscribeStatus: () => () => {},
     _statusListeners: readHistoryListenerSet(seed._statusListeners),
   };

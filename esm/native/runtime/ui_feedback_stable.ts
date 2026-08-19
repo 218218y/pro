@@ -77,7 +77,7 @@ function readFnMeta(value: unknown): StubFnMeta | null {
   const stubKind = Reflect.get(value, '__wp_stubKind');
   return {
     __wp_isStub: isStub === true,
-    __wp_stubKind: typeof stubKind === 'string' ? stubKind : undefined,
+    ...(typeof stubKind === 'string' ? { __wp_stubKind: stubKind } : {}),
   };
 }
 

@@ -106,8 +106,8 @@ export function createModulesRecomputeBuildRequestPolicy(
 ): ModulesRecomputeBuildRequestPolicy {
   const resolved = resolveModulesRecomputePolicyArgs({
     hasSeparateMeta: arguments.length > 1,
-    primary: options,
-    secondary: maybeOptions,
+    ...(options !== undefined ? { primary: options } : {}),
+    ...(maybeOptions !== undefined ? { secondary: maybeOptions } : {}),
   });
   const next: ModulesRecomputeBuildRequestPolicy = {};
   if (hasExplicitSkipBuild(resolved.options)) next.skipBuild = true;

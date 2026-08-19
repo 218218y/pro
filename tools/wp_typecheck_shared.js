@@ -7,6 +7,7 @@ export function createTypecheckHelpText() {
     'Usage:',
     '  node tools/wp_typecheck.js --all',
     '  node tools/wp_typecheck.js --mode project',
+    '  node tools/wp_typecheck.js --mode core-hardening',
     '  node tools/wp_typecheck.js --mode ui-lean',
   ].join('\n');
 }

@@ -2,14 +2,17 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 // The whole-project strict config is the canonical correctness gate.
+// core-hardening incrementally enables stricter indexed/optional semantics on
+// state/runtime/platform owners and their transitive dependencies.
 // ui-lean is intentionally separate because it compiles UI .ts files against
 // the dependency-light lean_types ambient surface rather than normal package types.
 export const MODE_TO_CONFIG = Object.freeze({
   project: 'tsconfig.json',
+  'core-hardening': 'tsconfig.hardening-core.json',
   'ui-lean': 'tsconfig.ui-lean.json',
 });
 
-export const DEFAULT_ALL_MODES = Object.freeze(['project', 'ui-lean']);
+export const DEFAULT_ALL_MODES = Object.freeze(['project', 'core-hardening', 'ui-lean']);
 
 export function parseTypecheckArgs(argv) {
   const flags = new Set(argv.filter(arg => arg.startsWith('--')));

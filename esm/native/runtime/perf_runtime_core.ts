@@ -286,6 +286,7 @@ export function markPerfPoint(
   options: PerfEntryOptions = {}
 ): WardrobeProPerfEntry {
   const stamp = roundDuration(nowMs());
+  const error = normalizeErrorMessage(options.error);
   return pushPerfEntry(App, {
     id: `mark-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: normalizeName(name),
@@ -297,7 +298,7 @@ export function markPerfPoint(
     interactionWaitMs: 0,
     status: 'mark',
     ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
-    ...(normalizeErrorMessage(options.error) ? { error: normalizeErrorMessage(options.error) } : {}),
+    ...(error ? { error } : {}),
   });
 }
 
@@ -309,6 +310,7 @@ export function recordPerfMetric(
   options: PerfEntryOptions = {}
 ): WardrobeProPerfEntry {
   const stamp = roundDuration(nowMs());
+  const error = normalizeErrorMessage(options.error);
   return pushPerfEntry(App, {
     id: `metric-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: normalizeName(name),
@@ -323,7 +325,7 @@ export function recordPerfMetric(
       metricUnit === 'score' ? Number(Math.max(0, metricValue).toFixed(4)) : roundDuration(metricValue),
     metricUnit,
     ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
-    ...(normalizeErrorMessage(options.error) ? { error: normalizeErrorMessage(options.error) } : {}),
+    ...(error ? { error } : {}),
   });
 }
 
@@ -333,13 +335,14 @@ export function startPerfSpan(App: AppContainer, name: string, options: PerfSpan
   const normalizedName = normalizeName(name);
   const kind = normalizeMeasuredKind(options.kind);
   const parent = kind === 'action' ? null : findParentActionSpan(store, normalizedName, options.parentId);
+  const phase = normalizePhase(options.phase);
   store.inflight.set(id, {
     id,
     name: normalizedName,
     kind,
     startTime: nowMs(),
     interactionWaitIntervals: [],
-    ...(normalizePhase(options.phase) ? { phase: normalizePhase(options.phase) } : {}),
+    ...(phase ? { phase } : {}),
     ...(parent ? { parentId: parent.id } : {}),
     ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
   });
@@ -380,6 +383,8 @@ export function endPerfSpan(
         : 0;
 
   const parentId = parent?.id || span.parentId;
+  const detail = mergePerfDetail(options.detail, span.detail);
+  const error = normalizeErrorMessage(options.error);
 
   const entry: WardrobeProPerfEntry = {
     id: span.id,
@@ -393,10 +398,8 @@ export function endPerfSpan(
     codeExecutionMs,
     interactionWaitMs,
     status: normalizeStatus(options.status),
-    ...(typeof mergePerfDetail(options.detail, span.detail) !== 'undefined'
-      ? { detail: mergePerfDetail(options.detail, span.detail) }
-      : {}),
-    ...(normalizeErrorMessage(options.error) ? { error: normalizeErrorMessage(options.error) } : {}),
+    ...(typeof detail !== 'undefined' ? { detail } : {}),
+    ...(error ? { error } : {}),
   };
   return pushPerfEntry(App, entry);
 }
@@ -565,11 +568,13 @@ function summarizeValues(values: number[]) {
   const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
   const count = sorted.length;
   const total = roundDuration(sorted.reduce((sum, value) => sum + value, 0));
+  const first = sorted[0];
+  const last = count > 0 ? sorted[count - 1] : undefined;
   return {
     total,
     average: count > 0 ? roundDuration(total / count) : 0,
-    min: count > 0 ? roundDuration(sorted[0]) : 0,
-    max: count > 0 ? roundDuration(sorted[count - 1]) : 0,
+    min: typeof first === 'number' ? roundDuration(first) : 0,
+    max: typeof last === 'number' ? roundDuration(last) : 0,
     p50: count > 0 ? roundDuration(percentile(sorted, 0.5)) : 0,
     p95: count > 0 ? roundDuration(percentile(sorted, 0.95)) : 0,
   };

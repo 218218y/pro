@@ -1,5 +1,6 @@
 import type {
   ModelsCommandReason,
+  ModelsCommandResult,
   ModelsDeleteTemporaryResult,
   ModelsLockResult,
   ModelsMergeResult,
@@ -125,14 +126,18 @@ export function readDeleteTemporaryResult(
   return { ...base, removed };
 }
 
-export function readCommandResult(value: unknown, defaultReason: ModelsCommandReason = 'not-installed') {
+export function readCommandResult(
+  value: unknown,
+  defaultReason: ModelsCommandReason = 'not-installed'
+): ModelsCommandResult {
   if (!isRecord(value)) return { ok: false, reason: defaultReason };
   const ok = value.ok === true;
   const message =
     typeof value.message === 'string' && value.message.trim() ? value.message.trim() : undefined;
+  const reason = ok ? undefined : normalizeModelsCommandReason(value.reason, defaultReason);
   return {
     ok,
-    reason: ok ? undefined : normalizeModelsCommandReason(value.reason, defaultReason),
+    ...(reason ? { reason } : {}),
     ...(message ? { message } : {}),
   };
 }

@@ -301,8 +301,8 @@ export function readGrooveLinesCountForPart(
     'grooveLinesCountMap',
     readConfigMapFromSnapshot(readConfigStateFromApp(App), 'grooveLinesCountMap', {})
   );
-  for (let index = 0; index < keys.length; index += 1) {
-    const normalized = normalizeGrooveLinesCountMapEntry(map[keys[index]]);
+  for (const key of keys) {
+    const normalized = normalizeGrooveLinesCountMapEntry(map[key]);
     if (normalized !== null) return normalized;
   }
   return null;

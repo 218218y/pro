@@ -77,23 +77,16 @@ export function buildLibraryModuleCfgs(
   topCfgList: ModulesConfigurationLike;
   bottomCfgList: ModulesConfigurationLike;
 } {
-  const mcTop = Math.max(0, topDoorsSig.length || 0);
-  const mcBottom = Math.max(0, bottomDoorsSig.length || 0);
-
   const topCfgList: ModulesConfigurationLike = [];
   const bottomCfgList: ModulesConfigurationLike = [];
 
-  for (let i = 0; i < mcTop; i++) {
-    const doors =
-      topDoorsSig[i] != null ? topDoorsSig[i] : LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
+  for (const rawDoors of topDoorsSig) {
+    const doors = rawDoors ?? LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
     topCfgList.push(createLibraryTopModuleConfig(doors));
   }
 
-  for (let i = 0; i < mcBottom; i++) {
-    const doors =
-      bottomDoorsSig[i] != null
-        ? bottomDoorsSig[i]
-        : LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
+  for (const rawDoors of bottomDoorsSig) {
+    const doors = rawDoors ?? LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
     bottomCfgList.push(createLibraryLowerModuleConfig(doors));
   }
 

@@ -181,8 +181,7 @@ export function readGrooveLayoutListForPart(args: {
     const key = formatIdentityValue(readIdentityValue(value));
     if (!key) return;
     const variants = buildDoorVisualLookupKeys(key);
-    for (let index = 0; index < variants.length; index += 1) {
-      const variant = variants[index];
+    for (const variant of variants) {
       if (variant && !seen.has(variant)) {
         seen.add(variant);
         candidates.push(variant);
@@ -191,8 +190,7 @@ export function readGrooveLayoutListForPart(args: {
   };
   pushVariants(args.scopedPartId);
   if (!args.preferScopedOnly) pushVariants(args.partId);
-  for (let index = 0; index < candidates.length; index += 1) {
-    const key = candidates[index];
+  for (const key of candidates) {
     const layouts = readGrooveLayoutList(args.map[key]);
     if (layouts.length) return { key, layouts };
   }
@@ -313,8 +311,7 @@ export function findGrooveLayoutMatchInRect(args: {
 }): GrooveLayoutHitMatch | null {
   const layouts = readGrooveLayoutList(args.layouts);
   let best: GrooveLayoutHitMatch | null = null;
-  for (let index = 0; index < layouts.length; index += 1) {
-    const layout = layouts[index];
+  for (const [index, layout] of layouts.entries()) {
     const placement = resolveGroovePlacementInRect({ rect: args.rect, layout });
     const distanceM = distanceFromPointToPlacement(args.hitX, args.hitY, placement);
     const toleranceM = clamp(

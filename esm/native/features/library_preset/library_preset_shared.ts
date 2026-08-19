@@ -188,15 +188,16 @@ function hasUsableInteriorState(cfg: ModuleConfigLike): boolean {
 }
 
 export function cloneExpectedLibraryModuleCfg(cfg: ModuleConfigLike): ModuleConfigLike {
+  const customData = isRec(cfg.customData)
+    ? {
+        ...cfg.customData,
+        shelves: Array.isArray(cfg.customData.shelves) ? cfg.customData.shelves.slice() : [],
+        rods: Array.isArray(cfg.customData.rods) ? cfg.customData.rods.slice() : [],
+      }
+    : cfg.customData;
   return {
     ...cfg,
-    customData: isRec(cfg.customData)
-      ? {
-          ...cfg.customData,
-          shelves: Array.isArray(cfg.customData.shelves) ? cfg.customData.shelves.slice() : [],
-          rods: Array.isArray(cfg.customData.rods) ? cfg.customData.rods.slice() : [],
-        }
-      : cfg.customData,
+    ...(typeof customData !== 'undefined' ? { customData } : {}),
   };
 }
 
@@ -269,8 +270,7 @@ function areLibraryModuleValuesEqual(prev: unknown, next: unknown): boolean {
   const nextKeys = Object.keys(next);
   if (prevKeys.length !== nextKeys.length) return false;
 
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
     if (!areLibraryModuleValuesEqual(prev[key], next[key])) return false;
   }
@@ -380,8 +380,7 @@ export function buildNextLibraryModuleCfgList(
   let changed = curList.length !== expectedList.length;
   const nextList: ModulesConfigurationLike = Array.from<ModuleConfigLike>({ length: expectedList.length });
 
-  for (let i = 0; i < expectedList.length; i++) {
-    const expected = expectedList[i];
+  for (const [i, expected] of expectedList.entries()) {
     const current = curList[i];
     if (canPreserveLibraryModuleCfg(current, expected)) {
       const normalized = normalizePreservedLibraryModuleCfg(current, expected);

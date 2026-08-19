@@ -23,8 +23,8 @@ function rectsOverlap(a: DoorTrimRect, b: DoorTrimRect, clearance: number): bool
 }
 
 function overlapsAnyMirror(rect: DoorTrimRect, mirrors: readonly DoorTrimRect[], clearance: number): boolean {
-  for (let i = 0; i < mirrors.length; i += 1) {
-    if (rectsOverlap(rect, mirrors[i], clearance)) return true;
+  for (const mirror of mirrors) {
+    if (rectsOverlap(rect, mirror, clearance)) return true;
   }
   return false;
 }
@@ -34,8 +34,7 @@ function buildMirrorPlacementRects(rect: DoorTrimRect, mirrorLayouts: unknown): 
   if (!layouts.length) return [];
   const placements = resolveMirrorPlacementListInRect({ rect, layouts });
   const out: DoorTrimRect[] = [];
-  for (let i = 0; i < placements.length; i += 1) {
-    const placement = placements[i];
+  for (const placement of placements) {
     const halfWidth = placement.mirrorWidthM / 2;
     const halfHeight = placement.mirrorHeightM / 2;
     out.push({
@@ -104,8 +103,7 @@ export function resolveDoorTrimPlacementAvoidingMirror(
   pushCandidate(centerXMin, base.centerY, 4);
   pushCandidate(centerXMax, base.centerY, 4);
 
-  for (let i = 0; i < mirrorRects.length; i += 1) {
-    const mirror = mirrorRects[i];
+  for (const mirror of mirrorRects) {
     if (base.axis === 'horizontal') {
       const overlapsX = !(baseRect.maxX <= mirror.minX - snapZone || baseRect.minX >= mirror.maxX + snapZone);
       if (overlapsX) {
@@ -128,6 +126,7 @@ export function resolveDoorTrimPlacementAvoidingMirror(
   if (!candidates.length) return base;
   candidates.sort((a, b) => a.rank - b.rank || a.delta - b.delta);
   const best = candidates[0];
+  if (!best) return base;
   const width = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, args.rect.maxX - args.rect.minX);
   const height = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, args.rect.maxY - args.rect.minY);
   return {

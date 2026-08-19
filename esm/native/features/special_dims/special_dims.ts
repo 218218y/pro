@@ -47,7 +47,7 @@ function readOverrideValue(sd: unknown, key: string): number {
 }
 
 function deleteKeys(rec: Record<string, unknown>, keys: string[]): void {
-  for (let i = 0; i < keys.length; i++) delete rec[keys[i]];
+  for (const key of keys) delete rec[key];
 }
 
 export function getSpecialDims(cfgMod: unknown): SpecialDimsRecord | null {

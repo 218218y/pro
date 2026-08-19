@@ -142,11 +142,11 @@ export function getDottedValue(root: UnknownRecord, dotted: string): unknown {
   try {
     const parts = String(dotted || '').split('.');
     let cur: unknown = root;
-    for (let i = 0; i < parts.length; i++) {
+    for (const part of parts) {
       if (!cur) return undefined;
       const curRec = asObjectRecord(cur);
       if (!curRec) return undefined;
-      const next = curRec[parts[i]];
+      const next = curRec[part];
       cur = asObjectRecord(next) || next;
     }
     return cur;

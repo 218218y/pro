@@ -110,8 +110,7 @@ function areModuleConfigValuesEqual(prev: unknown, next: unknown): boolean {
   const nextKeys = Object.keys(next);
   if (prevKeys.length !== nextKeys.length) return false;
 
-  for (let i = 0; i < prevKeys.length; i += 1) {
-    const key = prevKeys[i];
+  for (const key of prevKeys) {
     if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
     if (!areModuleConfigValuesEqual(prev[key], next[key])) return false;
   }
@@ -256,7 +255,11 @@ export function patchModulesConfigurationListAtForPatch(
     );
   }
 
-  const prevItem = out[i];
+  const prevItem =
+    out[i] ??
+    (bucket === 'stackSplitLowerModulesConfiguration'
+      ? createDefaultLowerModuleConfig(i)
+      : createDefaultTopModuleConfig(i, resolveTopModuleDoorsForIndex(undefined, i, options)));
   const rawNextItem = applyModuleRecordPatch(prevItem, patch);
   if (Object.is(rawNextItem, prevItem) && Object.is(cur, prevVal) && out.length === cur.length) return cur;
   const normalizedNextItem = normalizePatchedModuleItem(bucket, rawNextItem, i, options);

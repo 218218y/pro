@@ -77,9 +77,10 @@ export function installStateApiProjectLoadTransaction(ctx: ProjectLoadTransactio
       cornerMode: 'auto',
       topMode: 'materialize',
     });
+    const configPatch = buildSnapshotConfigPatch(config, PROJECT_CONFIG_REPLACE_KEYS);
     const payload: PatchPayload = {
       ui,
-      config: buildSnapshotConfigPatch(config, PROJECT_CONFIG_REPLACE_KEYS),
+      ...(configPatch !== undefined ? { config: configPatch } : {}),
       runtime: { ...snapshot.runtime },
       mode: { ...snapshot.mode },
       meta: { ...snapshot.meta },

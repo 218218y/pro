@@ -104,6 +104,7 @@ function stampLastActionAndMeta(args: {
   m.version = (Number(m.version) | 0) + 1;
   m.updatedAt = Date.now();
 
+  const coalesceMs = readRecordNumber(actionMeta, 'coalesceMs');
   const stamped: StoreLastActionLike = {
     type: type || '',
     source: readRecordString(actionMeta, 'source'),
@@ -117,7 +118,7 @@ function stampLastActionAndMeta(args: {
     uiOnly: readRecordBoolean(actionMeta, 'uiOnly'),
     noCapture: readRecordBoolean(actionMeta, 'noCapture'),
     coalesceKey: readRecordString(actionMeta, 'coalesceKey'),
-    coalesceMs: readRecordNumber(actionMeta, 'coalesceMs'),
+    ...(coalesceMs !== undefined ? { coalesceMs } : {}),
     affectsConfig: changeSet.config,
     affectsUi: changeSet.ui,
     affectsRuntime: changeSet.runtime,
@@ -163,7 +164,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     setLastActionEnvelope({
       type,
       payload,
-      meta: actionMeta,
+      ...(actionMeta !== undefined ? { meta: actionMeta } : {}),
     });
     const notificationMeta: ActionMetaLike = { ...stampedMeta };
     notifySelectorSubscribers(notificationMeta, createCommitNotificationChangeSet(changeSet));

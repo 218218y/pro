@@ -57,7 +57,7 @@ export function readModuleStructureSelectSignature(value: unknown): number[] | n
 
 function sumDoorSignature(signature: number[]): number {
   let sum = 0;
-  for (let i = 0; i < signature.length; i += 1) sum += signature[i];
+  for (const doors of signature) sum += doors;
   return sum;
 }
 

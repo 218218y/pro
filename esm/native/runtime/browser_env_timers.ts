@@ -186,7 +186,7 @@ export function getBrowserTimers(app: unknown): BrowserTimersLike {
     clearInterval: ci,
     requestAnimationFrame: raf,
     cancelAnimationFrame: caf,
-    queueMicrotask: qm || undefined,
+    ...(qm ? { queueMicrotask: qm } : {}),
     now: nowFn,
   };
 }

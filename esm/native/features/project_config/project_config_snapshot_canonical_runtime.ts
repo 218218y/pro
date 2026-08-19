@@ -38,13 +38,16 @@ function pickPresentStructuralProjectConfigPatch(
 ): Partial<CanonicalProjectConfigStructuralSnapshot<UnknownRecord>> {
   const out: Partial<CanonicalProjectConfigStructuralSnapshot<UnknownRecord>> = {};
   if (Object.prototype.hasOwnProperty.call(source, 'modulesConfiguration')) {
-    out.modulesConfiguration = source.modulesConfiguration;
+    const value = source.modulesConfiguration;
+    if (typeof value !== 'undefined') out.modulesConfiguration = value;
   }
   if (Object.prototype.hasOwnProperty.call(source, 'stackSplitLowerModulesConfiguration')) {
-    out.stackSplitLowerModulesConfiguration = source.stackSplitLowerModulesConfiguration;
+    const value = source.stackSplitLowerModulesConfiguration;
+    if (typeof value !== 'undefined') out.stackSplitLowerModulesConfiguration = value;
   }
   if (Object.prototype.hasOwnProperty.call(source, 'cornerConfiguration')) {
-    out.cornerConfiguration = source.cornerConfiguration;
+    const value = source.cornerConfiguration;
+    if (typeof value !== 'undefined') out.cornerConfiguration = value;
   }
   return out;
 }

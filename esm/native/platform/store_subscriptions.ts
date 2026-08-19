@@ -132,8 +132,14 @@ export function createSelectorRegistryEntry<T>(args: {
   domains?: readonly StoreSelectorDomainKey[];
 }): SelectorRegistryEntry {
   let cached: { value: T } | null = null;
-  const slices = normalizeSelectorSlices({ slice: args.slice, slices: args.slices });
-  const domains = normalizeSelectorDomains({ domain: args.domain, domains: args.domains });
+  const slices = normalizeSelectorSlices({
+    ...(args.slice ? { slice: args.slice } : {}),
+    ...(args.slices ? { slices: args.slices } : {}),
+  });
+  const domains = normalizeSelectorDomains({
+    ...(args.domain ? { domain: args.domain } : {}),
+    ...(args.domains ? { domains: args.domains } : {}),
+  });
 
   return {
     slices,
@@ -222,7 +228,7 @@ export function createListenerRegistry<T>() {
       });
       return;
     }
-    for (let i = 0; i < list.length; i += 1) fn(list[i]);
+    for (const listener of list) fn(listener);
   }
 
   return { add, forEach };
