@@ -9,6 +9,7 @@ import {
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 import { resolveInternalDrawerBottomLiftM } from '../esm/native/builder/drawer_runner_policy.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 class FakeVector3 {
   x = 0;
@@ -102,6 +103,7 @@ function createBaseArgs() {
     args: {
       App: {},
       input: {
+        roomArchitecturePlan: createTestRoomArchitecturePlan({ widthM: 0.8, heightM: 1.2, depthM: 0.5 }),
         cfgSnapshot: {},
         isInternalDrawersEnabled: true,
         sketchMode: true,

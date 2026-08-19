@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runPreparedBuildWardrobePlan } from '../esm/native/builder/build_wardrobe_flow_execute_runtime.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 test('prepared no-main execution delegates rendering through the orchestration port', () => {
   const calls: unknown[] = [];
@@ -47,12 +48,17 @@ test('prepared no-main execution delegates rendering through the orchestration p
     showContentsEnabled: true,
   };
 
-  runPreparedBuildWardrobePlan(prepared, { buildCtx: {}, plan } as any);
+  const roomArchitecturePlan = createTestRoomArchitecturePlan({ widthM: 1.8, heightM: 2.4, depthM: 0.6 });
+  runPreparedBuildWardrobePlan(prepared, {
+    buildCtx: { room: { architecturePlan: roomArchitecturePlan } },
+    plan,
+  } as any);
 
   assert.equal(calls.length, 1);
   const input = calls[0] as Record<string, unknown>;
   assert.equal(input.cfg, cfg);
   assert.equal(input.ui, ui);
+  assert.equal(input.roomArchitecturePlan, roomArchitecturePlan);
   assert.equal(input.createDoorVisual, createDoorVisual);
   assert.equal(input.addOutlines, addOutlines);
   assert.equal(Object.prototype.hasOwnProperty.call(input, 'App'), false);

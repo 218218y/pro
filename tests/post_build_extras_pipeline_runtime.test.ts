@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 
 import { createBuildContext } from '../esm/native/builder/build_context.ts';
 import { applyPostBuildExtras } from '../esm/native/builder/post_build_extras_pipeline.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 function createPostBuildContext(App: any, overrides: Record<string, unknown> = {}) {
   return createBuildContext({
     App,
     cfg: {},
     runtime: { doorsOpen: true },
+    room: { architecturePlan: createTestRoomArchitecturePlan() },
     flags: { globalClickMode: true },
     dims: { doorsCount: 2 },
     materials: {},

@@ -1,4 +1,5 @@
 import { isCarcassCornicePlan, isCarcassCorniceSegment } from './carcass_cornice_ir.js';
+import type { RoomArchitecturePlan } from '../../../types';
 import { isCarcassBackPanelOp, isCarcassBoardOp } from './carcass_shell_ir.js';
 
 import type {
@@ -35,6 +36,30 @@ function __readApp(v: unknown): AppContainer | undefined {
   return __isAppContainer(v) ? v : undefined;
 }
 
+function __isRoomArchitecturePlan(value: unknown): value is RoomArchitecturePlan {
+  const rec = __asRecord(value);
+  return !!(
+    rec &&
+    __asRecord(rec.config) &&
+    typeof rec.wardrobeWidthM === 'number' &&
+    Number.isFinite(rec.wardrobeWidthM) &&
+    typeof rec.wardrobeHeightM === 'number' &&
+    Number.isFinite(rec.wardrobeHeightM) &&
+    typeof rec.wardrobeDepthM === 'number' &&
+    Number.isFinite(rec.wardrobeDepthM) &&
+    __asRecord(rec.wardrobeBox) &&
+    __asRecord(rec.wall) &&
+    __asRecord(rec.wallSurfaces) &&
+    Array.isArray(rec.resolvedOpenings) &&
+    Object.prototype.hasOwnProperty.call(rec, 'columnAdjustment') &&
+    Object.prototype.hasOwnProperty.call(rec, 'activeCutObstacle')
+  );
+}
+
+function __readRoomArchitecturePlan(value: unknown): RoomArchitecturePlan | undefined {
+  return __isRoomArchitecturePlan(value) ? value : undefined;
+}
+
 function __isBaseOp(value: unknown): value is PlinthBaseOp | LegsBaseOp | LegPlatformsBaseOp {
   const rec = __asRecord(value);
   return !!(rec && (rec.kind === 'plinth' || rec.kind === 'legs' || rec.kind === 'leg_platforms'));
@@ -59,6 +84,7 @@ export function __asContext(v: unknown): RenderCarcassContext {
   return {
     App: __readApp(rec.App),
     THREE: rec.THREE,
+    roomArchitecturePlan: __readRoomArchitecturePlan(rec.roomArchitecturePlan),
     addOutlines: __isFn(rec.addOutlines) ? __outlineFn(rec.addOutlines) : undefined,
     getPartMaterial: __isFn(rec.getPartMaterial)
       ? __partMaterialFn(rec.getPartMaterial) || undefined

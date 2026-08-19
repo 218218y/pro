@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyInteriorLayout } from '../esm/native/builder/interior_pipeline.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 test('interior pipeline routes custom layouts through the canonical custom owner and shared sketch-extra seam', () => {
   const customCalls: any[] = [];
@@ -25,6 +26,7 @@ test('interior pipeline routes custom layouts through the canonical custom owner
   assert.equal(
     applyInteriorLayout({
       App,
+      roomArchitecturePlan: createTestRoomArchitecturePlan(),
       cfg: {},
       doorStyle: 'flat',
       isGroovesEnabled: false,
@@ -91,6 +93,7 @@ test('interior pipeline routes preset layouts through the canonical preset owner
   assert.equal(
     applyInteriorLayout({
       App,
+      roomArchitecturePlan: createTestRoomArchitecturePlan(),
       config: {
         isCustom: false,
         layout: 'hanging_split',

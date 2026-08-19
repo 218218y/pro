@@ -86,7 +86,6 @@ export function createAddCustomGridShelf(args: {
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
 }) {
   const {
-    App,
     roomArchitecturePlan,
     threeSurface,
     matCache,

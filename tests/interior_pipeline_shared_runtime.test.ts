@@ -2,12 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildSketchExtrasArgs } from '../esm/native/builder/interior_pipeline_shared.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 test('sketch extras pipeline forwards folded-clothes content renderer', () => {
   const addFoldedClothes = () => null;
   const args = buildSketchExtrasArgs(
     {
       App: {} as any,
+      roomArchitecturePlan: createTestRoomArchitecturePlan(),
       cfg: {},
       doorStyle: 'flat',
       showContentsEnabled: true,
@@ -29,7 +31,11 @@ test('sketch extras pipeline forwards folded-clothes content renderer', () => {
 
 test('sketch extras pipeline rejects missing canonical build inputs', () => {
   assert.throws(
-    () => buildSketchExtrasArgs({ App: {} as any, doorStyle: 'flat' }, { sketchExtras: { shelves: [] } }),
+    () =>
+      buildSketchExtrasArgs(
+        { App: {} as any, roomArchitecturePlan: createTestRoomArchitecturePlan(), doorStyle: 'flat' },
+        { sketchExtras: { shelves: [] } }
+      ),
     /cfgSnapshot is required/
   );
 });

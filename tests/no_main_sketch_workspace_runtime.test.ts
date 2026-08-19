@@ -14,6 +14,7 @@ import {
   FakeMesh,
   THREE,
 } from './sketch_box_runtime_helpers.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -323,6 +324,7 @@ test('no-main sketch workspace runtime: free-box doors receive the same door vis
   const rendered = maybeRenderNoMainSketchHost({
     App,
     THREE,
+    roomArchitecturePlan: createTestRoomArchitecturePlan({ widthM: 1.6, heightM: 2.4, depthM: 0.6 }),
     cfg: {
       modulesConfiguration: [
         {

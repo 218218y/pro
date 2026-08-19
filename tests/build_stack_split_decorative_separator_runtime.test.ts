@@ -8,6 +8,7 @@ import { CARCASS_INTERIOR_GRID_POLICY } from '../esm/shared/dimensions/carcass_i
 import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
 import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../esm/shared/dimensions/stack_split_policy.ts';
 import { EXTERNAL_DRAWER_SIZE_POLICY } from '../esm/shared/dimensions/external_drawer_policy.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 class FakeMeshBasicMaterial {
   userData: Record<string, unknown> = {};
@@ -207,6 +208,11 @@ function makeStackSplitLowerSetupArgs(
     addHangingClothes: null,
     addFoldedClothes: null,
     addRealisticHanger: null,
+    roomArchitecturePlan: createTestRoomArchitecturePlan({
+      widthM: 1.8,
+      heightM: (options.heightCm ?? 240) / 100,
+      depthM: (options.depthCm ?? 60) / 100,
+    }),
     rebuildDrawerMeta: null,
     pruneCachesSafe: null,
     triggerRender: null,
@@ -312,6 +318,7 @@ test('decorative stack split lower carcass keeps the bottom leg stage and suppre
   const prepared = prepareStackSplitLowerSetup({
     App,
     THREE: FAKE_THREE,
+    roomArchitecturePlan: createTestRoomArchitecturePlan({ widthM: 1.8, heightM: 2.4, depthM: 0.6 }),
     state: {},
     ui: { singleDoorPos: 'center' },
     runtime: {},

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 import {
   __asContext,
@@ -19,15 +20,18 @@ class MeshBasicMaterial {
 
 test('render_carcass shared normalizes context and ops through focused readers', () => {
   const outlined: unknown[] = [];
+  const roomArchitecturePlan = createTestRoomArchitecturePlan();
   const ctx = __asContext({
     App: { ok: true },
     THREE: { any: true },
+    roomArchitecturePlan,
     addOutlines: (obj: unknown) => outlined.push(obj),
     getPartMaterial: (partId: string) => `mat:${partId}`,
     __sketchMode: true,
     bodyMat: 'body',
   });
   assert.equal(ctx.__sketchMode, true);
+  assert.equal(ctx.roomArchitecturePlan, roomArchitecturePlan);
   assert.equal(typeof ctx.addOutlines, 'function');
   assert.equal(ctx.getPartMaterial?.('door'), 'mat:door');
   ctx.addOutlines?.('mesh');

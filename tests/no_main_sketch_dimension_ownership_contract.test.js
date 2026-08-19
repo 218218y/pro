@@ -20,7 +20,7 @@ const workspacePolicySymbol = 'NO_MAIN_SKETCH_WORKSPACE_POLICY';
 const compatibilitySymbol = 'NO_MAIN_SKETCH_DIMENSIONS';
 
 const ownerInitializerSha256 = '1ac8627d6358514b4bd83cff5eb4881430402eb9145aba3417f0e0517b90f903';
-const builderSemanticSha256 = 'c044eb8052b5f5bdec3289bdcffb7e870a9fc44794aa474fbba714f51a017295';
+const builderSemanticSha256 = '52b76bcc280dbf813e4fb2a37e4fd0ffcfba2930de84a60405711624c2e668c8';
 const builderLiteralSha256 = '854e96bc723cbdd1d8e1b83660b9c94189012a8ae456714f0a38055d68a31faf';
 const serviceSemanticSha256 = '57fc2750baedda94ec347f885a6162c86352bdbd362414b94c2bacd29144c2cc';
 const serviceLiteralSha256 = '494a0d89c74ac19a7bfb4e15102b425a0445d28c512a64e5f1ef16448c9aea0a';

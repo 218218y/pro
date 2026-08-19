@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { computeInteriorCustomOps } from '../esm/native/builder/core_storage_compute.js';
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 function createRenderHarness() {
   const rodCalls: Array<{ y: number; limit: number | null }> = [];
@@ -22,6 +23,7 @@ function createRenderHarness() {
     apply(ops: unknown) {
       return renderer.applyInteriorCustomOps({
         THREE: null,
+        roomArchitecturePlan: createTestRoomArchitecturePlan(),
         customOps: ops,
         createBoard: () => null,
         createRod: (y: unknown, _hangClothes: unknown, _single: unknown, limit: unknown) => {

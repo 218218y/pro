@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 test('renderInteriorCustomOps keeps module-scoped storage barrier multi-color material selection', () => {
   const boardCalls: Array<{
@@ -27,6 +28,7 @@ test('renderInteriorCustomOps keeps module-scoped storage barrier multi-color ma
 
   const ok = renderer.applyInteriorCustomOps({
     THREE: null,
+    roomArchitecturePlan: createTestRoomArchitecturePlan(),
     customOps: {
       shelves: [],
       rods: [],

@@ -10,6 +10,7 @@ import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pip
 import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
 import { asModuleList, asNumberList } from '../esm/native/builder/module_loop_pipeline_shared.ts';
 import { runModuleLoopItem } from '../esm/native/builder/module_loop_pipeline_module.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 function closeTo(actual: number, expected: number, message: string): void {
   assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} !== ${expected}`);
@@ -42,6 +43,7 @@ function createCtx(overrides: Record<string, unknown> = {}) {
     App: createApp(),
     cfg: {},
     ui: {},
+    room: { architecturePlan: createTestRoomArchitecturePlan({ widthM: 1.8, heightM: 2.4, depthM: 0.6 }) },
     layout: {
       modules: [{ doors: 1 }, { doors: 1 }],
       moduleCfgList: [{}, {}],

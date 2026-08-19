@@ -160,7 +160,7 @@ export function createApplyCarcassBaseOps() {
   }
 
   function applyRoomColumnLiners(runtime: RenderCarcassRuntime): void {
-    const { THREE, wardrobeGroup, sketchMode, App } = runtime;
+    const { THREE, wardrobeGroup, sketchMode } = runtime;
     const adjustment = resolveRoomColumnAdjustmentGeometry(runtime.roomArchitecturePlan);
     if (!adjustment || adjustment.linerPanels.length === 0) return;
 
@@ -194,7 +194,7 @@ export function createApplyCarcassBaseOps() {
   }
 
   function applyBaseSupport(base: unknown, runtime: RenderCarcassRuntime): void {
-    const { THREE, ctx, addOutlines, wardrobeGroup, App } = runtime;
+    const { THREE, ctx, addOutlines, wardrobeGroup } = runtime;
     const baseRec = readRecord(base);
     if (!baseRec) return;
     const baseKind = baseRec.kind;

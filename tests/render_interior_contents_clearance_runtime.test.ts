@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createBuilderRenderInteriorPresetOps } from '../esm/native/builder/render_interior_preset_ops.js';
 import { INTERIOR_FITTINGS_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
+import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
+import type { RoomArchitecturePlan } from '../types/index.ts';
 
 type FoldedCall = {
   shelfY: number;
@@ -24,9 +27,20 @@ type BoardCall = {
   userData?: Record<string, unknown>;
 };
 
-function commonInput(calls: FoldedCall[], boardCalls: BoardCall[] = []) {
+const DEFAULT_ROOM_ARCHITECTURE_PLAN = createTestRoomArchitecturePlan({
+  widthM: 1,
+  heightM: 2.4,
+  depthM: 0.6,
+});
+
+function commonInput(
+  calls: FoldedCall[],
+  boardCalls: BoardCall[] = [],
+  roomArchitecturePlan: RoomArchitecturePlan = DEFAULT_ROOM_ARCHITECTURE_PLAN
+) {
   return {
     THREE: null,
+    roomArchitecturePlan,
     createBoard: (
       width: unknown,
       _height: unknown,
@@ -365,11 +379,13 @@ test('removed left frame side forces the adjacent preset module shelves to brace
 test('preset shelf pins omit only the support that collides with the room column liner cut', () => {
   const pinObjects: any[] = [];
   const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
-  const renderer = createPresetRenderer(createShelfPinColumnApp());
+  const App = createShelfPinColumnApp();
+  const renderer = createPresetRenderer(App);
+  const roomArchitecturePlan = createRoomArchitecturePlanFromApp(App as never);
 
   assert.equal(
     renderer.applyInteriorPresetOps({
-      ...commonInput([]),
+      ...commonInput([], [], roomArchitecturePlan),
       THREE: makeMinimalThreeForPins(),
       wardrobeGroup: group,
       presetOps: { shelves: [1], rods: [] },
@@ -383,11 +399,13 @@ test('preset shelf pins omit only the support that collides with the room column
 test('custom shelf pins omit only the support that collides with the room column liner cut', () => {
   const pinObjects: any[] = [];
   const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
-  const renderer = createCustomRenderer(createShelfPinColumnApp());
+  const App = createShelfPinColumnApp();
+  const renderer = createCustomRenderer(App);
+  const roomArchitecturePlan = createRoomArchitecturePlanFromApp(App as never);
 
   assert.equal(
     renderer.applyInteriorCustomOps({
-      ...commonInput([]),
+      ...commonInput([], [], roomArchitecturePlan),
       THREE: makeMinimalThreeForPins(),
       wardrobeGroup: group,
       customOps: { shelves: [1], rods: [] },

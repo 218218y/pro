@@ -5,6 +5,7 @@ import { buildSketchExtrasArgs } from '../esm/native/builder/interior_pipeline_s
 import { resolveInteriorSketchExtrasInput } from '../esm/native/builder/render_interior_sketch_ops_input.ts';
 import type { RenderInteriorSketchOpsContext } from '../esm/native/builder/render_interior_sketch_ops_types.ts';
 import type { UnknownRecord } from '../types/index.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 function createResolverOwner(group: UnknownRecord = {}): RenderInteriorSketchOpsContext {
   return {
@@ -27,6 +28,7 @@ test('interior sketch pipeline normalizes draft string geometry before builder r
   const args = buildSketchExtrasArgs(
     {
       App: {},
+      roomArchitecturePlan: createTestRoomArchitecturePlan(),
       cfg: {},
       doorStyle: 'flat',
       effectiveBottomY: '0.1',
@@ -76,6 +78,7 @@ test('direct render sketch resolver rejects string draft geometry at the runtime
   const group: UnknownRecord = {};
   const resolved = resolveInteriorSketchExtrasInput(createResolverOwner(group), {
     App: {},
+    roomArchitecturePlan: createTestRoomArchitecturePlan(),
     cfgSnapshot: {},
     sketchExtras: {
       shelves: [{ id: 's1', yNorm: '0.4' }],

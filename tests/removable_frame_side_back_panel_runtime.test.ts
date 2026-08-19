@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { computeCarcassOps } from '../esm/native/builder/core_carcass_compute.ts';
 import { applyCarcassAndGetCabinetMetrics } from '../esm/native/builder/carcass_pipeline.ts';
 import { createApplyCarcassBaseOps } from '../esm/native/builder/render_carcass_ops_base.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
 class BoxGeometry {
   width: number;
@@ -185,6 +186,7 @@ test('wood back-panel render ops register the segment as body and use its part m
         registered.push({ partId, kind });
       },
       App: {},
+      roomArchitecturePlan: createTestRoomArchitecturePlan({ widthM: 1, heightM: 2, depthM: 0.6 }),
     } as never
   );
 
