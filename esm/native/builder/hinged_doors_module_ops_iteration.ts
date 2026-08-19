@@ -8,7 +8,10 @@ import type {
 
 export function appendDrawerShadowPlane(ctx: HingedDoorModuleOpsContext): void {
   try {
-    const ro = ctx.App && typeof ctx.App === 'object' ? getBuilderRenderOps(ctx.App) : null;
+    const App = ctx.App;
+    const THREE = ctx.THREE;
+    if (!App || typeof App !== 'object') return;
+    const ro = getBuilderRenderOps(App);
     if (
       ctx.drawerHeightTotal > 0 &&
       ro &&
@@ -19,8 +22,8 @@ export function appendDrawerShadowPlane(ctx: HingedDoorModuleOpsContext): void {
       const shadowH = 0.006;
       const shadowY = ctx.drawerTopEdgeAbsolute + shadowH / 2 + 0.0005;
       ro.createDrawerShadowPlane({
-        App: ctx.App,
-        THREE: ctx.THREE,
+        App,
+        ...(THREE !== undefined ? { THREE } : {}),
         externalW: ctx.externalW,
         shadowH,
         shadowY,

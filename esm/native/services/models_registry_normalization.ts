@@ -7,13 +7,13 @@ import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
 type CloneModelsContext = {
-  App?: AppContainer | null;
-  op?: string;
+  App?: AppContainer | null | undefined;
+  op?: string | undefined;
 };
 
 type NormalizeModelsContext = CloneModelsContext & {
-  normalizer?: ModelsNormalizer | null;
-  applyAppNormalizer?: boolean;
+  normalizer?: ModelsNormalizer | null | undefined;
+  applyAppNormalizer?: boolean | undefined;
 };
 
 type CloneFailure = {
@@ -133,9 +133,9 @@ export function _normalizeList(
   list: unknown,
   options?: {
     preferLatestDuplicateIds?: boolean;
-    App?: AppContainer | null;
-    normalizer?: ModelsNormalizer | null;
-    applyAppNormalizer?: boolean;
+    App?: AppContainer | null | undefined;
+    normalizer?: ModelsNormalizer | null | undefined;
+    applyAppNormalizer?: boolean | undefined;
   }
 ): SavedModelLike[] {
   if (!Array.isArray(list)) return [];
@@ -143,9 +143,9 @@ export function _normalizeList(
   const byId = new Map<string, number>();
   const preferLatestDuplicateIds = !!options?.preferLatestDuplicateIds;
   const normalizeContext: NormalizeModelsContext = {
-    App: options?.App,
-    normalizer: options?.normalizer,
-    applyAppNormalizer: options?.applyAppNormalizer,
+    ...(options?.App !== undefined ? { App: options.App } : {}),
+    ...(options?.normalizer !== undefined ? { normalizer: options.normalizer } : {}),
+    ...(options?.applyAppNormalizer !== undefined ? { applyAppNormalizer: options.applyAppNormalizer } : {}),
     op: 'normalizeList.item',
   };
   for (let i = 0; i < list.length; i += 1) {

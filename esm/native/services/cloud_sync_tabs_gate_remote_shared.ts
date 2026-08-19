@@ -38,8 +38,8 @@ export type CreateCloudSyncTabsGateRemoteOpsDeps = {
   getSite2TabsRoom: () => string;
   writeSite2TabsGateLocal: (open: boolean, until: number) => void;
   patchSite2TabsGateUi: (open: boolean, until: number, by: string) => void;
-  runtimeStatus?: CloudSyncRuntimeStatus;
-  publishStatus?: () => void;
+  runtimeStatus?: CloudSyncRuntimeStatus | undefined;
+  publishStatus?: (() => void) | undefined;
 };
 
 export const cloudSyncTabsGateRemoteFlights = new WeakMap<

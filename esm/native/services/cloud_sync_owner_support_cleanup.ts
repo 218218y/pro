@@ -40,7 +40,8 @@ export function disposeCloudSyncOwnerCleanup(args: {
   try {
     for (let i = cleanup.length - 1; i >= 0; i--) {
       try {
-        cleanup[i]();
+        const cleanupItem = cleanup[i];
+        if (cleanupItem) cleanupItem();
       } catch (err) {
         reportCloudSyncOwnerSupportError(App, 'services/cloud_sync.cleanupItem', err);
       }

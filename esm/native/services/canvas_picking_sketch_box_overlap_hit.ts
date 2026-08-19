@@ -38,8 +38,7 @@ export function findSketchModuleBoxHit(args: {
 
   let best: (typeof resolved)[number] | null = null;
   let bestScore = Infinity;
-  for (let i = 0; i < resolved.length; i++) {
-    const candidate = resolved[i];
+  for (const candidate of resolved) {
     const dx = cursorX != null ? Math.abs(cursorX - candidate.centerX) : 0;
     const dy = Math.abs(cursorY - candidate.centerY);
     const tolX = Math.max(0.02, Math.min(0.06, candidate.boxW * 0.18));

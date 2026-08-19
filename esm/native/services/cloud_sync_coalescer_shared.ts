@@ -6,18 +6,18 @@ import { createPendingReasonState, resetPendingReasonState } from './cloud_sync_
 export type PullCoalescerDeps = {
   scope: string;
   run: () => Promise<void> | void;
-  debounceMs?: number;
-  minGapMs?: number;
-  maxDelayMs?: number;
+  debounceMs?: number | undefined;
+  minGapMs?: number | undefined;
+  maxDelayMs?: number | undefined;
   isDisposed: () => boolean;
   isSuppressed: () => boolean;
   isMainPushInFlight: () => boolean;
-  subscribeMainPushSettled?: ((listener: () => void) => (() => void) | void) | null;
+  subscribeMainPushSettled?: ((listener: () => void) => (() => void) | void) | null | undefined;
   setTimeoutFn: (handler: () => void, ms: number) => TimeoutHandleLike;
   clearTimeoutFn: (id: TimeoutHandleLike | undefined) => void;
   reportNonFatal: (op: string, err: unknown) => void;
   diag: CloudSyncDiagFn;
-  diagCooldownMs?: number;
+  diagCooldownMs?: number | undefined;
 };
 
 export type CleanupFn = (() => void) | null;

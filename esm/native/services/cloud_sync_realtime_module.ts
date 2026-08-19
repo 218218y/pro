@@ -31,8 +31,8 @@ function asRealtimeModule(v: unknown): CloudSyncRealtimeModuleLike | null {
     ? { ...defaultRec, ...(defaultCreateClient ? { createClient: defaultCreateClient } : {}) }
     : undefined;
   return {
-    createClient: createClient || undefined,
-    default: defaultModule,
+    ...(createClient ? { createClient } : {}),
+    ...(defaultModule ? { default: defaultModule } : {}),
   };
 }
 

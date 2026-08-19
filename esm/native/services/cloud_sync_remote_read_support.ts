@@ -12,8 +12,8 @@ export type CloudSyncRemoteRowReaderArgs = {
   anonKey: string;
   room: string;
   getRow: CloudSyncGetRowFn;
-  runtimeStatus?: CloudSyncRuntimeStatus | null;
-  publishStatus?: (() => void) | null;
+  runtimeStatus?: CloudSyncRuntimeStatus | null | undefined;
+  publishStatus?: (() => void) | null | undefined;
 };
 
 export async function readCloudSyncRow(args: CloudSyncRemoteRowReaderArgs): Promise<CloudSyncReadResult> {

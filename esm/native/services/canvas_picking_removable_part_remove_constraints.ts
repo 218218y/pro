@@ -138,7 +138,7 @@ function readModuleIndex(value: unknown): number | null {
 export function isRemovableFrameSideMissingForModuleContentBuild(args: {
   App: AppContainer;
   moduleKey: unknown;
-  isBottomStack?: boolean;
+  isBottomStack?: boolean | undefined;
 }): boolean {
   const moduleIndex = readModuleIndex(args.moduleKey);
   if (moduleIndex == null) return false;
@@ -216,7 +216,7 @@ export function toastRemovableSideContentBuildBlock(App: AppContainer): void {
 export function blockRemovableSideContentBuildIfModuleSideMissing(args: {
   App: AppContainer;
   moduleKey: unknown;
-  isBottomStack?: boolean;
+  isBottomStack?: boolean | undefined;
 }): boolean {
   if (!isRemovableFrameSideMissingForModuleContentBuild(args)) return false;
   toastRemovableSideContentBuildBlock(args.App);

@@ -45,8 +45,8 @@ export function triggerCloudSyncPullAllScopes(args: {
 export function createCloudSyncRealtimePullScopeHandlerMap(args: {
   markRealtimeEvent: () => boolean;
   pullTriggers: CloudSyncPullScopeMap<CloudSyncPullTriggerLike>;
-  reason?: string;
-  immediate?: boolean;
+  reason?: string | undefined;
+  immediate?: boolean | undefined;
 }): CloudSyncPullScopeMap<() => void> {
   const reason = String(args.reason || 'realtime').trim() || 'realtime';
   return createCloudSyncPullScopeMap(scope => () => {
@@ -74,7 +74,7 @@ export function createCloudSyncRealtimeScopedHandlerMapFromTriggers(args: {
   markRealtimeEvent: () => boolean;
   mainTrigger: CloudSyncMainPullTriggerLike;
   pullTriggers: CloudSyncPullScopeMap<CloudSyncPullTriggerLike>;
-  reason?: string;
+  reason?: string | undefined;
   immediatePulls?: boolean;
   immediateMain?: boolean;
 }): CloudSyncRealtimeScopedHandlerMap {

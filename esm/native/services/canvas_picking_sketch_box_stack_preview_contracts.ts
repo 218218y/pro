@@ -47,19 +47,17 @@ export type ResolveSketchBoxStackPreviewArgs = {
   pointerX: number;
   pointerY: number;
   woodThick: number;
-  selectedDrawerCount?: number | null;
-  externalDrawerType?: 'regular' | 'shoe';
-  drawerHeightM?: number | null;
+  selectedDrawerCount?: number | null | undefined;
+  externalDrawerType?: 'regular' | 'shoe' | undefined;
+  drawerHeightM?: number | null | undefined;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
-  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
+  readSketchBoxHorizontalDividers?: ((box: unknown) => SketchBoxHorizontalDividerState[]) | undefined;
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentLike[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentLike | null;
-  resolveSketchBoxVerticalSegments?: (
-    args: ResolveSketchBoxVerticalSegmentsArgs
-  ) => SketchBoxVerticalSegmentLike[];
-  pickSketchBoxVerticalSegment?: (
-    args: PickSketchBoxVerticalSegmentArgs
-  ) => SketchBoxVerticalSegmentLike | null;
+  resolveSketchBoxVerticalSegments?:
+    ((args: ResolveSketchBoxVerticalSegmentsArgs) => SketchBoxVerticalSegmentLike[]) | undefined;
+  pickSketchBoxVerticalSegment?:
+    ((args: PickSketchBoxVerticalSegmentArgs) => SketchBoxVerticalSegmentLike | null) | undefined;
 };
 
 export type ResolveSketchBoxStackPreviewResult = {

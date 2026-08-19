@@ -140,7 +140,7 @@ export function clampHandleAbsY(
 function getCellForDoor(ctx: CornerWingDoorContext, doorIdx: number) {
   const cellIndex = Math.floor(doorIdx / CORNER_WING_CELL_POLICY.doorsPerCell);
   return ctx.cornerCells && ctx.cornerCells.length > 0
-    ? ctx.cornerCells[cellIndex] || ctx.cornerCells[0]
+    ? (ctx.cornerCells[cellIndex] ?? ctx.cornerCells[0] ?? null)
     : null;
 }
 

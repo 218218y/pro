@@ -33,7 +33,7 @@ export function findSketchFreeHoverTargetBox(args: {
     localParent: unknown;
     partPrefix: string;
   }) => LocalPoint | null;
-  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
+  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null | undefined;
 }): SketchFreeBoxTarget | null {
   const { freeBoxes, planeHit } = args;
   const planeHitX = asNumberOrNull(planeHit.x);
@@ -42,8 +42,8 @@ export function findSketchFreeHoverTargetBox(args: {
   let bestDist = Infinity;
   let bestRayHitIndex = Infinity;
   let bestTarget: SketchFreeBoxTarget | null = null;
-  for (let i = 0; i < freeBoxes.length; i++) {
-    const candidate = resolveSketchFreeHoverTargetCandidate({ ...args, box: freeBoxes[i], index: i });
+  for (const [i, box] of freeBoxes.entries()) {
+    const candidate = resolveSketchFreeHoverTargetCandidate({ ...args, box, index: i });
     if (!candidate) continue;
     if (candidate.rayHitIndex != null) {
       if (candidate.rayHitIndex >= bestRayHitIndex) continue;

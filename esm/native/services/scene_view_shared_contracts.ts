@@ -61,7 +61,7 @@ export type DirectionalLightLike = AmbientLightLike & {
 export type SceneRendererLightingSurfaceLike = UnknownRecord & {
   outputColorSpace?: unknown;
   toneMapping?: unknown;
-  toneMappingExposure?: number;
+  toneMappingExposure?: number | undefined;
 };
 export type SceneThreeLightingLike = ThreeLike & {
   AmbientLight: new (color?: number, intensity?: number) => AmbientLightLike;
@@ -73,7 +73,7 @@ export type SceneThreeLightingLike = ThreeLike & {
 export type SceneViewRendererLightingDefaults = {
   outputColorSpace?: unknown;
   toneMapping?: unknown;
-  toneMappingExposure?: number;
+  toneMappingExposure?: number | undefined;
 };
 
 export type RootStateWithStoreUi = RootStateLike & { storeUi?: unknown };

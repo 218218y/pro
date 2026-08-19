@@ -367,7 +367,7 @@ export function tryCommitManualLayoutFreeBoxFromHover(
       host,
       hoverRec: verticalRemoval.hoverRec,
       freeBoxContentKind: verticalRemoval.contentKind,
-      floorY,
+      ...(floorY !== undefined ? { floorY } : {}),
     });
     if (!commit.committed) return false;
     if (commit.nextHover) __wp_writeSketchHover(App, commit.nextHover);
@@ -400,7 +400,7 @@ export function tryCommitManualLayoutFreeBoxFromHover(
     host,
     hoverRec,
     freeBoxContentKind: contentKind,
-    floorY,
+    ...(floorY !== undefined ? { floorY } : {}),
   });
   if (!commit.committed) return false;
   if (commit.nextHover) __wp_writeSketchHover(App, commit.nextHover);

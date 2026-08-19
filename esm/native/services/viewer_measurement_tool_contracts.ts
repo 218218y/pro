@@ -56,10 +56,10 @@ export type PointMeasurementDraft = {
 };
 
 export type PointMeasurementPointerContext = {
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 };
 
 export type LocalPlanePoint = { x: number; y: number; z: number };

@@ -33,7 +33,7 @@ export function createCloudSyncTabsGateLocalBindings(args: {
   App: AppContainer;
   cfg: CloudSyncTabsGateConfig;
   storage: CloudSyncTabsGateStorageLike;
-  getGateBaseRoom?: () => string;
+  getGateBaseRoom?: (() => string) | undefined;
   state: CloudSyncTabsGateLocalMutableState;
   snapshotController: CloudSyncTabsGateSnapshotControllerLike;
 }): CloudSyncTabsGateLocalBindings {

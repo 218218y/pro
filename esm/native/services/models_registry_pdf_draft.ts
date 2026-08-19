@@ -23,14 +23,17 @@ function isProjectJsonLikeValue(value: unknown): value is ProjectJsonLike {
   if (kind === 'string' || kind === 'number' || kind === 'boolean') return true;
   if (Array.isArray(value)) return value.every(isProjectJsonLikeValue);
   if (!isObject(value)) return false;
-  const keys = Object.keys(value);
-  for (let i = 0; i < keys.length; i += 1) {
-    if (!isProjectJsonLikeValue(value[keys[i]])) return false;
+  for (const key of Object.keys(value)) {
+    if (!isProjectJsonLikeValue(value[key])) return false;
   }
   return true;
 }
 
-function asUiPdfState(v: unknown): ProjectPdfStateLike | null {
+type UiPdfStateSnapshot = Omit<ProjectPdfStateLike, 'orderPdfEditorZoom'> & {
+  orderPdfEditorZoom: number | undefined;
+};
+
+function asUiPdfState(v: unknown): UiPdfStateSnapshot | null {
   if (!isObject(v)) return null;
   const draft = isProjectJsonLikeValue(v.orderPdfEditorDraft) ? v.orderPdfEditorDraft : null;
   const zoomNumber = Number(v.orderPdfEditorZoom);
@@ -71,7 +74,7 @@ export function hasMeaningfulOrderPdfDraft(draft: unknown): boolean {
   );
 }
 
-export function readUiPdfState(App: AppContainer): ProjectPdfStateLike | null {
+export function readUiPdfState(App: AppContainer): UiPdfStateSnapshot | null {
   try {
     return asUiPdfState(readUiStateFromApp(App));
   } catch (error) {

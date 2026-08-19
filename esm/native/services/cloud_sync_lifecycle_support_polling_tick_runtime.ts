@@ -29,8 +29,8 @@ export function createCloudSyncPollingTick(args: {
   pollIntervalMs: number;
   suppressRef: { v: boolean };
   pullAllNow: CloudSyncPullAllNowFn;
-  restartRealtime?: () => void;
-  isDisposed?: () => boolean;
+  restartRealtime?: (() => void) | undefined;
+  isDisposed?: (() => boolean) | undefined;
   getIntervalHandle: () => IntervalHandleLike | null;
   stopPolling: (reason: string) => void;
 }): () => void {

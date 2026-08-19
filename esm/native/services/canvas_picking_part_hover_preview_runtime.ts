@@ -60,8 +60,8 @@ function callPreviewCleanup(
 
 export function createPartHoverPreviewRuntime(args: {
   App: AppContainer;
-  hideLayoutPreview?: PartHoverPreviewCallback | null;
-  hideSketchPreview?: PartHoverPreviewCallback | null;
+  hideLayoutPreview?: PartHoverPreviewCallback | null | undefined;
+  hideSketchPreview?: PartHoverPreviewCallback | null | undefined;
   previewRo?: unknown;
 }): PartHoverPreviewRuntime {
   const { App, hideLayoutPreview, hideSketchPreview, previewRo } = args;

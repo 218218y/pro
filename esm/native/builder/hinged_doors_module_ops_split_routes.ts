@@ -36,9 +36,14 @@ export function appendCustomSplitHingedDoorSegments(
   const segCount = cuts.length + 1;
 
   for (let segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
-    const segBottomY = segmentIndex === 0 ? ctx.doorBottomY : cuts[segmentIndex - 1] + visual.splitGap / 2;
+    const lowerCut = segmentIndex > 0 ? cuts[segmentIndex - 1] : null;
+    const upperCut = segmentIndex < cuts.length ? cuts[segmentIndex] : null;
+    if ((segmentIndex > 0 && lowerCut == null) || (segmentIndex < cuts.length && upperCut == null)) {
+      throw new RangeError('[hinged_doors] split cut boundary invariant violated');
+    }
+    const segBottomY = segmentIndex === 0 ? ctx.doorBottomY : (lowerCut as number) + visual.splitGap / 2;
     const segTopY =
-      segmentIndex === segCount - 1 ? ctx.effectiveTopLimit : cuts[segmentIndex] - visual.splitGap / 2;
+      segmentIndex === segCount - 1 ? ctx.effectiveTopLimit : (upperCut as number) - visual.splitGap / 2;
     const segH = segTopY - segBottomY;
     if (!(segH > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM)) continue;
 

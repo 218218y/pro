@@ -32,14 +32,14 @@ function readUniformArchivedUnifiedColor(
   requiredKeys: string[],
   absentKeys: string[]
 ): unknown {
-  for (let i = 0; i < absentKeys.length; i += 1) {
-    if (typeof readOwnPaintValue(colors, absentKeys[i]) !== 'undefined') return undefined;
+  for (const absentKey of absentKeys) {
+    if (typeof readOwnPaintValue(colors, absentKey) !== 'undefined') return undefined;
   }
   let color: unknown;
-  for (let i = 0; i < requiredKeys.length; i += 1) {
-    const value = readOwnPaintValue(colors, requiredKeys[i]);
+  for (const [index, requiredKey] of requiredKeys.entries()) {
+    const value = readOwnPaintValue(colors, requiredKey);
     if (typeof value !== 'string' || !value) return undefined;
-    if (i === 0) color = value;
+    if (index === 0) color = value;
     else if (value !== color) return undefined;
   }
   return color;

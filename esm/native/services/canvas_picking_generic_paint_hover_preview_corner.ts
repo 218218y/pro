@@ -24,8 +24,8 @@ export function resolveNearestPreviewObject(args: {
 }): UnknownRecord | null {
   const { App, wardrobeGroup, objects, anchorObject } = args;
   if (!objects.length) return anchorObject;
-  for (let i = 0; i < objects.length; i += 1) {
-    if (objects[i] === anchorObject) return anchorObject;
+  for (const object of objects) {
+    if (object === anchorObject) return anchorObject;
   }
 
   const referenceBox = __wp_measureObjectLocalBox(App, anchorObject, wardrobeGroup);
@@ -33,8 +33,7 @@ export function resolveNearestPreviewObject(args: {
 
   let bestObject: UnknownRecord | null = objects[0] || null;
   let bestDist = Infinity;
-  for (let i = 0; i < objects.length; i += 1) {
-    const candidate = objects[i];
+  for (const candidate of objects) {
     const box = __wp_measureObjectLocalBox(App, candidate, wardrobeGroup);
     if (!box) continue;
     const dx = box.centerX - referenceBox.centerX;
@@ -57,7 +56,8 @@ export function resolveCornerCorniceFrontObjectLocalPreview(args: {
   anchorObject: UnknownRecord;
 }): PaintPreviewGroupBox | null {
   const { App, wardrobeGroup, partKeys, objects, anchorObject } = args;
-  if (partKeys.length !== 1 || !__isCornerCorniceFrontPreviewKey(partKeys[0])) return null;
+  const partKey = partKeys.length === 1 ? partKeys[0] : undefined;
+  if (!partKey || !__isCornerCorniceFrontPreviewKey(partKey)) return null;
   const previewObject = resolveNearestPreviewObject({ App, wardrobeGroup, objects, anchorObject });
   const localBox = __readObjectLocalGeometryBox(previewObject);
   const woodThick = readPreviewBoxThickness(localBox);

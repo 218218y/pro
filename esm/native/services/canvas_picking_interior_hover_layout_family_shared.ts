@@ -19,7 +19,7 @@ export function buildLayoutPreviewPayload(args: {
   shelfYs: number[];
   rodYs: number[];
   storageBarrier: { y: number; h: number; z: number } | null;
-  shelfVariant?: ShelfVariant;
+  shelfVariant?: ShelfVariant | undefined;
 }): LayoutPreviewPayload {
   const { App, target, shelfYs, rodYs, storageBarrier, shelfVariant } = args;
   return {

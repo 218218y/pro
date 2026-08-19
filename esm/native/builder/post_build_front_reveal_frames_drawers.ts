@@ -49,8 +49,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
 
   const drawerEntries: DrawerRuntimeEntryLike[] = drawersArr.length > 0 ? drawersArr : sceneDrawerGroups;
 
-  for (let i = 0; i < drawerEntries.length; i++) {
-    const entry = drawerEntries[i];
+  for (const entry of drawerEntries) {
     const g = getDrawerEntryGroup(entry);
     if (!g || !g.userData || !g.position) continue;
 

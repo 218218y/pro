@@ -142,7 +142,7 @@ function buildModuleBaseShelfRanges(
 }
 
 function buildSketchShelfRanges(
-  args: RangeBuildContext & { shelves?: RecordMap[] | null }
+  args: RangeBuildContext & { shelves?: RecordMap[] | null | undefined }
 ): VerticalClearanceNeighborRange[] {
   const ranges: VerticalClearanceNeighborRange[] = [];
   const shelves = Array.isArray(args.shelves) ? args.shelves : [];
@@ -157,7 +157,10 @@ function buildSketchShelfRanges(
 }
 
 function buildModuleDrawerRanges(
-  args: RangeBuildContext & { drawers?: RecordMap[] | null; extDrawers?: RecordMap[] | null }
+  args: RangeBuildContext & {
+    drawers?: RecordMap[] | null | undefined;
+    extDrawers?: RecordMap[] | null | undefined;
+  }
 ): VerticalClearanceNeighborRange[] {
   const readCenterY = createManualLayoutSketchNormalizedCenterReader({
     bottomY: args.bottomY,
@@ -187,11 +190,11 @@ function buildModuleDrawerRanges(
 
 function buildModuleNeighborRanges(
   args: RangeBuildContext & {
-    cfgRef?: RecordMap | null;
-    info?: RecordMap | null;
-    shelves?: RecordMap[] | null;
-    drawers?: RecordMap[] | null;
-    extDrawers?: RecordMap[] | null;
+    cfgRef?: RecordMap | null | undefined;
+    info?: RecordMap | null | undefined;
+    shelves?: RecordMap[] | null | undefined;
+    drawers?: RecordMap[] | null | undefined;
+    extDrawers?: RecordMap[] | null | undefined;
   }
 ): VerticalClearanceNeighborRange[] {
   return [
@@ -320,18 +323,18 @@ function buildBoxDrawerRanges(
 
 export function buildSketchModuleStackAwareMeasurementEntries(
   args: RangeBuildContext & {
-    cfgRef?: RecordMap | null;
-    info?: RecordMap | null;
-    shelves?: RecordMap[] | null;
-    drawers?: RecordMap[] | null;
-    extDrawers?: RecordMap[] | null;
+    cfgRef?: RecordMap | null | undefined;
+    info?: RecordMap | null | undefined;
+    shelves?: RecordMap[] | null | undefined;
+    drawers?: RecordMap[] | null | undefined;
+    extDrawers?: RecordMap[] | null | undefined;
     targetCenterX: number;
     targetCenterY: number;
     targetWidth: number;
     targetHeight: number;
-    z?: number;
-    styleKey?: 'default' | 'cell';
-    textScale?: number;
+    z?: number | undefined;
+    styleKey?: 'default' | 'cell' | undefined;
+    textScale?: number | undefined;
   }
 ): HoverClearanceMeasurementEntry[] {
   return buildStackAwareVerticalClearanceMeasurementEntries({

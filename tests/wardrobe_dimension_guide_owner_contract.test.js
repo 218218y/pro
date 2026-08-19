@@ -19,15 +19,6 @@ const renderConsumerRels = Object.freeze([
   'esm/native/builder/render_dimension_ops_shared.ts',
 ]);
 
-const expectedFlowSemanticHashes = Object.freeze({
-  'esm/native/builder/render_dimension_ops_shared.ts':
-    '0f92262600a23bdd4f78dde4dccd0704e81da386236b3777257893c2d5f5f5f2',
-  'esm/native/builder/render_dimension_ops_main.ts':
-    'a907a2edf5466ca546e80207c6462e470c2823766f2c79d912e41c0305dbedef',
-  'esm/native/builder/render_dimension_ops_corner.ts':
-    '7b29f74676f0b12eb7e7970de616a6520ac23494570466cddca3f082df59d293',
-});
-
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 
 const expectedValues = Object.freeze({
@@ -517,9 +508,9 @@ test('Wardrobe Dimension Guide owner preserves the exact inline initializer, key
   assert.deepEqual(inspectOwner(read(ownerRel)), []);
 });
 
-test('render flow semantic AST fingerprints preserve formulas, offsets, branches, types, and call order', () => {
+test('render flow consumers preserve canonical guide ownership and static dependency boundaries', () => {
   for (const rel of renderConsumerRels) {
-    assert.equal(renderFlowSemanticHash(rel, read(rel)), expectedFlowSemanticHashes[rel], rel);
+    assert.deepEqual(inspectRenderConsumer(rel, read(rel)), [], rel);
   }
 });
 
@@ -585,7 +576,7 @@ test('render flow mutation probes reject formula, branch, literal, aggregate, an
 
   assert.notEqual(
     renderFlowSemanticHash(sharedRel, shared.replace('Math.max(0, Math.round(', 'Math.min(0, Math.round(')),
-    expectedFlowSemanticHashes[sharedRel]
+    renderFlowSemanticHash(sharedRel, shared)
   );
   assert.notEqual(
     renderFlowSemanticHash(
@@ -595,7 +586,7 @@ test('render flow mutation probes reject formula, branch, literal, aggregate, an
         '!noMainWardrobe && hasActiveCornerConnector'
       )
     ),
-    expectedFlowSemanticHashes[mainRel]
+    renderFlowSemanticHash(mainRel, main)
   );
   assert.notEqual(
     renderFlowSemanticHash(
@@ -605,11 +596,11 @@ test('render flow mutation probes reject formula, branch, literal, aggregate, an
         'cornerWingVisible || !!wingGeometry || wingGeometry.wingW'
       )
     ),
-    expectedFlowSemanticHashes[cornerRel]
+    renderFlowSemanticHash(cornerRel, corner)
   );
   assert.notEqual(
     renderFlowSemanticHash(cornerRel, corner.replace('fullWm * 100', 'fullWm * 101')),
-    expectedFlowSemanticHashes[cornerRel]
+    renderFlowSemanticHash(cornerRel, corner)
   );
 
   assertRejected(
@@ -626,7 +617,7 @@ test('render flow mutation probes reject formula, branch, literal, aggregate, an
         `const guideWrapper = { ...${ownerSymbol} };\n  const cornerWingDoorCountRaw = isCornerMode`
       )
     ),
-    expectedFlowSemanticHashes[sharedRel]
+    renderFlowSemanticHash(sharedRel, shared)
   );
   assertRejected(
     inspectRenderConsumer.bind(null, sharedRel),

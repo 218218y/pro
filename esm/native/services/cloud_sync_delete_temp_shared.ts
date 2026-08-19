@@ -35,8 +35,8 @@ export type DeleteTempArgs = {
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
   getSendRealtimeHint: () => CloudSyncRealtimeHintSender | null;
-  runtimeStatus?: CloudSyncRuntimeStatus;
-  publishStatus?: () => void;
+  runtimeStatus?: CloudSyncRuntimeStatus | undefined;
+  publishStatus?: (() => void) | undefined;
   runMainWriteFlight: <T>(key: string, run: () => Promise<T>, onBusy: () => T | Promise<T>) => Promise<T>;
   clearPendingPush: () => void;
   schedulePullSoon: (opts?: { immediate?: boolean; delayMs?: number; reason?: string }) => void;

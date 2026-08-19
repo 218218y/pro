@@ -77,8 +77,8 @@ export type Object3DWritable = {
   userData?: unknown;
   add?: Object3DLike['add'];
   remove?: Object3DLike['remove'];
-  getObjectByName?: Object3DLike['getObjectByName'];
-  traverse?: Object3DLike['traverse'];
+  getObjectByName?: NonNullable<Object3DLike['getObjectByName']>;
+  traverse?: NonNullable<Object3DLike['traverse']>;
 };
 export type Object3DRuntimeLike = Object3DWritable & {
   parent: Object3DLike | null;

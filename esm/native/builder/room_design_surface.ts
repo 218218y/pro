@@ -219,8 +219,7 @@ function fillRoomDesignSurface(
   if (!roomDesignService.WALL_COLORS) roomDesignService.WALL_COLORS = WALL_COLORS;
   if (!roomDesignService.DEFAULT_WALL_COLOR) roomDesignService.DEFAULT_WALL_COLOR = DEFAULT_WALL_COLOR;
 
-  for (let i = 0; i < ROOM_DESIGN_CALLABLE_KEYS.length; i += 1) {
-    const key = ROOM_DESIGN_CALLABLE_KEYS[i];
+  for (const key of ROOM_DESIGN_CALLABLE_KEYS) {
     if (roomDesignService.__wpRoomDesignInstalled === true) {
       installRoomDesignCallable(roomDesignService, context, key);
     } else {

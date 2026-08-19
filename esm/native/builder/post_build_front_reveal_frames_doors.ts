@@ -51,8 +51,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
 
   const doorEntries: DoorRuntimeEntryLike[] = doorsArr.length > 0 ? doorsArr : scannedDoorGroups;
 
-  for (let i = 0; i < doorEntries.length; i++) {
-    const entry = doorEntries[i];
+  for (const entry of doorEntries) {
     const g = getDoorEntryGroup(entry);
     if (!g || !g.userData || !g.position) continue;
     const type =

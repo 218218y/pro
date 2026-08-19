@@ -39,7 +39,7 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
-      edgeHandleVariant: hType === 'edge' ? runtime.getEdgeHandleVariant(id) : undefined,
+      edgeHandleVariant: hType === 'edge' ? runtime.getEdgeHandleVariant(id) : null,
       handleColor: runtime.getHandleColor(id),
     });
     if (!handle) continue;

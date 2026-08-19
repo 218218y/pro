@@ -201,8 +201,8 @@ export function createHingedDoorModuleOpsContext(
   const singleDoorW = moduleDoors > 0 ? modWidth / moduleDoors : 0;
 
   return {
-    App,
-    THREE,
+    ...(App !== undefined ? { App } : {}),
+    ...(THREE !== undefined ? { THREE } : {}),
     cfg,
     index,
     modulesLength,

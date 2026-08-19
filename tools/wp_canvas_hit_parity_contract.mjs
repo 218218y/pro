@@ -281,7 +281,7 @@ requireMatch(
 requireMatch(
   files.paintContracts,
   paintContracts,
-  /hitIdentity\?: CanvasPickingHitIdentity \| null;/,
+  /hitIdentity\?: CanvasPickingHitIdentity \| null \| undefined;/,
   'paint click args must expose optional canonical hitIdentity'
 );
 

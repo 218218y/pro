@@ -27,7 +27,7 @@ export const SITE2_TABS_TTL_MS = 90 * 60 * 1000;
 export function resolveCloudSyncTabsGateBaseRoom(args: {
   App: AppContainer;
   cfg: CloudSyncTabsGateConfig;
-  getGateBaseRoom?: () => string;
+  getGateBaseRoom?: (() => string) | undefined;
 }): string {
   const { App, cfg, getGateBaseRoom } = args;
   try {

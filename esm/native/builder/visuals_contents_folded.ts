@@ -401,7 +401,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
       width,
       parentGroup,
       maxHeight: resolvedMaxHeight,
-      maxDepth,
+      ...(maxDepth !== undefined ? { maxDepth } : {}),
       addOutlines,
       isSketch,
     });

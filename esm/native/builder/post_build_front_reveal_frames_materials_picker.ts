@@ -156,15 +156,15 @@ export function createFrontRevealMaterialPicker(
       if (!thinPool.length) thinPool = candidates.slice();
 
       let maxArea = 0;
-      for (let i = 0; i < thinPool.length; i++) {
-        if (thinPool[i].area > maxArea) maxArea = thinPool[i].area;
+      for (const candidate of thinPool) {
+        if (candidate.area > maxArea) maxArea = candidate.area;
       }
       let pool = thinPool.filter(candidate => candidate.area >= maxArea * 0.35);
       if (!pool.length) pool = thinPool;
 
       let maxFrontness = 0;
-      for (let i = 0; i < pool.length; i++) {
-        if (pool[i].frontness > maxFrontness) maxFrontness = pool[i].frontness;
+      for (const candidate of pool) {
+        if (candidate.frontness > maxFrontness) maxFrontness = candidate.frontness;
       }
       const frontTol = 0.025;
       const frontPool = pool.filter(candidate => candidate.frontness >= maxFrontness - frontTol);

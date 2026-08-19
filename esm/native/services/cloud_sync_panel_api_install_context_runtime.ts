@@ -2,7 +2,7 @@ import type { CloudSyncServiceLike } from '../../../types';
 
 export type InstallableCloudSyncPanelApi = CloudSyncServiceLike & {
   __wpCloudSyncPanelApiInstalled?: boolean;
-  __wpCloudSyncPanelApiImpl?: CloudSyncServiceLike;
+  __wpCloudSyncPanelApiImpl?: CloudSyncServiceLike | undefined;
 };
 
 export type CloudSyncPanelApiInstallContext = {

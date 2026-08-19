@@ -62,9 +62,9 @@ export function applyPostBuildSketchVisualOverlays(args: {
     stackKey === 'bottom' ? ['bottom', 'top'] : ['top', 'bottom'];
   const suppressedHandlePartIds: string[] = [];
   const collectSuppressedHandlePartIds = (partIds: string[]) => {
-    for (let i = 0; i < partIds.length; i += 1) suppressedHandlePartIds.push(partIds[i]);
+    for (const partId of partIds) suppressedHandlePartIds.push(partId);
   };
-  for (let i = 0; i < moduleCutStackKeys.length; i++) {
+  for (const moduleCutStackKey of moduleCutStackKeys) {
     applySketchExternalDrawerDoorCuts({
       App,
       THREE,
@@ -72,8 +72,8 @@ export function applyPostBuildSketchVisualOverlays(args: {
       cfg: cfgSnapshot,
       bodyMat,
       globalFrontMat,
-      stackKey: moduleCutStackKeys[i],
-      allowConfigDerivedCuts: moduleCutStackKeys[i] === stackKey,
+      stackKey: moduleCutStackKey,
+      allowConfigDerivedCuts: moduleCutStackKey === stackKey,
       collectSuppressedHandlePartIds,
     });
   }

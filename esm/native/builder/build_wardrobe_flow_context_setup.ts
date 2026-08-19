@@ -56,6 +56,35 @@ export function prepareBuildWardrobeContextSetup(
 
   const notesToPreserve = pre && pre.notesToPreserve ? pre.notesToPreserve : null;
 
+  const buildChestOnlyFn =
+    readFunction<
+      (args: {
+        H: number;
+        totalW: number;
+        D: number;
+        drawersCount: number;
+        baseType: string;
+        baseLegStyle: string;
+        baseLegColor: string;
+        baseLegPlatformMode: string;
+        baseLegPlatformSideMode?: string;
+        baseLegPlatformSideOverhangCm?: number;
+        baseLegPlatformFrontOverhangCm?: number;
+        basePlinthHeightCm: number;
+        baseLegHeightCm: number;
+        baseLegWidthCm?: number;
+        colorChoice: string;
+        customColor: string;
+        doorStyle: string;
+        isGroovesEnabled: boolean;
+        chestCommodeEnabled: boolean;
+        chestCommodeMirrorHeightCm: number;
+        chestCommodeMirrorWidthCm: number;
+        cfgSnapshot: ConfigStateLike | UnknownRecord;
+        renderPolicy: BuilderContentsRenderPolicy;
+      }) => void
+    >(buildChestOnly);
+
   if (
     orchestration.buildChestModeIfNeeded({
       ui: pickChestModeUi(ui),
@@ -64,34 +93,7 @@ export function prepareBuildWardrobeContextSetup(
       depthCm,
       drawersCount: chestDrawersCount,
       cfgSnapshot,
-      buildChestOnly:
-        readFunction<
-          (args: {
-            H: number;
-            totalW: number;
-            D: number;
-            drawersCount: number;
-            baseType: string;
-            baseLegStyle: string;
-            baseLegColor: string;
-            baseLegPlatformMode: string;
-            baseLegPlatformSideMode?: string;
-            baseLegPlatformSideOverhangCm?: number;
-            baseLegPlatformFrontOverhangCm?: number;
-            basePlinthHeightCm: number;
-            baseLegHeightCm: number;
-            baseLegWidthCm?: number;
-            colorChoice: string;
-            customColor: string;
-            doorStyle: string;
-            isGroovesEnabled: boolean;
-            chestCommodeEnabled: boolean;
-            chestCommodeMirrorHeightCm: number;
-            chestCommodeMirrorWidthCm: number;
-            cfgSnapshot: ConfigStateLike | UnknownRecord;
-            renderPolicy: BuilderContentsRenderPolicy;
-          }) => void
-        >(buildChestOnly) || undefined,
+      ...(buildChestOnlyFn ? { buildChestOnly: buildChestOnlyFn } : {}),
       renderPolicy,
     })
   ) {

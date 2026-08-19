@@ -21,7 +21,7 @@ export function createCloudSyncTabsGateLocalState(
     App: AppContainer;
     cfg: CloudSyncTabsGateConfig;
     storage: CloudSyncTabsGateStorageLike;
-    getGateBaseRoom?: () => string;
+    getGateBaseRoom?: (() => string) | undefined;
   } & CloudSyncTabsGateTimeoutApi
 ): CloudSyncTabsGateLocalState {
   const { App, cfg, storage, getGateBaseRoom, setTimeoutFn, clearTimeoutFn } = args;

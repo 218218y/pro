@@ -39,8 +39,8 @@ export function captureHandlesConfigSnapshot(cfgSnapshot: unknown): HandlesConfi
 export function createHandlesDoorRemovedReader(removedDoorsMap: ValueRecord): (partId: unknown) => boolean {
   return (partId: unknown): boolean => {
     const keys = listCanonicalRemovedDoorLookupKeys(partId);
-    for (let i = 0; i < keys.length; i += 1) {
-      if (removedDoorsMap[keys[i]] === true) return true;
+    for (const key of keys) {
+      if (removedDoorsMap[key] === true) return true;
     }
     return false;
   };

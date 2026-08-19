@@ -7,15 +7,15 @@ export type SketchBoxToggleHoverMode = 'none' | 'free-toggle' | 'manual-toggle';
 export type SketchBoxToggleContentKind = 'drawers' | 'ext_drawers' | 'regular_ext_drawers';
 
 export type CommitSketchModuleBoxContentArgs = {
-  App?: AppContainer | null;
-  cfg?: RecordMap | null;
+  App?: AppContainer | null | undefined;
+  cfg?: RecordMap | null | undefined;
   box: SketchModuleBoxLike;
-  boxId?: string | null;
+  boxId?: string | null | undefined;
   contentKind: string;
   hoverRec: RecordMap;
-  floorY?: number;
-  woodThick?: number;
-  hoverMode?: SketchBoxToggleHoverMode;
-  hoverHost?: ManualLayoutSketchHoverHost | null;
-  sketchExternalDrawerType?: 'regular' | 'shoe';
+  floorY?: number | undefined;
+  woodThick?: number | undefined;
+  hoverMode?: SketchBoxToggleHoverMode | undefined;
+  hoverHost?: ManualLayoutSketchHoverHost | null | undefined;
+  sketchExternalDrawerType?: 'regular' | 'shoe' | undefined;
 };

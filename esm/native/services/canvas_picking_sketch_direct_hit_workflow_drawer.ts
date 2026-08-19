@@ -1,4 +1,3 @@
-import type { DrawerVisualEntryLike } from '../../../types';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import type { ManualLayoutSketchDirectHitContext } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
@@ -115,8 +114,9 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           hoverOp: __hoverOp,
           hoverRec: __hoverRec,
           drawerId: externalPlan.target.drawerId,
-          boxId: externalPlan.target.scope === 'box' ? externalPlan.target.boxId : undefined,
-          listKind: externalPlan.target.scope === 'box' ? externalPlan.target.listKind : undefined,
+          ...(externalPlan.target.scope === 'box'
+            ? { boxId: externalPlan.target.boxId, listKind: externalPlan.target.listKind }
+            : {}),
         })
       ) {
         if (
@@ -157,8 +157,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           let maxY = -Infinity;
           let cnt = 0;
           const drawers = getDrawersArray(App);
-          for (let k = 0; k < drawers.length; k++) {
-            const drawer: DrawerVisualEntryLike = drawers[k];
+          for (const drawer of drawers) {
             if (!drawer || String(drawer.id || '') !== pid) continue;
             const group = drawer.group;
             if (!group) continue;
@@ -297,8 +296,9 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             hoverOp: __hoverOp,
             hoverRec: __hoverRec,
             drawerId: externalPlan.target.drawerId,
-            boxId: externalPlan.target.scope === 'box' ? externalPlan.target.boxId : undefined,
-            listKind: externalPlan.target.scope === 'box' ? externalPlan.target.listKind : undefined,
+            ...(externalPlan.target.scope === 'box'
+              ? { boxId: externalPlan.target.boxId, listKind: externalPlan.target.listKind }
+              : {}),
           });
         } else {
           let centerY = Number.NaN;

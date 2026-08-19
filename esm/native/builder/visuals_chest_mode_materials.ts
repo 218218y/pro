@@ -139,7 +139,7 @@ export function createChestModePartMaterialResolver(input: {
   const getPartColorValue = createChestModePartColorValueResolver({
     App,
     cfg,
-    individualColors: input.individualColors,
+    ...(input.individualColors !== undefined ? { individualColors: input.individualColors } : {}),
   });
   const resolveMirrorMaterial =
     input.resolveMirrorMaterial ||

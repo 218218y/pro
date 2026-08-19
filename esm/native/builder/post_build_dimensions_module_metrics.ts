@@ -124,8 +124,8 @@ export function derivePostBuildDimensionMetrics(args: {
       let rem = deltaCm;
 
       const adjustSegments = (indices: number[]) => {
-        for (let k = 0; k < indices.length && Math.abs(rem) > 1e-6; k++) {
-          const i = indices[k];
+        for (const i of indices) {
+          if (Math.abs(rem) <= 1e-6) break;
           const cur = readPostBuildMetricNumber(segWidthsCm[i]) ?? 0;
           if (rem > 0) {
             segWidthsCm[i] = cur + rem;

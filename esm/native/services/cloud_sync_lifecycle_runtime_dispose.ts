@@ -35,7 +35,8 @@ export function disposeCloudSyncLifecycleOwner(
   try {
     for (let i = state.listenerCleanup.length - 1; i >= 0; i--) {
       try {
-        state.listenerCleanup[i]();
+        const cleanupListener = state.listenerCleanup[i];
+        if (cleanupListener) cleanupListener();
       } catch (err) {
         _cloudSyncReportNonFatal(App, 'cloudSyncLifecycle.dispose.listenerCleanup', err, {
           throttleMs: 4000,

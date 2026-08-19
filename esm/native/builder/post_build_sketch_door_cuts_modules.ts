@@ -124,8 +124,7 @@ function collectSketchModuleExternalDrawerStackBounds(App: AppContainer): Sketch
   const hasRuntimeModuleDrawers = { top: false, bottom: false };
   if (!drawersArr.length) return { bounds: [], hasRuntimeModuleDrawers };
   const stacks = new Map<string, SketchModuleDrawerStackBounds>();
-  for (let i = 0; i < drawersArr.length; i++) {
-    const entry = drawersArr[i];
+  for (const [i, entry] of drawersArr.entries()) {
     const g = getDrawerEntryGroup(entry);
     const ud = asRecord(g && g.userData);
     if (!g || !ud || ud.__wpSketchExtDrawer !== true) continue;
@@ -209,8 +208,7 @@ export function applySketchExternalDrawerDoorCuts(args: {
         moduleCfgList[i],
         readKey(asRecord(gridMap), String(i))
       );
-      for (let j = 0; j < cuts.length; j++) {
-        const cut = cuts[j];
+      for (const cut of cuts) {
         const moduleKey = normalizeSketchModuleCutKey(String(i), stackKey);
         if (!moduleKey) continue;
         configDerivedBounds.push({
@@ -250,7 +248,9 @@ export function applySketchExternalDrawerDoorCuts(args: {
   applySketchDrawerDoorCuts({
     App,
     runtime,
-    collectSuppressedHandlePartIds: args.collectSuppressedHandlePartIds,
+    ...(args.collectSuppressedHandlePartIds
+      ? { collectSuppressedHandlePartIds: args.collectSuppressedHandlePartIds }
+      : {}),
     selectDoorCuts: (_entry, _g, ud) => {
       if (readStringOrNull(ud.__wpSketchBoxId)) return null;
       const doorStack = typeof ud.__wpStack === 'string' ? String(ud.__wpStack) : 'top';

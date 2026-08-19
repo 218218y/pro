@@ -71,7 +71,11 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
       throw err;
     }
 
-    const handleOpts: BuilderHandleMeshOptionsLike = { THREE, addOutlines, ...extraOpts };
+    const handleOpts: BuilderHandleMeshOptionsLike = {
+      THREE,
+      addOutlines: addOutlines ?? null,
+      ...extraOpts,
+    };
     const mesh = fn(type, w, h, !!isLeftHinge, handleOpts);
 
     if (!mesh) {

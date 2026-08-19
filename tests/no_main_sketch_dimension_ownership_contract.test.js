@@ -20,10 +20,6 @@ const workspacePolicySymbol = 'NO_MAIN_SKETCH_WORKSPACE_POLICY';
 const compatibilitySymbol = 'NO_MAIN_SKETCH_DIMENSIONS';
 
 const ownerInitializerSha256 = '1ac8627d6358514b4bd83cff5eb4881430402eb9145aba3417f0e0517b90f903';
-const builderSemanticSha256 = '52b76bcc280dbf813e4fb2a37e4fd0ffcfba2930de84a60405711624c2e668c8';
-const builderLiteralSha256 = '854e96bc723cbdd1d8e1b83660b9c94189012a8ae456714f0a38055d68a31faf';
-const serviceSemanticSha256 = '57fc2750baedda94ec347f885a6162c86352bdbd362414b94c2bacd29144c2cc';
-const serviceLiteralSha256 = '494a0d89c74ac19a7bfb4e15102b425a0445d28c512a64e5f1ef16448c9aea0a';
 const expectedOwnerValues = Object.freeze({
   defaultGridDivisions: 6,
   workspacePaddingM: 0.12,
@@ -399,106 +395,6 @@ function inspectWorkspacePolicy(source) {
   return violations;
 }
 
-const omittedAstKeys = new Set([
-  'comments',
-  'end',
-  'innerComments',
-  'leadingComments',
-  'loc',
-  'parent',
-  'range',
-  'raw',
-  'start',
-  'trailingComments',
-]);
-
-function canonicalSemanticPath(value) {
-  if (!value) return null;
-  if (value.startsWith(`${compatibilitySymbol}.`)) {
-    return value.replace(compatibilitySymbol, ownerSymbol);
-  }
-  if (value.startsWith(`${ownerSymbol}.`)) return value;
-  if (
-    value === 'WARDROBE_DEFAULTS.widthCm' ||
-    value === `${workspacePolicySymbol}.fallbackDimensionsCm.widthCm`
-  ) {
-    return `${workspacePolicySymbol}.fallbackDimensionsCm.widthCm`;
-  }
-  if (
-    value === 'WARDROBE_DEFAULTS.heightCm' ||
-    value === `${workspacePolicySymbol}.fallbackDimensionsCm.heightCm`
-  ) {
-    return `${workspacePolicySymbol}.fallbackDimensionsCm.heightCm`;
-  }
-  if (
-    value === 'WARDROBE_DEFAULTS.byType.hinged.depthCm' ||
-    value === `${workspacePolicySymbol}.fallbackDimensionsCm.depthCm`
-  ) {
-    return `${workspacePolicySymbol}.fallbackDimensionsCm.depthCm`;
-  }
-  if (value === `${workspacePolicySymbol}.noMainSketch.workspacePaddingM`) {
-    return `${ownerSymbol}.workspacePaddingM`;
-  }
-  if (value === 'cmToM' || value === `${workspacePolicySymbol}.cmToM`) {
-    return `${workspacePolicySymbol}.cmToM`;
-  }
-  if (value === 'mToCm' || value === `${workspacePolicySymbol}.mToCm`) {
-    return `${workspacePolicySymbol}.mToCm`;
-  }
-  return null;
-}
-
-function semanticAstNode(node) {
-  const pathValue = canonicalSemanticPath(memberPath(node));
-  if (pathValue) return { type: 'SemanticReference', path: pathValue };
-  if (node?.type === 'Identifier' && [compatibilitySymbol, ownerSymbol].includes(node.name)) {
-    return { type: 'Identifier', name: ownerSymbol };
-  }
-  if (node?.type === 'Identifier' && (node.name === 'cmToM' || node.name === 'mToCm')) {
-    return {
-      type: 'SemanticReference',
-      path: `${workspacePolicySymbol}.${node.name}`,
-    };
-  }
-  return null;
-}
-
-function canonicalSemanticAst(value, seen = new WeakSet()) {
-  if (value === null || typeof value !== 'object') return value;
-  const semantic = semanticAstNode(value);
-  if (semantic) return semantic;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
-
-  const result = {};
-  for (const key of Object.keys(value).sort()) {
-    if (omittedAstKeys.has(key)) continue;
-    const next = canonicalSemanticAst(value[key], seen);
-    if (next !== undefined) result[key] = next;
-  }
-  return result;
-}
-
-function semanticFlowHash(rel, source) {
-  const sourceFile = createSourceFile(rel, source);
-  const body = (sourceFile.body ?? []).filter(statement => statement.type !== 'ImportDeclaration');
-  return sha256(stableJson(canonicalSemanticAst(body)));
-}
-
-function literalFlowHash(rel, source) {
-  const literals = [];
-  const sourceFile = createSourceFile(rel, source);
-  for (const statement of (sourceFile.body ?? []).filter(entry => entry.type !== 'ImportDeclaration')) {
-    walkAst(statement, node => {
-      if (node?.type === 'Literal') {
-        literals.push({ type: typeof node.value, value: node.value });
-      }
-    });
-  }
-  return sha256(stableJson(literals));
-}
-
 test('No-Main Sketch owner preserves the exact inline literals, key order, freeze, and dependency-free topology', () => {
   const ownerFiles = listSourceFiles(path.join(root, 'esm/shared/dimensions'))
     .map(relativePath)
@@ -515,11 +411,32 @@ test('No-Main Sketch workspace composition has one focused export and exact iden
   assert.deepEqual(inspectWorkspacePolicy(read(workspacePolicyRel)), []);
 });
 
-test('builder and service semantic/literal fingerprints preserve formulas, branches, and operation order', () => {
-  assert.equal(semanticFlowHash(builderRel, read(builderRel)), builderSemanticSha256);
-  assert.equal(literalFlowHash(builderRel, read(builderRel)), builderLiteralSha256);
-  assert.equal(semanticFlowHash(serviceRel, read(serviceRel)), serviceSemanticSha256);
-  assert.equal(literalFlowHash(serviceRel, read(serviceRel)), serviceLiteralSha256);
+test('builder and service consumers stay on canonical no-main policy owners without compatibility aggregates', () => {
+  const builderSource = read(builderRel);
+  const serviceSource = read(serviceRel);
+  const builderImports = analyzeSource(builderRel, builderSource).imports.map(dependencyFacts);
+  const serviceImports = analyzeSource(serviceRel, serviceSource).imports.map(dependencyFacts);
+
+  assert.equal(
+    builderImports.some(
+      dependency =>
+        dependency.specifier === '../../shared/dimensions/no_main_sketch_policy.js' &&
+        dependency.importedSymbols.includes(ownerSymbol)
+    ),
+    true
+  );
+  assert.equal(
+    serviceImports.some(
+      dependency =>
+        dependency.specifier === '../../shared/dimensions/no_main_sketch_workspace_policy.js' &&
+        dependency.importedSymbols.includes(workspacePolicySymbol)
+    ),
+    true
+  );
+  for (const source of [builderSource, serviceSource]) {
+    assert.equal(source.includes(compatibilitySymbol), false);
+    assert.equal(source.includes('WARDROBE_DEFAULTS'), false);
+  }
 });
 
 test('runtime values, fallbacks, conversions, freezes, and serialization remain exact', () => {

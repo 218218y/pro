@@ -68,8 +68,7 @@ export function toggleSketchBoxDoor(
 
           nextOpen = !enabledDoors.some(entry => entry.door.open === true);
           toggledDoorCount = enabledDoors.length;
-          for (let di = 0; di < enabledDoors.length; di++) {
-            const entry = enabledDoors[di];
+          for (const entry of enabledDoors) {
             const runtimeTarget: SketchBoxDoorTarget = {
               moduleKey: runtimeModuleKey,
               boxId,

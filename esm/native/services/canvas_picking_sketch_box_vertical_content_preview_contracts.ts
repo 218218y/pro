@@ -45,24 +45,22 @@ export type ResolveSketchBoxVerticalContentPreviewArgs = {
   targetHeight: number;
   pointerX: number;
   pointerY: number;
-  partPrefix?: string | null;
-  intersects?: RaycastHitLike[];
+  partPrefix?: string | null | undefined;
+  intersects?: RaycastHitLike[] | undefined;
   woodThick: number;
-  shelfVariant?: string | null;
-  shelfDepthOverrideM?: number | null;
-  storageHeight?: number | null;
-  removeEpsShelf?: number;
-  removeEpsBox?: number;
+  shelfVariant?: string | null | undefined;
+  shelfDepthOverrideM?: number | null | undefined;
+  storageHeight?: number | null | undefined;
+  removeEpsShelf?: number | undefined;
+  removeEpsBox?: number | undefined;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
-  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
+  readSketchBoxHorizontalDividers?: ((box: unknown) => SketchBoxHorizontalDividerState[]) | undefined;
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentLike[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentLike | null;
-  resolveSketchBoxVerticalSegments?: (
-    args: ResolveSketchBoxVerticalSegmentsArgs
-  ) => SketchBoxVerticalSegmentState[];
-  pickSketchBoxVerticalSegment?: (
-    args: PickSketchBoxVerticalSegmentArgs
-  ) => SketchBoxVerticalSegmentState | null;
+  resolveSketchBoxVerticalSegments?:
+    ((args: ResolveSketchBoxVerticalSegmentsArgs) => SketchBoxVerticalSegmentState[]) | undefined;
+  pickSketchBoxVerticalSegment?:
+    ((args: PickSketchBoxVerticalSegmentArgs) => SketchBoxVerticalSegmentState | null) | undefined;
 };
 
 export type ResolveSketchBoxVerticalContentPreviewResult = {

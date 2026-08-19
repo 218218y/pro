@@ -10,11 +10,11 @@ import { resolveSketchModuleBoxPlacementAction } from './canvas_picking_sketch_m
 
 export function resolveSketchModuleBoxAction(args: {
   boxes: unknown[];
-  cursorXHint?: number | null;
+  cursorXHint?: number | null | undefined;
   cursorY: number;
   boxH: number;
-  widthM?: number | null;
-  depthM?: number | null;
+  widthM?: number | null | undefined;
+  depthM?: number | null | undefined;
   bottomY: number;
   topY: number;
   spanH: number;
@@ -25,9 +25,9 @@ export function resolveSketchModuleBoxAction(args: {
   internalZ: number;
   woodThick: number;
   resolveSketchBoxGeometry: ResolveSketchBoxGeometryFn;
-  enableCenterSnap?: boolean;
-  removeIdHint?: string | null;
-  placementBlockers?: VerticalOccupancyRange[] | null;
+  enableCenterSnap?: boolean | undefined;
+  removeIdHint?: string | null | undefined;
+  placementBlockers?: VerticalOccupancyRange[] | null | undefined;
 }): SketchModuleBoxActionState {
   const cursorY = clampSketchModuleBoxCenterY({
     centerY: Number(args.cursorY),

@@ -201,13 +201,13 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
     tagDoorVisualPart,
     hasGrooves,
     isSketch,
-    groovePartId,
+    ...(groovePartId !== undefined ? { groovePartId } : {}),
     zSign,
     targetW: innerW,
     targetH: innerH,
     zOffset: centerFaceZ,
     linesCountOverride: grooveLinesCount,
-    grooveLayout,
+    ...(grooveLayout !== undefined ? { grooveLayout } : {}),
   });
   return visualGroup;
 }

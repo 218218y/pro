@@ -168,7 +168,7 @@ export const CLOTH_COLORS = [
 
 export function getRandomClothColor() {
   const r = typeof seededRandom.random === 'function' ? seededRandom.random() : Math.random();
-  return CLOTH_COLORS[Math.floor(r * CLOTH_COLORS.length)];
+  return CLOTH_COLORS[Math.floor(r * CLOTH_COLORS.length)] ?? CLOTH_COLORS[0] ?? 0x2c3e50;
 }
 
 export const BOOK_COLORS = [
@@ -189,7 +189,7 @@ export const BOOK_SPINE_BAND_COLORS = Object.freeze([0xd6b45d, 0xc8a64f, 0xe8d9a
 
 export function getRandomBookColor() {
   const r = typeof seededRandom.random === 'function' ? seededRandom.random() : Math.random();
-  return BOOK_COLORS[Math.floor(r * BOOK_COLORS.length)];
+  return BOOK_COLORS[Math.floor(r * BOOK_COLORS.length)] ?? BOOK_COLORS[0] ?? 0x8b5a2b;
 }
 
 export function getRandomBookSetPalette(): readonly number[] {

@@ -75,21 +75,21 @@ type ManualLayoutSketchStackHoverArgs = {
   kind: 'drawers' | 'ext_drawers';
   op: 'add' | 'remove';
   yCenter: number;
-  baseY?: number | null;
-  removeId?: string | null;
-  removeKind?: 'sketch' | 'std' | '';
-  removePid?: string | null;
-  removeSlot?: number | null;
-  drawerH?: number | null;
-  drawerGap?: number | null;
-  stackH?: number | null;
-  drawerCount?: number | null;
-  drawerHeightM?: number | null;
-  hinge?: string | null;
-  doorId?: string | null;
-  doorLeftId?: string | null;
-  doorRightId?: string | null;
-  blockedReason?: string | null;
+  baseY?: number | null | undefined;
+  removeId?: string | null | undefined;
+  removeKind?: 'sketch' | 'std' | '' | undefined;
+  removePid?: string | null | undefined;
+  removeSlot?: number | null | undefined;
+  drawerH?: number | null | undefined;
+  drawerGap?: number | null | undefined;
+  stackH?: number | null | undefined;
+  drawerCount?: number | null | undefined;
+  drawerHeightM?: number | null | undefined;
+  hinge?: string | null | undefined;
+  doorId?: string | null | undefined;
+  doorLeftId?: string | null | undefined;
+  doorRightId?: string | null | undefined;
+  blockedReason?: string | null | undefined;
 };
 
 function withDefined(target: RecordMap, patch: Record<string, unknown>): RecordMap {

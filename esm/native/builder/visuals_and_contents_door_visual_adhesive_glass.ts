@@ -325,8 +325,7 @@ function readBoxGeometryDimension(
 }
 
 function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelMetrics | null {
-  for (let i = 0; i < group.children.length; i += 1) {
-    const child = group.children[i];
+  for (const child of group.children) {
     if (child.userData.__doorVisualRole !== role) continue;
 
     const geometry = readPanelGeometry(child);
@@ -426,9 +425,8 @@ export function createAdhesiveGlassDoorVisual(args: AdhesiveGlassDoorVisualArgs)
     grooveLayout: args.grooveLayout ?? null,
   });
 
-  for (let i = 0; i < placements.length; i += 1) {
-    const placement = placements[i];
-    const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
+  for (const [i, placement] of placements.entries()) {
+    const placementLayout = placementLayouts[i] ?? null;
     const faceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     appendAdhesiveGlassPane({
       App: args.App,
@@ -467,9 +465,8 @@ export function createStyledAdhesiveGlassDoorVisual(
   });
   const depthLayout = resolveOverlayDepthLayout(args.thickness);
 
-  for (let i = 0; i < placements.length; i += 1) {
-    const placement = placements[i];
-    const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
+  for (const [i, placement] of placements.entries()) {
+    const placementLayout = placementLayouts[i] ?? null;
     const faceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     appendAdhesiveGlassPane({
       App: args.App,

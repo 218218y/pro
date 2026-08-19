@@ -55,20 +55,20 @@ export function writeExtDrawerModeHover(
   App: AppContainer,
   args: {
     moduleKey: unknown;
-    isBottom?: boolean;
+    isBottom?: boolean | undefined;
     kind: ExtDrawerModeHoverKind;
     op: ExtDrawerModeHoverOp;
-    yCenter?: number | null;
-    baseY?: number | null;
-    removeId?: string | null;
-    removeKind?: 'sketch' | 'std' | '' | null;
-    removePid?: string | null;
-    drawerH?: number | null;
-    drawerGap?: number | null;
-    stackH?: number | null;
-    drawerCount?: number | null;
-    drawerHeightM?: number | null;
-    blockedReason?: string | null;
+    yCenter?: number | null | undefined;
+    baseY?: number | null | undefined;
+    removeId?: string | null | undefined;
+    removeKind?: 'sketch' | 'std' | '' | null | undefined;
+    removePid?: string | null | undefined;
+    drawerH?: number | null | undefined;
+    drawerGap?: number | null | undefined;
+    stackH?: number | null | undefined;
+    drawerCount?: number | null | undefined;
+    drawerHeightM?: number | null | undefined;
+    blockedReason?: string | null | undefined;
   }
 ): ExtDrawerModeHoverRecord {
   const moduleKey = coerceExtDrawerModeHoverModuleKey(args.moduleKey);

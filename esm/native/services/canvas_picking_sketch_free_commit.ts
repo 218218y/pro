@@ -69,7 +69,7 @@ type CreateSketchFreePlacementBoxHoverRecordArgs = {
   previewW: number;
   previewD: number;
   placementWall?: 'back' | 'left' | 'right';
-  removeId?: string | null;
+  removeId?: string | null | undefined;
   ts?: number;
 };
 

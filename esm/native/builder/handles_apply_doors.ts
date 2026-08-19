@@ -64,7 +64,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     if (!hType || hType === 'none') continue;
 
     const isLeftHinge = !!g.userData.__hingeLeft;
-    const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : undefined;
+    const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : null;
 
     const handle = createHandleMeshV7(hType, doorW, doorH, isLeftHinge, false, {
       App,
@@ -201,7 +201,7 @@ function collectSketchSegmentHandleLeaves(root: NodeLike): SketchSegmentHandleLe
     }
 
     const children = Array.isArray(node.children) ? node.children : [];
-    for (let i = 0; i < children.length; i += 1) stack.push(children[i]);
+    for (const child of children) stack.push(child);
   }
 
   out.sort((a, b) => {
@@ -217,8 +217,7 @@ function collectUnusuallySmallSketchDoorPartIds(
   leaves: readonly SketchSegmentHandleLeaf[],
   out: string[]
 ): void {
-  for (let i = 0; i < leaves.length; i += 1) {
-    const leaf = leaves[i];
+  for (const leaf of leaves) {
     if (
       isUnusuallySmallDoorSegment({
         partId: leaf.partId,
@@ -312,14 +311,13 @@ function refreshSketchSegmentedDoorHandles(
   runtime.removeExistingHandleChildren(root);
   if (!leaves.length) return;
 
-  for (let i = 0; i < leaves.length; i += 1) {
-    const leaf = leaves[i];
+  for (const leaf of leaves) {
     if (runtime.removeDoorsEnabled && runtime.isDoorRemovedV7(leaf.partId)) continue;
 
     const hType = runtime.getHandleType(leaf.partId, stackKey);
     if (!hType || hType === 'none') continue;
 
-    const edgeHandleVariant = hType === 'edge' ? runtime.getEdgeHandleVariant(leaf.partId) : undefined;
+    const edgeHandleVariant = hType === 'edge' ? runtime.getEdgeHandleVariant(leaf.partId) : null;
     const handle = createHandleMeshV7(hType, leaf.rootWidth, leaf.height, leaf.isLeftHinge, false, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,

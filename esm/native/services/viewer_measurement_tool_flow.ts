@@ -188,7 +188,7 @@ function addTrackedLine(args: {
   objects: Object3DLike[];
   points: Vector3Like[];
   name: string;
-  color?: number;
+  color?: number | undefined;
 }): void {
   const { THREE, wardrobeGroup, objects, points, name } = args;
   const color = args.color ?? POINT_DEFAULT_COLOR;
@@ -416,7 +416,7 @@ function addSelectionFrame(args: {
   plane: MeasurementPlane;
   objects: Object3DLike[];
   name?: string;
-  color?: number;
+  color?: number | undefined;
 }): void {
   const { THREE, wardrobeGroup, box, plane, objects } = args;
   const frameUMin = resolveSelectionFrameAxisMin(plane, plane.uAxis, plane.uMin, plane.uMax);
@@ -466,7 +466,7 @@ function addPointCrossMarker(args: {
   point: Vector3Like;
   namePrefix: string;
   half?: number;
-  color?: number;
+  color?: number | undefined;
 }): void {
   const { THREE, wardrobeGroup, objects, plane, point, namePrefix } = args;
   const half = args.half ?? 0.014;
@@ -502,7 +502,7 @@ function addDraftPointMarker(args: {
   plane: MeasurementPlane;
   point: Vector3Like;
   namePrefix?: string;
-  color?: number;
+  color?: number | undefined;
 }): void {
   addPointCrossMarker({
     ...args,
@@ -522,9 +522,9 @@ function removeOverlayStateObjects(state: MeasurementOverlayState | null): void 
 function renderPointDraftOverlay(args: {
   runtime: ViewerMeasurementFeatureRuntime;
   draft: PointMeasurementDraft;
-  hitState?: CanvasPickingClickHitState | null;
+  hitState?: CanvasPickingClickHitState | null | undefined;
   includePreview: boolean;
-  pointer?: PointMeasurementPointerContext | null;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): boolean {
   const { runtime, draft, hitState, includePreview, pointer } = args;
   const geometryRuntime = runtime.geometry;
@@ -596,8 +596,8 @@ function renderPointDraftOverlay(args: {
 
 function beginPointMeasurementDraft(args: {
   runtime: ViewerMeasurementFeatureRuntime;
-  hitState?: CanvasPickingClickHitState | null;
-  pointer?: PointMeasurementPointerContext | null;
+  hitState?: CanvasPickingClickHitState | null | undefined;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): boolean {
   const { runtime, hitState, pointer } = args;
   const geometryRuntime = runtime.geometry;
@@ -620,8 +620,8 @@ function beginPointMeasurementDraft(args: {
 function renderPointMeasurement(args: {
   runtime: ViewerMeasurementFeatureRuntime;
   draft: PointMeasurementDraft;
-  hitState?: CanvasPickingClickHitState | null;
-  pointer?: PointMeasurementPointerContext | null;
+  hitState?: CanvasPickingClickHitState | null | undefined;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): boolean {
   const { runtime, draft, hitState, pointer } = args;
   const geometryRuntime = runtime.geometry;
@@ -701,10 +701,10 @@ function exitPointMeasurementOnEmptyClick(runtime: ViewerMeasurementFeatureRunti
 function tryHandleViewerPointMeasurementClick(args: {
   runtime: ViewerMeasurementFeatureRuntime;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): boolean {
   const { runtime, hitState } = args;
   const pointer: PointMeasurementPointerContext = {
@@ -742,10 +742,10 @@ function tryHandleViewerPointMeasurementClick(args: {
 export function tryHandleViewerMeasurementHoverWithRuntime(args: {
   runtime: ViewerMeasurementFeatureRuntime;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): boolean {
   const { runtime, hitState } = args;
   if (getViewerMeasurementToolModeWithRuntime(runtime) !== 'points') {
@@ -885,10 +885,10 @@ function renderMeasurementOverlay(args: {
 export function tryHandleViewerMeasurementClickWithRuntime(args: {
   runtime: ViewerMeasurementFeatureRuntime;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): boolean {
   const { runtime, hitState } = args;
   try {

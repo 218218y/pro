@@ -144,7 +144,7 @@ export interface ConfigCompoundsSeedOptionsLike extends UnknownRecord {
 export interface ConfigCompoundsServiceLike extends UnknownRecord {
   seed?: (opts?: ConfigCompoundsSeedOptionsLike) => Promise<boolean>;
   isSeeded?: () => boolean;
-  options?: ConfigCompoundsSeedOptionsLike;
+  options?: ConfigCompoundsSeedOptionsLike | undefined;
 }
 
 export type BootStartFn = () => unknown;

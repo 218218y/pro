@@ -24,11 +24,11 @@ export type CloudSyncLifecycleStartPollingArgs = {
   publishStatus: () => void;
   diag: CloudSyncDiagFn;
   reason: string;
-  suppressRef?: { v: boolean };
+  suppressRef?: { v: boolean } | undefined;
   pullAllNow: CloudSyncPullAllNowFn;
-  restartRealtime?: () => void;
-  publish?: boolean;
-  isDisposed?: () => boolean;
+  restartRealtime?: (() => void) | undefined;
+  publish?: boolean | undefined;
+  isDisposed?: (() => boolean) | undefined;
 };
 
 function shouldKickCloudSyncRealtimeRecovery(args: {

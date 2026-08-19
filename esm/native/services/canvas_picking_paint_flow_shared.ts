@@ -181,20 +181,19 @@ export function toggleCorniceGroupPaint(__colors: IndividualColorsMap, paint: st
   });
 
   if (shouldRemove) {
-    for (let i = 0; i < CORNICE_PARTS.length; i += 1) delete __colors[CORNICE_PARTS[i]];
+    for (const part of CORNICE_PARTS) delete __colors[part];
     return;
   }
 
   __colors.cornice_color = paint;
-  for (let i = 1; i < CORNICE_PARTS.length; i += 1) delete __colors[CORNICE_PARTS[i]];
+  for (const part of CORNICE_PARTS.slice(1)) delete __colors[part];
 }
 
 export function sameFlatMap<T extends Record<string, unknown>>(a: T, b: T): boolean {
   const aKeys = Object.keys(a);
   const bKeys = Object.keys(b);
   if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i += 1) {
-    const key = aKeys[i];
+  for (const key of aKeys) {
     if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
     if (!Object.is(a[key], b[key])) return false;
   }

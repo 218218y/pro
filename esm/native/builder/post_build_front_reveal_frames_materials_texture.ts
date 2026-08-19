@@ -143,7 +143,7 @@ export function createFrontRevealTextureToneSampler(
         if (ctx2d && typeof ctx2d.getImageData === 'function') {
           const data = ctx2d.getImageData(0, 0, w, h).data;
           if (data && data.length >= 4) {
-            const pts = [
+            const pts: readonly [number, number][] = [
               [0.12, 0.12],
               [0.5, 0.12],
               [0.88, 0.12],
@@ -159,9 +159,9 @@ export function createFrontRevealTextureToneSampler(
             let bAcc = 0;
             let aAcc = 0;
             let n = 0;
-            for (let i = 0; i < pts.length; i++) {
-              const px = Math.max(0, Math.min(w - 1, Math.round(pts[i][0] * (w - 1))));
-              const py = Math.max(0, Math.min(h - 1, Math.round(pts[i][1] * (h - 1))));
+            for (const [sampleX, sampleY] of pts) {
+              const px = Math.max(0, Math.min(w - 1, Math.round(sampleX * (w - 1))));
+              const py = Math.max(0, Math.min(h - 1, Math.round(sampleY * (h - 1))));
               const offset = (py * w + px) * 4;
               if (offset + 3 >= data.length) continue;
               const alpha = readFiniteTextureRuntimeNumber(data[offset + 3]);

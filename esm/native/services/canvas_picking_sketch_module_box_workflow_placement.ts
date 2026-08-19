@@ -9,8 +9,8 @@ export function resolveSketchModuleBoxPlacementAction(args: {
   boxes: unknown[];
   cursorY: number;
   boxH: number;
-  widthM?: number | null;
-  depthM?: number | null;
+  widthM?: number | null | undefined;
+  depthM?: number | null | undefined;
   bottomY: number;
   spanH: number;
   pad: number;
@@ -21,7 +21,7 @@ export function resolveSketchModuleBoxPlacementAction(args: {
   woodThick: number;
   boxGeo: ReturnType<ResolveSketchBoxGeometryFn>;
   resolveSketchBoxGeometry: ResolveSketchBoxGeometryFn;
-  placementBlockers?: VerticalOccupancyRange[] | null;
+  placementBlockers?: VerticalOccupancyRange[] | null | undefined;
 }): SketchModuleBoxActionState {
   const widthM = args.widthM != null && Number.isFinite(args.widthM) && args.widthM > 0 ? args.widthM : null;
   const depthM = args.depthM != null && Number.isFinite(args.depthM) && args.depthM > 0 ? args.depthM : null;
@@ -40,7 +40,7 @@ export function resolveSketchModuleBoxPlacementAction(args: {
     internalZ: Number(args.internalZ),
     woodThick: Number(args.woodThick),
     resolveSketchBoxGeometry: args.resolveSketchBoxGeometry,
-    blockers: args.placementBlockers,
+    ...(args.placementBlockers !== undefined ? { blockers: args.placementBlockers } : {}),
     confineToPointerSlot: true,
   });
   if (resolvedPlacement.blocked) {

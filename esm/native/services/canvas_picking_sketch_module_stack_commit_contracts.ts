@@ -4,7 +4,7 @@ import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout
 export type RecordMap = UnknownRecord;
 
 export type CommitSketchModuleInternalDrawerArgs = {
-  App?: AppContainer | null;
+  App?: AppContainer | null | undefined;
   cfg: RecordMap;
   hoverRec: RecordMap;
   hoverOk: boolean;
@@ -12,7 +12,7 @@ export type CommitSketchModuleInternalDrawerArgs = {
   topY: number;
   totalHeight: number;
   pad: number;
-  woodThick?: number;
+  woodThick?: number | undefined;
   drawerHeightM: number;
   hitYClamped: number;
   hoverHost: ManualLayoutSketchHoverHost;
@@ -29,7 +29,7 @@ export type CommitSketchModuleExternalDrawerArgs = {
   topY: number;
   totalHeight: number;
   pad: number;
-  woodThick?: number;
+  woodThick?: number | undefined;
   hitYClamped: number;
   hoverHost: ManualLayoutSketchHoverHost;
 };

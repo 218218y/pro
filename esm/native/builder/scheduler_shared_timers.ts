@@ -114,7 +114,7 @@ export function makeDebouncedBuild(
 export function cancelBuilderWait(App: AppContainer): void {
   const state = ensureSchedulerState(App);
   const handle = state.builderWaitHandle;
-  state.builderWaitHandle = undefined;
+  delete state.builderWaitHandle;
   state.waitingForBuilder = false;
   state.waitingForBuilderVersion = 0;
   if (handle !== undefined) {
@@ -140,7 +140,7 @@ export function scheduleBuilderWait(
   let waitHandle: TimeoutHandleLike | undefined;
   const run = () => {
     const current = ensureSchedulerState(App);
-    if (current.builderWaitHandle === waitHandle) current.builderWaitHandle = undefined;
+    if (current.builderWaitHandle === waitHandle) delete current.builderWaitHandle;
     const activeVersion =
       typeof current.waitingForBuilderVersion === 'number' ? current.waitingForBuilderVersion : 0;
     if (!current.waitingForBuilder || (scheduledVersion > 0 && activeVersion !== scheduledVersion)) {

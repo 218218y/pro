@@ -117,15 +117,21 @@ export function prepareStackSplitLowerSetup(
     H: bottomH,
     woodThick: args.woodThick,
     baseType: args.baseTypeBottom,
-    baseLegStyle: args.baseLegStyle,
-    baseLegPlatformMode: args.baseLegPlatformMode,
-    baseLegPlatformSideMode: args.baseLegPlatformSideMode,
-    baseLegPlatformSideOverhangCm: args.baseLegPlatformSideOverhangCm,
-    baseLegPlatformFrontOverhangCm: args.baseLegPlatformFrontOverhangCm,
+    ...(args.baseLegStyle !== undefined ? { baseLegStyle: args.baseLegStyle } : {}),
+    ...(args.baseLegPlatformMode !== undefined ? { baseLegPlatformMode: args.baseLegPlatformMode } : {}),
+    ...(args.baseLegPlatformSideMode !== undefined
+      ? { baseLegPlatformSideMode: args.baseLegPlatformSideMode }
+      : {}),
+    ...(args.baseLegPlatformSideOverhangCm !== undefined
+      ? { baseLegPlatformSideOverhangCm: args.baseLegPlatformSideOverhangCm }
+      : {}),
+    ...(args.baseLegPlatformFrontOverhangCm !== undefined
+      ? { baseLegPlatformFrontOverhangCm: args.baseLegPlatformFrontOverhangCm }
+      : {}),
     baseLegSuppressTopPlatform: !!args.stackSplitDecorativeSeparatorEnabled,
-    basePlinthHeightCm: args.basePlinthHeightCm,
-    baseLegHeightCm: args.baseLegHeightCm,
-    baseLegWidthCm: args.baseLegWidthCm,
+    ...(args.basePlinthHeightCm !== undefined ? { basePlinthHeightCm: args.basePlinthHeightCm } : {}),
+    ...(args.baseLegHeightCm !== undefined ? { baseLegHeightCm: args.baseLegHeightCm } : {}),
+    ...(args.baseLegWidthCm !== undefined ? { baseLegWidthCm: args.baseLegWidthCm } : {}),
     doorsCount: bottomDoorsCount,
     hasCornice: false,
     moduleInternalWidths: bottomModuleInternalWidths,

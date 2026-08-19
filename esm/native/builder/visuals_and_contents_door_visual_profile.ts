@@ -102,14 +102,14 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     tagDoorVisualPart,
     hasGrooves,
     isSketch,
-    groovePartId,
+    ...(groovePartId !== undefined ? { groovePartId } : {}),
     zSign,
     targetW: centerW,
     targetH: centerH,
     zOffset: centerFaceZ,
     densityOverride: profileDims.grooveDensityOverride,
     linesCountOverride: grooveLinesCount,
-    grooveLayout,
+    ...(grooveLayout !== undefined ? { grooveLayout } : {}),
   });
 
   return visualGroup;

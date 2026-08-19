@@ -42,8 +42,8 @@ function readSketchSegmentGrooveVisualMapFlag(
   partId: string
 ): boolean | null {
   const keys = listDoorGrooveTargetLookupKeys(partId);
-  for (let index = 0; index < keys.length; index += 1) {
-    const flag = readSketchSegmentGrooveMapFlag(map, keys[index]);
+  for (const key of keys) {
+    const flag = readSketchSegmentGrooveMapFlag(map, key);
     if (flag !== null) return flag;
   }
   return null;
@@ -53,8 +53,7 @@ function hasAnySketchSegmentGrooveMapEntry(map: ValueRecord | null | undefined, 
   const base = resolveDoorVisualSegmentIdentity(toCanonicalDoorGrooveTargetKey(basePartId)).basePartId;
   if (!map || !base) return false;
   const keys = Object.keys(map);
-  for (let index = 0; index < keys.length; index += 1) {
-    const key = keys[index];
+  for (const key of keys) {
     if (!key || map[key] == null || key !== toCanonicalGroovesMapKey(key)) continue;
     const segmentPartId = toCanonicalDoorGrooveTargetKey(key);
     const identity = resolveDoorVisualSegmentIdentity(segmentPartId);

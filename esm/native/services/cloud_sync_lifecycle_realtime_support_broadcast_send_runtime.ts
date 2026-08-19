@@ -14,7 +14,7 @@ import { hasLiveRealtimeSubscriptionStatus } from './cloud_sync_realtime.js';
 
 function buildCloudSyncRealtimeHintDedupeKey(args: {
   scope: CloudSyncRealtimeHintPayload['scope'];
-  rowName?: string;
+  rowName?: string | undefined;
   room: string;
 }): string {
   const { scope, rowName, room } = args;
@@ -28,7 +28,7 @@ export async function sendCloudSyncRealtimeHint(args: {
   realtimeMode: string;
   runtimeStatus: CloudSyncRuntimeStatus;
   scope: string;
-  rowName?: string;
+  rowName?: string | undefined;
   room: string;
   clientId: string;
   eventName: string;

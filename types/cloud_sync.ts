@@ -19,11 +19,11 @@ export type CloudSyncScalarLike = string | number | boolean | null;
 export type CloudSyncJsonLike = UnknownRecord | unknown[] | CloudSyncScalarLike;
 
 export interface CloudSyncPayload extends UnknownRecord {
-  savedModels?: SavedModelLike[] | null;
-  savedColors?: SavedColorLike[] | null;
-  colorSwatchesOrder?: CloudSyncOrderList | null;
-  presetOrder?: CloudSyncOrderList | null;
-  hiddenPresets?: CloudSyncOrderList | null;
+  savedModels?: SavedModelLike[] | null | undefined;
+  savedColors?: SavedColorLike[] | null | undefined;
+  colorSwatchesOrder?: CloudSyncOrderList | null | undefined;
+  presetOrder?: CloudSyncOrderList | null | undefined;
+  hiddenPresets?: CloudSyncOrderList | null | undefined;
 }
 
 export interface CloudSyncStateRow {
@@ -380,10 +380,10 @@ export interface CloudCollectionsServiceLike extends UnknownRecord {
 }
 
 export interface CloudSyncTabsGatePayload extends UnknownRecord {
-  tabsGateOpen?: boolean | number | string | null;
-  tabsGateUntil?: number | string | null;
-  tabsGateRev?: number | string | null;
-  tabsGateBy?: string | null;
+  tabsGateOpen?: boolean | number | string | null | undefined;
+  tabsGateUntil?: number | string | null | undefined;
+  tabsGateRev?: number | string | null | undefined;
+  tabsGateBy?: string | null | undefined;
 }
 
 export interface CloudSyncTabsGateState {
@@ -394,9 +394,9 @@ export interface CloudSyncTabsGateState {
 }
 
 export interface CloudSyncSyncPinPayload extends UnknownRecord {
-  syncPinEnabled?: boolean | number | string | null;
-  syncPinRev?: number | string | null;
-  syncPinBy?: string | null;
+  syncPinEnabled?: boolean | number | string | null | undefined;
+  syncPinRev?: number | string | null | undefined;
+  syncPinBy?: string | null | undefined;
 }
 
 export interface CloudSyncSyncPinState {
@@ -406,9 +406,9 @@ export interface CloudSyncSyncPinState {
 }
 
 export interface CloudSyncContentsTogglePayload extends UnknownRecord {
-  showContentsEnabled?: boolean | number | string | null;
-  showContentsRev?: number | string | null;
-  showContentsBy?: string | null;
+  showContentsEnabled?: boolean | number | string | null | undefined;
+  showContentsRev?: number | string | null | undefined;
+  showContentsBy?: string | null | undefined;
 }
 
 export interface CloudSyncContentsToggleState {
@@ -418,10 +418,10 @@ export interface CloudSyncContentsToggleState {
 }
 
 export interface CloudSyncSketchPayload extends UnknownRecord {
-  sketchRev?: number | string | null;
-  sketchHash?: string | null;
-  sketchBy?: string | null;
-  sketch?: CloudSyncJsonLike;
+  sketchRev?: number | string | null | undefined;
+  sketchHash?: string | null | undefined;
+  sketchBy?: string | null | undefined;
+  sketch?: CloudSyncJsonLike | undefined;
 }
 
 export interface CloudSyncSketchState {

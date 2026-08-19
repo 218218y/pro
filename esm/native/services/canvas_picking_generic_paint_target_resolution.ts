@@ -21,7 +21,7 @@ export function resolveGenericPartPaintTarget(args: {
   wardrobeGroup: UnknownRecord | null | undefined;
   primaryHitObject: unknown;
   foundPartId?: string | null;
-  intersects?: readonly RaycastHitLike[] | null;
+  intersects?: readonly RaycastHitLike[] | null | undefined;
   primaryHitPoint?: { x?: number; y?: number; z?: number } | null;
 }): GenericPartPaintTarget | null {
   const { App, wardrobeGroup, primaryHitObject } = args;

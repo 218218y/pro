@@ -45,7 +45,7 @@ export function handleCloudSyncRealtimeDisconnect(
     subscribedRef: { current: boolean };
     transportToken: number;
     disconnectStateRef: { current: boolean };
-    opts?: { lastError?: string };
+    opts?: { lastError?: string } | undefined;
   }
 ): void {
   const {

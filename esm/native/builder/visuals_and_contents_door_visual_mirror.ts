@@ -227,9 +227,8 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
   // Sketch-only: a subtle diagonal pattern overlay to distinguish mirrors.
   const sketchCanvas = isSketch ? getOrCreateSketchPatternCanvas(App, THREE) : null;
 
-  for (let i = 0; i < placements.length; i += 1) {
-    const placement = placements[i];
-    const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
+  for (const [i, placement] of placements.entries()) {
+    const placementLayout = placementLayouts[i] ?? null;
     const placementFaceSign = readMirrorLayoutFaceSign(placementLayout, zSign);
     const mirrorMesh = new THREE.Mesh(
       new THREE.BoxGeometry(placement.mirrorWidthM, placement.mirrorHeightM, depthLayout.mirrorThick),
@@ -241,7 +240,7 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
     applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
     applyMirrorReflectorIdentityMetadata(mirrorMesh, {
-      ownerPartId: args.groovePartId,
+      ...(args.groovePartId !== undefined ? { ownerPartId: args.groovePartId } : {}),
       role: 'door_mirror_surface',
       placementIndex: i,
       faceSign: placementFaceSign,

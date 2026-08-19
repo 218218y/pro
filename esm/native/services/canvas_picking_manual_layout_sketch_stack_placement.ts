@@ -36,7 +36,7 @@ export function readManualLayoutSketchNormalizedCenterY(args: {
     topY,
     totalHeight: args.totalHeight,
     stackH: args.stackH,
-    pad: args.pad,
+    ...(args.pad !== undefined ? { pad: args.pad } : {}),
   });
 }
 
@@ -50,10 +50,10 @@ export function createManualLayoutSketchNormalizedCenterReader(args: {
     readManualLayoutSketchNormalizedCenterY({
       item,
       bottomY: args.bottomY,
-      topY: args.topY,
+      ...(args.topY !== undefined ? { topY: args.topY } : {}),
       totalHeight: args.totalHeight,
       stackH,
-      pad: args.pad,
+      ...(args.pad !== undefined ? { pad: args.pad } : {}),
     });
 }
 
@@ -62,7 +62,7 @@ export function buildManualLayoutSketchInternalDrawerBlockers(args: {
   bottomY: number;
   topY: number;
   pad: number;
-  woodThick?: number | null;
+  woodThick?: number | null | undefined;
   readCenterY: ManualLayoutSketchCenterReader;
 }): VerticalOccupancyRange[] {
   const blockerWoodThick =
@@ -114,12 +114,12 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
   topY: number;
   totalHeight: number;
   pad: number;
-  drawerHeightM?: number | null;
+  drawerHeightM?: number | null | undefined;
   drawers: UnknownRecord[];
   readCenterY: ManualLayoutSketchCenterReader;
-  woodThick?: number | null;
+  woodThick?: number | null | undefined;
   blockers?: VerticalOccupancyRange[];
-  gap?: number;
+  gap?: number | undefined;
 }): {
   op: 'add' | 'remove' | 'blocked';
   removeId: string | null;
@@ -151,7 +151,7 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
     bottomY: args.bottomY,
     topY: args.topY,
     pad: args.pad,
-    woodThick: args.woodThick,
+    ...(args.woodThick !== undefined ? { woodThick: args.woodThick } : {}),
     readCenterY: args.readCenterY,
   }).map(stack => ({
     ...stack,
@@ -176,7 +176,7 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
     clampCenter,
     sameStacks,
     blockers,
-    gap: args.gap,
+    ...(args.gap !== undefined ? { gap: args.gap } : {}),
     relocateOnCollision: false,
     snapToAvailableSlot: true,
   });
@@ -194,16 +194,16 @@ export function resolveManualLayoutSketchInternalDrawerPlacement(args: {
 export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
   desiredCenterY: number;
   selectedDrawerCount: number;
-  drawerType?: 'regular' | 'shoe';
-  drawerHeightM?: number | null;
+  drawerType?: 'regular' | 'shoe' | undefined;
+  drawerHeightM?: number | null | undefined;
   bottomY: number;
   topY: number;
   pad: number;
   extDrawers: UnknownRecord[];
   readCenterY: ManualLayoutSketchCenterReader;
   blockers?: VerticalOccupancyRange[];
-  regH?: number;
-  gap?: number;
+  regH?: number | undefined;
+  gap?: number | undefined;
 }): {
   op: 'add' | 'remove' | 'blocked';
   removeId: string | null;
@@ -254,7 +254,7 @@ export function resolveManualLayoutSketchExternalDrawerPlacement(args: {
       pad: args.pad,
       readCenterY: args.readCenterY,
     }).concat(args.blockers || []),
-    gap: args.gap,
+    ...(args.gap !== undefined ? { gap: args.gap } : {}),
     relocateOnCollision: false,
     snapToAvailableSlot: !isShoeDrawer,
   });

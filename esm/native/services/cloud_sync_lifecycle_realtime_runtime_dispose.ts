@@ -7,7 +7,7 @@ export function disposeCloudSyncRealtimeLifecycle(
   args: Pick<CloudSyncRealtimeLifecycleArgs, 'runtimeStatus' | 'publishStatus'> & {
     transport: CloudSyncRealtimeTransport;
     mutableState: CloudSyncRealtimeRuntimeMutableState;
-    opts?: { publish?: boolean };
+    opts?: { publish?: boolean } | undefined;
   }
 ): void {
   const { runtimeStatus, publishStatus, transport, mutableState, opts } = args;

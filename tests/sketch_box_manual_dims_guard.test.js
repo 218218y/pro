@@ -167,8 +167,8 @@ test('[sketch-box] picking bundle preserves width/depth overrides, rear-panel pr
     [
       /export function __wp_parseSketchBoxToolSpec\(tool: string\): __wpSketchBoxToolSpec \| null/,
       /export function __wp_resolveSketchBoxGeometry\(args: \{/,
-      /widthM: args\.widthOverrideM,/,
-      /depthM: args\.depthOverrideM,/,
+      /widthM:\s*args\.widthOverrideM/,
+      /depthM:\s*args\.depthOverrideM/,
       /widthM: boxTool\.boxWM,/,
       /depthM: boxTool\.boxDM,/,
       /snapToCenter:\s*hoverPlacement\.snapToCenter,/,

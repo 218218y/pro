@@ -19,8 +19,7 @@ export function scanCanvasPickingClickHits(args: {
 }): void {
   const { App, intersects, isRemoveDoorMode, state } = args;
 
-  for (let i = 0; i < intersects.length; i++) {
-    const hit = intersects[i];
+  for (const hit of intersects) {
     const obj = hit.object;
 
     if (obj.type === 'LineSegments' || obj.type === 'Line' || obj.type === 'Sprite') continue;

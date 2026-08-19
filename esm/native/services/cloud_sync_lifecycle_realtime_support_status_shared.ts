@@ -64,9 +64,9 @@ export function applyCloudSyncRealtimeLifecycleTransition(
     channel?: string;
     lastError?: string;
     runPollingTransition?: () => void;
-    diag?: CloudSyncDiagFn;
-    diagEvent?: string;
-    diagPayload?: CloudSyncDiagPayload;
+    diag?: CloudSyncDiagFn | undefined;
+    diagEvent?: string | undefined;
+    diagPayload?: CloudSyncDiagPayload | undefined;
   }
 ): boolean {
   const {

@@ -53,9 +53,11 @@ function resolveHorizontalCarcassFrontZ(args: { cabinetDepth: number; panelDepth
 
 function createShape(three: ThreeLoose, points: P2[]): ShapeLike | null {
   if (typeof three.Shape !== 'function' || !points.length) return null;
+  const firstPoint = points[0];
+  if (!firstPoint) return null;
   const shape = new three.Shape();
-  shape.moveTo(points[0].x, points[0].z);
-  for (let i = 1; i < points.length; i += 1) shape.lineTo(points[i].x, points[i].z);
+  shape.moveTo(firstPoint.x, firstPoint.z);
+  for (const point of points.slice(1)) shape.lineTo(point.x, point.z);
   if (typeof shape.closePath === 'function') shape.closePath();
   return shape;
 }
@@ -164,7 +166,7 @@ function addSegmentPanel(args: {
     globalDoorStyle: args.runtime.doorStyle,
   });
   const glassVisual = createHexCellDiagonalGlassVisual({
-    createDoorVisual: args.runtime.createDoorVisual,
+    createDoorVisual: args.runtime.createDoorVisual ?? null,
     width: len,
     height: args.height,
     thickness: args.runtime.woodThick,

@@ -213,6 +213,34 @@ test('free-box hover context preserves focused workspace-pad min, ratio, max, an
   assert.equal(typeof ratio.previewH, 'number');
 });
 
+test('free-box hover context applies optional width/depth overrides and treats omitted overrides as fallback inputs', () => {
+  const withDefaultOverrides = makeArgs({ planeX: 0, planeY: 0.5, boxH: 0.4 });
+  const {
+    widthOverrideM: _defaultWidthOverrideM,
+    depthOverrideM: _defaultDepthOverrideM,
+    ...base
+  } = withDefaultOverrides;
+  const explicit = createSketchFreeBoxHoverContext({
+    ...base,
+    widthOverrideM: 1.1,
+    depthOverrideM: 0.45,
+  });
+  const omitted = createSketchFreeBoxHoverContext(base);
+  const explicitUndefined = createSketchFreeBoxHoverContext({
+    ...base,
+    widthOverrideM: undefined,
+    depthOverrideM: undefined,
+  } as any);
+
+  assert.ok(explicit);
+  assert.ok(omitted);
+  assert.ok(explicitUndefined);
+  assert.equal(explicit.previewW, 1.1);
+  assert.equal(explicit.previewD, 0.45);
+  assert.equal(explicitUndefined.previewW, omitted.previewW);
+  assert.equal(explicitUndefined.previewD, omitted.previewD);
+});
+
 test('free-box hover context rejects malformed required geometry without changing helper fallbacks', () => {
   const base = makeArgs({ planeX: 1.2, planeY: 0.5, boxH: 0.4 });
   assert.equal(createSketchFreeBoxHoverContext({ ...base, planeX: Number.NaN }), null);

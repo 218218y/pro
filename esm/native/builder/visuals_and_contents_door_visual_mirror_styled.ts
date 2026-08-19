@@ -109,8 +109,7 @@ function readBoxGeometryDimension(
 }
 
 function readCenterPanelMetrics(group: Object3DLike, role: string): CenterPanelMetrics | null {
-  for (let i = 0; i < group.children.length; i += 1) {
-    const child = group.children[i];
+  for (const child of group.children) {
     if (child.userData.__doorVisualRole !== role) continue;
 
     const geometry = readPanelGeometry(child);
@@ -203,9 +202,8 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
   });
   const depthLayout = resolveMirrorDepthLayout(args.thickness);
 
-  for (let i = 0; i < placements.length; i += 1) {
-    const placement = placements[i];
-    const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
+  for (const [i, placement] of placements.entries()) {
+    const placementLayout = placementLayouts[i] ?? null;
     const placementFaceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     const mirrorMesh = new args.THREE.Mesh(
       new args.THREE.BoxGeometry(placement.mirrorWidthM, placement.mirrorHeightM, depthLayout.mirrorThick),
@@ -217,7 +215,7 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
     applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
     applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
     applyMirrorReflectorIdentityMetadata(mirrorMesh, {
-      ownerPartId: args.groovePartId,
+      ...(args.groovePartId !== undefined ? { ownerPartId: args.groovePartId } : {}),
       role: 'door_mirror_center_panel',
       placementIndex: i,
       faceSign: placementFaceSign,
@@ -267,7 +265,7 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
     applyDoorFaceIdentityMetadata(mirrorMesh, -1);
     applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
     applyMirrorReflectorIdentityMetadata(mirrorMesh, {
-      ownerPartId: args.groovePartId,
+      ...(args.groovePartId !== undefined ? { ownerPartId: args.groovePartId } : {}),
       role: 'door_mirror_inside_full_panel',
       placementIndex: i,
       faceSign: -1,

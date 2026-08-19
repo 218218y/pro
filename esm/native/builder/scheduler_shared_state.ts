@@ -24,9 +24,7 @@ export function ensureSchedulerState(App: AppContainer): BuilderSchedulerStateIn
     lastTs: 0,
     waitingForBuilder: false,
     waitingForBuilderVersion: 0,
-    builderWaitHandle: undefined,
     buildWardrobeDebounced: null,
-    debugStats: undefined,
   };
   B.__schedulerState = next;
   return next;

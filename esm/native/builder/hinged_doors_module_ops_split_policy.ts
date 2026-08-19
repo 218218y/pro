@@ -12,8 +12,7 @@ function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly nu
   const kept: number[] = [];
   let prevBottom = ctx.doorBottomY;
 
-  for (let i = 0; i < values.length; i++) {
-    const y = values[i];
+  for (const y of values) {
     if (y - prevBottom < minSegH) continue;
     if (topEdge - y < minSegH) continue;
     kept.push(y);
@@ -28,9 +27,8 @@ function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly nu
       height * HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceHeightRatio
     )
   );
-  for (let i = 0; i < kept.length; i++) {
-    const y = kept[i];
-    const prev = out.length ? out[out.length - 1] : NaN;
+  for (const y of kept) {
+    const prev = out.at(-1) ?? NaN;
     if (Number.isFinite(prev) && Math.abs(prev - y) <= tol) continue;
     out.push(y);
   }
@@ -77,7 +75,7 @@ export function computeTopSplitLineY(
 ): number {
   try {
     const norms = readSplitPosListSafe(ctx, `d${state.currentDoorId}`);
-    const n0 = norms.length ? norms[0] : NaN;
+    const n0 = norms[0] ?? NaN;
     if (!Number.isFinite(n0)) return ctx.splitLineY;
     const topEdge = ctx.effectiveTopLimit;
     const height = topEdge - ctx.doorBottomY;
@@ -104,8 +102,7 @@ export function computeCustomSplitCutsY(
 
     const padAbs = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM;
     const abs: number[] = [];
-    for (let i = 0; i < norms.length; i++) {
-      const raw = norms[i];
+    for (const raw of norms) {
       if (!Number.isFinite(raw)) continue;
       const normalized = Math.max(0, Math.min(1, raw));
       let y0 = ctx.doorBottomY + normalized * height;

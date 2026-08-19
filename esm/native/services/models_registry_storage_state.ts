@@ -1,20 +1,23 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, ModelsChangeListener, ModelsNormalizer, SavedModelLike } from '../../../types';
 
-import {
-  type AppModelsState,
-  type ModelsRuntimeState,
-  asListenersList,
-  isModelsNormalizer,
-} from './models_registry_contracts.js';
+import { type ModelsRuntimeState, asListenersList, isModelsNormalizer } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { _cloneJSON } from './models_registry_normalization.js';
 import { getAppModels } from './models_registry_storage_keys.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
+type ModelsRuntimeMirrorSnapshot = {
+  _normalizer: ModelsNormalizer | null;
+  _presets: SavedModelLike[];
+  _loaded: boolean;
+  _all: SavedModelLike[];
+  _listeners: ModelsChangeListener[];
+};
+
 function buildModelsRuntimeMirrorSnapshot(
   App: AppContainer,
   state: ModelsRuntimeState
-): Pick<AppModelsState, '_normalizer' | '_presets' | '_loaded' | '_all' | '_listeners'> | null {
+): ModelsRuntimeMirrorSnapshot | null {
   const presets = _cloneJSON(state.presets, { App, op: 'syncModelsStateToApp.presets' });
   const all = _cloneJSON(state.all, { App, op: 'syncModelsStateToApp.all' });
   if (!presets || !all) return null;
@@ -57,14 +60,14 @@ export function _hydrateFromApp(App: AppContainer): void {
 export function _notify(App?: AppContainer | null): void {
   const state = getModelsRuntimeStateForApp(App);
   const listeners = state.listeners.slice();
-  for (let i = 0; i < listeners.length; i++) {
+  for (const listener of listeners) {
     const snapshot = _cloneJSON(state.all, {
       App: App ?? null,
       op: 'notify.listenerSnapshot',
     });
     if (!snapshot) return;
     try {
-      listeners[i](snapshot);
+      listener(snapshot);
     } catch (e) {
       _modelsReportNonFatal(App ?? null, 'notify', e, 1500);
     }

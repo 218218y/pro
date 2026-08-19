@@ -87,18 +87,18 @@ function publishConstructionCorrections(
   ];
   const notices: Array<{ title: string; message: string }> = [];
 
-  for (let i = 0; i < kinds.length; i += 1) {
-    const kind = kinds[i];
+  for (const kind of kinds) {
     const definition = readConstructionCorrectionDefinition(kind);
     const message = definition.buildMessage(uniqueSortedPartIds(partIdsByKind[kind] || []).length);
     if (message) notices.push({ title: definition.title, message });
   }
-  if (!notices.length) return;
+  const firstNotice = notices[0];
+  if (!firstNotice) return;
 
-  const title = notices.length === 1 ? notices[0].title : 'סיכום שינויים חשובים בבנייה';
+  const title = notices.length === 1 ? firstNotice.title : 'סיכום שינויים חשובים בבנייה';
   const message =
     notices.length === 1
-      ? notices[0].message
+      ? firstNotice.message
       : notices.map((notice, index) => `${index + 1}. ${notice.message}`).join('\n\n');
 
   try {

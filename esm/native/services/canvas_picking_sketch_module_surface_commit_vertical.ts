@@ -47,7 +47,7 @@ function getSketchModuleVerticalContentLabel(kind: SketchModuleVerticalContentKi
 }
 
 function toastSketchVerticalContentCollisionFailure(args: {
-  App?: AppContainer;
+  App?: AppContainer | undefined;
   kind: SketchModuleVerticalContentKind;
 }): void {
   if (!args.App) return;

@@ -1347,8 +1347,9 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
   ]);
 
   assert.match(overlaySrc, /const moduleCutStackKeys: Array<'top' \| 'bottom'> =[\s\S]*\['top', 'bottom'\]/);
-  assert.match(overlaySrc, /stackKey: moduleCutStackKeys\[i\]/);
-  assert.match(overlaySrc, /allowConfigDerivedCuts: moduleCutStackKeys\[i\] === stackKey/);
+  assert.match(overlaySrc, /for \(const moduleCutStackKey of moduleCutStackKeys\)/);
+  assert.match(overlaySrc, /stackKey: moduleCutStackKey/);
+  assert.match(overlaySrc, /allowConfigDerivedCuts: moduleCutStackKey === stackKey/);
   assert.match(cutsSrc, /function normalizeSketchModuleCutKey\(/);
   assert.match(
     cutsSrc,

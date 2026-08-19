@@ -136,10 +136,12 @@ export function asCtx2DLike(v: unknown): Ctx2DLike | null {
       const out = Reflect.apply(getImageData, v, [sx, sy, sw, sh]);
       return asImageDataLike(out) ?? { data: new Uint8ClampedArray(0) };
     },
-    clearRect:
-      typeof clearRect === 'function'
-        ? (x: number, y: number, w: number, h: number) => Reflect.apply(clearRect, v, [x, y, w, h])
-        : undefined,
+    ...(typeof clearRect === 'function'
+      ? {
+          clearRect: (x: number, y: number, w: number, h: number) =>
+            Reflect.apply(clearRect, v, [x, y, w, h]),
+        }
+      : {}),
   };
 }
 

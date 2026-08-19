@@ -27,13 +27,13 @@ function readSketchExtrasRecord(value: unknown): RecordMap | null {
 }
 
 export function buildSketchModuleBoxVerticalBlockers(args: {
-  cfgRef?: RecordMap | null;
-  boxes?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  boxes?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;
   pad: number;
-  woodThick?: number;
+  woodThick?: number | undefined;
 }): VerticalOccupancyRange[] {
   if (!(args.topY > args.bottomY) || !(args.totalHeight > 0)) return [];
   const woodThick =
@@ -68,13 +68,13 @@ export function buildSketchModuleBoxVerticalBlockers(args: {
 }
 
 export function buildSketchModuleBoxPlacementBlockers(args: {
-  cfgRef?: RecordMap | null;
-  info?: RecordMap | null;
-  shelves?: RecordMap[] | null;
-  rods?: RecordMap[] | null;
-  storageBarriers?: RecordMap[] | null;
-  drawers?: RecordMap[] | null;
-  extDrawers?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  info?: RecordMap | null | undefined;
+  shelves?: RecordMap[] | null | undefined;
+  rods?: RecordMap[] | null | undefined;
+  storageBarriers?: RecordMap[] | null | undefined;
+  drawers?: RecordMap[] | null | undefined;
+  extDrawers?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;

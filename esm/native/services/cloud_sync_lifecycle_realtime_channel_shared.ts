@@ -64,7 +64,7 @@ export type CloudSyncRealtimeChannelStartArgs = {
   refs: CloudSyncRealtimeRefs;
   setSendRealtimeHint: (next: CloudSyncRealtimeHintSender | null) => void;
   transport: CloudSyncRealtimeTransport;
-  restartRealtime?: () => void;
+  restartRealtime?: (() => void) | undefined;
 };
 
 export function cleanupStaleRealtimeStart(args: {

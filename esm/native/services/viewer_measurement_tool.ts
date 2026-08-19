@@ -36,10 +36,10 @@ export function clearViewerMeasurementOverlay(App: AppContainer, render = true):
 export function resolveViewerMeasurementHitState(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): CanvasPickingClickHitState | null {
   return resolveViewerMeasurementHitStateWithRoom(args);
 }
@@ -47,10 +47,10 @@ export function resolveViewerMeasurementHitState(args: {
 export function tryHandleViewerMeasurementHover(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
   preResolvedHitState?: CanvasPickingClickHitState | null;
 }): boolean {
   const hitState =
@@ -70,10 +70,10 @@ export function tryHandleViewerMeasurementHover(args: {
 export function tryHandleViewerMeasurementClick(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): boolean {
   const hitState = resolveViewerMeasurementHitStateWithRoom(args);
   return tryHandleViewerMeasurementClickWithRuntime({

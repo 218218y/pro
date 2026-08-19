@@ -182,8 +182,7 @@ function clampAbsYToGroup(absY: number, centerY: number, height: number): number
 }
 
 function removeExistingHandleChildren(group: NodeLike): void {
-  for (let i = group.children.length - 1; i >= 0; i--) {
-    const c = group.children[i];
+  for (const c of group.children.slice().reverse()) {
     if (
       c.name === 'handle_group_v7' ||
       (c.userData && (c.userData.__kind === 'handle' || c.userData.isHandle))
@@ -199,8 +198,7 @@ function syncDoorVisibilityForRemovedDoors(
   isDoorRemovedV7: (partId: unknown) => boolean
 ): void {
   const arr = getDoorsArray(App);
-  for (let i = 0; i < arr.length; i++) {
-    const d = arr[i];
+  for (const d of arr) {
     const g = d && d.group;
     if (!g) continue;
 

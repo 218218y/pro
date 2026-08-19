@@ -20,10 +20,10 @@ export type CreateCloudSyncMainRowPullFlowArgs = {
   setTimeoutFn: (handler: () => void, ms: number) => TimeoutHandleLike;
   clearTimeoutFn: (id: TimeoutHandleLike | null | undefined) => void;
   suppressRef: { v: boolean };
-  diag?: CloudSyncDiagFn;
-  reportFailure?: (operation: string, error: unknown) => void;
+  diag?: CloudSyncDiagFn | undefined;
+  reportFailure?: ((operation: string, error: unknown) => void) | undefined;
   isPushInFlight: () => boolean;
-  hasPendingPushWork?: () => boolean;
+  hasPendingPushWork?: (() => boolean) | undefined;
   runPullRemote: (isInitial: boolean) => Promise<void>;
 };
 

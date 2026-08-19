@@ -66,6 +66,7 @@ export function getUnavailableCloudSyncPanelSnapshot(): CloudSyncPanelSnapshot {
 export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncPanelSnapshot {
   const rec = asCloudSyncPublicRecord(snapshot);
   if (!rec) return getUnavailableCloudSyncPanelSnapshot();
+  const conflict = cloneCloudSyncConflictStatus(rec.conflict);
   return cloneCloudSyncPanelSnapshot({
     room: typeof rec.room === 'string' ? rec.room : '',
     isPublic: typeof rec.isPublic === 'boolean' ? rec.isPublic : null,
@@ -94,9 +95,7 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
         ? rec.failureKind
         : '',
     floatingSync: !!rec.floatingSync,
-    ...(cloneCloudSyncConflictStatus(rec.conflict)
-      ? { conflict: cloneCloudSyncConflictStatus(rec.conflict) }
-      : {}),
+    ...(conflict ? { conflict } : {}),
   });
 }
 

@@ -68,7 +68,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
     localParent: unknown;
     partPrefix: string;
   }) => LocalPoint | null;
-  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null;
+  projectPointerToLocalZPlane?: ((planeZ: number) => LocalPoint | null) | null | undefined;
 }): SketchFreeBoxTargetCandidate | null {
   const {
     App,
@@ -162,7 +162,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
       targetHeight: heightM,
       pointerX: hitX,
       pointerY: hitY,
-      pointerZ: hitZ,
+      ...(hitZ !== undefined ? { pointerZ: hitZ } : {}),
     },
   };
 }

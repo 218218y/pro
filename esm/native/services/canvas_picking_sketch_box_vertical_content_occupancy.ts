@@ -159,7 +159,7 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
     contentXNorm,
     removeId,
     removeIdx,
-    heightM: blocker.heightM,
+    ...(blocker.heightM !== undefined ? { heightM: blocker.heightM } : {}),
   });
   const centerX = readFiniteSegmentNumber(segment, 'centerX') ?? state.targetGeo.centerX;
   const width = readFiniteSegmentNumber(segment, 'width') ?? state.targetGeo.innerW;

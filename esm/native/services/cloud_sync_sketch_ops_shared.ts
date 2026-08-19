@@ -45,7 +45,7 @@ export type CloudSyncSketchOpsBaseDeps = {
   App: AppContainer;
   cfg: CloudSyncSketchConfig;
   storage: StorageLike;
-  getGateBaseRoom?: () => string;
+  getGateBaseRoom?: (() => string) | undefined;
   currentRoom: () => string;
 };
 

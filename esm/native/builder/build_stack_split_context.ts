@@ -72,17 +72,27 @@ export function createStackSplitLowerBuildContext(args: {
     strings: {
       doorStyle: buildArgs.doorStyle,
       baseType: buildArgs.baseTypeBottom,
-      baseLegStyle: buildArgs.baseLegStyle,
-      baseLegColor: buildArgs.baseLegColor,
-      baseLegPlatformMode: buildArgs.baseLegPlatformMode,
-      baseLegPlatformSideMode: buildArgs.baseLegPlatformSideMode,
-      baseLegPlatformSideOverhangCm: buildArgs.baseLegPlatformSideOverhangCm,
-      baseLegPlatformFrontOverhangCm: buildArgs.baseLegPlatformFrontOverhangCm,
+      ...(buildArgs.baseLegStyle !== undefined ? { baseLegStyle: buildArgs.baseLegStyle } : {}),
+      ...(buildArgs.baseLegColor !== undefined ? { baseLegColor: buildArgs.baseLegColor } : {}),
+      ...(buildArgs.baseLegPlatformMode !== undefined
+        ? { baseLegPlatformMode: buildArgs.baseLegPlatformMode }
+        : {}),
+      ...(buildArgs.baseLegPlatformSideMode !== undefined
+        ? { baseLegPlatformSideMode: buildArgs.baseLegPlatformSideMode }
+        : {}),
+      ...(buildArgs.baseLegPlatformSideOverhangCm !== undefined
+        ? { baseLegPlatformSideOverhangCm: buildArgs.baseLegPlatformSideOverhangCm }
+        : {}),
+      ...(buildArgs.baseLegPlatformFrontOverhangCm !== undefined
+        ? { baseLegPlatformFrontOverhangCm: buildArgs.baseLegPlatformFrontOverhangCm }
+        : {}),
       stackSplitDecorativeSeparatorSideOverhangCm: buildArgs.stackSplitDecorativeSeparatorSideOverhangCm,
       stackSplitDecorativeSeparatorFrontOverhangCm: buildArgs.stackSplitDecorativeSeparatorFrontOverhangCm,
-      basePlinthHeightCm: buildArgs.basePlinthHeightCm,
-      baseLegHeightCm: buildArgs.baseLegHeightCm,
-      baseLegWidthCm: buildArgs.baseLegWidthCm,
+      ...(buildArgs.basePlinthHeightCm !== undefined
+        ? { basePlinthHeightCm: buildArgs.basePlinthHeightCm }
+        : {}),
+      ...(buildArgs.baseLegHeightCm !== undefined ? { baseLegHeightCm: buildArgs.baseLegHeightCm } : {}),
+      ...(buildArgs.baseLegWidthCm !== undefined ? { baseLegWidthCm: buildArgs.baseLegWidthCm } : {}),
     },
 
     layout: {
@@ -210,15 +220,25 @@ export function applyStackSplitLowerCornerWingIfNeeded(args: {
       roomArchitecturePlan: buildArgs.roomArchitecturePlan,
       stackKey: 'bottom',
       baseType: buildArgs.baseTypeBottom,
-      baseLegStyle: buildArgs.baseLegStyle,
-      baseLegColor: buildArgs.baseLegColor,
-      baseLegPlatformMode: buildArgs.baseLegPlatformMode,
-      baseLegPlatformSideMode: buildArgs.baseLegPlatformSideMode,
-      baseLegPlatformSideOverhangCm: buildArgs.baseLegPlatformSideOverhangCm,
-      baseLegPlatformFrontOverhangCm: buildArgs.baseLegPlatformFrontOverhangCm,
-      basePlinthHeightCm: buildArgs.basePlinthHeightCm,
-      baseLegHeightCm: buildArgs.baseLegHeightCm,
-      baseLegWidthCm: buildArgs.baseLegWidthCm,
+      ...(buildArgs.baseLegStyle !== undefined ? { baseLegStyle: buildArgs.baseLegStyle } : {}),
+      ...(buildArgs.baseLegColor !== undefined ? { baseLegColor: buildArgs.baseLegColor } : {}),
+      ...(buildArgs.baseLegPlatformMode !== undefined
+        ? { baseLegPlatformMode: buildArgs.baseLegPlatformMode }
+        : {}),
+      ...(buildArgs.baseLegPlatformSideMode !== undefined
+        ? { baseLegPlatformSideMode: buildArgs.baseLegPlatformSideMode }
+        : {}),
+      ...(buildArgs.baseLegPlatformSideOverhangCm !== undefined
+        ? { baseLegPlatformSideOverhangCm: buildArgs.baseLegPlatformSideOverhangCm }
+        : {}),
+      ...(buildArgs.baseLegPlatformFrontOverhangCm !== undefined
+        ? { baseLegPlatformFrontOverhangCm: buildArgs.baseLegPlatformFrontOverhangCm }
+        : {}),
+      ...(buildArgs.basePlinthHeightCm !== undefined
+        ? { basePlinthHeightCm: buildArgs.basePlinthHeightCm }
+        : {}),
+      ...(buildArgs.baseLegHeightCm !== undefined ? { baseLegHeightCm: buildArgs.baseLegHeightCm } : {}),
+      ...(buildArgs.baseLegWidthCm !== undefined ? { baseLegWidthCm: buildArgs.baseLegWidthCm } : {}),
       stackSplitEnabled: true,
       stackSplitUnifiedFrame: !!buildArgs.stackSplitUnifiedFrame,
       stackOffsetZ,

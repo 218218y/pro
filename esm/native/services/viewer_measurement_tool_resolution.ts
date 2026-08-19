@@ -875,7 +875,7 @@ function readModuleInteriorBox(args: {
 
   try {
     if (typeof wardrobeGroup.traverse === 'function') wardrobeGroup.traverse(visit);
-    else for (let i = 0; i < wardrobeGroup.children.length; i += 1) visit(wardrobeGroup.children[i]);
+    else for (const child of wardrobeGroup.children) visit(child);
   } catch {
     // A cavity measurement should still fall back to the full internal selector box.
   }
@@ -884,7 +884,8 @@ function readModuleInteriorBox(args: {
     .filter(n => Number.isFinite(n))
     .sort((a, b) => a - b)
     .reduce<number[]>((acc, n) => {
-      if (!acc.length || Math.abs(acc[acc.length - 1] - n) > 0.004) acc.push(n);
+      const last = acc[acc.length - 1];
+      if (last === undefined || Math.abs(last - n) > 0.004) acc.push(n);
       return acc;
     }, []);
 
@@ -893,6 +894,7 @@ function readModuleInteriorBox(args: {
   for (let i = 0; i < sorted.length - 1; i += 1) {
     const a = sorted[i];
     const b = sorted[i + 1];
+    if (a === undefined || b === undefined) continue;
     if (b - a < MIN_MEASURABLE_EDGE_M) continue;
     if (hitY >= a - 0.002 && hitY <= b + 0.002) {
       low = a;

@@ -52,8 +52,7 @@ export function collectOverlaps(args: {
   gap?: number;
 }): ResolvedModuleBoxLike[] {
   const result: ResolvedModuleBoxLike[] = [];
-  for (let i = 0; i < args.boxes.length; i++) {
-    const box = args.boxes[i];
+  for (const box of args.boxes) {
     if (
       doSketchBoxesOverlap({
         centerX: args.centerX,
@@ -64,7 +63,7 @@ export function collectOverlaps(args: {
         otherCenterY: box.centerY,
         otherW: box.boxW,
         otherH: box.boxH,
-        gap: args.gap,
+        ...(args.gap !== undefined ? { gap: args.gap } : {}),
       })
     ) {
       result.push(box);

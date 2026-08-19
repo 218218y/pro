@@ -17,9 +17,9 @@ export function buildNormalizedStackPosition(args: {
   centerY: number;
   stackH: number;
   bottomY: number;
-  topY?: number;
+  topY?: number | undefined;
   totalHeight: number;
-  pad?: number;
+  pad?: number | undefined;
 }): {
   baseYAbs: number;
   yNormC: number;
@@ -37,7 +37,7 @@ export function buildNormalizedStackPosition(args: {
       bottomY: args.bottomY,
       topY,
       stackH: args.stackH,
-      pad: args.pad,
+      ...(args.pad !== undefined ? { pad: args.pad } : {}),
     }),
   };
 }

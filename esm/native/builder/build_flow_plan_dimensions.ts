@@ -20,8 +20,8 @@ export function collectModuleHeights(args: {
     splitActiveForBuild && typeof lowerHeightCm === 'number' && Number.isFinite(lowerHeightCm)
       ? lowerHeightCm
       : 0;
-  for (let i = 0; i < list.length; i++) {
-    const m = readModuleConfig(list[i]);
+  for (const moduleConfig of list) {
+    const m = readModuleConfig(moduleConfig);
     const hCmActive = getActiveHeightCmFromConfig(m, offHcm);
     const active = typeof hCmActive === 'number' && Number.isFinite(hCmActive) && hCmActive > 0;
     allHeightManual = allHeightManual && !!active;
@@ -31,8 +31,7 @@ export function collectModuleHeights(args: {
 
   const carcassH = (() => {
     let maxH = 0;
-    for (let i = 0; i < moduleHeightsTotal.length; i++) {
-      const v = moduleHeightsTotal[i];
+    for (const v of moduleHeightsTotal) {
       if (v > maxH) maxH = v;
     }
     if (!Number.isFinite(maxH) || maxH <= 0) maxH = H;
@@ -55,19 +54,18 @@ export function collectModuleDepths(args: {
   let allDepthManual = true;
 
   const list = Array.isArray(moduleCfgList) ? moduleCfgList : [];
-  for (let i = 0; i < list.length; i++) {
-    const m = readModuleConfig(list[i]);
+  for (const [i, moduleConfig] of list.entries()) {
+    const m = readModuleConfig(moduleConfig);
     const dCmActive = getActiveDepthCmFromConfig(m);
     const active = typeof dCmActive === 'number' && Number.isFinite(dCmActive) && dCmActive > 0;
     allDepthManual = allDepthManual && !!active;
     const dm = active && typeof dCmActive === 'number' ? dCmActive / 100 : D;
+    const moduleInternalWidth = Array.isArray(moduleInternalWidths) ? moduleInternalWidths[i] : undefined;
     const hexGeometry = resolveHexCellGeometry({
       cfgMod: m,
       moduleWidthM:
-        Array.isArray(moduleInternalWidths) &&
-        typeof moduleInternalWidths[i] === 'number' &&
-        Number.isFinite(moduleInternalWidths[i])
-          ? Math.max(woodThick * 2, moduleInternalWidths[i])
+        typeof moduleInternalWidth === 'number' && Number.isFinite(moduleInternalWidth)
+          ? Math.max(woodThick * 2, moduleInternalWidth)
           : D,
       defaultDepthM: D,
       woodThickM: woodThick,
@@ -78,8 +76,7 @@ export function collectModuleDepths(args: {
   const carcassD = (() => {
     if (!allDepthManual) return D;
     let maxD = 0;
-    for (let i = 0; i < moduleDepthsTotal.length; i++) {
-      const v = moduleDepthsTotal[i];
+    for (const v of moduleDepthsTotal) {
       if (v > maxD) maxD = v;
     }
     if (!Number.isFinite(maxD) || maxD <= 0) return D;

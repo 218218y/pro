@@ -61,8 +61,8 @@ function disposeResource(value: unknown): void {
 function disposeMaterialTextures(material: unknown): void {
   const rec = asDisposableRecord(material);
   if (!rec || isCachedResource(rec)) return;
-  for (let i = 0; i < MATERIAL_TEXTURE_KEYS.length; i += 1) {
-    disposeResource(rec[MATERIAL_TEXTURE_KEYS[i]]);
+  for (const textureKey of MATERIAL_TEXTURE_KEYS) {
+    disposeResource(rec[textureKey]);
   }
 }
 

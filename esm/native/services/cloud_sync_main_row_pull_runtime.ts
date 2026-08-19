@@ -133,7 +133,7 @@ export function createCloudSyncMainRowPullFlow(
     queuePullSoon({
       immediate: !!opts?.immediate,
       delayMs: opts?.delayMs ?? 350,
-      reason: opts?.reason,
+      ...(opts?.reason !== undefined ? { reason: opts.reason } : {}),
     });
   };
 

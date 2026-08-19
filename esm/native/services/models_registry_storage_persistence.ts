@@ -32,8 +32,8 @@ function normalizeIdList(ids: readonly unknown[]): string[] {
   if (!Array.isArray(ids)) return [];
   const out: string[] = [];
   const seen = new Set<string>();
-  for (let i = 0; i < ids.length; i++) {
-    const id = String(ids[i] || '').trim();
+  for (const rawId of ids) {
+    const id = String(rawId || '').trim();
     if (!id || seen.has(id)) continue;
     seen.add(id);
     out.push(id);
@@ -44,8 +44,7 @@ function normalizeIdList(ids: readonly unknown[]): string[] {
 function filterAvailableIds(ids: string[], availableIds?: ReadonlySet<string> | null): string[] {
   if (!availableIds || availableIds.size <= 0) return ids.slice();
   const out: string[] = [];
-  for (let i = 0; i < ids.length; i++) {
-    const id = ids[i];
+  for (const id of ids) {
     if (availableIds.has(id)) out.push(id);
   }
   return out;

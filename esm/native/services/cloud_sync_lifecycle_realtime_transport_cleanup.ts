@@ -24,7 +24,7 @@ export function cleanupCloudSyncRealtimeTransport(
   args: Pick<CloudSyncRealtimeTransportArgs, 'App' | 'refs' | 'clearTimeoutFn' | 'setSendRealtimeHint'> & {
     mutableState: CloudSyncRealtimeTransportMutableState;
     op: string;
-    opts?: { keepHints?: boolean };
+    opts?: { keepHints?: boolean } | undefined;
   }
 ): void {
   const { App, refs, clearTimeoutFn, setSendRealtimeHint, mutableState, op, opts } = args;

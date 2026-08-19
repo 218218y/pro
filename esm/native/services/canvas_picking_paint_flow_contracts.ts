@@ -12,5 +12,5 @@ export interface CanvasPaintClickArgs {
   doorHitObject?: unknown;
   primaryHitPoint?: unknown;
   doorHitPoint?: unknown;
-  hitIdentity?: CanvasPickingHitIdentity | null;
+  hitIdentity?: CanvasPickingHitIdentity | null | undefined;
 }

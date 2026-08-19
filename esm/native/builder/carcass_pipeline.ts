@@ -147,12 +147,12 @@ function createApplyCarcassContext(
     throw new Error('[WardrobePro] Carcass pipeline: roomArchitecturePlan missing');
   }
   return {
-    THREE: args.THREE,
+    THREE: args.THREE ?? null,
     App: app,
     roomArchitecturePlan: args.roomArchitecturePlan,
-    addOutlines: args.addOutlines,
-    getPartMaterial: args.getPartMaterial,
-    __sketchMode: args.__sketchMode,
+    addOutlines: args.addOutlines ?? null,
+    ...(args.getPartMaterial !== undefined ? { getPartMaterial: args.getPartMaterial } : {}),
+    ...(args.__sketchMode !== undefined ? { __sketchMode: args.__sketchMode } : {}),
     legMat: args.legMat,
     masoniteMat: args.masoniteMat,
     whiteMat: args.whiteMat,

@@ -39,7 +39,7 @@ export type LayoutPreviewPayload = InteriorLayoutHoverPreviewArgsLike & {
   shelfYs: number[];
   rodYs: number[];
   storageBarrier: { y: number; h: number; z: number } | null;
-  shelfVariant?: ShelfVariant;
+  shelfVariant?: ShelfVariant | undefined;
   op: 'add' | 'remove';
 };
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T16:03:52.783Z",
+  "generatedAt": "2026-08-19T17:21:54.072Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 559,
@@ -1994,7 +1994,7 @@
     },
     {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
-      "line": 205,
+      "line": 207,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
@@ -2029,14 +2029,14 @@
     },
     {
       "file": "esm/native/builder/materials_factory.ts",
-      "line": 120,
+      "line": 119,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service."
     },
     {
       "file": "esm/native/builder/materials_factory.ts",
-      "line": 126,
+      "line": 125,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// install-mirror best-effort: compatibility markers/dependency mirrors are secondary to the live service."
@@ -2148,21 +2148,21 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_apply.ts",
-      "line": 137,
+      "line": 135,
       "term": "fallback",
       "category": "domain-default",
       "text": "// as a defensive fallback for malformed snapshots where both domains exist."
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 199,
+      "line": 198,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "const runtimeDrawerOwnerBlocksConfigFallback ="
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 202,
+      "line": 201,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "if (!stacksByModule.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback) {"
@@ -2183,7 +2183,7 @@
     },
     {
       "file": "esm/native/builder/registry.ts",
-      "line": 249,
+      "line": 250,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-install-metadata-fallback: optional registry marker is advisory and may be unavailable on sealed surfaces"

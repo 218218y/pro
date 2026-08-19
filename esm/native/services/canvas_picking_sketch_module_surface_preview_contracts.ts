@@ -8,9 +8,9 @@ export type RecordMap = Record<string, unknown>;
 
 export type SketchModuleSurfacePreviewResult = {
   handled: boolean;
-  preview?: RecordMap;
-  hoverRecord?: RecordMap;
-  hidePreview?: boolean;
+  preview?: RecordMap | undefined;
+  hoverRecord?: RecordMap | undefined;
+  hidePreview?: boolean | undefined;
 };
 
 export type ResolveSketchModuleSurfacePreviewArgs = {
@@ -47,8 +47,8 @@ export type ResolveSketchModuleSurfacePreviewArgs = {
   boxes: RecordMap[];
   storageBarriers: RecordMap[];
   shelves: RecordMap[];
-  drawers?: RecordMap[];
-  extDrawers?: RecordMap[];
+  drawers?: RecordMap[] | undefined;
+  extDrawers?: RecordMap[] | undefined;
   rods: RecordMap[];
   isCornerKey: (value: unknown) => boolean;
   resolveSketchBoxGeometry: (args: {
@@ -82,8 +82,8 @@ export type SketchModuleShelfRemovePreviewArgs = {
   spanH: number;
   pad: number;
   shelves: RecordMap[];
-  drawers?: RecordMap[];
-  extDrawers?: RecordMap[];
+  drawers?: RecordMap[] | undefined;
+  extDrawers?: RecordMap[] | undefined;
   variant: string;
   shelfDepthOverrideM: number | null;
   innerW: number;

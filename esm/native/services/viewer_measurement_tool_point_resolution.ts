@@ -105,7 +105,7 @@ function readRayPlaneLocalPoint(args: {
   runtime: ViewerMeasurementGeometryRuntime;
   plane: MeasurementPlane;
   wardrobeGroup: Object3DLike;
-  pointer?: PointMeasurementPointerContext | null;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): LocalPlanePoint | null {
   const { runtime, plane, wardrobeGroup, pointer } = args;
   const raycaster = pointer?.raycaster as RaycasterWithRay | null | undefined;
@@ -147,10 +147,10 @@ function readRayPlaneLocalPoint(args: {
 
 export function readPointMeasurementPointerLocalPoint(args: {
   runtime: ViewerMeasurementGeometryRuntime;
-  hitState?: CanvasPickingClickHitState | null;
+  hitState?: CanvasPickingClickHitState | null | undefined;
   wardrobeGroup: Object3DLike;
   plane: MeasurementPlane;
-  pointer?: PointMeasurementPointerContext | null;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): LocalPlanePoint | null {
   const { runtime, hitState, wardrobeGroup, plane, pointer } = args;
   return (
@@ -194,7 +194,7 @@ function readAggregateWardrobeBoundsBox(
 
   try {
     if (typeof wardrobeGroup.traverse === 'function') wardrobeGroup.traverse(visit);
-    else for (let i = 0; i < wardrobeGroup.children.length; i += 1) visit(wardrobeGroup.children[i]);
+    else for (const child of wardrobeGroup.children) visit(child);
   } catch {
     return null;
   }
@@ -362,7 +362,7 @@ export function resolvePointMeasurementStartFromPointer(args: {
   runtime: ViewerMeasurementGeometryRuntime;
   THREE: OverlayThree;
   wardrobeGroup: Object3DLike;
-  pointer?: PointMeasurementPointerContext | null;
+  pointer?: PointMeasurementPointerContext | null | undefined;
 }): PointMeasurementDraft | null {
   const { runtime, THREE, wardrobeGroup, pointer } = args;
   const boundsBox = readAggregateWardrobeBoundsBox(runtime, wardrobeGroup);
@@ -370,8 +370,7 @@ export function resolvePointMeasurementStartFromPointer(args: {
 
   const candidates: Array<{ plane: MeasurementPlane; clamp: PointClampResult }> = [];
   const kinds: MeasurementPlaneKind[] = ['front', 'side', 'top'];
-  for (let i = 0; i < kinds.length; i += 1) {
-    const kind = kinds[i];
+  for (const kind of kinds) {
     const axes = measurementPlaneAxes(kind);
     const sign =
       readCameraAxisSign({ runtime, THREE, wardrobeGroup, box: boundsBox, axis: axes.normal }) ?? 1;

@@ -34,7 +34,7 @@ function getCloudSyncAttentionPullReportOp(reason: string): string {
 
 export function requestCloudSyncAttentionPull(
   args: Pick<CloudSyncAttentionPullArgs, 'App' | 'runtimeStatus' | 'suppressRef' | 'pullAllNow'> & {
-    isDisposed?: () => boolean;
+    isDisposed?: (() => boolean) | undefined;
     state: CloudSyncAttentionPullMutableState;
     reason: string;
     now?: number;

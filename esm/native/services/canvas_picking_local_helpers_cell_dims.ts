@@ -117,9 +117,9 @@ export function __wp_getCellDimsHoverOp(
       applyW,
       applyH: effectiveApplyH,
       applyD,
-      hexCellMode,
-      hexCellProtrusionCm,
-      hexCellDoorWidthCm,
+      ...(hexCellMode !== undefined ? { hexCellMode } : {}),
+      ...(hexCellProtrusionCm !== undefined ? { hexCellProtrusionCm } : {}),
+      ...(hexCellDoorWidthCm !== undefined ? { hexCellDoorWidthCm } : {}),
       previewTargetBox: freeBoxPreviewTargetBox,
     });
     if (freeBoxOp) return freeBoxOp;

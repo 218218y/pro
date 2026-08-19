@@ -241,11 +241,17 @@ export function applyPostBuildExtras(input: BuildContextLike) {
             stackSplitEnabled: true,
             stackSplitUnifiedFrame,
             stackOffsetZ: 0,
-            baseLegStyle: ctx.strings?.baseLegStyle,
-            baseLegColor: ctx.strings?.baseLegColor,
-            basePlinthHeightCm: ctx.strings?.basePlinthHeightCm,
-            baseLegHeightCm: ctx.strings?.baseLegHeightCm,
-            baseLegWidthCm: ctx.strings?.baseLegWidthCm,
+            ...(ctx.strings?.baseLegStyle !== undefined ? { baseLegStyle: ctx.strings.baseLegStyle } : {}),
+            ...(ctx.strings?.baseLegColor !== undefined ? { baseLegColor: ctx.strings.baseLegColor } : {}),
+            ...(ctx.strings?.basePlinthHeightCm !== undefined
+              ? { basePlinthHeightCm: ctx.strings.basePlinthHeightCm }
+              : {}),
+            ...(ctx.strings?.baseLegHeightCm !== undefined
+              ? { baseLegHeightCm: ctx.strings.baseLegHeightCm }
+              : {}),
+            ...(ctx.strings?.baseLegWidthCm !== undefined
+              ? { baseLegWidthCm: ctx.strings.baseLegWidthCm }
+              : {}),
             shelfThick: resolvedShelfThick,
             snapshot: cornerBuildSnapshot,
           }

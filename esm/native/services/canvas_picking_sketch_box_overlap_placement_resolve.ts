@@ -54,8 +54,7 @@ function resolvePlacementBlockersAsBoxes(args: {
 
 function pickNextAnchor(direction: 1 | -1, overlaps: ResolvedModuleBoxLike[]): ResolvedModuleBoxLike | null {
   let nextAnchor: ResolvedModuleBoxLike | null = null;
-  for (let overlapIndex = 0; overlapIndex < overlaps.length; overlapIndex++) {
-    const overlap = overlaps[overlapIndex];
+  for (const overlap of overlaps) {
     if (!nextAnchor) {
       nextAnchor = overlap;
       continue;
@@ -265,7 +264,7 @@ export function resolveSketchModuleBoxPlacement(args: {
 
   const resolved = resolveModuleBoxes(args).concat(
     resolvePlacementBlockersAsBoxes({
-      blockers: args.blockers,
+      ...(args.blockers !== undefined ? { blockers: args.blockers } : {}),
       desiredCenterX,
       boxW,
     })
@@ -332,8 +331,10 @@ export function resolveSketchModuleBoxPlacement(args: {
 
   for (let oi = 0; oi < initialOverlaps.length; oi++) {
     const initialAnchor = initialOverlaps[oi];
+    if (!initialAnchor) continue;
     for (let di = 0; di < directionOrder.length; di++) {
       const direction = directionOrder[di];
+      if (direction === undefined) continue;
       const candidateY = resolvePlacementCandidateY({
         desiredCenterX,
         desiredCenterY,

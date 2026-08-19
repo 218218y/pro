@@ -47,30 +47,34 @@ type ResolveSketchBoxDoorPreviewArgs = {
   targetCenterY: number;
   targetHeight: number;
   pointerX: number;
-  pointerY?: number | null;
+  pointerY?: number | null | undefined;
   woodThick: number;
   readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
-  readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
+  readSketchBoxHorizontalDividers?: ((box: unknown) => SketchBoxHorizontalDividerState[]) | undefined;
   resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
-  resolveSketchBoxVerticalSegments?: (args: {
-    dividers: SketchBoxHorizontalDividerState[];
-    boxCenterY: number;
-    innerH: number;
-    woodThick: number;
-    verticalDividers?: SketchBoxDividerState[];
-    boxCenterX?: number | null;
-    innerW?: number | null;
-    cursorX?: number | null;
-    xNorm?: number | null;
-  }) => SketchBoxVerticalSegmentState[];
-  pickSketchBoxVerticalSegment?: (args: {
-    segments: SketchBoxVerticalSegmentState[];
-    boxCenterY: number;
-    innerH: number;
-    cursorY?: number | null;
-    yNorm?: number | null;
-  }) => SketchBoxVerticalSegmentState | null;
+  resolveSketchBoxVerticalSegments?:
+    | ((args: {
+        dividers: SketchBoxHorizontalDividerState[];
+        boxCenterY: number;
+        innerH: number;
+        woodThick: number;
+        verticalDividers?: SketchBoxDividerState[];
+        boxCenterX?: number | null;
+        innerW?: number | null;
+        cursorX?: number | null;
+        xNorm?: number | null;
+      }) => SketchBoxVerticalSegmentState[])
+    | undefined;
+  pickSketchBoxVerticalSegment?:
+    | ((args: {
+        segments: SketchBoxVerticalSegmentState[];
+        boxCenterY: number;
+        innerH: number;
+        cursorY?: number | null;
+        yNorm?: number | null;
+      }) => SketchBoxVerticalSegmentState | null)
+    | undefined;
 };
 
 type ResolveSketchBoxDoorPreviewResult = {
@@ -133,7 +137,7 @@ export function resolveSketchBoxDoorPreview(
           segments: verticalSegments,
           boxCenterY: targetCenterY,
           innerH: targetHeight,
-          cursorY: pointerY,
+          ...(pointerY !== undefined ? { cursorY: pointerY } : {}),
         })
       : null;
   const boxSegments = resolveSketchBoxSegments({
@@ -144,7 +148,7 @@ export function resolveSketchBoxDoorPreview(
     boxCenterY: targetCenterY,
     innerH: targetHeight,
     cursorX: pointerX,
-    cursorY: pointerY,
+    ...(pointerY !== undefined ? { cursorY: pointerY } : {}),
     woodThick: safeWoodThick,
   });
   const activeSegment = pickSketchBoxSegment({

@@ -104,7 +104,8 @@ export function createCloudSyncOwnerConflictJournal(args: {
         conflict.projectionAvailable = false;
         conflict.canKeepLocal = false;
         conflict.canUseRemote = stored.conflict.canUseRemote;
-        conflict.limitationReason = stored.conflict.limitationReason;
+        if (stored.conflict.limitationReason) conflict.limitationReason = stored.conflict.limitationReason;
+        else delete conflict.limitationReason;
       }
     }
     return persisted;

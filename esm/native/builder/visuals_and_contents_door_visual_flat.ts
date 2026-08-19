@@ -32,13 +32,13 @@ export function createFlatDoorVisual(args: StyledDoorVisualArgs) {
     tagDoorVisualPart,
     hasGrooves,
     isSketch,
-    groovePartId,
+    ...(groovePartId !== undefined ? { groovePartId } : {}),
     zSign,
     targetW: w,
     targetH: h,
     zOffset: (thickness / 2) * zSign,
     linesCountOverride: grooveLinesCount,
-    grooveLayout,
+    ...(grooveLayout !== undefined ? { grooveLayout } : {}),
   });
   return visualGroup;
 }

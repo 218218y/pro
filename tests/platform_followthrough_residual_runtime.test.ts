@@ -72,7 +72,9 @@ test('canvas picking trigger render uses canonical platform render follow-throug
   } as Record<string, unknown>;
 
   __wp_triggerRender(App as never, false);
+  __wp_triggerRender(App as never, true);
+  __wp_triggerRender(App as never);
 
-  assert.deepEqual(renders, [false]);
+  assert.deepEqual(renders, [false, true, false]);
   assert.deepEqual(ensured, []);
 });

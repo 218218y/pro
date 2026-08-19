@@ -29,14 +29,14 @@ type CreateCloudSyncTabsGateOpsDeps = {
   App: AppContainer;
   cfg: CloudSyncTabsGateConfig;
   storage: StorageLike;
-  getGateBaseRoom?: () => string;
+  getGateBaseRoom?: (() => string) | undefined;
   gatewayUrl: string;
   clientId: string;
   getRow: GetCloudSyncRow;
   upsertRow: UpsertCloudSyncRow;
   emitRealtimeHint: CloudSyncRealtimeHintSender;
-  runtimeStatus?: CloudSyncRuntimeStatus;
-  publishStatus?: () => void;
+  runtimeStatus?: CloudSyncRuntimeStatus | undefined;
+  publishStatus?: (() => void) | undefined;
 } & CloudSyncTabsGateTimeoutApi;
 
 export type CloudSyncTabsGateOps = {

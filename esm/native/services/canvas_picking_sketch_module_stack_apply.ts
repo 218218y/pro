@@ -224,7 +224,7 @@ function blockSketchStackCommitIfNoRoom(args: {
 function blockSketchStackCommitIfCollision(args: {
   App: AppContainer;
   contentKind: 'drawers' | 'ext_drawers';
-  blockedReason?: string | null;
+  blockedReason?: string | null | undefined;
   writeSketchHover: CommitSketchModuleStackToolArgs['writeSketchHover'];
 }): boolean {
   if (args.blockedReason !== 'collision') return false;

@@ -56,10 +56,10 @@ function buildRoomMeasurementHitState(
 export function resolveViewerMeasurementHitStateWithRoom(args: {
   App: AppContainer;
   hitState: CanvasPickingClickHitState | null;
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
+  ndcX?: number | undefined;
+  ndcY?: number | undefined;
+  raycaster?: RaycasterLike | null | undefined;
+  mouse?: MouseVectorLike | null | undefined;
 }): CanvasPickingClickHitState | null {
   if (typeof args.ndcX !== 'number' || typeof args.ndcY !== 'number' || !args.raycaster || !args.mouse) {
     return args.hitState;

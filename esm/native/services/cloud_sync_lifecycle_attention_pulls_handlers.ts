@@ -11,7 +11,7 @@ import type { CloudSyncAttentionPullArgs } from './cloud_sync_lifecycle_attentio
 
 export function createCloudSyncAttentionPullHandlers(
   args: Pick<CloudSyncAttentionPullArgs, 'App' | 'runtimeStatus' | 'suppressRef' | 'pullAllNow'> & {
-    isDisposed?: () => boolean;
+    isDisposed?: (() => boolean) | undefined;
     state: CloudSyncAttentionPullMutableState;
   }
 ): {

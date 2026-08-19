@@ -98,7 +98,7 @@ export interface PaintConfigSnapshotArgs {
   individualColors: IndividualColorsMap;
   curtainMap: CurtainMap;
   doorSpecialMap?: DoorSpecialMap;
-  doorStyleMap?: DoorStyleMap;
+  doorStyleMap?: DoorStyleMap | undefined;
   mirrorLayoutMap?: MirrorLayoutMap;
   meta?: ActionMetaLike;
 }

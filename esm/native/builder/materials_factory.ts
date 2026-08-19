@@ -64,8 +64,7 @@ function resolveMaterialsFactoryInstallContext(
 function clearDeprecatedInstalledMaterialsFactoryDrift(materials: InstallableBuilderMaterialsService): void {
   if (materials.__esm_materials_factory_v1 !== true) return;
   const keys = Object.keys(MATERIALS_FACTORY_CANONICAL_KEYS) as MaterialsFactoryCallableKey[];
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     const stableKey = MATERIALS_FACTORY_CANONICAL_KEYS[key];
     if (typeof materials[stableKey] !== 'function') {
       delete materials[key];

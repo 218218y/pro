@@ -49,12 +49,12 @@ function readUniformArchivedUnifiedColor(
   requiredKeys: string[],
   absentKeys: string[]
 ): unknown {
-  for (let i = 0; i < absentKeys.length; i += 1) {
-    if (typeof readOwnMapValue(map, absentKeys[i]) !== 'undefined') return undefined;
+  for (const key of absentKeys) {
+    if (typeof readOwnMapValue(map, key) !== 'undefined') return undefined;
   }
   let color: unknown;
-  for (let i = 0; i < requiredKeys.length; i += 1) {
-    const value = readOwnMapValue(map, requiredKeys[i]);
+  for (const [i, key] of requiredKeys.entries()) {
+    const value = readOwnMapValue(map, key);
     if (typeof value !== 'string' || !value) return undefined;
     if (i === 0) color = value;
     else if (value !== color) return undefined;

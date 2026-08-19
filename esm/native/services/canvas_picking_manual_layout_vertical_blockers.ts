@@ -25,16 +25,16 @@ export type ManualLayoutVerticalContentBlocker = VerticalOccupancyRange & {
 const VERTICAL_CONTENT_COLLISION_GAP_M = 0;
 
 type RangeContext = {
-  cfgRef?: RecordMap | null;
-  info?: RecordMap | null;
-  shelves?: RecordMap[] | null;
-  rods?: RecordMap[] | null;
-  storageBarriers?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  info?: RecordMap | null | undefined;
+  shelves?: RecordMap[] | null | undefined;
+  rods?: RecordMap[] | null | undefined;
+  storageBarriers?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;
-  pad?: number;
-  woodThick?: number;
+  pad?: number | undefined;
+  woodThick?: number | undefined;
 };
 
 function isRecord(value: unknown): value is RecordMap {
@@ -128,7 +128,7 @@ function pushBlocker(
     id: args.id ?? null,
     kind: args.kind,
     source: args.source,
-    index: args.index,
+    ...(args.index !== undefined ? { index: args.index } : {}),
     collisionGapM: VERTICAL_CONTENT_COLLISION_GAP_M,
     hardCollision: true,
   });
@@ -260,8 +260,8 @@ function pushRodBlocker(
     maxY: args.centerY + radius,
     kind: 'rod',
     source: args.source,
-    index: args.index,
-    id: args.id,
+    ...(args.index !== undefined ? { index: args.index } : {}),
+    ...(args.id !== undefined ? { id: args.id } : {}),
   });
 }
 
@@ -284,8 +284,7 @@ function buildCustomBaseRodBlockers(
   const coveredGridIndexes = new Set<number>();
   const ranges: ManualLayoutVerticalContentBlocker[] = [];
 
-  for (let i = 0; i < rodOps.length; i += 1) {
-    const rodOp = rodOps[i];
+  for (const [i, rodOp] of rodOps.entries()) {
     const yFactor = readRecordNumber(rodOp, 'yFactor');
     if (yFactor == null) continue;
     const gridIndex = deriveRodGridIndex(rodOp, args.divisions);
@@ -294,7 +293,7 @@ function buildCustomBaseRodBlockers(
     pushRodBlocker(ranges, {
       centerY: args.bottomY + yFactor * step + yAdd,
       source: 'base',
-      index: gridIndex ?? undefined,
+      ...(gridIndex != null ? { index: gridIndex } : {}),
       id: gridIndex != null ? `base_rod_${gridIndex}` : `base_rod_op_${i}`,
     });
   }
@@ -329,8 +328,7 @@ function buildPresetBaseRodBlockers(
   if (!rodOps.length) return [];
 
   const ranges: ManualLayoutVerticalContentBlocker[] = [];
-  for (let i = 0; i < rodOps.length; i += 1) {
-    const rodOp = rodOps[i];
+  for (const [i, rodOp] of rodOps.entries()) {
     const yFactor = readRecordNumber(rodOp, 'yFactor');
     if (yFactor == null) continue;
     const yAdd = readRecordNumber(rodOp, 'yAdd') ?? 0;
@@ -338,7 +336,7 @@ function buildPresetBaseRodBlockers(
     pushRodBlocker(ranges, {
       centerY: args.bottomY + yFactor * step + yAdd,
       source: 'base',
-      index: gridIndex ?? undefined,
+      ...(gridIndex != null ? { index: gridIndex } : {}),
       id: gridIndex != null ? `base_rod_${gridIndex}` : `base_rod_op_${i}`,
     });
   }

@@ -424,7 +424,7 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
     assert,
     tabsGateBundle,
     [
-      /getGateBaseRoom\?: \(\) => string;/,
+      /getGateBaseRoom\?:\s*\(\(\) => string\)\s*\|\s*undefined;/,
       /const explicit = String\(getGateBaseRoom\(\) \|\| ''\)\.trim\(\);/,
       /patchSite2TabsGateUi\(/,
       /resolveCloudSyncTabsGateBaseRoom\(/,
@@ -436,7 +436,7 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
     assert,
     sketchBundle,
     [
-      /getGateBaseRoom\?: \(\) => string;/,
+      /getGateBaseRoom\?:\s*\(\(\) => string\)\s*\|\s*undefined;/,
       /resolveCloudSyncGateBaseRoom\(/,
       /resolveInitialCloudSketchCatchupDecision\(/,
       /resolveCloudSketchPayloadFingerprint\(/,

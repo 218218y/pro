@@ -55,9 +55,8 @@ type BuildSketchBoxVerticalContentBlockersArgs = {
   verticalSegments: SketchBoxVerticalSegmentLike[];
   activeVerticalSegment: SketchBoxVerticalSegmentLike | null;
   pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentLike | null;
-  pickSketchBoxVerticalSegment?: (
-    args: PickSketchBoxVerticalSegmentArgs
-  ) => SketchBoxVerticalSegmentLike | null;
+  pickSketchBoxVerticalSegment?:
+    ((args: PickSketchBoxVerticalSegmentArgs) => SketchBoxVerticalSegmentLike | null) | undefined;
 };
 
 const VERTICAL_CONTENT_COLLISION_GAP_M = 0;
@@ -135,9 +134,9 @@ function pushBlocker(
     kind: args.kind,
     source: 'box',
     index: args.index,
-    xNorm: args.xNorm ?? undefined,
-    variant: args.variant ?? undefined,
-    depthM: args.depthM ?? undefined,
+    ...(args.xNorm != null ? { xNorm: args.xNorm } : {}),
+    ...(args.variant !== undefined ? { variant: args.variant } : {}),
+    ...(args.depthM !== undefined ? { depthM: args.depthM } : {}),
     heightM: args.heightM ?? maxY - minY,
     collisionGapM: VERTICAL_CONTENT_COLLISION_GAP_M,
     hardCollision: true,
@@ -199,7 +198,9 @@ function itemMatchesActiveCell(
       activeVerticalSegment: args.activeVerticalSegment,
       targetCenterY: args.targetCenterY,
       targetHeight: args.targetHeight,
-      pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment,
+      ...(args.pickSketchBoxVerticalSegment !== undefined
+        ? { pickSketchBoxVerticalSegment: args.pickSketchBoxVerticalSegment }
+        : {}),
     })
   );
 }
@@ -213,8 +214,7 @@ export function buildSketchBoxVerticalContentBlockers(
   const blockers: SketchBoxVerticalContentBlocker[] = [];
 
   const shelves = readRecordArray(args.targetBox, 'shelves');
-  for (let i = 0; i < shelves.length; i += 1) {
-    const shelf = shelves[i];
+  for (const [i, shelf] of shelves.entries()) {
     if (hasInvalidPresentNumber(shelf, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: shelf })) continue;
     const yNorm = readRecordNumber(shelf, 'yNorm');
@@ -237,8 +237,7 @@ export function buildSketchBoxVerticalContentBlockers(
   }
 
   const storageBarriers = readRecordArray(args.targetBox, 'storageBarriers');
-  for (let i = 0; i < storageBarriers.length; i += 1) {
-    const barrier = storageBarriers[i];
+  for (const [i, barrier] of storageBarriers.entries()) {
     if (hasInvalidPresentNumber(barrier, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: barrier })) continue;
     const yNorm = readRecordNumber(barrier, 'yNorm');
@@ -267,8 +266,7 @@ export function buildSketchBoxVerticalContentBlockers(
   }
 
   const rods = readRecordArray(args.targetBox, 'rods');
-  for (let i = 0; i < rods.length; i += 1) {
-    const rod = rods[i];
+  for (const [i, rod] of rods.entries()) {
     if (hasInvalidPresentNumber(rod, 'xNorm')) continue;
     if (!itemMatchesActiveCell({ ...args, item: rod })) continue;
     const yNorm = readRecordNumber(rod, 'yNorm');

@@ -18,7 +18,7 @@ export type ClearCloudSyncPublishedStateOptions = {
   preserveTestHooks?: boolean;
   preserveStableSurfaces?: boolean;
   invalidatePublicationEpoch?: boolean;
-  publicationEpoch?: number | null;
+  publicationEpoch?: number | null | undefined;
 };
 
 export type CloudSyncPublishedPreservableSlot =

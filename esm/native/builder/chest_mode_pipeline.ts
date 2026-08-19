@@ -85,10 +85,14 @@ export type BuildChestModeFollowThroughInput = Readonly<{
   addOutlines: BuilderContentsRenderPolicy['addOutlines'];
 }>;
 
-export type BuildChestModeInput = Omit<BuildChestModeIfNeededParams, 'followThrough'>;
+type BuildChestModeRuntimeParams = Omit<BuildChestModeIfNeededParams, 'buildChestOnly'> & {
+  buildChestOnly?: BuildChestModeIfNeededParams['buildChestOnly'];
+};
 
-export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | null | undefined) {
-  const p: Partial<BuildChestModeIfNeededParams> = params || {};
+export type BuildChestModeInput = Omit<BuildChestModeRuntimeParams, 'followThrough'>;
+
+export function buildChestModeIfNeeded(params: BuildChestModeRuntimeParams | null | undefined) {
+  const p: Partial<BuildChestModeRuntimeParams> = params || {};
   const ui = p.ui || null;
 
   if (!ui?.isChestMode) return false;

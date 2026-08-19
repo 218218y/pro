@@ -26,7 +26,7 @@ export type CloudSyncDiagStorageListenerArgs = {
   updateDiagEnabled: () => void;
   publishStatus: () => void;
   addListener: CloudSyncAddListenerLike;
-  isDisposed?: () => boolean;
+  isDisposed?: (() => boolean) | undefined;
 };
 
 export type CloudSyncAttentionPullArgs = {
@@ -35,7 +35,7 @@ export type CloudSyncAttentionPullArgs = {
   suppressRef: { v: boolean };
   pullAllNow: CloudSyncPullAllNowFn;
   addListener: CloudSyncAddListenerLike;
-  isDisposed?: () => boolean;
+  isDisposed?: (() => boolean) | undefined;
 };
 
 export function readStorageEventLike(ev: unknown): { key: string | null } | null {

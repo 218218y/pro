@@ -163,7 +163,13 @@ export async function moveModelInternalImpl(
     if (swapWith < 0 || swapWith >= list.length) {
       return { result: { ok: false, reason: 'edge' }, mutation: {} };
     }
-    [list[idx], list[swapWith]] = [list[swapWith], list[idx]];
+    const currentModel = list[idx];
+    const swapModel = list[swapWith];
+    if (!currentModel || !swapModel) {
+      return { result: { ok: false, reason: 'missing' }, mutation: {} };
+    }
+    list[idx] = swapModel;
+    list[swapWith] = currentModel;
     return {
       result: { ok: true },
       mutation: isPreset

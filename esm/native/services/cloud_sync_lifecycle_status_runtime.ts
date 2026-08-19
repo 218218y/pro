@@ -77,9 +77,9 @@ export function mutateCloudSyncLifecycleSnapshot(args: {
   runtimeStatus: CloudSyncRuntimeStatus;
   publishStatus: () => void;
   mutate: () => void;
-  diag?: CloudSyncDiagFn;
-  diagEvent?: string;
-  diagPayload?: CloudSyncDiagPayload;
+  diag?: CloudSyncDiagFn | undefined;
+  diagEvent?: string | undefined;
+  diagPayload?: CloudSyncDiagPayload | undefined;
 }): {
   changed: boolean;
   before: CloudSyncLifecycleSnapshot;

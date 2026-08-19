@@ -122,8 +122,7 @@ function resolvePresetRodPreviewMatch(args: {
       break;
   }
 
-  for (let i = 0; i < yFactors.length; i += 1) {
-    const yFactor = yFactors[i];
+  for (const yFactor of yFactors) {
     const gridIndex = Math.max(1, Math.min(divs, Math.round(yFactor)));
     consider(gridIndex, args.bottomY + yFactor * step);
   }

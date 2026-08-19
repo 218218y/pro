@@ -18,9 +18,9 @@ export type WriteCloudSyncMainRowPayloadArgs = {
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
   getSendRealtimeHint: CloudSyncMainRealtimeHintReader;
-  runtimeStatus?: CloudSyncRuntimeStatus;
-  publishStatus?: () => void;
-  setLastSeenUpdatedAt?: (value: string) => void;
+  runtimeStatus?: CloudSyncRuntimeStatus | undefined;
+  publishStatus?: (() => void) | undefined;
+  setLastSeenUpdatedAt?: ((value: string) => void) | undefined;
 };
 
 export type WriteCloudSyncMainRowPayloadResult = {

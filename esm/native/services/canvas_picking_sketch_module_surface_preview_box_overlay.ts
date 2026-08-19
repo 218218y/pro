@@ -79,7 +79,7 @@ export function resolveSketchModuleBoxFrontOverlay(
     woodThick: args.woodThick,
     widthM: args.widthM,
     depthM: args.depthM,
-    xNorm: args.xNorm != null ? args.xNorm : undefined,
+    ...(args.xNorm != null ? { xNorm: args.xNorm } : {}),
   });
   const overlaySegments = args.resolveSketchBoxSegments({
     dividers: args.readSketchBoxDividers(args.sourceBox),

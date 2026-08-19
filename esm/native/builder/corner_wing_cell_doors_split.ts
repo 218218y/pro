@@ -37,8 +37,13 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
     const cuts = mergeSplitCuts(ctx, state, mergedCuts);
     const segCount = cuts.length + 1;
     for (let segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
-      const segBottomY = segmentIndex === 0 ? state.doorBottomY : cuts[segmentIndex - 1] + ctx.splitGap / 2;
-      const segTopY = segmentIndex === segCount - 1 ? topEdge : cuts[segmentIndex] - ctx.splitGap / 2;
+      const lowerCut = segmentIndex > 0 ? cuts[segmentIndex - 1] : null;
+      const upperCut = segmentIndex < cuts.length ? cuts[segmentIndex] : null;
+      if ((segmentIndex > 0 && lowerCut == null) || (segmentIndex < cuts.length && upperCut == null)) {
+        throw new RangeError('[corner_wing] split cut boundary invariant violated');
+      }
+      const segBottomY = segmentIndex === 0 ? state.doorBottomY : (lowerCut as number) + ctx.splitGap / 2;
+      const segTopY = segmentIndex === segCount - 1 ? topEdge : (upperCut as number) - ctx.splitGap / 2;
       const segH = segTopY - segBottomY;
       if (!(segH > CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleShortInsetM)) continue;
       const segY = segBottomY + segH / 2;

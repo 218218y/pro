@@ -98,19 +98,22 @@ export function buildProjectStructureFromModel(
   const normalizedModel = normalizeModelRecord(modelData);
   const canonicalConfig = captureCanonicalModelConfigSnapshot(normalizedModel);
   const persistedConfig = readPersistedProjectConfigSnapshot(canonicalConfig);
+  const { grooveLinesCount: persistedGrooveLinesCount, ...persistedConfigWithoutGrooveLinesCount } =
+    persistedConfig;
   const projectStructure: ProjectDataLike = {
     settings: cloneObjectSnapshot(normalizedModel.settings),
     toggles: cloneObjectSnapshot(normalizedModel.toggles),
     chestSettings: cloneObjectSnapshot(normalizedModel.chestSettings),
-    ...persistedConfig,
+    ...persistedConfigWithoutGrooveLinesCount,
     cornerConfiguration: asCornerConfiguration(persistedConfig.cornerConfiguration),
     isLibraryMode: !!persistedConfig.isLibraryMode,
     savedColors: readSavedColorsSnapshot(App),
-    grooveLinesCount:
-      typeof persistedConfig.grooveLinesCount === 'number' || persistedConfig.grooveLinesCount === null
-        ? persistedConfig.grooveLinesCount
-        : normalizedModel.grooveLinesCount,
   };
+  const grooveLinesCount =
+    typeof persistedGrooveLinesCount === 'number' || persistedGrooveLinesCount === null
+      ? persistedGrooveLinesCount
+      : normalizedModel.grooveLinesCount;
+  if (grooveLinesCount !== undefined) projectStructure.grooveLinesCount = grooveLinesCount;
 
   stampCurrentProjectSchema(projectStructure);
   preserveOrderPdfEditorDraft(App, projectStructure);

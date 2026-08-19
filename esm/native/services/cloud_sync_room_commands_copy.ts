@@ -45,7 +45,12 @@ export async function runCloudSyncCopyShareLinkCommand(
   }
 
   if (clipboardFailure?.reason === 'error') {
-    return { ok: false, reason: 'error', link: text, message: clipboardFailure.message };
+    return {
+      ok: false,
+      reason: 'error',
+      link: text,
+      ...(clipboardFailure.message !== undefined ? { message: clipboardFailure.message } : {}),
+    };
   }
 
   return { ok: false, reason: clipboard ? 'clipboard' : 'unavailable', link: text };

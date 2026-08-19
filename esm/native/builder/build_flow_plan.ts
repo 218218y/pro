@@ -33,7 +33,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     heightCm,
     depthCm,
     doorsCount,
-    removablePartInteractionActive,
+    ...(removablePartInteractionActive !== undefined ? { removablePartInteractionActive } : {}),
     toStr,
   });
   const materials = orchestration.resolvePlanMaterials({

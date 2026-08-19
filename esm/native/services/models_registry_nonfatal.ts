@@ -8,7 +8,8 @@ const __modelsSoftSeen = new Map<string, number>();
 function readModelsErrorHead(error: unknown): string {
   try {
     const record = isObject(error) ? error : null;
-    if (record && typeof record.stack === 'string') return String(record.stack).split('\n')[0];
+    if (record && typeof record.stack === 'string')
+      return String(record.stack).split('\n')[0] ?? String(record.stack);
     if (record && typeof record.message === 'string') return String(record.message);
     return String(error);
   } catch (headError) {

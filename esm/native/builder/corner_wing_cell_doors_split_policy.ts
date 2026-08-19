@@ -22,8 +22,7 @@ export function readCustomSplitCutsY(ctx: CornerWingDoorContext, state: CornerWi
     const padAbs = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
     const minSegH = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
     const abs: number[] = [];
-    for (let i = 0; i < norms.length; i++) {
-      const rawNorm = norms[i];
+    for (const rawNorm of norms) {
       if (!Number.isFinite(rawNorm)) continue;
       const n = Math.max(0, Math.min(1, rawNorm));
       let y = state.doorBottomY + n * height;
@@ -71,8 +70,7 @@ function keepValidCuts(state: CornerWingDoorState, cuts: number[], minSegH: numb
   const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const kept: number[] = [];
   let prevBottom = state.doorBottomY;
-  for (let i = 0; i < cuts.length; i++) {
-    const y = cuts[i];
+  for (const y of cuts) {
     if (y - prevBottom < minSegH) continue;
     if (topEdge - y < minSegH) continue;
     kept.push(y);
@@ -90,9 +88,8 @@ function dedupeCuts(state: CornerWingDoorState, cuts: number[], height: number):
       height * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
     )
   );
-  for (let i = 0; i < cuts.length; i++) {
-    const y = cuts[i];
-    const prev = out.length ? out[out.length - 1] : NaN;
+  for (const y of cuts) {
+    const prev = out.at(-1) ?? NaN;
     if (Number.isFinite(prev) && Math.abs(prev - y) <= tolerance) continue;
     out.push(y);
   }

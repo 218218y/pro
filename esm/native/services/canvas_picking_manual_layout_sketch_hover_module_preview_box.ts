@@ -52,11 +52,17 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
       removeEpsShelf: REMOVE_EPS_SHELF,
       removeEpsBox: REMOVE_EPS_BOX,
       readSketchBoxDividers: __wp_readSketchBoxDividers,
-      readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
+      ...(__wp_readSketchBoxHorizontalDividers !== undefined
+        ? { readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers }
+        : {}),
       resolveSketchBoxSegments: __wp_resolveSketchBoxSegments,
       pickSketchBoxSegment: __wp_pickSketchBoxSegment,
-      resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments,
-      pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment,
+      ...(__wp_resolveSketchBoxVerticalSegments !== undefined
+        ? { resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments }
+        : {}),
+      ...(__wp_pickSketchBoxVerticalSegment !== undefined
+        ? { pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment }
+        : {}),
     });
     return hoverPreview
       ? writeManualLayoutSketchHoverPreview(ctx, hoverPreview)
@@ -80,11 +86,17 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
       pointerY: yClamped,
       woodThick,
       readSketchBoxDividers: __wp_readSketchBoxDividers,
-      readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
+      ...(__wp_readSketchBoxHorizontalDividers !== undefined
+        ? { readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers }
+        : {}),
       resolveSketchBoxSegments: __wp_resolveSketchBoxSegments,
       pickSketchBoxSegment: __wp_pickSketchBoxSegment,
-      resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments,
-      pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment,
+      ...(__wp_resolveSketchBoxVerticalSegments !== undefined
+        ? { resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments }
+        : {}),
+      ...(__wp_pickSketchBoxVerticalSegment !== undefined
+        ? { pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment }
+        : {}),
     });
     return doorPreview
       ? writeManualLayoutSketchHoverPreview(ctx, doorPreview)

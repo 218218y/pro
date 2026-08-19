@@ -27,18 +27,18 @@ export function reorderPresetsByStoredOrder(
     if (!order.length || allPresets.length <= 1) return;
 
     const byId = new Map<string, SavedModelLike>();
-    for (let i = 0; i < allPresets.length; i++) {
+    for (const preset of allPresets) {
       try {
-        const pid = readModelId(allPresets[i]);
-        if (pid) byId.set(pid, allPresets[i]);
+        const pid = readModelId(preset);
+        if (pid) byId.set(pid, preset);
       } catch (e) {
         _modelsReportNonFatal(App, 'ensureLoaded.order.map', e, 1500);
       }
     }
 
     const reordered: SavedModelLike[] = [];
-    for (let i = 0; i < order.length; i++) {
-      const orderedId = String(order[i] || '').trim();
+    for (const orderEntry of order) {
+      const orderedId = String(orderEntry || '').trim();
       if (!orderedId) continue;
       const preset = byId.get(orderedId);
       if (!preset) continue;
@@ -46,11 +46,11 @@ export function reorderPresetsByStoredOrder(
       byId.delete(orderedId);
     }
 
-    for (let i = 0; i < allPresets.length; i++) {
+    for (const preset of allPresets) {
       try {
-        const pid = readModelId(allPresets[i]);
+        const pid = readModelId(preset);
         if (pid && byId.has(pid)) {
-          reordered.push(allPresets[i]);
+          reordered.push(preset);
           byId.delete(pid);
         }
       } catch (e) {
@@ -70,8 +70,8 @@ export function collectAvailablePresetIds(
 ): Set<string> {
   const ids = new Set<string>();
   const addFrom = (list: SavedModelLike[]): void => {
-    for (let i = 0; i < list.length; i++) {
-      const id = readModelId(list[i]);
+    for (const model of list) {
+      const id = readModelId(model);
       if (id) ids.add(id);
     }
   };
@@ -88,9 +88,7 @@ export function splitStoredModels(
   const userPresets: SavedModelLike[] = [];
   const userModels: SavedModelLike[] = [];
 
-  for (let i = 0; i < stored.length; i++) {
-    const record = stored[i];
-    if (!record) continue;
+  for (const record of stored) {
     if (record.isPreset) {
       try {
         markModelAsUserPreset(record);
@@ -117,15 +115,15 @@ export function buildVisibleCorePresets(App: AppContainer, hidden: ReadonlySet<s
   const presets = asMutableModelsList(_normalizeList(state.presets, { App }));
   const corePresets: SavedModelLike[] = [];
 
-  for (let i = 0; i < presets.length; i++) {
+  for (const preset of presets) {
     try {
-      markModelAsCorePreset(presets[i]);
+      markModelAsCorePreset(preset);
     } catch (e) {
       _modelsReportNonFatal(App, 'ensureLoaded.corePreset', e, 1500);
     }
-    const presetId = readModelId(presets[i]);
+    const presetId = readModelId(preset);
     if (presetId && hidden.has(presetId)) continue;
-    corePresets.push(presets[i]);
+    corePresets.push(preset);
   }
 
   return corePresets;
@@ -168,10 +166,8 @@ export function getModelByIdInternalImpl(App: AppContainer, id: unknown): SavedM
   if (!id) return null;
 
   const state = getModelsRuntimeStateForApp(App);
-  for (let i = 0; i < state.all.length; i++) {
-    if (state.all[i]?.id === id) {
-      return state.all[i];
-    }
+  for (const model of state.all) {
+    if (model.id === id) return model;
   }
   return null;
 }
@@ -181,9 +177,8 @@ export function exportUserModelsInternalImpl(App: AppContainer): SavedModelLike[
 
   const state = getModelsRuntimeStateForApp(App);
   const user: SavedModelLike[] = [];
-  for (let i = 0; i < state.all.length; i++) {
-    const model = state.all[i];
-    if (model && (!model.isPreset || model.isUserPreset)) {
+  for (const model of state.all) {
+    if (!model.isPreset || model.isUserPreset) {
       const normalized = _normalizeModel(model, {
         App,
         op: 'exportUserModels',
@@ -193,13 +188,13 @@ export function exportUserModelsInternalImpl(App: AppContainer): SavedModelLike[
     }
   }
 
-  for (let i = 0; i < user.length; i++) {
+  for (const [index, userModel] of user.entries()) {
     try {
-      const model = asMutableModelsList([user[i]])[0];
+      const model = asMutableModelsList([userModel])[0];
       if (!model) continue;
       if (model.isPreset) markModelAsUserPreset(model);
       else markModelAsSavedModel(model);
-      user[i] = model;
+      user[index] = model;
     } catch (e) {
       _modelsReportNonFatal(App, 'exportUserModels', e, 1500);
     }

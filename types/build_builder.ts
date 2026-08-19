@@ -204,7 +204,7 @@ export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   internalDepth?: BuilderPreviewScalar;
   innerW?: BuilderPreviewScalar;
   woodThick?: BuilderPreviewScalar;
-  shelfVariant?: string | null;
+  shelfVariant?: string | null | undefined;
   op?: string | null;
   isRemove?: BuilderPreviewBool;
   shelfYs?: BuilderPreviewScalar[] | null;

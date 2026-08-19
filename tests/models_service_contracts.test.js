@@ -292,8 +292,8 @@ test('models callers and sync payloads stay on canonical seams', () => {
     cloudSyncTypes,
     [
       /export interface CloudSyncPayload extends UnknownRecord \{/,
-      /savedModels\?:\s*SavedModelLike\[\](?:\s*\|\s*(?:null|unknown))?\s*;/,
-      /savedColors\?:\s*SavedColorLike\[\](?:\s*\|\s*(?:null|unknown))?\s*;/,
+      /savedModels\?:\s*SavedModelLike\[\]\s*\|\s*null\s*\|\s*undefined\s*;/,
+      /savedColors\?:\s*SavedColorLike\[\]\s*\|\s*null\s*\|\s*undefined\s*;/,
     ],
     'cloudSyncTypes'
   );

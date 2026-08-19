@@ -61,9 +61,9 @@ export function resolveSketchModuleRodCollisionHeight(): number {
 }
 
 export function buildSketchModuleDrawerVerticalBlockers(args: {
-  cfgRef?: RecordMap | null;
-  drawers?: RecordMap[] | null;
-  extDrawers?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  drawers?: RecordMap[] | null | undefined;
+  extDrawers?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;
@@ -123,9 +123,9 @@ function clampSketchModuleVerticalContentCenterY(args: {
 }
 
 export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
-  cfgRef?: RecordMap | null;
-  drawers?: RecordMap[] | null;
-  extDrawers?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  drawers?: RecordMap[] | null | undefined;
+  extDrawers?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;
@@ -227,9 +227,9 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
 }
 
 export function doesSketchModuleVerticalRangeCollideWithDrawers(args: {
-  cfgRef?: RecordMap | null;
-  drawers?: RecordMap[] | null;
-  extDrawers?: RecordMap[] | null;
+  cfgRef?: RecordMap | null | undefined;
+  drawers?: RecordMap[] | null | undefined;
+  extDrawers?: RecordMap[] | null | undefined;
   bottomY: number;
   topY: number;
   totalHeight: number;

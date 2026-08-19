@@ -39,21 +39,29 @@ export function applyHingedDoorOpsAfterModules(ctx: unknown): boolean {
     throw new Error('[WardrobePro] Hinged door ops missing: applyHingedDoorsOps');
   }
 
+  const doorMapsConfig = asBuilderDoorMapsConfig(cfg);
+  const globalFrontMat = bc.materials && bc.materials.globalFrontMat;
+  const createDoorVisual = bc.create && bc.create.createDoorVisual;
+  const createHandleMesh = bc.create && bc.create.createHandleMesh;
+  const getPartMaterial = bc.resolvers && bc.resolvers.getPartMaterial;
+  const getHandleType = bc.resolvers && bc.resolvers.getHandleType;
+  const isDoorRemoved = bc.resolvers && bc.resolvers.isDoorRemoved;
+
   ro.applyHingedDoorsOps({
-    THREE: THREE,
-    cfg: asBuilderDoorMapsConfig(cfg),
+    THREE,
+    ...(doorMapsConfig !== undefined ? { cfg: doorMapsConfig } : {}),
     sketchMode: bc.flags?.sketchMode === true,
     __wpStack: bc && bc.flags && typeof bc.flags.__wpStack === 'string' ? String(bc.flags.__wpStack) : 'top',
     ops: opsList,
     doorStyle: (bc.strings && bc.strings.doorStyle) || '',
-    globalFrontMat: bc.materials && bc.materials.globalFrontMat,
-    createDoorVisual: bc.create && bc.create.createDoorVisual,
-    createHandleMesh: bc.create && bc.create.createHandleMesh,
-    getPartMaterial: bc.resolvers && bc.resolvers.getPartMaterial,
-    getHandleType: bc.resolvers && bc.resolvers.getHandleType,
+    ...(globalFrontMat !== undefined ? { globalFrontMat } : {}),
+    ...(createDoorVisual !== undefined ? { createDoorVisual } : {}),
+    ...(createHandleMesh !== undefined ? { createHandleMesh } : {}),
+    ...(getPartMaterial !== undefined ? { getPartMaterial } : {}),
+    ...(getHandleType !== undefined ? { getHandleType } : {}),
     isRemoveDoorMode: !!(bc.resolvers && bc.resolvers.isRemoveDoorMode),
     removeDoorsEnabled: !!(bc.resolvers && bc.resolvers.removeDoorsEnabled),
-    isDoorRemoved: bc.resolvers && bc.resolvers.isDoorRemoved,
+    ...(isDoorRemoved !== undefined ? { isDoorRemoved } : {}),
   });
 
   return true;

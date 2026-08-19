@@ -235,13 +235,14 @@ export function installBuilderRegistry(App: AppContainer): BuilderRegistryLike {
   const registry = _ensureRegistrySlot(builderService);
 
   const bound = createBuilderRegistry(container);
-  if (typeof registry.reset !== 'function') registry.reset = bound.reset;
-  if (typeof registry.registerPartObject !== 'function')
+  if (typeof registry.reset !== 'function' && typeof bound.reset === 'function') registry.reset = bound.reset;
+  if (typeof registry.registerPartObject !== 'function' && typeof bound.registerPartObject === 'function')
     registry.registerPartObject = bound.registerPartObject;
-  if (typeof registry.registerModuleHitBox !== 'function')
+  if (typeof registry.registerModuleHitBox !== 'function' && typeof bound.registerModuleHitBox === 'function')
     registry.registerModuleHitBox = bound.registerModuleHitBox;
-  if (typeof registry.finalize !== 'function') registry.finalize = bound.finalize;
-  if (typeof registry.get !== 'function') registry.get = bound.get;
+  if (typeof registry.finalize !== 'function' && typeof bound.finalize === 'function')
+    registry.finalize = bound.finalize;
+  if (typeof registry.get !== 'function' && typeof bound.get === 'function') registry.get = bound.get;
 
   try {
     registry.__esm_v1 = true;

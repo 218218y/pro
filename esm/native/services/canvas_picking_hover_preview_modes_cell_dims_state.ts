@@ -61,8 +61,8 @@ export function readCellDimsSpecialDims(
 
 function hasCompleteCellDimsOverride(specialDims: UnknownRecord | null, baseKeys: string[]): boolean {
   if (!specialDims) return false;
-  for (let i = 0; i < baseKeys.length; i += 1) {
-    if (__hasOwnFiniteValue(specialDims, baseKeys[i])) return true;
+  for (const baseKey of baseKeys) {
+    if (__hasOwnFiniteValue(specialDims, baseKey)) return true;
   }
   return false;
 }

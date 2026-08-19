@@ -8,8 +8,8 @@ import {
 
 export function resolveSketchModuleBoxRemoveAction(args: {
   boxes: unknown[];
-  removeIdHint?: string | null;
-  cursorXHint?: number | null;
+  removeIdHint?: string | null | undefined;
+  cursorXHint?: number | null | undefined;
   cursorY: number;
   bottomY: number;
   spanH: number;

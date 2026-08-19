@@ -36,7 +36,7 @@ import {
 export interface CanvasHandleAssignClickArgs {
   App: AppContainer;
   primaryHitObject: HitObjectLike | null;
-  doorHitObject?: HitObjectLike | null;
+  doorHitObject?: HitObjectLike | null | undefined;
   primaryHitPoint?: { x?: number; y?: number; z?: number } | null;
   doorHitPoint?: { x?: number; y?: number; z?: number } | null;
   foundDrawerId: string | null;
@@ -124,7 +124,7 @@ function findAncestorOwnerByPartId(
 
 function resolveManualHandleTargetOwner(args: {
   primaryHitObject: HitObjectLike | null;
-  doorHitObject?: HitObjectLike | null;
+  doorHitObject?: HitObjectLike | null | undefined;
   partId: string;
 }): DoorOwnerLike | null {
   const { primaryHitObject, doorHitObject, partId } = args;

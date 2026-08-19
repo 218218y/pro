@@ -147,9 +147,11 @@ export function appendMiterFaceFrameCaps(args: {
         pts.flatMap(([x, y]) => [x, y])
       ),
       () => {
+        const firstPoint = pts[0];
+        if (!firstPoint) throw new RangeError('[door_miter] polygon requires a first point');
         const shape: ShapeRuntimeLike = new THREE.Shape();
-        shape.moveTo(pts[0][0], pts[0][1]);
-        for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i][0], pts[i][1]);
+        shape.moveTo(firstPoint[0], firstPoint[1]);
+        for (const [x, y] of pts.slice(1)) shape.lineTo(x, y);
         shape.closePath();
         return new THREE.ShapeGeometry(shape);
       }

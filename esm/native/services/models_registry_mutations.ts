@@ -152,8 +152,7 @@ function areModelValuesEqual(a: unknown, b: unknown): boolean {
   const aKeys = Object.keys(aRec);
   const bKeys = Object.keys(bRec);
   if (aKeys.length !== bKeys.length) return false;
-  for (let i = 0; i < aKeys.length; i += 1) {
-    const key = aKeys[i];
+  for (const key of aKeys) {
     if (!Object.prototype.hasOwnProperty.call(bRec, key)) return false;
     if (!areModelValuesEqual(aRec[key], bRec[key])) return false;
   }
@@ -163,8 +162,9 @@ function areModelValuesEqual(a: unknown, b: unknown): boolean {
 function areModelsListsEqual(current: SavedModelLike[], next: SavedModelLike[]): boolean {
   if (current === next) return true;
   if (current.length !== next.length) return false;
-  for (let i = 0; i < current.length; i += 1) {
-    if (!areModelValuesEqual(current[i], next[i])) return false;
+  for (const [index, currentModel] of current.entries()) {
+    const nextModel = next[index];
+    if (!nextModel || !areModelValuesEqual(currentModel, nextModel)) return false;
   }
   return true;
 }
@@ -192,9 +192,9 @@ export function setModelPresetsInternalImpl(App: AppContainer, presetsArr: Saved
 
   const state = getModelsRuntimeStateForApp(App);
   const nextPresets = _normalizeList(presetsArr, { App, applyAppNormalizer: false });
-  for (let i = 0; i < nextPresets.length; i++) {
+  for (const preset of nextPresets) {
     try {
-      nextPresets[i].isPreset = true;
+      preset.isPreset = true;
     } catch (e) {
       _modelsReportNonFatal(App, 'setModelPresets.markPreset', e, 1500);
     }

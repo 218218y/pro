@@ -46,8 +46,8 @@ export function createCornerNormalizedConfigState(args: {
 
     const isRemoved = (id0: string): boolean => {
       const keys = listCanonicalRemovedDoorLookupKeys(id0);
-      for (let i = 0; i < keys.length; i += 1) {
-        if (__removedDoorsMap[keys[i]] === true) return true;
+      for (const key of keys) {
+        if (__removedDoorsMap[key] === true) return true;
       }
       return false;
     };

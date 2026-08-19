@@ -18,11 +18,11 @@ function hasCloudSyncSettledUpdatedAt(row: CloudSyncStateRow | null | undefined)
 }
 
 export function publishCloudSyncWriteActivity(args: {
-  runtimeStatus?: CloudSyncRuntimeStatus | null;
-  publishStatus?: (() => void) | null;
-  emitRealtimeHint?: CloudSyncRealtimeHintSender | null;
-  hintScope?: CloudSyncRealtimeScopedHandlerScope | null;
-  rowName?: string | null;
+  runtimeStatus?: CloudSyncRuntimeStatus | null | undefined;
+  publishStatus?: (() => void) | null | undefined;
+  emitRealtimeHint?: CloudSyncRealtimeHintSender | null | undefined;
+  hintScope?: CloudSyncRealtimeScopedHandlerScope | null | undefined;
+  rowName?: string | null | undefined;
 }): void {
   const { runtimeStatus, publishStatus, emitRealtimeHint, hintScope, rowName } = args;
   if (emitRealtimeHint && hintScope)
@@ -31,12 +31,12 @@ export function publishCloudSyncWriteActivity(args: {
 }
 
 export async function resolveCloudSyncSettledRowAfterWrite(args: {
-  returnedRow?: CloudSyncStateRow | null;
+  returnedRow?: CloudSyncStateRow | null | undefined;
   reader: CloudSyncSettledRowReader;
-  runtimeStatus?: CloudSyncRuntimeStatus | null;
-  publishStatus?: (() => void) | null;
-  onSettledUpdatedAt?: ((value: string) => void) | null;
-  countSettleReadAsPull?: boolean;
+  runtimeStatus?: CloudSyncRuntimeStatus | null | undefined;
+  publishStatus?: (() => void) | null | undefined;
+  onSettledUpdatedAt?: ((value: string) => void) | null | undefined;
+  countSettleReadAsPull?: boolean | undefined;
 }): Promise<CloudSyncStateRow | null> {
   const { returnedRow, reader, runtimeStatus, publishStatus, onSettledUpdatedAt, countSettleReadAsPull } =
     args;

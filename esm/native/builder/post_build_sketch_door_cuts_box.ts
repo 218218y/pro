@@ -29,8 +29,7 @@ function collectSketchBoxExternalDrawerStackBounds(App: AppContainer): SketchBox
   const drawersArr = getDrawersArray(App);
   if (!drawersArr.length) return [];
   const stacks = new Map<string, SketchBoxDrawerStackBounds>();
-  for (let i = 0; i < drawersArr.length; i++) {
-    const entry = drawersArr[i];
+  for (const [i, entry] of drawersArr.entries()) {
     const g = getDrawerEntryGroup(entry);
     const ud = asRecord(g && g.userData);
     if (!g || !ud || ud.__wpSketchExtDrawer !== true) continue;
@@ -113,7 +112,9 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
   applySketchDrawerDoorCuts({
     App,
     runtime,
-    collectSuppressedHandlePartIds: args.collectSuppressedHandlePartIds,
+    ...(args.collectSuppressedHandlePartIds
+      ? { collectSuppressedHandlePartIds: args.collectSuppressedHandlePartIds }
+      : {}),
     selectDoorCuts: (_entry, _g, ud) => {
       const boxId = readStringOrNull(ud.__wpSketchBoxId);
       if (!boxId) return null;

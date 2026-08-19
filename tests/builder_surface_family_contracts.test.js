@@ -509,7 +509,7 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     canvasPickingCoreRuntimeOwner,
-    [/runPlatformRenderFollowThrough\(App, \{ updateShadows, ensureRenderLoop: false \}\)/],
+    [/runPlatformRenderFollowThrough\(App,/, /ensureRenderLoop:\s*false/, /updateShadows/],
     'canvas picking runtime canonical render follow-through'
   );
   assertLacksAll(

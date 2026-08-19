@@ -86,8 +86,10 @@ function appendSketchSegmentHinges(args: {
     },
     state: hardwareContext.state,
     localCenterY: segmentCenterLocalY,
-    openFrameOffsetX: hardwareContext.openFrameOffsetX,
-    frontSign: hardwareContext.frontSign,
+    ...(hardwareContext.openFrameOffsetX !== undefined
+      ? { openFrameOffsetX: hardwareContext.openFrameOffsetX }
+      : {}),
+    ...(hardwareContext.frontSign !== undefined ? { frontSign: hardwareContext.frontSign } : {}),
   });
 }
 
@@ -126,8 +128,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   ud.__wpSketchCustomHandles = true;
   ud.__wpSketchSegmentedDoor = true;
 
-  for (let segIndex = 0; segIndex < visibleSegments.length; segIndex++) {
-    const seg = visibleSegments[segIndex];
+  for (const [segIndex, seg] of visibleSegments.entries()) {
     const segmentConstructionHeight = seg.yMax - seg.yMin;
     const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
     if (!(segHeight > SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM)) continue;

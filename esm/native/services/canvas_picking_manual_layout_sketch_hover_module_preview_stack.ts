@@ -118,14 +118,20 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
       pointerY: yClamped,
       woodThick,
       selectedDrawerCount,
-      externalDrawerType,
+      ...(externalDrawerType !== undefined ? { externalDrawerType } : {}),
       drawerHeightM,
       readSketchBoxDividers: __wp_readSketchBoxDividers,
-      readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
+      ...(__wp_readSketchBoxHorizontalDividers !== undefined
+        ? { readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers }
+        : {}),
       resolveSketchBoxSegments: __wp_resolveSketchBoxSegments,
       pickSketchBoxSegment: __wp_pickSketchBoxSegment,
-      resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments,
-      pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment,
+      ...(__wp_resolveSketchBoxVerticalSegments !== undefined
+        ? { resolveSketchBoxVerticalSegments: __wp_resolveSketchBoxVerticalSegments }
+        : {}),
+      ...(__wp_pickSketchBoxVerticalSegment !== undefined
+        ? { pickSketchBoxVerticalSegment: __wp_pickSketchBoxVerticalSegment }
+        : {}),
     });
     if (!stackPreview) {
       ctx.__wp_writeSketchHover(ctx.App, null);
@@ -158,7 +164,7 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
     boxes,
     woodThick,
     selectedDrawerCount,
-    externalDrawerType,
+    ...(externalDrawerType !== undefined ? { externalDrawerType } : {}),
     standardShoePreview:
       externalDrawerType === 'shoe' ? findStandardExternalShoePreviewForModule(ctx.App, hitModuleKey) : null,
     drawerHeightM,

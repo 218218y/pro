@@ -20,10 +20,15 @@ export function normalizeSketchDrawerCutIntervals(
     .filter(seg => Number.isFinite(seg.yMin) && Number.isFinite(seg.yMax) && seg.yMax - seg.yMin > minHeight)
     .sort((a, b) => a.yMin - b.yMin);
   if (!sorted.length) return [];
-  const merged: SketchDrawerCutSegment[] = [sorted[0]];
-  for (let i = 1; i < sorted.length; i++) {
+  const first = sorted[0];
+  if (!first) return [];
+  const merged: SketchDrawerCutSegment[] = [first];
+  for (const cur of sorted.slice(1)) {
     const prev = merged[merged.length - 1];
-    const cur = sorted[i];
+    if (!prev) {
+      merged.push({ ...cur });
+      continue;
+    }
     if (cur.yMin <= prev.yMax + DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutIntervalMergeGapM) {
       prev.yMax = Math.max(prev.yMax, cur.yMax);
       continue;
@@ -40,8 +45,7 @@ export function subtractSketchDrawerIntervals(
 ): SketchDrawerCutSegment[] {
   let cursor = doorMin;
   const visible: SketchDrawerCutSegment[] = [];
-  for (let i = 0; i < cuts.length; i++) {
-    const cut = cuts[i];
+  for (const cut of cuts) {
     if (cut.yMax <= cursor) continue;
     if (cut.yMin >= doorMax) break;
     if (cut.yMin > cursor + DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutVisibleSegmentMinHeightM) {
@@ -59,8 +63,7 @@ export function groupSketchDrawerStackBounds<TKey extends string>(
   entries: Array<SketchDrawerStackBounds & { key: TKey }>
 ): Map<TKey, SketchDrawerStackBounds[]> {
   const grouped = new Map<TKey, SketchDrawerStackBounds[]>();
-  for (let i = 0; i < entries.length; i++) {
-    const item = entries[i];
+  for (const item of entries) {
     const list = grouped.get(item.key);
     const bounds = { xMin: item.xMin, xMax: item.xMax, yMin: item.yMin, yMax: item.yMax };
     if (list) list.push(bounds);
