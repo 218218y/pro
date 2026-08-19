@@ -78,6 +78,28 @@ function createDoorGroup() {
   return door;
 }
 
+function createAuthoredSplitDoorLeaf(args: {
+  partId: string;
+  moduleKey: string;
+  centerY: number;
+  height: number;
+}) {
+  const door = new FakeGroup();
+  door.position.set(0, args.centerY, 0);
+  door.userData = {
+    partId: args.partId,
+    moduleIndex: args.moduleKey,
+    __wpStack: 'top',
+    __wpSketchModuleKey: args.moduleKey,
+    __doorWidth: 1,
+    __doorHeight: args.height,
+    __hingeLeft: true,
+  };
+  const sentinel = new FakeGroup();
+  door.add(sentinel);
+  return { door, sentinel };
+}
+
 function createBoxDoorGroup() {
   const door = new FakeGroup();
   door.position.set(0, 1, 0);
@@ -170,6 +192,136 @@ function createCtx() {
   };
 }
 
+test('module sketch door-cut pass does not recursively re-split regular hinged leaves from the split map alone', () => {
+  const App: Record<string, unknown> = {};
+  const bottom = createAuthoredSplitDoorLeaf({
+    partId: 'd0_bot',
+    moduleKey: '0',
+    centerY: 0.5,
+    height: 1,
+  });
+  const top = createAuthoredSplitDoorLeaf({
+    partId: 'd0_top',
+    moduleKey: '0',
+    centerY: 1.5,
+    height: 1,
+  });
+  getDoorsArray(App).push(
+    { type: 'hinged', group: bottom.door } as any,
+    { type: 'hinged', group: top.door } as any
+  );
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: { ...createCtx(), layout: { moduleCfgList: [{}] } } as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d0: true,
+        splitpos_d0: [0.5],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  assert.deepEqual(bottom.door.children, [bottom.sentinel]);
+  assert.deepEqual(top.door.children, [top.sentinel]);
+  assert.equal(bottom.door.userData.__wpSketchSegmentedDoor, undefined);
+  assert.equal(top.door.userData.__wpSketchSegmentedDoor, undefined);
+});
+
+test('module sketch drawer pass does not recursively split unrelated module leaves when another module owns drawer cuts', () => {
+  const App: Record<string, unknown> = {};
+  const drawerOwnedDoor = createDoorGroup();
+  const bottom = createAuthoredSplitDoorLeaf({
+    partId: 'd1_bot',
+    moduleKey: '1',
+    centerY: 0.5,
+    height: 1,
+  });
+  const top = createAuthoredSplitDoorLeaf({
+    partId: 'd1_top',
+    moduleKey: '1',
+    centerY: 1.5,
+    height: 1,
+  });
+  getDoorsArray(App).push(
+    { type: 'hinged', group: drawerOwnedDoor } as any,
+    { type: 'hinged', group: bottom.door } as any,
+    { type: 'hinged', group: top.door } as any
+  );
+  getDrawersArray(App).push({
+    group: createModuleExternalDrawerGroup({ yMin: 0.8, yMax: 1.2, drawerId: 'middle-stack' }),
+  } as any);
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: {
+      ...createCtx(),
+      layout: {
+        moduleCfgList: [{ sketchExtras: { extDrawers: [{ count: 1, yNormC: 0.5 }] } }, {}],
+      },
+    } as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d1: true,
+        splitpos_d1: [0.5],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  assert.equal(drawerOwnedDoor.userData.__wpSketchSegmentedDoor, true);
+  assert.deepEqual(bottom.door.children, [bottom.sentinel]);
+  assert.deepEqual(top.door.children, [top.sentinel]);
+  assert.equal(bottom.door.userData.__wpSketchSegmentedDoor, undefined);
+  assert.equal(top.door.userData.__wpSketchSegmentedDoor, undefined);
+});
+
+test('deferred full module door can replay manual split positions without recursively owning regular split leaves', () => {
+  const App: Record<string, unknown> = {};
+  const doorGroup = createDoorGroup();
+  getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
+
+  const invalidRuntimeDrawer = new FakeGroup();
+  invalidRuntimeDrawer.position.set(0, 1, 0);
+  invalidRuntimeDrawer.userData = {
+    __wpSketchExtDrawer: true,
+    __wpSketchModuleKey: '0',
+    __wpStack: 'top',
+    __doorWidth: 0,
+    __doorHeight: 0,
+  };
+  getDrawersArray(App).push({ group: invalidRuntimeDrawer } as any);
+
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: createCtx() as any,
+    cfg: {
+      splitDoorsMap: {
+        split_d0: true,
+        splitpos_d0: [0.5],
+      },
+    },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+    allowConfigDerivedCuts: false,
+  });
+
+  const segments = doorGroup.children.filter(child => child.userData?.__wpSketchDoorSegment === true);
+  assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, true);
+  assert.equal(segments.length, 2);
+});
+
 test('module sketch door cuts do not use config-derived cuts when invalid runtime drawer metadata exists', () => {
   const App: Record<string, unknown> = {};
   const doorGroup = createDoorGroup();
@@ -256,7 +408,7 @@ test('module sketch door cuts still use config-derived cuts when no runtime draw
   assert.ok(doorGroup.children.length > 0);
 });
 
-test('module sketch drawer door cuts replay stored split positions against the surviving door above bottom drawers', () => {
+test('module sketch drawer door cuts replay fixed standard split positions against the surviving door above bottom drawers', () => {
   const App: Record<string, unknown> = {};
   const doorGroup = createDoorGroup();
   getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
@@ -271,7 +423,7 @@ test('module sketch drawer door cuts replay stored split positions against the s
     cfg: {
       splitDoorsMap: {
         split_d0: true,
-        splitpos_d0: [0.25],
+        splitstdpos_d0: [0.25],
       },
     },
     bodyMat: { name: 'body' },
@@ -297,7 +449,7 @@ test('module sketch drawer door cuts replay stored split positions against the s
   );
 });
 
-test('module sketch drawer door cuts combine middle drawer gaps with lower and upper stored split positions', () => {
+test('module sketch drawer door cuts combine middle drawer gaps with lower and upper manual split positions', () => {
   const App: Record<string, unknown> = {};
   const doorGroup = createDoorGroup();
   getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
@@ -349,7 +501,7 @@ test('module sketch drawer door cuts combine middle drawer gaps with lower and u
   );
 });
 
-test('module sketch drawer door cuts replay stored split positions against the surviving door below top drawers', () => {
+test('module sketch drawer door cuts replay fixed standard split positions against the surviving door below top drawers', () => {
   const App: Record<string, unknown> = {};
   const doorGroup = createDoorGroup();
   getDoorsArray(App).push({ type: 'hinged', group: doorGroup } as any);
@@ -364,7 +516,7 @@ test('module sketch drawer door cuts replay stored split positions against the s
     cfg: {
       splitDoorsMap: {
         split_d0: true,
-        splitpos_d0: [2 / 3],
+        splitstdpos_d0: [2 / 3],
       },
     },
     bodyMat: { name: 'body' },

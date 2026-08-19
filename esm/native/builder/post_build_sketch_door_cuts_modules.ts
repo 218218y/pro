@@ -27,7 +27,8 @@ import {
   readKey,
   type ValueRecord,
 } from './post_build_extras_shared.js';
-import { readSketchDoorManualSplitSelection } from './post_build_sketch_door_cuts_apply.js';
+import { readSketchDoorSplitSelection } from './post_build_sketch_door_cuts_apply.js';
+import { hasSketchExternalDrawerDoorCutsInConfig } from './sketch_external_drawer_door_cut_ownership.js';
 import {
   readGeometryUserDataNumber,
   readGeometryUserDataNumberKey,
@@ -56,6 +57,21 @@ function normalizeSketchModuleCutKey(value: unknown, stackKey: 'top' | 'bottom')
   if (!key) return null;
   if (stackKey === 'bottom') return key.startsWith('lower_') ? key : `lower_${key}`;
   return key.startsWith('lower_') ? key.slice('lower_'.length) : key;
+}
+
+function collectSketchModuleDeferredSplitKeys(
+  ctx: BuildContextLike,
+  stackKey: 'top' | 'bottom'
+): Set<string> {
+  const layoutRec = readCtxLayoutSurface(ctx);
+  const moduleCfgList = asArray(readKey(layoutRec, 'moduleCfgList'));
+  const keys = new Set<string>();
+  for (let i = 0; i < moduleCfgList.length; i += 1) {
+    if (!hasSketchExternalDrawerDoorCutsInConfig(moduleCfgList[i])) continue;
+    const moduleKey = normalizeSketchModuleCutKey(String(i), stackKey);
+    if (moduleKey) keys.add(moduleKey);
+  }
+  return keys;
 }
 
 function readSketchExternalDrawerCutsForModule(cfg: unknown, gridEntry: unknown): SketchDrawerCutSegment[] {
@@ -179,6 +195,7 @@ export function applySketchExternalDrawerDoorCuts(args: {
     .map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }));
   let stacksByModule = groupSketchDrawerStackBounds(runtimeBounds);
   const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
+  const deferredSplitModuleKeys = collectSketchModuleDeferredSplitKeys(ctx, stackKey);
   const runtimeDrawerOwnerBlocksConfigFallback =
     !stacksByModule.size && runtimeStackCollection.hasRuntimeModuleDrawers[stackKey];
 
@@ -208,7 +225,12 @@ export function applySketchExternalDrawerDoorCuts(args: {
     stacksByModule = groupSketchDrawerStackBounds(configDerivedBounds);
   }
 
-  if (!stacksByModule.size && !splitMap) return;
+  // This pass may replay split positions only for modules whose regular hinged
+  // builder deliberately deferred split geometry because sketch external drawers
+  // own that door. A split map by itself is not ownership: normal split leaves are
+  // already emitted by the hinged-door builder and replaying the same positions on
+  // those leaves recursively subdivides them (1 cut -> 3 -> 7 ...).
+  if (!stacksByModule.size && (!splitMap || !deferredSplitModuleKeys.size)) return;
 
   const runtime = createSketchDoorCutsRuntime({
     App,
@@ -238,12 +260,16 @@ export function applySketchExternalDrawerDoorCuts(args: {
         stackKey
       );
       if (!moduleKey) return null;
+      const partId = typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`;
       const stacks = stacksByModule.get(moduleKey) || [];
-      const { basePartId, splitPosList } = readSketchDoorManualSplitSelection(
-        cfg,
-        typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`
-      );
-      if (!stacks.length && !splitPosList.length) return null;
+      const { basePartId, splitPosList } = readSketchDoorSplitSelection(cfg, partId);
+      // Only the canonical source door may be rebuilt by this post-build pass.
+      // Authored leaves such as d0_top/d0_bot/d0_mid1 normalize back to d0;
+      // replaying split positions on them is the recursive 1 -> 3 -> 7 failure.
+      const isCanonicalSourceDoor = partId === basePartId || partId === `${basePartId}_full`;
+      if (!isCanonicalSourceDoor) return null;
+      const ownsDeferredSplit = deferredSplitModuleKeys.has(moduleKey);
+      if (!stacks.length && !(ownsDeferredSplit && splitPosList.length)) return null;
       return { stacks, basePartId, splitPosList };
     },
   });

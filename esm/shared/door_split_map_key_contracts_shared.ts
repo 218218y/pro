@@ -54,6 +54,10 @@ export function isCanonicalSplitPositionMapKey(value: unknown): value is string 
   return hasCanonicalPrefixedBase(value, 'splitpos_', isCanonicalSplitPositionBaseKey);
 }
 
+export function isCanonicalSplitStandardPositionMapKey(value: unknown): value is string {
+  return hasCanonicalPrefixedBase(value, 'splitstdpos_', isCanonicalSplitPositionBaseKey);
+}
+
 export function isCanonicalSplitDoorsBottomMapKey(value: unknown): value is string {
   return hasCanonicalPrefixedBase(value, 'splitb_', isCanonicalSplitDoorBaseKey);
 }

@@ -22,10 +22,12 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
       splitDoorsMap: {
         split_d1: true,
         splitpos_d1: [0.25, 0.75, 'bad'],
+        splitstdpos_d1: [0.2, 0.8, 'bad'],
         split_d1_mid2_accent_top: true,
         split_d1_mid2_groove_left: true,
         splitpos_d1_mid2_accent_top: [0.4],
         splitpos_d1_mid2_groove_left: [0.5],
+        splitstdpos_d1_mid2_groove_left: [0.6],
         skip: { nope: true },
       },
       removedDoorsMap: {
@@ -76,10 +78,12 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
   const splits = readMap(App, 'splitDoorsMap');
   assert.equal(splits?.split_d1, true);
   assert.deepEqual(splits?.splitpos_d1, [0.25, 0.75]);
+  assert.deepEqual(splits?.splitstdpos_d1, [0.2, 0.8]);
   assert.equal('split_d1_mid2_accent_top' in (splits || {}), false);
   assert.equal('split_d1_mid2_groove_left' in (splits || {}), false);
   assert.equal('splitpos_d1_mid2_accent_top' in (splits || {}), false);
   assert.equal('splitpos_d1_mid2_groove_left' in (splits || {}), false);
+  assert.equal('splitstdpos_d1_mid2_groove_left' in (splits || {}), false);
   assert.equal('skip' in (splits || {}), false);
 
   const removed = readMap(App, 'removedDoorsMap');

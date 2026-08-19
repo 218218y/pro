@@ -27,6 +27,7 @@ import {
   isCanonicalSplitDoorsBottomMapKey,
   isCanonicalSplitDoorsMapKey,
   isCanonicalSplitPositionMapKey,
+  isCanonicalSplitStandardPositionMapKey,
 } from '../../../shared/door_split_map_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import { isCanonicalDoorVisualMapKey } from '../../../shared/door_visual_key_contracts_shared.js';
@@ -220,7 +221,7 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
       continue;
     }
 
-    if (isCanonicalSplitPositionMapKey(key)) {
+    if (isCanonicalSplitPositionMapKey(key) || isCanonicalSplitStandardPositionMapKey(key)) {
       const list = parseSplitPositionList(entry);
       if (list.length) out[key] = list;
     }

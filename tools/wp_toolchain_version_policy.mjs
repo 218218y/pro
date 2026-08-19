@@ -46,6 +46,7 @@ const TOOLCHAIN_DEV_DEPS = [
   {
     name: '@types/node',
     approvedRange: APPROVED_DEV_DEP_RANGES['@types/node'],
+    boundedCaretManifest: true,
     minVersion: '22.20.1',
     maxExclusiveVersion: '23.0.0',
     role: 'Node tool/test type surface aligned to the lowest supported Node runtime major.',
@@ -56,6 +57,7 @@ const TOOLCHAIN_DEV_DEPS = [
   {
     name: 'eslint',
     approvedRange: APPROVED_DEV_DEP_RANGES.eslint,
+    boundedCaretManifest: true,
     minVersion: '10.8.0',
     maxExclusiveVersion: '11.0.0',
     role: 'Strict JS/tools/tests/config lint gate.',
@@ -64,6 +66,7 @@ const TOOLCHAIN_DEV_DEPS = [
   {
     name: 'oxlint',
     approvedRange: APPROVED_DEV_DEP_RANGES.oxlint,
+    boundedCaretManifest: true,
     minVersion: '1.75.0',
     maxExclusiveVersion: '2.0.0',
     role: 'Blocking TS/TSX syntax lint gate.',
@@ -142,6 +145,36 @@ function compareSemver(left, right) {
   return 0;
 }
 
+function parseCaretSemverRange(value) {
+  const match = /^\^(\d+)\.(\d+)\.(\d+)$/.exec(String(value || ''));
+  if (!match) return null;
+  const min = {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+  };
+  let max;
+  if (min.major > 0) max = { major: min.major + 1, minor: 0, patch: 0 };
+  else if (min.minor > 0) max = { major: 0, minor: min.minor + 1, patch: 0 };
+  else max = { major: 0, minor: 0, patch: min.patch + 1 };
+  const format = version => `${version.major}.${version.minor}.${version.patch}`;
+  return {
+    manifestRange: String(value),
+    minVersion: format(min),
+    maxExclusiveVersion: format(max),
+  };
+}
+
+function isCaretManifestRangeWithinBounds(value, minVersion, maxExclusiveVersion) {
+  const parsedRange = parseCaretSemverRange(value);
+  const min = parseExactSemver(minVersion);
+  const max = parseExactSemver(maxExclusiveVersion);
+  const rangeMin = parsedRange ? parseExactSemver(parsedRange.minVersion) : null;
+  const rangeMax = parsedRange ? parseExactSemver(parsedRange.maxExclusiveVersion) : null;
+  if (!parsedRange || !min || !max || !rangeMin || !rangeMax) return false;
+  return compareSemver(rangeMin, min) >= 0 && compareSemver(rangeMax, max) <= 0;
+}
+
 function isVersionWithinBounds(version, minVersion, maxExclusiveVersion) {
   const parsed = parseExactSemver(version);
   const min = parseExactSemver(minVersion);
@@ -180,16 +213,23 @@ function collectToolchainVersionPolicy() {
     const lockRootRange = lockRootDevDependencies[item.name] || null;
     const resolvedVersion = lock.packages?.[`node_modules/${item.name}`]?.version || null;
     const dynamicOxcPolicy = item.dynamicOxcPatchLine ? parseOxcManifestRange(packageJsonRange) : null;
+    const boundedCaretApproved = item.boundedCaretManifest
+      ? isCaretManifestRangeWithinBounds(packageJsonRange, item.minVersion, item.maxExclusiveVersion)
+      : false;
     const approvedRange = item.dynamicOxcPatchLine
       ? (dynamicOxcPolicy?.manifestRange ?? packageJsonRange)
-      : item.approvedRange;
+      : item.boundedCaretManifest && boundedCaretApproved
+        ? packageJsonRange
+        : item.approvedRange;
     const minVersion = item.dynamicOxcPatchLine ? (dynamicOxcPolicy?.minVersion ?? null) : item.minVersion;
     const maxExclusiveVersion = item.dynamicOxcPatchLine
       ? (dynamicOxcPolicy?.maxExclusiveVersion ?? null)
       : item.maxExclusiveVersion;
     const manifestRangeApproved = item.dynamicOxcPatchLine
       ? Boolean(dynamicOxcPolicy)
-      : packageJsonRange === approvedRange;
+      : item.boundedCaretManifest
+        ? boundedCaretApproved
+        : packageJsonRange === approvedRange;
     const lockRangeMatchesManifest = packageJsonRange === lockRootRange;
     const resolvedWithinApprovedRange = item.exactResolvedVersion
       ? resolvedVersion === item.exactResolvedVersion
@@ -205,6 +245,10 @@ function collectToolchainVersionPolicy() {
       if (item.dynamicOxcPatchLine) {
         violations.push(
           `${item.name} must use a single Oxc 0.x patch-line range such as ^0.144.0 or >=0.144.0 <0.145.0; found ${packageJsonRange}.`
+        );
+      } else if (item.boundedCaretManifest) {
+        violations.push(
+          `${item.name} manifest range ${packageJsonRange} must be a caret range fully inside >=${minVersion} <${maxExclusiveVersion}.`
         );
       } else {
         violations.push(`${item.name} must use approved range ${approvedRange}; found ${packageJsonRange}.`);
@@ -462,6 +506,7 @@ export {
   collectToolchainVersionPolicy,
   createToolchainVersionPolicyMarkdown,
   createFormattedToolchainVersionPolicyMarkdown,
+  isCaretManifestRangeWithinBounds,
   isTsgolintVersionAlignedWithTypeScript,
   isVersionWithinBounds,
 };

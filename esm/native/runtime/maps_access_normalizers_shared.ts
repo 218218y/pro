@@ -9,6 +9,7 @@ import {
   isCanonicalSplitDoorsBottomMapKey,
   isCanonicalSplitDoorsMapKey,
   isCanonicalSplitPositionMapKey,
+  isCanonicalSplitStandardPositionMapKey,
 } from '../../shared/door_split_map_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord } from './maps_access_shared.js';
@@ -136,9 +137,11 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
   for (const key of Object.keys(rec)) {
     const isSplitToggleKey = key.startsWith('split_');
     const isSplitPositionKey = key.startsWith('splitpos_');
-    if (!isSplitToggleKey && !isSplitPositionKey) continue;
+    const isSplitStandardPositionKey = key.startsWith('splitstdpos_');
+    if (!isSplitToggleKey && !isSplitPositionKey && !isSplitStandardPositionKey) continue;
     if (isSplitToggleKey && !isCanonicalSplitDoorsMapKey(key)) continue;
     if (isSplitPositionKey && !isCanonicalSplitPositionMapKey(key)) continue;
+    if (isSplitStandardPositionKey && !isCanonicalSplitStandardPositionMapKey(key)) continue;
     const entry = rec[key];
     if (entry === null) {
       if (isSplitToggleKey) out[key] = null;
@@ -148,7 +151,7 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
       out[key] = entry;
       continue;
     }
-    if (isSplitPositionKey && Array.isArray(entry)) {
+    if ((isSplitPositionKey || isSplitStandardPositionKey) && Array.isArray(entry)) {
       const nums: number[] = [];
       for (const item of entry) {
         const num = typeof item === 'number' ? item : NaN;

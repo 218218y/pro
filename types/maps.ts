@@ -18,6 +18,7 @@ export type PartId = string;
 
 export type SplitDoorKey = `split_${PartId}`;
 export type SplitPosKey = `splitpos_${PartId}`;
+export type SplitStandardPosKey = `splitstdpos_${PartId}`;
 export type SplitBottomKey = `splitb_${PartId}`;
 export type RemovedDoorKey = `removed_${PartId}`;
 
@@ -35,7 +36,7 @@ export type HandlesMap = Record<string, string | null | undefined>;
 /** Hinges: hinge direction or a legacy object payload. */
 export type HingeMap = Record<string, string | UnknownRecord | null | undefined>;
 
-/** Split doors: canonical boolean toggles plus numeric split-position lists. */
+/** Split doors: canonical boolean toggles plus separate manual and standard numeric split-position lists. */
 export type SplitDoorsMap = Record<string, boolean | number[] | null | undefined>;
 
 /** Bottom split: toggle surface. */

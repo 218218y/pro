@@ -17,6 +17,7 @@ import {
   splitBottomKey,
   splitKey,
   splitPosKey,
+  splitStandardPosKey,
   toggleGrooveKey,
   writeHandle,
   writeIndividualColor,
@@ -24,6 +25,7 @@ import {
   writeSplit,
   writeSplitBottom,
   writeSplitPositionList,
+  writeSplitStandardPositionList,
 } from '../esm/native/runtime/maps_access.ts';
 
 test('runtime split key helpers use the door split authoring base for visual surface ids', () => {
@@ -32,6 +34,7 @@ test('runtime split key helpers use the door split authoring base for visual sur
   assert.equal(splitKey('d4_mid2_accent_top'), 'split_d4');
   assert.equal(splitKey('d4_mid2_groove_left'), 'split_d4');
   assert.equal(splitPosKey('d4_mid2_accent_top'), 'splitpos_d4');
+  assert.equal(splitStandardPosKey('d4_mid2_accent_top'), 'splitstdpos_d4');
   assert.equal(splitBottomKey('splitb_d5_bot'), 'splitb_d5');
   assert.equal(splitKey('sketch_box_0_boxA_door_left_mid2_accent_top'), 'split_sketch_box_0_boxA_door_left');
   assert.equal(
@@ -365,4 +368,10 @@ test('generic config map exports stay retired and visual keyed maps write only t
 
   assert.equal(writeSplitPositionList(App, 'd1_mid2_accent_top', [0.25, NaN, 0.75]), true);
   assert.deepEqual({ ...state.config.splitDoorsMap }, { splitpos_d1: [0.25, 0.75] });
+
+  assert.equal(writeSplitStandardPositionList(App, 'd1_top', [0.2, NaN, 0.8]), true);
+  assert.deepEqual(
+    { ...state.config.splitDoorsMap },
+    { splitpos_d1: [0.25, 0.75], splitstdpos_d1: [0.2, 0.8] }
+  );
 });

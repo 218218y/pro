@@ -16,8 +16,10 @@ import {
   isCanvasDoorSplitEnabled,
   isCanvasDoorSplitExplicit,
   readCanvasDoorSplitPosList,
+  readCanvasDoorSplitStandardPosList,
   runCanvasDoorSplitHistoryBatch,
   writeCanvasDoorSplitPosList,
+  writeCanvasDoorSplitStandardPosList,
 } from './canvas_picking_door_split_click_shared.js';
 
 function isCanvasDoorSplitBottomClick(bounds: CanvasDoorSplitBounds | null, hitY: number | null): boolean {
@@ -133,7 +135,7 @@ function resolveSketchManagedStandardSplitToggle(args: {
   isBottomRegion: boolean;
 }): { nextList: number[]; changedToSplit: boolean; nextBottomSplit: boolean } {
   const { App, doorBaseKey, bounds, topNorm, bottomNorm, isBottomRegion } = args;
-  const prev = readCanvasDoorSplitPosList(App, doorBaseKey);
+  const prev = readCanvasDoorSplitStandardPosList(App, doorBaseKey);
   const tolNorm = readSketchManagedStandardSplitToleranceNorm(bounds);
 
   let topActive = hasSketchManagedStandardSplitSlot({ prev, norm: topNorm, tolNorm });
@@ -217,7 +219,15 @@ function handleSketchManagedStandardSplitClick(args: {
         source: 'splitDoors:click:sketchManaged',
         op: 'split.sketchManagedStandard.missingDomainApi',
       });
+      // Standard and manual authoring are separate modes. Entering the fixed
+      // sketch-managed mode discards manual authoring positions for this door.
       writeCanvasDoorSplitPosList({
+        App: click.App,
+        doorBaseKey,
+        nextList: [],
+        source: 'splitDoors:click:sketchManaged',
+      });
+      writeCanvasDoorSplitStandardPosList({
         App: click.App,
         doorBaseKey,
         nextList,
@@ -260,9 +270,34 @@ export function handleCanvasDoorToggleSplitClick(args: {
 
   if (handleSketchManagedStandardSplitClick({ click, doorBaseKey, bounds, hitY: splitHitY })) return true;
 
+  const hasManualSplitPositions = readCanvasDoorSplitPosList(App, doorBaseKey).length > 0;
+
   if (isCanvasDoorSplitBottomClick(bounds, splitHitY)) {
-    const next = !isCanvasDoorSplitBottomEnabled(App, doorBaseKey);
+    const next = hasManualSplitPositions ? true : !isCanvasDoorSplitBottomEnabled(App, doorBaseKey);
     runCanvasDoorSplitHistoryBatch(App, 'splitDoorsBottom:click', () => {
+      if (hasManualSplitPositions) {
+        // split_* is also the manual-mode enable bit. Once manual positions are
+        // discarded it must not accidentally become a fixed top split.
+        callCanvasDoorSplitAction({
+          App,
+          key: splitKey,
+          next: false,
+          source: 'splitDoorsBottom:click',
+          op: 'splitBottom.clearManualTopState.missingDomainApi',
+        });
+      }
+      writeCanvasDoorSplitPosList({
+        App,
+        doorBaseKey,
+        nextList: [],
+        source: 'splitDoorsBottom:click',
+      });
+      writeCanvasDoorSplitStandardPosList({
+        App,
+        doorBaseKey,
+        nextList: [],
+        source: 'splitDoorsBottom:click',
+      });
       callCanvasDoorSplitBottomAction({
         App,
         key: splitBottomKey,
@@ -279,9 +314,21 @@ export function handleCanvasDoorToggleSplitClick(args: {
     foundModuleStack === 'bottom'
       ? isCanvasDoorSplitExplicit(App, doorBaseKey)
       : isCanvasDoorSplitEnabled(App, doorBaseKey);
-  const nextSplit = !isCurrentlySplit;
+  const nextSplit = hasManualSplitPositions ? true : !isCurrentlySplit;
 
   runCanvasDoorSplitHistoryBatch(App, 'splitDoors:click', () => {
+    writeCanvasDoorSplitPosList({
+      App,
+      doorBaseKey,
+      nextList: [],
+      source: 'splitDoors:click',
+    });
+    writeCanvasDoorSplitStandardPosList({
+      App,
+      doorBaseKey,
+      nextList: [],
+      source: 'splitDoors:click',
+    });
     callCanvasDoorSplitAction({
       App,
       key: splitKey,

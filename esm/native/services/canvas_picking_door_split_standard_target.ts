@@ -2,7 +2,7 @@ import type { AppContainer } from '../../../types';
 import type { CanvasDoorSplitBounds } from './canvas_picking_door_split_click_contracts.js';
 import {
   readCanvasDoorSketchVisibleSegments,
-  readCanvasDoorSplitPosList,
+  readCanvasDoorSplitStandardPosList,
 } from './canvas_picking_door_split_click_shared.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 
@@ -76,7 +76,7 @@ export function resolveCanvasDoorStandardSplitTarget(args: {
   const splitStableSegments = mergeSegmentsAcrossStoredSplitCuts({
     segments: visibleSegments,
     bounds,
-    splitPosList: readCanvasDoorSplitPosList(App, doorBaseKey),
+    splitPosList: readCanvasDoorSplitStandardPosList(App, doorBaseKey),
   });
 
   const bottomBounds = splitStableSegments.length ? splitStableSegments[0] : bounds;

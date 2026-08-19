@@ -17,11 +17,13 @@ import {
   callCanvasDoorSplitAction,
   callCanvasDoorSplitBottomAction,
   createCanvasDoorSplitKeyState,
+  isCanvasDoorSplitBottomEnabled,
   readCanvasDoorSplitBounds,
   readCanvasDoorSplitPosList,
   resolveCanvasDoorSplitBaseKey,
   runCanvasDoorSplitHistoryBatch,
   writeCanvasDoorSplitPosList,
+  writeCanvasDoorSplitStandardPosList,
 } from './canvas_picking_door_split_click_shared.js';
 
 function clampNumber(value: number, min: number, max: number): number {
@@ -30,6 +32,17 @@ function clampNumber(value: number, min: number, max: number): number {
 
 export const CANVAS_DOOR_CUSTOM_SPLIT_BLOCK_MESSAGE =
   'אי אפשר לחתוך דלת במרחק קטן מדי מחיתוך קיים או מקצה הדלת.';
+
+function readCanvasDoorManualSplitPosList(
+  App: CanvasDoorSplitClickArgs['App'],
+  doorBaseKey: string
+): number[] {
+  // Before fixed and manual authoring were separated, sketch-managed fixed slots
+  // were stored in splitpos_*. A true bottom split is a reliable discriminator:
+  // custom commits always clear splitb_* before writing manual positions.
+  if (isCanvasDoorSplitBottomEnabled(App, doorBaseKey)) return [];
+  return readCanvasDoorSplitPosList(App, doorBaseKey);
+}
 
 function readCanvasDoorCustomSplitPolicy(bounds: CanvasDoorSplitBounds): {
   height: number;
@@ -177,6 +190,14 @@ function commitCanvasDoorCustomSplitList(args: {
       source: 'splitDoors:custom',
       op: 'split.custom.missingDomainApi',
     });
+    // Manual authoring owns splitpos_* exclusively. Clear any fixed standard
+    // slot cache so a mode switch cannot replay top/bottom cuts alongside it.
+    writeCanvasDoorSplitStandardPosList({
+      App,
+      doorBaseKey,
+      nextList: [],
+      source: 'splitDoors:custom',
+    });
     writeCanvasDoorSplitPosList({
       App,
       doorBaseKey,
@@ -220,14 +241,14 @@ export function tryHandleCanvasDoorCustomSplitScreenRemoveClick(args: {
     ndcY,
     camera: args.camera || getCamera(App),
     readBounds: readCanvasDoorSplitBounds,
-    readPosList: readCanvasDoorSplitPosList,
+    readPosList: readCanvasDoorManualSplitPosList,
     normalizeDoorBaseKey: (app, _hitDoorGroup, hitDoorPid) => resolveCanvasDoorSplitBaseKey(app, hitDoorPid),
   });
   if (!candidate) return false;
 
   const prevList = sanitizeCanvasDoorSplitCuts(
     candidate.bounds,
-    readCanvasDoorSplitPosList(App, candidate.doorBaseKey)
+    readCanvasDoorManualSplitPosList(App, candidate.doorBaseKey)
   );
   const nextListRaw = prevList.filter((_n, idx) => idx !== candidate.target.index);
   commitCanvasDoorCustomSplitList({
@@ -263,7 +284,7 @@ export function handleCanvasDoorCustomSplitClick(args: {
   const H = maxY - minY;
   if (!Number.isFinite(H) || !(H > 0.05)) return true;
 
-  const prevList0 = sanitizeCanvasDoorSplitCuts(bounds, readCanvasDoorSplitPosList(App, doorBaseKey));
+  const prevList0 = sanitizeCanvasDoorSplitCuts(bounds, readCanvasDoorManualSplitPosList(App, doorBaseKey));
   const removeTarget = resolveCanvasDoorCustomSplitRemoveTarget({
     App,
     bounds,

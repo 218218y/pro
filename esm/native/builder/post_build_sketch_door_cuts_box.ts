@@ -8,7 +8,7 @@ import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/i
 import { getMirrorMaterial } from './render_ops.js';
 
 import { asRecord, getDrawerEntryGroup, readKey, type ValueRecord } from './post_build_extras_shared.js';
-import { readSketchDoorManualSplitSelection } from './post_build_sketch_door_cuts_apply.js';
+import { readSketchDoorSplitSelection } from './post_build_sketch_door_cuts_apply.js';
 import {
   readGeometryUserDataNumber,
   readGeometryUserDataNumberKey,
@@ -120,7 +120,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       const moduleKey = readStringOrNull(ud.__wpSketchModuleKey);
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
       const stacks = boxStacks.get(boxKey) || [];
-      const { basePartId, splitPosList } = readSketchDoorManualSplitSelection(
+      const { basePartId, splitPosList } = readSketchDoorSplitSelection(
         cfg,
         typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
       );

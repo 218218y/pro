@@ -256,7 +256,7 @@
     "vendor:offline:eslint-js-strict:adopt": "node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --adopt-existing",
     "vendor:offline:eslint-js-strict:check": "node tools/wp_refresh_offline_npm_vendor.mjs --profile eslint-js-strict --check",
     "deps:outdated": "npm outdated",
-    "deps:update:sync-generated": "npm run vendor:offline:packages:refresh && npm run toolchain:version-policy:report",
+    "deps:update:sync-generated": "npm run vendor:offline:packages:refresh && npm run lint:rule-matrix && npm run toolchain:version-policy:report",
     "deps:update:safe": "npm update && npm run deps:update:sync-generated",
     "deps:update:recommended": "npm update @playwright/test @supabase/supabase-js @types/node @types/react @types/react-dom @vitejs/plugin-react oxc-parser oxlint pdfjs-dist vite && npm run deps:update:sync-generated",
     "deps:update:playwright-browsers": "playwright install",

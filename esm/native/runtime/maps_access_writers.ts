@@ -1,7 +1,7 @@
 import type { ActionMetaLike } from '../../../types';
 
 import { mapsAccessReportNonFatal } from './maps_access_shared.js';
-import { splitBottomKey, splitKey, splitPosKey } from './maps_access_split_helpers.js';
+import { splitBottomKey, splitKey, splitPosKey, splitStandardPosKey } from './maps_access_split_helpers.js';
 import type { HandleValue, HingeValue } from './maps_access_shared.js';
 import { readMapsBagOrNull } from './maps_access_runtime.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
@@ -195,6 +195,23 @@ export function writeSplitPositionList(
   meta?: ActionMetaLike
 ): boolean {
   const canonicalKey = splitPosKey(doorId);
+  if (!canonicalKey) return false;
+  const nextList = Array.isArray(positions) ? positions.filter(Number.isFinite) : [];
+  return patchVisualKeyedMapEntriesFromOwner(
+    App,
+    'splitDoorsMap',
+    [{ key: canonicalKey, value: nextList.length ? nextList : null }],
+    meta
+  );
+}
+
+export function writeSplitStandardPositionList(
+  App: unknown,
+  doorId: unknown,
+  positions: readonly number[],
+  meta?: ActionMetaLike
+): boolean {
+  const canonicalKey = splitStandardPosKey(doorId);
   if (!canonicalKey) return false;
   const nextList = Array.isArray(positions) ? positions.filter(Number.isFinite) : [];
   return patchVisualKeyedMapEntriesFromOwner(

@@ -11,6 +11,7 @@ import {
   APPROVED_DEV_DEP_RANGES,
   collectToolchainVersionPolicy,
   createFormattedToolchainVersionPolicyMarkdown,
+  isCaretManifestRangeWithinBounds,
   isTsgolintVersionAlignedWithTypeScript,
   isVersionWithinBounds,
 } from '../tools/wp_toolchain_version_policy.mjs';
@@ -72,7 +73,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
   const activeOxcPolicy = parseOxcManifestRange(pkg.devDependencies['oxc-parser']);
   assert.ok(activeOxcPolicy);
-  const expectedRanges = {
+  const baselineRanges = {
     typescript: '7.0.2',
     '@types/node': '^22.20.1',
     eslint: '^10.8.0',
@@ -80,14 +81,20 @@ test('toolchain version policy allows bounded compatible updates', () => {
     'oxlint-tsgolint': '7.0.2001',
     'oxc-parser': pkg.devDependencies['oxc-parser'],
   };
-  assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
+  const activeRanges = {
+    ...baselineRanges,
+    '@types/node': pkg.devDependencies['@types/node'],
+    eslint: pkg.devDependencies.eslint,
+    oxlint: pkg.devDependencies.oxlint,
+  };
+  assert.deepEqual(APPROVED_DEV_DEP_RANGES, baselineRanges);
   assert.deepEqual(
     Object.fromEntries([...byName].map(([name, row]) => [name, row.packageJsonRange])),
-    expectedRanges
+    activeRanges
   );
   assert.deepEqual(
     Object.fromEntries([...byName].map(([name, row]) => [name, row.approvedRange])),
-    expectedRanges
+    activeRanges
   );
   assert.equal(policy.tsgolintTypeScriptAligned, true);
   assert.equal(
@@ -120,6 +127,16 @@ test('Oxc policy derives each 0.x patch line without a hard-coded minor', () => 
   assert.equal(parseOxcManifestRange('^1.0.0'), null);
   assert.equal(parseOxcManifestRange('^0.145'), null);
   assert.equal(parseOxcManifestRange('>=0.145.0 <0.147.0'), null);
+});
+
+test('bounded caret manifest ranges can advance inside reviewed toolchain windows', () => {
+  assert.equal(isCaretManifestRangeWithinBounds('^1.79.0', '1.75.0', '2.0.0'), true);
+  assert.equal(isCaretManifestRangeWithinBounds('^1.99.9', '1.75.0', '2.0.0'), true);
+  assert.equal(isCaretManifestRangeWithinBounds('^1.74.9', '1.75.0', '2.0.0'), false);
+  assert.equal(isCaretManifestRangeWithinBounds('^2.0.0', '1.75.0', '2.0.0'), false);
+  assert.equal(isCaretManifestRangeWithinBounds('>=1.79.0 <2.0.0', '1.75.0', '2.0.0'), false);
+  assert.equal(isCaretManifestRangeWithinBounds('^22.21.0', '22.20.1', '23.0.0'), true);
+  assert.equal(isCaretManifestRangeWithinBounds('^23.0.0', '22.20.1', '23.0.0'), false);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
@@ -160,7 +177,7 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
 
   assert.equal(
     scripts['deps:update:sync-generated'],
-    'npm run vendor:offline:packages:refresh && npm run toolchain:version-policy:report'
+    'npm run vendor:offline:packages:refresh && npm run lint:rule-matrix && npm run toolchain:version-policy:report'
   );
   assert.equal(
     scripts['vendor:offline:packages:refresh'],

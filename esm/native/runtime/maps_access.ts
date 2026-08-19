@@ -20,9 +20,11 @@ export {
   isSplitEnabledInMap,
   isSplitExplicitInMap,
   readSplitPosListFromMap,
+  readSplitStandardPosListFromMap,
   splitBottomKey,
   splitKey,
   splitPosKey,
+  splitStandardPosKey,
 } from './maps_access_split_helpers.js';
 export {
   getCurtainReader,
@@ -55,6 +57,7 @@ export {
   writeSplit,
   writeSplitBottom,
   writeSplitPositionList,
+  writeSplitStandardPositionList,
 } from './maps_access_writers.js';
 export {
   readSavedColors,

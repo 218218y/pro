@@ -226,8 +226,8 @@ test('regular split click on sketch-box doors stores a concrete split position a
   assert.equal(handledAdd, true);
   assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
-  assert.equal(Array.isArray(maps.splitDoorsMap[`splitpos_${partId}`]), true);
-  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+  assert.equal(Array.isArray(maps.splitDoorsMap[`splitstdpos_${partId}`]), true);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitstdpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
 
   const handledRemove = handleCanvasDoorSplitClick({
     App,
@@ -239,7 +239,7 @@ test('regular split click on sketch-box doors stores a concrete split position a
 
   assert.equal(handledRemove, true);
   assert.equal(maps.splitDoorsMap[`split_${partId}`], false);
-  assert.equal(maps.splitDoorsMap[`splitpos_${partId}`], undefined);
+  assert.equal(maps.splitDoorsMap[`splitstdpos_${partId}`], undefined);
 });
 
 test('regular split click on sketch-box doors keeps fixed top and bottom slots only', () => {
@@ -259,7 +259,7 @@ test('regular split click on sketch-box doors keeps fixed top and bottom slots o
     }),
     true
   );
-  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitstdpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
 
   assert.equal(
@@ -272,7 +272,7 @@ test('regular split click on sketch-box doors keeps fixed top and bottom slots o
     }),
     true
   );
-  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3, 2 / 3]);
+  assert.deepEqual(maps.splitDoorsMap[`splitstdpos_${partId}`], [1 / 3, 2 / 3]);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
 
   assert.equal(
@@ -285,9 +285,85 @@ test('regular split click on sketch-box doors keeps fixed top and bottom slots o
     }),
     true
   );
-  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3]);
+  assert.deepEqual(maps.splitDoorsMap[`splitstdpos_${partId}`], [1 / 3]);
   assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
+});
+
+test('manual split replaces sketch-managed fixed slots instead of combining both authoring modes', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const door = createDoorGroup(partId, 0.5, 1);
+  const { App, maps } = createSplitClickApp({
+    splitVariant: 'custom',
+    doorsArray: [door],
+    maps: {
+      splitDoorsMap: {
+        [`split_${partId}`]: true,
+        [`splitstdpos_${partId}`]: [1 / 3, 2 / 3],
+      },
+      splitDoorsBottomMap: { [`splitb_${partId}`]: true },
+    },
+  });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.5,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [0.5]);
+  assert.equal(maps.splitDoorsMap[`splitstdpos_${partId}`], undefined);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
+  assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.75,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [0.5, 0.75]);
+  assert.equal(maps.splitDoorsMap[`splitstdpos_${partId}`], undefined);
+});
+
+test('manual split replaces legacy sketch-managed fixed positions when bottom fixed state proves their origin', () => {
+  const partId = 'sketch_box_free_0_sbf_alpha_door_sbdr_1';
+  const door = createDoorGroup(partId, 0.5, 1);
+  const { App, maps } = createSplitClickApp({
+    splitVariant: 'custom',
+    doorsArray: [door],
+    maps: {
+      splitDoorsMap: {
+        [`split_${partId}`]: true,
+        [`splitpos_${partId}`]: [1 / 3, 2 / 3],
+      },
+      splitDoorsBottomMap: { [`splitb_${partId}`]: true },
+    },
+  });
+
+  assert.equal(
+    handleCanvasDoorSplitClick({
+      App,
+      effectiveDoorId: partId,
+      foundModuleStack: 'top',
+      doorHitY: 0.5,
+      doorHitGroup: (door as { group: unknown }).group,
+    }),
+    true
+  );
+
+  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [0.5]);
+  assert.equal(maps.splitDoorsMap[`splitstdpos_${partId}`], undefined);
+  assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
 });
 
 test('split hover bounds for rebuilt sketch-box door segments use world Y instead of child-local Y', () => {
@@ -375,7 +451,7 @@ test('regular split hover and click on rebuilt sketch-box doors ignore the drawe
     true
   );
 
-  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [0.25]);
+  assert.deepEqual(maps.splitDoorsMap[`splitstdpos_${partId}`], [0.25]);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
 });
 
@@ -470,7 +546,7 @@ test('regular split click on rebuilt sketch-box doors uses projected pointer Y l
   });
 
   assert.equal(handled, true);
-  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap[`splitstdpos_${partId}`] as number[])[0]) - 2 / 3) < 1e-9);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], false);
 });
 
@@ -485,7 +561,7 @@ test('regular split click on segmented sketch-box doors uses the whole box door 
     maps: {
       splitDoorsMap: {
         [`split_${partId}`]: true,
-        [`splitpos_${partId}`]: [1 / 3, 2 / 3, 0.82],
+        [`splitstdpos_${partId}`]: [1 / 3, 2 / 3, 0.82],
       },
       splitDoorsBottomMap: {
         [`splitb_${partId}`]: true,
@@ -514,7 +590,7 @@ test('regular split click on segmented sketch-box doors uses the whole box door 
     true
   );
 
-  assert.deepEqual(maps.splitDoorsMap[`splitpos_${partId}`], [1 / 3]);
+  assert.deepEqual(maps.splitDoorsMap[`splitstdpos_${partId}`], [1 / 3]);
   assert.equal(maps.splitDoorsMap[`split_${partId}`], true);
   assert.equal(maps.splitDoorsBottomMap[`splitb_${partId}`], true);
 });
@@ -1223,7 +1299,7 @@ test('regular split click on module doors rebuilt by sketch drawers stores split
     true
   );
 
-  assert.deepEqual(maps.splitDoorsMap.splitpos_d1, [0.25]);
+  assert.deepEqual(maps.splitDoorsMap.splitstdpos_d1, [0.25]);
   assert.equal(maps.splitDoorsMap.split_d1, true);
   assert.equal(maps.splitDoorsBottomMap.splitb_d1, true);
 });
@@ -1279,7 +1355,7 @@ test('regular split slots on module doors with middle sketch drawers use the low
     }),
     true
   );
-  assert.ok(Math.abs(Number((maps.splitDoorsMap.splitpos_d2 as number[])[0]) - 1 / 9) < 1e-9);
+  assert.ok(Math.abs(Number((maps.splitDoorsMap.splitstdpos_d2 as number[])[0]) - 1 / 9) < 1e-9);
   assert.equal(maps.splitDoorsBottomMap.splitb_d2, true);
 
   assert.equal(
@@ -1292,7 +1368,7 @@ test('regular split slots on module doors with middle sketch drawers use the low
     }),
     true
   );
-  const stored = maps.splitDoorsMap.splitpos_d2 as number[];
+  const stored = maps.splitDoorsMap.splitstdpos_d2 as number[];
   assert.equal(stored.length, 2);
   assert.ok(Math.abs(Number(stored[0]) - 1 / 9) < 1e-9);
   assert.ok(Math.abs(Number(stored[1]) - 8 / 9) < 1e-9);
@@ -1337,7 +1413,7 @@ test('regular split slots remain stable after a sketch-managed door has already 
   const { App, maps } = createSplitClickApp({
     doorsArray: [{ group: doorGroup }],
     maps: {
-      splitDoorsMap: { split_d3: true, splitpos_d3: [2 / 3] },
+      splitDoorsMap: { split_d3: true, splitstdpos_d3: [2 / 3] },
       splitDoorsBottomMap: { splitb_d3: false },
     },
   });
@@ -1355,5 +1431,5 @@ test('regular split slots remain stable after a sketch-managed door has already 
   );
 
   assert.equal(maps.splitDoorsMap.split_d3, false);
-  assert.equal(maps.splitDoorsMap.splitpos_d3, undefined);
+  assert.equal(maps.splitDoorsMap.splitstdpos_d3, undefined);
 });

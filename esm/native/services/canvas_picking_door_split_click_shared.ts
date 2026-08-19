@@ -6,10 +6,13 @@ import {
 } from './canvas_picking_door_split_bounds_shared.js';
 import {
   readSplitPosListFromMap,
+  readSplitStandardPosListFromMap,
   splitBottomKey as __splitBottomKey,
   splitKey as __splitKey,
   splitPosKey as __splitPosKey,
+  splitStandardPosKey as __splitStandardPosKey,
   writeSplitPositionList,
+  writeSplitStandardPositionList,
 } from '../runtime/maps_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import type { AppContainer } from '../../../types';
@@ -119,6 +122,10 @@ export function readCanvasDoorSplitPosList(App: AppContainer, doorBaseKey: strin
   return readSplitPosListFromMap(__wp_map(App, 'splitDoorsMap'), doorBaseKey);
 }
 
+export function readCanvasDoorSplitStandardPosList(App: AppContainer, doorBaseKey: string): number[] {
+  return readSplitStandardPosListFromMap(__wp_map(App, 'splitDoorsMap'), doorBaseKey);
+}
+
 export function callCanvasDoorSplitAction(args: {
   App: AppContainer;
   key: string;
@@ -169,6 +176,30 @@ export function writeCanvasDoorSplitPosList(args: {
     );
   } catch (error) {
     __wp_reportPickingIssue(App, error, { where: 'canvasPicking', op: 'split.custom.writeSplitPos' });
+  }
+}
+
+export function writeCanvasDoorSplitStandardPosList(args: {
+  App: AppContainer;
+  doorBaseKey: string;
+  nextList: number[];
+  source: string;
+}): void {
+  const { App, doorBaseKey, nextList, source } = args;
+  try {
+    const splitStandardPosKey = __splitStandardPosKey(doorBaseKey);
+    if (!splitStandardPosKey) return;
+    writeSplitStandardPositionList(
+      App,
+      doorBaseKey,
+      nextList,
+      createCanvasPickingDoorAuthoringStructuralMeta(source)
+    );
+  } catch (error) {
+    __wp_reportPickingIssue(App, error, {
+      where: 'canvasPicking',
+      op: 'split.standard.writeSplitPos',
+    });
   }
 }
 

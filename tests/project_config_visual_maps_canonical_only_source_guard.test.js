@@ -153,16 +153,23 @@ test('project config split maps keep only direct canonical split keys', () => {
     split_d1: true,
     splitpos_d1: [0.25, 'bad', 0.75],
     splitpos_main: [0.2, 0.8, NaN],
+    splitstdpos_d1: [0.3, 'bad', 0.7],
     split_d1_mid2_accent_top: true,
     split_d1_mid2_groove_left: true,
     splitpos_d1_mid2_accent_top: [0.4],
     splitpos_d1_mid2_groove_left: [0.5],
+    splitstdpos_d1_mid2_groove_left: [0.6],
     split_d2: 'true',
     splitpos_d3: '0.4',
   });
   assert.deepEqual(
     { ...splitDoorsMap },
-    { split_d1: true, splitpos_d1: [0.25, 0.75], splitpos_main: [0.2, 0.8] }
+    {
+      split_d1: true,
+      splitpos_d1: [0.25, 0.75],
+      splitpos_main: [0.2, 0.8],
+      splitstdpos_d1: [0.3, 0.7],
+    }
   );
 
   const splitDoorsBottomMap = readSplitDoorsBottomMapValue({

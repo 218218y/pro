@@ -3,7 +3,11 @@
 // Owns door-loop selection and interval application for segmented sketch-door rebuild flows.
 
 import { getDoorsArray } from '../runtime/render_access.js';
-import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
+import {
+  isSplitEnabledInMap,
+  readSplitPosListFromMap,
+  readSplitStandardPosListFromMap,
+} from '../runtime/maps_access.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
@@ -32,7 +36,7 @@ function clampSketchDoorCutValue(value: number, min: number, max: number): numbe
   return value;
 }
 
-function appendManualSplitLineCutIntervals(args: {
+function appendAuthoredSplitLineCutIntervals(args: {
   cuts: SketchDrawerCutSegment[];
   doorMin: number;
   doorMax: number;
@@ -85,7 +89,7 @@ function appendManualSplitLineCutIntervals(args: {
   }
 }
 
-function resolveSketchDoorManualSplitBounds(args: {
+function resolveSketchDoorAuthoredSplitBounds(args: {
   doorMin: number;
   doorMax: number;
   drawerCuts: SketchDrawerCutSegment[];
@@ -111,15 +115,12 @@ function resolveSketchDoorManualSplitBounds(args: {
   return { yMin, yMax };
 }
 
-export type SketchDoorManualSplitSelection = {
+export type SketchDoorSplitSelection = {
   basePartId: string;
   splitPosList: number[];
 };
 
-export function readSketchDoorManualSplitSelection(
-  cfg: ValueRecord,
-  partId: unknown
-): SketchDoorManualSplitSelection {
+export function readSketchDoorSplitSelection(cfg: ValueRecord, partId: unknown): SketchDoorSplitSelection {
   const basePartId = resolveDoorSplitAuthoringBaseKey(partId);
   if (!basePartId) return { basePartId: '', splitPosList: [] };
 
@@ -128,9 +129,13 @@ export function readSketchDoorManualSplitSelection(
     return { basePartId, splitPosList: [] };
   }
 
+  const manualSplitPosList = readSplitPosListFromMap(splitMap, basePartId);
+  const standardSplitPosList = readSplitStandardPosListFromMap(splitMap, basePartId);
   return {
     basePartId,
-    splitPosList: readSplitPosListFromMap(splitMap, basePartId),
+    // The two authoring modes are persisted separately. Manual positions win only
+    // as a defensive fallback for malformed snapshots where both domains exist.
+    splitPosList: manualSplitPosList.length ? manualSplitPosList : standardSplitPosList,
   };
 }
 
@@ -186,8 +191,8 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     }
     const drawerCuts = normalizeSketchDrawerCutIntervals(drawerCutsRaw);
     const cuts: SketchDrawerCutSegment[] = drawerCuts.map(seg => ({ yMin: seg.yMin, yMax: seg.yMax }));
-    const splitBounds = resolveSketchDoorManualSplitBounds({ doorMin, doorMax, drawerCuts });
-    appendManualSplitLineCutIntervals({
+    const splitBounds = resolveSketchDoorAuthoredSplitBounds({ doorMin, doorMax, drawerCuts });
+    appendAuthoredSplitLineCutIntervals({
       cuts,
       doorMin: splitBounds.yMin,
       doorMax: splitBounds.yMax,

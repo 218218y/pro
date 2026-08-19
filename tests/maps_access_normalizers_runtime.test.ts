@@ -89,6 +89,8 @@ test('maps access normalizers keep split maps on canonical keys and values only'
     splitpos_d1_mid2_accent_top: [0.4],
     splitpos_d1_mid2_groove_left: [0.4],
     splitpos_main: [0.2, 0.8, 'bad'],
+    splitstdpos_d1: [0.3, '0.5', 0.7],
+    splitstdpos_d1_mid2_groove_left: [0.4],
     split_sketch_box_0_boxA_door_left_mid2_accent_top: true,
     split_sketch_box_free_0_boxA_door_sbdr_1_mid2_groove_left: true,
     splitpos_d2: '0.4',
@@ -97,7 +99,12 @@ test('maps access normalizers keep split maps on canonical keys and values only'
 
   assert.deepEqual(
     { ...splitDoorsMap },
-    { split_d1: true, splitpos_d1: [0.25, 0.75], splitpos_main: [0.2, 0.8] }
+    {
+      split_d1: true,
+      splitpos_d1: [0.25, 0.75],
+      splitpos_main: [0.2, 0.8],
+      splitstdpos_d1: [0.3, 0.7],
+    }
   );
 
   const splitDoorsBottomMap = normalizeKnownMapSnapshot('splitDoorsBottomMap', {
