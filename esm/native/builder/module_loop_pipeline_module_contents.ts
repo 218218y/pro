@@ -12,7 +12,7 @@ import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleLoopMutableState } from './module_loop_pipeline_module_contracts.js';
 import type { ModuleVerticalMetrics, ResolvedModuleFrame } from './module_loop_pipeline_module_frame.js';
-import type { RemovedFrameSideFrontClosurePlan } from './removed_frame_side_front_closure.js';
+import type { RemovedFrameSideFrontClosurePlan } from './removed_frame_side_construction_plan.js';
 
 export function applyModuleContents(
   runtime: ModuleLoopRuntime,

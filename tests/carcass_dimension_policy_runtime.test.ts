@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildCarcassShell } from '../esm/native/builder/core_carcass_shell.ts';
+import { resolveRemovedFrameSideConstructionPlan } from '../esm/native/builder/removed_frame_side_construction_plan.ts';
 import { resolveBuildFlowPlan } from '../esm/native/builder/build_flow_plan.ts';
 import {
   createCornerWingCarcassShellMetrics,
@@ -38,8 +39,7 @@ test('carcass shell policy preserves regular shell board and back-panel geometry
     moduleDepths: null,
     isStepped: false,
     isDepthStepped: false,
-    removedLeftFrameSide: false,
-    removedRightFrameSide: false,
+    removedFrameSidePlan: resolveRemovedFrameSideConstructionPlan({ cfg: {} }),
   } as any);
 
   assert.deepEqual(result.boards.map(boardSnapshot), [

@@ -16,10 +16,7 @@ import {
   type SketchStorageBarrierExtra,
 } from './render_interior_sketch_shared.js';
 import { readSketchDoorVisualFactory } from './render_interior_sketch_visuals.js';
-import {
-  getExposedShelfSideForRemovedFrameSide,
-  getRoundedShelfSideForRemovedFrameSide,
-} from './removed_frame_side_brace_shelves.js';
+import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   requireInteriorSketchBooleanFlag,
   requireInteriorSketchConfigSnapshot,
@@ -142,19 +139,15 @@ export function resolveInteriorSketchExtrasInput(
   const braceInnerW = faces ? Math.max(0, faces.rightX - faces.leftX) : innerW;
   const braceCenterX = faces ? (faces.leftX + faces.rightX) / 2 : internalCenterX;
   const braceShelfWidth = braceInnerW > 0 ? Math.max(0, braceInnerW - BRACE_WIDTH_CLEARANCE) : innerW;
-  const shelfExposedSide = getExposedShelfSideForRemovedFrameSide({
+  const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
     cfg: cfgSnapshot,
     moduleIndex,
     modulesLength,
     frameSidePartIdPrefix: input.frameSidePartIdPrefix,
   });
-  const forceBraceShelves = shelfExposedSide != null;
-  const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
-    cfg: cfgSnapshot,
-    moduleIndex,
-    modulesLength,
-    frameSidePartIdPrefix: input.frameSidePartIdPrefix,
-  });
+  const shelfExposedSide = removedSideConstruction.exposedShelfSide;
+  const forceBraceShelves = removedSideConstruction.forceBraceShelves;
+  const roundedShelfSide = removedSideConstruction.roundedShelfSide;
 
   return {
     App,

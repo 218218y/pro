@@ -504,14 +504,7 @@ test('overlay divider next to a fixed left front closure reaches the cabinet fro
     moduleInternalZ: -0.01,
     moduleTotalDepth: 0.6,
   } as any;
-  const frontClosurePlan = {
-    side: 'left' as const,
-    partId: 'body_front_closure_left',
-    startDoorId: 1,
-    moduleDoors: 1,
-  };
-
-  createInterDivider(runtime, state, 0, frame, frontClosurePlan);
+  createInterDivider(runtime, state, 0, frame);
 
   assert.equal(calls.length, 1);
   const depth = Number(calls[0][2]);
@@ -556,7 +549,7 @@ test('lower overlay divider detects an intact right-side front closure in the ne
     moduleTotalDepth: 0.6,
   } as any;
 
-  createInterDivider(runtime, state, 0, frame, null);
+  createInterDivider(runtime, state, 0, frame);
 
   assert.equal(calls.length, 1);
   const depth = Number(calls[0][2]);
@@ -596,7 +589,7 @@ test('explicit right-door removal does not shorten the full-depth overlay divide
     moduleTotalDepth: 0.6,
   } as any;
 
-  createInterDivider(runtime, state, 0, frame, null);
+  createInterDivider(runtime, state, 0, frame);
 
   assert.equal(calls.length, 1);
   const depth = Number(calls[0][2]);

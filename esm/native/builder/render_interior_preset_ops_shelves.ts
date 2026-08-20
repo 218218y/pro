@@ -26,7 +26,7 @@ import {
 import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
-} from './removed_frame_side_brace_shelves.js';
+} from './removed_frame_side_construction_plan.js';
 import { boxFromCenterSize, intersectsActiveRoomColumnCutObstacle } from './room_architecture_geometry.js';
 
 export function createAddGridShelf(args: {

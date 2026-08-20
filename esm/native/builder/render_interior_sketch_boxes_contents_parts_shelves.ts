@@ -15,7 +15,7 @@ import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
 import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
-} from './removed_frame_side_brace_shelves.js';
+} from './removed_frame_side_construction_plan.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';
 import {

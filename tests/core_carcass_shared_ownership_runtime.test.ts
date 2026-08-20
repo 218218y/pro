@@ -77,8 +77,7 @@ test('Core Carcass Shared preserves shell constants, Material fallback, module f
     'hasDepthData',
     'isStepped',
     'isDepthStepped',
-    'removedLeftFrameSide',
-    'removedRightFrameSide',
+    'removedFrameSidePlan',
     'stackSplitDividerY',
   ]);
 

@@ -12,7 +12,7 @@ import {
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
-import { hasRemovedFrameSideOnEitherEdge } from './removed_frame_side_brace_shelves.js';
+import { resolveRemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   normalizeBaseLegPlatformFrontOverhangCm,
   normalizeBaseLegPlatformSideOverhangCm,
@@ -85,7 +85,9 @@ function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown, lowerHeightCm: 
 }
 
 function hasStackSplitScopedFrameSideRemoval(cfg: unknown): boolean {
-  return hasRemovedFrameSideOnEitherEdge(cfg) || hasRemovedFrameSideOnEitherEdge(cfg, 'lower_');
+  const upper = resolveRemovedFrameSideConstructionPlan({ cfg });
+  const lower = resolveRemovedFrameSideConstructionPlan({ cfg, frameSidePartIdPrefix: 'lower_' });
+  return upper.hasRemovedSide || lower.hasRemovedSide;
 }
 
 export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): BuildFlowPlanInputs {

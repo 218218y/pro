@@ -15,6 +15,10 @@ import type {
 } from './carcass_cornice_ir.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 import { resolveHexCellGeometry, type HexCellGeometry } from '../features/hex_cell/index.js';
+import {
+  resolveRemovedFrameSideOuterBounds,
+  type RemovedFrameSideConstructionPlan,
+} from './removed_frame_side_construction_plan.js';
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
@@ -59,8 +63,7 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
     D,
     woodThick: prepared.woodThick,
     topY: topSurfaceY,
-    removedLeftFrameSide: prepared.removedLeftFrameSide,
-    removedRightFrameSide: prepared.removedRightFrameSide,
+    removedFrameSidePlan: prepared.removedFrameSidePlan,
   };
   if (corniceTypeNorm === 'wave') {
     return buildWaveCornice(corniceParams);
@@ -73,20 +76,17 @@ type CorniceParams = {
   D: number;
   woodThick: number;
   topY: number;
-  removedLeftFrameSide: boolean;
-  removedRightFrameSide: boolean;
+  removedFrameSidePlan: RemovedFrameSideConstructionPlan;
 };
 
-type CorniceOuterBoundsInput = Pick<
-  CorniceParams,
-  'totalW' | 'woodThick' | 'removedLeftFrameSide' | 'removedRightFrameSide'
->;
+type CorniceOuterBoundsInput = Pick<CorniceParams, 'totalW' | 'woodThick' | 'removedFrameSidePlan'>;
 
 function resolveCorniceOuterBounds(input: CorniceOuterBoundsInput): { left: number; right: number } {
-  return {
-    left: -input.totalW / 2 + (input.removedLeftFrameSide ? input.woodThick : 0),
-    right: input.totalW / 2 - (input.removedRightFrameSide ? input.woodThick : 0),
-  };
+  return resolveRemovedFrameSideOuterBounds({
+    constructionPlan: input.removedFrameSidePlan,
+    totalW: input.totalW,
+    woodThick: input.woodThick,
+  });
 }
 
 type CorniceSideClosure = {

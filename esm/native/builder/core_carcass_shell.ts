@@ -8,6 +8,10 @@ import {
   CARCASS_FRONT_INSET_Z,
   type PreparedCarcassInput,
 } from './core_carcass_shared.js';
+import {
+  resolveRemovedFrameSideModuleConstructionPlan,
+  type RemovedFrameSideConstructionPlan,
+} from './removed_frame_side_construction_plan.js';
 
 const SHELL_DIMENSIONS = CARCASS_SHELL_DIMENSIONS;
 
@@ -84,8 +88,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
       moduleHeightsRaw,
       moduleDepths,
       isDepthStepped,
-      removedLeftFrameSide: prepared.removedLeftFrameSide,
-      removedRightFrameSide: prepared.removedRightFrameSide,
+      removedFrameSidePlan: prepared.removedFrameSidePlan,
       boards,
       backPanels,
     });
@@ -182,7 +185,19 @@ function appendStackSplitDividerBoardIfNeeded(
 }
 
 function hasRemovedFrameSide(prepared: PreparedCarcassInput): boolean {
-  return prepared.removedLeftFrameSide || prepared.removedRightFrameSide;
+  return prepared.removedFrameSidePlan.hasRemovedSide;
+}
+
+function resolveRemovedFrameSideModulePlan(
+  prepared: Pick<PreparedCarcassInput, 'removedFrameSidePlan'>,
+  moduleIndex: number,
+  modulesLength: number
+) {
+  return resolveRemovedFrameSideModuleConstructionPlan({
+    constructionPlan: prepared.removedFrameSidePlan,
+    moduleIndex,
+    modulesLength,
+  });
 }
 
 function readRemovedBackPanelPartId(
@@ -190,12 +205,7 @@ function readRemovedBackPanelPartId(
   moduleIndex: number,
   modulesLength: number
 ): string | null {
-  const left = prepared.removedLeftFrameSide && moduleIndex === 0;
-  const right = prepared.removedRightFrameSide && moduleIndex === modulesLength - 1;
-  if (left && right) return 'body_back_open';
-  if (left) return 'body_back_left_open';
-  if (right) return 'body_back_right_open';
-  return null;
+  return resolveRemovedFrameSideModulePlan(prepared, moduleIndex, modulesLength).backPanel.partId;
 }
 
 type BackPanelSegmentBounds = {
@@ -203,10 +213,7 @@ type BackPanelSegmentBounds = {
   rightBoundary: number;
 };
 
-type BackPanelSegmentInput = Pick<
-  PreparedCarcassInput,
-  'totalW' | 'woodThick' | 'removedLeftFrameSide' | 'removedRightFrameSide'
->;
+type BackPanelSegmentInput = Pick<PreparedCarcassInput, 'totalW' | 'woodThick' | 'removedFrameSidePlan'>;
 
 function resolveBackPanelSegmentBounds(args: {
   prepared: BackPanelSegmentInput;
@@ -217,15 +224,12 @@ function resolveBackPanelSegmentBounds(args: {
 }): BackPanelSegmentBounds {
   const { prepared, moduleIndex, modulesLength, internalLeft, moduleWidth } = args;
   const { totalW, woodThick } = prepared;
+  const modulePlan = resolveRemovedFrameSideModulePlan(prepared, moduleIndex, modulesLength);
   let leftBoundary = moduleIndex === 0 ? -totalW / 2 : internalLeft;
   let rightBoundary = moduleIndex === modulesLength - 1 ? totalW / 2 : internalLeft + moduleWidth + woodThick;
 
-  if (prepared.removedLeftFrameSide && moduleIndex === 0) {
-    leftBoundary += woodThick;
-  }
-  if (prepared.removedRightFrameSide && moduleIndex === modulesLength - 1) {
-    rightBoundary -= woodThick;
-  }
+  if (modulePlan.backPanel.insetLeftByFrameSide) leftBoundary += woodThick;
+  if (modulePlan.backPanel.insetRightByFrameSide) rightBoundary -= woodThick;
 
   return { leftBoundary, rightBoundary };
 }
@@ -363,8 +367,7 @@ type SteppedShellParams = {
   moduleHeightsRaw: unknown[];
   moduleDepths: number[] | null;
   isDepthStepped: boolean;
-  removedLeftFrameSide: boolean;
-  removedRightFrameSide: boolean;
+  removedFrameSidePlan: RemovedFrameSideConstructionPlan;
   boards: CarcassBoardOp[];
   backPanels: CarcassBackPanelOp[];
 };
@@ -381,8 +384,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
     moduleHeightsRaw,
     moduleDepths,
     isDepthStepped,
-    removedLeftFrameSide,
-    removedRightFrameSide,
+    removedFrameSidePlan,
     boards,
     backPanels,
   } = params;
@@ -457,7 +459,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
     });
 
     const bounds = resolveBackPanelSegmentBounds({
-      prepared: { totalW, woodThick, removedLeftFrameSide, removedRightFrameSide },
+      prepared: { totalW, woodThick, removedFrameSidePlan },
       moduleIndex: i,
       modulesLength: moduleWidths.length,
       internalLeft,

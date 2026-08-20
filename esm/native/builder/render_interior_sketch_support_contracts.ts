@@ -16,7 +16,7 @@ import type { SketchModuleInnerFaces } from './render_interior_sketch_module_geo
 import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
-} from './removed_frame_side_brace_shelves.js';
+} from './removed_frame_side_construction_plan.js';
 
 export type SketchBoxLocatorResult = {
   innerW: number;

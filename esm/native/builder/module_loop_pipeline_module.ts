@@ -7,7 +7,7 @@ import {
 import { createInterDivider } from './module_loop_pipeline_module_dividers.js';
 import { applyEdgeHandleDefaults, registerModuleHitBox } from './module_loop_pipeline_module_registry.js';
 import { applyHexCellGeometryForModule } from './module_loop_pipeline_hex_cell.js';
-import { resolveRemovedFrameSideFrontClosurePlan } from './removed_frame_side_front_closure.js';
+import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 
@@ -23,7 +23,7 @@ export function runModuleLoopItem(
   const frame = resolveModuleFrame(runtime, state, index, mod?.doors);
 
   const startDoorOfModule = state.globalDoorCounter;
-  const frontClosurePlan = resolveRemovedFrameSideFrontClosurePlan({
+  const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
     cfg: runtime.cfg,
     moduleIndex: index,
     modulesLength: runtime.modules.length,
@@ -31,9 +31,10 @@ export function runModuleLoopItem(
     startDoorId: startDoorOfModule,
     moduleDoors: frame.modDoors,
   });
+  const frontClosurePlan = removedSideConstruction.frontClosure;
 
   registerModuleHitBox(runtime, state, index, frame);
-  createInterDivider(runtime, state, index, frame, frontClosurePlan);
+  createInterDivider(runtime, state, index, frame);
   applyHexCellGeometryForModule(runtime, state, index, frame);
 
   const metrics = resolveModuleVerticalMetrics(runtime, frame);

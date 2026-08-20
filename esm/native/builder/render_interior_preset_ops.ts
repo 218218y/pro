@@ -19,11 +19,8 @@ import {
 } from './render_interior_preset_ops_shared.js';
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
-import {
-  forceShelfIndexesToBrace,
-  getExposedShelfSideForRemovedFrameSide,
-  getRoundedShelfSideForRemovedFrameSide,
-} from './removed_frame_side_brace_shelves.js';
+import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
+import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 
 export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps) {
   const __app = deps.app;
@@ -93,21 +90,17 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         if (shelfIndex != null) shelfSet[shelfIndex] = true;
       }
     }
-    const shelfExposedSide = getExposedShelfSideForRemovedFrameSide({
+    const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
       cfg: input.cfg,
       moduleIndex,
       modulesLength,
       frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     });
-    if (shelfExposedSide) {
+    const shelfExposedSide = removedSideConstruction.exposedShelfSide;
+    if (removedSideConstruction.forceBraceShelves) {
       forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
     }
-    const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
-      cfg: input.cfg,
-      moduleIndex,
-      modulesLength,
-      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
-    });
+    const roundedShelfSide = removedSideConstruction.roundedShelfSide;
 
     const regularShelfDepthCap = INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM;
     const regularDepth =

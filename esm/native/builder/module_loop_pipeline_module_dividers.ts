@@ -6,7 +6,6 @@ import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleConfigLike } from '../../../types/index.js';
 import type { ModuleLoopMutableState } from './module_loop_pipeline_module_contracts.js';
 import type { ResolvedModuleFrame } from './module_loop_pipeline_module_frame.js';
-import type { RemovedFrameSideFrontClosurePlan } from './removed_frame_side_front_closure.js';
 
 function resolveFullFrontDividerPanel(
   runtime: ModuleLoopRuntime,
@@ -23,8 +22,7 @@ export function createInterDivider(
   runtime: ModuleLoopRuntime,
   state: ModuleLoopMutableState,
   index: number,
-  frame: ResolvedModuleFrame,
-  _frontClosurePlan?: RemovedFrameSideFrontClosurePlan | null
+  frame: ResolvedModuleFrame
 ): void {
   if (index >= runtime.modules.length - 1) return;
 

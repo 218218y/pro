@@ -27,7 +27,7 @@ import type { SketchPlacementSupport } from './render_interior_sketch_support.js
 import type {
   RemovedFrameSideShelfExposure,
   RemovedFrameSideShelfRounding,
-} from './removed_frame_side_brace_shelves.js';
+} from './removed_frame_side_construction_plan.js';
 
 export type RenderInteriorSketchOpsContext = {
   app: RenderInteriorSketchOpsDeps['app'];
