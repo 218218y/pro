@@ -113,6 +113,47 @@ test('ui.raw nested keys retain precise structure/interior domain classification
   assert.equal(interiorCalls, 2);
 });
 
+test('cell-dimension panel disclosure notifies its structure and interior consumers', () => {
+  const store = createDomainTestStore();
+  let structureCalls = 0;
+  let interiorCalls = 0;
+  let navigationCalls = 0;
+
+  store.subscribeSelector(
+    state => {
+      structureCalls += 1;
+      return !!asRec(state.ui).cellDimsPanelOpen;
+    },
+    () => undefined,
+    { slice: 'ui', domain: 'structure' }
+  );
+  store.subscribeSelector(
+    state => {
+      interiorCalls += 1;
+      return !!asRec(state.ui).cellDimsHexPanelOpen;
+    },
+    () => undefined,
+    { slice: 'ui', domain: 'interior' }
+  );
+  store.subscribeSelector(
+    state => {
+      navigationCalls += 1;
+      return String(asRec(state.ui).activeTab || '');
+    },
+    () => undefined,
+    { slice: 'ui', domain: 'navigation' }
+  );
+
+  dispatchCompat(store, {
+    type: 'PATCH',
+    payload: { ui: { cellDimsPanelOpen: true, cellDimsHexPanelOpen: true } },
+  } as AnyRecord);
+
+  assert.equal(structureCalls, 2);
+  assert.equal(interiorCalls, 2);
+  assert.equal(navigationCalls, 1);
+});
+
 test('SET uses semantic domain classification instead of broad selector invalidation', () => {
   const store = createDomainTestStore();
   let navigationCalls = 0;

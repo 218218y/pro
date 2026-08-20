@@ -625,6 +625,103 @@ test('native mode exit does not publish a false transition when both canonical e
   assert.deepEqual(doorOps, []);
 });
 
+test('native mode exit applies its UI cleanup when the expected mode was already cleared', () => {
+  const uiPatches: Array<{ patch: Record<string, unknown>; meta: Record<string, unknown> | undefined }> = [];
+  const modeWrites: Array<{ primary: string; opts: Record<string, unknown> }> = [];
+  const state = {
+    ui: {
+      raw: { cellDimsHexMode: true },
+      cellDimsPanelOpen: true,
+      cellDimsHexPanelOpen: true,
+    },
+    config: {},
+    runtime: { globalClickMode: true },
+    mode: { primary: 'none', opts: {} as Record<string, unknown> },
+    meta: {},
+  };
+  const App: any = {
+    actions: {
+      ui: {
+        patch(patch: Record<string, unknown>, meta?: Record<string, unknown>) {
+          const rawPatch = (patch.raw || {}) as Record<string, unknown>;
+          state.ui = {
+            ...state.ui,
+            ...patch,
+            raw: { ...state.ui.raw, ...rawPatch },
+          };
+          uiPatches.push({ patch, meta });
+          return true;
+        },
+      },
+      mode: {
+        set(primary: string, opts: Record<string, unknown>) {
+          modeWrites.push({ primary, opts });
+          state.mode = { primary, opts };
+          return true;
+        },
+      },
+    },
+    services: {
+      doors: {
+        setOpen() {
+          return true;
+        },
+      },
+    },
+    deps: {
+      browser: {
+        document: { body: { style: {} }, activeElement: null },
+      },
+    },
+    store: {
+      getState: () => state,
+    },
+  };
+  const changes: Array<[string, string]> = [];
+
+  exitPrimaryModeImpl(
+    App,
+    'cell_dims',
+    {
+      source: 'test:cellDims:closeAfterReset',
+      immediate: true,
+      uiPatch: {
+        cellDimsPanelOpen: false,
+        cellDimsHexPanelOpen: false,
+        raw: { cellDimsHexMode: false },
+      },
+    },
+    (_app, previous, next) => {
+      changes.push([previous, next]);
+    }
+  );
+
+  assert.equal(state.mode.primary, 'none');
+  assert.deepEqual(modeWrites, []);
+  assert.deepEqual(changes, []);
+  assert.equal(state.ui.cellDimsPanelOpen, false);
+  assert.equal(state.ui.cellDimsHexPanelOpen, false);
+  assert.equal(state.ui.raw.cellDimsHexMode, false);
+  assert.deepEqual(uiPatches, [
+    {
+      patch: {
+        cellDimsPanelOpen: false,
+        cellDimsHexPanelOpen: false,
+        raw: { cellDimsHexMode: false },
+      },
+      meta: {
+        source: 'test:cellDims:closeAfterReset',
+        noBuild: true,
+        noHistory: true,
+        noAutosave: true,
+        noPersist: true,
+        noCapture: true,
+        immediate: true,
+      },
+    },
+  ]);
+});
+
 test('leaving remove-door mode schedules a structural rebuild so temporary stack-split interaction frames can converge', () => {
   const timers = createFakeTimers();
   const buildRequests: Array<Record<string, unknown>> = [];
