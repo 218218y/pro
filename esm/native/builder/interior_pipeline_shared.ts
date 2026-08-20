@@ -20,6 +20,7 @@ import {
   requireInteriorSketchConfigSnapshot,
   requireInteriorSketchDoorStyle,
 } from './render_interior_sketch_input_contract.js';
+import type { RemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   normalizeBuilderDraftSketchExtrasGeometry,
   readBuilderDraftGeometryNumber,
@@ -65,6 +66,7 @@ export type InteriorLayoutParams = ValueRecord & {
   modulesLength?: number;
   moduleKey?: string | number | null;
   frameSidePartIdPrefix?: string;
+  removedFrameSidePlan?: RemovedFrameSideConstructionPlan;
   startY?: number;
   startDoorId?: number;
   moduleDoors?: number;
@@ -171,6 +173,7 @@ export function buildSketchExtrasArgs(
     modulesLength: readNumber(input.modulesLength, -1),
     moduleKey: input.moduleKey,
     frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    ...(input.removedFrameSidePlan !== undefined ? { removedFrameSidePlan: input.removedFrameSidePlan } : {}),
     startY: readNumber(input.startY, 0),
     startDoorId: readNumber(input.startDoorId, 1),
     moduleDoors: readNumber(input.moduleDoors, 1),

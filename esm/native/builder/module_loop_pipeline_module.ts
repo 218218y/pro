@@ -24,10 +24,10 @@ export function runModuleLoopItem(
 
   const startDoorOfModule = state.globalDoorCounter;
   const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
-    cfg: runtime.cfg,
+    constructionPlan: runtime.removedFrameSidePlan,
+    capabilities: runtime.removedFrameSideCapabilities,
     moduleIndex: index,
     modulesLength: runtime.modules.length,
-    frameSidePartIdPrefix: runtime.stackKey === 'bottom' ? 'lower_' : '',
     startDoorId: startDoorOfModule,
     moduleDoors: frame.modDoors,
   });

@@ -18,6 +18,7 @@ import {
 } from './render_interior_custom_ops_shared.js';
 import { computeCustomModuleInnerFaces } from './render_interior_custom_ops_wall_faces.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
+import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   addCustomBaseShelfContents,
@@ -89,11 +90,15 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const braceSet = buildBraceShelfIndexSet(input);
     const shelfSet = buildShelfIndexSet(ops);
     const shelfVariantByIndex = buildShelfVariantByIndex(ops);
-    const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+    const removedFrameSidePlan = resolveRemovedFrameSideConstructionPlanAtBoundary({
+      constructionPlan: input.removedFrameSidePlan,
       cfg: input.cfg,
+      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    });
+    const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+      constructionPlan: removedFrameSidePlan,
       moduleIndex,
       modulesLength,
-      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     });
     const shelfExposedSide = removedSideConstruction.exposedShelfSide;
     if (removedSideConstruction.forceBraceShelves) {

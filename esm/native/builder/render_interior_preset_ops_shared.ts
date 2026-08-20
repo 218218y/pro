@@ -10,6 +10,7 @@ import type {
   RenderInteriorOpsDeps,
 } from './render_interior_ops_contracts.js';
 import { readRenderOpNumberOr } from './render_ops_number_contracts.js';
+import type { RemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   buildInteriorRenderIndexSet,
   readInteriorRenderGridIndex,
@@ -41,6 +42,7 @@ export type InteriorPresetInput = InteriorValueRecord & {
   modulesLength?: unknown;
   moduleKey?: unknown;
   frameSidePartIdPrefix?: unknown;
+  removedFrameSidePlan?: RemovedFrameSideConstructionPlan;
   currentShelfMat?: unknown;
   currentBraceShelfMat?: unknown;
   bodyMat?: unknown;

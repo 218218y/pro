@@ -495,10 +495,6 @@
       "entry": "interior_layout_presets/api.js"
     },
     {
-      "file": "esm/native/builder/removed_frame_side_construction_plan.ts",
-      "entry": "part_identity/api.js"
-    },
-    {
       "file": "esm/native/builder/render_carcass_ops_base.ts",
       "entry": "door_authoring/api.js"
     },

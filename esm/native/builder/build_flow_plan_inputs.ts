@@ -12,6 +12,7 @@ import {
   normalizeBaseLegWidthCm,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
+import { createRemovedFrameSideConstructionCapabilities } from './removed_frame_side_construction_capabilities.js';
 import { resolveRemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   normalizeBaseLegPlatformFrontOverhangCm,
@@ -85,8 +86,12 @@ function hasStackSplitPerCellFrameBreakingGeometry(cfg: unknown, lowerHeightCm: 
 }
 
 function hasStackSplitScopedFrameSideRemoval(cfg: unknown): boolean {
-  const upper = resolveRemovedFrameSideConstructionPlan({ cfg });
-  const lower = resolveRemovedFrameSideConstructionPlan({ cfg, frameSidePartIdPrefix: 'lower_' });
+  const capabilities = createRemovedFrameSideConstructionCapabilities(cfg);
+  const upper = resolveRemovedFrameSideConstructionPlan({ capabilities });
+  const lower = resolveRemovedFrameSideConstructionPlan({
+    capabilities,
+    frameSidePartIdPrefix: 'lower_',
+  });
   return upper.hasRemovedSide || lower.hasRemovedSide;
 }
 

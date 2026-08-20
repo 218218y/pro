@@ -1,11 +1,7 @@
-import {
-  isRemovedFrameSideOn,
-  isRoundedFrameSideShelvesOn,
-  type RemovableFrameSidePartIdPrefix,
-} from '../features/part_identity/api.js';
-import { hasRemovedHingedDoorInRange } from './doors_state_utils.js';
-
-import type { UnknownRecord } from '../../../types/index.js';
+import type {
+  RemovedFrameSideConstructionCapabilities,
+  RemovableFrameSidePartIdPrefix,
+} from './removed_frame_side_construction_capabilities.js';
 
 export type RemovedFrameSideConstructionSide = 'left' | 'right';
 export type RemovedFrameSideShelfExposure = RemovedFrameSideConstructionSide | 'both';
@@ -49,20 +45,18 @@ export type RemovedFrameSideModuleConstructionPlan = Readonly<{
 }>;
 
 export interface ResolveRemovedFrameSideConstructionPlanArgs {
-  cfg?: unknown;
+  capabilities: RemovedFrameSideConstructionCapabilities;
   frameSidePartIdPrefix?: unknown;
 }
 
-export interface ResolveRemovedFrameSideModuleConstructionPlanArgs extends ResolveRemovedFrameSideConstructionPlanArgs {
+export interface ResolveRemovedFrameSideModuleConstructionPlanArgs {
   constructionPlan?: RemovedFrameSideConstructionPlan;
+  capabilities?: RemovedFrameSideConstructionCapabilities;
+  frameSidePartIdPrefix?: unknown;
   moduleIndex?: unknown;
   modulesLength?: unknown;
   startDoorId?: unknown;
   moduleDoors?: unknown;
-}
-
-function readRecord(value: unknown): UnknownRecord | null {
-  return !!value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
 
 function normalizeFrameSidePartIdPrefix(value: unknown): RemovableFrameSidePartIdPrefix {
@@ -81,24 +75,41 @@ function readPositiveRuntimeInteger(value: unknown): number | null {
   return normalized > 0 ? normalized : null;
 }
 
+function requireCapabilities(
+  value: RemovedFrameSideConstructionCapabilities | null | undefined,
+  where: string
+): RemovedFrameSideConstructionCapabilities {
+  if (
+    !value ||
+    typeof value.isFrameSideRemoved !== 'function' ||
+    typeof value.isFrameSideShelfRounded !== 'function' ||
+    typeof value.hasRemovedHingedDoorInRange !== 'function' ||
+    typeof value.isHingedWardrobe !== 'boolean'
+  ) {
+    throw new TypeError(`[removed-frame-side] construction capabilities are required in ${where}`);
+  }
+  return value;
+}
+
 function resolveEdgePlan(
-  cfg: unknown,
+  capabilities: RemovedFrameSideConstructionCapabilities,
   side: RemovedFrameSideConstructionSide,
   frameSidePartIdPrefix: RemovableFrameSidePartIdPrefix
 ): RemovedFrameSideConstructionEdgePlan {
-  const removed = isRemovedFrameSideOn(cfg, side, frameSidePartIdPrefix);
+  const removed = capabilities.isFrameSideRemoved(side, frameSidePartIdPrefix);
   return Object.freeze({
     removed,
-    roundedShelves: removed && isRoundedFrameSideShelvesOn(cfg, side, frameSidePartIdPrefix),
+    roundedShelves: removed && capabilities.isFrameSideShelfRounded(side, frameSidePartIdPrefix),
   });
 }
 
 export function resolveRemovedFrameSideConstructionPlan(
   args: ResolveRemovedFrameSideConstructionPlanArgs
 ): RemovedFrameSideConstructionPlan {
+  const capabilities = requireCapabilities(args.capabilities, 'resolveRemovedFrameSideConstructionPlan');
   const frameSidePartIdPrefix = normalizeFrameSidePartIdPrefix(args.frameSidePartIdPrefix);
-  const left = resolveEdgePlan(args.cfg, 'left', frameSidePartIdPrefix);
-  const right = resolveEdgePlan(args.cfg, 'right', frameSidePartIdPrefix);
+  const left = resolveEdgePlan(capabilities, 'left', frameSidePartIdPrefix);
+  const right = resolveEdgePlan(capabilities, 'right', frameSidePartIdPrefix);
   return Object.freeze({
     frameSidePartIdPrefix,
     left,
@@ -169,23 +180,26 @@ function resolveBackPanelPlan(
 }
 
 function resolveFrontClosurePolicy(args: {
-  cfg: unknown;
+  capabilities?: RemovedFrameSideConstructionCapabilities;
   constructionPlan: RemovedFrameSideConstructionPlan;
   exposedShelfSide: RemovedFrameSideShelfExposure | null;
   startDoorId: number | null;
   moduleDoors: number | null;
 }): Pick<RemovedFrameSideModuleConstructionPlan, 'doorDisposition' | 'frontClosure'> {
-  const cfg = readRecord(args.cfg);
-  if (!args.exposedShelfSide || !cfg || cfg.wardrobeType !== 'hinged') {
+  if (!args.exposedShelfSide || args.startDoorId == null || args.moduleDoors == null) {
     return { doorDisposition: 'unchanged', frontClosure: null };
   }
-  if (args.startDoorId == null || args.moduleDoors == null) {
+
+  const capabilities = requireCapabilities(
+    args.capabilities,
+    'resolveRemovedFrameSideModuleConstructionPlan.frontClosure'
+  );
+  if (!capabilities.isHingedWardrobe) {
     return { doorDisposition: 'unchanged', frontClosure: null };
   }
 
   if (
-    hasRemovedHingedDoorInRange({
-      cfg,
+    capabilities.hasRemovedHingedDoorInRange({
       startDoorId: args.startDoorId,
       moduleDoors: args.moduleDoors,
       frameSidePartIdPrefix: args.constructionPlan.frameSidePartIdPrefix,
@@ -211,7 +225,10 @@ export function resolveRemovedFrameSideModuleConstructionPlan(
   const constructionPlan =
     args.constructionPlan ??
     resolveRemovedFrameSideConstructionPlan({
-      cfg: args.cfg,
+      capabilities: requireCapabilities(
+        args.capabilities,
+        'resolveRemovedFrameSideModuleConstructionPlan.constructionPlan'
+      ),
       frameSidePartIdPrefix: args.frameSidePartIdPrefix,
     });
   const moduleIndex = readRuntimeIndex(args.moduleIndex);
@@ -219,7 +236,7 @@ export function resolveRemovedFrameSideModuleConstructionPlan(
   const exposedShelfSide = resolveModuleExposure(constructionPlan, moduleIndex, modulesLength);
   const roundedShelfSide = resolveRoundedShelfSide(constructionPlan, moduleIndex, modulesLength);
   const front = resolveFrontClosurePolicy({
-    cfg: args.cfg,
+    ...(args.capabilities !== undefined ? { capabilities: args.capabilities } : {}),
     constructionPlan,
     exposedShelfSide,
     startDoorId: readPositiveRuntimeInteger(args.startDoorId),

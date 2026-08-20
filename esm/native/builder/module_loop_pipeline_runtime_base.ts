@@ -15,6 +15,8 @@ import {
 } from './module_loop_pipeline_shared.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
 import { reqNumber } from './module_loop_pipeline_runtime_shared.js';
+import { createRemovedFrameSideConstructionCapabilities } from './removed_frame_side_construction_capabilities.js';
+import { resolveRemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 
 import type { BuildContextLike, ConfigStateLike, UiStateLike } from '../../../types/index.js';
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime_contracts.js';
@@ -56,6 +58,8 @@ export type ModuleLoopRuntimeBase = Pick<
   | 'splitDoors'
   | 'hingedDoorPivotMap'
   | 'internalGridMap'
+  | 'removedFrameSideCapabilities'
+  | 'removedFrameSidePlan'
 >;
 
 export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopRuntimeBase {
@@ -115,6 +119,12 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
   const splitDoors = !!flags.splitDoors;
 
   const hingedDoorPivotMap = layout.hingedDoorPivotMap || null;
+  const frameSidePartIdPrefix = stackKey === 'bottom' ? 'lower_' : '';
+  const removedFrameSideCapabilities = createRemovedFrameSideConstructionCapabilities(cfg);
+  const removedFrameSidePlan = resolveRemovedFrameSideConstructionPlan({
+    capabilities: removedFrameSideCapabilities,
+    frameSidePartIdPrefix,
+  });
 
   let internalGridMap = {};
   try {
@@ -151,5 +161,7 @@ export function resolveModuleLoopRuntimeBase(ctx: BuildContextLike): ModuleLoopR
     splitDoors,
     hingedDoorPivotMap,
     internalGridMap,
+    removedFrameSideCapabilities,
+    removedFrameSidePlan,
   };
 }

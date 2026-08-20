@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T16:16:08.427Z",
+  "generatedAt": "2026-08-20T16:50:01.575Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -2001,7 +2001,7 @@
     },
     {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
-      "line": 207,
+      "line": 210,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
@@ -2057,14 +2057,14 @@
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
-      "line": 91,
+      "line": 95,
       "term": "fallbackCenterX",
       "category": "domain-default",
       "text": "fallbackCenterX: number,"
     },
     {
       "file": "esm/native/builder/module_loop_pipeline_runtime_contracts.ts",
-      "line": 92,
+      "line": 96,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "fallbackW: number"

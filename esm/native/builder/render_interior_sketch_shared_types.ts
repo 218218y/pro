@@ -16,6 +16,8 @@ import type {
   UnknownCallable,
 } from '../../../types';
 
+import type { RemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
+
 import type {
   InteriorGroupLike,
   InteriorOpsCallable,
@@ -119,6 +121,7 @@ export type RenderInteriorSketchInput = BuilderInteriorSketchArgsLike &
     modulesLength?: BuilderRuntimeGeometryScalar;
     moduleKey?: BuilderSketchIdLike;
     frameSidePartIdPrefix?: BuilderSketchIdLike;
+    removedFrameSidePlan?: RemovedFrameSideConstructionPlan;
     stackKey?: BuilderSketchIdLike;
     startY?: BuilderRuntimeGeometryScalar;
     startDoorId?: BuilderSketchIdLike;

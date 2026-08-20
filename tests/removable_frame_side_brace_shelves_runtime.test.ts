@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { forceShelfIndexesToBrace } from '../esm/native/builder/removed_frame_side_brace_shelves.ts';
+import { createRemovedFrameSideConstructionCapabilities } from '../esm/native/builder/removed_frame_side_construction_capabilities.ts';
+import { resolveRemovedFrameSideConstructionPlanAtBoundary } from '../esm/native/builder/removed_frame_side_construction_boundary.ts';
 import {
   resolveRemovedFrameSideConstructionPlan,
   resolveRemovedFrameSideModuleConstructionPlan,
@@ -18,25 +20,39 @@ function closeTo(actual: number, expected: number, message: string): void {
   assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} !== ${expected}`);
 }
 
-function resolveRemovedFrameSideModule(args: ResolveRemovedFrameSideModuleConstructionPlanArgs) {
-  return resolveRemovedFrameSideModuleConstructionPlan(args);
+type RemovedFrameSideTestArgs = Omit<ResolveRemovedFrameSideModuleConstructionPlanArgs, 'capabilities'> & {
+  cfg?: unknown;
+};
+
+function resolveRemovedFrameSideModule(args: RemovedFrameSideTestArgs) {
+  const { cfg, constructionPlan: injectedPlan, ...moduleArgs } = args;
+  const capabilities = createRemovedFrameSideConstructionCapabilities(cfg);
+  const constructionPlan =
+    injectedPlan ??
+    resolveRemovedFrameSideConstructionPlan({
+      capabilities,
+      frameSidePartIdPrefix: args.frameSidePartIdPrefix,
+    });
+  return resolveRemovedFrameSideModuleConstructionPlan({
+    ...moduleArgs,
+    constructionPlan,
+    capabilities,
+  });
 }
 
-function shouldForceBraceShelvesForRemovedFrameSide(
-  args: ResolveRemovedFrameSideModuleConstructionPlanArgs
-): boolean {
+function shouldForceBraceShelvesForRemovedFrameSide(args: RemovedFrameSideTestArgs): boolean {
   return resolveRemovedFrameSideModule(args).forceBraceShelves;
 }
 
-function getExposedShelfSideForRemovedFrameSide(args: ResolveRemovedFrameSideModuleConstructionPlanArgs) {
+function getExposedShelfSideForRemovedFrameSide(args: RemovedFrameSideTestArgs) {
   return resolveRemovedFrameSideModule(args).exposedShelfSide;
 }
 
-function getRoundedShelfSideForRemovedFrameSide(args: ResolveRemovedFrameSideModuleConstructionPlanArgs) {
+function getRoundedShelfSideForRemovedFrameSide(args: RemovedFrameSideTestArgs) {
   return resolveRemovedFrameSideModule(args).roundedShelfSide;
 }
 
-function resolveRemovedFrameSideFrontClosurePlan(args: ResolveRemovedFrameSideModuleConstructionPlanArgs) {
+function resolveRemovedFrameSideFrontClosurePlan(args: RemovedFrameSideTestArgs) {
   return resolveRemovedFrameSideModule(args).frontClosure;
 }
 
@@ -46,9 +62,10 @@ test('unified removed-side construction plan owns shelf, back-panel, door, and o
     removedDoorsMap: { removed_body_left: true },
     roundedFrameSideShelvesMap: { body_left: true },
   };
-  const constructionPlan = resolveRemovedFrameSideConstructionPlan({ cfg });
+  const capabilities = createRemovedFrameSideConstructionCapabilities(cfg);
+  const constructionPlan = resolveRemovedFrameSideConstructionPlan({ capabilities });
   const modulePlan = resolveRemovedFrameSideModuleConstructionPlan({
-    cfg,
+    capabilities,
     constructionPlan,
     moduleIndex: 0,
     modulesLength: 2,
@@ -80,6 +97,85 @@ test('unified removed-side construction plan owns shelf, back-panel, door, and o
     left: -0.88,
     right: 0.9,
   });
+});
+
+test('removed-side capabilities snapshot config once and keep the planner independent from later runtime mutation', () => {
+  const cfg = {
+    wardrobeType: 'hinged',
+    removedDoorsMap: { removed_body_left: true } as Record<string, unknown>,
+    roundedFrameSideShelvesMap: { body_left: true } as Record<string, unknown>,
+  };
+  const capabilities = createRemovedFrameSideConstructionCapabilities(cfg);
+
+  cfg.wardrobeType = 'sliding';
+  cfg.removedDoorsMap.removed_body_left = false;
+  cfg.removedDoorsMap.removed_d1_full = true;
+  cfg.roundedFrameSideShelvesMap.body_left = false;
+
+  const constructionPlan = resolveRemovedFrameSideConstructionPlan({ capabilities });
+  const modulePlan = resolveRemovedFrameSideModuleConstructionPlan({
+    capabilities,
+    constructionPlan,
+    moduleIndex: 0,
+    modulesLength: 2,
+    startDoorId: 1,
+    moduleDoors: 1,
+  });
+
+  assert.equal(constructionPlan.left.removed, true);
+  assert.equal(constructionPlan.left.roundedShelves, true);
+  assert.equal(modulePlan.doorDisposition, 'fixed-front-closure');
+  assert.equal(modulePlan.frontClosure?.partId, 'body_front_closure_left');
+});
+
+test('removed-side planner accepts a narrow injected capability surface without a config bag', () => {
+  const calls: string[] = [];
+  const capabilities = {
+    isHingedWardrobe: true,
+    isFrameSideRemoved(side: 'left' | 'right', prefix: '' | 'lower_') {
+      calls.push(`removed:${prefix}${side}`);
+      return side === 'right';
+    },
+    isFrameSideShelfRounded(side: 'left' | 'right', prefix: '' | 'lower_') {
+      calls.push(`rounded:${prefix}${side}`);
+      return side === 'right';
+    },
+    hasRemovedHingedDoorInRange() {
+      calls.push('door-range');
+      return false;
+    },
+  };
+
+  const constructionPlan = resolveRemovedFrameSideConstructionPlan({ capabilities });
+  const modulePlan = resolveRemovedFrameSideModuleConstructionPlan({
+    capabilities,
+    constructionPlan,
+    moduleIndex: 1,
+    modulesLength: 2,
+    startDoorId: 2,
+    moduleDoors: 1,
+  });
+
+  assert.deepEqual(constructionPlan.right, { removed: true, roundedShelves: true });
+  assert.equal(modulePlan.exposedShelfSide, 'right');
+  assert.equal(modulePlan.frontClosure?.partId, 'body_front_closure_right');
+  assert.deepEqual(calls, ['removed:left', 'removed:right', 'rounded:right', 'door-range']);
+});
+
+test('removed-side render boundary rejects malformed injected plans instead of silently re-reading config', () => {
+  assert.throws(
+    () =>
+      resolveRemovedFrameSideConstructionPlanAtBoundary({
+        constructionPlan: {
+          frameSidePartIdPrefix: '',
+          left: { removed: true, roundedShelves: true },
+          right: { removed: false, roundedShelves: false },
+          hasRemovedSide: false,
+        },
+        cfg: { removedDoorsMap: { removed_body_right: true } },
+      }),
+    /injected construction plan is invalid/
+  );
 });
 
 test('removed frame side brace policy only applies to the module adjacent to the removed outer side', () => {

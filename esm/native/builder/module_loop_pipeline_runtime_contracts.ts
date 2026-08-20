@@ -19,6 +19,8 @@ import type {
 } from '../../../types/index.js';
 
 import type { DoorStateLike, ModuleLike, ValueRecord } from './module_loop_pipeline_shared.js';
+import type { RemovedFrameSideConstructionCapabilities } from './removed_frame_side_construction_capabilities.js';
+import type { RemovedFrameSideConstructionPlan } from './removed_frame_side_construction_plan.js';
 
 export interface ModuleDoorSpan {
   spanW: number;
@@ -85,6 +87,8 @@ export interface ModuleLoopRuntime {
   curtainVal: DoorStateLike['curtainVal'];
   grooveVal: DoorStateLike['grooveVal'];
   internalGridMap: ValueRecord;
+  removedFrameSideCapabilities: RemovedFrameSideConstructionCapabilities;
+  removedFrameSidePlan: RemovedFrameSideConstructionPlan;
   computeModuleDoorSpan: (
     startDoorId: number,
     doorsCount: number,

@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-20T16:20:11.409Z
+Generated at: 2026-08-20T16:50:04.522Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 

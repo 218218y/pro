@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { applyCarcassAndGetCabinetMetrics } from '../esm/native/builder/carcass_pipeline.ts';
 import { forceShelfIndexesToBrace } from '../esm/native/builder/removed_frame_side_brace_shelves.ts';
+import { createRemovedFrameSideConstructionCapabilities } from '../esm/native/builder/removed_frame_side_construction_capabilities.ts';
 import {
   resolveRemovedFrameSideConstructionPlan,
   resolveRemovedFrameSideModuleConstructionPlan,
@@ -333,12 +334,13 @@ for (const scenario of SCENARIOS) {
   test(`removed-frame-side construction matrix: ${scenario.name}`, () => {
     const frameSidePartIdPrefix = scenario.frameSidePartIdPrefix ?? '';
     const corniceType = scenario.corniceType ?? DEFAULT_CORNICE_TYPE;
+    const capabilities = createRemovedFrameSideConstructionCapabilities(scenario.cfg);
     const constructionPlan = resolveRemovedFrameSideConstructionPlan({
-      cfg: scenario.cfg,
+      capabilities,
       frameSidePartIdPrefix,
     });
     const modulePlan = resolveRemovedFrameSideModuleConstructionPlan({
-      cfg: scenario.cfg,
+      capabilities,
       constructionPlan,
       moduleIndex: scenario.moduleIndex,
       modulesLength: scenario.modulesLength,

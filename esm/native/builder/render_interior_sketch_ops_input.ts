@@ -16,6 +16,7 @@ import {
   type SketchStorageBarrierExtra,
 } from './render_interior_sketch_shared.js';
 import { readSketchDoorVisualFactory } from './render_interior_sketch_visuals.js';
+import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
   requireInteriorSketchBooleanFlag,
@@ -139,11 +140,15 @@ export function resolveInteriorSketchExtrasInput(
   const braceInnerW = faces ? Math.max(0, faces.rightX - faces.leftX) : innerW;
   const braceCenterX = faces ? (faces.leftX + faces.rightX) / 2 : internalCenterX;
   const braceShelfWidth = braceInnerW > 0 ? Math.max(0, braceInnerW - BRACE_WIDTH_CLEARANCE) : innerW;
-  const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+  const removedFrameSidePlan = resolveRemovedFrameSideConstructionPlanAtBoundary({
+    constructionPlan: input.removedFrameSidePlan,
     cfg: cfgSnapshot,
+    frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+  });
+  const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+    constructionPlan: removedFrameSidePlan,
     moduleIndex,
     modulesLength,
-    frameSidePartIdPrefix: input.frameSidePartIdPrefix,
   });
   const shelfExposedSide = removedSideConstruction.exposedShelfSide;
   const forceBraceShelves = removedSideConstruction.forceBraceShelves;

@@ -84,6 +84,7 @@ export function applyPresetInteriorLayout(
         moduleIndex: readNumber(input.moduleIndex, -1),
         modulesLength: readNumber(input.modulesLength, -1),
         frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+        removedFrameSidePlan: input.removedFrameSidePlan,
         currentShelfMat: input.currentShelfMat,
         currentBraceShelfMat: input.currentBraceShelfMat,
         bodyMat: input.bodyMat,

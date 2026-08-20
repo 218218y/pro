@@ -20,6 +20,7 @@ import {
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
+import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 
 export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps) {
@@ -90,11 +91,15 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         if (shelfIndex != null) shelfSet[shelfIndex] = true;
       }
     }
-    const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+    const removedFrameSidePlan = resolveRemovedFrameSideConstructionPlanAtBoundary({
+      constructionPlan: input.removedFrameSidePlan,
       cfg: input.cfg,
+      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    });
+    const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
+      constructionPlan: removedFrameSidePlan,
       moduleIndex,
       modulesLength,
-      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     });
     const shelfExposedSide = removedSideConstruction.exposedShelfSide;
     if (removedSideConstruction.forceBraceShelves) {

@@ -140,6 +140,7 @@ export function applyModuleContents(
     modulesLength: runtime.modules.length,
     moduleKey: runtime.stackKey === 'bottom' ? `lower_${index}` : undefined,
     frameSidePartIdPrefix: runtime.stackKey === 'bottom' ? 'lower_' : '',
+    removedFrameSidePlan: runtime.removedFrameSidePlan,
     startY: runtime.startY,
     startDoorId: startDoorOfModule,
     moduleDoors: frame.modDoors,

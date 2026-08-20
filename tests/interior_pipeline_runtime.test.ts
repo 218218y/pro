@@ -7,6 +7,12 @@ import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers
 test('interior pipeline routes custom layouts through the canonical custom owner and shared sketch-extra seam', () => {
   const customCalls: any[] = [];
   const sketchExtraCalls: any[] = [];
+  const removedFrameSidePlan = {
+    frameSidePartIdPrefix: '',
+    left: { removed: true, roundedShelves: true },
+    right: { removed: false, roundedShelves: false },
+    hasRemovedSide: true,
+  } as const;
   const App = {
     services: {
       builder: {
@@ -50,6 +56,7 @@ test('interior pipeline routes custom layouts through the canonical custom owner
       moduleIndex: 4,
       modulesLength: 7,
       moduleKey: 'm-4',
+      removedFrameSidePlan,
       startDoorId: 12,
       moduleDoors: 2,
       externalW: 90,
@@ -62,11 +69,13 @@ test('interior pipeline routes custom layouts through the canonical custom owner
   assert.deepEqual(customCalls[0].customOps.shelves, [1]);
   assert.equal(customCalls[0].gridDivisions, 3);
   assert.deepEqual(customCalls[0].braceShelves, [2]);
+  assert.equal(customCalls[0].removedFrameSidePlan, removedFrameSidePlan);
 
   assert.equal(sketchExtraCalls.length, 1);
   assert.equal(sketchExtraCalls[0].moduleKey, 'm-4');
   assert.equal(sketchExtraCalls[0].moduleIndex, 4);
   assert.equal(sketchExtraCalls[0].startDoorId, 12);
+  assert.equal(sketchExtraCalls[0].removedFrameSidePlan, removedFrameSidePlan);
   assert.deepEqual(sketchExtraCalls[0].sketchExtras, {
     shelves: [{ id: 'shelf-1', yNorm: 0.5 }],
   });
@@ -77,6 +86,12 @@ test('interior pipeline routes custom layouts through the canonical custom owner
 
 test('interior pipeline routes preset layouts through the canonical preset owner through sketch drawer extras only', () => {
   const presetCalls: any[] = [];
+  const removedFrameSidePlan = {
+    frameSidePartIdPrefix: 'lower_',
+    left: { removed: false, roundedShelves: false },
+    right: { removed: true, roundedShelves: false },
+    hasRemovedSide: true,
+  } as const;
   const App = {
     services: {
       builder: {
@@ -112,6 +127,7 @@ test('interior pipeline routes preset layouts through the canonical preset owner
       moduleIndex: 1,
       modulesLength: 3,
       moduleKey: 'preset-1',
+      removedFrameSidePlan,
     }),
     true
   );
@@ -119,4 +135,5 @@ test('interior pipeline routes preset layouts through the canonical preset owner
   assert.equal(presetCalls.length, 1);
   assert.deepEqual(presetCalls[0].presetOps.shelves, [5, 1]);
   assert.deepEqual(presetCalls[0].braceShelves, [5]);
+  assert.equal(presetCalls[0].removedFrameSidePlan, removedFrameSidePlan);
 });

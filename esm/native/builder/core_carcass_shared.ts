@@ -16,6 +16,7 @@ import {
   DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
   platformOverhangCmToM,
 } from '../features/platform_overhang_support.js';
+import { createRemovedFrameSideConstructionCapabilities } from './removed_frame_side_construction_capabilities.js';
 import {
   resolveRemovedFrameSideConstructionPlan,
   type RemovedFrameSideConstructionPlan,
@@ -73,6 +74,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const hasCornice = !!inp.hasCornice;
   const corniceType = typeof inp.corniceType === 'string' && inp.corniceType ? inp.corniceType : 'classic';
   const cfg = _asObject(inp.cfg) || {};
+  const removedFrameSideCapabilities = createRemovedFrameSideConstructionCapabilities(cfg);
   const baseLegTopPlatformRequested = !!inp.baseLegTopPlatformOnly && baseType !== 'legs';
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(
     inp.baseLegPlatformMode,
@@ -260,7 +262,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     isStepped,
     isDepthStepped,
     removedFrameSidePlan: resolveRemovedFrameSideConstructionPlan({
-      cfg,
+      capabilities: removedFrameSideCapabilities,
       frameSidePartIdPrefix: inp.frameSidePartIdPrefix,
     }),
     stackSplitDividerY,
