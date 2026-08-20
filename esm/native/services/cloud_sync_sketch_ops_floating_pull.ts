@@ -34,12 +34,7 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
     const row = readResult.row;
     if (!row || !row.updated_at) {
       if (isInitial) {
-        applyFloatingSketchSyncPinnedInPlace(
-          state,
-          { App, storage },
-          state.floatingSketchSyncEnabled,
-          'local'
-        );
+        applyFloatingSketchSyncPinnedInPlace(state, { App, storage }, state.floatingSketchSyncEnabled);
       }
       return;
     }
@@ -47,7 +42,7 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
     if (isInitial || !state.lastFloatingSyncUpdatedAt || row.updated_at !== state.lastFloatingSyncUpdatedAt) {
       state.lastFloatingSyncUpdatedAt = row.updated_at;
       const parsed = parseFloatingSyncPayload(row.payload);
-      applyFloatingSketchSyncPinnedInPlace(state, { App, storage }, parsed.enabled, parsed.by || 'cloud');
+      applyFloatingSketchSyncPinnedInPlace(state, { App, storage }, parsed.enabled);
     }
   };
 }

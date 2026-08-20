@@ -12,7 +12,7 @@ import {
 import { applyStructureTemplateRecomputeBatch } from './structure_tab_core.js';
 import { setManualWidth } from '../actions/room_actions.js';
 import { getCfg as getCfgStore } from '../../store_access.js';
-import { structureTabReportNonFatal } from './structure_tab_shared.js';
+import { exitStructureEditMode, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   createStructureTabNoBuildImmediateMeta,
   createStructureTabNoBuildNoHistoryImmediateMeta,
@@ -24,10 +24,22 @@ import type {
   StructureWorkflowState,
 } from './structure_tab_workflows_controller_runtime.js';
 import type { StructureTabViewState } from './use_structure_tab_view_state_contracts.js';
+import { getPrimaryMode } from '../actions/modes_actions.js';
 
 export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';
 export const STRUCTURE_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: הקלד מידות ואז לחץ על תא או קופסא כדי להחיל';
 export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ על תא או קופסא כדי להפוך אותו לתא משושה';
+
+export function exitStructureCellDimsEditModeIfActive(args: {
+  app: AppContainer;
+  modeId: string;
+  source: string;
+}): boolean {
+  const modeId = String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID);
+  if (getPrimaryMode(args.app) !== modeId) return false;
+  exitStructureEditMode({ app: args.app, modeId, source: args.source });
+  return true;
+}
 
 export function createStructureWorkflowState(state: StructureTabViewState): StructureWorkflowState {
   return {

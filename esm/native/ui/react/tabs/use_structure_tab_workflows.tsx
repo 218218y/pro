@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
 
 import { callDoorsAction } from '../../../services/api.js';
-import { enterStructureEditMode, exitStructureEditMode } from './structure_tab_shared.js';
+import { enterStructureEditMode } from './structure_tab_shared.js';
 import { runHistoryBatch, setUiFlag } from '../actions/store_actions.js';
 import type {
   UseStructureTabWorkflowsArgs,
   UseStructureTabWorkflowsResult,
 } from './use_structure_tab_workflows_contracts.js';
 import {
+  exitStructureCellDimsEditModeIfActive,
   STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID,
   STRUCTURE_CELL_DIMS_MODE_MESSAGE,
   STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE,
@@ -52,15 +53,13 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
       setUiFlag(app, 'cellDimsPanelOpen', false, actionMeta);
       setUiFlag(app, 'cellDimsHexPanelOpen', false, actionMeta);
       workflowController.setCellDimsHexMode(false);
-      if (state.cellDimsEditActive) {
-        exitStructureEditMode({
-          app,
-          modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
-          source,
-        });
-      }
+      exitStructureCellDimsEditModeIfActive({
+        app,
+        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+        source,
+      });
     },
-    [app, meta, state.cellDimsEditActive, state.cellDimsModeId, workflowController]
+    [app, meta, state.cellDimsModeId, workflowController]
   );
 
   const enterHexCellDimsMode = useCallback(

@@ -5,7 +5,7 @@ import type {
   CloudSyncSyncPinCommandResult,
 } from '../../../types';
 
-import { _cloudSyncReportNonFatal, applyCloudSyncUiPatch, buildRestoreMeta } from './cloud_sync_support.js';
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 import {
   readFloatingSketchSyncPinnedLocal,
   type CloudSyncSketchConfig,
@@ -87,8 +87,7 @@ export function setFloatingSketchSyncEnabledStateInPlace(
 export function applyFloatingSketchSyncPinnedInPlace(
   state: CloudSyncFloatingSketchSyncMutableState,
   deps: Pick<CreateCloudSyncFloatingSketchSyncOpsDeps, 'App' | 'storage'>,
-  enabled: boolean,
-  by: string
+  enabled: boolean
 ): void {
   const { App, storage } = deps;
   try {
@@ -100,18 +99,6 @@ export function applyFloatingSketchSyncPinnedInPlace(
     setFloatingSketchSyncEnabledStateInPlace(state, { App, storage }, !!enabled);
   } catch (e) {
     _cloudSyncReportNonFatal(App, 'floatingSync.apply.setState', e, { throttleMs: 8000 });
-  }
-  try {
-    applyCloudSyncUiPatch(
-      App,
-      {
-        floatingSyncPinned: !!enabled,
-        floatingSyncPinnedBy: String(by || ''),
-      },
-      buildRestoreMeta(App, 'cloudSync:floatingSyncPinned')
-    );
-  } catch (e) {
-    _cloudSyncReportNonFatal(App, 'floatingSync.apply.uiPatch', e, { throttleMs: 8000 });
   }
 }
 

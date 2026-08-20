@@ -37,6 +37,14 @@ test('cloud sync floating sketch ops keep a thin facade over state/pull/push/run
     /subscribeFloatingSketchSyncEnabledStateInPlace\(/,
   ]);
 
+  assertLacksAll(assert, state, [
+    /applyCloudSyncUiPatch/,
+    /buildRestoreMeta/,
+    /floatingSyncPinned/,
+    /floatingSyncPinnedBy/,
+    /floatingSync\.apply\.uiPatch/,
+  ]);
+
   assertMatchesAll(assert, pull, [
     /readCloudSyncRowWithPullActivity\(/,
     /parseFloatingSyncPayload\(/,

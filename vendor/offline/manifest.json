@@ -385,13 +385,22 @@
         "packageCount": 16,
         "packages": [
           {
+            "name": "@oxc-project/types",
+            "version": "0.146.0",
+            "lockPath": "node_modules/@oxc-project/types",
+            "installPath": "node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.146.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.146.0.tgz",
+            "integrity": "sha512-XC0QsnnhVe7sLIWmYmdPw7x5P0h4W8vUU3Nv1ySgWXtvCz8NizoAEpGXA0sOYoJQV2Rl13LgURAHQ5cI5ILCSA=="
+          },
+          {
             "name": "@rolldown/binding-linux-x64-gnu",
-            "version": "1.2.4",
+            "version": "1.2.5",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
             "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
-            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.4.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.4.tgz",
-            "integrity": "sha512-4/GyVjmhR+Tc6HLJvwc1sOhPqAZtySiSMesOZyX6JQ5XBxoTDEMKQzvo07NIK6nTon/SivlZqvhzvuVBNQhObQ=="
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.5.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.5.tgz",
+            "integrity": "sha512-Mgj59/HTuYeK9Gz2MA+mBWKnHsAgkBSec15ZMb1st3oIfFbX7gCjOae7GydHhzcyQi9Z/7M1QuN9bR3oFqF0jQ=="
           },
           {
             "name": "@rolldown/pluginutils",
@@ -404,12 +413,12 @@
           },
           {
             "name": "@vitejs/plugin-react",
-            "version": "6.0.5",
+            "version": "6.1.0",
             "lockPath": "node_modules/@vitejs/plugin-react",
             "installPath": "node_modules/@vitejs/plugin-react",
-            "file": "vendor/offline/vite/vitejs__plugin-react-6.0.5.tgz",
-            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.0.5.tgz",
-            "integrity": "sha512-BOVzne/NL162sMdResB25mUv+vWMF5NoAjNf09TeGlE7ZpszZWSD3winycicLJw72yeVsoCn/2kOhEuCvEShMA=="
+            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.0.tgz",
+            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.0.tgz",
+            "integrity": "sha512-qd2BzUBehkov86WFhg0JkEFEYyCLG9uPCe6qWTY/kRlss9OvJrOF2UbIWT7p+8IzZHkEu0DNGHc4HSv+JdDLsw=="
           },
           {
             "name": "detect-libc",
@@ -485,21 +494,12 @@
           },
           {
             "name": "rolldown",
-            "version": "1.2.4",
+            "version": "1.2.5",
             "lockPath": "node_modules/rolldown",
             "installPath": "node_modules/rolldown",
-            "file": "vendor/offline/vite/rolldown-1.2.4.tgz",
-            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.4.tgz",
-            "integrity": "sha512-rSr7irW0K7QRWzjdJXqZowkcRdDtjRduh43rBltnVKd0VFq839l1lJoDvGJb6gl7+4rTTCrPWu+YfujUL8Ug7w=="
-          },
-          {
-            "name": "@oxc-project/types",
-            "version": "0.144.0",
-            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.144.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.144.0.tgz",
-            "integrity": "sha512-nuhZIOLuI6TFQ32I/WnUx+SCPY7SdSKwgnFHydAuoS1+Z4BRcaP+RRJmGzl9lw+0OFF7UmaESf7KQRXaNLHypg=="
+            "file": "vendor/offline/vite/rolldown-1.2.5.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.5.tgz",
+            "integrity": "sha512-VD2IE5PUG4Oj8zz2VGykiYd5wbnjdIiSsNQb8Qu5B+noEp+A78mu2iVvpp27g8es14Tk9rofNs5Tku9iQCS4fA=="
           },
           {
             "name": "source-map-js",
@@ -521,12 +521,12 @@
           },
           {
             "name": "vite",
-            "version": "8.2.1",
+            "version": "8.2.2",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.2.1.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.2.1.tgz",
-            "integrity": "sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw=="
+            "file": "vendor/offline/vite/vite-8.2.2.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.2.2.tgz",
+            "integrity": "sha512-cFKLV/PRgAUlIRm5WjMjJ86jrftzpqcgH+Us+DS8mI3CDNiH30Whrz8uHL3+MOLPAgqbMBAqWdAHAphOAM+z/Q=="
           }
         ]
       },
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "61fbae329cf1727273d32276f4fdeea04e1da3dc545c7673482d1606a8370eff"
+    "lockfileSha256": "fc1679d5a129a9ea37eb13d42c3478f05e6ce6362e11f69e54641be1b8679e54"
   }
 }

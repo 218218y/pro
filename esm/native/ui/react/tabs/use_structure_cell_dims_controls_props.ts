@@ -1,10 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import {
-  commitStructureRawValue,
-  enterStructureEditMode,
-  exitStructureEditMode,
-} from './structure_tab_shared.js';
+import { commitStructureRawValue, enterStructureEditMode } from './structure_tab_shared.js';
 import type {
   DisplayedValueReader,
   StructureTabNumericKey,
@@ -14,6 +10,7 @@ import { createStructureTabWorkflowCellDimsApi } from './structure_tab_workflows
 import {
   createStructureWorkflowOps,
   createStructureWorkflowState,
+  exitStructureCellDimsEditModeIfActive,
   STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID,
   STRUCTURE_CELL_DIMS_MODE_MESSAGE,
   STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE,
@@ -129,14 +126,12 @@ export function useStructureCellDimsControlsProps(
     setUiFlag(app, 'cellDimsPanelOpen', false, actionMeta);
     setUiFlag(app, 'cellDimsHexPanelOpen', false, actionMeta);
     cellDimsWorkflow.setCellDimsHexMode(false);
-    if (state.cellDimsEditActive) {
-      exitStructureEditMode({
-        app,
-        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
-        source,
-      });
-    }
-  }, [app, cellDimsWorkflow, meta, sourcePrefix, state.cellDimsEditActive, state.cellDimsModeId]);
+    exitStructureCellDimsEditModeIfActive({
+      app,
+      modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+      source,
+    });
+  }, [app, cellDimsWorkflow, meta, sourcePrefix, state.cellDimsModeId]);
 
   const onEnterHexCellDimsMode = useCallback(() => {
     const source = `${sourcePrefix}Hex:on`;

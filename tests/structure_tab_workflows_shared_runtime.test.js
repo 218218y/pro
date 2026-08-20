@@ -41,7 +41,16 @@ function loadStructureWorkflowsSharedModule(stubs = {}) {
     }
     if (specifier === './structure_tab_shared.js') {
       return {
+        exitStructureEditMode: args => stubs.calls.push(['exitStructureEditMode', args]),
         structureTabReportNonFatal: (...args) => stubs.calls.push(['structureTabReportNonFatal', ...args]),
+      };
+    }
+    if (specifier === '../actions/modes_actions.js') {
+      return {
+        getPrimaryMode: app => {
+          stubs.calls.push(['getPrimaryMode', app]);
+          return stubs.primaryMode || 'none';
+        },
       };
     }
     if (specifier === './structure_tab_meta.js') {
@@ -116,4 +125,47 @@ test('[structure-workflows-shared] modules configuration and auto width collapse
   assert.equal(autoWidthCall?.[1].meta.noBuild, true);
   assert.equal(autoWidthCall?.[1].meta.noHistory, true);
   assert.equal(autoWidthCall?.[1].meta.immediate, true);
+});
+
+test('[structure-workflows-shared] cell-dims exit reads the live primary mode instead of a stale React snapshot', () => {
+  const app = { id: 'app' };
+  const activeCalls = [];
+  const active = loadStructureWorkflowsSharedModule({
+    calls: activeCalls,
+    primaryMode: 'cell_dims',
+  });
+
+  assert.equal(
+    active.exitStructureCellDimsEditModeIfActive({
+      app,
+      modeId: 'cell_dims',
+      source: 'react:structure:cellDims:off',
+    }),
+    true
+  );
+  assert.equal(activeCalls.length, 2);
+  assert.equal(activeCalls[0]?.[0], 'getPrimaryMode');
+  assert.equal(activeCalls[0]?.[1], app);
+  assert.equal(activeCalls[1]?.[0], 'exitStructureEditMode');
+  assert.equal(activeCalls[1]?.[1]?.app, app);
+  assert.equal(activeCalls[1]?.[1]?.modeId, 'cell_dims');
+  assert.equal(activeCalls[1]?.[1]?.source, 'react:structure:cellDims:off');
+
+  const otherModeCalls = [];
+  const otherMode = loadStructureWorkflowsSharedModule({
+    calls: otherModeCalls,
+    primaryMode: 'door_trim',
+  });
+
+  assert.equal(
+    otherMode.exitStructureCellDimsEditModeIfActive({
+      app,
+      modeId: 'cell_dims',
+      source: 'react:structure:cellDims:off',
+    }),
+    false
+  );
+  assert.equal(otherModeCalls.length, 1);
+  assert.equal(otherModeCalls[0]?.[0], 'getPrimaryMode');
+  assert.equal(otherModeCalls[0]?.[1], app);
 });
