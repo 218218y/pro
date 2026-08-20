@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-20T14:32:13.393Z",
+  "generatedAt": "2026-08-20T16:24:00.259Z",
   "totals": {
-    "tests": 1252,
-    "unitRunnerTests": 1243,
+    "tests": 1253,
+    "unitRunnerTests": 1244,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 396,
     "runtime-unit": 346,
-    "integration": 471,
+    "integration": 472,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -6131,6 +6131,10 @@
     {
       "file": "tests/removable_side_content_build_guard_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/removed_frame_side_construction_matrix_integration.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/render_access_engine_consumers_guard.test.js",

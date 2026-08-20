@@ -180,10 +180,6 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shared.ts",
-      "entry": "part_identity/api.js"
-    },
-    {
-      "file": "esm/native/builder/core_carcass_shared.ts",
       "entry": "base_plinth_support.js"
     },
     {
@@ -499,7 +495,7 @@
       "entry": "interior_layout_presets/api.js"
     },
     {
-      "file": "esm/native/builder/removed_frame_side_brace_shelves.ts",
+      "file": "esm/native/builder/removed_frame_side_construction_plan.ts",
       "entry": "part_identity/api.js"
     },
     {
