@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-20T07:04:53.491Z",
+  "generatedAt": "2026-08-20T14:32:13.393Z",
   "totals": {
-    "tests": 1251,
-    "unitRunnerTests": 1242,
+    "tests": 1252,
+    "unitRunnerTests": 1243,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 396,
-    "runtime-unit": 345,
+    "runtime-unit": 346,
     "integration": 471,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -3635,6 +3635,10 @@
     {
       "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/cell_dims_free_box_core_capability_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/cell_dims_free_box_hover_capability_runtime.test.ts",

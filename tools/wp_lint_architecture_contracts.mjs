@@ -43,6 +43,20 @@ const TARGETED_CAPABILITY_CORE_CONTRACTS = new Map([
       ],
     },
   ],
+  [
+    'esm/native/services/canvas_picking_cell_dims_free_box_core.ts',
+    {
+      id: 'cell-dims-free-box-mutation-core',
+      label: 'Cell Dimensions Free Box mutation',
+      forbiddenTargets: [
+        /canvas_picking_cell_dims_free_box\.(?:js|ts)$/,
+        /canvas_picking_structural_commit\.(?:js|ts)$/,
+        /canvas_picking_cell_dims_linear_shared\.(?:js|ts)$/,
+        /canvas_picking_modules_patch_meta\.(?:js|ts)$/,
+        /canvas_picking_core_helpers\.(?:js|ts)$/,
+      ],
+    },
+  ],
 ]);
 
 const CORNER_CORNICE_PLAN_MODULES = new Set([

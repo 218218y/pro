@@ -1035,15 +1035,15 @@
       "entry": "special_dims/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_core.ts",
       "entry": "hex_cell/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_core.ts",
       "entry": "special_dims/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_core.ts",
       "entry": "base_leg_stage_special_dims_guard.js"
     },
     {
