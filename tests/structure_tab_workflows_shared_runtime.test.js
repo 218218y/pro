@@ -8,7 +8,6 @@ function loadStructureWorkflowsSharedModule(stubs = {}) {
   const localRequire = specifier => {
     if (specifier === '../actions/store_actions.js') {
       return {
-        patchUiSoft: (...args) => stubs.calls.push(['patchUiSoft', ...args]),
         setCfgModulesConfiguration: (...args) => stubs.calls.push(['setCfgModulesConfiguration', ...args]),
         setUiCellDimsDepth: (...args) => stubs.calls.push(['setUiCellDimsDepth', ...args]),
         setUiCellDimsHeight: (...args) => stubs.calls.push(['setUiCellDimsHeight', ...args]),
@@ -37,14 +36,6 @@ function loadStructureWorkflowsSharedModule(stubs = {}) {
         getCfg: app => {
           stubs.calls.push(['getCfg', app]);
           return stubs.cfg || { modulesConfiguration: [{ id: 'm1' }] };
-        },
-      };
-    }
-    if (specifier === '../actions/modes_actions.js') {
-      return {
-        getPrimaryMode: app => {
-          stubs.calls.push(['getPrimaryMode', app]);
-          return stubs.primaryMode || 'none';
         },
       };
     }
@@ -128,69 +119,29 @@ test('[structure-workflows-shared] modules configuration and auto width collapse
   assert.equal(autoWidthCall?.[1].meta.immediate, true);
 });
 
-test('[structure-workflows-shared] cell-dims exit atomically closes UI with the active expected mode', () => {
+test('[structure-workflows-shared] cell-dims exit delegates one atomic UI + expected-mode transition', () => {
   const calls = [];
-  const mod = loadStructureWorkflowsSharedModule({ calls, primaryMode: 'cell_dims' });
+  const mod = loadStructureWorkflowsSharedModule({ calls });
   const app = { id: 'app' };
-  const meta = { uiOnlyImmediate: source => ({ source, immediate: true, uiOnly: true }) };
 
   mod.exitStructureCellDimsEditMode({
     app,
-    meta,
     modeId: 'cell_dims',
     source: 'react:structure:cellDims:off',
   });
 
-  assert.equal(calls[0]?.[0], 'getPrimaryMode');
-  assert.equal(calls[1]?.[0], 'exitStructureEditMode');
-  assert.equal(calls.length, 2);
-  assert.equal(calls[1]?.[1]?.app, app);
-  assert.equal(calls[1]?.[1]?.modeId, 'cell_dims');
-  assert.equal(calls[1]?.[1]?.source, 'react:structure:cellDims:off');
-  assert.equal(calls[1]?.[1]?.immediate, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0]?.[0], 'exitStructureEditMode');
+  assert.equal(calls[0]?.[1]?.app, app);
+  assert.equal(calls[0]?.[1]?.modeId, 'cell_dims');
+  assert.equal(calls[0]?.[1]?.source, 'react:structure:cellDims:off');
+  assert.equal(calls[0]?.[1]?.immediate, true);
   assert.equal(
-    JSON.stringify(calls[1]?.[1]?.uiPatch),
+    JSON.stringify(calls[0]?.[1]?.uiPatch),
     JSON.stringify({
       cellDimsPanelOpen: false,
       cellDimsHexPanelOpen: false,
       raw: { cellDimsHexMode: false },
     })
-  );
-  assert.equal(
-    calls.some(entry => entry[0] === 'patchUiSoft'),
-    false
-  );
-});
-
-test('[structure-workflows-shared] cell-dims exit still closes the disclosure after the edit mode already ended', () => {
-  const calls = [];
-  const mod = loadStructureWorkflowsSharedModule({ calls, primaryMode: 'none' });
-  const app = { id: 'app' };
-  const meta = { uiOnlyImmediate: source => ({ source, immediate: true, uiOnly: true }) };
-
-  mod.exitStructureCellDimsEditMode({
-    app,
-    meta,
-    modeId: 'cell_dims',
-    source: 'react:structure:cellDims:off',
-  });
-
-  assert.equal(calls[0]?.[0], 'getPrimaryMode');
-  assert.equal(calls[1]?.[0], 'patchUiSoft');
-  assert.equal(calls.length, 2);
-  assert.equal(calls[1]?.[1], app);
-  assert.equal(
-    JSON.stringify(calls[1]?.[2]),
-    JSON.stringify({
-      cellDimsPanelOpen: false,
-      cellDimsHexPanelOpen: false,
-      raw: { cellDimsHexMode: false },
-    })
-  );
-  assert.equal(calls[1]?.[3]?.source, 'react:structure:cellDims:off');
-  assert.equal(calls[1]?.[3]?.immediate, true);
-  assert.equal(
-    calls.some(entry => entry[0] === 'exitStructureEditMode'),
-    false
   );
 });
