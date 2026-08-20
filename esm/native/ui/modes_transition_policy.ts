@@ -185,12 +185,12 @@ function commitPrimaryModeTransition(
 function commitTransitionUiPatchWithoutModeChange(
   App: AppLike,
   opts: ModeTransitionOptsLike,
-  fallbackSource: string
+  defaultSource: string
 ): void {
   const uiPatch = readTransitionUiPatch(opts);
   if (!uiPatch) return;
 
-  const applied = patchViaActions(App, { ui: uiPatch }, readTransitionMeta(opts, fallbackSource));
+  const applied = patchViaActions(App, { ui: uiPatch }, readTransitionMeta(opts, defaultSource));
   if (!applied) {
     throw new Error('[WardrobePro] UI transition cleanup requires canonical actions.ui.patch.');
   }
