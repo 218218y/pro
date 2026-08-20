@@ -1,16 +1,14 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../types';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   SKETCH_BOX_FREE_VERTICAL_POLICY,
   SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
 } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { getCfg } from '../kernel/api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { getActiveOverrideCm } from '../features/special_dims/index.js';
 import { hasHexCellDraftConfigChange, moduleHasHexCell } from '../features/hex_cell/index.js';
-import { asRecord } from '../runtime/record.js';
-import { __wp_raycastReuse, __wp_toModuleKey } from './canvas_picking_core_helpers.js';
+import { __wp_toModuleKey } from './canvas_picking_core_support_numbers.js';
 import {
   readCellDimsFreeBoxIdFromPartId,
   readCellDimsFreeBoxModuleKeyFromPartId,
@@ -21,14 +19,49 @@ import type {
   ModuleKey,
   SelectorLocalBox,
 } from './canvas_picking_hover_preview_modes_shared.js';
-import { __wp_getViewportRoots, __wp_measureWardrobeLocalBox } from './canvas_picking_projection_runtime.js';
 import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_boxes.js';
-import { resolveCellDimsPostClickFreeBoxHoverIdentity } from './canvas_picking_cell_dims_post_click_hover.js';
 
 const EPS_CM = 1e-6;
 const EPS_M = 1e-6;
 
 type StackKey = 'top' | 'bottom';
+
+type CellDimsFreeBoxViewportRoots = {
+  camera: unknown;
+  wardrobeGroup: unknown;
+};
+
+type CellDimsFreeBoxWardrobeBox = {
+  width?: unknown;
+  depth?: unknown;
+  centerZ?: unknown;
+};
+
+export type CellDimsFreeBoxPostClickIdentity = {
+  moduleKey: ModuleKey;
+  stackKey: StackKey;
+  freeBoxId: string;
+};
+
+export type CellDimsFreeBoxHoverCapabilities = {
+  readConfigSnapshot: () => unknown;
+  readViewportRoots: () => CellDimsFreeBoxViewportRoots;
+  measureWardrobeLocalBox: () => CellDimsFreeBoxWardrobeBox | null;
+  resolvePostClickIdentity: (ndcX: number, ndcY: number) => CellDimsFreeBoxPostClickIdentity | null;
+  raycast: (args: {
+    raycaster: RaycasterLike;
+    mouse: MouseVectorLike;
+    camera: unknown;
+    ndcX: number;
+    ndcY: number;
+    objects: unknown;
+    recursive?: boolean;
+  }) => RaycastHitLike[];
+};
+
+function asRecord(value: unknown): UnknownRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
 
 export type CellDimsFreeBoxHitCandidate = {
   boxId: string;
@@ -148,13 +181,17 @@ export function readCellDimsFreeBoxHitCandidate(
   return null;
 }
 
-function readModuleConfig(App: AppContainer, moduleKey: ModuleKey, stackKey: StackKey): UnknownRecord | null {
+function readModuleConfig(
+  capabilities: CellDimsFreeBoxHoverCapabilities,
+  moduleKey: ModuleKey,
+  stackKey: StackKey
+): UnknownRecord | null {
   if (typeof moduleKey !== 'number') return null;
   try {
-    const cfg = asRecord(getCfg(App));
+    const cfg = asRecord(capabilities.readConfigSnapshot());
     const bucket = stackKey === 'bottom' ? 'stackSplitLowerModulesConfiguration' : 'modulesConfiguration';
     const list = readModulesConfigurationListFromConfigSnapshot(cfg, bucket);
-    return asRecord(list[Math.max(0, Math.floor(moduleKey))]) as UnknownRecord | null;
+    return asRecord(list[Math.max(0, Math.floor(moduleKey))]);
   } catch {
     return null;
   }
@@ -177,9 +214,12 @@ function findFreeBoxById(boxes: UnknownRecord[], boxId: string): UnknownRecord |
   return null;
 }
 
-function resolveFreeBoxSelectorBox(args: { App: AppContainer; box: UnknownRecord }): SelectorLocalBox | null {
-  const { App, box } = args;
-  const wardrobeBox = __wp_measureWardrobeLocalBox(App);
+function resolveFreeBoxSelectorBox(args: {
+  capabilities: CellDimsFreeBoxHoverCapabilities;
+  box: UnknownRecord;
+}): SelectorLocalBox | null {
+  const { capabilities, box } = args;
+  const wardrobeBox = capabilities.measureWardrobeLocalBox();
   if (!wardrobeBox) return null;
   const centerX = readCanonicalNumber(box.absX);
   const centerY = readCanonicalNumber(box.absY);
@@ -211,16 +251,16 @@ function resolveFreeBoxSelectorBox(args: { App: AppContainer; box: UnknownRecord
 }
 
 function buildFreeBoxHoverTarget(args: {
-  App: AppContainer;
+  capabilities: CellDimsFreeBoxHoverCapabilities;
   candidate: CellDimsFreeBoxHitCandidate;
   intersects: RaycastHitLike[];
   anchorParent: unknown;
 }): CellDimsFreeBoxHoverBuildResult | null {
-  const { App, candidate, intersects, anchorParent } = args;
-  const cfgMod = readModuleConfig(App, candidate.moduleKey, candidate.stackKey);
+  const { capabilities, candidate, intersects, anchorParent } = args;
+  const cfgMod = readModuleConfig(capabilities, candidate.moduleKey, candidate.stackKey);
   const box = findFreeBoxById(readFreeBoxesFromModule(cfgMod), candidate.boxId);
   if (!box) return null;
-  const selectorBox = resolveFreeBoxSelectorBox({ App, box });
+  const selectorBox = resolveFreeBoxSelectorBox({ capabilities, box });
   if (!selectorBox) return null;
   const metrics = readSelectorBoxMetrics(selectorBox);
   if (!metrics) return null;
@@ -286,23 +326,23 @@ function findAnchorForFreeBox(root: unknown, boxId: string, moduleKey: ModuleKey
 }
 
 export function resolveCellDimsFreeBoxHoverTarget(args: {
-  App: AppContainer;
+  capabilities: CellDimsFreeBoxHoverCapabilities;
   ndcX: number;
   ndcY: number;
   raycaster: RaycasterLike;
   mouse: MouseVectorLike;
 }): CellDimsFreeBoxHoverBuildResult | null {
-  const { App, ndcX, ndcY, raycaster, mouse } = args;
+  const { capabilities, ndcX, ndcY, raycaster, mouse } = args;
   try {
-    const roots = __wp_getViewportRoots(App);
+    const roots = capabilities.readViewportRoots();
     const camera = roots.camera;
     const wardrobeGroup = roots.wardrobeGroup;
     if (!wardrobeGroup) return null;
 
-    const pending = resolveCellDimsPostClickFreeBoxHoverIdentity({ App, ndcX, ndcY });
+    const pending = capabilities.resolvePostClickIdentity(ndcX, ndcY);
     if (pending) {
       return buildFreeBoxHoverTarget({
-        App,
+        capabilities,
         candidate: {
           boxId: pending.freeBoxId,
           moduleKey: pending.moduleKey,
@@ -315,8 +355,7 @@ export function resolveCellDimsFreeBoxHoverTarget(args: {
     }
 
     if (!camera) return null;
-    const intersects = __wp_raycastReuse({
-      App,
+    const intersects = capabilities.raycast({
       raycaster,
       mouse,
       camera,
@@ -327,7 +366,7 @@ export function resolveCellDimsFreeBoxHoverTarget(args: {
     });
     const candidate = readCellDimsFreeBoxHitCandidate(intersects);
     return candidate
-      ? buildFreeBoxHoverTarget({ App, candidate, intersects, anchorParent: wardrobeGroup })
+      ? buildFreeBoxHoverTarget({ capabilities, candidate, intersects, anchorParent: wardrobeGroup })
       : null;
   } catch {
     return null;

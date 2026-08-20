@@ -77,6 +77,36 @@ test('lint architecture contracts keep viewer measurement geometry behind capabi
   );
 });
 
+test('lint architecture contracts keep targeted Canvas capability cores container-free', () => {
+  const alignmentFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_door_layout_alignment.ts',
+    `import type { AppContainer } from '../../../types';
+     import { getDoorRuntime } from '../runtime/doors_access.js';
+     export function run(App: AppContainer) { return getDoorRuntime(App); }`
+  );
+  assert.deepEqual(
+    alignmentFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:door-layout-alignment-runtime',
+      'lint-architecture/capability-boundary:door-layout-alignment-app-container',
+    ]
+  );
+
+  const freeBoxFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+    `import type { AppContainer } from '../../../types';
+     import { __wp_getViewportRoots } from './canvas_picking_projection_runtime.js';
+     export function run(App: AppContainer) { return __wp_getViewportRoots(App); }`
+  );
+  assert.deepEqual(
+    freeBoxFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:cell-dims-free-box-hover-runtime',
+      'lint-architecture/capability-boundary:cell-dims-free-box-hover-app-container',
+    ]
+  );
+});
+
 test('lint architecture contracts keep viewer measurement flow and facade on the feature runtime boundary', () => {
   const flowFailures = auditLintArchitectureSource(
     'esm/native/services/viewer_measurement_tool_flow.ts',

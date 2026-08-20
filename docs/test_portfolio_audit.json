@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-20T03:25:59.061Z",
+  "generatedAt": "2026-08-20T07:04:53.491Z",
   "totals": {
-    "tests": 1250,
-    "unitRunnerTests": 1241,
+    "tests": 1251,
+    "unitRunnerTests": 1242,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -17,11 +17,11 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 138
+    "contractOverlapTargets": 139
   },
   "categories": {
     "contract": 396,
-    "runtime-unit": 344,
+    "runtime-unit": 345,
     "integration": 471,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -1572,6 +1572,28 @@
         },
         {
           "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/wp_lint_architecture_contracts_runtime.test.js",
           "kind": "contract"
         }
       ]
@@ -3613,6 +3635,10 @@
     {
       "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/cell_dims_free_box_hover_capability_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/cell_dims_hover_preview_guard.test.js",

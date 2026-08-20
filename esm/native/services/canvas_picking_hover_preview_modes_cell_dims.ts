@@ -9,6 +9,7 @@ import type { PartHoverPreviewCommand } from './canvas_picking_part_hover_previe
 import { resolveCellDimsTargetBox } from './canvas_picking_hover_preview_modes_cell_dims_target.js';
 import { resolveCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { resolveCellDimsFreeBoxHoverTarget } from './canvas_picking_cell_dims_free_box_hover.js';
+import { createCellDimsFreeBoxHoverCapabilities } from './canvas_picking_cell_dims_free_box_hover_runtime.js';
 
 export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): boolean {
   if (!args.isCellDimsMode) return false;
@@ -33,7 +34,13 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       hideSketchPreview,
       previewRo,
     });
-    const freeBoxTarget = resolveCellDimsFreeBoxHoverTarget({ App, ndcX, ndcY, raycaster, mouse });
+    const freeBoxTarget = resolveCellDimsFreeBoxHoverTarget({
+      capabilities: createCellDimsFreeBoxHoverCapabilities(App),
+      ndcX,
+      ndcY,
+      raycaster,
+      mouse,
+    });
     const target =
       freeBoxTarget?.target ||
       resolveCellDimsPostClickHoverTarget({ App, ndcX, ndcY, measureObjectLocalBox }) ||

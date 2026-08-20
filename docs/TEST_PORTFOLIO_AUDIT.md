@@ -1,11 +1,11 @@
 # Test portfolio audit
 
-Generated: 2026-08-20T03:25:59.061Z
+Generated: 2026-08-20T07:04:53.491Z
 
 ## Summary
 
-- Test files classified: 1250
-- Canonical unit/runtime runner files: 1241
+- Test files classified: 1251
+- Canonical unit/runtime runner files: 1242
 - Playwright E2E files excluded from unit runner: 9
 - Helpers/fixtures excluded by filename contract: 39
 - Package script test references: 16
@@ -20,12 +20,12 @@ Generated: 2026-08-20T03:25:59.061Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 138
+- Cross-kind contract overlap targets: 139
 
 | Category            | Count |
 | ------------------- | ----: |
 | contract            |   396 |
-| runtime-unit        |   344 |
+| runtime-unit        |   345 |
 | integration         |   471 |
 | persistence-ingress |    23 |
 | e2e-smoke           |    10 |
@@ -134,6 +134,7 @@ Generated: 2026-08-20T03:25:59.061Z
 - `esm/native/services/api_state_surface.ts` — contract / ownership — `tests/store_backend_topology_contract.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/services/api.ts` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/builder_service_access_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/project_io_contracts.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/runtime_access_seam_topology_contract.test.js`, `tests/structure_tab_dimension_support_ownership_contract.test.js`, `tests/wp_layer_contract_runtime.test.js`
 - `esm/native/services/canvas_picking_cell_dims_flow.ts` — contract / ownership — `tests/canvas_picking_flow_topology_contract.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
+- `esm/native/services/canvas_picking_cell_dims_free_box_hover.ts` — contract / ownership — `tests/cell_dimension_layout_ownership_contract.test.js`, `tests/cell_dimension_layout_ownership_runtime.test.ts`, `tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js`, `tests/wp_lint_architecture_contracts_runtime.test.js`
 - `esm/native/services/canvas_picking_cell_dims_linear_shared.ts` — contract / ownership — `tests/canvas_picking_cell_dims_meta_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/cell_dimension_layout_ownership_contract.test.js`
 - `esm/native/services/canvas_picking_click_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/runtime_access_seam_topology_contract.test.js`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/statekernel_audit_contracts.test.js`, `tests/zustand_domain_paths_contracts.test.js`
 - `esm/native/services/canvas_picking_click_route_actions.ts` — contract / source-guard — `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`

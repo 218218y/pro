@@ -21,6 +21,30 @@ const CAPABILITY_ONLY_MODULES = new Set([
 ]);
 const VIEWER_MEASUREMENT_FACADE_MODULE = 'esm/native/services/viewer_measurement_tool.ts';
 
+const TARGETED_CAPABILITY_CORE_CONTRACTS = new Map([
+  [
+    'esm/native/services/canvas_picking_door_layout_alignment.ts',
+    {
+      id: 'door-layout-alignment',
+      label: 'Door layout alignment',
+      forbiddenTargets: [/canvas_picking_door_layout_alignment_runtime\.(?:js|ts)$/],
+    },
+  ],
+  [
+    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+    {
+      id: 'cell-dims-free-box-hover',
+      label: 'Cell Dimensions Free Box hover',
+      forbiddenTargets: [
+        /canvas_picking_cell_dims_free_box_hover_runtime\.(?:js|ts)$/,
+        /canvas_picking_projection_runtime(?:\.|_)/,
+        /canvas_picking_cell_dims_post_click_hover\.(?:js|ts)$/,
+        /canvas_picking_core_helpers\.(?:js|ts)$/,
+      ],
+    },
+  ],
+]);
+
 const CORNER_CORNICE_PLAN_MODULES = new Set([
   'esm/native/builder/corner_wing_cornice_plan.ts',
   'esm/native/builder/corner_connector_cornice_plan.ts',
@@ -390,6 +414,52 @@ function collectCapabilityBoundaryViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectTargetedCapabilityCoreViolations(rel, sourceFile, astApi) {
+  const contract = TARGETED_CAPABILITY_CORE_CONTRACTS.get(rel);
+  if (!contract) return [];
+  const failures = [];
+
+  for (const item of collectStaticModuleSpecifiers(sourceFile, astApi)) {
+    const target = getImportTargetRel(rel, item.specifier);
+    if (!target) continue;
+    const isForbiddenLayer =
+      target.startsWith('esm/native/runtime/') || target.startsWith('esm/native/kernel/');
+    const isForbiddenTarget = contract.forbiddenTargets.some(pattern => pattern.test(target));
+    if (!isForbiddenLayer && !isForbiddenTarget) continue;
+    failures.push(
+      makeViolation(
+        `lint-architecture/capability-boundary:${contract.id}-runtime`,
+        rel,
+        lineOf(sourceFile, item.node, astApi),
+        `${contract.label} core must consume injected capabilities instead of importing ${item.specifier}.`
+      )
+    );
+  }
+
+  let appContainerNode = null;
+  walkAst(
+    sourceFile,
+    node => {
+      if (appContainerNode) return;
+      if (!astApi.isIdentifier(node) || String(node.text || '') !== 'AppContainer') return;
+      appContainerNode = node;
+    },
+    { astApi }
+  );
+  if (appContainerNode) {
+    failures.push(
+      makeViolation(
+        `lint-architecture/capability-boundary:${contract.id}-app-container`,
+        rel,
+        lineOf(sourceFile, appContainerNode, astApi),
+        `${contract.label} core must depend on injected capabilities, not AppContainer.`
+      )
+    );
+  }
+
+  return failures;
+}
+
 function collectTypedIrBoundaryViolations(rel, sourceFile, astApi) {
   const forbidden = TYPED_IR_FORBIDDEN_IDENTIFIERS.get(rel);
   if (!forbidden) return [];
@@ -645,6 +715,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
   return [
     ...collectImportBoundaryViolations(rel, sourceFile, astApi),
     ...collectCapabilityBoundaryViolations(rel, sourceFile, astApi),
+    ...collectTargetedCapabilityCoreViolations(rel, sourceFile, astApi),
     ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
     ...collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi),
     ...collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi),
