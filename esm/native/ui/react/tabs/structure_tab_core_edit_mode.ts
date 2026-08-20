@@ -1,4 +1,9 @@
-import type { AppContainer, UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../types';
+import type {
+  AppContainer,
+  PublicUiPatch,
+  UiFeedbackNamespaceLike,
+  UnknownRecord,
+} from '../../../../../types';
 
 import {
   getDocumentMaybe,
@@ -160,11 +165,17 @@ export function enterStructureEditMode(args: {
   }
 }
 
-export function exitStructureEditMode(args: { app: AppContainer; modeId: string; source: string }): void {
-  const { app, modeId, source } = args;
+export function exitStructureEditMode(args: {
+  app: AppContainer;
+  modeId: string;
+  source: string;
+  uiPatch?: PublicUiPatch;
+  immediate?: boolean;
+}): void {
+  const { app, modeId, source, uiPatch, immediate } = args;
 
   try {
-    exitPrimaryMode(app, modeId, { closeDoors: true, source });
+    exitPrimaryMode(app, modeId, { closeDoors: true, source, uiPatch, immediate });
   } catch (err) {
     structureTabReportNonFatal(app, 'exitStructureEditMode.exitPrimaryMode', err);
   }

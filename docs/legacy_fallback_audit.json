@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T08:31:12.785Z",
+  "generatedAt": "2026-08-20T11:07:03.267Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -5235,31 +5235,31 @@
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
-      "line": 131,
+      "line": 126,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_cell_dims_controls_props.ts",
-      "line": 145,
+      "line": 140,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts",
-      "line": 29,
+      "line": 28,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_shared.ts",
-      "line": 38,
+      "line": 39,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
-      "text": "const modeId = String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID);"
+      "text": "modeId: String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
@@ -5277,14 +5277,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "line": 58,
+      "line": 54,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "line": 74,
+      "line": 70,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"

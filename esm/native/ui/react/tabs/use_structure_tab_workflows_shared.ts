@@ -24,21 +24,27 @@ import type {
   StructureWorkflowState,
 } from './structure_tab_workflows_controller_runtime.js';
 import type { StructureTabViewState } from './use_structure_tab_view_state_contracts.js';
-import { getPrimaryMode } from '../actions/modes_actions.js';
 
 export const STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID = 'cell_dims';
 export const STRUCTURE_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: הקלד מידות ואז לחץ על תא או קופסא כדי להחיל';
 export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ על תא או קופסא כדי להפוך אותו לתא משושה';
 
-export function exitStructureCellDimsEditModeIfActive(args: {
+export function exitStructureCellDimsEditMode(args: {
   app: AppContainer;
   modeId: string;
   source: string;
-}): boolean {
-  const modeId = String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID);
-  if (getPrimaryMode(args.app) !== modeId) return false;
-  exitStructureEditMode({ app: args.app, modeId, source: args.source });
-  return true;
+}): void {
+  exitStructureEditMode({
+    app: args.app,
+    modeId: String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+    source: args.source,
+    immediate: true,
+    uiPatch: {
+      cellDimsPanelOpen: false,
+      cellDimsHexPanelOpen: false,
+      raw: { cellDimsHexMode: false },
+    },
+  });
 }
 
 export function createStructureWorkflowState(state: StructureTabViewState): StructureWorkflowState {

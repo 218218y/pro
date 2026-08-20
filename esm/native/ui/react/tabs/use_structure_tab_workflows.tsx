@@ -8,7 +8,7 @@ import type {
   UseStructureTabWorkflowsResult,
 } from './use_structure_tab_workflows_contracts.js';
 import {
-  exitStructureCellDimsEditModeIfActive,
+  exitStructureCellDimsEditMode,
   STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID,
   STRUCTURE_CELL_DIMS_MODE_MESSAGE,
   STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE,
@@ -49,17 +49,13 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
 
   const exitCellDimsMode = useCallback(
     (source: string) => {
-      const actionMeta = meta.uiOnlyImmediate(`${source}:panelClose`);
-      setUiFlag(app, 'cellDimsPanelOpen', false, actionMeta);
-      setUiFlag(app, 'cellDimsHexPanelOpen', false, actionMeta);
-      workflowController.setCellDimsHexMode(false);
-      exitStructureCellDimsEditModeIfActive({
+      exitStructureCellDimsEditMode({
         app,
         modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
         source,
       });
     },
-    [app, meta, state.cellDimsModeId, workflowController]
+    [app, state.cellDimsModeId]
   );
 
   const enterHexCellDimsMode = useCallback(
