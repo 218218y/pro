@@ -7,6 +7,7 @@ import {
   collectOpaqueSourceFingerprintDebt,
   OPAQUE_SOURCE_FINGERPRINT_DEBT,
   SOURCE_POLICY_REGEX_CONTRACTS,
+  SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS,
   SOURCE_SHAPE_REGEX_RATCHET,
   runSourceContractQualityAudit,
   scanOpaqueSourceFingerprintText,
@@ -64,7 +65,20 @@ test('source-contract quality debt ledger is exact and ratchets the current repo
     sourceShape.policy.byFile.map(entry => entry.file).sort(),
     Object.keys(SOURCE_POLICY_REGEX_CONTRACTS).sort()
   );
-  assert.equal(sourceShape.raw.patterns, sourceShape.patterns + sourceShape.policy.patterns);
+  assert.deepEqual(
+    sourceShape.reviewed.byFile.map(entry => entry.file).sort(),
+    Object.keys(SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS).sort()
+  );
+  assert.equal(
+    sourceShape.raw.patterns,
+    sourceShape.patterns + sourceShape.policy.patterns + sourceShape.reviewed.patterns
+  );
+  assert.deepEqual(
+    Object.keys(SOURCE_POLICY_REGEX_CONTRACTS).filter(file =>
+      Object.hasOwn(SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS, file)
+    ),
+    []
+  );
   const result = runSourceContractQualityAudit();
   assert.equal(result.ok, true, JSON.stringify(result.failures));
 });

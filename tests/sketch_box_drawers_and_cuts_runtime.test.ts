@@ -6,6 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
 
 import {
+  getCallFacts,
+  getFunctionCallSequenceFacts,
+  getFunctionSignatureFact,
+  getFunctionVariableFacts,
+  getVariableDeclarationFact,
+} from './_semantic_source_contracts.js';
+
+import {
   HINGED_DOOR_RENDER_POLICY,
   HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
 } from '../esm/shared/dimensions/door_system_policy.ts';
@@ -1180,7 +1188,16 @@ test('sketch external drawers source keeps module faces aligned to real door spa
     '../esm/native/builder/render_interior_sketch_shared.ts',
     '../esm/native/builder/render_interior_sketch_shared_external_drawers.ts',
   ]);
-  assert.match(src, /const moduleDoorFaceSpan = resolveSketchModuleDoorFaceSpan\(\{/);
+  const opsInputSrc = await readSourceFiles(['../esm/native/builder/render_interior_sketch_ops_input.ts']);
+  const moduleDoorFaceSpanCalls = getCallFacts(
+    opsInputSrc,
+    'resolveSketchModuleDoorFaceSpan',
+    'render_interior_sketch_ops_input.ts'
+  );
+  assert.equal(moduleDoorFaceSpanCalls.length, 1);
+  assert.equal(moduleDoorFaceSpanCalls[0]?.args[0]?.kind, 'object');
+  assert.equal(moduleDoorFaceSpanCalls[0]?.args[0]?.properties?.input?.kind, 'identifier');
+  assert.equal(moduleDoorFaceSpanCalls[0]?.args[0]?.properties?.input?.name, 'input');
   assert.match(src, /const drawerFaceW = context\.moduleDoorFaceSpan\?\.spanW \?\? context\.outerW;/);
   assert.match(
     src,
@@ -1204,11 +1221,31 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   assert.match(src, /visualObj\.position\?\.set\?\.\(opPlan\.faceOffsetX, opPlan\.faceOffsetY, 0\);/);
   assert.match(src, /const doorStyle = resolveSketchDoorStyle\(input\);/);
   assert.doesNotMatch(src, /resolveSketchDoorStyle\(App, input\)/);
-  const normalizedSrc = normalizeSource(src);
-  assert.match(
-    normalizedSrc,
-    /resolveSketchFrontVisualState\(context\.input, opPlan\.partId\)[\s\S]*const effectiveFrameStyle = resolveEffectiveDoorStyle\(context\.doorStyle, context\.doorStyleMap, opPlan\.partId\);[\s\S]*context\.input\.createDoorVisual\([\s\S]*materialSet\.frontFaceMat,[\s\S]*frontVisualState\.isGlass \? 'glass' : effectiveFrameStyle,[\s\S]*frontVisualState\.mirrorLayout,[\s\S]*opPlan\.partId,[\s\S]*frontVisualState\.isGlass \? \{ glassFrameStyle: effectiveFrameStyle \} : null/
+  const drawerVisualSrc = await readSourceFiles([
+    '../esm/native/builder/render_interior_sketch_drawers_external_visual.ts',
+  ]);
+  const frontStateCalls = getCallFacts(
+    drawerVisualSrc,
+    'resolveSketchFrontVisualState',
+    'render_interior_sketch_drawers_external_visual.ts'
   );
+  assert.deepEqual(frontStateCalls[0]?.args, [
+    { kind: 'member', path: 'context.input' },
+    { kind: 'member', path: 'opPlan.partId' },
+  ]);
+  const createDoorVisualCalls = getCallFacts(
+    drawerVisualSrc,
+    'context.input.createDoorVisual',
+    'render_interior_sketch_drawers_external_visual.ts'
+  );
+  const createDoorVisualArgs = createDoorVisualCalls[0]?.args ?? [];
+  assert.deepEqual(createDoorVisualArgs[3], { kind: 'member', path: 'materialSet.frontFaceMat' });
+  assert.deepEqual(createDoorVisualArgs[11], { kind: 'member', path: 'frontVisualState.mirrorLayout' });
+  assert.deepEqual(createDoorVisualArgs[12], { kind: 'member', path: 'opPlan.partId' });
+  assert.equal(createDoorVisualArgs[4]?.kind, 'conditional');
+  assert.deepEqual(createDoorVisualArgs[4]?.test, { kind: 'member', path: 'frontVisualState.isGlass' });
+  assert.equal(createDoorVisualArgs[13]?.kind, 'object');
+  assert.equal(createDoorVisualArgs[13]?.spreads?.[0]?.kind, 'conditional');
   assert.match(src, /const boxExtDrawers = asRecordArray<InteriorValueRecord>\(box\.extDrawers\);/);
 });
 
@@ -1225,10 +1262,28 @@ test('sketch box drawers and external drawers source use divider-aware spans', a
     await readSketchBoxFrontsBundle(),
   ].join('\n');
   assert.match(src, /return \(item: InteriorValueRecord \| null\) => \{/);
-  assert.match(
-    src,
-    /const boxDrawers = shouldRenderBoxInternalDrawers\(input\)[\s\S]*asRecordArray<SketchDrawerExtra>\(box\.drawers\)/
+  const boxDrawerContentsSrc = await readSourceFiles([
+    '../esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts',
+  ]);
+  const boxDrawerVars = getFunctionVariableFacts(
+    boxDrawerContentsSrc,
+    'renderSketchBoxDrawerContents',
+    'render_interior_sketch_boxes_contents_drawers.ts'
   );
+  assert.deepEqual(boxDrawerVars?.boxDrawers, {
+    kind: 'conditional',
+    test: {
+      kind: 'call',
+      callee: 'shouldRenderBoxInternalDrawers',
+      args: [{ kind: 'identifier', name: 'input' }],
+    },
+    consequent: {
+      kind: 'call',
+      callee: 'asRecordArray',
+      args: [{ kind: 'member', path: 'box.drawers' }],
+    },
+    alternate: { kind: 'array', elements: [] },
+  });
   assert.match(src, /const spanSource = readRecord\(drawer\);/);
   assert.match(src, /const span = resolveBoxDrawerSpan\(spanSource\);/);
   assert.match(src, /const drawerFaceW = span\.faceW;/);
@@ -1261,9 +1316,16 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
     bundle,
     /const overlap = Math\.min\(doorXMax, stack\.xMax\) - Math\.max\(doorXMin, stack\.xMin\);/
   );
-  assert.match(
+  const overlayCallOrder = getFunctionCallSequenceFacts(
     orchestratorSrc,
-    /applySketchBoxExternalDrawerDoorCuts\([\s\S]*applyFrontRevealFrames\(ctx\);/
+    'applyPostBuildSketchVisualOverlays',
+    'post_build_visual_overlays.ts'
+  )?.map(call => call.callee);
+  assert.ok(overlayCallOrder);
+  assert.ok(
+    overlayCallOrder.indexOf('applySketchBoxExternalDrawerDoorCuts') <
+      overlayCallOrder.indexOf('applyFrontRevealFrames'),
+    'box drawer cuts must run before reveal frames'
   );
 });
 
@@ -1302,7 +1364,17 @@ test('sketch external drawer cuts and reveal frames use visible face envelope an
   assert.match(sketchCutsSrc, /const faceMaxY = baseY \+ stackH - frontInset \+ surroundingGap;/);
   assert.match(revealSrc, /if \(g\.userData\.__wpSketchSegmentedDoor\) \{/);
   assert.match(revealSrc, /segUd\.__wpSketchDoorSegment/);
-  assert.match(orchestratorSrc, /applySketchExternalDrawerDoorCuts\([\s\S]*applyFrontRevealFrames\(ctx\);/);
+  const overlayCallOrder = getFunctionCallSequenceFacts(
+    orchestratorSrc,
+    'applyPostBuildSketchVisualOverlays',
+    'post_build_visual_overlays.ts'
+  )?.map(call => call.callee);
+  assert.ok(overlayCallOrder);
+  assert.ok(
+    overlayCallOrder.indexOf('applySketchExternalDrawerDoorCuts') <
+      overlayCallOrder.indexOf('applyFrontRevealFrames'),
+    'module drawer cuts must run before reveal frames'
+  );
 });
 
 test('module sketch external drawer cuts use runtime drawer bounds so corner cells follow the real drawer front envelope', async () => {
@@ -1317,14 +1389,39 @@ test('module sketch external drawer cuts use runtime drawer bounds so corner cel
     src,
     /function collectSketchModuleExternalDrawerStackBounds\(App: AppContainer\): SketchModuleDrawerStackCollection/
   );
-  assert.match(
-    src,
-    /const runtimeStackCollection = collectSketchModuleExternalDrawerStackBounds\(App\);[\s\S]*const runtimeBounds = runtimeStackCollection\.bounds[\s\S]*item => item\.stackKey === stackKey[\s\S]*\);/
+  const moduleCutsSrc = await readSourceFiles([
+    '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
+  ]);
+  const moduleCutVars = getFunctionVariableFacts(
+    moduleCutsSrc,
+    'applySketchExternalDrawerDoorCuts',
+    'post_build_sketch_door_cuts_modules.ts'
   );
-  assert.match(
-    src,
-    /const moduleKeyRaw =[\s\S]*readStringOrNull\(ud\.__wpSketchModuleKey\) \|\| readStringOrNull\(ud\.moduleIndex\);/
+  assert.deepEqual(moduleCutVars?.runtimeStackCollection, {
+    kind: 'call',
+    callee: 'collectSketchModuleExternalDrawerStackBounds',
+    args: [{ kind: 'identifier', name: 'App' }],
+  });
+  assert.equal(moduleCutVars?.runtimeBounds?.kind, 'call');
+  const collectionVars = getFunctionVariableFacts(
+    moduleCutsSrc,
+    'collectSketchModuleExternalDrawerStackBounds',
+    'post_build_sketch_door_cuts_modules.ts'
   );
+  assert.deepEqual(collectionVars?.moduleKeyRaw, {
+    kind: 'binary',
+    operator: '||',
+    left: {
+      kind: 'call',
+      callee: 'readStringOrNull',
+      args: [{ kind: 'member', path: 'ud.__wpSketchModuleKey' }],
+    },
+    right: {
+      kind: 'call',
+      callee: 'readStringOrNull',
+      args: [{ kind: 'member', path: 'ud.moduleIndex' }],
+    },
+  });
   assert.match(
     bundle,
     /const overlap = Math\.min\(doorXMax, stack\.xMax\) - Math\.max\(doorXMin, stack\.xMin\);/
@@ -1346,27 +1443,95 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
     '../esm/native/builder/post_build_sketch_door_cuts_contracts.ts',
   ]);
 
-  assert.match(overlaySrc, /const moduleCutStackKeys: Array<'top' \| 'bottom'> =[\s\S]*\['top', 'bottom'\]/);
-  assert.match(overlaySrc, /for \(const moduleCutStackKey of moduleCutStackKeys\)/);
-  assert.match(overlaySrc, /stackKey: moduleCutStackKey/);
-  assert.match(overlaySrc, /allowConfigDerivedCuts: moduleCutStackKey === stackKey/);
+  const moduleCutStackKeys = getVariableDeclarationFact(
+    overlaySrc,
+    'moduleCutStackKeys',
+    'post_build_visual_overlays.ts'
+  );
+  assert.equal(moduleCutStackKeys?.type, 'Array<"bottom"|"top">');
+  assert.equal(moduleCutStackKeys?.initializer.kind, 'conditional');
+  assert.deepEqual(moduleCutStackKeys?.initializer.consequent, {
+    kind: 'array',
+    elements: [
+      { kind: 'literal', value: 'bottom' },
+      { kind: 'literal', value: 'top' },
+    ],
+  });
+  assert.deepEqual(moduleCutStackKeys?.initializer.alternate, {
+    kind: 'array',
+    elements: [
+      { kind: 'literal', value: 'top' },
+      { kind: 'literal', value: 'bottom' },
+    ],
+  });
+  const overlayDrawerCutCalls = getCallFacts(
+    overlaySrc,
+    'applySketchExternalDrawerDoorCuts',
+    'post_build_visual_overlays.ts'
+  );
+  const overlayCutOptions = overlayDrawerCutCalls[0]?.args[0];
+  assert.equal(overlayCutOptions?.kind, 'object');
+  assert.deepEqual(overlayCutOptions?.properties?.stackKey, {
+    kind: 'identifier',
+    name: 'moduleCutStackKey',
+  });
+  assert.deepEqual(overlayCutOptions?.properties?.allowConfigDerivedCuts, {
+    kind: 'binary',
+    operator: '===',
+    left: { kind: 'identifier', name: 'moduleCutStackKey' },
+    right: { kind: 'identifier', name: 'stackKey' },
+  });
   assert.match(cutsSrc, /function normalizeSketchModuleCutKey\(/);
   assert.match(
     cutsSrc,
     /if \(stackKey === 'bottom'\) return key\.startsWith\('lower_'\) \? key : `lower_\$\{key\}`;/
   );
-  assert.match(
-    cutsSrc,
-    /const moduleKey = normalizeSketchModuleCutKey\([\s\S]*readStringOrNull\(ud\.moduleIndex\),[\s\S]*stackKey[\s\S]*\);/
+  const moduleCutsDirectSrc = await readSourceFiles([
+    '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
+  ]);
+  const moduleCutCalls = getCallFacts(
+    moduleCutsDirectSrc,
+    'normalizeSketchModuleCutKey',
+    'post_build_sketch_door_cuts_modules.ts'
   );
-  assert.match(cutsSrc, /getHandleType \? getHandleType\(partId, stackKey\) : null/);
-  assert.match(cutsSrc, /stackKey\?: 'top' \| 'bottom';/);
-  assert.match(cutsSrc, /allowConfigDerivedCuts\?: boolean;/);
-  assert.match(cutsSrc, /const allowConfigDerivedCuts = args\.allowConfigDerivedCuts !== false;/);
-  assert.match(
-    cutsSrc,
-    /const runtimeDrawerOwnerBlocksConfigFallback =[\s\S]*runtimeStackCollection\.hasRuntimeModuleDrawers\[stackKey\]/
+  assert.ok(
+    moduleCutCalls.some(
+      call =>
+        call.args[1]?.kind === 'identifier' &&
+        call.args[1].name === 'stackKey' &&
+        JSON.stringify(call.args[0]).includes('ud.moduleIndex')
+    ),
+    'module cut normalization must include the persisted module index fallback and active stack key'
   );
+  const moduleCutSignature = getFunctionSignatureFact(
+    moduleCutsDirectSrc,
+    'applySketchExternalDrawerDoorCuts',
+    'post_build_sketch_door_cuts_modules.ts'
+  );
+  assert.ok(moduleCutSignature?.params[0]?.type?.includes('stackKey:"bottom"|"top"'));
+  assert.ok(moduleCutSignature?.params[0]?.type?.includes('allowConfigDerivedCuts?:boolean'));
+  const moduleCutVars = getFunctionVariableFacts(
+    moduleCutsDirectSrc,
+    'applySketchExternalDrawerDoorCuts',
+    'post_build_sketch_door_cuts_modules.ts'
+  );
+  assert.deepEqual(moduleCutVars?.allowConfigDerivedCuts, {
+    kind: 'binary',
+    operator: '!==',
+    left: { kind: 'member', path: 'args.allowConfigDerivedCuts' },
+    right: { kind: 'literal', value: false },
+  });
+  assert.deepEqual(moduleCutVars?.runtimeDrawerOwnerBlocksConfigFallback, {
+    kind: 'binary',
+    operator: '&&',
+    left: {
+      kind: 'unary',
+      operator: '!',
+      argument: { kind: 'member', path: 'stacksByModule.size' },
+    },
+    right: { kind: 'member', path: 'runtimeStackCollection.hasRuntimeModuleDrawers[stackKey]' },
+  });
+  // Handle-type stack routing is covered behaviorally above by segmented-door handle suppression.
   assert.match(
     cutsSrc,
     /if \(!stacksByModule\.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback\) \{/
@@ -1375,10 +1540,18 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
     cutsSrc,
     /const deferredSplitModuleKeys = collectSketchModuleDeferredSplitKeys\(ctx, stackKey\);/
   );
-  assert.match(
-    cutsSrc,
-    /if \(!stacksByModule\.size && \(!splitMap \|\| !deferredSplitModuleKeys\.size\)\) return;[\s\S]*const runtime = createSketchDoorCutsRuntime\(\{/
+  const cutCallOrder = getFunctionCallSequenceFacts(
+    moduleCutsDirectSrc,
+    'applySketchExternalDrawerDoorCuts',
+    'post_build_sketch_door_cuts_modules.ts'
+  )?.map(call => call.callee);
+  assert.ok(cutCallOrder?.includes('createSketchDoorCutsRuntime'));
+  assert.ok(cutCallOrder?.includes('applySketchDrawerDoorCuts'));
+  assert.ok(
+    cutCallOrder.indexOf('createSketchDoorCutsRuntime') < cutCallOrder.indexOf('applySketchDrawerDoorCuts'),
+    'runtime construction must precede door-cut application'
   );
+  // The no-owner early-return path is covered by the no-op and stack-local runtime cases in this suite.
   assert.match(
     cutsSrc,
     /const isCanonicalSourceDoor = partId === basePartId \|\| partId === `\$\{basePartId\}_full`;/

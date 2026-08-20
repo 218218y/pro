@@ -72,7 +72,12 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
 });
 
 test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/double_profile doors through the canonical door visual factory', async () => {
-  const { assertCallObjectContract, getCallFacts } = await semanticContracts;
+  const {
+    assertCallObjectContract,
+    getCallFacts,
+    getFunctionVariableFacts,
+    getVariableFunctionSignatureFact,
+  } = await semanticContracts;
   const render = [
     read('esm/native/builder/render_interior_sketch_ops.ts'),
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
@@ -90,7 +95,12 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
     sketchBoxFrontsBundle(),
   ].join('\n');
   assert.match(render, /const boxDoors = readSketchBoxDoors\(box\);/);
-  assert.match(renderSharedBundle, /xNorm\?: unknown;/);
+  const dividerSignature = getVariableFunctionSignatureFact(
+    read('esm/native/builder/render_interior_sketch_layout_dividers.ts'),
+    'resolveSketchBoxVerticalSegments',
+    'render_interior_sketch_layout_dividers.ts'
+  );
+  assert.ok(dividerSignature?.params[0]?.type?.includes('xNorm?:unknown'));
   assert.match(render, /const doorPid = `\$\{boxPid\}_door_\$\{doorId\}`/);
   assert.match(render, /const doorGroup = new THREE\.Group\(\)/);
   assert.match(render, /segment: resolveSketchBoxSegmentForContent\(/);
@@ -99,14 +109,30 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
     /const effectiveDoorStyle = resolveEffectiveDoorStyle\(doorStyle, doorStyleMap, doorPid\);/
   );
   assert.match(render, /export function resolveSketchBoxDoorVisualRoute\(/);
-  assert.match(
-    render,
-    /const canUseStyledDoorVisual = !!\([\s\S]*hasDoorVisualFactory[\s\S]*effectiveDoorStyle === 'profile' \|\| effectiveDoorStyle === 'double_profile'[\s\S]*!isSpecialVisual/
+  const visualRouteSource = read(
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_routes.ts'
   );
-  assert.match(
-    render,
-    /const styledVisual = visualRoute\.createDoorVisual\([\s\S]*visualRoute\.effectiveDoorStyle,[\s\S]*resolveSketchGroovesEnabled\(input\) && boxDoor\.groove === true,[\s\S]*doorPid/
+  const visualRouteVars = getFunctionVariableFacts(
+    visualRouteSource,
+    'resolveSketchBoxDoorVisualRoute',
+    'render_interior_sketch_boxes_fronts_door_visual_routes.ts'
   );
+  const styledGate = JSON.stringify(visualRouteVars?.canUseStyledDoorVisual);
+  assert.ok(styledGate.includes('hasDoorVisualFactory'));
+  assert.ok(styledGate.includes('effectiveDoorStyle'));
+  assert.ok(styledGate.includes('profile'));
+  assert.ok(styledGate.includes('double_profile'));
+  assert.ok(styledGate.includes('isSpecialVisual'));
+
+  const visualCoreSource = read('esm/native/builder/render_interior_sketch_boxes_fronts_door_visual_core.ts');
+  const styledVisualCall = getCallFacts(
+    visualCoreSource,
+    'visualRoute.createDoorVisual',
+    'render_interior_sketch_boxes_fronts_door_visual_core.ts'
+  ).find(call => call.args[4]?.kind === 'member' && call.args[4]?.path === 'visualRoute.effectiveDoorStyle');
+  assert.deepEqual(styledVisualCall?.args[4], { kind: 'member', path: 'visualRoute.effectiveDoorStyle' });
+  assert.equal(styledVisualCall?.args[5]?.kind, 'binary');
+  assert.deepEqual(styledVisualCall?.args[12], { kind: 'identifier', name: 'doorPid' });
   assert.match(
     render,
     /const doorSlab = new THREE\.Mesh\(new THREE\.BoxGeometry\(doorW, doorH, doorD\), materials\.doorMat\)/
@@ -296,14 +322,14 @@ test('sketch box door preview and edit flows track segment xNorm and route groov
   assert.match(commit, /xNorm: contentXNorm,/);
   assert.match(coreHelpers, /\^sketch_box\(\?:_free\)\?_\.\+_door\(\?:_\|\$\)/);
   assert.match(hoverTargets, /__wpSketchBoxDoor === true/);
-  assert.match(
-    doorEdit,
-    /const currentGrooveOn = current\.groove === true;[\s\S]*const nextGroove = !currentGrooveOn;[\s\S]*if \(!nextGroove\) return \{ \.\.\.current, groove: false, grooveLinesCount: null \};[\s\S]*return \{[\s\S]*groove: true,[\s\S]*grooveLinesCount: grooveLinesCountForClick,/
-  );
+  assert.match(doorEdit, /patchSketchBoxDoor\(/);
+  // Groove on/off/count semantics are covered by the segmented sketch-box groove runtime tests
+  // and canvas_picking_door_groove_click_refresh_runtime; avoid freezing the callback body syntax here.
 });
 
 test('door-action hover supports dedicated handle and hinge face previews', async () => {
-  const { assertCallObjectContract, getFunctionSignatureFact } = await semanticContracts;
+  const { assertCallObjectContract, getFunctionSignatureFact, getFunctionVariableFacts } =
+    await semanticContracts;
   const hoverFlow = read('esm/native/services/canvas_picking_hover_flow.ts');
   const hoverFlowCore = read('esm/native/services/canvas_picking_hover_flow_core.ts');
   const hoverFlowNonSplit = read('esm/native/services/canvas_picking_hover_flow_nonsplit.ts');
@@ -352,18 +378,21 @@ test('door-action hover supports dedicated handle and hinge face previews', asyn
     hoverModes,
     /const preferredFacePreviewPartId = hoverArgs\.preferredFacePreviewPartId \|\| null;/
   );
-  assert.match(
-    hoverModes,
-    /const canUsePreferredFacePreviewHit =[\s\S]*modeState\.isFacePreviewMode[\s\S]*!!preferredFacePreviewPartId/
+  const hoverStateSource = read('esm/native/services/canvas_picking_door_action_hover_state.ts');
+  const hoverStateVars = getFunctionVariableFacts(
+    hoverStateSource,
+    'resolveDoorActionHoverState',
+    'canvas_picking_door_action_hover_state.ts'
   );
-  assert.match(
-    hoverModes,
-    /const preferredFaceHit = canUsePreferredFacePreviewHit[\s\S]*\? __resolvePreferredFacePreviewHit\(/
-  );
-  assert.match(
-    hoverModes,
-    /modeState\.isTrimHoverMode[\s\S]*\? __wp_isDoorTrimActionTargetPartId[\s\S]*modeState\.isHandleHoverMode \|\| hoverArgs\.isGrooveEditMode[\s\S]*\? hoverArgs\.isDoorOrDrawerLikePartId[\s\S]*: hoverArgs\.isDoorLikePartId/
-  );
+  const preferredGate = JSON.stringify(hoverStateVars?.canUsePreferredFacePreviewHit);
+  assert.ok(preferredGate.includes('modeState.isFacePreviewMode'));
+  assert.ok(preferredGate.includes('preferredFacePreviewPartId'));
+  assert.equal(hoverStateVars?.preferredFaceHit?.kind, 'conditional');
+  assert.equal(hoverStateVars?.preferredFaceHit?.consequent?.callee, '__resolvePreferredFacePreviewHit');
+  const matcherFact = JSON.stringify(hoverStateVars?.hoverPartMatcher);
+  assert.ok(matcherFact.includes('__wp_isDoorTrimActionTargetPartId'));
+  assert.ok(matcherFact.includes('hoverArgs.isDoorOrDrawerLikePartId'));
+  assert.ok(matcherFact.includes('hoverArgs.isDoorLikePartId'));
   assert.match(
     hoverModes,
     /if \(modeState\.isHingeHoverMode && !__isSingleDoorHingeTarget\(App, hitDoorPid, hitDoorGroup\)\) return null;/
@@ -391,7 +420,7 @@ test('door-action hover supports dedicated handle and hinge face previews', asyn
   assert.match(hoverModes, /if \(modeState\.isFacePreviewMode\) \{/);
 });
 
-test('sticky edit-mode toast shows a visible stop hint under the main line', () => {
+test('sticky edit-mode toast shows a visible stop hint under the main line', async () => {
   const feedbackToast = read('esm/native/ui/feedback_toast_sticky.ts');
   const styles = read('css/react_styles.css');
 
@@ -405,10 +434,16 @@ test('sticky edit-mode toast shows a visible stop hint under the main line', () 
     feedbackToast,
     /export function resolveStickyStatusToastHost\(App: AppContainer, doc: Document\): HTMLElement \{/
   );
-  assert.match(
+  const { getFunctionVariableFacts } = await semanticContracts;
+  const hostVars = getFunctionVariableFacts(
     feedbackToast,
-    /const viewer =[\s\S]*asHTMLElement\(\$\('viewer-container'\)\)[\s\S]*asHTMLElement\(doc\.getElementById\('viewer-container'\)\);/
+    'resolveStickyStatusToastHost',
+    'feedback_toast_sticky.ts'
   );
+  const viewerFact = JSON.stringify(hostVars?.viewer);
+  assert.ok(viewerFact.includes('asHTMLElement'));
+  assert.ok(viewerFact.includes('viewer-container'));
+  assert.ok(viewerFact.includes('doc.getElementById'));
   assert.match(feedbackToast, /host\.appendChild\(el\);/);
   assert.match(styles, /align-items: center;/);
   assert.match(styles, /text-align: center;/);

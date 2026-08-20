@@ -428,18 +428,729 @@ export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
   }),
 });
 
+const REVIEWED_SOURCE_GUARD_REASON_BY_CLASS = Object.freeze({
+  'runtime-behavior-guard':
+    'Direct source-shape assertion is retained after review because it guards a narrow runtime/geometry forwarding invariant and is backed by focused behavior tests.',
+  'architecture-boundary':
+    'Source topology/ownership is the contract; the assertion is intentionally source-structural and remains under exact reviewed inventory.',
+  'typed-surface':
+    'Narrow typed-surface/source seam was reviewed; keeping the source guard is lower-complexity than another AST helper while exact counts remain ratcheted.',
+  'ui-runtime-policy':
+    'UI/accessibility/performance source shape is directly observable policy and is retained under reviewed inventory alongside runtime coverage.',
+  'toolchain-harness':
+    'Toolchain/test-harness source structure is itself the compatibility contract and is retained under exact reviewed inventory.',
+});
+
+function reviewedSourceGuard(reviewClass, patterns, categories) {
+  return Object.freeze({
+    reviewClass,
+    reason: REVIEWED_SOURCE_GUARD_REASON_BY_CLASS[reviewClass],
+    patterns,
+    categories: Object.freeze(categories),
+  });
+}
+
+export const SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS = Object.freeze({
+  'tests/interior_sketch_box_validation_source_guard.test.js': reviewedSourceGuard('ui-runtime-policy', 5, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 2,
+    loopSyntax: 0,
+  }),
+  'tests/groove_create_door_visual_forwarding_guard.test.cjs': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    4,
+    {
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/react_selector_hotspots_contracts.test.js': reviewedSourceGuard('ui-runtime-policy', 4, {
+    crossStatement: 4,
+    exactObjectCall: 2,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_box_hover_and_groove_fix_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 4, {
+    crossStatement: 3,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/corner_stack_ext_drawers_scope_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 3, {
+    crossStatement: 3,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/export_overlay_errors_family_contracts.test.js': reviewedSourceGuard('architecture-boundary', 3, {
+    crossStatement: 0,
+    exactObjectCall: 2,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_box_double_doors_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 3, {
+    crossStatement: 2,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_free_box_dimensions_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 3, {
+    crossStatement: 1,
+    exactObjectCall: 2,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_module_box_remove_shared_hit_guard.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    3,
+    {
+      crossStatement: 1,
+      exactObjectCall: 2,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/sliding_wardrobe_regression_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 3, {
+    crossStatement: 3,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/builder_room_corner_canonical_contracts.test.js': reviewedSourceGuard('architecture-boundary', 2, {
+    crossStatement: 0,
+    exactObjectCall: 2,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_hover_leave_cleanup_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 2,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/cloud_sync_family_contracts.test.js': reviewedSourceGuard('architecture-boundary', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/corner_helper_type_hardening_guard.test.js': reviewedSourceGuard('typed-surface', 2, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/kernel_history_runtime_contracts.test.js': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 1,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/meta_profile_contract_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/mode_toggle_button_icon_position_contracts.test.js': reviewedSourceGuard('ui-runtime-policy', 2, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/order_pdf_sketch_note_preview_edit_contract.test.js': reviewedSourceGuard('ui-runtime-policy', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/order_pdf_sketch_preview_annotations_contract.test.js': reviewedSourceGuard('ui-runtime-policy', 2, {
+    crossStatement: 2,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/post_build_removed_parts_runtime.test.ts': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 0,
+    exactObjectCall: 2,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/project_migration_boundary_contracts.test.js': reviewedSourceGuard('architecture-boundary', 2, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 2,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/react_form_accessibility_source_contract.test.js': reviewedSourceGuard('ui-runtime-policy', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/render_loop_idle_one_shot_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/render_ops_group_binding_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_box_door_z_clearance_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_free_box_internal_drawers_open_guard.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    2,
+    {
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/state_kernel_config_map_owner_boundary_guard.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    2,
+    {
+      crossStatement: 0,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 2,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/structure_tab_dimensions_cell_dims_reset_buttons_runtime.test.tsx': reviewedSourceGuard(
+    'ui-runtime-policy',
+    2,
+    {
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/ui_lean_typecheck_contracts.test.cjs': reviewedSourceGuard('toolchain-harness', 2, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/viewer_resize_perf_contract.test.js': reviewedSourceGuard('ui-runtime-policy', 2, {
+    crossStatement: 2,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/actions_domain_access_contracts.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/builder_deps_resolver_runtime.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/builder_room_shared_contracts.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/camera_motion_render_wakeup_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_hit_identity_parity_runtime.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_picking_cell_dims_meta_contracts.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_picking_config_meta_contracts.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_picking_manual_layout_contracts.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_picking_paint_meta_contracts.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/canvas_picking_remove_doors_source_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/chest_mode_dimensions_compatibility_ownership_contract.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 0,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 1,
+    }
+  ),
+  'tests/corner_ext_drawers_click_target_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/corner_sketch_ext_drawers_alignment_guard.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 1,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/corner_stack_paint_material_refresh_guard.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/corner_stack_split_scope_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/domain_modules_corner_clone_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/door_trim_modeopts_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/door_trim_type_hardening_guard.test.cjs': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/ext_drawers_hover_preview_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/interior_layout_presets_feature_ownership_contract.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 0,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/library_mode_recompute_preserves_library_defaults_guard.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/local_internal_drawers_local_doors_guard.test.cjs': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/local_motion_toggle_wakeup_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/material_dimension_ownership_closeout_contract.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 0,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/module_depth_ownership_contract.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/modules_patch_noop_reuse_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/no_main_corner_dimensions_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/offline_repair_toolchain_contracts.test.js': reviewedSourceGuard('toolchain-harness', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/profile_door_paint_material_refresh_guard.test.cjs': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 1,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/project_config_visual_maps_canonical_only_source_guard.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/react_form_unique_id_contracts.test.js': reviewedSourceGuard('ui-runtime-policy', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/react_release_asset_recovery_contract.test.js': reviewedSourceGuard('toolchain-harness', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/runtime_boundary_anyrecord_cleanup_guard.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/runtime_callable_surface_hardening_guard.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/runtime_selectors_normalizer_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_box_manual_dims_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js': reviewedSourceGuard(
+    'architecture-boundary',
+    1,
+    {
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/statekernel_audit_contracts.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 1,
+    loopSyntax: 0,
+  }),
+  'tests/store_selector_slice_policy_guard.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/store_ui_action_capability_contract.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/structure_tab_family_contracts.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 0,
+    exactObjectCall: 1,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/structure_tab_write_and_surface_contracts.test.js': reviewedSourceGuard(
+    'runtime-behavior-guard',
+    1,
+    {
+      crossStatement: 0,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 1,
+      loopSyntax: 0,
+    }
+  ),
+  'tests/ui_react_jsx_import_hardening_contracts.test.js': reviewedSourceGuard('runtime-behavior-guard', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/zustand_domain_paths_contracts.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 1,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/zustand_parity_integration_paths_guard.test.js': reviewedSourceGuard('typed-surface', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 1,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+  'tests/zustand_store_contracts.test.js': reviewedSourceGuard('architecture-boundary', 1, {
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 1,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
+  }),
+});
+
+// Reviewed closeout inventory: 77 files / 122 indicators; classes {'ui-runtime-policy': 9, 'runtime-behavior-guard': 38, 'architecture-boundary': 18, 'typed-surface': 9, 'toolchain-harness': 3}
+
 // Ratchet only the implementation-shaped debt. Explicit source-policy contracts above are
 // audited separately and cannot grow or drift without deliberate review.
 export const SOURCE_SHAPE_REGEX_RATCHET = Object.freeze({
-  files: 82,
-  patterns: 165,
+  files: 0,
+  patterns: 0,
   categories: Object.freeze({
-    crossStatement: 104,
-    exactObjectCall: 35,
-    optionalTypeSyntax: 18,
-    indexedAccessSyntax: 9,
-    ternaryUndefined: 18,
-    loopSyntax: 1,
+    crossStatement: 0,
+    exactObjectCall: 0,
+    optionalTypeSyntax: 0,
+    indexedAccessSyntax: 0,
+    ternaryUndefined: 0,
+    loopSyntax: 0,
   }),
 });
 
@@ -538,12 +1249,12 @@ function subtractSourceShapeCategoryCounts(left, right) {
   );
 }
 
-function sourcePolicyMetricsFromRaw(rawMetrics) {
+function sourceLedgerMetricsFromRaw(rawMetrics, ledger) {
   const categories = emptySourceShapeCategoryCounts();
   const byFile = [];
   let patterns = 0;
 
-  for (const [file, policy] of Object.entries(SOURCE_POLICY_REGEX_CONTRACTS)) {
+  for (const file of Object.keys(ledger)) {
     const actual = rawMetrics.byFile.find(entry => entry.file === file);
     if (!actual) continue;
     patterns += actual.patterns;
@@ -557,16 +1268,22 @@ function sourcePolicyMetricsFromRaw(rawMetrics) {
 
 export function collectImplementationShapeRegexMetrics(projectRoot = ROOT) {
   const raw = collectSourceShapeRegexMetrics(projectRoot);
-  const policy = sourcePolicyMetricsFromRaw(raw);
-  const policyFiles = new Set(policy.byFile.map(entry => entry.file));
-  const byFile = raw.byFile.filter(entry => !policyFiles.has(entry.file));
+  const policy = sourceLedgerMetricsFromRaw(raw, SOURCE_POLICY_REGEX_CONTRACTS);
+  const reviewed = sourceLedgerMetricsFromRaw(raw, SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS);
+  const excludedFiles = new Set([
+    ...policy.byFile.map(entry => entry.file),
+    ...reviewed.byFile.map(entry => entry.file),
+  ]);
+  const byFile = raw.byFile.filter(entry => !excludedFiles.has(entry.file));
+  const afterPolicy = subtractSourceShapeCategoryCounts(raw.categories, policy.categories);
   return {
     files: byFile.length,
-    patterns: Math.max(0, raw.patterns - policy.patterns),
-    categories: subtractSourceShapeCategoryCounts(raw.categories, policy.categories),
+    patterns: Math.max(0, raw.patterns - policy.patterns - reviewed.patterns),
+    categories: subtractSourceShapeCategoryCounts(afterPolicy, reviewed.categories),
     byFile,
     raw,
     policy,
+    reviewed,
   };
 }
 
@@ -640,6 +1357,39 @@ export function runSourceContractQualityAudit(projectRoot = ROOT) {
     }
   }
 
+  const policyFiles = new Set(Object.keys(SOURCE_POLICY_REGEX_CONTRACTS));
+  for (const [file, reviewed] of Object.entries(SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS)) {
+    if (policyFiles.has(file)) {
+      failures.push(`${file}: source contract cannot be registered as both policy and reviewed residual`);
+      continue;
+    }
+    const actualEntry = sourceShape.raw.byFile.find(entry => entry.file === file);
+    if (!actualEntry) {
+      failures.push(
+        `${file}: reviewed source guard has no measured source-shape regexes; remove the stale entry`
+      );
+      continue;
+    }
+    if (!String(reviewed.reviewClass || '').trim()) {
+      failures.push(`${file}: reviewed source guard requires a review class`);
+    }
+    if (!String(reviewed.reason || '').trim()) {
+      failures.push(`${file}: reviewed source guard requires a review reason`);
+    }
+    if (actualEntry.patterns !== reviewed.patterns) {
+      failures.push(
+        `${file}: reviewed source-guard pattern count changed ${reviewed.patterns} -> ${actualEntry.patterns}; re-review or modernize deliberately`
+      );
+    }
+    for (const key of SOURCE_SHAPE_REGEX_KEYS) {
+      if (actualEntry.categories[key] !== reviewed.categories[key]) {
+        failures.push(
+          `${file}: reviewed source-guard category ${key} changed ${reviewed.categories[key]} -> ${actualEntry.categories[key]}; re-review deliberately`
+        );
+      }
+    }
+  }
+
   for (const key of ['files', 'patterns']) {
     const expected = SOURCE_SHAPE_REGEX_RATCHET[key];
     const value = sourceShape[key];
@@ -686,7 +1436,8 @@ function main() {
   }
   console.log(
     `[source-contract-quality] ok (${result.files} opaque debt files, ${result.fixedSha256Baselines} fixed SHA-256 baselines; ` +
-      `${result.sourceShape.files} implementation-shape files, ${result.sourceShape.patterns} debt indicators; ` +
+      `${result.sourceShape.files} unreviewed implementation-shape files, ${result.sourceShape.patterns} unreviewed debt indicators; ` +
+      `${result.sourceShape.reviewed.files} reviewed residual source-guard files, ${result.sourceShape.reviewed.patterns} reviewed indicators; ` +
       `${result.sourceShape.policy.files} registered source-policy files, ${result.sourceShape.policy.patterns} policy indicators)`
   );
 }

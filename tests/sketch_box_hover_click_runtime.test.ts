@@ -13,6 +13,7 @@ import {
   parseSketchBoxTool,
 } from '../esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts';
 import { readSketchBoxFrontsBundle, readSourceFiles } from './sketch_box_runtime_helpers.ts';
+import { getCallFacts, getFunctionVariableFacts } from './_semantic_source_contracts.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -304,10 +305,46 @@ test('module sketch drawer click flow enforces cross-blocking and keeps immediat
   ]);
   assert.match(shared, /buildManualLayoutSketchExternalDrawerBlockers\(/);
   assert.match(shared, /buildManualLayoutSketchInternalDrawerBlockers\(/);
-  assert.match(shared, /createManualLayoutSketchStackHoverRecord\(\{[\s\S]*kind: 'drawers'/);
-  assert.match(shared, /createManualLayoutSketchStackHoverRecord\(\{[\s\S]*kind: 'ext_drawers'/);
-  assert.match(stackApplySrc, /commitSketchModuleInternalDrawerStack\(\{/);
-  assert.match(stackApplySrc, /commitSketchModuleExternalDrawerStack\(\{/);
+  const internalCommitSource = await readSourceFiles([
+    '../esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts',
+  ]);
+  const externalCommitSource = await readSourceFiles([
+    '../esm/native/services/canvas_picking_sketch_module_stack_commit_ext_drawers.ts',
+  ]);
+  const internalHoverCalls = getCallFacts(
+    internalCommitSource,
+    'createManualLayoutSketchStackHoverRecord',
+    'canvas_picking_sketch_module_stack_commit_drawers.ts'
+  );
+  const externalHoverCalls = getCallFacts(
+    externalCommitSource,
+    'createManualLayoutSketchStackHoverRecord',
+    'canvas_picking_sketch_module_stack_commit_ext_drawers.ts'
+  );
+  assert.ok(
+    internalHoverCalls.some(
+      call => call.args[0]?.kind === 'object' && call.args[0]?.properties?.kind?.value === 'drawers'
+    )
+  );
+  assert.ok(
+    externalHoverCalls.some(
+      call => call.args[0]?.kind === 'object' && call.args[0]?.properties?.kind?.value === 'ext_drawers'
+    )
+  );
+  assert.ok(
+    getCallFacts(
+      stackApplySrc,
+      'commitSketchModuleInternalDrawerStack',
+      'canvas_picking_sketch_module_stack_apply.ts'
+    ).some(call => call.args[0]?.kind === 'object')
+  );
+  assert.ok(
+    getCallFacts(
+      stackApplySrc,
+      'commitSketchModuleExternalDrawerStack',
+      'canvas_picking_sketch_module_stack_apply.ts'
+    ).some(call => call.args[0]?.kind === 'object')
+  );
 });
 
 test('module sketch external drawers preview reads the selector front envelope instead of the inner cavity only', async () => {
@@ -325,5 +362,15 @@ test('module sketch external drawers preview reads the selector front envelope i
     bundle,
     /const outerW = Math\.max\(\s*DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY\.externalPreviewMinWidthM,\s*faceEnvelope\?\.outerW \?\? innerW\s*\);/
   );
-  assert.match(bundle, /const frontPlaneZ =[\s\S]*faceEnvelope\?\.centerZ[\s\S]*faceEnvelope\?\.outerD/);
+  const extPreviewSource = await readSourceFiles([
+    '../esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts',
+  ]);
+  const extPreviewVars = getFunctionVariableFacts(
+    extPreviewSource,
+    'resolveSketchModuleExternalDrawersPreview',
+    'canvas_picking_sketch_module_stack_preview_ext_drawers.ts'
+  );
+  const frontPlaneFact = JSON.stringify(extPreviewVars?.frontPlaneZ);
+  assert.ok(frontPlaneFact.includes('faceEnvelope.centerZ'));
+  assert.ok(frontPlaneFact.includes('faceEnvelope.outerD'));
 });

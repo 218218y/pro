@@ -14,11 +14,16 @@ function memberPath(node) {
   if (node.type === 'ThisExpression') return 'this';
   if (node.type !== 'MemberExpression') return null;
   const object = memberPath(node.object);
-  const property = node.computed
-    ? node.property?.type === 'Literal'
-      ? String(node.property.value)
-      : null
-    : identifierName(node.property);
+  if (node.computed) {
+    if (node.property?.type === 'Identifier') {
+      return object ? `${object}[${node.property.name}]` : null;
+    }
+    if (node.property?.type === 'Literal') {
+      return object ? `${object}.${String(node.property.value)}` : null;
+    }
+    return null;
+  }
+  const property = identifierName(node.property);
   return object && property ? `${object}.${property}` : null;
 }
 
@@ -203,6 +208,68 @@ export function getVariableInitializerFact(source, variableName, fileName) {
     fact = expressionFact(node.init);
   });
   return fact;
+}
+
+export function getVariableDeclarationFact(source, variableName, fileName) {
+  const sourceFile = parse(source, fileName);
+  let fact = null;
+  walkAst(sourceFile, node => {
+    if (fact || node?.type !== 'VariableDeclarator' || node.id?.type !== 'Identifier') return;
+    if (node.id.name !== variableName) return;
+    fact = {
+      name: variableName,
+      type: typeName(node.id.typeAnnotation),
+      initializer: expressionFact(node.init),
+    };
+  });
+  return fact;
+}
+
+function findNamedFunctionLike(sourceFile, functionName) {
+  let declaration = null;
+  walkAst(sourceFile, node => {
+    if (declaration) return;
+    if (node?.type === 'FunctionDeclaration' && node.id?.name === functionName) {
+      declaration = node;
+      return;
+    }
+    if (
+      node?.type === 'VariableDeclarator' &&
+      node.id?.type === 'Identifier' &&
+      node.id.name === functionName
+    ) {
+      const init = unwrapExpression(node.init);
+      if (init?.type === 'ArrowFunctionExpression' || init?.type === 'FunctionExpression') declaration = init;
+    }
+  });
+  return declaration;
+}
+
+export function getFunctionVariableFacts(source, functionName, fileName) {
+  const sourceFile = parse(source, fileName);
+  const declaration = findNamedFunctionLike(sourceFile, functionName);
+  if (!declaration?.body) return null;
+  const facts = {};
+  walkAst(declaration.body, node => {
+    if (node?.type !== 'VariableDeclarator' || node.id?.type !== 'Identifier') return;
+    facts[node.id.name] = expressionFact(node.init);
+  });
+  return facts;
+}
+
+export function getFunctionCallSequenceFacts(source, functionName, fileName) {
+  const sourceFile = parse(source, fileName);
+  const declaration = findNamedFunctionLike(sourceFile, functionName);
+  if (!declaration?.body) return null;
+  const calls = [];
+  walkAst(declaration.body, node => {
+    if (node?.type !== 'CallExpression') return;
+    calls.push({
+      callee: memberPath(node.callee) || identifierName(node.callee),
+      args: (node.arguments || []).map(expressionFact),
+    });
+  });
+  return calls;
 }
 
 function functionLikeSignatureFact(node, name = null) {
