@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-19T19:34:32.384Z",
+  "generatedAt": "2026-08-19T20:27:03.952Z",
   "totals": {
     "tests": 1250,
     "unitRunnerTests": 1241,
     "e2eTests": 9,
-    "nonTestRuntimeFiles": 38,
+    "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
     "catalogTestReferences": 484,
     "totalTestReferences": 500,

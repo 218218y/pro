@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
+import { getInterfaceFact, getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
 
 const mapsTypes = readSource('../types/maps.ts', import.meta.url);
 const projectTypes = readSource('../types/project.ts', import.meta.url);
@@ -39,6 +40,9 @@ const modes = bundleSources(
   ],
   import.meta.url
 );
+
+const propertyMap = fact =>
+  new Map((fact?.properties || fact || []).map(property => [property.name, property]));
 
 const projectBundle = bundleSources(
   [
@@ -94,14 +98,31 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /export type ProjectJsonLike =/,
       /export type ProjectSavedNotesLike = SavedNote\[\];/,
       /export type ProjectPdfDraftLike = ProjectJsonLike;/,
-      /export interface ProjectFileLoadEventLike extends UnknownRecord/,
-      /export interface ProjectFileReaderEventLike extends UnknownRecord/,
-      /export interface ProjectSettingsLike extends (?:AnyRecord|UnknownRecord)/,
-      /export interface ProjectTogglesLike extends (?:AnyRecord|UnknownRecord)/,
-      /export interface ProjectSchemaValidationResult/,
-      /orderPdfEditorDraft\?: ProjectPdfDraftLike \| null;/,
     ],
     'projectTypes'
+  );
+  for (const interfaceName of ['ProjectFileLoadEventLike', 'ProjectFileReaderEventLike']) {
+    assert.deepEqual(getInterfaceFact(projectTypes, interfaceName, 'types/project.ts').extends, [
+      'UnknownRecord',
+    ]);
+  }
+  assert.deepEqual(getInterfaceFact(projectTypes, 'ProjectSettingsLike', 'types/project.ts').extends, [
+    'UnknownRecord',
+  ]);
+  assert.deepEqual(getInterfaceFact(projectTypes, 'ProjectTogglesLike', 'types/project.ts').extends, [
+    'UnknownRecord',
+  ]);
+  assert.ok(getInterfaceFact(projectTypes, 'ProjectSchemaValidationResult', 'types/project.ts'));
+  assert.deepEqual(
+    propertyMap(getInterfaceFact(projectTypes, 'ProjectPdfStateLike', 'types/project.ts')).get(
+      'orderPdfEditorDraft'
+    ),
+    {
+      name: 'orderPdfEditorDraft',
+      optional: true,
+      readonly: false,
+      type: 'ProjectPdfDraftLike|null',
+    }
   );
   assertMatchesAll(
     assert,
@@ -110,36 +131,76 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     'typesIndex'
   );
 
-  assertMatchesAll(
-    assert,
-    buildTypes,
-    [
-      /settings\?: ProjectSettingsLike;/,
-      /toggles\?: ProjectTogglesLike;/,
-      /individualColors\?: IndividualColorsMap;/,
-      /doorSpecialMap\?: DoorSpecialMap;/,
-      /savedNotes\?: ProjectSavedNotesLike;/,
-      /preChestState\?: ProjectPreChestStateLike;/,
-      /orderPdfEditorDraft\?: ProjectPdfDraftLike \| null;/,
-      /export interface ProjectExportResultLike extends UnknownRecord/,
-      /export type ProjectLoadInputLike = ProjectDataLike \| UnknownRecord \| object;/,
-      /export interface ProjectIoServiceLike extends UnknownRecord/,
-      /exportCurrentProject\?: \(meta\?: UnknownRecord\) => ProjectExportResultLike \| null \| undefined;/,
-      /loadProjectData\?: ProjectLoadActionFn;/,
-      /loadProjectDataFailFast\?: ProjectLoadFailFastFn;/,
-    ],
-    'buildTypes'
+  const projectDataProperties = propertyMap(
+    getInterfaceFact(buildTypes, 'ProjectDataLike', 'types/build.bundle.ts')
   );
+  for (const [name, type] of [
+    ['settings', 'ProjectSettingsLike'],
+    ['toggles', 'ProjectTogglesLike'],
+    ['individualColors', 'IndividualColorsMap'],
+    ['doorSpecialMap', 'DoorSpecialMap'],
+    ['savedNotes', 'ProjectSavedNotesLike'],
+    ['preChestState', 'ProjectPreChestStateLike'],
+    ['orderPdfEditorDraft', 'ProjectPdfDraftLike|null'],
+  ]) {
+    assert.deepEqual(projectDataProperties.get(name), {
+      name,
+      optional: true,
+      readonly: false,
+      type,
+    });
+  }
+  assert.deepEqual(getInterfaceFact(buildTypes, 'ProjectExportResultLike', 'types/build.bundle.ts').extends, [
+    'UnknownRecord',
+  ]);
+  assert.match(buildTypes, /export type ProjectLoadInputLike = ProjectDataLike \| UnknownRecord \| object;/);
+  const projectIoService = getInterfaceFact(buildTypes, 'ProjectIoServiceLike', 'types/build.bundle.ts');
+  assert.deepEqual(projectIoService.extends, ['UnknownRecord']);
+  const projectIoProperties = propertyMap(projectIoService);
+  assert.deepEqual(projectIoProperties.get('exportCurrentProject'), {
+    name: 'exportCurrentProject',
+    optional: true,
+    readonly: false,
+    type: 'fn(meta?:UnknownRecord)->ProjectExportResultLike|null|undefined',
+  });
+  assert.deepEqual(projectIoProperties.get('loadProjectData'), {
+    name: 'loadProjectData',
+    optional: true,
+    readonly: false,
+    type: 'ProjectLoadActionFn',
+  });
+  assert.deepEqual(projectIoProperties.get('loadProjectDataFailFast'), {
+    name: 'loadProjectDataFailFast',
+    optional: true,
+    readonly: false,
+    type: 'ProjectLoadFailFastFn',
+  });
   assertMatchesAll(
     assert,
     projectIoOperationTypes,
     [
       /export type ProjectLoadActionFn = \(/,
       /export type ProjectLoadFailFastFn = \(/,
-      /export type ProjectRecoverySuccessResult = \{[\s\S]*warnings\?: ProjectLoadWarning\[\]/,
       /export type ProjectRestoreActionResult =/,
     ],
     'projectIoOperationTypes'
+  );
+  assert.deepEqual(
+    getTypeLiteralPropertyFacts(
+      projectIoOperationTypes,
+      'ProjectRecoverySuccessResult',
+      'types/project_io_operations.ts'
+    ),
+    [
+      { name: 'ok', optional: false, readonly: false, type: 'true' },
+      { name: 'restoreGen', optional: true, readonly: false, type: 'number|undefined' },
+      {
+        name: 'warnings',
+        optional: true,
+        readonly: false,
+        type: 'ProjectLoadWarning[]|undefined',
+      },
+    ]
   );
   assertLacksAll(assert, configScalarTypes, [/individualColors: IndividualColorsMap;/], 'configScalarTypes');
 

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFirstExisting } from './_read_src.js';
+import { getInterfaceFact } from './_semantic_source_contracts.js';
 
 const kernelTypes = readFirstExisting(['../types/kernel.ts'], import.meta.url);
 const metaContract = readFirstExisting(['../esm/native/runtime/action_meta_contract.ts'], import.meta.url);
@@ -25,22 +26,42 @@ const runtimeTypes = readFirstExisting(['../types/runtime.ts'], import.meta.url)
 const doorsAccess = readFirstExisting(['../esm/native/runtime/doors_access_doors.ts'], import.meta.url);
 
 test('action meta vocabulary stays closed at both canonical and public action boundaries', () => {
-  const canonicalBlock = kernelTypes.match(/export interface CanonicalActionMetaLike \{[\s\S]*?\n\}/)?.[0];
-  assert.ok(canonicalBlock, 'CanonicalActionMetaLike should exist');
-  assert.doesNotMatch(canonicalBlock, /\[k:\s*string\]/);
-  assert.match(canonicalBlock, /immediate\?: boolean;/);
-  assert.match(canonicalBlock, /forceBuild\?: boolean;/);
-  assert.match(canonicalBlock, /noStorageWrite\?: boolean;/);
-  assert.match(canonicalBlock, /coalesceAcrossIdle\?: boolean;/);
-  assert.match(canonicalBlock, /preserveAutosave\?: boolean;/);
-  assert.match(canonicalBlock, /diagnostics\?: UnknownRecord;/);
-  assert.match(canonicalBlock, /extensions\?: UnknownRecord;/);
-
-  assert.match(kernelTypes, /export interface ActionMetaLike extends CanonicalActionMetaLike \{\}/);
-  assert.doesNotMatch(
-    kernelTypes,
-    /export interface ActionMetaLike extends CanonicalActionMetaLike,?\s*UnknownRecord/
-  );
+  assert.deepEqual(getInterfaceFact(kernelTypes, 'CanonicalActionMetaLike', 'types/kernel.ts'), {
+    name: 'CanonicalActionMetaLike',
+    extends: [],
+    properties: [
+      ['source', 'string'],
+      ['reason', 'string'],
+      ['silent', 'boolean'],
+      ['immediate', 'boolean'],
+      ['noBuild', 'boolean'],
+      ['noAutosave', 'boolean'],
+      ['noPersist', 'boolean'],
+      ['noHistory', 'boolean'],
+      ['noCapture', 'boolean'],
+      ['forceBuild', 'boolean'],
+      ['force', 'boolean'],
+      ['uiOnly', 'boolean'],
+      ['captureConfig', 'boolean'],
+      ['noStorageWrite', 'boolean'],
+      ['coalesceKey', 'string'],
+      ['coalesceMs', 'number'],
+      ['coalesceAcrossIdle', 'boolean'],
+      ['resetDefault', 'boolean'],
+      ['preserveAutosave', 'boolean'],
+      ['preserveAutosaveOnLoad', 'boolean'],
+      ['autosavePolicy', '"preserve-existing"'],
+      ['traceStorePatch', 'boolean'],
+      ['debugName', 'string'],
+      ['diagnostics', 'UnknownRecord'],
+      ['extensions', 'UnknownRecord'],
+    ].map(([name, type]) => ({ name, optional: true, readonly: false, type })),
+  });
+  assert.deepEqual(getInterfaceFact(kernelTypes, 'ActionMetaLike', 'types/kernel.ts'), {
+    name: 'ActionMetaLike',
+    extends: ['CanonicalActionMetaLike'],
+    properties: [],
+  });
   assert.doesNotMatch(backendStoreTypes, /meta\?: ActionMetaLike \| UnknownRecord/);
 });
 
@@ -59,28 +80,51 @@ test('canonical meta owners normalize through one runtime boundary', () => {
 });
 
 test('store observation metadata stays separate from behavior-changing action metadata', () => {
-  assert.match(storeStateTypes, /export interface StoreLastActionLike extends CanonicalActionMetaLike/);
-  assert.match(storeStateTypes, /type: string;/);
-  assert.match(storeStateTypes, /affectsConfig: boolean;/);
-  assert.match(storeStateTypes, /ts: number;/);
+  assert.deepEqual(getInterfaceFact(storeStateTypes, 'StoreLastActionLike', 'types/store_state.ts'), {
+    name: 'StoreLastActionLike',
+    extends: ['CanonicalActionMetaLike'],
+    properties: [
+      ['type', 'string'],
+      ['affectsConfig', 'boolean'],
+      ['affectsUi', 'boolean'],
+      ['affectsRuntime', 'boolean'],
+      ['affectsMode', 'boolean'],
+      ['affectsMeta', 'boolean'],
+      ['ts', 'number'],
+    ].map(([name, type]) => ({ name, optional: false, readonly: false, type })),
+  });
   assert.match(storeCommitPipeline, /const stamped: StoreLastActionLike = \{/);
-  const canonicalBlock =
-    kernelTypes.match(/export interface CanonicalActionMetaLike \{[\s\S]*?\n\}/)?.[0] || '';
-  assert.doesNotMatch(canonicalBlock, /\btype\?:/);
-  assert.doesNotMatch(canonicalBlock, /\baffectsConfig\?:/);
-  assert.doesNotMatch(canonicalBlock, /\bts\?:/);
+  const canonicalPropertyNames = new Set(
+    getInterfaceFact(kernelTypes, 'CanonicalActionMetaLike', 'types/kernel.ts').properties.map(
+      property => property.name
+    )
+  );
+  for (const observationKey of ['type', 'affectsConfig', 'ts']) {
+    assert.equal(canonicalPropertyNames.has(observationKey), false);
+  }
 });
 
 test('door service options stay separate from behavior-changing action metadata', () => {
-  assert.match(runtimeTypes, /export interface DoorsSetOpenOptionsLike extends ActionMetaLike/);
-  assert.match(runtimeTypes, /touch\?: boolean;/);
-  assert.match(runtimeTypes, /forceUpdate\?: boolean;/);
+  assert.deepEqual(getInterfaceFact(runtimeTypes, 'DoorsSetOpenOptionsLike', 'types/runtime.ts'), {
+    name: 'DoorsSetOpenOptionsLike',
+    extends: ['ActionMetaLike'],
+    properties: [
+      ['touch', 'boolean'],
+      ['forceUpdate', 'boolean'],
+      ['hardCloseDoors', 'boolean'],
+      ['hardClose', 'boolean'],
+      ['slidingHideOpen', 'boolean'],
+    ].map(([name, type]) => ({ name, optional: true, readonly: false, type })),
+  });
   assert.match(
     doorsAccess,
     /setDoorsOpenViaService\(App: unknown, open: boolean, opts\?: DoorsSetOpenOptionsLike\)/
   );
-  const canonicalBlock =
-    kernelTypes.match(/export interface CanonicalActionMetaLike \{[\s\S]*?\n\}/)?.[0] || '';
-  assert.doesNotMatch(canonicalBlock, /\btouch\?:/);
-  assert.doesNotMatch(canonicalBlock, /\bforceUpdate\?:/);
+  const canonicalPropertyNames = new Set(
+    getInterfaceFact(kernelTypes, 'CanonicalActionMetaLike', 'types/kernel.ts').properties.map(
+      property => property.name
+    )
+  );
+  assert.equal(canonicalPropertyNames.has('touch'), false);
+  assert.equal(canonicalPropertyNames.has('forceUpdate'), false);
 });

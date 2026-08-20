@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-import { assertLacksAll, assertMatchesAll, readSource } from './_source_bundle.js';
+import { assertMatchesAll, readSource } from './_source_bundle.js';
+import { getCallFacts, getFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
@@ -19,30 +20,82 @@ test('[canvas-picking/cell-dims-meta] linear and corner dimension writes use the
     cellDimsMeta,
     [
       /export type CanvasPickingCellDimsMeta = ActionMetaLike & \{ immediate\?: boolean \};/,
-      /export function createCanvasPickingCellDimsStructuralMeta\(source: string\): CanvasPickingCellDimsMeta/,
-      /export function createCanvasPickingCellDimsRefreshGatedMeta\([\s\S]*App: AppContainer,[\s\S]*source: string,[\s\S]*baseMeta\?: CanvasPickingCellDimsMeta[\s\S]*\): ActionMetaLike/,
       /Canvas picking cell-dims meta requires a source/,
-      /__wp_metaNoBuild\(App, normalized, baseMeta \|\| createCanvasPickingCellDimsStructuralMeta\(normalized\)\)/,
     ],
     'cell-dims meta owner'
   );
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      cellDimsMeta,
+      'createCanvasPickingCellDimsStructuralMeta',
+      'esm/native/services/canvas_picking_cell_dims_meta.ts'
+    ),
+    {
+      name: 'createCanvasPickingCellDimsStructuralMeta',
+      async: false,
+      params: [{ name: 'source', optional: false, type: 'string' }],
+      returnType: 'CanvasPickingCellDimsMeta',
+    }
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      cellDimsMeta,
+      'createCanvasPickingCellDimsRefreshGatedMeta',
+      'esm/native/services/canvas_picking_cell_dims_meta.ts'
+    ),
+    {
+      name: 'createCanvasPickingCellDimsRefreshGatedMeta',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'source', optional: false, type: 'string' },
+        { name: 'baseMeta', optional: true, type: 'CanvasPickingCellDimsMeta' },
+      ],
+      returnType: 'ActionMetaLike',
+    }
+  );
+  assert.deepEqual(getCallFacts(cellDimsMeta, '__wp_metaNoBuild'), [
+    {
+      callee: '__wp_metaNoBuild',
+      args: [
+        { kind: 'identifier', name: 'App' },
+        { kind: 'identifier', name: 'normalized' },
+        {
+          kind: 'binary',
+          operator: '||',
+          left: { kind: 'identifier', name: 'baseMeta' },
+          right: {
+            kind: 'call',
+            callee: 'createCanvasPickingCellDimsStructuralMeta',
+            args: [{ kind: 'identifier', name: 'normalized' }],
+          },
+        },
+      ],
+    },
+  ]);
 
   assertMatchesAll(
     assert,
     cellDimsLinearApply,
     [
       /import \{ createCanvasPickingCellDimsRefreshGatedMeta \} from '\.\/canvas_picking_cell_dims_meta\.js';/,
-      /const metaCfg = createCanvasPickingCellDimsRefreshGatedMeta\(App, source\);/,
-      /patchUiSoft\(App, \{ raw: rawPatch \}, createCanvasPickingCellDimsRefreshGatedMeta\(App, source\)\)/,
-      /requestCanvasPickingCommitStructuralRefresh\(App, source\)/,
     ],
     'linear cell-dims apply'
   );
-  assertLacksAll(
-    assert,
-    cellDimsLinearShared + '\n' + cellDimsLinearApply,
-    [/__wp_metaNoBuild\(/, /createHistoryableNoBuildMeta/],
-    'linear cell-dims meta leakage'
+  assert.equal(getCallFacts(cellDimsLinearApply, 'createCanvasPickingCellDimsRefreshGatedMeta').length, 2);
+  assert.deepEqual(getCallFacts(cellDimsLinearApply, 'requestCanvasPickingCommitStructuralRefresh'), [
+    {
+      callee: 'requestCanvasPickingCommitStructuralRefresh',
+      args: [
+        { kind: 'identifier', name: 'App' },
+        { kind: 'identifier', name: 'source' },
+      ],
+    },
+  ]);
+  assert.equal(getCallFacts(cellDimsLinearShared + '\n' + cellDimsLinearApply, '__wp_metaNoBuild').length, 0);
+  assert.equal(
+    getCallFacts(cellDimsLinearShared + '\n' + cellDimsLinearApply, 'createHistoryableNoBuildMeta').length,
+    0
   );
 
   assertMatchesAll(
@@ -50,17 +103,26 @@ test('[canvas-picking/cell-dims-meta] linear and corner dimension writes use the
     cellDimsCornerEffects,
     [
       /import \{ createCanvasPickingCellDimsRefreshGatedMeta \} from '\.\/canvas_picking_cell_dims_meta\.js';/,
-      /const meta = createCanvasPickingCellDimsRefreshGatedMeta\(App, source\);/,
-      /const uiMeta = createCanvasPickingCellDimsRefreshGatedMeta\(App, source\);/,
-      /requestCanvasPickingCommitStructuralRefresh\(App, source\)/,
     ],
     'corner cell-dims effects'
   );
-  assertLacksAll(
-    assert,
-    cellDimsCornerEffects + '\n' + cellDimsCornerShared,
-    [/__wp_metaNoBuild\(/, /createHistoryableNoBuildMeta/],
-    'corner cell-dims meta leakage'
+  assert.equal(getCallFacts(cellDimsCornerEffects, 'createCanvasPickingCellDimsRefreshGatedMeta').length, 2);
+  assert.deepEqual(getCallFacts(cellDimsCornerEffects, 'requestCanvasPickingCommitStructuralRefresh'), [
+    {
+      callee: 'requestCanvasPickingCommitStructuralRefresh',
+      args: [
+        { kind: 'identifier', name: 'App' },
+        { kind: 'identifier', name: 'source' },
+      ],
+    },
+  ]);
+  assert.equal(
+    getCallFacts(cellDimsCornerEffects + '\n' + cellDimsCornerShared, '__wp_metaNoBuild').length,
+    0
+  );
+  assert.equal(
+    getCallFacts(cellDimsCornerEffects + '\n' + cellDimsCornerShared, 'createHistoryableNoBuildMeta').length,
+    0
   );
 
   assert.ok(

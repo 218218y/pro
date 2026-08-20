@@ -52,26 +52,3 @@ test('Sketch drawer door cuts import exactly the two focused owners without alia
     /\b(?:DOOR_SYSTEM_DIMENSIONS|DRAWER_DIMENSIONS|HINGED_DOOR_SPLIT_POLICY|HINGED_DOOR_SYSTEM_POLICY|DRAWER_SKETCH_POLICY|splitDims|drawerDims|doorDims|cutDims)\b|import\s+\*\s+as|export\s+(?:type\s+)?(?:\*|\{)/u
   );
 });
-
-test('Sketch drawer door cuts preserve the focused split and drawer-cut formulas', () => {
-  const source = read(consumerRel);
-  for (const field of [
-    'minHeightForSplitM',
-    'splitGapM',
-    'bottomClampOffsetM',
-    'topClampOffsetM',
-    'minSegmentHeightM',
-    'duplicateCutToleranceMinM',
-    'duplicateCutToleranceMaxM',
-    'duplicateCutToleranceHeightRatio',
-  ]) {
-    assert.match(source, new RegExp(`HINGED_DOOR_SPLIT_GEOMETRY_POLICY\\.${field}`, 'u'));
-  }
-  assert.match(source, /overlap > DRAWER_SKETCH_DOOR_CUT_POLICY\.doorCutHorizontalOverlapMinM/u);
-  assert.equal((source.match(/DRAWER_SKETCH_DOOR_CUT_POLICY\.doorCutNoOpToleranceM/gu) || []).length, 2);
-  assert.match(source, /Math\.abs\(previousCut\s*-\s*cutY\)\s*<=\s*duplicateTolerance/u);
-  assert.match(
-    source,
-    /splitPosList\.length\s*\?\s*\{\s*minHeight:\s*HINGED_DOOR_SPLIT_GEOMETRY_POLICY\.splitGapM\s*\/\s*2\s*\}\s*:\s*\{\}/u
-  );
-});

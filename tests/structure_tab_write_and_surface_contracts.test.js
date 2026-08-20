@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import { getCallFacts } from './_semantic_source_contracts.js';
 
 const storeUiActionFiles = [
   '../esm/native/ui/react/actions/store_actions_ui.ts',
@@ -130,6 +131,39 @@ const structureActionsControllerBundle = bundleSources(
   ],
   import.meta.url
 );
+const workflowsControllersRaw = readSource(
+  '../esm/native/ui/react/tabs/use_structure_tab_workflows_controllers.tsx',
+  import.meta.url
+);
+const structuralSyncRaw = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_structural_controller_sync.ts',
+  import.meta.url
+);
+const structuralWritesRaw = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts',
+  import.meta.url
+);
+const structureActionsRaw = readSource(
+  '../esm/native/ui/react/tabs/use_structure_tab_actions.ts',
+  import.meta.url
+);
+const cornerActionsRaw = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts',
+  import.meta.url
+);
+const chestActionsRaw = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts',
+  import.meta.url
+);
+
+function assertObjectCall(source, callee, fileName, predicate = () => true) {
+  const calls = getCallFacts(source, callee, fileName);
+  assert.ok(
+    calls.some(call => call.args[0]?.kind === 'object' && predicate(call.args[0])),
+    `${callee} should preserve its semantic object-call contract`
+  );
+}
+
 const structureBundle = bundleSources(
   [
     '../esm/native/ui/react/actions/store_actions.ts',
@@ -219,8 +253,6 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
     assert,
     structureWorkflows,
     [
-      /createStructureTabWorkflowController\(\{/,
-      /createStructureTabStructuralController\(\{/,
       /structuralController\.syncSingleDoorPos\(\)/,
       /structuralController\.syncHingeVisibility\(\)/,
       /setCfgModulesConfiguration\(app, nextList, actionMeta\)/,
@@ -228,6 +260,16 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
       /createStructureTabNoBuildNoHistoryImmediateMeta\(meta, source\)/,
     ],
     'structure workflows writes'
+  );
+  assertObjectCall(
+    workflowsControllersRaw,
+    'createStructureTabWorkflowController',
+    'use_structure_tab_workflows_controllers.tsx'
+  );
+  assertObjectCall(
+    workflowsControllersRaw,
+    'createStructureTabStructuralController',
+    'use_structure_tab_workflows_controllers.tsx'
   );
 
   assertMatchesAll(
@@ -237,11 +279,7 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
       /setUiStructureSelect\(args\.app, patch\.structureSelect, actionMeta\)/,
       /setUiSingleDoorPos\(args\.app, patch\.singleDoorPos, actionMeta\)/,
       /applyUiSoftScalarPatch\(args\.app, softPatch, actionMeta\)/,
-      /applyStructureTemplateRecomputeBatch\(\{/,
       /createStructureTabStructuralCommitMeta\(args\.meta, source,/,
-      /commitStructureRawValue\(\{/,
-      /setStackSplitLowerLinkModeValue\(\{/,
-      /toggleStackSplitState\(\{/,
       /applyImmediateStructureUiPatch\(args, 'react:structure:baseType', \{ baseType: nextBaseType \}, meta => \{/,
       /setUiBaseType\(args\.app, nextBaseType, meta\)/,
       /applyImmediateStructureUiPatch\(\s*args,\s*'react:structure:slidingTracksColor',\s*\{ slidingTracksColor: nextSlidingTracksColor \}/,
@@ -249,6 +287,18 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
     ],
     'structure structural controller'
   );
+  assertObjectCall(
+    structuralSyncRaw,
+    'applyStructureTemplateRecomputeBatch',
+    'structure_tab_structural_controller_sync.ts'
+  );
+  for (const callee of [
+    'commitStructureRawValue',
+    'setStackSplitLowerLinkModeValue',
+    'toggleStackSplitState',
+  ]) {
+    assertObjectCall(structuralWritesRaw, callee, 'structure_tab_structural_controller_writes.ts');
+  }
 
   assertMatchesAll(
     assert,
@@ -384,15 +434,16 @@ ${structureCore}`,
     'structure stack-split mutations'
   );
 
-  assertMatchesAll(
-    assert,
-    structureActions,
-    [
-      /createStructureTabHingeActionsController\(\{/,
-      /createStructureTabCornerChestActionsController\(\{/,
-      /(?:React\.useMemo|useMemo)\(/,
-    ],
-    'structure action hooks'
+  assertMatchesAll(assert, structureActions, [/(?:React\.useMemo|useMemo)\(/], 'structure action hooks');
+  assertObjectCall(
+    structureActionsRaw,
+    'createStructureTabHingeActionsController',
+    'use_structure_tab_actions.ts'
+  );
+  assertObjectCall(
+    structureActionsRaw,
+    'createStructureTabCornerChestActionsController',
+    'use_structure_tab_actions.ts'
   );
 
   assertMatchesAll(
@@ -422,13 +473,25 @@ ${structureCore}`,
       /export function commitStructureStatePatchWithRecompute\(args: \{/,
       /runHistoryBatch\(\s*app,/,
       /patchViaActions\(app, rootPatch, meta\)/,
-      /const source = 'react:structure:corner';[\s\S]*commitStructureStatePatchWithRecompute\(\{[\s\S]*?source,/,
-      /const source = 'react:structure:chest:on';[\s\S]*commitStructureStatePatchWithRecompute\(\{[\s\S]*?source,/,
       /createStructureTabCornerActionsController\(args\)/,
       /createStructureTabChestActionsController\(args\)/,
       /statePatch:\s*\{\s*config:\s*configPatch,\s*ui:\s*uiPatch\s*\}/,
     ],
     'structure action controller contracts'
+  );
+  assert.match(cornerActionsRaw, /const source = 'react:structure:corner';/);
+  assertObjectCall(
+    cornerActionsRaw,
+    'commitStructureStatePatchWithRecompute',
+    'structure_tab_corner_chest_actions_controller_corner.ts',
+    object => object.properties.source?.kind === 'identifier' && object.properties.source.name === 'source'
+  );
+  assert.match(chestActionsRaw, /const source = 'react:structure:chest:on';/);
+  assertObjectCall(
+    chestActionsRaw,
+    'commitStructureStatePatchWithRecompute',
+    'structure_tab_corner_chest_actions_controller_chest.ts',
+    object => object.properties.source?.kind === 'identifier' && object.properties.source.name === 'source'
   );
 
   assertLacksAll(

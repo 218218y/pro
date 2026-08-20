@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
+import { getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
+
 const dockSource = readFileSync('esm/native/ui/react/overlay_quick_actions_dock.tsx', 'utf8');
 const stylesSource = readFileSync('css/react_styles.css', 'utf8');
 const tooltipPlacementSource = readFileSync('esm/native/ui/react/components/TooltipPlacement.ts', 'utf8');
@@ -38,9 +40,18 @@ test('quick action export buttons expose structured title and detail through the
   assert.match(dockSource, /aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}/);
   assert.match(tooltipPlacementSource, /const TOOLTIP_TITLE_ATTR = 'data-tooltip-title';/);
   assert.match(tooltipPlacementSource, /const TOOLTIP_DETAIL_ATTR = 'data-tooltip-detail';/);
-  assert.match(
-    tooltipPlacementSource,
-    /type TooltipContent = \{[\s\S]*title\?: string \| undefined;[\s\S]*detail\?: string \| undefined;[\s\S]*rich: boolean;/
+  assert.deepEqual(
+    getTypeLiteralPropertyFacts(
+      tooltipPlacementSource,
+      'TooltipContent',
+      'esm/native/ui/react/components/TooltipPlacement.ts'
+    ),
+    [
+      { name: 'text', optional: false, readonly: false, type: 'string' },
+      { name: 'title', optional: true, readonly: false, type: 'string|undefined' },
+      { name: 'detail', optional: true, readonly: false, type: 'string|undefined' },
+      { name: 'rich', optional: false, readonly: false, type: 'boolean' },
+    ]
   );
   assert.match(
     tooltipPlacementSource,

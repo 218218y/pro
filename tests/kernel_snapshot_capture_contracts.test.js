@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll } from './_source_bundle.js';
+import { getFunctionSignatureFact, getInterfaceFact } from './_semantic_source_contracts.js';
 
 const kernel = readSource('../esm/native/kernel/kernel.ts', import.meta.url);
 const capture = readSource('../esm/native/kernel/kernel_project_capture.ts', import.meta.url);
@@ -97,28 +98,75 @@ test('[kernel-snapshot-store] snapshot/store seam stays typed and publicly compa
     'kernel owner'
   );
 
-  assertMatchesAll(
-    assert,
+  const buildStateFact = getInterfaceFact(
     snapshotStore,
-    [
-      /export interface KernelBuildStateLike extends UnknownRecord/,
-      /export interface KernelSnapshotStoreMetaLike extends ActionMetaLike/,
-      /export interface KernelSnapshotStoreSyncOpts extends KernelSnapshotStoreMetaLike/,
-      /export interface KernelSnapshotStoreSystem/,
-      /export function createKernelSnapshotStoreSystem\(/,
-      /kernel_snapshot_store_build_state\.js/,
-      /kernel_snapshot_store_commits\.js/,
-      /stateKernel: StateKernelLike & UnknownRecord;/,
-      /getBuildState: \(override\?: unknown\) => KernelBuildStateLike;/,
-      /syncStore: \(opts\?: KernelSnapshotStoreSyncOpts \| null\) => void;/,
-      /commitFromSnapshot: \(uiSnapshot: unknown, meta\?: KernelSnapshotStoreMetaLike\) => void;/,
-      /setDirty: \(isDirtyValue: boolean, meta\?: KernelSnapshotStoreMetaLike\) => void;/,
-      /touch: \(meta\?: KernelSnapshotStoreMetaLike\) => void;/,
-      /commit: \(meta\?: KernelSnapshotStoreMetaLike\) => void;/,
-      /persist: \(meta\?: KernelSnapshotStoreMetaLike\) => void;/,
-    ],
-    'snapshot store seam'
+    'KernelBuildStateLike',
+    'kernel_snapshot_store_contracts.ts'
   );
+  assert.deepEqual(buildStateFact?.extends, ['UnknownRecord']);
+  assert.deepEqual(
+    buildStateFact?.properties.map(prop => prop.name),
+    ['ui', 'config', 'mode', 'runtime', 'build']
+  );
+
+  assert.deepEqual(
+    getInterfaceFact(snapshotStore, 'KernelSnapshotStoreMetaLike', 'kernel_snapshot_store_contracts.ts'),
+    { name: 'KernelSnapshotStoreMetaLike', extends: ['ActionMetaLike'], properties: [] }
+  );
+  const syncOpts = getInterfaceFact(
+    snapshotStore,
+    'KernelSnapshotStoreSyncOpts',
+    'kernel_snapshot_store_contracts.ts'
+  );
+  assert.deepEqual(syncOpts?.extends, ['KernelSnapshotStoreMetaLike']);
+  assert.deepEqual(syncOpts?.properties, [
+    { name: 'override', optional: true, readonly: false, type: 'UnknownRecord|null' },
+  ]);
+
+  const createArgs = getInterfaceFact(
+    snapshotStore,
+    'CreateKernelSnapshotStoreSystemArgs',
+    'kernel_snapshot_store_contracts.ts'
+  );
+  assert.equal(
+    createArgs?.properties.find(prop => prop.name === 'stateKernel')?.type,
+    'StateKernelLike&UnknownRecord'
+  );
+
+  const storeSystem = getInterfaceFact(
+    snapshotStore,
+    'KernelSnapshotStoreSystem',
+    'kernel_snapshot_store_contracts.ts'
+  );
+  const storeProps = new Map(storeSystem?.properties.map(prop => [prop.name, prop]));
+  assert.equal(storeProps.get('getBuildState')?.type, 'fn(override?:unknown)->KernelBuildStateLike');
+  assert.equal(storeProps.get('syncStore')?.type, 'fn(opts?:KernelSnapshotStoreSyncOpts|null)->void');
+  assert.equal(
+    storeProps.get('commitFromSnapshot')?.type,
+    'fn(uiSnapshot:unknown,meta?:KernelSnapshotStoreMetaLike)->void'
+  );
+  assert.equal(
+    storeProps.get('setDirty')?.type,
+    'fn(isDirtyValue:boolean,meta?:KernelSnapshotStoreMetaLike)->void'
+  );
+  assert.equal(storeProps.get('touch')?.type, 'fn(meta?:KernelSnapshotStoreMetaLike)->void');
+  assert.equal(storeProps.get('commit')?.type, 'fn(meta?:KernelSnapshotStoreMetaLike)->void');
+  assert.equal(storeProps.get('persist')?.type, 'fn(meta?:KernelSnapshotStoreMetaLike)->void');
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      snapshotStore,
+      'createKernelSnapshotStoreSystem',
+      'kernel_snapshot_store_system.ts'
+    ),
+    {
+      name: 'createKernelSnapshotStoreSystem',
+      async: false,
+      params: [{ name: 'args', optional: false, type: 'CreateKernelSnapshotStoreSystemArgs' }],
+      returnType: 'KernelSnapshotStoreSystem',
+    }
+  );
+  assert.match(snapshotStore, /kernel_snapshot_store_build_state\.js/);
+  assert.match(snapshotStore, /kernel_snapshot_store_commits\.js/);
 
   assert.ok(
     snapshotBundle.includes(

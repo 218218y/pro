@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  classifySourceShapeRegexPattern,
   collectOpaqueSourceFingerprintDebt,
+  collectSourceShapeRegexMetrics,
   OPAQUE_SOURCE_FINGERPRINT_DEBT,
+  SOURCE_SHAPE_REGEX_RATCHET,
   runSourceContractQualityAudit,
   scanOpaqueSourceFingerprintText,
 } from '../tools/wp_source_contract_quality_audit.mjs';
@@ -24,6 +27,25 @@ test('source-contract quality audit detects opaque semantic source baselines but
   );
 });
 
+test('source-contract quality classifies implementation-shape regex indicators semantically', () => {
+  assert.deepEqual(classifySourceShapeRegexPattern(String.raw`runThing\(\{[\s\S]*meta\?: ActionMetaLike`), {
+    crossStatement: true,
+    exactObjectCall: true,
+    optionalTypeSyntax: true,
+    indexedAccessSyntax: false,
+    ternaryUndefined: false,
+    loopSyntax: false,
+  });
+  assert.equal(classifySourceShapeRegexPattern(String.raw`items\[i\]`).indexedAccessSyntax, true);
+  assert.equal(
+    classifySourceShapeRegexPattern(
+      String.raw`return actions \? getValueAtPath\(actions, path\) : undefined;`
+    ).ternaryUndefined,
+    true
+  );
+  assert.equal(classifySourceShapeRegexPattern(String.raw`for\s*\(`).loopSyntax, true);
+});
+
 test('source-contract quality debt ledger is exact and ratchets the current repository', () => {
   const actual = collectOpaqueSourceFingerprintDebt();
   assert.deepEqual(
@@ -31,6 +53,11 @@ test('source-contract quality debt ledger is exact and ratchets the current repo
     Object.entries(OPAQUE_SOURCE_FINGERPRINT_DEBT)
       .map(([file, entry]) => ({ file, fixedSha256Baselines: entry.fixedSha256Baselines }))
       .sort((left, right) => left.file.localeCompare(right.file))
+  );
+  const sourceShape = collectSourceShapeRegexMetrics();
+  assert.deepEqual(
+    { files: sourceShape.files, patterns: sourceShape.patterns, categories: sourceShape.categories },
+    SOURCE_SHAPE_REGEX_RATCHET
   );
   const result = runSourceContractQualityAudit();
   assert.equal(result.ok, true, JSON.stringify(result.failures));

@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createSourceFile, walkAst } from './wp_ast_adapter.mjs';
 
 const ROOT = process.cwd();
 const FIXED_SHA256_LITERAL_RE = /['"]([0-9a-f]{64})['"]/gu;
@@ -11,6 +12,34 @@ const SOURCE_FINGERPRINT_MARKER_RE =
 // This is a ratchet, not an allow-forever list. A file must be removed from this ledger
 // as soon as its opaque source/AST baseline is replaced by explicit ownership/behavior facts.
 export const OPAQUE_SOURCE_FINGERPRINT_DEBT = Object.freeze({});
+
+const SOURCE_READER_MARKER_RE =
+  /(?:readSource|bundleSources|readFirstExisting|readFileSync|fs\.readFileSync)/u;
+export const SOURCE_SHAPE_REGEX_KEYS = Object.freeze([
+  'crossStatement',
+  'exactObjectCall',
+  'optionalTypeSyntax',
+  'indexedAccessSyntax',
+  'ternaryUndefined',
+  'loopSyntax',
+]);
+
+// Aggregate implementation-shape indicator ratchet. These patterns are not all invalid:
+// import/export, CSS, and negative architecture contracts can legitimately remain source-based.
+// The ratchet prevents silent growth while later modernization waves replace only the brittle
+// implementation-coupled cases with semantic AST, ownership, or runtime assertions.
+export const SOURCE_SHAPE_REGEX_RATCHET = Object.freeze({
+  files: 143,
+  patterns: 570,
+  categories: Object.freeze({
+    crossStatement: 346,
+    exactObjectCall: 100,
+    optionalTypeSyntax: 101,
+    indexedAccessSyntax: 32,
+    ternaryUndefined: 32,
+    loopSyntax: 1,
+  }),
+});
 
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -42,6 +71,65 @@ export function scanOpaqueSourceFingerprintText(source) {
   };
 }
 
+export function classifySourceShapeRegexPattern(patternIn) {
+  const pattern = String(patternIn || '');
+  return {
+    crossStatement: pattern.includes('[\\s\\S]'),
+    exactObjectCall: /\\\(\\\{|\\\(\\s\*\\\{/u.test(pattern),
+    optionalTypeSyntax: /\\\?\s*:\s*/u.test(pattern),
+    indexedAccessSyntax: /\\\[[A-Za-z_$][A-Za-z0-9_$]*\\\]/u.test(pattern),
+    ternaryUndefined: /[?\\]\s*[^\n]{0,100}:\s*(?:undefined|null)/u.test(pattern),
+    loopSyntax: /for\\s\*?\\\(/u.test(pattern),
+  };
+}
+
+function emptySourceShapeCategoryCounts() {
+  return Object.fromEntries(SOURCE_SHAPE_REGEX_KEYS.map(key => [key, 0]));
+}
+
+export function collectSourceShapeRegexMetrics(projectRoot = ROOT) {
+  const testRoot = path.join(projectRoot, 'tests');
+  const categories = emptySourceShapeCategoryCounts();
+  const byFile = [];
+  let patterns = 0;
+
+  for (const file of walk(testRoot)) {
+    const rel = normalize(projectRoot, file);
+    if (!/\.test\.(?:[cm]?[jt]sx?)$/u.test(rel)) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    if (!SOURCE_READER_MARKER_RE.test(source)) continue;
+
+    let sourceFile;
+    try {
+      sourceFile = createSourceFile(path.basename(file), source);
+    } catch {
+      continue;
+    }
+
+    const local = emptySourceShapeCategoryCounts();
+    let localPatterns = 0;
+    walkAst(sourceFile, node => {
+      if (node?.type !== 'Literal' || !node.regex?.pattern) return;
+      const classification = classifySourceShapeRegexPattern(node.regex.pattern);
+      let counted = false;
+      for (const key of SOURCE_SHAPE_REGEX_KEYS) {
+        if (!classification[key]) continue;
+        local[key] += 1;
+        counted = true;
+      }
+      if (counted) localPatterns += 1;
+    });
+
+    if (!localPatterns) continue;
+    patterns += localPatterns;
+    for (const key of SOURCE_SHAPE_REGEX_KEYS) categories[key] += local[key];
+    byFile.push({ file: rel, patterns: localPatterns, categories: local });
+  }
+
+  byFile.sort((left, right) => right.patterns - left.patterns || left.file.localeCompare(right.file));
+  return { files: byFile.length, patterns, categories, byFile };
+}
+
 export function collectOpaqueSourceFingerprintDebt(projectRoot = ROOT) {
   const testRoot = path.join(projectRoot, 'tests');
   return walk(testRoot)
@@ -61,6 +149,7 @@ export function collectOpaqueSourceFingerprintDebt(projectRoot = ROOT) {
 export function runSourceContractQualityAudit(projectRoot = ROOT) {
   const actual = collectOpaqueSourceFingerprintDebt(projectRoot);
   const actualByFile = new Map(actual.map(entry => [entry.file, entry.fixedSha256Baselines]));
+  const sourceShape = collectSourceShapeRegexMetrics(projectRoot);
   const failures = [];
 
   for (const entry of actual) {
@@ -88,10 +177,38 @@ export function runSourceContractQualityAudit(projectRoot = ROOT) {
     }
   }
 
+  for (const key of ['files', 'patterns']) {
+    const expected = SOURCE_SHAPE_REGEX_RATCHET[key];
+    const value = sourceShape[key];
+    if (value > expected) {
+      failures.push(
+        `source-shape regex ${key} increased ${expected} -> ${value}; modernize the new implementation-shaped contract or ratchet deliberately`
+      );
+    } else if (value < expected) {
+      failures.push(
+        `source-shape regex ${key} decreased ${expected} -> ${value}; lower SOURCE_SHAPE_REGEX_RATCHET deliberately`
+      );
+    }
+  }
+  for (const key of SOURCE_SHAPE_REGEX_KEYS) {
+    const expected = SOURCE_SHAPE_REGEX_RATCHET.categories[key];
+    const value = sourceShape.categories[key];
+    if (value > expected) {
+      failures.push(
+        `source-shape regex category ${key} increased ${expected} -> ${value}; modernize the new implementation-shaped contract or ratchet deliberately`
+      );
+    } else if (value < expected) {
+      failures.push(
+        `source-shape regex category ${key} decreased ${expected} -> ${value}; lower SOURCE_SHAPE_REGEX_RATCHET deliberately`
+      );
+    }
+  }
+
   return {
     ok: failures.length === 0,
     files: actual.length,
     fixedSha256Baselines: actual.reduce((sum, entry) => sum + entry.fixedSha256Baselines, 0),
+    sourceShape,
     failures,
     actual,
   };
@@ -105,7 +222,8 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `[source-contract-quality] ok (${result.files} debt files, ${result.fixedSha256Baselines} fixed SHA-256 baselines)`
+    `[source-contract-quality] ok (${result.files} opaque debt files, ${result.fixedSha256Baselines} fixed SHA-256 baselines; ` +
+      `${result.sourceShape.files} source-shape files, ${result.sourceShape.patterns} indicators)`
   );
 }
 

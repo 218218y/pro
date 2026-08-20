@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
+import { getFunctionSignatureFact, getInterfaceFact } from './_semantic_source_contracts.js';
 
 const modelsTypes = readSource('../types/models.ts', import.meta.url);
 const typesIndex = readSource('../types/index.ts', import.meta.url);
 const buildTypes = readBuildTypesBundle(import.meta.url);
 const modelsService = readSource('../esm/native/services/models.ts', import.meta.url);
+const modelsRegistry = readSource('../esm/native/services/models_registry.ts', import.meta.url);
 const modelsSurfaceInstall = readSource('../esm/native/services/models_surface_install.ts', import.meta.url);
 const modelsAccess = readSource('../esm/native/runtime/models_access.ts', import.meta.url);
 const modelsAccessShared = readSource('../esm/native/runtime/models_access_shared.ts', import.meta.url);
@@ -173,7 +175,6 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     assert,
     modelsAccessCommands,
     [
-      /export function ensureModelsLoadedViaService\(App: unknown, opts\?: ModelsLoadOptions\): boolean/,
       /export function ensureModelsLoadedViaServiceOrThrow\(/,
       /export function exportUserModelsViaService\(App: unknown\): SavedModelLike\[\]/,
       /export async function mergeImportedModelsViaService\([\s\S]*?\): Promise<ModelsMergeResult>/,
@@ -182,6 +183,23 @@ test('models contracts keep canonical service, helper, and typed access seams', 
       /export function setPresetModelsViaService\(/,
     ],
     'modelsAccessCommands'
+  );
+
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      modelsAccessCommands,
+      'ensureModelsLoadedViaService',
+      'models_access_commands.ts'
+    ),
+    {
+      name: 'ensureModelsLoadedViaService',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'unknown' },
+        { name: 'opts', optional: true, type: 'ModelsLoadOptions' },
+      ],
+      returnType: 'boolean',
+    }
   );
 
   assertMatchesAll(
@@ -257,13 +275,24 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     modelsHelpers,
     [
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
-      /export function ensureModelsLoadedInternal\(App: AppContainer, opts\?: ModelsOpts\): SavedModelLike\[\]/,
       /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
       /export function saveCurrentModelInternal\(/,
       /export function transferModelInternal\(/,
       /export function applyModelInternal\(App: AppContainer, id: SavedModelId\): ModelsCommandResult/,
     ],
     'modelsHelpers'
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(modelsRegistry, 'ensureModelsLoadedInternal', 'models_registry.ts'),
+    {
+      name: 'ensureModelsLoadedInternal',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'opts', optional: true, type: 'ModelsOpts' },
+      ],
+      returnType: 'SavedModelLike[]',
+    }
   );
 });
 
@@ -287,16 +316,21 @@ test('models callers and sync payloads stay on canonical seams', () => {
     'structureModelsBundle'
   );
 
-  assertMatchesAll(
-    assert,
-    cloudSyncTypes,
-    [
-      /export interface CloudSyncPayload extends UnknownRecord \{/,
-      /savedModels\?:\s*SavedModelLike\[\]\s*\|\s*null\s*\|\s*undefined\s*;/,
-      /savedColors\?:\s*SavedColorLike\[\]\s*\|\s*null\s*\|\s*undefined\s*;/,
-    ],
-    'cloudSyncTypes'
-  );
+  const cloudPayload = getInterfaceFact(cloudSyncTypes, 'CloudSyncPayload', 'types/cloud_sync.ts');
+  assert.deepEqual(cloudPayload?.extends, ['UnknownRecord']);
+  const cloudPayloadProps = new Map(cloudPayload?.properties.map(prop => [prop.name, prop]));
+  assert.deepEqual(cloudPayloadProps.get('savedModels'), {
+    name: 'savedModels',
+    optional: true,
+    readonly: false,
+    type: 'SavedModelLike[]|null|undefined',
+  });
+  assert.deepEqual(cloudPayloadProps.get('savedColors'), {
+    name: 'savedColors',
+    optional: true,
+    readonly: false,
+    type: 'SavedColorLike[]|null|undefined',
+  });
   assertMatchesAll(
     assert,
     cloudModelsBundle,
@@ -348,7 +382,6 @@ test('models-related autosave and project-load flows keep command-like canonical
 });
 
 test('models top-level owners stay thin and delegate command/storage policy to dedicated modules', () => {
-  const modelsRegistry = readSource('../esm/native/services/models_registry.ts', import.meta.url);
   const modelsApply = readSource('../esm/native/services/models_apply_ops.ts', import.meta.url);
 
   assertMatchesAll(
@@ -359,7 +392,6 @@ test('models top-level owners stay thin and delegate command/storage policy to d
       /\.\/models_registry_storage\.js/,
       /\.\/models_registry_shared\.js/,
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
-      /export function ensureModelsLoadedInternal\(App: AppContainer, opts\?: ModelsOpts\): SavedModelLike\[\]/,
       /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
     ],
     'modelsRegistryThinOwner'

@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { normalizeWhitespace } from './_source_bundle.js';
+import { getCallFacts } from './_semantic_source_contracts.js';
 
-const read = rel => normalizeWhitespace(fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+const readRaw = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+const read = rel => normalizeWhitespace(readRaw(rel));
 const lineCount = rel =>
   fs
     .readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
@@ -12,7 +14,9 @@ const lineCount = rel =>
 
 const layoutFlow = read('esm/native/services/canvas_picking_layout_edit_flow.ts');
 const layoutFlowManual = read('esm/native/services/canvas_picking_layout_edit_flow_manual.ts');
+const layoutFlowManualRaw = readRaw('esm/native/services/canvas_picking_layout_edit_flow_manual.ts');
 const sketchTools = read('esm/native/services/canvas_picking_manual_layout_sketch_tools.ts');
+const sketchToolsRaw = readRaw('esm/native/services/canvas_picking_manual_layout_sketch_tools.ts');
 const hoverTools = read('esm/native/services/canvas_picking_manual_layout_sketch_hover_tools.ts');
 const hoverToolsShared = read(
   'esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_shared.ts'
@@ -20,7 +24,7 @@ const hoverToolsShared = read(
 const hoverToolsSelector = read(
   'esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_selector.ts'
 );
-const hoverToolsRouter = read(
+const hoverToolsRouterRaw = readRaw(
   'esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts'
 );
 const hoverApply = read('esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts');
@@ -34,6 +38,14 @@ const directHitWorkflow = normalizeWhitespace(
 );
 const modeFlow = read('esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts');
 const audit = read('docs/layering_completion_audit.md');
+
+function assertObjectCall(source, callee, fileName) {
+  const calls = getCallFacts(source, callee, fileName);
+  assert.ok(
+    calls.some(call => call.args[0]?.kind === 'object'),
+    `${callee} should preserve its object-shaped semantic call seam`
+  );
+}
 
 test('manual-layout sketch click and hover owners stay thin and route through dedicated helper families', () => {
   assert.ok(lineCount('esm/native/services/canvas_picking_manual_layout_sketch_tools.ts') < 350);
@@ -50,7 +62,11 @@ test('manual-layout sketch click and hover owners stay thin and route through de
     layoutFlowManual,
     /import \{\s*tryHandleManualLayoutSketchToolClick\s*,?\s*\} from '\.\/canvas_picking_manual_layout_sketch_tools\.js';/
   );
-  assert.match(layoutFlowManual, /tryHandleManualLayoutSketchToolClick\(\{/);
+  assertObjectCall(
+    layoutFlowManualRaw,
+    'tryHandleManualLayoutSketchToolClick',
+    'canvas_picking_layout_edit_flow_manual.ts'
+  );
 
   assert.match(
     sketchTools,
@@ -64,16 +80,40 @@ test('manual-layout sketch click and hover owners stay thin and route through de
     sketchTools,
     /import \{\s*tryApplyManualLayoutSketchModeClick\s*,?\s*\} from '\.\/canvas_picking_manual_layout_sketch_click_mode_flow\.js';/
   );
-  assert.match(sketchTools, /tryApplyManualLayoutSketchHoverClick\(\{/);
-  assert.match(sketchTools, /tryApplyManualLayoutSketchDirectHitActions\(\{/);
-  assert.match(sketchTools, /tryApplyManualLayoutSketchModeClick\(\{/);
+  assertObjectCall(
+    sketchToolsRaw,
+    'tryApplyManualLayoutSketchHoverClick',
+    'canvas_picking_manual_layout_sketch_tools.ts'
+  );
+  assertObjectCall(
+    sketchToolsRaw,
+    'tryApplyManualLayoutSketchDirectHitActions',
+    'canvas_picking_manual_layout_sketch_tools.ts'
+  );
+  assertObjectCall(
+    sketchToolsRaw,
+    'tryApplyManualLayoutSketchModeClick',
+    'canvas_picking_manual_layout_sketch_tools.ts'
+  );
   assert.doesNotMatch(sketchTools, /if \(__mt === 'sketch_int_drawers'\) \{/);
   assert.doesNotMatch(sketchTools, /const isBox = __mt\.startsWith\(__SKETCH_BOX_TOOL_PREFIX\);/);
 
   assert.match(hoverTools, /canvas_picking_manual_layout_sketch_hover_tools_router\.js/);
-  assert.match(hoverToolsRouter, /tryHandleManualLayoutSketchHoverFreeFlow\(\{/);
-  assert.match(hoverToolsRouter, /tryHandleManualLayoutSketchHoverModuleFlow\(\{/);
-  assert.match(hoverToolsRouter, /resolvePreferredManualLayoutSketchSelectorHit\(\{/);
+  assertObjectCall(
+    hoverToolsRouterRaw,
+    'tryHandleManualLayoutSketchHoverFreeFlow',
+    'canvas_picking_manual_layout_sketch_hover_tools_router.ts'
+  );
+  assertObjectCall(
+    hoverToolsRouterRaw,
+    'tryHandleManualLayoutSketchHoverModuleFlow',
+    'canvas_picking_manual_layout_sketch_hover_tools_router.ts'
+  );
+  assertObjectCall(
+    hoverToolsRouterRaw,
+    'resolvePreferredManualLayoutSketchSelectorHit',
+    'canvas_picking_manual_layout_sketch_hover_tools_router.ts'
+  );
   assert.match(hoverToolsShared, /export function readManualLayoutSketchHoverRuntime\(/);
   assert.match(hoverToolsShared, /const tool = readActiveManualTool\(App\) \|\| '';/);
   assert.match(hoverToolsSelector, /export function resolvePreferredManualLayoutSketchSelectorHit\(/);

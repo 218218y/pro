@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { assertLacksAll, assertMatchesAll, bundleSources, readSource } from './_source_bundle.js';
+import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 const lineCount = rel => read(rel).trim().split(/\r?\n/).length;
@@ -10,6 +11,18 @@ const lineCount = rel => read(rel).trim().split(/\r?\n/).length;
 function maybeRead(rel) {
   const url = new URL(`../${rel}`, import.meta.url);
   return fs.existsSync(url) ? fs.readFileSync(url, 'utf8') : '';
+}
+
+function assertNoSemanticCall(source, callee, label) {
+  assert.equal(getCallFacts(source, callee).length, 0, `${label} should not call ${callee}`);
+}
+
+function assertSemanticCallFirstArg(source, callee, firstArgName, label) {
+  const calls = getCallFacts(source, callee);
+  assert.ok(
+    calls.some(call => call.args[0]?.kind === 'identifier' && call.args[0].name === firstArgName),
+    `${label} should call ${callee} with ${firstArgName}`
+  );
 }
 
 const namedOnlyPaths = [
@@ -437,29 +450,31 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     'builder bootstrap canonical ownership split'
   );
 
-  assertMatchesAll(
-    assert,
+  assert.deepEqual(getCallFacts(builderBootstrapDrawerMetaOwner, 'runPlatformWakeupFollowThrough'), [
+    {
+      callee: 'runPlatformWakeupFollowThrough',
+      args: [{ kind: 'identifier', name: 'App' }],
+    },
+  ]);
+  assertNoSemanticCall(
     builderBootstrapDrawerMetaOwner,
-    [/runPlatformWakeupFollowThrough\(App\)/],
+    'touchPlatformActivity',
     'builder bootstrap drawer-meta canonical wakeup follow-through'
   );
-  assertLacksAll(
-    assert,
+  assertNoSemanticCall(
     builderBootstrapDrawerMetaOwner,
-    [/touchPlatformActivity\(/, /ensureRenderLoopViaPlatform\(/],
+    'ensureRenderLoopViaPlatform',
     'builder bootstrap drawer-meta canonical wakeup follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, handlesApplyOwner, 'runPlatformRenderFollowThrough', {
+    firstArgIdentifier: 'App',
+    requiredProperties: { updateShadows: false },
+    label: 'handles apply canonical render follow-through',
+  });
+  assertNoSemanticCall(
     handlesApplyOwner,
-    [/runPlatformRenderFollowThrough\(App, \{ updateShadows: false \}\)/],
-    'handles apply canonical render follow-through'
-  );
-  assertLacksAll(
-    assert,
-    handlesApplyOwner,
-    [/triggerRenderViaPlatform\(/],
+    'triggerRenderViaPlatform',
     'handles apply canonical render follow-through'
   );
 
@@ -480,81 +495,77 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     'room internal shared canonical ownership split'
   );
 
-  assertMatchesAll(
-    assert,
+  assertSemanticCallFirstArg(
     roomSharedStateOwner,
-    [/runPlatformRenderFollowThrough\(A,/],
+    'runPlatformRenderFollowThrough',
+    'A',
     'room shared state canonical render follow-through'
   );
-  assertLacksAll(
-    assert,
+  assertNoSemanticCall(
     roomSharedStateOwner,
-    [/triggerRenderViaPlatform\(/, /ensureRenderLoopViaPlatform\(/],
+    'triggerRenderViaPlatform',
+    'room shared state canonical render follow-through'
+  );
+  assertNoSemanticCall(
+    roomSharedStateOwner,
+    'ensureRenderLoopViaPlatform',
     'room shared state canonical render follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, editStateResetOwner, 'runPlatformRenderFollowThrough', {
+    firstArgIdentifier: 'app',
+    requiredProperties: { updateShadows: true, ensureRenderLoop: false },
+    label: 'edit-state reset canonical render follow-through',
+  });
+  assertNoSemanticCall(
     editStateResetOwner,
-    [/runPlatformRenderFollowThrough\(app, \{ updateShadows: true, ensureRenderLoop: false \}\)/],
-    'edit-state reset canonical render follow-through'
-  );
-  assertLacksAll(
-    assert,
-    editStateResetOwner,
-    [/triggerRenderViaPlatform\(/],
+    'triggerRenderViaPlatform',
     'edit-state reset canonical render follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, canvasPickingCoreRuntimeOwner, 'runPlatformRenderFollowThrough', {
+    firstArgIdentifier: 'App',
+    requiredProperties: { ensureRenderLoop: false },
+    requiredIdentifiers: ['updateShadows'],
+    label: 'canvas picking runtime canonical render follow-through',
+  });
+  assertNoSemanticCall(
     canvasPickingCoreRuntimeOwner,
-    [/runPlatformRenderFollowThrough\(App,/, /ensureRenderLoop:\s*false/, /updateShadows/],
-    'canvas picking runtime canonical render follow-through'
-  );
-  assertLacksAll(
-    assert,
-    canvasPickingCoreRuntimeOwner,
-    [/triggerRenderViaPlatform\(/],
+    'triggerRenderViaPlatform',
     'canvas picking runtime canonical render follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, uiBootControllerSharedOwner, 'runPlatformRenderFollowThrough', {
+    firstArgIdentifier: 'App',
+    requiredProperties: { ensureRenderLoop: false },
+    requiredIdentifiers: ['updateShadows'],
+    label: 'ui boot controller shared canonical render follow-through',
+  });
+  assertNoSemanticCall(
     uiBootControllerSharedOwner,
-    [/runPlatformRenderFollowThrough\(App, \{ updateShadows: !!updateShadows, ensureRenderLoop: false \}\)/],
-    'ui boot controller shared canonical render follow-through'
-  );
-  assertLacksAll(
-    assert,
-    uiBootControllerSharedOwner,
-    [/triggerRenderViaPlatform\(/],
+    'triggerRenderViaPlatform',
     'ui boot controller shared canonical render follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, errorsInstallSupportOwner, 'runPlatformWakeupFollowThrough', {
+    firstArgIdentifier: 'App',
+    requiredProperties: { touchActivity: false },
+    label: 'errors install support canonical wakeup follow-through',
+  });
+  assertNoSemanticCall(
     errorsInstallSupportOwner,
-    [/runPlatformWakeupFollowThrough\(App, \{ touchActivity: false \}\)/],
-    'errors install support canonical wakeup follow-through'
-  );
-  assertLacksAll(
-    assert,
-    errorsInstallSupportOwner,
-    [/ensureRenderLoopViaPlatform\(/],
+    'ensureRenderLoopViaPlatform',
     'errors install support canonical wakeup follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  assertCallObjectContract(assert, platformBootMainOwner, 'runPlatformRenderFollowThrough', {
+    firstArgIdentifier: 'root',
+    requiredProperties: { updateShadows: false, ensureRenderLoop: false },
+    label: 'platform boot main canonical render follow-through',
+  });
+  assertNoSemanticCall(
     platformBootMainOwner,
-    [/runPlatformRenderFollowThrough\(root, \{ updateShadows: false, ensureRenderLoop: false \}\)/],
-    'platform boot main canonical render follow-through'
-  );
-  assertLacksAll(
-    assert,
-    platformBootMainOwner,
-    [/triggerRenderViaPlatform\(/],
+    'triggerRenderViaPlatform',
     'platform boot main canonical render follow-through'
   );
 

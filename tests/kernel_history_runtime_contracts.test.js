@@ -9,10 +9,12 @@ import {
   assertMatchesAll,
   assertLacksAll,
 } from './_source_bundle.js';
-import { readBuildTypesBundleNormalized } from './_build_types_bundle.js';
+import { readBuildTypesBundle } from './_build_types_bundle.js';
+import { getInterfaceFact, getTypeAliasFact } from './_semantic_source_contracts.js';
 
 const readNormalized = rel =>
   normalizeWhitespace(fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+const readRaw = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
 const kernelOwner = readSource('../esm/native/kernel/kernel.ts', import.meta.url);
 const historyModule = bundleSources(
@@ -52,10 +54,10 @@ const historyReadsBundle = bundleSources(
   ],
   import.meta.url
 );
-const kernelTypes = readNormalized('types/kernel.ts');
-const stateTypes = readNormalized('types/state.ts');
-const buildTypes = readBuildTypesBundleNormalized(import.meta.url);
-const appTypes = readNormalized('types/app.ts');
+const kernelTypesRaw = readRaw('types/kernel.ts');
+const stateTypesRaw = readRaw('types/state.ts');
+const buildTypesRaw = readBuildTypesBundle(import.meta.url);
+const appTypesRaw = readRaw('types/app.ts');
 const historyAccessEntry = readNormalized('esm/native/runtime/history_system_access.ts');
 const historyAccess = normalizeWhitespace(
   bundleSources(
@@ -133,52 +135,71 @@ test('[kernel-history] kernel owner delegates history lifecycle and overlay uses
 });
 
 test('[history-types] history, state, build, and app surfaces keep explicit ActionMeta boundaries', () => {
-  assertMatchesAll(
-    assert,
-    kernelTypes,
-    [
-      /export interface HistoryPushRequestLike extends ActionMetaLike \{/,
-      /export interface HistoryStatusLike extends UnknownRecord \{/,
-      /export type HistoryStatusListener = \(status: HistoryStatusLike, meta\?: ActionMetaLike\) => void;/,
-      /schedulePush\?: \(meta\?: ActionMetaLike\) => unknown;/,
-      /flushPendingPush\?: \(opts\?: HistoryPushRequestLike\) => unknown;/,
-      /pushState\?: \(opts\?: HistoryPushRequestLike\) => unknown;/,
-      /flushOrPush\?: \(opts\?: HistoryPushRequestLike\) => unknown;/,
-    ],
-    'kernel types'
+  const historyRequest = getInterfaceFact(kernelTypesRaw, 'HistoryPushRequestLike', 'types/kernel.ts');
+  assert.deepEqual(historyRequest?.extends, ['ActionMetaLike']);
+  assert.deepEqual(historyRequest?.properties, [
+    { name: 'noPush', optional: true, readonly: false, type: 'boolean' },
+    { name: 'keepRedo', optional: true, readonly: false, type: 'boolean' },
+  ]);
+
+  const historyStatus = getInterfaceFact(kernelTypesRaw, 'HistoryStatusLike', 'types/kernel.ts');
+  assert.deepEqual(historyStatus?.extends, ['UnknownRecord']);
+  assert.deepEqual(historyStatus?.properties, [
+    { name: 'canUndo', optional: false, readonly: false, type: 'boolean' },
+    { name: 'canRedo', optional: false, readonly: false, type: 'boolean' },
+    { name: 'undoCount', optional: false, readonly: false, type: 'number' },
+    { name: 'redoCount', optional: false, readonly: false, type: 'number' },
+    { name: 'isPaused', optional: false, readonly: false, type: 'boolean' },
+  ]);
+  assert.deepEqual(getTypeAliasFact(kernelTypesRaw, 'HistoryStatusListener', 'types/kernel.ts'), {
+    name: 'HistoryStatusListener',
+    type: 'fn(status:HistoryStatusLike,meta?:ActionMetaLike)->void',
+  });
+
+  const historyActions = getInterfaceFact(kernelTypesRaw, 'HistoryActionsNamespaceLike', 'types/kernel.ts');
+  const historyActionProps = new Map(historyActions?.properties.map(prop => [prop.name, prop]));
+  assert.equal(historyActionProps.get('schedulePush')?.type, 'fn(meta?:ActionMetaLike)->unknown');
+  assert.equal(historyActionProps.get('flushPendingPush')?.type, 'fn(opts?:HistoryPushRequestLike)->unknown');
+  assert.equal(historyActionProps.get('pushState')?.type, 'fn(opts?:HistoryPushRequestLike)->unknown');
+  assert.equal(historyActionProps.get('flushOrPush')?.type, 'fn(opts?:HistoryPushRequestLike)->unknown');
+
+  const stateKernel = getInterfaceFact(stateTypesRaw, 'StateKernelLike', 'types/state.ts');
+  const stateProps = new Map(stateKernel?.properties.map(prop => [prop.name, prop]));
+  assert.equal(
+    stateProps.get('patchConfigScalar')?.type,
+    'fn(key:string,valueOrFn:unknown,meta?:ActionMetaLike)->unknown'
   );
-  assertMatchesAll(
-    assert,
-    stateTypes,
-    [
-      /patchConfigScalar\?: \(key: string, valueOrFn: unknown, meta\?: ActionMetaLike\) => unknown;/,
-      /applyKernelConfigMapSnapshot\?: \(patchObj: unknown, meta\?: ActionMetaLike\) => unknown;/,
-      /commitFromSnapshot\?: \(snapshot: unknown, meta\?: ActionMetaLike\) => unknown;/,
-      /touch\?: \(meta\?: ActionMetaLike\) => unknown;/,
-    ],
-    'state types'
+  assert.equal(
+    stateProps.get('applyKernelConfigMapSnapshot')?.type,
+    'fn(patchObj:unknown,meta?:ActionMetaLike)->unknown'
   );
-  assert.doesNotMatch(stateTypes, /patchModuleConfig|patchSplitLowerModuleConfig/);
-  assertMatchesAll(
-    assert,
-    buildTypes,
-    [
-      /setActive\?: \(on: boolean, meta\?: ActionMetaLike\) => unknown;/,
-      /schedulePush\?: \(meta\?: ActionMetaLike\) => void;/,
-      /flushPendingPush\?: \(opts\?: HistoryPushRequestLike\) => void;/,
-      /subscribeStatus\?: \(listener: HistoryStatusListener\) => \(\) => void;/,
-    ],
-    'build types'
+  assert.equal(
+    stateProps.get('commitFromSnapshot')?.type,
+    'fn(snapshot:unknown,meta?:ActionMetaLike)->unknown'
   );
-  assertMatchesAll(
-    assert,
-    appTypes,
-    [
-      /setSketchMode: \(v: boolean, meta\?: ActionMetaLike\) => unknown;/,
-      /toggleSketchMode\?: \(meta\?: ActionMetaLike\) => unknown;/,
-    ],
-    'app types'
+  assert.equal(stateProps.get('touch')?.type, 'fn(meta?:ActionMetaLike)->unknown');
+  assert.equal(stateProps.has('patchModuleConfig'), false);
+  assert.equal(stateProps.has('patchSplitLowerModuleConfig'), false);
+
+  const roomDesign = getInterfaceFact(buildTypesRaw, 'RoomDesignServiceLike', 'types/build.ts bundle');
+  assert.equal(
+    roomDesign?.properties.find(prop => prop.name === 'setActive')?.type,
+    'fn(on:boolean,meta?:ActionMetaLike)->unknown'
   );
+  const historySystem = getInterfaceFact(buildTypesRaw, 'HistorySystemLike', 'types/build.ts bundle');
+  const historySystemProps = new Map(historySystem?.properties.map(prop => [prop.name, prop]));
+  assert.equal(historySystemProps.get('schedulePush')?.type, 'fn(meta?:ActionMetaLike)->void');
+  assert.equal(historySystemProps.get('flushPendingPush')?.type, 'fn(opts?:HistoryPushRequestLike)->void');
+  assert.equal(
+    historySystemProps.get('subscribeStatus')?.type,
+    'fn(listener:HistoryStatusListener)->fn()->void'
+  );
+
+  const viewNamespace = getInterfaceFact(appTypesRaw, 'ViewNamespaceLike', 'types/app.ts');
+  const viewProps = new Map(viewNamespace?.properties.map(prop => [prop.name, prop]));
+  assert.equal(viewProps.get('setSketchMode')?.type, 'fn(v:boolean,meta?:ActionMetaLike)->unknown');
+  assert.equal(viewProps.get('toggleSketchMode')?.type, 'fn(meta?:ActionMetaLike)->unknown');
+
   assert.match(historyAccessEntry, /from '\.\/history_system_access_services\.js';/);
   assert.match(historyAccessEntry, /from '\.\/history_system_access_system\.js';/);
   assertMatchesAll(

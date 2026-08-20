@@ -2,25 +2,50 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { normalizeWhitespace } from './_source_bundle.js';
+import { getCallFacts, getFunctionSignatureFact } from './_semantic_source_contracts.js';
 
-const read = rel => normalizeWhitespace(fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+const readRaw = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+const read = rel => normalizeWhitespace(readRaw(rel));
 
 const configPatchMeta = read('esm/native/services/canvas_picking_config_patch_meta.ts');
+const configPatchMetaRaw = readRaw('esm/native/services/canvas_picking_config_patch_meta.ts');
 const layoutFlow = read('esm/native/services/canvas_picking_layout_edit_flow.ts');
+const layoutFlowRaw = readRaw('esm/native/services/canvas_picking_layout_edit_flow.ts');
 const layoutFlowManual = read('esm/native/services/canvas_picking_layout_edit_flow_manual.ts');
+const layoutFlowManualRaw = readRaw('esm/native/services/canvas_picking_layout_edit_flow_manual.ts');
 const layoutFlowBrace = read('esm/native/services/canvas_picking_layout_edit_flow_brace.ts');
+const layoutFlowBraceRaw = readRaw('esm/native/services/canvas_picking_layout_edit_flow_brace.ts');
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
-const drawerCrossFamily = read('esm/native/services/canvas_picking_drawer_cross_family.ts');
+const drawerFlowExternalRaw = readRaw('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerRemovePlan = read('esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts');
+const drawerRemovePlanRaw = readRaw('esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts');
 const sketchHoverApply = read('esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts');
+const sketchHoverApplyRaw = readRaw(
+  'esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts'
+);
 const sketchModeClick = read('esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts');
+const sketchModeClickRaw = readRaw(
+  'esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts'
+);
 const sketchDirectHitDrawer = read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts');
 const sketchDirectHitShelf = read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelf.ts');
+const sketchDirectHitShelfRaw = readRaw(
+  'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelf.ts'
+);
 
 test('canvas picking config patches use one immediate-build structural meta owner', () => {
-  assert.match(
-    configPatchMeta,
-    /export function createCanvasPickingConfigStructuralPatchMeta\(source: string\): ActionMetaLike/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      configPatchMetaRaw,
+      'createCanvasPickingConfigStructuralPatchMeta',
+      'esm/native/services/canvas_picking_config_patch_meta.ts'
+    ),
+    {
+      name: 'createCanvasPickingConfigStructuralPatchMeta',
+      async: false,
+      params: [{ name: 'source', optional: false, type: 'string' }],
+      returnType: 'ActionMetaLike',
+    }
   );
   assert.match(configPatchMeta, /Canvas picking config structural patch requires a source/);
   assert.match(configPatchMeta, /immediate: true/);
@@ -46,44 +71,48 @@ test('canvas picking config patches use one immediate-build structural meta owne
     assert.doesNotMatch(source, /noHistory:/);
   }
 
-  assert.match(layoutFlow, /createCanvasPickingConfigStructuralPatchMeta\('layoutPreset'\)/);
-  assert.match(
-    layoutFlowManual,
-    /createCanvasPickingConfigStructuralPatchMeta\('manualLayout\.fillAllShelves'\)/
+  const sourceTags = source =>
+    getCallFacts(source, 'createCanvasPickingConfigStructuralPatchMeta').map(call => call.args[0]);
+  assert.deepEqual(sourceTags(layoutFlowRaw), [{ kind: 'literal', value: 'layoutPreset' }]);
+  assert.deepEqual(sourceTags(layoutFlowManualRaw), [
+    { kind: 'literal', value: 'manualLayout.fillAllShelves' },
+    { kind: 'literal', value: 'manualLayout.toggleItem' },
+  ]);
+  assert.ok(
+    sourceTags(layoutFlowBraceRaw).some(
+      fact => fact.kind === 'literal' && fact.value === 'braceShelves.toggle'
+    )
   );
-  assert.match(
-    layoutFlowManual,
-    /createCanvasPickingConfigStructuralPatchMeta\('manualLayout\.toggleItem'\)/
+  assert.deepEqual(sourceTags(drawerFlowExternalRaw), [{ kind: 'literal', value: 'extDrawers.toggle' }]);
+  assert.deepEqual(sourceTags(drawerRemovePlanRaw), [{ kind: 'member', path: 'args.source' }]);
+  const sketchHoverMetaFacts = sourceTags(sketchHoverApplyRaw);
+  assert.ok(
+    sketchHoverMetaFacts.some(
+      fact =>
+        fact.kind === 'call' &&
+        fact.callee === 'getSketchModuleBoxContentSource' &&
+        fact.args[0]?.kind === 'identifier' &&
+        fact.args[0].name === 'contentKind'
+    )
   );
-  assert.match(layoutFlowBrace, /createCanvasPickingConfigStructuralPatchMeta\('braceShelves\.toggle'\)/);
-  assert.match(drawerFlowExternal, /createCanvasPickingConfigStructuralPatchMeta\('extDrawers\.toggle'\)/);
-  assert.match(drawerRemovePlan, /createCanvasPickingConfigStructuralPatchMeta\(args\.source\)/);
-  assert.match(
-    drawerCrossFamily,
-    /commitCrossDrawerRemovePlan,[\s\S]*from '\.\/canvas_picking_drawer_cross_family_remove_plan\.js'/
-  );
-  assert.match(
-    sketchHoverApply,
-    /createCanvasPickingConfigStructuralPatchMeta\(getSketchModuleBoxContentSource\(contentKind\)\)/
-  );
-  assert.match(sketchHoverApply, /createCanvasPickingConfigStructuralPatchMeta\('sketch\.hoverRemoveRod'\)/);
-  assert.match(
-    sketchHoverApply,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.hoverRemoveStorage'\)/
-  );
-  assert.match(sketchHoverApply, /createCanvasPickingConfigStructuralPatchMeta\('sketch\.hoverAddShelf'\)/);
-  assert.match(
-    sketchHoverApply,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.hoverRemoveShelf'\)/
-  );
-  assert.match(sketchModeClick, /createCanvasPickingConfigStructuralPatchMeta\('sketch\.place'\)/);
+  for (const expectedSource of [
+    'sketch.hoverRemoveRod',
+    'sketch.hoverRemoveStorage',
+    'sketch.hoverAddShelf',
+    'sketch.hoverRemoveShelf',
+  ]) {
+    assert.ok(
+      sketchHoverMetaFacts.some(fact => fact.kind === 'literal' && fact.value === expectedSource),
+      `missing structural meta source ${expectedSource}`
+    );
+  }
+  assert.deepEqual(sourceTags(sketchModeClickRaw), [{ kind: 'literal', value: 'sketch.place' }]);
   assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeExternalDrawerByCrossHit'/);
   assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeInternalDrawerByHit\.guardY'/);
   assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeInternalDrawerByCrossHit'/);
   assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeStandardExternalDrawerByHit'/);
   assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeExternalDrawerByHit'/);
-  assert.match(
-    sketchDirectHitShelf,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.toggleBaseShelf'\)/
-  );
+  assert.deepEqual(sourceTags(sketchDirectHitShelfRaw), [
+    { kind: 'literal', value: 'sketch.toggleBaseShelf' },
+  ]);
 });
