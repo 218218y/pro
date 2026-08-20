@@ -182,6 +182,20 @@ function commitPrimaryModeTransition(
   }
 }
 
+function commitTransitionUiPatchWithoutModeChange(
+  App: AppLike,
+  opts: ModeTransitionOptsLike,
+  fallbackSource: string
+): void {
+  const uiPatch = readTransitionUiPatch(opts);
+  if (!uiPatch) return;
+
+  const applied = patchViaActions(App, { ui: uiPatch }, readTransitionMeta(opts, fallbackSource));
+  if (!applied) {
+    throw new Error('[WardrobePro] UI transition cleanup requires canonical actions.ui.patch.');
+  }
+}
+
 function shouldDefaultCloseDoorsOnExit(App: AppLike, currentMode: string): boolean {
   if (!getGlobalClickMode(App)) return false;
   const modes = getModesMap();
@@ -390,6 +404,13 @@ export function exitPrimaryModeImpl(
       safeBodyCursor(App, 'default');
     } catch (err) {
       modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:clearCursor', err);
+    }
+  } else {
+    try {
+      commitTransitionUiPatchWithoutModeChange(App, opts, 'ui:modes:exitPrimaryMode:uiCleanup');
+    } catch (error) {
+      modesReportNonFatal(App, 'esm/native/ui/modes_transition_policy.ts:exitUiCleanup', error);
+      return;
     }
   }
 
