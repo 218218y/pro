@@ -51,11 +51,12 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     (source: string) => {
       exitStructureCellDimsEditMode({
         app,
+        meta,
         modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
         source,
       });
     },
-    [app, state.cellDimsModeId]
+    [app, meta, state.cellDimsModeId]
   );
 
   const enterHexCellDimsMode = useCallback(

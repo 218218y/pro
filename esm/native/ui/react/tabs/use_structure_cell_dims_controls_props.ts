@@ -123,10 +123,11 @@ export function useStructureCellDimsControlsProps(
   const onExitCellDimsMode = useCallback(() => {
     exitStructureCellDimsEditMode({
       app,
+      meta,
       modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
       source: `${sourcePrefix}:off`,
     });
-  }, [app, sourcePrefix, state.cellDimsModeId]);
+  }, [app, meta, sourcePrefix, state.cellDimsModeId]);
 
   const onEnterHexCellDimsMode = useCallback(() => {
     const source = `${sourcePrefix}Hex:on`;

@@ -1,5 +1,6 @@
 import type { ActionMetaLike, AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 import {
+  patchUiSoft,
   setCfgModulesConfiguration,
   setUiCellDimsDepth,
   setUiCellDimsHeight,
@@ -13,6 +14,7 @@ import { applyStructureTemplateRecomputeBatch } from './structure_tab_core.js';
 import { setManualWidth } from '../actions/room_actions.js';
 import { getCfg as getCfgStore } from '../../store_access.js';
 import { exitStructureEditMode, structureTabReportNonFatal } from './structure_tab_shared.js';
+import { getPrimaryMode } from '../actions/modes_actions.js';
 import {
   createStructureTabNoBuildImmediateMeta,
   createStructureTabNoBuildNoHistoryImmediateMeta,
@@ -31,20 +33,32 @@ export const STRUCTURE_HEX_CELL_DIMS_MODE_MESSAGE = 'מצב עריכה: לחץ �
 
 export function exitStructureCellDimsEditMode(args: {
   app: AppContainer;
+  meta: MetaActionsNamespaceLike;
   modeId: string;
   source: string;
 }): void {
-  exitStructureEditMode({
-    app: args.app,
-    modeId: String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
-    source: args.source,
-    immediate: true,
-    uiPatch: {
-      cellDimsPanelOpen: false,
-      cellDimsHexPanelOpen: false,
-      raw: { cellDimsHexMode: false },
-    },
-  });
+  const modeId = String(args.modeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID);
+  const uiPatch = {
+    cellDimsPanelOpen: false,
+    cellDimsHexPanelOpen: false,
+    raw: { cellDimsHexMode: false },
+  };
+
+  // The disclosure and the edit mode are intentionally independent. The panel
+  // can remain open while another (or no) primary mode is active, so closing it
+  // must not depend on an expected-mode transition being accepted.
+  if (getPrimaryMode(args.app) === modeId) {
+    exitStructureEditMode({
+      app: args.app,
+      modeId,
+      source: args.source,
+      immediate: true,
+      uiPatch,
+    });
+    return;
+  }
+
+  patchUiSoft(args.app, uiPatch, createStructureTabUiOnlyImmediateMeta(args.meta, args.source));
 }
 
 export function createStructureWorkflowState(state: StructureTabViewState): StructureWorkflowState {
