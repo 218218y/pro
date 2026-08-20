@@ -97,20 +97,16 @@ test('removed frame side brace and rounding policy respects lower stack side ids
   );
 });
 
-test('forceShelfIndexesToBrace only converts existing shelves to brace geometry without erasing explicit variants', () => {
+test('forceShelfIndexesToBrace only converts existing shelves to brace geometry', () => {
   const braceSet: Record<number, true> = Object.create(null);
-  const variants: Record<number, string> = { 2: 'double' };
 
   forceShelfIndexesToBrace({
     braceSet,
     shelfSet: { 2: true, 4: true },
-    shelfVariantByIndex: variants,
     gridDivisions: 6,
   });
 
   assert.deepEqual(Object.keys(braceSet), ['2', '4']);
-  assert.equal(variants[2], 'double');
-  assert.equal(variants[4], undefined);
 });
 
 test('removed frame side brace helpers require runtime numeric indexes and canonical shelf keys', () => {

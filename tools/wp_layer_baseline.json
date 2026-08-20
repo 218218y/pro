@@ -5,7 +5,7 @@
     "mode": "decrease-only",
     "owner": "architecture-contract",
     "reason": "V2.2 establishes complete AST budgets including TypeScript import-type queries; from this reviewed baseline proposals may lower ceilings after verified dependency removal but never raise them to absorb growth.",
-    "reviewedAt": "2026-08-11",
+    "reviewedAt": "2026-08-20",
     "pendingReductionGraceDays": 14
   },
   "rules": [
@@ -209,11 +209,11 @@
       "from": "builder",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 140,
+      "maxImporterCount": 139,
       "maxImportCount": 287,
       "maxTypeImporterCount": 5,
       "maxTypeImportCount": 13,
-      "maxValueImporterCount": 136,
+      "maxValueImporterCount": 135,
       "maxValueImportCount": 275,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -476,11 +476,11 @@
       "to": "features",
       "decision": "allow",
       "maxImporterCount": 7,
-      "maxImportCount": 10,
+      "maxImportCount": 9,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
       "maxValueImporterCount": 7,
-      "maxValueImportCount": 10,
+      "maxValueImportCount": 9,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Project IO normalizes feature-owned project data."
@@ -545,12 +545,12 @@
       "from": "kernel",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 50,
-      "maxImportCount": 111,
+      "maxImporterCount": 49,
+      "maxImportCount": 104,
       "maxTypeImporterCount": 3,
       "maxTypeImportCount": 3,
-      "maxValueImporterCount": 50,
-      "maxValueImportCount": 109,
+      "maxValueImporterCount": 49,
+      "maxValueImportCount": 102,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Kernel installs state actions over runtime access contracts."
@@ -573,11 +573,11 @@
       "from": "platform",
       "to": "features",
       "decision": "allow",
-      "maxImporterCount": 3,
+      "maxImporterCount": 2,
       "maxImportCount": 4,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 3,
+      "maxValueImporterCount": 2,
       "maxValueImportCount": 4,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -629,11 +629,11 @@
       "from": "runtime",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 19,
+      "maxImporterCount": 17,
       "maxImportCount": 28,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 19,
+      "maxValueImporterCount": 17,
       "maxValueImportCount": 27,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -671,12 +671,12 @@
       "from": "services",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 251,
-      "maxImportCount": 539,
+      "maxImporterCount": 249,
+      "maxImportCount": 538,
       "maxTypeImporterCount": 19,
       "maxTypeImportCount": 25,
-      "maxValueImporterCount": 251,
-      "maxValueImportCount": 533,
+      "maxValueImporterCount": 249,
+      "maxValueImportCount": 532,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Services depend on focused runtime ports and accessors."
@@ -827,7 +827,7 @@
       "reason": "Permanently review and preserve the Runtime Product Limits public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-wardrobe-defaults-public-compatibility",
@@ -856,7 +856,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Defaults public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-stack-split-public-compatibility",
@@ -884,7 +884,7 @@
       "reason": "Permanently review and preserve the Runtime Stack Split public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-default-resolution-public-compatibility",
@@ -912,7 +912,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Default Resolution public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     }
   ],
   "reviewedOwnershipBudgets": [

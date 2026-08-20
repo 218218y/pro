@@ -92,7 +92,6 @@ export function getRoundedShelfSideForRemovedFrameSide(
 export function forceShelfIndexesToBrace(args: {
   braceSet: Record<number, true>;
   shelfSet?: Record<number, true> | null;
-  shelfVariantByIndex?: Record<number, string> | null;
   gridDivisions?: unknown;
 }): void {
   const braceSet = args.braceSet;

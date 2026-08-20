@@ -99,7 +99,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     });
     if (shelfExposedSide) {
-      forceShelfIndexesToBrace({ braceSet, shelfSet, shelfVariantByIndex, gridDivisions });
+      forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
     }
     const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
       cfg: input.cfg,
