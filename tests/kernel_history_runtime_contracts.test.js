@@ -10,7 +10,11 @@ import {
   assertLacksAll,
 } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
-import { getInterfaceFact, getTypeAliasFact } from './_semantic_source_contracts.js';
+import {
+  getFunctionSignatureFact,
+  getInterfaceFact,
+  getTypeAliasFact,
+} from './_semantic_source_contracts.js';
 
 const readNormalized = rel =>
   normalizeWhitespace(fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
@@ -59,6 +63,7 @@ const stateTypesRaw = readRaw('types/state.ts');
 const buildTypesRaw = readBuildTypesBundle(import.meta.url);
 const appTypesRaw = readRaw('types/app.ts');
 const historyAccessEntry = readNormalized('esm/native/runtime/history_system_access.ts');
+const historyAccessSystemRaw = readRaw('esm/native/runtime/history_system_access_system.ts');
 const historyAccess = normalizeWhitespace(
   bundleSources(
     [
@@ -208,14 +213,45 @@ test('[history-types] history, state, build, and app surfaces keep explicit Acti
     [
       /import type \{[\s\S]*HistoryPushRequestLike,[\s\S]*HistorySystemLike,[\s\S]*\} from '\.\.\/\.\.\/\.\.\/types';/,
       /import type \{ HistoryStatusLike, HistoryStatusListener \} from '\.\/history_system_access_shared\.js';/,
-      /export function scheduleHistoryPushMaybe\(App: unknown, meta\?: ActionMetaLike\): boolean \{/,
-      /export function flushHistoryPendingPushMaybe\(App: unknown, opts\?: HistoryPushRequestLike\): boolean \{/,
     ],
     'history access runtime'
   );
-  assert.doesNotMatch(
-    historyAccess,
-    /export type HistoryStatusListener = \(status: HistoryStatusLike, meta\?: unknown\) => void;/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      historyAccessSystemRaw,
+      'scheduleHistoryPushMaybe',
+      'history_system_access_system.ts'
+    ),
+    {
+      name: 'scheduleHistoryPushMaybe',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'unknown' },
+        { name: 'meta', optional: true, type: 'ActionMetaLike' },
+      ],
+      returnType: 'boolean',
+    }
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      historyAccessSystemRaw,
+      'flushHistoryPendingPushMaybe',
+      'history_system_access_system.ts'
+    ),
+    {
+      name: 'flushHistoryPendingPushMaybe',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'unknown' },
+        { name: 'opts', optional: true, type: 'HistoryPushRequestLike' },
+      ],
+      returnType: 'boolean',
+    }
+  );
+  assert.equal(
+    getTypeAliasFact(historyAccess, 'HistoryStatusListener', 'history_system_access.bundle.ts'),
+    null,
+    'history access should import the canonical HistoryStatusListener instead of redeclaring it'
   );
   assertMatchesAll(
     assert,

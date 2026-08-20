@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readServicesApiPublicSurface } from './_services_api_bundle.js';
+import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
 
 const actionsAccessEntry = readSource('../esm/native/runtime/actions_access.ts', import.meta.url);
 const actionsAccessBundle = bundleSources(
@@ -41,6 +42,10 @@ const smokeBundlePaths = [
 ];
 const smokeChecks = bundleSources(smokeBundlePaths, import.meta.url);
 const appHelpers = readSource('../esm/native/runtime/app_helpers.ts', import.meta.url);
+const canvasConfigActions = readSource(
+  '../esm/native/services/canvas_picking_config_actions.ts',
+  import.meta.url
+);
 const doorEditFlow = bundleSources(
   [
     '../esm/native/services/canvas_picking_door_edit_flow.ts',
@@ -234,10 +239,40 @@ test('[actions-domain] project IO, notes persistence, and boot paths use canonic
       /getSaveProjectAction/,
       /renderModelUiViaActionsOrThrow\(/,
       /setMultiModeViaActions\(App(?: as any)?, !!next, m(?: as any)?\)/,
-      /applyPaintViaActions\([\s\S]*App,[\s\S]*individualColors,[\s\S]*curtainMap,[\s\S]*meta,[\s\S]*doorSpecialMap,[\s\S]*mirrorLayoutMap,[\s\S]*doorStyleMap \?\? undefined[\s\S]*\)/,
       /runHistoryBatchViaActions\(App, meta, guardedFn\)/,
     ],
     'actionsBootBundle'
+  );
+  const paintCalls = getCallFacts(
+    canvasConfigActions,
+    'applyPaintViaActions',
+    'canvas_picking_config_actions.ts'
+  );
+  assert.ok(
+    paintCalls.some(call => {
+      const [app, colors, curtain, meta, special, mirror, style] = call.args;
+      return (
+        app?.kind === 'identifier' &&
+        app.name === 'App' &&
+        colors?.kind === 'identifier' &&
+        colors.name === 'individualColors' &&
+        curtain?.kind === 'identifier' &&
+        curtain.name === 'curtainMap' &&
+        meta?.kind === 'identifier' &&
+        meta.name === 'meta' &&
+        special?.kind === 'identifier' &&
+        special.name === 'doorSpecialMap' &&
+        mirror?.kind === 'identifier' &&
+        mirror.name === 'mirrorLayoutMap' &&
+        style?.kind === 'binary' &&
+        style.operator === '??' &&
+        style.left?.kind === 'identifier' &&
+        style.left.name === 'doorStyleMap' &&
+        style.right?.kind === 'identifier' &&
+        style.right.name === 'undefined'
+      );
+    }),
+    'actions boot should preserve canonical paint action argument ordering'
   );
   assertLacksAll(
     assert,
@@ -245,7 +280,20 @@ test('[actions-domain] project IO, notes persistence, and boot paths use canonic
     [/actions\.(?:meta|project)\s*=\s*/, /App\.actions\.meta/, /App\.actions\.project/],
     'actionsBootBundle'
   );
-  assert.match(appHelpers, /callMetaAction<\(meta\?: ActionMetaLike\) => unknown>\(App, 'touch', meta\)/);
+  assert.ok(
+    getCallFacts(appHelpers, 'callMetaAction', 'app_helpers.ts').some(call => {
+      const [app, actionName, meta] = call.args;
+      return (
+        app?.kind === 'identifier' &&
+        app.name === 'App' &&
+        actionName?.kind === 'literal' &&
+        actionName.value === 'touch' &&
+        meta?.kind === 'identifier' &&
+        meta.name === 'meta'
+      );
+    }),
+    'app helper should route touch through callMetaAction'
+  );
   assert.doesNotMatch(appHelpers, /patchViaActions\(App, \{\}, meta\)/);
 });
 
@@ -269,7 +317,23 @@ test('[actions-domain] smoke checks, camera, and canvas flows stay on canonical 
   assertMatchesAll(assert, canvasBundle, [/toggleDividerViaActions\(\s*App,\s*dividerKey/], 'canvasBundle');
   assert.match(doorEditFlow, /toggleGrooveViaActions\(\s*App,\s*grooveKey/);
   assert.match(doorEditFlow, /canvas_picking_door_split_click_shared\.js/);
-  assert.match(doorEditFlow, /handleCanvasDoorSplitClick\(\{/);
+  assertCallObjectContract(assert, doorEditFlow, 'handleCanvasDoorSplitClick', {
+    argIndex: 0,
+    requiredIdentifiers: [
+      'App',
+      'effectiveDoorId',
+      'foundModuleStack',
+      'doorHitY',
+      'ndcX',
+      'ndcY',
+      'raycaster',
+      'mouse',
+      'camera',
+      'doorHitGroup',
+    ],
+    label: 'door split click routing',
+    fileName: 'canvas_picking_door_edit_flow.ts',
+  });
   assert.match(doorEditFlow, /callDoorsAction\(App, 'setRemoved'/);
   assert.match(doorEditFlow, /callDoorsAction\(\s*App,\s*'setHinge'/);
   assert.match(doorEditFlow, /createCanvasPickingDoorAuthoringStructuralMeta\('hinge:click'\)/);

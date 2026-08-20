@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readSource, assertLacksAll, assertMatchesAll } from './_source_bundle.js';
+import { getInterfaceFact } from './_semantic_source_contracts.js';
 
 const appTypes = readSource('../types/app.ts', import.meta.url);
 const uiTypes = readSource('../types/ui.ts', import.meta.url);
@@ -8,12 +9,11 @@ const runtimeAssertApi = readSource('../esm/native/runtime/api_assert_surface.ts
 const runtimeApi = readSource('../esm/native/runtime/api.ts', import.meta.url);
 
 test('[app-container-legacy-surfaces] AppContainer stops advertising dead legacy app.dom/app.events/app.three slots', () => {
-  assertLacksAll(
-    assert,
-    appTypes,
-    [/\bevents\?: Namespace/, /\bthree\?: Namespace/, /\bdom\?: DomHelpersLike/],
-    'appTypes'
-  );
+  const appContainer = getInterfaceFact(appTypes, 'AppContainer', 'types/app.ts');
+  const appProperties = new Set(appContainer?.properties.map(property => property.name));
+  for (const retired of ['events', 'three', 'dom']) {
+    assert.equal(appProperties.has(retired), false, `AppContainer should not expose retired ${retired}`);
+  }
 });
 
 test('[app-container-legacy-surfaces] type barrel drops DomHelpersLike/EventBusLike residues', () => {

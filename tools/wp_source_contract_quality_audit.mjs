@@ -28,15 +28,197 @@ export const SOURCE_SHAPE_REGEX_KEYS = Object.freeze([
 // import/export, CSS, and negative architecture contracts can legitimately remain source-based.
 // The ratchet prevents silent growth while later modernization waves replace only the brittle
 // implementation-coupled cases with semantic AST, ownership, or runtime assertions.
+// Source-text assertions are sometimes the right tool: visual/CSS/DOM policy is itself
+// expressed in source structure and often has no useful runtime seam. Keep those contracts
+// explicit and exact instead of mixing them into the implementation-shape modernization debt.
+export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
+  'tests/order_pdf_toolbar_visual_contracts.test.js': Object.freeze({
+    reason: 'Order-PDF toolbar CSS/DOM/z-index layout policy is intentionally source-structural.',
+    patterns: 35,
+    categories: Object.freeze({
+      crossStatement: 34,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/design_tab_tooltip_visual_contracts.test.js': Object.freeze({
+    reason:
+      'Design-tab tooltip CSS/DOM placement and visual-state policy is intentionally source-structural.',
+    patterns: 22,
+    categories: Object.freeze({
+      crossStatement: 22,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 1,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/viewer_notes_controls_contract.test.js': Object.freeze({
+    reason: 'Viewer-notes control layout/DOM wiring is a visual interaction contract.',
+    patterns: 10,
+    categories: Object.freeze({
+      crossStatement: 10,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/overlay_quick_actions_tooltips_contract.test.js': Object.freeze({
+    reason: 'Quick-action tooltip DOM/CSS layering and presentation is a source-visible UI policy.',
+    patterns: 9,
+    categories: Object.freeze({
+      crossStatement: 8,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/ui_modern_pressed_states_contracts.test.js': Object.freeze({
+    reason: 'Pressed-state styling is a CSS/DOM visual-system contract.',
+    patterns: 9,
+    categories: Object.freeze({
+      crossStatement: 9,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/order_pdf_sketch_text_mode_layer_contract.test.js': Object.freeze({
+    reason: 'Order-PDF sketch-text layer ordering is intentionally checked as DOM/CSS source policy.',
+    patterns: 4,
+    categories: Object.freeze({
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/settings_visual_sections_runtime.test.js': Object.freeze({
+    reason: 'Settings visual-section layout is an explicit UI source contract.',
+    patterns: 4,
+    categories: Object.freeze({
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/app_boot_browser_project_family_contracts.test.js': Object.freeze({
+    reason:
+      'Boot/browser/project family contracts intentionally freeze integration topology, E2E sequencing, and UI source policy.',
+    patterns: 15,
+    categories: Object.freeze({
+      crossStatement: 15,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/builder_service_access_contracts.test.js': Object.freeze({
+    reason:
+      'Builder service-access contracts intentionally enforce facade exports, ownership routing, and stable binding topology.',
+    patterns: 8,
+    categories: Object.freeze({
+      crossStatement: 8,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/runtime_surface_family_contracts.test.js': Object.freeze({
+    reason:
+      'Runtime surface-family contracts intentionally enforce facade/owner topology as source architecture policy.',
+    patterns: 4,
+    categories: Object.freeze({
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/builder_bootstrap_install_contracts.test.js': Object.freeze({
+    reason:
+      'Builder bootstrap contracts intentionally enforce install-owner decomposition and binding topology.',
+    patterns: 4,
+    categories: Object.freeze({
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/wp_serial_tests_runtime.test.js': Object.freeze({
+    reason:
+      'Serial-test process harness regexes validate runtime child-process fixtures/output; they are not source implementation contracts.',
+    patterns: 7,
+    categories: Object.freeze({
+      crossStatement: 0,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 7,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_gateway_security_contract.test.js': Object.freeze({
+    reason: 'Cloud gateway SQL/privilege/retention assertions are explicit security source-policy contracts.',
+    patterns: 10,
+    categories: Object.freeze({
+      crossStatement: 7,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 3,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/design_tab_feedback_and_color_contracts.test.js': Object.freeze({
+    reason: 'Design feedback/color presentation is an explicit visual-source policy.',
+    patterns: 3,
+    categories: Object.freeze({
+      crossStatement: 3,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+});
+
+// Ratchet only the implementation-shaped debt. Explicit source-policy contracts above are
+// audited separately and cannot grow or drift without deliberate review.
 export const SOURCE_SHAPE_REGEX_RATCHET = Object.freeze({
-  files: 141,
-  patterns: 508,
+  files: 118,
+  patterns: 301,
   categories: Object.freeze({
-    crossStatement: 331,
-    exactObjectCall: 70,
-    optionalTypeSyntax: 86,
-    indexedAccessSyntax: 28,
-    ternaryUndefined: 32,
+    crossStatement: 191,
+    exactObjectCall: 49,
+    optionalTypeSyntax: 54,
+    indexedAccessSyntax: 18,
+    ternaryUndefined: 25,
     loopSyntax: 1,
   }),
 });
@@ -130,6 +312,44 @@ export function collectSourceShapeRegexMetrics(projectRoot = ROOT) {
   return { files: byFile.length, patterns, categories, byFile };
 }
 
+function subtractSourceShapeCategoryCounts(left, right) {
+  return Object.fromEntries(
+    SOURCE_SHAPE_REGEX_KEYS.map(key => [key, Math.max(0, (left[key] || 0) - (right[key] || 0))])
+  );
+}
+
+function sourcePolicyMetricsFromRaw(rawMetrics) {
+  const categories = emptySourceShapeCategoryCounts();
+  const byFile = [];
+  let patterns = 0;
+
+  for (const [file, policy] of Object.entries(SOURCE_POLICY_REGEX_CONTRACTS)) {
+    const actual = rawMetrics.byFile.find(entry => entry.file === file);
+    if (!actual) continue;
+    patterns += actual.patterns;
+    for (const key of SOURCE_SHAPE_REGEX_KEYS) categories[key] += actual.categories[key];
+    byFile.push(actual);
+  }
+
+  byFile.sort((left, right) => left.file.localeCompare(right.file));
+  return { files: byFile.length, patterns, categories, byFile };
+}
+
+export function collectImplementationShapeRegexMetrics(projectRoot = ROOT) {
+  const raw = collectSourceShapeRegexMetrics(projectRoot);
+  const policy = sourcePolicyMetricsFromRaw(raw);
+  const policyFiles = new Set(policy.byFile.map(entry => entry.file));
+  const byFile = raw.byFile.filter(entry => !policyFiles.has(entry.file));
+  return {
+    files: byFile.length,
+    patterns: Math.max(0, raw.patterns - policy.patterns),
+    categories: subtractSourceShapeCategoryCounts(raw.categories, policy.categories),
+    byFile,
+    raw,
+    policy,
+  };
+}
+
 export function collectOpaqueSourceFingerprintDebt(projectRoot = ROOT) {
   const testRoot = path.join(projectRoot, 'tests');
   return walk(testRoot)
@@ -149,7 +369,7 @@ export function collectOpaqueSourceFingerprintDebt(projectRoot = ROOT) {
 export function runSourceContractQualityAudit(projectRoot = ROOT) {
   const actual = collectOpaqueSourceFingerprintDebt(projectRoot);
   const actualByFile = new Map(actual.map(entry => [entry.file, entry.fixedSha256Baselines]));
-  const sourceShape = collectSourceShapeRegexMetrics(projectRoot);
+  const sourceShape = collectImplementationShapeRegexMetrics(projectRoot);
   const failures = [];
 
   for (const entry of actual) {
@@ -174,6 +394,29 @@ export function runSourceContractQualityAudit(projectRoot = ROOT) {
       failures.push(`${file}: stale source-fingerprint debt entry; remove it from the ledger`);
     } else if (!String(debt.reason || '').trim()) {
       failures.push(`${file}: source-fingerprint debt entry requires a migration reason`);
+    }
+  }
+
+  for (const [file, policy] of Object.entries(SOURCE_POLICY_REGEX_CONTRACTS)) {
+    const actualEntry = sourceShape.raw.byFile.find(entry => entry.file === file);
+    if (!actualEntry) {
+      failures.push(`${file}: registered source-policy contract has no measured source-shape regexes`);
+      continue;
+    }
+    if (!String(policy.reason || '').trim()) {
+      failures.push(`${file}: source-policy contract requires a review reason`);
+    }
+    if (actualEntry.patterns !== policy.patterns) {
+      failures.push(
+        `${file}: source-policy pattern count changed ${policy.patterns} -> ${actualEntry.patterns}; review the visual/source policy deliberately`
+      );
+    }
+    for (const key of SOURCE_SHAPE_REGEX_KEYS) {
+      if (actualEntry.categories[key] !== policy.categories[key]) {
+        failures.push(
+          `${file}: source-policy category ${key} changed ${policy.categories[key]} -> ${actualEntry.categories[key]}; review deliberately`
+        );
+      }
     }
   }
 
@@ -223,7 +466,8 @@ function main() {
   }
   console.log(
     `[source-contract-quality] ok (${result.files} opaque debt files, ${result.fixedSha256Baselines} fixed SHA-256 baselines; ` +
-      `${result.sourceShape.files} source-shape files, ${result.sourceShape.patterns} indicators)`
+      `${result.sourceShape.files} implementation-shape files, ${result.sourceShape.patterns} debt indicators; ` +
+      `${result.sourceShape.policy.files} registered source-policy files, ${result.sourceShape.policy.patterns} policy indicators)`
   );
 }
 

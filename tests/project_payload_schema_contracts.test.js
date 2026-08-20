@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
-import { getInterfaceFact, getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
+import {
+  getFunctionSignatureFact,
+  getInterfaceFact,
+  getTypeLiteralPropertyFacts,
+} from './_semantic_source_contracts.js';
 
 const mapsTypes = readSource('../types/maps.ts', import.meta.url);
 const projectTypes = readSource('../types/project.ts', import.meta.url);
@@ -210,10 +214,26 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     [
       /function readSavedNotes\(value: unknown\): ProjectSavedNotesLike \{/,
       /function cloneProjectJson\(value: unknown\): ProjectPdfDraftLike \| null \{/,
-      /export function buildProjectUiSnapshot\([\s\S]*savedNotes: ProjectSavedNotesLike/s,
       /orderPdfEditorDraft: hasDraft \? cloneProjectJson\(rec\.orderPdfEditorDraft\) : null/,
     ],
     'loadHelpers'
+  );
+
+  assert.deepEqual(
+    getFunctionSignatureFact(loadHelpers, 'buildProjectUiSnapshot', 'project_io_load_helpers.ts'),
+    {
+      name: 'buildProjectUiSnapshot',
+      async: false,
+      params: [
+        {
+          name: 'data',
+          optional: false,
+          type: 'ProjectDataLike|UnknownRecord|null|undefined',
+        },
+        { name: 'currentProjectName', optional: false, type: 'string' },
+      ],
+      returnType: 'type{uiState:UiStateLike;savedNotes:ProjectSavedNotesLike}',
+    }
   );
 
   assertMatchesAll(
@@ -222,7 +242,6 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     [
       /hasCurrentProjectSchema\(data: unknown\): boolean/,
       /validateProjectData\(data: ProjectDataLike\): ProjectSchemaValidationResult/,
-      /normalizeProjectData\(input: unknown, nowISO\?: string\): ProjectDataLike \| null/,
       /function ensureSettingsRecord\(data: ProjectDataLike\): ProjectSettingsLike & UnknownRecord|export function ensureSettingsRecord\(data: ProjectDataLike\): ProjectSettingsLike & UnknownRecord/,
       /function ensureTogglesRecord\(data: ProjectDataLike\): ProjectTogglesLike & UnknownRecord/,
       /function readSavedNotes\(value: unknown\): ProjectSavedNotesLike \{/,
@@ -232,6 +251,19 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /project_schema_validation\.js/,
     ],
     'projectSchema'
+  );
+
+  assert.deepEqual(
+    getFunctionSignatureFact(projectSchema, 'normalizeProjectData', 'project_schema.bundle.ts'),
+    {
+      name: 'normalizeProjectData',
+      async: false,
+      params: [
+        { name: 'input', optional: false, type: 'unknown' },
+        { name: 'nowISO', optional: true, type: 'string' },
+      ],
+      returnType: 'ProjectDataLike|null',
+    }
   );
   assertMatchesAll(
     assert,

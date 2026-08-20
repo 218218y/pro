@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { assertCallObjectContract } from './_semantic_source_contracts.js';
 
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
@@ -37,12 +38,36 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   assert.match(paintDoorStyle, /setCfgDoorStyleMap\(args\.App, doorStyleMap, baseMeta\)/);
   assert.doesNotMatch(paintDoorStyle, /cfgSetMap\(args\.App, 'doorStyleMap'/);
   assert.match(paintCommand, /export function resolveDoorStylePaintCommandTargetKey/);
-  assert.match(paintCommand, /resolveDoorAuthoringStylePaintTargetKey\(\{/);
+  assertCallObjectContract(assert, paintCommand, 'resolveDoorAuthoringStylePaintTargetKey', {
+    argIndex: 0,
+    requiredProperties: {
+      foundPartId: true,
+      effectiveDoorId: true,
+      foundDrawerId: true,
+      activeStack: true,
+      isDoorOrDrawerLikePartId: true,
+      scopePartKeyForStack: true,
+    },
+    requiredIdentifiers: ['__wp_isDoorOrDrawerLikePartId', '__wp_scopeCornerPartKeyForStack'],
+    label: 'door-style authoring target resolution',
+    fileName: 'canvas_picking_paint_command.ts',
+  });
   assert.match(paintCommand, /isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId/);
   assert.match(paintCommand, /scopePartKeyForStack: __wp_scopeCornerPartKeyForStack/);
-  assert.match(paintDoorStyle, /resolveDoorStylePaintCommandTargetKey\(\{/);
   assert.doesNotMatch(paintDoorStyle, /toDoorStyleOverrideMapKey/);
-  assert.match(hover, /resolveDoorStylePaintSelectionState\(\{/);
+  assertCallObjectContract(assert, paintDoorStyle, 'resolveDoorStylePaintCommandTargetKey', {
+    argIndex: 0,
+    requiredProperties: { foundPartId: true, effectiveDoorId: true, drawerId: true, stack: true },
+    label: 'door-style paint command target resolution',
+    fileName: 'canvas_picking_paint_flow_apply_door_style.ts',
+  });
+  assertCallObjectContract(assert, hover, 'resolveDoorStylePaintSelectionState', {
+    argIndex: 0,
+    requiredProperties: { paintSelection: true, doorStyleMap: true, partId: true },
+    requiredIdentifiers: ['normalizedPaintSelection', 'doorStyleMap', 'partKey'],
+    label: 'door-style hover selection state',
+    fileName: 'canvas_picking_door_action_hover_preview_paint.ts',
+  });
   assert.match(hover, /doorStylePaintState\.willRemove/);
   assert.match(grooveSegments, /shared\/door_groove_key_contracts_shared\.js/);
   assert.match(grooveSegments, /shared\/door_visual_key_contracts_shared\.js/);

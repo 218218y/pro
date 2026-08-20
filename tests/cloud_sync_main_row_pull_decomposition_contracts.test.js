@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import { getVariableFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 const pullFacade = readSource('../esm/native/services/cloud_sync_main_row_pull.ts', import.meta.url);
 const pullSharedOwner = readSource(
@@ -25,12 +26,16 @@ test('[cloud-sync-main-row-pull] facade stays thin while shared state/diag helpe
     ],
     'pullFacade'
   );
+  assert.equal(
+    getVariableFunctionSignatureFact(pullFacade, 'queuePullSoon', 'cloud_sync_main_row_pull.ts'),
+    null,
+    'thin pull facade should not own queuePullSoon'
+  );
   assertLacksAll(
     assert,
     pullFacade,
     [
       /createPendingReasonState\(/,
-      /const queuePullSoon = \(opts\?: MainRowPullRequestOptions, rememberReason = true\): void => \{/,
       /const parkPullUntilFlightsSettle = \(delayMsRaw: number\): boolean => \{/,
       /diag\('mainRow\.pull:coalesced:run'/,
     ],
@@ -55,11 +60,31 @@ test('[cloud-sync-main-row-pull] facade stays thin while shared state/diag helpe
     pullRuntimeOwner,
     [
       /export function createCloudSyncMainRowPullFlow\(/,
-      /const queuePullSoon = \(opts\?: MainRowPullRequestOptions, rememberReason = true\): void => \{/,
       /const parkPullUntilFlightsSettle = \(delayMsRaw: number\): boolean => \{/,
       /const runPullOnce = \(isInitial: boolean\): Promise<void> => \{/,
       /const flushPendingPullAfterFlights = \(\): void => \{/,
     ],
     'pullRuntimeOwner'
+  );
+  assert.deepEqual(
+    getVariableFunctionSignatureFact(
+      pullRuntimeOwner,
+      'queuePullSoon',
+      'cloud_sync_main_row_pull_runtime.ts'
+    ),
+    {
+      name: 'queuePullSoon',
+      async: false,
+      params: [
+        { name: 'opts', optional: true, type: 'MainRowPullRequestOptions' },
+        {
+          name: 'rememberReason',
+          optional: true,
+          type: null,
+          default: { kind: 'literal', value: true },
+        },
+      ],
+      returnType: 'void',
+    }
   );
 });

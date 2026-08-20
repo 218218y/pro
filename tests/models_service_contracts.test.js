@@ -116,7 +116,11 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     'modelsTypes'
   );
   assertMatchesAll(assert, typesIndex, [/export \* from '\.\/models';/], 'typesIndex');
-  assertMatchesAll(assert, buildTypes, [/models\?: ModelsServiceLike;/], 'buildTypes');
+  const servicesNamespace = getInterfaceFact(buildTypes, 'ServicesNamespace', 'types/build.bundle.ts');
+  assert.deepEqual(
+    servicesNamespace?.properties.find(property => property.name === 'models'),
+    { name: 'models', optional: true, readonly: false, type: 'ModelsServiceLike' }
+  );
 
   assertMatchesAll(
     assert,
@@ -177,12 +181,27 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     [
       /export function ensureModelsLoadedViaServiceOrThrow\(/,
       /export function exportUserModelsViaService\(App: unknown\): SavedModelLike\[\]/,
-      /export async function mergeImportedModelsViaService\([\s\S]*?\): Promise<ModelsMergeResult>/,
       /export async function mergeImportedModelsViaServiceOrThrow\(/,
       /export function setModelNormalizerViaService\(/,
       /export function setPresetModelsViaService\(/,
     ],
     'modelsAccessCommands'
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      modelsAccessCommands,
+      'mergeImportedModelsViaService',
+      'models_access_commands.ts'
+    ),
+    {
+      name: 'mergeImportedModelsViaService',
+      async: true,
+      params: [
+        { name: 'App', optional: false, type: 'unknown' },
+        { name: 'list', optional: false, type: 'SavedModelLike[]' },
+      ],
+      returnType: 'Promise<ModelsMergeResult>',
+    }
   );
 
   assert.deepEqual(
@@ -275,12 +294,23 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     modelsHelpers,
     [
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
-      /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
       /export function saveCurrentModelInternal\(/,
       /export function transferModelInternal\(/,
       /export function applyModelInternal\(App: AppContainer, id: SavedModelId\): ModelsCommandResult/,
     ],
     'modelsHelpers'
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(modelsRegistry, 'mergeImportedModelsInternal', 'models_registry.ts'),
+    {
+      name: 'mergeImportedModelsInternal',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'list', optional: false, type: 'SavedModelLike[]' },
+      ],
+      returnType: 'Promise<ModelsMergeResult>',
+    }
   );
   assert.deepEqual(
     getFunctionSignatureFact(modelsRegistry, 'ensureModelsLoadedInternal', 'models_registry.ts'),
@@ -392,7 +422,6 @@ test('models top-level owners stay thin and delegate command/storage policy to d
       /\.\/models_registry_storage\.js/,
       /\.\/models_registry_shared\.js/,
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
-      /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
     ],
     'modelsRegistryThinOwner'
   );

@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll } from './_source_bundle.js';
-import { getFunctionSignatureFact, getInterfaceFact } from './_semantic_source_contracts.js';
+import {
+  assertCallObjectContract,
+  getFunctionSignatureFact,
+  getInterfaceFact,
+} from './_semantic_source_contracts.js';
 
 const kernel = readSource('../esm/native/kernel/kernel.ts', import.meta.url);
 const capture = readSource('../esm/native/kernel/kernel_project_capture.ts', import.meta.url);
@@ -43,12 +47,24 @@ test('[kernel-project-capture] kernel delegates project serialization to focused
     kernel,
     [
       /from '\.\/kernel_project_capture\.js';/,
-      /projectCapture\.capture = createKernelProjectCapture\(\{/,
+      /projectCapture\.capture\s*=/,
       /captureSavedNotes: \(\) => captureSavedNotesViaService\(App\)/,
       /getUiSnapshot: \(\) => asRecord\(getUi\(App\), \{\}\)/,
     ],
     'kernel owner'
   );
+  assertCallObjectContract(assert, kernel, 'createKernelProjectCapture', {
+    argIndex: 0,
+    requiredProperties: {
+      stateKernel: true,
+      getUiSnapshot: true,
+      captureSavedNotes: true,
+      reportKernelError: true,
+    },
+    requiredIdentifiers: ['App', '__sk', 'reportKernelError'],
+    label: 'kernel project capture installation',
+    fileName: 'kernel.ts',
+  });
 
   assertMatchesAll(
     assert,
@@ -58,11 +74,17 @@ test('[kernel-project-capture] kernel delegates project serialization to focused
       /stateKernel: StateKernelLike \| null \| undefined;/,
       /hasCanonicalEssentialUiRawDimsFromSnapshot\(/,
       /from '\.\/kernel_project_capture_payload\.js';/,
-      /buildKernelProjectCaptureData\(\{/,
       /savedNotes: args\.captureSavedNotes\(\),/,
     ],
     'kernel project capture seam'
   );
+  assertCallObjectContract(assert, capture, 'buildKernelProjectCaptureData', {
+    argIndex: 0,
+    requiredProperties: { uiRec: true, rawAny: true, cfgRec: true, savedNotes: true },
+    requiredIdentifiers: ['uiRec', 'rawAny', 'cfgRec'],
+    label: 'kernel project capture payload builder',
+    fileName: 'kernel_project_capture.ts',
+  });
 
   assert.ok(
     captureBundle.includes('stackSplitLowerDepthManual'),
@@ -86,7 +108,7 @@ test('[kernel-snapshot-store] snapshot/store seam stays typed and publicly compa
     kernel,
     [
       /import \{ createKernelSnapshotStoreSystem \} from '\.\/kernel_snapshot_store_system\.js';/,
-      /const snapshotStore = createKernelSnapshotStoreSystem\(\{/,
+      /const snapshotStore\s*=/,
       /__sk\.getBuildState = snapshotStore\.getBuildState;/,
       /__sk\.commitFromSnapshot = snapshotStore\.commitFromSnapshot;/,
       /__sk\.syncStore = snapshotStore\.syncStore;/,
@@ -97,6 +119,13 @@ test('[kernel-snapshot-store] snapshot/store seam stays typed and publicly compa
     ],
     'kernel owner'
   );
+  assertCallObjectContract(assert, kernel, 'createKernelSnapshotStoreSystem', {
+    argIndex: 0,
+    requiredProperties: { stateKernel: true, setStoreUiSnapshot: true, touchStore: true },
+    requiredIdentifiers: ['App', '__sk', 'asRecord', 'reportKernelError'],
+    label: 'kernel snapshot-store installation',
+    fileName: 'kernel.ts',
+  });
 
   const buildStateFact = getInterfaceFact(
     snapshotStore,
@@ -211,12 +240,18 @@ test('[kernel-edit-state] kernel delegates edit-state capture/apply to dedicated
     kernel,
     [
       /from '\.\/kernel_edit_state_system\.js';/,
-      /const editStateSystem = createKernelEditStateSystem\(\{/,
+      /const editStateSystem\s*=/,
       /__sk\.captureEditState = editStateSystem\.captureEditState;/,
       /__sk\.applyEditState = editStateSystem\.applyEditState;/,
     ],
     'kernel owner'
   );
+  assertCallObjectContract(assert, kernel, 'createKernelEditStateSystem', {
+    argIndex: 0,
+    requiredIdentifiers: ['App', 'reportNonFatal'],
+    label: 'kernel edit-state installation',
+    fileName: 'kernel.ts',
+  });
   assertMatchesAll(
     assert,
     editState,

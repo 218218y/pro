@@ -8,6 +8,7 @@ import {
   assertMatchesAll,
   assertLacksAll,
 } from './_source_bundle.js';
+import { getFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 {
   const entryOwner = readSource('../esm/entry_pro.ts', import.meta.url);
@@ -261,9 +262,15 @@ import {
     assertLacksAll(
       assert,
       releaseMainOwner,
-      [/catch\s*\{\s*\/\/ ignore/, /ensureReactFlags/, /deps\?: Deps/],
+      [/catch\s*\{\s*\/\/ ignore/, /ensureReactFlags/],
       'releaseMainOwner'
     );
+    assert.deepEqual(getFunctionSignatureFact(releaseMainOwner, 'boot', 'release_main.ts'), {
+      name: 'boot',
+      async: true,
+      params: [{ name: 'opts', optional: false, type: 'type{deps:Deps}' }],
+      returnType: 'Promise<AppContainer>',
+    });
     assertMatchesAll(
       assert,
       bootSequenceOwner,

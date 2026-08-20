@@ -11,6 +11,11 @@ import {
   assertMatchesAny,
   assertLacksAll,
 } from './_source_bundle.js';
+import {
+  assertCallObjectContract,
+  getAssignedFunctionSignatureFact,
+  getInterfaceFact,
+} from './_semantic_source_contracts.js';
 
 const ROOT_URL = new URL('../esm/native/', import.meta.url);
 const ROOT_DIR = fileURLToPath(ROOT_URL);
@@ -78,11 +83,19 @@ test('[statekernel audit] notes, boot, and canvas writers stay on canonical acti
     notesService,
     [
       /function getMetaActions\(App: NotesServiceApp\): (?:MetaActionsNamespaceLike|NotesMetaActionsLike) \| null/,
-      /notesNs\.persist = \(meta\?: (?:ActionMetaLike \| UnknownRecord|AnyRecord)\) => \{/,
       /const payload = notesMeta\.build\('notes:react',/,
       /typeof metaNs\.persist === 'function'/,
     ],
     'notes service'
+  );
+  assert.deepEqual(
+    getAssignedFunctionSignatureFact(notesService, 'notesNs.persist', 'notes_service.bundle.ts'),
+    {
+      name: 'notesNs.persist',
+      async: false,
+      params: [{ name: 'meta', optional: true, type: 'ActionMetaLike|UnknownRecord' }],
+      returnType: null,
+    }
   );
   assertMatchesAny(
     assert,
@@ -98,14 +111,30 @@ test('[statekernel audit] notes, boot, and canvas writers stay on canonical acti
     stateApiMetaHistory,
     [
       /isActionStubFn\(metaNs\.persist, 'meta:persist'\)/,
-      /metaNs\.persist = function persist\(meta\?: ActionMetaLike\)/,
       /Delete-pass: persistence nudges should stay on canonical actions\/store paths\./,
       /return metaNs\.touch\?\.\(m\);/,
     ],
     'state history/meta'
   );
   assert.doesNotMatch(stateApiMetaHistory, /sk\['persist'\]/);
-  assert.match(typesKernel, /persist: \(meta\?: ActionMetaLike\) => unknown;/);
+  const metaActions = getInterfaceFact(typesKernel, 'MetaActionsNamespaceLike', 'types/kernel.ts');
+  assert.equal(
+    metaActions?.properties.find(property => property.name === 'persist')?.type,
+    'fn(meta?:ActionMetaLike)->unknown'
+  );
+  assert.deepEqual(
+    getAssignedFunctionSignatureFact(
+      stateApiMetaHistory,
+      'metaNs.persist',
+      'state_api_history_meta.bundle.ts'
+    ),
+    {
+      name: 'metaNs.persist',
+      async: false,
+      params: [{ name: 'meta', optional: true, type: 'ActionMetaLike' }],
+      returnType: null,
+    }
+  );
 
   assertMatchesAll(
     assert,
@@ -127,13 +156,22 @@ test('[statekernel audit] notes, boot, and canvas writers stay on canonical acti
   assertMatchesAll(
     assert,
     canvasPickingBundle,
-    [
-      /commitCanvasModuleStructuralPatch\(\{/,
-      /readCanvasModuleConfigForStack\(\{/,
-      /moduleKey: `corner:\$\{cellIdx\}`/,
-    ],
+    [/moduleKey: `corner:\$\{cellIdx\}`/],
     'canvas picking bundle'
   );
+  assertCallObjectContract(assert, canvasPickingBundle, 'commitCanvasModuleStructuralPatch', {
+    argIndex: 0,
+    requiredProperties: { moduleKey: true, mutate: true, meta: true },
+    label: 'canvas structural patch',
+    fileName: 'canvas_picking.bundle.ts',
+  });
+  assertCallObjectContract(assert, canvasPickingBundle, 'readCanvasModuleConfigForStack', {
+    argIndex: 0,
+    requiredProperties: { moduleKey: true },
+    requiredIdentifiers: ['cellIdx'],
+    label: 'corner module config read',
+    fileName: 'canvas_picking.bundle.ts',
+  });
   assertLacksAll(
     assert,
     canvasPickingBundle,

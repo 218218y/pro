@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import {
+  assertCallObjectContract,
+  getFunctionReturnFacts,
+  getVariableInitializerFact,
+} from './_semantic_source_contracts.js';
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -30,6 +35,9 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
     read('esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts'),
     read('esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_config.ts'),
   ].join('\n');
+  const surfaceCommitShared = read(
+    'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts'
+  );
   const clickMode = [
     'esm/native/services/canvas_picking_sketch_module_surface_commit.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_commit_flow.ts',
@@ -59,23 +67,57 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
   );
   assert.doesNotMatch(hoverModule, /boxWidthOverrideM = widthCm \/ 100/);
   assert.doesNotMatch(hoverModule, /boxDepthOverrideM = depthCm \/ 100/);
-  assert.match(clickMode, /const widthCm = readNumber\(spec \? spec\.widthCm : null\);/);
-  assert.match(clickMode, /const depthCm = readNumber\(spec \? spec\.depthCm : null\);/);
   assert.match(clickMode, /import \{ cmToM \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
-  assert.match(clickMode, /boxWM: widthCm != null && widthCm > 0 \? cmToM\(widthCm\) : null,/);
-  assert.match(clickMode, /boxDM: depthCm != null && depthCm > 0 \? cmToM\(depthCm\) : null,/);
-  assert.doesNotMatch(clickMode, /boxWM: widthCm != null && widthCm > 0 \? widthCm \/ 100 : null,/);
-  assert.doesNotMatch(clickMode, /boxDM: depthCm != null && depthCm > 0 \? depthCm \/ 100 : null,/);
+  for (const [name, member] of [
+    ['widthCm', 'spec.widthCm'],
+    ['depthCm', 'spec.depthCm'],
+  ]) {
+    const fact = getVariableInitializerFact(
+      surfaceCommitShared,
+      name,
+      'canvas_picking_sketch_module_surface_commit_shared.ts'
+    );
+    assert.equal(fact?.kind, 'call');
+    assert.equal(fact?.callee, 'readNumber');
+    const input = fact?.args?.[0];
+    assert.equal(input?.kind, 'conditional');
+    assert.equal(input?.test?.kind, 'identifier');
+    assert.equal(input?.test?.name, 'spec');
+    assert.equal(input?.consequent?.kind, 'member');
+    assert.equal(input?.consequent?.path, member);
+    assert.equal(input?.alternate?.kind, 'literal');
+    assert.equal(input?.alternate?.value, null);
+  }
+  const boxToolReturns = getFunctionReturnFacts(
+    surfaceCommitShared,
+    'parseSketchModuleBoxTool',
+    'canvas_picking_sketch_module_surface_commit_shared.ts'
+  );
+  assert.equal(boxToolReturns?.length, 1);
+  const boxToolResult = boxToolReturns?.[0];
+  assert.equal(boxToolResult?.kind, 'object');
+  for (const [property, scalar] of [
+    ['boxWM', 'widthCm'],
+    ['boxDM', 'depthCm'],
+  ]) {
+    const value = boxToolResult?.properties?.[property];
+    assert.equal(value?.kind, 'conditional');
+    assert.equal(value?.consequent?.kind, 'call');
+    assert.equal(value?.consequent?.callee, 'cmToM');
+    assert.equal(value?.consequent?.args?.[0]?.kind, 'identifier');
+    assert.equal(value?.consequent?.args?.[0]?.name, scalar);
+    assert.equal(value?.alternate?.kind, 'literal');
+    assert.equal(value?.alternate?.value, null);
+  }
 });
 
 test('free-box content commit stays centralized while preserving click safeguards', () => {
+  const runtimeCommitOwner = read('esm/native/services/canvas_picking_sketch_box_runtime_commit.ts');
+  const freeContentOwner = read('esm/native/services/canvas_picking_click_manual_sketch_free_content.ts');
+  const freeBoxOwner = read('esm/native/services/canvas_picking_click_manual_sketch_free_box.ts');
   const shared = [
     read('esm/native/services/canvas_picking_sketch_box_content_commit.ts'),
     read('esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts'),
-  ].join('\n');
-  const helpers = [
-    read('esm/native/services/canvas_picking_sketch_box_runtime.ts'),
-    read('esm/native/services/canvas_picking_sketch_box_runtime_commit.ts'),
   ].join('\n');
   const freeClick = [
     read('esm/native/services/canvas_picking_click_manual_sketch_free_flow.ts'),
@@ -88,14 +130,24 @@ test('free-box content commit stays centralized while preserving click safeguard
   assert.match(shared, /drawerCount,/);
   assert.match(shared, /op: 'add'/);
   assert.match(shared, /op: 'remove'/);
-  assert.match(
-    helpers,
-    /(?:const commit = (?:deps\.)?commitSketchFreePlacementHoverRecord\(\{|commitSketchFreePlacementHoverRecord\()/
-  );
-  assert.match(
-    freeClick,
-    /(?:const commit = (?:deps\.)?commitSketchFreePlacementHoverRecord\(\{|commitSketchFreePlacementHoverRecord\()/
-  );
+  assertCallObjectContract(assert, runtimeCommitOwner, 'deps.commitSketchFreePlacementHoverRecord', {
+    argIndex: 0,
+    requiredProperties: { App: true, host: true, hoverRec: true, freeBoxContentKind: true, floorY: true },
+    label: 'runtime free-box placement commit',
+    fileName: 'canvas_picking_sketch_box_runtime_commit.ts',
+  });
+  assertCallObjectContract(assert, freeContentOwner, 'commitSketchFreePlacementHoverRecord', {
+    argIndex: 0,
+    requiredProperties: { App: true, host: true, hoverRec: true, freeBoxContentKind: true, floorY: true },
+    label: 'free-content placement commit',
+    fileName: 'canvas_picking_click_manual_sketch_free_content.ts',
+  });
+  assertCallObjectContract(assert, freeBoxOwner, 'commitSketchFreePlacementHoverRecord', {
+    argIndex: 0,
+    requiredProperties: { App: true, host: true, hoverRec: true, floorY: true },
+    label: 'free-box placement commit',
+    fileName: 'canvas_picking_click_manual_sketch_free_box.ts',
+  });
   assert.match(
     freeClick,
     /function isRecentModuleScopedSketchHover\(hover: unknown, tool: string\): boolean/

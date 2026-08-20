@@ -4,10 +4,16 @@ import assert from 'node:assert/strict';
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readServicesApiPublicSurface } from './_services_api_bundle.js';
 import { readFirstExisting } from './_read_src.js';
+import { getCallFacts } from './_semantic_source_contracts.js';
 
 const runtimeApi = readSource('../esm/native/runtime/api.ts', import.meta.url);
 const servicesApi = readServicesApiPublicSurface(import.meta.url);
 const browserDownload = readSource('../esm/native/runtime/browser_download.ts', import.meta.url);
+const pdfDownloadCommands = readSource(
+  '../esm/native/ui/react/pdf/order_pdf_overlay_export_commands_downloads.ts',
+  import.meta.url
+);
+const pdfGmailOps = readSource('../esm/native/ui/react/pdf/order_pdf_overlay_gmail_ops.ts', import.meta.url);
 const exportSnapshot = readSource(
   '../esm/native/ui/export/export_canvas_workflow_snapshot.ts',
   import.meta.url
@@ -220,17 +226,37 @@ test('[export-download-dom] export and PDF flows use shared delivery seams inste
   assertMatchesAll(
     assert,
     pdfOverlay,
-    [
-      /triggerBlobDownloadViaBrowser\(\{ docMaybe, winMaybe \}, built\.blob, built\.fileName\)/,
-      /triggerBlobDownloadViaBrowser\(\{ docMaybe, winMaybe \}, built\.blob, fileName\)/,
-      /triggerBlobDownloadViaBrowser\(\{ docMaybe, winMaybe \}, blob, fileName\)/,
-      /order_pdf_overlay_runtime\.js/,
-      /order_pdf_overlay_text\.js/,
-      /order_pdf_overlay_interactions\.js/,
-    ],
+    [/order_pdf_overlay_runtime\.js/, /order_pdf_overlay_text\.js/, /order_pdf_overlay_interactions\.js/],
     'pdfOverlay'
   );
   assert.doesNotMatch(pdfOverlay, /function triggerBlobDownload\(/);
+  const downloadCalls = getCallFacts(
+    pdfDownloadCommands,
+    'triggerBlobDownloadViaBrowser',
+    'order_pdf_overlay_export_commands_downloads.ts'
+  );
+  assert.equal(
+    downloadCalls.length,
+    2,
+    'PDF download owner should preserve exactly two browser-download calls'
+  );
+  for (const call of downloadCalls) {
+    const surface = call.args[0];
+    assert.equal(surface?.kind, 'object');
+    assert.equal(surface?.properties.docMaybe?.kind, 'identifier');
+    assert.equal(surface?.properties.docMaybe?.name, 'docMaybe');
+    assert.equal(surface?.properties.winMaybe?.kind, 'identifier');
+    assert.equal(surface?.properties.winMaybe?.name, 'winMaybe');
+  }
+  const gmailDownloadCalls = getCallFacts(
+    pdfGmailOps,
+    'triggerBlobDownloadViaBrowser',
+    'order_pdf_overlay_gmail_ops.ts'
+  );
+  assert.equal(gmailDownloadCalls.length, 1, 'PDF Gmail fallback should preserve one browser-download call');
+  assert.equal(gmailDownloadCalls[0]?.args[0]?.kind, 'object');
+  assert.equal(gmailDownloadCalls[0]?.args[0]?.properties.docMaybe?.name, 'docMaybe');
+  assert.equal(gmailDownloadCalls[0]?.args[0]?.properties.winMaybe?.name, 'winMaybe');
 });
 
 test('[export-download-dom] notes and PDF DOM hotspots stay on shared DOM helpers', () => {

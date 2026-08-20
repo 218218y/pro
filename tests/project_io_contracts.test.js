@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readServicesApiPublicSurface } from './_services_api_bundle.js';
+import {
+  assertCallObjectContract,
+  getCallFacts,
+  getFunctionSignatureFact,
+  getInterfaceFact,
+  getTypeAliasFact,
+} from './_semantic_source_contracts.js';
 
 const projectIoAccessOwner = readSource('../esm/native/runtime/project_io_access.ts', import.meta.url);
 const projectIoAccess = bundleSources(
@@ -17,6 +24,15 @@ const projectIoAccess = bundleSources(
 const servicesApi = readServicesApiPublicSurface(import.meta.url);
 const projectIoOwner = readSource('../esm/native/io/project_io.ts', import.meta.url);
 const buildRuntimeTypes = readSource('../types/build_runtime.ts', import.meta.url);
+const projectLoadRuntimeAction = readSource(
+  '../esm/native/ui/project_load_runtime_action.ts',
+  import.meta.url
+);
+const projectSaveRuntimeResults = readSource(
+  '../esm/native/ui/project_save_runtime_results.ts',
+  import.meta.url
+);
+const smokeScenario = readSource('../esm/native/platform/smoke_checks_scenario.ts', import.meta.url);
 const stackRouter = bundleSources(
   [
     '../esm/native/kernel/state_api_stack_router.ts',
@@ -293,7 +309,19 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     ],
     'projectIoAccess'
   );
-  assert.doesNotMatch(buildRuntimeTypes, /ProjectIoLoadResultLike|pending\?: boolean/);
+  assert.equal(
+    getTypeAliasFact(buildRuntimeTypes, 'ProjectIoLoadResultLike', 'types/build_runtime.ts'),
+    null
+  );
+  assert.equal(
+    getInterfaceFact(buildRuntimeTypes, 'ProjectIoLoadResultLike', 'types/build_runtime.ts'),
+    null
+  );
+  assert.equal(
+    buildRuntimeTypes.includes('pending?: boolean'),
+    false,
+    'legacy pending load-result field should stay retired'
+  );
   assertMatchesAll(
     assert,
     servicesApi,
@@ -325,14 +353,30 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /ensureProjectIoService\(App\)/,
       /const installedRuntimes = new WeakMap</,
       /Object\.assign\(ProjectIO, \{/,
-      /export function exportCurrentProject\(App: AppContainer, meta\?: UnknownRecord \| null\): ProjectExportResultLike \| null/,
       /export function loadProjectData\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
       /export function loadProjectDataFailFast\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
-      /export function restoreAutosaveFailFast\(App: AppContainer, opts\?: ProjectLoadFailFastOpts\)/,
       /Reflect\.deleteProperty\(ProjectIO, 'restoreLastSession'\)/,
     ],
     'projectIoOwner'
   );
+  assert.deepEqual(getFunctionSignatureFact(projectIoOwner, 'exportCurrentProject', 'project_io.ts'), {
+    name: 'exportCurrentProject',
+    async: false,
+    params: [
+      { name: 'App', optional: false, type: 'AppContainer' },
+      { name: 'meta', optional: true, type: 'UnknownRecord|null' },
+    ],
+    returnType: 'ProjectExportResultLike|null',
+  });
+  assert.deepEqual(getFunctionSignatureFact(projectIoOwner, 'restoreAutosaveFailFast', 'project_io.ts'), {
+    name: 'restoreAutosaveFailFast',
+    async: false,
+    params: [
+      { name: 'App', optional: false, type: 'AppContainer' },
+      { name: 'opts', optional: true, type: 'ProjectLoadFailFastOpts' },
+    ],
+    returnType: null,
+  });
   assertLacksAll(
     assert,
     projectIoOwner,
@@ -365,16 +409,45 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /await projectUiController\.handleLoadInputChange\(e\);/,
       /void projectUiController\.restoreLastSession\(\);/,
       /void projectUiController\.resetToDefault\(\);/,
-      /reportProjectLoadResult\(fb, result\)|reportProjectLoadResult\(\{ toast \}, result\)|reportProjectLoadResult\(\{ toast: toast \}, result\)|runProjectLoadAction\(|runProjectLoadActionResult\(/,
       /reportProjectRestoreResult\(fb, result\)|runProjectRestoreAction\(/,
-      /reportProjectSaveResult\(fb, result\)|reportProjectSaveResult\(\{ toast \}, result\)|reportProjectSaveResult\(\{ toast: toast \}, result\)/,
       /exportProjectResultViaService\(\s*App,\s*\{\s*source:\s*'ui:saveProject'\s*\}/,
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
       /loadProjectFileInputViaService\(App, file\)|runProjectLoadAction\(App, \{ toast \}, file/,
       /exportProjectResultViaService\(App, \{ source: 'smoke' \}/,
-      /loadProjectDataFailFastResultViaServiceOrThrow\([\s\S]*meta:\s*\{ source: 'smoke' \}[\s\S]*queueIfBusy:\s*false/,
     ],
     'projectIoBundle'
+  );
+  assertCallObjectContract(assert, projectLoadRuntimeAction, 'executeAsyncProjectActionResult', {
+    argIndex: 0,
+    requiredIdentifiers: ['reportProjectLoadResult'],
+    label: 'project load result feedback routing',
+    fileName: 'project_load_runtime_action.ts',
+  });
+  assert.ok(
+    getCallFacts(projectSaveRuntimeResults, 'reportProjectSaveResult', 'project_save_runtime_results.ts')
+      .length >= 2,
+    'project save result feedback should remain centralized in the save-runtime results owner'
+  );
+  assertCallObjectContract(assert, smokeScenario, 'loadProjectDataFailFastResultViaServiceOrThrow', {
+    argIndex: 2,
+    requiredProperties: { silent: true, toast: false, queueIfBusy: false, meta: true },
+    requiredIdentifiers: [],
+    label: 'smoke fail-fast project reload',
+    fileName: 'project_io.bundle.ts',
+  });
+  const smokeReloadCalls = getCallFacts(
+    smokeScenario,
+    'loadProjectDataFailFastResultViaServiceOrThrow',
+    'smoke_checks_scenario.ts'
+  );
+  assert.ok(
+    smokeReloadCalls.some(call => {
+      const opts = call.args[2];
+      const meta = opts?.kind === 'object' ? opts.properties.meta : null;
+      const source = meta?.kind === 'object' ? meta.properties.source : null;
+      return source?.kind === 'literal' && source.value === 'smoke';
+    }),
+    'smoke fail-fast reload should keep source=smoke metadata'
   );
   assertLacksAll(
     assert,
@@ -444,12 +517,16 @@ test('project load/save helpers preserve semantic load flags, UI ephemera, and b
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
       /createProjectUiActionController\(/,
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|openProjectSaveLoadInput\(input\)|runProjectUiLoadInputChange\(args, evt\)/,
-      /reportProjectSaveResult\(\{ toast \}, result\)|reportProjectSaveResult\(fb, result\)/,
       /setDirtyViaActions\(App, false, meta\)/,
       /normalizeDownloadFilename\(|createProjectSaveBrowserPrompt\(/,
       /downloadJsonTextViaBrowser\(/,
     ],
     'projectSaveLoadBundle'
+  );
+  assert.ok(
+    getCallFacts(projectSaveRuntimeResults, 'reportProjectSaveResult', 'project_save_runtime_results.ts')
+      .length >= 2,
+    'project save/load UI should preserve canonical save-result feedback routing'
   );
   assertLacksAll(
     assert,

@@ -57,6 +57,8 @@ function typeName(node) {
       return node.types.map(typeName).sort().join('&');
     case 'TSArrayType':
       return `${typeName(node.elementType)}[]`;
+    case 'TSIndexedAccessType':
+      return `${typeName(node.objectType)}[${typeName(node.indexType)}]`;
     case 'TSLiteralType':
       return node.literal?.type === 'Literal' ? JSON.stringify(node.literal.value) : null;
     case 'TSStringKeyword':
@@ -88,8 +90,15 @@ function typeName(node) {
       });
       return `fn(${params.join(',')})->${typeName(node.returnType)}`;
     }
-    case 'TSTypeLiteral':
-      return 'type-literal';
+    case 'TSTypeLiteral': {
+      const members = (node.members || [])
+        .filter(member => member?.type === 'TSPropertySignature')
+        .map(member => {
+          const name = identifierName(member.key);
+          return `${name}${member.optional === true ? '?' : ''}:${typeName(member.typeAnnotation)}`;
+        });
+      return `type{${members.join(';')}}`;
+    }
     default:
       return node.type || null;
   }
@@ -190,6 +199,61 @@ export function getVariableInitializerFact(source, variableName, fileName) {
     if (fact || node?.type !== 'VariableDeclarator' || node.id?.type !== 'Identifier') return;
     if (node.id.name !== variableName) return;
     fact = expressionFact(node.init);
+  });
+  return fact;
+}
+
+function functionLikeSignatureFact(node, name = null) {
+  if (!node) return null;
+  return {
+    name,
+    async: node.async === true,
+    params: (node.params || []).map(parameter => {
+      const param = unwrapExpression(parameter);
+      if (param?.type === 'Identifier') {
+        return {
+          name: param.name,
+          optional: param.optional === true,
+          type: typeName(param.typeAnnotation),
+        };
+      }
+      if (param?.type === 'AssignmentPattern' && param.left?.type === 'Identifier') {
+        return {
+          name: param.left.name,
+          optional: true,
+          type: typeName(param.left.typeAnnotation),
+          default: expressionFact(param.right),
+        };
+      }
+      return { name: param?.type || null, optional: false, type: null };
+    }),
+    returnType: typeName(node.returnType),
+  };
+}
+
+export function getAssignedFunctionSignatureFact(source, targetPath, fileName) {
+  const sourceFile = parse(source, fileName);
+  let fact = null;
+  walkAst(sourceFile, node => {
+    if (fact || node?.type !== 'AssignmentExpression') return;
+    const left = memberPath(node.left);
+    if (left !== targetPath) return;
+    const right = unwrapExpression(node.right);
+    if (right?.type !== 'ArrowFunctionExpression' && right?.type !== 'FunctionExpression') return;
+    fact = functionLikeSignatureFact(right, targetPath);
+  });
+  return fact;
+}
+
+export function getVariableFunctionSignatureFact(source, variableName, fileName) {
+  const sourceFile = parse(source, fileName);
+  let fact = null;
+  walkAst(sourceFile, node => {
+    if (fact || node?.type !== 'VariableDeclarator' || node.id?.type !== 'Identifier') return;
+    if (node.id.name !== variableName) return;
+    const init = unwrapExpression(node.init);
+    if (init?.type !== 'ArrowFunctionExpression' && init?.type !== 'FunctionExpression') return;
+    fact = functionLikeSignatureFact(init, variableName);
   });
   return fact;
 }
@@ -306,6 +370,9 @@ export function expressionFact(rawNode) {
       args: (node.arguments || []).map(expressionFact),
     };
   }
+  if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression') {
+    return { kind: 'function', ...functionLikeSignatureFact(node) };
+  }
   if (node.type === 'ObjectExpression') {
     const properties = {};
     const spreads = [];
@@ -332,6 +399,22 @@ export function expressionFact(rawNode) {
     };
   }
   return { kind: node.type || 'unknown' };
+}
+
+export function getFunctionReturnFacts(source, functionName, fileName) {
+  const sourceFile = parse(source, fileName);
+  let declaration = null;
+  walkAst(sourceFile, node => {
+    if (!declaration && node?.type === 'FunctionDeclaration' && node.id?.name === functionName) {
+      declaration = node;
+    }
+  });
+  if (!declaration?.body) return null;
+  const returns = [];
+  walkAst(declaration.body, node => {
+    if (node?.type === 'ReturnStatement') returns.push(expressionFact(node.argument));
+  });
+  return returns;
 }
 
 export function getCallFacts(source, calleeName, fileName) {

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 
 import {
   classifySourceShapeRegexPattern,
+  collectImplementationShapeRegexMetrics,
   collectOpaqueSourceFingerprintDebt,
-  collectSourceShapeRegexMetrics,
   OPAQUE_SOURCE_FINGERPRINT_DEBT,
+  SOURCE_POLICY_REGEX_CONTRACTS,
   SOURCE_SHAPE_REGEX_RATCHET,
   runSourceContractQualityAudit,
   scanOpaqueSourceFingerprintText,
@@ -54,11 +55,16 @@ test('source-contract quality debt ledger is exact and ratchets the current repo
       .map(([file, entry]) => ({ file, fixedSha256Baselines: entry.fixedSha256Baselines }))
       .sort((left, right) => left.file.localeCompare(right.file))
   );
-  const sourceShape = collectSourceShapeRegexMetrics();
+  const sourceShape = collectImplementationShapeRegexMetrics();
   assert.deepEqual(
     { files: sourceShape.files, patterns: sourceShape.patterns, categories: sourceShape.categories },
     SOURCE_SHAPE_REGEX_RATCHET
   );
+  assert.deepEqual(
+    sourceShape.policy.byFile.map(entry => entry.file).sort(),
+    Object.keys(SOURCE_POLICY_REGEX_CONTRACTS).sort()
+  );
+  assert.equal(sourceShape.raw.patterns, sourceShape.patterns + sourceShape.policy.patterns);
   const result = runSourceContractQualityAudit();
   assert.equal(result.ok, true, JSON.stringify(result.failures));
 });
