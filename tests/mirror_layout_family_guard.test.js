@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
 
 function read(rel) {
   return fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
@@ -18,6 +19,8 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
   const sharedContracts = read('esm/shared/mirror_layout_contracts_shared.ts');
   const geometry = read('esm/native/features/door_authoring/internal/mirror_geometry.ts');
   const lookup = read('esm/native/features/door_authoring/internal/mirror_lookup.ts');
+  const mirrorVisual = read('esm/native/builder/visuals_and_contents_door_visual_mirror.ts');
+  const mirrorPaint = read('esm/native/services/canvas_picking_paint_flow_mirror.ts');
   const mirrorLayoutNorm = normalizeWhitespace(mirrorLayout);
   const contractsNorm = normalizeWhitespace(contracts);
   const sharedSurfaceContractsNorm = normalizeWhitespace(sharedSurfaceContracts);
@@ -31,11 +34,6 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
     read('esm/native/builder/visuals_and_contents_door_visual_mirror.ts'),
   ].join('\n');
   const visualsNorm = normalizeWhitespace(visuals);
-  const paintFlow = [
-    read('esm/native/services/canvas_picking_paint_flow_apply.ts'),
-    read('esm/native/services/canvas_picking_paint_flow_apply_special.ts'),
-    read('esm/native/services/canvas_picking_paint_flow_mirror.ts'),
-  ].join('\n');
   const hoverModes = [
     read('esm/native/services/canvas_picking_door_action_hover_flow.ts'),
     read('esm/native/services/canvas_picking_door_action_hover_marker.ts'),
@@ -80,10 +78,6 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
   assert.match(geometryNorm, /const preparedRect = prepareMirrorRect\(args\.rect\);/);
   assert.match(
     geometryNorm,
-    /out\[i\] = resolveMirrorPlacementFromPreparedRect\(\{ preparedRect, layout: layouts\[i\] \}\);/
-  );
-  assert.match(
-    geometryNorm,
     /if \(placement\.faceSign !== DEFAULT_FACE_SIGN\) out\.faceSign = placement\.faceSign;/
   );
 
@@ -93,18 +87,47 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
     lookupNorm,
     /const requestedFaceSign = args\.faceSign == null \? null : normalizeMirrorFaceSign\(args\.faceSign, DEFAULT_FACE_SIGN\);/
   );
-  assert.match(
-    lookupNorm,
-    /const placement = resolveMirrorPlacementFromPreparedRect\(\{ preparedRect, layout \}\);/
-  );
+
+  assertCallObjectContract(assert, geometry, 'resolveMirrorPlacementFromPreparedRect', {
+    argIndex: 0,
+    requiredProperties: { preparedRect: true, layout: true },
+    requiredIdentifiers: ['preparedRect'],
+    label: 'mirror geometry prepared-layout placement',
+    fileName: 'mirror_geometry.ts',
+  });
+  assertCallObjectContract(assert, lookup, 'resolveMirrorPlacementFromPreparedRect', {
+    argIndex: 0,
+    requiredProperties: { preparedRect: true, layout: true },
+    requiredIdentifiers: ['preparedRect', 'layout'],
+    label: 'mirror lookup prepared-layout placement',
+    fileName: 'mirror_lookup.ts',
+  });
 
   assert.match(visualsNorm, /const placementFaceSign = readMirrorLayoutFaceSign\(placementLayout, zSign\);/);
-  assert.match(
-    visualsNorm,
-    /mirrorMesh\.position\.set\([\s\S]*placement\.offsetX,[\s\S]*placement\.offsetY,[\s\S]*depthLayout\.mirrorCenterZ \* placementFaceSign[\s\S]*\);/
-  );
-  assert.match(paintFlow, /buildMirrorLayoutFromHit\([\s\S]*faceSign,[\s\S]*\)/);
-  assert.match(paintFlow, /findMirrorLayoutMatchInRect\([\s\S]*faceSign,[\s\S]*\)/);
+  assert.deepEqual(getCallFacts(mirrorVisual, 'mirrorMesh.position.set', 'mirror_visual.ts'), [
+    {
+      callee: 'mirrorMesh.position.set',
+      args: [
+        { kind: 'member', path: 'placement.offsetX' },
+        { kind: 'member', path: 'placement.offsetY' },
+        {
+          kind: 'binary',
+          operator: '*',
+          left: { kind: 'member', path: 'depthLayout.mirrorCenterZ' },
+          right: { kind: 'identifier', name: 'placementFaceSign' },
+        },
+      ],
+    },
+  ]);
+  for (const callee of ['buildMirrorLayoutFromHit', 'findMirrorLayoutMatchInRect']) {
+    assertCallObjectContract(assert, mirrorPaint, callee, {
+      argIndex: 0,
+      requiredProperties: { faceSign: true },
+      requiredIdentifiers: ['faceSign'],
+      label: `mirror paint ${callee}`,
+      fileName: 'canvas_picking_paint_flow_mirror.ts',
+    });
+  }
   assert.match(hoverModes, /tryHandleDoorPaintHoverPreview/);
   assert.match(doorActionPreview, /const hitFaceSign = __resolveMirrorFaceSignFromLocalPoint\(localHit\);/);
   assert.match(doorActionPreview, /zOff = 0\.02 \* \(placement\.faceSign === -1 \? -1 : 1\);/);

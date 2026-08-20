@@ -10,6 +10,12 @@ import {
   normalizeWhitespace,
 } from './_source_bundle.js';
 import { readFirstExisting } from './_read_src.js';
+import {
+  assertCallExists,
+  assertImportsFrom,
+  getFunctionSignatureFact,
+  getTypeLiteralPropertyFacts,
+} from './_semantic_source_contracts.js';
 
 const storeUiActionFiles = [
   '../esm/native/ui/react/actions/store_actions_ui.ts',
@@ -126,6 +132,10 @@ const libraryPresetRuntime = read('esm/native/features/library_preset/library_pr
 const libraryPresetShared = read('esm/native/features/library_preset/library_preset_shared.ts');
 const libraryPresetTypes = read('esm/native/features/library_preset/library_preset_types.ts');
 const libraryModuleDefaults = read('esm/native/features/library_preset/module_defaults.ts');
+const structureLibraryHelpers = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_library_helpers.ts',
+  import.meta.url
+);
 const storeActions = normalizeWhitespace(
   [
     read('esm/native/ui/react/actions/store_actions.ts'),
@@ -471,11 +481,35 @@ test('library preset contracts stay typed and keep semantic write wrappers for s
     [
       /export type LibraryPresetUiSnapshot = UnknownRecord & \{/,
       /export type LibraryPresetConfigSnapshot = UnknownRecord & \{/,
-      /type LibraryPresetMetaSurface = \{[\s\S]*merge: \(meta\?: ActionMetaLike, defaults\?: ActionMetaLike, src\?: string\) => ActionMetaLike;/,
-      /type LibraryPresetConfigSurface = \{[\s\S]*setModulesConfiguration: \(next: ModulesConfigurationLike \| null, meta\?: ActionMetaLike\) => unknown;/,
-      /type LibraryPresetUiSurface = \{[\s\S]*setStackSplitLowerHeight: \(value: UiRawInputsLike\['stackSplitLowerHeight'\], meta\?: ActionMetaLike\) => unknown;/,
     ],
     'libraryPresetTypes'
+  );
+  const metaSurface = getTypeLiteralPropertyFacts(
+    libraryPresetTypes,
+    'LibraryPresetMetaSurface',
+    'library_preset_types.ts'
+  );
+  assert.equal(
+    metaSurface?.find(property => property.name === 'merge')?.type,
+    'fn(meta?:ActionMetaLike,defaults?:ActionMetaLike,src?:string)->ActionMetaLike'
+  );
+  const configSurface = getTypeLiteralPropertyFacts(
+    libraryPresetTypes,
+    'LibraryPresetConfigSurface',
+    'library_preset_types.ts'
+  );
+  assert.equal(
+    configSurface?.find(property => property.name === 'setModulesConfiguration')?.type,
+    'fn(next:ModulesConfigurationLike|null,meta?:ActionMetaLike)->unknown'
+  );
+  const uiSurface = getTypeLiteralPropertyFacts(
+    libraryPresetTypes,
+    'LibraryPresetUiSurface',
+    'library_preset_types.ts'
+  );
+  assert.equal(
+    uiSurface?.find(property => property.name === 'setStackSplitLowerHeight')?.type,
+    'fn(value:UiRawInputsLike["stackSplitLowerHeight"],meta?:ActionMetaLike)->unknown'
   );
 
   assertMatchesAll(
@@ -502,23 +536,25 @@ test('library preset contracts stay typed and keep semantic write wrappers for s
     ],
     'libraryPresetShared'
   );
-  assertMatchesAll(
-    assert,
-    libraryModuleDefaults,
-    [
-      /export function buildLibraryModuleCfgs\(topDoorsSig: number\[\], bottomDoorsSig: number\[\]\): \{[\s\S]*topCfgList: ModulesConfigurationLike;/,
-    ],
-    'libraryModuleDefaults'
+  assert.deepEqual(
+    getFunctionSignatureFact(libraryModuleDefaults, 'buildLibraryModuleCfgs', 'module_defaults.ts'),
+    {
+      name: 'buildLibraryModuleCfgs',
+      async: false,
+      params: [
+        { name: 'topDoorsSig', optional: false, type: 'number[]' },
+        { name: 'bottomDoorsSig', optional: false, type: 'number[]' },
+      ],
+      returnType: 'type{topCfgList:ModulesConfigurationLike;bottomCfgList:ModulesConfigurationLike}',
+    }
   );
 
   assertMatchesAll(
     assert,
     structureTab,
     [
-      /import type \{[\s\S]*LibraryPresetEnv,[\s\S]*LibraryPresetUiOverride,[\s\S]*LibraryPresetUiSnapshot,[\s\S]*\} from '\.\.\/\.\.\/\.\.\/features\/library_preset\/library_preset\.js';/,
       /features\/library_preset\/library_preset\.js/,
       /function mergeUiOverride\(baseUi: LibraryPresetUiSnapshot, patch: LibraryPresetUiOverride\): LibraryPresetUiOverride \{/,
-      /history: \{[\s\S]*batch: \(fn: \(\) => void, m\?: ActionMetaLike\) => runHistoryBatch\(app, fn, m\),[\s\S]*\}/,
       /MetaActionsNamespaceLike/,
       /const fn = metaNs\?\.merge;/,
       /const fn = metaNs\?\.noBuild;/,
@@ -538,6 +574,28 @@ test('library preset contracts stay typed and keep semantic write wrappers for s
     ],
     'structureTab'
   );
+  assertImportsFrom(
+    assert,
+    structureLibraryHelpers,
+    '../../../features/library_preset/library_preset.js',
+    ['LibraryPresetEnv', 'LibraryPresetUiOverride', 'LibraryPresetUiSnapshot'],
+    { label: 'structure library preset type seam', fileName: 'structure_tab_library_helpers.ts' }
+  );
+  assertCallExists(
+    assert,
+    structureLibraryHelpers,
+    'runHistoryBatch',
+    call =>
+      call.args[0]?.kind === 'identifier' &&
+      call.args[0].name === 'app' &&
+      call.args[1]?.kind === 'identifier' &&
+      call.args[1].name === 'fn' &&
+      call.args[2]?.kind === 'identifier' &&
+      call.args[2].name === 'm',
+    'library preset history batch',
+    'structure_tab_library_helpers.ts'
+  );
+
   assertLacksAll(assert, structureTab, [/setUiScalar\(app, 'slidingTracksColor'/], 'structureTab');
 
   assertMatchesAll(

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -56,11 +57,6 @@ const notesTimerFiles = [
   notesWorkflowPersistenceRuntime,
 ];
 
-function readPdfJsDocumentLikeBlock() {
-  const match = /export type PdfJsDocumentLike[\s\S]*?};/.exec(pdfContracts);
-  return match ? match[0] : '';
-}
-
 test('ui type hardening installs one canonical pdf-lib bridge', () => {
   assert.match(pdfLibHelper, /export async function loadPdfLibNamespace\(/);
   assert.match(pdfLibHelper, /export function readPdfDocumentCtor\(/);
@@ -84,13 +80,30 @@ test('ui type hardening routes order-pdf seams through the local pdf-lib bridge'
 });
 
 test('ui type hardening keeps pdfjs cleanup owned by the loading task', () => {
-  assert.doesNotMatch(readPdfJsDocumentLikeBlock(), /destroy\?:/);
+  const documentProps = getTypeLiteralPropertyFacts(
+    pdfContracts,
+    'PdfJsDocumentLike',
+    'order_pdf_overlay_contracts.ts'
+  );
+  assert.equal(
+    documentProps.some(property => property.name === 'destroy'),
+    false
+  );
   for (const source of [imagePdfOps, pdfImportText, pdfRenderShared, sketchPreviewPdfDocument]) {
     assert.doesNotMatch(source, /pdfDoc\.destroy|document-owned hook|pdfjs-dist 5/);
     assert.doesNotMatch(source, /export function cleanupOrderPdfDoc\b|cleanupOrderPdfDoc\(/);
   }
-  assert.match(pdfContracts, /export type PdfJsLoadingTaskLike/);
-  assert.match(pdfContracts, /destroy\?: \(\) => void/);
+  const loadingTaskProps = new Map(
+    getTypeLiteralPropertyFacts(pdfContracts, 'PdfJsLoadingTaskLike', 'order_pdf_overlay_contracts.ts').map(
+      property => [property.name, property]
+    )
+  );
+  assert.deepEqual(loadingTaskProps.get('destroy'), {
+    name: 'destroy',
+    optional: true,
+    readonly: false,
+    type: 'fn()->void',
+  });
 });
 
 test('ui type hardening normalizes notes typing timers to TimeoutHandleLike', () => {

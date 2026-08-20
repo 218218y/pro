@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readServicesApiPublicSurface } from './_services_api_bundle.js';
-import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
+import { assertCallObjectContract, assertNamedExports, getCallFacts } from './_semantic_source_contracts.js';
 
 const actionsAccessEntry = readSource('../esm/native/runtime/actions_access.ts', import.meta.url);
 const actionsAccessBundle = bundleSources(
@@ -108,11 +108,27 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
       /export \* from '\.\/actions_access_core\.js';/,
       /export \* from '\.\/actions_access_domains\.js';/,
       /export \* from '\.\/actions_access_mutations\.js';/,
-      /export \{[\s\S]*ensureActionsRoot,[\s\S]*\} from '\.\/actions_access_core\.js';/,
-      /export \{[\s\S]*getMetaActions,[\s\S]*\} from '\.\/actions_access_domains\.js';/,
-      /export \{[\s\S]*commitUiSnapshotViaActions,[\s\S]*commitUiConfigSnapshotViaActionsOrThrow,[\s\S]*commitProjectLoadSnapshotViaActionsOrThrow,[\s\S]*applyProjectConfigSnapshotViaActionsOrThrow,[\s\S]*\} from '\.\/actions_access_mutations\.js';/,
     ],
     'actionsAccessEntry'
+  );
+  assertNamedExports(assert, actionsAccessEntry, ['ensureActionsRoot'], {
+    sourceModule: './actions_access_core.js',
+    label: 'actions core seam',
+  });
+  assertNamedExports(assert, actionsAccessEntry, ['getMetaActions'], {
+    sourceModule: './actions_access_domains.js',
+    label: 'actions domain seam',
+  });
+  assertNamedExports(
+    assert,
+    actionsAccessEntry,
+    [
+      'commitUiSnapshotViaActions',
+      'commitUiConfigSnapshotViaActionsOrThrow',
+      'commitProjectLoadSnapshotViaActionsOrThrow',
+      'applyProjectConfigSnapshotViaActionsOrThrow',
+    ],
+    { sourceModule: './actions_access_mutations.js', label: 'actions mutation seam' }
   );
 
   assertMatchesAll(

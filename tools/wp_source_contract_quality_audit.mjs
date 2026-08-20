@@ -169,27 +169,14 @@ export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
       loopSyntax: 0,
     }),
   }),
-  'tests/wp_serial_tests_runtime.test.js': Object.freeze({
-    reason:
-      'Serial-test process harness regexes validate runtime child-process fixtures/output; they are not source implementation contracts.',
-    patterns: 7,
-    categories: Object.freeze({
-      crossStatement: 0,
-      exactObjectCall: 0,
-      optionalTypeSyntax: 0,
-      indexedAccessSyntax: 7,
-      ternaryUndefined: 0,
-      loopSyntax: 0,
-    }),
-  }),
   'tests/cloud_sync_gateway_security_contract.test.js': Object.freeze({
     reason: 'Cloud gateway SQL/privilege/retention assertions are explicit security source-policy contracts.',
-    patterns: 10,
+    patterns: 7,
     categories: Object.freeze({
       crossStatement: 7,
       exactObjectCall: 0,
       optionalTypeSyntax: 0,
-      indexedAccessSyntax: 3,
+      indexedAccessSyntax: 0,
       ternaryUndefined: 0,
       loopSyntax: 0,
     }),
@@ -206,19 +193,252 @@ export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
       loopSyntax: 0,
     }),
   }),
+  'tests/interior_tab_sections_runtime.test.js': Object.freeze({
+    reason:
+      'Interior section spacing, wrapping, and option-button layout are explicit CSS/visual source policy.',
+    patterns: 7,
+    categories: Object.freeze({
+      crossStatement: 7,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/front_special_visual_routes_guard.test.js': Object.freeze({
+    reason:
+      'Special glass/mirror front routing intentionally freezes visual-state forwarding at the render seam.',
+    patterns: 5,
+    categories: Object.freeze({
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 5,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/github_actions_ci_contracts.test.js': Object.freeze({
+    reason: 'GitHub workflow sequencing and release-gate topology are YAML source policy by definition.',
+    patterns: 3,
+    categories: Object.freeze({
+      crossStatement: 3,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/structure_e2e_surface_contracts.test.js': Object.freeze({
+    reason:
+      'Structure E2E hooks and selected-state probing are explicit integration/source policy for stable automation.',
+    patterns: 3,
+    categories: Object.freeze({
+      crossStatement: 3,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/structure_tab_dimensions_stack_split_layout_runtime.test.tsx': Object.freeze({
+    reason:
+      'Structure stack-split dimension row spacing, badge width, link typography, and restore-button width are explicit CSS/layout source policy.',
+    patterns: 4,
+    categories: Object.freeze({
+      crossStatement: 4,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/runtime_platform_core_family_contracts.test.js': Object.freeze({
+    reason:
+      'Runtime/platform core family assertions intentionally enforce owner decomposition, public API topology, and canonical install sequencing.',
+    patterns: 3,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 2,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/builder_service_access_build_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Builder service-access build decomposition assertions intentionally freeze facade-to-owner topology and delegated build seams.',
+    patterns: 2,
+    categories: Object.freeze({
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_main_row_pull_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud main-row pull decomposition assertions intentionally enforce facade/shared/runtime owner topology.',
+    patterns: 2,
+    categories: Object.freeze({
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_sketch_ops_sketch_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud sketch-room decomposition assertions intentionally enforce state/load/pull/push/runtime ownership topology.',
+    patterns: 2,
+    categories: Object.freeze({
+      crossStatement: 2,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_coalescer_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud coalescer decomposition assertions intentionally enforce shared/policy/diag/runtime ownership topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_install_runtime_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud install-runtime decomposition assertions intentionally enforce shared/ops/panel/create owner topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_lifecycle_realtime_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud realtime-lifecycle decomposition assertions intentionally enforce facade/shared/runtime topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_lifecycle_realtime_transport_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud realtime-transport decomposition assertions intentionally enforce cleanup/status/runtime owner topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_lifecycle_status_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud lifecycle-status decomposition assertions intentionally enforce the dedicated snapshot/phase mutation seam.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 0,
+      exactObjectCall: 1,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_main_row_remote_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud remote main-row decomposition assertions intentionally enforce facade/shared/push/pull owner topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_realtime_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud realtime decomposition assertions intentionally enforce facade/shared/module ownership topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/cloud_sync_sketch_ops_floating_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Cloud floating-sketch decomposition assertions intentionally enforce state/pull/push/runtime owner topology.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 1,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 0,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
+  'tests/kernel_store_boundary_decomposition_contracts.test.js': Object.freeze({
+    reason:
+      'Kernel/store boundary decomposition assertions intentionally enforce thin public owners and focused orchestration seams.',
+    patterns: 1,
+    categories: Object.freeze({
+      crossStatement: 0,
+      exactObjectCall: 0,
+      optionalTypeSyntax: 1,
+      indexedAccessSyntax: 0,
+      ternaryUndefined: 0,
+      loopSyntax: 0,
+    }),
+  }),
 });
 
 // Ratchet only the implementation-shaped debt. Explicit source-policy contracts above are
 // audited separately and cannot grow or drift without deliberate review.
 export const SOURCE_SHAPE_REGEX_RATCHET = Object.freeze({
-  files: 118,
-  patterns: 301,
+  files: 82,
+  patterns: 165,
   categories: Object.freeze({
-    crossStatement: 191,
-    exactObjectCall: 49,
-    optionalTypeSyntax: 54,
-    indexedAccessSyntax: 18,
-    ternaryUndefined: 25,
+    crossStatement: 104,
+    exactObjectCall: 35,
+    optionalTypeSyntax: 18,
+    indexedAccessSyntax: 9,
+    ternaryUndefined: 18,
     loopSyntax: 1,
   }),
 });
@@ -258,8 +478,8 @@ export function classifySourceShapeRegexPattern(patternIn) {
   return {
     crossStatement: pattern.includes('[\\s\\S]'),
     exactObjectCall: /\\\(\\\{|\\\(\\s\*\\\{/u.test(pattern),
-    optionalTypeSyntax: /\\\?\s*:\s*/u.test(pattern),
-    indexedAccessSyntax: /\\\[[A-Za-z_$][A-Za-z0-9_$]*\\\]/u.test(pattern),
+    optionalTypeSyntax: /[A-Za-z0-9_$)]\\\?\s*:\s*/u.test(pattern),
+    indexedAccessSyntax: /[A-Za-z0-9_$.)]\\\[[A-Za-z_$][A-Za-z0-9_$]*\\\]/u.test(pattern),
     ternaryUndefined: /[?\\]\s*[^\n]{0,100}:\s*(?:undefined|null)/u.test(pattern),
     loopSyntax: /for\\s\*?\\\(/u.test(pattern),
   };

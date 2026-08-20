@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const runtimeRoots = ['esm/native/builder', 'esm/native/services', 'esm/native/runtime', 'types'];
@@ -69,8 +70,23 @@ test('[scalar-geometry-type-hardening] chest-mode UI pickup parses draft strings
   assert.match(pickup, /out\.baseLegWidthCm = normalizeBaseLegWidthCm/);
   assert.match(pickup, /readFiniteNumericDraft\(raw\?\.chestCommodeMirrorHeightCm\)/);
 
-  assert.match(pipeline, /widthCm\?: number;/);
-  assert.match(pipeline, /drawersCount\?: number;/);
+  const chestParams = new Map(
+    getTypeLiteralPropertyFacts(pipeline, 'BuildChestModeIfNeededParams', 'chest_mode_pipeline.ts').map(
+      property => [property.name, property]
+    )
+  );
+  assert.deepEqual(chestParams.get('widthCm'), {
+    name: 'widthCm',
+    optional: true,
+    readonly: false,
+    type: 'number',
+  });
+  assert.deepEqual(chestParams.get('drawersCount'), {
+    name: 'drawersCount',
+    optional: true,
+    readonly: false,
+    type: 'number',
+  });
   assert.match(pipeline, /baseLegPlatformSideOverhangCm: number;/);
   assert.match(pipeline, /chestCommodeMirrorHeightCm: number;/);
   assert.doesNotMatch(pipeline, /number\s*\|\s*string|string\s*\|\s*number/);

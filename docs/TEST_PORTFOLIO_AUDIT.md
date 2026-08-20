@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-20T02:30:50.665Z
+Generated: 2026-08-20T03:25:59.061Z
 
 ## Summary
 
@@ -65,7 +65,7 @@ Generated: 2026-08-20T02:30:50.665Z
 - `esm/native/builder/core_storage_compute_custom.ts` — contract / ownership — `tests/core_storage_compute_decomposition_contracts.test.js`, `tests/interior_fittings_builder_pair_ownership_contract.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/core_storage_compute_external_drawers.ts` — contract / ownership — `tests/core_storage_compute_decomposition_contracts.test.js`, `tests/external_drawer_geometry_ownership_contract.test.js`, `tests/external_drawer_ops_contracts_runtime.test.ts`
 - `esm/native/builder/corner_connector_cornice_shared.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`
-- `esm/native/builder/corner_connector_door_emit_visuals.ts` — contract / ownership — `tests/corner_door_trim_scoped_lookup_guard.test.js`, `tests/corner_stack_split_scope_guard.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/mirror_layout_family_guard.test.js`
+- `esm/native/builder/corner_connector_door_emit_visuals.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/corner_door_trim_scoped_lookup_guard.test.js`, `tests/corner_stack_split_scope_guard.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/hinged_door_hardware_route_contract.test.js`, `tests/hinged_door_motion_metadata_ownership_contract.test.js`, `tests/mirror_layout_family_guard.test.js`
 - `esm/native/builder/corner_state_normalize_layout.ts` — contract / ownership — `tests/carcass_base_dimension_ownership_closeout_contract.test.js`, `tests/door_removal_visibility_contracts.test.js`
 - `esm/native/builder/corner_wing_carcass_shell_floor_base.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_base_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/corner_wing_carcass_shell_metrics.ts` — contract / ownership — `tests/builder_corner_typed_surface_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`

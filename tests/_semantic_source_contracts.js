@@ -169,20 +169,22 @@ export function getTypeAliasFact(source, typeNameValue, fileName) {
 
 export function getTypeLiteralPropertyFacts(source, typeNameValue, fileName) {
   const sourceFile = parse(source, fileName);
-  let declaration = null;
+  let typeLiterals = null;
   walkAst(sourceFile, node => {
-    if (!declaration && node?.type === 'TSTypeAliasDeclaration' && node.id?.name === typeNameValue) {
-      const direct = node.typeAnnotation?.type === 'TSTypeLiteral' ? node.typeAnnotation : null;
-      const intersection =
-        node.typeAnnotation?.type === 'TSIntersectionType'
-          ? (node.typeAnnotation.types || []).find(type => type?.type === 'TSTypeLiteral') || null
-          : null;
-      const literal = direct || intersection;
-      if (literal) declaration = { ...node, __typeLiteral: literal };
+    if (typeLiterals || node?.type !== 'TSTypeAliasDeclaration' || node.id?.name !== typeNameValue) return;
+    const annotation = node.typeAnnotation;
+    if (annotation?.type === 'TSTypeLiteral') {
+      typeLiterals = [annotation];
+      return;
+    }
+    if (annotation?.type === 'TSIntersectionType') {
+      const literals = (annotation.types || []).filter(type => type?.type === 'TSTypeLiteral');
+      if (literals.length) typeLiterals = literals;
     }
   });
-  if (!declaration) return null;
-  return (declaration.__typeLiteral?.members || declaration.typeAnnotation?.members || [])
+  if (!typeLiterals) return null;
+  return typeLiterals
+    .flatMap(literal => literal.members || [])
     .filter(property => property?.type === 'TSPropertySignature')
     .map(property => ({
       name: identifierName(property.key),
@@ -439,6 +441,152 @@ function factContainsIdentifier(fact, identifier) {
     return true;
   if (Array.isArray(fact)) return fact.some(item => factContainsIdentifier(item, identifier));
   return Object.values(fact).some(value => factContainsIdentifier(value, identifier));
+}
+
+export function getExportFacts(source, fileName) {
+  const sourceFile = parse(source, fileName);
+  const exports = [];
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'ExportNamedDeclaration') return;
+    const sourceValue = node.source?.type === 'Literal' ? String(node.source.value) : null;
+    const declaration = node.declaration;
+    if (declaration) {
+      const declarationName =
+        declaration.id?.name ||
+        (declaration.type === 'VariableDeclaration' &&
+        declaration.declarations?.[0]?.id?.type === 'Identifier'
+          ? declaration.declarations[0].id.name
+          : null);
+      exports.push({
+        source: sourceValue,
+        exportKind: node.exportKind || 'value',
+        local: declarationName,
+        exported: declarationName,
+        declarationType: declaration.type,
+      });
+    }
+    for (const specifier of node.specifiers || []) {
+      if (specifier?.type !== 'ExportSpecifier') continue;
+      exports.push({
+        source: sourceValue,
+        exportKind: node.exportKind || specifier.exportKind || 'value',
+        local: identifierName(specifier.local),
+        exported: identifierName(specifier.exported),
+        declarationType: null,
+      });
+    }
+  });
+  return exports;
+}
+
+export function assertNamedExports(
+  assert,
+  source,
+  expectedNames,
+  { sourceModule = null, exportKind = null, label = 'named exports', fileName } = {}
+) {
+  const facts = getExportFacts(source, fileName).filter(fact => {
+    if (sourceModule !== null && fact.source !== sourceModule) return false;
+    if (exportKind !== null && fact.exportKind !== exportKind) return false;
+    return true;
+  });
+  const names = new Set(facts.map(fact => fact.exported).filter(Boolean));
+  for (const name of expectedNames) {
+    assert.ok(names.has(name), `${label} should export ${name}`);
+  }
+  return facts;
+}
+
+export function getImportFacts(source, fileName) {
+  const sourceFile = parse(source, fileName);
+  const imports = [];
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'ImportDeclaration') return;
+    const sourceValue = node.source?.type === 'Literal' ? String(node.source.value) : null;
+    const specifiers = (node.specifiers || []).map(specifier => ({
+      kind: specifier.type,
+      imported:
+        specifier.type === 'ImportSpecifier'
+          ? identifierName(specifier.imported)
+          : specifier.type === 'ImportDefaultSpecifier'
+            ? 'default'
+            : specifier.type === 'ImportNamespaceSpecifier'
+              ? '*'
+              : null,
+      local: identifierName(specifier.local),
+    }));
+    imports.push({ source: sourceValue, importKind: node.importKind || 'value', specifiers });
+  });
+  return imports;
+}
+
+export function assertImportsFrom(
+  assert,
+  source,
+  sourceModule,
+  expectedNames = [],
+  { label = sourceModule, fileName } = {}
+) {
+  const facts = getImportFacts(source, fileName).filter(fact => fact.source === sourceModule);
+  assert.ok(facts.length > 0, `${label} should import from ${sourceModule}`);
+  const names = new Set(
+    facts.flatMap(fact => fact.specifiers.map(specifier => specifier.imported).filter(Boolean))
+  );
+  for (const name of expectedNames) {
+    assert.ok(names.has(name), `${label} should import ${name} from ${sourceModule}`);
+  }
+  return facts;
+}
+
+export function getTypeAssertionFacts(source, fileName) {
+  const sourceFile = parse(source, fileName);
+  const facts = [];
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'TSAsExpression' && node?.type !== 'TSTypeAssertion') return;
+    facts.push({ expression: expressionFact(node.expression), type: typeName(node.typeAnnotation) });
+  });
+  return facts;
+}
+
+export function getJsxOpeningElementFacts(source, elementName, fileName) {
+  const sourceFile = parse(source, fileName);
+  const facts = [];
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'JSXOpeningElement') return;
+    const name = identifierName(node.name) || memberPath(node.name);
+    if (name !== elementName) return;
+    const attributes = {};
+    for (const attribute of node.attributes || []) {
+      if (attribute?.type !== 'JSXAttribute') continue;
+      const attrName = identifierName(attribute.name);
+      if (!attrName) continue;
+      if (attribute.value == null) {
+        attributes[attrName] = { kind: 'literal', value: true };
+        continue;
+      }
+      if (attribute.value.type === 'Literal') {
+        attributes[attrName] = { kind: 'literal', value: attribute.value.value };
+        continue;
+      }
+      if (attribute.value.type === 'JSXExpressionContainer') {
+        const expression = unwrapExpression(attribute.value.expression);
+        if (expression?.type === 'ArrowFunctionExpression' || expression?.type === 'FunctionExpression') {
+          attributes[attrName] = {
+            kind: 'function',
+            ...functionLikeSignatureFact(expression),
+            body:
+              expression.body?.type === 'BlockStatement'
+                ? { kind: 'block' }
+                : expressionFact(expression.body),
+          };
+        } else {
+          attributes[attrName] = expressionFact(expression);
+        }
+      }
+    }
+    facts.push({ name, selfClosing: node.selfClosing === true, attributes });
+  });
+  return facts;
 }
 
 export function getDeleteMemberFacts(source, fileName) {

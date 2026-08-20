@@ -2,8 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { normalizeWhitespace } from './_source_bundle.js';
+import {
+  getFunctionReturnFacts,
+  getTypeAssertionFacts,
+  getTypeLiteralPropertyFacts,
+} from './_semantic_source_contracts.js';
 
-const read = rel => normalizeWhitespace(fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+const readRaw = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+const read = rel => normalizeWhitespace(readRaw(rel));
 
 const canvasPicking = read('esm/native/services/canvas_picking.ts');
 const buildFlow = normalizeWhitespace(
@@ -145,7 +151,13 @@ test('builder/corner/canvas seams use typed installer contracts and reader helpe
     /export function installCanvasPickingService\(app: unknown\): CanvasPickingInstallerResult \| null/
   );
   assert.doesNotMatch(canvasPicking, /import type \{ AppContainer, AnyRecord \}/);
-  assert.doesNotMatch(canvasPicking, /return \{[\s\S]*\} as AnyRecord/);
+  assert.equal(
+    getTypeAssertionFacts(readRaw('esm/native/services/canvas_picking.ts'), 'canvas_picking.ts').some(
+      fact => fact.type === 'AnyRecord'
+    ),
+    false,
+    'canvas picking installer should not recover its result through AnyRecord casts'
+  );
 
   assert.match(buildStackSplit, /readBuildContext/);
   assert.match(buildStackSplit, /readFiniteNumberArray/);
@@ -191,14 +203,22 @@ test('builder/corner/canvas seams use typed installer contracts and reader helpe
 });
 
 test('corner builders keep typed flow params, reject non-string curtain values, and share reader contracts', () => {
-  const explicitNullishString =
-    /if \(typeof value === 'string'\) return value;[\s\S]*if \(value === null\) return null;[\s\S]*if \(typeof value === 'undefined'\) return undefined;[\s\S]*return undefined;/;
-
   assert.match(cornerWingCarcass, /corner_wing_carcass_shared\.js/);
   assert.match(cornerWingCarcass, /corner_wing_carcass_shell\.js/);
   assert.match(cornerWingCarcass, /corner_wing_carcass_selectors\.js/);
   assert.match(cornerWingCarcassShared, /type CornerWingCarcassFlowParams = \{/);
-  assert.doesNotMatch(cornerWingCarcassShared, /ctx: unknown;[\s\S]*helpers: unknown;/);
+  assert.deepEqual(
+    getTypeLiteralPropertyFacts(
+      readRaw('esm/native/builder/corner_wing_carcass_shared.ts'),
+      'CornerWingCarcassFlowParams',
+      'corner_wing_carcass_shared.ts'
+    ),
+    [
+      { name: 'ctx', optional: false, readonly: false, type: 'CornerWingCarcassCtx' },
+      { name: 'locals', optional: false, readonly: false, type: 'CornerWingCarcassLocals' },
+      { name: 'helpers', optional: false, readonly: false, type: 'CornerWingCarcassHelpers' },
+    ]
+  );
   assert.match(cornerWingCarcassShell, /const ds = THREE\.DoubleSide;/);
   assert.doesNotMatch(cornerWingCarcassShell, /asRecord\(THREE\)\['DoubleSide'\]/);
   assert.match(cornerWingCarcassSelectors, /const m = getInternalGridMap\(App, __stackKey === 'bottom'\);/);
@@ -212,15 +232,29 @@ test('corner builders keep typed flow params, reject non-string curtain values, 
   assert.match(cornerConnectorInterior, /createCornerConnectorInteriorEmitters\(params\.ctx\)/);
   assert.match(cornerConnectorInteriorShared, /uiAny: UnknownRecord;/);
   assert.match(cornerConnectorInteriorShared, /export type CornerConnectorInteriorCtx = \{/);
-  assert.match(
-    cornerConnectorShared,
-    /type WardrobeChildLike = UnknownRecord & \{ userData\?: UnknownRecord \};/
+  assert.deepEqual(
+    getTypeLiteralPropertyFacts(
+      readRaw('esm/native/builder/corner_connector_emit_shared.ts'),
+      'WardrobeChildLike',
+      'corner_connector_emit_shared.ts'
+    ),
+    [{ name: 'userData', optional: true, readonly: false, type: 'UnknownRecord' }]
   );
   assert.match(cornerConnectorShared, /export type CornerConnectorSetup = \{/);
 
-  assert.match(cornerWingCellShared, explicitNullishString);
-  assert.match(cornerConnectorDoor, explicitNullishString);
-  assert.match(renderDoorOps, explicitNullishString);
+  const nullishStringReturns = [
+    ['esm/native/builder/corner_wing_cell_shared.ts', 'readCurtainType'],
+    ['esm/native/builder/corner_connector_door_emit_visuals.ts', 'readCurtainTypeLocal'],
+    ['esm/native/builder/render_door_ops_shared_core.ts', 'readCurtainType'],
+  ];
+  for (const [fileName, functionName] of nullishStringReturns) {
+    assert.deepEqual(getFunctionReturnFacts(readRaw(fileName), functionName, fileName), [
+      { kind: 'identifier', name: 'value' },
+      { kind: 'literal', value: null },
+      { kind: 'identifier', name: 'undefined' },
+      { kind: 'identifier', name: 'undefined' },
+    ]);
+  }
   assert.doesNotMatch(cornerWingCellShared, /String\(value\)/);
   assert.doesNotMatch(cornerConnectorDoor, /String\(value\)/);
   assert.doesNotMatch(renderDoorOps, /String\(value\)/);

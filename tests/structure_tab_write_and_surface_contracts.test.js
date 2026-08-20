@@ -2,7 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
-import { getCallFacts } from './_semantic_source_contracts.js';
+import {
+  assertCallObjectContract,
+  assertNamedExports,
+  getCallFacts,
+  getFunctionSignatureFact,
+} from './_semantic_source_contracts.js';
 
 const storeUiActionFiles = [
   '../esm/native/ui/react/actions/store_actions_ui.ts',
@@ -26,6 +31,14 @@ const storeActions = bundleSources(
     ...storeUiActionFiles,
     '../esm/native/ui/react/actions/store_actions_runtime.ts',
   ],
+  import.meta.url
+);
+const storeConfigActionsOwner = readSource(
+  '../esm/native/ui/react/actions/store_actions_config.ts',
+  import.meta.url
+);
+const storeActionsRuntimeOwner = readSource(
+  '../esm/native/ui/react/actions/store_actions_runtime.ts',
   import.meta.url
 );
 const structureOwner = readSource('../esm/native/ui/react/tabs/StructureTab.view.tsx', import.meta.url);
@@ -221,19 +234,41 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
     assert,
     storeActions,
     [
-      /(?:function setCfgHingeMap\(|export \{[\s\S]*\bsetCfgHingeMap\b[\s\S]*\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';)/,
       /function setCfgPreChestState\(/,
-      /(?:function setCfgModulesConfiguration\(|export \{[\s\S]*\bsetCfgModulesConfiguration\b[\s\S]*\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';)/,
-      /(?:function setCfgLowerModulesConfiguration\(|export \{[\s\S]*\bsetCfgLowerModulesConfiguration\b[\s\S]*\} from '\.\.\/\.\.\/\.\.\/services\/api\.js';)/,
       /function setUiBaseType\(/,
       /function setUiHingeDirection\(/,
       /function setUiStructureSelect\(/,
       /function setUiSingleDoorPos\(/,
-      /function recomputeFromUi\([\s\S]*meta\?: ActionMetaLike,[\s\S]*opts\?: ModulesRecomputeFromUiOptionsLike[\s\S]*\): void \{/,
-      /runAppStructuralModulesRecompute\([\s\S]*\{ source: 'react:recomputeFromUi' \}/,
     ],
     'store actions surface'
   );
+  assertNamedExports(
+    assert,
+    storeConfigActionsOwner,
+    ['setCfgHingeMap', 'setCfgModulesConfiguration', 'setCfgLowerModulesConfiguration'],
+    { sourceModule: './store_actions_config_maps.js', label: 'structure config action seam' }
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(storeActionsRuntimeOwner, 'recomputeFromUi', 'store_actions_runtime.ts'),
+    {
+      name: 'recomputeFromUi',
+      async: false,
+      params: [
+        { name: 'app', optional: false, type: 'AppContainer' },
+        { name: 'uiArg', optional: true, type: 'unknown' },
+        { name: 'meta', optional: true, type: 'ActionMetaLike' },
+        { name: 'opts', optional: true, type: 'ModulesRecomputeFromUiOptionsLike' },
+      ],
+      returnType: 'void',
+    }
+  );
+  assertCallObjectContract(assert, storeActionsRuntimeOwner, 'runAppStructuralModulesRecompute', {
+    argIndex: 3,
+    firstArgIdentifier: 'app',
+    requiredProperties: { source: 'react:recomputeFromUi' },
+    label: 'structure recompute source meta',
+    fileName: 'store_actions_runtime.ts',
+  });
 
   assertMatchesAll(
     assert,
@@ -343,14 +378,17 @@ test('[contracts-structure-surface] StructureTab writes and recompute flows stay
   assertMatchesAll(
     assert,
     structureShared,
-    [
-      /structure_tab_core\.js/,
-      /structure_tab_structure_mutations\.js/,
-      /export \{[\s\S]*getModelsService/,
-      /export \{[\s\S]*commitStructureRawValue/,
-    ],
+    [/structure_tab_core\.js/, /structure_tab_structure_mutations\.js/],
     'structure shared barrel'
   );
+  assertNamedExports(assert, structureShared, ['getModelsService'], {
+    sourceModule: './structure_tab_core.js',
+    label: 'structure shared core seam',
+  });
+  assertNamedExports(assert, structureShared, ['commitStructureRawValue'], {
+    sourceModule: './structure_tab_structure_mutations.js',
+    label: 'structure shared mutation seam',
+  });
 
   assertMatchesAll(
     assert,
@@ -390,11 +428,26 @@ ${structureCore}`,
       /structure_tab_structure_mutations_shared\.js/,
       /structure_tab_structure_raw_mutations\.js/,
       /structure_tab_structure_stack_split_mutations\.js/,
-      /export type \{[\s\S]*StructureTabNumericKey/,
-      /export \{ commitStructureRawValue \}/,
-      /export \{[\s\S]*setStackSplitLowerLinkModeValue/,
     ],
     'structure mutations owner'
+  );
+  assertNamedExports(assert, structureMutations, ['StructureTabNumericKey', 'StructureTabStackSplitField'], {
+    sourceModule: './structure_tab_structure_mutations_shared.js',
+    exportKind: 'type',
+    label: 'structure mutation types',
+  });
+  assertNamedExports(assert, structureMutations, ['commitStructureRawValue'], {
+    sourceModule: './structure_tab_structure_raw_mutations.js',
+    label: 'structure raw mutation seam',
+  });
+  assertNamedExports(
+    assert,
+    structureMutations,
+    ['setStackSplitLowerLinkModeValue', 'toggleStackSplitState'],
+    {
+      sourceModule: './structure_tab_structure_stack_split_mutations.js',
+      label: 'structure stack-split mutation seam',
+    }
   );
 
   assertMatchesAll(

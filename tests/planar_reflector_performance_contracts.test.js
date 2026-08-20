@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { readFirstExisting } from './_read_src.js';
+import { assertNamedExports, getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
 
 const runtimeSource = readFirstExisting(
   ['../esm/native/runtime/planar_reflector_runtime.ts'],
@@ -32,10 +33,24 @@ test('planar reflectors adapt render-target resolution by mirror size and reflec
 });
 
 test('planar mirror refresh supports budgeted progressive batches', () => {
-  assert.match(runtimeSource, /export type \{[\s\S]*?PlanarMirrorRefreshOptions/);
+  assertNamedExports(assert, runtimeSource, ['PlanarMirrorRefreshOptions'], {
+    sourceModule: './planar_reflector_contracts.js',
+    exportKind: 'type',
+    label: 'planar reflector refresh type seam',
+  });
   assert.match(contractsSource, /export type PlanarMirrorRefreshOptions/);
-  assert.match(contractsSource, /maxSurfaces\?: number \| null/);
-  assert.match(contractsSource, /startIndex\?: number \| null/);
+  const refreshOptions = getTypeLiteralPropertyFacts(
+    contractsSource,
+    'PlanarMirrorRefreshOptions',
+    'planar_reflector_contracts.ts'
+  );
+  assert.deepEqual(
+    refreshOptions?.filter(property => property.name === 'maxSurfaces' || property.name === 'startIndex'),
+    [
+      { name: 'maxSurfaces', optional: true, readonly: false, type: 'null|number' },
+      { name: 'startIndex', optional: true, readonly: false, type: 'null|number' },
+    ]
+  );
   assert.match(contractsSource, /completedCycle: boolean/);
   assert.match(contractsSource, /nextIndex: number/);
   assert.match(refreshSource, /planar-reflector-budget-deferred/);

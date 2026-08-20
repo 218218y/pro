@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import {
+  getFunctionSignatureFact,
+  getTypeAliasFact,
+  getTypeAssertionFacts,
+} from './_semantic_source_contracts.js';
 
 const settingsBackup = readSource('../esm/native/ui/settings_backup.ts', import.meta.url);
 const settingsBackupExport = readSource('../esm/native/ui/settings_backup_export.ts', import.meta.url);
@@ -226,7 +231,6 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     assert,
     settingsBackupImportSupport,
     [
-      /export async function readBackupFileTextSafe\([\s\S]*App: AppContainer,[\s\S]*file: File[\s\S]*\): Promise<ReadBackupFileTextResult> \{/,
       /readFileTextResultViaBrowser\(file, \{/,
       /export async function mergeImportedSavedColors\(/,
       /export async function applyImportedStorageSettings\(/,
@@ -234,6 +238,22 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
       /writeColorSwatchesOrderOrThrow\(App, colorSwatchesOrder\.slice\(\), mapsMeta\)/,
     ],
     'settingsBackupImportSupport'
+  );
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      settingsBackupImportSupport,
+      'readBackupFileTextSafe',
+      'settings_backup_import_support.ts'
+    ),
+    {
+      name: 'readBackupFileTextSafe',
+      async: true,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'file', optional: false, type: 'File' },
+      ],
+      returnType: 'Promise<ReadBackupFileTextResult>',
+    }
   );
   assertLacksAll(
     assert,
@@ -306,23 +326,27 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     ],
     'browserSurface'
   );
-  assertLacksAll(
-    assert,
-    browserSurface,
-    [/as UnknownBag/, /App as AppContainer & \{ browser\?: unknown \}/],
-    'browserSurface'
+  assertLacksAll(assert, browserSurface, [/as UnknownBag/], 'browserSurface');
+  assert.ok(
+    !getTypeAssertionFacts(browserSurface, 'surface.ts').some(
+      fact => fact.type === 'AppContainer&type{browser?:unknown}'
+    ),
+    'browser surface should not restore the legacy AppContainer browser-bag cast'
   );
 
   assertMatchesAll(
     assert,
     browserDom,
     [
-      /type CanvasFactory = (?:\(w\?: number, h\?: number\)|NonNullable<PlatformNamespace\['createCanvas'\]>)/,
       /function createCanvasFactory\(doc: Document\): CanvasFactory \{/,
       /installStableSurfaceMethod<CanvasFactory>\(platform, 'createCanvas', '__wpCreateCanvas', \(\) => \{/,
     ],
     'browserDom'
   );
+  assert.deepEqual(getTypeAliasFact(browserDom, 'CanvasFactory', 'dom.ts'), {
+    name: 'CanvasFactory',
+    type: 'NonNullable<PlatformNamespace["createCanvas"]>',
+  });
   assertLacksAll(assert, browserDom, [/App as UnknownBag/, /const next = \{\} as UnknownBag/], 'browserDom');
 
   assertMatchesAll(
@@ -394,12 +418,13 @@ test('export, browser, and pdf flows stay on services-barrel and typed callable 
   assertMatchesAll(
     assert,
     browserEnvShared,
-    [
-      /export type DelayPromise = Promise<boolean> & \{ cancel\?: \(\) => void \};/,
-      /getDepsNamespaceMaybe<Partial<BrowserDeps>>\(App, 'browser'\)/,
-    ],
+    [/getDepsNamespaceMaybe<Partial<BrowserDeps>>\(App, 'browser'\)/],
     'browserEnvShared'
   );
+  assert.deepEqual(getTypeAliasFact(browserEnvShared, 'DelayPromise', 'env_shared.ts'), {
+    name: 'DelayPromise',
+    type: 'Promise<boolean>&type{cancel?:fn()->void}',
+  });
   assertMatchesAll(
     assert,
     browserEnvClipboard,

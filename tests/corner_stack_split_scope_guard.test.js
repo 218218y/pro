@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { normalizeWhitespace } from './_source_bundle.js';
+import { assertNamedExports, getFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 const MATERIALS_SRC = path.resolve(process.cwd(), 'esm/native/builder/corner_materials.ts');
 const REMOVE_SRC = path.resolve(process.cwd(), 'esm/native/builder/corner_state_normalize_config.ts');
@@ -53,7 +54,25 @@ test('[corner-stack-scope] lower stacked corner removal does not fall back to up
 test('[corner-stack-scope] mirror layout lookup can stay scoped-only for the lower stack', () => {
   const src = [fs.readFileSync(MIRROR_SRC, 'utf8'), fs.readFileSync(MIRROR_LOOKUP_SRC, 'utf8')].join('\n');
 
-  assert.match(src, /preferScopedOnly\?: boolean;/);
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      fs.readFileSync(MIRROR_LOOKUP_SRC, 'utf8'),
+      'readMirrorLayoutListForPart',
+      'mirror_lookup.ts'
+    ),
+    {
+      name: 'readMirrorLayoutListForPart',
+      async: false,
+      params: [
+        {
+          name: 'args',
+          optional: false,
+          type: 'type{map?:unknown;partId:unknown;scopedPartId?:unknown;preferScopedOnly?:boolean}',
+        },
+      ],
+      returnType: 'MirrorLayoutList',
+    }
+  );
   assert.match(src, /if \(!args\.preferScopedOnly\) pushVariants\(candidates, seen, args\.partId\);/);
 });
 
@@ -63,10 +82,26 @@ test('[corner-stack-scope] door hover preview uses stack-aware scoped ids for co
   const hoverTargetsPolicySrc = fs.readFileSync(HOVER_TARGETS_POLICY_SRC, 'utf8');
   const previewSrc = fs.readFileSync(ACTION_PREVIEW_SRC, 'utf8');
 
-  assert.match(
-    `${hoverTargetsSrc}
-${hoverTargetsPolicySrc}`,
-    /export (?:function __scopeCornerHoverPartKey\(partId: unknown, stackKey: unknown\): string|\{[\s\S]*__scopeCornerHoverPartKey[\s\S]*\} from '\.\/canvas_picking_door_hover_targets_policy\.js';)/
+  assertNamedExports(assert, hoverTargetsSrc, ['__scopeCornerHoverPartKey'], {
+    sourceModule: './canvas_picking_door_hover_targets_policy.js',
+    label: 'corner hover target policy facade',
+    fileName: 'canvas_picking_door_hover_targets_shared.ts',
+  });
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      hoverTargetsPolicySrc,
+      '__scopeCornerHoverPartKey',
+      'canvas_picking_door_hover_targets_policy.ts'
+    ),
+    {
+      name: '__scopeCornerHoverPartKey',
+      async: false,
+      params: [
+        { name: 'partId', optional: false, type: 'unknown' },
+        { name: 'stackKey', optional: false, type: 'unknown' },
+      ],
+      returnType: 'string',
+    }
   );
   assert.match(hoverSrc, /const scopedHitDoorPid = __scopeCornerHoverPartKey\(hitDoorPid, hitDoorStack\);/);
   assert.match(previewSrc, /const partKey = canonDoorPartKeyForMaps\(scopedHitDoorPid\);/);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { normalizeWhitespace } from './_source_bundle.js';
-import { getCallFacts, getFunctionSignatureFact } from './_semantic_source_contracts.js';
+import { assertImportsFrom, getCallFacts, getFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 const readRaw = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 const read = rel => normalizeWhitespace(readRaw(rel));
@@ -15,13 +15,11 @@ const doorHingeGroove = read('esm/native/services/canvas_picking_door_hinge_groo
 const doorHingeGrooveRaw = readRaw('esm/native/services/canvas_picking_door_hinge_groove_click.ts');
 const doorRemove = read('esm/native/services/canvas_picking_door_remove_click.ts');
 const doorRemoveRaw = readRaw('esm/native/services/canvas_picking_door_remove_click.ts');
-const doorSplitShared = read('esm/native/services/canvas_picking_door_split_click_shared.ts');
 const doorSplitSharedRaw = readRaw('esm/native/services/canvas_picking_door_split_click_shared.ts');
 const doorSplitCustom = read('esm/native/services/canvas_picking_door_split_click_custom.ts');
 const doorSplitCustomRaw = readRaw('esm/native/services/canvas_picking_door_split_click_custom.ts');
 const doorSplitToggle = read('esm/native/services/canvas_picking_door_split_click_toggle.ts');
 const doorSplitToggleRaw = readRaw('esm/native/services/canvas_picking_door_split_click_toggle.ts');
-const doorTrim = read('esm/native/services/canvas_picking_door_trim_click.ts');
 const doorTrimRaw = readRaw('esm/native/services/canvas_picking_door_trim_click.ts');
 const removablePartRemove = read('esm/native/services/canvas_picking_removable_part_remove_click.ts');
 const removablePartRemoveRaw = readRaw('esm/native/services/canvas_picking_removable_part_remove_click.ts');
@@ -62,11 +60,21 @@ test('canvas picking door-authoring writes use one immediate structural meta own
   assert.match(doorAuthoringMeta, /__wp_metaNoBuild\(/);
   assert.doesNotMatch(doorAuthoringMeta, /noHistory:/);
 
-  const helperImportPattern =
-    /import \{[\s\S]*createCanvasPickingDoorAuthoringStructuralMeta[\s\S]*\} from '\.\/canvas_picking_door_authoring_meta\.js';/;
-  const sourceFiles = [doorHingeGroove, doorRemove, doorSplitShared, doorTrim, removablePartRemove];
-  for (const source of sourceFiles) {
-    assert.match(source, helperImportPattern);
+  const sourceFiles = [
+    ['canvas_picking_door_hinge_groove_click.ts', doorHingeGrooveRaw],
+    ['canvas_picking_door_remove_click.ts', doorRemoveRaw],
+    ['canvas_picking_door_split_click_shared.ts', doorSplitSharedRaw],
+    ['canvas_picking_door_trim_click.ts', doorTrimRaw],
+    ['canvas_picking_removable_part_remove_click.ts', removablePartRemoveRaw],
+  ];
+  for (const [fileName, source] of sourceFiles) {
+    assertImportsFrom(
+      assert,
+      source,
+      './canvas_picking_door_authoring_meta.js',
+      ['createCanvasPickingDoorAuthoringStructuralMeta'],
+      { label: fileName, fileName }
+    );
     assert.doesNotMatch(source, /\{\s*source:\s*[^}]*immediate:\s*true\s*\}/);
     assert.doesNotMatch(source, /\{\s*immediate:\s*true\s*,\s*source[^}]*\}/);
   }
@@ -224,10 +232,31 @@ test('canvas picking door-authoring writes use one immediate structural meta own
       `missing semantic split door action ${actionName}`
     );
   }
-  assert.match(
-    doorSplitShared,
-    /writeCanvasDoorSplitPosList\(args: \{[\s\S]*doorBaseKey: string;[\s\S]*const splitPosKey = __splitPosKey\(doorBaseKey\)/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      doorSplitSharedRaw,
+      'writeCanvasDoorSplitPosList',
+      'canvas_picking_door_split_click_shared.ts'
+    ),
+    {
+      name: 'writeCanvasDoorSplitPosList',
+      async: false,
+      params: [
+        {
+          name: 'args',
+          optional: false,
+          type: 'type{App:AppContainer;doorBaseKey:string;nextList:number[];source:string}',
+        },
+      ],
+      returnType: 'void',
+    }
   );
+  assert.deepEqual(getCallFacts(doorSplitSharedRaw, '__splitPosKey'), [
+    {
+      callee: '__splitPosKey',
+      args: [{ kind: 'identifier', name: 'doorBaseKey' }],
+    },
+  ]);
   assert.deepEqual(getCallFacts(doorSplitSharedRaw, 'writeSplitPositionList'), [
     {
       callee: 'writeSplitPositionList',
@@ -257,6 +286,10 @@ test('canvas picking door-authoring writes use one immediate structural meta own
       `missing split history source ${source}`
     );
   }
-  assert.doesNotMatch(doorSplitCustom, /\{\s*source:\s*'splitDoors:custom'[\s\S]{0,40}immediate:\s*true/);
+  assert.deepEqual(
+    getCallFacts(doorSplitCustomRaw, 'createCanvasPickingDoorAuthoringStructuralMeta'),
+    [],
+    'custom split owner should delegate structural meta through the shared history/write seams'
+  );
   assert.doesNotMatch(doorSplitToggle, /\{\s*source:\s*'splitDoors/);
 });

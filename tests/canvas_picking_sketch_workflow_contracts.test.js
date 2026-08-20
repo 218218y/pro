@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { assertCallExists, assertNamedExports } from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
@@ -47,9 +48,21 @@ test('canvas picking sketch free-box and sketch-box divider helpers stay delegat
 
   assert.match(bundle, /(?:pickSketchFreeBoxHost as __wp_pickSketchFreeBoxHost|pickSketchFreeBoxHost)/);
   assert.match(bundle, /__wp_findSketchFreeBoxLocalHit/);
-  assert.match(localHelpersSketch, /findSketchFreeBoxLocalHit\(\{/);
+  assertCallExists(
+    assert,
+    localHelpersSketch,
+    'findSketchFreeBoxLocalHit',
+    undefined,
+    'local sketch free-box hit'
+  );
   assert.match(bundle, /__wp_resolveSketchFreeBoxHoverPlacement/);
-  assert.match(localHelpersSketch, /resolveSketchFreeBoxHoverPlacement\(\{/);
+  assertCallExists(
+    assert,
+    localHelpersSketch,
+    'resolveSketchFreeBoxHoverPlacement',
+    undefined,
+    'local sketch free-box hover placement'
+  );
   assert.doesNotMatch(bundle, /function __wp_pickSketchFreeBoxHost\(/);
   assert.doesNotMatch(bundle, /function __wp_resolveSketchFreeBoxGeometry\(/);
   assert.doesNotMatch(bundle, /function __wp_resolveSketchFreeBoxHoverPlacement\(/);
@@ -58,22 +71,34 @@ test('canvas picking sketch free-box and sketch-box divider helpers stay delegat
     sketchBoxes,
     /export function pickSketchFreeBoxHost\(App: AppContainer\): \{ moduleKey: ModuleKey; isBottom: boolean \} \| null/
   );
-  assert.match(
+  assertNamedExports(
+    assert,
     sketchBoxes,
-    /export \{[\s\S]*resolveSketchFreeBoxGeometry,[\s\S]*resolveSketchFreeBoxHoverPlacement,[\s\S]*\} from '\.\/canvas_picking_sketch_free_box_workflow\.js';/
+    ['resolveSketchFreeBoxGeometry', 'resolveSketchFreeBoxHoverPlacement'],
+    { sourceModule: './canvas_picking_sketch_free_box_workflow.js', label: 'sketch free-box workflow seam' }
   );
 
-  assert.match(
+  assertNamedExports(
+    assert,
     freeWorkflow,
-    /export type \{[\s\S]*ModuleKey,[\s\S]*ProjectWorldPointToLocalFn,[\s\S]*ResolveSketchFreeBoxHoverPlacementArgs,[\s\S]*\} from '\.\/canvas_picking_sketch_free_box_shared\.js';/
+    ['ModuleKey', 'ProjectWorldPointToLocalFn', 'ResolveSketchFreeBoxHoverPlacementArgs'],
+    {
+      sourceModule: './canvas_picking_sketch_free_box_shared.js',
+      exportKind: 'type',
+      label: 'free-box shared types',
+    }
   );
-  assert.match(
+  assertNamedExports(
+    assert,
     freeWorkflow,
-    /export \{[\s\S]*resolveSketchFreeBoxGeometry,[\s\S]*resolveSketchFreeBoxOutsideWardrobeSnapX,[\s\S]*\} from '\.\/canvas_picking_sketch_free_box_shared\.js';/
+    ['resolveSketchFreeBoxGeometry', 'resolveSketchFreeBoxOutsideWardrobeSnapX'],
+    { sourceModule: './canvas_picking_sketch_free_box_shared.js', label: 'free-box shared geometry seam' }
   );
-  assert.match(
+  assertNamedExports(
+    assert,
     freeWorkflow,
-    /export \{[\s\S]*resolveSketchFreeBoxAttachPlacement,[\s\S]*resolveSketchFreeBoxNonOverlappingPlacement,[\s\S]*\} from '\.\/canvas_picking_sketch_free_box_placement\.js';/
+    ['resolveSketchFreeBoxAttachPlacement', 'resolveSketchFreeBoxNonOverlappingPlacement'],
+    { sourceModule: './canvas_picking_sketch_free_box_placement.js', label: 'free-box placement seam' }
   );
   assert.match(
     freeWorkflow,

@@ -4,11 +4,14 @@ import fs from 'node:fs';
 
 import { bundleSources, normalizeWhitespace } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
+import { getFunctionSignatureFact, getTypeLiteralPropertyFacts } from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
 const buildTypes = readBuildTypesBundle(import.meta.url);
 const doorState = read('esm/native/builder/doors_state_utils.ts');
+const moduleLoopShared = read('esm/native/builder/module_loop_pipeline_shared.ts');
+const hingedDoorsShared = read('esm/native/builder/hinged_doors_shared.ts');
 const moduleLoopBundle = bundleSources(
   [
     '../esm/native/builder/module_loop_pipeline.ts',
@@ -63,18 +66,38 @@ test('[hinged-doors-type-hardening] builder door resolvers flow through shared t
   assert.doesNotMatch(doorState, /getModeId|isRemoveDoorsEnabled|isRemoveDoorMode/);
 
   assert.match(moduleLoopNorm, /type DoorStateLike = BuilderDoorStateAccessorsLike;/);
-  assert.match(
-    moduleLoopNorm,
-    /function readCurtainResolver\(value: unknown\): BuilderCurtainResolver \| undefined/
+  assert.deepEqual(
+    getFunctionSignatureFact(moduleLoopShared, 'readCurtainResolver', 'module_loop_pipeline_shared.ts'),
+    {
+      name: 'readCurtainResolver',
+      async: false,
+      params: [{ name: 'value', optional: false, type: 'unknown' }],
+      returnType: 'BuilderCurtainResolver|undefined',
+    }
   );
-  assert.match(
-    moduleLoopNorm,
-    /function readHingeDirResolver\(value: unknown\): BuilderHingeDirResolver \| undefined/
+  assert.deepEqual(
+    getFunctionSignatureFact(moduleLoopShared, 'readHingeDirResolver', 'module_loop_pipeline_shared.ts'),
+    {
+      name: 'readHingeDirResolver',
+      async: false,
+      params: [{ name: 'value', optional: false, type: 'unknown' }],
+      returnType: 'BuilderHingeDirResolver|undefined',
+    }
   );
 
   assert.match(hingedDoorsNorm, /export type HingedDoorPipelineCfg = BuilderDoorMapsConfigLike & \{/);
-  assert.match(hingedDoorsNorm, /getPartColorValue\?: BuilderPartColorResolver \| null;/);
-  assert.match(hingedDoorsNorm, /curtainVal\?: BuilderCurtainResolver \| null;/);
+  const hingedCfg = getTypeLiteralPropertyFacts(
+    hingedDoorsShared,
+    'AppendHingedDoorOpsParams',
+    'hinged_doors_shared.ts'
+  );
+  assert.deepEqual(
+    hingedCfg?.filter(property => property.name === 'getPartColorValue' || property.name === 'curtainVal'),
+    [
+      { name: 'getPartColorValue', optional: true, readonly: false, type: 'BuilderPartColorResolver|null' },
+      { name: 'curtainVal', optional: true, readonly: false, type: 'BuilderCurtainResolver|null' },
+    ]
+  );
   assert.doesNotMatch(
     hingedDoorsBundle,
     /@param \{Function\} params\.(getPartColorValue|isDoorRemoved|getHingeDir|isDoorSplit|isDoorSplitBottom|curtainVal|grooveVal)/

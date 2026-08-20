@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { assertLacksAll, assertMatchesAll, bundleSources, readSource } from './_source_bundle.js';
+import { assertCallObjectContract, getJsxOpeningElementFacts } from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
@@ -395,14 +396,49 @@ test('[overlay-export-family] overlay ui seams stay wiring-first while controlle
     assert,
     quickDock,
     [
-      /createQuickActionsDockController\(\{ api, reportNonFatal: reportOverlayAppNonFatal \}\)/,
       /quickActionsController\.readPinnedSync\(\)/,
       /quickActionsController\.subscribePinnedSync\(setPinnedSync\)/,
-      /quickActionsController\.toggleMenu\(\{/,
-      /runAction\(\{[\s\S]*keepOpen: keepOpenRef\.current,[\s\S]*op,/,
-      /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportTakeSnapshot\(\)\}[\s\S]*op="quick-actions:snapshot"[\s\S]*runAction=\{quickActionsController\.runAction\}/,
     ],
     'overlay quick actions dock'
+  );
+  assertCallObjectContract(assert, quickDock, 'createQuickActionsDockController', {
+    argIndex: 0,
+    requiredIdentifiers: ['api', 'reportOverlayAppNonFatal'],
+    label: 'quick-actions controller construction',
+    fileName: 'overlay_quick_actions_dock.tsx',
+  });
+  assertCallObjectContract(assert, quickDock, 'quickActionsController.toggleMenu', {
+    argIndex: 0,
+    requiredProperties: { op: 'quick-actions:toggle-menu' },
+    requiredIdentifiers: ['event', 'setMenuOpen'],
+    label: 'quick-actions menu toggle',
+    fileName: 'overlay_quick_actions_dock.tsx',
+  });
+  assertCallObjectContract(assert, quickDock, 'runAction', {
+    argIndex: 0,
+    requiredIdentifiers: ['keepOpenRef', 'op'],
+    label: 'quick-action export invocation',
+    fileName: 'overlay_quick_actions_dock.tsx',
+  });
+  const exportButtons = getJsxOpeningElementFacts(
+    quickDock,
+    'QuickActionExportButton',
+    'overlay_quick_actions_dock.tsx'
+  );
+  assert.ok(
+    exportButtons.some(button => {
+      const action = button.attributes.action;
+      return (
+        button.attributes.op?.kind === 'literal' &&
+        button.attributes.op.value === 'quick-actions:snapshot' &&
+        button.attributes.runAction?.kind === 'member' &&
+        button.attributes.runAction.path === 'quickActionsController.runAction' &&
+        action?.kind === 'function' &&
+        action.body?.kind === 'call' &&
+        action.body.callee === 'exp.exportTakeSnapshot'
+      );
+    }),
+    'snapshot export button should preserve semantic action/op/controller wiring'
   );
 
   assertMatchesAll(

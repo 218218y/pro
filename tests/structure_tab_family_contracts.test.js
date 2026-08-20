@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { assertLacksAll, assertMatchesAll, bundleSources, readSource } from './_source_bundle.js';
+import { assertNamedExports, getCallFacts } from './_semantic_source_contracts.js';
 
 const structureControlsOwner = readSource(
   '../esm/native/ui/react/tabs/structure_tab_controls.tsx',
@@ -27,6 +28,10 @@ const savedModelsDndOwner = readSource(
 );
 const workflowsOwner = readSource(
   '../esm/native/ui/react/tabs/structure_tab_workflows_controller_runtime.ts',
+  import.meta.url
+);
+const chestActionsOwner = readSource(
+  '../esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts',
   import.meta.url
 );
 
@@ -169,6 +174,16 @@ test('[structure-tab-family] structure owners stay thin over canonical field/cor
     'structure controls owner'
   );
 
+  assertNamedExports(
+    assert,
+    structureCoreOwner,
+    ['enterStructureEditMode', 'exitStructureEditMode', 'getModeConst'],
+    {
+      sourceModule: './structure_tab_core_edit_mode.js',
+      label: 'structure core edit-mode facade',
+      fileName: 'structure_tab_core.ts',
+    }
+  );
   assertMatchesAll(
     assert,
     structureCoreOwner,
@@ -179,7 +194,6 @@ test('[structure-tab-family] structure owners stay thin over canonical field/cor
       /structure_tab_core_recompute\.js/,
       /structure_tab_core_edit_mode\.js/,
       /export \{ getModelsService \}/,
-      /export \{[\s\S]*enterStructureEditMode/,
     ],
     'structure core owner'
   );
@@ -382,16 +396,33 @@ test('[structure-tab-family] structure notes/workflows stay normalized and chest
     [
       /const setChestDrawersCount = \(nn: number\) =>/,
       /setUiChestDrawersCount\(args\.app, next, actionMeta\);/,
-      /const source = 'react:structure:chest:count';[\s\S]*commitStructureStatePatchWithRecompute\(\{[\s\S]*source,/,
       /statePatch:\s*\{\s*ui:\s*uiPatch\s*\}/,
       /createStructureTabRecomputeWriteMeta\(source\)/,
     ],
     'structure chest drawer recompute bundle'
   );
-  assertLacksAll(
-    assert,
-    structureChestActionsBundle,
-    [/\{\s*source:\s*'react:structure:chest:count'[\s\S]*noBuild:\s*true\s*\}/],
-    'structure chest drawer recompute bundle'
+  assert.match(chestActionsOwner, /'react:structure:chest:count'/);
+  const chestRecomputeCalls = getCallFacts(
+    chestActionsOwner,
+    'commitStructureStatePatchWithRecompute',
+    'structure_tab_corner_chest_actions_controller_chest.ts'
+  );
+  assert.ok(
+    chestRecomputeCalls.some(call => {
+      const options = call.args[0];
+      return (
+        options?.kind === 'object' &&
+        options.properties.source?.kind === 'identifier' &&
+        options.properties.source.name === 'source' &&
+        options.properties.uiPatch?.kind === 'identifier' &&
+        options.properties.uiPatch.name === 'uiPatch' &&
+        options.properties.statePatch?.kind === 'object' &&
+        options.properties.statePatch.properties.ui?.kind === 'identifier' &&
+        options.properties.statePatch.properties.ui.name === 'uiPatch' &&
+        options.properties.meta?.kind === 'identifier' &&
+        options.properties.meta.name === 'actionMeta'
+      );
+    }),
+    'chest drawer count should recompute through the canonical state-patch seam'
   );
 });

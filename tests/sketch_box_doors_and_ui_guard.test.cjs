@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
+const semanticContracts = import('./_semantic_source_contracts.js');
+
 function read(rel) {
   return fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
 }
@@ -69,7 +71,8 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
   assert.match(sections, /מחיצה שוכבת/);
 });
 
-test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/double_profile doors through the canonical door visual factory', () => {
+test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/double_profile doors through the canonical door visual factory', async () => {
+  const { assertCallObjectContract, getCallFacts } = await semanticContracts;
   const render = [
     read('esm/native/builder/render_interior_sketch_ops.ts'),
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
@@ -113,20 +116,34 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
     render,
     /import \{ appendGrooveStrips \} from '\.\/visuals_and_contents_door_visual_grooves\.js';/
   );
-  assert.match(
-    render,
-    /appendGrooveStrips\(\{[\s\S]*hasGrooves: groovesEnabled && boxDoor\.groove === true,[\s\S]*grooveLayout: args\.grooveLayout \?\? null,/
-  );
+  const accentsSource = read('esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts');
+  assertCallObjectContract(assert, accentsSource, 'appendGrooveStrips', {
+    argIndex: 0,
+    requiredProperties: { isSketch: true, groovePartId: true, hasGrooves: true, grooveLayout: true },
+    requiredIdentifiers: ['groovesEnabled', 'boxDoor.groove', 'args.grooveLayout'],
+    label: 'sketch box groove strips',
+  });
   assert.doesNotMatch(render, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
   assert.match(render, /addAccent\(`\$\{doorPid\}_accent_top`/);
   assert.doesNotMatch(render, /const handlePid = `\$\{doorPid\}_handle`/);
-  assert.match(
-    render,
-    /doorsArray\.push\(\{[\s\S]*type: 'hinged',[\s\S]*isOpen: (?:doorOpen|layout\.doorOpen),[\s\S]*noGlobalOpen: true,[\s\S]*\}\)/
-  );
+  const doorsSource = read('esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts');
+  const doorPush = getCallFacts(doorsSource, 'doorsArray.push').find(call => {
+    const entry = call.args[0];
+    return (
+      entry?.kind === 'object' &&
+      entry.properties.type?.kind === 'literal' &&
+      entry.properties.type.value === 'hinged' &&
+      entry.properties.isOpen?.kind === 'member' &&
+      entry.properties.isOpen.path === 'layout.doorOpen' &&
+      entry.properties.noGlobalOpen?.kind === 'literal' &&
+      entry.properties.noGlobalOpen.value === true
+    );
+  });
+  assert.ok(doorPush, 'sketch box doors should register canonical hinged runtime metadata');
 });
 
-test('free box hover preview stays on the classic path and sketch box clicks toggle box doors', () => {
+test('free box hover preview stays on the classic path and sketch box clicks toggle box doors', async () => {
+  const { assertCallObjectContract } = await semanticContracts;
   const freeHover = [
     read('esm/native/services/canvas_picking_manual_layout_sketch_hover_free_content.ts'),
     read('esm/native/services/canvas_picking_manual_layout_sketch_hover_free_box.ts'),
@@ -144,8 +161,28 @@ test('free box hover preview stays on the classic path and sketch box clicks tog
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
     sketchBoxFrontsBundle(),
   ].join('\n');
-  assert.match(freeHover, /resolveSketchFreeBoxContentPreview\(\{/);
-  assert.match(freeHover, /resolveSketchFreePlacementBoxPreview\(\{/);
+  assertCallObjectContract(
+    assert,
+    read('esm/native/services/canvas_picking_manual_layout_sketch_hover_free_content.ts'),
+    'resolveSketchFreeBoxContentPreview',
+    {
+      argIndex: 0,
+      requiredProperties: { contentKind: true },
+      requiredIdentifiers: ['basePreviewArgs', 'freeContentKind'],
+      label: 'free-box content preview',
+    }
+  );
+  assertCallObjectContract(
+    assert,
+    read('esm/native/services/canvas_picking_manual_layout_sketch_hover_free_box.ts'),
+    'resolveSketchFreePlacementBoxPreview',
+    {
+      argIndex: 0,
+      requiredProperties: { boxH: true, widthOverrideM: true, depthOverrideM: true },
+      requiredIdentifiers: ['App', 'tool', 'host', 'planeHit'],
+      label: 'free-box placement preview',
+    }
+  );
   assert.match(toggle, /resolveSketchBoxToggleTarget\(/);
   assert.match(toggle, /seedSketchBoxDoorMotion\(App, runtimeTarget, nextOpen\)/);
   assert.match(toggle, /createCanvasPickingModulesMotionPatchMeta\('sketchBoxDoorToggle'\)/);
@@ -156,7 +193,8 @@ test('free box hover preview stays on the classic path and sketch box clicks tog
   assert.match(render, /doorGroup\.rotation\.y = motionSeed\.rotationY/);
 });
 
-test('sketch box door toggles preserve motion seeds for free boxes, patch saved state without rebuild, and allow handle assignment', () => {
+test('sketch box door toggles preserve motion seeds for free boxes, patch saved state without rebuild, and allow handle assignment', async () => {
+  const { getFunctionSignatureFact } = await semanticContracts;
   const toggle = [
     read('esm/native/services/canvas_picking_toggle_flow.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box.ts'),
@@ -182,9 +220,21 @@ test('sketch box door toggles preserve motion seeds for free boxes, patch saved 
   ].join('\n');
   const handleAssign = read('esm/native/services/canvas_picking_handle_assign_flow.ts');
 
-  assert.match(
-    toggle,
-    /function getSketchBoxDoorMotionSeedKey\([\s\S]*boxId: string,[\s\S]*doorId\?: string \| null[\s\S]*\): string \{/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      read('esm/native/services/canvas_picking_toggle_flow_sketch_box_runtime.ts'),
+      'getSketchBoxDoorMotionSeedKey'
+    ),
+    {
+      name: 'getSketchBoxDoorMotionSeedKey',
+      async: false,
+      params: [
+        { name: 'moduleKey', optional: false, type: 'null|string|undefined' },
+        { name: 'boxId', optional: false, type: 'string' },
+        { name: 'doorId', optional: true, type: 'null|string' },
+      ],
+      returnType: 'string',
+    }
   );
   assert.match(
     toggle,
@@ -199,9 +249,22 @@ test('sketch box door toggles preserve motion seeds for free boxes, patch saved 
     renderSharedBundle,
     /export const __SKETCH_BOX_DOOR_MOTION_SEED_KEY = '__wpSketchBoxDoorMotionSeed';/
   );
-  assert.match(
-    renderSharedBundle,
-    /export function consumeSketchBoxDoorMotionSeed\([\s\S]*boxId: string,[\s\S]*doorId\?: string \| null[\s\S]*\):/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      read('esm/native/builder/render_interior_sketch_pick_meta.ts'),
+      'consumeSketchBoxDoorMotionSeed'
+    ),
+    {
+      name: 'consumeSketchBoxDoorMotionSeed',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'moduleKey', optional: false, type: 'string' },
+        { name: 'boxId', optional: false, type: 'string' },
+        { name: 'doorId', optional: true, type: 'null|string' },
+      ],
+      returnType: 'null|type{rotationY:number;nextOpen:boolean}',
+    }
   );
   assert.match(renderSharedBundle, /const key = getSketchBoxDoorMotionSeedKey\(moduleKey, boxId, doorId\);/);
   assert.match(handleAssign, /function isDoorPartId\(partId: string\): boolean \{/);
@@ -239,7 +302,8 @@ test('sketch box door preview and edit flows track segment xNorm and route groov
   );
 });
 
-test('door-action hover supports dedicated handle and hinge face previews', () => {
+test('door-action hover supports dedicated handle and hinge face previews', async () => {
+  const { assertCallObjectContract, getFunctionSignatureFact } = await semanticContracts;
   const hoverFlow = read('esm/native/services/canvas_picking_hover_flow.ts');
   const hoverFlowCore = read('esm/native/services/canvas_picking_hover_flow_core.ts');
   const hoverFlowNonSplit = read('esm/native/services/canvas_picking_hover_flow_nonsplit.ts');
@@ -266,7 +330,18 @@ test('door-action hover supports dedicated handle and hinge face previews', () =
   assert.match(hoverFlowCore, /isHandleEditMode: __isHandleEditMode,/);
   assert.match(hoverFlowCore, /isHingeEditMode: __isHingeEditMode,/);
   assert.match(hoverFlowNonSplit, /resolveNonSplitPreferredFacePreviewState\(args\)/);
-  assert.match(hoverFlowNonSplitFace, /const facePreviewHitState = resolveCanvasPickingClickHitState\(\{/);
+  assertCallObjectContract(assert, hoverFlowNonSplitFace, 'resolveCanvasPickingClickHitState', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      ndcX: true,
+      ndcY: true,
+      isRemoveDoorMode: false,
+      raycaster: true,
+      mouse: true,
+    },
+    label: 'preferred-face hover hit-state',
+  });
   assert.match(hoverFlowNonSplitPreview, /preferredFacePreviewPartId,/);
   assert.match(hoverFlowNonSplitPreview, /preferredFacePreviewHitObject,/);
   assert.match(hoverModes, /const isHandleHoverMode = args\.isHandleEditMode === true;/);
@@ -293,9 +368,21 @@ test('door-action hover supports dedicated handle and hinge face previews', () =
     hoverModes,
     /if \(modeState\.isHingeHoverMode && !__isSingleDoorHingeTarget\(App, hitDoorPid, hitDoorGroup\)\) return null;/
   );
-  assert.match(
-    hoverTargets,
-    /export function __isSingleDoorHingeTarget\([\s\S]*App: AppContainer,[\s\S]*hitDoorPid: string,[\s\S]*hitDoorGroup: HitObjectLike[\s\S]*\): boolean \{/
+  assert.deepEqual(
+    getFunctionSignatureFact(
+      read('esm/native/services/canvas_picking_door_hover_targets_policy.ts'),
+      '__isSingleDoorHingeTarget'
+    ),
+    {
+      name: '__isSingleDoorHingeTarget',
+      async: false,
+      params: [
+        { name: 'App', optional: false, type: 'AppContainer' },
+        { name: 'hitDoorPid', optional: false, type: 'string' },
+        { name: 'hitDoorGroup', optional: false, type: 'HitObjectLike' },
+      ],
+      returnType: 'boolean',
+    }
   );
   assert.match(
     hoverTargets,

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import { assertNamedExports, getVariableFunctionSignatureFact } from './_semantic_source_contracts.js';
 
 const mainRowFacade = readSource('../esm/native/services/cloud_sync_main_row.ts', import.meta.url);
 const mainRowSharedOwner = readSource(
@@ -69,14 +70,23 @@ test('[cloud-sync-main-row] facade stays thin while dedicated owners hold mutabl
   assertMatchesAll(
     assert,
     mainRowPullOwner,
-    [
-      /from '\.\/cloud_sync_main_row_pull_shared\.js';/,
-      /from '\.\/cloud_sync_main_row_pull_runtime\.js';/,
-      /export\s+type\s*\{[\s\S]*CreateCloudSyncMainRowPullFlowArgs,[\s\S]*CloudSyncMainRowPullFlow,?[\s\S]*\}\s*from '\.\/cloud_sync_main_row_pull_shared\.js';/s,
-      /export\s*\{[\s\S]*createCloudSyncMainRowPullFlow[\s\S]*\}\s*from '\.\/cloud_sync_main_row_pull_runtime\.js';/s,
-    ],
+    [/from '\.\/cloud_sync_main_row_pull_shared\.js';/, /from '\.\/cloud_sync_main_row_pull_runtime\.js';/],
     'mainRowPullOwner'
   );
+  assertNamedExports(
+    assert,
+    mainRowPullOwner,
+    ['CreateCloudSyncMainRowPullFlowArgs', 'CloudSyncMainRowPullFlow'],
+    {
+      sourceModule: './cloud_sync_main_row_pull_shared.js',
+      exportKind: 'type',
+      label: 'main-row pull type seam',
+    }
+  );
+  assertNamedExports(assert, mainRowPullOwner, ['createCloudSyncMainRowPullFlow'], {
+    sourceModule: './cloud_sync_main_row_pull_runtime.js',
+    label: 'main-row pull runtime seam',
+  });
   assertMatchesAll(
     assert,
     mainRowPullSharedOwner,
@@ -93,24 +103,48 @@ test('[cloud-sync-main-row] facade stays thin while dedicated owners hold mutabl
     mainRowPullRuntimeOwner,
     [
       /export function createCloudSyncMainRowPullFlow\(/,
-      /const queuePullSoon = \(opts\?: MainRowPullRequestOptions, rememberReason = true\): void => \{/,
       /const parkPullUntilFlightsSettle = \(delayMsRaw: number\): boolean => \{/,
       /const runPullOnce = \(isInitial: boolean\): Promise<void> => \{/,
       /const flushPendingPullAfterFlights = \(\): void => \{/,
     ],
     'mainRowPullRuntimeOwner'
   );
+  assert.deepEqual(
+    getVariableFunctionSignatureFact(
+      mainRowPullRuntimeOwner,
+      'queuePullSoon',
+      'cloud_sync_main_row_pull_runtime.ts'
+    ),
+    {
+      name: 'queuePullSoon',
+      async: false,
+      params: [
+        { name: 'opts', optional: true, type: 'MainRowPullRequestOptions' },
+        { name: 'rememberReason', optional: true, type: null, default: { kind: 'literal', value: true } },
+      ],
+      returnType: 'void',
+    }
+  );
   assertMatchesAll(
     assert,
     mainRowPushOwner,
-    [
-      /from '\.\/cloud_sync_main_row_push_shared\.js';/,
-      /from '\.\/cloud_sync_main_row_push_runtime\.js';/,
-      /export\s+type\s*\{[\s\S]*CreateCloudSyncMainRowPushFlowArgs,[\s\S]*CloudSyncMainRowPushFlow,?[\s\S]*\}\s*from '\.\/cloud_sync_main_row_push_shared\.js';/s,
-      /export\s*\{[\s\S]*createCloudSyncMainRowPushFlow[\s\S]*\}\s*from '\.\/cloud_sync_main_row_push_runtime\.js';/s,
-    ],
+    [/from '\.\/cloud_sync_main_row_push_shared\.js';/, /from '\.\/cloud_sync_main_row_push_runtime\.js';/],
     'mainRowPushOwner'
   );
+  assertNamedExports(
+    assert,
+    mainRowPushOwner,
+    ['CreateCloudSyncMainRowPushFlowArgs', 'CloudSyncMainRowPushFlow'],
+    {
+      sourceModule: './cloud_sync_main_row_push_shared.js',
+      exportKind: 'type',
+      label: 'main-row push type seam',
+    }
+  );
+  assertNamedExports(assert, mainRowPushOwner, ['createCloudSyncMainRowPushFlow'], {
+    sourceModule: './cloud_sync_main_row_push_runtime.js',
+    label: 'main-row push runtime seam',
+  });
   assertMatchesAll(
     assert,
     mainRowPushSharedOwner,

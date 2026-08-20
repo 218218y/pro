@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
-import { getFunctionSignatureFact, getInterfaceFact } from './_semantic_source_contracts.js';
+import {
+  assertNamedExports,
+  getFunctionSignatureFact,
+  getInterfaceFact,
+} from './_semantic_source_contracts.js';
 
 const modelsTypes = readSource('../types/models.ts', import.meta.url);
 const typesIndex = readSource('../types/index.ts', import.meta.url);
@@ -125,12 +129,28 @@ test('models contracts keep canonical service, helper, and typed access seams', 
   assertMatchesAll(
     assert,
     modelsAccess,
-    [
-      /export \{ normalizeModelsCommandReason \} from '\.\/models_access_shared\.js';/,
-      /export \{[\s\S]*getModelsServiceSourceMaybe,[\s\S]*getModelsServiceMaybe,[\s\S]*ensureModelsService,[\s\S]*\} from '\.\/models_access_service\.js';/,
-      /export \{[\s\S]*ensureModelsLoadedViaService,[\s\S]*ensureModelsLoadedViaServiceOrThrow,[\s\S]*exportUserModelsViaService,[\s\S]*mergeImportedModelsViaService,[\s\S]*mergeImportedModelsViaServiceOrThrow,[\s\S]*setModelNormalizerViaService,[\s\S]*setPresetModelsViaService,[\s\S]*\} from '\.\/models_access_commands\.js';/,
-    ],
+    [/export \{ normalizeModelsCommandReason \} from '\.\/models_access_shared\.js';/],
     'modelsAccess'
+  );
+  assertNamedExports(
+    assert,
+    modelsAccess,
+    ['getModelsServiceSourceMaybe', 'getModelsServiceMaybe', 'ensureModelsService'],
+    { sourceModule: './models_access_service.js', label: 'models access service seam' }
+  );
+  assertNamedExports(
+    assert,
+    modelsAccess,
+    [
+      'ensureModelsLoadedViaService',
+      'ensureModelsLoadedViaServiceOrThrow',
+      'exportUserModelsViaService',
+      'mergeImportedModelsViaService',
+      'mergeImportedModelsViaServiceOrThrow',
+      'setModelNormalizerViaService',
+      'setPresetModelsViaService',
+    ],
+    { sourceModule: './models_access_commands.js', label: 'models access command seam' }
   );
   assertLacksAll(assert, modelsAccess, [/export default\s+/, /import \{/], 'modelsAccess');
 
@@ -293,13 +313,16 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     assert,
     modelsHelpers,
     [
-      /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
       /export function saveCurrentModelInternal\(/,
       /export function transferModelInternal\(/,
       /export function applyModelInternal\(App: AppContainer, id: SavedModelId\): ModelsCommandResult/,
     ],
     'modelsHelpers'
   );
+  assertNamedExports(assert, modelsRegistry, ['AppModelsState', 'StorageLike'], {
+    exportKind: 'type',
+    label: 'models registry state/storage types',
+  });
   assert.deepEqual(
     getFunctionSignatureFact(modelsRegistry, 'mergeImportedModelsInternal', 'models_registry.ts'),
     {
@@ -417,14 +440,13 @@ test('models top-level owners stay thin and delegate command/storage policy to d
   assertMatchesAll(
     assert,
     modelsRegistry,
-    [
-      /\.\/models_registry_runtime\.js/,
-      /\.\/models_registry_storage\.js/,
-      /\.\/models_registry_shared\.js/,
-      /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
-    ],
+    [/\.\/models_registry_runtime\.js/, /\.\/models_registry_storage\.js/, /\.\/models_registry_shared\.js/],
     'modelsRegistryThinOwner'
   );
+  assertNamedExports(assert, modelsRegistry, ['AppModelsState', 'StorageLike'], {
+    exportKind: 'type',
+    label: 'models registry thin-owner type seam',
+  });
 
   assertMatchesAll(
     assert,

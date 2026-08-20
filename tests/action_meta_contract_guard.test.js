@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFirstExisting } from './_read_src.js';
-import { getInterfaceFact } from './_semantic_source_contracts.js';
+import { getFunctionSignatureFact, getInterfaceFact } from './_semantic_source_contracts.js';
 
 const kernelTypes = readFirstExisting(['../types/kernel.ts'], import.meta.url);
 const metaContract = readFirstExisting(['../esm/native/runtime/action_meta_contract.ts'], import.meta.url);
@@ -62,7 +62,11 @@ test('action meta vocabulary stays closed at both canonical and public action bo
     extends: ['CanonicalActionMetaLike'],
     properties: [],
   });
-  assert.doesNotMatch(backendStoreTypes, /meta\?: ActionMetaLike \| UnknownRecord/);
+  const backendStore = getInterfaceFact(backendStoreTypes, 'BackendStoreLike', 'types/backend_store.ts');
+  assert.equal(
+    backendStore?.properties.find(property => property.name === 'patch')?.type,
+    'fn(payload:StorePatchPayload|UnknownRecord,meta?:ActionMetaLike,opts?:DispatchOptionsLike)->unknown'
+  );
 });
 
 test('canonical meta owners normalize through one runtime boundary', () => {
@@ -116,10 +120,16 @@ test('door service options stay separate from behavior-changing action metadata'
       ['slidingHideOpen', 'boolean'],
     ].map(([name, type]) => ({ name, optional: true, readonly: false, type })),
   });
-  assert.match(
-    doorsAccess,
-    /setDoorsOpenViaService\(App: unknown, open: boolean, opts\?: DoorsSetOpenOptionsLike\)/
-  );
+  assert.deepEqual(getFunctionSignatureFact(doorsAccess, 'setDoorsOpenViaService', 'doors_access_doors.ts'), {
+    name: 'setDoorsOpenViaService',
+    async: false,
+    params: [
+      { name: 'App', optional: false, type: 'unknown' },
+      { name: 'open', optional: false, type: 'boolean' },
+      { name: 'opts', optional: true, type: 'DoorsSetOpenOptionsLike' },
+    ],
+    returnType: 'boolean',
+  });
   const canonicalPropertyNames = new Set(
     getInterfaceFact(kernelTypes, 'CanonicalActionMetaLike', 'types/kernel.ts').properties.map(
       property => property.name

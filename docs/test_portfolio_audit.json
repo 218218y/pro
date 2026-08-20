@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T02:30:50.665Z",
+  "generatedAt": "2026-08-20T03:25:59.061Z",
   "totals": {
     "tests": 1250,
     "unitRunnerTests": 1241,
@@ -306,6 +306,10 @@
       "target": "esm/native/builder/corner_connector_door_emit_visuals.ts",
       "kinds": ["contract", "ownership"],
       "owners": [
+        {
+          "file": "tests/builder_corner_typed_surface_contracts.test.js",
+          "kind": "contract"
+        },
         {
           "file": "tests/corner_door_trim_scoped_lookup_guard.test.js",
           "kind": "contract"

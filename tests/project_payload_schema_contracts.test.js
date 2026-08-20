@@ -4,8 +4,11 @@ import assert from 'node:assert/strict';
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
 import {
+  assertNamedExports,
+  getFunctionReturnFacts,
   getFunctionSignatureFact,
   getInterfaceFact,
+  getTypeAliasFact,
   getTypeLiteralPropertyFacts,
 } from './_semantic_source_contracts.js';
 
@@ -214,10 +217,25 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     [
       /function readSavedNotes\(value: unknown\): ProjectSavedNotesLike \{/,
       /function cloneProjectJson\(value: unknown\): ProjectPdfDraftLike \| null \{/,
-      /orderPdfEditorDraft: hasDraft \? cloneProjectJson\(rec\.orderPdfEditorDraft\) : null/,
     ],
     'loadHelpers'
   );
+
+  const pdfPatchReturns = getFunctionReturnFacts(
+    loadHelpers,
+    'buildProjectPdfUiPatch',
+    'project_io_load_helpers.ts'
+  );
+  assert.deepEqual(pdfPatchReturns?.[0]?.properties?.orderPdfEditorDraft, {
+    kind: 'conditional',
+    test: { kind: 'identifier', name: 'hasDraft' },
+    consequent: {
+      kind: 'call',
+      callee: 'cloneProjectJson',
+      args: [{ kind: 'member', path: 'rec.orderPdfEditorDraft' }],
+    },
+    alternate: { kind: 'literal', value: null },
+  });
 
   assert.deepEqual(
     getFunctionSignatureFact(loadHelpers, 'buildProjectUiSnapshot', 'project_io_load_helpers.ts'),
@@ -343,11 +361,20 @@ test('project payload-related bundles keep typed save/load and modes seams witho
     ],
     'projectDragDrop'
   );
+  assertNamedExports(
+    assert,
+    projectDragDropController,
+    ['readDroppedProjectFile', 'readDroppedProjectFileFlightKey', 'isProjectFileDrag'],
+    {
+      sourceModule: './project_drag_drop_controller_shared.js',
+      label: 'project drag/drop shared facade',
+      fileName: 'project_drag_drop_controller_runtime.ts',
+    }
+  );
   assertMatchesAll(
     assert,
     projectDragDropController,
     [
-      /export \{[\s\S]*readDroppedProjectFile(?:,[\s\S]*readDroppedProjectFileFlightKey)?[,\s\S]*isProjectFileDrag[\s\S]*\} from '\.\/project_drag_drop_controller_shared\.js';/,
       /project_drag_drop_controller_drop\.js/,
       /const toast = typeof deps\.toast === 'function' \? deps\.toast : \(\) => undefined;/,
       /handleProjectDropLoad\(App, doc, toast, e\)/,
@@ -355,16 +382,27 @@ test('project payload-related bundles keep typed save/load and modes seams witho
     'projectDragDropController'
   );
 
+  assert.deepEqual(getTypeAliasFact(modes, 'ModesControllerApi', 'modes.bundle.ts'), {
+    name: 'ModesControllerApi',
+    type: 'Required<Pick<UiModesControllerLike,"apply"|"enterPrimaryMode"|"exitPrimaryMode"|"getPrimaryMode"|"getPrimaryModeOpts"|"isModeActive"|"togglePrimaryMode">>&type{unsub:UiModesControllerLike["unsub"]}',
+  });
+  const modesInterface = propertyMap(
+    getInterfaceFact(buildTypes, 'UiModesControllerLike', 'types/build.bundle.ts')
+  );
+  assert.deepEqual(modesInterface.get('unsub'), {
+    name: 'unsub',
+    optional: true,
+    readonly: false,
+    type: 'fn()->void|null|type{unsubscribe?:fn()->void}',
+  });
   assertMatchesAll(
     assert,
     modes,
     [
-      /type ModesControllerApi = (?:\\{|Required<Pick<UiModesControllerLike,)/,
       /export function getModeState\(App: AppLike\): ModeStateLike \{/,
       /export function getHandlesTools\(App: AppLike\): HandlesToolLike \| null \{/,
       /export function asUiFeedback\(value: unknown\): UiFeedbackWithEditStateToast \| null \{/,
       /const fb = asUiFeedback\(getUiFeedback\(App\)\);/,
-      /(?:let unsub: ModesControllerApi\['unsub'\] = null;|unsub: \(\(\) => void\) \| \{ unsubscribe\?: \(\) => void \} \| null;|api\.unsub = subscribe \? subscribe\(\(\) => \{ if \(typeof api\.apply === 'function'\) api\.apply\(\); \}\) : null;)/,
     ],
     'modes'
   );

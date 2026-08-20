@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { getInterfaceFact } from './_semantic_source_contracts.js';
 
 function readSource(file) {
   return fs.readFileSync(file, 'utf8');
@@ -79,8 +80,16 @@ test('retired state compatibility paths cannot re-enter runtime ownership', () =
   );
   assert.doesNotMatch(structureSync, /createStructuralRawMirrorPatch/);
   const rawTypes = readSource('types/ui_raw.ts');
-  assert.match(rawTypes, /structureSelect\?: string;/);
-  assert.match(rawTypes, /singleDoorPos\?: string;/);
+  const rawFact = getInterfaceFact(rawTypes, 'UiRawInputsLike', 'types/ui_raw.ts');
+  assert.deepEqual(
+    rawFact?.properties.filter(
+      property => property.name === 'structureSelect' || property.name === 'singleDoorPos'
+    ),
+    [
+      { name: 'structureSelect', optional: true, readonly: false, type: 'string' },
+      { name: 'singleDoorPos', optional: true, readonly: false, type: 'string' },
+    ]
+  );
   assert.match(projectLoad, /structureSelect: settings\.structureSelection/);
   assert.match(projectLoad, /singleDoorPos: settings\.singleDoorPos \|\| 'left'/);
   assert.doesNotMatch(orderPdfCache, /state\.build|captureState\.build/);
