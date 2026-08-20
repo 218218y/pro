@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T03:25:54.744Z",
+  "generatedAt": "2026-08-20T06:23:59.725Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 562,
@@ -3653,28 +3653,28 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 307,
+      "line": 311,
       "term": "fallbackMirrorLayoutShapeMatches",
       "category": "domain-default",
       "text": "function fallbackMirrorLayoutShapeMatches(currentLayout: unknown, otherLayout: unknown): boolean {"
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 410,
+      "line": 414,
       "term": "fallbackMirrorLayoutShapeMatches",
       "category": "domain-default",
       "text": "if (!fallbackMirrorLayoutShapeMatches(args.currentLayout, otherLayout)) continue;"
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 503,
+      "line": 507,
       "term": "fallbackGrooveShapeMatches",
       "category": "domain-default",
       "text": "function fallbackGrooveShapeMatches(args: {"
     },
     {
       "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-      "line": 613,
+      "line": 617,
       "term": "fallbackGrooveShapeMatches",
       "category": "domain-default",
       "text": "!fallbackGrooveShapeMatches({"

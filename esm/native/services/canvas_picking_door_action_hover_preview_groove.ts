@@ -31,6 +31,7 @@ import {
   resolveDoorLayoutAlignmentGuideWidth,
   resolveGrooveLayoutHoverAlignment,
 } from './canvas_picking_door_layout_alignment.js';
+import { createDoorLayoutAlignmentCapabilities } from './canvas_picking_door_layout_alignment_runtime.js';
 import type { DoorHitNode } from './canvas_picking_door_shared.js';
 import {
   buildRectClearanceMeasurementEntries,
@@ -118,7 +119,7 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
   const grooveAlignment =
     showCenteredMeasurements && nextLayout
       ? resolveGrooveLayoutHoverAlignment({
-          App: args.App,
+          capabilities: createDoorLayoutAlignmentCapabilities(args.App),
           currentPartId: partKey,
           currentRoot: __asObject<DoorHitNode>(args.hit.hitDoorGroup),
           currentOwner: __asObject<DoorHitNode>(surfaceOwner),

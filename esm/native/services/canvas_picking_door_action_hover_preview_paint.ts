@@ -33,6 +33,7 @@ import {
   resolveDoorLayoutAlignmentGuideWidth,
   resolveMirrorLayoutHoverAlignment,
 } from './canvas_picking_door_layout_alignment.js';
+import { createDoorLayoutAlignmentCapabilities } from './canvas_picking_door_layout_alignment_runtime.js';
 import type { DoorHitNode } from './canvas_picking_door_shared.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
@@ -180,7 +181,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     const mirrorAlignment =
       showCenteredMeasurements && nextLayout && normalizedPaintSelection === 'mirror'
         ? resolveMirrorLayoutHoverAlignment({
-            App,
+            capabilities: createDoorLayoutAlignmentCapabilities(App),
             currentPartId: partKey,
             currentRoot: __asObject<DoorHitNode>(hit.hitDoorGroup),
             currentOwner: __asObject<DoorHitNode>(mirrorOwnerGroup),

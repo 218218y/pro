@@ -6,6 +6,10 @@ import {
   resolveMirrorPlacementInRect,
 } from '../esm/native/features/door_authoring/api.ts';
 import { tryHandleDoorPaintHoverPreview } from '../esm/native/services/canvas_picking_door_action_hover_preview_paint.ts';
+import {
+  resolveMirrorLayoutHoverAlignment,
+  type DoorLayoutAlignmentCapabilities,
+} from '../esm/native/services/canvas_picking_door_layout_alignment.ts';
 
 class Vec3 {
   x = 0;
@@ -78,6 +82,47 @@ function assertMirrorCenterMeasurementStyles(
   assert.ok(horizontal.every(entry => entry.styleKey === (expected.widthCentered ? 'center' : 'cell')));
   assert.ok(vertical.every(entry => entry.styleKey === (expected.heightCentered ? 'center' : 'cell')));
 }
+
+test('door layout alignment core resolves symmetry through the injected capability surface only', () => {
+  const reads = { doors: 0, drawers: 0, grooveLines: 0 };
+  const capabilities: DoorLayoutAlignmentCapabilities = {
+    readDoorEntries() {
+      reads.doors += 1;
+      return [];
+    },
+    readDrawerEntries() {
+      reads.drawers += 1;
+      return [];
+    },
+    readGrooveLinesCountForPart() {
+      reads.grooveLines += 1;
+      return null;
+    },
+  };
+  const rect = { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 };
+  const currentLayout = { widthCm: 20, heightCm: 40, centerXNorm: 0.3, centerYNorm: 0.8 };
+  const currentPlacement = resolveMirrorPlacementInRect({ rect, layout: currentLayout });
+
+  assert.deepEqual(
+    resolveMirrorLayoutHoverAlignment({
+      capabilities,
+      currentPartId: 'd4_left',
+      currentRoot: null,
+      currentOwner: null,
+      currentRect: rect,
+      currentLayout,
+      currentPlacement,
+      mirrorLayoutMap: {
+        d5_right: [{ widthCm: 20, heightCm: 40, centerXNorm: 0.3, centerYNorm: 0.8 }],
+      },
+      doorSpecialMap: { d5_right: 'mirror' },
+      paintSelection: 'mirror',
+      scratch: new Vec3() as never,
+    }),
+    { hasVerticalAlignment: true, hasHorizontalAlignment: true }
+  );
+  assert.deepEqual(reads, { doors: 1, drawers: 1, grooveLines: 0 });
+});
 
 test('glass hover preview treats hex-cell diagonal panels as stationary special fronts', () => {
   const owner = createIdentityDoorOwner({

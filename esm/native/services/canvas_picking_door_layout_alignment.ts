@@ -1,4 +1,4 @@
-import type { AppContainer, GrooveLayoutEntry, UnknownRecord } from '../../../types';
+import type { GrooveLayoutEntry, UnknownRecord } from '../../../types';
 import {
   buildDoorVisualLookupKeys,
   computeAutoGrooveLinesCount,
@@ -7,14 +7,12 @@ import {
   readDoorVisualMirrorLayout,
   readGrooveLayoutList,
   readGrooveLayoutListForPart,
-  readGrooveLinesCountForPart,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
   resolveGroovePlacementInRect,
   resolveMirrorPlacementInRect,
 } from './canvas_picking_door_edit_shared.js';
 import { __wp_isDrawerLikePartId } from './canvas_picking_core_helpers.js';
-import { readDoorRuntimeEntries, readDrawerRuntimeEntries } from './doors_runtime_lifecycle_shared.js';
 import {
   readGrooveSurfaceRectFromUserData,
   readMirrorPlacementRectFromUserData,
@@ -27,6 +25,12 @@ import type { ReusableVectorLike } from './canvas_picking_door_action_hover_prev
 export type DoorLayoutHoverAlignment = {
   hasVerticalAlignment: boolean;
   hasHorizontalAlignment: boolean;
+};
+
+export type DoorLayoutAlignmentCapabilities = {
+  readDoorEntries: () => readonly unknown[];
+  readDrawerEntries: () => readonly unknown[];
+  readGrooveLinesCountForPart: (partId: string) => number | null;
 };
 
 type LayoutRect = { minX: number; maxX: number; minY: number; maxY: number };
@@ -114,10 +118,10 @@ function resolvePartIdHostKind(partId: string): DoorLayoutHostKind {
   return __wp_isDrawerLikePartId(partId) ? 'drawer' : 'door';
 }
 
-function collectDoorSceneCandidates(App: AppContainer): DoorSceneCandidate[] {
+function collectDoorSceneCandidates(capabilities: DoorLayoutAlignmentCapabilities): DoorSceneCandidate[] {
   const out: DoorSceneCandidate[] = [];
   const seenGroups = new Set<DoorHitNode>();
-  const pushEntries = (entries: unknown[], defaultKind: DoorLayoutHostKind) => {
+  const pushEntries = (entries: readonly unknown[], defaultKind: DoorLayoutHostKind) => {
     for (let index = 0; index < entries.length; index += 1) {
       const entry = asRecord(entries[index]);
       const group = asRecord(entry?.group) as DoorHitNode | null;
@@ -133,8 +137,8 @@ function collectDoorSceneCandidates(App: AppContainer): DoorSceneCandidate[] {
       });
     }
   };
-  pushEntries(readDoorRuntimeEntries(App) as unknown[], 'door');
-  pushEntries(readDrawerRuntimeEntries(App) as unknown[], 'drawer');
+  pushEntries(capabilities.readDoorEntries(), 'door');
+  pushEntries(capabilities.readDrawerEntries(), 'drawer');
   return out;
 }
 
@@ -324,7 +328,7 @@ function fallbackMirrorLayoutShapeMatches(currentLayout: unknown, otherLayout: u
 }
 
 export function resolveMirrorLayoutHoverAlignment(args: {
-  App: AppContainer;
+  capabilities: DoorLayoutAlignmentCapabilities;
   currentPartId: string;
   currentRoot: DoorHitNode | null;
   currentOwner: DoorHitNode | null;
@@ -340,7 +344,7 @@ export function resolveMirrorLayoutHoverAlignment(args: {
   if (!args.currentLayout || !args.mirrorLayoutMap) return alignment;
   const currentLayout = readMirrorLayoutList(args.currentLayout)[0] || null;
   if (!currentLayout) return alignment;
-  const candidates = collectDoorSceneCandidates(args.App);
+  const candidates = collectDoorSceneCandidates(args.capabilities);
   const currentSceneCandidate = candidates.find(candidate =>
     isSameDoorVisualHost(args.currentPartId, candidate.partId)
   );
@@ -475,14 +479,14 @@ function groovePlacementsHaveSameShape(args: {
 }
 
 function resolveOtherGrooveLinesCount(args: {
-  App: AppContainer;
+  capabilities: DoorLayoutAlignmentCapabilities;
   partId: string;
   layout: GrooveLayoutEntry;
   placement: ReturnType<typeof resolveGroovePlacementInRect>;
 }): number {
   const stored = normalizeGrooveLinesCount(args.layout.linesCount);
   if (stored != null) return stored;
-  const partCount = readGrooveLinesCountForPart(args.App, args.partId);
+  const partCount = args.capabilities.readGrooveLinesCountForPart(args.partId);
   if (partCount != null) return partCount;
   const distributionSpan =
     args.placement.orientation === 'horizontal' ? args.placement.heightM : args.placement.widthM;
@@ -522,7 +526,7 @@ function fallbackGrooveShapeMatches(args: {
 }
 
 export function resolveGrooveLayoutHoverAlignment(args: {
-  App: AppContainer;
+  capabilities: DoorLayoutAlignmentCapabilities;
   currentPartId: string;
   currentRoot: DoorHitNode | null;
   currentOwner: DoorHitNode | null;
@@ -535,7 +539,7 @@ export function resolveGrooveLayoutHoverAlignment(args: {
 }): DoorLayoutHoverAlignment {
   const alignment = emptyAlignment();
   if (!args.currentLayout || !args.grooveLayoutMap) return alignment;
-  const candidates = collectDoorSceneCandidates(args.App);
+  const candidates = collectDoorSceneCandidates(args.capabilities);
   const currentSceneCandidate = candidates.find(candidate =>
     isSameDoorVisualHost(args.currentPartId, candidate.partId)
   );
@@ -563,7 +567,7 @@ export function resolveGrooveLayoutHoverAlignment(args: {
     for (const otherLayout of otherLayouts) {
       const otherPlacement = resolveGroovePlacementInRect({ rect: otherRect, layout: otherLayout });
       const otherLinesCount = resolveOtherGrooveLinesCount({
-        App: args.App,
+        capabilities: args.capabilities,
         partId: candidate.partId,
         layout: otherLayout,
         placement: otherPlacement,
