@@ -49,6 +49,10 @@ function typeName(node) {
     }
     case 'TSUnionType':
       return node.types.map(typeName).sort().join('|');
+    case 'TSParenthesizedType':
+      return typeName(node.typeAnnotation);
+    case 'TSTypeOperator':
+      return `${node.operator || ''} ${typeName(node.typeAnnotation)}`.trim();
     case 'TSIntersectionType':
       return node.types.map(typeName).sort().join('&');
     case 'TSArrayType':
@@ -158,17 +162,18 @@ export function getTypeLiteralPropertyFacts(source, typeNameValue, fileName) {
   const sourceFile = parse(source, fileName);
   let declaration = null;
   walkAst(sourceFile, node => {
-    if (
-      !declaration &&
-      node?.type === 'TSTypeAliasDeclaration' &&
-      node.id?.name === typeNameValue &&
-      node.typeAnnotation?.type === 'TSTypeLiteral'
-    ) {
-      declaration = node;
+    if (!declaration && node?.type === 'TSTypeAliasDeclaration' && node.id?.name === typeNameValue) {
+      const direct = node.typeAnnotation?.type === 'TSTypeLiteral' ? node.typeAnnotation : null;
+      const intersection =
+        node.typeAnnotation?.type === 'TSIntersectionType'
+          ? (node.typeAnnotation.types || []).find(type => type?.type === 'TSTypeLiteral') || null
+          : null;
+      const literal = direct || intersection;
+      if (literal) declaration = { ...node, __typeLiteral: literal };
     }
   });
   if (!declaration) return null;
-  return (declaration.typeAnnotation?.members || [])
+  return (declaration.__typeLiteral?.members || declaration.typeAnnotation?.members || [])
     .filter(property => property?.type === 'TSPropertySignature')
     .map(property => ({
       name: identifierName(property.key),
@@ -178,6 +183,58 @@ export function getTypeLiteralPropertyFacts(source, typeNameValue, fileName) {
     }));
 }
 
+export function getVariableInitializerFact(source, variableName, fileName) {
+  const sourceFile = parse(source, fileName);
+  let fact = null;
+  walkAst(sourceFile, node => {
+    if (fact || node?.type !== 'VariableDeclarator' || node.id?.type !== 'Identifier') return;
+    if (node.id.name !== variableName) return;
+    fact = expressionFact(node.init);
+  });
+  return fact;
+}
+
+export function getNamedFunctionLikeSignatureFact(source, functionName, fileName) {
+  const sourceFile = parse(source, fileName);
+  let declaration = null;
+  walkAst(sourceFile, node => {
+    if (declaration) return;
+    if (node?.type === 'FunctionDeclaration' && node.id?.name === functionName) {
+      declaration = node;
+      return;
+    }
+    if (
+      (node?.type === 'FunctionExpression' || node?.type === 'ArrowFunctionExpression') &&
+      node.id?.name === functionName
+    ) {
+      declaration = node;
+    }
+  });
+  if (!declaration) return null;
+  return {
+    name: functionName,
+    async: declaration.async === true,
+    params: (declaration.params || []).map(parameter => {
+      const param = unwrapExpression(parameter);
+      if (param?.type === 'Identifier') {
+        return {
+          name: param.name,
+          optional: param.optional === true,
+          type: typeName(param.typeAnnotation),
+        };
+      }
+      if (param?.type === 'AssignmentPattern' && param.left?.type === 'Identifier') {
+        return {
+          name: param.left.name,
+          optional: true,
+          type: typeName(param.left.typeAnnotation),
+        };
+      }
+      return { name: param?.type || null, optional: false, type: null };
+    }),
+    returnType: typeName(declaration.returnType),
+  };
+}
 export function getFunctionSignatureFact(source, functionName, fileName) {
   const sourceFile = parse(source, fileName);
   let declaration = null;
@@ -301,6 +358,26 @@ function factContainsIdentifier(fact, identifier) {
   return Object.values(fact).some(value => factContainsIdentifier(value, identifier));
 }
 
+export function getDeleteMemberFacts(source, fileName) {
+  const sourceFile = parse(source, fileName);
+  const deletes = [];
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'UnaryExpression' || node.operator !== 'delete') return;
+    const argument = unwrapExpression(node.argument);
+    if (argument?.type !== 'MemberExpression') return;
+    deletes.push({
+      object: memberPath(argument.object) || identifierName(argument.object),
+      computed: argument.computed === true,
+      property:
+        argument.computed && argument.property?.type === 'Identifier'
+          ? { kind: 'identifier', name: argument.property.name }
+          : argument.computed && argument.property?.type === 'Literal'
+            ? { kind: 'literal', value: argument.property.value }
+            : { kind: 'identifier', name: identifierName(argument.property) },
+    });
+  });
+  return deletes;
+}
 export function assertCallObjectContract(
   assert,
   source,

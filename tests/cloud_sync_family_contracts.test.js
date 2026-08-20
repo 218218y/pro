@@ -8,6 +8,12 @@ import {
   assertLacksAll,
   normalizeWhitespace,
 } from './_source_bundle.js';
+import {
+  assertCallObjectContract,
+  getCallFacts,
+  getInterfacePropertyFacts,
+  getTypeLiteralPropertyFacts,
+} from './_semantic_source_contracts.js';
 
 const owner = readSource('../esm/native/services/cloud_sync.ts', import.meta.url);
 const ownerContext = bundleSources(
@@ -183,6 +189,8 @@ const configBundle = bundleSources(
   ],
   import.meta.url
 );
+const tabsGateSrc = readSource('../esm/native/services/cloud_sync_tabs_gate.ts', import.meta.url);
+const sketchSharedSrc = readSource('../esm/native/services/cloud_sync_sketch_ops_shared.ts', import.meta.url);
 const tabsGateBundle = bundleSources(
   [
     '../esm/native/services/cloud_sync_tabs_gate.ts',
@@ -310,7 +318,15 @@ const reactBundle = bundleSources(
 );
 
 test('cloud sync family keeps one thin owner over canonical install/config/realtime seams', () => {
-  assert.match(runtimeTypes, /realtimeMode\?: 'broadcast';/);
+  const runtimeConfig = getInterfacePropertyFacts(
+    runtimeTypes,
+    'WardrobeProSupabaseCloudSyncConfig',
+    'runtime.ts'
+  );
+  assert.deepEqual(
+    runtimeConfig?.find(property => property.name === 'realtimeMode'),
+    { name: 'realtimeMode', optional: true, readonly: false, type: '"broadcast"' }
+  );
   assert.match(cloudTypes, /mode: 'broadcast';/);
   assert.doesNotMatch(runtimeTypes, /postgres_changes/);
   assert.doesNotMatch(cloudTypes, /postgres_changes/);
@@ -420,11 +436,29 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
   assert.doesNotMatch(ownerContext, /storage\.getString\(CLOUD_SYNC_CLIENT_KEY\)/);
   assert.doesNotMatch(ownerContext, /storage\.setString\(CLOUD_SYNC_CLIENT_KEY,/);
 
+  const tabsGateDeps = getTypeLiteralPropertyFacts(
+    tabsGateSrc,
+    'CreateCloudSyncTabsGateOpsDeps',
+    'cloud_sync_tabs_gate.ts'
+  );
+  assert.deepEqual(
+    tabsGateDeps?.find(property => property.name === 'getGateBaseRoom'),
+    { name: 'getGateBaseRoom', optional: true, readonly: false, type: 'fn()->string|undefined' }
+  );
+  const sketchBaseDeps = getTypeLiteralPropertyFacts(
+    sketchSharedSrc,
+    'CloudSyncSketchOpsBaseDeps',
+    'cloud_sync_sketch_ops_shared.ts'
+  );
+  assert.deepEqual(
+    sketchBaseDeps?.find(property => property.name === 'getGateBaseRoom'),
+    { name: 'getGateBaseRoom', optional: true, readonly: false, type: 'fn()->string|undefined' }
+  );
+
   assertMatchesAll(
     assert,
     tabsGateBundle,
     [
-      /getGateBaseRoom\?:\s*\(\(\) => string\)\s*\|\s*undefined;/,
       /const explicit = String\(getGateBaseRoom\(\) \|\| ''\)\.trim\(\);/,
       /patchSite2TabsGateUi\(/,
       /resolveCloudSyncTabsGateBaseRoom\(/,
@@ -436,7 +470,6 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
     assert,
     sketchBundle,
     [
-      /getGateBaseRoom\?:\s*\(\(\) => string\)\s*\|\s*undefined;/,
       /resolveCloudSyncGateBaseRoom\(/,
       /resolveInitialCloudSketchCatchupDecision\(/,
       /resolveCloudSketchPayloadFingerprint\(/,
@@ -489,12 +522,23 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
   assertMatchesAll(
     assert,
     cloudSketchPullLoadSrc,
-    [
-      /from '\.\.\/runtime\/project_io_access\.js';/,
-      /loadProjectDataActionResultViaService\([\s\S]*'cloudSketch\.pull'/,
-    ],
+    [/from '\.\.\/runtime\/project_io_access\.js';/],
     'cloud sync sketch pull load'
   );
+  const sketchLoadCalls = getCallFacts(
+    cloudSketchPullLoadSrc,
+    'loadProjectDataActionResultViaService',
+    'cloud_sync_sketch_pull_load.ts'
+  );
+  assert.ok(
+    sketchLoadCalls.some(
+      call =>
+        call.args.some(arg => arg?.kind === 'literal' && arg.value === 'error') &&
+        call.args.some(arg => JSON.stringify(arg).includes('cloudSketch.pull'))
+    ),
+    'cloud sketch pull should load through the canonical project IO action with cloudSketch.pull metadata'
+  );
+
   assertLacksAll(
     assert,
     cloudSketchPullLoadSrc,
@@ -502,15 +546,15 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     'cloud sync sketch pull load'
   );
 
-  assertMatchesAll(
-    assert,
-    kernelSrc,
-    [
-      /getProjectCaptureServiceMaybe\(App\)/,
-      /loadProjectDataFailFastResultViaServiceOrThrow\(\s*App,\s*(?:rec|record),\s*\{[\s\S]*queueIfBusy:\s*false/,
-    ],
-    'kernel project access'
-  );
+  assertMatchesAll(assert, kernelSrc, [/getProjectCaptureServiceMaybe\(App\)/], 'kernel project access');
+  assertCallObjectContract(assert, kernelSrc, 'loadProjectDataFailFastResultViaServiceOrThrow', {
+    argIndex: 2,
+    firstArgIdentifier: 'App',
+    requiredProperties: { toast: false, queueIfBusy: false, meta: true },
+    label: 'kernel project load fail-fast options',
+    fileName: 'kernel.ts',
+  });
+
   assertLacksAll(
     assert,
     kernelSrc,
@@ -556,8 +600,12 @@ test('cloud sync family keeps typed runtime/react control surfaces canonical whi
     'cloud sync types'
   );
   assert.match(typesIndex, /export \* from '\.\/cloud_sync';/);
-  assert.doesNotMatch(appTypes, /cloudSync\?: Namespace & CloudSyncServiceLike;/);
-  assert.match(buildTypes, /cloudSync\?: CloudSyncServiceStateLike;/);
+  assert.doesNotMatch(appTypes, /\bcloudSync\b/);
+  const servicesNamespace = getInterfacePropertyFacts(buildTypes, 'ServicesNamespace', 'build_runtime.ts');
+  assert.deepEqual(
+    servicesNamespace?.find(property => property.name === 'cloudSync'),
+    { name: 'cloudSync', optional: true, readonly: false, type: 'CloudSyncServiceStateLike' }
+  );
 
   assertMatchesAll(
     assert,
@@ -574,11 +622,6 @@ test('cloud sync family keeps typed runtime/react control surfaces canonical whi
     assert,
     reactBundle,
     [
-      /createCloudSyncUiActionController\(\{ app, fb \}\)/,
-      /runCloudSyncUiToggleRoomMode\(\{ app, fb, commands, isPublic \}\)/,
-      /runCloudSyncUiSyncSketch\(\{ app, fb, commands \}\)/,
-      /runCloudSyncUiToggleFloatingSyncEnabled\(\{ app, fb, commands \}\)/,
-      /runCloudSyncUiToggleSite2TabsGate\(\{ app, fb, commands, nextOpen, meta \}\)/,
       /function readCloudSyncService\(app: AppContainer\): CloudSyncServiceLike \| null \{/,
       /getCloudSyncServiceMaybe\(app\)/,
       /runCloudSyncAsyncCommand\(app, CLOUD_SYNC_ASYNC_COMMANDS\.syncSketchNow\)/,
@@ -588,6 +631,22 @@ test('cloud sync family keeps typed runtime/react control surfaces canonical whi
     ],
     'cloud sync react bundle'
   );
+  for (const [callee, properties] of [
+    ['createCloudSyncUiActionController', ['app', 'fb']],
+    ['runCloudSyncUiToggleRoomMode', ['app', 'fb', 'commands', 'isPublic']],
+    ['runCloudSyncUiSyncSketch', ['app', 'fb', 'commands']],
+    ['runCloudSyncUiToggleFloatingSyncEnabled', ['app', 'fb', 'commands']],
+    ['runCloudSyncUiToggleSite2TabsGate', ['app', 'fb', 'commands', 'nextOpen', 'meta']],
+  ]) {
+    assertCallObjectContract(assert, reactBundle, callee, {
+      argIndex: 0,
+      requiredProperties: Object.fromEntries(properties.map(name => [name, true])),
+      requiredIdentifiers: properties,
+      label: `${callee} react owner call`,
+      fileName: 'cloud-sync-react-bundle.tsx',
+    });
+  }
+
   assertLacksAll(
     assert,
     reactBundle,

@@ -4,6 +4,11 @@ import fs from 'node:fs';
 
 import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
+import {
+  assertCallObjectContract,
+  getDeleteMemberFacts,
+  getInterfacePropertyFacts,
+} from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
@@ -68,7 +73,16 @@ const domainRoomBundle = bundleSources(
 const domainColors = read('esm/native/kernel/domain_api_colors_section.ts');
 
 test('[kernel-di] stateKernel DI stays centralized under services.stateKernel and kernel config helpers stay thin', () => {
-  assert.match(buildTypes, /stateKernel\?: StateKernelLike;/);
+  const servicesNamespace = getInterfacePropertyFacts(
+    buildTypes,
+    'ServicesNamespace',
+    'build-types-bundle.ts'
+  );
+  assert.ok(servicesNamespace, 'ServicesNamespace should remain declared');
+  assert.deepEqual(
+    servicesNamespace.find(property => property.name === 'stateKernel'),
+    { name: 'stateKernel', optional: true, readonly: false, type: 'StateKernelLike' }
+  );
 
   assertMatchesAll(
     assert,
@@ -89,10 +103,25 @@ test('[kernel-di] stateKernel DI stays centralized under services.stateKernel an
       /function ensureStateKernel\(App: AppContainer\): StateKernelLike \{/,
       /return ensureStateKernelService\(App\);/,
       /kernel_state_kernel_config\.js/,
-      /installKernelStateKernelConfigSurface\(\{/,
     ],
     'kernel owner'
   );
+  assertCallObjectContract(assert, kernelOwner, 'installKernelStateKernelConfigSurface', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      __sk: true,
+      asMeta: true,
+      asRecord: true,
+      isRecord: true,
+      isFn: true,
+      cloneKernelValue: true,
+      setStoreConfigPatch: true,
+    },
+    requiredIdentifiers: ['App'],
+    label: 'kernel config surface install',
+    fileName: 'kernel.ts',
+  });
   assert.doesNotMatch(kernelOwner, /function ensureServicesBag\(/);
 
   assert.doesNotMatch(historyAccess, /state_kernel_service\.js/);
@@ -122,12 +151,24 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     stateOwner,
     [
       /state_api_history_meta_reactivity\.js/,
-      /installStateApiHistoryMetaReactivity\(\{/,
       /import \{ installStateApiConfigNamespace \} from '\.\/state_api_config_namespace\.js';/,
-      /installStateApiConfigNamespace\(\{/,
     ],
     'state owner'
   );
+  assertCallObjectContract(assert, stateOwner, 'installStateApiHistoryMetaReactivity', {
+    argIndex: 0,
+    requiredProperties: { A: true, store: true, storeNs: true, historyNs: true, metaActionsNs: true },
+    requiredIdentifiers: ['normMeta', 'mergeMeta'],
+    label: 'state history/meta install',
+    fileName: 'state_api.ts',
+  });
+  assertCallObjectContract(assert, stateOwner, 'installStateApiConfigNamespace', {
+    argIndex: 0,
+    requiredProperties: { actions: true, configNs: true, metaActionsNs: true, store: true },
+    requiredIdentifiers: ['readCfgSnapshot', 'readUiSnapshot', 'commitConfigPatch'],
+    label: 'state config namespace install',
+    fileName: 'state_api.ts',
+  });
   assertMatchesAll(
     assert,
     stateBundle,
@@ -145,25 +186,32 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
     domainOwner,
     [
       /domain_api_modules_corner\.js/,
-      /installDomainApiModulesCorner\(\{/,
       /import \{ installDomainApiRoomSection \} from '\.\/domain_api_room_section\.js';/,
       /import \{ installDomainApiColorsSection \} from '\.\/domain_api_colors_section\.js';/,
-      /installDomainApiRoomSection\(\{/,
-      /installDomainApiColorsSection\(\{/,
     ],
     'domain owner'
   );
+  for (const [callee, properties] of [
+    ['installDomainApiModulesCorner', ['App', 'select', 'modulesActions', 'cornerActions', 'configActions']],
+    ['installDomainApiRoomSection', ['App', 'select', 'actions', 'roomActions', 'modulesActions']],
+    ['installDomainApiColorsSection', ['App', 'select', 'colorsActions', 'configActions']],
+  ]) {
+    assertCallObjectContract(assert, domainOwner, callee, {
+      argIndex: 0,
+      requiredProperties: Object.fromEntries(properties.map(name => [name, true])),
+      label: `${callee} owner install`,
+      fileName: 'domain_api.ts',
+    });
+  }
   assertMatchesAll(
     assert,
     domainBundle,
-    [
-      /export function installDomainApiModulesCorner\(/,
-      /modulesActions\.recomputeFromUi =/,
-      /delete modulesActions\[key\]/,
-      /delete cornerActions\[key\]/,
-    ],
+    [/export function installDomainApiModulesCorner\(/, /modulesActions\.recomputeFromUi =/],
     'domain bundle'
   );
+  const domainDeletes = getDeleteMemberFacts(domainBundle, 'domain-bundle.ts');
+  assert.ok(domainDeletes.some(entry => entry.object === 'modulesActions' && entry.property?.name === 'key'));
+  assert.ok(domainDeletes.some(entry => entry.object === 'cornerActions' && entry.property?.name === 'key'));
   assertLacksAll(
     assert,
     domainBundle,
@@ -179,7 +227,7 @@ test('[kernel-owner] state, domain, room, and colors owners delegate to focused 
   assertLacksAll(
     assert,
     buildTypes,
-    [/interface ModuleStackPatchInput/, /interface ModulesPatchFn/, /patch\?: ModulesPatchFn/],
+    [/\bModuleStackPatchInput\b/, /\bModulesPatchFn\b/],
     'domain modules public types'
   );
 

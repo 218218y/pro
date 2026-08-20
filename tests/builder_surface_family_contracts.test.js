@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { assertLacksAll, assertMatchesAll, bundleSources, readSource } from './_source_bundle.js';
-import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
+import {
+  assertCallObjectContract,
+  getCallFacts,
+  getVariableInitializerFact,
+  getInterfacePropertyFacts,
+} from './_semantic_source_contracts.js';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 const lineCount = rel => read(rel).trim().split(/\r?\n/).length;
@@ -129,6 +134,7 @@ const materialsFactoryTexturePolicyOwner = readSource(
   import.meta.url
 );
 const materialsApplyOwner = readSource('../esm/native/builder/materials_apply.ts', import.meta.url);
+const builderTypesOwner = readSource('../types/build_builder.ts', import.meta.url);
 const materialColorLookupOwner = readSource(
   '../esm/native/builder/material_color_lookup.ts',
   import.meta.url
@@ -294,26 +300,66 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     'corner dims structural refresh owner'
   );
 
-  assertMatchesAll(
-    assert,
-    canvasPickingStructuralRefresh,
-    [
-      /CANVAS_PICKING_COMMIT_REFRESH_PROFILE[\s\S]*immediate: true,[\s\S]*force: true,[\s\S]*triggerRender: true,[\s\S]*updateShadows: false/,
-      /CANVAS_PICKING_DEBOUNCED_AUTHORING_REFRESH_PROFILE[\s\S]*immediate: false,[\s\S]*force: false,[\s\S]*triggerRender: false,[\s\S]*updateShadows: false/,
-      /CANVAS_PICKING_IMMEDIATE_AUTHORING_REFRESH_PROFILE[\s\S]*immediate: true,[\s\S]*force: false,[\s\S]*triggerRender: false,[\s\S]*updateShadows: false/,
-      /requestBuilderStructuralRefresh\(App, \{/,
-    ],
-    'canvas picking structural refresh policy owner'
-  );
+  const expectedRefreshProfiles = {
+    CANVAS_PICKING_COMMIT_REFRESH_PROFILE: {
+      immediate: true,
+      force: true,
+      triggerRender: true,
+      updateShadows: false,
+    },
+    CANVAS_PICKING_DEBOUNCED_AUTHORING_REFRESH_PROFILE: {
+      immediate: false,
+      force: false,
+      triggerRender: false,
+      updateShadows: false,
+    },
+    CANVAS_PICKING_IMMEDIATE_AUTHORING_REFRESH_PROFILE: {
+      immediate: true,
+      force: false,
+      triggerRender: false,
+      updateShadows: false,
+    },
+  };
+  for (const [name, expected] of Object.entries(expectedRefreshProfiles)) {
+    const fact = getVariableInitializerFact(
+      canvasPickingStructuralRefresh,
+      name,
+      'canvas_picking_structural_refresh.ts'
+    );
+    assert.equal(fact?.kind, 'object', `${name} should stay an object policy`);
+    assert.deepEqual(
+      Object.fromEntries(Object.entries(fact.properties).map(([key, value]) => [key, value.value])),
+      expected,
+      `${name} should preserve canonical refresh semantics`
+    );
+  }
+  assertCallObjectContract(assert, canvasPickingStructuralRefresh, 'requestBuilderStructuralRefresh', {
+    firstArgIdentifier: 'App',
+    requiredProperties: {
+      source: true,
+      immediate: true,
+      force: true,
+      triggerRender: true,
+      updateShadows: true,
+    },
+    requiredIdentifiers: ['profile'],
+    label: 'canvas picking structural refresh policy owner',
+    fileName: 'canvas_picking_structural_refresh.ts',
+  });
 
-  assertMatchesAll(
-    assert,
-    materialsApplyOwner,
-    [
-      /refreshBuilderHandles\(App, \{[\s\S]*cfgSnapshot: colorContext\.cfg,[\s\S]*triggerRender: true,[\s\S]*updateShadows: false/,
-    ],
-    'materials apply canonical handle/render follow-through'
-  );
+  assertCallObjectContract(assert, materialsApplyOwner, 'refreshBuilderHandles', {
+    firstArgIdentifier: 'App',
+    requiredProperties: {
+      cfgSnapshot: true,
+      addOutlines: true,
+      removeDoorsEnabled: true,
+      triggerRender: true,
+      updateShadows: false,
+    },
+    requiredIdentifiers: ['colorContext', 'snapshot'],
+    label: 'materials apply canonical handle/render follow-through',
+    fileName: 'materials_apply.ts',
+  });
   assertLacksAll(
     assert,
     materialsApplyOwner,
@@ -327,12 +373,31 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
       /from '\.\/material_color_lookup\.js';/,
       /from '\.\/material_selection\.js';/,
       /requireMaterialsApplySnapshot\(args\.snapshot\)/,
-      /resolveGlobalFrontMaterialInput\(\{/,
-      /resolveSelectionFrontMaterial\(\{/,
-      /createPartMaterialResolver\(\{[\s\S]*cfg,[\s\S]*getMaterial/,
     ],
     'materials apply color policy canonical config source'
   );
+  assertCallObjectContract(assert, materialsApplyColorPolicy, 'resolveGlobalFrontMaterialInput', {
+    argIndex: 0,
+    requiredProperties: { colorChoice: true, customColor: true, cfg: true },
+    requiredIdentifiers: ['ui', 'cfg'],
+    label: 'materials apply global front selection',
+    fileName: 'materials_apply_color_policy.ts',
+  });
+  assertCallObjectContract(assert, materialsApplyColorPolicy, 'resolveSelectionFrontMaterial', {
+    argIndex: 0,
+    requiredProperties: { selection: true, cfg: true, getMaterial: true, customColor: true },
+    requiredIdentifiers: ['effectiveEntry', 'cfg', 'getMaterial', 'ui'],
+    label: 'materials apply per-part selection',
+    fileName: 'materials_apply_color_policy.ts',
+  });
+  assertCallObjectContract(assert, materialsApplyColorPolicy, 'createPartMaterialResolver', {
+    argIndex: 0,
+    requiredProperties: { ui: true, cfg: true, getMaterial: true, globalFrontMat: true },
+    requiredIdentifiers: ['ui', 'cfg', 'getMaterial', 'globalFrontMat'],
+    label: 'materials apply part resolver construction',
+    fileName: 'materials_apply_color_policy.ts',
+  });
+
   assertLacksAll(
     assert,
     materialsApplyColorPolicy,
@@ -378,9 +443,17 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     materialResolverOwner,
-    [/from '\.\/material_color_lookup\.js';/, /from '\.\/material_selection\.js';/, /readPartColorEntry\(\{/],
+    [/from '\.\/material_color_lookup\.js';/, /from '\.\/material_selection\.js';/],
     'full build material resolver shared color lookup and selection'
   );
+  assertCallObjectContract(assert, materialResolverOwner, 'readPartColorEntry', {
+    argIndex: 0,
+    requiredProperties: { individualColors: true, isMulti: true, partId: true, stackKey: null },
+    requiredIdentifiers: ['colors', 'cfg', 'partId'],
+    label: 'full build material resolver shared color lookup',
+    fileName: 'material_resolver.ts',
+  });
+
   assertLacksAll(
     assert,
     materialResolverOwner,
@@ -390,9 +463,17 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
   assertMatchesAll(
     assert,
     cornerMaterialsOwner,
-    [/from '\.\/material_selection\.js';/, /resolveSelectionFrontMaterial\(\{/],
+    [/from '\.\/material_selection\.js';/],
     'corner materials shared selection owner'
   );
+  assertCallObjectContract(assert, cornerMaterialsOwner, 'resolveSelectionFrontMaterial', {
+    argIndex: 0,
+    requiredProperties: { selection: true, cfg: true, getMaterial: true, toStr: true },
+    requiredIdentifiers: ['colorValue', 'cfg', 'getMaterial'],
+    label: 'corner materials shared selection owner',
+    fileName: 'corner_materials.ts',
+  });
+
   assertLacksAll(
     assert,
     cornerMaterialsOwner,
@@ -569,15 +650,26 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     'platform boot main canonical render follow-through'
   );
 
-  assertMatchesAll(
-    assert,
+  const structureBatchCalls = getCallFacts(
     structureWorkflowShared,
-    [
-      /applyStructureTemplateRecomputeBatch\(\{/,
-      /statePatch:\s*\{ config:\s*\{ modulesConfiguration: nextList \} \}/,
-      /statePatch:\s*\{ config:\s*\{ isManualWidth: false \}, ui:\s*\{ raw:\s*\{ width: nextWidth \} \} \}/,
-    ],
-    'structure workflow structural refresh owner'
+    'applyStructureTemplateRecomputeBatch',
+    'use_structure_tab_workflows_shared.ts'
+  );
+  assert.equal(
+    structureBatchCalls.length,
+    2,
+    'structure workflow should preserve two canonical batch writes'
+  );
+  const structureBatchFacts = structureBatchCalls.map(call => JSON.stringify(call.args[0]));
+  assert.ok(
+    structureBatchFacts.some(value => value.includes('modulesConfiguration') && value.includes('nextList')),
+    'structure workflow module commit should preserve modulesConfiguration state patch'
+  );
+  assert.ok(
+    structureBatchFacts.some(
+      value => value.includes('isManualWidth') && value.includes('nextWidth') && value.includes('statePatch')
+    ),
+    'structure workflow auto-width commit should preserve config+ui state patch'
   );
 
   assertMatchesAll(
@@ -674,11 +766,19 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     [
       /requestModulesRecomputeBuild\(App, uiOverride, runtime\.meta, 'noChange', runtime\.options\)/,
       /requestModulesRecomputeBuild\(App, uiOverride, runtime\.meta, 'noModuleChange', runtime\.options\)/,
-      /applyModulesRecomputeWrite\(\{/,
       /reason:\s*'derived'/,
     ],
     'modules recompute canonical ui-override build policy'
   );
+  assertCallObjectContract(assert, modulesRecomputeOwner, 'applyModulesRecomputeWrite', {
+    argIndex: 0,
+    firstArgIdentifier: undefined,
+    requiredProperties: { App: true, nextModules: true, meta: true, reason: 'derived', reportNonFatal: true },
+    requiredIdentifiers: ['modulesActions', 'newModules', 'runtime'],
+    label: 'modules recompute derived write',
+    fileName: 'domain_api_modules_corner_recompute.ts',
+  });
+
   assertLacksAll(
     assert,
     modulesRecomputeOwner,
@@ -694,11 +794,24 @@ test('[builder-surface-family] orchestration owners stay named-only and request-
     modulesRecomputeNoMainOwner,
     [
       /requestModulesRecomputeBuild\(App, uiOverride, runtime\.meta, 'noMain', runtime\.options\)/,
-      /applyModulesRecomputeWrite\(\{/,
       /reason:\s*'noMainCleanup'/,
     ],
     'no-main modules canonical ui-override build policy'
   );
+  assertCallObjectContract(assert, modulesRecomputeNoMainOwner, 'applyModulesRecomputeWrite', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      nextModules: true,
+      meta: true,
+      reason: 'noMainCleanup',
+      reportNonFatal: true,
+    },
+    requiredIdentifiers: ['sanitizedModules', 'runtime'],
+    label: 'no-main modules cleanup write',
+    fileName: 'domain_api_modules_corner_recompute_no_main.ts',
+  });
+
   assertLacksAll(
     assert,
     modulesRecomputeNoMainOwner,
@@ -1106,12 +1219,42 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   );
   assert.doesNotMatch(handlesOwner, /const computeGroupMaxZLocal = \(\(\) =>/);
   assert.match(handlesInstall, /resolveInstallContext\(handlesInstallContexts, h, A\)/);
-  assert.match(handlesInstall, /applyHandles\(\{ App: context\.App, \.\.\.opts \}\)/);
-  assert.match(handlesInstall, /purgeHandlesForRemovedDoors\(\{ App: context\.App, \.\.\.opts \}\)/);
-  assert.doesNotMatch(handlesInstall, /applyHandles\(\{ App: A, \.\.\.opts \}\)/);
-  assert.doesNotMatch(handlesInstall, /purgeHandlesForRemovedDoors\(\{ App: A, \.\.\.opts \}\)/);
+  for (const callee of ['applyHandles', 'purgeHandlesForRemovedDoors']) {
+    const calls = getCallFacts(handlesInstall, callee, 'handles.ts');
+    assert.ok(
+      calls.some(call => {
+        const arg = call.args[0];
+        return (
+          arg?.kind === 'object' &&
+          arg.properties.App?.kind === 'member' &&
+          arg.properties.App.path === 'context.App' &&
+          arg.spreads.some(spread => spread?.kind === 'identifier' && spread.name === 'opts')
+        );
+      }),
+      `${callee} should use the resolved install context and forward opts`
+    );
+    assert.equal(
+      calls.some(call => call.args[0]?.kind === 'object' && call.args[0].properties.App?.path === 'A'),
+      false,
+      `${callee} should not bypass the resolved install context`
+    );
+  }
   assert.match(handlesSurface, /BuilderHandlesServiceLike/);
-  assert.doesNotMatch(handlesSurface, /isDrawer: boolean,\s*ctx\?: CreateHandleMeshCtx/);
+  const builderHandlesSurface = getInterfacePropertyFacts(
+    builderTypesOwner,
+    'BuilderHandlesServiceLike',
+    'build_builder.ts'
+  );
+  assert.deepEqual(
+    builderHandlesSurface?.find(property => property.name === 'createHandleMeshV7'),
+    {
+      name: 'createHandleMeshV7',
+      optional: true,
+      readonly: false,
+      type: 'fn(type:unknown,width:number,height:number,isLeftHinge:boolean,isDrawer:boolean)->unknown',
+    },
+    'builder handles surface should keep the public five-argument mesh factory without ctx leakage'
+  );
   assert.match(handlesAccess, /requireBuilderHandlesApplyOptions\(opts\);/);
   assert.match(handlesAccess, /requireBuilderHandlesPurgeOptions\(opts\);/);
   assert.match(handlesShared, /export type HandlesApplyRuntime = \{/);
@@ -1192,9 +1335,19 @@ test('[builder-surface-family] visuals/module seams stay consolidated behind can
   assert.match(chestBuild, /export function buildChestOnly\(/);
   assert.match(chestBuild, /readChestModeCfgSnapshotFromOpts/);
   assert.doesNotMatch(chestBuild, /getCfg\(/);
-  assert.match(chestBuild, /applyFrontRevealFrames\(\{/);
+  assertCallObjectContract(assert, chestBuild, 'applyFrontRevealFrames', {
+    argIndex: 0,
+    requiredProperties: { __kind: 'chestModeBuildContext', App: true, THREE: true, cfg: true, flags: true },
+    requiredIdentifiers: ['App', 'THREE', 'cfg', 'renderPolicy'],
+    label: 'chest mode front reveal frames',
+    fileName: 'visuals_chest_mode_build.ts',
+  });
   assert.doesNotMatch(chestBuild, /shadowLine/);
-  assert.doesNotMatch(chestBuild, /MeshBasicMaterial\(\{ color: 0x000000 \}\)/);
+  assertNoSemanticCall(
+    chestBuild,
+    'MeshBasicMaterial',
+    'chest mode should not synthesize legacy black reveal material'
+  );
 
   const contentsSeam = read('esm/native/builder/visuals_contents.ts');
   const contentsShared = read('esm/native/builder/visuals_contents_shared.ts');

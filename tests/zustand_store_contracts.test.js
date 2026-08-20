@@ -4,6 +4,13 @@ import fs from 'node:fs';
 import { readFirstExisting } from './_read_src.js';
 import { normalizeWhitespace } from './_source_bundle.js';
 import { readBuildTypesBundle } from './_build_types_bundle.js';
+import {
+  getCallFacts,
+  getInterfacePropertyFacts,
+  getNamedFunctionLikeSignatureFact,
+  getTypeLiteralPropertyFacts,
+  getVariableInitializerFact,
+} from './_semantic_source_contracts.js';
 
 function read(rel) {
   return fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
@@ -37,6 +44,8 @@ const storeFeatureConfigBoundaryTs = readFirstExisting(
   ['../esm/native/platform/store_feature_config_boundary.ts'],
   import.meta.url
 );
+const buildTypesBundle = readBuildTypesBundle(import.meta.url);
+const stateTypes = read('types/state.ts');
 const storeSubscriptionsTs = readFirstExisting(
   ['../esm/native/platform/store_subscriptions.ts'],
   import.meta.url
@@ -72,9 +81,19 @@ const typesKernel = readFirstExisting(['../types/kernel.ts'], import.meta.url);
 
 test('[zustand-store] builder/store/config seams stay canonical and typed', () => {
   assert.match(plan, /import \{ getBuildStateMaybe \} from '\.\/store_access\.js';/);
-  assert.match(
-    plan,
-    /const normalizedDeps = setPlanDeps\(Object\.assign\(\{ App \}, __readPlanDeps\(deps\) \|\| \{\}\)\);/
+  const setPlanDepsCalls = getCallFacts(plan, 'setPlanDeps', 'plan.ts');
+  assert.ok(
+    setPlanDepsCalls.some(call => {
+      const arg = call.args[0];
+      return (
+        arg?.kind === 'call' &&
+        arg.callee === 'Object.assign' &&
+        JSON.stringify(arg).includes('App') &&
+        JSON.stringify(arg).includes('__readPlanDeps') &&
+        JSON.stringify(arg).includes('deps')
+      );
+    }),
+    'builder plan should normalize deps through setPlanDeps(Object.assign({App}, readDeps))'
   );
   assert.match(plan, /getBuildStateMaybe\(app, input\)/);
   assert.doesNotMatch(plan, /legacy injected stateKernel/);
@@ -82,15 +101,25 @@ test('[zustand-store] builder/store/config seams stay canonical and typed', () =
   assert.doesNotMatch(plan, /__deps\.stateKernel/);
   assert.match(provide, /installBuilderPlan\(A, \{ App: A \}\)/);
   assert.doesNotMatch(provide, /assertStateKernel/);
-  assert.doesNotMatch(provide, /installBuilderScheduler\(A, \{[\s\S]{0,200}stateKernel,/);
-  assert.doesNotMatch(typesKernel, /dispatch\?: \(action: ActionEnvelope<string, unknown>\) => unknown;/);
-  assert.doesNotMatch(
-    read('types/state.ts'),
-    /dispatch\?: \(action: A, opts\?: DispatchOptionsLike\) => unknown;/
+  const schedulerInstallCalls = getCallFacts(provide, 'installBuilderScheduler', 'provide.ts');
+  assert.ok(schedulerInstallCalls.length > 0, 'builder provide should install the scheduler');
+  assert.equal(
+    schedulerInstallCalls.some(call => JSON.stringify(call).includes('stateKernel')),
+    false,
+    'builder scheduler install should not receive legacy stateKernel DI'
   );
-  assert.doesNotMatch(
-    readBuildTypesBundle(import.meta.url),
-    /export interface BuilderSchedulerDepsLike[\s\S]{0,200}stateKernel\?: StateKernelLike;/
+  assert.doesNotMatch(typesKernel, /\bdispatch\b/);
+  assert.doesNotMatch(stateTypes, /\bdispatch\b/);
+  const schedulerDeps = getInterfacePropertyFacts(
+    buildTypesBundle,
+    'BuilderSchedulerDepsLike',
+    'build-types-bundle.ts'
+  );
+  assert.ok(schedulerDeps, 'BuilderSchedulerDepsLike should remain declared');
+  assert.equal(
+    schedulerDeps.some(property => property.name === 'stateKernel'),
+    false,
+    'BuilderSchedulerDepsLike should not reintroduce stateKernel DI'
   );
   assert.match(schedulerSharedBuildPlan, /getBuildStateMaybe\(App, uiOverride\)/);
   assert.doesNotMatch(scheduler, /s\.deps\.stateKernel/);
@@ -128,8 +157,18 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
   assert.match(storeChangeSetTs, /domains: readonly StoreChangeDomainKey\[\]/);
   assert.match(storeChangeSetTs, /changedKeys: StoreChangedKeys/);
   assert.match(storeChangeSetTs, /broad: boolean/);
-  assert.match(storeSubscriptionsTs, /domain\?: StoreSelectorDomainKey/);
-  assert.match(storeSubscriptionsTs, /domains\?: readonly StoreSelectorDomainKey\[\]/);
+  const selectorOpts = getTypeLiteralPropertyFacts(
+    storeSubscriptionsTs,
+    'StoreSelectorOpts',
+    'store_subscriptions.ts'
+  );
+  assert.deepEqual(
+    selectorOpts?.filter(property => property.name === 'domain' || property.name === 'domains'),
+    [
+      { name: 'domain', optional: true, readonly: false, type: 'StoreSelectorDomainKey' },
+      { name: 'domains', optional: true, readonly: false, type: 'readonly StoreSelectorDomainKey[]' },
+    ]
+  );
   assert.match(storeSharedTs, /selectorFilteredCount: number/);
   assert.match(storeSharedTs, /selectorEvaluationCount: number/);
   assert.match(
@@ -173,9 +212,30 @@ test('[zustand-store] store preserves shallow-equivalent values and skips semant
 test('[zustand-store] selector subscriptions and typed meta hooks remain required', () => {
   assert.match(storeSrc, /function subscribeSelector<T>\(/);
   assert.match(storeSrc, /const selectorListeners = createListenerRegistry<SelectorRegistryEntry>\(\)/);
-  assert.match(
-    normalizeWhitespace(`${storeTs}\n${storeCommitPipelineTs}`),
-    /const notificationMeta: ActionMetaLike = \{ \.\.\.stampedMeta \};[\s\S]*notifySelectorSubscribers\(notificationMeta, createCommitNotificationChangeSet\(changeSet\)\)/
+  const notificationMetaFact = getVariableInitializerFact(
+    storeCommitPipelineTs,
+    'notificationMeta',
+    'store_commit_pipeline.ts'
+  );
+  assert.deepEqual(notificationMetaFact, {
+    kind: 'object',
+    properties: {},
+    spreads: [{ kind: 'identifier', name: 'stampedMeta' }],
+  });
+  const selectorNotifyCalls = getCallFacts(
+    storeCommitPipelineTs,
+    'notifySelectorSubscribers',
+    'store_commit_pipeline.ts'
+  );
+  assert.ok(
+    selectorNotifyCalls.some(
+      call =>
+        call.args[0]?.kind === 'identifier' &&
+        call.args[0].name === 'notificationMeta' &&
+        call.args[1]?.kind === 'call' &&
+        call.args[1].callee === 'createCommitNotificationChangeSet'
+    ),
+    'store commit should notify selector subscribers with stamped notification metadata and the canonical change set'
   );
   assert.match(storeSrc, /subscribeSelector,?/);
   assert.match(storeSrc, /function getDebugStats\(\): StoreDebugStats/);
@@ -183,16 +243,28 @@ test('[zustand-store] selector subscriptions and typed meta hooks remain require
   assert.match(storeSubscriptionsTs, /export function createSelectorRegistryEntry<T>\(/);
   assert.match(storeSubscriptionsTs, /export function createListenerRegistry<T>\(\)/);
 
-  assert.match(hooksSrc, /type SelectorStoreApi = \{[\s\S]*?subscribeSelector:\s*<T>\(/);
+  const selectorStoreApi = getTypeLiteralPropertyFacts(hooks, 'SelectorStoreApi', 'hooks.tsx');
+  const subscribeSelectorFact = selectorStoreApi?.find(property => property.name === 'subscribeSelector');
+  assert.equal(subscribeSelectorFact?.optional, false);
+  assert.match(subscribeSelectorFact?.type || '', /^fn\(/);
   assert.match(hooksSrc, /requireStoreSelectorSurface\(app, 'ui\/react\/hooks'\)/);
   assert.match(hooksSrc, /const unsub = api\.subscribeSelector\(/);
   assert.match(hooksSrc, /return useSyncExternalStore\(subscribe, getSnapshot, getSnapshot\)/);
   assert.doesNotMatch(hooksSrc, /return api\.subscribe\(cb\)/);
 
   assert.match(stateApi, /isActionStubFn\(metaNs\.touch, 'meta:touch'\)/);
-  assert.match(stateApi, /metaNs\.touch = function touch\(meta\?: ActionMetaLike\)/);
+  assert.deepEqual(getNamedFunctionLikeSignatureFact(stateApi, 'touch', 'state-api-bundle.ts'), {
+    name: 'touch',
+    async: false,
+    params: [{ name: 'meta', optional: true, type: 'ActionMetaLike' }],
+    returnType: null,
+  });
   assert.match(stateApi, /return commitMetaTouch\(m\)/);
-  assert.match(typesKernel, /touch: \(meta\?: ActionMetaLike\) => unknown;/);
+  const metaActions = getInterfacePropertyFacts(typesKernel, 'MetaActionsNamespaceLike', 'kernel.ts');
+  assert.deepEqual(
+    metaActions?.find(property => property.name === 'touch'),
+    { name: 'touch', optional: false, readonly: false, type: 'fn(meta?:ActionMetaLike)->unknown' }
+  );
 });
 
 test('[zustand-store] local React/store helper types stay internal and public exports stay clean', () => {

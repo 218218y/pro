@@ -29,13 +29,13 @@ export const SOURCE_SHAPE_REGEX_KEYS = Object.freeze([
 // The ratchet prevents silent growth while later modernization waves replace only the brittle
 // implementation-coupled cases with semantic AST, ownership, or runtime assertions.
 export const SOURCE_SHAPE_REGEX_RATCHET = Object.freeze({
-  files: 143,
-  patterns: 570,
+  files: 141,
+  patterns: 508,
   categories: Object.freeze({
-    crossStatement: 346,
-    exactObjectCall: 100,
-    optionalTypeSyntax: 101,
-    indexedAccessSyntax: 32,
+    crossStatement: 331,
+    exactObjectCall: 70,
+    optionalTypeSyntax: 86,
+    indexedAccessSyntax: 28,
     ternaryUndefined: 32,
     loopSyntax: 1,
   }),

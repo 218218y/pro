@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { bundleSources, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import {
+  assertCallObjectContract,
+  getCallFacts,
+  getDeleteMemberFacts,
+} from './_semantic_source_contracts.js';
 
 function read(rel) {
   return fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
@@ -177,24 +182,85 @@ test('[zustand-domain] module/corner stack and config paths stay on canonical ac
     clickModuleRefs,
     /const __ensureCornerCellConfigRef = \(cellIdx: number\): ModuleConfigLike \| null =>/
   );
-  assert.match(clickModuleRefs, /readCanvasModuleConfigForStack\(\{/);
   assert.match(clickModuleRefs, /moduleKey: `corner:\$\{cellIdx\}`/);
   assert.doesNotMatch(clickModuleRefs, /ensureCornerCellAt/);
-  assert.match(clickModuleRefs, /commitCanvasModuleStructuralPatch\(\{/);
   assert.match(clickModuleRefs, /op: 'clickModuleRefs\.patch'/);
   assert.doesNotMatch(clickModuleRefs, /getModulesActions|patchForStack|ensureForStack/);
   assert.doesNotMatch(canvasPicking, /if \(App\.stateKernel\) \{\s*__patchConfigForKey\(/);
   assert.doesNotMatch(canvasPicking, /App\?\.stateKernel\?\.ensureCornerCellConfig/);
   assert.doesNotMatch(canvasPicking, /sk\.ensureModuleConfigForStack\(__activeStack, mk\)/);
   assert.doesNotMatch(canvasPicking, /sk\.patchModuleConfigForStack\(__activeStack, mk, patchFn, meta\)/);
-  assert.match(cellDimsCornerEffects, /commitCanvasModuleStructuralReplacement\(\{/);
+
+  const moduleConfigReadCalls = getCallFacts(
+    clickModuleRefs,
+    'readCanvasModuleConfigForStack',
+    'canvas_picking_click_module_refs.ts'
+  );
+  assert.equal(
+    moduleConfigReadCalls.length,
+    2,
+    'click module refs should preserve active+corner config reads'
+  );
+  assert.ok(
+    moduleConfigReadCalls.some(call => JSON.stringify(call.args[0]).includes('__activeStack')),
+    'active module config read should use the active stack'
+  );
+  assert.ok(
+    moduleConfigReadCalls.some(call => {
+      const arg = call.args[0];
+      const key = arg?.properties?.moduleKey;
+      return (
+        arg?.kind === 'object' &&
+        arg.properties.stack?.kind === 'literal' &&
+        arg.properties.stack.value === 'top' &&
+        key?.kind === 'template' &&
+        key.quasis?.[0] === 'corner:' &&
+        key.expressions?.[0]?.kind === 'identifier' &&
+        key.expressions[0].name === 'cellIdx'
+      );
+    }),
+    'corner cell config read should stay on the canonical top stack key'
+  );
+  assertCallObjectContract(assert, clickModuleRefs, 'commitCanvasModuleStructuralPatch', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      stack: true,
+      moduleKey: true,
+      mutate: true,
+      meta: true,
+      op: 'clickModuleRefs.patch',
+    },
+    requiredIdentifiers: ['__activeStack', 'mk', 'patchFn', 'meta'],
+    label: 'canvas module structural patch',
+    fileName: 'canvas_picking_click_module_refs.ts',
+  });
   assert.match(cellDimsCornerEffects, /moduleKey: 'corner'/);
   assert.match(cellDimsCornerEffects, /op: `cellDims\.corner\.\$\{op\}`/);
+  assertCallObjectContract(assert, cellDimsCornerEffects, 'commitCanvasModuleStructuralReplacement', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      stack: true,
+      moduleKey: 'corner',
+      nextConfig: true,
+      meta: true,
+      op: true,
+    },
+    requiredIdentifiers: ['stackKey', 'nextCornerCfg', 'meta', 'op'],
+    label: 'corner cell-dims structural replacement',
+    fileName: 'canvas_picking_cell_dims_corner_effects.ts',
+  });
   assert.doesNotMatch(cellDimsCornerEffects, /getModulesActions|patchForStack/);
   assert.doesNotMatch(cellDimsCornerEffects, /setCfgCornerConfiguration|patchCornerConfigurationForStack/);
 
-  assert.match(domainModulesCorner, /delete modulesActions\[key\]/);
-  assert.match(domainModulesCorner, /delete cornerActions\[key\]/);
+  const retiredActionDeletes = getDeleteMemberFacts(domainModulesCorner, 'domain_api_modules_corner.ts');
+  assert.ok(
+    retiredActionDeletes.some(entry => entry.object === 'modulesActions' && entry.property?.name === 'key')
+  );
+  assert.ok(
+    retiredActionDeletes.some(entry => entry.object === 'cornerActions' && entry.property?.name === 'key')
+  );
   assert.doesNotMatch(domainModulesCorner, /patchCanonicalStack|patchCornerForStack/);
   assert.doesNotMatch(domainModulesCorner, /modulesActions\.patchAt\s*=/);
   assert.doesNotMatch(domainModulesCorner, /cornerActions\.patchCellAt\s*=/);
@@ -248,14 +314,38 @@ test('[zustand-domain] history, config scalar, and applyPaint flows stay central
     'serviceCfgBundle'
   );
 
-  assert.match(domainApi, /installDomainApiColorsSection\(\{/);
-  assert.match(domainApiColors, /colorsActions\.applyPaint[\s\S]*configActions\.applyPaintSnapshot/);
-  assert.doesNotMatch(
-    domainApiColors,
-    /colorsActions\.applyPaint[\s\S]{0,260}stateKernel\.applyKernelConfigMapSnapshot/
+  assertCallObjectContract(assert, domainApi, 'installDomainApiColorsSection', {
+    argIndex: 0,
+    requiredProperties: {
+      App: true,
+      select: true,
+      colorsActions: true,
+      configActions: true,
+      _cfg: true,
+      _map: true,
+      _meta: true,
+    },
+    requiredIdentifiers: ['App', 'select', 'colorsActions', 'configActions'],
+    label: 'domain colors install',
+    fileName: 'domain_api.ts',
+  });
+  assert.match(domainApiColors, /colorsActions\.applyPaint\s*=/);
+  assert.ok(
+    getCallFacts(domainApiColors, 'configActions.applyPaintSnapshot', 'domain_api_colors_section.ts').length >
+      0,
+    'colors applyPaint should delegate to configActions.applyPaintSnapshot'
   );
-  assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}cfgPatchWithReplaceKeys\(/);
-  assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}applyConfigPatch\(App,/);
+  for (const retiredCallee of [
+    'stateKernel.applyKernelConfigMapSnapshot',
+    'cfgPatchWithReplaceKeys',
+    'applyConfigPatch',
+  ]) {
+    assert.equal(
+      getCallFacts(domainApiColors, retiredCallee, 'domain_api_colors_section.ts').length,
+      0,
+      `colors applyPaint should not call retired ${retiredCallee}`
+    );
+  }
 
   assert.match(mapsApi, /patchSimpleWritableMapEntryFromOwner/);
   assert.match(mapsApi, /patchVisualKeyedMapEntriesFromOwner/);
