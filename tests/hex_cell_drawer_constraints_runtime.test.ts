@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 
 import {
   HEX_CELL_DEFAULT_DOOR_WIDTH_RATIO,
+  captureHexCellDraftComparisonSnapshot,
+  hasHexCellDraftConfigChange,
+  hasHexCellDraftSnapshotChange,
   moduleHasDrawerContent,
   resolveDefaultHexDoorWidthCm,
   resolveHexCellDraftConfig,
@@ -36,4 +39,62 @@ test('hex-cell default door width follows the central ratio when no manual width
   assert.equal(resolveDefaultHexDoorWidthCm(100), 75);
   assert.equal(resolveDefaultHexDoorWidthCm(60), 45);
   assert.equal(resolveHexCellDraftConfig({ moduleWidthCm: 80 }).doorWidthCm, 60);
+});
+
+test('hex-cell draft comparison snapshot preserves config comparison semantics exactly', () => {
+  const configs = [
+    {},
+    { hexCell: { enabled: false } },
+    { hexCell: { enabled: true } },
+    { hexCell: { enabled: true, protrusionCm: 10, doorWidthCm: 60 } },
+    { hexCell: { enabled: true, protrusionCm: 12 } },
+  ];
+  const drafts = [
+    { moduleWidthCm: 80 },
+    { moduleWidthCm: 80, protrusionCm: 10, doorWidthCm: 60 },
+    { moduleWidthCm: 80, protrusionCm: 10.000001, doorWidthCm: 60, toleranceCm: 0.000001 },
+    { moduleWidthCm: 80, protrusionCm: 11, doorWidthCm: 61 },
+    { moduleWidthCm: 100, doorWidthCm: 75 },
+  ];
+
+  for (const cfgMod of configs) {
+    const snapshot = captureHexCellDraftComparisonSnapshot(cfgMod);
+    for (const draft of drafts) {
+      assert.equal(
+        hasHexCellDraftSnapshotChange({ snapshot, ...draft }),
+        hasHexCellDraftConfigChange({ cfgMod, ...draft })
+      );
+    }
+  }
+
+  const defaults = { hexCell: { enabled: true } };
+  assert.equal(
+    hasHexCellDraftConfigChange({
+      cfgMod: defaults,
+      moduleWidthCm: 80,
+      protrusionCm: 10,
+      doorWidthCm: 60,
+    }),
+    false
+  );
+  assert.equal(
+    hasHexCellDraftConfigChange({
+      cfgMod: defaults,
+      moduleWidthCm: 80,
+      protrusionCm: 10.000001,
+      doorWidthCm: 60,
+      toleranceCm: 0.000001,
+    }),
+    false
+  );
+  assert.equal(
+    hasHexCellDraftConfigChange({
+      cfgMod: defaults,
+      moduleWidthCm: 80,
+      protrusionCm: 10.000002,
+      doorWidthCm: 60,
+      toleranceCm: 0.000001,
+    }),
+    true
+  );
 });

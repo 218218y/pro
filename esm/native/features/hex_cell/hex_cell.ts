@@ -16,6 +16,12 @@ export type HexCellResolvedDraft = {
   doorWidthCm: number;
 };
 
+export type HexCellDraftComparisonSnapshot = Readonly<{
+  enabled: boolean;
+  protrusionCm: number | null;
+  doorWidthCm: number | null;
+}>;
+
 export type HexCellGeometry = {
   enabled: true;
   moduleWidthM: number;
@@ -84,6 +90,18 @@ export function moduleHasHexCell(cfgMod: unknown): boolean {
   return !!readHexCellConfig(cfgMod);
 }
 
+export function captureHexCellDraftComparisonSnapshot(cfgMod: unknown): HexCellDraftComparisonSnapshot {
+  const current = readHexCellConfig(cfgMod);
+  if (!current) {
+    return Object.freeze({ enabled: false, protrusionCm: null, doorWidthCm: null });
+  }
+  return Object.freeze({
+    enabled: true,
+    protrusionCm: nonNegativeCmOrNull(current.protrusionCm),
+    doorWidthCm: positiveCmOrNull(current.doorWidthCm),
+  });
+}
+
 export function resolveDefaultHexDoorWidthCm(moduleWidthCm: unknown): number {
   const width = positiveCmOrNull(moduleWidthCm) || 0;
   if (width <= 0) return HEX_CELL_MIN_DOOR_WIDTH_CM;
@@ -137,6 +155,32 @@ export function resolveHexCellUpdateConfig(args: {
   };
 }
 
+export function hasHexCellDraftSnapshotChange(args: {
+  snapshot: HexCellDraftComparisonSnapshot;
+  protrusionCm?: unknown;
+  doorWidthCm?: unknown;
+  moduleWidthCm?: unknown;
+  toleranceCm?: number;
+}): boolean {
+  const current = args.snapshot;
+  if (!current.enabled) return true;
+
+  const toleranceCm = Math.max(0, toFiniteNumber(args.toleranceCm) ?? 1e-6);
+  const moduleWidthCm = positiveCmOrNull(args.moduleWidthCm) || 0;
+  const requestedProtrusion = nonNegativeCmOrNull(args.protrusionCm);
+  if (requestedProtrusion != null) {
+    const currentProtrusion = current.protrusionCm ?? HEX_CELL_DEFAULT_PROTRUSION_CM;
+    if (Math.abs(currentProtrusion - requestedProtrusion) > toleranceCm) return true;
+  }
+
+  const requestedDoorWidth = positiveCmOrNull(args.doorWidthCm);
+  if (requestedDoorWidth != null) {
+    const currentDoorWidth = current.doorWidthCm ?? resolveDefaultHexDoorWidthCm(moduleWidthCm);
+    if (Math.abs(currentDoorWidth - requestedDoorWidth) > toleranceCm) return true;
+  }
+  return false;
+}
+
 export function hasHexCellDraftConfigChange(args: {
   cfgMod: unknown;
   protrusionCm?: unknown;
@@ -144,24 +188,13 @@ export function hasHexCellDraftConfigChange(args: {
   moduleWidthCm?: unknown;
   toleranceCm?: number;
 }): boolean {
-  const current = readHexCellConfig(args.cfgMod);
-  if (!current) return true;
-
-  const toleranceCm = Math.max(0, toFiniteNumber(args.toleranceCm) ?? 1e-6);
-  const moduleWidthCm = positiveCmOrNull(args.moduleWidthCm) || 0;
-  const requestedProtrusion = nonNegativeCmOrNull(args.protrusionCm);
-  if (requestedProtrusion != null) {
-    const currentProtrusion = resolveHexCellConfigProtrusionCm(current);
-    if (Math.abs(currentProtrusion - requestedProtrusion) > toleranceCm) return true;
-  }
-
-  const requestedDoorWidth = positiveCmOrNull(args.doorWidthCm);
-  if (requestedDoorWidth != null) {
-    const currentDoorWidth = resolveHexCellConfigDoorWidthCm(current, moduleWidthCm);
-    if (Math.abs(currentDoorWidth - requestedDoorWidth) > toleranceCm) return true;
-  }
-
-  return false;
+  return hasHexCellDraftSnapshotChange({
+    snapshot: captureHexCellDraftComparisonSnapshot(args.cfgMod),
+    ...(args.protrusionCm !== undefined ? { protrusionCm: args.protrusionCm } : {}),
+    ...(args.doorWidthCm !== undefined ? { doorWidthCm: args.doorWidthCm } : {}),
+    ...(args.moduleWidthCm !== undefined ? { moduleWidthCm: args.moduleWidthCm } : {}),
+    ...(args.toleranceCm !== undefined ? { toleranceCm: args.toleranceCm } : {}),
+  });
 }
 
 export function assignHexCellToConfig(

@@ -1031,15 +1031,15 @@
       "entry": "base_leg_stage_special_dims_guard.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_state.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_state.ts",
       "entry": "special_dims/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "file": "esm/native/services/canvas_picking_cell_dims_free_box_state.ts",
       "entry": "hex_cell/index.js"
     },
     {

@@ -16,6 +16,7 @@ const previewStateRel = 'esm/native/services/canvas_picking_hover_preview_modes_
 const previewInputsRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts';
 const previewTargetRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts';
 const freeBoxHoverRel = 'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts';
+const freeBoxStateRel = 'esm/native/services/canvas_picking_cell_dims_free_box_state.ts';
 const clickFlowRel = 'esm/native/services/canvas_picking_cell_dims_flow.ts';
 const clickContractsRel = 'esm/native/services/canvas_picking_cell_dims_contracts.ts';
 const linearContextRel = 'esm/native/services/canvas_picking_cell_dims_linear_shared.ts';
@@ -217,4 +218,27 @@ test('Cell Dimension Match, Preview, and Auto Width literals are fully propagate
       /export\s+(?:type\s+)?(?:\*|\{[^}]*\})\s+from|wardrobe_dimension_tokens_shared/u
     );
   }
+});
+
+test('Cell Dimensions Free Box hover receives typed state instead of interpreting the config bag', () => {
+  const hover = read(freeBoxHoverRel);
+  const state = read(freeBoxStateRel);
+  const hoverImports = directImportSummary(freeBoxHoverRel);
+  const featureImports = hoverImports.filter(item => item.specifier.includes('/features/'));
+
+  assert.deepEqual(featureImports, []);
+  assert.doesNotMatch(hover, /readConfigSnapshot|modulesConfiguration|stackSplitLowerModulesConfiguration/u);
+  assert.doesNotMatch(
+    hover,
+    /__wpCellDimsFreeBoxRecord|getActiveOverrideCm|moduleHasHexCell|hasHexCellDraftConfigChange/u
+  );
+  assert.match(hover, /readFreeBoxState:/u);
+  assert.match(hover, /__wpCellDimsFreeBoxState: state/u);
+
+  assert.match(state, /export function captureCellDimsFreeBoxState\(/u);
+  assert.match(state, /readModulesConfigurationListFromConfigSnapshot\(/u);
+  assert.match(state, /getActiveOverrideCm\(/u);
+  assert.match(state, /captureHexCellDraftComparisonSnapshot\(/u);
+  assert.match(state, /hasHexCellDraftSnapshotChange\(/u);
+  assert.match(state, /Object\.freeze\(/u);
 });

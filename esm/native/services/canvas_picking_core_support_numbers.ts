@@ -16,6 +16,10 @@ export function __wp_toFiniteNumber(v: unknown): number | null {
   return null;
 }
 
+export function __wp_identityString(value: unknown): string {
+  return formatIdentityValue(readIdentityValue(value));
+}
+
 export function __wp_toModuleKey(v: unknown): ModuleKey | null {
   if (v === 'corner') return 'corner';
   if (typeof v === 'string' && v.startsWith('corner:')) {

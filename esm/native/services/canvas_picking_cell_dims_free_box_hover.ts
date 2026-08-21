@@ -4,10 +4,6 @@ import {
   SKETCH_BOX_FREE_VERTICAL_POLICY,
   SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
 } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { getActiveOverrideCm } from '../features/special_dims/index.js';
-import { hasHexCellDraftConfigChange, moduleHasHexCell } from '../features/hex_cell/index.js';
 import { __wp_toModuleKey } from './canvas_picking_core_support_numbers.js';
 import {
   readCellDimsFreeBoxIdFromPartId,
@@ -20,11 +16,15 @@ import type {
   SelectorLocalBox,
 } from './canvas_picking_hover_preview_modes_shared.js';
 import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_boxes.js';
+import {
+  hasCellDimsFreeBoxHexDraftChange,
+  isCellDimsFreeBoxState,
+  type CellDimsFreeBoxStackKey,
+  type CellDimsFreeBoxState,
+} from './canvas_picking_cell_dims_free_box_state.js';
 
 const EPS_CM = 1e-6;
 const EPS_M = 1e-6;
-
-type StackKey = 'top' | 'bottom';
 
 type CellDimsFreeBoxViewportRoots = {
   camera: unknown;
@@ -39,12 +39,16 @@ type CellDimsFreeBoxWardrobeBox = {
 
 export type CellDimsFreeBoxPostClickIdentity = {
   moduleKey: ModuleKey;
-  stackKey: StackKey;
+  stackKey: CellDimsFreeBoxStackKey;
   freeBoxId: string;
 };
 
 export type CellDimsFreeBoxHoverCapabilities = {
-  readConfigSnapshot: () => unknown;
+  readFreeBoxState: (
+    moduleKey: ModuleKey,
+    stackKey: CellDimsFreeBoxStackKey,
+    boxId: string
+  ) => CellDimsFreeBoxState | null;
   readViewportRoots: () => CellDimsFreeBoxViewportRoots;
   measureWardrobeLocalBox: () => CellDimsFreeBoxWardrobeBox | null;
   resolvePostClickIdentity: (ndcX: number, ndcY: number) => CellDimsFreeBoxPostClickIdentity | null;
@@ -66,7 +70,7 @@ function asRecord(value: unknown): UnknownRecord | null {
 export type CellDimsFreeBoxHitCandidate = {
   boxId: string;
   moduleKey: ModuleKey;
-  stackKey: StackKey;
+  stackKey: CellDimsFreeBoxStackKey;
   anchor: unknown;
 };
 
@@ -93,11 +97,6 @@ type SelectorBoxMetrics = {
 
 function readCanonicalNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function readPositiveM(record: UnknownRecord | null, key: string): number | null {
-  const n = readCanonicalNumber(record ? record[key] : null);
-  return n != null && n > 0 ? n : null;
 }
 
 function readSelectorBoxMetrics(selectorBox: SelectorLocalBox): SelectorBoxMetrics | null {
@@ -141,7 +140,7 @@ function isRenderableHitObject(value: unknown): boolean {
   return true;
 }
 
-function readStackKey(userData: UnknownRecord | null): StackKey {
+function readStackKey(userData: UnknownRecord | null): CellDimsFreeBoxStackKey {
   const raw = userData?.__wpStack ?? userData?.stackKey ?? userData?.stack;
   return raw === 'bottom' ? 'bottom' : 'top';
 }
@@ -181,50 +180,16 @@ export function readCellDimsFreeBoxHitCandidate(
   return null;
 }
 
-function readModuleConfig(
-  capabilities: CellDimsFreeBoxHoverCapabilities,
-  moduleKey: ModuleKey,
-  stackKey: StackKey
-): UnknownRecord | null {
-  if (typeof moduleKey !== 'number') return null;
-  try {
-    const cfg = asRecord(capabilities.readConfigSnapshot());
-    const bucket = stackKey === 'bottom' ? 'stackSplitLowerModulesConfiguration' : 'modulesConfiguration';
-    const list = readModulesConfigurationListFromConfigSnapshot(cfg, bucket);
-    return asRecord(list[Math.max(0, Math.floor(moduleKey))]);
-  } catch {
-    return null;
-  }
-}
-
-function readFreeBoxesFromModule(cfgMod: UnknownRecord | null): UnknownRecord[] {
-  const boxes = asRecord(cfgMod?.sketchExtras)?.boxes;
-  return Array.isArray(boxes)
-    ? boxes
-        .map(item => asRecord(item))
-        .filter((item): item is UnknownRecord => !!item && item.freePlacement === true)
-    : [];
-}
-
-function findFreeBoxById(boxes: UnknownRecord[], boxId: string): UnknownRecord | null {
-  for (const [i, rec] of boxes.entries()) {
-    const id = formatIdentityValue(readIdentityValue(rec.id)) || formatIdentityValue(i);
-    if (id === boxId) return rec;
-  }
-  return null;
-}
-
 function resolveFreeBoxSelectorBox(args: {
   capabilities: CellDimsFreeBoxHoverCapabilities;
-  box: UnknownRecord;
+  state: CellDimsFreeBoxState;
 }): SelectorLocalBox | null {
-  const { capabilities, box } = args;
+  const { capabilities, state } = args;
   const wardrobeBox = capabilities.measureWardrobeLocalBox();
   if (!wardrobeBox) return null;
-  const centerX = readCanonicalNumber(box.absX);
-  const centerY = readCanonicalNumber(box.absY);
-  const heightM = readPositiveM(box, 'heightM') ?? readPositiveM(box, 'hM');
-  if (centerX == null || centerY == null || heightM == null) return null;
+  const centerX = state.centerX;
+  const centerY = state.centerY;
+  const heightM = state.heightM;
 
   const wardrobeWidth = readCanonicalNumber(wardrobeBox.width);
   const wardrobeDepth = readCanonicalNumber(wardrobeBox.depth);
@@ -237,8 +202,8 @@ function resolveFreeBoxSelectorBox(args: {
     backZ: wardrobeBackZ,
     centerX,
     woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
-    widthM: readPositiveM(box, 'widthM') ?? readPositiveM(box, 'wM'),
-    depthM: readPositiveM(box, 'depthM') ?? readPositiveM(box, 'dM'),
+    widthM: state.widthM,
+    depthM: state.depthM,
   });
   return {
     centerX: geo.centerX,
@@ -257,10 +222,9 @@ function buildFreeBoxHoverTarget(args: {
   anchorParent: unknown;
 }): CellDimsFreeBoxHoverBuildResult | null {
   const { capabilities, candidate, intersects, anchorParent } = args;
-  const cfgMod = readModuleConfig(capabilities, candidate.moduleKey, candidate.stackKey);
-  const box = findFreeBoxById(readFreeBoxesFromModule(cfgMod), candidate.boxId);
-  if (!box) return null;
-  const selectorBox = resolveFreeBoxSelectorBox({ capabilities, box });
+  const state = capabilities.readFreeBoxState(candidate.moduleKey, candidate.stackKey, candidate.boxId);
+  if (!state) return null;
+  const selectorBox = resolveFreeBoxSelectorBox({ capabilities, state });
   if (!selectorBox) return null;
   const metrics = readSelectorBoxMetrics(selectorBox);
   if (!metrics) return null;
@@ -275,7 +239,7 @@ function buildFreeBoxHoverTarget(args: {
     info: {
       __wpCellDimsFreeBox: true,
       __wpCellDimsFreeBoxId: candidate.boxId,
-      __wpCellDimsFreeBoxRecord: box,
+      __wpCellDimsFreeBoxState: state,
       __wpCellDimsFreeBoxSelectorBox: selectorBox,
     },
     bottomY: metrics.centerY - metrics.height / 2,
@@ -373,24 +337,29 @@ export function resolveCellDimsFreeBoxHoverTarget(args: {
   }
 }
 
-function readSpecialDims(target: InteriorHoverTarget): UnknownRecord | null {
-  return asRecord(asRecord(target.info)?.__wpCellDimsFreeBoxRecord)?.specialDims as UnknownRecord | null;
+function readFreeBoxState(target: InteriorHoverTarget): CellDimsFreeBoxState | null {
+  const state = target.info.__wpCellDimsFreeBoxState;
+  return isCellDimsFreeBoxState(state) ? state : null;
+}
+
+function readDimensionState(
+  target: InteriorHoverTarget,
+  dimension: 'width' | 'height' | 'depth'
+): CellDimsFreeBoxState['width'] | null {
+  return readFreeBoxState(target)?.[dimension] ?? null;
 }
 
 function resolveTargetDimensionCm(args: {
   target: InteriorHoverTarget;
   currentCm: number;
   applyCm: number | null | undefined;
-  specialKey: 'widthCm' | 'heightCm' | 'depthCm';
-  baseKey: 'baseWidthCm' | 'baseHeightCm' | 'baseDepthCm';
+  dimension: 'width' | 'height' | 'depth';
 }): number {
-  const { target, currentCm, applyCm, specialKey, baseKey } = args;
+  const { target, currentCm, applyCm, dimension } = args;
   if (applyCm == null || !Number.isFinite(applyCm) || !(applyCm > 0)) return currentCm;
-  const sd = readSpecialDims(target);
-  const active = getActiveOverrideCm(sd, specialKey, baseKey);
-  if (active != null && Math.abs(applyCm - active) <= EPS_CM) {
-    const base = readCanonicalNumber(sd?.[baseKey]);
-    return base != null && base > 0 ? base : currentCm;
+  const snapshot = readDimensionState(target, dimension);
+  if (snapshot?.activeCm != null && Math.abs(applyCm - snapshot.activeCm) <= EPS_CM) {
+    return snapshot.baseCm != null && snapshot.baseCm > 0 ? snapshot.baseCm : currentCm;
   }
   return applyCm;
 }
@@ -427,7 +396,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
   minHeightM: number,
   minDepthM: number
 ): SelectorLocalBox | null {
-  if (asRecord(target.info)?.__wpCellDimsFreeBox !== true) return null;
+  if (target.info.__wpCellDimsFreeBox !== true) return null;
   const current = readSelectorBoxMetrics(selectorBox);
   if (!current) return null;
   const currentWcm = Math.max(0, current.width * 100);
@@ -439,8 +408,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       target,
       currentCm: currentWcm,
       applyCm: applyW,
-      specialKey: 'widthCm',
-      baseKey: 'baseWidthCm',
+      dimension: 'width',
     }) / 100
   );
   const targetHm = Math.max(
@@ -449,8 +417,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       target,
       currentCm: currentHcm,
       applyCm: applyH,
-      specialKey: 'heightCm',
-      baseKey: 'baseHeightCm',
+      dimension: 'height',
     }) / 100
   );
   const targetDm = Math.max(
@@ -459,8 +426,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       target,
       currentCm: currentDcm,
       applyCm: applyD,
-      specialKey: 'depthCm',
-      baseKey: 'baseDepthCm',
+      dimension: 'depth',
     }) / 100
   );
   const currentBackZ = current.centerZ - current.depth / 2;
@@ -498,14 +464,12 @@ function resolveFreeBoxDimIntent(args: {
   target: InteriorHoverTarget;
   currentCm: number;
   applyCm: number | null | undefined;
-  specialKey: 'widthCm' | 'heightCm' | 'depthCm';
-  baseKey: 'baseWidthCm' | 'baseHeightCm' | 'baseDepthCm';
+  dimension: 'width' | 'height' | 'depth';
 }): FreeBoxDimIntent {
-  const { target, currentCm, applyCm, specialKey, baseKey } = args;
+  const { target, currentCm, applyCm, dimension } = args;
   if (applyCm == null || !Number.isFinite(applyCm) || !(applyCm > 0)) return null;
-  const sd = readSpecialDims(target);
-  const active = getActiveOverrideCm(sd, specialKey, baseKey);
-  if (active != null && Math.abs(applyCm - active) <= EPS_CM) return 'remove';
+  const snapshot = readDimensionState(target, dimension);
+  if (snapshot?.activeCm != null && Math.abs(applyCm - snapshot.activeCm) <= EPS_CM) return 'remove';
   return Math.abs(currentCm - applyCm) > EPS_CM ? 'add' : null;
 }
 
@@ -523,22 +487,19 @@ function resolveFreeBoxDimsIntent(args: {
       target: args.target,
       currentCm: Math.max(0, current.width * 100),
       applyCm: args.applyW,
-      specialKey: 'widthCm',
-      baseKey: 'baseWidthCm',
+      dimension: 'width',
     }),
     resolveFreeBoxDimIntent({
       target: args.target,
       currentCm: Math.max(0, current.height * 100),
       applyCm: args.applyH,
-      specialKey: 'heightCm',
-      baseKey: 'baseHeightCm',
+      dimension: 'height',
     }),
     resolveFreeBoxDimIntent({
       target: args.target,
       currentCm: Math.max(0, current.depth * 100),
       applyCm: args.applyD,
-      specialKey: 'depthCm',
-      baseKey: 'baseDepthCm',
+      dimension: 'depth',
     }),
   ];
   if (intents.includes('add')) return 'add';
@@ -557,20 +518,20 @@ export function resolveCellDimsFreeBoxHoverOp(args: {
   hexCellDoorWidthCm?: number | null;
   previewTargetBox: SelectorLocalBox;
 }): 'add' | 'remove' | null {
-  const box = asRecord(asRecord(args.target.info)?.__wpCellDimsFreeBoxRecord);
-  if (!box) return null;
+  const state = readFreeBoxState(args.target);
+  if (!state) return null;
   const current = readSelectorBoxMetrics(args.selectorBox);
   if (!current) return null;
   const dimChange = hasFreeBoxDimChange(args);
   const dimIntent = resolveFreeBoxDimsIntent(args);
   if (args.hexCellMode) {
-    if (!moduleHasHexCell(box)) return 'add';
+    if (!state.hexCell.enabled) return 'add';
     const moduleWidthCm =
       args.applyW != null && Number.isFinite(args.applyW) ? args.applyW : current.width * 100;
-    const hexChange = hasHexCellDraftConfigChange({
-      cfgMod: box,
-      protrusionCm: args.hexCellProtrusionCm,
-      doorWidthCm: args.hexCellDoorWidthCm,
+    const hexChange = hasCellDimsFreeBoxHexDraftChange({
+      state,
+      ...(args.hexCellProtrusionCm !== undefined ? { protrusionCm: args.hexCellProtrusionCm } : {}),
+      ...(args.hexCellDoorWidthCm !== undefined ? { doorWidthCm: args.hexCellDoorWidthCm } : {}),
       moduleWidthCm,
       toleranceCm: EPS_CM,
     });
@@ -583,5 +544,5 @@ export function resolveCellDimsFreeBoxHoverOp(args: {
 }
 
 export function isCellDimsFreeBoxTarget(target: InteriorHoverTarget | null | undefined): boolean {
-  return asRecord(target?.info)?.__wpCellDimsFreeBox === true;
+  return target?.info.__wpCellDimsFreeBox === true;
 }
