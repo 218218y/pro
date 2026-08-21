@@ -1,4 +1,11 @@
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import type { RemovedDoorsMap } from '../../types/index.js';
+
+import {
+  isCanonicalRemovedDoorsMapKey,
+  listCanonicalRemovedDoorLookupKeys,
+  toCanonicalRemovedDoorPartId,
+} from './removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 function readPartId(value: unknown): string {
   return formatIdentityValue(readIdentityValue(value)).trim();
@@ -7,11 +14,13 @@ function readPartId(value: unknown): string {
 export type RemovableFrameSide = 'left' | 'right';
 export type RemovableFrameSidePartIdPrefix = '' | 'lower_';
 
-export type RemovableSketchBoxSidePart = {
+export type RemovableSketchBoxSidePart = Readonly<{
   partId: string;
   boxPartId: string;
   side: RemovableFrameSide;
-};
+}>;
+
+export type RemovedPartsMapSnapshot = Readonly<RemovedDoorsMap>;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -28,13 +37,87 @@ const CANVAS_REMOVABLE_FRAME_SIDE_PART_IDS = new Set([
   ...Object.values(REMOVABLE_FRAME_SIDE_PART_ID_BY_SIDE).map(partId => `lower_${partId}`),
 ]);
 
+const HINGED_DOOR_PART_ID_RE = /^(lower_)?d(\d+)(?:_(?:full|top|bot|mid\d*))?$/i;
+
 function asRecord(value: unknown): UnknownRecord | null {
   return !!value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function readToggleValue(value: unknown): true | false | null | undefined {
+  if (value === true) return true;
+  if (value === false) return false;
+  if (value === null) return null;
+  return undefined;
+}
+
+function collectRemovedPartsMap(value: unknown, canonicalOnly: boolean): RemovedDoorsMap {
+  const record = asRecord(value);
+  const out: RemovedDoorsMap = Object.create(null);
+  if (!record) return out;
+
+  for (const key of Object.keys(record)) {
+    if (canonicalOnly && !isCanonicalRemovedDoorsMapKey(key)) continue;
+    const next = readToggleValue(record[key]);
+    if (next !== undefined) out[key] = next;
+  }
+  return out;
+}
+
+/**
+ * Detached read snapshot for the persisted `removedDoorsMap` surface.
+ *
+ * The persisted map also carries removable structural-part ids, so consumers
+ * query it through these canonical helpers instead of rebuilding map keys.
+ */
+export function captureRemovedPartsMapSnapshot(value: unknown): RemovedPartsMapSnapshot {
+  return Object.freeze(collectRemovedPartsMap(value, false));
+}
+
+/** Canonical normalizer for persisted/project removed-part maps. */
+export function normalizeCanonicalRemovedPartsMap(value: unknown): RemovedDoorsMap {
+  return collectRemovedPartsMap(value, true);
+}
+
+export function isRemovedPartOnMap(removedPartsMap: RemovedPartsMapSnapshot, partId: unknown): boolean {
+  return listCanonicalRemovedDoorLookupKeys(partId).some(key => removedPartsMap[key] === true);
+}
+
+export function createRemovedPartReader(
+  removedPartsMap: RemovedPartsMapSnapshot
+): (partId: unknown) => boolean {
+  return (partId: unknown): boolean => isRemovedPartOnMap(removedPartsMap, partId);
+}
+
+export function hasRemovedHingedDoorInMapRange(args: {
+  removedPartsMap: RemovedPartsMapSnapshot;
+  startDoorId: number;
+  moduleDoors: number;
+  frameSidePartIdPrefix?: unknown;
+}): boolean {
+  const endDoorId = args.startDoorId + args.moduleDoors - 1;
+  const isLowerStack = args.frameSidePartIdPrefix === 'lower_';
+
+  for (const [rawKey, value] of Object.entries(args.removedPartsMap)) {
+    if (value !== true) continue;
+    const canonicalPartId = toCanonicalRemovedDoorPartId(rawKey);
+    const match = HINGED_DOOR_PART_ID_RE.exec(canonicalPartId);
+    if (!match) continue;
+    const isLowerDoor = !!match[1];
+    if (isLowerDoor !== isLowerStack) continue;
+    const doorId = Number(match[2]);
+    if (Number.isInteger(doorId) && doorId >= args.startDoorId && doorId <= endDoorId) return true;
+  }
+
+  return false;
 }
 
 function readConfigMap(cfg: unknown, mapName: string): UnknownRecord {
   const cfgRecord = asRecord(cfg);
   return asRecord(cfgRecord?.[mapName]) || {};
+}
+
+function readRemovedPartsMapFromConfig(cfg: unknown): RemovedPartsMapSnapshot {
+  return captureRemovedPartsMapSnapshot(asRecord(cfg)?.removedDoorsMap);
 }
 
 function readFrameSidePartIdPrefix(value: unknown): RemovableFrameSidePartIdPrefix {
@@ -69,8 +152,7 @@ export function readRemovableSketchBoxSideFromPartId(partId: unknown): Removable
 }
 
 function isRemovedFrameSidePartOn(cfg: unknown, partId: string): boolean {
-  const map = readConfigMap(cfg, 'removedDoorsMap');
-  return map[`removed_${partId}`] === true;
+  return isRemovedPartOnMap(readRemovedPartsMapFromConfig(cfg), partId);
 }
 
 function isRoundedFrameSideShelvesPartOn(cfg: unknown, partId: string): boolean {
@@ -96,9 +178,9 @@ export function isRoundedFrameSideShelvesOn(
 
 function readRemovedSketchBoxSidePartIds(cfg: unknown): string[] {
   const out: string[] = [];
-  const map = readConfigMap(cfg, 'removedDoorsMap');
+  const map = readRemovedPartsMapFromConfig(cfg);
   for (const key of Object.keys(map)) {
-    if (!key.startsWith('removed_') || map[key] !== true) continue;
+    if (map[key] !== true) continue;
     const partId = canonicalRemovablePartKey(key);
     if (readRemovableSketchBoxSideFromPartId(partId)) out.push(partId);
   }

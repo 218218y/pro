@@ -8,6 +8,8 @@ import {
   readRemovableFrameSideFromPartId,
   readRemovableSketchBoxSideFromPartId,
   canonicalRemovablePartKey,
+  captureRemovedPartsMapSnapshot,
+  isRemovedPartOnMap,
 } from '../features/part_identity/api.js';
 import { readStoreStateMaybe } from '../runtime/store_surface_access.js';
 import { __wp_isRemoved, __wp_toast } from './canvas_picking_core_helpers.js';
@@ -119,14 +121,11 @@ function recordHasSideBlockingFittings(record: unknown): boolean {
   return recordHasDrawerContent(record) || recordHasHangingContent(record);
 }
 
-function readRemovedDoorsMapFromConfig(cfg: unknown): UnknownRecord {
-  return asRecord(asRecord(cfg)?.removedDoorsMap) || {};
-}
-
 function isRemovedPartIdOn(App: AppContainer, cfg: unknown, partId: string): boolean {
   if (!partId) return false;
   if (__wp_isRemoved(App, partId)) return true;
-  return readRemovedDoorsMapFromConfig(cfg)[`removed_${canonicalRemovablePartKey(partId)}`] === true;
+  const removedParts = captureRemovedPartsMapSnapshot(asRecord(cfg)?.removedDoorsMap);
+  return isRemovedPartOnMap(removedParts, canonicalRemovablePartKey(partId));
 }
 
 function readModuleIndex(value: unknown): number | null {

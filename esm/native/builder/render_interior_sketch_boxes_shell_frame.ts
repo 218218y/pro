@@ -14,7 +14,10 @@ import type { RoomColumnLinerFace } from '../../../types';
 import { applySketchBoxPickMeta } from './render_interior_sketch_pick_meta.js';
 import { renderSketchFreeBoxDimensions } from './render_interior_sketch_layout.js';
 import { renderSketchBoxCarcassAdornment } from './render_interior_sketch_visuals.js';
-import { readSketchBoxRemovedSideShelfState, sketchBoxSideToPartId } from '../features/part_identity/api.js';
+import {
+  builderSketchBoxSideToPartId,
+  readBuilderSketchBoxRemovedSideShelfState,
+} from './removable_parts_state.js';
 
 type SketchBoxHorizontalCapSpan = {
   width: number;
@@ -333,7 +336,7 @@ function resolveSketchBoxHorizontalCapSpan(args: {
   woodThick: number;
 }): SketchBoxHorizontalCapSpan {
   const { state, cfg, woodThick } = args;
-  const removedSideState = readSketchBoxRemovedSideShelfState(cfg, state.boxPid);
+  const removedSideState = readBuilderSketchBoxRemovedSideShelfState(cfg, state.boxPid);
   const leftInset = removedSideState.leftRemoved ? woodThick : 0;
   const rightInset = removedSideState.rightRemoved ? woodThick : 0;
 
@@ -381,8 +384,8 @@ export function renderSketchBoxShellFrame(args: {
   const xR = geometry.centerX + geometry.outerW / 2 - renderArgs.woodThick / 2;
   const backPanelZ = geometry.centerZ - geometry.outerD / 2 + renderArgs.woodThick / 2;
 
-  const leftSidePartId = sketchBoxSideToPartId(boxPid, 'left');
-  const rightSidePartId = sketchBoxSideToPartId(boxPid, 'right');
+  const leftSidePartId = builderSketchBoxSideToPartId(boxPid, 'left');
+  const rightSidePartId = builderSketchBoxSideToPartId(boxPid, 'right');
 
   const boxTopMesh =
     (state.hexGeometry

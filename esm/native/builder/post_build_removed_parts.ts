@@ -1,10 +1,14 @@
 import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
 import { getWardrobeGroup } from '../runtime/render_access.js';
-import { readConfigMapFromSnapshot } from '../runtime/config_selectors.js';
 import { isRemoveDoorModeFromSnapshot } from '../features/door_authoring/api.js';
-import { isCanvasRemovablePartId, canonicalRemovablePartKey } from '../features/part_identity/api.js';
 import { asRecord } from './post_build_extras_shared.js';
+import {
+  builderCanonicalRemovablePartKey,
+  captureBuilderRemovedPartsState,
+  isBuilderCanvasRemovablePartId,
+  type BuilderRemovedPartsState,
+} from './removable_parts_state.js';
 
 export function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): UnknownRecord {
   const cfg = asRecord(cfgSnapshot);
@@ -12,13 +16,8 @@ export function requireRemovedPartsConfigSnapshot(cfgSnapshot: unknown): Unknown
   return cfg;
 }
 
-function readRemovedPartsMap(cfgSnapshot: UnknownRecord): UnknownRecord {
-  return readConfigMapFromSnapshot(cfgSnapshot, 'removedDoorsMap', {});
-}
-
-function isRemovedPart(removedMap: UnknownRecord, partId: string): boolean {
-  const key = canonicalRemovablePartKey(partId);
-  return !!(key && removedMap[`removed_${key}`] === true);
+function readRemovedPartsState(cfgSnapshot: UnknownRecord): BuilderRemovedPartsState {
+  return captureBuilderRemovedPartsState(cfgSnapshot.removedDoorsMap);
 }
 
 function getOrCreateTransparentMaterial(THREE: ThreeLike, holder: UnknownRecord): unknown {
@@ -85,12 +84,10 @@ export function applyRemovedPartsAfterBuild(args: {
   const { App, THREE, cfgSnapshot, primaryMode } = args;
   const cfg = requireRemovedPartsConfigSnapshot(cfgSnapshot);
 
-  const removedMap = readRemovedPartsMap(cfg);
+  const removedParts = readRemovedPartsState(cfg);
   const wardrobeGroup = asRecord(getWardrobeGroup(App));
   if (!wardrobeGroup) return;
-  const removedKeys = Object.keys(removedMap).filter(
-    key => key.startsWith('removed_') && removedMap[key] === true
-  );
+  const removedKeys = Object.keys(removedParts.map).filter(key => removedParts.map[key] === true);
   if (!removedKeys.length) return;
 
   const removeMode = isRemoveDoorModeFromSnapshot({ primary: primaryMode });
@@ -104,8 +101,8 @@ export function applyRemovedPartsAfterBuild(args: {
     visited.add(node);
 
     const userData = asRecord(node.userData);
-    const partId = canonicalRemovablePartKey(userData?.partId);
-    if (partId && isCanvasRemovablePartId(partId) && isRemovedPart(removedMap, partId)) {
+    const partId = builderCanonicalRemovablePartKey(userData?.partId);
+    if (partId && isBuilderCanvasRemovablePartId(partId) && removedParts.isRemoved(partId)) {
       applyTransparentRemovedMaterial({ THREE, materialHolder, node, partId, removeMode });
       continue;
     }

@@ -1,5 +1,5 @@
 import type { RemovedDoorsMap, UnknownRecord } from '../../../types/index.js';
-import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import { normalizeBuilderRemovedPartsMap } from './removable_parts_state.js';
 import { MODES } from '../runtime/api.js';
 
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
@@ -10,20 +10,11 @@ export function asCornerBuildUI(value: unknown): CornerBuildUI {
 }
 
 export function asRemovedDoorsMap(value: unknown): RemovedDoorsMap {
-  if (!isRecord(value)) return {};
-  const next: RemovedDoorsMap = {};
-  for (const [key, raw] of Object.entries(value)) {
-    if (isCanonicalRemovedDoorsMapKey(key) && isRemovedDoorToggleValue(raw)) next[key] = raw;
-  }
-  return next;
+  return normalizeBuilderRemovedPartsMap(value);
 }
 
 export function asCornerConfigRecord(value: unknown): CornerConfigRecord | null {
   return isRecord(value) ? value : null;
-}
-
-export function isRemovedDoorToggleValue(value: unknown): value is RemovedDoorsMap[string] {
-  return value === true || value === false || value === null;
 }
 
 export function readFiniteNumber(v: unknown): number | null {

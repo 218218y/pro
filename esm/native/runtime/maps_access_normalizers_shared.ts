@@ -11,7 +11,7 @@ import {
   isCanonicalSplitPositionMapKey,
   isCanonicalSplitStandardPositionMapKey,
 } from '../../shared/door_split_map_key_contracts_shared.js';
-import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import { normalizeCanonicalRemovedPartsMap } from '../../shared/removable_parts_shared.js';
 import { asMapRecord, asRecord } from './maps_access_shared.js';
 
 export type KnownMapNormalizerMap = { [K in KnownMapName]: (value: unknown) => MapsByName[K] };
@@ -48,15 +48,7 @@ export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
 }
 
 export function normalizeRemovedDoorsMap(value: unknown): MapsByName['removedDoorsMap'] {
-  const rec = asMapRecord(value);
-  const out: MapsByName['removedDoorsMap'] = Object.create(null);
-  if (!rec) return out;
-  for (const key of Object.keys(rec)) {
-    if (!isCanonicalRemovedDoorsMapKey(key)) continue;
-    const next = normalizeToggleValue(rec[key]);
-    if (typeof next !== 'undefined') out[key] = next;
-  }
-  return out;
+  return normalizeCanonicalRemovedPartsMap(value);
 }
 
 export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitDoorsBottomMap'] {

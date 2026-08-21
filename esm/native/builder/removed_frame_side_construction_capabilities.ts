@@ -1,4 +1,8 @@
-import { hasRemovedHingedDoorInRange } from './doors_state_utils.js';
+import {
+  builderFrameSidePartId,
+  captureBuilderRemovedPartsState,
+  type BuilderRemovedPartsState,
+} from './removable_parts_state.js';
 
 export type RemovableFrameSide = 'left' | 'right';
 export type RemovableFrameSidePartIdPrefix = '' | 'lower_';
@@ -30,14 +34,9 @@ export type RemovedFrameSideConstructionCapabilities = Readonly<{
 
 type RemovedFrameSideConfigSnapshot = Readonly<{
   wardrobeType?: unknown;
-  removedDoorsMap: Readonly<Record<string, unknown>>;
+  removedParts: BuilderRemovedPartsState;
   roundedFrameSideShelvesMap: Readonly<Record<string, unknown>>;
 }>;
-
-const FRAME_SIDE_PART_ID_BY_SIDE: Readonly<Record<RemovableFrameSide, string>> = Object.freeze({
-  left: 'body_left',
-  right: 'body_right',
-});
 
 function readRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -56,16 +55,9 @@ function createConfigSnapshot(cfg: unknown): RemovedFrameSideConfigSnapshot {
     ...(config && Object.prototype.hasOwnProperty.call(config, 'wardrobeType')
       ? { wardrobeType: config.wardrobeType }
       : {}),
-    removedDoorsMap: snapshotRecord(config?.removedDoorsMap),
+    removedParts: captureBuilderRemovedPartsState(config?.removedDoorsMap),
     roundedFrameSideShelvesMap: snapshotRecord(config?.roundedFrameSideShelvesMap),
   });
-}
-
-function frameSidePartId(
-  side: RemovableFrameSide,
-  frameSidePartIdPrefix: RemovableFrameSidePartIdPrefix
-): string {
-  return `${frameSidePartIdPrefix}${FRAME_SIDE_PART_ID_BY_SIDE[side]}`;
 }
 
 export function createRemovedFrameSideConstructionCapabilities(
@@ -76,16 +68,14 @@ export function createRemovedFrameSideConstructionCapabilities(
   return Object.freeze({
     isHingedWardrobe: configSnapshot.wardrobeType === 'hinged',
     isFrameSideRemoved(side, frameSidePartIdPrefix) {
-      const partId = frameSidePartId(side, frameSidePartIdPrefix);
-      return configSnapshot.removedDoorsMap[`removed_${partId}`] === true;
+      return configSnapshot.removedParts.isRemoved(builderFrameSidePartId(side, frameSidePartIdPrefix));
     },
     isFrameSideShelfRounded(side, frameSidePartIdPrefix) {
-      const partId = frameSidePartId(side, frameSidePartIdPrefix);
+      const partId = builderFrameSidePartId(side, frameSidePartIdPrefix);
       return configSnapshot.roundedFrameSideShelvesMap[partId] === true;
     },
     hasRemovedHingedDoorInRange(range) {
-      return hasRemovedHingedDoorInRange({
-        cfg: configSnapshot,
+      return configSnapshot.removedParts.hasRemovedHingedDoorInRange({
         startDoorId: range.startDoorId,
         moduleDoors: range.moduleDoors,
         frameSidePartIdPrefix: range.frameSidePartIdPrefix,

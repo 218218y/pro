@@ -647,11 +647,11 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     publicFacade: 'esm/native/features/part_identity/api.ts',
     privateOwners: [
       'esm/native/features/drawer_box_identity.ts',
-      'esm/native/features/removable_parts.ts',
       'esm/native/features/shelf_part_identity.ts',
     ],
     behaviorTests: ['tests/removable_parts_frame_side_scope_runtime.test.ts'],
-    justification: 'Cross-layer part identity consumers require one feature entry.',
+    justification:
+      'Cross-layer part identity consumers use one Feature entry while removable-part domain semantics have one shared canonical owner.',
   }),
   topology({
     id: 'features:door-authoring',

@@ -186,6 +186,44 @@ test('lint architecture contracts keep part-hover preview clients behind the typ
   );
 });
 
+test('lint architecture contracts keep removable-part semantics behind the canonical owner and Builder seam', () => {
+  const directKeyFailures = auditLintArchitectureSource(
+    'esm/native/builder/doors_state_utils.ts',
+    `import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';`
+  );
+  assert.deepEqual(
+    directKeyFailures.map(failure => failure.rule),
+    ['lint-architecture/removable-parts:canonical-owner']
+  );
+
+  const directOwnerFailures = auditLintArchitectureSource(
+    'esm/native/builder/handles_config_snapshot.ts',
+    `import { captureRemovedPartsMapSnapshot } from '../../shared/removable_parts_shared.js';`
+  );
+  assert.deepEqual(
+    directOwnerFailures.map(failure => failure.rule),
+    ['lint-architecture/removable-parts:builder-seam']
+  );
+
+  const removedSideFailures = auditLintArchitectureSource(
+    'esm/native/builder/removed_frame_side_construction_capabilities.ts',
+    `import { hasRemovedHingedDoorInRange } from './doors_state_utils.js';`
+  );
+  assert.deepEqual(
+    removedSideFailures.map(failure => failure.rule),
+    ['lint-architecture/removable-parts:removed-side-capability']
+  );
+
+  const retiredOwnerFailures = auditLintArchitectureSource(
+    'esm/native/features/part_identity/api.ts',
+    `export * from '../removable_parts.js';`
+  );
+  assert.deepEqual(
+    retiredOwnerFailures.map(failure => failure.rule),
+    ['lint-architecture/removable-parts:retired-feature-owner']
+  );
+});
+
 test('lint architecture contracts keep planar reflector lifecycle ownership separated', () => {
   const installFailures = auditLintArchitectureSource(
     'esm/native/runtime/planar_reflector_runtime.ts',

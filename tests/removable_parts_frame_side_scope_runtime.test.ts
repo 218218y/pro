@@ -11,6 +11,10 @@ import {
   readRemovableSketchBoxSideFromPartId,
   readSketchBoxRemovedSideShelfState,
   sketchBoxSideToPartId,
+  captureRemovedPartsMapSnapshot,
+  createRemovedPartReader,
+  hasRemovedHingedDoorInMapRange,
+  normalizeCanonicalRemovedPartsMap,
 } from '../esm/native/features/part_identity/api.ts';
 
 test('canvas removable non-door scope includes stack-aware frame sides and sketch-box side walls', () => {
@@ -108,4 +112,73 @@ test('sketch-box side part ids are parsed and aggregated for brace shelf roundin
     rightRounded: false,
   });
   assert.deepEqual(readRemovedFrameSidePartIds(cfg), [leftPartId, rightPartId]);
+});
+
+test('removed-parts snapshot is detached and preserves inherited full-door lookup semantics', () => {
+  const source = { removed_d4_full: true, removed_body_left: true };
+  const snapshot = captureRemovedPartsMapSnapshot(source);
+  const isRemoved = createRemovedPartReader(snapshot);
+
+  source.removed_d4_full = false;
+  source.removed_body_left = false;
+
+  assert.equal(snapshot.removed_d4_full, true);
+  assert.equal(isRemoved('d4_top'), true);
+  assert.equal(isRemoved('body_left'), true);
+});
+
+test('canonical removed-parts normalizer retains only canonical toggle entries', () => {
+  assert.deepEqual(
+    {
+      ...normalizeCanonicalRemovedPartsMap({
+        removed_d1_full: true,
+        removed_body_left: false,
+        removed_d1_top: 'yes',
+        unrelated: true,
+      }),
+    },
+    { removed_d1_full: true, removed_body_left: false }
+  );
+});
+
+test('hinged-door range lookup keeps upper and lower stacks strictly isolated', () => {
+  const upperOnly = captureRemovedPartsMapSnapshot({ removed_d4_full: true });
+  const lowerOnly = captureRemovedPartsMapSnapshot({ removed_lower_d4_full: true });
+
+  assert.equal(
+    hasRemovedHingedDoorInMapRange({
+      removedPartsMap: upperOnly,
+      startDoorId: 4,
+      moduleDoors: 1,
+      frameSidePartIdPrefix: '',
+    }),
+    true
+  );
+  assert.equal(
+    hasRemovedHingedDoorInMapRange({
+      removedPartsMap: upperOnly,
+      startDoorId: 4,
+      moduleDoors: 1,
+      frameSidePartIdPrefix: 'lower_',
+    }),
+    false
+  );
+  assert.equal(
+    hasRemovedHingedDoorInMapRange({
+      removedPartsMap: lowerOnly,
+      startDoorId: 4,
+      moduleDoors: 1,
+      frameSidePartIdPrefix: '',
+    }),
+    false
+  );
+  assert.equal(
+    hasRemovedHingedDoorInMapRange({
+      removedPartsMap: lowerOnly,
+      startDoorId: 4,
+      moduleDoors: 1,
+      frameSidePartIdPrefix: 'lower_',
+    }),
+    true
+  );
 });

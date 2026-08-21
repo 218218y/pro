@@ -95,6 +95,21 @@ const PART_HOVER_PREVIEW_CLIENT_FORBIDDEN_IDENTIFIERS = new Set([
   'setSketchPlacementPreview',
 ]);
 
+const REMOVABLE_PARTS_SHARED_OWNER = 'esm/shared/removable_parts_shared.ts';
+const REMOVABLE_PARTS_FEATURE_FACADE = 'esm/native/features/part_identity/api.ts';
+const REMOVABLE_PARTS_BUILDER_SEAM = 'esm/native/builder/removable_parts_state.ts';
+const REMOVABLE_PARTS_BUILDER_CLIENTS = new Set([
+  'esm/native/builder/doors_state_utils.ts',
+  'esm/native/builder/handles_config_snapshot.ts',
+  'esm/native/builder/corner_state_normalize_shared.ts',
+  'esm/native/builder/corner_state_normalize_config.ts',
+  'esm/native/builder/removed_frame_side_construction_capabilities.ts',
+  'esm/native/builder/post_build_removed_parts.ts',
+  'esm/native/builder/render_interior_sketch_boxes_shell_frame.ts',
+]);
+const REMOVED_FRAME_SIDE_CAPABILITIES_MODULE =
+  'esm/native/builder/removed_frame_side_construction_capabilities.ts';
+
 const PLANAR_REFLECTOR_INSTALL_RUNTIME = 'esm/native/runtime/planar_reflector_runtime.ts';
 const PLANAR_REFLECTOR_REFRESH_RUNTIME = 'esm/native/runtime/planar_reflector_refresh_runtime.ts';
 const PLANAR_REFLECTOR_WARM_CACHE_RUNTIME = 'esm/native/runtime/planar_reflector_warm_cache.ts';
@@ -562,6 +577,63 @@ function collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi) {
   return failures;
 }
 
+function collectRemovablePartsDomainViolations(rel, sourceFile, astApi) {
+  const failures = [];
+  for (const item of collectStaticModuleSpecifiers(sourceFile, astApi)) {
+    const target = getImportTargetRel(rel, item.specifier);
+    const sourceTarget = target && target.endsWith('.js') ? `${target.slice(0, -3)}.ts` : target;
+
+    if (REMOVABLE_PARTS_BUILDER_CLIENTS.has(rel)) {
+      if (/removed_doors_map_keys_shared\.(?:js|ts)$/.test(target || '')) {
+        failures.push(
+          makeViolation(
+            'lint-architecture/removable-parts:canonical-owner',
+            rel,
+            lineOf(sourceFile, item.node, astApi),
+            `Migrated Builder removable-part clients must use ${REMOVABLE_PARTS_BUILDER_SEAM} instead of ${item.specifier}.`
+          )
+        );
+      }
+      if (sourceTarget === REMOVABLE_PARTS_SHARED_OWNER && rel !== REMOVABLE_PARTS_BUILDER_SEAM) {
+        failures.push(
+          makeViolation(
+            'lint-architecture/removable-parts:builder-seam',
+            rel,
+            lineOf(sourceFile, item.node, astApi),
+            `Builder removable-part clients must use ${REMOVABLE_PARTS_BUILDER_SEAM} instead of importing the shared owner directly.`
+          )
+        );
+      }
+    }
+
+    if (
+      rel === REMOVED_FRAME_SIDE_CAPABILITIES_MODULE &&
+      /doors_state_utils\.(?:js|ts)$/.test(target || '')
+    ) {
+      failures.push(
+        makeViolation(
+          'lint-architecture/removable-parts:removed-side-capability',
+          rel,
+          lineOf(sourceFile, item.node, astApi),
+          'Removed-frame-side capabilities must consume the canonical removable-parts Builder seam instead of the broad door-state utility.'
+        )
+      );
+    }
+
+    if (rel === REMOVABLE_PARTS_FEATURE_FACADE && sourceTarget === 'esm/native/features/removable_parts.ts') {
+      failures.push(
+        makeViolation(
+          'lint-architecture/removable-parts:retired-feature-owner',
+          rel,
+          lineOf(sourceFile, item.node, astApi),
+          'Feature part identity must re-export the canonical shared removable-parts owner; the retired Feature-private owner must not return.'
+        )
+      );
+    }
+  }
+  return failures;
+}
+
 function collectPlanarReflectorLifecycleViolations(rel, sourceFile, astApi) {
   if (!PLANAR_REFLECTOR_LIFECYCLE_MODULES.has(rel)) return [];
 
@@ -733,6 +805,7 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
     ...collectTypedIrBoundaryViolations(rel, sourceFile, astApi),
     ...collectCornerCorniceTypedIrViolations(rel, sourceFile, astApi),
     ...collectPartHoverPreviewProtocolViolations(rel, sourceFile, astApi),
+    ...collectRemovablePartsDomainViolations(rel, sourceFile, astApi),
     ...collectPlanarReflectorLifecycleViolations(rel, sourceFile, astApi),
     ...collectBrowserGlobalViolations(rel, sourceFile, astApi),
     ...collectAppBagViolations(rel, sourceFile, astApi),

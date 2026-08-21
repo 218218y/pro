@@ -1,6 +1,6 @@
 import { normalizeKnownMapSnapshot, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
 import { readConfigState, type ValueRecord } from './handles_shared.js';
-import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
+import { captureBuilderRemovedPartsState, normalizeBuilderRemovedPartsMap } from './removable_parts_state.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { ConfigStateLike } from '../../../types';
@@ -17,7 +17,7 @@ function normalizeHandlesMap(value: unknown): ValueRecord {
 }
 
 function normalizeRemovedDoorsMap(value: unknown): ValueRecord {
-  return normalizeKnownMapSnapshot('removedDoorsMap', value) as ValueRecord;
+  return normalizeBuilderRemovedPartsMap(value) as ValueRecord;
 }
 
 function normalizeSplitDoorsBottomMap(value: unknown): ValueRecord {
@@ -37,13 +37,7 @@ export function captureHandlesConfigSnapshot(cfgSnapshot: unknown): HandlesConfi
 }
 
 export function createHandlesDoorRemovedReader(removedDoorsMap: ValueRecord): (partId: unknown) => boolean {
-  return (partId: unknown): boolean => {
-    const keys = listCanonicalRemovedDoorLookupKeys(partId);
-    for (const key of keys) {
-      if (removedDoorsMap[key] === true) return true;
-    }
-    return false;
-  };
+  return captureBuilderRemovedPartsState(removedDoorsMap).isRemoved;
 }
 
 export function isBottomSplitBotPartFromSnapshot(splitDoorsBottomMap: ValueRecord, id: unknown): boolean {

@@ -9,7 +9,7 @@ import { asRemovedDoorsMap, ensureCornerConfigRecord } from './corner_state_norm
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isRecord } from './corner_geometry_plan.js';
 import { requireCornerConfigSnapshot } from './corner_config_readers.js';
-import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
+import { captureBuilderRemovedPartsState } from './removable_parts_state.js';
 
 export type CornerNormalizedConfigState = {
   __cfg: ConfigStateLike;
@@ -38,19 +38,12 @@ export function createCornerNormalizedConfigState(args: {
   };
 
   const __removedDoorsMap: RemovedDoorsMap = asRemovedDoorsMap(__cfg.removedDoorsMap);
+  const isRemoved = captureBuilderRemovedPartsState(__removedDoorsMap).isRemoved;
 
   const __isDoorRemoved = (pid: unknown) => {
     const kRaw = formatIdentityValue(readIdentityValue(pid));
     if (!kRaw) return false;
     const scoped = __stackScopePartKey(kRaw);
-
-    const isRemoved = (id0: string): boolean => {
-      const keys = listCanonicalRemovedDoorLookupKeys(id0);
-      for (const key of keys) {
-        if (__removedDoorsMap[key] === true) return true;
-      }
-      return false;
-    };
 
     if (isRemoved(scoped)) return true;
     if (!(__stackSplitEnabled && __stackKey === 'bottom') && scoped !== kRaw && isRemoved(kRaw)) return true;

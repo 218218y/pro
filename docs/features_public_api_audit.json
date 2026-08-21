@@ -455,10 +455,6 @@
       "entry": "door_authoring/api.js"
     },
     {
-      "file": "esm/native/builder/post_build_removed_parts.ts",
-      "entry": "part_identity/api.js"
-    },
-    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
       "entry": "manual_handle_position.js"
     },
@@ -621,10 +617,6 @@
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
       "entry": "hex_cell/index.js"
-    },
-    {
-      "file": "esm/native/builder/render_interior_sketch_boxes_shell_frame.ts",
-      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_drawers_external_apply.ts",
@@ -1893,7 +1885,8 @@
   ],
   "retiredSurfaces": [
     "esm/shared/wardrobe_dimension_tokens_shared.ts",
-    "esm/native/features/dimensions/index.ts"
+    "esm/native/features/dimensions/index.ts",
+    "esm/native/features/removable_parts.ts"
   ],
   "retiredSurfaceViolations": [],
   "violations": []
