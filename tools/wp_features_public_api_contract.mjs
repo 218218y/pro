@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { analyzeModuleDependencies, collectNamedModuleExports } from './wp_layer_contract_support.mjs';
 import {
   dimensionOwnerPublicBridgeViolations,
+  publicSurfacePolicyViolations,
+  retiredSurfaceDomains,
   retiredSurfaceForSpecifier,
 } from './wp_public_surface_policy_support.mjs';
 
@@ -65,7 +67,18 @@ function buildMarkdownReport(result) {
   lines.push(`- Public entries: ${result.publicEntries.length}`);
   lines.push(`- Import sites outside \`features/\`: ${result.importSites.length}`);
   lines.push(`- Violations: ${result.violations.length}`);
+  lines.push(
+    `- Retired surfaces: ${result.retiredSurfaces.length} across ${Object.keys(result.retiredSurfacesByDomain).length} domains`
+  );
   lines.push('');
+  lines.push('## Retired surfaces by domain');
+  lines.push('');
+  for (const [domain, surfaces] of Object.entries(result.retiredSurfacesByDomain)) {
+    lines.push(`### ${domain}`);
+    lines.push('');
+    for (const surface of surfaces) lines.push(`- \`${surface}\``);
+    lines.push('');
+  }
   lines.push('## Public entries by family');
   lines.push('');
   for (const [family, entries] of Object.entries(result.byFamily).sort(([a], [b]) =>
@@ -173,6 +186,9 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
     (publicSurfacePolicy.retiredFacadeOwnedSymbols ?? []).map(entry => `${entry.kind}:${entry.name}`)
   );
 
+  const policyViolations = publicSurfacePolicyViolations(publicSurfacePolicy);
+  violations.push(...policyViolations.map(violation => `public surface policy: ${violation}`));
+
   for (const surface of publicSurfacePolicy.retiredSurfaces ?? []) {
     if (fs.existsSync(path.join(projectRoot, surface.path))) {
       retiredSurfaceViolations.push(`${surface.path} is retired but still exists`);
@@ -235,6 +251,12 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
   retiredSurfaceViolations.sort(compareCodePoints);
   violations.push(...retiredSurfaceViolations);
 
+  const retiredSurfacesByDomain = Object.fromEntries(
+    [...retiredSurfaceDomains(publicSurfacePolicy).entries()]
+      .sort(([left], [right]) => compareCodePoints(left, right))
+      .map(([domain, surfaces]) => [domain, surfaces.map(surface => surface.path).sort(compareCodePoints)])
+  );
+
   return {
     ok: violations.length === 0,
     policy: manifest.policy || '',
@@ -242,6 +264,8 @@ export function runFeaturesPublicApiContract(projectRoot = root) {
     byFamily,
     importSites,
     retiredSurfaces: (publicSurfacePolicy.retiredSurfaces ?? []).map(surface => surface.path),
+    retiredSurfacesByDomain,
+    publicSurfacePolicyViolations: policyViolations,
     retiredSurfaceViolations,
     violations,
   };

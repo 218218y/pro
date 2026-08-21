@@ -10,6 +10,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 import {
   dimensionOwnerPublicBridgeViolations,
   retiredSurfaceForSpecifier,
+  retiredSurfacesForDomain,
 } from '../tools/wp_public_surface_policy_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,11 +34,12 @@ function retiredDependencies(source) {
 }
 
 test('retired dimension surfaces are absent and the repository has no route back to them', () => {
+  const retiredDimensionSurfaces = retiredSurfacesForDomain(policy, 'dimensions');
   assert.deepEqual(
-    policy.retiredSurfaces.map(surface => surface.path),
+    retiredDimensionSurfaces.map(surface => surface.path),
     ['esm/shared/wardrobe_dimension_tokens_shared.ts', 'esm/native/features/dimensions/index.ts']
   );
-  for (const surface of policy.retiredSurfaces) {
+  for (const surface of retiredDimensionSurfaces) {
     assert.equal(fs.existsSync(path.join(root, surface.path)), false, surface.path);
   }
 

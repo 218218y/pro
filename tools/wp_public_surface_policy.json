@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "architecture-contract",
-  "effectiveStage": "dimension-legacy-surface-retirement",
-  "effectiveDate": "2026-08-03",
+  "effectiveStage": "multi-domain-surface-retirement",
+  "effectiveDate": "2026-08-21",
   "applicationPolicy": "WardrobePro is a private application. Source paths are internal unless an explicit public manifest or supported-surface contract lists them.",
   "supportedSurfaces": [
     {
@@ -30,18 +30,21 @@
   "retiredSurfaces": [
     {
       "path": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+      "domain": "dimensions",
       "kind": "legacy-source-path-facade",
       "replacement": "Use focused owners internally or the supported Runtime/Services routes when the symbol is public.",
       "reason": "The private application has no production consumer for this 99-symbol compatibility surface."
     },
     {
       "path": "esm/native/features/dimensions/index.ts",
+      "domain": "dimensions",
       "kind": "unsupported-feature-wildcard-barrel",
       "replacement": "Use an entry listed in tools/wp_features_public_api_manifest.json.",
       "reason": "The barrel was absent from the Feature Public API manifest and had no production consumer."
     },
     {
       "path": "esm/native/features/removable_parts.ts",
+      "domain": "removable-parts",
       "kind": "retired-feature-private-domain-owner",
       "replacement": "Use esm/shared/removable_parts_shared.ts internally or esm/native/features/part_identity/api.ts at the Feature API boundary.",
       "reason": "Removable-part identity and removed-map semantics now have one shared canonical owner; the former Feature-private implementation would reintroduce duplicate domain authority."

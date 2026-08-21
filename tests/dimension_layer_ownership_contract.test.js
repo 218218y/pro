@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createRepositoryLayerContractFixture } from './helpers/repository_layer_contract_fixture.mjs';
+import { retiredSurfacesForDomain } from '../tools/wp_public_surface_policy_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
@@ -60,13 +61,14 @@ test('dimension edge accounting decomposes each observed statement into current 
 test('retired dimension paths stay absent while the supported Runtime and Services surface remains exact', () => {
   const manifest = readJson('tools/wp_wardrobe_dimension_public_surface_manifest.json');
   const policy = readJson('tools/wp_public_surface_policy.json');
+  const retiredDimensionSurfaces = retiredSurfacesForDomain(policy, 'dimensions');
   assert.deepEqual(
     {
       symbols: manifest.symbolCount,
       values: manifest.valueCount,
       types: manifest.typeCount,
       routes: manifest.symbols.length,
-      retiredSurfaces: policy.retiredSurfaces.length,
+      retiredSurfaces: retiredDimensionSurfaces.length,
       retiredSymbols: policy.retiredFacadeOnlyRoutes.length,
     },
     {
@@ -78,7 +80,7 @@ test('retired dimension paths stay absent while the supported Runtime and Servic
       retiredSymbols: 46,
     }
   );
-  for (const surface of policy.retiredSurfaces) {
+  for (const surface of retiredDimensionSurfaces) {
     assert.equal(fs.existsSync(path.join(root, surface.path)), false, surface.path);
   }
 });

@@ -12,6 +12,66 @@ function normalizeProjectModuleStem(value) {
   return normalized.replace(/^\.\//u, '');
 }
 
+function isNonEmptyText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function retiredSurfacesForDomain(policy, domain) {
+  const domainKey = isNonEmptyText(domain) ? domain.trim() : '';
+  if (!domainKey) return [];
+  const retiredSurfaces = Array.isArray(policy?.retiredSurfaces) ? policy.retiredSurfaces : [];
+  return retiredSurfaces.filter(surface => surface?.domain === domainKey);
+}
+
+export function retiredSurfaceDomains(policy) {
+  const out = new Map();
+  const retiredSurfaces = Array.isArray(policy?.retiredSurfaces) ? policy.retiredSurfaces : [];
+  for (const surface of retiredSurfaces) {
+    const domain = isNonEmptyText(surface?.domain) ? surface.domain.trim() : '';
+    if (!domain) continue;
+    const entries = out.get(domain) ?? [];
+    entries.push(surface);
+    out.set(domain, entries);
+  }
+  return out;
+}
+
+export function publicSurfacePolicyViolations(policy) {
+  const violations = [];
+  if (!policy || typeof policy !== 'object' || Array.isArray(policy)) {
+    return ['public surface policy must be an object'];
+  }
+  if (policy.version !== 2) violations.push('public surface policy version must be 2');
+
+  const retiredSurfaces = Array.isArray(policy.retiredSurfaces) ? policy.retiredSurfaces : [];
+  if (!Array.isArray(policy.retiredSurfaces)) {
+    violations.push('retiredSurfaces must be an array');
+  }
+
+  const seenPaths = new Set();
+  for (let index = 0; index < retiredSurfaces.length; index += 1) {
+    const surface = retiredSurfaces[index];
+    const prefix = `retiredSurfaces[${index}]`;
+    if (!surface || typeof surface !== 'object' || Array.isArray(surface)) {
+      violations.push(`${prefix} must be an object`);
+      continue;
+    }
+    for (const field of ['path', 'domain', 'kind', 'replacement', 'reason']) {
+      if (!isNonEmptyText(surface[field])) violations.push(`${prefix}.${field} must be non-empty text`);
+    }
+    const pathValue = isNonEmptyText(surface.path) ? surface.path.trim() : '';
+    if (pathValue) {
+      if (seenPaths.has(pathValue)) violations.push(`${prefix}.path duplicates ${pathValue}`);
+      seenPaths.add(pathValue);
+    }
+    const domain = isNonEmptyText(surface.domain) ? surface.domain.trim() : '';
+    if (domain && !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u.test(domain)) {
+      violations.push(`${prefix}.domain must be a lowercase kebab-case identifier`);
+    }
+  }
+  return violations;
+}
+
 export function retiredSurfaceStems(policy) {
   return new Set(
     (policy.retiredSurfaces ?? []).flatMap(surface => {

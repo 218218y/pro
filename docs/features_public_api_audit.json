@@ -1888,6 +1888,14 @@
     "esm/native/features/dimensions/index.ts",
     "esm/native/features/removable_parts.ts"
   ],
+  "retiredSurfacesByDomain": {
+    "dimensions": [
+      "esm/native/features/dimensions/index.ts",
+      "esm/shared/wardrobe_dimension_tokens_shared.ts"
+    ],
+    "removable-parts": ["esm/native/features/removable_parts.ts"]
+  },
+  "publicSurfacePolicyViolations": [],
   "retiredSurfaceViolations": [],
   "violations": []
 }
