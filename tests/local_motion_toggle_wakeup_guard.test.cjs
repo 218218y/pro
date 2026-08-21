@@ -10,6 +10,9 @@ function read(rel) {
 test('local door toggle paths stamp door motion and do not rely on one-shot render touches', () => {
   const toggleFlow = read('esm/native/services/canvas_picking_toggle_flow_shared.ts');
   const sketchBoxToggle = read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts');
+  const sketchBoxToggleRuntime = read(
+    'esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle_runtime.ts'
+  );
   const motionController = read('esm/native/platform/render_loop_motion.ts');
   const motionDoors = read('esm/native/platform/render_loop_motion_doors.ts');
   const motionDrawers = read('esm/native/platform/render_loop_motion_drawers.ts');
@@ -18,8 +21,15 @@ test('local door toggle paths stamp door motion and do not rely on one-shot rend
   assert.match(toggleFlow, /op: 'globalToggle\.cornerPent\.only',[\s\S]*?markLocalDoorMotion\(App\);/);
   assert.match(toggleFlow, /dr\.isOpen = !dr\.isOpen;\n\s*markLocalDoorMotion\(App\);/);
 
-  assert.match(sketchBoxToggle, /markLocalDoorMotion/);
-  assert.doesNotMatch(sketchBoxToggle, /__wp_triggerRender\(App, true\);/);
+  assert.match(sketchBoxToggle, /markLocalMotion: \(\) => void;/);
+  assert.match(sketchBoxToggle, /capabilities\.markLocalMotion\(\);/);
+  assert.doesNotMatch(sketchBoxToggle, /markLocalDoorMotion|__wp_triggerRender\(App, true\);/);
+  assert.match(
+    sketchBoxToggleRuntime,
+    /import \{ markLocalDoorMotion \} from '\.\/canvas_picking_toggle_flow_shared\.js';/
+  );
+  assert.match(sketchBoxToggleRuntime, /markLocalMotion: \(\) => markLocalDoorMotion\(App\),/);
+  assert.doesNotMatch(sketchBoxToggleRuntime, /__wp_triggerRender\(App, true\);/);
 
   assert.match(motionController, /hasActiveDoorMotion/);
   assert.match(motionController, /hasActiveDrawerMotion/);

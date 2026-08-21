@@ -199,6 +199,7 @@ const toggleBundle = bundleSources(
     '../esm/native/services/canvas_picking_sketch_box_target_identity.ts',
     '../esm/native/services/canvas_picking_toggle_flow_sketch_box_runtime.ts',
     '../esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts',
+    '../esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle_runtime.ts',
   ],
   import.meta.url
 );
