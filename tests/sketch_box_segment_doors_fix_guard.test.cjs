@@ -43,6 +43,7 @@ test('sketch box doors are tracked per segment and door hover resolves the canon
   ].join('\n');
   const doorEdit = [
     read('esm/native/services/canvas_picking_door_sketch_box_edit.ts'),
+    read('esm/native/services/canvas_picking_door_sketch_box_edit_runtime.ts'),
     read('esm/native/services/canvas_picking_door_hinge_groove_click.ts'),
     read('esm/native/services/canvas_picking_door_remove_click.ts'),
   ].join('\n');

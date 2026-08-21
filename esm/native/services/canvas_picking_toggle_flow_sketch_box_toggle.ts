@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { SketchBoxDoorTarget } from './canvas_picking_toggle_flow_sketch_box_contracts.js';
-import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target.js';
+import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target_runtime.js';
 import {
   applySketchBoxDoorRuntimeStateForBox,
   seedSketchBoxDoorMotion,

@@ -69,6 +69,18 @@ const TARGETED_CAPABILITY_CORE_CONTRACTS = new Map([
       ],
     },
   ],
+  [
+    'esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts',
+    {
+      id: 'sketch-box-toggle-target',
+      label: 'Sketch Box toggle target',
+      forbiddenTargets: [
+        /canvas_picking_toggle_flow_sketch_box_target_runtime\.(?:js|ts)$/,
+        /root_state_access\.(?:js|ts)$/,
+        /canvas_picking_door_sketch_box_edit_runtime\.(?:js|ts)$/,
+      ],
+    },
+  ],
 ]);
 
 const CORNER_CORNICE_PLAN_MODULES = new Set([

@@ -12,7 +12,7 @@ import {
   readSketchFreeBoxMotionScopeFromUserData,
 } from '../runtime/sketch_free_box_motion_identity.js';
 import { recordSketchFreeBoxMotionToggle } from '../runtime/sketch_free_box_motion_state.js';
-import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target.js';
+import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target_runtime.js';
 import { asRecord, ensureChildRecord, markLocalDoorMotion } from './canvas_picking_toggle_flow_shared.js';
 import { createCanvasPickingModulesMotionPatchMeta } from './canvas_picking_modules_patch_meta.js';
 import {

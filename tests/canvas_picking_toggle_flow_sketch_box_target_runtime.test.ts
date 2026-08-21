@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveSketchBoxToggleTarget } from '../esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts';
+import {
+  parseSketchBoxPartId,
+  resolveSketchBoxToggleTarget,
+} from '../esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts';
+import { resolveSketchBoxPatchTargets } from '../esm/native/services/canvas_picking_toggle_flow_sketch_box_target_runtime.ts';
+import { parseSketchBoxDoorTarget } from '../esm/native/services/canvas_picking_door_sketch_box_edit.ts';
 
 type HitNode = {
   userData?: Record<string, unknown>;
@@ -81,5 +86,70 @@ test('sketch-box toggle target still resolves door identity from a door part id 
       boxId: 'sbf_alpha',
       doorId: 'sbdr_1',
     }
+  );
+});
+
+test('sketch-box target identity stays canonical across toggle and door-edit parsers', () => {
+  const cases = [
+    {
+      pid: 'sketch_box_free_7_sbf_alpha_door_sbdr_1_accent_top',
+      expected: { moduleKey: '7', boxId: 'sbf_alpha', doorId: 'sbdr_1' },
+    },
+    {
+      pid: 'sketch_box_3_sb_2_door_left_top_groove_left',
+      expected: { moduleKey: '3', boxId: 'sb_2', doorId: 'left' },
+    },
+    {
+      pid: 'sketch_box_free_sbf_alpha_door_sbdr_1_bot',
+      expected: { moduleKey: null, boxId: 'sbf_alpha', doorId: 'sbdr_1' },
+    },
+  ];
+
+  for (const entry of cases) {
+    assert.deepEqual(parseSketchBoxPartId(entry.pid), entry.expected);
+    assert.deepEqual(parseSketchBoxDoorTarget(entry.pid), entry.expected);
+  }
+
+  assert.deepEqual(parseSketchBoxPartId('sketch_box_free_7_sbf_alpha'), {
+    moduleKey: '7',
+    boxId: 'sbf_alpha',
+    doorId: null,
+  });
+  assert.equal(parseSketchBoxDoorTarget('sketch_box_free_7_sbf_alpha'), null);
+});
+
+test('sketch-box toggle patch targets reuse the canonical door snapshot and preserve structural indices', () => {
+  const state = {
+    modulesConfiguration: [null, { id: 'top-a', sketchExtras: { boxes: [{ id: 'sbf_shared' }] } }],
+    stackSplitLowerModulesConfiguration: [
+      { id: 'bottom-a', sketchExtras: { boxes: [{ id: 'sbf_shared' }] } },
+    ],
+  };
+  const App = { store: { getState: () => state } } as any;
+
+  assert.deepEqual(
+    resolveSketchBoxPatchTargets(App, { moduleKey: null, boxId: 'sbf_shared', doorId: null }, 'bottom'),
+    [
+      { stack: 'bottom', moduleKey: '0' },
+      { stack: 'top', moduleKey: '1' },
+    ]
+  );
+});
+
+test('sketch-box toggle patch target with module identity avoids root-state reads', () => {
+  const App = {
+    store: {
+      getState: () => {
+        throw new Error('root state must not be read for direct module targets');
+      },
+    },
+  } as any;
+
+  assert.deepEqual(
+    resolveSketchBoxPatchTargets(App, { moduleKey: 'module-a', boxId: 'sbf_a', doorId: null }, 'top'),
+    [
+      { stack: 'top', moduleKey: 'module-a' },
+      { stack: 'bottom', moduleKey: 'module-a' },
+    ]
   );
 });

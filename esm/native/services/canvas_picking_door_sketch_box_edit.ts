@@ -1,8 +1,11 @@
-export type SketchBoxDoorTarget = {
-  moduleKey: string | null;
-  boxId: string;
-  doorId: string | null;
-};
+import type { SketchBoxDoorTarget } from './canvas_picking_toggle_flow_sketch_box_contracts.js';
+import {
+  parseSketchBoxDoorPartTarget,
+  readSketchBoxDoorSegmentSuffix as readCanonicalSketchBoxDoorSegmentSuffix,
+  stripSketchBoxDoorVisualSuffix as stripCanonicalSketchBoxDoorVisualSuffix,
+} from './canvas_picking_sketch_box_target_identity.js';
+
+export type { SketchBoxDoorTarget } from './canvas_picking_toggle_flow_sketch_box_contracts.js';
 
 export type SketchBoxDoorPatchOptions = {
   source?: string;
@@ -49,66 +52,20 @@ export function readSketchBoxDoorPatchSource(options?: SketchBoxDoorPatchOptions
   return typeof options?.source === 'string' && options.source.trim() ? options.source : 'sketchBoxDoorEdit';
 }
 
-function stripSketchBoxDoorSegmentSuffix(partId: string): string {
-  return String(partId || '').replace(
-    /_(?:top|bot|mid\d*)(?=_(?:accent|groove)_(?:top|bottom|left|right)$|$)/i,
-    ''
-  );
-}
-
 export function stripSketchBoxDoorVisualSuffix(partId: string | null | undefined): string {
-  return String(partId || '').replace(/_(?:accent|groove)_(?:top|bottom|left|right)$/i, '');
+  return stripCanonicalSketchBoxDoorVisualSuffix(partId);
 }
 
 export function readSketchBoxDoorSegmentSuffix(partId: string | null | undefined): string | null {
-  const cleaned = stripSketchBoxDoorVisualSuffix(partId);
-  const match = /_(top|bot|mid\d*)$/i.exec(cleaned);
-  return match?.[1] ? String(match[1]).toLowerCase() : null;
+  return readCanonicalSketchBoxDoorSegmentSuffix(partId);
 }
 
 export function isSketchBoxDoorSegmentPartId(partId: string | null | undefined): boolean {
-  const cleaned = stripSketchBoxDoorVisualSuffix(partId);
-  return !!readSketchBoxDoorSegmentSuffix(cleaned) && parseSketchBoxDoorTarget(cleaned) !== null;
+  return !!readSketchBoxDoorSegmentSuffix(partId) && parseSketchBoxDoorTarget(partId) !== null;
 }
 
 export function parseSketchBoxDoorTarget(partId: string | null | undefined): SketchBoxDoorTarget | null {
-  const pid = stripSketchBoxDoorSegmentSuffix(String(partId || ''));
-  if (!pid) return null;
-  let match =
-    /^sketch_box_free_(.+)_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
-      pid
-    );
-  if (match?.[2]) {
-    return {
-      moduleKey: match[1] ? String(match[1]) : null,
-      boxId: String(match[2]),
-      doorId: match[3] ? String(match[3]) : null,
-    };
-  }
-  match =
-    /^sketch_box_(.+)_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
-      pid
-    );
-  if (match?.[2]) {
-    return {
-      moduleKey: match[1] ? String(match[1]) : null,
-      boxId: String(match[2]),
-      doorId: match[3] ? String(match[3]) : null,
-    };
-  }
-  match =
-    /^sketch_box_free_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
-      pid
-    );
-  if (match?.[1])
-    return { moduleKey: null, boxId: String(match[1]), doorId: match[2] ? String(match[2]) : null };
-  match =
-    /^sketch_box_(sb(?:f)?_[a-z0-9]+)_door_([a-z0-9_]+?)(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
-      pid
-    );
-  if (match?.[1])
-    return { moduleKey: null, boxId: String(match[1]), doorId: match[2] ? String(match[2]) : null };
-  return null;
+  return parseSketchBoxDoorPartTarget(partId);
 }
 
 function orderedStacks(preferredStack: 'top' | 'bottom'): readonly ('top' | 'bottom')[] {
