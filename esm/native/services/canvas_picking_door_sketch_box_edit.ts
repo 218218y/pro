@@ -1,14 +1,3 @@
-import type { AppContainer, UnknownRecord } from '../../../types';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-
-import { readRootState } from '../runtime/root_state_access.js';
-import { asRecord, ensureRecordSlot } from './canvas_picking_door_edit_shared.js';
-import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
-import {
-  commitCanvasModuleStructuralPatch,
-  readCanvasModuleConfigForStack,
-} from './canvas_picking_structural_commit.js';
-
 export type SketchBoxDoorTarget = {
   moduleKey: string | null;
   boxId: string;
@@ -19,7 +8,44 @@ export type SketchBoxDoorPatchOptions = {
   source?: string;
 };
 
-function readSketchBoxDoorPatchSource(options?: SketchBoxDoorPatchOptions | null): string {
+export type SketchBoxDoorRecord = Record<string, unknown>;
+
+export type SketchBoxDoorModuleSnapshot = {
+  lookupIndex: number;
+  patchModuleKey: string;
+  identities: readonly string[];
+  hasTargetBox: boolean;
+  targetDoor: SketchBoxDoorRecord | null;
+};
+
+export type SketchBoxDoorStateSnapshot = {
+  top: readonly SketchBoxDoorModuleSnapshot[];
+  bottom: readonly SketchBoxDoorModuleSnapshot[];
+};
+
+export type SketchBoxDoorPatchTarget = {
+  stack: 'top' | 'bottom';
+  moduleKey: string;
+};
+
+export type SketchBoxDoorPatchRequest = SketchBoxDoorPatchTarget & {
+  boxId: string;
+  doorId: string | null;
+  mutate: (door: SketchBoxDoorRecord | null) => SketchBoxDoorRecord | null;
+  source: string;
+};
+
+export type SketchBoxDoorPatchOutcome = {
+  committed: boolean;
+  changed: boolean;
+};
+
+export type SketchBoxDoorEditCapabilities = {
+  readTargetSnapshot: (target: SketchBoxDoorTarget) => SketchBoxDoorStateSnapshot;
+  commitDoorPatch: (request: SketchBoxDoorPatchRequest) => SketchBoxDoorPatchOutcome;
+};
+
+export function readSketchBoxDoorPatchSource(options?: SketchBoxDoorPatchOptions | null): string {
   return typeof options?.source === 'string' && options.source.trim() ? options.source : 'sketchBoxDoorEdit';
 }
 
@@ -85,195 +111,105 @@ export function parseSketchBoxDoorTarget(partId: string | null | undefined): Ske
   return null;
 }
 
-function resolveSketchBoxDoorPatchTargets(
-  App: AppContainer,
+function orderedStacks(preferredStack: 'top' | 'bottom'): readonly ('top' | 'bottom')[] {
+  return preferredStack === 'bottom' ? ['bottom', 'top'] : ['top', 'bottom'];
+}
+
+function modulesForStack(
+  snapshot: SketchBoxDoorStateSnapshot,
+  stack: 'top' | 'bottom'
+): readonly SketchBoxDoorModuleSnapshot[] {
+  return stack === 'bottom' ? snapshot.bottom : snapshot.top;
+}
+
+function moduleMatchesIdentity(module: SketchBoxDoorModuleSnapshot, moduleKey: string): boolean {
+  const numericIndex = /^\d+$/.test(moduleKey) ? Number(moduleKey) : Number.NaN;
+  if (Number.isInteger(numericIndex) && module.lookupIndex === numericIndex) return true;
+  return module.identities.includes(moduleKey);
+}
+
+export function readSketchBoxDoorRecordWithCapabilities(
+  capabilities: SketchBoxDoorEditCapabilities,
   target: SketchBoxDoorTarget | null,
   preferredStack: 'top' | 'bottom'
-): Array<{ stack: 'top' | 'bottom'; moduleKey: string }> {
-  if (!target?.boxId) return [];
-  const orderedStacks: Array<'top' | 'bottom'> =
-    preferredStack === 'bottom' ? ['bottom', 'top'] : ['top', 'bottom'];
-  const out: Array<{ stack: 'top' | 'bottom'; moduleKey: string }> = [];
-  const seen = new Set<string>();
+): SketchBoxDoorRecord | null {
+  if (!target?.boxId) return null;
+  const snapshot = capabilities.readTargetSnapshot(target);
 
-  const pushCandidate = (stack: 'top' | 'bottom', moduleKey: unknown) => {
-    if (moduleKey == null || moduleKey === '') return;
-    const normalizedModuleKey = formatIdentityValue(readIdentityValue(moduleKey));
-    const key = `${stack}::${normalizedModuleKey}`;
+  for (const stack of orderedStacks(preferredStack)) {
+    const modules = modulesForStack(snapshot, stack);
+    if (target.moduleKey != null && target.moduleKey !== '') {
+      const moduleKey = String(target.moduleKey);
+      for (const module of modules) {
+        if (!moduleMatchesIdentity(module, moduleKey)) continue;
+        if (module.targetDoor) return module.targetDoor;
+      }
+    }
+
+    for (const module of modules) {
+      if (module.targetDoor) return module.targetDoor;
+    }
+  }
+
+  return null;
+}
+
+export function resolveSketchBoxDoorPatchTargets(
+  snapshot: SketchBoxDoorStateSnapshot | null,
+  target: SketchBoxDoorTarget | null,
+  preferredStack: 'top' | 'bottom'
+): SketchBoxDoorPatchTarget[] {
+  if (!target?.boxId) return [];
+  const out: SketchBoxDoorPatchTarget[] = [];
+  const seen = new Set<string>();
+  const pushCandidate = (stack: 'top' | 'bottom', moduleKey: string) => {
+    if (!moduleKey) return;
+    const key = `${stack}::${moduleKey}`;
     if (seen.has(key)) return;
     seen.add(key);
-    out.push({ stack, moduleKey: normalizedModuleKey });
+    out.push({ stack, moduleKey });
   };
 
   if (target.moduleKey) {
-    for (const stack of orderedStacks) pushCandidate(stack, target.moduleKey);
+    const moduleKey = String(target.moduleKey);
+    for (const stack of orderedStacks(preferredStack)) pushCandidate(stack, moduleKey);
     return out;
   }
+  if (!snapshot) return out;
 
-  const state = asRecord(readRootState(App));
-  for (const stack of orderedStacks) {
-    const bucketKey = stack === 'bottom' ? 'stackSplitLowerModulesConfiguration' : 'modulesConfiguration';
-    const modules = Array.isArray(state?.[bucketKey]) ? state[bucketKey] : [];
-    for (let i = 0; i < modules.length; i++) {
-      const cfgRec = asRecord(modules[i]);
-      const extra = asRecord(cfgRec?.sketchExtras);
-      const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : [];
-      const found = boxes.some(box => {
-        const boxRec = asRecord(box);
-        return !!boxRec && formatIdentityValue(readIdentityValue(boxRec.id)) === target.boxId;
-      });
-      if (found) pushCandidate(stack, i);
+  for (const stack of orderedStacks(preferredStack)) {
+    const modules = modulesForStack(snapshot, stack);
+    for (const module of modules) {
+      if (!module.hasTargetBox) continue;
+      pushCandidate(stack, module.patchModuleKey);
     }
   }
 
   return out;
 }
 
-function readSketchBoxDoorModulesForStack(
-  state: UnknownRecord | null,
-  stack: 'top' | 'bottom'
-): UnknownRecord[] {
-  const bucketKey = stack === 'bottom' ? 'stackSplitLowerModulesConfiguration' : 'modulesConfiguration';
-  const modules = Array.isArray(state?.[bucketKey]) ? state?.[bucketKey] : [];
-  return modules.map(item => asRecord(item)).filter((item): item is UnknownRecord => !!item);
-}
-
-function findSketchBoxDoorInModule(
-  cfg: UnknownRecord | null,
-  boxId: string,
-  doorId: string | null
-): UnknownRecord | null {
-  const extra = asRecord(cfg?.sketchExtras);
-  const boxes = Array.isArray(extra?.boxes) ? extra.boxes : [];
-  for (let i = 0; i < boxes.length; i++) {
-    const boxRec = asRecord(boxes[i]);
-    if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== boxId) continue;
-    const doors = Array.isArray(boxRec.doors) ? boxRec.doors : [];
-    for (let di = 0; di < doors.length; di++) {
-      const doorRec = asRecord(doors[di]);
-      if (!doorRec) continue;
-      if (doorId && formatIdentityValue(readIdentityValue(doorRec.id)) !== doorId) continue;
-      return doorRec;
-    }
-    return null;
-  }
-  return null;
-}
-
-export function readSketchBoxDoorRecord(
-  App: AppContainer,
-  target: SketchBoxDoorTarget | null,
-  preferredStack: 'top' | 'bottom'
-): UnknownRecord | null {
-  if (!target?.boxId) return null;
-  const state = asRecord(readRootState(App));
-  const orderedStacks: Array<'top' | 'bottom'> =
-    preferredStack === 'bottom' ? ['bottom', 'top'] : ['top', 'bottom'];
-  const rawDoorId = target.doorId != null && String(target.doorId) ? String(target.doorId) : null;
-
-  for (const stack of orderedStacks) {
-    const modules = readSketchBoxDoorModulesForStack(state, stack);
-    if (target.moduleKey != null && target.moduleKey !== '') {
-      const moduleKey = String(target.moduleKey);
-      const numericIndex = /^\d+$/.test(moduleKey) ? Number(moduleKey) : NaN;
-      const exactCandidates = modules.filter((cfg, index) => {
-        if (Number.isInteger(numericIndex) && index === numericIndex) return true;
-        const cfgRec = asRecord(cfg);
-        return (
-          formatIdentityValue(readIdentityValue(cfgRec?.id)) === moduleKey ||
-          formatIdentityValue(readIdentityValue(cfgRec?.moduleKey)) === moduleKey ||
-          formatIdentityValue(readIdentityValue(cfgRec?.key)) === moduleKey
-        );
-      });
-      for (const cfg of exactCandidates) {
-        const found = findSketchBoxDoorInModule(cfg, target.boxId, rawDoorId);
-        if (found) return found;
-      }
-    }
-
-    for (const cfg of modules) {
-      const found = findSketchBoxDoorInModule(cfg, target.boxId, rawDoorId);
-      if (found) return found;
-    }
-  }
-
-  return null;
-}
-
-export function patchSketchBoxDoor(
-  App: AppContainer,
+export function patchSketchBoxDoorWithCapabilities(
+  capabilities: SketchBoxDoorEditCapabilities,
   target: SketchBoxDoorTarget | null,
   preferredStack: 'top' | 'bottom',
-  mutate: (door: UnknownRecord | null) => UnknownRecord | null,
+  mutate: (door: SketchBoxDoorRecord | null) => SketchBoxDoorRecord | null,
   options?: SketchBoxDoorPatchOptions | null
 ): boolean {
   if (!target) return false;
-  const { boxId, doorId: rawDoorId } = target;
-  const patchTargets = resolveSketchBoxDoorPatchTargets(App, target, preferredStack);
+  const snapshot = target.moduleKey ? null : capabilities.readTargetSnapshot(target);
+  const patchTargets = resolveSketchBoxDoorPatchTargets(snapshot, target, preferredStack);
+  const source = readSketchBoxDoorPatchSource(options);
+
   for (const patchTarget of patchTargets) {
-    const stack = patchTarget.stack;
-    const cfg = readCanvasModuleConfigForStack({
-      App,
-      stack,
-      moduleKey: patchTarget.moduleKey,
-      op: 'sketchBoxDoorEdit.target',
-    });
-    const cfgRec = asRecord(cfg);
-    const extra = asRecord(cfgRec?.sketchExtras);
-    const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : null;
-    if (!boxes) continue;
-    let changed = false;
-    const outcome = commitCanvasModuleStructuralPatch({
-      App,
-      stack,
-      moduleKey: patchTarget.moduleKey,
-      mutate: (cfgPatch: UnknownRecord) => {
-        const extraRec = ensureRecordSlot(cfgPatch, 'sketchExtras');
-        const list = Array.isArray(extraRec.boxes) ? extraRec.boxes : (extraRec.boxes = []);
-        for (let i = 0; i < list.length; i++) {
-          const boxRec = asRecord(list[i]);
-          if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== boxId) continue;
-          const doorId = rawDoorId != null && String(rawDoorId) ? String(rawDoorId) : '';
-          const doors = Array.isArray(boxRec.doors) ? boxRec.doors.filter(it => !!asRecord(it)) : [];
-          const nextDoors: UnknownRecord[] = [];
-          let matched = false;
-          for (let di = 0; di < doors.length; di++) {
-            const currentDoor = asRecord(doors[di]);
-            if (!currentDoor) continue;
-            const currentId = formatIdentityValue(readIdentityValue(currentDoor.id));
-            if (doorId && currentId !== doorId) {
-              nextDoors.push(currentDoor);
-              continue;
-            }
-            const nextDoor = mutate(currentDoor);
-            if (nextDoor) nextDoors.push(nextDoor);
-            matched = true;
-            if (doorId) {
-              for (let dj = di + 1; dj < doors.length; dj++) {
-                const later = asRecord(doors[dj]);
-                if (later) nextDoors.push(later);
-              }
-              break;
-            }
-          }
-          if (!matched && !doorId) {
-            const nextDoor = mutate(null);
-            if (nextDoor) nextDoors.push(nextDoor);
-            matched = nextDoor != null;
-          }
-          if (nextDoors.length) boxRec.doors = nextDoors;
-          else delete boxRec.doors;
-          delete boxRec.door;
-          changed = matched;
-          return;
-        }
-        return changed;
-      },
-      meta: createCanvasPickingModulesStructuralPatchMeta(readSketchBoxDoorPatchSource(options)),
-      op: 'sketchBoxDoorEdit.patch',
+    const outcome = capabilities.commitDoorPatch({
+      ...patchTarget,
+      boxId: target.boxId,
+      doorId: target.doorId != null && String(target.doorId) ? String(target.doorId) : null,
+      mutate,
+      source,
     });
     if (!outcome.committed) return false;
-    if (outcome.changed && changed) return true;
+    if (outcome.changed) return true;
   }
   return false;
 }

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-20T18:37:00.496Z",
+  "generatedAt": "2026-08-21T04:35:36.140Z",
   "summary": {
     "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 484,
-    "sequenceResolvedFileReferences": 126,
+    "catalogFileReferences": 485,
+    "sequenceResolvedFileReferences": 127,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
     "runnerIssues": 0,
@@ -1079,11 +1079,12 @@
       "portfolioRole": "focused",
       "serialPolicy": null,
       "childGroups": [],
-      "directFileCount": 6,
-      "resolvedFileCount": 6,
+      "directFileCount": 7,
+      "resolvedFileCount": 7,
       "files": [
         "tests/canvas_picking_sketch_box_runtime_runtime.test.ts",
         "tests/canvas_picking_sketch_box_door_preview_runtime.test.ts",
+        "tests/canvas_picking_door_sketch_box_edit_capability_runtime.test.ts",
         "tests/canvas_picking_sketch_box_doors_runtime.test.ts",
         "tests/canvas_picking_sketch_box_overlap_runtime.test.ts",
         "tests/sketch_box_hover_click_runtime.test.ts",
@@ -1173,7 +1174,7 @@
         "sketch-render-visuals"
       ],
       "directFileCount": 0,
-      "resolvedFileCount": 32,
+      "resolvedFileCount": 33,
       "files": []
     },
     {

@@ -105,6 +105,25 @@ test('lint architecture contracts keep targeted Canvas capability cores containe
       'lint-architecture/capability-boundary:cell-dims-free-box-hover-app-container',
     ]
   );
+
+  const sketchBoxDoorFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_door_sketch_box_edit.ts',
+    `import type { AppContainer } from '../../../types';
+     import { readRootState } from '../runtime/root_state_access.js';
+     import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
+     export function run(App: AppContainer) {
+       readRootState(App);
+       return commitCanvasModuleStructuralPatch;
+     }`
+  );
+  assert.deepEqual(
+    sketchBoxDoorFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:sketch-box-door-edit-runtime',
+      'lint-architecture/capability-boundary:sketch-box-door-edit-runtime',
+      'lint-architecture/capability-boundary:sketch-box-door-edit-app-container',
+    ]
+  );
 });
 
 test('lint architecture contracts keep viewer measurement flow and facade on the feature runtime boundary', () => {

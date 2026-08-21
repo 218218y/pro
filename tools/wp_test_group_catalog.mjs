@@ -495,6 +495,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     files: [
       'tests/canvas_picking_sketch_box_runtime_runtime.test.ts',
       'tests/canvas_picking_sketch_box_door_preview_runtime.test.ts',
+      'tests/canvas_picking_door_sketch_box_edit_capability_runtime.test.ts',
       'tests/canvas_picking_sketch_box_doors_runtime.test.ts',
       'tests/canvas_picking_sketch_box_overlap_runtime.test.ts',
       'tests/sketch_box_hover_click_runtime.test.ts',

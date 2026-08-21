@@ -57,6 +57,18 @@ const TARGETED_CAPABILITY_CORE_CONTRACTS = new Map([
       ],
     },
   ],
+  [
+    'esm/native/services/canvas_picking_door_sketch_box_edit.ts',
+    {
+      id: 'sketch-box-door-edit',
+      label: 'Sketch Box door edit',
+      forbiddenTargets: [
+        /canvas_picking_door_sketch_box_edit_runtime\.(?:js|ts)$/,
+        /canvas_picking_structural_commit\.(?:js|ts)$/,
+        /canvas_picking_modules_patch_meta\.(?:js|ts)$/,
+      ],
+    },
+  ],
 ]);
 
 const CORNER_CORNICE_PLAN_MODULES = new Set([

@@ -8,8 +8,8 @@ import { __wp_map } from './canvas_picking_core_helpers.js';
 import {
   isSketchBoxDoorSegmentPartId,
   parseSketchBoxDoorTarget,
-  readSketchBoxDoorRecord,
 } from './canvas_picking_door_sketch_box_edit.js';
+import { readSketchBoxDoorRecord } from './canvas_picking_door_sketch_box_edit_runtime.js';
 import type { DoorActionHoverResolvedState } from './canvas_picking_door_action_hover_contracts.js';
 import type { DoorActionHoverArgs } from './canvas_picking_door_hover_targets.js';
 import { __asObject, __scopeCornerHoverPartKey } from './canvas_picking_door_hover_targets.js';

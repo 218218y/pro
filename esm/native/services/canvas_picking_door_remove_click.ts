@@ -11,8 +11,8 @@ import {
 import {
   isSketchBoxDoorSegmentPartId,
   parseSketchBoxDoorTarget,
-  patchSketchBoxDoor,
 } from './canvas_picking_door_sketch_box_edit.js';
+import { patchSketchBoxDoor } from './canvas_picking_door_sketch_box_edit_runtime.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
   __wp_reportPickingIssue,

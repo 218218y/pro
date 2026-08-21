@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-21T01:00:06.678Z",
+  "generatedAt": "2026-08-21T04:35:36.560Z",
   "totals": {
-    "tests": 1254,
-    "unitRunnerTests": 1245,
+    "tests": 1255,
+    "unitRunnerTests": 1246,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
-    "catalogTestReferences": 484,
-    "totalTestReferences": 500,
+    "catalogTestReferences": 485,
+    "totalTestReferences": 501,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 67,
     "genericTestGroupRunner": "test:group",
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 397,
     "runtime-unit": 346,
-    "integration": 472,
+    "integration": 473,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -3242,6 +3242,10 @@
     },
     {
       "file": "tests/canvas_picking_door_paint_hover_resolution_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_door_sketch_box_edit_capability_runtime.test.ts",
       "category": "integration"
     },
     {

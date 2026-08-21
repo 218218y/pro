@@ -50,9 +50,11 @@ import {
 import {
   isSketchBoxDoorSegmentPartId,
   parseSketchBoxDoorTarget,
+} from './canvas_picking_door_sketch_box_edit.js';
+import {
   patchSketchBoxDoor,
   readSketchBoxDoorRecord,
-} from './canvas_picking_door_sketch_box_edit.js';
+} from './canvas_picking_door_sketch_box_edit_runtime.js';
 import {
   toCanonicalDoorGrooveTargetKey,
   toCanonicalGrooveLinesCountMapKey,
