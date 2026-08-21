@@ -61,3 +61,32 @@ test('project_schema: validateProjectData fails when settings is missing', async
   assert.equal(v.ok, false);
   assert.ok(v.errors.some(e => e.includes('settings')));
 });
+
+test('project_schema: hinged no-main projects persist doors=0 while sliding zero-door payloads remain invalid', async () => {
+  const { validateProjectData, normalizeProjectData, PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } =
+    await schemaMod();
+  const noMain = {
+    __schema: PROJECT_SCHEMA_ID,
+    __version: PROJECT_SCHEMA_VERSION,
+    settings: {
+      wardrobeType: 'hinged',
+      width: 0,
+      height: 0,
+      depth: 0,
+      doors: 0,
+    },
+    toggles: { sketchMode: true },
+  };
+
+  assert.equal(validateProjectData(noMain).ok, true);
+  assert.ok(normalizeProjectData(noMain));
+
+  const sliding = structuredClone(noMain);
+  sliding.settings.wardrobeType = 'sliding';
+  const invalid = validateProjectData(sliding);
+  assert.equal(invalid.ok, false);
+  assert.ok(
+    invalid.errors.some(error => error.includes('0 is reserved for the hinged no-main wardrobe state'))
+  );
+  assert.equal(normalizeProjectData(sliding), null);
+});

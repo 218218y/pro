@@ -686,11 +686,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 138,
-      "maxImportCount": 163,
+      "maxImportCount": 162,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
       "maxValueImporterCount": 138,
-      "maxValueImportCount": 163,
+      "maxValueImportCount": 162,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Services orchestrate persistence and UI-independent workflows over shared domain contracts."

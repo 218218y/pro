@@ -121,3 +121,69 @@ test('Cell Dimensions Free Box mutation core blocks hex conversion over external
   assert.match(outcome.blockedMessage || '', /מגירות/);
   assert.equal(JSON.stringify(box), before);
 });
+
+test('Cell Dimensions Free Box preserves active width and height while applying a new depth draft', () => {
+  const { cfg, box } = createConfig();
+
+  const first = applyCanvasFreeBoxCellDimsMutation({
+    cfg,
+    boxId: 'free-a',
+    clickArgs: createCoreArgs({ applyW: 80, applyH: 90, applyD: null }),
+  });
+  assert.equal(first.changed, true);
+  assert.equal(box.widthM, 0.8);
+  assert.equal(box.heightM, 0.9);
+  assert.equal(box.depthM, 0.35);
+  assert.deepEqual(box.specialDims, {
+    baseWidthCm: 60,
+    widthCm: 80,
+    baseHeightCm: 80,
+    heightCm: 90,
+  });
+
+  const second = applyCanvasFreeBoxCellDimsMutation({
+    cfg,
+    boxId: 'free-a',
+    clickArgs: createCoreArgs({ applyW: 80, applyH: 90, applyD: 40 }),
+  });
+  assert.equal(second.changed, true);
+  assert.equal(box.widthM, 0.8);
+  assert.equal(box.heightM, 0.9);
+  assert.equal(box.depthM, 0.4);
+  assert.deepEqual(box.specialDims, {
+    baseWidthCm: 60,
+    widthCm: 80,
+    baseHeightCm: 80,
+    heightCm: 90,
+    baseDepthCm: 35,
+    depthCm: 40,
+  });
+});
+
+test('Cell Dimensions Free Box still toggles matching active dimensions back when the combined draft has no new value', () => {
+  const { cfg, box } = createConfig({
+    widthM: 0.8,
+    heightM: 0.9,
+    depthM: 0.4,
+    specialDims: {
+      baseWidthCm: 60,
+      widthCm: 80,
+      baseHeightCm: 80,
+      heightCm: 90,
+      baseDepthCm: 35,
+      depthCm: 40,
+    },
+  });
+
+  const outcome = applyCanvasFreeBoxCellDimsMutation({
+    cfg,
+    boxId: 'free-a',
+    clickArgs: createCoreArgs({ applyW: 80, applyH: 90, applyD: 40 }),
+  });
+
+  assert.equal(outcome.changed, true);
+  assert.equal(box.widthM, 0.6);
+  assert.equal(box.heightM, 0.8);
+  assert.equal(box.depthM, 0.35);
+  assert.equal(box.specialDims, undefined);
+});

@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
 import { buildProjectConfigSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
+import {
+  normalizeProjectData,
+  PROJECT_SCHEMA_ID,
+  PROJECT_SCHEMA_VERSION,
+} from '../esm/native/io/project_schema.ts';
 
 test('project io export uses the canonical project capture and preserves pdf draft payloads from UI state', () => {
   const App = {
@@ -312,4 +317,115 @@ test('project io export fails visibly when canonical project capture is unavaila
   assert.equal(reports.length, 1);
   assert.equal(reports[0]?.[0], 'project.export.currentProject');
   assert.match(String((reports[0]?.[1] as Error)?.message || ''), /Project capture is not canonical/);
+});
+
+test('project io export and current-schema restore accept the hinged no-main wardrobe state with free boxes', () => {
+  const reports: Array<[string, unknown]> = [];
+  const freeBox = {
+    id: 'free-no-main-1',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    widthM: 0.8,
+    heightM: 0.9,
+    depthM: 0.4,
+  };
+  const App = {
+    actions: {},
+    services: {
+      project: {
+        capture(scope: unknown) {
+          assert.equal(scope, 'persist');
+          return {
+            settings: { wardrobeType: 'hinged', width: 0, height: 0, depth: 0, doors: 0 },
+            toggles: { sketchMode: true },
+            modulesConfiguration: [
+              {
+                doors: 0,
+                sketchExtras: { boxes: [freeBox] },
+              },
+            ],
+          };
+        },
+      },
+      platform: {
+        util: { log() {} },
+        reportError() {},
+        triggerRender() {},
+      },
+    },
+    store: {
+      getState() {
+        return {
+          ui: { projectName: 'No main free-box project' },
+          config: {},
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+  } as any;
+
+  const orchestrator = createProjectIoOrchestrator({
+    App,
+    showToast() {},
+    userAgent: 'node:test',
+    schemaId: PROJECT_SCHEMA_ID,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    reportNonFatal(op, err) {
+      reports.push([op, err]);
+    },
+  });
+
+  const exported = orchestrator.exportCurrentProject({ source: 'unit:no-main' });
+  assert.ok(exported);
+  assert.equal(reports.length, 0);
+  assert.equal(exported?.projectData?.settings?.doors, 0);
+  assert.equal(exported?.projectData?.settings?.wardrobeType, 'hinged');
+  assert.equal(
+    (exported?.projectData?.modulesConfiguration as any)?.[0]?.sketchExtras?.boxes?.[0]?.id,
+    freeBox.id
+  );
+
+  const restored = normalizeProjectData(JSON.parse(String(exported?.jsonStr)));
+  assert.ok(restored);
+  assert.equal(restored?.settings?.doors, 0);
+  assert.equal((restored?.modulesConfiguration as any)?.[0]?.sketchExtras?.boxes?.[0]?.id, freeBox.id);
+});
+
+test('project schema keeps zero doors exclusive to the hinged no-main state', () => {
+  const reports: Array<[string, unknown]> = [];
+  const App = {
+    actions: {},
+    services: {
+      project: {
+        capture() {
+          return {
+            settings: { wardrobeType: 'sliding', width: 0, height: 0, depth: 0, doors: 0 },
+            toggles: {},
+          };
+        },
+      },
+      platform: { util: { log() {} }, reportError() {}, triggerRender() {} },
+    },
+    store: { getState: () => ({ ui: {}, config: {}, runtime: {}, mode: {}, meta: {} }) },
+  } as any;
+  const orchestrator = createProjectIoOrchestrator({
+    App,
+    showToast() {},
+    userAgent: 'node:test',
+    schemaId: PROJECT_SCHEMA_ID,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    reportNonFatal(op, err) {
+      reports.push([op, err]);
+    },
+  });
+
+  assert.equal(orchestrator.exportCurrentProject({ source: 'unit:sliding-zero' }), null);
+  assert.equal(reports.length, 1);
+  assert.match(
+    String((reports[0]?.[1] as Error)?.message || ''),
+    /0 is reserved for the hinged no-main wardrobe state/
+  );
 });

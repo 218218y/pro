@@ -376,3 +376,44 @@ test('[cell-dims/free-box] unchanged dimensions remain a structural no-op after 
   assert.equal(freeBox.depthM, 0.35);
   assert.equal(calls.toasts.length, 0);
 });
+
+test('[cell-dims/free-box] changing depth after width and height keeps the existing active width and height overrides', () => {
+  const { App, state, freeBox } = createFreeBoxHarness();
+  state.ui.raw.cellDimsWidth = 80;
+  state.ui.raw.cellDimsHeight = 90;
+  state.ui.raw.cellDimsDepth = '';
+
+  const click = () =>
+    handleCanvasCellDimsClick({
+      App,
+      foundModuleIndex: 0,
+      foundPartId: 'sketch_box_free_0_free-1',
+      hitUserData: {
+        __wpSketchFreePlacement: true,
+        __wpSketchBoxId: 'free-1',
+        __wpSketchModuleKey: 0,
+      },
+      isBottomStack: false,
+      ensureCornerCellConfigRef: () => null,
+    });
+
+  click();
+  assert.equal(freeBox.widthM, 0.8);
+  assert.equal(freeBox.heightM, 0.9);
+  assert.equal(freeBox.depthM, 0.35);
+
+  state.ui.raw.cellDimsDepth = 40;
+  click();
+
+  assert.equal(freeBox.widthM, 0.8);
+  assert.equal(freeBox.heightM, 0.9);
+  assert.equal(freeBox.depthM, 0.4);
+  assert.deepEqual(freeBox.specialDims, {
+    baseWidthCm: 60,
+    widthCm: 80,
+    baseHeightCm: 80,
+    heightCm: 90,
+    baseDepthCm: 35,
+    depthCm: 40,
+  });
+});

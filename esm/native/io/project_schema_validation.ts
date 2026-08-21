@@ -121,8 +121,14 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
         errors.push(`settings.${key} must be a finite number`);
       }
     }
-    if (typeof settings.doors === 'number' && (!Number.isInteger(settings.doors) || settings.doors < 1)) {
-      errors.push('settings.doors must be a positive integer');
+    if (typeof settings.doors === 'number') {
+      const doors = settings.doors;
+      const noMainWardrobe = doors === 0 && settings.wardrobeType === 'hinged';
+      if (!Number.isInteger(doors) || doors < 0 || (doors === 0 && !noMainWardrobe)) {
+        errors.push(
+          'settings.doors must be a non-negative integer; 0 is reserved for the hinged no-main wardrobe state'
+        );
+      }
     }
     for (const key of OPTIONAL_NUMERIC_SETTINGS_KEYS) {
       if (hasOwn(settings, key) && (typeof settings[key] !== 'number' || !Number.isFinite(settings[key]))) {

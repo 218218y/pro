@@ -229,7 +229,11 @@ function shouldBlockFreeBoxHeightDepthByBaseLegStage(args: {
   );
 }
 
-function applyBoxDimension(box: SketchBoxLike, spec: DimSpec): boolean {
+function applyBoxDimension(
+  box: SketchBoxLike,
+  spec: DimSpec,
+  options: { allowToggleBack: boolean }
+): boolean {
   const target = spec.applyValueCm;
   if (target == null || !Number.isFinite(target) || target <= 0) return false;
 
@@ -238,9 +242,16 @@ function applyBoxDimension(box: SketchBoxLike, spec: DimSpec): boolean {
 
   const sd = cloneSpecialDims(box.specialDims);
   const active = getActiveOverrideCm(sd, spec.specialKey, spec.baseKey);
-  const toggledBack = active != null && Math.abs(target - active) <= EPS_CM;
-  const nextValue = toggledBack ? (readPositiveSpecialBaseCm(sd, spec.baseKey) ?? current) : target;
+  const matchesCurrent = Math.abs(target - current) <= EPS_CM;
+  const toggledBack =
+    options.allowToggleBack && matchesCurrent && active != null && Math.abs(target - active) <= EPS_CM;
 
+  // Cell-dimension inputs describe one combined draft. When one dimension changes,
+  // matching active overrides on the other axes are context, not a request to reset
+  // them. Only a click with no new dimension value may toggle matching overrides back.
+  if (matchesCurrent && !toggledBack) return false;
+
+  const nextValue = toggledBack ? (readPositiveSpecialBaseCm(sd, spec.baseKey) ?? current) : target;
   applyOverrideToSpecialDims({
     sd,
     key: spec.specialKey,
@@ -251,7 +262,17 @@ function applyBoxDimension(box: SketchBoxLike, spec: DimSpec): boolean {
   });
   assignSpecialDimsToConfig(box, sd);
   writeDimensionCm(box, spec, nextValue);
-  return Math.abs(nextValue - current) > EPS_CM || toggledBack || target !== current;
+  return Math.abs(nextValue - current) > EPS_CM || toggledBack;
+}
+
+function hasNewDimensionValueChange(box: SketchBoxLike, specs: readonly DimSpec[]): boolean {
+  for (const spec of specs) {
+    const target = spec.applyValueCm;
+    if (target == null || !Number.isFinite(target) || target <= 0) continue;
+    const current = readDimensionCm(box, spec);
+    if (current == null || Math.abs(target - current) > EPS_CM) return true;
+  }
+  return false;
 }
 
 function hasDimensionDraftChange(args: { box: SketchBoxLike; specs: DimSpec[] }): boolean {
@@ -336,6 +357,7 @@ export function applyCanvasFreeBoxCellDimsMutation(args: {
   }
 
   const hasDimChange = hasDimensionDraftChange({ box, specs });
+  const allowDimensionToggleBack = !hasNewDimensionValueChange(box, specs);
   let changed = false;
   let removedHex = false;
   let appliedHex = false;
@@ -362,7 +384,8 @@ export function applyCanvasFreeBoxCellDimsMutation(args: {
       };
     }
 
-    for (const spec of specs) changed = applyBoxDimension(box, spec) || changed;
+    for (const spec of specs)
+      changed = applyBoxDimension(box, spec, { allowToggleBack: allowDimensionToggleBack }) || changed;
     changed = clampFreeBoxAboveRoomFloorAfterHeightChange({ box, heightSpec, oldHeightM }) || changed;
     const newDepthM = readDimensionM(box, depthSpec);
     if (oldDepthM != null && newDepthM != null) {
@@ -389,7 +412,8 @@ export function applyCanvasFreeBoxCellDimsMutation(args: {
     return { changed, removedHex, appliedHex, blockedMessage: null };
   }
 
-  for (const spec of specs) changed = applyBoxDimension(box, spec) || changed;
+  for (const spec of specs)
+    changed = applyBoxDimension(box, spec, { allowToggleBack: allowDimensionToggleBack }) || changed;
   changed = clampFreeBoxAboveRoomFloorAfterHeightChange({ box, heightSpec, oldHeightM }) || changed;
   const newDepthM = readDimensionM(box, depthSpec);
   if (oldDepthM != null && newDepthM != null) {
