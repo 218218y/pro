@@ -12,8 +12,13 @@ import {
   readSketchFreeBoxMotionScopeFromUserData,
 } from '../runtime/sketch_free_box_motion_identity.js';
 import { recordSketchFreeBoxMotionToggle } from '../runtime/sketch_free_box_motion_state.js';
+import {
+  hasSketchBoxDoorOpenTarget,
+  mutateSketchBoxDoorOpenState,
+  type SketchBoxDoorOpenMutationResult,
+} from './canvas_picking_sketch_box_door_open_mutation.js';
 import { resolveSketchBoxPatchTargets } from './canvas_picking_toggle_flow_sketch_box_target_runtime.js';
-import { asRecord, ensureChildRecord, markLocalDoorMotion } from './canvas_picking_toggle_flow_shared.js';
+import { asRecord, markLocalDoorMotion } from './canvas_picking_toggle_flow_shared.js';
 import { createCanvasPickingModulesMotionPatchMeta } from './canvas_picking_modules_patch_meta.js';
 import {
   commitCanvasModuleStructuralPatch,
@@ -41,13 +46,18 @@ export function resolveSketchFreeBoxToggleScope(
   return readSketchFreeBoxMotionScopeFromPartId(foundPartId || null);
 }
 
+type SketchFreeBoxDoorPatchOutcome = {
+  committed: boolean;
+  changed: boolean;
+};
+
 function patchSketchFreeBoxDoorOpenState(
   App: AppContainer,
   scope: SketchFreeBoxMotionScope,
   nextOpen: boolean,
   preferredStack?: string | null
-): void {
-  if (!scope.boxId) return;
+): SketchFreeBoxDoorPatchOutcome {
+  if (!scope.boxId) return { committed: true, changed: false };
   const patchTargets = resolveSketchBoxPatchTargets(
     App,
     { moduleKey: scope.moduleKey, boxId: scope.boxId, doorId: null },
@@ -61,51 +71,41 @@ function patchSketchFreeBoxDoorOpenState(
       moduleKey: patchTarget.moduleKey,
       op: 'sketchFreeBoxToggle.target',
     });
-    const cfgRec = asRecord(cfg);
-    const extra = asRecord(cfgRec?.sketchExtras);
-    const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : null;
-    if (!boxes) continue;
-    const exists = boxes.some(box => {
-      const rec = asRecord(box);
-      return (
-        !!rec && formatIdentityValue(readIdentityValue(rec.id)) === scope.boxId && rec.freePlacement === true
-      );
-    });
-    if (!exists) continue;
+    if (
+      !hasSketchBoxDoorOpenTarget(cfg, {
+        boxId: scope.boxId,
+        requireFreePlacement: true,
+      })
+    ) {
+      continue;
+    }
 
-    commitCanvasModuleStructuralPatch({
+    let mutationResult: SketchBoxDoorOpenMutationResult = {
+      matchedBox: false,
+      changed: false,
+      nextOpen: null,
+      doorIds: [],
+    };
+    const outcome = commitCanvasModuleStructuralPatch({
       App,
       stack: patchTarget.stack,
       moduleKey: patchTarget.moduleKey,
       mutate: (cfgPatch: UnknownRecord) => {
-        const extraRec = ensureChildRecord(cfgPatch, 'sketchExtras');
-        const list = Array.isArray(extraRec.boxes) ? extraRec.boxes : (extraRec.boxes = []);
-        for (let i = 0; i < list.length; i++) {
-          const boxRec = asRecord(list[i]);
-          if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== scope.boxId) continue;
-          if (boxRec.freePlacement !== true) continue;
-          const doors = Array.isArray(boxRec.doors) ? boxRec.doors.slice() : [];
-          if (!doors.length) return false;
-          let changed = false;
-          for (let doorIndex = 0; doorIndex < doors.length; doorIndex++) {
-            const doorRec = asRecord(doors[doorIndex]);
-            if (!(doorRec && doorRec.enabled !== false)) continue;
-            const doorId =
-              formatIdentityValue(readIdentityValue(doorRec.id)) || `sketch_box_door_${doorIndex}`;
-            doors[doorIndex] = { ...doorRec, id: doorId, enabled: true, open: !!nextOpen };
-            changed = true;
-          }
-          if (!changed) return false;
-          boxRec.doors = doors;
-          delete boxRec.door;
-          return true;
-        }
-        return false;
+        mutationResult = mutateSketchBoxDoorOpenState(cfgPatch, {
+          boxId: scope.boxId,
+          nextOpen,
+          requireFreePlacement: true,
+        });
+        return mutationResult.changed;
       },
       meta: createCanvasPickingModulesMotionPatchMeta('sketchFreeBoxGlobalToggle'),
       op: 'sketchFreeBoxToggle.patch',
     });
+    if (!outcome.committed) return { committed: false, changed: false };
+    if (outcome.changed && mutationResult.changed) return { committed: true, changed: true };
   }
+
+  return { committed: true, changed: false };
 }
 
 function setDoorLocalOpenState(door: UnknownRecord, nextOpen: boolean): void {
@@ -147,11 +147,16 @@ export function toggleSketchFreeBoxOpen(
 
   const hasInternalDrawers = matchedDrawers.some(drawer => isSketchFreeBoxInternalDrawerEntry(drawer));
 
+  if (matchedDoors.length) {
+    const patchOutcome = patchSketchFreeBoxDoorOpenState(App, scope, nextOpen, preferredStack);
+    // The click remains consumed, but runtime motion must not diverge from a rejected structural write.
+    if (!patchOutcome.committed) return true;
+  }
+
   recordSketchFreeBoxMotionToggle(App, scope, nextOpen, {
     hasInternalDrawers,
     delayMs: readRuntimeConfigNumberFromApp(App, 'DOOR_DELAY_MS', 600),
   });
-  patchSketchFreeBoxDoorOpenState(App, scope, nextOpen, preferredStack);
 
   for (const door of matchedDoors) {
     const rec = asRecord(door);

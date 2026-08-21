@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-21T04:35:35.929Z
+Generated at: 2026-08-21T08:49:38.898Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -40,8 +40,8 @@ Generated at: 2026-08-21T04:35:35.929Z
 
 ## Test portfolio
 
-- Classified test files: **1255**
-- Unit/runtime files: **1246**
+- Classified test files: **1256**
+- Unit/runtime files: **1247**
 - Playwright E2E files: **9**
 - Canonical contracts: **21**
 - Historical architecture proof files: **0**

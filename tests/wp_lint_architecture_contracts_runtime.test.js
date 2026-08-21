@@ -143,6 +143,34 @@ test('lint architecture contracts keep targeted Canvas capability cores containe
       'lint-architecture/capability-boundary:sketch-box-toggle-target-app-container',
     ]
   );
+
+  const sketchBoxToggleFlowFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts',
+    `import type { AppContainer } from '../../../types';
+     import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
+     export function run(App: AppContainer) { return commitCanvasModuleStructuralPatch || App; }`
+  );
+  assert.deepEqual(
+    sketchBoxToggleFlowFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:sketch-box-toggle-flow-runtime',
+      'lint-architecture/capability-boundary:sketch-box-toggle-flow-app-container',
+    ]
+  );
+
+  const sketchBoxDoorOpenMutationFailures = auditLintArchitectureSource(
+    'esm/native/services/canvas_picking_sketch_box_door_open_mutation.ts',
+    `import type { AppContainer } from '../../../types';
+     import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
+     export function run(App: AppContainer) { return commitCanvasModuleStructuralPatch || App; }`
+  );
+  assert.deepEqual(
+    sketchBoxDoorOpenMutationFailures.map(failure => failure.rule),
+    [
+      'lint-architecture/capability-boundary:sketch-box-door-open-mutation-runtime',
+      'lint-architecture/capability-boundary:sketch-box-door-open-mutation-app-container',
+    ]
+  );
 });
 
 test('lint architecture contracts keep viewer measurement flow and facade on the feature runtime boundary', () => {

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-21T04:35:36.140Z",
+  "generatedAt": "2026-08-21T08:49:39.007Z",
   "summary": {
     "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 485,
-    "sequenceResolvedFileReferences": 127,
+    "catalogFileReferences": 487,
+    "sequenceResolvedFileReferences": 129,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
     "runnerIssues": 0,
@@ -1079,12 +1079,13 @@
       "portfolioRole": "focused",
       "serialPolicy": null,
       "childGroups": [],
-      "directFileCount": 7,
-      "resolvedFileCount": 7,
+      "directFileCount": 8,
+      "resolvedFileCount": 8,
       "files": [
         "tests/canvas_picking_sketch_box_runtime_runtime.test.ts",
         "tests/canvas_picking_sketch_box_door_preview_runtime.test.ts",
         "tests/canvas_picking_door_sketch_box_edit_capability_runtime.test.ts",
+        "tests/canvas_picking_sketch_box_door_toggle_capability_runtime.test.ts",
         "tests/canvas_picking_sketch_box_doors_runtime.test.ts",
         "tests/canvas_picking_sketch_box_overlap_runtime.test.ts",
         "tests/sketch_box_hover_click_runtime.test.ts",
@@ -1100,8 +1101,8 @@
       "portfolioRole": "focused",
       "serialPolicy": null,
       "childGroups": [],
-      "directFileCount": 9,
-      "resolvedFileCount": 9,
+      "directFileCount": 10,
+      "resolvedFileCount": 10,
       "files": [
         "tests/canvas_picking_sketch_free_surface_preview_runtime.test.ts",
         "tests/canvas_picking_sketch_free_box_content_preview_runtime.test.ts",
@@ -1109,6 +1110,7 @@
         "tests/canvas_picking_manual_layout_free_box_content_runtime.test.ts",
         "tests/sketch_free_boxes_attach_runtime.test.ts",
         "tests/sketch_free_boxes_hover_plane_attach_runtime.test.ts",
+        "tests/sketch_free_box_global_open_runtime.test.ts",
         "tests/sketch_free_boxes_outside_attach_runtime.test.ts",
         "tests/sketch_free_boxes_remove_and_sidewall_runtime.test.ts",
         "tests/sketch_free_boxes_room_floor_runtime.test.ts"
@@ -1174,7 +1176,7 @@
         "sketch-render-visuals"
       ],
       "directFileCount": 0,
-      "resolvedFileCount": 33,
+      "resolvedFileCount": 35,
       "files": []
     },
     {

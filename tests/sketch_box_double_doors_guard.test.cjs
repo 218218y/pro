@@ -84,6 +84,8 @@ test('sketch box renderer splits a segment into mirrored leaves with a tighter c
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_runtime.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts'),
+    read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle_runtime.ts'),
+    read('esm/native/services/canvas_picking_sketch_box_door_open_mutation.ts'),
   ].join('\n');
 
   assert.match(render, /const boxDoorPlacements = readSketchBoxDoorPlacements\(\{/);
@@ -107,5 +109,4 @@ test('sketch box renderer splits a segment into mirrored leaves with a tighter c
     toggle,
     /const enabledDoors: Array<\{ index: number; door: UnknownRecord; doorId: string \}> = \[\];/
   );
-  assert.match(toggle, /nextOpen = !enabledDoors\.some\(entry => entry\.door\.open === true\);/);
 });

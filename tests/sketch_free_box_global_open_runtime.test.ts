@@ -581,3 +581,74 @@ test('regular external drawer edit lets free-box doors follow the current global
 
   assert.notEqual(freeDoorGroup.rotation.y, 0);
 });
+
+test('free-box global toggle consumes the click but publishes no runtime motion when structural door persistence rejects', () => {
+  const cfg = {
+    sketchExtras: {
+      boxes: [
+        {
+          id: 'freeAlpha',
+          freePlacement: true,
+          doors: [{ id: 'main', enabled: true, open: false }],
+        },
+      ],
+    },
+  };
+  const doorGroup = {
+    position: makeVec(),
+    rotation: { y: 0 },
+    userData: {
+      partId: 'sketch_box_free_0_freeAlpha_door_main',
+      __wpSketchBoxId: 'freeAlpha',
+      __wpSketchModuleKey: '0',
+      __wpSketchBoxDoorId: 'main',
+      __wpSketchBoxDoor: true,
+      __wpSketchFreePlacement: true,
+    },
+  };
+  const door = {
+    group: doorGroup,
+    type: 'hinged',
+    hingeSide: 'left',
+    isOpen: false,
+    noGlobalOpen: true,
+  };
+  const app: Record<string, unknown> = {
+    actions: {
+      modules: {
+        ensureForStack(stack: string, moduleKey: unknown) {
+          return stack === 'top' && String(moduleKey) === '0' ? cfg : null;
+        },
+        patchForStack(
+          _stack: string,
+          _moduleKey: unknown,
+          patcher: (moduleCfg: Record<string, unknown>) => void
+        ) {
+          patcher(cfg as unknown as Record<string, unknown>);
+          return false;
+        },
+      },
+    },
+    store: makeStore({
+      runtime: { globalClickMode: true, doorsOpen: false },
+      mode: { primary: 'none', opts: {} },
+      ui: {},
+      config: {},
+      meta: {},
+    }),
+    services: { platform: { activity: {} }, config: {}, tools: { getDrawersOpenId: () => null } },
+    render: { doorsArray: [door], drawersArray: [] },
+  };
+
+  assert.equal(
+    toggleSketchFreeBoxOpen(app as never, {
+      boxId: 'freeAlpha',
+      moduleKey: '0',
+      prefix: 'sketch_box_free_0_freeAlpha',
+    }),
+    true
+  );
+  assert.equal(door.isOpen, false);
+  assert.equal((cfg.sketchExtras.boxes[0].doors[0] as any).open, false);
+  assert.equal((app as any).__wpSketchFreeBoxMotionState, undefined);
+});

@@ -180,6 +180,8 @@ test('free box hover preview stays on the classic path and sketch box clicks tog
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_runtime.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts'),
+    read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle_runtime.ts'),
+    read('esm/native/services/canvas_picking_sketch_box_door_open_mutation.ts'),
     read('esm/native/services/canvas_picking_modules_patch_meta.ts'),
   ].join('\n');
   const render = [
@@ -210,7 +212,10 @@ test('free box hover preview stays on the classic path and sketch box clicks tog
     }
   );
   assert.match(toggle, /resolveSketchBoxToggleTarget\(/);
-  assert.match(toggle, /seedSketchBoxDoorMotion\(App, runtimeTarget, nextOpen\)/);
+  assert.match(
+    toggle,
+    /seedDoorMotion: \(target, nextOpen\) => seedSketchBoxDoorMotion\(App, target, nextOpen\)/
+  );
   assert.match(toggle, /createCanvasPickingModulesMotionPatchMeta\('sketchBoxDoorToggle'\)/);
   assert.match(
     render,
@@ -227,6 +232,8 @@ test('sketch box door toggles preserve motion seeds for free boxes, patch saved 
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_target.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_runtime.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts'),
+    read('esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle_runtime.ts'),
+    read('esm/native/services/canvas_picking_sketch_box_door_open_mutation.ts'),
     read('esm/native/services/canvas_picking_toggle_flow_shared.ts'),
     read('esm/native/services/canvas_picking_modules_patch_meta.ts'),
   ].join('\n');

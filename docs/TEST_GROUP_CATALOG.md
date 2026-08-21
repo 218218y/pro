@@ -1,13 +1,13 @@
 # Test group catalog
 
-Generated: 2026-08-21T04:35:36.140Z
+Generated: 2026-08-21T08:49:39.007Z
 
 ## Summary
 
 - Catalog groups: 67
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 485
-- Resolved file references across aggregate sequences: 127
+- Catalog-owned direct test-file references: 487
+- Resolved file references across aggregate sequences: 129
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
 - Generic runner issues: 0
@@ -65,11 +65,11 @@ Generated: 2026-08-21T04:35:36.140Z
 | `runtime-surface-family-core`               | architecture | node-test      |            1 |              1 |            0 | runtime                                                              |
 | `service-canonical-surfaces`                | focused      | tsx-test       |            8 |              8 |            0 | services/public-surface                                              |
 | `sketch-box-content-protocol`               | focused      | tsx-test       |           13 |             13 |            0 | services/canvas-picking, features/sketch-box                         |
-| `sketch-box-hover`                          | focused      | tsx-test       |            7 |              7 |            0 | services/canvas-picking/sketch-box                                   |
-| `sketch-free-boxes`                         | focused      | tsx-test       |            9 |              9 |            0 | services/canvas-picking/sketch-free-boxes                            |
+| `sketch-box-hover`                          | focused      | tsx-test       |            8 |              8 |            0 | services/canvas-picking/sketch-box                                   |
+| `sketch-free-boxes`                         | focused      | tsx-test       |           10 |             10 |            0 | services/canvas-picking/sketch-free-boxes                            |
 | `sketch-manual-hover`                       | focused      | tsx-test       |           10 |             10 |            0 | services/canvas-picking/manual-layout                                |
 | `sketch-render-visuals`                     | focused      | tsx-test       |            7 |              7 |            0 | builder/render-sketch                                                |
-| `sketch-surfaces`                           | focused      | group-sequence |            0 |             33 |            4 | services/canvas-picking, features/sketch-box                         |
+| `sketch-surfaces`                           | focused      | group-sequence |            0 |             35 |            4 | services/canvas-picking, features/sketch-box                         |
 | `state-config-kernel-surfaces`              | focused      | serial-tsx     |            9 |              9 |            0 | kernel/state, runtime/config                                         |
 | `structure-tab-family-contracts`            | architecture | node-test      |            1 |              1 |            0 | ui/structure-tab                                                     |
 | `structure-tab-family-core`                 | focused      | serial-tsx     |           22 |             22 |            0 | ui/structure-tab, ui/interior-tab                                    |

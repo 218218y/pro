@@ -81,6 +81,32 @@ const TARGETED_CAPABILITY_CORE_CONTRACTS = new Map([
       ],
     },
   ],
+  [
+    'esm/native/services/canvas_picking_toggle_flow_sketch_box_toggle.ts',
+    {
+      id: 'sketch-box-toggle-flow',
+      label: 'Sketch Box toggle flow',
+      forbiddenTargets: [
+        /canvas_picking_toggle_flow_sketch_box_toggle_runtime\.(?:js|ts)$/,
+        /canvas_picking_toggle_flow_sketch_box_runtime\.(?:js|ts)$/,
+        /canvas_picking_toggle_flow_sketch_box_target_runtime\.(?:js|ts)$/,
+        /canvas_picking_structural_commit\.(?:js|ts)$/,
+        /canvas_picking_modules_patch_meta\.(?:js|ts)$/,
+      ],
+    },
+  ],
+  [
+    'esm/native/services/canvas_picking_sketch_box_door_open_mutation.ts',
+    {
+      id: 'sketch-box-door-open-mutation',
+      label: 'Sketch Box door-open mutation',
+      forbiddenTargets: [
+        /canvas_picking_structural_commit\.(?:js|ts)$/,
+        /canvas_picking_toggle_flow_sketch_box_target_runtime\.(?:js|ts)$/,
+        /canvas_picking_toggle_flow_sketch_box_toggle_runtime\.(?:js|ts)$/,
+      ],
+    },
+  ],
 ]);
 
 const CORNER_CORNICE_PLAN_MODULES = new Set([
