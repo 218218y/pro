@@ -761,12 +761,12 @@
           },
           {
             "name": "eslint",
-            "version": "10.8.1",
+            "version": "10.9.0",
             "lockPath": "node_modules/eslint",
             "installPath": "node_modules/eslint",
-            "file": "vendor/offline/eslint/eslint-10.8.1.tgz",
-            "url": "https://registry.npmjs.org/eslint/-/eslint-10.8.1.tgz",
-            "integrity": "sha512-wqA7W2jbsC/BnV9Iv1UZpKVFkO1AdNoSmYW8NWG4HNOBbkAMvIqDZ27pI2f07dqn583NcIC44ckjAcOXDL1QbQ=="
+            "file": "vendor/offline/eslint/eslint-10.9.0.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.9.0.tgz",
+            "integrity": "sha512-5KeEOJZBfEVA47boFiBsf+6MmmJpffM7qEBg4pLla2e4nlKgdKlqCW0oSLOGsT8Wl5uCGJptLV1bkaiShj90Gw=="
           },
           {
             "name": "eslint-scope",
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "fc1679d5a129a9ea37eb13d42c3478f05e6ce6362e11f69e54641be1b8679e54"
+    "lockfileSha256": "8af9fcd29c2199b32823cd00b6bae45aae6e515e1e82a21f833efe04726b0c46"
   }
 }
