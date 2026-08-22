@@ -5,6 +5,7 @@ import {
   SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
 } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { __wp_toModuleKey } from './canvas_picking_core_support_numbers.js';
+import { hasCellDimsFreeBoxNewDimensionValueChange } from './canvas_picking_cell_dims_free_box_dimension_draft.js';
 import {
   readCellDimsFreeBoxIdFromPartId,
   readCellDimsFreeBoxModuleKeyFromPartId,
@@ -354,11 +355,12 @@ function resolveTargetDimensionCm(args: {
   currentCm: number;
   applyCm: number | null | undefined;
   dimension: 'width' | 'height' | 'depth';
+  allowToggleBack: boolean;
 }): number {
-  const { target, currentCm, applyCm, dimension } = args;
+  const { target, currentCm, applyCm, dimension, allowToggleBack } = args;
   if (applyCm == null || !Number.isFinite(applyCm) || !(applyCm > 0)) return currentCm;
   const snapshot = readDimensionState(target, dimension);
-  if (snapshot?.activeCm != null && Math.abs(applyCm - snapshot.activeCm) <= EPS_CM) {
+  if (allowToggleBack && snapshot?.activeCm != null && Math.abs(applyCm - snapshot.activeCm) <= EPS_CM) {
     return snapshot.baseCm != null && snapshot.baseCm > 0 ? snapshot.baseCm : currentCm;
   }
   return applyCm;
@@ -402,6 +404,14 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
   const currentWcm = Math.max(0, current.width * 100);
   const currentHcm = Math.max(0, current.height * 100);
   const currentDcm = Math.max(0, current.depth * 100);
+  const allowDimensionToggleBack = !hasCellDimsFreeBoxNewDimensionValueChange(
+    [
+      { currentCm: currentWcm, targetCm: applyW },
+      { currentCm: currentHcm, targetCm: applyH },
+      { currentCm: currentDcm, targetCm: applyD },
+    ],
+    EPS_CM
+  );
   const targetWm = Math.max(
     minWidthM,
     resolveTargetDimensionCm({
@@ -409,6 +419,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       currentCm: currentWcm,
       applyCm: applyW,
       dimension: 'width',
+      allowToggleBack: allowDimensionToggleBack,
     }) / 100
   );
   const targetHm = Math.max(
@@ -418,6 +429,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       currentCm: currentHcm,
       applyCm: applyH,
       dimension: 'height',
+      allowToggleBack: allowDimensionToggleBack,
     }) / 100
   );
   const targetDm = Math.max(
@@ -427,6 +439,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
       currentCm: currentDcm,
       applyCm: applyD,
       dimension: 'depth',
+      allowToggleBack: allowDimensionToggleBack,
     }) / 100
   );
   const currentBackZ = current.centerZ - current.depth / 2;

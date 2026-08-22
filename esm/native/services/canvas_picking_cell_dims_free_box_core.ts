@@ -32,6 +32,7 @@ import {
 } from './canvas_picking_sketch_box_content_commit.js';
 import { __wp_toModuleKey, type ModuleKey } from './canvas_picking_core_support_numbers.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
+import { hasCellDimsFreeBoxNewDimensionValueChange } from './canvas_picking_cell_dims_free_box_dimension_draft.js';
 
 export type CanvasFreeBoxCellDimsCoreArgs = {
   foundModuleIndex: string | number;
@@ -265,16 +266,6 @@ function applyBoxDimension(
   return Math.abs(nextValue - current) > EPS_CM || toggledBack;
 }
 
-function hasNewDimensionValueChange(box: SketchBoxLike, specs: readonly DimSpec[]): boolean {
-  for (const spec of specs) {
-    const target = spec.applyValueCm;
-    if (target == null || !Number.isFinite(target) || target <= 0) continue;
-    const current = readDimensionCm(box, spec);
-    if (current == null || Math.abs(target - current) > EPS_CM) return true;
-  }
-  return false;
-}
-
 function hasDimensionDraftChange(args: { box: SketchBoxLike; specs: DimSpec[] }): boolean {
   for (const spec of args.specs) {
     const target = spec.applyValueCm;
@@ -357,7 +348,13 @@ export function applyCanvasFreeBoxCellDimsMutation(args: {
   }
 
   const hasDimChange = hasDimensionDraftChange({ box, specs });
-  const allowDimensionToggleBack = !hasNewDimensionValueChange(box, specs);
+  const allowDimensionToggleBack = !hasCellDimsFreeBoxNewDimensionValueChange(
+    specs.map(spec => ({
+      currentCm: readDimensionCm(box, spec),
+      targetCm: spec.applyValueCm,
+    })),
+    EPS_CM
+  );
   let changed = false;
   let removedHex = false;
   let appliedHex = false;

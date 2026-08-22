@@ -278,3 +278,81 @@ test('Cell Dimensions Free Box preview and hover op use the captured special-dim
     'remove'
   );
 });
+
+test('Cell Dimensions Free Box preview preserves matching active dimensions when another dimension changes', () => {
+  const config = createFreeBoxConfig() as any;
+  const box = config.modulesConfiguration[0].sketchExtras.boxes[0];
+  Object.assign(box, {
+    widthM: 0.95,
+    heightM: 0.9,
+    depthM: 0.45,
+    specialDims: {
+      baseWidthCm: 90,
+      widthCm: 95,
+      baseHeightCm: 80,
+      heightCm: 90,
+      baseDepthCm: 40,
+      depthCm: 45,
+    },
+  });
+  const state = captureCellDimsFreeBoxState({
+    configSnapshot: config,
+    moduleKey: 0,
+    stackKey: 'top',
+    boxId: 'free-a',
+  });
+  assert.ok(state);
+
+  const selectorBox = {
+    centerX: 0.25,
+    centerY: 0.75,
+    centerZ: -0.075,
+    width: 0.95,
+    height: 0.9,
+    depth: 0.45,
+  };
+  const target = {
+    intersects: [],
+    hitModuleKey: 0,
+    hitSelectorObj: null,
+    isBottom: false,
+    hitY: 0.75,
+    info: { __wpCellDimsFreeBox: true, __wpCellDimsFreeBoxState: state },
+    bottomY: 0.3,
+    topY: 1.2,
+    spanH: 0.9,
+    woodThick: 0.018,
+    innerW: 0.914,
+    internalCenterX: 0.25,
+    internalDepth: 0.432,
+    internalZ: -0.075,
+    backZ: -0.3,
+    regularDepth: 0.45,
+  } as const;
+
+  const previewTargetBox = resolveCellDimsFreeBoxPreviewTargetBox(
+    target,
+    selectorBox,
+    100,
+    90,
+    45,
+    0.03,
+    0.03,
+    0.024
+  );
+  assert.ok(previewTargetBox);
+  assert.equal(previewTargetBox.width, 1);
+  assert.equal(previewTargetBox.height, 0.9);
+  assert.equal(previewTargetBox.depth, 0.45);
+  assert.equal(
+    resolveCellDimsFreeBoxHoverOp({
+      target,
+      selectorBox,
+      applyW: 100,
+      applyH: 90,
+      applyD: 45,
+      previewTargetBox,
+    }),
+    'add'
+  );
+});
