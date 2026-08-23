@@ -8,7 +8,12 @@
 
 import { createAppContainer } from './app_container.js';
 import { bootSequence } from './boot/boot_sequence.js';
-import { installAppDeps, requireThreeDeps } from './boot/boot_app_shared.js';
+import {
+  endBootPerfSpan,
+  installAppDeps,
+  requireThreeDeps,
+  startBootPerfSpan,
+} from './boot/boot_app_shared.js';
 
 import type { AppContainer, Deps } from '../types';
 
@@ -42,13 +47,23 @@ export async function boot(opts: { deps?: Deps } = {}): Promise<AppContainer> {
   requireThreeDeps(deps);
 
   const app = createApp({ deps });
+  const preReactSpanId = startBootPerfSpan(app, 'boot.pre-react', {
+    kind: 'phase',
+    phase: 'boot',
+  });
 
   const runBootSequence = typeof bootSequence === 'function' ? bootSequence : null;
   if (!runBootSequence) {
     throw new Error('[WardrobePro][ESM] boot_sequence.js missing export: bootSequence(app)');
   }
 
-  await runBootSequence(app);
+  try {
+    await runBootSequence(app);
+    endBootPerfSpan(app, preReactSpanId);
+  } catch (error) {
+    endBootPerfSpan(app, preReactSpanId, { status: 'error', error });
+    throw error;
+  }
 
   return app;
 }

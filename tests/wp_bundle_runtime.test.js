@@ -12,7 +12,15 @@ import {
 } from '../tools/wp_bundle_emit.js';
 import { buildDistModules, shouldRebuildDistModules } from '../tools/wp_bundle_dist.js';
 import { BUNDLE_CODE_SPLITTING_GROUPS, resolveTscInvocation } from '../tools/wp_bundle_shared.js';
-import { analyzeBundleChunkTopology, assertBundleChunkTopology } from '../tools/wp_bundle_chunk_graph.js';
+import {
+  classifyInitialModuleSubsystem,
+  createInitialBundleSubsystemSummary,
+} from '../tools/wp_bundle_attribution_support.js';
+import {
+  analyzeBundleChunkTopology,
+  assertBundleChunkTopology,
+  CLIENT_INITIAL_BUNDLE_BUDGET,
+} from '../tools/wp_bundle_chunk_graph.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-bundle-'));
@@ -194,6 +202,7 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   assert.deepEqual(
     BUNDLE_CODE_SPLITTING_GROUPS.map(({ name, priority, tags }) => ({ name, priority, tags })),
     [
+      { name: 'supabase', priority: 80, tags: undefined },
       { name: 'pdf', priority: 70, tags: undefined },
       { name: 'vendor', priority: 60, tags: undefined },
       { name: 'app_initial', priority: 50, tags: ['$initial'] },
@@ -264,6 +273,19 @@ test('bundle chunk topology keeps deferred features outside the static entry clo
         isEntry: false,
         imports: [],
         dynamicImports: [],
+        modules: {
+          '/repo/node_modules/react/index.js': {},
+        },
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-supabase.js',
+        isEntry: false,
+        imports: [],
+        dynamicImports: [],
+        modules: {
+          '/repo/node_modules/@supabase/supabase-js/dist/index.mjs': {},
+        },
       },
       {
         type: 'chunk',
@@ -277,12 +299,47 @@ test('bundle chunk topology keeps deferred features outside the static entry clo
 
   const analysis = assertBundleChunkTopology(result);
   assert.deepEqual(analysis.eagerDeferredChunks, []);
+  assert.deepEqual(analysis.eagerDeferredModules, []);
   assert.deepEqual(analysis.staticCycles, []);
   assert.deepEqual(analysis.staticClosure, [
     'wardrobepro.bundle.js',
     'wardrobepro.chunk-release_main.js',
     'wardrobepro.chunk-vendor.js',
   ]);
+});
+
+test('bundle chunk topology rejects Supabase and PDF modules in generic initial chunks', () => {
+  const result = {
+    output: [
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.bundle.js',
+        isEntry: true,
+        imports: ['wardrobepro.chunk-vendor.js'],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-vendor.js',
+        isEntry: false,
+        imports: [],
+        modules: {
+          '/repo/node_modules/react/index.js': {},
+          '/repo/node_modules/@supabase/realtime-js/dist/index.mjs': {},
+          '/repo/node_modules/pdfjs-dist/build/pdf.mjs': {},
+        },
+      },
+    ],
+  };
+
+  const analysis = analyzeBundleChunkTopology(result);
+  assert.deepEqual(
+    analysis.eagerDeferredModules.map(item => item.label),
+    ['Supabase remote-cloud vendor', 'PDF vendor']
+  );
+  assert.throws(
+    () => assertBundleChunkTopology(result),
+    /deferred modules are statically reachable:.*Supabase remote-cloud vendor.*PDF vendor/s
+  );
 });
 
 test('bundle chunk topology rejects artifact cycles and eager deferred chunks', () => {
@@ -315,5 +372,83 @@ test('bundle chunk topology rejects artifact cycles and eager deferred chunks', 
   assert.throws(
     () => assertBundleChunkTopology(result),
     /static chunk cycle:.*deferred chunks are statically reachable/s
+  );
+});
+
+test('bundle chunk topology enforces deterministic initial byte, chunk, and module budgets', () => {
+  const result = {
+    output: [
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.bundle.js',
+        isEntry: true,
+        imports: ['wardrobepro.chunk-app_initial.js'],
+        code: 'entry',
+        modules: {},
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-app_initial.js',
+        isEntry: false,
+        imports: [],
+        code: 'initial-code',
+        modules: { '/repo/esm/main.js': {} },
+      },
+    ],
+  };
+
+  const analysis = assertBundleChunkTopology(result, {
+    initialBudget: { rawBytes: 100, gzipBytes: 100, chunkCount: 2, moduleCount: 1 },
+  });
+  assert.deepEqual(analysis.initial, {
+    chunkCount: 2,
+    moduleCount: 1,
+    rawBytes: 17,
+    gzipBytes: analysis.initial.gzipBytes,
+  });
+  assert.ok(analysis.initial.gzipBytes > 0);
+  assert.throws(
+    () =>
+      assertBundleChunkTopology(result, {
+        initialBudget: { ...CLIENT_INITIAL_BUNDLE_BUDGET, moduleCount: 0 },
+      }),
+    /initial module count exceeded budget: 1 > 0/
+  );
+});
+
+test('bundle attribution groups initial modules by subsystem without counting deferred chunks', () => {
+  assert.equal(
+    classifyInitialModuleSubsystem('/repo/esm/native/services/canvas_picking_core.ts'),
+    'canvas picking'
+  );
+  assert.equal(
+    classifyInitialModuleSubsystem('/repo/esm/native/services/cloud_sync_main_row.ts'),
+    'cloud sync'
+  );
+  assert.equal(classifyInitialModuleSubsystem('/repo/node_modules/react/index.js'), 'React/UI vendor');
+
+  assert.deepEqual(
+    createInitialBundleSubsystemSummary(
+      [
+        {
+          fileName: 'initial.js',
+          modules: {
+            '/repo/esm/native/services/canvas_picking_core.ts': { renderedLength: 120 },
+            '/repo/node_modules/react/index.js': { renderedLength: 80 },
+          },
+        },
+        {
+          fileName: 'deferred.js',
+          modules: {
+            '/repo/esm/native/services/cloud_sync_main_row.ts': { renderedLength: 500 },
+          },
+        },
+      ],
+      ['initial.js']
+    ),
+    [
+      { subsystem: 'canvas picking', moduleCount: 1, renderedBytes: 120 },
+      { subsystem: 'React/UI vendor', moduleCount: 1, renderedBytes: 80 },
+    ]
   );
 });

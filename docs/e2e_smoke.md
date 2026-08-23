@@ -18,6 +18,7 @@ npm run e2e:canvas-pointer-parity
 npm run e2e:smoke:headed
 npm run perf:browser
 npm run perf:browser:release
+npm run perf:browser:release:stable
 ```
 
 `npm run e2e:smoke:preflight` checks the Playwright/browser environment before running the suite.
@@ -33,6 +34,13 @@ errors and missing/invalid evidence fail immediately without retry.
 Wall-clock journey materiality is profile-specific: the Vite dev lane requires a 150ms absolute excess to
 filter module-transform and development-server jitter, while release and runtime-code budgets retain the 20ms
 threshold. This does not relax the static release UX contract.
+
+Use `npm run perf:browser:release:stable` for optimization before/after evidence, not as the ordinary fast gate.
+It reuses one release artifact across one warm-up and three measured runs, requires a stable execution-environment
+identity, and reports medians plus distribution. Results from different machines, Chromium versions, viewports,
+cache policies, or test sequences are explicitly not directly comparable. Journey-level responsiveness includes
+Long Task count/total/max/p95 and render-settle attribution so document-wide totals are not used alone to choose
+a refactor target.
 
 `npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It keeps the five
 canonical Chromium `@critical` journeys (app boot/navigation, real authoring/build follow-through,

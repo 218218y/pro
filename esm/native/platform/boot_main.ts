@@ -6,7 +6,7 @@
 // - Fail fast if required deps are missing; run UI boot; mark boot-ready; trigger render.
 
 import type { AppContainer, UnknownCallable } from '../../../types';
-import { getBrowserTimers } from '../runtime/api.js';
+import { endPerfSpan, getBrowserTimers, startPerfSpan } from '../runtime/api.js';
 import { isBootInstalled, markBootInstalled } from '../runtime/install_state_access.js';
 import {
   isPlatformBootInitDone,
@@ -49,6 +49,7 @@ export function installBootMain(App: unknown) {
 
   root.boot = root.boot || {};
   const boot: BootSurface = root.boot;
+  let appStartReadinessSpanId: string | null = null;
 
   function writeBootReady(on: boolean): boolean {
     try {
@@ -100,6 +101,7 @@ export function installBootMain(App: unknown) {
 
   function runInit(): void {
     let ok = false;
+    let bootError: unknown = null;
     try {
       const entry = getBootStartEntry(root);
       if (!_isFn(entry)) {
@@ -110,9 +112,14 @@ export function installBootMain(App: unknown) {
       entry();
       ok = true;
     } catch (error) {
+      bootError = error;
       reportBootNonFatal(root, 'boot.start.entry', error);
     } finally {
       finishBootAttempt(ok);
+      if (appStartReadinessSpanId) {
+        endPerfSpan(root, appStartReadinessSpanId, ok ? {} : { status: 'error', error: bootError });
+        appStartReadinessSpanId = null;
+      }
     }
 
     if (!ok) return;
@@ -149,6 +156,10 @@ export function installBootMain(App: unknown) {
     // THREE must be injected explicitly (Pure ESM): root.deps.THREE
     assertThreeViaDeps(root, 'platform/boot_main.start.THREE');
 
+    appStartReadinessSpanId = startPerfSpan(root, 'boot.post-mount.app-start.readiness', {
+      kind: 'phase',
+      phase: 'boot.post-mount',
+    });
     writeBootReady(false);
     setPlatformBootInitRunning(root, true);
     scheduleInit();

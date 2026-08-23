@@ -36,12 +36,30 @@ function asRealtimeModule(v: unknown): CloudSyncRealtimeModuleLike | null {
   };
 }
 
+export function createRealtimeModuleLoader(
+  importModule: () => Promise<unknown>
+): () => Promise<CloudSyncRealtimeModuleLike | null> {
+  let modulePromise: Promise<CloudSyncRealtimeModuleLike | null> | null = null;
+  return async () => {
+    const inflight = modulePromise ?? importModule().then(asRealtimeModule);
+    modulePromise = inflight;
+    try {
+      return await inflight;
+    } catch (error) {
+      if (modulePromise === inflight) modulePromise = null;
+      throw error;
+    }
+  };
+}
+
+const loadRealtimeModule = createRealtimeModuleLoader(() => import('@supabase/supabase-js'));
+
 export async function resolveRealtimeCreateClient(
   App: AppContainer
 ): Promise<CloudSyncRealtimeFactory | null> {
   const injected = getRealtimeCreateClientHook(App);
   if (typeof injected === 'function') return injected;
-  const mod = asRealtimeModule(await import('@supabase/supabase-js'));
+  const mod = await loadRealtimeModule();
   if (typeof mod?.createClient === 'function') return mod.createClient;
   if (mod?.default && typeof mod.default.createClient === 'function') return mod.default.createClient;
   return null;

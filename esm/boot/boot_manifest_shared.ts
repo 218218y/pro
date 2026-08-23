@@ -1,4 +1,4 @@
-import { guardVoid, reportError } from '../native/runtime/api.js';
+import { endPerfSpan, guardVoid, reportError, startPerfSpan } from '../native/runtime/api.js';
 
 import { makeActiveElementIdReader } from '../native/adapters/browser/install.js';
 
@@ -21,6 +21,14 @@ export type BootStep = {
 type UnknownRecord = Record<string, unknown>;
 export type BuilderDepsBag = UnknownRecord & { getActiveElementId?: () => string };
 type RawBootInstaller = (app: AppContainer) => unknown;
+type BootPerfSpanOptions = {
+  kind?: 'phase';
+  phase?: string;
+};
+type BootPerfSpanEndOptions = {
+  status?: 'ok' | 'error';
+  error?: unknown;
+};
 
 const __presetModelsInstalled: WeakSet<object> | null = typeof WeakSet === 'function' ? new WeakSet() : null;
 
@@ -77,6 +85,22 @@ export function requireBootInstaller(value: unknown, label: string): BootInstall
   const installer = getBootInstallerMaybe(value);
   if (installer) return installer;
   throw new Error(`[WardrobePro][ESM] Invalid boot installer for ${label}.`);
+}
+
+export function startBootPerfSpan(
+  app: AppContainer,
+  name: string,
+  options: BootPerfSpanOptions = {}
+): string {
+  return startPerfSpan(app, name, options);
+}
+
+export function endBootPerfSpan(
+  app: AppContainer,
+  spanId: string,
+  options: BootPerfSpanEndOptions = {}
+): void {
+  endPerfSpan(app, spanId, options);
 }
 
 export function createBuilderDepsBag(): BuilderDepsBag {

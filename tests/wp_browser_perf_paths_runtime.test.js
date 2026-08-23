@@ -70,6 +70,12 @@ test('browser perf package commands expose independent dev and release lanes', (
     pkg.scripts['perf:browser:release'],
     'node tools/wp_browser_perf_smoke.mjs --target release --enforce'
   );
+  assert.equal(
+    pkg.scripts['perf:browser:release:stable'],
+    'node tools/wp_browser_perf_stable.mjs --warmups 1 --runs 3'
+  );
+  assert.equal(pkg.scripts['perf:boot-report'], 'node tools/wp_boot_critical_path_report.mjs');
+  assert.equal(pkg.scripts['bundle:analyze:supabase'], 'node tools/wp_bundle_supabase_experiment.mjs');
   assert.match(pkg.scripts['build:browser-perf-release'], /--build-mode perf/u);
   assert.match(pkg.scripts['build:browser-perf-release'], /\.artifacts\/browser-perf\/release-site/u);
   assert.match(pkg.scripts['start:browser-perf-release'], /tools\/serve\.js --root/u);

@@ -16,7 +16,7 @@ import {
   createObservabilityBuildDefines,
   normalizeObservabilityBuildMode,
 } from './wp_observability_build.js';
-import { assertBundleChunkTopology } from './wp_bundle_chunk_graph.js';
+import { assertBundleChunkTopology, CLIENT_INITIAL_BUNDLE_BUDGET } from './wp_bundle_chunk_graph.js';
 
 export function cleanOldBundleArtifacts(outDirAbs) {
   try {
@@ -151,7 +151,15 @@ export async function buildBundleArtifacts({
       `[WP Bundle] Building ESM bundle (${normalizeObservabilityBuildMode(args.buildMode, 'client')})...`
     );
     const buildResult = await viteBuild(createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }));
-    assertBundleChunkTopology(buildResult);
+    const topology = assertBundleChunkTopology(buildResult, {
+      initialBudget:
+        args.minify && normalizeObservabilityBuildMode(args.buildMode, 'client') === 'client'
+          ? CLIENT_INITIAL_BUNDLE_BUDGET
+          : null,
+    });
+    console.log(
+      `[WP Bundle] Initial app closure: chunks=${topology.initial.chunkCount}, modules=${topology.initial.moduleCount}, raw=${topology.initial.rawBytes}, gzip=${topology.initial.gzipBytes}`
+    );
     writeBundleOutputs({
       tmpDirAbs,
       outFileAbs,

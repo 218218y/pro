@@ -81,6 +81,14 @@ const TOOLCHAIN_FAMILIES = [
         ],
         forbiddenNeedles: ['export function buildDistModules('],
       },
+      {
+        path: 'tools/wp_bundle_attribution_support.js',
+        requiredNeedles: [
+          'export function classifyInitialModuleSubsystem(',
+          'export function createInitialBundleSubsystemSummary(',
+        ],
+        forbiddenNeedles: ['await build('],
+      },
     ],
   },
   {

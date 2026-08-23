@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../types';
+import { endBootPerfSpan, startBootPerfSpan } from './boot_manifest_shared.js';
 
 type BrowserBootReporter = (err: unknown, meta: { op: string; phase?: string }) => void;
 type BrowserBootSurfaceInstaller = (app: AppContainer, win: Window) => void;
@@ -151,9 +152,15 @@ export async function runBrowserBootRuntime(opts: BrowserBootRuntimeOpts): Promi
   if (!win || !doc) return;
 
   if (typeof mountReactUi === 'function') {
+    const reactMountSpanId = startBootPerfSpan(app, 'boot.react.shell.mount', {
+      kind: 'phase',
+      phase: 'boot.react',
+    });
     try {
       await mountReactUi(app, win, doc);
+      endBootPerfSpan(app, reactMountSpanId);
     } catch (err) {
+      endBootPerfSpan(app, reactMountSpanId, { status: 'error', error: err });
       reportBrowserBoot(report, err, { phase: 'reactUi', op: 'mount' });
       throw err;
     }

@@ -106,6 +106,10 @@ npm run e2e:smoke
 npm run perf:smoke
 npm run perf:browser
 npm run perf:browser:release
+npm run perf:browser:release:stable
+npm run bundle:analyze
+npm run bundle:analyze:supabase
+npm run perf:boot-report
 ```
 
 For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
@@ -121,6 +125,22 @@ regression lane and uses only the dev baseline. `npm run perf:browser:release` b
 release artifact in observability mode `perf`, serves that artifact statically, verifies the served build id and
 bundle digest, and compares it only with the release baseline. Fixed product UX targets remain independent from
 both generated regression baselines, so regenerating a baseline cannot widen the desired UX envelope.
+
+Performance evidence is split into two categories:
+
+- Structural release evidence is deterministic enough for cross-environment CI: initial raw/gzip bytes,
+  initial chunk/module counts, static cycles, and forbidden deferred module reachability. The release bundler
+  enforces these invariants from the emitted artifact, including PDF and Supabase ecosystem modules, and
+  `npm run bundle:analyze` writes subsystem attribution under `.artifacts/bundle-attribution`.
+  `npm run bundle:analyze:supabase` reproduces generic-vendor versus dedicated-Supabase builds on one source
+  identity and records deterministic initial-closure deltas in the same artifact directory.
+- Runtime timing is comparable only on the same machine and browser version with the same viewport, release
+  artifact, cache policy, and test sequence. `npm run perf:browser:release:stable` builds once, runs one warm-up
+  plus three measured profiles, and reports median, min/max, quartiles, and MAD. Absolute milliseconds from
+  different machines are not directly comparable. After both stable profiling and `bundle:analyze`, run
+  `npm run perf:boot-report` to join boot step/phase timing with subsystem attribution. Its category C entries
+  are provisional candidates and retain explicit unknown blockers until a behavioral boundary experiment proves
+  that post-mount initialization is safe.
 
 ## UI/state rules
 

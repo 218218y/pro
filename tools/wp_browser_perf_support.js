@@ -2100,6 +2100,89 @@ export function createUserJourneySummary(steps, storeFlowSummary = {}, fallbackF
   return summary;
 }
 
+export function createDurationSampleSummary(values) {
+  const sorted = normalizeDurationSamples(values).sort((left, right) => left - right);
+  const totalMs = roundDuration(sorted.reduce((sum, value) => sum + value, 0));
+  return {
+    samples: sorted,
+    count: sorted.length,
+    totalMs,
+    minMs: sorted.length ? roundDuration(sorted[0]) : 0,
+    maxMs: sorted.length ? roundDuration(sorted.at(-1)) : 0,
+    medianMs: sorted.length ? roundDuration(percentile(sorted, 0.5)) : 0,
+    p95Ms: sorted.length ? roundDuration(percentile(sorted, 0.95)) : 0,
+  };
+}
+
+export function createStableSampleSummary(values) {
+  const summary = createDurationSampleSummary(values);
+  const sorted = summary.samples;
+  const medianMs = summary.medianMs;
+  const deviations = sorted.map(value => Math.abs(value - medianMs)).sort((left, right) => left - right);
+  return {
+    samples: sorted,
+    count: summary.count,
+    median: medianMs,
+    min: summary.minMs,
+    max: summary.maxMs,
+    p25: sorted.length ? roundDuration(percentile(sorted, 0.25)) : 0,
+    p75: sorted.length ? roundDuration(percentile(sorted, 0.75)) : 0,
+    mad: deviations.length ? roundDuration(percentile(deviations, 0.5)) : 0,
+  };
+}
+
+export function createJourneyResponsivenessSummary(flowSteps) {
+  const summary = {};
+  for (const rawStep of Array.isArray(flowSteps) ? flowSteps : []) {
+    if (!rawStep || typeof rawStep !== 'object') continue;
+    const name = typeof rawStep.name === 'string' && rawStep.name.trim() ? rawStep.name.trim() : null;
+    if (!name) continue;
+    const journey = normalizeUserFlowJourneyName(rawStep.journey || inferUserFlowJourneyName(name));
+    const bucket = summary[journey] || {
+      stepCount: 0,
+      steps: [],
+      longTaskSamples: [],
+      renderSettleSamples: [],
+    };
+    bucket.stepCount += 1;
+    bucket.steps.push(name);
+    bucket.longTaskSamples.push(...normalizeDurationSamples(rawStep.delta?.longTasks?.samples));
+    bucket.renderSettleSamples.push(...normalizeDurationSamples(rawStep.delta?.renderSettle?.samples));
+    summary[journey] = bucket;
+  }
+
+  for (const bucket of Object.values(summary)) {
+    bucket.steps = bucket.steps.slice().sort((left, right) => left.localeCompare(right));
+    bucket.longTasks = createDurationSampleSummary(bucket.longTaskSamples);
+    bucket.renderSettle = createDurationSampleSummary(bucket.renderSettleSamples);
+    delete bucket.longTaskSamples;
+    delete bucket.renderSettleSamples;
+  }
+  return summary;
+}
+
+export function rankJourneyResponsiveness(summary, limit = 10) {
+  return Object.entries(summary || {})
+    .map(([name, item]) => ({
+      name,
+      stepCount: Number(item?.stepCount) || 0,
+      longTasks: createDurationSampleSummary(item?.longTasks?.samples),
+      renderSettle: createDurationSampleSummary(item?.renderSettle?.samples),
+    }))
+    .filter(item => item.longTasks.count > 0 || item.renderSettle.count > 0)
+    .sort((left, right) => {
+      if (right.longTasks.totalMs !== left.longTasks.totalMs) {
+        return right.longTasks.totalMs - left.longTasks.totalMs;
+      }
+      if (right.longTasks.maxMs !== left.longTasks.maxMs) {
+        return right.longTasks.maxMs - left.longTasks.maxMs;
+      }
+      if (right.longTasks.count !== left.longTasks.count) return right.longTasks.count - left.longTasks.count;
+      return left.name.localeCompare(right.name);
+    })
+    .slice(0, Math.max(1, limit));
+}
+
 export function rankUserJourneys(summary, limit = 5) {
   return Object.entries(summary || {})
     .map(([name, item]) => ({
@@ -3099,6 +3182,10 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     result.userJourneyDiagnosisSummary && Object.keys(result.userJourneyDiagnosisSummary).length
       ? result.userJourneyDiagnosisSummary
       : createUserJourneyDiagnosisSummary(userJourneySummary, storeFlowSummary, journeyStoreSourceSummary);
+  const journeyResponsivenessSummary =
+    result.journeyResponsivenessSummary && Object.keys(result.journeyResponsivenessSummary).length
+      ? result.journeyResponsivenessSummary
+      : createJourneyResponsivenessSummary(result.windowResponsivenessFlowSteps);
   const hotspots = rankBrowserPerfHotspots(perfSummary);
   const pressureRows = rankRepeatedMetricPressure(pressureSummary);
   const domainRows = rankPerfDomains(domainSummary);
@@ -3112,11 +3199,16 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   const journeyBuildRows = rankJourneyBuildPressure(journeyBuildPressureSummary);
   const userJourneyRows = rankUserJourneys(userJourneySummary);
   const userJourneyDiagnosisRows = rankUserJourneyDiagnosis(userJourneyDiagnosisSummary);
+  const journeyResponsivenessRows = rankJourneyResponsiveness(journeyResponsivenessSummary);
   const requiredJourneyNames = readRequiredUserJourneyNames(contracts, null, userJourneySummary);
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
   const actionNames = Object.keys(projectActionSummary).sort();
   const stateIntegrityNames = Object.keys(stateIntegritySummary).sort();
   const measurementProfile = normalizeBrowserPerfMeasurementProfile(result.measurementProfile);
+  const executionEnvironment =
+    result.executionEnvironment && typeof result.executionEnvironment === 'object'
+      ? result.executionEnvironment
+      : {};
   const reportTitle =
     measurementProfile?.id === 'release'
       ? '# Release browser perf + E2E baseline'
@@ -3128,6 +3220,8 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     `Measurement profile: ${measurementProfile?.id || 'unknown'} (${measurementProfile?.label || 'unclassified'})`,
     `Pipeline: ${measurementProfile?.buildPipeline || 'unknown'} -> ${measurementProfile?.serverKind || 'unknown'} -> Chromium`,
     `Page: ${measurementProfile?.pagePath || 'unknown'}; observability mode: ${measurementProfile?.observabilityMode || 'unknown'}`,
+    `Environment: ${executionEnvironment.platform || 'unknown'} ${executionEnvironment.architecture || ''}; CPU=${executionEnvironment.cpuModel || 'unknown'} (${Number(executionEnvironment.logicalCpuCount) || 0} logical); Node=${executionEnvironment.nodeVersion || 'unknown'}; browser=${executionEnvironment.browserVersion || 'unknown'}; viewport=${Number(executionEnvironment.viewport?.width) || 0}x${Number(executionEnvironment.viewport?.height) || 0}; cache=${executionEnvironment.cachePolicy || 'unknown'}`,
+    'Runtime milliseconds are comparable only across runs with the same environment, artifact, viewport, cache policy, and sequence.',
     '',
     '## User flow timings',
     '',
@@ -3280,6 +3374,16 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   lines.push(
     `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, INP=${formatMs(Number(browserMetrics.inp?.valueMs) || 0)} (${Number(browserMetrics.inp?.interactionCount) || 0} interactions, source=${browserMetrics.inp?.source || 'none'}), Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
   );
+  lines.push('', '### Top Long-Task Journeys', '');
+  if (!journeyResponsivenessRows.length) {
+    lines.push('- no journey-attributed Long Tasks recorded');
+  } else {
+    for (const item of journeyResponsivenessRows) {
+      lines.push(
+        `- ${item.name}: count=${item.longTasks.count}, total=${formatMs(item.longTasks.totalMs)}, max=${formatMs(item.longTasks.maxMs)}, p95=${formatMs(item.longTasks.p95Ms)}, renderSettle=${item.renderSettle.count} / total=${formatMs(item.renderSettle.totalMs)}`
+      );
+    }
+  }
   lines.push('', '### UX target status (advisory)', '');
   lines.push(
     '- These product UX targets are fixed independently from the generated regression baseline; baseline regeneration cannot widen them.'

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-21T08:49:39.171Z",
+  "generatedAt": "2026-08-23T10:13:35.971Z",
   "totals": {
-    "tests": 1256,
-    "unitRunnerTests": 1247,
+    "tests": 1257,
+    "unitRunnerTests": 1248,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 397,
-    "runtime-unit": 346,
+    "runtime-unit": 347,
     "integration": 474,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -7534,6 +7534,10 @@
     },
     {
       "file": "tests/wp_ast_adapter_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_boot_critical_path_support.test.js",
       "category": "runtime-unit"
     },
     {

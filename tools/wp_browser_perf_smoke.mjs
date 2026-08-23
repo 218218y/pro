@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
@@ -27,7 +28,9 @@ import {
   createRepeatedMetricPressureSummary,
   createBuildFlowPressureSummary,
   createBuildSummary,
+  createDurationSampleSummary,
   createJourneyBuildPressureSummary,
+  createJourneyResponsivenessSummary,
   createStoreDebugSummary,
   createStoreFlowPressureSummary,
   createJourneyStoreSourceSummary,
@@ -63,6 +66,7 @@ import { BROWSER_PERF_REQUIRED_UX_METRICS } from './wp_browser_perf_ux_targets.j
 
 const projectRoot = process.cwd();
 const measurementTarget = parseBrowserPerfTarget();
+const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
 const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
 const confirmationCandidateIdentities = confirmationRun
   ? parseBrowserPerfConfirmationCandidates(process.env[BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV])
@@ -226,6 +230,7 @@ function prepareMeasurementArtifact() {
       buildId: null,
     };
   }
+  if (reuseReleaseArtifact) return readReleaseArtifactEvidence();
   runRequiredNpmScript(measurementTarget.buildScript);
   return readReleaseArtifactEvidence();
 }
@@ -433,9 +438,11 @@ async function waitForBootReadiness(page, result, timeoutMs = BOOT_READY_TIMEOUT
 async function withStep(result, page, name, run, meta = {}) {
   if (!Array.isArray(result.windowStoreDebugFlowSteps)) result.windowStoreDebugFlowSteps = [];
   if (!Array.isArray(result.windowBuildDebugFlowSteps)) result.windowBuildDebugFlowSteps = [];
+  if (!Array.isArray(result.windowResponsivenessFlowSteps)) result.windowResponsivenessFlowSteps = [];
   assertBrowserPerfStepNameAvailable(result.userFlow, name);
   const beforeStoreDebug = await readStoreDebugStats(page);
   const beforeBuildDebug = await readBuildDebugStats(page);
+  const beforeResponsiveness = await readBrowserResponsivenessStats(page);
   const startedAt = Date.now();
   await run();
   const durationMs = Date.now() - startedAt;
@@ -448,6 +455,7 @@ async function withStep(result, page, name, run, meta = {}) {
   });
   const afterStoreDebug = await readStoreDebugStats(page);
   const afterBuildDebug = await readBuildDebugStats(page);
+  const afterResponsiveness = await readBrowserResponsivenessStats(page);
   const stepMeta = {
     name,
     durationMs,
@@ -463,6 +471,12 @@ async function withStep(result, page, name, run, meta = {}) {
     ...stepMeta,
     before: beforeBuildDebug,
     after: afterBuildDebug,
+  });
+  result.windowResponsivenessFlowSteps.push({
+    ...stepMeta,
+    before: beforeResponsiveness,
+    after: afterResponsiveness,
+    delta: createBrowserResponsivenessDelta(beforeResponsiveness, afterResponsiveness),
   });
 }
 
@@ -676,6 +690,35 @@ async function readPerfEntries(page, name) {
     if (!Array.isArray(captured)) return window.__WP_PERF__?.getEntries?.(metricName) || [];
     return captured.filter(entry => entry?.name === metricName);
   }, name);
+}
+
+async function readBrowserResponsivenessStats(page) {
+  return await page.evaluate(() => {
+    const entries = window.__WP_PERF__?.getEntries?.() || [];
+    return {
+      sessionId: String(Number(window.performance?.timeOrigin) || 0),
+      longTasks: entries
+        .filter(entry => entry?.kind === 'browser-metric' && entry?.name === 'browser.longTask')
+        .map(entry => Number(entry.metricValue) || 0),
+      renderSettle: entries
+        .filter(entry => entry?.kind === 'render-settle')
+        .map(entry => Number(entry.uxTotalMs) || 0),
+    };
+  });
+}
+
+function createBrowserResponsivenessDelta(before, after) {
+  const sameSession = !!before?.sessionId && before.sessionId === after?.sessionId;
+  const sliceNew = (previous, next) => {
+    const values = Array.isArray(next) ? next : [];
+    const offset =
+      sameSession && Array.isArray(previous) && values.length >= previous.length ? previous.length : 0;
+    return values.slice(offset);
+  };
+  return {
+    longTasks: createDurationSampleSummary(sliceNew(before?.longTasks, after?.longTasks)),
+    renderSettle: createDurationSampleSummary(sliceNew(before?.renderSettle, after?.renderSettle)),
+  };
 }
 
 async function readStoreDebugStats(page) {
@@ -2234,10 +2277,25 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installPerfEntryCapture(page);
 
   const result = {
-    version: 13,
+    version: 14,
     generatedAt: new Date().toISOString(),
     measurementProfile,
     measurementArtifact,
+    executionEnvironment: {
+      platform: process.platform,
+      osRelease: os.release(),
+      architecture: process.arch,
+      cpuModel: os.cpus()[0]?.model || 'unknown',
+      logicalCpuCount: os.cpus().length,
+      totalMemoryBytes: os.totalmem(),
+      nodeVersion: process.version,
+      browserVersion: browser.version(),
+      browserSource: browserSupport.browserSource,
+      headless: true,
+      viewport: { width: 1280, height: 800 },
+      cachePolicy: 'fresh-browser-context-per-run',
+      testSequence: 'wp_browser_perf_smoke.v14',
+    },
     browserPerfRoomId,
     cloudSyncRestIsolated: true,
     userFlow: {},
@@ -2260,6 +2318,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     windowStoreDebugFlowSteps: [],
     windowStoreFlowPressureSummary: {},
     windowBuildDebugFlowSteps: [],
+    windowResponsivenessFlowSteps: [],
+    journeyResponsivenessSummary: {},
     windowBuildFlowPressureSummary: {},
     journeyBuildPressureSummary: {},
     stateIntegrityChecks: [],
@@ -3395,6 +3455,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowBuildDebugSummary = createBuildSummary(result.windowBuildDebugStats);
     result.windowBuildFlowPressureSummary = createBuildFlowPressureSummary(result.windowBuildDebugFlowSteps);
     result.journeyBuildPressureSummary = createJourneyBuildPressureSummary(result.windowBuildDebugFlowSteps);
+    result.journeyResponsivenessSummary = createJourneyResponsivenessSummary(
+      result.windowResponsivenessFlowSteps
+    );
     result.userJourneySummary = createUserJourneySummary(
       result.userFlowSteps,
       result.windowStoreFlowPressureSummary,

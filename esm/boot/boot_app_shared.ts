@@ -1,5 +1,7 @@
 import type { AppContainer, Deps, Deps3D, ThreeLike } from '../../types';
 
+export { endBootPerfSpan, startBootPerfSpan } from './boot_manifest_shared.js';
+
 type BootSoftWarn = (op: string, err: unknown) => void;
 
 type UnknownRecord = Record<string, unknown>;

@@ -5,6 +5,11 @@ import { resolveLocalTypeScriptBin, resolveTypeScriptTool } from './wp_typescrip
 
 export const BUNDLE_CODE_SPLITTING_GROUPS = [
   {
+    name: 'supabase',
+    test: /[\\/]node_modules[\\/](?:@supabase[\\/]|iceberg-js[\\/])/,
+    priority: 80,
+  },
+  {
     name: 'pdf',
     test: /[\\/]node_modules[\\/](?:pdfjs-dist|pdf-lib|@pdf-lib|fontkit)[\\/]/,
     priority: 70,

@@ -32,13 +32,17 @@ import {
   createBuildSummary,
   createBuildFlowPressureSummary,
   createBuildPressureBudget,
+  createDurationSampleSummary,
   createJourneyBuildPressureSummary,
+  createJourneyResponsivenessSummary,
   createJourneyStoreSourceSummary,
   createUserJourneyBudget,
   createUserJourneyDiagnosisBudget,
   createUserJourneyDiagnosisSummary,
   createUserJourneySummary,
+  createStableSampleSummary,
   rankJourneyBuildPressure,
+  rankJourneyResponsiveness,
   rankJourneyStoreSources,
   rankRuntimeOutcomeCoverage,
   rankStoreDebugSources,
@@ -3224,6 +3228,73 @@ test('browser perf support groups user journeys and creates journey budgets cano
     maxSelectorEvaluationCount: 149,
     maxSelectorNotifyCount: 91,
     maxTotalSourceMs: 159,
+  });
+});
+
+test('browser perf support attributes Long Tasks and render settle samples to journeys', () => {
+  const summary = createJourneyResponsivenessSummary([
+    {
+      name: 'boot.app-shell',
+      journey: 'boot-and-shell',
+      delta: {
+        longTasks: { samples: [80, 120] },
+        renderSettle: { samples: [18] },
+      },
+    },
+    {
+      name: 'cabinet-core.configure',
+      journey: 'cabinet-core-authoring',
+      delta: {
+        longTasks: { samples: [55, 90, 60] },
+        renderSettle: { samples: [12, 20] },
+      },
+    },
+    {
+      name: 'cabinet-core.option-burst',
+      journey: 'cabinet-core-authoring',
+      delta: {
+        longTasks: { samples: [140] },
+        renderSettle: { samples: [25] },
+      },
+    },
+  ]);
+
+  assert.deepEqual(summary['boot-and-shell'].longTasks, {
+    samples: [80, 120],
+    count: 2,
+    totalMs: 200,
+    minMs: 80,
+    maxMs: 120,
+    medianMs: 80,
+    p95Ms: 120,
+  });
+  assert.equal(summary['cabinet-core-authoring'].longTasks.totalMs, 345);
+  assert.equal(summary['cabinet-core-authoring'].longTasks.maxMs, 140);
+  assert.deepEqual(
+    rankJourneyResponsiveness(summary).map(item => item.name),
+    ['cabinet-core-authoring', 'boot-and-shell']
+  );
+});
+
+test('browser perf support creates median, quartile, and MAD stable-run summaries', () => {
+  assert.deepEqual(createDurationSampleSummary([50, 10, 30]), {
+    samples: [10, 30, 50],
+    count: 3,
+    totalMs: 90,
+    minMs: 10,
+    maxMs: 50,
+    medianMs: 30,
+    p95Ms: 50,
+  });
+  assert.deepEqual(createStableSampleSummary([90, 100, 110, 300, 95]), {
+    samples: [90, 95, 100, 110, 300],
+    count: 5,
+    median: 100,
+    min: 90,
+    max: 300,
+    p25: 95,
+    p75: 110,
+    mad: 10,
   });
 });
 
