@@ -20,6 +20,7 @@ import {
   readCabinetDoorDrawerLayoutProjectSubset,
 } from '../tests/e2e/helpers/cabinet_door_drawer_layout_fixture.js';
 import {
+  attributeBrowserResponsivenessToSteps,
   createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
   createBrowserPerfSessionArtifactCaptureState,
@@ -31,12 +32,14 @@ import {
   createDurationSampleSummary,
   createJourneyBuildPressureSummary,
   createJourneyResponsivenessSummary,
+  createLongTaskRootCauseSummary,
   createStoreDebugSummary,
   createStoreFlowPressureSummary,
   createJourneyStoreSourceSummary,
   createUserJourneyDiagnosisSummary,
   createUserJourneySummary,
   rankStoreDebugSources,
+  rankResponsivenessSteps,
   takeBrowserPerfSessionArtifactDelta,
   createRuntimeOutcomeCoverageSummary,
   createRuntimeRecoveryDebtSummary,
@@ -351,7 +354,7 @@ async function installCloudSyncGatewayIsolation(context) {
 }
 
 const BOOT_READY_TIMEOUT_MS = 45000;
-const BOOT_READY_POLL_MS = 250;
+const BOOT_READY_POLL_MS = 25;
 const BOOT_OVERLAY_IDS = ['wpFatalOverlay', 'wpBootFatalOverlay', 'wp-fatal-overlay'];
 
 function formatRuntimeIssueLines(runtimeIssues = {}) {
@@ -376,7 +379,22 @@ async function readBootReadinessState(page) {
     const hasBodyClass = !!body?.classList?.contains('wp-ui-react');
     const hasReactRoot = !!document.querySelector('#reactSidebarRoot .wp-react');
     const hasViewerCanvas = !!document.querySelector('#viewer-container canvas');
-    const systemReady = window.__WP_PERF__?.getStateFingerprint?.()?.systemReady === true;
+    const stateFingerprint = window.__WP_PERF__?.getStateFingerprint?.() || {};
+    const perfEntries = window.__WP_PERF__?.getEntries?.() || [];
+    const readMilestoneMs = name => {
+      for (let index = perfEntries.length - 1; index >= 0; index -= 1) {
+        const entry = perfEntries[index];
+        if (entry?.kind !== 'mark' || entry?.name !== name) continue;
+        const timestamp = Number(entry.startTime);
+        return Number.isFinite(timestamp) && timestamp >= 0 ? timestamp : null;
+      }
+      return null;
+    };
+    const shellVisibleAtMs = readMilestoneMs('boot.milestone.shell-visible');
+    const operationalReadyAtMs = readMilestoneMs('boot.milestone.operational-ready');
+    const autosaveReadyAtMs = readMilestoneMs('boot.milestone.autosave-ready');
+    const bootReady = stateFingerprint.bootReady === true;
+    const systemReady = stateFingerprint.systemReady === true;
     let overlayId = null;
     let overlayText = '';
     for (const id of overlayIds) {
@@ -397,18 +415,36 @@ async function readBootReadinessState(page) {
       overlayId,
       overlayText,
       title: document.title || '',
+      nowMs: Number(window.performance?.now?.()) || 0,
+      sessionId: String(Number(window.performance?.timeOrigin) || 0),
+      bootReady,
       systemReady,
-      ready: hasBodyClass && hasReactRoot && hasViewerCanvas && systemReady,
+      shellVisibleAtMs,
+      operationalReadyAtMs,
+      autosaveReadyAtMs,
+      shellVisible: hasBodyClass && hasReactRoot && hasViewerCanvas && shellVisibleAtMs != null,
+      operationalReady:
+        hasBodyClass && hasReactRoot && hasViewerCanvas && bootReady && operationalReadyAtMs != null,
+      autosaveReady:
+        hasBodyClass &&
+        hasReactRoot &&
+        hasViewerCanvas &&
+        bootReady &&
+        systemReady &&
+        autosaveReadyAtMs != null,
     };
   }, BOOT_OVERLAY_IDS);
 }
 
-function createBootReadinessError(state, runtimeIssues = {}) {
+function createBootReadinessError(state, runtimeIssues = {}, milestone = 'autosaveReady') {
   const reasons = [];
   if (!state?.hasBodyClass) reasons.push('body missing wp-ui-react');
   if (!state?.hasReactRoot) reasons.push('react sidebar root missing');
   if (!state?.hasViewerCanvas) reasons.push('viewer canvas missing');
-  if (!state?.systemReady) reasons.push('runtime systemReady not reached');
+  if (milestone !== 'shellVisible' && !state?.bootReady) reasons.push('lifecycle bootReady not reached');
+  if (milestone === 'autosaveReady' && !state?.systemReady) {
+    reasons.push('autosave runtime systemReady not reached');
+  }
   const details = [
     `title=${JSON.stringify(state?.title || '')}`,
     `bodyClass=${JSON.stringify(state?.bodyClassName || '')}`,
@@ -417,22 +453,96 @@ function createBootReadinessError(state, runtimeIssues = {}) {
   if (state?.overlayText) details.push(`overlayText=${JSON.stringify(state.overlayText)}`);
   details.push(...formatRuntimeIssueLines(runtimeIssues));
   return new Error(
-    `WardrobePro boot did not become ready (${reasons.join(', ') || 'unknown'}). ${details.join(' | ')}`
+    `WardrobePro boot milestone ${milestone} was not reached (${reasons.join(', ') || 'unknown'}). ${details.join(' | ')}`
   );
 }
 
-async function waitForBootReadiness(page, result, timeoutMs = BOOT_READY_TIMEOUT_MS) {
+async function waitForBootMilestone(
+  page,
+  result,
+  milestone = 'autosaveReady',
+  timeoutMs = BOOT_READY_TIMEOUT_MS
+) {
   const startedAt = Date.now();
   let lastState = null;
   while (Date.now() - startedAt < timeoutMs) {
     lastState = await readBootReadinessState(page);
-    if (lastState.ready) return lastState;
+    if (lastState[milestone] === true) {
+      if (milestone === 'shellVisible') {
+        await page.evaluate(
+          () => new Promise(resolve => window.requestAnimationFrame(() => resolve(undefined)))
+        );
+        lastState = await readBootReadinessState(page);
+        if (lastState[milestone] !== true) continue;
+      }
+      return lastState;
+    }
     if (lastState.overlayId) {
-      throw createBootReadinessError(lastState, result?.runtimeIssues);
+      throw createBootReadinessError(lastState, result?.runtimeIssues, milestone);
     }
     await page.waitForTimeout(BOOT_READY_POLL_MS);
   }
-  throw createBootReadinessError(lastState, result?.runtimeIssues);
+  throw createBootReadinessError(lastState, result?.runtimeIssues, milestone);
+}
+
+async function waitForBootReadiness(page, result, timeoutMs = BOOT_READY_TIMEOUT_MS) {
+  return await waitForBootMilestone(page, result, 'autosaveReady', timeoutMs);
+}
+
+async function readBrowserStepClock(page) {
+  return await page.evaluate(() => ({
+    sessionId: String(Number(window.performance?.timeOrigin) || 0),
+    nowMs: Number(window.performance?.now?.()) || 0,
+  }));
+}
+
+function createBrowserStepTimingWindows(before, after) {
+  if (before?.sessionId && before.sessionId === after?.sessionId) {
+    return [
+      {
+        sessionId: before.sessionId,
+        startTime: Number(before.nowMs) || 0,
+        endTime: Number(after.nowMs) || 0,
+      },
+    ];
+  }
+  if (!after?.sessionId) return [];
+  return [
+    {
+      sessionId: after.sessionId,
+      startTime: 0,
+      endTime: Number(after.nowMs) || 0,
+    },
+  ];
+}
+
+function alignBootStepTimingWindowsToMilestones(result, milestones) {
+  const sessionId = String(milestones?.sessionId || '');
+  const shellVisibleMs = Number(milestones?.shellVisibleMs);
+  const operationalReadyMs = Number(milestones?.operationalReadyMs);
+  const autosaveReadyMs = Number(milestones?.autosaveReadyMs);
+  if (
+    !sessionId ||
+    !Number.isFinite(shellVisibleMs) ||
+    !Number.isFinite(operationalReadyMs) ||
+    !Number.isFinite(autosaveReadyMs) ||
+    shellVisibleMs < 0 ||
+    operationalReadyMs < shellVisibleMs ||
+    autosaveReadyMs < operationalReadyMs
+  ) {
+    throw new Error('Browser perf boot milestone timestamps are missing or non-monotonic.');
+  }
+
+  const windowsByStep = new Map([
+    ['boot.shell-visible', { startTime: 0, endTime: shellVisibleMs }],
+    ['boot.operational-ready.wait', { startTime: shellVisibleMs, endTime: operationalReadyMs }],
+    ['boot.autosave-ready.wait', { startTime: operationalReadyMs, endTime: autosaveReadyMs }],
+  ]);
+  for (const step of result.windowResponsivenessFlowSteps || []) {
+    const window = windowsByStep.get(step?.name);
+    if (!window) continue;
+    step.timingWindows = [{ sessionId, ...window }];
+  }
 }
 
 async function withStep(result, page, name, run, meta = {}) {
@@ -442,9 +552,9 @@ async function withStep(result, page, name, run, meta = {}) {
   assertBrowserPerfStepNameAvailable(result.userFlow, name);
   const beforeStoreDebug = await readStoreDebugStats(page);
   const beforeBuildDebug = await readBuildDebugStats(page);
-  const beforeResponsiveness = await readBrowserResponsivenessStats(page);
+  const beforeClock = await readBrowserStepClock(page);
   const startedAt = Date.now();
-  await run();
+  const runResult = await run();
   const durationMs = Date.now() - startedAt;
   result.userFlow[name] = durationMs;
   result.userFlowSteps.push({
@@ -455,7 +565,7 @@ async function withStep(result, page, name, run, meta = {}) {
   });
   const afterStoreDebug = await readStoreDebugStats(page);
   const afterBuildDebug = await readBuildDebugStats(page);
-  const afterResponsiveness = await readBrowserResponsivenessStats(page);
+  const afterClock = await readBrowserStepClock(page);
   const stepMeta = {
     name,
     durationMs,
@@ -474,10 +584,9 @@ async function withStep(result, page, name, run, meta = {}) {
   });
   result.windowResponsivenessFlowSteps.push({
     ...stepMeta,
-    before: beforeResponsiveness,
-    after: afterResponsiveness,
-    delta: createBrowserResponsivenessDelta(beforeResponsiveness, afterResponsiveness),
+    timingWindows: createBrowserStepTimingWindows(beforeClock, afterClock),
   });
+  return runResult;
 }
 
 async function installProjectActionRecorder(page) {
@@ -690,35 +799,6 @@ async function readPerfEntries(page, name) {
     if (!Array.isArray(captured)) return window.__WP_PERF__?.getEntries?.(metricName) || [];
     return captured.filter(entry => entry?.name === metricName);
   }, name);
-}
-
-async function readBrowserResponsivenessStats(page) {
-  return await page.evaluate(() => {
-    const entries = window.__WP_PERF__?.getEntries?.() || [];
-    return {
-      sessionId: String(Number(window.performance?.timeOrigin) || 0),
-      longTasks: entries
-        .filter(entry => entry?.kind === 'browser-metric' && entry?.name === 'browser.longTask')
-        .map(entry => Number(entry.metricValue) || 0),
-      renderSettle: entries
-        .filter(entry => entry?.kind === 'render-settle')
-        .map(entry => Number(entry.uxTotalMs) || 0),
-    };
-  });
-}
-
-function createBrowserResponsivenessDelta(before, after) {
-  const sameSession = !!before?.sessionId && before.sessionId === after?.sessionId;
-  const sliceNew = (previous, next) => {
-    const values = Array.isArray(next) ? next : [];
-    const offset =
-      sameSession && Array.isArray(previous) && values.length >= previous.length ? previous.length : 0;
-    return values.slice(offset);
-  };
-  return {
-    longTasks: createDurationSampleSummary(sliceNew(before?.longTasks, after?.longTasks)),
-    renderSettle: createDurationSampleSummary(sliceNew(before?.renderSettle, after?.renderSettle)),
-  };
 }
 
 async function readStoreDebugStats(page) {
@@ -1930,7 +2010,24 @@ async function addSavedDesignTexture(page, textureFilePath, name = `Texture ${Da
   await uploadInput.setInputFiles(textureFilePath);
   await expect(page.locator('.wp-r-upload-ok')).toBeVisible();
   const beforeCount = (await readPerfSummary(page))['design.savedColor.add']?.count || 0;
-  await page.locator('button[data-testid="design-custom-color-save-button"]').click();
+  const saveButton = getActiveTabPanel(page, 'design')
+    .locator('button[data-testid="design-custom-color-save-button"]:visible')
+    .last();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(saveButton).toBeVisible();
+  await saveButton.scrollIntoViewIfNeeded();
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        const finish = () => resolve();
+        if (typeof window.requestAnimationFrame !== 'function') {
+          queueMicrotask(finish);
+          return;
+        }
+        window.requestAnimationFrame(() => window.requestAnimationFrame(finish));
+      })
+  );
+  await saveButton.click();
   const modalInput = page.locator('#modalInput');
   await expect(modalInput).toBeVisible();
   await modalInput.fill(name);
@@ -2319,7 +2416,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     windowStoreFlowPressureSummary: {},
     windowBuildDebugFlowSteps: [],
     windowResponsivenessFlowSteps: [],
+    windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
+    topLongTaskSteps: [],
+    longTaskRootCauseSummary: [],
     journeyResponsivenessSummary: {},
+    bootMilestones: {},
     windowBuildFlowPressureSummary: {},
     journeyBuildPressureSummary: {},
     stateIntegrityChecks: [],
@@ -2338,18 +2439,42 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   });
 
   try {
-    await withStep(
+    const shellState = await withStep(
       result,
       page,
-      'boot.app-shell',
+      'boot.shell-visible',
       async () => {
         await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
         await installProjectActionRecorder(page);
         await expect(page.locator('#viewer-container')).toBeVisible();
-        await waitForBootReadiness(page, result);
+        return await waitForBootMilestone(page, result, 'shellVisible');
       },
       { journey: USER_JOURNEYS.bootAndShell, tags: ['boot', 'shell'] }
     );
+    const operationalState = await withStep(
+      result,
+      page,
+      'boot.operational-ready.wait',
+      async () => await waitForBootMilestone(page, result, 'operationalReady'),
+      { journey: USER_JOURNEYS.bootAndShell, tags: ['boot', 'operational-readiness'] }
+    );
+    const autosaveState = await withStep(
+      result,
+      page,
+      'boot.autosave-ready.wait',
+      async () => await waitForBootMilestone(page, result, 'autosaveReady'),
+      { journey: USER_JOURNEYS.bootAndShell, tags: ['boot', 'autosave-readiness'] }
+    );
+    result.bootMilestones = {
+      sessionId: autosaveState?.sessionId || operationalState?.sessionId || shellState?.sessionId || null,
+      shellVisibleMs: Number(shellState?.shellVisibleAtMs) || 0,
+      operationalReadyMs: Number(operationalState?.operationalReadyAtMs) || 0,
+      autosaveReadyMs: Number(autosaveState?.autosaveReadyAtMs) || 0,
+    };
+    result.userFlow['boot.shell-visible'] = result.bootMilestones.shellVisibleMs;
+    result.userFlow['boot.operational-ready'] = result.bootMilestones.operationalReadyMs;
+    result.userFlow['boot.autosave-ready'] = result.bootMilestones.autosaveReadyMs;
+    alignBootStepTimingWindowsToMilestones(result, result.bootMilestones);
     await resetStoreDebugStats(page);
     await resetBuildDebugStats(page);
     result.windowStoreDebugFlowSteps = [];
@@ -3074,7 +3199,20 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       { journey: USER_JOURNEYS.orderPdfLifecycle, tags: ['order-pdf', 'pressure'] }
     );
 
+    await page.evaluate(
+      () =>
+        new Promise(resolve => {
+          window.setTimeout(() => window.requestAnimationFrame(() => resolve(undefined)), 0);
+        })
+    );
     await captureSessionArtifacts(page, result);
+    const responsivenessAttribution = attributeBrowserResponsivenessToSteps(
+      result.windowResponsivenessFlowSteps,
+      result.windowPerfEntries
+    );
+    result.windowResponsivenessFlowSteps = responsivenessAttribution.steps;
+    result.windowResponsivenessUnattributed = responsivenessAttribution.unattributed;
+    result.topLongTaskSteps = rankResponsivenessSteps(result.windowResponsivenessFlowSteps, 20);
 
     const restoreNameInput = await prepareRestoreLastSessionScenario(page, result, savedProjectPath);
 
@@ -3451,6 +3589,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowStoreDebugSummary = createStoreDebugSummary(result.windowStoreDebugStats);
     result.windowStoreDebugTopSources = rankStoreDebugSources(result.windowStoreDebugStats, 5);
     result.windowStoreFlowPressureSummary = createStoreFlowPressureSummary(result.windowStoreDebugFlowSteps);
+    result.longTaskRootCauseSummary = createLongTaskRootCauseSummary(result, 5);
     result.windowBuildDebugStats = await readBuildDebugStats(page);
     result.windowBuildDebugSummary = createBuildSummary(result.windowBuildDebugStats);
     result.windowBuildFlowPressureSummary = createBuildFlowPressureSummary(result.windowBuildDebugFlowSteps);

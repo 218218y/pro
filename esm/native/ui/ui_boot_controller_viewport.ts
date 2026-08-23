@@ -7,6 +7,7 @@ import {
   resetCameraPreset,
   assertThreeViaDeps,
   ensureModelsLoadedViaService,
+  runPerfPhase,
 } from '../services/api.js';
 import type { AppContainer } from '../../../types';
 import type {
@@ -41,7 +42,9 @@ export function ensureUiBootViewportContext(
     reporter.throwHard('viewport.invalidContainer', '[WardrobePro] viewer-container is invalid');
   }
 
-  const surface: ViewportSurfaceLike = createViewportSurface(App, { container });
+  const surface: ViewportSurfaceLike = runPerfPhase(App, 'boot.ui.viewport.create', 'boot.ui.viewport', () =>
+    createViewportSurface(App, { container })
+  );
   const { renderer } = surface;
 
   if (!renderer?.domElement) {
@@ -52,7 +55,9 @@ export function ensureUiBootViewportContext(
   }
 
   try {
-    initializeViewportSceneSyncOrThrow(App);
+    runPerfPhase(App, 'boot.ui.viewport.scene-sync', 'boot.ui.viewport', () =>
+      initializeViewportSceneSyncOrThrow(App)
+    );
   } catch (err) {
     reporter.throwHard(
       'viewport.initializeSceneSync',
@@ -62,17 +67,18 @@ export function ensureUiBootViewportContext(
   }
 
   const roomDesign = requireRoomDesignService(App, 'native/ui/boot_main.roomDesign');
-  if (roomDesign && typeof roomDesign.buildRoom === 'function') roomDesign.buildRoom();
-  else {
+  if (roomDesign && typeof roomDesign.buildRoom === 'function') {
+    runPerfPhase(App, 'boot.ui.room.build', 'boot.ui.viewport', () => roomDesign.buildRoom?.());
+  } else {
     reporter.throwHard(
       'roomDesign.buildRoom.missing',
       '[WardrobePro] RoomDesign service is missing buildRoom() during UI boot.'
     );
   }
 
-  if (!container.contains?.(renderer.domElement)) {
-    container.appendChild(renderer.domElement);
-  }
+  runPerfPhase(App, 'boot.ui.viewport.attach', 'boot.ui.viewport', () => {
+    if (!container.contains?.(renderer.domElement)) container.appendChild(renderer.domElement);
+  });
 
   if (typeof container.contains === 'function' && !container.contains(renderer.domElement)) {
     reporter.throwHard(

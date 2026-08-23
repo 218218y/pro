@@ -1,4 +1,3 @@
-import { handleCanvasCellDimsClick } from './canvas_picking_cell_dims_flow.js';
 import { tryHandleCanvasLayoutEditClick } from './canvas_picking_layout_edit_flow.js';
 import { tryHandleCanvasDrawerModeClick } from './canvas_picking_drawer_mode_flow.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
@@ -10,18 +9,11 @@ export function tryHandleCanvasPickingLayoutRoute(args: CanvasPickingClickRouteA
     __isLayoutEditMode,
     __isManualLayoutMode,
     __isBraceShelvesMode,
-    __isCellDimsMode,
     __isIntDrawerEditMode,
     __isExtDrawerEditMode,
     __isDividerEditMode,
   } = modeState;
-  const {
-    __activeModuleKey,
-    __isBottomStack,
-    __patchConfigForKey,
-    __getActiveConfigRef,
-    __ensureCornerCellConfigRef,
-  } = moduleRefs;
+  const { __activeModuleKey, __isBottomStack, __patchConfigForKey, __getActiveConfigRef } = moduleRefs;
 
   if (
     tryHandleCanvasLayoutEditClick({
@@ -38,20 +30,6 @@ export function tryHandleCanvasPickingLayoutRoute(args: CanvasPickingClickRouteA
       __getActiveConfigRef,
     })
   ) {
-    return true;
-  }
-
-  if (__isCellDimsMode && foundModuleIndex != null) {
-    handleCanvasCellDimsClick({
-      App,
-      foundModuleIndex,
-      foundPartId: typeof foundPartId === 'string' ? foundPartId : null,
-      hitUserData: hitState.hitUserData || hitState.primaryHitObject?.userData || null,
-      isBottomStack: __isBottomStack,
-      ensureCornerCellConfigRef: __ensureCornerCellConfigRef,
-      ndcX: args.ndcX,
-      ndcY: args.ndcY,
-    });
     return true;
   }
 

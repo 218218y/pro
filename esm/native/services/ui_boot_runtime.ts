@@ -1,7 +1,7 @@
 import type { AppContainer, TimeoutHandleLike, UiBootRuntimeServiceLike } from '../../../types';
 
 import { setRuntimeSystemReady } from '../runtime/runtime_write_access.js';
-import { getBrowserTimers } from '../runtime/api.js';
+import { getBrowserTimers, markPerfPoint } from '../runtime/api.js';
 import { logViaPlatform } from '../runtime/platform_access.js';
 import { setAutosaveAllowed } from '../runtime/autosave_access.js';
 import {
@@ -143,6 +143,7 @@ export function installUiBootReadyTimers(App: AppContainer, report?: BootReporte
     service.__systemReadyTimer = null;
     if (!writeRuntimeSystemReady(App, true, report)) return;
     if (!writeAutosaveAllowed(App, true, report)) return;
+    markPerfPoint(App, 'boot.milestone.autosave-ready');
     try {
       if (!logViaPlatform(App, 'System Ready. Autosave active.')) {
         reportBootRuntimeSoft(

@@ -7,6 +7,7 @@ import {
   BROWSER_PERF_MIN_MATERIAL_COUNT_EXCESS,
   BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS,
   BROWSER_PERF_MIN_MATERIAL_DRIFT_MS,
+  attributeBrowserResponsivenessToSteps,
   classifyRuntimeMetricDomain,
   createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
@@ -35,6 +36,7 @@ import {
   createDurationSampleSummary,
   createJourneyBuildPressureSummary,
   createJourneyResponsivenessSummary,
+  createLongTaskRootCauseSummary,
   createJourneyStoreSourceSummary,
   createUserJourneyBudget,
   createUserJourneyDiagnosisBudget,
@@ -43,6 +45,7 @@ import {
   createStableSampleSummary,
   rankJourneyBuildPressure,
   rankJourneyResponsiveness,
+  rankResponsivenessSteps,
   rankJourneyStoreSources,
   rankRuntimeOutcomeCoverage,
   rankStoreDebugSources,
@@ -3274,6 +3277,134 @@ test('browser perf support attributes Long Tasks and render settle samples to jo
     rankJourneyResponsiveness(summary).map(item => item.name),
     ['cabinet-core-authoring', 'boot-and-shell']
   );
+});
+
+test('browser perf support attributes delayed Long Tasks by timestamp overlap and document session', () => {
+  const attribution = attributeBrowserResponsivenessToSteps(
+    [
+      {
+        name: 'step-a',
+        journey: 'cabinet-core-authoring',
+        timingWindows: [{ sessionId: 'doc-1', startTime: 100, endTime: 220 }],
+      },
+      {
+        name: 'step-b',
+        journey: 'cabinet-core-authoring',
+        timingWindows: [{ sessionId: 'doc-1', startTime: 220, endTime: 400 }],
+      },
+      {
+        name: 'boot.shell-visible',
+        journey: 'boot-and-shell',
+        timingWindows: [{ sessionId: 'doc-2', startTime: 0, endTime: 180 }],
+      },
+    ],
+    [
+      perfEntry('browser.longTask', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'doc-1',
+        metricValue: 80,
+        metricUnit: 'ms',
+        detail: { startTime: 190 },
+      }),
+      perfEntry('browser.longTask', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'doc-2',
+        metricValue: 70,
+        metricUnit: 'ms',
+        detail: { startTime: 40 },
+      }),
+      perfEntry('browser.longTask', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'retired-doc',
+        metricValue: 90,
+        metricUnit: 'ms',
+        detail: { startTime: 150 },
+      }),
+    ]
+  );
+
+  const stepA = attribution.steps.find(step => step.name === 'step-a');
+  const stepB = attribution.steps.find(step => step.name === 'step-b');
+  const boot = attribution.steps.find(step => step.name === 'boot.shell-visible');
+  assert.equal(stepA.delta.longTasks.count, 0);
+  assert.equal(stepB.delta.longTasks.totalMs, 80);
+  assert.equal(stepB.longTaskAttribution[0].overlapMs, 50);
+  assert.equal(boot.delta.longTasks.totalMs, 70);
+  assert.equal(attribution.unattributed.longTasks.length, 1);
+  assert.deepEqual(
+    rankResponsivenessSteps(attribution.steps).map(item => item.name),
+    ['step-b', 'boot.shell-visible']
+  );
+});
+
+test('browser perf support explains Long Tasks with exact builder, render, and slow-store intervals', () => {
+  const rows = createLongTaskRootCauseSummary({
+    windowResponsivenessFlowSteps: [
+      {
+        name: 'cabinet-core.configure',
+        journey: 'cabinet-core-authoring',
+        longTaskAttribution: [
+          {
+            sessionId: 'doc-1',
+            startTime: 100,
+            endTime: 300,
+            durationMs: 200,
+            overlapMs: 200,
+          },
+        ],
+      },
+    ],
+    windowPerfEntries: [
+      perfEntry('builder.execute', 70, 'ok', {
+        kind: 'phase',
+        browserSessionId: 'doc-1',
+        startTime: 120,
+        endTime: 190,
+        uxTotalMs: 70,
+      }),
+      perfEntry('render.frame.total', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'doc-1',
+        metricValue: 80,
+        metricUnit: 'ms',
+        detail: { startTime: 180, endTime: 260 },
+      }),
+      perfEntry('render.frame.renderer', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'doc-1',
+        metricValue: 72,
+        metricUnit: 'ms',
+        detail: { startTime: 184, endTime: 256 },
+      }),
+      perfEntry('store.commit.slow', 0, 'ok', {
+        kind: 'browser-metric',
+        browserSessionId: 'doc-1',
+        metricValue: 20,
+        metricUnit: 'ms',
+        detail: { startTime: 270, endTime: 290 },
+      }),
+      perfEntry('boot.ui.viewport', 25, 'ok', {
+        kind: 'phase',
+        browserSessionId: 'doc-1',
+        startTime: 100,
+        endTime: 125,
+        uxTotalMs: 25,
+      }),
+    ],
+    windowStoreFlowPressureSummary: {
+      'cabinet-core.configure': { totalSourceMs: 34 },
+    },
+  });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].builderContributionMs, 70);
+  assert.equal(rows[0].renderContributionMs, 80);
+  assert.deepEqual(rows[0].renderPhaseContributionsMs, { renderer: 72 });
+  assert.equal(rows[0].storeContributionMs, 20);
+  assert.equal(rows[0].storeStepTotalMs, 34);
+  assert.equal(rows[0].bootContributionMs, 25);
+  assert.equal(rows[0].otherKnownContributionMs, 25);
+  assert.equal(rows[0].unattributedMs, 20);
 });
 
 test('browser perf support creates median, quartile, and MAD stable-run summaries', () => {

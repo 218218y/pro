@@ -189,6 +189,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.equal(storeDebug, null);
   assert.equal(surface.getStoreDebugStats?.(), null);
   assert.deepEqual(getPerfStateFingerprint(app), {
+    bootReady: false,
     systemReady: true,
     projectName: 'Browser Perf Project',
     savedColorCount: 2,

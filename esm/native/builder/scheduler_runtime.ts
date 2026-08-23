@@ -10,7 +10,7 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { assertApp, markPerfRenderSettle, reportError } from '../runtime/api.js';
+import { assertApp, endPerfSpan, markPerfRenderSettle, reportError, startPerfSpan } from '../runtime/api.js';
 import {
   ensureSchedulerState,
   normalizeSchedulerDeps,
@@ -229,6 +229,11 @@ function executePendingBuild(
   cancelBuilderWait(App);
   const shouldMeasureBuildExecution = isBuildDebugStatsEnabled();
   const startedAt = shouldMeasureBuildExecution ? nowForBuildStats() : 0;
+  const perfSpanId = startPerfSpan(App, 'builder.execute', {
+    kind: 'phase',
+    phase: 'builder',
+    detail: { reason: execReason, immediate, forceBuild },
+  });
   try {
     const result = callBuild(App, buildState);
     if (isBuildThenableResult(result)) {
@@ -244,6 +249,7 @@ function executePendingBuild(
               'ok'
             );
           }
+          endPerfSpan(App, perfSpanId, { status: 'ok' });
           markBuildRenderSettle(App, execReason, immediate, forceBuild);
           return value;
         },
@@ -258,6 +264,7 @@ function executePendingBuild(
               'error'
             );
           }
+          endPerfSpan(App, perfSpanId, { status: 'error', error });
           throw error;
         }
       );
@@ -272,6 +279,7 @@ function executePendingBuild(
         'ok'
       );
     }
+    endPerfSpan(App, perfSpanId, { status: 'ok' });
     markBuildRenderSettle(App, execReason, immediate, forceBuild);
     return result;
   } catch (error) {
@@ -285,6 +293,7 @@ function executePendingBuild(
         'error'
       );
     }
+    endPerfSpan(App, perfSpanId, { status: 'error', error });
     throw error;
   }
 }

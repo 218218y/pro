@@ -1,5 +1,6 @@
-import type { UnknownRecord } from '../../../types/index.js';
+import type { AppContainer, UnknownRecord } from '../../../types/index.js';
 import { getBrowserTimers, requestIdleCallbackMaybe } from './api_browser_surface.js';
+import { runPerfPhase } from './observability_surface.js';
 import { getCamera, getMirrorRenderTarget, getRenderer, getScene } from './render_access.js';
 import { getCacheBag } from './cache_access.js';
 
@@ -244,7 +245,9 @@ export function scheduleAdhesiveGlassStandardShaderWarmup(App: unknown, THREE: u
 
   const run = () => {
     try {
-      warmAdhesiveGlassStandardShaderNow(App, THREE);
+      runPerfPhase(App as AppContainer, 'boot.ui.shader-warmup.execute', 'shader-warmup', () =>
+        warmAdhesiveGlassStandardShaderNow(App, THREE)
+      );
     } catch {
       state.scheduled = false;
       state.completed = false;

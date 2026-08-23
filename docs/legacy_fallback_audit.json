@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T10:56:04.095Z",
+  "generatedAt": "2026-08-23T13:45:21.143Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -4682,7 +4682,7 @@
     },
     {
       "file": "esm/native/ui/react/boot_react_ui.tsx",
-      "line": 57,
+      "line": 62,
       "term": "fallback",
       "category": "domain-default",
       "text": "// console-fallback-isolation: debug toast logging is optional and must never break UI boot."
@@ -5137,7 +5137,7 @@
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
-      "line": 93,
+      "line": 97,
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"

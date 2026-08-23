@@ -14,6 +14,7 @@ const read = rel => normalizeWhitespace(readRaw(rel));
 const clickFlow = read('esm/native/services/canvas_picking_click_flow.ts');
 const clickRouteRaw = [
   readRaw('esm/native/services/canvas_picking_click_route.ts'),
+  readRaw('esm/native/services/canvas_picking_click_route_cell_dims.ts'),
   readRaw('esm/native/services/canvas_picking_click_route_layout.ts'),
   readRaw('esm/native/services/canvas_picking_click_route_actions.ts'),
 ].join('\n');

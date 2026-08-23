@@ -137,6 +137,7 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
     const savedColorValues = readPerfStateSavedColorValues(root.config);
     const config = asRecord<Record<string, unknown>>(root.config);
     return {
+      bootReady: normalizePerfStateBoolean(asRecord<Record<string, unknown>>(App.lifecycle)?.bootReady),
       systemReady: normalizePerfStateBoolean(runtime?.systemReady),
       projectName: normalizePerfStateString(ui?.projectName),
       savedColorCount: savedColorValues.length,

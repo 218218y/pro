@@ -11,6 +11,7 @@ import {
   ensureRenderRuntimeState,
   getBrowserTimers,
   getWindowMaybe,
+  runPerfPhase,
 } from '../runtime/api.js';
 import { ensureRenderBag as ensureRenderCoreBag } from '../runtime/render_access_shared.js';
 import {
@@ -269,40 +270,54 @@ export function createViewportSurface(
   if (!container) throw new Error('[WardrobePro][render_surface_runtime] container is required');
   const render = getRenderBag(App);
   const THREE = getTHREE(App);
-  if (typeof THREE.OrbitControls !== 'function')
+  const OrbitControls = THREE.OrbitControls;
+  if (typeof OrbitControls !== 'function')
     throw new Error('[WardrobePro][render_surface_runtime] THREE.OrbitControls is not available');
   const width =
     typeof container.clientWidth === 'number' && container.clientWidth > 0 ? container.clientWidth : 1;
   const height =
     typeof container.clientHeight === 'number' && container.clientHeight > 0 ? container.clientHeight : 1;
-  const scene = THREE.Scene ? readObject3DLike(new THREE.Scene()) : null;
+  const perfApp = App as AppContainer;
+  const scene = runPerfPhase(perfApp, 'boot.ui.viewport.scene', 'boot.ui.viewport.create', () =>
+    THREE.Scene ? readObject3DLike(new THREE.Scene()) : null
+  );
   if (!scene) throw new Error('[WardrobePro][render_surface_runtime] THREE.Scene is not available');
   render.scene = scene;
   const mirrorCubeSize = readConfigNumber(App, 'MIRROR_CUBE_SIZE', DEFAULT_MIRROR_CUBE_SIZE);
-  if (
-    !THREE.WebGLCubeRenderTarget ||
-    !THREE.CubeCamera ||
-    !THREE.PerspectiveCamera ||
-    !THREE.WebGLRenderer ||
-    !THREE.Group
-  )
+  const WebGLCubeRenderTarget = THREE.WebGLCubeRenderTarget;
+  const CubeCamera = THREE.CubeCamera;
+  const PerspectiveCamera = THREE.PerspectiveCamera;
+  const WebGLRenderer = THREE.WebGLRenderer;
+  const Group = THREE.Group;
+  if (!WebGLCubeRenderTarget || !CubeCamera || !PerspectiveCamera || !WebGLRenderer || !Group)
     throw new Error(
       '[WardrobePro][render_surface_runtime] required THREE surface constructors are not available'
     );
-  const mirrorRenderTarget = readWebGLRenderTargetLike(
-    new THREE.WebGLCubeRenderTarget(mirrorCubeSize, {
-      generateMipmaps: false,
-      minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter,
-      format: THREE.RGBAFormat,
-    })
+  const mirrorRenderTarget = runPerfPhase(
+    perfApp,
+    'boot.ui.viewport.mirror-target',
+    'boot.ui.viewport.create',
+    () =>
+      readWebGLRenderTargetLike(
+        new WebGLCubeRenderTarget(mirrorCubeSize, {
+          generateMipmaps: false,
+          minFilter: THREE.LinearFilter,
+          magFilter: THREE.LinearFilter,
+          format: THREE.RGBAFormat,
+        })
+      )
   );
   if (!mirrorRenderTarget)
     throw new Error(
       '[WardrobePro][render_surface_runtime] THREE.WebGLCubeRenderTarget did not return a render-target-like instance'
     );
   render.mirrorRenderTarget = mirrorRenderTarget;
-  const mirrorCubeCamera = readObject3DLike(new THREE.CubeCamera(0.1, 100, render.mirrorRenderTarget));
+  const mirrorCubeCamera = runPerfPhase(
+    perfApp,
+    'boot.ui.viewport.mirror-camera',
+    'boot.ui.viewport.create',
+    () => readObject3DLike(new CubeCamera(0.1, 100, render.mirrorRenderTarget))
+  );
   if (!mirrorCubeCamera)
     throw new Error(
       '[WardrobePro][render_surface_runtime] THREE.CubeCamera did not return an Object3D-like instance'
@@ -315,7 +330,9 @@ export function createViewportSurface(
       'createSurface.mirrorCamera',
       'cannot initialize mirror camera position'
     );
-  const camera = readCameraLike(new THREE.PerspectiveCamera(45, width / height, 0.1, 100));
+  const camera = runPerfPhase(perfApp, 'boot.ui.viewport.camera', 'boot.ui.viewport.create', () =>
+    readCameraLike(new PerspectiveCamera(45, width / height, 0.1, 100))
+  );
   if (!camera)
     throw new Error(
       '[WardrobePro][render_surface_runtime] THREE.PerspectiveCamera did not return a camera-like instance'
@@ -323,12 +340,14 @@ export function createViewportSurface(
   render.camera = camera;
   if (!writeVec3(readCameraPosition(camera), 0, 2.2, 5.5))
     throw renderSurfaceOperationError('createSurface.camera', 'cannot initialize camera position');
-  const renderer = readRendererLike(
-    new THREE.WebGLRenderer({
-      antialias: readConfigBoolean(App, 'RENDER_ANTIALIAS', DEFAULT_RENDER_ANTIALIAS),
-      preserveDrawingBuffer: false,
-      alpha: true,
-    })
+  const renderer = runPerfPhase(perfApp, 'boot.ui.viewport.webgl-renderer', 'boot.ui.viewport.create', () =>
+    readRendererLike(
+      new WebGLRenderer({
+        antialias: readConfigBoolean(App, 'RENDER_ANTIALIAS', DEFAULT_RENDER_ANTIALIAS),
+        preserveDrawingBuffer: false,
+        alpha: true,
+      })
+    )
   );
   if (!renderer)
     throw new Error(
@@ -336,22 +355,26 @@ export function createViewportSurface(
     );
   render.renderer = renderer;
   try {
-    const rr = readRendererWritable(renderer);
-    if (rr?.setClearColor) rr.setClearColor(0x000000, 0);
-    if (rr?.setSize) rr.setSize(width, height);
-    const win = getWindowMaybe(App);
-    const dpr = win && typeof win.devicePixelRatio === 'number' ? Number(win.devicePixelRatio) : 1;
-    const maxPixelRatio = readConfigNumber(App, 'PIXEL_RATIO_MAX', DEFAULT_MAX_PIXEL_RATIO);
-    if (rr?.setPixelRatio) rr.setPixelRatio(Math.min(dpr, maxPixelRatio));
-    const shadowsEnabled = readConfigBoolean(App, 'RENDER_SHADOWS_ENABLED', DEFAULT_RENDER_SHADOWS_ENABLED);
-    ensureRendererShadowMap(renderer, THREE.PCFShadowMap, shadowsEnabled);
-    if (typeof container.appendChild === 'function' && rr?.domElement) container.appendChild(rr.domElement);
+    runPerfPhase(perfApp, 'boot.ui.viewport.renderer-setup', 'boot.ui.viewport.create', () => {
+      const rr = readRendererWritable(renderer);
+      if (rr?.setClearColor) rr.setClearColor(0x000000, 0);
+      if (rr?.setSize) rr.setSize(width, height);
+      const win = getWindowMaybe(App);
+      const dpr = win && typeof win.devicePixelRatio === 'number' ? Number(win.devicePixelRatio) : 1;
+      const maxPixelRatio = readConfigNumber(App, 'PIXEL_RATIO_MAX', DEFAULT_MAX_PIXEL_RATIO);
+      if (rr?.setPixelRatio) rr.setPixelRatio(Math.min(dpr, maxPixelRatio));
+      const shadowsEnabled = readConfigBoolean(App, 'RENDER_SHADOWS_ENABLED', DEFAULT_RENDER_SHADOWS_ENABLED);
+      ensureRendererShadowMap(renderer, THREE.PCFShadowMap, shadowsEnabled);
+      if (typeof container.appendChild === 'function' && rr?.domElement) container.appendChild(rr.domElement);
+    });
   } catch (error) {
     reportRenderSurfaceNonFatal(App, 'createSurface.rendererSetup', error);
     throw error;
   }
   const domElement = readRendererWritable(renderer)?.domElement;
-  const controls = readControlsLike(new THREE.OrbitControls(camera, domElement));
+  const controls = runPerfPhase(perfApp, 'boot.ui.viewport.controls', 'boot.ui.viewport.create', () =>
+    readControlsLike(new OrbitControls(camera, domElement))
+  );
   if (!controls)
     throw new Error(
       '[WardrobePro][render_surface_runtime] THREE.OrbitControls did not return a controls-like instance'
@@ -363,19 +386,34 @@ export function createViewportSurface(
     throw renderSurfaceOperationError('createSurface.controls', 'cannot initialize controls target');
   if (!updateCameraAndControls(camera, controls))
     throw renderSurfaceOperationError('createSurface.controls', 'camera or controls update failed');
-  let wardrobeGroup = render.wardrobeGroup;
-  if (!wardrobeGroup) {
-    wardrobeGroup = readObject3DLike(new THREE.Group());
-    if (!wardrobeGroup)
-      throw new Error(
-        '[WardrobePro][render_surface_runtime] THREE.Group did not return an Object3D-like instance'
-      );
-    render.wardrobeGroup = wardrobeGroup;
-  }
-  if (readObject3DWritable(wardrobeGroup)?.parent !== scene && !addNode(scene, wardrobeGroup))
-    throw renderSurfaceOperationError('createSurface.wardrobeGroup', 'cannot attach wardrobe group to scene');
+  const wardrobeGroup = runPerfPhase(
+    perfApp,
+    'boot.ui.viewport.scene-groups',
+    'boot.ui.viewport.create',
+    () => {
+      let nextWardrobeGroup = render.wardrobeGroup;
+      if (!nextWardrobeGroup) {
+        nextWardrobeGroup = readObject3DLike(new Group());
+        if (!nextWardrobeGroup) {
+          throw new Error(
+            '[WardrobePro][render_surface_runtime] THREE.Group did not return an Object3D-like instance'
+          );
+        }
+        render.wardrobeGroup = nextWardrobeGroup;
+      }
+      if (readObject3DWritable(nextWardrobeGroup)?.parent !== scene && !addNode(scene, nextWardrobeGroup)) {
+        throw renderSurfaceOperationError(
+          'createSurface.wardrobeGroup',
+          'cannot attach wardrobe group to scene'
+        );
+      }
+      return nextWardrobeGroup;
+    }
+  );
   try {
-    scheduleAdhesiveGlassStandardShaderWarmup(App, THREE);
+    runPerfPhase(perfApp, 'boot.ui.viewport.shader-warmup-schedule', 'boot.ui.viewport.create', () =>
+      scheduleAdhesiveGlassStandardShaderWarmup(App, THREE)
+    );
   } catch {
     // Shader warmup is an optimization only; viewport creation must stay resilient.
   }

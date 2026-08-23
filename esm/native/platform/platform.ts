@@ -9,7 +9,7 @@ import { createStore } from './store.js';
 import { createDefaultState } from '../runtime/default_state.js';
 import { installStorage } from './storage.js';
 import { installDirtyFlag } from './dirty_flag.js';
-import { getBrowserTimers, requestIdleCallbackMaybe } from '../runtime/api.js';
+import { getBrowserTimers, recordPerfMetric, requestIdleCallbackMaybe } from '../runtime/api.js';
 import { installToolsRuntimeState } from '../runtime/tools_runtime_state.js';
 import { readRuntimeStateFromApp } from '../runtime/root_state_access.js';
 import { setBuildTag } from '../runtime/build_info_access.js';
@@ -171,6 +171,20 @@ export function installPlatform(rootApp: AppContainer): AppContainer['platform']
       getNoneMode: function () {
         return getModeConst('NONE', 'none');
       },
+      ...(typeof __WP_BUILD_CLIENT__ === 'undefined' || __WP_BUILD_CLIENT__ !== true
+        ? {
+            recordSlowCommit(detail: {
+              startTime: number;
+              endTime: number;
+              durationMs: number;
+              type: string;
+              source: string;
+              slices: string[];
+            }) {
+              recordPerfMetric(App, 'store.commit.slow', detail.durationMs, 'ms', { detail });
+            },
+          }
+        : {}),
     })
   );
 

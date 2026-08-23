@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-23T10:56:09.453Z",
+  "generatedAt": "2026-08-23T13:45:27.512Z",
   "totals": {
-    "tests": 1257,
-    "unitRunnerTests": 1248,
+    "tests": 1258,
+    "unitRunnerTests": 1249,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 397,
     "runtime-unit": 347,
-    "integration": 474,
+    "integration": 475,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 6
@@ -3326,6 +3326,10 @@
     },
     {
       "file": "tests/canvas_picking_hover_targets_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_interior_extension_runtime.test.ts",
       "category": "integration"
     },
     {

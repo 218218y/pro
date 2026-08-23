@@ -59,6 +59,14 @@ type StoreCommitPipelineDeps = {
   notify: (actionMeta?: ActionMetaLike) => void;
   notifySelectorSubscribers: (actionMeta: ActionMetaLike | undefined, changeSet: StoreChangeSet) => void;
   setLastActionEnvelope: (action: ActionEnvelope<string, unknown> | null) => void;
+  recordSlowCommit?: (detail: {
+    startTime: number;
+    endTime: number;
+    durationMs: number;
+    type: string;
+    source: string;
+    slices: string[];
+  }) => void;
 };
 
 type CommitControlFlags = {
@@ -142,7 +150,26 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     notify,
     notifySelectorSubscribers,
     setLastActionEnvelope,
+    recordSlowCommit,
   } = deps;
+
+  function recordSlowCommitMaybe(
+    startTime: number,
+    durationMs: number,
+    type: string,
+    payload: unknown,
+    meta: ActionMetaLike | undefined
+  ): void {
+    if (!recordSlowCommit || durationMs < tracePatchThresholdMs) return;
+    recordSlowCommit({
+      startTime,
+      endTime: startTime + durationMs,
+      durationMs,
+      type,
+      source: readRecordString(meta, 'source'),
+      slices: collectPayloadSlices(payload),
+    });
+  }
 
   function commitNextState(
     nextState: RootStateLike,
@@ -184,7 +211,9 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
       return current;
     }
     const out = commitNextState(nextRoot, 'SET', nextRootIn, meta, silent, changeSet);
-    recordDebugPatchStat(debugState, 'SET', nextRootIn, meta, nowMs() - t0, tracePatchThresholdMs);
+    const dt = nowMs() - t0;
+    recordDebugPatchStat(debugState, 'SET', nextRootIn, meta, dt, tracePatchThresholdMs);
+    recordSlowCommitMaybe(t0, dt, 'SET', nextRootIn, meta);
     return out;
   }
 
@@ -250,6 +279,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     const out = commitNextState(nextRoot, 'PATCH', payload, meta, silent, changeSet);
     const dt = nowMs() - t0;
     recordDebugPatchStat(debugState, 'PATCH', payload, meta, dt, tracePatchThresholdMs);
+    recordSlowCommitMaybe(t0, dt, 'PATCH', payload, meta);
 
     if (traceThis && dt >= tracePatchThresholdMs) {
       const slices = collectPayloadSlices(payload);

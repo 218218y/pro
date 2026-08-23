@@ -43,6 +43,14 @@ type StoreCreateOpts = {
   // This is intentionally store-local so it works in tests/tooling as well.
   tracePatches?: boolean;
   tracePatchThresholdMs?: number;
+  recordSlowCommit?: (detail: {
+    startTime: number;
+    endTime: number;
+    durationMs: number;
+    type: string;
+    source: string;
+    slices: string[];
+  }) => void;
 } & UnknownRecord;
 
 type ZustandRootApi = ZustandStoreApi<RootStateLike>;
@@ -203,6 +211,9 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
     debugState,
     notify,
     notifySelectorSubscribers,
+    ...(typeof storeOpts.recordSlowCommit === 'function'
+      ? { recordSlowCommit: storeOpts.recordSlowCommit }
+      : {}),
     setLastActionEnvelope(action) {
       lastActionEnvelope = action;
     },

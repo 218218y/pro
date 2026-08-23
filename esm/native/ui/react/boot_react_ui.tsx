@@ -17,7 +17,12 @@ import { installHistoryUI } from '../interactions/history_ui.js';
 import { installProjectDragDrop } from '../interactions/project_drag_drop.js';
 import { ensureSaveProjectAction } from '../interactions/project_save_load.js';
 import { getUiRuntime } from '../runtime/ui_runtime.js';
-import { endPerfSpan, markPerfPoint, startPerfSpan } from '../../services/api.js';
+import {
+  endPerfSpan,
+  loadCanvasPickingInteriorExtension,
+  markPerfPoint,
+  startPerfSpan,
+} from '../../services/api.js';
 
 type BootReactUiOpts = {
   app: AppContainer;
@@ -225,7 +230,12 @@ export function bootReactUi(opts: BootReactUiOpts): void {
     queueMicrotask(finalizeMount);
   };
 
-  mount(mountHosts.sidebar, REACT_SIDEBAR_ROOT_ID, 'Sidebar', <ReactSidebarApp />);
+  mount(
+    mountHosts.sidebar,
+    REACT_SIDEBAR_ROOT_ID,
+    'Sidebar',
+    <ReactSidebarApp loadInteriorPickingExtension={loadCanvasPickingInteriorExtension} />
+  );
   mount(mountHosts.overlay, REACT_OVERLAY_ROOT_ID, 'Overlay', <ReactOverlayApp />);
 
   // Global React overlay styles are enabled only after the complete shell mounted.

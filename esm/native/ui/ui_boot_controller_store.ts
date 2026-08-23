@@ -4,6 +4,7 @@ import {
   resetHistoryBaselineOrThrow,
   hasCanonicalEssentialUiRawDimsFromSnapshot,
   installStoreReactivityOrThrow,
+  runPerfPhase,
 } from '../services/api.js';
 import { getUi } from './store_access.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
@@ -12,7 +13,9 @@ import { readRecord, reportUiBootPlatformError } from './ui_boot_controller_shar
 
 export function installUiBootStoreSeedAndHistory(App: AppContainer, reporter: UiBootReporterLike): void {
   try {
-    installStoreReactivityOrThrow(App, 'UI boot store reactivity');
+    runPerfPhase(App, 'boot.ui.store-reactivity', 'boot.ui.store', () =>
+      installStoreReactivityOrThrow(App, 'UI boot store reactivity')
+    );
   } catch (err) {
     const bootErr = reporter.toBootError(
       'store.installReactivity',
@@ -46,7 +49,9 @@ export function installUiBootStoreSeedAndHistory(App: AppContainer, reporter: Ui
     }
 
     try {
-      commitBootSeedUiSnapshotOrThrow(App, seedUi, 'init:seed', 'UI boot seed snapshot');
+      runPerfPhase(App, 'boot.ui.seed', 'boot.ui.store', () =>
+        commitBootSeedUiSnapshotOrThrow(App, seedUi, 'init:seed', 'UI boot seed snapshot')
+      );
     } catch (err) {
       reporter.throwHard(
         'store.commitSeedUiSnapshot',
@@ -57,7 +62,9 @@ export function installUiBootStoreSeedAndHistory(App: AppContainer, reporter: Ui
   }
 
   try {
-    resetHistoryBaselineOrThrow(App, { source: 'init:seed' }, 'UI boot history baseline reset');
+    runPerfPhase(App, 'boot.ui.history-baseline', 'boot.ui.store', () =>
+      resetHistoryBaselineOrThrow(App, { source: 'init:seed' }, 'UI boot history baseline reset')
+    );
   } catch (err) {
     reporter.throwHard(
       'history.resetBaseline(init:seed)',

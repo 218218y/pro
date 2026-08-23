@@ -11,7 +11,7 @@
     "pagePath": "/index.html"
   },
   "uxJourneyBudgetMs": {
-    "boot.app-shell": 3501,
+    "boot.autosave-ready": 3501,
     "export.settings-tab.open": 824,
     "settings.visual.global-click.roundtrip": 678,
     "header.sketch-mode.roundtrip": 701,

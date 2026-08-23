@@ -18,6 +18,8 @@ import {
   beginUiBootSession,
   installUiBootReadyTimers,
   installStableSurfaceMethod,
+  markPerfPoint,
+  runPerfPhase,
 } from '../services/api.js';
 import {
   createUiBootReporter,
@@ -50,18 +52,23 @@ export function bootMain(App: AppContainer) {
   const reporter = createUiBootReporter(App);
 
   try {
-    ensureUiBootModelsLoaded(App, reporter);
+    runPerfPhase(App, 'boot.ui.models', 'boot.ui', () => ensureUiBootModelsLoaded(App, reporter));
 
     // React UI renders camera/undo/redo overlays and does not rely on attribute-based click delegation delegation.
     const $ = get$(App);
     const container = $('viewer-container');
     if (!container) throw new Error('[WardrobePro] viewer-container not found');
 
-    const ctx = ensureUiBootViewportContext(App, container, reporter);
-    primeUiBootCamera(App, reporter);
-    installUiBootStoreSeedAndHistory(App, reporter);
-    installUiBootInteractions(App, ctx, reporter);
-    installUiBootReadyTimers(App, reporter.soft);
+    const ctx = runPerfPhase(App, 'boot.ui.viewport', 'boot.ui', () =>
+      ensureUiBootViewportContext(App, container, reporter)
+    );
+    runPerfPhase(App, 'boot.ui.camera.prime', 'boot.ui', () => primeUiBootCamera(App, reporter));
+    runPerfPhase(App, 'boot.ui.store-seed-history', 'boot.ui', () =>
+      installUiBootStoreSeedAndHistory(App, reporter)
+    );
+    runPerfPhase(App, 'boot.ui.interactions', 'boot.ui', () => installUiBootInteractions(App, ctx, reporter));
+    runPerfPhase(App, 'boot.ui.ready-timers', 'boot.ui', () => installUiBootReadyTimers(App, reporter.soft));
+    markPerfPoint(App, 'boot.milestone.shell-visible');
   } catch (err) {
     abortUiBootSession(App, reporter.soft);
     throw err;

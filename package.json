@@ -136,6 +136,7 @@
     "bundle:client": "node tools/wp_bundle.js --build-mode client",
     "bundle:analyze": "node tools/wp_bundle_attribution.mjs",
     "bundle:analyze:supabase": "node tools/wp_bundle_supabase_experiment.mjs",
+    "bundle:analyze:canvas-picking": "node tools/wp_bundle_canvas_picking_experiment.mjs",
     "perf:boot-report": "node tools/wp_boot_critical_path_report.mjs",
     "bundle:perf": "node tools/wp_bundle.js --build-mode perf",
     "bundle:debug": "node tools/wp_bundle.js --build-mode debug",

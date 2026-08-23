@@ -2131,6 +2131,303 @@ export function createStableSampleSummary(values) {
   };
 }
 
+function normalizeBrowserSessionId(value) {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function normalizeTimingWindow(value) {
+  if (!value || typeof value !== 'object') return null;
+  const sessionId = normalizeBrowserSessionId(value.sessionId);
+  const startTime = Number(value.startTime);
+  const endTime = Number(value.endTime);
+  if (!sessionId || !Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime < startTime) {
+    return null;
+  }
+  return {
+    sessionId,
+    startTime: Math.max(0, startTime),
+    endTime: Math.max(0, endTime),
+  };
+}
+
+function normalizeResponsivenessEntry(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const sessionId = normalizeBrowserSessionId(entry.browserSessionId);
+  if (!sessionId) return null;
+
+  if (entry.kind === 'browser-metric' && entry.name === 'browser.longTask') {
+    const startTime = Number(entry.detail?.startTime);
+    const durationMs = Number(entry.metricValue);
+    if (!Number.isFinite(startTime) || !Number.isFinite(durationMs) || durationMs <= 0) return null;
+    return {
+      kind: 'longTask',
+      sessionId,
+      startTime: Math.max(0, startTime),
+      endTime: Math.max(0, startTime) + durationMs,
+      durationMs,
+    };
+  }
+
+  if (entry.kind === 'render-settle') {
+    const startTime = Number(entry.startTime);
+    const endTime = Number(entry.endTime);
+    const durationMs = Number(entry.uxTotalMs);
+    if (
+      !Number.isFinite(startTime) ||
+      !Number.isFinite(endTime) ||
+      !Number.isFinite(durationMs) ||
+      durationMs < 0
+    ) {
+      return null;
+    }
+    return {
+      kind: 'renderSettle',
+      sessionId,
+      startTime: Math.max(0, startTime),
+      endTime: Math.max(0, endTime),
+      durationMs,
+    };
+  }
+
+  return null;
+}
+
+function intervalOverlapMs(leftStart, leftEnd, rightStart, rightEnd) {
+  return Math.max(0, Math.min(leftEnd, rightEnd) - Math.max(leftStart, rightStart));
+}
+
+function assignTimedEntryToStep(entry, indexedSteps) {
+  let selected = null;
+  for (const candidate of indexedSteps) {
+    for (const window of candidate.windows) {
+      if (window.sessionId !== entry.sessionId) continue;
+      const overlapMs = intervalOverlapMs(entry.startTime, entry.endTime, window.startTime, window.endTime);
+      if (overlapMs <= 0) continue;
+      if (
+        !selected ||
+        overlapMs > selected.overlapMs ||
+        (overlapMs === selected.overlapMs && candidate.index < selected.step.index)
+      ) {
+        selected = { step: candidate, overlapMs };
+      }
+    }
+  }
+  return selected;
+}
+
+/**
+ * Attribute browser responsiveness entries after the scenario has finished.
+ * PerformanceObserver delivery order is deliberately irrelevant: the owner is
+ * selected from the entry's real document-relative interval and the step window
+ * carrying the same performance.timeOrigin session id.
+ */
+export function attributeBrowserResponsivenessToSteps(flowSteps, perfEntries) {
+  const steps = (Array.isArray(flowSteps) ? flowSteps : []).map((rawStep, index) => {
+    const windows = (Array.isArray(rawStep?.timingWindows) ? rawStep.timingWindows : [])
+      .map(normalizeTimingWindow)
+      .filter(Boolean);
+    return {
+      index,
+      windows,
+      row: {
+        ...rawStep,
+        timingWindows: windows,
+        longTaskAttribution: [],
+        renderSettleAttribution: [],
+      },
+    };
+  });
+  const unattributedLongTasks = [];
+  const unattributedRenderSettle = [];
+
+  for (const rawEntry of Array.isArray(perfEntries) ? perfEntries : []) {
+    const entry = normalizeResponsivenessEntry(rawEntry);
+    if (!entry) continue;
+    const assignment = assignTimedEntryToStep(entry, steps);
+    const attribution = {
+      sessionId: entry.sessionId,
+      startTime: roundDuration(entry.startTime),
+      endTime: roundDuration(entry.endTime),
+      durationMs: roundDuration(entry.durationMs),
+      overlapMs: roundDuration(assignment?.overlapMs || 0),
+    };
+    if (!assignment) {
+      (entry.kind === 'longTask' ? unattributedLongTasks : unattributedRenderSettle).push(attribution);
+      continue;
+    }
+    if (entry.kind === 'longTask') assignment.step.row.longTaskAttribution.push(attribution);
+    else assignment.step.row.renderSettleAttribution.push(attribution);
+  }
+
+  for (const step of steps) {
+    step.row.delta = {
+      longTasks: createDurationSampleSummary(step.row.longTaskAttribution.map(item => item.durationMs)),
+      renderSettle: createDurationSampleSummary(
+        step.row.renderSettleAttribution.map(item => item.durationMs)
+      ),
+    };
+  }
+
+  return {
+    steps: steps.map(item => item.row),
+    unattributed: {
+      longTasks: unattributedLongTasks,
+      renderSettle: unattributedRenderSettle,
+    },
+  };
+}
+
+export function rankResponsivenessSteps(flowSteps, limit = 20) {
+  return (Array.isArray(flowSteps) ? flowSteps : [])
+    .map(step => ({
+      name: typeof step?.name === 'string' ? step.name : '',
+      journey: typeof step?.journey === 'string' ? step.journey : '',
+      longTasks: createDurationSampleSummary(step?.delta?.longTasks?.samples),
+      renderSettle: createDurationSampleSummary(step?.delta?.renderSettle?.samples),
+    }))
+    .filter(item => item.name && (item.longTasks.count > 0 || item.renderSettle.count > 0))
+    .sort((left, right) => {
+      if (right.longTasks.totalMs !== left.longTasks.totalMs) {
+        return right.longTasks.totalMs - left.longTasks.totalMs;
+      }
+      if (right.longTasks.maxMs !== left.longTasks.maxMs) {
+        return right.longTasks.maxMs - left.longTasks.maxMs;
+      }
+      return left.name.localeCompare(right.name);
+    })
+    .slice(0, Math.max(1, limit));
+}
+
+function normalizeContributionInterval(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const sessionId = normalizeBrowserSessionId(entry.browserSessionId);
+  if (!sessionId) return null;
+  const detail = entry.detail && typeof entry.detail === 'object' ? entry.detail : {};
+  let startTime = Number(entry.startTime);
+  let endTime = Number(entry.endTime);
+  let owner = null;
+
+  if (entry.name === 'builder.execute' && entry.kind === 'phase') {
+    owner = 'builder';
+  } else if (entry.name === 'render.frame.total' && entry.kind === 'browser-metric') {
+    owner = 'render';
+    startTime = Number(detail.startTime);
+    endTime = Number(detail.endTime);
+  } else if (
+    typeof entry.name === 'string' &&
+    entry.name.startsWith('render.frame.') &&
+    entry.kind === 'browser-metric'
+  ) {
+    owner = `render:${entry.name.slice('render.frame.'.length)}`;
+    startTime = Number(detail.startTime);
+    endTime = Number(detail.endTime);
+  } else if (entry.name === 'store.commit.slow' && entry.kind === 'browser-metric') {
+    owner = 'store';
+    startTime = Number(detail.startTime);
+    endTime = Number(detail.endTime);
+  } else if (typeof entry.name === 'string' && entry.name.startsWith('boot.') && entry.kind === 'phase') {
+    owner = 'boot';
+  } else {
+    return null;
+  }
+
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime <= startTime) return null;
+  return { owner, sessionId, startTime, endTime, detail };
+}
+
+function clippedIntervals(task, intervals) {
+  return intervals
+    .filter(interval => interval.sessionId === task.sessionId)
+    .map(interval => ({
+      startTime: Math.max(task.startTime, interval.startTime),
+      endTime: Math.min(task.endTime, interval.endTime),
+    }))
+    .filter(interval => interval.endTime > interval.startTime)
+    .sort((left, right) => left.startTime - right.startTime);
+}
+
+function unionDurationMs(intervals) {
+  if (!intervals.length) return 0;
+  let startTime = intervals[0].startTime;
+  let endTime = intervals[0].endTime;
+  let totalMs = 0;
+  for (const interval of intervals.slice(1)) {
+    if (interval.startTime <= endTime) {
+      endTime = Math.max(endTime, interval.endTime);
+      continue;
+    }
+    totalMs += endTime - startTime;
+    startTime = interval.startTime;
+    endTime = interval.endTime;
+  }
+  return roundDuration(totalMs + endTime - startTime);
+}
+
+/** Exact interval overlap for the largest observed Long Tasks. Store totals below
+ * the slow-commit threshold remain step-level evidence and are not pretended to
+ * be exact task contribution. */
+export function createLongTaskRootCauseSummary(result, limit = 5) {
+  const flowSteps = Array.isArray(result?.windowResponsivenessFlowSteps)
+    ? result.windowResponsivenessFlowSteps
+    : [];
+  const contributionIntervals = (Array.isArray(result?.windowPerfEntries) ? result.windowPerfEntries : [])
+    .map(normalizeContributionInterval)
+    .filter(Boolean);
+  const storeFlowSummary =
+    result?.windowStoreFlowPressureSummary && typeof result.windowStoreFlowPressureSummary === 'object'
+      ? result.windowStoreFlowPressureSummary
+      : createStoreFlowPressureSummary(result?.windowStoreDebugFlowSteps);
+  const tasks = [];
+  for (const step of flowSteps) {
+    for (const task of Array.isArray(step?.longTaskAttribution) ? step.longTaskAttribution : []) {
+      tasks.push({
+        ...task,
+        step: String(step?.name || 'unknown'),
+        journey: String(step?.journey || inferUserFlowJourneyName(step?.name || '')),
+      });
+    }
+  }
+
+  return tasks
+    .sort((left, right) => Number(right.durationMs) - Number(left.durationMs))
+    .slice(0, Math.max(1, limit))
+    .map(task => {
+      const renderPhaseOwners = Array.from(
+        new Set(
+          contributionIntervals
+            .map(interval => interval.owner)
+            .filter(owner => typeof owner === 'string' && owner.startsWith('render:'))
+        )
+      ).sort((left, right) => left.localeCompare(right));
+      const byOwner = Object.fromEntries(
+        ['builder', 'render', 'store', 'boot', ...renderPhaseOwners].map(owner => {
+          const intervals = contributionIntervals.filter(interval => interval.owner === owner);
+          return [owner, unionDurationMs(clippedIntervals(task, intervals))];
+        })
+      );
+      const allKnownIntervals = clippedIntervals(task, contributionIntervals);
+      const knownUnionMs = unionDurationMs(allKnownIntervals);
+      return {
+        journey: task.journey,
+        step: task.step,
+        sessionId: task.sessionId,
+        startTime: roundDuration(Number(task.startTime) || 0),
+        durationMs: roundDuration(Number(task.durationMs) || 0),
+        overlapMs: roundDuration(Number(task.overlapMs) || 0),
+        builderContributionMs: byOwner.builder || 0,
+        renderContributionMs: byOwner.render || 0,
+        renderPhaseContributionsMs: Object.fromEntries(
+          renderPhaseOwners.map(owner => [owner.slice('render:'.length), byOwner[owner] || 0])
+        ),
+        storeContributionMs: byOwner.store || 0,
+        storeStepTotalMs: roundDuration(Number(storeFlowSummary?.[task.step]?.totalSourceMs) || 0),
+        bootContributionMs: byOwner.boot || 0,
+        otherKnownContributionMs: byOwner.boot || 0,
+        unattributedMs: roundDuration(Math.max(0, Number(task.durationMs) - knownUnionMs)),
+      };
+    });
+}
+
 export function createJourneyResponsivenessSummary(flowSteps) {
   const summary = {};
   for (const rawStep of Array.isArray(flowSteps) ? flowSteps : []) {
@@ -3200,6 +3497,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   const userJourneyRows = rankUserJourneys(userJourneySummary);
   const userJourneyDiagnosisRows = rankUserJourneyDiagnosis(userJourneyDiagnosisSummary);
   const journeyResponsivenessRows = rankJourneyResponsiveness(journeyResponsivenessSummary);
+  const responsivenessStepRows = rankResponsivenessSteps(result.windowResponsivenessFlowSteps);
   const requiredJourneyNames = readRequiredUserJourneyNames(contracts, null, userJourneySummary);
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
   const actionNames = Object.keys(projectActionSummary).sort();
@@ -3374,6 +3672,17 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   lines.push(
     `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, INP=${formatMs(Number(browserMetrics.inp?.valueMs) || 0)} (${Number(browserMetrics.inp?.interactionCount) || 0} interactions, source=${browserMetrics.inp?.source || 'none'}), Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
   );
+  const bootMilestones = result.bootMilestones || {};
+  lines.push(
+    '',
+    '### Boot readiness truth',
+    '',
+    '| Milestone | Time from navigation | Meaning |',
+    '|---|---:|---|',
+    `| shell-visible | ${formatMs(Number(bootMilestones.shellVisibleMs) || 0)} | React shell mounted and viewer canvas attached |`,
+    `| operational-ready | ${formatMs(Number(bootMilestones.operationalReadyMs) || 0)} | lifecycle bootReady reached after required UI boot and builder flush |`,
+    `| autosave-ready | ${formatMs(Number(bootMilestones.autosaveReadyMs) || 0)} | delayed systemReady reached; autosave may activate |`
+  );
   lines.push('', '### Top Long-Task Journeys', '');
   if (!journeyResponsivenessRows.length) {
     lines.push('- no journey-attributed Long Tasks recorded');
@@ -3381,6 +3690,34 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     for (const item of journeyResponsivenessRows) {
       lines.push(
         `- ${item.name}: count=${item.longTasks.count}, total=${formatMs(item.longTasks.totalMs)}, max=${formatMs(item.longTasks.maxMs)}, p95=${formatMs(item.longTasks.p95Ms)}, renderSettle=${item.renderSettle.count} / total=${formatMs(item.renderSettle.totalMs)}`
+      );
+    }
+  }
+  lines.push('', '### Top Long-Task Steps', '');
+  if (!responsivenessStepRows.length) {
+    lines.push('- no step-attributed Long Tasks recorded');
+  } else {
+    lines.push('| Step | Long tasks | Total | Max | Render settle |', '|---|---:|---:|---:|---:|');
+    for (const item of responsivenessStepRows) {
+      lines.push(
+        `| ${item.name} | ${item.longTasks.count} | ${formatMs(item.longTasks.totalMs)} | ${formatMs(item.longTasks.maxMs)} | ${formatMs(item.renderSettle.totalMs)} |`
+      );
+    }
+  }
+  const longTaskRootCauseRows = Array.isArray(result.longTaskRootCauseSummary)
+    ? result.longTaskRootCauseSummary
+    : [];
+  lines.push('', '### Largest Long-Task root causes', '');
+  if (!longTaskRootCauseRows.length) {
+    lines.push('- no attributed Long Tasks recorded');
+  } else {
+    lines.push(
+      '| Journey | Step | Duration | Builder | Render | Store (exact slow commits) | Store step total | Unattributed |',
+      '|---|---|---:|---:|---:|---:|---:|---:|'
+    );
+    for (const item of longTaskRootCauseRows) {
+      lines.push(
+        `| ${item.journey} | ${item.step} | ${formatMs(item.durationMs)} | ${formatMs(item.builderContributionMs)} | ${formatMs(item.renderContributionMs)} | ${formatMs(item.storeContributionMs)} | ${formatMs(item.storeStepTotalMs)} | ${formatMs(item.unattributedMs)} |`
       );
     }
   }

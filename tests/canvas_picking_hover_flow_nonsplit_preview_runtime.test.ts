@@ -6,6 +6,7 @@ import { tryHandleCanvasNonSplitDoorPreviewRoute } from '../esm/native/services/
 import { tryHandleCanvasNonSplitPaintPreviewRoute } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview_paint.ts';
 import { tryHandleCanvasNonSplitPreviewRoutes } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview.ts';
 import { tryHandleCanvasNonSplitInteriorPreviewRoutes } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts';
+import { tryHandleCanvasNonSplitCellDimsPreview } from '../esm/native/services/canvas_picking_hover_flow_nonsplit_preview_cell_dims.ts';
 import type {
   HandleCanvasNonSplitHoverArgs,
   NonSplitPreviewRouteArgs,
@@ -421,10 +422,6 @@ test('non-split interior preview stops at the first handled route and does not f
         calls.push('layout');
         return false;
       },
-      tryHandleCellDimsHoverPreview: () => {
-        calls.push('cell');
-        return false;
-      },
     }
   );
 
@@ -432,18 +429,13 @@ test('non-split interior preview stops at the first handled route and does not f
   assert.deepEqual(calls, ['ext:true']);
 });
 
-test('non-split interior preview reaches cell-dims with the canonical helper surface when earlier routes miss', () => {
+test('non-split core preview reaches cell-dims with the canonical helper surface', () => {
   let captured: Record<string, unknown> | null = null;
-  const handled = tryHandleCanvasNonSplitInteriorPreviewRoutes(
+  const handled = tryHandleCanvasNonSplitCellDimsPreview(
     createHoverArgs({ isCellDimsMode: true, previewRo: { kind: 'preview' } as never }),
-    {
-      tryHandleExtDrawersHoverPreview: () => false,
-      tryHandleDrawerDividerHoverPreview: () => false,
-      tryHandleCanvasLayoutFamilyHover: () => false,
-      tryHandleCellDimsHoverPreview: args => {
-        captured = args as Record<string, unknown>;
-        return true;
-      },
+    args => {
+      captured = args as Record<string, unknown>;
+      return true;
     }
   );
 

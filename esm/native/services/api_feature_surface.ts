@@ -7,6 +7,7 @@
 export { handleCanvasClickNDC, handleCanvasHoverNDC } from './canvas_picking_core.js';
 export { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 export { __wp_clearSketchHover as clearSketchHoverPreview } from './canvas_picking_local_helpers.js';
+export { loadCanvasPickingInteriorExtension } from './canvas_picking_interior_extension_loader.js';
 export { historyBatch } from '../runtime/app_helpers.js';
 
 // Edit state helpers (used by UI bindings)

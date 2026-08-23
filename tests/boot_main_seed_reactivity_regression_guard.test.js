@@ -44,9 +44,17 @@ test('[regression] controller installs store reactivity before seed commit and s
   );
   assert.match(bootMain, /installUiBootStoreSeedAndHistory\(App, reporter\)/);
   assert.doesNotMatch(bootMain, /commitBootSeedUiSnapshotOrThrow\(App, seedUi/);
-  assert.match(
+  const roomBuildGuardIdx = indexOfOrThrow(
     bootController,
-    /roomDesign && typeof roomDesign\.buildRoom === 'function'\) roomDesign\.buildRoom\(\)/
+    "roomDesign && typeof roomDesign.buildRoom === 'function'"
+  );
+  const measuredRoomBuildIdx = indexOfOrThrow(
+    bootController,
+    "runPerfPhase(App, 'boot.ui.room.build', 'boot.ui.viewport', () => roomDesign.buildRoom?.())"
+  );
+  assert.ok(
+    roomBuildGuardIdx < measuredRoomBuildIdx,
+    'room build timing must remain inside the validated RoomDesign service branch'
   );
   assert.doesNotMatch(bootController, /roomDesign\.setActive\(!sketchMode/);
 });

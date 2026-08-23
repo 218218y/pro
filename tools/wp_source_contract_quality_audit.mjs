@@ -635,14 +635,6 @@ export const SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS = Object.freeze({
     ternaryUndefined: 0,
     loopSyntax: 0,
   }),
-  'tests/render_loop_idle_one_shot_guard.test.cjs': reviewedSourceGuard('runtime-behavior-guard', 2, {
-    crossStatement: 2,
-    exactObjectCall: 0,
-    optionalTypeSyntax: 0,
-    indexedAccessSyntax: 0,
-    ternaryUndefined: 0,
-    loopSyntax: 0,
-  }),
   'tests/render_ops_group_binding_guard.test.js': reviewedSourceGuard('runtime-behavior-guard', 2, {
     crossStatement: 2,
     exactObjectCall: 0,
@@ -1137,7 +1129,7 @@ export const SOURCE_REVIEWED_SOURCE_GUARD_CONTRACTS = Object.freeze({
   }),
 });
 
-// Reviewed closeout inventory: 77 files / 122 indicators; classes {'ui-runtime-policy': 9, 'runtime-behavior-guard': 38, 'architecture-boundary': 18, 'typed-surface': 9, 'toolchain-harness': 3}
+// Reviewed closeout inventory: 76 files / 120 indicators; classes {'ui-runtime-policy': 9, 'runtime-behavior-guard': 37, 'architecture-boundary': 18, 'typed-surface': 9, 'toolchain-harness': 3}
 
 // Ratchet only the implementation-shaped debt. Explicit source-policy contracts above are
 // audited separately and cannot grow or drift without deliberate review.

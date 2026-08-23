@@ -327,7 +327,7 @@ import { getFunctionSignatureFact } from './_semantic_source_contracts.js';
         /Required mount root #\$\{id\} is missing/,
         /#sidebar must be owned exclusively by #reactSidebarRoot/,
         /non-React\/pre-rendered DOM is unsupported/,
-        /mount\(mountHosts\.sidebar, REACT_SIDEBAR_ROOT_ID, 'Sidebar'/,
+        /mount\(\s*mountHosts\.sidebar,\s*REACT_SIDEBAR_ROOT_ID,\s*'Sidebar'/,
         /mount\(mountHosts\.overlay, REACT_OVERLAY_ROOT_ID, 'Overlay'/,
         /doc\.body\.classList\.add\('wp-ui-react'\)/,
       ],

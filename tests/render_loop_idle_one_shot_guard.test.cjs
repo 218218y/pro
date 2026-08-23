@@ -6,14 +6,38 @@ const path = require('node:path');
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'esm/native/platform/render_loop_impl_runtime.ts'), 'utf8');
 
+function indexOfOrThrow(needle) {
+  const index = source.indexOf(needle);
+  assert.notEqual(index, -1, `missing render-loop contract: ${needle}`);
+  return index;
+}
+
 test('render loop keeps plain render wakeups one-shot and continues only for real motion', () => {
-  assert.match(
-    source,
-    /let controlsStillMoving = false;[\s\S]*controlsStillMoving = call0m\(c, c\['update'\]\) === true;/
+  const controlsStateIdx = indexOfOrThrow('let controlsStillMoving = false;');
+  const measuredControlsIdx = indexOfOrThrow('controlsStillMoving = __framePerfEnabled');
+  const controlsFallbackIdx = indexOfOrThrow(": call0m(c, c['update']) === true;");
+  const continuationStateIdx = indexOfOrThrow(
+    "const mirrorWorkPending = getRenderSlot(A, '__mirrorWorkPending') === true;"
   );
-  assert.match(
-    source,
-    /const mirrorWorkPending = getRenderSlot\(A, '__mirrorWorkPending'\) === true;[\s\S]*const shouldContinueLoop =[\s\S]*motionFrame\.isAnimating \|\| controlsStillMoving \|\| cameraMoveRenderingActive \|\| mirrorWorkPending;[\s\S]*if \(!shouldContinueLoop\) \{[\s\S]*clearLoopSchedule\(A\);[\s\S]*return;[\s\S]*\}/
+  const continuationDecisionIdx = indexOfOrThrow('const shouldContinueLoop =');
+  const continuationSourcesIdx = indexOfOrThrow(
+    'motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive || mirrorWorkPending;'
+  );
+  const inactiveStopIdx = source.indexOf('if (!shouldContinueLoop) {', continuationSourcesIdx);
+  const clearScheduleIdx = source.indexOf('clearLoopSchedule(A);', inactiveStopIdx);
+  const inactiveReturnIdx = source.indexOf('return;', clearScheduleIdx);
+
+  assert.ok(
+    controlsStateIdx < measuredControlsIdx && measuredControlsIdx < controlsFallbackIdx,
+    'controls.update must feed the real-motion state in both measured and ordinary frames'
+  );
+  assert.ok(
+    continuationStateIdx < continuationDecisionIdx &&
+      continuationDecisionIdx < continuationSourcesIdx &&
+      continuationSourcesIdx < inactiveStopIdx &&
+      inactiveStopIdx < clearScheduleIdx &&
+      clearScheduleIdx < inactiveReturnIdx,
+    'the loop must stop after evaluating only the canonical real-motion continuation sources'
   );
   assert.doesNotMatch(
     source,

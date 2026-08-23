@@ -16,7 +16,7 @@ import type {
   ModuleKey,
   SelectorLocalBox,
 } from './canvas_picking_hover_preview_modes_shared.js';
-import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_boxes.js';
+import { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_box_geometry_box.js';
 import {
   hasCellDimsFreeBoxHexDraftChange,
   isCellDimsFreeBoxState,

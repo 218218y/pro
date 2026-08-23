@@ -82,6 +82,6 @@ test('React roots use distinct identifier prefixes for useId fields', () => {
   const bootReactUi = read('esm/native/ui/react/boot_react_ui.tsx');
 
   assert.match(bootReactUi, /createRoot\(el, \{ identifierPrefix: `\$\{id\}-` \}\)/);
-  assert.match(bootReactUi, /mount\(mountHosts\.sidebar, REACT_SIDEBAR_ROOT_ID, 'Sidebar'/);
+  assert.match(bootReactUi, /mount\(\s*mountHosts\.sidebar,\s*REACT_SIDEBAR_ROOT_ID,\s*'Sidebar'/);
   assert.match(bootReactUi, /mount\(mountHosts\.overlay, REACT_OVERLAY_ROOT_ID, 'Overlay'/);
 });

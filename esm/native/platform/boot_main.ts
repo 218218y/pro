@@ -6,7 +6,7 @@
 // - Fail fast if required deps are missing; run UI boot; mark boot-ready; trigger render.
 
 import type { AppContainer, UnknownCallable } from '../../../types';
-import { endPerfSpan, getBrowserTimers, startPerfSpan } from '../runtime/api.js';
+import { endPerfSpan, getBrowserTimers, markPerfPoint, startPerfSpan } from '../runtime/api.js';
 import { isBootInstalled, markBootInstalled } from '../runtime/install_state_access.js';
 import {
   isPlatformBootInitDone,
@@ -71,8 +71,9 @@ export function installBootMain(App: unknown) {
   }
 
   function _setBootReady(): void {
-    writeBootReady(true);
+    const ready = writeBootReady(true);
     flushBuilderAfterBoot();
+    if (ready) markPerfPoint(root, 'boot.milestone.operational-ready');
   }
 
   function isReady(): boolean {
@@ -123,7 +124,17 @@ export function installBootMain(App: unknown) {
     }
 
     if (!ok) return;
-    runPlatformRenderFollowThrough(root, { updateShadows: false, ensureRenderLoop: false });
+    const firstRenderSpanId = startPerfSpan(root, 'boot.ui.first-render', {
+      kind: 'phase',
+      phase: 'boot.ui',
+    });
+    try {
+      runPlatformRenderFollowThrough(root, { updateShadows: false, ensureRenderLoop: false });
+      endPerfSpan(root, firstRenderSpanId);
+    } catch (error) {
+      endPerfSpan(root, firstRenderSpanId, { status: 'error', error });
+      throw error;
+    }
   }
 
   function scheduleInit(): void {

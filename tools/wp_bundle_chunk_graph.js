@@ -1,10 +1,10 @@
 import zlib from 'node:zlib';
 
 export const CLIENT_INITIAL_BUNDLE_BUDGET = Object.freeze({
-  rawBytes: 4_550_000,
-  gzipBytes: 1_100_000,
+  rawBytes: 4_100_000,
+  gzipBytes: 990_000,
   chunkCount: 4,
-  moduleCount: 2_085,
+  moduleCount: 1_900,
 });
 
 const DEFERRED_ENTRY_CHUNK_PATTERNS = [
@@ -25,6 +25,10 @@ const DEFERRED_INITIAL_MODULE_PATTERNS = [
   {
     label: 'PDF vendor',
     test: /[\\/]node_modules[\\/](?:pdfjs-dist|pdf-lib|@pdf-lib|fontkit)[\\/]/u,
+  },
+  {
+    label: 'Interior Canvas Picking extension roots',
+    test: /[\\/]native[\\/]services[\\/]canvas_picking_(?:click_route_(?:manual|layout)|hover_flow_nonsplit_(?:sketch|preview_interior))\.[cm]?js$/u,
   },
 ];
 

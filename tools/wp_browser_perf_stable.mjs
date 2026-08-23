@@ -98,7 +98,9 @@ function assertComparableSamples(samples) {
 }
 
 const numericMetrics = {
-  bootAppShellMs: result => Number(result.userFlow?.['boot.app-shell']) || 0,
+  bootShellVisibleMs: result => Number(result.bootMilestones?.shellVisibleMs) || 0,
+  bootOperationalReadyMs: result => Number(result.bootMilestones?.operationalReadyMs) || 0,
+  bootAutosaveReadyMs: result => Number(result.bootMilestones?.autosaveReadyMs) || 0,
   lcpMs: result => Number(result.windowBrowserMetrics?.lcp?.valueMs) || 0,
   inpMs: result => Number(result.windowBrowserMetrics?.inp?.valueMs) || 0,
   documentLongTaskTotalMs: result => Number(result.windowBrowserMetrics?.longTasks?.totalMs) || 0,
@@ -140,6 +142,34 @@ function summarizePerfNames(samples, names) {
       samples.map(sample => Number(sample.windowPerfSummary?.[name]?.codeExecutionTotalMs) || 0)
     ),
   }));
+}
+
+function summarizeBrowserMetricPrefix(samples, prefix) {
+  const names = new Set(
+    samples.flatMap(sample =>
+      (Array.isArray(sample.windowPerfEntries) ? sample.windowPerfEntries : [])
+        .filter(
+          entry =>
+            entry?.kind === 'browser-metric' &&
+            entry?.metricUnit === 'ms' &&
+            typeof entry?.name === 'string' &&
+            entry.name.startsWith(prefix)
+        )
+        .map(entry => entry.name)
+    )
+  );
+  return Array.from(names)
+    .map(name => ({
+      name,
+      durationMs: createStableSampleSummary(
+        samples.map(sample =>
+          (Array.isArray(sample.windowPerfEntries) ? sample.windowPerfEntries : [])
+            .filter(entry => entry?.name === name && entry?.kind === 'browser-metric')
+            .reduce((total, entry) => total + (Number(entry?.metricValue) || 0), 0)
+        )
+      ),
+    }))
+    .sort((left, right) => right.durationMs.median - left.durationMs.median);
 }
 
 function readResponsivenessStepRows(sample, name) {
@@ -228,6 +258,16 @@ function renderMarkdown(report) {
   for (const [name, summary] of Object.entries(report.metrics)) {
     lines.push(`| ${name} | ${formatSummary(summary)} |`);
   }
+  lines.push(
+    '',
+    '## Boot truth table',
+    '',
+    '| Milestone | Median distribution | What blocks it | User-visible? |',
+    '|---|---:|---|---|',
+    `| shell-visible | ${formatSummary(report.metrics.bootShellVisibleMs)} | React shell mounted and viewer canvas attached | yes |`,
+    `| operational-ready | ${formatSummary(report.metrics.bootOperationalReadyMs)} | lifecycle bootReady, required UI boot, initial builder flush | mostly |`,
+    `| autosave-ready | ${formatSummary(report.metrics.bootAutosaveReadyMs)} | intentional systemReady/autosave delay | no |`
+  );
   lines.push('', '## Slowest boot steps', '', '| Step | Median ms |', '|---|---:|');
   for (const item of report.bootSteps.slice(0, 15)) {
     lines.push(`| ${item.name} | ${formatSummary(item.durationMs)} |`);
@@ -238,6 +278,14 @@ function renderMarkdown(report) {
   }
   lines.push('', '## Boot macro spans', '', '| Span | Median ms |', '|---|---:|');
   for (const item of report.bootMacroSpans) {
+    lines.push(`| ${item.name} | ${formatSummary(item.durationMs)} |`);
+  }
+  lines.push('', '## Post-mount UI boot', '', '| Operation | Median ms |', '|---|---:|');
+  for (const item of report.uiBootPhases.slice(0, 30)) {
+    lines.push(`| ${item.name} | ${formatSummary(item.durationMs)} |`);
+  }
+  lines.push('', '## Slow-frame phases', '', '| Phase | Median ms |', '|---|---:|');
+  for (const item of report.slowFramePhases.slice(0, 20)) {
     lines.push(`| ${item.name} | ${formatSummary(item.durationMs)} |`);
   }
   lines.push(
@@ -262,6 +310,18 @@ function renderMarkdown(report) {
   for (const item of report.responsivenessSteps.slice(0, 20)) {
     lines.push(
       `| ${item.name} | ${formatSummary(item.longTaskTotalMs)} | ${formatSummary(item.longTaskMaxMs)} | ${formatSummary(item.longTaskCount)} | ${formatSummary(item.renderSettleTotalMs)} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Largest Long-Task root causes',
+    '',
+    '| Run | Journey | Step | Duration | Builder | Render | Renderer | Mirror | Store exact | Boot | Unattributed |',
+    '|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|'
+  );
+  for (const item of report.longTaskRootCauses.slice(0, 15)) {
+    lines.push(
+      `| ${item.run} | ${item.journey} | ${item.step} | ${item.durationMs} | ${item.builderContributionMs} | ${item.renderContributionMs} | ${item.renderPhaseContributionsMs?.renderer || 0} | ${item.renderPhaseContributionsMs?.mirror || 0} | ${item.storeContributionMs} | ${item.bootContributionMs || 0} | ${item.unattributedMs} |`
     );
   }
   return `${lines.join('\n')}\n`;
@@ -310,8 +370,18 @@ const report = {
     'boot.react.shell.mount',
     'boot.post-mount.app-start.readiness',
   ]),
+  uiBootPhases: summarizePerfPrefix(samples, 'boot.ui.'),
+  slowFramePhases: summarizeBrowserMetricPrefix(samples, 'render.frame.'),
   longTaskJourneys: summarizeJourneys(samples),
   responsivenessSteps: summarizeResponsivenessSteps(samples),
+  longTaskRootCauses: samples
+    .flatMap((sample, index) =>
+      (Array.isArray(sample.longTaskRootCauseSummary) ? sample.longTaskRootCauseSummary : []).map(item => ({
+        run: index + 1,
+        ...item,
+      }))
+    )
+    .sort((left, right) => right.durationMs - left.durationMs),
   samples: samples.map(sample => ({
     generatedAt: sample.generatedAt,
     metrics: Object.fromEntries(Object.entries(numericMetrics).map(([name, read]) => [name, read(sample)])),

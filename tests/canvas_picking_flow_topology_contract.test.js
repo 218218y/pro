@@ -48,12 +48,18 @@ const MODULE_CONTRACTS = [
     file: 'esm/native/services/canvas_picking_click_route.ts',
     exports: ['routeCanvasPickingClick'],
     imports: {
-      './canvas_picking_click_route_manual.js': ['tryHandleCanvasPickingManualOrEmptyRoute'],
-      './canvas_picking_click_route_layout.js': ['tryHandleCanvasPickingLayoutRoute'],
       './canvas_picking_click_route_actions.js': ['tryHandleCanvasPickingActionRoute'],
+      './canvas_picking_click_route_cell_dims.js': ['tryHandleCanvasPickingCellDimsRoute'],
+      './canvas_picking_click_manual_sketch_free_reset.js': ['resetCanvasPickingEmptyClick'],
+      './canvas_picking_interior_extension_registry.js': [
+        'isCanvasPickingInteriorClickMode',
+        'requireCanvasPickingInteriorExtension',
+      ],
       './viewer_measurement_tool.js': ['tryHandleViewerMeasurementClick'],
     },
     forbiddenImports: [
+      './canvas_picking_click_route_manual.js',
+      './canvas_picking_click_route_layout.js',
       './canvas_picking_layout_edit_flow.js',
       './canvas_picking_drawer_mode_flow.js',
       './canvas_picking_door_edit_flow.js',
@@ -61,6 +67,39 @@ const MODULE_CONTRACTS = [
       './canvas_picking_handle_assign_flow.js',
       './canvas_picking_toggle_flow.js',
     ],
+  },
+  {
+    file: 'esm/native/services/canvas_picking_click_route_cell_dims.ts',
+    exports: ['tryHandleCanvasPickingCellDimsRoute'],
+    imports: {
+      './canvas_picking_cell_dims_flow.js': ['handleCanvasCellDimsClick'],
+    },
+  },
+  {
+    file: 'esm/native/services/canvas_picking_interior_extension_loader.ts',
+    exports: ['loadCanvasPickingInteriorExtension'],
+    imports: {
+      './canvas_picking_interior_extension_registry.js': ['CanvasPickingInteriorExtension'],
+    },
+    forbiddenImports: [
+      './canvas_picking_click_route_manual.js',
+      './canvas_picking_click_route_layout.js',
+      './canvas_picking_hover_flow_nonsplit_sketch.js',
+      './canvas_picking_hover_flow_nonsplit_preview_interior.js',
+    ],
+  },
+  {
+    file: 'esm/native/services/canvas_picking_interior_extension.ts',
+    exports: ['installCanvasPickingInteriorExtension'],
+    imports: {
+      './canvas_picking_click_route_manual.js': ['tryHandleCanvasPickingManualOrEmptyRoute'],
+      './canvas_picking_click_route_layout.js': ['tryHandleCanvasPickingLayoutRoute'],
+      './canvas_picking_hover_flow_nonsplit_sketch.js': ['tryHandleCanvasNonSplitSketchHover'],
+      './canvas_picking_hover_flow_nonsplit_preview_interior.js': [
+        'tryHandleCanvasNonSplitInteriorPreviewRoutes',
+      ],
+      './canvas_picking_interior_extension_registry.js': ['registerCanvasPickingInteriorExtension'],
+    },
   },
   {
     file: 'esm/native/services/canvas_picking_click_route_manual.ts',
@@ -76,7 +115,6 @@ const MODULE_CONTRACTS = [
     file: 'esm/native/services/canvas_picking_click_route_layout.ts',
     exports: ['tryHandleCanvasPickingLayoutRoute'],
     imports: {
-      './canvas_picking_cell_dims_flow.js': ['handleCanvasCellDimsClick'],
       './canvas_picking_layout_edit_flow.js': ['tryHandleCanvasLayoutEditClick'],
       './canvas_picking_drawer_mode_flow.js': ['tryHandleCanvasDrawerModeClick'],
     },
@@ -233,19 +271,26 @@ const MODULE_CONTRACTS = [
     imports: {
       './canvas_picking_hover_flow_nonsplit_face.js': ['resolveNonSplitPreferredFacePreviewState'],
       './canvas_picking_hover_flow_nonsplit_preview.js': ['tryHandleCanvasNonSplitPreviewRoutes'],
-      './canvas_picking_hover_flow_nonsplit_sketch.js': ['tryHandleCanvasNonSplitSketchHover'],
+      './canvas_picking_interior_extension_registry.js': [
+        'isCanvasPickingInteriorHoverMode',
+        'requireCanvasPickingInteriorExtension',
+      ],
     },
+    forbiddenImports: ['./canvas_picking_hover_flow_nonsplit_sketch.js'],
   },
   {
     file: 'esm/native/services/canvas_picking_hover_flow_nonsplit_preview.ts',
     exports: ['tryHandleCanvasNonSplitPreviewRoutes'],
     imports: {
       './canvas_picking_hover_flow_nonsplit_preview_door.js': ['tryHandleCanvasNonSplitDoorPreviewRoute'],
-      './canvas_picking_hover_flow_nonsplit_preview_interior.js': [
-        'tryHandleCanvasNonSplitInteriorPreviewRoutes',
+      './canvas_picking_hover_flow_nonsplit_preview_cell_dims.js': ['tryHandleCanvasNonSplitCellDimsPreview'],
+      './canvas_picking_interior_extension_registry.js': [
+        'isCanvasPickingInteriorHoverMode',
+        'requireCanvasPickingInteriorExtension',
       ],
       './canvas_picking_hover_flow_nonsplit_preview_paint.js': ['tryHandleCanvasNonSplitPaintPreviewRoute'],
     },
+    forbiddenImports: ['./canvas_picking_hover_flow_nonsplit_preview_interior.js'],
   },
   {
     file: 'esm/native/services/canvas_picking_hover_preview_modes.ts',

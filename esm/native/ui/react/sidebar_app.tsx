@@ -36,7 +36,11 @@ function SidebarLockedView({
   );
 }
 
-export function ReactSidebarApp() {
+export function ReactSidebarApp({
+  loadInteriorPickingExtension,
+}: {
+  loadInteriorPickingExtension: () => Promise<unknown>;
+}) {
   const {
     app,
     activeSafe,
@@ -106,6 +110,7 @@ export function ReactSidebarApp() {
                 settingsMounted={settingsMounted}
                 sketchMounted={sketchMounted}
                 toggleNoMainWardrobe={toggleSketchNoMainWardrobe}
+                loadInteriorPickingExtension={loadInteriorPickingExtension}
               />
             </Suspense>
           </LazyErrorBoundary>

@@ -1,4 +1,4 @@
-import { getBrowserTimers } from '../runtime/api.js';
+import { getBrowserTimers, recordPerfMetric } from '../runtime/api.js';
 import {
   getAnimateFn,
   getCamera,
@@ -34,6 +34,15 @@ import { createRenderLoopMirrorDriver } from './render_loop_mirror_driver.js';
 import { createRenderLoopMotionController } from './render_loop_motion.js';
 import { createRenderLoopVisualEffects } from './render_loop_visual_effects.js';
 
+const SLOW_FRAME_THRESHOLD_MS = 50;
+
+type FramePerfPhase = {
+  name: string;
+  startTime: number;
+  endTime: number;
+  durationMs: number;
+};
+
 export function createInstalledRenderAnimate(
   A: AppLike,
   report: RenderLoopReportFn
@@ -41,6 +50,8 @@ export function createInstalledRenderAnimate(
   const __timers = getBrowserTimers(A);
   const __raf = __timers.requestAnimationFrame;
   const __now = __timers.now;
+  const __perfApp = toAppContainer(A);
+  const __framePerfEnabled = typeof __WP_BUILD_CLIENT__ === 'undefined' || __WP_BUILD_CLIENT__ !== true;
   const __frontOverlay = createRenderLoopFrontOverlayHelpers(A, {
     report,
     getRenderSlot,
@@ -84,6 +95,42 @@ export function createInstalledRenderAnimate(
     setRenderSlot,
   });
 
+  function runMeasuredFramePhase<T>(phases: FramePerfPhase[], name: string, run: () => T): T {
+    const startTime = __now();
+    try {
+      return run();
+    } finally {
+      const endTime = __now();
+      phases.push({ name, startTime, endTime, durationMs: Math.max(0, endTime - startTime) });
+    }
+  }
+
+  function recordSlowFrame(frameStartMs: number, phases: FramePerfPhase[]): void {
+    if (!__framePerfEnabled) return;
+    const frameEndMs = __now();
+    const totalMs = Math.max(0, frameEndMs - frameStartMs);
+    if (totalMs < SLOW_FRAME_THRESHOLD_MS) return;
+
+    recordPerfMetric(__perfApp, 'render.frame.total', totalMs, 'ms', {
+      detail: {
+        startTime: frameStartMs,
+        endTime: frameEndMs,
+        thresholdMs: SLOW_FRAME_THRESHOLD_MS,
+        phaseDurations: Object.fromEntries(phases.map(item => [item.name, item.durationMs])),
+      },
+    });
+    for (const phase of phases) {
+      recordPerfMetric(__perfApp, `render.frame.${phase.name}`, phase.durationMs, 'ms', {
+        detail: {
+          startTime: phase.startTime,
+          endTime: phase.endTime,
+          frameStartTime: frameStartMs,
+          frameTotalMs: totalMs,
+        },
+      });
+    }
+  }
+
   function animate() {
     {
       const lifecycle = asRecord(A.lifecycle, {});
@@ -94,17 +141,27 @@ export function createInstalledRenderAnimate(
     }
 
     const frameStartMs = __now();
+    const framePerfPhases: FramePerfPhase[] = [];
     setLastFrameTs(A, frameStartMs);
     setRenderSlot(A, '__frameStartMs', frameStartMs);
 
     try {
-      const motionFrame = __motion.stepFrame(frameStartMs);
+      const motionFrame = __framePerfEnabled
+        ? runMeasuredFramePhase(framePerfPhases, 'motion', () => __motion.stepFrame(frameStartMs))
+        : __motion.stepFrame(frameStartMs);
       if (!motionFrame.isActiveState) {
+        recordSlowFrame(frameStartMs, framePerfPhases);
         clearLoopSchedule(A);
         return;
       }
 
-      __visualEffects.updateFrontOverlaySeamsVisibility();
+      if (__framePerfEnabled) {
+        runMeasuredFramePhase(framePerfPhases, 'visual-effects', () =>
+          __visualEffects.updateFrontOverlaySeamsVisibility()
+        );
+      } else {
+        __visualEffects.updateFrontOverlaySeamsVisibility();
+      }
 
       let controlsStillMoving = false;
       {
@@ -113,7 +170,9 @@ export function createInstalledRenderAnimate(
         if (c && typeof c['update'] === 'function') {
           // OrbitControls.update() returns true while damping/input still changes the camera.
           // Treat that as a real animation; a plain render wakeup must remain one-shot.
-          controlsStillMoving = call0m(c, c['update']) === true;
+          controlsStillMoving = __framePerfEnabled
+            ? runMeasuredFramePhase(framePerfPhases, 'controls', () => call0m(c, c['update']) === true)
+            : call0m(c, c['update']) === true;
         }
       }
 
@@ -133,17 +192,33 @@ export function createInstalledRenderAnimate(
             : null;
         const __hiddenNow = !!(__floorUd && __floorUd['__wpAutoHideHidden']);
         if (__hiddenNow || (__n & 1) === 0) {
-          __visualEffects.autoHideRoomFloor();
+          if (__framePerfEnabled) {
+            runMeasuredFramePhase(framePerfPhases, 'auto-hide-room-floor', () =>
+              __visualEffects.autoHideRoomFloor()
+            );
+          } else {
+            __visualEffects.autoHideRoomFloor();
+          }
         }
       }
 
       {
         const __nowMotion = __now();
-        __visualEffects.updateMirrorMotionState(__nowMotion, motionFrame.isAnimating);
+        if (__framePerfEnabled) {
+          runMeasuredFramePhase(framePerfPhases, 'visual-effects', () =>
+            __visualEffects.updateMirrorMotionState(__nowMotion, motionFrame.isAnimating)
+          );
+        } else {
+          __visualEffects.updateMirrorMotionState(__nowMotion, motionFrame.isAnimating);
+        }
       }
 
       {
-        __mirrorDriver.updateMirrorCube();
+        if (__framePerfEnabled) {
+          runMeasuredFramePhase(framePerfPhases, 'mirror', () => __mirrorDriver.updateMirrorCube());
+        } else {
+          __mirrorDriver.updateMirrorCube();
+        }
       }
 
       {
@@ -152,9 +227,17 @@ export function createInstalledRenderAnimate(
         const camera0 = getCamera(A);
         const renderer = asRecordOrNull(renderer0);
         if (renderer && typeof renderer['render'] === 'function' && scene0 && camera0) {
-          call2m(renderer, renderer['render'], scene0, camera0);
+          if (__framePerfEnabled) {
+            runMeasuredFramePhase(framePerfPhases, 'renderer', () =>
+              call2m(renderer, renderer['render'], scene0, camera0)
+            );
+          } else {
+            call2m(renderer, renderer['render'], scene0, camera0);
+          }
         }
       }
+
+      recordSlowFrame(frameStartMs, framePerfPhases);
 
       const mirrorWorkPending = getRenderSlot(A, '__mirrorWorkPending') === true;
       const shouldContinueLoop =

@@ -1,7 +1,10 @@
 import type { HandleCanvasNonSplitHoverArgs } from './canvas_picking_hover_flow_nonsplit_contracts.js';
 import { resolveNonSplitPreferredFacePreviewState } from './canvas_picking_hover_flow_nonsplit_face.js';
 import { tryHandleCanvasNonSplitPreviewRoutes } from './canvas_picking_hover_flow_nonsplit_preview.js';
-import { tryHandleCanvasNonSplitSketchHover } from './canvas_picking_hover_flow_nonsplit_sketch.js';
+import {
+  isCanvasPickingInteriorHoverMode,
+  requireCanvasPickingInteriorExtension,
+} from './canvas_picking_interior_extension_registry.js';
 
 export type { HandleCanvasNonSplitHoverArgs } from './canvas_picking_hover_flow_nonsplit_contracts.js';
 
@@ -13,5 +16,6 @@ export function tryHandleCanvasNonSplitHover(args: HandleCanvasNonSplitHoverArgs
     return true;
   }
 
-  return tryHandleCanvasNonSplitSketchHover(args);
+  if (!isCanvasPickingInteriorHoverMode(args)) return false;
+  return requireCanvasPickingInteriorExtension().tryHandleSketchHover(args);
 }

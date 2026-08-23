@@ -7,7 +7,7 @@ import { bundleSources, assertMatchesAll } from './_source_bundle.js';
 
 const CORE = path.resolve(
   process.cwd(),
-  'esm/native/services/canvas_picking_hover_flow_nonsplit_preview_interior.ts'
+  'esm/native/services/canvas_picking_hover_flow_nonsplit_preview_cell_dims.ts'
 );
 const SEAM = path.resolve(process.cwd(), 'esm/native/services/canvas_picking_hover_preview_modes.ts');
 const SRC = path.resolve(
@@ -34,7 +34,8 @@ test('[cell-dims-hover] preview resolves the future target box instead of painti
   const inputs = fs.readFileSync(INPUTS, 'utf8');
   const state = fs.readFileSync(STATE, 'utf8');
   const target = fs.readFileSync(TARGET, 'utf8');
-  assert.match(core, /tryHandleCellDimsHoverPreview\(/);
+  assert.match(core, /from '\.\/canvas_picking_hover_preview_modes_cell_dims\.js'/);
+  assert.match(core, /return handleCellDimsPreview\(/);
   assert.match(
     seam,
     /export \{ tryHandleCellDimsHoverPreview \} from '\.\/canvas_picking_hover_preview_modes_cell_dims\.js';/
