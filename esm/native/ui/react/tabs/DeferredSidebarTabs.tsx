@@ -1,12 +1,29 @@
-import type { ReactElement } from 'react';
+import { lazy, type ReactElement } from 'react';
 
 import type { TabId } from '../../../../../types';
+import type { SketchNoMainWardrobeAction } from '../actions/sketch_no_main_wardrobe_action.js';
 
 import { LazyErrorBoundary } from '../components/index.js';
-import { DesignTabView } from './DesignTab.view.js';
-import { SettingsTab } from './SettingsTab.js';
-import { InteriorTabView } from './InteriorTab.view.js';
-import { SketchTabView } from './SketchTab.view.js';
+
+const DesignTabViewLazy = lazy(async () => {
+  const mod = await import('./DesignTab.view.js');
+  return { default: mod.DesignTabView };
+});
+
+const InteriorTabViewLazy = lazy(async () => {
+  const mod = await import('./InteriorTab.view.js');
+  return { default: mod.InteriorTabView };
+});
+
+const SketchTabViewLazy = lazy(async () => {
+  const mod = await import('./SketchTab.view.js');
+  return { default: mod.SketchTabView };
+});
+
+const SettingsTabLazy = lazy(async () => {
+  const mod = await import('./SettingsTab.js');
+  return { default: mod.SettingsTab };
+});
 
 type DeferredSidebarTabsProps = {
   app: unknown;
@@ -17,6 +34,7 @@ type DeferredSidebarTabsProps = {
   canRenderSketch: boolean;
   settingsMounted: boolean;
   sketchMounted: boolean;
+  toggleNoMainWardrobe: SketchNoMainWardrobeAction;
 };
 
 export function DeferredSidebarTabs(props: DeferredSidebarTabsProps): ReactElement {
@@ -29,20 +47,21 @@ export function DeferredSidebarTabs(props: DeferredSidebarTabsProps): ReactEleme
     canRenderSketch,
     settingsMounted,
     sketchMounted,
+    toggleNoMainWardrobe,
   } = props;
 
   return (
     <>
-      {canRenderDesign ? <DesignTabView active={activeTab === 'design'} /> : null}
-      {canRenderInterior ? <InteriorTabView active={activeTab === 'interior'} /> : null}
+      {canRenderDesign ? <DesignTabViewLazy active={activeTab === 'design'} /> : null}
+      {canRenderInterior ? <InteriorTabViewLazy active={activeTab === 'interior'} /> : null}
       {canRenderSketch && sketchMounted ? (
         <LazyErrorBoundary label="טאב סקיצה" app={app}>
-          <SketchTabView active={activeTab === 'sketch'} />
+          <SketchTabViewLazy active={activeTab === 'sketch'} toggleNoMainWardrobe={toggleNoMainWardrobe} />
         </LazyErrorBoundary>
       ) : null}
       {canRenderSettings && settingsMounted ? (
         <LazyErrorBoundary label="טאב הגדרות" app={app}>
-          <SettingsTab active={activeTab === 'settings'} />
+          <SettingsTabLazy active={activeTab === 'settings'} />
         </LazyErrorBoundary>
       ) : null}
     </>

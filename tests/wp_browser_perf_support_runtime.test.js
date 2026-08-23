@@ -962,6 +962,19 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
 
   const actionSummary = createProjectActionSummary(result.projectActionEvents);
   assert.equal(actionSummary.save.okCount, 1);
+  assert.deepEqual(
+    createProjectActionSummary([
+      { action: 'save', ok: false, pending: true, reason: 'dispatched' },
+      { action: 'save', ok: true, pending: false },
+    ]).save,
+    {
+      count: 2,
+      okCount: 1,
+      failureCount: 0,
+      pendingCount: 1,
+      lastReason: 'dispatched',
+    }
+  );
 
   const md = summarizeBrowserPerfResult(result, {
     requiredRuntimeMetrics: ['project.save'],
@@ -3334,7 +3347,7 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     repeatedSourceCount: 1,
     dominantSourceSharePct: 61.25,
     dominantSourceMs: 49,
-    primaryBottleneck: 'selector-fanout',
+    primaryBottleneck: 'duration-heavy',
     totalDurationMs: 1000,
     totalSourceMs: 80,
     commitCount: 24,
@@ -3401,6 +3414,19 @@ test('browser perf support summarizes repeated journey store sources and diagnos
     createUserJourneyDiagnosisBudget(clampedDiagnosis)['tiny-source-journey'].maxDominantSourceSharePct,
     100
   );
+
+  const countOnlyPressure = createUserJourneyDiagnosisSummary({
+    'count-only-pressure': {
+      stepCount: 1,
+      totalDurationMs: 500,
+      totalSourceMs: 5,
+      commitCount: 4,
+      selectorEvaluationCount: 200,
+      selectorNotifyCount: 100,
+      steps: [],
+    },
+  });
+  assert.equal(countOnlyPressure['count-only-pressure'].primaryBottleneck, 'duration-heavy');
 });
 
 test('browser perf dominant-source ratio is blocking only when total source time is material', () => {

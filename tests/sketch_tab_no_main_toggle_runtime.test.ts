@@ -6,7 +6,7 @@ import {
   SKETCH_NO_MAIN_RESTORE_KEY,
   isSketchNoMainWardrobeActive,
   toggleSketchNoMainWardrobe,
-} from '../esm/native/ui/react/tabs/sketch_tab_no_main_toggle.ts';
+} from '../esm/native/ui/react/actions/sketch_no_main_wardrobe_action.ts';
 
 type AnyRecord = Record<string, any>;
 

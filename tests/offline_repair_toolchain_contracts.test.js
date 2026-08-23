@@ -1497,6 +1497,7 @@ test('offline npm extraction recreates npm-style bin links and repairs missing l
   const probe = String.raw`
 from pathlib import Path
 import json
+import os
 import sys
 import tarfile
 import tempfile
@@ -1528,17 +1529,28 @@ try:
     destination = core._install_npm_entry(entry, "1.0.0")
     link = fixture / "node_modules" / ".bin" / "offline-bin-fixture"
     target = destination / "bin" / "cli.js"
-    if not link.is_symlink() or link.resolve() != target.resolve():
-        raise AssertionError("initial npm bin link was not created")
+    launcher_paths = [link]
+    if os.name == "nt":
+        launcher_paths.extend([link.with_suffix(".cmd"), link.with_suffix(".ps1")])
+
+    def assert_launchers_created(message):
+        if os.name == "nt":
+            if not all(item.is_file() for item in launcher_paths):
+                raise AssertionError(message)
+            if not all(core._NPM_BIN_SHIM_MARKER in item.read_text(encoding="utf-8") for item in launcher_paths):
+                raise AssertionError(f"{message}: launcher ownership marker is missing")
+        elif not link.is_symlink() or link.resolve() != target.resolve():
+            raise AssertionError(message)
+
+    assert_launchers_created("initial npm bin launcher was not created")
 
     link.unlink()
     core._install_npm_entry(entry, "1.0.0")
-    if not link.is_symlink() or link.resolve() != target.resolve():
-        raise AssertionError("matching installed package did not repair its missing npm bin link")
+    assert_launchers_created("matching installed package did not repair its missing npm bin launcher")
 
     core._remove_npm_bin_links(destination)
-    if link.exists() or link.is_symlink():
-        raise AssertionError("owned npm bin link was not cleaned before package removal")
+    if any(item.exists() or item.is_symlink() for item in launcher_paths):
+        raise AssertionError("owned npm bin launcher was not cleaned before package removal")
 finally:
     core.ROOT = original_root
 

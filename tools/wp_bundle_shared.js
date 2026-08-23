@@ -15,9 +15,9 @@ export const BUNDLE_CODE_SPLITTING_GROUPS = [
     priority: 60,
   },
   {
-    name: 'pdf_overlay_shared',
-    test: /[\/]dist[\/]esm[\/]native[\/](?:services[\/]api\.js|ui[\/]dom_helpers\.js|ui[\/]react[\/](?:actions[\/].*|hooks\.js|export_actions\.js))/,
-    priority: 55,
+    name: 'app_initial',
+    tags: ['$initial'],
+    priority: 50,
   },
 ];
 

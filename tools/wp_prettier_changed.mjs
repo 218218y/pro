@@ -97,6 +97,24 @@ function fail(message, cause) {
   process.exit(cause?.status || 1);
 }
 
+function canonicalPathForComparison(value) {
+  const resolved = path.resolve(value);
+  try {
+    return fs.realpathSync.native(resolved);
+  } catch {
+    return resolved;
+  }
+}
+
+function pathsReferToSameLocation(left, right) {
+  const leftCanonical = canonicalPathForComparison(left);
+  const rightCanonical = canonicalPathForComparison(right);
+  if (process.platform === 'win32') {
+    return leftCanonical.toLowerCase() === rightCanonical.toLowerCase();
+  }
+  return leftCanonical === rightCanonical;
+}
+
 function assertGitRepo() {
   const result = run(gitCmd(), ['rev-parse', '--show-toplevel']);
   if (result.status !== 0) {
@@ -104,7 +122,7 @@ function assertGitRepo() {
   }
 
   const gitRoot = path.resolve(result.stdout.trim());
-  if (gitRoot !== PROJECT_ROOT) {
+  if (!pathsReferToSameLocation(gitRoot, PROJECT_ROOT)) {
     fail(`[WP Prettier] Expected Git root to be ${PROJECT_ROOT}, got ${gitRoot}.`);
   }
 }

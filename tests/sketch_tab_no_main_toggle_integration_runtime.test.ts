@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
 import { createStore } from '../esm/native/platform/store.ts';
-import { toggleSketchNoMainWardrobe } from '../esm/native/ui/react/tabs/sketch_tab_no_main_toggle.ts';
+import { toggleSketchNoMainWardrobe } from '../esm/native/ui/react/actions/sketch_no_main_wardrobe_action.ts';
 
 test('Sketch No-Main uses the installed ui/config snapshot transaction with canonical config map replacement', () => {
   const store = createStore({

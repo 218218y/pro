@@ -73,6 +73,14 @@ const TOOLCHAIN_FAMILIES = [
         ],
         forbiddenNeedles: ['export function shouldRebuildDistModules('],
       },
+      {
+        path: 'tools/wp_bundle_chunk_graph.js',
+        requiredNeedles: [
+          'export function analyzeBundleChunkTopology(',
+          'export function assertBundleChunkTopology(',
+        ],
+        forbiddenNeedles: ['export function buildDistModules('],
+      },
     ],
   },
   {

@@ -6,6 +6,7 @@ import { StructureTabView } from './tabs/StructureTab.view.js';
 import { SidebarHeader } from './sidebar_header.js';
 import { DeferredSidebarTabsLazy, TABS, prefetchDeferredSidebarTabs } from './sidebar_shared.js';
 import { useSidebarViewState } from './use_sidebar_view_state.js';
+import { toggleSketchNoMainWardrobe } from './actions/sketch_no_main_wardrobe_action.js';
 
 function SidebarLockedView({
   enabledTabs,
@@ -104,6 +105,7 @@ export function ReactSidebarApp() {
                 canRenderSketch={canRenderTab('sketch')}
                 settingsMounted={settingsMounted}
                 sketchMounted={sketchMounted}
+                toggleNoMainWardrobe={toggleSketchNoMainWardrobe}
               />
             </Suspense>
           </LazyErrorBoundary>

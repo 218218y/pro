@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T18:36:57.941Z",
+  "generatedAt": "2026-08-23T07:04:45.307Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -5137,7 +5137,7 @@
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
-      "line": 92,
+      "line": 93,
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"

@@ -1848,6 +1848,10 @@ export function createUserJourneyDiagnosisSummary(
     });
     const topStep =
       stepRows.slice().sort((left, right) => {
+        if ((right.totalSourceMs || 0) !== (left.totalSourceMs || 0))
+          return (right.totalSourceMs || 0) - (left.totalSourceMs || 0);
+        if ((right.durationMs || 0) !== (left.durationMs || 0))
+          return (right.durationMs || 0) - (left.durationMs || 0);
         if ((right.commitCount || 0) !== (left.commitCount || 0))
           return (right.commitCount || 0) - (left.commitCount || 0);
         if ((right.selectorEvaluationCount || 0) !== (left.selectorEvaluationCount || 0)) {
@@ -1856,10 +1860,6 @@ export function createUserJourneyDiagnosisSummary(
         if ((right.selectorNotifyCount || 0) !== (left.selectorNotifyCount || 0)) {
           return (right.selectorNotifyCount || 0) - (left.selectorNotifyCount || 0);
         }
-        if ((right.totalSourceMs || 0) !== (left.totalSourceMs || 0))
-          return (right.totalSourceMs || 0) - (left.totalSourceMs || 0);
-        if ((right.durationMs || 0) !== (left.durationMs || 0))
-          return (right.durationMs || 0) - (left.durationMs || 0);
         return String(left.name || '').localeCompare(String(right.name || ''));
       })[0] || null;
     const rankedSources = rankJourneyStoreSources(journeySources[name], 3);
@@ -1877,22 +1877,25 @@ export function createUserJourneyDiagnosisSummary(
     const selectorNotifyCount = Number(item?.selectorNotifyCount) || 0;
     const selectorPressure = selectorEvaluationCount > 0 ? selectorEvaluationCount : selectorNotifyCount;
     const totalDurationMs = Number(item?.totalDurationMs) || 0;
+    const hasMaterialStoreTime = totalSourceMs >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS;
+    const durationDominates = totalDurationMs >= 250 && totalDurationMs >= Math.max(250, totalSourceMs * 3);
     let primaryBottleneck = 'balanced';
-    if (
-      commitCount >= Math.max(10, selectorPressure * 0.5) &&
-      commitCount >= (Number(item?.stepCount) || 0) * 2
-    ) {
-      primaryBottleneck = 'store-churn';
-    } else if (selectorPressure >= Math.max(20, commitCount * 1.75)) {
-      primaryBottleneck = 'selector-fanout';
+    if (durationDominates) {
+      primaryBottleneck = 'duration-heavy';
     } else if (
-      totalSourceMs >= BROWSER_PERF_MIN_MATERIAL_DURATION_EXCESS_MS &&
+      hasMaterialStoreTime &&
       dominantSourceSharePct >= 45 &&
       (Number(topSource?.stepCount) || 0) >= 2
     ) {
       primaryBottleneck = 'source-hotspot';
-    } else if (totalDurationMs >= Math.max(250, (Number(item?.totalSourceMs) || 0) * 3)) {
-      primaryBottleneck = 'duration-heavy';
+    } else if (
+      hasMaterialStoreTime &&
+      commitCount >= Math.max(10, selectorPressure * 0.5) &&
+      commitCount >= (Number(item?.stepCount) || 0) * 2
+    ) {
+      primaryBottleneck = 'store-churn';
+    } else if (hasMaterialStoreTime && selectorPressure >= Math.max(20, commitCount * 1.75)) {
+      primaryBottleneck = 'selector-fanout';
     }
     summary[name] = {
       stepCount: Number(item?.stepCount) || 0,
@@ -2165,7 +2168,7 @@ export function createProjectActionSummary(events) {
     const bucket = groups[action];
     bucket.count += 1;
     if (event.ok === true) bucket.okCount += 1;
-    else bucket.failureCount += 1;
+    else if (event.pending !== true) bucket.failureCount += 1;
     if (event.pending === true) bucket.pendingCount += 1;
     if (typeof event.reason === 'string' && event.reason.trim()) bucket.lastReason = event.reason.trim();
   }

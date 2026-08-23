@@ -10,9 +10,9 @@ import type {
 } from '../../../../../types';
 import { WARDROBE_DEFAULTS } from '../../../../shared/dimensions/wardrobe_defaults.js';
 
-import { commitUiConfigSnapshot, getConfigSnapshot, getUiSnapshot } from '../actions/store_actions.js';
-import { applyStructureTemplateSnapshotRecomputeTransaction } from './structure_tab_core_recompute.js';
-import { createStructureTabNoBuildImmediateMeta } from './structure_tab_meta.js';
+import { commitUiConfigSnapshot, getConfigSnapshot, getUiSnapshot } from './store_actions.js';
+import { applyStructureTemplateSnapshotRecomputeTransaction } from '../tabs/structure_tab_core_recompute.js';
+import { createStructureTabNoBuildImmediateMeta } from '../tabs/structure_tab_meta.js';
 import {
   SKETCH_NO_MAIN_EXTRA_LIST_KEYS,
   SKETCH_NO_MAIN_FREE_EXTRAS_KEY,
@@ -27,14 +27,19 @@ import {
   type SketchNoMainExtraListKey,
   type SketchNoMainFreeExtrasSnapshot,
   type SketchNoMainRestoreSnapshot,
-} from './sketch_tab_no_main_snapshot_codec.js';
+} from '../tabs/sketch_tab_no_main_snapshot_codec.js';
 
 export {
   SKETCH_NO_MAIN_FREE_EXTRAS_KEY,
   SKETCH_NO_MAIN_RESTORE_KEY,
-} from './sketch_tab_no_main_snapshot_codec.js';
+} from '../tabs/sketch_tab_no_main_snapshot_codec.js';
 
 export type SketchNoMainToggleResult = { ok: true; active: boolean; restored: boolean };
+
+export type SketchNoMainWardrobeAction = (args: {
+  app: AppContainer;
+  meta: MetaActionsNamespaceLike;
+}) => SketchNoMainToggleResult;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);

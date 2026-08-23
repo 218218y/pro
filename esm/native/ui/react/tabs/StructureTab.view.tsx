@@ -21,7 +21,7 @@ import { ProjectPanel } from '../panels/ProjectPanel.js';
 import { useStructureTabViewState } from './use_structure_tab_view_state.js';
 import { useStructureTabWorkflows } from './use_structure_tab_workflows.js';
 import { runPerfAction } from '../../../services/api.js';
-import { toggleSketchNoMainWardrobe } from './sketch_tab_no_main_toggle.js';
+import { toggleSketchNoMainWardrobe } from '../actions/sketch_no_main_wardrobe_action.js';
 
 export function StructureTabView(props: { active: boolean }): ReactElement {
   return <StructureTabInner active={props.active} />;

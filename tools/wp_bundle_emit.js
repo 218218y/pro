@@ -16,6 +16,7 @@ import {
   createObservabilityBuildDefines,
   normalizeObservabilityBuildMode,
 } from './wp_observability_build.js';
+import { assertBundleChunkTopology } from './wp_bundle_chunk_graph.js';
 
 export function cleanOldBundleArtifacts(outDirAbs) {
   try {
@@ -149,7 +150,8 @@ export async function buildBundleArtifacts({
     console.log(
       `[WP Bundle] Building ESM bundle (${normalizeObservabilityBuildMode(args.buildMode, 'client')})...`
     );
-    await viteBuild(createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }));
+    const buildResult = await viteBuild(createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }));
+    assertBundleChunkTopology(buildResult);
     writeBundleOutputs({
       tmpDirAbs,
       outFileAbs,

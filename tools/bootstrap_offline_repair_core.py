@@ -928,6 +928,47 @@ def _package_node_modules_directory(destination: Path) -> Path:
     )
 
 
+_NPM_BIN_SHIM_MARKER = "WardrobePro offline npm bin target:"
+
+
+def _windows_npm_bin_shims(bin_dir: Path, name: str, relative_target: str) -> dict[Path, str]:
+    target_posix = relative_target.replace("\\", "/")
+    shell_target = (
+        target_posix.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("$", "\\$")
+        .replace("`", "\\`")
+    )
+    command_target = relative_target.replace("%", "%%")
+    powershell_target = target_posix.replace("'", "''")
+    marker = f"{_NPM_BIN_SHIM_MARKER} {target_posix}"
+    return {
+        bin_dir / name: (
+            f"#!/bin/sh\n# {marker}\n"
+            f'exec node "$(dirname "$0")/{shell_target}" "$@"\n'
+        ),
+        bin_dir / f"{name}.cmd": (
+            f"@ECHO off\n:: {marker}\nSETLOCAL\n"
+            f'node "%~dp0{command_target}" %*\nEXIT /B %ERRORLEVEL%\n'
+        ),
+        bin_dir / f"{name}.ps1": (
+            f"#!/usr/bin/env pwsh\n# {marker}\n"
+            f"& node (Join-Path $PSScriptRoot '{powershell_target}') @args\n"
+            "exit $LASTEXITCODE\n"
+        ),
+    }
+
+
+def _is_owned_npm_bin_shim(candidate: Path) -> bool:
+    if not candidate.is_file() or candidate.is_symlink():
+        return False
+    try:
+        header = candidate.read_text(encoding="utf-8").splitlines()[:3]
+        return any(line.lstrip("#: ").startswith(_NPM_BIN_SHIM_MARKER) for line in header)
+    except (OSError, UnicodeError):
+        return False
+
+
 def _remove_npm_bin_links(destination: Path) -> None:
     if not destination.exists():
         return
@@ -935,17 +976,26 @@ def _remove_npm_bin_links(destination: Path) -> None:
     if not bin_entries:
         return
     bin_dir = _package_node_modules_directory(destination) / ".bin"
-    for name in bin_entries:
-        link = bin_dir / name
-        if not link.is_symlink():
-            continue
-        try:
-            resolved = (link.parent / os.readlink(link)).resolve(strict=False)
-            destination_resolved = destination.resolve()
-        except OSError:
-            continue
-        if resolved == destination_resolved or destination_resolved in resolved.parents:
-            link.unlink()
+    destination_resolved = destination.resolve()
+    for name, relative in bin_entries.items():
+        relative_path = _safe_relative_posix(relative.removeprefix("./"), f"npm bin target {name}")
+        target = destination.joinpath(*relative_path.parts)
+        relative_target = os.path.relpath(target, bin_dir)
+        candidates = (
+            _windows_npm_bin_shims(bin_dir, name, relative_target).keys()
+            if os.name == "nt"
+            else (bin_dir / name,)
+        )
+        for candidate in candidates:
+            if candidate.is_symlink():
+                try:
+                    resolved = (candidate.parent / os.readlink(candidate)).resolve(strict=False)
+                except OSError:
+                    continue
+                if resolved == destination_resolved or destination_resolved in resolved.parents:
+                    candidate.unlink()
+            elif os.name == "nt" and _is_owned_npm_bin_shim(candidate):
+                candidate.unlink()
 
 
 def _sync_npm_bin_links(destination: Path) -> None:
@@ -967,6 +1017,23 @@ def _sync_npm_bin_links(destination: Path) -> None:
 
         link = bin_dir / name
         relative_target = os.path.relpath(target, bin_dir)
+        if os.name == "nt":
+            for shim, content in _windows_npm_bin_shims(bin_dir, name, relative_target).items():
+                if shim.is_symlink():
+                    current_target = (shim.parent / os.readlink(shim)).resolve(strict=False)
+                    if current_target != target.resolve():
+                        raise OfflineCoreError(
+                            f"Cannot replace an unowned offline npm bin link: {_display_path(shim)}"
+                        )
+                    shim.unlink()
+                elif shim.exists() and not _is_owned_npm_bin_shim(shim):
+                    raise OfflineCoreError(
+                        f"Cannot create offline npm bin shim because an unowned file already exists: "
+                        f"{_display_path(shim)}"
+                    )
+                if not shim.exists() or shim.read_text(encoding="utf-8") != content:
+                    shim.write_text(content, encoding="utf-8")
+            continue
         if link.is_symlink():
             current_target = (link.parent / os.readlink(link)).resolve(strict=False)
             if current_target == target.resolve():

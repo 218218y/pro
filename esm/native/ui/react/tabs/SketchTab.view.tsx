@@ -12,7 +12,10 @@ import { StructureCellDimsControls } from './structure_tab_dimensions_section_ce
 import { useStructureCellDimsControlsProps } from './use_structure_cell_dims_controls_props.js';
 import { useStructureTabViewState } from './use_structure_tab_view_state.js';
 import { createInteriorLayoutSectionProps } from './interior_layout_section_props.js';
-import { isSketchNoMainWardrobeActive, toggleSketchNoMainWardrobe } from './sketch_tab_no_main_toggle.js';
+import {
+  isSketchNoMainWardrobeActive,
+  type SketchNoMainWardrobeAction,
+} from '../actions/sketch_no_main_wardrobe_action.js';
 import { useInteriorTabViewState } from './use_interior_tab_view_state.js';
 import { useInteriorTabWorkflows } from './use_interior_tab_workflows.js';
 import { RoomArchitectureControls } from './settings_visual_sections_room.js';
@@ -33,11 +36,16 @@ const SKETCH_BOX_CELL_DIMS_TEST_IDS = {
 
 const SKETCH_NO_MAIN_SELECTOR_SLICES = ['ui', 'config'] as const;
 
-export function SketchTabView(props: InteriorTabViewProps): ReactElement {
-  return <SketchTabInner active={props.active} />;
+type SketchTabViewProps = InteriorTabViewProps & {
+  toggleNoMainWardrobe: SketchNoMainWardrobeAction;
+};
+
+export function SketchTabView(props: SketchTabViewProps): ReactElement {
+  return <SketchTabInner active={props.active} toggleNoMainWardrobe={props.toggleNoMainWardrobe} />;
 }
 
-function SketchTabInner(props: { active: boolean }): ReactElement {
+function SketchTabInner(props: SketchTabViewProps): ReactElement {
+  const { toggleNoMainWardrobe } = props;
   const app = useApp();
   const meta = useMeta();
   const feedback = useUiFeedback();
@@ -78,7 +86,7 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
       app,
       'sketch.noMainWardrobe.toggle',
       () => {
-        const result = toggleSketchNoMainWardrobe({ app, meta });
+        const result = toggleNoMainWardrobe({ app, meta });
         feedback.toast(
           result.active ? 'הארון הראשי בוטל. אפשר לבנות סקיצה חופשית.' : 'הארון הראשי חזר למצב הקודם.',
           'success'
@@ -87,7 +95,7 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
       },
       { detail: { nextActive: !noMainState.active, doors: noMainState.doors } }
     );
-  }, [app, feedback, meta, noMainState.active, noMainState.doors]);
+  }, [app, feedback, meta, noMainState.active, noMainState.doors, toggleNoMainWardrobe]);
 
   return (
     <TabPanel tabId="sketch" active={props.active}>

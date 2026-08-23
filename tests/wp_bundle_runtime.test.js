@@ -11,7 +11,8 @@ import {
   writeBundleOutputs,
 } from '../tools/wp_bundle_emit.js';
 import { buildDistModules, shouldRebuildDistModules } from '../tools/wp_bundle_dist.js';
-import { resolveTscInvocation } from '../tools/wp_bundle_shared.js';
+import { BUNDLE_CODE_SPLITTING_GROUPS, resolveTscInvocation } from '../tools/wp_bundle_shared.js';
+import { analyzeBundleChunkTopology, assertBundleChunkTopology } from '../tools/wp_bundle_chunk_graph.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-bundle-'));
@@ -190,6 +191,14 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   assert.equal(cfg.build.rolldownOptions.output.entryFileNames, 'wardrobepro.bundle.js');
   assert.equal(cfg.build.rolldownOptions.output.chunkFileNames, 'wardrobepro.chunk-[name].js');
   assert.equal(cfg.build.rolldownOptions.treeshake.moduleSideEffects, false);
+  assert.deepEqual(
+    BUNDLE_CODE_SPLITTING_GROUPS.map(({ name, priority, tags }) => ({ name, priority, tags })),
+    [
+      { name: 'pdf', priority: 70, tags: undefined },
+      { name: 'vendor', priority: 60, tags: undefined },
+      { name: 'app_initial', priority: 50, tags: ['$initial'] },
+    ]
+  );
 });
 
 test('bundle build config maps scheduler debug stats to full implementation outside client mode', () => {
@@ -230,4 +239,81 @@ test('bundle emit writes build-mode marker next to the entry bundle', () => {
   });
 
   assert.equal(fs.readFileSync(`${outFile}.buildmode.txt`, 'utf8').trim(), 'perf');
+});
+
+test('bundle chunk topology keeps deferred features outside the static entry closure', () => {
+  const result = {
+    output: [
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.bundle.js',
+        isEntry: true,
+        imports: ['wardrobepro.chunk-release_main.js'],
+        dynamicImports: [],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-release_main.js',
+        isEntry: false,
+        imports: ['wardrobepro.chunk-vendor.js'],
+        dynamicImports: ['wardrobepro.chunk-DeferredSidebarTabs.js'],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-vendor.js',
+        isEntry: false,
+        imports: [],
+        dynamicImports: [],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-DeferredSidebarTabs.js',
+        isEntry: false,
+        imports: ['wardrobepro.chunk-vendor.js'],
+        dynamicImports: [],
+      },
+    ],
+  };
+
+  const analysis = assertBundleChunkTopology(result);
+  assert.deepEqual(analysis.eagerDeferredChunks, []);
+  assert.deepEqual(analysis.staticCycles, []);
+  assert.deepEqual(analysis.staticClosure, [
+    'wardrobepro.bundle.js',
+    'wardrobepro.chunk-release_main.js',
+    'wardrobepro.chunk-vendor.js',
+  ]);
+});
+
+test('bundle chunk topology rejects artifact cycles and eager deferred chunks', () => {
+  const result = {
+    output: [
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.bundle.js',
+        isEntry: true,
+        imports: ['wardrobepro.chunk-release_main.js'],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-release_main.js',
+        isEntry: false,
+        imports: ['wardrobepro.chunk-DeferredSidebarTabs.js'],
+      },
+      {
+        type: 'chunk',
+        fileName: 'wardrobepro.chunk-DeferredSidebarTabs.js',
+        isEntry: false,
+        imports: ['wardrobepro.chunk-release_main.js'],
+      },
+    ],
+  };
+
+  const analysis = analyzeBundleChunkTopology(result);
+  assert.deepEqual(analysis.eagerDeferredChunks, ['wardrobepro.chunk-DeferredSidebarTabs.js']);
+  assert.equal(analysis.staticCycles.length, 1);
+  assert.throws(
+    () => assertBundleChunkTopology(result),
+    /static chunk cycle:.*deferred chunks are statically reachable/s
+  );
 });
