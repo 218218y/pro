@@ -169,6 +169,7 @@ export interface RuntimeStateLike {
   paintColor?: string | null;
   handlesType?: HandleType;
   interiorManualTool?: string | null;
+  pendingGrooveLinesCountMap?: Record<string, number>;
   wardrobeWidthM?: number | null;
   wardrobeHeightM?: number | null;
   wardrobeDepthM?: number | null;

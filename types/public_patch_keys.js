@@ -155,6 +155,7 @@ export const PUBLIC_RUNTIME_PATCH_KEYS = [
   'paintColor',
   'handlesType',
   'interiorManualTool',
+  'pendingGrooveLinesCountMap',
   'wardrobeWidthM',
   'wardrobeHeightM',
   'wardrobeDepthM',

@@ -20,6 +20,7 @@ import {
   requestDoorAuthoringImmediateRefresh,
 } from '../esm/native/services/canvas_picking_door_authoring_burst.ts';
 import { tryHandleCanvasPickingActionRoute } from '../esm/native/services/canvas_picking_click_route_actions.ts';
+import { installStateApi } from '../esm/native/kernel/state_api.ts';
 
 type BuildRequest = {
   uiOverride: unknown;
@@ -179,6 +180,36 @@ test('regular door groove click toggles the groove and requests an immediate reb
   assert.equal(buildRequests[0].meta.source, 'groove:click');
   assert.equal(buildRequests[0].meta.immediate, true);
   assert.equal(buildRequests[0].meta.force, false);
+});
+
+test('regular door groove click writes its pending count through the canonical runtime patch contract', () => {
+  const { App, state, buildRequests } = createApp();
+  App.store.setRuntime = (patch: Record<string, unknown>) => {
+    state.runtime = { ...state.runtime, ...(patch || {}) };
+    return patch;
+  };
+  delete App.actions.runtime.patch;
+  installStateApi(App);
+
+  const handled = handleCanvasDoorGrooveClick({
+    App,
+    effectiveDoorId: 'd1_left',
+    foundPartId: null,
+    activeStack: 'top',
+    foundModuleStack: 'top',
+    doorHitObject: {
+      userData: {
+        partId: 'd1_left',
+        __doorWidth: 0.45,
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(state.config.groovesMap.groove_d1_left, true);
+  assert.equal(typeof state.config.grooveLinesCountMap.d1_left, 'number');
+  assert.equal(state.runtime.pendingGrooveLinesCountMap.d1_left, state.config.grooveLinesCountMap.d1_left);
+  assert.equal(buildRequests.length, 1);
 });
 
 test('manual horizontal groove click persists the exact sized surface placement and removes it on a second click', () => {

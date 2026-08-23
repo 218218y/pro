@@ -229,6 +229,7 @@ const RUNTIME_DOMAIN_BY_KEY = {
   paintColor: APPEARANCE,
   handlesType: INTERIOR_APPEARANCE,
   interiorManualTool: ['interior', 'interaction'],
+  pendingGrooveLinesCountMap: APPEARANCE,
   wardrobeWidthM: STRUCTURE,
   wardrobeHeightM: STRUCTURE,
   wardrobeDepthM: STRUCTURE,
