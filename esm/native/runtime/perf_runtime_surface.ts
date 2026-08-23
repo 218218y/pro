@@ -13,6 +13,7 @@ import type {
   WardrobeProRendererInfoSnapshot,
   WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
+  VisualContentGeometryCacheStatsLike,
 } from '../../../types/index.js';
 
 import {
@@ -46,9 +47,14 @@ import {
   resetBuildRuntimeDebugStats,
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
+  getVisualContentGeometryCacheRuntimeStats,
+  resetVisualContentGeometryCacheRuntimeStats,
 } from './perf_runtime_debug_surfaces.js';
 import { getPerfStateFingerprint } from './perf_runtime_state_fingerprint.js';
 import { getRendererInfoSnapshot, getSceneContentSnapshot } from './perf_runtime_render_snapshot.js';
+import { requestPerfRenderFrameSample } from './perf_runtime_frame_sampler.js';
+import { setDoorsOpenViaService } from './doors_access.js';
+import { triggerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
 
 export type { PerfActionOptions, PerfEntryOptions, PerfSpanOptions } from './perf_runtime_surface_types.js';
 export {
@@ -118,6 +124,25 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {
       return getSceneContentSnapshot(App);
+    },
+    getVisualContentGeometryCacheStats(): VisualContentGeometryCacheStatsLike | null {
+      return getVisualContentGeometryCacheRuntimeStats(App);
+    },
+    resetVisualContentGeometryCacheStats(): VisualContentGeometryCacheStatsLike | null {
+      return resetVisualContentGeometryCacheRuntimeStats(App);
+    },
+    sampleRendererFrames(count: number): Promise<WardrobeProPerfEntry[]> {
+      return requestPerfRenderFrameSample(App, count, () => getPerfEntries(App));
+    },
+    scheduleAdhesiveGlassWarmupForDesignIntent(): void {
+      triggerAdhesiveGlassDesignIntentWarmup(App);
+    },
+    setDoorsOpenForVisualProbe(open: boolean): boolean {
+      return setDoorsOpenViaService(App, open, {
+        touch: true,
+        forceUpdate: true,
+        source: 'perf:visual-probe',
+      });
     },
     getErrorHistory(): ErrorsHistoryEntryLike[] {
       return getRuntimeErrorHistory(App);

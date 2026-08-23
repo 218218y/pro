@@ -1,6 +1,8 @@
 import path from 'node:path';
 
 export const OBSERVABILITY_BUILD_MODES = Object.freeze(['client', 'perf', 'debug']);
+export const ADHESIVE_GLASS_WARMUP_MODES = Object.freeze(['startup', 'off', 'design-intent']);
+export const FOLDED_GEOMETRY_MODES = Object.freeze(['exact', 'segments-2', 'canonical-scale']);
 
 export function normalizeObservabilityBuildMode(value, fallback = 'client') {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -8,12 +10,30 @@ export function normalizeObservabilityBuildMode(value, fallback = 'client') {
   return OBSERVABILITY_BUILD_MODES.includes(fallback) ? fallback : 'client';
 }
 
-export function createObservabilityBuildDefines(buildMode) {
+export function normalizeAdhesiveGlassWarmupMode(value, fallback = 'startup') {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (ADHESIVE_GLASS_WARMUP_MODES.includes(raw)) return raw;
+  return ADHESIVE_GLASS_WARMUP_MODES.includes(fallback) ? fallback : 'startup';
+}
+
+export function normalizeFoldedGeometryMode(value, fallback = 'canonical-scale') {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (FOLDED_GEOMETRY_MODES.includes(raw)) return raw;
+  return FOLDED_GEOMETRY_MODES.includes(fallback) ? fallback : 'canonical-scale';
+}
+
+export function createObservabilityBuildDefines(buildMode, options = {}) {
   const mode = normalizeObservabilityBuildMode(buildMode);
+  const adhesiveGlassWarmupMode =
+    mode === 'perf' ? normalizeAdhesiveGlassWarmupMode(options.adhesiveGlassWarmupMode) : 'startup';
+  const foldedGeometryMode =
+    mode === 'perf' ? normalizeFoldedGeometryMode(options.foldedGeometryMode) : 'canonical-scale';
   return {
     __WP_BUILD_CLIENT__: JSON.stringify(mode === 'client'),
     __WP_BUILD_PERF__: JSON.stringify(mode === 'perf'),
     __WP_BUILD_DEBUG__: JSON.stringify(mode === 'debug'),
+    __WP_ADHESIVE_GLASS_WARMUP_MODE__: JSON.stringify(adhesiveGlassWarmupMode),
+    __WP_FOLDED_GEOMETRY_MODE__: JSON.stringify(foldedGeometryMode),
   };
 }
 

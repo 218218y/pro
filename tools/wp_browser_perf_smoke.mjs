@@ -71,6 +71,22 @@ const projectRoot = process.cwd();
 const measurementTarget = parseBrowserPerfTarget();
 const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
 const traceHeaderSketch = process.argv.includes('--trace-header-sketch');
+const profileFoldedContents = process.argv.includes('--profile-folded-contents');
+const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
+const adhesiveGlassWarmupMode = ['startup', 'off', 'design-intent'].includes(
+  String(process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE || '')
+    .trim()
+    .toLowerCase()
+)
+  ? String(process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE).trim().toLowerCase()
+  : 'startup';
+const foldedGeometryMode = ['exact', 'segments-2', 'canonical-scale'].includes(
+  String(process.env.WP_PERF_FOLDED_GEOMETRY_MODE || '')
+    .trim()
+    .toLowerCase()
+)
+  ? String(process.env.WP_PERF_FOLDED_GEOMETRY_MODE).trim().toLowerCase()
+  : 'canonical-scale';
 const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
 const confirmationCandidateIdentities = confirmationRun
   ? parseBrowserPerfConfirmationCandidates(process.env[BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV])
@@ -102,6 +118,13 @@ const headerSketchTraceReportPath = path.join(
   'browser-perf',
   measurementTarget.id,
   'header-sketch-trace-run.md'
+);
+const foldedContentsScreenshotPath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  `folded-contents-${foldedGeometryMode}.png`
 );
 const baselinePath = resolveBrowserPerfBaselinePath(projectRoot, measurementTarget.id);
 const textureFixturePath = path.join(
@@ -920,6 +943,50 @@ async function captureSessionArtifacts(page, result) {
   }
 }
 
+async function finalizeShaderWarmupProfile(page, result) {
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        window.setTimeout(() => window.requestAnimationFrame(() => resolve(undefined)), 0);
+      })
+  );
+  await captureSessionArtifacts(page, result);
+  const responsivenessAttribution = attributeBrowserResponsivenessToSteps(
+    result.windowResponsivenessFlowSteps,
+    result.windowPerfEntries
+  );
+  result.windowResponsivenessFlowSteps = responsivenessAttribution.steps;
+  result.windowResponsivenessUnattributed = responsivenessAttribution.unattributed;
+  result.topLongTaskSteps = rankResponsivenessSteps(result.windowResponsivenessFlowSteps, 20);
+  result.adhesiveGlassFirstUse = {
+    black: createAdhesiveGlassFirstUseSummary(result, 'adhesive-glass.first-use.black.apply-and-render'),
+    variant: createAdhesiveGlassFirstUseSummary(result, 'adhesive-glass.first-use.variant-update-and-render'),
+  };
+  result.windowBrowserMetrics = createBrowserMetricSummaryFromEntries(
+    result.windowPerfEntries,
+    result.windowBrowserMetrics
+  );
+  result.windowPerfSummary = createPerfSummaryFromEntries(result.windowPerfEntries);
+  result.windowBuildDebugStats = await readBuildDebugStats(page);
+  result.windowBuildDebugSummary = createBuildSummary(result.windowBuildDebugStats);
+  result.journeyResponsivenessSummary = createJourneyResponsivenessSummary(
+    result.windowResponsivenessFlowSteps
+  );
+  result.longTaskRootCauseSummary = createLongTaskRootCauseSummary(result, 5);
+  result.builderExecutionRootCauseSummary = createBuilderExecutionRootCauseSummary(result);
+  const markdown = [
+    '# Shader warm-up focused profile',
+    '',
+    `- mode: ${result.experiment?.adhesiveGlassWarmupMode || 'unknown'}`,
+    `- shell-visible: ${Number(result.bootMilestones?.shellVisibleMs) || 0}ms`,
+    `- operational-ready: ${Number(result.bootMilestones?.operationalReadyMs) || 0}ms`,
+    `- INP: ${Number(result.windowBrowserMetrics?.inp?.valueMs) || 0}ms`,
+    '',
+  ].join('\n');
+  writeJson(latestJsonPath, result);
+  writeText(latestMdPath, markdown);
+}
+
 async function readPerfSummary(page) {
   return await page.evaluate(() => {
     const summary = window.__WP_PERF__?.getSummary?.() || {};
@@ -964,6 +1031,73 @@ async function readRendererInfoSnapshot(page) {
 
 async function readSceneContentSnapshot(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getSceneContentSnapshot?.() || null);
+}
+
+async function readVisualContentGeometryCacheStats(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getVisualContentGeometryCacheStats?.() || null);
+}
+
+async function resetVisualContentGeometryCacheStats(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.resetVisualContentGeometryCacheStats?.() || null);
+}
+
+function summarizeSampledRendererFrames(entries) {
+  const rows = Array.isArray(entries) ? entries : [];
+  const valuesFor = name =>
+    rows.filter(entry => entry?.name === name).map(entry => Number(entry?.metricValue) || 0);
+  return {
+    requestedFrames: 20,
+    recordedFrames: valuesFor('render.frame.total').length,
+    total: createDurationSampleSummary(valuesFor('render.frame.total')),
+    renderer: createDurationSampleSummary(valuesFor('render.frame.renderer')),
+    mirror: createDurationSampleSummary(valuesFor('render.frame.mirror')),
+  };
+}
+
+async function sampleSettledRendererFrames(page, count = 20) {
+  const entries = await page.evaluate(async requestedCount => {
+    const sample = window.__WP_PERF__?.sampleRendererFrames;
+    if (typeof sample !== 'function') return [];
+    return await sample.call(window.__WP_PERF__, requestedCount);
+  }, count);
+  return { ...summarizeSampledRendererFrames(entries), requestedFrames: count };
+}
+
+async function captureViewerContentsOnProbe(page, button, label) {
+  await resetVisualContentGeometryCacheStats(page);
+  const beforeClock = await readBrowserStepClock(page);
+  const beforeRenderer = await readRendererInfoSnapshot(page);
+  const beforeCache = await readVisualContentGeometryCacheStats(page);
+  const beforeEntries = await page.evaluate(() => window.__WP_PERF__?.getEntries?.().length || 0);
+  await setPressedButtonStateAndWaitForBuild(page, button, true, label);
+  const afterClock = await readBrowserStepClock(page);
+  const [afterRenderer, afterCache, snapshot, allEntries] = await Promise.all([
+    readRendererInfoSnapshot(page),
+    readVisualContentGeometryCacheStats(page),
+    readSceneContentSnapshot(page),
+    page.evaluate(() => window.__WP_PERF__?.getEntries?.() || []),
+  ]);
+  const buildEntries = (Array.isArray(allEntries) ? allEntries.slice(beforeEntries) : [])
+    .filter(
+      entry => entry?.name === 'builder.execute' || String(entry?.name || '').startsWith('builder.contents.')
+    )
+    .map(entry => ({
+      name: String(entry?.name || ''),
+      durationMs: Number(entry?.codeExecutionMs) || 0,
+      startTime: Number(entry?.startTime) || 0,
+      endTime: Number(entry?.endTime) || 0,
+      detail: entry?.detail || null,
+    }));
+  return {
+    timingWindows: createBrowserStepTimingWindows(beforeClock, afterClock),
+    beforeRenderer,
+    afterRenderer,
+    beforeCache,
+    afterCache,
+    snapshot,
+    buildEntries,
+    steadyRenderer: await sampleSettledRendererFrames(page, 20),
+  };
 }
 
 async function resetBuildDebugStats(page) {
@@ -1882,6 +2016,9 @@ async function waitForTwoBrowserFrames(page) {
 
 async function selectAdhesiveGlassPaintBrush(page, kind) {
   await openMainTab(page, 'design');
+  if (adhesiveGlassWarmupMode === 'design-intent') {
+    await page.evaluate(() => window.__WP_PERF__?.scheduleAdhesiveGlassWarmupForDesignIntent?.());
+  }
   const panel = getActiveTabPanel(page, 'design');
   const multiColorRow = panel.locator('.toggle-row').filter({ hasText: 'צביעה ותוסף לכל חלק בנפרד' }).first();
   const enabledToggle = multiColorRow.locator('input[type="checkbox"]').first();
@@ -2653,6 +2790,12 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       testSequence: 'wp_browser_perf_smoke.v15',
     },
     browserPerfRoomId,
+    experiment: {
+      adhesiveGlassWarmupMode,
+      foldedGeometryMode,
+      profileFoldedContents,
+      profileShaderWarmup,
+    },
     cloudSyncRestIsolated: true,
     userFlow: {},
     userFlowSteps: [],
@@ -2827,6 +2970,61 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       async () => {
         const button = getViewerContentsToggleButton(page);
         const beforePressed = await readButtonPressed(button);
+        if (profileFoldedContents) {
+          if (beforePressed) {
+            await setPressedButtonStateAndWaitForBuild(
+              page,
+              button,
+              false,
+              'viewer contents cold-profile setup'
+            );
+          }
+          const disabledBefore = {
+            pressed: false,
+            showContentsEnabled: false,
+            snapshot: await readSceneContentSnapshot(page),
+          };
+          const coldOn = await captureViewerContentsOnProbe(page, button, 'viewer contents cold on toggle');
+          await setPressedButtonStateAndWaitForBuild(page, button, false, 'viewer contents cold off toggle');
+          const disabledBetween = {
+            pressed: false,
+            showContentsEnabled: false,
+            snapshot: await readSceneContentSnapshot(page),
+          };
+          const warmOn = await captureViewerContentsOnProbe(page, button, 'viewer contents warm on toggle');
+          await page.evaluate(() => window.__WP_PERF__?.setDoorsOpenForVisualProbe?.(true));
+          await page.waitForTimeout(900);
+          await waitForTwoBrowserFrames(page);
+          ensureDir(foldedContentsScreenshotPath);
+          await page.screenshot({ path: foldedContentsScreenshotPath, fullPage: true });
+          await page.evaluate(() => window.__WP_PERF__?.setDoorsOpenForVisualProbe?.(false));
+          await page.waitForTimeout(900);
+          await waitForTwoBrowserFrames(page);
+          if (!beforePressed) {
+            await setPressedButtonStateAndWaitForBuild(
+              page,
+              button,
+              false,
+              'viewer contents cold-profile restore'
+            );
+          }
+          result.viewerContentsProbe = {
+            profile: 'cold-warm-cache-and-steady-render',
+            beforePressed,
+            samples: [
+              disabledBefore,
+              { pressed: true, showContentsEnabled: true, snapshot: coldOn.snapshot },
+              disabledBetween,
+              { pressed: true, showContentsEnabled: true, snapshot: warmOn.snapshot },
+            ],
+            enabled: warmOn.snapshot,
+            disabled: disabledBefore.snapshot,
+            coldOn,
+            warmOn,
+            screenshotPath: path.relative(projectRoot, foldedContentsScreenshotPath),
+          };
+          return;
+        }
         const beforeFingerprint = await readPerfStateFingerprint(page);
         const before = {
           pressed: beforePressed,
@@ -2890,6 +3088,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       },
       { journey: USER_JOURNEYS.adhesiveGlassFirstUse, tags: ['adhesive-glass', 'frosted', 'variant'] }
     );
+
+    if (profileShaderWarmup) {
+      await finalizeShaderWarmupProfile(page, result);
+      return;
+    }
 
     const cabinetCoreSavedName = `Cabinet Browser Perf ${Date.now()}`;
     let expectedCabinetCoreState = null;

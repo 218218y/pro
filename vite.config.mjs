@@ -38,7 +38,10 @@ export default defineConfig(async ({ mode }) => {
     },
 
     define: {
-      ...createObservabilityBuildDefines(observabilityBuildMode),
+      ...createObservabilityBuildDefines(observabilityBuildMode, {
+        adhesiveGlassWarmupMode: process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE,
+        foldedGeometryMode: process.env.WP_PERF_FOLDED_GEOMETRY_MODE,
+      }),
     },
 
     oxc: {

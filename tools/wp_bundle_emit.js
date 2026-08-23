@@ -44,7 +44,10 @@ export function createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }) {
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
-      ...createObservabilityBuildDefines(buildMode),
+      ...createObservabilityBuildDefines(buildMode, {
+        adhesiveGlassWarmupMode: process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE,
+        foldedGeometryMode: process.env.WP_PERF_FOLDED_GEOMETRY_MODE,
+      }),
     },
     build: {
       emptyOutDir: true,

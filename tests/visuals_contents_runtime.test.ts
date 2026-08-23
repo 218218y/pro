@@ -10,6 +10,8 @@ import {
   getCachedBoxGeometry,
   getCachedExtrudeGeometry,
   getCachedRoundedBoxGeometry,
+  getVisualContentGeometryCachePerfStats,
+  resetVisualContentGeometryCachePerfStats,
   resolveContentsOutline,
   resolveContentsDoorStyle,
   requireContentsRenderPolicy,
@@ -411,11 +413,25 @@ test('visuals_contents folded clothes clamp depth and use only the explicit sket
 
   const minShelfZ = -0.1 + 0.015;
   const maxShelfZ = 0.1 - 0.015;
+  const readEffectiveDepth = (child: any) => child.geometry.args[2] * child.scale.z;
   assert.ok(
-    parent.children.every(child => child.position.z - child.geometry.args[2] / 2 >= minShelfZ - 1e-9)
+    parent.children.every(child => child.position.z - readEffectiveDepth(child) / 2 >= minShelfZ - 1e-9)
   );
   assert.ok(
-    parent.children.every(child => child.position.z + child.geometry.args[2] / 2 <= maxShelfZ + 1e-9)
+    parent.children.every(child => child.position.z + readEffectiveDepth(child) / 2 <= maxShelfZ + 1e-9)
+  );
+  assert.equal(
+    new Set(parent.children.map(child => child.geometry)).size,
+    1,
+    'folded bodies should share one canonical geometry'
+  );
+  assert.ok(
+    new Set(parent.children.map(child => child.scale.x)).size > 1,
+    'decorative width variation should be preserved on mesh scale'
+  );
+  assert.ok(
+    parent.children.every(child => Math.abs(child.geometry.args[1] * child.scale.y - 0.025) < 1e-9),
+    'canonical scaling must preserve the requested garment height'
   );
   assert.ok(parent.children.every(child => child.userData.__kind === 'folded_cloth_item'));
   assert.ok(
@@ -637,6 +653,7 @@ test('visuals_contents reuse content geometries and materials across determinist
 test('visuals_contents geometry cache absorbs sub-millimeter decorative jitter', () => {
   const { App } = createApp();
   const THREE = App.deps.THREE;
+  THREE.RoundedBoxGeometry = FakeBoxGeometry;
 
   const firstBox = getCachedBoxGeometry(THREE, 0.1234, 0.2507, 0.1709);
   const secondBox = getCachedBoxGeometry(THREE, 0.1239, 0.2509, 0.17095);
@@ -659,6 +676,29 @@ test('visuals_contents geometry cache absorbs sub-millimeter decorative jitter',
   );
   assert.equal(firstExtrude, secondExtrude);
   assert.equal(firstBox.userData.__sharedVisualContentGeometry, true);
+});
+
+test('visuals_contents geometry cache perf stats separate cold misses from warm hits by folded usage', () => {
+  const { App } = createApp();
+  const THREE = App.deps.THREE;
+  THREE.RoundedBoxGeometry = FakeBoxGeometry;
+
+  resetVisualContentGeometryCachePerfStats(App);
+  const cold = getCachedRoundedBoxGeometry(THREE, 0.221, 0.024, 0.154, 4, 0.005, 'folded.body');
+  const coldStats = getVisualContentGeometryCachePerfStats(App);
+  assert.equal(coldStats?.roundedBox.lookups, 1);
+  assert.equal(coldStats?.roundedBox.hits, 0);
+  assert.equal(coldStats?.roundedBox.misses, 1);
+  assert.equal(coldStats?.byUsage['folded.body']?.uniqueKeys, 1);
+
+  resetVisualContentGeometryCachePerfStats(App);
+  const warm = getCachedRoundedBoxGeometry(THREE, 0.221, 0.024, 0.154, 4, 0.005, 'folded.body');
+  const warmStats = getVisualContentGeometryCachePerfStats(App);
+  assert.equal(warm, cold);
+  assert.equal(warmStats?.roundedBox.lookups, 1);
+  assert.equal(warmStats?.roundedBox.hits, 1);
+  assert.equal(warmStats?.roundedBox.misses, 0);
+  assert.equal(warmStats?.geometryCacheSizeAtReset, warmStats?.geometryCacheSize);
 });
 
 test('visuals_contents realistic hanger consumes the explicit showHanger flag and scales to narrow modules', () => {

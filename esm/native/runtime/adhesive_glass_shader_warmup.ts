@@ -3,9 +3,12 @@ import { getBrowserTimers, requestIdleCallbackMaybe } from './api_browser_surfac
 import { runPerfPhase } from './observability_surface.js';
 import { getCamera, getMirrorRenderTarget, getRenderer, getScene } from './render_access.js';
 import { getCacheBag } from './cache_access.js';
+import { registerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
 
 const ADHESIVE_GLASS_STANDARD_WARMUP_KEY = '__wpAdhesiveGlassStandardShaderWarmup';
 const ADHESIVE_GLASS_STANDARD_WARMUP_PROFILE = 'cube-standard-front-opaque-warm-v1';
+
+export type AdhesiveGlassShaderWarmupMode = 'startup' | 'off' | 'design-intent';
 
 type WarmupState = {
   scheduled?: boolean;
@@ -81,6 +84,12 @@ function call2(ctx: unknown, fn: unknown, a: unknown, b: unknown): unknown {
 
 function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): unknown {
   return typeof fn === 'function' ? fn.call(ctx, a, b, c) : undefined;
+}
+
+export function getAdhesiveGlassShaderWarmupMode(): AdhesiveGlassShaderWarmupMode {
+  const mode =
+    typeof __WP_ADHESIVE_GLASS_WARMUP_MODE__ === 'string' ? __WP_ADHESIVE_GLASS_WARMUP_MODE__ : 'startup';
+  return mode === 'off' || mode === 'design-intent' ? mode : 'startup';
 }
 
 function createWarmupMaterial(THREE: unknown, texture: unknown): unknown {
@@ -308,4 +317,14 @@ export function scheduleAdhesiveGlassStandardShaderWarmup(App: unknown, THREE: u
     state.scheduled = false;
     run();
   }
+}
+
+export function scheduleAdhesiveGlassStandardShaderWarmupAtStartup(App: unknown, THREE: unknown): void {
+  const mode = getAdhesiveGlassShaderWarmupMode();
+  if (mode === 'design-intent') {
+    registerAdhesiveGlassDesignIntentWarmup(App, () => scheduleAdhesiveGlassStandardShaderWarmup(App, THREE));
+    return;
+  }
+  if (mode !== 'startup') return;
+  scheduleAdhesiveGlassStandardShaderWarmup(App, THREE);
 }

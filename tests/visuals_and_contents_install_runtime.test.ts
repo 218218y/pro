@@ -20,6 +20,7 @@ function createThreeStub() {
   class Mesh {
     position = { set() {} };
     rotation = { y: 0 };
+    scale = { set() {} };
     userData: AnyRecord = {};
     constructor(
       public geometry: unknown,

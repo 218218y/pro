@@ -270,11 +270,29 @@ export interface BuilderModulesSurfaceLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
+export interface VisualContentGeometryCacheCounterLike {
+  lookups: number;
+  hits: number;
+  misses: number;
+  uniqueKeys: number;
+}
+
+export interface VisualContentGeometryCacheStatsLike {
+  geometryCacheSize: number;
+  geometryCacheSizeAtReset: number;
+  materialCacheSize: number;
+  box: VisualContentGeometryCacheCounterLike;
+  roundedBox: VisualContentGeometryCacheCounterLike;
+  byUsage: Record<string, VisualContentGeometryCacheCounterLike>;
+}
+
 export interface BuilderContentsSurfaceLike extends UnknownRecord {
   addDimensionLine?: BuilderDimensionLineFn;
   addHangingClothes?: BuilderAddHangingClothesFn;
   addFoldedClothes?: BuilderAddFoldedClothesFn;
   addRealisticHanger?: BuilderAddRealisticHangerFn;
+  getGeometryCachePerfStats?: () => VisualContentGeometryCacheStatsLike | null;
+  resetGeometryCachePerfStats?: () => VisualContentGeometryCacheStatsLike | null;
 
   [k: string]: unknown;
 }

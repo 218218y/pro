@@ -500,6 +500,12 @@ export interface WardrobeProPerfConsoleSurface {
   getStateFingerprint?: () => WardrobeProPerfStateFingerprint | null;
   getRendererInfoSnapshot?: () => WardrobeProRendererInfoSnapshot | null;
   getSceneContentSnapshot?: () => WardrobeProSceneContentSnapshot | null;
+  getVisualContentGeometryCacheStats?: () => import('./build_ops').VisualContentGeometryCacheStatsLike | null;
+  resetVisualContentGeometryCacheStats?: () =>
+    import('./build_ops').VisualContentGeometryCacheStatsLike | null;
+  sampleRendererFrames?: (count: number) => Promise<WardrobeProPerfEntry[]>;
+  scheduleAdhesiveGlassWarmupForDesignIntent?: () => void;
+  setDoorsOpenForVisualProbe?: (open: boolean) => boolean;
   getStoreDebugStats?: () => StoreDebugStats | null;
   resetStoreDebugStats?: () => StoreDebugStats | null;
   getBuildDebugStats?: () => BuilderDebugStatsLike | null;

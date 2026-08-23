@@ -9,8 +9,8 @@ import { BROWSER_PERF_TARGETS, resolveBrowserPerfTargetPaths } from './wp_browse
 const projectRoot = process.cwd();
 const target = BROWSER_PERF_TARGETS.release;
 const targetPaths = resolveBrowserPerfTargetPaths(projectRoot, target);
-const stableJsonPath = path.join(path.dirname(targetPaths.latestJsonPath), 'stable-latest.json');
-const stableMdPath = path.join(path.dirname(targetPaths.latestJsonPath), 'stable-latest.md');
+const stableLatestJsonPath = path.join(path.dirname(targetPaths.latestJsonPath), 'stable-latest.json');
+const stableLatestMdPath = path.join(path.dirname(targetPaths.latestJsonPath), 'stable-latest.md');
 
 function readPositiveIntegerFlag(name, fallback) {
   const prefix = `--${name}=`;
@@ -23,6 +23,14 @@ function readPositiveIntegerFlag(name, fallback) {
     throw new Error(`[browser-perf-stable] --${name} must be a non-negative integer`);
   }
   return value;
+}
+
+function readStringFlag(name, fallback) {
+  const prefix = `--${name}=`;
+  const inline = process.argv.find(value => value.startsWith(prefix));
+  const index = process.argv.indexOf(`--${name}`);
+  const raw = inline ? inline.slice(prefix.length) : index >= 0 ? process.argv[index + 1] : undefined;
+  return typeof raw === 'string' && raw.trim() ? raw.trim().toLowerCase() : fallback;
 }
 
 function runCommand(command, args, label) {
@@ -372,7 +380,32 @@ function renderMarkdown(report) {
 
 const warmupRuns = readPositiveIntegerFlag('warmups', 1);
 const measuredRuns = readPositiveIntegerFlag('runs', 3);
+const adhesiveGlassWarmupMode = readStringFlag('warmup-mode', 'startup');
+const foldedGeometryMode = readStringFlag('folded-geometry-mode', 'canonical-scale');
+const profileFoldedContents = process.argv.includes('--profile-folded-contents');
+const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
+if (!['startup', 'off', 'design-intent'].includes(adhesiveGlassWarmupMode)) {
+  throw new Error('[browser-perf-stable] --warmup-mode must be startup, off, or design-intent');
+}
+if (!['exact', 'segments-2', 'canonical-scale'].includes(foldedGeometryMode)) {
+  throw new Error(
+    '[browser-perf-stable] --folded-geometry-mode must be exact, segments-2, or canonical-scale'
+  );
+}
 if (measuredRuns < 1) throw new Error('[browser-perf-stable] at least one measured run is required');
+process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = adhesiveGlassWarmupMode;
+process.env.WP_PERF_FOLDED_GEOMETRY_MODE = foldedGeometryMode;
+
+const variantSuffix = profileFoldedContents
+  ? `${adhesiveGlassWarmupMode}-folded-contents-${foldedGeometryMode}`
+  : profileShaderWarmup
+    ? `${adhesiveGlassWarmupMode}-shader-profile`
+    : adhesiveGlassWarmupMode;
+const stableJsonPath = path.join(
+  path.dirname(targetPaths.latestJsonPath),
+  `stable-warmup-${variantSuffix}.json`
+);
+const stableMdPath = path.join(path.dirname(targetPaths.latestJsonPath), `stable-warmup-${variantSuffix}.md`);
 
 runNpmScript(target.buildScript);
 const sampleScript = path.join(projectRoot, 'tools', 'wp_browser_perf_smoke.mjs');
@@ -382,11 +415,10 @@ for (let index = 0; index < warmupRuns + measuredRuns; index += 1) {
   console.log(
     `[browser-perf-stable] ${measured ? 'measured' : 'warm-up'} run ${measured ? index - warmupRuns + 1 : index + 1}/${measured ? measuredRuns : warmupRuns}`
   );
-  runCommand(
-    process.execPath,
-    [sampleScript, '--target', 'release', '--reuse-release-artifact'],
-    '[browser-perf-stable] browser sample'
-  );
+  const sampleArgs = [sampleScript, '--target', 'release', '--reuse-release-artifact'];
+  if (profileFoldedContents) sampleArgs.push('--profile-folded-contents');
+  if (profileShaderWarmup) sampleArgs.push('--profile-shader-warmup');
+  runCommand(process.execPath, sampleArgs, '[browser-perf-stable] browser sample');
   const result = readLatestResult();
   if (measured) samples.push(result);
 }
@@ -397,6 +429,12 @@ const report = {
   version: 1,
   generatedAt: new Date().toISOString(),
   comparisonPolicy: 'not directly comparable across environments',
+  experiment: {
+    adhesiveGlassWarmupMode,
+    foldedGeometryMode,
+    profileFoldedContents,
+    profileShaderWarmup,
+  },
   warmupRuns,
   measuredRuns,
   environment: environmentIdentity(first),
@@ -458,4 +496,6 @@ const report = {
 fs.mkdirSync(path.dirname(stableJsonPath), { recursive: true });
 fs.writeFileSync(stableJsonPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 fs.writeFileSync(stableMdPath, renderMarkdown(report), 'utf8');
+fs.copyFileSync(stableJsonPath, stableLatestJsonPath);
+fs.copyFileSync(stableMdPath, stableLatestMdPath);
 console.log(`[browser-perf-stable] wrote ${path.relative(projectRoot, stableJsonPath)}`);

@@ -22,6 +22,8 @@ import type {
   RoomArchitecturePlan,
   ThreeLike,
   UnknownRecord,
+  VisualContentGeometryCacheCounterLike,
+  VisualContentGeometryCacheStatsLike,
 } from '../../../types/index.js';
 
 export type AppAwareAddHangingClothesFn = (
@@ -38,6 +40,10 @@ export type AppAwareAddRealisticHangerFn = (
   App: AppContainer,
   ...args: Parameters<BuilderAddRealisticHangerFn>
 ) => ReturnType<BuilderAddRealisticHangerFn>;
+
+function isClientVisualContentsBuild(): boolean {
+  return typeof __WP_BUILD_CLIENT__ !== 'undefined' && __WP_BUILD_CLIENT__ === true;
+}
 
 export function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -217,9 +223,118 @@ type ThreeCacheHost = object;
 
 const GEOMETRY_CACHE_BY_THREE = new WeakMap<ThreeCacheHost, Map<string, GeometryLike>>();
 const MATERIAL_CACHE_BY_THREE = new WeakMap<ThreeCacheHost, Map<string, MaterialLike>>();
+const GEOMETRY_CACHE_PERF_STATS_BY_THREE = new WeakMap<ThreeCacheHost, MutableGeometryCachePerfStats>();
 const VISUAL_CONTENT_GEOMETRY_CACHE_LIMIT = 1200;
 const VISUAL_CONTENT_MATERIAL_CACHE_LIMIT = 320;
 const VISUAL_CONTENT_GEOMETRY_BUCKET_M = 0.001;
+
+type MutableGeometryCacheCounter = {
+  lookups: number;
+  hits: number;
+  misses: number;
+  uniqueKeys: Set<string>;
+};
+
+type MutableGeometryCachePerfStats = {
+  geometryCacheSizeAtReset: number;
+  box: MutableGeometryCacheCounter;
+  roundedBox: MutableGeometryCacheCounter;
+  byUsage: Map<string, MutableGeometryCacheCounter>;
+};
+
+function createGeometryCacheCounter(): MutableGeometryCacheCounter {
+  return { lookups: 0, hits: 0, misses: 0, uniqueKeys: new Set<string>() };
+}
+
+function createGeometryCachePerfStats(geometryCacheSizeAtReset: number): MutableGeometryCachePerfStats {
+  return {
+    geometryCacheSizeAtReset,
+    box: createGeometryCacheCounter(),
+    roundedBox: createGeometryCacheCounter(),
+    byUsage: new Map<string, MutableGeometryCacheCounter>(),
+  };
+}
+
+function readGeometryCachePerfStats(THREE: ThreeLike): MutableGeometryCachePerfStats {
+  const host = readThreeCacheHost(THREE);
+  let stats = GEOMETRY_CACHE_PERF_STATS_BY_THREE.get(host);
+  if (!stats) {
+    stats = createGeometryCachePerfStats(readGeometryCache(THREE).size);
+    GEOMETRY_CACHE_PERF_STATS_BY_THREE.set(host, stats);
+  }
+  return stats;
+}
+
+function recordGeometryCacheLookup(
+  THREE: ThreeLike,
+  kind: 'box' | 'roundedBox',
+  key: string,
+  hit: boolean,
+  usage?: string
+): void {
+  if (isClientVisualContentsBuild()) return;
+  const stats = readGeometryCachePerfStats(THREE);
+  const counters = [stats[kind]];
+  const normalizedUsage = typeof usage === 'string' ? usage.trim() : '';
+  if (normalizedUsage) {
+    let usageCounter = stats.byUsage.get(normalizedUsage);
+    if (!usageCounter) {
+      usageCounter = createGeometryCacheCounter();
+      stats.byUsage.set(normalizedUsage, usageCounter);
+    }
+    counters.push(usageCounter);
+  }
+  for (const counter of counters) {
+    counter.lookups += 1;
+    if (hit) counter.hits += 1;
+    else counter.misses += 1;
+    counter.uniqueKeys.add(key);
+  }
+}
+
+function snapshotGeometryCacheCounter(
+  counter: MutableGeometryCacheCounter
+): VisualContentGeometryCacheCounterLike {
+  return {
+    lookups: counter.lookups,
+    hits: counter.hits,
+    misses: counter.misses,
+    uniqueKeys: counter.uniqueKeys.size,
+  };
+}
+
+export function getVisualContentGeometryCachePerfStats(
+  App: AppContainer
+): VisualContentGeometryCacheStatsLike | null {
+  if (isClientVisualContentsBuild()) return null;
+  const THREE = ensureVisualsContentsTHREE(App);
+  const stats = readGeometryCachePerfStats(THREE);
+  return {
+    geometryCacheSize: readGeometryCache(THREE).size,
+    geometryCacheSizeAtReset: stats.geometryCacheSizeAtReset,
+    materialCacheSize: readMaterialCache(THREE).size,
+    box: snapshotGeometryCacheCounter(stats.box),
+    roundedBox: snapshotGeometryCacheCounter(stats.roundedBox),
+    byUsage: Object.fromEntries(
+      Array.from(stats.byUsage.entries())
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([usage, counter]) => [usage, snapshotGeometryCacheCounter(counter)])
+    ),
+  };
+}
+
+export function resetVisualContentGeometryCachePerfStats(
+  App: AppContainer
+): VisualContentGeometryCacheStatsLike | null {
+  if (isClientVisualContentsBuild()) return null;
+  const THREE = ensureVisualsContentsTHREE(App);
+  const before = getVisualContentGeometryCachePerfStats(App);
+  GEOMETRY_CACHE_PERF_STATS_BY_THREE.set(
+    readThreeCacheHost(THREE),
+    createGeometryCachePerfStats(readGeometryCache(THREE).size)
+  );
+  return before;
+}
 
 function readThreeCacheHost(THREE: ThreeLike): ThreeCacheHost {
   return THREE as unknown as ThreeCacheHost;
@@ -287,11 +402,13 @@ export function getCachedBoxGeometry(
   THREE: ThreeLike,
   width: number,
   height: number,
-  depth: number
+  depth: number,
+  usage?: string
 ): GeometryLike {
   const cache = readGeometryCache(THREE);
   const key = geometryKey('box', width, height, depth);
   const cached = cache.get(key);
+  recordGeometryCacheLookup(THREE, 'box', key, !!cached, usage);
   if (cached) return cached;
   const geometry = new THREE.BoxGeometry(
     quantizeVisualContentMetric(width),
@@ -309,13 +426,15 @@ export function getCachedRoundedBoxGeometry(
   height: number,
   depth: number,
   segments: number,
-  radius: number
+  radius: number,
+  usage?: string
 ): GeometryLike {
   if (typeof THREE.RoundedBoxGeometry === 'undefined')
-    return getCachedBoxGeometry(THREE, width, height, depth);
+    return getCachedBoxGeometry(THREE, width, height, depth, usage);
   const cache = readGeometryCache(THREE);
   const key = geometryKey('roundedBox', width, height, depth, segments, radius);
   const cached = cache.get(key);
+  recordGeometryCacheLookup(THREE, 'roundedBox', key, !!cached, usage);
   if (cached) return cached;
   const geometry = new THREE.RoundedBoxGeometry(
     quantizeVisualContentMetric(width),

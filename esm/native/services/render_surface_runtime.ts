@@ -19,7 +19,7 @@ import {
   readRuntimeConfigNumberFromApp,
 } from '../runtime/runtime_config_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
-import { scheduleAdhesiveGlassStandardShaderWarmup } from '../runtime/adhesive_glass_shader_warmup.js';
+import { scheduleAdhesiveGlassStandardShaderWarmupAtStartup } from '../runtime/adhesive_glass_shader_warmup.js';
 import {
   addNode,
   clampNumber,
@@ -412,7 +412,7 @@ export function createViewportSurface(
   );
   try {
     runPerfPhase(perfApp, 'boot.ui.viewport.shader-warmup-schedule', 'boot.ui.viewport.create', () =>
-      scheduleAdhesiveGlassStandardShaderWarmup(App, THREE)
+      scheduleAdhesiveGlassStandardShaderWarmupAtStartup(App, THREE)
     );
   } catch {
     // Shader warmup is an optimization only; viewport creation must stay resilient.

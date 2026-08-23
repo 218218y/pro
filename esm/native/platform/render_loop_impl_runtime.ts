@@ -33,8 +33,8 @@ import { createRenderLoopFrontOverlayHelpers } from './render_loop_impl_front_ov
 import { createRenderLoopMirrorDriver } from './render_loop_mirror_driver.js';
 import { createRenderLoopMotionController } from './render_loop_motion.js';
 import { createRenderLoopVisualEffects } from './render_loop_visual_effects.js';
-
 const SLOW_FRAME_THRESHOLD_MS = 50;
+const PERF_RENDER_FRAME_SAMPLE_REMAINING_SLOT = '__wpPerfRenderFrameSampleRemaining';
 
 type FramePerfPhase = {
   name: string;
@@ -105,11 +105,23 @@ export function createInstalledRenderAnimate(
     }
   }
 
-  function recordSlowFrame(frameStartMs: number, phases: FramePerfPhase[]): void {
+  function readForcedFrameSampleRemaining(): number {
+    if (!__framePerfEnabled) return 0;
+    return Math.max(0, Math.floor(Number(getRenderSlot(A, PERF_RENDER_FRAME_SAMPLE_REMAINING_SLOT)) || 0));
+  }
+
+  function recordMeasuredFrame(frameStartMs: number, phases: FramePerfPhase[], forceCapture: boolean): void {
     if (!__framePerfEnabled) return;
     const frameEndMs = __now();
     const totalMs = Math.max(0, frameEndMs - frameStartMs);
-    if (totalMs < SLOW_FRAME_THRESHOLD_MS) return;
+    if (forceCapture) {
+      setRenderSlot(
+        A,
+        PERF_RENDER_FRAME_SAMPLE_REMAINING_SLOT,
+        Math.max(0, readForcedFrameSampleRemaining() - 1)
+      );
+    }
+    if (totalMs < SLOW_FRAME_THRESHOLD_MS && !forceCapture) return;
 
     recordPerfMetric(__perfApp, 'render.frame.total', totalMs, 'ms', {
       detail: {
@@ -149,8 +161,9 @@ export function createInstalledRenderAnimate(
       const motionFrame = __framePerfEnabled
         ? runMeasuredFramePhase(framePerfPhases, 'motion', () => __motion.stepFrame(frameStartMs))
         : __motion.stepFrame(frameStartMs);
-      if (!motionFrame.isActiveState) {
-        recordSlowFrame(frameStartMs, framePerfPhases);
+      const forceFrameCapture = readForcedFrameSampleRemaining() > 0;
+      if (!motionFrame.isActiveState && !forceFrameCapture) {
+        recordMeasuredFrame(frameStartMs, framePerfPhases, false);
         clearLoopSchedule(A);
         return;
       }
@@ -237,12 +250,13 @@ export function createInstalledRenderAnimate(
         }
       }
 
-      recordSlowFrame(frameStartMs, framePerfPhases);
+      recordMeasuredFrame(frameStartMs, framePerfPhases, forceFrameCapture);
 
       const mirrorWorkPending = getRenderSlot(A, '__mirrorWorkPending') === true;
       const shouldContinueLoop =
         motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive || mirrorWorkPending;
-      if (!shouldContinueLoop) {
+      const shouldContinuePerfSampling = readForcedFrameSampleRemaining() > 0;
+      if (!shouldContinueLoop && !shouldContinuePerfSampling) {
         clearLoopSchedule(A);
         return;
       }

@@ -6,6 +6,10 @@
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { createInternalDrawerBox, buildChestOnly } from './visuals_chest_mode.js';
 import { addHangingClothes, addFoldedClothes, addRealisticHanger } from './visuals_contents.js';
+import {
+  getVisualContentGeometryCachePerfStats,
+  resetVisualContentGeometryCachePerfStats,
+} from './visuals_contents_shared.js';
 import { createDoorVisual } from './visuals_and_contents_door_visual.js';
 import {
   __ensureApp,
@@ -46,7 +50,12 @@ type VisualsAndContentsInstallContext = {
 };
 
 type BuilderModulesCallableKey = 'createDoorVisual' | 'createInternalDrawerBox' | 'buildChestOnly';
-type BuilderContentsCallableKey = 'addHangingClothes' | 'addFoldedClothes' | 'addRealisticHanger';
+type BuilderContentsCallableKey =
+  | 'addHangingClothes'
+  | 'addFoldedClothes'
+  | 'addRealisticHanger'
+  | 'getGeometryCachePerfStats'
+  | 'resetGeometryCachePerfStats';
 
 const BUILDER_MODULES_CANONICAL_KEYS: Record<BuilderModulesCallableKey, string> = {
   createDoorVisual: '__wpBuilderModulesCreateDoorVisual',
@@ -58,6 +67,8 @@ const BUILDER_CONTENTS_CANONICAL_KEYS: Record<BuilderContentsCallableKey, string
   addHangingClothes: '__wpBuilderContentsAddHangingClothes',
   addFoldedClothes: '__wpBuilderContentsAddFoldedClothes',
   addRealisticHanger: '__wpBuilderContentsAddRealisticHanger',
+  getGeometryCachePerfStats: '__wpBuilderContentsGetGeometryCachePerfStats',
+  resetGeometryCachePerfStats: '__wpBuilderContentsResetGeometryCachePerfStats',
 };
 
 const BUILDER_MODULES_CALLABLE_KEYS: readonly BuilderModulesCallableKey[] = [
@@ -70,6 +81,8 @@ const BUILDER_CONTENTS_CALLABLE_KEYS: readonly BuilderContentsCallableKey[] = [
   'addHangingClothes',
   'addFoldedClothes',
   'addRealisticHanger',
+  'getGeometryCachePerfStats',
+  'resetGeometryCachePerfStats',
 ];
 
 const visualsAndContentsInstallContexts = new WeakMap<object, VisualsAndContentsInstallContext>();
@@ -84,6 +97,8 @@ export const builderContents = {
   addHangingClothes,
   addFoldedClothes,
   addRealisticHanger,
+  getGeometryCachePerfStats: getVisualContentGeometryCachePerfStats,
+  resetGeometryCachePerfStats: resetVisualContentGeometryCachePerfStats,
 };
 
 function createVisualsAndContentsInstallContext(App: AppContainer): VisualsAndContentsInstallContext {
@@ -165,6 +180,28 @@ export function installBuilderVisualsAndContents(App: AppContainer) {
         Parameters<BuilderCreateInternalDrawerBoxFn>,
         ReturnType<BuilderCreateInternalDrawerBoxFn>
       >(modulesContext, createInternalDrawerBox);
+    }
+  );
+  installStableSurfaceMethod(
+    C,
+    'getGeometryCachePerfStats',
+    BUILDER_CONTENTS_CANONICAL_KEYS.getGeometryCachePerfStats,
+    () => {
+      return __bindWithApp<[], ReturnType<typeof getVisualContentGeometryCachePerfStats>>(
+        contentsContext,
+        getVisualContentGeometryCachePerfStats
+      );
+    }
+  );
+  installStableSurfaceMethod(
+    C,
+    'resetGeometryCachePerfStats',
+    BUILDER_CONTENTS_CANONICAL_KEYS.resetGeometryCachePerfStats,
+    () => {
+      return __bindWithApp<[], ReturnType<typeof resetVisualContentGeometryCachePerfStats>>(
+        contentsContext,
+        resetVisualContentGeometryCachePerfStats
+      );
     }
   );
   installStableSurfaceMethod(M, 'buildChestOnly', BUILDER_MODULES_CANONICAL_KEYS.buildChestOnly, () => {

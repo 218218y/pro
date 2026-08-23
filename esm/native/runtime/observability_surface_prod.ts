@@ -261,6 +261,19 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {
       return null;
     },
+    getVisualContentGeometryCacheStats(): null {
+      return null;
+    },
+    resetVisualContentGeometryCacheStats(): null {
+      return null;
+    },
+    sampleRendererFrames(): Promise<WardrobeProPerfEntry[]> {
+      return Promise.resolve([]);
+    },
+    scheduleAdhesiveGlassWarmupForDesignIntent(): void {},
+    setDoorsOpenForVisualProbe(): boolean {
+      return false;
+    },
     getErrorHistory(): ErrorsHistoryEntryLike[] {
       return [];
     },

@@ -12,7 +12,7 @@ function indexOfOrThrow(needle) {
   return index;
 }
 
-test('render loop keeps plain render wakeups one-shot and continues only for real motion', () => {
+test('render loop keeps plain render wakeups one-shot and bounds perf-only frame sampling', () => {
   const controlsStateIdx = indexOfOrThrow('let controlsStillMoving = false;');
   const measuredControlsIdx = indexOfOrThrow('controlsStillMoving = __framePerfEnabled');
   const controlsFallbackIdx = indexOfOrThrow(": call0m(c, c['update']) === true;");
@@ -23,7 +23,13 @@ test('render loop keeps plain render wakeups one-shot and continues only for rea
   const continuationSourcesIdx = indexOfOrThrow(
     'motionFrame.isAnimating || controlsStillMoving || cameraMoveRenderingActive || mirrorWorkPending;'
   );
-  const inactiveStopIdx = source.indexOf('if (!shouldContinueLoop) {', continuationSourcesIdx);
+  const perfSamplingIdx = indexOfOrThrow(
+    'const shouldContinuePerfSampling = readForcedFrameSampleRemaining() > 0;'
+  );
+  const inactiveStopIdx = source.indexOf(
+    'if (!shouldContinueLoop && !shouldContinuePerfSampling) {',
+    continuationSourcesIdx
+  );
   const clearScheduleIdx = source.indexOf('clearLoopSchedule(A);', inactiveStopIdx);
   const inactiveReturnIdx = source.indexOf('return;', clearScheduleIdx);
 
@@ -34,10 +40,11 @@ test('render loop keeps plain render wakeups one-shot and continues only for rea
   assert.ok(
     continuationStateIdx < continuationDecisionIdx &&
       continuationDecisionIdx < continuationSourcesIdx &&
-      continuationSourcesIdx < inactiveStopIdx &&
+      continuationSourcesIdx < perfSamplingIdx &&
+      perfSamplingIdx < inactiveStopIdx &&
       inactiveStopIdx < clearScheduleIdx &&
       clearScheduleIdx < inactiveReturnIdx,
-    'the loop must stop after evaluating only the canonical real-motion continuation sources'
+    'the loop must keep production continuation separate from bounded perf-only frame sampling'
   );
   assert.doesNotMatch(
     source,

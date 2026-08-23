@@ -20,7 +20,35 @@ import {
   seededRandom,
   type AppAwareAddFoldedClothesFn,
 } from './visuals_contents_shared.js';
-import type { Object3DLike } from '../../../types/index.js';
+import type { MaterialLike, Object3DLike } from '../../../types/index.js';
+
+type FoldedRoundedUsage =
+  'folded.body' | 'folded.top-panel' | 'folded.front-fold' | 'folded.collar' | 'folded.sleeve-fold';
+
+type FoldedGeometryMode = 'exact' | 'segments-2' | 'canonical-scale';
+
+const CANONICAL_FOLDED_ROUNDED_DIMENSIONS: Record<
+  FoldedRoundedUsage,
+  Readonly<{ width: number; height: number; depth: number }>
+> = Object.freeze({
+  'folded.body': Object.freeze({ width: 0.255, height: 0.025, depth: 0.18 }),
+  'folded.top-panel': Object.freeze({ width: 0.189, height: 0.005, depth: 0.068 }),
+  'folded.front-fold': Object.freeze({ width: 0.179, height: 0.003, depth: 0.043 }),
+  'folded.collar': Object.freeze({ width: 0.061, height: 0.0025, depth: 0.036 }),
+  'folded.sleeve-fold': Object.freeze({ width: 0.046, height: 0.003, depth: 0.032 }),
+});
+
+const CANONICAL_FOLDED_CREASE_DIMENSIONS = Object.freeze({
+  width: 0.018,
+  height: 0.011,
+  depth: 0.012,
+});
+
+export function getFoldedGeometryMode(): FoldedGeometryMode {
+  const mode =
+    typeof __WP_FOLDED_GEOMETRY_MODE__ === 'string' ? __WP_FOLDED_GEOMETRY_MODE__ : 'canonical-scale';
+  return mode === 'exact' || mode === 'segments-2' ? mode : 'canonical-scale';
+}
 
 type ShelfBookRun = {
   remaining: number;
@@ -271,20 +299,60 @@ function adjustHexColor(color: number, amount: number): number {
   return (r << 16) | (g << 8) | b;
 }
 
-function createFoldedClothGeometry(
+function resolveFoldedCornerRadius(width: number, height: number, depth: number): number {
+  return Math.min(0.008, Math.max(0.002, Math.min(width, height, depth) * 0.28));
+}
+
+function createFoldedClothMesh(
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>,
   width: number,
   height: number,
-  depth: number
-) {
-  return getCachedRoundedBoxGeometry(
+  depth: number,
+  usage: FoldedRoundedUsage,
+  material: MaterialLike
+): Object3DLike {
+  const mode = getFoldedGeometryMode();
+  const canonical = mode === 'canonical-scale' ? CANONICAL_FOLDED_ROUNDED_DIMENSIONS[usage] : null;
+  const geometryWidth = canonical?.width ?? width;
+  const geometryHeight = canonical?.height ?? height;
+  const geometryDepth = canonical?.depth ?? depth;
+  const segments = mode === 'segments-2' ? (usage === 'folded.body' ? 2 : 1) : 4;
+  const geometry = getCachedRoundedBoxGeometry(
     THREE,
-    width,
-    height,
-    depth,
-    4,
-    Math.min(0.008, Math.max(0.002, Math.min(width, height, depth) * 0.28))
+    geometryWidth,
+    geometryHeight,
+    geometryDepth,
+    segments,
+    resolveFoldedCornerRadius(geometryWidth, geometryHeight, geometryDepth),
+    usage
   );
+  const mesh = new THREE.Mesh(geometry, material);
+  if (canonical) {
+    mesh.scale.set(width / canonical.width, height / canonical.height, depth / canonical.depth);
+  }
+  return mesh;
+}
+
+function createFoldedCreaseMesh(
+  THREE: ReturnType<typeof ensureVisualsContentsTHREE>,
+  width: number,
+  height: number,
+  depth: number,
+  material: MaterialLike
+): Object3DLike {
+  const canonical = getFoldedGeometryMode() === 'canonical-scale' ? CANONICAL_FOLDED_CREASE_DIMENSIONS : null;
+  const geometry = getCachedBoxGeometry(
+    THREE,
+    canonical?.width ?? width,
+    canonical?.height ?? height,
+    canonical?.depth ?? depth,
+    'folded.crease'
+  );
+  const mesh = new THREE.Mesh(geometry, material);
+  if (canonical) {
+    mesh.scale.set(width / canonical.width, height / canonical.height, depth / canonical.depth);
+  }
+  return mesh;
 }
 
 function addFoldedGarmentDetails(args: {
@@ -311,8 +379,12 @@ function addFoldedGarmentDetails(args: {
     roughness: 0.97,
     metalness: 0.0,
   });
-  const topPanel = new THREE.Mesh(
-    createFoldedClothGeometry(THREE, itemWidth * 0.74, itemHeight * 0.2, itemDepth * 0.38),
+  const topPanel = createFoldedClothMesh(
+    THREE,
+    itemWidth * 0.74,
+    itemHeight * 0.2,
+    itemDepth * 0.38,
+    'folded.top-panel',
     accentMat
   );
   topPanel.position.set(0, itemHeight * 0.16, itemDepth * 0.18);
@@ -320,8 +392,12 @@ function addFoldedGarmentDetails(args: {
   topPanel.userData.__kind = 'folded_cloth_top_panel';
   item.add?.(topPanel);
 
-  const frontFold = new THREE.Mesh(
-    createFoldedClothGeometry(THREE, itemWidth * 0.7, itemHeight * 0.12, itemDepth * 0.24),
+  const frontFold = createFoldedClothMesh(
+    THREE,
+    itemWidth * 0.7,
+    itemHeight * 0.12,
+    itemDepth * 0.24,
+    'folded.front-fold',
     shadowMat
   );
   frontFold.position.set(0, -itemHeight * 0.06, itemDepth * 0.28);
@@ -330,8 +406,12 @@ function addFoldedGarmentDetails(args: {
   item.add?.(frontFold);
 
   if (variantSelector === 0) {
-    const collar = new THREE.Mesh(
-      createFoldedClothGeometry(THREE, itemWidth * 0.24, itemHeight * 0.1, itemDepth * 0.2),
+    const collar = createFoldedClothMesh(
+      THREE,
+      itemWidth * 0.24,
+      itemHeight * 0.1,
+      itemDepth * 0.2,
+      'folded.collar',
       shadowMat
     );
     collar.position.set(0, itemHeight * 0.24, itemDepth * 0.08);
@@ -340,8 +420,12 @@ function addFoldedGarmentDetails(args: {
     item.add?.(collar);
   } else if (variantSelector === 1) {
     for (const side of [-1, 1]) {
-      const sleeveFold = new THREE.Mesh(
-        createFoldedClothGeometry(THREE, itemWidth * 0.18, itemHeight * 0.12, itemDepth * 0.18),
+      const sleeveFold = createFoldedClothMesh(
+        THREE,
+        itemWidth * 0.18,
+        itemHeight * 0.12,
+        itemDepth * 0.18,
+        'folded.sleeve-fold',
         accentMat
       );
       sleeveFold.position.set(side * itemWidth * 0.22, itemHeight * 0.08, itemDepth * 0.04);
@@ -350,13 +434,11 @@ function addFoldedGarmentDetails(args: {
       item.add?.(sleeveFold);
     }
   } else {
-    const crease = new THREE.Mesh(
-      getCachedBoxGeometry(
-        THREE,
-        Math.max(itemWidth * 0.07, 0.006),
-        itemHeight * 0.44,
-        Math.max(itemDepth * 0.07, 0.004)
-      ),
+    const crease = createFoldedCreaseMesh(
+      THREE,
+      Math.max(itemWidth * 0.07, 0.006),
+      itemHeight * 0.44,
+      Math.max(itemDepth * 0.07, 0.004),
       accentMat
     );
     crease.position.set(0, 0, itemDepth * 0.22);
@@ -450,9 +532,12 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           const depthScale = 0.9 + seededRandom.random() * 0.1;
           const itemWidth = dims.itemWidthM * widthScale;
           const actualDepth = itemDepth * depthScale;
-          const geometry = createFoldedClothGeometry(THREE, itemWidth, itemHeight, actualDepth);
-          const item = new THREE.Mesh(
-            geometry,
+          const item = createFoldedClothMesh(
+            THREE,
+            itemWidth,
+            itemHeight,
+            actualDepth,
+            'folded.body',
             getCachedMeshStandardMaterial(THREE, `folded-cloth:${stackColor}`, {
               color: stackColor,
               roughness: 0.94,

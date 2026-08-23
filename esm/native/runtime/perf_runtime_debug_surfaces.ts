@@ -5,6 +5,7 @@ import type {
   RenderFollowThroughBudgetSummaryLike,
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
+  VisualContentGeometryCacheStatsLike,
 } from '../../../types/index.js';
 
 import { getBuilderService } from './builder_service_access.js';
@@ -24,6 +25,10 @@ type BuilderServiceWithDebugSurface = {
   getBuildDebugStats?: () => BuilderDebugStatsLike;
   resetBuildDebugStats?: () => BuilderDebugStatsLike;
   getBuildDebugBudget?: () => BuildDebugBudgetSummaryLike;
+  contents?: {
+    getGeometryCachePerfStats?: () => VisualContentGeometryCacheStatsLike | null;
+    resetGeometryCachePerfStats?: () => VisualContentGeometryCacheStatsLike | null;
+  };
 };
 
 function getStoreWithDebugSurface(App: AppContainer): StoreWithDebugSurface | null {
@@ -218,6 +223,30 @@ export function getBuildRuntimeDebugBudget(App: AppContainer): BuildDebugBudgetS
     return summarizeBuildDebugBudgetLocal(getBuildRuntimeDebugStats(App));
   } catch {
     return summarizeBuildDebugBudgetLocal(createEmptyBuildDebugStats());
+  }
+}
+
+export function getVisualContentGeometryCacheRuntimeStats(
+  App: AppContainer
+): VisualContentGeometryCacheStatsLike | null {
+  try {
+    const builder = getBuilderWithDebugSurface(App);
+    const read = builder?.contents?.getGeometryCachePerfStats;
+    return typeof read === 'function' ? read.call(builder?.contents) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function resetVisualContentGeometryCacheRuntimeStats(
+  App: AppContainer
+): VisualContentGeometryCacheStatsLike | null {
+  try {
+    const builder = getBuilderWithDebugSurface(App);
+    const reset = builder?.contents?.resetGeometryCachePerfStats;
+    return typeof reset === 'function' ? reset.call(builder?.contents) : null;
+  } catch {
+    return null;
   }
 }
 

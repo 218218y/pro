@@ -194,6 +194,8 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
   assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'true');
   assert.equal(cfg.define.__WP_BUILD_PERF__, 'false');
+  assert.equal(cfg.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
+  assert.equal(cfg.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
   assert.equal(cfg.build.copyPublicDir, false);
   assert.equal(cfg.build.rolldownOptions.preserveEntrySignatures, 'strict');
   assert.equal(cfg.build.rolldownOptions.output.entryFileNames, 'wardrobepro.bundle.js');
@@ -231,6 +233,38 @@ test('bundle build config maps scheduler debug stats to full implementation outs
   assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
   assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'false');
   assert.equal(cfg.define.__WP_BUILD_PERF__, 'true');
+  assert.equal(cfg.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
+  assert.equal(cfg.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+});
+
+test('perf bundle accepts isolated adhesive-glass warmup experiments without changing client builds', () => {
+  const previous = process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE;
+  const previousFolded = process.env.WP_PERF_FOLDED_GEOMETRY_MODE;
+  process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = 'off';
+  process.env.WP_PERF_FOLDED_GEOMETRY_MODE = 'canonical-scale';
+  try {
+    const perf = createBundleBuildConfig({
+      root: '/repo',
+      entryAbs: '/repo/dist/esm/release_main.js',
+      tmpDirAbs: '/tmp/wp-bundle',
+      args: { sourcemap: false, minify: true, buildMode: 'perf' },
+    });
+    const client = createBundleBuildConfig({
+      root: '/repo',
+      entryAbs: '/repo/dist/esm/release_main.js',
+      tmpDirAbs: '/tmp/wp-bundle-client',
+      args: { sourcemap: false, minify: true, buildMode: 'client' },
+    });
+    assert.equal(perf.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"off"');
+    assert.equal(perf.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+    assert.equal(client.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
+    assert.equal(client.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+  } finally {
+    if (typeof previous === 'undefined') delete process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE;
+    else process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = previous;
+    if (typeof previousFolded === 'undefined') delete process.env.WP_PERF_FOLDED_GEOMETRY_MODE;
+    else process.env.WP_PERF_FOLDED_GEOMETRY_MODE = previousFolded;
+  }
 });
 
 test('bundle emit writes build-mode marker next to the entry bundle', () => {
