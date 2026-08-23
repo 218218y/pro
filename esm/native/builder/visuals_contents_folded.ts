@@ -16,6 +16,7 @@ import {
   resolveContentsOutline,
   resolveLibraryContents,
   resolveShowContents,
+  runVisualContentsPerfPhase,
   seededRandom,
   type AppAwareAddFoldedClothesFn,
 } from './visuals_contents_shared.js';
@@ -392,96 +393,102 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   const seedVal = Math.floor(shelfX * 123 + shelfY * 456 + shelfZ * 789 + width * 1000);
   seededRandom.setSeed(Math.abs(seedVal) + 55);
 
-  if (isLibraryContents) {
-    addShelfBooks({
-      THREE,
-      shelfX,
-      shelfY,
-      shelfZ,
-      width,
-      parentGroup,
-      maxHeight: resolvedMaxHeight,
-      ...(maxDepth !== undefined ? { maxDepth } : {}),
-      addOutlines,
-      isSketch,
-    });
-    return;
-  }
-
-  const dims = FOLDED_CLOTHES_VISUAL_POLICY;
-  const baseItemDepth = dims.baseItemDepthM;
-  const depthMargin = dims.depthMarginM;
-  const resolvedMaxDepth = readPositiveVisualContentRuntimeNumber(maxDepth);
-  const maxItemDepth =
-    resolvedMaxDepth != null ? Math.max(0, resolvedMaxDepth - depthMargin * 2) : baseItemDepth;
-  const itemDepth = resolvedMaxDepth != null ? Math.min(baseItemDepth, maxItemDepth) : baseItemDepth;
-  if (resolvedMaxDepth != null && itemDepth < dims.minItemDepthM) return;
-
-  const backEdgeZ = resolvedMaxDepth != null ? shelfZ - resolvedMaxDepth / 2 : null;
-  const frontEdgeZ = resolvedMaxDepth != null ? shelfZ + resolvedMaxDepth / 2 : null;
-  const minZ = resolvedMaxDepth != null && backEdgeZ != null ? backEdgeZ + depthMargin + itemDepth / 2 : null;
-  const maxZ =
-    resolvedMaxDepth != null && frontEdgeZ != null ? frontEdgeZ - depthMargin - itemDepth / 2 : null;
-  const clamp = (value: number, a: number, b: number) => (value < a ? a : value > b ? b : value);
-  const zRoom = resolvedMaxDepth != null && maxZ != null && minZ != null ? Math.max(0, maxZ - minZ) : 0;
-  const zSpread =
-    resolvedMaxDepth != null ? Math.min(dims.zSpreadMaxM, zRoom * dims.zSpreadRatio) : dims.zSpreadMaxM;
-
-  const itemHeight = dims.itemHeightM;
-  const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
-  const stacks = Math.floor(width / dims.stackPitchM);
-
-  for (let i = 0; i < stacks; i++) {
-    const xPos = shelfX - width / 2 + dims.stackXInsetM + i * dims.stackPitchM;
-    let itemsInStack = Math.floor(seededRandom.random() * dims.randomItemsRange) + dims.stackBaseItems;
-    if (itemsInStack > maxItemsAllowed) itemsInStack = maxItemsAllowed;
-    if (itemsInStack < 1 && resolvedMaxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
-    if (itemsInStack < 0) itemsInStack = 0;
-
-    let currentY = shelfY;
-    const stackColor = getRandomClothColor();
-    for (let j = 0; j < itemsInStack; j++) {
-      const widthScale = 0.92 + seededRandom.random() * 0.12;
-      const depthScale = 0.9 + seededRandom.random() * 0.1;
-      const itemWidth = dims.itemWidthM * widthScale;
-      const actualDepth = itemDepth * depthScale;
-      const geometry = createFoldedClothGeometry(THREE, itemWidth, itemHeight, actualDepth);
-      const item = new THREE.Mesh(
-        geometry,
-        getCachedMeshStandardMaterial(THREE, `folded-cloth:${stackColor}`, {
-          color: stackColor,
-          roughness: 0.94,
-          metalness: 0.0,
-          flatShading: false,
-        })
-      );
-
-      const randomOffsetX = (seededRandom.random() - 0.5) * dims.randomOffsetXM;
-      const randomOffsetZ = (seededRandom.random() - 0.5) * zSpread;
-      let zPos = shelfZ + randomOffsetZ;
-      if (resolvedMaxDepth != null && minZ != null && maxZ != null) {
-        if (maxZ < minZ) break;
-        const halfDepth = actualDepth / 2;
-        zPos = clamp(zPos, minZ + halfDepth - itemDepth / 2, maxZ - halfDepth + itemDepth / 2);
-      }
-
-      item.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
-      item.rotation.y = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
-      item.userData = item.userData || {};
-      item.userData.__kind = 'folded_cloth_item';
-      addFoldedGarmentDetails({
-        THREE,
-        item,
-        itemWidth,
-        itemHeight,
-        itemDepth: actualDepth,
-        color: stackColor,
-        stackIndex: i,
-        itemIndex: j,
+  return runVisualContentsPerfPhase(App, 'builder.contents.total', () => {
+    if (isLibraryContents) {
+      return runVisualContentsPerfPhase(App, 'builder.contents.books', () => {
+        addShelfBooks({
+          THREE,
+          shelfX,
+          shelfY,
+          shelfZ,
+          width,
+          parentGroup,
+          maxHeight: resolvedMaxHeight,
+          ...(maxDepth !== undefined ? { maxDepth } : {}),
+          addOutlines,
+          isSketch,
+        });
       });
-      if (isSketch) addOutlines(item);
-      parentGroup.add(item);
-      currentY += itemHeight;
     }
-  }
+
+    return runVisualContentsPerfPhase(App, 'builder.contents.folded-clothes', () => {
+      const dims = FOLDED_CLOTHES_VISUAL_POLICY;
+      const baseItemDepth = dims.baseItemDepthM;
+      const depthMargin = dims.depthMarginM;
+      const resolvedMaxDepth = readPositiveVisualContentRuntimeNumber(maxDepth);
+      const maxItemDepth =
+        resolvedMaxDepth != null ? Math.max(0, resolvedMaxDepth - depthMargin * 2) : baseItemDepth;
+      const itemDepth = resolvedMaxDepth != null ? Math.min(baseItemDepth, maxItemDepth) : baseItemDepth;
+      if (resolvedMaxDepth != null && itemDepth < dims.minItemDepthM) return;
+
+      const backEdgeZ = resolvedMaxDepth != null ? shelfZ - resolvedMaxDepth / 2 : null;
+      const frontEdgeZ = resolvedMaxDepth != null ? shelfZ + resolvedMaxDepth / 2 : null;
+      const minZ =
+        resolvedMaxDepth != null && backEdgeZ != null ? backEdgeZ + depthMargin + itemDepth / 2 : null;
+      const maxZ =
+        resolvedMaxDepth != null && frontEdgeZ != null ? frontEdgeZ - depthMargin - itemDepth / 2 : null;
+      const clamp = (value: number, a: number, b: number) => (value < a ? a : value > b ? b : value);
+      const zRoom = resolvedMaxDepth != null && maxZ != null && minZ != null ? Math.max(0, maxZ - minZ) : 0;
+      const zSpread =
+        resolvedMaxDepth != null ? Math.min(dims.zSpreadMaxM, zRoom * dims.zSpreadRatio) : dims.zSpreadMaxM;
+
+      const itemHeight = dims.itemHeightM;
+      const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
+      const stacks = Math.floor(width / dims.stackPitchM);
+
+      for (let i = 0; i < stacks; i++) {
+        const xPos = shelfX - width / 2 + dims.stackXInsetM + i * dims.stackPitchM;
+        let itemsInStack = Math.floor(seededRandom.random() * dims.randomItemsRange) + dims.stackBaseItems;
+        if (itemsInStack > maxItemsAllowed) itemsInStack = maxItemsAllowed;
+        if (itemsInStack < 1 && resolvedMaxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
+        if (itemsInStack < 0) itemsInStack = 0;
+
+        let currentY = shelfY;
+        const stackColor = getRandomClothColor();
+        for (let j = 0; j < itemsInStack; j++) {
+          const widthScale = 0.92 + seededRandom.random() * 0.12;
+          const depthScale = 0.9 + seededRandom.random() * 0.1;
+          const itemWidth = dims.itemWidthM * widthScale;
+          const actualDepth = itemDepth * depthScale;
+          const geometry = createFoldedClothGeometry(THREE, itemWidth, itemHeight, actualDepth);
+          const item = new THREE.Mesh(
+            geometry,
+            getCachedMeshStandardMaterial(THREE, `folded-cloth:${stackColor}`, {
+              color: stackColor,
+              roughness: 0.94,
+              metalness: 0.0,
+              flatShading: false,
+            })
+          );
+
+          const randomOffsetX = (seededRandom.random() - 0.5) * dims.randomOffsetXM;
+          const randomOffsetZ = (seededRandom.random() - 0.5) * zSpread;
+          let zPos = shelfZ + randomOffsetZ;
+          if (resolvedMaxDepth != null && minZ != null && maxZ != null) {
+            if (maxZ < minZ) break;
+            const halfDepth = actualDepth / 2;
+            zPos = clamp(zPos, minZ + halfDepth - itemDepth / 2, maxZ - halfDepth + itemDepth / 2);
+          }
+
+          item.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
+          item.rotation.y = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
+          item.userData = item.userData || {};
+          item.userData.__kind = 'folded_cloth_item';
+          addFoldedGarmentDetails({
+            THREE,
+            item,
+            itemWidth,
+            itemHeight,
+            itemDepth: actualDepth,
+            color: stackColor,
+            stackIndex: i,
+            itemIndex: j,
+          });
+          if (isSketch) addOutlines(item);
+          parentGroup.add(item);
+          currentY += itemHeight;
+        }
+      }
+    });
+  });
 };

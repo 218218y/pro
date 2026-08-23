@@ -1,4 +1,4 @@
-import { assertApp } from '../runtime/api.js';
+import { assertApp, runPerfPhase } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 import {
@@ -62,6 +62,10 @@ export function ensureVisualsContentsApp(passed: unknown): AppContainer {
 export function ensureVisualsContentsTHREE(passedApp: unknown): ThreeLike {
   const App = ensureVisualsContentsApp(passedApp);
   return assertThreeViaDeps(App, 'native/builder/visuals_contents.THREE');
+}
+
+export function runVisualContentsPerfPhase<T>(App: AppContainer, name: string, run: () => T): T {
+  return runPerfPhase(App, name, 'builder-contents', run);
 }
 
 export function visualObjectIntersectsRoomColumnCut(

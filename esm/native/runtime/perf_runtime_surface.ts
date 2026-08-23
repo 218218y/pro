@@ -10,6 +10,8 @@ import type {
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
+  WardrobeProRendererInfoSnapshot,
+  WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
 } from '../../../types/index.js';
 
@@ -46,6 +48,7 @@ import {
   resetStoreDebugStats,
 } from './perf_runtime_debug_surfaces.js';
 import { getPerfStateFingerprint } from './perf_runtime_state_fingerprint.js';
+import { getRendererInfoSnapshot, getSceneContentSnapshot } from './perf_runtime_render_snapshot.js';
 
 export type { PerfActionOptions, PerfEntryOptions, PerfSpanOptions } from './perf_runtime_surface_types.js';
 export {
@@ -109,6 +112,12 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
       return getPerfStateFingerprint(App);
+    },
+    getRendererInfoSnapshot(): WardrobeProRendererInfoSnapshot | null {
+      return getRendererInfoSnapshot(App);
+    },
+    getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {
+      return getSceneContentSnapshot(App);
     },
     getErrorHistory(): ErrorsHistoryEntryLike[] {
       return getRuntimeErrorHistory(App);

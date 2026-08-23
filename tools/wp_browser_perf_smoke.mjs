@@ -70,6 +70,7 @@ import { BROWSER_PERF_REQUIRED_UX_METRICS } from './wp_browser_perf_ux_targets.j
 const projectRoot = process.cwd();
 const measurementTarget = parseBrowserPerfTarget();
 const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
+const traceHeaderSketch = process.argv.includes('--trace-header-sketch');
 const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
 const confirmationCandidateIdentities = confirmationRun
   ? parseBrowserPerfConfirmationCandidates(process.env[BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV])
@@ -81,6 +82,27 @@ const browserPerfRoomId = `browser-perf-${measurementTarget.id}-${Date.now().toS
 const browserPerfRoomCredential = buildBrowserPerfRoomCredential(browserPerfRoomId);
 const pageUrl = `${baseUrl}${measurementTarget.pagePath}#room=${encodeURIComponent(browserPerfRoomId)}&roomToken=${encodeURIComponent(browserPerfRoomCredential.token)}`;
 const { latestJsonPath, latestMdPath, docPath } = targetPaths;
+const headerSketchTracePath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  'header-sketch-trace.json'
+);
+const headerSketchTraceResultPath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  'header-sketch-trace-run.json'
+);
+const headerSketchTraceReportPath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  'header-sketch-trace-run.md'
+);
 const baselinePath = resolveBrowserPerfBaselinePath(projectRoot, measurementTarget.id);
 const textureFixturePath = path.join(
   projectRoot,
@@ -98,6 +120,7 @@ const USER_JOURNEYS = Object.freeze({
   orderPdfLifecycle: 'order-pdf-lifecycle',
   projectRoundtrip: 'project-roundtrip',
   projectRecoveryProveout: 'project-recovery-proveout',
+  adhesiveGlassFirstUse: 'adhesive-glass-first-use',
 });
 
 function ensureDir(filePath) {
@@ -112,6 +135,49 @@ function writeJson(filePath, value) {
 function writeText(filePath, value) {
   ensureDir(filePath);
   fs.writeFileSync(filePath, value, 'utf8');
+}
+
+async function startChromiumTrace(page) {
+  const session = await page.context().newCDPSession(page);
+  await session.send('Tracing.start', {
+    categories: [
+      'blink.user_timing',
+      'cc',
+      'devtools.timeline',
+      'disabled-by-default-devtools.timeline',
+      'disabled-by-default-devtools.timeline.frame',
+      'gpu',
+      'v8',
+      'v8.execute',
+    ].join(','),
+    options: 'sampling-frequency=10000',
+    transferMode: 'ReturnAsStream',
+  });
+  return session;
+}
+
+async function finishChromiumTrace(session, filePath) {
+  const completed = new Promise(resolve => session.once('Tracing.tracingComplete', resolve));
+  await session.send('Tracing.end');
+  const event = await completed;
+  const stream = event?.stream;
+  if (typeof stream !== 'string' || !stream) {
+    throw new Error('Chromium trace completed without a readable stream');
+  }
+  const chunks = [];
+  try {
+    let eof = false;
+    while (!eof) {
+      const response = await session.send('IO.read', { handle: stream });
+      chunks.push(response.base64Encoded ? Buffer.from(response.data, 'base64') : Buffer.from(response.data));
+      eof = response.eof === true;
+    }
+  } finally {
+    await session.send('IO.close', { handle: stream }).catch(() => {});
+    await session.detach().catch(() => {});
+  }
+  ensureDir(filePath);
+  fs.writeFileSync(filePath, Buffer.concat(chunks));
 }
 
 function buildBrowserPerfRoomToken(expiresAtMs) {
@@ -589,6 +655,85 @@ async function withStep(result, page, name, run, meta = {}) {
   return runResult;
 }
 
+function perfEntryOverlapsTimingWindow(entry, timingWindow) {
+  if (String(entry?.browserSessionId || '') !== String(timingWindow?.sessionId || '')) return false;
+  const detail = entry?.detail && typeof entry.detail === 'object' ? entry.detail : {};
+  const entryStart = Number(detail.startTime ?? entry?.startTime);
+  const entryEnd = Number(detail.endTime ?? entry?.endTime);
+  const windowStart = Number(timingWindow?.startTime);
+  const windowEnd = Number(timingWindow?.endTime);
+  return (
+    Number.isFinite(entryStart) &&
+    Number.isFinite(entryEnd) &&
+    Number.isFinite(windowStart) &&
+    Number.isFinite(windowEnd) &&
+    Math.min(entryEnd, windowEnd) > Math.max(entryStart, windowStart)
+  );
+}
+
+function summarizeStepBrowserMetric(result, stepName, metricName) {
+  const step = (result.windowResponsivenessFlowSteps || []).find(row => row?.name === stepName);
+  const timingWindows = Array.isArray(step?.timingWindows) ? step.timingWindows : [];
+  const values = (result.windowPerfEntries || [])
+    .filter(
+      entry =>
+        entry?.name === metricName &&
+        entry?.kind === 'browser-metric' &&
+        timingWindows.some(window => perfEntryOverlapsTimingWindow(entry, window))
+    )
+    .map(entry => Number(entry?.metricValue) || 0);
+  return createDurationSampleSummary(values);
+}
+
+function createAdhesiveGlassFirstUseSummary(result, stepName) {
+  const step = (result.windowResponsivenessFlowSteps || []).find(row => row?.name === stepName);
+  return {
+    longTasks: step?.delta?.longTasks || createDurationSampleSummary([]),
+    renderer: summarizeStepBrowserMetric(result, stepName, 'render.frame.renderer'),
+    frameTotal: summarizeStepBrowserMetric(result, stepName, 'render.frame.total'),
+  };
+}
+
+function createBuilderExecutionRootCauseSummary(result) {
+  const steps = Array.isArray(result.windowResponsivenessFlowSteps)
+    ? result.windowResponsivenessFlowSteps
+    : [];
+  const entries = Array.isArray(result.windowPerfEntries) ? result.windowPerfEntries : [];
+  return entries
+    .filter(entry => entry?.name === 'builder.execute' && entry?.kind === 'phase')
+    .map(entry => {
+      const entryStart = Number(entry?.startTime) || 0;
+      const entryEnd = Number(entry?.endTime) || entryStart;
+      let owner = null;
+      let ownerOverlapMs = 0;
+      for (const step of steps) {
+        for (const window of Array.isArray(step?.timingWindows) ? step.timingWindows : []) {
+          if (String(entry?.browserSessionId || '') !== String(window?.sessionId || '')) continue;
+          const overlapMs = Math.max(
+            0,
+            Math.min(entryEnd, Number(window?.endTime) || 0) -
+              Math.max(entryStart, Number(window?.startTime) || 0)
+          );
+          if (overlapMs > ownerOverlapMs) {
+            owner = step;
+            ownerOverlapMs = overlapMs;
+          }
+        }
+      }
+      const detail = entry?.detail && typeof entry.detail === 'object' ? entry.detail : {};
+      return {
+        executionId: String(entry?.id || ''),
+        reason: String(detail.reason || 'unknown'),
+        durationMs: Number(entry?.codeExecutionMs) || Math.max(0, entryEnd - entryStart),
+        overlapMs: ownerOverlapMs,
+        journey: String(owner?.journey || 'unattributed'),
+        step: String(owner?.name || 'unattributed'),
+      };
+    })
+    .sort((left, right) => right.durationMs - left.durationMs)
+    .slice(0, 50);
+}
+
 async function installProjectActionRecorder(page) {
   await page.evaluate(() => {
     const win = window;
@@ -813,8 +958,34 @@ async function readBuildDebugStats(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getBuildDebugStats?.() || null);
 }
 
+async function readRendererInfoSnapshot(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getRendererInfoSnapshot?.() || null);
+}
+
+async function readSceneContentSnapshot(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getSceneContentSnapshot?.() || null);
+}
+
 async function resetBuildDebugStats(page) {
   return await page.evaluate(() => window.__WP_PERF__?.resetBuildDebugStats?.() || null);
+}
+
+async function waitForBuildExecutionAfter(page, beforeCount, label) {
+  await expect
+    .poll(async () => Number((await readBuildDebugStats(page))?.executeCount) || 0, {
+      timeout: 5000,
+      message: `${label} did not produce a builder execution`,
+    })
+    .toBeGreaterThan(beforeCount);
+  await waitForTwoBrowserFrames(page);
+}
+
+async function setPressedButtonStateAndWaitForBuild(page, button, pressed, label) {
+  const current = await readButtonPressed(button);
+  if (current === pressed) return;
+  const beforeCount = Number((await readBuildDebugStats(page))?.executeCount) || 0;
+  await setPressedButtonState(button, pressed);
+  await waitForBuildExecutionAfter(page, beforeCount, label);
 }
 
 async function readPerfStateFingerprint(page) {
@@ -823,6 +994,17 @@ async function readPerfStateFingerprint(page) {
     throw new Error('Browser perf state fingerprint missing: expected __WP_PERF__.getStateFingerprint()');
   }
   return normalizeUiStateFingerprint(fingerprint);
+}
+
+async function readAdhesiveGlassDoorCounts(page) {
+  const fingerprint = await page.evaluate(() => window.__WP_PERF__?.getStateFingerprint?.() || null);
+  if (!fingerprint) {
+    throw new Error('Browser perf state fingerprint missing while measuring adhesive glass');
+  }
+  return {
+    black: normalizeCountValue(fingerprint.blackAdhesiveGlassDoorCount),
+    frosted: normalizeCountValue(fingerprint.frostedAdhesiveGlassDoorCount),
+  };
 }
 
 async function readClipboardWriteCount(page) {
@@ -928,6 +1110,7 @@ function normalizeUiStateFingerprint(fingerprint) {
     splitDoors: !!fingerprint?.splitDoors,
     removeDoorsEnabled: !!fingerprint?.removeDoorsEnabled,
     internalDrawersEnabled: !!fingerprint?.internalDrawersEnabled,
+    showContentsEnabled: !!fingerprint?.showContentsEnabled,
     groovesMapCount: normalizeCountValue(fingerprint?.groovesMapCount),
     grooveLinesCountMapCount: normalizeCountValue(fingerprint?.grooveLinesCountMapCount),
     splitDoorMapCount: normalizeCountValue(fingerprint?.splitDoorMapCount),
@@ -1683,8 +1866,84 @@ async function toggleViewerNotesVisibilityTwice(page) {
   await togglePressedButtonTwice(getViewerNotesVisibilityButton(page));
 }
 
-async function toggleViewerContentsVisibilityTwice(page) {
-  await togglePressedButtonTwice(getViewerContentsToggleButton(page));
+async function waitForTwoBrowserFrames(page) {
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        const requestFrame = window.requestAnimationFrame;
+        if (typeof requestFrame !== 'function') {
+          queueMicrotask(resolve);
+          return;
+        }
+        requestFrame(() => requestFrame(() => resolve(undefined)));
+      })
+  );
+}
+
+async function selectAdhesiveGlassPaintBrush(page, kind) {
+  await openMainTab(page, 'design');
+  const panel = getActiveTabPanel(page, 'design');
+  const multiColorRow = panel.locator('.toggle-row').filter({ hasText: 'צביעה ותוסף לכל חלק בנפרד' }).first();
+  const enabledToggle = multiColorRow.locator('input[type="checkbox"]').first();
+  await expect(enabledToggle).toHaveCount(1);
+  await setCheckboxState(enabledToggle, true);
+
+  const swatch = panel
+    .getByRole('button', { name: kind === 'black' ? 'זכוכית שחורה' : 'זכוכית חלבית', exact: true })
+    .first();
+  await expect(swatch).toBeVisible();
+  await swatch.click();
+  await expect.poll(async () => await isButtonSelected(swatch)).toBe(true);
+  await waitForTwoBrowserFrames(page);
+}
+
+async function clickCanvasAtNdc(page, point) {
+  const canvas = page.locator('#viewer-container canvas').first();
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  if (!box || !(box.width > 0) || !(box.height > 0)) {
+    throw new Error('Adhesive-glass first-use probe could not resolve the viewer canvas bounds');
+  }
+  await canvas.click({
+    position: {
+      x: ((point.x + 1) / 2) * box.width,
+      y: ((1 - point.y) / 2) * box.height,
+    },
+  });
+  await waitForTwoBrowserFrames(page);
+}
+
+async function applyAdhesiveGlassViaCanvas(page, kind, preferredPoint = null) {
+  await selectAdhesiveGlassPaintBrush(page, kind);
+  const before = await readAdhesiveGlassDoorCounts(page);
+  const candidates = preferredPoint
+    ? [preferredPoint]
+    : [
+        { x: 0, y: 0.15 },
+        { x: -0.25, y: 0.15 },
+        { x: 0.25, y: 0.15 },
+        { x: -0.5, y: 0.15 },
+        { x: 0.5, y: 0.15 },
+        { x: 0, y: 0.45 },
+        { x: -0.25, y: 0.45 },
+        { x: 0.25, y: 0.45 },
+        { x: -0.5, y: 0.45 },
+        { x: 0.5, y: 0.45 },
+        { x: 0, y: -0.15 },
+        { x: -0.25, y: -0.15 },
+        { x: 0.25, y: -0.15 },
+      ];
+
+  for (const point of candidates) {
+    await clickCanvasAtNdc(page, point);
+    const counts = await readAdhesiveGlassDoorCounts(page);
+    if (kind === 'black' ? counts.black > before.black : counts.frosted > before.frosted) {
+      return { point, counts };
+    }
+  }
+  throw new Error(
+    `Adhesive-glass first-use probe could not apply ${kind} glass: before=${JSON.stringify(before)}`
+  );
 }
 
 async function isButtonSelected(button) {
@@ -2374,7 +2633,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installPerfEntryCapture(page);
 
   const result = {
-    version: 14,
+    version: 15,
     generatedAt: new Date().toISOString(),
     measurementProfile,
     measurementArtifact,
@@ -2391,7 +2650,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       headless: true,
       viewport: { width: 1280, height: 800 },
       cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v14',
+      testSequence: 'wp_browser_perf_smoke.v15',
     },
     browserPerfRoomId,
     cloudSyncRestIsolated: true,
@@ -2419,7 +2678,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
     topLongTaskSteps: [],
     longTaskRootCauseSummary: [],
+    builderExecutionRootCauseSummary: [],
     journeyResponsivenessSummary: {},
+    adhesiveGlassFirstUse: {},
+    headerSketchRendererProbe: {},
+    viewerContentsProbe: {},
     bootMilestones: {},
     windowBuildFlowPressureSummary: {},
     journeyBuildPressureSummary: {},
@@ -2502,15 +2765,40 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['settings', 'visual', 'toggle'] }
     );
 
-    await withStep(
-      result,
-      page,
-      'header.sketch-mode.roundtrip',
-      async () => {
-        await togglePressedButtonTwice(getHeaderSketchToggle(page));
-      },
-      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['header', 'visual', 'sketch'] }
-    );
+    const headerTraceSession = traceHeaderSketch ? await startChromiumTrace(page) : null;
+    try {
+      await withStep(
+        result,
+        page,
+        'header.sketch-mode.roundtrip',
+        async () => {
+          const button = getHeaderSketchToggle(page);
+          const beforePressed = await readButtonPressed(button);
+          const before = await readRendererInfoSnapshot(page);
+          await setPressedButtonStateAndWaitForBuild(
+            page,
+            button,
+            !beforePressed,
+            'header sketch first toggle'
+          );
+          const afterToggle = await readRendererInfoSnapshot(page);
+          await setPressedButtonStateAndWaitForBuild(
+            page,
+            button,
+            beforePressed,
+            'header sketch restore toggle'
+          );
+          const afterSettled = await readRendererInfoSnapshot(page);
+          result.headerSketchRendererProbe = { beforePressed, before, afterToggle, afterSettled };
+        },
+        { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['header', 'visual', 'sketch'] }
+      );
+    } finally {
+      if (headerTraceSession) {
+        await finishChromiumTrace(headerTraceSession, headerSketchTracePath);
+        console.log(`[browser-perf] header sketch trace: ${headerSketchTracePath}`);
+      }
+    }
 
     await withStep(
       result,
@@ -2537,9 +2825,70 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       page,
       'viewer.contents.visibility.roundtrip',
       async () => {
-        await toggleViewerContentsVisibilityTwice(page);
+        const button = getViewerContentsToggleButton(page);
+        const beforePressed = await readButtonPressed(button);
+        const beforeFingerprint = await readPerfStateFingerprint(page);
+        const before = {
+          pressed: beforePressed,
+          showContentsEnabled: beforeFingerprint.showContentsEnabled === true,
+          snapshot: await readSceneContentSnapshot(page),
+        };
+        await setPressedButtonStateAndWaitForBuild(
+          page,
+          button,
+          !beforePressed,
+          'viewer contents first toggle'
+        );
+        const toggledFingerprint = await readPerfStateFingerprint(page);
+        const afterToggle = {
+          pressed: !beforePressed,
+          showContentsEnabled: toggledFingerprint.showContentsEnabled === true,
+          snapshot: await readSceneContentSnapshot(page),
+        };
+        await setPressedButtonStateAndWaitForBuild(
+          page,
+          button,
+          beforePressed,
+          'viewer contents restore toggle'
+        );
+        const restoredFingerprint = await readPerfStateFingerprint(page);
+        const afterSettled = {
+          pressed: beforePressed,
+          showContentsEnabled: restoredFingerprint.showContentsEnabled === true,
+          snapshot: await readSceneContentSnapshot(page),
+        };
+        const snapshots = [before, afterToggle, afterSettled];
+        result.viewerContentsProbe = {
+          beforePressed,
+          samples: snapshots,
+          enabled: snapshots.find(item => item.showContentsEnabled)?.snapshot || null,
+          disabled: snapshots.find(item => !item.showContentsEnabled)?.snapshot || null,
+        };
       },
       { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['viewer', 'contents', 'visibility'] }
+    );
+
+    let adhesiveGlassDoorPoint = null;
+    await withStep(
+      result,
+      page,
+      'adhesive-glass.first-use.black.apply-and-render',
+      async () => {
+        const applied = await applyAdhesiveGlassViaCanvas(page, 'black');
+        adhesiveGlassDoorPoint = applied.point;
+      },
+      { journey: USER_JOURNEYS.adhesiveGlassFirstUse, tags: ['adhesive-glass', 'black', 'first-use'] }
+    );
+
+    await withStep(
+      result,
+      page,
+      'adhesive-glass.first-use.variant-update-and-render',
+      async () => {
+        if (!adhesiveGlassDoorPoint) throw new Error('Adhesive-glass first-use target point is missing');
+        await applyAdhesiveGlassViaCanvas(page, 'frosted', adhesiveGlassDoorPoint);
+      },
+      { journey: USER_JOURNEYS.adhesiveGlassFirstUse, tags: ['adhesive-glass', 'frosted', 'variant'] }
     );
 
     const cabinetCoreSavedName = `Cabinet Browser Perf ${Date.now()}`;
@@ -3213,6 +3562,13 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowResponsivenessFlowSteps = responsivenessAttribution.steps;
     result.windowResponsivenessUnattributed = responsivenessAttribution.unattributed;
     result.topLongTaskSteps = rankResponsivenessSteps(result.windowResponsivenessFlowSteps, 20);
+    result.adhesiveGlassFirstUse = {
+      black: createAdhesiveGlassFirstUseSummary(result, 'adhesive-glass.first-use.black.apply-and-render'),
+      variant: createAdhesiveGlassFirstUseSummary(
+        result,
+        'adhesive-glass.first-use.variant-update-and-render'
+      ),
+    };
 
     const restoreNameInput = await prepareRestoreLastSessionScenario(page, result, savedProjectPath);
 
@@ -3590,6 +3946,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowStoreDebugTopSources = rankStoreDebugSources(result.windowStoreDebugStats, 5);
     result.windowStoreFlowPressureSummary = createStoreFlowPressureSummary(result.windowStoreDebugFlowSteps);
     result.longTaskRootCauseSummary = createLongTaskRootCauseSummary(result, 5);
+    result.builderExecutionRootCauseSummary = createBuilderExecutionRootCauseSummary(result);
     result.windowBuildDebugStats = await readBuildDebugStats(page);
     result.windowBuildDebugSummary = createBuildSummary(result.windowBuildDebugStats);
     result.windowBuildFlowPressureSummary = createBuildFlowPressureSummary(result.windowBuildDebugFlowSteps);
@@ -3692,7 +4049,6 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     stopServer(server);
   }
 
-  writeJson(latestJsonPath, result);
   const md = summarizeBrowserPerfResult(result, {
     requiredRuntimeMetrics,
     requiredRuntimeMetricMinimumCounts,
@@ -3701,8 +4057,14 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     requiredRuntimeOutcomeCoverage,
     requiredRuntimeRecoverySequences,
   });
-  writeText(latestMdPath, md);
-  writeText(docPath, md);
+  if (traceHeaderSketch) {
+    writeJson(headerSketchTraceResultPath, result);
+    writeText(headerSketchTraceReportPath, md);
+  } else {
+    writeJson(latestJsonPath, result);
+    writeText(latestMdPath, md);
+    writeText(docPath, md);
+  }
 
   if (updateBaseline) {
     writeJson(

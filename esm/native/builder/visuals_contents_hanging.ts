@@ -12,6 +12,7 @@ import {
   resolveContentsDoorStyle,
   resolveContentsOutline,
   resolveShowContents,
+  runVisualContentsPerfPhase,
   seededRandom,
   visualObjectIntersectsRoomColumnCut,
   type AppAwareAddHangingClothesFn,
@@ -289,76 +290,85 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
   if (!resolveShowContents(policy)) return;
   const addOutlines = resolveContentsOutline(policy);
 
-  const seedVal = Math.floor(rodX * 1000 + rodY * 1000 + rodZ * 1000 + width * 1000);
-  seededRandom.setSeed(Math.abs(seedVal) + 1);
+  return runVisualContentsPerfPhase(App, 'builder.contents.total', () =>
+    runVisualContentsPerfPhase(App, 'builder.contents.hanging-clothes', () => {
+      const seedVal = Math.floor(rodX * 1000 + rodY * 1000 + rodZ * 1000 + width * 1000);
+      seededRandom.setSeed(Math.abs(seedVal) + 1);
 
-  const count = Math.max(1, Math.floor(width / dims.spacingM));
-  let baseClothDepth: number = dims.defaultDepthM;
-  if (currentStyle === 'profile' || currentStyle === 'double_profile') baseClothDepth = dims.framedDoorDepthM;
-  if (typeof isRestrictedDepth === 'number' && Number.isFinite(isRestrictedDepth) && isRestrictedDepth > 0) {
-    baseClothDepth = Math.min(baseClothDepth, Math.max(dims.restrictedDepthMinM, isRestrictedDepth));
-  } else if (isRestrictedDepth) {
-    baseClothDepth = Math.min(baseClothDepth, dims.restrictedDepthDefaultM);
-  }
-
-  for (let i = 0; i < count; i++) {
-    const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
-    const hanger = createStyledHanger({ THREE, dims, xPos, rodY, rodZ });
-    if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, hanger)) continue;
-    parentGroup.add(hanger);
-
-    const variant = selectGarmentVariant();
-    let clothHeight =
-      variant === 'coat'
-        ? dims.coatHeightM
-        : variant === 'dress'
-          ? dims.coatHeightM * 0.92
-          : dims.shirtHeightM;
-    clothHeight = clamp(
-      clothHeight,
-      dims.minRenderableHeightM,
-      Math.max(dims.minRenderableHeightM, maxHeight - dims.bottomClearanceM)
-    );
-    if (clothHeight <= dims.minRenderableHeightM) continue;
-
-    const clothWidth = dims.clothWidthM * (0.92 + seededRandom.random() * 0.18);
-    const clothColor = getRandomClothColor();
-    const bevel = Math.min(0.004, baseClothDepth * 0.05);
-    const clothGeo = getCachedExtrudeGeometry(
-      THREE,
-      `hanging-cloth:${variant}:${quantizeVisualContentMetric(clothWidth)}:${quantizeVisualContentMetric(clothHeight)}:${quantizeVisualContentMetric(baseClothDepth)}:${quantizeVisualContentMetric(bevel)}`,
-      () => createGarmentShape(THREE, variant, clothWidth, clothHeight),
-      {
-        steps: 1,
-        depth: baseClothDepth,
-        curveSegments: 10,
-        bevelEnabled: true,
-        bevelThickness: bevel,
-        bevelSize: bevel,
-        bevelSegments: 2,
+      const count = Math.max(1, Math.floor(width / dims.spacingM));
+      let baseClothDepth: number = dims.defaultDepthM;
+      if (currentStyle === 'profile' || currentStyle === 'double_profile')
+        baseClothDepth = dims.framedDoorDepthM;
+      if (
+        typeof isRestrictedDepth === 'number' &&
+        Number.isFinite(isRestrictedDepth) &&
+        isRestrictedDepth > 0
+      ) {
+        baseClothDepth = Math.min(baseClothDepth, Math.max(dims.restrictedDepthMinM, isRestrictedDepth));
+      } else if (isRestrictedDepth) {
+        baseClothDepth = Math.min(baseClothDepth, dims.restrictedDepthDefaultM);
       }
-    );
-    const clothMat = getCachedMeshStandardMaterial(THREE, `hanging-cloth:${clothColor}`, {
-      color: clothColor,
-      roughness: 0.93,
-      metalness: 0.0,
-    });
-    const cloth = new THREE.Mesh(clothGeo, clothMat);
-    cloth.position.set(xPos, rodY - clothHeight / 2 - dims.clothYOffsetM, rodZ - baseClothDepth / 2);
-    cloth.rotation.y = (seededRandom.random() - 0.5) * dims.clothRotationYRangeRad;
-    cloth.userData = cloth.userData || {};
-    cloth.userData.__kind = 'hanging_cloth';
-    cloth.userData.__variant = variant;
-    addGarmentDetails({
-      THREE,
-      garment: cloth,
-      variant,
-      color: clothColor,
-      width: clothWidth,
-      height: clothHeight,
-      depth: baseClothDepth,
-    });
-    addOutlines?.(cloth);
-    parentGroup.add(cloth);
-  }
+
+      for (let i = 0; i < count; i++) {
+        const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
+        const hanger = createStyledHanger({ THREE, dims, xPos, rodY, rodZ });
+        if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, hanger)) continue;
+        parentGroup.add(hanger);
+
+        const variant = selectGarmentVariant();
+        let clothHeight =
+          variant === 'coat'
+            ? dims.coatHeightM
+            : variant === 'dress'
+              ? dims.coatHeightM * 0.92
+              : dims.shirtHeightM;
+        clothHeight = clamp(
+          clothHeight,
+          dims.minRenderableHeightM,
+          Math.max(dims.minRenderableHeightM, maxHeight - dims.bottomClearanceM)
+        );
+        if (clothHeight <= dims.minRenderableHeightM) continue;
+
+        const clothWidth = dims.clothWidthM * (0.92 + seededRandom.random() * 0.18);
+        const clothColor = getRandomClothColor();
+        const bevel = Math.min(0.004, baseClothDepth * 0.05);
+        const clothGeo = getCachedExtrudeGeometry(
+          THREE,
+          `hanging-cloth:${variant}:${quantizeVisualContentMetric(clothWidth)}:${quantizeVisualContentMetric(clothHeight)}:${quantizeVisualContentMetric(baseClothDepth)}:${quantizeVisualContentMetric(bevel)}`,
+          () => createGarmentShape(THREE, variant, clothWidth, clothHeight),
+          {
+            steps: 1,
+            depth: baseClothDepth,
+            curveSegments: 10,
+            bevelEnabled: true,
+            bevelThickness: bevel,
+            bevelSize: bevel,
+            bevelSegments: 2,
+          }
+        );
+        const clothMat = getCachedMeshStandardMaterial(THREE, `hanging-cloth:${clothColor}`, {
+          color: clothColor,
+          roughness: 0.93,
+          metalness: 0.0,
+        });
+        const cloth = new THREE.Mesh(clothGeo, clothMat);
+        cloth.position.set(xPos, rodY - clothHeight / 2 - dims.clothYOffsetM, rodZ - baseClothDepth / 2);
+        cloth.rotation.y = (seededRandom.random() - 0.5) * dims.clothRotationYRangeRad;
+        cloth.userData = cloth.userData || {};
+        cloth.userData.__kind = 'hanging_cloth';
+        cloth.userData.__variant = variant;
+        addGarmentDetails({
+          THREE,
+          garment: cloth,
+          variant,
+          color: clothColor,
+          width: clothWidth,
+          height: clothHeight,
+          depth: baseClothDepth,
+        });
+        addOutlines?.(cloth);
+        parentGroup.add(cloth);
+      }
+    })
+  );
 };

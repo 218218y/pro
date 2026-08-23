@@ -103,6 +103,38 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
         },
       },
     },
+    render: {
+      renderer: {
+        info: {
+          render: { calls: 17, triangles: 2048, lines: 12, points: 3 },
+          memory: { geometries: 41, textures: 9 },
+          programs: [{}, {}, {}],
+        },
+      },
+      wardrobeGroup: {
+        children: [
+          {
+            isMesh: true,
+            userData: { __kind: 'library_book' },
+            children: [
+              {
+                isMesh: true,
+                userData: { __kind: 'library_book_spine_band' },
+                children: [],
+              },
+            ],
+          },
+          {
+            isMesh: true,
+            userData: { __kind: 'hanging_cloth' },
+            children: [
+              { type: 'LineSegments', children: [] },
+              { isMesh: true, userData: { __kind: 'hanging_cloth_collar' }, children: [] },
+            ],
+          },
+        ],
+      },
+    },
   } as any;
 
   const mark = markPerfPoint(app, 'boot.mark');
@@ -179,6 +211,8 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.equal(typeof surface.getSummary, 'function');
   assert.equal(typeof surface.getBrowserMetrics, 'function');
   assert.equal(typeof surface.getStateFingerprint, 'function');
+  assert.equal(typeof surface.getRendererInfoSnapshot, 'function');
+  assert.equal(typeof surface.getSceneContentSnapshot, 'function');
   assert.equal(typeof surface.getStoreDebugStats, 'function');
   assert.equal(typeof surface.getErrorHistory, 'function');
   assert.equal(typeof surface.getBuildDebugStats, 'function');
@@ -202,6 +236,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
     splitDoors: true,
     removeDoorsEnabled: true,
     internalDrawersEnabled: true,
+    showContentsEnabled: false,
     groovesMapCount: 2,
     grooveLinesCountMapCount: 2,
     splitDoorMapCount: 2,
@@ -212,8 +247,32 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
     drawerDividerCount: 2,
     internalDrawerPlacementCount: 4,
     externalDrawerSelectionCount: 4,
+    blackAdhesiveGlassDoorCount: 0,
+    frostedAdhesiveGlassDoorCount: 0,
   });
   assert.deepEqual(surface.getStateFingerprint?.(), getPerfStateFingerprint(app));
+  assert.deepEqual(surface.getRendererInfoSnapshot?.(), {
+    calls: 17,
+    triangles: 2048,
+    lines: 12,
+    points: 3,
+    geometries: 41,
+    textures: 9,
+    programs: 3,
+  });
+  assert.deepEqual(surface.getSceneContentSnapshot?.(), {
+    object3DCount: 6,
+    meshCount: 4,
+    books: 1,
+    bookSpineBands: 1,
+    foldedGarments: 0,
+    foldedDetails: 0,
+    hangingGarments: 1,
+    hangingDetails: 1,
+    hangers: 0,
+    hangerObjects: 0,
+    outlines: 1,
+  });
   assert.equal(getRuntimeErrorHistory(app).length, 1);
   assert.deepEqual(surface.getErrorHistory?.(), getRuntimeErrorHistory(app));
   const buildDebug = getBuildRuntimeDebugStats(app);

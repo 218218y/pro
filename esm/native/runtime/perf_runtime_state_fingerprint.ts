@@ -58,6 +58,12 @@ function countTruthyRecordEntries(value: unknown): number {
   return count;
 }
 
+function countRecordValue(value: unknown, expected: string): number {
+  const record = asRecord<Record<string, unknown>>(value);
+  if (!record) return 0;
+  return Object.values(record).filter(item => item === expected).length;
+}
+
 function countDoorTrimEntries(value: unknown): number {
   const rec = asRecord<Record<string, unknown>>(value);
   if (!rec) return 0;
@@ -150,6 +156,7 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
       splitDoors: normalizePerfStateBoolean(ui?.splitDoors),
       removeDoorsEnabled: normalizePerfStateBoolean(ui?.removeDoorsEnabled),
       internalDrawersEnabled: normalizePerfStateBoolean(ui?.internalDrawersEnabled),
+      showContentsEnabled: normalizePerfStateBoolean(ui?.showContents),
       groovesMapCount: countTruthyRecordEntries(config?.groovesMap),
       grooveLinesCountMapCount: countTruthyRecordEntries(config?.grooveLinesCountMap),
       splitDoorMapCount: countTruthyRecordEntries(config?.splitDoorsMap),
@@ -160,6 +167,8 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
       drawerDividerCount: countTruthyRecordEntries(config?.drawerDividersMap),
       internalDrawerPlacementCount: countPerfStateInternalDrawerPlacements(config),
       externalDrawerSelectionCount: countPerfStateExternalDrawerSelections(config),
+      blackAdhesiveGlassDoorCount: countRecordValue(config?.doorSpecialMap, 'black_glass'),
+      frostedAdhesiveGlassDoorCount: countRecordValue(config?.doorSpecialMap, 'frosted_glass'),
     };
   } catch {
     return null;

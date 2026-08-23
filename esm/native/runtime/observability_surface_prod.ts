@@ -11,6 +11,8 @@ import type {
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
+  WardrobeProRendererInfoSnapshot,
+  WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
 } from '../../../types/index.js';
 
@@ -251,6 +253,12 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
       };
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
+      return null;
+    },
+    getRendererInfoSnapshot(): WardrobeProRendererInfoSnapshot | null {
+      return null;
+    },
+    getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {
       return null;
     },
     getErrorHistory(): ErrorsHistoryEntryLike[] {

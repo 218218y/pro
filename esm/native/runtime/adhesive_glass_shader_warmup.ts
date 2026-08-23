@@ -9,6 +9,7 @@ const ADHESIVE_GLASS_STANDARD_WARMUP_PROFILE = 'cube-standard-front-opaque-warm-
 
 type WarmupState = {
   scheduled?: boolean;
+  inFlight?: Promise<void> | null;
   completed?: boolean;
   profile?: string;
   material?: unknown;
@@ -137,16 +138,15 @@ function createWarmupMesh(THREE: unknown, material: unknown): { geometry: unknow
   return { geometry, mesh };
 }
 
-function withShaderErrorChecksDisabled(renderer: UnknownRecord, run: () => void): void {
+function withShaderErrorChecksDisabled<T>(renderer: UnknownRecord, run: () => T): T {
   const debug = isRecord(renderer.debug) ? renderer.debug : null;
   if (!debug || typeof debug.checkShaderErrors === 'undefined') {
-    run();
-    return;
+    return run();
   }
   const prev = debug.checkShaderErrors;
   try {
     debug.checkShaderErrors = false;
-    run();
+    return run();
   } finally {
     debug.checkShaderErrors = prev;
   }
@@ -165,7 +165,8 @@ function removeWarmupMesh(scene: UnknownRecord, mesh: unknown): void {
 
 export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown): boolean {
   const state = readWarmupState(App);
-  state.attempts = Math.max(0, Math.floor(Number(state.attempts) || 0)) + 1;
+
+  if (state.inFlight) return true;
 
   const renderer = isRecord(getRenderer(App)) ? (getRenderer(App) as UnknownRecord) : null;
   const scene = isRecord(getScene(App)) ? (getScene(App) as UnknownRecord) : null;
@@ -174,6 +175,7 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
   if (!renderer || !scene || !camera || !texture) {
     state.completed = false;
     state.scheduled = false;
+    state.inFlight = null;
     state.lastSkippedReason = 'surface-incomplete';
     return false;
   }
@@ -190,62 +192,97 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
   if (!material || !warmupMesh) {
     state.completed = false;
     state.scheduled = false;
+    state.inFlight = null;
     state.lastSkippedReason = 'three-capability-missing';
     return false;
   }
 
-  const add = scene.add;
+  state.attempts = Math.max(0, Math.floor(Number(state.attempts) || 0)) + 1;
+  state.scheduled = false;
+  state.completed = false;
+
   let added = false;
   try {
-    if (typeof add === 'function') {
-      call1(scene, add, warmupMesh.mesh);
-      added = true;
-    }
+    call0(
+      isRecord(warmupMesh.mesh) ? warmupMesh.mesh : null,
+      isRecord(warmupMesh.mesh) ? warmupMesh.mesh.updateMatrixWorld : null
+    );
+
     const compileAsync = renderer.compileAsync;
     const compile = renderer.compile;
-    withShaderErrorChecksDisabled(renderer, () => {
-      if (typeof compileAsync === 'function') {
-        const result = call2(renderer, compileAsync, scene, camera);
-        if (result && typeof (result as Promise<unknown>).catch === 'function') {
-          void (result as Promise<unknown>).catch(() => undefined);
-        }
-      } else if (typeof compile === 'function') {
-        call2(renderer, compile, scene, camera);
-      } else if (typeof renderer.render === 'function') {
-        call2(renderer, renderer.render, scene, camera);
-      }
-    });
     state.material = material;
     state.geometry = warmupMesh.geometry;
     state.mesh = warmupMesh.mesh;
     state.profile = ADHESIVE_GLASS_STANDARD_WARMUP_PROFILE;
+
+    if (typeof compileAsync === 'function') {
+      const result = withShaderErrorChecksDisabled(renderer, () =>
+        call3(renderer, compileAsync, warmupMesh.mesh, camera, scene)
+      );
+      if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
+        const completion = runPerfPhase(
+          App as AppContainer,
+          'boot.ui.shader-warmup.complete',
+          'shader-warmup',
+          () => Promise.resolve(result)
+        );
+        let inFlight: Promise<void>;
+        inFlight = completion.then(
+          () => {
+            if (state.inFlight !== inFlight) return;
+            state.inFlight = null;
+            state.completed = true;
+            state.lastSkippedReason = null;
+          },
+          () => {
+            if (state.inFlight !== inFlight) return;
+            state.inFlight = null;
+            state.completed = false;
+            state.lastSkippedReason = 'compile-failed';
+          }
+        );
+        state.inFlight = inFlight;
+        state.lastSkippedReason = null;
+        return true;
+      }
+    } else if (typeof compile === 'function') {
+      withShaderErrorChecksDisabled(renderer, () => call3(renderer, compile, warmupMesh.mesh, camera, scene));
+    } else if (typeof renderer.render === 'function') {
+      const add = scene.add;
+      if (typeof add === 'function') {
+        call1(scene, add, warmupMesh.mesh);
+        added = true;
+      }
+      withShaderErrorChecksDisabled(renderer, () => call2(renderer, renderer.render, scene, camera));
+    } else {
+      state.lastSkippedReason = 'renderer-compile-unavailable';
+      return false;
+    }
+
     state.completed = true;
-    state.scheduled = false;
+    state.inFlight = null;
     state.lastSkippedReason = null;
     return true;
   } catch {
     state.completed = false;
     state.scheduled = false;
+    state.inFlight = null;
     state.lastSkippedReason = 'compile-failed';
     return false;
   } finally {
     if (added) removeWarmupMesh(scene, warmupMesh.mesh);
-    call0(
-      isRecord(warmupMesh.mesh) ? warmupMesh.mesh : null,
-      isRecord(warmupMesh.mesh) ? warmupMesh.mesh.updateMatrixWorld : null
-    );
   }
 }
 
 export function scheduleAdhesiveGlassStandardShaderWarmup(App: unknown, THREE: unknown): void {
   const state = readWarmupState(App);
-  if (state.completed || state.scheduled) return;
+  if (state.completed || state.scheduled || state.inFlight) return;
   state.scheduled = true;
   state.profile = ADHESIVE_GLASS_STANDARD_WARMUP_PROFILE;
 
   const run = () => {
     try {
-      runPerfPhase(App as AppContainer, 'boot.ui.shader-warmup.execute', 'shader-warmup', () =>
+      runPerfPhase(App as AppContainer, 'boot.ui.shader-warmup.submit', 'shader-warmup', () =>
         warmAdhesiveGlassStandardShaderNow(App, THREE)
       );
     } catch {

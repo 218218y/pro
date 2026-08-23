@@ -802,8 +802,8 @@ test('adhesive glass standard material shader warmup compiles the cube envMap pr
   const calls = [];
   const renderer = {
     debug: { checkShaderErrors: true },
-    compile(sceneArg, cameraArg) {
-      calls.push({ sceneArg, cameraArg, checkShaderErrors: this.debug.checkShaderErrors });
+    compile(objectArg, cameraArg, targetSceneArg) {
+      calls.push({ objectArg, cameraArg, targetSceneArg, checkShaderErrors: this.debug.checkShaderErrors });
     },
   };
   const app = {
@@ -814,8 +814,9 @@ test('adhesive glass standard material shader warmup compiles the cube envMap pr
 
   assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].sceneArg, scene);
+  assert.equal(calls[0].objectArg.name, '__wpAdhesiveGlassStandardShaderWarmupMesh');
   assert.equal(calls[0].cameraArg, camera);
+  assert.equal(calls[0].targetSceneArg, scene);
   assert.equal(calls[0].checkShaderErrors, false);
   assert.equal(renderer.debug.checkShaderErrors, true);
   assert.equal(scene.children.length, 0);
@@ -830,6 +831,163 @@ test('adhesive glass standard material shader warmup compiles the cube envMap pr
   assert.equal(state.material.transparent, false);
   assert.equal(state.material.depthWrite, true);
   assert.equal(state.material.userData.__wpAdhesiveGlassShaderWarmup, true);
+});
+
+test('adhesive glass async shader warmup remains pending, preserves the live scene, and completes on resolve', async () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const existingChild = new THREE.Group();
+  scene.add(existingChild);
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  const calls = [];
+  let resolveCompile;
+  const compilePromise = new Promise(resolve => {
+    resolveCompile = resolve;
+  });
+  const renderer = {
+    debug: { checkShaderErrors: true },
+    compileAsync(objectArg, cameraArg, targetSceneArg) {
+      calls.push({ objectArg, cameraArg, targetSceneArg, checkShaderErrors: this.debug.checkShaderErrors });
+      return compilePromise;
+    },
+  };
+  const app = {
+    deps: { THREE },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
+  const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
+  const inFlight = state.inFlight;
+  assert.equal(typeof inFlight?.then, 'function');
+  assert.equal(state.completed, false);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].objectArg, state.mesh);
+  assert.equal(calls[0].cameraArg, camera);
+  assert.equal(calls[0].targetSceneArg, scene);
+  assert.equal(calls[0].checkShaderErrors, false);
+  assert.equal(renderer.debug.checkShaderErrors, true);
+  assert.deepEqual(scene.children, [existingChild]);
+
+  resolveCompile();
+  await inFlight;
+  assert.equal(state.inFlight, null);
+  assert.equal(state.completed, true);
+  assert.equal(state.lastSkippedReason, null);
+  assert.deepEqual(scene.children, [existingChild]);
+});
+
+test('adhesive glass async shader warmup rejection remains retryable', async () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  let compileCalls = 0;
+  let rejectFirst;
+  const firstCompile = new Promise((_resolve, reject) => {
+    rejectFirst = reject;
+  });
+  const renderer = {
+    compileAsync() {
+      compileCalls += 1;
+      return compileCalls === 1 ? firstCompile : Promise.resolve();
+    },
+  };
+  const app = {
+    deps: { THREE },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
+  const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
+  const failedFlight = state.inFlight;
+  rejectFirst(new Error('compile failed'));
+  await failedFlight;
+  assert.equal(state.completed, false);
+  assert.equal(state.inFlight, null);
+  assert.equal(state.lastSkippedReason, 'compile-failed');
+
+  assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
+  const retryFlight = state.inFlight;
+  await retryFlight;
+  assert.equal(compileCalls, 2);
+  assert.equal(state.completed, true);
+  assert.equal(state.inFlight, null);
+  assert.equal(state.lastSkippedReason, null);
+});
+
+test('adhesive glass async shader warmup is single-flight across repeated schedules', async () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  let timerCalls = 0;
+  let compileCalls = 0;
+  let resolveCompile;
+  const compilePromise = new Promise(resolve => {
+    resolveCompile = resolve;
+  });
+  const renderer = {
+    compileAsync() {
+      compileCalls += 1;
+      return compilePromise;
+    },
+  };
+  const app = {
+    deps: {
+      THREE,
+      browser: {
+        setTimeout(fn) {
+          timerCalls += 1;
+          fn();
+          return 1;
+        },
+      },
+    },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  scheduleAdhesiveGlassStandardShaderWarmup(app, THREE);
+  scheduleAdhesiveGlassStandardShaderWarmup(app, THREE);
+  const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
+  const inFlight = state.inFlight;
+  assert.equal(timerCalls, 1);
+  assert.equal(compileCalls, 1);
+  assert.equal(state.completed, false);
+
+  resolveCompile();
+  await inFlight;
+  assert.equal(state.completed, true);
+});
+
+test('adhesive glass shader warmup retains the render fallback for renderers without compile support', () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  const renderChildren = [];
+  const renderer = {
+    render(sceneArg, cameraArg) {
+      assert.equal(sceneArg, scene);
+      assert.equal(cameraArg, camera);
+      renderChildren.push(...sceneArg.children);
+    },
+  };
+  const app = {
+    deps: { THREE },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
+  const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
+  assert.deepEqual(renderChildren, [state.mesh]);
+  assert.equal(scene.children.length, 0);
+  assert.equal(state.completed, true);
 });
 
 test('adhesive glass shader warmup schedules once and reuses the warmed standard profile', () => {

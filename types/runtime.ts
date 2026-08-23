@@ -450,6 +450,7 @@ export interface WardrobeProPerfStateFingerprint {
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
   internalDrawersEnabled: boolean;
+  showContentsEnabled: boolean;
   groovesMapCount: number;
   grooveLinesCountMapCount: number;
   splitDoorMapCount: number;
@@ -460,6 +461,32 @@ export interface WardrobeProPerfStateFingerprint {
   drawerDividerCount: number;
   internalDrawerPlacementCount: number;
   externalDrawerSelectionCount: number;
+  blackAdhesiveGlassDoorCount: number;
+  frostedAdhesiveGlassDoorCount: number;
+}
+
+export interface WardrobeProRendererInfoSnapshot {
+  calls: number;
+  triangles: number;
+  lines: number;
+  points: number;
+  geometries: number;
+  textures: number;
+  programs: number;
+}
+
+export interface WardrobeProSceneContentSnapshot {
+  object3DCount: number;
+  meshCount: number;
+  books: number;
+  bookSpineBands: number;
+  foldedGarments: number;
+  foldedDetails: number;
+  hangingGarments: number;
+  hangingDetails: number;
+  hangers: number;
+  hangerObjects: number;
+  outlines: number;
 }
 
 export interface WardrobeProPerfConsoleSurface {
@@ -471,6 +498,8 @@ export interface WardrobeProPerfConsoleSurface {
   getSummary: () => Record<string, WardrobeProPerfMetricSummary>;
   getBrowserMetrics: () => WardrobeProBrowserPerfMetrics;
   getStateFingerprint?: () => WardrobeProPerfStateFingerprint | null;
+  getRendererInfoSnapshot?: () => WardrobeProRendererInfoSnapshot | null;
+  getSceneContentSnapshot?: () => WardrobeProSceneContentSnapshot | null;
   getStoreDebugStats?: () => StoreDebugStats | null;
   resetStoreDebugStats?: () => StoreDebugStats | null;
   getBuildDebugStats?: () => BuilderDebugStatsLike | null;

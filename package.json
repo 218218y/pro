@@ -124,6 +124,7 @@
     "perf:browser:update-baseline": "node tools/wp_browser_perf_smoke.mjs --target dev --update-baseline",
     "perf:browser:release": "node tools/wp_browser_perf_smoke.mjs --target release --enforce",
     "perf:browser:release:stable": "node tools/wp_browser_perf_stable.mjs --warmups 1 --runs 3",
+    "perf:browser:trace:header-sketch": "node tools/wp_browser_perf_smoke.mjs --target release --reuse-release-artifact --trace-header-sketch",
     "perf:browser:release:update-baseline": "node tools/wp_browser_perf_smoke.mjs --target release --update-baseline",
     "build:browser-perf-release": "node tools/wp_release.js --build-mode perf --out .artifacts/browser-perf/release-site",
     "start:browser-perf-release": "node tools/serve.js --root .artifacts/browser-perf/release-site --port 5176",

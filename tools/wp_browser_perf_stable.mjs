@@ -104,9 +104,40 @@ const numericMetrics = {
   lcpMs: result => Number(result.windowBrowserMetrics?.lcp?.valueMs) || 0,
   inpMs: result => Number(result.windowBrowserMetrics?.inp?.valueMs) || 0,
   documentLongTaskTotalMs: result => Number(result.windowBrowserMetrics?.longTasks?.totalMs) || 0,
+  documentLongTaskMaxMs: result => Number(result.windowBrowserMetrics?.longTasks?.maxMs) || 0,
   documentLongTaskP95Ms: result => Number(result.windowBrowserMetrics?.longTasks?.p95Ms) || 0,
   bootJourneyLongTaskTotalMs: result =>
     Number(result.journeyResponsivenessSummary?.['boot-and-shell']?.longTasks?.totalMs) || 0,
+  autosaveWaitLongTaskTotalMs: result =>
+    Number(
+      result.windowResponsivenessFlowSteps?.find(row => row?.name === 'boot.autosave-ready.wait')?.delta
+        ?.longTasks?.totalMs
+    ) || 0,
+  autosaveWaitLongTaskMaxMs: result =>
+    Number(
+      result.windowResponsivenessFlowSteps?.find(row => row?.name === 'boot.autosave-ready.wait')?.delta
+        ?.longTasks?.maxMs
+    ) || 0,
+  shaderWarmupSubmitMs: result =>
+    Number(
+      (
+        result.windowPerfSummary?.['boot.ui.shader-warmup.submit'] ||
+        result.windowPerfSummary?.['boot.ui.shader-warmup.execute']
+      )?.codeExecutionMaxMs
+    ) || 0,
+  shaderWarmupCompletionMs: result =>
+    Number(result.windowPerfSummary?.['boot.ui.shader-warmup.complete']?.codeExecutionMaxMs) || 0,
+  firstAdhesiveGlassLongTaskMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.black?.longTasks?.maxMs) || 0,
+  firstAdhesiveGlassRendererMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.black?.renderer?.maxMs) || 0,
+  firstAdhesiveGlassFrameMaxMs: result => Number(result.adhesiveGlassFirstUse?.black?.frameTotal?.maxMs) || 0,
+  adhesiveGlassVariantLongTaskMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.variant?.longTasks?.maxMs) || 0,
+  adhesiveGlassVariantRendererMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.variant?.renderer?.maxMs) || 0,
+  adhesiveGlassVariantFrameMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.variant?.frameTotal?.maxMs) || 0,
   builderCpuTotalMs: result => Number(result.windowBuildDebugSummary?.executeDurationTotalMs) || 0,
 };
 
@@ -324,6 +355,18 @@ function renderMarkdown(report) {
       `| ${item.run} | ${item.journey} | ${item.step} | ${item.durationMs} | ${item.builderContributionMs} | ${item.renderContributionMs} | ${item.renderPhaseContributionsMs?.renderer || 0} | ${item.renderPhaseContributionsMs?.mirror || 0} | ${item.storeContributionMs} | ${item.bootContributionMs || 0} | ${item.unattributedMs} |`
     );
   }
+  lines.push(
+    '',
+    '## Slowest builder executions',
+    '',
+    '| Run | Journey | Step | Build reason | Execution id | Builder ms | Step overlap ms |',
+    '|---:|---|---|---|---|---:|---:|'
+  );
+  for (const item of report.builderExecutions.slice(0, 20)) {
+    lines.push(
+      `| ${item.run} | ${item.journey} | ${item.step} | ${item.reason} | ${item.executionId} | ${item.durationMs} | ${item.overlapMs} |`
+    );
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -363,6 +406,14 @@ const report = {
     bundleBytes: Number(first.measurementArtifact?.bundleBytes) || 0,
   },
   metrics: summarizeNamedMetrics(samples),
+  evidenceCoverage: {
+    shaderWarmupCompletionSamples: samples.filter(
+      sample => Number(sample.windowPerfSummary?.['boot.ui.shader-warmup.complete']?.count) > 0
+    ).length,
+    adhesiveGlassFirstUseSamples: samples.filter(
+      sample => Number(sample.adhesiveGlassFirstUse?.black?.longTasks?.count) >= 0
+    ).length,
+  },
   bootSteps: summarizePerfPrefix(samples, 'boot.step.'),
   bootPhases: summarizePerfPrefix(samples, 'boot.phase.'),
   bootMacroSpans: summarizePerfNames(samples, [
@@ -382,6 +433,22 @@ const report = {
       }))
     )
     .sort((left, right) => right.durationMs - left.durationMs),
+  builderExecutions: samples
+    .flatMap((sample, index) =>
+      (Array.isArray(sample.builderExecutionRootCauseSummary)
+        ? sample.builderExecutionRootCauseSummary
+        : []
+      ).map(item => ({ run: index + 1, ...item }))
+    )
+    .sort((left, right) => right.durationMs - left.durationMs),
+  rendererInfoProbes: samples.map((sample, index) => ({
+    run: index + 1,
+    ...sample.headerSketchRendererProbe,
+  })),
+  viewerContentsProbes: samples.map((sample, index) => ({
+    run: index + 1,
+    ...sample.viewerContentsProbe,
+  })),
   samples: samples.map(sample => ({
     generatedAt: sample.generatedAt,
     metrics: Object.fromEntries(Object.entries(numericMetrics).map(([name, read]) => [name, read(sample)])),
