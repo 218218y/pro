@@ -222,6 +222,11 @@ function readResponsivenessStepRows(sample, name) {
   const rows = Array.isArray(sample.windowResponsivenessFlowSteps)
     ? sample.windowResponsivenessFlowSteps
     : [];
+  if (name === 'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip') {
+    return rows.filter(
+      row => row?.name === name || String(row?.name || '').startsWith('cabinet-door-drawer-authoring.layout.')
+    );
+  }
   return rows.filter(row => row?.name === name);
 }
 
@@ -295,7 +300,13 @@ function readRootCauseStepTotal(sample, stepName, readValue) {
   return (
     Array.isArray(sample.authoringIsolationRootCauseSummary) ? sample.authoringIsolationRootCauseSummary : []
   )
-    .filter(item => item?.step === stepName)
+    .filter(item => {
+      if (item?.step === stepName) return true;
+      return (
+        stepName === 'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip' &&
+        String(item?.step || '').startsWith('cabinet-door-drawer-authoring.layout.')
+      );
+    })
     .reduce((total, item) => total + (Number(readValue(item)) || 0), 0);
 }
 
@@ -328,6 +339,102 @@ function summarizeAuthoringIsolation(samples) {
       samples.map(sample => Number(sample.windowBrowserMetrics?.inp?.valueMs) || 0)
     ),
   }));
+}
+
+const LAYOUT_SCENARIO_STEP_PREFIX = 'cabinet-door-drawer-authoring.layout.';
+
+function readExactRootCauseStepTotal(sample, stepName, readValue) {
+  return (
+    Array.isArray(sample.authoringIsolationRootCauseSummary) ? sample.authoringIsolationRootCauseSummary : []
+  )
+    .filter(item => item?.step === stepName)
+    .reduce((total, item) => total + (Number(readValue(item)) || 0), 0);
+}
+
+function readLayoutProgramLifecycle(sample, stepName) {
+  const suffix = stepName.slice(LAYOUT_SCENARIO_STEP_PREFIX.length);
+  const segments = suffix.split('.');
+  const scenario = segments[0] || '';
+  const phase = segments.slice(1).join('.');
+  const operation = phase === 'first-render' ? 'load' : phase === 'reload-first-render' ? 'reload' : null;
+  if (!operation) return null;
+  return (
+    Array.isArray(sample.layoutScenarioResourceProfiles) ? sample.layoutScenarioResourceProfiles : []
+  ).find(item => item?.scenario === scenario && item?.operation === operation)?.programLifecycle;
+}
+
+function summarizeLayoutScenarioPhases(samples) {
+  const names = new Set(
+    samples.flatMap(sample =>
+      (Array.isArray(sample.windowResponsivenessFlowSteps) ? sample.windowResponsivenessFlowSteps : [])
+        .map(row => String(row?.name || ''))
+        .filter(name => name.startsWith(LAYOUT_SCENARIO_STEP_PREFIX))
+    )
+  );
+  return Array.from(names)
+    .map(name => ({
+      name,
+      scenario: name.slice(LAYOUT_SCENARIO_STEP_PREFIX.length).split('.')[0] || 'unknown',
+      phase: name.slice(LAYOUT_SCENARIO_STEP_PREFIX.length).split('.').slice(1).join('.') || 'unknown',
+      longTaskMaxMs: createStableSampleSummary(
+        samples.map(sample => readResponsivenessStepMetric(sample, name, 'longTasks', 'maxMs'))
+      ),
+      builderMs: createStableSampleSummary(
+        samples.map(sample => readExactRootCauseStepTotal(sample, name, item => item.builderContributionMs))
+      ),
+      rendererMs: createStableSampleSummary(
+        samples.map(sample =>
+          readExactRootCauseStepTotal(sample, name, item => item.renderPhaseContributionsMs?.renderer)
+        )
+      ),
+      programsRemoved: createStableSampleSummary(
+        samples.map(sample => readLayoutProgramLifecycle(sample, name)?.removedAfterBuild?.length || 0)
+      ),
+      programsAdded: createStableSampleSummary(
+        samples.map(sample => readLayoutProgramLifecycle(sample, name)?.addedAtFirstRender?.length || 0)
+      ),
+      programsReturned: createStableSampleSummary(
+        samples.map(sample => readLayoutProgramLifecycle(sample, name)?.disappearedAndReturned?.length || 0)
+      ),
+    }))
+    .sort((left, right) => right.longTaskMaxMs.median - left.longTaskMaxMs.median);
+}
+
+function sumOwnerProfileMetric(sample, key, owner) {
+  return (
+    Array.isArray(sample.layoutScenarioResourceProfiles) ? sample.layoutScenarioResourceProfiles : []
+  ).reduce((total, item) => total + (Number(item?.cleanup?.[key]?.[owner]) || 0), 0);
+}
+
+function summarizeMaterialLifecycle(samples) {
+  const owners = new Set(
+    samples.flatMap(sample =>
+      (Array.isArray(sample.layoutScenarioResourceProfiles)
+        ? sample.layoutScenarioResourceProfiles
+        : []
+      ).flatMap(item => [
+        ...Object.keys(item?.cleanup?.persistentCacheHits || {}),
+        ...Object.keys(item?.cleanup?.persistentCacheMaterialsDisposed || {}),
+        ...Object.keys(item?.cleanup?.persistentCacheMaterialsReusedAfterDispose || {}),
+      ])
+    )
+  );
+  return Array.from(owners)
+    .map(owner => ({
+      owner,
+      hits: createStableSampleSummary(
+        samples.map(sample => sumOwnerProfileMetric(sample, 'persistentCacheHits', owner))
+      ),
+      disposedDuringRebuild: createStableSampleSummary(
+        samples.map(sample => sumOwnerProfileMetric(sample, 'persistentCacheMaterialsDisposed', owner))
+      ),
+      reusedAfterDispose: createStableSampleSummary(
+        samples.map(sample =>
+          sumOwnerProfileMetric(sample, 'persistentCacheMaterialsReusedAfterDispose', owner)
+        )
+      ),
+    }))
+    .sort((left, right) => right.disposedDuringRebuild.median - left.disposedDuringRebuild.median);
 }
 
 function formatSummary(summary) {
@@ -424,6 +531,30 @@ function renderMarkdown(report) {
   }
   lines.push(
     '',
+    '## Layout scenario renderer attribution',
+    '',
+    '| Scenario | Phase | Max LT | Builder | Renderer | Programs removed / added / returned |',
+    '|---|---|---:|---:|---:|---:|'
+  );
+  for (const item of report.layoutScenarioPhases) {
+    lines.push(
+      `| ${item.scenario} | ${item.phase} | ${formatSummary(item.longTaskMaxMs)} | ${formatSummary(item.builderMs)} | ${formatSummary(item.rendererMs)} | ${formatSummary(item.programsRemoved)} / ${formatSummary(item.programsAdded)} / ${formatSummary(item.programsReturned)} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Material resource lifetime',
+    '',
+    '| Cache owner | Hits | Materials disposed during rebuild | Reused after dispose |',
+    '|---|---:|---:|---:|'
+  );
+  for (const item of report.materialLifecycle) {
+    lines.push(
+      `| ${item.owner} | ${formatSummary(item.hits)} | ${formatSummary(item.disposedDuringRebuild)} | ${formatSummary(item.reusedAfterDispose)} |`
+    );
+  }
+  lines.push(
+    '',
     '## Largest Long-Task root causes',
     '',
     '| Run | Journey | Step | Duration | Builder | Mirror | Renderer | Effects | Store exact | Other | Unattributed |',
@@ -470,6 +601,22 @@ function renderMarkdown(report) {
       `| ${item.run} | ${item.journey} | ${item.step} | ${item.reason} | ${item.executionId} | ${item.durationMs} | ${item.overlapMs} |`
     );
   }
+  if (report.directMirrorRefreshProbes.some(item => Array.isArray(item.refreshes))) {
+    lines.push(
+      '',
+      '## Chest direct mirror refresh ownership',
+      '',
+      '| Run | Build execution | Owner | Ordinal | Duration ms | Refreshed |',
+      '|---:|---|---|---:|---:|---|'
+    );
+    for (const probe of report.directMirrorRefreshProbes) {
+      for (const refresh of Array.isArray(probe.refreshes) ? probe.refreshes : []) {
+        lines.push(
+          `| ${probe.run} | ${refresh.builderExecutionId || 'outside-build'} | ${refresh.owner || 'unknown'} | ${refresh.refreshOrdinalInsideBuild || 0} | ${refresh.durationMs || 0} | ${refresh.refreshed === true ? 'yes' : 'no'} |`
+        );
+      }
+    }
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -480,6 +627,7 @@ const foldedGeometryMode = readStringFlag('folded-geometry-mode', 'canonical-sca
 const mirrorCubeExperimentMode = readStringFlag('mirror-cube-experiment', 'defer-first-presentation');
 const profileFoldedContents = process.argv.includes('--profile-folded-contents');
 const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
+const profileDirectMirrorRefresh = process.argv.includes('--profile-direct-mirror-refresh');
 if (!['startup', 'off', 'design-intent'].includes(adhesiveGlassWarmupMode)) {
   throw new Error('[browser-perf-stable] --warmup-mode must be startup, off, or design-intent');
 }
@@ -498,13 +646,15 @@ process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = adhesiveGlassWarmupMode;
 process.env.WP_PERF_FOLDED_GEOMETRY_MODE = foldedGeometryMode;
 process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT = mirrorCubeExperimentMode;
 
-const variantSuffix = profileFoldedContents
-  ? `${adhesiveGlassWarmupMode}-folded-contents-${foldedGeometryMode}`
-  : profileShaderWarmup
-    ? `${adhesiveGlassWarmupMode}-shader-profile`
-    : mirrorCubeExperimentMode === 'baseline'
-      ? adhesiveGlassWarmupMode
-      : `${adhesiveGlassWarmupMode}-mirror-${mirrorCubeExperimentMode}`;
+const variantSuffix = profileDirectMirrorRefresh
+  ? `${adhesiveGlassWarmupMode}-direct-mirror-refresh`
+  : profileFoldedContents
+    ? `${adhesiveGlassWarmupMode}-folded-contents-${foldedGeometryMode}`
+    : profileShaderWarmup
+      ? `${adhesiveGlassWarmupMode}-shader-profile`
+      : mirrorCubeExperimentMode === 'baseline'
+        ? adhesiveGlassWarmupMode
+        : `${adhesiveGlassWarmupMode}-mirror-${mirrorCubeExperimentMode}`;
 const stableJsonPath = path.join(
   path.dirname(targetPaths.latestJsonPath),
   `stable-warmup-${variantSuffix}.json`
@@ -522,6 +672,7 @@ for (let index = 0; index < warmupRuns + measuredRuns; index += 1) {
   const sampleArgs = [sampleScript, '--target', 'release', '--reuse-release-artifact'];
   if (profileFoldedContents) sampleArgs.push('--profile-folded-contents');
   if (profileShaderWarmup) sampleArgs.push('--profile-shader-warmup');
+  if (profileDirectMirrorRefresh) sampleArgs.push('--profile-direct-mirror-refresh');
   runCommand(process.execPath, sampleArgs, '[browser-perf-stable] browser sample');
   const result = readLatestResult();
   if (measured) samples.push(result);
@@ -530,7 +681,7 @@ for (let index = 0; index < warmupRuns + measuredRuns; index += 1) {
 assertComparableSamples(samples);
 const first = samples[0];
 const report = {
-  version: 1,
+  version: 2,
   generatedAt: new Date().toISOString(),
   comparisonPolicy: 'not directly comparable across environments',
   experiment: {
@@ -539,6 +690,7 @@ const report = {
     mirrorCubeExperimentMode,
     profileFoldedContents,
     profileShaderWarmup,
+    profileDirectMirrorRefresh,
   },
   warmupRuns,
   measuredRuns,
@@ -569,6 +721,8 @@ const report = {
   longTaskJourneys: summarizeJourneys(samples),
   responsivenessSteps: summarizeResponsivenessSteps(samples),
   authoringIsolation: summarizeAuthoringIsolation(samples),
+  layoutScenarioPhases: summarizeLayoutScenarioPhases(samples),
+  materialLifecycle: summarizeMaterialLifecycle(samples),
   longTaskRootCauses: samples
     .flatMap((sample, index) =>
       (Array.isArray(sample.longTaskRootCauseSummary) ? sample.longTaskRootCauseSummary : []).map(item => ({
@@ -602,6 +756,10 @@ const report = {
   adhesiveGlassProgramProbes: samples.map((sample, index) => ({
     run: index + 1,
     ...(sample.adhesiveGlassProgramProbe || {}),
+  })),
+  directMirrorRefreshProbes: samples.map((sample, index) => ({
+    run: index + 1,
+    ...(sample.directMirrorRefreshProbe || {}),
   })),
   samples: samples.map(sample => ({
     generatedAt: sample.generatedAt,

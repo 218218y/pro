@@ -6,6 +6,7 @@
 export {
   ensureBuilderService,
   getBuilderService,
+  readActiveBuilderExecutionId,
   requireBuilderService,
 } from './builder_service_access_shared.js';
 

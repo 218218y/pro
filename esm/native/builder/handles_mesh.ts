@@ -13,6 +13,23 @@ import {
   STANDARD_HANDLE_RENDER_POLICY,
 } from '../../shared/dimensions/handle_policy.js';
 
+function recordPersistentMaterialCacheUse(material: unknown, cacheHit: boolean): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  if (!material || typeof material !== 'object') return;
+  const rec = material as Record<string, unknown>;
+  const userData =
+    rec.userData && typeof rec.userData === 'object' ? (rec.userData as Record<string, unknown>) : {};
+  userData.__wpPerfPersistentCacheOwner = 'handles';
+  if (cacheHit) {
+    userData.__wpPerfPersistentCacheHitCount = (Number(userData.__wpPerfPersistentCacheHitCount) || 0) + 1;
+    if (userData.__wpPerfDisposedByCleanGroup === true) {
+      userData.__wpPerfReturnedAfterDisposeCount =
+        (Number(userData.__wpPerfReturnedAfterDisposeCount) || 0) + 1;
+    }
+  }
+  rec.userData = userData;
+}
+
 export function createHandleMeshV7(
   type: unknown,
   w: number,
@@ -40,8 +57,9 @@ export function createHandleMeshV7(
     cache._stdHandleMatByColor || Object.create(null));
 
   if (type === 'edge') {
+    const cachedEdgeMat = edgeHandleMatByColor[handleColor];
     const edgeMat =
-      edgeHandleMatByColor[handleColor] ||
+      cachedEdgeMat ||
       (edgeHandleMatByColor[handleColor] = new THREE.MeshStandardMaterial({
         color: palette.hex,
         emissive: palette.emissiveHex,
@@ -49,6 +67,7 @@ export function createHandleMeshV7(
         roughness: palette.roughness,
         metalness: palette.metalness,
       }));
+    recordPersistentMaterialCacheUse(edgeMat, !!cachedEdgeMat);
 
     if (isDrawer) {
       const targetEdgeLen =
@@ -85,8 +104,9 @@ export function createHandleMeshV7(
     return g;
   }
 
+  const cachedStdMat = stdHandleMatByColor[handleColor];
   const stdMat =
-    stdHandleMatByColor[handleColor] ||
+    cachedStdMat ||
     (stdHandleMatByColor[handleColor] = new THREE.MeshStandardMaterial({
       color: palette.hex,
       emissive: palette.emissiveHex,
@@ -94,6 +114,7 @@ export function createHandleMeshV7(
       roughness: palette.roughness,
       metalness: palette.metalness,
     }));
+  recordPersistentMaterialCacheUse(stdMat, !!cachedStdMat);
 
   if (isDrawer) {
     const geo = new THREE.BoxGeometry(

@@ -1,8 +1,6 @@
 import {
   getDrawersArray,
   installPlanarMirrorReflector,
-  refreshTrackedMirrorSurfacesNow,
-  getViewportSurface,
   getWardrobeGroup,
   trackMirrorSurface,
 } from '../runtime/render_access.js';
@@ -28,9 +26,7 @@ import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
 import type { AppContainer, BuilderBuildChestOnlyOptsLike } from '../../../types/index.js';
 
 import {
-  asChestModeControls,
   asChestModeObject3D,
-  asChestModeRenderer,
   ensureChestModeApp,
   ensureChestModeTHREE,
   getMirrorMaterialFromServices,
@@ -566,13 +562,4 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       );
     }
   }
-
-  const { renderer, scene, camera, controls } = getViewportSurface(App);
-  const rendererLike = asChestModeRenderer(renderer);
-  const controlsLike = asChestModeControls(controls);
-  if (rendererLike && scene && camera && typeof rendererLike.render === 'function') {
-    refreshTrackedMirrorSurfacesNow(App);
-    rendererLike.render(scene, camera);
-  }
-  if (controlsLike && typeof controlsLike.update === 'function') controlsLike.update();
 }

@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-08-24T08:13:30.904Z
+Generated: 2026-08-24T13:15:46.717Z
 
 ## Summary
 
@@ -20,7 +20,7 @@ Generated: 2026-08-24T08:13:30.904Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 139
+- Cross-kind contract overlap targets: 140
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -112,6 +112,7 @@ Generated: 2026-08-24T08:13:30.904Z
 - `esm/native/platform/render_loop_motion_doors.ts` — contract / ownership — `tests/internal_drawers_do_not_hold_doors_open_guard.test.cjs`, `tests/local_internal_drawers_local_doors_guard.test.cjs`, `tests/local_motion_toggle_wakeup_guard.test.cjs`, `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_free_box_internal_drawers_open_guard.test.js`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
 - `esm/native/platform/render_loop_motion_shared.ts` — contract / ownership — `tests/render_loop_door_motion_ownership_runtime.test.ts`, `tests/sketch_internal_drawers_keep_doors_closed_guard.test.cjs`
 - `esm/native/runtime/api.ts` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/app_container_legacy_surfaces_cleanup_guard.test.js`, `tests/chest_mode_dimensions_compatibility_ownership_contract.test.js`, `tests/export_download_dom_contracts.test.js`, `tests/interior_storage_dimension_ownership_closeout_contract.test.js`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/retired_dimension_import_paths_contract.test.js`, `tests/runtime_platform_core_family_contracts.test.js`
+- `esm/native/runtime/builder_service_access_build_followthrough_runtime.ts` — contract / ownership — `tests/build_completion_runtime_owners_contracts.test.js`, `tests/chest_mode_build_ownership_contract.test.js`
 - `esm/native/runtime/cfg_access_map_owner.ts` — contract / ownership — `tests/store_backend_topology_contract.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/runtime/cfg_access_maps.ts` — contract / ownership — `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`
 - `esm/native/runtime/cfg_access_scalars.ts` — contract / ownership — `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`

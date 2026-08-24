@@ -20,7 +20,11 @@ export {
   ensureRenderMetaMap,
 } from './render_access_state_bags.js';
 
-export type { MirrorRefreshNowResult, RenderRuntimeStateLike } from './render_access_state_runtime.js';
+export type {
+  MirrorDirectRefreshContext,
+  MirrorRefreshNowResult,
+  RenderRuntimeStateLike,
+} from './render_access_state_runtime.js';
 
 export {
   ensureRenderRuntimeState,

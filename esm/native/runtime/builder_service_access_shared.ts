@@ -73,6 +73,13 @@ export function getBuilderService(App: unknown): BuilderServiceLike | null {
   return asBuilderService(getServiceSlotMaybe<BuilderBagLike>(App, 'builder'));
 }
 
+export function readActiveBuilderExecutionId(App: unknown): string | null {
+  const builder = getBuilderService(App);
+  const schedulerState = asRecord<UnknownRecord>(builder?.__schedulerState);
+  const executionId = schedulerState?.activeExecutionId;
+  return typeof executionId === 'string' && executionId ? executionId : null;
+}
+
 export function requireBuilderService(
   App: AppContainer,
   label = 'runtime/builder_service_access'

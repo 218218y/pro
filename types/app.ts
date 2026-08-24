@@ -55,6 +55,24 @@ export interface RenderFollowThroughDebugStatsLike extends UnknownRecord {
   activityTouchCount: number;
   afterTouchCount: number;
   ensureRenderLoopAfterTriggerCount: number;
+  cleanupCallCount?: number;
+  cleanupMaterialReferenceCount?: number;
+  cleanupMaterialsDisposed?: number;
+  cleanupUniqueMaterialsDisposed?: number;
+  cleanupCachedMaterialSkips?: number;
+  cleanupDuplicateMaterialDisposeAttempts?: number;
+  cleanupGeometryReferenceCount?: number;
+  cleanupGeometriesDisposed?: number;
+  cleanupUniqueGeometriesDisposed?: number;
+  cleanupCachedGeometrySkips?: number;
+  cleanupDuplicateGeometryDisposeAttempts?: number;
+  cleanupTextureReferenceCount?: number;
+  cleanupTexturesDisposed?: number;
+  cleanupUniqueTexturesDisposed?: number;
+  cleanupDuplicateTextureDisposeAttempts?: number;
+  cleanupPersistentCacheMaterialsDisposed?: Record<string, number>;
+  cleanupPersistentCacheMaterialsReusedAfterDispose?: Record<string, number>;
+  cleanupPersistentCacheHits?: Record<string, number>;
 }
 
 export interface RenderFollowThroughBudgetSummaryLike extends UnknownRecord {
@@ -77,7 +95,7 @@ export interface PlatformUtilNamespaceLike extends UnknownRecord {
   log?: PlatformLogFn;
   idle?: (cb: () => void, timeout?: number) => unknown;
   clone?: <T>(value: T, seed?: unknown) => T;
-  cleanGroup?: (group: unknown) => unknown;
+  cleanGroup?: (group: unknown, options?: unknown) => unknown;
   pruneCachesSafe?: (rootNode?: unknown) => unknown;
   afterPaint?: (cb: () => void) => unknown;
   hash32?: PlatformHash32Fn;

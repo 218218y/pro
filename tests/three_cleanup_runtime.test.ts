@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { cleanGroup, installThreeCleanup } from '../esm/native/platform/three_cleanup.ts';
+import {
+  cleanGroup,
+  installThreeCleanup,
+  type CleanGroupDiagnostics,
+} from '../esm/native/platform/three_cleanup.ts';
 import { getPlatformUtil } from '../esm/native/runtime/platform_access.ts';
 
 type AnyRecord = Record<string, unknown>;
@@ -101,4 +105,45 @@ test('installThreeCleanup restores the canonical cleanGroup helper if the util s
 
   assert.equal(util.cleanGroup, cleanGroup);
   assert.equal(first, cleanGroup);
+});
+
+test('cleanGroup diagnostics expose cached skips and duplicate disposal attempts without changing lifetime policy', () => {
+  const sharedGeometry = makeDisposable();
+  const sharedMaterial = makeDisposable({ __keepMaterial: true });
+  const sharedTexture = makeDisposable();
+  sharedMaterial.map = sharedTexture;
+  const cachedMaterial = makeDisposable({ userData: { isCached: true } });
+  const children = [
+    { geometry: sharedGeometry, material: sharedMaterial, userData: {} },
+    { geometry: sharedGeometry, material: [sharedMaterial, cachedMaterial], userData: {} },
+  ];
+  const group = {
+    children,
+    remove(child: unknown) {
+      const index = children.indexOf(child as (typeof children)[number]);
+      if (index >= 0) children.splice(index, 1);
+    },
+  };
+  let diagnostics: CleanGroupDiagnostics | null = null;
+
+  cleanGroup(group, {
+    onDiagnostics(value) {
+      diagnostics = value;
+    },
+  });
+
+  assert.equal(sharedMaterial.disposeCount, 2, '__keepMaterial must not become a lifetime exemption');
+  assert.equal(sharedGeometry.disposeCount, 2);
+  assert.equal(sharedTexture.disposeCount, 2);
+  assert.equal(cachedMaterial.disposeCount, 0);
+  assert.equal(diagnostics?.materialsDisposed, 2);
+  assert.equal(diagnostics?.uniqueMaterialsDisposed, 1);
+  assert.equal(diagnostics?.duplicateMaterialDisposeAttempts, 1);
+  assert.equal(diagnostics?.cachedMaterialSkips, 1);
+  assert.equal(diagnostics?.geometriesDisposed, 2);
+  assert.equal(diagnostics?.uniqueGeometriesDisposed, 1);
+  assert.equal(diagnostics?.duplicateGeometryDisposeAttempts, 1);
+  assert.equal(diagnostics?.texturesDisposed, 2);
+  assert.equal(diagnostics?.uniqueTexturesDisposed, 1);
+  assert.equal(diagnostics?.duplicateTextureDisposeAttempts, 1);
 });

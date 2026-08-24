@@ -20,6 +20,8 @@ export function ensureSchedulerState(App: AppContainer): BuilderSchedulerStateIn
     debouncedUsesTimerDeadline: false,
     pendingScheduleVersion: 0,
     scheduleVersionSeq: 0,
+    executionIdSeq: 0,
+    activeExecutionId: null,
     lastExecutedSignature: null,
     lastTs: 0,
     waitingForBuilder: false,

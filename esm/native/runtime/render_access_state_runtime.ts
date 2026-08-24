@@ -17,7 +17,9 @@ import {
 } from './render_access_shared.js';
 import { asRecord } from './record.js';
 import { reportError } from './errors.js';
-import { runPerfPhase } from './perf_runtime_core.js';
+import { endPerfSpan, startPerfSpan } from './perf_runtime_core.js';
+import { readActiveBuilderExecutionId } from './builder_service_access_shared.js';
+import { getRenderRootMaybe } from './app_roots_access.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 import {
   isPlanarMirrorSurface,
@@ -77,6 +79,11 @@ export type MirrorRefreshNowResult = {
   mirrorCount: number;
   materialSyncCount: number;
   skippedReason: string | null;
+};
+
+export type MirrorDirectRefreshContext = {
+  owner?: string;
+  buildMode?: string;
 };
 
 function isRenderRuntimeStateBag(
@@ -374,11 +381,46 @@ function refreshTrackedMirrorSurfacesNowImpl(App: unknown): MirrorRefreshNowResu
   }
 }
 
-export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowResult {
+function createDirectRefreshPerfDetail(
+  App: unknown,
+  context: MirrorDirectRefreshContext | null | undefined
+): Record<string, unknown> {
+  const renderBag = asRecord<RenderRuntimeStateLike & UnknownRecord>(getRenderRootMaybe(App));
+  const builderExecutionId = readActiveBuilderExecutionId(App);
+  const ordinalKey = builderExecutionId || 'outside-build';
+  if (renderBag && renderBag.__wpDirectRefreshOrdinalKey !== ordinalKey) {
+    renderBag.__wpDirectRefreshOrdinalKey = ordinalKey;
+    renderBag.__wpDirectRefreshOrdinal = 0;
+  }
+  const ordinal = (Number(renderBag?.__wpDirectRefreshOrdinal) || 0) + 1;
+  if (renderBag) renderBag.__wpDirectRefreshOrdinal = ordinal;
+  return {
+    builderExecutionId,
+    buildMode: typeof context?.buildMode === 'string' ? context.buildMode : 'unknown',
+    owner: typeof context?.owner === 'string' ? context.owner : 'unknown',
+    refreshOrdinalInsideBuild: ordinal,
+  };
+}
+
+export function refreshTrackedMirrorSurfacesNow(
+  App: unknown,
+  context?: MirrorDirectRefreshContext | null
+): MirrorRefreshNowResult {
   if (typeof __WP_BUILD_PERF__ !== 'undefined' && __WP_BUILD_PERF__ === true) {
-    return runPerfPhase(App as AppContainer, 'mirror.direct-refresh', 'render:mirror', () =>
-      refreshTrackedMirrorSurfacesNowImpl(App)
-    );
+    const detail = createDirectRefreshPerfDetail(App, context);
+    const spanId = startPerfSpan(App as AppContainer, 'mirror.direct-refresh', {
+      kind: 'phase',
+      phase: 'render:mirror',
+      detail,
+    });
+    try {
+      const result = refreshTrackedMirrorSurfacesNowImpl(App);
+      endPerfSpan(App as AppContainer, spanId, { status: 'ok', detail: { ...detail, ...result } });
+      return result;
+    } catch (error) {
+      endPerfSpan(App as AppContainer, spanId, { status: 'error', error, detail });
+      throw error;
+    }
   }
   return refreshTrackedMirrorSurfacesNowImpl(App);
 }

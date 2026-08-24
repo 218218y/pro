@@ -130,6 +130,7 @@
     "perf:browser:release:profile:folded-canonical": "node tools/wp_browser_perf_stable.mjs --warmups 1 --runs 3 --warmup-mode off --folded-geometry-mode canonical-scale --profile-folded-contents",
     "perf:browser:release:profile:folded-segments": "node tools/wp_browser_perf_stable.mjs --warmups 1 --runs 3 --warmup-mode off --folded-geometry-mode segments-2 --profile-folded-contents",
     "perf:browser:trace:header-sketch": "node tools/wp_browser_perf_smoke.mjs --target release --reuse-release-artifact --trace-header-sketch",
+    "perf:browser:trace:layout-drawer-stack-heavy": "node tools/wp_browser_perf_smoke.mjs --target release --reuse-release-artifact --trace-layout-drawer-stack-heavy",
     "perf:browser:release:update-baseline": "node tools/wp_browser_perf_smoke.mjs --target release --update-baseline",
     "build:browser-perf-release": "node tools/wp_release.js --build-mode perf --out .artifacts/browser-perf/release-site",
     "start:browser-perf-release": "node tools/serve.js --root .artifacts/browser-perf/release-site --port 5176",

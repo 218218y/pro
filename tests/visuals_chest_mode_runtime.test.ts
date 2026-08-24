@@ -833,8 +833,8 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
 
   assert.equal(App.render.drawersArray.length, 3);
   assert.equal(dimensionCalls.length, 2);
-  assert.equal(getRenderCalls(), 1);
-  assert.equal(getUpdateCalls(), 1);
+  assert.equal(getRenderCalls(), 0, 'buildChestOnly owns scene construction, not viewport presentation');
+  assert.equal(getUpdateCalls(), 0, 'controls update belongs to the chest follow-through owner');
 
   const legCount = wardrobeGroup.children.filter(
     (child: any) => child?.geometry?.type === 'CylinderGeometry'

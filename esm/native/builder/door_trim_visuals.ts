@@ -67,6 +67,20 @@ function asMaterial(value: unknown): MaterialLike | null {
   return isMaterialLike(value) ? value : null;
 }
 
+function recordPersistentMaterialCacheUse(material: MaterialLike, cacheHit: boolean): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  const userData = isRecord(material.userData) ? material.userData : {};
+  userData.__wpPerfPersistentCacheOwner = 'door-trim';
+  if (cacheHit) {
+    userData.__wpPerfPersistentCacheHitCount = (Number(userData.__wpPerfPersistentCacheHitCount) || 0) + 1;
+    if (userData.__wpPerfDisposedByCleanGroup === true) {
+      userData.__wpPerfReturnedAfterDisposeCount =
+        (Number(userData.__wpPerfReturnedAfterDisposeCount) || 0) + 1;
+    }
+  }
+  material.userData = userData;
+}
+
 function resolveDoorTrimPalette(color: string): DoorTrimColorPalette {
   return resolveMetalFinishPalette(color);
 }
@@ -126,7 +140,10 @@ function getTrimMaterial(args: {
   const cache = ensureDoorTrimMaterialCache(args.App);
   const key = String(args.color || 'nickel');
   const cached = asMaterial(cache[key]);
-  if (cached) return cached;
+  if (cached) {
+    recordPersistentMaterialCacheUse(cached, true);
+    return cached;
+  }
   const palette = resolveDoorTrimPalette(key);
   try {
     const mat = new args.THREE.MeshStandardMaterial({
@@ -141,6 +158,7 @@ function getTrimMaterial(args: {
     } catch {
       // builder-visual-metadata-fallback: optional trim material metadata must not block door rendering
     }
+    recordPersistentMaterialCacheUse(mat, false);
     cache[key] = mat;
     return mat;
   } catch {

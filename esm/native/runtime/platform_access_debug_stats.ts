@@ -30,6 +30,84 @@ export function createRenderFollowThroughDebugStats(): RenderFollowThroughDebugS
   };
 }
 
+type ResourceCleanupDiagnosticsLike = {
+  materialReferences?: number;
+  materialsDisposed?: number;
+  uniqueMaterialsDisposed?: number;
+  cachedMaterialSkips?: number;
+  duplicateMaterialDisposeAttempts?: number;
+  geometryReferences?: number;
+  geometriesDisposed?: number;
+  uniqueGeometriesDisposed?: number;
+  cachedGeometrySkips?: number;
+  duplicateGeometryDisposeAttempts?: number;
+  textureReferences?: number;
+  texturesDisposed?: number;
+  uniqueTexturesDisposed?: number;
+  duplicateTextureDisposeAttempts?: number;
+  persistentCacheMaterialsDisposed?: Record<string, number>;
+  persistentCacheMaterialsReusedAfterDispose?: Record<string, number>;
+  persistentCacheHits?: Record<string, number>;
+};
+
+function addCount(target: RenderFollowThroughDebugStatsLike, key: string, value: unknown): void {
+  const next = Number(value);
+  if (!Number.isFinite(next) || next <= 0) return;
+  target[key] = (Number(target[key]) || 0) + next;
+}
+
+function mergeOwnerCounts(
+  target: RenderFollowThroughDebugStatsLike,
+  key:
+    | 'cleanupPersistentCacheMaterialsDisposed'
+    | 'cleanupPersistentCacheMaterialsReusedAfterDispose'
+    | 'cleanupPersistentCacheHits',
+  source: Record<string, number> | null | undefined
+): void {
+  if (!source || typeof source !== 'object') return;
+  const current = asRecord<Record<string, number>>(target[key]) || {};
+  for (const [owner, rawCount] of Object.entries(source)) {
+    const count = Number(rawCount);
+    if (!owner || !Number.isFinite(count) || count <= 0) continue;
+    current[owner] = (Number(current[owner]) || 0) + count;
+  }
+  target[key] = current;
+}
+
+export function recordPlatformResourceCleanupStats(
+  host: PlatformServiceNamespaceLike | UnknownRecord | null | undefined,
+  diagnostics: ResourceCleanupDiagnosticsLike | null | undefined
+): RenderFollowThroughDebugStatsLike {
+  const stats = ensureRenderFollowThroughDebugStats(host);
+  stats.cleanupCallCount = (Number(stats.cleanupCallCount) || 0) + 1;
+  addCount(stats, 'cleanupMaterialReferenceCount', diagnostics?.materialReferences);
+  addCount(stats, 'cleanupMaterialsDisposed', diagnostics?.materialsDisposed);
+  addCount(stats, 'cleanupUniqueMaterialsDisposed', diagnostics?.uniqueMaterialsDisposed);
+  addCount(stats, 'cleanupCachedMaterialSkips', diagnostics?.cachedMaterialSkips);
+  addCount(stats, 'cleanupDuplicateMaterialDisposeAttempts', diagnostics?.duplicateMaterialDisposeAttempts);
+  addCount(stats, 'cleanupGeometryReferenceCount', diagnostics?.geometryReferences);
+  addCount(stats, 'cleanupGeometriesDisposed', diagnostics?.geometriesDisposed);
+  addCount(stats, 'cleanupUniqueGeometriesDisposed', diagnostics?.uniqueGeometriesDisposed);
+  addCount(stats, 'cleanupCachedGeometrySkips', diagnostics?.cachedGeometrySkips);
+  addCount(stats, 'cleanupDuplicateGeometryDisposeAttempts', diagnostics?.duplicateGeometryDisposeAttempts);
+  addCount(stats, 'cleanupTextureReferenceCount', diagnostics?.textureReferences);
+  addCount(stats, 'cleanupTexturesDisposed', diagnostics?.texturesDisposed);
+  addCount(stats, 'cleanupUniqueTexturesDisposed', diagnostics?.uniqueTexturesDisposed);
+  addCount(stats, 'cleanupDuplicateTextureDisposeAttempts', diagnostics?.duplicateTextureDisposeAttempts);
+  mergeOwnerCounts(
+    stats,
+    'cleanupPersistentCacheMaterialsDisposed',
+    diagnostics?.persistentCacheMaterialsDisposed
+  );
+  mergeOwnerCounts(
+    stats,
+    'cleanupPersistentCacheMaterialsReusedAfterDispose',
+    diagnostics?.persistentCacheMaterialsReusedAfterDispose
+  );
+  mergeOwnerCounts(stats, 'cleanupPersistentCacheHits', diagnostics?.persistentCacheHits);
+  return stats;
+}
+
 export function ensureRenderFollowThroughDebugStats(
   host: PlatformServiceNamespaceLike | UnknownRecord | null | undefined
 ): RenderFollowThroughDebugStatsLike {
@@ -49,7 +127,24 @@ export function getRenderFollowThroughDebugStats(
 export function cloneRenderFollowThroughDebugStats(
   stats: RenderFollowThroughDebugStatsLike | null | undefined
 ): RenderFollowThroughDebugStatsLike | null {
-  return stats ? { ...stats } : null;
+  return stats
+    ? {
+        ...stats,
+        ...(stats.cleanupPersistentCacheMaterialsDisposed && {
+          cleanupPersistentCacheMaterialsDisposed: {
+            ...stats.cleanupPersistentCacheMaterialsDisposed,
+          },
+        }),
+        ...(stats.cleanupPersistentCacheMaterialsReusedAfterDispose && {
+          cleanupPersistentCacheMaterialsReusedAfterDispose: {
+            ...stats.cleanupPersistentCacheMaterialsReusedAfterDispose,
+          },
+        }),
+        ...(stats.cleanupPersistentCacheHits && {
+          cleanupPersistentCacheHits: { ...stats.cleanupPersistentCacheHits },
+        }),
+      }
+    : null;
 }
 
 export function resetRenderFollowThroughDebugStats(

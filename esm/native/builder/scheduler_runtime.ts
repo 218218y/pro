@@ -229,11 +229,17 @@ function executePendingBuild(
   cancelBuilderWait(App);
   const shouldMeasureBuildExecution = isBuildDebugStatsEnabled();
   const startedAt = shouldMeasureBuildExecution ? nowForBuildStats() : 0;
+  const executionId = `build-${(Number(state.executionIdSeq) || 0) + 1}`;
+  state.executionIdSeq = (Number(state.executionIdSeq) || 0) + 1;
+  state.activeExecutionId = executionId;
   const perfSpanId = startPerfSpan(App, 'builder.execute', {
     kind: 'phase',
     phase: 'builder',
-    detail: { reason: execReason, immediate, forceBuild },
+    detail: { reason: execReason, immediate, forceBuild, executionId },
   });
+  const clearActiveExecution = () => {
+    if (state.activeExecutionId === executionId) state.activeExecutionId = null;
+  };
   try {
     const result = callBuild(App, buildState);
     if (isBuildThenableResult(result)) {
@@ -251,6 +257,7 @@ function executePendingBuild(
           }
           endPerfSpan(App, perfSpanId, { status: 'ok' });
           markBuildRenderSettle(App, execReason, immediate, forceBuild);
+          clearActiveExecution();
           return value;
         },
         error => {
@@ -265,6 +272,7 @@ function executePendingBuild(
             );
           }
           endPerfSpan(App, perfSpanId, { status: 'error', error });
+          clearActiveExecution();
           throw error;
         }
       );
@@ -281,6 +289,7 @@ function executePendingBuild(
     }
     endPerfSpan(App, perfSpanId, { status: 'ok' });
     markBuildRenderSettle(App, execReason, immediate, forceBuild);
+    clearActiveExecution();
     return result;
   } catch (error) {
     if (shouldMeasureBuildExecution) {
@@ -294,6 +303,7 @@ function executePendingBuild(
       );
     }
     endPerfSpan(App, perfSpanId, { status: 'error', error });
+    clearActiveExecution();
     throw error;
   }
 }

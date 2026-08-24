@@ -71,6 +71,7 @@ const projectRoot = process.cwd();
 const measurementTarget = parseBrowserPerfTarget();
 const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
 const traceHeaderSketch = process.argv.includes('--trace-header-sketch');
+const traceLayoutDrawerStackHeavy = process.argv.includes('--trace-layout-drawer-stack-heavy');
 const profileFoldedContents = process.argv.includes('--profile-folded-contents');
 const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
 const profileDirectMirrorRefresh = process.argv.includes('--profile-direct-mirror-refresh');
@@ -126,6 +127,13 @@ const headerSketchTraceReportPath = path.join(
   'browser-perf',
   measurementTarget.id,
   'header-sketch-trace-run.md'
+);
+const layoutDrawerStackHeavyTracePath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  'layout-drawer-stack-heavy-reload-trace.json'
 );
 const foldedContentsScreenshotPath = path.join(
   projectRoot,
@@ -785,9 +793,13 @@ const AUTHORING_ISOLATION_ROOT_CAUSE_STEPS = new Set([
 function assignLongTaskRootCauseSummaries(result) {
   const allRootCauses = createLongTaskRootCauseSummary(result, 1000);
   result.longTaskRootCauseSummary = allRootCauses.slice(0, 5);
-  result.authoringIsolationRootCauseSummary = allRootCauses.filter(item =>
-    AUTHORING_ISOLATION_ROOT_CAUSE_STEPS.has(String(item?.step || ''))
-  );
+  result.authoringIsolationRootCauseSummary = allRootCauses.filter(item => {
+    const step = String(item?.step || '');
+    return (
+      AUTHORING_ISOLATION_ROOT_CAUSE_STEPS.has(step) ||
+      step.startsWith('cabinet-door-drawer-authoring.layout.')
+    );
+  });
 }
 
 function createBuilderExecutionRootCauseSummary(result) {
@@ -818,7 +830,7 @@ function createBuilderExecutionRootCauseSummary(result) {
       }
       const detail = entry?.detail && typeof entry.detail === 'object' ? entry.detail : {};
       return {
-        executionId: String(entry?.id || ''),
+        executionId: String(detail.executionId || entry?.id || ''),
         reason: String(detail.reason || 'unknown'),
         durationMs: Number(entry?.codeExecutionMs) || Math.max(0, entryEnd - entryStart),
         overlapMs: ownerOverlapMs,
@@ -1099,6 +1111,10 @@ async function readBuildDebugStats(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getBuildDebugStats?.() || null);
 }
 
+async function readRenderDebugStats(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getRenderDebugStats?.() || null);
+}
+
 async function readRendererInfoSnapshot(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getRendererInfoSnapshot?.() || null);
 }
@@ -1136,6 +1152,66 @@ function findReusedProgramKeys(before, after, candidateKeys) {
     const afterProgram = afterByKey.get(key);
     return beforeProgram && afterProgram && Number(afterProgram.usedTimes) > Number(beforeProgram.usedTimes);
   });
+}
+
+function diffOwnerCounts(before, after, key) {
+  const beforeCounts = before?.[key] && typeof before[key] === 'object' ? before[key] : {};
+  const afterCounts = after?.[key] && typeof after[key] === 'object' ? after[key] : {};
+  const owners = new Set([...Object.keys(beforeCounts), ...Object.keys(afterCounts)]);
+  return Object.fromEntries(
+    Array.from(owners)
+      .map(owner => [
+        owner,
+        Math.max(0, (Number(afterCounts[owner]) || 0) - (Number(beforeCounts[owner]) || 0)),
+      ])
+      .filter(([, count]) => count > 0)
+  );
+}
+
+function createRenderCleanupDelta(before, after) {
+  const readDelta = key => Math.max(0, (Number(after?.[key]) || 0) - (Number(before?.[key]) || 0));
+  return {
+    cleanupCalls: readDelta('cleanupCallCount'),
+    materialReferences: readDelta('cleanupMaterialReferenceCount'),
+    materialsDisposed: readDelta('cleanupMaterialsDisposed'),
+    uniqueMaterialsDisposed: readDelta('cleanupUniqueMaterialsDisposed'),
+    cachedMaterialSkips: readDelta('cleanupCachedMaterialSkips'),
+    duplicateMaterialDisposeAttempts: readDelta('cleanupDuplicateMaterialDisposeAttempts'),
+    geometryReferences: readDelta('cleanupGeometryReferenceCount'),
+    geometriesDisposed: readDelta('cleanupGeometriesDisposed'),
+    uniqueGeometriesDisposed: readDelta('cleanupUniqueGeometriesDisposed'),
+    cachedGeometrySkips: readDelta('cleanupCachedGeometrySkips'),
+    duplicateGeometryDisposeAttempts: readDelta('cleanupDuplicateGeometryDisposeAttempts'),
+    textureReferences: readDelta('cleanupTextureReferenceCount'),
+    texturesDisposed: readDelta('cleanupTexturesDisposed'),
+    uniqueTexturesDisposed: readDelta('cleanupUniqueTexturesDisposed'),
+    duplicateTextureDisposeAttempts: readDelta('cleanupDuplicateTextureDisposeAttempts'),
+    persistentCacheHits: diffOwnerCounts(before, after, 'cleanupPersistentCacheHits'),
+    persistentCacheMaterialsDisposed: diffOwnerCounts(
+      before,
+      after,
+      'cleanupPersistentCacheMaterialsDisposed'
+    ),
+    persistentCacheMaterialsReusedAfterDispose: diffOwnerCounts(
+      before,
+      after,
+      'cleanupPersistentCacheMaterialsReusedAfterDispose'
+    ),
+  };
+}
+
+function createProgramLifecycleProbe(beforeLoad, afterBuild, afterFirstRender) {
+  const removedAfterBuild = diffProgramKeys(afterBuild, beforeLoad);
+  const addedAtFirstRender = diffProgramKeys(afterBuild, afterFirstRender);
+  const firstRenderKeys = readProgramKeys(afterFirstRender);
+  return {
+    beforeLoadCount: Number(beforeLoad?.count) || 0,
+    afterBuildCount: Number(afterBuild?.count) || 0,
+    afterFirstRenderCount: Number(afterFirstRender?.count) || 0,
+    removedAfterBuild,
+    addedAtFirstRender,
+    disappearedAndReturned: removedAfterBuild.filter(key => firstRenderKeys.has(key)),
+  };
 }
 
 function createAdhesiveGlassProgramProbe(result) {
@@ -1325,12 +1401,20 @@ async function saveProjectViaHeader(page, saveName) {
 }
 
 async function loadProjectViaHeader(page, filePath) {
+  const detail = await beginProjectLoadViaHeader(page, filePath);
+  await waitForProjectFirstRender(page);
+  return detail;
+}
+
+async function beginProjectLoadViaHeader(page, filePath) {
   const loadEventPromise = waitForProjectAction(page, 'load');
   await page.locator('button[data-testid="header-project-load-button"]').click();
   await page.locator('input[data-testid="header-project-load-input"]').setInputFiles(filePath);
-  const detail = await loadEventPromise;
+  return await loadEventPromise;
+}
+
+async function waitForProjectFirstRender(page) {
   await waitForUiSettledAfterProjectAction(page);
-  return detail;
 }
 
 function createCabinetDoorDrawerLayoutFixtureFile(sourceProjectPath, scenario = 'mixed-layout') {
@@ -2953,7 +3037,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installPerfEntryCapture(page);
 
   const result = {
-    version: 16,
+    version: 17,
     generatedAt: new Date().toISOString(),
     measurementProfile,
     measurementArtifact,
@@ -2970,7 +3054,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       headless: true,
       viewport: { width: 1280, height: 800 },
       cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v17',
+      testSequence: 'wp_browser_perf_smoke.v18',
     },
     browserPerfRoomId,
     experiment: {
@@ -2980,6 +3064,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       profileFoldedContents,
       profileShaderWarmup,
       profileDirectMirrorRefresh,
+      traceLayoutDrawerStackHeavy,
     },
     cloudSyncRestIsolated: true,
     userFlow: {},
@@ -3672,9 +3757,15 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       async () => {
         const seedName = `Door Drawer Layout Matrix Seed ${Date.now()}`;
         await fillProjectNameViaActiveInput(page, seedName);
-        const { detail: seedSaveDetail, path: seedProjectPath } = await saveProjectViaHeader(
+        const { detail: seedSaveDetail, path: seedProjectPath } = await withStep(
+          result,
           page,
-          'browser-perf-door-drawer-layout-matrix-seed'
+          'cabinet-door-drawer-authoring.layout.seed.save',
+          () => saveProjectViaHeader(page, 'browser-perf-door-drawer-layout-matrix-seed'),
+          {
+            journey: USER_JOURNEYS.cabinetDoorDrawerAuthoring,
+            tags: ['doors', 'drawers', 'authoring', 'matrix', 'seed', 'save'],
+          }
         );
         if (!seedSaveDetail || seedSaveDetail.ok !== true) {
           throw new Error(`Door/drawer layout matrix seed save failed: ${JSON.stringify(seedSaveDetail)}`);
@@ -3687,13 +3778,47 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.preconditions'
         );
         const scenarioFixtures = createCabinetDoorDrawerLayoutFixtureMatrixFiles(seedProjectPath);
+        result.layoutScenarioResourceProfiles = [];
         for (const { fixturePath, expectedFingerprint, scenario } of scenarioFixtures) {
-          const scenarioLoadDetail = await loadProjectViaHeader(page, fixturePath);
+          const phasePrefix = `cabinet-door-drawer-authoring.layout.${scenario}`;
+          const phaseMeta = phase => ({
+            journey: USER_JOURNEYS.cabinetDoorDrawerAuthoring,
+            tags: ['doors', 'drawers', 'authoring', 'matrix', scenario, phase],
+          });
+          const beforeLoadPrograms = await readRendererProgramSnapshot(page);
+          const beforeLoadCleanup = await readRenderDebugStats(page);
+          const scenarioLoadDetail = await withStep(
+            result,
+            page,
+            `${phasePrefix}.load`,
+            () => beginProjectLoadViaHeader(page, fixturePath),
+            phaseMeta('load')
+          );
           if (!scenarioLoadDetail || scenarioLoadDetail.ok !== true) {
             throw new Error(
               `Door/drawer layout scenario ${scenario} load failed: ${JSON.stringify(scenarioLoadDetail)}`
             );
           }
+          const afterLoadBuildPrograms = await readRendererProgramSnapshot(page);
+          await withStep(
+            result,
+            page,
+            `${phasePrefix}.first-render`,
+            () => waitForProjectFirstRender(page),
+            phaseMeta('first-render')
+          );
+          const afterLoadFirstRenderPrograms = await readRendererProgramSnapshot(page);
+          const afterLoadCleanup = await readRenderDebugStats(page);
+          result.layoutScenarioResourceProfiles.push({
+            scenario,
+            operation: 'load',
+            programLifecycle: createProgramLifecycleProbe(
+              beforeLoadPrograms,
+              afterLoadBuildPrograms,
+              afterLoadFirstRenderPrograms
+            ),
+            cleanup: createRenderCleanupDelta(beforeLoadCleanup, afterLoadCleanup),
+          });
           await assertPerfStateFingerprintSubset(
             result,
             page,
@@ -3701,9 +3826,12 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             expectedFingerprint,
             `Door/drawer layout scenario ${scenario} should expose the expected cut/remove/drawer authoring fingerprint`
           );
-          const { detail: scenarioSaveDetail, path: scenarioProjectPath } = await saveProjectViaHeader(
+          const { detail: scenarioSaveDetail, path: scenarioProjectPath } = await withStep(
+            result,
             page,
-            `browser-perf-door-drawer-layout-${scenario}`
+            `${phasePrefix}.save`,
+            () => saveProjectViaHeader(page, `browser-perf-door-drawer-layout-${scenario}`),
+            phaseMeta('save')
           );
           if (!scenarioSaveDetail || scenarioSaveDetail.ok !== true) {
             throw new Error(
@@ -3720,12 +3848,54 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             `Door/drawer layout scenario ${scenario} save should persist the authored cut/remove/drawer project payload branches`
           );
           await fillProjectNameViaActiveInput(page, `Door Drawer Layout Scenario ${scenario} ${Date.now()}`);
-          const scenarioReloadDetail = await loadProjectViaHeader(page, scenarioProjectPath);
-          if (!scenarioReloadDetail || scenarioReloadDetail.ok !== true) {
-            throw new Error(
-              `Door/drawer layout scenario ${scenario} reload failed: ${JSON.stringify(scenarioReloadDetail)}`
+          const shouldTraceReload = traceLayoutDrawerStackHeavy && scenario === 'drawer-stack-heavy';
+          const beforeReloadPrograms = await readRendererProgramSnapshot(page);
+          const beforeReloadCleanup = await readRenderDebugStats(page);
+          const layoutTraceSession = shouldTraceReload ? await startChromiumTrace(page) : null;
+          let scenarioReloadDetail = null;
+          let afterReloadBuildPrograms = null;
+          let afterReloadFirstRenderPrograms = null;
+          try {
+            scenarioReloadDetail = await withStep(
+              result,
+              page,
+              `${phasePrefix}.reload`,
+              () => beginProjectLoadViaHeader(page, scenarioProjectPath),
+              phaseMeta('reload')
             );
+            if (!scenarioReloadDetail || scenarioReloadDetail.ok !== true) {
+              throw new Error(
+                `Door/drawer layout scenario ${scenario} reload failed: ${JSON.stringify(scenarioReloadDetail)}`
+              );
+            }
+            afterReloadBuildPrograms = await readRendererProgramSnapshot(page);
+            await withStep(
+              result,
+              page,
+              `${phasePrefix}.reload-first-render`,
+              () => waitForProjectFirstRender(page),
+              phaseMeta('reload-first-render')
+            );
+            afterReloadFirstRenderPrograms = await readRendererProgramSnapshot(page);
+          } finally {
+            if (layoutTraceSession) {
+              await finishChromiumTrace(layoutTraceSession, layoutDrawerStackHeavyTracePath);
+              console.log(
+                `[browser-perf] drawer-stack-heavy reload trace: ${layoutDrawerStackHeavyTracePath}`
+              );
+            }
           }
+          const afterReloadCleanup = await readRenderDebugStats(page);
+          result.layoutScenarioResourceProfiles.push({
+            scenario,
+            operation: 'reload',
+            programLifecycle: createProgramLifecycleProbe(
+              beforeReloadPrograms,
+              afterReloadBuildPrograms,
+              afterReloadFirstRenderPrograms
+            ),
+            cleanup: createRenderCleanupDelta(beforeReloadCleanup, afterReloadCleanup),
+          });
           await assertPerfStateFingerprintSubset(
             result,
             page,
@@ -3734,7 +3904,16 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             `Door/drawer layout scenario ${scenario} save-load roundtrip should preserve the authored cut/remove/drawer fingerprint`
           );
         }
-        const canonicalLoadDetail = await loadProjectViaHeader(page, seedProjectPath);
+        const canonicalLoadDetail = await withStep(
+          result,
+          page,
+          'cabinet-door-drawer-authoring.layout.restore',
+          () => loadProjectViaHeader(page, seedProjectPath),
+          {
+            journey: USER_JOURNEYS.cabinetDoorDrawerAuthoring,
+            tags: ['doors', 'drawers', 'authoring', 'matrix', 'restore'],
+          }
+        );
         if (!canonicalLoadDetail || canonicalLoadDetail.ok !== true) {
           throw new Error(
             `Door/drawer layout matrix canonical restore load failed: ${JSON.stringify(canonicalLoadDetail)}`
@@ -3845,16 +4024,31 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           );
           const summaryBefore = await readPerfSummary(page);
           const beforeCount = Number(summaryBefore?.['mirror.direct-refresh']?.count) || 0;
+          const directEntriesBefore = await readPerfEntries(page, 'mirror.direct-refresh');
           await setChestModeAndWaitForBuild(page, true, 'direct mirror refresh chest-mode enable');
           await setChestCommodeAndWaitForBuild(page, true, 'direct mirror refresh commode enable');
           const summaryAfter = await readPerfSummary(page);
           const directSummary = summaryAfter?.['mirror.direct-refresh'] || {};
+          const directEntriesAfter = await readPerfEntries(page, 'mirror.direct-refresh');
+          const measuredEntries = directEntriesAfter.slice(directEntriesBefore.length);
           result.directMirrorRefreshProbe = {
             beforeCount,
             afterCount: Number(directSummary.count) || 0,
             countDelta: Math.max(0, (Number(directSummary.count) || 0) - beforeCount),
-            codeExecutionTotalMs: Number(directSummary.codeExecutionTotalMs) || 0,
-            codeExecutionMaxMs: Number(directSummary.codeExecutionMaxMs) || 0,
+            codeExecutionTotalMs: measuredEntries.reduce(
+              (total, entry) => total + (Number(entry?.codeExecutionMs) || 0),
+              0
+            ),
+            codeExecutionMaxMs: Math.max(
+              0,
+              ...measuredEntries.map(entry => Number(entry?.codeExecutionMs) || 0)
+            ),
+            refreshes: measuredEntries.map(entry => ({
+              durationMs: Number(entry?.codeExecutionMs) || 0,
+              startTime: Number(entry?.startTime) || 0,
+              endTime: Number(entry?.endTime) || 0,
+              ...(entry?.detail && typeof entry.detail === 'object' ? entry.detail : {}),
+            })),
           };
           if (result.directMirrorRefreshProbe.countDelta <= 0) {
             throw new Error('Chest commode audit did not reach the direct mirror refresh owner');
@@ -4530,6 +4724,13 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowStoreDebugSummary = createStoreDebugSummary(result.windowStoreDebugStats);
     result.windowStoreDebugTopSources = rankStoreDebugSources(result.windowStoreDebugStats, 5);
     result.windowStoreFlowPressureSummary = createStoreFlowPressureSummary(result.windowStoreDebugFlowSteps);
+    const finalResponsivenessAttribution = attributeBrowserResponsivenessToSteps(
+      result.windowResponsivenessFlowSteps,
+      result.windowPerfEntries
+    );
+    result.windowResponsivenessFlowSteps = finalResponsivenessAttribution.steps;
+    result.windowResponsivenessUnattributed = finalResponsivenessAttribution.unattributed;
+    result.topLongTaskSteps = rankResponsivenessSteps(result.windowResponsivenessFlowSteps, 20);
     assignLongTaskRootCauseSummaries(result);
     result.builderExecutionRootCauseSummary = createBuilderExecutionRootCauseSummary(result);
     result.windowBuildDebugStats = await readBuildDebugStats(page);

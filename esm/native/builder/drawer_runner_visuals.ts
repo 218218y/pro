@@ -50,6 +50,28 @@ type RunnerMaterials = {
 
 const materialCache = new WeakMap<object, RunnerMaterials>();
 
+function recordPersistentMaterialCacheUse(material: unknown, cacheHit: boolean): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  if (!material || typeof material !== 'object') return;
+  const rec = material as UnknownRecord;
+  const userData = rec.userData && typeof rec.userData === 'object' ? (rec.userData as UnknownRecord) : {};
+  userData.__wpPerfPersistentCacheOwner = 'drawer-runner';
+  if (cacheHit) {
+    userData.__wpPerfPersistentCacheHitCount = (Number(userData.__wpPerfPersistentCacheHitCount) || 0) + 1;
+    if (userData.__wpPerfDisposedByCleanGroup === true) {
+      userData.__wpPerfReturnedAfterDisposeCount =
+        (Number(userData.__wpPerfReturnedAfterDisposeCount) || 0) + 1;
+    }
+  }
+  rec.userData = userData;
+}
+
+function recordRunnerMaterialCacheUse(materials: RunnerMaterials, cacheHit: boolean): void {
+  for (const material of Object.values(materials)) {
+    recordPersistentMaterialCacheUse(material, cacheHit);
+  }
+}
+
 // Drawer-runner finishes are render-only hardware policy owned by the builder layer.
 // Keep them local instead of creating a builder -> features dependency for visual-only tokens.
 const BLUM_FIXED_RUNNER_FINISH = { color: 0xe5e9ef, roughness: 0.2, metalness: 0.28 } as const;
@@ -61,7 +83,10 @@ function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
   if (typeof Material !== 'function') return null;
   const cacheKey = THREE as unknown as object;
   const cached = materialCache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    recordRunnerMaterialCacheUse(cached, true);
+    return cached;
+  }
 
   const materials: RunnerMaterials = {
     // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
@@ -73,6 +98,7 @@ function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
     blumInner: new Material(BLUM_MOVING_RUNNER_FINISH),
     blumLock: new Material(BLUM_LOCKING_DEVICE_FINISH),
   };
+  recordRunnerMaterialCacheUse(materials, false);
   materialCache.set(cacheKey, materials);
   return materials;
 }

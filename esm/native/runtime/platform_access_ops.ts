@@ -14,6 +14,7 @@ import {
   recordPlatformActivityTouchStats,
   recordPlatformEnsureRenderLoopAfterTriggerStats,
   recordPlatformRenderFollowThroughStats,
+  recordPlatformResourceCleanupStats,
   recordPlatformWakeupFollowThroughStats,
   resetRenderFollowThroughDebugStats,
   summarizeRenderFollowThroughBudget,
@@ -234,15 +235,25 @@ export function cloneViaPlatform<T>(App: unknown, value: T, seed?: unknown): T {
   }
 }
 
-export function getPlatformCleanGroup(App: unknown): ((group: unknown) => unknown) | null {
-  return bindMethod<[unknown], unknown>(readUtil(App), 'cleanGroup');
+export function getPlatformCleanGroup(App: unknown): ((group: unknown, options?: unknown) => unknown) | null {
+  return bindMethod<[unknown, unknown?], unknown>(readUtil(App), 'cleanGroup');
 }
 
 export function cleanGroupViaPlatform(App: unknown, group: unknown): boolean {
   try {
     const fn = getPlatformCleanGroup(App);
     if (!fn) return false;
-    fn(group);
+    if (typeof __WP_BUILD_PERF__ !== 'undefined' && __WP_BUILD_PERF__ === true) {
+      let diagnostics: Record<string, unknown> | null = null;
+      fn(group, {
+        onDiagnostics(value: unknown) {
+          diagnostics = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+        },
+      });
+      recordPlatformResourceCleanupStats(getPlatformService(App), diagnostics);
+    } else {
+      fn(group);
+    }
     return true;
   } catch (error) {
     reportPlatformOpRejected(App, error, 'cleanGroup.ownerRejected');

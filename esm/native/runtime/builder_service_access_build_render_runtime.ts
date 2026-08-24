@@ -30,7 +30,10 @@ export function renderBuilderViewportNowRuntime(App: unknown): BuilderViewportRe
   let renderedViewport = false;
   const renderFn = renderer && typeof renderer.render === 'function' ? renderer.render : null;
   if (renderFn && render?.scene && render?.camera) {
-    refreshTrackedMirrorSurfacesNow(App);
+    refreshTrackedMirrorSurfacesNow(App, {
+      owner: 'chestFollowThrough',
+      buildMode: 'chest',
+    });
     renderFn.call(renderer, render.scene, render.camera);
     renderedViewport = true;
   }

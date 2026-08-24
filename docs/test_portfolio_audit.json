@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T08:13:30.904Z",
+  "generatedAt": "2026-08-24T13:15:46.717Z",
   "totals": {
     "tests": 1259,
     "unitRunnerTests": 1250,
@@ -17,7 +17,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 139
+    "contractOverlapTargets": 140
   },
   "categories": {
     "contract": 398,
@@ -1205,6 +1205,20 @@
         {
           "file": "tests/runtime_platform_core_family_contracts.test.js",
           "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/runtime/builder_service_access_build_followthrough_runtime.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/build_completion_runtime_owners_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/chest_mode_build_ownership_contract.test.js",
+          "kind": "ownership"
         }
       ]
     },

@@ -8,6 +8,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/visuals_chest_mode_build.ts';
+const followThroughRel = 'esm/native/runtime/builder_service_access_build_followthrough_runtime.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 test('Chest Mode Build imports its exact use-case owner without aliases or aggregates', () => {
@@ -129,4 +130,16 @@ test('Chest Mode Build maps every structural field directly to its focused owner
     /const insetReveal = isInsetDrawerMount\s*\? Math\.min\(HINGED_DOOR_MOUNT_POLICY\.insetRevealM, Math\.max\(0, thick \/ 3\)\)\s*: 0;/u
   );
   assert.match(source, /const dimensionTextScale = CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY\.textScale;/u);
+});
+
+test('Chest Mode build owns scene construction while follow-through owns final viewport presentation', () => {
+  const buildSource = read(consumerRel);
+  const followThroughSource = read(followThroughRel);
+
+  assert.doesNotMatch(
+    buildSource,
+    /\b(?:getViewportSurface|refreshTrackedMirrorSurfacesNow|asChestModeRenderer|asChestModeControls)\b/u
+  );
+  assert.match(followThroughSource, /applyBuilderHandles\(App, handleApplyOpts\)/u);
+  assert.match(followThroughSource, /renderBuilderViewportNowRuntime\(App\)/u);
 });

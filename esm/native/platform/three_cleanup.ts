@@ -32,8 +32,36 @@ type GroupLike = Object3DLike & {
   remove?: (child: Object3DLike) => void;
 };
 
+export type CleanGroupDiagnostics = {
+  materialReferences: number;
+  materialsDisposed: number;
+  uniqueMaterialsDisposed: number;
+  cachedMaterialSkips: number;
+  duplicateMaterialDisposeAttempts: number;
+  geometryReferences: number;
+  geometriesDisposed: number;
+  uniqueGeometriesDisposed: number;
+  cachedGeometrySkips: number;
+  duplicateGeometryDisposeAttempts: number;
+  textureReferences: number;
+  texturesDisposed: number;
+  uniqueTexturesDisposed: number;
+  duplicateTextureDisposeAttempts: number;
+  persistentCacheMaterialsDisposed: Record<string, number>;
+  persistentCacheMaterialsReusedAfterDispose: Record<string, number>;
+  persistentCacheHits: Record<string, number>;
+};
+
+type CleanGroupDiagnosticsContext = CleanGroupDiagnostics & {
+  disposedMaterials: Set<MaterialLike>;
+  disposedGeometries: Set<GeometryLike>;
+  disposedTextures: Set<TextureLike>;
+  persistentMaterialsObserved: Set<MaterialLike>;
+};
+
 type CleanGroupOptions = {
   getCustomTexture?: () => TextureLike | null;
+  onDiagnostics?: (diagnostics: CleanGroupDiagnostics) => void;
 } & UnknownRecord;
 
 const TEXTURE_TYPES: readonly string[] = [
@@ -78,6 +106,95 @@ function isCachedResource(value: unknown): boolean {
   return readRecord(readObject3DLike(value)?.userData)?.isCached === true;
 }
 
+function createDiagnosticsContext(): CleanGroupDiagnosticsContext {
+  return {
+    materialReferences: 0,
+    materialsDisposed: 0,
+    uniqueMaterialsDisposed: 0,
+    cachedMaterialSkips: 0,
+    duplicateMaterialDisposeAttempts: 0,
+    geometryReferences: 0,
+    geometriesDisposed: 0,
+    uniqueGeometriesDisposed: 0,
+    cachedGeometrySkips: 0,
+    duplicateGeometryDisposeAttempts: 0,
+    textureReferences: 0,
+    texturesDisposed: 0,
+    uniqueTexturesDisposed: 0,
+    duplicateTextureDisposeAttempts: 0,
+    persistentCacheMaterialsDisposed: {},
+    persistentCacheMaterialsReusedAfterDispose: {},
+    persistentCacheHits: {},
+    disposedMaterials: new Set(),
+    disposedGeometries: new Set(),
+    disposedTextures: new Set(),
+    persistentMaterialsObserved: new Set(),
+  };
+}
+
+function incrementOwnerCount(target: Record<string, number>, owner: unknown): void {
+  if (typeof owner !== 'string' || !owner.trim()) return;
+  const key = owner.trim();
+  target[key] = (target[key] || 0) + 1;
+}
+
+function markPerfDisposedMaterial(material: MaterialLike, context: CleanGroupDiagnosticsContext): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  const userData = readRecord(material.userData) || {};
+  const owner = userData.__wpPerfPersistentCacheOwner;
+  incrementOwnerCount(context.persistentCacheMaterialsDisposed, owner);
+  const reuseCount = Number(userData.__wpPerfReturnedAfterDisposeCount) || 0;
+  const observedReuseCount = Number(userData.__wpPerfObservedReturnedAfterDisposeCount) || 0;
+  const newReuseCount = Math.max(0, reuseCount - observedReuseCount);
+  if (newReuseCount > 0 && typeof owner === 'string' && owner.trim()) {
+    context.persistentCacheMaterialsReusedAfterDispose[owner.trim()] =
+      (context.persistentCacheMaterialsReusedAfterDispose[owner.trim()] || 0) + newReuseCount;
+  }
+  userData.__wpPerfObservedReturnedAfterDisposeCount = reuseCount;
+  userData.__wpPerfDisposedByCleanGroup = true;
+  material.userData = userData;
+}
+
+function observePerfPersistentMaterial(material: MaterialLike, context: CleanGroupDiagnosticsContext): void {
+  if (context.persistentMaterialsObserved.has(material)) return;
+  context.persistentMaterialsObserved.add(material);
+  const userData = readRecord(material.userData);
+  const owner = userData?.__wpPerfPersistentCacheOwner;
+  const hitCount = Number(userData?.__wpPerfPersistentCacheHitCount) || 0;
+  const observedHitCount = Number(userData?.__wpPerfObservedPersistentCacheHitCount) || 0;
+  const newHitCount = Math.max(0, hitCount - observedHitCount);
+  if (newHitCount > 0 && typeof owner === 'string' && owner.trim()) {
+    context.persistentCacheHits[owner.trim()] =
+      (context.persistentCacheHits[owner.trim()] || 0) + newHitCount;
+  }
+  if (userData) userData.__wpPerfObservedPersistentCacheHitCount = hitCount;
+}
+
+function publishDiagnostics(context: CleanGroupDiagnosticsContext, options?: CleanGroupOptions): void {
+  if (typeof options?.onDiagnostics !== 'function') return;
+  options.onDiagnostics({
+    materialReferences: context.materialReferences,
+    materialsDisposed: context.materialsDisposed,
+    uniqueMaterialsDisposed: context.disposedMaterials.size,
+    cachedMaterialSkips: context.cachedMaterialSkips,
+    duplicateMaterialDisposeAttempts: context.duplicateMaterialDisposeAttempts,
+    geometryReferences: context.geometryReferences,
+    geometriesDisposed: context.geometriesDisposed,
+    uniqueGeometriesDisposed: context.disposedGeometries.size,
+    cachedGeometrySkips: context.cachedGeometrySkips,
+    duplicateGeometryDisposeAttempts: context.duplicateGeometryDisposeAttempts,
+    textureReferences: context.textureReferences,
+    texturesDisposed: context.texturesDisposed,
+    uniqueTexturesDisposed: context.disposedTextures.size,
+    duplicateTextureDisposeAttempts: context.duplicateTextureDisposeAttempts,
+    persistentCacheMaterialsDisposed: { ...context.persistentCacheMaterialsDisposed },
+    persistentCacheMaterialsReusedAfterDispose: {
+      ...context.persistentCacheMaterialsReusedAfterDispose,
+    },
+    persistentCacheHits: { ...context.persistentCacheHits },
+  });
+}
+
 function readTextureLike(value: unknown): TextureLike | null {
   return readRecord(value);
 }
@@ -110,9 +227,20 @@ function readObjectChildren(value: unknown): Object3DLike[] {
   return out;
 }
 
-function disposeGeometry(geometry: unknown): void {
+function disposeGeometry(geometry: unknown, context: CleanGroupDiagnosticsContext | null): void {
   const geo = readRecord(geometry);
-  if (!geo || isCachedResource(geo) || typeof geo.dispose !== 'function') return;
+  if (!geo) return;
+  if (context) context.geometryReferences += 1;
+  if (isCachedResource(geo)) {
+    if (context) context.cachedGeometrySkips += 1;
+    return;
+  }
+  if (typeof geo.dispose !== 'function') return;
+  if (context) {
+    if (context.disposedGeometries.has(geo)) context.duplicateGeometryDisposeAttempts += 1;
+    else context.disposedGeometries.add(geo);
+    context.geometriesDisposed += 1;
+  }
   try {
     geo.dispose();
   } catch {
@@ -120,10 +248,20 @@ function disposeGeometry(geometry: unknown): void {
   }
 }
 
-function disposeMaterialTextures(material: MaterialLike, customTexture: TextureLike | null): void {
+function disposeMaterialTextures(
+  material: MaterialLike,
+  customTexture: TextureLike | null,
+  context: CleanGroupDiagnosticsContext | null
+): void {
   for (const textureType of TEXTURE_TYPES) {
     const texture = readTextureLike(material[textureType]);
     if (!texture || texture === customTexture || typeof texture.dispose !== 'function') continue;
+    if (context) {
+      context.textureReferences += 1;
+      if (context.disposedTextures.has(texture)) context.duplicateTextureDisposeAttempts += 1;
+      else context.disposedTextures.add(texture);
+      context.texturesDisposed += 1;
+    }
     try {
       texture.dispose();
     } catch {
@@ -132,10 +270,26 @@ function disposeMaterialTextures(material: MaterialLike, customTexture: TextureL
   }
 }
 
-function disposeMaterial(material: MaterialLike, customTexture: TextureLike | null): void {
-  if (isCachedResource(material)) return;
-  disposeMaterialTextures(material, customTexture);
+function disposeMaterial(
+  material: MaterialLike,
+  customTexture: TextureLike | null,
+  context: CleanGroupDiagnosticsContext | null
+): void {
+  if (context) context.materialReferences += 1;
+  if (context) observePerfPersistentMaterial(material, context);
+  if (isCachedResource(material)) {
+    if (context) context.cachedMaterialSkips += 1;
+    return;
+  }
+  disposeMaterialTextures(material, customTexture, context);
   if (typeof material.dispose !== 'function') return;
+  if (context) {
+    const duplicateDispose = context.disposedMaterials.has(material);
+    if (duplicateDispose) context.duplicateMaterialDisposeAttempts += 1;
+    else context.disposedMaterials.add(material);
+    context.materialsDisposed += 1;
+    if (!duplicateDispose) markPerfDisposedMaterial(material, context);
+  }
   try {
     material.dispose();
   } catch {
@@ -143,11 +297,15 @@ function disposeMaterial(material: MaterialLike, customTexture: TextureLike | nu
   }
 }
 
-function disposeNodeResources(node: Object3DLike, customTexture: TextureLike | null): void {
-  disposeGeometry(node.geometry);
+function disposeNodeResources(
+  node: Object3DLike,
+  customTexture: TextureLike | null,
+  context: CleanGroupDiagnosticsContext | null
+): void {
+  disposeGeometry(node.geometry, context);
   const materials = readMaterialList(node.material);
   for (const material of materials) {
-    disposeMaterial(material, customTexture);
+    disposeMaterial(material, customTexture, context);
   }
 }
 
@@ -170,24 +328,33 @@ function assertApp(app: unknown): void {
  * Dispose all non-cached geometries/materials/textures inside a THREE.Group recursively,
  * then remove children from the group.
  */
-export function cleanGroup(group: unknown, options?: CleanGroupOptions): void {
-  const root = readGroupLike(group);
-  if (!root) return;
-
-  const customTexture = typeof options?.getCustomTexture === 'function' ? options.getCustomTexture() : null;
-
+function cleanGroupRecursive(
+  root: GroupLike,
+  customTexture: TextureLike | null,
+  context: CleanGroupDiagnosticsContext | null
+): void {
   for (let i = root.children.length - 1; i >= 0; i--) {
     const child = readObject3DLike(root.children[i]);
     if (!child) continue;
 
     const childGroup = readGroupLike(child);
     if (childGroup && readObjectChildren(childGroup).length > 0) {
-      cleanGroup(childGroup, options);
+      cleanGroupRecursive(childGroup, customTexture, context);
     }
 
-    disposeNodeResources(child, customTexture);
+    disposeNodeResources(child, customTexture, context);
     removeChild(root, child);
   }
+}
+
+export function cleanGroup(group: unknown, options?: CleanGroupOptions): void {
+  const root = readGroupLike(group);
+  if (!root) return;
+
+  const customTexture = typeof options?.getCustomTexture === 'function' ? options.getCustomTexture() : null;
+  const context = typeof options?.onDiagnostics === 'function' ? createDiagnosticsContext() : null;
+  cleanGroupRecursive(root, customTexture, context);
+  if (context) publishDiagnostics(context, options);
 }
 
 /**
@@ -200,6 +367,6 @@ export function installThreeCleanup(app: unknown): void {
   assertApp(app);
   const util = ensurePlatformUtil(app);
   if (util.cleanGroup !== cleanGroup) {
-    util.cleanGroup = cleanGroup;
+    util.cleanGroup = cleanGroup as NonNullable<typeof util.cleanGroup>;
   }
 }
