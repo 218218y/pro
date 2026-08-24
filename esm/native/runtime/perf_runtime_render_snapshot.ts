@@ -67,7 +67,7 @@ export function getSceneContentSnapshot(App: AppContainer): WardrobeProSceneCont
     if (kind === 'library_book') snapshot.books += 1;
     else if (kind === 'library_book_spine_band') snapshot.bookSpineBands += 1;
     else if (kind === 'folded_cloth_item') snapshot.foldedGarments += 1;
-    else if (kind.startsWith('folded_cloth_')) snapshot.foldedDetails += 1;
+    else if (kind !== 'folded_cloth_body' && kind.startsWith('folded_cloth_')) snapshot.foldedDetails += 1;
     else if (kind === 'hanging_cloth') snapshot.hangingGarments += 1;
     else if (kind.startsWith('hanging_cloth_')) snapshot.hangingDetails += 1;
     else if (kind === 'hanging_hanger') snapshot.hangers += 1;

@@ -303,6 +303,12 @@ function resolveFoldedCornerRadius(width: number, height: number, depth: number)
   return Math.min(0.008, Math.max(0.002, Math.min(width, height, depth) * 0.28));
 }
 
+function resolveCanonicalFoldedScale(targetSize: number, canonicalSize: number): number {
+  const quantizedCanonicalSize = quantizeVisualContentMetric(canonicalSize);
+  if (!(quantizedCanonicalSize > 0)) return 1;
+  return quantizeVisualContentMetric(targetSize) / quantizedCanonicalSize;
+}
+
 function createFoldedClothMesh(
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>,
   width: number,
@@ -328,7 +334,11 @@ function createFoldedClothMesh(
   );
   const mesh = new THREE.Mesh(geometry, material);
   if (canonical) {
-    mesh.scale.set(width / canonical.width, height / canonical.height, depth / canonical.depth);
+    mesh.scale.set(
+      resolveCanonicalFoldedScale(width, canonical.width),
+      resolveCanonicalFoldedScale(height, canonical.height),
+      resolveCanonicalFoldedScale(depth, canonical.depth)
+    );
   }
   return mesh;
 }
@@ -350,14 +360,18 @@ function createFoldedCreaseMesh(
   );
   const mesh = new THREE.Mesh(geometry, material);
   if (canonical) {
-    mesh.scale.set(width / canonical.width, height / canonical.height, depth / canonical.depth);
+    mesh.scale.set(
+      resolveCanonicalFoldedScale(width, canonical.width),
+      resolveCanonicalFoldedScale(height, canonical.height),
+      resolveCanonicalFoldedScale(depth, canonical.depth)
+    );
   }
   return mesh;
 }
 
 function addFoldedGarmentDetails(args: {
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
-  item: Object3DLike;
+  garment: Object3DLike;
   itemWidth: number;
   itemHeight: number;
   itemDepth: number;
@@ -365,7 +379,7 @@ function addFoldedGarmentDetails(args: {
   stackIndex: number;
   itemIndex: number;
 }): void {
-  const { THREE, item, itemWidth, itemHeight, itemDepth, color, stackIndex, itemIndex } = args;
+  const { THREE, garment, itemWidth, itemHeight, itemDepth, color, stackIndex, itemIndex } = args;
   const variantSelector = (stackIndex + itemIndex) % 3;
   const accentColor = adjustHexColor(color, 18);
   const shadowColor = adjustHexColor(color, -14);
@@ -390,7 +404,7 @@ function addFoldedGarmentDetails(args: {
   topPanel.position.set(0, itemHeight * 0.16, itemDepth * 0.18);
   topPanel.userData = topPanel.userData || {};
   topPanel.userData.__kind = 'folded_cloth_top_panel';
-  item.add?.(topPanel);
+  garment.add?.(topPanel);
 
   const frontFold = createFoldedClothMesh(
     THREE,
@@ -403,7 +417,7 @@ function addFoldedGarmentDetails(args: {
   frontFold.position.set(0, -itemHeight * 0.06, itemDepth * 0.28);
   frontFold.userData = frontFold.userData || {};
   frontFold.userData.__kind = 'folded_cloth_front_fold';
-  item.add?.(frontFold);
+  garment.add?.(frontFold);
 
   if (variantSelector === 0) {
     const collar = createFoldedClothMesh(
@@ -417,7 +431,7 @@ function addFoldedGarmentDetails(args: {
     collar.position.set(0, itemHeight * 0.24, itemDepth * 0.08);
     collar.userData = collar.userData || {};
     collar.userData.__kind = 'folded_cloth_collar';
-    item.add?.(collar);
+    garment.add?.(collar);
   } else if (variantSelector === 1) {
     for (const side of [-1, 1]) {
       const sleeveFold = createFoldedClothMesh(
@@ -431,7 +445,7 @@ function addFoldedGarmentDetails(args: {
       sleeveFold.position.set(side * itemWidth * 0.22, itemHeight * 0.08, itemDepth * 0.04);
       sleeveFold.userData = sleeveFold.userData || {};
       sleeveFold.userData.__kind = 'folded_cloth_sleeve_fold';
-      item.add?.(sleeveFold);
+      garment.add?.(sleeveFold);
     }
   } else {
     const crease = createFoldedCreaseMesh(
@@ -444,7 +458,7 @@ function addFoldedGarmentDetails(args: {
     crease.position.set(0, 0, itemDepth * 0.22);
     crease.userData = crease.userData || {};
     crease.userData.__kind = 'folded_cloth_crease';
-    item.add?.(crease);
+    garment.add?.(crease);
   }
 }
 
@@ -532,7 +546,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           const depthScale = 0.9 + seededRandom.random() * 0.1;
           const itemWidth = dims.itemWidthM * widthScale;
           const actualDepth = itemDepth * depthScale;
-          const item = createFoldedClothMesh(
+          const body = createFoldedClothMesh(
             THREE,
             itemWidth,
             itemHeight,
@@ -546,6 +560,14 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
             })
           );
 
+          body.userData = body.userData || {};
+          body.userData.__kind = 'folded_cloth_body';
+
+          const garment = new THREE.Group();
+          garment.userData = garment.userData || {};
+          garment.userData.__kind = 'folded_cloth_item';
+          garment.add(body);
+
           const randomOffsetX = (seededRandom.random() - 0.5) * dims.randomOffsetXM;
           const randomOffsetZ = (seededRandom.random() - 0.5) * zSpread;
           let zPos = shelfZ + randomOffsetZ;
@@ -555,13 +577,11 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
             zPos = clamp(zPos, minZ + halfDepth - itemDepth / 2, maxZ - halfDepth + itemDepth / 2);
           }
 
-          item.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
-          item.rotation.y = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
-          item.userData = item.userData || {};
-          item.userData.__kind = 'folded_cloth_item';
+          garment.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
+          garment.rotation.y = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
           addFoldedGarmentDetails({
             THREE,
-            item,
+            garment,
             itemWidth,
             itemHeight,
             itemDepth: actualDepth,
@@ -569,8 +589,8 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
             stackIndex: i,
             itemIndex: j,
           });
-          if (isSketch) addOutlines(item);
-          parentGroup.add(item);
+          if (isSketch) addOutlines(body);
+          parentGroup.add(garment);
           currentY += itemHeight;
         }
       }

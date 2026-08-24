@@ -17,20 +17,29 @@ function createThreeStub() {
   class MeshStandardMaterial {
     constructor(public opts: AnyRecord) {}
   }
-  class Mesh {
+  class Group {
+    children: unknown[] = [];
     position = { set() {} };
     rotation = { y: 0 };
     scale = { set() {} };
     userData: AnyRecord = {};
+    add(node: unknown) {
+      this.children.push(node);
+    }
+  }
+  class Mesh extends Group {
     constructor(
       public geometry: unknown,
       public material: unknown
-    ) {}
+    ) {
+      super();
+    }
   }
   return {
     BoxGeometry,
     RoundedBoxGeometry,
     MeshStandardMaterial,
+    Group,
     Mesh,
   };
 }

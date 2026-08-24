@@ -411,33 +411,61 @@ test('visuals_contents folded clothes clamp depth and use only the explicit sket
   assert.ok(parent.children.length > 0);
   assert.equal(outlined.length, parent.children.length);
 
+  const garments = parent.children;
+  const bodies = garments.map(garment =>
+    garment.children.find((child: any) => child.userData.__kind === 'folded_cloth_body')
+  );
+  assert.ok(bodies.every(Boolean), 'each folded garment group should own one body mesh');
+  assert.ok(
+    bodies.every(body => outlined.includes(body)),
+    'outlines should remain attached to body meshes'
+  );
+
   const minShelfZ = -0.1 + 0.015;
   const maxShelfZ = 0.1 - 0.015;
   const readEffectiveDepth = (child: any) => child.geometry.args[2] * child.scale.z;
   assert.ok(
-    parent.children.every(child => child.position.z - readEffectiveDepth(child) / 2 >= minShelfZ - 1e-9)
+    garments.every(
+      (garment, index) => garment.position.z - readEffectiveDepth(bodies[index]) / 2 >= minShelfZ - 1e-9
+    )
   );
   assert.ok(
-    parent.children.every(child => child.position.z + readEffectiveDepth(child) / 2 <= maxShelfZ + 1e-9)
+    garments.every(
+      (garment, index) => garment.position.z + readEffectiveDepth(bodies[index]) / 2 <= maxShelfZ + 1e-9
+    )
   );
   assert.equal(
-    new Set(parent.children.map(child => child.geometry)).size,
+    new Set(bodies.map(body => body.geometry)).size,
     1,
     'folded bodies should share one canonical geometry'
   );
   assert.ok(
-    new Set(parent.children.map(child => child.scale.x)).size > 1,
+    new Set(bodies.map(body => body.scale.x)).size > 1,
     'decorative width variation should be preserved on mesh scale'
   );
   assert.ok(
-    parent.children.every(child => Math.abs(child.geometry.args[1] * child.scale.y - 0.025) < 1e-9),
+    bodies.every(body => Math.abs(body.geometry.args[1] * body.scale.y - 0.025) < 1e-9),
     'canonical scaling must preserve the requested garment height'
   );
-  assert.ok(parent.children.every(child => child.userData.__kind === 'folded_cloth_item'));
+  assert.ok(garments.every(garment => garment.userData.__kind === 'folded_cloth_item'));
   assert.ok(
-    parent.children.some(child =>
-      child.children.some((detail: any) => String(detail.userData.__kind || '').startsWith('folded_cloth_'))
+    garments.every(garment => garment.scale.x === 1 && garment.scale.y === 1 && garment.scale.z === 1),
+    'folded garment roots must remain unscaled'
+  );
+  assert.ok(
+    garments.some(garment =>
+      garment.children.some(
+        (detail: any) =>
+          detail.userData.__kind !== 'folded_cloth_body' &&
+          String(detail.userData.__kind || '').startsWith('folded_cloth_')
+      )
     )
+  );
+  assert.ok(
+    bodies.every(body =>
+      body.children.every((child: any) => !String(child.userData.__kind || '').startsWith('folded_cloth_'))
+    ),
+    'folded details must be siblings of the scaled body rather than scaled descendants'
   );
 });
 
