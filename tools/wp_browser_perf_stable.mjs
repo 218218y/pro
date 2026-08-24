@@ -82,6 +82,7 @@ function environmentIdentity(result) {
     viewport: environment.viewport || null,
     cachePolicy: environment.cachePolicy || null,
     testSequence: environment.testSequence || null,
+    gpu: environment.gpu || null,
   };
 }
 
@@ -140,6 +141,12 @@ const numericMetrics = {
   firstAdhesiveGlassRendererMaxMs: result =>
     Number(result.adhesiveGlassFirstUse?.black?.renderer?.maxMs) || 0,
   firstAdhesiveGlassFrameMaxMs: result => Number(result.adhesiveGlassFirstUse?.black?.frameTotal?.maxMs) || 0,
+  firstAdhesiveGlassCubeUpdateMaxMs: result =>
+    Number(result.adhesiveGlassFirstUse?.black?.cubeUpdate?.maxMs) || 0,
+  firstAdhesiveGlassPresentationMs: result =>
+    Number(result.adhesiveGlassFirstUse?.black?.inputToFirstPresentationMs) || 0,
+  firstAdhesiveGlassReflectionReadyMs: result =>
+    Number(result.adhesiveGlassFirstUse?.black?.inputToReflectionReadyMs) || 0,
   adhesiveGlassVariantLongTaskMaxMs: result =>
     Number(result.adhesiveGlassFirstUse?.variant?.longTasks?.maxMs) || 0,
   adhesiveGlassVariantRendererMaxMs: result =>
@@ -286,6 +293,7 @@ function renderMarkdown(report) {
     `Warm-up runs: ${report.warmupRuns}; measured runs: ${report.measuredRuns}`,
     `Artifact: ${report.artifact.buildId} / ${report.artifact.bundleSha256}`,
     `Environment: ${report.environment.platform} ${report.environment.architecture}; CPU=${report.environment.cpuModel}; browser=${report.environment.browserVersion}; viewport=${report.environment.viewport?.width || 0}x${report.environment.viewport?.height || 0}; cache=${report.environment.cachePolicy}`,
+    `GPU: vendor=${report.environment.gpu?.unmaskedVendor || report.environment.gpu?.vendor || 'unavailable'}; renderer=${report.environment.gpu?.unmaskedRenderer || report.environment.gpu?.renderer || 'unavailable'}; WebGL=${report.environment.gpu?.webglVersion || 'unavailable'}; GLSL=${report.environment.gpu?.glslVersion || 'unavailable'}; KHR_parallel_shader_compile=${report.environment.gpu?.khrParallelShaderCompile === true ? 'yes' : 'no'}; cube=${report.environment.gpu?.mirrorCubeSize || 0}px; DPR=${report.environment.gpu?.devicePixelRatio || 0}`,
     '',
     '> Runtime milliseconds are not directly comparable across environments. Compare only profiles with the same environment identity, viewport, cache policy, and test sequence.',
     '',
@@ -355,12 +363,36 @@ function renderMarkdown(report) {
     '',
     '## Largest Long-Task root causes',
     '',
-    '| Run | Journey | Step | Duration | Builder | Render | Renderer | Mirror | Store exact | Boot | Unattributed |',
+    '| Run | Journey | Step | Duration | Builder | Mirror | Renderer | Effects | Store exact | Other | Unattributed |',
     '|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|'
   );
   for (const item of report.longTaskRootCauses.slice(0, 15)) {
     lines.push(
-      `| ${item.run} | ${item.journey} | ${item.step} | ${item.durationMs} | ${item.builderContributionMs} | ${item.renderContributionMs} | ${item.renderPhaseContributionsMs?.renderer || 0} | ${item.renderPhaseContributionsMs?.mirror || 0} | ${item.storeContributionMs} | ${item.bootContributionMs || 0} | ${item.unattributedMs} |`
+      `| ${item.run} | ${item.journey} | ${item.step} | ${item.durationMs} | ${item.builderContributionMs} | ${item.renderPhaseContributionsMs?.mirror || 0} | ${item.renderPhaseContributionsMs?.renderer || 0} | ${item.renderPhaseContributionsMs?.['visual-effects'] || 0} | ${item.storeContributionMs} | ${item.otherKnownContributionMs || 0} | ${item.unattributedMs} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Adhesive Glass cube updates',
+    '',
+    '| Run | Update | First | Cube size | Mirrors | Cube surfaces | Budget before | Cube update | Budget overrun | Calls delta | Triangles delta | Programs delta |',
+    '|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
+  );
+  for (const item of report.adhesiveGlassCubePasses) {
+    lines.push(
+      `| ${item.run} | ${item.updateNumber || 0} | ${item.isFirstUpdate === true ? 'yes' : 'no'} | ${item.cubeRenderTargetSize || 0} | ${item.mirrorCount || 0} | ${item.cubeSurfaceCount || 0} | ${item.remainingBudgetBeforeStartMs || 0} | ${item.durationMs || 0} | ${item.budgetOverrunMs || 0} | ${item.rendererDelta?.calls || 0} | ${item.rendererDelta?.triangles || 0} | ${item.rendererDelta?.programs || 0} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Adhesive Glass program proveout',
+    '',
+    '| Run | Before warm-up | After warm-up | Before actual glass | After actual glass | Warm-up created | Warmed programs reused | Actual new/not warmed |',
+    '|---:|---:|---:|---:|---:|---:|---:|---:|'
+  );
+  for (const item of report.adhesiveGlassProgramProbes) {
+    lines.push(
+      `| ${item.run} | ${item.warmupBefore?.count || 0} | ${item.warmupAfter?.count || 0} | ${item.actualBefore?.count || 0} | ${item.actualAfter?.count || 0} | ${item.warmupCreatedProgramKeys?.length || 0} | ${item.warmedProgramReuseKeys?.length || 0} | ${item.actualCreatedProgramKeysNotWarmed?.length || 0} |`
     );
   }
   lines.push(
@@ -382,6 +414,7 @@ const warmupRuns = readPositiveIntegerFlag('warmups', 1);
 const measuredRuns = readPositiveIntegerFlag('runs', 3);
 const adhesiveGlassWarmupMode = readStringFlag('warmup-mode', 'startup');
 const foldedGeometryMode = readStringFlag('folded-geometry-mode', 'canonical-scale');
+const mirrorCubeExperimentMode = readStringFlag('mirror-cube-experiment', 'defer-first-presentation');
 const profileFoldedContents = process.argv.includes('--profile-folded-contents');
 const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
 if (!['startup', 'off', 'design-intent'].includes(adhesiveGlassWarmupMode)) {
@@ -392,15 +425,23 @@ if (!['exact', 'segments-2', 'canonical-scale'].includes(foldedGeometryMode)) {
     '[browser-perf-stable] --folded-geometry-mode must be exact, segments-2, or canonical-scale'
   );
 }
+if (!['baseline', 'defer-first-presentation', 'first-refresh-128'].includes(mirrorCubeExperimentMode)) {
+  throw new Error(
+    '[browser-perf-stable] --mirror-cube-experiment must be baseline, defer-first-presentation, or first-refresh-128'
+  );
+}
 if (measuredRuns < 1) throw new Error('[browser-perf-stable] at least one measured run is required');
 process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = adhesiveGlassWarmupMode;
 process.env.WP_PERF_FOLDED_GEOMETRY_MODE = foldedGeometryMode;
+process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT = mirrorCubeExperimentMode;
 
 const variantSuffix = profileFoldedContents
   ? `${adhesiveGlassWarmupMode}-folded-contents-${foldedGeometryMode}`
   : profileShaderWarmup
     ? `${adhesiveGlassWarmupMode}-shader-profile`
-    : adhesiveGlassWarmupMode;
+    : mirrorCubeExperimentMode === 'baseline'
+      ? adhesiveGlassWarmupMode
+      : `${adhesiveGlassWarmupMode}-mirror-${mirrorCubeExperimentMode}`;
 const stableJsonPath = path.join(
   path.dirname(targetPaths.latestJsonPath),
   `stable-warmup-${variantSuffix}.json`
@@ -432,6 +473,7 @@ const report = {
   experiment: {
     adhesiveGlassWarmupMode,
     foldedGeometryMode,
+    mirrorCubeExperimentMode,
     profileFoldedContents,
     profileShaderWarmup,
   },
@@ -486,6 +528,16 @@ const report = {
   viewerContentsProbes: samples.map((sample, index) => ({
     run: index + 1,
     ...sample.viewerContentsProbe,
+  })),
+  adhesiveGlassCubePasses: samples.flatMap((sample, index) =>
+    (Array.isArray(sample.adhesiveGlassFirstUse?.black?.cubeUpdates)
+      ? sample.adhesiveGlassFirstUse.black.cubeUpdates
+      : []
+    ).map(item => ({ run: index + 1, ...item }))
+  ),
+  adhesiveGlassProgramProbes: samples.map((sample, index) => ({
+    run: index + 1,
+    ...(sample.adhesiveGlassProgramProbe || {}),
   })),
   samples: samples.map(sample => ({
     generatedAt: sample.generatedAt,

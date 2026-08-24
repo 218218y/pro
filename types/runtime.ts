@@ -475,6 +475,32 @@ export interface WardrobeProRendererInfoSnapshot {
   programs: number;
 }
 
+export interface WardrobeProRendererProgramSnapshotEntry {
+  key: string;
+  id: number | null;
+  usedTimes: number;
+  name: string | null;
+  cacheKeyHash: string | null;
+}
+
+export interface WardrobeProRendererProgramSnapshot {
+  count: number;
+  programs: WardrobeProRendererProgramSnapshotEntry[];
+}
+
+export interface WardrobeProGpuFingerprint {
+  webglVersion: string | null;
+  glslVersion: string | null;
+  vendor: string | null;
+  renderer: string | null;
+  unmaskedVendor: string | null;
+  unmaskedRenderer: string | null;
+  khrParallelShaderCompile: boolean;
+  maxCubeMapTextureSize: number;
+  devicePixelRatio: number;
+  mirrorCubeSize: number;
+}
+
 export interface WardrobeProSceneContentSnapshot {
   object3DCount: number;
   meshCount: number;
@@ -499,6 +525,8 @@ export interface WardrobeProPerfConsoleSurface {
   getBrowserMetrics: () => WardrobeProBrowserPerfMetrics;
   getStateFingerprint?: () => WardrobeProPerfStateFingerprint | null;
   getRendererInfoSnapshot?: () => WardrobeProRendererInfoSnapshot | null;
+  getRendererProgramSnapshot?: () => WardrobeProRendererProgramSnapshot | null;
+  getGpuFingerprint?: () => WardrobeProGpuFingerprint | null;
   getSceneContentSnapshot?: () => WardrobeProSceneContentSnapshot | null;
   getVisualContentGeometryCacheStats?: () => import('./build_ops').VisualContentGeometryCacheStatsLike | null;
   resetVisualContentGeometryCacheStats?: () =>

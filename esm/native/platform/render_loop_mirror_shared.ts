@@ -25,6 +25,9 @@ export type RenderSlotWriter = (app: AppContainer, key: string, value: unknown) 
 export type MirrorDriverDeps = {
   report: MirrorReportFn;
   now: () => number;
+  recordMetric?: (name: string, durationMs: number, detail: UnknownRecord, error?: unknown) => void;
+  scheduleIdleTask?: (run: () => void, timeoutMs: number) => void;
+  wakeRenderLoop?: () => void;
   isTaggedMirrorSurface: TaggedMirrorFn;
   tryHideMirrorSurface: HideMirrorFn;
   getRenderSlot: RenderSlotReader;

@@ -7,10 +7,12 @@ import type {
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
   WardrobeProBrowserPerfMetrics,
+  WardrobeProGpuFingerprint,
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
   WardrobeProRendererInfoSnapshot,
+  WardrobeProRendererProgramSnapshot,
   WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
   VisualContentGeometryCacheStatsLike,
@@ -51,7 +53,12 @@ import {
   resetVisualContentGeometryCacheRuntimeStats,
 } from './perf_runtime_debug_surfaces.js';
 import { getPerfStateFingerprint } from './perf_runtime_state_fingerprint.js';
-import { getRendererInfoSnapshot, getSceneContentSnapshot } from './perf_runtime_render_snapshot.js';
+import {
+  getGpuFingerprint,
+  getRendererInfoSnapshot,
+  getRendererProgramSnapshot,
+  getSceneContentSnapshot,
+} from './perf_runtime_render_snapshot.js';
 import { requestPerfRenderFrameSample } from './perf_runtime_frame_sampler.js';
 import { setDoorsOpenViaService } from './doors_access.js';
 import { triggerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
@@ -92,7 +99,10 @@ export function getRuntimeErrorHistory(App: AppContainer): ErrorsHistoryEntryLik
   }
 }
 
-export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfConsoleSurface {
+export function createPerfConsoleSurface(
+  App: AppContainer,
+  win: Window | null | undefined = null
+): WardrobeProPerfConsoleSurface {
   return {
     mark(name: string, detail?: unknown): WardrobeProPerfEntry {
       return markPerfPoint(App, name, { detail });
@@ -121,6 +131,13 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     getRendererInfoSnapshot(): WardrobeProRendererInfoSnapshot | null {
       return getRendererInfoSnapshot(App);
+    },
+    getRendererProgramSnapshot(): WardrobeProRendererProgramSnapshot | null {
+      return getRendererProgramSnapshot(App);
+    },
+    getGpuFingerprint(): WardrobeProGpuFingerprint | null {
+      const dpr = typeof win?.devicePixelRatio === 'number' ? win.devicePixelRatio : 1;
+      return getGpuFingerprint(App, dpr);
     },
     getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {
       return getSceneContentSnapshot(App);
@@ -180,7 +197,7 @@ export function installPerfRuntimeSurface(
   try {
     if (!win || typeof win !== 'object') return null;
     installBrowserPerformanceObservers(App, win);
-    const surface = createPerfConsoleSurface(App);
+    const surface = createPerfConsoleSurface(App, win);
     Object.defineProperty(win, '__WP_PERF__', {
       configurable: true,
       enumerable: false,

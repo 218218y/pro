@@ -196,6 +196,7 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   assert.equal(cfg.define.__WP_BUILD_PERF__, 'false');
   assert.equal(cfg.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
   assert.equal(cfg.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+  assert.equal(cfg.define.__WP_MIRROR_CUBE_EXPERIMENT__, '"defer-first-presentation"');
   assert.equal(cfg.build.copyPublicDir, false);
   assert.equal(cfg.build.rolldownOptions.preserveEntrySignatures, 'strict');
   assert.equal(cfg.build.rolldownOptions.output.entryFileNames, 'wardrobepro.bundle.js');
@@ -235,13 +236,16 @@ test('bundle build config maps scheduler debug stats to full implementation outs
   assert.equal(cfg.define.__WP_BUILD_PERF__, 'true');
   assert.equal(cfg.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
   assert.equal(cfg.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+  assert.equal(cfg.define.__WP_MIRROR_CUBE_EXPERIMENT__, '"defer-first-presentation"');
 });
 
-test('perf bundle accepts isolated adhesive-glass warmup experiments without changing client builds', () => {
+test('perf bundle accepts isolated warmup and mirror experiments while client keeps the production policy', () => {
   const previous = process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE;
   const previousFolded = process.env.WP_PERF_FOLDED_GEOMETRY_MODE;
+  const previousMirrorCube = process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT;
   process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = 'off';
   process.env.WP_PERF_FOLDED_GEOMETRY_MODE = 'canonical-scale';
+  process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT = 'defer-first-presentation';
   try {
     const perf = createBundleBuildConfig({
       root: '/repo',
@@ -257,13 +261,17 @@ test('perf bundle accepts isolated adhesive-glass warmup experiments without cha
     });
     assert.equal(perf.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"off"');
     assert.equal(perf.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+    assert.equal(perf.define.__WP_MIRROR_CUBE_EXPERIMENT__, '"defer-first-presentation"');
     assert.equal(client.define.__WP_ADHESIVE_GLASS_WARMUP_MODE__, '"startup"');
     assert.equal(client.define.__WP_FOLDED_GEOMETRY_MODE__, '"canonical-scale"');
+    assert.equal(client.define.__WP_MIRROR_CUBE_EXPERIMENT__, '"defer-first-presentation"');
   } finally {
     if (typeof previous === 'undefined') delete process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE;
     else process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE = previous;
     if (typeof previousFolded === 'undefined') delete process.env.WP_PERF_FOLDED_GEOMETRY_MODE;
     else process.env.WP_PERF_FOLDED_GEOMETRY_MODE = previousFolded;
+    if (typeof previousMirrorCube === 'undefined') delete process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT;
+    else process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT = previousMirrorCube;
   }
 });
 

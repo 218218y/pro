@@ -8,10 +8,12 @@ import type {
   StoreDebugStats,
   WardrobeProBrowserPerfMetrics,
   WardrobeProDebugConsoleSurface,
+  WardrobeProGpuFingerprint,
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
   WardrobeProRendererInfoSnapshot,
+  WardrobeProRendererProgramSnapshot,
   WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
 } from '../../../types/index.js';
@@ -256,6 +258,12 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
       return null;
     },
     getRendererInfoSnapshot(): WardrobeProRendererInfoSnapshot | null {
+      return null;
+    },
+    getRendererProgramSnapshot(): WardrobeProRendererProgramSnapshot | null {
+      return null;
+    },
+    getGpuFingerprint(): WardrobeProGpuFingerprint | null {
       return null;
     },
     getSceneContentSnapshot(): WardrobeProSceneContentSnapshot | null {

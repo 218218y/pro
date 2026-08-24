@@ -2407,6 +2407,14 @@ export function createLongTaskRootCauseSummary(result, limit = 5) {
       );
       const allKnownIntervals = clippedIntervals(task, contributionIntervals);
       const knownUnionMs = unionDurationMs(allKnownIntervals);
+      const explicitlyDisplayedIntervals = clippedIntervals(
+        task,
+        contributionIntervals.filter(interval =>
+          ['builder', 'store', 'render:mirror', 'render:renderer', 'render:visual-effects'].includes(
+            interval.owner
+          )
+        )
+      );
       return {
         journey: task.journey,
         step: task.step,
@@ -2422,7 +2430,9 @@ export function createLongTaskRootCauseSummary(result, limit = 5) {
         storeContributionMs: byOwner.store || 0,
         storeStepTotalMs: roundDuration(Number(storeFlowSummary?.[task.step]?.totalSourceMs) || 0),
         bootContributionMs: byOwner.boot || 0,
-        otherKnownContributionMs: byOwner.boot || 0,
+        otherKnownContributionMs: roundDuration(
+          Math.max(0, knownUnionMs - unionDurationMs(explicitlyDisplayedIntervals))
+        ),
         unattributedMs: roundDuration(Math.max(0, Number(task.durationMs) - knownUnionMs)),
       };
     });
@@ -3712,12 +3722,12 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('- no attributed Long Tasks recorded');
   } else {
     lines.push(
-      '| Journey | Step | Duration | Builder | Render | Store (exact slow commits) | Store step total | Unattributed |',
-      '|---|---|---:|---:|---:|---:|---:|---:|'
+      '| Journey | Step | Duration | Builder | Mirror | Renderer | Effects | Store (exact slow commits) | Other | Unattributed |',
+      '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|'
     );
     for (const item of longTaskRootCauseRows) {
       lines.push(
-        `| ${item.journey} | ${item.step} | ${formatMs(item.durationMs)} | ${formatMs(item.builderContributionMs)} | ${formatMs(item.renderContributionMs)} | ${formatMs(item.storeContributionMs)} | ${formatMs(item.storeStepTotalMs)} | ${formatMs(item.unattributedMs)} |`
+        `| ${item.journey} | ${item.step} | ${formatMs(item.durationMs)} | ${formatMs(item.builderContributionMs)} | ${formatMs(item.renderPhaseContributionsMs?.mirror || 0)} | ${formatMs(item.renderPhaseContributionsMs?.renderer || 0)} | ${formatMs(item.renderPhaseContributionsMs?.['visual-effects'] || 0)} | ${formatMs(item.storeContributionMs)} | ${formatMs(item.otherKnownContributionMs || 0)} | ${formatMs(item.unattributedMs)} |`
       );
     }
   }

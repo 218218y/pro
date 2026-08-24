@@ -212,6 +212,8 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.equal(typeof surface.getBrowserMetrics, 'function');
   assert.equal(typeof surface.getStateFingerprint, 'function');
   assert.equal(typeof surface.getRendererInfoSnapshot, 'function');
+  assert.equal(typeof surface.getRendererProgramSnapshot, 'function');
+  assert.equal(typeof surface.getGpuFingerprint, 'function');
   assert.equal(typeof surface.getSceneContentSnapshot, 'function');
   assert.equal(typeof surface.getStoreDebugStats, 'function');
   assert.equal(typeof surface.getErrorHistory, 'function');
@@ -260,6 +262,15 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
     textures: 9,
     programs: 3,
   });
+  assert.deepEqual(surface.getRendererProgramSnapshot?.(), {
+    count: 3,
+    programs: [
+      { key: 'index:0', id: null, usedTimes: 0, name: null, cacheKeyHash: null },
+      { key: 'index:1', id: null, usedTimes: 0, name: null, cacheKeyHash: null },
+      { key: 'index:2', id: null, usedTimes: 0, name: null, cacheKeyHash: null },
+    ],
+  });
+  assert.equal(surface.getGpuFingerprint?.(), null);
   assert.deepEqual(surface.getSceneContentSnapshot?.(), {
     object3DCount: 6,
     meshCount: 4,

@@ -47,6 +47,7 @@ export function createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }) {
       ...createObservabilityBuildDefines(buildMode, {
         adhesiveGlassWarmupMode: process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE,
         foldedGeometryMode: process.env.WP_PERF_FOLDED_GEOMETRY_MODE,
+        mirrorCubeExperimentMode: process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT,
       }),
     },
     build: {

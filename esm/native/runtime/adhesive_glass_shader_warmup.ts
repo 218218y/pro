@@ -1,9 +1,10 @@
 import type { AppContainer, UnknownRecord } from '../../../types/index.js';
 import { getBrowserTimers, requestIdleCallbackMaybe } from './api_browser_surface.js';
-import { runPerfPhase } from './observability_surface.js';
+import { markPerfPoint, runPerfPhase } from './observability_surface.js';
 import { getCamera, getMirrorRenderTarget, getRenderer, getScene } from './render_access.js';
 import { getCacheBag } from './cache_access.js';
 import { registerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
+import { getRendererProgramSnapshot } from './perf_runtime_render_snapshot.js';
 
 const ADHESIVE_GLASS_STANDARD_WARMUP_KEY = '__wpAdhesiveGlassStandardShaderWarmup';
 const ADHESIVE_GLASS_STANDARD_WARMUP_PROFILE = 'cube-standard-front-opaque-warm-v1';
@@ -84,6 +85,23 @@ function call2(ctx: unknown, fn: unknown, a: unknown, b: unknown): unknown {
 
 function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): unknown {
   return typeof fn === 'function' ? fn.call(ctx, a, b, c) : undefined;
+}
+
+function markWarmupProgramSnapshot(
+  App: AppContainer,
+  stage: 'before' | 'after',
+  beforeKeys: ReadonlySet<string> = new Set()
+): Set<string> {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return new Set();
+  const snapshot = getRendererProgramSnapshot(App);
+  const keys = new Set(snapshot?.programs.map(program => program.key) || []);
+  markPerfPoint(App, `adhesive-glass.shader-warmup.programs.${stage}`, {
+    detail: {
+      snapshot,
+      newProgramKeys: stage === 'after' ? Array.from(keys).filter(key => !beforeKeys.has(key)) : [],
+    },
+  });
+  return keys;
 }
 
 export function getAdhesiveGlassShaderWarmupMode(): AdhesiveGlassShaderWarmupMode {
@@ -219,6 +237,7 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
 
     const compileAsync = renderer.compileAsync;
     const compile = renderer.compile;
+    const programKeysBefore = markWarmupProgramSnapshot(App as AppContainer, 'before');
     state.material = material;
     state.geometry = warmupMesh.geometry;
     state.mesh = warmupMesh.mesh;
@@ -239,6 +258,7 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
         inFlight = completion.then(
           () => {
             if (state.inFlight !== inFlight) return;
+            markWarmupProgramSnapshot(App as AppContainer, 'after', programKeysBefore);
             state.inFlight = null;
             state.completed = true;
             state.lastSkippedReason = null;
@@ -267,6 +287,8 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
       state.lastSkippedReason = 'renderer-compile-unavailable';
       return false;
     }
+
+    markWarmupProgramSnapshot(App as AppContainer, 'after', programKeysBefore);
 
     state.completed = true;
     state.inFlight = null;

@@ -1,9 +1,10 @@
-import { getBrowserTimers, recordPerfMetric } from '../runtime/api.js';
+import { getBrowserTimers, recordPerfMetric, requestIdleCallbackMaybe } from '../runtime/api.js';
 import {
   getAnimateFn,
   getCamera,
   getControls,
   getDoorsArray,
+  getLoopRaf,
   getRenderer,
   getRoomGroup,
   getScene,
@@ -89,6 +90,36 @@ export function createInstalledRenderAnimate(
   const __mirrorDriver = createRenderLoopMirrorDriver(toAppContainer(A), {
     report: (_app, op, err, opts) => report(op, err, opts),
     now: __now,
+    recordMetric: (name, durationMs, detail, error) => {
+      recordPerfMetric(__perfApp, name, durationMs, 'ms', {
+        status: error ? 'error' : 'ok',
+        error,
+        detail,
+      });
+    },
+    scheduleIdleTask: (run, timeoutMs) => {
+      try {
+        const idle = requestIdleCallbackMaybe(A);
+        if (idle) {
+          idle(() => run(), { timeout: timeoutMs });
+          return;
+        }
+      } catch (error) {
+        report('animate.scheduleMirrorIdle', error, { throttleMs: 2000 });
+      }
+      __timers.setTimeout(run, 0);
+    },
+    wakeRenderLoop: () => {
+      if (getLoopRaf(A)) return;
+      const scheduledAt = __now();
+      setRafScheduledAt(A, scheduledAt);
+      try {
+        setLoopRaf(A, __raf(asFrameRequestCallback(getAnimateFn(A), animate)));
+      } catch (error) {
+        clearLoopSchedule(A);
+        report('animate.scheduleMirrorRefresh', error, { throttleMs: 2000 });
+      }
+    },
     isTaggedMirrorSurface: __frontOverlay.isTaggedMirrorSurface,
     tryHideMirrorSurface: __frontOverlay.tryHideMirrorSurface,
     getRenderSlot,
@@ -141,6 +172,45 @@ export function createInstalledRenderAnimate(
         },
       });
     }
+  }
+
+  function recordMirrorPresentationEvidence(): void {
+    if (!__framePerfEnabled) return;
+    const pending = asRecordOrNull(getRenderSlot(A, '__mirrorCubePresentationPending'));
+    if (!pending) return;
+    const presentationAtMs = __now();
+    const startTime = Number(pending['startTime']);
+    const evidenceStartTime = Number.isFinite(startTime) ? startTime : presentationAtMs;
+    const detail = {
+      ...pending,
+      startTime: evidenceStartTime,
+      endTime: presentationAtMs,
+      presentationAtMs,
+    };
+    if (
+      pending['isFirstUpdate'] === true &&
+      getRenderSlot(A, '__mirrorCubeFirstPresentationRecorded') !== true
+    ) {
+      recordPerfMetric(
+        __perfApp,
+        'mirror.cube.first-presentation',
+        Math.max(0, presentationAtMs - evidenceStartTime),
+        'ms',
+        { detail }
+      );
+      setRenderSlot(A, '__mirrorCubeFirstPresentationRecorded', true);
+    }
+    if (pending['highQuality'] === true && getRenderSlot(A, '__mirrorCubeReflectionReadyRecorded') !== true) {
+      recordPerfMetric(
+        __perfApp,
+        'mirror.cube.reflection-ready',
+        Math.max(0, presentationAtMs - evidenceStartTime),
+        'ms',
+        { detail }
+      );
+      setRenderSlot(A, '__mirrorCubeReflectionReadyRecorded', true);
+    }
+    setRenderSlot(A, '__mirrorCubePresentationPending', null);
   }
 
   function animate() {
@@ -249,6 +319,8 @@ export function createInstalledRenderAnimate(
           }
         }
       }
+
+      recordMirrorPresentationEvidence();
 
       recordMeasuredFrame(frameStartMs, framePerfPhases, forceFrameCapture);
 

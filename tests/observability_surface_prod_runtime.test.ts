@@ -85,6 +85,8 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.equal(surface.end('noop-span'), null);
   assert.equal(surface.getStateFingerprint?.(), null);
   assert.equal(surface.getRendererInfoSnapshot?.(), null);
+  assert.equal(surface.getRendererProgramSnapshot?.(), null);
+  assert.equal(surface.getGpuFingerprint?.(), null);
   assert.equal(surface.getSceneContentSnapshot?.(), null);
   assert.deepEqual(surface.getErrorHistory?.(), []);
   assert.equal(surface.getBuildDebugStats?.(), null);

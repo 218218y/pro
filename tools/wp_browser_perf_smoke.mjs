@@ -87,6 +87,13 @@ const foldedGeometryMode = ['exact', 'segments-2', 'canonical-scale'].includes(
 )
   ? String(process.env.WP_PERF_FOLDED_GEOMETRY_MODE).trim().toLowerCase()
   : 'canonical-scale';
+const mirrorCubeExperimentMode = ['baseline', 'defer-first-presentation', 'first-refresh-128'].includes(
+  String(process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT || '')
+    .trim()
+    .toLowerCase()
+)
+  ? String(process.env.WP_PERF_MIRROR_CUBE_EXPERIMENT).trim().toLowerCase()
+  : 'defer-first-presentation';
 const confirmationRun = process.argv.includes(BROWSER_PERF_CONFIRMATION_FLAG);
 const confirmationCandidateIdentities = confirmationRun
   ? parseBrowserPerfConfirmationCandidates(process.env[BROWSER_PERF_CONFIRMATION_CANDIDATES_ENV])
@@ -125,6 +132,13 @@ const foldedContentsScreenshotPath = path.join(
   'browser-perf',
   measurementTarget.id,
   `folded-contents-${foldedGeometryMode}.png`
+);
+const adhesiveGlassScreenshotPath = path.join(
+  projectRoot,
+  '.artifacts',
+  'browser-perf',
+  measurementTarget.id,
+  `adhesive-glass-reflection-ready-${mirrorCubeExperimentMode}.png`
 );
 const baselinePath = resolveBrowserPerfBaselinePath(projectRoot, measurementTarget.id);
 const textureFixturePath = path.join(
@@ -710,10 +724,50 @@ function summarizeStepBrowserMetric(result, stepName, metricName) {
 
 function createAdhesiveGlassFirstUseSummary(result, stepName) {
   const step = (result.windowResponsivenessFlowSteps || []).find(row => row?.name === stepName);
+  const firstWindow = Array.isArray(step?.timingWindows) ? step.timingWindows[0] : null;
+  const expectedCubeUpdates = result?.experiment?.mirrorCubeExperimentMode === 'first-refresh-128' ? 2 : 1;
+  const cubeEntries = (result.windowPerfEntries || []).filter(
+    entry =>
+      entry?.name === 'mirror.cube.update' &&
+      entry?.kind === 'browser-metric' &&
+      String(entry?.browserSessionId || '') === String(firstWindow?.sessionId || '') &&
+      Number(entry?.detail?.startTime) >= Number(firstWindow?.startTime) &&
+      Number(entry?.detail?.updateNumber) >= 1 &&
+      Number(entry?.detail?.updateNumber) <= expectedCubeUpdates
+  );
+  const readPresentationDelay = metricName => {
+    const entry = (result.windowPerfEntries || []).find(
+      item =>
+        item?.name === metricName &&
+        item?.kind === 'browser-metric' &&
+        String(item?.browserSessionId || '') === String(firstWindow?.sessionId || '') &&
+        Number(item?.detail?.endTime) >= Number(firstWindow?.startTime)
+    );
+    if (!entry) return null;
+    const presentationAtMs = Number(entry?.detail?.endTime);
+    const inputMarks = (result.windowPerfEntries || [])
+      .filter(
+        item =>
+          item?.name === 'adhesive-glass.first-use.input' &&
+          item?.kind === 'mark' &&
+          String(item?.browserSessionId || '') === String(entry?.browserSessionId || '') &&
+          Number(item?.startTime) <= presentationAtMs
+      )
+      .sort((left, right) => Number(right?.startTime) - Number(left?.startTime));
+    const inputAtMs = Number(inputMarks[0]?.startTime ?? firstWindow?.startTime);
+    return Number.isFinite(inputAtMs) ? Math.max(0, presentationAtMs - inputAtMs) : null;
+  };
   return {
     longTasks: step?.delta?.longTasks || createDurationSampleSummary([]),
     renderer: summarizeStepBrowserMetric(result, stepName, 'render.frame.renderer'),
     frameTotal: summarizeStepBrowserMetric(result, stepName, 'render.frame.total'),
+    cubeUpdate: createDurationSampleSummary(cubeEntries.map(entry => Number(entry?.metricValue) || 0)),
+    cubeUpdates: cubeEntries.map(entry => ({
+      durationMs: Number(entry?.metricValue) || 0,
+      ...(entry?.detail && typeof entry.detail === 'object' ? entry.detail : {}),
+    })),
+    inputToFirstPresentationMs: readPresentationDelay('mirror.cube.first-presentation'),
+    inputToReflectionReadyMs: readPresentationDelay('mirror.cube.reflection-ready'),
   };
 }
 
@@ -951,6 +1005,7 @@ async function finalizeShaderWarmupProfile(page, result) {
       })
   );
   await captureSessionArtifacts(page, result);
+  result.adhesiveGlassProgramProbe = createAdhesiveGlassProgramProbe(result);
   const responsivenessAttribution = attributeBrowserResponsivenessToSteps(
     result.windowResponsivenessFlowSteps,
     result.windowPerfEntries
@@ -1027,6 +1082,67 @@ async function readBuildDebugStats(page) {
 
 async function readRendererInfoSnapshot(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getRendererInfoSnapshot?.() || null);
+}
+
+async function readRendererProgramSnapshot(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getRendererProgramSnapshot?.() || null);
+}
+
+async function readGpuFingerprint(page) {
+  return await page.evaluate(() => window.__WP_PERF__?.getGpuFingerprint?.() || null);
+}
+
+function readProgramKeys(snapshot) {
+  return new Set(
+    (Array.isArray(snapshot?.programs) ? snapshot.programs : [])
+      .map(program => (typeof program?.key === 'string' ? program.key : null))
+      .filter(Boolean)
+  );
+}
+
+function diffProgramKeys(before, after) {
+  const beforeKeys = readProgramKeys(before);
+  return Array.from(readProgramKeys(after)).filter(key => !beforeKeys.has(key));
+}
+
+function findReusedProgramKeys(before, after, candidateKeys) {
+  const beforeByKey = new Map(
+    (Array.isArray(before?.programs) ? before.programs : []).map(program => [program?.key, program])
+  );
+  const afterByKey = new Map(
+    (Array.isArray(after?.programs) ? after.programs : []).map(program => [program?.key, program])
+  );
+  return candidateKeys.filter(key => {
+    const beforeProgram = beforeByKey.get(key);
+    const afterProgram = afterByKey.get(key);
+    return beforeProgram && afterProgram && Number(afterProgram.usedTimes) > Number(beforeProgram.usedTimes);
+  });
+}
+
+function createAdhesiveGlassProgramProbe(result) {
+  const entries = Array.isArray(result?.windowPerfEntries) ? result.windowPerfEntries : [];
+  const readWarmupSnapshot = name => {
+    const entry = entries.find(item => item?.name === name && item?.kind === 'mark');
+    return entry?.detail?.snapshot || null;
+  };
+  const warmupBefore = readWarmupSnapshot('adhesive-glass.shader-warmup.programs.before');
+  const warmupAfter = readWarmupSnapshot('adhesive-glass.shader-warmup.programs.after');
+  const actualBefore = result?.adhesiveGlassProgramProbe?.actualBefore || null;
+  const actualAfter = result?.adhesiveGlassProgramProbe?.actualAfter || null;
+  const warmupCreatedProgramKeys = diffProgramKeys(warmupBefore, warmupAfter);
+  const actualCreatedProgramKeys = diffProgramKeys(actualBefore, actualAfter);
+  return {
+    warmupBefore,
+    warmupAfter,
+    actualBefore,
+    actualAfter,
+    warmupCreatedProgramKeys,
+    actualCreatedProgramKeys,
+    warmedProgramReuseKeys: findReusedProgramKeys(actualBefore, actualAfter, warmupCreatedProgramKeys),
+    actualCreatedProgramKeysNotWarmed: actualCreatedProgramKeys.filter(
+      key => !readProgramKeys(warmupAfter).has(key)
+    ),
+  };
 }
 
 async function readSceneContentSnapshot(page) {
@@ -2034,12 +2150,15 @@ async function selectAdhesiveGlassPaintBrush(page, kind) {
   await waitForTwoBrowserFrames(page);
 }
 
-async function clickCanvasAtNdc(page, point) {
+async function clickCanvasAtNdc(page, point, inputMarkName = null) {
   const canvas = page.locator('#viewer-container canvas').first();
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
   if (!box || !(box.width > 0) || !(box.height > 0)) {
     throw new Error('Adhesive-glass first-use probe could not resolve the viewer canvas bounds');
+  }
+  if (inputMarkName) {
+    await page.evaluate(name => window.__WP_PERF__?.mark?.(name), inputMarkName);
   }
   await canvas.click({
     position: {
@@ -2072,7 +2191,7 @@ async function applyAdhesiveGlassViaCanvas(page, kind, preferredPoint = null) {
       ];
 
   for (const point of candidates) {
-    await clickCanvasAtNdc(page, point);
+    await clickCanvasAtNdc(page, point, kind === 'black' ? 'adhesive-glass.first-use.input' : null);
     const counts = await readAdhesiveGlassDoorCounts(page);
     if (kind === 'black' ? counts.black > before.black : counts.frosted > before.frosted) {
       return { point, counts };
@@ -2770,7 +2889,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installPerfEntryCapture(page);
 
   const result = {
-    version: 15,
+    version: 16,
     generatedAt: new Date().toISOString(),
     measurementProfile,
     measurementArtifact,
@@ -2787,12 +2906,13 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       headless: true,
       viewport: { width: 1280, height: 800 },
       cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v15',
+      testSequence: 'wp_browser_perf_smoke.v16',
     },
     browserPerfRoomId,
     experiment: {
       adhesiveGlassWarmupMode,
       foldedGeometryMode,
+      mirrorCubeExperimentMode,
       profileFoldedContents,
       profileShaderWarmup,
     },
@@ -2824,6 +2944,8 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     builderExecutionRootCauseSummary: [],
     journeyResponsivenessSummary: {},
     adhesiveGlassFirstUse: {},
+    adhesiveGlassProgramProbe: {},
+    adhesiveGlassVisualProbe: {},
     headerSketchRendererProbe: {},
     viewerContentsProbe: {},
     bootMilestones: {},
@@ -2877,6 +2999,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       operationalReadyMs: Number(operationalState?.operationalReadyAtMs) || 0,
       autosaveReadyMs: Number(autosaveState?.autosaveReadyAtMs) || 0,
     };
+    result.executionEnvironment.gpu = await readGpuFingerprint(page);
     result.userFlow['boot.shell-visible'] = result.bootMilestones.shellVisibleMs;
     result.userFlow['boot.operational-ready'] = result.bootMilestones.operationalReadyMs;
     result.userFlow['boot.autosave-ready'] = result.bootMilestones.autosaveReadyMs;
@@ -3072,11 +3195,22 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       page,
       'adhesive-glass.first-use.black.apply-and-render',
       async () => {
+        const actualBefore = await readRendererProgramSnapshot(page);
         const applied = await applyAdhesiveGlassViaCanvas(page, 'black');
         adhesiveGlassDoorPoint = applied.point;
+        const actualAfter = await readRendererProgramSnapshot(page);
+        result.adhesiveGlassProgramProbe = { actualBefore, actualAfter };
       },
       { journey: USER_JOURNEYS.adhesiveGlassFirstUse, tags: ['adhesive-glass', 'black', 'first-use'] }
     );
+    await expectPerfMetricCount(page, 'mirror.cube.reflection-ready', 1);
+    await page.locator('#viewer-container canvas').first().screenshot({
+      path: adhesiveGlassScreenshotPath,
+    });
+    result.adhesiveGlassVisualProbe = {
+      screenshotPath: path.relative(projectRoot, adhesiveGlassScreenshotPath),
+      counts: await readAdhesiveGlassDoorCounts(page),
+    };
 
     await withStep(
       result,
@@ -3758,6 +3892,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
         })
     );
     await captureSessionArtifacts(page, result);
+    result.adhesiveGlassProgramProbe = createAdhesiveGlassProgramProbe(result);
     const responsivenessAttribution = attributeBrowserResponsivenessToSteps(
       result.windowResponsivenessFlowSteps,
       result.windowPerfEntries

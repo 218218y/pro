@@ -21,6 +21,77 @@ function call2m(ctx: unknown, fn: unknown, first: unknown, second: unknown): unk
   return typeof fn === 'function' ? fn.call(ctx, first, second) : undefined;
 }
 
+type RendererCounters = {
+  calls: number;
+  triangles: number;
+  programs: number;
+};
+
+function readFiniteCount(value: unknown): number {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, numeric) : 0;
+}
+
+function readRendererCounters(renderer: UnknownRecord): RendererCounters {
+  const info = asRecordOrNull(renderer['info']);
+  const render = asRecordOrNull(info?.['render']);
+  return {
+    calls: readFiniteCount(render?.['calls']),
+    triangles: readFiniteCount(render?.['triangles']),
+    programs: Array.isArray(info?.['programs']) ? info['programs'].length : 0,
+  };
+}
+
+function readCubeRenderTargetSize(renderTarget: UnknownRecord): number {
+  return Math.max(readFiniteCount(renderTarget['width']), readFiniteCount(renderTarget['height']));
+}
+
+type MirrorCubeRefreshMode = 'baseline' | 'defer-first-presentation' | 'first-refresh-128';
+
+function getMirrorCubeRefreshMode(): MirrorCubeRefreshMode {
+  const mode = typeof __WP_MIRROR_CUBE_EXPERIMENT__ === 'string' ? __WP_MIRROR_CUBE_EXPERIMENT__ : 'baseline';
+  return mode === 'defer-first-presentation' || mode === 'first-refresh-128' ? mode : 'baseline';
+}
+
+function setMirrorPresentationPending(
+  deps: Pick<MirrorDriverDeps, 'setRenderSlot'>,
+  app: AppContainer,
+  detail: UnknownRecord
+): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  deps.setRenderSlot(app, '__mirrorCubePresentationPending', detail);
+}
+
+function scheduleFullResolutionRefresh(
+  app: AppContainer,
+  deps: Pick<MirrorDriverDeps, 'setRenderSlot' | 'scheduleIdleTask' | 'wakeRenderLoop'>,
+  renderTarget: UnknownRecord,
+  fullSize: number
+): void {
+  const resizeAndRefresh = () => {
+    call2m(renderTarget, renderTarget['setSize'], fullSize, fullSize);
+    deps.setRenderSlot(app, '__mirrorCubeHighQualityPending', false);
+    deps.setRenderSlot(app, '__mirrorDirty', true);
+    deps.setRenderSlot(app, '__mirrorWorkPending', true);
+    deps.wakeRenderLoop?.();
+  };
+  deps.scheduleIdleTask?.(resizeAndRefresh, 1000);
+}
+
+function scheduleDeferredCubeRefresh(
+  app: AppContainer,
+  deps: Pick<MirrorDriverDeps, 'setRenderSlot' | 'scheduleIdleTask' | 'wakeRenderLoop'>
+): void {
+  const refresh = () => {
+    deps.setRenderSlot(app, '__mirrorCubeDeferredUntilIdle', false);
+    deps.setRenderSlot(app, '__mirrorDirty', true);
+    deps.setRenderSlot(app, '__mirrorWorkPending', true);
+    deps.wakeRenderLoop?.();
+  };
+  deps.setRenderSlot(app, '__mirrorCubeDeferredUntilIdle', true);
+  deps.scheduleIdleTask?.(refresh, 1000);
+}
+
 function readMaterialRecords(object: UnknownRecord | null): UnknownRecord[] {
   if (!object) return [];
   const material = object['material'];
@@ -64,7 +135,16 @@ function restoreHiddenMirrors(mirrors: UnknownRecord[]): void {
 
 export function runMirrorCubePass(args: {
   app: AppContainer;
-  deps: Pick<MirrorDriverDeps, 'now' | 'tryHideMirrorSurface' | 'getRenderSlot' | 'setRenderSlot'>;
+  deps: Pick<
+    MirrorDriverDeps,
+    | 'now'
+    | 'recordMetric'
+    | 'scheduleIdleTask'
+    | 'wakeRenderLoop'
+    | 'tryHideMirrorSurface'
+    | 'getRenderSlot'
+    | 'setRenderSlot'
+  >;
   policy: MirrorFramePolicy;
   mirrors: UnknownRecord[];
   hasMirror: boolean;
@@ -99,7 +179,7 @@ export function runMirrorCubePass(args: {
   const cube = asRecordOrNull(getMirrorCubeCamera(app));
   const renderTarget = asRecordOrNull(getMirrorRenderTarget(app));
   const texture = renderTarget?.['texture'] ?? null;
-  if (!cube || typeof cube['update'] !== 'function' || !texture) {
+  if (!cube || !renderTarget || typeof cube['update'] !== 'function' || !texture) {
     deps.setRenderSlot(app, '__mirrorCubeLastSkippedReason', 'mirror-cube-prerequisites-missing');
     deps.setRenderSlot(app, '__mirrorCubeLastSkippedAtMs', policy.nowMs);
     deps.setRenderSlot(app, '__mirrorWorkPending', policy.mirrorDirty);
@@ -110,12 +190,16 @@ export function runMirrorCubePass(args: {
   const mirrorsToHide = acquireMirrorHideScratch(app);
   try {
     let foundMirrorForUpdate = false;
+    let mirrorCount = 0;
+    let cubeSurfaceCount = 0;
     for (const entry of mirrors) {
       const mirror = asRecordOrNull(entry);
       if (!mirror) continue;
+      mirrorCount += 1;
       const shouldSyncCubeMaterial = policy.cubeMirrorMode || !isPlanarMirrorSurface(mirror);
       if (!deps.tryHideMirrorSurface(mirror, texture, mirrorsToHide)) continue;
       if (!shouldSyncCubeMaterial) continue;
+      cubeSurfaceCount += 1;
       syncTrackedMirrorMaterialEnvMap(mirror, texture);
       foundMirrorForUpdate = true;
     }
@@ -131,11 +215,93 @@ export function runMirrorCubePass(args: {
 
     if (!hasMirror) return;
 
+    const refreshMode = getMirrorCubeRefreshMode();
+    if (
+      refreshMode === 'defer-first-presentation' &&
+      updateCount === 0 &&
+      deps.getRenderSlot<boolean>(app, '__mirrorCubeFirstPresentationDeferralConsumed') !== true
+    ) {
+      const deferredAtMs = deps.now();
+      deps.setRenderSlot(app, '__mirrorCubeFirstPresentationDeferralConsumed', true);
+      deps.setRenderSlot(app, '__mirrorWorkPending', false);
+      setMirrorPresentationPending(deps, app, {
+        startTime: deferredAtMs,
+        updateNumber: 1,
+        isFirstUpdate: true,
+        highQuality: false,
+        deferredBeforeCube: true,
+        cubeRenderTargetSize: readCubeRenderTargetSize(renderTarget),
+      });
+      scheduleDeferredCubeRefresh(app, deps);
+      return;
+    }
+
     const shadowMap = getShadowMap(app);
     const previousAutoUpdate = shadowMap ? shadowMap['autoUpdate'] : undefined;
+    const beforeUpdateMs = deps.now();
+    const elapsedBeforeStartMs =
+      policy.frameStartMs > 0 ? Math.max(0, beforeUpdateMs - policy.frameStartMs) : 0;
+    const remainingBudgetBeforeStartMs = Math.max(0, policy.frameBudgetMs - elapsedBeforeStartMs);
+    const rendererBefore = readRendererCounters(renderer);
+    const updateNumber = updateCount + 1;
+    const fullCubeSize = readCubeRenderTargetSize(renderTarget);
+    const useTemporaryFirstResolution =
+      refreshMode === 'first-refresh-128' &&
+      updateCount === 0 &&
+      fullCubeSize > 128 &&
+      typeof renderTarget['setSize'] === 'function';
+    if (useTemporaryFirstResolution) {
+      call2m(renderTarget, renderTarget['setSize'], 128, 128);
+      deps.setRenderSlot(app, '__mirrorCubeHighQualityPending', true);
+    }
+    let updateError: unknown = null;
     try {
       if (shadowMap && typeof previousAutoUpdate !== 'undefined') shadowMap['autoUpdate'] = false;
-      call2m(cube, cube['update'], renderer, scene);
+      try {
+        call2m(cube, cube['update'], renderer, scene);
+      } catch (error) {
+        updateError = error;
+        if (useTemporaryFirstResolution) {
+          call2m(renderTarget, renderTarget['setSize'], fullCubeSize, fullCubeSize);
+          deps.setRenderSlot(app, '__mirrorCubeHighQualityPending', false);
+        }
+        throw error;
+      } finally {
+        if (typeof __WP_BUILD_PERF__ !== 'undefined' && __WP_BUILD_PERF__ === true) {
+          const endTime = deps.now();
+          const durationMs = Math.max(0, endTime - beforeUpdateMs);
+          const rendererAfter = readRendererCounters(renderer);
+          deps.recordMetric?.(
+            'mirror.cube.update',
+            durationMs,
+            {
+              startTime: beforeUpdateMs,
+              endTime,
+              updateNumber,
+              updateCountBefore: updateCount,
+              isFirstUpdate: updateCount === 0,
+              mirrorDirty: policy.mirrorDirty,
+              mirrorCount,
+              cubeSurfaceCount,
+              cubeRenderTargetSize: readCubeRenderTargetSize(renderTarget),
+              resolutionStage: useTemporaryFirstResolution ? 'temporary-first-128' : 'full',
+              motionActive: policy.motionActive,
+              frameBudgetMs: policy.frameBudgetMs,
+              elapsedBeforeStartMs,
+              remainingBudgetBeforeStartMs,
+              budgetOverrunMs: Math.max(0, durationMs - remainingBudgetBeforeStartMs),
+              rendererBefore,
+              rendererAfter,
+              rendererDelta: {
+                calls: rendererAfter.calls - rendererBefore.calls,
+                triangles: rendererAfter.triangles - rendererBefore.triangles,
+                programs: rendererAfter.programs - rendererBefore.programs,
+              },
+            },
+            updateError || undefined
+          );
+        }
+      }
       deps.setRenderSlot(app, '__mirrorLastUpdateMs', policy.nowMs);
       incrementRenderSlotCounter(deps, app, '__mirrorUpdateCount');
       deps.setRenderSlot(app, '__mirrorDirty', false);
@@ -143,6 +309,19 @@ export function runMirrorCubePass(args: {
       deps.setRenderSlot(app, '__mirrorPresenceKnown', true);
       deps.setRenderSlot(app, '__mirrorPresenceHasMirror', true);
       deps.setRenderSlot(app, '__mirrorPresenceCheckedAtMs', policy.nowMs);
+      setMirrorPresentationPending(deps, app, {
+        startTime: beforeUpdateMs,
+        updateNumber,
+        isFirstUpdate: updateCount === 0,
+        highQuality: !useTemporaryFirstResolution,
+        deferredBeforeCube: false,
+        cubeRenderTargetSize: readCubeRenderTargetSize(renderTarget),
+      });
+      if (useTemporaryFirstResolution) {
+        scheduleFullResolutionRefresh(app, deps, renderTarget, fullCubeSize);
+      } else if (deps.getRenderSlot<boolean>(app, '__mirrorCubeHighQualityPending') === true) {
+        deps.setRenderSlot(app, '__mirrorCubeHighQualityPending', false);
+      }
     } finally {
       if (shadowMap && typeof previousAutoUpdate !== 'undefined')
         shadowMap['autoUpdate'] = previousAutoUpdate;

@@ -3,6 +3,11 @@ import path from 'node:path';
 export const OBSERVABILITY_BUILD_MODES = Object.freeze(['client', 'perf', 'debug']);
 export const ADHESIVE_GLASS_WARMUP_MODES = Object.freeze(['startup', 'off', 'design-intent']);
 export const FOLDED_GEOMETRY_MODES = Object.freeze(['exact', 'segments-2', 'canonical-scale']);
+export const MIRROR_CUBE_EXPERIMENT_MODES = Object.freeze([
+  'baseline',
+  'defer-first-presentation',
+  'first-refresh-128',
+]);
 
 export function normalizeObservabilityBuildMode(value, fallback = 'client') {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -22,18 +27,29 @@ export function normalizeFoldedGeometryMode(value, fallback = 'canonical-scale')
   return FOLDED_GEOMETRY_MODES.includes(fallback) ? fallback : 'canonical-scale';
 }
 
+export function normalizeMirrorCubeExperimentMode(value, fallback = 'baseline') {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (MIRROR_CUBE_EXPERIMENT_MODES.includes(raw)) return raw;
+  return MIRROR_CUBE_EXPERIMENT_MODES.includes(fallback) ? fallback : 'baseline';
+}
+
 export function createObservabilityBuildDefines(buildMode, options = {}) {
   const mode = normalizeObservabilityBuildMode(buildMode);
   const adhesiveGlassWarmupMode =
     mode === 'perf' ? normalizeAdhesiveGlassWarmupMode(options.adhesiveGlassWarmupMode) : 'startup';
   const foldedGeometryMode =
     mode === 'perf' ? normalizeFoldedGeometryMode(options.foldedGeometryMode) : 'canonical-scale';
+  const mirrorCubeExperimentMode =
+    mode === 'perf'
+      ? normalizeMirrorCubeExperimentMode(options.mirrorCubeExperimentMode, 'defer-first-presentation')
+      : 'defer-first-presentation';
   return {
     __WP_BUILD_CLIENT__: JSON.stringify(mode === 'client'),
     __WP_BUILD_PERF__: JSON.stringify(mode === 'perf'),
     __WP_BUILD_DEBUG__: JSON.stringify(mode === 'debug'),
     __WP_ADHESIVE_GLASS_WARMUP_MODE__: JSON.stringify(adhesiveGlassWarmupMode),
     __WP_FOLDED_GEOMETRY_MODE__: JSON.stringify(foldedGeometryMode),
+    __WP_MIRROR_CUBE_EXPERIMENT__: JSON.stringify(mirrorCubeExperimentMode),
   };
 }
 
