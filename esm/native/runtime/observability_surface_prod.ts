@@ -97,6 +97,18 @@ export function buildPerfEntryOptionsFromActionResult(_result?: unknown): PerfEn
   return undefined;
 }
 
+export function beginBuildProgramLifecycleProbe(
+  _App: AppContainer,
+  _executionId: string,
+  _reason: string
+): void {}
+
+export function markBuildProgramLifecyclePreRender(_App: AppContainer, _executionId: string): void {}
+
+export function abortBuildProgramLifecycleProbe(_App: AppContainer, _executionId: string): void {}
+
+export function completeBuildProgramLifecycleAfterRender(_App: AppContainer): void {}
+
 export function markPerfPoint(
   _App: AppContainer,
   name: string,

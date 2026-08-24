@@ -1,4 +1,7 @@
-import type { UnknownRecord } from '../../../types/index.js';
+import type { AppContainer, UnknownRecord } from '../../../types/index.js';
+import { enqueueBuilderPerfMetric } from './builder_perf_metric_queue.js';
+import { ensureMaterialsRuntime, touchMaterialsCacheMeta } from './materials_factory_shared.js';
+import { ensureSchedulerState } from './scheduler_shared.js';
 import {
   BLUM_TANDEM_DRAWER_RUNNER_POLICY,
   ROLLER_DRAWER_RUNNER_POLICY,
@@ -27,6 +30,7 @@ type RunnerThreeLike = {
 };
 
 type AppendDrawerRunnerVisualsArgs = {
+  App: AppContainer;
   THREE: RunnerThreeLike;
   runnerType: unknown;
   fixedParent: RunnerObjectLike;
@@ -48,28 +52,105 @@ type RunnerMaterials = {
   blumLock: unknown;
 };
 
-const materialCache = new WeakMap<object, RunnerMaterials>();
+type RunnerMaterialRole = keyof RunnerMaterials;
 
-function recordPersistentMaterialCacheUse(material: unknown, cacheHit: boolean): void {
-  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
-  if (!material || typeof material !== 'object') return;
+type RunnerMaterialRoleProbe = {
+  returnedFromCache: number;
+  created: number;
+  returnedAfterDispose: number;
+  boundToMesh: number;
+  boundAfterDispose: number;
+};
+
+type RunnerMaterialProbe = {
+  executionId: string;
+  roles: Record<RunnerMaterialRole, RunnerMaterialRoleProbe>;
+};
+
+const RUNNER_MATERIAL_ROLES: RunnerMaterialRole[] = [
+  'rollerSteel',
+  'rollerWheel',
+  'blumSteel',
+  'blumInner',
+  'blumLock',
+];
+
+function createRunnerMaterialProbe(App: AppContainer): RunnerMaterialProbe | null {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return null;
+  const executionId = ensureSchedulerState(App).activeExecutionId;
+  if (!executionId) return null;
+  return {
+    executionId,
+    roles: Object.fromEntries(
+      RUNNER_MATERIAL_ROLES.map(role => [
+        role,
+        {
+          returnedFromCache: 0,
+          created: 0,
+          returnedAfterDispose: 0,
+          boundToMesh: 0,
+          boundAfterDispose: 0,
+        },
+      ])
+    ) as Record<RunnerMaterialRole, RunnerMaterialRoleProbe>,
+  };
+}
+
+function readMaterialUserData(material: unknown): UnknownRecord | null {
+  if (!material || typeof material !== 'object') return null;
   const rec = material as UnknownRecord;
   const userData = rec.userData && typeof rec.userData === 'object' ? (rec.userData as UnknownRecord) : {};
+  rec.userData = userData;
+  return userData;
+}
+
+function recordPersistentMaterialCacheUse(
+  material: unknown,
+  role: RunnerMaterialRole,
+  cacheHit: boolean,
+  probe: RunnerMaterialProbe | null
+): void {
+  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  const userData = readMaterialUserData(material);
+  if (!userData) return;
   userData.__wpPerfPersistentCacheOwner = 'drawer-runner';
+  userData.__wpDrawerRunnerMaterialRole = role;
+  const roleProbe = probe?.roles[role];
   if (cacheHit) {
+    if (roleProbe) roleProbe.returnedFromCache += 1;
     userData.__wpPerfPersistentCacheHitCount = (Number(userData.__wpPerfPersistentCacheHitCount) || 0) + 1;
     if (userData.__wpPerfDisposedByCleanGroup === true) {
+      if (roleProbe) roleProbe.returnedAfterDispose += 1;
       userData.__wpPerfReturnedAfterDisposeCount =
         (Number(userData.__wpPerfReturnedAfterDisposeCount) || 0) + 1;
     }
+  } else if (roleProbe) {
+    roleProbe.created += 1;
   }
-  rec.userData = userData;
 }
 
-function recordRunnerMaterialCacheUse(materials: RunnerMaterials, cacheHit: boolean): void {
-  for (const material of Object.values(materials)) {
-    recordPersistentMaterialCacheUse(material, cacheHit);
-  }
+function recordRunnerMaterialBinding(material: unknown, probe: RunnerMaterialProbe | null): void {
+  const userData = readMaterialUserData(material);
+  const role = userData?.__wpDrawerRunnerMaterialRole;
+  if (!userData || typeof role !== 'string' || !RUNNER_MATERIAL_ROLES.includes(role as RunnerMaterialRole))
+    return;
+  if (!probe) return;
+  const roleProbe = probe.roles[role as RunnerMaterialRole];
+  roleProbe.boundToMesh += 1;
+  if (userData?.__wpPerfDisposedByCleanGroup === true) roleProbe.boundAfterDispose += 1;
+}
+
+function publishRunnerMaterialProbe(App: AppContainer, probe: RunnerMaterialProbe | null): void {
+  if (!probe) return;
+  enqueueBuilderPerfMetric(App, {
+    name: 'builder.drawer-runner.material-lifetime',
+    metricValue: 1,
+    metricUnit: 'count',
+    detail: {
+      executionId: probe.executionId,
+      roles: probe.roles,
+    },
+  });
 }
 
 // Drawer-runner finishes are render-only hardware policy owned by the builder layer.
@@ -78,29 +159,54 @@ const BLUM_FIXED_RUNNER_FINISH = { color: 0xe5e9ef, roughness: 0.2, metalness: 0
 const BLUM_MOVING_RUNNER_FINISH = { color: 0xd8dde4, roughness: 0.24, metalness: 0.32 } as const;
 const BLUM_LOCKING_DEVICE_FINISH = { color: 0xb8c0c8, roughness: 0.3, metalness: 0.32 } as const;
 
-function getRunnerMaterials(THREE: RunnerThreeLike): RunnerMaterials | null {
+const RUNNER_MATERIAL_DEFINITIONS: Record<RunnerMaterialRole, UnknownRecord> = {
+  // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
+  rollerSteel: { color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 },
+  rollerWheel: { color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 },
+  // Keep the moving member subtly distinct for depth, while the front locking
+  // device is deliberately a slightly darker nickel instead of the old orange.
+  blumSteel: BLUM_FIXED_RUNNER_FINISH,
+  blumInner: BLUM_MOVING_RUNNER_FINISH,
+  blumLock: BLUM_LOCKING_DEVICE_FINISH,
+};
+
+const RUNNER_MATERIAL_CACHE_KEYS: Record<RunnerMaterialRole, string> = {
+  rollerSteel: 'drawer-runner:roller-steel:v1',
+  rollerWheel: 'drawer-runner:roller-wheel:v1',
+  blumSteel: 'drawer-runner:blum-steel:v1',
+  blumInner: 'drawer-runner:blum-inner:v1',
+  blumLock: 'drawer-runner:blum-lock:v1',
+};
+
+function getRunnerMaterials(
+  App: AppContainer,
+  THREE: RunnerThreeLike,
+  probe: RunnerMaterialProbe | null
+): RunnerMaterials | null {
   const Material = THREE.MeshStandardMaterial;
   if (typeof Material !== 'function') return null;
-  const cacheKey = THREE as unknown as object;
-  const cached = materialCache.get(cacheKey);
-  if (cached) {
-    recordRunnerMaterialCacheUse(cached, true);
-    return cached;
-  }
-
-  const materials: RunnerMaterials = {
-    // Powder-coated roller runners are commonly white; the wheels are nylon/plastic.
-    rollerSteel: new Material({ color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 }),
-    rollerWheel: new Material({ color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 }),
-    // Keep the moving member subtly distinct for depth, while the front locking
-    // device is deliberately a slightly darker nickel instead of the old orange.
-    blumSteel: new Material(BLUM_FIXED_RUNNER_FINISH),
-    blumInner: new Material(BLUM_MOVING_RUNNER_FINISH),
-    blumLock: new Material(BLUM_LOCKING_DEVICE_FINISH),
+  const { renderCache, renderMeta } = ensureMaterialsRuntime(App);
+  const materialCache = renderCache.materialCache;
+  const materialMeta = renderMeta.material;
+  const resolve = (role: RunnerMaterialRole): unknown => {
+    const cacheKey = RUNNER_MATERIAL_CACHE_KEYS[role];
+    let material = materialCache.get(cacheKey);
+    const cacheHit = !!material;
+    if (!material) {
+      material = new Material(RUNNER_MATERIAL_DEFINITIONS[role]);
+      materialCache.set(cacheKey, material);
+    }
+    const userData = readMaterialUserData(material);
+    if (userData) {
+      userData.isCached = true;
+      userData.__wpDrawerRunnerMaterialRole = role;
+      userData.__wpDrawerRunnerMaterialCacheKey = cacheKey;
+    }
+    touchMaterialsCacheMeta(App, materialMeta, cacheKey);
+    recordPersistentMaterialCacheUse(material, role, cacheHit, probe);
+    return material;
   };
-  recordRunnerMaterialCacheUse(materials, false);
-  materialCache.set(cacheKey, materials);
-  return materials;
+  return Object.fromEntries(RUNNER_MATERIAL_ROLES.map(role => [role, resolve(role)])) as RunnerMaterials;
 }
 
 function markHardware(obj: RunnerObjectLike, ownerPartId: string, role: string): void {
@@ -126,7 +232,9 @@ function addBox(args: {
   position: [number, number, number];
   ownerPartId: string;
   role: string;
+  probe: RunnerMaterialProbe | null;
 }): RunnerObjectLike {
+  recordRunnerMaterialBinding(args.material, args.probe);
   const mesh = new args.THREE.Mesh(new args.THREE.BoxGeometry(...args.size), args.material);
   mesh.position?.set?.(...args.position);
   markHardware(mesh, args.ownerPartId, args.role);
@@ -143,12 +251,14 @@ function addWheel(args: {
   position: [number, number, number];
   ownerPartId: string;
   role: string;
+  probe: RunnerMaterialProbe | null;
 }): RunnerObjectLike | null {
   const CylinderGeometry = args.THREE.CylinderGeometry;
   // Runtime THREE always provides CylinderGeometry. Lightweight/headless render
   // adapters may intentionally expose only BoxGeometry; rails should still render
   // instead of making unrelated drawer rendering fail because a wheel primitive is absent.
   if (typeof CylinderGeometry !== 'function') return null;
+  recordRunnerMaterialBinding(args.material, args.probe);
   const wheel = new args.THREE.Mesh(
     new CylinderGeometry(args.radius, args.radius, args.width, 20),
     args.material
@@ -165,7 +275,11 @@ function resolveRunnerLength(depthM: number, endInsetM: number, minLengthM: numb
   return Math.min(depthM, Math.max(minLengthM, depthM - endInsetM * 2));
 }
 
-function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials: RunnerMaterials): void {
+function appendRollerRunnerVisuals(
+  args: AppendDrawerRunnerVisualsArgs,
+  materials: RunnerMaterials,
+  probe: RunnerMaterialProbe | null
+): void {
   const policy = ROLLER_DRAWER_RUNNER_POLICY;
   const length = resolveRunnerLength(args.drawerDepthM, policy.endInsetM, policy.minVisualLengthM);
   if (!(length > 0)) return;
@@ -192,6 +306,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     const movingFlangeX = side * (args.drawerWidthM / 2 + movingFlangeW / 2);
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.movingParent,
       material: materials.rollerSteel,
       size: [webT, policy.profileHeightM, length],
@@ -201,6 +316,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     });
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.movingParent,
       material: materials.rollerSteel,
       size: [movingFlangeW, flangeT, length],
@@ -217,6 +333,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     const fixedFlangeLocalX = side * (args.mountingWidthM / 2 - fixedFlangeW / 2);
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.rollerSteel,
       size: [webT, policy.profileHeightM, length],
@@ -226,6 +343,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     });
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.rollerSteel,
       size: [fixedFlangeW, flangeT, length],
@@ -239,6 +357,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     });
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.rollerSteel,
       size: [fixedFlangeW, flangeT, length],
@@ -256,6 +375,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     const wheelX = side * ((args.drawerWidthM + args.mountingWidthM) / 4);
     addWheel({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.rollerWheel,
       radius: policy.visualWheelRadiusM,
@@ -266,6 +386,7 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
     });
     addWheel({
       THREE: args.THREE,
+      probe,
       parent: args.movingParent,
       material: materials.rollerWheel,
       radius: policy.visualWheelRadiusM,
@@ -277,7 +398,11 @@ function appendRollerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, material
   }
 }
 
-function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials: RunnerMaterials): void {
+function appendBlumRunnerVisuals(
+  args: AppendDrawerRunnerVisualsArgs,
+  materials: RunnerMaterials,
+  probe: RunnerMaterialProbe | null
+): void {
   const policy = BLUM_TANDEM_DRAWER_RUNNER_POLICY;
   const nominalLength = Math.min(
     policy.nominalLengthMaxM,
@@ -342,6 +467,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     // Fixed cabinet-mounted body of the concealed runner.
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.blumSteel,
       size: [fixedRailWidth, policy.visualRailHeightM, length],
@@ -351,6 +477,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     });
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.fixedParent,
       material: materials.blumSteel,
       size: [fixedWallWebThickness, fixedWallRiseHeight, length],
@@ -362,6 +489,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     // Telescoping member that travels with the drawer.
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.movingParent,
       material: materials.blumInner,
       size: [movingRailWidth, policy.visualInnerRailHeightM, length * 0.9],
@@ -373,6 +501,7 @@ function appendBlumRunnerVisuals(args: AppendDrawerRunnerVisualsArgs, materials:
     // TANDEM locking device: left/right, directly below the front of the drawer.
     addBox({
       THREE: args.THREE,
+      probe,
       parent: args.movingParent,
       material: materials.blumLock,
       size: [policy.visualLockWidthM, policy.visualLockHeightM, policy.visualLockDepthM],
@@ -398,9 +527,11 @@ export function appendDrawerRunnerVisuals(args: AppendDrawerRunnerVisualsArgs): 
   ) {
     return;
   }
-  const materials = getRunnerMaterials(args.THREE);
+  const probe = createRunnerMaterialProbe(args.App);
+  const materials = getRunnerMaterials(args.App, args.THREE, probe);
   if (!materials) return;
   const runnerType = normalizeDrawerRunnerType(args.runnerType);
-  if (runnerType === 'blum') appendBlumRunnerVisuals(args, materials);
-  else appendRollerRunnerVisuals(args, materials);
+  if (runnerType === 'blum') appendBlumRunnerVisuals(args, materials, probe);
+  else appendRollerRunnerVisuals(args, materials, probe);
+  publishRunnerMaterialProbe(args.App, probe);
 }

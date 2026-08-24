@@ -1,4 +1,9 @@
-import { getBrowserTimers, recordPerfMetric, requestIdleCallbackMaybe } from '../runtime/api.js';
+import {
+  completeBuildProgramLifecycleAfterRender,
+  getBrowserTimers,
+  recordPerfMetric,
+  requestIdleCallbackMaybe,
+} from '../runtime/api.js';
 import {
   getAnimateFn,
   getCamera,
@@ -317,6 +322,7 @@ export function createInstalledRenderAnimate(
           } else {
             call2m(renderer, renderer['render'], scene0, camera0);
           }
+          completeBuildProgramLifecycleAfterRender(__perfApp);
         }
       }
 

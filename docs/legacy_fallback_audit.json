@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T13:15:42.419Z",
+  "generatedAt": "2026-08-24T18:03:53.072Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -3121,14 +3121,14 @@
     },
     {
       "file": "esm/native/runtime/api.ts",
-      "line": 259,
+      "line": 263,
       "term": "compatibility",
       "category": "domain-default",
       "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"
     },
     {
       "file": "esm/native/runtime/api.ts",
-      "line": 259,
+      "line": 263,
       "term": "chest_mode_dimensions_compatibility",
       "category": "domain-default",
       "text": "export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';"

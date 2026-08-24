@@ -7,8 +7,11 @@ import type {
 import { installDebugConsoleSurface } from './debug_console_surface.js';
 import { isDebugObservabilityBuild, isPerfObservabilityBuild } from './observability_build_mode.js';
 import {
+  abortBuildProgramLifecycleProbe,
+  beginBuildProgramLifecycleProbe,
   buildPerfEntryOptionsFromActionResult,
   clearPerfEntries,
+  completeBuildProgramLifecycleAfterRender,
   createPerfConsoleSurface,
   endPerfSpan,
   getBuildRuntimeDebugBudget,
@@ -26,6 +29,7 @@ import {
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
   markPerfPoint,
+  markBuildProgramLifecyclePreRender,
   markPerfRenderSettle,
   recordPerfMetric,
   runPerfAction,
@@ -36,8 +40,11 @@ import {
 } from './perf_runtime_surface.js';
 
 export {
+  abortBuildProgramLifecycleProbe,
+  beginBuildProgramLifecycleProbe,
   buildPerfEntryOptionsFromActionResult,
   clearPerfEntries,
+  completeBuildProgramLifecycleAfterRender,
   createPerfConsoleSurface,
   endPerfSpan,
   getBuildRuntimeDebugBudget,
@@ -55,6 +62,7 @@ export {
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
   markPerfPoint,
+  markBuildProgramLifecyclePreRender,
   markPerfRenderSettle,
   recordPerfMetric,
   runPerfAction,

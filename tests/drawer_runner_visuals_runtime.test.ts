@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { appendDrawerRunnerVisuals } from '../esm/native/builder/drawer_runner_visuals.ts';
+import { pruneCachesSafe } from '../esm/native/platform/cache_pruning_runtime.ts';
+import { cleanGroup } from '../esm/native/platform/three_cleanup.ts';
 import { readConfigScalarOrDefault } from '../esm/native/runtime/config_selectors.ts';
 import {
   BLUM_TANDEM_DRAWER_RUNNER_POLICY,
@@ -35,7 +37,13 @@ class FakeCylinderGeometry {
 }
 
 class FakeMaterial {
+  userData: Record<string, unknown> = {};
+  disposeCount = 0;
   constructor(public params: Record<string, unknown>) {}
+
+  dispose(): void {
+    this.disposeCount += 1;
+  }
 }
 
 class FakeMesh {
@@ -68,6 +76,11 @@ class FakeParent {
   add(obj: FakeMesh): void {
     this.children.push(obj);
   }
+
+  remove(obj: FakeMesh): void {
+    const index = this.children.indexOf(obj);
+    if (index >= 0) this.children.splice(index, 1);
+  }
 }
 
 const FakeTHREE = {
@@ -76,6 +89,16 @@ const FakeTHREE = {
   CylinderGeometry: FakeCylinderGeometry,
   MeshStandardMaterial: FakeMaterial,
 };
+
+function createFakeApp(): Record<string, unknown> {
+  return {
+    services: { builder: { scheduler: { activeExecutionId: null } } },
+    render: { cache: {}, meta: {} },
+    platform: { util: {} },
+  };
+}
+
+const fakeApp = createFakeApp();
 
 function roles(parent: FakeParent): string[] {
   return parent.children.map(child => String(child.userData.__wpDrawerRunnerRole));
@@ -94,13 +117,22 @@ function assertHardwareMetadata(parent: FakeParent, ownerPartId: string): void {
   }
 }
 
-function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number; mountingWidth?: number } = {}): {
+function append(
+  args: {
+    App?: Record<string, unknown>;
+    type?: unknown;
+    depth?: number;
+    boxOffsetZ?: number;
+    mountingWidth?: number;
+  } = {}
+): {
   fixed: FakeParent;
   moving: FakeParent;
 } {
   const fixed = new FakeParent();
   const moving = new FakeParent();
   appendDrawerRunnerVisuals({
+    App: (args.App || fakeApp) as never,
     THREE: FakeTHREE,
     runnerType: args.type,
     fixedParent: fixed,
@@ -114,6 +146,18 @@ function append(args: { type?: unknown; depth?: number; boxOffsetZ?: number; mou
     ownerPartId: 'drawer:test',
   });
   return { fixed, moving };
+}
+
+function readMaterialCache(App: Record<string, unknown>): Map<string, FakeMaterial> {
+  return (App.render as { cache: { materialCache: Map<string, FakeMaterial> } }).cache.materialCache;
+}
+
+function findRunnerMaterial(parent: FakeParent, role: string): FakeMaterial {
+  const material = parent.children
+    .map(child => child.material)
+    .find(item => item.userData.__wpDrawerRunnerMaterialRole === role);
+  assert.ok(material, `expected Drawer Runner material role ${role}`);
+  return material;
 }
 
 test('[drawer-runner-visuals-runtime] roller is the canonical default', () => {
@@ -513,4 +557,98 @@ test('[drawer-runner-visuals-runtime] simplified runner geometry never exceeds a
       );
     }
   }
+});
+
+test('[drawer-runner-visuals-runtime] canonical material lifetime is App-owned and isolated across Apps', () => {
+  const AppA = createFakeApp();
+  const AppB = createFakeApp();
+  const first = append({ App: AppA, type: 'roller' });
+  const second = append({ App: AppA, type: 'roller' });
+  const otherApp = append({ App: AppB, type: 'roller' });
+
+  const firstSteel = findRunnerMaterial(first.fixed, 'rollerSteel');
+  assert.equal(findRunnerMaterial(second.fixed, 'rollerSteel'), firstSteel);
+  assert.notEqual(findRunnerMaterial(otherApp.fixed, 'rollerSteel'), firstSteel);
+  assert.equal(firstSteel.userData.isCached, true);
+  assert.equal(firstSteel.userData.__keepMaterial, undefined);
+});
+
+test('[drawer-runner-visuals-runtime] all five canonical material roles preserve their exact finishes', () => {
+  const App = createFakeApp();
+  append({ App, type: 'roller' });
+  append({ App, type: 'blum' });
+  const byRole = new Map<string, FakeMaterial>();
+  for (const material of readMaterialCache(App).values()) {
+    byRole.set(String(material.userData.__wpDrawerRunnerMaterialRole), material);
+  }
+  assert.deepEqual(Object.fromEntries(Array.from(byRole, ([role, material]) => [role, material.params])), {
+    rollerSteel: { color: 0xf2f2ee, roughness: 0.55, metalness: 0.25 },
+    rollerWheel: { color: 0xd7d7d2, roughness: 0.82, metalness: 0.0 },
+    blumSteel: { color: 0xe5e9ef, roughness: 0.2, metalness: 0.28 },
+    blumInner: { color: 0xd8dde4, roughness: 0.24, metalness: 0.32 },
+    blumLock: { color: 0xb8c0c8, roughness: 0.3, metalness: 0.32 },
+  });
+});
+
+test('[drawer-runner-visuals-runtime] cleanGroup never disposes cached Runner materials or poisons rebuild reuse', () => {
+  const App = createFakeApp();
+  const first = append({ App, type: 'roller' });
+  const steel = findRunnerMaterial(first.fixed, 'rollerSteel');
+  const wheel = findRunnerMaterial(first.fixed, 'rollerWheel');
+
+  cleanGroup(first.fixed);
+  cleanGroup(first.moving);
+  assert.equal(steel.disposeCount, 0);
+  assert.equal(wheel.disposeCount, 0);
+
+  const rebuilt = append({ App, type: 'roller' });
+  assert.equal(findRunnerMaterial(rebuilt.fixed, 'rollerSteel'), steel);
+  assert.equal(findRunnerMaterial(rebuilt.fixed, 'rollerWheel'), wheel);
+  assert.equal(steel.disposeCount, 0);
+  assert.equal(wheel.disposeCount, 0);
+});
+
+test('[drawer-runner-visuals-runtime] canonical pruning evicts unused Runner materials exactly once', () => {
+  const App = createFakeApp();
+  const emitted = append({ App, type: 'roller' });
+  const steel = findRunnerMaterial(emitted.fixed, 'rollerSteel');
+  const cache = readMaterialCache(App);
+  (App.platform as { util: Record<string, unknown> }).util.cacheLimits = {
+    textures: 0,
+    materials: 0,
+    dimLabels: 0,
+    edges: 0,
+    geometries: 0,
+  };
+  pruneCachesSafe(App as never, { traverse(): void {} });
+
+  assert.equal(cache.has(String(steel.userData.__wpDrawerRunnerMaterialCacheKey)), false);
+  assert.equal(steel.disposeCount, 1);
+  pruneCachesSafe(App as never, { traverse(): void {} });
+  assert.equal(steel.disposeCount, 1);
+});
+
+test('[drawer-runner-visuals-runtime] canonical pruning retains a Runner material that is live in scene', () => {
+  const App = createFakeApp();
+  const emitted = append({ App, type: 'roller' });
+  const liveMesh = emitted.fixed.children[0];
+  assert.ok(liveMesh);
+  const liveMaterial = liveMesh.material;
+  const liveKey = String(liveMaterial.userData.__wpDrawerRunnerMaterialCacheKey);
+  const cache = readMaterialCache(App);
+  (App.platform as { util: Record<string, unknown> }).util.cacheLimits = {
+    textures: 0,
+    materials: 0,
+    dimLabels: 0,
+    edges: 0,
+    geometries: 0,
+  };
+  pruneCachesSafe(App as never, {
+    traverse(visitor: (node: FakeMesh) => void): void {
+      visitor(liveMesh);
+    },
+  });
+
+  assert.equal(cache.get(liveKey), liveMaterial);
+  assert.equal(liveMaterial.disposeCount, 0);
 });

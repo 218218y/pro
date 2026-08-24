@@ -356,7 +356,7 @@ function readLayoutProgramLifecycle(sample, stepName) {
   const segments = suffix.split('.');
   const scenario = segments[0] || '';
   const phase = segments.slice(1).join('.');
-  const operation = phase === 'first-render' ? 'load' : phase === 'reload-first-render' ? 'reload' : null;
+  const operation = phase === 'load' ? 'load' : phase === 'reload' ? 'reload' : null;
   if (!operation) return null;
   return (
     Array.isArray(sample.layoutScenarioResourceProfiles) ? sample.layoutScenarioResourceProfiles : []
@@ -396,6 +396,7 @@ function summarizeLayoutScenarioPhases(samples) {
       programsReturned: createStableSampleSummary(
         samples.map(sample => readLayoutProgramLifecycle(sample, name)?.disappearedAndReturned?.length || 0)
       ),
+      programLifecycleByRun: samples.map(sample => readLayoutProgramLifecycle(sample, name) || null),
     }))
     .sort((left, right) => right.longTaskMaxMs.median - left.longTaskMaxMs.median);
 }
@@ -435,6 +436,56 @@ function summarizeMaterialLifecycle(samples) {
       ),
     }))
     .sort((left, right) => right.disposedDuringRebuild.median - left.disposedDuringRebuild.median);
+}
+
+function readDrawerRunnerRoleCounters(sample, scenario, operation, role) {
+  const profile = (
+    Array.isArray(sample.layoutScenarioResourceProfiles) ? sample.layoutScenarioResourceProfiles : []
+  ).find(item => item?.scenario === scenario && item?.operation === operation);
+  return profile?.drawerRunnerMaterialLifetime?.roles?.[role] || {};
+}
+
+function summarizeDrawerRunnerMaterialLifecycle(samples) {
+  const keys = new Set(
+    samples.flatMap(sample =>
+      (Array.isArray(sample.layoutScenarioResourceProfiles)
+        ? sample.layoutScenarioResourceProfiles
+        : []
+      ).flatMap(profile =>
+        Object.keys(profile?.drawerRunnerMaterialLifetime?.roles || {}).map(role =>
+          JSON.stringify([profile?.scenario || 'unknown', profile?.operation || 'unknown', role])
+        )
+      )
+    )
+  );
+  return Array.from(keys)
+    .map(key => {
+      const [scenario, operation, role] = JSON.parse(key);
+      const summarize = counter =>
+        createStableSampleSummary(
+          samples.map(
+            sample => Number(readDrawerRunnerRoleCounters(sample, scenario, operation, role)?.[counter]) || 0
+          )
+        );
+      return {
+        scenario,
+        operation,
+        role,
+        returnedFromCache: summarize('returnedFromCache'),
+        created: summarize('created'),
+        returnedAfterDispose: summarize('returnedAfterDispose'),
+        boundToMesh: summarize('boundToMesh'),
+        boundAfterDispose: summarize('boundAfterDispose'),
+        executionIdsByRun: samples.map(sample => {
+          const profile = (
+            Array.isArray(sample.layoutScenarioResourceProfiles) ? sample.layoutScenarioResourceProfiles : []
+          ).find(item => item?.scenario === scenario && item?.operation === operation);
+          return profile?.drawerRunnerMaterialLifetime?.executionIds || [];
+        }),
+      };
+    })
+    .filter(item => item.created.max > 0 || item.returnedFromCache.max > 0 || item.boundToMesh.max > 0)
+    .sort((left, right) => right.boundAfterDispose.median - left.boundAfterDispose.median);
 }
 
 function formatSummary(summary) {
@@ -551,6 +602,18 @@ function renderMarkdown(report) {
   for (const item of report.materialLifecycle) {
     lines.push(
       `| ${item.owner} | ${formatSummary(item.hits)} | ${formatSummary(item.disposedDuringRebuild)} | ${formatSummary(item.reusedAfterDispose)} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Drawer Runner bound-material lifetime',
+    '',
+    '| Scenario | Operation | Material role | Returned | Created | Returned after dispose | Bound meshes | Bound after dispose | Execution IDs by run |',
+    '|---|---|---|---:|---:|---:|---:|---:|---|'
+  );
+  for (const item of report.drawerRunnerMaterialLifecycle) {
+    lines.push(
+      `| ${item.scenario} | ${item.operation} | ${item.role} | ${formatSummary(item.returnedFromCache)} | ${formatSummary(item.created)} | ${formatSummary(item.returnedAfterDispose)} | ${formatSummary(item.boundToMesh)} | ${formatSummary(item.boundAfterDispose)} | ${item.executionIdsByRun.map(ids => ids.join(',') || '-').join(' / ')} |`
     );
   }
   lines.push(
@@ -723,6 +786,7 @@ const report = {
   authoringIsolation: summarizeAuthoringIsolation(samples),
   layoutScenarioPhases: summarizeLayoutScenarioPhases(samples),
   materialLifecycle: summarizeMaterialLifecycle(samples),
+  drawerRunnerMaterialLifecycle: summarizeDrawerRunnerMaterialLifecycle(samples),
   longTaskRootCauses: samples
     .flatMap((sample, index) =>
       (Array.isArray(sample.longTaskRootCauseSummary) ? sample.longTaskRootCauseSummary : []).map(item => ({

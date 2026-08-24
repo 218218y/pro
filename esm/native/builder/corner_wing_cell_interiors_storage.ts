@@ -316,6 +316,7 @@ export function emitCornerWingExternalDrawers(
     dGroup.position.copy(closed);
 
     appendDrawerRunnerVisuals({
+      App: runtime.App,
       THREE: runtime.THREE,
       runnerType: readDrawerRunnerTypeFromConfig(runtime.__cfg),
       fixedParent: fixedRunnerHardware,

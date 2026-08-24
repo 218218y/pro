@@ -141,6 +141,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       intBox.position.copy(closedPos);
 
       appendDrawerRunnerVisuals({
+        App,
         THREE,
         runnerType: cfg.drawerRunnerType,
         fixedParent: fixedRunnerHardware,

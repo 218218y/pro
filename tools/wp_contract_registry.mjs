@@ -213,13 +213,17 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     publicFacade: 'esm/native/runtime/perf_runtime_surface.ts',
     privateOwners: [
       'esm/native/runtime/perf_runtime_core.ts',
+      'esm/native/runtime/perf_runtime_build_program_lifecycle.ts',
       'esm/native/runtime/perf_runtime_state_fingerprint.ts',
       'esm/native/runtime/perf_runtime_debug_surfaces.ts',
       'esm/native/runtime/perf_runtime_surface_types.ts',
       'esm/native/runtime/perf_runtime_browser_observer.ts',
     ],
     allowedImporters: ['esm/native/runtime/render_access_state_runtime.ts'],
-    behaviorTests: ['tests/perf_runtime_surface_runtime.test.ts'],
+    behaviorTests: [
+      'tests/perf_runtime_surface_runtime.test.ts',
+      'tests/perf_runtime_build_program_lifecycle.test.ts',
+    ],
     justification:
       'Stable runtime instrumentation surface over environment-specific collectors; the low-level render state owner may use the perf core only behind the compile-time perf flag to avoid a facade cycle through builder debug surfaces.',
   }),

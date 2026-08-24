@@ -1214,6 +1214,68 @@ function createProgramLifecycleProbe(beforeLoad, afterBuild, afterFirstRender) {
   };
 }
 
+async function readBuildExecutionProbeEntries(page) {
+  return await page.evaluate(() => ({
+    programLifecycle: window.__WP_PERF__?.getEntries?.('builder.program-lifecycle') || [],
+    drawerRunnerMaterials: window.__WP_PERF__?.getEntries?.('builder.drawer-runner.material-lifetime') || [],
+  }));
+}
+
+function summarizeDrawerRunnerMaterialEntries(entries) {
+  const roles = {};
+  const executionIds = new Set();
+  for (const entry of Array.isArray(entries) ? entries : []) {
+    const executionId = String(entry?.detail?.executionId || '');
+    if (executionId) executionIds.add(executionId);
+    const entryRoles = entry?.detail?.roles;
+    if (!entryRoles || typeof entryRoles !== 'object') continue;
+    for (const [role, counters] of Object.entries(entryRoles)) {
+      const target = roles[role] || {
+        returnedFromCache: 0,
+        created: 0,
+        returnedAfterDispose: 0,
+        boundToMesh: 0,
+        boundAfterDispose: 0,
+      };
+      for (const key of Object.keys(target)) target[key] += Number(counters?.[key]) || 0;
+      roles[role] = target;
+    }
+  }
+  return { executionIds: Array.from(executionIds), roles };
+}
+
+function createBuildExecutionOperationProbe(before, after) {
+  const beforeProgramIds = new Set(
+    (Array.isArray(before?.programLifecycle) ? before.programLifecycle : []).map(entry => entry?.id)
+  );
+  const beforeMaterialIds = new Set(
+    (Array.isArray(before?.drawerRunnerMaterials) ? before.drawerRunnerMaterials : []).map(entry => entry?.id)
+  );
+  const programEntries = (Array.isArray(after?.programLifecycle) ? after.programLifecycle : []).filter(
+    entry => !beforeProgramIds.has(entry?.id)
+  );
+  const materialEntries = (
+    Array.isArray(after?.drawerRunnerMaterials) ? after.drawerRunnerMaterials : []
+  ).filter(entry => !beforeMaterialIds.has(entry?.id));
+  const programDetail = programEntries.at(-1)?.detail || null;
+  return {
+    programLifecycle: programDetail
+      ? {
+          executionId: String(programDetail.executionId || ''),
+          reason: String(programDetail.reason || ''),
+          ...createProgramLifecycleProbe(programDetail.p0, programDetail.p1, programDetail.p2),
+          p0: programDetail.p0 || null,
+          p1: programDetail.p1 || null,
+          p2: programDetail.p2 || null,
+          supersededExecutionIds: Array.isArray(programDetail.supersededExecutionIds)
+            ? programDetail.supersededExecutionIds
+            : [],
+        }
+      : null,
+    drawerRunnerMaterialLifetime: summarizeDrawerRunnerMaterialEntries(materialEntries),
+  };
+}
+
 function createAdhesiveGlassProgramProbe(result) {
   const entries = Array.isArray(result?.windowPerfEntries) ? result.windowPerfEntries : [];
   const readWarmupSnapshot = name => {
@@ -3785,7 +3847,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             journey: USER_JOURNEYS.cabinetDoorDrawerAuthoring,
             tags: ['doors', 'drawers', 'authoring', 'matrix', scenario, phase],
           });
-          const beforeLoadPrograms = await readRendererProgramSnapshot(page);
+          const beforeLoadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const beforeLoadCleanup = await readRenderDebugStats(page);
           const scenarioLoadDetail = await withStep(
             result,
@@ -3799,7 +3861,6 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
               `Door/drawer layout scenario ${scenario} load failed: ${JSON.stringify(scenarioLoadDetail)}`
             );
           }
-          const afterLoadBuildPrograms = await readRendererProgramSnapshot(page);
           await withStep(
             result,
             page,
@@ -3807,16 +3868,17 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             () => waitForProjectFirstRender(page),
             phaseMeta('first-render')
           );
-          const afterLoadFirstRenderPrograms = await readRendererProgramSnapshot(page);
+          const afterLoadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const afterLoadCleanup = await readRenderDebugStats(page);
+          const loadExecutionProbe = createBuildExecutionOperationProbe(
+            beforeLoadExecutionProbe,
+            afterLoadExecutionProbe
+          );
           result.layoutScenarioResourceProfiles.push({
             scenario,
             operation: 'load',
-            programLifecycle: createProgramLifecycleProbe(
-              beforeLoadPrograms,
-              afterLoadBuildPrograms,
-              afterLoadFirstRenderPrograms
-            ),
+            programLifecycle: loadExecutionProbe.programLifecycle,
+            drawerRunnerMaterialLifetime: loadExecutionProbe.drawerRunnerMaterialLifetime,
             cleanup: createRenderCleanupDelta(beforeLoadCleanup, afterLoadCleanup),
           });
           await assertPerfStateFingerprintSubset(
@@ -3849,12 +3911,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           );
           await fillProjectNameViaActiveInput(page, `Door Drawer Layout Scenario ${scenario} ${Date.now()}`);
           const shouldTraceReload = traceLayoutDrawerStackHeavy && scenario === 'drawer-stack-heavy';
-          const beforeReloadPrograms = await readRendererProgramSnapshot(page);
+          const beforeReloadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const beforeReloadCleanup = await readRenderDebugStats(page);
           const layoutTraceSession = shouldTraceReload ? await startChromiumTrace(page) : null;
           let scenarioReloadDetail = null;
-          let afterReloadBuildPrograms = null;
-          let afterReloadFirstRenderPrograms = null;
+          let afterReloadExecutionProbe = null;
           try {
             scenarioReloadDetail = await withStep(
               result,
@@ -3868,7 +3929,6 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
                 `Door/drawer layout scenario ${scenario} reload failed: ${JSON.stringify(scenarioReloadDetail)}`
               );
             }
-            afterReloadBuildPrograms = await readRendererProgramSnapshot(page);
             await withStep(
               result,
               page,
@@ -3876,7 +3936,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
               () => waitForProjectFirstRender(page),
               phaseMeta('reload-first-render')
             );
-            afterReloadFirstRenderPrograms = await readRendererProgramSnapshot(page);
+            afterReloadExecutionProbe = await readBuildExecutionProbeEntries(page);
           } finally {
             if (layoutTraceSession) {
               await finishChromiumTrace(layoutTraceSession, layoutDrawerStackHeavyTracePath);
@@ -3886,14 +3946,15 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             }
           }
           const afterReloadCleanup = await readRenderDebugStats(page);
+          const reloadExecutionProbe = createBuildExecutionOperationProbe(
+            beforeReloadExecutionProbe,
+            afterReloadExecutionProbe
+          );
           result.layoutScenarioResourceProfiles.push({
             scenario,
             operation: 'reload',
-            programLifecycle: createProgramLifecycleProbe(
-              beforeReloadPrograms,
-              afterReloadBuildPrograms,
-              afterReloadFirstRenderPrograms
-            ),
+            programLifecycle: reloadExecutionProbe.programLifecycle,
+            drawerRunnerMaterialLifetime: reloadExecutionProbe.drawerRunnerMaterialLifetime,
             cleanup: createRenderCleanupDelta(beforeReloadCleanup, afterReloadCleanup),
           });
           await assertPerfStateFingerprintSubset(

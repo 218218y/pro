@@ -63,6 +63,13 @@ import { requestPerfRenderFrameSample } from './perf_runtime_frame_sampler.js';
 import { setDoorsOpenViaService } from './doors_access.js';
 import { triggerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
 
+export {
+  abortBuildProgramLifecycleProbe,
+  beginBuildProgramLifecycleProbe,
+  completeBuildProgramLifecycleAfterRender,
+  markBuildProgramLifecyclePreRender,
+} from './perf_runtime_build_program_lifecycle.js';
+
 export type { PerfActionOptions, PerfEntryOptions, PerfSpanOptions } from './perf_runtime_surface_types.js';
 export {
   buildPerfEntryOptionsFromActionResult,

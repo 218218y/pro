@@ -10,7 +10,17 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { assertApp, endPerfSpan, markPerfRenderSettle, reportError, startPerfSpan } from '../runtime/api.js';
+import {
+  abortBuildProgramLifecycleProbe,
+  assertApp,
+  beginBuildProgramLifecycleProbe,
+  endPerfSpan,
+  markBuildProgramLifecyclePreRender,
+  markPerfRenderSettle,
+  recordPerfMetric,
+  reportError,
+  startPerfSpan,
+} from '../runtime/api.js';
 import {
   ensureSchedulerState,
   normalizeSchedulerDeps,
@@ -50,6 +60,15 @@ import {
   createBuildDebugStats,
   summarizeBuildDebugBudget,
 } from './scheduler_debug_stats.js';
+import { drainBuilderPerfMetrics } from './builder_perf_metric_queue.js';
+
+function flushBuilderPerfMetrics(App: AppContainer): void {
+  for (const metric of drainBuilderPerfMetrics(App)) {
+    recordPerfMetric(App, metric.name, metric.metricValue, metric.metricUnit, {
+      detail: metric.detail,
+    });
+  }
+}
 
 function nextScheduleVersion(state: BuilderSchedulerStateInternalLike): number {
   const next = (typeof state.scheduleVersionSeq === 'number' ? state.scheduleVersionSeq : 0) + 1;
@@ -237,6 +256,7 @@ function executePendingBuild(
     phase: 'builder',
     detail: { reason: execReason, immediate, forceBuild, executionId },
   });
+  beginBuildProgramLifecycleProbe(App, executionId, execReason);
   const clearActiveExecution = () => {
     if (state.activeExecutionId === executionId) state.activeExecutionId = null;
   };
@@ -245,6 +265,8 @@ function executePendingBuild(
     if (isBuildThenableResult(result)) {
       return result.then(
         value => {
+          flushBuilderPerfMetrics(App);
+          markBuildProgramLifecyclePreRender(App, executionId);
           if (shouldMeasureBuildExecution) {
             recordBuildExecuteDuration(
               state,
@@ -261,6 +283,8 @@ function executePendingBuild(
           return value;
         },
         error => {
+          drainBuilderPerfMetrics(App);
+          abortBuildProgramLifecycleProbe(App, executionId);
           if (shouldMeasureBuildExecution) {
             recordBuildExecuteDuration(
               state,
@@ -277,6 +301,8 @@ function executePendingBuild(
         }
       );
     }
+    flushBuilderPerfMetrics(App);
+    markBuildProgramLifecyclePreRender(App, executionId);
     if (shouldMeasureBuildExecution) {
       recordBuildExecuteDuration(
         state,
@@ -292,6 +318,8 @@ function executePendingBuild(
     clearActiveExecution();
     return result;
   } catch (error) {
+    drainBuilderPerfMetrics(App);
+    abortBuildProgramLifecycleProbe(App, executionId);
     if (shouldMeasureBuildExecution) {
       recordBuildExecuteDuration(
         state,

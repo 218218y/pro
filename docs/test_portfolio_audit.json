@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T13:15:46.717Z",
+  "generatedAt": "2026-08-24T18:04:07.752Z",
   "totals": {
-    "tests": 1259,
-    "unitRunnerTests": 1250,
+    "tests": 1260,
+    "unitRunnerTests": 1251,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -25,7 +25,7 @@
     "integration": 475,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
-    "perf-smoke": 6
+    "perf-smoke": 7
   },
   "failures": {
     "missingTestRefs": [],
@@ -5749,6 +5749,10 @@
     {
       "file": "tests/paint_hover_topology_contract.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/perf_runtime_build_program_lifecycle.test.ts",
+      "category": "perf-smoke"
     },
     {
       "file": "tests/perf_runtime_surface_runtime.test.ts",

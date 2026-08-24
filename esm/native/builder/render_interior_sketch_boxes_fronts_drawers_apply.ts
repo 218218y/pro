@@ -68,6 +68,7 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
       const drawerBoxNode = addSketchBoxExternalDrawerBoxAndConnector(context, opPlan, groupNode);
       if (drawerBoxNode) {
         appendDrawerRunnerVisuals({
+          App: context.App,
           THREE: context.THREE,
           runnerType: readDrawerRunnerTypeFromConfig(context.input.cfgSnapshot),
           fixedParent: fixedRunnerHardware,

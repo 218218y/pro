@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-24T13:15:46.239Z
+Generated at: 2026-08-24T18:04:06.860Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -33,15 +33,15 @@ Generated at: 2026-08-24T13:15:46.239Z
 ## Ownership topology
 
 - Registered topology families: **42**
-- Private owners: **247**
-- Guarded private-owner import sites: **511**
+- Private owners: **248**
+- Guarded private-owner import sites: **513**
 - Identity facades: **132**
 - Explicitly inventoried identity facades: **111**
 
 ## Test portfolio
 
-- Classified test files: **1259**
-- Unit/runtime files: **1250**
+- Classified test files: **1260**
+- Unit/runtime files: **1251**
 - Playwright E2E files: **9**
 - Canonical contracts: **21**
 - Historical architecture proof files: **0**

@@ -245,8 +245,12 @@ export {
 } from './api_services_state_surface.js';
 
 export {
+  abortBuildProgramLifecycleProbe,
+  beginBuildProgramLifecycleProbe,
   buildPerfEntryOptionsFromActionResult,
+  completeBuildProgramLifecycleAfterRender,
   markPerfPoint,
+  markBuildProgramLifecyclePreRender,
   markPerfRenderSettle,
   recordPerfMetric,
   startPerfSpan,

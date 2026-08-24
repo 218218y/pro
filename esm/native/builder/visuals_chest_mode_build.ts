@@ -404,6 +404,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     drawerGroup.add(connMesh);
 
     appendDrawerRunnerVisuals({
+      App,
       THREE,
       runnerType: DEFAULT_DRAWER_RUNNER_TYPE,
       fixedParent: fixedRunnerHardware,

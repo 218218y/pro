@@ -253,6 +253,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       group.position.copy(closedPos);
 
       appendDrawerRunnerVisuals({
+        App,
         THREE,
         runnerType: cfg.drawerRunnerType,
         fixedParent: fixedRunnerHardware,
