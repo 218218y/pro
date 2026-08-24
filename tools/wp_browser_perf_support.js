@@ -2309,6 +2309,8 @@ function normalizeContributionInterval(entry) {
 
   if (entry.name === 'builder.execute' && entry.kind === 'phase') {
     owner = 'builder';
+  } else if (entry.name === 'mirror.direct-refresh' && entry.kind === 'phase') {
+    owner = 'render:mirror';
   } else if (entry.name === 'render.frame.total' && entry.kind === 'browser-metric') {
     owner = 'render';
     startTime = Number(detail.startTime);

@@ -3383,6 +3383,13 @@ test('browser perf support explains Long Tasks with exact builder, render, and s
         metricUnit: 'ms',
         detail: { startTime: 195, endTime: 200 },
       }),
+      perfEntry('mirror.direct-refresh', 10, 'ok', {
+        kind: 'phase',
+        browserSessionId: 'doc-1',
+        startTime: 260,
+        endTime: 270,
+        uxTotalMs: 10,
+      }),
       perfEntry('store.commit.slow', 0, 'ok', {
         kind: 'browser-metric',
         browserSessionId: 'doc-1',
@@ -3406,12 +3413,12 @@ test('browser perf support explains Long Tasks with exact builder, render, and s
   assert.equal(rows.length, 1);
   assert.equal(rows[0].builderContributionMs, 70);
   assert.equal(rows[0].renderContributionMs, 80);
-  assert.deepEqual(rows[0].renderPhaseContributionsMs, { motion: 5, renderer: 72 });
+  assert.deepEqual(rows[0].renderPhaseContributionsMs, { mirror: 10, motion: 5, renderer: 72 });
   assert.equal(rows[0].storeContributionMs, 20);
   assert.equal(rows[0].storeStepTotalMs, 34);
   assert.equal(rows[0].bootContributionMs, 25);
   assert.equal(rows[0].otherKnownContributionMs, 24);
-  assert.equal(rows[0].unattributedMs, 20);
+  assert.equal(rows[0].unattributedMs, 10);
 });
 
 test('browser perf support creates median, quartile, and MAD stable-run summaries', () => {

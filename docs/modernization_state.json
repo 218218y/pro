@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T20:49:51.737Z",
+  "generatedAt": "2026-08-24T08:13:30.344Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -27,7 +27,7 @@
   "ownership": {
     "registeredFamilies": 42,
     "privateOwners": 247,
-    "guardedImportSites": 510,
+    "guardedImportSites": 511,
     "identityFacades": 132,
     "explicitlyInventoriedIdentityFacades": 111
   },

@@ -335,6 +335,7 @@ test.describe('Playwright real user paths', () => {
     const seedProject = JSON.parse(await fs.readFile(seedProjectPath!, 'utf8')) as Record<string, unknown>;
     const { project: authoredProject, expectedFingerprint } =
       createCabinetDoorDrawerLayoutFixture(seedProject);
+    expect(authoredProject.doorSpecialMap).toEqual({});
     const authoredFixturePath = path.join(os.tmpdir(), `door-drawer-layout-${Date.now()}.json`);
     await fs.writeFile(authoredFixturePath, `${JSON.stringify(authoredProject, null, 2)}\n`, 'utf8');
 
@@ -381,6 +382,7 @@ test.describe('Playwright real user paths', () => {
     const authoredScenarios = createCabinetDoorDrawerLayoutScenarioMatrix(seedProject);
 
     for (const { scenario, project: authoredProject, expectedFingerprint } of authoredScenarios) {
+      expect(authoredProject.doorSpecialMap).toEqual({});
       const authoredFixturePath = path.join(os.tmpdir(), `door-drawer-layout-${scenario}-${Date.now()}.json`);
       await fs.writeFile(authoredFixturePath, `${JSON.stringify(authoredProject, null, 2)}\n`, 'utf8');
 

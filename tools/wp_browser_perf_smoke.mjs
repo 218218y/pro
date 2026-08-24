@@ -73,6 +73,7 @@ const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
 const traceHeaderSketch = process.argv.includes('--trace-header-sketch');
 const profileFoldedContents = process.argv.includes('--profile-folded-contents');
 const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
+const profileDirectMirrorRefresh = process.argv.includes('--profile-direct-mirror-refresh');
 const adhesiveGlassWarmupMode = ['startup', 'off', 'design-intent'].includes(
   String(process.env.WP_PERF_ADHESIVE_GLASS_WARMUP_MODE || '')
     .trim()
@@ -158,6 +159,9 @@ const USER_JOURNEYS = Object.freeze({
   projectRoundtrip: 'project-roundtrip',
   projectRecoveryProveout: 'project-recovery-proveout',
   adhesiveGlassFirstUse: 'adhesive-glass-first-use',
+  reflectiveAuthoring: 'reflective-authoring',
+  journeyIsolation: 'journey-isolation',
+  mirrorDirectRefreshAudit: 'mirror-direct-refresh-audit',
 });
 
 function ensureDir(filePath) {
@@ -771,6 +775,21 @@ function createAdhesiveGlassFirstUseSummary(result, stepName) {
   };
 }
 
+const AUTHORING_ISOLATION_ROOT_CAUSE_STEPS = new Set([
+  'cabinet-door-drawer-authoring.configure',
+  'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip',
+  'cabinet-door-drawer-authoring.reflective.representative-door-style-edit',
+  'adhesive-glass.first-use.black.apply-and-render',
+]);
+
+function assignLongTaskRootCauseSummaries(result) {
+  const allRootCauses = createLongTaskRootCauseSummary(result, 1000);
+  result.longTaskRootCauseSummary = allRootCauses.slice(0, 5);
+  result.authoringIsolationRootCauseSummary = allRootCauses.filter(item =>
+    AUTHORING_ISOLATION_ROOT_CAUSE_STEPS.has(String(item?.step || ''))
+  );
+}
+
 function createBuilderExecutionRootCauseSummary(result) {
   const steps = Array.isArray(result.windowResponsivenessFlowSteps)
     ? result.windowResponsivenessFlowSteps
@@ -1027,7 +1046,7 @@ async function finalizeShaderWarmupProfile(page, result) {
   result.journeyResponsivenessSummary = createJourneyResponsivenessSummary(
     result.windowResponsivenessFlowSteps
   );
-  result.longTaskRootCauseSummary = createLongTaskRootCauseSummary(result, 5);
+  assignLongTaskRootCauseSummaries(result);
   result.builderExecutionRootCauseSummary = createBuilderExecutionRootCauseSummary(result);
   const markdown = [
     '# Shader warm-up focused profile',
@@ -1257,6 +1276,20 @@ async function readAdhesiveGlassDoorCounts(page) {
   };
 }
 
+async function assertNonReflectiveAuthoringPreconditions(result, page, name) {
+  return await assertPerfStateFingerprintSubset(
+    result,
+    page,
+    name,
+    {
+      blackAdhesiveGlassDoorCount: 0,
+      frostedAdhesiveGlassDoorCount: 0,
+      showContentsEnabled: false,
+    },
+    'Non-reflective authoring journeys require zero adhesive-glass doors and disabled visual contents'
+  );
+}
+
 async function readClipboardWriteCount(page) {
   return await page.evaluate(() => {
     const writes = window.__WP_TEST_CLIPBOARD_WRITES__ || [];
@@ -1361,6 +1394,8 @@ function normalizeUiStateFingerprint(fingerprint) {
     removeDoorsEnabled: !!fingerprint?.removeDoorsEnabled,
     internalDrawersEnabled: !!fingerprint?.internalDrawersEnabled,
     showContentsEnabled: !!fingerprint?.showContentsEnabled,
+    blackAdhesiveGlassDoorCount: normalizeCountValue(fingerprint?.blackAdhesiveGlassDoorCount),
+    frostedAdhesiveGlassDoorCount: normalizeCountValue(fingerprint?.frostedAdhesiveGlassDoorCount),
     groovesMapCount: normalizeCountValue(fingerprint?.groovesMapCount),
     grooveLinesCountMapCount: normalizeCountValue(fingerprint?.grooveLinesCountMapCount),
     splitDoorMapCount: normalizeCountValue(fingerprint?.splitDoorMapCount),
@@ -1669,6 +1704,11 @@ async function expectPerfMetricCount(page, metricName, minCount) {
     .toBeGreaterThanOrEqual(minCount);
 }
 
+async function readPerfMetricCount(page, metricName) {
+  const summary = await readPerfSummary(page);
+  return Number(summary?.[metricName]?.count) || 0;
+}
+
 async function getCheckboxClickTarget(locator) {
   const label = locator.locator('xpath=ancestor::label[1]').first();
   if ((await label.count()) > 0) {
@@ -1896,6 +1936,30 @@ async function setStructureDimension(page, key, value) {
   await input.fill(expectedValue);
   await input.blur();
   await expect(input).toHaveValue(expectedValue);
+}
+
+async function setChestModeAndWaitForBuild(page, enabled, label) {
+  await openMainTab(page, 'structure');
+  const input = getActiveTabPanel(page, 'structure')
+    .locator('input[data-testid="structure-chest-mode-toggle"][type="checkbox"]')
+    .first();
+  await expect(input).toHaveCount(1);
+  if ((await input.isChecked()) === enabled) return;
+  const beforeBuildCount = Number((await readBuildDebugStats(page))?.executeCount) || 0;
+  await setCheckboxState(input, enabled);
+  await waitForBuildExecutionAfter(page, beforeBuildCount, label);
+}
+
+async function setChestCommodeAndWaitForBuild(page, enabled, label) {
+  await openMainTab(page, 'structure');
+  const button = getActiveTabPanel(page, 'structure')
+    .locator('button[data-testid="structure-chest-commode-button"]')
+    .first();
+  await expect(button).toBeVisible();
+  if ((await readButtonPressed(button)) === enabled) return;
+  const beforeBuildCount = Number((await readBuildDebugStats(page))?.executeCount) || 0;
+  await setPressedButtonState(button, enabled);
+  await waitForBuildExecutionAfter(page, beforeBuildCount, label);
 }
 
 async function readStructureDimensions(page) {
@@ -2906,7 +2970,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       headless: true,
       viewport: { width: 1280, height: 800 },
       cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v16',
+      testSequence: 'wp_browser_perf_smoke.v17',
     },
     browserPerfRoomId,
     experiment: {
@@ -2915,6 +2979,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       mirrorCubeExperimentMode,
       profileFoldedContents,
       profileShaderWarmup,
+      profileDirectMirrorRefresh,
     },
     cloudSyncRestIsolated: true,
     userFlow: {},
@@ -2941,11 +3006,13 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
     topLongTaskSteps: [],
     longTaskRootCauseSummary: [],
+    authoringIsolationRootCauseSummary: [],
     builderExecutionRootCauseSummary: [],
     journeyResponsivenessSummary: {},
     adhesiveGlassFirstUse: {},
     adhesiveGlassProgramProbe: {},
     adhesiveGlassVisualProbe: {},
+    directMirrorRefreshProbe: {},
     headerSketchRendererProbe: {},
     viewerContentsProbe: {},
     bootMilestones: {},
@@ -3189,6 +3256,30 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['viewer', 'contents', 'visibility'] }
     );
 
+    let canonicalNonReflectiveProjectPath = null;
+    await withStep(
+      result,
+      page,
+      'journey-isolation.non-reflective-seed.capture',
+      async () => {
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'journey-isolation.non-reflective-seed.capture.preconditions'
+        );
+        const { detail, path: projectPath } = await saveProjectViaHeader(
+          page,
+          'browser-perf-non-reflective-seed'
+        );
+        if (!detail || detail.ok !== true) {
+          throw new Error(`Non-reflective seed save failed: ${JSON.stringify(detail)}`);
+        }
+        if (!projectPath) throw new Error('Non-reflective seed project path missing');
+        canonicalNonReflectiveProjectPath = projectPath;
+      },
+      { journey: USER_JOURNEYS.journeyIsolation, tags: ['seed', 'non-reflective', 'capture'] }
+    );
+
     let adhesiveGlassDoorPoint = null;
     await withStep(
       result,
@@ -3227,6 +3318,27 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       await finalizeShaderWarmupProfile(page, result);
       return;
     }
+
+    await withStep(
+      result,
+      page,
+      'journey-isolation.non-reflective-seed.restore-before-authoring',
+      async () => {
+        if (!canonicalNonReflectiveProjectPath) {
+          throw new Error('Non-reflective seed project path missing before authoring restore');
+        }
+        const detail = await loadProjectViaHeader(page, canonicalNonReflectiveProjectPath);
+        if (!detail || detail.ok !== true) {
+          throw new Error(`Non-reflective seed restore failed: ${JSON.stringify(detail)}`);
+        }
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'journey-isolation.non-reflective-seed.restore-before-authoring.preconditions'
+        );
+      },
+      { journey: USER_JOURNEYS.journeyIsolation, tags: ['seed', 'non-reflective', 'restore'] }
+    );
 
     const cabinetCoreSavedName = `Cabinet Browser Perf ${Date.now()}`;
     let expectedCabinetCoreState = null;
@@ -3386,6 +3498,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       page,
       'cabinet-door-drawer-authoring.configure',
       async () => {
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'cabinet-door-drawer-authoring.configure.preconditions'
+        );
         await setStructureType(page, 'hinged');
         await setDoorStyle(page, 'profile');
         await setDoorFeatureToggle(page, 'groovesEnabled', true);
@@ -3403,6 +3520,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       }
     );
 
+    let cleanDoorDrawerSeedProjectPath = null;
     await withStep(
       result,
       page,
@@ -3562,6 +3680,12 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           throw new Error(`Door/drawer layout matrix seed save failed: ${JSON.stringify(seedSaveDetail)}`);
         }
         if (!seedProjectPath) throw new Error('Door/drawer layout matrix seed project path missing');
+        cleanDoorDrawerSeedProjectPath = seedProjectPath;
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip.preconditions'
+        );
         const scenarioFixtures = createCabinetDoorDrawerLayoutFixtureMatrixFiles(seedProjectPath);
         for (const { fixturePath, expectedFingerprint, scenario } of scenarioFixtures) {
           const scenarioLoadDetail = await loadProjectViaHeader(page, fixturePath);
@@ -3640,6 +3764,129 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
         tags: ['doors', 'drawers', 'authoring', 'matrix', 'roundtrip'],
       }
     );
+
+    await withStep(
+      result,
+      page,
+      'cabinet-door-drawer-authoring.reflective.setup',
+      async () => {
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'cabinet-door-drawer-authoring.reflective.setup.preconditions'
+        );
+        const cubeUpdateCountBefore = await readPerfMetricCount(page, 'mirror.cube.update');
+        await applyAdhesiveGlassViaCanvas(page, 'black');
+        await expectPerfMetricCount(page, 'mirror.cube.update', cubeUpdateCountBefore + 1);
+        const counts = await readAdhesiveGlassDoorCounts(page);
+        const ok = counts.black > 0;
+        result.stateIntegrityChecks.push({
+          name: 'cabinet-door-drawer-authoring.reflective.setup.reflective-preconditions',
+          ok,
+          expected: { blackAdhesiveGlassDoorCount: '> 0' },
+          actual: { blackAdhesiveGlassDoorCount: counts.black },
+          message: 'Reflective authoring requires an explicitly activated adhesive-glass surface',
+        });
+        if (!ok) throw new Error('Reflective authoring setup did not activate black adhesive glass');
+      },
+      { journey: USER_JOURNEYS.journeyIsolation, tags: ['reflective', 'adhesive-glass', 'setup'] }
+    );
+
+    await withStep(
+      result,
+      page,
+      'cabinet-door-drawer-authoring.reflective.representative-door-style-edit',
+      async () => {
+        const counts = await readAdhesiveGlassDoorCounts(page);
+        if (counts.black <= 0 && counts.frosted <= 0) {
+          throw new Error('Reflective authoring edit started without an adhesive-glass surface');
+        }
+        const beforeBuildCount = Number((await readBuildDebugStats(page))?.executeCount) || 0;
+        await setDoorStyle(page, 'post');
+        await waitForBuildExecutionAfter(page, beforeBuildCount, 'reflective door-style edit');
+      },
+      {
+        journey: USER_JOURNEYS.reflectiveAuthoring,
+        tags: ['reflective', 'door-style', 'representative-edit'],
+      }
+    );
+
+    await withStep(
+      result,
+      page,
+      'journey-isolation.clean-authoring-seed.restore-after-reflective',
+      async () => {
+        if (!cleanDoorDrawerSeedProjectPath) {
+          throw new Error('Clean door/drawer seed project path missing after reflective authoring');
+        }
+        const detail = await loadProjectViaHeader(page, cleanDoorDrawerSeedProjectPath);
+        if (!detail || detail.ok !== true) {
+          throw new Error(`Clean authoring seed restore failed: ${JSON.stringify(detail)}`);
+        }
+        await assertNonReflectiveAuthoringPreconditions(
+          result,
+          page,
+          'journey-isolation.clean-authoring-seed.restore-after-reflective.preconditions'
+        );
+      },
+      { journey: USER_JOURNEYS.journeyIsolation, tags: ['seed', 'non-reflective', 'restore'] }
+    );
+
+    if (profileDirectMirrorRefresh) {
+      await withStep(
+        result,
+        page,
+        'mirror-direct-refresh.chest-commode.enable-and-render',
+        async () => {
+          await assertNonReflectiveAuthoringPreconditions(
+            result,
+            page,
+            'mirror-direct-refresh.chest-commode.enable-and-render.preconditions'
+          );
+          const summaryBefore = await readPerfSummary(page);
+          const beforeCount = Number(summaryBefore?.['mirror.direct-refresh']?.count) || 0;
+          await setChestModeAndWaitForBuild(page, true, 'direct mirror refresh chest-mode enable');
+          await setChestCommodeAndWaitForBuild(page, true, 'direct mirror refresh commode enable');
+          const summaryAfter = await readPerfSummary(page);
+          const directSummary = summaryAfter?.['mirror.direct-refresh'] || {};
+          result.directMirrorRefreshProbe = {
+            beforeCount,
+            afterCount: Number(directSummary.count) || 0,
+            countDelta: Math.max(0, (Number(directSummary.count) || 0) - beforeCount),
+            codeExecutionTotalMs: Number(directSummary.codeExecutionTotalMs) || 0,
+            codeExecutionMaxMs: Number(directSummary.codeExecutionMaxMs) || 0,
+          };
+          if (result.directMirrorRefreshProbe.countDelta <= 0) {
+            throw new Error('Chest commode audit did not reach the direct mirror refresh owner');
+          }
+        },
+        {
+          journey: USER_JOURNEYS.mirrorDirectRefreshAudit,
+          tags: ['mirror', 'direct-refresh', 'chest', 'commode'],
+        }
+      );
+
+      await withStep(
+        result,
+        page,
+        'journey-isolation.clean-authoring-seed.restore-after-direct-mirror-audit',
+        async () => {
+          if (!cleanDoorDrawerSeedProjectPath) {
+            throw new Error('Clean door/drawer seed project path missing after direct mirror audit');
+          }
+          const detail = await loadProjectViaHeader(page, cleanDoorDrawerSeedProjectPath);
+          if (!detail || detail.ok !== true) {
+            throw new Error(`Clean seed restore after direct mirror audit failed: ${JSON.stringify(detail)}`);
+          }
+          await assertNonReflectiveAuthoringPreconditions(
+            result,
+            page,
+            'journey-isolation.clean-authoring-seed.restore-after-direct-mirror-audit.preconditions'
+          );
+        },
+        { journey: USER_JOURNEYS.journeyIsolation, tags: ['seed', 'non-reflective', 'restore'] }
+      );
+    }
 
     await withStep(
       result,
@@ -4283,7 +4530,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     result.windowStoreDebugSummary = createStoreDebugSummary(result.windowStoreDebugStats);
     result.windowStoreDebugTopSources = rankStoreDebugSources(result.windowStoreDebugStats, 5);
     result.windowStoreFlowPressureSummary = createStoreFlowPressureSummary(result.windowStoreDebugFlowSteps);
-    result.longTaskRootCauseSummary = createLongTaskRootCauseSummary(result, 5);
+    assignLongTaskRootCauseSummaries(result);
     result.builderExecutionRootCauseSummary = createBuilderExecutionRootCauseSummary(result);
     result.windowBuildDebugStats = await readBuildDebugStats(page);
     result.windowBuildDebugSummary = createBuildSummary(result.windowBuildDebugStats);

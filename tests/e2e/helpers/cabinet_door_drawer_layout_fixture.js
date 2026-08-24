@@ -236,6 +236,9 @@ function createFingerprint(base) {
     splitDoors: !!base.splitDoors,
     removeDoorsEnabled: !!base.removeDoorsEnabled,
     internalDrawersEnabled: !!base.internalDrawersEnabled,
+    showContentsEnabled: false,
+    blackAdhesiveGlassDoorCount: 0,
+    frostedAdhesiveGlassDoorCount: 0,
     groovesMapCount: Math.max(0, Math.floor(Number(base.groovesMapCount) || 0)),
     grooveLinesCountMapCount: Math.max(0, Math.floor(Number(base.grooveLinesCountMapCount) || 0)),
     splitDoorMapCount: Math.max(0, Math.floor(Number(base.splitDoorMapCount) || 0)),
@@ -258,6 +261,7 @@ function applyBaseCabinetDoorDrawerState(project) {
   project.toggles.splitDoors = false;
   project.toggles.removeDoors = false;
   project.toggles.internalDrawers = false;
+  project.toggles.showContents = false;
   project.grooveLinesCount = null;
   project.groovesMap = {};
   project.grooveLinesCountMap = {};
@@ -266,6 +270,7 @@ function applyBaseCabinetDoorDrawerState(project) {
   project.removedDoorsMap = {};
   project.drawerDividersMap = {};
   project.doorTrimMap = {};
+  project.doorSpecialMap = {};
   project.modulesConfiguration = [];
   project.stackSplitLowerModulesConfiguration = [];
 }

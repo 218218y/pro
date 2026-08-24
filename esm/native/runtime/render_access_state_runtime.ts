@@ -1,3 +1,4 @@
+import type { AppContainer } from '../../../types/index.js';
 import type {
   Object3DLike,
   RenderAutoHideFloorCacheLike,
@@ -16,6 +17,7 @@ import {
 } from './render_access_shared.js';
 import { asRecord } from './record.js';
 import { reportError } from './errors.js';
+import { runPerfPhase } from './perf_runtime_core.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 import {
   isPlanarMirrorSurface,
@@ -294,7 +296,7 @@ function writeMirrorPresenceState(
   }
 }
 
-export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowResult {
+function refreshTrackedMirrorSurfacesNowImpl(App: unknown): MirrorRefreshNowResult {
   const result: MirrorRefreshNowResult = {
     refreshed: false,
     mirrorCount: 0,
@@ -370,6 +372,15 @@ export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowR
       entry.obj.visible = entry.visible;
     }
   }
+}
+
+export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowResult {
+  if (typeof __WP_BUILD_PERF__ !== 'undefined' && __WP_BUILD_PERF__ === true) {
+    return runPerfPhase(App as AppContainer, 'mirror.direct-refresh', 'render:mirror', () =>
+      refreshTrackedMirrorSurfacesNowImpl(App)
+    );
+  }
+  return refreshTrackedMirrorSurfacesNowImpl(App);
 }
 
 export function invalidateMirrorTracking(App: unknown): void {

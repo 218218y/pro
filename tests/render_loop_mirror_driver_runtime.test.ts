@@ -46,11 +46,19 @@ function makeSlots(seed: Record<string, unknown>) {
 function createDriver(
   app: AnyRecord,
   slots: Record<string, unknown>,
-  options?: { now?: number | (() => number); onTag?: () => void; onHide?: () => void }
+  options?: {
+    now?: number | (() => number);
+    onTag?: () => void;
+    onHide?: () => void;
+    scheduleIdleTask?: (run: () => void, timeoutMs: number) => void;
+    wakeRenderLoop?: () => void;
+  }
 ) {
   return createRenderLoopMirrorDriver(app as never, {
     report: () => undefined,
     now: () => (typeof options?.now === 'function' ? options.now() : (options?.now ?? 0)),
+    scheduleIdleTask: options?.scheduleIdleTask,
+    wakeRenderLoop: options?.wakeRenderLoop,
     isTaggedMirrorSurface(obj) {
       options?.onTag?.();
       return !!obj?.__taggedMirror;
@@ -71,6 +79,124 @@ function createDriver(
     },
   });
 }
+
+function withMirrorCubeExperiment(mode: string, run: () => void): void {
+  const key = '__WP_MIRROR_CUBE_EXPERIMENT__';
+  const globals = globalThis as AnyRecord;
+  const previous = Object.getOwnPropertyDescriptor(globals, key);
+  Object.defineProperty(globals, key, { configurable: true, writable: true, value: mode });
+  try {
+    run();
+  } finally {
+    if (previous) Object.defineProperty(globals, key, previous);
+    else delete globals[key];
+  }
+}
+
+function makeDeferredCubeHarness() {
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorUpdateCount: 0,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  const idleRuns: Array<{ run: () => void; timeoutMs: number }> = [];
+  let wakeCount = 0;
+  const driver = createDriver(app, slots, {
+    now: 105,
+    scheduleIdleTask(run, timeoutMs) {
+      idleRuns.push({ run, timeoutMs });
+    },
+    wakeRenderLoop() {
+      wakeCount += 1;
+    },
+  });
+  return {
+    app,
+    driver,
+    idleRuns,
+    slots,
+    get cubeUpdateCount() {
+      return Number(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls) || 0;
+    },
+    get wakeCount() {
+      return wakeCount;
+    },
+  };
+}
+
+test('deferred mirror cube latch blocks an unrelated second frame until the idle callback unlocks it', () => {
+  withMirrorCubeExperiment('defer-first-presentation', () => {
+    const harness = makeDeferredCubeHarness();
+
+    harness.driver.updateMirrorCube();
+    assert.equal(harness.cubeUpdateCount, 0);
+    assert.equal(harness.slots.__mirrorCubeDeferredUntilIdle, true);
+    assert.equal(harness.slots.__mirrorWorkPending, false);
+    assert.equal(harness.idleRuns.length, 1);
+    assert.equal(harness.idleRuns[0]?.timeoutMs, 1000);
+
+    harness.driver.updateMirrorCube();
+    assert.equal(harness.cubeUpdateCount, 0, 'an unrelated second frame must not bypass the idle latch');
+    assert.equal(harness.slots.__mirrorWorkPending, false, 'waiting for idle must not keep RAF work pending');
+
+    harness.idleRuns[0]?.run();
+    assert.equal(harness.slots.__mirrorCubeDeferredUntilIdle, false);
+    assert.equal(harness.slots.__mirrorDirty, true);
+    assert.equal(harness.slots.__mirrorWorkPending, true);
+    assert.equal(harness.wakeCount, 1);
+
+    harness.driver.updateMirrorCube();
+    assert.equal(harness.cubeUpdateCount, 1, 'idle unlock must permit exactly one cube refresh');
+  });
+});
+
+test('deferred mirror cube latch blocks camera activity and repeated wakeups without RAF spin', () => {
+  withMirrorCubeExperiment('defer-first-presentation', () => {
+    const harness = makeDeferredCubeHarness();
+    harness.driver.updateMirrorCube();
+    harness.slots.__mirrorMotionActive = true;
+
+    for (let index = 0; index < 5; index += 1) harness.driver.updateMirrorCube();
+
+    assert.equal(harness.cubeUpdateCount, 0, 'camera/controls frames must not refresh before idle unlock');
+    assert.equal(harness.idleRuns.length, 1, 'repeated wakes must coalesce behind one idle callback');
+    assert.equal(
+      harness.slots.__mirrorWorkPending,
+      false,
+      'the deferred latch must not create a RAF busy-loop'
+    );
+
+    harness.slots.__mirrorMotionActive = false;
+    harness.idleRuns[0]?.run();
+    harness.driver.updateMirrorCube();
+    assert.equal(harness.cubeUpdateCount, 1);
+  });
+});
+
+test('deferred mirror cube idle callback is single-flight and stale callback invocations are no-ops', () => {
+  withMirrorCubeExperiment('defer-first-presentation', () => {
+    const harness = makeDeferredCubeHarness();
+    harness.driver.updateMirrorCube();
+    for (let index = 0; index < 5; index += 1) harness.driver.updateMirrorCube();
+    assert.equal(harness.idleRuns.length, 1);
+
+    const idleRun = harness.idleRuns[0]?.run;
+    idleRun?.();
+    idleRun?.();
+    assert.equal(harness.wakeCount, 1, 'a stale duplicate idle invocation must not schedule another refresh');
+
+    harness.driver.updateMirrorCube();
+    assert.equal(harness.cubeUpdateCount, 1);
+  });
+});
 
 test('render loop mirror driver does not run cube updates while realistic mirror mode is enabled', () => {
   const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };

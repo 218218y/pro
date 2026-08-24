@@ -80,9 +80,11 @@ function scheduleFullResolutionRefresh(
 
 function scheduleDeferredCubeRefresh(
   app: AppContainer,
-  deps: Pick<MirrorDriverDeps, 'setRenderSlot' | 'scheduleIdleTask' | 'wakeRenderLoop'>
+  deps: Pick<MirrorDriverDeps, 'getRenderSlot' | 'setRenderSlot' | 'scheduleIdleTask' | 'wakeRenderLoop'>
 ): void {
+  if (deps.getRenderSlot<boolean>(app, '__mirrorCubeDeferredUntilIdle') === true) return;
   const refresh = () => {
+    if (deps.getRenderSlot<boolean>(app, '__mirrorCubeDeferredUntilIdle') !== true) return;
     deps.setRenderSlot(app, '__mirrorCubeDeferredUntilIdle', false);
     deps.setRenderSlot(app, '__mirrorDirty', true);
     deps.setRenderSlot(app, '__mirrorWorkPending', true);
@@ -162,6 +164,8 @@ export function runMirrorCubePass(args: {
 
   if (!hasCubeMirrorSurfaces || !hasMirror || !intervalDue) return;
 
+  if (deps.getRenderSlot<boolean>(app, '__mirrorCubeDeferredUntilIdle') === true) return;
+
   if (!policy.canRunInBudget) {
     markBudgetDeferred(deps, app, policy.nowMs, '__mirrorCubeBudgetSkipCount');
     return;
@@ -219,6 +223,7 @@ export function runMirrorCubePass(args: {
     if (
       refreshMode === 'defer-first-presentation' &&
       updateCount === 0 &&
+      typeof deps.scheduleIdleTask === 'function' &&
       deps.getRenderSlot<boolean>(app, '__mirrorCubeFirstPresentationDeferralConsumed') !== true
     ) {
       const deferredAtMs = deps.now();

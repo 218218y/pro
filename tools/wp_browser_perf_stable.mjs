@@ -281,6 +281,55 @@ function summarizeJourneys(samples) {
     .sort((left, right) => right.longTaskTotalMs.median - left.longTaskTotalMs.median);
 }
 
+const AUTHORING_ISOLATION_SCENARIOS = Object.freeze([
+  { name: 'door/drawer clean', step: 'cabinet-door-drawer-authoring.configure' },
+  { name: 'layout matrix clean', step: 'cabinet-door-drawer-authoring.layout-scenario-matrix-roundtrip' },
+  {
+    name: 'reflective authoring',
+    step: 'cabinet-door-drawer-authoring.reflective.representative-door-style-edit',
+  },
+  { name: 'adhesive glass first use', step: 'adhesive-glass.first-use.black.apply-and-render' },
+]);
+
+function readRootCauseStepTotal(sample, stepName, readValue) {
+  return (
+    Array.isArray(sample.authoringIsolationRootCauseSummary) ? sample.authoringIsolationRootCauseSummary : []
+  )
+    .filter(item => item?.step === stepName)
+    .reduce((total, item) => total + (Number(readValue(item)) || 0), 0);
+}
+
+function summarizeAuthoringIsolation(samples) {
+  return AUTHORING_ISOLATION_SCENARIOS.map(scenario => ({
+    ...scenario,
+    longTaskTotalMs: createStableSampleSummary(
+      samples.map(sample => readResponsivenessStepMetric(sample, scenario.step, 'longTasks', 'totalMs'))
+    ),
+    longTaskMaxMs: createStableSampleSummary(
+      samples.map(sample => readResponsivenessStepMetric(sample, scenario.step, 'longTasks', 'maxMs'))
+    ),
+    longTaskCount: createStableSampleSummary(
+      samples.map(sample => readResponsivenessStepMetric(sample, scenario.step, 'longTasks', 'count'))
+    ),
+    builderMs: createStableSampleSummary(
+      samples.map(sample => readRootCauseStepTotal(sample, scenario.step, item => item.builderContributionMs))
+    ),
+    mirrorMs: createStableSampleSummary(
+      samples.map(sample =>
+        readRootCauseStepTotal(sample, scenario.step, item => item.renderPhaseContributionsMs?.mirror)
+      )
+    ),
+    rendererMs: createStableSampleSummary(
+      samples.map(sample =>
+        readRootCauseStepTotal(sample, scenario.step, item => item.renderPhaseContributionsMs?.renderer)
+      )
+    ),
+    documentInpMs: createStableSampleSummary(
+      samples.map(sample => Number(sample.windowBrowserMetrics?.inp?.valueMs) || 0)
+    ),
+  }));
+}
+
 function formatSummary(summary) {
   return `${summary.median} (${summary.min}–${summary.max}; p25=${summary.p25}, p75=${summary.p75}, MAD=${summary.mad})`;
 }
@@ -357,6 +406,20 @@ function renderMarkdown(report) {
   for (const item of report.responsivenessSteps.slice(0, 20)) {
     lines.push(
       `| ${item.name} | ${formatSummary(item.longTaskTotalMs)} | ${formatSummary(item.longTaskMaxMs)} | ${formatSummary(item.longTaskCount)} | ${formatSummary(item.renderSettleTotalMs)} |`
+    );
+  }
+  lines.push(
+    '',
+    '## Clean vs reflective authoring',
+    '',
+    '> INP is document-wide for this shared test sequence; it is shown as shared environment evidence, not attributed to an individual step.',
+    '',
+    '| Scenario | Long Tasks total | Max LT | Count | Builder | Mirror | Renderer | Document INP (shared) |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|'
+  );
+  for (const item of report.authoringIsolation) {
+    lines.push(
+      `| ${item.name} | ${formatSummary(item.longTaskTotalMs)} | ${formatSummary(item.longTaskMaxMs)} | ${formatSummary(item.longTaskCount)} | ${formatSummary(item.builderMs)} | ${formatSummary(item.mirrorMs)} | ${formatSummary(item.rendererMs)} | ${formatSummary(item.documentInpMs)} |`
     );
   }
   lines.push(
@@ -505,6 +568,7 @@ const report = {
   slowFramePhases: summarizeBrowserMetricPrefix(samples, 'render.frame.'),
   longTaskJourneys: summarizeJourneys(samples),
   responsivenessSteps: summarizeResponsivenessSteps(samples),
+  authoringIsolation: summarizeAuthoringIsolation(samples),
   longTaskRootCauses: samples
     .flatMap((sample, index) =>
       (Array.isArray(sample.longTaskRootCauseSummary) ? sample.longTaskRootCauseSummary : []).map(item => ({
