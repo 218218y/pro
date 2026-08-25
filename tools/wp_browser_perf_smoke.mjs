@@ -72,6 +72,14 @@ const measurementTarget = parseBrowserPerfTarget();
 const reuseReleaseArtifact = process.argv.includes('--reuse-release-artifact');
 const traceHeaderSketch = process.argv.includes('--trace-header-sketch');
 const traceLayoutDrawerStackHeavy = process.argv.includes('--trace-layout-drawer-stack-heavy');
+const programOwnerProbeKeys = (() => {
+  const configured = String(process.env.WP_PERF_PROGRAM_OWNER_KEYS || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+  if (configured.length) return Array.from(new Set(configured));
+  return traceLayoutDrawerStackHeavy ? ['cache:a65a61da'] : [];
+})();
 const profileFoldedContents = process.argv.includes('--profile-folded-contents');
 const profileShaderWarmup = process.argv.includes('--profile-shader-warmup');
 const profileDirectMirrorRefresh = process.argv.includes('--profile-direct-mirror-refresh');
@@ -1121,6 +1129,13 @@ async function readRendererInfoSnapshot(page) {
 
 async function readRendererProgramSnapshot(page) {
   return await page.evaluate(() => window.__WP_PERF__?.getRendererProgramSnapshot?.() || null);
+}
+
+async function readRendererProgramOwnerSnapshot(page, requestedKeys) {
+  return await page.evaluate(
+    keys => window.__WP_PERF__?.getRendererProgramOwnerSnapshot?.(keys) || null,
+    requestedKeys
+  );
 }
 
 async function readGpuFingerprint(page) {
@@ -3127,6 +3142,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       profileShaderWarmup,
       profileDirectMirrorRefresh,
       traceLayoutDrawerStackHeavy,
+      programOwnerProbeKeys,
     },
     cloudSyncRestIsolated: true,
     userFlow: {},
@@ -3843,10 +3859,17 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
         result.layoutScenarioResourceProfiles = [];
         for (const { fixturePath, expectedFingerprint, scenario } of scenarioFixtures) {
           const phasePrefix = `cabinet-door-drawer-authoring.layout.${scenario}`;
+          const shouldProbeProgramOwner =
+            traceLayoutDrawerStackHeavy &&
+            scenario === 'drawer-stack-heavy' &&
+            programOwnerProbeKeys.length > 0;
           const phaseMeta = phase => ({
             journey: USER_JOURNEYS.cabinetDoorDrawerAuthoring,
             tags: ['doors', 'drawers', 'authoring', 'matrix', scenario, phase],
           });
+          const beforeLoadProgramOwners = shouldProbeProgramOwner
+            ? await readRendererProgramOwnerSnapshot(page, programOwnerProbeKeys)
+            : null;
           const beforeLoadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const beforeLoadCleanup = await readRenderDebugStats(page);
           const scenarioLoadDetail = await withStep(
@@ -3870,6 +3893,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           );
           const afterLoadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const afterLoadCleanup = await readRenderDebugStats(page);
+          const afterLoadProgramOwners = shouldProbeProgramOwner
+            ? await readRendererProgramOwnerSnapshot(page, programOwnerProbeKeys)
+            : null;
           const loadExecutionProbe = createBuildExecutionOperationProbe(
             beforeLoadExecutionProbe,
             afterLoadExecutionProbe
@@ -3880,6 +3906,15 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             programLifecycle: loadExecutionProbe.programLifecycle,
             drawerRunnerMaterialLifetime: loadExecutionProbe.drawerRunnerMaterialLifetime,
             cleanup: createRenderCleanupDelta(beforeLoadCleanup, afterLoadCleanup),
+            ...(shouldProbeProgramOwner
+              ? {
+                  programOwnerProbe: {
+                    requestedKeys: programOwnerProbeKeys,
+                    before: beforeLoadProgramOwners,
+                    after: afterLoadProgramOwners,
+                  },
+                }
+              : {}),
           });
           await assertPerfStateFingerprintSubset(
             result,
@@ -3911,6 +3946,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           );
           await fillProjectNameViaActiveInput(page, `Door Drawer Layout Scenario ${scenario} ${Date.now()}`);
           const shouldTraceReload = traceLayoutDrawerStackHeavy && scenario === 'drawer-stack-heavy';
+          const beforeReloadProgramOwners = shouldProbeProgramOwner
+            ? await readRendererProgramOwnerSnapshot(page, programOwnerProbeKeys)
+            : null;
           const beforeReloadExecutionProbe = await readBuildExecutionProbeEntries(page);
           const beforeReloadCleanup = await readRenderDebugStats(page);
           const layoutTraceSession = shouldTraceReload ? await startChromiumTrace(page) : null;
@@ -3946,6 +3984,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             }
           }
           const afterReloadCleanup = await readRenderDebugStats(page);
+          const afterReloadProgramOwners = shouldProbeProgramOwner
+            ? await readRendererProgramOwnerSnapshot(page, programOwnerProbeKeys)
+            : null;
           const reloadExecutionProbe = createBuildExecutionOperationProbe(
             beforeReloadExecutionProbe,
             afterReloadExecutionProbe
@@ -3956,6 +3997,15 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
             programLifecycle: reloadExecutionProbe.programLifecycle,
             drawerRunnerMaterialLifetime: reloadExecutionProbe.drawerRunnerMaterialLifetime,
             cleanup: createRenderCleanupDelta(beforeReloadCleanup, afterReloadCleanup),
+            ...(shouldProbeProgramOwner
+              ? {
+                  programOwnerProbe: {
+                    requestedKeys: programOwnerProbeKeys,
+                    before: beforeReloadProgramOwners,
+                    after: afterReloadProgramOwners,
+                  },
+                }
+              : {}),
           });
           await assertPerfStateFingerprintSubset(
             result,

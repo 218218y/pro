@@ -12,6 +12,7 @@ import type {
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
   WardrobeProRendererInfoSnapshot,
+  WardrobeProRendererProgramOwnerSnapshot,
   WardrobeProRendererProgramSnapshot,
   WardrobeProSceneContentSnapshot,
   WardrobeProPerfStateFingerprint,
@@ -56,6 +57,7 @@ import { getPerfStateFingerprint } from './perf_runtime_state_fingerprint.js';
 import {
   getGpuFingerprint,
   getRendererInfoSnapshot,
+  getRendererProgramOwnerSnapshot,
   getRendererProgramSnapshot,
   getSceneContentSnapshot,
 } from './perf_runtime_render_snapshot.js';
@@ -141,6 +143,11 @@ export function createPerfConsoleSurface(
     },
     getRendererProgramSnapshot(): WardrobeProRendererProgramSnapshot | null {
       return getRendererProgramSnapshot(App);
+    },
+    getRendererProgramOwnerSnapshot(
+      requestedKeys: readonly string[]
+    ): WardrobeProRendererProgramOwnerSnapshot {
+      return getRendererProgramOwnerSnapshot(App, requestedKeys);
     },
     getGpuFingerprint(): WardrobeProGpuFingerprint | null {
       const dpr = typeof win?.devicePixelRatio === 'number' ? win.devicePixelRatio : 1;
