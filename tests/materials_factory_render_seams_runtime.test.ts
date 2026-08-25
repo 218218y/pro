@@ -181,6 +181,24 @@ test('materials_factory heals cached sketch lifetime metadata on cache hit witho
   assert.equal((resolved.userData as AnyRecord).isCached, true);
 });
 
+test('materials_factory fails fast when a cached material cannot accept its lifetime marker', () => {
+  const App: AnyRecord = {
+    deps: { THREE: makeThreeStub() },
+    store: makeStore({ sketchMode: true }),
+  };
+  const legacyMaterial: AnyRecord = {
+    userData: Object.freeze({ ownerProbe: 'frozen-cache-entry' }),
+    opts: { color: 0xffffff },
+    dispose() {},
+  };
+  ensureRenderCacheMaps(App).materialCache.set('sketch_white', legacyMaterial);
+
+  assert.throws(
+    () => getMaterial(App, '#ffffff', 'front', false, undefined, materialSnapshot(true)),
+    TypeError
+  );
+});
+
 test('materials_factory sketch material survives cleanGroup and remains reusable after rebuild', () => {
   const App: AnyRecord = {
     deps: { THREE: makeThreeStub() },

@@ -22,15 +22,11 @@ function markModuleSelectorMaterialLifetime(
   variant: ModuleSelectorMaterialVariant,
   cacheKey: string
 ): void {
-  try {
-    const userData = material.userData && typeof material.userData === 'object' ? material.userData : {};
-    userData.isCached = true;
-    userData.__wpModuleSelectorMaterialVariant = variant;
-    userData.__wpModuleSelectorMaterialCacheKey = cacheKey;
-    material.userData = userData;
-  } catch {
-    // render-metadata best-effort: cache ownership must not block selector creation.
-  }
+  const userData = material.userData && typeof material.userData === 'object' ? material.userData : {};
+  userData.isCached = true;
+  userData.__wpModuleSelectorMaterialVariant = variant;
+  userData.__wpModuleSelectorMaterialCacheKey = cacheKey;
+  material.userData = userData;
 }
 
 /**

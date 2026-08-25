@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-08-24T18:04:06.860Z
+Generated at: 2026-08-25T09:43:27.097Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -14,10 +14,10 @@ Generated at: 2026-08-24T18:04:06.860Z
 
 ## Error observability
 
-- Statement-free catches: **515**
+- Statement-free catches: **514**
 - Bare catches: **0**
 - Vague catch comments: **0**
-- Files containing statement-free catches: **280**
+- Files containing statement-free catches: **279**
 
 ## Compatibility debt
 
@@ -40,8 +40,8 @@ Generated at: 2026-08-24T18:04:06.860Z
 
 ## Test portfolio
 
-- Classified test files: **1260**
-- Unit/runtime files: **1251**
+- Classified test files: **1261**
+- Unit/runtime files: **1252**
 - Playwright E2E files: **9**
 - Canonical contracts: **21**
 - Historical architecture proof files: **0**

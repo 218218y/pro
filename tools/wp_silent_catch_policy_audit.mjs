@@ -9,7 +9,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx']);
 const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 16,
   boot: 3,
-  builder: 119,
+  builder: 118,
   features: 12,
   io: 4,
   kernel: 9,
@@ -122,6 +122,8 @@ const FUNCTIONAL_OWNERS_WITHOUT_SILENT_CATCHES = Object.freeze([
   'esm/native/runtime/doors_access_services.ts',
   'esm/native/runtime/cache_access.ts',
   'esm/native/ui/react/actions/interior_actions.ts',
+  'esm/native/builder/materials_factory_material_policy.ts',
+  'esm/native/builder/module_selector_material.ts',
 ]);
 
 function parserLanguage(file) {

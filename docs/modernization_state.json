@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T18:04:06.860Z",
+  "generatedAt": "2026-08-25T09:43:27.097Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -8,10 +8,10 @@
     "testPortfolio": true
   },
   "silentCatches": {
-    "statementFree": 515,
+    "statementFree": 514,
     "bare": 0,
     "vagueComments": 0,
-    "files": 280
+    "files": 279
   },
   "compatibility": {
     "totalCategorizedOccurrences": 563,
@@ -32,8 +32,8 @@
     "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
-    "classifiedFiles": 1260,
-    "unitRuntimeFiles": 1251,
+    "classifiedFiles": 1261,
+    "unitRuntimeFiles": 1252,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

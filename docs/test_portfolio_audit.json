@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T18:04:07.752Z",
+  "generatedAt": "2026-08-25T09:45:00.795Z",
   "totals": {
-    "tests": 1260,
-    "unitRunnerTests": 1251,
+    "tests": 1261,
+    "unitRunnerTests": 1252,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 398,
-    "runtime-unit": 347,
+    "runtime-unit": 348,
     "integration": 475,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
@@ -5352,6 +5352,10 @@
     },
     {
       "file": "tests/module_loop_rear_clearance_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/module_selector_material_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

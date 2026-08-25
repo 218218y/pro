@@ -488,40 +488,6 @@ export interface WardrobeProRendererProgramSnapshot {
   programs: WardrobeProRendererProgramSnapshotEntry[];
 }
 
-export interface WardrobeProRendererProgramOwnerSceneObject {
-  objectId: number | null;
-  objectUuid: string | null;
-  objectType: string | null;
-  objectName: string | null;
-  materialIndex: number;
-  userData: Record<string, string | number | boolean | null>;
-}
-
-export interface WardrobeProRendererProgramOwnerMatch {
-  programKey: string;
-  programId: number | null;
-  programUsedTimes: number;
-  programCacheKeyHash: string | null;
-  rawProgramCacheKey: string | null;
-  materialDiagnosticId: number;
-  materialId: number | null;
-  materialUuid: string | null;
-  materialType: string | null;
-  materialName: string | null;
-  isCached: boolean;
-  persistentCacheOwner: string | null;
-  canonicalMaterialCacheKeys: string[];
-  materialUserData: Record<string, string | number | boolean | null>;
-  sceneObjects: WardrobeProRendererProgramOwnerSceneObject[];
-}
-
-export interface WardrobeProRendererProgramOwnerSnapshot {
-  requestedKeys: string[];
-  rendererPropertiesSupported: boolean;
-  traversedObjectCount: number;
-  matches: WardrobeProRendererProgramOwnerMatch[];
-}
-
 export interface WardrobeProGpuFingerprint {
   webglVersion: string | null;
   glslVersion: string | null;
@@ -560,9 +526,6 @@ export interface WardrobeProPerfConsoleSurface {
   getStateFingerprint?: () => WardrobeProPerfStateFingerprint | null;
   getRendererInfoSnapshot?: () => WardrobeProRendererInfoSnapshot | null;
   getRendererProgramSnapshot?: () => WardrobeProRendererProgramSnapshot | null;
-  getRendererProgramOwnerSnapshot?: (
-    requestedKeys: readonly string[]
-  ) => WardrobeProRendererProgramOwnerSnapshot;
   getGpuFingerprint?: () => WardrobeProGpuFingerprint | null;
   getSceneContentSnapshot?: () => WardrobeProSceneContentSnapshot | null;
   getVisualContentGeometryCacheStats?: () => import('./build_ops').VisualContentGeometryCacheStatsLike | null;

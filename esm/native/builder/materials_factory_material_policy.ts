@@ -42,14 +42,10 @@ export function createMaterialSnapshotBinding(
 function markCachedMaterialLifetime<T>(material: T): T {
   if (!material || typeof material !== 'object') return material;
   const cachedMaterial = material as MaterialLike;
-  try {
-    const userData =
-      cachedMaterial.userData && typeof cachedMaterial.userData === 'object' ? cachedMaterial.userData : {};
-    userData.isCached = true;
-    cachedMaterial.userData = userData;
-  } catch {
-    // render-metadata best-effort: cache metadata is secondary to the material instance.
-  }
+  const userData =
+    cachedMaterial.userData && typeof cachedMaterial.userData === 'object' ? cachedMaterial.userData : {};
+  userData.isCached = true;
+  cachedMaterial.userData = userData;
   return material;
 }
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T18:03:53.072Z",
+  "generatedAt": "2026-08-25T09:45:00.668Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 563,
@@ -1861,7 +1861,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
-      "line": 53,
+      "line": 50,
       "term": "fallbackMinWidthM",
       "category": "domain-default",
       "text": "Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, activeWidth),"

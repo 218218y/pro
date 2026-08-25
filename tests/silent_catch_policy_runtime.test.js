@@ -94,6 +94,8 @@ test('silent-catch policy keeps current production ratchets exact and functional
     'esm/native/runtime/doors_access_services.ts',
     'esm/native/runtime/cache_access.ts',
     'esm/native/ui/react/actions/interior_actions.ts',
+    'esm/native/builder/materials_factory_material_policy.ts',
+    'esm/native/builder/module_selector_material.ts',
   ]) {
     assert.equal(paths.has(file), false, `${file} must remain free of statement-free catches`);
   }

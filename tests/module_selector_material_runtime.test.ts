@@ -152,6 +152,21 @@ test('[module-selector-material] cache hit heals lifetime metadata without repla
   assert.equal(resolved.userData.isCached, true);
 });
 
+test('[module-selector-material] lifetime marker failure is fatal instead of returning an unsafe cached material', () => {
+  const App = createApp();
+  const legacyMaterial = createStandardMaterial();
+  legacyMaterial.userData = Object.freeze({ ownerProbe: 'frozen' }) as AnyRecord;
+  ensureRenderCacheMaps(App).materialCache.set('module-selector:standard:v1', legacyMaterial);
+
+  assert.throws(
+    () =>
+      getModuleSelectorMaterial(App, 'standard', () => {
+        throw new Error('frozen cache entry should be reused before lifetime validation');
+      }),
+    TypeError
+  );
+});
+
 test('[module-selector-material] cleanGroup cannot dispose a shared selector material and rebuild reuses it', () => {
   const App = createApp();
   const material = getModuleSelectorMaterial(App, 'standard', createStandardMaterial);
