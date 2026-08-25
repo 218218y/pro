@@ -30,7 +30,7 @@ const CLIENT_PATTERN = /^[a-zA-Z0-9:_-]{1,160}$/;
 const MAX_REQUEST_BYTES = 2_100_000;
 const MAX_PAYLOAD_BYTES = 2_000_000;
 const ROW_SELECT = 'room,payload,revision,updated_at,updated_by';
-const ACTIONS = new Set(['issue-public', 'create-room', 'renew-room', 'read', 'write']);
+const ACTIONS = new Set(['issue-public', 'create-room', 'renew-room', 'read', 'write', 'publish-sketch']);
 
 function getRequiredEnv(name: string): string {
   const value = String(Deno.env.get(name) || '').trim();
@@ -349,6 +349,78 @@ async function writeRow(args: {
       };
 }
 
+const SKETCH_PUBLISH_KEYS = new Set(['sketch', 'sketchHash', 'sketchRev', 'sketchBy']);
+
+function isDirectionalSketchPublishRoom(baseRoom: string, room: string): boolean {
+  return room === `${baseRoom}::sketch::toMain` || room === `${baseRoom}::sketch::toSite2`;
+}
+
+function isValidSketchPublishPayload(payload: JsonRecord, clientId: string): boolean {
+  if (Object.keys(payload).some(key => !SKETCH_PUBLISH_KEYS.has(key))) return false;
+  const sketchRev = payload.sketchRev;
+  const sketchHash = payload.sketchHash;
+  const sketchBy = payload.sketchBy;
+  if (
+    typeof sketchRev !== 'number' ||
+    !Number.isSafeInteger(sketchRev) ||
+    sketchRev < 1 ||
+    sketchBy !== clientId
+  ) {
+    return false;
+  }
+  const isClear = payload.sketch === null && sketchHash === null;
+  const isSnapshot =
+    payload.sketch !== null &&
+    typeof payload.sketch !== 'undefined' &&
+    typeof sketchHash === 'string' &&
+    sketchHash.trim().length > 0 &&
+    sketchHash.trim().length <= 512;
+  return isClear || isSnapshot;
+}
+
+function isSketchPublishNoop(current: RoomRow | null, payload: JsonRecord): boolean {
+  if (!current) return false;
+  if (payload.sketch === null && payload.sketchHash === null) {
+    return !current.payload.sketch && !current.payload.sketchHash;
+  }
+  const desiredHash = typeof payload.sketchHash === 'string' ? payload.sketchHash.trim() : '';
+  const currentHash = typeof current.payload.sketchHash === 'string' ? current.payload.sketchHash.trim() : '';
+  return !!desiredHash && desiredHash === currentHash;
+}
+
+async function publishSketchRow(args: {
+  client: SupabaseClient;
+  tenantId: string;
+  storeId: string;
+  room: string;
+  payload: JsonRecord;
+  clientId: string;
+}): Promise<{ ok: true; row: RoomRow; changed: boolean } | { ok: false; row: RoomRow | null }> {
+  let current = await readRow(args.client, args.tenantId, args.storeId, args.room);
+  if (isSketchPublishNoop(current, args.payload)) {
+    return { ok: true, row: current as RoomRow, changed: false };
+  }
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const written = await writeRow({
+      client: args.client,
+      tenantId: args.tenantId,
+      storeId: args.storeId,
+      room: args.room,
+      payload: args.payload,
+      expectedRevision: current?.revision || 0,
+      clientId: args.clientId,
+    });
+    if (written.ok) return { ok: true, row: written.row, changed: true };
+    current = written.row;
+    if (isSketchPublishNoop(current, args.payload)) {
+      return { ok: true, row: current as RoomRow, changed: false };
+    }
+  }
+
+  return { ok: false, row: current };
+}
+
 function readTokenTtlSeconds(): number {
   const raw = Number(Deno.env.get('WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS') || 604_800);
   return Number.isInteger(raw) && raw >= 3600 && raw <= 2_592_000 ? raw : 604_800;
@@ -443,17 +515,18 @@ Deno.serve(async request => {
       { auth: { persistSession: false, autoRefreshToken: false } }
     );
 
+    const rateAction = action === 'publish-sketch' ? 'write' : action;
     const rate =
-      action === 'create-room'
+      rateAction === 'create-room'
         ? { limit: 20, windowSeconds: 3600 }
-        : action === 'write'
+        : rateAction === 'write'
           ? { limit: 120, windowSeconds: 60 }
           : { limit: 300, windowSeconds: 60 };
     if (
       !(await consumeRateLimit({
         client: supabase,
         request,
-        action,
+        action: rateAction,
         secret,
         limit: rate.limit,
         windowSeconds: rate.windowSeconds,
@@ -555,6 +628,48 @@ Deno.serve(async request => {
         row: await readRow(supabase, tenantId, storeId, room),
         leaseTouchedAt: lease.touchedAt,
       });
+    }
+
+    if (action === 'publish-sketch') {
+      const payload = body.payload;
+      const clientId = typeof body.clientId === 'string' ? body.clientId.trim() : '';
+      if (
+        !isDirectionalSketchPublishRoom(claims.room, room) ||
+        !isRecord(payload) ||
+        !CLIENT_PATTERN.test(clientId) ||
+        !isValidSketchPublishPayload(payload, clientId)
+      ) {
+        return jsonResponse(responseOrigin, 400, {
+          ok: false,
+          code: 'publish_sketch_contract',
+        });
+      }
+      if (encoder.encode(JSON.stringify(payload)).byteLength > MAX_PAYLOAD_BYTES) {
+        return jsonResponse(responseOrigin, 413, {
+          ok: false,
+          code: 'payload_too_large',
+        });
+      }
+      const result = await publishSketchRow({
+        client: supabase,
+        tenantId,
+        storeId,
+        room,
+        payload,
+        clientId,
+      });
+      return result.ok
+        ? jsonResponse(responseOrigin, 200, {
+            ok: true,
+            row: result.row,
+            changed: result.changed,
+            leaseTouchedAt: lease.touchedAt,
+          })
+        : jsonResponse(responseOrigin, 409, {
+            ok: false,
+            code: 'revision_conflict',
+            row: result.row,
+          });
     }
 
     if (action === 'write') {

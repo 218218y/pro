@@ -5,6 +5,7 @@ import type {
   CloudSyncSketchPayload,
   CloudSyncSyncPinPayload,
   CloudSyncUpsertResult,
+  CloudSyncUpsertRowOptions,
 } from '../../../types';
 
 import { asBool, getRoomFromUrl, isExplicitSite2Bundle } from './cloud_sync_config.js';
@@ -38,7 +39,8 @@ export type UpsertCloudSyncRow = (
   gatewayUrl: string,
   anonKey: string,
   room: string,
-  payload: CloudSyncSketchPayload | CloudSyncSyncPinPayload | CloudSyncContentsTogglePayload
+  payload: CloudSyncSketchPayload | CloudSyncSyncPinPayload | CloudSyncContentsTogglePayload,
+  options?: CloudSyncUpsertRowOptions
 ) => Promise<CloudSyncUpsertResult>;
 
 export type CloudSyncSketchOpsBaseDeps = {

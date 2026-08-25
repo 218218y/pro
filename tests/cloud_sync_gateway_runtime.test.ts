@@ -5,6 +5,7 @@ import {
   createPrivateRoomCredential,
   getGatewayRow,
   issuePublicRoomCredential,
+  publishGatewaySketchRow,
   renewPrivateRoomCredential,
   writeGatewayRow,
 } from '../esm/native/services/cloud_sync_gateway.ts';
@@ -109,6 +110,46 @@ test('cloud sync gateway writes with an expected revision and parses the committ
   assert.equal(requestBody?.action, 'write');
   assert.equal(requestBody?.expectedRevision, 4);
   assert.equal(requestBody?.clientId, 'client-b');
+});
+
+test('cloud sync gateway publishes a sketch authoritatively in one request and preserves the changed flag', async () => {
+  let requestBody: Record<string, unknown> | null = null;
+  const result = await publishGatewaySketchRow({
+    ...gateway,
+    room: 'room_a::sketch::toSite2',
+    roomToken: 'signed.token.value',
+    payload: {
+      sketch: { settings: { width: 88 } },
+      sketchHash: 'hash-88',
+      sketchRev: 123,
+      sketchBy: 'client-sketch',
+    },
+    clientId: 'client-sketch',
+    fetchFn: async (_url, init) => {
+      requestBody = JSON.parse(String(init?.body || '{}')) as Record<string, unknown>;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          changed: false,
+          row: {
+            room: 'room_a::sketch::toSite2',
+            revision: 4,
+            updated_at: '2026-08-25T09:00:00.000Z',
+            updated_by: 'client-sketch',
+            payload: requestBody?.payload,
+          },
+        }),
+      };
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.ok && result.changed, false);
+  assert.equal(requestBody?.action, 'publish-sketch');
+  assert.equal(requestBody?.expectedRevision, undefined);
+  assert.equal(requestBody?.room, 'room_a::sketch::toSite2');
 });
 
 test('cloud sync gateway exposes a stale-write conflict as data for a bounded merge retry', async () => {

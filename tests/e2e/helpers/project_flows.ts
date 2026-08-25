@@ -398,6 +398,41 @@ async function installCloudSyncGatewayIsolation(
       });
       return;
     }
+    if (action === 'publish-sketch') {
+      const current = rows.get(room) || null;
+      const desiredHash = typeof payload.sketchHash === 'string' ? payload.sketchHash.trim() : '';
+      const currentHash =
+        typeof current?.payload?.sketchHash === 'string' ? String(current.payload.sketchHash).trim() : '';
+      const clearNoop =
+        !!current &&
+        payload.sketch === null &&
+        payload.sketchHash === null &&
+        !current.payload.sketch &&
+        !current.payload.sketchHash;
+      const hashNoop = !!current && !!desiredHash && desiredHash === currentHash;
+      if (clearNoop || hashNoop) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, changed: false, row: current }),
+        });
+        return;
+      }
+      const next = {
+        room,
+        payload,
+        revision: (current?.revision || 0) + 1,
+        updated_at: new Date().toISOString(),
+        updated_by: typeof body.clientId === 'string' ? body.clientId : 'e2e-client',
+      };
+      rows.set(room, next);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, changed: true, row: next }),
+      });
+      return;
+    }
     if (action === 'write') {
       const current = rows.get(room) || null;
       const expectedRevision = typeof body.expectedRevision === 'number' ? body.expectedRevision : -1;

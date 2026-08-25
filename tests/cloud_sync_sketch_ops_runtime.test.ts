@@ -334,9 +334,9 @@ test('cloud sync sketch routing is directional between main and site2 bundles', 
   await site2Ops.pullSketchOnce(false);
 
   assert.deepEqual(mainWrites, ['room-a::sketch::toSite2']);
-  assert.deepEqual(mainReads, ['room-a::sketch::toSite2', 'room-a::sketch::toMain']);
+  assert.deepEqual(mainReads, ['room-a::sketch::toMain']);
   assert.deepEqual(site2Writes, ['room-a::sketch::toMain']);
-  assert.deepEqual(site2Reads, ['room-a::sketch::toMain', 'room-a::sketch::toSite2']);
+  assert.deepEqual(site2Reads, ['room-a::sketch::toSite2']);
 });
 
 test('cloud sync sketch push preserves thrown error messages', async () => {
@@ -519,8 +519,9 @@ test('cloud sync sketch push does not contaminate pull baseline across direction
   assert.deepEqual(loadedWidths, [140]);
 });
 
-test('cloud sync sketch push settles the pushed updated_at canonically so the next pull stays quiet', async () => {
+test('cloud sync sketch push uses one authoritative publish request and settles from its returned row', async () => {
   let getRowCalls = 0;
+  let upsertCalls = 0;
   let exportCalls = 0;
   let loadCalls = 0;
   const settledUpdatedAt = '2026-04-04T12:00:00.000Z';
@@ -556,17 +557,6 @@ test('cloud sync sketch push settles the pushed updated_at canonically so the ne
     currentRoom: () => 'room-a',
     getRow: async () => {
       getRowCalls += 1;
-      if (getRowCalls === 1) {
-        return {
-          updated_at: '2026-04-04T11:59:00.000Z',
-          payload: {
-            sketchRev: 10,
-            sketchHash: 'older-remote-hash',
-            sketchBy: 'remote-client',
-            sketch: { settings: { width: 140 } },
-          },
-        } as any;
-      }
       return {
         updated_at: settledUpdatedAt,
         payload: {
@@ -577,7 +567,22 @@ test('cloud sync sketch push settles the pushed updated_at canonically so the ne
         },
       } as any;
     },
-    upsertRow: async () => ({ ok: true }) as any,
+    upsertRow: async (_gatewayUrl, _anonKey, room, payload, options) => {
+      upsertCalls += 1;
+      assert.equal(room, 'room-a::sketch::toSite2');
+      assert.deepEqual(options, { mode: 'publish-sketch' });
+      return {
+        ok: true,
+        changed: true,
+        row: {
+          room,
+          revision: 4,
+          updated_at: settledUpdatedAt,
+          updated_by: 'local-client',
+          payload,
+        },
+      } as any;
+    },
     emitRealtimeHint: () => undefined,
     runtimeStatus: { realtime: { status: 'idle' } } as any,
     publishStatus: () => undefined,
@@ -591,7 +596,8 @@ test('cloud sync sketch push settles the pushed updated_at canonically so the ne
   assert.equal(pushed.changed, true);
   assert.equal(typeof pushed.hash, 'string');
   assert.equal(Boolean(pushed.hash), true);
-  assert.equal(getRowCalls, 3, 'push should do one compare read, one settle read, and one later pull read');
+  assert.equal(upsertCalls, 1, 'manual sketch publish should require exactly one client-to-gateway request');
+  assert.equal(getRowCalls, 1, 'only the later opposite-direction pull should read from the gateway');
   assert.equal(exportCalls, 1, 'the quiet follow-up pull should not need to re-capture the local sketch');
   assert.equal(loadCalls, 0, 'the quiet follow-up pull should not re-apply the just-pushed sketch');
 });
@@ -786,7 +792,7 @@ test('floating sketch sync push shares app-scoped ownership across sketch-op ins
   assert.deepEqual(await enableA, { ok: true, changed: true, enabled: true });
 });
 
-test('cloud sync sketch reset clears the remote sketch with a tombstone and becomes a no-op once cleared', async () => {
+test('cloud sync sketch reset delegates tombstone noop detection to the authoritative publish request', async () => {
   const writes: Array<{ room: string; payload: Record<string, unknown> }> = [];
   let remotePayload: Record<string, unknown> = {
     sketchRev: 10,
@@ -794,6 +800,7 @@ test('cloud sync sketch reset clears the remote sketch with a tombstone and beco
     sketchBy: 'main-client',
     sketch: { settings: { width: 180 } },
   };
+  let revision = 1;
 
   const ops = createCloudSyncSketchOps({
     App: {} as any,
@@ -808,17 +815,39 @@ test('cloud sync sketch reset clears the remote sketch with a tombstone and beco
     gatewayUrl: 'https://example.invalid',
     clientId: 'main-client',
     currentRoom: () => 'room-a',
-    getRow: async () =>
-      ({
-        updated_at: '2026-07-14T04:00:00.000Z',
-        payload: remotePayload,
-      }) as any,
-    upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
-      remotePayload = payload as Record<string, unknown>;
+    getRow: async () => {
+      throw new Error('manual push must not perform a client-side compare read');
+    },
+    upsertRow: async (_gatewayUrl, _anonKey, room, payload, options) => {
+      assert.deepEqual(options, { mode: 'publish-sketch' });
+      const nextPayload = payload as Record<string, unknown>;
+      const alreadyCleared = !remotePayload.sketch && !remotePayload.sketchHash;
+      if (alreadyCleared && nextPayload.sketch === null && nextPayload.sketchHash === null) {
+        return {
+          ok: true,
+          changed: false,
+          row: {
+            room,
+            revision,
+            updated_at: '2026-07-14T04:01:00.000Z',
+            updated_by: 'main-client',
+            payload: remotePayload,
+          },
+        } as any;
+      }
+      remotePayload = nextPayload;
+      revision += 1;
       writes.push({ room, payload: remotePayload });
       return {
         ok: true,
-        row: { updated_at: '2026-07-14T04:01:00.000Z', payload: remotePayload },
+        changed: true,
+        row: {
+          room,
+          revision,
+          updated_at: '2026-07-14T04:01:00.000Z',
+          updated_by: 'main-client',
+          payload: remotePayload,
+        },
       } as any;
     },
     emitRealtimeHint: () => undefined,
@@ -849,7 +878,8 @@ test('cloud sync sketch reset clears the remote sketch with a tombstone and beco
   assert.equal(writes.length, 1);
 });
 
-test('cloud sync sketch clear never treats an unavailable read as proof that the remote sketch is absent', async () => {
+test('cloud sync sketch clear reports a failed authoritative publish without a client-side pre-read', async () => {
+  let readCalls = 0;
   let writeCalls = 0;
   const ops = createCloudSyncSketchOps({
     App: {} as any,
@@ -864,13 +894,14 @@ test('cloud sync sketch clear never treats an unavailable read as proof that the
     gatewayUrl: 'https://example.invalid',
     clientId: 'main-client',
     currentRoom: () => 'room-a',
-    getRow: async () => ({
-      ok: false,
-      failure: { kind: 'network', message: 'offline' },
-    }),
-    upsertRow: async () => {
+    getRow: async () => {
+      readCalls += 1;
+      return null as any;
+    },
+    upsertRow: async (_gatewayUrl, _anonKey, _room, _payload, options) => {
       writeCalls += 1;
-      return { ok: false } as any;
+      assert.deepEqual(options, { mode: 'publish-sketch' });
+      return { ok: false, failure: { kind: 'network', message: 'offline' } } as any;
     },
     emitRealtimeHint: () => undefined,
     runtimeStatus: { realtime: { status: 'idle' } } as any,
@@ -882,7 +913,8 @@ test('cloud sync sketch clear never treats an unavailable read as proof that the
     ok: false,
     reason: 'write',
   });
-  assert.equal(writeCalls, 0);
+  assert.equal(readCalls, 0);
+  assert.equal(writeCalls, 1);
 });
 
 test('cloud sync sketch snapshot treats the canonical default project as a clear operation', async () => {

@@ -6,7 +6,7 @@ import type {
 } from '../../../types';
 
 import type { SupabaseCfg } from './cloud_sync_config.js';
-import { getGatewayRow, writeGatewayRow } from './cloud_sync_gateway.js';
+import { getGatewayRow, publishGatewaySketchRow, writeGatewayRow } from './cloud_sync_gateway.js';
 import { mergeCloudSyncPayloads, projectCloudSyncConflictRemotePayload } from './cloud_sync_payload_merge.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_gateway_contracts.js';
 import type { CloudSyncOwnerCredentialSession } from './cloud_sync_owner_gateway_credential_session.js';
@@ -100,7 +100,7 @@ export function createCloudSyncOwnerGatewayTransport(args: {
     return result;
   };
 
-  const upsertRow: CloudSyncUpsertRowFn = async (gatewayUrlIn, anonKeyIn, roomIn, payloadIn) => {
+  const upsertRow: CloudSyncUpsertRowFn = async (gatewayUrlIn, anonKeyIn, roomIn, payloadIn, options) => {
     if (conflicts.reconcile(roomIn)) {
       const conflict = conflicts.readActive();
       if (!conflict) {
@@ -127,6 +127,30 @@ export function createCloudSyncOwnerGatewayTransport(args: {
     const credential = await credentials.resolveRoomCredential(roomIn);
     if (!credential) {
       return { ok: false, failure: credentials.readLastFailure() || credentials.missingCredentialFailure() };
+    }
+    if (options?.mode === 'publish-sketch') {
+      const published = await publishGatewaySketchRow({
+        fetchFn,
+        gatewayUrl: gatewayUrlIn,
+        anonKey: anonKeyIn,
+        storeId: cfg.storeId,
+        room: roomIn,
+        roomToken: credential.token,
+        payload: payloadIn,
+        clientId,
+      });
+      if (published.ok === true) {
+        credentials.publishSuccess(credential);
+        rowCache.write(published.row);
+        conflicts.finalize(roomIn);
+        return published;
+      }
+      if (published.conflict === true) {
+        rowCache.write(published.row);
+        return published;
+      }
+      credentials.publishFailure(credential, published.failure);
+      return published;
     }
     const baseRow = rowCache.read(roomIn);
     const first = await writeGatewayRow({

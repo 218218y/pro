@@ -7,6 +7,7 @@ import type {
   CloudSyncRemoteAdoptionResult,
   CloudSyncStateRow,
   CloudSyncUpsertResult,
+  CloudSyncUpsertRowOptions,
 } from '../../../types';
 
 export type CloudSyncConflictLocalSnapshot = {
@@ -24,7 +25,8 @@ export type CloudSyncUpsertRowFn = (
   gatewayUrlIn: string,
   anonKeyIn: string,
   roomIn: string,
-  payloadIn: CloudSyncPayload
+  payloadIn: CloudSyncPayload,
+  options?: CloudSyncUpsertRowOptions
 ) => Promise<CloudSyncUpsertResult>;
 
 export type CloudSyncIssuePrivateRoomFn = () => Promise<CloudSyncCredentialIssueResult>;

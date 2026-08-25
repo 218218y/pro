@@ -49,6 +49,10 @@ test('Edge Function verifies signed room scope and performs bounded compare-and-
     /storeId !== originStoreId/u,
     /const ACTIONS = new Set/u,
     /['"]renew-room['"]/u,
+    /['"]publish-sketch['"]/u,
+    /isDirectionalSketchPublishRoom\(/u,
+    /isValidSketchPublishPayload\(/u,
+    /action === 'publish-sketch' \? 'write' : action/u,
     /room_token_expired/u,
     /Retry-After/u,
     /retryAfterSeconds/u,
@@ -58,6 +62,10 @@ test('Edge Function verifies signed room scope and performs bounded compare-and-
     assert.match(source, required);
   }
   assert.doesNotMatch(source, /\.delete\s*\(/u);
+  assert.match(
+    source,
+    /room === `\$\{baseRoom\}::sketch::toMain` \|\| room === `\$\{baseRoom\}::sketch::toSite2`/u
+  );
   assert.doesNotMatch(source, /roomToken[^\n]*console/u);
   assert.match(roomScope, /CLOUD_SYNC_ALLOWED_ROOM_PATHS/u);
   assert.doesNotMatch(roomScope, /startsWith\(`\$\{claims\.room\}::`\)\s*\)\s*;/u);

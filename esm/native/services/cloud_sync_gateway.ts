@@ -27,6 +27,14 @@ type CloudSyncGatewayRequest =
   | { action: 'renew-room'; storeId: string; room: string; roomToken: string }
   | { action: 'read'; storeId: string; room: string; roomToken: string }
   | {
+      action: 'publish-sketch';
+      storeId: string;
+      room: string;
+      roomToken: string;
+      payload: CloudSyncPayload;
+      clientId: string;
+    }
+  | {
       action: 'write';
       storeId: string;
       room: string;
@@ -217,6 +225,38 @@ export async function writeGatewayRow(args: {
     return { ok: false, failure: readGatewayFailure(response) };
   } catch (error) {
     _cloudSyncReportNonFatal(null, 'writeGatewayRow.fetch', error, { throttleMs: 6000 });
+    return { ok: false, failure: readNetworkFailure(error) };
+  }
+}
+
+export async function publishGatewaySketchRow(args: {
+  fetchFn: CloudSyncFetchLike;
+  gatewayUrl: string;
+  anonKey: string;
+  storeId: string;
+  room: string;
+  roomToken: string;
+  payload: CloudSyncPayload;
+  clientId: string;
+}): Promise<CloudSyncUpsertResult> {
+  try {
+    const response = await postGateway(args.fetchFn, args.gatewayUrl, args.anonKey, {
+      action: 'publish-sketch',
+      storeId: args.storeId,
+      room: args.room,
+      roomToken: args.roomToken,
+      payload: args.payload,
+      clientId: args.clientId,
+    });
+    const row = readGatewayRowEnvelope(response.data);
+    const envelope = asRecord(response.data);
+    if (response.ok && row) {
+      return { ok: true, row, changed: envelope?.changed !== false };
+    }
+    if (response.status === 409 && row) return { ok: false, conflict: true, row };
+    return { ok: false, failure: readGatewayFailure(response) };
+  } catch (error) {
+    _cloudSyncReportNonFatal(null, 'publishGatewaySketchRow.fetch', error, { throttleMs: 6000 });
     return { ok: false, failure: readNetworkFailure(error) };
   }
 }

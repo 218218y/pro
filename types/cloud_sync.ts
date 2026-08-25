@@ -122,8 +122,12 @@ export type CloudSyncConflictResolutionResult =
 export type CloudSyncCredentialIssueResult =
   { ok: true; credential: CloudSyncRoomCredential } | { ok: false; failure: CloudSyncGatewayFailure };
 
+export type CloudSyncUpsertRowOptions = {
+  mode?: 'publish-sketch';
+};
+
 export type CloudSyncUpsertResult =
-  | { ok: true; row: CloudSyncStateRow }
+  | { ok: true; row: CloudSyncStateRow; changed?: boolean }
   | {
       ok: false;
       conflict: true;

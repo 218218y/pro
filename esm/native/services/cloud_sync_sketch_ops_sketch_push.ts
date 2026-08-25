@@ -4,12 +4,8 @@ import type {
   CloudSyncSketchSyncOptions,
 } from '../../../types';
 
-import { readCloudSyncRowWithPullActivity } from './cloud_sync_remote_read_support.js';
-import {
-  publishCloudSyncWriteActivity,
-  resolveCloudSyncSettledRowAfterWrite,
-} from './cloud_sync_remote_write_support.js';
-import { parseSketchPayload, resolveCloudSyncSketchRoom } from './cloud_sync_sketch_ops_shared.js';
+import { publishCloudSyncWriteActivity } from './cloud_sync_remote_write_support.js';
+import { resolveCloudSyncSketchRoom } from './cloud_sync_sketch_ops_shared.js';
 import type {
   CloudSyncSketchRoomMutableState,
   CreateCloudSyncSketchRoomOpsDeps,
@@ -33,10 +29,6 @@ function resolveCloudSyncSketchWriteIntent(
   if (!snapshot) return null;
   if (isDefaultCloudSketchSnapshot(deps.App, snapshot)) return { kind: 'clear' };
   return { kind: 'snapshot', data: snapshot.data, hash: snapshot.hash };
-}
-
-function isCloudSketchAlreadyCleared(existingPayload: ReturnType<typeof parseSketchPayload> | null): boolean {
-  return !!existingPayload && !existingPayload.hash && !existingPayload.sketch;
 }
 
 function buildCloudSketchPayload(
@@ -70,7 +62,6 @@ export function createCloudSyncSketchSyncNow(
     gatewayUrl,
     clientId,
     currentRoom,
-    getRow,
     upsertRow,
     emitRealtimeHint,
     runtimeStatus,
@@ -88,34 +79,24 @@ export function createCloudSyncSketchSyncNow(
       const intent = resolveCloudSyncSketchWriteIntent(deps, options);
       if (!intent) return { ok: false, reason: 'capture' };
 
-      const existingResult = await readCloudSyncRowWithPullActivity({
-        gatewayUrl,
-        anonKey: cfg.anonKey,
-        room: sketchRoom,
-        getRow,
-        runtimeStatus,
-        publishStatus,
-      });
-      if (existingResult.ok === false) {
-        return { ok: false, reason: 'write' };
-      }
-      const existing = existingResult.row;
-      const existingPayload = existing ? parseSketchPayload(existing.payload) : null;
-      if (intent.kind === 'clear') {
-        if (isCloudSketchAlreadyCleared(existingPayload)) {
-          return { ok: true, changed: false, reason: 'noop', hash: '' };
-        }
-      } else if (existingPayload?.hash && existingPayload.hash === intent.hash) {
-        return { ok: true, changed: false, reason: 'noop', hash: intent.hash };
-      }
-
       const res = await upsertRow(
         gatewayUrl,
         cfg.anonKey,
         sketchRoom,
-        buildCloudSketchPayload(intent, clientId)
+        buildCloudSketchPayload(intent, clientId),
+        { mode: 'publish-sketch' }
       );
       if (!res.ok) return { ok: false, reason: 'write' };
+
+      state.lastSketchPullUpdatedAt = res.row.updated_at;
+      state.sketchBaselineDone = true;
+
+      if (res.changed === false) {
+        return intent.kind === 'clear'
+          ? { ok: true, changed: false, reason: 'noop', hash: '' }
+          : { ok: true, changed: false, reason: 'noop', hash: intent.hash };
+      }
+
       publishCloudSyncWriteActivity({
         runtimeStatus,
         publishStatus,
@@ -123,18 +104,6 @@ export function createCloudSyncSketchSyncNow(
         hintScope: 'sketch',
         rowName: sketchRoom,
       });
-
-      await resolveCloudSyncSettledRowAfterWrite({
-        returnedRow: res.row,
-        reader: { gatewayUrl, anonKey: cfg.anonKey, room: sketchRoom, getRow },
-        runtimeStatus,
-        publishStatus,
-        onSettledUpdatedAt: value => {
-          state.lastSketchPullUpdatedAt = value;
-        },
-      });
-
-      state.sketchBaselineDone = true;
 
       return intent.kind === 'clear'
         ? { ok: true, changed: true, reason: 'cleared', hash: '' }

@@ -74,6 +74,55 @@ function response(status: number, body: unknown) {
   };
 }
 
+test('owner gateway authoritative sketch publish uses one gateway request without a cache-warming read', async () => {
+  const requests: RequestBody[] = [];
+  const fetch = async (_url: string, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body || '{}')) as RequestBody;
+    requests.push(body);
+    assert.equal(body.action, 'publish-sketch');
+    return response(200, {
+      ok: true,
+      changed: true,
+      row: {
+        room: body.room,
+        payload: body.payload,
+        revision: 8,
+        updated_at: '2026-08-25T09:00:00.000Z',
+        updated_by: 'client-local',
+      },
+    });
+  };
+  const io = createCloudSyncOwnerGatewayIo({
+    App: { deps: { browser: { fetch } } } as any,
+    cfg,
+    gatewayUrl: 'https://example.supabase.co/functions/v1/wp-cloud-sync-room',
+    rooms: createRooms(),
+    clientId: 'client-local',
+    runtimeStatus: createRuntimeStatus() as any,
+    publishStatus: () => {},
+  });
+  assert.ok(io);
+
+  const result = await io.upsertRow(
+    'gateway',
+    'anon-key',
+    'room_a::sketch::toSite2',
+    {
+      sketch: { settings: { width: 88 } },
+      sketchHash: 'hash-88',
+      sketchRev: 123,
+      sketchBy: 'client-local',
+    },
+    { mode: 'publish-sketch' }
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.ok && result.changed, true);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0]?.action, 'publish-sketch');
+  assert.equal(requests[0]?.expectedRevision, undefined);
+});
+
 test('owner gateway retries one stale write after a safe three-way merge', async () => {
   const requests: RequestBody[] = [];
   const basePayload = {
