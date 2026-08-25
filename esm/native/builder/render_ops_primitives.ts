@@ -7,6 +7,7 @@ import {
 import { INTERIOR_SHELF_ROUNDED_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
 import { applyShelfExposedEdgeMaterials } from './shelf_front_edge_material.js';
+import { getModuleSelectorMaterial } from './module_selector_material.js';
 import {
   axisAlignedBoxToCenterSize,
   boxFromCenterSize,
@@ -847,15 +848,18 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const z = __number(args.z);
     const moduleIndex = args.moduleIndex;
 
-    const hitBox = new THREE.Mesh(
-      new THREE.BoxGeometry(modWidth, cabinetBodyHeight, D),
-      new THREE.MeshBasicMaterial({
-        transparent: true,
-        opacity: 0.0,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      })
+    const hitMaterial = getModuleSelectorMaterial(
+      App,
+      'standard',
+      () =>
+        new THREE.MeshBasicMaterial({
+          transparent: true,
+          opacity: 0.0,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        })
     );
+    const hitBox = new THREE.Mesh(new THREE.BoxGeometry(modWidth, cabinetBodyHeight, D), hitMaterial);
     hitBox.position.set(x, y, z);
     const __wpStack = typeof args.__wpStack === 'string' ? String(args.__wpStack) : undefined;
     hitBox.userData = { moduleIndex, isModuleSelector: true, __wpStack };

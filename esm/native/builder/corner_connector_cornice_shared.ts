@@ -5,6 +5,7 @@
 
 import { CARCASS_CORNICE_COMMON_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import { CORNER_CONNECTOR_CORNICE_HIT_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import { getModuleSelectorMaterial } from './module_selector_material.js';
 import type { UnknownRecord } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
 
@@ -152,13 +153,20 @@ export function appendCornerConnectorCorniceHitArea(args: {
 
   const bbW = Math.max(CORNER_CONNECTOR_CORNICE_HIT_POLICY.corniceHitMinWidthM, L);
   const bbD = Math.max(CORNER_CONNECTOR_CORNICE_HIT_POLICY.corniceHitMinWidthM, L);
-  const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0, side: THREE.DoubleSide });
-  // IMPORTANT: material.visible=false is ignored by the picking system.
-  // Use a fully-transparent material so the hitbox remains clickable.
-  // Also: depthWrite MUST be disabled, otherwise this invisible mesh can hide transparent curtains/glass
-  // (it writes to the depth buffer and blocks rendering when doors are closed).
-  hitMat.depthWrite = false;
-  hitMat.colorWrite = false;
+  const hitMat = getModuleSelectorMaterial(ctx.App, 'picking-only', () => {
+    const material = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0.0,
+      side: THREE.DoubleSide,
+    });
+    // IMPORTANT: material.visible=false is ignored by the picking system.
+    // Use a fully-transparent material so the hitbox remains clickable.
+    // Also: depthWrite MUST be disabled, otherwise this invisible mesh can hide transparent curtains/glass
+    // (it writes to the depth buffer and blocks rendering when doors are closed).
+    material.depthWrite = false;
+    material.colorWrite = false;
+    return material;
+  });
 
   const hitHeight = Math.max(
     CORNER_CONNECTOR_CORNICE_HIT_POLICY.corniceHitMinWidthM,
