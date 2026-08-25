@@ -223,9 +223,11 @@ test('cloud sync tabs gate tracks control-row push and pull activity through run
   }
 });
 
-test('cloud sync sketch preflight read marks pull activity before the push path settles', async () => {
+test('cloud sync sketch publish stays a push-only operation without a browser preflight pull', async () => {
   const runtimeStatus = createRuntimeStatus();
   const publishSnapshots: Array<{ lastPullSuccessAt: number; lastPushAt: number }> = [];
+  let getRowCalls = 0;
+  let publishMode = '';
   let nowMs = 260;
   const realNow = Date.now;
   Date.now = () => (nowMs += 10);
@@ -245,9 +247,18 @@ test('cloud sync sketch preflight read marks pull activity before the push path 
       gatewayUrl: 'https://example.test',
       clientId: 'client-1',
       currentRoom: () => 'room-a',
-      getRow: async () => ({ ok: true, row: null }) as any,
-      upsertRow: async () =>
-        ({ ok: true, row: { updated_at: '2026-04-13T10:02:30.000Z', payload: {} } }) as any,
+      getRow: async () => {
+        getRowCalls += 1;
+        return { ok: true, row: null } as any;
+      },
+      upsertRow: async (_gateway, _anon, _room, _payload, options) => {
+        publishMode = String(options?.mode || '');
+        return {
+          ok: true,
+          changed: true,
+          row: { updated_at: '2026-04-13T10:02:30.000Z', payload: {} },
+        } as any;
+      },
       emitRealtimeHint: () => undefined,
       runtimeStatus,
       publishStatus: () => {
@@ -261,13 +272,11 @@ test('cloud sync sketch preflight read marks pull activity before the push path 
 
     await ops.syncSketchNow();
 
-    assert.equal(runtimeStatus.lastPullSuccessAt > 0, true);
-    assert.equal(runtimeStatus.lastPushAt > runtimeStatus.lastPullSuccessAt, true);
-    assert.deepEqual(publishSnapshots, [
-      { lastPullSuccessAt: 0, lastPushAt: 0 },
-      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: 0 },
-      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: runtimeStatus.lastPushAt },
-    ]);
+    assert.equal(getRowCalls, 0);
+    assert.equal(publishMode, 'publish-sketch');
+    assert.equal(runtimeStatus.lastPullSuccessAt, 0);
+    assert.equal(runtimeStatus.lastPushAt > 0, true);
+    assert.deepEqual(publishSnapshots, [{ lastPullSuccessAt: 0, lastPushAt: runtimeStatus.lastPushAt }]);
   } finally {
     Date.now = realNow;
   }

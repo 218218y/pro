@@ -51,10 +51,15 @@ test('cloud sync sketch room ops keep a thin facade over state/load/pull/push/ru
 
   assertMatchesAll(assert, push, [
     /cloud_sync_sketch_ops_sketch_state\.js/,
-    /readCloudSyncRowWithPullActivity\(/,
-    /resolveCloudSyncSettledRowAfterWrite\(/,
+    /mode:\s*['"]publish-sketch['"]/,
+    /state\.lastSketchPullUpdatedAt\s*=\s*res\.row\.updated_at/,
+    /res\.changed\s*===\s*false/,
     /publishCloudSyncWriteActivity\(/,
     /export function createCloudSyncSketchSyncNow\(/,
+  ]);
+  assertLacksAll(assert, push, [
+    /readCloudSyncRowWithPullActivity\(/,
+    /resolveCloudSyncSettledRowAfterWrite\(/,
   ]);
 
   assertMatchesAll(assert, runtime, [
