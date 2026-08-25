@@ -39,15 +39,32 @@ export function createMaterialSnapshotBinding(
     factory(color, type, useCustomTexture, customTextureDataURL, snapshot);
 }
 
+function markCachedMaterialLifetime<T>(material: T): T {
+  if (!material || typeof material !== 'object') return material;
+  const cachedMaterial = material as MaterialLike;
+  try {
+    const userData =
+      cachedMaterial.userData && typeof cachedMaterial.userData === 'object' ? cachedMaterial.userData : {};
+    userData.isCached = true;
+    cachedMaterial.userData = userData;
+  } catch {
+    // render-metadata best-effort: cache metadata is secondary to the material instance.
+  }
+  return material;
+}
+
 function getSketchMaterial(App: AppLike, cacheKey: string) {
   const runtime = ensureMaterialsRuntime(App);
   const { renderCache, renderMeta } = runtime;
   const THREE = getMaterialsTHREE(App);
-  if (!renderCache.materialCache.has(cacheKey)) {
-    renderCache.materialCache.set(cacheKey, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  let material = renderCache.materialCache.get(cacheKey);
+  if (!material) {
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    renderCache.materialCache.set(cacheKey, material);
   }
+  markCachedMaterialLifetime(material);
   touchMaterialsCacheMeta(App, renderMeta.material, cacheKey);
-  return renderCache.materialCache.get(cacheKey);
+  return material;
 }
 
 function resolveMetalColor(color: unknown): string | number {
@@ -106,6 +123,7 @@ export function getMaterial(
 
   const cachedMat = renderCache.materialCache.get(cacheKey);
   if (cachedMat) {
+    markCachedMaterialLifetime(cachedMat);
     touchMaterialsCacheMeta(App, renderMeta.material, cacheKey);
     return cachedMat;
   }
@@ -125,11 +143,7 @@ export function getMaterial(
     newMat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
   }
 
-  try {
-    newMat.userData = { isCached: true };
-  } catch {
-    // render-metadata best-effort: cache metadata is secondary to the material instance.
-  }
+  markCachedMaterialLifetime(newMat);
 
   touchMaterialsCacheMeta(App, renderMeta.material, cacheKey);
   renderCache.materialCache.set(cacheKey, newMat);
