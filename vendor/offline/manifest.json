@@ -109,21 +109,21 @@
     "launcher": "bin/tsc"
   },
   "oxlint": {
-    "version": "1.79.0",
+    "version": "1.80.0",
     "package": {
       "lockPath": "node_modules/oxlint",
       "installPath": "node_modules/oxlint",
-      "file": "vendor/offline/oxlint/oxlint-1.79.0.tgz",
-      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.79.0.tgz",
-      "integrity": "sha512-hVJ9hq9m2unPS+Of4eJJgCPdIeCC+3DHEUX3tkmrPJr3OK2hz7PhXwgC+ZP71ZcYu8cCDEtQrqLxWNvxBppBVg=="
+      "file": "vendor/offline/oxlint/oxlint-1.80.0.tgz",
+      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.80.0.tgz",
+      "integrity": "sha512-5nTiSps4qdbCWLbxzuO00alHkEO2exR9YMN/ig6QXWrLsYSG0KaObOAM+l6oU2LcKPWoSAGYbkZIGEu1ViiWKA=="
     },
     "platforms": {
       "linux-x64": {
         "lockPath": "node_modules/@oxlint/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxlint/binding-linux-x64-gnu",
-        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.79.0.tgz",
-        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.79.0.tgz",
-        "integrity": "sha512-iFZL02deziHslb3jEX9KdqlAkYoo4fGyotchKDzdfK1f5mxlIBeiQeHhvK3iFpuEJSB4ma/qeFn9oxPiwnhUPQ==",
+        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.80.0.tgz",
+        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.80.0.tgz",
+        "integrity": "sha512-vSVh5cSo3Xxs6ghBCcFJlpbkbENzDog1qXtoXLa/HC3aCrR4XO76GZbXmQoCPHnu99nQpdCeC3H9tdNICfDh7A==",
         "runtime": "gnu"
       }
     },
@@ -173,21 +173,21 @@
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.7.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.7.tgz",
-            "integrity": "sha512-26wVFEgs6gbe7wmzCrud1pK8q6oOgcUu7OOF24BuazB8ZUCskU9ZSLrCjoWIFVxx09rjAxsXxPleaWowHvdPCA=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.8.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.8.tgz",
+            "integrity": "sha512-/SaLcvlqGWdm0HSCWMgHu7cjJiQXfP8/mOY+6dUyV9flQz7sPBBZ+ed2zYtoukojPmxOaL7bm+d/G4GeWWoN7g=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.7.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.7.tgz",
-            "integrity": "sha512-0tT9KzEcTfb6MWdUWIDfy6uq6UNF691r/9NfXxxl8s9+G5QrD7VP1UC+PAwzsCzJTClIKyidNau/grYTL+QmHw=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.8.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.8.tgz",
+            "integrity": "sha512-TWM2XWJoitLiIPCvgJh7SriC+L/T9qkYCVzC66AidsZy0QP1hkKzBzVwshCdcA3q6fIn3yE0ISbq4lMJSy8jFw=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -218,21 +218,21 @@
           },
           {
             "name": "@supabase/auth-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/auth-js",
             "installPath": "node_modules/@supabase/auth-js",
-            "file": "vendor/offline/runtime/supabase__auth-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.3.tgz",
-            "integrity": "sha512-NA0rsgAlWZPvbhw8aUdmgfpHVgUAcd8zK5ov43l++o1bLIPXZhRiAlRobhwF5AatQuovpqxsMH50F4oyyV4XZw=="
+            "file": "vendor/offline/runtime/supabase__auth-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.4.tgz",
+            "integrity": "sha512-z8DesgwLzKM5PiT0yNmJU8VJyh1zAhYi+20Z7drdJQLXg/wWW4yGt/un+He5ERYUo94Vz66t5aeyr1DIDemI5A=="
           },
           {
             "name": "@supabase/functions-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/functions-js",
             "installPath": "node_modules/@supabase/functions-js",
-            "file": "vendor/offline/runtime/supabase__functions-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.3.tgz",
-            "integrity": "sha512-gfv481mTOVWtZIJgXupxZpni2V2UWPf6jeF/jOK7HdMHdH+mt6sU0sHHwf0POsPip8ltlulu9OUHgwVzl5ddRw=="
+            "file": "vendor/offline/runtime/supabase__functions-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.4.tgz",
+            "integrity": "sha512-DQ0aVH8wSQAccVqNoEkec62qCu2QRNyoGN53RqsVZ1k6F1zq4/v8scrlR6LNT2RJmT97apiTmORijPVhErCS2g=="
           },
           {
             "name": "@supabase/phoenix",
@@ -245,39 +245,39 @@
           },
           {
             "name": "@supabase/postgrest-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/postgrest-js",
             "installPath": "node_modules/@supabase/postgrest-js",
-            "file": "vendor/offline/runtime/supabase__postgrest-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.3.tgz",
-            "integrity": "sha512-+Mf6uCpzr00bqxwX8hTK2X2L9eAL/1vuOjdEjx6upz9ulb0RmQT16XeU/JkMUlVHw/B46ZnPa2busY4Kd9YCzw=="
+            "file": "vendor/offline/runtime/supabase__postgrest-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.4.tgz",
+            "integrity": "sha512-uaubtPSeg2TR4wrtfQoQWgkTAe+a0qWX2KhmwvTfNl5mGN9+U7owiJt6abk3o/V6O899PSRD1yzxs5RlF4xTug=="
           },
           {
             "name": "@supabase/realtime-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/realtime-js",
             "installPath": "node_modules/@supabase/realtime-js",
-            "file": "vendor/offline/runtime/supabase__realtime-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.3.tgz",
-            "integrity": "sha512-E6wljXWs7DUOloyIB69i3YFInWE6IyCvgTAbQ0KYxOHv26FdA1KzEXTuzxrYEdf70t406Z9BRwUlGyclGF2FXA=="
+            "file": "vendor/offline/runtime/supabase__realtime-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.4.tgz",
+            "integrity": "sha512-vZ+j079SKrM0Xiq7MJCvQKLDpaH2kfKfLY68xuQE1sqsCsMmx1CyrDBJHsxZ3cX01VOs5SI9igmoZAF3BmdZxw=="
           },
           {
             "name": "@supabase/storage-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/storage-js",
             "installPath": "node_modules/@supabase/storage-js",
-            "file": "vendor/offline/runtime/supabase__storage-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.3.tgz",
-            "integrity": "sha512-oSK61tzlUvg+BWPqpKQCu9qqonsO26btaoAR9D6Gest2aj7xUqToj9rKyaoYOJczkhg9BjqA1REbYy9tPI4bDA=="
+            "file": "vendor/offline/runtime/supabase__storage-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.4.tgz",
+            "integrity": "sha512-lQ0JemuTlMIXVKgSci1qez8yPnM5hyDngeAfEBjZS2Om4D+Cus0EE5BE6glFobrxdyii1OF4UzWfF0zcQgDq5A=="
           },
           {
             "name": "@supabase/supabase-js",
-            "version": "2.112.3",
+            "version": "2.112.4",
             "lockPath": "node_modules/@supabase/supabase-js",
             "installPath": "node_modules/@supabase/supabase-js",
-            "file": "vendor/offline/runtime/supabase__supabase-js-2.112.3.tgz",
-            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.3.tgz",
-            "integrity": "sha512-Jv1bxVQmEJNkjvPEhFaKjPzsh+Ozyew6lWGD+SoYcsclDEP1z7yEvKvfUQfzy0DkxRIQnZNxmmWtAzw5XLTQoA=="
+            "file": "vendor/offline/runtime/supabase__supabase-js-2.112.4.tgz",
+            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.4.tgz",
+            "integrity": "sha512-UiCX1udlFY1fQQrO7Z3GU7obQsju0w5Vk9mOOwalfo/+Gy+tahWVenSSuu5E/GTy/q//HxvGv2IrCdW66/61kw=="
           },
           {
             "name": "iceberg-js",
@@ -385,22 +385,13 @@
         "packageCount": 16,
         "packages": [
           {
-            "name": "@oxc-project/types",
-            "version": "0.146.0",
-            "lockPath": "node_modules/@oxc-project/types",
-            "installPath": "node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.146.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.146.0.tgz",
-            "integrity": "sha512-XC0QsnnhVe7sLIWmYmdPw7x5P0h4W8vUU3Nv1ySgWXtvCz8NizoAEpGXA0sOYoJQV2Rl13LgURAHQ5cI5ILCSA=="
-          },
-          {
             "name": "@rolldown/binding-linux-x64-gnu",
-            "version": "1.2.5",
+            "version": "1.2.6",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
             "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
-            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.5.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.5.tgz",
-            "integrity": "sha512-Mgj59/HTuYeK9Gz2MA+mBWKnHsAgkBSec15ZMb1st3oIfFbX7gCjOae7GydHhzcyQi9Z/7M1QuN9bR3oFqF0jQ=="
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.6.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.6.tgz",
+            "integrity": "sha512-KekI0gS0wLxe1UBSQSjenBVwou/JkcQPDzBPICGZjxUv9k3RteHDPBQaiOicZUFKRIH2wKEimGwVpnJsbPzu7w=="
           },
           {
             "name": "@rolldown/pluginutils",
@@ -413,12 +404,12 @@
           },
           {
             "name": "@vitejs/plugin-react",
-            "version": "6.1.0",
+            "version": "6.1.1",
             "lockPath": "node_modules/@vitejs/plugin-react",
             "installPath": "node_modules/@vitejs/plugin-react",
-            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.0.tgz",
-            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.0.tgz",
-            "integrity": "sha512-qd2BzUBehkov86WFhg0JkEFEYyCLG9uPCe6qWTY/kRlss9OvJrOF2UbIWT7p+8IzZHkEu0DNGHc4HSv+JdDLsw=="
+            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.1.tgz",
+            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.1.tgz",
+            "integrity": "sha512-yxLaQV9gkhS8ezJqCM6+ndU7mDY6gqAg75NQ+0IjwEI8IYOmQCgkRwHKVSfWXW076DsqMo0Dk+0FK1U+M5RgFw=="
           },
           {
             "name": "detect-libc",
@@ -476,12 +467,12 @@
           },
           {
             "name": "picomatch",
-            "version": "4.0.5",
+            "version": "4.0.7",
             "lockPath": "node_modules/picomatch",
             "installPath": "node_modules/picomatch",
-            "file": "vendor/offline/vite/picomatch-4.0.5.tgz",
-            "url": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.5.tgz",
-            "integrity": "sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A=="
+            "file": "vendor/offline/vite/picomatch-4.0.7.tgz",
+            "url": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+            "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="
           },
           {
             "name": "postcss",
@@ -494,12 +485,21 @@
           },
           {
             "name": "rolldown",
-            "version": "1.2.5",
+            "version": "1.2.6",
             "lockPath": "node_modules/rolldown",
             "installPath": "node_modules/rolldown",
-            "file": "vendor/offline/vite/rolldown-1.2.5.tgz",
-            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.5.tgz",
-            "integrity": "sha512-VD2IE5PUG4Oj8zz2VGykiYd5wbnjdIiSsNQb8Qu5B+noEp+A78mu2iVvpp27g8es14Tk9rofNs5Tku9iQCS4fA=="
+            "file": "vendor/offline/vite/rolldown-1.2.6.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.6.tgz",
+            "integrity": "sha512-vMM4q3aixf46GiF1Kok8jDPFsEpXgFWGjUHXNkNHNm+Y2adXAG2dbX91jkti3i0ZRsOlcmbuzAz1poObSHCmUA=="
+          },
+          {
+            "name": "@oxc-project/types",
+            "version": "0.147.0",
+            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.147.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.147.0.tgz",
+            "integrity": "sha512-IJ3s6ltHLp45S0bh7phkX+gJO7A1Wuz2EaqpAhb8WjqDwbzMiWKHhyyT42tskaWjEYXtHtVCPpnBJVT9+dcRLg=="
           },
           {
             "name": "source-map-js",
@@ -761,12 +761,12 @@
           },
           {
             "name": "eslint",
-            "version": "10.9.0",
+            "version": "10.9.1",
             "lockPath": "node_modules/eslint",
             "installPath": "node_modules/eslint",
-            "file": "vendor/offline/eslint/eslint-10.9.0.tgz",
-            "url": "https://registry.npmjs.org/eslint/-/eslint-10.9.0.tgz",
-            "integrity": "sha512-5KeEOJZBfEVA47boFiBsf+6MmmJpffM7qEBg4pLla2e4nlKgdKlqCW0oSLOGsT8Wl5uCGJptLV1bkaiShj90Gw=="
+            "file": "vendor/offline/eslint/eslint-10.9.1.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.9.1.tgz",
+            "integrity": "sha512-9VaAkDURekixUQJy0oJYl2DcN6oKMfxay7XzaGYAWQwsb6qfKf+x76R2k1L8kb1boc+FyCAaTA9GmiKaaiaF+A=="
           },
           {
             "name": "eslint-scope",
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "8af9fcd29c2199b32823cd00b6bae45aae6e515e1e82a21f833efe04726b0c46"
+    "lockfileSha256": "46752bd42203b09e99e09672c91e0c34ee775ce3e34c668766e59512d478ab0b"
   }
 }
