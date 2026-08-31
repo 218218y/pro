@@ -86,11 +86,12 @@ function StructureTabInner(props: { active: boolean }) {
     chestCommodeMirrorWidthManual: state.chestCommodeMirrorWidthManual,
   });
 
-  const noMainWardrobeActive = !state.isSliding && !state.isChestMode && state.doors === 0;
-  const auxiliaryModesVisible = !state.isSliding && !noMainWardrobeActive;
+  const mainWardrobeAbsent = !state.isSliding && !state.isChestMode && state.doors === 0;
+  const noMainWardrobeActive = mainWardrobeAbsent && !state.cornerMode;
+  const auxiliaryModesVisible = !state.isSliding && !mainWardrobeAbsent;
   const effectiveLibraryMode = auxiliaryModesVisible && state.isLibraryMode;
   const effectiveChestMode = auxiliaryModesVisible && state.isChestMode;
-  const hideWardrobeTypeOptions = effectiveChestMode || noMainWardrobeActive;
+  const hideWardrobeTypeOptions = effectiveChestMode || mainWardrobeAbsent;
   const dimensionsSectionVisible = !effectiveLibraryMode && !effectiveChestMode;
   const restoreMainWardrobe = useCallback(() => {
     if (!noMainWardrobeActive) return;
@@ -115,6 +116,7 @@ function StructureTabInner(props: { active: boolean }) {
     height: state.height,
     depth: state.depth,
     doors: state.doors,
+    allowNoMainWardrobe: state.cornerMode,
     cellDimsEditActive: state.cellDimsEditActive,
     cellDimsPanelOpen: state.cellDimsPanelOpen,
     cellDimsHexPanelOpen: state.cellDimsHexPanelOpen,
@@ -176,7 +178,7 @@ function StructureTabInner(props: { active: boolean }) {
 
       <StructureDimensionsSection visible={dimensionsSectionVisible} {...dimensionsProps} />
 
-      {!noMainWardrobeActive ? (
+      {!mainWardrobeAbsent ? (
         <StructureBodySection
           baseType={state.baseType}
           baseLegStyle={state.baseLegStyle}

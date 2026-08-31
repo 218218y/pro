@@ -14,6 +14,7 @@ import {
 export function StructureDimensionsMainFields(props: {
   isSliding: StructureDimensionsContentProps['isSliding'];
   doors: StructureDimensionsContentProps['doors'];
+  allowNoMainWardrobe?: StructureDimensionsContentProps['allowNoMainWardrobe'];
   width: StructureDimensionsContentProps['width'];
   height: StructureDimensionsContentProps['height'];
   depth: StructureDimensionsContentProps['depth'];
@@ -62,6 +63,7 @@ export function StructureDimensionsMainFields(props: {
             bounds={readStructureDimensionBounds({
               key: 'doors',
               wardrobeType: props.isSliding ? 'sliding' : 'hinged',
+              allowNoMainWardrobe: props.allowNoMainWardrobe === true,
             })}
           />
         </div>
@@ -78,6 +80,7 @@ export function StructureDimensionsMainFields(props: {
               key: 'width',
               wardrobeType: props.isSliding ? 'sliding' : 'hinged',
               doors: props.doors,
+              allowNoMainWardrobe: props.allowNoMainWardrobe === true,
             })}
           />
 

@@ -1,7 +1,7 @@
 import { STACK_SPLIT_POLICY } from './stack_split_policy.js';
 
 export const WARDROBE_LIMITS = Object.freeze({
-  width: Object.freeze({ minCm: 40, chestMinCm: 20, maxCm: 560 }),
+  width: Object.freeze({ minCm: 40, hingedSingleDoorMinCm: 20, chestMinCm: 20, maxCm: 560 }),
   height: Object.freeze({ minCm: 100, chestMinCm: 20, maxCm: 300 }),
   depth: Object.freeze({ minCm: 20, maxCm: 150 }),
   doors: Object.freeze({ min: 0, slidingMin: 2, max: 14 }),
@@ -27,6 +27,7 @@ export const WARDROBE_LIMITS = Object.freeze({
 });
 
 export const WARDROBE_WIDTH_MIN: number = WARDROBE_LIMITS.width.minCm;
+export const WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN: number = WARDROBE_LIMITS.width.hingedSingleDoorMinCm;
 export const WARDROBE_CHEST_WIDTH_MIN: number = WARDROBE_LIMITS.width.chestMinCm;
 export const WARDROBE_WIDTH_MAX: number = WARDROBE_LIMITS.width.maxCm;
 

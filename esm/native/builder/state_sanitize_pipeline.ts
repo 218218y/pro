@@ -79,9 +79,6 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const minDoorsAllowed = isSliding
     ? WARDROBE_SANITIZATION_POLICY.limits.doors.slidingMin
     : WARDROBE_SANITIZATION_POLICY.limits.doors.min;
-  const minWLimit = isChestMode
-    ? WARDROBE_SANITIZATION_POLICY.limits.width.chestMinCm
-    : WARDROBE_SANITIZATION_POLICY.limits.width.minCm;
   const minHLimit = isChestMode
     ? WARDROBE_SANITIZATION_POLICY.limits.height.chestMinCm
     : WARDROBE_SANITIZATION_POLICY.limits.height.minCm;
@@ -93,6 +90,11 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const rawHeight = _toNum(raw.height, WARDROBE_SANITIZATION_POLICY.defaults.heightCm);
   const rawDepth = _toNum(raw.depth, defaultDepth);
   const rawDoors = _toInt(raw.doors != null ? raw.doors : ui.doors, defaultDoors);
+  const minWLimit = isChestMode
+    ? WARDROBE_SANITIZATION_POLICY.limits.width.chestMinCm
+    : !isSliding && rawDoors === 1
+      ? WARDROBE_SANITIZATION_POLICY.limits.width.hingedSingleDoorMinCm
+      : WARDROBE_SANITIZATION_POLICY.limits.width.minCm;
   const rawChestDrawers = _toInt(
     raw.chestDrawersCount,
     WARDROBE_SANITIZATION_POLICY.defaults.chestDrawersCount

@@ -9,11 +9,12 @@ import { StructureDimensionsMainFields } from './structure_tab_dimensions_sectio
 import { StructureStackSplitControls } from './structure_tab_dimensions_section_stack_split.js';
 
 export function StructureDimensionsContent(props: StructureDimensionsContentProps): ReactElement {
-  const noMainWardrobeActive = !props.isSliding && Number(props.doors) === 0;
+  const noMainWardrobeActive = !!props.noMainWardrobeActive;
   const mainFields = (
     <StructureDimensionsMainFields
       isSliding={props.isSliding}
       doors={props.doors}
+      allowNoMainWardrobe={props.allowNoMainWardrobe}
       width={props.width}
       height={props.height}
       depth={props.depth}

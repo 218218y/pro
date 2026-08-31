@@ -6,7 +6,7 @@ import {
   setUiCornerSide,
   setUiCornerWidth,
 } from '../actions/store_actions.js';
-import { adjustCameraForCorner, resetCameraPreset } from '../../../services/api.js';
+import { adjustCameraForCorner, getUiFeedback, resetCameraPreset } from '../../../services/api.js';
 import {
   DEFAULT_CORNER_DOORS,
   DEFAULT_CORNER_WIDTH,
@@ -28,6 +28,15 @@ import { createStructureTabRecomputeWriteMeta } from './structure_tab_meta.js';
 
 export function createStructureTabCornerActionsController(args: StructureTabCornerChestActionsArgs) {
   const toggleCornerMode = (nextOn: boolean) => {
+    if (!nextOn && Math.max(0, Math.round(Number(args.doors) || 0)) === 0) {
+      try {
+        getUiFeedback(args.app).toast('כדי לבטל ארון פינתי, בחר קודם לפחות דלת אחת בארון הראשי.', 'error');
+      } catch {
+        // The invariant is primary; feedback is best-effort only.
+      }
+      return;
+    }
+
     const source = 'react:structure:corner';
     const actionMeta = createStructureTabRecomputeWriteMeta(source);
     const patch: CornerPatch = { cornerMode: !!nextOn };

@@ -73,6 +73,37 @@ test('chest mode keeps non-zero width even though doors count is zero', () => {
   assert.equal(dims.chestDrawersCount, 2);
 });
 
+test('single-door hinged wardrobe accepts 20cm while multi-door minimum remains 40cm', () => {
+  const singleDoor = sanitizeBuildDimsAndSyncRuntime({
+    App: null,
+    ui: {
+      raw: { width: 20, height: 240, depth: 55, doors: 1, chestDrawersCount: 4 },
+    },
+    cfg: { wardrobeType: 'hinged' },
+  });
+  assert.equal(singleDoor.skipBuild, false);
+  assert.equal(singleDoor.widthCm, 20);
+  assert.equal(singleDoor.doorsCount, 1);
+
+  const singleDoorBelowMin = sanitizeBuildDimsAndSyncRuntime({
+    App: null,
+    ui: {
+      raw: { width: 19, height: 240, depth: 55, doors: 1, chestDrawersCount: 4 },
+    },
+    cfg: { wardrobeType: 'hinged' },
+  });
+  assert.equal(singleDoorBelowMin.widthCm, 20);
+
+  const twoDoors = sanitizeBuildDimsAndSyncRuntime({
+    App: null,
+    ui: {
+      raw: { width: 20, height: 240, depth: 55, doors: 2, chestDrawersCount: 4 },
+    },
+    cfg: { wardrobeType: 'hinged' },
+  });
+  assert.equal(twoDoors.widthCm, 40);
+});
+
 test('regular hinged wardrobe with zero doors still collapses width to zero', () => {
   const dims = sanitizeBuildDimsAndSyncRuntime({
     App: null,
@@ -120,6 +151,11 @@ test('sanitizer uses sliding depth and door fallbacks when raw values are missin
 
 test('active dimension drafts outside their exact limits skip without builder or runtime writes', () => {
   const cases = [
+    {
+      activeId: 'width',
+      wardrobeType: 'hinged',
+      raw: { width: 19, height: 240, depth: 55, doors: 1 },
+    },
     {
       activeId: 'width',
       wardrobeType: 'hinged',

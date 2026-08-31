@@ -22,6 +22,7 @@ import {
   WARDROBE_DOORS_MAX,
   WARDROBE_HEIGHT_MAX,
   WARDROBE_HEIGHT_MIN,
+  WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN,
   WARDROBE_SLIDING_DOORS_MIN,
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
@@ -72,8 +73,16 @@ function maxAtLeast(min: number, value: number): number {
   return Math.max(min, value);
 }
 
+function resolveMainWardrobeWidthMin(args: StructureDimensionContext): number {
+  if (args.isChestMode) return WARDROBE_CHEST_WIDTH_MIN;
+  const doors = Math.round(Number(args.doors));
+  if (args.wardrobeType !== 'sliding' && Number.isFinite(doors) && doors === 1) {
+    return WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN;
+  }
+  return WARDROBE_WIDTH_MIN;
+}
+
 function isZeroDoorHingedWardrobe(args: StructureDimensionContext): boolean {
-  if (args.allowNoMainWardrobe) return true;
   if (args.wardrobeType === 'sliding') return false;
   const doors = Math.round(Number(args.doors));
   return Number.isFinite(doors) && doors === 0;
@@ -86,7 +95,7 @@ export function readStructureDimensionBounds(args: StructureDimensionContext): S
   switch (args.key) {
     case 'width':
       return {
-        min: isChestMode ? WARDROBE_CHEST_WIDTH_MIN : WARDROBE_WIDTH_MIN,
+        min: resolveMainWardrobeWidthMin(args),
         max: WARDROBE_WIDTH_MAX,
         allowZero: !isChestMode && isZeroDoorHingedWardrobe(args),
       };
@@ -99,7 +108,7 @@ export function readStructureDimensionBounds(args: StructureDimensionContext): S
       return { min: WARDROBE_DEPTH_MIN, max: WARDROBE_DEPTH_MAX };
     case 'doors':
       return {
-        min: isSliding ? WARDROBE_SLIDING_DOORS_MIN : 0,
+        min: isSliding ? WARDROBE_SLIDING_DOORS_MIN : args.allowNoMainWardrobe ? 0 : 1,
         max: WARDROBE_DOORS_MAX,
         integer: true,
       };

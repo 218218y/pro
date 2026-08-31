@@ -549,4 +549,11 @@ test('sketch no-main active detection reads canonical ui.raw and ignores retired
     }),
     true
   );
+  assert.equal(
+    isSketchNoMainWardrobeActive({
+      ui: { raw: { doors: 0 }, doors: 0, cornerMode: true } as any,
+      wardrobeType: 'hinged',
+    }),
+    false
+  );
 });

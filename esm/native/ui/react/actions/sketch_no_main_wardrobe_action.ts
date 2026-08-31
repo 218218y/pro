@@ -355,7 +355,8 @@ export function isSketchNoMainWardrobeActive(args: {
 }): boolean {
   return (
     args.wardrobeType !== 'sliding' &&
-    readUiRawInt(args.ui || {}, 'doors', WARDROBE_DEFAULTS.byType.hinged.doorsCount) === 0
+    readUiRawInt(args.ui || {}, 'doors', WARDROBE_DEFAULTS.byType.hinged.doorsCount) === 0 &&
+    args.ui?.cornerMode !== true
   );
 }
 

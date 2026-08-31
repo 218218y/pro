@@ -72,6 +72,7 @@ function loadTsModule(relPath, calls, cache = new Map()) {
         WARDROBE_DOORS_MAX: 14,
         WARDROBE_HEIGHT_MAX: 300,
         WARDROBE_HEIGHT_MIN: 100,
+        WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN: 20,
         WARDROBE_SLIDING_DOORS_MIN: 2,
         WARDROBE_WIDTH_MAX: 560,
         WARDROBE_WIDTH_MIN: 40,
@@ -222,6 +223,125 @@ test('[structure-raw-mutations] doors commit collapses auto-width fix into the s
   assert.ok(!calls.some(entry => entry[0] === 'setManualWidth'));
 });
 
+test('[structure-raw-mutations] regular hinged doors cannot be reduced to zero from Structure tab', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({ getDisplayedRawValue: key => ({ doors: 4, width: 160 })[key] || 0 }),
+    key: 'doors',
+    nextValue: 0,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(
+    JSON.stringify(batchCall[1].statePatch),
+    JSON.stringify({
+      ui: { raw: { doors: 1, width: 40 }, singleDoorPos: 'left' },
+    })
+  );
+});
+
+test('[structure-raw-mutations] corner mode may intentionally reduce main hinged doors to zero', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({
+      allowNoMainWardrobe: true,
+      getDisplayedRawValue: key => ({ doors: 4, width: 160 })[key] || 0,
+    }),
+    key: 'doors',
+    nextValue: 0,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(
+    JSON.stringify(batchCall[1].statePatch),
+    JSON.stringify({
+      ui: { raw: { doors: 0, width: 0 } },
+    })
+  );
+});
+
+test('[structure-dimension-constraints] Structure tab door minimum is one except for sliding and corner-only-capable mode', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts', calls);
+
+  assert.equal(
+    JSON.stringify(mod.readStructureDimensionBounds({ key: 'doors', wardrobeType: 'hinged' })),
+    JSON.stringify({ min: 1, max: 14, integer: true })
+  );
+  assert.equal(
+    JSON.stringify(
+      mod.readStructureDimensionBounds({
+        key: 'doors',
+        wardrobeType: 'hinged',
+        allowNoMainWardrobe: true,
+      })
+    ),
+    JSON.stringify({ min: 0, max: 14, integer: true })
+  );
+  assert.equal(
+    JSON.stringify(mod.readStructureDimensionBounds({ key: 'doors', wardrobeType: 'sliding' })),
+    JSON.stringify({ min: 2, max: 14, integer: true })
+  );
+});
+
+test('[structure-dimension-constraints] one-door hinged width minimum is 20cm without weakening other wardrobes', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts', calls);
+
+  assert.equal(
+    JSON.stringify(mod.readStructureDimensionBounds({ key: 'width', wardrobeType: 'hinged', doors: 1 })),
+    JSON.stringify({ min: 20, max: 560, allowZero: false })
+  );
+  assert.equal(
+    JSON.stringify(mod.readStructureDimensionBounds({ key: 'width', wardrobeType: 'hinged', doors: 2 })),
+    JSON.stringify({ min: 40, max: 560, allowZero: false })
+  );
+  assert.equal(
+    JSON.stringify(mod.readStructureDimensionBounds({ key: 'width', wardrobeType: 'sliding', doors: 2 })),
+    JSON.stringify({ min: 40, max: 560, allowZero: false })
+  );
+  assert.equal(
+    JSON.stringify(
+      mod.readStructureDimensionBounds({
+        key: 'width',
+        wardrobeType: 'hinged',
+        doors: 0,
+        allowNoMainWardrobe: true,
+      })
+    ),
+    JSON.stringify({ min: 40, max: 560, allowZero: true })
+  );
+});
+
+test('[structure-raw-mutations] one-door hinged width accepts 20cm as a manual width', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({
+      doors: 1,
+      width: 40,
+      getDisplayedRawValue: key => ({ width: 40 })[key] || 0,
+    }),
+    key: 'width',
+    nextValue: 20,
+  });
+
+  const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batchCall);
+  assert.equal(JSON.stringify(batchCall[1].uiPatch), JSON.stringify({ raw: { width: 20 } }));
+  assert.equal(
+    JSON.stringify(batchCall[1].statePatch),
+    JSON.stringify({ ui: { raw: { width: 20 } }, config: { isManualWidth: true } })
+  );
+});
+
 test('[structure-raw-mutations] height and depth commits request coalesced build timing', () => {
   for (const [key, nextValue] of [
     ['height', 260],
@@ -356,6 +476,7 @@ test('[structure-dimension-constraints] zero-door wardrobes allow the exact zero
     key: 'width',
     wardrobeType: 'hinged',
     doors: 0,
+    allowNoMainWardrobe: true,
   });
   assert.equal(regularZeroDoorBounds.allowZero, true);
   assert.equal(field.readStructureDimensionValidationMessage('0', regularZeroDoorBounds), null);

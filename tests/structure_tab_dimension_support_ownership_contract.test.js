@@ -66,6 +66,7 @@ const ownerGroups = Object.freeze([
       'WARDROBE_DOORS_MAX',
       'WARDROBE_HEIGHT_MAX',
       'WARDROBE_HEIGHT_MIN',
+      'WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN',
       'WARDROBE_SLIDING_DOORS_MIN',
       'WARDROBE_WIDTH_MAX',
       'WARDROBE_WIDTH_MIN',
@@ -123,6 +124,7 @@ const groupAConsumers = Object.freeze({
     'WARDROBE_DOORS_MAX',
     'WARDROBE_HEIGHT_MAX',
     'WARDROBE_HEIGHT_MIN',
+    'WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN',
     'WARDROBE_SLIDING_DOORS_MIN',
     'WARDROBE_WIDTH_MAX',
     'WARDROBE_WIDTH_MIN',
@@ -350,7 +352,7 @@ function inspectFeature(source) {
   const localExports = exports.filter(entry => entry.source === null);
   const hexExports = exports.filter(entry => entry.source === './hex_cell/index.js');
   if (
-    localExports.length !== 39 ||
+    localExports.length !== 40 ||
     localExports.some(entry => entry.kind !== 'value' || entry.localName !== entry.exportedName) ||
     stableJson(sorted(localExports.map(entry => entry.exportedName))) !==
       stableJson(sorted([...sharedSymbols, ...projectedSymbols]))
@@ -478,7 +480,7 @@ function inspectAdapter(source) {
     addViolation(violations, 'adapter-alias-or-surface');
   }
   if (
-    exports.length !== 41 ||
+    exports.length !== 42 ||
     exports.some(entry => entry.source !== featureSpecifier || entry.localName !== entry.exportedName)
   ) {
     addViolation(violations, 'adapter-export-surface');
@@ -589,14 +591,14 @@ function assertMutationRejected(violations, kind, label) {
   );
 }
 
-test('feature boundary has one exact composition import and 41 identity-preserving exports', () => {
+test('feature boundary has one exact composition import and 42 identity-preserving exports', () => {
   const featureFiles = listSourceFiles(path.join(root, 'esm/native/features'))
     .map(file => path.relative(root, file).replaceAll('\\', '/'))
     .filter(rel => path.basename(rel) === 'structure_tab_dimension_support.ts');
   assert.deepEqual(featureFiles, [featureRel]);
-  assert.equal(sharedSymbols.length, 37);
-  assert.equal([...sharedSymbols, autoWidthPolicySymbol].length, 38);
-  assert.equal(surfaceSymbols.length, 41);
+  assert.equal(sharedSymbols.length, 38);
+  assert.equal([...sharedSymbols, autoWidthPolicySymbol].length, 39);
+  assert.equal(surfaceSymbols.length, 42);
   assert.deepEqual(inspectFeature(read(featureRel)), []);
   assert.deepEqual(inspectCompositionOwner(read(compositionOwnerRel)), []);
   assert.deepEqual(inspectAdapter(read(adapterRel)), []);

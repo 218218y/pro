@@ -93,6 +93,7 @@ export function commitStructureRawValue(args: {
   doors: number;
   structureSelectRaw: string;
   singleDoorPosRaw: string;
+  allowNoMainWardrobe?: boolean;
   chestCommodeEnabled?: boolean;
   chestCommodeMirrorWidthManual?: boolean;
 }): void {
@@ -111,6 +112,7 @@ export function commitStructureRawValue(args: {
     doors,
     structureSelectRaw,
     singleDoorPosRaw,
+    allowNoMainWardrobe = false,
     chestCommodeEnabled = false,
     chestCommodeMirrorWidthManual = false,
   } = args;
@@ -140,6 +142,7 @@ export function commitStructureRawValue(args: {
     height,
     depth,
     doors,
+    allowNoMainWardrobe,
   });
   if (normalizedValue == null) return;
 

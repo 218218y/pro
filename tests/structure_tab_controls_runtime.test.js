@@ -413,18 +413,16 @@ test('[structure-tab-controls] StructureTab gates type, corner, and library cont
 
   assert.match(
     src,
-    /const\s+noMainWardrobeActive\s*=\s*!state\.isSliding\s*&&\s*!state\.isChestMode\s*&&\s*state\.doors\s*===\s*0;/
+    /const\s+mainWardrobeAbsent\s*=\s*!state\.isSliding\s*&&\s*!state\.isChestMode\s*&&\s*state\.doors\s*===\s*0;/
   );
-  assert.match(src, /const\s+auxiliaryModesVisible\s*=\s*!state\.isSliding\s*&&\s*!noMainWardrobeActive;/);
-  assert.match(
-    src,
-    /const\s+hideWardrobeTypeOptions\s*=\s*effectiveChestMode\s*\|\|\s*noMainWardrobeActive;/
-  );
+  assert.match(src, /const\s+noMainWardrobeActive\s*=\s*mainWardrobeAbsent\s*&&\s*!state\.cornerMode;/);
+  assert.match(src, /const\s+auxiliaryModesVisible\s*=\s*!state\.isSliding\s*&&\s*!mainWardrobeAbsent;/);
+  assert.match(src, /const\s+hideWardrobeTypeOptions\s*=\s*effectiveChestMode\s*\|\|\s*mainWardrobeAbsent;/);
   assert.match(
     src,
     /<TypeSelector hideTypeOptions=\{hideWardrobeTypeOptions\} isChestMode=\{effectiveChestMode\} \/>/
   );
-  assert.match(src, /!noMainWardrobeActive\s*\? \(\s*<StructureBodySection/);
+  assert.match(src, /!mainWardrobeAbsent\s*\? \(\s*<StructureBodySection/);
   assert.match(src, /hideBaseTypeControls=\{false\}/);
   assert.match(src, /!effectiveChestMode\s*&&\s*!noMainWardrobeActive\s*\? \(\s*<StructureCornerSection/);
   assert.match(src, /!effectiveChestMode \? \(\s*<StructureLibrarySection/);

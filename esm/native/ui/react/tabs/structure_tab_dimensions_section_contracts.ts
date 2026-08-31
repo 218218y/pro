@@ -63,6 +63,7 @@ export type StructureDimensionsContentProps = {
   height: number;
   depth: number;
   doors: number;
+  allowNoMainWardrobe?: boolean;
   cellDimsEditActive: boolean;
   cellDimsPanelOpen: boolean;
   cellDimsHexPanelOpen: boolean;

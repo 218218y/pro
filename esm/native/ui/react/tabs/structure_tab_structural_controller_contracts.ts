@@ -42,6 +42,7 @@ export type CreateStructureTabStructuralControllerArgs = {
   wardrobeType: string;
   isChestMode: boolean;
   isManualWidth: boolean;
+  allowNoMainWardrobe: boolean;
   width: number;
   height: number;
   depth: number;

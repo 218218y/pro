@@ -203,6 +203,7 @@ export function createStructureTabStructuralWriteController(
         wardrobeType: args.wardrobeType,
         isChestMode: args.isChestMode,
         isManualWidth: args.isManualWidth,
+        allowNoMainWardrobe: args.allowNoMainWardrobe,
         width: args.width,
         height: args.height,
         depth: args.depth,

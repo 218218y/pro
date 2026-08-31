@@ -19,7 +19,7 @@ const actionControllerRouteContracts = Object.freeze({
     ]),
   }),
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts': Object.freeze({
-    services: Object.freeze(['adjustCameraForCorner', 'resetCameraPreset']),
+    services: Object.freeze(['adjustCameraForCorner', 'getUiFeedback', 'resetCameraPreset']),
     adapter: Object.freeze([
       'DEFAULT_CORNER_DOORS',
       'DEFAULT_CORNER_WIDTH',
@@ -171,6 +171,7 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         adjustCameraForChest: (...args) => calls.push(['adjustCameraForChest', ...args]),
         adjustCameraForCorner: (...args) => calls.push(['adjustCameraForCorner', ...args]),
         createStructuralModulesRecomputeOpts: () => ({ structureChanged: true, preserveTemplate: true }),
+        getUiFeedback: () => ({ toast: (...args) => calls.push(['toast', ...args]) }),
         patchViaActions:
           overrides.patchViaActions ||
           ((...args) => {
@@ -501,6 +502,44 @@ test('[structure-actions-controller] chest and corner controller runs recompute/
         JSON.stringify(entry[2]) === JSON.stringify({ raw: { chestDrawersCount: 2 } }) &&
         JSON.stringify(entry[5]) === JSON.stringify({})
     )
+  );
+});
+
+test('[structure-actions-controller] corner-only mode cannot disable the corner and silently create no-main state', () => {
+  const calls = [];
+  const mod = loadStructureActionsControllerModule(calls);
+  const controller = mod.createStructureTabCornerChestActionsController({
+    app: { id: 'app' },
+    meta: {
+      uiOnlyImmediate: source => ({ source, uiOnly: true, immediate: true }),
+      noBuild: (meta, source) => ({ ...meta, source, noBuild: true }),
+      noHistory: (_meta, source) => ({ source, noHistory: true }),
+    },
+    cornerSide: 'left',
+    cornerWidth: 120,
+    cornerDoors: 3,
+    cornerHeight: 240,
+    cornerDepth: 55,
+    depth: 55,
+    doors: 0,
+    width: 0,
+    height: 240,
+    isManualWidth: false,
+    baseType: 'plinth',
+    baseLegPlatformMode: 'stage',
+    preChestState: {},
+  });
+
+  controller.toggleCornerMode(false);
+
+  assert.ok(calls.some(entry => entry[0] === 'toast' && entry[2] === 'error'));
+  assert.equal(
+    calls.some(entry => entry[0] === 'setUiCornerMode'),
+    false
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'runAppStructuralModulesRecompute'),
+    false
   );
 });
 
