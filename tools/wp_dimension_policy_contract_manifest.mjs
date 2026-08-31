@@ -122,6 +122,7 @@ export const DIMENSION_STATIC_POLICY_CONTRACTS = deepFreeze([
           'WARDROBE_DOORS_MIN',
           'WARDROBE_HEIGHT_MAX',
           'WARDROBE_HEIGHT_MIN',
+          'WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN',
           'WARDROBE_SLIDING_DOORS_MIN',
           'WARDROBE_WIDTH_MAX',
           'WARDROBE_WIDTH_MIN',
@@ -137,6 +138,7 @@ export const DIMENSION_STATIC_POLICY_CONTRACTS = deepFreeze([
       limits: object({
         width: object({
           minCm: ref('WARDROBE_WIDTH_MIN'),
+          hingedSingleDoorMinCm: ref('WARDROBE_HINGED_SINGLE_DOOR_WIDTH_MIN'),
           chestMinCm: ref('WARDROBE_CHEST_WIDTH_MIN'),
           maxCm: ref('WARDROBE_WIDTH_MAX'),
         }),

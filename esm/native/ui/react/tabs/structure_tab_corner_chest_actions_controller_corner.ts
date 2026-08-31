@@ -29,11 +29,7 @@ import { createStructureTabRecomputeWriteMeta } from './structure_tab_meta.js';
 export function createStructureTabCornerActionsController(args: StructureTabCornerChestActionsArgs) {
   const toggleCornerMode = (nextOn: boolean) => {
     if (!nextOn && Math.max(0, Math.round(Number(args.doors) || 0)) === 0) {
-      try {
-        getUiFeedback(args.app).toast('כדי לבטל ארון פינתי, בחר קודם לפחות דלת אחת בארון הראשי.', 'error');
-      } catch {
-        // The invariant is primary; feedback is best-effort only.
-      }
+      getUiFeedback(args.app).toast('כדי לבטל ארון פינתי, בחר קודם לפחות דלת אחת בארון הראשי.', 'error');
       return;
     }
 

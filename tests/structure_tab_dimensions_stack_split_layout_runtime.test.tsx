@@ -191,7 +191,11 @@ test('[structure-stack-split] sliding wardrobes render the upper/lower split con
 });
 
 test('[structure-dimensions] no-main sketch state shows only restore-main action and hides cell dimensions controls', () => {
-  const html = renderDimensionsContent({ isSliding: false, doors: 0 });
+  const html = renderDimensionsContent({
+    isSliding: false,
+    doors: 0,
+    noMainWardrobeActive: true,
+  });
 
   assert.doesNotMatch(html, /חלוקת ארון לחלק עליון וחלק תחתון/);
   assert.doesNotMatch(html, /דלתות/);
@@ -202,6 +206,22 @@ test('[structure-dimensions] no-main sketch state shows only restore-main action
   assert.match(html, /structure-restore-main-wardrobe-button/);
   assert.doesNotMatch(html, /מידות מיוחדות לפי תא/);
   assert.doesNotMatch(html, /structure-cell-dims-mode-button/);
+});
+
+test('[structure-dimensions] corner-only state keeps structure dimensions available at zero main doors', () => {
+  const html = renderDimensionsContent({
+    isSliding: false,
+    doors: 0,
+    allowNoMainWardrobe: true,
+    noMainWardrobeActive: false,
+  });
+
+  assert.match(html, /דלתות/);
+  assert.match(html, /name="doors" value="0"/);
+  assert.match(html, /name="doors" value="0"[^>]*min="0"|min="0"[^>]*name="doors" value="0"/);
+  assert.match(html, /חלוקת ארון לחלק עליון וחלק תחתון/);
+  assert.match(html, /structure-cell-dims-mode-button/);
+  assert.doesNotMatch(html, /החזרת ארון ראשי/);
 });
 
 test('[structure-dimensions] no-main restore action does not keep the dimensions title shell', () => {
