@@ -65,13 +65,13 @@
     "launcher": "bin/esbuild"
   },
   "tsx": {
-    "version": "4.23.12",
+    "version": "4.23.13",
     "package": {
       "lockPath": "node_modules/tsx",
       "installPath": "node_modules/tsx",
-      "file": "vendor/offline/tsx/tsx-4.23.12.tgz",
-      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.12.tgz",
-      "integrity": "sha512-FDf4L4sYzKtzWYhU/Xm0AQFdTjdIxNo9ElTf2mxXM6k8YMHXzYUe4yODVaXP4V9uMFbVg8c0qyBccK2OOxb45Q=="
+      "file": "vendor/offline/tsx/tsx-4.23.13.tgz",
+      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.13.tgz",
+      "integrity": "sha512-BL5MGkRln6aDYhb0xbQlEAGw743BaZYWdbWtdJOBriYJboKgUUYCadFp2/FpBBZquBC/ezNBn7wMMPx7FDZUDw=="
     },
     "esbuildRange": "~0.28.0",
     "executable": "dist/cli.mjs"
@@ -317,12 +317,12 @@
           },
           {
             "name": "pdfjs-dist",
-            "version": "6.2.108",
+            "version": "6.3.289",
             "lockPath": "node_modules/pdfjs-dist",
             "installPath": "node_modules/pdfjs-dist",
-            "file": "vendor/offline/runtime/pdfjs-dist-6.2.108.tgz",
-            "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.2.108.tgz",
-            "integrity": "sha512-YxFb+SQcodN2rnX9Tn3dHYlqfb7NjlzzfONPpJd+AKoKtUjEdevTfbC07d5TcczzOK6261auRkP/M8OBHs9vFQ=="
+            "file": "vendor/offline/runtime/pdfjs-dist-6.3.289.tgz",
+            "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.3.289.tgz",
+            "integrity": "sha512-ZHjSVpDa3D6izMq8/04lvkhkATUmL9px6ChPaXc1k6nU2Mrhlg1/7F0bdUqCwUjw3NsPTfPZsMDUU6ZIcRaeQw=="
           },
           {
             "name": "react",
@@ -1158,6 +1158,6 @@
         ]
       }
     },
-    "lockfileSha256": "9d339b6838b32a635042f954249b916407f41352a7421a762099ecbb1f1239fe"
+    "lockfileSha256": "6b270a5462c0279e87fa33814bb61f092a3a2419a1a43d202bd505cdb645ad24"
   }
 }
