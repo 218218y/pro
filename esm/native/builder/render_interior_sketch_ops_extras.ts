@@ -1,6 +1,12 @@
 import { applySketchExternalDrawers, applySketchInternalDrawers } from './render_interior_sketch_drawers.js';
 import { createSketchBoxLocator } from './render_interior_sketch_support.js';
 import {
+  resolveSketchBoxDividerPlacement,
+  resolveSketchBoxHorizontalDividerPlacement,
+  resolveSketchBoxHorizontalDividerScopeSegment,
+  resolveSketchBoxVerticalDividerScopeSegment,
+} from './render_interior_sketch_layout.js';
+import {
   applySketchRods,
   applySketchShelves,
   applySketchStorageBarriers,
@@ -13,6 +19,100 @@ import type {
   InteriorSketchResolvedThree,
   RenderInteriorSketchOpsContext,
 } from './render_interior_sketch_ops_types.js';
+
+function resolveInteriorSketchModuleDividerMaterial(
+  resolved: InteriorSketchExtrasInput,
+  owner: RenderInteriorSketchOpsContext,
+  partId: string
+): unknown {
+  if (resolved.getPartMaterial !== undefined && owner.isFn(resolved.getPartMaterial)) {
+    const material = resolved.getPartMaterial(partId);
+    if (material != null) return material;
+  }
+  return resolved.bodyMat;
+}
+
+export function applyInteriorSketchOwnedDividers(
+  resolved: InteriorSketchExtrasInput,
+  owner: RenderInteriorSketchOpsContext
+): void {
+  const verticalDividers = resolved.dividers;
+  const horizontalDividers = resolved.horizontalDividers;
+  if (!verticalDividers.length && !horizontalDividers.length) return;
+
+  const centerY = (resolved.effectiveBottomY + resolved.effectiveTopY) / 2;
+  const dividerDepth = Math.max(0.0001, resolved.internalDepth);
+  const centerZ = resolved.internalZ;
+  const hostPartPrefix = resolved.moduleKeyStr
+    ? `sketch_module_${resolved.moduleKeyStr}`
+    : `sketch_module_${resolved.moduleIndex}`;
+
+  for (const [index, divider] of horizontalDividers.entries()) {
+    const column =
+      divider.xNorm != null
+        ? resolveSketchBoxHorizontalDividerScopeSegment({
+            divider,
+            horizontalDividers,
+            verticalDividers,
+            boxCenterX: resolved.internalCenterX,
+            innerW: resolved.innerW,
+            boxCenterY: centerY,
+            innerH: resolved.spanH,
+            woodThick: resolved.woodThick,
+          })
+        : null;
+    const placement = resolveSketchBoxHorizontalDividerPlacement({
+      boxCenterY: centerY,
+      innerH: resolved.spanH,
+      woodThick: resolved.woodThick,
+      dividerYNorm: divider.yNorm,
+    });
+    const partId = `${hostPartPrefix}_hdivider_${divider.id || index}`;
+    resolved.createBoard(
+      Math.max(0.0001, column ? column.width : resolved.innerW),
+      Math.max(0.0001, resolved.woodThick),
+      dividerDepth,
+      column ? column.centerX : resolved.internalCenterX,
+      placement.centerY,
+      centerZ,
+      resolveInteriorSketchModuleDividerMaterial(resolved, owner, partId),
+      partId
+    );
+  }
+
+  for (const [index, divider] of verticalDividers.entries()) {
+    const placement = resolveSketchBoxDividerPlacement({
+      boxCenterX: resolved.internalCenterX,
+      innerW: resolved.innerW,
+      woodThick: resolved.woodThick,
+      dividerXNorm: divider.xNorm,
+    });
+    const row =
+      divider.yNorm != null && horizontalDividers.length
+        ? resolveSketchBoxVerticalDividerScopeSegment({
+            divider,
+            verticalDividers,
+            horizontalDividers,
+            boxCenterX: resolved.internalCenterX,
+            innerW: resolved.innerW,
+            boxCenterY: centerY,
+            innerH: resolved.spanH,
+            woodThick: resolved.woodThick,
+          })
+        : null;
+    const partId = `${hostPartPrefix}_divider_${divider.id || index}`;
+    resolved.createBoard(
+      Math.max(0.0001, resolved.woodThick),
+      Math.max(0.0001, row ? row.height : resolved.spanH),
+      dividerDepth,
+      placement.centerX,
+      row ? row.centerY : centerY,
+      centerZ,
+      resolveInteriorSketchModuleDividerMaterial(resolved, owner, partId),
+      partId
+    );
+  }
+}
 
 export function applyInteriorSketchOwnedStorageBarriers(
   resolved: InteriorSketchExtrasInput,

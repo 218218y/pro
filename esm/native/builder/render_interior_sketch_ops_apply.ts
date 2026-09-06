@@ -4,6 +4,7 @@ import {
   resolveInteriorSketchThreeAndDimensions,
 } from './render_interior_sketch_ops_dimensions.js';
 import {
+  applyInteriorSketchOwnedDividers,
   applyInteriorSketchOwnedDrawers,
   applyInteriorSketchOwnedRods,
   applyInteriorSketchOwnedShelves,
@@ -22,6 +23,7 @@ export function applyInteriorSketchExtrasOwner(owner: RenderInteriorSketchOpsCon
   const placementPlan = createInteriorSketchExtrasPlacementPlan(owner, resolved, resolvedThree);
   const boxAbs = renderInteriorSketchOwnedBoxes({ owner, resolved, resolvedThree, placementPlan });
 
+  applyInteriorSketchOwnedDividers(resolved, owner);
   applyInteriorSketchOwnedStorageBarriers(resolved, owner);
   renderInteriorSketchPendingFreeBoxDimensions(resolvedThree);
   applyInteriorSketchOwnedShelves({ resolved, resolvedThree, placementPlan, boxAbs });

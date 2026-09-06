@@ -37,6 +37,44 @@ function readCellDoorCountFromMode(App: CanvasCellDimsClickArgs['App']): 1 | 2 |
   return opts?.cellDoorCount === 1 || opts?.cellDoorCount === 2 ? opts.cellDoorCount : null;
 }
 
+export function applyCanvasLinearCellDoorCountFromSketch(args: {
+  App: CanvasCellDimsClickArgs['App'];
+  foundModuleIndex: number;
+  isBottomStack: boolean;
+  doorCount: 1 | 2;
+}): void {
+  const { App, foundModuleIndex, isBottomStack, doorCount } = args;
+  try {
+    if (isBottomStack) {
+      __wp_toast(App, 'שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', 'info');
+      return;
+    }
+    const ui = __wp_ui(App);
+    const cfg = __wp_cfg(App);
+    const raw: UiRawInputsLike = ui.raw ?? {};
+    handleCanvasLinearCellDimsClick({
+      App,
+      foundModuleIndex,
+      isBottomStack: false,
+      ui,
+      cfg,
+      raw,
+      applyW: null,
+      applyH: null,
+      applyD: null,
+      cellDoorCount: doorCount,
+      autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
+    });
+  } catch (err) {
+    __wp_reportPickingIssue(
+      App,
+      err,
+      { where: 'canvasPicking', op: 'sketch.cellDoorCount', throttleMs: 500 },
+      { failFast: true }
+    );
+  }
+}
+
 export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
   const {
     App,

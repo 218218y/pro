@@ -72,6 +72,21 @@ export type ManualLayoutStorageRemoveCommand = {
   removeIdx: number | null;
 };
 
+export type ManualLayoutModuleDividerCommand = {
+  kind: 'module_divider';
+  op: 'add' | 'remove';
+  axis: 'vertical' | 'horizontal';
+  dividerId: string | null;
+  dividerXNorm: number | null;
+  dividerYNorm: number | null;
+};
+
+export type ManualLayoutCellDoorCountCommand = {
+  kind: 'cell_door_count';
+  op: 'apply';
+  doorCount: 1 | 2;
+};
+
 export type ManualLayoutDrawerStackBaseCommand = CommandBase & {
   kind: 'drawers' | 'ext_drawers';
   yCenter: number;
@@ -126,6 +141,8 @@ export type ManualLayoutCommand =
   | ManualLayoutRodRemoveCommand
   | ManualLayoutStorageAddCommand
   | ManualLayoutStorageRemoveCommand
+  | ManualLayoutModuleDividerCommand
+  | ManualLayoutCellDoorCountCommand
   | ManualLayoutDrawerStackAddCommand
   | ManualLayoutDrawerStackRemoveCommand;
 
@@ -167,6 +184,9 @@ const COMMAND_FIELDS = {
   'rod:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx', 'rodIndex']),
   'storage:add': new Set(['kind', 'op', 'yNorm', 'blockedReason']),
   'storage:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx']),
+  'module_divider:add': new Set(['kind', 'op', 'axis', 'dividerId', 'dividerXNorm', 'dividerYNorm']),
+  'module_divider:remove': new Set(['kind', 'op', 'axis', 'dividerId', 'dividerXNorm', 'dividerYNorm']),
+  'cell_door_count:apply': new Set(['kind', 'op', 'doorCount']),
   'drawers:add': DRAWER_STACK_FIELDS,
   'drawers:remove': DRAWER_STACK_FIELDS,
   'ext_drawers:add': DRAWER_STACK_FIELDS,
@@ -300,6 +320,35 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
     if (record.removeKind === 'base' && removeIdx === null)
       return { kind: 'storage', op: 'remove', removeKind: 'base', removeIdx: null };
     return null;
+  }
+
+  if (record.kind === 'module_divider') {
+    const dividerId = readNullableString(record.dividerId);
+    const dividerXNorm = readNullableUnit(record.dividerXNorm);
+    const dividerYNorm = readNullableUnit(record.dividerYNorm);
+    const axis = record.axis === 'vertical' || record.axis === 'horizontal' ? record.axis : null;
+    const op = record.op === 'add' || record.op === 'remove' ? record.op : null;
+    if (dividerId === undefined || dividerXNorm === undefined || dividerYNorm === undefined || !axis || !op)
+      return null;
+    if (op === 'add') {
+      if (axis === 'vertical' && dividerXNorm == null) return null;
+      if (axis === 'horizontal' && dividerYNorm == null) return null;
+    } else if (dividerId == null && dividerXNorm == null && dividerYNorm == null) {
+      return null;
+    }
+    return {
+      kind: 'module_divider',
+      op,
+      axis,
+      dividerId,
+      dividerXNorm,
+      dividerYNorm,
+    };
+  }
+
+  if (record.kind === 'cell_door_count') {
+    if (record.op !== 'apply' || (record.doorCount !== 1 && record.doorCount !== 2)) return null;
+    return { kind: 'cell_door_count', op: 'apply', doorCount: record.doorCount };
   }
 
   if (record.kind !== 'drawers' && record.kind !== 'ext_drawers') return null;

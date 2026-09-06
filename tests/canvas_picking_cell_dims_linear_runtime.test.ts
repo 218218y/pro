@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { handleCanvasCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_flow.ts';
+import {
+  applyCanvasLinearCellDoorCountFromSketch,
+  handleCanvasCellDimsClick,
+} from '../esm/native/services/canvas_picking_cell_dims_flow.ts';
 import { handleCanvasLinearCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_linear.ts';
 import { readLinearCellDimsTotals } from '../esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
+import { createManualLayoutSketchCellDoorCountHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
+import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts';
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
@@ -524,4 +529,69 @@ test('cell-dims click ingress accepts a door-only edit from canonical mode opts'
     raw: { doors: 3 },
     structureSelect: '[1,2]',
   });
+});
+
+test('sketch door-count adapter reuses the canonical linear cell-door mutation', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 4 };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.build.modulesStructure = [{ doors: 2 }, { doors: 2 }];
+
+  applyCanvasLinearCellDoorCountFromSketch({
+    App,
+    foundModuleIndex: 0,
+    isBottomStack: false,
+    doorCount: 1,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.deepEqual(
+    calls.snapshots[0].snapshot.modulesConfiguration.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { doors: 3 },
+    structureSelect: '[1,2]',
+  });
+  assert.equal(calls.snapshots[0].snapshot.modulesConfiguration[0].specialDims.widthCm, 80);
+  assert.equal(calls.snapshots[0].snapshot.modulesConfiguration[1].specialDims.widthCm, 80);
+});
+
+test('manual sketch door hover click reaches the existing cell-door owner without a parallel config patch', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.structureSelect = '[1,1]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 2 };
+  state.config.modulesConfiguration = [{ doors: 1 }, { doors: 1 }];
+  state.build.modulesStructure = [{ doors: 1 }, { doors: 1 }];
+  let cleared = 0;
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App,
+    __activeModuleKey: 1,
+    __isBottomStack: false,
+    topY: 2.2,
+    bottomY: 0,
+    __gridInfo: null,
+    __hoverRec: createManualLayoutSketchCellDoorCountHoverRecord({
+      host: { tool: 'sketch_box_double_door', moduleKey: 1, isBottom: false, ts: 1 },
+      doorCount: 2,
+    }),
+    __hoverOk: true,
+    __patchConfigForKey: () => {
+      throw new Error('cell door count must use the canonical CELL_DIMS owner');
+    },
+    __wp_clearSketchHover: () => {
+      cleared += 1;
+    },
+  });
+
+  assert.equal(applied, true);
+  assert.equal(cleared, 1);
+  assert.equal(calls.snapshots.length, 1);
+  assert.deepEqual(
+    calls.snapshots[0].snapshot.modulesConfiguration.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(calls.uiPatches[0].patch, { raw: { doors: 3 }, structureSelect: '[1,2]' });
 });

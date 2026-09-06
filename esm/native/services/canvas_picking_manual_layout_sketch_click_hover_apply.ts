@@ -6,6 +6,7 @@ import {
   getSketchModuleBoxContentSource,
 } from './canvas_picking_sketch_box_content_commit.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { applyCanvasLinearCellDoorCountFromSketch } from './canvas_picking_cell_dims_flow.js';
 import { removeStandardExternalDrawerFromConfig } from './canvas_picking_drawer_cross_family.js';
 import { restoreShoeDrawerBaseIfNoShoeDrawersRemain } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import {
@@ -31,6 +32,12 @@ import {
   SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_structural_command.js';
 import { decodeManualLayoutCommand } from './canvas_picking_manual_layout_command.js';
+import {
+  addSketchBoxDividerState,
+  addSketchBoxHorizontalDividerState,
+  removeSketchBoxDividerState,
+  removeSketchBoxHorizontalDividerState,
+} from './canvas_picking_sketch_box_divider_state_mutation.js';
 
 type RecordMap = Record<string, unknown>;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -47,6 +54,10 @@ type ManualLayoutSketchClickHoverApplyArgs = {
   __patchConfigForKey: (mk: ModuleKey, patchFn: (cfg: RecordMap) => void, meta: ActionMetaLike) => unknown;
   __wp_clearSketchHover: (App: AppContainer) => void;
 };
+
+function readRecord(value: unknown): RecordMap | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as RecordMap) : null;
+}
 
 function readGridDivisions(gridInfo: RecordMap | null): number {
   const raw = gridInfo?.gridDivisions;
@@ -75,9 +86,75 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
     manualHoverKind === 'shelf' ||
     manualHoverKind === 'rod' ||
     manualHoverKind === 'storage' ||
+    manualHoverKind === 'module_divider' ||
+    manualHoverKind === 'cell_door_count' ||
     manualHoverKind === 'drawers' ||
     manualHoverKind === 'ext_drawers';
-  if (__hoverOk && isManualCommandHover && !decodeManualLayoutCommand(__hoverRec).ok) {
+  const manualCommand = __hoverOk && isManualCommandHover ? decodeManualLayoutCommand(__hoverRec) : null;
+  if (__hoverOk && isManualCommandHover && !manualCommand?.ok) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
+
+  if (manualCommand?.ok && manualCommand.command.kind === 'module_divider') {
+    const command = manualCommand.command;
+    if (typeof __activeModuleKey !== 'number' || !Number.isInteger(__activeModuleKey)) {
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const committed = __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        let sketchExtras = readRecord(cfg.sketchExtras);
+        if (!sketchExtras) {
+          sketchExtras = {};
+          cfg.sketchExtras = sketchExtras;
+        }
+        if (command.op === 'add') {
+          if (command.axis === 'horizontal') {
+            addSketchBoxHorizontalDividerState(sketchExtras, command.dividerYNorm, command.dividerId, {
+              xNorm: command.dividerXNorm,
+            });
+          } else {
+            addSketchBoxDividerState(sketchExtras, command.dividerXNorm, command.dividerId, {
+              yNorm: command.dividerYNorm,
+            });
+          }
+          return;
+        }
+        if (command.axis === 'horizontal') {
+          removeSketchBoxHorizontalDividerState(
+            sketchExtras,
+            command.dividerId,
+            command.dividerYNorm,
+            command.dividerXNorm
+          );
+        } else {
+          removeSketchBoxDividerState(
+            sketchExtras,
+            command.dividerId,
+            command.dividerXNorm,
+            command.dividerYNorm
+          );
+        }
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.moduleDivider')
+    );
+    if (committed !== false) __wp_clearSketchHover(App);
+    return true;
+  }
+
+  if (manualCommand?.ok && manualCommand.command.kind === 'cell_door_count') {
+    if (typeof __activeModuleKey !== 'number' || !Number.isInteger(__activeModuleKey)) {
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    applyCanvasLinearCellDoorCountFromSketch({
+      App,
+      foundModuleIndex: __activeModuleKey,
+      isBottomStack: !!__isBottomStack,
+      doorCount: manualCommand.command.doorCount,
+    });
     __wp_clearSketchHover(App);
     return true;
   }

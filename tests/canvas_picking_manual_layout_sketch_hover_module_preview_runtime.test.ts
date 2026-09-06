@@ -9,6 +9,7 @@ import {
 import { tryHandleManualLayoutSketchHoverModuleBoxPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_box.ts';
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+import { decodeManualLayoutCommand } from '../esm/native/services/canvas_picking_manual_layout_command.ts';
 
 function requireStructuralCommand(value: unknown) {
   const decoded = decodeSketchStructuralCommandHover(value);
@@ -89,6 +90,7 @@ function createBaseContext(overrides: Record<string, unknown> = {}) {
     drawers: [],
     extDrawers: [],
     cfgRef: {},
+    sketchExtras: {},
     activeModuleBox: null,
     ...overrides,
   } as any;
@@ -163,4 +165,25 @@ test('manual-layout shared remove eps exports retain number shape and focused-ow
   assert.equal(boxEpsilon, SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM);
   assert.equal(typeof shelfEpsilon, 'number');
   assert.equal(typeof boxEpsilon, 'number');
+});
+
+test('manual-layout box door buttons target a regular wardrobe cell when no sketch box is under the pointer', () => {
+  const { ctx, calls } = createBaseContext({
+    tool: 'sketch_box_double_door',
+    activeModuleBox: null,
+    hitModuleKey: 1,
+    isBottom: false,
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleBoxPreview(ctx);
+  assert.equal(handled, true);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.previews.length, 1);
+  const decoded = decodeManualLayoutCommand(calls.hover[0]);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical cell-door command: ${decoded.reason}`);
+  assert.deepEqual(decoded.command, { kind: 'cell_door_count', op: 'apply', doorCount: 2 });
+  assert.equal(calls.previews[0].kind, 'box');
+  assert.equal(calls.previews[0].w, 0.96);
+  assert.equal(calls.previews[0].boxH, 2);
 });

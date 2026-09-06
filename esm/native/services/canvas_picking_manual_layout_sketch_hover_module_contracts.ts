@@ -103,6 +103,7 @@ export type ManualLayoutSketchHoverModuleContext = ManualLayoutSketchHoverModule
   drawers: UnknownRecord[];
   extDrawers: UnknownRecord[];
   cfgRef: UnknownRecord | null;
+  sketchExtras: UnknownRecord;
   activeModuleBox: FindSketchModuleBoxAtPointResult | null;
 };
 

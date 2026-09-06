@@ -314,6 +314,8 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
 }
 
 export interface BuilderSketchExtrasLike extends UnknownRecord {
+  dividers?: BuilderSketchDividerLike[] | null;
+  horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;
   shelves?: BuilderSketchShelfLike[] | null;
   boxes?: BuilderSketchBoxLike[] | null;
   storageBarriers?: BuilderSketchStorageBarrierLike[] | null;

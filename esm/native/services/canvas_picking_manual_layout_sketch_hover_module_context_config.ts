@@ -21,7 +21,15 @@ import {
 
 type ManualLayoutSketchHoverModuleConfigContext = Pick<
   ManualLayoutSketchHoverModuleContext,
-  'boxes' | 'storageBarriers' | 'shelves' | 'rods' | 'drawers' | 'extDrawers' | 'cfgRef' | 'activeModuleBox'
+  | 'boxes'
+  | 'storageBarriers'
+  | 'shelves'
+  | 'rods'
+  | 'drawers'
+  | 'extDrawers'
+  | 'cfgRef'
+  | 'sketchExtras'
+  | 'activeModuleBox'
 >;
 
 type ResolveManualLayoutSketchHoverModuleConfigContextArgs = Pick<
@@ -90,6 +98,7 @@ export function resolveManualLayoutSketchHoverModuleConfigContext(
   let drawers: RecordMap[] = [];
   let extDrawers: RecordMap[] = [];
   let cfgRef: RecordMap | null = null;
+  let sketchExtras: RecordMap = {};
   try {
     const cfg = getCfg(App);
     const mk = hitModuleKey;
@@ -134,6 +143,7 @@ export function resolveManualLayoutSketchHoverModuleConfigContext(
       }
     }
 
+    sketchExtras = extra || {};
     boxes = readRecordList(extra, 'boxes');
     shelves = readRecordList(extra, 'shelves');
     drawers = readRecordList(extra, 'drawers');
@@ -167,6 +177,7 @@ export function resolveManualLayoutSketchHoverModuleConfigContext(
     drawers,
     extDrawers,
     cfgRef,
+    sketchExtras,
     activeModuleBox,
   };
 }

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleDividerFlow } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_divider_flow.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+import { decodeManualLayoutCommand } from '../esm/native/services/canvas_picking_manual_layout_command.ts';
 
 function requireStructuralCommand(value: unknown) {
   const decoded = decodeSketchStructuralCommandHover(value);
@@ -156,4 +157,39 @@ test('manual-layout divider hover does not snap to string-encoded segment geomet
   assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(previews[0].snapToCenter, false);
   assert.equal(previews[0].x, -0.12);
+});
+
+test('manual-layout divider hover targets the regular module when no sketch box owns the pointer', () => {
+  const moduleState = {
+    horizontalDividers: [{ id: 'h1', yNorm: 0.5, order: 1 }],
+  };
+  const { ctx, previews, hovers } = createContext({
+    boxes: [],
+    sketchExtras: moduleState,
+    yClamped: 0.5,
+    __wp_readSketchBoxDividers: (value: unknown) => (value === moduleState ? [] : []),
+    __wp_readSketchBoxHorizontalDividers: (value: unknown) =>
+      value === moduleState ? [{ id: 'h1', yNorm: 0.5, centered: true, order: 1 }] : [],
+    __wp_resolveSketchBoxVerticalSegments: () => [
+      { index: 0, bottomY: 0, topY: 0.99, centerY: 0.495, height: 0.99, yNorm: 0.2475 },
+      { index: 1, bottomY: 1.01, topY: 2, centerY: 1.505, height: 0.99, yNorm: 0.7525 },
+    ],
+    __wp_pickSketchBoxVerticalSegment: ({ segments, cursorY }: any) =>
+      cursorY != null && cursorY < 1 ? segments[0] : segments[1],
+  });
+
+  const handled = tryHandleManualLayoutSketchHoverModuleDividerFlow(ctx);
+  assert.equal(handled, true);
+  assert.equal(hovers.length, 1);
+  assert.equal(previews.length, 1);
+  assert.equal(hovers[0].kind, 'module_divider');
+  const decoded = decodeManualLayoutCommand(hovers[0]);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected module divider command: ${decoded.reason}`);
+  assert.equal(decoded.command.kind, 'module_divider');
+  if (decoded.command.kind !== 'module_divider') assert.fail('Expected module divider command');
+  assert.equal(decoded.command.axis, 'vertical');
+  assert.equal(decoded.command.op, 'add');
+  assert.equal(decoded.command.dividerYNorm, 0.2475);
+  assert.equal(previews[0].h, 0.99);
 });

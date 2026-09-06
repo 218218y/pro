@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.js';
 import { withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
+import { createManualLayoutSketchModuleDividerHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
 
 test('manual-layout hover click commits sketch-box storage content through the canonical content owner and clears hover', () => {
   const cfg: Record<string, unknown> = {
@@ -167,4 +168,48 @@ test('manual-layout hover click consumes blocked sketch-box content without patc
   assert.equal(cleared, 1);
   assert.equal(toasts.length, 1);
   assert.equal(toasts[0]?.[1], 'error');
+});
+
+test('manual-layout hover click commits regular-module dividers into module sketchExtras', () => {
+  const cfg: Record<string, unknown> = {};
+  let cleared = 0;
+  let patchMeta: Record<string, unknown> | null = null;
+  const hover = createManualLayoutSketchModuleDividerHoverRecord({
+    host: { tool: 'sketch_box_divider', moduleKey: 1, isBottom: false, ts: 1 },
+    op: 'add',
+    axis: 'vertical',
+    dividerId: null,
+    dividerXNorm: 0.4,
+    dividerYNorm: 0.25,
+  });
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 1,
+    __isBottomStack: false,
+    topY: 2,
+    bottomY: 0,
+    __gridInfo: null,
+    __hoverRec: hover,
+    __hoverOk: true,
+    __patchConfigForKey: (_mk, patchFn, meta) => {
+      patchMeta = { ...meta };
+      patchFn(cfg);
+      return null;
+    },
+    __wp_clearSketchHover: () => {
+      cleared += 1;
+    },
+  });
+
+  const dividers = ((cfg.sketchExtras as Record<string, unknown>)?.dividers || []) as Array<
+    Record<string, unknown>
+  >;
+  assert.equal(applied, true);
+  assert.deepEqual(patchMeta, { source: 'sketch.moduleDivider', immediate: true });
+  assert.equal(cleared, 1);
+  assert.equal(dividers.length, 1);
+  assert.equal(dividers[0].xNorm, 0.4);
+  assert.equal(dividers[0].yNorm, 0.25);
+  assert.equal(dividers[0].order, 1);
 });

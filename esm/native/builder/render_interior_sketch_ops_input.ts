@@ -16,6 +16,7 @@ import {
   type SketchStorageBarrierExtra,
 } from './render_interior_sketch_shared.js';
 import { readSketchDoorVisualFactory } from './render_interior_sketch_visuals.js';
+import { readSketchBoxDividers, readSketchBoxHorizontalDividers } from './render_interior_sketch_layout.js';
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
@@ -61,6 +62,8 @@ export function resolveInteriorSketchExtrasInput(
   requireInteriorSketchDoorStyle(input.doorStyle, 'render_interior_sketch');
   requireInteriorSketchBooleanFlag(input.isGroovesEnabled, 'isGroovesEnabled', 'render_interior_sketch');
 
+  const dividers = readSketchBoxDividers(extra);
+  const horizontalDividers = readSketchBoxHorizontalDividers(extra);
   const shelves = asRecordArray<SketchShelfExtra>(extra.shelves);
   const boxes = asRecordArray<SketchBoxExtra>(extra.boxes);
   const storageBarriers = asRecordArray<SketchStorageBarrierExtra>(extra.storageBarriers);
@@ -69,6 +72,8 @@ export function resolveInteriorSketchExtrasInput(
   const drawers = internalDrawersEnabled ? asRecordArray<SketchDrawerExtra>(extra.drawers) : [];
   const extDrawers = asRecordArray<SketchExternalDrawerExtra>(extra.extDrawers);
   if (
+    !dividers.length &&
+    !horizontalDividers.length &&
     !shelves.length &&
     !boxes.length &&
     !storageBarriers.length &&
@@ -158,6 +163,8 @@ export function resolveInteriorSketchExtrasInput(
     App,
     renderOps,
     input,
+    dividers,
+    horizontalDividers,
     shelves,
     boxes,
     storageBarriers,

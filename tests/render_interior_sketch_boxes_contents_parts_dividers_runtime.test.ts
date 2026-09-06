@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderSketchBoxContentDividers } from '../esm/native/builder/render_interior_sketch_boxes_contents_parts_dividers.ts';
+import { applyInteriorSketchOwnedDividers } from '../esm/native/builder/render_interior_sketch_ops_extras.ts';
+import {
+  addSketchBoxDividerState,
+  addSketchBoxHorizontalDividerState,
+} from '../esm/native/services/canvas_picking_sketch_box_divider_state_mutation.ts';
 import {
   readSketchBoxDividers,
   readSketchBoxHorizontalDividers,
@@ -128,4 +133,57 @@ test('later nested divider cannot retroactively shrink an earlier divider scope'
     boards[2].py < 1,
     `bottom-row vertical divider should remain below the first horizontal divider, got y ${boards[2].py}`
   );
+});
+
+test('regular-module divider renderer preserves first-divider precedence after later nested dividers', () => {
+  const state: Record<string, unknown> = {};
+  addSketchBoxHorizontalDividerState(state, 0.5, 'module-h1');
+  addSketchBoxDividerState(state, 0.5, 'module-v1', { yNorm: 0.25 });
+
+  const render = () => {
+    const boards: Array<{ sx: number; sy: number; px: number; py: number; partId: string }> = [];
+    applyInteriorSketchOwnedDividers(
+      {
+        dividers: readSketchBoxDividers(state),
+        horizontalDividers: readSketchBoxHorizontalDividers(state),
+        effectiveBottomY: 0,
+        effectiveTopY: 2,
+        spanH: 2,
+        innerW: 1,
+        woodThick: 0.02,
+        internalDepth: 0.4,
+        internalCenterX: 0,
+        internalZ: -0.2,
+        moduleKeyStr: '0',
+        moduleIndex: 0,
+        bodyMat: 'mat',
+        createBoard: (
+          sx: number,
+          sy: number,
+          _sz: number,
+          px: number,
+          py: number,
+          _pz: number,
+          _mat: unknown,
+          partId: string
+        ) => {
+          boards.push({ sx, sy, px, py, partId });
+        },
+      } as any,
+      { isFn: (value: unknown) => typeof value === 'function' } as any
+    );
+    return boards;
+  };
+
+  const before = render();
+  const verticalBefore = before.find(board => board.partId.endsWith('_divider_module-v1'));
+  assert.ok(verticalBefore);
+  assert.ok(verticalBefore.sy < 1 && verticalBefore.py < 1);
+
+  addSketchBoxHorizontalDividerState(state, 0.25, 'module-h2', { xNorm: 0.25 });
+  const after = render();
+  const verticalAfter = after.find(board => board.partId.endsWith('_divider_module-v1'));
+  assert.ok(verticalAfter);
+  assert.ok(Math.abs(verticalAfter.sy - verticalBefore.sy) < 1e-9);
+  assert.ok(Math.abs(verticalAfter.py - verticalBefore.py) < 1e-9);
 });

@@ -179,6 +179,8 @@ function normalizeBuilderSketchExtrasGeometryWith(
   const extra = asRecord<UnknownRecord>(value);
   if (!extra) return null;
   const out: UnknownRecord = { ...extra };
+  normalizeRecordListField(out, 'dividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
+  normalizeRecordListField(out, 'horizontalDividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'shelves', SKETCH_SHELF_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   if (hasOwn(out, 'boxes')) out.boxes = normalizeSketchBoxListValue(out.boxes, normalizeScalar);
   normalizeRecordListField(

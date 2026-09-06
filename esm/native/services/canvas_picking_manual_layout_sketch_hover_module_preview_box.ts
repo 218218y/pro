@@ -1,6 +1,7 @@
 import type { ManualLayoutSketchHoverModuleContext } from './canvas_picking_manual_layout_sketch_hover_module_contracts.js';
 import { resolveSketchBoxVerticalContentPreview } from './canvas_picking_sketch_box_vertical_content_preview.js';
 import { resolveSketchBoxDoorPreview } from './canvas_picking_sketch_box_door_preview.js';
+import { createManualLayoutSketchCellDoorCountHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   createManualLayoutSketchHoverHost,
   hideManualLayoutSketchHoverPreview,
@@ -31,6 +32,15 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
     isShelf,
     isRod,
     isStorage,
+    hitModuleKey,
+    isBottom,
+    bottomY,
+    topY,
+    spanH,
+    innerW,
+    internalCenterX,
+    internalDepth,
+    internalZ,
   } = ctx;
 
   if ((isShelf || isRod || isStorage) && activeModuleBox && setPreview) {
@@ -101,6 +111,36 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
     return doorPreview
       ? writeManualLayoutSketchHoverPreview(ctx, doorPreview)
       : hideManualLayoutSketchHoverPreview(ctx);
+  }
+
+  if (
+    (isBoxDoor || isBoxDoubleDoor) &&
+    !activeModuleBox &&
+    setPreview &&
+    typeof hitModuleKey === 'number' &&
+    Number.isInteger(hitModuleKey) &&
+    hitModuleKey >= 0 &&
+    !isBottom
+  ) {
+    return writeManualLayoutSketchHoverPreview(ctx, {
+      hoverRecord: createManualLayoutSketchCellDoorCountHoverRecord({
+        host: createManualLayoutSketchHoverHost(ctx),
+        doorCount: isBoxDoubleDoor ? 2 : 1,
+      }),
+      preview: {
+        kind: 'box',
+        fillFront: true,
+        fillBack: false,
+        x: internalCenterX,
+        y: (bottomY + topY) / 2,
+        z: internalZ,
+        w: Math.max(0.0001, innerW),
+        boxH: Math.max(0.0001, spanH),
+        d: Math.max(0.0001, internalDepth),
+        woodThick,
+        op: 'add',
+      },
+    });
   }
 
   return false;

@@ -4,7 +4,10 @@ import {
   readFiniteNumber,
   readSketchDividerTargetBox,
 } from './canvas_picking_manual_layout_sketch_hover_module_shared.js';
-import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import {
+  createManualLayoutSketchBoxContentHoverRecord,
+  createManualLayoutSketchModuleDividerHoverRecord,
+} from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   createManualLayoutSketchHoverHost,
   writeManualLayoutSketchHoverPreview,
@@ -57,6 +60,8 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
   const {
     tool,
     boxes,
+    sketchExtras,
+    hitModuleKey,
     setPreview,
     hitLocalX,
     internalCenterX,
@@ -94,9 +99,11 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     __wp_readSketchBoxDividerXNorm,
   } = ctx;
   if (tool !== __SKETCH_BOX_DIVIDER_TOOL && tool !== __SKETCH_BOX_HORIZONTAL_DIVIDER_TOOL) return false;
-  if (!boxes.length || !setPreview) return false;
+  if (!setPreview) return false;
 
   let targetBox: any = null;
+  let targetState: unknown = null;
+  let moduleTarget = false;
   let targetGeo: any = null;
   let targetCenterY: number | null = null;
   let targetHeight: number | null = null;
@@ -134,18 +141,32 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     if (dist < bestDist) {
       bestDist = dist;
       targetBox = box;
+      targetState = box;
       targetGeo = geo;
       targetCenterY = cy;
       targetHeight = hM;
     }
   }
-  if (!targetBox || !targetGeo || targetCenterY == null || targetHeight == null) return false;
-  const boxId = targetBox.id != null ? String(targetBox.id) : '';
+  if (!targetBox) {
+    if (typeof hitModuleKey !== 'number' || !Number.isInteger(hitModuleKey) || hitModuleKey < 0) return false;
+    moduleTarget = true;
+    targetState = sketchExtras;
+    targetGeo = {
+      centerX: internalCenterX,
+      innerW,
+      innerD: internalDepth,
+      innerBackZ: internalZ - internalDepth / 2,
+    };
+    targetCenterY = bottomY + spanH / 2;
+    targetHeight = spanH + woodThick * 2;
+  }
+  if (!targetState || !targetGeo || targetCenterY == null || targetHeight == null) return false;
+  const boxId = targetBox?.id != null ? String(targetBox.id) : '';
   const targetInnerH = Math.max(0.0001, targetHeight - woodThick * 2);
   const dividerPreviewD = Math.max(0.0001, targetGeo.innerD);
   const dividerPreviewZ = targetGeo.innerBackZ + targetGeo.innerD / 2;
-  const existingDividers = __wp_readSketchBoxDividers(targetBox);
-  const existingHorizontalDividers = __wp_readSketchBoxHorizontalDividers(targetBox);
+  const existingDividers = __wp_readSketchBoxDividers(targetState);
+  const existingHorizontalDividers = __wp_readSketchBoxHorizontalDividers(targetState);
 
   if (tool === __SKETCH_BOX_HORIZONTAL_DIVIDER_TOOL) {
     const columnSegments = __wp_resolveSketchBoxSegments({
@@ -214,17 +235,26 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
       resolveSketchBoxHorizontalDividerPlacement: __wp_resolveSketchBoxHorizontalDividerPlacement,
     });
     return writeManualLayoutSketchHoverPreview(ctx, {
-      hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
-        host: createManualLayoutSketchHoverHost(ctx),
-        contentKind: 'divider',
-        boxId,
-        freePlacement: false,
-        op,
-        dividerId,
-        dividerYNorm,
-        dividerXNorm,
-        dividerAxis: 'horizontal',
-      }),
+      hoverRecord: moduleTarget
+        ? createManualLayoutSketchModuleDividerHoverRecord({
+            host: createManualLayoutSketchHoverHost(ctx),
+            op,
+            axis: 'horizontal',
+            dividerId,
+            dividerYNorm,
+            dividerXNorm,
+          })
+        : createManualLayoutSketchBoxContentHoverRecord({
+            host: createManualLayoutSketchHoverHost(ctx),
+            contentKind: 'divider',
+            boxId,
+            freePlacement: false,
+            op,
+            dividerId,
+            dividerYNorm,
+            dividerXNorm,
+            dividerAxis: 'horizontal',
+          }),
       preview: {
         kind: 'drawer_divider',
         dividerAxis: 'horizontal',
@@ -300,7 +330,7 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     innerW: targetGeo.innerW,
     woodThick,
     cursorX,
-    dividerXNorm: __wp_readSketchBoxDividerXNorm(targetBox),
+    dividerXNorm: __wp_readSketchBoxDividerXNorm(targetState),
     enableCenterSnap: true,
   });
   const freePlacementGeometry = readDividerPlacement(freePlacement) ?? {
@@ -362,17 +392,26 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
     resolveSketchBoxDividerPlacement: __wp_resolveSketchBoxDividerPlacement,
   });
   return writeManualLayoutSketchHoverPreview(ctx, {
-    hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
-      host: createManualLayoutSketchHoverHost(ctx),
-      contentKind: 'divider',
-      boxId,
-      freePlacement: false,
-      op,
-      dividerId,
-      dividerXNorm,
-      dividerYNorm,
-      dividerAxis: 'vertical',
-    }),
+    hoverRecord: moduleTarget
+      ? createManualLayoutSketchModuleDividerHoverRecord({
+          host: createManualLayoutSketchHoverHost(ctx),
+          op,
+          axis: 'vertical',
+          dividerId,
+          dividerXNorm,
+          dividerYNorm,
+        })
+      : createManualLayoutSketchBoxContentHoverRecord({
+          host: createManualLayoutSketchHoverHost(ctx),
+          contentKind: 'divider',
+          boxId,
+          freePlacement: false,
+          op,
+          dividerId,
+          dividerXNorm,
+          dividerYNorm,
+          dividerAxis: 'vertical',
+        }),
     preview: {
       kind: 'drawer_divider',
       dividerAxis: 'vertical',

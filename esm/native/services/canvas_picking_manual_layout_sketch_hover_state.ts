@@ -70,6 +70,20 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   blockedReason?: string | null;
 };
 
+type ManualLayoutSketchModuleDividerHoverArgs = {
+  host: ManualLayoutSketchHoverHost;
+  op: 'add' | 'remove';
+  axis: 'vertical' | 'horizontal';
+  dividerId?: string | null;
+  dividerXNorm?: number | null;
+  dividerYNorm?: number | null;
+};
+
+type ManualLayoutSketchCellDoorCountHoverArgs = {
+  host: ManualLayoutSketchHoverHost;
+  doorCount: 1 | 2;
+};
+
 type ManualLayoutSketchStackHoverArgs = {
   host: ManualLayoutSketchHoverHost;
   kind: 'drawers' | 'ext_drawers';
@@ -187,6 +201,46 @@ export function createManualLayoutSketchBoxHoverRecord(args: ManualLayoutSketchB
     __wpBlockedReason: args.blockedReason ?? undefined,
     [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope(command),
   });
+}
+
+export function createManualLayoutSketchModuleDividerHoverRecord(
+  args: ManualLayoutSketchModuleDividerHoverArgs
+): RecordMap {
+  const dividerId = args.dividerId ?? null;
+  const dividerXNorm = args.dividerXNorm ?? null;
+  const dividerYNorm = args.dividerYNorm ?? null;
+  const command: ManualLayoutCommand = {
+    kind: 'module_divider',
+    op: args.op,
+    axis: args.axis,
+    dividerId,
+    dividerXNorm,
+    dividerYNorm,
+  };
+  return withDefined(
+    createManualLayoutSketchHoverBase({ host: args.host, kind: 'module_divider', op: args.op }),
+    {
+      dividerAxis: args.axis,
+      dividerId: args.dividerId ?? undefined,
+      dividerXNorm: args.dividerXNorm ?? undefined,
+      dividerYNorm: args.dividerYNorm ?? undefined,
+      [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope(command),
+    }
+  );
+}
+
+export function createManualLayoutSketchCellDoorCountHoverRecord(
+  args: ManualLayoutSketchCellDoorCountHoverArgs
+): RecordMap {
+  return {
+    ...createManualLayoutSketchHoverBase({ host: args.host, kind: 'cell_door_count', op: 'apply' }),
+    doorCount: args.doorCount,
+    [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope({
+      kind: 'cell_door_count',
+      op: 'apply',
+      doorCount: args.doorCount,
+    }),
+  };
 }
 
 function createStructuralCommandFromHoverArgs(

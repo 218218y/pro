@@ -22,7 +22,11 @@ import type {
   SketchModuleInnerFaces,
 } from './render_interior_sketch_module_geometry.js';
 import type { RenderSketchFreeWardrobeBox } from './render_interior_sketch_boxes_shared.js';
-import type { SketchFreeBoxDimensionEntry } from './render_interior_sketch_layout.js';
+import type {
+  SketchBoxDividerState,
+  SketchBoxHorizontalDividerState,
+  SketchFreeBoxDimensionEntry,
+} from './render_interior_sketch_layout.js';
 import type { SketchPlacementSupport } from './render_interior_sketch_support.js';
 import type {
   RemovedFrameSideShelfExposure,
@@ -49,6 +53,8 @@ export type InteriorSketchExtrasInput = {
   App: AppContainer;
   renderOps: InteriorValueRecord | null;
   input: RenderInteriorSketchInput;
+  dividers: SketchBoxDividerState[];
+  horizontalDividers: SketchBoxHorizontalDividerState[];
   shelves: SketchShelfExtra[];
   boxes: SketchBoxExtra[];
   storageBarriers: SketchStorageBarrierExtra[];
