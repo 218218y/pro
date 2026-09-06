@@ -19,6 +19,12 @@ import {
   clampSketchModuleStorageCenterY,
 } from './canvas_picking_sketch_module_vertical_content.js';
 import {
+  doesSketchModuleContentItemBelongToCell,
+  resolveSketchModulePartitionCell,
+  resolveSketchModulePartitionScopeOrder,
+  resolveSketchModulePointerNorm,
+} from './canvas_picking_sketch_module_partition.js';
+import {
   createRodAddHoverRecord,
   createShelfAddHoverRecord,
   createStorageAddHoverRecord,
@@ -82,6 +88,46 @@ export function resolveSketchModuleContentPreview(args: {
   let storageHPreview = args.storageHPreview;
   let op: 'add' | 'remove' | 'blocked' = args.contentOp;
 
+  const pointerX = Number.isFinite(source.hitLocalX) ? Number(source.hitLocalX) : internalCenterX;
+  const partitionGeometry = {
+    innerW,
+    internalCenterX,
+    bottomY,
+    topY,
+    woodThick,
+  };
+  const pointerNorm = resolveSketchModulePointerNorm({
+    geometry: partitionGeometry,
+    pointerX,
+    pointerY: yClamped,
+  });
+  const partitionCell = resolveSketchModulePartitionCell({
+    sketchExtras: source.sketchExtras,
+    geometry: partitionGeometry,
+    pointerX,
+    pointerY: yClamped,
+  });
+  const partitionScopeOrder = resolveSketchModulePartitionScopeOrder(source.sketchExtras);
+  const belongsToTarget = (item: Record<string, unknown>): boolean =>
+    !partitionCell ||
+    doesSketchModuleContentItemBelongToCell({
+      sketchExtras: source.sketchExtras,
+      geometry: partitionGeometry,
+      item,
+      cell: partitionCell,
+    });
+  const targetDrawers = (source.drawers ?? []).filter(belongsToTarget);
+  const targetExtDrawers = (source.extDrawers ?? []).filter(belongsToTarget);
+  const targetBottomY = partitionCell?.bottomY ?? bottomY;
+  const targetTopY = partitionCell?.topY ?? topY;
+  const clampToTargetCell = (centerY: number, heightM: number): number => {
+    const half = Math.max(0, heightM) / 2;
+    const lo = targetBottomY + pad + half;
+    const hi = targetTopY - pad - half;
+    if (!(hi >= lo)) return (targetBottomY + targetTopY) / 2;
+    return Math.max(lo, Math.min(hi, centerY));
+  };
+
   if (isStorage && storageBarriers.length) {
     const storageMatch = findNearestSketchModuleStorageBarrier({
       storageBarriers,
@@ -114,8 +160,8 @@ export function resolveSketchModuleContentPreview(args: {
     op === 'add' &&
     doesSketchModuleVerticalRangeCollideWithDrawers({
       cfgRef: source.cfgRef,
-      drawers: source.drawers,
-      extDrawers: source.extDrawers,
+      drawers: targetDrawers,
+      extDrawers: targetExtDrawers,
       bottomY,
       topY,
       totalHeight: spanH,
@@ -136,29 +182,33 @@ export function resolveSketchModuleContentPreview(args: {
     woodThick,
     resolveSketchBoxGeometry: source.resolveSketchBoxGeometry,
   });
-  const previewX = boxShelfSpan.centerX != null ? boxShelfSpan.centerX : internalCenterX;
+  const previewX =
+    boxShelfSpan.centerX != null ? boxShelfSpan.centerX : (partitionCell?.centerX ?? internalCenterX);
+  const previewInnerW = boxShelfSpan.innerW != null ? boxShelfSpan.innerW : (partitionCell?.width ?? innerW);
 
   if (isStorage) {
     const storagePlacement =
       op === 'add'
         ? resolveSketchModuleVerticalRangePlacementAgainstDrawers({
             cfgRef: source.cfgRef,
-            drawers: source.drawers,
-            extDrawers: source.extDrawers,
+            drawers: targetDrawers,
+            extDrawers: targetExtDrawers,
             bottomY,
             topY,
             totalHeight: spanH,
             pad,
             desiredCenterY: yClamped,
             heightM: storageHPreview,
+            limitBottomY: targetBottomY,
+            limitTopY: targetTopY,
           })
         : null;
     const storagePreviewY =
       op === 'add'
         ? (storagePlacement?.centerY ??
           clampSketchModuleStorageCenterY({
-            bottomY,
-            topY,
+            bottomY: targetBottomY,
+            topY: targetTopY,
             pad,
             heightM: storageHPreview,
             pointerY: yClamped,
@@ -176,17 +226,19 @@ export function resolveSketchModuleContentPreview(args: {
           ? createStorageAddHoverRecord({
               host: source.host,
               yNorm: storageAddYNorm,
+              xNorm: pointerNorm.xNorm,
+              scopeOrder: partitionScopeOrder,
               blockedReason: blockedBySketchDrawers ? 'collision' : null,
             })
           : undefined,
       preview: {
         kind: 'storage',
-        x: internalCenterX,
+        x: partitionCell?.centerX ?? internalCenterX,
         y: storagePreviewY,
         z: zFront + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
         w: Math.max(
           INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
-          innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+          previewInnerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
         ),
         h: storageHPreview,
         d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick),
@@ -198,7 +250,9 @@ export function resolveSketchModuleContentPreview(args: {
   }
 
   if (isRod) {
-    const blockedBySketchDrawers = isAddBlockedBySketchDrawers(resolveSketchModuleRodCollisionHeight());
+    const rodCollisionHeight = resolveSketchModuleRodCollisionHeight();
+    if (op === 'add') yClamped = clampToTargetCell(yClamped, rodCollisionHeight);
+    const blockedBySketchDrawers = isAddBlockedBySketchDrawers(rodCollisionHeight);
     if (blockedBySketchDrawers) op = 'blocked';
     const rodAddYNorm = spanH > 0 ? Math.max(0, Math.min(1, (yClamped - bottomY) / spanH)) : 0;
     return {
@@ -208,17 +262,19 @@ export function resolveSketchModuleContentPreview(args: {
           ? createRodAddHoverRecord({
               host: source.host,
               yNorm: rodAddYNorm,
+              xNorm: pointerNorm.xNorm,
+              scopeOrder: partitionScopeOrder,
               blockedReason: blockedBySketchDrawers ? 'collision' : null,
             })
           : undefined,
       preview: {
         kind: 'rod',
-        x: internalCenterX,
+        x: partitionCell?.centerX ?? internalCenterX,
         y: yClamped,
         z: internalZ,
         w: Math.max(
           SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
-          innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+          previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
         ),
         h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
         d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
@@ -230,7 +286,7 @@ export function resolveSketchModuleContentPreview(args: {
   }
 
   const shelfPreview = createSketchModuleShelfPreviewGeometry({
-    innerW: boxShelfSpan.innerW != null ? boxShelfSpan.innerW : innerW,
+    innerW: previewInnerW,
     internalDepth: boxShelfSpan.innerD != null ? boxShelfSpan.innerD : internalDepth,
     backZ: boxShelfSpan.innerBackZ != null ? boxShelfSpan.innerBackZ : backZ,
     woodThick,
@@ -241,14 +297,17 @@ export function resolveSketchModuleContentPreview(args: {
     variant: variantPreview,
     shelfDepthOverrideM,
   });
-  const blockedBySketchDrawers = isAddBlockedBySketchDrawers(shelfPreview.h);
+  const shelfPreviewY = op === 'add' ? clampToTargetCell(yClamped, shelfPreview.h) : yClamped;
+  const blockedBySketchDrawers = isAddBlockedBySketchDrawers(shelfPreview.h, shelfPreviewY);
   if (blockedBySketchDrawers) op = 'blocked';
-  const addYNorm = spanH > 0 ? Math.max(0, Math.min(1, (yClamped - bottomY) / spanH)) : 0;
+  const addYNorm = spanH > 0 ? Math.max(0, Math.min(1, (shelfPreviewY - bottomY) / spanH)) : 0;
   const shelfAddHoverRecord =
     args.isShelf && args.contentOp === 'add'
       ? createShelfAddHoverRecord({
           host: source.host,
           yNorm: addYNorm,
+          xNorm: pointerNorm.xNorm,
+          scopeOrder: partitionScopeOrder,
           variant: variantPreview,
           depthM: shelfDepthOverrideM,
           blockedReason: blockedBySketchDrawers ? 'collision' : null,
@@ -267,7 +326,7 @@ export function resolveSketchModuleContentPreview(args: {
     drawers: source.drawers,
     extDrawers: source.extDrawers,
     targetCenterX: previewX,
-    targetCenterY: yClamped,
+    targetCenterY: shelfPreviewY,
     targetWidth: shelfPreview.w,
     targetHeight: shelfPreview.h,
     z:
@@ -287,7 +346,7 @@ export function resolveSketchModuleContentPreview(args: {
       kind: 'shelf',
       variant: shelfPreview.variant,
       x: previewX,
-      y: yClamped,
+      y: shelfPreviewY,
       z: shelfPreview.z,
       w: shelfPreview.w,
       h: shelfPreview.h,

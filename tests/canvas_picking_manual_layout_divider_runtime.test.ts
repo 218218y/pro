@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { tryHandleManualLayoutSketchHoverModuleDividerFlow } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_divider_flow.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
 import { decodeManualLayoutCommand } from '../esm/native/services/canvas_picking_manual_layout_command.ts';
+import {
+  resolveSketchPartitionCells,
+  resolveSketchPartitionContentCells,
+} from '../esm/shared/dimensions/sketch_box_divider_policy.ts';
 
 function requireStructuralCommand(value: unknown) {
   const decoded = decodeSketchStructuralCommandHover(value);
@@ -192,4 +196,65 @@ test('manual-layout divider hover targets the regular module when no sketch box 
   assert.equal(decoded.command.op, 'add');
   assert.equal(decoded.command.dividerYNorm, 0.2475);
   assert.equal(previews[0].h, 0.99);
+});
+
+test('partition topology keeps creation precedence and content ownership across nested regular-module splits', () => {
+  const partition = {
+    verticalDividers: [
+      { id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 },
+      { id: 'v3', xNorm: 0.25, yNorm: 0.25, order: 3 },
+    ],
+    horizontalDividers: [{ id: 'h2', yNorm: 0.5, xNorm: 0.25, order: 2 }],
+    centerX: 0,
+    centerY: 0.5,
+    innerW: 1,
+    innerH: 1,
+    woodThick: 0.02,
+  } as const;
+
+  const cells = resolveSketchPartitionCells(partition);
+  assert.deepEqual(
+    cells.map(cell => [cell.normLeft, cell.normRight, cell.normBottom, cell.normTop]),
+    [
+      [0, 0.25, 0, 0.5],
+      [0.25, 0.5, 0, 0.5],
+      [0.5, 1, 0, 1],
+      [0, 0.5, 0.5, 1],
+    ]
+  );
+
+  const prePartition = resolveSketchPartitionContentCells({ ...partition, yNorm: 0.25 });
+  assert.deepEqual(
+    prePartition.map(cell => [cell.normLeft, cell.normRight, cell.normBottom, cell.normTop]),
+    [
+      [0, 0.25, 0, 0.5],
+      [0.25, 0.5, 0, 0.5],
+      [0.5, 1, 0, 1],
+    ]
+  );
+
+  const authoredBeforeNestedSplit = resolveSketchPartitionContentCells({
+    ...partition,
+    xNorm: 0.1,
+    yNorm: 0.25,
+    scopeOrder: 2,
+  });
+  assert.deepEqual(
+    authoredBeforeNestedSplit.map(cell => [cell.normLeft, cell.normRight, cell.normBottom, cell.normTop]),
+    [
+      [0, 0.25, 0, 0.5],
+      [0.25, 0.5, 0, 0.5],
+    ]
+  );
+
+  const authoredAfterNestedSplit = resolveSketchPartitionContentCells({
+    ...partition,
+    xNorm: 0.1,
+    yNorm: 0.25,
+    scopeOrder: 3,
+  });
+  assert.deepEqual(
+    authoredAfterNestedSplit.map(cell => [cell.normLeft, cell.normRight, cell.normBottom, cell.normTop]),
+    [[0, 0.25, 0, 0.5]]
+  );
 });

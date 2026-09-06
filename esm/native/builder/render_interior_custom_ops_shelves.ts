@@ -84,6 +84,8 @@ export function createAddCustomGridShelf(args: {
   activeSlots: unknown[];
   shelfExposedSide?: RemovedFrameSideShelfExposure | null;
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
+  resolvePartitionCellsAtY?:
+    ((y: number) => readonly { centerX: number; width: number; leftX: number; rightX: number }[]) | undefined;
 }) {
   const {
     roomArchitecturePlan,
@@ -115,6 +117,7 @@ export function createAddCustomGridShelf(args: {
     activeSlots,
     shelfExposedSide,
     roundedShelfSide,
+    resolvePartitionCellsAtY,
   } = args;
 
   let pinGeo: unknown = null;
@@ -134,10 +137,13 @@ export function createAddCustomGridShelf(args: {
     shelfDepth: number,
     shelfH: number,
     isBrace: boolean,
-    shelfPartId: string
+    shelfPartId: string,
+    pinLeftX: number = braceMetrics.leftInnerX,
+    pinRightX: number = braceMetrics.rightInnerX,
+    pinInnerW: number = innerW
   ) => {
     if (isBrace || !threeSurface) return;
-    if (!(innerW > 0) || !(shelfDepth > 0)) return;
+    if (!(pinInnerW > 0) || !(shelfDepth > 0)) return;
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
@@ -180,10 +186,10 @@ export function createAddCustomGridShelf(args: {
       group.add?.(mesh);
     };
 
-    mkPin(braceMetrics.leftInnerX + PIN_LEN / 2, zBack);
-    mkPin(braceMetrics.leftInnerX + PIN_LEN / 2, zFront);
-    mkPin(braceMetrics.rightInnerX - PIN_LEN / 2, zBack);
-    mkPin(braceMetrics.rightInnerX - PIN_LEN / 2, zFront);
+    mkPin(pinLeftX + PIN_LEN / 2, zBack);
+    mkPin(pinLeftX + PIN_LEN / 2, zFront);
+    mkPin(pinRightX - PIN_LEN / 2, zBack);
+    mkPin(pinRightX - PIN_LEN / 2, zFront);
   };
 
   function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
@@ -239,8 +245,6 @@ export function createAddCustomGridShelf(args: {
     const shelfH = shelfHeightForVariant(shelfVariant, shelfThick);
     const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
     const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
-    const shelfW = isBrace ? braceMetrics.braceShelfWidth : braceMetrics.regularShelfWidth;
-    const shelfX = isBrace ? braceMetrics.braceCenterX : internalCenterX;
     const shelfPartId = createModuleShelfPartId(moduleKey, gridIndex);
     const material =
       isGlass && glassMat
@@ -259,45 +263,87 @@ export function createAddCustomGridShelf(args: {
             ...(roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : {}),
           }
         : null;
-    const mesh = asMesh(
-      createBoard(shelfW, shelfH, shelfDepth, shelfX, shelfY, shelfZ, material, shelfPartId, shelfOptions)
-    );
+    const partitionCells = resolvePartitionCellsAtY?.(shelfY) ?? [];
+    const spans = partitionCells.length
+      ? partitionCells
+      : [
+          {
+            centerX: isBrace ? braceMetrics.braceCenterX : internalCenterX,
+            width: innerW,
+            leftX: braceMetrics.leftInnerX,
+            rightX: braceMetrics.rightInnerX,
+          },
+        ];
 
-    if (mesh && typeof mesh === 'object') {
-      mesh.userData = mesh.userData || {};
-      markShelfBoardUserData(mesh.userData, {
-        groupPartId: SHELF_GROUP_PART_ID,
-        shelfIndex: gridIndex,
-        variant: shelfVariant,
-        isBrace,
-        exposedSide: shelfOptions?.shelfExposedSide,
-        roundedSide: shelfOptions?.roundedShelfSide,
-      });
-    }
-
-    addShelfPins(shelfY, shelfZ, shelfDepth, shelfH, isBrace, shelfPartId);
-
-    if (isGlass && mesh && typeof mesh === 'object') {
-      mesh.userData = mesh.userData || {};
-      if (mesh.userData) mesh.userData.__keepMaterial = true;
-      mesh.castShadow = false;
-      mesh.receiveShadow = false;
-      mesh.renderOrder = 2;
-    }
-
-    const hasDrawerAbove = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex + 1) !== -1;
-    const hasDrawerHere = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex) !== -1;
-    if (!hasDrawerAbove && !hasDrawerHere && __isFn(addFoldedClothes)) {
-      addFoldedClothes(
-        internalCenterX,
-        shelfY + shelfH / 2,
-        shelfZ,
-        innerW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
-        group,
-        resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
-        shelfDepth,
-        contentsPolicy
+    for (const span of spans) {
+      const shelfW = Math.max(
+        0,
+        span.width -
+          (isBrace
+            ? INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM
+            : INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM)
       );
+      if (!(shelfW > 0)) continue;
+      const mesh = asMesh(
+        createBoard(
+          shelfW,
+          shelfH,
+          shelfDepth,
+          span.centerX,
+          shelfY,
+          shelfZ,
+          material,
+          shelfPartId,
+          shelfOptions
+        )
+      );
+
+      if (mesh && typeof mesh === 'object') {
+        mesh.userData = mesh.userData || {};
+        markShelfBoardUserData(mesh.userData, {
+          groupPartId: SHELF_GROUP_PART_ID,
+          shelfIndex: gridIndex,
+          variant: shelfVariant,
+          isBrace,
+          exposedSide: shelfOptions?.shelfExposedSide,
+          roundedSide: shelfOptions?.roundedShelfSide,
+        });
+      }
+
+      addShelfPins(
+        shelfY,
+        shelfZ,
+        shelfDepth,
+        shelfH,
+        isBrace,
+        shelfPartId,
+        span.leftX,
+        span.rightX,
+        span.width
+      );
+
+      if (isGlass && mesh && typeof mesh === 'object') {
+        mesh.userData = mesh.userData || {};
+        if (mesh.userData) mesh.userData.__keepMaterial = true;
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        mesh.renderOrder = 2;
+      }
+
+      const hasDrawerAbove = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex + 1) !== -1;
+      const hasDrawerHere = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex) !== -1;
+      if (!hasDrawerAbove && !hasDrawerHere && __isFn(addFoldedClothes)) {
+        addFoldedClothes(
+          span.centerX,
+          shelfY + shelfH / 2,
+          shelfZ,
+          Math.max(0, span.width - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM),
+          group,
+          resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
+          shelfDepth,
+          contentsPolicy
+        );
+      }
     }
   };
 }
@@ -320,6 +366,7 @@ export function addCustomBaseShelfContents(args: {
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
+  resolvePartitionCellsAtY?: ((y: number) => readonly { centerX: number; width: number }[]) | undefined;
 }): void {
   const {
     group,
@@ -338,6 +385,7 @@ export function addCustomBaseShelfContents(args: {
     internalZ,
     isInternalDrawersEnabled,
     activeSlots,
+    resolvePartitionCellsAtY,
   } = args;
 
   if (!shelfSet[1] || !__isFn(addFoldedClothes)) return;
@@ -360,14 +408,18 @@ export function addCustomBaseShelfContents(args: {
   const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
   const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
 
-  addFoldedClothes(
-    internalCenterX,
-    effectiveBottomY,
-    shelfZ,
-    innerW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
-    group,
-    maxHeight,
-    shelfDepth,
-    contentsPolicy
-  );
+  const cells = resolvePartitionCellsAtY?.(effectiveBottomY + 1e-6) ?? [];
+  const spans = cells.length ? cells : [{ centerX: internalCenterX, width: innerW }];
+  for (const span of spans) {
+    addFoldedClothes(
+      span.centerX,
+      effectiveBottomY,
+      shelfZ,
+      Math.max(0, span.width - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM),
+      group,
+      maxHeight,
+      shelfDepth,
+      contentsPolicy
+    );
+  }
 }

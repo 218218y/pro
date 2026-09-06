@@ -9,6 +9,11 @@ import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manua
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import {
+  doesSketchModuleContentItemBelongToCell,
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCellAtNorm,
+} from './canvas_picking_sketch_module_partition.js';
 import type {
   CommitSketchModuleExternalDrawerArgs,
   RecordMap,
@@ -64,20 +69,90 @@ export function commitSketchModuleExternalDrawers(
     !Array.isArray(args.cfg.sketchExtras)
       ? (args.cfg.sketchExtras as RecordMap)
       : null;
+  const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
+  const targetHover = stackHover?.kind === 'ext_drawers' ? stackHover : null;
+  const targetCell = targetHover
+    ? resolveSketchModulePartitionCellAtNorm({
+        sketchExtras: existingExtra ?? {},
+        bottomY: args.bottomY,
+        topY: args.topY,
+        woodThick:
+          typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
+        xNorm: targetHover.xNorm,
+        yNorm: Math.max(
+          0,
+          Math.min(1, (targetHover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
+        ),
+      })
+    : null;
+  const targetBottomY = targetCell?.bottomY ?? args.bottomY;
+  const targetTopY = targetCell?.topY ?? args.topY;
   const list = Array.isArray(existingExtra?.extDrawers) ? (existingExtra.extDrawers as RecordMap[]) : [];
   const internalDrawers = Array.isArray(existingExtra?.drawers) ? (existingExtra.drawers as RecordMap[]) : [];
   const shelves = Array.isArray(existingExtra?.shelves) ? (existingExtra.shelves as RecordMap[]) : [];
+  const rods = Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [];
   const storageBarriers = Array.isArray(existingExtra?.storageBarriers)
     ? (existingExtra.storageBarriers as RecordMap[])
     : [];
   const boxes = Array.isArray(existingExtra?.boxes) ? (existingExtra.boxes as RecordMap[]) : [];
+  const partitionGeometry = {
+    innerW: 1,
+    internalCenterX: 0,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
+  };
+  const targetExternalDrawers = filterSketchModuleContentItemsForCell({
+    sketchExtras: existingExtra ?? {},
+    geometry: partitionGeometry,
+    items: list,
+    cell: targetCell,
+  }).map(candidate => candidate.item);
+  const targetInternalDrawers = filterSketchModuleContentItemsForCell({
+    sketchExtras: existingExtra ?? {},
+    geometry: partitionGeometry,
+    items: internalDrawers,
+    cell: targetCell,
+  }).map(candidate => candidate.item);
   const readNormalizedCenterY = createManualLayoutSketchNormalizedCenterReader({
     bottomY: args.bottomY,
     totalHeight: args.totalHeight,
   });
+  const verticalContentBlockers = buildManualLayoutVerticalContentBlockers({
+    cfgRef: args.cfg,
+    shelves,
+    rods,
+    storageBarriers,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    totalHeight: args.totalHeight,
+    pad: args.pad,
+    woodThick: args.woodThick,
+  }).filter(blocker => {
+    if (!targetCell || blocker.source === 'base') return true;
+    const index =
+      typeof blocker.index === 'number' && Number.isFinite(blocker.index) ? Math.round(blocker.index) : -1;
+    const item =
+      blocker.kind === 'shelf'
+        ? shelves[index]
+        : blocker.kind === 'rod'
+          ? rods[index]
+          : blocker.kind === 'storage'
+            ? storageBarriers[index]
+            : null;
+    return (
+      !!item &&
+      doesSketchModuleContentItemBelongToCell({
+        sketchExtras: existingExtra ?? {},
+        geometry: partitionGeometry,
+        item,
+        cell: targetCell,
+      })
+    );
+  });
   const internalDrawerBlockers = [
     ...buildManualLayoutSketchInternalDrawerBlockers({
-      drawers: internalDrawers,
+      drawers: targetInternalDrawers,
       bottomY: args.bottomY,
       topY: args.topY,
       pad: args.pad,
@@ -91,17 +166,7 @@ export function commitSketchModuleExternalDrawers(
       totalHeight: args.totalHeight,
       moduleIndex: args.hoverHost.moduleKey,
     }),
-    ...buildManualLayoutVerticalContentBlockers({
-      cfgRef: args.cfg,
-      shelves,
-      rods: Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [],
-      storageBarriers,
-      bottomY: args.bottomY,
-      topY: args.topY,
-      totalHeight: args.totalHeight,
-      pad: args.pad,
-      woodThick: args.woodThick,
-    }),
+    ...verticalContentBlockers,
     ...buildSketchModuleBoxVerticalBlockers({
       cfgRef: args.cfg,
       boxes,
@@ -118,10 +183,10 @@ export function commitSketchModuleExternalDrawers(
     selectedDrawerCount: args.requestedDrawerCount,
     drawerType: args.drawerType,
     drawerHeightM: args.drawerHeightM,
-    bottomY: args.bottomY,
-    topY: args.topY,
+    bottomY: targetBottomY,
+    topY: targetTopY,
     pad: args.pad,
-    extDrawers: list,
+    extDrawers: targetExternalDrawers,
     readCenterY: readNormalizedCenterY,
     blockers: internalDrawerBlockers,
   });
@@ -149,7 +214,7 @@ export function commitSketchModuleExternalDrawers(
       stackH: placement.stackH,
     });
   }
-  if (!sketchStackFitsAvailableHeight(placement.stackH, Math.max(0, args.topY - args.bottomY))) {
+  if (!sketchStackFitsAvailableHeight(placement.stackH, Math.max(0, targetTopY - targetBottomY))) {
     return null;
   }
 
@@ -168,6 +233,7 @@ export function commitSketchModuleExternalDrawers(
     count: args.drawerType === 'shoe' ? 0 : placement.drawerCount,
     drawerHeightM: args.drawerHeightM,
     ...(args.drawerType === 'shoe' ? { hasShoeDrawer: true } : {}),
+    ...(targetHover ? { xNorm: targetHover.xNorm, scopeOrder: targetHover.scopeOrder } : {}),
   };
   mutableList.push(item);
   return createManualLayoutSketchStackHoverRecord({
@@ -175,6 +241,8 @@ export function commitSketchModuleExternalDrawers(
     kind: 'ext_drawers',
     op: 'remove',
     removeId: item.id,
+    xNorm: targetHover?.xNorm,
+    scopeOrder: targetHover?.scopeOrder,
     yCenter: placement.yCenter,
     baseY: normalized.baseYAbs,
     drawerCount: placement.drawerCount,

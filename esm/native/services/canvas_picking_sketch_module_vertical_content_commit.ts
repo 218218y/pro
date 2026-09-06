@@ -20,11 +20,14 @@ export function commitSketchModuleShelf(args: {
   totalHeight: number;
   pointerY: number;
   yNorm: number;
+  xNorm?: number | null;
+  scopeOrder?: number | null;
   variant: string;
   shelfDepthM?: number | null;
   removeEps: number;
 }): void {
-  const { cfg, bottomY, totalHeight, pointerY, yNorm, variant, shelfDepthM, removeEps } = args;
+  const { cfg, bottomY, totalHeight, pointerY, yNorm, xNorm, scopeOrder, variant, shelfDepthM, removeEps } =
+    args;
   const extra = ensureRecord(cfg, 'sketchExtras');
   const shelves = ensureRecordList(extra, 'shelves');
   const match = findNearestSketchModuleShelf({
@@ -39,6 +42,10 @@ export function commitSketchModuleShelf(args: {
   }
   const next: RecordMap = { variant: variant || 'double' };
   writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  if (typeof xNorm === 'number' && Number.isFinite(xNorm))
+    writeSketchCommitClampedUnitNumber(next, 'xNorm', xNorm, 0.5);
+  if (typeof scopeOrder === 'number' && Number.isFinite(scopeOrder) && scopeOrder >= 0)
+    next.scopeOrder = scopeOrder;
   writeSketchCommitPositiveNumber(next, 'depthM', shelfDepthM);
   shelves.push(next);
 }
@@ -49,9 +56,11 @@ export function commitSketchModuleRod(args: {
   totalHeight: number;
   pointerY: number;
   yNorm: number;
+  xNorm?: number | null;
+  scopeOrder?: number | null;
   removeEps: number;
 }): void {
-  const { cfg, bottomY, totalHeight, pointerY, yNorm, removeEps } = args;
+  const { cfg, bottomY, totalHeight, pointerY, yNorm, xNorm, scopeOrder, removeEps } = args;
   const extra = ensureRecord(cfg, 'sketchExtras');
   const rods = ensureRecordList(extra, 'rods');
   const match = findNearestSketchModuleRod({
@@ -66,6 +75,10 @@ export function commitSketchModuleRod(args: {
   }
   const next: RecordMap = {};
   writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  if (typeof xNorm === 'number' && Number.isFinite(xNorm))
+    writeSketchCommitClampedUnitNumber(next, 'xNorm', xNorm, 0.5);
+  if (typeof scopeOrder === 'number' && Number.isFinite(scopeOrder) && scopeOrder >= 0)
+    next.scopeOrder = scopeOrder;
   rods.push(next);
 }
 
@@ -76,11 +89,14 @@ export function commitSketchModuleStorageBarrier(args: {
   totalHeight: number;
   pad: number;
   pointerY: number;
+  xNorm?: number | null;
+  scopeOrder?: number | null;
   heightM: number;
   removeEps: number;
   idFactory: () => string;
 }): void {
-  const { cfg, bottomY, topY, totalHeight, pad, pointerY, heightM, removeEps, idFactory } = args;
+  const { cfg, bottomY, topY, totalHeight, pad, pointerY, xNorm, scopeOrder, heightM, removeEps, idFactory } =
+    args;
   const extra = ensureRecord(cfg, 'sketchExtras');
   const barriers = ensureRecordList(extra, 'storageBarriers');
   const yCenterAbs = clampSketchModuleStorageCenterY({
@@ -103,6 +119,10 @@ export function commitSketchModuleStorageBarrier(args: {
   const yNorm = Math.max(0, Math.min(1, (yCenterAbs - bottomY) / totalHeight));
   const next: RecordMap = { id: idFactory() };
   writeSketchCommitClampedUnitNumber(next, 'yNorm', yNorm, 0.5);
+  if (typeof xNorm === 'number' && Number.isFinite(xNorm))
+    writeSketchCommitClampedUnitNumber(next, 'xNorm', xNorm, 0.5);
+  if (typeof scopeOrder === 'number' && Number.isFinite(scopeOrder) && scopeOrder >= 0)
+    next.scopeOrder = scopeOrder;
   writeSketchCommitPositiveNumber(next, 'heightM', heightM);
   barriers.push(next);
 }

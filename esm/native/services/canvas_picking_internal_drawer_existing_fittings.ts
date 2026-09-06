@@ -118,7 +118,7 @@ export function resolveInternalDrawerExistingFittingRemoval(
   const spanH = Math.max(0, args.topY - args.bottomY);
   if (!(spanH > 0)) return null;
 
-  const sketchExtras = readSketchExtras(args.cfgRef);
+  const sketchExtras = readSketchExtras(args.cfgRef) ?? {};
   const result = resolveSketchModuleSurfacePreview({
     host: { tool: 'sketch_int_drawers', moduleKey: args.moduleKey, isBottom: args.isBottom },
     tool: 'sketch_int_drawers',
@@ -126,6 +126,7 @@ export function resolveInternalDrawerExistingFittingRemoval(
     intersects: args.intersects,
     info: args.info,
     cfgRef: args.cfgRef,
+    sketchExtras,
     hitLocalX: null,
     yClamped: args.yClamped,
     bottomY: args.bottomY,

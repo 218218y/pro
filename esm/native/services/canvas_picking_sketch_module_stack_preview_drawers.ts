@@ -10,6 +10,12 @@ import { withoutInternalDrawerReplaceableShelfBlockers } from './canvas_picking_
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import {
+  doesSketchModuleContentItemBelongToCell,
+  resolveSketchModulePartitionCell,
+  resolveSketchModulePartitionScopeOrder,
+  resolveSketchModulePointerNorm,
+} from './canvas_picking_sketch_module_partition.js';
 import type {
   ResolveSketchModuleStackPreviewArgs,
   ResolveSketchModuleStackPreviewResult,
@@ -35,13 +41,43 @@ export function resolveSketchModuleDrawersPreview(
     woodThick,
   } = args;
 
+  const sketchExtras = cfgRef?.sketchExtras ?? {};
+  const geometry = { innerW, internalCenterX, bottomY, topY, woodThick };
+  const pointerX =
+    typeof args.hitLocalX === 'number' && Number.isFinite(args.hitLocalX) ? args.hitLocalX : internalCenterX;
+  const pointerNorm = resolveSketchModulePointerNorm({ geometry, pointerX, pointerY: desiredCenterY });
+  const partitionCell = resolveSketchModulePartitionCell({
+    sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: desiredCenterY,
+  });
+  const scopeOrder = resolveSketchModulePartitionScopeOrder(sketchExtras);
+  const targetBottomY = partitionCell?.bottomY ?? bottomY;
+  const targetTopY = partitionCell?.topY ?? topY;
+  const targetInnerW = partitionCell?.width ?? innerW;
+  const targetCenterX = partitionCell?.centerX ?? internalCenterX;
+  const belongsToTarget = (item: Record<string, unknown>): boolean =>
+    !partitionCell ||
+    doesSketchModuleContentItemBelongToCell({
+      sketchExtras,
+      geometry,
+      item,
+      cell: partitionCell,
+    });
+  const targetDrawers = drawers.filter(belongsToTarget);
+  const targetExtDrawers = extDrawers.filter(belongsToTarget);
+  const targetShelves = (args.shelves ?? []).filter(belongsToTarget);
+  const targetRods = (args.rods ?? []).filter(belongsToTarget);
+  const targetStorage = (args.storageBarriers ?? []).filter(belongsToTarget);
+
   const readCenterY = createManualLayoutSketchNormalizedCenterReader({ bottomY, totalHeight });
   const verticalContentBlockers = buildManualLayoutVerticalContentBlockers({
     cfgRef,
     info: args.info,
-    shelves: args.shelves,
-    rods: args.rods,
-    storageBarriers: args.storageBarriers,
+    shelves: targetShelves,
+    rods: targetRods,
+    storageBarriers: targetStorage,
     bottomY,
     topY,
     totalHeight,
@@ -50,9 +86,9 @@ export function resolveSketchModuleDrawersPreview(
   });
   const placementBlockers = [
     ...buildManualLayoutSketchExternalDrawerBlockers({
-      extDrawers,
-      bottomY,
-      topY,
+      extDrawers: targetExtDrawers,
+      bottomY: targetBottomY,
+      topY: targetTopY,
       pad,
       readCenterY,
     }),
@@ -69,12 +105,12 @@ export function resolveSketchModuleDrawersPreview(
   ];
   let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY,
-    bottomY,
-    topY,
+    bottomY: targetBottomY,
+    topY: targetTopY,
     totalHeight,
     pad,
     drawerHeightM: args.drawerHeightM,
-    drawers,
+    drawers: targetDrawers,
     readCenterY,
     woodThick,
     blockers: placementBlockers,
@@ -82,12 +118,12 @@ export function resolveSketchModuleDrawersPreview(
   if (placement.op === 'blocked') {
     placement = resolveManualLayoutSketchInternalDrawerPlacement({
       desiredCenterY,
-      bottomY,
-      topY,
+      bottomY: targetBottomY,
+      topY: targetTopY,
       totalHeight,
       pad,
       drawerHeightM: args.drawerHeightM,
-      drawers,
+      drawers: targetDrawers,
       readCenterY,
       woodThick,
       blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
@@ -108,7 +144,7 @@ export function resolveSketchModuleDrawersPreview(
 
   const previewW = Math.max(
     DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinWidthM,
-    innerW - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewWidthClearanceM
+    targetInnerW - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewWidthClearanceM
   );
   const previewD = Math.max(
     DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinDepthM,
@@ -125,7 +161,7 @@ export function resolveSketchModuleDrawersPreview(
     shelves: args.shelves,
     drawers,
     extDrawers,
-    targetCenterX: internalCenterX,
+    targetCenterX,
     targetCenterY: yCenter,
     targetWidth: previewW,
     targetHeight: placement.stackH,
@@ -155,11 +191,13 @@ export function resolveSketchModuleDrawersPreview(
       drawerGap: placement.drawerGap,
       drawerHeightM: args.drawerHeightM ?? placement.drawerH,
       stackH: placement.stackH,
+      xNorm: pointerNorm.xNorm,
+      scopeOrder,
       blockedReason,
     }),
     preview: {
       kind: 'drawers',
-      x: internalCenterX,
+      x: targetCenterX,
       y: baseY,
       z: internalZ,
       w: previewW,

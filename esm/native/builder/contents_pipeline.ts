@@ -9,6 +9,7 @@ import type {
   BuilderCreateRodConfigLike,
   BuilderCreateRodWithContentsArgsLike,
   BuilderInteriorRodCreator,
+  BuilderInteriorRodSpanOverride,
   BuilderOutlineFn,
   RoomArchitecturePlan,
 } from '../../../types';
@@ -73,8 +74,13 @@ function createRodArgs(
   yPos: number,
   enableHangingClothes: boolean,
   enableSingleHanger: boolean,
-  manualHeightLimit: number | null
+  manualHeightLimit: number | null,
+  spanOverride: BuilderInteriorRodSpanOverride | null
 ): BuilderCreateRodWithContentsArgsLike {
+  const effectiveBottomY = spanOverride?.effectiveBottomY ?? baseArgs.effectiveBottomY;
+  const effectiveTopY = spanOverride?.effectiveTopY ?? baseArgs.effectiveTopY;
+  const innerW = spanOverride?.innerW ?? baseArgs.innerW;
+  const internalCenterX = spanOverride?.internalCenterX ?? baseArgs.internalCenterX;
   return {
     App: app,
     ...(baseArgs.THREE !== undefined ? { THREE: baseArgs.THREE } : {}),
@@ -85,14 +91,14 @@ function createRodArgs(
     manualHeightLimit,
     cfg: baseArgs.cfg,
     config,
-    ...(baseArgs.effectiveBottomY !== undefined ? { effectiveBottomY: baseArgs.effectiveBottomY } : {}),
-    ...(baseArgs.effectiveTopY !== undefined ? { effectiveTopY: baseArgs.effectiveTopY } : {}),
+    ...(effectiveBottomY !== undefined ? { effectiveBottomY } : {}),
+    ...(effectiveTopY !== undefined ? { effectiveTopY } : {}),
     ...(baseArgs.gridDivisions !== undefined ? { gridDivisions: baseArgs.gridDivisions } : {}),
     ...(baseArgs.localGridStep !== undefined ? { localGridStep: baseArgs.localGridStep } : {}),
     ...(baseArgs.woodThick !== undefined ? { woodThick: baseArgs.woodThick } : {}),
     ...(baseArgs.shelfThick !== undefined ? { shelfThick: baseArgs.shelfThick } : {}),
-    ...(baseArgs.innerW !== undefined ? { innerW: baseArgs.innerW } : {}),
-    ...(baseArgs.internalCenterX !== undefined ? { internalCenterX: baseArgs.internalCenterX } : {}),
+    ...(innerW !== undefined ? { innerW } : {}),
+    ...(internalCenterX !== undefined ? { internalCenterX } : {}),
     ...(baseArgs.internalZ !== undefined ? { internalZ: baseArgs.internalZ } : {}),
     ...(baseArgs.internalDepth !== undefined ? { internalDepth: baseArgs.internalDepth } : {}),
     ...(baseArgs.doorFrontZ !== undefined ? { doorFrontZ: baseArgs.doorFrontZ } : {}),
@@ -133,7 +139,8 @@ export function makeRodCreator(args: MakeRodCreatorArgs | null | undefined): Bui
     yPos: number,
     enableHangingClothes: boolean = true,
     enableSingleHanger: boolean = true,
-    manualHeightLimit: number | null = null
+    manualHeightLimit: number | null = null,
+    spanOverride: BuilderInteriorRodSpanOverride | null = null
   ) {
     const createRodWithContents = readCreateRodWithContents(app);
 
@@ -145,7 +152,16 @@ export function makeRodCreator(args: MakeRodCreatorArgs | null | undefined): Bui
 
     try {
       return createRodWithContents(
-        createRodArgs(app, args, config, yPos, enableHangingClothes, enableSingleHanger, manualHeightLimit)
+        createRodArgs(
+          app,
+          args,
+          config,
+          yPos,
+          enableHangingClothes,
+          enableSingleHanger,
+          manualHeightLimit,
+          spanOverride
+        )
       );
     } catch (err: unknown) {
       if (reportError) {

@@ -239,3 +239,70 @@ test('module internal drawer commit rejects placement that would overlap an exis
   assert.equal(result, null);
   assert.deepEqual((cfg.sketchExtras as { drawers: unknown[] }).drawers, []);
 });
+
+test('sibling-cell drawer stack does not block preview or commit in another partition leaf', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }],
+      drawers: [
+        {
+          id: 'right-existing',
+          xNorm: 0.75,
+          scopeOrder: 1,
+          yNormC: 0.5,
+          drawerHeightM: 0.165,
+        },
+      ],
+    },
+  };
+  const drawers = (cfg.sketchExtras as { drawers: Record<string, unknown>[] }).drawers;
+  const preview = resolveSketchModuleStackPreview({
+    host,
+    contentKind: 'drawers',
+    moduleKey: 2,
+    cfgRef: cfg,
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.018,
+    desiredCenterY: 1.2,
+    hitLocalX: -0.225,
+    innerW: 0.9,
+    internalCenterX: 0,
+    internalDepth: 0.55,
+    internalZ: 0,
+    drawers,
+    extDrawers: [],
+    shelves: [],
+    rods: [],
+    storageBarriers: [],
+    woodThick: 0.018,
+    isCornerKey: () => false,
+  });
+
+  assert.equal(preview.hoverRecord.op, 'add');
+  assert.notEqual(preview.hoverRecord.__wpBlockedReason, 'collision');
+  assert.ok(preview.preview.x < 0);
+
+  const result = commitSketchModuleInternalDrawerStack({
+    cfg,
+    hoverRec: preview.hoverRecord,
+    hoverOk: true,
+    bottomY: 0,
+    topY: 2.4,
+    totalHeight: 2.4,
+    pad: 0.018,
+    woodThick: 0.018,
+    drawerHeightM: 0.165,
+    hitYClamped: 1.2,
+    hoverHost: host,
+  });
+
+  assert.ok(result);
+  const stored = (cfg.sketchExtras as { drawers: Record<string, unknown>[] }).drawers;
+  assert.equal(stored.length, 2);
+  const added = stored.find(item => item.id !== 'right-existing');
+  assert.ok(added);
+  assert.ok((added?.xNorm as number) < 0.5);
+  assert.equal(added?.scopeOrder, 1);
+});

@@ -21,6 +21,7 @@ type BoardCall = {
   width: number;
   height: number;
   depth: number;
+  x: number;
   partId: string;
   options: unknown;
   material: unknown;
@@ -57,6 +58,7 @@ function commonInput(
         width: Number(width),
         height: Number(_height),
         depth: Number(depth),
+        x: Number(_x),
         partId: String(partId),
         options,
         material: _material,
@@ -313,7 +315,16 @@ function makeMinimalThreeForPins() {
     geometry: unknown;
     material: unknown;
     rotation: Record<string, number> = {};
-    position = { set: (_x: unknown, _y: unknown, _z: unknown) => undefined };
+    position = {
+      x: 0,
+      y: 0,
+      z: 0,
+      set: (x: unknown, y: unknown, z: unknown) => {
+        this.position.x = Number(x);
+        this.position.y = Number(y);
+        this.position.z = Number(z);
+      },
+    };
     userData: Record<string, unknown> = {};
     constructor(geometry: unknown, material: unknown) {
       this.geometry = geometry;
@@ -546,4 +557,58 @@ test('removed frame side keeps custom shelf type while applying brace geometry a
     shape: 'rounded_shelf',
     roundedShelfSide: 'left',
   });
+});
+
+test('preset shelf and pins split at a regular-module divider instead of spanning the old cell', () => {
+  const boards: BoardCall[] = [];
+  const pinObjects: any[] = [];
+  const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+  const renderer = createPresetRenderer();
+
+  assert.equal(
+    renderer.applyInteriorPresetOps({
+      ...commonInput([], boards),
+      THREE: makeMinimalThreeForPins(),
+      wardrobeGroup: group,
+      sketchExtras: { dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }] },
+      presetOps: { shelves: [1], rods: [] },
+    }),
+    true
+  );
+
+  const shelves = boards.filter(board => board.partId === 'module_shelf_0_g1');
+  assert.equal(shelves.length, 2);
+  assert.ok(shelves[0]!.x < 0 && shelves[1]!.x > 0);
+  assert.ok(shelves.every(shelf => shelf.width < 0.5));
+  const pins = pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin');
+  assert.equal(pins.length, 8);
+  assert.equal(pins.filter(pin => pin.position.x < 0).length, 4);
+  assert.equal(pins.filter(pin => pin.position.x > 0).length, 4);
+});
+
+test('custom shelf and pins use the same logical-cell split as preset shelves', () => {
+  const boards: BoardCall[] = [];
+  const pinObjects: any[] = [];
+  const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+  const renderer = createCustomRenderer();
+
+  assert.equal(
+    renderer.applyInteriorCustomOps({
+      ...commonInput([], boards),
+      THREE: makeMinimalThreeForPins(),
+      wardrobeGroup: group,
+      sketchExtras: { dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }] },
+      customOps: { shelves: [1], rods: [] },
+    }),
+    true
+  );
+
+  const shelves = boards.filter(board => board.partId === 'module_shelf_0_g1');
+  assert.equal(shelves.length, 2);
+  assert.ok(shelves[0]!.x < 0 && shelves[1]!.x > 0);
+  assert.ok(shelves.every(shelf => shelf.width < 0.5));
+  const pins = pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin');
+  assert.equal(pins.length, 8);
+  assert.equal(pins.filter(pin => pin.position.x < 0).length, 4);
+  assert.equal(pins.filter(pin => pin.position.x > 0).length, 4);
 });

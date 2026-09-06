@@ -11,6 +11,11 @@ import {
   applySketchShelves,
   applySketchStorageBarriers,
 } from './render_interior_sketch_support.js';
+import { resolveSketchPartitionShelfWidths } from './render_interior_sketch_support_shelves.js';
+
+import { resolveInteriorSketchContentCells } from './render_interior_sketch_partition_content.js';
+import { toFiniteNumber } from './render_interior_sketch_shared.js';
+import type { SketchPartitionCell } from './render_interior_sketch_layout_dividers.js';
 
 import type { RenderSketchBoxAbsEntry } from './render_interior_sketch_boxes.js';
 import type {
@@ -114,26 +119,67 @@ export function applyInteriorSketchOwnedDividers(
   }
 }
 
+function toCellLocalNorm(
+  value: unknown,
+  resolved: InteriorSketchExtrasInput,
+  cell: SketchPartitionCell
+): number | null {
+  const norm = toFiniteNumber(value);
+  if (norm == null || !(cell.height > 0) || !(resolved.spanH > 0)) return null;
+  const absoluteY = resolved.effectiveBottomY + Math.max(0, Math.min(1, norm)) * resolved.spanH;
+  return Math.max(0, Math.min(1, (absoluteY - cell.bottomY) / cell.height));
+}
+
+function localizeVerticalItem<T extends Record<string, unknown>>(
+  item: T,
+  resolved: InteriorSketchExtrasInput,
+  cell: SketchPartitionCell
+): T {
+  const out = { ...item } as Record<string, unknown>;
+  const yNorm = toCellLocalNorm(item.yNorm, resolved, cell);
+  const yNormC = toCellLocalNorm(item.yNormC, resolved, cell);
+  if (yNorm != null) out.yNorm = yNorm;
+  if (yNormC != null) out.yNormC = yNormC;
+  return out as T;
+}
+
+function resolveCellDoorFaceSpan(
+  resolved: InteriorSketchExtrasInput,
+  cell: SketchPartitionCell
+): InteriorSketchExtrasInput['moduleDoorFaceSpan'] {
+  const full = resolved.moduleDoorFaceSpan;
+  if (!full || !(full.spanW > 0)) return { spanW: cell.width, centerX: cell.centerX };
+  const left = full.centerX - full.spanW / 2 + cell.normLeft * full.spanW;
+  const right = full.centerX - full.spanW / 2 + cell.normRight * full.spanW;
+  return right > left ? { spanW: right - left, centerX: (left + right) / 2 } : null;
+}
+
 export function applyInteriorSketchOwnedStorageBarriers(
   resolved: InteriorSketchExtrasInput,
   owner: RenderInteriorSketchOpsContext
 ): void {
-  applySketchStorageBarriers({
-    storageBarriers: resolved.storageBarriers,
-    effectiveBottomY: resolved.effectiveBottomY,
-    effectiveTopY: resolved.effectiveTopY,
-    spanH: resolved.spanH,
-    woodThick: resolved.woodThick,
-    innerW: resolved.innerW,
-    internalCenterX: resolved.internalCenterX,
-    internalDepth: resolved.internalDepth,
-    internalZ: resolved.internalZ,
-    moduleKeyStr: resolved.moduleKeyStr,
-    bodyMat: resolved.bodyMat,
-    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
-    isFn: owner.isFn,
-    createBoard: resolved.createBoard,
-  });
+  for (const barrier of resolved.storageBarriers) {
+    if (!barrier) continue;
+    for (const cell of resolveInteriorSketchContentCells(resolved, barrier)) {
+      const localized = localizeVerticalItem(barrier, resolved, cell);
+      applySketchStorageBarriers({
+        storageBarriers: [localized],
+        effectiveBottomY: cell.bottomY,
+        effectiveTopY: cell.topY,
+        spanH: cell.height,
+        woodThick: resolved.woodThick,
+        innerW: cell.width,
+        internalCenterX: cell.centerX,
+        internalDepth: resolved.internalDepth,
+        internalZ: resolved.internalZ,
+        moduleKeyStr: resolved.moduleKeyStr,
+        bodyMat: resolved.bodyMat,
+        ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+        isFn: owner.isFn,
+        createBoard: resolved.createBoard,
+      });
+    }
+  }
 }
 
 export function applyInteriorSketchOwnedShelves(args: {
@@ -145,47 +191,67 @@ export function applyInteriorSketchOwnedShelves(args: {
   const { resolved, resolvedThree, placementPlan, boxAbs } = args;
   const placementSupport = placementPlan.placementSupport;
   const findBoxAtY = createSketchBoxLocator(boxAbs);
+  const cellGroups = new Map<string, { cell: SketchPartitionCell; shelves: typeof resolved.shelves }>();
 
-  applySketchShelves({
-    shelves: resolved.shelves,
-    yFromNorm: placementSupport.yFromNorm,
-    findBoxAtY,
-    braceCenterX: resolved.braceCenterX,
-    braceShelfWidth: resolved.braceShelfWidth,
-    regularShelfWidth: resolved.regularShelfWidth,
-    internalCenterX: resolved.internalCenterX,
-    internalDepth: resolved.internalDepth,
-    internalZ: resolved.internalZ,
-    regularDepth: resolved.regularDepth,
-    backZ: resolved.backZ,
-    forceBraceShelves: resolved.forceBraceShelves,
-    shelfExposedSide: resolved.shelfExposedSide,
-    roundedShelfSide: resolved.roundedShelfSide,
-    woodThick: resolved.woodThick,
-    shelfThick: resolved.shelfThick,
-    effectiveTopY: resolved.effectiveTopY,
-    showContentsEnabled: resolved.input.showContentsEnabled === true,
-    ...(resolved.input.addFoldedClothes !== undefined
-      ? { addFoldedClothes: resolved.input.addFoldedClothes }
-      : {}),
-    contentsPolicy: {
+  for (const shelf of resolved.shelves) {
+    if (!shelf) continue;
+    for (const cell of resolveInteriorSketchContentCells(resolved, shelf)) {
+      const key = `${cell.normLeft}:${cell.normRight}:${cell.normBottom}:${cell.normTop}`;
+      const group = cellGroups.get(key) ?? { cell, shelves: [] };
+      group.shelves.push(shelf);
+      cellGroups.set(key, group);
+    }
+  }
+
+  for (const { cell, shelves } of cellGroups.values()) {
+    const { braceShelfWidth, regularShelfWidth } = resolveSketchPartitionShelfWidths(cell.width);
+    applySketchShelves({
+      shelves,
+      yFromNorm: placementSupport.yFromNorm,
+      findBoxAtY(y) {
+        const box = findBoxAtY(y);
+        if (!box) return null;
+        const boxLeft = box.centerX - box.innerW / 2;
+        const boxRight = box.centerX + box.innerW / 2;
+        return boxRight > cell.leftX && boxLeft < cell.rightX ? box : null;
+      },
+      braceCenterX: cell.centerX,
+      braceShelfWidth,
+      regularShelfWidth,
+      internalCenterX: cell.centerX,
+      internalDepth: resolved.internalDepth,
+      internalZ: resolved.internalZ,
+      regularDepth: resolved.regularDepth,
+      backZ: resolved.backZ,
+      forceBraceShelves: resolved.forceBraceShelves,
+      shelfExposedSide: resolved.shelfExposedSide,
+      roundedShelfSide: resolved.roundedShelfSide,
+      woodThick: resolved.woodThick,
+      shelfThick: resolved.shelfThick,
+      effectiveTopY: cell.topY,
       showContentsEnabled: resolved.input.showContentsEnabled === true,
-      sketchMode: resolved.input.sketchMode === true,
-      addOutlines: resolved.input.addOutlines || null,
-      cfgSnapshot: resolved.input.cfgSnapshot,
-    },
-    currentShelfMat: resolved.currentShelfMat,
-    currentBraceShelfMat: resolved.currentBraceShelfMat,
-    moduleKeyStr: resolved.moduleKeyStr,
-    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
-    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
-    glassMat: placementSupport.glassMat,
-    createBoard: resolved.createBoard,
-    group: resolved.group,
-    THREE: resolvedThree.THREE,
-    addBraceDarkSeams: placementSupport.addBraceDarkSeams,
-    addShelfPins: placementSupport.addShelfPins,
-  });
+      ...(resolved.input.addFoldedClothes !== undefined
+        ? { addFoldedClothes: resolved.input.addFoldedClothes }
+        : {}),
+      contentsPolicy: {
+        showContentsEnabled: resolved.input.showContentsEnabled === true,
+        sketchMode: resolved.input.sketchMode === true,
+        addOutlines: resolved.input.addOutlines || null,
+        cfgSnapshot: resolved.input.cfgSnapshot,
+      },
+      currentShelfMat: resolved.currentShelfMat,
+      currentBraceShelfMat: resolved.currentBraceShelfMat,
+      moduleKeyStr: resolved.moduleKeyStr,
+      ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+      ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
+      glassMat: placementSupport.glassMat,
+      createBoard: resolved.createBoard,
+      group: resolved.group,
+      THREE: resolvedThree.THREE,
+      addBraceDarkSeams: placementSupport.addBraceDarkSeams,
+      addShelfPins: placementSupport.addShelfPins,
+    });
+  }
 }
 
 export function applyInteriorSketchOwnedRods(args: {
@@ -196,23 +262,51 @@ export function applyInteriorSketchOwnedRods(args: {
 }): void {
   const { owner, resolved, resolvedThree, placementPlan } = args;
 
-  applySketchRods({
-    rods: resolved.rods,
-    yFromNorm: placementPlan.placementSupport.yFromNorm,
-    ...(resolved.input.createRod !== undefined ? { createRod: resolved.input.createRod } : {}),
-    isFn: owner.isFn,
-    THREE: resolvedThree.THREE,
-    App: resolved.App,
-    assertTHREE: owner.assertTHREE,
-    asObject: owner.asObject,
-    innerW: resolved.innerW,
-    internalCenterX: resolved.internalCenterX,
-    internalZ: resolved.internalZ,
-    group: resolved.group,
-    reportSoft(op, error) {
-      owner.renderOpsHandleCatch(resolved.App, op, error, undefined, { failFast: false, throttleMs: 5000 });
-    },
-  });
+  for (const rod of resolved.rods) {
+    if (!rod) continue;
+    for (const cell of resolveInteriorSketchContentCells(resolved, rod)) {
+      const y = placementPlan.placementSupport.yFromNorm(rod.yNorm);
+      if (y == null) continue;
+      if (resolved.input.createRod !== undefined && owner.isFn(resolved.input.createRod)) {
+        try {
+          resolved.input.createRod(y, true, true, null, {
+            innerW: cell.width,
+            internalCenterX: cell.centerX,
+            effectiveBottomY: cell.bottomY,
+            effectiveTopY: cell.topY,
+          });
+          continue;
+        } catch (error) {
+          owner.renderOpsHandleCatch(
+            resolved.App,
+            'applyInteriorSketchExtras.rods.installedOwnerRejected',
+            error,
+            undefined,
+            { failFast: false, throttleMs: 5000 }
+          );
+        }
+      }
+      applySketchRods({
+        rods: [rod],
+        yFromNorm: placementPlan.placementSupport.yFromNorm,
+        isFn: owner.isFn,
+        THREE: resolvedThree.THREE,
+        App: resolved.App,
+        assertTHREE: owner.assertTHREE,
+        asObject: owner.asObject,
+        innerW: cell.width,
+        internalCenterX: cell.centerX,
+        internalZ: resolved.internalZ,
+        group: resolved.group,
+        reportSoft(op, error) {
+          owner.renderOpsHandleCatch(resolved.App, op, error, undefined, {
+            failFast: false,
+            throttleMs: 5000,
+          });
+        },
+      });
+    }
+  }
 }
 
 export function applyInteriorSketchOwnedDrawers(args: {
@@ -222,58 +316,85 @@ export function applyInteriorSketchOwnedDrawers(args: {
 }): void {
   const { owner, resolved, resolvedThree } = args;
 
-  applySketchExternalDrawers({
-    App: resolved.App,
-    input: resolved.input,
-    drawers: resolved.drawers,
-    extDrawers: resolved.extDrawers,
-    THREE: resolvedThree.THREE,
-    group: resolved.group,
-    effectiveBottomY: resolved.effectiveBottomY,
-    effectiveTopY: resolved.effectiveTopY,
-    spanH: resolved.spanH,
-    innerW: resolved.innerW,
-    moduleDepth: resolved.moduleDepth,
-    internalDepth: resolved.internalDepth,
-    internalCenterX: resolved.internalCenterX,
-    internalZ: resolved.internalZ,
-    moduleIndex: resolved.moduleIndex,
-    moduleKeyStr: resolved.moduleKeyStr,
-    woodThick: resolved.woodThick,
-    shelfThick: resolved.shelfThick,
-    bodyMat: resolved.bodyMat,
-    currentBraceShelfMat: resolved.currentBraceShelfMat,
-    createBoard: resolved.createBoard,
-    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
-    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
-    moduleDoorFaceSpan: resolved.moduleDoorFaceSpan,
-    isFn: owner.isFn,
-    renderOpsHandleCatch: owner.renderOpsHandleCatch,
-  });
+  for (const extDrawer of resolved.extDrawers) {
+    if (!extDrawer) continue;
+    for (const cell of resolveInteriorSketchContentCells(resolved, extDrawer)) {
+      const localized = localizeVerticalItem(extDrawer, resolved, cell);
+      applySketchExternalDrawers({
+        App: resolved.App,
+        input: resolved.input,
+        drawers: [],
+        extDrawers: [localized],
+        THREE: resolvedThree.THREE,
+        group: resolved.group,
+        effectiveBottomY: cell.bottomY,
+        effectiveTopY: cell.topY,
+        spanH: cell.height,
+        innerW: cell.width,
+        moduleDepth: resolved.moduleDepth,
+        internalDepth: resolved.internalDepth,
+        internalCenterX: cell.centerX,
+        internalZ: resolved.internalZ,
+        moduleIndex: resolved.moduleIndex,
+        moduleKeyStr: resolved.moduleKeyStr,
+        woodThick: resolved.woodThick,
+        shelfThick: resolved.shelfThick,
+        bodyMat: resolved.bodyMat,
+        currentBraceShelfMat: resolved.currentBraceShelfMat,
+        createBoard: resolved.createBoard,
+        ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+        ...(resolved.getPartColorValue !== undefined
+          ? { getPartColorValue: resolved.getPartColorValue }
+          : {}),
+        moduleDoorFaceSpan: resolveCellDoorFaceSpan(resolved, cell),
+        isFn: owner.isFn,
+        renderOpsHandleCatch: owner.renderOpsHandleCatch,
+      });
+    }
+  }
 
-  applySketchInternalDrawers({
-    App: resolved.App,
-    input: resolved.input,
-    drawers: resolved.drawers,
-    extDrawers: resolved.extDrawers,
-    THREE: resolvedThree.THREE,
-    group: resolved.group,
-    effectiveBottomY: resolved.effectiveBottomY,
-    effectiveTopY: resolved.effectiveTopY,
-    spanH: resolved.spanH,
-    woodThick: resolved.woodThick,
-    innerW: resolved.innerW,
-    internalDepth: resolved.internalDepth,
-    internalCenterX: resolved.internalCenterX,
-    internalZ: resolved.internalZ,
-    moduleIndex: resolved.moduleIndex,
-    moduleKeyStr: resolved.moduleKeyStr,
-    bodyMat: resolved.bodyMat,
-    currentShelfMat: resolved.currentShelfMat,
-    createBoard: resolved.createBoard,
-    ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
-    ...(resolved.getPartColorValue !== undefined ? { getPartColorValue: resolved.getPartColorValue } : {}),
-    applyInternalDrawersOps: owner.applyInternalDrawersOps,
-    renderOpsHandleCatch: owner.renderOpsHandleCatch,
-  });
+  for (const drawer of resolved.drawers) {
+    if (!drawer) continue;
+    for (const cell of resolveInteriorSketchContentCells(resolved, drawer)) {
+      const localized = localizeVerticalItem(drawer, resolved, cell);
+      const scopedExternal = resolved.extDrawers
+        .filter(item =>
+          resolveInteriorSketchContentCells(resolved, item).some(
+            candidate =>
+              candidate.normLeft === cell.normLeft &&
+              candidate.normRight === cell.normRight &&
+              candidate.normBottom === cell.normBottom &&
+              candidate.normTop === cell.normTop
+          )
+        )
+        .map(item => localizeVerticalItem(item, resolved, cell));
+      applySketchInternalDrawers({
+        App: resolved.App,
+        input: resolved.input,
+        drawers: [localized],
+        extDrawers: scopedExternal,
+        THREE: resolvedThree.THREE,
+        group: resolved.group,
+        effectiveBottomY: cell.bottomY,
+        effectiveTopY: cell.topY,
+        spanH: cell.height,
+        woodThick: resolved.woodThick,
+        innerW: cell.width,
+        internalDepth: resolved.internalDepth,
+        internalCenterX: cell.centerX,
+        internalZ: resolved.internalZ,
+        moduleIndex: resolved.moduleIndex,
+        moduleKeyStr: resolved.moduleKeyStr,
+        bodyMat: resolved.bodyMat,
+        currentShelfMat: resolved.currentShelfMat,
+        createBoard: resolved.createBoard,
+        ...(resolved.getPartMaterial !== undefined ? { getPartMaterial: resolved.getPartMaterial } : {}),
+        ...(resolved.getPartColorValue !== undefined
+          ? { getPartColorValue: resolved.getPartColorValue }
+          : {}),
+        applyInternalDrawersOps: owner.applyInternalDrawersOps,
+        renderOpsHandleCatch: owner.renderOpsHandleCatch,
+      });
+    }
+  }
 }

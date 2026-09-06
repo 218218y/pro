@@ -22,6 +22,10 @@ import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
+import {
+  resolveInteriorModulePartitionCells,
+  resolveInteriorModulePartitionCellsAtY,
+} from './render_interior_partitioned_module_content.js';
 
 export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps) {
   const __app = deps.app;
@@ -75,6 +79,20 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const shelfThick = readPresetNumber(input.shelfThick, woodThick);
     const internalDepth = readPresetNumber(input.internalDepth, 0);
     const internalCenterX = readPresetNumber(input.internalCenterX, 0);
+    const partitionCells = resolveInteriorModulePartitionCells({
+      sketchExtras: input.sketchExtras,
+      geometry: {
+        centerX: internalCenterX,
+        bottomY: effectiveBottomY,
+        topY: effectiveTopY,
+        innerW,
+        woodThick,
+      },
+    });
+    const partitioned = partitionCells.length > 1;
+    const resolvePartitionCellsAtY = partitioned
+      ? (y: number) => resolveInteriorModulePartitionCellsAtY({ cells: partitionCells, y })
+      : undefined;
     const internalZ = readPresetNumber(input.internalZ, 0);
     const D = readPresetNumber(input.D, 0);
     const moduleIndex = readPresetInteger(input.moduleIndex, -1);
@@ -176,6 +194,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       shelfExposedSide,
       roundedShelfSide,
       renderOpsHandleCatch: __renderOpsHandleCatch,
+      ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
     });
 
     if (Array.isArray(ops.shelves)) {
@@ -195,7 +214,19 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
             (Number.isFinite(limitFactor) ? limitFactor : 0) * localGridStep +
             (Number.isFinite(limitAdd) ? limitAdd : 0);
         }
-        createRod(yRod, !!rod.enableHangingClothes, !!rod.enableSingleHanger, limit);
+        const rodCells = resolvePartitionCellsAtY?.(yRod) ?? [];
+        if (rodCells.length) {
+          for (const cell of rodCells) {
+            createRod(yRod, !!rod.enableHangingClothes, !!rod.enableSingleHanger, limit, {
+              innerW: cell.width,
+              internalCenterX: cell.centerX,
+              effectiveBottomY: cell.bottomY,
+              effectiveTopY: cell.topY,
+            });
+          }
+        } else {
+          createRod(yRod, !!rod.enableHangingClothes, !!rod.enableSingleHanger, limit);
+        }
       }
     }
 
@@ -223,16 +254,21 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         // Keep the default body material if per-part color lookup fails.
       }
 
-      createBoard(
-        innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM,
-        barrierH,
-        woodThick,
-        internalCenterX,
-        effectiveBottomY + barrierH / 2,
-        D / 2 + zOff,
-        material,
-        partId
-      );
+      const barrierY = effectiveBottomY + barrierH / 2;
+      const barrierCells = resolvePartitionCellsAtY?.(barrierY) ?? [];
+      const spans = barrierCells.length ? barrierCells : [{ width: innerW, centerX: internalCenterX }];
+      for (const span of spans) {
+        createBoard(
+          Math.max(0, span.width - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM),
+          barrierH,
+          woodThick,
+          span.centerX,
+          barrierY,
+          D / 2 + zOff,
+          material,
+          partId
+        );
+      }
     }
 
     return true;

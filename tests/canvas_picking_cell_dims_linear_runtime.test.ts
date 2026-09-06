@@ -595,3 +595,58 @@ test('manual sketch door hover click reaches the existing cell-door owner withou
   );
   assert.deepEqual(calls.uiPatches[0].patch, { raw: { doors: 3 }, structureSelect: '[1,2]' });
 });
+
+test('manual sketch door hover stores a per-leaf override for a partitioned regular module', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.structureSelect = '[2]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 2 };
+  state.config.modulesConfiguration = [
+    {
+      doors: 2,
+      sketchExtras: {
+        dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }],
+      },
+    },
+  ];
+  state.build.modulesStructure = [{ doors: 2 }];
+  let cleared = 0;
+  let patchCalls = 0;
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App,
+    __activeModuleKey: 0,
+    __isBottomStack: false,
+    topY: 2.2,
+    bottomY: 0,
+    __gridInfo: null,
+    __hoverRec: createManualLayoutSketchCellDoorCountHoverRecord({
+      host: { tool: 'sketch_box_double_door', moduleKey: 0, isBottom: false, ts: 2 },
+      doorCount: 2,
+      xNorm: 0.25,
+      yNorm: 0.5,
+      scopeOrder: 1,
+    }),
+    __hoverOk: true,
+    __patchConfigForKey: (moduleKey: number, patchFn: (cfg: Record<string, unknown>) => void) => {
+      patchCalls += 1;
+      assert.equal(moduleKey, 0);
+      patchFn(state.config.modulesConfiguration[0]);
+      return true;
+    },
+    __wp_clearSketchHover: () => {
+      cleared += 1;
+    },
+  });
+
+  assert.equal(applied, true);
+  assert.equal(cleared, 1);
+  assert.equal(patchCalls, 1);
+  assert.equal(calls.snapshots.length, 0, 'partitioned cell must not rewrite the module door topology');
+  assert.equal(state.config.modulesConfiguration[0].doors, 2);
+  const cellDoors = state.config.modulesConfiguration[0].sketchExtras.cellDoors;
+  assert.equal(cellDoors.length, 1);
+  assert.equal(cellDoors[0].count, 2);
+  assert.equal(cellDoors[0].xNorm, 0.25);
+  assert.equal(cellDoors[0].yNorm, 0.5);
+  assert.equal(cellDoors[0].scopeOrder, 1);
+});

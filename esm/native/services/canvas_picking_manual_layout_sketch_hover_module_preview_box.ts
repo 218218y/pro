@@ -3,6 +3,11 @@ import { resolveSketchBoxVerticalContentPreview } from './canvas_picking_sketch_
 import { resolveSketchBoxDoorPreview } from './canvas_picking_sketch_box_door_preview.js';
 import { createManualLayoutSketchCellDoorCountHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
+  resolveSketchModulePartitionCell,
+  resolveSketchModulePartitionScopeOrder,
+  resolveSketchModulePointerNorm,
+} from './canvas_picking_sketch_module_partition.js';
+import {
   createManualLayoutSketchHoverHost,
   hideManualLayoutSketchHoverPreview,
   REMOVE_EPS_BOX,
@@ -17,6 +22,7 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
   const {
     tool,
     activeModuleBox,
+    sketchExtras,
     setPreview,
     yClamped,
     woodThick,
@@ -122,20 +128,33 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
     hitModuleKey >= 0 &&
     !isBottom
   ) {
+    const pointerX = resolveManualLayoutSketchHoverPointerX(ctx.hitLocalX, internalCenterX);
+    const geometry = { innerW, internalCenterX, bottomY, topY, woodThick };
+    const pointerNorm = resolveSketchModulePointerNorm({ geometry, pointerX, pointerY: yClamped });
+    const targetCell = resolveSketchModulePartitionCell({
+      sketchExtras,
+      geometry,
+      pointerX,
+      pointerY: yClamped,
+    });
+    const scopeOrder = resolveSketchModulePartitionScopeOrder(sketchExtras);
     return writeManualLayoutSketchHoverPreview(ctx, {
       hoverRecord: createManualLayoutSketchCellDoorCountHoverRecord({
         host: createManualLayoutSketchHoverHost(ctx),
         doorCount: isBoxDoubleDoor ? 2 : 1,
+        xNorm: pointerNorm.xNorm,
+        yNorm: pointerNorm.yNorm,
+        scopeOrder,
       }),
       preview: {
         kind: 'box',
         fillFront: true,
         fillBack: false,
-        x: internalCenterX,
-        y: (bottomY + topY) / 2,
+        x: targetCell?.centerX ?? internalCenterX,
+        y: targetCell?.centerY ?? (bottomY + topY) / 2,
         z: internalZ,
-        w: Math.max(0.0001, innerW),
-        boxH: Math.max(0.0001, spanH),
+        w: Math.max(0.0001, targetCell?.width ?? innerW),
+        boxH: Math.max(0.0001, targetCell?.height ?? spanH),
         d: Math.max(0.0001, internalDepth),
         woodThick,
         op: 'add',

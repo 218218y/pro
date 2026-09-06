@@ -132,15 +132,25 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
   pad: number;
   desiredCenterY: number;
   heightM: number;
+  limitBottomY?: number | undefined;
+  limitTopY?: number | undefined;
 }): { centerY: number; blocked: boolean } {
   const desiredCenterY = readFiniteNumber(args.desiredCenterY);
   const heightM = readFiniteNumber(args.heightM);
   if (desiredCenterY == null || heightM == null || !(heightM > 0)) {
     return { centerY: desiredCenterY ?? Number.NaN, blocked: false };
   }
+  const limitBottomY =
+    typeof args.limitBottomY === 'number' && Number.isFinite(args.limitBottomY)
+      ? Math.max(args.bottomY, args.limitBottomY)
+      : args.bottomY;
+  const limitTopY =
+    typeof args.limitTopY === 'number' && Number.isFinite(args.limitTopY)
+      ? Math.min(args.topY, args.limitTopY)
+      : args.topY;
   const centerY = clampSketchModuleVerticalContentCenterY({
-    bottomY: args.bottomY,
-    topY: args.topY,
+    bottomY: limitBottomY,
+    topY: limitTopY,
     pad: args.pad,
     heightM,
     centerY: desiredCenterY,
@@ -166,8 +176,8 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
       ? Math.max(0, stack.collisionGapM)
       : gapDefault;
   const pointerY = centerY;
-  const freeBottomY = args.bottomY + Math.max(0, args.pad);
-  const freeTopY = args.topY - Math.max(0, args.pad);
+  const freeBottomY = limitBottomY + Math.max(0, args.pad);
+  const freeTopY = limitTopY - Math.max(0, args.pad);
   const half = heightM / 2;
   const sortedBlockers = blockers
     .filter(

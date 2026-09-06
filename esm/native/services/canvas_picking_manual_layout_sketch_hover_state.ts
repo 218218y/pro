@@ -82,6 +82,9 @@ type ManualLayoutSketchModuleDividerHoverArgs = {
 type ManualLayoutSketchCellDoorCountHoverArgs = {
   host: ManualLayoutSketchHoverHost;
   doorCount: 1 | 2;
+  xNorm?: number | null;
+  yNorm?: number | null;
+  scopeOrder?: number | null;
 };
 
 type ManualLayoutSketchStackHoverArgs = {
@@ -104,6 +107,8 @@ type ManualLayoutSketchStackHoverArgs = {
   doorLeftId?: string | null | undefined;
   doorRightId?: string | null | undefined;
   blockedReason?: string | null | undefined;
+  xNorm?: number | null | undefined;
+  scopeOrder?: number | null | undefined;
 };
 
 function withDefined(target: RecordMap, patch: Record<string, unknown>): RecordMap {
@@ -239,6 +244,18 @@ export function createManualLayoutSketchCellDoorCountHoverRecord(
       kind: 'cell_door_count',
       op: 'apply',
       doorCount: args.doorCount,
+      xNorm:
+        typeof args.xNorm === 'number' && Number.isFinite(args.xNorm)
+          ? Math.max(0, Math.min(1, args.xNorm))
+          : 0.5,
+      yNorm:
+        typeof args.yNorm === 'number' && Number.isFinite(args.yNorm)
+          ? Math.max(0, Math.min(1, args.yNorm))
+          : 0.5,
+      scopeOrder:
+        typeof args.scopeOrder === 'number' && Number.isFinite(args.scopeOrder)
+          ? Math.max(0, args.scopeOrder)
+          : 0,
     }),
   };
 }
@@ -362,6 +379,14 @@ export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketc
   const commandBase: ManualLayoutDrawerStackBaseCommand = {
     kind: args.kind,
     yCenter: args.yCenter,
+    xNorm:
+      typeof args.xNorm === 'number' && Number.isFinite(args.xNorm)
+        ? Math.max(0, Math.min(1, args.xNorm))
+        : 0.5,
+    scopeOrder:
+      typeof args.scopeOrder === 'number' && Number.isFinite(args.scopeOrder)
+        ? Math.max(0, args.scopeOrder)
+        : 0,
     baseY: args.baseY ?? null,
     removeId,
     removeKind,
@@ -407,6 +432,8 @@ export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketc
   if (!command) return createManualLayoutSketchBlockedHoverRecord(args.host);
   return withDefined(createManualLayoutSketchHoverBase({ host: args.host, kind: args.kind, op: args.op }), {
     yCenter: args.yCenter,
+    xNorm: args.xNorm ?? undefined,
+    scopeOrder: args.scopeOrder ?? undefined,
     baseY: args.baseY ?? undefined,
     removeId: args.removeId ?? undefined,
     removeKind: args.removeKind || undefined,

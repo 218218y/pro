@@ -1,4 +1,12 @@
-import { SKETCH_BOX_DIVIDER_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_divider_policy.js';
+import {
+  SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+  findSketchPartitionCellAtNorm,
+  resolveSketchPartitionContentCells,
+  resolveSketchPartitionMaxOrder,
+} from '../../shared/dimensions/sketch_box_divider_policy.js';
+
+export { findSketchPartitionCellAtNorm, resolveSketchPartitionContentCells, resolveSketchPartitionMaxOrder };
+export type SketchPartitionCell = NonNullable<ReturnType<typeof findSketchPartitionCellAtNorm>>;
 import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,

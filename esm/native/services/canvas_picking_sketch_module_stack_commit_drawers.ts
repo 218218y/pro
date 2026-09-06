@@ -15,6 +15,12 @@ import {
 } from './canvas_picking_internal_drawer_shelf_replacement.js';
 import { removeManualLayoutBaseShelf } from './canvas_picking_manual_layout_config_ops_shelf.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import {
+  doesSketchModuleContentItemBelongToCell,
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCellAtNorm,
+} from './canvas_picking_sketch_module_partition.js';
 import type {
   CommitSketchModuleInternalDrawerArgs,
   RecordMap,
@@ -146,19 +152,57 @@ export function commitSketchModuleInternalDrawers(
     !Array.isArray(args.cfg.sketchExtras)
       ? (args.cfg.sketchExtras as RecordMap)
       : null;
+  const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
+  const targetHover = stackHover?.kind === 'drawers' ? stackHover : null;
+  const targetCell = targetHover
+    ? resolveSketchModulePartitionCellAtNorm({
+        sketchExtras: existingExtra ?? {},
+        bottomY: args.bottomY,
+        topY: args.topY,
+        woodThick:
+          typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
+        xNorm: targetHover.xNorm,
+        yNorm: Math.max(
+          0,
+          Math.min(1, (targetHover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
+        ),
+      })
+    : null;
+  const targetBottomY = targetCell?.bottomY ?? args.bottomY;
+  const targetTopY = targetCell?.topY ?? args.topY;
   const list = Array.isArray(existingExtra?.drawers) ? (existingExtra.drawers as RecordMap[]) : [];
   const externalDrawers = Array.isArray(existingExtra?.extDrawers)
     ? (existingExtra.extDrawers as RecordMap[])
     : [];
   const shelves = Array.isArray(existingExtra?.shelves) ? (existingExtra.shelves as RecordMap[]) : [];
+  const rods = Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [];
   const storageBarriers = Array.isArray(existingExtra?.storageBarriers)
     ? (existingExtra.storageBarriers as RecordMap[])
     : [];
   const boxes = Array.isArray(existingExtra?.boxes) ? (existingExtra.boxes as RecordMap[]) : [];
+  const partitionGeometry = {
+    innerW: 1,
+    internalCenterX: 0,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
+  };
+  const targetDrawers = filterSketchModuleContentItemsForCell({
+    sketchExtras: existingExtra ?? {},
+    geometry: partitionGeometry,
+    items: list,
+    cell: targetCell,
+  }).map(candidate => candidate.item);
+  const targetExternalDrawers = filterSketchModuleContentItemsForCell({
+    sketchExtras: existingExtra ?? {},
+    geometry: partitionGeometry,
+    items: externalDrawers,
+    cell: targetCell,
+  }).map(candidate => candidate.item);
 
   const stackMetrics = resolveSketchInternalDrawerMetrics({
     drawerHeightM: args.drawerHeightM,
-    availableHeightM: Math.max(0, args.topY - args.bottomY - args.pad * 2),
+    availableHeightM: Math.max(0, targetTopY - targetBottomY - args.pad * 2),
   });
   const stackH = stackMetrics.stackH;
 
@@ -192,18 +236,39 @@ export function commitSketchModuleInternalDrawers(
   const verticalContentBlockers = buildManualLayoutVerticalContentBlockers({
     cfgRef: args.cfg,
     shelves,
-    rods: Array.isArray(existingExtra?.rods) ? (existingExtra.rods as RecordMap[]) : [],
+    rods,
     storageBarriers,
     bottomY: args.bottomY,
     topY: args.topY,
     totalHeight: args.totalHeight,
     pad: args.pad,
     woodThick: args.woodThick,
+  }).filter(blocker => {
+    if (!targetCell || blocker.source === 'base') return true;
+    const index =
+      typeof blocker.index === 'number' && Number.isFinite(blocker.index) ? Math.round(blocker.index) : -1;
+    const item =
+      blocker.kind === 'shelf'
+        ? shelves[index]
+        : blocker.kind === 'rod'
+          ? rods[index]
+          : blocker.kind === 'storage'
+            ? storageBarriers[index]
+            : null;
+    return (
+      !!item &&
+      doesSketchModuleContentItemBelongToCell({
+        sketchExtras: existingExtra ?? {},
+        geometry: partitionGeometry,
+        item,
+        cell: targetCell,
+      })
+    );
   });
 
   const placementBlockers = [
     ...buildManualLayoutSketchExternalDrawerBlockers({
-      extDrawers: externalDrawers,
+      extDrawers: targetExternalDrawers,
       bottomY: args.bottomY,
       topY: args.topY,
       pad: args.pad,
@@ -222,12 +287,12 @@ export function commitSketchModuleInternalDrawers(
   ];
   let placement = resolveManualLayoutSketchInternalDrawerPlacement({
     desiredCenterY: hover.yCenterAbs,
-    bottomY: args.bottomY,
-    topY: args.topY,
+    bottomY: targetBottomY,
+    topY: targetTopY,
     totalHeight: args.totalHeight,
     pad: args.pad,
     drawerHeightM: args.drawerHeightM,
-    drawers: list,
+    drawers: targetDrawers,
     readCenterY: readNormalizedCenterY,
     woodThick: args.woodThick,
     blockers: placementBlockers,
@@ -235,12 +300,12 @@ export function commitSketchModuleInternalDrawers(
   if (placement.op === 'blocked') {
     placement = resolveManualLayoutSketchInternalDrawerPlacement({
       desiredCenterY: hover.yCenterAbs,
-      bottomY: args.bottomY,
-      topY: args.topY,
+      bottomY: targetBottomY,
+      topY: targetTopY,
       totalHeight: args.totalHeight,
       pad: args.pad,
       drawerHeightM: args.drawerHeightM,
-      drawers: list,
+      drawers: targetDrawers,
       readCenterY: readNormalizedCenterY,
       woodThick: args.woodThick,
       blockers: withoutInternalDrawerReplaceableShelfBlockers(placementBlockers),
@@ -279,6 +344,7 @@ export function commitSketchModuleInternalDrawers(
     yNorm: normalized.yNormBase,
     yAnchor: normalized.yAnchor,
     drawerHeightM: args.drawerHeightM,
+    ...(targetHover ? { xNorm: targetHover.xNorm, scopeOrder: targetHover.scopeOrder } : {}),
   };
   mutableList.push(item);
   const removedShelfCount = removeShelvesTouchingInternalDrawerCassette({
@@ -299,6 +365,8 @@ export function commitSketchModuleInternalDrawers(
     kind: 'drawers',
     op: 'remove',
     removeId: item.id,
+    xNorm: targetHover?.xNorm,
+    scopeOrder: targetHover?.scopeOrder,
     yCenter: placement.yCenter,
     removeKind: 'sketch',
     baseY: normalized.baseYAbs,

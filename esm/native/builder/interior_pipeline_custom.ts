@@ -70,6 +70,7 @@ export function applyCustomInteriorLayout(
         addOutlines: input.addOutlines,
         sketchMode: input.sketchMode === true,
         showContentsEnabled: input.showContentsEnabled === true,
+        sketchExtras: config.sketchExtras,
         effectiveBottomY: readNumber(input.effectiveBottomY, 0),
         effectiveTopY: readNumber(input.effectiveTopY, 0),
         localGridStep: readNumber(input.localGridStep, 0),

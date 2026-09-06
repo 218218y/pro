@@ -83,6 +83,8 @@ export function resolveSketchModuleSurfacePreview(
         extDrawers: args.extDrawers,
         variant,
         shelfDepthOverrideM: args.shelfDepthOverrideM,
+        sketchExtras: args.sketchExtras,
+        hitLocalX: args.hitLocalX,
         innerW,
         internalDepth,
         internalCenterX,

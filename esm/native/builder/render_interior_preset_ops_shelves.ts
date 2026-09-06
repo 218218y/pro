@@ -7,6 +7,7 @@ import type {
   InteriorTHREESurface,
 } from './render_interior_ops_contracts.js';
 import {
+  INTERIOR_SHELF_GEOMETRY_POLICY,
   INTERIOR_SHELF_PIN_RENDER_POLICY,
   INTERIOR_SHELF_POLICY,
 } from '../../shared/dimensions/interior_fittings_policy.js';
@@ -64,6 +65,8 @@ export function createAddGridShelf(args: {
   shelfExposedSide?: RemovedFrameSideShelfExposure | null;
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
   renderOpsHandleCatch: InteriorPresetHandleCatch;
+  resolvePartitionCellsAtY?:
+    ((y: number) => readonly { centerX: number; width: number; leftX: number; rightX: number }[]) | undefined;
 }): (gridIndex: number) => void {
   const {
     App,
@@ -92,13 +95,12 @@ export function createAddGridShelf(args: {
     internalZ,
     regularDepth,
     regularZ,
-    regularShelfWidth,
-    braceShelfWidth,
     leftInnerX,
     rightInnerX,
     shelfExposedSide,
     roundedShelfSide,
     renderOpsHandleCatch,
+    resolvePartitionCellsAtY,
   } = args;
 
   const pinRadius = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
@@ -147,10 +149,13 @@ export function createAddGridShelf(args: {
     shelfDepth: number,
     shelfH: number,
     isBrace: boolean,
-    shelfPartId: string
+    shelfPartId: string,
+    pinLeftX: number = leftInnerX,
+    pinRightX: number = rightInnerX,
+    pinInnerW: number = innerW
   ): void {
     if (isBrace) return;
-    if (!(innerW > 0) || !(shelfDepth > 0)) return;
+    if (!(pinInnerW > 0) || !(shelfDepth > 0)) return;
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
@@ -194,10 +199,10 @@ export function createAddGridShelf(args: {
       group.add?.(mesh);
     };
 
-    mkPin(leftInnerX + pinLength / 2, zBack);
-    mkPin(leftInnerX + pinLength / 2, zFront);
-    mkPin(rightInnerX - pinLength / 2, zBack);
-    mkPin(rightInnerX - pinLength / 2, zFront);
+    mkPin(pinLeftX + pinLength / 2, zBack);
+    mkPin(pinLeftX + pinLength / 2, zFront);
+    mkPin(pinRightX - pinLength / 2, zBack);
+    mkPin(pinRightX - pinLength / 2, zFront);
   }
 
   function resolveBaseContentsMaxHeight(shelfH: number): number {
@@ -252,8 +257,17 @@ export function createAddGridShelf(args: {
     const isBrace = !!braceSet[gridKey];
     const shelfDepth = isBrace ? internalDepth : regularDepth;
     const shelfZ = isBrace ? internalZ : regularZ;
-    const shelfW = isBrace ? braceShelfWidth : regularShelfWidth;
-    const shelfX = isBrace ? braceCenterX : internalCenterX;
+    const partitionCells = resolvePartitionCellsAtY?.(y) ?? [];
+    const spans = partitionCells.length
+      ? partitionCells
+      : [
+          {
+            centerX: isBrace ? braceCenterX : internalCenterX,
+            width: innerW,
+            leftX: leftInnerX,
+            rightX: rightInnerX,
+          },
+        ];
 
     const shelfPartId = createModuleShelfPartId(moduleKey, gridKey);
     const shelfMat = resolveShelfPartMaterial({
@@ -269,41 +283,63 @@ export function createAddGridShelf(args: {
             ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
           }
         : null;
-    const shelfMesh = createBoard(
-      shelfW,
-      shelfThick,
-      shelfDepth,
-      shelfX,
-      y,
-      shelfZ,
-      shelfMat,
-      shelfPartId,
-      shelfOptions
-    );
-    if (shelfMesh && typeof shelfMesh === 'object') {
-      const userData = ((shelfMesh as { userData?: Record<string, unknown> }).userData ||= {});
-      markShelfBoardUserData(userData, {
-        groupPartId: SHELF_GROUP_PART_ID,
-        shelfIndex: gridKey,
-        variant: isBrace ? 'brace' : 'regular',
-        isBrace,
-        exposedSide: shelfOptions?.shelfExposedSide,
-        roundedSide: shelfOptions?.roundedShelfSide,
-      });
-    }
-    addShelfPins(y, shelfZ, shelfDepth, shelfThick, isBrace, shelfPartId);
 
-    if (__isFn(addFoldedClothes)) {
-      addFoldedClothes(
-        internalCenterX,
-        y + shelfThick / 2,
-        shelfZ,
-        innerW - INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
-        group,
-        resolveShelfContentsMaxHeight(gridKey, y, shelfThick),
-        shelfDepth,
-        contentsPolicy
+    for (const span of spans) {
+      const shelfW = Math.max(
+        0,
+        span.width -
+          (isBrace
+            ? INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM
+            : INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM)
       );
+      if (!(shelfW > 0)) continue;
+      const shelfX = span.centerX;
+      const shelfMesh = createBoard(
+        shelfW,
+        shelfThick,
+        shelfDepth,
+        shelfX,
+        y,
+        shelfZ,
+        shelfMat,
+        shelfPartId,
+        shelfOptions
+      );
+      if (shelfMesh && typeof shelfMesh === 'object') {
+        const userData = ((shelfMesh as { userData?: Record<string, unknown> }).userData ||= {});
+        markShelfBoardUserData(userData, {
+          groupPartId: SHELF_GROUP_PART_ID,
+          shelfIndex: gridKey,
+          variant: isBrace ? 'brace' : 'regular',
+          isBrace,
+          exposedSide: shelfOptions?.shelfExposedSide,
+          roundedSide: shelfOptions?.roundedShelfSide,
+        });
+      }
+      addShelfPins(
+        y,
+        shelfZ,
+        shelfDepth,
+        shelfThick,
+        isBrace,
+        shelfPartId,
+        span.leftX,
+        span.rightX,
+        span.width
+      );
+
+      if (__isFn(addFoldedClothes)) {
+        addFoldedClothes(
+          span.centerX,
+          y + shelfThick / 2,
+          shelfZ,
+          Math.max(0, span.width - INTERIOR_SHELF_POLICY.contentsWidthClearanceM),
+          group,
+          resolveShelfContentsMaxHeight(gridKey, y, shelfThick),
+          shelfDepth,
+          contentsPolicy
+        );
+      }
     }
   };
 }

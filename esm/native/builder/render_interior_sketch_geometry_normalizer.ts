@@ -25,17 +25,31 @@ const INTERIOR_SKETCH_INPUT_GEOMETRY_SCALAR_KEYS = [
 ] as const;
 
 const SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'frontZ'] as const;
-const SKETCH_SHELF_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'depthM'] as const;
-const SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'heightM', 'hM'] as const;
-const SKETCH_ROD_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm'] as const;
-const SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'yNormC', 'drawerHeightM'] as const;
+const SKETCH_SHELF_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'scopeOrder', 'depthM'] as const;
+const SKETCH_STORAGE_BARRIER_GEOMETRY_SCALAR_KEYS = [
+  'xNorm',
+  'yNorm',
+  'scopeOrder',
+  'heightM',
+  'hM',
+] as const;
+const SKETCH_ROD_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'scopeOrder'] as const;
+const SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS = [
+  'xNorm',
+  'yNorm',
+  'yNormC',
+  'scopeOrder',
+  'drawerHeightM',
+] as const;
 const SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS = [
   'xNorm',
   'yNorm',
   'yNormC',
+  'scopeOrder',
   'drawerHeightM',
   'count',
 ] as const;
+const SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'scopeOrder', 'count'] as const;
 const SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'grooveLinesCount'] as const;
 const SKETCH_BOX_GEOMETRY_SCALAR_KEYS = [
   'heightM',
@@ -61,6 +75,7 @@ type GeometryScalarKey =
   | (typeof SKETCH_ROD_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS)[number]
+  | (typeof SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_BOX_GEOMETRY_SCALAR_KEYS)[number];
 
@@ -179,6 +194,7 @@ function normalizeBuilderSketchExtrasGeometryWith(
   const extra = asRecord<UnknownRecord>(value);
   if (!extra) return null;
   const out: UnknownRecord = { ...extra };
+  normalizeRecordListField(out, 'cellDoors', SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'dividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'horizontalDividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'shelves', SKETCH_SHELF_GEOMETRY_SCALAR_KEYS, normalizeScalar);

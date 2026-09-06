@@ -9,6 +9,8 @@ import {
 export function createShelfAddHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
   yNorm: number;
+  xNorm: number;
+  scopeOrder: number;
   variant: string | null;
   depthM?: number | null;
   blockedReason?: string | null;
@@ -31,6 +33,8 @@ export function createShelfAddHoverRecord(args: {
       kind: 'shelf',
       op: 'add',
       yNorm,
+      xNorm: args.xNorm,
+      scopeOrder: args.scopeOrder,
       variant,
       depthM,
       blockedReason,
@@ -90,6 +94,8 @@ export function createStorageRemoveHoverRecord(args: {
 export function createStorageAddHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
   yNorm: number;
+  xNorm: number;
+  scopeOrder: number;
   blockedReason?: string | null;
 }): RecordMap {
   const yNorm = Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : Number.NaN;
@@ -106,6 +112,8 @@ export function createStorageAddHoverRecord(args: {
       kind: 'storage',
       op: 'add',
       yNorm,
+      xNorm: args.xNorm,
+      scopeOrder: args.scopeOrder,
       blockedReason,
     }),
   };
@@ -114,6 +122,8 @@ export function createStorageAddHoverRecord(args: {
 export function createRodAddHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
   yNorm: number;
+  xNorm: number;
+  scopeOrder: number;
   blockedReason?: string | null;
 }): RecordMap {
   const yNorm = Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : Number.NaN;
@@ -130,6 +140,8 @@ export function createRodAddHoverRecord(args: {
       kind: 'rod',
       op: 'add',
       yNorm,
+      xNorm: args.xNorm,
+      scopeOrder: args.scopeOrder,
       blockedReason,
     }),
   };

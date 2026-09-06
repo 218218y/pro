@@ -4,6 +4,10 @@ import {
 } from '../../shared/dimensions/interior_storage_policy.js';
 import { clampSketchModuleStorageCenterY } from './canvas_picking_sketch_module_vertical_content.js';
 import {
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCell,
+} from './canvas_picking_sketch_module_partition.js';
+import {
   createStorageRemoveHoverRecord,
   isRecord,
   readRecordNumber,
@@ -50,6 +54,12 @@ function resolveSketchStorageRemoveMatch(args: {
   bottomY: number;
   spanH: number;
   pointerY: number;
+  sketchExtras: ResolveSketchModuleSurfacePreviewArgs['sketchExtras'];
+  innerW: number;
+  internalCenterX: number;
+  topY: number;
+  woodThick: number;
+  hitLocalX: number | null;
 }): StorageRemoveMatch | null {
   const defaultHeight = INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   let best: StorageRemoveMatch | null = null;
@@ -60,8 +70,31 @@ function resolveSketchStorageRemoveMatch(args: {
     best = match;
   };
 
-  for (let i = 0; i < args.storageBarriers.length; i += 1) {
-    const barrier = args.storageBarriers[i];
+  const geometry = {
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: args.woodThick,
+  };
+  const pointerX =
+    typeof args.hitLocalX === 'number' && Number.isFinite(args.hitLocalX)
+      ? args.hitLocalX
+      : args.internalCenterX;
+  const targetCell = resolveSketchModulePartitionCell({
+    sketchExtras: args.sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: args.pointerY,
+  });
+  const candidates = filterSketchModuleContentItemsForCell({
+    sketchExtras: args.sketchExtras,
+    geometry,
+    items: args.storageBarriers,
+    cell: targetCell,
+  });
+  for (const candidate of candidates) {
+    const barrier = candidate.item;
     if (!isRecord(barrier)) continue;
     const yNorm = readRecordNumber(barrier, 'yNorm');
     if (yNorm == null) continue;
@@ -70,7 +103,7 @@ function resolveSketchStorageRemoveMatch(args: {
     const heightM = rawHeight != null && rawHeight > 0 ? rawHeight : defaultHeight;
     consider({
       removeKind: 'sketch',
-      removeIdx: i,
+      removeIdx: candidate.index,
       yAbs,
       heightM,
       dy: distanceFromVerticalSpan(args.pointerY, yAbs, heightM),
@@ -113,16 +146,41 @@ export function resolveSketchModuleStorageRemovePreview(args: {
     bottomY: args.bottomY,
     spanH: args.spanH,
     pointerY: args.yClamped,
+    sketchExtras: args.source.sketchExtras,
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
+    topY: args.topY,
+    woodThick: args.woodThick,
+    hitLocalX: args.source.hitLocalX,
   });
   if (!storageMatch || storageMatch.dy > args.removeEpsBox) return null;
 
-  const previewY = clampSketchModuleStorageCenterY({
+  const geometry = {
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
     bottomY: args.bottomY,
     topY: args.topY,
+    woodThick: args.woodThick,
+  };
+  const pointerX =
+    typeof args.source.hitLocalX === 'number' && Number.isFinite(args.source.hitLocalX)
+      ? args.source.hitLocalX
+      : args.internalCenterX;
+  const targetCell = resolveSketchModulePartitionCell({
+    sketchExtras: args.source.sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: storageMatch.yAbs,
+  });
+  const previewY = clampSketchModuleStorageCenterY({
+    bottomY: targetCell?.bottomY ?? args.bottomY,
+    topY: targetCell?.topY ?? args.topY,
     pad: args.pad,
     heightM: storageMatch.heightM,
     pointerY: storageMatch.yAbs,
   });
+  const previewCenterX = targetCell?.centerX ?? args.internalCenterX;
+  const previewInnerW = targetCell?.width ?? args.innerW;
   const depth0 = Number.isFinite(args.internalDepth) ? args.internalDepth : 0;
   const zFront = args.internalZ + depth0 / 2;
   return {
@@ -134,12 +192,12 @@ export function resolveSketchModuleStorageRemovePreview(args: {
     }),
     preview: {
       kind: 'storage',
-      x: args.internalCenterX,
+      x: previewCenterX,
       y: previewY,
       z: zFront + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
       w: Math.max(
         INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
-        args.innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+        previewInnerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
       ),
       h: storageMatch.heightM,
       d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, args.woodThick),

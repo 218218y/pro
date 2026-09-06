@@ -16,6 +16,16 @@ import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_co
 import { readObject, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
 
+export function resolveSketchPartitionShelfWidths(width: number): {
+  braceShelfWidth: number;
+  regularShelfWidth: number;
+} {
+  return {
+    braceShelfWidth: Math.max(0, width - INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM),
+    regularShelfWidth: Math.max(0, width - INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM),
+  };
+}
+
 function resolveShelfDepth(args: {
   requestedDepth: unknown;
   woodThick: number;

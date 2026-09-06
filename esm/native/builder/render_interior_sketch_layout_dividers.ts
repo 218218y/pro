@@ -1,5 +1,21 @@
 import type { SketchBoxExtra, SketchDividerExtra } from './render_interior_sketch_shared.js';
-import { SKETCH_BOX_DIVIDER_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_divider_policy.js';
+import {
+  SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+  findSketchPartitionCellAtNorm,
+  resolveSketchPartitionCells,
+  resolveSketchPartitionContentCells,
+  resolveSketchPartitionDoorCount,
+  resolveSketchPartitionMaxOrder,
+} from '../../shared/dimensions/sketch_box_divider_policy.js';
+
+export {
+  findSketchPartitionCellAtNorm,
+  resolveSketchPartitionCells,
+  resolveSketchPartitionContentCells,
+  resolveSketchPartitionDoorCount,
+  resolveSketchPartitionMaxOrder,
+};
+export type SketchPartitionCell = ReturnType<typeof resolveSketchPartitionCells>[number];
 import {
   formatIdentityValue,
   normalizeSketchBoxDividerStructuralOrder,

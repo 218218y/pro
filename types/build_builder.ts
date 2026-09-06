@@ -236,6 +236,7 @@ export interface BuilderSketchShelfLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   yNorm?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
   depthM?: BuilderSketchScalar;
   variant?: string | null;
 }
@@ -244,6 +245,7 @@ export interface BuilderSketchStorageBarrierLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   yNorm?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
   heightM?: BuilderSketchScalar;
   hM?: BuilderSketchScalar;
 }
@@ -252,6 +254,7 @@ export interface BuilderSketchRodLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   yNorm?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchDrawerLike extends UnknownRecord {
@@ -259,12 +262,21 @@ export interface BuilderSketchDrawerLike extends UnknownRecord {
   yNorm?: BuilderSketchScalar;
   yNormC?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
   drawerHeightM?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchExternalDrawerLike extends BuilderSketchDrawerLike {
   count?: BuilderSketchScalar;
   hasShoeDrawer?: boolean | null;
+}
+
+export interface BuilderSketchCellDoorLike extends UnknownRecord {
+  id?: BuilderSketchIdLike;
+  xNorm?: BuilderSketchScalar;
+  yNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
+  count?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchBoxDoorLike extends UnknownRecord {
@@ -314,6 +326,7 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
 }
 
 export interface BuilderSketchExtrasLike extends UnknownRecord {
+  cellDoors?: BuilderSketchCellDoorLike[] | null;
   dividers?: BuilderSketchDividerLike[] | null;
   horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;
   shelves?: BuilderSketchShelfLike[] | null;
@@ -586,11 +599,18 @@ export interface RoomTextureParamsLike extends UnknownRecord {
   lines?: string;
   size?: number;
 }
+export interface BuilderInteriorRodSpanOverride {
+  innerW?: number;
+  internalCenterX?: number;
+  effectiveBottomY?: number;
+  effectiveTopY?: number;
+}
 export type BuilderInteriorRodCreator = (
   yPos: number,
   enableHangingClothes?: boolean,
   enableSingleHanger?: boolean,
-  manualHeightLimit?: number | null
+  manualHeightLimit?: number | null,
+  spanOverride?: BuilderInteriorRodSpanOverride | null
 ) => unknown;
 export interface BuilderCreateRodConfigLike extends UnknownRecord {}
 export interface BuilderCreateRodWithContentsArgsLike extends BuilderRenderCommonArgsLike {

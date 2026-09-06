@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-06T16:33:56.518Z",
+  "generatedAt": "2026-09-06T20:51:49.051Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 563,
+    "totalOccurrences": 567,
     "totalFiles": 219,
     "byCategory": {
-      "runtime-default": 60,
+      "runtime-default": 64,
       "domain-default": 407,
       "error-message-default": 42,
       "framework-default": 4,
@@ -1319,9 +1319,9 @@
         }
       },
       "esm/shared/dimensions/sketch_box_divider_policy.ts": {
-        "total": 2,
+        "total": 6,
         "categories": {
-          "runtime-default": 2
+          "runtime-default": 6
         }
       },
       "esm/shared/room_architecture_shared.ts": {
@@ -1460,6 +1460,13 @@
         }
       },
       {
+        "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+        "total": 6,
+        "categories": {
+          "runtime-default": 6
+        }
+      },
+      {
         "file": "esm/test_no_side_effects_on_import.mjs",
         "total": 6,
         "categories": {
@@ -1552,13 +1559,6 @@
         "categories": {
           "domain-default": 2,
           "runtime-default": 2
-        }
-      },
-      {
-        "file": "esm/native/services/canvas_picking_door_layout_alignment.ts",
-        "total": 4,
-        "categories": {
-          "domain-default": 4
         }
       }
     ]
@@ -2484,7 +2484,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_dividers.ts",
-      "line": 32,
+      "line": 48,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "return n != null && n > 0 ? n : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
@@ -2589,28 +2589,28 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 23,
+      "line": 33,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 26,
+      "line": 36,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 27,
+      "line": 37,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "let shelfDepth = fallbackDepth;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 142,
+      "line": 152,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: isBrace ? internalDepth : regularDepth,"
@@ -3933,7 +3933,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_segments.ts",
-      "line": 32,
+      "line": 40,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": ": SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
@@ -3982,7 +3982,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
-      "line": 158,
+      "line": 178,
       "term": "fallback",
       "category": "domain-default",
       "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
@@ -5421,6 +5421,34 @@
       "term": "fallbackWoodThicknessM",
       "category": "runtime-default",
       "text": "fallbackWoodThicknessM: SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM,"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 95,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "function clampUnit(value: unknown, fallback: number): number {"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 96,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : fallback;"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 99,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "function finitePositive(value: unknown, fallback: number): number {"
+    },
+    {
+      "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+      "line": 100,
+      "term": "fallback",
+      "category": "runtime-default",
+      "text": "return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",

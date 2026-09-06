@@ -1,15 +1,15 @@
 # Legacy / fallback audit
 
-Generated at: 2026-09-06T16:33:56.518Z
+Generated at: 2026-09-06T20:51:49.051Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **563**
+- Total categorized occurrences: **567**
 - Files with occurrences: **219**
 - Reviewed compatibility seams under growth ratchet: **21**
 - Category counts:
-  - `runtime-default`: **60**
+  - `runtime-default`: **64**
   - `domain-default`: **407**
   - `error-message-default`: **42**
   - `framework-default`: **4**
@@ -56,6 +56,7 @@ Generated at: 2026-09-06T16:33:56.518Z
 - `esm/native/builder/corner_connector_emit.ts` - **6** (domain-default: 6)
 - `esm/native/features/sketch_stack_positioning.ts` - **6** (domain-default: 6)
 - `esm/native/ui/project_load_runtime_action.ts` - **6** (error-message-default: 6)
+- `esm/shared/dimensions/sketch_box_divider_policy.ts` - **6** (runtime-default: 6)
 - `esm/test_no_side_effects_on_import.mjs` - **6** (test-fixture: 6)
 - `esm/native/runtime/browser_env_surface.ts` - **5** (runtime-default: 5)
 - `esm/native/runtime/doors_runtime_support_modes.ts` - **5** (compat-boundary: 1, domain-default: 1, runtime-default: 3)
@@ -69,7 +70,6 @@ Generated at: 2026-09-06T16:33:56.518Z
 - `esm/native/builder/visuals_and_contents_door_visual.ts` - **4** (domain-default: 4)
 - `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **4** (runtime-default: 4)
 - `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
-- `esm/native/services/canvas_picking_door_layout_alignment.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

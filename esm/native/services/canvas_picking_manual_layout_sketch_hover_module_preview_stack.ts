@@ -155,6 +155,7 @@ export function tryHandleManualLayoutSketchHoverModuleStackPreview(
     totalHeight: spanH,
     pad,
     desiredCenterY: yClamped,
+    hitLocalX: resolveManualLayoutSketchHoverPointerX(ctx.hitLocalX, internalCenterX),
     innerW,
     internalCenterX,
     internalDepth,

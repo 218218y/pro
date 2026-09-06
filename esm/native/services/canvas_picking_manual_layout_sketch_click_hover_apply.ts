@@ -21,7 +21,11 @@ import {
   removeManualLayoutBaseStorage,
   removeManualLayoutSketchExtraByIndex,
 } from './canvas_picking_manual_layout_config_ops.js';
-import { commitSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
+import {
+  commitSketchModuleRod,
+  commitSketchModuleShelf,
+  commitSketchModuleStorageBarrier,
+} from './canvas_picking_sketch_module_vertical_content.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import {
   decodeSketchBoxContentCommandHover,
@@ -32,6 +36,11 @@ import {
   SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_structural_command.js';
 import { decodeManualLayoutCommand } from './canvas_picking_manual_layout_command.js';
+import { parseSketchStorageHeight } from './canvas_picking_sketch_module_surface_commit_shared.js';
+import {
+  hasSketchModulePartitions,
+  setSketchModulePartitionCellDoorCount,
+} from './canvas_picking_sketch_module_partition.js';
 import {
   addSketchBoxDividerState,
   addSketchBoxHorizontalDividerState,
@@ -149,13 +158,41 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       __wp_clearSketchHover(App);
       return true;
     }
-    applyCanvasLinearCellDoorCountFromSketch({
-      App,
-      foundModuleIndex: __activeModuleKey,
-      isBottomStack: !!__isBottomStack,
-      doorCount: manualCommand.command.doorCount,
-    });
-    __wp_clearSketchHover(App);
+    const command = manualCommand.command;
+    if (command.scopeOrder <= 0) {
+      applyCanvasLinearCellDoorCountFromSketch({
+        App,
+        foundModuleIndex: __activeModuleKey,
+        isBottomStack: !!__isBottomStack,
+        doorCount: command.doorCount,
+      });
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    let appliedToPartitionCell = false;
+    const patched = __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        if (!hasSketchModulePartitions(cfg.sketchExtras)) return;
+        appliedToPartitionCell = setSketchModulePartitionCellDoorCount({
+          cfg,
+          xNorm: command.xNorm,
+          yNorm: command.yNorm,
+          scopeOrder: command.scopeOrder,
+          doorCount: command.doorCount,
+        });
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.partitionCellDoorCount')
+    );
+    if (!appliedToPartitionCell) {
+      applyCanvasLinearCellDoorCountFromSketch({
+        App,
+        foundModuleIndex: __activeModuleKey,
+        isBottomStack: !!__isBottomStack,
+        doorCount: command.doorCount,
+      });
+    }
+    if (patched !== false || !appliedToPartitionCell) __wp_clearSketchHover(App);
     return true;
   }
 
@@ -243,6 +280,34 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
   }
 
   const rodHover = __hoverOk ? readManualLayoutSketchRodHoverIntent(__hoverRec) : null;
+  if (rodHover && rodHover.op === 'add') {
+    if (rodHover.blockedReason) {
+      toastSketchBoxContentBlocked(App, 'rod', rodHover.blockedReason);
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const totalHeight = topY - bottomY;
+    if (!(totalHeight > 0)) return false;
+    const yNorm = Math.max(0, Math.min(1, rodHover.yNorm));
+    const committed = __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        commitSketchModuleRod({
+          cfg,
+          bottomY,
+          totalHeight,
+          pointerY: bottomY + yNorm * totalHeight,
+          yNorm,
+          xNorm: rodHover.xNorm,
+          scopeOrder: rodHover.scopeOrder,
+          removeEps: -1,
+        });
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverAddRod')
+    );
+    if (committed !== false) __wp_clearSketchHover(App);
+    return true;
+  }
   if (rodHover && rodHover.op === 'remove') {
     __patchConfigForKey(
       __activeModuleKey,
@@ -265,6 +330,39 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
   }
 
   const storageHover = __hoverOk ? readManualLayoutSketchStorageHoverIntent(__hoverRec) : null;
+  if (storageHover && storageHover.op === 'add') {
+    if (storageHover.blockedReason) {
+      toastSketchBoxContentBlocked(App, 'storage', storageHover.blockedReason);
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const totalHeight = topY - bottomY;
+    if (!(totalHeight > 0)) return false;
+    const yNorm = Math.max(0, Math.min(1, storageHover.yNorm));
+    const committed = __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        commitSketchModuleStorageBarrier({
+          cfg,
+          bottomY,
+          topY,
+          totalHeight,
+          pad: 0,
+          pointerY: bottomY + yNorm * totalHeight,
+          xNorm: storageHover.xNorm,
+          scopeOrder: storageHover.scopeOrder,
+          heightM: parseSketchStorageHeight(
+            typeof __hoverRec.tool === 'string' ? __hoverRec.tool : 'sketch_storage:'
+          ),
+          removeEps: -1,
+          idFactory: () => `ss_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`,
+        });
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverAddStorage')
+    );
+    if (committed !== false) __wp_clearSketchHover(App);
+    return true;
+  }
   if (storageHover && storageHover.op === 'remove') {
     __patchConfigForKey(
       __activeModuleKey,
@@ -305,6 +403,8 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           totalHeight,
           pointerY: bottomY + yNormClamped * totalHeight,
           yNorm: yNormClamped,
+          xNorm: shelfHover.xNorm,
+          scopeOrder: shelfHover.scopeOrder,
           variant: shelfHover.variant || 'double',
           shelfDepthM: shelfHover.depthM,
           removeEps: -1,

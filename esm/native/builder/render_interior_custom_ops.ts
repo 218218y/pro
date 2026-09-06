@@ -28,6 +28,10 @@ import {
   applyCustomInteriorGridLayout,
   applyCustomStorageBarrier,
 } from './render_interior_custom_ops_layout.js';
+import {
+  resolveInteriorModulePartitionCells,
+  resolveInteriorModulePartitionCellsAtY,
+} from './render_interior_partitioned_module_content.js';
 
 export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps) {
   const __app = deps.app;
@@ -79,6 +83,20 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const shelfThick = readCustomRenderNumber(input.shelfThick, woodThick);
     const internalDepth = readCustomRenderNumber(input.internalDepth, 0);
     const internalCenterX = readCustomRenderNumber(input.internalCenterX, 0);
+    const partitionCells = resolveInteriorModulePartitionCells({
+      sketchExtras: input.sketchExtras,
+      geometry: {
+        centerX: internalCenterX,
+        bottomY: effectiveBottomY,
+        topY: effectiveTopY,
+        innerW,
+        woodThick,
+      },
+    });
+    const partitioned = partitionCells.length > 1;
+    const resolvePartitionCellsAtY = partitioned
+      ? (y: number) => resolveInteriorModulePartitionCellsAtY({ cells: partitionCells, y })
+      : undefined;
     const internalZ = readCustomRenderNumber(input.internalZ, 0);
     const D = readCustomRenderNumber(input.D, 0);
     const moduleIndex = readCustomRenderInteger(input.moduleIndex, -1);
@@ -179,6 +197,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       activeSlots,
       shelfExposedSide,
       roundedShelfSide,
+      ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
     });
 
     addCustomBaseShelfContents({
@@ -212,7 +231,27 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       internalZ,
       isInternalDrawersEnabled,
       activeSlots,
+      ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
     });
+
+    const createPartitionedRod = (
+      rodY: number,
+      enableHangingClothes: boolean,
+      enableSingleHanger: boolean,
+      limit: number | null
+    ) => {
+      const cells = resolvePartitionCellsAtY?.(rodY) ?? [];
+      if (!cells.length) return createRod(rodY, enableHangingClothes, enableSingleHanger, limit);
+      for (const cell of cells) {
+        createRod(rodY, enableHangingClothes, enableSingleHanger, limit, {
+          innerW: cell.width,
+          internalCenterX: cell.centerX,
+          effectiveBottomY: cell.bottomY,
+          effectiveTopY: cell.topY,
+        });
+      }
+      return true;
+    };
 
     applyCustomInteriorGridLayout({
       gridDivisions,
@@ -222,7 +261,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       shelfSet,
       shelfVariantByIndex,
       addGridShelf,
-      createRod,
+      createRod: createPartitionedRod,
       rodMap: buildRodMap(ops),
     });
 
@@ -237,6 +276,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       internalCenterX,
       effectiveBottomY,
       D,
+      ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
     });
 
     return true;

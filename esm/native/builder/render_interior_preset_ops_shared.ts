@@ -47,6 +47,7 @@ export type InteriorPresetInput = InteriorValueRecord & {
   currentBraceShelfMat?: unknown;
   bodyMat?: unknown;
   showContentsEnabled?: unknown;
+  sketchExtras?: unknown;
   braceShelves?: unknown;
   cfg?: InteriorValueRecord;
   getPartMaterial?: InteriorOpsCallable;

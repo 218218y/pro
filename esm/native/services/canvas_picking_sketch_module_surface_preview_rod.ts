@@ -6,6 +6,10 @@ import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_s
 import { SKETCH_BOX_ROD_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { findNearestSketchModuleRod } from './canvas_picking_sketch_module_vertical_content.js';
 import {
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCell,
+} from './canvas_picking_sketch_module_partition.js';
+import {
   createRodRemoveHoverRecord,
   isRecord,
   readRecordArray,
@@ -137,11 +141,40 @@ function resolveSketchModuleRodRemoveMatch(args: {
   spanH: number;
   pointerY: number;
   rods: ResolveSketchModuleSurfacePreviewArgs['rods'];
+  sketchExtras: ResolveSketchModuleSurfacePreviewArgs['sketchExtras'];
+  innerW: number;
+  internalCenterX: number;
+  topY: number;
+  woodThick: number;
+  hitLocalX: number | null;
 }): SketchModuleRodRemoveMatch | null {
   let best: SketchModuleRodRemoveMatch | null = null;
 
+  const geometry = {
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: args.woodThick,
+  };
+  const pointerX =
+    typeof args.hitLocalX === 'number' && Number.isFinite(args.hitLocalX)
+      ? args.hitLocalX
+      : args.internalCenterX;
+  const targetCell = resolveSketchModulePartitionCell({
+    sketchExtras: args.sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: args.pointerY,
+  });
+  const candidates = filterSketchModuleContentItemsForCell({
+    sketchExtras: args.sketchExtras,
+    geometry,
+    items: args.rods,
+    cell: targetCell,
+  });
   const sketchMatch = findNearestSketchModuleRod({
-    rods: args.rods,
+    rods: candidates.map(candidate => candidate.item),
     bottomY: args.bottomY,
     totalHeight: args.spanH,
     pointerY: args.pointerY,
@@ -149,7 +182,7 @@ function resolveSketchModuleRodRemoveMatch(args: {
   if (sketchMatch) {
     best = {
       removeKind: 'sketch',
-      removeIdx: sketchMatch.index,
+      removeIdx: candidates[sketchMatch.index]?.index ?? null,
       rodIndex: null,
       yAbs: sketchMatch.yAbs,
       dy: sketchMatch.dy,
@@ -188,10 +221,35 @@ export function resolveSketchModuleRodRemovePreview(args: {
     spanH: args.spanH,
     pointerY: args.yClamped,
     rods: args.rods,
+    sketchExtras: args.source.sketchExtras,
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
+    topY: args.topY,
+    woodThick: args.woodThick,
+    hitLocalX: args.source.hitLocalX,
   });
   if (!rodRemoveMatch || rodRemoveMatch.dy > args.removeEpsShelf) return null;
 
   const previewY = Math.max(args.bottomY + args.pad, Math.min(args.topY - args.pad, rodRemoveMatch.yAbs));
+  const geometry = {
+    innerW: args.innerW,
+    internalCenterX: args.internalCenterX,
+    bottomY: args.bottomY,
+    topY: args.topY,
+    woodThick: args.woodThick,
+  };
+  const pointerX =
+    typeof args.source.hitLocalX === 'number' && Number.isFinite(args.source.hitLocalX)
+      ? args.source.hitLocalX
+      : args.internalCenterX;
+  const targetCell = resolveSketchModulePartitionCell({
+    sketchExtras: args.source.sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: previewY,
+  });
+  const previewCenterX = targetCell?.centerX ?? args.internalCenterX;
+  const previewInnerW = targetCell?.width ?? args.innerW;
   return {
     handled: true,
     hoverRecord: createRodRemoveHoverRecord({
@@ -202,12 +260,12 @@ export function resolveSketchModuleRodRemovePreview(args: {
     }),
     preview: {
       kind: 'rod',
-      x: args.internalCenterX,
+      x: previewCenterX,
       y: previewY,
       z: args.internalZ,
       w: Math.max(
         SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
-        args.innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+        previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
       ),
       h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
       d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,

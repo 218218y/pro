@@ -26,6 +26,7 @@ export type ResolveSketchModuleStackPreviewArgs = {
   totalHeight: number;
   pad: number;
   desiredCenterY: number;
+  hitLocalX?: number | null | undefined;
   innerW: number;
   internalCenterX: number;
   internalDepth: number;

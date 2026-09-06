@@ -10,6 +10,10 @@ import {
 } from './canvas_picking_sketch_module_vertical_content.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCell,
+} from './canvas_picking_sketch_module_partition.js';
+import {
   asRecord,
   createShelfRemoveHoverRecord,
   readRecordNumber,
@@ -42,6 +46,8 @@ export function resolveSketchModuleShelfRemovePreview(
     shelves,
     variant,
     shelfDepthOverrideM,
+    sketchExtras,
+    hitLocalX,
     innerW,
     internalDepth,
     internalCenterX,
@@ -59,6 +65,20 @@ export function resolveSketchModuleShelfRemovePreview(
   let shelfRemoveIdx: number | null = null;
   let baseShelfIndex: number | null = null;
   let nextYClamped = args.yClamped;
+  const geometry = { innerW, internalCenterX, bottomY, topY, woodThick };
+  const pointerX = typeof hitLocalX === 'number' && Number.isFinite(hitLocalX) ? hitLocalX : internalCenterX;
+  const targetCell = resolveSketchModulePartitionCell({
+    sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: nextYClamped,
+  });
+  const shelfCandidates = filterSketchModuleContentItemsForCell({
+    sketchExtras,
+    geometry,
+    items: shelves,
+    cell: targetCell,
+  });
   try {
     const shelfBoardHit = intersects.find(h => {
       const o = h && h.object ? h.object : null;
@@ -72,9 +92,9 @@ export function resolveSketchModuleShelfRemovePreview(
     const isCornerMk = isCornerKey(hitModuleKey);
     const shelfHitY = hitFromBoard ? boardY : isCornerMk ? nextYClamped : null;
     if (typeof shelfHitY === 'number') {
-      if (shelves.length) {
+      if (shelfCandidates.length) {
         const shelfMatch = findNearestSketchModuleShelf({
-          shelves,
+          shelves: shelfCandidates.map(candidate => candidate.item),
           bottomY,
           totalHeight: spanH,
           pointerY: shelfHitY,
@@ -82,7 +102,7 @@ export function resolveSketchModuleShelfRemovePreview(
         if (shelfMatch && isWithinInclusiveTolerance(shelfHitY, shelfMatch.yAbs, removeEpsShelf)) {
           op = 'remove';
           shelfRemoveKind = 'sketch';
-          shelfRemoveIdx = shelfMatch.index;
+          shelfRemoveIdx = shelfCandidates[shelfMatch.index]?.index ?? null;
           nextYClamped = Math.max(bottomY + pad, Math.min(topY - pad, shelfMatch.yAbs));
           if (shelfMatch.variant) variantPreview = shelfMatch.variant;
           if (shelfMatch.depthM != null) nextShelfDepthOverrideM = shelfMatch.depthM;
@@ -159,8 +179,10 @@ export function resolveSketchModuleShelfRemovePreview(
   }
 
   if (op === 'remove' && shelfRemoveKind) {
+    const previewInnerW = targetCell?.width ?? innerW;
+    const previewCenterX = targetCell?.centerX ?? internalCenterX;
     const shelfPreview = createSketchModuleShelfPreviewGeometry({
-      innerW,
+      innerW: previewInnerW,
       internalDepth,
       backZ,
       woodThick,
@@ -179,7 +201,7 @@ export function resolveSketchModuleShelfRemovePreview(
       shelves,
       drawers: args.drawers,
       extDrawers: args.extDrawers,
-      targetCenterX: internalCenterX,
+      targetCenterX: previewCenterX,
       targetCenterY: nextYClamped,
       targetWidth: shelfPreview.w,
       targetHeight: shelfPreview.h,
@@ -209,7 +231,7 @@ export function resolveSketchModuleShelfRemovePreview(
         preview: {
           kind: 'shelf',
           variant: shelfPreview.variant,
-          x: internalCenterX,
+          x: previewCenterX,
           y: nextYClamped,
           z: shelfPreview.z,
           w: shelfPreview.w,

@@ -15,6 +15,12 @@ import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manua
 import { buildSketchModuleBoxVerticalBlockers } from './canvas_picking_sketch_module_box_blockers.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { createManualLayoutSketchStackHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import {
+  doesSketchModuleContentItemBelongToCell,
+  resolveSketchModulePartitionCell,
+  resolveSketchModulePartitionScopeOrder,
+  resolveSketchModulePointerNorm,
+} from './canvas_picking_sketch_module_partition.js';
 import type {
   RecordMap,
   ResolveSketchModuleStackPreviewArgs,
@@ -71,12 +77,42 @@ export function resolveSketchModuleExternalDrawersPreview(
     hitSelectorObj,
   } = args;
 
+  const sketchExtras = args.cfgRef?.sketchExtras ?? {};
+  const geometry = { innerW, internalCenterX, bottomY, topY, woodThick };
+  const pointerX =
+    typeof args.hitLocalX === 'number' && Number.isFinite(args.hitLocalX) ? args.hitLocalX : internalCenterX;
+  const pointerNorm = resolveSketchModulePointerNorm({ geometry, pointerX, pointerY: desiredCenterY });
+  const partitionCell = resolveSketchModulePartitionCell({
+    sketchExtras,
+    geometry,
+    pointerX,
+    pointerY: desiredCenterY,
+  });
+  const scopeOrder = resolveSketchModulePartitionScopeOrder(sketchExtras);
+  const targetBottomY = partitionCell?.bottomY ?? bottomY;
+  const targetTopY = partitionCell?.topY ?? topY;
+  const targetInnerW = partitionCell?.width ?? innerW;
+  const targetCenterX = partitionCell?.centerX ?? internalCenterX;
+  const belongsToTarget = (item: Record<string, unknown>): boolean =>
+    !partitionCell ||
+    doesSketchModuleContentItemBelongToCell({
+      sketchExtras,
+      geometry,
+      item,
+      cell: partitionCell,
+    });
+  const targetDrawers = drawers.filter(belongsToTarget);
+  const targetExtDrawers = extDrawers.filter(belongsToTarget);
+  const targetShelves = (args.shelves ?? []).filter(belongsToTarget);
+  const targetRods = (args.rods ?? []).filter(belongsToTarget);
+  const targetStorage = (args.storageBarriers ?? []).filter(belongsToTarget);
+
   const readCenterY = createManualLayoutSketchNormalizedCenterReader({ bottomY, totalHeight });
   const internalDrawerBlockers = [
     ...buildManualLayoutSketchInternalDrawerBlockers({
-      drawers,
-      bottomY,
-      topY,
+      drawers: targetDrawers,
+      bottomY: targetBottomY,
+      topY: targetTopY,
       pad,
       woodThick,
       readCenterY,
@@ -92,9 +128,9 @@ export function resolveSketchModuleExternalDrawersPreview(
     ...buildManualLayoutVerticalContentBlockers({
       cfgRef: args.cfgRef,
       info: args.info,
-      shelves: args.shelves,
-      rods: args.rods,
-      storageBarriers: args.storageBarriers,
+      shelves: targetShelves,
+      rods: targetRods,
+      storageBarriers: targetStorage,
       bottomY,
       topY,
       totalHeight,
@@ -119,11 +155,11 @@ export function resolveSketchModuleExternalDrawersPreview(
         : DRAWER_SKETCH_SIZING_POLICY.externalPreviewDefaultCount,
     drawerType: args.externalDrawerType,
     drawerHeightM: args.drawerHeightM,
-    bottomY,
-    topY,
+    bottomY: targetBottomY,
+    topY: targetTopY,
     pad,
     gap: DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM,
-    extDrawers,
+    extDrawers: targetExtDrawers,
     readCenterY,
     blockers: internalDrawerBlockers,
   });
@@ -154,9 +190,9 @@ export function resolveSketchModuleExternalDrawersPreview(
   const faceEnvelope = selectorFrontEnvelope ?? readSelectorFrontEnvelope(hitSelectorObj);
   const outerW = Math.max(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM,
-    faceEnvelope?.outerW ?? innerW
+    partitionCell ? targetInnerW : (faceEnvelope?.outerW ?? innerW)
   );
-  const defaultCenterX = faceEnvelope?.centerX ?? internalCenterX;
+  const defaultCenterX = partitionCell ? targetCenterX : (faceEnvelope?.centerX ?? internalCenterX);
   const frontPlaneZ =
     (faceEnvelope?.centerZ ??
       internalZ + internalDepth / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewCenterZInsetM) +
@@ -235,6 +271,8 @@ export function resolveSketchModuleExternalDrawersPreview(
       drawerHeightM: standardShoePreview?.drawerH ?? args.drawerHeightM ?? placement.drawerH,
       drawerH,
       stackH: placement.stackH,
+      xNorm: pointerNorm.xNorm,
+      scopeOrder,
       blockedReason,
     }),
     preview: {

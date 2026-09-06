@@ -5,8 +5,12 @@ import { computeInteriorCustomOps } from '../esm/native/builder/core_storage_com
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 
+function closeEnough(actual: number, expected: number, epsilon = 1e-9) {
+  assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
+}
+
 function createRenderHarness() {
-  const rodCalls: Array<{ y: number; limit: number | null }> = [];
+  const rodCalls: Array<{ y: number; limit: number | null; span: Record<string, number> | null }> = [];
   const group = { children: [] as unknown[] };
   const renderer = createBuilderRenderInteriorCustomOps({
     app: () => ({}),
@@ -20,14 +24,29 @@ function createRenderHarness() {
 
   return {
     rodCalls,
-    apply(ops: unknown) {
+    apply(ops: unknown, overrides: Record<string, unknown> = {}) {
       return renderer.applyInteriorCustomOps({
         THREE: null,
         roomArchitecturePlan: createTestRoomArchitecturePlan(),
         customOps: ops,
         createBoard: () => null,
-        createRod: (y: unknown, _hangClothes: unknown, _single: unknown, limit: unknown) => {
-          rodCalls.push({ y: Number(y), limit: limit == null ? null : Number(limit) });
+        createRod: (y: unknown, _hangClothes: unknown, _single: unknown, limit: unknown, span: unknown) => {
+          const rec =
+            span && typeof span === 'object' && !Array.isArray(span)
+              ? (span as Record<string, unknown>)
+              : null;
+          rodCalls.push({
+            y: Number(y),
+            limit: limit == null ? null : Number(limit),
+            span: rec
+              ? {
+                  innerW: Number(rec.innerW),
+                  internalCenterX: Number(rec.internalCenterX),
+                  effectiveBottomY: Number(rec.effectiveBottomY),
+                  effectiveTopY: Number(rec.effectiveTopY),
+                }
+              : null,
+          });
           return null;
         },
         wardrobeGroup: group,
@@ -43,6 +62,7 @@ function createRenderHarness() {
         D: 0.6,
         moduleIndex: 0,
         modulesLength: 1,
+        ...overrides,
       });
     },
   };
@@ -108,4 +128,31 @@ test('renderInteriorCustomOps keeps exact preset-backed hanging rod height after
   assert.equal(harness.apply(ops), true);
   assert.equal(harness.rodCalls.length, 1);
   assert.equal(Number(harness.rodCalls[0].y.toFixed(2)), 1.52);
+});
+
+test('custom hanging rod is split into the logical cells created by a regular-module divider', () => {
+  const ops = computeInteriorCustomOps(
+    {
+      shelves: [false, false, false, false, false],
+      rods: [false, true, false, false, false, false],
+      rodOps: [{ gridIndex: 2, yFactor: 2.3, enableHangingClothes: true, enableSingleHanger: true }],
+      storage: false,
+      shelfVariants: [],
+    },
+    6
+  );
+  const harness = createRenderHarness();
+  assert.equal(
+    harness.apply(ops, {
+      sketchExtras: { dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }] },
+    }),
+    true
+  );
+  assert.equal(harness.rodCalls.length, 2);
+  const spans = harness.rodCalls.map(call => call.span);
+  assert.ok(spans.every(Boolean));
+  assert.ok((spans[0]?.internalCenterX ?? 0) < 0);
+  assert.ok((spans[1]?.internalCenterX ?? 0) > 0);
+  closeEnough(spans[0]?.innerW as number, 0.491);
+  closeEnough(spans[1]?.innerW as number, 0.491);
 });

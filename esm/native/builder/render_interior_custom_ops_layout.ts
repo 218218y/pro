@@ -81,6 +81,7 @@ export function applyCustomStorageBarrier(args: {
   internalCenterX: number;
   effectiveBottomY: number;
   D: number;
+  resolvePartitionCellsAtY?: ((y: number) => readonly { centerX: number; width: number }[]) | undefined;
 }): void {
   const {
     input,
@@ -93,6 +94,7 @@ export function applyCustomStorageBarrier(args: {
     internalCenterX,
     effectiveBottomY,
     D,
+    resolvePartitionCellsAtY,
   } = args;
   const storageBarrier = asRecord(ops.storageBarrier);
   if (!storageBarrier || !storageBarrier.barrierH) return;
@@ -119,14 +121,19 @@ export function applyCustomStorageBarrier(args: {
     // Keep the default body material if per-part color lookup fails.
   }
 
-  createBoard(
-    innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM,
-    barrierH,
-    woodThick,
-    internalCenterX,
-    effectiveBottomY + barrierH / 2,
-    D / 2 + zOff,
-    material,
-    partId
-  );
+  const barrierY = effectiveBottomY + barrierH / 2;
+  const cells = resolvePartitionCellsAtY?.(barrierY) ?? [];
+  const spans = cells.length ? cells : [{ centerX: internalCenterX, width: innerW }];
+  for (const span of spans) {
+    createBoard(
+      Math.max(0, span.width - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM),
+      barrierH,
+      woodThick,
+      span.centerX,
+      barrierY,
+      D / 2 + zOff,
+      material,
+      partId
+    );
+  }
 }

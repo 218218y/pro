@@ -95,6 +95,7 @@ export function applyPresetInteriorLayout(
         addOutlines: input.addOutlines,
         sketchMode: input.sketchMode === true,
         showContentsEnabled: input.showContentsEnabled === true,
+        sketchExtras: config.sketchExtras,
       }) === true;
   } catch (error) {
     reportInteriorLayoutError(input.App, error, {

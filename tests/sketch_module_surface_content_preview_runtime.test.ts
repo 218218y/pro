@@ -13,6 +13,7 @@ import {
 import { resolveSketchModuleContentPreview } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_content.js';
 import { resolveSketchModuleVerticalRangePlacementAgainstDrawers } from '../esm/native/services/canvas_picking_sketch_module_vertical_content_collision.js';
 import { clampSketchModuleStorageCenterY } from '../esm/native/services/canvas_picking_sketch_module_vertical_content_match.js';
+import { readManualLayoutSketchShelfHoverIntent } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_intent.js';
 
 const close = (actual: number, expected: number, epsilon = 1e-9) =>
   assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
@@ -398,4 +399,61 @@ test('surface content shelf measurements preserve focused-owner Z branches, scal
   assert.equal(remove.preview?.op, 'remove');
   assert.equal(remove.hoverRecord, undefined);
   assert.equal(Array.isArray(remove.preview?.clearanceMeasurements), true);
+});
+
+test('sibling partition cell does not block shelf authoring while the owning cell still collides', () => {
+  const sketchExtras = {
+    dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }],
+  };
+  const rightDrawer = {
+    id: 'right-drawer',
+    xNorm: 0.75,
+    yNormC: 0.5,
+    scopeOrder: 1,
+    drawerHeightM: 0.18,
+  };
+
+  const left = resolveSketchModuleContentPreview(
+    makeArgs({
+      isShelf: true,
+      yClamped: 0.5,
+      source: { hitLocalX: -0.25, sketchExtras, drawers: [rightDrawer] },
+    })
+  );
+  assert.equal(left.preview?.op, 'add');
+  assert.ok((left.preview?.x as number) < 0);
+  assert.ok((left.preview?.w as number) < 0.5);
+  const leftIntent = readManualLayoutSketchShelfHoverIntent(left.hoverRecord ?? {});
+  assert.ok(leftIntent);
+  close(leftIntent?.xNorm as number, 0.25);
+  assert.equal(leftIntent?.scopeOrder, 1);
+
+  const right = resolveSketchModuleContentPreview(
+    makeArgs({
+      isShelf: true,
+      yClamped: 0.5,
+      source: { hitLocalX: 0.25, sketchExtras, drawers: [rightDrawer] },
+    })
+  );
+  assert.equal(right.preview?.op, 'blocked');
+  assert.equal(right.hoverRecord?.__wpBlockedReason, 'collision');
+});
+
+test('horizontal partition clamps newly-authored shelf inside its logical leaf cell', () => {
+  const sketchExtras = {
+    horizontalDividers: [{ id: 'h1', yNorm: 0.5, xNorm: 0.5, order: 1 }],
+  };
+  const result = resolveSketchModuleContentPreview(
+    makeArgs({
+      isShelf: true,
+      yClamped: 0.49,
+      source: { hitLocalX: 0, sketchExtras },
+    })
+  );
+  assert.equal(result.preview?.op, 'add');
+  const previewTop = (result.preview?.y as number) + (result.preview?.h as number) / 2;
+  const lowerCellPhysicalTop = 0.5 - 0.018 / 2;
+  assert.ok(previewTop <= lowerCellPhysicalTop - 0.01 + 1e-9);
+  const intent = readManualLayoutSketchShelfHoverIntent(result.hoverRecord ?? {});
+  assert.equal(intent?.scopeOrder, 1);
 });

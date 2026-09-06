@@ -20,6 +20,7 @@ export type ResolveSketchModuleSurfacePreviewArgs = {
   intersects: RaycastHitLike[];
   info: RecordMap;
   cfgRef: RecordMap | null;
+  sketchExtras: RecordMap;
   hitLocalX: number | null;
   yClamped: number;
   bottomY: number;
@@ -86,6 +87,8 @@ export type SketchModuleShelfRemovePreviewArgs = {
   extDrawers?: RecordMap[] | undefined;
   variant: string;
   shelfDepthOverrideM: number | null;
+  sketchExtras: RecordMap;
+  hitLocalX: number | null;
   innerW: number;
   internalDepth: number;
   internalCenterX: number;

@@ -8,6 +8,11 @@ import {
   renderRemovedFrameSideFrontClosure,
 } from './removed_frame_side_front_closure.js';
 import { asBuilderDoorMapsConfig } from './builder_config_boundary.js';
+import {
+  hasInteriorModulePartitions,
+  resolveInteriorModulePartitionCells,
+  resolveInteriorModulePartitionDoorCount,
+} from './render_interior_partitioned_module_content.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleLoopMutableState } from './module_loop_pipeline_module_contracts.js';
@@ -170,6 +175,76 @@ export function applyModuleContents(
     renderRemovedFrameSideFrontClosure({ runtime, frame, plan: frontClosurePlan });
     state.globalDoorCounter = advanceDoorCounterPastFrontClosure(frontClosurePlan);
     return;
+  }
+
+  const sketchExtras = frame.config.sketchExtras;
+  if (hasInteriorModulePartitions(sketchExtras)) {
+    const partitionGeometry = {
+      centerX: metrics.internalCenterX,
+      bottomY: metrics.effectiveBottomY,
+      topY: metrics.effectiveTopY,
+      innerW: metrics.innerW,
+      woodThick: runtime.woodThick,
+    };
+    const cells = resolveInteriorModulePartitionCells({ sketchExtras, geometry: partitionGeometry });
+    if (cells.length > 1) {
+      let doorCounter = state.globalDoorCounter;
+      const moduleLeftX = state.currentX;
+      const insetMount = runtime.cfg.doorMountMode === 'inset';
+      for (const cell of cells) {
+        const widthShare = Math.max(0, cell.normRight - cell.normLeft);
+        const leafDoorW = Math.max(0.0001, frame.modWidth * widthShare);
+        const leafLeftX = moduleLeftX + frame.modWidth * cell.normLeft;
+        const leafDoors = resolveInteriorModulePartitionDoorCount({
+          sketchExtras,
+          geometry: partitionGeometry,
+          cell,
+          moduleDoorCount: frame.modDoors,
+        });
+        doorCounter = appendHingedDoorOpsForModule({
+          App: runtime.App,
+          THREE: runtime.THREE,
+          __wpStack: runtime.stackKey,
+          cfg: asBuilderDoorMapsConfig(runtime.cfg),
+          ui: runtime.ui,
+          moduleIndex: index,
+          modulesLength: runtime.modules.length,
+          moduleDoors: leafDoors,
+          modWidth: leafDoorW,
+          currentX: leafLeftX,
+          globalDoorCounter: doorCounter,
+          drawerHeightTotal: 0,
+          effectiveBottomY: cell.bottomY,
+          startY: cell.bottomY,
+          woodThick: runtime.woodThick,
+          cabinetBodyHeight: cell.height + (insetMount ? runtime.woodThick : runtime.woodThick / 2),
+          cabinetTopY: cell.topY,
+          D: runtime.D,
+          moduleDoorFrontZ: frame.moduleDoorFrontZ,
+          splitLineY: 0,
+          splitDoors: false,
+          opsList: runtime.hingedDoorOpsList,
+          hingedDoorPivotMap: null,
+          globalHandleAbsY: runtime.globalHandleAbsY,
+          config: frame.config,
+          moduleCfgList: runtime.moduleCfgList,
+          getPartColorValue: runtime.getPartColorValue ?? null,
+          isGroovesEnabled: runtime.isGroovesEnabled,
+          removeDoorsEnabled: runtime.removeDoorsEnabled,
+          isDoorRemoved: runtime.isDoorRemoved ?? null,
+          shadowMat: runtime.shadowMat,
+          externalW: leafDoorW,
+          externalCenterX: leafLeftX + leafDoorW / 2,
+          getHingeDir: runtime.getHingeDir,
+          isDoorSplit: runtime.isDoorSplit,
+          isDoorSplitBottom: runtime.isDoorSplitBottom,
+          curtainVal: runtime.curtainVal,
+          grooveVal: runtime.grooveVal,
+        });
+      }
+      state.globalDoorCounter = doorCounter;
+      return;
+    }
   }
 
   state.globalDoorCounter = appendHingedDoorOpsForModule({
