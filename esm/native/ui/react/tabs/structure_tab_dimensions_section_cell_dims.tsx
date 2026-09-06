@@ -1,12 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import {
-  Button,
-  InlineNotice,
-  ModeToggleButton,
-  OptionButton,
-  OptionButtonGroup,
-} from '../components/index.js';
+import { Button, InlineNotice, ModeToggleButton } from '../components/index.js';
+import { OptionButton, OptionButtonGroup } from '../components/OptionButton.js';
 import { OptionalDimField } from './structure_tab_controls.js';
 import {
   DEFAULT_HEIGHT,

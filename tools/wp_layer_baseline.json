@@ -5,7 +5,7 @@
     "mode": "decrease-only",
     "owner": "architecture-contract",
     "reason": "V2.2 establishes complete AST budgets including TypeScript import-type queries; from this reviewed baseline proposals may lower ceilings after verified dependency removal but never raise them to absorb growth.",
-    "reviewedAt": "2026-08-20",
+    "reviewedAt": "2026-09-06",
     "pendingReductionGraceDays": 14
   },
   "rules": [
@@ -685,11 +685,11 @@
       "from": "services",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 138,
+      "maxImporterCount": 136,
       "maxImportCount": 160,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 138,
+      "maxValueImporterCount": 136,
       "maxValueImportCount": 160,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,

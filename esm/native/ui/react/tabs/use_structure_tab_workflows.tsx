@@ -55,7 +55,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
       enterStructureEditMode({
         app,
         fb,
-        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+        modeId: state.cellDimsModeId,
         source,
         message:
           count == null

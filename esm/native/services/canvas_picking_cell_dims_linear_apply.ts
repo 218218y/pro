@@ -237,6 +237,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     depthPromotion.nextTotal > 0 &&
     Math.abs(depthPromotion.nextTotal - applyCtx.totalD) > 1e-6;
 
+  const structuralMeta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
   if (doorCountResult.changed) {
     try {
       patchUiSoft(
@@ -245,7 +246,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
           raw: { doors: doorCountResult.nextTotalDoors },
           structureSelect: doorCountResult.structureSelect,
         },
-        createCanvasPickingCellDimsRefreshGatedMeta(App, source)
+        structuralMeta
       );
     } catch (err) {
       __wp_reportPickingIssue(
@@ -258,7 +259,6 @@ export function applyCanvasLinearCellDimsContextWithOptions(
   }
 
   try {
-    const metaCfg = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
     applyCellDimsConfigSnapshot({
       App,
       modulesConfiguration: nextModsCfg,
@@ -269,7 +269,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
       ...(!applyCtx.isBottomStack && widthChanged ? { width: nextTotalW } : {}),
       ...(!applyCtx.isBottomStack && heightChanged ? { height: heightPromotion.nextTotal } : {}),
       ...(!applyCtx.isBottomStack && depthChanged ? { depth: depthPromotion.nextTotal } : {}),
-      meta: metaCfg,
+      meta: structuralMeta,
     });
   } catch (err) {
     __wp_reportPickingIssue(
