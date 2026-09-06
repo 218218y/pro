@@ -1,4 +1,5 @@
 import {
+  normalizeSketchBoxDividerOrder,
   normalizeSketchBoxDividerXNorm,
   normalizeSketchBoxDividerYNorm,
   readFiniteNumber,
@@ -18,6 +19,14 @@ function createDividerId(prefix: string, dividerId?: unknown): string {
   );
 }
 
+function nextSketchBoxDividerOrder(box: unknown): number {
+  let maxOrder = 0;
+  for (const divider of [...readSketchBoxDividers(box), ...readSketchBoxHorizontalDividers(box)]) {
+    maxOrder = Math.max(maxOrder, normalizeSketchBoxDividerOrder(divider.order) ?? 0);
+  }
+  return maxOrder + 1;
+}
+
 export function addSketchBoxDividerState(
   box: unknown,
   dividerXNorm: number | null,
@@ -33,6 +42,7 @@ export function addSketchBoxDividerState(
     id: createDividerId('sbd', dividerId),
     xNorm: norm,
     centered: Math.abs(norm - 0.5) <= 0.001,
+    order: nextSketchBoxDividerOrder(box),
     ...(frontZ != null ? { frontZ } : {}),
     ...(yNorm != null ? { yNorm } : {}),
   });
@@ -96,6 +106,7 @@ export function addSketchBoxHorizontalDividerState(
     id: createDividerId('sbh', dividerId),
     yNorm: norm,
     centered: Math.abs(norm - 0.5) <= 0.001,
+    order: nextSketchBoxDividerOrder(box),
     ...(frontZ != null ? { frontZ } : {}),
     ...(xNorm != null ? { xNorm } : {}),
   });
@@ -151,6 +162,11 @@ export function applySketchBoxDividerState(box: unknown, dividerXNorm: number | 
     return;
   }
   writeSketchBoxDividers(box, [
-    { id: 'primary_divider', xNorm: norm, centered: Math.abs(norm - 0.5) <= 0.001 },
+    {
+      id: 'primary_divider',
+      xNorm: norm,
+      centered: Math.abs(norm - 0.5) <= 0.001,
+      order: nextSketchBoxDividerOrder(box),
+    },
   ]);
 }

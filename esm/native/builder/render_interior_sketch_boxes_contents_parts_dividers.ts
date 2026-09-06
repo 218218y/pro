@@ -1,11 +1,10 @@
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import { toFiniteNumber } from './render_interior_sketch_shared.js';
 import {
-  pickSketchBoxVerticalSegment,
   resolveSketchBoxDividerPlacement,
+  resolveSketchBoxHorizontalDividerScopeSegment,
   resolveSketchBoxHorizontalDividerPlacement,
-  resolveSketchBoxSegmentForContent,
-  resolveSketchBoxVerticalSegments,
+  resolveSketchBoxVerticalDividerScopeSegment,
 } from './render_interior_sketch_layout.js';
 import { resolveSketchBoxContentPartMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
 
@@ -48,31 +47,19 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
   const { boxPid, centerY, sideH, boxMat, geometry } = shell;
   const dividerDepth = Math.max(0.0001, geometry.innerD);
   const defaultCenterZ = geometry.innerBackZ + geometry.innerD / 2;
-  const verticalSegments = boxHorizontalDividers.length
-    ? resolveSketchBoxVerticalSegments({
-        dividers: boxHorizontalDividers,
-        boxCenterY: centerY,
-        innerH: sideH,
-        woodThick,
-        verticalDividers: boxDividers,
-        boxCenterX: geometry.centerX,
-        innerW: geometry.innerW,
-      })
-    : [];
 
   for (const [hi, divider] of boxHorizontalDividers.entries()) {
     const column =
       divider.xNorm != null
-        ? resolveSketchBoxSegmentForContent({
-            dividers: boxDividers,
+        ? resolveSketchBoxHorizontalDividerScopeSegment({
+            divider,
+            verticalDividers: boxDividers,
             horizontalDividers: boxHorizontalDividers,
             boxCenterX: geometry.centerX,
             innerW: geometry.innerW,
             boxCenterY: centerY,
             innerH: sideH,
             woodThick,
-            xNorm: divider.xNorm,
-            yNorm: divider.yNorm,
           })
         : null;
     const placement = resolveSketchBoxHorizontalDividerPlacement({
@@ -129,21 +116,16 @@ export function renderSketchBoxContentDividers(args: RenderSketchBoxStaticConten
         : undefined,
     });
     const row =
-      divider.yNorm != null && verticalSegments.length
-        ? pickSketchBoxVerticalSegment({
-            segments: resolveSketchBoxVerticalSegments({
-              dividers: boxHorizontalDividers,
-              boxCenterY: centerY,
-              innerH: sideH,
-              woodThick,
-              verticalDividers: boxDividers,
-              boxCenterX: geometry.centerX,
-              innerW: geometry.innerW,
-              xNorm: divider.xNorm,
-            }),
+      divider.yNorm != null && boxHorizontalDividers.length
+        ? resolveSketchBoxVerticalDividerScopeSegment({
+            divider,
+            verticalDividers: boxDividers,
+            horizontalDividers: boxHorizontalDividers,
+            boxCenterX: geometry.centerX,
+            innerW: geometry.innerW,
             boxCenterY: centerY,
             innerH: sideH,
-            yNorm: divider.yNorm,
+            woodThick,
           })
         : null;
     createBoard(

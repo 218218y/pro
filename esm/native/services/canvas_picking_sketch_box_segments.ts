@@ -6,6 +6,7 @@ import type {
   SketchBoxVerticalSegmentState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
 import {
+  normalizeSketchBoxDividerOrder,
   normalizeSketchBoxDividerXNorm,
   normalizeSketchBoxDividerYNorm,
   readFiniteNumber,
@@ -34,6 +35,36 @@ function dividerHalfFor(span: number, woodThick: number): number {
   return Math.min(span / 2, Math.max(woodThick / 2, SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.dividerHalfMinM));
 }
 
+function dividerPrecedesOrder(divider: { order?: number }, order: number): boolean {
+  const dividerOrder = normalizeSketchBoxDividerOrder(divider.order);
+  return dividerOrder == null || dividerOrder < order;
+}
+
+function resolveTargetX(args: {
+  boxCenterX: number;
+  innerW: number;
+  cursorX?: number | null | undefined;
+  xNorm?: number | null | undefined;
+}): number | null {
+  const cursorX = readFiniteNumber(args.cursorX);
+  if (cursorX != null) return cursorX;
+  const xNorm = normalizeSketchBoxDividerXNorm(args.xNorm);
+  if (xNorm == null) return null;
+  return args.boxCenterX - args.innerW / 2 + xNorm * args.innerW;
+}
+
+function segmentContainsX(segment: SketchBoxSegmentState | null, x: number | null): boolean {
+  if (!segment || x == null) return false;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+  return x >= segment.leftX - eps && x <= segment.rightX + eps;
+}
+
+function segmentContainsY(segment: SketchBoxVerticalSegmentState | null, y: number): boolean {
+  if (!segment) return false;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+  return y >= segment.bottomY - eps && y <= segment.topY + eps;
+}
+
 export function resolveSketchBoxVerticalSegments(args: {
   dividers: SketchBoxHorizontalDividerState[];
   boxCenterY: number;
@@ -54,6 +85,8 @@ export function resolveSketchBoxVerticalSegments(args: {
   const horizontalDividers = filterHorizontalDividersForColumn({
     dividers: Array.isArray(args.dividers) ? args.dividers : [],
     verticalDividers: Array.isArray(args.verticalDividers) ? args.verticalDividers : [],
+    boxCenterY: safeCenterY,
+    innerH: safeInnerH,
     boxCenterX: args.boxCenterX,
     innerW: args.innerW,
     cursorX: args.cursorX,
@@ -92,6 +125,8 @@ export function resolveSketchBoxVerticalSegments(args: {
 function filterHorizontalDividersForColumn(args: {
   dividers: SketchBoxHorizontalDividerState[];
   verticalDividers: SketchBoxDividerState[];
+  boxCenterY: number;
+  innerH: number;
   boxCenterX?: number | null | undefined;
   innerW?: number | null | undefined;
   cursorX?: number | null | undefined;
@@ -114,6 +149,12 @@ function filterHorizontalDividersForColumn(args: {
   if (boxCenterX == null || innerW == null) {
     return dividers.filter(divider => normalizeSketchBoxDividerXNorm(divider.xNorm) == null);
   }
+  const targetX = resolveTargetX({
+    boxCenterX,
+    innerW,
+    cursorX: args.cursorX,
+    xNorm: args.xNorm,
+  });
   const segments = resolveSketchBoxSegments({
     dividers: args.verticalDividers,
     boxCenterX,
@@ -132,6 +173,20 @@ function filterHorizontalDividersForColumn(args: {
   return dividers.filter(divider => {
     const dividerXNorm = normalizeSketchBoxDividerXNorm(divider.xNorm);
     if (dividerXNorm == null) return true;
+    const order = normalizeSketchBoxDividerOrder(divider.order);
+    if (order != null) {
+      const scope = resolveSketchBoxHorizontalDividerScopeSegment({
+        divider,
+        horizontalDividers: dividers,
+        verticalDividers: args.verticalDividers,
+        boxCenterX,
+        innerW,
+        boxCenterY: args.boxCenterY,
+        innerH: args.innerH,
+        woodThick: args.woodThick,
+      });
+      return segmentContainsX(scope, targetX);
+    }
     const owner = pickSketchBoxSegment({
       segments,
       boxCenterX,
@@ -173,12 +228,33 @@ function verticalDividerBelongsToSegment(args: {
   divider: SketchBoxDividerState;
   segment: SketchBoxVerticalSegmentState | null;
   verticalSegments: SketchBoxVerticalSegmentState[];
+  verticalDividers: SketchBoxDividerState[];
+  horizontalDividers: SketchBoxHorizontalDividerState[];
+  boxCenterX: number;
+  innerW: number;
+  woodThick: number;
   boxCenterY?: number | null | undefined;
   innerH?: number | null | undefined;
 }): boolean {
   if (!args.verticalSegments.length || !args.segment) return true;
   const yNorm = normalizeSketchBoxDividerYNorm(args.divider.yNorm);
   if (yNorm == null) return true;
+  const order = normalizeSketchBoxDividerOrder(args.divider.order);
+  if (order != null) {
+    const boxCenterY = readSafeCenter(args.boxCenterY);
+    const innerH = readSafeSpan(args.innerH);
+    const scope = resolveSketchBoxVerticalDividerScopeSegment({
+      divider: args.divider,
+      verticalDividers: args.verticalDividers,
+      horizontalDividers: args.horizontalDividers,
+      boxCenterX: args.boxCenterX,
+      innerW: args.innerW,
+      boxCenterY,
+      innerH,
+      woodThick: args.woodThick,
+    });
+    return segmentContainsY(scope, args.segment.centerY);
+  }
   const owner = pickSketchBoxVerticalSegment({
     segments: args.verticalSegments,
     boxCenterY: readSafeCenter(args.boxCenterY),
@@ -238,6 +314,11 @@ export function resolveSketchBoxSegments(args: {
       divider,
       segment: activeVerticalSegment,
       verticalSegments,
+      verticalDividers: Array.isArray(args.dividers) ? args.dividers : [],
+      horizontalDividers,
+      boxCenterX: safeCenterX,
+      innerW: safeInnerW,
+      woodThick: safeWoodThick,
       boxCenterY: args.boxCenterY,
       innerH: args.innerH,
     })
@@ -296,4 +377,89 @@ export function pickSketchBoxSegment(args: {
   return (
     segments.toSorted((a, b) => Math.abs(a.centerX - targetX) - Math.abs(b.centerX - targetX))[0] || null
   );
+}
+
+export function resolveSketchBoxHorizontalDividerScopeSegment(args: {
+  divider: SketchBoxHorizontalDividerState;
+  horizontalDividers: SketchBoxHorizontalDividerState[];
+  verticalDividers: SketchBoxDividerState[];
+  boxCenterX: number;
+  innerW: number;
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+}): SketchBoxSegmentState | null {
+  const dividerXNorm = normalizeSketchBoxDividerXNorm(args.divider.xNorm);
+  if (dividerXNorm == null) return null;
+  const order = normalizeSketchBoxDividerOrder(args.divider.order);
+  const verticalDividers = Array.isArray(args.verticalDividers) ? args.verticalDividers : [];
+  const horizontalDividers = Array.isArray(args.horizontalDividers) ? args.horizontalDividers : [];
+  const priorVerticalDividers =
+    order == null
+      ? verticalDividers
+      : verticalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const priorHorizontalDividers =
+    order == null
+      ? []
+      : horizontalDividers.filter(
+          divider => divider.id !== args.divider.id && dividerPrecedesOrder(divider, order)
+        );
+  const segments = resolveSketchBoxSegments({
+    dividers: priorVerticalDividers,
+    horizontalDividers: priorHorizontalDividers,
+    boxCenterX: args.boxCenterX,
+    innerW: args.innerW,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    woodThick: args.woodThick,
+    yNorm: args.divider.yNorm,
+    xNorm: dividerXNorm,
+  });
+  return pickSketchBoxSegment({
+    segments,
+    boxCenterX: args.boxCenterX,
+    innerW: args.innerW,
+    xNorm: dividerXNorm,
+  });
+}
+
+export function resolveSketchBoxVerticalDividerScopeSegment(args: {
+  divider: SketchBoxDividerState;
+  verticalDividers: SketchBoxDividerState[];
+  horizontalDividers: SketchBoxHorizontalDividerState[];
+  boxCenterX: number;
+  innerW: number;
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+}): SketchBoxVerticalSegmentState | null {
+  const dividerYNorm = normalizeSketchBoxDividerYNorm(args.divider.yNorm);
+  if (dividerYNorm == null) return null;
+  const order = normalizeSketchBoxDividerOrder(args.divider.order);
+  const verticalDividers = Array.isArray(args.verticalDividers) ? args.verticalDividers : [];
+  const horizontalDividers = Array.isArray(args.horizontalDividers) ? args.horizontalDividers : [];
+  const priorVerticalDividers =
+    order == null
+      ? verticalDividers
+      : verticalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const priorHorizontalDividers =
+    order == null
+      ? horizontalDividers
+      : horizontalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const segments = resolveSketchBoxVerticalSegments({
+    dividers: priorHorizontalDividers,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    woodThick: args.woodThick,
+    verticalDividers: priorVerticalDividers,
+    boxCenterX: args.boxCenterX,
+    innerW: args.innerW,
+    xNorm: args.divider.xNorm,
+  });
+  return pickSketchBoxVerticalSegment({
+    segments,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    yNorm: dividerYNorm,
+  });
 }

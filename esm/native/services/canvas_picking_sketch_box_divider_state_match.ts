@@ -2,6 +2,7 @@ import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
+import { normalizeSketchBoxDividerOrder } from './canvas_picking_sketch_box_dividers_shared.js';
 import {
   SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
   SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY,
@@ -13,7 +14,9 @@ import {
 import {
   pickSketchBoxSegment,
   pickSketchBoxVerticalSegment,
+  resolveSketchBoxHorizontalDividerScopeSegment,
   resolveSketchBoxSegments,
+  resolveSketchBoxVerticalDividerScopeSegment,
   resolveSketchBoxVerticalSegments,
 } from './canvas_picking_sketch_box_segments.js';
 
@@ -65,13 +68,38 @@ export function findNearestSketchBoxDivider(args: {
   let bestDist = Infinity;
   for (const divider of dividers) {
     if (verticalSegments.length && activeVerticalSegment && divider.yNorm != null) {
-      const owner = pickSketchBoxVerticalSegment({
-        segments: verticalSegments,
-        boxCenterY: Number(args.boxCenterY),
-        innerH: Number(args.innerH),
-        yNorm: divider.yNorm,
-      });
-      if (owner?.index !== activeVerticalSegment.index) continue;
+      if (
+        normalizeSketchBoxDividerOrder(divider.order) != null &&
+        Number.isFinite(Number(args.boxCenterY)) &&
+        Number.isFinite(Number(args.innerH))
+      ) {
+        const scope = resolveSketchBoxVerticalDividerScopeSegment({
+          divider,
+          verticalDividers: dividers,
+          horizontalDividers,
+          boxCenterX: args.boxCenterX,
+          innerW: args.innerW,
+          boxCenterY: Number(args.boxCenterY),
+          innerH: Number(args.innerH),
+          woodThick: args.woodThick,
+        });
+        const cursorY = Number(args.cursorY);
+        const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+        if (
+          scope &&
+          Number.isFinite(cursorY) &&
+          (cursorY < scope.bottomY - eps || cursorY > scope.topY + eps)
+        )
+          continue;
+      } else {
+        const owner = pickSketchBoxVerticalSegment({
+          segments: verticalSegments,
+          boxCenterY: Number(args.boxCenterY),
+          innerH: Number(args.innerH),
+          yNorm: divider.yNorm,
+        });
+        if (owner?.index !== activeVerticalSegment.index) continue;
+      }
     }
     const placement = resolveSketchBoxDividerPlacement({
       boxCenterX: args.boxCenterX,
@@ -143,13 +171,38 @@ export function findNearestSketchBoxHorizontalDivider(args: {
   let bestDist = Infinity;
   for (const divider of dividers) {
     if (segments.length && activeSegment && Number.isFinite(Number(divider.xNorm))) {
-      const owner = pickSketchBoxSegment({
-        segments,
-        boxCenterX: Number(args.boxCenterX),
-        innerW: Number(args.innerW),
-        xNorm: Number(divider.xNorm),
-      });
-      if (owner?.index !== activeSegment.index) continue;
+      if (
+        normalizeSketchBoxDividerOrder(divider.order) != null &&
+        Number.isFinite(Number(args.boxCenterX)) &&
+        Number.isFinite(Number(args.innerW))
+      ) {
+        const scope = resolveSketchBoxHorizontalDividerScopeSegment({
+          divider,
+          horizontalDividers: dividers,
+          verticalDividers,
+          boxCenterX: Number(args.boxCenterX),
+          innerW: Number(args.innerW),
+          boxCenterY: args.boxCenterY,
+          innerH: args.innerH,
+          woodThick: args.woodThick,
+        });
+        const cursorX = Number(args.cursorX);
+        const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+        if (
+          scope &&
+          Number.isFinite(cursorX) &&
+          (cursorX < scope.leftX - eps || cursorX > scope.rightX + eps)
+        )
+          continue;
+      } else {
+        const owner = pickSketchBoxSegment({
+          segments,
+          boxCenterX: Number(args.boxCenterX),
+          innerW: Number(args.innerW),
+          xNorm: Number(divider.xNorm),
+        });
+        if (owner?.index !== activeSegment.index) continue;
+      }
     }
     const placement = resolveSketchBoxHorizontalDividerPlacement({
       boxCenterY: args.boxCenterY,

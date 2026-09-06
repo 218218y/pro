@@ -25,6 +25,8 @@ export {
   pickSketchBoxVerticalSegment,
   resolveSketchBoxVerticalSegments,
   resolveSketchBoxSegmentForContent,
+  resolveSketchBoxHorizontalDividerScopeSegment,
+  resolveSketchBoxVerticalDividerScopeSegment,
 } from './render_interior_sketch_layout_dividers.js';
 export type {
   SketchBoxDividerState,

@@ -221,6 +221,7 @@ export interface BuilderSketchDividerLike extends UnknownRecord {
   xNorm?: BuilderSketchScalar;
   yNorm?: BuilderSketchScalar;
   frontZ?: BuilderSketchScalar;
+  order?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchHorizontalDividerLike extends UnknownRecord {
@@ -228,6 +229,7 @@ export interface BuilderSketchHorizontalDividerLike extends UnknownRecord {
   yNorm?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;
   frontZ?: BuilderSketchScalar;
+  order?: BuilderSketchScalar;
 }
 
 export interface BuilderSketchShelfLike extends UnknownRecord {

@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderSketchBoxContentDividers } from '../esm/native/builder/render_interior_sketch_boxes_contents_parts_dividers.ts';
+import {
+  readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
+} from '../esm/native/builder/render_interior_sketch_layout_dividers.ts';
 
 function createRenderArgs(overrides: Record<string, unknown> = {}) {
   const boards: Array<{ sx: number; sy: number; sz: number; px: number; py: number; pz: number }> = [];
@@ -81,5 +85,47 @@ test('horizontal divider render is limited to the owning vertical segment width'
   assert.ok(
     boards[0].px > 0,
     `right-column horizontal divider should render right of center, got x ${boards[0].px}`
+  );
+});
+
+test('later nested divider cannot retroactively shrink an earlier divider scope', () => {
+  const { args, boards } = createRenderArgs();
+  const firstCreatedAt = 1_700_000_000_100;
+  const secondCreatedAt = 1_700_000_000_200;
+  const thirdCreatedAt = 1_700_000_000_300;
+  const legacyBox = {
+    horizontalDividers: [
+      { id: `sbh_aaaaaaa${firstCreatedAt.toString(36)}`, yNorm: 0.5, centered: true, frontZ: 0.2 },
+      {
+        id: `sbh_ccccccc${thirdCreatedAt.toString(36)}`,
+        yNorm: 0.25,
+        xNorm: 0.2455,
+        centered: false,
+        frontZ: 0.2,
+      },
+    ],
+    dividers: [
+      {
+        id: `sbd_bbbbbbb${secondCreatedAt.toString(36)}`,
+        xNorm: 0.5,
+        yNorm: 0.2455,
+        centered: true,
+        frontZ: 0.2,
+      },
+    ],
+  };
+  (args as any).boxHorizontalDividers = readSketchBoxHorizontalDividers(legacyBox);
+  (args as any).boxDividers = readSketchBoxDividers(legacyBox);
+
+  renderSketchBoxContentDividers(args);
+
+  assert.equal(boards.length, 3);
+  assert.ok(
+    boards[2].sy > 0.4,
+    `vertical divider created for the full bottom row must not shrink after a later nested horizontal divider, got height ${boards[2].sy}`
+  );
+  assert.ok(
+    boards[2].py < 1,
+    `bottom-row vertical divider should remain below the first horizontal divider, got y ${boards[2].py}`
   );
 });

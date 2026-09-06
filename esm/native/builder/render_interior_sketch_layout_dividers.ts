@@ -1,6 +1,11 @@
 import type { SketchBoxExtra, SketchDividerExtra } from './render_interior_sketch_shared.js';
 import { SKETCH_BOX_DIVIDER_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_divider_policy.js';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import {
+  formatIdentityValue,
+  normalizeSketchBoxDividerStructuralOrder,
+  readIdentityValue,
+  resolveSketchBoxDividerStructuralOrder,
+} from '../../shared/identity_value_shared.js';
 import {
   asRecordArray,
   readObject,
@@ -28,6 +33,27 @@ function safeWood(value: unknown): number {
 }
 function dividerHalf(span: number, woodThick: number): number {
   return Math.min(span / 2, Math.max(woodThick / 2, SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.dividerHalfMinM));
+}
+
+function dividerOrder(value: unknown): number | null {
+  return normalizeSketchBoxDividerStructuralOrder(value);
+}
+
+function dividerPrecedesOrder(divider: { order?: number }, order: number): boolean {
+  const currentOrder = dividerOrder(divider.order);
+  return currentOrder == null || currentOrder < order;
+}
+
+function segmentContainsX(segment: SketchBoxSegment | null, x: number): boolean {
+  if (!segment) return false;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+  return x >= segment.leftX - eps && x <= segment.rightX + eps;
+}
+
+function segmentContainsY(segment: SketchBoxVerticalSegment | null, y: number): boolean {
+  if (!segment) return false;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
+  return y >= segment.bottomY - eps && y <= segment.topY + eps;
 }
 
 function resolveAxisPlacement(args: {
@@ -92,6 +118,7 @@ export type SketchBoxDividerState = {
   centered: boolean;
   frontZ?: number;
   yNorm?: number;
+  order?: number;
 };
 export type SketchBoxHorizontalDividerState = {
   id: string;
@@ -99,6 +126,7 @@ export type SketchBoxHorizontalDividerState = {
   centered: boolean;
   frontZ?: number;
   xNorm?: number;
+  order?: number;
 };
 export type SketchBoxSegment = {
   index: number;
@@ -125,14 +153,17 @@ export const readSketchBoxDividers = (box: unknown): SketchBoxDividerState[] => 
   for (const [i, it] of dividersRaw.entries()) {
     const xNorm = clampUnit(it.xNorm);
     if (xNorm == null) continue;
+    const id = it.id != null && it.id !== '' ? String(it.id) : `sbd_${i}`;
     const frontZ = toFiniteNumber(it.frontZ);
     const yNorm = clampUnit((it as Record<string, unknown>).yNorm);
+    const order = resolveSketchBoxDividerStructuralOrder((it as Record<string, unknown>).order, id);
     dividers.push({
-      id: it.id != null && it.id !== '' ? String(it.id) : `sbd_${i}`,
+      id,
       xNorm,
       centered: Math.abs(xNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),
       ...(yNorm != null ? { yNorm } : {}),
+      ...(order != null ? { order } : {}),
     });
   }
   if (dividers.length) return dividers.sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm);
@@ -147,14 +178,17 @@ export const readSketchBoxHorizontalDividers = (box: unknown): SketchBoxHorizont
   for (const [i, it] of dividersRaw.entries()) {
     const yNorm = clampUnit(it.yNorm);
     if (yNorm == null) continue;
+    const id = formatIdentityValue(readIdentityValue(it.id)) || `sbh_${i}`;
     const frontZ = toFiniteNumber(it.frontZ);
     const xNorm = clampUnit(it.xNorm);
+    const order = resolveSketchBoxDividerStructuralOrder(it.order, id);
     dividers.push({
-      id: formatIdentityValue(readIdentityValue(it.id)) || `sbh_${i}`,
+      id,
       yNorm,
       centered: Math.abs(yNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),
       ...(xNorm != null ? { xNorm } : {}),
+      ...(order != null ? { order } : {}),
     });
   }
   return dividers.sort((a, b) => (a.xNorm ?? -1) - (b.xNorm ?? -1) || a.yNorm - b.yNorm);
@@ -228,6 +262,8 @@ export const resolveSketchBoxVerticalSegments = (args: {
     dividers: filterHorizontalDividersForColumn({
       dividers: args.dividers,
       ...(args.verticalDividers !== undefined ? { verticalDividers: args.verticalDividers } : {}),
+      boxCenterY: cy,
+      innerH: h,
       ...(args.boxCenterX !== undefined ? { boxCenterX: args.boxCenterX } : {}),
       ...(args.innerW !== undefined ? { innerW: args.innerW } : {}),
       ...(args.xNorm !== undefined ? { xNorm: args.xNorm } : {}),
@@ -264,6 +300,8 @@ export const resolveSketchBoxVerticalSegments = (args: {
 function filterHorizontalDividersForColumn(args: {
   dividers: SketchBoxHorizontalDividerState[];
   verticalDividers?: SketchBoxDividerState[];
+  boxCenterY: number;
+  innerH: number;
   boxCenterX?: number | null;
   innerW?: number | null;
   xNorm?: unknown;
@@ -291,9 +329,25 @@ function filterHorizontalDividersForColumn(args: {
     xNorm: args.xNorm,
   });
   if (!activeSegment) return dividers.filter(divider => clampUnit(divider.xNorm) == null);
+  const targetXNorm = clampUnit(args.xNorm);
+  const targetX =
+    targetXNorm == null ? activeSegment.centerX : boxCenterX - innerW / 2 + targetXNorm * innerW;
   return dividers.filter(divider => {
     const dividerXNorm = clampUnit(divider.xNorm);
     if (dividerXNorm == null) return true;
+    if (dividerOrder(divider.order) != null) {
+      const scope = resolveSketchBoxHorizontalDividerScopeSegment({
+        divider,
+        horizontalDividers: dividers,
+        verticalDividers,
+        boxCenterX,
+        innerW,
+        boxCenterY: args.boxCenterY,
+        innerH: args.innerH,
+        woodThick: args.woodThick,
+      });
+      return segmentContainsX(scope, targetX);
+    }
     const owner = pickSketchBoxSegment({
       segments,
       boxCenterX,
@@ -363,6 +417,19 @@ export const resolveSketchBoxSegments = (args: {
     : null;
   const rowDividers = (Array.isArray(args.dividers) ? args.dividers : []).filter(divider => {
     if (!verticalSegments.length || !active || divider.yNorm == null) return true;
+    if (dividerOrder(divider.order) != null && boxCenterY != null && innerH != null) {
+      const scope = resolveSketchBoxVerticalDividerScopeSegment({
+        divider,
+        verticalDividers: Array.isArray(args.dividers) ? args.dividers : [],
+        horizontalDividers,
+        boxCenterX: cx,
+        innerW: w,
+        boxCenterY,
+        innerH,
+        woodThick: t,
+      });
+      return segmentContainsY(scope, active.centerY);
+    }
     return (
       pickSketchBoxVerticalSegment({
         segments: verticalSegments,
@@ -435,5 +502,84 @@ export const resolveSketchBoxSegmentForContent = (args: {
     boxCenterX: args.boxCenterX,
     innerW: args.innerW,
     xNorm: args.xNorm,
+  });
+};
+
+export const resolveSketchBoxHorizontalDividerScopeSegment = (args: {
+  divider: SketchBoxHorizontalDividerState;
+  horizontalDividers: SketchBoxHorizontalDividerState[];
+  verticalDividers: SketchBoxDividerState[];
+  boxCenterX: number;
+  innerW: number;
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+}): SketchBoxSegment | null => {
+  const xNorm = clampUnit(args.divider.xNorm);
+  if (xNorm == null) return null;
+  const order = dividerOrder(args.divider.order);
+  const verticalDividers = Array.isArray(args.verticalDividers) ? args.verticalDividers : [];
+  const horizontalDividers = Array.isArray(args.horizontalDividers) ? args.horizontalDividers : [];
+  const priorVerticalDividers =
+    order == null
+      ? verticalDividers
+      : verticalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const priorHorizontalDividers =
+    order == null
+      ? []
+      : horizontalDividers.filter(
+          divider => divider.id !== args.divider.id && dividerPrecedesOrder(divider, order)
+        );
+  return resolveSketchBoxSegmentForContent({
+    dividers: priorVerticalDividers,
+    horizontalDividers: priorHorizontalDividers,
+    boxCenterX: args.boxCenterX,
+    innerW: args.innerW,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    woodThick: args.woodThick,
+    xNorm,
+    yNorm: args.divider.yNorm,
+  });
+};
+
+export const resolveSketchBoxVerticalDividerScopeSegment = (args: {
+  divider: SketchBoxDividerState;
+  verticalDividers: SketchBoxDividerState[];
+  horizontalDividers: SketchBoxHorizontalDividerState[];
+  boxCenterX: number;
+  innerW: number;
+  boxCenterY: number;
+  innerH: number;
+  woodThick: number;
+}): SketchBoxVerticalSegment | null => {
+  const yNorm = clampUnit(args.divider.yNorm);
+  if (yNorm == null) return null;
+  const order = dividerOrder(args.divider.order);
+  const verticalDividers = Array.isArray(args.verticalDividers) ? args.verticalDividers : [];
+  const horizontalDividers = Array.isArray(args.horizontalDividers) ? args.horizontalDividers : [];
+  const priorVerticalDividers =
+    order == null
+      ? verticalDividers
+      : verticalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const priorHorizontalDividers =
+    order == null
+      ? horizontalDividers
+      : horizontalDividers.filter(divider => dividerPrecedesOrder(divider, order));
+  const segments = resolveSketchBoxVerticalSegments({
+    dividers: priorHorizontalDividers,
+    verticalDividers: priorVerticalDividers,
+    boxCenterX: args.boxCenterX,
+    innerW: args.innerW,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    woodThick: args.woodThick,
+    xNorm: args.divider.xNorm,
+  });
+  return pickSketchBoxVerticalSegment({
+    segments,
+    boxCenterY: args.boxCenterY,
+    innerH: args.innerH,
+    yNorm,
   });
 };

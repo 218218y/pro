@@ -1,5 +1,9 @@
 import type { UnknownRecord } from '../../../types';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import {
+  formatIdentityValue,
+  normalizeSketchBoxDividerStructuralOrder,
+  readIdentityValue,
+} from '../../shared/identity_value_shared.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import {
   getDefaultBaseLegWidthCm,
@@ -26,6 +30,8 @@ export type SketchBoxDividerState = {
   xNorm: number;
   centered: boolean;
   frontZ?: number;
+  /** Monotonic structural creation order. Missing only on legacy persisted boxes. */
+  order?: number;
   /** Undefined means a full-height vertical divider. */
   yNorm?: number;
 };
@@ -35,6 +41,8 @@ export type SketchBoxHorizontalDividerState = {
   yNorm: number;
   centered: boolean;
   frontZ?: number;
+  /** Monotonic structural creation order. Missing only on legacy persisted boxes. */
+  order?: number;
   /** Undefined means a full-width horizontal divider. */
   xNorm?: number;
 };
@@ -92,6 +100,10 @@ export type SketchBoxDoorPlacement = {
 
 export function readFiniteNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+export function normalizeSketchBoxDividerOrder(value: unknown): number | null {
+  return normalizeSketchBoxDividerStructuralOrder(value);
 }
 
 export function readDividerRecordList(value: unknown): UnknownRecord[] {

@@ -1,10 +1,15 @@
 import { asRecord } from '../runtime/record.js';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import {
+  formatIdentityValue,
+  readIdentityValue,
+  resolveSketchBoxDividerStructuralOrder,
+} from '../../shared/identity_value_shared.js';
 import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
 import {
+  normalizeSketchBoxDividerOrder,
   normalizeSketchBoxDividerXNorm,
   normalizeSketchBoxDividerYNorm,
   readDividerRecordList,
@@ -29,13 +34,16 @@ export function readSketchBoxDividers(box: unknown): SketchBoxDividerState[] {
     const it = dividersRaw[i];
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
     if (xNorm == null) continue;
+    const id = formatIdentityValue(readIdentityValue(it?.id)) || `sbd_${i}`;
     const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
     const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
+    const order = resolveSketchBoxDividerStructuralOrder(it?.order, id);
     dividers.push({
-      id: formatIdentityValue(readIdentityValue(it?.id)) || `sbd_${i}`,
+      id,
       xNorm,
       centered: Math.abs(xNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),
+      ...(order != null ? { order } : {}),
       ...(yNorm != null ? { yNorm } : {}),
     });
   }
@@ -52,13 +60,16 @@ export function readSketchBoxHorizontalDividers(box: unknown): SketchBoxHorizont
     const it = dividersRaw[i];
     const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
     if (yNorm == null) continue;
+    const id = formatIdentityValue(readIdentityValue(it?.id)) || `sbh_${i}`;
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
     const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
+    const order = resolveSketchBoxDividerStructuralOrder(it?.order, id);
     dividers.push({
-      id: formatIdentityValue(readIdentityValue(it?.id)) || `sbh_${i}`,
+      id,
       yNorm,
       centered: Math.abs(yNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),
+      ...(order != null ? { order } : {}),
       ...(xNorm != null ? { xNorm } : {}),
     });
   }
@@ -80,6 +91,7 @@ export function writeSketchBoxDividers(box: unknown, dividers: SketchBoxDividerS
         ...(typeof divider.frontZ === 'number' && Number.isFinite(divider.frontZ)
           ? { frontZ: divider.frontZ }
           : {}),
+        ...(normalizeSketchBoxDividerOrder(divider.order) != null ? { order: divider.order } : {}),
         ...(typeof divider.yNorm === 'number' && Number.isFinite(divider.yNorm)
           ? { yNorm: divider.yNorm }
           : {}),
@@ -109,6 +121,7 @@ export function writeSketchBoxHorizontalDividers(
         ...(typeof divider.frontZ === 'number' && Number.isFinite(divider.frontZ)
           ? { frontZ: divider.frontZ }
           : {}),
+        ...(normalizeSketchBoxDividerOrder(divider.order) != null ? { order: divider.order } : {}),
         ...(typeof divider.xNorm === 'number' && Number.isFinite(divider.xNorm)
           ? { xNorm: divider.xNorm }
           : {}),

@@ -606,3 +606,128 @@ test('free sketch-box doors respect horizontal rows created after a full-height 
   assert.ok(Number(upperDoorPreview.preview.w) < targetGeo.innerW);
   assert.ok(Number(lowerDoorPreview.preview.w) < targetGeo.innerW);
 });
+
+test('free sketch-box divider precedence follows creation order across nested cells', () => {
+  const targetBox = { id: 'free_box_nested_precedence', freePlacement: true } as Record<string, unknown>;
+  const targetGeo = makeTargetGeo();
+  const wardrobeBox = { centerX: 0, centerY: 1, centerZ: 0, width: 2, height: 2, depth: 0.6 } as never;
+
+  const previewAt = (
+    tool: 'sketch_box_divider' | 'sketch_box_divider_horizontal',
+    pointerX: number,
+    pointerY: number
+  ) =>
+    resolveSketchFreeSurfaceContentPreview({
+      tool,
+      contentKind: 'divider',
+      host: { moduleKey: 0, isBottom: true },
+      target: {
+        boxId: 'free_box_nested_precedence',
+        targetBox,
+        targetGeo,
+        targetCenterY: 1,
+        targetHeight: 1,
+        pointerX,
+        pointerY,
+        pointerZ: -0.2,
+      },
+      wardrobeBox,
+      readSketchBoxDividers,
+      readSketchBoxHorizontalDividers,
+      resolveSketchBoxSegments,
+      pickSketchBoxSegment,
+      findNearestSketchBoxDivider,
+      resolveSketchBoxDividerPlacement,
+      readSketchBoxDividerXNorm,
+      resolveSketchBoxVerticalSegments,
+      pickSketchBoxVerticalSegment,
+      findNearestSketchBoxHorizontalDivider,
+      resolveSketchBoxHorizontalDividerPlacement,
+    });
+
+  const commit = (preview: NonNullable<ReturnType<typeof resolveSketchFreeSurfaceContentPreview>>) =>
+    commitSketchModuleBoxContent({
+      box: targetBox as never,
+      boxId: 'free_box_nested_precedence',
+      contentKind: 'divider',
+      hoverRec: preview.hoverRecord,
+    });
+
+  const firstHorizontal = previewAt('sketch_box_divider_horizontal', 0, 1);
+  assert.ok(firstHorizontal);
+  commit(firstHorizontal!);
+
+  const topVertical = previewAt('sketch_box_divider', -0.2, 1.25);
+  assert.ok(topVertical);
+  commit(topVertical!);
+
+  const bottomVertical = previewAt('sketch_box_divider', 0.2, 0.75);
+  assert.ok(bottomVertical);
+  commit(bottomVertical!);
+
+  const bottomLeftHorizontal = previewAt('sketch_box_divider_horizontal', -0.3, 0.75);
+  assert.ok(bottomLeftHorizontal);
+  commit(bottomLeftHorizontal!);
+
+  const nestedVertical = previewAt('sketch_box_divider', -0.35, 0.62);
+  assert.ok(nestedVertical);
+  const nestedCommand = requireSketchStructuralCommandHover(nestedVertical!.hoverRecord);
+  assert.equal(nestedCommand.command.kind, 'add-vertical-divider');
+  if (nestedCommand.command.kind !== 'add-vertical-divider') throw new Error('expected vertical divider');
+
+  assert.ok(
+    Number(nestedVertical!.preview.h) < 0.3,
+    `nested vertical divider must be limited to the lower-left child cell, got height ${nestedVertical!.preview.h}`
+  );
+  assert.ok(
+    Number(nestedCommand.command.dividerYNorm) < 0.2,
+    `nested vertical divider must persist the selected child-row scope, got yNorm ${nestedCommand.command.dividerYNorm}`
+  );
+
+  const orders = [
+    ...readSketchBoxDividers(targetBox).map(divider => divider.order),
+    ...readSketchBoxHorizontalDividers(targetBox).map(divider => divider.order),
+  ].toSorted((a, b) => Number(a) - Number(b));
+  assert.deepEqual(orders, [1, 2, 3, 4], 'committed partitions must preserve one shared creation order');
+
+  commit(nestedVertical!);
+  const committedOrders = [
+    ...readSketchBoxDividers(targetBox).map(divider => divider.order),
+    ...readSketchBoxHorizontalDividers(targetBox).map(divider => divider.order),
+  ].toSorted((a, b) => Number(a) - Number(b));
+  assert.deepEqual(committedOrders, [1, 2, 3, 4, 5]);
+
+  const bottomRowDivider = findNearestSketchBoxDivider({
+    dividers: readSketchBoxDividers(targetBox),
+    horizontalDividers: readSketchBoxHorizontalDividers(targetBox),
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 1,
+    innerH: 1,
+    woodThick: 0.018,
+    cursorX: 0.2,
+    cursorY: 0.9,
+  });
+  assert.equal(
+    bottomRowDivider?.dividerId,
+    readSketchBoxDividers(targetBox).find(divider => divider.order === 3)?.id,
+    'later nested rows must not make the earlier bottom-row divider unselectable in part of its original scope'
+  );
+
+  const nestedHorizontalDivider = findNearestSketchBoxHorizontalDivider({
+    dividers: readSketchBoxHorizontalDividers(targetBox),
+    verticalDividers: readSketchBoxDividers(targetBox),
+    boxCenterX: 0,
+    innerW: 1,
+    boxCenterY: 1,
+    innerH: 1,
+    woodThick: 0.018,
+    cursorX: -0.3,
+    cursorY: 0.75,
+  });
+  assert.equal(
+    nestedHorizontalDivider?.dividerId,
+    readSketchBoxHorizontalDividers(targetBox).find(divider => divider.order === 4)?.id,
+    'later nested columns must not make an earlier horizontal divider unselectable inside its original scope'
+  );
+});

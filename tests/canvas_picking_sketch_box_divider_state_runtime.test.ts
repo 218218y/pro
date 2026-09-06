@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 
 import {
   addSketchBoxDividerState,
+  addSketchBoxHorizontalDividerState,
   applySketchBoxDividerState,
   findNearestSketchBoxDivider,
   readSketchBoxDividerXNorm,
   readSketchBoxDividers,
+  readSketchBoxHorizontalDividers,
   resolveSketchBoxDividerPlacement,
   resolveSketchBoxDividerPlacements,
   removeSketchBoxDividerState,
@@ -43,6 +45,18 @@ test('divider-state records normalize sorted divider lists through the canonical
   assert.equal(box.centerDivider, undefined);
   assert.equal(box.dividerXNorm, undefined);
   assert.deepEqual(box.dividers, [{ id: 'mid', xNorm: 0.5 }]);
+});
+
+test('divider-state records recover creation order from legacy generated divider ids', () => {
+  const verticalCreatedAt = 1_700_000_000_100;
+  const horizontalCreatedAt = 1_700_000_000_200;
+  const box = {
+    dividers: [{ id: `sbd_abcdefg${verticalCreatedAt.toString(36)}`, xNorm: 0.5, yNorm: 0.25 }],
+    horizontalDividers: [{ id: `sbh_hijklmn${horizontalCreatedAt.toString(36)}`, yNorm: 0.5, xNorm: 0.25 }],
+  } as Record<string, unknown>;
+
+  assert.equal(readSketchBoxDividers(box)[0]?.order, verticalCreatedAt);
+  assert.equal(readSketchBoxHorizontalDividers(box)[0]?.order, horizontalCreatedAt);
 });
 
 test('divider-state placement snaps to center and resolves nearest dividers by rendered centerX', () => {
@@ -87,14 +101,24 @@ test('divider-state mutations add, remove, and apply canonical divider payloads 
   const box = { dividerXNorm: 0.5, centerDivider: true } as Record<string, unknown>;
 
   applySketchBoxDividerState(box, 0.4);
-  assert.deepEqual(box.dividers, [{ id: 'primary_divider', xNorm: 0.4 }]);
+  assert.deepEqual(box.dividers, [{ id: 'primary_divider', xNorm: 0.4, order: 1 }]);
   assert.equal(box.centerDivider, undefined);
   assert.equal(box.dividerXNorm, undefined);
 
+  addSketchBoxHorizontalDividerState(box, 0.5, 'middle-row');
+  assert.equal(
+    readSketchBoxHorizontalDividers(box)[0]?.order,
+    2,
+    'divider order must be shared across both axes'
+  );
+
   addSketchBoxDividerState(box, 0.7, 'extra');
   assert.deepEqual(
-    readSketchBoxDividers(box).map(it => it.id),
-    ['primary_divider', 'extra']
+    readSketchBoxDividers(box).map(it => ({ id: it.id, order: it.order })),
+    [
+      { id: 'primary_divider', order: 1 },
+      { id: 'extra', order: 3 },
+    ]
   );
 
   removeSketchBoxDividerState(box, '', 0.69);
