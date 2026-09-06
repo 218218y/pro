@@ -17,6 +17,7 @@ const renderCellDimsControls = (overrides: Record<string, unknown> = {}) => {
     React.createElement(StructureCellDimsControls, {
       isSliding: false,
       cellDimsEditActive: true,
+      cellDoorCount: null,
       cellDimsPanelOpen: true,
       cellDimsHexPanelOpen: false,
       hasAnyCellDimsOverrides: true,
@@ -33,6 +34,7 @@ const renderCellDimsControls = (overrides: Record<string, unknown> = {}) => {
       onSetRaw: noop,
       onResetAllCellDimsOverrides: noop,
       onEnterCellDimsMode: noop,
+      onSetCellDoorCount: noop,
       onExitCellDimsMode: noop,
       onEnterHexCellDimsMode: noop,
       onExitHexCellDimsMode: noop,
@@ -119,6 +121,7 @@ function createCellDimsControlsTree(overrides: Record<string, unknown> = {}) {
   const props = {
     isSliding: false,
     cellDimsEditActive: false,
+    cellDoorCount: null,
     cellDimsPanelOpen: true,
     cellDimsHexPanelOpen: false,
     hasAnyCellDimsOverrides: false,
@@ -135,6 +138,7 @@ function createCellDimsControlsTree(overrides: Record<string, unknown> = {}) {
     onSetRaw: record('setRaw'),
     onResetAllCellDimsOverrides: record('resetAll'),
     onEnterCellDimsMode: record('enterCellDims'),
+    onSetCellDoorCount: record('setCellDoorCount'),
     onExitCellDimsMode: record('exitCellDims'),
     onEnterHexCellDimsMode: record('enterHex'),
     onExitHexCellDimsMode: record('exitHex'),
@@ -184,6 +188,30 @@ test('[structure-cell-dims] dimension field edits re-enter edit mode before comm
   calls.length = 0;
   widthField.props.onCommit(null);
   assert.deepEqual(calls, [['enterCellDims'], ['clearWidth']]);
+});
+
+test('[structure-cell-dims] door-count choices support dimensions-only, one door, and two doors', () => {
+  const { tree, calls } = createCellDimsControlsTree({ cellDoorCount: 1 });
+  const elements = flattenElements(tree);
+  const oneDoor = elements.find(el => el.props?.testId === 'structure-cell-dims-door-count-1');
+  const twoDoors = elements.find(el => el.props?.testId === 'structure-cell-dims-door-count-2');
+  const dimensionsOnly = elements.find(
+    el => el.props?.testId === 'structure-cell-dims-door-count-dimensions-only'
+  );
+
+  assert.ok(oneDoor);
+  assert.ok(twoDoors);
+  assert.ok(dimensionsOnly);
+  assert.equal(oneDoor.props.selected, true);
+  assert.equal(twoDoors.props.selected, false);
+  assert.equal(dimensionsOnly.props.selected, false);
+
+  twoDoors.props.onClick();
+  dimensionsOnly.props.onClick();
+  assert.deepEqual(calls, [
+    ['setCellDoorCount', 2],
+    ['setCellDoorCount', null],
+  ]);
 });
 
 test('[structure-cell-dims] hex disclosure stays independent and hex field edits re-enter hex edit mode', () => {

@@ -47,6 +47,26 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     [app, fb, meta, state.cellDimsModeId, workflowController]
   );
 
+  const setCellDoorCountMode = useCallback(
+    (count: 1 | 2 | null, source: string) => {
+      const actionMeta = meta.uiOnlyImmediate(`${source}:panelOpen`);
+      setUiFlag(app, 'cellDimsPanelOpen', true, actionMeta);
+      workflowController.setCellDimsHexMode(false);
+      enterStructureEditMode({
+        app,
+        fb,
+        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+        source,
+        message:
+          count == null
+            ? STRUCTURE_CELL_DIMS_MODE_MESSAGE
+            : `שינוי תא ל-${count === 1 ? 'דלת אחת' : '2 דלתות'} - לחץ על תא להחלה`,
+        modeOpts: count == null ? {} : { cellDoorCount: count },
+      });
+    },
+    [app, fb, meta, state.cellDimsModeId, workflowController]
+  );
+
   const exitCellDimsMode = useCallback(
     (source: string) => {
       exitStructureCellDimsEditMode({
@@ -205,6 +225,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     commitStructural: structuralController.commitStructural,
     setRaw: structuralController.setRaw,
     enterCellDimsMode,
+    setCellDoorCountMode,
     exitCellDimsMode,
     enterHexCellDimsMode,
     exitHexCellDimsMode,

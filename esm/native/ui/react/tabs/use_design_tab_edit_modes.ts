@@ -18,6 +18,7 @@ type UseDesignTabEditModesArgs = {
   removedDoorsDirty: boolean;
   primaryMode: string;
   splitVariant: string;
+  cellDoorCount: 1 | 2 | null;
 };
 
 export type DesignTabEditModesModel = {
@@ -25,17 +26,21 @@ export type DesignTabEditModesModel = {
   splitActive: boolean;
   splitIsCustom: boolean;
   removeDoorActive: boolean;
+  cellDoorEditActive: boolean;
+  cellDoorCount: 1 | 2 | null;
   setFeatureToggle: (key: DesignTabFeatureToggleKey, on: boolean) => void;
   toggleGrooveEdit: () => void;
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
   toggleRemoveDoorEdit: () => void;
+  setCellDoorCount: (count: 1 | 2) => void;
 };
 
 export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTabEditModesModel {
   const MODE_GROOVE_RAW = useMemo(() => getModeConst('GROOVE', 'groove'), []);
   const MODE_SPLIT_RAW = useMemo(() => getModeConst('SPLIT', 'split'), []);
   const MODE_REMOVE_DOOR_RAW = useMemo(() => getModeConst('REMOVE_DOOR', 'remove_door'), []);
+  const MODE_CELL_DOOR_RAW = useMemo(() => getModeConst('CELL_DIMS', 'cell_dims'), []);
 
   const feedback = useMemo(() => resolveDesignTabFeedback(args.fb), [args.fb]);
   const modeState = useMemo(
@@ -46,8 +51,16 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
         grooveModeId: MODE_GROOVE_RAW,
         splitModeId: MODE_SPLIT_RAW,
         removeDoorModeId: MODE_REMOVE_DOOR_RAW,
+        cellDoorModeId: MODE_CELL_DOOR_RAW,
       }),
-    [args.primaryMode, args.splitVariant, MODE_GROOVE_RAW, MODE_SPLIT_RAW, MODE_REMOVE_DOOR_RAW]
+    [
+      args.primaryMode,
+      args.splitVariant,
+      MODE_GROOVE_RAW,
+      MODE_SPLIT_RAW,
+      MODE_REMOVE_DOOR_RAW,
+      MODE_CELL_DOOR_RAW,
+    ]
   );
 
   const controller = useMemo(
@@ -58,6 +71,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
         grooveModeId: MODE_GROOVE_RAW,
         splitModeId: MODE_SPLIT_RAW,
         removeDoorModeId: MODE_REMOVE_DOOR_RAW,
+        cellDoorModeId: MODE_CELL_DOOR_RAW,
         groovesEnabled: args.groovesEnabled,
         splitDoors: args.splitDoors,
         removeDoorsEnabled: args.removeDoorsEnabled,
@@ -67,6 +81,8 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
         splitActive: modeState.splitActive,
         splitIsCustom: modeState.splitIsCustom,
         removeDoorActive: modeState.removeDoorActive,
+        cellDoorEditActive: modeState.cellDoorEditActive,
+        cellDoorCount: args.cellDoorCount,
       }),
     [
       args.app,
@@ -74,6 +90,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
       MODE_GROOVE_RAW,
       MODE_SPLIT_RAW,
       MODE_REMOVE_DOOR_RAW,
+      MODE_CELL_DOOR_RAW,
       args.groovesEnabled,
       args.splitDoors,
       args.removeDoorsEnabled,
@@ -83,6 +100,8 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
       modeState.splitActive,
       modeState.splitIsCustom,
       modeState.removeDoorActive,
+      modeState.cellDoorEditActive,
+      args.cellDoorCount,
     ]
   );
 
@@ -91,10 +110,13 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
     splitActive: modeState.splitActive,
     splitIsCustom: modeState.splitIsCustom,
     removeDoorActive: modeState.removeDoorActive,
+    cellDoorEditActive: modeState.cellDoorEditActive,
+    cellDoorCount: modeState.cellDoorEditActive ? args.cellDoorCount : null,
     setFeatureToggle: controller.setFeatureToggle,
     toggleGrooveEdit: controller.toggleGrooveEdit,
     toggleSplitEdit: controller.toggleSplitEdit,
     toggleSplitCustomEdit: controller.toggleSplitCustomEdit,
     toggleRemoveDoorEdit: controller.toggleRemoveDoorEdit,
+    setCellDoorCount: controller.setCellDoorCount,
   };
 }

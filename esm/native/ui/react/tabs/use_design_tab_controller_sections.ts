@@ -44,6 +44,7 @@ export function useDesignTabControllerSections(args: {
     removedDoorsDirty: state.removedDoorsDirty,
     primaryMode: state.primaryMode,
     splitVariant: state.splitVariant,
+    cellDoorCount: state.cellDoorCount,
   });
 
   const controllerRuntime = useMemo(
@@ -110,6 +111,8 @@ export function useDesignTabControllerSections(args: {
       splitActive: editModes.splitActive,
       splitIsCustom: editModes.splitIsCustom,
       removeDoorActive: editModes.removeDoorActive,
+      cellDoorEditActive: editModes.cellDoorEditActive,
+      cellDoorCount: editModes.cellDoorCount,
       setFeatureToggle: controllerRuntime.setFeatureToggle,
       toggleGrooveEdit: editModes.toggleGrooveEdit,
       setGrooveLinesCount: controllerRuntime.setGrooveLinesCount,
@@ -121,6 +124,7 @@ export function useDesignTabControllerSections(args: {
       toggleSplitEdit: editModes.toggleSplitEdit,
       toggleSplitCustomEdit: editModes.toggleSplitCustomEdit,
       toggleRemoveDoorEdit: editModes.toggleRemoveDoorEdit,
+      setCellDoorCount: editModes.setCellDoorCount,
       toggleRoundedFrameSideShelves: controllerRuntime.toggleRoundedFrameSideShelves,
     }),
     [
@@ -145,6 +149,8 @@ export function useDesignTabControllerSections(args: {
       editModes.splitActive,
       editModes.splitIsCustom,
       editModes.removeDoorActive,
+      editModes.cellDoorEditActive,
+      editModes.cellDoorCount,
       controllerRuntime.setFeatureToggle,
       editModes.toggleGrooveEdit,
       controllerRuntime.setGrooveLinesCount,
@@ -156,6 +162,7 @@ export function useDesignTabControllerSections(args: {
       editModes.toggleSplitEdit,
       editModes.toggleSplitCustomEdit,
       editModes.toggleRemoveDoorEdit,
+      editModes.setCellDoorCount,
       controllerRuntime.toggleRoundedFrameSideShelves,
     ]
   );

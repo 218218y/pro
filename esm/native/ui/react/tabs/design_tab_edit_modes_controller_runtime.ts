@@ -15,6 +15,7 @@ export type DesignTabEditModesState = {
   splitActive: boolean;
   splitIsCustom: boolean;
   removeDoorActive: boolean;
+  cellDoorEditActive: boolean;
 };
 
 export type ReadDesignTabEditModesStateArgs = {
@@ -23,6 +24,7 @@ export type ReadDesignTabEditModesStateArgs = {
   grooveModeId: string;
   splitModeId: string;
   removeDoorModeId: string;
+  cellDoorModeId: string;
 };
 
 export type DesignTabEditModesControllerArgs = {
@@ -31,6 +33,7 @@ export type DesignTabEditModesControllerArgs = {
   grooveModeId: string;
   splitModeId: string;
   removeDoorModeId: string;
+  cellDoorModeId: string;
   groovesEnabled: boolean;
   splitDoors: boolean;
   removeDoorsEnabled: boolean;
@@ -40,6 +43,8 @@ export type DesignTabEditModesControllerArgs = {
   splitActive: boolean;
   splitIsCustom: boolean;
   removeDoorActive: boolean;
+  cellDoorEditActive: boolean;
+  cellDoorCount: 1 | 2 | null;
   reportNonFatal?: (op: string, err: unknown, throttleMs?: number) => void;
 };
 
@@ -49,6 +54,7 @@ export type DesignTabEditModesController = {
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
   toggleRemoveDoorEdit: () => void;
+  setCellDoorCount: (count: 1 | 2) => void;
 };
 
 const COALESCED_DESIGN_SPLIT_DOORS_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
@@ -68,11 +74,13 @@ export function readDesignTabEditModesState(args: ReadDesignTabEditModesStateArg
   const grooveKey = readModeKey(args.grooveModeId);
   const splitKey = readModeKey(args.splitModeId);
   const removeDoorKey = readModeKey(args.removeDoorModeId);
+  const cellDoorKey = readModeKey(args.cellDoorModeId);
   const grooveActive = primaryKey === grooveKey;
   const splitActive = primaryKey === splitKey;
   const removeDoorActive = primaryKey === removeDoorKey;
+  const cellDoorEditActive = primaryKey === cellDoorKey;
   const splitIsCustom = splitActive && readModeKey(args.splitVariant) === 'custom';
-  return { grooveActive, splitActive, splitIsCustom, removeDoorActive };
+  return { grooveActive, splitActive, splitIsCustom, removeDoorActive, cellDoorEditActive };
 }
 
 export function createDesignTabEditModesController(
@@ -168,6 +176,20 @@ export function createDesignTabEditModesController(
       );
     } catch (err) {
       showModeWarn('editModes:split', err);
+    }
+  };
+
+  const enterCellDoorEditMode = (count: 1 | 2) => {
+    try {
+      enterPrimaryMode(args.app, String(args.cellDoorModeId), {
+        closeDoors: true,
+        cursor: 'alias',
+        toast: `שינוי תא ל-${count === 1 ? 'דלת אחת' : '2 דלתות'} - לחץ על תא להחלה`,
+        modeOpts: { cellDoorCount: count },
+        source: `react:design:cellDoorCount:${count}`,
+      });
+    } catch (err) {
+      showModeWarn('editModes:cellDoorCount', err);
     }
   };
 
@@ -271,6 +293,10 @@ export function createDesignTabEditModesController(
     toggleRemoveDoorEdit: () => {
       if (args.removeDoorActive) exitEditMode(args.removeDoorModeId);
       else enterEditMode(args.removeDoorModeId, 'הסרת דלת - לחץ להסרה/החזרה');
+    },
+    setCellDoorCount: count => {
+      if (args.cellDoorEditActive && args.cellDoorCount === count) return;
+      enterCellDoorEditMode(count);
     },
   };
 }

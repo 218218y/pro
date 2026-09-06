@@ -10,6 +10,7 @@ import { requestCanvasPickingCommitStructuralRefresh } from './canvas_picking_st
 import {
   applyOverrideToSpecialDims,
   assignSpecialDimsToConfig,
+  clearOverrideKeys,
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
 import {
@@ -26,6 +27,7 @@ import { createCanvasPickingCellDimsRefreshGatedMeta } from './canvas_picking_ce
 import { buildMutableLinearModules } from './canvas_picking_cell_dims_linear_mutable.js';
 import { applyLinearCellDimsWidthPolicy } from './canvas_picking_cell_dims_linear_width.js';
 import { promoteUniformLinearCellDim } from './canvas_picking_cell_dims_linear_normalize.js';
+import { resolveLinearCellDoorCountPolicy } from './canvas_picking_cell_dims_linear_doors.js';
 
 export type LinearCellDimsSelectedModuleMutationResult = {
   toastMessage?: string;
@@ -137,6 +139,37 @@ export function applyCanvasLinearCellDimsContextWithOptions(
   const applyCtx = options.disableToggleBack ? withoutLinearToggleBack(ctx) : ctx;
   const { App } = applyCtx;
   const skipDimensionMutations = options.skipDimensionMutations === true;
+  const requestedCellDoorCount = applyCtx.cellDoorCount;
+  const hasDimensionMutation = applyCtx.applyW != null || applyCtx.applyH != null || applyCtx.applyD != null;
+
+  if (requestedCellDoorCount != null && (applyCtx.isBottomStack || applyCtx.wardrobeType === 'sliding')) {
+    try {
+      const fn = readToastFn(App);
+      if (typeof fn === 'function') fn('שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', true);
+    } catch (err) {
+      __wp_reportPickingIssue(App, err, { where: 'canvasPicking', op: 'cellDims.cellDoorUnsupportedToast' });
+    }
+    return;
+  }
+
+  if (
+    requestedCellDoorCount != null &&
+    requestedCellDoorCount === (applyCtx.doorsPerModule[applyCtx.idx] ?? 1) &&
+    !hasDimensionMutation &&
+    !options.mutateSelectedModule
+  ) {
+    try {
+      const fn = readToastFn(App);
+      if (typeof fn === 'function')
+        fn(
+          `תא ${applyCtx.idx + 1} כבר מוגדר עם ${requestedCellDoorCount === 1 ? 'דלת אחת' : '2 דלתות'}`,
+          true
+        );
+    } catch (err) {
+      __wp_reportPickingIssue(App, err, { where: 'canvasPicking', op: 'cellDims.cellDoorNoopToast' });
+    }
+    return;
+  }
   if (!skipDimensionMutations && shouldBlockLinearHeightDepthSpecialDimsByBaseLegStage(applyCtx)) {
     toastBaseLegStageSpecialDimsBlocked(applyCtx);
     return;
@@ -148,9 +181,37 @@ export function applyCanvasLinearCellDimsContextWithOptions(
   const extraMutation: LinearCellDimsSelectedModuleMutationResult | undefined =
     mutationResult && typeof mutationResult === 'object' ? mutationResult : undefined;
 
-  const { setManualWidth, unsetManualWidth, nextTotalW } = skipDimensionMutations
-    ? { setManualWidth: false, unsetManualWidth: false, nextTotalW: applyCtx.totalW }
+  const { setManualWidth, unsetManualWidth, nextTotalW, nextWidthsCm } = skipDimensionMutations
+    ? {
+        setManualWidth: false,
+        unsetManualWidth: false,
+        nextTotalW: applyCtx.totalW,
+        nextWidthsCm: applyCtx.widthsCurr.slice(),
+      }
     : applyLinearCellDimsWidthPolicy(applyCtx, nextModsCfg, ensureOwnModule);
+  const doorCountResult = resolveLinearCellDoorCountPolicy({
+    ctx: applyCtx,
+    desiredWidthsCm: nextWidthsCm,
+    nextTotalW,
+  });
+  if (doorCountResult.changed) {
+    for (let i = 0; i < applyCtx.moduleCount; i += 1) {
+      const moduleCfg = ensureOwnModule(i);
+      moduleCfg.doors = doorCountResult.nextDoorsPerModule[i] ?? 1;
+      const sd = cloneSpecialDims(readSpecialDimsRecord(moduleCfg));
+      const rebase = doorCountResult.widthRebase[i];
+      if (!rebase) {
+        throw new RangeError(`[WardrobePro][cellDims] Missing width rebase plan for module ${i}.`);
+      }
+      if (rebase.clearWidthOverride) {
+        clearOverrideKeys(sd, ['widthCm', 'baseWidthCm']);
+      } else {
+        sd.widthCm = rebase.desiredWidthCm;
+        sd.baseWidthCm = rebase.nextBaseWidthCm;
+      }
+      assignSpecialDimsToConfig(moduleCfg, sd);
+    }
+  }
   const heightPromotion = skipDimensionMutations
     ? { nextTotal: applyCtx.totalH, promoted: false }
     : applyCtx.isBottomStack
@@ -176,14 +237,34 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     depthPromotion.nextTotal > 0 &&
     Math.abs(depthPromotion.nextTotal - applyCtx.totalD) > 1e-6;
 
+  if (doorCountResult.changed) {
+    try {
+      patchUiSoft(
+        App,
+        {
+          raw: { doors: doorCountResult.nextTotalDoors },
+          structureSelect: doorCountResult.structureSelect,
+        },
+        createCanvasPickingCellDimsRefreshGatedMeta(App, source)
+      );
+    } catch (err) {
+      __wp_reportPickingIssue(
+        App,
+        err,
+        { where: 'canvasPicking', op: 'cellDims.syncDoorStructureUi' },
+        { failFast: true }
+      );
+    }
+  }
+
   try {
     const metaCfg = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
     applyCellDimsConfigSnapshot({
       App,
       modulesConfiguration: nextModsCfg,
       modulesBucket: applyCtx.configBucket,
-      ...(!applyCtx.isBottomStack && (setManualWidth || unsetManualWidth)
-        ? { manualWidth: setManualWidth }
+      ...(!applyCtx.isBottomStack && (doorCountResult.changed || setManualWidth || unsetManualWidth)
+        ? { manualWidth: doorCountResult.changed ? true : setManualWidth }
         : {}),
       ...(!applyCtx.isBottomStack && widthChanged ? { width: nextTotalW } : {}),
       ...(!applyCtx.isBottomStack && heightChanged ? { height: heightPromotion.nextTotal } : {}),
@@ -242,6 +323,9 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     const fn = readToastFn(App);
     const msg =
       extraMutation?.toastMessage ||
+      (doorCountResult.changed
+        ? `תא ${applyCtx.idx + 1} הוגדר עם ${requestedCellDoorCount === 1 ? 'דלת אחת' : '2 דלתות'}`
+        : null) ||
       (applyCtx.didToggleBack
         ? `תא ${applyCtx.idx + 1} חזר למידות רגילות`
         : `הוחל על תא ${applyCtx.idx + 1}`);

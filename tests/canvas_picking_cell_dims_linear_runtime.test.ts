@@ -404,3 +404,124 @@ test('linear cell-dims keeps structure controls in ui while ui.raw owns the cano
     widthCm: 210,
   });
 });
+
+test('cell door-count edit preserves 80-80 compartment widths while changing [2,2] to [1,2]', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 4 };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.build.modulesStructure = [{ doors: 2 }, { doors: 2 }];
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
+    applyW: null,
+    applyH: null,
+    applyD: null,
+    cellDoorCount: 1,
+    foundModuleIndex: 0,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.equal(calls.builds.length, 1);
+  assert.equal(calls.touches.length, 1);
+  assert.equal(calls.uiPatches.length, 1);
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { doors: 3 },
+    structureSelect: '[1,2]',
+  });
+
+  const snapshot = calls.snapshots[0].snapshot;
+  assert.equal(snapshot.isManualWidth, true);
+  assert.equal(snapshot.width, undefined);
+  assert.deepEqual(
+    snapshot.modulesConfiguration.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(snapshot.modulesConfiguration[0].specialDims, {
+    widthCm: 80,
+    baseWidthCm: 53.33,
+  });
+  assert.deepEqual(snapshot.modulesConfiguration[1].specialDims, {
+    widthCm: 80,
+    baseWidthCm: 106.67,
+  });
+  assert.match(calls.toasts[0]?.message || '', /תא 1 הוגדר עם דלת אחת/);
+});
+
+test('cell door-count edit can apply a special width and door topology in one click', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 4 };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.build.modulesStructure = [{ doors: 2 }, { doors: 2 }];
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
+    applyW: 90,
+    applyH: null,
+    applyD: null,
+    cellDoorCount: 1,
+    foundModuleIndex: 0,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.equal(calls.builds.length, 1);
+  assert.equal(calls.touches.length, 1);
+  assert.equal(calls.uiPatches.length, 2);
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { doors: 3 },
+    structureSelect: '[1,2]',
+  });
+  assert.deepEqual(calls.uiPatches[1].patch, { raw: { width: 170 } });
+
+  const snapshot = calls.snapshots[0].snapshot;
+  assert.equal(snapshot.isManualWidth, true);
+  assert.equal(snapshot.width, 170);
+  assert.deepEqual(
+    snapshot.modulesConfiguration.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(snapshot.modulesConfiguration[0].specialDims, {
+    baseWidthCm: 56.67,
+    widthCm: 90,
+  });
+  assert.deepEqual(snapshot.modulesConfiguration[1].specialDims, {
+    baseWidthCm: 113.33,
+    widthCm: 80,
+  });
+});
+
+test('cell-dims click ingress accepts a door-only edit from canonical mode opts', () => {
+  const { App, state, calls } = createAppHarness();
+  state.mode = { primary: 'cell_dims', opts: { cellDoorCount: 2 } };
+  state.ui.structureSelect = '[1,1]';
+  state.ui.raw = { width: 160, height: 220, depth: 55, doors: 2 };
+  state.config.modulesConfiguration = [{ doors: 1 }, { doors: 1 }];
+  state.build.modulesStructure = [{ doors: 1 }, { doors: 1 }];
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 1,
+    foundPartId: null,
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.deepEqual(
+    calls.snapshots[0].snapshot.modulesConfiguration.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { doors: 3 },
+    structureSelect: '[1,2]',
+  });
+});

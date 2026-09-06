@@ -65,6 +65,7 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
     grooveModeId: 'groove',
     splitModeId: 'split',
     removeDoorModeId: 'remove_door',
+    cellDoorModeId: 'cell_dims',
   });
   assert.equal(
     JSON.stringify(state),
@@ -73,6 +74,7 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
       splitActive: true,
       splitIsCustom: true,
       removeDoorActive: false,
+      cellDoorEditActive: false,
     })
   );
 
@@ -82,6 +84,7 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
     grooveModeId: 'groove',
     splitModeId: 'split',
     removeDoorModeId: 'remove_door',
+    cellDoorModeId: 'cell_dims',
     groovesEnabled: false,
     splitDoors: false,
     removeDoorsEnabled: false,
@@ -91,6 +94,8 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
     splitActive: false,
     splitIsCustom: false,
     removeDoorActive: false,
+    cellDoorEditActive: false,
+    cellDoorCount: null,
   });
 
   controller.setFeatureToggle('groovesEnabled', true);
@@ -129,6 +134,13 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
   assert.ok(calls.some(entry => entry[0] === 'enterPrimaryMode' && entry[2] === 'split'));
   const splitCall = calls.find(entry => entry[0] === 'enterPrimaryMode');
   assert.equal(splitCall[3].modeOpts.splitVariant, 'custom');
+
+  calls.length = 0;
+  controller.setCellDoorCount(1);
+  const cellDoorCall = calls.find(entry => entry[0] === 'enterPrimaryMode' && entry[2] === 'cell_dims');
+  assert.ok(cellDoorCall);
+  assert.equal(cellDoorCall[3].modeOpts.cellDoorCount, 1);
+  assert.equal(cellDoorCall[3].source, 'react:design:cellDoorCount:1');
 
   calls.length = 0;
   const exitController = mod.createDesignTabEditModesController({

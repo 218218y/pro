@@ -49,6 +49,7 @@ export type StructureTabViewState = {
   hingeEditActive: boolean;
   cellDimsModeId: string;
   cellDimsEditActive: boolean;
+  cellDoorCount: 1 | 2 | null;
   cellDimsPanelOpen: boolean;
   cellDimsHexPanelOpen: boolean;
   stackSplitEnabled: boolean;

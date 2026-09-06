@@ -39,6 +39,8 @@ export type DesignTabDoorFeaturesSectionModel = {
   splitActive: boolean;
   splitIsCustom: boolean;
   removeDoorActive: boolean;
+  cellDoorEditActive: boolean;
+  cellDoorCount: 1 | 2 | null;
   setFeatureToggle: (key: DesignTabFeatureToggleKey, on: boolean) => void;
   toggleGrooveEdit: () => void;
   setGrooveLinesCount: (count: number) => void;
@@ -50,6 +52,7 @@ export type DesignTabDoorFeaturesSectionModel = {
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
   toggleRemoveDoorEdit: () => void;
+  setCellDoorCount: (count: 1 | 2) => void;
   toggleRoundedFrameSideShelves: () => void;
 };
 

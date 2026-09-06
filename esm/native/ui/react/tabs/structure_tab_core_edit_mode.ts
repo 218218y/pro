@@ -133,14 +133,16 @@ export function enterStructureEditMode(args: {
   modeId: string;
   source: string;
   message: string;
+  modeOpts?: UnknownRecord;
 }): void {
-  const { app, fb, modeId, source, message } = args;
+  const { app, fb, modeId, source, message, modeOpts } = args;
 
   try {
     enterPrimaryMode(app, modeId, {
       source,
       closeDoors: true,
       cursor: 'alias',
+      ...(modeOpts ? { modeOpts } : {}),
     });
   } catch (err) {
     structureTabReportNonFatal(app, 'enterStructureEditMode.enterPrimaryMode', err);

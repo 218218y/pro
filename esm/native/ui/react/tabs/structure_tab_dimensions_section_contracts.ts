@@ -65,6 +65,7 @@ export type StructureDimensionsContentProps = {
   doors: number;
   allowNoMainWardrobe?: boolean;
   cellDimsEditActive: boolean;
+  cellDoorCount: 1 | 2 | null;
   cellDimsPanelOpen: boolean;
   cellDimsHexPanelOpen: boolean;
   hasAnyCellDimsOverrides: boolean;
@@ -89,6 +90,7 @@ export type StructureDimensionsContentProps = {
   onSetRaw: StructureSetRaw;
   onResetAllCellDimsOverrides: () => void;
   onEnterCellDimsMode: () => void;
+  onSetCellDoorCount: (count: 1 | 2 | null) => void;
   onExitCellDimsMode: () => void;
   onEnterHexCellDimsMode: () => void;
   onExitHexCellDimsMode: () => void;

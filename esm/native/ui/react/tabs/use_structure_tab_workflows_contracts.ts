@@ -25,6 +25,7 @@ export type UseStructureTabWorkflowsResult = {
   commitStructural: (partial: StructureUiPartial, source: string) => void;
   setRaw: (key: StructureTabNumericKey, value: number) => void;
   enterCellDimsMode: (source: string) => void;
+  setCellDoorCountMode: (count: 1 | 2 | null, source: string) => void;
   exitCellDimsMode: (source: string) => void;
   enterHexCellDimsMode: (source: string) => void;
   exitHexCellDimsMode: (source: string) => void;

@@ -244,6 +244,31 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
               <div className="wp-r-editmode-hint">לחץ על דלת כדי להסיר או להחזיר אותה לסקיצה.</div>
 
+              {model.wardrobeType === 'hinged' ? (
+                <div className="wp-r-mt-2" data-testid="design-cell-door-count-controls">
+                  <div className="wp-r-label wp-r-label--center">שינוי מספר דלתות בתא</div>
+                  <OptionButtonGroup columns={2} density="compact" label="שינוי מספר דלתות בתא">
+                    <OptionButton
+                      density="compact"
+                      selected={model.cellDoorEditActive && model.cellDoorCount === 1}
+                      onClick={() => model.setCellDoorCount(1)}
+                      testId="design-cell-door-count-1"
+                    >
+                      דלת אחת
+                    </OptionButton>
+                    <OptionButton
+                      density="compact"
+                      selected={model.cellDoorEditActive && model.cellDoorCount === 2}
+                      onClick={() => model.setCellDoorCount(2)}
+                      testId="design-cell-door-count-2"
+                    >
+                      2 דלתות
+                    </OptionButton>
+                  </OptionButtonGroup>
+                  <div className="wp-r-editmode-hint">בחר 1 או 2 ואז לחץ על התא שברצונך לשנות.</div>
+                </div>
+              ) : null}
+
               {model.wardrobeType === 'hinged' && model.roundedFrameSideShelvesVisible ? (
                 <ModeToggleButton
                   active={model.roundedFrameSideShelvesActive}

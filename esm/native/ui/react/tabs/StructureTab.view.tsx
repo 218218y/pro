@@ -118,6 +118,7 @@ function StructureTabInner(props: { active: boolean }) {
     doors: state.doors,
     allowNoMainWardrobe: state.cornerMode,
     cellDimsEditActive: state.cellDimsEditActive,
+    cellDoorCount: state.cellDoorCount,
     cellDimsPanelOpen: state.cellDimsPanelOpen,
     cellDimsHexPanelOpen: state.cellDimsHexPanelOpen,
     hasAnyCellDimsOverrides: state.hasAnyCellDimsOverrides,
@@ -142,6 +143,8 @@ function StructureTabInner(props: { active: boolean }) {
     onSetRaw: workflows.setRaw,
     onResetAllCellDimsOverrides: workflows.resetAllCellDimsOverrides,
     onEnterCellDimsMode: () => workflows.enterCellDimsMode('react:structure:cellDims:on'),
+    onSetCellDoorCount: (count: 1 | 2 | null) =>
+      workflows.setCellDoorCountMode(count, `react:structure:cellDims:doors:${count ?? 'dimensionsOnly'}`),
     onExitCellDimsMode: () => workflows.exitCellDimsMode('react:structure:cellDims:off'),
     onEnterHexCellDimsMode: () => workflows.enterHexCellDimsMode('react:structure:cellDimsHex:on'),
     onExitHexCellDimsMode: () => workflows.exitHexCellDimsMode('react:structure:cellDimsHex:off'),

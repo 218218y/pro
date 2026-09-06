@@ -145,6 +145,7 @@ function SketchTabInner(props: SketchTabViewProps): ReactElement {
             <StructureCellDimsControls
               {...sketchBoxCellDimsProps}
               hideForSliding={false}
+              showCellDoorCountControls={false}
               modeLabel="שינוי מידות מיוחדות לקופסא"
               resetAllLabel="חזרה למידות רגילות לקופסאות"
               resetAllTooltip="ביטול כל המידות המיוחדות שהוחלו על תאים וקופסאות חופשיות"

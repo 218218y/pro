@@ -84,7 +84,11 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     isChestMode,
   } = useUiSelectorShallow(ui => readStructureTabBaseUiState(ui), 'structure');
 
-  const { primaryMode } = useModeSelectorShallow(mode => ({ primaryMode: String(mode.primary || 'none') }));
+  const { primaryMode, cellDoorCount } = useModeSelectorShallow(mode => {
+    const opts = mode.opts && typeof mode.opts === 'object' && !Array.isArray(mode.opts) ? mode.opts : {};
+    const doorCount = opts.cellDoorCount === 1 || opts.cellDoorCount === 2 ? opts.cellDoorCount : null;
+    return { primaryMode: String(mode.primary || 'none'), cellDoorCount: doorCount as 1 | 2 | null };
+  });
 
   const hingeModeId = getModeConst(app, 'HINGE', 'hinge');
   const hingeEditActive = primaryMode === hingeModeId;
@@ -241,6 +245,7 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
     hingeEditActive,
     cellDimsModeId,
     cellDimsEditActive,
+    cellDoorCount,
     cellDimsPanelOpen,
     cellDimsHexPanelOpen,
     stackSplitEnabled,

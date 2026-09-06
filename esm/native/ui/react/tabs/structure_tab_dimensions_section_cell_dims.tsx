@@ -1,6 +1,12 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import { Button, InlineNotice, ModeToggleButton } from '../components/index.js';
+import {
+  Button,
+  InlineNotice,
+  ModeToggleButton,
+  OptionButton,
+  OptionButtonGroup,
+} from '../components/index.js';
 import { OptionalDimField } from './structure_tab_controls.js';
 import {
   DEFAULT_HEIGHT,
@@ -76,6 +82,7 @@ export type StructureCellDimsControlsLabels = Partial<{
 export type StructureCellDimsControlsProps = {
   isSliding: StructureDimensionsContentProps['isSliding'];
   cellDimsEditActive: StructureDimensionsContentProps['cellDimsEditActive'];
+  cellDoorCount: StructureDimensionsContentProps['cellDoorCount'];
   cellDimsPanelOpen: StructureDimensionsContentProps['cellDimsPanelOpen'];
   cellDimsHexPanelOpen: StructureDimensionsContentProps['cellDimsHexPanelOpen'];
   hasAnyCellDimsOverrides: StructureDimensionsContentProps['hasAnyCellDimsOverrides'];
@@ -92,6 +99,7 @@ export type StructureCellDimsControlsProps = {
   onSetRaw: StructureDimensionsContentProps['onSetRaw'];
   onResetAllCellDimsOverrides: StructureDimensionsContentProps['onResetAllCellDimsOverrides'];
   onEnterCellDimsMode: StructureDimensionsContentProps['onEnterCellDimsMode'];
+  onSetCellDoorCount: StructureDimensionsContentProps['onSetCellDoorCount'];
   onExitCellDimsMode: StructureDimensionsContentProps['onExitCellDimsMode'];
   onEnterHexCellDimsMode: StructureDimensionsContentProps['onEnterHexCellDimsMode'];
   onExitHexCellDimsMode: StructureDimensionsContentProps['onExitHexCellDimsMode'];
@@ -107,6 +115,7 @@ export type StructureCellDimsControlsProps = {
   testIds?: Partial<StructureCellDimsControlsTestIds>;
   labels?: StructureCellDimsControlsLabels;
   hideForSliding?: boolean;
+  showCellDoorCountControls?: boolean;
 };
 
 const DEFAULT_STRUCTURE_CELL_DIMS_TEST_IDS: StructureCellDimsControlsTestIds = {
@@ -177,6 +186,40 @@ export function StructureCellDimsControls(props: StructureCellDimsControlsProps)
 
       {cellDimsPanelOpen ? (
         <div style={{ marginTop: 10 }}>
+          {props.showCellDoorCountControls !== false ? (
+            <div className="wp-r-mb-2" data-testid="structure-cell-dims-door-count-controls">
+              <div className="wp-r-label wp-r-label--center">מספר דלתות בתא</div>
+              <OptionButtonGroup columns={3} density="compact" label="מספר דלתות בתא">
+                <OptionButton
+                  density="compact"
+                  selected={props.cellDoorCount == null}
+                  onClick={() => props.onSetCellDoorCount(null)}
+                  testId="structure-cell-dims-door-count-dimensions-only"
+                >
+                  מידות בלבד
+                </OptionButton>
+                <OptionButton
+                  density="compact"
+                  selected={props.cellDoorCount === 1}
+                  onClick={() => props.onSetCellDoorCount(1)}
+                  testId="structure-cell-dims-door-count-1"
+                >
+                  דלת אחת
+                </OptionButton>
+                <OptionButton
+                  density="compact"
+                  selected={props.cellDoorCount === 2}
+                  onClick={() => props.onSetCellDoorCount(2)}
+                  testId="structure-cell-dims-door-count-2"
+                >
+                  2 דלתות
+                </OptionButton>
+              </OptionButtonGroup>
+              <div className="wp-r-editmode-hint">
+                אפשר להשאיר את שדות המידה ריקים ולשנות רק את מספר הדלתות בתא.
+              </div>
+            </div>
+          ) : null}
           <div
             style={{
               display: 'flex',

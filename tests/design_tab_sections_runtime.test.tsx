@@ -61,6 +61,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: true,
         removeDoorActive: false,
+        cellDoorEditActive: true,
+        cellDoorCount: 1,
         roundedFrameSideShelvesVisible: true,
         roundedFrameSideShelvesActive: false,
         setFeatureToggle: noop,
@@ -74,6 +76,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        setCellDoorCount: noop,
         toggleRoundedFrameSideShelves: noop,
       },
     })
@@ -94,6 +97,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: false,
         removeDoorActive: false,
+        cellDoorEditActive: false,
+        cellDoorCount: null,
         roundedFrameSideShelvesVisible: true,
         roundedFrameSideShelvesActive: true,
         setFeatureToggle: noop,
@@ -103,6 +108,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        setCellDoorCount: noop,
         toggleRoundedFrameSideShelves: noop,
       },
     })
@@ -123,6 +129,8 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         splitIsCustom: false,
         removeDoorsEnabled: false,
         removeDoorActive: false,
+        cellDoorEditActive: false,
+        cellDoorCount: null,
         roundedFrameSideShelvesVisible: false,
         roundedFrameSideShelvesActive: false,
         setFeatureToggle: noop,
@@ -132,6 +140,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        setCellDoorCount: noop,
         toggleRoundedFrameSideShelves: noop,
       },
     })
@@ -141,6 +150,9 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /ברירת מחדל/);
   assert.match(hingedHtml, /חיתוך דלתות ידני/);
   assert.match(hingedHtml, /הסר\/החזר דלת/);
+  assert.match(hingedHtml, /שינוי מספר דלתות בתא/);
+  assert.match(hingedHtml, /design-cell-door-count-1/);
+  assert.match(hingedHtml, /design-cell-door-count-2/);
   assert.match(hingedHtml, /מדפים מעוגלים/);
   assert.match(hingedHtml, /design-rounded-frame-side-shelves-button/);
   assert.match(hingedHtml, /design-groove-manual-button/);
@@ -160,6 +172,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.doesNotMatch(slidingHtml, /דפנות/);
   assert.doesNotMatch(slidingHtml, /מדפים מעוגלים/);
   assert.doesNotMatch(slidingHtml, /design-rounded-frame-side-shelves-button/);
+  assert.doesNotMatch(slidingHtml, /design-cell-door-count-controls/);
   assert.equal(hiddenHtml, '');
 });
 
@@ -184,6 +197,8 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         splitIsCustom: false,
         removeDoorsEnabled: true,
         removeDoorActive: true,
+        cellDoorEditActive: false,
+        cellDoorCount: null,
         roundedFrameSideShelvesVisible: true,
         roundedFrameSideShelvesActive: true,
         setFeatureToggle: noop,
@@ -197,6 +212,7 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         toggleSplitEdit: noop,
         toggleSplitCustomEdit: noop,
         toggleRemoveDoorEdit: noop,
+        setCellDoorCount: noop,
         toggleRoundedFrameSideShelves: noop,
       },
     })
@@ -221,6 +237,7 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
   assert.doesNotMatch(chestDoorFeaturesHtml, /הסרת דלתות או דפנות/);
   assert.doesNotMatch(chestDoorFeaturesHtml, /הסר\/החזר דלת/);
   assert.doesNotMatch(chestDoorFeaturesHtml, /מדפים מעוגלים/);
+  assert.doesNotMatch(chestDoorFeaturesHtml, /design-cell-door-count-controls/);
   assert.equal(chestCorniceHtml, '');
 });
 

@@ -17,15 +17,24 @@ test('design-tab shared readers normalize legacy/raw values safely', () => {
   assert.deepEqual(readDesignTabModeState({ primary: 'split', opts: { splitVariant: 'custom' } }), {
     primaryMode: 'split',
     splitVariant: 'custom',
+    cellDoorCount: null,
   });
 
   assert.deepEqual(readDesignTabModeState({ primary: null, opts: { splitVariant: 12 } }), {
     primaryMode: 'none',
     splitVariant: '',
+    cellDoorCount: null,
+  });
+
+  assert.deepEqual(readDesignTabModeState({ primary: 'cell_dims', opts: { cellDoorCount: 2 } }), {
+    primaryMode: 'cell_dims',
+    splitVariant: '',
+    cellDoorCount: 2,
   });
 
   assert.deepEqual(readDesignTabModeState(undefined), {
     primaryMode: 'none',
     splitVariant: '',
+    cellDoorCount: null,
   });
 });

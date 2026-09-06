@@ -3,7 +3,7 @@
 // Extracted from canvas_picking_click_flow.ts to keep the click owner focused on
 // routing while preserving the canonical cell-dims click behavior in one helper.
 
-import type { UiRawInputsLike } from '../../../types';
+import type { UiRawInputsLike, UnknownRecord } from '../../../types';
 import type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../../shared/dimensions/wardrobe_layout_comparison_policy.js';
 
@@ -23,8 +23,19 @@ import {
 } from './canvas_picking_core_helpers.js';
 import { rememberCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
+import { readModeStateFromApp } from '../runtime/root_state_access.js';
 
 export type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
+
+function asRecord(value: unknown): UnknownRecord | null {
+  return !!value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function readCellDoorCountFromMode(App: CanvasCellDimsClickArgs['App']): 1 | 2 | null {
+  const mode = asRecord(readModeStateFromApp(App));
+  const opts = asRecord(mode?.opts);
+  return opts?.cellDoorCount === 1 || opts?.cellDoorCount === 2 ? opts.cellDoorCount : null;
+}
 
 export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
   const {
@@ -56,7 +67,8 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       Number.isFinite(draftHexProtrusion) && draftHexProtrusion >= 0 ? draftHexProtrusion : null;
     const hexCellDoorWidthCm =
       Number.isFinite(draftHexDoorWidth) && draftHexDoorWidth > 0 ? draftHexDoorWidth : null;
-    if (!hexCellMode && !applyW && !applyH && !applyD) {
+    const cellDoorCount = readCellDoorCountFromMode(App);
+    if (!hexCellMode && !applyW && !applyH && !applyD && cellDoorCount == null) {
       if (__isBottomStack && Number.isFinite(draftH) && draftH > 0) {
         try {
           __wp_toast(App, 'בארון התחתון ניתן להחיל לפי תא רק רוחב או עומק', 'info');
@@ -97,6 +109,19 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       freeBoxId: freeBoxHoverId,
     });
 
+    if (
+      cellDoorCount != null &&
+      (__isBottomStack || isFreeBoxHoverHit || __wp_isCornerKey(foundModuleIndex))
+    ) {
+      __wp_toast(App, 'שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', 'info');
+      return;
+    }
+
+    if (cellDoorCount != null && hexCellMode) {
+      __wp_toast(App, 'יש לצאת ממצב תא משושה לפני שינוי מספר הדלתות בתא', 'info');
+      return;
+    }
+
     const resolved = {
       App,
       isBottomStack: __isBottomStack,
@@ -106,6 +131,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       applyW,
       applyH,
       applyD,
+      cellDoorCount,
       autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
       hexCellMode,
       hexCellProtrusionCm,

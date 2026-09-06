@@ -7,12 +7,14 @@ import type { UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../type
 
 export type DesignTabDoorStyle = 'flat' | 'profile' | 'double_profile';
 export type DesignTabCorniceType = 'classic' | 'wave';
-export type DesignTabModeConstants = Partial<Record<'GROOVE' | 'SPLIT' | 'REMOVE_DOOR', string>>;
+export type DesignTabModeConstants = Partial<
+  Record<'GROOVE' | 'SPLIT' | 'REMOVE_DOOR' | 'CELL_DIMS', string>
+>;
 export type DesignTabSwatchDropPos = 'before' | 'after' | '';
 export type DesignTabSwatchReorderPos = 'before' | 'after' | 'end';
 export type DesignTabFeatureToggleKey = 'groovesEnabled' | 'splitDoors' | 'removeDoorsEnabled' | 'hasCornice';
 
-export type SplitModeOptsLike = { splitVariant?: string } & UnknownRecord;
+export type SplitModeOptsLike = { splitVariant?: string; cellDoorCount?: 1 | 2 } & UnknownRecord;
 
 export type EnterModeOptsLike = {
   closeDoors: boolean;
@@ -46,6 +48,7 @@ export type DesignTabFeedbackApi = {
 export type DesignTabModeStateSummary = {
   primaryMode: string;
   splitVariant: string;
+  cellDoorCount: 1 | 2 | null;
 };
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -99,6 +102,7 @@ export function readDesignTabModeState(mode: unknown): DesignTabModeStateSummary
   return {
     primaryMode: typeof modeRec?.primary === 'string' && modeRec.primary ? modeRec.primary : 'none',
     splitVariant: readSplitModeVariant(opts?.splitVariant),
+    cellDoorCount: opts?.cellDoorCount === 1 || opts?.cellDoorCount === 2 ? opts.cellDoorCount : null,
   };
 }
 

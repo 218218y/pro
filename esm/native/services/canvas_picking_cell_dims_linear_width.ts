@@ -21,6 +21,7 @@ export interface LinearCellDimsWidthResult {
   setManualWidth: boolean;
   unsetManualWidth: boolean;
   nextTotalW: number;
+  nextWidthsCm: number[];
 }
 
 export function applyLinearCellDimsWidthPolicy(
@@ -47,6 +48,7 @@ export function applyLinearCellDimsWidthPolicy(
   let unsetManualWidth = false;
   let nextTotalW = totalW;
   let nextWidthForIdx: number | null = null;
+  let nextWidthsCm = widthsCurr.slice();
 
   if (applyW != null) {
     if (idx < 0 || idx >= widthsCurr.length) {
@@ -113,6 +115,7 @@ export function applyLinearCellDimsWidthPolicy(
     for (const [i, width] of newWidths.entries()) newWidths[i] = Math.round(width * 100) / 100;
     nextTotalW = Math.round(sumWidths() * 100) / 100;
     nextWidthForIdx = readRequiredLinearDimension(newWidths, idx, 'selected width');
+    nextWidthsCm = newWidths.slice();
   } else if (
     ctx.isBottomStack ? readBool(raw, 'stackSplitLowerWidthManual') : readBool(cfg, 'isManualWidth')
   ) {
@@ -162,5 +165,5 @@ export function applyLinearCellDimsWidthPolicy(
     assignSpecialDimsToConfig(next, sd);
   }
 
-  return { setManualWidth, unsetManualWidth, nextTotalW };
+  return { setManualWidth, unsetManualWidth, nextTotalW, nextWidthsCm };
 }

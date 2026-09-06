@@ -120,6 +120,26 @@ export function useStructureCellDimsControlsProps(
     });
   }, [app, cellDimsWorkflow, editModeMessage, fb, meta, sourcePrefix, state.cellDimsModeId]);
 
+  const onSetCellDoorCount = useCallback(
+    (count: 1 | 2 | null) => {
+      const source = `${sourcePrefix}:doors:${count ?? 'dimensionsOnly'}`;
+      setUiFlag(app, 'cellDimsPanelOpen', true, meta.uiOnlyImmediate(`${source}:panelOpen`));
+      cellDimsWorkflow.setCellDimsHexMode(false);
+      enterStructureEditMode({
+        app,
+        fb,
+        modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),
+        source,
+        message:
+          count == null
+            ? editModeMessage
+            : `שינוי תא ל-${count === 1 ? 'דלת אחת' : '2 דלתות'} - לחץ על תא להחלה`,
+        modeOpts: count == null ? {} : { cellDoorCount: count },
+      });
+    },
+    [app, cellDimsWorkflow, editModeMessage, fb, meta, sourcePrefix, state.cellDimsModeId]
+  );
+
   const onExitCellDimsMode = useCallback(() => {
     exitStructureCellDimsEditMode({
       app,
@@ -152,6 +172,7 @@ export function useStructureCellDimsControlsProps(
   return {
     isSliding: state.isSliding,
     cellDimsEditActive: state.cellDimsEditActive,
+    cellDoorCount: state.cellDoorCount,
     cellDimsPanelOpen: state.cellDimsPanelOpen,
     cellDimsHexPanelOpen: state.cellDimsHexPanelOpen,
     hasAnyCellDimsOverrides: state.hasAnyCellDimsOverrides,
@@ -168,6 +189,7 @@ export function useStructureCellDimsControlsProps(
     onSetRaw,
     onResetAllCellDimsOverrides: cellDimsWorkflow.resetAllCellDimsOverrides,
     onEnterCellDimsMode,
+    onSetCellDoorCount,
     onExitCellDimsMode,
     onEnterHexCellDimsMode,
     onExitHexCellDimsMode,
