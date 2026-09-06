@@ -2484,7 +2484,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_dividers.ts",
-      "line": 27,
+      "line": 32,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "return n != null && n > 0 ? n : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"
@@ -3919,21 +3919,21 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
-      "line": 197,
+      "line": 209,
       "term": "fallbackId",
       "category": "domain-default",
       "text": "export function normalizeSketchBoxDoorState(raw: unknown, fallbackId: string): SketchBoxDoorState | null {"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_dividers_shared.ts",
-      "line": 204,
+      "line": 216,
       "term": "fallbackId",
       "category": "domain-default",
       "text": "const id = formatIdentityValue(readIdentityValue(idRaw)) || fallbackId;"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_box_segments.ts",
-      "line": 31,
+      "line": 32,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": ": SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;"

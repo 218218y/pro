@@ -30,7 +30,7 @@ export type SketchBoxDividerState = {
   xNorm: number;
   centered: boolean;
   frontZ?: number;
-  /** Monotonic structural creation order. Missing only on legacy persisted boxes. */
+  /** Monotonic structural creation order. Missing only on previously persisted boxes. */
   order?: number;
   /** Undefined means a full-height vertical divider. */
   yNorm?: number;
@@ -41,7 +41,7 @@ export type SketchBoxHorizontalDividerState = {
   yNorm: number;
   centered: boolean;
   frontZ?: number;
-  /** Monotonic structural creation order. Missing only on legacy persisted boxes. */
+  /** Monotonic structural creation order. Missing only on previously persisted boxes. */
   order?: number;
   /** Undefined means a full-width horizontal divider. */
   xNorm?: number;

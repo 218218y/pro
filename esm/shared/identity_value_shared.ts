@@ -23,10 +23,10 @@ export function normalizeSketchBoxDividerStructuralOrder(value: unknown): number
 
 /**
  * Older generated sketch-box divider ids contain the creation timestamp after
- * their seven-character random token. Recover it so saved legacy projects can
+ * their seven-character random token. Recover it so previously saved projects can
  * use creation-order partition semantics without an eager data migration.
  */
-export function inferLegacySketchBoxDividerStructuralOrder(id: unknown): number | null {
+export function inferPersistedSketchBoxDividerStructuralOrder(id: unknown): number | null {
   if (typeof id !== 'string') return null;
   const match = /^sb[dh]_([a-z0-9]{7})([a-z0-9]+)$/i.exec(id);
   if (!match) return null;
@@ -37,5 +37,5 @@ export function inferLegacySketchBoxDividerStructuralOrder(id: unknown): number 
 }
 
 export function resolveSketchBoxDividerStructuralOrder(order: unknown, id?: unknown): number | null {
-  return normalizeSketchBoxDividerStructuralOrder(order) ?? inferLegacySketchBoxDividerStructuralOrder(id);
+  return normalizeSketchBoxDividerStructuralOrder(order) ?? inferPersistedSketchBoxDividerStructuralOrder(id);
 }
