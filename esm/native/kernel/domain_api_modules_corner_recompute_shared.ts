@@ -39,13 +39,11 @@ export interface DomainApiModulesCornerRecomputeRuntime {
   meta: ActionMetaLike;
 }
 
-function readUiRawPreferredString(
+function readCanonicalUiStructureString(
   ui: UiStateLike,
   key: 'singleDoorPos' | 'structureSelect',
   defaultValue = ''
 ): string {
-  const rawValue = ui.raw?.[key];
-  if (typeof rawValue === 'string') return rawValue;
   const value = ui[key];
   return typeof value === 'string' ? value : defaultValue;
 }
@@ -65,8 +63,8 @@ export function createDomainApiModulesCornerRecomputeRuntime(args: {
   const cfg = _cfg();
   const ui = _isRecord(uiOverride) ? (uiOverride as UiStateLike) : _ui();
   const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 2);
-  const singlePos = readUiRawPreferredString(ui, 'singleDoorPos');
-  const structVal = readUiRawPreferredString(ui, 'structureSelect');
+  const singlePos = readCanonicalUiStructureString(ui, 'singleDoorPos');
+  const structVal = readCanonicalUiStructureString(ui, 'structureSelect');
   const wardrobeType = cfg?.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
   const modulesStructure = asModulesStructureList(
     calculateModuleStructurePure(doorsCount, singlePos, structVal, wardrobeType) || []

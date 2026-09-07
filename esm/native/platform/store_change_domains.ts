@@ -142,8 +142,6 @@ const UI_RAW_DOMAIN_BY_KEY = {
   height: STRUCTURE,
   depth: STRUCTURE,
   doors: STRUCTURE,
-  structureSelect: STRUCTURE,
-  singleDoorPos: STRUCTURE,
   chestDrawersCount: STRUCTURE,
   chestCommodeMirrorHeightCm: STRUCTURE,
   chestCommodeMirrorWidthCm: STRUCTURE,

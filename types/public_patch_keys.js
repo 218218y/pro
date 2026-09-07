@@ -113,8 +113,6 @@ export const PUBLIC_UI_RAW_PATCH_KEYS = [
   'height',
   'depth',
   'doors',
-  'structureSelect',
-  'singleDoorPos',
   'chestDrawersCount',
   'chestCommodeMirrorHeightCm',
   'chestCommodeMirrorWidthCm',

@@ -109,17 +109,17 @@ test('module layout pipeline rejects stale same-door-sum structure from a previo
   assert.equal(result.moduleCfgList.length, 1);
 });
 
-test('module layout pipeline reads structure controls from ui.raw before stale mirrored ui fields', () => {
+test('module layout pipeline reads structure controls from canonical ui fields despite stale legacy raw mirrors', () => {
   const result = computeModulesAndLayout(
     createArgs({
       doorsCount: 3,
       ui: {
-        singleDoorPos: 'left',
-        structureSelect: '[1,1,1]',
+        singleDoorPos: 'right',
+        structureSelect: '[2,1]',
         raw: {
-          singleDoorPos: 'right',
-          structureSelect: '[2,1]',
-        },
+          singleDoorPos: 'left',
+          structureSelect: '[1,1,1]',
+        } as any,
       },
       calculateModuleStructure(doorsCount: unknown, singleDoorPos: unknown, structureSelect: unknown) {
         assert.equal(doorsCount, 3);

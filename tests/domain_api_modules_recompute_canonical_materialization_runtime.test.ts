@@ -94,7 +94,7 @@ test('non-library recompute canonicalizes preserved modules through the top-modu
   assert.equal(next[2].doors, 1);
 });
 
-test('modules recompute runtime derives structure from ui.raw before stale mirrored structure fields', () => {
+test('modules recompute runtime derives structure from canonical ui fields despite stale legacy raw mirrors', () => {
   const state: { config: AnyRec; ui: AnyRec } = {
     config: {
       wardrobeType: 'hinged',
@@ -107,13 +107,13 @@ test('modules recompute runtime derives structure from ui.raw before stale mirro
     },
     ui: {
       doors: 3,
-      singleDoorPos: 'left',
-      structureSelect: '[1,1,1]',
+      singleDoorPos: 'right',
+      structureSelect: '[2,1]',
       raw: {
         doors: 3,
-        singleDoorPos: 'right',
-        structureSelect: '[2,1]',
-      },
+        singleDoorPos: 'left',
+        structureSelect: '[1,1,1]',
+      } as any,
     },
   };
 

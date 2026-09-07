@@ -110,10 +110,6 @@ export function buildProjectUiSnapshot(
       stackSplitLowerDepthManual: lowerDepthManual,
       stackSplitLowerWidthManual: lowerWidthManual,
       stackSplitLowerDoorsManual: lowerDoorsManual,
-      ...(typeof settings.structureSelection === 'string'
-        ? { structureSelect: settings.structureSelection }
-        : {}),
-      singleDoorPos: settings.singleDoorPos || 'left',
     }),
     projectName: readLoadedProjectName(rec, currentProjectName),
     ...(typeof settings.doors === 'number' ? { doors: settings.doors } : {}),

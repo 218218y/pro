@@ -16,7 +16,7 @@ import {
   PUBLIC_UI_PATCH_KEYS,
   PUBLIC_UI_RAW_PATCH_KEYS,
 } from '../../../types/public_patch_keys.js';
-import { isUiRawBooleanKey, isUiRawNumericKey, isUiRawStringKey } from '../../../types/ui_raw.js';
+import { isUiRawBooleanKey, isUiRawNumericKey } from '../../../types/ui_raw.js';
 import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
 
 const ROOT_KEYS = new Set<string>(PUBLIC_ROOT_PATCH_KEYS);
@@ -51,10 +51,6 @@ function assertUiRawValue(key: string, value: unknown, label: string): void {
   if (isUiRawBooleanKey(key)) {
     if (typeof value === 'boolean') return;
     throw new TypeError(`[WardrobePro] ${label}.${key} must be boolean.`);
-  }
-  if (isUiRawStringKey(key)) {
-    if (typeof value === 'string') return;
-    throw new TypeError(`[WardrobePro] ${label}.${key} must be string.`);
   }
   if (isUiRawNumericKey(key)) {
     if (value === null || (typeof value === 'number' && Number.isFinite(value))) return;

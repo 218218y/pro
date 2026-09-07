@@ -101,8 +101,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
         let singleDoorPos = 'left';
         try {
           const u = ui || {};
-          const raw = asRecord(u['raw']);
-          const pos = u['singleDoorPos'] ?? raw?.['singleDoorPos'] ?? cfg['singleDoorPos'];
+          const pos = u['singleDoorPos'] ?? cfg['singleDoorPos'];
           singleDoorPos = pos === 'right' ? 'right' : 'left';
         } catch (e) {
           _exportReportNonFatalNoApp('calcBodySplit.singleDoorPos', e, 3000);

@@ -85,12 +85,9 @@ test('retired state compatibility paths cannot re-enter runtime ownership', () =
     rawFact?.properties.filter(
       property => property.name === 'structureSelect' || property.name === 'singleDoorPos'
     ),
-    [
-      { name: 'structureSelect', optional: true, readonly: false, type: 'string' },
-      { name: 'singleDoorPos', optional: true, readonly: false, type: 'string' },
-    ]
+    []
   );
-  assert.match(projectLoad, /structureSelect: settings\.structureSelection/);
-  assert.match(projectLoad, /singleDoorPos: settings\.singleDoorPos \|\| 'left'/);
+  assert.equal((projectLoad.match(/structureSelect: settings\.structureSelection/g) || []).length, 1);
+  assert.equal((projectLoad.match(/singleDoorPos: settings\.singleDoorPos \|\| 'left'/g) || []).length, 1);
   assert.doesNotMatch(orderPdfCache, /state\.build|captureState\.build/);
 });

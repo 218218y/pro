@@ -176,7 +176,7 @@ test('project payload runtime: essential ui dimensions reject numeric strings', 
   assert.equal(normalized, null);
 });
 
-test('project payload runtime: load helper mirrors structural module controls into ui.raw', () => {
+test('project payload runtime: load helper keeps structural module controls in canonical ui fields only', () => {
   const normalized = normalizeProjectData(
     currentProject({
       settings: {
@@ -193,8 +193,8 @@ test('project payload runtime: load helper mirrors structural module controls in
 
   assert.ok(normalized);
   const uiSnapshot = buildProjectUiSnapshot(normalized, 'Project');
-  assert.equal((uiSnapshot.uiState.raw as any).structureSelect, '[2,1]');
-  assert.equal((uiSnapshot.uiState.raw as any).singleDoorPos, 'right');
+  assert.equal(Object.prototype.hasOwnProperty.call(uiSnapshot.uiState.raw || {}, 'structureSelect'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(uiSnapshot.uiState.raw || {}, 'singleDoorPos'), false);
   assert.equal(uiSnapshot.uiState.structureSelect, '[2,1]');
   assert.equal(uiSnapshot.uiState.singleDoorPos, 'right');
 });
