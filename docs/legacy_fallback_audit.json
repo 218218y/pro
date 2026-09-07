@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T08:10:43.197Z",
+  "generatedAt": "2026-09-07T11:06:07.590Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -2050,7 +2050,7 @@
     },
     {
       "file": "esm/native/builder/module_layout_pipeline.ts",
-      "line": 234,
+      "line": 232,
       "term": "compatibility",
       "category": "compat-boundary",
       "text": "// compatibility-boundary: callers without the calculator may still reuse a door-count-current"
