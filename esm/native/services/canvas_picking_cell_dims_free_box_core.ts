@@ -29,7 +29,7 @@ import {
 import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
-} from './canvas_picking_sketch_box_content_commit.js';
+} from './canvas_picking_sketch_box_content_commit_boxes.js';
 import { __wp_toModuleKey, type ModuleKey } from './canvas_picking_core_support_numbers.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
 import { hasCellDimsFreeBoxNewDimensionValueChange } from './canvas_picking_cell_dims_free_box_dimension_draft.js';
