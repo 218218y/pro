@@ -612,3 +612,40 @@ test('custom shelf and pins use the same logical-cell split as preset shelves', 
   assert.equal(pins.filter(pin => pin.position.x < 0).length, 4);
   assert.equal(pins.filter(pin => pin.position.x > 0).length, 4);
 });
+
+test('partition-local base shelf suppression removes only the selected leaf shelf and pins', () => {
+  for (const createRenderer of [createPresetRenderer, createCustomRenderer]) {
+    const boards: BoardCall[] = [];
+    const pinObjects: any[] = [];
+    const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+    const renderer = createRenderer();
+    const sketchExtras = {
+      dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }],
+      baseShelfSuppressions: [{ id: 's1', shelfIndex: 1, xNorm: 0.25, yNorm: 0.25, scopeOrder: 1 }],
+    };
+    const args = {
+      ...commonInput([], boards),
+      THREE: makeMinimalThreeForPins(),
+      wardrobeGroup: group,
+      sketchExtras,
+    };
+    const applied =
+      createRenderer === createPresetRenderer
+        ? (renderer as ReturnType<typeof createPresetRenderer>).applyInteriorPresetOps({
+            ...args,
+            presetOps: { shelves: [1], rods: [] },
+          })
+        : (renderer as ReturnType<typeof createCustomRenderer>).applyInteriorCustomOps({
+            ...args,
+            customOps: { shelves: [1], rods: [] },
+          });
+
+    assert.equal(applied, true);
+    const shelves = boards.filter(board => board.partId === 'module_shelf_0_g1');
+    assert.equal(shelves.length, 1);
+    assert.ok(shelves[0]!.x > 0, 'the unsuppressed neighbor leaf must keep its base shelf');
+    const pins = pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin');
+    assert.equal(pins.length, 4);
+    assert.ok(pins.every(pin => pin.position.x > 0));
+  }
+});

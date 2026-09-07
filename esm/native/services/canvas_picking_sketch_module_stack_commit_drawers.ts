@@ -19,7 +19,9 @@ import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_
 import {
   doesSketchModuleContentItemBelongToCell,
   filterSketchModuleContentItemsForCell,
+  isSketchModuleBaseShelfSuppressedInCell,
   resolveSketchModulePartitionCellAtNorm,
+  suppressSketchModuleBaseShelfInCell,
 } from './canvas_picking_sketch_module_partition.js';
 import type {
   CommitSketchModuleInternalDrawerArgs,
@@ -86,6 +88,8 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
   bottomY: number;
   topY: number;
   woodThick?: unknown;
+  targetCell: ReturnType<typeof resolveSketchModulePartitionCellAtNorm>;
+  targetOwnership: { xNorm: number; scopeOrder: number } | null;
 }): number {
   const cassette = resolveSketchInternalDrawerCassetteRange({
     baseY: args.baseY,
@@ -121,6 +125,20 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
   if (baseShelfIndexes.size) {
     const divs = readGridDivisions(args.cfg);
     for (const shelfIndex of Array.from(baseShelfIndexes).sort((a, b) => a - b)) {
+      if (args.targetCell && args.targetOwnership) {
+        if (
+          suppressSketchModuleBaseShelfInCell({
+            cfg: args.cfg,
+            shelfIndex,
+            xNorm: args.targetOwnership.xNorm,
+            yNorm: args.targetCell.yNorm,
+            scopeOrder: args.targetOwnership.scopeOrder,
+          })
+        ) {
+          removedCount += 1;
+        }
+        continue;
+      }
       removeManualLayoutBaseShelf(args.cfg, {
         divs,
         shelfIndex,
@@ -251,7 +269,21 @@ export function commitSketchModuleInternalDrawers(
     pad: args.pad,
     woodThick: args.woodThick,
   }).filter(blocker => {
-    if (!targetCell || blocker.source === 'base') return true;
+    if (!targetCell) return true;
+    if (blocker.source === 'base') {
+      const shelfIndex =
+        typeof blocker.index === 'number' && Number.isFinite(blocker.index)
+          ? Math.round(blocker.index)
+          : null;
+      return (
+        shelfIndex == null ||
+        !isSketchModuleBaseShelfSuppressedInCell({
+          sketchExtras: existingExtra ?? {},
+          shelfIndex,
+          cell: targetCell,
+        })
+      );
+    }
     const index =
       typeof blocker.index === 'number' && Number.isFinite(blocker.index) ? Math.round(blocker.index) : -1;
     const item =
@@ -364,6 +396,10 @@ export function commitSketchModuleInternalDrawers(
     bottomY: args.bottomY,
     topY: args.topY,
     woodThick: args.woodThick,
+    targetCell,
+    targetOwnership: targetOwnership
+      ? { xNorm: targetOwnership.xNorm, scopeOrder: targetOwnership.scopeOrder }
+      : null,
   });
   toastInternalDrawerRemovedShelves(args.App, removedShelfCount);
   markSketchInternalDrawersDirty(args.cfg);

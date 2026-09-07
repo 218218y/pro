@@ -23,6 +23,7 @@ import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js'
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
 import {
+  isInteriorModuleBaseShelfSuppressedInCell,
   resolveInteriorModulePartitionCells,
   resolveInteriorModulePartitionCellsAtY,
 } from './render_interior_partitioned_module_content.js';
@@ -79,19 +80,32 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const shelfThick = readPresetNumber(input.shelfThick, woodThick);
     const internalDepth = readPresetNumber(input.internalDepth, 0);
     const internalCenterX = readPresetNumber(input.internalCenterX, 0);
+    const partitionGeometry = {
+      centerX: internalCenterX,
+      bottomY: effectiveBottomY,
+      topY: effectiveTopY,
+      innerW,
+      woodThick,
+    };
     const partitionCells = resolveInteriorModulePartitionCells({
       sketchExtras: input.sketchExtras,
-      geometry: {
-        centerX: internalCenterX,
-        bottomY: effectiveBottomY,
-        topY: effectiveTopY,
-        innerW,
-        woodThick,
-      },
+      geometry: partitionGeometry,
     });
     const partitioned = partitionCells.length > 1;
     const resolvePartitionCellsAtY = partitioned
       ? (y: number) => resolveInteriorModulePartitionCellsAtY({ cells: partitionCells, y })
+      : undefined;
+    const isPartitionShelfSuppressed = partitioned
+      ? (
+          shelfIndex: number,
+          cell: { normLeft: number; normRight: number; normBottom: number; normTop: number }
+        ) =>
+          isInteriorModuleBaseShelfSuppressedInCell({
+            sketchExtras: input.sketchExtras,
+            geometry: partitionGeometry,
+            shelfIndex,
+            cell,
+          })
       : undefined;
     const internalZ = readPresetNumber(input.internalZ, 0);
     const D = readPresetNumber(input.D, 0);
@@ -195,6 +209,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       roundedShelfSide,
       renderOpsHandleCatch: __renderOpsHandleCatch,
       ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
+      ...(isPartitionShelfSuppressed ? { isPartitionShelfSuppressed } : {}),
     });
 
     if (Array.isArray(ops.shelves)) {

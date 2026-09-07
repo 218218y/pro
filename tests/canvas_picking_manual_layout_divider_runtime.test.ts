@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 import { tryHandleManualLayoutSketchHoverModuleDividerFlow } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_divider_flow.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
@@ -257,4 +258,17 @@ test('partition topology keeps creation precedence and content ownership across 
     authoredAfterNestedSplit.map(cell => [cell.normLeft, cell.normRight, cell.normBottom, cell.normTop]),
     [[0, 0.25, 0, 0.5]]
   );
+});
+
+test('manual-layout divider click refreshes hover synchronously before layout commit routing', () => {
+  const source = fs.readFileSync('esm/native/services/canvas_picking_click_route_layout.ts', 'utf8');
+  assert.match(
+    source,
+    /manualTool !== 'sketch_box_divider' && manualTool !== 'sketch_box_divider_horizontal'/u
+  );
+  const refreshCall = source.indexOf('refreshDividerHoverAtClick(args);');
+  const layoutCommit = source.indexOf('tryHandleCanvasLayoutEditClick({');
+  assert.ok(refreshCall >= 0, 'divider click hover refresh call must exist');
+  assert.ok(layoutCommit > refreshCall, 'divider hover must be refreshed before hover intent is committed');
+  assert.match(source, /__coreHandleCanvasHoverNDC\(args\.App, args\.ndcX, args\.ndcY\)/u);
 });

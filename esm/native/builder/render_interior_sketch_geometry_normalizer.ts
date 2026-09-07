@@ -49,6 +49,12 @@ const SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS = [
   'drawerHeightM',
   'count',
 ] as const;
+const SKETCH_BASE_SHELF_SUPPRESSION_GEOMETRY_SCALAR_KEYS = [
+  'shelfIndex',
+  'xNorm',
+  'yNorm',
+  'scopeOrder',
+] as const;
 const SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'scopeOrder', 'count'] as const;
 const SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS = ['xNorm', 'yNorm', 'grooveLinesCount'] as const;
 const SKETCH_BOX_GEOMETRY_SCALAR_KEYS = [
@@ -75,6 +81,7 @@ type GeometryScalarKey =
   | (typeof SKETCH_ROD_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_DRAWER_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_EXTERNAL_DRAWER_GEOMETRY_SCALAR_KEYS)[number]
+  | (typeof SKETCH_BASE_SHELF_SUPPRESSION_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_BOX_DOOR_GEOMETRY_SCALAR_KEYS)[number]
   | (typeof SKETCH_BOX_GEOMETRY_SCALAR_KEYS)[number];
@@ -194,6 +201,12 @@ function normalizeBuilderSketchExtrasGeometryWith(
   const extra = asRecord<UnknownRecord>(value);
   if (!extra) return null;
   const out: UnknownRecord = { ...extra };
+  normalizeRecordListField(
+    out,
+    'baseShelfSuppressions',
+    SKETCH_BASE_SHELF_SUPPRESSION_GEOMETRY_SCALAR_KEYS,
+    normalizeScalar
+  );
   normalizeRecordListField(out, 'cellDoors', SKETCH_CELL_DOOR_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'dividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);
   normalizeRecordListField(out, 'horizontalDividers', SKETCH_DIVIDER_GEOMETRY_SCALAR_KEYS, normalizeScalar);

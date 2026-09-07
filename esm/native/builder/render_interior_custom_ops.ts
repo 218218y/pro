@@ -29,6 +29,7 @@ import {
   applyCustomStorageBarrier,
 } from './render_interior_custom_ops_layout.js';
 import {
+  isInteriorModuleBaseShelfSuppressedInCell,
   resolveInteriorModulePartitionCells,
   resolveInteriorModulePartitionCellsAtY,
 } from './render_interior_partitioned_module_content.js';
@@ -83,19 +84,32 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const shelfThick = readCustomRenderNumber(input.shelfThick, woodThick);
     const internalDepth = readCustomRenderNumber(input.internalDepth, 0);
     const internalCenterX = readCustomRenderNumber(input.internalCenterX, 0);
+    const partitionGeometry = {
+      centerX: internalCenterX,
+      bottomY: effectiveBottomY,
+      topY: effectiveTopY,
+      innerW,
+      woodThick,
+    };
     const partitionCells = resolveInteriorModulePartitionCells({
       sketchExtras: input.sketchExtras,
-      geometry: {
-        centerX: internalCenterX,
-        bottomY: effectiveBottomY,
-        topY: effectiveTopY,
-        innerW,
-        woodThick,
-      },
+      geometry: partitionGeometry,
     });
     const partitioned = partitionCells.length > 1;
     const resolvePartitionCellsAtY = partitioned
       ? (y: number) => resolveInteriorModulePartitionCellsAtY({ cells: partitionCells, y })
+      : undefined;
+    const isPartitionShelfSuppressed = partitioned
+      ? (
+          shelfIndex: number,
+          cell: { normLeft: number; normRight: number; normBottom: number; normTop: number }
+        ) =>
+          isInteriorModuleBaseShelfSuppressedInCell({
+            sketchExtras: input.sketchExtras,
+            geometry: partitionGeometry,
+            shelfIndex,
+            cell,
+          })
       : undefined;
     const internalZ = readCustomRenderNumber(input.internalZ, 0);
     const D = readCustomRenderNumber(input.D, 0);
@@ -198,6 +212,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       shelfExposedSide,
       roundedShelfSide,
       ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
+      ...(isPartitionShelfSuppressed ? { isPartitionShelfSuppressed } : {}),
     });
 
     addCustomBaseShelfContents({
@@ -232,6 +247,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       isInternalDrawersEnabled,
       activeSlots,
       ...(resolvePartitionCellsAtY ? { resolvePartitionCellsAtY } : {}),
+      ...(isPartitionShelfSuppressed ? { isPartitionShelfSuppressed } : {}),
     });
 
     const createPartitionedRod = (

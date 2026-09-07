@@ -290,6 +290,14 @@ export interface BuilderSketchCellDoorLike extends UnknownRecord {
   count?: BuilderSketchScalar;
 }
 
+export interface BuilderSketchBaseShelfSuppressionLike extends UnknownRecord {
+  id?: BuilderSketchIdLike;
+  shelfIndex?: BuilderSketchScalar;
+  xNorm?: BuilderSketchScalar;
+  yNorm?: BuilderSketchScalar;
+  scopeOrder?: BuilderSketchScalar;
+}
+
 export interface BuilderSketchBoxDoorLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   enabled?: boolean | null;
@@ -337,6 +345,7 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
 }
 
 export interface BuilderSketchExtrasLike extends UnknownRecord {
+  baseShelfSuppressions?: BuilderSketchBaseShelfSuppressionLike[] | null;
   cellDoors?: BuilderSketchCellDoorLike[] | null;
   dividers?: BuilderSketchDividerLike[] | null;
   horizontalDividers?: BuilderSketchHorizontalDividerLike[] | null;

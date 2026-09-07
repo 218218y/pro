@@ -1835,3 +1835,60 @@ test('stack tool removes sketch shelf when an internal drawer cassette touches i
   assert.deepEqual(extras.shelves, []);
   assert.equal(Array.isArray(extras.drawers), true);
 });
+
+test('partitioned internal drawer suppresses a replaced base shelf only in its logical cell', () => {
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    gridDivisions: 5,
+    customData: {
+      shelves: [false, true, false, false],
+      shelfVariants: ['', 'regular', '', ''],
+    },
+    sketchExtras: {
+      dividers: [{ id: 'v1', xNorm: 0.5, yNorm: 0.5, order: 1 }],
+    },
+  };
+
+  const handled = tryCommitSketchModuleStackTool({
+    App: { services: { uiFeedback: { toast: () => {} } } } as any,
+    cfg,
+    tool: 'sketch_int_drawers',
+    hoverOk: true,
+    hoverRec: createManualLayoutSketchStackHoverRecord({
+      host: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
+      kind: 'drawers',
+      op: 'add',
+      xNorm: 0.25,
+      scopeOrder: 1,
+      yCenter: 0.6,
+      drawerH: 0.2,
+      drawerGap: 0,
+      drawerHeightM: 0.2,
+      stackH: 0.4,
+    }),
+    bottomY: 0,
+    topY: 1,
+    totalHeight: 1,
+    pad: 0.02,
+    woodThick: 0.02,
+    hitYClamped: 0.6,
+    hoverHost: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
+    writeSketchHover: () => {},
+  });
+
+  assert.equal(handled, true);
+  const customData = cfg.customData as { shelves: boolean[]; shelfVariants: string[] };
+  assert.equal(
+    customData.shelves[1],
+    true,
+    'the canonical base shelf must remain enabled for the neighbor cell'
+  );
+  assert.equal(customData.shelfVariants[1], 'regular');
+  const extra = cfg.sketchExtras as Record<string, unknown>;
+  const suppressions = extra.baseShelfSuppressions as Array<Record<string, unknown>>;
+  assert.equal(suppressions.length, 1);
+  assert.equal(suppressions[0]?.shelfIndex, 2);
+  assert.equal(suppressions[0]?.xNorm, 0.25);
+  assert.equal(suppressions[0]?.scopeOrder, 1);
+  assert.equal(Array.isArray(extra.drawers), true);
+});

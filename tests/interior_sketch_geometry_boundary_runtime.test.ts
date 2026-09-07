@@ -40,6 +40,9 @@ test('interior sketch pipeline normalizes draft string geometry before builder r
     } as unknown as Parameters<typeof buildSketchExtrasArgs>[0],
     {
       sketchExtras: {
+        baseShelfSuppressions: [
+          { id: 'sup1', shelfIndex: '2', xNorm: '0.25', yNorm: '0.4', scopeOrder: '1' },
+        ],
         dividers: [{ id: 'md1', xNorm: '0.4', yNorm: '0.25' }],
         horizontalDividers: [{ id: 'mh1', yNorm: '0.6', xNorm: '0.75' }],
         shelves: [{ id: 's1', yNorm: '0.25', depthM: '0.42' }],
@@ -63,6 +66,12 @@ test('interior sketch pipeline normalizes draft string geometry before builder r
   assert.equal(args.woodThick, 0.018);
   assert.equal(args.moduleIndex, 3);
   assert.equal(args.modulesLength, 4);
+
+  const suppression = args.sketchExtras.baseShelfSuppressions?.[0] as UnknownRecord;
+  assert.equal(suppression.shelfIndex, 2);
+  assert.equal(suppression.xNorm, 0.25);
+  assert.equal(suppression.yNorm, 0.4);
+  assert.equal(suppression.scopeOrder, 1);
 
   const divider = args.sketchExtras.dividers?.[0] as UnknownRecord;
   assert.equal(divider.xNorm, 0.4);

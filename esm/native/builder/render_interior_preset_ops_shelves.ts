@@ -66,7 +66,28 @@ export function createAddGridShelf(args: {
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
   renderOpsHandleCatch: InteriorPresetHandleCatch;
   resolvePartitionCellsAtY?:
-    ((y: number) => readonly { centerX: number; width: number; leftX: number; rightX: number }[]) | undefined;
+    | ((y: number) => readonly {
+        centerX: number;
+        width: number;
+        leftX: number;
+        rightX: number;
+        normLeft: number;
+        normRight: number;
+        normBottom: number;
+        normTop: number;
+      }[])
+    | undefined;
+  isPartitionShelfSuppressed?:
+    | ((
+        shelfIndex: number,
+        cell: {
+          normLeft: number;
+          normRight: number;
+          normBottom: number;
+          normTop: number;
+        }
+      ) => boolean)
+    | undefined;
 }): (gridIndex: number) => void {
   const {
     App,
@@ -101,6 +122,7 @@ export function createAddGridShelf(args: {
     roundedShelfSide,
     renderOpsHandleCatch,
     resolvePartitionCellsAtY,
+    isPartitionShelfSuppressed,
   } = args;
 
   const pinRadius = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
@@ -219,16 +241,33 @@ export function createAddGridShelf(args: {
     const maxHeight = resolveBaseContentsMaxHeight(shelfThick);
     if (!(maxHeight > 0)) return;
 
-    addFoldedClothes(
-      internalCenterX,
-      effectiveBottomY,
-      shelfZ,
-      innerW - INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
-      group,
-      maxHeight,
-      shelfDepth,
-      contentsPolicy
-    );
+    const baseCells = resolvePartitionCellsAtY?.(effectiveBottomY + 1e-6) ?? [];
+    if (!baseCells.length) {
+      addFoldedClothes(
+        internalCenterX,
+        effectiveBottomY,
+        shelfZ,
+        innerW - INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
+        group,
+        maxHeight,
+        shelfDepth,
+        contentsPolicy
+      );
+      return;
+    }
+    for (const cell of baseCells) {
+      if (isPartitionShelfSuppressed?.(1, cell)) continue;
+      addFoldedClothes(
+        cell.centerX,
+        effectiveBottomY,
+        shelfZ,
+        Math.max(0, cell.width - INTERIOR_SHELF_POLICY.contentsWidthClearanceM),
+        group,
+        maxHeight,
+        shelfDepth,
+        contentsPolicy
+      );
+    }
   }
 
   function resolveShelfContentsMaxHeight(gridIndex: number, shelfY: number, shelfH: number): number {
@@ -266,6 +305,10 @@ export function createAddGridShelf(args: {
             width: innerW,
             leftX: leftInnerX,
             rightX: rightInnerX,
+            normLeft: 0,
+            normRight: 1,
+            normBottom: 0,
+            normTop: 1,
           },
         ];
 
@@ -285,6 +328,7 @@ export function createAddGridShelf(args: {
         : null;
 
     for (const span of spans) {
+      if (partitionCells.length && isPartitionShelfSuppressed?.(gridKey, span)) continue;
       const shelfW = Math.max(
         0,
         span.width -

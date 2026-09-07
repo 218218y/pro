@@ -85,7 +85,28 @@ export function createAddCustomGridShelf(args: {
   shelfExposedSide?: RemovedFrameSideShelfExposure | null;
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
   resolvePartitionCellsAtY?:
-    ((y: number) => readonly { centerX: number; width: number; leftX: number; rightX: number }[]) | undefined;
+    | ((y: number) => readonly {
+        centerX: number;
+        width: number;
+        leftX: number;
+        rightX: number;
+        normLeft: number;
+        normRight: number;
+        normBottom: number;
+        normTop: number;
+      }[])
+    | undefined;
+  isPartitionShelfSuppressed?:
+    | ((
+        shelfIndex: number,
+        cell: {
+          normLeft: number;
+          normRight: number;
+          normBottom: number;
+          normTop: number;
+        }
+      ) => boolean)
+    | undefined;
 }) {
   const {
     roomArchitecturePlan,
@@ -118,6 +139,7 @@ export function createAddCustomGridShelf(args: {
     shelfExposedSide,
     roundedShelfSide,
     resolvePartitionCellsAtY,
+    isPartitionShelfSuppressed,
   } = args;
 
   let pinGeo: unknown = null;
@@ -272,10 +294,15 @@ export function createAddCustomGridShelf(args: {
             width: innerW,
             leftX: braceMetrics.leftInnerX,
             rightX: braceMetrics.rightInnerX,
+            normLeft: 0,
+            normRight: 1,
+            normBottom: 0,
+            normTop: 1,
           },
         ];
 
     for (const span of spans) {
+      if (partitionCells.length && isPartitionShelfSuppressed?.(gridIndex, span)) continue;
       const shelfW = Math.max(
         0,
         span.width -
@@ -366,7 +393,27 @@ export function addCustomBaseShelfContents(args: {
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
-  resolvePartitionCellsAtY?: ((y: number) => readonly { centerX: number; width: number }[]) | undefined;
+  resolvePartitionCellsAtY?:
+    | ((y: number) => readonly {
+        centerX: number;
+        width: number;
+        normLeft: number;
+        normRight: number;
+        normBottom: number;
+        normTop: number;
+      }[])
+    | undefined;
+  isPartitionShelfSuppressed?:
+    | ((
+        shelfIndex: number,
+        cell: {
+          normLeft: number;
+          normRight: number;
+          normBottom: number;
+          normTop: number;
+        }
+      ) => boolean)
+    | undefined;
 }): void {
   const {
     group,
@@ -386,6 +433,7 @@ export function addCustomBaseShelfContents(args: {
     isInternalDrawersEnabled,
     activeSlots,
     resolvePartitionCellsAtY,
+    isPartitionShelfSuppressed,
   } = args;
 
   if (!shelfSet[1] || !__isFn(addFoldedClothes)) return;
@@ -409,8 +457,20 @@ export function addCustomBaseShelfContents(args: {
   const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
 
   const cells = resolvePartitionCellsAtY?.(effectiveBottomY + 1e-6) ?? [];
-  const spans = cells.length ? cells : [{ centerX: internalCenterX, width: innerW }];
+  const spans = cells.length
+    ? cells
+    : [
+        {
+          centerX: internalCenterX,
+          width: innerW,
+          normLeft: 0,
+          normRight: 1,
+          normBottom: 0,
+          normTop: 1,
+        },
+      ];
   for (const span of spans) {
+    if (cells.length && isPartitionShelfSuppressed?.(1, span)) continue;
     addFoldedClothes(
       span.centerX,
       effectiveBottomY,
