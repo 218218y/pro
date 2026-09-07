@@ -32,6 +32,9 @@ function createPreviewPayload(
     anchorParent: command.anchorParent,
     kind: command.kind,
     ...(command.kind === 'object_boxes' ? { previewObjects: [...command.previewObjects] } : {}),
+    ...(command.kind === 'cell_layout'
+      ? { cellLayoutBoxes: command.cellLayoutBoxes.map(box => ({ ...box })) }
+      : {}),
     fillFront: command.fillFront,
     fillBack: command.fillBack,
     overlayThroughScene: command.overlayThroughScene,

@@ -1,4 +1,4 @@
-import type { CanvasLinearCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
+import type { CanvasLinearCellDimsGeometryArgs } from './canvas_picking_cell_dims_contracts.js';
 import type { ModulesConfigBucketKey } from '../features/modules_configuration/modules_config_api.js';
 
 import { calculateModuleStructure } from '../features/modules_configuration/calc_module_structure.js';
@@ -23,7 +23,7 @@ export interface ResolvedLinearModules {
 }
 
 function readBottomScalar(
-  raw: CanvasLinearCellDimsArgs['raw'],
+  raw: CanvasLinearCellDimsGeometryArgs['raw'],
   valueKey: 'stackSplitLowerWidth' | 'stackSplitLowerDepth',
   manualKey: 'stackSplitLowerWidthManual' | 'stackSplitLowerDepthManual',
   defaultValue: number
@@ -31,7 +31,7 @@ function readBottomScalar(
   return raw[manualKey] === true ? readCanonicalPositiveNumberOr(raw[valueKey], defaultValue) : defaultValue;
 }
 
-export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
+export function readLinearCellDimsTotals(args: CanvasLinearCellDimsGeometryArgs): {
   totalW: number;
   totalH: number;
   totalD: number;
@@ -49,7 +49,7 @@ export function readLinearCellDimsTotals(args: CanvasLinearCellDimsArgs): {
   };
 }
 
-function resolveDoorsCount(args: CanvasLinearCellDimsArgs): number {
+function resolveDoorsCount(args: CanvasLinearCellDimsGeometryArgs): number {
   const { raw } = args;
   const topDoors = readCanonicalIntOr(raw.doors, 0);
   if (!args.isBottomStack) return topDoors;
@@ -58,7 +58,7 @@ function resolveDoorsCount(args: CanvasLinearCellDimsArgs): number {
     : topDoors;
 }
 
-function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
+function resolveSingleDoorPos(args: CanvasLinearCellDimsGeometryArgs): string {
   const value =
     typeof args.ui.singleDoorPos === 'string'
       ? args.ui.singleDoorPos
@@ -69,7 +69,7 @@ function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
   return value || 'center';
 }
 
-function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: number): string {
+function resolveStructureSelect(args: CanvasLinearCellDimsGeometryArgs, doorsCount: number): string {
   const structureSelect = typeof args.ui.structureSelect === 'string' ? args.ui.structureSelect : '';
   if (!args.isBottomStack) return structureSelect;
   const topDoors = readCanonicalIntOr(args.raw.doors, doorsCount);
@@ -77,7 +77,7 @@ function resolveStructureSelect(args: CanvasLinearCellDimsArgs, doorsCount: numb
 }
 
 function readModulesFromConfigBucket(
-  args: CanvasLinearCellDimsArgs,
+  args: CanvasLinearCellDimsGeometryArgs,
   bucket: ModulesConfigBucketKey
 ): unknown[] {
   const list = readModulesConfigurationListFromConfigSnapshot(args.cfg, bucket);
@@ -105,7 +105,7 @@ export function syncDoorsPerModule(
   return { doorsPerModule, sumDoors };
 }
 
-export function resolveLinearModules(args: CanvasLinearCellDimsArgs): ResolvedLinearModules | null {
+export function resolveLinearModules(args: CanvasLinearCellDimsGeometryArgs): ResolvedLinearModules | null {
   const { App, cfg } = args;
   const configBucket: ModulesConfigBucketKey = args.isBottomStack
     ? 'stackSplitLowerModulesConfiguration'

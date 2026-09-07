@@ -10,6 +10,7 @@ import { resolveCellDimsTargetBox } from './canvas_picking_hover_preview_modes_c
 import { resolveCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { resolveCellDimsFreeBoxHoverTarget } from './canvas_picking_cell_dims_free_box_hover.js';
 import { createCellDimsFreeBoxHoverCapabilities } from './canvas_picking_cell_dims_free_box_hover_runtime.js';
+import { resolveLinearCellDimsLayoutPreview } from './canvas_picking_hover_preview_modes_cell_dims_layout.js';
 
 export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): boolean {
   if (!args.isCellDimsMode) return false;
@@ -99,34 +100,69 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       previewTargetBox
     );
 
-    const command: PartHoverPreviewCommand = {
-      kind: 'box',
-      anchor: target.hitSelectorObj,
-      anchorParent: freeBoxTarget?.anchorParent || null,
-      fillFront: true,
-      fillBack: false,
-      overlayThroughScene: true,
-      x: Number(previewTargetBox.centerX),
-      y: Number(previewTargetBox.centerY),
-      z: Number(previewTargetBox.centerZ),
-      w: Math.max(
-        CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
-        Number(previewTargetBox.width) - CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM
-      ),
-      boxH: Math.max(
-        CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
-        Number(previewTargetBox.height) - CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM
-      ),
-      d: Math.max(CELL_DIMENSION_PREVIEW_POLICY.minDepthM, Number(previewTargetBox.depth)),
-      woodThick: Math.max(
-        CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMinM,
-        Math.min(
-          CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMaxM,
-          Number(target.woodThick) * CELL_DIMENSION_PREVIEW_POLICY.woodThicknessScale
-        )
-      ),
-      op,
-    };
+    const woodThick = Math.max(
+      CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMinM,
+      Math.min(
+        CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMaxM,
+        Number(target.woodThick) * CELL_DIMENSION_PREVIEW_POLICY.woodThicknessScale
+      )
+    );
+    const fullLayout = freeBoxTarget
+      ? null
+      : resolveLinearCellDimsLayoutPreview({
+          App,
+          target,
+          applyW,
+          applyH,
+          applyD,
+          measureObjectLocalBox,
+          matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+          minWidthM: CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+          minHeightM: CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+          minDepthM: CELL_DIMENSION_PREVIEW_POLICY.minDepthM,
+          widthClearanceM: CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM,
+          heightClearanceM: CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM,
+        });
+    const command: PartHoverPreviewCommand = fullLayout
+      ? {
+          kind: 'cell_layout',
+          anchor: fullLayout.anchor,
+          anchorParent: fullLayout.anchorParent,
+          fillFront: true,
+          fillBack: false,
+          overlayThroughScene: true,
+          x: fullLayout.selectedBox.x,
+          y: fullLayout.selectedBox.y,
+          z: fullLayout.selectedBox.z,
+          w: fullLayout.selectedBox.w,
+          boxH: fullLayout.selectedBox.boxH,
+          d: fullLayout.selectedBox.d,
+          woodThick,
+          op,
+          cellLayoutBoxes: fullLayout.boxes,
+        }
+      : {
+          kind: 'box',
+          anchor: target.hitSelectorObj,
+          anchorParent: freeBoxTarget?.anchorParent || null,
+          fillFront: true,
+          fillBack: false,
+          overlayThroughScene: true,
+          x: Number(previewTargetBox.centerX),
+          y: Number(previewTargetBox.centerY),
+          z: Number(previewTargetBox.centerZ),
+          w: Math.max(
+            CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+            Number(previewTargetBox.width) - CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM
+          ),
+          boxH: Math.max(
+            CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+            Number(previewTargetBox.height) - CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM
+          ),
+          d: Math.max(CELL_DIMENSION_PREVIEW_POLICY.minDepthM, Number(previewTargetBox.depth)),
+          woodThick,
+          op,
+        };
     return previewRuntime.apply({
       type: 'show',
       clearScope: 'layout',

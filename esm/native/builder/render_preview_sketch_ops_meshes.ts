@@ -99,6 +99,7 @@ export function createSketchPlacementPreviewGroup(args: {
   userData.__boxRight = boxRight;
   userData.__boxBack = boxBack;
   userData.__externalDrawerMeshes = externalDrawerMeshes;
+  userData.__cellLayoutMeshes = [];
   userData.__matShelf = materials.matShelf;
   userData.__matGlass = materials.matGlass;
   userData.__matBox = materials.matBox;
@@ -107,6 +108,7 @@ export function createSketchPlacementPreviewGroup(args: {
   userData.__matRod = materials.matRod;
   userData.__matBoxOverlay = materials.matBoxOverlay;
   userData.__matRemoveOverlay = materials.matRemoveOverlay;
+  userData.__matCellLayoutPeerOverlay = materials.matCellLayoutPeerOverlay;
   userData.__lineShelf = materials.lineShelf;
   userData.__lineGlass = materials.lineGlass;
   userData.__lineBox = materials.lineBox;
@@ -115,6 +117,7 @@ export function createSketchPlacementPreviewGroup(args: {
   userData.__lineRod = materials.lineRod;
   userData.__lineBoxOverlay = materials.lineBoxOverlay;
   userData.__lineRemoveOverlay = materials.lineRemoveOverlay;
+  userData.__lineCellLayoutBoundaryOverlay = materials.lineCellLayoutBoundaryOverlay;
 
   return group;
 }

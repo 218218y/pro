@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-25T09:45:00.795Z",
+  "generatedAt": "2026-09-07T04:04:23.753Z",
   "totals": {
-    "tests": 1261,
-    "unitRunnerTests": 1252,
+    "tests": 1263,
+    "unitRunnerTests": 1254,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 398,
     "runtime-unit": 348,
-    "integration": 475,
+    "integration": 477,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 7
@@ -3180,6 +3180,10 @@
     },
     {
       "file": "tests/canvas_picking_cell_dims_free_box_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_cell_dims_full_layout_preview_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -6376,6 +6380,10 @@
     },
     {
       "file": "tests/render_preview_sketch_pipeline_box_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_preview_sketch_pipeline_cell_layout_runtime.test.ts",
       "category": "integration"
     },
     {

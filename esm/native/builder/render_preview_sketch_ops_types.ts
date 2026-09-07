@@ -31,6 +31,7 @@ export type SketchPlacementPreviewMaterialSet = {
   matRod: PreviewMaterialLike;
   matBoxOverlay: PreviewMaterialLike;
   matRemoveOverlay: PreviewMaterialLike;
+  matCellLayoutPeerOverlay: PreviewMaterialLike;
   lineShelf: PreviewMaterialLike;
   lineGlass: PreviewMaterialLike;
   lineBox: PreviewMaterialLike;
@@ -39,6 +40,7 @@ export type SketchPlacementPreviewMaterialSet = {
   lineRod: PreviewMaterialLike;
   lineBoxOverlay: PreviewMaterialLike;
   lineRemoveOverlay: PreviewMaterialLike;
+  lineCellLayoutBoundaryOverlay: PreviewMaterialLike;
 };
 
 export type SketchPlacementPreviewMeshSlots = {

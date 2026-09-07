@@ -150,6 +150,10 @@ export function hideSketchPlacementPreviewOwner(
           // ignore stale outline cleanup failures
         }
       }
+      for (const mesh of owner.shared.readPreviewObjectList(userData.__cellLayoutMeshes)) {
+        mesh.visible = false;
+        owner.shared.setOutlineVisible(mesh, false);
+      }
       hideSketchPlacementMeasurements(group, owner.shared);
     }
   } catch {

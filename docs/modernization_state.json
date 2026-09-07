@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T20:47:11.726Z",
+  "generatedAt": "2026-09-07T04:04:23.496Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -32,8 +32,8 @@
     "explicitlyInventoriedIdentityFacades": 111
   },
   "tests": {
-    "classifiedFiles": 1261,
-    "unitRuntimeFiles": 1252,
+    "classifiedFiles": 1263,
+    "unitRuntimeFiles": 1254,
     "e2eFiles": 9,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,

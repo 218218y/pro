@@ -44,6 +44,22 @@ test('part-hover preview protocol validates typed box and object-box commands', 
     validatePartHoverPreviewCommand({ ...BOX_COMMAND, kind: 'object_boxes', previewObjects: [] }),
     ['object_boxes preview requires at least one preview object']
   );
+  const cellLayoutBoxes = [
+    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true },
+    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false },
+  ];
+  assert.deepEqual(
+    validatePartHoverPreviewCommand({ ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes }),
+    []
+  );
+  assert.deepEqual(
+    validatePartHoverPreviewCommand({
+      ...BOX_COMMAND,
+      kind: 'cell_layout',
+      cellLayoutBoxes: cellLayoutBoxes.map(box => ({ ...box, selected: false })),
+    }),
+    ['cell_layout preview requires exactly one selected cell']
+  );
 });
 
 test('part-hover preview runtime owns cleanup ordering and raw RenderOps payload construction', () => {
@@ -83,6 +99,24 @@ test('part-hover preview runtime owns cleanup ordering and raw RenderOps payload
   assert.equal(payloads[0]?.op, 'add');
   assert.equal(payloads[0]?.w, 0.8);
   assert.equal(payloads[0]?.boxH, 1.9);
+
+  calls.length = 0;
+  const cellLayoutBoxes = [
+    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true },
+    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false },
+  ];
+  assert.equal(
+    runtime.apply({
+      type: 'show',
+      clearScope: 'layout',
+      reason: 'cell-layout-runtime-test',
+      command: { ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes },
+    }),
+    true
+  );
+  assert.deepEqual(calls, ['layout:true', 'show']);
+  assert.deepEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
+  assert.notEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
 });
 
 test('part-hover preview runtime preserves scoped cleanup and fails closed on invalid commands', () => {

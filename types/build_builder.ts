@@ -159,6 +159,16 @@ export interface BuilderPreviewMeasurementEntryLike extends UnknownRecord {
   labelFaceSign?: BuilderPreviewScalar;
 }
 
+export interface BuilderPreviewCellLayoutBoxLike extends UnknownRecord {
+  x?: BuilderPreviewScalar;
+  y?: BuilderPreviewScalar;
+  z?: BuilderPreviewScalar;
+  w?: BuilderPreviewScalar;
+  boxH?: BuilderPreviewScalar;
+  d?: BuilderPreviewScalar;
+  selected?: BuilderPreviewBool;
+}
+
 export interface BuilderPreviewMarkerLike extends UnknownRecord {
   visible?: boolean;
   userData?: UnknownRecord | null;
@@ -193,6 +203,7 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   viewFaceSign?: BuilderPreviewScalar;
   labelFaceSign?: BuilderPreviewScalar;
   clearanceMeasurements?: BuilderPreviewMeasurementEntryLike[] | null;
+  cellLayoutBoxes?: BuilderPreviewCellLayoutBoxLike[] | null;
 }
 export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   App?: AppContainer;

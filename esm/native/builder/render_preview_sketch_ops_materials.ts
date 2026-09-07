@@ -54,6 +54,7 @@ export function createSketchPlacementPreviewMaterials(
     matRod: createSketchMeshMaterial(THREE, shared, 0x6fe7ff, 0.38),
     matBoxOverlay: createSketchMeshMaterial(THREE, shared, 0xfbbf24, 0.3, false),
     matRemoveOverlay: createSketchMeshMaterial(THREE, shared, 0xff4d4f, 0.32, false),
+    matCellLayoutPeerOverlay: createSketchMeshMaterial(THREE, shared, 0x4fc3f7, 0.18, false),
     lineShelf: createSketchLineMaterial(THREE, shared, 0x7fd3ff, 0.75),
     lineGlass: createSketchLineMaterial(THREE, shared, 0x7fd3ff, 0.92),
     lineBox: createSketchLineMaterial(THREE, shared, 0xfbbf24, 0.75),
@@ -62,5 +63,6 @@ export function createSketchPlacementPreviewMaterials(
     lineRod: createSketchLineMaterial(THREE, shared, 0xe9fdff, 1),
     lineBoxOverlay: createSketchLineMaterial(THREE, shared, 0xfbbf24, 0.98, false),
     lineRemoveOverlay: createSketchLineMaterial(THREE, shared, 0xff4d4f, 1, false),
+    lineCellLayoutBoundaryOverlay: createSketchLineMaterial(THREE, shared, 0x111111, 0.96, false),
   };
 }

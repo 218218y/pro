@@ -34,6 +34,8 @@ export interface LinearCellDimsContext extends CanvasLinearCellDimsArgs {
   toggledBackD: boolean;
 }
 
+export type LinearCellDimsGeometryContext = Omit<LinearCellDimsContext, 'autoWidthMatchToleranceCm'>;
+
 export type EnsureOwnLinearModule = (i: number) => ModuleShape;
 
 export function readRequiredLinearDimension(values: readonly number[], idx: number, label: string): number {

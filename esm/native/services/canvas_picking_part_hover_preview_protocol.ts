@@ -1,5 +1,5 @@
 export type PartHoverPreviewOp = 'add' | 'remove';
-export type PartHoverPreviewKind = 'box' | 'object_boxes';
+export type PartHoverPreviewKind = 'box' | 'object_boxes' | 'cell_layout';
 export type PartHoverPreviewClearScope = 'none' | 'layout' | 'sketch' | 'layout-and-sketch';
 
 export type PartHoverPreviewCommandBase = {
@@ -27,7 +27,23 @@ export type PartHoverObjectBoxesPreviewCommand = PartHoverPreviewCommandBase & {
   previewObjects: readonly unknown[];
 };
 
-export type PartHoverPreviewCommand = PartHoverBoxPreviewCommand | PartHoverObjectBoxesPreviewCommand;
+export type PartHoverCellLayoutPreviewBox = {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+  boxH: number;
+  d: number;
+  selected: boolean;
+};
+
+export type PartHoverCellLayoutPreviewCommand = PartHoverPreviewCommandBase & {
+  kind: 'cell_layout';
+  cellLayoutBoxes: readonly PartHoverCellLayoutPreviewBox[];
+};
+
+export type PartHoverPreviewCommand =
+  PartHoverBoxPreviewCommand | PartHoverObjectBoxesPreviewCommand | PartHoverCellLayoutPreviewCommand;
 
 export type PartHoverPreviewDecision =
   | {
@@ -57,6 +73,23 @@ export function validatePartHoverPreviewCommand(command: PartHoverPreviewCommand
   if (!isFinitePositive(command.woodThick)) violations.push('woodThick must be positive and finite');
   if (command.kind === 'object_boxes' && command.previewObjects.length === 0) {
     violations.push('object_boxes preview requires at least one preview object');
+  }
+  if (command.kind === 'cell_layout') {
+    if (command.cellLayoutBoxes.length < 2) {
+      violations.push('cell_layout preview requires at least two cells');
+    }
+    let selectedCount = 0;
+    for (const [index, box] of command.cellLayoutBoxes.entries()) {
+      if (!Number.isFinite(box.x)) violations.push(`cell_layout[${index}].x must be finite`);
+      if (!Number.isFinite(box.y)) violations.push(`cell_layout[${index}].y must be finite`);
+      if (!Number.isFinite(box.z)) violations.push(`cell_layout[${index}].z must be finite`);
+      if (!isFinitePositive(box.w)) violations.push(`cell_layout[${index}].w must be positive and finite`);
+      if (!isFinitePositive(box.boxH))
+        violations.push(`cell_layout[${index}].boxH must be positive and finite`);
+      if (!isFinitePositive(box.d)) violations.push(`cell_layout[${index}].d must be positive and finite`);
+      if (box.selected) selectedCount += 1;
+    }
+    if (selectedCount !== 1) violations.push('cell_layout preview requires exactly one selected cell');
   }
   return violations;
 }

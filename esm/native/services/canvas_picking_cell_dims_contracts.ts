@@ -43,3 +43,5 @@ export interface CanvasCornerCellDimsArgs extends CanvasCellDimsResolvedDrafts {
 export interface CanvasLinearCellDimsArgs extends CanvasCellDimsResolvedDrafts {
   foundModuleIndex: string | number;
 }
+
+export type CanvasLinearCellDimsGeometryArgs = Omit<CanvasLinearCellDimsArgs, 'autoWidthMatchToleranceCm'>;

@@ -3,6 +3,10 @@ import { applyBoxContentSketchPlacementPreview } from './render_preview_sketch_p
 import { applyLinearSketchPlacementPreview } from './render_preview_sketch_pipeline_linear.js';
 import { applyObjectBoxesSketchPlacementPreview } from './render_preview_sketch_pipeline_object_boxes.js';
 import {
+  applyCellLayoutSketchPlacementPreview,
+  hideCellLayoutSketchPlacementPreviewMeshes,
+} from './render_preview_sketch_pipeline_cell_layout.js';
+import {
   applySketchPlacementMeasurements,
   hideSketchPlacementMeasurements,
 } from './render_preview_sketch_measurements.js';
@@ -21,6 +25,13 @@ export function applySketchPlacementPreview(args: ApplySketchPlacementPreviewArg
     } catch {
       // keep preview application resilient
     }
+  }
+
+  if (ctx.kind !== 'cell_layout') hideCellLayoutSketchPlacementPreviewMeshes(ctx);
+
+  if (applyCellLayoutSketchPlacementPreview(ctx)) {
+    hideSketchPlacementMeasurements(ctx.g, ctx.shared);
+    return ctx.g;
   }
 
   if (applyObjectBoxesSketchPlacementPreview(ctx)) {

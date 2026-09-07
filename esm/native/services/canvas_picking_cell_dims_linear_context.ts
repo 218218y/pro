@@ -1,5 +1,11 @@
-import type { CanvasLinearCellDimsArgs } from './canvas_picking_cell_dims_contracts.js';
-import type { LinearCellDimsContext } from './canvas_picking_cell_dims_linear_shared.js';
+import type {
+  CanvasLinearCellDimsArgs,
+  CanvasLinearCellDimsGeometryArgs,
+} from './canvas_picking_cell_dims_contracts.js';
+import type {
+  LinearCellDimsContext,
+  LinearCellDimsGeometryContext,
+} from './canvas_picking_cell_dims_linear_shared.js';
 
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
@@ -9,9 +15,9 @@ import {
 import { computeCurrentLinearDims } from './canvas_picking_cell_dims_linear_context_current.js';
 import { applyLinearToggleBack } from './canvas_picking_cell_dims_linear_context_toggle.js';
 
-export function buildCanvasLinearCellDimsContext(
-  args: CanvasLinearCellDimsArgs
-): LinearCellDimsContext | null {
+export function buildCanvasLinearCellDimsGeometryContext(
+  args: CanvasLinearCellDimsGeometryArgs
+): LinearCellDimsGeometryContext | null {
   const resolved = resolveLinearModules(args);
   if (!resolved) return null;
 
@@ -68,4 +74,12 @@ export function buildCanvasLinearCellDimsContext(
     baseD: current.baseD,
     ...toggles,
   };
+}
+
+export function buildCanvasLinearCellDimsContext(
+  args: CanvasLinearCellDimsArgs
+): LinearCellDimsContext | null {
+  const geometry = buildCanvasLinearCellDimsGeometryContext(args);
+  if (!geometry) return null;
+  return { ...geometry, autoWidthMatchToleranceCm: args.autoWidthMatchToleranceCm };
 }
