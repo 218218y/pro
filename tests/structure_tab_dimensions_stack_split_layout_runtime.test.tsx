@@ -184,6 +184,20 @@ test('[structure-stack-split] lower cabinet fields use a compact row layout for 
   );
 });
 
+test('[structure-stack-split] lower height input and near-limit notice share the canonical 20cm upper minimum', () => {
+  const html = renderStackSplitControls({
+    height: 240,
+    stackSplitLowerHeight: 220,
+  });
+
+  const lowerHeightInput = html.match(/<input[^>]*name="stackSplitLowerHeight"[^>]*>/)?.[0];
+  assert.ok(lowerHeightInput);
+  assert.match(lowerHeightInput, /value="220"/);
+  assert.match(lowerHeightInput, /min="20"/);
+  assert.match(lowerHeightInput, /max="220"/);
+  assert.match(html, /המינימום האפשרי לחלק העליון הוא 20/);
+});
+
 test('[structure-stack-split] sliding wardrobes render the upper/lower split control', () => {
   const html = renderStackSplitControls({ isSliding: true, stackSplitEnabled: false });
 

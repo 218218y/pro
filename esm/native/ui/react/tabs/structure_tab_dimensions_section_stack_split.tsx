@@ -36,6 +36,13 @@ export function StructureStackSplitControls(props: {
   onSetStackSplitDecorativeSeparatorFrontOverhangCm: StructureDimensionsContentProps['onSetStackSplitDecorativeSeparatorFrontOverhangCm'];
   renderStackLinkBadge: StructureDimensionsContentProps['renderStackLinkBadge'];
 }): ReactElement | null {
+  const lowerHeightBounds = readStructureDimensionBounds({
+    key: 'stackSplitLowerHeight',
+    height: props.height,
+  });
+  const minTopHeight = Math.max(0, props.height - (lowerHeightBounds.max ?? props.height));
+  const currentTopHeight = props.height - props.stackSplitLowerHeight;
+
   return (
     <div className="wp-field" data-testid={STRUCTURE_STACK_SPLIT_SECTION_TEST_ID}>
       <ModeToggleButton
@@ -86,10 +93,7 @@ export function StructureStackSplitControls(props: {
                 onCommit={value => props.onSetRaw('stackSplitLowerHeight', value)}
                 step={5}
                 buttonsStep={5}
-                bounds={readStructureDimensionBounds({
-                  key: 'stackSplitLowerHeight',
-                  height: props.height,
-                })}
+                bounds={lowerHeightBounds}
                 reserveInputAddon={true}
               />
             </div>
@@ -137,8 +141,8 @@ export function StructureStackSplitControls(props: {
             </div>
           </div>
 
-          {props.height - props.stackSplitLowerHeight < 45 ? (
-            <InlineNotice>המינימום האפשרי לחלק העליון הוא 40 ס"מ.</InlineNotice>
+          {currentTopHeight < minTopHeight + 5 ? (
+            <InlineNotice>המינימום האפשרי לחלק העליון הוא {minTopHeight} ס"מ.</InlineNotice>
           ) : null}
         </div>
       ) : null}

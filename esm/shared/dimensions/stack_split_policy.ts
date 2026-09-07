@@ -7,7 +7,7 @@ const STACK_SPLIT_DEFAULTS = Object.freeze({
 });
 
 const STACK_SPLIT_LIMITS = Object.freeze({
-  minTopHeightCm: centimeters(40),
+  minTopHeightCm: centimeters(20),
   minLowerHeightCm: centimeters(20),
   lowerDepthMinCm: centimeters(20),
   lowerDepthMaxCm: centimeters(150),

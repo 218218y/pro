@@ -131,6 +131,36 @@ test('build_flow_plan inputs clear top base while preserving an upper leg platfo
   assert.ok(plan.H < 1.7);
 });
 
+test('build_flow_plan inputs preserve a 20cm upper cabinet when the authored lower height reaches the canonical maximum', () => {
+  const plan = resolveBuildFlowPlanInputs({
+    ui: {
+      baseType: 'legs',
+      raw: {
+        stackSplitLowerHeight: 230,
+        stackSplitLowerHeightManual: true,
+        stackSplitLowerDepth: 60,
+        stackSplitLowerDepthManual: false,
+        stackSplitLowerWidth: 180,
+        stackSplitLowerWidthManual: false,
+      },
+      stackSplitEnabled: true,
+    } as any,
+    cfg: {
+      wardrobeType: 'hinged',
+    } as any,
+    widthCm: 180,
+    heightCm: 240,
+    depthCm: 60,
+    doorsCount: 3,
+    toStr,
+  });
+
+  assert.equal(plan.splitActiveForBuild, true);
+  assert.equal(plan.stackSplitUnifiedFrame, true);
+  assert.equal(plan.lowerHeightCm, 220);
+  assertApproximatelyEqual(plan.H, 0.2 + 0.018);
+});
+
 test('build_flow_plan inputs keep one frame for stack split when lower width and depth match the upper unit', () => {
   const plan = resolveBuildFlowPlanInputs({
     ui: {

@@ -84,7 +84,7 @@ export function normalizeStackSplit(args: {
   const overallHeightCm = Number(args.overallHeightCm);
   const overallDepthCm = Number(args.overallDepthCm);
 
-  // Hard constraint: keep at least 40cm for the upper unit.
+  // Hard constraint: keep at least the canonical minimum height for the upper unit.
   // (We may still *recommend* more in the UI, but we don't block it.)
   const minTopCm =
     typeof args.minTopCm === 'number' && Number.isFinite(args.minTopCm)

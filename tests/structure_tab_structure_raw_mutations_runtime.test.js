@@ -56,7 +56,7 @@ function loadTsModule(relPath, calls, cache = new Map()) {
         STACK_SPLIT_LOWER_HEIGHT_MIN: 20,
         STACK_SPLIT_LOWER_WIDTH_MAX: 800,
         STACK_SPLIT_LOWER_WIDTH_MIN: 30,
-        STACK_SPLIT_MIN_TOP_HEIGHT: 40,
+        STACK_SPLIT_MIN_TOP_HEIGHT: 20,
         WARDROBE_CELL_DEPTH_MAX: 150,
         WARDROBE_CELL_DEPTH_MIN: 20,
         WARDROBE_CELL_HEIGHT_MAX: 300,
@@ -287,6 +287,18 @@ test('[structure-dimension-constraints] Structure tab door minimum is one except
   assert.equal(
     JSON.stringify(mod.readStructureDimensionBounds({ key: 'doors', wardrobeType: 'sliding' })),
     JSON.stringify({ min: 2, max: 14, integer: true })
+  );
+});
+
+test('[structure-dimension-constraints] stack split allows the upper cabinet down to the canonical 20cm minimum', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts', calls);
+
+  const bounds = mod.readStructureDimensionBounds({ key: 'stackSplitLowerHeight', height: 240 });
+  assert.equal(JSON.stringify(bounds), JSON.stringify({ min: 20, max: 220 }));
+  assert.equal(
+    mod.normalizeStructureRawValue({ key: 'stackSplitLowerHeight', height: 240, value: 230 }),
+    220
   );
 });
 
