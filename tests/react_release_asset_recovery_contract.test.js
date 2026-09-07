@@ -4,10 +4,54 @@ import path from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
+}
+
+function collectDeferredTabPrefetchLoaders(source) {
+  const sourceFile = createSourceFile('DeferredSidebarTabs.tsx', source);
+  let prefetchFunction = null;
+
+  walkAst(sourceFile, node => {
+    if (node?.type === 'FunctionDeclaration' && node.id?.name === 'prefetchDeferredSidebarTabView') {
+      prefetchFunction = node;
+    }
+  });
+
+  assert.ok(prefetchFunction, 'expected prefetchDeferredSidebarTabView function');
+
+  const loadersByTab = {};
+  walkAst(prefetchFunction.body, node => {
+    if (node?.type !== 'IfStatement') return;
+    const condition = node.test;
+    if (
+      condition?.type !== 'BinaryExpression' ||
+      condition.operator !== '===' ||
+      condition.left?.type !== 'Identifier' ||
+      condition.left.name !== 'tabId' ||
+      condition.right?.type !== 'Literal' ||
+      typeof condition.right.value !== 'string'
+    ) {
+      return;
+    }
+
+    let loaderName = null;
+    walkAst(node.consequent, child => {
+      if (loaderName || child?.type !== 'CallExpression') return;
+      if (child.callee?.type !== 'Identifier' || child.callee.name !== 'prefetchModule') return;
+      const loadCall = child.arguments?.[0];
+      if (loadCall?.type !== 'CallExpression' || loadCall.callee?.type !== 'Identifier') return;
+      loaderName = loadCall.callee.name;
+    });
+
+    if (loaderName) loadersByTab[condition.right.value] = loaderName;
+  });
+
+  return loadersByTab;
 }
 
 test('react background warmup only preloads the stable sidebar shell chunk', () => {
@@ -36,10 +80,12 @@ test('sidebar intent prefetch warms the selected tab and shared interior picking
   assert.match(shared, /mod\.prefetchDeferredSidebarTabView\(tabId\)/);
 
   assert.match(deferred, /export function prefetchDeferredSidebarTabView\(/);
-  assert.match(deferred, /tabId === 'sketch'[\s\S]*loadSketchTabViewModule\(\)/);
-  assert.match(deferred, /tabId === 'interior'[\s\S]*loadInteriorTabViewModule\(\)/);
-  assert.match(deferred, /tabId === 'design'[\s\S]*loadDesignTabViewModule\(\)/);
-  assert.match(deferred, /tabId === 'settings'[\s\S]*loadSettingsTabModule\(\)/);
+  assert.deepEqual(collectDeferredTabPrefetchLoaders(deferred), {
+    design: 'loadDesignTabViewModule',
+    interior: 'loadInteriorTabViewModule',
+    sketch: 'loadSketchTabViewModule',
+    settings: 'loadSettingsTabModule',
+  });
 
   assert.doesNotMatch(warmup, /loadCanvasPickingInteriorExtension/);
 });
