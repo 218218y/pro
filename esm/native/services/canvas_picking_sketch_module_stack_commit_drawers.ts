@@ -153,18 +153,25 @@ export function commitSketchModuleInternalDrawers(
       ? (args.cfg.sketchExtras as RecordMap)
       : null;
   const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
-  const targetHover = stackHover?.kind === 'drawers' ? stackHover : null;
-  const targetCell = targetHover
+  const targetOwnership =
+    stackHover?.kind === 'drawers' &&
+    typeof stackHover.xNorm === 'number' &&
+    Number.isFinite(stackHover.xNorm) &&
+    typeof stackHover.scopeOrder === 'number' &&
+    Number.isFinite(stackHover.scopeOrder)
+      ? { hover: stackHover, xNorm: stackHover.xNorm, scopeOrder: stackHover.scopeOrder }
+      : null;
+  const targetCell = targetOwnership
     ? resolveSketchModulePartitionCellAtNorm({
         sketchExtras: existingExtra ?? {},
         bottomY: args.bottomY,
         topY: args.topY,
         woodThick:
           typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
-        xNorm: targetHover.xNorm,
+        xNorm: targetOwnership.xNorm,
         yNorm: Math.max(
           0,
-          Math.min(1, (targetHover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
+          Math.min(1, (targetOwnership.hover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
         ),
       })
     : null;
@@ -344,7 +351,7 @@ export function commitSketchModuleInternalDrawers(
     yNorm: normalized.yNormBase,
     yAnchor: normalized.yAnchor,
     drawerHeightM: args.drawerHeightM,
-    ...(targetHover ? { xNorm: targetHover.xNorm, scopeOrder: targetHover.scopeOrder } : {}),
+    ...(targetOwnership ? { xNorm: targetOwnership.xNorm, scopeOrder: targetOwnership.scopeOrder } : {}),
   };
   mutableList.push(item);
   const removedShelfCount = removeShelvesTouchingInternalDrawerCassette({
@@ -365,8 +372,8 @@ export function commitSketchModuleInternalDrawers(
     kind: 'drawers',
     op: 'remove',
     removeId: item.id,
-    xNorm: targetHover?.xNorm,
-    scopeOrder: targetHover?.scopeOrder,
+    xNorm: targetOwnership?.xNorm,
+    scopeOrder: targetOwnership?.scopeOrder,
     yCenter: placement.yCenter,
     removeKind: 'sketch',
     baseY: normalized.baseYAbs,

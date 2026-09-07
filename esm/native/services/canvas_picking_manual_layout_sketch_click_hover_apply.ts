@@ -159,7 +159,27 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       return true;
     }
     const command = manualCommand.command;
-    if (command.scopeOrder <= 0) {
+    const ownershipXNorm =
+      typeof __hoverRec.xNorm === 'number' &&
+      Number.isFinite(__hoverRec.xNorm) &&
+      __hoverRec.xNorm >= 0 &&
+      __hoverRec.xNorm <= 1
+        ? __hoverRec.xNorm
+        : null;
+    const ownershipYNorm =
+      typeof __hoverRec.yNorm === 'number' &&
+      Number.isFinite(__hoverRec.yNorm) &&
+      __hoverRec.yNorm >= 0 &&
+      __hoverRec.yNorm <= 1
+        ? __hoverRec.yNorm
+        : null;
+    const ownershipScopeOrder =
+      typeof __hoverRec.scopeOrder === 'number' &&
+      Number.isFinite(__hoverRec.scopeOrder) &&
+      __hoverRec.scopeOrder > 0
+        ? __hoverRec.scopeOrder
+        : null;
+    if (ownershipXNorm == null || ownershipYNorm == null || ownershipScopeOrder == null) {
       applyCanvasLinearCellDoorCountFromSketch({
         App,
         foundModuleIndex: __activeModuleKey,
@@ -176,9 +196,9 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         if (!hasSketchModulePartitions(cfg.sketchExtras)) return;
         appliedToPartitionCell = setSketchModulePartitionCellDoorCount({
           cfg,
-          xNorm: command.xNorm,
-          yNorm: command.yNorm,
-          scopeOrder: command.scopeOrder,
+          xNorm: ownershipXNorm,
+          yNorm: ownershipYNorm,
+          scopeOrder: ownershipScopeOrder,
           doorCount: command.doorCount,
         });
       },
@@ -298,8 +318,8 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           totalHeight,
           pointerY: bottomY + yNorm * totalHeight,
           yNorm,
-          xNorm: rodHover.xNorm,
-          scopeOrder: rodHover.scopeOrder,
+          ...(rodHover.xNorm !== undefined ? { xNorm: rodHover.xNorm } : {}),
+          ...(rodHover.scopeOrder !== undefined ? { scopeOrder: rodHover.scopeOrder } : {}),
           removeEps: -1,
         });
       },
@@ -349,8 +369,8 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           totalHeight,
           pad: 0,
           pointerY: bottomY + yNorm * totalHeight,
-          xNorm: storageHover.xNorm,
-          scopeOrder: storageHover.scopeOrder,
+          ...(storageHover.xNorm !== undefined ? { xNorm: storageHover.xNorm } : {}),
+          ...(storageHover.scopeOrder !== undefined ? { scopeOrder: storageHover.scopeOrder } : {}),
           heightM: parseSketchStorageHeight(
             typeof __hoverRec.tool === 'string' ? __hoverRec.tool : 'sketch_storage:'
           ),
@@ -403,8 +423,8 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
           totalHeight,
           pointerY: bottomY + yNormClamped * totalHeight,
           yNorm: yNormClamped,
-          xNorm: shelfHover.xNorm,
-          scopeOrder: shelfHover.scopeOrder,
+          ...(shelfHover.xNorm !== undefined ? { xNorm: shelfHover.xNorm } : {}),
+          ...(shelfHover.scopeOrder !== undefined ? { scopeOrder: shelfHover.scopeOrder } : {}),
           variant: shelfHover.variant || 'double',
           shelfDepthM: shelfHover.depthM,
           removeEps: -1,

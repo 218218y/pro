@@ -33,8 +33,6 @@ export type ManualLayoutShelfAddCommand = CommandBase & {
   kind: 'shelf';
   op: 'add';
   yNorm: number;
-  xNorm: number;
-  scopeOrder: number;
   variant: string;
   depthM: number | null;
 };
@@ -51,8 +49,6 @@ export type ManualLayoutRodAddCommand = CommandBase & {
   kind: 'rod';
   op: 'add';
   yNorm: number;
-  xNorm: number;
-  scopeOrder: number;
 };
 
 export type ManualLayoutRodRemoveCommand = {
@@ -67,8 +63,6 @@ export type ManualLayoutStorageAddCommand = CommandBase & {
   kind: 'storage';
   op: 'add';
   yNorm: number;
-  xNorm: number;
-  scopeOrder: number;
 };
 
 export type ManualLayoutStorageRemoveCommand = {
@@ -91,16 +85,11 @@ export type ManualLayoutCellDoorCountCommand = {
   kind: 'cell_door_count';
   op: 'apply';
   doorCount: 1 | 2;
-  xNorm: number;
-  yNorm: number;
-  scopeOrder: number;
 };
 
 export type ManualLayoutDrawerStackBaseCommand = CommandBase & {
   kind: 'drawers' | 'ext_drawers';
   yCenter: number;
-  xNorm: number;
-  scopeOrder: number;
   baseY: number | null;
   removeId: string | null;
   removeKind: 'sketch' | 'std' | '';
@@ -174,8 +163,6 @@ const DRAWER_STACK_FIELDS = new Set([
   'kind',
   'op',
   'yCenter',
-  'xNorm',
-  'scopeOrder',
   'baseY',
   'removeId',
   'removeKind',
@@ -191,15 +178,15 @@ const DRAWER_STACK_FIELDS = new Set([
 const COMMAND_FIELDS = {
   'box:add': new Set(['kind', 'op', 'xCenter', 'yCenter', 'xNorm', 'blockedReason']),
   'box:remove': new Set(['kind', 'op', 'xCenter', 'yCenter', 'xNorm', 'removeId', 'blockedReason']),
-  'shelf:add': new Set(['kind', 'op', 'yNorm', 'xNorm', 'scopeOrder', 'variant', 'depthM', 'blockedReason']),
+  'shelf:add': new Set(['kind', 'op', 'yNorm', 'variant', 'depthM', 'blockedReason']),
   'shelf:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx', 'shelfIndex']),
-  'rod:add': new Set(['kind', 'op', 'yNorm', 'xNorm', 'scopeOrder', 'blockedReason']),
+  'rod:add': new Set(['kind', 'op', 'yNorm', 'blockedReason']),
   'rod:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx', 'rodIndex']),
-  'storage:add': new Set(['kind', 'op', 'yNorm', 'xNorm', 'scopeOrder', 'blockedReason']),
+  'storage:add': new Set(['kind', 'op', 'yNorm', 'blockedReason']),
   'storage:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx']),
   'module_divider:add': new Set(['kind', 'op', 'axis', 'dividerId', 'dividerXNorm', 'dividerYNorm']),
   'module_divider:remove': new Set(['kind', 'op', 'axis', 'dividerId', 'dividerXNorm', 'dividerYNorm']),
-  'cell_door_count:apply': new Set(['kind', 'op', 'doorCount', 'xNorm', 'yNorm', 'scopeOrder']),
+  'cell_door_count:apply': new Set(['kind', 'op', 'doorCount']),
   'drawers:add': DRAWER_STACK_FIELDS,
   'drawers:remove': DRAWER_STACK_FIELDS,
   'ext_drawers:add': DRAWER_STACK_FIELDS,
@@ -286,17 +273,10 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
   if (record.kind === 'shelf') {
     if (record.op === 'add') {
       const yNorm = readUnit(record.yNorm);
-      const xNorm = readUnit(record.xNorm);
-      const scopeOrder = readNonNegative(record.scopeOrder);
       const variant = readString(record.variant);
       const depthM = readNullablePositive(record.depthM);
-      return yNorm != null &&
-        xNorm != null &&
-        scopeOrder != null &&
-        variant &&
-        depthM !== undefined &&
-        blockedReason !== undefined
-        ? { kind: 'shelf', op: 'add', yNorm, xNorm, scopeOrder, variant, depthM, blockedReason }
+      return yNorm != null && variant && depthM !== undefined && blockedReason !== undefined
+        ? { kind: 'shelf', op: 'add', yNorm, variant, depthM, blockedReason }
         : null;
     }
     const removeIdx = readNullableIndex(record.removeIdx);
@@ -312,10 +292,8 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
   if (record.kind === 'rod') {
     if (record.op === 'add') {
       const yNorm = readUnit(record.yNorm);
-      const xNorm = readUnit(record.xNorm);
-      const scopeOrder = readNonNegative(record.scopeOrder);
-      return yNorm != null && xNorm != null && scopeOrder != null && blockedReason !== undefined
-        ? { kind: 'rod', op: 'add', yNorm, xNorm, scopeOrder, blockedReason }
+      return yNorm != null && blockedReason !== undefined
+        ? { kind: 'rod', op: 'add', yNorm, blockedReason }
         : null;
     }
     const removeIdx = readNullableIndex(record.removeIdx);
@@ -331,10 +309,8 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
   if (record.kind === 'storage') {
     if (record.op === 'add') {
       const yNorm = readUnit(record.yNorm);
-      const xNorm = readUnit(record.xNorm);
-      const scopeOrder = readNonNegative(record.scopeOrder);
-      return yNorm != null && xNorm != null && scopeOrder != null && blockedReason !== undefined
-        ? { kind: 'storage', op: 'add', yNorm, xNorm, scopeOrder, blockedReason }
+      return yNorm != null && blockedReason !== undefined
+        ? { kind: 'storage', op: 'add', yNorm, blockedReason }
         : null;
     }
     const removeIdx = readNullableIndex(record.removeIdx);
@@ -371,24 +347,12 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
   }
 
   if (record.kind === 'cell_door_count') {
-    const xNorm = readUnit(record.xNorm);
-    const yNorm = readUnit(record.yNorm);
-    const scopeOrder = readNonNegative(record.scopeOrder);
-    if (
-      record.op !== 'apply' ||
-      (record.doorCount !== 1 && record.doorCount !== 2) ||
-      xNorm == null ||
-      yNorm == null ||
-      scopeOrder == null
-    )
-      return null;
-    return { kind: 'cell_door_count', op: 'apply', doorCount: record.doorCount, xNorm, yNorm, scopeOrder };
+    if (record.op !== 'apply' || (record.doorCount !== 1 && record.doorCount !== 2)) return null;
+    return { kind: 'cell_door_count', op: 'apply', doorCount: record.doorCount };
   }
 
   if (record.kind !== 'drawers' && record.kind !== 'ext_drawers') return null;
   const yCenter = readFinite(record.yCenter);
-  const xNorm = readUnit(record.xNorm);
-  const scopeOrder = readNonNegative(record.scopeOrder);
   const baseY = record.baseY === null ? null : readFinite(record.baseY);
   const removeId = readNullableString(record.removeId);
   const removePid = readNullableString(record.removePid);
@@ -404,8 +368,6 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
       : null;
   if (
     yCenter == null ||
-    xNorm == null ||
-    scopeOrder == null ||
     (record.baseY !== null && baseY == null) ||
     removeId === undefined ||
     removePid === undefined ||
@@ -429,8 +391,6 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
   const base: ManualLayoutDrawerStackBaseCommand = {
     kind: record.kind,
     yCenter,
-    xNorm,
-    scopeOrder,
     baseY,
     removeId,
     removeKind,

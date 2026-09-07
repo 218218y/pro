@@ -226,8 +226,7 @@ export function resolveSketchModuleContentPreview(args: {
           ? createStorageAddHoverRecord({
               host: source.host,
               yNorm: storageAddYNorm,
-              xNorm: pointerNorm.xNorm,
-              scopeOrder: partitionScopeOrder,
+              ...(partitionCell ? { xNorm: pointerNorm.xNorm, scopeOrder: partitionScopeOrder } : {}),
               blockedReason: blockedBySketchDrawers ? 'collision' : null,
             })
           : undefined,
@@ -236,10 +235,19 @@ export function resolveSketchModuleContentPreview(args: {
         x: partitionCell?.centerX ?? internalCenterX,
         y: storagePreviewY,
         z: zFront + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
-        w: Math.max(
-          INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
-          previewInnerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
-        ),
+        ...(partitionCell
+          ? {
+              w: Math.max(
+                INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+                previewInnerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+              ),
+            }
+          : {
+              w: Math.max(
+                INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+                innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+              ),
+            }),
         h: storageHPreview,
         d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick),
         woodThick,
@@ -262,8 +270,7 @@ export function resolveSketchModuleContentPreview(args: {
           ? createRodAddHoverRecord({
               host: source.host,
               yNorm: rodAddYNorm,
-              xNorm: pointerNorm.xNorm,
-              scopeOrder: partitionScopeOrder,
+              ...(partitionCell ? { xNorm: pointerNorm.xNorm, scopeOrder: partitionScopeOrder } : {}),
               blockedReason: blockedBySketchDrawers ? 'collision' : null,
             })
           : undefined,
@@ -272,10 +279,19 @@ export function resolveSketchModuleContentPreview(args: {
         x: partitionCell?.centerX ?? internalCenterX,
         y: yClamped,
         z: internalZ,
-        w: Math.max(
-          SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
-          previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
-        ),
+        ...(partitionCell
+          ? {
+              w: Math.max(
+                SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+                previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+              ),
+            }
+          : {
+              w: Math.max(
+                SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+                innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+              ),
+            }),
         h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
         d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
         woodThick,

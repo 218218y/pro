@@ -54,15 +54,28 @@ export type ManualLayoutSketchHoverMatchState = {
 
 export type ManualLayoutSketchBoxHoverIntent = ManualLayoutBoxAddCommand | ManualLayoutBoxRemoveCommand;
 
-export type ManualLayoutSketchStackHoverIntent =
-  ManualLayoutDrawerStackAddCommand | ManualLayoutDrawerStackRemoveCommand;
+export type ManualLayoutSketchPartitionOwnership = {
+  xNorm?: number;
+  scopeOrder?: number;
+};
 
-export type ManualLayoutSketchShelfHoverIntent = ManualLayoutShelfAddCommand | ManualLayoutShelfRemoveCommand;
+export type ManualLayoutSketchStackHoverIntent = (
+  ManualLayoutDrawerStackAddCommand | ManualLayoutDrawerStackRemoveCommand
+) &
+  ManualLayoutSketchPartitionOwnership;
 
-export type ManualLayoutSketchRodHoverIntent = ManualLayoutRodAddCommand | ManualLayoutRodRemoveCommand;
+export type ManualLayoutSketchShelfHoverIntent = (
+  ManualLayoutShelfAddCommand | ManualLayoutShelfRemoveCommand
+) &
+  ManualLayoutSketchPartitionOwnership;
 
-export type ManualLayoutSketchStorageHoverIntent =
-  ManualLayoutStorageAddCommand | ManualLayoutStorageRemoveCommand;
+export type ManualLayoutSketchRodHoverIntent = (ManualLayoutRodAddCommand | ManualLayoutRodRemoveCommand) &
+  ManualLayoutSketchPartitionOwnership;
+
+export type ManualLayoutSketchStorageHoverIntent = (
+  ManualLayoutStorageAddCommand | ManualLayoutStorageRemoveCommand
+) &
+  ManualLayoutSketchPartitionOwnership;
 
 export function readNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;

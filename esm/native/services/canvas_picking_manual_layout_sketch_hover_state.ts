@@ -237,27 +237,31 @@ export function createManualLayoutSketchModuleDividerHoverRecord(
 export function createManualLayoutSketchCellDoorCountHoverRecord(
   args: ManualLayoutSketchCellDoorCountHoverArgs
 ): RecordMap {
-  return {
-    ...createManualLayoutSketchHoverBase({ host: args.host, kind: 'cell_door_count', op: 'apply' }),
-    doorCount: args.doorCount,
-    [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope({
-      kind: 'cell_door_count',
-      op: 'apply',
+  return withDefined(
+    {
+      ...createManualLayoutSketchHoverBase({ host: args.host, kind: 'cell_door_count', op: 'apply' }),
       doorCount: args.doorCount,
+      [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope({
+        kind: 'cell_door_count',
+        op: 'apply',
+        doorCount: args.doorCount,
+      }),
+    },
+    {
       xNorm:
         typeof args.xNorm === 'number' && Number.isFinite(args.xNorm)
           ? Math.max(0, Math.min(1, args.xNorm))
-          : 0.5,
+          : undefined,
       yNorm:
         typeof args.yNorm === 'number' && Number.isFinite(args.yNorm)
           ? Math.max(0, Math.min(1, args.yNorm))
-          : 0.5,
+          : undefined,
       scopeOrder:
         typeof args.scopeOrder === 'number' && Number.isFinite(args.scopeOrder)
           ? Math.max(0, args.scopeOrder)
-          : 0,
-    }),
-  };
+          : undefined,
+    }
+  );
 }
 
 function createStructuralCommandFromHoverArgs(
@@ -379,14 +383,6 @@ export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketc
   const commandBase: ManualLayoutDrawerStackBaseCommand = {
     kind: args.kind,
     yCenter: args.yCenter,
-    xNorm:
-      typeof args.xNorm === 'number' && Number.isFinite(args.xNorm)
-        ? Math.max(0, Math.min(1, args.xNorm))
-        : 0.5,
-    scopeOrder:
-      typeof args.scopeOrder === 'number' && Number.isFinite(args.scopeOrder)
-        ? Math.max(0, args.scopeOrder)
-        : 0,
     baseY: args.baseY ?? null,
     removeId,
     removeKind,

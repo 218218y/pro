@@ -263,10 +263,19 @@ export function resolveSketchModuleRodRemovePreview(args: {
       x: previewCenterX,
       y: previewY,
       z: args.internalZ,
-      w: Math.max(
-        SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
-        previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
-      ),
+      ...(targetCell
+        ? {
+            w: Math.max(
+              SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+              previewInnerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+            ),
+          }
+        : {
+            w: Math.max(
+              SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+              args.innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+            ),
+          }),
       h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
       d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
       woodThick: args.woodThick,

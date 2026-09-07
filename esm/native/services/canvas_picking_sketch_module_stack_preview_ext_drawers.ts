@@ -190,8 +190,11 @@ export function resolveSketchModuleExternalDrawersPreview(
   const faceEnvelope = selectorFrontEnvelope ?? readSelectorFrontEnvelope(hitSelectorObj);
   const outerW = Math.max(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM,
-    partitionCell ? targetInnerW : (faceEnvelope?.outerW ?? innerW)
+    faceEnvelope?.outerW ?? innerW
   );
+  const partitionOuterW = partitionCell
+    ? Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM, targetInnerW)
+    : outerW;
   const defaultCenterX = partitionCell ? targetCenterX : (faceEnvelope?.centerX ?? internalCenterX);
   const frontPlaneZ =
     (faceEnvelope?.centerZ ??
@@ -206,7 +209,7 @@ export function resolveSketchModuleExternalDrawersPreview(
     frontPlaneZ + visualT / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM;
   const defaultPreviewW = Math.max(
     DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
-    outerW - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
+    partitionOuterW - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
   );
   const centerX = standardShoePreview?.x ?? defaultCenterX;
   const frontZ = standardShoePreview?.z ?? defaultFrontZ;
@@ -271,8 +274,7 @@ export function resolveSketchModuleExternalDrawersPreview(
       drawerHeightM: standardShoePreview?.drawerH ?? args.drawerHeightM ?? placement.drawerH,
       drawerH,
       stackH: placement.stackH,
-      xNorm: pointerNorm.xNorm,
-      scopeOrder,
+      ...(partitionCell ? { xNorm: pointerNorm.xNorm, scopeOrder } : {}),
       blockedReason,
     }),
     preview: {

@@ -70,18 +70,25 @@ export function commitSketchModuleExternalDrawers(
       ? (args.cfg.sketchExtras as RecordMap)
       : null;
   const stackHover = args.hoverOk ? readManualLayoutSketchStackHoverIntent(args.hoverRec) : null;
-  const targetHover = stackHover?.kind === 'ext_drawers' ? stackHover : null;
-  const targetCell = targetHover
+  const targetOwnership =
+    stackHover?.kind === 'ext_drawers' &&
+    typeof stackHover.xNorm === 'number' &&
+    Number.isFinite(stackHover.xNorm) &&
+    typeof stackHover.scopeOrder === 'number' &&
+    Number.isFinite(stackHover.scopeOrder)
+      ? { hover: stackHover, xNorm: stackHover.xNorm, scopeOrder: stackHover.scopeOrder }
+      : null;
+  const targetCell = targetOwnership
     ? resolveSketchModulePartitionCellAtNorm({
         sketchExtras: existingExtra ?? {},
         bottomY: args.bottomY,
         topY: args.topY,
         woodThick:
           typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) ? args.woodThick : 0.018,
-        xNorm: targetHover.xNorm,
+        xNorm: targetOwnership.xNorm,
         yNorm: Math.max(
           0,
-          Math.min(1, (targetHover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
+          Math.min(1, (targetOwnership.hover.yCenter - args.bottomY) / Math.max(0.0001, args.totalHeight))
         ),
       })
     : null;
@@ -233,7 +240,7 @@ export function commitSketchModuleExternalDrawers(
     count: args.drawerType === 'shoe' ? 0 : placement.drawerCount,
     drawerHeightM: args.drawerHeightM,
     ...(args.drawerType === 'shoe' ? { hasShoeDrawer: true } : {}),
-    ...(targetHover ? { xNorm: targetHover.xNorm, scopeOrder: targetHover.scopeOrder } : {}),
+    ...(targetOwnership ? { xNorm: targetOwnership.xNorm, scopeOrder: targetOwnership.scopeOrder } : {}),
   };
   mutableList.push(item);
   return createManualLayoutSketchStackHoverRecord({
@@ -241,8 +248,8 @@ export function commitSketchModuleExternalDrawers(
     kind: 'ext_drawers',
     op: 'remove',
     removeId: item.id,
-    xNorm: targetHover?.xNorm,
-    scopeOrder: targetHover?.scopeOrder,
+    xNorm: targetOwnership?.xNorm,
+    scopeOrder: targetOwnership?.scopeOrder,
     yCenter: placement.yCenter,
     baseY: normalized.baseYAbs,
     drawerCount: placement.drawerCount,

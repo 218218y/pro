@@ -142,9 +142,7 @@ export function tryHandleManualLayoutSketchHoverModuleBoxPreview(
       hoverRecord: createManualLayoutSketchCellDoorCountHoverRecord({
         host: createManualLayoutSketchHoverHost(ctx),
         doorCount: isBoxDoubleDoor ? 2 : 1,
-        xNorm: pointerNorm.xNorm,
-        yNorm: pointerNorm.yNorm,
-        scopeOrder,
+        ...(targetCell ? { xNorm: pointerNorm.xNorm, yNorm: pointerNorm.yNorm, scopeOrder } : {}),
       }),
       preview: {
         kind: 'box',

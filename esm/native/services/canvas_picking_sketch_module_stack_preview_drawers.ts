@@ -191,8 +191,7 @@ export function resolveSketchModuleDrawersPreview(
       drawerGap: placement.drawerGap,
       drawerHeightM: args.drawerHeightM ?? placement.drawerH,
       stackH: placement.stackH,
-      xNorm: pointerNorm.xNorm,
-      scopeOrder,
+      ...(partitionCell ? { xNorm: pointerNorm.xNorm, scopeOrder } : {}),
       blockedReason,
     }),
     preview: {
