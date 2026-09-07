@@ -279,7 +279,7 @@ test('[structure-tab-family] interior owners stay thin over pipeline + sketch-bo
     [
       /interior_layout_sketch_box_controls_runtime\.js/,
       /interior_layout_sketch_box_controls_components\.js/,
-      /toggleSketchBoxControlsPanel\(props, isSketchBoxControlsOpen, isSketchBoxToolActive\);/,
+      /toggleSketchBoxControlsPanel\(props, isSketchBoxControlsOpen, isSketchBoxPanelToolActive\);/,
       /updateSketchBoxOptionalDimensionDraft\(props, 'width', raw\);/,
       /toggleSketchBoxBasePanel\(props, isBaseToolActive\);/,
       /selectSketchBoxCorniceType\(props, next\);/,

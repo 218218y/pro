@@ -23,7 +23,7 @@ function sketchBoxFrontsBundle() {
   ].join('\n');
 }
 
-test('sketch box UI exposes a dedicated double-door mode under the single-door action', () => {
+test('sketch UI exposes the persistent double-door mode alongside the single-door action', () => {
   const helpers = [
     read('esm/native/ui/react/tabs/interior_tab_helpers.tsx'),
     read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'),
@@ -34,7 +34,7 @@ test('sketch box UI exposes a dedicated double-door mode under the single-door a
   ].join('\n');
 
   assert.match(helpers, /SKETCH_TOOL_BOX_DOUBLE_DOOR = 'sketch_box_double_door'/);
-  assert.match(sections, /2 דלתות לקופסא/);
+  assert.match(sections, /label="2 דלתות"/);
   assert.match(sections, /active=\{isDoubleDoorToolActive\}/);
   assert.match(
     sections,

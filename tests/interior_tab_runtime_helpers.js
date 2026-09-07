@@ -192,6 +192,15 @@ export function loadInteriorTabViewStateControllerModule(calls, options = {}) {
           },
           clampSketch: (value, min, max) => Math.min(max, Math.max(min, Number(value))),
           isSketchBoxTool: value => String(value).startsWith('sketch_box:'),
+          isSketchBoxPanelTool: value => {
+            const tool = String(value);
+            return (
+              tool.startsWith('sketch_box:') ||
+              tool === 'sketch_box_door_hinge' ||
+              tool.startsWith('sketch_box_cornice:') ||
+              tool.startsWith('sketch_box_base:')
+            );
+          },
           parseSketchBoxTool: value => {
             const raw = String(value);
             if (!raw.startsWith('sketch_box:')) return null;

@@ -32,7 +32,7 @@ export function toggleSketchBoxTool(
     props.exitManual();
     return;
   }
-  props.setSketchBoxPanelOpen(true);
+  if (tool === 'doorHinge') props.setSketchBoxPanelOpen(true);
   if (
     tool === 'divider' ||
     tool === 'horizontalDivider' ||

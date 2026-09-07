@@ -65,10 +65,26 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
   assert.match(view, /sketchBoxHeightDraft: '40',/);
   assert.match(helpers, /SKETCH_TOOL_BOX_DOOR = 'sketch_box_door'/);
   assert.match(helpers, /SKETCH_TOOL_BOX_DOOR_HINGE = 'sketch_box_door_hinge'/);
-  assert.match(sections, /דלת לקופסא/);
+  assert.match(sections, /label="דלת 1"/);
+  assert.match(sections, /label="2 דלתות"/);
   assert.match(sections, /כיוון פתיחת דלת לקופסא/);
   assert.match(sections, /מחיצה עומדת/);
   assert.match(sections, /מחיצה שוכבת/);
+  const boxControls = read('esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx');
+  const persistentToolsStart = boxControls.indexOf('        )}\n        <SketchBoxToolRow>');
+  assert.ok(persistentToolsStart >= 0, 'persistent tools must live after the collapsible box controls');
+  for (const label of ['מחיצה עומדת', 'מחיצה שוכבת', 'דלת 1', '2 דלתות']) {
+    assert.ok(
+      boxControls.indexOf(`label="${label}"`, persistentToolsStart) > persistentToolsStart,
+      `${label} must render outside the collapsible box controls`
+    );
+  }
+  const sketchControls = read('esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx');
+  assert.ok(
+    sketchControls.indexOf('<InteriorSketchBoxControlsSection') <
+      sketchControls.lastIndexOf('<InteriorDoorTrimSection'),
+    'persistent divider/door tools must render before door-trim controls'
+  );
 });
 
 test('sketch box renderer keeps the flat-slab path but upgrades free-box profile/double_profile doors through the canonical door visual factory', async () => {

@@ -81,7 +81,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
   const plinthHeightInputId = buildScopedFormFieldId('wp-r-sketch-box-plinth-height', props.formFieldIdScope);
   const {
     isSketchBoxControlsOpen,
-    isSketchBoxToolActive,
+    isSketchBoxPanelToolActive,
     isDividerToolActive,
     isHorizontalDividerToolActive,
     isDoorToolActive,
@@ -99,7 +99,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
           active={isSketchBoxControlsOpen}
           iconClass="fas fa-vector-square"
           onClick={() => {
-            toggleSketchBoxControlsPanel(props, isSketchBoxControlsOpen, isSketchBoxToolActive);
+            toggleSketchBoxControlsPanel(props, isSketchBoxControlsOpen, isSketchBoxPanelToolActive);
           }}
           buttonChildren={
             <>
@@ -186,43 +186,6 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
             <SketchBoxToolRow>
               <SketchBoxToolButton
-                label="מחיצה עומדת"
-                active={isDividerToolActive}
-                iconClass="fas fa-grip-lines-vertical"
-                cellStyle={{ flex: '1 1 0' }}
-                onClick={() => {
-                  toggleSketchBoxTool(props, 'divider', SKETCH_TOOL_BOX_DIVIDER, isDividerToolActive);
-                }}
-              />
-
-              <SketchBoxToolButton
-                label="מחיצה שוכבת"
-                active={isHorizontalDividerToolActive}
-                iconClass="fas fa-grip-lines"
-                cellStyle={{ flex: '1 1 0' }}
-                onClick={() => {
-                  toggleSketchBoxTool(
-                    props,
-                    'horizontalDivider',
-                    SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
-                    isHorizontalDividerToolActive
-                  );
-                }}
-              />
-            </SketchBoxToolRow>
-
-            <SketchBoxToolButton
-              label="דלת לקופסא"
-              active={isDoorToolActive}
-              iconClass="fas fa-door-closed"
-              cellClassName="wp-sketch-box-cell--door"
-              onClick={() => {
-                toggleSketchBoxTool(props, 'door', SKETCH_TOOL_BOX_DOOR, isDoorToolActive);
-              }}
-            />
-
-            <SketchBoxToolRow>
-              <SketchBoxToolButton
                 label="כיוון פתיחת דלת"
                 active={isDoorHingeToolActive}
                 iconClass="fas fa-redo"
@@ -231,22 +194,6 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 buttonChildren={<>כיוון פתיחת דלת לקופסא</>}
                 onClick={() => {
                   toggleSketchBoxTool(props, 'doorHinge', SKETCH_TOOL_BOX_DOOR_HINGE, isDoorHingeToolActive);
-                }}
-              />
-
-              <SketchBoxToolButton
-                label="2 דלתות לקופסא"
-                active={isDoubleDoorToolActive}
-                iconClass="fas fa-columns"
-                cellClassName="wp-sketch-box-cell--door"
-                cellStyle={{ flex: '1 1 0' }}
-                onClick={() => {
-                  toggleSketchBoxTool(
-                    props,
-                    'doubleDoor',
-                    SKETCH_TOOL_BOX_DOUBLE_DOOR,
-                    isDoubleDoorToolActive
-                  );
                 }}
               />
             </SketchBoxToolRow>
@@ -447,6 +394,56 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
             />
           </>
         )}
+        <SketchBoxToolRow>
+          <SketchBoxToolButton
+            label="מחיצה עומדת"
+            active={isDividerToolActive}
+            iconClass="fas fa-grip-lines-vertical"
+            cellStyle={{ flex: '1 1 0' }}
+            onClick={() => {
+              toggleSketchBoxTool(props, 'divider', SKETCH_TOOL_BOX_DIVIDER, isDividerToolActive);
+            }}
+          />
+
+          <SketchBoxToolButton
+            label="מחיצה שוכבת"
+            active={isHorizontalDividerToolActive}
+            iconClass="fas fa-grip-lines"
+            cellStyle={{ flex: '1 1 0' }}
+            onClick={() => {
+              toggleSketchBoxTool(
+                props,
+                'horizontalDivider',
+                SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL,
+                isHorizontalDividerToolActive
+              );
+            }}
+          />
+        </SketchBoxToolRow>
+
+        <SketchBoxToolRow>
+          <SketchBoxToolButton
+            label="דלת 1"
+            active={isDoorToolActive}
+            iconClass="fas fa-door-closed"
+            cellClassName="wp-sketch-box-cell--door"
+            cellStyle={{ flex: '1 1 0' }}
+            onClick={() => {
+              toggleSketchBoxTool(props, 'door', SKETCH_TOOL_BOX_DOOR, isDoorToolActive);
+            }}
+          />
+
+          <SketchBoxToolButton
+            label="2 דלתות"
+            active={isDoubleDoorToolActive}
+            iconClass="fas fa-columns"
+            cellClassName="wp-sketch-box-cell--door"
+            cellStyle={{ flex: '1 1 0' }}
+            onClick={() => {
+              toggleSketchBoxTool(props, 'doubleDoor', SKETCH_TOOL_BOX_DOUBLE_DOOR, isDoubleDoorToolActive);
+            }}
+          />
+        </SketchBoxToolRow>
       </div>
     </div>
   );

@@ -6,13 +6,13 @@ import {
   SKETCH_TOOL_BOX_DOOR,
   SKETCH_TOOL_BOX_DOUBLE_DOOR,
   SKETCH_TOOL_BOX_DOOR_HINGE,
-  isSketchBoxTool,
+  isSketchBoxPanelTool,
 } from './interior_tab_helpers.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 
 export type SketchBoxControlsViewState = Readonly<{
   isSketchBoxControlsOpen: boolean;
-  isSketchBoxToolActive: boolean;
+  isSketchBoxPanelToolActive: boolean;
   isDividerToolActive: boolean;
   isHorizontalDividerToolActive: boolean;
   isDoorToolActive: boolean;
@@ -26,7 +26,7 @@ export function readSketchBoxControlsViewState(
   props: InteriorSketchBoxControlsSectionProps
 ): SketchBoxControlsViewState {
   const isSketchBoxControlsOpen = props.isSketchBoxControlsOpen;
-  const isSketchBoxToolActive = props.isSketchToolActive && isSketchBoxTool(props.manualToolRaw);
+  const isSketchBoxPanelToolActive = props.isSketchToolActive && isSketchBoxPanelTool(props.manualToolRaw);
   const isDividerToolActive = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DIVIDER;
   const isHorizontalDividerToolActive =
     props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL;
@@ -42,7 +42,7 @@ export function readSketchBoxControlsViewState(
 
   return {
     isSketchBoxControlsOpen,
-    isSketchBoxToolActive,
+    isSketchBoxPanelToolActive,
     isDividerToolActive,
     isHorizontalDividerToolActive,
     isDoorToolActive,

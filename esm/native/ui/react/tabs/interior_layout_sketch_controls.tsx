@@ -4,7 +4,7 @@ import {
   OptionBtn,
   SKETCH_TOOL_EXT_DRAWERS_PREFIX,
   cx,
-  isSketchBoxTool,
+  isSketchBoxPanelTool,
   isSketchInternalDrawersTool,
 } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
@@ -16,8 +16,8 @@ import {
 } from './interior_layout_sketch_sections.js';
 
 export function InteriorLayoutSketchToolsPanel(props: InteriorLayoutSectionProps): ReactElement {
-  const isSketchBoxToolActive = props.isSketchToolActive && isSketchBoxTool(props.manualToolRaw);
-  const isSketchBoxControlsOpen = props.sketchBoxPanelOpen || isSketchBoxToolActive;
+  const isSketchBoxPanelToolActive = props.isSketchToolActive && isSketchBoxPanelTool(props.manualToolRaw);
+  const isSketchBoxControlsOpen = props.sketchBoxPanelOpen || isSketchBoxPanelToolActive;
   const isDoorTrimControlsOpen = props.doorTrimPanelOpen || props.isDoorTrimMode;
   const isSketchExtDrawersToolActive =
     props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_EXT_DRAWERS_PREFIX);

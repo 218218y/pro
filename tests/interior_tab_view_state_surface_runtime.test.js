@@ -94,6 +94,20 @@ test('[interior-view-state-controller] centralizes sketch and door-trim sync sid
       ['setSketchIntDrawerHeightDraft', '24'],
     ])
   );
+
+  const persistentToolsHarness = createInteriorViewStateControllerHarness();
+  for (const tool of [
+    'sketch_box_divider',
+    'sketch_box_divider_horizontal',
+    'sketch_box_door',
+    'sketch_box_double_door',
+  ]) {
+    persistentToolsHarness.controller.syncSketchBoxPanelState(true, tool);
+  }
+  assert.deepEqual(persistentToolsHarness.calls, []);
+
+  persistentToolsHarness.controller.syncSketchBoxPanelState(true, 'sketch_box_door_hinge');
+  assert.deepEqual(persistentToolsHarness.calls, [['setSketchBoxPanelOpen', true]]);
 });
 
 test('[interior-view-state-controller] syncs sketch box plinth height from the active base tool', () => {

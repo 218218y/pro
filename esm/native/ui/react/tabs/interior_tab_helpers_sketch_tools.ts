@@ -276,6 +276,16 @@ export function isSketchBoxTool(tool: string): boolean {
   );
 }
 
+export function isSketchBoxPanelTool(tool: string): boolean {
+  if (!tool) return false;
+  return (
+    tool.startsWith(SKETCH_TOOL_BOX_PREFIX) ||
+    tool === SKETCH_TOOL_BOX_DOOR_HINGE ||
+    tool.startsWith(SKETCH_TOOL_BOX_CORNICE_PREFIX) ||
+    tool.startsWith(SKETCH_TOOL_BOX_BASE_PREFIX)
+  );
+}
+
 export function parseSketchExternalDrawersCount(tool: string): number | null {
   return parseSketchExternalDrawersTool(tool)?.count ?? null;
 }

@@ -86,13 +86,23 @@ test('[box-controls] box advanced controls stay collapsed until box mode is acti
     read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'),
   ].join('\n');
   assert.match(interiorSketchBundle, /const isSketchBoxControlsOpen =/);
-  assert.match(
-    interiorSketchBundle,
-    /const isSketchBoxToolActive = props\.isSketchToolActive && isSketchBoxTool\(props\.manualToolRaw\);/
-  );
-  assert.match(helpers, /export function isSketchBoxTool\(tool: string\): boolean \{/);
+  assert.match(interiorSketchBundle, /const isSketchBoxPanelToolActive =/);
+  assert.match(interiorSketchBundle, /isSketchBoxPanelTool\(props\.manualToolRaw\)/);
+  assert.match(helpers, /export function isSketchBoxPanelTool\(tool: string\): boolean \{/);
   assert.match(helpers, /tool\.startsWith\(SKETCH_TOOL_BOX_PREFIX\)/);
-  assert.match(helpers, /tool === SKETCH_TOOL_BOX_DIVIDER/);
   assert.match(helpers, /tool === SKETCH_TOOL_BOX_DOOR_HINGE/);
+  const panelToolStart = helpers.indexOf('export function isSketchBoxPanelTool');
+  const panelToolEnd = helpers.indexOf('export function parseSketchExternalDrawersCount', panelToolStart);
+  const panelToolSource = helpers.slice(panelToolStart, panelToolEnd);
+  assert.doesNotMatch(panelToolSource, /SKETCH_TOOL_BOX_DIVIDER/);
+  assert.doesNotMatch(panelToolSource, /SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL/);
+  assert.doesNotMatch(panelToolSource, /SKETCH_TOOL_BOX_DOOR(?!_HINGE)/);
+  assert.doesNotMatch(panelToolSource, /SKETCH_TOOL_BOX_DOUBLE_DOOR/);
   assert.match(interiorSketchBundle, /\{isSketchBoxControlsOpen && \(/);
+  const panelRuntime = read('esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_panels.ts');
+  const toggleStart = panelRuntime.indexOf('export function toggleSketchBoxTool');
+  const toggleEnd = panelRuntime.indexOf('export function toggleSketchBoxBasePanel', toggleStart);
+  const toggleSource = panelRuntime.slice(toggleStart, toggleEnd);
+  assert.match(toggleSource, /if \(tool === 'doorHinge'\) props\.setSketchBoxPanelOpen\(true\);/);
+  assert.equal((toggleSource.match(/setSketchBoxPanelOpen\(true\)/g) || []).length, 1);
 });

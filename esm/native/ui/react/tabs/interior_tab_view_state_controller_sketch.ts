@@ -1,7 +1,7 @@
 import { exitPrimaryMode } from '../actions/modes_actions.js';
 import {
   clampSketch,
-  isSketchBoxTool,
+  isSketchBoxPanelTool,
   parseSketchBoxTool,
   parseSketchExternalDrawersCount,
   parseSketchExternalDrawersHeightCm,
@@ -152,7 +152,7 @@ export function createInteriorTabSketchViewStateController(
     },
 
     syncSketchBoxPanelState(isSketchToolActive, manualToolRaw) {
-      if (!isSketchToolActive || !isSketchBoxTool(manualToolRaw)) return;
+      if (!isSketchToolActive || !isSketchBoxPanelTool(manualToolRaw)) return;
       setSketchBoxPanelOpen(true);
     },
 
