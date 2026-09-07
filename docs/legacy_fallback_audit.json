@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T20:51:49.051Z",
+  "generatedAt": "2026-09-07T08:10:43.197Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -5144,7 +5144,7 @@
     },
     {
       "file": "esm/native/ui/react/sidebar_shared.ts",
-      "line": 91,
+      "line": 95,
       "term": "fallback",
       "category": "domain-default",
       "text": "// config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list."

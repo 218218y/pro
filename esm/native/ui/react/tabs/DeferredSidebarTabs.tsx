@@ -5,13 +5,15 @@ import type { SketchNoMainWardrobeAction } from '../actions/sketch_no_main_wardr
 
 import { LazyErrorBoundary } from '../components/index.js';
 
-const DesignTabViewLazy = lazy(async () => {
-  const mod = await import('./DesignTab.view.js');
-  return { default: mod.DesignTabView };
-});
-
+let designTabViewModulePromise: Promise<typeof import('./DesignTab.view.js')> | null = null;
 let interiorTabViewModulePromise: Promise<typeof import('./InteriorTab.view.js')> | null = null;
 let sketchTabViewModulePromise: Promise<typeof import('./SketchTab.view.js')> | null = null;
+let settingsTabModulePromise: Promise<typeof import('./SettingsTab.js')> | null = null;
+
+function loadDesignTabViewModule(): Promise<typeof import('./DesignTab.view.js')> {
+  designTabViewModulePromise ||= import('./DesignTab.view.js');
+  return designTabViewModulePromise;
+}
 
 function loadInteriorTabViewModule(): Promise<typeof import('./InteriorTab.view.js')> {
   interiorTabViewModulePromise ||= import('./InteriorTab.view.js');
@@ -22,6 +24,36 @@ function loadSketchTabViewModule(): Promise<typeof import('./SketchTab.view.js')
   sketchTabViewModulePromise ||= import('./SketchTab.view.js');
   return sketchTabViewModulePromise;
 }
+
+function loadSettingsTabModule(): Promise<typeof import('./SettingsTab.js')> {
+  settingsTabModulePromise ||= import('./SettingsTab.js');
+  return settingsTabModulePromise;
+}
+
+function prefetchModule(promise: Promise<unknown>): void {
+  void promise.catch(() => undefined);
+}
+
+export function prefetchDeferredSidebarTabView(tabId: TabId | null | undefined): void {
+  if (tabId === 'design') {
+    prefetchModule(loadDesignTabViewModule());
+    return;
+  }
+  if (tabId === 'interior') {
+    prefetchModule(loadInteriorTabViewModule());
+    return;
+  }
+  if (tabId === 'sketch') {
+    prefetchModule(loadSketchTabViewModule());
+    return;
+  }
+  if (tabId === 'settings') prefetchModule(loadSettingsTabModule());
+}
+
+const DesignTabViewLazy = lazy(async () => {
+  const mod = await loadDesignTabViewModule();
+  return { default: mod.DesignTabView };
+});
 
 const InteriorTabViewLazy = lazy(async () => {
   const mod = await loadInteriorTabViewModule();
@@ -34,7 +66,7 @@ const SketchTabViewLazy = lazy(async () => {
 });
 
 const SettingsTabLazy = lazy(async () => {
-  const mod = await import('./SettingsTab.js');
+  const mod = await loadSettingsTabModule();
   return { default: mod.SettingsTab };
 });
 

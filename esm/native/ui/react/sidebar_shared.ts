@@ -1,7 +1,11 @@
 import { lazy } from 'react';
 
 import type { AppContainer, CloudSyncServiceLike, TabId, UnknownRecord } from '../../../../types';
-import { getCloudSyncServiceMaybe, readRuntimeConfigValueFromApp } from '../../services/api.js';
+import {
+  getCloudSyncServiceMaybe,
+  loadCanvasPickingInteriorExtension,
+  readRuntimeConfigValueFromApp,
+} from '../../services/api.js';
 
 let deferredSidebarTabsPromise: Promise<typeof import('./tabs/DeferredSidebarTabs.js')> | null = null;
 
@@ -14,7 +18,7 @@ function loadDeferredSidebarTabs() {
 
 export function prefetchDeferredSidebarTabs(tabId: TabId | null | undefined): void {
   if (tabId === 'structure' || !tabId) return;
-  void loadDeferredSidebarTabs().catch(() => undefined);
+  prefetchDeferredSidebarTabIntent(tabId);
 }
 
 export const DeferredSidebarTabsLazy = lazy(async () => {
@@ -91,4 +95,17 @@ export function getSite2EnabledTabs(app: AppContainer): TabId[] {
     // config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list.
   }
   return SITE2_ENABLED_TABS_DEFAULT.slice();
+}
+
+function prefetchDeferredSidebarTabIntent(tabId: TabId): void {
+  // Interior and Sketch both suspend on the same picking extension when first mounted.
+  // Start that larger request immediately on user intent instead of waiting for the
+  // tiny DeferredSidebarTabs shell to arrive and for React to mount the selected tab.
+  if (tabId === 'interior' || tabId === 'sketch') {
+    void loadCanvasPickingInteriorExtension().catch(() => undefined);
+  }
+
+  void loadDeferredSidebarTabs()
+    .then(mod => mod.prefetchDeferredSidebarTabView(tabId))
+    .catch(() => undefined);
 }
