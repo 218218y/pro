@@ -1,11 +1,11 @@
 import type { AppContainer } from '../../../types';
-import { getCfg, getUi } from '../kernel/api.js';
-import { getWardrobeGroup } from '../runtime/render_access.js';
 import { buildCanvasLinearCellDimsGeometryContext } from './canvas_picking_cell_dims_linear_context.js';
 import { resolveLinearCellDimsFutureWidths } from './canvas_picking_cell_dims_linear_width.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { findModuleSelectorObject } from './canvas_picking_module_selector_hits.js';
 import { resolveCellDimsTargetBox } from './canvas_picking_hover_preview_modes_cell_dims_target.js';
+import { readLinearCellDimsLayoutState } from './canvas_picking_hover_preview_modes_cell_dims_inputs.js';
+import { __wp_getViewportRoots } from './canvas_picking_projection_runtime.js';
 import type {
   InteriorHoverTarget,
   MeasureObjectLocalBoxFn,
@@ -102,8 +102,9 @@ export function resolveLinearCellDimsLayoutPreview(args: {
   } = args;
   if (target.isBottom || typeof target.hitModuleKey !== 'number') return null;
 
-  const ui = getUi(App);
-  const cfg = getCfg(App);
+  const layoutState = readLinearCellDimsLayoutState(App);
+  if (!layoutState) return null;
+  const { ui, cfg } = layoutState;
   const raw = ui.raw ?? {};
   const ctx = buildCanvasLinearCellDimsGeometryContext({
     App,
@@ -118,7 +119,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
   });
   if (!ctx || ctx.moduleCount < 2) return null;
 
-  const wardrobeRoot = getWardrobeGroup(App);
+  const wardrobeRoot = __wp_getViewportRoots(App).wardrobeGroup;
   if (!wardrobeRoot) return null;
 
   const selectorBoxes: SelectorLocalBox[] = [];

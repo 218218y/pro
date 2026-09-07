@@ -1,9 +1,20 @@
 import type { AppContainer } from '../../../types';
-import { getCfg } from '../kernel/api.js';
+import { getCfg, getUi } from '../kernel/api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import type { CellDimsCurrentHeightInput } from './canvas_picking_hover_preview_modes_cell_dims_contracts.js';
 import type { InteriorHoverTarget, SelectorLocalBox } from './canvas_picking_hover_preview_modes_shared.js';
 import { __readRecord } from './canvas_picking_hover_preview_modes_shared.js';
+
+export function readLinearCellDimsLayoutState(App: AppContainer): {
+  ui: ReturnType<typeof getUi>;
+  cfg: ReturnType<typeof getCfg>;
+} | null {
+  try {
+    return { ui: getUi(App), cfg: getCfg(App) };
+  } catch {
+    return null;
+  }
+}
 
 export function readLinearSelectorBoundaryInsetsCm(
   App: AppContainer,
