@@ -16,10 +16,8 @@ export type MarkerMaterialMap = PreviewValueRecord & {
   __matRemove?: unknown;
   __matAdd?: unknown;
   __matCenter?: unknown;
-  __precisionLine?: unknown;
-  __precisionMatAdd?: unknown;
-  __precisionMatRemove?: unknown;
-  __precisionMatAligned?: unknown;
+  __matAligned?: unknown;
+  __doorCutHoverVisualVersion?: number;
   __ignoreRaycast?: boolean;
 };
 

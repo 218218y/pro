@@ -92,13 +92,9 @@ export const HINGED_DOOR_SPLIT_AUTHORING_POLICY = Object.freeze({
   hoverCustomRemoveToleranceMinM: meters(0.03),
   hoverCustomRemoveToleranceMaxM: meters(0.08),
   hoverCustomRemoveToleranceRatio: 0.06,
-  hoverCustomMarkerMinHeightM: meters(0.02),
-  hoverCustomMarkerMaxHeightM: meters(0.06),
-  hoverCustomMarkerHeightRatio: 0.03,
-  // Keep the broad interaction band for easy pointer targeting, but show the exact cut
-  // with a dedicated line whose physical height matches the rendered split gap.
-  hoverCustomPrecisionLineHeightM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM,
-  hoverCustomPrecisionLineZOffsetM: meters(0.001),
+  // The custom split marker is only visual feedback. Pointer/remove tolerance is owned
+  // separately below, so the marker itself can match the physical split gap exactly.
+  hoverCustomMarkerHeightM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM,
   hoverCustomAlignmentToleranceMinM: meters(0.002),
   hoverCustomAlignmentToleranceMaxM: meters(0.008),
   hoverCustomAlignmentToleranceHeightRatio: 0.003,

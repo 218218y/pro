@@ -52,6 +52,12 @@ class Mesh {
     }
     return this;
   }
+
+  remove(child: Mesh) {
+    this.children = this.children.filter(entry => entry !== child);
+    child.parent = null;
+    return this;
+  }
 }
 
 const THREE = {
@@ -61,7 +67,7 @@ const THREE = {
   DoubleSide: 'double-side',
 };
 
-test('door cut hover marker keeps a broad band and owns a high-contrast exact-cut overlay', () => {
+test('door cut hover marker is a single high-contrast overlay that stays readable through transparent doors', () => {
   const App = {} as any;
   const cache = new Map<string, unknown>();
   const wardrobeGroup = {
@@ -109,29 +115,39 @@ test('door cut hover marker keeps a broad band and owns a high-contrast exact-cu
   assert.equal(marker.visible, false);
   assert.equal(marker.renderOrder, 10000);
   assert.equal(wardrobeGroup.children.includes(marker), true);
+  assert.equal(marker.children.length, 0);
+  assert.equal(marker.userData.__ignoreRaycast, true);
 
-  const precisionLine = marker.userData.__precisionLine as Mesh | undefined;
-  assert.ok(precisionLine);
-  assert.equal(precisionLine.parent, marker);
-  assert.equal(precisionLine.visible, false);
-  assert.equal(precisionLine.renderOrder, 10001);
-  assert.equal(precisionLine.userData.__ignoreRaycast, true);
-  assert.equal(precisionLine.position.z, 0);
-
-  const precisionAddMat = marker.userData.__precisionMatAdd as MeshBasicMaterial | undefined;
-  const precisionRemoveMat = marker.userData.__precisionMatRemove as MeshBasicMaterial | undefined;
-  const precisionAlignedMat = marker.userData.__precisionMatAligned as MeshBasicMaterial | undefined;
-  for (const material of [precisionAddMat, precisionRemoveMat, precisionAlignedMat]) {
+  const materials = [
+    marker.userData.__matAdd as MeshBasicMaterial | undefined,
+    marker.userData.__matRemove as MeshBasicMaterial | undefined,
+    marker.userData.__matAligned as MeshBasicMaterial | undefined,
+  ];
+  for (const material of materials) {
     assert.ok(material);
     assert.equal(material.params.transparent, true);
     assert.equal(material.params.depthWrite, false);
     assert.equal(material.params.depthTest, false);
+    assert.ok(Number(material.params.opacity) >= 0.9);
   }
-  assert.ok(Number(precisionAddMat?.params.opacity) >= 0.9);
-  assert.ok(Number(precisionRemoveMat?.params.opacity) >= 0.9);
-  assert.ok(Number(precisionAlignedMat?.params.opacity) >= 0.9);
 
-  const cached = owner.ensureDoorCutHoverMarker({ App, THREE } as any);
+  assert.equal(marker.userData.__doorCutHoverVisualVersion, 2);
+
+  const stalePrecisionLine = new Mesh(new PlaneGeometry(1, 1), null);
+  marker.add(stalePrecisionLine);
+  marker.userData.__precisionLine = stalePrecisionLine;
+  marker.userData.__precisionMatAdd = 'stale-add';
+  marker.userData.__precisionMatRemove = 'stale-remove';
+  marker.userData.__precisionMatAligned = 'stale-aligned';
+  marker.userData.__doorCutHoverVisualVersion = 1;
+  marker.userData.__matAdd = new MeshBasicMaterial({ opacity: 0.22 });
+
+  const cached = owner.ensureDoorCutHoverMarker({ App, THREE } as any) as Mesh | null;
   assert.equal(cached, marker);
   assert.equal(wardrobeGroup.children.filter(child => child === marker).length, 1);
+  assert.equal(marker.children.includes(stalePrecisionLine), false);
+  assert.equal(stalePrecisionLine.visible, false);
+  assert.equal(marker.userData.__precisionLine, undefined);
+  assert.equal(marker.userData.__doorCutHoverVisualVersion, 2);
+  assert.ok(Number((marker.userData.__matAdd as MeshBasicMaterial).params.opacity) >= 0.9);
 });

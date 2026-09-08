@@ -58,10 +58,6 @@ export type MarkerUserDataLike = UnknownRecord & {
   __matMirror?: unknown;
   __matCenter?: unknown;
   __matAligned?: unknown;
-  __precisionLine?: MarkerLike;
-  __precisionMatAdd?: unknown;
-  __precisionMatRemove?: unknown;
-  __precisionMatAligned?: unknown;
 };
 
 export type MarkerLike = {

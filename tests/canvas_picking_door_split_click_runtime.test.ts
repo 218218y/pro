@@ -856,25 +856,12 @@ test('custom split hover shows a blocked marker when construction policy would r
   } as any;
   const runtime: Record<string, unknown> = {};
   let markerHeight = 0;
-  let precisionScaleY = 0;
-  const precisionLine = {
-    visible: false,
-    material: null as unknown,
-    scale: {
-      set(_x: number, y: number) {
-        precisionScaleY = y;
-      },
-    },
-  };
   const marker = {
     visible: true,
     material: null as unknown,
     userData: {
       __matRemove: 'remove',
       __matAdd: 'add',
-      __precisionLine: precisionLine,
-      __precisionMatAdd: 'precision-add',
-      __precisionMatRemove: 'precision-remove',
     },
     position: { copy() {} },
     quaternion: { copy() {} },
@@ -935,11 +922,7 @@ test('custom split hover shows a blocked marker when construction policy would r
   assert.equal(handled, true);
   assert.equal(marker.visible, true);
   assert.equal(marker.material, 'remove');
-  assert.equal(precisionLine.visible, true);
-  assert.equal(precisionLine.material, 'precision-remove');
-  assert.ok(markerHeight > 0);
-  assert.ok(precisionScaleY > 0 && precisionScaleY < 1);
-  assert.ok(Math.abs(markerHeight * precisionScaleY - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM) < 1e-9);
+  assert.ok(Math.abs(markerHeight - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM) < 1e-9);
 });
 
 test('custom split click blocks edge-clamped add attempts instead of auto-moving the cut inward', () => {
@@ -1167,16 +1150,6 @@ test('custom split hover exposes top and bottom cut-distance measurements and ma
     },
   };
   let markerHeight = 0;
-  let precisionScaleY = 0;
-  const precisionLine = {
-    visible: false,
-    material: null as unknown,
-    scale: {
-      set(_x: number, y: number) {
-        precisionScaleY = y;
-      },
-    },
-  };
   const marker = {
     visible: false,
     material: null as unknown,
@@ -1184,10 +1157,6 @@ test('custom split hover exposes top and bottom cut-distance measurements and ma
       __matRemove: 'remove',
       __matAdd: 'add',
       __matAligned: 'center',
-      __precisionLine: precisionLine,
-      __precisionMatAdd: 'precision-add',
-      __precisionMatRemove: 'precision-remove',
-      __precisionMatAligned: 'precision-center',
     },
     position: { copy() {} },
     quaternion: { copy() {} },
@@ -1256,11 +1225,7 @@ test('custom split hover exposes top and bottom cut-distance measurements and ma
   assert.equal(handled, true);
   assert.equal(marker.visible, true);
   assert.equal(marker.material, 'center');
-  assert.equal(precisionLine.visible, true);
-  assert.equal(precisionLine.material, 'precision-center');
-  assert.ok(markerHeight > 0);
-  assert.ok(precisionScaleY > 0 && precisionScaleY < 1);
-  assert.ok(Math.abs(markerHeight * precisionScaleY - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM) < 1e-9);
+  assert.ok(Math.abs(markerHeight - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM) < 1e-9);
   assert.ok(preview);
   assert.equal(preview?.showPrimaryBody, false);
   assert.equal(preview?.showCenterYGuide, true);
