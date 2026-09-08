@@ -73,3 +73,32 @@ test('stack split context dim sync shifts only finite runtime numbers', () => {
   assert.equal(ctx.dims.splitLineY, 1.6);
   assert.equal(ctx.dims.internalZ, '0.03');
 });
+
+test('stack split upper shift accepts a large finite end index without 32-bit overflow', () => {
+  const lower: MockObject = {
+    position: { y: 0.1, z: 0.01 },
+    userData: { partId: 'lower_body' },
+  };
+  const upperFrame: MockObject = {
+    position: { y: 0.4, z: 0.02 },
+    userData: { partId: 'upper_frame' },
+  };
+  const upperShelf: MockObject = {
+    position: { y: 0.8, z: 0.03 },
+    userData: { partId: 'upper_shelf' },
+  };
+  const App = makeApp([lower, upperFrame, upperShelf]);
+
+  shiftWardrobeRange({
+    App,
+    fromIdx: 1,
+    toIdx: Number.MAX_SAFE_INTEGER,
+    dy: 0.5,
+    dz: 0.04,
+    adjustHandleAbsY: false,
+  });
+
+  assert.deepEqual(lower.position, { y: 0.1, z: 0.01 });
+  assert.deepEqual(upperFrame.position, { y: 0.9, z: 0.06 });
+  assert.deepEqual(upperShelf.position, { y: 1.3, z: 0.07 });
+});

@@ -18,8 +18,14 @@ export function markWardrobeRangeStackScope(args: {
 }): void {
   const group = readRecord(getWardrobeGroup(args.App));
   const arr = readUnknownArray(group?.children);
-  const from = Math.max(0, Math.min(arr.length, Number.isFinite(args.fromIdx) ? args.fromIdx | 0 : 0));
-  const to = Math.max(from, Math.min(arr.length, Number.isFinite(args.toIdx) ? args.toIdx | 0 : arr.length));
+  const from = Math.max(
+    0,
+    Math.min(arr.length, Number.isFinite(args.fromIdx) ? Math.trunc(args.fromIdx) : 0)
+  );
+  const to = Math.max(
+    from,
+    Math.min(arr.length, Number.isFinite(args.toIdx) ? Math.trunc(args.toIdx) : arr.length)
+  );
 
   for (let i = from; i < to; i += 1) {
     const obj = arr[i];
@@ -58,8 +64,8 @@ export function shiftWardrobeRange(args: {
 
   const group = readRecord(getWardrobeGroup(App));
   const arr = readUnknownArray(group?.children);
-  const from = Math.max(0, Math.min(arr.length, args.fromIdx | 0));
-  const to = Math.max(from, Math.min(arr.length, args.toIdx | 0));
+  const from = Math.max(0, Math.min(arr.length, Math.trunc(args.fromIdx)));
+  const to = Math.max(from, Math.min(arr.length, Math.trunc(args.toIdx)));
 
   const moved = new Set<unknown>();
   for (let i = from; i < to; i++) {

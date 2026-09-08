@@ -41,3 +41,27 @@ test('stack hover scope can mark a unified carcass range as shared geometry', ()
   assert.equal(sharedTop.userData.existing, true);
   assert.equal(upper.userData.__wpStack, 'top');
 });
+
+test('stack hover scope treats a large finite end index as the real end of the wardrobe range', () => {
+  const lower = { userData: { __wpStackRegion: 'bottom' } };
+  const upperFrame = { userData: {} };
+  const upperDivider = { userData: {} };
+  const upperShelf = { userData: {} };
+  const upperDoor = { userData: { __wpStack: 'top' } };
+  const children = [lower, upperFrame, upperDivider, upperShelf, upperDoor];
+  const App = createApp(children);
+
+  markWardrobeRangeStackScope({
+    App,
+    fromIdx: 1,
+    toIdx: Number.MAX_SAFE_INTEGER,
+    stackKey: 'top',
+  });
+
+  assert.equal(lower.userData.__wpStackRegion, 'bottom');
+  assert.equal(upperFrame.userData.__wpStackRegion, 'top');
+  assert.equal(upperDivider.userData.__wpStackRegion, 'top');
+  assert.equal(upperShelf.userData.__wpStackRegion, 'top');
+  assert.equal(upperDoor.userData.__wpStackRegion, 'top');
+  assert.equal(upperDoor.userData.__wpStack, 'top');
+});
