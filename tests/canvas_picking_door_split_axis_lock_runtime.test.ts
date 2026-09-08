@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  clearCanvasDoorSplitPointerHover,
   clearCanvasDoorSplitVerticalLock,
+  nudgeCanvasDoorSplitPointerWorldY,
+  prepareCanvasDoorSplitPointerMove,
   resolveCanvasDoorSplitPointerWorldY,
   resolveCanvasDoorSplitVerticalLockedWorldY,
   setCanvasDoorSplitVerticalLockPressed,
@@ -39,6 +42,41 @@ test('Shift pressed before the first manual-split projection locks on the first 
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, null), null);
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 0.8), 0.8);
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.4), 0.8);
+});
+
+test('manual split arrow nudge moves the shared authoring height by exactly 1 cm and physical pointer motion releases it', () => {
+  const App = createApp();
+  clearCanvasDoorSplitVerticalLock(App);
+
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.2), 1.2);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), 1.21);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.2), 1.21);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, -0.01), 1.2);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.2), 1.2);
+
+  prepareCanvasDoorSplitPointerMove(App);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), null);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.55), 1.55);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), 1.56);
+
+  clearCanvasDoorSplitPointerHover(App);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), null);
+});
+
+test('Shift adopts a keyboard-nudged height, keeps later arrow nudges locked across doors, and releases back to pointer Y', () => {
+  const App = createApp();
+  clearCanvasDoorSplitVerticalLock(App);
+
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.0), 1.0);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), 1.01);
+  setCanvasDoorSplitVerticalLockPressed(App, true);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.7), 1.01);
+  assert.equal(nudgeCanvasDoorSplitPointerWorldY(App, 0.01), 1.02);
+
+  prepareCanvasDoorSplitPointerMove(App);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 2.3), 1.02);
+  setCanvasDoorSplitVerticalLockPressed(App, false);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 2.3), 2.3);
 });
 
 test('shared pointer-Y resolver applies the same locked height used by hover and click callers', () => {
@@ -78,13 +116,28 @@ test('canvas keyboard integration maps held Shift to the manual-split vertical l
   const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
   doc.defaultView = win;
   const domEl = { ownerDocument: doc } as any;
-  const dispose = installCanvasDoorSplitAxisLockInteraction(App, domEl);
+  let nudgeRefreshes = 0;
+  const dispose = installCanvasDoorSplitAxisLockInteraction(App, domEl, () => {
+    nudgeRefreshes += 1;
+  });
 
   doc.dispatch('keydown', { key: 'Shift', repeat: false, target: { tagName: 'BODY' } });
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 2.1), 1.35);
 
   doc.dispatch('keyup', { key: 'Shift', target: { tagName: 'BODY' } });
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 2.1), 2.1);
+
+  const arrowMarks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'ArrowUp',
+    repeat: false,
+    target: { tagName: 'BODY' },
+    preventDefault: () => arrowMarks.push('prevent'),
+    stopPropagation: () => arrowMarks.push('stop'),
+  });
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 2.1), 2.11);
+  assert.deepEqual(arrowMarks, ['prevent', 'stop']);
+  assert.equal(nudgeRefreshes, 1);
 
   doc.dispatch('keydown', { key: 'Shift', repeat: false, target: { tagName: 'BODY' } });
   win.dispatch('blur', {});

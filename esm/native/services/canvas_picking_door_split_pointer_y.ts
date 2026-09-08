@@ -17,6 +17,7 @@ type CanvasDoorSplitAxisLockState = {
   pressed: boolean;
   latestWorldY: number | null;
   lockedWorldY: number | null;
+  keyboardWorldY: number | null;
 };
 
 const canvasDoorSplitAxisLockByApp = new WeakMap<object, CanvasDoorSplitAxisLockState>();
@@ -29,6 +30,7 @@ function getCanvasDoorSplitAxisLockState(App: AppContainer): CanvasDoorSplitAxis
     pressed: false,
     latestWorldY: null,
     lockedWorldY: null,
+    keyboardWorldY: null,
   };
   canvasDoorSplitAxisLockByApp.set(key, created);
   return created;
@@ -41,9 +43,15 @@ export function setCanvasDoorSplitVerticalLockPressed(App: AppContainer, pressed
 
   state.pressed = next;
   if (next) {
-    state.lockedWorldY = isFiniteNumber(state.latestWorldY) ? Number(state.latestWorldY) : null;
+    state.lockedWorldY = isFiniteNumber(state.keyboardWorldY)
+      ? Number(state.keyboardWorldY)
+      : isFiniteNumber(state.latestWorldY)
+        ? Number(state.latestWorldY)
+        : null;
+    state.keyboardWorldY = null;
   } else {
     state.lockedWorldY = null;
+    state.keyboardWorldY = null;
   }
 }
 
@@ -53,17 +61,61 @@ export function resolveCanvasDoorSplitVerticalLockedWorldY(
 ): number | null {
   const state = getCanvasDoorSplitAxisLockState(App);
   if (!isFiniteNumber(worldY)) {
-    return state.pressed && isFiniteNumber(state.lockedWorldY) ? Number(state.lockedWorldY) : null;
+    if (state.pressed && isFiniteNumber(state.lockedWorldY)) return Number(state.lockedWorldY);
+    if (!state.pressed && isFiniteNumber(state.keyboardWorldY)) return Number(state.keyboardWorldY);
+    return null;
   }
 
   const current = Number(worldY);
-  if (!state.pressed) {
-    state.latestWorldY = current;
-    return current;
+  state.latestWorldY = current;
+
+  if (state.pressed) {
+    if (!isFiniteNumber(state.lockedWorldY)) state.lockedWorldY = current;
+    return Number(state.lockedWorldY);
   }
 
-  if (!isFiniteNumber(state.lockedWorldY)) state.lockedWorldY = current;
-  return Number(state.lockedWorldY);
+  if (isFiniteNumber(state.keyboardWorldY)) return Number(state.keyboardWorldY);
+  return current;
+}
+
+/**
+ * A physical pointer move takes ownership of the authoring height again.
+ * While Shift is held, the locked height remains authoritative so horizontal
+ * travel across adjacent doors keeps the same cut height.
+ */
+export function prepareCanvasDoorSplitPointerMove(App: AppContainer): void {
+  const state = getCanvasDoorSplitAxisLockState(App);
+  state.latestWorldY = null;
+  if (!state.pressed) state.keyboardWorldY = null;
+}
+
+/**
+ * Nudge the current manual-split authoring height in world metres.
+ * Returns null when the pointer is not currently resolved over a split door.
+ */
+export function nudgeCanvasDoorSplitPointerWorldY(App: AppContainer, deltaWorldY: number): number | null {
+  if (!isFiniteNumber(deltaWorldY) || deltaWorldY === 0) return null;
+  const state = getCanvasDoorSplitAxisLockState(App);
+  if (!isFiniteNumber(state.latestWorldY)) return null;
+
+  const base =
+    state.pressed && isFiniteNumber(state.lockedWorldY)
+      ? Number(state.lockedWorldY)
+      : isFiniteNumber(state.keyboardWorldY)
+        ? Number(state.keyboardWorldY)
+        : Number(state.latestWorldY);
+  const next = base + Number(deltaWorldY);
+  if (!isFiniteNumber(next)) return null;
+
+  if (state.pressed) state.lockedWorldY = next;
+  else state.keyboardWorldY = next;
+  return next;
+}
+
+export function clearCanvasDoorSplitPointerHover(App: AppContainer): void {
+  const state = getCanvasDoorSplitAxisLockState(App);
+  state.latestWorldY = null;
+  state.keyboardWorldY = null;
 }
 
 export function clearCanvasDoorSplitVerticalLock(App: AppContainer): void {

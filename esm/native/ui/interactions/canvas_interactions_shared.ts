@@ -4,6 +4,7 @@ import type { AppContainer } from '../../../../types';
 import {
   clearCanvasDoorSplitVerticalLock,
   clearSketchHoverPreview,
+  nudgeCanvasDoorSplitPointerWorldY,
   getBrowserTimers,
   getBuilderRenderOps,
   MODES,
@@ -125,13 +126,39 @@ function isManualDoorSplitModeActive(App: AppContainer): boolean {
   return mode.primary === MODES.SPLIT && opts?.splitVariant === 'custom';
 }
 
-export function installCanvasDoorSplitAxisLockInteraction(App: AppContainer, domEl: HTMLElement): () => void {
+export const CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M = 0.01;
+
+export function installCanvasDoorSplitAxisLockInteraction(
+  App: AppContainer,
+  domEl: HTMLElement,
+  onNudgeApplied?: (() => void) | null
+): () => void {
   const doc = domEl.ownerDocument || null;
   const win = doc?.defaultView || null;
   if (!doc) return () => clearCanvasDoorSplitVerticalLock(App);
 
   const onKeyDown = (event: KeyboardEvent): void => {
-    if (event.key !== 'Shift' || event.repeat || isEditableCanvasKeyboardTarget(event.target)) return;
+    if (isEditableCanvasKeyboardTarget(event.target)) return;
+
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      try {
+        if (!isManualDoorSplitModeActive(App)) return;
+        const delta =
+          event.key === 'ArrowUp'
+            ? CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M
+            : -CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M;
+        const nextY = nudgeCanvasDoorSplitPointerWorldY(App, delta);
+        if (typeof nextY !== 'number') return;
+        event.preventDefault();
+        event.stopPropagation();
+        onNudgeApplied?.();
+      } catch (err) {
+        reportCanvasInteractionsNonFatal(App, 'splitAxisLock.arrowNudge', err);
+      }
+      return;
+    }
+
+    if (event.key !== 'Shift' || event.repeat) return;
     try {
       if (!isManualDoorSplitModeActive(App)) return;
       setCanvasDoorSplitVerticalLockPressed(App, true);

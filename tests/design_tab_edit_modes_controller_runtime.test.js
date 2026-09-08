@@ -170,6 +170,11 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
         entry[4] === 'react:design:splitDoorsTransparent'
     )
   );
+  assert.equal(
+    calls.some(entry => entry[0] === 'exitPrimaryMode'),
+    false,
+    'transparency is an in-mode option update and must not exit manual split mode'
+  );
 
   calls.length = 0;
   controller.setCellDoorCount(1);

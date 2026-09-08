@@ -226,7 +226,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
               <div className={model.splitIsCustom ? 'wp-r-editmode-hint' : 'wp-r-editmode-hint hidden'}>
                 הזז עכבר לראות קו חיתוך. לחץ להוספה. לחץ שוב על קו קיים כדי להסיר. אפשר כמה חיתוכים. החזק
-                Shift כדי לנעול את גובה החיתוך ולעבור ימינה/שמאלה לדלת סמוכה באותו גובה.
+                Shift כדי לנעול את גובה החיתוך ולעבור ימינה/שמאלה לדלת סמוכה באותו גובה. כשהעכבר מעל דלת,
+                השתמש בחיצים למעלה/למטה כדי להזיז את החיתוך בדיוק 1 ס״מ בכל לחיצה.
               </div>
             </div>
           ) : null}

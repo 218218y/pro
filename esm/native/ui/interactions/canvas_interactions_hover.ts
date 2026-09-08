@@ -1,6 +1,11 @@
 import type { AppContainer } from '../../../../types';
 import { disposeViewerMeasurementHoverTooltip } from './canvas_measurement_hover_tooltip.js';
-import { cancelCanvasPostBuildHoverRefresh, updateCanvasPostBuildHoverRefresh } from '../../services/api.js';
+import {
+  cancelCanvasPostBuildHoverRefresh,
+  clearCanvasDoorSplitPointerHover,
+  prepareCanvasDoorSplitPointerMove,
+  updateCanvasPostBuildHoverRefresh,
+} from '../../services/api.js';
 import {
   cancelQueuedCanvasHoverRefresh,
   createClearTransientHoverPreview,
@@ -54,6 +59,7 @@ export function createCanvasHoverInteractionOps(
       const xy = getClientXY(e, App);
       if (!xy) return;
 
+      prepareCanvasDoorSplitPointerMove(App);
       state.hoverLastCx = xy.cx;
       state.hoverLastCy = xy.cy;
       const rect = rectOps.readRectCached(24);
@@ -77,6 +83,7 @@ export function createCanvasHoverInteractionOps(
     state.downPointerId = null;
     cancelQueuedCanvasHoverRefresh(App, state, timers, 'pointerleave.cancelRaf');
     cancelCanvasPostBuildHoverRefresh(App);
+    clearCanvasDoorSplitPointerHover(App);
     rectOps.invalidateRectCache();
     clearTransientHoverPreview();
     try {
@@ -86,12 +93,29 @@ export function createCanvasHoverInteractionOps(
     }
   };
 
+  const refreshCurrentHover = (): void => {
+    refreshCanvasHoverAtClientPoint({
+      App,
+      deps,
+      state,
+      rectOps,
+      applyHoverCursorFromResult,
+      cx: state.hoverLastCx,
+      cy: state.hoverLastCy,
+      rectMaxAgeMs: 0,
+      invalidateRectCache: true,
+      syncPickingMatrices: true,
+      op: 'hover.refreshAfterSplitKeyboardNudge',
+    });
+  };
+
   const disposeHover = (): void => {
     rectOps.invalidateRectCache();
     cancelQueuedCanvasHoverRefresh(App, state, timers, 'cancelRaf');
     cancelCanvasPostBuildHoverRefresh(App);
+    clearCanvasDoorSplitPointerHover(App);
     disposeViewerMeasurementHoverTooltip(deps.domEl);
   };
 
-  return { onPointerMove, onPointerLeave, disposeHover };
+  return { onPointerMove, onPointerLeave, refreshCurrentHover, disposeHover };
 }

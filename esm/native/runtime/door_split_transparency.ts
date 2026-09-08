@@ -50,7 +50,9 @@ function cloneOneMaterial(material: unknown): unknown {
     nextRec.depthWrite = false;
     nextRec.needsUpdate = true;
     return next;
-  } catch {
+  } catch (error) {
+    // Optional material cloning may be unsupported by a custom material; keep the original untouched.
+    void error;
     return material;
   }
 }
@@ -72,8 +74,9 @@ function disposeOneMaterial(material: unknown): void {
   if (typeof dispose !== 'function') return;
   try {
     Reflect.apply(dispose, material, []);
-  } catch {
+  } catch (error) {
     // Material disposal is best-effort; restoration of the original reference is the important part.
+    void error;
   }
 }
 

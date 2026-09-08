@@ -40,7 +40,14 @@ export function installCanvasInteractions(
 
   const hoverOps = createCanvasHoverInteractionOps(App, deps, state, rectOps);
   const pointerOps = createCanvasPointerInteractionOps(App, deps, state, normalizedOpts, rectOps);
-  const disposeSplitAxisLock = installCanvasDoorSplitAxisLockInteraction(App, domEl);
+  const disposeSplitAxisLock = installCanvasDoorSplitAxisLockInteraction(App, domEl, () => {
+    hoverOps.refreshCurrentHover();
+    try {
+      deps.triggerRender(false);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.arrowNudge.triggerRender', err);
+    }
+  });
 
   const onPointerMove: EventListener = e => {
     hoverOps.onPointerMove(e);

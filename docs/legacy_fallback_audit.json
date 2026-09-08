@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T10:01:38.856Z",
+  "generatedAt": "2026-09-08T11:54:00.809Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -3723,7 +3723,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_split_pointer_y.ts",
-      "line": 68,
+      "line": 177,
       "term": "fallback",
       "category": "domain-default",
       "text": "// projection-fallback: alternate door-bound projection remains available when local transforms fail"
@@ -4409,14 +4409,14 @@
     },
     {
       "file": "esm/native/ui/modes_mode_opts.ts",
-      "line": 47,
+      "line": 55,
       "term": "fallback",
       "category": "domain-default",
       "text": "// drawer-fallback: a non-writable isOpen flag must not prevent position recovery for other drawers."
     },
     {
       "file": "esm/native/ui/modes_mode_opts.ts",
-      "line": 52,
+      "line": 60,
       "term": "fallback",
       "category": "domain-default",
       "text": "// drawer-fallback: an individual position copy failure must not abort recovery for remaining drawers."

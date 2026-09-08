@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
+import { createStore as createRuntimeStore } from '../esm/native/platform/store.ts';
+import { patchPrimaryModeOpts } from '../esm/native/ui/react/actions/modes_actions.ts';
 import { setCfgHandlesMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
@@ -94,6 +96,39 @@ function createStore(root?: AnyRecord): { state: AnyRecord; calls: AnyRecord[]; 
 
   return { state, calls, store };
 }
+
+test('[state-api] mode opts noop filtering preserves the complete atomic replacement used by in-mode authoring patches', () => {
+  const store = createRuntimeStore({
+    initialState: {
+      ui: {},
+      config: {},
+      runtime: {},
+      mode: {
+        primary: 'split',
+        opts: { splitVariant: 'custom', authoringProbe: 'keep' },
+      },
+      meta: { dirty: false },
+    },
+  });
+  const App: AnyRecord = { actions: {}, services: {}, store, modes: { NONE: 'none' } };
+
+  installStateApi(App as any);
+
+  const applied = patchPrimaryModeOpts(
+    App as any,
+    'split',
+    { splitDoorsTransparent: true },
+    'test:manual-split-transparency'
+  );
+
+  assert.equal(applied, true);
+  assert.equal(store.getState().mode.primary, 'split');
+  assert.deepEqual(store.getState().mode.opts, {
+    splitVariant: 'custom',
+    authoringProbe: 'keep',
+    splitDoorsTransparent: true,
+  });
+});
 
 test('[state-api] commitUiSnapshot suppresses semantically unchanged snapshots when only __capturedAt would differ', () => {
   const { calls, store } = createStore({

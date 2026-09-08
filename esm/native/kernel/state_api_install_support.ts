@@ -198,6 +198,15 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
   const patchKeys = namespace === 'config' ? readConfigPatchDataKeys(patchRecord) : Object.keys(patchRecord);
 
   for (const key of patchKeys) {
+    if (namespace === 'mode' && key === 'opts') {
+      // mode.opts is an atomic replacement downstream (applyModePatchSlice), not a deep-merge patch.
+      // Preserve the complete requested opts object when any nested option changes; recursively
+      // filtering unchanged keys here would turn a safe full replacement into destructive data loss.
+      const nextOpts = isSliceRecord(patchRecord[key]) ? cloneComparableRecord(patchRecord[key]) : {};
+      if (!snapshotStoreValueEqual(prevRec[key], nextOpts)) next[key] = nextOpts;
+      continue;
+    }
+
     if (replaceRec && replaceRec[key]) {
       const nextValue = patchRecord[key];
       if (!snapshotStoreValueEqual(prevRec[key], nextValue)) {

@@ -98,6 +98,9 @@ export {
   setHardCloseForMs,
 } from '../runtime/doors_access.js';
 export {
+  clearCanvasDoorSplitPointerHover,
   clearCanvasDoorSplitVerticalLock,
+  nudgeCanvasDoorSplitPointerWorldY,
+  prepareCanvasDoorSplitPointerMove,
   setCanvasDoorSplitVerticalLockPressed,
 } from './canvas_picking_door_split_pointer_y.js';
