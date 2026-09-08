@@ -79,17 +79,22 @@ function readGroupChildren(group: PreviewGroupLike): PreviewObject3DLike[] {
 }
 
 type CellLayoutStackKey = 'top' | 'bottom';
+type CellLayoutObjectScope = CellLayoutStackKey | 'shared';
 
 function readCellLayoutStackKey(value: unknown): CellLayoutStackKey | null {
   return value === 'top' || value === 'bottom' ? value : null;
 }
 
+function readCellLayoutObjectScope(value: unknown): CellLayoutObjectScope | null {
+  return value === 'shared' ? 'shared' : readCellLayoutStackKey(value);
+}
+
 function readObjectStackScope(
   ctx: SketchPlacementPreviewContext,
   object: PreviewObject3DLike
-): CellLayoutStackKey | null {
+): CellLayoutObjectScope | null {
   const userData = ctx.shared.readUserData(object.userData);
-  return readCellLayoutStackKey(userData.__wpStackRegion) || readCellLayoutStackKey(userData.__wpStack);
+  return readCellLayoutObjectScope(userData.__wpStackRegion) || readCellLayoutStackKey(userData.__wpStack);
 }
 
 function isGlobalSketchFreePlacementObject(
@@ -110,11 +115,11 @@ function shouldIsolateCellLayoutChild(
   if (isGlobalSketchFreePlacementObject(ctx, child)) return false;
 
   const childStack = readObjectStackScope(ctx, child);
-  // In stack-split mode the opposite stack is the only wardrobe geometry that
-  // must survive unchanged. Unscoped root children are transient/global visual
-  // overlays created after build; hiding them avoids leaking the original
-  // active-stack highlights through the isolated preview.
-  return childStack !== (requestedStack === 'top' ? 'bottom' : 'top');
+  // The opposite stack and physically shared unified-frame geometry must survive
+  // unchanged. Unscoped root children are transient/global overlays created after
+  // build; hiding them avoids leaking original active-stack highlights through the
+  // isolated preview.
+  return childStack !== 'shared' && childStack !== (requestedStack === 'top' ? 'bottom' : 'top');
 }
 
 function resolveCellLayoutIsolationRoot(ctx: SketchPlacementPreviewContext): PreviewGroupLike | null {

@@ -128,6 +128,10 @@ export function prepareBuildWardrobeExecution(
     roomArchitecturePlan,
   });
 
+  const unifiedFrameStartIndex =
+    plan.splitActiveForBuild && plan.stackSplitUnifiedFrame
+      ? prepared.orchestration.readWardrobeChildCount()
+      : -1;
   const { startY, cabinetBodyHeight, cabinetTopY, splitLineY } = resolveBuildWardrobeCarcassMetrics({
     App,
     THREE,
@@ -137,9 +141,18 @@ export function prepareBuildWardrobeExecution(
     sketchMode,
     addOutlinesMesh,
   });
-  const effectiveSplitUpperStartIndex = plan.stackSplitUnifiedFrame
-    ? prepared.orchestration.readWardrobeChildCount()
-    : splitUpperStartIndex;
+  let effectiveSplitUpperStartIndex = splitUpperStartIndex;
+  if (unifiedFrameStartIndex >= 0) {
+    const postCarcassChildCount = prepared.orchestration.readWardrobeChildCount();
+    if (postCarcassChildCount >= unifiedFrameStartIndex) {
+      prepared.orchestration.markWardrobeStackScope({
+        fromIdx: unifiedFrameStartIndex,
+        toIdx: postCarcassChildCount,
+        stackKey: 'shared',
+      });
+      effectiveSplitUpperStartIndex = postCarcassChildCount;
+    }
+  }
   const topStartY = plan.stackSplitUnifiedFrame ? 0 : startY;
   const topCabinetBodyHeight = plan.stackSplitUnifiedFrame ? plan.H : cabinetBodyHeight;
   const topCabinetTopY = plan.stackSplitUnifiedFrame ? topStartY + topCabinetBodyHeight : cabinetTopY;

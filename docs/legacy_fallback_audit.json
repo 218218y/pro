@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T11:06:07.590Z",
+  "generatedAt": "2026-09-08T10:01:38.856Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -1609,7 +1609,7 @@
     },
     {
       "file": "esm/native/builder/build_app_context.ts",
-      "line": 109,
+      "line": 110,
       "term": "fallbackReplay",
       "category": "domain-default",
       "text": "reportSoftError('native/builder/build_runner.fallbackReplay', error);"

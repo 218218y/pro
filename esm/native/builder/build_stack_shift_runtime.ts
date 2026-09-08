@@ -14,7 +14,7 @@ export function markWardrobeRangeStackScope(args: {
   App: AppContainer;
   fromIdx: number;
   toIdx: number;
-  stackKey: 'top' | 'bottom';
+  stackKey: 'top' | 'bottom' | 'shared';
 }): void {
   const group = readRecord(getWardrobeGroup(args.App));
   const arr = readUnknownArray(group?.children);

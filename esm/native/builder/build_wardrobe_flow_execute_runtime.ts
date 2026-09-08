@@ -3,7 +3,6 @@ import { applyHingedDoorOpsAfterModules } from './hinged_doors_pipeline.js';
 import { applySlidingDoorsIfNeeded } from './sliding_doors_pipeline.js';
 import { applyPostBuildExtras } from './post_build_extras_pipeline.js';
 import { asBuilderOpenStateRecord } from './builder_config_boundary.js';
-import { markWardrobeRangeStackScope } from './build_stack_shift_runtime.js';
 
 import type { BuildContextLike } from '../../../types';
 import type { PreparedBuildWardrobeExecution } from './build_wardrobe_flow_context.js';
@@ -75,9 +74,8 @@ export function completePreparedBuildWardrobeExecution(
   });
 
   applyPostBuildExtras(buildCtx);
-  if (plan.splitActiveForBuild && splitUpperStartIndex >= 0 && buildCtx.App) {
-    markWardrobeRangeStackScope({
-      App: buildCtx.App,
+  if (plan.splitActiveForBuild && splitUpperStartIndex >= 0) {
+    prepared.orchestration.markWardrobeStackScope({
       fromIdx: splitUpperStartIndex,
       toIdx: Number.MAX_SAFE_INTEGER,
       stackKey: 'top',

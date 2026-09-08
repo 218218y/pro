@@ -226,22 +226,41 @@ test('cell-layout stack isolation hides only the active stack and unscoped overl
   const { ctx, wardrobeRoot } = createContext();
   const topPart = { visible: true, userData: { __wpStackRegion: 'top' } };
   const bottomPart = { visible: true, userData: { __wpStackRegion: 'bottom' } };
+  const sharedFrame = { visible: true, userData: { __wpStackRegion: 'shared' } };
   const transientOverlay = { visible: true, userData: { partId: 'hover_overlay' } };
   const globalFreeBox = { visible: true, userData: { partId: 'sketch_box_free_42' } };
-  wardrobeRoot.children.unshift(topPart, bottomPart, transientOverlay, globalFreeBox);
+  wardrobeRoot.children.unshift(topPart, bottomPart, sharedFrame, transientOverlay, globalFreeBox);
   ctx.input.isolateStackKey = 'top';
 
   assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
   assert.equal(topPart.visible, false);
   assert.equal(bottomPart.visible, true);
+  assert.equal(sharedFrame.visible, true);
   assert.equal(transientOverlay.visible, false);
   assert.equal(globalFreeBox.visible, true);
 
   restoreCellLayoutWardrobeVisibility(ctx.g as never, ctx.shared as never);
   assert.equal(topPart.visible, true);
   assert.equal(bottomPart.visible, true);
+  assert.equal(sharedFrame.visible, true);
   assert.equal(transientOverlay.visible, true);
   assert.equal(globalFreeBox.visible, true);
+});
+
+test('cell-layout lower-stack isolation preserves upper and shared unified-frame geometry', () => {
+  const { ctx, wardrobeRoot } = createContext();
+  const topPart = { visible: true, userData: { __wpStackRegion: 'top' } };
+  const bottomPart = { visible: true, userData: { __wpStackRegion: 'bottom' } };
+  const sharedFrame = { visible: true, userData: { __wpStackRegion: 'shared' } };
+  const transientOverlay = { visible: true, userData: { partId: 'hover_overlay' } };
+  wardrobeRoot.children.unshift(topPart, bottomPart, sharedFrame, transientOverlay);
+  ctx.input.isolateStackKey = 'bottom';
+
+  assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
+  assert.equal(bottomPart.visible, false);
+  assert.equal(topPart.visible, true);
+  assert.equal(sharedFrame.visible, true);
+  assert.equal(transientOverlay.visible, false);
 });
 
 test('cell-layout isolation restores the exact pre-hover visibility state', () => {

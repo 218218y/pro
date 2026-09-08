@@ -123,6 +123,7 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /reportError\(/,
       /maybeRenderNoMainSketchHost\(/,
       /finalizeStackSplitUpperShift\(/,
+      /markWardrobeStackScope:/,
       /makeHandleCreator\(/,
       /prepareBuildScene\(/,
       /buildChestModeIfNeeded\(/,
@@ -171,6 +172,8 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
     [
       /orchestration\.createHandleBindings\(/,
       /orchestration\.readWardrobeChildCount\(/,
+      /orchestration\.markWardrobeStackScope\(/,
+      /stackKey:\s*'shared'/,
       /orchestration\.syncNoMainWorkspaceMetrics\(/,
     ],
     'prepared build context orchestration ports'
@@ -221,6 +224,7 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /buildModulesLoop\(/,
       /orchestration\.renderNoMainSketchHost\(/,
       /orchestration\.finalizeStackSplitUpperShift\(/,
+      /orchestration\.markWardrobeStackScope\(/,
       /applyPostBuildExtras\(/,
     ],
     'buildExecuteRuntime'

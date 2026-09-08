@@ -24,3 +24,20 @@ test('stack hover scope stamps only the requested built range and preserves glob
   assert.equal(upperA.userData.__wpStackRegion, 'top');
   assert.equal(freeBox.userData.__wpStackRegion, undefined);
 });
+
+test('stack hover scope can mark a unified carcass range as shared geometry', () => {
+  const lower = { userData: { __wpStackRegion: 'bottom' } };
+  const sharedSide = { userData: {} };
+  const sharedTop = { userData: { existing: true } };
+  const upper = { userData: { __wpStack: 'top' } };
+  const children = [lower, sharedSide, sharedTop, upper];
+  const App = createApp(children);
+
+  markWardrobeRangeStackScope({ App, fromIdx: 1, toIdx: 3, stackKey: 'shared' });
+
+  assert.equal(lower.userData.__wpStackRegion, 'bottom');
+  assert.equal(sharedSide.userData.__wpStackRegion, 'shared');
+  assert.equal(sharedTop.userData.__wpStackRegion, 'shared');
+  assert.equal(sharedTop.userData.existing, true);
+  assert.equal(upper.userData.__wpStack, 'top');
+});

@@ -24,6 +24,7 @@ import {
 } from './build_no_main_sketch_host.js';
 import { resolveBuildStateOrThrow } from './build_state_resolver.js';
 import { finalizeStackSplitUpperShift } from './build_stack_split_pipeline.js';
+import { markWardrobeRangeStackScope } from './build_stack_shift_runtime.js';
 import { makeBoardCreator } from './board_factory.js';
 import { buildChestModeIfNeeded } from './chest_mode_pipeline.js';
 import {
@@ -224,6 +225,7 @@ export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlo
     syncNoMainWorkspaceMetrics: input => syncNoMainSketchWorkspaceMetrics({ App, ...input }),
     renderNoMainSketchHost: input => maybeRenderNoMainSketchHost({ App, ...input }),
     finalizeStackSplitUpperShift: input => finalizeStackSplitUpperShift({ App, ...input }),
+    markWardrobeStackScope: input => markWardrobeRangeStackScope({ App, ...input }),
     beginConstructionCorrectionFeedback: () => beginConstructionCorrectionFeedback(App),
     completeConstructionCorrectionFeedback: publish => completeConstructionCorrectionFeedback(App, publish),
     reportBuildFailure: (label, error, showToast) => {

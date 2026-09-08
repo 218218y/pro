@@ -48,6 +48,12 @@ export type BuildFlowHandleBindingsInput = Readonly<{
 
 export type BuildFlowStackSplitUpperFinalizeInput = Omit<FinalizeStackSplitUpperShiftArgs, 'App'>;
 
+export type BuildFlowStackScopeInput = Readonly<{
+  fromIdx: number;
+  toIdx: number;
+  stackKey: 'top' | 'bottom' | 'shared';
+}>;
+
 export type BuildFlowOrchestrationContext = Readonly<{
   resolveState: (stateOrOverride: unknown) => BuildStateResolvedLike;
   resetCaches: () => void;
@@ -64,6 +70,7 @@ export type BuildFlowOrchestrationContext = Readonly<{
   syncNoMainWorkspaceMetrics: (input: NoMainSketchWorkspaceMetricsInput) => void;
   renderNoMainSketchHost: (input: NoMainSketchRenderInput) => boolean;
   finalizeStackSplitUpperShift: (input: BuildFlowStackSplitUpperFinalizeInput) => void;
+  markWardrobeStackScope: (input: BuildFlowStackScopeInput) => void;
   beginConstructionCorrectionFeedback: () => void;
   completeConstructionCorrectionFeedback: (publish: boolean) => void;
   reportBuildFailure: (label: string, error: unknown, showToast: unknown) => void;
