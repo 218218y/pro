@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T11:54:00.809Z",
+  "generatedAt": "2026-09-08T15:08:27.270Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -4724,28 +4724,28 @@
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
-      "line": 151,
+      "line": 176,
       "term": "fallbackNotes",
       "category": "domain-default",
       "text": "fallbackNotes: SavedNote[];"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
-      "line": 154,
+      "line": 179,
       "term": "fallbackNotes",
       "category": "domain-default",
       "text": "const { startNotes, currentNotes, fallbackNotes, captureEditorsIntoNotes } = args;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
-      "line": 155,
+      "line": 180,
       "term": "fallbackNotes",
       "category": "domain-default",
       "text": "const base = currentNotes || fallbackNotes;"
     },
     {
       "file": "esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.ts",
-      "line": 158,
+      "line": 183,
       "term": "fallbackNotes",
       "category": "domain-default",
       "text": "const baseline = startNotes || fallbackNotes;"
