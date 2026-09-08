@@ -206,6 +206,22 @@ test('cell-layout renderer isolates the original wardrobe, highlights the select
   assert.equal(peerDivider.position.x, boxes[2]!.x);
 });
 
+test('cell-layout isolation uses the attached THREE parent when RenderOps exposes only an add-only wardrobe adapter', () => {
+  const { ctx, originalVisible, originalHidden } = createContext();
+  const actualRoot = ctx.g.parent;
+
+  ctx.wardrobeGroup = () => ({
+    add(object: unknown) {
+      (actualRoot as { children: unknown[] }).children.push(object);
+    },
+  });
+
+  assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
+  assert.equal(originalVisible.visible, false);
+  assert.equal(originalHidden.visible, false);
+  assert.equal(ctx.g.visible, true);
+});
+
 test('cell-layout isolation restores the exact pre-hover visibility state', () => {
   const { ctx, shared, originalVisible, originalHidden } = createContext();
   assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);

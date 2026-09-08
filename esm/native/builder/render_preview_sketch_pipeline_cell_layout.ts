@@ -1,4 +1,3 @@
-import { CELL_DIMENSION_PREVIEW_POLICY } from '../../shared/dimensions/cell_dimension_policy.js';
 import { readPreviewNumber, readPreviewPositiveNumber } from './render_preview_number_contracts.js';
 import type {
   PreviewGroupLike,
@@ -17,6 +16,12 @@ type CellLayoutIsolationSnapshot = {
   root: PreviewGroupLike;
   entries: VisibilitySnapshotEntry[];
 };
+
+const CELL_LAYOUT_DOOR_DIVIDER_VISUAL = Object.freeze({
+  widthM: 0.008,
+  depthM: 0.004,
+  frontOffsetM: 0.0015,
+});
 
 function readCellLayoutMeshes(ctx: SketchPlacementPreviewContext): PreviewMeshLike[] {
   return ctx.shared.readPreviewObjectList(ctx.ud.__cellLayoutMeshes);
@@ -73,13 +78,27 @@ function readGroupChildren(group: PreviewGroupLike): PreviewObject3DLike[] {
   );
 }
 
+function resolveCellLayoutIsolationRoot(ctx: SketchPlacementPreviewContext): PreviewGroupLike | null {
+  const attachedParent = ctx.asPreviewGroup(ctx.g.parent);
+  if (attachedParent && readGroupChildren(attachedParent).includes(ctx.g)) return attachedParent;
+
+  const anchorParent = ctx.asPreviewGroup(ctx.input.anchorParent);
+  if (anchorParent && readGroupChildren(anchorParent).includes(ctx.g)) return anchorParent;
+
+  return ctx.asPreviewGroup(ctx.wardrobeGroup(ctx.App));
+}
+
 function isolateWardrobeForCellLayout(ctx: SketchPlacementPreviewContext): void {
   if (ctx.input.isolateWardrobe !== true) {
     restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
     return;
   }
 
-  const root = ctx.asPreviewGroup(ctx.wardrobeGroup(ctx.App));
+  // RenderOps exposes wardrobeGroup through an add-only adapter. The preview group,
+  // however, has already been attached to the real THREE.Group before this stage.
+  // Resolve that concrete parent first so isolation can actually enumerate and hide
+  // the wardrobe's children (doors, handles, outlines, hover markers, etc.).
+  const root = resolveCellLayoutIsolationRoot(ctx);
   if (!root) return;
 
   let snapshot = readIsolationSnapshot(ctx.g, ctx.shared);
@@ -256,18 +275,15 @@ export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPrevie
       if (!divider) continue;
       const dividerX = x - w / 2 + (w * dividerIndex) / doorCount;
       const dividerZ =
-        z +
-        d / 2 +
-        CELL_DIMENSION_PREVIEW_POLICY.doorDividerFrontOffsetM +
-        CELL_DIMENSION_PREVIEW_POLICY.doorDividerDepthM / 2;
+        z + d / 2 + CELL_LAYOUT_DOOR_DIVIDER_VISUAL.frontOffsetM + CELL_LAYOUT_DOOR_DIVIDER_VISUAL.depthM / 2;
       ctx.setVisible(divider, true);
       ctx.resetMeshOrientation(divider);
       ctx.applyPreviewStyle(divider, doorDividerMaterial, null, selected ? 10030 : 10028);
       divider.position?.set?.(dividerX, y, dividerZ);
       divider.scale?.set?.(
-        CELL_DIMENSION_PREVIEW_POLICY.doorDividerWidthM,
+        CELL_LAYOUT_DOOR_DIVIDER_VISUAL.widthM,
         boxH,
-        CELL_DIMENSION_PREVIEW_POLICY.doorDividerDepthM
+        CELL_LAYOUT_DOOR_DIVIDER_VISUAL.depthM
       );
     }
   }
