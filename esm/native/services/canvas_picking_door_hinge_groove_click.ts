@@ -61,6 +61,7 @@ import {
   toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { requestDoorAuthoringImmediateRefresh } from './canvas_picking_door_authoring_burst.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   hasAnyDoorGrooveSegmentMapEntry,
   isDoorGrooveSegmentPartId,
@@ -211,12 +212,16 @@ function handleCanvasDoorGrooveLayoutClick(args: {
   }
   const localHit = readPointXYZ(localHitVector);
   if (!localHit) return true;
+  const lockedLocalHit = resolveCanvasPrecisionAxisLockedLocalPoint(args.App, {
+    x: localHit.x,
+    y: localHit.y,
+  });
 
   const removeMatch = findGrooveLayoutMatchInRect({
     rect: surfaceRect,
     layouts: currentLayouts,
-    hitX: localHit.x,
-    hitY: localHit.y,
+    hitX: lockedLocalHit.x,
+    hitY: lockedLocalHit.y,
   });
   const groovesMap = normalizeKnownMapSnapshot('groovesMap', __wp_map(args.App, 'groovesMap'));
   const hasCanonicalFullVertical =
@@ -239,8 +244,8 @@ function handleCanvasDoorGrooveLayoutClick(args: {
 
   const nextLayout = buildGrooveLayoutFromHit({
     rect: surfaceRect,
-    hitX: localHit.x,
-    hitY: localHit.y,
+    hitX: lockedLocalHit.x,
+    hitY: lockedLocalHit.y,
     draft: {
       widthCm: tool.manual ? tool.widthCm : null,
       heightCm: tool.manual ? tool.heightCm : null,

@@ -4,6 +4,7 @@ import {
   cancelCanvasPostBuildHoverRefresh,
   clearCanvasDoorSplitPointerHover,
   prepareCanvasDoorSplitPointerMove,
+  resolveCanvasPrecisionAxisLockedClientPoint,
   updateCanvasPostBuildHoverRefresh,
 } from '../../services/api.js';
 import {
@@ -60,10 +61,11 @@ export function createCanvasHoverInteractionOps(
       if (!xy) return;
 
       prepareCanvasDoorSplitPointerMove(App);
+      const authoringPoint = resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: xy.cx, cy: xy.cy });
       state.hoverLastCx = xy.cx;
       state.hoverLastCy = xy.cy;
       const rect = rectOps.readRectCached(24);
-      const ndc = rect ? toNdcFromClient(xy.cx, xy.cy, rect) : null;
+      const ndc = rect ? toNdcFromClient(authoringPoint.cx, authoringPoint.cy, rect) : null;
       if (ndc) updateCanvasPostBuildHoverRefresh(App, ndc.x, ndc.y);
 
       if (!state.hoverMoveQueued) {

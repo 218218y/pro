@@ -34,6 +34,7 @@ import {
   resolveMirrorLayoutHoverAlignment,
 } from './canvas_picking_door_layout_alignment.js';
 import { createDoorLayoutAlignmentCapabilities } from './canvas_picking_door_layout_alignment_runtime.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import type { DoorHitNode } from './canvas_picking_door_shared.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import {
@@ -132,6 +133,12 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     }
     localHit.set(hitPoint.x, hitPoint.y, hitPoint.z);
     mirrorOwnerGroup?.worldToLocal?.(localHit);
+    const lockedLocalHit = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+      x: localHit.x,
+      y: localHit.y,
+    });
+    localHit.x = lockedLocalHit.x;
+    localHit.y = lockedLocalHit.y;
     const hitFaceSign = __resolveMirrorFaceSignFromLocalPoint(localHit);
     const existingMirrorLayouts = readDoorVisualMirrorLayout(mirrorLayoutMap, partKey) || [];
     const mirrorDraft = __readMirrorDraft(readUi, App);

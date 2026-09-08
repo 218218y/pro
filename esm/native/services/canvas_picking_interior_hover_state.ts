@@ -31,6 +31,11 @@ export function asHoverModuleConfig(value: unknown): HoverModuleConfigLike | nul
   return rec ? { ...rec } : null;
 }
 
+export function readPrimaryMode(App: AppContainer): string {
+  const mode = readModeStateFromApp(App);
+  return typeof mode.primary === 'string' ? mode.primary : '';
+}
+
 export function readModeOpts(App: AppContainer): UnknownRecord {
   const mode = readModeStateFromApp(App);
   const opts = mode && typeof mode === 'object' ? mode.opts : null;

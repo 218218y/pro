@@ -112,6 +112,11 @@ export function nudgeCanvasDoorSplitPointerWorldY(App: AppContainer, deltaWorldY
   return next;
 }
 
+export function hasCanvasDoorSplitPointerWorldY(App: AppContainer): boolean {
+  const state = getCanvasDoorSplitAxisLockState(App);
+  return isFiniteNumber(state.latestWorldY);
+}
+
 export function clearCanvasDoorSplitPointerHover(App: AppContainer): void {
   const state = getCanvasDoorSplitAxisLockState(App);
   state.latestWorldY = null;

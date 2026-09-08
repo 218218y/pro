@@ -10,7 +10,17 @@ import {
   resolveCanvasDoorSplitVerticalLockedWorldY,
   setCanvasDoorSplitVerticalLockPressed,
 } from '../esm/native/services/canvas_picking_door_split_pointer_y.ts';
-import { installCanvasDoorSplitAxisLockInteraction } from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
+import {
+  installCanvasAuthoringKeyboardInteraction,
+  installCanvasDoorSplitAxisLockInteraction,
+} from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
+import {
+  clearCanvasPrecisionAxisLock,
+  readCanvasPrecisionAxisLockScope,
+  resolveCanvasPrecisionAxisLockedClientPoint,
+  resolveCanvasPrecisionAxisLockedLocalPoint,
+  setCanvasPrecisionAxisLockPressed,
+} from '../esm/native/services/canvas_picking_precision_axis_lock.ts';
 
 function createApp(mode = { primary: 'split', opts: { splitVariant: 'custom' } }) {
   return {
@@ -162,5 +172,217 @@ test('manual-split Shift shortcut ignores editable targets', () => {
   doc.dispatch('keydown', { key: 'Shift', repeat: false, target: { tagName: 'INPUT' } });
   assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.7), 1.7);
 
+  dispose();
+});
+
+test('Enter commits the current manual split target and suppresses native focused-button activation', () => {
+  const App = createApp();
+  clearCanvasDoorSplitVerticalLock(App);
+  assert.equal(resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.42), 1.42);
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let commits = 0;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onManualSplitCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const marks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    repeat: false,
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation: () => marks.push('stop'),
+  });
+
+  assert.equal(commits, 1);
+  assert.deepEqual(marks, ['prevent', 'stop']);
+  dispose();
+});
+
+test('Enter does not hijack controls when no manual split hover target is available', () => {
+  const App = createApp();
+  clearCanvasDoorSplitVerticalLock(App);
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let commits = 0;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onManualSplitCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const marks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation: () => marks.push('stop'),
+  });
+  assert.equal(commits, 0);
+  assert.deepEqual(marks, []);
+  dispose();
+});
+
+function createPrecisionApp(args: {
+  primary: string;
+  opts?: Record<string, unknown>;
+  ui?: Record<string, unknown>;
+  manualTool?: string;
+  paint?: string;
+}) {
+  const state = {
+    mode: { primary: args.primary, opts: args.opts || {} },
+    ui: args.ui || {},
+  };
+  return {
+    store: { getState: () => state },
+    services: {
+      tools: {
+        getInteriorManualTool: () => args.manualTool || null,
+        getPaintColor: () => args.paint || null,
+      },
+    },
+  } as any;
+}
+
+test('precision Shift axis lock chooses the dominant direction once and keeps it until release', () => {
+  const App = createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_int_drawers' });
+  clearCanvasPrecisionAxisLock(App);
+
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 100, cy: 100 }), {
+    cx: 100,
+    cy: 100,
+  });
+  setCanvasPrecisionAxisLockPressed(App, true);
+
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 106, cy: 102 }), {
+    cx: 106,
+    cy: 100,
+  });
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 110, cy: 170 }), {
+    cx: 110,
+    cy: 100,
+  });
+
+  setCanvasPrecisionAxisLockPressed(App, false);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 110, cy: 170 }), {
+    cx: 110,
+    cy: 170,
+  });
+});
+
+test('precision Shift axis lock supports exact local vertical and horizontal placement coordinates', () => {
+  const verticalApp = createPrecisionApp({
+    primary: 'handle',
+    opts: { handlePlacement: 'manual' },
+  });
+  clearCanvasPrecisionAxisLock(verticalApp);
+  resolveCanvasPrecisionAxisLockedClientPoint(verticalApp, { cx: 50, cy: 50 });
+  resolveCanvasPrecisionAxisLockedLocalPoint(verticalApp, { x: 0.2, y: 0.8 });
+  setCanvasPrecisionAxisLockPressed(verticalApp, true);
+  resolveCanvasPrecisionAxisLockedClientPoint(verticalApp, { cx: 51, cy: 60 });
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(verticalApp, { x: 0.7, y: 1.2 }), {
+    x: 0.2,
+    y: 1.2,
+  });
+
+  const horizontalApp = createPrecisionApp({
+    primary: 'groove',
+    ui: { grooveManualEnabled: true },
+  });
+  clearCanvasPrecisionAxisLock(horizontalApp);
+  resolveCanvasPrecisionAxisLockedClientPoint(horizontalApp, { cx: 80, cy: 90 });
+  resolveCanvasPrecisionAxisLockedLocalPoint(horizontalApp, { x: 0.15, y: 0.65 });
+  setCanvasPrecisionAxisLockPressed(horizontalApp, true);
+  resolveCanvasPrecisionAxisLockedClientPoint(horizontalApp, { cx: 92, cy: 91 });
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(horizontalApp, { x: 0.55, y: 1.1 }), {
+    x: 0.55,
+    y: 0.65,
+  });
+});
+
+test('precision Shift scope is limited to positional authoring modes and covers requested tools', () => {
+  for (const manualTool of [
+    'shelf',
+    'sketch_int_drawers',
+    'sketch_ext_drawers:4',
+    'sketch_box:80',
+    'sketch_box_divider',
+  ]) {
+    const App = createPrecisionApp({ primary: 'manual_layout', manualTool });
+    assert.equal(readCanvasPrecisionAxisLockScope(App), `manual_layout:${manualTool}`);
+  }
+
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({ primary: 'handle', opts: { handlePlacement: 'manual' } })
+    ),
+    'handle:manual'
+  );
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({ primary: 'groove', ui: { grooveManualEnabled: true } })
+    ),
+    'groove:manual'
+  );
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({
+        primary: 'paint',
+        paint: 'mirror',
+        ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+      })
+    ),
+    'paint:mirror-sized'
+  );
+
+  assert.equal(readCanvasPrecisionAxisLockScope(createPrecisionApp({ primary: 'measure' })), null);
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(createPrecisionApp({ primary: 'paint', paint: '#ffffff' })),
+    null
+  );
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({ primary: 'split', opts: { splitVariant: 'custom' } })
+    ),
+    null
+  );
+});
+
+test('manual-split Enter auto-repeat stays captured without toggling the cut repeatedly', () => {
+  const App = createApp();
+  clearCanvasDoorSplitVerticalLock(App);
+  resolveCanvasDoorSplitVerticalLockedWorldY(App, 1.15);
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let commits = 0;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onManualSplitCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const marks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    repeat: true,
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation: () => marks.push('stop'),
+  });
+  assert.equal(commits, 0);
+  assert.deepEqual(marks, ['prevent', 'stop']);
   dispose();
 });

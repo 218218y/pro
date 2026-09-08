@@ -8,6 +8,7 @@ import {
   readMirrorLayoutList,
 } from '../features/door_authoring/api.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   readMirrorPlacementRectFromUserData,
   resolveMirrorPlacementOwnerByPartId,
@@ -148,12 +149,16 @@ export function resolveMirrorLayoutForPaintClick(
   if (!owner || !rect || !hitPoint) return identityResult() || emptyMirrorLayoutClickResult();
   const localPoint = __wp_projectWorldPointToLocal(App, hitPoint, owner);
   if (!localPoint) return identityResult() || emptyMirrorLayoutClickResult();
+  const lockedLocalPoint = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: localPoint.x,
+    y: localPoint.y,
+  });
   const faceSign = resolveMirrorFaceSignFromLocalPoint(localPoint);
   const removeMatch = findMirrorLayoutMatchInRect({
     rect,
     layouts,
-    hitX: localPoint.x,
-    hitY: localPoint.y,
+    hitX: lockedLocalPoint.x,
+    hitY: lockedLocalPoint.y,
     faceSign,
   });
   if (!hasSizedDraft) {
@@ -168,8 +173,8 @@ export function resolveMirrorLayoutForPaintClick(
 
   const nextLayout = buildMirrorLayoutFromHit({
     rect,
-    hitX: localPoint.x,
-    hitY: localPoint.y,
+    hitX: lockedLocalPoint.x,
+    hitY: lockedLocalPoint.y,
     draft,
     faceSign,
   });

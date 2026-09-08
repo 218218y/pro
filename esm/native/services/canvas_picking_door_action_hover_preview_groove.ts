@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   buildGrooveLayoutFromHit,
   findGrooveLayoutMatchInRect,
@@ -69,6 +70,12 @@ export function tryHandleDoorGrooveLayoutHoverPreview(args: {
 
   args.localHit.set(hitPoint.x, hitPoint.y, hitPoint.z);
   surfaceOwner.worldToLocal(args.localHit);
+  const lockedLocalHit = resolveCanvasPrecisionAxisLockedLocalPoint(args.App, {
+    x: args.localHit.x,
+    y: args.localHit.y,
+  });
+  args.localHit.x = lockedLocalHit.x;
+  args.localHit.y = lockedLocalHit.y;
   const ui = args.readUi(args.App);
   const manual = ui?.grooveManualEnabled === true;
   const orientation = ui?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical';

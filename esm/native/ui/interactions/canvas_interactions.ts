@@ -7,7 +7,7 @@ import {
   createCanvasInteractionState,
   createEventBinding,
   createRectCacheOps,
-  installCanvasDoorSplitAxisLockInteraction,
+  installCanvasAuthoringKeyboardInteraction,
   reportCanvasInteractionsNonFatal,
   type CanvasInteractionsDeps,
   type CanvasInteractionsOptions,
@@ -40,13 +40,17 @@ export function installCanvasInteractions(
 
   const hoverOps = createCanvasHoverInteractionOps(App, deps, state, rectOps);
   const pointerOps = createCanvasPointerInteractionOps(App, deps, state, normalizedOpts, rectOps);
-  const disposeSplitAxisLock = installCanvasDoorSplitAxisLockInteraction(App, domEl, () => {
-    hoverOps.refreshCurrentHover();
-    try {
-      deps.triggerRender(false);
-    } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.arrowNudge.triggerRender', err);
-    }
+  const disposeAuthoringKeyboard = installCanvasAuthoringKeyboardInteraction(App, domEl, {
+    onVisualStateChanged: () => {
+      hoverOps.refreshCurrentHover();
+      try {
+        deps.triggerRender(false);
+      } catch (err) {
+        reportCanvasInteractionsNonFatal(App, 'authoringKeyboard.refresh.triggerRender', err);
+      }
+    },
+    onManualSplitCommitRequested: () =>
+      pointerOps.commitKeyboardAtClientPoint(state.hoverLastCx, state.hoverLastCy),
   });
 
   const onPointerMove: EventListener = e => {
@@ -69,7 +73,7 @@ export function installCanvasInteractions(
     state.disposed = true;
     try {
       hoverOps.disposeHover();
-      disposeSplitAxisLock();
+      disposeAuthoringKeyboard();
       for (const fn of removers) {
         try {
           fn();

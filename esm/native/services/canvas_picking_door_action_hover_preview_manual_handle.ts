@@ -18,6 +18,7 @@ import {
   resolveManualHandleLocalPosition,
 } from '../features/manual_handle_position.js';
 import type { UnknownRecord } from '../../../types';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   buildRectClearanceMeasurementEntries,
   resolveCellMeasurementLabelOutsets,
@@ -506,6 +507,9 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     if (doorMarker) doorMarker.visible = false;
     return false;
   }
+  const lockedLocalHit = resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: localHit.x, y: localHit.y });
+  localHit.x = lockedLocalHit.x;
+  localHit.y = lockedLocalHit.y;
 
   const manualPosition = createManualHandlePositionFromLocalPoint({
     rect,

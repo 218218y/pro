@@ -25,6 +25,7 @@ import { getThreeMaybe } from '../runtime/three_access.js';
 import { readMapOrEmpty, writeHandle } from '../runtime/maps_access.js';
 import { readDoorLeafRectFromUserData, resolveDoorHitOwnerByPartId } from './canvas_picking_door_shared.js';
 import { createCanvasPickingHandleAssignStructuralMeta } from './canvas_picking_handle_assign_meta.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   __wp_isDoorLikePartId,
   __wp_isDrawerLikePartId,
@@ -203,11 +204,15 @@ function tryHandleManualHandlePositionClick(
   } catch {
     return true;
   }
+  const lockedLocalPoint = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: localPoint.x,
+    y: localPoint.y,
+  });
 
   const position = createManualHandlePositionFromLocalPoint({
     rect,
-    localX: localPoint.x,
-    localY: localPoint.y,
+    localX: lockedLocalPoint.x,
+    localY: lockedLocalPoint.y,
   });
   if (!position) return true;
 

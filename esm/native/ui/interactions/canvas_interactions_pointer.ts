@@ -3,6 +3,7 @@ import {
   cancelCanvasPostBuildHoverRefresh,
   consumeSuppressNextCanvasPostClickHoverRefresh,
   requestCanvasPostBuildHoverRefresh,
+  resolveCanvasPrecisionAxisLockedClientPoint,
 } from '../../services/api.js';
 import {
   callNotesFirst,
@@ -30,6 +31,104 @@ export function createCanvasPointerInteractionOps(
   const timers = getInteractionTimers(App);
   const applyHoverCursorFromResult = createHoverCursorApplier(App, deps.domEl, state);
   const clearTransientHoverPreview = createClearTransientHoverPreview(App, deps.domEl, state);
+
+  const commitAtClientPoint = (
+    upXy: NonNullable<ReturnType<typeof getClientXY>>,
+    source: 'pointer' | 'keyboard'
+  ): boolean => {
+    let clickNdc: { x: number; y: number } | null = null;
+
+    try {
+      const rect = rectOps.readRectCached(0);
+      const authoringPoint = resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: upXy.cx, cy: upXy.cy });
+      clickNdc = rect ? toNdcFromClient(authoringPoint.cx, authoringPoint.cy, rect) : null;
+      if (clickNdc && typeof deps.handleCanvasClickNDC === 'function') {
+        deps.handleCanvasClickNDC(clickNdc.x, clickNdc.y, App);
+      }
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, source === 'keyboard' ? 'keyboardCommit.click' : 'click', err);
+      clickNdc = null;
+    }
+
+    let suppressPostClickHoverRefresh = false;
+    if (clickNdc) {
+      suppressPostClickHoverRefresh = consumeSuppressNextCanvasPostClickHoverRefresh(App);
+      cancelQueuedCanvasHoverRefresh(App, state, timers, 'hover.cancelBeforePostClickRefresh');
+      clearTransientHoverPreview();
+      state.hoverLastCx = upXy.cx;
+      state.hoverLastCy = upXy.cy;
+      if (suppressPostClickHoverRefresh) {
+        cancelCanvasPostBuildHoverRefresh(App);
+      } else {
+        requestCanvasPostBuildHoverRefresh(
+          App,
+          clickNdc.x,
+          clickNdc.y,
+          source === 'keyboard'
+            ? 'canvas.keyboard.enter.postBuildHover'
+            : 'canvas.pointer.click.postBuildHover'
+        );
+      }
+    }
+
+    try {
+      if (typeof deps.triggerRender === 'function') deps.triggerRender(true);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(
+        App,
+        source === 'keyboard' ? 'triggerRender(keyboardCommit)' : 'triggerRender(click)',
+        err
+      );
+    }
+
+    if (clickNdc && !suppressPostClickHoverRefresh) {
+      const hoverCx = upXy.cx;
+      const hoverCy = upXy.cy;
+      try {
+        state.hoverRafId = timers.requestAnimationFrame(() => {
+          state.hoverRafId = 0;
+          if (state.disposed) return;
+          const refreshCx = state.hoverMoveQueued ? state.hoverLastCx : hoverCx;
+          const refreshCy = state.hoverMoveQueued ? state.hoverLastCy : hoverCy;
+          state.hoverMoveQueued = false;
+          refreshCanvasHoverAtClientPoint({
+            App,
+            deps,
+            state,
+            rectOps,
+            applyHoverCursorFromResult,
+            cx: refreshCx,
+            cy: refreshCy,
+            rectMaxAgeMs: 0,
+            invalidateRectCache: true,
+            syncPickingMatrices: true,
+            op: source === 'keyboard' ? 'hover.refreshAfterKeyboardCommit' : 'hover.refreshAfterClick',
+          });
+          try {
+            if (typeof deps.triggerRender === 'function') deps.triggerRender(false);
+          } catch (err) {
+            reportCanvasInteractionsNonFatal(
+              App,
+              source === 'keyboard'
+                ? 'triggerRender(hover.refreshAfterKeyboardCommit)'
+                : 'triggerRender(hover.refreshAfterClick)',
+              err
+            );
+          }
+        });
+      } catch (err) {
+        reportCanvasInteractionsNonFatal(
+          App,
+          source === 'keyboard'
+            ? 'hover.scheduleRefreshAfterKeyboardCommit'
+            : 'hover.scheduleRefreshAfterClick',
+          err
+        );
+      }
+    }
+
+    return clickNdc !== null;
+  };
 
   const onPointerDown: EventListener = e => {
     try {
@@ -90,77 +189,7 @@ export function createCanvasPointerInteractionOps(
       return;
     }
 
-    let clickNdc: { x: number; y: number } | null = null;
-
-    try {
-      const rect = rectOps.readRectCached(0);
-      clickNdc = rect && upXy ? toNdcFromClient(upXy.cx, upXy.cy, rect) : null;
-      if (clickNdc && typeof deps.handleCanvasClickNDC === 'function') {
-        deps.handleCanvasClickNDC(clickNdc.x, clickNdc.y, App);
-      }
-    } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'click', err);
-      clickNdc = null;
-    }
-
-    let suppressPostClickHoverRefresh = false;
-    if (clickNdc && upXy) {
-      suppressPostClickHoverRefresh = consumeSuppressNextCanvasPostClickHoverRefresh(App);
-      cancelQueuedCanvasHoverRefresh(App, state, timers, 'hover.cancelBeforePostClickRefresh');
-      clearTransientHoverPreview();
-      state.hoverLastCx = upXy.cx;
-      state.hoverLastCy = upXy.cy;
-      if (suppressPostClickHoverRefresh) {
-        cancelCanvasPostBuildHoverRefresh(App);
-      } else {
-        requestCanvasPostBuildHoverRefresh(
-          App,
-          clickNdc.x,
-          clickNdc.y,
-          'canvas.pointer.click.postBuildHover'
-        );
-      }
-    }
-
-    try {
-      if (typeof deps.triggerRender === 'function') deps.triggerRender(true);
-    } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'triggerRender(click)', err);
-    }
-
-    if (clickNdc && upXy && !suppressPostClickHoverRefresh) {
-      const hoverCx = upXy.cx;
-      const hoverCy = upXy.cy;
-      try {
-        state.hoverRafId = timers.requestAnimationFrame(() => {
-          state.hoverRafId = 0;
-          if (state.disposed) return;
-          const refreshCx = state.hoverMoveQueued ? state.hoverLastCx : hoverCx;
-          const refreshCy = state.hoverMoveQueued ? state.hoverLastCy : hoverCy;
-          state.hoverMoveQueued = false;
-          refreshCanvasHoverAtClientPoint({
-            App,
-            deps,
-            state,
-            rectOps,
-            applyHoverCursorFromResult,
-            cx: refreshCx,
-            cy: refreshCy,
-            rectMaxAgeMs: 0,
-            invalidateRectCache: true,
-            syncPickingMatrices: true,
-            op: 'hover.refreshAfterClick',
-          });
-          try {
-            if (typeof deps.triggerRender === 'function') deps.triggerRender(false);
-          } catch (err) {
-            reportCanvasInteractionsNonFatal(App, 'triggerRender(hover.refreshAfterClick)', err);
-          }
-        });
-      } catch (err) {
-        reportCanvasInteractionsNonFatal(App, 'hover.scheduleRefreshAfterClick', err);
-      }
-    }
+    if (upXy) commitAtClientPoint(upXy, 'pointer');
   };
 
   const onPointerCancel: EventListener = () => {
@@ -201,5 +230,16 @@ export function createCanvasPointerInteractionOps(
     }
   };
 
-  return { onPointerDown, onPointerUp, onPointerCancel, onWheel, onClick, onMoveRender };
+  const commitKeyboardAtClientPoint = (cx: number, cy: number): boolean =>
+    commitAtClientPoint({ cx, cy, pointerId: null }, 'keyboard');
+
+  return {
+    onPointerDown,
+    onPointerUp,
+    onPointerCancel,
+    onWheel,
+    onClick,
+    onMoveRender,
+    commitKeyboardAtClientPoint,
+  };
 }

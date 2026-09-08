@@ -3723,7 +3723,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_split_pointer_y.ts",
-      "line": 177,
+      "line": 182,
       "term": "fallback",
       "category": "domain-default",
       "text": "// projection-fallback: alternate door-bound projection remains available when local transforms fail"
@@ -4353,7 +4353,7 @@
     },
     {
       "file": "esm/native/ui/interactions/canvas_interactions_pointer.ts",
-      "line": 80,
+      "line": 179,
       "term": "compatibility",
       "category": "browser-adapter",
       "text": "// pointer-compatibility: coordinate probing may fail on exotic events; preserve the conservative click decision."

@@ -578,3 +578,39 @@ test('canvas pointer interactions honor notes-first mode and throttle move rende
     Date.now = realNow;
   }
 });
+
+test('canvas keyboard commit uses the same click and post-build hover pipeline as a pointer click', () => {
+  const domEl = createDomEl();
+  const state = createCanvasInteractionState();
+  const rectOps = createRectCacheOps(domEl, state);
+  const rafQueue = createRafQueue();
+  const clickCalls: Array<{ x: number; y: number }> = [];
+  const hoverCalls: Array<{ x: number; y: number }> = [];
+  const App = createApp(false, rafQueue);
+
+  const ops = createCanvasPointerInteractionOps(
+    App,
+    {
+      domEl,
+      triggerRender() {},
+      handleCanvasClickNDC(x: number, y: number) {
+        clickCalls.push({ x, y });
+      },
+      handleCanvasHoverNDC(x: number, y: number) {
+        hoverCalls.push({ x, y });
+        return true;
+      },
+    },
+    state,
+    { clickMaxDistPx: 5, moveThrottleMs: 20, notesClickFirst: true },
+    rectOps
+  );
+
+  assert.equal(ops.commitKeyboardAtClientPoint(60, 45), true);
+  assert.deepEqual(clickCalls, [{ x: 0, y: 0 }]);
+  const pendingPostBuildHover = consumeCanvasPostBuildHoverRefresh(App);
+  assert.equal(pendingPostBuildHover?.reason, 'canvas.keyboard.enter.postBuildHover');
+
+  rafQueue.flushFrame();
+  assert.deepEqual(hoverCalls, [{ x: 0, y: 0 }]);
+});

@@ -3,14 +3,19 @@
 import type { AppContainer } from '../../../../types';
 import {
   clearCanvasDoorSplitVerticalLock,
+  clearCanvasPrecisionAxisLock,
   clearSketchHoverPreview,
   nudgeCanvasDoorSplitPointerWorldY,
   getBrowserTimers,
   getBuilderRenderOps,
+  hasCanvasDoorSplitPointerWorldY,
   MODES,
+  readCanvasPrecisionAxisLockScope,
   readModeStateFromApp,
   reportError,
+  resolveCanvasPrecisionAxisLockedClientPoint,
   setCanvasDoorSplitVerticalLockPressed,
+  setCanvasPrecisionAxisLockPressed,
   syncCanvasPickingViewportMatrices,
 } from '../../services/api.js';
 import {
@@ -128,14 +133,22 @@ function isManualDoorSplitModeActive(App: AppContainer): boolean {
 
 export const CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M = 0.01;
 
-export function installCanvasDoorSplitAxisLockInteraction(
+export function installCanvasAuthoringKeyboardInteraction(
   App: AppContainer,
   domEl: HTMLElement,
-  onNudgeApplied?: (() => void) | null
+  callbacks?: {
+    onVisualStateChanged?: ((reason: 'nudge' | 'axis') => void) | null;
+    onManualSplitCommitRequested?: (() => boolean) | null;
+  }
 ): () => void {
   const doc = domEl.ownerDocument || null;
   const win = doc?.defaultView || null;
-  if (!doc) return () => clearCanvasDoorSplitVerticalLock(App);
+  if (!doc) {
+    return () => {
+      clearCanvasDoorSplitVerticalLock(App);
+      clearCanvasPrecisionAxisLock(App);
+    };
+  }
 
   const onKeyDown = (event: KeyboardEvent): void => {
     if (isEditableCanvasKeyboardTarget(event.target)) return;
@@ -151,19 +164,32 @@ export function installCanvasDoorSplitAxisLockInteraction(
         if (typeof nextY !== 'number') return;
         event.preventDefault();
         event.stopPropagation();
-        onNudgeApplied?.();
+        callbacks?.onVisualStateChanged?.('nudge');
       } catch (err) {
         reportCanvasInteractionsNonFatal(App, 'splitAxisLock.arrowNudge', err);
       }
       return;
     }
 
+    if (event.key === 'Enter') {
+      try {
+        if (!isManualDoorSplitModeActive(App) || !hasCanvasDoorSplitPointerWorldY(App)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.repeat) return;
+        callbacks?.onManualSplitCommitRequested?.();
+      } catch (err) {
+        reportCanvasInteractionsNonFatal(App, 'splitAxisLock.enterCommit', err);
+      }
+      return;
+    }
+
     if (event.key !== 'Shift' || event.repeat) return;
     try {
-      if (!isManualDoorSplitModeActive(App)) return;
-      setCanvasDoorSplitVerticalLockPressed(App, true);
+      if (isManualDoorSplitModeActive(App)) setCanvasDoorSplitVerticalLockPressed(App, true);
+      if (readCanvasPrecisionAxisLockScope(App)) setCanvasPrecisionAxisLockPressed(App, true);
     } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.keydown', err);
+      reportCanvasInteractionsNonFatal(App, 'authoringAxisLock.keydown', err);
     }
   };
 
@@ -171,16 +197,19 @@ export function installCanvasDoorSplitAxisLockInteraction(
     if (event.key !== 'Shift') return;
     try {
       setCanvasDoorSplitVerticalLockPressed(App, false);
+      setCanvasPrecisionAxisLockPressed(App, false);
+      callbacks?.onVisualStateChanged?.('axis');
     } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.keyup', err);
+      reportCanvasInteractionsNonFatal(App, 'authoringAxisLock.keyup', err);
     }
   };
 
   const clearLock = (): void => {
     try {
       clearCanvasDoorSplitVerticalLock(App);
+      clearCanvasPrecisionAxisLock(App);
     } catch (err) {
-      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.clear', err);
+      reportCanvasInteractionsNonFatal(App, 'authoringAxisLock.clear', err);
     }
   };
 
@@ -194,6 +223,19 @@ export function installCanvasDoorSplitAxisLockInteraction(
     win?.removeEventListener('blur', clearLock, false);
     clearLock();
   };
+}
+
+// Focused wrapper retained for split-axis callers and runtime tests.
+export function installCanvasDoorSplitAxisLockInteraction(
+  App: AppContainer,
+  domEl: HTMLElement,
+  onNudgeApplied?: (() => void) | null
+): () => void {
+  return installCanvasAuthoringKeyboardInteraction(App, domEl, {
+    onVisualStateChanged: reason => {
+      if (reason === 'nudge') onNudgeApplied?.();
+    },
+  });
 }
 
 export function getClientXY(e: Event, App?: AppContainer | null): PointerInfo | null {
@@ -366,7 +408,8 @@ export function refreshCanvasHoverAtClientPoint(args: CanvasHoverRefreshArgs): b
   try {
     if (invalidateRectCache) rectOps.invalidateRectCache();
     const rect = rectOps.readRectCached(rectMaxAgeMs);
-    const ndc = rect ? toNdcFromClient(cx, cy, rect) : null;
+    const authoringPoint = resolveCanvasPrecisionAxisLockedClientPoint(App, { cx, cy });
+    const ndc = rect ? toNdcFromClient(authoringPoint.cx, authoringPoint.cy, rect) : null;
     if (ndc && typeof deps.handleCanvasHoverNDC === 'function') {
       if (syncPickingMatrices) syncCanvasPickingViewportMatrices(App);
       hoverRes = deps.handleCanvasHoverNDC(ndc.x, ndc.y, App);
