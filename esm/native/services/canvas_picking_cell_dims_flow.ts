@@ -3,7 +3,7 @@
 // Extracted from canvas_picking_click_flow.ts to keep the click owner focused on
 // routing while preserving the canonical cell-dims click behavior in one helper.
 
-import type { UiRawInputsLike, UnknownRecord } from '../../../types';
+import type { UiRawInputsLike } from '../../../types';
 import type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../../shared/dimensions/wardrobe_layout_comparison_policy.js';
 
@@ -23,19 +23,9 @@ import {
 } from './canvas_picking_core_helpers.js';
 import { rememberCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_post_click_hover.js';
 import { readCellDimsFreeBoxIdFromPartId } from './canvas_picking_cell_dims_free_box_identity.js';
-import { readModeStateFromApp } from '../runtime/root_state_access.js';
+import { readCellDimsDoorCountMode } from './canvas_picking_cell_dims_mode_state.js';
 
 export type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
-
-function asRecord(value: unknown): UnknownRecord | null {
-  return !!value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
-}
-
-function readCellDoorCountFromMode(App: CanvasCellDimsClickArgs['App']): 1 | 2 | null {
-  const mode = asRecord(readModeStateFromApp(App));
-  const opts = asRecord(mode?.opts);
-  return opts?.cellDoorCount === 1 || opts?.cellDoorCount === 2 ? opts.cellDoorCount : null;
-}
 
 export function applyCanvasLinearCellDoorCountFromSketch(args: {
   App: CanvasCellDimsClickArgs['App'];
@@ -105,7 +95,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       Number.isFinite(draftHexProtrusion) && draftHexProtrusion >= 0 ? draftHexProtrusion : null;
     const hexCellDoorWidthCm =
       Number.isFinite(draftHexDoorWidth) && draftHexDoorWidth > 0 ? draftHexDoorWidth : null;
-    const cellDoorCount = readCellDoorCountFromMode(App);
+    const cellDoorCount = readCellDimsDoorCountMode(App);
     if (!hexCellMode && !applyW && !applyH && !applyD && cellDoorCount == null) {
       if (__isBottomStack && Number.isFinite(draftH) && draftH > 0) {
         try {

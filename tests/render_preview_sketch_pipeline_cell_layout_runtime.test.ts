@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyCellLayoutSketchPlacementPreview } from '../esm/native/builder/render_preview_sketch_pipeline_cell_layout.ts';
+import {
+  applyCellLayoutSketchPlacementPreview,
+  restoreCellLayoutWardrobeVisibility,
+} from '../esm/native/builder/render_preview_sketch_pipeline_cell_layout.ts';
 
 class FakeVector3 {
   x = 0;
@@ -41,13 +44,15 @@ class FakeMesh {
   position = new FakeVector3();
   scale = new FakeVector3();
   children: unknown[] = [];
+  parent: unknown = null;
 
   constructor(geometry: unknown, material: unknown) {
     this.geometry = geometry;
     this.material = material;
   }
 
-  add(child: unknown) {
+  add(child: any) {
+    child.parent = this;
     this.children.push(child);
   }
 }
@@ -64,38 +69,67 @@ function createContext() {
     selectedRemove: { id: 'selected-red' },
     peer: { id: 'peer-cyan' },
     boundary: { id: 'boundary-black' },
+    divider: { id: 'door-divider-black' },
   };
   const ud: Record<string, any> = {
     __cellLayoutMeshes: [],
+    __cellLayoutDoorDividerMeshes: [],
+    __matCellLayoutSelectedOverlay: materials.selected,
     __matBoxOverlay: materials.selected,
     __matRemoveOverlay: materials.selectedRemove,
     __matCellLayoutPeerOverlay: materials.peer,
+    __matCellLayoutDoorDividerOverlay: materials.divider,
     __lineCellLayoutBoundaryOverlay: materials.boundary,
   };
   const boxes = [
-    { x: -0.8, y: 1, z: 0, w: 0.42, boxH: 1.95, d: 0.55, selected: false },
-    { x: -0.2, y: 1, z: 0, w: 0.68, boxH: 1.95, d: 0.55, selected: true },
-    { x: 0.4, y: 1, z: 0, w: 0.43, boxH: 1.95, d: 0.55, selected: false },
+    { x: -0.8, y: 1, z: 0, w: 0.42, boxH: 1.95, d: 0.55, selected: false, doorCount: 1 },
+    { x: -0.2, y: 1, z: 0, w: 0.68, boxH: 1.95, d: 0.55, selected: true, doorCount: 2 },
+    { x: 0.4, y: 1, z: 0, w: 0.43, boxH: 1.95, d: 0.55, selected: false, doorCount: 2 },
   ];
+  const originalVisible = { visible: true };
+  const originalHidden = { visible: false };
+  const g: Record<string, any> = {
+    visible: false,
+    isGroup: true,
+    userData: ud,
+    children: [],
+    add(mesh: FakeMesh) {
+      mesh.parent = g;
+      g.children.push(mesh);
+      added.push(mesh);
+    },
+  };
+  const wardrobeRoot: Record<string, any> = {
+    isGroup: true,
+    children: [originalVisible, originalHidden, g],
+  };
+  g.parent = wardrobeRoot;
+
+  const shared = {
+    readPreviewObjectList(value: unknown) {
+      return Array.isArray(value) ? value : [];
+    },
+    readUserData(value: unknown) {
+      return value && typeof value === 'object' ? value : {};
+    },
+    markIgnoreRaycast() {},
+  };
 
   const ctx = {
+    App: {},
     kind: 'cell_layout',
-    input: { cellLayoutBoxes: boxes },
+    input: { cellLayoutBoxes: boxes, isolateWardrobe: true },
     THREE: { Mesh: FakeMesh, LineSegments: FakeLineSegments },
     shelfA,
-    g: {
-      visible: false,
-      add(mesh: FakeMesh) {
-        added.push(mesh);
-      },
-    },
+    g,
     ud,
     isRemove: false,
-    shared: {
-      readPreviewObjectList(value: unknown) {
-        return Array.isArray(value) ? value : [];
-      },
-      markIgnoreRaycast() {},
+    shared,
+    wardrobeGroup() {
+      return wardrobeRoot;
+    },
+    asPreviewGroup(value: unknown) {
+      return value && typeof value === 'object' ? value : null;
     },
     readOutline(mesh: FakeMesh) {
       return mesh.userData.__outline ?? null;
@@ -118,27 +152,30 @@ function createContext() {
       outlineRenderOrder?: number
     ) {
       if (!mesh) return;
-      mesh.material = material;
+      if (material) mesh.material = material;
       if (typeof renderOrder === 'number') mesh.renderOrder = renderOrder;
       const outline = mesh.userData.__outline as FakeLineSegments | undefined;
       if (outline) {
-        outline.material = lineMaterial;
+        if (lineMaterial) outline.material = lineMaterial;
         if (typeof outlineRenderOrder === 'number') outline.renderOrder = outlineRenderOrder;
       }
     },
     hideAll() {},
   };
 
-  return { ctx, boxes, added, materials, ud };
+  return { ctx, boxes, added, materials, ud, shared, wardrobeRoot, originalVisible, originalHidden };
 }
 
-test('cell-layout renderer draws the selected cell separately and gives every cell a black boundary', () => {
-  const { ctx, boxes, added, materials, ud } = createContext();
+test('cell-layout renderer isolates the original wardrobe, highlights the selected cell, and draws door separators', () => {
+  const { ctx, boxes, added, materials, ud, originalVisible, originalHidden } = createContext();
 
   assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
   assert.equal(ctx.g.visible, true);
-  assert.equal(added.length, boxes.length);
+  assert.equal(originalVisible.visible, false);
+  assert.equal(originalHidden.visible, false);
   assert.equal(ud.__cellLayoutMeshes.length, boxes.length);
+  assert.equal(ud.__cellLayoutDoorDividerMeshes.length, 2);
+  assert.equal(added.length, boxes.length + 2);
 
   for (let i = 0; i < boxes.length; i += 1) {
     const mesh = ud.__cellLayoutMeshes[i] as FakeMesh;
@@ -157,17 +194,38 @@ test('cell-layout renderer draws the selected cell separately and gives every ce
     assert.equal(mesh.renderOrder, box.selected ? 10024 : 10020);
     assert.equal(outline.renderOrder, box.selected ? 10025 : 10021);
   }
+
+  const selectedDivider = ud.__cellLayoutDoorDividerMeshes[0] as FakeMesh;
+  assert.equal(selectedDivider.visible, true);
+  assert.equal(selectedDivider.material, materials.divider);
+  assert.equal(selectedDivider.position.x, boxes[1]!.x);
+  assert.ok(selectedDivider.position.z > boxes[1]!.z + boxes[1]!.d / 2);
+
+  const peerDivider = ud.__cellLayoutDoorDividerMeshes[1] as FakeMesh;
+  assert.equal(peerDivider.visible, true);
+  assert.equal(peerDivider.position.x, boxes[2]!.x);
 });
 
-test('cell-layout renderer reuses dynamic meshes and hides stale peer cells when the layout shrinks', () => {
+test('cell-layout isolation restores the exact pre-hover visibility state', () => {
+  const { ctx, shared, originalVisible, originalHidden } = createContext();
+  assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
+
+  restoreCellLayoutWardrobeVisibility(ctx.g as never, shared as never);
+  assert.equal(originalVisible.visible, true);
+  assert.equal(originalHidden.visible, false);
+});
+
+test('cell-layout renderer reuses dynamic meshes and hides stale cells and door dividers when the layout shrinks', () => {
   const { ctx, ud, added } = createContext();
   assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
-  assert.equal(added.length, 3);
+  assert.equal(added.length, 5);
 
   ctx.input.cellLayoutBoxes = ctx.input.cellLayoutBoxes.slice(0, 2);
   assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
-  assert.equal(added.length, 3);
+  assert.equal(added.length, 5);
   assert.equal((ud.__cellLayoutMeshes[0] as FakeMesh).visible, true);
   assert.equal((ud.__cellLayoutMeshes[1] as FakeMesh).visible, true);
   assert.equal((ud.__cellLayoutMeshes[2] as FakeMesh).visible, false);
+  assert.equal((ud.__cellLayoutDoorDividerMeshes[0] as FakeMesh).visible, true);
+  assert.equal((ud.__cellLayoutDoorDividerMeshes[1] as FakeMesh).visible, false);
 });

@@ -14,6 +14,7 @@ import { readModulesConfigurationListFromConfigSnapshot } from '../features/modu
 import { getActiveOverrideCm, isOverrideActive } from '../features/special_dims/index.js';
 import { hasHexCellDraftConfigChange, moduleHasHexCell } from '../features/hex_cell/index.js';
 import { resolveCellDimsFreeBoxHoverOp } from './canvas_picking_cell_dims_free_box_hover.js';
+import { readCellDimsDoorCountMode } from './canvas_picking_cell_dims_mode_state.js';
 
 function readRecordProp(value: unknown, key: string): unknown {
   return value && typeof value === 'object' && !Array.isArray(value) ? Reflect.get(value, key) : undefined;
@@ -26,6 +27,7 @@ export function __wp_readCellDimsDraft(App: AppContainer): {
   hexCellMode?: boolean;
   hexCellProtrusionCm?: number | null;
   hexCellDoorWidthCm?: number | null;
+  cellDoorCount?: 1 | 2 | null;
 } {
   try {
     const ui = __wp_ui(App);
@@ -43,11 +45,14 @@ export function __wp_readCellDimsDraft(App: AppContainer): {
       hexCellMode?: boolean;
       hexCellProtrusionCm?: number | null;
       hexCellDoorWidthCm?: number | null;
+      cellDoorCount?: 1 | 2 | null;
     } = {
       applyW: Number.isFinite(draftW) && draftW > 0 ? draftW : null,
       applyH: Number.isFinite(draftH) && draftH > 0 ? draftH : null,
       applyD: Number.isFinite(draftD) && draftD > 0 ? draftD : null,
     };
+    const cellDoorCount = readCellDimsDoorCountMode(App);
+    if (cellDoorCount != null) result.cellDoorCount = cellDoorCount;
     if (hexCellMode) result.hexCellMode = true;
     if (Number.isFinite(draftHexProtrusion) && draftHexProtrusion >= 0) {
       result.hexCellProtrusionCm = draftHexProtrusion;

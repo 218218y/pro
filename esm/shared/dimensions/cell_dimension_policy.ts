@@ -11,4 +11,7 @@ export const CELL_DIMENSION_PREVIEW_POLICY = Object.freeze({
   woodThicknessMinM: 0.004,
   woodThicknessMaxM: 0.01,
   woodThicknessScale: 0.5,
+  doorDividerWidthM: 0.008,
+  doorDividerDepthM: 0.004,
+  doorDividerFrontOffsetM: 0.0015,
 });

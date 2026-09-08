@@ -167,6 +167,7 @@ export interface BuilderPreviewCellLayoutBoxLike extends UnknownRecord {
   boxH?: BuilderPreviewScalar;
   d?: BuilderPreviewScalar;
   selected?: BuilderPreviewBool;
+  doorCount?: BuilderPreviewScalar;
 }
 
 export interface BuilderPreviewMarkerLike extends UnknownRecord {
@@ -204,6 +205,7 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   labelFaceSign?: BuilderPreviewScalar;
   clearanceMeasurements?: BuilderPreviewMeasurementEntryLike[] | null;
   cellLayoutBoxes?: BuilderPreviewCellLayoutBoxLike[] | null;
+  isolateWardrobe?: BuilderPreviewBool;
 }
 export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   App?: AppContainer;

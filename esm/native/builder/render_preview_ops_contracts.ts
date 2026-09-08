@@ -102,6 +102,8 @@ export type SketchPlacementPreviewUserData = PreviewValueRecord & {
   __boxBack?: PreviewMeshLike;
   __externalDrawerMeshes?: PreviewMeshLike[];
   __cellLayoutMeshes?: PreviewMeshLike[];
+  __cellLayoutDoorDividerMeshes?: PreviewMeshLike[];
+  __cellLayoutIsolation?: unknown;
   __matShelf?: PreviewMaterialLike;
   __matGlass?: PreviewMaterialLike;
   __matBox?: PreviewMaterialLike;
@@ -110,7 +112,9 @@ export type SketchPlacementPreviewUserData = PreviewValueRecord & {
   __matRod?: PreviewMaterialLike;
   __matBoxOverlay?: PreviewMaterialLike;
   __matRemoveOverlay?: PreviewMaterialLike;
+  __matCellLayoutSelectedOverlay?: PreviewMaterialLike;
   __matCellLayoutPeerOverlay?: PreviewMaterialLike;
+  __matCellLayoutDoorDividerOverlay?: PreviewMaterialLike;
   __lineShelf?: PreviewMaterialLike;
   __lineGlass?: PreviewMaterialLike;
   __lineBox?: PreviewMaterialLike;

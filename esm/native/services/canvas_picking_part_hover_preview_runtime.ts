@@ -33,7 +33,10 @@ function createPreviewPayload(
     kind: command.kind,
     ...(command.kind === 'object_boxes' ? { previewObjects: [...command.previewObjects] } : {}),
     ...(command.kind === 'cell_layout'
-      ? { cellLayoutBoxes: command.cellLayoutBoxes.map(box => ({ ...box })) }
+      ? {
+          cellLayoutBoxes: command.cellLayoutBoxes.map(box => ({ ...box })),
+          isolateWardrobe: command.isolateWardrobe,
+        }
       : {}),
     fillFront: command.fillFront,
     fillBack: command.fillBack,

@@ -1,9 +1,29 @@
+import { CELL_DIMENSION_PREVIEW_POLICY } from '../../shared/dimensions/cell_dimension_policy.js';
 import { readPreviewNumber, readPreviewPositiveNumber } from './render_preview_number_contracts.js';
-import type { PreviewMeshLike } from './render_preview_ops_contracts.js';
+import type {
+  PreviewGroupLike,
+  PreviewMeshLike,
+  PreviewObject3DLike,
+} from './render_preview_ops_contracts.js';
+import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
+
+type VisibilitySnapshotEntry = {
+  object: PreviewObject3DLike;
+  visible: boolean;
+};
+
+type CellLayoutIsolationSnapshot = {
+  root: PreviewGroupLike;
+  entries: VisibilitySnapshotEntry[];
+};
 
 function readCellLayoutMeshes(ctx: SketchPlacementPreviewContext): PreviewMeshLike[] {
   return ctx.shared.readPreviewObjectList(ctx.ud.__cellLayoutMeshes);
+}
+
+function readCellLayoutDoorDividerMeshes(ctx: SketchPlacementPreviewContext): PreviewMeshLike[] {
+  return ctx.shared.readPreviewObjectList(ctx.ud.__cellLayoutDoorDividerMeshes);
 }
 
 function hideMesh(ctx: SketchPlacementPreviewContext, mesh: PreviewMeshLike | null): void {
@@ -13,6 +33,71 @@ function hideMesh(ctx: SketchPlacementPreviewContext, mesh: PreviewMeshLike | nu
 
 export function hideCellLayoutSketchPlacementPreviewMeshes(ctx: SketchPlacementPreviewContext): void {
   for (const mesh of readCellLayoutMeshes(ctx)) hideMesh(ctx, mesh);
+  for (const mesh of readCellLayoutDoorDividerMeshes(ctx)) hideMesh(ctx, mesh);
+}
+
+function readIsolationSnapshot(
+  group: PreviewGroupLike,
+  shared: RenderPreviewSketchShared
+): CellLayoutIsolationSnapshot | null {
+  const ud = shared.readUserData(group.userData);
+  const snapshot = ud.__cellLayoutIsolation as CellLayoutIsolationSnapshot | undefined;
+  if (!snapshot || !snapshot.root || !Array.isArray(snapshot.entries)) return null;
+  return snapshot;
+}
+
+export function restoreCellLayoutWardrobeVisibility(
+  group: PreviewGroupLike,
+  shared: RenderPreviewSketchShared
+): void {
+  const ud = shared.readUserData(group.userData);
+  const snapshot = readIsolationSnapshot(group, shared);
+  if (snapshot) {
+    for (const entry of snapshot.entries) {
+      if (!entry?.object || typeof entry.object !== 'object') continue;
+      entry.object.visible = entry.visible;
+    }
+  }
+  try {
+    delete ud.__cellLayoutIsolation;
+  } catch {
+    ud.__cellLayoutIsolation = undefined;
+  }
+}
+
+function readGroupChildren(group: PreviewGroupLike): PreviewObject3DLike[] {
+  const children = group.children;
+  if (!Array.isArray(children)) return [];
+  return children.filter(
+    (child): child is PreviewObject3DLike => !!child && typeof child === 'object' && !Array.isArray(child)
+  );
+}
+
+function isolateWardrobeForCellLayout(ctx: SketchPlacementPreviewContext): void {
+  if (ctx.input.isolateWardrobe !== true) {
+    restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
+    return;
+  }
+
+  const root = ctx.asPreviewGroup(ctx.wardrobeGroup(ctx.App));
+  if (!root) return;
+
+  let snapshot = readIsolationSnapshot(ctx.g, ctx.shared);
+  if (snapshot && snapshot.root !== root) {
+    restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
+    snapshot = null;
+  }
+  if (!snapshot) snapshot = { root, entries: [] };
+
+  for (const child of readGroupChildren(root)) {
+    if (child === ctx.g) continue;
+    if (!snapshot.entries.some(entry => entry.object === child)) {
+      snapshot.entries.push({ object: child, visible: child.visible !== false });
+    }
+    child.visible = false;
+  }
+
+  ctx.ud.__cellLayoutIsolation = snapshot;
 }
 
 function createCellLayoutMesh(ctx: SketchPlacementPreviewContext): PreviewMeshLike | null {
@@ -44,6 +129,22 @@ function createCellLayoutMesh(ctx: SketchPlacementPreviewContext): PreviewMeshLi
   return mesh;
 }
 
+function createCellLayoutDoorDividerMesh(ctx: SketchPlacementPreviewContext): PreviewMeshLike | null {
+  const source = ctx.shelfA;
+  const material = ctx.ud.__matCellLayoutDoorDividerOverlay;
+  if (!source?.geometry || !material) return null;
+
+  const mesh = new ctx.THREE.Mesh(source.geometry, material);
+  mesh.visible = false;
+  mesh.renderOrder = 10028;
+  ctx.shared.markIgnoreRaycast(mesh);
+  mesh.raycast = function () {};
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+  ctx.g.add(mesh);
+  return mesh;
+}
+
 function ensureCellLayoutMeshes(ctx: SketchPlacementPreviewContext, count: number): PreviewMeshLike[] {
   const meshes = readCellLayoutMeshes(ctx);
   while (meshes.length < count) {
@@ -55,11 +156,37 @@ function ensureCellLayoutMeshes(ctx: SketchPlacementPreviewContext, count: numbe
   return meshes;
 }
 
+function ensureCellLayoutDoorDividerMeshes(
+  ctx: SketchPlacementPreviewContext,
+  count: number
+): PreviewMeshLike[] {
+  const meshes = readCellLayoutDoorDividerMeshes(ctx);
+  while (meshes.length < count) {
+    const mesh = createCellLayoutDoorDividerMesh(ctx);
+    if (!mesh) break;
+    meshes.push(mesh);
+  }
+  ctx.ud.__cellLayoutDoorDividerMeshes = meshes;
+  return meshes;
+}
+
+function countRequiredDoorDividers(ctx: SketchPlacementPreviewContext, rawBoxes: unknown[]): number {
+  let total = 0;
+  for (const rawBox of rawBoxes) {
+    const rec = ctx.readValueRecord(rawBox);
+    const doorCount = rec ? readPreviewPositiveNumber(rec.doorCount) : null;
+    if (doorCount == null || !Number.isInteger(doorCount)) continue;
+    total += Math.max(0, doorCount - 1);
+  }
+  return total;
+}
+
 export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'cell_layout') return false;
 
   const rawBoxes = Array.isArray(ctx.input.cellLayoutBoxes) ? ctx.input.cellLayoutBoxes : [];
   if (rawBoxes.length < 2) {
+    restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
     ctx.g.visible = false;
     ctx.hideAll();
     hideCellLayoutSketchPlacementPreviewMeshes(ctx);
@@ -67,20 +194,28 @@ export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPrevie
   }
 
   const meshes = ensureCellLayoutMeshes(ctx, rawBoxes.length);
-  if (meshes.length < rawBoxes.length) {
+  const requiredDoorDividers = countRequiredDoorDividers(ctx, rawBoxes);
+  const doorDividerMeshes = ensureCellLayoutDoorDividerMeshes(ctx, requiredDoorDividers);
+  if (meshes.length < rawBoxes.length || doorDividerMeshes.length < requiredDoorDividers) {
+    restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
     ctx.g.visible = false;
     ctx.hideAll();
     hideCellLayoutSketchPlacementPreviewMeshes(ctx);
     return true;
   }
 
+  isolateWardrobeForCellLayout(ctx);
   ctx.g.visible = true;
   ctx.hideAll();
+  for (const divider of doorDividerMeshes) hideMesh(ctx, divider);
+
   const boundaryLine = ctx.ud.__lineCellLayoutBoundaryOverlay || ctx.ud.__lineBoxOverlay || ctx.ud.__lineBox;
   const selectedMaterial = ctx.isRemove
     ? ctx.ud.__matRemoveOverlay || ctx.ud.__matRemove
-    : ctx.ud.__matBoxOverlay || ctx.ud.__matBox;
+    : ctx.ud.__matCellLayoutSelectedOverlay || ctx.ud.__matBoxOverlay || ctx.ud.__matBox;
   const peerMaterial = ctx.ud.__matCellLayoutPeerOverlay || ctx.ud.__matShelf || ctx.ud.__matBox;
+  const doorDividerMaterial = ctx.ud.__matCellLayoutDoorDividerOverlay;
+  let nextDoorDividerIndex = 0;
 
   for (let i = 0; i < meshes.length; i += 1) {
     const mesh = meshes[i] ?? null;
@@ -96,6 +231,8 @@ export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPrevie
     const w = readPreviewPositiveNumber(rec.w);
     const boxH = readPreviewPositiveNumber(rec.boxH);
     const d = readPreviewPositiveNumber(rec.d);
+    const doorCountValue = readPreviewPositiveNumber(rec.doorCount);
+    const doorCount = doorCountValue != null && Number.isInteger(doorCountValue) ? doorCountValue : 1;
     if (x == null || y == null || z == null || w == null || boxH == null || d == null) {
       hideMesh(ctx, mesh);
       continue;
@@ -113,6 +250,30 @@ export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPrevie
     );
     mesh.position?.set?.(x, y, z);
     mesh.scale?.set?.(w, boxH, d);
+
+    for (let dividerIndex = 1; dividerIndex < doorCount; dividerIndex += 1) {
+      const divider = doorDividerMeshes[nextDoorDividerIndex++] ?? null;
+      if (!divider) continue;
+      const dividerX = x - w / 2 + (w * dividerIndex) / doorCount;
+      const dividerZ =
+        z +
+        d / 2 +
+        CELL_DIMENSION_PREVIEW_POLICY.doorDividerFrontOffsetM +
+        CELL_DIMENSION_PREVIEW_POLICY.doorDividerDepthM / 2;
+      ctx.setVisible(divider, true);
+      ctx.resetMeshOrientation(divider);
+      ctx.applyPreviewStyle(divider, doorDividerMaterial, null, selected ? 10030 : 10028);
+      divider.position?.set?.(dividerX, y, dividerZ);
+      divider.scale?.set?.(
+        CELL_DIMENSION_PREVIEW_POLICY.doorDividerWidthM,
+        boxH,
+        CELL_DIMENSION_PREVIEW_POLICY.doorDividerDepthM
+      );
+    }
+  }
+
+  for (let i = nextDoorDividerIndex; i < doorDividerMeshes.length; i += 1) {
+    hideMesh(ctx, doorDividerMeshes[i] ?? null);
   }
 
   return true;

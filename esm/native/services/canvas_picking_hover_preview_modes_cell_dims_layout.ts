@@ -20,6 +20,7 @@ export type CellDimsLayoutPreviewBox = {
   boxH: number;
   d: number;
   selected: boolean;
+  doorCount: number;
 };
 
 export type CellDimsLayoutPreviewPlan = {
@@ -46,13 +47,25 @@ function createPreviewBox(args: {
   x: number;
   w: number;
   selected: boolean;
+  doorCount: number;
   minWidthM: number;
   minHeightM: number;
   minDepthM: number;
   widthClearanceM: number;
   heightClearanceM: number;
 }): CellDimsLayoutPreviewBox {
-  const { box, x, w, selected, minWidthM, minHeightM, minDepthM, widthClearanceM, heightClearanceM } = args;
+  const {
+    box,
+    x,
+    w,
+    selected,
+    doorCount,
+    minWidthM,
+    minHeightM,
+    minDepthM,
+    widthClearanceM,
+    heightClearanceM,
+  } = args;
   return {
     x,
     y: Number(box.centerY),
@@ -61,6 +74,7 @@ function createPreviewBox(args: {
     boxH: Math.max(minHeightM, Number(box.height) - heightClearanceM),
     d: Math.max(minDepthM, Number(box.depth)),
     selected,
+    doorCount,
   };
 }
 
@@ -78,6 +92,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
   applyW: number | null | undefined;
   applyH: number | null | undefined;
   applyD: number | null | undefined;
+  cellDoorCount: 1 | 2 | null | undefined;
   measureObjectLocalBox: MeasureObjectLocalBoxFn;
   matchToleranceCm: number;
   minWidthM: number;
@@ -92,6 +107,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     applyW,
     applyH,
     applyD,
+    cellDoorCount,
     measureObjectLocalBox,
     matchToleranceCm,
     minWidthM,
@@ -116,6 +132,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     applyW: applyW ?? null,
     applyH: applyH ?? null,
     applyD: applyD ?? null,
+    cellDoorCount: cellDoorCount ?? null,
   });
   if (!ctx || ctx.moduleCount < 2) return null;
 
@@ -179,6 +196,10 @@ export function resolveLinearCellDimsLayoutPreview(args: {
       x: centerX,
       w: internalWidthM,
       selected: i === selectedIndex,
+      doorCount:
+        i === selectedIndex && (cellDoorCount === 1 || cellDoorCount === 2)
+          ? cellDoorCount
+          : Math.max(1, Math.round(Number(ctx.doorsPerModule[i]) || 1)),
       minWidthM,
       minHeightM,
       minDepthM,

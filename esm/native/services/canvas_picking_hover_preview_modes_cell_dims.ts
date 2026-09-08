@@ -55,10 +55,10 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
     }
 
     const draft = readCellDimsDraft(App);
-    const { applyW, applyD } = draft;
+    const { applyW, applyD, cellDoorCount } = draft;
     const applyH = target.isBottom ? null : draft.applyH;
     const hexCellMode = draft.hexCellMode === true;
-    if (!hexCellMode && applyW == null && applyH == null && applyD == null) {
+    if (!hexCellMode && applyW == null && applyH == null && applyD == null && cellDoorCount == null) {
       return previewRuntime.apply({
         type: 'clear',
         clearScope: 'layout-and-sketch',
@@ -115,6 +115,7 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
           applyW,
           applyH,
           applyD,
+          cellDoorCount,
           measureObjectLocalBox,
           matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
           minWidthM: CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
@@ -140,6 +141,7 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
           woodThick,
           op,
           cellLayoutBoxes: fullLayout.boxes,
+          isolateWardrobe: true,
         }
       : {
           kind: 'box',

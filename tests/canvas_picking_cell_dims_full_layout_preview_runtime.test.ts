@@ -91,6 +91,7 @@ test('cell-dims full-layout preview uses commit width policy and predicts every 
     applyW: 70,
     applyH: null,
     applyD: null,
+    cellDoorCount: null,
     measureObjectLocalBox: (_App, object, parent) => {
       assert.equal(parent, wardrobeRoot);
       return (currentBoxes.get(object) ?? null) as any;
@@ -107,6 +108,10 @@ test('cell-dims full-layout preview uses commit width policy and predicts every 
     [false, true, false, false]
   );
   assert.equal(plan.selectedBox, plan.boxes[1]);
+  assert.deepEqual(
+    plan.boxes.map(box => box.doorCount),
+    [1, 1, 1, 1]
+  );
 
   // Same width policy as commit: [45, 70, 45, 45]cm, with the canonical
   // wall/divider insets. Preview clearance is applied only to the visual box.
@@ -123,6 +128,22 @@ test('cell-dims full-layout preview uses commit width policy and predicts every 
   assert.notEqual(plan.boxes[0]!.x, currentBoxes.get(selectors[0])!.centerX);
   assert.notEqual(plan.boxes[2]!.x, currentBoxes.get(selectors[2])!.centerX);
   assert.notEqual(plan.boxes[3]!.x, currentBoxes.get(selectors[3])!.centerX);
+
+  const doorCountPlan = resolveLinearCellDimsLayoutPreview({
+    App,
+    target,
+    applyW: null,
+    applyH: null,
+    applyD: null,
+    cellDoorCount: 2,
+    measureObjectLocalBox: (_App, object) => (currentBoxes.get(object) ?? null) as any,
+    ...PREVIEW_POLICY_ARGS,
+  });
+  assert.ok(doorCountPlan);
+  assert.deepEqual(
+    doorCountPlan.boxes.map(box => box.doorCount),
+    [1, 2, 1, 1]
+  );
 });
 
 test('cell-dims full-layout preview fails closed outside the proven top linear layout', () => {
@@ -152,6 +173,7 @@ test('cell-dims full-layout preview fails closed outside the proven top linear l
     applyW: 100,
     applyH: null,
     applyD: null,
+    cellDoorCount: null,
     measureObjectLocalBox: () => ({
       centerX: 0,
       centerY: 1,
@@ -170,6 +192,7 @@ test('cell-dims full-layout preview fails closed outside the proven top linear l
     applyW: 100,
     applyH: null,
     applyD: null,
+    cellDoorCount: null,
     measureObjectLocalBox: () => ({
       centerX: 0,
       centerY: 1,

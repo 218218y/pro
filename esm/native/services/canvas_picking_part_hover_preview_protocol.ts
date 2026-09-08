@@ -35,11 +35,13 @@ export type PartHoverCellLayoutPreviewBox = {
   boxH: number;
   d: number;
   selected: boolean;
+  doorCount: number;
 };
 
 export type PartHoverCellLayoutPreviewCommand = PartHoverPreviewCommandBase & {
   kind: 'cell_layout';
   cellLayoutBoxes: readonly PartHoverCellLayoutPreviewBox[];
+  isolateWardrobe: boolean;
 };
 
 export type PartHoverPreviewCommand =
@@ -87,6 +89,8 @@ export function validatePartHoverPreviewCommand(command: PartHoverPreviewCommand
       if (!isFinitePositive(box.boxH))
         violations.push(`cell_layout[${index}].boxH must be positive and finite`);
       if (!isFinitePositive(box.d)) violations.push(`cell_layout[${index}].d must be positive and finite`);
+      if (!Number.isInteger(box.doorCount) || box.doorCount < 1)
+        violations.push(`cell_layout[${index}].doorCount must be a positive integer`);
       if (box.selected) selectedCount += 1;
     }
     if (selectedCount !== 1) violations.push('cell_layout preview requires exactly one selected cell');

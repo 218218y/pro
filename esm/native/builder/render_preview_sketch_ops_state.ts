@@ -2,6 +2,7 @@ import type { AppContainer } from '../../../types';
 import { EXTERNAL_DRAWER_PREVIEW_MESH_COUNT } from './render_preview_sketch_pipeline_box_content_drawers.js';
 import type { PreviewGroupLike, PreviewTHREESurface } from './render_preview_ops_contracts.js';
 import { hideSketchPlacementMeasurements } from './render_preview_sketch_measurements.js';
+import { restoreCellLayoutWardrobeVisibility } from './render_preview_sketch_pipeline_cell_layout.js';
 import { createSketchPlacementPreviewMaterials } from './render_preview_sketch_ops_materials.js';
 import {
   createSketchPlacementPreviewGroup,
@@ -125,6 +126,7 @@ export function hideSketchPlacementPreviewOwner(
   try {
     const group = owner.shared.asPreviewGroup(owner.cacheValue(App, 'sketchPlacementPreview'));
     if (group) {
+      restoreCellLayoutWardrobeVisibility(group, owner.shared);
       group.visible = false;
       const userData = owner.shared.readUserData(group.userData);
       try {
@@ -151,6 +153,10 @@ export function hideSketchPlacementPreviewOwner(
         }
       }
       for (const mesh of owner.shared.readPreviewObjectList(userData.__cellLayoutMeshes)) {
+        mesh.visible = false;
+        owner.shared.setOutlineVisible(mesh, false);
+      }
+      for (const mesh of owner.shared.readPreviewObjectList(userData.__cellLayoutDoorDividerMeshes)) {
         mesh.visible = false;
         owner.shared.setOutlineVisible(mesh, false);
       }

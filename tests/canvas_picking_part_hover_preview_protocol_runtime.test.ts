@@ -45,20 +45,38 @@ test('part-hover preview protocol validates typed box and object-box commands', 
     ['object_boxes preview requires at least one preview object']
   );
   const cellLayoutBoxes = [
-    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true },
-    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false },
+    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true, doorCount: 2 },
+    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false, doorCount: 1 },
   ];
   assert.deepEqual(
-    validatePartHoverPreviewCommand({ ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes }),
+    validatePartHoverPreviewCommand({
+      ...BOX_COMMAND,
+      kind: 'cell_layout',
+      cellLayoutBoxes,
+      isolateWardrobe: true,
+    }),
     []
   );
   assert.deepEqual(
     validatePartHoverPreviewCommand({
       ...BOX_COMMAND,
       kind: 'cell_layout',
+      isolateWardrobe: true,
       cellLayoutBoxes: cellLayoutBoxes.map(box => ({ ...box, selected: false })),
     }),
     ['cell_layout preview requires exactly one selected cell']
+  );
+  assert.deepEqual(
+    validatePartHoverPreviewCommand({
+      ...BOX_COMMAND,
+      kind: 'cell_layout',
+      isolateWardrobe: true,
+      cellLayoutBoxes: cellLayoutBoxes.map((box, index) => ({
+        ...box,
+        doorCount: index === 0 ? 0 : box.doorCount,
+      })),
+    }),
+    ['cell_layout[0].doorCount must be a positive integer']
   );
 });
 
@@ -102,21 +120,22 @@ test('part-hover preview runtime owns cleanup ordering and raw RenderOps payload
 
   calls.length = 0;
   const cellLayoutBoxes = [
-    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true },
-    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false },
+    { x: -0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: true, doorCount: 2 },
+    { x: 0.5, y: 1, z: 0, w: 0.4, boxH: 1.9, d: 0.55, selected: false, doorCount: 1 },
   ];
   assert.equal(
     runtime.apply({
       type: 'show',
       clearScope: 'layout',
       reason: 'cell-layout-runtime-test',
-      command: { ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes },
+      command: { ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes, isolateWardrobe: true },
     }),
     true
   );
   assert.deepEqual(calls, ['layout:true', 'show']);
   assert.deepEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
   assert.notEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
+  assert.equal(payloads[1]?.isolateWardrobe, true);
 });
 
 test('part-hover preview runtime preserves scoped cleanup and fails closed on invalid commands', () => {
