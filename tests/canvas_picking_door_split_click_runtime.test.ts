@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { handleCanvasDoorSplitClick } from '../esm/native/services/canvas_picking_door_split_click.ts';
+import { tryHandleCanvasPickingActionRoute } from '../esm/native/services/canvas_picking_click_route_actions.ts';
 import {
   __wp_getSplitHoverDoorBaseKey,
   __wp_readSplitHoverDoorBounds,
@@ -1432,4 +1433,134 @@ test('regular split slots remain stable after a sketch-managed door has already 
 
   assert.equal(maps.splitDoorsMap.split_d3, false);
   assert.equal(maps.splitDoorsMap.splitstdpos_d3, undefined);
+});
+
+test('custom split routed click keeps the resolved door hit authoritative over another door screen remove candidate', () => {
+  class Vec3 {
+    constructor(
+      public x = 0,
+      public y = 0,
+      public z = 0
+    ) {}
+    clone() {
+      return new Vec3(this.x, this.y, this.z);
+    }
+    sub(other: { x: number; y: number; z: number }) {
+      this.x -= other.x;
+      this.y -= other.y;
+      this.z -= other.z;
+      return this;
+    }
+    multiplyScalar(n: number) {
+      this.x *= n;
+      this.y *= n;
+      this.z *= n;
+      return this;
+    }
+    add(other: { x: number; y: number; z: number }) {
+      this.x += other.x;
+      this.y += other.y;
+      this.z += other.z;
+      return this;
+    }
+    project() {
+      this.x /= 2;
+      this.y /= 10;
+      return this;
+    }
+  }
+
+  function projectedDoor(partId: string, y: number) {
+    const group = {
+      userData: {
+        partId,
+        __doorHeight: 2,
+        __doorWidth: 0.8,
+        __doorMeshOffsetX: 0,
+        __handleZSign: 1,
+      },
+      position: { y },
+      worldToLocal(v: Vec3) {
+        v.y -= this.position.y;
+        return v;
+      },
+      localToWorld(v: Vec3) {
+        v.y += this.position.y;
+        return v;
+      },
+      getWorldPosition(v: Vec3) {
+        v.y = this.position.y;
+        return v;
+      },
+    };
+    return { group };
+  }
+
+  const firstDoor = projectedDoor('d1_full', 1);
+  const secondDoor = projectedDoor('d2_full', 1);
+  const { App, maps } = createSplitClickApp({
+    splitVariant: 'custom',
+    doorsArray: [firstDoor, secondDoor],
+    maps: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] } },
+  });
+  (App as any).deps = { THREE: { Vector3: Vec3, Box3: class {} } };
+  (App as any).render.camera = {};
+
+  const handled = tryHandleCanvasPickingActionRoute({
+    App,
+    ndcX: 0,
+    ndcY: 0.1,
+    raycaster: {} as never,
+    mouse: {} as never,
+    modeState: {
+      __pm: 'split',
+      __isPaintMode: false,
+      __isGrooveEditMode: false,
+      __isSplitEditMode: true,
+      __isLayoutEditMode: false,
+      __isManualLayoutMode: false,
+      __isBraceShelvesMode: false,
+      __isCellDimsMode: false,
+      __isMeasureMode: false,
+      __isExtDrawerEditMode: false,
+      __isIntDrawerEditMode: false,
+      __isDividerEditMode: false,
+      __isHandleEditMode: false,
+      __isHingeEditMode: false,
+      __isRemoveDoorMode: false,
+      __isDoorTrimMode: false,
+    },
+    hitState: {
+      intersects: [],
+      foundPartId: 'd2_full',
+      foundModuleIndex: null,
+      foundModuleStack: 'top',
+      effectiveDoorId: 'd2_full',
+      foundDrawerId: null,
+      primaryHitObject: secondDoor.group as never,
+      doorHitObject: secondDoor.group as never,
+      doorHitGroup: secondDoor.group as never,
+      primaryHitPoint: { x: 0, y: 1.4, z: 0 },
+      doorHitPoint: { x: 0, y: 1.4, z: 0 },
+      moduleHitY: null,
+      doorHitY: 1.4,
+      primaryHitY: 1.4,
+      hitIdentity: null,
+    },
+    moduleRefs: {
+      __activeModuleKey: null,
+      __activeStack: 'top',
+      __isBottomStack: false,
+      __ensureConfigRefForKey: () => null,
+      __patchConfigForKey: () => false,
+      __getActiveConfigRef: () => null,
+      __ensureCornerCellConfigRef: () => null,
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(maps.splitDoorsMap.split_d1, true, 'the neighboring door cut must remain intact');
+  assert.deepEqual(maps.splitDoorsMap.splitpos_d1, [0.5]);
+  assert.equal(maps.splitDoorsMap.split_d2, true, 'the resolved clicked door receives the new cut');
+  assert.deepEqual(maps.splitDoorsMap.splitpos_d2, [0.7]);
 });

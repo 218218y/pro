@@ -1,6 +1,4 @@
 import { tryHandleCanvasDoorEditClick } from './canvas_picking_door_edit_flow.js';
-import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
-import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
 import { tryHandleCanvasPaintClick } from './canvas_picking_paint_flow.js';
 import { tryHandleCanvasHandleAssignClick } from './canvas_picking_handle_assign_flow.js';
 import { resolveGenericPartPaintTarget } from './canvas_picking_generic_paint_target_resolution.js';
@@ -38,14 +36,6 @@ export function tryHandleCanvasPickingActionRoute(args: CanvasPickingClickRouteA
   const usesActionableFaceHit = __isDoorTrimMode || __isGrooveEditMode;
   const routedDoorHitPoint = usesActionableFaceHit ? doorHitPoint || primaryHitPoint : doorHitPoint;
   const routedDoorHitObject = usesActionableFaceHit ? doorHitObject || primaryHitObject : doorHitObject;
-
-  if (
-    __isSplitEditMode &&
-    readSplitVariant(App) === 'custom' &&
-    tryHandleCanvasDoorCustomSplitScreenRemoveClick({ App, ndcX, ndcY, camera: getCamera(App) })
-  ) {
-    return true;
-  }
 
   if (
     tryHandleCanvasDoorEditClick({
