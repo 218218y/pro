@@ -3,6 +3,31 @@ import { MIN_SIZE, clamp, parsePx, px, type Interaction, type Rect } from './not
 
 let nextGeneratedNoteId = 1;
 
+export const NOTES_DUPLICATE_OFFSET_PX = 24;
+
+export type NotesClipboardShortcut = 'copy' | 'paste';
+
+export type NotesClipboardShortcutEventLike = {
+  altKey?: boolean;
+  code?: string;
+  ctrlKey?: boolean;
+  key?: string;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+};
+
+export function readNotesClipboardShortcut(
+  event: NotesClipboardShortcutEventLike
+): NotesClipboardShortcut | null {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return null;
+
+  const code = String(event.code || '');
+  const key = String(event.key || '').toLowerCase();
+  if (code === 'KeyC' || key === 'c' || key === 'ב') return 'copy';
+  if (code === 'KeyV' || key === 'v' || key === 'ה') return 'paste';
+  return null;
+}
+
 export function createNotesOverlayNoteId(): string {
   const now = Date.now().toString(36);
   const seq = (nextGeneratedNoteId++).toString(36);
@@ -168,6 +193,26 @@ export function buildRectFromPoints(startX: number, startY: number, endX: number
     top: Math.min(startY, endY),
     width: Math.abs(endX - startX),
     height: Math.abs(endY - startY),
+  };
+}
+
+export function cloneNoteForClipboard(note: SavedNote): SavedNote {
+  return {
+    ...note,
+    style: note.style ? { ...note.style } : {},
+  };
+}
+
+export function createDuplicatedNote(note: SavedNote, offsetPx = NOTES_DUPLICATE_OFFSET_PX): SavedNote {
+  const bounds = readSavedNoteBounds(note.style);
+  return {
+    ...cloneNoteForClipboard(note),
+    id: createNotesOverlayNoteId(),
+    style: {
+      ...note.style,
+      left: px(clamp(bounds.left + offsetPx, 0, 100000)),
+      top: px(clamp(bounds.top + offsetPx, 0, 100000)),
+    },
   };
 }
 

@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from 'react';
-import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import type { FocusEvent, KeyboardEvent as ReactKeyboardEvent, MouseEvent } from 'react';
 
 import {
   NOTES_OUTSIDE_POINTER_IGNORE_SELECTOR,
@@ -9,6 +9,13 @@ import {
   type UseNotesOverlayEditorWorkflowsArgs,
 } from './notes_overlay_editor_workflow_shared.js';
 import { installDomEventListener } from '../effects/dom_event_cleanup.js';
+import { getSelectionOffsetsForEditor } from './notes_overlay_editor_state.js';
+import {
+  cloneNoteForClipboard,
+  createDuplicatedNote,
+  readNotesClipboardShortcut,
+} from './notes_overlay_controller_interactions_shared.js';
+import type { SavedNote } from '../../../../../types';
 
 export type NotesOverlayEditorEventHandlers = Pick<
   import('./notes_overlay_editor_workflow_shared.js').NotesOverlayEditorWorkflows,
@@ -26,12 +33,19 @@ export function useNotesOverlayEditorWorkflowEvents(
     activeIndex,
     interaction,
     editorRefs,
+    draftNotes,
+    draftNotesRef,
+    setDraftNotes,
+    captureEditorsIntoNotes,
+    commitNotes,
     suppressNextClickRef,
     ignoreOutsideClickUntilRef,
     readPointerEventTarget,
     setColorPaletteOpen,
     setSizePaletteOpen,
   } = args;
+  const copiedNoteRef = useRef<SavedNote | null>(null);
+
   const {
     captureAndCommitDraft,
     captureActiveDraftIfDirty,
@@ -88,7 +102,7 @@ export function useNotesOverlayEditorWorkflowEvents(
   );
 
   const onEditorKeyUp = useCallback(
-    (index: number, e: KeyboardEvent<HTMLDivElement>) => {
+    (index: number, e: ReactKeyboardEvent<HTMLDivElement>) => {
       const key = String(e.key || '');
       const isNavigationKey =
         key === 'ArrowLeft' ||
@@ -133,6 +147,69 @@ export function useNotesOverlayEditorWorkflowEvents(
     },
     [saveSelectionForIndex, syncToolbarFromSelection]
   );
+
+  useEffect(() => {
+    if (!doc) return;
+
+    const onKeyDownCapture = (ev: Event) => {
+      const KeyboardEventCtor = doc.defaultView?.KeyboardEvent;
+      if (!KeyboardEventCtor || !(ev instanceof KeyboardEventCtor) || ev.defaultPrevented) return;
+      if (!editMode || !notesEnabled || activeIndex == null || interaction) return;
+
+      const shortcut = readNotesClipboardShortcut(ev);
+      if (!shortcut) return;
+
+      const activeEditor = editorRefs.current[activeIndex];
+      if (getSelectionOffsetsForEditor(doc, activeEditor)) return;
+
+      const base = draftNotesRef.current || draftNotes;
+      const captured = captureEditorsIntoNotes(base);
+      const activeNote = captured[activeIndex];
+      if (!activeNote) return;
+
+      if (shortcut === 'copy') {
+        copiedNoteRef.current = cloneNoteForClipboard(activeNote);
+        ev.preventDefault();
+        ev.stopPropagation();
+        return;
+      }
+
+      const copied = copiedNoteRef.current;
+      if (!copied) return;
+
+      const duplicate = createDuplicatedNote(copied);
+      const next = [...captured, duplicate];
+      const nextIndex = next.length - 1;
+
+      ev.preventDefault();
+      ev.stopPropagation();
+      draftNotesRef.current = next;
+      setDraftNotes(next);
+      commitNotes(next, 'react:notes:duplicate');
+      setActive(nextIndex);
+    };
+
+    return installDomEventListener({
+      target: doc,
+      type: 'keydown',
+      listener: onKeyDownCapture as EventListener,
+      options: true,
+      label: 'notesOverlayClipboardShortcut',
+    });
+  }, [
+    activeIndex,
+    captureEditorsIntoNotes,
+    commitNotes,
+    doc,
+    draftNotes,
+    draftNotesRef,
+    editMode,
+    editorRefs,
+    interaction,
+    notesEnabled,
+    setActive,
+    setDraftNotes,
+  ]);
 
   useEffect(() => {
     if (!doc) return;

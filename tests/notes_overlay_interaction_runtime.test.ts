@@ -5,12 +5,15 @@ import {
   applyInteractionToDraftNotes,
   applyInteractionToNote,
   buildRectFromPoints,
+  cloneNoteForClipboard,
+  createDuplicatedNote,
   createEmptyNoteFromRect,
   createHandleNoteInteraction,
   createResizeNoteInteraction,
   didNotesChange,
   didNoteLayoutChange,
   finalizeInteractionDraftNotes,
+  readNotesClipboardShortcut,
   readSavedNoteBounds,
 } from '../esm/native/ui/react/notes/notes_overlay_controller_interactions_shared.js';
 import { MIN_SIZE } from '../esm/native/ui/react/notes/notes_overlay_helpers_shared.js';
@@ -40,6 +43,51 @@ test('notes overlay create note seeds a stable id, px-based style defaults and k
   });
   assert.equal(note.text, '');
   assert.equal(note.doorsOpen, true);
+});
+
+test('notes overlay clipboard shortcuts accept Ctrl/Cmd C/V without stealing modified variants', () => {
+  assert.equal(readNotesClipboardShortcut({ ctrlKey: true, code: 'KeyC', key: 'c' }), 'copy');
+  assert.equal(readNotesClipboardShortcut({ metaKey: true, code: 'KeyV', key: 'v' }), 'paste');
+  assert.equal(readNotesClipboardShortcut({ ctrlKey: true, key: 'ב' }), 'copy');
+  assert.equal(readNotesClipboardShortcut({ ctrlKey: true, key: 'ה' }), 'paste');
+  assert.equal(readNotesClipboardShortcut({ ctrlKey: true, shiftKey: true, code: 'KeyV', key: 'V' }), null);
+  assert.equal(readNotesClipboardShortcut({ ctrlKey: true, altKey: true, code: 'KeyC' }), null);
+  assert.equal(readNotesClipboardShortcut({ code: 'KeyC', key: 'c' }), null);
+});
+
+test('notes overlay duplicate preserves text, dimensions and formatting while creating a nearby unique note', () => {
+  const source = {
+    id: 'note-source',
+    text: '<b>אותו טקסט</b>',
+    doorsOpen: false,
+    style: {
+      left: '120px',
+      top: '80px',
+      width: '210px',
+      height: '95px',
+      baseTextColor: '#123456',
+      baseFontSize: '5',
+      textColor: '#654321',
+      fontSize: '6',
+    },
+  } as any;
+
+  const clipboard = cloneNoteForClipboard(source);
+  const duplicate = createDuplicatedNote(clipboard);
+
+  assert.notEqual(clipboard, source);
+  assert.notEqual(clipboard.style, source.style);
+  assert.notEqual(duplicate.id, source.id);
+  assert.match(String(duplicate.id), /^note-/);
+  assert.equal(duplicate.text, source.text);
+  assert.equal(duplicate.doorsOpen, source.doorsOpen);
+  assert.deepEqual(duplicate.style, {
+    ...source.style,
+    left: '144px',
+    top: '104px',
+  });
+  assert.equal(source.style.left, '120px');
+  assert.equal(source.style.top, '80px');
 });
 
 test('notes overlay move interaction clamps note position inside the non-negative workspace', () => {
