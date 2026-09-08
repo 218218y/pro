@@ -651,6 +651,10 @@ test('Group A-D contracts preserve explicit Structure patterns and view-state ou
       { label: 'ברירת מחדל (80-80-80 ותא 40 לבחירה)', structure: 'default' },
       { label: 'כולו תאים צרים', structure: [1, 1, 1, 1, 1, 1, 1] },
     ],
+    8: [
+      { label: 'ברירת מחדל (80-80-80-80)', structure: 'default' },
+      { label: '80-40-80-40-80', structure: [2, 1, 2, 1, 2] },
+    ],
   });
   assert.deepEqual(
     viewStateKeyOrder(read('esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts')),

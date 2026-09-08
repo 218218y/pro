@@ -46,4 +46,8 @@ export const STRUCTURE_PATTERNS: Record<number, StructurePattern[]> = {
     },
     { label: 'כולו תאים צרים', structure: [1, 1, 1, 1, 1, 1, 1] },
   ],
+  8: [
+    { label: `ברירת מחדל (${formatStructureWidths(2, 2, 2, 2)})`, structure: 'default' },
+    { label: formatStructureWidths(2, 1, 2, 1, 2), structure: [2, 1, 2, 1, 2] },
+  ],
 };
