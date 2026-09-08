@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T15:08:27.270Z",
+  "generatedAt": "2026-09-08T17:19:00.015Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 567,
@@ -3744,14 +3744,14 @@
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_mode_flow_shared.ts",
-      "line": 187,
+      "line": 185,
       "term": "fallbackM",
       "category": "domain-default",
       "text": "fallbackM: number"
     },
     {
       "file": "esm/native/services/canvas_picking_drawer_mode_flow_shared.ts",
-      "line": 204,
+      "line": 202,
       "term": "fallbackM",
       "category": "domain-default",
       "text": "return fallbackM > 0 ? fallbackM : null;"
@@ -5165,14 +5165,14 @@
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 89,
+      "line": 92,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "} catch (fallbackErr) {"
     },
     {
       "file": "esm/native/ui/react/tabs/settings_visual_room_design_controller_runtime.ts",
-      "line": 90,
+      "line": 93,
       "term": "fallbackErr",
       "category": "error-message-default",
       "text": "reportNonFatal(args, `${source}:setActive`, fallbackErr || err);"
@@ -5452,35 +5452,35 @@
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 59,
+      "line": 60,
       "term": "fallback",
       "category": "runtime-default",
       "text": "function normalizeWallColor(value: unknown, fallback: string): string {"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 60,
+      "line": 61,
       "term": "fallback",
       "category": "runtime-default",
       "text": "if (typeof value !== 'string') return fallback;"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 62,
+      "line": 63,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return /^#[0-9a-f]{6}$/u.test(normalized) ? normalized : fallback;"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 95,
+      "line": 96,
       "term": "fallbackId",
       "category": "runtime-default",
       "text": "const fallbackId = `room-opening-${i + 1}`;"
     },
     {
       "file": "esm/shared/room_architecture_shared.ts",
-      "line": 97,
+      "line": 98,
       "term": "fallbackId",
       "category": "domain-default",
       "text": "let id = rawId || fallbackId;"
