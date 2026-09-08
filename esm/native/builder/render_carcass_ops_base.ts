@@ -11,9 +11,9 @@ import {
   axisAlignedBoxToCenterSize,
   boxFromCenterSize,
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnCutObstacle,
-  resolveRoomColumnAdjustmentGeometry,
-  subtractAxisAlignedBox,
+  resolveActiveRoomColumnCutObstacles,
+  resolveRoomColumnAdjustmentGeometries,
+  subtractAxisAlignedBoxes,
 } from './room_architecture_geometry.js';
 import type { RoomColumnLinerFace } from '../../../types';
 import {
@@ -124,14 +124,14 @@ export function createApplyCarcassBaseOps() {
     material: unknown;
     partId: string;
     registryKind: 'plinth' | 'body';
-    obstacle: ReturnType<typeof resolveActiveRoomColumnCutObstacle>;
+    obstacles: ReturnType<typeof resolveActiveRoomColumnCutObstacles>;
   }): void {
-    const { runtime, width, height, depth, x, y, z, material, partId, registryKind, obstacle } = args;
+    const { runtime, width, height, depth, x, y, z, material, partId, registryKind, obstacles } = args;
     const { THREE, addOutlines, wardrobeGroup, reg, App } = runtime;
     const sourceBox = boxFromCenterSize({ x, y, z, width, height, depth });
-    const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+    const intersects = obstacles.some(obstacle => !!intersectAxisAlignedBoxes(sourceBox, obstacle));
 
-    if (!intersection || !obstacle) {
+    if (!intersects) {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
       mesh.position.set(x, y, z);
       mesh.userData = { partId };
@@ -141,7 +141,7 @@ export function createApplyCarcassBaseOps() {
       return;
     }
 
-    const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+    const pieces = subtractAxisAlignedBoxes(sourceBox, obstacles);
     const group = new THREE.Group();
     group.position.set(x, y, z);
     group.userData = { partId, __wpRoomColumnAdjusted: true };
@@ -161,8 +161,9 @@ export function createApplyCarcassBaseOps() {
 
   function applyRoomColumnLiners(runtime: RenderCarcassRuntime): void {
     const { THREE, wardrobeGroup, sketchMode } = runtime;
-    const adjustment = resolveRoomColumnAdjustmentGeometry(runtime.roomArchitecturePlan);
-    if (!adjustment || adjustment.linerPanels.length === 0) return;
+    const adjustments = resolveRoomColumnAdjustmentGeometries(runtime.roomArchitecturePlan);
+    const panels = adjustments.flatMap(adjustment => adjustment.linerPanels);
+    if (panels.length === 0) return;
 
     const group = new THREE.Group();
     group.userData = {
@@ -171,7 +172,7 @@ export function createApplyCarcassBaseOps() {
       ignorePicking: true,
     };
 
-    for (const panel of adjustment.linerPanels) {
+    for (const panel of panels) {
       const piece = axisAlignedBoxToCenterSize(panel.box);
       const mesh = new THREE.Mesh(
         new THREE.BoxGeometry(piece.width, piece.height, piece.depth),
@@ -180,6 +181,7 @@ export function createApplyCarcassBaseOps() {
       mesh.position.set(piece.x, piece.y, piece.z);
       mesh.userData = {
         ...group.userData,
+        roomColumnId: panel.columnId,
         __wpRoomColumnLinerFace: panel.face,
       };
       if (!sketchMode) {
@@ -197,7 +199,7 @@ export function createApplyCarcassBaseOps() {
     const baseRec = readRecord(base);
     if (!baseRec) return;
     const baseKind = baseRec.kind;
-    const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
+    const obstacles = resolveActiveRoomColumnCutObstacles(runtime.roomArchitecturePlan);
 
     if (baseKind === 'plinth') {
       const pid = __asString(baseRec.partId, 'plinth_color');
@@ -225,7 +227,7 @@ export function createApplyCarcassBaseOps() {
             material: plMat,
             partId: pid,
             registryKind: 'plinth',
-            obstacle,
+            obstacles,
           });
         }
         return;
@@ -248,7 +250,7 @@ export function createApplyCarcassBaseOps() {
         material: plMat,
         partId: pid,
         registryKind: 'plinth',
-        obstacle,
+        obstacles,
       });
       return;
     }
@@ -277,7 +279,7 @@ export function createApplyCarcassBaseOps() {
           material: platformMat,
           partId: pid,
           registryKind: 'body',
-          obstacle,
+          obstacles,
         });
       }
       if (baseKind !== 'legs' || !ctx.legMat) return;
@@ -319,7 +321,7 @@ export function createApplyCarcassBaseOps() {
           height,
           depth: legHalfDepth * 2,
         });
-        if (obstacle && intersectAxisAlignedBoxes(legBox, obstacle)) continue;
+        if (obstacles.some(obstacle => !!intersectAxisAlignedBoxes(legBox, obstacle))) continue;
 
         const leg = new THREE.Mesh(legGeometry, ctx.legMat);
         leg.position.set(px, height / 2, pz);
@@ -345,11 +347,11 @@ export function createApplyCarcassBaseOps() {
         height: bd.height,
         depth: bd.depth,
       });
-      const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
-      const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+      const obstacles = resolveActiveRoomColumnCutObstacles(runtime.roomArchitecturePlan);
+      const intersects = obstacles.some(obstacle => !!intersectAxisAlignedBoxes(sourceBox, obstacle));
 
-      if (intersection && obstacle) {
-        const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+      if (intersects) {
+        const pieces = subtractAxisAlignedBoxes(sourceBox, obstacles);
         const group = new THREE.Group();
         group.position.set(bd.x, bd.y, bd.z);
         const sharedUserData: AnyMap = partId
@@ -420,11 +422,11 @@ export function createApplyCarcassBaseOps() {
         height: seg.height,
         depth: seg.depth,
       });
-      const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
-      const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+      const obstacles = resolveActiveRoomColumnCutObstacles(runtime.roomArchitecturePlan);
+      const intersects = obstacles.some(obstacle => !!intersectAxisAlignedBoxes(sourceBox, obstacle));
 
-      if (intersection && obstacle) {
-        const pieces = subtractAxisAlignedBox(sourceBox, obstacle);
+      if (intersects) {
+        const pieces = subtractAxisAlignedBoxes(sourceBox, obstacles);
         const group = new THREE.Group();
         group.position.set(seg.x, seg.y, seg.z);
         const sharedUserData: AnyMap = {

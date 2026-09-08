@@ -1,6 +1,7 @@
 import type {
   AxisAlignedBox,
   ResolvedRoomOpeningGeometry,
+  RoomArchitectureColumnGeometry,
   RoomArchitectureConfigLike,
   RoomArchitectureGeometry,
   RoomArchitecturePlan,
@@ -45,7 +46,7 @@ function cloneRoomArchitectureConfig(config: RoomArchitectureConfigLike): RoomAr
     backWall: { ...config.backWall },
     leftWall: { ...config.leftWall },
     rightWall: { ...config.rightWall },
-    column: { ...config.column },
+    columns: Array.isArray(config.columns) ? config.columns.map(column => ({ ...column })) : [],
     openings: Array.isArray(config.openings) ? config.openings.map(opening => ({ ...opening })) : [],
     wallColor: config.wallColor,
     surfacesHidden: config.surfacesHidden,
@@ -106,19 +107,23 @@ function resolveRoomArchitectureGeometry(input: RoomArchitecturePlanInput): Room
   const leftWall = config.backWall.enabled ? resolveSideWall('left', config.leftWall) : null;
   const rightWall = config.backWall.enabled ? resolveSideWall('right', config.rightWall) : null;
 
-  let column: RoomArchitectureGeometry['column'] = null;
-  if (config.backWall.enabled && config.column.enabled) {
-    const columnLeftX = wallLeftX + config.column.offsetLeftCm / 100;
-    const columnBottomY = config.column.bottomOffsetCm / 100;
-    column = withBoxMetrics({
-      minX: columnLeftX,
-      maxX: columnLeftX + config.column.widthCm / 100,
-      minY: columnBottomY,
-      maxY: columnBottomY + config.column.heightCm / 100,
-      minZ: wallFrontZ,
-      maxZ: wallFrontZ + config.column.depthCm / 100,
-    });
-  }
+  const columns: RoomArchitectureColumnGeometry[] = config.backWall.enabled
+    ? config.columns.map(column => {
+        const columnLeftX = wallLeftX + column.offsetLeftCm / 100;
+        const columnBottomY = column.bottomOffsetCm / 100;
+        return {
+          id: column.id,
+          ...withBoxMetrics({
+            minX: columnLeftX,
+            maxX: columnLeftX + column.widthCm / 100,
+            minY: columnBottomY,
+            maxY: columnBottomY + column.heightCm / 100,
+            minZ: wallFrontZ,
+            maxZ: wallFrontZ + column.depthCm / 100,
+          }),
+        };
+      })
+    : [];
 
   return {
     config,
@@ -128,7 +133,7 @@ function resolveRoomArchitectureGeometry(input: RoomArchitecturePlanInput): Room
     wall,
     leftWall,
     rightWall,
-    column,
+    columns,
   };
 }
 
@@ -339,6 +344,20 @@ export function subtractAxisAlignedBox(source: AxisAlignedBox, obstacle: AxisAli
   return subtractAxisAlignedBoxInOrder(source, obstacle, ['x', 'y', 'z']);
 }
 
+export function subtractAxisAlignedBoxes(
+  source: AxisAlignedBox,
+  obstacles: readonly AxisAlignedBox[]
+): AxisAlignedBox[] {
+  let pieces: AxisAlignedBox[] = [source];
+  for (const obstacle of obstacles) {
+    const next: AxisAlignedBox[] = [];
+    for (const piece of pieces) next.push(...subtractAxisAlignedBox(piece, obstacle));
+    pieces = next;
+    if (pieces.length === 0) break;
+  }
+  return pieces;
+}
+
 type WallOpeningRect = Readonly<{
   minU: number;
   maxU: number;
@@ -533,10 +552,11 @@ function wardrobeBoxFromGeometry(geometry: RoomArchitectureGeometry): AxisAligne
 }
 
 function buildRoomColumnLinerPanels(args: {
+  columnId: string;
   intrusion: AxisAlignedBox;
   cutIntrusion: AxisAlignedBox;
 }): RoomColumnLinerPanel[] {
-  const { intrusion, cutIntrusion } = args;
+  const { columnId, intrusion, cutIntrusion } = args;
   const panels: RoomColumnLinerPanel[] = [];
 
   const add = (face: RoomColumnLinerFace, box: AxisAlignedBox): void => {
@@ -545,7 +565,7 @@ function buildRoomColumnLinerPanels(args: {
       box.maxY - box.minY > ROOM_ARCHITECTURE_EPSILON_M &&
       box.maxZ - box.minZ > ROOM_ARCHITECTURE_EPSILON_M
     ) {
-      panels.push({ face, box });
+      panels.push({ columnId, face, box });
     }
   };
 
@@ -626,12 +646,10 @@ function buildRoomColumnCutObstacle(args: {
 }
 
 function buildRoomColumnAdjustmentGeometry(
-  geometry: RoomArchitectureGeometry,
+  column: RoomArchitectureColumnGeometry,
   wardrobeBox: AxisAlignedBox
 ): RoomColumnAdjustmentGeometry | null {
-  const obstacle =
-    geometry.config.backWall.enabled && geometry.config.column.enabled ? geometry.column : null;
-  if (!obstacle) return null;
+  const obstacle = column;
 
   const intrusion = intersectAxisAlignedBoxes(obstacle, wardrobeBox);
   if (!intrusion) return null;
@@ -645,12 +663,13 @@ function buildRoomColumnAdjustmentGeometry(
   if (!cutIntrusion) return null;
 
   return {
+    columnId: column.id,
     wardrobeBox,
     obstacle,
     intrusion,
     cutObstacle,
     cutIntrusion,
-    linerPanels: buildRoomColumnLinerPanels({ intrusion, cutIntrusion }),
+    linerPanels: buildRoomColumnLinerPanels({ columnId: column.id, intrusion, cutIntrusion }),
   };
 }
 
@@ -663,7 +682,9 @@ function deepFreezeRoomPlanValue<T>(value: T): T {
 export function createRoomArchitecturePlan(input: RoomArchitecturePlanInput): RoomArchitecturePlan {
   const geometry = resolveRoomArchitectureGeometry(input);
   const wardrobeBox = wardrobeBoxFromGeometry(geometry);
-  const columnAdjustment = buildRoomColumnAdjustmentGeometry(geometry, wardrobeBox);
+  const columnAdjustments = geometry.columns
+    .map(column => buildRoomColumnAdjustmentGeometry(column, wardrobeBox))
+    .filter((entry): entry is RoomColumnAdjustmentGeometry => entry !== null);
   const plan: RoomArchitecturePlan = {
     ...geometry,
     wardrobeBox,
@@ -673,45 +694,50 @@ export function createRoomArchitecturePlan(input: RoomArchitecturePlanInput): Ro
       right: resolveRoomWallSurface(geometry, 'right'),
     },
     resolvedOpenings: resolveRoomOpeningsGeometry(geometry),
-    columnAdjustment,
-    activeCutObstacle: columnAdjustment?.cutObstacle ?? null,
+    columnAdjustments,
+    activeCutObstacles: columnAdjustments.map(adjustment => adjustment.cutObstacle),
   };
   return deepFreezeRoomPlanValue(plan);
 }
 
-export function resolveRoomColumnAdjustmentGeometry(
+export function resolveRoomColumnAdjustmentGeometries(
   plan: RoomArchitecturePlan
-): RoomColumnAdjustmentGeometry | null {
-  return plan.columnAdjustment;
+): readonly RoomColumnAdjustmentGeometry[] {
+  return plan.columnAdjustments;
 }
 
-export function resolveActiveRoomColumnCutObstacle(plan: RoomArchitecturePlan): AxisAlignedBox | null {
-  return plan.activeCutObstacle;
+export function resolveActiveRoomColumnCutObstacles(plan: RoomArchitecturePlan): readonly AxisAlignedBox[] {
+  return plan.activeCutObstacles;
 }
 
 export function resolveRoomColumnLinerPanelsForBox(
   plan: RoomArchitecturePlan,
   enclosureBox: AxisAlignedBox
 ): RoomColumnLinerPanel[] {
-  const adjustment = plan.columnAdjustment;
-  if (!adjustment) return [];
-
-  // Free-box boards are cut by createBoard() with this same canonical cut obstacle.
-  // Derive the liner from that exact cut so the liner can never overlap uncut wood
-  // or leave a gap because a second enclosure-relative obstacle was calculated here.
-  const intrusion = intersectAxisAlignedBoxes(adjustment.obstacle, enclosureBox);
-  const cutIntrusion = intersectAxisAlignedBoxes(adjustment.cutObstacle, enclosureBox);
-  if (!intrusion || !cutIntrusion) return [];
-
-  return buildRoomColumnLinerPanels({ intrusion, cutIntrusion });
+  const panels: RoomColumnLinerPanel[] = [];
+  for (const adjustment of plan.columnAdjustments) {
+    // Free-box boards are cut by createBoard() with these same canonical cut obstacles.
+    // Derive every liner from that exact cut so the liner can never overlap uncut wood
+    // or leave a gap because a second enclosure-relative obstacle was calculated here.
+    const intrusion = intersectAxisAlignedBoxes(adjustment.obstacle, enclosureBox);
+    const cutIntrusion = intersectAxisAlignedBoxes(adjustment.cutObstacle, enclosureBox);
+    if (!intrusion || !cutIntrusion) continue;
+    panels.push(
+      ...buildRoomColumnLinerPanels({
+        columnId: adjustment.columnId,
+        intrusion,
+        cutIntrusion,
+      })
+    );
+  }
+  return panels;
 }
 
 export function intersectsActiveRoomColumnCutObstacle(
   plan: RoomArchitecturePlan,
   box: AxisAlignedBox
 ): boolean {
-  const obstacle = plan.activeCutObstacle;
-  return !!(obstacle && intersectAxisAlignedBoxes(box, obstacle));
+  return plan.activeCutObstacles.some(obstacle => !!intersectAxisAlignedBoxes(box, obstacle));
 }
 
 export function resolveHorizontalSpanAgainstRoomColumnCut(
@@ -726,7 +752,6 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     minUsableLength: number;
   }
 ): RoomColumnAdjustedHorizontalSpan | null {
-  const obstacle = plan.activeCutObstacle;
   const sourceMinX = args.centerX - args.length / 2;
   const sourceMaxX = args.centerX + args.length / 2;
   const source = {
@@ -738,7 +763,7 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     maxZ: args.centerZ + args.halfDepth,
   };
 
-  if (!obstacle) {
+  if (plan.activeCutObstacles.length === 0) {
     return {
       minX: sourceMinX,
       maxX: sourceMaxX,
@@ -747,8 +772,11 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     };
   }
 
-  const cut = intersectAxisAlignedBoxes(source, obstacle);
-  if (!cut) {
+  const cuts = plan.activeCutObstacles
+    .map(obstacle => intersectAxisAlignedBoxes(source, obstacle))
+    .filter((cut): cut is AxisAlignedBox => cut !== null)
+    .sort((a, b) => a.minX - b.minX);
+  if (cuts.length === 0) {
     return {
       minX: sourceMinX,
       maxX: sourceMaxX,
@@ -757,16 +785,30 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     };
   }
 
-  const cutsLeftEdge = cut.minX <= sourceMinX + ROOM_ARCHITECTURE_EPSILON_M;
-  const cutsRightEdge = cut.maxX >= sourceMaxX - ROOM_ARCHITECTURE_EPSILON_M;
-  if (cutsLeftEdge && cutsRightEdge) return null;
+  const mergedCuts: Array<{ minX: number; maxX: number }> = [];
+  for (const cut of cuts) {
+    const previous = mergedCuts.at(-1);
+    if (previous && cut.minX <= previous.maxX + ROOM_ARCHITECTURE_EPSILON_M) {
+      previous.maxX = Math.max(previous.maxX, cut.maxX);
+    } else {
+      mergedCuts.push({ minX: cut.minX, maxX: cut.maxX });
+    }
+  }
 
-  // A column in the middle would split one fitting into two independent fittings.
-  // The room-column rule intentionally removes that fitting instead.
-  if (!cutsLeftEdge && !cutsRightEdge) return null;
+  const usable: Array<{ minX: number; maxX: number }> = [];
+  let cursor = sourceMinX;
+  for (const cut of mergedCuts) {
+    if (cut.minX > cursor + ROOM_ARCHITECTURE_EPSILON_M) usable.push({ minX: cursor, maxX: cut.minX });
+    cursor = Math.max(cursor, cut.maxX);
+  }
+  if (cursor < sourceMaxX - ROOM_ARCHITECTURE_EPSILON_M) usable.push({ minX: cursor, maxX: sourceMaxX });
 
-  const minX = cutsLeftEdge ? cut.maxX : sourceMinX;
-  const maxX = cutsRightEdge ? cut.minX : sourceMaxX;
+  // A cut that leaves multiple separate spans would require independent fittings.
+  // Keep the established policy: remove that fitting rather than inventing split hardware.
+  if (usable.length !== 1) return null;
+  const span = usable[0];
+  if (!span) return null;
+  const { minX, maxX } = span;
   const length = maxX - minX;
   if (!(length >= args.minUsableLength - ROOM_ARCHITECTURE_EPSILON_M)) return null;
 

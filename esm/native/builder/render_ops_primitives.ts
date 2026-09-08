@@ -12,8 +12,8 @@ import {
   axisAlignedBoxToCenterSize,
   boxFromCenterSize,
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnCutObstacle,
-  subtractAxisAlignedBox,
+  resolveActiveRoomColumnCutObstacles,
+  subtractAxisAlignedBoxes,
 } from './room_architecture_geometry.js';
 
 import type {
@@ -769,10 +769,12 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const addOutlines = args.addOutlines;
 
     const sourceBox = boxFromCenterSize({ x, y, z, width: w, height: h, depth: d });
-    const obstacle = resolveActiveRoomColumnCutObstacle(roomArchitecturePlan);
-    const intersection = obstacle ? intersectAxisAlignedBoxes(sourceBox, obstacle) : null;
+    const obstacles = resolveActiveRoomColumnCutObstacles(roomArchitecturePlan);
+    const intersections = obstacles
+      .map(obstacle => intersectAxisAlignedBoxes(sourceBox, obstacle))
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
-    if (!intersection) {
+    if (intersections.length === 0) {
       const mesh = new THREE.Mesh(createBoardGeometry(THREE, args, w, h, d), mat);
       mesh.position.set(x, y, z);
       if (!sketchMode) {
@@ -785,12 +787,12 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
       return mesh;
     }
 
-    const cutObstacle = obstacle as NonNullable<typeof obstacle>;
-    let pieces = subtractAxisAlignedBox(sourceBox, cutObstacle);
-    if (args.shape === 'rounded_shelf' && intersection.maxZ < sourceBox.maxZ - 1e-7) {
-      const rearSource: AxisAlignedBoxLike = { ...sourceBox, maxZ: intersection.maxZ };
-      const frontSlab: AxisAlignedBoxLike = { ...sourceBox, minZ: intersection.maxZ };
-      pieces = [...subtractAxisAlignedBox(rearSource, cutObstacle), frontSlab];
+    let pieces = subtractAxisAlignedBoxes(sourceBox, obstacles);
+    const deepestCutZ = Math.max(...intersections.map(intersection => intersection.maxZ));
+    if (args.shape === 'rounded_shelf' && deepestCutZ < sourceBox.maxZ - 1e-7) {
+      const rearSource: AxisAlignedBoxLike = { ...sourceBox, maxZ: deepestCutZ };
+      const frontSlab: AxisAlignedBoxLike = { ...sourceBox, minZ: deepestCutZ };
+      pieces = [...subtractAxisAlignedBoxes(rearSource, obstacles), frontSlab];
     }
     const group = new THREE.Group();
     group.position.set(x, y, z);

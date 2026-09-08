@@ -2506,6 +2506,37 @@
   margin-top: 10px;
 }
 
+#reactSidebarRoot .wp-r-room-column-section-heading,
+#reactSidebarRoot .wp-r-room-column-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#reactSidebarRoot .wp-r-room-column-count {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+#reactSidebarRoot .wp-r-room-column-card {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--input-bg) 86%, var(--card-bg) 14%);
+}
+
+#reactSidebarRoot .wp-r-room-column-remove-btn {
+  margin: 0;
+}
+
+#reactSidebarRoot .wp-r-room-column-add-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
 #reactSidebarRoot .wp-r-room-openings-block {
   margin-top: 12px;
   padding-top: 10px;

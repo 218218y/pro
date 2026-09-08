@@ -30,14 +30,16 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               depthCm: value?.rightWall?.depthCm ?? 300,
               heightCm: value?.rightWall?.heightCm ?? 280,
             },
-            column: {
-              enabled: value?.column?.enabled === true,
-              offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
-              widthCm: value?.column?.widthCm ?? 30,
-              depthCm: value?.column?.depthCm ?? 20,
-              heightCm: value?.column?.heightCm ?? 280,
-              bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
-            },
+            columns: Array.isArray(value?.columns)
+              ? value.columns.map((column, index) => ({
+                  id: typeof column?.id === 'string' && column.id ? column.id : `room-column-${index + 1}`,
+                  offsetLeftCm: column?.offsetLeftCm ?? 180,
+                  widthCm: column?.widthCm ?? 30,
+                  depthCm: column?.depthCm ?? 20,
+                  heightCm: column?.heightCm ?? 280,
+                  bottomOffsetCm: column?.bottomOffsetCm ?? 0,
+                }))
+              : [],
             wallColor: value?.wallColor ?? '#f2efe6',
             surfacesHidden: value?.surfacesHidden === true,
           })),
@@ -67,14 +69,16 @@ function loadSettingsVisualViewStateModule(stubs = {}) {
               depthCm: value?.rightWall?.depthCm ?? 300,
               heightCm: value?.rightWall?.heightCm ?? 280,
             },
-            column: {
-              enabled: value?.column?.enabled === true,
-              offsetLeftCm: value?.column?.offsetLeftCm ?? 180,
-              widthCm: value?.column?.widthCm ?? 30,
-              depthCm: value?.column?.depthCm ?? 20,
-              heightCm: value?.column?.heightCm ?? 280,
-              bottomOffsetCm: value?.column?.bottomOffsetCm ?? 0,
-            },
+            columns: Array.isArray(value?.columns)
+              ? value.columns.map((column, index) => ({
+                  id: typeof column?.id === 'string' && column.id ? column.id : `room-column-${index + 1}`,
+                  offsetLeftCm: column?.offsetLeftCm ?? 180,
+                  widthCm: column?.widthCm ?? 30,
+                  depthCm: column?.depthCm ?? 20,
+                  heightCm: column?.heightCm ?? 280,
+                  bottomOffsetCm: column?.bottomOffsetCm ?? 0,
+                }))
+              : [],
             wallColor: value?.wallColor ?? '#f2efe6',
             surfacesHidden: value?.surfacesHidden === true,
           })),
@@ -126,14 +130,7 @@ test('settings visual controls view-state runtime reads cfg state through canoni
     backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
     leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
     rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-    column: {
-      enabled: false,
-      offsetLeftCm: 180,
-      widthCm: 30,
-      depthCm: 20,
-      heightCm: 280,
-      bottomOffsetCm: 0,
-    },
+    columns: [],
     wallColor: '#f2efe6',
     surfacesHidden: false,
   };

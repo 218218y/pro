@@ -225,7 +225,7 @@ const defaultRoomArchitecturePlan = createRoomArchitecturePlan({
     backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
     leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
     rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-    column: { enabled: false, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 280, bottomOffsetCm: 0 },
+    columns: [],
     openings: [],
     wallColor: '#f2efe6',
     surfacesHidden: false,
@@ -762,14 +762,16 @@ test('visuals_contents realistic hanger consumes the explicit showHanger flag an
 test('visuals_contents removes hangers whose physical bounds collide with the room-column liner cut', () => {
   const roomArchitecture = {
     backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 42.5,
-      widthCm: 3,
-      depthCm: 20,
-      heightCm: 200,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 42.5,
+        widthCm: 3,
+        depthCm: 20,
+        heightCm: 200,
+        bottomOffsetCm: 0,
+      },
+    ],
     surfacesHidden: false,
   };
   const { App } = createApp({

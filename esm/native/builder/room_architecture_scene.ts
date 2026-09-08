@@ -590,17 +590,18 @@ export function refreshRoomArchitectureScene(
 
   for (const opening of openings) addOpeningVisuals({ factory, resolved: opening });
 
-  if (geometry.column) {
+  for (const column of geometry.columns) {
     addArchitectureBox({
       group,
       BoxGeometryCtor,
       MaterialCtor,
       MeshCtor,
-      box: geometry.column,
-      name: 'wpWallColumn',
+      box: column,
+      name: `wpWallColumn_${column.id}`,
       kind: 'room_column',
       color: wallColor,
       castShadow: true,
+      userData: { roomColumnId: column.id },
     });
   }
 

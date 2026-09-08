@@ -19,7 +19,7 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
             backWall: { ...current.backWall, ...(patch.backWall || {}) },
             leftWall: { ...current.leftWall, ...(patch.leftWall || {}) },
             rightWall: { ...current.rightWall, ...(patch.rightWall || {}) },
-            column: { ...current.column, ...(patch.column || {}) },
+            columns: patch.columns ?? current.columns,
           })),
       };
     }
@@ -46,7 +46,7 @@ function loadSettingsVisualRoomDesignControllerModule(stubs = {}) {
             backWall: { ...current.backWall, ...patch.backWall },
             leftWall: { ...current.leftWall, ...patch.leftWall },
             rightWall: { ...current.rightWall, ...patch.rightWall },
-            column: { ...current.column, ...patch.column },
+            columns: patch.columns ?? current.columns,
           })),
         applyStructuralConfigMutation:
           stubs.applyStructuralConfigMutation ||
@@ -112,14 +112,7 @@ test('[settings-visual-room-design-controller] delegates floor/wall flows throug
       backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
       leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
       rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-      column: {
-        enabled: false,
-        offsetLeftCm: 180,
-        widthCm: 30,
-        depthCm: 20,
-        heightCm: 280,
-        bottomOffsetCm: 0,
-      },
+      columns: [],
       wallColor: '#f2efe6',
       surfacesHidden: false,
     },
@@ -176,14 +169,7 @@ test('[settings-visual-room-design-controller] falls back cleanly when runtime a
       backWall: { enabled: false, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
       leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
       rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-      column: {
-        enabled: false,
-        offsetLeftCm: 180,
-        widthCm: 30,
-        depthCm: 20,
-        heightCm: 280,
-        bottomOffsetCm: 0,
-      },
+      columns: [],
       wallColor: '#f2efe6',
       surfacesHidden: false,
     },
@@ -215,14 +201,7 @@ test('[settings-visual-room-design-controller] persists room architecture struct
       backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
       leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
       rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-      column: {
-        enabled: false,
-        offsetLeftCm: 180,
-        widthCm: 30,
-        depthCm: 20,
-        heightCm: 280,
-        bottomOffsetCm: 0,
-      },
+      columns: [],
       wallColor: '#f2efe6',
       surfacesHidden: false,
     },
@@ -254,8 +233,17 @@ test('[settings-visual-room-design-controller] persists room architecture struct
     wardrobeWidthCm: 240,
   });
 
-  controller.setColumnEnabled(true);
-  controller.setColumnDimension('depthCm', 35);
+  controller.addColumn();
+  controller.addColumn();
+  assert.equal(
+    JSON.stringify(configState.roomArchitecture.columns.map(column => [column.id, column.offsetLeftCm])),
+    JSON.stringify([
+      ['room-column-1', 180],
+      ['room-column-2', 220],
+    ])
+  );
+  controller.setColumnDimension('room-column-1', 'depthCm', 35);
+  controller.removeColumn('room-column-2');
   controller.setBackWallDimension('widthCm', 500);
   controller.setWardrobeOffsetRightCm(20);
   controller.setSideWallEnabled('leftWall', true);
@@ -264,8 +252,9 @@ test('[settings-visual-room-design-controller] persists room architecture struct
   controller.toggleArchitectureVisibility();
   controller.toggleArchitectureVisibility();
 
-  assert.equal(configState.roomArchitecture.column.enabled, true);
-  assert.equal(configState.roomArchitecture.column.depthCm, 35);
+  assert.equal(configState.roomArchitecture.columns.length, 1);
+  assert.equal(configState.roomArchitecture.columns[0].id, 'room-column-1');
+  assert.equal(configState.roomArchitecture.columns[0].depthCm, 35);
   assert.equal(configState.roomArchitecture.backWall.widthCm, 500);
   assert.equal(configState.roomArchitecture.backWall.wardrobeOffsetLeftCm, 240);
   assert.equal(configState.roomArchitecture.leftWall.enabled, true);
@@ -275,8 +264,10 @@ test('[settings-visual-room-design-controller] persists room architecture struct
   assert.deepEqual(
     calls.filter(call => call[0] === 'mutation').map(call => [call[1], call[2]]),
     [
-      ['react:settingsVisual:roomColumnEnabled', 'immediate'],
-      ['react:settingsVisual:roomColumn:depthCm', 'coalesced'],
+      ['react:settingsVisual:roomColumn:add', 'immediate'],
+      ['react:settingsVisual:roomColumn:add', 'immediate'],
+      ['react:settingsVisual:roomColumn:room-column-1:depthCm', 'coalesced'],
+      ['react:settingsVisual:roomColumn:room-column-2:remove', 'immediate'],
       ['react:settingsVisual:roomBackWall:widthCm', 'coalesced'],
       ['react:settingsVisual:roomBackWall:wardrobeOffsetRightCm', 'coalesced'],
       ['react:settingsVisual:roomArchitecture:leftWall:enabled', 'none'],
@@ -286,7 +277,7 @@ test('[settings-visual-room-design-controller] persists room architecture struct
       ['react:settingsVisual:roomArchitectureVisibility', 'none'],
     ]
   );
-  assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 9);
+  assert.equal(calls.filter(call => call[0] === 'refreshArchitecture').length, 11);
 });
 
 test('[settings-visual-room-design-controller] keeps the full wardrobe body inside the back wall', () => {
@@ -296,14 +287,7 @@ test('[settings-visual-room-design-controller] keeps the full wardrobe body insi
       backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
       leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
       rightWall: { enabled: true, depthCm: 300, heightCm: 280 },
-      column: {
-        enabled: false,
-        offsetLeftCm: 180,
-        widthCm: 30,
-        depthCm: 20,
-        heightCm: 280,
-        bottomOffsetCm: 0,
-      },
+      columns: [],
       openings: [],
       wallColor: '#f2efe6',
       surfacesHidden: false,

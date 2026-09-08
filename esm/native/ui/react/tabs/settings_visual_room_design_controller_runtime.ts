@@ -3,6 +3,7 @@ import type {
   MetaActionsNamespaceLike,
   RoomArchitectureConfigLike,
   RoomArchitecturePatch,
+  RoomColumnConfigLike,
   RoomOpeningKind,
   UnknownRecord,
 } from '../../../../../types';
@@ -42,8 +43,10 @@ export type SettingsVisualRoomDesignController = {
   setSideWallDimension: (side: 'leftWall' | 'rightWall', key: 'depthCm' | 'heightCm', value: number) => void;
   setWardrobeOffsetRightCm: (value: number) => void;
   alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
-  setColumnEnabled: (enabled: boolean) => void;
+  addColumn: () => void;
+  removeColumn: (columnId: string) => void;
   setColumnDimension: (
+    columnId: string,
     key: 'offsetLeftCm' | 'widthCm' | 'depthCm' | 'heightCm' | 'bottomOffsetCm',
     value: number
   ) => void;
@@ -132,6 +135,63 @@ function commitRoomArchitecture(
 
 function normalizeInputNumber(value: number): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function nextRoomColumnId(columns: readonly RoomColumnConfigLike[]): string {
+  const ids = new Set(columns.map(column => column.id));
+  let index = 1;
+  while (ids.has(`room-column-${index}`)) index += 1;
+  return `room-column-${index}`;
+}
+
+function createRoomColumnDraft(current: RoomArchitectureConfigLike): RoomColumnConfigLike {
+  const wallWidthCm = current.backWall.widthCm;
+  const widthCm = Math.min(30, wallWidthCm);
+  const maxOffset = Math.max(0, wallWidthCm - widthCm);
+  const occupied = current.columns
+    .map(column => ({
+      start: Math.max(0, Math.min(wallWidthCm, column.offsetLeftCm)),
+      end: Math.max(0, Math.min(wallWidthCm, column.offsetLeftCm + column.widthCm)),
+    }))
+    .filter(interval => interval.end > interval.start)
+    .sort((a, b) => a.start - b.start);
+
+  const merged: Array<{ start: number; end: number }> = [];
+  for (const interval of occupied) {
+    const previous = merged.at(-1);
+    if (previous && interval.start <= previous.end) previous.end = Math.max(previous.end, interval.end);
+    else merged.push({ ...interval });
+  }
+
+  const free: Array<{ start: number; end: number }> = [];
+  let cursor = 0;
+  for (const interval of merged) {
+    if (interval.start > cursor) free.push({ start: cursor, end: interval.start });
+    cursor = Math.max(cursor, interval.end);
+  }
+  if (cursor < wallWidthCm) free.push({ start: cursor, end: wallWidthCm });
+
+  const preferred = Math.min(maxOffset, 180 + current.columns.length * 40);
+  let offsetLeftCm: number | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const span of free) {
+    if (span.end - span.start < widthCm) continue;
+    const candidate = Math.min(span.end - widthCm, Math.max(span.start, preferred));
+    const distance = Math.abs(candidate - preferred);
+    if (distance < bestDistance) {
+      offsetLeftCm = candidate;
+      bestDistance = distance;
+    }
+  }
+
+  return {
+    id: nextRoomColumnId(current.columns),
+    offsetLeftCm: offsetLeftCm ?? maxOffset,
+    widthCm,
+    depthCm: 20,
+    heightCm: current.backWall.heightCm,
+    bottomOffsetCm: 0,
+  };
 }
 
 export function resolveSettingsVisualFloorStyle(
@@ -266,21 +326,38 @@ export function createSettingsVisualRoomDesignController(
         'immediate'
       );
     },
-    setColumnEnabled: enabled => {
+    addColumn: () => {
+      const current = readCurrentRoomArchitecture(args);
       commitRoomArchitecture(
         args,
-        { column: { enabled } },
-        'react:settingsVisual:roomColumnEnabled',
+        { columns: [...current.columns, createRoomColumnDraft(current)] },
+        'react:settingsVisual:roomColumn:add',
         'immediate'
       );
     },
-    setColumnDimension: (key, value) => {
-      const nextValue = normalizeInputNumber(value);
-      if (nextValue == null) return;
+    removeColumn: columnId => {
+      const current = readCurrentRoomArchitecture(args);
+      if (!current.columns.some(column => column.id === columnId)) return;
       commitRoomArchitecture(
         args,
-        { column: { [key]: nextValue } },
-        `react:settingsVisual:roomColumn:${key}`,
+        { columns: current.columns.filter(column => column.id !== columnId) },
+        `react:settingsVisual:roomColumn:${columnId}:remove`,
+        'immediate'
+      );
+    },
+    setColumnDimension: (columnId, key, value) => {
+      const nextValue = normalizeInputNumber(value);
+      if (nextValue == null) return;
+      const current = readCurrentRoomArchitecture(args);
+      if (!current.columns.some(column => column.id === columnId)) return;
+      commitRoomArchitecture(
+        args,
+        {
+          columns: current.columns.map(column =>
+            column.id === columnId ? { ...column, [key]: nextValue } : column
+          ),
+        },
+        `react:settingsVisual:roomColumn:${columnId}:${key}`,
         'coalesced'
       );
     },

@@ -3,7 +3,7 @@ import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 import {
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnCutObstacle,
+  resolveActiveRoomColumnCutObstacles,
 } from './room_architecture_geometry.js';
 
 import type {
@@ -79,8 +79,8 @@ export function visualObjectIntersectsRoomColumnCut(
   THREE: ThreeLike,
   object: unknown
 ): boolean {
-  const obstacle = resolveActiveRoomColumnCutObstacle(roomArchitecturePlan);
-  if (!obstacle || !object || typeof THREE.Box3 !== 'function') return false;
+  const obstacles = resolveActiveRoomColumnCutObstacles(roomArchitecturePlan);
+  if (obstacles.length === 0 || !object || typeof THREE.Box3 !== 'function') return false;
 
   try {
     const bounds = new THREE.Box3().setFromObject(object);
@@ -95,7 +95,8 @@ export function visualObjectIntersectsRoomColumnCut(
     if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
       return false;
     }
-    return !!intersectAxisAlignedBoxes({ minX, maxX, minY, maxY, minZ, maxZ }, obstacle);
+    const boundsBox = { minX, maxX, minY, maxY, minZ, maxZ };
+    return obstacles.some(obstacle => !!intersectAxisAlignedBoxes(boundsBox, obstacle));
   } catch {
     // Detached previews and lightweight tests may not expose full THREE bounds machinery.
     return false;

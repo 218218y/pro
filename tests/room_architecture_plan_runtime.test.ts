@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { AxisAlignedBox, RoomArchitectureConfigLike } from '../types/index.ts';
+import type { AxisAlignedBox, RoomArchitectureConfigLike, RoomColumnConfigLike } from '../types/index.ts';
 import { normalizeProjectRoomArchitecture } from '../esm/native/features/project_config/api.ts';
 import {
   ROOM_ARCHITECTURE_EPSILON_M,
@@ -10,6 +10,7 @@ import {
   intersectAxisAlignedBoxes,
   resolveHorizontalSpanAgainstRoomColumnCut,
   subtractAxisAlignedBox,
+  subtractAxisAlignedBoxes,
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import {
   createRoomArchitecturePlanFromBuildSnapshot,
@@ -25,19 +26,24 @@ function canonicalRoom(overrides: Record<string, unknown> = {}): RoomArchitectur
     backWall: { enabled: true, widthCm: 100, heightCm: 280, wardrobeOffsetLeftCm: 0 },
     leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
     rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-    column: {
-      enabled: false,
-      offsetLeftCm: 40,
-      widthCm: 20,
-      depthCm: 31,
-      heightCm: 100,
-      bottomOffsetCm: 50,
-    },
+    columns: [],
     openings: [],
     wallColor: '#f2efe6',
     surfacesHidden: false,
     ...overrides,
   });
+}
+
+function roomColumn(overrides: Partial<RoomColumnConfigLike> = {}): RoomColumnConfigLike {
+  return {
+    id: 'room-column-1',
+    offsetLeftCm: 40,
+    widthCm: 20,
+    depthCm: 31,
+    heightCm: 100,
+    bottomOffsetCm: 50,
+    ...overrides,
+  };
 }
 
 function planFor(config: RoomArchitectureConfigLike, dimensions = { width: 1, height: 2.4, depth: 0.6 }) {
@@ -98,14 +104,14 @@ test('room architecture plan disables side surfaces with the back wall and const
       backWall: { enabled: false, widthCm: 300, heightCm: 250, wardrobeOffsetLeftCm: 20 },
       leftWall: { enabled: true, depthCm: 250, heightCm: 250 },
       rightWall: { enabled: true, depthCm: 250, heightCm: 250 },
-      column: { enabled: true, offsetLeftCm: 40, widthCm: 20, depthCm: 20, heightCm: 100, bottomOffsetCm: 0 },
+      columns: [roomColumn({ offsetLeftCm: 40, widthCm: 20, depthCm: 20, heightCm: 100, bottomOffsetCm: 0 })],
     })
   );
   assert.equal(disabled.leftWall, null);
   assert.equal(disabled.rightWall, null);
-  assert.equal(disabled.column, null);
+  assert.deepEqual(disabled.columns, []);
   assert.deepEqual(disabled.wallSurfaces, { back: null, left: null, right: null });
-  assert.equal(disabled.columnAdjustment, null);
+  assert.deepEqual(disabled.columnAdjustments, []);
 });
 
 test('room architecture plan preserves current dimension fallback behavior for malformed non-positive inputs', () => {
@@ -135,14 +141,7 @@ test('build-snapshot adapter canonicalizes malformed openings before the pure pl
         backWall: { enabled: true, widthCm: 260, heightCm: 260, wardrobeOffsetLeftCm: 10 },
         leftWall: { enabled: true, depthCm: 220, heightCm: 240 },
         rightWall: { enabled: false, depthCm: 220, heightCm: 240 },
-        column: {
-          enabled: false,
-          offsetLeftCm: 10,
-          widthCm: 20,
-          depthCm: 20,
-          heightCm: 100,
-          bottomOffsetCm: 0,
-        },
+        columns: [],
         openings: [
           {
             id: 'bad-kind',
@@ -286,62 +285,106 @@ test('AABB intersection treats epsilon edge touch as empty and subtraction prese
   assert.deepEqual(subtractAxisAlignedBox(source, source), []);
 });
 
+test('multiple axis-aligned column cuts are subtracted sequentially without overlap or lost volume', () => {
+  const source: AxisAlignedBox = { minX: -1, maxX: 1, minY: 0, maxY: 1, minZ: 0, maxZ: 1 };
+  const obstacles: AxisAlignedBox[] = [
+    { minX: -0.8, maxX: -0.6, minY: 0, maxY: 1, minZ: 0, maxZ: 1 },
+    { minX: 0.3, maxX: 0.5, minY: 0, maxY: 1, minZ: 0, maxZ: 1 },
+  ];
+  const pieces = subtractAxisAlignedBoxes(source, obstacles);
+
+  assert.equal(pieces.length, 3);
+  assert.ok(
+    pieces.every(piece => obstacles.every(obstacle => intersectAxisAlignedBoxes(piece, obstacle) === null))
+  );
+  assertClose(
+    pieces.reduce((total, piece) => total + boxVolume(piece), 0),
+    boxVolume(source) - obstacles.reduce((total, obstacle) => total + boxVolume(obstacle), 0)
+  );
+});
+
+test('multiple columns preserve stable ids and produce independent cut adjustments', () => {
+  const plan = planFor(
+    canonicalRoom({
+      columns: [
+        roomColumn({
+          id: 'room-column-left',
+          offsetLeftCm: 10,
+          widthCm: 10,
+          heightCm: 220,
+          bottomOffsetCm: 0,
+        }),
+        roomColumn({
+          id: 'room-column-right',
+          offsetLeftCm: 70,
+          widthCm: 15,
+          heightCm: 180,
+          bottomOffsetCm: 20,
+        }),
+      ],
+    })
+  );
+
+  assert.deepEqual(
+    plan.columns.map(column => column.id),
+    ['room-column-left', 'room-column-right']
+  );
+  assert.deepEqual(
+    plan.columnAdjustments.map(adjustment => adjustment.columnId),
+    ['room-column-left', 'room-column-right']
+  );
+  assert.equal(plan.activeCutObstacles.length, 2);
+  assert.ok(
+    plan.columnAdjustments.every(adjustment =>
+      adjustment.linerPanels.every(panel => panel.columnId === adjustment.columnId)
+    )
+  );
+});
+
 test('column plan omits disabled/outside columns and resolves partial intrusions at wardrobe edges', () => {
   const disabled = planFor(canonicalRoom());
-  assert.equal(disabled.columnAdjustment, null);
-  assert.equal(disabled.activeCutObstacle, null);
+  assert.deepEqual(disabled.columnAdjustments, []);
+  assert.deepEqual(disabled.activeCutObstacles, []);
 
   const outside = planFor(
     canonicalRoom({
       backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 150 },
-      column: { enabled: true, offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 50 },
+      columns: [roomColumn({ offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 50 })],
     })
   );
-  assert.ok(outside.column);
-  assert.equal(outside.columnAdjustment, null);
+  assert.equal(outside.columns.length, 1);
+  assert.deepEqual(outside.columnAdjustments, []);
 
   const leftPartial = planFor(
     canonicalRoom({
       backWall: { enabled: true, widthCm: 120, heightCm: 280, wardrobeOffsetLeftCm: 20 },
-      column: { enabled: true, offsetLeftCm: 0, widthCm: 30, depthCm: 31, heightCm: 100, bottomOffsetCm: 50 },
+      columns: [roomColumn({ offsetLeftCm: 0, widthCm: 30, depthCm: 31, heightCm: 100, bottomOffsetCm: 50 })],
     })
   );
-  assert.ok(leftPartial.columnAdjustment);
-  assertClose(leftPartial.columnAdjustment?.intrusion.minX ?? Number.NaN, -0.5);
-  assertClose(leftPartial.columnAdjustment?.intrusion.maxX ?? Number.NaN, -0.4);
+  assert.ok(leftPartial.columnAdjustments[0]);
+  assertClose(leftPartial.columnAdjustments[0]?.intrusion.minX ?? Number.NaN, -0.5);
+  assertClose(leftPartial.columnAdjustments[0]?.intrusion.maxX ?? Number.NaN, -0.4);
 
   const rightPartial = planFor(
     canonicalRoom({
       backWall: { enabled: true, widthCm: 120, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-      column: {
-        enabled: true,
-        offsetLeftCm: 90,
-        widthCm: 30,
-        depthCm: 31,
-        heightCm: 100,
-        bottomOffsetCm: 50,
-      },
+      columns: [
+        roomColumn({ offsetLeftCm: 90, widthCm: 30, depthCm: 31, heightCm: 100, bottomOffsetCm: 50 }),
+      ],
     })
   );
-  assert.ok(rightPartial.columnAdjustment);
-  assertClose(rightPartial.columnAdjustment?.intrusion.minX ?? Number.NaN, 0.4);
-  assertClose(rightPartial.columnAdjustment?.intrusion.maxX ?? Number.NaN, 0.5);
+  assert.ok(rightPartial.columnAdjustments[0]);
+  assertClose(rightPartial.columnAdjustments[0]?.intrusion.minX ?? Number.NaN, 0.4);
+  assertClose(rightPartial.columnAdjustments[0]?.intrusion.maxX ?? Number.NaN, 0.5);
 });
 
 test('central column expands the cut for liner thickness and emits all five liner faces', () => {
   const plan = planFor(
     canonicalRoom({
-      column: {
-        enabled: true,
-        offsetLeftCm: 40,
-        widthCm: 20,
-        depthCm: 31,
-        heightCm: 100,
-        bottomOffsetCm: 50,
-      },
+      columns: [roomColumn()],
     })
   );
-  const adjustment = plan.columnAdjustment;
+  const adjustment = plan.columnAdjustments[0];
   assert.ok(adjustment);
   assert.deepEqual(
     adjustment?.linerPanels.map(panel => panel.face),
@@ -370,40 +413,37 @@ test('central column expands the cut for liner thickness and emits all five line
 });
 
 test('column liners respect enclosure edges at left/right/top/bottom and a full cut creates no liner volume', () => {
-  const faces = (column: RoomArchitectureConfigLike['column']) =>
-    planFor(canonicalRoom({ column })).columnAdjustment?.linerPanels.map(panel => panel.face) ?? [];
+  const faces = (column: RoomColumnConfigLike) =>
+    planFor(canonicalRoom({ columns: [column] })).columnAdjustments[0]?.linerPanels.map(
+      panel => panel.face
+    ) ?? [];
 
   assert.deepEqual(
-    faces({ enabled: true, offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 }),
+    faces(roomColumn({ offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 })),
     ['front', 'right', 'top']
   );
   assert.deepEqual(
-    faces({ enabled: true, offsetLeftCm: 80, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 }),
+    faces(roomColumn({ offsetLeftCm: 80, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 })),
     ['front', 'left', 'top']
   );
   assert.deepEqual(
-    faces({ enabled: true, offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 }),
+    faces(roomColumn({ offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 0 })),
     ['front', 'left', 'right', 'top']
   );
   assert.deepEqual(
-    faces({ enabled: true, offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 140 }),
+    faces(roomColumn({ offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 100, bottomOffsetCm: 140 })),
     ['front', 'left', 'right', 'bottom']
   );
 
   const full = planFor(
     canonicalRoom({
-      column: {
-        enabled: true,
-        offsetLeftCm: 0,
-        widthCm: 100,
-        depthCm: 100,
-        heightCm: 240,
-        bottomOffsetCm: 0,
-      },
+      columns: [
+        roomColumn({ offsetLeftCm: 0, widthCm: 100, depthCm: 100, heightCm: 240, bottomOffsetCm: 0 }),
+      ],
     })
   );
-  assert.deepEqual(full.columnAdjustment?.cutIntrusion, full.wardrobeBox);
-  assert.deepEqual(full.columnAdjustment?.linerPanels, []);
+  assert.deepEqual(full.columnAdjustments[0]?.cutIntrusion, full.wardrobeBox);
+  assert.deepEqual(full.columnAdjustments[0]?.linerPanels, []);
 });
 
 test('horizontal fitting span is unchanged without a column, clips at either edge, and is removed for central/full or too-short cuts', () => {
@@ -426,7 +466,7 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
 
   const left = planFor(
     canonicalRoom({
-      column: { enabled: true, offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 },
+      columns: [roomColumn({ offsetLeftCm: 0, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 })],
     })
   );
   const leftClipped = resolveHorizontalSpanAgainstRoomColumnCut(left, args);
@@ -437,7 +477,7 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
 
   const right = planFor(
     canonicalRoom({
-      column: { enabled: true, offsetLeftCm: 80, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 },
+      columns: [roomColumn({ offsetLeftCm: 80, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 })],
     })
   );
   const rightClipped = resolveHorizontalSpanAgainstRoomColumnCut(right, args);
@@ -448,25 +488,44 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
 
   const central = planFor(
     canonicalRoom({
-      column: { enabled: true, offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 },
+      columns: [roomColumn({ offsetLeftCm: 40, widthCm: 20, depthCm: 31, heightCm: 220, bottomOffsetCm: 0 })],
     })
   );
   assert.equal(resolveHorizontalSpanAgainstRoomColumnCut(central, args), null);
   assert.equal(resolveHorizontalSpanAgainstRoomColumnCut(left, { ...args, minUsableLength: 0.7 }), null);
+
+  const bothEdges = planFor(
+    canonicalRoom({
+      columns: [
+        roomColumn({
+          id: 'room-column-left',
+          offsetLeftCm: 0,
+          widthCm: 20,
+          heightCm: 220,
+          bottomOffsetCm: 0,
+        }),
+        roomColumn({
+          id: 'room-column-right',
+          offsetLeftCm: 80,
+          widthCm: 20,
+          heightCm: 220,
+          bottomOffsetCm: 0,
+        }),
+      ],
+    })
+  );
+  const bothClipped = resolveHorizontalSpanAgainstRoomColumnCut(bothEdges, args);
+  assert.ok(bothClipped);
+  assert.ok((bothClipped?.minX ?? -1) > -0.4);
+  assert.ok((bothClipped?.maxX ?? 1) < 0.4);
+  assertClose(bothClipped?.centerX ?? Number.NaN, 0);
 });
 
 test('room architecture plan is deterministic and deeply immutable', () => {
   const input = {
     config: canonicalRoom({
       leftWall: { enabled: true, depthCm: 250, heightCm: 250 },
-      column: {
-        enabled: true,
-        offsetLeftCm: 40,
-        widthCm: 20,
-        depthCm: 31,
-        heightCm: 100,
-        bottomOffsetCm: 50,
-      },
+      columns: [roomColumn()],
       openings: [
         {
           id: 'window',
@@ -493,6 +552,10 @@ test('room architecture plan is deterministic and deeply immutable', () => {
   assert.ok(Object.isFrozen(first.config.backWall));
   assert.ok(Object.isFrozen(first.resolvedOpenings));
   assert.ok(Object.isFrozen(first.resolvedOpenings[0]));
-  assert.ok(Object.isFrozen(first.columnAdjustment));
-  assert.ok(Object.isFrozen(first.columnAdjustment?.linerPanels));
+  assert.ok(Object.isFrozen(first.columns));
+  assert.ok(Object.isFrozen(first.columns[0]));
+  assert.ok(Object.isFrozen(first.columnAdjustments));
+  assert.ok(Object.isFrozen(first.columnAdjustments[0]));
+  assert.ok(Object.isFrozen(first.columnAdjustments[0]?.linerPanels));
+  assert.ok(Object.isFrozen(first.activeCutObstacles));
 });

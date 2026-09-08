@@ -949,14 +949,16 @@ function roomArchitectureForRodColumn(column: { offsetLeftCm: number; widthCm: n
     backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
     leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
     rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-    column: {
-      enabled: true,
-      offsetLeftCm: column.offsetLeftCm,
-      widthCm: column.widthCm,
-      depthCm: 20,
-      heightCm: 220,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: column.offsetLeftCm,
+        widthCm: column.widthCm,
+        depthCm: 20,
+        heightCm: 220,
+        bottomOffsetCm: 0,
+      },
+    ],
     wallColor: '#f2efe6',
     surfacesHidden: false,
   };

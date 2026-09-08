@@ -29,14 +29,7 @@ function createRootState(overrides: Record<string, unknown> = {}) {
         backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
         leftWall: { enabled: true, depthCm: 320, heightCm: 270 },
         rightWall: { enabled: false, depthCm: 280, heightCm: 260 },
-        column: {
-          enabled: false,
-          offsetLeftCm: 180,
-          widthCm: 30,
-          depthCm: 20,
-          heightCm: 280,
-          bottomOffsetCm: 0,
-        },
+        columns: [],
         openings: [],
         wallColor: '#e8e1d4',
         surfacesHidden: false,
@@ -282,6 +275,17 @@ test('room openings resolve against their host wall and scene rendering cuts the
       bottomOffsetCm: 0,
     },
   ];
+  (rootState.config as any).roomArchitecture.columns = [
+    { id: 'room-column-left', offsetLeftCm: 90, widthCm: 25, depthCm: 20, heightCm: 220, bottomOffsetCm: 0 },
+    {
+      id: 'room-column-right',
+      offsetLeftCm: 250,
+      widthCm: 30,
+      depthCm: 25,
+      heightCm: 180,
+      bottomOffsetCm: 40,
+    },
+  ];
   const App = createApp(rootState, roomGroup);
   const roomGeometry = createRoomArchitecturePlanFromApp(App);
   const backWindow = resolveRoomOpeningGeometry(
@@ -314,6 +318,9 @@ test('room openings resolve against their host wall and scene rendering cuts the
   const rightWallMesh = architecture.getObjectByName('wpRightWall');
   assert.ok(backWallMesh);
   assert.ok(rightWallMesh);
+  assert.ok(architecture.getObjectByName('wpWallColumn_room-column-left'));
+  assert.ok(architecture.getObjectByName('wpWallColumn_room-column-right'));
+  assert.equal(roomGeometry.columns.length, 2);
   assert.ok(backWallMesh.geometry instanceof FakeBufferGeometry);
   assert.ok(rightWallMesh.geometry instanceof FakeBufferGeometry);
   assert.ok(backWallMesh.geometry.attributes.position.array.length > 0);

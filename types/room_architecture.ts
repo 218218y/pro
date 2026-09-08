@@ -12,7 +12,7 @@ export interface RoomSideWallConfigLike {
 }
 
 export interface RoomColumnConfigLike {
-  enabled: boolean;
+  id: string;
   offsetLeftCm: number;
   widthCm: number;
   depthCm: number;
@@ -37,7 +37,7 @@ export interface RoomArchitectureConfigLike {
   backWall: RoomBackWallConfigLike;
   leftWall: RoomSideWallConfigLike;
   rightWall: RoomSideWallConfigLike;
-  column: RoomColumnConfigLike;
+  columns: RoomColumnConfigLike[];
   openings: RoomWallOpeningLike[];
   wallColor: string;
   surfacesHidden: boolean;
@@ -45,12 +45,12 @@ export interface RoomArchitectureConfigLike {
 
 export type RoomArchitecturePatch = Omit<
   Partial<RoomArchitectureConfigLike>,
-  'backWall' | 'leftWall' | 'rightWall' | 'column' | 'openings'
+  'backWall' | 'leftWall' | 'rightWall' | 'columns' | 'openings'
 > & {
   backWall?: Partial<RoomArchitectureConfigLike['backWall']>;
   leftWall?: Partial<RoomArchitectureConfigLike['leftWall']>;
   rightWall?: Partial<RoomArchitectureConfigLike['rightWall']>;
-  column?: Partial<RoomArchitectureConfigLike['column']>;
+  columns?: RoomColumnConfigLike[];
   openings?: RoomWallOpeningLike[];
 };
 
@@ -66,17 +66,29 @@ export interface AxisAlignedBox {
 export type RoomColumnLinerFace = 'left' | 'right' | 'top' | 'bottom' | 'front';
 
 export interface RoomColumnLinerPanel {
+  columnId: string;
   face: RoomColumnLinerFace;
   box: AxisAlignedBox;
 }
 
 export interface RoomColumnAdjustmentGeometry {
+  columnId: string;
   wardrobeBox: AxisAlignedBox;
   obstacle: AxisAlignedBox;
   intrusion: AxisAlignedBox;
   cutObstacle: AxisAlignedBox;
   cutIntrusion: AxisAlignedBox;
   linerPanels: readonly RoomColumnLinerPanel[];
+}
+
+export interface RoomArchitectureColumnGeometry extends AxisAlignedBox {
+  id: string;
+  centerX: number;
+  centerY: number;
+  centerZ: number;
+  width: number;
+  height: number;
+  depth: number;
 }
 
 export interface RoomArchitectureWallGeometry extends AxisAlignedBox {
@@ -127,16 +139,7 @@ export interface RoomArchitectureGeometry {
   wall: RoomArchitectureWallGeometry;
   leftWall: RoomArchitectureWallGeometry | null;
   rightWall: RoomArchitectureWallGeometry | null;
-  column:
-    | (AxisAlignedBox & {
-        centerX: number;
-        centerY: number;
-        centerZ: number;
-        width: number;
-        height: number;
-        depth: number;
-      })
-    | null;
+  columns: readonly RoomArchitectureColumnGeometry[];
 }
 
 export interface RoomArchitecturePlanInput {
@@ -150,8 +153,8 @@ export interface RoomArchitecturePlan extends RoomArchitectureGeometry {
   wardrobeBox: AxisAlignedBox;
   wallSurfaces: Readonly<Record<RoomWallId, RoomWallSurfaceGeometry | null>>;
   resolvedOpenings: readonly ResolvedRoomOpeningGeometry[];
-  columnAdjustment: RoomColumnAdjustmentGeometry | null;
-  activeCutObstacle: AxisAlignedBox | null;
+  columnAdjustments: readonly RoomColumnAdjustmentGeometry[];
+  activeCutObstacles: readonly AxisAlignedBox[];
 }
 
 export interface RoomColumnAdjustedHorizontalSpan {

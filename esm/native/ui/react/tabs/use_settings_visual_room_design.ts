@@ -44,8 +44,10 @@ export type SettingsVisualRoomDesignModel = {
   setSideWallDimension: (side: 'leftWall' | 'rightWall', key: 'depthCm' | 'heightCm', value: number) => void;
   setWardrobeOffsetRightCm: (value: number) => void;
   alignWardrobeOnWall: (mode: 'left' | 'center' | 'right') => void;
-  setColumnEnabled: (enabled: boolean) => void;
+  addColumn: () => void;
+  removeColumn: (columnId: string) => void;
   setColumnDimension: (
+    columnId: string,
     key: 'offsetLeftCm' | 'widthCm' | 'depthCm' | 'heightCm' | 'bottomOffsetCm',
     value: number
   ) => void;
@@ -122,7 +124,8 @@ export function useSettingsVisualRoomDesign(
       setSideWallDimension: roomDesignController.setSideWallDimension,
       setWardrobeOffsetRightCm: roomDesignController.setWardrobeOffsetRightCm,
       alignWardrobeOnWall: roomDesignController.alignWardrobeOnWall,
-      setColumnEnabled: roomDesignController.setColumnEnabled,
+      addColumn: roomDesignController.addColumn,
+      removeColumn: roomDesignController.removeColumn,
       setColumnDimension: roomDesignController.setColumnDimension,
       toggleArchitectureVisibility: roomDesignController.toggleArchitectureVisibility,
       beginOpeningPlacement: roomDesignController.beginOpeningPlacement,
@@ -146,7 +149,8 @@ export function useSettingsVisualRoomDesign(
       roomDesignController.setSideWallDimension,
       roomDesignController.setWardrobeOffsetRightCm,
       roomDesignController.alignWardrobeOnWall,
-      roomDesignController.setColumnEnabled,
+      roomDesignController.addColumn,
+      roomDesignController.removeColumn,
       roomDesignController.setColumnDimension,
       roomDesignController.toggleArchitectureVisibility,
       roomDesignController.beginOpeningPlacement,

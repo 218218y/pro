@@ -47,7 +47,7 @@ function createHarness() {
         backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 0 },
         leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
         rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
-        column: { enabled: false },
+        columns: [],
         openings: [],
         wallColor: '#ffffff',
         surfacesHidden: false,

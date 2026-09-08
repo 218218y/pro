@@ -73,14 +73,16 @@ test('room column cuts carcass boards into real geometry around the obstacle', (
           config: {
             roomArchitecture: {
               backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-              column: {
-                enabled: true,
-                offsetLeftCm: 140,
-                widthCm: 30,
-                depthCm: 20,
-                heightCm: 240,
-                bottomOffsetCm: 0,
-              },
+              columns: [
+                {
+                  id: 'room-column-1',
+                  offsetLeftCm: 140,
+                  widthCm: 30,
+                  depthCm: 20,
+                  heightCm: 240,
+                  bottomOffsetCm: 0,
+                },
+              ],
               surfacesHidden: true,
             },
           },
@@ -150,14 +152,16 @@ test('room column cuts plinth and leg platforms instead of leaving base boards t
           config: {
             roomArchitecture: {
               backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-              column: {
-                enabled: true,
-                offsetLeftCm: 140,
-                widthCm: 30,
-                depthCm: 20,
-                heightCm: 240,
-                bottomOffsetCm: 0,
-              },
+              columns: [
+                {
+                  id: 'room-column-1',
+                  offsetLeftCm: 140,
+                  widthCm: 30,
+                  depthCm: 20,
+                  heightCm: 240,
+                  bottomOffsetCm: 0,
+                },
+              ],
               surfacesHidden: false,
             },
           },
@@ -235,14 +239,16 @@ test('room column suppresses only legs that physically collide with the column c
           config: {
             roomArchitecture: {
               backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-              column: {
-                enabled: true,
-                offsetLeftCm: 140,
-                widthCm: 30,
-                depthCm: 20,
-                heightCm: 240,
-                bottomOffsetCm: 0,
-              },
+              columns: [
+                {
+                  id: 'room-column-1',
+                  offsetLeftCm: 140,
+                  widthCm: 30,
+                  depthCm: 20,
+                  heightCm: 240,
+                  bottomOffsetCm: 0,
+                },
+              ],
               surfacesHidden: false,
             },
           },
@@ -309,14 +315,16 @@ test('room column liners cover every exposed notch face with the white masonite 
           config: {
             roomArchitecture: {
               backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-              column: {
-                enabled: true,
-                offsetLeftCm: 140,
-                widthCm: 30,
-                depthCm: 20,
-                heightCm: 120,
-                bottomOffsetCm: 40,
-              },
+              columns: [
+                {
+                  id: 'room-column-1',
+                  offsetLeftCm: 140,
+                  widthCm: 30,
+                  depthCm: 20,
+                  heightCm: 120,
+                  bottomOffsetCm: 40,
+                },
+              ],
               surfacesHidden: true,
             },
           },

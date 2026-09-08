@@ -26,17 +26,18 @@ export const DEFAULT_ROOM_ARCHITECTURE: Readonly<RoomArchitectureConfigLike> = O
     depthCm: 300,
     heightCm: 280,
   }),
-  column: Object.freeze({
-    enabled: false,
-    offsetLeftCm: 180,
-    widthCm: 30,
-    depthCm: 20,
-    heightCm: 280,
-    bottomOffsetCm: 0,
-  }),
+  columns: Object.freeze([]) as unknown as RoomArchitectureConfigLike['columns'],
   openings: Object.freeze([]) as unknown as RoomWallOpeningLike[],
   wallColor: DEFAULT_ROOM_ARCHITECTURE_WALL_COLOR,
   surfacesHidden: false,
+});
+
+const DEFAULT_ROOM_COLUMN = Object.freeze({
+  offsetLeftCm: 180,
+  widthCm: 30,
+  depthCm: 20,
+  heightCm: 280,
+  bottomOffsetCm: 0,
 });
 
 function asRecord(value: unknown): UnknownRecord | null {
@@ -110,10 +111,56 @@ function normalizeRoomOpenings(value: unknown): RoomWallOpeningLike[] {
   return out;
 }
 
+function normalizeRoomColumns(args: {
+  root: UnknownRecord;
+  wallWidthCm: number;
+  wallHeightCm: number;
+}): RoomArchitectureConfigLike['columns'] {
+  const { root, wallWidthCm, wallHeightCm } = args;
+  const rawColumns: unknown[] = Array.isArray(root.columns) ? (root.columns as unknown[]) : [];
+  const out: RoomArchitectureConfigLike['columns'] = [];
+  const seen = new Set<string>();
+
+  for (let i = 0; i < rawColumns.length; i += 1) {
+    const raw = asRecord(rawColumns[i]);
+    if (!raw) continue;
+    const widthCm = roundCm(clamp(finiteNumber(raw.widthCm, DEFAULT_ROOM_COLUMN.widthCm), 1, wallWidthCm));
+    const offsetLeftCm = roundCm(
+      clamp(
+        finiteNumber(raw.offsetLeftCm, DEFAULT_ROOM_COLUMN.offsetLeftCm),
+        0,
+        Math.max(0, wallWidthCm - widthCm)
+      )
+    );
+    const bottomOffsetCm = roundCm(
+      clamp(finiteNumber(raw.bottomOffsetCm, DEFAULT_ROOM_COLUMN.bottomOffsetCm), 0, wallHeightCm - 1)
+    );
+    const heightCm = roundCm(
+      clamp(
+        finiteNumber(raw.heightCm, DEFAULT_ROOM_COLUMN.heightCm),
+        1,
+        Math.max(1, wallHeightCm - bottomOffsetCm)
+      )
+    );
+    const depthCm = roundCm(clamp(finiteNumber(raw.depthCm, DEFAULT_ROOM_COLUMN.depthCm), 1, 300));
+    const rawId = typeof raw.id === 'string' ? raw.id.trim() : '';
+    const baseId = rawId || `room-column-${i + 1}`;
+    let id = baseId;
+    let suffix = 2;
+    while (seen.has(id)) {
+      id = `${baseId}-${suffix}`;
+      suffix += 1;
+    }
+    seen.add(id);
+    out.push({ id, offsetLeftCm, widthCm, depthCm, heightCm, bottomOffsetCm });
+  }
+
+  return out;
+}
+
 export function normalizeRoomArchitecture(value: unknown): RoomArchitectureConfigLike {
   const root = asRecord(value) || {};
   const wallRaw = asRecord(root.backWall) || {};
-  const columnRaw = asRecord(root.column) || {};
   const defaults = DEFAULT_ROOM_ARCHITECTURE;
 
   const wallWidthCm = roundCm(clamp(finiteNumber(wallRaw.widthCm, defaults.backWall.widthCm), 50, 2000));
@@ -121,28 +168,6 @@ export function normalizeRoomArchitecture(value: unknown): RoomArchitectureConfi
   const wardrobeOffsetLeftCm = roundCm(
     clamp(finiteNumber(wallRaw.wardrobeOffsetLeftCm, defaults.backWall.wardrobeOffsetLeftCm), 0, wallWidthCm)
   );
-
-  const columnWidthCm = roundCm(
-    clamp(finiteNumber(columnRaw.widthCm, defaults.column.widthCm), 1, wallWidthCm)
-  );
-  const columnOffsetLeftCm = roundCm(
-    clamp(
-      finiteNumber(columnRaw.offsetLeftCm, defaults.column.offsetLeftCm),
-      0,
-      Math.max(0, wallWidthCm - columnWidthCm)
-    )
-  );
-  const bottomOffsetCm = roundCm(
-    clamp(finiteNumber(columnRaw.bottomOffsetCm, defaults.column.bottomOffsetCm), 0, wallHeightCm - 1)
-  );
-  const columnHeightCm = roundCm(
-    clamp(
-      finiteNumber(columnRaw.heightCm, defaults.column.heightCm),
-      1,
-      Math.max(1, wallHeightCm - bottomOffsetCm)
-    )
-  );
-  const columnDepthCm = roundCm(clamp(finiteNumber(columnRaw.depthCm, defaults.column.depthCm), 1, 300));
 
   return {
     backWall: {
@@ -153,14 +178,7 @@ export function normalizeRoomArchitecture(value: unknown): RoomArchitectureConfi
     },
     leftWall: normalizeSideWall(root.leftWall, defaults.leftWall),
     rightWall: normalizeSideWall(root.rightWall, defaults.rightWall),
-    column: {
-      enabled: columnRaw.enabled === true,
-      offsetLeftCm: columnOffsetLeftCm,
-      widthCm: columnWidthCm,
-      depthCm: columnDepthCm,
-      heightCm: columnHeightCm,
-      bottomOffsetCm,
-    },
+    columns: normalizeRoomColumns({ root, wallWidthCm, wallHeightCm }),
     openings: normalizeRoomOpenings(root.openings),
     wallColor: normalizeWallColor(root.wallColor, defaults.wallColor),
     surfacesHidden: root.surfacesHidden === true,
@@ -178,7 +196,7 @@ export function patchRoomArchitecture(
     backWall: { ...base.backWall, ...patch.backWall },
     leftWall: { ...base.leftWall, ...patch.leftWall },
     rightWall: { ...base.rightWall, ...patch.rightWall },
-    column: { ...base.column, ...patch.column },
+    columns: patch.columns ?? base.columns,
     openings: patch.openings ?? base.openings,
   });
 }

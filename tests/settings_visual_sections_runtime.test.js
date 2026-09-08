@@ -16,7 +16,10 @@ const roomArchitectureModel = {
     backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
     leftWall: { enabled: true, depthCm: 320, heightCm: 270 },
     rightWall: { enabled: true, depthCm: 280, heightCm: 260 },
-    column: { enabled: true, offsetLeftCm: 180, widthCm: 30, depthCm: 20, heightCm: 260, bottomOffsetCm: 20 },
+    columns: [
+      { id: 'room-column-1', offsetLeftCm: 80, widthCm: 30, depthCm: 20, heightCm: 260, bottomOffsetCm: 20 },
+      { id: 'room-column-2', offsetLeftCm: 220, widthCm: 40, depthCm: 35, heightCm: 180, bottomOffsetCm: 0 },
+    ],
     openings: [],
     wallColor: '#f2efe6',
     surfacesHidden: false,
@@ -31,7 +34,8 @@ const roomArchitectureModel = {
   setArchitectureWallColor: noop,
   setWardrobeOffsetRightCm: noop,
   alignWardrobeOnWall: noop,
-  setColumnEnabled: noop,
+  addColumn: noop,
+  removeColumn: noop,
   setColumnDimension: noop,
   beginOpeningPlacement: () => true,
   removeOpening: noop,
@@ -103,14 +107,20 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(architectureHtml, /הוספת קירות/);
   assert.match(architectureHtml, /קיר צד שמאל/);
   assert.match(architectureHtml, /קיר צד ימין/);
-  assert.match(architectureHtml, /עמוד בולט מהקיר/);
+  assert.match(architectureHtml, /עמודים בולטים מהקיר/);
+  assert.match(architectureHtml, /עמוד 1/);
+  assert.match(architectureHtml, /עמוד 2/);
+  assert.match(architectureHtml, /settings-room-column-1-remove/);
+  assert.match(architectureHtml, /settings-room-column-2-remove/);
+  assert.match(architectureHtml, /settings-room-column-add/);
+  assert.match(architectureHtml, /הוסף עמוד נוסף/);
   assert.match(architectureHtml, /חלונות ודלתות/);
   assert.match(architectureHtml, /settings-room-opening-window/);
   assert.match(architectureHtml, /settings-room-opening-door/);
   assert.doesNotMatch(architectureHtml, /מקם חלון על קיר/);
   assert.doesNotMatch(architectureHtml, /מקם דלת על קיר/);
   assert.doesNotMatch(architectureHtml, /ביטול מיקום/);
-  assert.match(architectureHtml, /הסתר קירות ועמוד/);
+  assert.match(architectureHtml, /הסתר קירות ועמודים/);
   assert.match(
     architectureHtml,
     /<button[^>]*data-testid="settings-room-architecture-visibility"[^>]*aria-pressed="false"[^>]*class="[^"]*type-option[^"]*"/
@@ -127,8 +137,8 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
     hiddenArchitectureHtml,
     /<button[^>]*data-testid="settings-room-architecture-visibility"[^>]*aria-pressed="true"[^>]*class="[^"]*selected active[^"]*"/
   );
-  assert.match(hiddenArchitectureHtml, />הסתר קירות ועמוד<\/button>/);
-  assert.equal(countMatches(architectureHtml, /step="5"/g), 15);
+  assert.match(hiddenArchitectureHtml, />הסתר קירות ועמודים<\/button>/);
+  assert.equal(countMatches(architectureHtml, /step="5"/g), 20);
   assert.doesNotMatch(architectureHtml, /step="0\.1"/);
   const wallWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-wall-width"[^>]*>/)?.[0] || '';
   const leftOffsetInput =
@@ -139,10 +149,13 @@ test('[settings-visual-sections-runtime] room section renders canonical room-des
   assert.match(wallWidthInput, /min="240"/);
   assert.match(leftOffsetInput, /max="160"/);
   assert.match(rightOffsetInput, /max="160"/);
-  const columnWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-column-width"[^>]*>/)?.[0] || '';
+  const columnWidthInput = architectureHtml.match(/<input[^>]*id="wp-room-column-1-width"[^>]*>/)?.[0] || '';
+  const secondColumnDepthInput =
+    architectureHtml.match(/<input[^>]*id="wp-room-column-2-depth"[^>]*>/)?.[0] || '';
   assert.match(columnWidthInput, /aria-valuemin="1"/);
   assert.match(columnWidthInput, /step="5"/);
   assert.doesNotMatch(columnWidthInput, /\smin="1"/);
+  assert.match(secondColumnDepthInput, /value="35"/);
   assert.match(roomHtml, /פרקט/);
   assert.match(roomHtml, /אריחים/);
   assert.match(roomHtml, /צבע הקירות/);

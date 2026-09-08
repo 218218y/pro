@@ -61,14 +61,16 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
       backWall: { enabled: true, widthCm: 520, heightCm: 290, wardrobeOffsetLeftCm: 35 },
       leftWall: { enabled: true, depthCm: 340, heightCm: 285 },
       rightWall: { enabled: true, depthCm: 360, heightCm: 290 },
-      column: {
-        enabled: true,
-        offsetLeftCm: 210,
-        widthCm: 42,
-        depthCm: 28,
-        heightCm: 250,
-        bottomOffsetCm: 15,
-      },
+      columns: [
+        {
+          id: 'room-column-1',
+          offsetLeftCm: 210,
+          widthCm: 42,
+          depthCm: 28,
+          heightCm: 250,
+          bottomOffsetCm: 15,
+        },
+      ],
       openings: [
         {
           id: 'room-window-1',
@@ -172,14 +174,14 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   );
   assert.equal(snapshot.roomArchitecture.backWall.widthCm, 520);
   assert.equal(snapshot.roomArchitecture.rightWall.enabled, true);
-  assert.equal(snapshot.roomArchitecture.column.depthCm, 28);
+  assert.equal(snapshot.roomArchitecture.columns[0]?.depthCm, 28);
   assert.equal(snapshot.roomArchitecture.openings[0].wall, 'right');
   assert.equal(snapshot.modulesConfiguration[2].sketchExtras.boxes[0].placementWall, 'right');
 
   const restoredConfig = buildProjectConfigSnapshot(snapshot);
   assert.equal(restoredConfig.roomArchitecture?.backWall.widthCm, 520);
   assert.equal(restoredConfig.roomArchitecture?.rightWall.depthCm, 360);
-  assert.equal(restoredConfig.roomArchitecture?.column.enabled, true);
+  assert.equal(restoredConfig.roomArchitecture?.columns[0]?.id, 'room-column-1');
   assert.equal(restoredConfig.roomArchitecture?.openings[0]?.id, 'room-window-1');
   assert.equal(
     (restoredConfig.modulesConfiguration?.[2] as Record<string, any>)?.sketchExtras?.boxes?.[0]
@@ -455,10 +457,10 @@ test('kernel project capture payload preserves exact persisted key order and ser
   }
 
   const serialized = JSON.stringify(payload);
-  assert.equal(serialized.length, 2436);
+  assert.equal(serialized.length, 2343);
   assert.equal(
     createHash('sha256').update(serialized).digest('hex'),
-    'cb8f81c8bbedf6a5fe32c01daf870a11940b384e588a168ee87e8a46bb5a824b'
+    '4e0df364114c56cee6c165797f749b19f607ec3ff5128f8b32942c2457be7672'
   );
 });
 

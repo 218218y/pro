@@ -95,14 +95,13 @@ type RoomColumnArchitectureLike = {
     heightCm: number;
     wardrobeOffsetLeftCm: number;
   };
-  column: {
-    enabled: true;
+  columns: Array<{
     offsetLeftCm: number;
     widthCm: number;
     depthCm: number;
     heightCm: number;
     bottomOffsetCm: number;
-  };
+  }>;
   surfacesHidden: boolean;
 };
 
@@ -137,29 +136,35 @@ function boxesOverlap(a: DrawerCollisionBox, b: DrawerCollisionBox): boolean {
 function readRoomArchitecture(value: unknown): RoomColumnArchitectureLike | null {
   const root = asRecord(value);
   const backWall = asRecord(root?.backWall);
-  const column = asRecord(root?.column);
-  if (!backWall || !column || backWall.enabled !== true || column.enabled !== true) return null;
+  const rawColumns = Array.isArray(root?.columns) ? root.columns : [];
+  if (!backWall || backWall.enabled !== true || rawColumns.length === 0) return null;
 
   const wallWidthCm = readPositiveNumber(backWall.widthCm);
   const wallHeightCm = readPositiveNumber(backWall.heightCm);
   const wardrobeOffsetLeftCm = readFiniteNumber(backWall.wardrobeOffsetLeftCm);
-  const offsetLeftCm = readFiniteNumber(column.offsetLeftCm);
-  const widthCm = readPositiveNumber(column.widthCm);
-  const depthCm = readPositiveNumber(column.depthCm);
-  const heightCm = readPositiveNumber(column.heightCm);
-  const bottomOffsetCm = readFiniteNumber(column.bottomOffsetCm);
-  if (
-    wallWidthCm == null ||
-    wallHeightCm == null ||
-    wardrobeOffsetLeftCm == null ||
-    offsetLeftCm == null ||
-    widthCm == null ||
-    depthCm == null ||
-    heightCm == null ||
-    bottomOffsetCm == null
-  ) {
-    return null;
+  if (wallWidthCm == null || wallHeightCm == null || wardrobeOffsetLeftCm == null) return null;
+
+  const columns: RoomColumnArchitectureLike['columns'] = [];
+  for (const entry of rawColumns) {
+    const column = asRecord(entry);
+    if (!column) continue;
+    const offsetLeftCm = readFiniteNumber(column.offsetLeftCm);
+    const widthCm = readPositiveNumber(column.widthCm);
+    const depthCm = readPositiveNumber(column.depthCm);
+    const heightCm = readPositiveNumber(column.heightCm);
+    const bottomOffsetCm = readFiniteNumber(column.bottomOffsetCm);
+    if (
+      offsetLeftCm == null ||
+      widthCm == null ||
+      depthCm == null ||
+      heightCm == null ||
+      bottomOffsetCm == null
+    ) {
+      continue;
+    }
+    columns.push({ offsetLeftCm, widthCm, depthCm, heightCm, bottomOffsetCm });
   }
+  if (columns.length === 0) return null;
 
   return {
     backWall: {
@@ -168,14 +173,7 @@ function readRoomArchitecture(value: unknown): RoomColumnArchitectureLike | null
       heightCm: wallHeightCm,
       wardrobeOffsetLeftCm,
     },
-    column: {
-      enabled: true,
-      offsetLeftCm,
-      widthCm,
-      depthCm,
-      heightCm,
-      bottomOffsetCm,
-    },
+    columns,
     surfacesHidden: root?.surfacesHidden === true,
   };
 }
@@ -204,28 +202,17 @@ function readWardrobeDimensionM(
   return fallbackM > 0 ? fallbackM : null;
 }
 
-function resolveRoomColumnCutContext(
-  App: AppContainer,
-  roomArchitecture: unknown
-): RoomColumnCutContext | null {
+function resolveRoomColumnCutContexts(App: AppContainer, roomArchitecture: unknown): RoomColumnCutContext[] {
   const architecture = readRoomArchitecture(roomArchitecture);
-  if (!architecture) return null;
+  if (!architecture) return [];
 
   const wardrobeWidthM = readWardrobeDimensionM(App, 'wardrobeWidthM', 'width', 2.4);
   const wardrobeHeightM = readWardrobeDimensionM(App, 'wardrobeHeightM', 'height', 2.4);
   const wardrobeDepthM = readWardrobeDimensionM(App, 'wardrobeDepthM', 'depth', 0.6);
-  if (wardrobeWidthM == null || wardrobeHeightM == null || wardrobeDepthM == null) return null;
+  if (wardrobeWidthM == null || wardrobeHeightM == null || wardrobeDepthM == null) return [];
 
   const wallLeftX = -wardrobeWidthM / 2 - architecture.backWall.wardrobeOffsetLeftCm / 100;
   const wallFrontZ = -wardrobeDepthM / 2 - ROOM_COLUMN_BACK_WALL_GAP_M;
-  const obstacle: DrawerCollisionBox = {
-    minX: wallLeftX + architecture.column.offsetLeftCm / 100,
-    maxX: wallLeftX + (architecture.column.offsetLeftCm + architecture.column.widthCm) / 100,
-    minY: architecture.column.bottomOffsetCm / 100,
-    maxY: (architecture.column.bottomOffsetCm + architecture.column.heightCm) / 100,
-    minZ: wallFrontZ,
-    maxZ: wallFrontZ + architecture.column.depthCm / 100,
-  };
   const wardrobe: DrawerCollisionBox = {
     minX: -wardrobeWidthM / 2,
     maxX: wardrobeWidthM / 2,
@@ -234,34 +221,45 @@ function resolveRoomColumnCutContext(
     minZ: -wardrobeDepthM / 2,
     maxZ: wardrobeDepthM / 2,
   };
-  if (!boxesOverlap(obstacle, wardrobe)) return null;
-
-  return {
-    wardrobe,
-    cutObstacle: {
-      minX:
-        obstacle.minX > wardrobe.minX + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-          ? obstacle.minX - ROOM_COLUMN_LINER_THICKNESS_M
-          : obstacle.minX,
-      maxX:
-        obstacle.maxX < wardrobe.maxX - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-          ? obstacle.maxX + ROOM_COLUMN_LINER_THICKNESS_M
-          : obstacle.maxX,
-      minY:
-        obstacle.minY > wardrobe.minY + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-          ? obstacle.minY - ROOM_COLUMN_LINER_THICKNESS_M
-          : obstacle.minY,
-      maxY:
-        obstacle.maxY < wardrobe.maxY - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-          ? obstacle.maxY + ROOM_COLUMN_LINER_THICKNESS_M
-          : obstacle.maxY,
-      minZ: obstacle.minZ,
-      maxZ:
-        obstacle.maxZ < wardrobe.maxZ - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
-          ? obstacle.maxZ + ROOM_COLUMN_LINER_THICKNESS_M
-          : obstacle.maxZ,
-    },
-  };
+  const contexts: RoomColumnCutContext[] = [];
+  for (const column of architecture.columns) {
+    const obstacle: DrawerCollisionBox = {
+      minX: wallLeftX + column.offsetLeftCm / 100,
+      maxX: wallLeftX + (column.offsetLeftCm + column.widthCm) / 100,
+      minY: column.bottomOffsetCm / 100,
+      maxY: (column.bottomOffsetCm + column.heightCm) / 100,
+      minZ: wallFrontZ,
+      maxZ: wallFrontZ + column.depthCm / 100,
+    };
+    if (!boxesOverlap(obstacle, wardrobe)) continue;
+    contexts.push({
+      wardrobe,
+      cutObstacle: {
+        minX:
+          obstacle.minX > wardrobe.minX + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+            ? obstacle.minX - ROOM_COLUMN_LINER_THICKNESS_M
+            : obstacle.minX,
+        maxX:
+          obstacle.maxX < wardrobe.maxX - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+            ? obstacle.maxX + ROOM_COLUMN_LINER_THICKNESS_M
+            : obstacle.maxX,
+        minY:
+          obstacle.minY > wardrobe.minY + ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+            ? obstacle.minY - ROOM_COLUMN_LINER_THICKNESS_M
+            : obstacle.minY,
+        maxY:
+          obstacle.maxY < wardrobe.maxY - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+            ? obstacle.maxY + ROOM_COLUMN_LINER_THICKNESS_M
+            : obstacle.maxY,
+        minZ: obstacle.minZ,
+        maxZ:
+          obstacle.maxZ < wardrobe.maxZ - ROOM_COLUMN_DRAWER_COLLISION_EPSILON_M
+            ? obstacle.maxZ + ROOM_COLUMN_LINER_THICKNESS_M
+            : obstacle.maxZ,
+      },
+    });
+  }
+  return contexts;
 }
 
 /**
@@ -275,8 +273,8 @@ export function shouldBlockDrawerBuildForRoomColumn(args: {
   isBottomStack: boolean;
 }): boolean {
   if (args.moduleKey == null) return false;
-  const roomColumn = resolveRoomColumnCutContext(args.App, args.roomArchitecture);
-  if (!roomColumn) return false;
+  const roomColumns = resolveRoomColumnCutContexts(args.App, args.roomArchitecture);
+  if (roomColumns.length === 0) return false;
 
   const grid = getInternalGridMap(args.App, args.isBottomStack);
   const info = asInternalGridInfo(grid[String(args.moduleKey)] ?? grid[args.moduleKey as keyof typeof grid]);
@@ -306,7 +304,7 @@ export function shouldBlockDrawerBuildForRoomColumn(args: {
     minZ: internalZ - internalDepth / 2,
     maxZ: internalZ + internalDepth / 2,
   };
-  return boxesOverlap(roomColumn.cutObstacle, cell);
+  return roomColumns.some(roomColumn => boxesOverlap(roomColumn.cutObstacle, cell));
 }
 
 /**
@@ -319,8 +317,8 @@ export function shouldBlockFreeBoxDrawerBuildForRoomColumn(args: {
   roomArchitecture: unknown;
   box: unknown;
 }): boolean {
-  const roomColumn = resolveRoomColumnCutContext(args.App, args.roomArchitecture);
-  if (!roomColumn) return false;
+  const roomColumns = resolveRoomColumnCutContexts(args.App, args.roomArchitecture);
+  if (roomColumns.length === 0) return false;
 
   const box = asRecord(args.box);
   if (!box || box.freePlacement !== true) return false;
@@ -334,12 +332,12 @@ export function shouldBlockFreeBoxDrawerBuildForRoomColumn(args: {
   const measuredWidth = readPositiveNumber(wardrobeBox?.width);
   const measuredDepth = readPositiveNumber(wardrobeBox?.depth);
   const measuredCenterZ = readFiniteNumber(wardrobeBox?.centerZ);
-  const wardrobeWidth = measuredWidth ?? roomColumn.wardrobe.maxX - roomColumn.wardrobe.minX;
-  const wardrobeDepth = measuredDepth ?? roomColumn.wardrobe.maxZ - roomColumn.wardrobe.minZ;
+  const wardrobe = roomColumns[0]?.wardrobe;
+  if (!wardrobe) return false;
+  const wardrobeWidth = measuredWidth ?? wardrobe.maxX - wardrobe.minX;
+  const wardrobeDepth = measuredDepth ?? wardrobe.maxZ - wardrobe.minZ;
   const wardrobeBackZ =
-    measuredDepth != null && measuredCenterZ != null
-      ? measuredCenterZ - measuredDepth / 2
-      : roomColumn.wardrobe.minZ;
+    measuredDepth != null && measuredCenterZ != null ? measuredCenterZ - measuredDepth / 2 : wardrobe.minZ;
 
   const geometry = resolveSketchFreeBoxGeometry({
     wardrobeWidth,
@@ -357,5 +355,5 @@ export function shouldBlockFreeBoxDrawerBuildForRoomColumn(args: {
     minZ: geometry.centerZ - geometry.outerD / 2,
     maxZ: geometry.centerZ + geometry.outerD / 2,
   };
-  return boxesOverlap(roomColumn.cutObstacle, freeBox);
+  return roomColumns.some(roomColumn => boxesOverlap(roomColumn.cutObstacle, freeBox));
 }

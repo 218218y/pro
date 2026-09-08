@@ -2,7 +2,7 @@ import type { CorniceProfileSegment, CorniceWaveSideSegment } from './carcass_co
 import {
   ROOM_ARCHITECTURE_EPSILON_M,
   intersectAxisAlignedBoxes,
-  resolveActiveRoomColumnCutObstacle,
+  resolveActiveRoomColumnCutObstacles,
 } from './room_architecture_geometry.js';
 import type { AxisAlignedBox } from '../../../types';
 import type { CorniceOp, CorniceSegment, RenderCarcassRuntime } from './render_carcass_ops_shared.js';
@@ -116,11 +116,27 @@ export function resolveCorniceSegmentsAgainstRoomColumnCut(
   seg: CorniceSegment,
   runtime: Pick<RenderCarcassRuntime, 'roomArchitecturePlan'>
 ): CorniceSegment[] {
-  const obstacle = resolveActiveRoomColumnCutObstacle(runtime.roomArchitecturePlan);
-  if (!obstacle) return [seg];
+  const obstacles = resolveActiveRoomColumnCutObstacles(runtime.roomArchitecturePlan);
+  if (obstacles.length === 0) return [seg];
 
-  if (seg.kind === 'cornice_wave_side') return trimWaveSideAgainstObstacle(seg, obstacle);
-  if (seg.kind === 'cornice_profile_seg') return trimProfileSideAgainstObstacle(seg, obstacle);
+  if (seg.kind === 'cornice_wave_side') {
+    let segments: CorniceWaveSideSegment[] = [seg];
+    for (const obstacle of obstacles) {
+      segments = segments.flatMap(entry => trimWaveSideAgainstObstacle(entry, obstacle));
+      if (segments.length === 0) break;
+    }
+    return segments;
+  }
+
+  if (seg.kind === 'cornice_profile_seg') {
+    let segments: CorniceProfileSegment[] = [seg];
+    for (const obstacle of obstacles) {
+      segments = segments.flatMap(entry => trimProfileSideAgainstObstacle(entry, obstacle));
+      if (segments.length === 0) break;
+    }
+    return segments;
+  }
+
   return [seg];
 }
 

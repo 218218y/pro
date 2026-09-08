@@ -365,11 +365,81 @@ function resolveWardrobeWallAlignment(model: SettingsVisualRoomDesignModel): War
   return null;
 }
 
+function RoomColumnControls(props: {
+  model: SettingsVisualRoomDesignModel;
+  column: SettingsVisualRoomDesignModel['roomArchitecture']['columns'][number];
+  index: number;
+  wallMax: number;
+  wallHeightMax: number;
+}): ReactElement {
+  const { model, column, index, wallMax, wallHeightMax } = props;
+  const number = index + 1;
+  const idPrefix = `wp-room-column-${number}`;
+
+  return (
+    <div className="wp-r-room-column-card" data-testid={`settings-room-column-${number}`}>
+      <div className="wp-r-room-column-card-heading">
+        <span className="wp-r-label">עמוד {number}</span>
+        <OptionButton
+          density="micro"
+          className="wp-r-room-column-remove-btn"
+          onClick={() => model.removeColumn(column.id)}
+          testId={`settings-room-column-${number}-remove`}
+          icon={<i className="fas fa-trash" aria-hidden="true" />}
+        >
+          מחק עמוד
+        </OptionButton>
+      </div>
+      <div className="wp-r-room-dimension-grid wp-r-room-column-grid">
+        <ArchitectureNumberField
+          id={`${idPrefix}-offset`}
+          label="מיקום משמאל"
+          value={column.offsetLeftCm}
+          min={0}
+          max={wallMax}
+          onChange={value => model.setColumnDimension(column.id, 'offsetLeftCm', value)}
+        />
+        <ArchitectureNumberField
+          id={`${idPrefix}-width`}
+          label="רוחב העמוד"
+          value={column.widthCm}
+          min={1}
+          max={wallMax}
+          onChange={value => model.setColumnDimension(column.id, 'widthCm', value)}
+        />
+        <ArchitectureNumberField
+          id={`${idPrefix}-depth`}
+          label="עומק הבליטה"
+          value={column.depthCm}
+          min={1}
+          max={300}
+          onChange={value => model.setColumnDimension(column.id, 'depthCm', value)}
+        />
+        <ArchitectureNumberField
+          id={`${idPrefix}-height`}
+          label="גובה העמוד"
+          value={column.heightCm}
+          min={1}
+          max={wallHeightMax}
+          onChange={value => model.setColumnDimension(column.id, 'heightCm', value)}
+        />
+        <ArchitectureNumberField
+          id={`${idPrefix}-bottom`}
+          label="התחלה מהרצפה"
+          value={column.bottomOffsetCm}
+          min={0}
+          max={wallHeightMax}
+          onChange={value => model.setColumnDimension(column.id, 'bottomOffsetCm', value)}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesignModel }): ReactElement {
   const model = props.model;
   const architecture = model.roomArchitecture;
   const wall = architecture.backWall;
-  const column = architecture.column;
   const wallMax = Math.max(50, wall.widthCm);
   const wallMin = Math.max(50, model.wardrobeWidthCm);
   const wardrobeOffsetMax = Math.max(0, wall.widthCm - model.wardrobeWidthCm);
@@ -382,7 +452,7 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
         <div>
           <div className="wp-r-room-architecture-title">קירות ומבנה החדר</div>
           <div className="wp-r-room-architecture-subtitle">
-            הקירות והעמוד הם חלק מההדמיה; עמוד פעיל גם מתאים את בניית הארון סביבו.
+            הקירות והעמודים הם חלק מההדמיה; כל עמוד מתאים את בניית הארון סביב המידות והמיקום שלו.
           </div>
         </div>
       </div>
@@ -474,57 +544,35 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
           />
 
           <div className="wp-r-room-column-block">
-            <ToggleRow
-              label="עמוד בולט מהקיר"
-              checked={column.enabled}
-              onChange={model.setColumnEnabled}
-              testId="settings-room-column-toggle"
-            />
+            <div className="wp-r-room-column-section-heading">
+              <span className="wp-r-label">עמודים בולטים מהקיר</span>
+              {architecture.columns.length ? (
+                <span className="wp-r-room-column-count">
+                  {architecture.columns.length === 1 ? 'עמוד אחד' : `${architecture.columns.length} עמודים`}
+                </span>
+              ) : null}
+            </div>
 
-            {column.enabled ? (
-              <div className="wp-r-room-dimension-grid wp-r-room-column-grid">
-                <ArchitectureNumberField
-                  id="wp-room-column-offset"
-                  label="מיקום משמאל"
-                  value={column.offsetLeftCm}
-                  min={0}
-                  max={wallMax}
-                  onChange={value => model.setColumnDimension('offsetLeftCm', value)}
-                />
-                <ArchitectureNumberField
-                  id="wp-room-column-width"
-                  label="רוחב העמוד"
-                  value={column.widthCm}
-                  min={1}
-                  max={wallMax}
-                  onChange={value => model.setColumnDimension('widthCm', value)}
-                />
-                <ArchitectureNumberField
-                  id="wp-room-column-depth"
-                  label="עומק הבליטה"
-                  value={column.depthCm}
-                  min={1}
-                  max={300}
-                  onChange={value => model.setColumnDimension('depthCm', value)}
-                />
-                <ArchitectureNumberField
-                  id="wp-room-column-height"
-                  label="גובה העמוד"
-                  value={column.heightCm}
-                  min={1}
-                  max={wallHeightMax}
-                  onChange={value => model.setColumnDimension('heightCm', value)}
-                />
-                <ArchitectureNumberField
-                  id="wp-room-column-bottom"
-                  label="התחלה מהרצפה"
-                  value={column.bottomOffsetCm}
-                  min={0}
-                  max={wallHeightMax}
-                  onChange={value => model.setColumnDimension('bottomOffsetCm', value)}
-                />
-              </div>
-            ) : null}
+            {architecture.columns.map((column, index) => (
+              <RoomColumnControls
+                key={column.id}
+                model={model}
+                column={column}
+                index={index}
+                wallMax={wallMax}
+                wallHeightMax={wallHeightMax}
+              />
+            ))}
+
+            <OptionButton
+              density="micro"
+              className="wp-r-room-column-add-btn"
+              onClick={model.addColumn}
+              testId="settings-room-column-add"
+              icon={<i className="fas fa-plus" aria-hidden="true" />}
+            >
+              {architecture.columns.length ? 'הוסף עמוד נוסף' : 'הוסף עמוד בולט'}
+            </OptionButton>
           </div>
 
           <RoomOpeningsControls model={model} />
@@ -537,11 +585,11 @@ export function RoomArchitectureControls(props: { model: SettingsVisualRoomDesig
             testId="settings-room-architecture-visibility"
             icon={<i className="fas fa-eye-slash" aria-hidden="true" />}
           >
-            הסתר קירות ועמוד
+            הסתר קירות ועמודים
           </OptionButton>
-          {architecture.surfacesHidden && column.enabled ? (
+          {architecture.surfacesHidden && architecture.columns.length ? (
             <div className="wp-r-room-architecture-hidden-note">
-              הקירות והעמוד מוסתרים רק בתצוגה. החיתוכים וההתאמות של הארון לעמוד נשארים פעילים.
+              הקירות והעמודים מוסתרים רק בתצוגה. החיתוכים וההתאמות של הארון לעמודים נשארים פעילים.
             </div>
           ) : null}
         </div>

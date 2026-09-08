@@ -162,14 +162,16 @@ function createPrimitiveHarness(roomArchitecture?: AnyMap) {
 test('room column cuts a real rear notch into interior boards while preserving part identity', () => {
   const { App, THREE, group, ops } = createPrimitiveHarness({
     backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 140,
-      widthCm: 30,
-      depthCm: 20,
-      heightCm: 240,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 140,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 240,
+        bottomOffsetCm: 0,
+      },
+    ],
     surfacesHidden: true,
   });
 
@@ -204,17 +206,72 @@ test('room column cuts a real rear notch into interior boards while preserving p
   }
 });
 
+test('two room columns cut the same board independently without losing canonical part identity', () => {
+  const { App, THREE, group, ops } = createPrimitiveHarness({
+    backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+    leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+    columns: [
+      {
+        id: 'room-column-left',
+        offsetLeftCm: 90,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 240,
+        bottomOffsetCm: 0,
+      },
+      {
+        id: 'room-column-right',
+        offsetLeftCm: 190,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 240,
+        bottomOffsetCm: 0,
+      },
+    ],
+    openings: [],
+    wallColor: '#f2efe6',
+    surfacesHidden: false,
+  });
+
+  const board = ops.createBoard({
+    App,
+    THREE,
+    w: 1.8,
+    h: 0.018,
+    d: 0.55,
+    x: 0,
+    y: 1,
+    z: 0,
+    mat: { id: 'two-column-material' },
+    partId: 'two_column_shelf_test',
+  }) as FakeGroup;
+
+  assert.equal(group.children[0], board);
+  assert.equal(board.userData.__wpRoomColumnAdjusted, true);
+  assert.equal(
+    board.children.length,
+    5,
+    'two disjoint rear notches should produce five physical board segments'
+  );
+  for (const child of board.children as FakeMesh[]) {
+    assert.equal(child.userData, board.userData);
+  }
+});
+
 test('room-column split boards propagate post-create render flags to every physical segment', () => {
   const { App, THREE, ops } = createPrimitiveHarness({
     backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 140,
-      widthCm: 30,
-      depthCm: 20,
-      heightCm: 240,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 140,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 240,
+        bottomOffsetCm: 0,
+      },
+    ],
     surfacesHidden: false,
   });
 
@@ -245,14 +302,16 @@ test('room-column split boards propagate post-create render flags to every physi
 test('room column keeps the rounded shelf front geometry and does not paint internal notch faces as front edges', () => {
   const { App, THREE, ops } = createPrimitiveHarness({
     backWall: { enabled: true, widthCm: 300, heightCm: 280, wardrobeOffsetLeftCm: 50 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 140,
-      widthCm: 30,
-      depthCm: 20,
-      heightCm: 240,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 140,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 240,
+        bottomOffsetCm: 0,
+      },
+    ],
     surfacesHidden: false,
   });
   const materials = ['right', 'left', 'top', 'bottom', 'front', 'back'];

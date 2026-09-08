@@ -51,8 +51,8 @@ function __isRoomArchitecturePlan(value: unknown): value is RoomArchitecturePlan
     __asRecord(rec.wall) &&
     __asRecord(rec.wallSurfaces) &&
     Array.isArray(rec.resolvedOpenings) &&
-    Object.prototype.hasOwnProperty.call(rec, 'columnAdjustment') &&
-    Object.prototype.hasOwnProperty.call(rec, 'activeCutObstacle')
+    Array.isArray(rec.columnAdjustments) &&
+    Array.isArray(rec.activeCutObstacles)
   );
 }
 

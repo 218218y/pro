@@ -90,14 +90,16 @@ test('project config persisted snapshot readers share a canonical branch list an
         backWall: { enabled: true, widthCm: '520', heightCm: 300, wardrobeOffsetLeftCm: '65' },
         leftWall: { enabled: true, depthCm: '360', heightCm: 275 },
         rightWall: { enabled: false, depthCm: 280, heightCm: '265' },
-        column: {
-          enabled: true,
-          offsetLeftCm: '210',
-          widthCm: 35,
-          depthCm: '24.5',
-          heightCm: 250,
-          bottomOffsetCm: 20,
-        },
+        columns: [
+          {
+            id: 'room-column-1',
+            offsetLeftCm: '210',
+            widthCm: 35,
+            depthCm: '24.5',
+            heightCm: 250,
+            bottomOffsetCm: 20,
+          },
+        ],
         openings: [
           {
             id: 'window-main',
@@ -149,14 +151,16 @@ test('project config persisted snapshot readers share a canonical branch list an
     backWall: { enabled: true, widthCm: 520, heightCm: 300, wardrobeOffsetLeftCm: 65 },
     leftWall: { enabled: true, depthCm: 360, heightCm: 275 },
     rightWall: { enabled: false, depthCm: 280, heightCm: 265 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 210,
-      widthCm: 35,
-      depthCm: 24.5,
-      heightCm: 250,
-      bottomOffsetCm: 20,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 210,
+        widthCm: 35,
+        depthCm: 24.5,
+        heightCm: 250,
+        bottomOffsetCm: 20,
+      },
+    ],
     openings: [
       {
         id: 'window-main',
@@ -171,6 +175,55 @@ test('project config persisted snapshot readers share a canonical branch list an
     wallColor: '#e8e1d4',
     surfacesHidden: true,
   });
+});
+
+test('project config persistence preserves multiple room columns with independent ids and dimensions', () => {
+  const persisted = readPersistedProjectConfigSnapshot({
+    roomArchitecture: {
+      backWall: { enabled: true, widthCm: 500, heightCm: 300, wardrobeOffsetLeftCm: 50 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 300 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 300 },
+      columns: [
+        { id: 'room-column-1', offsetLeftCm: 80, widthCm: 25, depthCm: 18, heightCm: 270, bottomOffsetCm: 0 },
+        {
+          id: 'custom-column',
+          offsetLeftCm: 260,
+          widthCm: 45,
+          depthCm: 32,
+          heightCm: 180,
+          bottomOffsetCm: 60,
+        },
+      ],
+      openings: [],
+      wallColor: '#ffffff',
+      surfacesHidden: false,
+    },
+  } as never);
+
+  assert.deepEqual(persisted.roomArchitecture.columns, [
+    { id: 'room-column-1', offsetLeftCm: 80, widthCm: 25, depthCm: 18, heightCm: 270, bottomOffsetCm: 0 },
+    { id: 'custom-column', offsetLeftCm: 260, widthCm: 45, depthCm: 32, heightCm: 180, bottomOffsetCm: 60 },
+  ]);
+  assert.equal('column' in (persisted.roomArchitecture as unknown as Record<string, unknown>), false);
+});
+
+test('project config persistence does not revive the removed singular room-column contract', () => {
+  const persisted = readPersistedProjectConfigSnapshot({
+    roomArchitecture: {
+      backWall: { enabled: true, widthCm: 400, heightCm: 280, wardrobeOffsetLeftCm: 50 },
+      column: {
+        enabled: true,
+        offsetLeftCm: 180,
+        widthCm: 30,
+        depthCm: 20,
+        heightCm: 280,
+        bottomOffsetCm: 0,
+      },
+    },
+  } as never);
+
+  assert.deepEqual(persisted.roomArchitecture.columns, []);
+  assert.equal('column' in (persisted.roomArchitecture as unknown as Record<string, unknown>), false);
 });
 
 test('project config persisted snapshot readers sanitize structural and map branches even when given a loose raw snapshot', () => {

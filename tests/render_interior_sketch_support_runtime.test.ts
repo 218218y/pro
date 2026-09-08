@@ -147,14 +147,16 @@ test('render interior sketch shelf pins omit only supports that collide with the
     config: {
       roomArchitecture: {
         backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-        column: {
-          enabled: true,
-          offsetLeftCm: 19,
-          widthCm: 5,
-          depthCm: 15,
-          heightCm: 200,
-          bottomOffsetCm: 0,
-        },
+        columns: [
+          {
+            id: 'room-column-1',
+            offsetLeftCm: 19,
+            widthCm: 5,
+            depthCm: 15,
+            heightCm: 200,
+            bottomOffsetCm: 0,
+          },
+        ],
         surfacesHidden: false,
       },
     },

@@ -533,14 +533,16 @@ test('sketch-free drawer commit consumes a room-column collision without mutatin
     config: {
       roomArchitecture: {
         backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-        column: {
-          enabled: true,
-          offsetLeftCm: 115,
-          widthCm: 10,
-          depthCm: 25,
-          heightCm: 180,
-          bottomOffsetCm: 10,
-        },
+        columns: [
+          {
+            id: 'room-column-1',
+            offsetLeftCm: 115,
+            widthCm: 10,
+            depthCm: 25,
+            heightCm: 180,
+            bottomOffsetCm: 10,
+          },
+        ],
         surfacesHidden: false,
       },
     },

@@ -193,14 +193,16 @@ test('drawer build is blocked with a clear toast when the room column cuts the t
   const cfg: Record<string, unknown> = { layout: 'shelves' };
   const roomArchitecture = {
     backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 42.5,
-      widthCm: 15,
-      depthCm: 20,
-      heightCm: 200,
-      bottomOffsetCm: 0,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 42.5,
+        widthCm: 15,
+        depthCm: 20,
+        heightCm: 200,
+        bottomOffsetCm: 0,
+      },
+    ],
     surfacesHidden: false,
   };
   const { App, toasts } = createGuardApp({
@@ -264,14 +266,16 @@ test('free-box internal and external drawers are blocked when the room column cu
   const cfg: Record<string, unknown> = { sketchExtras: { boxes: [box] } };
   const roomArchitecture = {
     backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 115,
-      widthCm: 10,
-      depthCm: 25,
-      heightCm: 180,
-      bottomOffsetCm: 10,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 115,
+        widthCm: 10,
+        depthCm: 25,
+        heightCm: 180,
+        bottomOffsetCm: 10,
+      },
+    ],
     surfacesHidden: false,
   };
   const { App, toasts } = createGuardApp({
@@ -396,14 +400,16 @@ test('free-box drawer guard follows builder ui.raw dimension fallback when runti
   const cfg: Record<string, unknown> = { sketchExtras: { boxes: [box] } };
   const roomArchitecture = {
     backWall: { enabled: true, widthCm: 240, heightCm: 280, wardrobeOffsetLeftCm: 0 },
-    column: {
-      enabled: true,
-      offsetLeftCm: 115,
-      widthCm: 10,
-      depthCm: 25,
-      heightCm: 180,
-      bottomOffsetCm: 10,
-    },
+    columns: [
+      {
+        id: 'room-column-1',
+        offsetLeftCm: 115,
+        widthCm: 10,
+        depthCm: 25,
+        heightCm: 180,
+        bottomOffsetCm: 10,
+      },
+    ],
     surfacesHidden: false,
   };
   const { App, toasts } = createGuardApp({
