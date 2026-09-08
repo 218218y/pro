@@ -58,13 +58,20 @@ export type MarkerUserDataLike = UnknownRecord & {
   __matMirror?: unknown;
   __matCenter?: unknown;
   __matAligned?: unknown;
+  __precisionLine?: MarkerLike;
+  __precisionMatAdd?: unknown;
+  __precisionMatRemove?: unknown;
+  __precisionMatAligned?: unknown;
 };
 
 export type MarkerLike = {
   visible?: boolean;
   material?: unknown;
   userData?: MarkerUserDataLike | null;
-  position?: { copy?: (next: ReusableVectorLike) => unknown };
+  position?: {
+    copy?: (next: ReusableVectorLike) => unknown;
+    set?: (x: number, y: number, z: number) => unknown;
+  };
   quaternion?: { copy?: (next: ReusableQuaternionLike) => unknown };
   scale?: { set?: (x: number, y: number, z: number) => unknown };
 };

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-08T11:54:03.989Z",
+  "generatedAt": "2026-09-08T19:15:58.577Z",
   "totals": {
-    "tests": 1268,
-    "unitRunnerTests": 1259,
+    "tests": 1269,
+    "unitRunnerTests": 1260,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 399,
     "runtime-unit": 349,
-    "integration": 480,
+    "integration": 481,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 7
@@ -6380,6 +6380,10 @@
     },
     {
       "file": "tests/render_ops_shared_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_preview_door_cut_marker_runtime.test.ts",
       "category": "integration"
     },
     {

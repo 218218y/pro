@@ -30,12 +30,27 @@ export function createDoorCutHoverMarkerOwner(ctx: RenderPreviewMarkerContext) {
       const addMat = createMarkerMaterial(THREE, 0x7fd3ff, 0.22);
       const removeMat = createMarkerMaterial(THREE, 0xff6b6b, 0.26);
       const alignedMat = createMarkerMaterial(THREE, 0x34d399, 0.3);
+      const precisionAddMat = createMarkerMaterial(THREE, 0x7fd3ff, 0.96);
+      const precisionRemoveMat = createMarkerMaterial(THREE, 0xff4d4f, 0.98);
+      const precisionAlignedMat = createMarkerMaterial(THREE, 0x34d399, 0.98);
 
       const mesh = new THREE.Mesh(geo, addMat);
+      const precisionLine = new THREE.Mesh(geo, precisionAddMat);
+      precisionLine.userData = precisionLine.userData || {};
+      precisionLine.userData.__ignoreRaycast = true;
+      precisionLine.raycast = function () {};
+      precisionLine.visible = false;
+      precisionLine.renderOrder = 10001;
+      mesh.add(precisionLine);
+
       mesh.userData = mesh.userData || {};
       mesh.userData.__matAdd = addMat;
       mesh.userData.__matRemove = removeMat;
       mesh.userData.__matAligned = alignedMat;
+      mesh.userData.__precisionLine = precisionLine;
+      mesh.userData.__precisionMatAdd = precisionAddMat;
+      mesh.userData.__precisionMatRemove = precisionRemoveMat;
+      mesh.userData.__precisionMatAligned = precisionAlignedMat;
       mesh.visible = false;
       mesh.renderOrder = 10000;
 

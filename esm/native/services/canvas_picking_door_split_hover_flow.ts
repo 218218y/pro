@@ -29,6 +29,42 @@ import {
 } from './canvas_picking_door_hover_targets.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 
+type CanvasDoorCustomSplitPrecisionState = 'add' | 'remove' | 'aligned';
+
+function setCanvasDoorCustomSplitPrecisionLine(args: {
+  marker: MarkerLike | null;
+  visible: boolean;
+  markerHeight?: number;
+  state?: CanvasDoorCustomSplitPrecisionState;
+}): void {
+  const markerUd = __asObject<MarkerUserDataLike>(args.marker?.userData);
+  const precisionLine = markerUd?.__precisionLine || null;
+  if (!precisionLine) return;
+
+  precisionLine.visible = args.visible;
+  if (!args.visible) return;
+
+  const markerHeight = Number(args.markerHeight);
+  if (!(markerHeight > 0)) {
+    precisionLine.visible = false;
+    return;
+  }
+
+  const precisionHeight = HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomPrecisionLineHeightM;
+  const relativeHeight = Math.max(0.0001, Math.min(1, precisionHeight / markerHeight));
+  precisionLine.scale?.set?.(1, relativeHeight, 1);
+  precisionLine.position?.set?.(0, 0, HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverCustomPrecisionLineZOffsetM);
+
+  const state = args.state || 'add';
+  const material =
+    state === 'remove'
+      ? markerUd?.__precisionMatRemove
+      : state === 'aligned'
+        ? markerUd?.__precisionMatAligned
+        : markerUd?.__precisionMatAdd;
+  if (material) precisionLine.material = material;
+}
+
 export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   const {
     App,
@@ -46,6 +82,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   } = args;
 
   if (marker) marker.visible = false;
+  setCanvasDoorCustomSplitPrecisionLine({ marker: cutMarker, visible: false });
   const isSplitCustom = splitVariant === 'custom';
   const activeMarker: MarkerLike | null = (isSplitCustom ? cutMarker : marker) || null;
   const hit = __resolveHoverHit(args, args.isDoorLikePartId);
@@ -140,6 +177,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   let standardLineH = 0.02;
   let customIsRemove = false;
   let customIsBlocked = false;
+  let customPrecisionState: CanvasDoorCustomSplitPrecisionState = 'add';
 
   if (!isSplitCustom) {
     if (!hit) {
@@ -232,6 +270,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
         : hasAlignedCut
           ? activeUd.__matAligned || activeUd.__matAdd
           : activeUd.__matAdd;
+    customPrecisionState = isRemove || isBlocked ? 'remove' : hasAlignedCut ? 'aligned' : 'add';
   }
 
   try {
@@ -333,10 +372,22 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
 
   activeMarker.visible = true;
   if (material) activeMarker.material = material;
-  activeMarker.scale?.set?.(
-    Math.max(splitHoverDims.hoverMarkerScaleMinM, w - splitHoverDims.hoverMarkerWidthClearanceM),
-    Math.max(splitHoverDims.hoverMarkerScaleMinM, regionH - splitHoverDims.hoverMarkerHeightClearanceM),
-    1
+  const markerWidth = Math.max(
+    splitHoverDims.hoverMarkerScaleMinM,
+    w - splitHoverDims.hoverMarkerWidthClearanceM
   );
+  const markerHeight = Math.max(
+    splitHoverDims.hoverMarkerScaleMinM,
+    regionH - splitHoverDims.hoverMarkerHeightClearanceM
+  );
+  activeMarker.scale?.set?.(markerWidth, markerHeight, 1);
+  if (isSplitCustom) {
+    setCanvasDoorCustomSplitPrecisionLine({
+      marker: activeMarker,
+      visible: true,
+      markerHeight,
+      state: customPrecisionState,
+    });
+  }
   return true;
 }
