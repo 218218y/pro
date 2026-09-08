@@ -14,7 +14,7 @@ import { MODES } from './modes_constants.js';
 import { readModeStateFromApp } from './root_state_access.js';
 import { asRecord } from './record.js';
 
-export const MANUAL_DOOR_SPLIT_GHOST_OPACITY = 0.08;
+export const MANUAL_DOOR_SPLIT_GHOST_OPACITY = 0.48;
 
 type MaterialHolderLike = Object3DLike & { material?: unknown };
 type GhostMaterialState = {
