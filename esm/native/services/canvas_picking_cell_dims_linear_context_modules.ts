@@ -2,7 +2,10 @@ import type { CanvasLinearCellDimsGeometryArgs } from './canvas_picking_cell_dim
 import type { ModulesConfigBucketKey } from '../features/modules_configuration/modules_config_api.js';
 
 import { calculateModuleStructure } from '../features/modules_configuration/calc_module_structure.js';
-import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
+import {
+  readExplicitLowerStructureSelect,
+  readModulesConfigurationListFromConfigSnapshot,
+} from '../features/modules_configuration/modules_config_api.js';
 
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import {
@@ -72,6 +75,10 @@ function resolveSingleDoorPos(args: CanvasLinearCellDimsGeometryArgs): string {
 function resolveStructureSelect(args: CanvasLinearCellDimsGeometryArgs, doorsCount: number): string {
   const structureSelect = typeof args.ui.structureSelect === 'string' ? args.ui.structureSelect : '';
   if (!args.isBottomStack) return structureSelect;
+
+  const explicitLowerStructure = readExplicitLowerStructureSelect(args.cfg, doorsCount);
+  if (explicitLowerStructure) return explicitLowerStructure;
+
   const topDoors = readCanonicalIntOr(args.raw.doors, doorsCount);
   return doorsCount !== topDoors ? '' : structureSelect;
 }
@@ -117,7 +124,9 @@ export function resolveLinearModules(args: CanvasLinearCellDimsGeometryArgs): Re
   const structureSelect = resolveStructureSelect(args, doorsCount);
 
   const cfgModules = readModulesFromConfigBucket(args, configBucket);
-  let modules: unknown[] = args.isBottomStack && cfgModules.length ? cfgModules : [];
+  const hasExplicitLowerTopology =
+    args.isBottomStack && !!readExplicitLowerStructureSelect(args.cfg, doorsCount);
+  let modules: unknown[] = hasExplicitLowerTopology && cfgModules.length ? cfgModules : [];
 
   if (!Array.isArray(modules) || !modules.length) {
     try {

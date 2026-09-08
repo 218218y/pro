@@ -14,6 +14,7 @@ import {
   cloneSpecialDims,
 } from '../features/special_dims/index.js';
 import {
+  readCanonicalIntOr,
   readRequiredLinearDimension,
   readSpecialDimsRecord,
   readToastFn,
@@ -28,10 +29,60 @@ import { buildMutableLinearModules } from './canvas_picking_cell_dims_linear_mut
 import { applyLinearCellDimsWidthPolicy } from './canvas_picking_cell_dims_linear_width.js';
 import { promoteUniformLinearCellDim } from './canvas_picking_cell_dims_linear_normalize.js';
 import { resolveLinearCellDoorCountPolicy } from './canvas_picking_cell_dims_linear_doors.js';
+import { buildCanvasLinearCellDimsContext } from './canvas_picking_cell_dims_linear_context.js';
 
 export type LinearCellDimsSelectedModuleMutationResult = {
   toastMessage?: string;
 };
+
+type PreservedLowerDoorTopology = {
+  modulesConfiguration: UnknownRecord[];
+  totalDoors: number;
+};
+
+function sumLinearDoors(signature: readonly number[]): number {
+  return signature.reduce((sum, doors) => sum + Math.max(1, Math.round(Number(doors) || 1)), 0);
+}
+
+function captureLowerDoorTopologyBeforeTopMutation(
+  ctx: LinearCellDimsContext
+): PreservedLowerDoorTopology | null {
+  if (ctx.isBottomStack || ctx.ui.stackSplitEnabled !== true) return null;
+
+  const currentTopDoors = sumLinearDoors(ctx.doorsPerModule);
+  const canonicalTopDoors = readCanonicalIntOr(ctx.raw.doors, currentTopDoors);
+  const totalDoors =
+    ctx.raw.stackSplitLowerDoorsManual === true
+      ? readCanonicalIntOr(ctx.raw.stackSplitLowerDoors, canonicalTopDoors)
+      : canonicalTopDoors;
+
+  if (totalDoors < 1) return { modulesConfiguration: [], totalDoors: Math.max(0, totalDoors) };
+
+  const lowerCtx = buildCanvasLinearCellDimsContext({
+    App: ctx.App,
+    foundModuleIndex: 0,
+    isBottomStack: true,
+    ui: ctx.ui,
+    cfg: ctx.cfg,
+    raw: ctx.raw,
+    applyW: null,
+    applyH: null,
+    applyD: null,
+    cellDoorCount: null,
+    autoWidthMatchToleranceCm: ctx.autoWidthMatchToleranceCm,
+  });
+  if (!lowerCtx) {
+    throw new RangeError(
+      '[WardrobePro][cellDims] Unable to preserve lower door topology before top mutation.'
+    );
+  }
+
+  const { nextModsCfg, ensureOwnModule } = buildMutableLinearModules(lowerCtx);
+  for (let i = 0; i < lowerCtx.moduleCount; i += 1) {
+    ensureOwnModule(i).doors = Math.max(1, Math.round(Number(lowerCtx.doorsPerModule[i]) || 1));
+  }
+  return { modulesConfiguration: nextModsCfg, totalDoors };
+}
 
 export type LinearCellDimsApplyOptions = {
   source?: string;
@@ -142,7 +193,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
   const requestedCellDoorCount = applyCtx.cellDoorCount;
   const hasDimensionMutation = applyCtx.applyW != null || applyCtx.applyH != null || applyCtx.applyD != null;
 
-  if (requestedCellDoorCount != null && (applyCtx.isBottomStack || applyCtx.wardrobeType === 'sliding')) {
+  if (requestedCellDoorCount != null && applyCtx.wardrobeType === 'sliding') {
     try {
       const fn = readToastFn(App);
       if (typeof fn === 'function') fn('שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', true);
@@ -194,6 +245,10 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     desiredWidthsCm: nextWidthsCm,
     nextTotalW,
   });
+  const preservedLowerDoorTopology =
+    doorCountResult.changed && !applyCtx.isBottomStack
+      ? captureLowerDoorTopologyBeforeTopMutation(applyCtx)
+      : null;
   if (doorCountResult.changed) {
     for (let i = 0; i < applyCtx.moduleCount; i += 1) {
       const moduleCfg = ensureOwnModule(i);
@@ -238,14 +293,40 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     Math.abs(depthPromotion.nextTotal - applyCtx.totalD) > 1e-6;
 
   const structuralMeta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
+  if (preservedLowerDoorTopology?.modulesConfiguration.length) {
+    try {
+      applyCellDimsConfigSnapshot({
+        App,
+        modulesConfiguration: preservedLowerDoorTopology.modulesConfiguration,
+        modulesBucket: 'stackSplitLowerModulesConfiguration',
+        meta: structuralMeta,
+      });
+    } catch (err) {
+      __wp_reportPickingIssue(
+        App,
+        err,
+        { where: 'canvasPicking', op: 'cellDims.preserveLowerDoorTopology' },
+        { failFast: true }
+      );
+    }
+  }
   if (doorCountResult.changed) {
     try {
+      const rawDoorPatch: UnknownRecord = applyCtx.isBottomStack
+        ? {
+            stackSplitLowerDoors: doorCountResult.nextTotalDoors,
+            stackSplitLowerDoorsManual: true,
+          }
+        : { doors: doorCountResult.nextTotalDoors };
+      if (!applyCtx.isBottomStack && preservedLowerDoorTopology) {
+        rawDoorPatch.stackSplitLowerDoors = preservedLowerDoorTopology.totalDoors;
+        rawDoorPatch.stackSplitLowerDoorsManual = true;
+      }
       patchUiSoft(
         App,
-        {
-          raw: { doors: doorCountResult.nextTotalDoors },
-          structureSelect: doorCountResult.structureSelect,
-        },
+        applyCtx.isBottomStack
+          ? { raw: rawDoorPatch }
+          : { raw: rawDoorPatch, structureSelect: doorCountResult.structureSelect },
         structuralMeta
       );
     } catch (err) {

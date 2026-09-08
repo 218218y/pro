@@ -1,7 +1,10 @@
 import { cloneViaPlatform } from '../runtime/platform_access.js';
 import { readModuleConfig, readRecord, readStringProp, readUiState } from './build_flow_readers.js';
 import { createDefaultLowerModuleConfig, normalizeLowerModuleConfig } from '../features/stack_split/index.js';
-import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
+import {
+  readExplicitLowerStructureSelect,
+  readModulesConfigurationListFromConfigSnapshot,
+} from '../features/modules_configuration/modules_config_api.js';
 
 import type {
   AppContainer,
@@ -14,18 +17,22 @@ import { toStr } from './build_stack_split_contracts.js';
 
 export function makeBottomUi(args: {
   ui: UiStateLike | null;
+  cfg?: ConfigStateLike | null;
   bottomDoorsCount: number;
   topDoorsCount: number;
 }): UiStateLike {
   const u0: UiStateLike = readUiState(args.ui) || {};
+  const explicitStructure = readExplicitLowerStructureSelect(args.cfg, args.bottomDoorsCount);
   const needs = args.bottomDoorsCount !== args.topDoorsCount;
   const hasSingle = !!u0.singleDoorPos;
   const hasStruct = !!u0.structureSelect;
+  const needsExplicitStructure = !!explicitStructure && u0.structureSelect !== explicitStructure;
 
-  if (needs || !hasSingle) {
+  if (needs || !hasSingle || needsExplicitStructure) {
     const u1: UiStateLike = Object.assign({}, u0);
     if (!hasSingle) u1.singleDoorPos = 'center';
-    if (needs && hasStruct) u1.structureSelect = '';
+    if (explicitStructure) u1.structureSelect = explicitStructure;
+    else if (needs && hasStruct) u1.structureSelect = '';
     return u1;
   }
   return u0;

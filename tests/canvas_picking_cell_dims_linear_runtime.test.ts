@@ -504,6 +504,107 @@ test('cell door-count edit can apply a special width and door topology in one cl
   });
 });
 
+test('bottom cell door-count edit owns lower topology without mutating top doors', () => {
+  const { App, state, calls } = createAppHarness();
+  state.mode = { primary: 'cell_dims', opts: { cellDoorCount: 1 } };
+  state.ui.stackSplitEnabled = true;
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = {
+    width: 160,
+    height: 220,
+    depth: 55,
+    doors: 4,
+    stackSplitLowerHeight: 80,
+    stackSplitLowerDoors: 4,
+    stackSplitLowerDoorsManual: false,
+  };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.config.stackSplitLowerModulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  App.actions.config.setLowerModulesConfiguration = function setLowerModulesConfiguration(
+    next: unknown,
+    meta?: unknown
+  ) {
+    calls.lowerModules.push({ next: cloneJson(next), meta: cloneJson(meta) });
+    state.config.stackSplitLowerModulesConfiguration = cloneJson(next);
+    return next;
+  };
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 0,
+    foundPartId: null,
+    isBottomStack: true,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(calls.snapshots.length, 0, 'bottom edit must not write the top modules snapshot');
+  assert.equal(calls.lowerModules.length, 1);
+  assert.deepEqual(
+    calls.lowerModules[0].next.map((mod: any) => mod.doors),
+    [1, 2]
+  );
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { stackSplitLowerDoors: 3, stackSplitLowerDoorsManual: true },
+  });
+  assert.equal('doors' in calls.uiPatches[0].patch.raw, false);
+  assert.equal('structureSelect' in calls.uiPatches[0].patch, false);
+});
+
+test('top cell door-count edit freezes the current lower topology before changing top structure', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.stackSplitEnabled = true;
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = {
+    width: 160,
+    height: 220,
+    depth: 55,
+    doors: 4,
+    stackSplitLowerHeight: 80,
+    stackSplitLowerDoors: 2,
+    stackSplitLowerDoorsManual: false,
+  };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.config.stackSplitLowerModulesConfiguration = [{ specialDims: { baseWidthCm: 80, widthCm: 70 } }, {}];
+  App.actions.config.setLowerModulesConfiguration = function setLowerModulesConfiguration(
+    next: unknown,
+    meta?: unknown
+  ) {
+    calls.lowerModules.push({ next: cloneJson(next), meta: cloneJson(meta) });
+    state.config.stackSplitLowerModulesConfiguration = cloneJson(next);
+    return next;
+  };
+
+  handleCanvasLinearCellDimsClick({
+    App,
+    ui: state.ui,
+    cfg: state.config,
+    raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
+    applyW: null,
+    applyH: null,
+    applyD: null,
+    cellDoorCount: 1,
+    foundModuleIndex: 0,
+  });
+
+  assert.equal(calls.snapshots.length, 1);
+  assert.equal(calls.lowerModules.length, 1);
+  assert.deepEqual(
+    calls.lowerModules[0].next.map((mod: any) => mod.doors),
+    [2, 2],
+    'linked lower topology must be materialized before the top signature changes'
+  );
+  assert.deepEqual(calls.lowerModules[0].next[0].specialDims, { baseWidthCm: 80, widthCm: 70 });
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: {
+      doors: 3,
+      stackSplitLowerDoors: 4,
+      stackSplitLowerDoorsManual: true,
+    },
+    structureSelect: '[1,2]',
+  });
+});
+
 test('cell-dims click ingress accepts a door-only edit from canonical mode opts', () => {
   const { App, state, calls } = createAppHarness();
   state.mode = { primary: 'cell_dims', opts: { cellDoorCount: 2 } };
@@ -649,4 +750,49 @@ test('manual sketch door hover stores a per-leaf override for a partitioned regu
   assert.equal(cellDoors[0].xNorm, 0.25);
   assert.equal(cellDoors[0].yNorm, 0.5);
   assert.equal(cellDoors[0].scopeOrder, 1);
+});
+
+test('sketch door-count adapter supports the bottom stack independently', () => {
+  const { App, state, calls } = createAppHarness();
+  state.ui.stackSplitEnabled = true;
+  state.ui.structureSelect = '[2,2]';
+  state.ui.raw = {
+    width: 160,
+    height: 220,
+    depth: 55,
+    doors: 4,
+    stackSplitLowerHeight: 80,
+    stackSplitLowerDoors: 4,
+    stackSplitLowerDoorsManual: false,
+  };
+  state.config.modulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  state.config.stackSplitLowerModulesConfiguration = [{ doors: 2 }, { doors: 2 }];
+  App.actions.config.setLowerModulesConfiguration = function setLowerModulesConfiguration(
+    next: unknown,
+    meta?: unknown
+  ) {
+    calls.lowerModules.push({ next: cloneJson(next), meta: cloneJson(meta) });
+    return next;
+  };
+
+  applyCanvasLinearCellDoorCountFromSketch({
+    App,
+    foundModuleIndex: 1,
+    isBottomStack: true,
+    doorCount: 1,
+  });
+
+  assert.equal(calls.snapshots.length, 0);
+  assert.equal(calls.lowerModules.length, 1);
+  assert.deepEqual(
+    calls.lowerModules[0].next.map((mod: any) => mod.doors),
+    [2, 1]
+  );
+  assert.deepEqual(calls.uiPatches[0].patch, {
+    raw: { stackSplitLowerDoors: 3, stackSplitLowerDoorsManual: true },
+  });
+  assert.equal(
+    calls.toasts.some(({ message }) => /נתמך בתאי הגוף הראשי/.test(message)),
+    false
+  );
 });

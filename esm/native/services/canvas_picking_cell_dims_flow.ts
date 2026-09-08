@@ -35,17 +35,13 @@ export function applyCanvasLinearCellDoorCountFromSketch(args: {
 }): void {
   const { App, foundModuleIndex, isBottomStack, doorCount } = args;
   try {
-    if (isBottomStack) {
-      __wp_toast(App, 'שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', 'info');
-      return;
-    }
     const ui = __wp_ui(App);
     const cfg = __wp_cfg(App);
     const raw: UiRawInputsLike = ui.raw ?? {};
     handleCanvasLinearCellDimsClick({
       App,
       foundModuleIndex,
-      isBottomStack: false,
+      isBottomStack,
       ui,
       cfg,
       raw,
@@ -137,10 +133,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       freeBoxId: freeBoxHoverId,
     });
 
-    if (
-      cellDoorCount != null &&
-      (__isBottomStack || isFreeBoxHoverHit || __wp_isCornerKey(foundModuleIndex))
-    ) {
+    if (cellDoorCount != null && (isFreeBoxHoverHit || __wp_isCornerKey(foundModuleIndex))) {
       __wp_toast(App, 'שינוי מספר הדלתות נתמך בתאי הגוף הראשי של ארון פתיחה', 'info');
       return;
     }

@@ -56,7 +56,12 @@ export function prepareStackSplitLowerSetup(
       : args.doorsCount;
   const bottomTotalW = bottomWidthCm / 100;
 
-  const uiBottom = makeBottomUi({ ui: args.ui, bottomDoorsCount, topDoorsCount: args.doorsCount });
+  const uiBottom = makeBottomUi({
+    ui: args.ui,
+    cfg: args.cfg,
+    bottomDoorsCount,
+    topDoorsCount: args.doorsCount,
+  });
   const bottomModulesCount = computeBottomModulesCount({
     cfg: args.cfg,
     uiBottom,

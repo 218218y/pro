@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { addStackSplitDecorativeSeparatorIfNeeded } from '../esm/native/builder/build_stack_split_decorative_separator.ts';
 import { prepareStackSplitLowerSetup } from '../esm/native/builder/build_stack_split_lower_setup.ts';
+import { makeBottomUi } from '../esm/native/builder/build_stack_split_bottom_layout.ts';
 import { CARCASS_INTERIOR_DIMENSIONS } from '../esm/shared/dimensions/carcass_interior_policy.ts';
 import { CARCASS_INTERIOR_GRID_POLICY } from '../esm/shared/dimensions/carcass_interior_grid_policy.ts';
 import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
@@ -571,4 +572,32 @@ test('stack split decorative separator is a no-op while disabled', () => {
   const calls: unknown[][] = [];
   addStackSplitDecorativeSeparatorIfNeeded(makeArgs(false, calls));
   assert.equal(calls.length, 0);
+});
+
+test('Stack Split Lower prefers its explicit per-cell door signature over the top structure selection', () => {
+  const lowerConfig = [{ doors: 1 }, { doors: 2 }];
+  const uiBottom = makeBottomUi({
+    ui: { singleDoorPos: 'center', structureSelect: '[2,1]' },
+    cfg: {
+      wardrobeType: 'hinged',
+      stackSplitLowerModulesConfiguration: lowerConfig,
+    },
+    bottomDoorsCount: 3,
+    topDoorsCount: 3,
+  });
+
+  assert.equal(uiBottom.structureSelect, '[1,2]');
+
+  const args = makeStackSplitLowerSetupArgs({ lowerModuleConfigs: lowerConfig });
+  args.lowerDoorsCount = 3;
+  args.doorsCount = 3;
+  args.ui = { singleDoorPos: 'center', structureSelect: '[2,1]' };
+  args.calculateModuleStructure = (_doorsCount: number, _singleDoorPos: string, structureSelect: string) =>
+    JSON.parse(structureSelect || '[2,1]').map((doors: number) => ({ doors }));
+
+  const prepared = prepareStackSplitLowerSetup(args);
+  assert.deepEqual(
+    prepared.bottomModules.map((module: any) => module.doors),
+    [1, 2]
+  );
 });

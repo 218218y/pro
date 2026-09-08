@@ -7,6 +7,8 @@
 
 export {
   normalizeConfigModulesConfigurationContainersInPlace,
+  readExplicitLowerDoorSignature,
+  readExplicitLowerStructureSelect,
   readModulesConfigurationListFromConfigSnapshot,
 } from './modules_config_contracts.js';
 

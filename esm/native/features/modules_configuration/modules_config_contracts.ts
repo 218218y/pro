@@ -102,6 +102,29 @@ export function readModulesConfigurationListFromConfigSnapshot(
   return Array.isArray(v) ? v : [];
 }
 
+export function readExplicitLowerDoorSignature(cfg: unknown, expectedTotalDoors: number): number[] | null {
+  const list = readModulesConfigurationListFromConfigSnapshot(cfg, 'stackSplitLowerModulesConfiguration');
+  if (!list.length) return null;
+
+  const signature: number[] = [];
+  let sum = 0;
+  for (const entry of list) {
+    if (!isRecord(entry)) return null;
+    const doors = toInt(entry.doors, 0);
+    if (doors < 1) return null;
+    signature.push(doors);
+    sum += doors;
+  }
+
+  const expected = Math.max(0, Math.round(Number(expectedTotalDoors) || 0));
+  return signature.length > 0 && sum === expected ? signature : null;
+}
+
+export function readExplicitLowerStructureSelect(cfg: unknown, expectedTotalDoors: number): string | null {
+  const signature = readExplicitLowerDoorSignature(cfg, expectedTotalDoors);
+  return signature ? JSON.stringify(signature) : null;
+}
+
 /**
  * Ensure required config containers exist (in-place) for older snapshots.
  * This is intentionally minimal (only the two module buckets).

@@ -201,10 +201,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
       w: internalWidthM,
       selected: i === selectedIndex,
       doorCount:
-        i === selectedIndex &&
-        !isBottomStack &&
-        ctx.wardrobeType !== 'sliding' &&
-        (cellDoorCount === 1 || cellDoorCount === 2)
+        i === selectedIndex && ctx.wardrobeType !== 'sliding' && (cellDoorCount === 1 || cellDoorCount === 2)
           ? cellDoorCount
           : Math.max(1, Math.round(Number(ctx.doorsPerModule[i]) || 1)),
       minWidthM,

@@ -228,8 +228,8 @@ test('cell-dims full-layout preview supports one-cell and bottom-stack linear la
   assert.equal(bottomPlan.isolateStackKey, 'bottom');
   assert.equal(
     bottomPlan.boxes[0]!.doorCount,
-    1,
-    'bottom stack must not preview unsupported door-count edits'
+    2,
+    'bottom stack previews its own per-cell door-count edit independently'
   );
   assertNear(bottomPlan.boxes[0]!.boxH, 0.814 - CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM);
   assertNear(bottomPlan.boxes[0]!.d, 0.6);
