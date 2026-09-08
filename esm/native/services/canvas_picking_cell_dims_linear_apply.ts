@@ -293,23 +293,6 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     Math.abs(depthPromotion.nextTotal - applyCtx.totalD) > 1e-6;
 
   const structuralMeta = createCanvasPickingCellDimsRefreshGatedMeta(App, source);
-  if (preservedLowerDoorTopology?.modulesConfiguration.length) {
-    try {
-      applyCellDimsConfigSnapshot({
-        App,
-        modulesConfiguration: preservedLowerDoorTopology.modulesConfiguration,
-        modulesBucket: 'stackSplitLowerModulesConfiguration',
-        meta: structuralMeta,
-      });
-    } catch (err) {
-      __wp_reportPickingIssue(
-        App,
-        err,
-        { where: 'canvasPicking', op: 'cellDims.preserveLowerDoorTopology' },
-        { failFast: true }
-      );
-    }
-  }
   if (doorCountResult.changed) {
     try {
       const rawDoorPatch: UnknownRecord = applyCtx.isBottomStack
@@ -344,6 +327,9 @@ export function applyCanvasLinearCellDimsContextWithOptions(
       App,
       modulesConfiguration: nextModsCfg,
       modulesBucket: applyCtx.configBucket,
+      ...(preservedLowerDoorTopology?.modulesConfiguration.length
+        ? { linkedLowerModulesConfiguration: preservedLowerDoorTopology.modulesConfiguration }
+        : {}),
       ...(!applyCtx.isBottomStack && (doorCountResult.changed || setManualWidth || unsetManualWidth)
         ? { manualWidth: doorCountResult.changed ? true : setManualWidth }
         : {}),

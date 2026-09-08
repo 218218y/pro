@@ -86,6 +86,7 @@ export interface CellDimsConfigSnapshotArgs {
   App: AppContainer;
   modulesConfiguration: unknown;
   modulesBucket?: 'modulesConfiguration' | 'stackSplitLowerModulesConfiguration';
+  linkedLowerModulesConfiguration?: unknown;
   manualWidth?: boolean;
   width?: unknown;
   height?: unknown;
@@ -129,9 +130,13 @@ export function applyCellDimsConfigSnapshot(args: CellDimsConfigSnapshotArgs): v
   const { App, meta } = args;
   const snapshot = buildModulesGeometrySnapshot(args);
   const bucket = args.modulesBucket || 'modulesConfiguration';
+  const linkedLowerModulesConfiguration =
+    bucket === 'modulesConfiguration' && typeof args.linkedLowerModulesConfiguration !== 'undefined'
+      ? asModulesConfiguration(args.linkedLowerModulesConfiguration)
+      : null;
 
-  if (bucket === 'modulesConfiguration' && applyModulesGeometrySnapshotViaActions(App, snapshot, meta)) {
-    return;
+  if (bucket === 'modulesConfiguration' && linkedLowerModulesConfiguration === null) {
+    if (applyModulesGeometrySnapshotViaActions(App, snapshot, meta)) return;
   }
 
   cfgBatch(
@@ -139,10 +144,16 @@ export function applyCellDimsConfigSnapshot(args: CellDimsConfigSnapshotArgs): v
     function () {
       if (bucket === 'stackSplitLowerModulesConfiguration') {
         setCfgLowerModulesConfiguration(App, snapshot.modulesConfiguration, meta);
-      } else {
-        setCfgModulesConfiguration(App, snapshot.modulesConfiguration, meta);
-        if (typeof snapshot.isManualWidth === 'boolean') setCfgManualWidth(App, snapshot.isManualWidth, meta);
+        return;
       }
+
+      if (linkedLowerModulesConfiguration !== null) {
+        setCfgLowerModulesConfiguration(App, linkedLowerModulesConfiguration, meta);
+      }
+      if (applyModulesGeometrySnapshotViaActions(App, snapshot, meta)) return;
+
+      setCfgModulesConfiguration(App, snapshot.modulesConfiguration, meta);
+      if (typeof snapshot.isManualWidth === 'boolean') setCfgManualWidth(App, snapshot.isManualWidth, meta);
     },
     meta
   );
