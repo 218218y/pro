@@ -118,7 +118,7 @@ function createContext() {
   const ctx = {
     App: {},
     kind: 'cell_layout',
-    input: { cellLayoutBoxes: boxes, isolateWardrobe: true },
+    input: { cellLayoutBoxes: boxes, isolateWardrobe: true, isolateStackKey: null },
     THREE: { Mesh: FakeMesh, LineSegments: FakeLineSegments },
     shelfA,
     g,
@@ -220,6 +220,28 @@ test('cell-layout isolation uses the attached THREE parent when RenderOps expose
   assert.equal(originalVisible.visible, false);
   assert.equal(originalHidden.visible, false);
   assert.equal(ctx.g.visible, true);
+});
+
+test('cell-layout stack isolation hides only the active stack and unscoped overlays', () => {
+  const { ctx, wardrobeRoot } = createContext();
+  const topPart = { visible: true, userData: { __wpStackRegion: 'top' } };
+  const bottomPart = { visible: true, userData: { __wpStackRegion: 'bottom' } };
+  const transientOverlay = { visible: true, userData: { partId: 'hover_overlay' } };
+  const globalFreeBox = { visible: true, userData: { partId: 'sketch_box_free_42' } };
+  wardrobeRoot.children.unshift(topPart, bottomPart, transientOverlay, globalFreeBox);
+  ctx.input.isolateStackKey = 'top';
+
+  assert.equal(applyCellLayoutSketchPlacementPreview(ctx as never), true);
+  assert.equal(topPart.visible, false);
+  assert.equal(bottomPart.visible, true);
+  assert.equal(transientOverlay.visible, false);
+  assert.equal(globalFreeBox.visible, true);
+
+  restoreCellLayoutWardrobeVisibility(ctx.g as never, ctx.shared as never);
+  assert.equal(topPart.visible, true);
+  assert.equal(bottomPart.visible, true);
+  assert.equal(transientOverlay.visible, true);
+  assert.equal(globalFreeBox.visible, true);
 });
 
 test('cell-layout isolation restores the exact pre-hover visibility state', () => {

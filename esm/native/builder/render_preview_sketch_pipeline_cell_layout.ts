@@ -78,6 +78,45 @@ function readGroupChildren(group: PreviewGroupLike): PreviewObject3DLike[] {
   );
 }
 
+type CellLayoutStackKey = 'top' | 'bottom';
+
+function readCellLayoutStackKey(value: unknown): CellLayoutStackKey | null {
+  return value === 'top' || value === 'bottom' ? value : null;
+}
+
+function readObjectStackScope(
+  ctx: SketchPlacementPreviewContext,
+  object: PreviewObject3DLike
+): CellLayoutStackKey | null {
+  const userData = ctx.shared.readUserData(object.userData);
+  return readCellLayoutStackKey(userData.__wpStackRegion) || readCellLayoutStackKey(userData.__wpStack);
+}
+
+function isGlobalSketchFreePlacementObject(
+  ctx: SketchPlacementPreviewContext,
+  child: PreviewObject3DLike
+): boolean {
+  const userData = ctx.shared.readUserData(child.userData);
+  const partId = typeof userData.partId === 'string' ? userData.partId : '';
+  return partId.startsWith('sketch_box_free_');
+}
+
+function shouldIsolateCellLayoutChild(
+  ctx: SketchPlacementPreviewContext,
+  child: PreviewObject3DLike
+): boolean {
+  const requestedStack = readCellLayoutStackKey(ctx.input.isolateStackKey);
+  if (requestedStack == null) return true;
+  if (isGlobalSketchFreePlacementObject(ctx, child)) return false;
+
+  const childStack = readObjectStackScope(ctx, child);
+  // In stack-split mode the opposite stack is the only wardrobe geometry that
+  // must survive unchanged. Unscoped root children are transient/global visual
+  // overlays created after build; hiding them avoids leaking the original
+  // active-stack highlights through the isolated preview.
+  return childStack !== (requestedStack === 'top' ? 'bottom' : 'top');
+}
+
 function resolveCellLayoutIsolationRoot(ctx: SketchPlacementPreviewContext): PreviewGroupLike | null {
   const attachedParent = ctx.asPreviewGroup(ctx.g.parent);
   if (attachedParent && readGroupChildren(attachedParent).includes(ctx.g)) return attachedParent;
@@ -109,7 +148,7 @@ function isolateWardrobeForCellLayout(ctx: SketchPlacementPreviewContext): void 
   if (!snapshot) snapshot = { root, entries: [] };
 
   for (const child of readGroupChildren(root)) {
-    if (child === ctx.g) continue;
+    if (child === ctx.g || !shouldIsolateCellLayoutChild(ctx, child)) continue;
     if (!snapshot.entries.some(entry => entry.object === child)) {
       snapshot.entries.push({ object: child, visible: child.visible !== false });
     }
@@ -204,7 +243,7 @@ export function applyCellLayoutSketchPlacementPreview(ctx: SketchPlacementPrevie
   if (ctx.kind !== 'cell_layout') return false;
 
   const rawBoxes = Array.isArray(ctx.input.cellLayoutBoxes) ? ctx.input.cellLayoutBoxes : [];
-  if (rawBoxes.length < 2) {
+  if (rawBoxes.length < 1) {
     restoreCellLayoutWardrobeVisibility(ctx.g, ctx.shared);
     ctx.g.visible = false;
     ctx.hideAll();

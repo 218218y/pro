@@ -54,6 +54,7 @@ test('part-hover preview protocol validates typed box and object-box commands', 
       kind: 'cell_layout',
       cellLayoutBoxes,
       isolateWardrobe: true,
+      isolateStackKey: null,
     }),
     []
   );
@@ -61,7 +62,28 @@ test('part-hover preview protocol validates typed box and object-box commands', 
     validatePartHoverPreviewCommand({
       ...BOX_COMMAND,
       kind: 'cell_layout',
+      cellLayoutBoxes: [cellLayoutBoxes[0]!],
       isolateWardrobe: true,
+      isolateStackKey: 'bottom',
+    }),
+    []
+  );
+  assert.deepEqual(
+    validatePartHoverPreviewCommand({
+      ...BOX_COMMAND,
+      kind: 'cell_layout',
+      cellLayoutBoxes,
+      isolateWardrobe: true,
+      isolateStackKey: 'side' as never,
+    }),
+    ['cell_layout isolateStackKey must be top, bottom, or null']
+  );
+  assert.deepEqual(
+    validatePartHoverPreviewCommand({
+      ...BOX_COMMAND,
+      kind: 'cell_layout',
+      isolateWardrobe: true,
+      isolateStackKey: null,
       cellLayoutBoxes: cellLayoutBoxes.map(box => ({ ...box, selected: false })),
     }),
     ['cell_layout preview requires exactly one selected cell']
@@ -71,6 +93,7 @@ test('part-hover preview protocol validates typed box and object-box commands', 
       ...BOX_COMMAND,
       kind: 'cell_layout',
       isolateWardrobe: true,
+      isolateStackKey: null,
       cellLayoutBoxes: cellLayoutBoxes.map((box, index) => ({
         ...box,
         doorCount: index === 0 ? 0 : box.doorCount,
@@ -128,7 +151,13 @@ test('part-hover preview runtime owns cleanup ordering and raw RenderOps payload
       type: 'show',
       clearScope: 'layout',
       reason: 'cell-layout-runtime-test',
-      command: { ...BOX_COMMAND, kind: 'cell_layout', cellLayoutBoxes, isolateWardrobe: true },
+      command: {
+        ...BOX_COMMAND,
+        kind: 'cell_layout',
+        cellLayoutBoxes,
+        isolateWardrobe: true,
+        isolateStackKey: 'top',
+      },
     }),
     true
   );
@@ -136,6 +165,7 @@ test('part-hover preview runtime owns cleanup ordering and raw RenderOps payload
   assert.deepEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
   assert.notEqual(payloads[1]?.cellLayoutBoxes, cellLayoutBoxes);
   assert.equal(payloads[1]?.isolateWardrobe, true);
+  assert.equal(payloads[1]?.isolateStackKey, 'top');
 });
 
 test('part-hover preview runtime preserves scoped cleanup and fails closed on invalid commands', () => {

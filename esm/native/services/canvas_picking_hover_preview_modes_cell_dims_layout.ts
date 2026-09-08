@@ -28,6 +28,7 @@ export type CellDimsLayoutPreviewPlan = {
   anchorParent: unknown;
   selectedBox: CellDimsLayoutPreviewBox;
   boxes: CellDimsLayoutPreviewBox[];
+  isolateStackKey: 'top' | 'bottom' | null;
 };
 
 function readFutureInternalWidthM(args: {
@@ -116,25 +117,28 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     widthClearanceM,
     heightClearanceM,
   } = args;
-  if (target.isBottom || typeof target.hitModuleKey !== 'number') return null;
+  if (typeof target.hitModuleKey !== 'number') return null;
 
   const layoutState = readLinearCellDimsLayoutState(App);
   if (!layoutState) return null;
   const { ui, cfg } = layoutState;
   const raw = ui.raw ?? {};
+  const isBottomStack = target.isBottom === true;
+  const stackKey = isBottomStack ? 'bottom' : 'top';
+  const effectiveApplyH = isBottomStack ? null : applyH;
   const ctx = buildCanvasLinearCellDimsGeometryContext({
     App,
     foundModuleIndex: target.hitModuleKey,
-    isBottomStack: false,
+    isBottomStack,
     ui,
     cfg,
     raw,
     applyW: applyW ?? null,
-    applyH: applyH ?? null,
+    applyH: effectiveApplyH ?? null,
     applyD: applyD ?? null,
     cellDoorCount: cellDoorCount ?? null,
   });
-  if (!ctx || ctx.moduleCount < 2) return null;
+  if (!ctx || ctx.moduleCount < 1) return null;
 
   const wardrobeRoot = __wp_getViewportRoots(App).wardrobeGroup;
   if (!wardrobeRoot) return null;
@@ -144,7 +148,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     const selector = findModuleSelectorObject({
       root: wardrobeRoot,
       moduleKey: i,
-      stackKey: 'top',
+      stackKey,
       toModuleKey: __wp_toModuleKey,
     });
     if (!selector) return null;
@@ -164,7 +168,7 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     target,
     selectedCurrentBox,
     applyW,
-    applyH,
+    effectiveApplyH,
     applyD,
     matchToleranceCm,
     minWidthM,
@@ -197,7 +201,10 @@ export function resolveLinearCellDimsLayoutPreview(args: {
       w: internalWidthM,
       selected: i === selectedIndex,
       doorCount:
-        i === selectedIndex && (cellDoorCount === 1 || cellDoorCount === 2)
+        i === selectedIndex &&
+        !isBottomStack &&
+        ctx.wardrobeType !== 'sliding' &&
+        (cellDoorCount === 1 || cellDoorCount === 2)
           ? cellDoorCount
           : Math.max(1, Math.round(Number(ctx.doorsPerModule[i]) || 1)),
       minWidthM,
@@ -212,11 +219,12 @@ export function resolveLinearCellDimsLayoutPreview(args: {
     currentX += internalWidthM + (i < ctx.moduleCount - 1 ? woodThickM : 0);
   }
 
-  if (!selectedBox || boxes.length < 2) return null;
+  if (!selectedBox || boxes.length < 1) return null;
   return {
     anchor: wardrobeRoot,
     anchorParent: wardrobeRoot,
     selectedBox,
     boxes,
+    isolateStackKey: ui.stackSplitEnabled === true ? stackKey : null,
   };
 }

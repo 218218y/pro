@@ -9,6 +9,7 @@ export interface CornerCellWidthDistribution {
   getCellCfg: CornerCellConfigReader;
   widthsCurr: number[];
   minW: number[];
+  doorsInCell: number[];
 }
 
 export interface CornerCellWidthSelectionState {

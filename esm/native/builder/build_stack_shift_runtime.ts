@@ -10,6 +10,29 @@ function isGlobalSketchFreePlacementObject(value: unknown): boolean {
   return partId.startsWith('sketch_box_free_');
 }
 
+export function markWardrobeRangeStackScope(args: {
+  App: AppContainer;
+  fromIdx: number;
+  toIdx: number;
+  stackKey: 'top' | 'bottom';
+}): void {
+  const group = readRecord(getWardrobeGroup(args.App));
+  const arr = readUnknownArray(group?.children);
+  const from = Math.max(0, Math.min(arr.length, Number.isFinite(args.fromIdx) ? args.fromIdx | 0 : 0));
+  const to = Math.max(from, Math.min(arr.length, Number.isFinite(args.toIdx) ? args.toIdx | 0 : arr.length));
+
+  for (let i = from; i < to; i += 1) {
+    const obj = arr[i];
+    if (isGlobalSketchFreePlacementObject(obj)) continue;
+    const entry = readRecord(obj);
+    if (!entry) continue;
+    const existingUserData = readRecord(entry.userData);
+    const userData = existingUserData || {};
+    userData.__wpStackRegion = args.stackKey;
+    if (!existingUserData) entry.userData = userData;
+  }
+}
+
 function shiftFiniteNumberProperty(record: Record<string, unknown>, key: string, delta: number): void {
   const value = record[key];
   if (typeof value === 'number' && Number.isFinite(value)) record[key] = value + delta;

@@ -11,6 +11,7 @@ import { resolveCellDimsPostClickHoverTarget } from './canvas_picking_cell_dims_
 import { resolveCellDimsFreeBoxHoverTarget } from './canvas_picking_cell_dims_free_box_hover.js';
 import { createCellDimsFreeBoxHoverCapabilities } from './canvas_picking_cell_dims_free_box_hover_runtime.js';
 import { resolveLinearCellDimsLayoutPreview } from './canvas_picking_hover_preview_modes_cell_dims_layout.js';
+import { resolveCornerCellDimsLayoutPreview } from './canvas_picking_hover_preview_modes_cell_dims_corner_layout.js';
 
 export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): boolean {
   if (!args.isCellDimsMode) return false;
@@ -107,23 +108,25 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
         Number(target.woodThick) * CELL_DIMENSION_PREVIEW_POLICY.woodThicknessScale
       )
     );
+    const layoutPreviewArgs = {
+      App,
+      target,
+      applyW,
+      applyH,
+      applyD,
+      measureObjectLocalBox,
+      matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+      minWidthM: CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+      minHeightM: CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+      minDepthM: CELL_DIMENSION_PREVIEW_POLICY.minDepthM,
+      widthClearanceM: CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM,
+      heightClearanceM: CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM,
+    };
     const fullLayout = freeBoxTarget
       ? null
-      : resolveLinearCellDimsLayoutPreview({
-          App,
-          target,
-          applyW,
-          applyH,
-          applyD,
-          cellDoorCount,
-          measureObjectLocalBox,
-          matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
-          minWidthM: CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
-          minHeightM: CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
-          minDepthM: CELL_DIMENSION_PREVIEW_POLICY.minDepthM,
-          widthClearanceM: CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM,
-          heightClearanceM: CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM,
-        });
+      : typeof target.hitModuleKey === 'number'
+        ? resolveLinearCellDimsLayoutPreview({ ...layoutPreviewArgs, cellDoorCount })
+        : resolveCornerCellDimsLayoutPreview(layoutPreviewArgs);
     const command: PartHoverPreviewCommand = fullLayout
       ? {
           kind: 'cell_layout',
@@ -142,6 +145,7 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
           op,
           cellLayoutBoxes: fullLayout.boxes,
           isolateWardrobe: true,
+          isolateStackKey: fullLayout.isolateStackKey,
         }
       : {
           kind: 'box',

@@ -206,6 +206,7 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   clearanceMeasurements?: BuilderPreviewMeasurementEntryLike[] | null;
   cellLayoutBoxes?: BuilderPreviewCellLayoutBoxLike[] | null;
   isolateWardrobe?: BuilderPreviewBool;
+  isolateStackKey?: 'top' | 'bottom' | null;
 }
 export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   App?: AppContainer;

@@ -42,6 +42,7 @@ export type PartHoverCellLayoutPreviewCommand = PartHoverPreviewCommandBase & {
   kind: 'cell_layout';
   cellLayoutBoxes: readonly PartHoverCellLayoutPreviewBox[];
   isolateWardrobe: boolean;
+  isolateStackKey: 'top' | 'bottom' | null;
 };
 
 export type PartHoverPreviewCommand =
@@ -77,8 +78,15 @@ export function validatePartHoverPreviewCommand(command: PartHoverPreviewCommand
     violations.push('object_boxes preview requires at least one preview object');
   }
   if (command.kind === 'cell_layout') {
-    if (command.cellLayoutBoxes.length < 2) {
-      violations.push('cell_layout preview requires at least two cells');
+    if (command.cellLayoutBoxes.length < 1) {
+      violations.push('cell_layout preview requires at least one cell');
+    }
+    if (
+      command.isolateStackKey !== null &&
+      command.isolateStackKey !== 'top' &&
+      command.isolateStackKey !== 'bottom'
+    ) {
+      violations.push('cell_layout isolateStackKey must be top, bottom, or null');
     }
     let selectedCount = 0;
     for (const [index, box] of command.cellLayoutBoxes.entries()) {

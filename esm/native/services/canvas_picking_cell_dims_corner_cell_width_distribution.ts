@@ -77,7 +77,9 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
         }
       }
       const currentWidth = widthsCurr[adjIdx];
-      if (currentWidth == null) return { cellCount, modsPrev, modsNext, getCellCfg, widthsCurr, minW };
+      if (currentWidth == null) {
+        return { cellCount, modsPrev, modsNext, getCellCfg, widthsCurr, minW, doorsInCell };
+      }
       const nextV = currentWidth + delta;
       widthsCurr[adjIdx] = Math.max(minW[adjIdx] ?? 5, nextV);
     }
@@ -92,5 +94,6 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
     getCellCfg,
     widthsCurr,
     minW,
+    doorsInCell,
   };
 }

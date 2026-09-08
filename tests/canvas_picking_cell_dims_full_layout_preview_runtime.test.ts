@@ -146,12 +146,35 @@ test('cell-dims full-layout preview uses commit width policy and predicts every 
   );
 });
 
-test('cell-dims full-layout preview fails closed outside the proven top linear layout', () => {
-  const selector = createSelector(0);
-  const wardrobeRoot = { children: [selector] };
+test('cell-dims full-layout preview supports one-cell and bottom-stack linear layouts', () => {
+  const topSelector = createSelector(0);
+  const bottomSelector = {
+    userData: { isModuleSelector: true, moduleIndex: 0, __wpStack: 'bottom' },
+    children: [],
+  };
+  const wardrobeRoot = { children: [topSelector, bottomSelector] };
   const state = {
-    ui: { raw: { width: 90, height: 200, depth: 55, doors: 1 } },
-    config: { wardrobeType: 'hinged', modulesConfiguration: [{ doors: 1 }] },
+    ui: {
+      stackSplitEnabled: true,
+      raw: {
+        width: 90,
+        height: 200,
+        depth: 55,
+        doors: 1,
+        stackSplitLowerWidth: 80,
+        stackSplitLowerWidthManual: true,
+        stackSplitLowerHeight: 85,
+        stackSplitLowerDepth: 50,
+        stackSplitLowerDepthManual: true,
+        stackSplitLowerDoors: 1,
+        stackSplitLowerDoorsManual: true,
+      },
+    },
+    config: {
+      wardrobeType: 'hinged',
+      modulesConfiguration: [{ doors: 1 }],
+      stackSplitLowerModulesConfiguration: [{ doors: 1 }],
+    },
     runtime: {},
     mode: {},
     meta: {},
@@ -162,46 +185,52 @@ test('cell-dims full-layout preview fails closed outside the proven top linear l
   } as any;
   const baseTarget = {
     hitModuleKey: 0,
-    hitSelectorObj: selector,
+    hitSelectorObj: topSelector,
     isBottom: false,
     woodThick: 0.018,
+    info: {},
   } as any;
 
-  const singleCell = resolveLinearCellDimsLayoutPreview({
+  const topPlan = resolveLinearCellDimsLayoutPreview({
     App,
     target: baseTarget,
     applyW: 100,
     applyH: null,
     applyD: null,
     cellDoorCount: null,
-    measureObjectLocalBox: () => ({
-      centerX: 0,
-      centerY: 1,
-      centerZ: 0,
-      width: 0.864,
-      height: 1.96,
-      depth: 0.55,
-    }),
+    measureObjectLocalBox: (_App, object, parent) => {
+      assert.equal(parent, wardrobeRoot);
+      assert.equal(object, topSelector);
+      return { centerX: 0, centerY: 1, centerZ: 0, width: 0.864, height: 1.96, depth: 0.55 };
+    },
     ...PREVIEW_POLICY_ARGS,
   });
-  assert.equal(singleCell, null);
+  assert.ok(topPlan);
+  assert.equal(topPlan.boxes.length, 1);
+  assert.equal(topPlan.isolateStackKey, 'top');
 
-  const bottomCell = resolveLinearCellDimsLayoutPreview({
+  const bottomPlan = resolveLinearCellDimsLayoutPreview({
     App,
-    target: { ...baseTarget, isBottom: true },
-    applyW: 100,
-    applyH: null,
-    applyD: null,
-    cellDoorCount: null,
-    measureObjectLocalBox: () => ({
-      centerX: 0,
-      centerY: 1,
-      centerZ: 0,
-      width: 0.864,
-      height: 1.96,
-      depth: 0.55,
-    }),
+    target: { ...baseTarget, hitSelectorObj: bottomSelector, isBottom: true },
+    applyW: 95,
+    applyH: 150,
+    applyD: 60,
+    cellDoorCount: 2,
+    measureObjectLocalBox: (_App, object, parent) => {
+      assert.equal(parent, wardrobeRoot);
+      assert.equal(object, bottomSelector);
+      return { centerX: 0, centerY: 0.425, centerZ: 0, width: 0.764, height: 0.814, depth: 0.5 };
+    },
     ...PREVIEW_POLICY_ARGS,
   });
-  assert.equal(bottomCell, null);
+  assert.ok(bottomPlan);
+  assert.equal(bottomPlan.boxes.length, 1);
+  assert.equal(bottomPlan.isolateStackKey, 'bottom');
+  assert.equal(
+    bottomPlan.boxes[0]!.doorCount,
+    1,
+    'bottom stack must not preview unsupported door-count edits'
+  );
+  assertNear(bottomPlan.boxes[0]!.boxH, 0.814 - CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM);
+  assertNear(bottomPlan.boxes[0]!.d, 0.6);
 });

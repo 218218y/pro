@@ -1,4 +1,4 @@
-import { shiftWardrobeRange } from './build_stack_shift_runtime.js';
+import { markWardrobeRangeStackScope, shiftWardrobeRange } from './build_stack_shift_runtime.js';
 import { readUnknownArray } from './build_flow_readers.js';
 
 import type { AppContainer, UnknownRecord } from '../../../types';
@@ -18,6 +18,12 @@ export function finalizeBuiltStackSplitLowerRange(args: {
     dy: 0,
     dz: Number.isFinite(args.splitDzBottom) ? args.splitDzBottom : 0,
     adjustHandleAbsY: false,
+  });
+  markWardrobeRangeStackScope({
+    App: args.App,
+    fromIdx: args.splitBottomStartIndex,
+    toIdx: splitBottomEndIndex,
+    stackKey: 'bottom',
   });
   return groupChildren ? groupChildren.length : -1;
 }

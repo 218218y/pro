@@ -138,7 +138,9 @@ export function readStoredWidthCm(cfgCell: UnknownRecord, App: AppContainer, op:
   }
 }
 
-export function buildCornerCellDimsContext(args: CanvasCornerCellDimsArgs): CornerCellDimsContext {
+export function buildCornerCellDimsContext(
+  args: Omit<CanvasCornerCellDimsArgs, 'autoWidthMatchToleranceCm'>
+): CornerCellDimsContext {
   const {
     App,
     ui,

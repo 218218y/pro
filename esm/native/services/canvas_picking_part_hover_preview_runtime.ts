@@ -36,6 +36,7 @@ function createPreviewPayload(
       ? {
           cellLayoutBoxes: command.cellLayoutBoxes.map(box => ({ ...box })),
           isolateWardrobe: command.isolateWardrobe,
+          isolateStackKey: command.isolateStackKey,
         }
       : {}),
     fillFront: command.fillFront,
