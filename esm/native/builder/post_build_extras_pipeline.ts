@@ -11,6 +11,7 @@ import {
   snapDrawersToTargetsViaService,
   syncDoorsVisualsNow,
   getDrawerRebuildIntent,
+  syncManualDoorSplitTransparency,
 } from '../runtime/doors_access.js';
 import { reportError } from '../runtime/api.js';
 import { readRuntimeScalarOrDefault } from '../runtime/runtime_selectors.js';
@@ -325,6 +326,10 @@ export function applyPostBuildExtras(input: BuildContextLike) {
       stackKey: __stackKey,
     });
   }
+
+  // Manual split transparency is an authoring overlay, not model state. Reapply it
+  // after every complete door build so rebuilt/segmented/corner doors keep the same view.
+  syncManualDoorSplitTransparency(App);
 
   // Shadow map refresh
   const shadowMap = getShadowMap(App);

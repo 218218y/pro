@@ -2,10 +2,14 @@
 
 import type { AppContainer } from '../../../../types';
 import {
+  clearCanvasDoorSplitVerticalLock,
   clearSketchHoverPreview,
   getBrowserTimers,
   getBuilderRenderOps,
+  MODES,
+  readModeStateFromApp,
   reportError,
+  setCanvasDoorSplitVerticalLockPressed,
   syncCanvasPickingViewportMatrices,
 } from '../../services/api.js';
 import {
@@ -104,6 +108,64 @@ export function createCanvasInteractionState(): CanvasInteractionState {
     rectCache: null,
     rectCacheAt: 0,
     disposed: false,
+  };
+}
+
+function isEditableCanvasKeyboardTarget(target: unknown): boolean {
+  const rec = readRecord(target);
+  if (!rec) return false;
+  const tagName = typeof rec.tagName === 'string' ? rec.tagName.toLowerCase() : '';
+  if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') return true;
+  return rec.isContentEditable === true;
+}
+
+function isManualDoorSplitModeActive(App: AppContainer): boolean {
+  const mode = readModeStateFromApp(App);
+  const opts = readRecord(mode.opts);
+  return mode.primary === MODES.SPLIT && opts?.splitVariant === 'custom';
+}
+
+export function installCanvasDoorSplitAxisLockInteraction(App: AppContainer, domEl: HTMLElement): () => void {
+  const doc = domEl.ownerDocument || null;
+  const win = doc?.defaultView || null;
+  if (!doc) return () => clearCanvasDoorSplitVerticalLock(App);
+
+  const onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Shift' || event.repeat || isEditableCanvasKeyboardTarget(event.target)) return;
+    try {
+      if (!isManualDoorSplitModeActive(App)) return;
+      setCanvasDoorSplitVerticalLockPressed(App, true);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.keydown', err);
+    }
+  };
+
+  const onKeyUp = (event: KeyboardEvent): void => {
+    if (event.key !== 'Shift') return;
+    try {
+      setCanvasDoorSplitVerticalLockPressed(App, false);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.keyup', err);
+    }
+  };
+
+  const clearLock = (): void => {
+    try {
+      clearCanvasDoorSplitVerticalLock(App);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, 'splitAxisLock.clear', err);
+    }
+  };
+
+  doc.addEventListener('keydown', onKeyDown, false);
+  doc.addEventListener('keyup', onKeyUp, false);
+  win?.addEventListener('blur', clearLock, false);
+
+  return () => {
+    doc.removeEventListener('keydown', onKeyDown, false);
+    doc.removeEventListener('keyup', onKeyUp, false);
+    win?.removeEventListener('blur', clearLock, false);
+    clearLock();
   };
 }
 

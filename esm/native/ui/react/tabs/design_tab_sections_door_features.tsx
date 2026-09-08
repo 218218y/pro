@@ -207,8 +207,26 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                 {model.splitIsCustom ? 'סיום עריכה' : 'חיתוך דלתות ידני'}
               </ModeToggleButton>
 
+              {model.splitIsCustom ? (
+                <ModeToggleButton
+                  active={model.splitDoorsTransparent}
+                  icon={
+                    <i
+                      className={model.splitDoorsTransparent ? 'fas fa-eye' : 'fas fa-eye-slash'}
+                      aria-hidden="true"
+                    />
+                  }
+                  onClick={model.toggleSplitDoorsTransparent}
+                  className="wp-r-mt-2"
+                  data-testid="design-split-transparent-doors-button"
+                >
+                  דלתות שקופות
+                </ModeToggleButton>
+              ) : null}
+
               <div className={model.splitIsCustom ? 'wp-r-editmode-hint' : 'wp-r-editmode-hint hidden'}>
-                הזז עכבר לראות קו חיתוך. לחץ להוספה. לחץ שוב על קו קיים כדי להסיר. אפשר כמה חיתוכים.
+                הזז עכבר לראות קו חיתוך. לחץ להוספה. לחץ שוב על קו קיים כדי להסיר. אפשר כמה חיתוכים. החזק
+                Shift כדי לנעול את גובה החיתוך ולעבור ימינה/שמאלה לדלת סמוכה באותו גובה.
               </div>
             </div>
           ) : null}

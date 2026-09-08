@@ -14,7 +14,11 @@ export type DesignTabSwatchDropPos = 'before' | 'after' | '';
 export type DesignTabSwatchReorderPos = 'before' | 'after' | 'end';
 export type DesignTabFeatureToggleKey = 'groovesEnabled' | 'splitDoors' | 'removeDoorsEnabled' | 'hasCornice';
 
-export type SplitModeOptsLike = { splitVariant?: string; cellDoorCount?: 1 | 2 } & UnknownRecord;
+export type SplitModeOptsLike = {
+  splitVariant?: string;
+  splitDoorsTransparent?: boolean;
+  cellDoorCount?: 1 | 2;
+} & UnknownRecord;
 
 export type EnterModeOptsLike = {
   closeDoors: boolean;
@@ -48,6 +52,7 @@ export type DesignTabFeedbackApi = {
 export type DesignTabModeStateSummary = {
   primaryMode: string;
   splitVariant: string;
+  splitDoorsTransparent: boolean;
   cellDoorCount: 1 | 2 | null;
 };
 
@@ -102,6 +107,7 @@ export function readDesignTabModeState(mode: unknown): DesignTabModeStateSummary
   return {
     primaryMode: typeof modeRec?.primary === 'string' && modeRec.primary ? modeRec.primary : 'none',
     splitVariant: readSplitModeVariant(opts?.splitVariant),
+    splitDoorsTransparent: opts?.splitDoorsTransparent === true,
     cellDoorCount: opts?.cellDoorCount === 1 || opts?.cellDoorCount === 2 ? opts.cellDoorCount : null,
   };
 }

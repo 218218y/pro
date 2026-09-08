@@ -7,6 +7,7 @@ import {
   createCanvasInteractionState,
   createEventBinding,
   createRectCacheOps,
+  installCanvasDoorSplitAxisLockInteraction,
   reportCanvasInteractionsNonFatal,
   type CanvasInteractionsDeps,
   type CanvasInteractionsOptions,
@@ -39,6 +40,7 @@ export function installCanvasInteractions(
 
   const hoverOps = createCanvasHoverInteractionOps(App, deps, state, rectOps);
   const pointerOps = createCanvasPointerInteractionOps(App, deps, state, normalizedOpts, rectOps);
+  const disposeSplitAxisLock = installCanvasDoorSplitAxisLockInteraction(App, domEl);
 
   const onPointerMove: EventListener = e => {
     hoverOps.onPointerMove(e);
@@ -60,6 +62,7 @@ export function installCanvasInteractions(
     state.disposed = true;
     try {
       hoverOps.disposeHover();
+      disposeSplitAxisLock();
       for (const fn of removers) {
         try {
           fn();

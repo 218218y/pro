@@ -92,6 +92,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
         ndcY: args.ndcY,
         hitDoorGroup,
         referenceY: hit ? hit.hitY : null,
+        lockVertical: true,
       });
 
   let doorBaseKey = screenRemoveCandidate?.doorBaseKey || hitDoorPid;

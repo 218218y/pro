@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../../../types';
 
-import { enterPrimaryMode, exitPrimaryMode } from '../actions/modes_actions.js';
+import { enterPrimaryMode, exitPrimaryMode, patchPrimaryModeOpts } from '../actions/modes_actions.js';
 import { setUiFlag } from '../actions/store_actions.js';
 import { applyStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import { __designTabReportNonFatal } from './design_tab_multicolor_shared.js';
@@ -42,6 +42,7 @@ export type DesignTabEditModesControllerArgs = {
   grooveActive: boolean;
   splitActive: boolean;
   splitIsCustom: boolean;
+  splitDoorsTransparent: boolean;
   removeDoorActive: boolean;
   cellDoorEditActive: boolean;
   cellDoorCount: 1 | 2 | null;
@@ -53,6 +54,7 @@ export type DesignTabEditModesController = {
   toggleGrooveEdit: () => void;
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
+  toggleSplitDoorsTransparent: () => void;
   toggleRemoveDoorEdit: () => void;
   setCellDoorCount: (count: 1 | 2) => void;
 };
@@ -289,6 +291,22 @@ export function createDesignTabEditModesController(
     toggleSplitCustomEdit: () => {
       if (args.splitIsCustom) exitEditMode(args.splitModeId);
       else enterSplitEditMode('חיתוך דלתות ידני - הזז עכבר, לחץ להוספה/הסרה', 'custom');
+    },
+    toggleSplitDoorsTransparent: () => {
+      if (!args.splitIsCustom) return;
+      const next = !args.splitDoorsTransparent;
+      const applied = patchPrimaryModeOpts(
+        args.app,
+        String(args.splitModeId),
+        { splitDoorsTransparent: next },
+        'react:design:splitDoorsTransparent'
+      );
+      if (!applied) {
+        reportNonFatal(
+          'editModes:splitDoorsTransparent',
+          new Error('Manual split transparency mode option could not be applied')
+        );
+      }
     },
     toggleRemoveDoorEdit: () => {
       if (args.removeDoorActive) exitEditMode(args.removeDoorModeId);

@@ -13,7 +13,11 @@
 
 import type { AppContainer, DoorsServiceAccessLike, UnknownRecord } from '../../../types';
 
-import { ensureDoorsService } from '../runtime/doors_access.js';
+import {
+  ensureDoorsService,
+  isManualDoorSplitTransparencyEnabled,
+  syncManualDoorSplitTransparency,
+} from '../runtime/doors_access.js';
 import { hasCallableContract } from '../runtime/install_idempotency_patterns.js';
 import { resolveInstallContext, type InstallContext } from '../runtime/install_context.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
@@ -71,6 +75,8 @@ export {
   rebuildDrawerMeta,
   isInternalDrawerIdStrict,
   getDrawerMetaMap,
+  isManualDoorSplitTransparencyEnabled,
+  syncManualDoorSplitTransparency,
 };
 
 type DoorsServiceApi = DoorsServiceAccessLike &

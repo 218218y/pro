@@ -57,6 +57,8 @@ export {
   closeAllLocal,
   closeDrawerById,
   snapDrawersToTargets,
+  isManualDoorSplitTransparencyEnabled,
+  syncManualDoorSplitTransparency,
 } from './doors_runtime.js';
 export {
   getHistoryStatusMaybe,
@@ -95,3 +97,7 @@ export {
   setHardCloseUntil,
   setHardCloseForMs,
 } from '../runtime/doors_access.js';
+export {
+  clearCanvasDoorSplitVerticalLock,
+  setCanvasDoorSplitVerticalLockPressed,
+} from './canvas_picking_door_split_pointer_y.js';

@@ -1,4 +1,12 @@
-import { getTools, patchUiSoft, snapDrawersToTargets, getDrawersArray } from '../services/api.js';
+import {
+  getTools,
+  patchUiSoft,
+  snapDrawersToTargets,
+  getDrawersArray,
+  clearCanvasDoorSplitVerticalLock,
+  syncManualDoorSplitTransparency,
+  triggerRenderViaPlatform,
+} from '../services/api.js';
 
 import type { ModeActionOptsLike } from '../../../types';
 
@@ -76,6 +84,20 @@ function applyManualLayoutModeOpts(App: AppLike, opts: ModeActionOptsLike): void
   }
 }
 
+function applyDoorSplitAuthoringOpts(App: AppLike, mode: string, opts: ModeActionOptsLike): void {
+  const modes = getModesMap();
+  const splitMode = modes.SPLIT || 'split';
+  const customSplitActive = mode === splitMode && opts.splitVariant === 'custom';
+  const enabled = customSplitActive && opts.splitDoorsTransparent === true;
+  try {
+    if (!customSplitActive) clearCanvasDoorSplitVerticalLock(App);
+    const changed = syncManualDoorSplitTransparency(App, enabled);
+    if (changed > 0) triggerRenderViaPlatform(App, true);
+  } catch (err) {
+    modesReportNonFatal(App, 'esm/native/ui/modes_mode_opts.ts:doorSplitTransparency', err);
+  }
+}
+
 function applyExtDrawerModeOpts(App: AppLike, opts: ModeActionOptsLike): void {
   try {
     const patch: Record<string, unknown> = {};
@@ -97,6 +119,7 @@ export function applyModeOptsImpl(App: AppLike, mode: string, opts?: ModeActionO
   const cleanOpts: ModeActionOptsLike = isRecord(opts) ? { ...opts } : {};
 
   try {
+    applyDoorSplitAuthoringOpts(App, mode, cleanOpts);
     if (mode === modes.HANDLE) applyHandleModeOpts(App, cleanOpts);
     if (mode === modes.LAYOUT) applyLayoutModeOpts(App, cleanOpts);
     if (mode === modes.MANUAL_LAYOUT) applyManualLayoutModeOpts(App, cleanOpts);

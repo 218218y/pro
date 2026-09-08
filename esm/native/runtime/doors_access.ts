@@ -64,3 +64,7 @@ export {
   resolveDividerDrawerClearanceTarget,
   resolveDividerDrawerDoorClearanceTarget,
 } from './divider_drawer_door_clearance.js';
+export {
+  isManualDoorSplitTransparencyEnabled,
+  syncManualDoorSplitTransparency,
+} from './door_split_transparency.js';

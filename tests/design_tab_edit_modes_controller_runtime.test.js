@@ -13,6 +13,10 @@ function loadDesignTabEditModesControllerModule(calls) {
       return {
         enterPrimaryMode: (...args) => calls.push(['enterPrimaryMode', ...args]),
         exitPrimaryMode: (...args) => calls.push(['exitPrimaryMode', ...args]),
+        patchPrimaryModeOpts: (...args) => {
+          calls.push(['patchPrimaryModeOpts', ...args]);
+          return true;
+        },
       };
     }
     if (specifier === '../actions/builder_actions.js') {
@@ -136,6 +140,38 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
   assert.equal(splitCall[3].modeOpts.splitVariant, 'custom');
 
   calls.length = 0;
+  const transparentController = mod.createDesignTabEditModesController({
+    app: { id: 'app' },
+    feedback: { toast: (...args) => calls.push(['toast', ...args]) },
+    grooveModeId: 'groove',
+    splitModeId: 'split',
+    removeDoorModeId: 'remove_door',
+    cellDoorModeId: 'cell_dims',
+    groovesEnabled: false,
+    splitDoors: true,
+    removeDoorsEnabled: false,
+    groovesDirty: false,
+    removedDoorsDirty: false,
+    grooveActive: false,
+    splitActive: true,
+    splitIsCustom: true,
+    splitDoorsTransparent: false,
+    removeDoorActive: false,
+    cellDoorEditActive: false,
+    cellDoorCount: null,
+  });
+  transparentController.toggleSplitDoorsTransparent();
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'patchPrimaryModeOpts' &&
+        entry[2] === 'split' &&
+        JSON.stringify(entry[3]) === JSON.stringify({ splitDoorsTransparent: true }) &&
+        entry[4] === 'react:design:splitDoorsTransparent'
+    )
+  );
+
+  calls.length = 0;
   controller.setCellDoorCount(1);
   const cellDoorCall = calls.find(entry => entry[0] === 'enterPrimaryMode' && entry[2] === 'cell_dims');
   assert.ok(cellDoorCall);
@@ -229,6 +265,9 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
             },
             exitPrimaryMode() {
               throw new Error('exit-boom');
+            },
+            patchPrimaryModeOpts() {
+              throw new Error('patch-mode-boom');
             },
           };
         }

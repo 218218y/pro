@@ -273,6 +273,7 @@ export function handleCanvasDoorCustomSplitClick(args: {
     ndcY,
     hitDoorGroup: click.doorHitGroup,
     referenceY: doorHitY,
+    lockVertical: true,
   });
   if (!bounds || typeof hitY !== 'number') return true;
 

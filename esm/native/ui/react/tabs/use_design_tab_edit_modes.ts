@@ -18,6 +18,7 @@ type UseDesignTabEditModesArgs = {
   removedDoorsDirty: boolean;
   primaryMode: string;
   splitVariant: string;
+  splitDoorsTransparent: boolean;
   cellDoorCount: 1 | 2 | null;
 };
 
@@ -25,6 +26,7 @@ export type DesignTabEditModesModel = {
   grooveActive: boolean;
   splitActive: boolean;
   splitIsCustom: boolean;
+  splitDoorsTransparent: boolean;
   removeDoorActive: boolean;
   cellDoorEditActive: boolean;
   cellDoorCount: 1 | 2 | null;
@@ -32,6 +34,7 @@ export type DesignTabEditModesModel = {
   toggleGrooveEdit: () => void;
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
+  toggleSplitDoorsTransparent: () => void;
   toggleRemoveDoorEdit: () => void;
   setCellDoorCount: (count: 1 | 2) => void;
 };
@@ -80,6 +83,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
         grooveActive: modeState.grooveActive,
         splitActive: modeState.splitActive,
         splitIsCustom: modeState.splitIsCustom,
+        splitDoorsTransparent: args.splitDoorsTransparent,
         removeDoorActive: modeState.removeDoorActive,
         cellDoorEditActive: modeState.cellDoorEditActive,
         cellDoorCount: args.cellDoorCount,
@@ -99,6 +103,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
       modeState.grooveActive,
       modeState.splitActive,
       modeState.splitIsCustom,
+      args.splitDoorsTransparent,
       modeState.removeDoorActive,
       modeState.cellDoorEditActive,
       args.cellDoorCount,
@@ -109,6 +114,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
     grooveActive: modeState.grooveActive,
     splitActive: modeState.splitActive,
     splitIsCustom: modeState.splitIsCustom,
+    splitDoorsTransparent: modeState.splitIsCustom && args.splitDoorsTransparent,
     removeDoorActive: modeState.removeDoorActive,
     cellDoorEditActive: modeState.cellDoorEditActive,
     cellDoorCount: modeState.cellDoorEditActive ? args.cellDoorCount : null,
@@ -116,6 +122,7 @@ export function useDesignTabEditModes(args: UseDesignTabEditModesArgs): DesignTa
     toggleGrooveEdit: controller.toggleGrooveEdit,
     toggleSplitEdit: controller.toggleSplitEdit,
     toggleSplitCustomEdit: controller.toggleSplitCustomEdit,
+    toggleSplitDoorsTransparent: controller.toggleSplitDoorsTransparent,
     toggleRemoveDoorEdit: controller.toggleRemoveDoorEdit,
     setCellDoorCount: controller.setCellDoorCount,
   };

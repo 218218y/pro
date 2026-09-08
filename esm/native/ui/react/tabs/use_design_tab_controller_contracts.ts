@@ -38,6 +38,7 @@ export type DesignTabDoorFeaturesSectionModel = {
   grooveActive: boolean;
   splitActive: boolean;
   splitIsCustom: boolean;
+  splitDoorsTransparent: boolean;
   removeDoorActive: boolean;
   cellDoorEditActive: boolean;
   cellDoorCount: 1 | 2 | null;
@@ -51,6 +52,7 @@ export type DesignTabDoorFeaturesSectionModel = {
   setGrooveOrientation: (orientation: GrooveOrientation) => void;
   toggleSplitEdit: () => void;
   toggleSplitCustomEdit: () => void;
+  toggleSplitDoorsTransparent: () => void;
   toggleRemoveDoorEdit: () => void;
   setCellDoorCount: (count: 1 | 2) => void;
   toggleRoundedFrameSideShelves: () => void;

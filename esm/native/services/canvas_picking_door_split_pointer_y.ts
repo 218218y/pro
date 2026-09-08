@@ -13,6 +13,63 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
+type CanvasDoorSplitAxisLockState = {
+  pressed: boolean;
+  latestWorldY: number | null;
+  lockedWorldY: number | null;
+};
+
+const canvasDoorSplitAxisLockByApp = new WeakMap<object, CanvasDoorSplitAxisLockState>();
+
+function getCanvasDoorSplitAxisLockState(App: AppContainer): CanvasDoorSplitAxisLockState {
+  const key = App as object;
+  const current = canvasDoorSplitAxisLockByApp.get(key);
+  if (current) return current;
+  const created: CanvasDoorSplitAxisLockState = {
+    pressed: false,
+    latestWorldY: null,
+    lockedWorldY: null,
+  };
+  canvasDoorSplitAxisLockByApp.set(key, created);
+  return created;
+}
+
+export function setCanvasDoorSplitVerticalLockPressed(App: AppContainer, pressed: boolean): void {
+  const state = getCanvasDoorSplitAxisLockState(App);
+  const next = !!pressed;
+  if (state.pressed === next) return;
+
+  state.pressed = next;
+  if (next) {
+    state.lockedWorldY = isFiniteNumber(state.latestWorldY) ? Number(state.latestWorldY) : null;
+  } else {
+    state.lockedWorldY = null;
+  }
+}
+
+export function resolveCanvasDoorSplitVerticalLockedWorldY(
+  App: AppContainer,
+  worldY: number | null
+): number | null {
+  const state = getCanvasDoorSplitAxisLockState(App);
+  if (!isFiniteNumber(worldY)) {
+    return state.pressed && isFiniteNumber(state.lockedWorldY) ? Number(state.lockedWorldY) : null;
+  }
+
+  const current = Number(worldY);
+  if (!state.pressed) {
+    state.latestWorldY = current;
+    return current;
+  }
+
+  if (!isFiniteNumber(state.lockedWorldY)) state.lockedWorldY = current;
+  return Number(state.lockedWorldY);
+}
+
+export function clearCanvasDoorSplitVerticalLock(App: AppContainer): void {
+  canvasDoorSplitAxisLockByApp.delete(App as object);
+}
+
 function readDoorMarkerPlaneZ(hitDoorGroup: unknown): number {
   const group = asRecord(hitDoorGroup);
   const userData = asRecord(group?.userData);
@@ -82,15 +139,18 @@ export function resolveCanvasDoorSplitPointerWorldY(args: {
   ndcY?: number | null | undefined;
   hitDoorGroup?: unknown;
   referenceY?: number | null | undefined;
+  lockVertical?: boolean | undefined;
 }): number | null {
   const { App, raycaster, mouse, ndcX, ndcY, hitDoorGroup, referenceY } = args;
   const reference = isFiniteNumber(referenceY) ? Number(referenceY) : null;
+  const finalizeY = (value: number | null): number | null =>
+    args.lockVertical ? resolveCanvasDoorSplitVerticalLockedWorldY(App, value) : value;
   if (!raycaster || !mouse || !isFiniteNumber(ndcX) || !isFiniteNumber(ndcY) || !hitDoorGroup) {
-    return reference;
+    return finalizeY(reference);
   }
 
   const camera = args.camera || getCamera(App);
-  if (!camera) return reference;
+  if (!camera) return finalizeY(reference);
 
   trySyncDoorGroupMatrix(hitDoorGroup);
   const localHit = __wp_intersectScreenWithLocalZPlane({
@@ -103,8 +163,8 @@ export function resolveCanvasDoorSplitPointerWorldY(args: {
     localParent: hitDoorGroup,
     planeZ: readDoorMarkerPlaneZ(hitDoorGroup),
   });
-  if (!localHit) return reference;
+  if (!localHit) return finalizeY(reference);
 
   const projectedWorldY = localPointToWorldY(App, hitDoorGroup, localHit);
-  return isFiniteNumber(projectedWorldY) ? projectedWorldY : reference;
+  return finalizeY(isFiniteNumber(projectedWorldY) ? projectedWorldY : reference);
 }

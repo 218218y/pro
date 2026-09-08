@@ -8,7 +8,12 @@ import {
   enterPrimaryMode as nativeEnterPrimaryMode,
   exitPrimaryMode as nativeExitPrimaryMode,
 } from '../../modes.js';
-import { readStoreStateMaybe, reportError, resetAllEditModesViaService } from '../../../services/api.js';
+import {
+  patchMode,
+  readStoreStateMaybe,
+  reportError,
+  resetAllEditModesViaService,
+} from '../../../services/api.js';
 
 type StoreStateLike = {
   mode?: unknown;
@@ -120,5 +125,36 @@ export function exitPrimaryMode(app: AppContainer, expectedMode?: string, opts?:
     getNativeModeApi().exit(app, expectedMode, opts || {});
   } catch (error) {
     reportModeActionFailure(app, 'exitPrimaryMode.ownerRejected', error);
+  }
+}
+
+export function patchPrimaryModeOpts(
+  app: AppContainer,
+  expectedMode: string,
+  optsPatch: UnknownRecord,
+  source = 'react:modeOpts'
+): boolean {
+  try {
+    const mode = getModeRecord(app);
+    const primary = typeof mode.primary === 'string' && mode.primary ? mode.primary : 'none';
+    if (primary !== expectedMode) return false;
+    const currentOpts = asRec(mode.opts);
+    const result = patchMode(
+      app,
+      { opts: { ...currentOpts, ...asRec(optsPatch) } },
+      { source, noBuild: true, noHistory: true, noAutosave: true, noPersist: true, noCapture: true }
+    );
+    if (result === false) {
+      reportModeActionFailure(
+        app,
+        'patchPrimaryModeOpts.rejected',
+        new Error('Mode opts patch was rejected')
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    reportModeActionFailure(app, 'patchPrimaryModeOpts.ownerRejected', error);
+    return false;
   }
 }
