@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../types';
 import { readModeOpts, readPrimaryMode, readUiState } from './canvas_picking_interior_hover_state.js';
 import { readActiveManualTool, readCanvasPaintSelection } from './canvas_picking_tool_access.js';
+import { parseSketchBoxToolSpec } from './canvas_picking_sketch_box_runtime_spec.js';
 
 export type CanvasPrecisionAxis = 'horizontal' | 'vertical';
 export type CanvasPrecisionClientPoint = { cx: number; cy: number };
@@ -13,6 +14,7 @@ type CanvasPrecisionAxisLockState = {
   axis: CanvasPrecisionAxis | null;
   localLatest: { x: number; y: number } | null;
   localAnchor: { x: number; y: number } | null;
+  keyboardXOffsetM: number;
   keyboardYOffsetM: number;
 };
 
@@ -73,6 +75,36 @@ export function readCanvasPrecisionAxisLockScope(App: AppContainer): string | nu
   return null;
 }
 
+function allowsCanvasPrecisionHorizontalKeyboardNudge(App: AppContainer): boolean {
+  const primary = readPrimaryMode(App);
+  const opts = readModeOpts(App);
+
+  if (primary === 'handle' && opts.handlePlacement === 'manual') return true;
+  if (primary === 'door_trim') return true;
+
+  if (primary === 'groove') {
+    const ui = readUiState(App);
+    return ui.grooveManualEnabled === true && readPositiveDraftCm(ui.currentGrooveDraftWidthCm) != null;
+  }
+
+  if (primary === 'paint') {
+    const ui = readUiState(App);
+    if (readPositiveDraftCm(ui.currentMirrorDraftWidthCm) == null) return false;
+    const selection = readCanvasPaintSelection(App);
+    return selection === 'mirror' || selection === 'black_glass' || selection === 'frosted_glass';
+  }
+
+  if (primary === 'manual_layout') {
+    const manualTool = readManualToolScope(App, opts.manualTool);
+    if (manualTool === 'sketch_box_divider') return true;
+    if (!manualTool.startsWith('sketch_box:')) return false;
+    const spec = parseSketchBoxToolSpec(manualTool);
+    return spec?.widthCm != null && Number.isFinite(spec.widthCm) && spec.widthCm > 0;
+  }
+
+  return false;
+}
+
 function getState(App: AppContainer): CanvasPrecisionAxisLockState {
   const key = App as object;
   const current = stateByApp.get(key);
@@ -85,6 +117,7 @@ function getState(App: AppContainer): CanvasPrecisionAxisLockState {
     axis: null,
     localLatest: null,
     localAnchor: null,
+    keyboardXOffsetM: 0,
     keyboardYOffsetM: 0,
   };
   stateByApp.set(key, created);
@@ -108,6 +141,7 @@ export function setCanvasPrecisionAxisLockPressed(App: AppContainer, pressed: bo
   state.anchor = next && nextScope && state.latest ? clonePoint(state.latest) : null;
   if (scopeChanged) {
     state.localLatest = null;
+    state.keyboardXOffsetM = 0;
     state.keyboardYOffsetM = 0;
   }
   state.localAnchor = next && nextScope && state.localLatest ? { ...state.localLatest } : null;
@@ -128,6 +162,7 @@ export function resolveCanvasPrecisionAxisLockedClientPoint(
     state.anchor = state.pressed && nextScope ? previousLatest || clonePoint(current) : null;
     state.localAnchor = null;
     state.localLatest = null;
+    state.keyboardXOffsetM = 0;
     state.keyboardYOffsetM = 0;
   }
   state.latest = clonePoint(current);
@@ -161,6 +196,7 @@ export function resolveCanvasPrecisionAxisLockedLocalPoint(
     state.axis = null;
     state.anchor = null;
     state.localAnchor = state.pressed && nextScope ? previousLatest || { ...current } : null;
+    state.keyboardXOffsetM = 0;
     state.keyboardYOffsetM = 0;
   }
   state.localLatest = { ...current };
@@ -175,8 +211,11 @@ export function resolveCanvasPrecisionAxisLockedLocalPoint(
         : { x: state.localAnchor.x, y: current.y };
   }
 
-  if (!nextScope || !state.keyboardYOffsetM) return resolved;
-  return { x: resolved.x, y: resolved.y + state.keyboardYOffsetM };
+  if (!nextScope || (!state.keyboardXOffsetM && !state.keyboardYOffsetM)) return resolved;
+  return {
+    x: resolved.x + state.keyboardXOffsetM,
+    y: resolved.y + state.keyboardYOffsetM,
+  };
 }
 
 /**
@@ -186,6 +225,7 @@ export function resolveCanvasPrecisionAxisLockedLocalPoint(
  */
 export function prepareCanvasPrecisionPointerMove(App: AppContainer): void {
   const state = getState(App);
+  state.keyboardXOffsetM = 0;
   state.keyboardYOffsetM = 0;
 }
 
@@ -194,6 +234,35 @@ export function hasCanvasPrecisionLocalPoint(App: AppContainer): boolean {
   if (!state?.localLatest) return false;
   const scope = readCanvasPrecisionAxisLockScope(App);
   return !!scope && state.scope === scope;
+}
+
+/**
+ * Moves the active positional authoring target horizontally in local/world X when the
+ * active tool owns an explicit horizontal placement coordinate. Returns null for
+ * workflows whose horizontal position is fixed by their host cell/surface.
+ */
+export function nudgeCanvasPrecisionLocalX(App: AppContainer, deltaM: number): number | null {
+  const delta = Number(deltaM);
+  if (!Number.isFinite(delta) || !delta) return null;
+  if (!allowsCanvasPrecisionHorizontalKeyboardNudge(App)) return null;
+
+  const state = getState(App);
+  const nextScope = readCanvasPrecisionAxisLockScope(App);
+  if (!nextScope) return null;
+  if (state.scope !== nextScope) {
+    state.scope = nextScope;
+    state.axis = null;
+    state.anchor = null;
+    state.localAnchor = null;
+    state.localLatest = null;
+    state.keyboardXOffsetM = 0;
+    state.keyboardYOffsetM = 0;
+    return null;
+  }
+  if (!state.localLatest) return null;
+
+  state.keyboardXOffsetM += delta;
+  return state.localLatest.x + state.keyboardXOffsetM;
 }
 
 /**
@@ -214,6 +283,7 @@ export function nudgeCanvasPrecisionLocalY(App: AppContainer, deltaM: number): n
     state.anchor = null;
     state.localAnchor = null;
     state.localLatest = null;
+    state.keyboardXOffsetM = 0;
     state.keyboardYOffsetM = 0;
     return null;
   }

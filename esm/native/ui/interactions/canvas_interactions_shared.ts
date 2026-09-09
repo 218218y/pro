@@ -7,6 +7,7 @@ import {
   clearSketchHoverPreview,
   hasCanvasPrecisionLocalPoint,
   nudgeCanvasDoorSplitPointerWorldY,
+  nudgeCanvasPrecisionLocalX,
   nudgeCanvasPrecisionLocalY,
   getBrowserTimers,
   getBuilderRenderOps,
@@ -173,18 +174,29 @@ export function installCanvasAuthoringKeyboardInteraction(
   const onKeyDown = (event: KeyboardEvent): void => {
     if (isEditableCanvasKeyboardTarget(event.target)) return;
 
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    if (
+      event.key === 'ArrowUp' ||
+      event.key === 'ArrowDown' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight'
+    ) {
       try {
-        const direction = event.key === 'ArrowUp' ? 1 : -1;
-        const nextY = isManualDoorSplitModeActive(App)
-          ? nudgeCanvasDoorSplitPointerWorldY(App, direction * CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M)
-          : nudgeCanvasPrecisionLocalY(App, direction * CANVAS_AUTHORING_KEYBOARD_NUDGE_M);
-        if (typeof nextY !== 'number') return;
+        let nextCoordinate: number | null = null;
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+          const direction = event.key === 'ArrowUp' ? 1 : -1;
+          nextCoordinate = isManualDoorSplitModeActive(App)
+            ? nudgeCanvasDoorSplitPointerWorldY(App, direction * CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M)
+            : nudgeCanvasPrecisionLocalY(App, direction * CANVAS_AUTHORING_KEYBOARD_NUDGE_M);
+        } else if (!isManualDoorSplitModeActive(App)) {
+          const direction = event.key === 'ArrowRight' ? 1 : -1;
+          nextCoordinate = nudgeCanvasPrecisionLocalX(App, direction * CANVAS_AUTHORING_KEYBOARD_NUDGE_M);
+        }
+        if (typeof nextCoordinate !== 'number') return;
         event.preventDefault();
         event.stopPropagation();
         callbacks?.onVisualStateChanged?.('nudge');
       } catch (err) {
-        reportCanvasInteractionsNonFatal(App, 'splitAxisLock.arrowNudge', err);
+        reportCanvasInteractionsNonFatal(App, 'authoringKeyboard.arrowNudge', err);
       }
       return;
     }

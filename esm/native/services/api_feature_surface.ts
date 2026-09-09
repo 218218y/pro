@@ -8,6 +8,7 @@ export { handleCanvasClickNDC, handleCanvasHoverNDC } from './canvas_picking_cor
 export {
   clearCanvasPrecisionAxisLock,
   hasCanvasPrecisionLocalPoint,
+  nudgeCanvasPrecisionLocalX,
   nudgeCanvasPrecisionLocalY,
   prepareCanvasPrecisionPointerMove,
   readCanvasPrecisionAxisLockScope,

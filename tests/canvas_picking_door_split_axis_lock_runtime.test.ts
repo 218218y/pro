@@ -17,6 +17,7 @@ import {
 } from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
 import {
   clearCanvasPrecisionAxisLock,
+  nudgeCanvasPrecisionLocalX,
   nudgeCanvasPrecisionLocalY,
   prepareCanvasPrecisionPointerMove,
   readCanvasPrecisionAxisLockScope,
@@ -415,6 +416,99 @@ test('precision keyboard nudge moves positional authoring by exactly 1 cm and re
   });
 });
 
+test('precision horizontal keyboard nudge moves eligible authoring by exactly 1 cm and pointer motion releases both axes', () => {
+  const App = createPrecisionApp({
+    primary: 'handle',
+    opts: { handlePlacement: 'manual' },
+  });
+  clearCanvasPrecisionAxisLock(App);
+
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.25, y: 0.8 }), {
+    x: 0.25,
+    y: 0.8,
+  });
+  assert.equal(nudgeCanvasPrecisionLocalX(App, 0.01), 0.26);
+  assert.equal(nudgeCanvasPrecisionLocalY(App, -0.01), 0.79);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.25, y: 0.8 }), {
+    x: 0.26,
+    y: 0.79,
+  });
+  assert.equal(nudgeCanvasPrecisionLocalX(App, -0.01), 0.25);
+
+  prepareCanvasPrecisionPointerMove(App);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.42, y: 1.1 }), {
+    x: 0.42,
+    y: 1.1,
+  });
+});
+
+test('horizontal keyboard nudges are enabled only for authoring tools with a movable X placement', () => {
+  const eligible = [
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'mirror',
+      ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'black_glass',
+      ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'frosted_glass',
+      ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'groove',
+      ui: {
+        grooveManualEnabled: true,
+        currentGrooveDraftWidthCm: '35',
+        currentGrooveDraftHeightCm: '80',
+      },
+    }),
+    createPrecisionApp({ primary: 'handle', opts: { handlePlacement: 'manual' } }),
+    createPrecisionApp({ primary: 'door_trim' }),
+    createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_box_divider' }),
+    createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_box:80@45@35' }),
+  ];
+
+  for (const App of eligible) {
+    clearCanvasPrecisionAxisLock(App);
+    resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 });
+    assert.equal(nudgeCanvasPrecisionLocalX(App, 0.01), 0.31);
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 }), {
+      x: 0.31,
+      y: 0.9,
+    });
+  }
+
+  const ineligible = [
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'mirror',
+      ui: { currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'groove',
+      ui: { grooveManualEnabled: true, currentGrooveDraftHeightCm: '80' },
+    }),
+    createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_box_divider_horizontal' }),
+    createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_box:80' }),
+    createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_shelf:regular' }),
+  ];
+
+  for (const App of ineligible) {
+    clearCanvasPrecisionAxisLock(App);
+    resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 });
+    assert.equal(nudgeCanvasPrecisionLocalX(App, 0.01), null);
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 }), {
+      x: 0.3,
+      y: 0.9,
+    });
+  }
+});
+
 test('generic positional-authoring Arrow keys and Enter reuse the shared keyboard owner', () => {
   const App = createPrecisionApp({
     primary: 'groove',
@@ -462,6 +556,88 @@ test('generic positional-authoring Arrow keys and Enter reuse the shared keyboar
   });
   assert.equal(commits, 1);
   assert.deepEqual(enterMarks, ['prevent', 'stop']);
+  dispose();
+});
+
+test('eligible positional authoring maps ArrowLeft and ArrowRight to X and Enter commits the nudged target', () => {
+  const App = createPrecisionApp({
+    primary: 'paint',
+    paint: 'mirror',
+    ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+  });
+  clearCanvasPrecisionAxisLock(App);
+  resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let refreshes = 0;
+  let commits = 0;
+  let committedPoint: { x: number; y: number } | null = null;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onVisualStateChanged: reason => {
+      if (reason === 'nudge') refreshes += 1;
+    },
+    onPositionalAuthoringCommitRequested: () => {
+      commits += 1;
+      committedPoint = resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+      return true;
+    },
+  });
+
+  for (const key of ['ArrowRight', 'ArrowRight', 'ArrowLeft']) {
+    const marks: string[] = [];
+    doc.dispatch('keydown', {
+      key,
+      target: { tagName: 'BODY' },
+      preventDefault: () => marks.push('prevent'),
+      stopPropagation: () => marks.push('stop'),
+    });
+    assert.deepEqual(marks, ['prevent', 'stop']);
+  }
+  assert.equal(refreshes, 3);
+  const previewPoint = resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+  assert.ok(Math.abs(previewPoint.x - 0.21) < 1e-12);
+  assert.equal(previewPoint.y, 0.9);
+
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    repeat: false,
+    target: { tagName: 'BODY' },
+    preventDefault() {},
+    stopPropagation() {},
+  });
+  assert.equal(commits, 1);
+  assert.ok(committedPoint);
+  assert.ok(Math.abs(committedPoint.x - 0.21) < 1e-12);
+  assert.equal(committedPoint.y, 0.9);
+  dispose();
+});
+
+test('ineligible positional tools do not capture horizontal arrow keys', () => {
+  const App = createPrecisionApp({
+    primary: 'manual_layout',
+    manualTool: 'sketch_box_divider_horizontal',
+  });
+  clearCanvasPrecisionAxisLock(App);
+  resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any);
+  const marks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'ArrowLeft',
+    target: { tagName: 'BODY' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation: () => marks.push('stop'),
+  });
+  assert.deepEqual(marks, []);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 }), {
+    x: 0.2,
+    y: 0.9,
+  });
   dispose();
 });
 
