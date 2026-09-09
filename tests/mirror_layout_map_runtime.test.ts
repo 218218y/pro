@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 
 import {
   findMirrorLayoutMatchInRect,
-  materializeMirrorLayoutSurfaceKinds,
   mirrorLayoutMapEquals,
   readMirrorLayoutMap,
   resolveMirrorPlacementListInRect,
 } from '../esm/native/features/door_authoring/api.ts';
+import { materializeMirrorLayoutSurfaceKinds } from '../esm/shared/mirror_layout_contracts_shared.ts';
 
 test('mirror layout runtime clones map/list payloads so callers cannot mutate canonical mirror snapshots', () => {
   const source = {

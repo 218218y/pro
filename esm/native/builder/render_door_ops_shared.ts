@@ -39,6 +39,7 @@ export {
   readSlidingUiState,
   resolveDoorVisualStyle,
   resolveMirrorLayout,
+  mirrorLayoutHasBuilderSurfaceKind,
   resolveGrooveLayout,
   resolveSlidingDoorVisualState,
   resolveHandleType,

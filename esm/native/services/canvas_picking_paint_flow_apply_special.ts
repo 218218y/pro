@@ -7,10 +7,7 @@ import type {
 } from '../../../types';
 
 import {
-  isAdhesiveGlassValue,
-  materializeMirrorLayoutSurfaceKinds,
   readMirrorLayoutList,
-  readMirrorLayoutSurfaceKind,
   readDoorVisualMapEntry,
   isDoorStyleOverrideValue,
   resolveGlassFrameStylePaintSelection,
@@ -25,7 +22,11 @@ import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
 import { resolveMirrorLayoutForPaintClick } from './canvas_picking_paint_flow_mirror.js';
 import {
   isSpecialPart,
+  isSpecialVal,
+  materializePaintMirrorLayoutSurfaceKinds,
   readCurtainChoice,
+  readPaintMirrorLayoutSurfaceKind,
+  resolveDoorSurfacePaintKind,
   type MirrorLayoutClickResult,
   type ResolvedMirrorLayoutClickResult,
 } from './canvas_picking_paint_flow_shared.js';
@@ -61,9 +62,7 @@ function readEffectiveSpecialEntry(
   partKey: string
 ): { key: string; value: Exclude<DoorSpecialValue, null> } | null {
   const entry = readEffectiveMapEntry(state.special0, partKey);
-  return entry && (entry.value === 'mirror' || entry.value === 'glass' || isAdhesiveGlassValue(entry.value))
-    ? { key: entry.key, value: entry.value }
-    : null;
+  return entry && isSpecialVal(entry.value) ? { key: entry.key, value: entry.value } : null;
 }
 
 function readEffectiveTextEntry(
@@ -234,8 +233,7 @@ function resolveSurfaceLayoutsAfterAdd(args: {
 }): MirrorLayoutList | null {
   const { existingSpecial, existingMirrorLayouts, surfaceKind, result } = args;
   const faceSign = result.hitFaceSign;
-  const existingOverlayKind: DoorSurfaceOverlayKind | null =
-    existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : null;
+  const existingOverlayKind = resolveDoorSurfacePaintKind(existingSpecial);
   const explicitExistingLayouts = existingMirrorLayouts.length
     ? existingMirrorLayouts
     : existingOverlayKind && existingOverlayKind !== surfaceKind
@@ -268,7 +266,7 @@ function resolveRepresentativeOverlaySpecial(
   layouts: MirrorLayoutList,
   fallback: DoorSurfaceOverlayKind
 ): DoorSurfaceOverlayKind {
-  return layouts.length ? readMirrorLayoutSurfaceKind(layouts[0], fallback) : fallback;
+  return layouts.length ? readPaintMirrorLayoutSurfaceKind(layouts[0], fallback) : fallback;
 }
 
 export function applyPaintPartMutation(args: {
@@ -288,8 +286,8 @@ export function applyPaintPartMutation(args: {
   const existingMirrorEntry = readEffectiveMapEntry(state.mirror0, paintPartKey);
   const existingMirrorLayoutsRaw = readMirrorLayoutList(existingMirrorEntry?.value);
   const existingOverlayFallback: DoorSurfaceOverlayKind =
-    existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : 'mirror';
-  const existingMirrorLayouts = materializeMirrorLayoutSurfaceKinds(
+    resolveDoorSurfacePaintKind(existingSpecial) || 'mirror';
+  const existingMirrorLayouts = materializePaintMirrorLayoutSurfaceKinds(
     existingMirrorLayoutsRaw,
     existingOverlayFallback
   );
@@ -302,8 +300,7 @@ export function applyPaintPartMutation(args: {
   const isSpecialPaintPart = isSpecialPart(paintPartKey);
   const isHexCellDiagonalPaintPart = isHexCellDiagonalPanelPartId(paintPartKey);
 
-  const surfaceKind: DoorSurfaceOverlayKind | null =
-    paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection) ? paintSelection : null;
+  const surfaceKind = resolveDoorSurfacePaintKind(paintSelection);
 
   if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && surfaceKind) {
     const mirrorResult = resolveMirrorLayout(

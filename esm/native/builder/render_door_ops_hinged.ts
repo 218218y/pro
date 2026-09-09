@@ -1,4 +1,4 @@
-import { mirrorLayoutHasSurfaceKind, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
+import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
@@ -27,6 +27,7 @@ import {
   readThreeLike,
   resolveHandleType,
   resolveMirrorLayout,
+  mirrorLayoutHasBuilderSurfaceKind,
   resolveGrooveLayout,
   resolveDoorVisualStyle,
 } from './render_door_ops_shared.js';
@@ -200,7 +201,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       const mirrorLayout = resolveMirrorLayout(cfg, partId);
       const layoutFallbackKind = doorOp.isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';
       const isMirrorDoor =
-        doorOp.isMirror || mirrorLayoutHasSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);
+        doorOp.isMirror || mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);
       let mirrorMat = null;
       if (isMirrorDoor) {
         mirrorMat = getMirrorMaterial({

@@ -4,8 +4,10 @@ import type {
   DoorSpecialMap,
   DoorSpecialValue,
   DoorStyleMap,
+  DoorSurfaceOverlayKind,
   IndividualColorsMap,
   MirrorLayoutEntry,
+  MirrorLayoutList,
   MirrorLayoutMap,
   UnknownRecord,
 } from '../../../types';
@@ -17,6 +19,7 @@ import {
   isGlassPaintSelection,
   readDoorStyleMap,
   mirrorLayoutMapEquals,
+  readMirrorLayoutList,
   readMirrorLayoutMap,
 } from '../features/door_authoring/api.js';
 import { isCanvasPickingSpecialPaintTargetPartId } from './canvas_picking_special_paint_targets.js';
@@ -208,8 +211,30 @@ export function isSpecialPart(__paintPartKey: string): boolean {
   return isCanvasPickingSpecialPaintTargetPartId(__paintPartKey);
 }
 
-export function isSpecialVal(v: unknown): v is DoorSpecialValue {
+export function isSpecialVal(v: unknown): v is Exclude<DoorSpecialValue, null> {
   return v === 'mirror' || v === 'glass' || isAdhesiveGlassValue(v);
+}
+
+export function resolveDoorSurfacePaintKind(value: unknown): DoorSurfaceOverlayKind | null {
+  if (value === 'mirror') return 'mirror';
+  return isAdhesiveGlassValue(value) ? value : null;
+}
+
+export function readPaintMirrorLayoutSurfaceKind(
+  layout: MirrorLayoutEntry | null | undefined,
+  fallback: DoorSurfaceOverlayKind
+): DoorSurfaceOverlayKind {
+  return resolveDoorSurfacePaintKind(layout?.surfaceKind) || fallback;
+}
+
+export function materializePaintMirrorLayoutSurfaceKinds(
+  layouts: unknown,
+  fallback: DoorSurfaceOverlayKind
+): MirrorLayoutList {
+  return readMirrorLayoutList(layouts).map(layout => ({
+    ...layout,
+    surfaceKind: readPaintMirrorLayoutSurfaceKind(layout, fallback),
+  }));
 }
 
 export function getPaintSourceTag(paint: string, foundPartId: string): string {

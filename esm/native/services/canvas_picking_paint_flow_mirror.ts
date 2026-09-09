@@ -6,7 +6,6 @@ import {
   findMirrorLayoutMatchInRect,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
-  readMirrorLayoutSurfaceKind,
 } from '../features/door_authoring/api.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
@@ -16,7 +15,7 @@ import {
 } from './canvas_picking_door_shared.js';
 import type { ResolvedCanvasPaintCommand } from './canvas_picking_paint_command.js';
 import type { MirrorLayoutClickResult } from './canvas_picking_paint_flow_shared.js';
-import { isRecord } from './canvas_picking_paint_flow_shared.js';
+import { isRecord, readPaintMirrorLayoutSurfaceKind } from './canvas_picking_paint_flow_shared.js';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
 
 function emptyMirrorLayoutClickResult(): MirrorLayoutClickResult {
@@ -89,7 +88,7 @@ function findFullDoorMirrorFaceMatch(
   for (let i = 0; i < list.length; i += 1) {
     const layout = list[i];
     if (
-      readMirrorLayoutSurfaceKind(layout, fallbackSurfaceKind) === surfaceKind &&
+      readPaintMirrorLayoutSurfaceKind(layout, fallbackSurfaceKind) === surfaceKind &&
       isFullDoorMirrorLayoutEntry(layout) &&
       readMirrorLayoutFaceSign(layout, DEFAULT_FACE_SIGN) === faceSign
     ) {

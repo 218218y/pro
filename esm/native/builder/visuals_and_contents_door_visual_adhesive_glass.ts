@@ -11,6 +11,7 @@ import {
 import {
   readMirrorLayoutFaceSign,
   resolveAdhesiveGlassKind,
+  resolveMirrorPlacementInRect,
   resolveMirrorPlacementListInRect,
   type AdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
@@ -308,6 +309,39 @@ export function appendAdhesiveGlassPane(args: {
     // Cube reflection tracking is best-effort; the pane itself remains a valid glass overlay.
   }
   return pane;
+}
+
+export function appendAdhesiveGlassLayoutPlacement(args: {
+  App: AppContainer;
+  THREE: ThreeLike;
+  group: Object3DLike;
+  kind: AdhesiveGlassKind;
+  rect: { minX: number; maxX: number; minY: number; maxY: number };
+  layout: MirrorLayoutList[number];
+  baseHalfDepthM: number;
+  thickness: number;
+  zSign: number;
+  role: string;
+  tagDoorVisualPart: TagDoorVisualPartFn;
+}): Object3DLike {
+  const placement = resolveMirrorPlacementInRect({ rect: args.rect, layout: args.layout });
+  const depthLayout = resolveAdhesiveGlassDepthLayout(args.thickness);
+  const faceSign = readMirrorLayoutFaceSign(args.layout, args.zSign);
+  return appendAdhesiveGlassPane({
+    App: args.App,
+    THREE: args.THREE,
+    group: args.group,
+    kind: args.kind,
+    widthM: placement.mirrorWidthM,
+    heightM: placement.mirrorHeightM,
+    depthM: depthLayout.glassThick,
+    x: placement.offsetX,
+    y: placement.offsetY,
+    z: (args.baseHalfDepthM + depthLayout.adhesiveGap + depthLayout.glassThick / 2) * faceSign,
+    faceSign,
+    role: args.role,
+    tagDoorVisualPart: args.tagDoorVisualPart,
+  });
 }
 
 function readPanelGeometry(value: Object3DLike): unknown {

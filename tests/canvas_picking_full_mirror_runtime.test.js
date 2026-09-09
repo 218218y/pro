@@ -63,6 +63,27 @@ const { applyPaintPartMutation } = loadTsModule(
       readCurtainChoice() {
         return 'none';
       },
+      resolveDoorSurfacePaintKind(value) {
+        return value === 'mirror' || value === 'black_glass' || value === 'frosted_glass' ? value : null;
+      },
+      readPaintMirrorLayoutSurfaceKind(layout, fallback) {
+        return layout?.surfaceKind === 'mirror' ||
+          layout?.surfaceKind === 'black_glass' ||
+          layout?.surfaceKind === 'frosted_glass'
+          ? layout.surfaceKind
+          : fallback;
+      },
+      materializePaintMirrorLayoutSurfaceKinds(layouts, fallback) {
+        return (Array.isArray(layouts) ? layouts : []).map(layout => ({
+          ...layout,
+          surfaceKind:
+            layout?.surfaceKind === 'mirror' ||
+            layout?.surfaceKind === 'black_glass' ||
+            layout?.surfaceKind === 'frosted_glass'
+              ? layout.surfaceKind
+              : fallback,
+        }));
+      },
     },
   }
 );
@@ -158,13 +179,15 @@ test('full inside mirror is stored as a face-specific full layout', () => {
   });
 
   assert.equal(state.special.d4_full, 'mirror');
-  assert.deepEqual(JSON.parse(JSON.stringify(state.mirrorLayout.d4_full)), [{ faceSign: -1 }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.mirrorLayout.d4_full)), [
+    { surfaceKind: 'mirror', faceSign: -1 },
+  ]);
 });
 
 test('full outside mirror does not erase an existing full inside mirror', () => {
   const state = createState({
     special0: { d4_full: 'mirror' },
-    mirror0: { d4_full: [{ faceSign: -1 }] },
+    mirror0: { d4_full: [{ surfaceKind: 'mirror', faceSign: -1 }] },
   });
   applyPaintPartMutation({
     state,
@@ -180,7 +203,7 @@ test('full outside mirror does not erase an existing full inside mirror', () => 
 
   assert.equal(state.special.d4_full, 'mirror');
   assert.deepEqual(JSON.parse(JSON.stringify(state.mirrorLayout.d4_full)), [
-    { faceSign: -1 },
-    { faceSign: 1 },
+    { surfaceKind: 'mirror', faceSign: -1 },
+    { surfaceKind: 'mirror' },
   ]);
 });

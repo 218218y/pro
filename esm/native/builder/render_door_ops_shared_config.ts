@@ -1,4 +1,4 @@
-import type { GrooveLayoutList, MirrorLayoutList } from '../../../types';
+import type { DoorSurfaceOverlayKind, GrooveLayoutList, MirrorLayoutList } from '../../../types';
 import {
   readDoorStyleMap,
   resolveAdhesiveGlassKind,
@@ -87,6 +87,25 @@ export function resolveMirrorLayout(cfg: SlidingDoorConfig, partId: string): Mir
   const map = cfg.mirrorLayoutMap;
   if (!map || typeof partId !== 'string' || !partId) return null;
   return readDoorVisualMirrorLayout(map, partId);
+}
+
+function readBuilderMirrorLayoutSurfaceKind(
+  layout: MirrorLayoutList[number],
+  fallbackKind: DoorSurfaceOverlayKind
+): DoorSurfaceOverlayKind {
+  if (layout.surfaceKind === 'mirror') return 'mirror';
+  return resolveAdhesiveGlassKind(layout.surfaceKind) || fallbackKind;
+}
+
+export function mirrorLayoutHasBuilderSurfaceKind(
+  mirrorLayout: MirrorLayoutList | null,
+  surfaceKind: DoorSurfaceOverlayKind,
+  fallbackKind: DoorSurfaceOverlayKind
+): boolean {
+  if (!Array.isArray(mirrorLayout)) return false;
+  return mirrorLayout.some(
+    layout => readBuilderMirrorLayoutSurfaceKind(layout, fallbackKind) === surfaceKind
+  );
 }
 
 export function resolveGrooveLayout(cfg: SlidingDoorConfig, partId: string): GrooveLayoutList | null {

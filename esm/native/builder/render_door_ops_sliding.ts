@@ -7,11 +7,7 @@ import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import {
-  hasMirrorSurfaceOnFace,
-  mirrorLayoutHasSurfaceKind,
-  resolveEffectiveDoorStyle,
-} from '../features/door_authoring/api.js';
+import { hasMirrorSurfaceOnFace, resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   buildRailGroup,
@@ -32,6 +28,7 @@ import {
   readThreeLike,
   resolveHandleType,
   resolveMirrorLayout,
+  mirrorLayoutHasBuilderSurfaceKind,
   resolveGrooveLayout,
   resolveSlidingDoorVisualState,
 } from './render_door_ops_shared.js';
@@ -153,7 +150,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
       const mirrorLayout = resolveMirrorLayout(cfg, slideID);
       const layoutFallbackKind = visualState.isMirror ? 'mirror' : visualState.adhesiveGlassKind || 'mirror';
-      const hasLayoutMirror = mirrorLayoutHasSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);
+      const hasLayoutMirror = mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);
       const isMirrorDoor = visualState.isMirror || hasLayoutMirror;
       const grooveLayout = resolveGrooveLayout(cfg, slideID);
       const hasPlacedGrooveLayout = Array.isArray(grooveLayout) && grooveLayout.length > 0;

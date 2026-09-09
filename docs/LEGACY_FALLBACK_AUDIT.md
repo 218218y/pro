@@ -1,16 +1,16 @@
 # Legacy / fallback audit
 
-Generated at: 2026-09-08T17:19:00.015Z
+Generated at: 2026-09-09T06:11:49.861Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **567**
-- Files with occurrences: **219**
+- Total categorized occurrences: **617**
+- Files with occurrences: **228**
 - Reviewed compatibility seams under growth ratchet: **21**
 - Category counts:
-  - `runtime-default`: **64**
-  - `domain-default`: **407**
+  - `runtime-default`: **72**
+  - `domain-default`: **449**
   - `error-message-default`: **42**
   - `framework-default`: **4**
   - `browser-adapter`: **18**
@@ -42,6 +42,7 @@ Generated at: 2026-09-08T17:19:00.015Z
 
 - `esm/native/ui/react/notes/notes_overlay_editor_async.ts` - **15** (domain-default: 15)
 - `esm/native/builder/visuals_and_contents_door_visual_glass.ts` - **14** (domain-default: 11, external-api-compat: 3)
+- `esm/native/builder/visuals_and_contents_door_visual.ts` - **13** (domain-default: 13)
 - `esm/native/builder/render_preview_sketch_pipeline_shared.ts` - **12** (domain-default: 12)
 - `esm/native/builder/core_carcass_cornice.ts` - **11** (domain-default: 11)
 - `esm/native/runtime/groove_lines_access.ts` - **11** (domain-default: 6, runtime-default: 5)
@@ -52,6 +53,9 @@ Generated at: 2026-09-08T17:19:00.015Z
 - `esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts` - **9** (domain-default: 9)
 - `esm/native/builder/render_interior_sketch_drawers_external_plan.ts` - **9** (domain-default: 9)
 - `esm/native/builder/render_interior_sketch_module_geometry.ts` - **8** (domain-default: 8)
+- `esm/native/services/canvas_picking_paint_flow_mirror.ts` - **8** (domain-default: 8)
+- `esm/shared/mirror_layout_contracts_shared.ts` - **8** (runtime-default: 8)
+- `esm/native/services/canvas_picking_paint_flow_apply_special.ts` - **7** (domain-default: 7)
 - `esm/native/builder/core_doors_compute.ts` - **6** (domain-default: 6)
 - `esm/native/builder/corner_connector_emit.ts` - **6** (domain-default: 6)
 - `esm/native/features/sketch_stack_positioning.ts` - **6** (domain-default: 6)
@@ -65,11 +69,7 @@ Generated at: 2026-09-08T17:19:00.015Z
 - `esm/native/ui/project_session_commands_shared.ts` - **5** (error-message-default: 5)
 - `esm/shared/dimensions/compatibility/legacy_dimension_number_view.ts` - **5** (compat-boundary: 5)
 - `esm/shared/room_architecture_shared.ts` - **5** (domain-default: 1, runtime-default: 4)
-- `esm/native/builder/render_interior_sketch_layout_geometry.ts` - **4** (domain-default: 4)
-- `esm/native/builder/render_interior_sketch_support_shelves.ts` - **4** (domain-default: 4)
-- `esm/native/builder/visuals_and_contents_door_visual.ts` - **4** (domain-default: 4)
-- `esm/native/kernel/domain_api_modules_corner_recompute_policy.ts` - **4** (runtime-default: 4)
-- `esm/native/runtime/ui_feedback_stable.ts` - **4** (domain-default: 2, runtime-default: 2)
+- `esm/native/builder/render_door_ops_shared_config.ts` - **4** (domain-default: 4)
 
 ## Allowlist check
 

@@ -2,7 +2,6 @@ import {
   buildMirrorLayoutFromHit,
   buildSnappedMirrorCenterFromHit,
   findMirrorLayoutMatchInRect,
-  materializeMirrorLayoutSurfaceKinds,
   resolveMirrorPlacementInRect,
   isGlassPaintSelection,
   isAdhesiveGlassValue,
@@ -34,6 +33,7 @@ import {
   resolveDoorLayoutAlignmentGuideWidth,
   resolveMirrorLayoutHoverAlignment,
 } from './canvas_picking_door_layout_alignment.js';
+import { materializePaintMirrorLayoutSurfaceKinds } from './canvas_picking_paint_flow_shared.js';
 import { createDoorLayoutAlignmentCapabilities } from './canvas_picking_door_layout_alignment_runtime.js';
 import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import type { DoorHitNode } from './canvas_picking_door_shared.js';
@@ -144,7 +144,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     const surfaceKind = normalizedPaintSelection as 'mirror' | 'black_glass' | 'frosted_glass';
     const existingOverlayFallback =
       existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : surfaceKind;
-    const existingMirrorLayouts = materializeMirrorLayoutSurfaceKinds(
+    const existingMirrorLayouts = materializePaintMirrorLayoutSurfaceKinds(
       readDoorVisualMirrorLayout(mirrorLayoutMap, partKey) || [],
       existingOverlayFallback
     );

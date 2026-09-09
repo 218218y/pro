@@ -9,6 +9,7 @@ import { DOOR_MIRROR_RENDER_POLICY } from '../../shared/dimensions/door_visual_p
 import { getCacheBag } from '../runtime/cache_access.js';
 import {
   readMirrorLayoutFaceSign,
+  resolveMirrorPlacementInRect,
   resolveMirrorPlacementListInRect,
 } from '../features/door_authoring/api.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
@@ -228,6 +229,43 @@ export function appendMirrorDoorSurfacePlacement(args: {
   }
 
   return mirrorMesh;
+}
+
+export function appendMirrorDoorSurfaceLayoutPlacement(args: {
+  App: AppContainer;
+  THREE: ThreeLike;
+  parent: Object3DLike;
+  mat: unknown;
+  rect: { minX: number; maxX: number; minY: number; maxY: number };
+  layout: MirrorLayoutList[number];
+  placementIndex: number;
+  baseHalfDepthM: number;
+  thickness: number;
+  zSign: number;
+  isSketch: boolean;
+  role: string;
+  groovePartId?: string | null;
+  tagDoorVisualPart?: TagDoorVisualPartFn | null;
+  mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
+}): Object3DLike {
+  const placement = resolveMirrorPlacementInRect({ rect: args.rect, layout: args.layout });
+  return appendMirrorDoorSurfacePlacement({
+    App: args.App,
+    THREE: args.THREE,
+    parent: args.parent,
+    mat: args.mat,
+    placement,
+    placementLayout: args.layout,
+    placementIndex: args.placementIndex,
+    baseHalfDepthM: args.baseHalfDepthM,
+    thickness: args.thickness,
+    zSign: args.zSign,
+    isSketch: args.isSketch,
+    role: args.role,
+    groovePartId: args.groovePartId ?? null,
+    tagDoorVisualPart: args.tagDoorVisualPart ?? null,
+    mirrorReflectorProfile: args.mirrorReflectorProfile ?? null,
+  });
 }
 
 export function applyMirrorReflectorProfileMetadata(

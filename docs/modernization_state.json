@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T19:15:58.323Z",
+  "generatedAt": "2026-09-09T06:11:55.629Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -14,8 +14,8 @@
     "files": 279
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 567,
-    "filesWithOccurrences": 219,
+    "totalCategorizedOccurrences": 617,
+    "filesWithOccurrences": 228,
     "guardedOccurrences": 21,
     "guardedFiles": 12,
     "projectMigration": 1,

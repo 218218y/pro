@@ -1,9 +1,7 @@
 import {
   hasMirrorSurfaceOnFace,
-  materializeMirrorLayoutSurfaceKinds,
   readGrooveLayoutList,
   readMirrorLayoutFaceSign,
-  readMirrorLayoutSurfaceKind,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
@@ -34,6 +32,25 @@ import type {
   Object3DLike,
 } from '../../../types/index.js';
 
+function readDoorVisualSurfaceKind(
+  layout: MirrorLayoutList[number] | null | undefined,
+  fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'
+): 'mirror' | 'black_glass' | 'frosted_glass' {
+  if (layout?.surfaceKind === 'mirror') return 'mirror';
+  return resolveAdhesiveGlassKind(layout?.surfaceKind) || fallbackKind;
+}
+
+function materializeDoorVisualSurfaceKinds(
+  mirrorLayout: MirrorLayoutList | null,
+  fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'
+): MirrorLayoutList {
+  if (!Array.isArray(mirrorLayout)) return [];
+  return mirrorLayout.map(layout => ({
+    ...layout,
+    surfaceKind: readDoorVisualSurfaceKind(layout, fallbackKind),
+  }));
+}
+
 function hasMixedDoorSurfaceKinds(
   mirrorLayout: MirrorLayoutList | null,
   fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'
@@ -41,7 +58,7 @@ function hasMixedDoorSurfaceKinds(
   if (!Array.isArray(mirrorLayout) || mirrorLayout.length < 2) return false;
   let firstKind: 'mirror' | 'black_glass' | 'frosted_glass' | null = null;
   for (const layout of mirrorLayout) {
-    const kind = readMirrorLayoutSurfaceKind(layout, fallbackKind);
+    const kind = readDoorVisualSurfaceKind(layout, fallbackKind);
     if (firstKind == null) firstKind = kind;
     else if (kind !== firstKind) return true;
   }
@@ -139,7 +156,7 @@ export function createDoorVisual(
     hasExplicitMirrorLayout(mirrorLayout) &&
     hasMixedDoorSurfaceKinds(mirrorLayout, surfaceFallbackKind)
   ) {
-    const mixedLayout = materializeMirrorLayoutSurfaceKinds(mirrorLayout, surfaceFallbackKind);
+    const mixedLayout = materializeDoorVisualSurfaceKinds(mirrorLayout, surfaceFallbackKind);
     return createMixedSurfaceDoorVisual({
       App,
       THREE,

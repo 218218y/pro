@@ -32,12 +32,6 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
   const geometryNorm = normalizeWhitespace(geometry);
   const lookupNorm = normalizeWhitespace(lookup);
 
-  const visuals = [
-    read('esm/native/builder/visuals_and_contents.ts'),
-    read('esm/native/builder/visuals_and_contents_door_visual.ts'),
-    read('esm/native/builder/visuals_and_contents_door_visual_mirror.ts'),
-  ].join('\n');
-  const visualsNorm = normalizeWhitespace(visuals);
   const hoverModes = [
     read('esm/native/services/canvas_picking_door_action_hover_flow.ts'),
     read('esm/native/services/canvas_picking_door_action_hover_marker.ts'),

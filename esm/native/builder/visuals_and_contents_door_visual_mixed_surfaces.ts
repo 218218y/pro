@@ -1,13 +1,5 @@
-import {
-  readMirrorLayoutSurfaceKind,
-  resolveMirrorPlacementInRect,
-  type AdhesiveGlassKind,
-} from '../features/door_authoring/api.js';
-import { appendMirrorDoorSurfacePlacement } from './visuals_and_contents_door_visual_mirror.js';
-import {
-  appendAdhesiveGlassPane,
-  resolveAdhesiveGlassDepthLayout,
-} from './visuals_and_contents_door_visual_adhesive_glass.js';
+import { appendMirrorDoorSurfaceLayoutPlacement } from './visuals_and_contents_door_visual_mirror.js';
+import { appendAdhesiveGlassLayoutPlacement } from './visuals_and_contents_door_visual_adhesive_glass.js';
 import { createFlatDoorVisual } from './visuals_and_contents_door_visual_flat.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
@@ -124,23 +116,18 @@ function appendAdhesivePlacement(args: {
   base: MixedSurfaceDoorVisualArgs;
   target: CenterPanelTarget;
   layout: MirrorLayoutList[number];
-  kind: AdhesiveGlassKind;
+  kind: 'black_glass' | 'frosted_glass';
 }): void {
-  const placement = resolveMirrorPlacementInRect({ rect: args.target.rect, layout: args.layout });
-  const depth = resolveAdhesiveGlassDepthLayout(args.base.thickness);
-  const faceSign = placement.faceSign === -1 ? -1 : 1;
-  appendAdhesiveGlassPane({
+  appendAdhesiveGlassLayoutPlacement({
     App: args.base.App,
     THREE: args.base.THREE,
     group: args.target.parent,
     kind: args.kind,
-    widthM: placement.mirrorWidthM,
-    heightM: placement.mirrorHeightM,
-    depthM: depth.glassThick,
-    x: placement.offsetX,
-    y: placement.offsetY,
-    z: (args.target.baseHalfDepthM + depth.adhesiveGap + depth.glassThick / 2) * faceSign,
-    faceSign,
+    rect: args.target.rect,
+    layout: args.layout,
+    baseHalfDepthM: args.target.baseHalfDepthM,
+    thickness: args.base.thickness,
+    zSign: args.base.zSign,
     role: args.base.style === 'flat' ? 'door_adhesive_glass_surface' : 'door_adhesive_glass_center_panel',
     tagDoorVisualPart: args.base.tagDoorVisualPart,
   });
@@ -152,16 +139,18 @@ export function createMixedSurfaceDoorVisual(args: MixedSurfaceDoorVisualArgs): 
   for (let index = 0; index < args.mirrorLayout.length; index += 1) {
     const layout = args.mirrorLayout[index];
     if (!layout) continue;
-    const kind = readMirrorLayoutSurfaceKind(layout, 'mirror');
+    const kind = layout.surfaceKind;
+    if (kind !== 'mirror' && kind !== 'black_glass' && kind !== 'frosted_glass') {
+      throw new Error('[WardrobePro] Mixed door surface layout requires an explicit surface kind');
+    }
     if (kind === 'mirror') {
-      const placement = resolveMirrorPlacementInRect({ rect: target.rect, layout });
-      appendMirrorDoorSurfacePlacement({
+      appendMirrorDoorSurfaceLayoutPlacement({
         App: args.App,
         THREE: args.THREE,
         parent: target.parent,
         mat: args.mirrorMat,
-        placement,
-        placementLayout: layout,
+        rect: target.rect,
+        layout,
         placementIndex: index,
         baseHalfDepthM: target.baseHalfDepthM,
         thickness: args.thickness,
