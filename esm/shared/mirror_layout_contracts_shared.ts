@@ -1,4 +1,5 @@
 import type {
+  DoorSurfaceOverlayKind,
   MirrorLayoutEntry,
   MirrorLayoutList,
   MirrorLayoutMap,
@@ -8,6 +9,57 @@ import { isCanonicalDoorVisualMapKey } from './door_visual_key_contracts_shared.
 import { DOOR_MIRROR_LAYOUT_POLICY } from './dimensions/door_visual_policy.js';
 
 export const DEFAULT_CENTER_NORM = 0.5;
+
+export const DEFAULT_DOOR_SURFACE_OVERLAY_KIND: DoorSurfaceOverlayKind = 'mirror';
+
+export function resolveDoorSurfaceOverlayKind(value: unknown): DoorSurfaceOverlayKind | null {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (raw === 'mirror' || raw === 'black_glass' || raw === 'frosted_glass') return raw;
+  return null;
+}
+
+export function readMirrorLayoutSurfaceKind(
+  layout: unknown,
+  fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND
+): DoorSurfaceOverlayKind {
+  const entry = isRecord(layout) ? layout : null;
+  return resolveDoorSurfaceOverlayKind(entry?.surfaceKind) || fallback;
+}
+
+export function readMirrorLayoutExplicitSurfaceKind(layout: unknown): DoorSurfaceOverlayKind | null {
+  const entry = isRecord(layout) ? layout : null;
+  return resolveDoorSurfaceOverlayKind(entry?.surfaceKind);
+}
+
+export function mirrorLayoutHasSurfaceKind(
+  layouts: unknown,
+  surfaceKind: DoorSurfaceOverlayKind,
+  fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND
+): boolean {
+  return readMirrorLayoutList(layouts).some(
+    layout => readMirrorLayoutSurfaceKind(layout, fallback) === surfaceKind
+  );
+}
+
+export function filterMirrorLayoutListBySurfaceKind(
+  layouts: unknown,
+  surfaceKind: DoorSurfaceOverlayKind,
+  fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND
+): MirrorLayoutList {
+  return readMirrorLayoutList(layouts).filter(
+    layout => readMirrorLayoutSurfaceKind(layout, fallback) === surfaceKind
+  );
+}
+
+export function materializeMirrorLayoutSurfaceKinds(
+  layouts: unknown,
+  fallback: DoorSurfaceOverlayKind
+): MirrorLayoutList {
+  return readMirrorLayoutList(layouts).map(layout => ({
+    ...layout,
+    surfaceKind: readMirrorLayoutSurfaceKind(layout, fallback),
+  }));
+}
 export const DEFAULT_FACE_SIGN = 1;
 export const FULL_MIRROR_INSET_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutFullInsetM;
 export const MIN_MIRROR_SIZE_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutMinSizeM;
@@ -97,8 +149,10 @@ export function readMirrorLayoutEntry(value: unknown): MirrorLayoutEntry | null 
     ? readFinite(value.faceSign)
     : null;
   const faceSign = readMirrorLayoutFaceSign(value, DEFAULT_FACE_SIGN);
+  const surfaceKind = readMirrorLayoutExplicitSurfaceKind(value);
 
   const out: MirrorLayoutEntry = {};
+  if (surfaceKind) out.surfaceKind = surfaceKind;
   if (widthCm != null) out.widthCm = widthCm;
   if (heightCm != null) out.heightCm = heightCm;
   if (Math.abs(centerXNorm - DEFAULT_CENTER_NORM) > CENTER_EPSILON) out.centerXNorm = centerXNorm;
@@ -191,6 +245,10 @@ export function mirrorLayoutEquals(a: unknown, b: unknown): boolean {
   const af = readMirrorLayoutFaceSign(aa, DEFAULT_FACE_SIGN);
   const bf = readMirrorLayoutFaceSign(bb, DEFAULT_FACE_SIGN);
   if (af !== bf) return false;
+
+  const ak = readMirrorLayoutSurfaceKind(aa, DEFAULT_DOOR_SURFACE_OVERLAY_KIND);
+  const bk = readMirrorLayoutSurfaceKind(bb, DEFAULT_DOOR_SURFACE_OVERLAY_KIND);
+  if (ak !== bk) return false;
 
   return true;
 }

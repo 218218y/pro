@@ -1,8 +1,16 @@
-import type { AppContainer, DoorSpecialValue, MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
+import type {
+  AppContainer,
+  DoorSpecialValue,
+  DoorSurfaceOverlayKind,
+  MirrorLayoutEntry,
+  MirrorLayoutList,
+} from '../../../types';
 
 import {
   isAdhesiveGlassValue,
+  materializeMirrorLayoutSurfaceKinds,
   readMirrorLayoutList,
+  readMirrorLayoutSurfaceKind,
   readDoorVisualMapEntry,
   isDoorStyleOverrideValue,
   resolveGlassFrameStylePaintSelection,
@@ -202,35 +210,65 @@ function deleteClickedDoorVisualEntries(args: {
 }
 
 export type ResolveMirrorLayoutForPaintClickFn = (
-  args: { App: AppContainer; command: ResolvedCanvasPaintCommand },
+  args: {
+    App: AppContainer;
+    command: ResolvedCanvasPaintCommand;
+    surfaceKind?: DoorSurfaceOverlayKind;
+    fallbackSurfaceKind?: DoorSurfaceOverlayKind;
+  },
   layouts?: MirrorLayoutList | null
 ) => MirrorLayoutClickResult;
 
-function createFullDoorMirrorLayout(faceSign: 1 | -1): MirrorLayoutEntry {
-  return { faceSign };
+function createFullDoorSurfaceLayout(
+  surfaceKind: DoorSurfaceOverlayKind,
+  faceSign: 1 | -1
+): MirrorLayoutEntry {
+  return faceSign === -1 ? { surfaceKind, faceSign: -1 } : { surfaceKind };
 }
 
-function resolveMirrorLayoutsAfterAdd(args: {
-  existingSpecial: string | null;
-  paintSelection: string;
+function resolveSurfaceLayoutsAfterAdd(args: {
+  existingSpecial: DoorSpecialValue;
   existingMirrorLayouts: MirrorLayoutList;
+  surfaceKind: DoorSurfaceOverlayKind;
   result: ResolvedMirrorLayoutClickResult;
 }): MirrorLayoutList | null {
-  const { existingSpecial, existingMirrorLayouts, paintSelection, result } = args;
+  const { existingSpecial, existingMirrorLayouts, surfaceKind, result } = args;
+  const faceSign = result.hitFaceSign;
+  const existingOverlayKind: DoorSurfaceOverlayKind | null =
+    existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : null;
+  const explicitExistingLayouts = existingMirrorLayouts.length
+    ? existingMirrorLayouts
+    : existingOverlayKind && existingOverlayKind !== surfaceKind
+      ? [createFullDoorSurfaceLayout(existingOverlayKind, 1)]
+      : [];
+
   if (!result.isFullDoorMirror) {
-    return existingSpecial === paintSelection
-      ? existingMirrorLayouts.concat([result.nextLayout])
-      : [result.nextLayout];
+    return explicitExistingLayouts.concat([{ ...result.nextLayout, surfaceKind }]);
   }
 
-  const faceSign = result.hitFaceSign;
-  if (existingSpecial !== paintSelection) return faceSign === -1 ? [createFullDoorMirrorLayout(-1)] : null;
-  if (existingMirrorLayouts.length)
-    return existingMirrorLayouts.concat([createFullDoorMirrorLayout(faceSign)]);
+  if (existingOverlayKind !== surfaceKind) {
+    if (explicitExistingLayouts.length) {
+      return explicitExistingLayouts.concat([createFullDoorSurfaceLayout(surfaceKind, faceSign)]);
+    }
+    return faceSign === -1 ? [createFullDoorSurfaceLayout(surfaceKind, -1)] : null;
+  }
 
-  // Full-face mirror without a layout means "outside face".
-  // When the user clicks the inside face, preserve that existing outside mirror and add an explicit inside one.
-  return faceSign === -1 ? [createFullDoorMirrorLayout(1), createFullDoorMirrorLayout(-1)] : null;
+  if (existingMirrorLayouts.length) {
+    return existingMirrorLayouts.concat([createFullDoorSurfaceLayout(surfaceKind, faceSign)]);
+  }
+
+  // Preserve the existing compact representation for a single outside full-face overlay.
+  // If the user adds the inside face, materialize both faces so they remain independently removable.
+  return faceSign === -1
+    ? [createFullDoorSurfaceLayout(surfaceKind, 1), createFullDoorSurfaceLayout(surfaceKind, -1)]
+    : null;
+}
+
+function resolveRepresentativeOverlaySpecial(
+  layouts: MirrorLayoutList,
+  fallback: DoorSurfaceOverlayKind
+): DoorSurfaceOverlayKind {
+  return layouts.length ? readMirrorLayoutSurfaceKind(layouts[0], fallback) : fallback;
 }
 
 export function applyPaintPartMutation(args: {
@@ -248,7 +286,13 @@ export function applyPaintPartMutation(args: {
   const existingSpecial = existingSpecialEntry?.value ?? null;
   const specialOwnerKey = existingSpecialEntry?.key || paintPartKey;
   const existingMirrorEntry = readEffectiveMapEntry(state.mirror0, paintPartKey);
-  const existingMirrorLayouts = readMirrorLayoutList(existingMirrorEntry?.value);
+  const existingMirrorLayoutsRaw = readMirrorLayoutList(existingMirrorEntry?.value);
+  const existingOverlayFallback: DoorSurfaceOverlayKind =
+    existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : 'mirror';
+  const existingMirrorLayouts = materializeMirrorLayoutSurfaceKinds(
+    existingMirrorLayoutsRaw,
+    existingOverlayFallback
+  );
   const mirrorOwnerKey = existingMirrorLayouts.length
     ? existingMirrorEntry?.key || paintPartKey
     : specialOwnerKey;
@@ -258,12 +302,21 @@ export function applyPaintPartMutation(args: {
   const isSpecialPaintPart = isSpecialPart(paintPartKey);
   const isHexCellDiagonalPaintPart = isHexCellDiagonalPanelPartId(paintPartKey);
 
-  const isMirrorLikeOverlaySelection = paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection);
+  const surfaceKind: DoorSurfaceOverlayKind | null =
+    paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection) ? paintSelection : null;
 
-  if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && isMirrorLikeOverlaySelection) {
-    const mirrorResult = resolveMirrorLayout({ App: state.App, command }, existingMirrorLayouts);
+  if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && surfaceKind) {
+    const mirrorResult = resolveMirrorLayout(
+      {
+        App: state.App,
+        command,
+        surfaceKind,
+        fallbackSurfaceKind: existingOverlayFallback,
+      },
+      existingMirrorLayouts
+    );
     const { removeMatch, canApplyMirror } = mirrorResult;
-    if (existingSpecial === paintSelection && removeMatch) {
+    if (removeMatch) {
       const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
       const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
         targetPartId: paintPartKey,
@@ -290,11 +343,11 @@ export function applyPaintPartMutation(args: {
         });
         deleteClickedDoorVisualEntries({ state, partKey: paintPartKey });
         if (nextLayouts.length) {
-          state.ensureSpecial()[paintPartKey] = paintSelection;
+          state.ensureSpecial()[paintPartKey] = resolveRepresentativeOverlaySpecial(nextLayouts, surfaceKind);
           state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
         }
       } else if (nextLayouts.length) {
-        state.ensureSpecial()[mirrorOwnerKey] = paintSelection;
+        state.ensureSpecial()[mirrorOwnerKey] = resolveRepresentativeOverlaySpecial(nextLayouts, surfaceKind);
         deleteDoorVisualOwnerAliasEntries(state.ensureCurtains(), mirrorOwnerKey);
         state.ensureMirrorLayout()[mirrorOwnerKey] = nextLayouts;
       } else {
@@ -347,20 +400,22 @@ export function applyPaintPartMutation(args: {
       return;
     }
 
-    const nextLayouts = resolveMirrorLayoutsAfterAdd({
+    const nextLayouts = resolveSurfaceLayoutsAfterAdd({
       existingSpecial,
       existingMirrorLayouts,
-      paintSelection,
+      surfaceKind,
       result: mirrorResult,
     });
 
     if (existingSpecial === 'glass') {
       restoreDoorStyleBeforeReplacingGlassSpecial(state, paintPartKey, specialOwnerKey);
     }
-    state.ensureSpecial()[paintPartKey] = paintSelection;
+    state.ensureSpecial()[paintPartKey] = nextLayouts?.length
+      ? resolveRepresentativeOverlaySpecial(nextLayouts, surfaceKind)
+      : surfaceKind;
     clearDoorStyleBeforeGlassMarker(state, paintPartKey);
     deleteDoorVisualOwnerAliasEntries(state.ensureCurtains(), paintPartKey);
-    if (nextLayouts && nextLayouts.length) state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
+    if (nextLayouts?.length) state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
     else deleteDoorVisualOwnerAliasEntries(state.ensureMirrorLayout(), paintPartKey);
     return;
   }

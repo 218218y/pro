@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   findMirrorLayoutMatchInRect,
+  materializeMirrorLayoutSurfaceKinds,
   mirrorLayoutMapEquals,
   readMirrorLayoutMap,
   resolveMirrorPlacementListInRect,
@@ -47,4 +48,67 @@ test('mirror layout runtime preserves placement/match parity after family split'
   assert.equal(match!.index, 1);
   assert.equal(match!.layout.faceSign, -1);
   assert.notEqual(match!.layout, layouts[1]);
+});
+
+test('mirror layout runtime persists overlay kinds and treats kind as part of layout identity', () => {
+  const source = {
+    d1: [
+      { surfaceKind: 'mirror', widthCm: 30, heightCm: 70, centerXNorm: 0.25 },
+      { surfaceKind: 'black_glass', widthCm: 30, heightCm: 70, centerXNorm: 0.75 },
+    ],
+  };
+
+  const map = readMirrorLayoutMap(source);
+  assert.deepEqual(map.d1, source.d1);
+  assert.equal(mirrorLayoutMapEquals(map, readMirrorLayoutMap(source)), true);
+  assert.equal(
+    mirrorLayoutMapEquals(map, {
+      d1: [
+        { surfaceKind: 'mirror', widthCm: 30, heightCm: 70, centerXNorm: 0.25 },
+        { surfaceKind: 'frosted_glass', widthCm: 30, heightCm: 70, centerXNorm: 0.75 },
+      ],
+    }),
+    false
+  );
+});
+
+test('mirror layout runtime materializes legacy fallback kinds and matches only the requested overlay kind', () => {
+  const rect = { minX: 0, maxX: 1, minY: 0, maxY: 2 };
+  const layouts = materializeMirrorLayoutSurfaceKinds(
+    [
+      { widthCm: 30, heightCm: 60, centerXNorm: 0.5 },
+      { surfaceKind: 'frosted_glass', widthCm: 30, heightCm: 60, centerXNorm: 0.5 },
+    ],
+    'black_glass'
+  );
+
+  assert.deepEqual(layouts, [
+    { surfaceKind: 'black_glass', widthCm: 30, heightCm: 60 },
+    { surfaceKind: 'frosted_glass', widthCm: 30, heightCm: 60 },
+  ]);
+
+  const placement = resolveMirrorPlacementListInRect({ rect, layouts: [layouts[0]] })[0];
+  const blackMatch = findMirrorLayoutMatchInRect({
+    rect,
+    layouts,
+    hitX: placement.centerX,
+    hitY: placement.centerY,
+    toleranceM: 0.001,
+    surfaceKind: 'black_glass',
+    fallbackSurfaceKind: 'black_glass',
+  });
+  const frostedMatch = findMirrorLayoutMatchInRect({
+    rect,
+    layouts,
+    hitX: placement.centerX,
+    hitY: placement.centerY,
+    toleranceM: 0.001,
+    surfaceKind: 'frosted_glass',
+    fallbackSurfaceKind: 'black_glass',
+  });
+
+  assert.equal(blackMatch?.index, 0);
+  assert.equal(blackMatch?.layout.surfaceKind, 'black_glass');
+  assert.equal(frostedMatch?.index, 1);
+  assert.equal(frostedMatch?.layout.surfaceKind, 'frosted_glass');
 });

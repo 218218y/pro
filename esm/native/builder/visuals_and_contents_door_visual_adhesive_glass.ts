@@ -20,7 +20,6 @@ import { getCacheBag } from '../runtime/cache_access.js';
 import { __markMirrorTracked } from './visuals_and_contents_shared.js';
 import {
   applyDoorFaceIdentityMetadata,
-  applyMirrorPlacementRectMetadata,
   readMirrorPlacementRectMetadata,
 } from './visuals_and_contents_door_visual_tagging.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
@@ -85,7 +84,7 @@ function resolveOverlayKind(value: unknown): AdhesiveGlassKind {
   return resolveAdhesiveGlassKind(value) || 'frosted_glass';
 }
 
-function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
+export function resolveAdhesiveGlassDepthLayout(thickness: number): OverlayDepthLayout {
   const baseDoorThick = Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, thickness);
   const glassThick = Math.max(
     DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMinM,
@@ -269,11 +268,10 @@ function tagAdhesiveGlassPane(args: {
   pane.userData.__mirrorHeightM = heightM;
   pane.userData.__doorVisualRole = role;
   applyDoorFaceIdentityMetadata(pane, faceSign);
-  applyMirrorPlacementRectMetadata(pane, widthM, heightM);
   tagDoorVisualPart(pane, role);
 }
 
-function appendAdhesiveGlassPane(args: {
+export function appendAdhesiveGlassPane(args: {
   App: AppContainer;
   THREE: ThreeLike;
   group: Object3DLike;
@@ -393,7 +391,7 @@ export function createAdhesiveGlassDoorVisual(args: AdhesiveGlassDoorVisualArgs)
     typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : (_node, _visualRole) => undefined;
   const visualGroup = new args.THREE.Group();
   const woodMat = args.baseMaterial || args.mat || new args.THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
-  const depthLayout = resolveOverlayDepthLayout(args.thickness);
+  const depthLayout = resolveAdhesiveGlassDepthLayout(args.thickness);
   const placementLayouts =
     Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [null];
   const placements = resolveMirrorPlacementListInRect({
@@ -463,7 +461,7 @@ export function createStyledAdhesiveGlassDoorVisual(
     rect: center.placementRect,
     layouts: placementLayouts,
   });
-  const depthLayout = resolveOverlayDepthLayout(args.thickness);
+  const depthLayout = resolveAdhesiveGlassDepthLayout(args.thickness);
 
   for (const [i, placement] of placements.entries()) {
     const placementLayout = placementLayouts[i] ?? null;
@@ -497,7 +495,7 @@ export function createStyledFullAdhesiveGlassDoorVisual(
     typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : (_node, _visualRole) => undefined;
   const layoutList = Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [];
   const fullInsideLayouts = layoutList.filter(layout => readMirrorLayoutFaceSign(layout, args.zSign) === -1);
-  const depthLayout = resolveOverlayDepthLayout(args.thickness);
+  const depthLayout = resolveAdhesiveGlassDepthLayout(args.thickness);
   const glassWidth = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
   const glassHeight = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.h - FULL_MIRROR_INSET_M);
 

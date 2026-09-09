@@ -1,10 +1,11 @@
-import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../../../types';
+import type { DoorSurfaceOverlayKind, MirrorLayoutEntry, MirrorLayoutList } from '../../../../../types';
 
 import {
   cloneMirrorLayoutEntry,
   DEFAULT_FACE_SIGN,
   normalizeMirrorFaceSign,
   readMirrorLayoutFaceSign,
+  readMirrorLayoutSurfaceKind,
   readMirrorLayoutList,
   isRecord,
 } from './surface_layout_contracts.js';
@@ -69,6 +70,8 @@ export function findMirrorLayoutMatchInRect(args: {
   hitY: number;
   toleranceM?: number;
   faceSign?: unknown;
+  surfaceKind?: DoorSurfaceOverlayKind | null;
+  fallbackSurfaceKind?: DoorSurfaceOverlayKind;
 }): MirrorLayoutHitMatch | null {
   const layouts = readMirrorLayoutList(args.layouts);
   if (!layouts.length) return null;
@@ -78,6 +81,12 @@ export function findMirrorLayoutMatchInRect(args: {
   const requestedFaceSign =
     args.faceSign == null ? null : normalizeMirrorFaceSign(args.faceSign, DEFAULT_FACE_SIGN);
   for (const [i, layout] of layouts.entries()) {
+    if (
+      args.surfaceKind &&
+      readMirrorLayoutSurfaceKind(layout, args.fallbackSurfaceKind || 'mirror') !== args.surfaceKind
+    ) {
+      continue;
+    }
     if (
       requestedFaceSign !== null &&
       readMirrorLayoutFaceSign(layout, DEFAULT_FACE_SIGN) !== requestedFaceSign

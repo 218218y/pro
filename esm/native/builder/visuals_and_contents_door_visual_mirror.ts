@@ -91,7 +91,7 @@ type MirrorDoorDepthLayout = {
   mirrorFrontZ: number;
 };
 
-function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout {
+export function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout {
   const baseDoorThick = Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, thickness);
   const mirrorThick = Math.max(
     DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMinM,
@@ -119,6 +119,115 @@ function writeFiniteMirrorProfileNumber(
 ): void {
   const num = typeof value === 'number' ? value : value != null ? Number(value) : NaN;
   if (Number.isFinite(num)) userData[key] = num;
+}
+
+export function appendMirrorDoorSurfacePlacement(args: {
+  App: AppContainer;
+  THREE: ThreeLike;
+  parent: Object3DLike;
+  mat: unknown;
+  placement: {
+    mirrorWidthM: number;
+    mirrorHeightM: number;
+    offsetX: number;
+    offsetY: number;
+  };
+  placementLayout: MirrorLayoutList[number] | null;
+  placementIndex: number;
+  baseHalfDepthM: number;
+  thickness: number;
+  zSign: number;
+  isSketch: boolean;
+  role: string;
+  groovePartId?: string | null;
+  tagDoorVisualPart?: TagDoorVisualPartFn | null;
+  mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
+}): Object3DLike {
+  const tagDoorVisualPart: TagDoorVisualPartFn =
+    typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : (_node, _visualRole) => undefined;
+  const depthLayout = resolveMirrorDoorDepthLayout(args.thickness);
+  const placementFaceSign = readMirrorLayoutFaceSign(args.placementLayout, args.zSign);
+  const surfaceCenterZ = args.baseHalfDepthM + depthLayout.adhesiveGap + depthLayout.mirrorThick / 2;
+  const mirrorMesh = new args.THREE.Mesh(
+    new args.THREE.BoxGeometry(
+      args.placement.mirrorWidthM,
+      args.placement.mirrorHeightM,
+      depthLayout.mirrorThick
+    ),
+    args.mat
+  );
+  mirrorMesh.userData = mirrorMesh.userData || {};
+  mirrorMesh.userData.__keepMaterial = true;
+  mirrorMesh.userData.__wpMirrorSurface = true;
+  applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
+  applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
+  applyMirrorReflectorIdentityMetadata(mirrorMesh, {
+    ...(args.groovePartId !== undefined ? { ownerPartId: args.groovePartId } : {}),
+    role: args.role,
+    placementIndex: args.placementIndex,
+    faceSign: placementFaceSign,
+    widthM: args.placement.mirrorWidthM,
+    heightM: args.placement.mirrorHeightM,
+    offsetX: args.placement.offsetX,
+    offsetY: args.placement.offsetY,
+    profile: args.mirrorReflectorProfile ?? null,
+  });
+  tagDoorVisualPart(mirrorMesh, args.role);
+  mirrorMesh.position.set(args.placement.offsetX, args.placement.offsetY, surfaceCenterZ * placementFaceSign);
+  try {
+    installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
+      faceSign: placementFaceSign,
+      sketchMode: args.isSketch,
+    });
+  } catch {
+    // Keep the existing envMap mirror material for cube mode.
+  }
+  args.parent.add(mirrorMesh);
+  try {
+    __markMirrorTracked(args.App, mirrorMesh);
+  } catch {
+    // Best-effort only.
+  }
+
+  if (args.isSketch) {
+    const sketchCanvas = getOrCreateSketchPatternCanvas(args.App, args.THREE);
+    if (sketchCanvas) {
+      try {
+        const tex = new args.THREE.CanvasTexture(sketchCanvas);
+        tex.wrapS = args.THREE.RepeatWrapping;
+        tex.wrapT = args.THREE.RepeatWrapping;
+        tex.repeat.set(
+          Math.max(0.25, args.placement.mirrorWidthM * 3),
+          Math.max(0.25, args.placement.mirrorHeightM * 3)
+        );
+        const markGeo = new args.THREE.PlaneGeometry(
+          args.placement.mirrorWidthM,
+          args.placement.mirrorHeightM
+        );
+        const markMat = new args.THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.3,
+          side: args.THREE.DoubleSide,
+        });
+        const marking = new args.THREE.Mesh(markGeo, markMat);
+        marking.userData = marking.userData || {};
+        marking.userData.__keepMaterial = true;
+        applyDoorFaceIdentityMetadata(marking, placementFaceSign);
+        marking.position.set(
+          args.placement.offsetX,
+          args.placement.offsetY,
+          (args.baseHalfDepthM + depthLayout.adhesiveGap + depthLayout.mirrorThick + 0.001) *
+            placementFaceSign
+        );
+        args.parent.add(marking);
+      } catch {
+        // ignore sketch markings
+      }
+    }
+  }
+
+  return mirrorMesh;
 }
 
 export function applyMirrorReflectorProfileMetadata(
@@ -224,87 +333,24 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     grooveLayout: args.grooveLayout ?? null,
   });
 
-  // Sketch-only: a subtle diagonal pattern overlay to distinguish mirrors.
-  const sketchCanvas = isSketch ? getOrCreateSketchPatternCanvas(App, THREE) : null;
-
   for (const [i, placement] of placements.entries()) {
-    const placementLayout = placementLayouts[i] ?? null;
-    const placementFaceSign = readMirrorLayoutFaceSign(placementLayout, zSign);
-    const mirrorMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(placement.mirrorWidthM, placement.mirrorHeightM, depthLayout.mirrorThick),
-      mat
-    );
-    mirrorMesh.userData = mirrorMesh.userData || {};
-    mirrorMesh.userData.__keepMaterial = true;
-    mirrorMesh.userData.__wpMirrorSurface = true;
-    applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
-    applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
-    applyMirrorReflectorIdentityMetadata(mirrorMesh, {
-      ...(args.groovePartId !== undefined ? { ownerPartId: args.groovePartId } : {}),
-      role: 'door_mirror_surface',
+    appendMirrorDoorSurfacePlacement({
+      App,
+      THREE,
+      parent: visualGroup,
+      mat,
+      placement,
+      placementLayout: placementLayouts[i] ?? null,
       placementIndex: i,
-      faceSign: placementFaceSign,
-      widthM: placement.mirrorWidthM,
-      heightM: placement.mirrorHeightM,
-      offsetX: placement.offsetX,
-      offsetY: placement.offsetY,
-      profile: args.mirrorReflectorProfile ?? null,
+      baseHalfDepthM: depthLayout.baseDoorThick / 2,
+      thickness,
+      zSign,
+      isSketch,
+      role: 'door_mirror_surface',
+      groovePartId: args.groovePartId ?? null,
+      tagDoorVisualPart,
+      mirrorReflectorProfile: args.mirrorReflectorProfile ?? null,
     });
-    mirrorMesh.position.set(
-      placement.offsetX,
-      placement.offsetY,
-      depthLayout.mirrorCenterZ * placementFaceSign
-    );
-    try {
-      installPlanarMirrorReflector(App, THREE, mirrorMesh, {
-        faceSign: placementFaceSign,
-        sketchMode: isSketch,
-      });
-    } catch {
-      // Keep the existing envMap mirror material for cube mode.
-    }
-    visualGroup.add(mirrorMesh);
-
-    // Track mirror surfaces for fast reflection updates (avoids full scene traversal on each frame).
-    try {
-      __markMirrorTracked(App, mirrorMesh);
-    } catch {
-      // Best-effort only.
-    }
-
-    if (sketchCanvas) {
-      try {
-        const tex = new THREE.CanvasTexture(sketchCanvas);
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(
-          Math.max(0.25, placement.mirrorWidthM * 3),
-          Math.max(0.25, placement.mirrorHeightM * 3)
-        );
-
-        const markGeo = new THREE.PlaneGeometry(placement.mirrorWidthM, placement.mirrorHeightM);
-        const markMat = new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          opacity: 0.3,
-          side: THREE.DoubleSide,
-        });
-        const marking = new THREE.Mesh(markGeo, markMat);
-        marking.userData = marking.userData || {};
-        marking.userData.__keepMaterial = true;
-
-        const markingFaceSign = readMirrorLayoutFaceSign(placementLayout, zSign);
-        applyDoorFaceIdentityMetadata(marking, markingFaceSign);
-        marking.position.set(
-          placement.offsetX,
-          placement.offsetY,
-          (depthLayout.mirrorFrontZ + 0.001) * markingFaceSign
-        );
-        visualGroup.add(marking);
-      } catch {
-        // ignore sketch markings
-      }
-    }
   }
 
   return visualGroup;

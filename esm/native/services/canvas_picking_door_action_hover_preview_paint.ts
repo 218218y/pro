@@ -2,6 +2,7 @@ import {
   buildMirrorLayoutFromHit,
   buildSnappedMirrorCenterFromHit,
   findMirrorLayoutMatchInRect,
+  materializeMirrorLayoutSurfaceKinds,
   resolveMirrorPlacementInRect,
   isGlassPaintSelection,
   isAdhesiveGlassValue,
@@ -140,19 +141,24 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     localHit.x = lockedLocalHit.x;
     localHit.y = lockedLocalHit.y;
     const hitFaceSign = __resolveMirrorFaceSignFromLocalPoint(localHit);
-    const existingMirrorLayouts = readDoorVisualMirrorLayout(mirrorLayoutMap, partKey) || [];
+    const surfaceKind = normalizedPaintSelection as 'mirror' | 'black_glass' | 'frosted_glass';
+    const existingOverlayFallback =
+      existingSpecial === 'mirror' || isAdhesiveGlassValue(existingSpecial) ? existingSpecial : surfaceKind;
+    const existingMirrorLayouts = materializeMirrorLayoutSurfaceKinds(
+      readDoorVisualMirrorLayout(mirrorLayoutMap, partKey) || [],
+      existingOverlayFallback
+    );
     const mirrorDraft = __readMirrorDraft(readUi, App);
     const hasSizedDraft = __hasMirrorSizedDraft(readUi, App);
-    const removeMatch =
-      existingSpecial === normalizedPaintSelection
-        ? findMirrorLayoutMatchInRect({
-            rect: mirrorRect,
-            layouts: existingMirrorLayouts,
-            hitX: localHit.x,
-            hitY: localHit.y,
-            faceSign: hitFaceSign,
-          })
-        : null;
+    const removeMatch = findMirrorLayoutMatchInRect({
+      rect: mirrorRect,
+      layouts: existingMirrorLayouts,
+      hitX: localHit.x,
+      hitY: localHit.y,
+      faceSign: hitFaceSign,
+      surfaceKind,
+      fallbackSurfaceKind: existingOverlayFallback,
+    });
     const isCanonicalFullMirrorRemoveHover =
       existingSpecial === normalizedPaintSelection &&
       !hasSizedDraft &&
@@ -164,7 +170,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
       hitX: localHit.x,
       hitY: localHit.y,
     });
-    const nextLayout = hasSizedDraft
+    const nextLayoutBase = hasSizedDraft
       ? buildMirrorLayoutFromHit({
           rect: mirrorRect,
           hitX: localHit.x,
@@ -173,6 +179,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
           faceSign: hitFaceSign,
         })
       : null;
+    const nextLayout = nextLayoutBase ? { ...nextLayoutBase, surfaceKind } : null;
     const placement = removeMatch
       ? removeMatch.placement
       : resolveMirrorPlacementInRect({

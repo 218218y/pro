@@ -585,7 +585,9 @@ test('paint click replaces glass with a one-sided mirror through the public pain
   assert.deepEqual(applyPaintCalls[0]?.[1], {});
   assert.deepEqual(applyPaintCalls[0]?.[2], { source: 'paint.apply:mirror', immediate: true });
   assert.deepEqual(applyPaintCalls[0]?.[3], { d12_full: 'mirror' });
-  assert.deepEqual(applyPaintCalls[0]?.[4], { d12_full: [{ faceSign: -1 }] });
+  assert.deepEqual(applyPaintCalls[0]?.[4], {
+    d12_full: [{ surfaceKind: 'mirror', faceSign: -1 }],
+  });
   assert.deepEqual(applyPaintCalls[0]?.[5], { d12_full: 'double_profile' });
   assert.equal(materialRefreshes, 0);
 });
@@ -785,7 +787,14 @@ test('paint special mutation removes only the matched mirror layout while preser
   assert.equal(state.special.d1_left, 'mirror');
   assert.equal(state.curtains.d1_left, undefined);
   assert.deepEqual(state.mirrorLayout.d1_left, [
-    { widthCm: 40, heightCm: 40, centerXNorm: 0.7, centerYNorm: 0.6, faceSign: -1 },
+    {
+      surfaceKind: 'mirror',
+      widthCm: 40,
+      heightCm: 40,
+      centerXNorm: 0.7,
+      centerYNorm: 0.6,
+      faceSign: -1,
+    },
   ]);
 });
 
@@ -845,7 +854,112 @@ test('paint special mutation applies adhesive glass with the same sized-layout l
   assert.equal(state.special.d7_full, 'black_glass');
   assert.equal(state.curtains.d7_full, undefined);
   assert.deepEqual(state.mirrorLayout.d7_full, [
-    { widthCm: 48, heightCm: 90, centerXNorm: 0.5, centerYNorm: 0.5, faceSign: 1 },
+    {
+      surfaceKind: 'black_glass',
+      widthCm: 48,
+      heightCm: 90,
+      centerXNorm: 0.5,
+      centerYNorm: 0.5,
+      faceSign: 1,
+    },
+  ]);
+});
+
+test('paint special mutation preserves heterogeneous sized surface overlays on the same door', () => {
+  const state = createManualState({
+    special0: { d9_full: 'mirror' },
+    mirror0: {
+      d9_full: [
+        {
+          surfaceKind: 'mirror',
+          widthCm: 30,
+          heightCm: 70,
+          centerXNorm: 0.25,
+          centerYNorm: 0.5,
+          faceSign: 1,
+        },
+      ],
+    },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd9_full',
+    paintSelection: 'black_glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd9_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: { widthCm: 24, heightCm: 55, centerXNorm: 0.72, centerYNorm: 0.55, faceSign: 1 },
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: false,
+    }),
+  });
+
+  assert.equal(state.special.d9_full, 'mirror');
+  assert.deepEqual(state.mirrorLayout.d9_full, [
+    {
+      surfaceKind: 'mirror',
+      widthCm: 30,
+      heightCm: 70,
+      centerXNorm: 0.25,
+      faceSign: 1,
+    },
+    {
+      surfaceKind: 'black_glass',
+      widthCm: 24,
+      heightCm: 55,
+      centerXNorm: 0.72,
+      centerYNorm: 0.55,
+      faceSign: 1,
+    },
+  ]);
+});
+
+test('paint special mutation can add frosted glass beside existing black glass without replacing it', () => {
+  const state = createManualState({
+    special0: { d10_full: 'black_glass' },
+    mirror0: {
+      d10_full: [
+        {
+          surfaceKind: 'black_glass',
+          widthCm: 22,
+          heightCm: 45,
+          centerXNorm: 0.3,
+          faceSign: 1,
+        },
+      ],
+    },
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd10_full',
+    paintSelection: 'frosted_glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd10_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: { widthCm: 22, heightCm: 45, centerXNorm: 0.7, faceSign: 1 },
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: false,
+    }),
+  });
+
+  assert.equal(state.special.d10_full, 'black_glass');
+  assert.deepEqual(state.mirrorLayout.d10_full, [
+    { surfaceKind: 'black_glass', widthCm: 22, heightCm: 45, centerXNorm: 0.3, faceSign: 1 },
+    { surfaceKind: 'frosted_glass', widthCm: 22, heightCm: 45, centerXNorm: 0.7, faceSign: 1 },
   ]);
 });
 
@@ -1017,7 +1131,7 @@ test('paint special mutation replaces glass with a one-sided full mirror on the 
   assert.equal(insideState.special.d11_full, 'mirror');
   assert.equal(insideState.curtains.d11_full, undefined);
   assert.equal(insideState.style.d11_full, 'double_profile');
-  assert.deepEqual(insideState.mirrorLayout.d11_full, [{ faceSign: -1 }]);
+  assert.deepEqual(insideState.mirrorLayout.d11_full, [{ surfaceKind: 'mirror', faceSign: -1 }]);
 });
 
 test('paint special mutation treats chest drawer fronts like regular drawer fronts for mirror and glass', () => {
@@ -1847,7 +1961,7 @@ test('mirror paint click resolves sized layouts against styled-center mirror met
     faceSign: 1,
   });
 
-  assert.deepEqual(result.nextLayout, expected);
+  assert.deepEqual(result.nextLayout, expected ? { ...expected, surfaceKind: 'mirror' } : expected);
 });
 
 test('mirror paint click removes an existing styled mirror through the wood center panel even when the raw hit lands on the shifted mirror mesh', () => {
@@ -1919,7 +2033,7 @@ test('mirror paint click removes an existing styled mirror through the wood cent
   );
 
   assert.equal(result.removeMatch?.index, 0);
-  assert.deepEqual(result.nextLayout, layouts[0]);
+  assert.deepEqual(result.nextLayout, { ...layouts[0], surfaceKind: 'mirror' });
 });
 
 test('mirror paint click treats blank mirror dimensions as a full-door mirror instead of storing an off-center layout', () => {
@@ -2161,7 +2275,7 @@ test('paint special mutation stores a full-door inside mirror as a face-specific
   });
 
   assert.equal(state.special.d5_full, 'mirror');
-  assert.deepEqual(state.mirrorLayout.d5_full, [{ faceSign: -1 }]);
+  assert.deepEqual(state.mirrorLayout.d5_full, [{ surfaceKind: 'mirror', faceSign: -1 }]);
 });
 
 test('paint special mutation adds a full-door outside mirror without erasing an existing inside mirror', () => {
@@ -2190,7 +2304,10 @@ test('paint special mutation adds a full-door outside mirror without erasing an 
   });
 
   assert.equal(state.special.d5_full, 'mirror');
-  assert.deepEqual(state.mirrorLayout.d5_full, [{ faceSign: -1 }, { faceSign: 1 }]);
+  assert.deepEqual(state.mirrorLayout.d5_full, [
+    { surfaceKind: 'mirror', faceSign: -1 },
+    { surfaceKind: 'mirror' },
+  ]);
 });
 
 test('paint special mutation preserves the canonical implicit outside full mirror when adding an inside mirror', () => {
@@ -2216,7 +2333,10 @@ test('paint special mutation preserves the canonical implicit outside full mirro
   });
 
   assert.equal(state.special.d5_full, 'mirror');
-  assert.deepEqual(state.mirrorLayout.d5_full, [{ faceSign: 1 }, { faceSign: -1 }]);
+  assert.deepEqual(state.mirrorLayout.d5_full, [
+    { surfaceKind: 'mirror' },
+    { surfaceKind: 'mirror', faceSign: -1 },
+  ]);
 });
 
 test('paint click rejects mirror on carcass frame parts before grouped body paint writes invalid colors', () => {

@@ -86,8 +86,12 @@ export type DoorSpecialMap = Record<string, DoorSpecialValue | undefined>;
 /** Per-part door/drawer front style override. */
 export type DoorStyleMap = Record<string, 'flat' | 'profile' | 'double_profile' | undefined>;
 
-/** Optional per-door mirror sizing / placement (persisted in cm + normalized anchor). */
+/** Surface overlays that can coexist on the same door/front. */
+export type DoorSurfaceOverlayKind = 'mirror' | 'black_glass' | 'frosted_glass';
+
+/** Optional per-door surface sizing / placement (persisted in cm + normalized anchor). */
 export interface MirrorLayoutEntry extends UnknownRecord {
+  surfaceKind?: DoorSurfaceOverlayKind | null;
   widthCm?: number | null;
   heightCm?: number | null;
   centerXNorm?: number | null;

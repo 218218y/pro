@@ -609,6 +609,158 @@ test('adhesive black glass panes are cube-reflection tracked without becoming fu
   assert.equal(pane.material.userData.__wpAdhesiveGlassReflectionStrength, 0.72);
   assert.equal(pane.material.roughness, 0.18);
   assert.equal(pane.material.metalness, 0.06);
+  assert.equal(pane.userData.__mirrorRectMinX, undefined);
+  assert.equal(pane.userData.__mirrorRectMaxX, undefined);
+  assert.equal(pane.userData.__mirrorRectMinY, undefined);
+  assert.equal(pane.userData.__mirrorRectMaxY, undefined);
+});
+
+test('mixed sized mirror, black glass, and frosted glass render together on one flat door', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const visual = createDoorVisual(
+    app,
+    0.8,
+    2,
+    0.02,
+    { kind: 'mirror' },
+    'flat',
+    false,
+    true,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    [
+      {
+        surfaceKind: 'mirror',
+        widthCm: 20,
+        heightCm: 60,
+        centerXNorm: 0.2,
+        centerYNorm: 0.5,
+        faceSign: 1,
+      },
+      {
+        surfaceKind: 'black_glass',
+        widthCm: 18,
+        heightCm: 50,
+        centerXNorm: 0.5,
+        centerYNorm: 0.5,
+        faceSign: 1,
+      },
+      {
+        surfaceKind: 'frosted_glass',
+        widthCm: 16,
+        heightCm: 40,
+        centerXNorm: 0.8,
+        centerYNorm: 0.5,
+        faceSign: 1,
+      },
+    ],
+    'd1_mixed',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const nodes = [];
+  const visit = node => {
+    nodes.push(node);
+    for (const child of node.children || []) visit(child);
+  };
+  visit(visual);
+
+  const mirrorPane = nodes.find(
+    node => node.userData?.__wpMirrorSurface === true && !node.userData?.__wpAdhesiveGlassSurface
+  );
+  const blackPane = nodes.find(node => node.userData?.__wpAdhesiveGlassSurface === 'black_glass');
+  const frostedPane = nodes.find(node => node.userData?.__wpAdhesiveGlassSurface === 'frosted_glass');
+
+  assert.ok(mirrorPane);
+  assert.ok(blackPane);
+  assert.ok(frostedPane);
+  assert.ok(Math.abs(mirrorPane.geometry.args[0] - 0.2) < 1e-9);
+  assert.ok(Math.abs(mirrorPane.geometry.args[1] - 0.6) < 1e-9);
+  assert.ok(Math.abs(blackPane.geometry.args[0] - 0.18) < 1e-9);
+  assert.ok(Math.abs(blackPane.geometry.args[1] - 0.5) < 1e-9);
+  assert.ok(Math.abs(frostedPane.geometry.args[0] - 0.16) < 1e-9);
+  assert.ok(Math.abs(frostedPane.geometry.args[1] - 0.4) < 1e-9);
+  assert.equal(blackPane.userData.__mirrorRectMinX, undefined);
+  assert.equal(frostedPane.userData.__mirrorRectMinX, undefined);
+});
+
+test('mixed sized surfaces share the styled profile center panel instead of replacing the frame', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const visual = createDoorVisual(
+    app,
+    0.8,
+    2,
+    0.02,
+    { kind: 'mirror' },
+    'profile',
+    false,
+    true,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    [
+      { surfaceKind: 'mirror', widthCm: 18, heightCm: 55, centerXNorm: 0.3, faceSign: 1 },
+      { surfaceKind: 'black_glass', widthCm: 18, heightCm: 55, centerXNorm: 0.7, faceSign: 1 },
+    ],
+    'd1_profile_mixed',
+    { renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const centerPanel = findRole(visual, 'door_profile_center_panel');
+  assert.ok(centerPanel);
+  assert.ok(
+    collectRoles(visual).some(
+      role => role.startsWith('door_profile_') && role !== 'door_profile_center_panel'
+    )
+  );
+  const mirrorPane = centerPanel.children.find(
+    node => node.userData?.__wpMirrorSurface === true && !node.userData?.__wpAdhesiveGlassSurface
+  );
+  const glassPane = centerPanel.children.find(
+    node => node.userData?.__wpAdhesiveGlassSurface === 'black_glass'
+  );
+  assert.ok(mirrorPane);
+  assert.ok(glassPane);
+  assert.equal(glassPane.userData.__mirrorRectMinX, undefined);
+});
+
+test('black and frosted sized glass render together without requiring a mirror special', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const visual = createDoorVisual(
+    app,
+    0.8,
+    2,
+    0.02,
+    { kind: 'wood' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    [
+      { surfaceKind: 'black_glass', widthCm: 20, heightCm: 45, centerXNorm: 0.3, faceSign: 1 },
+      { surfaceKind: 'frosted_glass', widthCm: 20, heightCm: 45, centerXNorm: 0.7, faceSign: 1 },
+    ],
+    'd2_mixed_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const nodes = [];
+  const visit = node => {
+    nodes.push(node);
+    for (const child of node.children || []) visit(child);
+  };
+  visit(visual);
+  assert.equal(nodes.filter(node => node.userData?.__wpAdhesiveGlassSurface === 'black_glass').length, 1);
+  assert.equal(nodes.filter(node => node.userData?.__wpAdhesiveGlassSurface === 'frosted_glass').length, 1);
 });
 
 test('adhesive glass reuses one cached material per glass kind and seeds the cube texture', () => {

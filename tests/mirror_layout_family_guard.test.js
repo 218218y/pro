@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { assertCallObjectContract, getCallFacts } from './_semantic_source_contracts.js';
+import {
+  assertCallObjectContract,
+  getCallFacts,
+  getFunctionVariableFacts,
+} from './_semantic_source_contracts.js';
 
 function read(rel) {
   return fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
@@ -103,17 +107,45 @@ test('[mirror-layout-family] canonical seam keeps split contracts/geometry/looku
     fileName: 'mirror_lookup.ts',
   });
 
-  assert.match(visualsNorm, /const placementFaceSign = readMirrorLayoutFaceSign\(placementLayout, zSign\);/);
+  const appendMirrorPlacementVars = getFunctionVariableFacts(
+    mirrorVisual,
+    'appendMirrorDoorSurfacePlacement',
+    'visuals_and_contents_door_visual_mirror.ts'
+  );
+  assert.deepEqual(appendMirrorPlacementVars?.placementFaceSign, {
+    kind: 'call',
+    callee: 'readMirrorLayoutFaceSign',
+    args: [
+      { kind: 'member', path: 'args.placementLayout' },
+      { kind: 'member', path: 'args.zSign' },
+    ],
+  });
+  assert.deepEqual(appendMirrorPlacementVars?.surfaceCenterZ, {
+    kind: 'binary',
+    operator: '+',
+    left: {
+      kind: 'binary',
+      operator: '+',
+      left: { kind: 'member', path: 'args.baseHalfDepthM' },
+      right: { kind: 'member', path: 'depthLayout.adhesiveGap' },
+    },
+    right: {
+      kind: 'binary',
+      operator: '/',
+      left: { kind: 'member', path: 'depthLayout.mirrorThick' },
+      right: { kind: 'literal', value: 2 },
+    },
+  });
   assert.deepEqual(getCallFacts(mirrorVisual, 'mirrorMesh.position.set', 'mirror_visual.ts'), [
     {
       callee: 'mirrorMesh.position.set',
       args: [
-        { kind: 'member', path: 'placement.offsetX' },
-        { kind: 'member', path: 'placement.offsetY' },
+        { kind: 'member', path: 'args.placement.offsetX' },
+        { kind: 'member', path: 'args.placement.offsetY' },
         {
           kind: 'binary',
           operator: '*',
-          left: { kind: 'member', path: 'depthLayout.mirrorCenterZ' },
+          left: { kind: 'identifier', name: 'surfaceCenterZ' },
           right: { kind: 'identifier', name: 'placementFaceSign' },
         },
       ],

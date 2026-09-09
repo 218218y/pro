@@ -7,7 +7,11 @@ import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
-import { resolveEffectiveDoorStyle, hasMirrorSurfaceOnFace } from '../features/door_authoring/api.js';
+import {
+  hasMirrorSurfaceOnFace,
+  mirrorLayoutHasSurfaceKind,
+  resolveEffectiveDoorStyle,
+} from '../features/door_authoring/api.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   buildRailGroup,
@@ -148,13 +152,15 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
 
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
       const mirrorLayout = resolveMirrorLayout(cfg, slideID);
+      const layoutFallbackKind = visualState.isMirror ? 'mirror' : visualState.adhesiveGlassKind || 'mirror';
+      const hasLayoutMirror = mirrorLayoutHasSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);
+      const isMirrorDoor = visualState.isMirror || hasLayoutMirror;
       const grooveLayout = resolveGrooveLayout(cfg, slideID);
       const hasPlacedGrooveLayout = Array.isArray(grooveLayout) && grooveLayout.length > 0;
       const hasAdhesiveGlass = !!visualState.adhesiveGlassKind;
       const hasOutsideOverlaySurface =
-        (visualState.isMirror || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
-      const overlayBlocksGrooves =
-        hasOutsideOverlaySurface && (!visualState.isMirror || !hasPlacedGrooveLayout);
+        (isMirrorDoor || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+      const overlayBlocksGrooves = hasOutsideOverlaySurface && (!isMirrorDoor || !hasPlacedGrooveLayout);
       const hasSlideGrooves =
         isGroovesEnabled &&
         !overlayBlocksGrooves &&
@@ -167,7 +173,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       if (createDoorVisual) {
         const slideWoodMat = slideMat || globalFrontMat;
         let slideMirrorMat = null;
-        if (visualState.isMirror) {
+        if (isMirrorDoor) {
           slideMirrorMat = getMirrorMaterial({
             App,
             THREE,
@@ -175,7 +181,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           });
           if (!slideMirrorMat) slideMirrorMat = slideWoodMat;
         }
-        const mirrorReflectorProfile = visualState.isMirror
+        const mirrorReflectorProfile = isMirrorDoor
           ? ({
               slidingLane: zPos === innerZ ? 'inner' : 'outer',
               ...(doorOp.index !== undefined ? { slidingDoorIndex: doorOp.index } : {}),
@@ -193,12 +199,12 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           doorOp.width,
           doorOp.height,
           SLIDING_DOOR_CONSTRUCTION_POLICY.visualThicknessM,
-          visualState.isMirror ? slideMirrorMat : slideWoodMat,
+          isMirrorDoor ? slideMirrorMat : slideWoodMat,
           effectiveDoorStyle,
           hasSlideGrooves,
-          visualState.isMirror,
+          isMirrorDoor,
           visualState.isGlass ? visualState.curtain : null,
-          visualState.isMirror || visualState.adhesiveGlassKind ? slideWoodMat : globalFrontMat,
+          isMirrorDoor || visualState.adhesiveGlassKind ? slideWoodMat : globalFrontMat,
           1,
           false,
           mirrorLayout,

@@ -731,6 +731,10 @@
       "entry": "door_authoring/api.js"
     },
     {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_mixed_surfaces.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/builder/visuals_chest_mode_build.ts",
       "entry": "base_leg_support.js"
     },

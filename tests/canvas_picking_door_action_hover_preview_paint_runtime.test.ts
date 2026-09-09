@@ -344,6 +344,115 @@ test('glass curtain hover uses current curtain UI state and shows remove materia
   assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [0.7, 1.9, 1]);
 });
 
+test('sized adhesive-glass hover follows the current door hit after a first pane already exists', () => {
+  const owner = createIdentityDoorOwner({
+    partId: 'd6_full',
+    __doorWidth: 1,
+    __doorHeight: 2,
+  });
+  const firstPane = createIdentityDoorOwner({
+    partId: 'd6_full',
+    __wpAdhesiveGlassSurface: 'black_glass',
+  });
+  firstPane.parent = owner;
+
+  const mirrorLayoutMap = {
+    d6_full: [
+      {
+        surfaceKind: 'black_glass',
+        widthCm: 20,
+        heightCm: 40,
+        centerXNorm: 0.25,
+        centerYNorm: 0.5,
+      },
+    ],
+  };
+  const markerPosition = { x: NaN, y: NaN, z: NaN };
+  const marker: Record<string, unknown> = {
+    visible: false,
+    material: 'base',
+    userData: {
+      __matAdd: 'add',
+      __matRemove: 'remove',
+      __matGroove: 'groove',
+      __matMirror: 'surface',
+      __matCenter: 'center',
+    },
+    position: {
+      copy(next: Vec3) {
+        markerPosition.x = next.x;
+        markerPosition.y = next.y;
+        markerPosition.z = next.z;
+      },
+    },
+    quaternion: { copy() {} },
+    scale: {
+      last: null as [number, number, number] | null,
+      set(x: number, y: number, z: number) {
+        this.last = [x, y, z];
+      },
+    },
+  };
+  const hitPoint = { x: 0.25, y: 0.4, z: 0.1, set() {} };
+  const rect = { minX: -0.5, maxX: 0.5, minY: -1, maxY: 1 };
+  const expectedLayout = buildMirrorLayoutFromHit({
+    rect,
+    hitX: hitPoint.x,
+    hitY: hitPoint.y,
+    draft: { widthCm: 20, heightCm: 40 },
+    faceSign: 1,
+  });
+  assert.ok(expectedLayout);
+  const expectedPlacement = resolveMirrorPlacementInRect({ rect, layout: expectedLayout });
+
+  const handled = tryHandleDoorPaintHoverPreview({
+    App: {
+      maps: {
+        getMap(name: string) {
+          if (name === 'mirrorLayoutMap') return mirrorLayoutMap;
+          if (name === 'doorSpecialMap') return { d6_full: 'black_glass' };
+          return {};
+        },
+      },
+    } as never,
+    THREE: { Vector3: Vec3, Quaternion: Quat },
+    hit: {
+      hitDoorPid: 'd6_full',
+      hitDoorGroup: firstPane as never,
+      hitPoint: hitPoint as never,
+    },
+    groupRec: owner as never,
+    userData: owner.userData as never,
+    wardrobeGroup: {
+      worldToLocal(target: Vec3) {
+        return target;
+      },
+    } as never,
+    doorMarker: marker as never,
+    markerUd: marker.userData as never,
+    local: new Vec3() as never,
+    localHit: new Vec3() as never,
+    wq: new Quat() as never,
+    zOff: 0.02,
+    scopedHitDoorPid: 'd6_full',
+    canonDoorPartKeyForMaps: (id: string) => id,
+    normalizedPaintSelection: 'black_glass',
+    setSketchPreview: null,
+    readUi: () => ({ currentMirrorDraftWidthCm: 20, currentMirrorDraftHeightCm: 40 }) as never,
+  });
+
+  assert.equal(handled, true);
+  assert.equal(marker.visible, true);
+  assert.notEqual(marker.material, 'remove');
+  assert.ok(Math.abs(markerPosition.x - expectedPlacement.centerX) < 1e-9);
+  assert.ok(Math.abs(markerPosition.y - expectedPlacement.centerY) < 1e-9);
+  assert.deepEqual((marker.scale as { last: [number, number, number] | null }).last, [
+    expectedPlacement.mirrorWidthM,
+    expectedPlacement.mirrorHeightM,
+    1,
+  ]);
+});
+
 test('mirror and glass hover previews treat chest drawer fronts as special fronts', () => {
   for (const selection of ['mirror', '__wp_glass_style__:flat']) {
     const owner = createIdentityDoorOwner({

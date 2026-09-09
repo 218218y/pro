@@ -1,4 +1,4 @@
-import type { AppContainer, MirrorLayoutList, UnknownRecord } from '../../../types';
+import type { AppContainer, DoorSurfaceOverlayKind, MirrorLayoutList, UnknownRecord } from '../../../types';
 
 import {
   DEFAULT_FACE_SIGN,
@@ -6,6 +6,7 @@ import {
   findMirrorLayoutMatchInRect,
   readMirrorLayoutFaceSign,
   readMirrorLayoutList,
+  readMirrorLayoutSurfaceKind,
 } from '../features/door_authoring/api.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
@@ -80,12 +81,15 @@ function isFullDoorMirrorLayoutEntry(layout: unknown): boolean {
 
 function findFullDoorMirrorFaceMatch(
   layouts: MirrorLayoutList | null | undefined,
-  faceSign: 1 | -1
+  faceSign: 1 | -1,
+  surfaceKind: DoorSurfaceOverlayKind,
+  fallbackSurfaceKind: DoorSurfaceOverlayKind
 ): { index: number } | null {
   const list = readMirrorLayoutList(layouts);
   for (let i = 0; i < list.length; i += 1) {
     const layout = list[i];
     if (
+      readMirrorLayoutSurfaceKind(layout, fallbackSurfaceKind) === surfaceKind &&
       isFullDoorMirrorLayoutEntry(layout) &&
       readMirrorLayoutFaceSign(layout, DEFAULT_FACE_SIGN) === faceSign
     ) {
@@ -100,13 +104,20 @@ function resolveFullDoorMirrorHitIdentityResult(args: {
   layouts: MirrorLayoutList | null | undefined;
   targetId: string | null;
   hasSizedDraft: boolean;
+  surfaceKind: DoorSurfaceOverlayKind;
+  fallbackSurfaceKind: DoorSurfaceOverlayKind;
 }): MirrorLayoutClickResult | null {
   if (args.hasSizedDraft) return null;
   const faceSign = readHitIdentityMirrorFaceSign(args.command, args.targetId);
   if (faceSign == null) return null;
   return {
     nextLayout: null,
-    removeMatch: findFullDoorMirrorFaceMatch(args.layouts, faceSign),
+    removeMatch: findFullDoorMirrorFaceMatch(
+      args.layouts,
+      faceSign,
+      args.surfaceKind,
+      args.fallbackSurfaceKind
+    ),
     canApplyMirror: true,
     hitFaceSign: faceSign,
     isFullDoorMirror: true,
@@ -127,11 +138,18 @@ function resolveMirrorFaceSignFromLocalPoint(localPoint: UnknownRecord | null): 
 }
 
 export function resolveMirrorLayoutForPaintClick(
-  args: { App: AppContainer; command: ResolvedCanvasPaintCommand },
+  args: {
+    App: AppContainer;
+    command: ResolvedCanvasPaintCommand;
+    surfaceKind?: DoorSurfaceOverlayKind;
+    fallbackSurfaceKind?: DoorSurfaceOverlayKind;
+  },
   layouts?: MirrorLayoutList | null
 ): MirrorLayoutClickResult {
   const { App, command } = args;
   const targetId = command.canonicalPartKey;
+  const surfaceKind = args.surfaceKind || 'mirror';
+  const fallbackSurfaceKind = args.fallbackSurfaceKind || surfaceKind;
   const hitObj = command.hitReferences.doorObject ?? command.hitReferences.primaryObject;
   const hitPoint = command.hitReferences.doorPoint ?? command.hitReferences.primaryPoint;
   const owner = resolveMirrorPlacementOwnerByPartId(isRecord(hitObj) ? hitObj : null, targetId || null);
@@ -144,6 +162,8 @@ export function resolveMirrorLayoutForPaintClick(
       layouts,
       targetId: targetId || null,
       hasSizedDraft,
+      surfaceKind,
+      fallbackSurfaceKind,
     });
 
   if (!owner || !rect || !hitPoint) return identityResult() || emptyMirrorLayoutClickResult();
@@ -160,6 +180,8 @@ export function resolveMirrorLayoutForPaintClick(
     hitX: lockedLocalPoint.x,
     hitY: lockedLocalPoint.y,
     faceSign,
+    surfaceKind,
+    fallbackSurfaceKind,
   });
   if (!hasSizedDraft) {
     return {
@@ -171,14 +193,15 @@ export function resolveMirrorLayoutForPaintClick(
     };
   }
 
-  const nextLayout = buildMirrorLayoutFromHit({
+  const nextLayoutBase = buildMirrorLayoutFromHit({
     rect,
     hitX: lockedLocalPoint.x,
     hitY: lockedLocalPoint.y,
     draft,
     faceSign,
   });
-  if (!nextLayout) return emptyMirrorLayoutClickResult();
+  if (!nextLayoutBase) return emptyMirrorLayoutClickResult();
+  const nextLayout = { ...nextLayoutBase, surfaceKind };
   return {
     nextLayout,
     removeMatch,

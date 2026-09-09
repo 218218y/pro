@@ -1,10 +1,13 @@
 import {
   hasMirrorSurfaceOnFace,
+  materializeMirrorLayoutSurfaceKinds,
   readGrooveLayoutList,
   readMirrorLayoutFaceSign,
+  readMirrorLayoutSurfaceKind,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
+import { createMixedSurfaceDoorVisual } from './visuals_and_contents_door_visual_mixed_surfaces.js';
 import {
   createAdhesiveGlassDoorVisual,
   createStyledAdhesiveGlassDoorVisual,
@@ -30,6 +33,20 @@ import type {
   MirrorLayoutList,
   Object3DLike,
 } from '../../../types/index.js';
+
+function hasMixedDoorSurfaceKinds(
+  mirrorLayout: MirrorLayoutList | null,
+  fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'
+): boolean {
+  if (!Array.isArray(mirrorLayout) || mirrorLayout.length < 2) return false;
+  let firstKind: 'mirror' | 'black_glass' | 'frosted_glass' | null = null;
+  for (const layout of mirrorLayout) {
+    const kind = readMirrorLayoutSurfaceKind(layout, fallbackKind);
+    if (firstKind == null) firstKind = kind;
+    else if (kind !== firstKind) return true;
+  }
+  return false;
+}
 
 function hasExplicitMirrorLayout(mirrorLayout: MirrorLayoutList | null): boolean {
   if (!Array.isArray(mirrorLayout)) return false;
@@ -116,6 +133,35 @@ export function createDoorVisual(
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
 
   const adhesiveGlassKind = resolveAdhesiveGlassKind(options?.adhesiveGlassKind);
+  const surfaceFallbackKind = isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';
+  if (
+    (style === 'flat' || style === 'profile' || style === 'double_profile') &&
+    hasExplicitMirrorLayout(mirrorLayout) &&
+    hasMixedDoorSurfaceKinds(mirrorLayout, surfaceFallbackKind)
+  ) {
+    const mixedLayout = materializeMirrorLayoutSurfaceKinds(mirrorLayout, surfaceFallbackKind);
+    return createMixedSurfaceDoorVisual({
+      App,
+      THREE,
+      style,
+      w,
+      h,
+      thickness,
+      mirrorMat: mat,
+      baseMaterial: baseMaterial || mat,
+      zSign,
+      isSketch,
+      mirrorLayout: mixedLayout,
+      addOutlines,
+      hasGrooves,
+      groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
+      grooveLayout: options?.grooveLayout ?? null,
+      tagDoorVisualPart,
+      mirrorReflectorProfile: options?.mirrorReflectorProfile ?? null,
+    });
+  }
+
   if (adhesiveGlassKind) {
     const hasOutsideGlassSurface = hasMirrorSurfaceOnFace(mirrorLayout, zSign, zSign);
     const hasOutsideGrooves = hasGrooves && !hasOutsideGlassSurface;
