@@ -401,6 +401,8 @@ test('package release scripts keep client mode explicit for shipped site bundles
   assert.match(pkg.scripts.release, /--build-mode client/);
   assert.equal(pkg.scripts['release:client'], 'npm run release');
   assert.match(pkg.scripts['release:release'], /--build-mode client/);
+  assert.equal(pkg.scripts['release:parity'], 'npm run release:release && npm run release:parity:check');
+  assert.equal(pkg.scripts['release:parity:check'], 'node tools/wp_release_parity.js --strict-build');
   assert.match(pkg.scripts['release:site2'], /--build-mode client/);
   assert.equal(
     pkg.scripts['check:release-clean'],
