@@ -353,12 +353,12 @@
           },
           {
             "name": "three",
-            "version": "0.185.1",
+            "version": "0.186.0",
             "lockPath": "node_modules/three",
             "installPath": "node_modules/three",
-            "file": "vendor/offline/runtime/three-0.185.1.tgz",
-            "url": "https://registry.npmjs.org/three/-/three-0.185.1.tgz",
-            "integrity": "sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg=="
+            "file": "vendor/offline/runtime/three-0.186.0.tgz",
+            "url": "https://registry.npmjs.org/three/-/three-0.186.0.tgz",
+            "integrity": "sha512-cr/fIM2ddMSVbYVgkfD4jLJv7Fh/8ZTjvo+7gQeSVGUZHxpx9FDwoL5iC7hUz/LiRA8wMbqfnb90xKfm1/HHkQ=="
           },
           {
             "name": "tslib",
@@ -381,10 +381,7 @@
         ]
       },
       "vite-build": {
-        "rootDependencies": [
-          "@vitejs/plugin-react",
-          "vite"
-        ],
+        "rootDependencies": ["@vitejs/plugin-react", "vite"],
         "packageCount": 16,
         "packages": [
           {
@@ -534,9 +531,7 @@
         ]
       },
       "eslint-js-strict": {
-        "rootDependencies": [
-          "eslint"
-        ],
+        "rootDependencies": ["eslint"],
         "packageCount": 77,
         "packages": [
           {
@@ -1235,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "df54680837ace0ac36aafdf3ec4e3199aa3334f20acbfeef7a87e0f68060bfd2"
+    "lockfileSha256": "a6718f0d17e5d805da0428e453b32c9d953972ab220bf685e66668b178885c71"
   }
 }

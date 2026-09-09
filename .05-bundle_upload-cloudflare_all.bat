@@ -10,10 +10,13 @@ set "MAIN_RELEASE_DIR=dist\sites\bargig\main\release"
 set "SITE2_RELEASE_DIR=dist\sites\bargig\site2\release"
 set "MAIN_CLOUDFLARE_PROJECT=bargig-pro"
 set "SITE2_CLOUDFLARE_PROJECT=bargig-pro2"
+set "WRANGLER_VERSION=4.130.0"
 
 echo ==========================================
 echo  Bargig - build and deploy to Cloudflare
 echo ==========================================
+echo.
+echo  Wrangler CLI: %WRANGLER_VERSION% ^(pinned for reproducible deploys^)
 echo.
 
 where node >nul 2>nul
@@ -63,13 +66,13 @@ if not exist "%SITE2_RELEASE_DIR%" (
 echo.
 echo [3/4] Deploying main site to Cloudflare Pages: %MAIN_CLOUDFLARE_PROJECT%
 echo ------------------------------------------
-call npx --yes wrangler pages deploy "%MAIN_RELEASE_DIR%" --project-name %MAIN_CLOUDFLARE_PROJECT% --branch main
+call npx --yes wrangler@%WRANGLER_VERSION% pages deploy "%MAIN_RELEASE_DIR%" --project-name "%MAIN_CLOUDFLARE_PROJECT%" --branch main
 if errorlevel 1 goto fail
 
 echo.
 echo [4/4] Deploying customer site to Cloudflare Pages: %SITE2_CLOUDFLARE_PROJECT%
 echo ------------------------------------------
-call npx --yes wrangler pages deploy "%SITE2_RELEASE_DIR%" --project-name %SITE2_CLOUDFLARE_PROJECT% --branch main
+call npx --yes wrangler@%WRANGLER_VERSION% pages deploy "%SITE2_RELEASE_DIR%" --project-name "%SITE2_CLOUDFLARE_PROJECT%" --branch main
 if errorlevel 1 goto fail
 
 echo.
