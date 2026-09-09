@@ -163,6 +163,50 @@ test('canvas hover interactions queue one RAF and use the latest pointer positio
   assert.equal(domEl.style.cursor, 'pointer');
 });
 
+test('canvas pointer return transfers focused dimension input ownership to active precision authoring', () => {
+  const domEl = createDomEl();
+  let blurCalls = 0;
+  const input = {
+    tagName: 'INPUT',
+    blur() {
+      blurCalls += 1;
+    },
+  };
+  domEl.ownerDocument = { activeElement: input };
+
+  const state = createCanvasInteractionState();
+  const rectOps = createRectCacheOps(domEl, state);
+  const { App } = createApp();
+  App.store = {
+    getState: () => ({
+      mode: { primary: 'paint', opts: {} },
+      ui: { currentMirrorDraftHeightCm: '90' },
+    }),
+  };
+  App.services.tools = { getPaintColor: () => 'mirror' };
+
+  const ops = createCanvasHoverInteractionOps(
+    App,
+    {
+      domEl,
+      triggerRender() {
+        return undefined;
+      },
+      handleCanvasClickNDC() {
+        return null;
+      },
+      handleCanvasHoverNDC() {
+        return true;
+      },
+    },
+    state,
+    rectOps
+  );
+
+  ops.onPointerMove({ clientX: 60, clientY: 45, pointerId: 1 } as any);
+  assert.equal(blurCalls, 1);
+});
+
 test('canvas hover interactions retarget a pending post-build hover refresh to the latest pointer position', () => {
   const domEl = createDomEl();
   const state = createCanvasInteractionState();

@@ -133,6 +133,22 @@ function isManualDoorSplitModeActive(App: AppContainer): boolean {
   return mode.primary === MODES.SPLIT && opts?.splitVariant === 'custom';
 }
 
+export function releaseCanvasAuthoringEditableFocus(App: AppContainer, domEl: HTMLElement): void {
+  const doc = domEl.ownerDocument || null;
+  if (!doc) return;
+  if (!isManualDoorSplitModeActive(App) && !readCanvasPrecisionAxisLockScope(App)) return;
+
+  const activeElement = doc.activeElement;
+  if (!isEditableCanvasKeyboardTarget(activeElement)) return;
+
+  try {
+    const blur = readRecord(activeElement)?.blur;
+    if (typeof blur === 'function') blur.call(activeElement);
+  } catch (err) {
+    reportCanvasInteractionsNonFatal(App, 'authoringKeyboard.releaseEditableFocus', err);
+  }
+}
+
 export const CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M = 0.01;
 export const CANVAS_AUTHORING_KEYBOARD_NUDGE_M = 0.01;
 

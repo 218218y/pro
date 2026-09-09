@@ -13,6 +13,7 @@ import {
 import {
   installCanvasAuthoringKeyboardInteraction,
   installCanvasDoorSplitAxisLockInteraction,
+  releaseCanvasAuthoringEditableFocus,
 } from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
 import {
   clearCanvasPrecisionAxisLock,
@@ -276,6 +277,57 @@ function createPrecisionApp(args: {
     },
   } as any;
 }
+
+test('returning the pointer to canvas releases focused dimension fields for precision keyboard ownership', () => {
+  const scenarios = [
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'mirror',
+      ui: { currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'black_glass',
+      ui: { currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'paint',
+      paint: 'frosted_glass',
+      ui: { currentMirrorDraftHeightCm: '90' },
+    }),
+    createPrecisionApp({
+      primary: 'groove',
+      ui: { grooveManualEnabled: true },
+    }),
+  ];
+
+  for (const App of scenarios) {
+    let blurCalls = 0;
+    const input = {
+      tagName: 'INPUT',
+      blur() {
+        blurCalls += 1;
+      },
+    };
+    releaseCanvasAuthoringEditableFocus(App, {
+      ownerDocument: { activeElement: input },
+    } as any);
+    assert.equal(blurCalls, 1);
+  }
+
+  let ordinaryBlurCalls = 0;
+  releaseCanvasAuthoringEditableFocus(createPrecisionApp({ primary: 'paint', paint: '#ffffff' }), {
+    ownerDocument: {
+      activeElement: {
+        tagName: 'INPUT',
+        blur() {
+          ordinaryBlurCalls += 1;
+        },
+      },
+    },
+  } as any);
+  assert.equal(ordinaryBlurCalls, 0);
+});
 
 test('precision Shift axis lock chooses the dominant direction once and keeps it until release', () => {
   const App = createPrecisionApp({ primary: 'manual_layout', manualTool: 'sketch_int_drawers' });

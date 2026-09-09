@@ -15,6 +15,7 @@ import {
   getClientXY,
   getInteractionTimers,
   refreshCanvasHoverAtClientPoint,
+  releaseCanvasAuthoringEditableFocus,
   reportCanvasInteractionsNonFatal,
   toNdcFromClient,
   type CanvasInteractionState,
@@ -61,6 +62,7 @@ export function createCanvasHoverInteractionOps(
       const xy = getClientXY(e, App);
       if (!xy) return;
 
+      releaseCanvasAuthoringEditableFocus(App, deps.domEl);
       prepareCanvasDoorSplitPointerMove(App);
       prepareCanvasPrecisionPointerMove(App);
       const authoringPoint = resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: xy.cx, cy: xy.cy });
