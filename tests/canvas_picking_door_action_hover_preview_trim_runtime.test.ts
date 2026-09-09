@@ -5,8 +5,14 @@ import {
   __readDoorTrimConfigMap,
   __readDoorTrimModeDraft,
 } from '../esm/native/services/canvas_picking_door_action_hover_preview_state.ts';
-import { resolveCellMeasurementLabelOutsets } from '../esm/native/services/canvas_picking_hover_clearance_measurements.ts';
 import { tryHandleDoorTrimHoverPreview } from '../esm/native/services/canvas_picking_door_action_hover_preview_trim.ts';
+import {
+  clearCanvasPrecisionAxisLock,
+  nudgeCanvasPrecisionLocalY,
+  resolveCanvasPrecisionAxisLockedLocalPoint,
+  resolveCanvasPrecisionAxisLockedClientPoint,
+  setCanvasPrecisionAxisLockPressed,
+} from '../esm/native/services/canvas_picking_precision_axis_lock.ts';
 
 class Vec3 {
   x = 0;
@@ -180,6 +186,67 @@ test('door trim hover reads the same mode opts and config map as click flow', ()
   assert.equal(Array.isArray(trimMap.d1_left), true);
   assert.equal(trimMap.d1_left[0].axis, 'vertical');
   assert.equal(trimMap.d1_left[0].span, 'custom');
+});
+
+test('door trim hover uses shared Shift axis lock and keyboard-nudged placement coordinates', () => {
+  const app: any = createApp();
+  const state = app.store.getState();
+  state.mode.primary = 'door_trim';
+  state.config.doorTrimMap = {};
+  const owner = createDoorOwner();
+  const marker = createMarker();
+  const previewCalls: Record<string, unknown>[] = [];
+  clearCanvasPrecisionAxisLock(app);
+
+  resolveCanvasPrecisionAxisLockedClientPoint(app, { cx: 100, cy: 100 });
+  resolveCanvasPrecisionAxisLockedLocalPoint(app, { x: 0.1, y: 0.3 });
+  setCanvasPrecisionAxisLockPressed(app, true);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(app, { cx: 112, cy: 102 }), {
+    cx: 112,
+    cy: 100,
+  });
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(app, { x: 0.2, y: 0.7 }), {
+    x: 0.2,
+    y: 0.3,
+  });
+  setCanvasPrecisionAxisLockPressed(app, false);
+  assert.equal(nudgeCanvasPrecisionLocalY(app, 0.01), 0.71);
+
+  const handled = tryHandleDoorTrimHoverPreview({
+    App: app,
+    THREE: { Vector3: Vec3, Quaternion: Quat },
+    hit: {
+      hitDoorPid: 'd1_left',
+      hitDoorGroup: owner,
+      hitPoint: { x: 0.2, y: 0.7, z: 0.02 },
+    },
+    hitDoorPid: 'd1_left',
+    groupRec: owner,
+    userData: owner.userData,
+    doorMarker: marker,
+    markerUd: marker.userData,
+    local: new Vec3(),
+    localHit: new Vec3(),
+    wq: new Quat(),
+    zOff: 0.02,
+    setSketchPreview(previewArgs: Record<string, unknown>) {
+      previewCalls.push(previewArgs);
+      return {
+        hoverMarker: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+        mesh: { material: { color: { setHex() {} }, emissive: { setHex() {} } } },
+      };
+    },
+    wardrobeGroup: {
+      worldToLocal(target: Vec3) {
+        return target;
+      },
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(previewCalls.length, 1);
+  assert.ok(Math.abs(Number(previewCalls[0].x) - 0.2) <= 1e-9);
+  assert.ok(Math.abs(Number(previewCalls[0].y) - 0.71) <= 1e-9);
 });
 
 test('door trim hover preview matches vertical custom trim placement and remove semantics', () => {

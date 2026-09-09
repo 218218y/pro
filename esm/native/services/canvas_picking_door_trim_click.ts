@@ -21,6 +21,7 @@ import {
 } from './canvas_picking_door_shared.js';
 import { asRecord, readDoorTrimConfigMap, readDoorTrimModeOpts } from './canvas_picking_door_edit_shared.js';
 import { createCanvasPickingDoorAuthoringStructuralMeta } from './canvas_picking_door_authoring_meta.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import { __wp_historyBatch, __wp_map } from './canvas_picking_core_helpers.js';
 
 export interface CanvasDoorTrimClickArgs {
@@ -71,8 +72,12 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
   }
 
   const mappedLocal = mapDoorTrimSurfaceLocalPoint(userData, localPoint);
-  const localX = mappedLocal.localX;
-  const localY = mappedLocal.localY;
+  const precisionLocal = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: mappedLocal.localX,
+    y: mappedLocal.localY,
+  });
+  const localX = precisionLocal.x;
+  const localY = precisionLocal.y;
   const trimsMap = readDoorTrimConfigMap(App);
   const currentList = trimsMap[trimPartId] || [];
   const mirrorLayoutMap = __wp_map(App, 'mirrorLayoutMap');

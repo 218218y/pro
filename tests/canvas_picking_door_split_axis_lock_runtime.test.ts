@@ -103,19 +103,40 @@ test('shared pointer-Y resolver applies the same locked height used by hover and
 
 class FakeEventTarget {
   listeners = new Map<string, Set<(event: any) => void>>();
+  captureListeners = new Map<string, Set<(event: any) => void>>();
 
-  addEventListener(type: string, listener: (event: any) => void): void {
-    const set = this.listeners.get(type) || new Set<(event: any) => void>();
+  addEventListener(
+    type: string,
+    listener: (event: any) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    const capture =
+      options === true || (!!options && typeof options === 'object' && options.capture === true);
+    const target = capture ? this.captureListeners : this.listeners;
+    const set = target.get(type) || new Set<(event: any) => void>();
     set.add(listener);
-    this.listeners.set(type, set);
+    target.set(type, set);
   }
 
-  removeEventListener(type: string, listener: (event: any) => void): void {
-    this.listeners.get(type)?.delete(listener);
+  removeEventListener(
+    type: string,
+    listener: (event: any) => void,
+    options?: boolean | EventListenerOptions
+  ): void {
+    const capture =
+      options === true || (!!options && typeof options === 'object' && options.capture === true);
+    (capture ? this.captureListeners : this.listeners).get(type)?.delete(listener);
   }
 
   dispatch(type: string, event: any): void {
-    for (const listener of this.listeners.get(type) || []) listener(event);
+    for (const listener of this.captureListeners.get(type) || []) {
+      listener(event);
+      if (event.__stopped === true) return;
+    }
+    for (const listener of this.listeners.get(type) || []) {
+      listener(event);
+      if (event.__stopped === true) return;
+    }
   }
 }
 
@@ -392,6 +413,96 @@ test('generic positional-authoring Arrow keys and Enter reuse the shared keyboar
   dispose();
 });
 
+test('precision authoring captures Enter before focused accessibility controls can reactivate the selected tool', () => {
+  const App = createPrecisionApp({
+    primary: 'paint',
+    paint: 'mirror',
+    ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+  });
+  clearCanvasPrecisionAxisLock(App);
+  resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let accessibilityActivations = 0;
+  let commits = 0;
+
+  // Models the existing document-bubble accessibility shortcut for .type-option buttons.
+  doc.addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    accessibilityActivations += 1;
+    App.store.getState().mode.primary = 'none';
+  });
+
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onPositionalAuthoringCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const marks: string[] = [];
+  const event = {
+    key: 'Enter',
+    repeat: false,
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation() {
+      marks.push('stop');
+      this.__stopped = true;
+    },
+    __stopped: false,
+  };
+  doc.dispatch('keydown', event);
+
+  assert.equal(commits, 1);
+  assert.equal(accessibilityActivations, 0);
+  assert.deepEqual(marks, ['prevent', 'stop']);
+  assert.equal(App.store.getState().mode.primary, 'paint');
+  dispose();
+});
+
+test('horizontal sketch divider and box placement share 1 cm Arrow nudges and Enter commit ownership', () => {
+  for (const manualTool of ['sketch_box_divider_horizontal', 'sketch_box:80']) {
+    const App = createPrecisionApp({ primary: 'manual_layout', manualTool });
+    clearCanvasPrecisionAxisLock(App);
+    resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 });
+
+    const win = new FakeEventTarget();
+    const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+    doc.defaultView = win;
+    let commits = 0;
+    const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+      onPositionalAuthoringCommitRequested: () => {
+        commits += 1;
+        return true;
+      },
+    });
+
+    doc.dispatch('keydown', {
+      key: 'ArrowUp',
+      target: { tagName: 'BODY' },
+      preventDefault() {},
+      stopPropagation() {},
+    });
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 0.9 }), {
+      x: 0.3,
+      y: 0.91,
+    });
+
+    doc.dispatch('keydown', {
+      key: 'Enter',
+      repeat: false,
+      target: { tagName: 'BODY' },
+      preventDefault() {},
+      stopPropagation() {},
+    });
+    assert.equal(commits, 1, manualTool);
+    dispose();
+  }
+});
+
 test('generic positional-authoring Enter leaves focused controls alone until a canvas target exists', () => {
   const App = createPrecisionApp({
     primary: 'handle',
@@ -429,11 +540,16 @@ test('precision Shift scope is limited to positional authoring modes and covers 
     'sketch_ext_drawers:4',
     'sketch_box:80',
     'sketch_box_divider',
+    'sketch_box_divider_horizontal',
   ]) {
     const App = createPrecisionApp({ primary: 'manual_layout', manualTool });
     assert.equal(readCanvasPrecisionAxisLockScope(App), `manual_layout:${manualTool}`);
   }
 
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(createPrecisionApp({ primary: 'door_trim' })),
+    'door_trim:placement'
+  );
   assert.equal(
     readCanvasPrecisionAxisLockScope(
       createPrecisionApp({ primary: 'handle', opts: { handlePlacement: 'manual' } })

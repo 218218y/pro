@@ -23,6 +23,7 @@ import {
   type TransformNodeLike,
 } from './canvas_picking_door_action_hover_preview_shared.js';
 import type { UnknownRecord } from '../../../types';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import {
   buildRectClearanceMeasurementEntries,
   markCenteredRectClearanceMeasurements,
@@ -75,8 +76,12 @@ export function tryHandleDoorTrimHoverPreview(args: DoorTrimHoverPreviewArgs): b
   localHit.set(hit.hitPoint.x, hit.hitPoint.y, hit.hitPoint.z);
   trimGroupRec.worldToLocal?.(localHit);
   const mappedLocal = mapDoorTrimSurfaceLocalPoint(trimUserData, localHit);
-  const localX = mappedLocal.localX;
-  const localY = mappedLocal.localY;
+  const precisionLocal = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: mappedLocal.localX,
+    y: mappedLocal.localY,
+  });
+  const localX = precisionLocal.x;
+  const localY = precisionLocal.y;
   const currentTrims = trimMap[trimPartId] || [];
   const match = findDoorTrimMatchInRect({
     rect: rect0,

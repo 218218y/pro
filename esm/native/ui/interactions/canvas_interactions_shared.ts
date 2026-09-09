@@ -219,13 +219,15 @@ export function installCanvasAuthoringKeyboardInteraction(
     }
   };
 
-  doc.addEventListener('keydown', onKeyDown, false);
-  doc.addEventListener('keyup', onKeyUp, false);
+  // Precision authoring owns these shortcuts before focused React/accessibility controls
+  // can reinterpret Enter/Arrow keys. Editable targets are still ignored above.
+  doc.addEventListener('keydown', onKeyDown, true);
+  doc.addEventListener('keyup', onKeyUp, true);
   win?.addEventListener('blur', clearLock, false);
 
   return () => {
-    doc.removeEventListener('keydown', onKeyDown, false);
-    doc.removeEventListener('keyup', onKeyUp, false);
+    doc.removeEventListener('keydown', onKeyDown, true);
+    doc.removeEventListener('keyup', onKeyUp, true);
     win?.removeEventListener('blur', clearLock, false);
     clearLock();
   };

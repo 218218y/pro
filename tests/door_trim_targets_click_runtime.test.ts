@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 
 import { resolveDoorTrimTarget } from '../esm/native/services/canvas_picking_door_trim_targets.ts';
 import { handleCanvasDoorTrimClick } from '../esm/native/services/canvas_picking_door_trim_click.ts';
+import {
+  clearCanvasPrecisionAxisLock,
+  nudgeCanvasPrecisionLocalY,
+  resolveCanvasPrecisionAxisLockedLocalPoint,
+} from '../esm/native/services/canvas_picking_precision_axis_lock.ts';
 
 type DoorGroupLike = {
   userData: Record<string, unknown>;
@@ -43,6 +48,7 @@ function createDoorTrimApp() {
   }> = [];
   const rootState = {
     mode: {
+      primary: 'door_trim',
       opts: {
         trimAxis: 'horizontal',
         trimColor: 'gold',
@@ -116,6 +122,29 @@ test('door trim target resolution canonicalizes segmented door ids and bottom-co
   const cornerSurfaceTarget = resolveDoorTrimTarget(App, 'corner_door_2_mid2_groove_left', lowerCorner);
   assert.equal(cornerSurfaceTarget?.partId, 'lower_corner_door_2_full');
   assert.equal(cornerSurfaceTarget?.group, lowerCorner);
+});
+
+test('door trim click commits the same keyboard-nudged local placement shown by precision hover', () => {
+  const { app, rootState } = createDoorTrimApp();
+  const doorGroup = createDoorGroup('d7_full');
+  app.render.doorsArray = [{ group: doorGroup }];
+  clearCanvasPrecisionAxisLock(app);
+
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(app, { x: 0, y: 0.3 }), { x: 0, y: 0.3 });
+  assert.equal(nudgeCanvasPrecisionLocalY(app, 0.01), 0.31);
+
+  const handled = handleCanvasDoorTrimClick({
+    App: app,
+    effectiveDoorId: 'd7_full',
+    foundPartId: null,
+    doorHitPoint: { x: 0, y: 0.3, z: 0 },
+    doorHitObject: doorGroup,
+  });
+
+  assert.equal(handled, true);
+  const [addedTrim] = rootState.config.doorTrimMap.d7_full;
+  assert.ok(addedTrim);
+  assert.equal(addedTrim.centerYNorm, 0.655);
 });
 
 test('door trim click writes canonical trim maps through history batch and toggles existing matches off', () => {

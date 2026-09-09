@@ -48,6 +48,10 @@ export function readCanvasPrecisionAxisLockScope(App: AppContainer): string | nu
     return 'handle:manual';
   }
 
+  if (primary === 'door_trim') {
+    return 'door_trim:placement';
+  }
+
   if (primary === 'groove') {
     const ui = readUiState(App);
     if (ui.grooveManualEnabled === true) return 'groove:manual';
