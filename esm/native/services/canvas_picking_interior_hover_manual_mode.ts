@@ -36,6 +36,7 @@ import {
 } from './canvas_picking_interior_hover_layout_family_shared.js';
 import { resolveManualLayoutShelfFillPlan } from './canvas_picking_manual_layout_config_ops.js';
 import { tryHandleManualLayoutFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 
 export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -106,7 +107,11 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
       )
     );
     const step = target.spanH / currentToolDivs;
-    const relY = target.hitY - target.bottomY;
+    const precisionHit = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+      x: target.internalCenterX,
+      y: target.hitY,
+    });
+    const relY = precisionHit.y - target.bottomY;
 
     if (manualTool === 'shelf' && isNewLayout && setLayoutPreview) {
       hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });

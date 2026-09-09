@@ -17,6 +17,7 @@ import type {
 } from './canvas_picking_manual_layout_sketch_hover_module_contracts.js';
 import { SKETCH_BOX_TOOL_PREFIX as __SKETCH_BOX_TOOL_PREFIX } from './canvas_picking_manual_layout_sketch_hover_module_contracts.js';
 import { readNum, readRecordValue } from './canvas_picking_manual_layout_sketch_hover_module_shared.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 
 type ManualLayoutSketchHoverModuleBaseContext = Pick<
   ManualLayoutSketchHoverModuleContext,
@@ -63,7 +64,14 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
     hitLocalX: initialHitLocalX,
     __hideSketchPreviewAndClearHover,
   } = args;
-  const hitLocalX = initialHitLocalX;
+  const precisionHit = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: typeof initialHitLocalX === 'number' && Number.isFinite(initialHitLocalX) ? initialHitLocalX : 0,
+    y: hitY,
+  });
+  const hitLocalX =
+    typeof initialHitLocalX === 'number' && Number.isFinite(initialHitLocalX)
+      ? precisionHit.x
+      : initialHitLocalX;
 
   const isBottom = hitStack === 'bottom';
   const grid = getInternalGridMap(App, isBottom);
@@ -101,7 +109,7 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
       woodThick * INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio
     )
   );
-  let yClamped = Math.max(bottomY + pad, Math.min(topY - pad, hitY));
+  let yClamped = Math.max(bottomY + pad, Math.min(topY - pad, precisionHit.y));
 
   const isBox = tool.startsWith(__SKETCH_BOX_TOOL_PREFIX);
   const isStorage = tool.startsWith('sketch_storage:');

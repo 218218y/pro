@@ -20,6 +20,7 @@ import {
   type RoomWallSurfacePickMeta,
 } from './room_wall_picking.js';
 import { __wp_projectWorldPointToLocal } from './canvas_picking_projection_runtime_plane.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 
 type InteriorModuleConfigRefLike = UnknownRecord;
 
@@ -238,6 +239,11 @@ export function resolveManualLayoutSketchHoverFreePlaneContext(
   }
 
   if (!(planeHit && Number.isFinite(workspaceBackZ))) return null;
+  const lockedPlaneHit = resolveCanvasPrecisionAxisLockedLocalPoint(App, {
+    x: planeHit.x,
+    y: planeHit.y,
+  });
+  planeHit = { ...planeHit, x: lockedPlaneHit.x, y: lockedPlaneHit.y };
 
   const cfgRef = __wp_readInteriorModuleConfigRef(App, host.moduleKey, host.isBottom);
   const extra = asRecord(readRecordValue(cfgRef, 'sketchExtras'));

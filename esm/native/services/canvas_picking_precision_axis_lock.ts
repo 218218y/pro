@@ -13,6 +13,7 @@ type CanvasPrecisionAxisLockState = {
   axis: CanvasPrecisionAxis | null;
   localLatest: { x: number; y: number } | null;
   localAnchor: { x: number; y: number } | null;
+  keyboardYOffsetM: number;
 };
 
 const AXIS_DECISION_THRESHOLD_PX = 4;
@@ -59,7 +60,10 @@ export function readCanvasPrecisionAxisLockScope(App: AppContainer): string | nu
       readPositiveDraftCm(ui.currentMirrorDraftWidthCm) != null ||
       readPositiveDraftCm(ui.currentMirrorDraftHeightCm) != null;
     if (!hasSizedMirrorDraft) return null;
-    return readCanvasPaintSelection(App) === 'mirror' ? 'paint:mirror-sized' : null;
+    const selection = readCanvasPaintSelection(App);
+    if (selection === 'mirror') return 'paint:mirror-sized';
+    if (selection === 'black_glass' || selection === 'frosted_glass') return `paint:${selection}-sized`;
+    return null;
   }
 
   return null;
@@ -77,6 +81,7 @@ function getState(App: AppContainer): CanvasPrecisionAxisLockState {
     axis: null,
     localLatest: null,
     localAnchor: null,
+    keyboardYOffsetM: 0,
   };
   stateByApp.set(key, created);
   return created;
@@ -97,7 +102,10 @@ export function setCanvasPrecisionAxisLockPressed(App: AppContainer, pressed: bo
   state.scope = nextScope;
   state.axis = null;
   state.anchor = next && nextScope && state.latest ? clonePoint(state.latest) : null;
-  if (scopeChanged) state.localLatest = null;
+  if (scopeChanged) {
+    state.localLatest = null;
+    state.keyboardYOffsetM = 0;
+  }
   state.localAnchor = next && nextScope && state.localLatest ? { ...state.localLatest } : null;
 }
 
@@ -116,6 +124,7 @@ export function resolveCanvasPrecisionAxisLockedClientPoint(
     state.anchor = state.pressed && nextScope ? previousLatest || clonePoint(current) : null;
     state.localAnchor = null;
     state.localLatest = null;
+    state.keyboardYOffsetM = 0;
   }
   state.latest = clonePoint(current);
 
@@ -148,14 +157,66 @@ export function resolveCanvasPrecisionAxisLockedLocalPoint(
     state.axis = null;
     state.anchor = null;
     state.localAnchor = state.pressed && nextScope ? previousLatest || { ...current } : null;
+    state.keyboardYOffsetM = 0;
   }
   state.localLatest = { ...current };
 
-  if (!state.pressed || !nextScope || !state.axis) return current;
-  if (!state.localAnchor) state.localAnchor = previousLatest || { ...current };
+  let resolved = current;
+  if (state.pressed && nextScope && state.axis) {
+    if (!state.localAnchor) state.localAnchor = previousLatest || { ...current };
 
-  if (state.axis === 'horizontal') return { x: current.x, y: state.localAnchor.y };
-  return { x: state.localAnchor.x, y: current.y };
+    resolved =
+      state.axis === 'horizontal'
+        ? { x: current.x, y: state.localAnchor.y }
+        : { x: state.localAnchor.x, y: current.y };
+  }
+
+  if (!nextScope || !state.keyboardYOffsetM) return resolved;
+  return { x: resolved.x, y: resolved.y + state.keyboardYOffsetM };
+}
+
+/**
+ * Marks real pointer motion for positional authoring. Keyboard nudges deliberately
+ * survive hover refreshes at the same client point, but the next physical move
+ * hands control back to the pointer immediately.
+ */
+export function prepareCanvasPrecisionPointerMove(App: AppContainer): void {
+  const state = getState(App);
+  state.keyboardYOffsetM = 0;
+}
+
+export function hasCanvasPrecisionLocalPoint(App: AppContainer): boolean {
+  const state = stateByApp.get(App as object);
+  if (!state?.localLatest) return false;
+  const scope = readCanvasPrecisionAxisLockScope(App);
+  return !!scope && state.scope === scope;
+}
+
+/**
+ * Moves the active positional authoring target vertically in local/world Y.
+ * Returns null until the active workflow has produced at least one local point,
+ * so arrow keys never hijack unrelated controls or an uninitialized canvas.
+ */
+export function nudgeCanvasPrecisionLocalY(App: AppContainer, deltaM: number): number | null {
+  const delta = Number(deltaM);
+  if (!Number.isFinite(delta) || !delta) return null;
+
+  const state = getState(App);
+  const nextScope = readCanvasPrecisionAxisLockScope(App);
+  if (!nextScope) return null;
+  if (state.scope !== nextScope) {
+    state.scope = nextScope;
+    state.axis = null;
+    state.anchor = null;
+    state.localAnchor = null;
+    state.localLatest = null;
+    state.keyboardYOffsetM = 0;
+    return null;
+  }
+  if (!state.localLatest) return null;
+
+  state.keyboardYOffsetM += delta;
+  return state.localLatest.y + state.keyboardYOffsetM;
 }
 
 export function clearCanvasPrecisionAxisLock(App: AppContainer): void {

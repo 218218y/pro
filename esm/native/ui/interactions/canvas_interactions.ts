@@ -51,6 +51,8 @@ export function installCanvasInteractions(
     },
     onManualSplitCommitRequested: () =>
       pointerOps.commitKeyboardAtClientPoint(state.hoverLastCx, state.hoverLastCy),
+    onPositionalAuthoringCommitRequested: () =>
+      pointerOps.commitKeyboardAtClientPoint(state.hoverLastCx, state.hoverLastCy),
   });
 
   const onPointerMove: EventListener = e => {

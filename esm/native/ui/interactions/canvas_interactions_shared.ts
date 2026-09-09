@@ -5,7 +5,9 @@ import {
   clearCanvasDoorSplitVerticalLock,
   clearCanvasPrecisionAxisLock,
   clearSketchHoverPreview,
+  hasCanvasPrecisionLocalPoint,
   nudgeCanvasDoorSplitPointerWorldY,
+  nudgeCanvasPrecisionLocalY,
   getBrowserTimers,
   getBuilderRenderOps,
   hasCanvasDoorSplitPointerWorldY,
@@ -132,6 +134,7 @@ function isManualDoorSplitModeActive(App: AppContainer): boolean {
 }
 
 export const CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M = 0.01;
+export const CANVAS_AUTHORING_KEYBOARD_NUDGE_M = 0.01;
 
 export function installCanvasAuthoringKeyboardInteraction(
   App: AppContainer,
@@ -139,6 +142,7 @@ export function installCanvasAuthoringKeyboardInteraction(
   callbacks?: {
     onVisualStateChanged?: ((reason: 'nudge' | 'axis') => void) | null;
     onManualSplitCommitRequested?: (() => boolean) | null;
+    onPositionalAuthoringCommitRequested?: (() => boolean) | null;
   }
 ): () => void {
   const doc = domEl.ownerDocument || null;
@@ -155,12 +159,10 @@ export function installCanvasAuthoringKeyboardInteraction(
 
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       try {
-        if (!isManualDoorSplitModeActive(App)) return;
-        const delta =
-          event.key === 'ArrowUp'
-            ? CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M
-            : -CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M;
-        const nextY = nudgeCanvasDoorSplitPointerWorldY(App, delta);
+        const direction = event.key === 'ArrowUp' ? 1 : -1;
+        const nextY = isManualDoorSplitModeActive(App)
+          ? nudgeCanvasDoorSplitPointerWorldY(App, direction * CANVAS_DOOR_SPLIT_KEYBOARD_NUDGE_WORLD_M)
+          : nudgeCanvasPrecisionLocalY(App, direction * CANVAS_AUTHORING_KEYBOARD_NUDGE_M);
         if (typeof nextY !== 'number') return;
         event.preventDefault();
         event.stopPropagation();
@@ -173,13 +175,17 @@ export function installCanvasAuthoringKeyboardInteraction(
 
     if (event.key === 'Enter') {
       try {
-        if (!isManualDoorSplitModeActive(App) || !hasCanvasDoorSplitPointerWorldY(App)) return;
+        const isManualSplit = isManualDoorSplitModeActive(App);
+        const hasManualSplitTarget = isManualSplit && hasCanvasDoorSplitPointerWorldY(App);
+        const hasPositionalTarget = !isManualSplit && hasCanvasPrecisionLocalPoint(App);
+        if (!hasManualSplitTarget && !hasPositionalTarget) return;
         event.preventDefault();
         event.stopPropagation();
         if (event.repeat) return;
-        callbacks?.onManualSplitCommitRequested?.();
+        if (hasManualSplitTarget) callbacks?.onManualSplitCommitRequested?.();
+        else callbacks?.onPositionalAuthoringCommitRequested?.();
       } catch (err) {
-        reportCanvasInteractionsNonFatal(App, 'splitAxisLock.enterCommit', err);
+        reportCanvasInteractionsNonFatal(App, 'authoringKeyboard.enterCommit', err);
       }
       return;
     }

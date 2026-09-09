@@ -12,6 +12,7 @@ import type {
 import { asRecord } from '../runtime/record.js';
 import { createManualLayoutSketchPlacementMetricsResolver } from './canvas_picking_manual_layout_sketch_click_box_metrics.js';
 import { resolveManualLayoutSketchHoverMatchState } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 
 import { tryApplyManualLayoutSketchHoverClick } from './canvas_picking_manual_layout_sketch_click_hover_apply.js';
 import { tryApplyManualLayoutSketchDirectHitActions } from './canvas_picking_manual_layout_sketch_click_direct_hit_actions.js';
@@ -83,8 +84,9 @@ export function tryHandleManualLayoutSketchToolClick(args: ManualLayoutSketchToo
   const totalHeight = topY - bottomY;
   if (!(totalHeight > 0)) return true;
   const firstHitY = typeof intersects[0]?.point?.y === 'number' ? intersects[0].point.y : null;
-  const hitY0 = moduleHitY !== null ? moduleHitY : firstHitY;
-  if (typeof hitY0 !== 'number') return true;
+  const rawHitY = moduleHitY !== null ? moduleHitY : firstHitY;
+  if (typeof rawHitY !== 'number') return true;
+  const hitY0 = resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0, y: rawHitY }).y;
   const __gridInfoKey = mapKey != null ? String(mapKey) : '';
   const __gridMapRec = asRecord(__gridMap);
   const __gridInfo = __gridInfoKey && __gridMapRec ? asRecord(__gridMapRec[__gridInfoKey]) : null;

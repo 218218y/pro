@@ -16,6 +16,8 @@ import {
 } from '../esm/native/ui/interactions/canvas_interactions_shared.ts';
 import {
   clearCanvasPrecisionAxisLock,
+  nudgeCanvasPrecisionLocalY,
+  prepareCanvasPrecisionPointerMove,
   readCanvasPrecisionAxisLockScope,
   resolveCanvasPrecisionAxisLockedClientPoint,
   resolveCanvasPrecisionAxisLockedLocalPoint,
@@ -310,6 +312,116 @@ test('precision Shift axis lock supports exact local vertical and horizontal pla
   });
 });
 
+test('precision keyboard nudge moves positional authoring by exactly 1 cm and real pointer motion releases it', () => {
+  const App = createPrecisionApp({
+    primary: 'handle',
+    opts: { handlePlacement: 'manual' },
+  });
+  clearCanvasPrecisionAxisLock(App);
+
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.25, y: 0.8 }), {
+    x: 0.25,
+    y: 0.8,
+  });
+  assert.equal(nudgeCanvasPrecisionLocalY(App, 0.01), 0.81);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.25, y: 0.8 }), {
+    x: 0.25,
+    y: 0.81,
+  });
+  assert.equal(nudgeCanvasPrecisionLocalY(App, 0.01), 0.8200000000000001);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.25, y: 0.8 }), {
+    x: 0.25,
+    y: 0.8200000000000001,
+  });
+  assert.equal(nudgeCanvasPrecisionLocalY(App, -0.01), 0.81);
+
+  prepareCanvasPrecisionPointerMove(App);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.3, y: 1.1 }), {
+    x: 0.3,
+    y: 1.1,
+  });
+});
+
+test('generic positional-authoring Arrow keys and Enter reuse the shared keyboard owner', () => {
+  const App = createPrecisionApp({
+    primary: 'groove',
+    ui: { grooveManualEnabled: true },
+  });
+  clearCanvasPrecisionAxisLock(App);
+  resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 });
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let refreshes = 0;
+  let commits = 0;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onVisualStateChanged: reason => {
+      if (reason === 'nudge') refreshes += 1;
+    },
+    onPositionalAuthoringCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const arrowMarks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'ArrowUp',
+    target: { tagName: 'BODY' },
+    preventDefault: () => arrowMarks.push('prevent'),
+    stopPropagation: () => arrowMarks.push('stop'),
+  });
+  assert.deepEqual(arrowMarks, ['prevent', 'stop']);
+  assert.equal(refreshes, 1);
+  assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.9 }), {
+    x: 0.2,
+    y: 0.91,
+  });
+
+  const enterMarks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    repeat: false,
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => enterMarks.push('prevent'),
+    stopPropagation: () => enterMarks.push('stop'),
+  });
+  assert.equal(commits, 1);
+  assert.deepEqual(enterMarks, ['prevent', 'stop']);
+  dispose();
+});
+
+test('generic positional-authoring Enter leaves focused controls alone until a canvas target exists', () => {
+  const App = createPrecisionApp({
+    primary: 'handle',
+    opts: { handlePlacement: 'manual' },
+  });
+  clearCanvasPrecisionAxisLock(App);
+
+  const win = new FakeEventTarget();
+  const doc = new FakeEventTarget() as FakeEventTarget & { defaultView: FakeEventTarget };
+  doc.defaultView = win;
+  let commits = 0;
+  const dispose = installCanvasAuthoringKeyboardInteraction(App, { ownerDocument: doc } as any, {
+    onPositionalAuthoringCommitRequested: () => {
+      commits += 1;
+      return true;
+    },
+  });
+
+  const marks: string[] = [];
+  doc.dispatch('keydown', {
+    key: 'Enter',
+    target: { tagName: 'BUTTON' },
+    preventDefault: () => marks.push('prevent'),
+    stopPropagation: () => marks.push('stop'),
+  });
+  assert.equal(commits, 0);
+  assert.deepEqual(marks, []);
+  dispose();
+});
+
 test('precision Shift scope is limited to positional authoring modes and covers requested tools', () => {
   for (const manualTool of [
     'shelf',
@@ -344,6 +456,26 @@ test('precision Shift scope is limited to positional authoring modes and covers 
     ),
     'paint:mirror-sized'
   );
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({
+        primary: 'paint',
+        paint: 'black_glass',
+        ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+      })
+    ),
+    'paint:black_glass-sized'
+  );
+  assert.equal(
+    readCanvasPrecisionAxisLockScope(
+      createPrecisionApp({
+        primary: 'paint',
+        paint: 'frosted_glass',
+        ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+      })
+    ),
+    'paint:frosted_glass-sized'
+  );
 
   assert.equal(readCanvasPrecisionAxisLockScope(createPrecisionApp({ primary: 'measure' })), null);
   assert.equal(
@@ -356,6 +488,42 @@ test('precision Shift scope is limited to positional authoring modes and covers 
     ),
     null
   );
+});
+
+test('sized black and frosted glass use the same Shift axis lock as other precision authoring tools', () => {
+  for (const paint of ['black_glass', 'frosted_glass']) {
+    const App = createPrecisionApp({
+      primary: 'paint',
+      paint,
+      ui: { currentMirrorDraftWidthCm: '45', currentMirrorDraftHeightCm: '90' },
+    });
+    clearCanvasPrecisionAxisLock(App);
+
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 100, cy: 100 }), {
+      cx: 100,
+      cy: 100,
+    });
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.2, y: 0.8 }), {
+      x: 0.2,
+      y: 0.8,
+    });
+
+    setCanvasPrecisionAxisLockPressed(App, true);
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedClientPoint(App, { cx: 112, cy: 102 }), {
+      cx: 112,
+      cy: 100,
+    });
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.5, y: 1.1 }), {
+      x: 0.5,
+      y: 0.8,
+    });
+
+    setCanvasPrecisionAxisLockPressed(App, false);
+    assert.deepEqual(resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0.5, y: 1.1 }), {
+      x: 0.5,
+      y: 1.1,
+    });
+  }
 });
 
 test('manual-split Enter auto-repeat stays captured without toggling the cut repeatedly', () => {

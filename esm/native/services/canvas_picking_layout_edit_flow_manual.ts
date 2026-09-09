@@ -14,6 +14,7 @@ import { tryHandleManualLayoutSketchToolClick } from './canvas_picking_manual_la
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import { resolveCanvasPrecisionAxisLockedLocalPoint } from './canvas_picking_precision_axis_lock.js';
 import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import {
   fillManualLayoutShelves,
@@ -183,8 +184,9 @@ export function tryHandleCanvasManualLayoutClick(args: CanvasLayoutEditClickArgs
     }
 
     const totalHeight = topY - bottomY;
-    const hitY = moduleHitY ?? readHitPointY(intersects[0]);
-    if (typeof hitY !== 'number') return;
+    const hitYRaw = moduleHitY ?? readHitPointY(intersects[0]);
+    if (typeof hitYRaw !== 'number') return;
+    const hitY = resolveCanvasPrecisionAxisLockedLocalPoint(App, { x: 0, y: hitYRaw }).y;
 
     const arrayIdx = resolveManualLayoutToggleIndex({
       manualTool,

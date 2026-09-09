@@ -7,6 +7,9 @@
 export { handleCanvasClickNDC, handleCanvasHoverNDC } from './canvas_picking_core.js';
 export {
   clearCanvasPrecisionAxisLock,
+  hasCanvasPrecisionLocalPoint,
+  nudgeCanvasPrecisionLocalY,
+  prepareCanvasPrecisionPointerMove,
   readCanvasPrecisionAxisLockScope,
   resolveCanvasPrecisionAxisLockedClientPoint,
   resolveCanvasPrecisionAxisLockedLocalPoint,
