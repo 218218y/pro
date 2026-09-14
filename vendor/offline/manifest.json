@@ -326,30 +326,30 @@
           },
           {
             "name": "react",
-            "version": "19.2.8",
+            "version": "19.3.0",
             "lockPath": "node_modules/react",
             "installPath": "node_modules/react",
-            "file": "vendor/offline/runtime/react-19.2.8.tgz",
-            "url": "https://registry.npmjs.org/react/-/react-19.2.8.tgz",
-            "integrity": "sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw=="
+            "file": "vendor/offline/runtime/react-19.3.0.tgz",
+            "url": "https://registry.npmjs.org/react/-/react-19.3.0.tgz",
+            "integrity": "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog=="
           },
           {
             "name": "react-dom",
-            "version": "19.2.8",
+            "version": "19.3.0",
             "lockPath": "node_modules/react-dom",
             "installPath": "node_modules/react-dom",
-            "file": "vendor/offline/runtime/react-dom-19.2.8.tgz",
-            "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz",
-            "integrity": "sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ=="
+            "file": "vendor/offline/runtime/react-dom-19.3.0.tgz",
+            "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.0.tgz",
+            "integrity": "sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q=="
           },
           {
             "name": "scheduler",
-            "version": "0.27.0",
+            "version": "0.28.0",
             "lockPath": "node_modules/scheduler",
             "installPath": "node_modules/scheduler",
-            "file": "vendor/offline/runtime/scheduler-0.27.0.tgz",
-            "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
-            "integrity": "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q=="
+            "file": "vendor/offline/runtime/scheduler-0.28.0.tgz",
+            "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.28.0.tgz",
+            "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw=="
           },
           {
             "name": "three",
@@ -458,12 +458,12 @@
           },
           {
             "name": "nanoid",
-            "version": "3.3.18",
+            "version": "3.3.19",
             "lockPath": "node_modules/nanoid",
             "installPath": "node_modules/nanoid",
-            "file": "vendor/offline/vite/nanoid-3.3.18.tgz",
-            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
-            "integrity": "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w=="
+            "file": "vendor/offline/vite/nanoid-3.3.19.tgz",
+            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.19.tgz",
+            "integrity": "sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug=="
           },
           {
             "name": "picocolors",
@@ -521,12 +521,12 @@
           },
           {
             "name": "vite",
-            "version": "8.2.2",
+            "version": "8.3.0",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.2.2.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.2.2.tgz",
-            "integrity": "sha512-cFKLV/PRgAUlIRm5WjMjJ86jrftzpqcgH+Us+DS8mI3CDNiH30Whrz8uHL3+MOLPAgqbMBAqWdAHAphOAM+z/Q=="
+            "file": "vendor/offline/vite/vite-8.3.0.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.3.0.tgz",
+            "integrity": "sha512-lhZBVvEHefgE+HQZC9O7EBJgCU/nVzFNl7vkS4RE0APtWLP02/8QVIkQtzBxPquh7lq5/78NHipTj7ODQ6XuyQ=="
           }
         ]
       },
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "ea86b2390ab9fe45849ca61276e1e18d29d7dd77547f80f8decb7cdb60870d7f"
+    "lockfileSha256": "0304fe289d13d9edbe4853fbabca250cddb60b129a7582e2707a4d326ee7aa75"
   }
 }
