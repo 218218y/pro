@@ -77,13 +77,13 @@
     "executable": "dist/cli.mjs"
   },
   "prettier": {
-    "version": "3.9.6",
+    "version": "3.9.7",
     "package": {
       "lockPath": "node_modules/prettier",
       "installPath": "node_modules/prettier",
-      "file": "vendor/offline/prettier/prettier-3.9.6.tgz",
-      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.6.tgz",
-      "integrity": "sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g=="
+      "file": "vendor/offline/prettier/prettier-3.9.7.tgz",
+      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.7.tgz",
+      "integrity": "sha512-T3mF5P7HFzZVLDQuCUNtJj6WK1pcpLMweMNUVwGb01bLNkH9AkKxtZvmInw8K6bnn2O3d6/5RHl6zSHiBAD0Og=="
     },
     "executable": "bin/prettier.cjs"
   },
@@ -385,13 +385,22 @@
         "packageCount": 16,
         "packages": [
           {
+            "name": "@oxc-project/types",
+            "version": "0.150.0",
+            "lockPath": "node_modules/@oxc-project/types",
+            "installPath": "node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.150.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
+            "integrity": "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="
+          },
+          {
             "name": "@rolldown/binding-linux-x64-gnu",
-            "version": "1.2.8",
+            "version": "1.2.9",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
             "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
-            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.8.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.8.tgz",
-            "integrity": "sha512-H9tRr5ibfXFVLxbPOseVewewFpl28zcEdjRDt2FTUZU7odxP0gEv1ki4/kGmcGOh78oRwZuuQllGLZ9zTJp84g=="
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.9.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.9.tgz",
+            "integrity": "sha512-9s0AZ8BFK5/n7B/TBoa2yJE3gI3KURrbXcPBlsAsvjU4VeJKgE90y1YtNxyEUIcHPQkg6/yfF3qihUrcM/Kf0Q=="
           },
           {
             "name": "@rolldown/pluginutils",
@@ -485,21 +494,12 @@
           },
           {
             "name": "rolldown",
-            "version": "1.2.8",
+            "version": "1.2.9",
             "lockPath": "node_modules/rolldown",
             "installPath": "node_modules/rolldown",
-            "file": "vendor/offline/vite/rolldown-1.2.8.tgz",
-            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.8.tgz",
-            "integrity": "sha512-Z67nTmhZe7anqnM/EjI392w5i/ANUinjip7QYsOyN37oayduxt3ksdX0hf5OOamkAd53BiIHfbfSzfUmzKFQqQ=="
-          },
-          {
-            "name": "@oxc-project/types",
-            "version": "0.149.0",
-            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.149.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.149.0.tgz",
-            "integrity": "sha512-Efcc+iF0j3Bf67YjEqIqWXbX5XddXoK/Mw4K1/JuXwRCZ8N16VR7iT23nlCc9XrveFVh/E5Rqs2StT0V8v9LdA=="
+            "file": "vendor/offline/vite/rolldown-1.2.9.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.9.tgz",
+            "integrity": "sha512-hx/Pv0N1haXRb11qkfnK5MXB/iqr7i0yjWQqmO9uHqZpBgQSqzc8UsSnEpalsh+j1I8qQ2CkXAkJC8Br3dKSlg=="
           },
           {
             "name": "source-map-js",
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "fb0ec7625469f1af85865b0e4cdac9e046a68e75b815bc1bee55083bdfb59bd2"
+    "lockfileSha256": "5e460e986db3cfc06e06936a40f6b2bcf3a30f21dbe592b875e9d36bcdcc03c4"
   }
 }
