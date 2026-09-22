@@ -12,8 +12,8 @@ Most core toolchain manifests use bounded compatibility ranges, while `package-l
 | `@types/node`     | `^22.20.1`              | `^22.20.1`   | `^22.20.1`        | `22.20.4`             | `>=22.20.1 <23.0.0`     | Node tool/test type surface aligned to the lowest supported Node runtime major.   | Allow newer Node 22 declaration releases while Node 22 remains the compatibility floor. Node 24 remains the primary runtime.                                                                                                 |
 | `eslint`          | `^10.8.0`               | `^10.8.0`    | `^10.8.0`         | `10.11.0`             | `>=10.8.0 <11.0.0`      | Strict JS/tools/tests/config lint gate.                                           | Allow ESLint 10 patch/minor releases; major upgrades require a lint policy review.                                                                                                                                           |
 | `oxlint`          | `^1.79.0`               | `^1.79.0`    | `^1.79.0`         | `1.85.0`              | `>=1.75.0 <2.0.0`       | Blocking TS/TSX syntax lint gate.                                                 | Allow Oxlint 1.x patch/minor releases while the syntax and type-aware lanes remain at zero diagnostics.                                                                                                                      |
-| `oxlint-tsgolint` | `7.0.2001`              | `7.0.2001`   | `7.0.2001`        | `7.0.2001`            | `=7.0.2001`             | Blocking type-aware lint lane.                                                    | Keep this exact because it is encoded for the pinned TypeScript compiler; refresh both together.                                                                                                                             |
-| `oxc-parser`      | `^0.150.0`              | `^0.150.0`   | `^0.150.0`        | `0.150.0`             | `>=0.150.0 <0.151.0`    | Internal AST adapter parser used by production contracts and code-analysis tools. | Allow the active Oxc 0.x patch line declared by package.json. Moving to the next Oxc minor updates the reviewed patch window during dependency synchronization, then the AST adapter and offline vendor contracts must pass. |
+| `oxlint-tsgolint` | `7.0.2001`              | `^7.0.2002`  | `^7.0.2002`       | `7.0.2002`            | `=7.0.2001`             | Blocking type-aware lint lane.                                                    | Keep this exact because it is encoded for the pinned TypeScript compiler; refresh both together.                                                                                                                             |
+| `oxc-parser`      | `^0.151.0`              | `^0.151.0`   | `^0.151.0`        | `0.151.0`             | `>=0.151.0 <0.152.0`    | Internal AST adapter parser used by production contracts and code-analysis tools. | Allow the active Oxc 0.x patch line declared by package.json. Moving to the next Oxc minor updates the reviewed patch window during dependency synchronization, then the AST adapter and offline vendor contracts must pass. |
 
 ## Removed packages that must stay absent
 
@@ -34,4 +34,7 @@ Most core toolchain manifests use bounded compatibility ranges, while `package-l
 
 ## Current status
 
-Ready: all toolchain manifest ranges are approved, resolved lock versions are inside their compatibility windows, the offline Oxc compatibility bridge matches the active parser window, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.
+Not ready:
+
+- oxlint-tsgolint must use approved range 7.0.2001; found ^7.0.2002.
+- oxlint-tsgolint resolved version 7.0.2002 does not satisfy approved policy =7.0.2001.

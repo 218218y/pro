@@ -14,31 +14,31 @@
     }
   },
   "ast": {
-    "version": "0.150.0",
-    "compatibleProjectRange": ">=0.150.0 <0.151.0",
+    "version": "0.151.0",
+    "compatibleProjectRange": ">=0.151.0 <0.152.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
         "installPath": "node_modules/oxc-parser",
-        "file": "vendor/offline/ast/oxc-parser-0.150.0.tgz",
-        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.150.0.tgz",
-        "integrity": "sha512-zwajKw1GUa57IOdafIS7/yOObGF2NihwIfZfs5yJTRprMSkiwhWOc/k+n8bwnUPbHr2/XsjfBO8KyTPaW3VpWg=="
+        "file": "vendor/offline/ast/oxc-parser-0.151.0.tgz",
+        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.151.0.tgz",
+        "integrity": "sha512-cX++XpBDCtSe52KKH3rhbh6xIRidYPpyB2reI3azD4l+Y0ci4JZiUgVXyM/r9rrMnYZf9gdWi+9fvFl1wol7nA=="
       },
       {
-        "lockPath": "node_modules/@oxc-project/types",
-        "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/types-0.150.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
-        "integrity": "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="
+        "lockPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
+        "installPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
+        "file": "vendor/offline/ast/types-0.151.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.151.0.tgz",
+        "integrity": "sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA=="
       }
     ],
     "bindings": {
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.150.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.150.0.tgz",
-        "integrity": "sha512-Vx0GSA9ZCRTUiczoEQnIIyXkMvtEY8uc6IiwLQtMe5ci2sXPqjrry0Ek5fsPP1k2kCzkML3ow9UOOEgnEDi7Bw=="
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.151.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.151.0.tgz",
+        "integrity": "sha512-JHB/TuPCUdnkMq9RXB7C/SZuauJUp1EYHi5DaH7ge7uNlCY4AOhc0QeWOjo2rj308+NjxgTwminglWpqlllAig=="
       }
     }
   },
@@ -129,21 +129,21 @@
     },
     "launcher": "bin/oxlint",
     "typeAware": {
-      "version": "7.0.2001",
+      "version": "7.0.2002",
       "package": {
         "lockPath": "node_modules/oxlint-tsgolint",
         "installPath": "node_modules/oxlint-tsgolint",
-        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2001.tgz",
-        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2001.tgz",
-        "integrity": "sha512-KjK/XLcXr1DSyonKhsuFqJRiuKqcyG9j3LJ8nkOsrLzGvodBPqzHOKauy10asLMDI0sUpvb+1sxlzff3udZvfg=="
+        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2002.tgz",
+        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2002.tgz",
+        "integrity": "sha512-rQAj2RAQM57nCwTd3PhtnAkREGW2StqI47tzudNlJF8WwGommM7rVpeP4O1O8/ZiuDZ9f2GnTESzLHGTluwkvQ=="
       },
       "platforms": {
         "linux-x64": {
           "lockPath": "node_modules/@oxlint-tsgolint/linux-x64",
           "installPath": "node_modules/@oxlint-tsgolint/linux-x64",
-          "file": "vendor/offline/oxlint/linux-x64-7.0.2001.tgz",
-          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2001.tgz",
-          "integrity": "sha512-UDezNqdECVmngu2TPnjaS1YoAmcTaBoI5lV9vk3VahBxoi+I5r9k3iJTT7qZoYWOXTD/7T7bNcwRgrocR6BscQ=="
+          "file": "vendor/offline/oxlint/linux-x64-7.0.2002.tgz",
+          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2002.tgz",
+          "integrity": "sha512-E5CcRALAYdiQMbdYjEqlLOiYuEdt21RtXiyxIoD8bfypdfkpWppacijKOR4i0DtLXFRVwCGQggZBWk5bOIpU1A=="
         }
       },
       "launcher": "bin/tsgolint.js",
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "c8f639e099d4b6c7a328c384b56c440cfcfb0e142dcd73f4edf21d658526b801"
+    "lockfileSha256": "73c0926648ab2b5feb1dfdb5d641d314a665cbb1a4ffba7f1b7470ef5432f3c4"
   }
 }
