@@ -25,8 +25,8 @@
         "integrity": "sha512-cX++XpBDCtSe52KKH3rhbh6xIRidYPpyB2reI3azD4l+Y0ci4JZiUgVXyM/r9rrMnYZf9gdWi+9fvFl1wol7nA=="
       },
       {
-        "lockPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
-        "installPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
+        "lockPath": "node_modules/@oxc-project/types",
+        "installPath": "node_modules/@oxc-project/types",
         "file": "vendor/offline/ast/types-0.151.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.151.0.tgz",
         "integrity": "sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA=="
@@ -385,15 +385,6 @@
         "packageCount": 16,
         "packages": [
           {
-            "name": "@oxc-project/types",
-            "version": "0.150.0",
-            "lockPath": "node_modules/@oxc-project/types",
-            "installPath": "node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.150.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
-            "integrity": "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="
-          },
-          {
             "name": "@rolldown/binding-linux-x64-gnu",
             "version": "1.2.9",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
@@ -500,6 +491,15 @@
             "file": "vendor/offline/vite/rolldown-1.2.9.tgz",
             "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.9.tgz",
             "integrity": "sha512-hx/Pv0N1haXRb11qkfnK5MXB/iqr7i0yjWQqmO9uHqZpBgQSqzc8UsSnEpalsh+j1I8qQ2CkXAkJC8Br3dKSlg=="
+          },
+          {
+            "name": "@oxc-project/types",
+            "version": "0.150.0",
+            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.150.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
+            "integrity": "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="
           },
           {
             "name": "source-map-js",
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "73c0926648ab2b5feb1dfdb5d641d314a665cbb1a4ffba7f1b7470ef5432f3c4"
+    "lockfileSha256": "9ef446b4f6dcb728ef955911622bb02be770ed7c25f50174d2ab95f00326429b"
   }
 }
