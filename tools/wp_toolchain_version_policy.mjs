@@ -25,10 +25,22 @@ const STATIC_APPROVED_DEV_DEP_RANGES = Object.freeze({
   'oxlint-tsgolint': '7.0.2001',
 });
 
-const INITIAL_OXC_MANIFEST_RANGE = readJson('package.json').devDependencies?.['oxc-parser'] ?? null;
+const INITIAL_PACKAGE_JSON = readJson('package.json');
+const INITIAL_LOCKFILE = readJson('package-lock.json');
+const INITIAL_OXC_MANIFEST_RANGE = INITIAL_PACKAGE_JSON.devDependencies?.['oxc-parser'] ?? null;
 const INITIAL_OXC_POLICY = parseOxcManifestRange(INITIAL_OXC_MANIFEST_RANGE);
+const INITIAL_TYPESCRIPT_RESOLVED_VERSION =
+  INITIAL_LOCKFILE.packages?.['node_modules/typescript']?.version ?? null;
+const INITIAL_TSGOLINT_RESOLVED_VERSION =
+  INITIAL_LOCKFILE.packages?.['node_modules/oxlint-tsgolint']?.version ?? null;
+const INITIAL_TSGOLINT_APPROVED_EXACT =
+  deriveTsgolintApprovedExactVersion(
+    INITIAL_TYPESCRIPT_RESOLVED_VERSION,
+    INITIAL_TSGOLINT_RESOLVED_VERSION
+  ) ?? STATIC_APPROVED_DEV_DEP_RANGES['oxlint-tsgolint'];
 const APPROVED_DEV_DEP_RANGES = Object.freeze({
   ...STATIC_APPROVED_DEV_DEP_RANGES,
+  'oxlint-tsgolint': INITIAL_TSGOLINT_APPROVED_EXACT,
   'oxc-parser': INITIAL_OXC_POLICY?.manifestRange ?? INITIAL_OXC_MANIFEST_RANGE,
 });
 
@@ -78,10 +90,10 @@ const TOOLCHAIN_DEV_DEPS = [
     approvedRange: APPROVED_DEV_DEP_RANGES['oxlint-tsgolint'],
     minVersion: '7.0.2001',
     maxExclusiveVersion: '7.1.0',
-    exactResolvedVersion: '7.0.2001',
+    dynamicTsgolintExact: true,
     role: 'Blocking type-aware lint lane.',
     updatePolicy:
-      'Keep this exact because it is encoded for the pinned TypeScript compiler; refresh both together.',
+      'Keep the manifest exact. The approved revision follows the resolved lockfile only when its version encoding still matches the pinned TypeScript compiler.',
   },
   {
     name: 'oxc-parser',
@@ -107,10 +119,11 @@ function readJson(relativePath) {
 }
 
 function parseArgs(argv) {
-  const args = { checkPath: null, outPath: null, json: false };
+  const args = { checkPath: null, outPath: null, json: false, failOnViolations: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--json') args.json = true;
+    else if (arg === '--fail-on-violations') args.failOnViolations = true;
     else if (arg === '--check') args.checkPath = argv[++i] || DEFAULT_DOC_RELATIVE_PATH;
     else if (arg.startsWith('--check='))
       args.checkPath = arg.slice('--check='.length) || DEFAULT_DOC_RELATIVE_PATH;
@@ -118,7 +131,7 @@ function parseArgs(argv) {
     else if (arg.startsWith('--out=')) args.outPath = arg.slice('--out='.length) || DEFAULT_DOC_RELATIVE_PATH;
     else if (arg === '--help' || arg === '-h') {
       console.log(
-        'Usage: node tools/wp_toolchain_version_policy.mjs [--json] [--out docs/TOOLCHAIN_VERSION_POLICY.md] [--check docs/TOOLCHAIN_VERSION_POLICY.md]'
+        'Usage: node tools/wp_toolchain_version_policy.mjs [--json] [--fail-on-violations] [--out docs/TOOLCHAIN_VERSION_POLICY.md] [--check docs/TOOLCHAIN_VERSION_POLICY.md]'
       );
       process.exit(0);
     } else {
@@ -198,6 +211,12 @@ function isTsgolintVersionAlignedWithTypeScript(typescriptVersion, tsgolintVersi
   return encodedTypeScriptPatch === typescriptPatch && /^\d{3}$/.test(tsgolintRevision);
 }
 
+function deriveTsgolintApprovedExactVersion(typescriptVersion, tsgolintVersion) {
+  if (!isTsgolintVersionAlignedWithTypeScript(typescriptVersion, tsgolintVersion)) return null;
+  if (!isVersionWithinBounds(tsgolintVersion, '7.0.2001', '7.1.0')) return null;
+  return String(tsgolintVersion);
+}
+
 function collectToolchainVersionPolicy() {
   const pkg = readJson('package.json');
   const lock = readJson('package-lock.json');
@@ -207,6 +226,9 @@ function collectToolchainVersionPolicy() {
   const rows = [];
   const violations = [];
   const nodeRuntimePolicy = readNodeRuntimePolicy(ROOT);
+  const typescriptVersion = lock.packages?.['node_modules/typescript']?.version || null;
+  const tsgolintVersion = lock.packages?.['node_modules/oxlint-tsgolint']?.version || null;
+  const tsgolintApprovedExact = deriveTsgolintApprovedExactVersion(typescriptVersion, tsgolintVersion);
 
   for (const item of TOOLCHAIN_DEV_DEPS) {
     const packageJsonRange = devDependencies[item.name] || null;
@@ -218,9 +240,11 @@ function collectToolchainVersionPolicy() {
       : false;
     const approvedRange = item.dynamicOxcPatchLine
       ? (dynamicOxcPolicy?.manifestRange ?? packageJsonRange)
-      : item.boundedCaretManifest && boundedCaretApproved
-        ? packageJsonRange
-        : item.approvedRange;
+      : item.dynamicTsgolintExact && tsgolintApprovedExact
+        ? tsgolintApprovedExact
+        : item.boundedCaretManifest && boundedCaretApproved
+          ? packageJsonRange
+          : item.approvedRange;
     const minVersion = item.dynamicOxcPatchLine ? (dynamicOxcPolicy?.minVersion ?? null) : item.minVersion;
     const maxExclusiveVersion = item.dynamicOxcPatchLine
       ? (dynamicOxcPolicy?.maxExclusiveVersion ?? null)
@@ -231,13 +255,14 @@ function collectToolchainVersionPolicy() {
         ? boundedCaretApproved
         : packageJsonRange === approvedRange;
     const lockRangeMatchesManifest = packageJsonRange === lockRootRange;
-    const resolvedWithinApprovedRange = item.exactResolvedVersion
-      ? resolvedVersion === item.exactResolvedVersion
+    const exactResolvedVersion = item.dynamicTsgolintExact ? approvedRange : item.exactResolvedVersion;
+    const resolvedWithinApprovedRange = exactResolvedVersion
+      ? resolvedVersion === exactResolvedVersion
       : item.dynamicOxcPatchLine
         ? versionSatisfiesOxcPolicy(resolvedVersion, dynamicOxcPolicy)
         : isVersionWithinBounds(resolvedVersion, minVersion, maxExclusiveVersion);
-    const allowedResolvedSpec = item.exactResolvedVersion
-      ? `=${item.exactResolvedVersion}`
+    const allowedResolvedSpec = exactResolvedVersion
+      ? `=${exactResolvedVersion}`
       : (dynamicOxcPolicy?.boundedRange ?? `>=${minVersion} <${maxExclusiveVersion}`);
 
     if (!packageJsonRange) violations.push(`${item.name} is missing from package.json devDependencies.`);
@@ -279,6 +304,7 @@ function collectToolchainVersionPolicy() {
     rows.push({
       ...item,
       approvedRange,
+      exactResolvedVersion,
       minVersion,
       maxExclusiveVersion,
       packageJsonRange,
@@ -291,8 +317,6 @@ function collectToolchainVersionPolicy() {
     });
   }
 
-  const typescriptVersion = lock.packages?.['node_modules/typescript']?.version || null;
-  const tsgolintVersion = lock.packages?.['node_modules/oxlint-tsgolint']?.version || null;
   const tsgolintTypeScriptAligned = isTsgolintVersionAlignedWithTypeScript(
     typescriptVersion,
     tsgolintVersion
@@ -384,7 +408,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The active `oxc-parser` uses a narrow 0.x patch-line window derived from its package manifest; the offline vendor synchronizer adopts that same window and exact lockfile graph. This permits routine Oxc minor refreshes without leaving stale hard-coded policy behind, while compatibility is still enforced by the AST adapter and offline vendor contracts. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
+    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The `oxlint-tsgolint` revision is lock-derived rather than hard-coded, but it is accepted only when its encoded TypeScript version still matches the pinned compiler. The active `oxc-parser` uses a narrow 0.x patch-line window derived from its package manifest; the offline vendor synchronizer adopts that same window and exact lockfile graph. This permits routine Oxc minor refreshes without leaving stale hard-coded policy behind, while compatibility is still enforced by the AST adapter and offline vendor contracts. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
     '',
     '## Bounded toolchain ranges',
     '',
@@ -473,6 +497,8 @@ async function main() {
 
   if (args.json) console.log(JSON.stringify(policy, null, 2));
 
+  if (args.failOnViolations) assertClean(policy);
+
   if (args.outPath) {
     writeFile(args.outPath, markdown);
     console.log(`[toolchain-version-policy] wrote ${args.outPath}`);
@@ -506,6 +532,7 @@ export {
   collectToolchainVersionPolicy,
   createToolchainVersionPolicyMarkdown,
   createFormattedToolchainVersionPolicyMarkdown,
+  deriveTsgolintApprovedExactVersion,
   isCaretManifestRangeWithinBounds,
   isTsgolintVersionAlignedWithTypeScript,
   isVersionWithinBounds,

@@ -11,6 +11,7 @@ import {
   APPROVED_DEV_DEP_RANGES,
   collectToolchainVersionPolicy,
   createFormattedToolchainVersionPolicyMarkdown,
+  deriveTsgolintApprovedExactVersion,
   isCaretManifestRangeWithinBounds,
   isTsgolintVersionAlignedWithTypeScript,
   isVersionWithinBounds,
@@ -71,6 +72,8 @@ test('toolchain version policy allows bounded compatible updates', () => {
   }
 
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+  const activeTsgolintVersion = lock.packages['node_modules/oxlint-tsgolint'].version;
   const activeOxcPolicy = parseOxcManifestRange(pkg.devDependencies['oxc-parser']);
   assert.ok(activeOxcPolicy);
   const baselineRanges = {
@@ -78,7 +81,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
     '@types/node': '^22.20.1',
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
-    'oxlint-tsgolint': '7.0.2001',
+    'oxlint-tsgolint': activeTsgolintVersion,
     'oxc-parser': pkg.devDependencies['oxc-parser'],
   };
   const activeRanges = {
@@ -149,6 +152,15 @@ test('bounded toolchain windows accept reviewed updates and reject boundary cros
   assert.equal(isVersionWithinBounds('latest', '1.0.0', '2.0.0'), false);
 });
 
+test('oxlint-tsgolint approved exact pin follows an aligned lockfile revision', () => {
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '7.0.2000'), null);
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '7.0.2001'), '7.0.2001');
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '7.0.2002'), '7.0.2002');
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '7.0.2999'), '7.0.2999');
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '^7.0.2002'), null);
+  assert.equal(deriveTsgolintApprovedExactVersion('7.0.2', '7.0.3001'), null);
+});
+
 test('oxlint-tsgolint version encoding stays aligned with the pinned TypeScript release', () => {
   assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2000'), true);
   assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2001'), true);
@@ -177,7 +189,11 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
 
   assert.equal(
     scripts['deps:update:sync-generated'],
-    'npm run vendor:offline:packages:refresh && npm run lint:rule-matrix && npm run toolchain:version-policy:report'
+    'npm run vendor:offline:packages:refresh && npm run lint:rule-matrix && npm run toolchain:version-policy:sync'
+  );
+  assert.equal(
+    scripts['toolchain:version-policy:sync'],
+    'node tools/wp_toolchain_version_policy.mjs --fail-on-violations --out docs/TOOLCHAIN_VERSION_POLICY.md'
   );
   assert.equal(
     scripts['vendor:offline:packages:refresh'],
