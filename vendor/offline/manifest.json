@@ -77,13 +77,13 @@
     "executable": "dist/cli.mjs"
   },
   "prettier": {
-    "version": "3.9.8",
+    "version": "3.9.9",
     "package": {
       "lockPath": "node_modules/prettier",
       "installPath": "node_modules/prettier",
-      "file": "vendor/offline/prettier/prettier-3.9.8.tgz",
-      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.8.tgz",
-      "integrity": "sha512-WRFq3Wn3WId7LLROfMLdH7xaFr2jR62wU8nLO6rQUOLOxNZUviyJQs1M0iIhLexSFy+L+w0ch66wtoO2jRjG0A=="
+      "file": "vendor/offline/prettier/prettier-3.9.9.tgz",
+      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.9.tgz",
+      "integrity": "sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg=="
     },
     "executable": "bin/prettier.cjs"
   },
@@ -129,21 +129,21 @@
     },
     "launcher": "bin/oxlint",
     "typeAware": {
-      "version": "7.0.2002",
+      "version": "7.0.2003",
       "package": {
         "lockPath": "node_modules/oxlint-tsgolint",
         "installPath": "node_modules/oxlint-tsgolint",
-        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2002.tgz",
-        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2002.tgz",
-        "integrity": "sha512-rQAj2RAQM57nCwTd3PhtnAkREGW2StqI47tzudNlJF8WwGommM7rVpeP4O1O8/ZiuDZ9f2GnTESzLHGTluwkvQ=="
+        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2003.tgz",
+        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2003.tgz",
+        "integrity": "sha512-VnK4zlqgmgq/7ZcjzCk/WpN8kKFsYGcB85Io9qT3wL4K8Un3RKmJkp793crNETieMusPMKOA4a+Mw2wbteI6TQ=="
       },
       "platforms": {
         "linux-x64": {
           "lockPath": "node_modules/@oxlint-tsgolint/linux-x64",
           "installPath": "node_modules/@oxlint-tsgolint/linux-x64",
-          "file": "vendor/offline/oxlint/linux-x64-7.0.2002.tgz",
-          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2002.tgz",
-          "integrity": "sha512-E5CcRALAYdiQMbdYjEqlLOiYuEdt21RtXiyxIoD8bfypdfkpWppacijKOR4i0DtLXFRVwCGQggZBWk5bOIpU1A=="
+          "file": "vendor/offline/oxlint/linux-x64-7.0.2003.tgz",
+          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2003.tgz",
+          "integrity": "sha512-GXdyO/XyqDJ3s/llR/oOktLsYNjZtWSQBy0JMc+/0gsNPvTcseKPhn9c6KcFyWmnr6H4vljYALbujonqSzzEGw=="
         }
       },
       "launcher": "bin/tsgolint.js",
@@ -218,21 +218,21 @@
           },
           {
             "name": "@supabase/auth-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/auth-js",
             "installPath": "node_modules/@supabase/auth-js",
-            "file": "vendor/offline/runtime/supabase__auth-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.116.0.tgz",
-            "integrity": "sha512-Cmosty12gyKGK9N3bQb+lMmuAFev5nmUzaR1AsmZHqKOAGzqX1VQzmp49CNPwOx/pw0H9Qqk4rs9yhwTlKpfDg=="
+            "file": "vendor/offline/runtime/supabase__auth-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.117.2.tgz",
+            "integrity": "sha512-Z3WnGwrphYZubrLbxp5Iv0tLA9A5GhvKzJ/ZXglxqwd2QEH2R4dXRltjVJ8sIn4xEW2BSFIGT0yALVJIgZeDYw=="
           },
           {
             "name": "@supabase/functions-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/functions-js",
             "installPath": "node_modules/@supabase/functions-js",
-            "file": "vendor/offline/runtime/supabase__functions-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.116.0.tgz",
-            "integrity": "sha512-E+VOc2QDcni/fySqkBFiZhnoB3SGydEdZgFI6/dEAGAHx6yEhB46TN9qb2wXs+E+RSzOBV0R6dasiSlw4xlZAA=="
+            "file": "vendor/offline/runtime/supabase__functions-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.117.2.tgz",
+            "integrity": "sha512-6DT4ZIjmZxa9ANKaBIrjc86AyKrX8M376ynvNeOBBVad3eP7x3UHqWfDR2ynFkHGzCuOpr1A+kObmnahxuwuog=="
           },
           {
             "name": "@supabase/phoenix",
@@ -245,39 +245,39 @@
           },
           {
             "name": "@supabase/postgrest-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/postgrest-js",
             "installPath": "node_modules/@supabase/postgrest-js",
-            "file": "vendor/offline/runtime/supabase__postgrest-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.116.0.tgz",
-            "integrity": "sha512-kGpVZTDHxFTJS3tu+rU0iTAZ+4U0bcLVjxwCk8f3gRhjw3qdCZjTBlgYvc4kGH2XccmAzbkKwXL/mrNHMGSc+A=="
+            "file": "vendor/offline/runtime/supabase__postgrest-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.117.2.tgz",
+            "integrity": "sha512-V1Qhn+M8xzJqCasOxHZ2KG19Fj39PxU7weEAmOK65/KTsWCRXboB4hcQwFvxRvM7ZikeP9IZWNvQkfjvSxzYFw=="
           },
           {
             "name": "@supabase/realtime-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/realtime-js",
             "installPath": "node_modules/@supabase/realtime-js",
-            "file": "vendor/offline/runtime/supabase__realtime-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.116.0.tgz",
-            "integrity": "sha512-MHAnlXxi2s6yiJsZsQMfs2B3RFxeVfQWxerqYhIMqcCQV/FuY3LIeouPEkXw/ah7wUWMLYwempF9MOCUScyddg=="
+            "file": "vendor/offline/runtime/supabase__realtime-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.117.2.tgz",
+            "integrity": "sha512-lYXSAIg3eAKA58riUED6Vb+TCzF8jtx18uOoiCaVJ7ZMre6FWBpwB1MPeW+B6vykJT/hPdiuqwcSB7ILMS21ew=="
           },
           {
             "name": "@supabase/storage-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/storage-js",
             "installPath": "node_modules/@supabase/storage-js",
-            "file": "vendor/offline/runtime/supabase__storage-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.116.0.tgz",
-            "integrity": "sha512-6/3hR6vccBP6oGM5B6RfbwZcTCKmQOodd/ZWQdsw8yJsU5zO/a//oBL6yLnmgxcjnHSrelW8rsO7hL5DPybyUQ=="
+            "file": "vendor/offline/runtime/supabase__storage-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.117.2.tgz",
+            "integrity": "sha512-8gAJoVaxZa/War2kFRfJMxGk4M190Q7lJ70BofwGlRxU/u9pIodd6XyTvmXkxOKXWuIYtkDaYPZrIAUt1T/7FQ=="
           },
           {
             "name": "@supabase/supabase-js",
-            "version": "2.116.0",
+            "version": "2.117.2",
             "lockPath": "node_modules/@supabase/supabase-js",
             "installPath": "node_modules/@supabase/supabase-js",
-            "file": "vendor/offline/runtime/supabase__supabase-js-2.116.0.tgz",
-            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.116.0.tgz",
-            "integrity": "sha512-YyWmKXt2NspV9iO8FPnlswUFJIRnrLd3oTCb+3ZyYRuKZtBH0xCUDgnUqoyA0fGUxpM/UhfwDjYf/dht/9bp7g=="
+            "file": "vendor/offline/runtime/supabase__supabase-js-2.117.2.tgz",
+            "url": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.117.2.tgz",
+            "integrity": "sha512-eSG2VKnHR+Clp1PmidZ1/weJ8PJwoybjva3L2GgKqFG4YDS1Iqmc61psKGZP5xw6OMT2O7ZorPR42PY6q1BOXg=="
           },
           {
             "name": "iceberg-js",
@@ -353,12 +353,12 @@
           },
           {
             "name": "three",
-            "version": "0.186.0",
+            "version": "0.186.1",
             "lockPath": "node_modules/three",
             "installPath": "node_modules/three",
-            "file": "vendor/offline/runtime/three-0.186.0.tgz",
-            "url": "https://registry.npmjs.org/three/-/three-0.186.0.tgz",
-            "integrity": "sha512-cr/fIM2ddMSVbYVgkfD4jLJv7Fh/8ZTjvo+7gQeSVGUZHxpx9FDwoL5iC7hUz/LiRA8wMbqfnb90xKfm1/HHkQ=="
+            "file": "vendor/offline/runtime/three-0.186.1.tgz",
+            "url": "https://registry.npmjs.org/three/-/three-0.186.1.tgz",
+            "integrity": "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA=="
           },
           {
             "name": "tslib",
@@ -385,13 +385,22 @@
         "packageCount": 16,
         "packages": [
           {
+            "name": "@oxc-project/types",
+            "version": "0.151.0",
+            "lockPath": "node_modules/@oxc-project/types",
+            "installPath": "node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.151.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.151.0.tgz",
+            "integrity": "sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA=="
+          },
+          {
             "name": "@rolldown/binding-linux-x64-gnu",
-            "version": "1.2.9",
+            "version": "1.2.11",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
             "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
-            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.9.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.9.tgz",
-            "integrity": "sha512-9s0AZ8BFK5/n7B/TBoa2yJE3gI3KURrbXcPBlsAsvjU4VeJKgE90y1YtNxyEUIcHPQkg6/yfF3qihUrcM/Kf0Q=="
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.11.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.11.tgz",
+            "integrity": "sha512-mOVBT3dPpkWm8XBWPmU4bf+U6dYDLeMo/9ojUmis4N0L5uu10qra5vOyngZ7/PSdoE4G9KvRt4bloRxNjLas7A=="
           },
           {
             "name": "@rolldown/pluginutils",
@@ -485,21 +494,12 @@
           },
           {
             "name": "rolldown",
-            "version": "1.2.9",
+            "version": "1.2.11",
             "lockPath": "node_modules/rolldown",
             "installPath": "node_modules/rolldown",
-            "file": "vendor/offline/vite/rolldown-1.2.9.tgz",
-            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.9.tgz",
-            "integrity": "sha512-hx/Pv0N1haXRb11qkfnK5MXB/iqr7i0yjWQqmO9uHqZpBgQSqzc8UsSnEpalsh+j1I8qQ2CkXAkJC8Br3dKSlg=="
-          },
-          {
-            "name": "@oxc-project/types",
-            "version": "0.150.0",
-            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.150.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.150.0.tgz",
-            "integrity": "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="
+            "file": "vendor/offline/vite/rolldown-1.2.11.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.11.tgz",
+            "integrity": "sha512-qpSwIyz0jHQq5qXBTNxFmE6664rJ7O+4TvPFOiOaBSrz8IOHc1koKKSqTM2H6u1UG1+TveuC6vaDHKXFOvb1Kw=="
           },
           {
             "name": "source-map-js",
@@ -521,12 +521,12 @@
           },
           {
             "name": "vite",
-            "version": "8.3.0",
+            "version": "8.3.1",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.3.0.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.3.0.tgz",
-            "integrity": "sha512-lhZBVvEHefgE+HQZC9O7EBJgCU/nVzFNl7vkS4RE0APtWLP02/8QVIkQtzBxPquh7lq5/78NHipTj7ODQ6XuyQ=="
+            "file": "vendor/offline/vite/vite-8.3.1.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.3.1.tgz",
+            "integrity": "sha512-/bvH9E9tmCXRGp2uXY3WbOldqpTwFkbha/8ANaEQ6VkxhH60KyqLwgZq6lG2y+4uT55x9+9eUHMpQ7uGnOCKjA=="
           }
         ]
       },
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "fab8e2c7f064aabd89b6ec01a8d1fda511719a99f56901da7447b389e1969adf"
+    "lockfileSha256": "d3b9a1c3dc78c213269cd673f699a5cf84cc6057f7b11d3289755b23e79f423a"
   }
 }
