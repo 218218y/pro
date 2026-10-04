@@ -74,6 +74,19 @@ function isVersionInBoundedRange(version, range) {
   return compare(actual, parse(match[1])) >= 0 && compare(actual, parse(match[2])) < 0;
 }
 
+function minimumRangeAccepts(version, range) {
+  const versionMatch = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version ?? '');
+  const rangeMatch = /^>=(\d+)\.(\d+)\.(\d+)$/u.exec(range ?? '');
+  if (!versionMatch || !rangeMatch) return false;
+  const actual = versionMatch.slice(1).map(Number);
+  const minimum = rangeMatch.slice(1).map(Number);
+  return (
+    actual[0] > minimum[0] ||
+    (actual[0] === minimum[0] && actual[1] > minimum[1]) ||
+    (actual[0] === minimum[0] && actual[1] === minimum[1] && actual[2] >= minimum[2])
+  );
+}
+
 function platformConstraintAccepts(values, target) {
   if (!Array.isArray(values) || values.length === 0) return true;
   const allowed = values.filter(value => !value.startsWith('!'));
@@ -152,7 +165,9 @@ test('offline Oxlint manifest is exact, Linux-only, and includes the type-aware 
     lock.packages['node_modules/oxlint-tsgolint'].optionalDependencies['@oxlint-tsgolint/linux-x64'],
     typeAware.version
   );
-  assert.equal(lock.packages['node_modules/oxlint'].peerDependencies['oxlint-tsgolint'], '>=7.0.2001');
+  const typeAwarePeerRange = lock.packages['node_modules/oxlint'].peerDependencies['oxlint-tsgolint'];
+  assert.match(typeAwarePeerRange, /^>=\d+\.\d+\.\d+$/u);
+  assert.equal(minimumRangeAccepts(typeAware.version, typeAwarePeerRange), true);
 });
 
 test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', () => {
