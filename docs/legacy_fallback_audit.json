@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-09T06:11:49.861Z",
+  "generatedAt": "2026-10-05T15:03:57.790Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -5344,14 +5344,14 @@
     },
     {
       "file": "esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts",
-      "line": 106,
+      "line": 110,
       "term": "fallbackDocumentCtor",
       "category": "domain-default",
       "text": "const fallbackDocumentCtor = !injectedCreateDoc ? await loadPdfDocumentCtor() : null;"
     },
     {
       "file": "esm/native/ui/react/pdf/order_pdf_overlay_export_ops_image_pdf.ts",
-      "line": 107,
+      "line": 111,
       "term": "fallbackDocumentCtor",
       "category": "domain-default",
       "text": "const canonicalCreateDoc = injectedCreateDoc || fallbackDocumentCtor?.create;"

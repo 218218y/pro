@@ -15,6 +15,7 @@ import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFString, PDFHexStrin
 
 const EXPECTED_PAGE_SIZE = Object.freeze({ width: 595.2756, height: 841.8898 });
 const GEOMETRY_TOLERANCE = 0.05;
+const MAX_TEMPLATE_BYTES = 512 * 1024;
 const REQUIRED_TEXT_FIELDS = Object.freeze({
   order_number: Object.freeze({ x: 411.7, y: 699.0, width: 82.2, height: 16.5 }),
   order_date: Object.freeze({ x: 34.5, y: 699.0, width: 82.2, height: 16.5 }),
@@ -199,7 +200,7 @@ async function main() {
   const fontObj = dr ? dr.get(PDFName.of('Font')) : null;
   const fontDict = fontObj ? ctx.lookup(fontObj, PDFDict) : null;
 
-  const referenced = new Set();
+  const referenced = new Set(parseFontNamesFromDA(acroForm.get(PDFName.of('DA'))));
   for (const name of required) {
     let field;
     try {
@@ -237,9 +238,31 @@ async function main() {
         `Missing fonts: ${missingFonts.join(', ')}`,
       ]);
     }
+
+    const unusedFonts = fontDict
+      .keys()
+      .map(key => (typeof key.decodeText === 'function' ? key.decodeText() : String(key).replace(/^\//, '')))
+      .filter(name => !referenced.has(name));
+    if (unusedFonts.length) {
+      fail(
+        'The template contains unused /AcroForm/DR/Font resources that unnecessarily bloat the production asset.',
+        [
+          `Unused form fonts: ${unusedFonts.join(', ')}`,
+          'Remove only unused AcroForm font resources; do not rasterize or flatten the PDF.',
+        ]
+      );
+    }
   }
 
-  ok('order_template.pdf AcroForm looks sane.');
+  if (bytes.length > MAX_TEMPLATE_BYTES) {
+    fail('The interactive order template exceeds the production asset size budget.', [
+      `Maximum: ${MAX_TEMPLATE_BYTES} bytes (512 KiB)`,
+      `Actual: ${bytes.length} bytes`,
+      'Keep vector/page content and form fields intact; optimize redundant PDF resources instead of reducing render quality.',
+    ]);
+  }
+
+  ok(`order_template.pdf AcroForm looks sane (${bytes.length} bytes).`);
 }
 
 main().catch(e => {
