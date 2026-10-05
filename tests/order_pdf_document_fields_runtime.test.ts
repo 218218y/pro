@@ -14,6 +14,17 @@ import {
   resolveOrderPdfScalarFieldValues,
 } from '../esm/native/ui/pdf/order_pdf_document_fields_runtime.ts';
 
+test('order pdf scalar field order keeps keyboard navigation aligned with the form layout', () => {
+  assert.deepEqual(ORDER_PDF_SCALAR_FIELD_KEYS, [
+    'orderNumber',
+    'orderDate',
+    'projectName',
+    'phone',
+    'mobile',
+    'deliveryAddress',
+  ]);
+});
+
 test('order pdf document fields runtime reads scalar values and resolves project/date defaults canonically', () => {
   assert.deepEqual(readOrderPdfScalarFieldValues({ projectName: 'פרויקט', phone: 12345 }), {
     projectName: 'פרויקט',

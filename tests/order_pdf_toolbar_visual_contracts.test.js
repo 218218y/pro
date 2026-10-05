@@ -352,11 +352,8 @@ test('order PDF image attachment toggles keep text-only labels and show a presse
   assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-editor-toggle\.is-on::after\s*\{/);
 });
 
-test('order PDF editor keyboard order follows the visual customer-field order and uses the deployed PDF font asset', () => {
-  const stage = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx');
+test('order PDF editor uses the deployed TypoText font asset for scalar and multiline fields', () => {
   const css = readSource('css/react_styles.css');
-
-  assert.match(stage, /ORDER_PDF_SCALAR_FIELD_KEYS\.map\(\s*key => ORDER_PDF_INPUTS_BY_KEY\[key\]\s*\)/);
 
   assert.match(
     css,

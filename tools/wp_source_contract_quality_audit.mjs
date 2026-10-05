@@ -34,9 +34,9 @@ export const SOURCE_SHAPE_REGEX_KEYS = Object.freeze([
 export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
   'tests/order_pdf_toolbar_visual_contracts.test.js': Object.freeze({
     reason: 'Order-PDF toolbar CSS/DOM/z-index layout policy is intentionally source-structural.',
-    patterns: 35,
+    patterns: 38,
     categories: Object.freeze({
-      crossStatement: 34,
+      crossStatement: 37,
       exactObjectCall: 1,
       optionalTypeSyntax: 0,
       indexedAccessSyntax: 0,
