@@ -6,6 +6,10 @@ import type {
   PdfJsPageViewportFn,
 } from './order_pdf_overlay_contracts.js';
 import {
+  ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
+  ORDER_PDF_TEMPLATE_PAGE_WIDTH,
+} from '../../pdf/order_pdf_field_specs_runtime.js';
+import {
   appendOrderPdfDetailsContinuationImagePage,
   buildOrderPdfDetailsText,
   ensureOrderPdfDejaVuLoaded,
@@ -133,8 +137,8 @@ export function createOrderPdfOverlayImagePdfOps(deps: OrderPdfOverlayExportOpsD
       let detailsPage1Lines: string[] | undefined;
       let detailsOverflowText = '';
       let detailsSplitDone = false;
-      let lastPageW = 595;
-      let lastPageH = 842;
+      let lastPageW = ORDER_PDF_TEMPLATE_PAGE_WIDTH;
+      let lastPageH = ORDER_PDF_TEMPLATE_PAGE_HEIGHT;
 
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
@@ -144,9 +148,13 @@ export function createOrderPdfOverlayImagePdfOps(deps: OrderPdfOverlayExportOpsD
 
         const baseViewport = getViewport.call(page, { scale: 1 });
         const pageW =
-          typeof getProp(baseViewport, 'width') === 'number' ? Number(getProp(baseViewport, 'width')) : 595;
+          typeof getProp(baseViewport, 'width') === 'number'
+            ? Number(getProp(baseViewport, 'width'))
+            : ORDER_PDF_TEMPLATE_PAGE_WIDTH;
         const pageH =
-          typeof getProp(baseViewport, 'height') === 'number' ? Number(getProp(baseViewport, 'height')) : 842;
+          typeof getProp(baseViewport, 'height') === 'number'
+            ? Number(getProp(baseViewport, 'height'))
+            : ORDER_PDF_TEMPLATE_PAGE_HEIGHT;
         lastPageW = pageW;
         lastPageH = pageH;
 

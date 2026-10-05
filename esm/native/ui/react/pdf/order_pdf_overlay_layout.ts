@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react';
 
 import {
   computeOrderPdfOverlayFieldStyleMap,
+  ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
+  ORDER_PDF_TEMPLATE_PAGE_WIDTH,
   type OrderPdfFieldKey,
 } from '../../pdf/order_pdf_field_specs_runtime.js';
 import { resolveOrderPdfImportedImageFlags } from './order_pdf_overlay_sketch_image_slots_runtime.js';
@@ -37,7 +39,10 @@ export function computeOrderPdfOverlayLayout(args: {
   zoom: number;
   importedPdfImagePageCount: number;
 }): OrderPdfOverlayLayout {
-  const size = args.pageSize || { w: 595, h: 842 };
+  const size = args.pageSize || {
+    w: ORDER_PDF_TEMPLATE_PAGE_WIDTH,
+    h: ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
+  };
   const cssScale = args.zoom;
   const importedPdfImagePageCount = Math.max(0, Number(args.importedPdfImagePageCount) || 0);
   const fieldStyles = computeOrderPdfOverlayFieldStyleMap(cssScale) as Record<

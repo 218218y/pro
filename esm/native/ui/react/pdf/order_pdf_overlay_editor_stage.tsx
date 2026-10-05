@@ -54,8 +54,8 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     className: 'wp-pdf-editor-input',
     styleKey: 'projectName',
     dir: 'rtl',
-    ariaLabel: 'שם הפרויקט',
-    title: 'שם הפרויקט',
+    ariaLabel: 'שם הלקוח',
+    title: 'שם הלקוח',
   },
   {
     key: 'deliveryAddress',

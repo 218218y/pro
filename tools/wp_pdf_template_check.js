@@ -13,6 +13,28 @@ import { fileURLToPath } from 'node:url';
 
 import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFString, PDFHexString } from 'pdf-lib';
 
+const EXPECTED_PAGE_SIZE = Object.freeze({ width: 595.2756, height: 841.8898 });
+const GEOMETRY_TOLERANCE = 0.05;
+const REQUIRED_TEXT_FIELDS = Object.freeze({
+  order_number: Object.freeze({ x: 411.7, y: 699.0, width: 82.2, height: 16.5 }),
+  order_date: Object.freeze({ x: 34.5, y: 699.0, width: 82.2, height: 16.5 }),
+  customer_name: Object.freeze({ x: 370.5, y: 625.3, width: 163.3, height: 17.0 }),
+  phone: Object.freeze({ x: 204.6, y: 626.3, width: 115.6, height: 17.0 }),
+  mobile: Object.freeze({ x: 38.7, y: 626.3, width: 124.7, height: 17.0 }),
+  address: Object.freeze({ x: 38.7, y: 597.8, width: 404.055, height: 17.0 }),
+  order_details: Object.freeze({ x: 34.0, y: 150.0, width: 526.0, height: 414.0 }),
+  notes: Object.freeze({ x: 34.0, y: 66.0, width: 526.0, height: 49.0 }),
+});
+
+function nearlyEqual(actual, expected, tolerance = GEOMETRY_TOLERANCE) {
+  return Number.isFinite(actual) && Math.abs(actual - expected) <= tolerance;
+}
+
+function describeRect(rect) {
+  if (!rect) return 'missing';
+  return `x=${rect.x}, y=${rect.y}, width=${rect.width}, height=${rect.height}`;
+}
+
 function resolveProjectRoot() {
   const __filename = fileURLToPath(import.meta.url);
   return path.resolve(path.dirname(__filename), '..');
@@ -111,14 +133,54 @@ async function main() {
     fail('The template /AcroForm/Fields contains invalid entries.', badFields);
   }
 
-  // Required field names
-  const required = ['מלל1', '0', '1', '2', '3', '4', '5', '6'];
+  const pages = pdfDoc.getPages();
+  if (pages.length !== 1) {
+    fail('The order template must contain exactly one primary form page.', [
+      `Expected pages: 1`,
+      `Actual pages: ${pages.length}`,
+    ]);
+  }
+  const pageSize = pages[0]?.getSize?.();
+  if (
+    !pageSize ||
+    !nearlyEqual(pageSize.width, EXPECTED_PAGE_SIZE.width) ||
+    !nearlyEqual(pageSize.height, EXPECTED_PAGE_SIZE.height)
+  ) {
+    fail('The order template page size does not match the canonical A4 template geometry.', [
+      `Expected: ${EXPECTED_PAGE_SIZE.width} x ${EXPECTED_PAGE_SIZE.height} pt`,
+      `Actual: ${pageSize ? `${pageSize.width} x ${pageSize.height} pt` : 'unavailable'}`,
+    ]);
+  }
+
+  // Required field names and widget rectangles. These coordinates are the contract used by
+  // the browser overlay, text-import fallback, raster export, and interactive PDF export.
+  const required = Object.keys(REQUIRED_TEXT_FIELDS);
   const missing = [];
+  const geometryErrors = [];
   for (const name of required) {
+    let field;
     try {
-      form.getTextField(name);
+      field = form.getTextField(name);
     } catch {
       missing.push(name);
+      continue;
+    }
+
+    const widgets = field?.acroField?.getWidgets?.() || [];
+    if (widgets.length !== 1) {
+      geometryErrors.push(`${name}: expected exactly one widget, found ${widgets.length}`);
+      continue;
+    }
+    const actual = widgets[0]?.getRectangle?.();
+    const expected = REQUIRED_TEXT_FIELDS[name];
+    if (
+      !actual ||
+      !nearlyEqual(actual.x, expected.x) ||
+      !nearlyEqual(actual.y, expected.y) ||
+      !nearlyEqual(actual.width, expected.width) ||
+      !nearlyEqual(actual.height, expected.height)
+    ) {
+      geometryErrors.push(`${name}: expected ${describeRect(expected)}; actual ${describeRect(actual)}`);
     }
   }
   if (missing.length) {
@@ -126,6 +188,9 @@ async function main() {
       'The template is missing required text fields.',
       missing.map(n => `Missing field: ${n}`)
     );
+  }
+  if (geometryErrors.length) {
+    fail('The template field geometry does not match the application field contract.', geometryErrors);
   }
 
   // Font resources referenced by /DA must exist under /AcroForm/DR/Font.

@@ -83,6 +83,7 @@ test('order pdf canvas render runtime: uses injected browser timers and renders 
   await pdfRenderQueueRef.current;
 
   assert.equal(renderCalls.length, 1);
+  assert.equal(renderCalls[0]?.annotationMode, 0);
   assert.equal(canvas.width, 100);
   assert.equal(canvas.height, 40);
   assert.equal(canvas.style.width, '100px');

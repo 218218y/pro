@@ -18,6 +18,7 @@ export type PdfJsPageReadyLike = {
   render: (opts: {
     canvasContext: CanvasRenderingContext2D;
     viewport: PdfViewportLike;
+    annotationMode?: number;
   }) => PdfJsRenderTaskLike;
 };
 

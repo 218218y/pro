@@ -90,21 +90,21 @@ test('order pdf document fields runtime derives imported field names from canoni
     seen.push([...names]);
     const first = names[0];
     switch (first) {
-      case 'מלל1':
+      case 'order_number':
         return '1007';
-      case '0':
+      case 'order_date':
         return '12/04/2026';
-      case '1':
+      case 'customer_name':
         return 'פרויקט יהלום';
-      case '2':
+      case 'address':
         return 'רחוב הדוגמה 5';
-      case '3':
+      case 'phone':
         return '03-5555555';
-      case '4':
+      case 'mobile':
         return '050-1234567';
-      case '5':
+      case 'order_details':
         return 'פרט ראשון';
-      case '6':
+      case 'notes':
         return 'הערה חשובה';
       case 'wp_order_details_cont':
         return 'פרט המשך';

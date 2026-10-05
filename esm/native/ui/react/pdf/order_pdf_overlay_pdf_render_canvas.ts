@@ -10,6 +10,10 @@ import {
   type ToastLike,
 } from './order_pdf_overlay_pdf_render_shared.js';
 
+// The editor owns form values in its HTML overlay. Rendering AcroForm widget appearances
+// into the background canvas would duplicate/stale template values underneath those inputs.
+const PDFJS_ANNOTATION_MODE_DISABLE = 0;
+
 export function scheduleOrderPdfCanvasRender(args: {
   openRef: RefBox<boolean>;
   canvasRef: RefBox<HTMLCanvasElement | null>;
@@ -85,7 +89,11 @@ export function scheduleOrderPdfCanvasRender(args: {
         ctx.fillRect(0, 0, canvasNow.width, canvasNow.height);
         ctx.restore();
 
-        const renderTask = pageReady.render({ canvasContext: ctx, viewport });
+        const renderTask = pageReady.render({
+          canvasContext: ctx,
+          viewport,
+          annotationMode: PDFJS_ANNOTATION_MODE_DISABLE,
+        });
         pdfRenderTaskRef.current = renderTask;
 
         try {

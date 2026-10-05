@@ -1,5 +1,6 @@
 import {
   ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
+  ORDER_PDF_TEMPLATE_PAGE_WIDTH,
   listOrderPdfFieldSpecs,
   type OrderPdfFieldKey,
   type OrderPdfFieldSpec,
@@ -8,7 +9,6 @@ import {
 import type { OrderPdfImportedDraftFieldValues } from '../../pdf/order_pdf_document_fields_runtime.js';
 import { getPdfJsLibFromModule, getProp, isPromiseLike } from './order_pdf_overlay_runtime.js';
 
-const ORDER_PDF_IMPORT_TEMPLATE_PAGE_WIDTH = 595;
 const ORDER_PDF_TEXT_ITEM_DEFAULT_HEIGHT = 12;
 
 type UnknownRecord = Record<string, unknown>;
@@ -60,12 +60,11 @@ function readNumberTuple(value: unknown): number[] {
 
 function readPdfJsPageSize(page: PdfJsTextPageLike): { width: number; height: number } {
   const view = readNumberTuple(page.view);
-  const width =
-    view.length >= 4 ? Math.abs((view[2] ?? 0) - (view[0] ?? 0)) : ORDER_PDF_IMPORT_TEMPLATE_PAGE_WIDTH;
+  const width = view.length >= 4 ? Math.abs((view[2] ?? 0) - (view[0] ?? 0)) : ORDER_PDF_TEMPLATE_PAGE_WIDTH;
   const height =
     view.length >= 4 ? Math.abs((view[3] ?? 0) - (view[1] ?? 0)) : ORDER_PDF_TEMPLATE_PAGE_HEIGHT;
   return {
-    width: width > 0 ? width : ORDER_PDF_IMPORT_TEMPLATE_PAGE_WIDTH,
+    width: width > 0 ? width : ORDER_PDF_TEMPLATE_PAGE_WIDTH,
     height: height > 0 ? height : ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
   };
 }
@@ -109,7 +108,7 @@ function scaleFieldBoxToPage(
   pageWidth: number,
   pageHeight: number
 ): OrderPdfTemplateBoxLike {
-  const sx = pageWidth / ORDER_PDF_IMPORT_TEMPLATE_PAGE_WIDTH;
+  const sx = pageWidth / ORDER_PDF_TEMPLATE_PAGE_WIDTH;
   const sy = pageHeight / ORDER_PDF_TEMPLATE_PAGE_HEIGHT;
   return {
     x: box.x * sx,

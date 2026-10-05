@@ -32,7 +32,8 @@ export const ORDER_PDF_FIELD_KEYS = Object.freeze([
   'notes',
 ] as const satisfies readonly OrderPdfFieldKey[]);
 
-export const ORDER_PDF_TEMPLATE_PAGE_HEIGHT = 842;
+export const ORDER_PDF_TEMPLATE_PAGE_WIDTH = 595.2756;
+export const ORDER_PDF_TEMPLATE_PAGE_HEIGHT = 841.8898;
 
 function toTemplateBox(rect: OrderPdfOverlayFieldRectLike): OrderPdfTemplateBoxLike {
   return {
@@ -71,9 +72,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   orderNumber: freezeSpec({
     key: 'orderNumber',
     imageKey: 'orderNo',
-    templateFieldName: 'מלל1',
+    templateFieldName: 'order_number',
     generatedFieldName: 'wp_order_number',
-    overlayRect: { x: 392.202, top: 181.709, w: 91.877, h: 17.288 },
+    overlayRect: { x: 411.7, top: 142.8898, w: 82.2, h: 16.5 },
     dir: 'ltr',
     align: 'right',
     multiline: false,
@@ -81,9 +82,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   orderDate: freezeSpec({
     key: 'orderDate',
     imageKey: 'date',
-    templateFieldName: '0',
+    templateFieldName: 'order_date',
     generatedFieldName: 'wp_order_date',
-    overlayRect: { x: 65.0322, top: 178.039, w: 102.109, h: 16.581 },
+    overlayRect: { x: 34.5, top: 142.8898, w: 82.2, h: 16.5 },
     dir: 'ltr',
     align: 'left',
     multiline: false,
@@ -91,9 +92,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   projectName: freezeSpec({
     key: 'projectName',
     imageKey: 'name',
-    templateFieldName: '1',
+    templateFieldName: 'customer_name',
     generatedFieldName: 'wp_project_name',
-    overlayRect: { x: 394.872, top: 238.89, w: 125.672, h: 17.726 },
+    overlayRect: { x: 370.5, top: 216.5898, w: 163.3, h: 17 },
     dir: 'rtl',
     align: 'right',
     multiline: false,
@@ -101,9 +102,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   deliveryAddress: freezeSpec({
     key: 'deliveryAddress',
     imageKey: 'address',
-    templateFieldName: '2',
+    templateFieldName: 'address',
     generatedFieldName: 'wp_delivery_address',
-    overlayRect: { x: 26.1378, top: 239.128, w: 229.745, h: 18.061 },
+    overlayRect: { x: 38.7, top: 244.0898, w: 404.055, h: 17 },
     dir: 'rtl',
     align: 'right',
     multiline: false,
@@ -111,9 +112,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   phone: freezeSpec({
     key: 'phone',
     imageKey: 'phone',
-    templateFieldName: '3',
+    templateFieldName: 'phone',
     generatedFieldName: 'wp_phone',
-    overlayRect: { x: 377.235, top: 271.985, w: 125.673, h: 16.581 },
+    overlayRect: { x: 204.6, top: 215.5898, w: 115.6, h: 17 },
     dir: 'ltr',
     align: 'right',
     multiline: false,
@@ -121,9 +122,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   mobile: freezeSpec({
     key: 'mobile',
     imageKey: 'mobile',
-    templateFieldName: '4',
+    templateFieldName: 'mobile',
     generatedFieldName: 'wp_mobile',
-    overlayRect: { x: 201.701, top: 271.918, w: 125.672, h: 16.582 },
+    overlayRect: { x: 38.7, top: 215.5898, w: 124.7, h: 17 },
     dir: 'ltr',
     align: 'right',
     multiline: false,
@@ -131,9 +132,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   details: freezeSpec({
     key: 'details',
     imageKey: 'details',
-    templateFieldName: '5',
+    templateFieldName: 'order_details',
     generatedFieldName: 'wp_order_details',
-    overlayRect: { x: 32.2911, top: 589.966, w: 514.911, h: 246.11 },
+    overlayRect: { x: 34, top: 691.8898, w: 526, h: 414 },
     dir: 'rtl',
     align: 'right',
     multiline: true,
@@ -141,9 +142,9 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
   notes: freezeSpec({
     key: 'notes',
     imageKey: 'notes',
-    templateFieldName: '6',
+    templateFieldName: 'notes',
     generatedFieldName: 'wp_notes',
-    overlayRect: { x: 30.5456, top: 709.53, w: 516.656, h: 93.382 },
+    overlayRect: { x: 34, top: 775.8898, w: 526, h: 49 },
     dir: 'rtl',
     align: 'right',
     multiline: true,

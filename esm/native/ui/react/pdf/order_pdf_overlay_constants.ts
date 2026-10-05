@@ -22,12 +22,12 @@ export const CAPTURE_TRUE: AddEventListenerOptions = { capture: true };
 export const SCROLL_CENTER: ScrollIntoViewOptions = { block: 'center', inline: 'nearest' };
 
 // Tuned to public/order_template.pdf (uses the template's built-in AcroForm field rectangles).
-// Page: A4 portrait (595×842pt). `top` is distance from top edge to the *bottom* of the field.
-export const FIELD_ORDER_NO = ORDER_PDF_OVERLAY_FIELD_RECTS.orderNumber; // template field: מלל1 (מספר הזמנה)
-export const FIELD_DATE = ORDER_PDF_OVERLAY_FIELD_RECTS.orderDate; // template field: 0 (תאריך)
-export const FIELD_NAME = ORDER_PDF_OVERLAY_FIELD_RECTS.projectName; // template field: 1 (שם)
-export const FIELD_DETAILS = ORDER_PDF_OVERLAY_FIELD_RECTS.details; // template field: 5 (פרוט הזמנה)
-export const FIELD_ADDRESS = ORDER_PDF_OVERLAY_FIELD_RECTS.deliveryAddress; // template field: 2 (כתובת מלאה לאספקה)
-export const FIELD_PHONE = ORDER_PDF_OVERLAY_FIELD_RECTS.phone; // template field: 3 (טלפון)
-export const FIELD_MOBILE = ORDER_PDF_OVERLAY_FIELD_RECTS.mobile; // template field: 4 (נייד)
-export const FIELD_NOTES = ORDER_PDF_OVERLAY_FIELD_RECTS.notes; // template field: 6 (הערות)
+// Page: A4 portrait (595.2756×841.8898pt). `top` is distance from top edge to the *bottom* of the field.
+export const FIELD_ORDER_NO = ORDER_PDF_OVERLAY_FIELD_RECTS.orderNumber; // order_number (מספר הזמנה)
+export const FIELD_DATE = ORDER_PDF_OVERLAY_FIELD_RECTS.orderDate; // order_date (תאריך)
+export const FIELD_NAME = ORDER_PDF_OVERLAY_FIELD_RECTS.projectName; // customer_name (שם הלקוח)
+export const FIELD_DETAILS = ORDER_PDF_OVERLAY_FIELD_RECTS.details; // order_details (פרוט הזמנה)
+export const FIELD_ADDRESS = ORDER_PDF_OVERLAY_FIELD_RECTS.deliveryAddress; // address (כתובת מלאה לאספקה)
+export const FIELD_PHONE = ORDER_PDF_OVERLAY_FIELD_RECTS.phone; // phone (טלפון)
+export const FIELD_MOBILE = ORDER_PDF_OVERLAY_FIELD_RECTS.mobile; // mobile (נייד)
+export const FIELD_NOTES = ORDER_PDF_OVERLAY_FIELD_RECTS.notes; // notes (הערות)
