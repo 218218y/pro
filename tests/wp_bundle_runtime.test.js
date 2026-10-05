@@ -190,6 +190,8 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
     'scheduler_debug_stats_prod.js'
   );
   assert.equal(cfg.resolve.alias[aliasKey], aliasTarget);
+  assert.equal(cfg.resolve.alias['./observability_surface.js'], aliasTarget);
+  assert.equal(cfg.resolve.alias['./native/runtime/observability_surface.js'], aliasTarget);
   assert.equal(cfg.resolve.alias[statsAliasKey], statsAliasTarget);
   assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
   assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'true');
@@ -213,7 +215,7 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   );
 });
 
-test('bundle build config maps scheduler debug stats to full implementation outside client mode', () => {
+test('bundle build config maps observability and scheduler diagnostics to full implementations outside client mode', () => {
   const cfg = createBundleBuildConfig({
     root: '/repo',
     entryAbs: '/repo/dist/esm/release_main.js',
@@ -221,6 +223,22 @@ test('bundle build config maps scheduler debug stats to full implementation outs
     args: { sourcemap: false, minify: true, buildMode: 'perf' },
   });
 
+  const observabilityAliasKey = path.join(
+    '/repo',
+    'dist',
+    'esm',
+    'native',
+    'runtime',
+    'observability_surface.js'
+  );
+  const observabilityAliasTarget = path.join(
+    '/repo',
+    'dist',
+    'esm',
+    'native',
+    'runtime',
+    'observability_surface_full.js'
+  );
   const statsAliasKey = path.join('/repo', 'dist', 'esm', 'native', 'builder', 'scheduler_debug_stats.js');
   const statsAliasTarget = path.join(
     '/repo',
@@ -230,6 +248,9 @@ test('bundle build config maps scheduler debug stats to full implementation outs
     'builder',
     'scheduler_debug_stats_full.js'
   );
+  assert.equal(cfg.resolve.alias[observabilityAliasKey], observabilityAliasTarget);
+  assert.equal(cfg.resolve.alias['./observability_surface.js'], observabilityAliasTarget);
+  assert.equal(cfg.resolve.alias['./native/runtime/observability_surface.js'], observabilityAliasTarget);
   assert.equal(cfg.resolve.alias[statsAliasKey], statsAliasTarget);
   assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
   assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'false');

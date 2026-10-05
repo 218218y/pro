@@ -81,8 +81,13 @@ export function createObservabilityAliasMap({ root, buildMode, useDist }) {
     builderDir,
     `${resolveSchedulerDebugStatsTargetBaseName(mode)}.${suffix}`
   );
+  // Vite/Rolldown matches aliases against the raw import specifier. Runtime modules import the
+  // canonical surface locally, while release entries import it from the ESM root, so cover both
+  // forms in addition to the resolved absolute path.
   return {
     [observabilityCanonicalAbs]: observabilityTargetAbs,
+    './observability_surface.js': observabilityTargetAbs,
+    './native/runtime/observability_surface.js': observabilityTargetAbs,
     [schedulerStatsCanonicalAbs]: schedulerStatsTargetAbs,
     './scheduler_debug_stats.js': schedulerStatsTargetAbs,
   };
