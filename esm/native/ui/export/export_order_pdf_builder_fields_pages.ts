@@ -3,6 +3,7 @@ import {
   reportOrderPdfBuilderFieldError,
   type OrderPdfBuilderFieldAcrobatOps,
 } from './export_order_pdf_builder_fields_shared.js';
+import { ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE } from '../pdf/order_pdf_field_specs_runtime.js';
 
 export function createOrderPdfBuilderFieldPageOps(
   ctx: OrderPdfBuilderContextLike,
@@ -17,7 +18,7 @@ export function createOrderPdfBuilderFieldPageOps(
   const addOverflowDetailsPage = async (text: string, align: unknown): Promise<void> => {
     if (!text || !text.trim()) return;
     try {
-      const fontSize = 11;
+      const fontSize = ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE;
       const margin = 30;
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
       const box = {

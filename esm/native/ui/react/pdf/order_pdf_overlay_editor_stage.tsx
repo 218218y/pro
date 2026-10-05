@@ -6,6 +6,7 @@ import type {
   ReactElement,
 } from 'react';
 
+import { ORDER_PDF_SCALAR_FIELD_KEYS } from '../../pdf/order_pdf_document_fields_runtime.js';
 import type { OrderPdfEditableScalarField } from './order_pdf_overlay_draft_state.js';
 import type {
   OrderPdfOverlayAnnotationActions,
@@ -30,8 +31,8 @@ type OrderPdfInputDescriptor = {
   autoComplete?: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
 };
 
-const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
-  {
+const ORDER_PDF_INPUTS_BY_KEY: Readonly<Record<OrderPdfEditableScalarField, OrderPdfInputDescriptor>> = {
+  orderNumber: {
     key: 'orderNumber',
     className: 'wp-pdf-editor-input wp-pdf-editor-input--small',
     styleKey: 'orderNumber',
@@ -40,7 +41,7 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     title: 'מספר הזמנה',
     placeholder: 'מספר',
   },
-  {
+  orderDate: {
     key: 'orderDate',
     className: 'wp-pdf-editor-input wp-pdf-editor-input--small',
     styleKey: 'orderDate',
@@ -49,7 +50,7 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     title: 'תאריך הזמנה',
     placeholder: 'תאריך',
   },
-  {
+  projectName: {
     key: 'projectName',
     className: 'wp-pdf-editor-input',
     styleKey: 'projectName',
@@ -57,16 +58,7 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     ariaLabel: 'שם הלקוח',
     title: 'שם הלקוח',
   },
-  {
-    key: 'deliveryAddress',
-    className: 'wp-pdf-editor-input',
-    styleKey: 'deliveryAddress',
-    dir: 'rtl',
-    ariaLabel: 'כתובת מלאה לאספקה',
-    title: 'כתובת מלאה לאספקה',
-    placeholder: 'כתובת מלאה לאספקה',
-  },
-  {
+  phone: {
     key: 'phone',
     className: 'wp-pdf-editor-input wp-pdf-editor-input--small',
     styleKey: 'phone',
@@ -78,7 +70,7 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     inputMode: 'tel',
     autoComplete: 'tel',
   },
-  {
+  mobile: {
     key: 'mobile',
     className: 'wp-pdf-editor-input wp-pdf-editor-input--small',
     styleKey: 'mobile',
@@ -90,7 +82,20 @@ const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = [
     inputMode: 'tel',
     autoComplete: 'tel',
   },
-];
+  deliveryAddress: {
+    key: 'deliveryAddress',
+    className: 'wp-pdf-editor-input',
+    styleKey: 'deliveryAddress',
+    dir: 'rtl',
+    ariaLabel: 'כתובת מלאה לאספקה',
+    title: 'כתובת מלאה לאספקה',
+    placeholder: 'כתובת מלאה לאספקה',
+  },
+};
+
+const ORDER_PDF_INPUTS: readonly OrderPdfInputDescriptor[] = ORDER_PDF_SCALAR_FIELD_KEYS.map(
+  key => ORDER_PDF_INPUTS_BY_KEY[key]
+);
 
 export function OrderPdfOverlayEditorStage(props: {
   refs: OrderPdfOverlayEditorRefs;

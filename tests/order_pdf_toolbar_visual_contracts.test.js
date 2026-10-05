@@ -351,3 +351,23 @@ test('order PDF image attachment toggles keep text-only labels and show a presse
   assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-editor-toggle::after\s*\{/);
   assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-editor-toggle\.is-on::after\s*\{/);
 });
+
+test('order PDF editor keyboard order follows the visual customer-field order and uses the deployed PDF font asset', () => {
+  const stage = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx');
+  const css = readSource('css/react_styles.css');
+
+  assert.match(stage, /ORDER_PDF_SCALAR_FIELD_KEYS\.map\(\s*key => ORDER_PDF_INPUTS_BY_KEY\[key\]\s*\)/);
+
+  assert.match(
+    css,
+    /@font-face\s*\{[\s\S]*?font-family:\s*'WPOrderPdfTypoText';[\s\S]*?src:\s*url\('\/fonts\/TypoText\.ttf'\) format\('truetype'\);/
+  );
+  assert.match(
+    css,
+    /body\.wp-ui-react \.wp-pdf-editor-input,[\s\S]*?font-family:\s*'WPOrderPdfTypoText',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
+  );
+  assert.match(
+    css,
+    /body\.wp-ui-react \.wp-pdf-editor-richbox \{[\s\S]*?font-family:\s*'WPOrderPdfTypoText',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
+  );
+});

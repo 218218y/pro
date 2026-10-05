@@ -9,6 +9,7 @@ import {
   type OrderPdfBuilderFieldAcrobatOps,
   type OrderPdfBuilderFieldTextOps,
 } from './export_order_pdf_builder_fields_shared.js';
+import { ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE } from '../pdf/order_pdf_field_specs_runtime.js';
 
 export function createOrderPdfBuilderFieldTextOps(
   ctx: OrderPdfBuilderContextLike,
@@ -19,7 +20,11 @@ export function createOrderPdfBuilderFieldTextOps(
   const { form, font, firstPage, black } = runtime;
 
   const resolveFieldFontSize = (spec: OrderPdfFieldSpecLike): number => {
-    const baseFontSize = spec.multiline && (spec.key === 'details' || spec.key === 'notes') ? 12 : 11;
+    const configuredFontSize = Number(spec.fontSize);
+    const baseFontSize =
+      Number.isFinite(configuredFontSize) && configuredFontSize > 0
+        ? configuredFontSize
+        : ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE;
     let fontSize = baseFontSize;
     try {
       if (spec.multiline && (spec.key === 'details' || spec.key === 'notes')) {

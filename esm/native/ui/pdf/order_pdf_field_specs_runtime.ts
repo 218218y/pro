@@ -14,6 +14,7 @@ export type OrderPdfFieldSpec = {
   imageKey: OrderPdfImageFieldKey;
   templateFieldName: string;
   generatedFieldName: string;
+  fontSize: number;
   overlayRect: OrderPdfOverlayFieldRectLike;
   templateBox: OrderPdfTemplateBoxLike;
   dir: 'rtl' | 'ltr';
@@ -25,15 +26,16 @@ export const ORDER_PDF_FIELD_KEYS = Object.freeze([
   'orderNumber',
   'orderDate',
   'projectName',
-  'deliveryAddress',
   'phone',
   'mobile',
+  'deliveryAddress',
   'details',
   'notes',
 ] as const satisfies readonly OrderPdfFieldKey[]);
 
 export const ORDER_PDF_TEMPLATE_PAGE_WIDTH = 595.2756;
 export const ORDER_PDF_TEMPLATE_PAGE_HEIGHT = 841.8898;
+export const ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE = 12;
 
 function toTemplateBox(rect: OrderPdfOverlayFieldRectLike): OrderPdfTemplateBoxLike {
   return {
@@ -60,9 +62,9 @@ function buildOrderPdfFieldRecord<T>(
     orderNumber: mapValue('orderNumber', ORDER_PDF_FIELD_SPECS.orderNumber),
     orderDate: mapValue('orderDate', ORDER_PDF_FIELD_SPECS.orderDate),
     projectName: mapValue('projectName', ORDER_PDF_FIELD_SPECS.projectName),
-    deliveryAddress: mapValue('deliveryAddress', ORDER_PDF_FIELD_SPECS.deliveryAddress),
     phone: mapValue('phone', ORDER_PDF_FIELD_SPECS.phone),
     mobile: mapValue('mobile', ORDER_PDF_FIELD_SPECS.mobile),
+    deliveryAddress: mapValue('deliveryAddress', ORDER_PDF_FIELD_SPECS.deliveryAddress),
     details: mapValue('details', ORDER_PDF_FIELD_SPECS.details),
     notes: mapValue('notes', ORDER_PDF_FIELD_SPECS.notes),
   };
@@ -74,6 +76,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'orderNo',
     templateFieldName: 'order_number',
     generatedFieldName: 'wp_order_number',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 411.7, top: 142.8898, w: 82.2, h: 16.5 },
     dir: 'ltr',
     align: 'right',
@@ -84,6 +87,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'date',
     templateFieldName: 'order_date',
     generatedFieldName: 'wp_order_date',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 34.5, top: 142.8898, w: 82.2, h: 16.5 },
     dir: 'ltr',
     align: 'left',
@@ -94,6 +98,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'name',
     templateFieldName: 'customer_name',
     generatedFieldName: 'wp_project_name',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 370.5, top: 216.5898, w: 163.3, h: 17 },
     dir: 'rtl',
     align: 'right',
@@ -104,6 +109,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'address',
     templateFieldName: 'address',
     generatedFieldName: 'wp_delivery_address',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 38.7, top: 244.0898, w: 404.055, h: 17 },
     dir: 'rtl',
     align: 'right',
@@ -114,6 +120,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'phone',
     templateFieldName: 'phone',
     generatedFieldName: 'wp_phone',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 204.6, top: 215.5898, w: 115.6, h: 17 },
     dir: 'ltr',
     align: 'right',
@@ -124,6 +131,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'mobile',
     templateFieldName: 'mobile',
     generatedFieldName: 'wp_mobile',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 38.7, top: 215.5898, w: 124.7, h: 17 },
     dir: 'ltr',
     align: 'right',
@@ -134,6 +142,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'details',
     templateFieldName: 'order_details',
     generatedFieldName: 'wp_order_details',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 34, top: 691.8898, w: 526, h: 414 },
     dir: 'rtl',
     align: 'right',
@@ -144,6 +153,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     imageKey: 'notes',
     templateFieldName: 'notes',
     generatedFieldName: 'wp_notes',
+    fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
     overlayRect: { x: 34, top: 775.8898, w: 526, h: 49 },
     dir: 'rtl',
     align: 'right',
@@ -167,9 +177,9 @@ export const ORDER_PDF_IMAGE_TEMPLATE_BOXES: Readonly<
   orderNo: ORDER_PDF_FIELD_SPECS.orderNumber.templateBox,
   date: ORDER_PDF_FIELD_SPECS.orderDate.templateBox,
   name: ORDER_PDF_FIELD_SPECS.projectName.templateBox,
-  address: ORDER_PDF_FIELD_SPECS.deliveryAddress.templateBox,
   phone: ORDER_PDF_FIELD_SPECS.phone.templateBox,
   mobile: ORDER_PDF_FIELD_SPECS.mobile.templateBox,
+  address: ORDER_PDF_FIELD_SPECS.deliveryAddress.templateBox,
   details: ORDER_PDF_FIELD_SPECS.details.templateBox,
   notes: ORDER_PDF_FIELD_SPECS.notes.templateBox,
 });

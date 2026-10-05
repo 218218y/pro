@@ -42,6 +42,7 @@ function setPrimaryDocumentFields(input: {
       key: spec.key,
       value: valueByKey[spec.key],
       box: spec.templateBox,
+      fontSize: spec.fontSize,
       multiline: spec.multiline || undefined,
       align: spec.align === 'left' ? runtime.TextAlignment.Left : runtime.TextAlignment.Right,
     });

@@ -7,6 +7,7 @@ import {
   ORDER_PDF_IMAGE_TEMPLATE_BOXES,
   ORDER_PDF_REQUIRED_TEMPLATE_FIELDS,
   ORDER_PDF_TEMPLATE_BOXES,
+  ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
   ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
   ORDER_PDF_TEMPLATE_PAGE_WIDTH,
   computeOrderPdfOverlayFieldStyleMap,
@@ -27,6 +28,17 @@ const EXPECTED_TEMPLATE_FIELDS = Object.freeze({
 test('[order-pdf] canonical field specs keep overlay/template/image mappings aligned', () => {
   assert.equal(ORDER_PDF_TEMPLATE_PAGE_WIDTH, 595.2756);
   assert.equal(ORDER_PDF_TEMPLATE_PAGE_HEIGHT, 841.8898);
+  assert.equal(ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE, 12);
+  assert.deepEqual(ORDER_PDF_FIELD_KEYS, [
+    'orderNumber',
+    'orderDate',
+    'projectName',
+    'phone',
+    'mobile',
+    'deliveryAddress',
+    'details',
+    'notes',
+  ]);
 
   const specs = listOrderPdfFieldSpecs();
   assert.deepEqual(
@@ -44,6 +56,7 @@ test('[order-pdf] canonical field specs keep overlay/template/image mappings ali
     assert.deepEqual(spec.overlayRect, expected.rect);
     assert.equal(Object.hasOwn(spec, 'fallbackFieldName'), false);
     assert.match(spec.generatedFieldName, /^wp_/);
+    assert.equal(spec.fontSize, ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE);
     assert.equal(spec.templateBox.x, spec.overlayRect.x);
     assert.equal(spec.templateBox.y, ORDER_PDF_TEMPLATE_PAGE_HEIGHT - spec.overlayRect.top);
     assert.equal(spec.templateBox.w, spec.overlayRect.w);

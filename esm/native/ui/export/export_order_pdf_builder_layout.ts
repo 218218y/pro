@@ -18,6 +18,7 @@ import {
   listOrderPdfCompositeImageCapturePlan,
   type OrderPdfCompositeImageSlotBytes,
 } from './export_order_pdf_composite_image_slots_runtime.js';
+import { ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE } from '../pdf/order_pdf_field_specs_runtime.js';
 
 export function resolveOrderPdfBuildDraft(
   App: AppContainer,
@@ -108,7 +109,7 @@ export function splitOrderPdfDetailsOverflow(opts: {
   let overflowText = '';
 
   try {
-    const fontSize = 11;
+    const fontSize = ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE;
     const padding = 6;
     const lineGap = Math.max(2, Math.round(fontSize * 0.25));
     const lineHeight = fontSize + lineGap;

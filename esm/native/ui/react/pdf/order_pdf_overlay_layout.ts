@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 
 import {
   computeOrderPdfOverlayFieldStyleMap,
+  ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
   ORDER_PDF_TEMPLATE_PAGE_HEIGHT,
   ORDER_PDF_TEMPLATE_PAGE_WIDTH,
   type OrderPdfFieldKey,
@@ -29,7 +30,10 @@ export type OrderPdfOverlayImageFlags = {
 export type OrderPdfOverlayLayout = {
   size: OrderPdfOverlayPageSize;
   cssScale: number;
-  pageStyle: CSSProperties & { ['--wp-pdf-zoom']?: number };
+  pageStyle: CSSProperties & {
+    ['--wp-pdf-zoom']?: number;
+    ['--wp-pdf-field-font-size']?: string;
+  };
   fieldStyles: OrderPdfOverlayFieldStyleMap;
   importedPdfFlags: OrderPdfOverlayImageFlags;
 };
@@ -53,7 +57,11 @@ export function computeOrderPdfOverlayLayout(args: {
   return {
     size,
     cssScale,
-    pageStyle: { direction: 'ltr', '--wp-pdf-zoom': cssScale },
+    pageStyle: {
+      direction: 'ltr',
+      '--wp-pdf-zoom': cssScale,
+      '--wp-pdf-field-font-size': `${ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE}px`,
+    },
     fieldStyles,
     importedPdfFlags: resolveOrderPdfImportedImageFlags(importedPdfImagePageCount),
   };

@@ -40,12 +40,12 @@ export async function prepareOrderPdfBuildAssets(
   }
 
   const fontBytes = await captureOps.fetchBytesFirstOk(App, [
-    '/fonts/DejaVuSans.ttf',
-    './fonts/DejaVuSans.ttf',
-    'fonts/DejaVuSans.ttf',
+    '/fonts/TypoText.ttf',
+    './fonts/TypoText.ttf',
+    'fonts/TypoText.ttf',
   ]);
   if (!fontBytes) {
-    deps._toast(App, 'קובץ פונט חסר (DejaVuSans.ttf)', 'error');
+    deps._toast(App, 'קובץ פונט חסר (TypoText.ttf)', 'error');
     return null;
   }
 
