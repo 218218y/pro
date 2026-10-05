@@ -71,6 +71,48 @@ function asText(obj) {
   }
 }
 
+function lookupPdfDict(ctx, obj) {
+  if (!obj) return null;
+  try {
+    const resolved = ctx.lookup(obj);
+    return resolved instanceof PDFDict ? resolved : null;
+  } catch {
+    return null;
+  }
+}
+
+function lookupPdfArray(ctx, obj) {
+  if (!obj) return null;
+  try {
+    const resolved = ctx.lookup(obj);
+    return resolved instanceof PDFArray ? resolved : null;
+  } catch {
+    return null;
+  }
+}
+
+function fontDescriptorEmbedsProgram(ctx, descriptorObj) {
+  const descriptor = lookupPdfDict(ctx, descriptorObj);
+  if (!descriptor) return false;
+  return ['FontFile', 'FontFile2', 'FontFile3'].some(name => Boolean(descriptor.get(PDFName.of(name))));
+}
+
+function fontResourceEmbedsProgram(ctx, fontObj) {
+  const font = lookupPdfDict(ctx, fontObj);
+  if (!font) return false;
+
+  if (fontDescriptorEmbedsProgram(ctx, font.get(PDFName.of('FontDescriptor')))) {
+    return true;
+  }
+
+  const descendants = lookupPdfArray(ctx, font.get(PDFName.of('DescendantFonts')));
+  if (!descendants) return false;
+  for (let i = 0; i < descendants.size(); i++) {
+    if (fontResourceEmbedsProgram(ctx, descendants.get(i))) return true;
+  }
+  return false;
+}
+
 function parseFontNamesFromDA(da) {
   // DA looks like: /Helv 11 Tf 0 g
   const s = typeof da === 'string' ? da : asText(da);
@@ -239,16 +281,24 @@ async function main() {
       ]);
     }
 
-    const unusedFonts = fontDict
+    // Acrobat may add non-embedded Standard 14 form resources (for example /ZaDb)
+    // during an incremental save even when no current field references them. Those dictionaries
+    // are tiny and do not carry a font program, so only unused embedded fonts are asset bloat.
+    const unusedEmbeddedFonts = fontDict
       .keys()
-      .map(key => (typeof key.decodeText === 'function' ? key.decodeText() : String(key).replace(/^\//, '')))
-      .filter(name => !referenced.has(name));
-    if (unusedFonts.length) {
+      .map(key => ({
+        key,
+        name: typeof key.decodeText === 'function' ? key.decodeText() : String(key).replace(/^\//, ''),
+      }))
+      .filter(({ name }) => !referenced.has(name))
+      .filter(({ key }) => fontResourceEmbedsProgram(ctx, fontDict.get(key)))
+      .map(({ name }) => name);
+    if (unusedEmbeddedFonts.length) {
       fail(
-        'The template contains unused /AcroForm/DR/Font resources that unnecessarily bloat the production asset.',
+        'The template contains unused embedded /AcroForm/DR/Font resources that unnecessarily bloat the production asset.',
         [
-          `Unused form fonts: ${unusedFonts.join(', ')}`,
-          'Remove only unused AcroForm font resources; do not rasterize or flatten the PDF.',
+          `Unused embedded form fonts: ${unusedEmbeddedFonts.join(', ')}`,
+          'Remove only unused embedded AcroForm font resources; do not rasterize or flatten the PDF.',
         ]
       );
     }
