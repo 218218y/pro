@@ -352,19 +352,23 @@ test('order PDF image attachment toggles keep text-only labels and show a presse
   assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-editor-toggle\.is-on::after\s*\{/);
 });
 
-test('order PDF editor uses the deployed TypoText font asset for scalar and multiline fields', () => {
+test('order PDF editor uses the deployed Arimo font asset for scalar and multiline fields', () => {
   const css = readSource('css/react_styles.css');
 
   assert.match(
     css,
-    /@font-face\s*\{[\s\S]*?font-family:\s*'WPOrderPdfTypoText';[\s\S]*?src:\s*url\('\/fonts\/TypoText\.ttf'\) format\('truetype'\);/
+    /@font-face\s*\{[\s\S]*?font-family:\s*'WPOrderPdfArimo';[\s\S]*?src:\s*url\('\/fonts\/Arimo-Regular\.ttf'\) format\('truetype'\);/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-editor-input,[\s\S]*?font-family:\s*'WPOrderPdfTypoText',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
+    /body\.wp-ui-react \.wp-pdf-editor-input,[\s\S]*?font-family:\s*'WPOrderPdfArimo',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-editor-richbox \{[\s\S]*?font-family:\s*'WPOrderPdfTypoText',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
+    /body\.wp-ui-react \.wp-pdf-editor-richbox \{[\s\S]*?font-family:\s*'WPOrderPdfArimo',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
+  );
+  assert.match(
+    css,
+    /body\.wp-ui-react \.wp-pdf-editor-rich-editor \{[\s\S]*?font-family:\s*'WPOrderPdfArimo',[\s\S]*?font-size:\s*calc\(var\(--wp-pdf-field-font-size, 12px\) \* var\(--wp-pdf-zoom, 1\)\);/
   );
 });

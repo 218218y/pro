@@ -18,7 +18,7 @@ export {
 } from './order_pdf_overlay_export_ops_image_pdf_text_layout.js';
 export type { OrderPdfPreparedTextLayout } from './order_pdf_overlay_export_ops_image_pdf_text_layout.js';
 
-const WP_ORDER_PDF_TYPO_TEXT_FAMILY = 'WPOrderPdfTypoText';
+const WP_ORDER_PDF_ARIMO_FAMILY = 'WPOrderPdfArimo';
 export const ORDER_PDF_IMAGE_CONTINUATION_MARGIN = 30;
 
 export type OrderPdfOverlayReportNonFatal = (op: string, err: unknown, dedupeMs?: number) => void;
@@ -38,7 +38,7 @@ export function buildOrderPdfDetailsText(draft: OrderPdfDraft): string {
   return resolveOrderPdfDetailsTextFromDraft(draft);
 }
 
-export async function ensureOrderPdfTypoTextLoaded(args: {
+export async function ensureOrderPdfArimoLoaded(args: {
   doc: Document;
   win: WindowPartialLike | null;
   getProp: GetPropFn;
@@ -58,8 +58,8 @@ export async function ensureOrderPdfTypoTextLoaded(args: {
       }
     };
 
-    if (check(`12px "${WP_ORDER_PDF_TYPO_TEXT_FAMILY}"`)) {
-      return `"${WP_ORDER_PDF_TYPO_TEXT_FAMILY}", Arial, sans-serif`;
+    if (check(`12px "${WP_ORDER_PDF_ARIMO_FAMILY}"`)) {
+      return `"${WP_ORDER_PDF_ARIMO_FAMILY}", Arial, sans-serif`;
     }
 
     const dv = getProp(doc, 'defaultView');
@@ -68,7 +68,7 @@ export async function ensureOrderPdfTypoTextLoaded(args: {
     if (!FontFaceCtor0 || !add) return 'Arial, sans-serif';
     if (!isFontFaceCtorLike(FontFaceCtor0)) return 'Arial, sans-serif';
 
-    const ff = new FontFaceCtor0(WP_ORDER_PDF_TYPO_TEXT_FAMILY, 'url(/fonts/TypoText.ttf)');
+    const ff = new FontFaceCtor0(WP_ORDER_PDF_ARIMO_FAMILY, 'url(/fonts/Arimo-Regular.ttf)');
     const loaded = await ff.load();
     add(loaded);
 
@@ -76,10 +76,10 @@ export async function ensureOrderPdfTypoTextLoaded(args: {
       const ready = getProp(fonts, 'ready');
       if (isPromiseLike(ready)) await ready;
     } catch (err) {
-      report('orderPdfOverlay.ensureOrderPdfTypoTextLoaded.ready', err);
+      report('orderPdfOverlay.ensureOrderPdfArimoLoaded.ready', err);
     }
 
-    return `"${WP_ORDER_PDF_TYPO_TEXT_FAMILY}", Arial, sans-serif`;
+    return `"${WP_ORDER_PDF_ARIMO_FAMILY}", Arial, sans-serif`;
   } catch {
     return 'Arial, sans-serif';
   }

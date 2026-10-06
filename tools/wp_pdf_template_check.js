@@ -16,6 +16,8 @@ import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFString, PDFHexStrin
 const EXPECTED_PAGE_SIZE = Object.freeze({ width: 595.2756, height: 841.8898 });
 const GEOMETRY_TOLERANCE = 0.05;
 const MAX_TEMPLATE_BYTES = 512 * 1024;
+const EXPECTED_FORM_FONT_POSTSCRIPT_NAME = 'Arimo-Regular';
+const EXPECTED_FORM_FONT_SIZE = 12;
 const REQUIRED_TEXT_FIELDS = Object.freeze({
   order_number: Object.freeze({ x: 411.7, y: 699.0, width: 82.2, height: 16.5 }),
   order_date: Object.freeze({ x: 34.5, y: 699.0, width: 82.2, height: 16.5 }),
@@ -24,7 +26,7 @@ const REQUIRED_TEXT_FIELDS = Object.freeze({
   mobile: Object.freeze({ x: 38.7, y: 626.3, width: 124.7, height: 17.0 }),
   address: Object.freeze({ x: 38.7, y: 597.8, width: 404.055, height: 17.0 }),
   order_details: Object.freeze({ x: 34.0, y: 150.0, width: 526.0, height: 414.0 }),
-  notes: Object.freeze({ x: 34.0, y: 66.0, width: 526.0, height: 49.0 }),
+  notes: Object.freeze({ x: 34.0, y: 62.0, width: 526.0, height: 49.0 }),
 });
 
 function nearlyEqual(actual, expected, tolerance = GEOMETRY_TOLERANCE) {
@@ -113,16 +115,32 @@ function fontResourceEmbedsProgram(ctx, fontObj) {
   return false;
 }
 
-function parseFontNamesFromDA(da) {
-  // DA looks like: /Helv 11 Tf 0 g
-  const s = typeof da === 'string' ? da : asText(da);
-  const out = new Set();
-  const re = /\/([A-Za-z0-9_+\-\.]+)\s+\d+(?:\.\d+)?\s+Tf/g;
+function parseFontSelectionsFromDA(da) {
+  // DA looks like: /Helv 11 Tf 0 g. Acrobat may encode '/' as the PDF-string octal escape \057.
+  const raw = typeof da === 'string' ? da : asText(da);
+  const s = raw.replace(/\\([0-7]{1,3})/g, (_match, octal) => String.fromCharCode(Number.parseInt(octal, 8)));
+  const out = [];
+  const re = /\/([A-Za-z0-9_+\-\.]+)\s+(\d+(?:\.\d+)?)\s+Tf/g;
   let m;
   while ((m = re.exec(s))) {
-    if (m[1]) out.add(m[1]);
+    if (m[1]) out.push({ name: m[1], size: Number(m[2]) });
   }
-  return Array.from(out);
+  return out;
+}
+
+function parseFontNamesFromDA(da) {
+  return Array.from(new Set(parseFontSelectionsFromDA(da).map(entry => entry.name)));
+}
+
+function pdfNameText(value) {
+  if (!value) return '';
+  try {
+    if (typeof value.decodeText === 'function') return value.decodeText();
+  } catch {
+    // Fall through to the less specific representations below.
+  }
+  if (typeof value.name === 'string') return value.name;
+  return String(value).replace(/^\//, '');
 }
 
 async function main() {
@@ -130,6 +148,10 @@ async function main() {
   const p = path.join(root, 'public', 'order_template.pdf');
   if (!fs.existsSync(p)) {
     fail('Missing file: public/order_template.pdf');
+  }
+  const fontAssetPath = path.join(root, 'public', 'fonts', 'Arimo-Regular.ttf');
+  if (!fs.existsSync(fontAssetPath)) {
+    fail('Missing file: public/fonts/Arimo-Regular.ttf');
   }
   const bytes = fs.readFileSync(p);
   let pdfDoc;
@@ -200,6 +222,8 @@ async function main() {
   const required = Object.keys(REQUIRED_TEXT_FIELDS);
   const missing = [];
   const geometryErrors = [];
+  const fieldFontErrors = [];
+  const requiredFieldFontAliases = new Set();
   for (const name of required) {
     let field;
     try {
@@ -207,6 +231,20 @@ async function main() {
     } catch {
       missing.push(name);
       continue;
+    }
+
+    const fieldDa = field?.acroField?.dict?.get?.(PDFName.of('DA'));
+    const fontSelections = parseFontSelectionsFromDA(fieldDa);
+    if (fontSelections.length !== 1) {
+      fieldFontErrors.push(`${name}: expected one /DA font selection, found ${fontSelections.length}`);
+    } else {
+      const selection = fontSelections[0];
+      requiredFieldFontAliases.add(selection.name);
+      if (!nearlyEqual(selection.size, EXPECTED_FORM_FONT_SIZE, 0.001)) {
+        fieldFontErrors.push(
+          `${name}: expected ${EXPECTED_FORM_FONT_SIZE}pt form font; actual ${selection.size}pt`
+        );
+      }
     }
 
     const widgets = field?.acroField?.getWidgets?.() || [];
@@ -234,6 +272,9 @@ async function main() {
   }
   if (geometryErrors.length) {
     fail('The template field geometry does not match the application field contract.', geometryErrors);
+  }
+  if (fieldFontErrors.length) {
+    fail('The template field font size does not match the application typography contract.', fieldFontErrors);
   }
 
   // Font resources referenced by /DA must exist under /AcroForm/DR/Font.
@@ -279,6 +320,21 @@ async function main() {
       fail('The template references fonts in /DA that are not present in /AcroForm/DR/Font.', [
         `Missing fonts: ${missingFonts.join(', ')}`,
       ]);
+    }
+
+    const wrongFieldFonts = [];
+    for (const alias of requiredFieldFontAliases) {
+      const resource = fontDict.get(PDFName.of(alias));
+      const fontResource = lookupPdfDict(ctx, resource);
+      const baseFontName = pdfNameText(fontResource?.get(PDFName.of('BaseFont')));
+      if (baseFontName !== EXPECTED_FORM_FONT_POSTSCRIPT_NAME) {
+        wrongFieldFonts.push(
+          `/${alias}: expected /BaseFont /${EXPECTED_FORM_FONT_POSTSCRIPT_NAME}; actual /${baseFontName || 'missing'}`
+        );
+      }
+    }
+    if (wrongFieldFonts.length) {
+      fail('The template form font does not match the deployed browser/export font.', wrongFieldFonts);
     }
 
     // Acrobat may add non-embedded Standard 14 form resources (for example /ZaDb)

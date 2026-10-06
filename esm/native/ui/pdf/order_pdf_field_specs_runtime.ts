@@ -154,7 +154,7 @@ export const ORDER_PDF_FIELD_SPECS: Readonly<Record<OrderPdfFieldKey, OrderPdfFi
     templateFieldName: 'notes',
     generatedFieldName: 'wp_notes',
     fontSize: ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE,
-    overlayRect: { x: 34, top: 775.8898, w: 526, h: 49 },
+    overlayRect: { x: 34, top: 779.8898, w: 526, h: 49 },
     dir: 'rtl',
     align: 'right',
     multiline: true,

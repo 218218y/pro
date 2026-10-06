@@ -12,7 +12,7 @@ import {
 import {
   appendOrderPdfDetailsContinuationImagePage,
   buildOrderPdfDetailsText,
-  ensureOrderPdfTypoTextLoaded,
+  ensureOrderPdfArimoLoaded,
   paintOrderPdfTextInBox,
   prepareOrderPdfTextLayout,
   resolveOrderPdfDetailsPageSplit,
@@ -126,7 +126,7 @@ export function createOrderPdfOverlayImagePdfOps(deps: OrderPdfOverlayExportOpsD
         return page;
       };
       const allDetailsText = buildOrderPdfDetailsText(draft);
-      const fontFamily = await ensureOrderPdfTypoTextLoaded({
+      const fontFamily = await ensureOrderPdfArimoLoaded({
         doc,
         win: winMaybe ?? null,
         getProp,

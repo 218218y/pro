@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'WPOrderPdfTypoText';
-  src: url('/fonts/TypoText.ttf') format('truetype');
+  font-family: 'WPOrderPdfArimo';
+  src: url('/fonts/Arimo-Regular.ttf') format('truetype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -6291,7 +6291,7 @@ body.wp-ui-react .wp-pdf-editor-textarea {
   outline: none;
   background: transparent;
   color: #0f172a;
-  font-family: 'WPOrderPdfTypoText', Arial, sans-serif;
+  font-family: 'WPOrderPdfArimo', Arial, sans-serif;
   font-size: calc(var(--wp-pdf-field-font-size, 12px) * var(--wp-pdf-zoom, 1));
   line-height: 1.35;
 }
@@ -6342,7 +6342,7 @@ body.wp-ui-react .wp-pdf-editor-richbox {
   outline: none;
   background: rgba(255, 255, 255, 0.72);
   color: #0f172a;
-  font-family: 'WPOrderPdfTypoText', Arial, sans-serif;
+  font-family: 'WPOrderPdfArimo', Arial, sans-serif;
   font-size: calc(var(--wp-pdf-field-font-size, 12px) * var(--wp-pdf-zoom, 1));
   line-height: 1.35;
   border-radius: calc(6px * var(--wp-pdf-zoom, 1));
@@ -6368,6 +6368,8 @@ body.wp-ui-react .wp-pdf-editor-rich-delim {
 
 body.wp-ui-react .wp-pdf-editor-rich-editor {
   outline: none;
+  font-family: 'WPOrderPdfArimo', Arial, sans-serif;
+  font-size: calc(var(--wp-pdf-field-font-size, 12px) * var(--wp-pdf-zoom, 1));
   min-height: calc(36px * var(--wp-pdf-zoom, 1));
   flex: 1 1 auto;
   width: 100%;

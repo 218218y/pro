@@ -22,7 +22,7 @@ const EXPECTED_TEMPLATE_FIELDS = Object.freeze({
   phone: { name: 'phone', rect: { x: 204.6, top: 215.5898, w: 115.6, h: 17 } },
   mobile: { name: 'mobile', rect: { x: 38.7, top: 215.5898, w: 124.7, h: 17 } },
   details: { name: 'order_details', rect: { x: 34, top: 691.8898, w: 526, h: 414 } },
-  notes: { name: 'notes', rect: { x: 34, top: 775.8898, w: 526, h: 49 } },
+  notes: { name: 'notes', rect: { x: 34, top: 779.8898, w: 526, h: 49 } },
 } as const);
 
 test('[order-pdf] canonical field specs keep overlay/template/image mappings aligned', () => {

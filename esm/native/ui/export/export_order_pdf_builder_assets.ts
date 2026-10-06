@@ -40,12 +40,12 @@ export async function prepareOrderPdfBuildAssets(
   }
 
   const fontBytes = await captureOps.fetchBytesFirstOk(App, [
-    '/fonts/TypoText.ttf',
-    './fonts/TypoText.ttf',
-    'fonts/TypoText.ttf',
+    '/fonts/Arimo-Regular.ttf',
+    './fonts/Arimo-Regular.ttf',
+    'fonts/Arimo-Regular.ttf',
   ]);
   if (!fontBytes) {
-    deps._toast(App, 'קובץ פונט חסר (TypoText.ttf)', 'error');
+    deps._toast(App, 'קובץ פונט חסר (Arimo-Regular.ttf)', 'error');
     return null;
   }
 

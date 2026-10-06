@@ -535,8 +535,8 @@ export function writeReleaseMetadata({
   const tplPdf = path.join(root, 'public', 'order_template.pdf');
   const tplPdfOut = path.join(releaseDir, 'order_template.pdf');
   if (exists(tplPdf)) mustExist.push(['order_template.pdf', tplPdfOut]);
-  const fontTtfOut = path.join(releaseDir, 'fonts', 'TypoText.ttf');
-  mustExist.push(['fonts/TypoText.ttf', fontTtfOut]);
+  const fontTtfOut = path.join(releaseDir, 'fonts', 'Arimo-Regular.ttf');
+  mustExist.push(['fonts/Arimo-Regular.ttf', fontTtfOut]);
   const missing = mustExist.filter(([, p]) => !exists(p)).map(([label]) => label);
   if (missing.length) {
     console.warn('[WP Release] WARNING: Missing required public assets in release:', missing.join(', '));
