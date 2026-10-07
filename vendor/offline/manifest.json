@@ -14,31 +14,31 @@
     }
   },
   "ast": {
-    "version": "0.152.0",
-    "compatibleProjectRange": ">=0.152.0 <0.153.0",
+    "version": "0.153.0",
+    "compatibleProjectRange": ">=0.153.0 <0.154.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
         "installPath": "node_modules/oxc-parser",
-        "file": "vendor/offline/ast/oxc-parser-0.152.0.tgz",
-        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.152.0.tgz",
-        "integrity": "sha512-ZztsZgaCWmPeKYMdoTT5e0oV/oxD1NeLWNR3kAtr/G707cUPYaaozRlVDHLCGnszHJRszN9mJwmPNpqgwloC0A=="
+        "file": "vendor/offline/ast/oxc-parser-0.153.0.tgz",
+        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.153.0.tgz",
+        "integrity": "sha512-cEnpyyV1OJRXv++SFNw0z8i+2o/cr88rVLaOYJafELDoHM5yHvCAbwGRLvxuany6SNLcbblSMUyZaGzH+quSYg=="
       },
       {
-        "lockPath": "node_modules/@oxc-project/types",
-        "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/types-0.152.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.152.0.tgz",
-        "integrity": "sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw=="
+        "lockPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
+        "installPath": "node_modules/oxc-parser/node_modules/@oxc-project/types",
+        "file": "vendor/offline/ast/types-0.153.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.153.0.tgz",
+        "integrity": "sha512-jSNrRIyvPVLL5E1z/tS5zLAprosGz/FuI1PWwEOz59j3E4TTTzSpqKb/RDGqJhhW0QHYISGXxq582wGx6T11Tw=="
       }
     ],
     "bindings": {
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.152.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.152.0.tgz",
-        "integrity": "sha512-ltgrSF6L+yPTVsIdaAyqKq3zTqzj/1VlNbxWZuxAe8flR3sWdyNsKvdXukoO8/ucJbLickhmieRBge+o/e8Ugw=="
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.153.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.153.0.tgz",
+        "integrity": "sha512-Da8Vqs1xdtoDYtEjmozD7wGgJeLBQkMbR0WUBECOSxodyX5DXy8ySlvJWbukyO2Q0+TM9EK+4LT6tbq0jCg4hQ=="
       }
     }
   },
@@ -109,21 +109,21 @@
     "launcher": "bin/tsc"
   },
   "oxlint": {
-    "version": "1.86.0",
+    "version": "1.87.0",
     "package": {
       "lockPath": "node_modules/oxlint",
       "installPath": "node_modules/oxlint",
-      "file": "vendor/offline/oxlint/oxlint-1.86.0.tgz",
-      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.86.0.tgz",
-      "integrity": "sha512-og0lhgvZfgGF//gOOmZXvtr+GmBbAGEnbEhv/QUg7UW2Wi4wHMnJbnMD+zuHgPdJxdklfgpPupdlAaAySyxrZg=="
+      "file": "vendor/offline/oxlint/oxlint-1.87.0.tgz",
+      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.87.0.tgz",
+      "integrity": "sha512-drxVlaW7Oqq7wSy1CN25znRu00aRq8n57Q2wniJRxCmtYVz07ufCm7EVDPQFZURrTgQIjzKrVEHAD/HcvJXObg=="
     },
     "platforms": {
       "linux-x64": {
         "lockPath": "node_modules/@oxlint/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxlint/binding-linux-x64-gnu",
-        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.86.0.tgz",
-        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.86.0.tgz",
-        "integrity": "sha512-C1WjukSyMnr66b+w1/tV8RFVv6d9v0MzDf4p9IxVXknqgmTHBgZh1pccN1eHzFr0b9Tbb3OXoPsAAdAuHAQfeA==",
+        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.87.0.tgz",
+        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.87.0.tgz",
+        "integrity": "sha512-Dry46Fa+AXE/xt9J/YriujU1pU9mzfNWHGQwtOYibAFH8HLrKWCi93AhIGnuUMiwn2JbuBkRyz51f50Ly4r4ow==",
         "runtime": "gnu"
       }
     },
@@ -381,7 +381,10 @@
         ]
       },
       "vite-build": {
-        "rootDependencies": ["@vitejs/plugin-react", "vite"],
+        "rootDependencies": [
+          "@vitejs/plugin-react",
+          "vite"
+        ],
         "packageCount": 16,
         "packages": [
           {
@@ -413,12 +416,12 @@
           },
           {
             "name": "@vitejs/plugin-react",
-            "version": "6.1.1",
+            "version": "6.1.2",
             "lockPath": "node_modules/@vitejs/plugin-react",
             "installPath": "node_modules/@vitejs/plugin-react",
-            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.1.tgz",
-            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.1.tgz",
-            "integrity": "sha512-yxLaQV9gkhS8ezJqCM6+ndU7mDY6gqAg75NQ+0IjwEI8IYOmQCgkRwHKVSfWXW076DsqMo0Dk+0FK1U+M5RgFw=="
+            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.2.tgz",
+            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.2.tgz",
+            "integrity": "sha512-fhJNGUdscQa4HkI0xFxwonWyhnVReCPDbXI7FH7jmzpnVCrFQI7PRrhWecO263610vOrs9tr2Y4xcf8uAdFxbw=="
           },
           {
             "name": "detect-libc",
@@ -458,12 +461,12 @@
           },
           {
             "name": "nanoid",
-            "version": "3.3.19",
+            "version": "3.3.20",
             "lockPath": "node_modules/nanoid",
             "installPath": "node_modules/nanoid",
-            "file": "vendor/offline/vite/nanoid-3.3.19.tgz",
-            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.19.tgz",
-            "integrity": "sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug=="
+            "file": "vendor/offline/vite/nanoid-3.3.20.tgz",
+            "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.20.tgz",
+            "integrity": "sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ=="
           },
           {
             "name": "picocolors",
@@ -485,12 +488,12 @@
           },
           {
             "name": "postcss",
-            "version": "8.5.28",
+            "version": "8.5.29",
             "lockPath": "node_modules/postcss",
             "installPath": "node_modules/postcss",
-            "file": "vendor/offline/vite/postcss-8.5.28.tgz",
-            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.28.tgz",
-            "integrity": "sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A=="
+            "file": "vendor/offline/vite/postcss-8.5.29.tgz",
+            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.29.tgz",
+            "integrity": "sha512-49cGhUbXj8Qenv0iTMxA1cFBzxXoctpC9Ujd77t1WcbJIr6nF/eI7g/8MgxrYldFRuAXvja7xQRwavoW7kgrxQ=="
           },
           {
             "name": "rolldown",
@@ -521,17 +524,19 @@
           },
           {
             "name": "vite",
-            "version": "8.3.2",
+            "version": "8.3.3",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.3.2.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.3.2.tgz",
-            "integrity": "sha512-SQr1x6W5vVSbROg7vsyXIaxK9b0G7zsT68acdWWRmnBUsgDieLCRG+Rep9WdZgcposvv/GSnr4GUUBqB3vXq6w=="
+            "file": "vendor/offline/vite/vite-8.3.3.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.3.3.tgz",
+            "integrity": "sha512-cTAldKPImjg6c+gk48U19POPn3GCBzZwpdsN8ZMEEcbpes+6/wvfqUd0C2y3qYY4wsj8PwgFwrZ/1jBPVttMSg=="
           }
         ]
       },
       "eslint-js-strict": {
-        "rootDependencies": ["eslint"],
+        "rootDependencies": [
+          "eslint"
+        ],
         "packageCount": 77,
         "packages": [
           {
@@ -716,12 +721,12 @@
           },
           {
             "name": "acorn",
-            "version": "8.18.0",
+            "version": "8.19.0",
             "lockPath": "node_modules/acorn",
             "installPath": "node_modules/acorn",
-            "file": "vendor/offline/eslint/acorn-8.18.0.tgz",
-            "url": "https://registry.npmjs.org/acorn/-/acorn-8.18.0.tgz",
-            "integrity": "sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ=="
+            "file": "vendor/offline/eslint/acorn-8.19.0.tgz",
+            "url": "https://registry.npmjs.org/acorn/-/acorn-8.19.0.tgz",
+            "integrity": "sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw=="
           },
           {
             "name": "acorn-jsx",
@@ -1230,6 +1235,6 @@
         ]
       }
     },
-    "lockfileSha256": "f6416cd58614c0b9a1b20b1048949df3972292689f1e301ba36d51a3af1e9ec3"
+    "lockfileSha256": "a594daee413221a5a5d74570695b93f726e6a10b61e0d247a943684f1e53eeed"
   }
 }
