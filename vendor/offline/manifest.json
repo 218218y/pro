@@ -381,10 +381,7 @@
         ]
       },
       "vite-build": {
-        "rootDependencies": [
-          "@vitejs/plugin-react",
-          "vite"
-        ],
+        "rootDependencies": ["@vitejs/plugin-react", "vite"],
         "packageCount": 16,
         "packages": [
           {
@@ -534,9 +531,7 @@
         ]
       },
       "eslint-js-strict": {
-        "rootDependencies": [
-          "eslint"
-        ],
+        "rootDependencies": ["eslint"],
         "packageCount": 77,
         "packages": [
           {
