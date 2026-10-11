@@ -77,13 +77,13 @@
     "executable": "dist/cli.mjs"
   },
   "prettier": {
-    "version": "3.9.9",
+    "version": "3.9.10",
     "package": {
       "lockPath": "node_modules/prettier",
       "installPath": "node_modules/prettier",
-      "file": "vendor/offline/prettier/prettier-3.9.9.tgz",
-      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.9.tgz",
-      "integrity": "sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg=="
+      "file": "vendor/offline/prettier/prettier-3.9.10.tgz",
+      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.10.tgz",
+      "integrity": "sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA=="
     },
     "executable": "bin/prettier.cjs"
   },
@@ -129,21 +129,21 @@
     },
     "launcher": "bin/oxlint",
     "typeAware": {
-      "version": "7.0.2003",
+      "version": "7.0.2004",
       "package": {
         "lockPath": "node_modules/oxlint-tsgolint",
         "installPath": "node_modules/oxlint-tsgolint",
-        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2003.tgz",
-        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2003.tgz",
-        "integrity": "sha512-VnK4zlqgmgq/7ZcjzCk/WpN8kKFsYGcB85Io9qT3wL4K8Un3RKmJkp793crNETieMusPMKOA4a+Mw2wbteI6TQ=="
+        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2004.tgz",
+        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2004.tgz",
+        "integrity": "sha512-vQ9WDF3fiZJvRdSDosNOflerOCOpwol6vWzVDxW76RcU19cjTh7engvkHLvmv+tzedR8fAiJUVUGr6IVZdkzXQ=="
       },
       "platforms": {
         "linux-x64": {
           "lockPath": "node_modules/@oxlint-tsgolint/linux-x64",
           "installPath": "node_modules/@oxlint-tsgolint/linux-x64",
-          "file": "vendor/offline/oxlint/linux-x64-7.0.2003.tgz",
-          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2003.tgz",
-          "integrity": "sha512-GXdyO/XyqDJ3s/llR/oOktLsYNjZtWSQBy0JMc+/0gsNPvTcseKPhn9c6KcFyWmnr6H4vljYALbujonqSzzEGw=="
+          "file": "vendor/offline/oxlint/linux-x64-7.0.2004.tgz",
+          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2004.tgz",
+          "integrity": "sha512-LPunZvm6ZbWPfHMAyfZf9ci3HHvNEzLejO8zdqO3GoVGoSEHqqufHUD7+OgeatVSaJP7uXDJ2HaNOHIoH7go4Q=="
         }
       },
       "launcher": "bin/tsgolint.js",
@@ -173,21 +173,21 @@
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.0.10",
+            "version": "1.0.11",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.10.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.10.tgz",
-            "integrity": "sha512-V+qptzsGnPMFxEbhwc6eDNMe5eDrfiBIp8qGpuRjAVIX4Kn2zxvwQ1Xco6Fwe+3tYIe3iLW8LM9D+SvjyJhqbQ=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.11.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.11.tgz",
+            "integrity": "sha512-vt5tog1cr+QKadIddGe+3LrcX0EmjEd0izF717Uwf92mBmgYfq2XRmL2r4bZU40spB69exxhrBn9I91HYEr/7w=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.0.10",
+            "version": "1.0.11",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.10.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.10.tgz",
-            "integrity": "sha512-48HkZPQeAN/R+9NPpY64tceoyCUW5xYYtHKZnC+BG11qiihXJCbH+xfbgGU+OdYp1Q4s84HDl9ILU0KBK6SBOQ=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.11.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.11.tgz",
+            "integrity": "sha512-iDapw7nFSE5tsmQxcH2+KotJhyfVPmHd6vUOQN/Em+8WNbkZJwJ/rDowlJMFnMl0SYSDSfgKCNUGi6Sn5++Smg=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -521,12 +521,12 @@
           },
           {
             "name": "vite",
-            "version": "8.3.3",
+            "version": "8.3.4",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.3.3.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.3.3.tgz",
-            "integrity": "sha512-cTAldKPImjg6c+gk48U19POPn3GCBzZwpdsN8ZMEEcbpes+6/wvfqUd0C2y3qYY4wsj8PwgFwrZ/1jBPVttMSg=="
+            "file": "vendor/offline/vite/vite-8.3.4.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.3.4.tgz",
+            "integrity": "sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ=="
           }
         ]
       },
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "8da0368d82eb5ba22a926eeee781ca748b8bedb397f760b0fb86380ebd65959d"
+    "lockfileSha256": "77a65da6d1d0e538455381130633a3837216442e94ccd6ccfbfddc4a6c21da7b"
   }
 }
