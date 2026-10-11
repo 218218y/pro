@@ -1,8 +1,7 @@
 import type { ActionMetaLike } from '../../../types';
 
 import { cfgBatch, setCfgManualWidth, setCfgModulesConfiguration } from '../runtime/cfg_access.js';
-import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
-import { stripWidthOverridesFromConfig } from '../features/special_dims/index.js';
+import { readModulesWithoutWidthOverrides } from './domain_api_module_width_overrides.js';
 import type { InstallDomainApiRoomSectionArgs } from './domain_api_room_section_shared.js';
 
 export function installRoomManualWidthSurface(args: InstallDomainApiRoomSectionArgs): void {
@@ -23,8 +22,7 @@ export function installRoomManualWidthSurface(args: InstallDomainApiRoomSectionA
 
       if (!next) {
         const cfg0 = _cfg() || {};
-        const mods0 = readModulesConfigurationListFromConfigSnapshot(cfg0, 'modulesConfiguration');
-        const cleaned = mods0.map(m => stripWidthOverridesFromConfig(m));
+        const cleaned = readModulesWithoutWidthOverrides(cfg0);
 
         const sourceBase =
           (meta && meta.source ? String(meta.source) : 'actions:room:setManualWidth') + ':off:clean';

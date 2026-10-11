@@ -1,7 +1,7 @@
 import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 
 import { setManualWidth } from '../actions/room_actions.js';
-import { resizeAuthoredModuleDoorSignature } from '../../../features/modules_configuration/calc_module_structure.js';
+import { resizeAuthoredModuleDoorSignature } from './structure_tab_door_signature_policy.js';
 import { runPerfAction } from '../../../services/api.js';
 import { isAutoWidthForDoors, resolveAutoWidthForDoors } from './structure_tab_dimension_defaults.js';
 import {

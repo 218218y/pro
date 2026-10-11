@@ -55,53 +55,6 @@ export function readModuleStructureSelectSignature(value: unknown): number[] | n
   return Array.isArray(parsed) ? readPositiveDoorCountList(parsed) : null;
 }
 
-/**
- * When the number of doors changes, retain an explicitly authored cell layout
- * instead of silently replacing it with the default odd/even distribution.
- * Existing cells keep their door counts; new leaves are added/removed at the
- * right edge. This is intentionally limited to the supported 1/2-leaf cells.
- * A stale or unsupported signature must not become a source of layout truth.
- */
-export function resizeAuthoredModuleDoorSignature(
-  structureSelect: unknown,
-  previousDoors: number,
-  nextDoors: number
-): number[] | null {
-  const signature = readModuleStructureSelectSignature(structureSelect);
-  if (
-    !signature ||
-    !Number.isInteger(previousDoors) ||
-    !Number.isInteger(nextDoors) ||
-    previousDoors < 1 ||
-    nextDoors < 1 ||
-    signature.some(doors => doors !== 1 && doors !== 2) ||
-    signature.reduce((sum, doors) => sum + doors, 0) !== previousDoors
-  )
-    return null;
-
-  const resized = signature.slice();
-  let remaining = Math.abs(nextDoors - previousDoors);
-  if (nextDoors > previousDoors) {
-    if (resized[resized.length - 1] === 1 && remaining > 0) {
-      resized[resized.length - 1] = 2;
-      remaining--;
-    }
-    while (remaining >= 2) {
-      resized.push(2);
-      remaining -= 2;
-    }
-    if (remaining) resized.push(1);
-  } else {
-    while (remaining > 0 && resized.length) {
-      const last = resized.length - 1;
-      if (resized[last] === 1) resized.pop();
-      else resized[last] = 1;
-      remaining--;
-    }
-  }
-  return resized.length ? resized : null;
-}
-
 function sumDoorSignature(signature: number[]): number {
   let sum = 0;
   for (const doors of signature) sum += doors;

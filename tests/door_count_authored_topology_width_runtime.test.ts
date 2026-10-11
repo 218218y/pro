@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resizeAuthoredModuleDoorSignature } from '../esm/native/features/modules_configuration/calc_module_structure.ts';
+import { resizeAuthoredModuleDoorSignature } from '../esm/native/ui/react/tabs/structure_tab_door_signature_policy.ts';
+import { readModuleStructureSelectSignature } from '../esm/native/features/modules_configuration/calc_module_structure.ts';
+import {
+  readModulesWithoutWidthOverrides,
+  stripModuleWidthOverrides,
+} from '../esm/native/kernel/domain_api_module_width_overrides.ts';
 import { buildRecomputedModules } from '../esm/native/kernel/domain_api_modules_corner_recompute_template.ts';
 import { computeModuleLayout } from '../esm/native/builder/core_layout_compute.ts';
 import { createDefaultTopModuleConfig } from '../esm/native/features/modules_configuration/module_defaults.ts';
@@ -111,4 +116,50 @@ test('non-door-count structural recompute leaves manually authored widths intact
     source: 'react:structure:pattern',
   });
   assert.equal((next[0].specialDims as any)?.widthCm, 40);
+});
+
+test('authored door resizing uses the same accepted signature inputs as the feature calculator', () => {
+  for (const serialized of [
+    '[2,2,2]',
+    '["2",2,2]',
+    '[1.9,2,2]',
+    ' [1, 2, 2] ',
+    '[]',
+    'null',
+    '[true,2]',
+    '[0,2]',
+    '["1.2",2]',
+    'invalid',
+  ]) {
+    const signature = readModuleStructureSelectSignature(serialized);
+    const accepted = signature !== null && signature.every(doors => doors === 1 || doors === 2);
+    const count = signature?.reduce((sum, doors) => sum + doors, 0) ?? 0;
+    assert.equal(
+      resizeAuthoredModuleDoorSignature(serialized, count, count + 1) !== null,
+      accepted,
+      serialized
+    );
+  }
+});
+
+test('kernel width-override policy keeps topology cleanup and manual-width reset equivalent', () => {
+  const source = [
+    {
+      doors: 2,
+      layout: 'shelves',
+      specialDims: { widthCm: 80, baseWidthCm: 72, heightCm: 212, baseHeightCm: 200, depthCm: 60 },
+    },
+    { doors: 1, layout: 'hanging_top2', specialDims: { widthCm: 40, baseWidthCm: 36 } },
+    { doors: 2, layout: 'shelves', isCustom: true },
+  ];
+  const before = structuredClone(source);
+  const fromRecompute = stripModuleWidthOverrides(source);
+  const fromManualWidth = readModulesWithoutWidthOverrides({ modulesConfiguration: source });
+  assert.deepEqual(fromManualWidth, fromRecompute);
+  assert.deepEqual(source, before, 'caller state is never mutated');
+  assert.equal(fromRecompute[0]?.specialDims?.heightCm, 212);
+  assert.equal(fromRecompute[0]?.specialDims?.depthCm, 60);
+  assert.equal(fromRecompute[0]?.specialDims?.widthCm, undefined);
+  assert.equal(fromRecompute[1]?.specialDims, undefined);
+  assert.equal(fromRecompute[2]?.isCustom, true);
 });

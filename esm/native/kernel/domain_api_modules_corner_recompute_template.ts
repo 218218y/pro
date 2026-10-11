@@ -1,5 +1,5 @@
 import type { ModuleCfgItem } from './domain_api_modules_corner_shared.js';
-import { stripWidthOverridesFromConfig } from '../features/special_dims/index.js';
+import { stripModuleWidthOverrides } from './domain_api_module_width_overrides.js';
 import {
   clonePrevModuleOnto,
   createSeedModules,
@@ -275,10 +275,7 @@ export function buildRecomputedModules(runtime: DomainApiModulesCornerRecomputeR
     typeof runtime.meta.source === 'string' &&
     (runtime.meta.source.includes('react:structure:doors') || runtime.meta.source.includes('ui:doors'));
   if (isGlobalDoorCountEdit && oldDoors !== newDoors && runtime.currentModules.length !== newModules.length) {
-    for (let i = 0; i < newModules.length; i++) {
-      const module = requireModuleAt(newModules, i);
-      newModules[i] = stripWidthOverridesFromConfig(module) as ModuleCfgItem;
-    }
+    return stripModuleWidthOverrides(newModules);
   }
   return newModules;
 }
