@@ -151,6 +151,8 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       App,
       group,
       woodThick,
+      innerW,
+      internalCenterX,
       moduleIndex,
       modulesLength,
       renderOpsHandleCatch: __renderOpsHandleCatch,

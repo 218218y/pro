@@ -1,5 +1,9 @@
 import type { AppContainer } from '../../../types';
 import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
+import {
+  pickMatchingModuleWallFace,
+  MODULE_WALL_FACE_MATCH_TOLERANCE_M,
+} from './render_interior_module_wall_face_selection.js';
 import type { InteriorGroupLike, InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import {
   asMesh,
@@ -32,8 +36,6 @@ export function computePresetModuleInnerFaces(args: {
     renderOpsHandleCatch,
   } = args;
 
-  const WALL_FACE_MATCH_TOLERANCE_M = 0.004;
-
   const findParts = (partId: string): InteriorWallMesh[] => {
     const out: InteriorWallMesh[] = [];
     try {
@@ -52,39 +54,6 @@ export function computePresetModuleInnerFaces(args: {
       reportInteriorPresetSoft(App, renderOpsHandleCatch, 'applyInteriorPresetOps.findParts.walk', err);
     }
     return out;
-  };
-
-  const pickBestWall = (list: InteriorWallMesh[]): InteriorWallMesh | null => {
-    if (!Array.isArray(list) || list.length === 0) return null;
-    if (list.length === 1) return list[0] ?? null;
-
-    const first = list[0];
-    if (!first) return null;
-    let best = first;
-    let bestScore = Infinity;
-    for (const node of list) {
-      const isMesh = !!(node && node.isMesh && node.geometry);
-      let width = NaN;
-      try {
-        const parameters = isMesh ? node.geometry?.parameters : null;
-        width = readGeometryRuntimeNumber(parameters?.width) ?? NaN;
-      } catch (err) {
-        reportInteriorPresetSoft(
-          App,
-          renderOpsHandleCatch,
-          'applyInteriorPresetOps.pickBestWall.widthParam',
-          err
-        );
-      }
-      const meshPenalty = isMesh ? 0 : 1000;
-      const widthPenalty = Number.isFinite(width) ? Math.abs(width - woodThick) : 10;
-      const score = meshPenalty + widthPenalty;
-      if (score < bestScore) {
-        bestScore = score;
-        best = node;
-      }
-    }
-    return best;
   };
 
   const faceXFromMesh = (mesh: InteriorWallMesh | null, wantMaxX: boolean): number => {
@@ -170,12 +139,14 @@ export function computePresetModuleInnerFaces(args: {
     rightPartId = 'body_right';
   }
 
-  const leftMesh = pickBestWall(findParts(leftPartId));
-  const rightMesh = pickBestWall(findParts(rightPartId));
-  const preciseLeft = faceXFromMesh(leftMesh, true);
-  const preciseRight = faceXFromMesh(rightMesh, false);
+  const preciseLeft = pickMatchingModuleWallFace(findParts(leftPartId), expectedLeft, mesh =>
+    faceXFromMesh(mesh, true)
+  );
+  const preciseRight = pickMatchingModuleWallFace(findParts(rightPartId), expectedRight, mesh =>
+    faceXFromMesh(mesh, false)
+  );
 
-  if (Number.isFinite(preciseLeft) && Number.isFinite(preciseRight) && preciseRight > preciseLeft) {
+  if (preciseLeft != null && preciseRight != null && preciseRight > preciseLeft) {
     return { leftX: preciseLeft, rightX: preciseRight };
   }
 
@@ -208,7 +179,10 @@ export function computePresetModuleInnerFaces(args: {
   }
 
   if (Number.isFinite(bestLeft) && Number.isFinite(bestRight) && bestRight > bestLeft) {
-    if (bestLeftDistance > WALL_FACE_MATCH_TOLERANCE_M || bestRightDistance > WALL_FACE_MATCH_TOLERANCE_M) {
+    if (
+      bestLeftDistance > MODULE_WALL_FACE_MATCH_TOLERANCE_M ||
+      bestRightDistance > MODULE_WALL_FACE_MATCH_TOLERANCE_M
+    ) {
       reportInteriorPresetSoft(
         App,
         renderOpsHandleCatch,

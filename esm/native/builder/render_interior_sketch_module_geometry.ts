@@ -12,6 +12,7 @@ import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.
 import type { RenderSketchFreeWardrobeBox } from './render_interior_sketch_boxes_shared.js';
 
 import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
+import { pickMatchingModuleWallFace } from './render_interior_module_wall_face_selection.js';
 import {
   asGeometryUserData,
   readGeometryUserDataNumberKey,
@@ -145,7 +146,7 @@ export function createMeasureWardrobeLocalBox(args: CreateMeasureWardrobeLocalBo
 export function resolveSketchModuleInnerFaces(
   args: ResolveSketchModuleGeometryArgs
 ): SketchModuleInnerFaces | null {
-  const { group, moduleIndex, modulesLength, woodThick } = args;
+  const { group, moduleIndex, modulesLength, woodThick, innerW, internalCenterX } = args;
 
   const getMeshW = (mesh: InteriorMeshLike | null): number => {
     const geometry = mesh?.geometry;
@@ -165,30 +166,29 @@ export function resolveSketchModuleInnerFaces(
     return woodThick;
   };
 
-  const findPart = (partId: string): InteriorMeshLike | null => {
+  const findMatchingFace = (partId: string, wantRightFace: boolean, expectedX: number): number | null => {
     const children = group.children;
     if (!Array.isArray(children)) return null;
-    for (let i = 0; i < children.length; i++) {
-      const child = asMesh(children[i]);
-      if (child?.userData?.partId === partId) return child;
+    const matches = [];
+    for (const child of children) {
+      const mesh = asMesh(child);
+      if (mesh?.userData?.partId === partId) matches.push(mesh);
     }
-    return null;
+    return pickMatchingModuleWallFace(matches, expectedX, mesh => {
+      const width = getMeshW(mesh);
+      const x = readGeometryRuntimeNumber(mesh?.position?.x);
+      return x != null && width > 0 ? x + (wantRightFace ? width / 2 : -width / 2) : NaN;
+    });
   };
 
   if (!(moduleIndex >= 0) || !(modulesLength > 0)) return null;
   const leftPid = moduleIndex === 0 ? 'body_left' : `divider_inter_${moduleIndex - 1}`;
   const rightPid = moduleIndex === modulesLength - 1 ? 'body_right' : `divider_inter_${moduleIndex}`;
-  const leftMesh = findPart(leftPid);
-  const rightMesh = findPart(rightPid);
-  if (!leftMesh || !rightMesh) return null;
-  const leftW = getMeshW(leftMesh);
-  const rightW = getMeshW(rightMesh);
-  const leftX = readGeometryRuntimeNumber(leftMesh.position?.x);
-  const rightX = readGeometryRuntimeNumber(rightMesh.position?.x);
-  if (leftX == null || rightX == null || !(leftW > 0) || !(rightW > 0)) return null;
-  const leftInner = leftX + leftW / 2;
-  const rightInner = rightX - rightW / 2;
-  if (!Number.isFinite(leftInner) || !Number.isFinite(rightInner) || !(rightInner > leftInner)) return null;
+  const expectedLeft = internalCenterX - innerW / 2;
+  const expectedRight = internalCenterX + innerW / 2;
+  const leftInner = findMatchingFace(leftPid, true, expectedLeft);
+  const rightInner = findMatchingFace(rightPid, false, expectedRight);
+  if (leftInner == null || rightInner == null || !(rightInner > leftInner)) return null;
   return { leftX: leftInner, rightX: rightInner };
 }
 
