@@ -2,12 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveModuleLoopRuntime } from '../esm/native/builder/module_loop_pipeline_runtime.ts';
-import { resolveModuleFrame } from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
+import {
+  resolveModuleFrame,
+  resolveModuleVerticalMetrics,
+} from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
 import { resolveModuleLoopRuntimeBase } from '../esm/native/builder/module_loop_pipeline_runtime_base.ts';
 import { resolveModuleLoopRuntimeResolvers } from '../esm/native/builder/module_loop_pipeline_runtime_resolvers.ts';
 import { createInterDivider } from '../esm/native/builder/module_loop_pipeline_module_dividers.ts';
+import { moduleRequiresCustomBoundaryGeometry } from '../esm/native/builder/module_custom_geometry_policy.ts';
 import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pipeline_module_depth.ts';
 import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
+import { computeModuleLayout } from '../esm/native/builder/core_layout_compute.ts';
+import { computeHingedDoorPivotMap } from '../esm/native/builder/core_doors_compute.ts';
 import { asModuleList, asNumberList } from '../esm/native/builder/module_loop_pipeline_shared.ts';
 import { runModuleLoopItem } from '../esm/native/builder/module_loop_pipeline_module.ts';
 import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
@@ -429,4 +435,182 @@ test('module loop replaces intact doors next to a removed frame side with one fi
     undefined,
     'doors replaced by the closure must not author edge-handle defaults'
   );
+});
+
+test('door-count width rebasing never creates doubled side walls or shifts door pivots in neighboring bays', () => {
+  const woodThick = 0.018;
+  const totalW = 2.4;
+  // Repartitioning the left, right, or middle bay changes door weights but not
+  // the physical opening widths. Cell-dims stores widthCm on every bay to keep
+  // that invariant; a width-only override must not create another side panel.
+  for (const signature of [
+    [2, 2],
+    [1, 2],
+    [2, 1],
+    [1, 2, 2],
+    [2, 1, 2],
+    [2, 2, 1],
+    [2, 2, 2],
+    [1, 1, 2],
+  ]) {
+    const segmentCm = (totalW * 100) / signature.length;
+    const totalDoors = signature.reduce((total, count) => total + count, 0);
+    const moduleCfgList = signature.map(doors => ({
+      doors,
+      specialDims: {
+        widthCm: segmentCm,
+        baseWidthCm: (totalW * 100 * doors) / totalDoors,
+      },
+    }));
+    const modules = signature.map(doors => ({ doors }));
+    const layout = computeModuleLayout({
+      totalW,
+      woodThick,
+      modulesStructure: modules,
+      modulesConfiguration: moduleCfgList,
+    });
+    const ctx = createCtx({
+      cfg: { wardrobeType: 'hinged' },
+      layout: {
+        modules,
+        moduleCfgList,
+        moduleInternalWidths: layout.moduleInternalWidths,
+        singleUnitWidth: layout.singleUnitWidth,
+      },
+      dims: {
+        totalW,
+        woodThick,
+        cabinetBodyHeight: 2.4,
+        startY: 0,
+        D: 0.6,
+        H: 2.4,
+        internalDepth: 0.56,
+        internalZ: 0,
+        defaultH: 2.4,
+      },
+    });
+    const baseRuntime = resolveModuleLoopRuntimeBase(ctx);
+    assert.deepEqual(
+      baseRuntime.moduleIsCustom,
+      signature.map(() => false),
+      String(signature)
+    );
+    const panels: unknown[][] = [];
+    const runtime = {
+      ...baseRuntime,
+      createBoard: (...args: unknown[]) => {
+        panels.push(args);
+      },
+      getPartMaterial: () => ({}),
+    } as any;
+    const pivots = computeHingedDoorPivotMap({
+      modulesStructure: modules,
+      totalW,
+      woodThick,
+      singleUnitWidth: layout.singleUnitWidth,
+      moduleInternalWidths: layout.moduleInternalWidths,
+      moduleIsCustom: baseRuntime.moduleIsCustom,
+    });
+    let currentX = -totalW / 2 + woodThick;
+    let doorId = 1;
+    for (const [index, doors] of signature.entries()) {
+      const modWidth = layout.moduleInternalWidths[index]!;
+      const frame = {
+        modWidth,
+        moduleCenterX: currentX + modWidth / 2,
+        moduleCabinetBodyHeight: 2.4,
+        config: {},
+      } as any;
+      const metrics = resolveModuleVerticalMetrics(runtime, frame, index);
+      closeTo(metrics.innerW, modWidth, `width-only ${signature}: module ${index} opening`);
+      closeTo(
+        metrics.internalCenterX,
+        frame.moduleCenterX,
+        `width-only ${signature}: module ${index} center`
+      );
+      createInterDivider(runtime, { currentX } as any, index, {
+        ...frame,
+        moduleInternalDepth: 0.56,
+        moduleTotalDepth: 0.6,
+        moduleInternalZ: 0,
+      } as any);
+      const firstDoor = pivots[doorId];
+      assert.ok(firstDoor);
+      closeTo(
+        firstDoor.doorLeftEdge,
+        currentX - woodThick / 2,
+        `width-only ${signature}: module ${index} door start`
+      );
+      doorId += doors;
+      currentX += modWidth + (index < signature.length - 1 ? woodThick : 0);
+    }
+    assert.deepEqual(
+      panels.map(panel => panel[7]),
+      signature.slice(0, -1).map((_doors, index) => `divider_inter_${index}`),
+      `door signature ${signature} must retain single shared dividers`
+    );
+  }
+});
+
+test('true independent height/depth/hex bays reserve the extra side wall in their neighboring interior opening', () => {
+  const woodThick = 0.018;
+  const width = 0.76;
+  const startX = -0.8;
+  const cases = [
+    { specialDims: { heightCm: 215, baseHeightCm: 240 } },
+    { specialDims: { depthCm: 70, baseDepthCm: 60 } },
+    { hexCell: { enabled: true, protrusionCm: 10 } },
+  ];
+  assert.equal(
+    moduleRequiresCustomBoundaryGeometry({ specialDims: { widthCm: 70, baseWidthCm: 80 } }, 0),
+    false
+  );
+  for (const variant of cases) {
+    assert.equal(moduleRequiresCustomBoundaryGeometry(variant, 0), true);
+    for (const flags of [
+      [true, false],
+      [false, true],
+      [true, true],
+    ]) {
+      const runtime = {
+        woodThick,
+        moduleIsCustom: flags,
+        cfg: { wardrobeType: 'sliding' },
+        startY: 0,
+      } as any;
+      const firstFrame = {
+        modWidth: width,
+        moduleCenterX: startX + width / 2,
+        moduleCabinetBodyHeight: 2.4,
+        config: {},
+      } as any;
+      const followingStartX = startX + width + woodThick;
+      const secondFrame = {
+        modWidth: width,
+        moduleCenterX: followingStartX + width / 2,
+        moduleCabinetBodyHeight: 2.4,
+        config: {},
+      } as any;
+      const first = resolveModuleVerticalMetrics(runtime, firstFrame, 0);
+      const second = resolveModuleVerticalMetrics(runtime, secondFrame, 1);
+      closeTo(first.innerW, width, 'first bay stays full width');
+      closeTo(second.innerW, width - woodThick, 'following bay excludes extra physical wall');
+      closeTo(
+        second.internalCenterX - second.innerW / 2,
+        followingStartX + woodThick,
+        'interior left face must begin after the extra divider panel'
+      );
+      closeTo(
+        second.internalCenterX + second.innerW / 2,
+        followingStartX + width,
+        'right interior face must be unchanged'
+      );
+    }
+  }
+  const ordinary = resolveModuleVerticalMetrics(
+    { woodThick, moduleIsCustom: [false, false], cfg: { wardrobeType: 'sliding' }, startY: 0 } as any,
+    { modWidth: width, moduleCenterX: startX + width / 2, moduleCabinetBodyHeight: 2.4, config: {} } as any,
+    1
+  );
+  closeTo(ordinary.innerW, width, 'ordinary divider has no extra inset');
 });

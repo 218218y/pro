@@ -91,10 +91,18 @@ export function resolveModuleFrame(
 
 export function resolveModuleVerticalMetrics(
   runtime: ModuleLoopRuntime,
-  frame: ResolvedModuleFrame
+  frame: ResolvedModuleFrame,
+  moduleIndex: number
 ): ModuleVerticalMetrics {
-  const innerW = frame.modWidth;
-  const internalCenterX = frame.moduleCenterX;
+  // A genuine custom boundary uses two full-thickness panels. Its right-hand
+  // panel occupies the first woodThick of the *following* module. All interior
+  // fittings must use the unobstructed opening, not the door/module span.
+  // Width-only overrides use a normal shared divider (see custom geometry policy).
+  const hasExtraLeftWall =
+    moduleIndex > 0 && (runtime.moduleIsCustom[moduleIndex - 1] || runtime.moduleIsCustom[moduleIndex]);
+  const leftWallInset = hasExtraLeftWall ? runtime.woodThick : 0;
+  const innerW = Math.max(0, frame.modWidth - leftWallInset);
+  const internalCenterX = frame.moduleCenterX + leftWallInset / 2;
   const externalW = frame.modWidth;
   const externalCenterX = frame.moduleCenterX;
   const internalStartY = runtime.startY + runtime.woodThick;

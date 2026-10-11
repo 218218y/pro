@@ -37,7 +37,7 @@ export function runModuleLoopItem(
   createInterDivider(runtime, state, index, frame);
   applyHexCellGeometryForModule(runtime, state, index, frame);
 
-  const metrics = resolveModuleVerticalMetrics(runtime, frame);
+  const metrics = resolveModuleVerticalMetrics(runtime, frame, index);
   writeInternalGridMap(runtime, index, frame, metrics);
 
   if (!frontClosurePlan) applyEdgeHandleDefaults(runtime, frame.modDoors, startDoorOfModule);

@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createBuilderRenderInteriorPresetOps } from '../esm/native/builder/render_interior_preset_ops.js';
+import { computeModuleLayout } from '../esm/native/builder/core_layout_compute.ts';
+import { moduleRequiresCustomBoundaryGeometry } from '../esm/native/builder/module_custom_geometry_policy.ts';
+import { resolveModuleVerticalMetrics } from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
 import { INTERIOR_FITTINGS_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
@@ -649,5 +652,130 @@ test('partition-local base shelf suppression removes only the selected leaf shel
     const pins = pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin');
     assert.equal(pins.length, 4);
     assert.ok(pins.every(pin => pin.position.x > 0));
+  }
+});
+
+test('repartitioning one/two-door bays preserves all four visible preset/custom shelf supports across the cabinet', () => {
+  const woodThick = 0.018;
+  const pinLength = INTERIOR_FITTINGS_POLICY.pins.lengthM;
+  const totalW = 2.4;
+  const scenarios = [
+    { signature: [2, 2], special: -1 },
+    { signature: [1, 2], special: -1 },
+    { signature: [2, 1], special: -1 },
+    { signature: [1, 2, 2], special: -1 },
+    { signature: [2, 1, 2], special: -1 },
+    { signature: [2, 2, 1], special: -1 },
+    { signature: [2, 2, 2], special: -1 },
+    // Real independent depth/height geometry keeps two panels. The right bay's
+    // interior (including shelves and their supports) must exclude the extra wall.
+    { signature: [2, 2], special: 0 },
+    { signature: [2, 2], special: 1 },
+    { signature: [1, 2, 2], special: 1 },
+  ];
+
+  for (const scenario of scenarios) {
+    const modulesStructure = scenario.signature.map(doors => ({ doors }));
+    const sumDoors = scenario.signature.reduce((sum, doors) => sum + doors, 0);
+    const desiredWidthCm = (totalW * 100) / scenario.signature.length;
+    const moduleConfigs = scenario.signature.map((doors, index) => ({
+      doors,
+      specialDims: {
+        widthCm: desiredWidthCm,
+        baseWidthCm: (totalW * 100 * doors) / sumDoors,
+        ...(index === scenario.special ? { heightCm: 215, baseHeightCm: 240 } : {}),
+      },
+    }));
+    const layout = computeModuleLayout({
+      totalW,
+      woodThick,
+      modulesStructure,
+      modulesConfiguration: moduleConfigs,
+    });
+    const flags = moduleConfigs.map(cfg => moduleRequiresCustomBoundaryGeometry(cfg, 0));
+    let currentX = -totalW / 2 + woodThick;
+
+    for (let index = 0; index < scenario.signature.length; index++) {
+      const width = layout.moduleInternalWidths[index]!;
+      const frame = {
+        modWidth: width,
+        moduleCenterX: currentX + width / 2,
+        moduleCabinetBodyHeight: 2.4,
+        config: {},
+      } as any;
+      const metrics = resolveModuleVerticalMetrics(
+        {
+          woodThick,
+          moduleIsCustom: flags,
+          cfg: { wardrobeType: 'sliding' },
+          startY: 0,
+        } as any,
+        frame,
+        index
+      );
+      const expectedLeft = currentX + (index > 0 && (flags[index - 1] || flags[index]) ? woodThick : 0);
+      const expectedRight = currentX + width;
+      const caseLabel = `${scenario.signature.join(',')}; special=${scenario.special}; bay=${index}`;
+
+      for (const rendererType of ['preset', 'custom'] as const) {
+        const boards: BoardCall[] = [];
+        const pinObjects: any[] = [];
+        const group = { children: [], add: (obj: any) => pinObjects.push(obj) };
+        const baseArgs = {
+          ...commonInput([], boards),
+          THREE: makeMinimalThreeForPins(),
+          wardrobeGroup: group,
+          innerW: metrics.innerW,
+          internalCenterX: metrics.internalCenterX,
+          moduleIndex: index,
+          modulesLength: scenario.signature.length,
+          woodThick,
+        };
+        const success =
+          rendererType === 'preset'
+            ? createPresetRenderer().applyInteriorPresetOps({
+                ...baseArgs,
+                presetOps: { shelves: [1], rods: [] },
+              })
+            : createCustomRenderer().applyInteriorCustomOps({
+                ...baseArgs,
+                customOps: { shelves: [1], rods: [] },
+              });
+        assert.equal(success, true, `${rendererType}: ${caseLabel}`);
+        const pins = pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin');
+        assert.equal(pins.length, 4, `${rendererType}: ${caseLabel} must have four shelf pins`);
+        const left = pins.filter(obj => obj.position.x < metrics.internalCenterX);
+        const right = pins.filter(obj => obj.position.x > metrics.internalCenterX);
+        assert.equal(left.length, 2, `${rendererType}: ${caseLabel} left pin pair`);
+        assert.equal(right.length, 2, `${rendererType}: ${caseLabel} right pin pair`);
+        for (const pin of left) {
+          assert.ok(
+            pin.position.x - pinLength / 2 >= expectedLeft - 1e-9,
+            `${rendererType}: ${caseLabel} left support must not be buried in its side wall`
+          );
+          assert.ok(
+            Math.abs(pin.position.x - (expectedLeft + pinLength / 2)) < 1e-9,
+            `${rendererType}: ${caseLabel} left support touches its physical side wall`
+          );
+        }
+        for (const pin of right) {
+          assert.ok(
+            pin.position.x + pinLength / 2 <= expectedRight + 1e-9,
+            `${rendererType}: ${caseLabel} right support must fit before its side wall`
+          );
+        }
+        const shelf = boards.find(board => board.partId === `module_shelf_${index}_g1`);
+        assert.ok(shelf, `${rendererType}: ${caseLabel} shelf board should render`);
+        assert.ok(
+          shelf.x - shelf.width / 2 >= expectedLeft - 1e-9,
+          `${rendererType}: ${caseLabel} shelf board must clear its left divider`
+        );
+        assert.ok(
+          shelf.x + shelf.width / 2 <= expectedRight + 1e-9,
+          `${rendererType}: ${caseLabel} shelf board must clear its right divider`
+        );
+      }
+      currentX += width + (index < scenario.signature.length - 1 ? woodThick : 0);
+    }
   }
 });
