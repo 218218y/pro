@@ -827,6 +827,10 @@
       "entry": "library_preset/library_preset.js"
     },
     {
+      "file": "esm/native/kernel/domain_api_modules_corner_recompute_template.ts",
+      "entry": "special_dims/index.js"
+    },
+    {
       "file": "esm/native/kernel/domain_api_modules_corner_selectors.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
@@ -1825,6 +1829,10 @@
     {
       "file": "esm/native/ui/react/tabs/structure_tab_structural_controller_writes.ts",
       "entry": "shoe_drawer_base_constraint.js"
+    },
+    {
+      "file": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
+      "entry": "modules_configuration/calc_module_structure.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_view_state_contracts.ts",

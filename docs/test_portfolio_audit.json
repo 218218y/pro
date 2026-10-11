@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-09T06:11:56.199Z",
+  "generatedAt": "2026-10-11T10:56:35.110Z",
   "totals": {
-    "tests": 1269,
-    "unitRunnerTests": 1260,
+    "tests": 1271,
+    "unitRunnerTests": 1262,
     "e2eTests": 9,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 399,
     "runtime-unit": 349,
-    "integration": 481,
+    "integration": 483,
     "persistence-ingress": 23,
     "e2e-smoke": 10,
     "perf-smoke": 7
@@ -4587,6 +4587,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/door_count_authored_topology_width_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/door_glass_build_runtime.test.js",
       "category": "integration"
     },
@@ -6324,6 +6328,10 @@
     },
     {
       "file": "tests/render_interior_sketch_visuals_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_stacked_module_wall_faces_runtime.test.ts",
       "category": "integration"
     },
     {

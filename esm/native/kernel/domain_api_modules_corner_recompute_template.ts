@@ -1,4 +1,5 @@
 import type { ModuleCfgItem } from './domain_api_modules_corner_shared.js';
+import { stripWidthOverridesFromConfig } from '../features/special_dims/index.js';
 import {
   clonePrevModuleOnto,
   createSeedModules,
@@ -261,5 +262,23 @@ export function buildRecomputedModules(runtime: DomainApiModulesCornerRecomputeR
   }
 
   applyPreservedTemplate(runtime, newModules);
+
+  // A global door-count edit can change the number of physical openings. In
+  // that case, copied width overrides belong to the old partition; retaining
+  // them can consume the entire carcass width before the new cell is assigned
+  // any space (which previously produced a 1 cm phantom door and stray handles).
+  // Let the canonical builder allocate widths for the new topology. Keep all
+  // other per-cell authoring state, including height/depth overrides.
+  const oldDoors = sumDoors(runtime.currentModulesStructure);
+  const newDoors = sumDoors(newModules.map(module => module.doors));
+  const isGlobalDoorCountEdit =
+    typeof runtime.meta.source === 'string' &&
+    (runtime.meta.source.includes('react:structure:doors') || runtime.meta.source.includes('ui:doors'));
+  if (isGlobalDoorCountEdit && oldDoors !== newDoors && runtime.currentModules.length !== newModules.length) {
+    for (let i = 0; i < newModules.length; i++) {
+      const module = requireModuleAt(newModules, i);
+      newModules[i] = stripWidthOverridesFromConfig(module) as ModuleCfgItem;
+    }
+  }
   return newModules;
 }

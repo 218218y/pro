@@ -1,6 +1,7 @@
 import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 
 import { setManualWidth } from '../actions/room_actions.js';
+import { resizeAuthoredModuleDoorSignature } from '../../../features/modules_configuration/calc_module_structure.js';
 import { runPerfAction } from '../../../services/api.js';
 import { isAutoWidthForDoors, resolveAutoWidthForDoors } from './structure_tab_dimension_defaults.js';
 import {
@@ -264,7 +265,10 @@ export function commitStructureRawValue(args: {
       const parsed =
         structureSelectRaw && structureSelectRaw.trim() ? safeJsonParse(structureSelectRaw) : null;
       const sum = sumDoorsFromStructure(parsed);
-      if (sum != null && sum !== doorsN) uiPatch.structureSelect = '';
+      if (sum != null && sum !== doorsN) {
+        const resized = resizeAuthoredModuleDoorSignature(structureSelectRaw, doors, doorsN);
+        uiPatch.structureSelect = resized ? JSON.stringify(resized) : '';
+      }
 
       const nextStructRaw =
         typeof uiPatch.structureSelect === 'string' ? String(uiPatch.structureSelect) : structureSelectRaw;

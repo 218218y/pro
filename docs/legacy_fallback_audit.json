@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T15:03:57.790Z",
+  "generatedAt": "2026-10-11T10:56:32.153Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -2628,14 +2628,14 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
-      "line": 105,
+      "line": 106,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_module_geometry.ts",
-      "line": 163,
+      "line": 164,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-geometry-fallback: malformed optional bounds are skipped while deriving module geometry"

@@ -223,6 +223,44 @@ test('[structure-raw-mutations] doors commit collapses auto-width fix into the s
   assert.ok(!calls.some(entry => entry[0] === 'setManualWidth'));
 });
 
+test('[structure-raw-mutations] 6→7 global doors retains the authored 2+2+2 cells before adding the seventh leaf', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+  mod.commitStructureRawValue({
+    ...baseArgs({
+      isManualWidth: true,
+      width: 200,
+      doors: 6,
+      structureSelectRaw: '[2,2,2]',
+      singleDoorPosRaw: 'left',
+    }),
+    key: 'doors',
+    nextValue: 7,
+  });
+
+  const batch = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batch);
+  assert.deepEqual(JSON.parse(JSON.stringify(batch[1].uiPatch)), {
+    raw: { doors: 7 },
+    structureSelect: '[2,2,2,1]',
+  });
+  assert.equal(batch[1].statePatch.config, undefined, 'manual carcass width must stay manual');
+});
+
+test('[structure-raw-mutations] invalid old signature is discarded on global door change', () => {
+  const calls = [];
+  const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+  mod.commitStructureRawValue({
+    ...baseArgs({ width: 200, doors: 6, structureSelectRaw: '[1,2,2]', singleDoorPosRaw: 'left' }),
+    key: 'doors',
+    nextValue: 7,
+  });
+  const batch = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+  assert.ok(batch);
+  assert.equal(batch[1].uiPatch.structureSelect, '', 'stale signature must not override canonical pattern');
+});
+
 test('[structure-raw-mutations] regular hinged doors cannot be reduced to zero from Structure tab', () => {
   const calls = [];
   const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
