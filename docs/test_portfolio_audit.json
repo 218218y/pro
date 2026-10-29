@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-29T16:29:32.557Z",
+  "generatedAt": "2026-10-29T18:00:47.555Z",
   "totals": {
-    "tests": 1274,
-    "unitRunnerTests": 1263,
-    "e2eTests": 11,
+    "tests": 1276,
+    "unitRunnerTests": 1264,
+    "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
     "catalogTestReferences": 487,
@@ -22,9 +22,9 @@
   "categories": {
     "contract": 399,
     "runtime-unit": 350,
-    "integration": 483,
+    "integration": 484,
     "persistence-ingress": 23,
-    "e2e-smoke": 12,
+    "e2e-smoke": 13,
     "perf-smoke": 7
   },
   "failures": {
@@ -4711,6 +4711,10 @@
       "category": "e2e-smoke"
     },
     {
+      "file": "tests/e2e/export_a4_pdf.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
       "file": "tests/e2e/html_sanitize_security.spec.ts",
       "category": "e2e-smoke"
     },
@@ -4796,6 +4800,10 @@
     },
     {
       "file": "tests/export_actions_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/export_canvas_a4_pdf_runtime.test.ts",
       "category": "integration"
     },
     {
