@@ -7,7 +7,7 @@ import {
   A4_PAGE_WIDTH_PT,
   fitPdfImageToPage,
 } from '../esm/native/ui/export/export_pdf_image_page_layout.ts';
-import { exportCanvasAsA4Pdf } from '../esm/native/ui/export/export_canvas_delivery_a4_pdf.ts';
+import { exportCanvasAsA4Pdf } from '../esm/native/ui/export/export_canvas_delivery_download.ts';
 
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==',
@@ -18,7 +18,7 @@ function fakeCanvas(toBlob: (callback: BlobCallback) => void): HTMLCanvasElement
   return { toBlob } as unknown as HTMLCanvasElement;
 }
 
-function browserDownloadHarness() {
+function browserDownloadHarness(downloadError?: Error) {
   const seen: Array<{ name: string; blob: Blob }> = [];
   let blob: Blob | null = null;
   const doc = {
@@ -29,6 +29,7 @@ function browserDownloadHarness() {
         download: '',
         href: '',
         click() {
+          if (downloadError) throw downloadError;
           if (blob) seen.push({ name: this.download, blob });
         },
         remove() {},
@@ -133,6 +134,35 @@ test('security-restricted canvas is surfaced as recoverable encoding failure', a
     }
   );
   assert.deepEqual(result, { ok: false, stage: 'encoding', reason: 'security', error });
+});
+
+test('A4 PDF export preserves browser click failures without success feedback', async () => {
+  const { app, seen } = browserDownloadHarness(new Error('Browser refused PDF download'));
+  await assert.rejects(
+    exportCanvasAsA4Pdf(
+      app,
+      fakeCanvas(callback => callback(new Blob([ONE_PIXEL_PNG], { type: 'image/png' }))),
+      'cabinet-a4.pdf',
+      () => assert.fail('must not report a successful download')
+    ),
+    /Browser refused PDF download/
+  );
+  assert.deepEqual(seen, []);
+});
+
+test('A4 PDF export reports null PNG encoding as a non-security failure', async () => {
+  const { app, seen } = browserDownloadHarness();
+  const result = await exportCanvasAsA4Pdf(
+    app,
+    fakeCanvas(callback => callback(null)),
+    'cabinet-a4.pdf',
+    () => assert.fail('must not report a successful download')
+  );
+  assert.equal(result.ok, false);
+  if (result.ok || result.stage !== 'encoding') assert.fail('expected an encoding failure');
+  assert.equal(result.reason, 'error');
+  assert.match(String(result.error), /PNG encoding returned null/);
+  assert.deepEqual(seen, []);
 });
 
 test('React export action routing exposes both A4 PDF variants without replacing clipboard actions', async () => {

@@ -1,9 +1,11 @@
 import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types';
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
-import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
-import { exportCanvasAsA4Pdf } from './export_canvas_delivery_a4_pdf.js';
-import { isCanvasEncodingSecurityError } from './export_canvas_delivery_shared.js';
+import {
+  isCanvasEncodingSecurityError,
+  isCanvasExportSecurityFailure,
+} from './export_canvas_delivery_shared.js';
+import { exportCanvasAsA4Pdf } from './export_canvas_delivery_download.js';
 import {
   captureFrontNotesTransform,
   drawExportHeader,

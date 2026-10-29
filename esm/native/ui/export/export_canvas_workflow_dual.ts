@@ -5,7 +5,7 @@ import {
   isCanvasEncodingSecurityError,
   isCanvasExportSecurityFailure,
 } from './export_canvas_delivery_shared.js';
-import { exportCanvasAsA4Pdf } from './export_canvas_delivery_a4_pdf.js';
+import { exportCanvasAsA4Pdf } from './export_canvas_delivery_download.js';
 import {
   captureFrontNotesTransform,
   drawExportHeader,
