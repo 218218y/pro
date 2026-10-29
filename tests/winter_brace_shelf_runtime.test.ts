@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import { createShelfFrontEdgeMaterials } from '../esm/native/builder/shelf_front_edge_material.ts';
 import {
   createWinterBraceShelfGeometry,
   resolveWinterBraceShelfFrame,
@@ -116,6 +117,61 @@ test('winter ring has no internal faces and omits caps against cabinet side wall
       );
   }
 });
+
+for (const exposedSide of [null, 'left', 'right', 'both'] as const) {
+  test(`winter frame colors only outer edges after color changes with exposed side ${exposedSide}`, () => {
+    const geometry = createWinterBraceShelfGeometry(
+      THREE,
+      1,
+      0.018,
+      0.6,
+      INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm,
+      exposedSide
+    ) as THREE.BufferGeometry;
+    const body = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+    const mesh = new THREE.Mesh(geometry, body);
+    mesh.updateMatrixWorld(true);
+    const materialAt = (origin: THREE.Vector3, direction: THREE.Vector3) => {
+      const hit = new THREE.Raycaster(origin, direction).intersectObject(mesh)[0];
+      assert.ok(hit?.face, 'the tested frame face must exist and face the ray');
+      return Array.isArray(mesh.material) ? mesh.material[hit.face.materialIndex] : mesh.material;
+    };
+    for (const color of ['#804020', '#2266cc']) {
+      const front = new THREE.MeshBasicMaterial({ color });
+      mesh.material = createShelfFrontEdgeMaterials({
+        shelfMaterial: body,
+        frontEdgeMaterial: front,
+        exposedSide,
+      }) as THREE.Material[];
+      for (const direction of [
+        new THREE.Vector3(0, 0, -1),
+        new THREE.Vector3(1, 0, 0),
+        new THREE.Vector3(0, 0, 1),
+        new THREE.Vector3(-1, 0, 0),
+      ]) {
+        assert.equal(
+          materialAt(new THREE.Vector3(), direction),
+          body,
+          'every wall facing the opening must retain the shelf body material'
+        );
+      }
+      assert.equal(materialAt(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, -1)), front);
+      if (exposedSide === 'left' || exposedSide === 'both') {
+        assert.equal(materialAt(new THREE.Vector3(-1, 0, 0), new THREE.Vector3(1, 0, 0)), front);
+      }
+      if (exposedSide === 'right' || exposedSide === 'both') {
+        assert.equal(materialAt(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-1, 0, 0)), front);
+      }
+    }
+    const paintedShelf = new THREE.MeshBasicMaterial({ color: '#557733' });
+    mesh.material = paintedShelf;
+    assert.equal(
+      materialAt(new THREE.Vector3(), new THREE.Vector3(0, 0, -1)),
+      paintedShelf,
+      'individual shelf painting must still apply to the entire shelf'
+    );
+  });
+}
 
 test('winter brace survives grid editing, build derivation and both module and free-box previews', () => {
   const cfg = { isCustom: true, customData: { shelves: [], rods: [], shelfVariants: [] }, braceShelves: [] };

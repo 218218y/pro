@@ -27,7 +27,9 @@ type FrameThree = {
 
 // Emit only the boundary of the ring. Joined closed boxes leave coincident
 // internal faces, and side caps flush with cabinet walls cause z-fighting.
-// Face groups retain BoxGeometry's +X, -X, +Y, -Y, +Z, -Z material indices.
+// Outer faces retain BoxGeometry's +X, -X, +Y, -Y, +Z, -Z material indices.
+// The opening always uses the shelf body material (+Y), so front-edge color
+// and exposed-side edge banding cannot leak into the inner walls.
 export function createWinterBraceShelfGeometry(
   THREE: FrameThree,
   w: number,
@@ -73,7 +75,7 @@ export function createWinterBraceShelfGeometry(
     [-1, 0, 0],
   ];
   const outerMaterials = [5, 0, 4, 1];
-  const innerMaterials = [4, 1, 5, 0];
+  const shelfBodyMaterialIndex = 2;
   const at = (point: readonly [number, number], y: number): Point => [point[0], y, point[1]];
   for (let edge = 0; edge < 4; edge++) {
     const next = (edge + 1) % 4;
@@ -92,7 +94,7 @@ export function createWinterBraceShelfGeometry(
     quad(
       [at(ia, h / 2), at(ia, -h / 2), at(ib, -h / 2), at(ib, h / 2)],
       [-normal[0], 0, -normal[2]],
-      innerMaterials[edge]!
+      shelfBodyMaterialIndex
     );
   }
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));

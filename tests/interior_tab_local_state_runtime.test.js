@@ -81,18 +81,20 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
     double: '',
     glass: '',
     brace: '',
+    winter_brace: '',
   });
   assert.deepEqual(JSON.parse(JSON.stringify(defaults.sketchShelfDepthDraftByVariant)), {
     regular: '',
     double: '',
     glass: '',
     brace: '',
+    winter_brace: '',
   });
 
-  assert.equal(INTERIOR_LAYOUT_TYPES.length, 6);
+  assert.equal(INTERIOR_LAYOUT_TYPES.length, 7);
   assert.deepEqual(
     Array.from(INTERIOR_LAYOUT_TYPES, item => item.id),
-    ['shelves', 'hanging', 'hanging_split', 'mixed', 'storage', 'brace_shelves']
+    ['shelves', 'hanging', 'hanging_split', 'mixed', 'storage', 'brace_shelves', 'winter_brace']
   );
   assert.deepEqual(
     Array.from(INTERIOR_MANUAL_TOOLS, item => item.id),

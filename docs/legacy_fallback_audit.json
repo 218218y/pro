@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-11T10:56:32.153Z",
+  "generatedAt": "2026-10-29T16:29:26.360Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1823,7 +1823,7 @@
     },
     {
       "file": "esm/native/builder/core_storage_compute_custom.ts",
-      "line": 142,
+      "line": 145,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-fallback: optional custom shelf-variant metadata may be omitted when enumeration fails."
@@ -2600,28 +2600,28 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
-      "line": 109,
+      "line": 113,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "const fallbackW = Math.max("
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
-      "line": 116,
+      "line": 120,
       "term": "fallbackD",
       "category": "domain-default",
       "text": "const fallbackD = Math.max("
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
-      "line": 125,
+      "line": 129,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "const outerW = widthValue != null ? Math.max(minW, widthValue) : fallbackW;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
-      "line": 126,
+      "line": 130,
       "term": "fallbackD",
       "category": "domain-default",
       "text": "const outerD = depthValue != null ? Math.max(minD, depthValue) : fallbackD;"
@@ -4329,7 +4329,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
-      "line": 178,
+      "line": 191,
       "term": "fallback",
       "category": "domain-default",
       "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
@@ -4721,7 +4721,7 @@
     },
     {
       "file": "esm/native/ui/interactions/project_drag_drop_controller_drop.ts",
-      "line": 30,
+      "line": 32,
       "term": "fallbackMessage",
       "category": "error-message-default",
       "text": "await runProjectLoadAction(App, { toast }, file, { fallbackMessage: 'טעינת קובץ נכשלה' });"
