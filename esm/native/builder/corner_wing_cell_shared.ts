@@ -7,6 +7,7 @@
 import type { CornerCell } from './corner_geometry_plan.js';
 export type { CornerCell, CornerCellCfg } from './corner_geometry_plan.js';
 import type {
+  ThreeLike,
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
   BuilderFoldedContentsPolicy,
@@ -68,6 +69,8 @@ export type AddFoldedClothesLike = (
 ) => unknown;
 
 export type ThreeCornerCellLike = {
+  BufferGeometry: ThreeLike['BufferGeometry'];
+  Float32BufferAttribute: ThreeLike['Float32BufferAttribute'];
   CylinderGeometry: new (
     radiusTop: number,
     radiusBottom: number,

@@ -128,6 +128,7 @@ export function OrderPdfOverlayEditorStage(props: {
   return (
     <div
       ref={editorStageRef}
+      data-file-drop-owner="order-pdf"
       className={`wp-pdf-editor-stage${stage.dragOver ? ' is-drop' : ''}`}
       dir="ltr"
       onPointerDownCapture={onStagePointerDownCapture}

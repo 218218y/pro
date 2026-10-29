@@ -100,7 +100,7 @@ export type InteriorLayoutSectionProps = {
   manualUiTool: ManualToolId;
   activeManualToolForUi: ManualToolId;
   currentGridDivisions: number;
-  gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace';
+  gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   showManualRow: boolean;
   showGridControls: boolean;
   showShelfVariantControls: boolean;
@@ -214,8 +214,11 @@ export type InteriorLayoutSectionProps = {
   enterManual: (tool: ManualToolId) => void;
   exitManual: () => void;
   setGridDivisions: (count: number) => void;
-  setGridShelfVariant: (variant: 'regular' | 'double' | 'glass' | 'brace') => void;
-  enterSketchDivision: (tool: ManualToolId, shelfVariant: 'regular' | 'double' | 'glass' | 'brace') => void;
+  setGridShelfVariant: (variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace') => void;
+  enterSketchDivision: (
+    tool: ManualToolId,
+    shelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace'
+  ) => void;
   activateManualToolId: (toolId: string) => void;
   activateDoorTrimMode: (
     axis: DoorTrimUiAxis,

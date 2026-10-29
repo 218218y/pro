@@ -156,7 +156,10 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     ) {
       const raw = variant ?? '';
       const v0 = raw.trim().toLowerCase();
-      const v = v0 === 'regular' || v0 === 'double' || v0 === 'glass' || v0 === 'brace' ? v0 : 'regular';
+      const v =
+        v0 === 'regular' || v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'winter_brace'
+          ? v0
+          : 'regular';
       return uiNs.patchSoft?.(
         { currentGridShelfVariant: v },
         uiOnlyMeta(meta, 'actions.ui:setGridShelfVariantState')

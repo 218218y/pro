@@ -604,3 +604,22 @@ test('render primitive handles preserve focused policy dimensions and placement'
     [0.45, 0, 0.02]
   );
 });
+
+test('winter brace board shape crosses the factory and primitive boundary without becoming a solid box', () => {
+  const { App, THREE, ops, roomArchitecturePlan } = createPrimitiveHarness();
+  const createBoard = makeBoardCreator({
+    THREE,
+    sketchMode: false,
+    addOutlines: null,
+    roomArchitecturePlan,
+    runtime: { createBoard: args => ops.createBoard({ ...args, App }), reportError: null },
+  } as never);
+  const mesh = createBoard(1, 0.018, 0.6, 0, 1, 0, {}, 'sketch_shelf_0_1', {
+    shape: 'winter_brace_shelf',
+  }) as FakeMesh;
+  assert.ok(mesh.geometry instanceof FakeBufferGeometry);
+  const geometry = mesh.geometry as FakeBufferGeometry;
+  assert.equal(geometry.groups.length, 14, 'caps flush with cabinet walls must not be rendered');
+  assert.equal(mesh.userData.partId, 'sketch_shelf_0_1');
+  assert.equal(mesh.castShadow, true);
+});

@@ -100,3 +100,29 @@ test('rod sketch preview guide lines can be anchored to the intended handle cent
   assert.equal(ctx.boxLeft.position.y, 0);
   assert.equal(ctx.boxLeft.scale.y, 3);
 });
+
+test('winter shelf placement preview uses four frame bars with an open center for add and remove', () => {
+  for (const isRemove of [false, true]) {
+    const ctx = {
+      ...createRodContext(),
+      kind: 'shelf',
+      variant: 'winter_brace',
+      h: 0.018,
+      woodThick: 0.018,
+      w: 1,
+      d: 0.6,
+      isRemove,
+      boxRight: new FakeMesh(),
+    };
+    applyLinearSketchPlacementPreview(ctx as never);
+    const bars = [ctx.shelfA, ctx.boxTop, ctx.boxLeft, ctx.boxRight];
+    assert.ok(bars.every(bar => bar.visible));
+    assert.ok(
+      bars.every(
+        bar =>
+          Math.abs(bar.position.x - ctx.x) >= bar.scale.x / 2 ||
+          Math.abs(bar.position.z - ctx.z) >= bar.scale.z / 2
+      )
+    );
+  }
+});

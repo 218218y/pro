@@ -145,7 +145,11 @@ function setUiGridShelfVariantState(
   const raw = asStringValue(variant);
   const normalized = raw.trim().toLowerCase();
   const next =
-    normalized === 'regular' || normalized === 'double' || normalized === 'glass' || normalized === 'brace'
+    normalized === 'regular' ||
+    normalized === 'double' ||
+    normalized === 'glass' ||
+    normalized === 'brace' ||
+    normalized === 'winter_brace'
       ? normalized
       : 'regular';
   setUiScalarSoft(runtime, 'currentGridShelfVariant', next, meta);

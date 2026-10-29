@@ -1,10 +1,12 @@
 import {
   SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
   SKETCH_BOX_ROD_PREVIEW_POLICY,
 } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { readPreviewNumber, readPreviewPositiveNumber } from './render_preview_number_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 import type { DoorTrimSurfacePlane } from '../features/door_authoring/api.js';
+import { resolveWinterBraceShelfFrame } from './winter_brace_shelf_geometry.js';
 
 function readSurfacePlane(value: unknown): DoorTrimSurfacePlane {
   return value === 'yz' || value === 'xz' ? value : 'xy';
@@ -150,7 +152,7 @@ function applyRodPreview(ctx: SketchPlacementPreviewContext): boolean {
 
 function applyDefaultShelfPreview(ctx: SketchPlacementPreviewContext): void {
   const isGlass = ctx.variant === 'glass';
-  const isBrace = ctx.variant === 'brace';
+  const isBrace = ctx.variant === 'brace' || ctx.variant === 'winter_brace';
   let material = isGlass ? ctx.ud.__matGlass : isBrace ? ctx.ud.__matBrace : ctx.ud.__matShelf;
   let lineMaterial = isGlass ? ctx.ud.__lineGlass : isBrace ? ctx.ud.__lineBrace : ctx.ud.__lineShelf;
   if (ctx.isRemove) {
@@ -159,6 +161,28 @@ function applyDefaultShelfPreview(ctx: SketchPlacementPreviewContext): void {
   }
   const h0 = ctx.h > 0 ? ctx.h : ctx.woodThick;
   const hReal = Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, h0);
+
+  if (ctx.variant === 'winter_brace') {
+    const meshes = [ctx.shelfA, ctx.boxTop, ctx.boxLeft, ctx.boxRight];
+    resolveWinterBraceShelfFrame(
+      ctx.w,
+      ctx.d,
+      SKETCH_BOX_SHELF_PREVIEW_POLICY.winterBraceFrameWidthCm
+    ).forEach((bar, index) => {
+      ctx.placePreviewBoxMesh({
+        mesh: meshes[index] ?? null,
+        sx: bar.w,
+        sy: hReal,
+        sz: bar.d,
+        px: ctx.x + bar.x,
+        py: ctx.y,
+        pz: ctx.z + bar.z,
+        material,
+        lineMaterial,
+      });
+    });
+    return;
+  }
 
   ctx.placePreviewBoxMesh({
     mesh: ctx.shelfA,

@@ -85,7 +85,7 @@ export function resolveSketchBoxShelfPreview(
   } = state;
 
   const variant = shelfVariant || 'regular';
-  const isBrace = variant === 'brace';
+  const isBrace = variant === 'brace' || variant === 'winter_brace';
   const isDouble = variant === 'double' || !variant;
   const shelfH =
     variant === 'glass'

@@ -1,12 +1,19 @@
 import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
+import {
+  createWinterBraceShelfGeometry,
+  resolveWinterBraceShelfFrame,
+} from './winter_brace_shelf_geometry.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import {
   EDGE_HANDLE_SIZE_POLICY,
   STANDARD_HANDLE_RENDER_POLICY,
 } from '../../shared/dimensions/handle_policy.js';
-import { INTERIOR_SHELF_ROUNDED_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_SHELF_ROUNDED_RENDER_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
-import { applyShelfExposedEdgeMaterials } from './shelf_front_edge_material.js';
+import { applyShelfExposedEdgeMaterials, readShelfExposedSide } from './shelf_front_edge_material.js';
 import { getModuleSelectorMaterial } from './module_selector_material.js';
 import {
   axisAlignedBoxToCenterSize,
@@ -628,6 +635,15 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
   }
 
   function createBoardGeometry(THREE: RenderThreeLike, args: BoardArgs, w: number, h: number, d: number) {
+    if (args.shape === 'winter_brace_shelf')
+      return createWinterBraceShelfGeometry(
+        THREE,
+        w,
+        h,
+        d,
+        INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm,
+        readShelfExposedSide(args.shelfExposedSide)
+      );
     if (args.shape === 'rounded_shelf') return createRoundedShelfGeometry(THREE, args, w, h, d);
     return new THREE.BoxGeometry(w, h, d);
   }
@@ -787,7 +803,16 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
       return mesh;
     }
 
-    let pieces = subtractAxisAlignedBoxes(sourceBox, obstacles);
+    let pieces =
+      args.shape === 'winter_brace_shelf'
+        ? resolveWinterBraceShelfFrame(w, d, INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm).flatMap(
+            bar =>
+              subtractAxisAlignedBoxes(
+                boxFromCenterSize({ x: x + bar.x, y, z: z + bar.z, width: bar.w, height: h, depth: bar.d }),
+                obstacles
+              )
+          )
+        : subtractAxisAlignedBoxes(sourceBox, obstacles);
     const deepestCutZ = Math.max(...intersections.map(intersection => intersection.maxZ));
     if (args.shape === 'rounded_shelf' && deepestCutZ < sourceBox.maxZ - 1e-7) {
       const rearSource: AxisAlignedBoxLike = { ...sourceBox, maxZ: deepestCutZ };

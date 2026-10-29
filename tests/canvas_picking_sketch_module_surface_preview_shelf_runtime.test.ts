@@ -388,6 +388,18 @@ test('custom and built-in layout interpretation preserves shelf existence and br
   assert.equal(brace.result?.preview?.variant, 'brace');
   const regular = resolve({ cfgRef: { layout: 'shelves', braceShelves: [] } });
   assert.equal(regular.result?.preview?.variant, 'double');
+  const winter = resolve({
+    cfgRef: {
+      isCustom: true,
+      customData: {
+        shelves: [false, false, true],
+        shelfVariants: ['', '', 'winter_brace'],
+      },
+    },
+  });
+  assertBaseRemoval(winter, 3);
+  assert.equal(winter.result?.preview?.variant, 'winter_brace');
+  assert.equal(winter.result?.preview?.d, 0.55);
 });
 
 test('shelf-board hit filtering and malformed inputs remain resilient', () => {

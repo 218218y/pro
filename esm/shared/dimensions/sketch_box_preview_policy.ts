@@ -17,6 +17,7 @@ export const SKETCH_BOX_SHELF_PREVIEW_POLICY = Object.freeze({
   shelfMinWidthM: meters(0.02),
   shelfHoverMinWidthM: meters(0.05),
   shelfBraceClearanceM: INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM,
+  winterBraceFrameWidthCm: INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm,
   shelfRegularClearanceM: INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM,
   shelfRemoveNoBoardToleranceMinM: meters(0.018),
   shelfRemoveNoBoardToleranceMaxM: meters(0.03),

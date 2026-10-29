@@ -15,6 +15,7 @@ import type {
 } from './render_preview_ops_contracts.js';
 import type { RenderPreviewInteriorHoverShared } from './render_preview_interior_hover_shared.js';
 import { ensureInteriorLayoutHoverPreview } from './render_preview_interior_hover_cache.js';
+import { resolveWinterBraceShelfFrame } from './winter_brace_shelf_geometry.js';
 import {
   readPreviewNumber,
   readPreviewPositiveNumber,
@@ -154,7 +155,7 @@ export function setInteriorLayoutHoverPreview(
   if (shelfVariant === 'glass') {
     shelfMat = ud.__matGlass || shelfMat;
     shelfLine = ud.__lineGlass || shelfLine;
-  } else if (shelfVariant === 'brace') {
+  } else if (shelfVariant === 'brace' || shelfVariant === 'winter_brace') {
     shelfMat = ud.__matBrace || shelfMat;
     shelfLine = ud.__lineBrace || shelfLine;
   }
@@ -171,12 +172,13 @@ export function setInteriorLayoutHoverPreview(
   const storageLine: PreviewMaterialLike | null =
     (isRemove ? ud.__lineRemove || ud.__lineStorage : ud.__lineStorage) ?? null;
 
-  const shelfDepth = shelfVariant === 'brace' ? internalDepth : regularDepth;
+  const shelfDepth =
+    shelfVariant === 'brace' || shelfVariant === 'winter_brace' ? internalDepth : regularDepth;
   const shelfZ = backZ + shelfDepth / 2;
   const shelfW = Math.max(
     SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfHoverMinWidthM,
     innerW -
-      (shelfVariant === 'brace'
+      (shelfVariant === 'brace' || shelfVariant === 'winter_brace'
         ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
         : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
   );
@@ -189,13 +191,24 @@ export function setInteriorLayoutHoverPreview(
 
   for (let i = 0; i < shelfList.length; i++) {
     const mesh = shared.asPreviewMesh(shelfList[i]);
-    const y0 = readPreviewNumber(shelfYs[i]);
+    const isFrame = shelfVariant === 'winter_brace';
+    const y0 = readPreviewNumber(shelfYs[isFrame ? Math.floor(i / 4) : i]);
     if (!mesh || y0 == null) {
       setVisible(mesh, false);
       continue;
     }
     setVisible(mesh, true);
     applyStyle(mesh, shelfMat, shelfLine);
+    if (isFrame) {
+      const bar = resolveWinterBraceShelfFrame(
+        shelfW,
+        shelfDepth,
+        INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm
+      )[i % 4]!;
+      mesh.position?.set?.(x + bar.x, y0, shelfZ + bar.z);
+      mesh.scale?.set?.(bar.w, Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, shelfH), bar.d);
+      continue;
+    }
     if (mesh.position && typeof mesh.position.set === 'function') mesh.position.set(x, y0, shelfZ);
     if (mesh.scale && typeof mesh.scale.set === 'function') {
       mesh.scale.set(shelfW, Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, shelfH), shelfDepth);

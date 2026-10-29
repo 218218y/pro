@@ -218,7 +218,7 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
   }
 
   const variant = typeof blocker.variant === 'string' && blocker.variant ? blocker.variant : 'regular';
-  const isBrace = variant === 'brace';
+  const isBrace = variant === 'brace' || variant === 'winter_brace';
   const shelfDepth =
     blocker.depthM != null && Number.isFinite(blocker.depthM) && blocker.depthM > 0
       ? Math.min(state.targetGeo.innerD, Math.max(previewArgs.woodThick, blocker.depthM))

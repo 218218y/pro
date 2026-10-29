@@ -58,7 +58,7 @@ export type BraceShelvesFreeBoxPlan = {
   previewInternalZ: number;
   previewInnerD: number;
   previewWoodThick: number;
-  currentVariant: 'regular' | 'double' | 'glass' | 'brace';
+  currentVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   nextVariant: 'regular' | 'brace';
   nextDepthM: number;
 };
@@ -97,8 +97,12 @@ export function normalizeGridDivisions(value: unknown): number {
     : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 }
 
-export function normalizeShelfVariant(value: unknown): 'regular' | 'double' | 'glass' | 'brace' {
-  return value === 'double' || value === 'glass' || value === 'brace' ? value : 'regular';
+export function normalizeShelfVariant(
+  value: unknown
+): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace' {
+  return value === 'double' || value === 'glass' || value === 'brace' || value === 'winter_brace'
+    ? value
+    : 'regular';
 }
 
 export function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
@@ -111,7 +115,7 @@ export function shelfThicknessForVariant(variant: unknown, woodThick: number): n
 }
 
 export function resolveShelfDepth(args: { variant: string; innerD: number; woodThick: number }): number {
-  if (args.variant === 'brace') return args.innerD;
+  if (args.variant === 'brace' || args.variant === 'winter_brace') return args.innerD;
   return Math.min(args.innerD, Math.max(args.woodThick, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM));
 }
 

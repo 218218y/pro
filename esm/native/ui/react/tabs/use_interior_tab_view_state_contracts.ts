@@ -48,7 +48,7 @@ export type InteriorTabViewState = {
   manualTool: ManualToolId;
   manualToolRaw: string;
   currentGridDivisions: number;
-  gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace';
+  gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   extDrawerType: ExtDrawerType;
   extDrawerCount: number;
   internalDrawersEnabled: boolean;

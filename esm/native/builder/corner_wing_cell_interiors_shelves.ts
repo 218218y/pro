@@ -1,3 +1,4 @@
+import { createWinterBraceShelfGeometry } from './winter_brace_shelf_geometry.js';
 import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import {
   INTERIOR_SHELF_GEOMETRY_POLICY,
@@ -21,7 +22,10 @@ export type CornerWingInteriorShelfRuntime = {
   glassShelfMat: unknown;
   GLASS_SHELF_THICK: number;
   DOUBLE_SHELF_THICK: number;
-  readCornerShelfVariant(cfgCell: CornerCellCfg, gridIndex: number): 'regular' | 'double' | 'glass' | 'brace';
+  readCornerShelfVariant(
+    cfgCell: CornerCellCfg,
+    gridIndex: number
+  ): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   addCornerShelfPins(
     shelfY: number,
     shelfZ: number,
@@ -72,7 +76,7 @@ export function createCornerWingInteriorShelfRuntime(
   const readCornerShelfVariant = (
     cfgCell: CornerCellCfg,
     gridIndex: number
-  ): 'regular' | 'double' | 'glass' | 'brace' => {
+  ): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace' => {
     const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
     const variants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
     const raw =
@@ -81,7 +85,8 @@ export function createCornerWingInteriorShelfRuntime(
             .trim()
             .toLowerCase()
         : '';
-    if (raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'regular') return raw;
+    if (raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'winter_brace' || raw === 'regular')
+      return raw;
     return 'regular';
   };
 
@@ -170,7 +175,7 @@ export function createCornerWingInteriorShelfRuntime(
 function cornerShelfHeightForVariant(
   runtime: CornerWingInteriorRuntime,
   shelfRuntime: CornerWingInteriorShelfRuntime,
-  variant: 'regular' | 'double' | 'glass' | 'brace'
+  variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace'
 ): number {
   if (variant === 'glass') return shelfRuntime.GLASS_SHELF_THICK;
   if (variant === 'double') return shelfRuntime.DOUBLE_SHELF_THICK;
@@ -217,7 +222,7 @@ export function addCornerWingGridShelf(
   if (!(y < cellRuntime.effectiveTopY - CORNER_WING_INTERIOR_POLICY.shelfTopPlacementGuardM)) return;
 
   const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
-  const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace';
+  const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace' || shelfVariant === 'winter_brace';
   const isGlassShelf = shelfVariant === 'glass';
   const shelfDepth = isBraceShelf ? cellRuntime.__internalDepth : cellRuntime.__regularDepth;
   const shelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, shelfVariant);
@@ -231,7 +236,16 @@ export function addCornerWingGridShelf(
       ? shelfRuntime.glassShelfMat
       : runtime.getCornerShelfMat(shelfPartId, isBraceShelf);
   const shelf = new runtime.THREE.Mesh(
-    new runtime.THREE.BoxGeometry(shelfW, shelfH, shelfDepth),
+    shelfVariant === 'winter_brace'
+      ? createWinterBraceShelfGeometry(
+          runtime.THREE,
+          shelfW,
+          shelfH,
+          shelfDepth,
+          INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm,
+          null
+        )
+      : new runtime.THREE.BoxGeometry(shelfW, shelfH, shelfDepth),
     shelfMaterial
   );
   shelf.position.set(cellInnerCenterX, y, shelfZ);
@@ -265,7 +279,7 @@ export function addCornerWingGridShelf(
     shelfPartId
   );
 
-  if (runtime.showContentsEnabled) {
+  if (shelfVariant !== 'winter_brace' && runtime.showContentsEnabled) {
     runtime.addFoldedClothes(
       cellInnerCenterX,
       y + shelfH / 2,

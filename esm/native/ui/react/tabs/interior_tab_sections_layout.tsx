@@ -20,9 +20,11 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
             key={t.id}
             className="type-option--iconrow"
             selected={
-              t.id === 'brace_shelves'
-                ? props.isBraceShelvesMode
-                : props.isLayoutMode && props.layoutType === t.id
+              t.id === 'winter_brace'
+                ? props.isSketchToolActive && props.manualToolRaw.startsWith('sketch_shelf:winter_brace')
+                : t.id === 'brace_shelves'
+                  ? props.isBraceShelvesMode
+                  : props.isLayoutMode && props.layoutType === t.id
             }
             onClick={() => props.enterLayout(t.id)}
           >

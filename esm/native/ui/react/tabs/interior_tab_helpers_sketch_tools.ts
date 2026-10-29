@@ -61,6 +61,7 @@ export const SKETCH_TOOL_SHELF_DOUBLE = 'sketch_shelf:double';
 export const SKETCH_TOOL_SHELF_REGULAR = 'sketch_shelf:regular';
 export const SKETCH_TOOL_SHELF_GLASS = 'sketch_shelf:glass';
 export const SKETCH_TOOL_SHELF_BRACE = 'sketch_shelf:brace';
+export const SKETCH_TOOL_SHELF_WINTER_BRACE = 'sketch_shelf:winter_brace';
 export const SKETCH_TOOL_ROD = 'sketch_rod';
 export const SKETCH_TOOL_BOX_DIVIDER = 'sketch_box_divider';
 export const SKETCH_TOOL_BOX_DIVIDER_HORIZONTAL = 'sketch_box_divider_horizontal';

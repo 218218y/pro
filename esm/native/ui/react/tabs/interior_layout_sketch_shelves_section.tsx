@@ -11,6 +11,7 @@ import {
 import {
   SKETCH_TOOL_ROD,
   SKETCH_TOOL_SHELF_BRACE,
+  SKETCH_TOOL_SHELF_WINTER_BRACE,
   SKETCH_TOOL_SHELF_DOUBLE,
   SKETCH_TOOL_SHELF_GLASS,
   SKETCH_TOOL_SHELF_PREFIX,
@@ -29,6 +30,7 @@ const SKETCH_SHELF_VARIANTS: ReadonlyArray<[string, string, string, string]> = [
   [SKETCH_TOOL_SHELF_DOUBLE, 'double', 'כפול', 'fas fa-clone'],
   [SKETCH_TOOL_SHELF_GLASS, 'glass', 'זכוכית', 'fas fa-gem'],
   [SKETCH_TOOL_SHELF_BRACE, 'brace', 'קושרת', 'fas fa-link'],
+  [SKETCH_TOOL_SHELF_WINTER_BRACE, 'winter_brace', 'קושרת חורף', 'far fa-square'],
 ];
 
 const SKETCH_SHELF_DEPTH_MIN_CM = 5;
@@ -159,6 +161,19 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         >
           אוגר מצעים
         </ModeToggleButton>
+        <ModeToggleButton
+          active={props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace'}
+          className="wp-sketch-shelf-btn"
+          icon={<i className="far fa-square" aria-hidden="true" />}
+          onClick={() => {
+            const active =
+              props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace';
+            if (active) props.exitManual();
+            else props.enterSketchShelfTool('winter_brace');
+          }}
+        >
+          קושרת חורף
+        </ModeToggleButton>
       </div>
 
       <div
@@ -243,7 +258,9 @@ export function InteriorSketchShelfDepthField(props: InteriorLayoutSectionProps)
             max={SKETCH_SHELF_DEPTH_MAX_CM}
             step={SKETCH_SHELF_DEPTH_STEP_CM}
             placeholder={
-              activeSketchShelfVariant === 'brace' ? 'מלא' : String(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM)
+              activeSketchShelfVariant === 'brace' || activeSketchShelfVariant === 'winter_brace'
+                ? 'מלא'
+                : String(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM)
             }
             data-testid="interior-sketch-shelf-depth-input"
             onFocus={(e: import('react').FocusEvent<HTMLInputElement>) => {

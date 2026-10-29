@@ -39,9 +39,13 @@ export function readManualToolId(value: unknown, defaultValue: ManualToolId = 's
   return raw === 'rod' || raw === 'storage' || raw === 'shelf' ? raw : defaultValue;
 }
 
-export function readGridShelfVariant(value: unknown): 'regular' | 'double' | 'glass' | 'brace' {
+export function readGridShelfVariant(
+  value: unknown
+): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace' {
   const raw = asStr(value, 'regular').trim().toLowerCase();
-  return raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'regular' ? raw : 'regular';
+  return raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'winter_brace' || raw === 'regular'
+    ? raw
+    : 'regular';
 }
 
 export function readExtDrawerType(value: unknown, defaultValue: ExtDrawerType = 'regular'): ExtDrawerType {

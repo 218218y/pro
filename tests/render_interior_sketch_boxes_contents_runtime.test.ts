@@ -431,3 +431,20 @@ test('usable Sketch Box content center Z preserves positive and non-positive dep
   assert.equal(resolveSketchBoxUsableContentCenterZ(shell, 0), -0.2);
   assert.equal(resolveSketchBoxUsableContentCenterZ(shell, -0.4), -0.2);
 });
+
+for (const freePlacement of [false, true]) {
+  test(`winter brace renders as one paintable frame inside ${freePlacement ? 'free' : 'wardrobe'} sketch boxes`, () => {
+    const { args, boards, shelfPins } = createBaseArgs();
+    args.boxDividers = [];
+    args.shell.box = { freePlacement, shelves: [{ id: 'winter', yNorm: 0.5, variant: 'winter_brace' }] };
+    args.args.input.addFoldedClothes = () => assert.fail('open shelf must not carry floating contents');
+    renderSketchBoxContents(args);
+    const shelf = boards.find(board => board.args[7] === 'box_0_shelf_winter');
+    assert.ok(shelf);
+    assert.equal(shelf.args[8].shape, 'winter_brace_shelf');
+    assert.equal(shelf.args[0], args.shell.geometry.innerW);
+    assert.equal(shelf.userData.__wpShelfVariant, 'winter_brace');
+    assert.equal(shelf.userData.__wpShelfIsBrace, true);
+    assert.equal(shelfPins[0][6], false);
+  });
+}

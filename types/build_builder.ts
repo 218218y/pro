@@ -512,7 +512,7 @@ export type BuilderDimensionLineFn = (
 
 export type BuilderRoundedShelfSide = 'left' | 'right' | 'both';
 export type BuilderShelfExposedSide = 'left' | 'right' | 'both';
-export type BuilderBoardShape = 'box' | 'rounded_shelf';
+export type BuilderBoardShape = 'box' | 'rounded_shelf' | 'winter_brace_shelf';
 
 export interface BuilderCreateBoardOptions extends UnknownRecord {
   shape?: BuilderBoardShape;

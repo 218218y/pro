@@ -205,7 +205,10 @@ export function setGridDivisions(app: AppContainer, n: unknown): void {
 export function setGridShelfVariant(app: AppContainer, variant: unknown): void {
   const raw = typeof variant === 'string' ? variant : '';
   const v0 = raw.trim().toLowerCase();
-  const v = v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'regular' ? v0 : 'regular';
+  const v =
+    v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'winter_brace' || v0 === 'regular'
+      ? v0
+      : 'regular';
 
   try {
     const m: ActionMetaLike = {

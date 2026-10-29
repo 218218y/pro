@@ -3,10 +3,14 @@ import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thic
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import { SKETCH_BOX_FREE_VERTICAL_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 
-export const normalizeSketchShelfVariant = (variant: unknown): 'regular' | 'double' | 'glass' | 'brace' => {
+export const normalizeSketchShelfVariant = (
+  variant: unknown
+): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace' => {
   const raw = typeof variant === 'string' ? variant : '';
   const v = raw.trim().toLowerCase();
-  return v === 'double' || v === 'glass' || v === 'brace' || v === 'regular' ? v : 'regular';
+  return v === 'double' || v === 'glass' || v === 'brace' || v === 'winter_brace' || v === 'regular'
+    ? v
+    : 'regular';
 };
 
 export const resolveSketchBoxGeometry = (args: {

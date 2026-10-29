@@ -144,7 +144,8 @@ function createInteriorLayoutHoverPreviewGroup(
   group.userData.__keepMaterialSubtree = true;
 
   const shelfList = [];
-  for (let i = 0; i < 8; i++) {
+  // Eight grid rows, with four reusable bars per winter brace frame.
+  for (let i = 0; i < 8 * 4; i++) {
     const shelf = mk(matShelf, lineShelf);
     shelfList.push(shelf);
     group.add(shelf);

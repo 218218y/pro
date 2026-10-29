@@ -17,7 +17,7 @@ type ManualLayoutCustomData = LayoutConfigCustomDataLike & {
 
 export type { ManualLayoutConfigRecord, ManualLayoutCustomData };
 
-export type ManualLayoutShelfVariant = 'regular' | 'double' | 'glass' | 'brace';
+export type ManualLayoutShelfVariant = 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
 export type ManualLayoutExtraListKey = 'rods' | 'shelves' | 'storageBarriers';
 
 export type ManualLayoutGridMutationArgs = {
@@ -186,5 +186,7 @@ export function ensureSketchExtrasList(
 }
 
 export function normalizeManualLayoutShelfVariant(value: unknown): ManualLayoutShelfVariant {
-  return value === 'double' || value === 'glass' || value === 'brace' ? value : 'regular';
+  return value === 'double' || value === 'glass' || value === 'brace' || value === 'winter_brace'
+    ? value
+    : 'regular';
 }

@@ -59,7 +59,9 @@ export function readGridDivisions(value: unknown, defaultValue = 6, max = 12): n
 
 export function readShelfVariant(value: unknown): ShelfVariant {
   const raw = readString(value, 'regular');
-  return raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'regular' ? raw : 'regular';
+  return raw === 'double' || raw === 'glass' || raw === 'brace' || raw === 'winter_brace' || raw === 'regular'
+    ? raw
+    : 'regular';
 }
 
 export function readBooleanArray(value: unknown): boolean[] {

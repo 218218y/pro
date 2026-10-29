@@ -9,19 +9,24 @@ import {
 } from './interior_layout_sketch_shelves_section.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
-type GridShelfVariant = 'regular' | 'double' | 'glass' | 'brace';
+type GridShelfVariant = 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
 
 const GRID_SHELF_VARIANTS: ReadonlyArray<[GridShelfVariant, string, string]> = [
   ['regular', 'רגיל', 'fas fa-minus'],
   ['double', 'כפול', 'fas fa-clone'],
   ['glass', 'זכוכית', 'fas fa-gem'],
   ['brace', 'קושרת', 'fas fa-link'],
+  ['winter_brace', 'קושרת חורף', 'far fa-square'],
 ];
 
 function readActiveShelfVariantForUi(props: InteriorLayoutSectionProps): GridShelfVariant {
   if (!props.isSketchDivisionToolActive) return props.gridShelfVariant;
   const variant = parseSketchShelfVariant(props.manualToolRaw);
-  return variant === 'double' || variant === 'glass' || variant === 'brace' || variant === 'regular'
+  return variant === 'double' ||
+    variant === 'glass' ||
+    variant === 'brace' ||
+    variant === 'winter_brace' ||
+    variant === 'regular'
     ? variant
     : props.gridShelfVariant;
 }

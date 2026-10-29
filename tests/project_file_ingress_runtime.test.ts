@@ -161,3 +161,28 @@ test('project drag-drop rejects non-json files before touching ProjectIO', async
       typeof DragEvent | undefined;
   }
 });
+
+test('project importer yields portal file drops to their declared owner before touching ProjectIO', async () => {
+  const { doc, classNames } = createDocHarness();
+  const controller = createProjectDragDropController({} as never, {
+    doc,
+    toast() {
+      assert.fail('a dedicated PDF drop must not report a project error');
+    },
+  });
+  for (const name of ['existing.pdf', 'project.json']) {
+    const event = new Event('drop', { cancelable: true });
+    Object.defineProperty(event, 'dataTransfer', { value: { files: [createNamedBlob(name)] } });
+    Object.defineProperty(event, 'composedPath', {
+      value: () => [
+        { getAttribute: (key: string) => (key === 'data-file-drop-owner' ? 'order-pdf' : null) },
+        doc.body,
+      ],
+    });
+    controller.preventDefaultsForFilesOnly(event);
+    controller.onDragOverClass(event);
+    await controller.onDropHandle(event);
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(classNames.has('is-dragover'), false);
+  }
+});

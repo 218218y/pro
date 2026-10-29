@@ -14,6 +14,19 @@ export type ProjectDragDropController = {
 type DataTransferItemLike = { kind?: string };
 type DataTransferFilesLike = FileList | ArrayLike<ProjectFileLike>;
 
+// Portals may share body's native event target with the project importer.
+// Respect the declared drop owner before either listener handles the file.
+export function hasDedicatedFileDropOwner(event: Event): boolean {
+  return event
+    .composedPath()
+    .some(
+      target =>
+        'getAttribute' in target &&
+        typeof target.getAttribute === 'function' &&
+        target.getAttribute('data-file-drop-owner') !== null
+    );
+}
+
 function readDataTransferItemKind(item: unknown): string {
   return item && typeof item === 'object' && 'kind' in item && typeof item.kind === 'string' ? item.kind : '';
 }

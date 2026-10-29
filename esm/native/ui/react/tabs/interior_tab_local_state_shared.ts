@@ -34,6 +34,7 @@ export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
   { id: 'mixed', label: 'משולב', icon: 'fas fa-border-all' },
   { id: 'storage', label: 'אוגר מצעים', icon: 'fas fa-box-open' },
   { id: 'brace_shelves', label: 'מדפי קושרת', icon: 'fas fa-link' },
+  { id: 'winter_brace', label: 'קושרת חורף', icon: 'far fa-square' },
 ];
 
 export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [
@@ -119,6 +120,7 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
       double: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
       glass: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
       brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
+      winter_brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
     },
     sketchBoxHeightDraft: '40',
     sketchBoxWidthDraft: '',
@@ -153,6 +155,7 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
       double: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
       glass: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
       brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
+      winter_brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
     },
     doorTrimPanelOpen: false,
     doorTrimColor: 'nickel',

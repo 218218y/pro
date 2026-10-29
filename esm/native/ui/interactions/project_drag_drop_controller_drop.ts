@@ -4,6 +4,7 @@ import { runProjectLoadAction } from '../project_load_runtime.js';
 import { clearProjectDragOverClass } from './project_drag_drop_controller_visual.js';
 import {
   readDroppedProjectFile,
+  hasDedicatedFileDropOwner,
   type ProjectDragDropToastFn,
 } from './project_drag_drop_controller_shared.js';
 
@@ -14,6 +15,7 @@ export async function handleProjectDropLoad(
   e: Event
 ): Promise<void> {
   clearProjectDragOverClass(doc);
+  if (hasDedicatedFileDropOwner(e)) return;
   const ev = e instanceof DragEvent ? e : null;
   const files = ev?.dataTransfer?.files ?? null;
   const file = readDroppedProjectFile(files);

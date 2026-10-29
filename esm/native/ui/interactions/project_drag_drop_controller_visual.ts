@@ -1,7 +1,8 @@
 import { toggleBodyClass } from '../dom_helpers.js';
-import { isProjectFileDrag } from './project_drag_drop_controller_shared.js';
+import { hasDedicatedFileDropOwner, isProjectFileDrag } from './project_drag_drop_controller_shared.js';
 
 export function preventProjectDragDefaultsForFilesOnly(e: Event): void {
+  if (hasDedicatedFileDropOwner(e)) return;
   const ev = e instanceof DragEvent ? e : null;
   if (!isProjectFileDrag(ev)) return;
   e.preventDefault();
@@ -11,7 +12,7 @@ export function preventProjectDragDefaultsForFilesOnly(e: Event): void {
 export function updateProjectDragOverClass(doc: Document, e: Event): void {
   try {
     const ev = e instanceof DragEvent ? e : null;
-    if (!isProjectFileDrag(ev)) {
+    if (hasDedicatedFileDropOwner(e) || !isProjectFileDrag(ev)) {
       toggleBodyClass(doc, 'is-dragover', false);
       return;
     }

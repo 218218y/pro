@@ -184,11 +184,13 @@ export function toggleManualLayoutShelf(
       : '';
   const isBraceExisting = braceShelves.includes(shelfIndex);
   const existingVariant =
-    isBraceExisting || currentVariantRaw === 'brace'
-      ? 'brace'
-      : currentVariantRaw === 'double' || currentVariantRaw === 'glass' || currentVariantRaw === 'regular'
-        ? currentVariantRaw
-        : 'regular';
+    currentVariantRaw === 'winter_brace'
+      ? 'winter_brace'
+      : isBraceExisting || currentVariantRaw === 'brace'
+        ? 'brace'
+        : currentVariantRaw === 'double' || currentVariantRaw === 'glass' || currentVariantRaw === 'regular'
+          ? currentVariantRaw
+          : 'regular';
   const desiredStore = args.shelfVariant === 'regular' ? '' : args.shelfVariant;
   const existing = !!customData.shelves[args.arrayIdx];
 

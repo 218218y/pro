@@ -262,7 +262,7 @@ export function createAddCustomGridShelf(args: {
   return function addGridShelf(gridIndex: number, variant: ShelfVariant | undefined): void {
     const shelfY = effectiveBottomY + gridIndex * localGridStep;
     const shelfVariant = typeof variant === 'string' ? variant : 'regular';
-    const isBrace = !!braceSet[gridIndex] || shelfVariant === 'brace';
+    const isBrace = !!braceSet[gridIndex] || shelfVariant === 'brace' || shelfVariant === 'winter_brace';
     const isGlass = shelfVariant === 'glass';
     const shelfH = shelfHeightForVariant(shelfVariant, shelfThick);
     const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
@@ -279,12 +279,14 @@ export function createAddCustomGridShelf(args: {
           });
 
     const shelfOptions: BuilderCreateBoardOptions | null =
-      isBrace && shelfExposedSide
-        ? {
-            shelfExposedSide,
-            ...(roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : {}),
-          }
-        : null;
+      shelfVariant === 'winter_brace'
+        ? { shape: 'winter_brace_shelf', shelfExposedSide: shelfExposedSide ?? null }
+        : isBrace && shelfExposedSide
+          ? {
+              shelfExposedSide,
+              ...(roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : {}),
+            }
+          : null;
     const partitionCells = resolvePartitionCellsAtY?.(shelfY) ?? [];
     const spans = partitionCells.length
       ? partitionCells
@@ -359,7 +361,7 @@ export function createAddCustomGridShelf(args: {
 
       const hasDrawerAbove = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex + 1) !== -1;
       const hasDrawerHere = isInternalDrawersEnabled && activeSlots.indexOf(gridIndex) !== -1;
-      if (!hasDrawerAbove && !hasDrawerHere && __isFn(addFoldedClothes)) {
+      if (shelfVariant !== 'winter_brace' && !hasDrawerAbove && !hasDrawerHere && __isFn(addFoldedClothes)) {
         addFoldedClothes(
           span.centerX,
           shelfY + shelfH / 2,
@@ -452,7 +454,7 @@ export function addCustomBaseShelfContents(args: {
   );
   if (!(maxHeight > 0)) return;
 
-  const isBrace = !!braceSet[1] || firstShelfVariant === 'brace';
+  const isBrace = !!braceSet[1] || firstShelfVariant === 'brace' || firstShelfVariant === 'winter_brace';
   const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
   const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
 

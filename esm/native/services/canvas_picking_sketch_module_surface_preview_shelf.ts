@@ -4,6 +4,7 @@ import {
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
+import { readExistingShelfVariant } from './canvas_picking_interior_hover_layout_family_shared.js';
 import {
   createSketchModuleShelfPreviewGeometry,
   findNearestSketchModuleShelf,
@@ -168,7 +169,19 @@ export function resolveSketchModuleShelfRemovePreview(
               nextYClamped = Math.max(bottomY + pad, Math.min(topY - pad, targetY));
               const braceShelves = readRecordValue(cfgRef, 'braceShelves');
               const isBraceExisting = Array.isArray(braceShelves) && braceShelves.indexOf(shelfIndex) >= 0;
-              variantPreview = isBraceExisting ? 'brace' : 'double';
+              const custom = asRecord(readRecordValue(cfgRef, 'customData'));
+              const shelfVariants = Array.isArray(custom?.shelfVariants) ? custom.shelfVariants : [];
+              const savedVariant = shelfVariants[shelfIndex - 1];
+              variantPreview =
+                typeof savedVariant === 'string' && savedVariant !== ''
+                  ? readExistingShelfVariant({
+                      braceList: isBraceExisting ? [shelfIndex] : [],
+                      shelfIndex,
+                      shelfVariants,
+                    })
+                  : isBraceExisting
+                    ? 'brace'
+                    : 'double';
             }
           }
         }

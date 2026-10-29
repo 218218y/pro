@@ -76,7 +76,8 @@ export function __boardArgs(x: unknown): BoardArgs {
   if ('mat' in map) next.mat = map.mat;
   if ('partId' in map) next.partId = map.partId;
   if ('sketchMode' in map) next.sketchMode = !!map.sketchMode;
-  if (map.shape === 'rounded_shelf' || map.shape === 'box') next.shape = map.shape;
+  if (map.shape === 'rounded_shelf' || map.shape === 'box' || map.shape === 'winter_brace_shelf')
+    next.shape = map.shape;
   if (
     map.shelfExposedSide === 'left' ||
     map.shelfExposedSide === 'right' ||

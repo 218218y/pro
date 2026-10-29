@@ -489,3 +489,31 @@ test('corner wing materials require a build config snapshot instead of reading l
     /cfgSnapshot is required/
   );
 });
+
+test('winter brace frame remains one individually paintable shelf with the normal hover target', () => {
+  const id = createSketchShelfPartId('lower_0', 1);
+  const board = makeBoxObject(id);
+  Object.assign(board.userData, {
+    __wpShelfGroupPartId: SHELF_GROUP_PART_ID,
+    __wpShelfVariant: 'winter_brace',
+    __wpShelfIsBrace: true,
+  });
+  const group = { children: [board] };
+  const preview = resolvePaintPreviewGroupBox({
+    App: {} as never,
+    wardrobeGroup: group as never,
+    partKeys: [id],
+    anchorObject: board as never,
+    anchorParent: group as never,
+  });
+  assert.equal(preview?.kind, 'object_boxes');
+  assert.deepEqual(preview?.previewObjects, [board]);
+  assert.deepEqual(resolvePaintTargetKeys(id, 'bottom'), [id]);
+  const resolveMaterial = createPartMaterialResolver({
+    ui: { frontColorShelfInheritanceMode: 'brace' },
+    cfg: { isMultiColorMode: true, individualColors: { [id]: '#123456' } },
+    getMaterial: (color: string) => `paint:${color}`,
+    globalFrontMat: 'default',
+  });
+  assert.equal(resolveMaterial(id, null, board.userData), 'paint:#123456');
+});

@@ -52,6 +52,7 @@ export function readExistingShelfVariant(args: {
   const isBraceExisting = braceList.some(v => Number(v) === shelfIndex);
   const savedVariant =
     typeof shelfVariants[shelfIndex - 1] === 'string' ? String(shelfVariants[shelfIndex - 1]) : '';
+  if (savedVariant === 'winter_brace') return savedVariant;
   return isBraceExisting || savedVariant === 'brace'
     ? 'brace'
     : savedVariant === 'double' || savedVariant === 'glass' || savedVariant === 'regular'

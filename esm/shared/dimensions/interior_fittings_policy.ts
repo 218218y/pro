@@ -7,6 +7,8 @@ export const INTERIOR_SHELF_GEOMETRY_POLICY = Object.freeze({
   braceWidthClearanceM: meters(0),
   spanMinHeightM: meters(0.05),
   doubleThicknessMultiplier: 2,
+  // Winter brace frame width on all four sides, in centimeters.
+  winterBraceFrameWidthCm: 8,
 });
 
 export const INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY = Object.freeze({

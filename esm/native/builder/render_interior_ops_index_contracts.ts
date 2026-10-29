@@ -1,7 +1,7 @@
 import { readRenderOpNumber } from './render_ops_number_contracts.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 
-export type InteriorShelfVariant = 'double' | 'glass' | 'brace' | 'regular';
+export type InteriorShelfVariant = 'double' | 'glass' | 'brace' | 'regular' | 'winter_brace';
 
 const MAX_SAFE_INTEGER_TEXT = String(Number.MAX_SAFE_INTEGER);
 
@@ -48,7 +48,11 @@ export function buildInteriorRenderIndexSet(values: unknown): Record<number, tru
 
 export function readInteriorShelfVariant(value: unknown): InteriorShelfVariant | null {
   const variant = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  return variant === 'double' || variant === 'glass' || variant === 'brace' || variant === 'regular'
+  return variant === 'double' ||
+    variant === 'glass' ||
+    variant === 'brace' ||
+    variant === 'winter_brace' ||
+    variant === 'regular'
     ? variant
     : null;
 }

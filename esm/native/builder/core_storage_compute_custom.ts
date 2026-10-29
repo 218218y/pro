@@ -78,7 +78,10 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       ops.shelves.push(i);
       const vRaw = shelfVariantsArr[i - 1];
       const v0 = typeof vRaw === 'string' ? vRaw.trim().toLowerCase() : '';
-      const v = v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'regular' ? v0 : '';
+      const v =
+        v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'winter_brace' || v0 === 'regular'
+          ? v0
+          : '';
       if (v && v !== 'regular') shelfVariantsByIndex[i] = v;
     }
 

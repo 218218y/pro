@@ -121,7 +121,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       removedSideState.rightRemoved && Math.abs(segmentRightX - innerRightX) <= sideEdgeEpsilon;
     const forceBraceByRemovedSide = touchesRemovedLeftSide || touchesRemovedRightSide;
     const variant = rawVariant;
-    const isBrace = forceBraceByRemovedSide || variant === 'brace';
+    const isBrace = forceBraceByRemovedSide || variant === 'brace' || variant === 'winter_brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double' || !variant;
     const shelfExposedSide: RemovedFrameSideShelfExposure | null =
@@ -161,12 +161,14 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     );
     const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth);
     const shelfOptions: BuilderCreateBoardOptions | null =
-      isBrace && shelfExposedSide
-        ? {
-            shelfExposedSide,
-            ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
-          }
-        : null;
+      variant === 'winter_brace'
+        ? { shape: 'winter_brace_shelf', shelfExposedSide }
+        : isBrace && shelfExposedSide
+          ? {
+              shelfExposedSide,
+              ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
+            }
+          : null;
     const mesh = asMesh(
       createBoard(shelfW, shelfH, shelfDepth, shelfCenterX, shelfY, shelfZ, shelfMat, shelfPid, shelfOptions)
     );
@@ -198,7 +200,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       !isBrace && (isDouble || isGlass || variant === 'regular')
     );
 
-    if (args.args.input.showContentsEnabled === true && isFn(args.args.input.addFoldedClothes)) {
+    if (
+      variant !== 'winter_brace' &&
+      args.args.input.showContentsEnabled === true &&
+      isFn(args.args.input.addFoldedClothes)
+    ) {
       const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(shelfY, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {

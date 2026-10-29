@@ -18,7 +18,7 @@ export function createSketchModuleShelfPreviewGeometry(args: {
 } {
   const { innerW, internalDepth, backZ, woodThick, regularDepth, shelfDepthOverrideM } = args;
   const variant = args.variant || 'double';
-  const isBrace = variant === 'brace';
+  const isBrace = variant === 'brace' || variant === 'winter_brace';
   const isDouble = variant === 'double' || !variant;
   const GLASS_THICK_M = MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   const shelfDims = INTERIOR_SHELF_GEOMETRY_POLICY;

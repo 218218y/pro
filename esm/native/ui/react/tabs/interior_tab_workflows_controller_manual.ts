@@ -87,7 +87,7 @@ export function createInteriorTabManualWorkflowController(
 
   const enterSketchDivision = (
     tool: ManualToolId,
-    shelfVariant: 'regular' | 'double' | 'glass' | 'brace'
+    shelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace'
   ) => {
     if (tool === 'rod') {
       activateManualToolId(SKETCH_TOOL_ROD);
@@ -171,6 +171,10 @@ export function createInteriorTabManualWorkflowController(
     },
 
     enterLayout(layoutType: LayoutTypeId) {
+      if (layoutType === 'winter_brace') {
+        enterSketchShelfTool('winter_brace');
+        return;
+      }
       if (layoutType === 'brace_shelves') {
         toggleBraceShelvesMode(app);
         return;
@@ -206,7 +210,7 @@ export function createInteriorTabManualWorkflowController(
       interiorSetGridDivisions(app, count);
     },
 
-    setGridShelfVariant(variant: 'regular' | 'double' | 'glass' | 'brace') {
+    setGridShelfVariant(variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace') {
       interiorSetGridShelfVariant(app, variant);
     },
   };

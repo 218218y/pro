@@ -17,7 +17,7 @@ import type {
 export type ModuleKey = number | 'corner' | `corner:${number}`;
 export type PreviewRenderPayload = SketchPlacementPreviewArgsLike | InteriorLayoutHoverPreviewArgsLike;
 export type PreviewCallback = ((args: PreviewRenderPayload) => unknown) | null;
-export type ShelfVariant = 'regular' | 'double' | 'glass' | 'brace';
+export type ShelfVariant = 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
 export type LayoutManualTool = 'shelf' | 'rod' | 'storage';
 export type HoverCustomDataLike = ModuleCustomDataLike &
   UnknownRecord & {

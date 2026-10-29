@@ -294,17 +294,19 @@ function resolveShelfLabel(ctx: LabelContext): string | null {
   const ordinal = shelfOrdinal(ctx);
   const base = basePartId.includes('shoe')
     ? 'מדף נעליים'
-    : ctx.shelfIsBrace
-      ? 'מדף קושרת'
-      : ctx.shelfVariant === 'glass'
-        ? 'מדף זכוכית'
-        : ctx.shelfVariant === 'double'
-          ? 'מדף כפול'
-          : ctx.shelfIsRounded
-            ? 'מדף מעוגל'
-            : basePartId.startsWith('corner_') || basePartId.includes('_corner_')
-              ? 'מדף פינתי'
-              : 'מדף';
+    : ctx.shelfVariant === 'winter_brace'
+      ? 'קושרת חורף'
+      : ctx.shelfIsBrace
+        ? 'מדף קושרת'
+        : ctx.shelfVariant === 'glass'
+          ? 'מדף זכוכית'
+          : ctx.shelfVariant === 'double'
+            ? 'מדף כפול'
+            : ctx.shelfIsRounded
+              ? 'מדף מעוגל'
+              : basePartId.startsWith('corner_') || basePartId.includes('_corner_')
+                ? 'מדף פינתי'
+                : 'מדף';
   const label = withOrdinal(base, ordinal);
   const cell = moduleLabel(ctx);
   return ctx.moduleIndex != null ? `${label} ב${cell}` : label;

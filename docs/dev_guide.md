@@ -153,6 +153,9 @@ Performance evidence is split into two categories:
 
 ## Build/render rules
 
+- Winter brace shelves (`winter_brace`, shown as קושרת חורף) use the normal shelf identity, material and sketch persistence paths with an open four-sided frame. Change `INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm` in `esm/shared/dimensions/interior_fittings_policy.ts` to set all four rims in centimeters (default 8; e.g. 6). Build and placement previews share the same frame planner. Narrow cells limit the rim to a quarter of the smaller span so the opening stays usable; geometry tests follow the configured value and exercise several widths rather than pinning the default.
+- File drop surfaces declare `data-file-drop-owner`. The page-wide project importer yields to those surfaces, including React portals attached to the same body event target.
+
 - Kernel derives build state from the canonical store or explicit overrides.
 - Builder/render operations should receive explicit deps/context.
 - Avoid duplicate builds, duplicate writes, and rerenders that do not reflect semantic state changes.

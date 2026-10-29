@@ -49,8 +49,11 @@ export type InteriorTabWorkflowController = {
   enterManual: (tool: ManualToolId) => void;
   exitManual: () => void;
   setGridDivisions: (count: number) => void;
-  setGridShelfVariant: (variant: 'regular' | 'double' | 'glass' | 'brace') => void;
-  enterSketchDivision: (tool: ManualToolId, shelfVariant: 'regular' | 'double' | 'glass' | 'brace') => void;
+  setGridShelfVariant: (variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace') => void;
+  enterSketchDivision: (
+    tool: ManualToolId,
+    shelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace'
+  ) => void;
   enterExtDrawer: (type: ExtDrawerType, count?: number) => void;
   exitExtDrawer: () => void;
   toggleDividerMode: () => void;

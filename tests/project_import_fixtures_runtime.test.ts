@@ -113,3 +113,40 @@ test('project import rejects old envelopes and missing schema metadata', () => {
   assert.equal(normalizeProjectData({ project: { settings: { wardrobeType: 'hinged' } } }), null);
   assert.equal(normalizeProjectData({ settings: { wardrobeType: 'hinged' }, toggles: {} }), null);
 });
+
+test('current projects preserve winter brace shelves across grids, sketch boxes and stack scopes', () => {
+  const source = asRecord(readFixtureObject('minimal_empty_owned_branches_project.json'), 'fixture');
+  const winter = { id: 'winter', variant: 'winter_brace', yNorm: 0.5 };
+  const module = {
+    layout: 'shelves',
+    isCustom: true,
+    gridDivisions: 6,
+    doors: 1,
+    extDrawersCount: 0,
+    hasShoeDrawer: false,
+    customData: { shelves: [true], rods: [], storage: false, shelfVariants: ['winter_brace'] },
+    sketchExtras: {
+      shelves: [winter],
+      boxes: [
+        { id: 'inside', shelves: [winter] },
+        { id: 'outside', freePlacement: true, shelves: [winter] },
+      ],
+    },
+  };
+  source.modulesConfiguration = [module];
+  source.stackSplitLowerModulesConfiguration = [structuredClone(module)];
+  const normalized = normalizeFixtureInput(JSON.parse(JSON.stringify(source)), 'winter brace');
+  const config = buildCanonicalProjectConfigSnapshot(normalized);
+  assertCanonicalProjectConfigSnapshot(config, 'winter brace');
+  for (const key of ['modulesConfiguration', 'stackSplitLowerModulesConfiguration']) {
+    const restored = asRecord(asArray((config as Record<string, unknown>)[key], key)[0], 'restored module');
+    const custom = asRecord(restored.customData, 'custom data');
+    assert.equal(asArray(custom.shelfVariants, 'variants')[0], 'winter_brace');
+    const extras = asRecord(restored.sketchExtras, 'extras');
+    assert.equal(asRecord(asArray(extras.shelves, 'shelves')[0], 'shelf').variant, 'winter_brace');
+    for (const box of asArray(extras.boxes, 'boxes')) {
+      const shelves = asArray(asRecord(box, 'box').shelves, 'box shelves');
+      assert.equal(asRecord(shelves[0], 'box shelf').variant, 'winter_brace');
+    }
+  }
+});

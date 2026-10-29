@@ -20,7 +20,7 @@ export type ShelfGridFreeBoxCommand = FreeBoxCellRange & {
   kind: 'shelf-grid';
   boxId: string;
   shelfYNorms: number[];
-  variant: 'regular' | 'double' | 'glass' | 'brace';
+  variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   depthM: number | null;
   blockedReason: string | null;
 };
@@ -32,7 +32,7 @@ export type PresetLayoutFreeBoxCommand = FreeBoxCellRange & {
   rodYNorms: number[];
   storageYNorm: number | null;
   storageHeightM: number | null;
-  variant: 'regular' | 'double' | 'glass' | 'brace';
+  variant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   depthM: number | null;
   blockedReason: string | null;
 };
@@ -63,7 +63,7 @@ export type FreeBoxDecodeFailure =
 export type FreeBoxDecodeResult<T extends FreeBoxCommand = FreeBoxCommand> =
   { ok: true; value: T } | { ok: false; reason: FreeBoxDecodeFailure };
 
-const SHELF_VARIANTS = new Set(['regular', 'double', 'glass', 'brace']);
+const SHELF_VARIANTS = new Set(['regular', 'double', 'glass', 'brace', 'winter_brace']);
 
 function isRecord(value: unknown): value is RecordMap {
   return !!value && typeof value === 'object' && !Array.isArray(value);

@@ -126,7 +126,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     if (y == null) continue;
     const rawVariant = normalizeSketchShelfVariant(shelf.variant);
     const variant = rawVariant;
-    const isBrace = forceBraceShelves || variant === 'brace';
+    const isBrace = forceBraceShelves || variant === 'brace' || variant === 'winter_brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double';
     const isRegular = variant === 'regular';
@@ -167,12 +167,14 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
             getPartMaterial,
           });
     const shelfOptions: BuilderCreateBoardOptions | null =
-      isBrace && shelfExposedSide
-        ? {
-            shelfExposedSide,
-            ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
-          }
-        : null;
+      variant === 'winter_brace'
+        ? { shape: 'winter_brace_shelf', shelfExposedSide }
+        : isBrace && shelfExposedSide
+          ? {
+              shelfExposedSide,
+              ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
+            }
+          : null;
     const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, shelfPartId, shelfOptions);
 
     const meshRec = readObject<{
@@ -212,7 +214,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       shelfPartId
     );
 
-    if (showContentsEnabled && typeof addFoldedClothes === 'function') {
+    if (variant !== 'winter_brace' && showContentsEnabled && typeof addFoldedClothes === 'function') {
       const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(y, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {
