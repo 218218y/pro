@@ -17,7 +17,9 @@ export function createExportCanvasWorkflowOps(deps: ExportCanvasWorkflowDeps): E
   return {
     copyToClipboard: createCopyToClipboardWorkflow(deps),
     exportDualImage: createExportDualImageWorkflow(deps),
+    exportDualImageA4Pdf: createExportDualImageWorkflow(deps, 'a4-pdf'),
     exportRenderAndSketch: createExportRenderAndSketchWorkflow(deps),
+    exportRenderAndSketchA4Pdf: createExportRenderAndSketchWorkflow(deps, 'a4-pdf'),
     takeSnapshot: createTakeSnapshotWorkflow(deps),
   };
 }

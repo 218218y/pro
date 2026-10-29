@@ -132,7 +132,9 @@ const __workflowOps: ExportCanvasWorkflowOpsLike = createExportCanvasWorkflowOps
 
 export const copyToClipboard = __workflowOps.copyToClipboard;
 export const exportDualImage = __workflowOps.exportDualImage;
+export const exportDualImageA4Pdf = __workflowOps.exportDualImageA4Pdf;
 export const exportRenderAndSketch = __workflowOps.exportRenderAndSketch;
+export const exportRenderAndSketchA4Pdf = __workflowOps.exportRenderAndSketchA4Pdf;
 export const takeSnapshot = __workflowOps.takeSnapshot;
 
 const __orderPdfOps: ExportOrderPdfOpsLike = createExportOrderPdfOps({
@@ -225,7 +227,9 @@ export function exportCanvas(
   const action = readExportAction(options);
   if (action === 'snapshot' || action === 'save') return takeSnapshot(App);
   if (action === 'dual' || action === 'openclosed') return exportDualImage(App);
+  if (action === 'dual-a4-pdf' || action === 'openclosedpdf') return exportDualImageA4Pdf(App);
   if (action === 'rendersketch' || action === 'sketch') return exportRenderAndSketch(App);
+  if (action === 'render-sketch-a4-pdf' || action === 'sketchpdf') return exportRenderAndSketchA4Pdf(App);
   if (action === 'autozoom') return autoZoomCamera(App);
   return copyToClipboard(App);
 }

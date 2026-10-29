@@ -2,6 +2,8 @@ import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
 import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
+import { exportCanvasAsA4Pdf } from './export_canvas_delivery_a4_pdf.js';
+import { isCanvasEncodingSecurityError } from './export_canvas_delivery_shared.js';
 import {
   captureFrontNotesTransform,
   drawExportHeader,
@@ -14,7 +16,8 @@ import {
 } from './export_canvas_workflow_viewport_policy.js';
 
 export function createExportRenderAndSketchWorkflow(
-  deps: ExportCanvasWorkflowDeps
+  deps: ExportCanvasWorkflowDeps,
+  format: 'clipboard' | 'a4-pdf' = 'clipboard'
 ): (App: AppContainer) => Promise<CanvasExportDeliveryResult | void> {
   const {
     _requireApp,
@@ -153,18 +156,35 @@ export function createExportRenderAndSketchWorkflow(
 
       try {
         const finalCanvas = await createComposite(true);
-        const deliveryResult = await _handleCanvasExport(App, finalCanvas, 'wardrobe-render-sketch.png', {
-          mode: 'clipboard',
-          clipboardFailureMode: 'none',
-          deferSecurityEncodingFailureToast: true,
-          toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
-        });
+        const deliveryResult =
+          format === 'a4-pdf'
+            ? await exportCanvasAsA4Pdf(App, finalCanvas, 'wardrobe-render-sketch-a4.pdf', deps._toast)
+            : await _handleCanvasExport(App, finalCanvas, 'wardrobe-render-sketch.png', {
+                mode: 'clipboard',
+                clipboardFailureMode: 'none',
+                deferSecurityEncodingFailureToast: true,
+                toastClipboardSuccess: 'ייצוא סקיצה/הדמיה הועתק ללוח בהצלחה!',
+              });
         if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
+        if (format === 'a4-pdf' && !deliveryResult.ok && deliveryResult.stage === 'encoding') {
+          throw deliveryResult.error;
+        }
         return deliveryResult;
       } catch (err) {
+        if (format === 'a4-pdf' && !isCanvasEncodingSecurityError(err)) throw err;
         deps._reportExportRecovery(App, 'exportRenderAndSketch.retryWithoutLogo', err, { pass: 'logo' });
         if (deps.shouldFailFast(App)) throw err;
         const finalCanvasWithoutLogo = await createComposite(false);
+        if (format === 'a4-pdf') {
+          const result = await exportCanvasAsA4Pdf(
+            App,
+            finalCanvasWithoutLogo,
+            'wardrobe-render-sketch-a4.pdf',
+            deps._toast
+          );
+          if (!result.ok && result.stage === 'encoding') throw result.error;
+          return result;
+        }
         return await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-render-sketch.png', {
           mode: 'clipboard',
           clipboardFailureMode: 'none',

@@ -26,7 +26,9 @@ type ExportCanvasModuleLike = {
   takeSnapshot?: ((app: AppContainer) => unknown) | undefined;
   copyToClipboard?: ((app: AppContainer) => unknown) | undefined;
   exportDualImage?: ((app: AppContainer) => unknown) | undefined;
+  exportDualImageA4Pdf?: ((app: AppContainer) => unknown) | undefined;
   exportRenderAndSketch?: ((app: AppContainer) => unknown) | undefined;
+  exportRenderAndSketchA4Pdf?: ((app: AppContainer) => unknown) | undefined;
   autoZoomCamera?: ((app: AppContainer) => unknown) | undefined;
 };
 
@@ -114,7 +116,9 @@ function asExportCanvasModule(mod: unknown): ExportCanvasModuleLike {
     takeSnapshot: readExportAction(rec, 'takeSnapshot'),
     copyToClipboard: readExportAction(rec, 'copyToClipboard'),
     exportDualImage: readExportAction(rec, 'exportDualImage'),
+    exportDualImageA4Pdf: readExportAction(rec, 'exportDualImageA4Pdf'),
     exportRenderAndSketch: readExportAction(rec, 'exportRenderAndSketch'),
+    exportRenderAndSketchA4Pdf: readExportAction(rec, 'exportRenderAndSketchA4Pdf'),
     autoZoomCamera: readExportAction(rec, 'autoZoomCamera'),
   };
 }
@@ -125,7 +129,9 @@ function hasAnyExportAction(mod: ExportCanvasModuleLike | null | undefined): boo
     (mod.takeSnapshot ||
       mod.copyToClipboard ||
       mod.exportDualImage ||
+      mod.exportDualImageA4Pdf ||
       mod.exportRenderAndSketch ||
+      mod.exportRenderAndSketchA4Pdf ||
       mod.autoZoomCamera)
   );
 }
@@ -138,8 +144,12 @@ function pickExportAction(mod: ExportCanvasModuleLike, kind: ExportUiActionKind)
       return mod.copyToClipboard;
     case 'dual':
       return mod.exportDualImage;
+    case 'dual-a4-pdf':
+      return mod.exportDualImageA4Pdf;
     case 'render-sketch':
       return mod.exportRenderAndSketch;
+    case 'render-sketch-a4-pdf':
+      return mod.exportRenderAndSketchA4Pdf;
     case 'auto-zoom':
       return mod.autoZoomCamera;
     default:
@@ -155,8 +165,12 @@ function resolveExportPerfMetricName(kind: ExportUiActionKind): string {
       return 'export.copy';
     case 'dual':
       return 'export.dual';
+    case 'dual-a4-pdf':
+      return 'export.dualA4Pdf';
     case 'render-sketch':
       return 'export.renderSketch';
+    case 'render-sketch-a4-pdf':
+      return 'export.renderSketchA4Pdf';
     case 'auto-zoom':
       return 'export.autoZoom';
     default:
@@ -266,14 +280,18 @@ export function createExportActions(app: AppContainer, toast: ToastFn, deps?: Cr
   const exportTakeSnapshot = async (): Promise<ExportUiActionResult> => run('snapshot');
   const exportCopyToClipboard = async (): Promise<ExportUiActionResult> => run('copy');
   const exportDualImage = async (): Promise<ExportUiActionResult> => run('dual');
+  const exportDualImageA4Pdf = async (): Promise<ExportUiActionResult> => run('dual-a4-pdf');
   const exportRenderAndSketch = async (): Promise<ExportUiActionResult> => run('render-sketch');
+  const exportRenderAndSketchA4Pdf = async (): Promise<ExportUiActionResult> => run('render-sketch-a4-pdf');
   const exportAutoZoomCamera = async (): Promise<ExportUiActionResult> => run('auto-zoom');
 
   return {
     exportTakeSnapshot,
     exportCopyToClipboard,
     exportDualImage,
+    exportDualImageA4Pdf,
     exportRenderAndSketch,
+    exportRenderAndSketchA4Pdf,
     exportAutoZoomCamera,
   };
 }

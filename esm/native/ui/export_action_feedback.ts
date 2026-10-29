@@ -46,6 +46,15 @@ export function getExportActionFailureToast(result: ExportUiActionResult): Expor
             : withDetail('ייצוא פתוח/סגור נכשל', result.message),
         type: 'error',
       };
+    case 'dual-a4-pdf':
+    case 'render-sketch-a4-pdf':
+      return {
+        message:
+          result.reason === 'not-installed'
+            ? 'ייצוא PDF בגודל A4 לא זמין כרגע'
+            : withDetail('ייצוא PDF בגודל A4 נכשל', result.message),
+        type: 'error',
+      };
     case 'render-sketch':
       return {
         message:

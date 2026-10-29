@@ -1,6 +1,7 @@
 import type { CanvasExportDeliveryResult } from '../../../types';
 
-export type ExportUiActionKind = 'snapshot' | 'copy' | 'dual' | 'render-sketch' | 'auto-zoom';
+export type ExportUiActionKind =
+  'snapshot' | 'copy' | 'dual' | 'dual-a4-pdf' | 'render-sketch' | 'render-sketch-a4-pdf' | 'auto-zoom';
 export type ExportUiActionReason = 'not-installed' | 'error' | 'busy' | 'delivery-failed';
 
 type CanvasExportDeliverySuccess = Extract<CanvasExportDeliveryResult, { ok: true }>;

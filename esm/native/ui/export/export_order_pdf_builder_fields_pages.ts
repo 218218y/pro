@@ -4,6 +4,7 @@ import {
   type OrderPdfBuilderFieldAcrobatOps,
 } from './export_order_pdf_builder_fields_shared.js';
 import { ORDER_PDF_TEMPLATE_FIELD_FONT_SIZE } from '../pdf/order_pdf_field_specs_runtime.js';
+import { fitPdfImageToPage } from './export_pdf_image_page_layout.js';
 
 export function createOrderPdfBuilderFieldPageOps(
   ctx: OrderPdfBuilderContextLike,
@@ -53,19 +54,16 @@ export function createOrderPdfBuilderFieldPageOps(
   const addCompositeImagesPage = async (pngBytes: Uint8Array): Promise<void> => {
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
     const img = await pdfDoc.embedPng(pngBytes);
-    const margin = 18;
-    const maxWidth = pageWidth - margin * 2;
-    const maxHeight = pageHeight - margin * 2;
-    const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-    const width = img.width * scale;
-    const height = img.height * scale;
-
-    page.drawImage(img, {
-      x: (pageWidth - width) / 2,
-      y: (pageHeight - height) / 2,
-      width,
-      height,
-    });
+    page.drawImage(
+      img,
+      fitPdfImageToPage({
+        pageWidth,
+        pageHeight,
+        imageWidth: img.width,
+        imageHeight: img.height,
+        margin: 18,
+      })
+    );
   };
 
   return {

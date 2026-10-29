@@ -379,7 +379,9 @@ export type CanvasExportDeliveryResult =
 export interface ExportCanvasWorkflowOpsLike extends UnknownRecord {
   copyToClipboard: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
   exportDualImage: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
+  exportDualImageA4Pdf: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
   exportRenderAndSketch: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
+  exportRenderAndSketchA4Pdf: (app: AppContainer) => Promise<CanvasExportDeliveryResult | void>;
   takeSnapshot: (app: AppContainer) => Promise<void>;
 }
 

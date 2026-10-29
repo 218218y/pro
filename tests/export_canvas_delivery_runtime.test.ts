@@ -404,3 +404,57 @@ test('fail-fast delivery rejects a tainted canvas instead of converting it into 
   assert.equal(created.state.encodeCount, 1);
   assert.equal(created.state.dataUrlCount, 0);
 });
+
+test('A4 PDF variants reuse the composite capture without altering clipboard PNG exports', async () => {
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  const harness = createDualWorkflowHarness({
+    encodeAttempt: (_attempt, callback) => callback(new Blob([png], { type: 'image/png' })),
+    clipboardWrite: async () => undefined,
+  });
+  const downloads: Array<{ filename: string; blob: Blob }> = [];
+  let activeBlob: Blob | null = null;
+  const app = harness.App as typeof harness.App & { docMaybe: unknown; winMaybe: unknown };
+  app.docMaybe = {
+    body: { appendChild() {} },
+    createElement: () => ({
+      style: {},
+      download: '',
+      href: '',
+      click() {
+        if (activeBlob) downloads.push({ filename: this.download, blob: activeBlob });
+      },
+      remove() {},
+    }),
+  };
+  app.winMaybe = {
+    URL: {
+      createObjectURL(blob: Blob) {
+        activeBlob = blob;
+        return 'blob:export-test';
+      },
+      revokeObjectURL() {},
+    },
+  };
+
+  assert.deepEqual(await harness.ops.exportDualImageA4Pdf(app as never), { ok: true, delivery: 'download' });
+  assert.deepEqual(await harness.ops.exportRenderAndSketchA4Pdf(app as never), {
+    ok: true,
+    delivery: 'download',
+  });
+  assert.deepEqual(
+    downloads.map(({ filename }) => filename),
+    ['wardrobe-design-open-closed-a4.pdf', 'wardrobe-render-sketch-a4.pdf']
+  );
+  assert.deepEqual(
+    harness.canvasStates.map(({ encodeCount }) => encodeCount),
+    [1, 1]
+  );
+  assert.equal(harness.readClipboardWriteCount(), 0);
+  assert.deepEqual(
+    harness.toasts.map(({ kind }) => kind),
+    ['success', 'success']
+  );
+});

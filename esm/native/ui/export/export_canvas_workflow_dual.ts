@@ -1,7 +1,11 @@
 import type { AppContainer, CanvasExportDeliveryResult } from '../../../../types';
 
 import type { ExportCanvasWorkflowDeps } from './export_canvas_workflow_shared.js';
-import { isCanvasExportSecurityFailure } from './export_canvas_delivery_shared.js';
+import {
+  isCanvasEncodingSecurityError,
+  isCanvasExportSecurityFailure,
+} from './export_canvas_delivery_shared.js';
+import { exportCanvasAsA4Pdf } from './export_canvas_delivery_a4_pdf.js';
 import {
   captureFrontNotesTransform,
   drawExportHeader,
@@ -13,7 +17,8 @@ import {
 } from './export_canvas_workflow_viewport_policy.js';
 
 export function createExportDualImageWorkflow(
-  deps: ExportCanvasWorkflowDeps
+  deps: ExportCanvasWorkflowDeps,
+  format: 'clipboard' | 'a4-pdf' = 'clipboard'
 ): (App: AppContainer) => Promise<CanvasExportDeliveryResult | void> {
   const {
     _requireApp,
@@ -130,18 +135,36 @@ export function createExportDualImageWorkflow(
 
     try {
       const finalCanvas = await createComposite(true);
-      const deliveryResult = await _handleCanvasExport(App, finalCanvas, 'wardrobe-design-open-closed.png', {
-        mode: 'clipboard',
-        clipboardFailureMode: 'none',
-        deferSecurityEncodingFailureToast: true,
-        toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
-      });
+      const deliveryResult =
+        format === 'a4-pdf'
+          ? await exportCanvasAsA4Pdf(App, finalCanvas, 'wardrobe-design-open-closed-a4.pdf', deps._toast)
+          : await _handleCanvasExport(App, finalCanvas, 'wardrobe-design-open-closed.png', {
+              mode: 'clipboard',
+              clipboardFailureMode: 'none',
+              deferSecurityEncodingFailureToast: true,
+              toastClipboardSuccess: 'ייצוא פתוח/סגור הועתק ללוח בהצלחה!',
+            });
       if (isCanvasExportSecurityFailure(deliveryResult)) throw deliveryResult.error;
+      if (format === 'a4-pdf' && !deliveryResult.ok && deliveryResult.stage === 'encoding') {
+        throw deliveryResult.error;
+      }
       return deliveryResult;
     } catch (err) {
+      // PDF library/download errors are not logo security errors: do not render twice.
+      if (format === 'a4-pdf' && !isCanvasEncodingSecurityError(err)) throw err;
       deps._reportExportRecovery(App, 'exportDualImage.retryWithoutLogo', err, { pass: 'logo' });
       if (deps.shouldFailFast(App)) throw err;
       const finalCanvasWithoutLogo = await createComposite(false);
+      if (format === 'a4-pdf') {
+        const result = await exportCanvasAsA4Pdf(
+          App,
+          finalCanvasWithoutLogo,
+          'wardrobe-design-open-closed-a4.pdf',
+          deps._toast
+        );
+        if (!result.ok && result.stage === 'encoding') throw result.error;
+        return result;
+      }
       return await _handleCanvasExport(App, finalCanvasWithoutLogo, 'wardrobe-design-open-closed.png', {
         mode: 'clipboard',
         clipboardFailureMode: 'none',

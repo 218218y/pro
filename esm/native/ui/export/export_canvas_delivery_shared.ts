@@ -4,6 +4,15 @@ import type { CanvasExportDeliveryResult } from '../../../../types';
 
 export type { CanvasExportDeliveryResult } from '../../../../types';
 
+export function isCanvasEncodingSecurityError(error: unknown): boolean {
+  const value = error && (typeof error === 'object' || typeof error === 'function') ? Object(error) : null;
+  const name = value && typeof value.name === 'string' ? value.name.trim().toLowerCase() : '';
+  if (name === 'securityerror') return true;
+  const message =
+    value && typeof value.message === 'string' ? value.message : typeof error === 'string' ? error : '';
+  return /taint|security|origin-clean|cross-origin/i.test(message);
+}
+
 export interface CanvasExportOptions {
   mode?: string;
   clipboardFailureMode?: string;

@@ -129,6 +129,26 @@ export function SettingsTab(props: { active: boolean }): ReactElement {
 
               <SettingsAction
                 icon="fas fa-file-pdf"
+                title="פתוח/סגור PDF A4"
+                subtitle="עמוד A4 להוספה ל-PDF קיים, בלי שינויי גודל ב-Acrobat"
+                testId="export-dual-image-a4-pdf-button"
+                onClick={() => {
+                  void exp.exportDualImageA4Pdf();
+                }}
+              />
+
+              <SettingsAction
+                icon="fas fa-file-pdf"
+                title="סקיצה/הדמיה PDF A4"
+                subtitle="עמוד A4 להוספה ל-PDF קיים, באיכות המקור"
+                testId="export-render-sketch-a4-pdf-button"
+                onClick={() => {
+                  void exp.exportRenderAndSketchA4Pdf();
+                }}
+              />
+
+              <SettingsAction
+                icon="fas fa-file-pdf"
                 title="PDF עריכה"
                 subtitle="פתח טופס בדפדפן ואז ייצא"
                 titleAttr="עורך PDF להזמנה"
