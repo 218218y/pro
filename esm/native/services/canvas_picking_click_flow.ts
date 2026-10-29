@@ -64,6 +64,17 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
     raycaster: __wpRaycaster,
     mouse: __wpMouse,
   });
+  // A cut is a gap in the door mesh, so the ray can hit a selector or carcass
+  // behind it. Match the hover's projected cut line whenever no door was hit;
+  // a resolved door retains priority over neighboring screen-space candidates.
+  if (
+    modeState.__isSplitEditMode &&
+    readSplitVariant(App) === 'custom' &&
+    !hitState?.effectiveDoorId &&
+    tryHandleCanvasDoorCustomSplitScreenRemoveClick({ App, ndcX, ndcY })
+  ) {
+    return;
+  }
   if (!hitState) {
     if (modeState.__isMeasureMode) {
       tryHandleViewerMeasurementClick({
@@ -74,13 +85,6 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      return;
-    }
-    if (
-      modeState.__isSplitEditMode &&
-      readSplitVariant(App) === 'custom' &&
-      tryHandleCanvasDoorCustomSplitScreenRemoveClick({ App, ndcX, ndcY })
-    ) {
       return;
     }
     return;

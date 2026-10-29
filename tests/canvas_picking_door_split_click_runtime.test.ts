@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import type { AppContainer } from '../types/index.ts';
 
+import { __coreHandleCanvasClickNDC } from '../esm/native/services/canvas_picking_click_flow.ts';
+import { resolveCanvasPickingClickHitState } from '../esm/native/services/canvas_picking_click_hit_flow.ts';
+import { resolveCanvasDoorCustomSplitScreenRemoveCandidate } from '../esm/native/services/canvas_picking_door_split_remove_target.ts';
 import { handleCanvasDoorSplitClick } from '../esm/native/services/canvas_picking_door_split_click.ts';
-import { tryHandleCanvasPickingActionRoute } from '../esm/native/services/canvas_picking_click_route_actions.ts';
 import {
   __wp_getSplitHoverDoorBaseKey,
   __wp_readSplitHoverDoorBounds,
@@ -13,8 +17,128 @@ import { hasCanvasDoorCustomSplitHeightAlignment } from '../esm/native/services/
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 import {
   readCanvasDoorSplitBounds,
+  readCanvasDoorSplitPosList,
   resolveCanvasDoorSplitBaseKey,
 } from '../esm/native/services/canvas_picking_door_split_click_shared.ts';
+
+test('every manual split removal hover commits through gaps and nearby faces at oblique viewing angles', () => {
+  for (const cameraX of [-2, 0, 2]) {
+    for (const backing of ['selector', 'carcass', 'empty']) {
+      for (const pointerX of [-0.3, 0.3]) {
+        for (const pointerYOffset of [-0.02, 0, 0.02]) {
+          const label = JSON.stringify({ cameraX, backing, pointerX, pointerYOffset });
+          const wardrobeGroup = new THREE.Group();
+          const doorsArray = [
+            { partId: 'd1_bot', minY: 0, maxY: 0.997 },
+            { partId: 'd1_top', minY: 1.003, maxY: 2 },
+          ].map(({ partId, minY, maxY }) => {
+            const group = new THREE.Group();
+            group.position.y = (minY + maxY) / 2;
+            group.userData = { partId, __doorHeight: maxY - minY, __doorWidth: 0.8 };
+            group.add(
+              new THREE.Mesh(new THREE.BoxGeometry(0.8, maxY - minY, 0.02), new THREE.MeshBasicMaterial())
+            );
+            wardrobeGroup.add(group);
+            return { group };
+          });
+          if (backing !== 'empty') {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2, 0.02), new THREE.MeshBasicMaterial());
+            mesh.position.set(0, 1, -0.2);
+            mesh.userData =
+              backing === 'selector' ? { isModuleSelector: true, moduleIndex: 0 } : { partId: 'back' };
+            wardrobeGroup.add(mesh);
+          }
+          const camera = new THREE.PerspectiveCamera(40, 1.6, 0.1, 100);
+          camera.position.set(cameraX, 1 + cameraX / 4, 5);
+          camera.lookAt(0, 1, 0);
+          camera.updateMatrixWorld(true);
+          wardrobeGroup.updateMatrixWorld(true);
+          const { App, maps, toasts } = createSplitClickApp({
+            splitVariant: 'custom',
+            doorsArray,
+            maps: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] } },
+          });
+          const app: AppContainer = App;
+          Object.assign(app.store!.getState().mode, { primary: 'split' });
+          Object.assign(app, { deps: { THREE } });
+          Object.assign(app.render!, { camera, wardrobeGroup, scene: new THREE.Scene(), renderer: {} });
+          const point = new THREE.Vector3(pointerX, 1 + pointerYOffset, 0).project(camera);
+          const raycaster = new THREE.Raycaster();
+          const mouse = new THREE.Vector2();
+          const hit = resolveCanvasPickingClickHitState({
+            App,
+            raycaster,
+            mouse,
+            ndcX: point.x,
+            ndcY: point.y,
+            isRemoveDoorMode: false,
+          });
+          if (pointerYOffset === 0) {
+            assert.equal(hit?.effectiveDoorId, null, label);
+            if (backing === 'selector') assert.equal(hit?.foundModuleIndex, 0, label);
+            if (backing === 'carcass') assert.equal(hit?.foundPartId, 'back', label);
+          } else assert.ok(hit?.effectiveDoorId, label);
+
+          const marker = new THREE.Mesh();
+          marker.userData = { __matRemove: 'remove', __matAdd: 'add' };
+          const runtime = {};
+          let previewOp: unknown;
+          const hovered = tryHandleSplitDoorHover({
+            App,
+            ndcX: point.x,
+            ndcY: point.y,
+            raycaster,
+            mouse,
+            marker: null,
+            cutMarker: marker as never,
+            splitVariant: 'custom',
+            getViewportRoots: () => ({ camera, wardrobeGroup, scene: null, renderer: {} }) as never,
+            getSplitHoverRaycastRoots: () => doorsArray.map(entry => entry.group),
+            raycastReuse: args => {
+              mouse.set(args.ndcX, args.ndcY);
+              raycaster.setFromCamera(mouse, camera);
+              return raycaster.intersectObjects(
+                doorsArray.map(entry => entry.group),
+                true
+              ) as never;
+            },
+            isViewportRoot: (_app, node) => node === wardrobeGroup,
+            str: (_app, value) => String(value),
+            isDoorLikePartId: partId => /^d\d+_/u.test(partId),
+            normalizeDoorBaseKey: (_app, _group, partId) => resolveCanvasDoorSplitBaseKey(App, partId),
+            readSplitHoverDoorBounds: readCanvasDoorSplitBounds,
+            readSplitPosList: readCanvasDoorSplitPosList,
+            getCanvasPickingRuntime: () => runtime,
+            getRegularSplitPreviewLineY: () => null,
+            setSketchPreview: args => {
+              previewOp = args.op;
+              return true;
+            },
+            reportPickingIssue: (_app, error) => {
+              throw error;
+            },
+          });
+          assert.equal(hovered, true, label);
+          assert.equal(marker.visible, true, label);
+          assert.equal(marker.material, 'remove', label);
+          assert.equal(previewOp, 'remove', label);
+          __coreHandleCanvasClickNDC(App, point.x, point.y);
+          assert.equal(maps.splitDoorsMap.split_d1, false, label);
+          assert.equal(maps.splitDoorsMap.splitpos_d1, undefined, label);
+          assert.deepEqual(toasts, [], label);
+          wardrobeGroup.traverse(node => {
+            if (node instanceof THREE.Mesh) {
+              node.geometry.dispose();
+              const materials = Array.isArray(node.material) ? node.material : [node.material];
+              for (const material of materials) material.dispose();
+            }
+          });
+          marker.geometry.dispose();
+        }
+      }
+    }
+  }
+});
 
 type DoorActionCall = {
   type: 'setSplit' | 'setSplitBottom' | 'setKey';
@@ -1455,7 +1579,7 @@ test('regular split slots remain stable after a sketch-managed door has already 
   assert.equal(maps.splitDoorsMap.splitstdpos_d3, undefined);
 });
 
-test('custom split routed click keeps the resolved door hit authoritative over another door screen remove candidate', () => {
+test('custom split click keeps the resolved door hit authoritative over another door screen remove candidate', () => {
   class Vec3 {
     constructor(
       public x = 0,
@@ -1523,62 +1647,39 @@ test('custom split routed click keeps the resolved door hit authoritative over a
     doorsArray: [firstDoor, secondDoor],
     maps: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] } },
   });
-  (App as any).deps = { THREE: { Vector3: Vec3, Box3: class {} } };
-  (App as any).render.camera = {};
-
-  const handled = tryHandleCanvasPickingActionRoute({
-    App,
-    ndcX: 0,
-    ndcY: 0.1,
-    raycaster: {} as never,
-    mouse: {} as never,
-    modeState: {
-      __pm: 'split',
-      __isPaintMode: false,
-      __isGrooveEditMode: false,
-      __isSplitEditMode: true,
-      __isLayoutEditMode: false,
-      __isManualLayoutMode: false,
-      __isBraceShelvesMode: false,
-      __isCellDimsMode: false,
-      __isMeasureMode: false,
-      __isExtDrawerEditMode: false,
-      __isIntDrawerEditMode: false,
-      __isDividerEditMode: false,
-      __isHandleEditMode: false,
-      __isHingeEditMode: false,
-      __isRemoveDoorMode: false,
-      __isDoorTrimMode: false,
-    },
-    hitState: {
-      intersects: [],
-      foundPartId: 'd2_full',
-      foundModuleIndex: null,
-      foundModuleStack: 'top',
-      effectiveDoorId: 'd2_full',
-      foundDrawerId: null,
-      primaryHitObject: secondDoor.group as never,
-      doorHitObject: secondDoor.group as never,
-      doorHitGroup: secondDoor.group as never,
-      primaryHitPoint: { x: 0, y: 1.4, z: 0 },
-      doorHitPoint: { x: 0, y: 1.4, z: 0 },
-      moduleHitY: null,
-      doorHitY: 1.4,
-      primaryHitY: 1.4,
-      hitIdentity: null,
-    },
-    moduleRefs: {
-      __activeModuleKey: null,
-      __activeStack: 'top',
-      __isBottomStack: false,
-      __ensureConfigRefForKey: () => null,
-      __patchConfigForKey: () => false,
-      __getActiveConfigRef: () => null,
-      __ensureCornerCellConfigRef: () => null,
+  const app: AppContainer = App;
+  Object.assign(app.store!.getState().mode, { primary: 'split' });
+  Object.assign(app, {
+    deps: {
+      THREE: {
+        Vector3: Vec3,
+        Vector2: class {
+          x = 0;
+          y = 0;
+        },
+        Box3: class {},
+        Raycaster: class {
+          setFromCamera() {}
+          intersectObjects() {
+            return [{ object: secondDoor.group, point: { x: 0, y: 1.4, z: 0 } }];
+          }
+        },
+      },
     },
   });
+  Object.assign(app.render!, { camera: {} });
+  const screenCandidate = resolveCanvasDoorCustomSplitScreenRemoveCandidate({
+    App,
+    roots: [firstDoor.group, secondDoor.group],
+    ndcX: 0,
+    ndcY: 0.1,
+    readBounds: readCanvasDoorSplitBounds,
+    readPosList: readCanvasDoorSplitPosList,
+    normalizeDoorBaseKey: (_app, _group, partId) => resolveCanvasDoorSplitBaseKey(App, partId),
+  });
+  assert.equal(screenCandidate?.doorBaseKey, 'd1', 'a nearby projected cut really is eligible');
+  __coreHandleCanvasClickNDC(App, 0, 0.1);
 
-  assert.equal(handled, true);
   assert.equal(maps.splitDoorsMap.split_d1, true, 'the neighboring door cut must remain intact');
   assert.deepEqual(maps.splitDoorsMap.splitpos_d1, [0.5]);
   assert.equal(maps.splitDoorsMap.split_d2, true, 'the resolved clicked door receives the new cut');

@@ -19,6 +19,53 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('manual door split can be removed at the same pointer position after rebuilding', async ({ page }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await setDoorFeatureToggle(page, 'splitDoors', true);
+    await setDoorAuthoringMode(page, 'split-custom', true);
+
+    const point = { x: 0.1, y: 0 };
+    await expect.poll(async () => (await inspectCanvasViaDebugNdc(page, point))?.partId).toMatch(/^d\d+_/u);
+    const canvas = page.locator('#viewer-container canvas').first();
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    const client = { x: box!.x + ((point.x + 1) / 2) * box!.width, y: box!.y + box!.height / 2 };
+    const readCuts = async () => {
+      const state = await readDebugStoreState(page);
+      const config = state.config as { splitDoorsMap?: Record<string, unknown> };
+      return config.splitDoorsMap?.splitpos_d3 || [];
+    };
+
+    await page.mouse.move(client.x, client.y);
+    for (let cycle = 0; cycle < 3; cycle++) {
+      const beforeBuild = (await readBuildDebugStats(page)).executeCount;
+      await page.mouse.down();
+      await page.mouse.up();
+      await expect.poll(readCuts).toHaveLength(1);
+      await expect
+        .poll(async () => (await readBuildDebugStats(page)).executeCount)
+        .toBeGreaterThan(beforeBuild);
+
+      // The cut opens a gap: selectors/carcass behind it still produce a click
+      // hit, while the visible line remains an actionable removal target.
+      await expect
+        .poll(async () => (await inspectCanvasViaDebugNdc(page, point))?.partId || '')
+        .not.toMatch(/^d\d+_/u);
+      await expect
+        .poll(async () => canvas.evaluate(node => (node as HTMLElement).style.cursor))
+        .toBe('pointer');
+      const beforeRemove = (await readBuildDebugStats(page)).executeCount;
+      await page.mouse.down();
+      await page.mouse.up();
+      await expect.poll(readCuts).toEqual([]);
+      await expect
+        .poll(async () => (await readBuildDebugStats(page)).executeCount)
+        .toBeGreaterThan(beforeRemove);
+    }
+    expectNoRuntimeIssues(issues);
+  });
+
   test('browser hover and click apply cell dimensions to the same canvas target @critical', async ({
     page,
   }) => {
