@@ -66,6 +66,7 @@ const focusedInventories = new Map([
       'esm/native/services/canvas_picking_door_split_click_custom.ts',
       'esm/native/services/canvas_picking_door_split_click_toggle.ts',
       'esm/native/services/canvas_picking_door_split_standard_target.ts',
+      'esm/shared/dimensions/sketch_box_preview_policy.ts',
       'esm/shared/wardrobe_construction_validation_shared.ts',
       ownerRel,
     ],

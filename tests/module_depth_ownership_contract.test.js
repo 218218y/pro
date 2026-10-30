@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/module_loop_pipeline_module_depth.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
-test('Module Depth imports exactly three focused owners without aliases or aggregate policies', () => {
+test('Module Depth imports its four focused owners including the closed-door stop policy without aliases', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency =>
@@ -32,6 +32,12 @@ test('Module Depth imports exactly three focused owners without aliases or aggre
         importedSymbols: ['CARCASS_INTERIOR_DIMENSIONS'],
       },
       {
+        specifier: '../../shared/dimensions/door_system_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['resolveBraceShelfFrontZ'],
+      },
+      {
         specifier: '../../shared/dimensions/carcass_shell_policy.js',
         kind: 'value',
         syntax: 'static-import',
@@ -45,7 +51,7 @@ test('Module Depth imports exactly three focused owners without aliases or aggre
       },
     ]
   );
-  assert.equal(focusedImports.length, 3);
+  assert.equal(focusedImports.length, 4);
   assert.equal(
     focusedImports.every(dependency =>
       dependency.bindings.every(binding => binding.importedName === binding.localName)

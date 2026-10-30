@@ -78,6 +78,11 @@ test('free-placement sketch-box doors use the inner frame opening in inset door 
 
   assert.ok(layout);
   assert.equal(layout.doorPid, 'sketch_box_free_0_freeInsetBox_door_doorA');
+  assert.equal(
+    layout.groupUserData.noGlobalOpen,
+    true,
+    'ordinary box doors retain their local opening policy'
+  );
   assert.ok(Math.abs(layout.pivotX - -0.261) < 1e-9);
   assert.ok(Math.abs(layout.doorW - 0.522) < 1e-9);
   assert.ok(Math.abs(layout.doorH - 0.722) < 1e-9);

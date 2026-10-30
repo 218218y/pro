@@ -5,6 +5,7 @@ import { appendFullHingedDoorOps } from '../esm/native/builder/hinged_doors_modu
 
 function createCtx(overrides: Record<string, unknown> = {}) {
   const base = {
+    winterBraceDoorPlan: { cuts: [], fixedBelowY: null },
     cfg: {
       wardrobeType: 'hinged',
       isMultiColorMode: true,
