@@ -1,3 +1,5 @@
+import { resolveWinterBraceDoorPlan } from './winter_brace_shelf_geometry.js';
+import { createSketchVerticalPlacement } from './render_interior_sketch_support_placement.js';
 import {
   CORNER_WING_BODY_POLICY,
   CORNER_CONNECTOR_DOOR_RENDER_POLICY,
@@ -86,10 +88,26 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   const totalDoorH = effectiveTopLimit - doorBottomY - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const topSplitEnabled = ctx.splitDoors && isSplit(ctx, doorBaseId);
   const bottomSplitEnabled = ctx.splitDoors && isSplitBottom(ctx, doorBaseId);
-  const shouldSplit = ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled);
+  const shelfTopY = effectiveTopLimit - ctx.woodThick / 2;
+  const placement = createSketchVerticalPlacement({
+    effectiveBottomY: cellEffBottomY,
+    effectiveTopY: shelfTopY,
+    woodThick: ctx.woodThick,
+  });
+  const divisions =
+    typeof cellCfg?.gridDivisions === 'number' && cellCfg.gridDivisions > 1 ? cellCfg.gridDivisions : 6;
+  const winterBraceDoorPlan = resolveWinterBraceDoorPlan({
+    config: cellCfg,
+    source: 'module',
+    gridY: index => cellEffBottomY + (index * (shelfTopY - cellEffBottomY)) / divisions,
+    sketchY: placement.yFromNorm,
+  });
+  const shouldSplit =
+    winterBraceDoorPlan.cuts.length > 0 || (ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled));
   const bottomLineY = computeBottomLineY(ctx, cellCfg, cellEffBottomY, doorBottomY, effectiveTopLimit);
 
   return {
+    winterBraceDoorPlan,
     doorIdx,
     cell,
     cellKey,

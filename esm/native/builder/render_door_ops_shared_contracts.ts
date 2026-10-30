@@ -97,6 +97,8 @@ export type SlidingDoorOpLike = {
 };
 
 export type HingedDoorOpLike = {
+  fixedClosed?: boolean;
+  winterBraceDoorPlan?: { cuts: number[]; fixedBelowY: number | null };
   x: number;
   y: number;
   z: number;

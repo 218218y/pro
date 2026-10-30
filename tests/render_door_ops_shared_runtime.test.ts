@@ -78,6 +78,7 @@ test('render_door_ops_shared parses sliding and hinged op payloads with sane fal
     isLeftHinge: false,
     openAngle: undefined,
     isRemoved: false,
+    fixedClosed: false,
     isMirror: true,
     hasGroove: false,
     moduleIndex: undefined,

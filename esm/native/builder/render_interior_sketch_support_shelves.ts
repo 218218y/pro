@@ -145,11 +145,13 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       : null;
     const shelfX = boxHere ? boxHere.centerX : baseShelfX;
     const shelfW = boxHere ? (boxShelfW ?? baseShelfW) : baseShelfW;
+    const braceDepth = Math.max(woodThick, (args.braceFrontZ ?? backZ + internalDepth) - backZ);
+    const maxShelfDepth = isBrace ? braceDepth : internalDepth;
     const shelfDepth = resolveShelfDepth({
       requestedDepth: shelf.depthM,
       woodThick,
-      internalDepth,
-      fallbackDepth: isBrace ? internalDepth : regularDepth,
+      internalDepth: maxShelfDepth,
+      fallbackDepth: isBrace ? braceDepth : regularDepth,
       boxInnerDepth: boxHere?.innerD ?? null,
     });
 

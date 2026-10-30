@@ -269,8 +269,13 @@ export function applySketchExternalDrawerDoorCuts(args: {
       const isCanonicalSourceDoor = partId === basePartId || partId === `${basePartId}_full`;
       if (!isCanonicalSourceDoor) return null;
       const ownsDeferredSplit = deferredSplitModuleKeys.has(moduleKey);
-      if (!stacks.length && !(ownsDeferredSplit && splitPosList.length)) return null;
-      return { stacks, basePartId, splitPosList };
+      const winterPlan = asRecord(ud.__wpWinterBraceDoorPlan);
+      const lineCutsY = Array.isArray(winterPlan?.cuts)
+        ? winterPlan.cuts.filter((y): y is number => typeof y === 'number' && Number.isFinite(y))
+        : [];
+      const fixedBelowY = typeof winterPlan?.fixedBelowY === 'number' ? winterPlan.fixedBelowY : null;
+      if (!stacks.length && !(ownsDeferredSplit && (splitPosList.length || lineCutsY.length))) return null;
+      return { stacks, basePartId, splitPosList, lineCutsY, fixedBelowY };
     },
   });
 }

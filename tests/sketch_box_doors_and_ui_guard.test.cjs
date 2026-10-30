@@ -177,8 +177,10 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
       entry.properties.type.value === 'hinged' &&
       entry.properties.isOpen?.kind === 'member' &&
       entry.properties.isOpen.path === 'layout.doorOpen' &&
-      entry.properties.noGlobalOpen?.kind === 'literal' &&
-      entry.properties.noGlobalOpen.value === true
+      entry.properties.noGlobalOpen?.kind === 'binary' &&
+      entry.properties.noGlobalOpen.operator === '===' &&
+      entry.properties.noGlobalOpen.left?.path === 'layout.groupUserData.noGlobalOpen' &&
+      entry.properties.noGlobalOpen.right?.value === true
     );
   });
   assert.ok(doorPush, 'sketch box doors should register canonical hinged runtime metadata');

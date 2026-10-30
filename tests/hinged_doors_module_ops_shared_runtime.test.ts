@@ -207,6 +207,7 @@ test('hinged_doors_module_ops_shared derives default handle height and emits seg
 
   assert.equal(opsList.length, 1);
   assert.deepEqual(opsList[0], {
+    fixedClosed: false,
     partId: 'd4_top',
     moduleIndex: 0,
     pivotX: state.pivotX,

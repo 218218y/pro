@@ -181,6 +181,7 @@ export function resolveInteriorSketchExtrasInput(
     woodThick,
     shelfThick,
     internalDepth,
+    braceFrontZ: readBuilderRuntimeGeometryNumber(input.braceFrontZ, internalZ + internalDepth / 2),
     internalCenterX,
     internalZ,
     moduleDepth,

@@ -198,6 +198,7 @@ export function resolveSketchModuleShelfRemovePreview(
       innerW: previewInnerW,
       internalDepth,
       backZ,
+      braceFrontZ: readRecordNumber(info, 'braceFrontZ'),
       woodThick,
       regularDepth,
       variant: variantPreview,

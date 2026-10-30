@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-29T18:00:47.555Z",
+  "generatedAt": "2026-10-30T02:23:24.885Z",
   "totals": {
-    "tests": 1276,
-    "unitRunnerTests": 1264,
+    "tests": 1278,
+    "unitRunnerTests": 1266,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,8 +21,8 @@
   },
   "categories": {
     "contract": 399,
-    "runtime-unit": 350,
-    "integration": 484,
+    "runtime-unit": 351,
+    "integration": 485,
     "persistence-ingress": 23,
     "e2e-smoke": 13,
     "perf-smoke": 7
@@ -2873,6 +2873,10 @@
     {
       "file": "tests/bootstrap_drawer_meta_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/brace_shelf_depth_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/browser_adapter_healing_runtime.test.ts",
@@ -7617,6 +7621,10 @@
     {
       "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/winter_brace_doors_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/winter_brace_shelf_runtime.test.ts",

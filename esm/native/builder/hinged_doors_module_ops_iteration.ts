@@ -111,7 +111,9 @@ export function createHingedDoorIterationState(
     topSplitEnabled,
     bottomSplitEnabled,
     shouldSplitThisDoor:
-      ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled) && !deferSplitToSketchDoorCutPass,
+      (ctx.winterBraceDoorPlan.cuts.length > 0 ||
+        (ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled))) &&
+      !deferSplitToSketchDoorCutPass,
     sourceKey: `d${currentDoorId}_full`,
     topKey: `d${currentDoorId}_top`,
     midKey: `d${currentDoorId}_mid`,

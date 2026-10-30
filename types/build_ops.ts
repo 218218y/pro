@@ -25,6 +25,8 @@ export type Vec3Like = UnknownRecord & { x: number; y: number; z: number };
 
 // Hinged doors (front swing doors)
 export type HingedDoorOpLike = UnknownRecord & {
+  fixedClosed?: boolean;
+  winterBraceDoorPlan?: { cuts: number[]; fixedBelowY: number | null };
   partId: string;
   moduleIndex?: number;
   moduleDoors?: number;

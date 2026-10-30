@@ -1,3 +1,7 @@
+import {
+  readWinterBraceDoorLockState,
+  buildWinterBraceDoorLockPatch,
+} from '../selectors/config_selectors.js';
 // React UI actions: interior tools (layout/manual/drawers/dividers)
 
 import type { AppContainer, ActionMetaLike, DrawerRunnerType, UnknownRecord } from '../../../../../types';
@@ -14,7 +18,7 @@ import {
   setCfgScalar,
 } from './store_actions.js';
 import { getMetaActionFn } from '../../../services/api.js';
-import { readStoreStateMaybe } from '../../../services/api.js';
+import { readStoreStateMaybe, patchViaActions } from '../../../services/api.js';
 import {
   applyStructuralConfigMutation,
   applyStructuralUiMutation,
@@ -341,5 +345,14 @@ export function setInternalDrawersEnabled(
     );
   } catch (error) {
     reportInteriorActionFailure(app, 'internalDrawers.write', error);
+  }
+}
+
+export function toggleWinterBraceDoorLock(app: AppContainer): void {
+  const config = readStoreStateMaybe(app)?.config;
+  const lockState = readWinterBraceDoorLockState(config);
+  const patch = buildWinterBraceDoorLockPatch(config, !lockState.locked);
+  if (!patchViaActions(app, { config: patch }, { source: 'winterBrace:doorLock', immediate: true })) {
+    throw new Error('Winter brace door lock config action is unavailable');
   }
 }

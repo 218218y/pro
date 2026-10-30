@@ -92,6 +92,7 @@ export type ApplySketchStorageBarriersArgs = {
 };
 
 export type ApplySketchShelvesArgs = {
+  braceFrontZ?: number;
   shelves: SketchShelfExtra[];
   yFromNorm: (yNorm: unknown) => number | null;
   findBoxAtY: (y: number) => SketchBoxLocatorResult | null;

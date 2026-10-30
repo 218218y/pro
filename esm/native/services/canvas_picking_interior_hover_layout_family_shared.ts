@@ -30,6 +30,9 @@ export function buildLayoutPreviewPayload(args: {
     internalZ: target.internalZ,
     innerW: target.innerW,
     internalDepth: target.internalDepth,
+    ...(readNumber(target.info.braceFrontZ) != null
+      ? { braceFrontZ: readNumber(target.info.braceFrontZ)! }
+      : {}),
     woodThick: target.woodThick,
     shelfYs,
     rodYs,

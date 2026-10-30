@@ -71,6 +71,7 @@ export type InteriorSketchExtrasInput = {
   woodThick: number;
   shelfThick: number;
   internalDepth: number;
+  braceFrontZ: number;
   internalCenterX: number;
   internalZ: number;
   moduleDepth: number;

@@ -55,6 +55,8 @@ export function createAddGridShelf(args: {
   woodThick: number;
   shelfThick: number;
   internalDepth: number;
+  braceDepth?: number;
+  braceZ?: number;
   internalZ: number;
   regularDepth: number;
   regularZ: number;
@@ -236,8 +238,8 @@ export function createAddGridShelf(args: {
   function addBaseShelfContents(): void {
     if (!shelfSet[1] || !__isFn(addFoldedClothes)) return;
     const isBrace = !!braceSet[1];
-    const shelfDepth = isBrace ? internalDepth : regularDepth;
-    const shelfZ = isBrace ? internalZ : regularZ;
+    const shelfDepth = isBrace ? (args.braceDepth ?? internalDepth) : regularDepth;
+    const shelfZ = isBrace ? (args.braceZ ?? internalZ) : regularZ;
     const maxHeight = resolveBaseContentsMaxHeight(shelfThick);
     if (!(maxHeight > 0)) return;
 
@@ -294,8 +296,8 @@ export function createAddGridShelf(args: {
     if (!(y < effectiveTopY - 0.01)) return;
 
     const isBrace = !!braceSet[gridKey];
-    const shelfDepth = isBrace ? internalDepth : regularDepth;
-    const shelfZ = isBrace ? internalZ : regularZ;
+    const shelfDepth = isBrace ? (args.braceDepth ?? internalDepth) : regularDepth;
+    const shelfZ = isBrace ? (args.braceZ ?? internalZ) : regularZ;
     const partitionCells = resolvePartitionCellsAtY?.(y) ?? [];
     const spans = partitionCells.length
       ? partitionCells

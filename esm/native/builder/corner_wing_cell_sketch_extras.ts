@@ -36,6 +36,7 @@ type CornerWingCellSketchExtrasParams = {
   cellInnerW: number;
   woodThick: number;
   __internalDepth: number;
+  braceFrontZ?: number;
   cellInnerCenterX: number;
   __fullDepthCenterZ: number;
   __z: (z: number) => number;
@@ -143,6 +144,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       innerW: cellInnerW,
       woodThick,
       internalDepth: __internalDepth,
+      ...(params.braceFrontZ !== undefined ? { braceFrontZ: params.braceFrontZ } : {}),
       internalCenterX: cellInnerCenterX,
       internalZ: __fullDepthCenterZ,
       // Corner sketch extras must render against the *cell* depth/front plane,

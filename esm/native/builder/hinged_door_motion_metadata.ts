@@ -15,6 +15,7 @@ type HingedDoorMotionMetadataPatchInput = Readonly<{
   invertSwing?: boolean;
   removed?: boolean;
   noGlobalOpen?: boolean;
+  fixedClosed?: boolean;
   widthM?: number;
   heightM?: number;
   meshOffsetXM?: number;

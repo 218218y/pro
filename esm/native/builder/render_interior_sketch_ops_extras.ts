@@ -220,6 +220,7 @@ export function applyInteriorSketchOwnedShelves(args: {
       regularShelfWidth,
       internalCenterX: cell.centerX,
       internalDepth: resolved.internalDepth,
+      braceFrontZ: resolved.braceFrontZ,
       internalZ: resolved.internalZ,
       regularDepth: resolved.regularDepth,
       backZ: resolved.backZ,

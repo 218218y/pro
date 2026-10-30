@@ -120,6 +120,7 @@ export function createCornerWingInteriorCellRuntime(
     localGridStep: cell.localGridStep,
     __braceSet,
     __internalDepth,
+    braceFrontZ: zShift,
     __regularDepth,
     __fullDepthCenterZ,
     __backFaceZ,

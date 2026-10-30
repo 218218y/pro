@@ -79,6 +79,8 @@ export function createAddCustomGridShelf(args: {
   woodThick: number;
   shelfThick: number;
   internalDepth: number;
+  braceDepth?: number;
+  braceZ?: number;
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
@@ -265,8 +267,8 @@ export function createAddCustomGridShelf(args: {
     const isBrace = !!braceSet[gridIndex] || shelfVariant === 'brace' || shelfVariant === 'winter_brace';
     const isGlass = shelfVariant === 'glass';
     const shelfH = shelfHeightForVariant(shelfVariant, shelfThick);
-    const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
-    const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
+    const shelfDepth = isBrace ? (args.braceDepth ?? internalDepth) : braceMetrics.regularDepth;
+    const shelfZ = isBrace ? (args.braceZ ?? internalZ) : braceMetrics.regularZ;
     const shelfPartId = createModuleShelfPartId(moduleKey, gridIndex);
     const material =
       isGlass && glassMat
@@ -392,6 +394,8 @@ export function addCustomBaseShelfContents(args: {
   woodThick: number;
   shelfThick: number;
   internalDepth: number;
+  braceDepth?: number;
+  braceZ?: number;
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
@@ -455,8 +459,8 @@ export function addCustomBaseShelfContents(args: {
   if (!(maxHeight > 0)) return;
 
   const isBrace = !!braceSet[1] || firstShelfVariant === 'brace' || firstShelfVariant === 'winter_brace';
-  const shelfDepth = isBrace ? internalDepth : braceMetrics.regularDepth;
-  const shelfZ = isBrace ? internalZ : braceMetrics.regularZ;
+  const shelfDepth = isBrace ? (args.braceDepth ?? internalDepth) : braceMetrics.regularDepth;
+  const shelfZ = isBrace ? (args.braceZ ?? internalZ) : braceMetrics.regularZ;
 
   const cells = resolvePartitionCellsAtY?.(effectiveBottomY + 1e-6) ?? [];
   const spans = cells.length

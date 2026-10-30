@@ -1,9 +1,12 @@
+import { resolveWinterBraceDoorPlan } from './winter_brace_shelf_geometry.js';
+import { createSketchVerticalPlacement } from './render_interior_sketch_support_placement.js';
 import { reportError, shouldFailFast } from '../runtime/api.js';
 import { isDoorSpecialSurfaceValue, readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import {
   HINGED_DOOR_MOUNT_POLICY,
   HINGED_DOOR_RENDER_POLICY,
+  resolveHingedDoorClosedBackZ,
 } from '../../shared/dimensions/door_system_policy.js';
 import { EXTERNAL_DRAWER_FRONT_RENDER_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
 import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
@@ -73,9 +76,9 @@ export function createHingedDoorModuleOpsContext(
   const insetReveal = isInsetDoorMount
     ? Math.min(HINGED_DOOR_MOUNT_POLICY.insetRevealM, Math.max(0, woodThick / 3))
     : 0;
-  const doorOpZ = isInsetDoorMount
-    ? doorFrontZ - HINGED_DOOR_RENDER_POLICY.visualThicknessM / 2 - insetReveal
-    : doorFrontZ + HINGED_DOOR_RENDER_POLICY.opFrontZOffsetM;
+  const doorOpZ =
+    resolveHingedDoorClosedBackZ(doorFrontZ, cfg.doorMountMode, woodThick) +
+    HINGED_DOOR_RENDER_POLICY.visualThicknessM / 2;
   const splitLineY = params && typeof params.splitLineY === 'number' ? params.splitLineY : 0;
   const splitDoors = !!(params && params.splitDoors);
   const stackKey = typeof params.__wpStack === 'string' ? String(params.__wpStack) : 'top';
@@ -200,7 +203,20 @@ export function createHingedDoorModuleOpsContext(
   const totalDoorSpace = effectiveTopLimit - doorBottomY;
   const singleDoorW = moduleDoors > 0 ? modWidth / moduleDoors : 0;
 
+  const shelfTopY = params.effectiveTopY ?? effectiveTopLimit - woodThick / 2;
+  const placement = createSketchVerticalPlacement({ effectiveBottomY, effectiveTopY: shelfTopY, woodThick });
+  const divisions =
+    typeof configRecord.gridDivisions === 'number' && configRecord.gridDivisions > 1
+      ? configRecord.gridDivisions
+      : 6;
+  const winterBraceDoorPlan = resolveWinterBraceDoorPlan({
+    config: configRecord,
+    source: 'module',
+    gridY: index => effectiveBottomY + (index * (shelfTopY - effectiveBottomY)) / divisions,
+    sketchY: placement.yFromNorm,
+  });
   return {
+    winterBraceDoorPlan,
     ...(App !== undefined ? { App } : {}),
     ...(THREE !== undefined ? { THREE } : {}),
     cfg,

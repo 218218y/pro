@@ -1841,7 +1841,7 @@
   font-size: 0.82rem;
 }
 
-/* Sketch shelves group: keep the 3 top buttons and the 4 variant buttons on a single row */
+/* Shelf controls wrap on narrow sidebars; winter brace controls have their own row. */
 #reactSidebarRoot
   :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
   .wp-tool-card--layout
@@ -1850,7 +1850,7 @@
   :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
   .wp-tool-card--layout
   .wp-sketch-shelf-subrow {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -1865,7 +1865,25 @@
   .wp-sketch-shelf-subrow
   .type-option {
   flex: 1 1 0;
-  min-width: 0;
+  min-width: min-content;
+}
+
+#reactSidebarRoot .wp-tool-card--layout .wp-winter-brace-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+
+#reactSidebarRoot .wp-sketch-shelf-btn .wp-r-editmode-toggle__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+#reactSidebarRoot .wp-sketch-shelf-btn .wp-r-editmode-toggle__label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 /* Make the 4 variant buttons a touch more compact so they fit nicely */

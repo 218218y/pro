@@ -54,6 +54,7 @@ export type InteriorLayoutParams = ValueRecord & {
   woodThick?: number;
   shelfThick?: number;
   internalDepth?: number;
+  braceFrontZ?: number;
   internalCenterX?: number;
   internalZ?: number;
   D?: number;
@@ -166,6 +167,7 @@ export function buildSketchExtrasArgs(
     woodThick: readNumber(input.woodThick, 0),
     shelfThick: readNumber(input.shelfThick, readNumber(input.woodThick, 0)),
     internalDepth: readNumber(input.internalDepth, 0),
+    ...(input.braceFrontZ !== undefined ? { braceFrontZ: input.braceFrontZ } : {}),
     internalCenterX: readNumber(input.internalCenterX, 0),
     internalZ: readNumber(input.internalZ, 0),
     D: readNumber(input.D, 0),

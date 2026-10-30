@@ -29,6 +29,7 @@ import {
   createShelfAddHoverRecord,
   createStorageAddHoverRecord,
   findSketchBoxInnerShelfSpan,
+  readRecordNumber,
   type ResolveSketchModuleSurfacePreviewArgs,
   type SketchModuleSurfacePreviewResult,
 } from './canvas_picking_sketch_module_surface_preview_shared.js';
@@ -304,6 +305,7 @@ export function resolveSketchModuleContentPreview(args: {
   const shelfPreview = createSketchModuleShelfPreviewGeometry({
     innerW: previewInnerW,
     internalDepth: boxShelfSpan.innerD != null ? boxShelfSpan.innerD : internalDepth,
+    braceFrontZ: boxShelfSpan.innerD != null ? null : readRecordNumber(source.info, 'braceFrontZ'),
     backZ: boxShelfSpan.innerBackZ != null ? boxShelfSpan.innerBackZ : backZ,
     woodThick,
     regularDepth:

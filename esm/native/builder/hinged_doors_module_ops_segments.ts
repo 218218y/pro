@@ -51,6 +51,9 @@ export function pushHingedDoorSegment(
   const style = special === 'glass' ? 'glass' : null;
   const op = attachHiddenModuleDoors(
     {
+      fixedClosed:
+        ctx.winterBraceDoorPlan.fixedBelowY !== null &&
+        args.segY + args.segH / 2 <= ctx.winterBraceDoorPlan.fixedBelowY + 1e-6,
       partId: args.partId,
       moduleIndex: ctx.index,
       pivotX: state.pivotX,

@@ -28,6 +28,9 @@ export type ManualToolOption = InteriorManualToolOption;
 export type HandleTypeOption = InteriorHandleTypeOption;
 
 export type InteriorTabViewState = {
+  hasWinterBrace: boolean;
+  winterBraceDoorsLocked: boolean;
+  toggleWinterBraceDoorLock: () => void;
   modeOpts: ModeActionOptsLike;
   wardrobeType: 'sliding' | 'hinged';
   isChestMode: boolean;

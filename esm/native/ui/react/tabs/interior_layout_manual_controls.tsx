@@ -4,6 +4,7 @@ import { InlineNotice } from '../components/InlineNotice.js';
 import { ModeToggleButton } from '../components/index.js';
 import { OptionBtn, cx, parseSketchShelfVariant } from './interior_tab_helpers.js';
 import {
+  WinterBraceShelfControls,
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
 } from './interior_layout_sketch_shelves_section.js';
@@ -16,7 +17,6 @@ const GRID_SHELF_VARIANTS: ReadonlyArray<[GridShelfVariant, string, string]> = [
   ['double', 'כפול', 'fas fa-clone'],
   ['glass', 'זכוכית', 'fas fa-gem'],
   ['brace', 'קושרת', 'fas fa-link'],
-  ['winter_brace', 'קושרת חורף', 'far fa-square'],
 ];
 
 function readActiveShelfVariantForUi(props: InteriorLayoutSectionProps): GridShelfVariant {
@@ -163,6 +163,21 @@ export function InteriorLayoutManualControls(props: InteriorLayoutSectionProps):
           </ModeToggleButton>
         ))}
       </div>
+
+      {props.showShelfVariantControls ? (
+        <WinterBraceShelfControls
+          props={props}
+          active={activeShelfVariantForUi === 'winter_brace'}
+          onSelect={() => {
+            props.setManualRowOpen(true);
+            props.setManualUiTool('shelf');
+            props.setGridShelfVariant('winter_brace');
+            if (props.isSketchDivisionToolActive) props.enterSketchDivision('shelf', 'winter_brace');
+            else if (!props.isManualLayoutMode || props.isSketchToolActive || props.manualTool !== 'shelf')
+              props.enterManual('shelf');
+          }}
+        />
+      ) : null}
 
       <InteriorSketchShelfDepthField {...props} formFieldIdScope="interior-layout-manual-controls" />
       <InteriorSketchStorageHeightField {...props} formFieldIdScope="interior-layout-manual-controls" />

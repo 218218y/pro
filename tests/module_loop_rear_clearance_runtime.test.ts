@@ -15,6 +15,7 @@ function closeTo(actual: number, expected: number, message?: string): void {
 test('custom module full-depth divider side walls are shortened behind the back panel', () => {
   const calls: unknown[][] = [];
   const runtime = {
+    cfg: { wardrobeType: 'hinged' },
     D: 0.55,
     woodThick: 0.018,
     startY: 0,

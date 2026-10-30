@@ -67,6 +67,7 @@ export type CornerWingDoorContext = {
 };
 
 export type CornerWingDoorState = {
+  winterBraceDoorPlan: { cuts: number[]; fixedBelowY: number | null };
   doorIdx: number;
   cell: CornerCell | null;
   cellKey: string;

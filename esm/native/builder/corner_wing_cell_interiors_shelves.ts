@@ -224,7 +224,10 @@ export function addCornerWingGridShelf(
   const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
   const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace' || shelfVariant === 'winter_brace';
   const isGlassShelf = shelfVariant === 'glass';
-  const shelfDepth = isBraceShelf ? cellRuntime.__internalDepth : cellRuntime.__regularDepth;
+  const braceDepth =
+    (cellRuntime.braceFrontZ ?? cellRuntime.__backFaceZ + cellRuntime.__internalDepth) -
+    cellRuntime.__backFaceZ;
+  const shelfDepth = isBraceShelf ? braceDepth : cellRuntime.__regularDepth;
   const shelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, shelfVariant);
   const shelfW = isBraceShelf ? cellInnerW : cellShelfW;
   const shelfZ = cellRuntime.__backFaceZ + shelfDepth / 2;

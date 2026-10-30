@@ -26,6 +26,7 @@ import { resolveSketchBoxShelfMaterial } from './render_interior_sketch_boxes_co
 import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
+  resolveSketchBoxBraceDepth,
 } from './render_interior_sketch_boxes_contents_depth.js';
 
 function readPositiveNumber(value: unknown): number | null {
@@ -52,6 +53,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     woodThick,
   });
   const usableRegularDepth = Math.min(regularDepth, usableContentDepth);
+  const braceDepth = resolveSketchBoxBraceDepth({ shell, input: args.args.input, woodThick });
   const removedSideState = readSketchBoxRemovedSideShelfState(args.args.input.cfgSnapshot, boxPid);
   const innerLeftX = geometry.centerX - geometry.innerW / 2;
   const innerRightX = geometry.centerX + geometry.innerW / 2;
@@ -137,9 +139,10 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     const roundedShelfSide: RemovedFrameSideShelfRounding | null =
       roundedLeft && roundedRight ? 'both' : roundedLeft ? 'left' : roundedRight ? 'right' : null;
 
-    let shelfDepth = isBrace ? usableContentDepth : usableRegularDepth;
+    const maxShelfDepth = isBrace ? braceDepth : usableContentDepth;
+    let shelfDepth = isBrace ? braceDepth : usableRegularDepth;
     const depthM = readPositiveNumber(shelf.depthM);
-    if (depthM != null) shelfDepth = Math.min(usableContentDepth, Math.max(woodThick, depthM));
+    if (depthM != null) shelfDepth = Math.min(maxShelfDepth, Math.max(woodThick, depthM));
     const shelfPid = `${boxPid}_shelf_${String(shelf.id ?? si)}`;
     const shelfMat = resolveSketchBoxShelfMaterial({
       getPartMaterial,

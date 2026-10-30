@@ -104,3 +104,37 @@ export function createWinterBraceShelfGeometry(
   geometry.computeBoundingSphere();
   return geometry;
 }
+
+type RecordValue = Record<string, unknown>;
+const winterBraceRecord = (value: unknown): RecordValue | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as RecordValue) : null;
+
+export type WinterBraceDoorPlan = { cuts: number[]; fixedBelowY: number | null };
+
+export function resolveWinterBraceDoorPlan(args: {
+  config: unknown;
+  source: 'module' | 'box';
+  gridY: (index: number) => number;
+  sketchY: (norm: number) => number | null;
+}): WinterBraceDoorPlan {
+  const config = winterBraceRecord(args.config);
+  const custom = winterBraceRecord(config?.customData);
+  const ys: number[] = [];
+  if (args.source === 'module' && config?.isCustom === true && Array.isArray(custom?.shelfVariants)) {
+    const shelves = Array.isArray(custom.shelves) ? custom.shelves : [];
+    custom.shelfVariants.forEach((variant, index) => {
+      if (variant === 'winter_brace' && shelves[index] === true) ys.push(args.gridY(index + 1));
+    });
+  }
+  const extras = args.source === 'box' ? config : winterBraceRecord(config?.sketchExtras);
+  const shelves = Array.isArray(extras?.shelves) ? extras.shelves : [];
+  for (const item of shelves) {
+    const shelf = winterBraceRecord(item);
+    if (shelf?.variant !== 'winter_brace' || typeof shelf.yNorm !== 'number' || !Number.isFinite(shelf.yNorm))
+      continue;
+    const y = args.sketchY(shelf.yNorm);
+    if (y !== null) ys.push(y);
+  }
+  const cuts = [...new Set(ys.filter(Number.isFinite))].sort((a, b) => a - b);
+  return { cuts, fixedBelowY: config?.winterBraceDoorsUnlocked === true ? null : (cuts.at(-1) ?? null) };
+}

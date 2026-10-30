@@ -57,6 +57,24 @@ export function appendSplitHingedDoorOps(
   const topSplitLineY = computeTopSplitLineY(ctx, state);
   const customSplitCutsY = computeCustomSplitCutsY(ctx, state);
 
+  if (ctx.winterBraceDoorPlan.cuts.length) {
+    appendCustomSplitHingedDoorSegments(
+      ctx,
+      state,
+      visual,
+      mergeSplitCuts(
+        ctx,
+        [
+          ...(state.topSplitEnabled ? (customSplitCutsY.length ? customSplitCutsY : [topSplitLineY]) : []),
+          ...ctx.winterBraceDoorPlan.cuts,
+        ],
+        bottomLineY,
+        state.bottomSplitEnabled
+      )
+    );
+    return;
+  }
+
   if (state.topSplitEnabled && customSplitCutsY.length) {
     appendCustomSplitHingedDoorSegments(
       ctx,

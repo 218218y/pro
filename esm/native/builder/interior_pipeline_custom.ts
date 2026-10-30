@@ -78,6 +78,7 @@ export function applyCustomInteriorLayout(
         woodThick: readNumber(input.woodThick, 0),
         shelfThick: readNumber(input.shelfThick, readNumber(input.woodThick, 0)),
         internalDepth: readNumber(input.internalDepth, 0),
+        ...(input.braceFrontZ !== undefined ? { braceFrontZ: input.braceFrontZ } : {}),
         internalCenterX: readNumber(input.internalCenterX, 0),
         internalZ: readNumber(input.internalZ, 0),
         D: readNumber(input.D, 0),

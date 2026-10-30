@@ -231,6 +231,55 @@ test('segmented sketch door rebuild replaces original hinges with two hinges on 
   );
 });
 
+test('winter cut below external drawers gets an independent fixed pivot with its own hinges', () => {
+  const wardrobe = new FakeGroup();
+  const door = new FakeGroup();
+  door.position.set(-0.45, 1, 0.6);
+  door.userData = {
+    partId: 'd5_full',
+    __doorWidth: 0.9,
+    __doorHeight: 2,
+    __doorMeshOffsetX: 0.45,
+    __hingeLeft: true,
+  };
+  wardrobe.add(door);
+  installInitialHinges({
+    wardrobeGroup: wardrobe,
+    doorGroup: door,
+    partId: 'd5_full',
+    width: 0.9,
+    height: 2,
+    isLeftHinge: true,
+  });
+  const fixed: FakeNode[] = [];
+  rebuildSketchSegmentedDoor({
+    runtime: createBaseRuntime(),
+    g: door as never,
+    ud: door.userData,
+    visibleSegments: [
+      { yMin: 0, yMax: 0.798 },
+      { yMin: 0.802, yMax: 1.1 },
+      { yMin: 1.4, yMax: 2 },
+    ],
+    basePartId: 'd5',
+    fixedBelowY: 0.8,
+    registerFixedDoor(group, hingeSide) {
+      assert.equal(hingeSide, 'left');
+      fixed.push(group as unknown as FakeNode);
+    },
+  });
+  assert.equal(fixed.length, 1);
+  assert.equal(fixed[0]!.parent, wardrobe);
+  assert.equal(fixed[0]!.userData.__wpDoorFixedClosed, true);
+  assert.equal(fixed[0]!.userData.partId, 'd5_bot');
+  assert.equal(hardwareGroups(fixed[0]!, 'door').length, 2);
+  assert.equal(hardwareGroups(door, 'door').length, 4);
+  assert.equal(
+    door.children.some(node => node.userData.partId === 'd5_bot'),
+    false
+  );
+});
+
 test('segmented sketch door rebuild moves the lower hinge above a bottom external-drawer cut', () => {
   const wardrobeGroup = new FakeGroup();
   const doorGroup = new FakeGroup();

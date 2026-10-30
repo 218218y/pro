@@ -63,6 +63,7 @@ export function resolveHingedDoorTargetRotationY(
   if (!targetOpen || !door) return 0;
 
   const metadata = readHingedDoorMotionMetadata(door);
+  if (metadata.fixedClosed) return 0;
   let rotationY = (door.hingeSide === 'left' ? -1 : 1) * HINGED_DOOR_KINEMATICS_POLICY.openAngleRad;
 
   if (metadata.isCornerPent) rotationY *= metadata.openDirectionSign;

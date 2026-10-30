@@ -1,3 +1,4 @@
+import { patchBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metadata.js';
 import {
   CORNER_CONNECTOR_LAYOUT_POLICY,
   CORNER_CONNECTOR_DOOR_RENDER_POLICY,
@@ -31,8 +32,11 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
   const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const customSplitCutsY = readCustomSplitCutsY(ctx, state);
 
-  if (state.topSplitEnabled && customSplitCutsY.length) {
-    const mergedCuts = customSplitCutsY.slice();
+  if ((state.topSplitEnabled && customSplitCutsY.length) || state.winterBraceDoorPlan.cuts.length) {
+    const mergedCuts = [
+      ...(state.topSplitEnabled ? (customSplitCutsY.length ? customSplitCutsY : [state.splitLineY]) : []),
+      ...state.winterBraceDoorPlan.cuts,
+    ];
     if (state.bottomSplitEnabled && Number.isFinite(state.bottomLineY)) mergedCuts.push(state.bottomLineY);
     const cuts = mergeSplitCuts(ctx, state, mergedCuts);
     const segCount = cuts.length + 1;
@@ -188,6 +192,11 @@ function pushSegment(
 ): void {
   const isRemovedDoor = ctx.removeDoorsEnabled && ctx.isDoorRemoved(partId);
   const group = createCornerDoorGroup(ctx, state, partId, segH, handleAbsY, isRemovedDoor);
+  patchBuilderHingedDoorMotionMetadata(group.userData, {
+    fixedClosed:
+      state.winterBraceDoorPlan.fixedBelowY !== null &&
+      segY + segH / 2 <= state.winterBraceDoorPlan.fixedBelowY + 1e-6,
+  });
   group.position.set(state.pivotX, segY, CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + state.doorZShift);
 
   const added = processCornerDoorVisual(ctx, partId, {

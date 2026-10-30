@@ -73,6 +73,7 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     isLeftHinge: value.isLeftHinge === true,
     openAngle: readRenderOpNumber(value.openAngle) ?? undefined,
     isRemoved: value.isRemoved === true,
+    fixedClosed: value.fixedClosed === true,
     isMirror: value.isMirror === true,
     ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     hasGroove: value.hasGroove === true,
@@ -84,6 +85,21 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     handleAbsY: readRenderOpNumber(value.handleAbsY) ?? undefined,
     allowHandle: value.allowHandle === false ? false : undefined,
   };
+  if (value.winterBraceDoorPlan !== undefined) {
+    const plan = value.winterBraceDoorPlan;
+    if (
+      !isRecord(plan) ||
+      !Array.isArray(plan.cuts) ||
+      !plan.cuts.every((y: unknown) => typeof y === 'number' && Number.isFinite(y)) ||
+      !(
+        plan.fixedBelowY === null ||
+        (typeof plan.fixedBelowY === 'number' && Number.isFinite(plan.fixedBelowY))
+      )
+    ) {
+      throw new TypeError('Invalid winter brace door plan');
+    }
+    op.winterBraceDoorPlan = { cuts: plan.cuts.slice(), fixedBelowY: plan.fixedBelowY };
+  }
   const carcassMountFaceX = readRenderOpNumber(value.carcassMountFaceX);
   if (carcassMountFaceX != null) {
     Object.defineProperty(op, 'carcassMountFaceX', {

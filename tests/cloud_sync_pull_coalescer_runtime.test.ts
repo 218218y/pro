@@ -297,7 +297,9 @@ test('cloud sync pull coalescer parks queued work during main-row push and resum
   assert.equal(harness.timers.activeCount(), 0);
 });
 
-test('cloud sync pull coalescer keeps one fallback retry timer when main-row push is active but no push-settled hook exists', async () => {
+test('cloud sync pull coalescer keeps one fallback retry timer when main-row push is active but no push-settled hook exists', async t => {
+  let now = 1000;
+  t.mock.method(Date, 'now', () => now);
   const harness = createCoalescerHarness({ subscribeMainPushSettled: null });
 
   harness.setMainPushInFlight(true);
@@ -308,6 +310,7 @@ test('cloud sync pull coalescer keeps one fallback retry timer when main-row pus
   assert.equal(harness.pushSettledListenerCount, 0);
   assert.equal(harness.runs.length, 0);
 
+  now += 25;
   assert.equal(harness.timers.runNext(), true);
   await Promise.resolve();
   assert.deepEqual(
@@ -318,6 +321,7 @@ test('cloud sync pull coalescer keeps one fallback retry timer when main-row pus
   assert.equal(harness.runs.length, 0);
 
   harness.setMainPushInFlight(false);
+  now += 25;
   assert.equal(harness.timers.runNext(), true);
   await Promise.resolve();
   await Promise.resolve();

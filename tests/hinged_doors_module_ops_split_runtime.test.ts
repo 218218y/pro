@@ -39,6 +39,7 @@ function createCtx(overrides: Record<string, unknown> = {}) {
     hingedDoorPivotMap: null,
     globalHandleAbsY: 1.05,
     configRecord: {},
+    winterBraceDoorPlan: { cuts: [], fixedBelowY: null },
     moduleCfgList: [{}],
     isGroovesEnabled: true,
     removeDoorsEnabled: false,

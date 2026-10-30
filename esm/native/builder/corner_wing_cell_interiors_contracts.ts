@@ -104,6 +104,7 @@ export type CornerWingInteriorCellRuntime = {
   localGridStep: number;
   __braceSet: Record<number, true>;
   __internalDepth: number;
+  braceFrontZ: number;
   __regularDepth: number;
   __fullDepthCenterZ: number;
   __backFaceZ: number;

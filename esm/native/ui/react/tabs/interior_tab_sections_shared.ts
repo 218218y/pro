@@ -86,6 +86,9 @@ export const DOOR_TRIM_SPAN_PRIMARY_OPTIONS = DOOR_TRIM_SPAN_OPTIONS.slice(0, 3)
 export const DOOR_TRIM_SPAN_SECONDARY_OPTIONS = DOOR_TRIM_SPAN_OPTIONS.slice(3);
 
 export type InteriorLayoutSectionProps = {
+  hasWinterBrace: boolean;
+  winterBraceDoorsLocked: boolean;
+  toggleWinterBraceDoorLock: () => void;
   wardrobeType: 'sliding' | 'hinged';
   isChestMode: boolean;
   layoutActive: boolean;

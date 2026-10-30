@@ -150,10 +150,12 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       group.userData = {
         ...createBuilderHingedDoorMotionMetadata({
           partId,
+          fixedClosed: doorOp.fixedClosed === true,
           widthM: doorOp.width,
           heightM: doorOp.height,
           meshOffsetXM: doorOp.meshOffsetX || 0,
         }),
+        ...(doorOp.winterBraceDoorPlan ? { __wpWinterBraceDoorPlan: doorOp.winterBraceDoorPlan } : {}),
         moduleIndex: doorOp.moduleIndex,
         __wpModuleDoors: doorOp.moduleDoors,
         __wpStack: wpStackArg,

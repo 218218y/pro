@@ -1,3 +1,5 @@
+import { resolveWinterBraceDoorPlan } from './winter_brace_shelf_geometry.js';
+import { resolveSketchDoorSegmentPartId } from './post_build_sketch_door_cuts_rebuild_shared.js';
 import {
   getSketchBoxDoorPlacementSegmentKey,
   type SketchBoxDoorPlacement,
@@ -7,7 +9,12 @@ import type {
   ResolvedSketchBoxDoorLayout,
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
-import { readSketchBoxDoorId } from './render_interior_sketch_shared.js';
+import {
+  readSketchBoxDoorId,
+  asRecordArray,
+  type SketchShelfExtra,
+} from './render_interior_sketch_shared.js';
+import { resolveSketchBoxSegmentForContent } from './render_interior_sketch_layout.js';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { readGeometryRuntimePositiveNumber } from './geometry_runtime_contracts.js';
 import {
@@ -206,4 +213,68 @@ export function resolveSketchBoxDoorLayout(args: {
       ...(handleAbsY != null ? { __handleAbsY: handleAbsY } : {}),
     },
   };
+}
+
+export function resolveWinterBraceBoxDoorLayouts(
+  args: RenderSketchBoxDoorFrontsArgs,
+  layout: ResolvedSketchBoxDoorLayout
+): ResolvedSketchBoxDoorLayout[] {
+  const { shell, yFromBoxNorm } = args.frontsArgs;
+  const doorSegment = layout.placement?.segment;
+  const shelves = asRecordArray<SketchShelfExtra>(shell.box.shelves).filter(shelf => {
+    if (!doorSegment) return true;
+    const segment = resolveSketchBoxSegmentForContent({
+      dividers: args.frontsArgs.boxDividers,
+      horizontalDividers: args.frontsArgs.boxHorizontalDividers,
+      boxCenterX: shell.geometry.centerX,
+      innerW: shell.geometry.innerW,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      woodThick: args.frontsArgs.args.woodThick,
+      xNorm: shelf.xNorm,
+      yNorm: shelf.yNorm,
+    });
+    return (
+      !segment || Math.min(segment.rightX, doorSegment.rightX) > Math.max(segment.leftX, doorSegment.leftX)
+    );
+  });
+  const plan = resolveWinterBraceDoorPlan({
+    config: { ...shell.box, shelves },
+    source: 'box',
+    gridY: () => NaN,
+    sketchY: norm => yFromBoxNorm(norm, args.frontsArgs.args.woodThick / 2),
+  });
+  if (!plan.cuts.length) return [layout];
+  const bottom = layout.doorCenterY - layout.doorH / 2;
+  const top = layout.doorCenterY + layout.doorH / 2;
+  const cuts: number[] = [];
+  const halfGap = SKETCH_BOX_DOOR_PREVIEW_POLICY.doorSplitGapM / 2;
+  for (const y of plan.cuts) {
+    const previousTop = cuts.length ? cuts.at(-1)! + halfGap : bottom;
+    if (
+      y - halfGap - previousTop >= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorSplitMinSegmentHeightM &&
+      top - y - halfGap >= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorSplitMinSegmentHeightM
+    )
+      cuts.push(y);
+  }
+  if (!cuts.length) return [layout];
+  const bounds = [bottom, ...cuts, top];
+  return bounds.slice(0, -1).map((lo, index) => {
+    const minY = lo + (index > 0 ? halfGap : 0);
+    const maxY = bounds[index + 1]! - (index < cuts.length ? halfGap : 0);
+    const partId = resolveSketchDoorSegmentPartId(layout.doorPid, bounds.length - 1, index);
+    const height = maxY - minY;
+    const fixedClosed = plan.fixedBelowY !== null && maxY <= plan.fixedBelowY + 1e-6;
+    return {
+      ...layout,
+      doorPid: partId,
+      doorH: height,
+      doorCenterY: (minY + maxY) / 2,
+      groupUserData: {
+        ...layout.groupUserData,
+        ...createBuilderHingedDoorMotionMetadata({ partId, heightM: height, fixedClosed }),
+        noGlobalOpen: false,
+      },
+    };
+  });
 }

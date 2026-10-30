@@ -20,7 +20,11 @@ import {
   readConfigScalarOrDefault,
   readCornerConfigurationFromConfigSnapshot,
 } from '../../../services/api.js';
-import { readModulesConfigurationListFromConfigSnapshot } from '../../../features/modules_configuration/modules_config_api.js';
+import {
+  readWinterBraceDoorLockState,
+  buildWinterBraceDoorLockPatch,
+  readModulesConfigurationListFromConfigSnapshot,
+} from '../../../features/modules_configuration/modules_config_api.js';
 import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/index.js';
 import { moduleHasHexCell } from '../../../features/hex_cell/index.js';
 import { hasSketchInternalDrawersDirtyOrData } from '../../../features/sketch_drawer_sizing.js';
@@ -273,3 +277,5 @@ export function selectHasInternalDrawersData(cfg: ConfigStateLike): boolean {
     return false;
   }
 }
+
+export { readWinterBraceDoorLockState, buildWinterBraceDoorLockPatch };
