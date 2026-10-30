@@ -101,6 +101,10 @@ test('manual free-box brace protocol validates identity and narrows the target v
     host,
     boxId: 'box-3',
     plan: {
+      action: 'convert',
+      targetVariant: 'brace',
+      previewOp: 'add',
+      blockedReason: null,
       shelfId: 'shelf-9',
       shelfIdx: 2,
       shelfY: 1,
@@ -118,6 +122,11 @@ test('manual free-box brace protocol validates identity and narrows the target v
   });
 
   assert.deepEqual(readBraceShelvesFreeBoxCommand(hover), {
+    action: 'convert',
+    targetVariant: 'brace',
+    yNorm: 0.5,
+    xNorm: 0.5,
+    blockedReason: null,
     kind: 'brace-shelf',
     boxId: 'box-3',
     shelfId: 'shelf-9',

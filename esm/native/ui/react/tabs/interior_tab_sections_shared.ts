@@ -95,6 +95,7 @@ export type InteriorLayoutSectionProps = {
   isLayoutMode: boolean;
   isManualLayoutMode: boolean;
   isBraceShelvesMode: boolean;
+  isRegularShelfMode: boolean;
   isSketchToolActive: boolean;
   isSketchDivisionToolActive: boolean;
   layoutType: LayoutTypeId;

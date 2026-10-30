@@ -33,8 +33,9 @@ export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
   { id: 'hanging_split', label: 'תלייה כפולה', icon: 'fas fa-grip-lines' },
   { id: 'mixed', label: 'משולב', icon: 'fas fa-border-all' },
   { id: 'storage', label: 'אוגר מצעים', icon: 'fas fa-box-open' },
-  { id: 'brace_shelves', label: 'מדפי קושרת', icon: 'fas fa-link' },
   { id: 'winter_brace', label: 'קושרת חורף', icon: 'far fa-square' },
+  { id: 'brace_shelves', label: 'מדפי קושרת', icon: 'fas fa-link' },
+  { id: 'regular_shelf', label: 'מדף רגיל', icon: 'fas fa-minus' },
 ];
 
 export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [

@@ -274,7 +274,7 @@ function writeBraceShelvesHoverPreview(args: {
     h: args.plan.nextVariant === 'brace' ? args.plan.previewWoodThick : args.plan.previewWoodThick,
     d: args.plan.nextDepthM,
     woodThick: args.plan.previewWoodThick,
-    op: 'add',
+    op: args.plan.blockedReason ? 'blocked' : args.plan.previewOp,
   });
   return true;
 }
@@ -442,6 +442,7 @@ export function tryHandlePresetLayoutFreeBoxHover(args: {
 
 export function tryHandleBraceShelvesFreeBoxHover(args: {
   App: AppContainer;
+  targetVariant?: 'regular' | 'brace';
   ndcX: number;
   ndcY: number;
   raycaster: RaycasterLike;
@@ -461,6 +462,7 @@ export function tryHandleBraceShelvesFreeBoxHover(args: {
   });
   if (!targetContext) return false;
   const plan = resolveBraceShelvesFreeBoxPlan({
+    ...(args.targetVariant ? { targetVariant: args.targetVariant } : {}),
     targetBox: targetContext.target.targetBox,
     targetGeo: targetContext.target.targetGeo,
     targetCenterY: targetContext.target.targetCenterY,

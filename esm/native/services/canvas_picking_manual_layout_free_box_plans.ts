@@ -1,3 +1,7 @@
+import {
+  resolveShelfShortcutOperation,
+  type ShelfShortcutVariant,
+} from './canvas_picking_shelf_shortcuts.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   INTERIOR_ROD_RENDER_POLICY,
@@ -308,6 +312,7 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
 
 export function resolveBraceShelvesFreeBoxPlan(args: {
   targetBox: unknown;
+  targetVariant?: ShelfShortcutVariant;
   targetGeo: { centerX: number; innerW: number; innerD: number; innerBackZ: number };
   targetCenterY: number;
   targetHeight: number;
@@ -335,6 +340,7 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
   const tolerance = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM;
   for (let i = 0; i < shelves.length; i += 1) {
     const shelf = shelves[i];
+    if (!shelf) continue;
     const yNorm = readRecordNumber(shelf, 'yNorm');
     if (yNorm == null) continue;
     const xNorm = readContentItemXNorm(shelf);
@@ -349,11 +355,16 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     );
     const dy = Math.abs(shelfY - args.pointerY);
     if (dy > tolerance || dy >= bestDy) continue;
-    const nextVariant = currentVariant === 'brace' ? 'regular' : 'brace';
+    const operation = resolveShelfShortcutOperation(shelf, args.targetVariant ?? 'brace');
+    const nextVariant = operation.variant;
     const nextDepthM = resolveShelfDepth({ variant: nextVariant, innerD: args.targetGeo.innerD, woodThick });
     const shelfIdRaw = readRecordValue(shelf, 'id');
     bestDy = dy;
     best = {
+      blockedReason: null,
+      action: operation.action,
+      targetVariant: args.targetVariant ?? 'brace',
+      previewOp: operation.previewOp,
       shelfId: formatIdentityValue(readIdentityValue(shelfIdRaw)) || null,
       shelfIdx: i,
       shelfY,
@@ -369,5 +380,49 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
       nextDepthM,
     };
   }
-  return best;
+  if (best) return best;
+  const variant = args.targetVariant ?? 'brace';
+  const y = state.clampBoxCenterY(args.pointerY, woodThick / 2);
+  const blockers = buildSketchBoxVerticalContentBlockers({
+    targetBox: args.targetBox,
+    targetGeo: args.targetGeo,
+    targetCenterY: args.targetCenterY,
+    targetHeight: args.targetHeight,
+    woodThick,
+    boxSegments: state.boxSegments,
+    activeSegment: state.activeSegment,
+    verticalSegments: state.verticalSegments,
+    activeVerticalSegment: state.activeVerticalSegment,
+    pickSketchBoxSegment,
+    pickSketchBoxVerticalSegment,
+  });
+  const blockedReason = !state.hasVerticalRoomFor(woodThick)
+    ? 'no-room'
+    : doesSketchBoxVerticalCandidateCollide({
+          blockers,
+          centerY: y,
+          heightM: woodThick,
+          blockerKinds: ['rod', 'storage'],
+        })
+      ? 'collision'
+      : null;
+  return {
+    blockedReason,
+    action: 'add',
+    targetVariant: variant,
+    previewOp: 'add',
+    shelfId: null,
+    shelfIdx: -1,
+    shelfY: y,
+    shelfYNorm: clampUnit((y - (args.targetCenterY - args.targetHeight / 2)) / args.targetHeight),
+    contentXNorm: metrics.contentXNorm,
+    previewX: metrics.previewX,
+    previewW: metrics.previewW,
+    previewInternalZ: args.targetGeo.innerBackZ + args.targetGeo.innerD / 2,
+    previewInnerD: args.targetGeo.innerD,
+    previewWoodThick: woodThick,
+    currentVariant: variant,
+    nextVariant: variant,
+    nextDepthM: resolveShelfDepth({ variant, innerD: args.targetGeo.innerD, woodThick }),
+  };
 }

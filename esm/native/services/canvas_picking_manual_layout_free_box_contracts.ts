@@ -48,6 +48,10 @@ export type PresetLayoutFreeBoxPlan = {
 };
 
 export type BraceShelvesFreeBoxPlan = {
+  blockedReason: string | null;
+  action: 'add' | 'convert' | 'remove';
+  targetVariant: 'regular' | 'brace';
+  previewOp: 'add' | 'remove';
   shelfId: string | null;
   shelfIdx: number;
   shelfY: number;

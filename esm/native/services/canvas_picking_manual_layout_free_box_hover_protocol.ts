@@ -38,6 +38,11 @@ export type PresetLayoutFreeBoxCommand = FreeBoxCellRange & {
 };
 
 export type BraceShelvesFreeBoxCommand = {
+  blockedReason: string | null;
+  action: 'add' | 'convert' | 'remove';
+  targetVariant: 'regular' | 'brace';
+  yNorm: number;
+  xNorm: number;
   kind: 'brace-shelf';
   boxId: string;
   shelfId: string | null;
@@ -221,6 +226,7 @@ function decodePresetLayoutCommand(command: RecordMap): PresetLayoutFreeBoxComma
 }
 
 function decodeBraceShelvesCommand(command: RecordMap): BraceShelvesFreeBoxCommand | null {
+  const blockedReason = readNullableString(command, 'blockedReason');
   const boxId = readRequiredString(command, 'boxId');
   const shelfId = readNullableString(command, 'shelfId');
   const shelfIdxValue = hasOwn(command, 'shelfIdx') ? command.shelfIdx : undefined;
@@ -230,16 +236,27 @@ function decodeBraceShelvesCommand(command: RecordMap): BraceShelvesFreeBoxComma
       : typeof shelfIdxValue === 'number' &&
           Number.isFinite(shelfIdxValue) &&
           Number.isInteger(shelfIdxValue) &&
-          shelfIdxValue >= 0
+          shelfIdxValue >= -1
         ? shelfIdxValue
         : undefined;
   const depthM = readNullablePositiveNumber(command, 'depthM');
   if (
     command.kind !== 'brace-shelf' ||
+    blockedReason === undefined ||
     !boxId ||
     shelfId === undefined ||
     shelfIdx === undefined ||
-    (!shelfId && shelfIdx == null) ||
+    (command.action !== 'add' && command.action !== 'convert' && command.action !== 'remove') ||
+    (command.targetVariant !== 'regular' && command.targetVariant !== 'brace') ||
+    typeof command.yNorm !== 'number' ||
+    !Number.isFinite(command.yNorm) ||
+    command.yNorm < 0 ||
+    command.yNorm > 1 ||
+    typeof command.xNorm !== 'number' ||
+    !Number.isFinite(command.xNorm) ||
+    command.xNorm < 0 ||
+    command.xNorm > 1 ||
+    (command.action !== 'add' && !shelfId && (shelfIdx == null || shelfIdx < 0)) ||
     (command.variant !== 'regular' && command.variant !== 'brace') ||
     depthM === undefined
   ) {
@@ -247,6 +264,11 @@ function decodeBraceShelvesCommand(command: RecordMap): BraceShelvesFreeBoxComma
   }
   return {
     kind: 'brace-shelf',
+    blockedReason,
+    action: command.action,
+    targetVariant: command.targetVariant,
+    yNorm: command.yNorm,
+    xNorm: command.xNorm,
     boxId,
     shelfId,
     shelfIdx,
@@ -422,6 +444,11 @@ export function createBraceShelvesHoverRecord(args: {
 }): RecordMap {
   const command: BraceShelvesFreeBoxCommand = {
     kind: 'brace-shelf',
+    action: args.plan.action,
+    blockedReason: args.plan.blockedReason,
+    targetVariant: args.plan.targetVariant,
+    yNorm: args.plan.shelfYNorm,
+    xNorm: args.plan.contentXNorm,
     boxId: args.boxId,
     shelfId: args.plan.shelfId,
     shelfIdx: args.plan.shelfIdx,

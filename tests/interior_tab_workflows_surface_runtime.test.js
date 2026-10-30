@@ -8,6 +8,7 @@ test('[interior-workflows-controller] sketch/manual/layout flows route through o
 
   controller.enterLayout('shelves');
   controller.enterLayout('brace_shelves');
+  controller.enterLayout('regular_shelf');
   controller.enterSketchDivision('shelf', 'glass');
   controller.enterSketchDivision('rod', 'regular');
   controller.enterSketchDivision('storage', 'regular');
@@ -31,7 +32,8 @@ test('[interior-workflows-controller] sketch/manual/layout flows route through o
   controller.toggleHandleMode('none');
 
   assert.ok(calls.some(entry => entry[0] === 'enterLayoutMode' && entry[2] === 'shelves'));
-  assert.ok(calls.some(entry => entry[0] === 'toggleBraceShelvesMode'));
+  assert.ok(calls.some(entry => entry[0] === 'toggleBraceShelvesMode' && entry[2] === 'brace'));
+  assert.ok(calls.some(entry => entry[0] === 'toggleBraceShelvesMode' && entry[2] === 'regular'));
   assert.ok(
     calls.some(entry => entry[0] === 'enterManualLayoutMode' && entry[2] === 'sketch_shelf:glass@27')
   );

@@ -636,11 +636,19 @@ function makeFreeBoxHoverHarness(args: { box: RecordMap; pointerX?: number; poin
       cache: {},
     },
     services: {},
-    actions: { modules: { patchForStack() {} } },
+    actions: {
+      modules: {
+        patchForStack(_stack: unknown, _key: unknown, patcher: (cfg: RecordMap) => void) {
+          patcher(modCfg);
+        },
+      },
+    },
   };
 
   return {
     App: App as never,
+    state,
+    modCfg,
     raycaster: raycaster as never,
     mouse: { x: 0, y: 0 },
     events,
@@ -707,6 +715,55 @@ test('manual-layout shelf-grid defaults and span boundary come from focused owne
   });
   assert.equal(zeroSpan.blockedReason, 'no-room');
   assert.ok(zeroSpan.shelfYs.every(Number.isFinite));
+});
+
+for (const variant of ['regular', 'brace'] as const) {
+  test(`${variant} free-box shortcut adds one shelf and removes it on the next hover and click`, () => {
+    const box: RecordMap = {
+      id: 'shortcut-box',
+      freePlacement: true,
+      absX: 0,
+      absY: 1,
+      widthM: 0.8,
+      heightM: 1,
+      depthM: 0.5,
+    };
+    const harness = makeFreeBoxHoverHarness({ box });
+    harness.state.mode = { primary: 'brace_shelves', opts: { shelfShortcutVariant: variant } };
+    const hover = () =>
+      tryHandleBraceShelvesFreeBoxHover({
+        ...harness,
+        targetVariant: variant,
+        ndcX: 0,
+        ndcY: 0,
+      });
+    assert.equal(hover(), true);
+    assert.equal(harness.sketchPreviews.at(-1)?.op, 'add');
+    assert.equal(tryCommitBraceShelvesFreeBoxFromHover(harness.App), true);
+    assert.equal((box.shelves as RecordMap[])[0]?.variant, variant);
+    assert.equal(hover(), true);
+    assert.equal(harness.sketchPreviews.at(-1)?.op, 'remove');
+    assert.equal(tryCommitBraceShelvesFreeBoxFromHover(harness.App), true);
+    assert.deepEqual(box.shelves, []);
+  });
+}
+
+test('free-box shortcut blocks adding through an existing rod', () => {
+  const box: RecordMap = {
+    id: 'blocked-shortcut',
+    freePlacement: true,
+    absX: 0,
+    absY: 1,
+    widthM: 0.8,
+    heightM: 1,
+    depthM: 0.5,
+    rods: [{ yNorm: 0.5, xNorm: 0.5 }],
+  };
+  const harness = makeFreeBoxHoverHarness({ box });
+  assert.equal(tryHandleBraceShelvesFreeBoxHover({ ...harness, ndcX: 0, ndcY: 0 }), true);
+  assert.equal(harness.sketchPreviews.at(-1)?.op, 'blocked');
+  assert.equal(tryCommitBraceShelvesFreeBoxFromHover(harness.App), true);
+  assert.equal(box.shelves, undefined);
 });
 
 test('manual-layout preset defaults preserve focused grid, rod, storage and material geometry', () => {
@@ -783,7 +840,8 @@ test('manual-layout brace plan keeps exact tolerance, nearest identity, cell fil
   assert.equal(boundary.shelfIdx, 0);
   assert.equal(boundary.nextVariant, 'brace');
   assert.equal(boundary.nextDepthM, base.targetGeo.innerD);
-  assert.equal(aboveBoundary, null);
+  assert.equal(aboveBoundary?.action, 'add');
+  assert.equal(aboveBoundary?.shelfIdx, -1);
 
   const activeCell = resolveBraceShelvesFreeBoxPlan({
     ...base,
@@ -1338,6 +1396,6 @@ test('brace-shelves shortcut toggles an existing free-box shelf instead of the m
   const box = (((modCfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
   const shelf = ((box.shelves as RecordMap[]) ?? [])[0] as RecordMap;
   assert.equal(shelf.variant, 'brace');
-  assert.equal(shelf.depthM, 0.382);
+  assert.equal(shelf.depthM, undefined, 'converted shelves use the canonical depth for their new variant');
   assert.equal(__wp_readSketchHover(App as never), null);
 });

@@ -17,22 +17,25 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
 
       <div className="wp-layout-grid">
         {props.layoutTypes.map(t => (
-          <OptionBtn
-            key={t.id}
-            className="type-option--iconrow"
-            selected={
-              t.id === 'winter_brace'
-                ? props.isSketchToolActive && props.manualToolRaw.startsWith('sketch_shelf:winter_brace')
-                : t.id === 'brace_shelves'
-                  ? props.isBraceShelvesMode
-                  : props.isLayoutMode && props.layoutType === t.id
-            }
-            onClick={() => props.enterLayout(t.id)}
-          >
-            <i className={t.icon} aria-hidden="true" /> {t.label}
-          </OptionBtn>
+          <div key={t.id} className="wp-layout-shortcut-cell">
+            <OptionBtn
+              className="type-option--iconrow"
+              selected={
+                t.id === 'winter_brace'
+                  ? props.isSketchToolActive && props.manualToolRaw.startsWith('sketch_shelf:winter_brace')
+                  : t.id === 'brace_shelves'
+                    ? props.isBraceShelvesMode && !props.isRegularShelfMode
+                    : t.id === 'regular_shelf'
+                      ? props.isRegularShelfMode
+                      : props.isLayoutMode && props.layoutType === t.id
+              }
+              onClick={() => props.enterLayout(t.id)}
+            >
+              <i className={t.icon} aria-hidden="true" /> {t.label}
+            </OptionBtn>
+            {t.id === 'winter_brace' ? <WinterBraceDoorLockButton {...props} iconOnly /> : null}
+          </div>
         ))}
-        <WinterBraceDoorLockButton {...props} />
       </div>
 
       <InteriorLayoutManualControls {...props} />

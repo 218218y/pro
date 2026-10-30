@@ -7,8 +7,8 @@ import type {
   ShelfVariant,
 } from './canvas_picking_interior_hover_shared.js';
 import {
+  asHoverCustomData,
   readBooleanArray,
-  readCustomData,
   readNumber,
   readString,
 } from './canvas_picking_interior_hover_shared.js';
@@ -63,9 +63,13 @@ export function readExistingShelfVariant(args: {
       : 'regular';
 }
 
-export function hasShelfAtIndex(cfgRef: HoverModuleConfigLike, shelfIndex: number): boolean {
+export function hasShelfAtIndex(
+  cfgRef: { isCustom?: unknown; customData?: unknown; layout?: unknown },
+  shelfIndex: number
+): boolean {
+  if (!Number.isInteger(shelfIndex) || shelfIndex < 1) return false;
   if (cfgRef.isCustom) {
-    const shelvesArr = readBooleanArray(readCustomData(cfgRef)?.shelves);
+    const shelvesArr = readBooleanArray(asHoverCustomData(cfgRef.customData)?.shelves);
     return !!shelvesArr[shelfIndex - 1];
   }
   const layoutType = readString(cfgRef.layout, 'shelves');

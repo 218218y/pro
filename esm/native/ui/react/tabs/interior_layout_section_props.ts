@@ -16,6 +16,7 @@ export function createInteriorLayoutSectionProps(
     isLayoutMode: state.isLayoutMode,
     isManualLayoutMode: state.isManualLayoutMode,
     isBraceShelvesMode: state.isBraceShelvesMode,
+    isRegularShelfMode: state.isRegularShelfMode,
     isSketchToolActive: state.isSketchToolActive,
     isSketchDivisionToolActive: state.isSketchDivisionToolActive,
     layoutType: state.layoutType,

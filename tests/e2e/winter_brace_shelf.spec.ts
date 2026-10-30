@@ -10,6 +10,7 @@ import {
   setStackSplitEnabled,
   saveProjectViaHeader,
   readSavedProjectPayload,
+  inspectCanvasViaDebugNdc,
 } from './helpers/project_flows';
 
 for (const wardrobeType of ['hinged', 'sliding', 'corner']) {
@@ -141,14 +142,18 @@ async function expectShelfButtonsFit(scope: Locator): Promise<void> {
       const iconBounds = icon.getBoundingClientRect();
       return {
         text: element.textContent,
-        labelFits:
-          labelBounds.left >= bounds.left &&
-          labelBounds.right <= bounds.right &&
-          labelBounds.top >= bounds.top &&
-          labelBounds.bottom <= bounds.bottom &&
-          label.scrollWidth <= label.clientWidth + 1,
+        labelFits: element.classList.contains('wp-winter-brace-lock-icon')
+          ? !!element.getAttribute('aria-label')
+          : labelBounds.left >= bounds.left &&
+            labelBounds.right <= bounds.right &&
+            labelBounds.top >= bounds.top &&
+            labelBounds.bottom <= bounds.bottom &&
+            label.scrollWidth <= label.clientWidth + 1,
         iconFits: iconBounds.width > 0 && iconBounds.left >= bounds.left && iconBounds.right <= bounds.right,
-        separated: labelBounds.right <= iconBounds.left + 1 || iconBounds.right <= labelBounds.left + 1,
+        separated:
+          element.classList.contains('wp-winter-brace-lock-icon') ||
+          labelBounds.right <= iconBounds.left + 1 ||
+          iconBounds.right <= labelBounds.left + 1,
         glyph: getComputedStyle(icon.querySelector('i')!, '::before').content,
       };
     });
@@ -194,6 +199,22 @@ test('winter shelf and lock labels fit in separate rows in interior and sketch a
     for (const tab of ['interior', 'sketch'] as const) {
       await openMainTab(page, tab);
       const panel = page.locator(`#reactSidebarRoot .tab-content[data-tab="${tab}"]`);
+      if (tab === 'interior') {
+        const grid = panel.locator('.wp-layout-grid');
+        const storage = (await grid.getByRole('button', { name: 'אוגר מצעים', exact: true }).boundingBox())!;
+        const winter = (await grid.getByRole('button', { name: 'קושרת חורף', exact: true }).boundingBox())!;
+        const brace = (await grid.getByRole('button', { name: 'מדפי קושרת', exact: true }).boundingBox())!;
+        const regular = (await grid.getByRole('button', { name: 'מדף רגיל', exact: true }).boundingBox())!;
+        expect(Math.abs(storage.y - winter.y)).toBeLessThan(2);
+        expect(winter.x).toBeLessThan(storage.x);
+        expect(Math.abs(brace.y - regular.y)).toBeLessThan(2);
+        expect(brace.y).toBeGreaterThan(storage.y);
+        const iconLock = grid.getByTestId('winter-brace-door-lock-button');
+        await expect(iconLock).toHaveAccessibleName('דלתות נעולות');
+        await iconLock.click();
+        await expect(iconLock).toHaveAccessibleName('דלתות משוחררות');
+        await iconLock.click();
+      }
       if (
         tab === 'interior' &&
         !(await panel.getByTestId('interior-manual-shelf-variant-regular-button').isVisible())
@@ -224,4 +245,109 @@ test('winter shelf and lock labels fit in separate rows in interior and sketch a
         .screenshot({ path: testInfo.outputPath(`${tab}-${width}.png`) });
     }
   }
+});
+
+test('interior shelf shortcuts add, convert and remove shelves through browser pointers', async ({
+  page,
+}) => {
+  const issues = collectRuntimeIssues(page);
+  await gotoSmokeApp(page);
+  const project = JSON.parse(
+    readFileSync('tests/fixtures/project_import/minimal_empty_owned_branches_project.json', 'utf8')
+  );
+  Object.assign(project.settings, {
+    wardrobeType: 'hinged',
+    doorStyle: 'flat',
+  });
+  project.modulesConfiguration = [
+    {
+      doors: 1,
+      layout: 'shelves',
+      isCustom: true,
+      gridDivisions: 6,
+      extDrawersCount: 0,
+      hasShoeDrawer: false,
+      customData: {
+        shelves: [false, false, false, false, false],
+        rods: [],
+        storage: false,
+        shelfVariants: [],
+      },
+    },
+  ];
+  project.modulesConfiguration.push(structuredClone(project.modulesConfiguration[0]));
+  const loaded = waitForProjectActionEvent(page, 'load');
+  await page.locator('input[data-testid="header-project-load-input"]').setInputFiles({
+    name: 'shelf-shortcuts.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(project)),
+  });
+  const loadResult = await loaded;
+  expect(loadResult.ok, JSON.stringify(loadResult)).toBe(true);
+  await openMainTab(page, 'interior');
+  const grid = page.locator('#reactSidebarRoot .tab-content[data-tab="interior"] .wp-layout-grid');
+  await grid.getByRole('button', { name: 'מדפי קושרת', exact: true }).click();
+  await expect
+    .poll(async () => (await readDebugStoreState(page)).mode)
+    .toMatchObject({ primary: 'brace_shelves', opts: { shelfShortcutVariant: 'brace' } });
+  let point: { x: number; y: number } | null = null;
+  await expect
+    .poll(async () => {
+      for (const y of [0, -0.2, 0.2])
+        for (const x of [0, -0.15, 0.15]) {
+          const hit = await inspectCanvasViaDebugNdc(page, { x, y });
+          if (
+            hit?.moduleIndex === 0 &&
+            hit.moduleHitY != null &&
+            hit.moduleHitY > 0.5 &&
+            hit.moduleHitY < 1.8 &&
+            !hit.partId?.startsWith('d1')
+          ) {
+            point = { x, y };
+            return true;
+          }
+        }
+      return false;
+    })
+    .toBe(true);
+  const canvas = page.locator('#viewer-container canvas').first();
+  const bounds = (await canvas.boundingBox())!;
+  const client = {
+    x: bounds.x + ((point!.x + 1) / 2) * bounds.width,
+    y: bounds.y + ((1 - point!.y) / 2) * bounds.height,
+  };
+  const shelves = async () => {
+    const config = (await readDebugStoreState(page)).config as {
+      modulesConfiguration: Array<{ sketchExtras?: { shelves?: Array<{ variant: string }> } }>;
+    };
+    return config.modulesConfiguration[0]?.sketchExtras?.shelves ?? [];
+  };
+  const click = async () => {
+    await page.mouse.move(client.x + 2, client.y);
+    await page.mouse.move(client.x, client.y);
+    await page.mouse.click(client.x, client.y);
+  };
+  await click();
+  await expect.poll(shelves).toMatchObject([{ variant: 'brace' }]);
+  await expect
+    .poll(async () =>
+      page.evaluate(() =>
+        window.__WP_DEBUG__!.scene.getGeometrySnapshot()!.partIds.includes('sketch_shelf_0_1')
+      )
+    )
+    .toBe(true);
+  await click();
+  await expect.poll(shelves).toEqual([]);
+  await grid.getByRole('button', { name: 'מדף רגיל', exact: true }).click();
+  await click();
+  await expect.poll(shelves).toMatchObject([{ variant: 'regular' }]);
+  await grid.getByRole('button', { name: 'מדפי קושרת', exact: true }).click();
+  await click();
+  await expect.poll(shelves).toMatchObject([{ variant: 'brace' }]);
+  await grid.getByRole('button', { name: 'מדף רגיל', exact: true }).click();
+  await click();
+  await expect.poll(shelves).toMatchObject([{ variant: 'regular' }]);
+  await click();
+  await expect.poll(shelves).toEqual([]);
+  expectNoRuntimeIssues(issues);
 });

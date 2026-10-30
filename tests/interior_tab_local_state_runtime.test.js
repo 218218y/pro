@@ -91,10 +91,19 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
     winter_brace: '',
   });
 
-  assert.equal(INTERIOR_LAYOUT_TYPES.length, 7);
+  assert.equal(INTERIOR_LAYOUT_TYPES.length, 8);
   assert.deepEqual(
     Array.from(INTERIOR_LAYOUT_TYPES, item => item.id),
-    ['shelves', 'hanging', 'hanging_split', 'mixed', 'storage', 'brace_shelves', 'winter_brace']
+    [
+      'shelves',
+      'hanging',
+      'hanging_split',
+      'mixed',
+      'storage',
+      'winter_brace',
+      'brace_shelves',
+      'regular_shelf',
+    ]
   );
   assert.deepEqual(
     Array.from(INTERIOR_MANUAL_TOOLS, item => item.id),

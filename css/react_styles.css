@@ -1875,6 +1875,26 @@
   margin-top: 6px;
 }
 
+#reactSidebarRoot .wp-layout-shortcut-cell {
+  display: flex;
+  min-width: 0;
+  gap: 4px;
+}
+
+#reactSidebarRoot .wp-layout-shortcut-cell > .type-option {
+  min-width: 0;
+  white-space: normal;
+}
+
+#reactSidebarRoot .wp-layout-shortcut-cell .wp-winter-brace-lock-icon {
+  flex: 0 0 34px;
+  padding: 6px;
+}
+
+#reactSidebarRoot .wp-winter-brace-lock-icon .wp-r-editmode-toggle__label {
+  display: none;
+}
+
 #reactSidebarRoot .wp-sketch-shelf-btn .wp-r-editmode-toggle__icon {
   display: inline-flex;
   flex-shrink: 0;

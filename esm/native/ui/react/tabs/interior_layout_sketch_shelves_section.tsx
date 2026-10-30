@@ -431,19 +431,25 @@ export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionPro
   );
 }
 
-export function WinterBraceDoorLockButton(props: InteriorLayoutSectionProps): ReactElement | null {
+export function WinterBraceDoorLockButton(
+  props: InteriorLayoutSectionProps & { iconOnly?: boolean }
+): ReactElement | null {
   if (!props.hasWinterBrace) return null;
   return (
     <ModeToggleButton
       active={props.winterBraceDoorsLocked}
-      className="wp-sketch-shelf-btn"
+      className={cx('wp-sketch-shelf-btn', props.iconOnly && 'wp-winter-brace-lock-icon')}
       data-testid="winter-brace-door-lock-button"
+      {...(props.iconOnly
+        ? { 'aria-label': props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות' }
+        : {})}
+      title={props.winterBraceDoorsLocked ? 'שחרור דלתות קושרת חורף' : 'נעילת דלתות קושרת חורף'}
       icon={
         <i className={props.winterBraceDoorsLocked ? 'fas fa-lock' : 'fas fa-lock-open'} aria-hidden="true" />
       }
       onClick={props.toggleWinterBraceDoorLock}
     >
-      {props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות'}
+      {props.iconOnly ? null : props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות'}
     </ModeToggleButton>
   );
 }

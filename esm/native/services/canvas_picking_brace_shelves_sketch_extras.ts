@@ -1,6 +1,14 @@
+import {
+  applyShelfShortcutToList,
+  resolveShelfShortcutOperation,
+  type ShelfShortcutVariant,
+} from './canvas_picking_shelf_shortcuts.js';
 import type { UnknownRecord } from '../../../types';
-import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
-import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import {
+  createSketchHoverHostIdentity,
+  readSketchHoverHostIdentity,
+} from './canvas_picking_sketch_hover_identity.js';
+import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import type { ModuleKey } from './canvas_picking_layout_edit_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import {
@@ -33,7 +41,7 @@ function readNumber(value: unknown): number | null {
 }
 
 function readString(value: unknown): string {
-  return formatIdentityValue(readIdentityValue(value));
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function stripLowerStackPrefix(partId: string): string {
@@ -163,11 +171,13 @@ export function createBraceSketchShelfHoverRecord(args: {
   moduleKey: ModuleKey | 'corner' | null;
   isBottom: boolean;
   match: BraceSketchShelfMatch;
+  targetVariant?: ShelfShortcutVariant;
 }): BraceSketchShelfHoverRecord {
-  const op: 'add' | 'remove' = args.match.isBrace ? 'remove' : 'add';
+  const op = resolveShelfShortcutOperation(args.match.shelf, args.targetVariant ?? 'brace').previewOp;
   return {
     ts: Date.now(),
     tool: 'brace_shelves',
+    targetVariant: args.targetVariant ?? 'brace',
     ...createSketchHoverHostIdentity({ moduleKey: args.moduleKey, isBottom: args.isBottom }),
     kind: 'brace_shelf',
     op,
@@ -179,6 +189,7 @@ export function createBraceSketchShelfHoverRecord(args: {
 export function createBraceSketchShelfPreview(args: {
   braceFrontZ?: number | null;
   match: BraceSketchShelfMatch;
+  targetVariant?: ShelfShortcutVariant;
   internalCenterX: number;
   innerW: number;
   internalDepth: number;
@@ -186,6 +197,7 @@ export function createBraceSketchShelfPreview(args: {
   woodThick: number;
   regularDepth: number;
 }): UnknownRecord {
+  const operation = resolveShelfShortcutOperation(args.match.shelf, args.targetVariant ?? 'brace');
   const shelfPreview = createSketchModuleShelfPreviewGeometry({
     innerW: args.innerW,
     internalDepth: args.internalDepth,
@@ -193,12 +205,12 @@ export function createBraceSketchShelfPreview(args: {
     backZ: args.backZ,
     woodThick: args.woodThick,
     regularDepth: args.regularDepth,
-    variant: 'brace',
-    shelfDepthOverrideM: args.match.depthM,
+    variant: operation.variant,
+    shelfDepthOverrideM: operation.action === 'remove' ? args.match.depthM : null,
   });
   return {
     kind: 'shelf',
-    variant: 'brace',
+    variant: operation.variant,
     x: args.internalCenterX,
     y: args.match.yAbs,
     z: shelfPreview.z,
@@ -206,7 +218,7 @@ export function createBraceSketchShelfPreview(args: {
     h: shelfPreview.h,
     d: shelfPreview.d,
     woodThick: args.woodThick,
-    op: args.match.isBrace ? 'remove' : 'add',
+    op: operation.previewOp,
   };
 }
 
@@ -216,18 +228,18 @@ export function isFreshBraceSketchShelfHover(args: {
   isBottom: boolean;
   now: number;
   maxAgeMs?: number;
+  targetVariant?: ShelfShortcutVariant;
 }): boolean {
   const rec = asRecord(args.hover);
   if (!rec) return false;
+  const host = readSketchHoverHostIdentity(rec, __wp_toModuleKey);
+  if (!host) return false;
   if (rec.tool !== 'brace_shelves') return false;
-  if (rec.kind !== 'brace_shelf') return false;
-  if (
-    formatIdentityValue(readIdentityValue(rec.moduleKey)) !==
-    formatIdentityValue(readIdentityValue(args.moduleKey))
-  ) {
+  if (rec.kind !== 'brace_shelf' || rec.targetVariant !== (args.targetVariant ?? 'brace')) return false;
+  if (host.moduleKey !== __wp_toModuleKey(args.moduleKey)) {
     return false;
   }
-  if (!!rec.isBottom !== !!args.isBottom) return false;
+  if (host.isBottom !== args.isBottom) return false;
   const ts = readNumber(rec.ts);
   if (ts == null) return false;
   if (args.now - ts > (args.maxAgeMs ?? 1200)) return false;
@@ -235,7 +247,11 @@ export function isFreshBraceSketchShelfHover(args: {
   return idx != null && idx >= 0;
 }
 
-export function toggleBraceSketchShelfAtIndex(cfg: unknown, index: number): boolean {
+export function toggleBraceSketchShelfAtIndex(
+  cfg: unknown,
+  index: number,
+  target: ShelfShortcutVariant = 'brace'
+): boolean {
   const cfgRec = asRecord(cfg);
   if (!cfgRec) return false;
   const extra = asRecord(cfgRec.sketchExtras);
@@ -244,6 +260,5 @@ export function toggleBraceSketchShelfAtIndex(cfg: unknown, index: number): bool
   if (!shelves || idx < 0 || idx >= shelves.length) return false;
   const shelf = asRecord(shelves[idx]);
   if (!shelf) return false;
-  shelf.variant = shelf.variant === 'brace' ? 'regular' : 'brace';
-  return true;
+  return applyShelfShortcutToList(shelves, idx, target);
 }

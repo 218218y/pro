@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types/index.js';
+import { applyShelfShortcutToList, readShelfShortcutVariant } from './canvas_picking_shelf_shortcuts.js';
 
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
@@ -121,6 +122,16 @@ function removeItemsInGridCell(args: {
 
 function updateFreeBoxShelfVariant(args: { box: RecordMap; command: BraceShelvesFreeBoxCommand }): boolean {
   const shelves = ensureSketchBoxContentList(args.box, 'shelves') as RecordMap[];
+  if (args.command.action === 'add') {
+    shelves.push({
+      id: createRandomId('sbc'),
+      yNorm: args.command.yNorm,
+      xNorm: args.command.xNorm,
+      variant: args.command.variant,
+      ...(args.command.targetVariant === 'brace' ? { braceShortcutAdded: true } : {}),
+    });
+    return true;
+  }
   const { shelfId, shelfIdx } = args.command;
   let index = -1;
   if (shelfId) {
@@ -133,10 +144,7 @@ function updateFreeBoxShelfVariant(args: { box: RecordMap; command: BraceShelves
   if (index < 0) return false;
   const item = shelves[index];
   if (!item) return false;
-  const { variant, depthM } = args.command;
-  item.variant = variant;
-  if (depthM != null && depthM > 0) item.depthM = depthM;
-  return true;
+  return applyShelfShortcutToList(shelves, index, args.command.targetVariant);
 }
 
 function commitShelfGridHover(args: {
@@ -299,6 +307,11 @@ function commitBraceShelvesHover(args: {
     return true;
   }
   const { boxId } = command;
+  if (command.blockedReason) {
+    toastSketchBoxContentBlocked(args.App, 'shelf', command.blockedReason);
+    __wp_clearSketchHover(args.App);
+    return true;
+  }
   const outcome = commitCanvasModuleStructuralPatch({
     App: args.App,
     stack: args.host.isBottom ? 'bottom' : 'top',
@@ -341,7 +354,13 @@ export function tryCommitBraceShelvesFreeBoxFromHover(App: AppContainer): boolea
     toModuleKey: __wp_toModuleKey,
     requireFreePlacement: true,
   });
-  return hoverRec ? commitBraceShelvesHover({ App, host, hoverRec }) : false;
+  if (!hoverRec) return false;
+  const command = readBraceShelvesFreeBoxCommand(hoverRec);
+  if (!command || command.targetVariant !== readShelfShortcutVariant(App)) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
+  return commitBraceShelvesHover({ App, host, hoverRec });
 }
 
 export function tryCommitManualLayoutFreeBoxFromHover(

@@ -106,6 +106,8 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       isLayoutMode: coreState.isLayoutMode,
       isManualLayoutMode: coreState.isManualLayoutMode,
       isBraceShelvesMode: coreState.isBraceShelvesMode,
+      isRegularShelfMode:
+        coreState.isBraceShelvesMode && coreState.modeOpts.shelfShortcutVariant === 'regular',
       isSketchToolActive: coreState.isSketchToolActive,
       isSketchDivisionToolActive: coreState.isSketchDivisionToolActive,
       isExtDrawerMode: coreState.isExtDrawerMode,

@@ -9,7 +9,14 @@ import type {
 import type { HandleFinishColor } from '../../../features/finish_palette/api.js';
 
 export type LayoutTypeId =
-  'shelves' | 'hanging' | 'hanging_split' | 'mixed' | 'storage' | 'brace_shelves' | 'winter_brace';
+  | 'shelves'
+  | 'hanging'
+  | 'hanging_split'
+  | 'mixed'
+  | 'storage'
+  | 'brace_shelves'
+  | 'regular_shelf'
+  | 'winter_brace';
 export type ManualToolId = 'shelf' | 'rod' | 'storage';
 export type SketchBoxCorniceType = 'classic' | 'wave';
 export type SketchBoxBaseType = 'plinth' | 'legs' | 'none';

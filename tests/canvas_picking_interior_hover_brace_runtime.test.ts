@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { getInternalGridMap } from '../esm/native/runtime/cache_access.ts';
 import { tryHandleCanvasBraceShelvesHover } from '../esm/native/services/canvas_picking_interior_hover_brace_mode.ts';
+import { __wp_readSketchHover } from '../esm/native/services/canvas_picking_local_helpers.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -17,7 +18,10 @@ function makeSelector(moduleIndex: string, y: number): AnyRecord {
   };
 }
 
-function createApp(intersects: AnyRecord[], stateOverrides: { config?: AnyRecord; ui?: AnyRecord } = {}) {
+function createApp(
+  intersects: AnyRecord[],
+  stateOverrides: { config?: AnyRecord; ui?: AnyRecord; mode?: AnyRecord } = {}
+) {
   const wardrobeGroup: AnyRecord = { children: [] };
   const state = {
     config: stateOverrides.config || {
@@ -39,7 +43,7 @@ function createApp(intersects: AnyRecord[], stateOverrides: { config?: AnyRecord
       },
     },
     ui: stateOverrides.ui || {},
-    mode: {},
+    mode: stateOverrides.mode ?? {},
     runtime: {},
     meta: {},
   };
@@ -109,6 +113,44 @@ test('brace-shelves hover uses the specific corner-cell selector and the click-a
   assert.ok(preview && Math.abs(Number(preview.y) - 0.8) < 1e-9);
   assert.equal(preview?.anchor, specificSelector);
 });
+
+for (const variant of ['regular', 'brace'] as const) {
+  test(`${variant} shortcut previews an arbitrary-height addition in empty space`, () => {
+    const selector = makeSelector('0', 1.01);
+    const { App, raycaster, mouse } = createApp([{ object: selector, point: { x: 0, y: 1.01, z: 0 } }], {
+      config: { modulesConfiguration: [{ layout: 'shelves' }] },
+      mode: { opts: { shelfShortcutVariant: variant } },
+    });
+    getInternalGridMap(App, false)['0'] = {
+      effectiveBottomY: 0,
+      effectiveTopY: 2.4,
+      gridDivisions: 6,
+      woodThick: 0.018,
+    };
+    let preview: AnyRecord | null = null;
+    assert.equal(
+      tryHandleCanvasBraceShelvesHover({
+        App,
+        ndcX: 0,
+        ndcY: 0,
+        raycaster,
+        mouse,
+        previewRo: {
+          setSketchPlacementPreview: (value: AnyRecord) => {
+            preview = value;
+          },
+        },
+        hideLayoutPreview() {},
+        hideSketchPreview() {},
+      } as never),
+      true
+    );
+    assert.equal(preview?.variant, variant);
+    assert.equal(preview?.y, 1.01);
+    assert.equal(preview?.op, 'add');
+    assert.equal((__wp_readSketchHover(App) as AnyRecord).kind, 'shelf_shortcut_add');
+  });
+}
 
 test('brace-shelves hover materializes a missing corner-cell config before the first corner click', () => {
   const selector = makeSelector('corner:0', 0.91);
