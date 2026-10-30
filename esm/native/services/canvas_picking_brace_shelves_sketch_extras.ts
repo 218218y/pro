@@ -177,6 +177,7 @@ export function createBraceSketchShelfHoverRecord(args: {
 }
 
 export function createBraceSketchShelfPreview(args: {
+  braceFrontZ?: number | null;
   match: BraceSketchShelfMatch;
   internalCenterX: number;
   innerW: number;
@@ -188,6 +189,7 @@ export function createBraceSketchShelfPreview(args: {
   const shelfPreview = createSketchModuleShelfPreviewGeometry({
     innerW: args.innerW,
     internalDepth: args.internalDepth,
+    braceFrontZ: args.braceFrontZ ?? null,
     backZ: args.backZ,
     woodThick: args.woodThick,
     regularDepth: args.regularDepth,

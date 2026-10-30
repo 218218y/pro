@@ -53,6 +53,8 @@ export type SketchDoorCutsRuntime = {
 };
 
 export type SketchDoorCutSelection = {
+  lineCutsY?: number[];
+  fixedBelowY?: number | null;
   basePartId: string;
   stacks: SketchDrawerStackBounds[];
   splitPosList?: number[];
@@ -77,6 +79,8 @@ export type ApplySketchDrawerDoorCutsArgs = {
 };
 
 export type RebuildSketchSegmentedDoorArgs = {
+  registerFixedDoor?: (group: Object3DLike, hingeSide: 'left' | 'right') => void;
+  fixedBelowY?: number | null;
   runtime: SketchDoorCutsRuntime;
   g: Object3DLike;
   ud: ValueRecord;

@@ -143,6 +143,11 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     const regularDepth =
       internalDepth > 0 ? Math.min(internalDepth, regularShelfDepthCap) : regularShelfDepthCap;
     const backZ = internalZ - internalDepth / 2;
+    const braceDepth = Math.max(
+      woodThick,
+      readPresetNumber(input.braceFrontZ, internalZ + internalDepth / 2) - backZ
+    );
+    const braceZ = backZ + braceDepth / 2;
     const regularZ = backZ + regularDepth / 2;
     const regularShelfWidth =
       innerW > 0 ? Math.max(0, innerW - INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM) : innerW;
@@ -198,6 +203,8 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       woodThick,
       shelfThick,
       internalDepth,
+      braceDepth,
+      braceZ,
       internalZ,
       regularDepth,
       regularZ,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T16:29:26.360Z",
+  "generatedAt": "2026-10-29T19:16:27.511Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1963,28 +1963,28 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 50,
+      "line": 52,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 54,
+      "line": 56,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 176,
+      "line": 194,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.fallbackDoorW;"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
-      "line": 172,
+      "line": 174,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
@@ -2054,7 +2054,7 @@
     },
     {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
-      "line": 210,
+      "line": 212,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
@@ -2278,14 +2278,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 202,
+      "line": 204,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = doorOp.isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 204,
+      "line": 206,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "doorOp.isMirror || mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
@@ -2404,7 +2404,7 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_boxes_fronts_doors.ts",
-      "line": 108,
+      "line": 112,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output"
@@ -2719,10 +2719,10 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 152,
+      "line": 154,
       "term": "fallbackDepth",
       "category": "domain-default",
-      "text": "fallbackDepth: isBrace ? internalDepth : regularDepth,"
+      "text": "fallbackDepth: isBrace ? braceDepth : regularDepth,"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_storage.ts",

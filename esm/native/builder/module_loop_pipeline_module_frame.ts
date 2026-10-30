@@ -17,6 +17,7 @@ export interface ResolvedModuleFrame {
   moduleFrontZ: number;
   moduleDoorDepth: number;
   moduleDoorFrontZ: number;
+  braceFrontZ: number;
   moduleHitDepth: number;
   moduleHitZ: number;
   moduleCabinetBodyHeight: number;
@@ -81,6 +82,7 @@ export function resolveModuleFrame(
     moduleFrontZ: depth.moduleFrontZ,
     moduleDoorDepth: depth.moduleDoorDepth,
     moduleDoorFrontZ: depth.moduleDoorFrontZ,
+    braceFrontZ: depth.braceFrontZ,
     moduleHitDepth: depth.moduleHitDepth,
     moduleHitZ: depth.moduleHitZ,
     moduleCabinetBodyHeight,
@@ -171,6 +173,7 @@ export function writeInternalGridMap(
       internalCenterX: metrics.internalCenterX,
       internalDepth: frame.moduleInternalDepth,
       internalZ: frame.moduleInternalZ,
+      braceFrontZ: frame.braceFrontZ,
       woodThick: runtime.woodThick,
       D: frame.moduleTotalDepth,
       startY: runtime.startY,

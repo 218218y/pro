@@ -31,6 +31,7 @@ export type HingedDoorMotionMetadataSnapshot = Readonly<{
   invertSwing: boolean;
   removed: boolean;
   noGlobalOpen: boolean;
+  fixedClosed: boolean;
   widthM: number | null;
   heightM: number | null;
   meshOffsetXM: number | null;
@@ -45,6 +46,7 @@ export type HingedDoorMotionMetadataPatchInput = Readonly<{
   invertSwing?: boolean;
   removed?: boolean;
   noGlobalOpen?: boolean;
+  fixedClosed?: boolean;
   widthM?: number;
   heightM?: number;
   meshOffsetXM?: number;
@@ -109,6 +111,7 @@ export function readHingedDoorMotionMetadataSnapshot(
     openDirectionSign: resolveOpenDirectionSign(userData),
     invertSwing: entryInvertSwing || userData?.__invertSwing === true,
     removed: userData?.__wpDoorRemoved === true,
+    fixedClosed: userData?.__wpDoorFixedClosed === true,
     noGlobalOpen:
       userData?.noGlobalOpen === true ||
       isCornerPent ||
@@ -142,6 +145,7 @@ export function createHingedDoorMotionMetadataPatch(
   if (input.handleZSign === 1 || input.handleZSign === -1) out.__handleZSign = input.handleZSign;
   if (input.invertSwing === true) out.__invertSwing = true;
   if (typeof input.removed === 'boolean') out.__wpDoorRemoved = input.removed;
+  if (typeof input.fixedClosed === 'boolean') out.__wpDoorFixedClosed = input.fixedClosed;
   if (input.noGlobalOpen === true) out.noGlobalOpen = true;
 
   assignFinite(out, '__doorWidth', input.widthM);

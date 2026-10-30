@@ -23,6 +23,7 @@ function runtime(overrides: Partial<Pick<ModuleLoopRuntime, 'D' | 'woodThick' | 
     D: 0.6,
     woodThick: 0.018,
     depthReduction: 0.03,
+    cfg: { wardrobeType: 'hinged' },
     ...overrides,
   } as unknown as ModuleLoopRuntime;
 }
@@ -70,6 +71,7 @@ test('module depth profile preserves override validation, focused-owner offsets,
     'moduleFrontZ',
     'moduleDoorDepth',
     'moduleDoorFrontZ',
+    'braceFrontZ',
     'moduleHitDepth',
     'moduleHitZ',
   ]);

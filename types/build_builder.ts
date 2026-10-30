@@ -692,6 +692,7 @@ export type BuilderPartColorResolver = (partId: string) => BuilderPartColorValue
 
 /** Canonical public input for RenderOps.applyInteriorSketchExtras. */
 export interface BuilderInteriorSketchArgsLike extends UnknownRecord {
+  braceFrontZ?: number;
   App: AppContainer;
   roomArchitecturePlan: RoomArchitecturePlan;
   cfgSnapshot: ConfigStateLike | UnknownRecord;

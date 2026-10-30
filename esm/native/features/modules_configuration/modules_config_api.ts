@@ -40,3 +40,5 @@ export {
   sanitizeModulesConfigurationListForPatch,
   sanitizeModulesConfigurationListLight,
 } from './modules_config_patch.js';
+
+export { readWinterBraceDoorLockState, buildWinterBraceDoorLockPatch } from './modules_config_contracts.js';

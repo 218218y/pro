@@ -9,6 +9,7 @@ export function createSketchModuleShelfPreviewGeometry(args: {
   regularDepth: number;
   variant: string | null;
   shelfDepthOverrideM?: number | null;
+  braceFrontZ?: number | null;
 }): {
   variant: string;
   w: number;
@@ -28,11 +29,12 @@ export function createSketchModuleShelfPreviewGeometry(args: {
       : isDouble
         ? Math.max(woodThick, woodThick * shelfDims.doubleThicknessMultiplier)
         : woodThick;
-  let d = isBrace ? internalDepth : regularDepth;
+  const maxDepth = isBrace && args.braceFrontZ != null ? args.braceFrontZ - backZ : internalDepth;
+  let d = isBrace ? maxDepth : regularDepth;
   if (shelfDepthOverrideM != null && Number.isFinite(shelfDepthOverrideM) && shelfDepthOverrideM > 0) {
     let depth = shelfDepthOverrideM;
     if (depth < woodThick) depth = woodThick;
-    if (Number.isFinite(internalDepth) && internalDepth > 0) depth = Math.min(depth, internalDepth);
+    if (Number.isFinite(maxDepth) && maxDepth > 0) depth = Math.min(depth, maxDepth);
     d = depth;
   }
   return {

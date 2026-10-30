@@ -6,7 +6,10 @@ import {
 import type { RenderSketchBoxDoorFrontsArgs } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
 import { consumeSketchBoxDoorMotionSeed } from './render_interior_sketch_pick_meta.js';
-import { resolveSketchBoxDoorLayout } from './render_interior_sketch_boxes_fronts_door_layout.js';
+import {
+  resolveSketchBoxDoorLayout,
+  resolveWinterBraceBoxDoorLayouts,
+} from './render_interior_sketch_boxes_fronts_door_layout.js';
 import { appendSketchBoxDoorVisuals } from './render_interior_sketch_boxes_fronts_door_visuals.js';
 import { resolveSketchFreeBoxSharedHandleAbsY } from './render_interior_sketch_boxes_fronts_door_handle_policy.js';
 import type { Object3DLike, ThreeLike } from '../../../types';
@@ -50,62 +53,64 @@ export function renderSketchBoxDoorFronts(args: RenderSketchBoxDoorFrontsArgs): 
     const placement = boxDoorPlacements[doorIndex] || null;
     if (!placement) continue;
 
-    const layout = resolveSketchBoxDoorLayout({
+    const baseLayout = resolveSketchBoxDoorLayout({
       renderArgs: args,
       placement,
       placementsBySegment: boxDoorPlacementsBySegment,
       sharedHandleAbsY,
     });
-    if (!layout) continue;
+    if (!baseLayout) continue;
 
-    const doorGroup = new THREE.Group();
-    doorGroup.position?.set?.(layout.pivotX, layout.doorCenterY, layout.doorZ);
-    const motionSeed = consumeSketchBoxDoorMotionSeed(App, moduleKeyStr, bid, layout.doorId);
-    if (motionSeed && doorGroup.rotation && Number.isFinite(motionSeed.rotationY)) {
-      doorGroup.rotation.y = motionSeed.rotationY;
-    }
-    doorGroup.userData = layout.groupUserData;
-    group.add?.(doorGroup);
+    for (const layout of resolveWinterBraceBoxDoorLayouts(args, baseLayout)) {
+      const doorGroup = new THREE.Group();
+      doorGroup.position?.set?.(layout.pivotX, layout.doorCenterY, layout.doorZ);
+      const motionSeed = consumeSketchBoxDoorMotionSeed(App, moduleKeyStr, bid, layout.doorId);
+      if (motionSeed && doorGroup.rotation && Number.isFinite(motionSeed.rotationY)) {
+        doorGroup.rotation.y = motionSeed.rotationY;
+      }
+      doorGroup.userData = layout.groupUserData;
+      group.add?.(doorGroup);
 
-    appendSketchBoxDoorVisuals({
-      renderArgs: args,
-      doorGroup,
-      layout,
-    });
-
-    attachHingedDoorHardware({
-      THREE: THREE as unknown as ThreeLike,
-      wardrobeGroup: group as unknown as Object3DLike,
-      doorGroup: doorGroup as unknown as Object3DLike,
-      doorOp: {
-        x: 0,
-        y: layout.doorCenterY,
-        z: layout.doorZ,
-        width: layout.doorW,
-        height: layout.doorH,
-        partId: layout.doorPid,
-        isLeftHinge: layout.hingeLeft,
-        isRemoved: false,
-        isMirror: false,
-        hasGroove: false,
-        pivotX: layout.pivotX,
-        carcassMountFaceX: layout.carcassMountFaceX,
-      },
-      state: readHingeHardwareState(layout.doorD),
-    });
-
-    if (Array.isArray(doorsArray)) {
-      doorsArray.push({
-        group: doorGroup,
-        hingeSide: layout.hingeSide,
-        type: 'hinged',
-        isOpen: layout.doorOpen,
-        noGlobalOpen: true,
+      appendSketchBoxDoorVisuals({
+        renderArgs: args,
+        doorGroup,
+        layout,
       });
-      try {
-        markSplitHoverPickablesDirty?.(App);
-      } catch {
-        // builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output
+
+      attachHingedDoorHardware({
+        THREE: THREE as unknown as ThreeLike,
+        wardrobeGroup: group as unknown as Object3DLike,
+        doorGroup: doorGroup as unknown as Object3DLike,
+        doorOp: {
+          x: 0,
+          y: layout.doorCenterY,
+          z: layout.doorZ,
+          width: layout.doorW,
+          height: layout.doorH,
+          partId: layout.doorPid,
+          isLeftHinge: layout.hingeLeft,
+          isRemoved: false,
+          isMirror: false,
+          hasGroove: false,
+          pivotX: layout.pivotX,
+          carcassMountFaceX: layout.carcassMountFaceX,
+        },
+        state: readHingeHardwareState(layout.doorD),
+      });
+
+      if (Array.isArray(doorsArray)) {
+        doorsArray.push({
+          group: doorGroup,
+          hingeSide: layout.hingeSide,
+          type: 'hinged',
+          isOpen: layout.doorOpen,
+          noGlobalOpen: layout.groupUserData.noGlobalOpen === true,
+        });
+        try {
+          markSplitHoverPickablesDirty?.(App);
+        } catch {
+          // builder-pickable-cache-fallback: optional hover-pickable invalidation must not block door geometry output
+        }
       }
     }
   }

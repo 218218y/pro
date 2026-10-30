@@ -13,10 +13,37 @@ export const HINGED_DOOR_RENDER_POLICY = Object.freeze({
 export const HINGED_DOOR_MOUNT_POLICY = Object.freeze({
   insetFrameThicknessM: meters(0.036),
   insetRevealM: meters(0.003),
+  braceStopClearanceM: meters(0.0005),
   sameModuleLeafGapMaxM: meters(0.003),
   sameModuleLeafGapWoodDivisor: 10,
   sameModuleLeafGapSpanRatioMax: 0.1,
 });
+
+/** Back face of the closed slab, shared by door placement and its interior stops. */
+export function resolveHingedDoorClosedBackZ(frontZ: number, mode: unknown, woodThick: number): number {
+  return mode === 'inset'
+    ? frontZ -
+        HINGED_DOOR_RENDER_POLICY.visualThicknessM -
+        Math.min(HINGED_DOOR_MOUNT_POLICY.insetRevealM, Math.max(0, woodThick / 3))
+    : frontZ + HINGED_DOOR_RENDER_POLICY.opFrontZOffsetM - HINGED_DOOR_RENDER_POLICY.visualThicknessM / 2;
+}
+
+export function resolveBraceShelfFrontZ(args: {
+  wardrobeType: unknown;
+  doorMountMode: unknown;
+  woodThick: number;
+  frontZ: number;
+  doorFrontZ: number;
+  internalFrontZ: number;
+}): number {
+  // Sliding tracks occupy the front of the carcass; preserve their existing working clearance.
+  if (args.wardrobeType === 'sliding') return args.internalFrontZ;
+  return Math.min(
+    args.frontZ,
+    resolveHingedDoorClosedBackZ(args.doorFrontZ, args.doorMountMode, args.woodThick) -
+      HINGED_DOOR_MOUNT_POLICY.braceStopClearanceM
+  );
+}
 
 export const HINGED_DOOR_SHARED_PIVOT_DIMENSION_POLICY = Object.freeze({
   sharedPivotMatchToleranceM: meters(0.0015),

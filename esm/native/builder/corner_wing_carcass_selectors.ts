@@ -66,6 +66,7 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
   if (firstGridCell) {
     for (const cell of cornerCells) {
       m[cell.key] = {
+        braceFrontZ: cell.depth - wingD,
         effectiveBottomY: cell.effectiveBottomY,
         effectiveTopY: cell.effectiveTopY,
         localGridStep: cell.localGridStep,

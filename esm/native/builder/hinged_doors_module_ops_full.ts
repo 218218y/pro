@@ -63,6 +63,7 @@ export function appendFullHingedDoorOps(
 
   const op = attachHiddenModuleDoors(
     {
+      ...(ctx.winterBraceDoorPlan.cuts.length ? { winterBraceDoorPlan: ctx.winterBraceDoorPlan } : {}),
       partId: colorKey,
       moduleIndex: ctx.index,
       pivotX: state.pivotX,

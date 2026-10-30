@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { readWinterBraceDoorLockState } from '../selectors/config_selectors.js';
+import { toggleWinterBraceDoorLock as toggleWinterBraceDoorLockAction } from '../actions/interior_actions.js';
+import { useMemo, useCallback } from 'react';
 
 import type { AppContainer } from '../../../../../types';
 import {
@@ -38,6 +40,8 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
   ]);
   const hasIntDrawerData = useCfgSelector(selectHasInternalDrawersData, undefined, 'interior');
   const drawerRunnerType = useCfgSelector(selectDrawerRunnerType, undefined, 'interior');
+  const winterLock = useCfgSelectorShallow(readWinterBraceDoorLockState, 'interior');
+  const toggleWinterBraceDoorLock = useCallback(() => toggleWinterBraceDoorLockAction(app), [app]);
   const isChestMode = !!ui.isChestMode;
   const wardrobeType = useCfgSelector(
     cfg => (String(cfg.wardrobeType || 'hinged') === 'sliding' ? 'sliding' : 'hinged'),
@@ -93,6 +97,9 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
   const result = useMemo<InteriorTabViewState>(
     () => ({
       modeOpts: coreState.modeOpts,
+      hasWinterBrace: winterLock.hasWinterBrace,
+      winterBraceDoorsLocked: winterLock.locked,
+      toggleWinterBraceDoorLock,
       wardrobeType,
       isChestMode,
       hasIntDrawerData,
@@ -132,7 +139,16 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       showGridControls: coreState.showGridControls,
       showShelfVariantControls: coreState.showShelfVariantControls,
     }),
-    [coreState, wardrobeType, isChestMode, hasIntDrawerData, drawerRunnerType, localState]
+    [
+      coreState,
+      wardrobeType,
+      isChestMode,
+      hasIntDrawerData,
+      drawerRunnerType,
+      localState,
+      winterLock,
+      toggleWinterBraceDoorLock,
+    ]
   );
 
   return {

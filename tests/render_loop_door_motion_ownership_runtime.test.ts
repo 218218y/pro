@@ -340,6 +340,30 @@ test('hinged snap, sync, and animated routes share one canonical Corner Pent + i
   closeTo(animated.group.rotation.y, expected * 0.1, 'animated target parity');
 });
 
+test('fixed winter doors stay closed through snap, sync and animated opening routes', () => {
+  const makeDoor = (): TestDoor => ({
+    type: 'hinged',
+    hingeSide: 'left',
+    isOpen: true,
+    group: { position: { x: 0, y: 1, z: 0.3 }, rotation: { y: 0 }, userData: { __wpDoorFixedClosed: true } },
+  });
+  const snapped = makeDoor();
+  forceUpdatePerState({
+    runtime: { globalClickMode: false },
+    render: { doorsArray: [snapped], drawersArray: [] },
+  } as never);
+  assert.equal(snapped.group.rotation.y, 0);
+  const synced = makeDoor();
+  syncVisualsNow(
+    { runtime: { globalClickMode: true }, render: { doorsArray: [synced], drawersArray: [] } } as never,
+    { open: true, includeDrawers: false }
+  );
+  assert.equal(synced.group.rotation.y, 0);
+  const animated = makeDoor();
+  updateRenderLoopDoorMotions(makeApp([animated]), frame({ doorsShouldBeOpen: true }));
+  assert.equal(animated.group.rotation.y, 0);
+});
+
 test('hinged motion sign metadata stays fail-safe for non-primitive values', () => {
   const malformed = {
     type: 'hinged',

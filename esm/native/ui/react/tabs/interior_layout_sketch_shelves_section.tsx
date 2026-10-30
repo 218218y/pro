@@ -11,7 +11,6 @@ import {
 import {
   SKETCH_TOOL_ROD,
   SKETCH_TOOL_SHELF_BRACE,
-  SKETCH_TOOL_SHELF_WINTER_BRACE,
   SKETCH_TOOL_SHELF_DOUBLE,
   SKETCH_TOOL_SHELF_GLASS,
   SKETCH_TOOL_SHELF_PREFIX,
@@ -30,7 +29,6 @@ const SKETCH_SHELF_VARIANTS: ReadonlyArray<[string, string, string, string]> = [
   [SKETCH_TOOL_SHELF_DOUBLE, 'double', 'כפול', 'fas fa-clone'],
   [SKETCH_TOOL_SHELF_GLASS, 'glass', 'זכוכית', 'fas fa-gem'],
   [SKETCH_TOOL_SHELF_BRACE, 'brace', 'קושרת', 'fas fa-link'],
-  [SKETCH_TOOL_SHELF_WINTER_BRACE, 'winter_brace', 'קושרת חורף', 'far fa-square'],
 ];
 
 const SKETCH_SHELF_DEPTH_MIN_CM = 5;
@@ -161,19 +159,6 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         >
           אוגר מצעים
         </ModeToggleButton>
-        <ModeToggleButton
-          active={props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace'}
-          className="wp-sketch-shelf-btn"
-          icon={<i className="far fa-square" aria-hidden="true" />}
-          onClick={() => {
-            const active =
-              props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace';
-            if (active) props.exitManual();
-            else props.enterSketchShelfTool('winter_brace');
-          }}
-        >
-          קושרת חורף
-        </ModeToggleButton>
       </div>
 
       <div
@@ -214,6 +199,15 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         ))}
       </div>
 
+      <WinterBraceShelfControls
+        props={props}
+        active={props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace'}
+        onSelect={() => {
+          if (props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace')
+            props.exitManual();
+          else props.enterSketchShelfTool('winter_brace');
+        }}
+      />
       <InteriorSketchShelfDepthField {...props} />
       <InteriorSketchStorageHeightField {...props} />
     </div>
@@ -433,6 +427,48 @@ export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionPro
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+export function WinterBraceDoorLockButton(props: InteriorLayoutSectionProps): ReactElement | null {
+  if (!props.hasWinterBrace) return null;
+  return (
+    <ModeToggleButton
+      active={props.winterBraceDoorsLocked}
+      className="wp-sketch-shelf-btn"
+      data-testid="winter-brace-door-lock-button"
+      icon={
+        <i className={props.winterBraceDoorsLocked ? 'fas fa-lock' : 'fas fa-lock-open'} aria-hidden="true" />
+      }
+      onClick={props.toggleWinterBraceDoorLock}
+    >
+      {props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות'}
+    </ModeToggleButton>
+  );
+}
+
+export function WinterBraceShelfControls({
+  props,
+  active,
+  onSelect,
+}: {
+  props: InteriorLayoutSectionProps;
+  active: boolean;
+  onSelect: () => void;
+}): ReactElement {
+  return (
+    <div className="wp-r-type-selector type-selector wp-winter-brace-row" dir="rtl">
+      <ModeToggleButton
+        active={active}
+        className="wp-sketch-shelf-btn"
+        data-testid="winter-brace-shelf-button"
+        icon={<i className="far fa-square" aria-hidden="true" />}
+        onClick={onSelect}
+      >
+        קושרת חורף
+      </ModeToggleButton>
+      <WinterBraceDoorLockButton {...props} />
     </div>
   );
 }

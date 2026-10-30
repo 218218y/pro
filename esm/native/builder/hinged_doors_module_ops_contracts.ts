@@ -45,6 +45,7 @@ export type HingedDoorModuleOpsContext = {
   doorBottomY: number;
   effectiveTopLimit: number;
   totalDoorSpace: number;
+  winterBraceDoorPlan: { cuts: number[]; fixedBelowY: number | null };
   singleDoorW: number;
   getHingeDirSafe: (doorKey: string, defaultDir: 'left' | 'right') => 'left' | 'right';
   isDoorSplitSafe: (map: unknown, doorId: number) => boolean;

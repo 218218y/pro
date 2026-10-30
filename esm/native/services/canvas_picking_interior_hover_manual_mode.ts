@@ -25,6 +25,7 @@ import {
   readCustomData,
   readGridDivisions,
   readManualTool,
+  readNumber,
   readShelfVariant,
   readUiState,
   setPreview,
@@ -198,7 +199,9 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const existingVariant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants });
     const op = !exists ? 'add' : existingVariant !== shelfVariant ? 'add' : 'remove';
     const isBrace = shelfVariant === 'brace' || shelfVariant === 'winter_brace';
-    const depthM = isBrace ? target.internalDepth : target.regularDepth;
+    const depthM = isBrace
+      ? (readNumber(target.info.braceFrontZ) ?? target.backZ + target.internalDepth) - target.backZ
+      : target.regularDepth;
     const z = target.backZ + depthM / 2;
     const w =
       target.innerW > 0

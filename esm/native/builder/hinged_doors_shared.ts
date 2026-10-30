@@ -55,6 +55,7 @@ export type AppendHingedDoorOpsParams = {
   globalDoorCounter?: number;
   drawerHeightTotal?: number;
   effectiveBottomY?: number;
+  effectiveTopY?: number;
   startY?: number;
   woodThick?: number;
   cabinetBodyHeight?: number;

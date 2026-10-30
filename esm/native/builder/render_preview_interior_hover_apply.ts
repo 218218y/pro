@@ -173,7 +173,9 @@ export function setInteriorLayoutHoverPreview(
     (isRemove ? ud.__lineRemove || ud.__lineStorage : ud.__lineStorage) ?? null;
 
   const shelfDepth =
-    shelfVariant === 'brace' || shelfVariant === 'winter_brace' ? internalDepth : regularDepth;
+    shelfVariant === 'brace' || shelfVariant === 'winter_brace'
+      ? (readPreviewNumber(input.braceFrontZ) ?? backZ + internalDepth) - backZ
+      : regularDepth;
   const shelfZ = backZ + shelfDepth / 2;
   const shelfW = Math.max(
     SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfHoverMinWidthM,

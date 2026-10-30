@@ -1,3 +1,4 @@
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from './door_system_policy.js';
 import { BASE_PLINTH_POLICY } from './base_plinth_policy.js';
 import {
   INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
@@ -50,6 +51,8 @@ export const SKETCH_BOX_STORAGE_PREVIEW_POLICY = Object.freeze({
 });
 
 export const SKETCH_BOX_DOOR_PREVIEW_POLICY = Object.freeze({
+  doorSplitGapM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM,
+  doorSplitMinSegmentHeightM: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM,
   doorMinDimensionM: meters(0.05),
   doorEdgeEpsilonM: meters(0.001),
   doorInsetMinM: meters(0.002),

@@ -1,6 +1,7 @@
 import { getActiveDepthCmFromConfig } from '../features/special_dims/index.js';
 import { resolveHexCellGeometry } from '../features/hex_cell/index.js';
 import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
+import { resolveBraceShelfFrontZ } from '../../shared/dimensions/door_system_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { CM_PER_METER } from '../../shared/dimensions/units.js';
 
@@ -41,6 +42,7 @@ export interface ModuleDepthProfile {
   moduleFrontZ: number;
   moduleDoorDepth: number;
   moduleDoorFrontZ: number;
+  braceFrontZ: number;
   moduleHitDepth: number;
   moduleHitZ: number;
 }
@@ -68,6 +70,14 @@ export function resolveModuleDepthProfile(
   const moduleOuterZ = -runtime.D / 2 + moduleTotalDepth / 2;
   const moduleFrontZ = -runtime.D / 2 + moduleTotalDepth;
   const moduleDoorFrontZ = -runtime.D / 2 + moduleDoorDepth;
+  const braceFrontZ = resolveBraceShelfFrontZ({
+    wardrobeType: runtime.cfg.wardrobeType,
+    doorMountMode: runtime.cfg.doorMountMode,
+    woodThick: runtime.woodThick,
+    frontZ: moduleFrontZ,
+    doorFrontZ: moduleDoorFrontZ,
+    internalFrontZ: moduleInternalZ + moduleInternalDepth / 2,
+  });
   const moduleHitDepth = Math.max(moduleTotalDepth, moduleDoorDepth);
   const moduleHitZ = -runtime.D / 2 + moduleHitDepth / 2;
 
@@ -79,6 +89,7 @@ export function resolveModuleDepthProfile(
     moduleFrontZ,
     moduleDoorDepth,
     moduleDoorFrontZ,
+    braceFrontZ,
     moduleHitDepth,
     moduleHitZ,
   };

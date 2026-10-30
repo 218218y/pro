@@ -8,6 +8,9 @@ export function createInteriorLayoutSectionProps(
 ): InteriorLayoutSectionProps {
   return {
     wardrobeType: state.wardrobeType,
+    hasWinterBrace: state.hasWinterBrace,
+    winterBraceDoorsLocked: state.winterBraceDoorsLocked,
+    toggleWinterBraceDoorLock: state.toggleWinterBraceDoorLock,
     isChestMode: state.isChestMode,
     layoutActive: state.layoutActive,
     isLayoutMode: state.isLayoutMode,

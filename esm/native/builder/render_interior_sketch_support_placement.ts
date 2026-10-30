@@ -27,24 +27,7 @@ export function createInteriorSketchPlacementSupport(
     faces,
   } = args;
 
-  const clampY = (y: number) => {
-    const pad = Math.min(
-      SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMaxM,
-      Math.max(
-        SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM,
-        woodThick * SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadWoodRatio
-      )
-    );
-    const lo = effectiveBottomY + pad;
-    const hi = effectiveTopY - pad;
-    return Math.max(lo, Math.min(hi, y));
-  };
-
-  const yFromNorm = (yNorm: unknown): number | null => {
-    const n = toFiniteNumber(yNorm);
-    if (n == null) return null;
-    return clampY(effectiveBottomY + Math.max(0, Math.min(1, n)) * (effectiveTopY - effectiveBottomY));
-  };
+  const { clampY, yFromNorm } = createSketchVerticalPlacement({ effectiveBottomY, effectiveTopY, woodThick });
 
   const placementMaterials = createSketchPlacementMaterialResources({
     App,
@@ -75,4 +58,32 @@ export function createInteriorSketchPlacementSupport(
       pinEdgeOffsetDefault: placementMaterials.pinEdgeOffsetDefault,
     }),
   };
+}
+
+export function createSketchVerticalPlacement(args: {
+  effectiveBottomY: number;
+  effectiveTopY: number;
+  woodThick: number;
+}) {
+  const { effectiveBottomY, effectiveTopY, woodThick } = args;
+  const clampY = (y: number) => {
+    const pad = Math.min(
+      SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMaxM,
+      Math.max(
+        SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM,
+        woodThick * SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadWoodRatio
+      )
+    );
+    const lo = effectiveBottomY + pad;
+    const hi = effectiveTopY - pad;
+    return Math.max(lo, Math.min(hi, y));
+  };
+
+  const yFromNorm = (yNorm: unknown): number | null => {
+    const n = toFiniteNumber(yNorm);
+    if (n == null) return null;
+    return clampY(effectiveBottomY + Math.max(0, Math.min(1, n)) * (effectiveTopY - effectiveBottomY));
+  };
+
+  return { clampY, yFromNorm };
 }

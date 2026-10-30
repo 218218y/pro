@@ -67,6 +67,7 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
       cellInnerW: cellRuntime.cellInnerW,
       woodThick: runtime.woodThick,
       __internalDepth: cellRuntime.__internalDepth,
+      braceFrontZ: cellRuntime.braceFrontZ,
       cellInnerCenterX: cellRuntime.cellInnerCenterX,
       __fullDepthCenterZ: cellRuntime.__fullDepthCenterZ,
       __z: cellRuntime.__z,

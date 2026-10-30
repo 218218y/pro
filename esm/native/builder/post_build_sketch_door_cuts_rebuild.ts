@@ -1,3 +1,4 @@
+import { patchBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metadata.js';
 // Post-build sketch external-drawer segmented-door rebuild (Pure ESM)
 //
 // Owns segmented sketch-door rebuild orchestration while focused helpers own segment meta, visuals, and handles.
@@ -227,10 +228,21 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       frontZ: thickness / 2 + 0.0015,
       faceSign: 1,
     });
-    g.add(visualObj);
+    let motionGroup = g;
+    if (args.fixedBelowY != null && seg.yMax <= args.fixedBelowY + 1e-6 && g.parent) {
+      motionGroup = new runtime.THREE.Group();
+      motionGroup.position.set(g.position.x, g.position.y, g.position.z);
+      motionGroup.userData = { ...ud, partId: segmentPartId, __wpSketchSegmentedDoor: true };
+      delete motionGroup.userData.__wpWinterBraceDoorPlan;
+      patchBuilderHingedDoorMotionMetadata(motionGroup.userData, { fixedClosed: true });
+      g.parent.add(motionGroup);
+      if (!args.registerFixedDoor) throw new Error('Winter brace fixed door registration is missing');
+      args.registerFixedDoor(motionGroup, isLeftHinge ? 'left' : 'right');
+    }
+    motionGroup.add(visualObj);
     appendSketchSegmentHinges({
       runtime,
-      doorGroup: g,
+      doorGroup: motionGroup,
       hardwareContext,
       segmentPartId,
       segmentHeight: segmentVisualHeight,
@@ -241,7 +253,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
 
     const handleResult = maybeAttachSegmentHandle({
       runtime,
-      g,
+      g: motionGroup,
       width,
       seg,
       segHeight,

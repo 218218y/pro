@@ -1352,6 +1352,20 @@
       "to": "shared",
       "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
       "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["resolveBraceShelfFrontZ"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Brace shelf depth follows the same closed-door slab geometry as door placement. The module depth producer imports this focused door geometry owner directly so inset stops cannot overlap the door; carcass interior dimensions remain constants only.",
+      "id": "dimension-owner-builder-module-depth-brace-door-stop"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "statement": {
         "toFile": "esm/shared/dimensions/units.ts",
         "kind": "value",
         "importedSymbols": ["CM_PER_METER"],

@@ -1,3 +1,4 @@
+import { WinterBraceDoorLockButton } from './interior_layout_sketch_shelves_section.js';
 import type { ReactElement } from 'react';
 
 import { OptionBtn, cx } from './interior_tab_helpers.js';
@@ -31,6 +32,7 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
             <i className={t.icon} aria-hidden="true" /> {t.label}
           </OptionBtn>
         ))}
+        <WinterBraceDoorLockButton {...props} />
       </div>
 
       <InteriorLayoutManualControls {...props} />

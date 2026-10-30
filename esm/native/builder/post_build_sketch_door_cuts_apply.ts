@@ -146,7 +146,8 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
   };
   if (!doorsArr.length) return;
 
-  for (const entryRaw of doorsArr) {
+  const sourceDoors = doorsArr.slice();
+  for (const entryRaw of sourceDoors) {
     const entry = asRecord(entryRaw);
     const g = getDoorEntryGroup(entryRaw);
     const ud = asRecord(g && g.userData);
@@ -157,7 +158,8 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     if (!selection) continue;
     const selectedStacks = Array.isArray(selection.stacks) ? selection.stacks : [];
     const splitPosList = Array.isArray(selection.splitPosList) ? selection.splitPosList : [];
-    if (!selectedStacks.length && !splitPosList.length) continue;
+    const lineCutsY = selection.lineCutsY ?? [];
+    if (!selectedStacks.length && !splitPosList.length && !lineCutsY.length) continue;
 
     const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
     const height = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
@@ -194,9 +196,15 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
       doorMax: splitBounds.yMax,
       splitPosList,
     });
+    for (const y of lineCutsY) {
+      const halfGap = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM / 2;
+      if (y > doorMin && y < doorMax) cuts.push({ yMin: y - halfGap, yMax: y + halfGap });
+    }
     const normalizedCuts = normalizeSketchDrawerCutIntervals(
       cuts,
-      splitPosList.length ? { minHeight: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM / 2 } : {}
+      splitPosList.length || lineCutsY.length
+        ? { minHeight: HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM / 2 }
+        : {}
     );
     if (!normalizedCuts.length) continue;
     const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts);
@@ -212,6 +220,10 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
       g,
       ud,
       visibleSegments,
+      fixedBelowY: selection.fixedBelowY ?? null,
+      registerFixedDoor: (group, hingeSide) => {
+        doorsArr.push({ type: 'hinged', group, hingeSide, isOpen: false });
+      },
       basePartId: selection.basePartId,
       collectSuppressedHandlePartIds,
     });

@@ -133,3 +133,77 @@ export function normalizeConfigModulesConfigurationContainersInPlace(cfg: Unknow
   if (!Array.isArray(cfg.modulesConfiguration)) cfg.modulesConfiguration = [];
   if (!Array.isArray(cfg.stackSplitLowerModulesConfiguration)) cfg.stackSplitLowerModulesConfiguration = [];
 }
+
+type WinterBraceConfigRecord = Record<string, unknown>;
+const winterBraceRecord = (value: unknown): WinterBraceConfigRecord | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as WinterBraceConfigRecord) : null;
+function ownsWinterBrace(config: WinterBraceConfigRecord, source: 'module' | 'box'): boolean {
+  const custom = winterBraceRecord(config.customData);
+  const active = Array.isArray(custom?.shelves) ? custom.shelves : [];
+  if (
+    source === 'module' &&
+    config.isCustom === true &&
+    Array.isArray(custom?.shelfVariants) &&
+    custom.shelfVariants.some((v, i) => v === 'winter_brace' && active[i] === true)
+  )
+    return true;
+  const extras = source === 'box' ? config : winterBraceRecord(config.sketchExtras);
+  return (
+    Array.isArray(extras?.shelves) &&
+    extras.shelves.some(shelf => winterBraceRecord(shelf)?.variant === 'winter_brace')
+  );
+}
+
+function visitHosts(
+  config: WinterBraceConfigRecord,
+  visit: (host: WinterBraceConfigRecord, source: 'module' | 'box') => void
+) {
+  const module = (value: unknown) => {
+    const host = winterBraceRecord(value);
+    if (!host) return;
+    visit(host, 'module');
+    const boxes = winterBraceRecord(host.sketchExtras)?.boxes;
+    if (Array.isArray(boxes))
+      for (const box of boxes) {
+        const item = winterBraceRecord(box);
+        if (item) visit(item, 'box');
+      }
+  };
+  for (const key of ['modulesConfiguration', 'stackSplitLowerModulesConfiguration']) {
+    const list = config[key];
+    if (Array.isArray(list)) list.forEach(module);
+  }
+  const corner = winterBraceRecord(config.cornerConfiguration);
+  if (corner)
+    for (const host of [corner, winterBraceRecord(corner.stackSplitLower)]) {
+      if (!host) continue;
+      module(host);
+      if (Array.isArray(host.modulesConfiguration)) host.modulesConfiguration.forEach(module);
+    }
+}
+
+export function readWinterBraceDoorLockState(config: unknown): { hasWinterBrace: boolean; locked: boolean } {
+  let hasWinterBrace = false,
+    locked = false;
+  const cfg = winterBraceRecord(config);
+  if (cfg)
+    visitHosts(cfg, (host, source) => {
+      if (!ownsWinterBrace(host, source)) return;
+      hasWinterBrace = true;
+      if (host.winterBraceDoorsUnlocked !== true) locked = true;
+    });
+  return { hasWinterBrace, locked };
+}
+
+export function buildWinterBraceDoorLockPatch(config: unknown, locked: boolean): WinterBraceConfigRecord {
+  const cfg = winterBraceRecord(config);
+  if (!cfg) throw new TypeError('Winter brace door lock requires a config snapshot');
+  const patch: WinterBraceConfigRecord = {};
+  for (const key of ['modulesConfiguration', 'stackSplitLowerModulesConfiguration', 'cornerConfiguration']) {
+    if (cfg[key] !== undefined) patch[key] = structuredClone(cfg[key]);
+  }
+  visitHosts(patch, (host, source) => {
+    if (ownsWinterBrace(host, source)) host.winterBraceDoorsUnlocked = !locked;
+  });
+  return patch;
+}

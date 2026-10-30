@@ -17,6 +17,7 @@ import {
   readBraceShelves,
   readCustomData,
   readGridDivisions,
+  readNumber,
   readHoverModuleConfig,
   setPreview,
 } from './canvas_picking_interior_hover_shared.js';
@@ -98,6 +99,7 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
           internalCenterX: target.internalCenterX,
           innerW: target.innerW,
           internalDepth: target.internalDepth,
+          braceFrontZ: readNumber(target.info.braceFrontZ),
           backZ: target.backZ,
           woodThick: target.woodThick,
           regularDepth: target.regularDepth,
@@ -148,10 +150,12 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
       variant: 'brace',
       x: target.internalCenterX,
       y: shelfY,
-      z: target.backZ + target.internalDepth / 2,
+      z:
+        target.backZ +
+        ((readNumber(target.info.braceFrontZ) ?? target.backZ + target.internalDepth) - target.backZ) / 2,
       w: target.innerW > 0 ? Math.max(0, target.innerW - 0.002) : target.innerW,
       h: target.woodThick,
-      d: target.internalDepth,
+      d: (readNumber(target.info.braceFrontZ) ?? target.backZ + target.internalDepth) - target.backZ,
       woodThick: target.woodThick,
       op: isBrace ? 'remove' : 'add',
     });

@@ -34,6 +34,7 @@ export type RuntimeHingedDoorMotionMetadata = Readonly<{
   invertSwing: boolean;
   removed: boolean;
   noGlobalOpen: boolean;
+  fixedClosed: boolean;
   widthM: number | null;
   heightM: number | null;
   meshOffsetXM: number | null;
