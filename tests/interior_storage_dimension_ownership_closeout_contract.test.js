@@ -82,6 +82,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
+  'esm/native/services/canvas_picking_shelf_shortcuts.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
   'esm/native/services/canvas_picking_manual_layout_free_box_commit.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
@@ -317,7 +318,7 @@ function objectPropertyFacts(object) {
   }));
 }
 
-test('Interior Storage focused ownership is exactly 33 direct unaliased static value routes', () => {
+test('Interior Storage focused ownership is exactly 34 direct unaliased static value routes', () => {
   const actual = {};
   let statements = 0;
 
@@ -357,8 +358,8 @@ test('Interior Storage focused ownership is exactly 33 direct unaliased static v
     actual[rel] = dependency.importedSymbols;
   }
 
-  assert.equal(Object.keys(actual).length, 33);
-  assert.equal(statements, 33);
+  assert.equal(Object.keys(actual).length, 34);
+  assert.equal(statements, 34);
   assert.deepEqual(
     Object.fromEntries(Object.entries(actual).sort(([left], [right]) => left.localeCompare(right))),
     Object.fromEntries(
