@@ -810,21 +810,34 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
   assert.ok(hangers.every(hanger => hanger.position.x > -0.045));
 });
 
-test('winter blankets adapt stack count to compartment height while staying grounded and rounded', () => {
+test('winter blankets blend standard and filler layers so the top gap stays compact and rounded', () => {
   const { App, outlined } = createApp();
   const supportY = 0.65;
-  const tallParent = new FakeGroup();
-  const tallHeight = 0.78;
   const policy = {
     ...foldedContentsPolicy(false, true, true, mesh => outlined.push(mesh)),
     contentKind: 'winter_blankets' as const,
   };
+
+  const collectHeights = (stack: any) =>
+    stack.children.map((layer: any) => {
+      const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
+      assert.ok(body, 'winter blanket layer must contain a body mesh');
+      return body.geometry.args[1];
+    });
+
+  const tallParent = new FakeGroup();
+  const tallHeight = 0.78;
   addFoldedClothes(App, 0, supportY, 0, 0.72, tallParent as any, tallHeight, 0.46, policy);
   assert.equal(tallParent.children.length, 1);
   const tallStack = tallParent.children[0];
   assert.equal(tallStack.userData.__kind, 'winter_blanket_stack');
   assert.equal(tallStack.position.y, supportY);
-  assert.equal(tallStack.children.length, 4, 'taller blanket compartments should stack more quilts');
+  const tallHeights = collectHeights(tallStack);
+  assert.equal(
+    tallHeights.length,
+    5,
+    'tall compartments should add a thinner top blanket instead of leaving a large empty gap'
+  );
   assert.equal(outlined.length, tallStack.children.length);
   let tallStackTop = supportY;
   for (const layer of tallStack.children) {
@@ -833,10 +846,6 @@ test('winter blankets adapt stack count to compartment height while staying grou
     const fold = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_fold');
     assert.ok(body && fold, 'a folded comforter has a rounded textile body and a visible fold');
     assert.ok(outlined.includes(body));
-    assert.ok(
-      body.geometry.args[1] >= 0.15,
-      'each winter blanket stays substantially thicker than regular folded clothes'
-    );
     const bottomY = tallStack.position.y + layer.position.y - body.geometry.args[1] / 2;
     const topY = tallStack.position.y + layer.position.y + body.geometry.args[1] / 2;
     tallStackTop = Math.max(tallStackTop, topY);
@@ -846,17 +855,59 @@ test('winter blankets adapt stack count to compartment height while staying grou
     assert.ok(tallStack.position.z + body.geometry.args[2] / 2 <= 0.46 / 2);
     assert.ok(tallStack.position.z - body.geometry.args[2] / 2 >= -0.46 / 2);
   }
-  const topGap = supportY + tallHeight - tallStackTop;
-  assert.ok(
-    Math.abs(topGap - 0.15) < 0.02,
-    'the blanket stack should stop around 15cm below the compartment top'
+  assert.equal(
+    tallHeights.filter((height: number) => height >= 0.15).length,
+    4,
+    'tall compartments should keep the thicker blankets and only compress the filler blanket'
   );
+  assert.ok(
+    tallHeights.some((height: number) => height < 0.12),
+    'the top filler blanket should be visibly thinner when needed'
+  );
+  const tallTopGap = supportY + tallHeight - tallStackTop;
+  assert.ok(
+    tallTopGap >= 0.1 && tallTopGap <= 0.15,
+    'the tall compartment top gap should stay within the compact target band'
+  );
+
+  const mediumParent = new FakeGroup();
+  const mediumHeight = 0.41;
+  addFoldedClothes(App, 0, supportY, 0, 0.72, mediumParent as any, mediumHeight, 0.46, policy);
+  assert.equal(mediumParent.children.length, 1);
+  const mediumStack = mediumParent.children[0];
+  const mediumHeights = collectHeights(mediumStack);
+  assert.equal(mediumHeights.length, 3, 'mid-height compartments should be able to use two filler blankets');
+  assert.equal(
+    mediumHeights.filter((height: number) => height < 0.12).length,
+    2,
+    'mid-height compartments should use two thinner blankets to close the remaining gap'
+  );
+  const mediumStackTop = mediumStack.children.reduce((max: number, layer: any) => {
+    const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
+    return Math.max(max, mediumStack.position.y + layer.position.y + body.geometry.args[1] / 2);
+  }, supportY);
+  const mediumTopGap = supportY + mediumHeight - mediumStackTop;
+  assert.ok(mediumTopGap >= 0.1 && mediumTopGap <= 0.15);
 
   const shortParent = new FakeGroup();
   addFoldedClothes(App, 0, supportY, 0, 0.72, shortParent as any, 0.24, 0.46, policy);
   assert.equal(shortParent.children.length, 1);
   const shortStack = shortParent.children[0];
-  assert.equal(shortStack.children.length, 1, 'shorter blanket compartments should render fewer quilts');
+  const shortHeights = collectHeights(shortStack);
+  assert.ok(
+    shortHeights.length >= 1 && shortHeights.length <= 2,
+    'shorter blanket compartments should use one or two thin filler blankets'
+  );
+  assert.ok(
+    shortHeights.every((height: number) => height >= 0.052 && height <= 0.11),
+    'a short compartment should use only thinner filler blankets'
+  );
+  const shortStackTop = shortStack.children.reduce((max: number, layer: any) => {
+    const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
+    return Math.max(max, shortStack.position.y + layer.position.y + body.geometry.args[1] / 2);
+  }, supportY);
+  const shortTopGap = supportY + 0.24 - shortStackTop;
+  assert.ok(shortTopGap >= 0.1 && shortTopGap <= 0.15);
 
   const hidden = new FakeGroup();
   addFoldedClothes(App, 0, supportY, 0, 0.72, hidden as any, tallHeight, 0.46, {
@@ -865,7 +916,7 @@ test('winter blankets adapt stack count to compartment height while staying grou
   });
   assert.equal(hidden.children.length, 0);
   const tooShort = new FakeGroup();
-  addFoldedClothes(App, 0, supportY, 0, 0.72, tooShort as any, 0.065, 0.46, policy);
+  addFoldedClothes(App, 0, supportY, 0, 0.72, tooShort as any, 0.04, 0.46, policy);
   assert.equal(tooShort.children.length, 0, 'do not create a floating or squeezed blanket');
   const narrow = new FakeGroup();
   addFoldedClothes(App, 0, supportY, 0, 0.15, narrow as any, tallHeight, 0.46, policy);

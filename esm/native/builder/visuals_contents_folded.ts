@@ -100,50 +100,107 @@ function readPositiveVisualContentRuntimeNumber(value: unknown): number | null {
   return n != null && n > 0 ? n : null;
 }
 
-type WinterBlanketLayerCandidate = Readonly<{
-  count: number;
+type WinterBlanketTopLayerPlan = Readonly<{
+  layerHeights: readonly number[];
   topGap: number;
   diff: number;
 }>;
 
-function collectWinterBlanketLayerCandidates(args: {
+type WinterBlanketStackPlan = Readonly<{
+  layerHeights: readonly number[];
+  topGap: number;
+}>;
+
+function distributeWinterBlanketTopLayerHeights(args: {
+  totalHeight: number;
+  layerCount: number;
+  minHeight: number;
   maxHeight: number;
-  targetTopGap: number;
-  minimumTopGap: number;
-  maxLayers: number;
-  layerHeight: number;
-}): WinterBlanketLayerCandidate[] {
-  const { maxHeight, targetTopGap, minimumTopGap, maxLayers, layerHeight } = args;
-  const candidates: WinterBlanketLayerCandidate[] = [];
-  for (let count = 1; count <= maxLayers; count++) {
-    const usedHeight = count * layerHeight;
-    const topGap = quantizeVisualContentMetric(maxHeight - usedHeight);
-    if (topGap < minimumTopGap) continue;
-    candidates.push({ count, topGap, diff: Math.abs(topGap - targetTopGap) });
+}): number[] {
+  const { totalHeight, layerCount, minHeight, maxHeight } = args;
+  const heights = Array.from({ length: layerCount }, () => minHeight);
+  let remaining = totalHeight - minHeight * layerCount;
+  for (let index = 0; index < layerCount && remaining > 1e-9; index++) {
+    const add = Math.min(maxHeight - minHeight, remaining);
+    heights[index] = (heights[index] ?? minHeight) + add;
+    remaining -= add;
   }
-  return candidates;
+  return heights.map(height => quantizeVisualContentMetric(height));
 }
 
-function resolveWinterBlanketLayerCount(maxHeight: number): number {
+function resolveWinterBlanketTopLayerPlan(remainingHeight: number): WinterBlanketTopLayerPlan | null {
   const dims = WINTER_BLANKET_VISUAL_POLICY;
-  const pickBest = (minimumTopGap: number): number => {
-    const candidates = collectWinterBlanketLayerCandidates({
-      maxHeight,
-      targetTopGap: dims.preferredTopClearanceM,
-      minimumTopGap,
-      maxLayers: dims.maxLayers,
-      layerHeight: dims.layerHeightM,
-    });
-    if (!candidates.length) return 0;
-    candidates.sort((left, right) => {
-      if (left.diff !== right.diff) return left.diff - right.diff;
-      if (left.topGap !== right.topGap) return left.topGap - right.topGap;
-      return right.count - left.count;
-    });
-    return candidates[0]!.count;
-  };
+  const minUse = remainingHeight - dims.maximumTopClearanceM;
+  const maxUse = remainingHeight - dims.minimumTopClearanceM;
+  if (maxUse < dims.topLayerMinHeightM) return null;
 
-  return pickBest(dims.minimumTopClearanceM) || pickBest(dims.tightFitMinimumTopClearanceM);
+  const preferredUse = clamp(remainingHeight - dims.preferredTopClearanceM, minUse, maxUse);
+  const maxLayerCount = Math.min(dims.maxTopFillerLayers, Math.max(0, dims.maxLayers - 1));
+  const candidates: WinterBlanketTopLayerPlan[] = [];
+
+  for (let layerCount = 1; layerCount <= maxLayerCount; layerCount++) {
+    const minTotal = layerCount * dims.topLayerMinHeightM;
+    const maxTotal = layerCount * dims.topLayerMaxHeightM;
+    const feasibleMin = Math.max(minUse, minTotal);
+    const feasibleMax = Math.min(maxUse, maxTotal);
+    if (feasibleMin > feasibleMax) continue;
+    const totalHeight = clamp(preferredUse, feasibleMin, feasibleMax);
+    const layerHeights = distributeWinterBlanketTopLayerHeights({
+      totalHeight,
+      layerCount,
+      minHeight: dims.topLayerMinHeightM,
+      maxHeight: dims.topLayerMaxHeightM,
+    });
+    const usedHeight = layerHeights.reduce((sum, height) => sum + height, 0);
+    const topGap = quantizeVisualContentMetric(remainingHeight - usedHeight);
+    candidates.push({
+      layerHeights,
+      topGap,
+      diff: Math.abs(topGap - dims.preferredTopClearanceM),
+    });
+  }
+
+  if (!candidates.length) return null;
+  candidates.sort((left, right) => {
+    if (left.diff !== right.diff) return left.diff - right.diff;
+    if (left.topGap !== right.topGap) return left.topGap - right.topGap;
+    if (left.layerHeights.length !== right.layerHeights.length) {
+      return left.layerHeights.length - right.layerHeights.length;
+    }
+    const leftTotal = left.layerHeights.reduce((sum, height) => sum + height, 0);
+    const rightTotal = right.layerHeights.reduce((sum, height) => sum + height, 0);
+    return rightTotal - leftTotal;
+  });
+  return candidates[0] ?? null;
+}
+
+function resolveWinterBlanketStackPlan(maxHeight: number): WinterBlanketStackPlan {
+  const dims = WINTER_BLANKET_VISUAL_POLICY;
+  const maxBaseLayers = Math.min(
+    dims.maxLayers,
+    Math.max(0, Math.floor((maxHeight - dims.minimumTopClearanceM) / dims.layerHeightM))
+  );
+
+  for (let baseLayerCount = maxBaseLayers; baseLayerCount >= 0; baseLayerCount--) {
+    const baseHeights = Array.from({ length: baseLayerCount }, () => dims.layerHeightM);
+    const usedBaseHeight = baseLayerCount * dims.layerHeightM;
+    const remainingHeight = quantizeVisualContentMetric(maxHeight - usedBaseHeight);
+    if (remainingHeight < dims.tightFitMinimumTopClearanceM) continue;
+    if (remainingHeight >= dims.minimumTopClearanceM && remainingHeight <= dims.maximumTopClearanceM) {
+      return { layerHeights: baseHeights, topGap: remainingHeight };
+    }
+
+    const fillerLayerBudget = dims.maxLayers - baseLayerCount;
+    if (fillerLayerBudget <= 0) continue;
+    const fillerPlan = resolveWinterBlanketTopLayerPlan(remainingHeight);
+    if (!fillerPlan || fillerPlan.layerHeights.length > fillerLayerBudget) continue;
+    return {
+      layerHeights: [...baseHeights, ...fillerPlan.layerHeights],
+      topGap: fillerPlan.topGap,
+    };
+  }
+
+  return { layerHeights: [], topGap: maxHeight };
 }
 
 function resolveRotatedBookFootprintWidth(width: number, height: number, angleZ: number): number {
@@ -525,22 +582,23 @@ function addWinterBlankets(args: {
   const { THREE, shelfX, shelfY, shelfZ, width, maxHeight, maxDepth, parentGroup, addOutlines, isSketch } =
     args;
   const dims = WINTER_BLANKET_VISUAL_POLICY;
-  const layerCount = resolveWinterBlanketLayerCount(maxHeight);
+  const stackPlan = resolveWinterBlanketStackPlan(maxHeight);
   const quiltWidth = Math.min(dims.maxWidthM, width - dims.sideClearanceM * 2);
   const availableDepth = maxDepth == null ? dims.maxDepthM : maxDepth - dims.depthClearanceM * 2;
   const quiltDepth = Math.min(dims.maxDepthM, availableDepth);
-  if (layerCount < 1 || quiltWidth < dims.minWidthM || quiltDepth < dims.minDepthM) return;
+  if (stackPlan.layerHeights.length < 1 || quiltWidth < dims.minWidthM || quiltDepth < dims.minDepthM) return;
 
   // A deliberately subdued textile palette; each layer reads as one folded blanket.
   const palette = [0xd8c9b6, 0x9baeb0, 0xc3b7a7, 0xa7b5a5] as const;
   const centerZ = shelfZ + (maxDepth == null ? 0 : Math.min(0.03, (maxDepth - quiltDepth) / 4));
   const stack = new THREE.Group();
-  stack.userData = { __kind: 'winter_blanket_stack' };
+  stack.userData = { __kind: 'winter_blanket_stack', topGap: stackPlan.topGap };
   stack.position.set(shelfX, shelfY, centerZ);
 
-  for (let layer = 0; layer < layerCount; layer++) {
+  let layerBaseY = 0;
+  for (let layer = 0; layer < stackPlan.layerHeights.length; layer++) {
     const color = palette[layer % palette.length]!;
-    const height = dims.layerHeightM;
+    const height = stackPlan.layerHeights[layer]!;
     const widthInset = layer % 2 === 0 ? 0 : dims.widthInsetEveryOtherLayer;
     const depthInset = layer % 2 === 0 ? dims.depthInsetEveryOtherLayer : 0;
     const bodyWidth = quiltWidth - widthInset;
@@ -556,8 +614,13 @@ function addWinterBlankets(args: {
       material
     );
     const blanket = new THREE.Group();
-    blanket.userData = { __kind: 'winter_blanket', __layer: layer };
-    blanket.position.set((layer % 2 ? 1 : -1) * 0.006, layer * height + height / 2, 0);
+    blanket.userData = {
+      __kind: 'winter_blanket',
+      __layer: layer,
+      __height: height,
+      __style: height < dims.layerHeightM ? 'filler' : 'standard',
+    };
+    blanket.position.set((layer % 2 ? 1 : -1) * 0.006, layerBaseY + height / 2, 0);
     blanket.add(body);
     body.userData = { __kind: 'winter_blanket_body' };
 
@@ -584,6 +647,7 @@ function addWinterBlankets(args: {
     blanket.add(lip);
     if (isSketch) addOutlines(body);
     stack.add(blanket);
+    layerBaseY += height;
   }
   parentGroup.add?.(stack);
 }
