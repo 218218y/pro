@@ -81,11 +81,12 @@ export const WINTER_BLANKET_VISUAL_POLICY = Object.freeze({
   layerHeightM: meters(0.156),
   topLayerMinHeightM: meters(0.052),
   topLayerMaxHeightM: meters(0.11),
-  preferredTopClearanceM: meters(0.12),
-  minimumTopClearanceM: meters(0.1),
-  maximumTopClearanceM: meters(0.15),
-  tightFitMinimumTopClearanceM: meters(0.045),
-  maxLayers: 8,
+  // EDIT HERE: free space above the blanket stack (meters). 0.10 = 10 cm; 0.08 = 8 cm.
+  // The renderer and regression tests both follow this single target automatically.
+  targetTopClearanceM: meters(0.03),
+  // Physical guard against touching the brace when the requested target is unreachable.
+  absoluteTopSafetyClearanceM: meters(0.02),
+  maxLayers: 16,
   maxTopFillerLayers: 2,
   sideRoundRadiusRatio: 0.4,
   widthInsetEveryOtherLayer: 0.042,

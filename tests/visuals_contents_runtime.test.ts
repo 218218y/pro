@@ -20,7 +20,10 @@ import {
   resolveShowHanger,
 } from '../esm/native/builder/visuals_contents_shared.ts';
 import { __asBufferAttribute } from '../esm/native/builder/visuals_and_contents_shared.ts';
-import { BOOK_CONTENT_VISUAL_POLICY } from '../esm/shared/dimensions/content_visual_policy.ts';
+import {
+  BOOK_CONTENT_VISUAL_POLICY,
+  WINTER_BLANKET_VISUAL_POLICY,
+} from '../esm/shared/dimensions/content_visual_policy.ts';
 import { createRoomArchitecturePlan } from '../esm/native/builder/room_architecture_geometry.ts';
 import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 
@@ -810,115 +813,120 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
   assert.ok(hangers.every(hanger => hanger.position.x > -0.045));
 });
 
-test('winter blankets blend standard and filler layers so the top gap stays compact and rounded', () => {
+test('winter blankets follow the configured top clearance with full and thinner layers', () => {
   const { App, outlined } = createApp();
+  const dims = WINTER_BLANKET_VISUAL_POLICY;
+  const target = dims.targetTopClearanceM;
   const supportY = 0.65;
   const policy = {
     ...foldedContentsPolicy(false, true, true, mesh => outlined.push(mesh)),
     contentKind: 'winter_blankets' as const,
   };
 
-  const collectHeights = (stack: any) =>
-    stack.children.map((layer: any) => {
+  const renderStack = (height: number) => {
+    const parent = new FakeGroup();
+    addFoldedClothes(App, 0, supportY, 0, 0.72, parent as any, height, 0.46, policy);
+    assert.equal(parent.children.length, 1);
+    const stack = parent.children[0];
+    assert.equal(stack.userData.__kind, 'winter_blanket_stack');
+    assert.equal(stack.position.y, supportY);
+    let stackTop = supportY;
+    let lastTop = supportY;
+    const heights: number[] = [];
+    for (const layer of stack.children) {
+      assert.equal(layer.userData.__kind, 'winter_blanket');
       const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
-      assert.ok(body, 'winter blanket layer must contain a body mesh');
-      return body.geometry.args[1];
-    });
+      const fold = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_fold');
+      assert.ok(body && fold, 'each blanket has a rounded body and a visible fold');
+      assert.ok(outlined.includes(body));
+      const bodyHeight = body.geometry.args[1] as number;
+      heights.push(bodyHeight);
+      const bottomY = stack.position.y + layer.position.y - bodyHeight / 2;
+      const topY = stack.position.y + layer.position.y + bodyHeight / 2;
+      assert.ok(Math.abs(bottomY - lastTop) < 0.002, 'layers must rest on one another');
+      assert.ok(topY < supportY + height, 'blankets must stay below the brace');
+      assert.ok(Math.abs(layer.position.x) + body.geometry.args[0] / 2 <= 0.72 / 2);
+      assert.ok(stack.position.z + body.geometry.args[2] / 2 <= 0.46 / 2);
+      assert.ok(stack.position.z - body.geometry.args[2] / 2 >= -0.46 / 2);
+      lastTop = topY;
+      stackTop = topY;
+    }
+    const gap = supportY + height - stackTop;
+    assert.ok(
+      Math.abs(gap - target) < 0.015,
+      `expected about ${target * 100}cm above blankets, got ${gap * 100}cm in a ${height * 100}cm cell`
+    );
+    assert.ok(Math.abs(stack.userData.topGap - gap) < 0.002);
+    return heights;
+  };
 
-  const tallParent = new FakeGroup();
-  const tallHeight = 0.78;
-  addFoldedClothes(App, 0, supportY, 0, 0.72, tallParent as any, tallHeight, 0.46, policy);
-  assert.equal(tallParent.children.length, 1);
-  const tallStack = tallParent.children[0];
-  assert.equal(tallStack.userData.__kind, 'winter_blanket_stack');
-  assert.equal(tallStack.position.y, supportY);
-  const tallHeights = collectHeights(tallStack);
+  const tallHeights = renderStack(target + dims.layerHeightM * 4 + dims.topLayerMinHeightM + 0.03);
+  assert.equal(tallHeights.length, 5, 'four regular blankets and one thin top blanket');
   assert.equal(
-    tallHeights.length,
-    5,
-    'tall compartments should add a thinner top blanket instead of leaving a large empty gap'
-  );
-  assert.equal(outlined.length, tallStack.children.length);
-  let tallStackTop = supportY;
-  for (const layer of tallStack.children) {
-    assert.equal(layer.userData.__kind, 'winter_blanket');
-    const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
-    const fold = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_fold');
-    assert.ok(body && fold, 'a folded comforter has a rounded textile body and a visible fold');
-    assert.ok(outlined.includes(body));
-    const bottomY = tallStack.position.y + layer.position.y - body.geometry.args[1] / 2;
-    const topY = tallStack.position.y + layer.position.y + body.geometry.args[1] / 2;
-    tallStackTop = Math.max(tallStackTop, topY);
-    assert.ok(bottomY >= supportY - 1e-8);
-    assert.ok(topY < supportY + tallHeight);
-    assert.ok(Math.abs(layer.position.x) + body.geometry.args[0] / 2 <= 0.72 / 2);
-    assert.ok(tallStack.position.z + body.geometry.args[2] / 2 <= 0.46 / 2);
-    assert.ok(tallStack.position.z - body.geometry.args[2] / 2 >= -0.46 / 2);
-  }
-  assert.equal(
-    tallHeights.filter((height: number) => height >= 0.15).length,
+    tallHeights.filter(height => height > dims.topLayerMaxHeightM).length,
     4,
-    'tall compartments should keep the thicker blankets and only compress the filler blanket'
+    'full blankets must retain their original thickness'
   );
-  assert.ok(
-    tallHeights.some((height: number) => height < 0.12),
-    'the top filler blanket should be visibly thinner when needed'
-  );
-  const tallTopGap = supportY + tallHeight - tallStackTop;
-  assert.ok(
-    tallTopGap >= 0.1 && tallTopGap <= 0.15,
-    'the tall compartment top gap should stay within the compact target band'
-  );
+  assert.ok(tallHeights[4]! < dims.layerHeightM);
 
-  const mediumParent = new FakeGroup();
-  const mediumHeight = 0.41;
-  addFoldedClothes(App, 0, supportY, 0, 0.72, mediumParent as any, mediumHeight, 0.46, policy);
-  assert.equal(mediumParent.children.length, 1);
-  const mediumStack = mediumParent.children[0];
-  const mediumHeights = collectHeights(mediumStack);
-  assert.equal(mediumHeights.length, 3, 'mid-height compartments should be able to use two filler blankets');
-  assert.equal(
-    mediumHeights.filter((height: number) => height < 0.12).length,
-    2,
-    'mid-height compartments should use two thinner blankets to close the remaining gap'
-  );
-  const mediumStackTop = mediumStack.children.reduce((max: number, layer: any) => {
-    const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
-    return Math.max(max, mediumStack.position.y + layer.position.y + body.geometry.args[1] / 2);
-  }, supportY);
-  const mediumTopGap = supportY + mediumHeight - mediumStackTop;
-  assert.ok(mediumTopGap >= 0.1 && mediumTopGap <= 0.15);
+  const mediumHeights = renderStack(target + dims.layerHeightM + dims.topLayerMinHeightM * 2 + 0.03);
+  assert.equal(mediumHeights.length, 3, 'one full blanket and two thin top blankets');
+  assert.equal(mediumHeights.filter(height => height < dims.layerHeightM).length, 2);
 
-  const shortParent = new FakeGroup();
-  addFoldedClothes(App, 0, supportY, 0, 0.72, shortParent as any, 0.24, 0.46, policy);
-  assert.equal(shortParent.children.length, 1);
-  const shortStack = shortParent.children[0];
-  const shortHeights = collectHeights(shortStack);
-  assert.ok(
-    shortHeights.length >= 1 && shortHeights.length <= 2,
-    'shorter blanket compartments should use one or two thin filler blankets'
-  );
-  assert.ok(
-    shortHeights.every((height: number) => height >= 0.052 && height <= 0.11),
-    'a short compartment should use only thinner filler blankets'
-  );
-  const shortStackTop = shortStack.children.reduce((max: number, layer: any) => {
-    const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
-    return Math.max(max, shortStack.position.y + layer.position.y + body.geometry.args[1] / 2);
-  }, supportY);
-  const shortTopGap = supportY + 0.24 - shortStackTop;
-  assert.ok(shortTopGap >= 0.1 && shortTopGap <= 0.15);
+  const shortHeights = renderStack(target + 0.09);
+  assert.equal(shortHeights.length, 1, 'a low compartment uses one thinner blanket');
+  assert.ok(shortHeights[0]! <= dims.topLayerMaxHeightM);
 
   const hidden = new FakeGroup();
-  addFoldedClothes(App, 0, supportY, 0, 0.72, hidden as any, tallHeight, 0.46, {
+  addFoldedClothes(App, 0, supportY, 0, 0.72, hidden as any, target + 0.8, 0.46, {
     ...policy,
     showContentsEnabled: false,
   });
   assert.equal(hidden.children.length, 0);
   const tooShort = new FakeGroup();
-  addFoldedClothes(App, 0, supportY, 0, 0.72, tooShort as any, 0.04, 0.46, policy);
+  addFoldedClothes(App, 0, supportY, 0, 0.72, tooShort as any, Math.min(0.04, target / 2), 0.46, policy);
   assert.equal(tooShort.children.length, 0, 'do not create a floating or squeezed blanket');
+  const noRoomAboveTarget = new FakeGroup();
+  addFoldedClothes(
+    App,
+    0,
+    supportY,
+    0,
+    0.72,
+    noRoomAboveTarget as any,
+    target + dims.topLayerMinHeightM - 0.005,
+    0.46,
+    policy
+  );
+  assert.equal(
+    noRoomAboveTarget.children.length,
+    0,
+    'do not violate the configured gap in a very short cell'
+  );
   const narrow = new FakeGroup();
-  addFoldedClothes(App, 0, supportY, 0, 0.15, narrow as any, tallHeight, 0.46, policy);
+  addFoldedClothes(App, 0, supportY, 0, 0.15, narrow as any, target + 0.8, 0.46, policy);
   assert.equal(narrow.children.length, 0);
+});
+
+test('winter blanket top clearance tracks the one policy value across compartment heights', () => {
+  const { App } = createApp();
+  const dims = WINTER_BLANKET_VISUAL_POLICY;
+  const target = dims.targetTopClearanceM;
+  const policy = {
+    ...foldedContentsPolicy(false, true, false, null),
+    contentKind: 'winter_blankets' as const,
+  };
+  for (const usedHeight of [0.052, 0.09, 0.14, 0.23, 0.39, 0.82, 1.6, 2.1]) {
+    const availableHeight = target + usedHeight;
+    const group = new FakeGroup();
+    addFoldedClothes(App, 0, 0, 0, 0.72, group as any, availableHeight, 0.46, policy);
+    assert.equal(group.children.length, 1, `expected blankets for a ${availableHeight}m compartment`);
+    const stack = group.children[0];
+    const stackTop = stack.children.reduce((top: number, layer: any) => {
+      const body = layer.children.find((child: any) => child.userData.__kind === 'winter_blanket_body');
+      return Math.max(top, layer.position.y + body.geometry.args[1] / 2);
+    }, 0);
+    const gap = availableHeight - stackTop;
+    assert.ok(Math.abs(gap - target) < 0.015, `gap at ${availableHeight}m is ${gap}m (target ${target}m)`);
+  }
 });

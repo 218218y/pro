@@ -100,12 +100,6 @@ function readPositiveVisualContentRuntimeNumber(value: unknown): number | null {
   return n != null && n > 0 ? n : null;
 }
 
-type WinterBlanketTopLayerPlan = Readonly<{
-  layerHeights: readonly number[];
-  topGap: number;
-  diff: number;
-}>;
-
 type WinterBlanketStackPlan = Readonly<{
   layerHeights: readonly number[];
   topGap: number;
@@ -128,79 +122,53 @@ function distributeWinterBlanketTopLayerHeights(args: {
   return heights.map(height => quantizeVisualContentMetric(height));
 }
 
-function resolveWinterBlanketTopLayerPlan(remainingHeight: number): WinterBlanketTopLayerPlan | null {
-  const dims = WINTER_BLANKET_VISUAL_POLICY;
-  const minUse = remainingHeight - dims.maximumTopClearanceM;
-  const maxUse = remainingHeight - dims.minimumTopClearanceM;
-  if (maxUse < dims.topLayerMinHeightM) return null;
-
-  const preferredUse = clamp(remainingHeight - dims.preferredTopClearanceM, minUse, maxUse);
-  const maxLayerCount = Math.min(dims.maxTopFillerLayers, Math.max(0, dims.maxLayers - 1));
-  const candidates: WinterBlanketTopLayerPlan[] = [];
-
-  for (let layerCount = 1; layerCount <= maxLayerCount; layerCount++) {
-    const minTotal = layerCount * dims.topLayerMinHeightM;
-    const maxTotal = layerCount * dims.topLayerMaxHeightM;
-    const feasibleMin = Math.max(minUse, minTotal);
-    const feasibleMax = Math.min(maxUse, maxTotal);
-    if (feasibleMin > feasibleMax) continue;
-    const totalHeight = clamp(preferredUse, feasibleMin, feasibleMax);
-    const layerHeights = distributeWinterBlanketTopLayerHeights({
-      totalHeight,
-      layerCount,
-      minHeight: dims.topLayerMinHeightM,
-      maxHeight: dims.topLayerMaxHeightM,
-    });
-    const usedHeight = layerHeights.reduce((sum, height) => sum + height, 0);
-    const topGap = quantizeVisualContentMetric(remainingHeight - usedHeight);
-    candidates.push({
-      layerHeights,
-      topGap,
-      diff: Math.abs(topGap - dims.preferredTopClearanceM),
-    });
-  }
-
-  if (!candidates.length) return null;
-  candidates.sort((left, right) => {
-    if (left.diff !== right.diff) return left.diff - right.diff;
-    if (left.topGap !== right.topGap) return left.topGap - right.topGap;
-    if (left.layerHeights.length !== right.layerHeights.length) {
-      return left.layerHeights.length - right.layerHeights.length;
-    }
-    const leftTotal = left.layerHeights.reduce((sum, height) => sum + height, 0);
-    const rightTotal = right.layerHeights.reduce((sum, height) => sum + height, 0);
-    return rightTotal - leftTotal;
-  });
-  return candidates[0] ?? null;
-}
-
+/** Find the nearest safe gap using thick blankets plus up to two thin top blankets. */
 function resolveWinterBlanketStackPlan(maxHeight: number): WinterBlanketStackPlan {
   const dims = WINTER_BLANKET_VISUAL_POLICY;
-  const maxBaseLayers = Math.min(
-    dims.maxLayers,
-    Math.max(0, Math.floor((maxHeight - dims.minimumTopClearanceM) / dims.layerHeightM))
-  );
-
-  for (let baseLayerCount = maxBaseLayers; baseLayerCount >= 0; baseLayerCount--) {
-    const baseHeights = Array.from({ length: baseLayerCount }, () => dims.layerHeightM);
-    const usedBaseHeight = baseLayerCount * dims.layerHeightM;
-    const remainingHeight = quantizeVisualContentMetric(maxHeight - usedBaseHeight);
-    if (remainingHeight < dims.tightFitMinimumTopClearanceM) continue;
-    if (remainingHeight >= dims.minimumTopClearanceM && remainingHeight <= dims.maximumTopClearanceM) {
-      return { layerHeights: baseHeights, topGap: remainingHeight };
-    }
-
-    const fillerLayerBudget = dims.maxLayers - baseLayerCount;
-    if (fillerLayerBudget <= 0) continue;
-    const fillerPlan = resolveWinterBlanketTopLayerPlan(remainingHeight);
-    if (!fillerPlan || fillerPlan.layerHeights.length > fillerLayerBudget) continue;
-    return {
-      layerHeights: [...baseHeights, ...fillerPlan.layerHeights],
-      topGap: fillerPlan.topGap,
-    };
+  const targetGap = dims.targetTopClearanceM;
+  const minimumSafeGap = Math.min(targetGap, dims.absoluteTopSafetyClearanceM);
+  // Do not sacrifice the requested clearance when even one thin blanket cannot fit.
+  if (maxHeight < targetGap + dims.topLayerMinHeightM) {
+    return { layerHeights: [], topGap: maxHeight };
   }
 
-  return { layerHeights: [], topGap: maxHeight };
+  let best: (WinterBlanketStackPlan & { error: number; thickCount: number }) | null = null;
+  for (let thickCount = 0; thickCount <= dims.maxLayers; thickCount++) {
+    const thickHeight = thickCount * dims.layerHeightM;
+    const maxThinCount = Math.min(dims.maxTopFillerLayers, dims.maxLayers - thickCount);
+    for (let thinCount = 0; thinCount <= maxThinCount; thinCount++) {
+      if (thickCount + thinCount === 0) continue;
+      const minimumUsed = thickHeight + thinCount * dims.topLayerMinHeightM;
+      const maximumUsed = thickHeight + thinCount * dims.topLayerMaxHeightM;
+      const safeMaximumUsed = Math.min(maximumUsed, maxHeight - minimumSafeGap);
+      if (minimumUsed > safeMaximumUsed + 1e-9) continue;
+
+      const wantedUsed = clamp(maxHeight - targetGap, minimumUsed, safeMaximumUsed);
+      const topHeights = distributeWinterBlanketTopLayerHeights({
+        totalHeight: wantedUsed - thickHeight,
+        layerCount: thinCount,
+        minHeight: dims.topLayerMinHeightM,
+        maxHeight: dims.topLayerMaxHeightM,
+      });
+      const layerHeights = [...Array.from({ length: thickCount }, () => dims.layerHeightM), ...topHeights];
+      const usedHeight = layerHeights.reduce((sum, height) => sum + height, 0);
+      const topGap = quantizeVisualContentMetric(maxHeight - usedHeight);
+      const error = Math.abs(topGap - targetGap);
+      if (
+        best === null ||
+        error < best.error - 1e-6 ||
+        (Math.abs(error - best.error) <= 1e-6 && thickCount > best.thickCount) ||
+        (Math.abs(error - best.error) <= 1e-6 &&
+          thickCount === best.thickCount &&
+          layerHeights.length < best.layerHeights.length)
+      ) {
+        best = { layerHeights, topGap, error, thickCount };
+      }
+    }
+  }
+  return best === null
+    ? { layerHeights: [], topGap: maxHeight }
+    : { layerHeights: best.layerHeights, topGap: best.topGap };
 }
 
 function resolveRotatedBookFootprintWidth(width: number, height: number, angleZ: number): number {
