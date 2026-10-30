@@ -1,8 +1,15 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
 import {
+  readShelfShortcutVariant,
+  resolveShelfShortcutAddition,
+  createShelfShortcutAddHover,
+} from './canvas_picking_shelf_shortcuts.js';
+import { createSketchModuleShelfPreviewGeometry } from './canvas_picking_sketch_module_vertical_content.js';
+import {
   __wp_clearSketchHover,
   __wp_resolveInteriorHoverTarget,
   __wp_writeSketchHover,
+  __wp_projectWorldPointToLocal,
 } from './canvas_picking_local_helpers.js';
 import {
   resolveShelfBoardPick,
@@ -44,10 +51,12 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     hideSketchPreview: hideSketchPreviewFn,
   } = args;
   try {
+    const targetVariant = readShelfShortcutVariant(App);
     const { setPreview: setSketchPreview } = getSketchPreviewFns(previewRo);
     if (
       tryHandleBraceShelvesFreeBoxHover({
         App,
+        targetVariant,
         ndcX,
         ndcY,
         raycaster,
@@ -88,6 +97,7 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
         moduleKey: target.hitModuleKey,
         isBottom: target.isBottom,
         match: sketchShelfMatch,
+        targetVariant,
       });
       __wp_writeSketchHover(App, hoverRecord);
       return setPreview(setSketchPreview, {
@@ -96,6 +106,7 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
         anchor: target.hitSelectorObj,
         ...createBraceSketchShelfPreview({
           match: sketchShelfMatch,
+          targetVariant,
           internalCenterX: target.internalCenterX,
           innerW: target.innerW,
           internalDepth: target.internalDepth,
@@ -125,39 +136,74 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
       boardToleranceM: resolveShelfPickVerticalToleranceM(target.woodThick, 2.75),
       selectorHitToleranceM: resolveShelfSelectorPickToleranceM(step),
     });
-    if (!shelfPick) {
-      __wp_clearSketchHover(App);
-      hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
-      return false;
+    if (!shelfPick || !hasShelfAtIndex(cfgRef, shelfPick.shelfIndex)) {
+      const hit = target.intersects.find(h => h.object === target.hitSelectorObj);
+      const point = hit?.point
+        ? __wp_projectWorldPointToLocal(App, hit.point, target.hitSelectorObj?.parent)
+        : null;
+      const addition = resolveShelfShortcutAddition({
+        config: cfgRef,
+        ...target,
+        pointerY: target.hitY,
+        pointerX: typeof point?.x === 'number' ? point.x : target.internalCenterX,
+      });
+      if (!addition) {
+        hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
+        return false;
+      }
+      __wp_writeSketchHover(
+        App,
+        createShelfShortcutAddHover(addition, target.hitModuleKey, target.isBottom, targetVariant)
+      );
+      const geometry = createSketchModuleShelfPreviewGeometry({
+        innerW: addition.width,
+        internalDepth: target.internalDepth,
+        braceFrontZ: readNumber(target.info.braceFrontZ),
+        backZ: target.backZ,
+        woodThick: target.woodThick,
+        regularDepth: target.regularDepth,
+        variant: targetVariant,
+      });
+      return setPreview(setSketchPreview, {
+        App,
+        THREE: getThreeMaybe(App),
+        anchor: target.hitSelectorObj,
+        kind: 'shelf',
+        x: addition.centerX,
+        y: addition.y,
+        ...geometry,
+        woodThick: target.woodThick,
+        op: addition.blocked ? 'blocked' : 'add',
+      });
     }
 
     const { shelfIndex, shelfY } = shelfPick;
-    if (!hasShelfAtIndex(cfgRef, shelfIndex)) {
-      __wp_clearSketchHover(App);
-      hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
-      return false;
-    }
 
     const braceList = readBraceShelves(cfgRef);
     const customData = readCustomData(cfgRef);
     const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
-    const isBrace = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants }) === 'brace';
+    const variant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants });
+    const isBrace = variant === 'brace' || variant === 'winter_brace';
+    const nextVariant = targetVariant === 'regular' || isBrace ? 'regular' : 'brace';
+    const geometry = createSketchModuleShelfPreviewGeometry({
+      innerW: target.innerW,
+      internalDepth: target.internalDepth,
+      braceFrontZ: readNumber(target.info.braceFrontZ),
+      backZ: target.backZ,
+      woodThick: target.woodThick,
+      regularDepth: target.regularDepth,
+      variant: nextVariant,
+    });
     return setPreview(setSketchPreview, {
       App,
       THREE: getThreeMaybe(App),
       anchor: target.hitSelectorObj,
       kind: 'shelf',
-      variant: 'brace',
       x: target.internalCenterX,
       y: shelfY,
-      z:
-        target.backZ +
-        ((readNumber(target.info.braceFrontZ) ?? target.backZ + target.internalDepth) - target.backZ) / 2,
-      w: target.innerW > 0 ? Math.max(0, target.innerW - 0.002) : target.innerW,
-      h: target.woodThick,
-      d: (readNumber(target.info.braceFrontZ) ?? target.backZ + target.internalDepth) - target.backZ,
+      ...geometry,
       woodThick: target.woodThick,
-      op: isBrace ? 'remove' : 'add',
+      op: targetVariant === 'regular' ? (isBrace ? 'add' : 'remove') : isBrace ? 'remove' : 'add',
     });
   } catch {
     return false;

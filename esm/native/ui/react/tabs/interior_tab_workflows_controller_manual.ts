@@ -175,8 +175,8 @@ export function createInteriorTabManualWorkflowController(
         enterSketchShelfTool('winter_brace');
         return;
       }
-      if (layoutType === 'brace_shelves') {
-        toggleBraceShelvesMode(app);
+      if (layoutType === 'brace_shelves' || layoutType === 'regular_shelf') {
+        toggleBraceShelvesMode(app, layoutType === 'regular_shelf' ? 'regular' : 'brace');
         return;
       }
       enterLayoutMode(app, layoutType);

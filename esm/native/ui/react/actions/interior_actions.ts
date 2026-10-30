@@ -157,21 +157,27 @@ export function enterManualLayoutMode(app: AppContainer, toolId: unknown): void 
   });
 }
 
-export function toggleBraceShelvesMode(app: AppContainer): void {
+export function toggleBraceShelvesMode(app: AppContainer, variant: 'regular' | 'brace' = 'brace'): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
   const MODE_BRACE = readInteriorModeId(modes.BRACE_SHELVES, 'brace_shelves');
 
   const cur = getPrimaryMode(app);
-  if (String(cur) === MODE_BRACE) {
+  const activeVariant =
+    readStoreStateMaybe(app)?.mode?.opts?.shelfShortcutVariant === 'regular' ? 'regular' : 'brace';
+  if (String(cur) === MODE_BRACE && activeVariant === variant) {
     exitPrimaryMode(app, MODE_BRACE);
     return;
   }
 
   enterPrimaryMode(app, MODE_BRACE, {
+    modeOpts: { shelfShortcutVariant: variant },
     openDoors: true,
     cursor: 'alias',
-    toast: 'מדפי קושרת: לחץ על מדף כדי להפוך אותו לקושרת/רגיל',
+    toast:
+      variant === 'brace'
+        ? 'מדפי קושרת: לחץ להמרת מדף או להוספה בשטח ריק'
+        : 'מדף רגיל: לחץ להמרה, להסרה או להוספה בשטח ריק',
   });
 }
 

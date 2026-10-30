@@ -247,6 +247,7 @@ export interface BuilderSketchHorizontalDividerLike extends UnknownRecord {
 }
 
 export interface BuilderSketchShelfLike extends UnknownRecord {
+  braceShortcutAdded?: boolean;
   id?: BuilderSketchIdLike;
   yNorm?: BuilderSketchScalar;
   xNorm?: BuilderSketchScalar;

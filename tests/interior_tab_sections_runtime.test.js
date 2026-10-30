@@ -7,6 +7,7 @@ import { InteriorLayoutManualControls } from '../esm/native/ui/react/tabs/interi
 import {
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
+  WinterBraceShelfButton,
 } from '../esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.js';
 import { InteriorLayoutSketchToolsPanel } from '../esm/native/ui/react/tabs/interior_layout_sketch_controls.js';
 import {
@@ -19,6 +20,32 @@ import fs from 'node:fs';
 import path from 'node:path';
 const noop = () => {};
 const setStateNoop = () => undefined;
+
+test('winter shelf compound control keeps the main action and lock independently accessible', () => {
+  for (const locked of [true, false]) {
+    const html = renderToStaticMarkup(
+      React.createElement(WinterBraceShelfButton, {
+        props: createLayoutProps({ hasWinterBrace: true, winterBraceDoorsLocked: locked }),
+        active: false,
+        onSelect: noop,
+      })
+    );
+    assert.match(html, /role="group" aria-label="קושרת חורף"/);
+    assert.equal((html.match(/<button\b/g) ?? []).length, 2);
+    assert.match(html, /data-testid="winter-brace-shelf-button"/);
+    assert.match(html, new RegExp(`aria-label="${locked ? 'דלתות נעולות' : 'דלתות משוחררות'}"`));
+    assert.match(html, new RegExp(`class="fas fa-lock${locked ? '' : '-open'}"`));
+    assert.doesNotMatch(html, /<button\b[^>]*>(?:(?!<\/button>).)*<button\b/s);
+  }
+  const empty = renderToStaticMarkup(
+    React.createElement(WinterBraceShelfButton, {
+      props: createLayoutProps({ hasWinterBrace: false }),
+      active: false,
+      onSelect: noop,
+    })
+  );
+  assert.equal((empty.match(/<button\b/g) ?? []).length, 1);
+});
 function findElementByTestId(node, testId) {
   if (!node || typeof node !== 'object') return null;
   if (node.props?.['data-testid'] === testId || node.props?.testId === testId) return node;

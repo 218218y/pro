@@ -1869,10 +1869,74 @@
 }
 
 #reactSidebarRoot .wp-tool-card--layout .wp-winter-brace-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
-  gap: 6px;
   margin-top: 6px;
+}
+
+#reactSidebarRoot .wp-layout-shortcut-cell {
+  display: flex;
+  min-width: 0;
+  gap: 4px;
+}
+
+#reactSidebarRoot .wp-layout-shortcut-cell > .type-option {
+  min-width: 0;
+  white-space: normal;
+}
+
+#reactSidebarRoot .wp-winter-brace-control {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+#reactSidebarRoot .wp-winter-brace-control:is(:hover, :focus-within, .is-active) {
+  border-color: var(--primary);
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-winter-brace-control
+  > .type-option {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  white-space: normal;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-winter-brace-control
+  > .type-option:is(:hover, .selected) {
+  transform: none;
+  box-shadow: none;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-winter-brace-control
+  > .type-option:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -4px;
+}
+
+#reactSidebarRoot
+  :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])
+  .wp-tool-card--layout
+  .wp-winter-brace-control
+  > .wp-winter-brace-lock-icon {
+  flex: 0 0 34px;
+  border-inline-start: 1px solid var(--border-color);
+}
+
+#reactSidebarRoot .wp-winter-brace-lock-icon .wp-r-editmode-toggle__label {
+  display: none;
 }
 
 #reactSidebarRoot .wp-sketch-shelf-btn .wp-r-editmode-toggle__icon {

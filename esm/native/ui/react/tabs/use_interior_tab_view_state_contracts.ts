@@ -38,6 +38,7 @@ export type InteriorTabViewState = {
   isLayoutMode: boolean;
   isManualLayoutMode: boolean;
   isBraceShelvesMode: boolean;
+  isRegularShelfMode: boolean;
   isSketchToolActive: boolean;
   isSketchDivisionToolActive: boolean;
   isExtDrawerMode: boolean;

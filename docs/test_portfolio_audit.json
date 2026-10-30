@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-30T02:23:24.885Z",
+  "generatedAt": "2026-10-30T07:15:11.851Z",
   "totals": {
-    "tests": 1278,
-    "unitRunnerTests": 1266,
+    "tests": 1279,
+    "unitRunnerTests": 1267,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 399,
     "runtime-unit": 351,
-    "integration": 485,
+    "integration": 486,
     "persistence-ingress": 23,
     "e2e-smoke": 13,
     "perf-smoke": 7
@@ -3508,6 +3508,10 @@
     },
     {
       "file": "tests/canvas_picking_shelf_hit_targets_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_shelf_shortcuts_runtime.test.ts",
       "category": "integration"
     },
     {

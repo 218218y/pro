@@ -1,11 +1,30 @@
 import { getInternalGridMap } from '../runtime/cache_access.js';
+import { hasShelfAtIndex } from './canvas_picking_interior_hover_layout_family_shared.js';
+import {
+  readShelfShortcutVariant,
+  readFreshShelfShortcutAddition,
+  resolveShelfShortcutAddition,
+  addShortcutShelf,
+} from './canvas_picking_shelf_shortcuts.js';
+import {
+  resolveSelectorInternalMetrics,
+  readSelectorEnvelopeFromObject,
+} from './canvas_picking_selector_internal_metrics.js';
+import {
+  removeManualLayoutBaseShelf,
+  toggleManualLayoutShelf,
+} from './canvas_picking_manual_layout_config_ops.js';
 import {
   resolveShelfBoardPick,
   resolveShelfPickVerticalToleranceM,
   resolveShelfSelectorPickToleranceM,
 } from './canvas_picking_shelf_hit_targets.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
-import { __wp_clearSketchHover, __wp_readSketchHover } from './canvas_picking_local_helpers.js';
+import {
+  __wp_clearSketchHover,
+  __wp_readSketchHover,
+  __wp_projectWorldPointToLocal,
+} from './canvas_picking_local_helpers.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
@@ -39,6 +58,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
   } = args;
 
   if (!__isBraceShelvesMode) return false;
+  const targetVariant = readShelfShortcutVariant(App);
   if (tryCommitBraceShelvesFreeBoxFromHover(App)) return true;
   if (firstRenderableHitIsSketchFreeBox(intersects)) {
     __wp_clearSketchHover(App);
@@ -66,6 +86,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       moduleKey: mapKey,
       isBottom: __isBottomStack,
       now: Date.now(),
+      targetVariant,
     })
       ? asRecord(sketchHover)
       : null;
@@ -78,7 +99,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       const committed = __patchConfigForKey(
         mapKey,
         cfg => {
-          toggleBraceSketchShelfAtIndex(cfg, removeIdx);
+          toggleBraceSketchShelfAtIndex(cfg, removeIdx, targetVariant);
         },
         createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
       );
@@ -101,7 +122,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       const committed = __patchConfigForKey(
         mapKey,
         cfg => {
-          toggleBraceSketchShelfAtIndex(cfg, directSketchShelfMatch.index);
+          toggleBraceSketchShelfAtIndex(cfg, directSketchShelfMatch.index, targetVariant);
         },
         createCanvasPickingConfigStructuralPatchMeta('braceShelves.sketchExtraToggle')
       );
@@ -123,38 +144,70 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       boardToleranceM: resolveShelfPickVerticalToleranceM(safeStep, 0.18),
       selectorHitToleranceM: resolveShelfSelectorPickToleranceM(safeStep),
     });
-    if (!shelfPick) return;
+    const shelfIndex = shelfPick?.shelfIndex ?? -1;
 
-    const { shelfIndex } = shelfPick;
+    const shelfExists = shelfPick !== null && hasShelfAtIndex(configRef, shelfIndex);
 
-    const isCustom = !!(configRef && configRef.isCustom);
-    let shelfExists = false;
-    if (isCustom) {
-      const cd = asRecord(configRef.customData) || {};
-      const shelvesArr = Array.isArray(cd.shelves) ? cd.shelves : [];
-      shelfExists = !!shelvesArr[shelfIndex - 1];
-    } else {
-      const lt = String(configRef.layout || 'shelves');
-      switch (lt) {
-        case 'shelves':
-        case 'mixed':
-          shelfExists = true;
-          break;
-        case 'hanging':
-        case 'hanging_top2':
-        case 'storage':
-        case 'storage_shelf':
-          shelfExists = shelfIndex === 4 || shelfIndex === 5;
-          break;
-        case 'hanging_split':
-          shelfExists = shelfIndex === 1 || shelfIndex === 5;
-          break;
-        default:
-          shelfExists = false;
-      }
+    if (!shelfExists) {
+      const selectorHit = intersects.find(hit => {
+        const data = asRecord(hit.object?.userData);
+        return data?.isModuleSelector === true && String(data.moduleIndex) === String(mapKey);
+      });
+      const selector = selectorHit?.object;
+      const point = selectorHit?.point
+        ? __wp_projectWorldPointToLocal(App, selectorHit.point, selector?.parent)
+        : null;
+      const metrics = resolveSelectorInternalMetrics({
+        info,
+        selectorEnvelope: readSelectorEnvelopeFromObject(selector),
+      });
+      const addition =
+        readFreshShelfShortcutAddition(sketchHover, mapKey, __isBottomStack, targetVariant) ??
+        resolveShelfShortcutAddition({
+          config: configRef,
+          bottomY,
+          topY,
+          pointerY: moduleHitY ?? firstHitY ?? NaN,
+          pointerX: typeof point?.x === 'number' ? point.x : metrics.internalCenterX,
+          ...metrics,
+        });
+      if (!addition || addition.blocked) return;
+      const result = __patchConfigForKey(
+        mapKey,
+        cfg => {
+          addShortcutShelf(cfg, addition, targetVariant);
+        },
+        createCanvasPickingConfigStructuralPatchMeta('shelfShortcut.add')
+      );
+      if (result !== false) __wp_clearSketchHover(App);
+      return;
     }
 
-    if (!shelfExists) return;
+    if (targetVariant === 'regular') {
+      __patchConfigForKey(
+        mapKey,
+        cfg => {
+          const custom = asRecord(cfg.customData);
+          const variants = Array.isArray(custom?.shelfVariants) ? custom.shelfVariants : [];
+          const braces = Array.isArray(cfg.braceShelves) ? cfg.braceShelves : [];
+          const isBrace =
+            braces.includes(shelfIndex) ||
+            variants[shelfIndex - 1] === 'brace' ||
+            variants[shelfIndex - 1] === 'winter_brace';
+          const grid = { divs: divisions, topY, bottomY, shelfIndex };
+          if (isBrace)
+            toggleManualLayoutShelf(cfg, {
+              ...grid,
+              arrayIdx: shelfIndex - 1,
+              shelfVariant: 'regular',
+              reset: false,
+            });
+          else removeManualLayoutBaseShelf(cfg, grid);
+        },
+        createCanvasPickingConfigStructuralPatchMeta('shelfShortcut.regular')
+      );
+      return;
+    }
 
     __patchConfigForKey(
       mapKey,
@@ -165,11 +218,13 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
         const arrayIdx = shelfIndex - 1;
         const savedVariant =
           shelfVariants && typeof shelfVariants[arrayIdx] === 'string' ? String(shelfVariants[arrayIdx]) : '';
-        const isBrace = list.includes(shelfIndex) || savedVariant === 'brace';
+        const isBrace =
+          list.includes(shelfIndex) || savedVariant === 'brace' || savedVariant === 'winter_brace';
 
         if (isBrace) {
           removeBraceShelfIndex(list, shelfIndex);
-          if (shelfVariants && savedVariant === 'brace') shelfVariants[arrayIdx] = '';
+          if (shelfVariants && (savedVariant === 'brace' || savedVariant === 'winter_brace'))
+            shelfVariants[arrayIdx] = '';
         } else {
           addBraceShelfIndex(list, shelfIndex);
         }

@@ -17,7 +17,7 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
     mock: specifier => {
       if (specifier === './modes_actions.js') {
         return {
-          getPrimaryMode: () => 'none',
+          getPrimaryMode: () => store.mode?.primary ?? 'none',
           enterPrimaryMode: (...args) => calls.push(['enterPrimaryMode', ...args]),
           exitPrimaryMode: (...args) => calls.push(['exitPrimaryMode', ...args]),
         };
@@ -74,6 +74,30 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
   });
   return { api, calls, store, app };
 }
+
+test('[interior-actions] shelf shortcuts switch variants in one mode and repeat-click exits', () => {
+  const { api, calls, store, app } = loadInteriorActionsHarness();
+  api.toggleBraceShelvesMode(app);
+  assert.equal(
+    calls.find(entry => entry[0] === 'enterPrimaryMode')?.[3]?.modeOpts?.shelfShortcutVariant,
+    'brace'
+  );
+  calls.length = 0;
+  store.mode = { primary: 'brace_shelves', opts: { shelfShortcutVariant: 'brace' } };
+  api.toggleBraceShelvesMode(app, 'regular');
+  assert.equal(
+    calls.find(entry => entry[0] === 'enterPrimaryMode')?.[3]?.modeOpts?.shelfShortcutVariant,
+    'regular'
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'exitPrimaryMode'),
+    false
+  );
+  calls.length = 0;
+  store.mode.opts.shelfShortcutVariant = 'regular';
+  api.toggleBraceShelvesMode(app, 'regular');
+  assert.ok(calls.some(entry => entry[0] === 'exitPrimaryMode' && entry[2] === 'brace_shelves'));
+});
 
 test('[interior-actions] internal drawer toggle routes through coalesced structural ui mutation', () => {
   const { api, calls, store, app } = loadInteriorActionsHarness();

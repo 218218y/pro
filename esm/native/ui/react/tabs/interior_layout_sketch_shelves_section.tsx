@@ -431,37 +431,47 @@ export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionPro
   );
 }
 
-export function WinterBraceDoorLockButton(props: InteriorLayoutSectionProps): ReactElement | null {
+function WinterBraceDoorLockButton(props: InteriorLayoutSectionProps): ReactElement | null {
   if (!props.hasWinterBrace) return null;
   return (
     <ModeToggleButton
       active={props.winterBraceDoorsLocked}
-      className="wp-sketch-shelf-btn"
+      className="wp-sketch-shelf-btn wp-winter-brace-lock-icon"
       data-testid="winter-brace-door-lock-button"
+      aria-label={props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות'}
+      title={props.winterBraceDoorsLocked ? 'שחרור דלתות קושרת חורף' : 'נעילת דלתות קושרת חורף'}
       icon={
         <i className={props.winterBraceDoorsLocked ? 'fas fa-lock' : 'fas fa-lock-open'} aria-hidden="true" />
       }
       onClick={props.toggleWinterBraceDoorLock}
     >
-      {props.winterBraceDoorsLocked ? 'דלתות נעולות' : 'דלתות משוחררות'}
+      {null}
     </ModeToggleButton>
   );
 }
 
-export function WinterBraceShelfControls({
-  props,
-  active,
-  onSelect,
-}: {
+type WinterBraceShelfButtonProps = {
   props: InteriorLayoutSectionProps;
   active: boolean;
   onSelect: () => void;
-}): ReactElement {
+};
+
+export function WinterBraceShelfButton({
+  props,
+  active,
+  onSelect,
+}: WinterBraceShelfButtonProps): ReactElement {
   return (
-    <div className="wp-r-type-selector type-selector wp-winter-brace-row" dir="rtl">
+    <div
+      className={cx('wp-winter-brace-control', active && 'is-active')}
+      role="group"
+      aria-label="קושרת חורף"
+      data-testid="winter-brace-combined-button"
+      dir="rtl"
+    >
       <ModeToggleButton
         active={active}
-        className="wp-sketch-shelf-btn"
+        className="wp-sketch-shelf-btn wp-winter-brace-main"
         data-testid="winter-brace-shelf-button"
         icon={<i className="far fa-square" aria-hidden="true" />}
         onClick={onSelect}
@@ -469,6 +479,14 @@ export function WinterBraceShelfControls({
         קושרת חורף
       </ModeToggleButton>
       <WinterBraceDoorLockButton {...props} />
+    </div>
+  );
+}
+
+export function WinterBraceShelfControls(props: WinterBraceShelfButtonProps): ReactElement {
+  return (
+    <div className="wp-winter-brace-row">
+      <WinterBraceShelfButton {...props} />
     </div>
   );
 }
