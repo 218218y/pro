@@ -78,10 +78,15 @@ export const WINTER_BLANKET_VISUAL_POLICY = Object.freeze({
   minDepthM: meters(0.16),
   maxWidthM: meters(0.58),
   maxDepthM: meters(0.4),
-  layerHeightM: meters(0.052),
-  topClearanceM: meters(0.025),
-  maxLayers: 4,
-  foldLipHeightM: meters(0.01),
+  layerHeightM: meters(0.156),
+  preferredTopClearanceM: meters(0.15),
+  minimumTopClearanceM: meters(0.08),
+  tightFitMinimumTopClearanceM: meters(0.045),
+  maxLayers: 8,
+  sideRoundRadiusRatio: 0.4,
+  widthInsetEveryOtherLayer: 0.042,
+  depthInsetEveryOtherLayer: 0.028,
+  foldLipHeightM: meters(0.018),
 });
 
 export const FOLDED_CLOTHES_VISUAL_POLICY = Object.freeze({

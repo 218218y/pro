@@ -100,6 +100,52 @@ function readPositiveVisualContentRuntimeNumber(value: unknown): number | null {
   return n != null && n > 0 ? n : null;
 }
 
+type WinterBlanketLayerCandidate = Readonly<{
+  count: number;
+  topGap: number;
+  diff: number;
+}>;
+
+function collectWinterBlanketLayerCandidates(args: {
+  maxHeight: number;
+  targetTopGap: number;
+  minimumTopGap: number;
+  maxLayers: number;
+  layerHeight: number;
+}): WinterBlanketLayerCandidate[] {
+  const { maxHeight, targetTopGap, minimumTopGap, maxLayers, layerHeight } = args;
+  const candidates: WinterBlanketLayerCandidate[] = [];
+  for (let count = 1; count <= maxLayers; count++) {
+    const usedHeight = count * layerHeight;
+    const topGap = quantizeVisualContentMetric(maxHeight - usedHeight);
+    if (topGap < minimumTopGap) continue;
+    candidates.push({ count, topGap, diff: Math.abs(topGap - targetTopGap) });
+  }
+  return candidates;
+}
+
+function resolveWinterBlanketLayerCount(maxHeight: number): number {
+  const dims = WINTER_BLANKET_VISUAL_POLICY;
+  const pickBest = (minimumTopGap: number): number => {
+    const candidates = collectWinterBlanketLayerCandidates({
+      maxHeight,
+      targetTopGap: dims.preferredTopClearanceM,
+      minimumTopGap,
+      maxLayers: dims.maxLayers,
+      layerHeight: dims.layerHeightM,
+    });
+    if (!candidates.length) return 0;
+    candidates.sort((left, right) => {
+      if (left.diff !== right.diff) return left.diff - right.diff;
+      if (left.topGap !== right.topGap) return left.topGap - right.topGap;
+      return right.count - left.count;
+    });
+    return candidates[0]!.count;
+  };
+
+  return pickBest(dims.minimumTopClearanceM) || pickBest(dims.tightFitMinimumTopClearanceM);
+}
+
 function resolveRotatedBookFootprintWidth(width: number, height: number, angleZ: number): number {
   const angleCos = Math.abs(Math.cos(angleZ));
   const angleSin = Math.abs(Math.sin(angleZ));
@@ -479,14 +525,11 @@ function addWinterBlankets(args: {
   const { THREE, shelfX, shelfY, shelfZ, width, maxHeight, maxDepth, parentGroup, addOutlines, isSketch } =
     args;
   const dims = WINTER_BLANKET_VISUAL_POLICY;
-  const layerCount = Math.min(
-    dims.maxLayers,
-    Math.floor((maxHeight - dims.topClearanceM) / dims.layerHeightM)
-  );
+  const layerCount = resolveWinterBlanketLayerCount(maxHeight);
   const quiltWidth = Math.min(dims.maxWidthM, width - dims.sideClearanceM * 2);
   const availableDepth = maxDepth == null ? dims.maxDepthM : maxDepth - dims.depthClearanceM * 2;
   const quiltDepth = Math.min(dims.maxDepthM, availableDepth);
-  if (layerCount < 2 || quiltWidth < dims.minWidthM || quiltDepth < dims.minDepthM) return;
+  if (layerCount < 1 || quiltWidth < dims.minWidthM || quiltDepth < dims.minDepthM) return;
 
   // A deliberately subdued textile palette; each layer reads as one folded blanket.
   const palette = [0xd8c9b6, 0x9baeb0, 0xc3b7a7, 0xa7b5a5] as const;
@@ -498,23 +541,18 @@ function addWinterBlankets(args: {
   for (let layer = 0; layer < layerCount; layer++) {
     const color = palette[layer % palette.length]!;
     const height = dims.layerHeightM;
-    const bodyWidth = quiltWidth * (layer % 2 === 0 ? 1 : 0.965);
-    const bodyDepth = quiltDepth * (layer % 2 === 0 ? 0.97 : 1);
+    const widthInset = layer % 2 === 0 ? 0 : dims.widthInsetEveryOtherLayer;
+    const depthInset = layer % 2 === 0 ? dims.depthInsetEveryOtherLayer : 0;
+    const bodyWidth = quiltWidth - widthInset;
+    const bodyDepth = quiltDepth - depthInset;
+    const sideRadius = Math.min(height * dims.sideRoundRadiusRatio, bodyDepth * 0.18, bodyWidth * 0.08);
     const material = getCachedMeshStandardMaterial(THREE, `winter-blanket:${color}`, {
       color,
       roughness: 0.98,
       metalness: 0,
     });
     const body = new THREE.Mesh(
-      getCachedRoundedBoxGeometry(
-        THREE,
-        bodyWidth,
-        height,
-        bodyDepth,
-        3,
-        height * 0.23,
-        'winter-blanket.body'
-      ),
+      getCachedRoundedBoxGeometry(THREE, bodyWidth, height, bodyDepth, 4, sideRadius, 'winter-blanket.body'),
       material
     );
     const blanket = new THREE.Group();
@@ -528,11 +566,11 @@ function addWinterBlankets(args: {
     const lip = new THREE.Mesh(
       getCachedRoundedBoxGeometry(
         THREE,
-        bodyWidth * 0.87,
+        bodyWidth * 0.9,
         dims.foldLipHeightM,
-        bodyDepth * 0.28,
-        2,
-        dims.foldLipHeightM * 0.22,
+        bodyDepth * 0.26,
+        3,
+        Math.min(dims.foldLipHeightM * 0.45, bodyDepth * 0.08),
         'winter-blanket.fold'
       ),
       getCachedMeshStandardMaterial(THREE, `winter-blanket-fold:${lipColor}`, {
@@ -541,7 +579,7 @@ function addWinterBlankets(args: {
         metalness: 0,
       })
     );
-    lip.position.set(0, height * 0.32, bodyDepth * 0.3);
+    lip.position.set(0, height * 0.26, bodyDepth * 0.28);
     lip.userData = { __kind: 'winter_blanket_fold' };
     blanket.add(lip);
     if (isSketch) addOutlines(body);

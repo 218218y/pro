@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T07:15:04.423Z",
+  "generatedAt": "2026-10-30T08:14:17.767Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -2698,28 +2698,28 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 33,
+      "line": 34,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 36,
+      "line": 37,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 37,
+      "line": 38,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "let shelfDepth = fallbackDepth;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 154,
+      "line": 162,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: isBrace ? braceDepth : regularDepth,"
