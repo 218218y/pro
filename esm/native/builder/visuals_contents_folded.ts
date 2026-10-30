@@ -1,6 +1,7 @@
 import {
   BOOK_CONTENT_VISUAL_POLICY,
   FOLDED_CLOTHES_VISUAL_POLICY,
+  WINTER_BLANKET_VISUAL_POLICY,
 } from '../../shared/dimensions/content_visual_policy.js';
 import {
   ensureVisualsContentsApp,
@@ -462,6 +463,93 @@ function addFoldedGarmentDetails(args: {
   }
 }
 
+/** A short, supported stack beneath a winter brace; the brace frame itself stays empty. */
+function addWinterBlankets(args: {
+  THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
+  shelfX: number;
+  shelfY: number;
+  shelfZ: number;
+  width: number;
+  maxHeight: number;
+  maxDepth: number | undefined;
+  parentGroup: Object3DLike;
+  addOutlines: (mesh: unknown) => unknown;
+  isSketch: boolean;
+}): void {
+  const { THREE, shelfX, shelfY, shelfZ, width, maxHeight, maxDepth, parentGroup, addOutlines, isSketch } =
+    args;
+  const dims = WINTER_BLANKET_VISUAL_POLICY;
+  const layerCount = Math.min(
+    dims.maxLayers,
+    Math.floor((maxHeight - dims.topClearanceM) / dims.layerHeightM)
+  );
+  const quiltWidth = Math.min(dims.maxWidthM, width - dims.sideClearanceM * 2);
+  const availableDepth = maxDepth == null ? dims.maxDepthM : maxDepth - dims.depthClearanceM * 2;
+  const quiltDepth = Math.min(dims.maxDepthM, availableDepth);
+  if (layerCount < 2 || quiltWidth < dims.minWidthM || quiltDepth < dims.minDepthM) return;
+
+  // A deliberately subdued textile palette; each layer reads as one folded blanket.
+  const palette = [0xd8c9b6, 0x9baeb0, 0xc3b7a7, 0xa7b5a5] as const;
+  const centerZ = shelfZ + (maxDepth == null ? 0 : Math.min(0.03, (maxDepth - quiltDepth) / 4));
+  const stack = new THREE.Group();
+  stack.userData = { __kind: 'winter_blanket_stack' };
+  stack.position.set(shelfX, shelfY, centerZ);
+
+  for (let layer = 0; layer < layerCount; layer++) {
+    const color = palette[layer % palette.length]!;
+    const height = dims.layerHeightM;
+    const bodyWidth = quiltWidth * (layer % 2 === 0 ? 1 : 0.965);
+    const bodyDepth = quiltDepth * (layer % 2 === 0 ? 0.97 : 1);
+    const material = getCachedMeshStandardMaterial(THREE, `winter-blanket:${color}`, {
+      color,
+      roughness: 0.98,
+      metalness: 0,
+    });
+    const body = new THREE.Mesh(
+      getCachedRoundedBoxGeometry(
+        THREE,
+        bodyWidth,
+        height,
+        bodyDepth,
+        3,
+        height * 0.23,
+        'winter-blanket.body'
+      ),
+      material
+    );
+    const blanket = new THREE.Group();
+    blanket.userData = { __kind: 'winter_blanket', __layer: layer };
+    blanket.position.set((layer % 2 ? 1 : -1) * 0.006, layer * height + height / 2, 0);
+    blanket.add(body);
+    body.userData = { __kind: 'winter_blanket_body' };
+
+    // Fold-over at the front face (rather than collars or sleeves from the clothing renderer).
+    const lipColor = adjustHexColor(color, 15);
+    const lip = new THREE.Mesh(
+      getCachedRoundedBoxGeometry(
+        THREE,
+        bodyWidth * 0.87,
+        dims.foldLipHeightM,
+        bodyDepth * 0.28,
+        2,
+        dims.foldLipHeightM * 0.22,
+        'winter-blanket.fold'
+      ),
+      getCachedMeshStandardMaterial(THREE, `winter-blanket-fold:${lipColor}`, {
+        color: lipColor,
+        roughness: 0.97,
+        metalness: 0,
+      })
+    );
+    lip.position.set(0, height * 0.32, bodyDepth * 0.3);
+    lip.userData = { __kind: 'winter_blanket_fold' };
+    blanket.add(lip);
+    if (isSketch) addOutlines(body);
+    stack.add(blanket);
+  }
+  parentGroup.add?.(stack);
+}
+
 export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   App,
   shelfX,
@@ -490,6 +578,23 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   seededRandom.setSeed(Math.abs(seedVal) + 55);
 
   return runVisualContentsPerfPhase(App, 'builder.contents.total', () => {
+    if (policy.contentKind === 'winter_blankets') {
+      return runVisualContentsPerfPhase(App, 'builder.contents.winter-blankets', () => {
+        addWinterBlankets({
+          THREE,
+          shelfX,
+          shelfY,
+          shelfZ,
+          width,
+          parentGroup,
+          maxHeight: resolvedMaxHeight,
+          maxDepth,
+          addOutlines,
+          isSketch,
+        });
+      });
+    }
+
     if (isLibraryContents) {
       return runVisualContentsPerfPhase(App, 'builder.contents.books', () => {
         addShelfBooks({

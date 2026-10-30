@@ -437,7 +437,8 @@ for (const freePlacement of [false, true]) {
     const { args, boards, shelfPins } = createBaseArgs();
     args.boxDividers = [];
     args.shell.box = { freePlacement, shelves: [{ id: 'winter', yNorm: 0.5, variant: 'winter_brace' }] };
-    args.args.input.addFoldedClothes = () => assert.fail('open shelf must not carry floating contents');
+    const blankets: unknown[][] = [];
+    args.args.input.addFoldedClothes = (...params: unknown[]) => blankets.push(params);
     renderSketchBoxContents(args);
     const shelf = boards.find(board => board.args[7] === 'box_0_shelf_winter');
     assert.ok(shelf);
@@ -446,5 +447,9 @@ for (const freePlacement of [false, true]) {
     assert.equal(shelf.userData.__wpShelfVariant, 'winter_brace');
     assert.equal(shelf.userData.__wpShelfIsBrace, true);
     assert.equal(shelfPins[0][6], false);
+    assert.equal(blankets.length, 1, 'there should be only one stack in the compartment below');
+    assert.equal(blankets[0]![1], args.shell.innerBottomY, 'the stack must rest on the box floor');
+    assert.ok((blankets[0]![5] as number) > 0);
+    assert.equal((blankets[0]![7] as { contentKind: string }).contentKind, 'winter_blankets');
   });
 }

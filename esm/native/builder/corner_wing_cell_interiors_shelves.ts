@@ -282,6 +282,40 @@ export function addCornerWingGridShelf(
     shelfPartId
   );
 
+  const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
+  const activeShelves = Array.isArray(customData?.shelves) ? customData.shelves : [];
+  const gridDivisions = Math.max(0, Math.floor(cellRuntime.gridDivisions));
+  let nextShelfIndex: number | null = null;
+  let previousShelfIndex: number | null = null;
+  for (let index = 1; index < gridDivisions; index++) {
+    if (!activeShelves[index - 1]) continue;
+    if (index > gridIndex && nextShelfIndex === null) nextShelfIndex = index;
+    if (index < gridIndex) previousShelfIndex = index;
+  }
+  const cellBelowWinter =
+    nextShelfIndex != null && shelfRuntime.readCornerShelfVariant(cfgCell, nextShelfIndex) === 'winter_brace';
+  if (shelfVariant === 'winter_brace' && previousShelfIndex === null && runtime.showContentsEnabled) {
+    const availableHeight =
+      y - shelfH / 2 - cellRuntime.effectiveBottomY - CORNER_WING_INTERIOR_POLICY.shelfContentsTopClearanceM;
+    if (availableHeight > 0) {
+      runtime.addFoldedClothes(
+        cellInnerCenterX,
+        cellRuntime.effectiveBottomY,
+        shelfZ,
+        Math.max(0, cellInnerW - CORNER_WING_INTERIOR_POLICY.foldedContentsWidthClearanceM),
+        runtime.wingGroup,
+        availableHeight,
+        shelfDepth,
+        {
+          showContentsEnabled: true,
+          sketchMode: runtime.__sketchMode === true,
+          addOutlines: runtime.addOutlines,
+          cfgSnapshot: runtime.__cfg,
+          contentKind: 'winter_blankets',
+        }
+      );
+    }
+  }
   if (shelfVariant !== 'winter_brace' && runtime.showContentsEnabled) {
     runtime.addFoldedClothes(
       cellInnerCenterX,
@@ -299,6 +333,7 @@ export function addCornerWingGridShelf(
         sketchMode: runtime.__sketchMode === true,
         addOutlines: runtime.addOutlines,
         cfgSnapshot: runtime.__cfg,
+        ...(cellBelowWinter ? { contentKind: 'winter_blankets' as const } : {}),
       }
     );
   }

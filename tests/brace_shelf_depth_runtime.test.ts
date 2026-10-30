@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pipeline_module_depth.ts';
 import { appendHingedDoorOpsForModule } from '../esm/native/builder/hinged_doors_module_ops.ts';
 import { applySketchShelves } from '../esm/native/builder/render_interior_sketch_support_shelves.ts';
-import { createAddCustomGridShelf } from '../esm/native/builder/render_interior_custom_ops_shelves.ts';
+import {
+  addCustomBaseShelfContents,
+  createAddCustomGridShelf,
+} from '../esm/native/builder/render_interior_custom_ops_shelves.ts';
 import { createAddGridShelf } from '../esm/native/builder/render_interior_preset_ops_shelves.ts';
 import {
   resolveSketchBoxBraceDepth,
@@ -151,4 +154,68 @@ test('inset box braces reach the door back while other contents keep their exist
   const doorBack = resolveSketchBoxClosedInsetDoorBackZ(args as never);
   closeTo(shell.geometry.innerBackZ + depth, doorBack - 0.0005);
   assert.ok(depth > resolveSketchBoxUsableContentDepth(args as never));
+});
+
+test('custom-grid winter compartment replaces garments with grounded blankets, without drawing on its open frame', () => {
+  const contents: unknown[][] = [];
+  const args = {
+    App: {},
+    roomArchitecturePlan: createTestRoomArchitecturePlan(),
+    threeSurface: null,
+    matCache: {},
+    group: { add() {} },
+    createBoard() {
+      return { userData: {} };
+    },
+    addFoldedClothes(...parameters: unknown[]) {
+      contents.push(parameters);
+    },
+    contentsPolicy: { showContentsEnabled: true, sketchMode: false, addOutlines: null, cfgSnapshot: {} },
+    currentShelfMat: {},
+    currentBraceShelfMat: {},
+    moduleKey: '0',
+    braceSet: {},
+    shelfSet: { 1: true, 2: true },
+    shelfVariantByIndex: { 1: 'regular', 2: 'winter_brace' },
+    braceMetrics: {
+      regularDepth: 0.45,
+      regularZ: -0.07,
+      regularShelfWidth: 0.98,
+      braceShelfWidth: 1,
+      braceCenterX: 0,
+      leftInnerX: -0.5,
+      rightInnerX: 0.5,
+    },
+    effectiveBottomY: 0.02,
+    effectiveTopY: 2,
+    localGridStep: 0.5,
+    gridDivisions: 4,
+    internalCenterX: 0,
+    innerW: 1,
+    woodThick: 0.018,
+    shelfThick: 0.018,
+    internalDepth: 0.57,
+    internalZ: -0.01,
+    braceDepth: 0.595,
+    braceZ: 0.0025,
+    activeSlots: [],
+    isInternalDrawersEnabled: false,
+  };
+  const addShelf = createAddCustomGridShelf(args as never);
+  addShelf(1, 'regular');
+  addShelf(2, 'winter_brace');
+  assert.equal(contents.length, 1, 'winter frame must not support contents directly');
+  assert.equal(contents[0]![1], 0.02 + 0.5 + 0.009);
+  assert.equal((contents[0]![7] as { contentKind: string }).contentKind, 'winter_blankets');
+  assert.ok((contents[0]![5] as number) < 0.5);
+
+  contents.length = 0;
+  addCustomBaseShelfContents({
+    ...args,
+    shelfVariantByIndex: { 1: 'winter_brace' },
+    shelfSet: { 1: true },
+  } as never);
+  assert.equal(contents.length, 1);
+  assert.equal(contents[0]![1], 0.02, 'first winter frame uses the module floor for its blankets');
+  assert.equal((contents[0]![7] as { contentKind: string }).contentKind, 'winter_blankets');
 });

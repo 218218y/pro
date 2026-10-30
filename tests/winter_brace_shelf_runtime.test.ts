@@ -253,6 +253,7 @@ for (const stack of ['top', 'bottom']) {
   test(`corner winter shelf keeps ${stack} stack identity and the real frame geometry`, () => {
     const group = new THREE.Group();
     const material = new THREE.MeshBasicMaterial();
+    const blankets: unknown[][] = [];
     const runtime = {
       THREE,
       woodThick: 0.018,
@@ -268,8 +269,8 @@ for (const stack of ['top', 'bottom']) {
       getMaterial: () => material,
       addOutlines() {},
       showContentsEnabled: true,
-      addFoldedClothes() {
-        assert.fail('no floating contents in winter frame');
+      addFoldedClothes(...params: unknown[]) {
+        blankets.push(params);
       },
     };
     const shelfRuntime = createCornerWingInteriorShelfRuntime(runtime as never);
@@ -292,6 +293,9 @@ for (const stack of ['top', 'bottom']) {
       shelfRuntime,
       1
     );
+    assert.equal(blankets.length, 1);
+    assert.equal(blankets[0]![1], 0, 'corner blankets must rest on the base panel');
+    assert.equal((blankets[0]![7] as { contentKind: string }).contentKind, 'winter_blankets');
     const shelf = group.children[0] as THREE.Mesh;
     assert.equal(shelf.userData.__wpShelfVariant, 'winter_brace');
     assert.equal(shelf.userData.__wpShelfIsBrace, true);
@@ -305,3 +309,55 @@ for (const stack of ['top', 'bottom']) {
     );
   });
 }
+
+test('sketch winter brace populates only the supported compartment below it', () => {
+  const getCalls = (shelves: { variant: 'regular' | 'winter_brace'; yNorm: number }[], enabled = true) => {
+    const calls: unknown[][] = [];
+    applySketchShelves({
+      shelves,
+      yFromNorm: value => Number(value),
+      findBoxAtY: () => null,
+      braceCenterX: 0,
+      braceShelfWidth: 1,
+      regularShelfWidth: 0.98,
+      internalCenterX: 0,
+      internalDepth: 0.6,
+      internalZ: 0,
+      regularDepth: 0.45,
+      backZ: -0.3,
+      woodThick: 0.018,
+      shelfThick: 0.018,
+      effectiveBottomY: 0.2,
+      effectiveTopY: 2.4,
+      showContentsEnabled: enabled,
+      addFoldedClothes(...args: unknown[]) {
+        calls.push(args);
+      },
+      contentsPolicy: { showContentsEnabled: enabled },
+      currentShelfMat: {},
+      currentBraceShelfMat: {},
+      moduleKeyStr: 'test',
+      glassMat: null,
+      createBoard() {
+        return { userData: {} };
+      },
+      group: {},
+      addShelfPins() {},
+    } as never);
+    return calls;
+  };
+  const placed = getCalls([
+    { variant: 'regular', yNorm: 0.7 },
+    { variant: 'winter_brace', yNorm: 1.15 },
+  ]);
+  assert.equal(placed.length, 1, 'regular clothes must not overlap the blanket cell');
+  assert.equal((placed[0]![7] as { contentKind: string }).contentKind, 'winter_blankets');
+  assert.ok(Math.abs((placed[0]![1] as number) - 0.709) < 1e-9);
+  assert.ok((placed[0]![5] as number) < 0.45);
+
+  const floor = getCalls([{ variant: 'winter_brace', yNorm: 1.15 }]);
+  assert.equal(floor.length, 1);
+  assert.equal(floor[0]![1], 0.2, 'no lower shelf: blankets rest on the cell floor');
+  assert.equal(getCalls([{ variant: 'winter_brace', yNorm: 1.15 }], false).length, 0);
+  assert.equal(getCalls([{ variant: 'regular', yNorm: 0.7 }]).length, 1);
+});

@@ -73,6 +73,7 @@ export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
 export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
     cfgSnapshot: ConfigStateLike;
+    contentKind?: 'winter_blankets';
   }>;
 export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &
   Readonly<{

@@ -107,6 +107,7 @@ export type ApplySketchShelvesArgs = {
   woodThick: number;
   shelfThick: number;
   effectiveTopY: number;
+  effectiveBottomY?: number;
   showContentsEnabled: boolean;
   addFoldedClothes?: InteriorOpsCallable;
   contentsPolicy: InteriorValueRecord;

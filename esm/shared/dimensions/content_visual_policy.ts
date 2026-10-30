@@ -70,6 +70,20 @@ export const BOOK_CONTENT_VISUAL_POLICY = Object.freeze({
   stackTiltYRangeRad: 0.04,
 });
 
+// Visual-only quilts: dimensions are physical meters, not shelf-layout percentages.
+export const WINTER_BLANKET_VISUAL_POLICY = Object.freeze({
+  sideClearanceM: meters(0.04),
+  depthClearanceM: meters(0.045),
+  minWidthM: meters(0.22),
+  minDepthM: meters(0.16),
+  maxWidthM: meters(0.58),
+  maxDepthM: meters(0.4),
+  layerHeightM: meters(0.052),
+  topClearanceM: meters(0.025),
+  maxLayers: 4,
+  foldLipHeightM: meters(0.01),
+});
+
 export const FOLDED_CLOTHES_VISUAL_POLICY = Object.freeze({
   defaultMaxHeightM: meters(0.5),
   baseItemDepthM: meters(0.36),

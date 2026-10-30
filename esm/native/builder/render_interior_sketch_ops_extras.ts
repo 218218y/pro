@@ -230,6 +230,7 @@ export function applyInteriorSketchOwnedShelves(args: {
       woodThick: resolved.woodThick,
       shelfThick: resolved.shelfThick,
       effectiveTopY: cell.topY,
+      effectiveBottomY: cell.bottomY,
       showContentsEnabled: resolved.input.showContentsEnabled === true,
       ...(resolved.input.addFoldedClothes !== undefined
         ? { addFoldedClothes: resolved.input.addFoldedClothes }

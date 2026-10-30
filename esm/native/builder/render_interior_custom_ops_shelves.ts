@@ -235,6 +235,14 @@ export function createAddCustomGridShelf(args: {
     );
   }
 
+  function nextShelfIsWinterBrace(gridIndex: number): boolean {
+    const maxGrid = Math.max(0, Math.floor(gridDivisions));
+    for (let next = gridIndex + 1; next < maxGrid; next++) {
+      if (shelfSet[next]) return shelfVariantByIndex[next] === 'winter_brace';
+    }
+    return false;
+  }
+
   let glassMat: InteriorMaterialLike | null = null;
   try {
     const cache = isRecord(matCache) ? matCache : null;
@@ -372,7 +380,9 @@ export function createAddCustomGridShelf(args: {
           group,
           resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
           shelfDepth,
-          contentsPolicy
+          nextShelfIsWinterBrace(gridIndex)
+            ? { ...(contentsPolicy as Record<string, unknown>), contentKind: 'winter_blankets' }
+            : contentsPolicy
         );
       }
     }
@@ -485,7 +495,9 @@ export function addCustomBaseShelfContents(args: {
       group,
       maxHeight,
       shelfDepth,
-      contentsPolicy
+      firstShelfVariant === 'winter_brace'
+        ? { ...(contentsPolicy as Record<string, unknown>), contentKind: 'winter_blankets' }
+        : contentsPolicy
     );
   }
 }

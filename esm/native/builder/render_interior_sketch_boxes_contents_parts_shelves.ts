@@ -23,6 +23,7 @@ import {
   resolveSketchBoxSegmentForContent,
 } from './render_interior_sketch_layout.js';
 import { resolveSketchBoxShelfMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
+import { isCellBelowWinterBrace, resolveWinterBlanketSupport } from './winter_brace_contents_layout.js';
 import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
@@ -96,6 +97,28 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
         INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM
     );
   }
+
+  const shelfPlacements = boxShelves.flatMap(shelf => {
+    if (!shelf) return [];
+    const variant = normalizeSketchShelfVariant(shelf.variant);
+    const height = shelfHeightForVariant(variant);
+    const y = yFromBoxNorm(shelf.yNorm, height / 2);
+    if (y == null) return [];
+    const segment = resolveSketchBoxSegmentForContent({
+      dividers: boxDividers,
+      boxCenterX: geometry.centerX,
+      innerW: geometry.innerW,
+      woodThick,
+      xNorm: shelf.xNorm,
+      horizontalDividers: boxHorizontalDividers,
+      boxCenterY: shell.centerY,
+      innerH: shell.sideH,
+      yNorm: shelf.yNorm,
+    });
+    return [
+      { y, height, variant, leftX: segment?.leftX ?? innerLeftX, rightX: segment?.rightX ?? innerRightX },
+    ];
+  });
 
   for (let si = 0; si < boxShelves.length; si++) {
     const shelf = boxShelves[si] || null;
@@ -203,8 +226,44 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       !isBrace && (isDouble || isGlass || variant === 'regular')
     );
 
+    const cellPlacements = shelfPlacements.filter(
+      shelf => shelf.leftX < segmentRightX - 0.0001 && shelf.rightX > segmentLeftX + 0.0001
+    );
+    if (
+      variant === 'winter_brace' &&
+      args.args.input.showContentsEnabled === true &&
+      isFn(args.args.input.addFoldedClothes)
+    ) {
+      const support = resolveWinterBlanketSupport({
+        shelves: cellPlacements,
+        winterY: shelfY,
+        winterHeight: shelfH,
+        bottomY: shell.innerBottomY,
+        clearance: INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM,
+      });
+      const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
+      if (support && contentsWidth > 0) {
+        args.args.input.addFoldedClothes(
+          shelfCenterX,
+          support.shelfTopY,
+          shelfZ,
+          contentsWidth,
+          args.args.group,
+          support.maxHeight,
+          shelfDepth,
+          {
+            showContentsEnabled: true,
+            sketchMode: args.args.input.sketchMode === true,
+            addOutlines: args.args.input.addOutlines || null,
+            cfgSnapshot: args.args.input.cfgSnapshot,
+            contentKind: 'winter_blankets',
+          }
+        );
+      }
+    }
     if (
       variant !== 'winter_brace' &&
+      !isCellBelowWinterBrace(cellPlacements, shelfY) &&
       args.args.input.showContentsEnabled === true &&
       isFn(args.args.input.addFoldedClothes)
     ) {
