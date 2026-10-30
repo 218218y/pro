@@ -165,7 +165,31 @@ async function expectShelfButtonsFit(scope: Locator): Promise<void> {
   }
 }
 
-test('winter shelf and lock labels fit in separate rows in interior and sketch at desktop and narrow widths', async ({
+async function expectCombinedWinterControl(scope: Locator): Promise<void> {
+  const controls = scope.getByTestId('winter-brace-combined-button');
+  for (const control of await controls.all()) {
+    const main = control.getByTestId('winter-brace-shelf-button');
+    const lock = control.getByTestId('winter-brace-door-lock-button');
+    const outer = (await control.boundingBox())!;
+    const mainBounds = (await main.boundingBox())!;
+    const lockBounds = (await lock.boundingBox())!;
+    expect(Math.abs(lockBounds.x + lockBounds.width - mainBounds.x)).toBeLessThan(1);
+    expect(Math.abs(lockBounds.y - mainBounds.y)).toBeLessThan(1);
+    expect(Math.abs(lockBounds.height - mainBounds.height)).toBeLessThan(1);
+    expect(lockBounds.x).toBeLessThan(mainBounds.x);
+    expect(lockBounds.width).toBeLessThan(mainBounds.width);
+    expect(Math.abs(lockBounds.x - outer.x - 2)).toBeLessThan(1);
+    for (const button of [main, lock]) {
+      const style = await button.evaluate(element => {
+        const css = getComputedStyle(element);
+        return { radius: css.borderRadius, top: css.borderTopWidth, bottom: css.borderBottomWidth };
+      });
+      expect(style).toEqual({ radius: '0px', top: '0px', bottom: '0px' });
+    }
+  }
+}
+
+test('winter shelf split controls fit and keep their actions independent at desktop and narrow widths', async ({
   page,
 }, testInfo) => {
   await gotoSmokeApp(page);
@@ -200,9 +224,9 @@ test('winter shelf and lock labels fit in separate rows in interior and sketch a
       await openMainTab(page, tab);
       const panel = page.locator(`#reactSidebarRoot .tab-content[data-tab="${tab}"]`);
       if (tab === 'interior') {
-        const grid = panel.locator('.wp-layout-grid');
+        const grid = panel.locator('.wp-tool-card--layout .wp-layout-grid');
         const storage = (await grid.getByRole('button', { name: 'אוגר מצעים', exact: true }).boundingBox())!;
-        const winter = (await grid.getByRole('button', { name: 'קושרת חורף', exact: true }).boundingBox())!;
+        const winter = (await grid.getByTestId('winter-brace-combined-button').boundingBox())!;
         const brace = (await grid.getByRole('button', { name: 'מדפי קושרת', exact: true }).boundingBox())!;
         const regular = (await grid.getByRole('button', { name: 'מדף רגיל', exact: true }).boundingBox())!;
         expect(Math.abs(storage.y - winter.y)).toBeLessThan(2);
@@ -211,9 +235,13 @@ test('winter shelf and lock labels fit in separate rows in interior and sketch a
         expect(brace.y).toBeGreaterThan(storage.y);
         const iconLock = grid.getByTestId('winter-brace-door-lock-button');
         await expect(iconLock).toHaveAccessibleName('דלתות נעולות');
+        const modeBefore = (await readDebugStoreState(page)).mode;
         await iconLock.click();
         await expect(iconLock).toHaveAccessibleName('דלתות משוחררות');
+        expect((await readDebugStoreState(page)).mode).toEqual(modeBefore);
         await iconLock.click();
+        await expectCombinedWinterControl(grid);
+        await grid.screenshot({ path: testInfo.outputPath(`shortcuts-${width}.png`) });
       }
       if (
         tab === 'interior' &&
@@ -228,21 +256,22 @@ test('winter shelf and lock labels fit in separate rows in interior and sketch a
       const row = panel.locator('.wp-winter-brace-row:visible').first();
       await expect(row.getByTestId('winter-brace-shelf-button')).toHaveText('קושרת חורף');
       const lock = row.getByTestId('winter-brace-door-lock-button');
-      await expect(lock).toHaveText('דלתות נעולות');
+      await expect(lock).toHaveAccessibleName('דלתות נעולות');
       await expectShelfButtonsFit(panel);
+      await expectCombinedWinterControl(row);
       const variants = panel.locator('.wp-sketch-shelf-subrow:visible').first();
       expect(await variants.getByRole('button').count()).toBe(4);
       const variantsBounds = (await variants.boundingBox())!;
       const rowBounds = (await row.boundingBox())!;
       expect(rowBounds.y).toBeGreaterThanOrEqual(variantsBounds.y + variantsBounds.height);
       await lock.click();
-      await expect(lock).toHaveText('דלתות משוחררות');
+      await expect(lock).toHaveAccessibleName('דלתות משוחררות');
       await expectShelfButtonsFit(panel);
-      await lock.click();
+      await lock.focus();
+      await lock.press('Space');
+      await expect(lock).toHaveAccessibleName('דלתות נעולות');
       await row.scrollIntoViewIfNeeded();
-      await panel
-        .locator('.wp-tool-card--layout')
-        .screenshot({ path: testInfo.outputPath(`${tab}-${width}.png`) });
+      await row.screenshot({ path: testInfo.outputPath(`${tab}-${width}.png`) });
     }
   }
 });
@@ -285,7 +314,9 @@ test('interior shelf shortcuts add, convert and remove shelves through browser p
   const loadResult = await loaded;
   expect(loadResult.ok, JSON.stringify(loadResult)).toBe(true);
   await openMainTab(page, 'interior');
-  const grid = page.locator('#reactSidebarRoot .tab-content[data-tab="interior"] .wp-layout-grid');
+  const grid = page.locator(
+    '#reactSidebarRoot .tab-content[data-tab="interior"] .wp-tool-card--layout .wp-layout-grid'
+  );
   await grid.getByRole('button', { name: 'מדפי קושרת', exact: true }).click();
   await expect
     .poll(async () => (await readDebugStoreState(page)).mode)

@@ -1,4 +1,4 @@
-import { WinterBraceDoorLockButton } from './interior_layout_sketch_shelves_section.js';
+import { WinterBraceShelfButton } from './interior_layout_sketch_shelves_section.js';
 import type { ReactElement } from 'react';
 
 import { OptionBtn, cx } from './interior_tab_helpers.js';
@@ -18,22 +18,29 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
       <div className="wp-layout-grid">
         {props.layoutTypes.map(t => (
           <div key={t.id} className="wp-layout-shortcut-cell">
-            <OptionBtn
-              className="type-option--iconrow"
-              selected={
-                t.id === 'winter_brace'
-                  ? props.isSketchToolActive && props.manualToolRaw.startsWith('sketch_shelf:winter_brace')
-                  : t.id === 'brace_shelves'
+            {t.id === 'winter_brace' ? (
+              <WinterBraceShelfButton
+                props={props}
+                active={
+                  props.isSketchToolActive && props.manualToolRaw.startsWith('sketch_shelf:winter_brace')
+                }
+                onSelect={() => props.enterLayout('winter_brace')}
+              />
+            ) : (
+              <OptionBtn
+                className="type-option--iconrow"
+                selected={
+                  t.id === 'brace_shelves'
                     ? props.isBraceShelvesMode && !props.isRegularShelfMode
                     : t.id === 'regular_shelf'
                       ? props.isRegularShelfMode
                       : props.isLayoutMode && props.layoutType === t.id
-              }
-              onClick={() => props.enterLayout(t.id)}
-            >
-              <i className={t.icon} aria-hidden="true" /> {t.label}
-            </OptionBtn>
-            {t.id === 'winter_brace' ? <WinterBraceDoorLockButton {...props} iconOnly /> : null}
+                }
+                onClick={() => props.enterLayout(t.id)}
+              >
+                <i className={t.icon} aria-hidden="true" /> {t.label}
+              </OptionBtn>
+            )}
           </div>
         ))}
       </div>

@@ -1,6 +1,6 @@
 # Legacy / fallback audit
 
-Generated at: 2026-10-30T03:40:25.123Z
+Generated at: 2026-10-30T07:15:04.423Z
 
 ## Summary
 
