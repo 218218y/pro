@@ -120,7 +120,10 @@ export function createOrderPdfBuilderFieldAcrobatOps(
         createOrderPdfWidgetAppearance(
           pdfField as { getText: () => string | undefined },
           widget,
-          appearanceFont as { encodeText: (line: string) => unknown },
+          appearanceFont as {
+            encodeText: (line: string) => unknown;
+            widthOfTextAtSize: (line: string, size: number) => number;
+          },
           runtime.appearanceKit
         )
       );

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-01T03:26:03.483Z",
+  "generatedAt": "2026-11-01T04:48:13.430Z",
   "totals": {
-    "tests": 1280,
-    "unitRunnerTests": 1268,
+    "tests": 1281,
+    "unitRunnerTests": 1269,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 399,
     "runtime-unit": 351,
-    "integration": 487,
+    "integration": 488,
     "persistence-ingress": 23,
     "e2e-smoke": 13,
     "perf-smoke": 7
@@ -5544,6 +5544,10 @@
     },
     {
       "file": "tests/order_pdf_export_image_pdf_release_regressions.test.js",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_field_appearance_alignment_runtime.test.ts",
       "category": "integration"
     },
     {

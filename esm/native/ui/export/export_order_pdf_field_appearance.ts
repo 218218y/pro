@@ -10,7 +10,10 @@ import { visualOrderForPdfFieldAppearance } from './export_order_pdf_field_bidi.
 export function createOrderPdfWidgetAppearance(
   field: { getText: () => string | undefined },
   widget: unknown,
-  font: { encodeText: (line: string) => unknown },
+  font: {
+    encodeText: (line: string) => unknown;
+    widthOfTextAtSize: (line: string, size: number) => number;
+  },
   kit: OrderPdfAppearanceKitLike
 ): OrderPdfAppearanceOperatorLike[] {
   // Let pdf-lib wrap the original logical text *before* reordering each
@@ -21,6 +24,18 @@ export function createOrderPdfWidgetAppearance(
   // shows: fontkit can shape/reorder an entire Hebrew run a second time.
   const textByEncodedGlyphs = new Map<string, string>();
   const measuringFont = Object.create(font) as typeof font;
+  // pdf-lib positions right-aligned lines using widthOfTextAtSize(), but the
+  // actual /AP below paints the *visual* line one glyph at a time. Measuring
+  // the editable /V instead includes invisible bidi marks (and may include
+  // kerning that is not applied by the one-glyph Tj operators). Each line's
+  // width must therefore equal the sum of the advances we actually paint.
+  measuringFont.widthOfTextAtSize = (line: string, size: number): number => {
+    let width = 0;
+    for (const glyph of visualOrderForPdfFieldAppearance(line)) {
+      width += font.widthOfTextAtSize(glyph, size);
+    }
+    return width;
+  };
   measuringFont.encodeText = (line: string) => {
     const encoded = font.encodeText(line);
     textByEncodedGlyphs.set(String(encoded), line);
