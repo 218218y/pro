@@ -546,7 +546,7 @@ function bidi(str: string, startLevel = 1): string {
   const strLength = str.length;
   if (strLength === 0) return str;
   const chars: string[] = str.split('');
-  const types: string[] = new Array(strLength);
+  const types: string[] = [];
   let numBidi = 0;
   let i: number, ii: number;
   for (i = 0; i < strLength; ++i) {
@@ -584,7 +584,7 @@ function bidi(str: string, startLevel = 1): string {
       startLevel = 1;
     }
   }
-  const levels: number[] = new Array(strLength).fill(startLevel);
+  const levels: number[] = Array.from({ length: strLength }, () => startLevel);
   for (i = 0; i < strLength; ++i) {
     levels[i] = startLevel;
   }
@@ -745,8 +745,7 @@ const PDF_BIDI_CONTROL_CHARS = /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
 
 export function visualOrderForPdfFieldAppearance(text: string): string {
   return String(text || '')
-    .replace(PDF_BIDI_CONTROL_CHARS, '')
     .split(/\r?\n/)
-    .map(line => bidi(line, 1))
+    .map(line => bidi(line, 1).replace(PDF_BIDI_CONTROL_CHARS, ''))
     .join('\n');
 }

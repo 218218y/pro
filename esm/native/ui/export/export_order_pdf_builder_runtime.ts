@@ -30,6 +30,10 @@ export async function loadOrderPdfBuilderRuntime(
   const PDFDocument = getCtor<{ load: (bytes: Uint8Array) => Promise<PdfDocLike> }>(pdf, 'PDFDocument');
   const rgb = getCtor<(r: number, g: number, b: number) => unknown>(pdf, 'rgb');
   const TextAlignment = asObject(pdf['TextAlignment']);
+  const defaultTextFieldAppearanceProvider = getCtor<
+    (field: unknown, widget: unknown, font: unknown) => { name: string }[]
+  >(pdf, 'defaultTextFieldAppearanceProvider');
+  const showText = getCtor<(encoded: unknown) => { name: string }>(pdf, 'showText');
   const updateDefaultAppearance = getCtor<
     (acroField: unknown, color: unknown, font: unknown, fontSize: number) => unknown
   >(pdf, 'updateDefaultAppearance');
@@ -46,6 +50,8 @@ export async function loadOrderPdfBuilderRuntime(
   if (
     !PDFDocument ||
     !rgb ||
+    !defaultTextFieldAppearanceProvider ||
+    !showText ||
     !PDFName ||
     !PDFNumber ||
     !PDFBool ||
@@ -67,6 +73,31 @@ export async function loadOrderPdfBuilderRuntime(
   const { width: pageWidth, height: pageHeight } = firstPage.getSize();
   const black = rgb(0, 0, 0);
   const form = pdfDoc.getForm();
+
+  // The /DA recorded by pdf-lib refers to font.name. Acrobat needs that same
+  // alias in /AcroForm/DR/Font when the user focuses and edits a text widget;
+  // the /AP's own resource dictionary is not sufficient for interactive edits.
+  const acroForm = (form as { acroForm?: { dict?: unknown } }).acroForm;
+  const acroDict = acroForm?.dict as
+    | { lookup?: (key: unknown, type: unknown) => unknown; set?: (key: unknown, value: unknown) => void }
+    | undefined;
+  const context = pdfDoc.context as { obj?: (value: unknown) => unknown } | undefined;
+  const embedded = font as { name?: string; ref?: unknown };
+  if (!acroDict?.lookup || !acroDict.set || !context?.obj || !embedded.name || !embedded.ref) {
+    throw new Error('Cannot register the order PDF editable form font');
+  }
+  const ensureResourceDict = (parent: typeof acroDict, key: string) => {
+    let resource = parent.lookup?.(PDFName.of(key), PDFDict) as typeof acroDict | undefined;
+    if (!resource) {
+      resource = context.obj?.({}) as typeof acroDict;
+      parent.set?.(PDFName.of(key), resource);
+    }
+    if (!resource?.set) throw new Error(`Invalid order PDF /AcroForm/${key} resource`);
+    return resource;
+  };
+  const dr = ensureResourceDict(acroDict, 'DR');
+  const fonts = ensureResourceDict(dr, 'Font');
+  fonts.set?.(PDFName.of(embedded.name), embedded.ref);
 
   const asText = (obj: unknown): string => {
     try {
@@ -118,6 +149,7 @@ export async function loadOrderPdfBuilderRuntime(
     pageHeight,
     black,
     TextAlignment,
+    appearanceKit: { defaultTextFieldAppearanceProvider, showText },
     updateDefaultAppearance: updateDefaultAppearance ?? null,
     PDFName,
     PDFNumber,

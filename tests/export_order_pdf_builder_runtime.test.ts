@@ -89,11 +89,11 @@ test('buildOrderPdfInteractiveBlobFromDraft keeps the embedded AcroForm template
       projectName: 'בדיקת PDF',
       orderNumber: '1234',
       orderDate: '2026-03-26',
-      deliveryAddress: 'רחוב לדוגמה 1',
+      deliveryAddress: 'רחוב לדוגמה 10, עפולה',
       phone: '03-5555555',
-      mobile: '050-5555555',
-      notes: 'הערה',
-      detailsText: 'פרטי הזמנה',
+      mobile: 'חני 050-5555555',
+      notes: 'הובלה 400',
+      detailsText: 'סוג: פתיחה, דלתות: 4, מידות (ס״מ): 160×240×55, מחיר 3200 שח, '.repeat(3),
       detailsTouched: true,
       includeRenderSketch: false,
       includeOpenClosed: false,
@@ -145,5 +145,34 @@ test('buildOrderPdfInteractiveBlobFromDraft keeps the embedded AcroForm template
     baseFont && typeof (baseFont as { decodeText?: () => string }).decodeText === 'function'
       ? (baseFont as { decodeText: () => string }).decodeText()
       : '';
-  assert.equal(baseFontName, 'Arimo-Regular');
+  assert.match(baseFontName, /^Arimo-Regular(?:-[A-Za-z0-9]+)?$/);
+  assert.equal(acroForm?.get(PDFName.of('NeedAppearances')), undefined);
+
+  // Every saved value must have a reusable appearance without asking the
+  // preview handler to regenerate it, including the multiline fields.
+  for (const [name, field] of outputForm.getFields().map(f => [f.getName(), f] as const)) {
+    const textField = outputForm.getTextField(name);
+    assert.equal(
+      textField.acroField.dict.get(PDFName.of('AA')),
+      undefined,
+      `${name} has unexpected script actions`
+    );
+    for (const widget of textField.acroField.getWidgets()) {
+      const apObj = widget.dict.get(PDFName.of('AP'));
+      assert.ok(apObj, `${name} has no /AP`);
+      const ap = outputPdf.context.lookup(apObj, PDFDict);
+      const appearance = ap?.get(PDFName.of('N'));
+      assert.ok(appearance, `${name} has no /AP/N`);
+      const stream = outputPdf.context.lookup(appearance) as { getContents?: () => Uint8Array };
+      assert.ok((stream?.getContents?.().byteLength ?? 0) > 20, `${name} has empty /AP/N`);
+    }
+    assert.ok(field);
+  }
+  assert.match(
+    (outputForm.getTextField('customer_name').getText() || '')
+      .replace(/[\u200e\u200f]/g, '')
+      .replace(/\u00a0/g, ' '),
+    /בדיקת PDF/
+  );
+  assert.match(outputForm.getTextField('notes').getText() || '', /הובלה/);
 });

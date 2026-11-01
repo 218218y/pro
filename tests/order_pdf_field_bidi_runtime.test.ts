@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { visualOrderForPdfFieldAppearance } from '../esm/native/ui/export/export_order_pdf_field_bidi.ts';
+import { createOrderPdfTextBidiOps } from '../esm/native/ui/export/export_order_pdf_text_bidi.ts';
 
 test('AcroForm vector appearance: reorder RTL letters without reversing Latin/number runs', () => {
   const expected = new Map([
@@ -25,4 +26,18 @@ test('AcroForm vector appearance: bidi controls are paint-only, multiline layout
   assert.ok(result.includes('החיתפ :גוס'));
   assert.ok(result.includes('55×240×160'));
   assert.doesNotMatch(result, /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/u);
+});
+
+// PDF drawing is left-to-right; editing values contain bidi marks which must
+// be resolved before they are omitted from the painted glyph stream.
+test('stabilized AcroForm field appearance retains number runs and punctuation', () => {
+  const { fixBidiForAcrobatText } = createOrderPdfTextBidiOps();
+  assert.equal(
+    visualOrderForPdfFieldAppearance(fixBidiForAcrobatText('מידות (ס"מ): 160×240×55')),
+    '160×240×55\u00a0:)מ"ס( תודימ'
+  );
+  assert.equal(
+    visualOrderForPdfFieldAppearance(fixBidiForAcrobatText('חני 0548414850')),
+    '0548414850\u00a0ינח'
+  );
 });

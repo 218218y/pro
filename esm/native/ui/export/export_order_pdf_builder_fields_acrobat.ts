@@ -3,7 +3,8 @@ import type {
   OrderPdfFieldSpecLike,
   PdfTextFieldLike,
 } from './export_order_pdf_builder_shared.js';
-import { getObjectMethods, getSetter } from './export_order_pdf_shared.js';
+import { getObjectMethods } from './export_order_pdf_shared.js';
+import { createOrderPdfWidgetAppearance } from './export_order_pdf_field_appearance.js';
 import {
   readOrderPdfNumberField,
   reportOrderPdfBuilderFieldError,
@@ -13,42 +14,23 @@ import {
 export function createOrderPdfBuilderFieldAcrobatOps(
   ctx: OrderPdfBuilderContextLike
 ): OrderPdfBuilderFieldAcrobatOps {
-  const { App, deps, textOps, runtime } = ctx;
+  const { deps, textOps, runtime } = ctx;
   const { asArray, getFn, getProp } = deps;
-  const { fixBidiForAcrobatText, acrobatBidiFixFormatScript } = textOps;
-  const { pdfDoc, font, black, updateDefaultAppearance, PDFName, PDFNumber, PDFString, asText } = runtime;
+  const { fixBidiForAcrobatText } = textOps;
+  const { font, black, updateDefaultAppearance, PDFName, PDFNumber, PDFString, asText } = runtime;
 
-  const ensureAcroFieldDAHasTf = (acroField: unknown, targetFontSize: number): boolean => {
-    try {
-      const dict = acroField ? getProp(acroField, 'dict') : null;
-      const dictMethods = getObjectMethods(dict);
-      if (!dictMethods?.get || !dictMethods.set) return false;
-
-      const keyDA = PDFName.of('DA');
-      const daObj = dictMethods.get(keyDA);
-      const daText = asText(daObj) || '';
-      if (/\bTf\b/.test(daText)) return true;
-
-      const prefixMatch = /\/([A-Za-z0-9_+\-.]+)\s+\d+(?:\.\d+)?/.exec(daText);
-      const anyFontMatch = /\/([A-Za-z0-9_+\-.]+)/.exec(daText);
-      const fontName = (prefixMatch && prefixMatch[1]) || (anyFontMatch && anyFontMatch[1]) || 'Helv';
-
-      let next = daText;
-      if (prefixMatch && prefixMatch[0]) {
-        next = daText.replace(prefixMatch[0], `/${fontName} ${targetFontSize} Tf`);
-      } else if (daText && daText.trim().length) {
-        next = `/${fontName} ${targetFontSize} Tf ${daText}`.trim();
-      } else {
-        next = `/${fontName} ${targetFontSize} Tf 0 g`;
-      }
-
-      const daPdf = PDFString && typeof PDFString.of === 'function' ? PDFString.of(next) : next;
-      dictMethods.set(keyDA, daPdf);
-      return /\bTf\b/.test(next);
-    } catch (e) {
-      reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.ensureAcroFieldDAHasTf', e);
-      return false;
+  const ensureAcroFieldDAHasTf = (acroField: unknown, targetFontSize: number): void => {
+    const dict = getProp(acroField, 'dict');
+    const methods = getObjectMethods(dict);
+    if (!methods?.get || !methods.set || !PDFString?.of) {
+      throw new Error('Order PDF field default appearance is not writable');
     }
+    // Imported Acrobat templates sometimes encode the slash as \057 inside
+    // the DA *value*. pdf-lib's Tf parser cannot read that escape and silently
+    // auto-sizes the widget (e.g. notes become 35pt instead of 12pt).
+    const da = asText(methods.get(PDFName.of('DA'))).replace(/\\057/g, '/');
+    const fontAlias = /\/([A-Za-z0-9_+.-]+)\s+(?:\d+(?:\.\d+)?)\s+Tf/.exec(da)?.[1] || 'ArimoU';
+    methods.set(PDFName.of('DA'), PDFString.of(`/${fontAlias} ${targetFontSize} Tf 0 g`));
   };
 
   const clearRichTextField = (field: unknown): void => {
@@ -78,78 +60,6 @@ export function createOrderPdfBuilderFieldAcrobatOps(
     }
   };
 
-  const bidiFormatScript = acrobatBidiFixFormatScript();
-  const pdfContext = getProp(pdfDoc, 'context');
-  const ctxObj = pdfContext ? getFn(pdfContext, 'obj') : null;
-  const ctxLookup = pdfContext ? getFn(pdfContext, 'lookup') : null;
-  const bidiFormatAction = ctxObj
-    ? ctxObj.call(pdfContext, { S: PDFName.of('JavaScript'), JS: bidiFormatScript })
-    : null;
-
-  const ensureBidiFormatAction = (dict: unknown): void => {
-    try {
-      if (!dict || !bidiFormatAction) return;
-      const aaKey = PDFName.of('AA');
-      let aa: unknown = null;
-      const dictLike = getObjectMethods(dict);
-      const aaObj = dictLike && typeof dictLike.get === 'function' ? dictLike.get(aaKey) : null;
-      let aaResolved: unknown = aaObj;
-      try {
-        if (aaObj && ctxLookup) aaResolved = ctxLookup.call(pdfContext, aaObj);
-      } catch (e) {
-        reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.ensureBidiFormatAction.lookup', e);
-      }
-
-      const aaResolvedDict = getSetter(aaResolved);
-      if (aaResolvedDict) {
-        aa = aaResolved;
-      } else {
-        aa = ctxObj ? ctxObj.call(pdfContext, {}) : null;
-        if (aa && dictLike && typeof dictLike.set === 'function') dictLike.set(aaKey, aa);
-      }
-      const aaSet = getSetter(aa);
-      if (aaSet) aaSet(PDFName.of('F'), bidiFormatAction);
-    } catch (e) {
-      reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.ensureBidiFormatAction', e);
-    }
-  };
-
-  const attachBidiFormatToField = (field: unknown): void => {
-    try {
-      const acro = field ? getProp(field, 'acroField') : null;
-      const dict = acro ? getProp(acro, 'dict') : null;
-      ensureBidiFormatAction(dict);
-      const getWidgets = acro ? getFn(acro, 'getWidgets') : null;
-      const widgets = asArray(getWidgets ? getWidgets.call(acro) : []);
-      for (const widget of widgets) {
-        const widgetDict = widget ? getProp(widget, 'dict') : null;
-        ensureBidiFormatAction(widgetDict);
-      }
-    } catch (e) {
-      reportOrderPdfBuilderFieldError(ctx, 'buildOrderPdfInteractive.attachBidiFormatToField', e);
-    }
-  };
-
-  const patchFieldWidgetsAppearance = (field: unknown, errorPrefix: string): void => {
-    try {
-      const acro = getProp(field, 'acroField');
-      const acroDict = acro ? getProp(acro, 'dict') : null;
-      const dictGet = acroDict ? getFn(acroDict, 'get') : null;
-      const da = dictGet ? dictGet.call(acroDict, PDFName.of('DA')) : null;
-      const widgetsFn = acro ? getFn(acro, 'getWidgets') : null;
-      const widgets = asArray(widgetsFn ? widgetsFn.call(acro) : []);
-      for (const widget of widgets) {
-        const widgetDict = widget ? getProp(widget, 'dict') : null;
-        const del = widgetDict ? getFn(widgetDict, 'delete') : null;
-        const set = widgetDict ? getFn(widgetDict, 'set') : null;
-        if (del) del.call(widgetDict, PDFName.of('AP'));
-        if (da && set) set.call(widgetDict, PDFName.of('DA'), da);
-      }
-    } catch (e) {
-      reportOrderPdfBuilderFieldError(ctx, `${errorPrefix}.widgetsPatch`, e);
-    }
-  };
-
   const configureFieldForAcrobat = (
     field: PdfTextFieldLike,
     fontSize: number,
@@ -157,7 +67,6 @@ export function createOrderPdfBuilderFieldAcrobatOps(
     errorPrefix: string
   ): void => {
     clearRichTextField(field);
-    attachBidiFormatToField(field);
 
     if (spec.multiline) {
       try {
@@ -188,18 +97,48 @@ export function createOrderPdfBuilderFieldAcrobatOps(
     } catch (e) {
       reportOrderPdfBuilderFieldError(ctx, `${errorPrefix}.ensureDA`, e);
     }
+
+    const acro = getProp(field, 'acroField');
+    const acroDict = getProp(acro, 'dict');
+    const da = getFn(acroDict, 'get')?.call(acroDict, PDFName.of('DA'));
+    const widgets = asArray(getFn(acro, 'getWidgets')?.call(acro) || []);
+    if (!da || !widgets.length) throw new Error('Order PDF field DA or widgets unavailable');
+    for (const widget of widgets) {
+      const set = getFn(getProp(widget, 'dict'), 'set');
+      if (!set) throw new Error('Order PDF widget DA cannot be set');
+      set.call(getProp(widget, 'dict'), PDFName.of('DA'), da);
+    }
   };
 
   const writeFieldText = (field: PdfTextFieldLike, value: string, errorPrefix: string): void => {
+    // Do not silently export a half-filled document if the appearance fails.
     try {
       field.setText(fixBidiForAcrobatText(value || ''));
-    } catch (e) {
-      reportOrderPdfBuilderFieldError(ctx, `${errorPrefix}.setText`, e);
+      const update = getFn<(font: unknown, provider: unknown) => void>(field, 'updateAppearances');
+      if (!update) throw new Error('Text field appearance generator unavailable');
+      update.call(field, font, (pdfField: unknown, widget: unknown, appearanceFont: unknown) =>
+        createOrderPdfWidgetAppearance(
+          pdfField as { getText: () => string | undefined },
+          widget,
+          appearanceFont as { encodeText: (line: string) => unknown },
+          runtime.appearanceKit
+        )
+      );
+      const acro = getProp(field, 'acroField');
+      const widgets = asArray(getFn(acro, 'getWidgets')?.call(acro) || []);
+      if (!widgets.length) throw new Error('Order PDF field has no widgets');
+      for (const widget of widgets) {
+        const dict = getProp(widget, 'dict');
+        const get = getFn(dict, 'get');
+        if (!get?.call(dict, PDFName.of('AP'))) {
+          throw new Error('Order PDF field has no /AP stream');
+        }
+      }
+    } catch (error) {
+      reportOrderPdfBuilderFieldError(ctx, `${errorPrefix}.appearance`, error);
+      throw error;
     }
-    patchFieldWidgetsAppearance(field, errorPrefix);
   };
-
-  void App;
 
   return {
     configureFieldForAcrobat,

@@ -3,6 +3,16 @@ import type { ExportOrderPdfDeps } from './export_order_pdf_types.js';
 import type { ExportOrderPdfTextOps } from './export_order_pdf_text_contracts.js';
 import type { PdfWidthFontLike } from './export_order_pdf_contracts_shared.js';
 
+export type OrderPdfAppearanceOperatorLike = { name: string; args?: readonly unknown[] };
+export type OrderPdfAppearanceKitLike = {
+  defaultTextFieldAppearanceProvider: (
+    field: unknown,
+    widget: unknown,
+    font: unknown
+  ) => OrderPdfAppearanceOperatorLike[];
+  showText: (encoded: unknown) => OrderPdfAppearanceOperatorLike;
+};
+
 export type PdfRectLike = { x: number; y: number; w: number; h: number };
 export type PdfClassLike = abstract new (...init: readonly unknown[]) => Record<string, unknown>;
 
@@ -100,6 +110,7 @@ export type OrderPdfBuilderRuntimeLike = {
   pageHeight: number;
   black: unknown;
   TextAlignment: Record<string, unknown>;
+  appearanceKit: OrderPdfAppearanceKitLike;
   updateDefaultAppearance:
     ((acroField: unknown, color: unknown, font: unknown, fontSize: number) => unknown) | null;
   PDFName: { of: (name: string) => unknown };
@@ -134,7 +145,7 @@ export type OrderPdfBuilderContextLike = {
 
 export type OrderPdfBuilderTemplateOps = {
   validateTemplate: (requiredTemplateFields: readonly string[]) => { ok: boolean; problems: string[] };
-  applyNeedAppearances: () => void;
+  disableNeedAppearances: () => void;
 };
 
 export type OrderPdfBuilderFieldOps = {

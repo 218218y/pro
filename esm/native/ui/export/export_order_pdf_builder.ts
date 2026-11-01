@@ -62,7 +62,7 @@ export function createExportOrderPdfBuilderOps(
         return null;
       }
 
-      templateOps.applyNeedAppearances();
+      templateOps.disableNeedAppearances();
       return await buildOrderPdfDocumentResult({
         App: app,
         deps,

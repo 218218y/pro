@@ -16,7 +16,7 @@ export function createOrderPdfBuilderTemplateOps(
 ): OrderPdfBuilderTemplateOps {
   const { App, deps, runtime } = ctx;
   const { asArray, getFn, getProp, _exportReportThrottled } = deps;
-  const { pdfDoc, form, PDFName, PDFBool, PDFDict, PDFArray, PDFRef, parseFontNamesFromDA } = runtime;
+  const { pdfDoc, form, PDFName, PDFDict, PDFArray, PDFRef, parseFontNamesFromDA } = runtime;
 
   const validateTemplate = (
     requiredTemplateFields: readonly string[]
@@ -148,32 +148,18 @@ export function createOrderPdfBuilderTemplateOps(
     return { ok: problems.length === 0, problems };
   };
 
-  const applyNeedAppearances = (): void => {
-    try {
-      const setNeedAppearances = getFn(form, 'setNeedAppearances');
-      if (setNeedAppearances) setNeedAppearances.call(form, true);
-    } catch (e) {
-      _exportReportThrottled(App, 'buildOrderPdfInteractive.setNeedAppearances', e, {
-        throttleMs: 1500,
-      });
-    }
-
-    try {
-      const acroForm = getProp(form, 'acroForm');
-      const acroDict = acroForm ? getProp(acroForm, 'dict') : null;
-      const dictSet = acroDict ? getFn(acroDict, 'set') : null;
-      if (dictSet && PDFBool && PDFBool.True) {
-        dictSet.call(acroDict, PDFName.of('NeedAppearances'), PDFBool.True);
-      }
-    } catch (e) {
-      _exportReportThrottled(App, 'buildOrderPdfInteractive.setNeedAppearancesDict', e, {
-        throttleMs: 1500,
-      });
-    }
+  const disableNeedAppearances = (): void => {
+    // /AP/N is now guaranteed for every widget. Do not invite viewers to
+    // regenerate the carefully ordered Hebrew content from the editable /V.
+    const acroForm = getProp(form, 'acroForm');
+    const acroDict = getProp(acroForm, 'dict');
+    const deleteKey = getFn<(key: unknown) => unknown>(acroDict, 'delete');
+    if (!deleteKey) throw new Error('Cannot clear /AcroForm/NeedAppearances');
+    deleteKey.call(acroDict, PDFName.of('NeedAppearances'));
   };
 
   return {
     validateTemplate,
-    applyNeedAppearances,
+    disableNeedAppearances,
   };
 }
