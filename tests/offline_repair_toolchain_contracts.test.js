@@ -582,7 +582,10 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
       .update(fs.readFileSync(path.join(root, 'package-lock.json')))
       .digest('hex')
   );
-  assert.deepEqual(profile.rootDependencies, Object.keys(pkg.dependencies).sort());
+  assert.deepEqual(
+    profile.rootDependencies,
+    [...new Set([...Object.keys(pkg.dependencies), 'three'])].sort()
+  );
   assert.equal(profile.packageCount, profile.packages.length);
   assert.ok(profile.packageCount > profile.rootDependencies.length);
 
@@ -656,7 +659,7 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
     fixtureLock.packages[''] = {
       ...fixtureLock.packages[''],
       dependencies: { tsx: pkg.devDependencies.tsx },
-      devDependencies: {},
+      devDependencies: { three: pkg.devDependencies.three ?? pkg.dependencies.three },
     };
     fs.mkdirSync(path.join(fixtureRoot, 'vendor/offline/runtime'), { recursive: true });
     fs.writeFileSync(
@@ -668,6 +671,10 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
       `${JSON.stringify(manifest, null, 2)}\n`
     );
     const fixtureArchives = [
+      [
+        `vendor/offline/runtime/three-${lock.packages['node_modules/three'].version}.tgz`,
+        `runtime/three-${lock.packages['node_modules/three'].version}.tgz`,
+      ],
       [manifest.tsx.package.file, `runtime/tsx-${manifest.tsx.version}.tgz`],
       [manifest.esbuild.package.file, `runtime/esbuild-${manifest.esbuild.version}.tgz`],
       [
@@ -691,12 +698,27 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
     const fixtureManifest = JSON.parse(
       fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
     );
-    assert.deepEqual(fixtureManifest.workspace.profiles['tsx-tests'].rootDependencies, ['tsx']);
+    assert.deepEqual(fixtureManifest.workspace.profiles['tsx-tests'].rootDependencies, ['three', 'tsx']);
     assert.equal(
       fixtureManifest.workspace.profiles['tsx-tests'].packageCount,
       fixtureManifest.workspace.profiles['tsx-tests'].packages.length
     );
     assert.equal(fs.existsSync(path.join(fixtureRoot, 'vendor/offline/runtime/stale-0.0.0.tgz')), false);
+
+    // Losing a test runtime root must fail before publishing a reduced offline plan.
+    delete fixtureLock.packages[''].devDependencies.three;
+    fs.writeFileSync(path.join(fixtureRoot, 'package-lock.json'), JSON.stringify(fixtureLock));
+    const missingRoot = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'tsx-tests', '--sync-plan'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(missingRoot.status, 1);
+    assert.match(missingRoot.stderr, /TSX test runtime root is not a project dependency: three/u);
+    assert.equal(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8'),
+      `${JSON.stringify(fixtureManifest, null, 2)}\n`
+    );
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
