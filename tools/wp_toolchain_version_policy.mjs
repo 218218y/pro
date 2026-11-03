@@ -16,10 +16,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/TOOLCHAIN_VERSION_POLICY.md';
+const NODE_RUNTIME_POLICY = readNodeRuntimePolicy(ROOT);
 
 const STATIC_APPROVED_DEV_DEP_RANGES = Object.freeze({
   typescript: '7.0.2',
-  '@types/node': '^24.19.2',
+  '@types/node': NODE_RUNTIME_POLICY.typeDeclarationRange,
   eslint: '^10.8.0',
   oxlint: '^1.75.0',
   'oxlint-tsgolint': '7.0.2001',
@@ -59,8 +60,8 @@ const TOOLCHAIN_DEV_DEPS = [
     name: '@types/node',
     approvedRange: APPROVED_DEV_DEP_RANGES['@types/node'],
     boundedCaretManifest: true,
-    minVersion: '24.19.2',
-    maxExclusiveVersion: '25.0.0',
+    minVersion: NODE_RUNTIME_POLICY.typeDeclarationMinimumVersion,
+    maxExclusiveVersion: NODE_RUNTIME_POLICY.typeDeclarationMaximumExclusiveVersion,
     role: 'Node tool/test type surface aligned to the supported Node 24 runtime.',
     updatePolicy:
       'Allow Node 24 declaration updates; changing the runtime major requires an explicit policy review.',
@@ -408,7 +409,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The `oxlint-tsgolint` revision is lock-derived rather than hard-coded, but it is accepted only when its encoded TypeScript version still matches the pinned compiler. The active `oxc-parser` uses a narrow 0.x patch-line window derived from its package manifest; the offline vendor synchronizer adopts that same window and exact lockfile graph. This permits routine Oxc minor refreshes without leaving stale hard-coded policy behind, while compatibility is still enforced by the AST adapter and offline vendor contracts. `@types/node` follows the sole supported Node 24 runtime. The exact runtime pin is also the minimum accepted patch level; engines, CI and the offline Node archive must advance together.',
+    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. The `oxlint-tsgolint` revision is lock-derived rather than hard-coded, but it is accepted only when its encoded TypeScript version still matches the pinned compiler. The active `oxc-parser` uses a narrow 0.x patch-line window derived from its package manifest; the offline vendor synchronizer adopts that same window and exact lockfile graph. This permits routine Oxc minor refreshes without leaving stale hard-coded policy behind, while compatibility is still enforced by the AST adapter and offline vendor contracts. `@types/node` follows the sole supported Node 24 runtime. The exact runtime pin is also the minimum accepted patch level; engines, CI and the offline Node archive must advance together. Declaration caret ranges may advance within the reviewed Node 24 window; the resolved lock version must satisfy the declared minimum. Runtime-boundary tests derive their cases from the pin so routine patch upgrades do not require rewriting test expectations.',
     '',
     '## Bounded toolchain ranges',
     '',
