@@ -356,6 +356,27 @@ export default [
     },
   },
 
+  // Browser performance harnesses execute Node orchestration and browser callbacks.
+  {
+    files: ['tools/wp_browser_perf_smoke.mjs', 'tools/wp_browser_perf_server.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...nodeGlobals,
+        ...browserBuiltins,
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
+        HTMLInputElement: 'readonly',
+      },
+    },
+    rules: {
+      'no-undef': 'error',
+      'no-redeclare': 'error',
+      'no-unreachable': 'error',
+    },
+  },
+
   // Runtime-loader helpers intentionally expose a local CommonJS fallback inside test sandboxes.
   {
     files: ['tests/project_drag_drop_controller_runtime_helpers.js'],

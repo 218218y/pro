@@ -26,6 +26,59 @@ import {
   startPerfSpan,
 } from '../esm/native/runtime/perf_runtime_surface.ts';
 
+test('perf fingerprint counts canonical compact and mixed door surface layouts once per door', () => {
+  const cases = [
+    {
+      config: { doorSpecialMap: { d1_full: 'black_glass' } },
+      expected: { black: 1, frosted: 0 },
+    },
+    {
+      config: {
+        doorSpecialMap: { d1_full: 'black_glass' },
+        mirrorLayoutMap: {
+          d1_full: [
+            { surfaceKind: 'black_glass' },
+            { surfaceKind: 'frosted_glass', faceSign: -1 },
+            { surfaceKind: 'frosted_glass', widthCm: 20 },
+          ],
+        },
+      },
+      expected: { black: 1, frosted: 1 },
+    },
+    {
+      config: {
+        doorSpecialMap: { d1_full: 'black_glass' },
+        mirrorLayoutMap: { d1_full: [{ surfaceKind: 'frosted_glass' }] },
+      },
+      expected: { black: 0, frosted: 1 },
+    },
+    {
+      config: {
+        doorSpecialMap: { d1_full: 'black_glass' },
+        mirrorLayoutMap: {
+          d1_full: [{ widthCm: 20 }],
+          d2_full: [{ surfaceKind: 'frosted_glass' }],
+        },
+      },
+      expected: { black: 1, frosted: 1 },
+    },
+  ];
+  for (const { config, expected } of cases) {
+    const app = { store: { getState: () => ({ config }) } } as unknown as Parameters<
+      typeof getPerfStateFingerprint
+    >[0];
+    const fingerprint = getPerfStateFingerprint(app);
+    assert.ok(fingerprint);
+    assert.deepEqual(
+      {
+        black: fingerprint.blackAdhesiveGlassDoorCount,
+        frosted: fingerprint.frostedAdhesiveGlassDoorCount,
+      },
+      expected
+    );
+  }
+});
+
 test('perf runtime surface records marks, spans, summaries, and errors', async () => {
   const prevCustomEvent = globalThis.CustomEvent;
   globalThis.CustomEvent = class CustomEvent<T = unknown> extends Event {

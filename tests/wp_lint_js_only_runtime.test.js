@@ -6,6 +6,24 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 
+test('browser performance harness lint rejects variables that escaped their setup scope', async () => {
+  const { ESLint } = await import('eslint');
+  const eslint = new ESLint({ cwd: ROOT });
+  const [result] = await eslint.lintText(
+    `
+    try { const browserSupport = { browserSource: 'system' }; console.log(browserSupport); }
+    finally { console.log('cleanup'); }
+    console.log(browserSupport.browserSource);
+  `,
+    { filePath: 'tools/wp_browser_perf_smoke.mjs' }
+  );
+  assert.ok(
+    result.messages.some(
+      message => message.ruleId === 'no-undef' && message.message.includes('browserSupport')
+    )
+  );
+});
+
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
 }
@@ -117,6 +135,8 @@ test('wp_lint defaults target JS-only surfaces only', () => {
   assert.match(runner, /profile.*js-only/s);
   assert.match(runner, /esm\/\*\*\/\*\.js/);
   assert.match(runner, /tests\/\*\*\/\*\.js/);
+  assert.ok(runner.includes("'tools/wp_browser_perf_smoke.mjs'"));
+  assert.ok(runner.includes("'tools/wp_browser_perf_server.mjs'"));
   assert.doesNotMatch(
     runner,
     new RegExp(`${OLD_PARSER_REMOVAL}|${OLD_LINT_LEGACY}|types\\/|\\*\\.ts|\\*\\.tsx`)

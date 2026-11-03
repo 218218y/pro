@@ -437,6 +437,38 @@ test('report paths stay under docs and state path stays under artifacts', () => 
 });
 
 test(
+  'closeout bounds pipes held by a detached descendant after its command exits',
+  { timeout: 10000 },
+  async () => {
+    let pid;
+    try {
+      const result = await runLane(
+        {
+          id: 'escaped-pipe-probe',
+          command: process.execPath,
+          args: [
+            '-e',
+            `
+        const { spawn } = require('node:child_process');
+        const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { detached: true, stdio: 'inherit', windowsHide: true });
+        console.log('escaped-pid:' + child.pid);
+        setTimeout(() => process.exit(0), 200);
+      `,
+          ],
+          expected: 'pass',
+        },
+        { timeoutMs: 5000, drainTimeoutMs: 250 }
+      );
+      pid = Number(/escaped-pid:(\d+)/u.exec(result.stdout)?.[1]);
+      assert.equal(result.status, 'failed');
+      assert.match(result.stderr, /descendants retained output pipes/u);
+    } finally {
+      if (Number.isInteger(pid) && pid > 0) process.kill(pid, 'SIGKILL');
+    }
+  }
+);
+
+test(
   'closeout terminates timed-out commands and preserves live diagnostic output',
   { timeout: 10000 },
   async () => {

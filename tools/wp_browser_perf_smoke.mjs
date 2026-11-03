@@ -3053,6 +3053,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   let browser;
   let context;
   let page;
+  const browserSupport = resolvePlaywrightChromiumLaunchOptions();
   try {
     const serverReady = await waitForBrowserPerfServer(pageUrl, 1500);
     if (!serverReady) {
@@ -3062,7 +3063,6 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     }
     await assertReleaseServerProvenance(measurementArtifact);
 
-    const browserSupport = resolvePlaywrightChromiumLaunchOptions();
     browser = await chromium.launch({ headless: true, ...browserSupport.launchOptions });
     context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     await installCloudSyncGatewayIsolation(context);
@@ -3079,89 +3079,90 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     throw error;
   }
 
-  const result = {
-    version: 17,
-    generatedAt: new Date().toISOString(),
-    measurementProfile,
-    measurementArtifact,
-    executionEnvironment: {
-      platform: process.platform,
-      osRelease: os.release(),
-      architecture: process.arch,
-      cpuModel: os.cpus()[0]?.model || 'unknown',
-      logicalCpuCount: os.cpus().length,
-      totalMemoryBytes: os.totalmem(),
-      nodeVersion: process.version,
-      browserVersion: browser.version(),
-      browserSource: browserSupport.browserSource,
-      headless: true,
-      viewport: { width: 1280, height: 800 },
-      cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v18',
-    },
-    browserPerfRoomId,
-    experiment: {
-      adhesiveGlassWarmupMode,
-      foldedGeometryMode,
-      mirrorCubeExperimentMode,
-      profileFoldedContents,
-      profileShaderWarmup,
-      profileDirectMirrorRefresh,
-      traceLayoutDrawerStackHeavy,
-    },
-    cloudSyncRestIsolated: true,
-    userFlow: {},
-    userFlowSteps: [],
-    userJourneySummary: {},
-    journeyStoreSourceSummary: {},
-    userJourneyDiagnosisSummary: {},
-    windowPerfSummary: {},
-    windowPerfEntries: [],
-    windowPerfPressureSummary: {},
-    windowPerfDomainSummary: {},
-    windowPerfOutcomeSummary: {},
-    windowPerfRecoverySequenceSummary: {},
-    windowPerfRecoveryDebtSummary: {},
-    windowPerfRecoveryHangoverSummary: {},
-    windowBrowserMetrics: {},
-    windowStoreDebugStats: null,
-    windowStoreDebugSummary: {},
-    windowStoreDebugTopSources: [],
-    windowStoreDebugFlowSteps: [],
-    windowStoreFlowPressureSummary: {},
-    windowBuildDebugFlowSteps: [],
-    windowResponsivenessFlowSteps: [],
-    windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
-    topLongTaskSteps: [],
-    longTaskRootCauseSummary: [],
-    authoringIsolationRootCauseSummary: [],
-    builderExecutionRootCauseSummary: [],
-    journeyResponsivenessSummary: {},
-    adhesiveGlassFirstUse: {},
-    adhesiveGlassProgramProbe: {},
-    adhesiveGlassVisualProbe: {},
-    directMirrorRefreshProbe: {},
-    headerSketchRendererProbe: {},
-    viewerContentsProbe: {},
-    bootMilestones: {},
-    windowBuildFlowPressureSummary: {},
-    journeyBuildPressureSummary: {},
-    stateIntegrityChecks: [],
-    stateIntegritySummary: {},
-    runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
-    projectActionEvents: [],
-    browserSource: browserSupport.browserSource,
-    clipboardWrites: 0,
-  };
-
-  page.on('pageerror', error => {
-    result.runtimeIssues.pageErrors.push(String(error));
-  });
-  page.on('console', message => {
-    if (message.type() === 'error') result.runtimeIssues.consoleErrors.push(message.text());
-  });
-
+  let result;
   try {
+    result = {
+      version: 17,
+      generatedAt: new Date().toISOString(),
+      measurementProfile,
+      measurementArtifact,
+      executionEnvironment: {
+        platform: process.platform,
+        osRelease: os.release(),
+        architecture: process.arch,
+        cpuModel: os.cpus()[0]?.model || 'unknown',
+        logicalCpuCount: os.cpus().length,
+        totalMemoryBytes: os.totalmem(),
+        nodeVersion: process.version,
+        browserVersion: browser.version(),
+        browserSource: browserSupport.browserSource,
+        headless: true,
+        viewport: { width: 1280, height: 800 },
+        cachePolicy: 'fresh-browser-context-per-run',
+        testSequence: 'wp_browser_perf_smoke.v18',
+      },
+      browserPerfRoomId,
+      experiment: {
+        adhesiveGlassWarmupMode,
+        foldedGeometryMode,
+        mirrorCubeExperimentMode,
+        profileFoldedContents,
+        profileShaderWarmup,
+        profileDirectMirrorRefresh,
+        traceLayoutDrawerStackHeavy,
+      },
+      cloudSyncRestIsolated: true,
+      userFlow: {},
+      userFlowSteps: [],
+      userJourneySummary: {},
+      journeyStoreSourceSummary: {},
+      userJourneyDiagnosisSummary: {},
+      windowPerfSummary: {},
+      windowPerfEntries: [],
+      windowPerfPressureSummary: {},
+      windowPerfDomainSummary: {},
+      windowPerfOutcomeSummary: {},
+      windowPerfRecoverySequenceSummary: {},
+      windowPerfRecoveryDebtSummary: {},
+      windowPerfRecoveryHangoverSummary: {},
+      windowBrowserMetrics: {},
+      windowStoreDebugStats: null,
+      windowStoreDebugSummary: {},
+      windowStoreDebugTopSources: [],
+      windowStoreDebugFlowSteps: [],
+      windowStoreFlowPressureSummary: {},
+      windowBuildDebugFlowSteps: [],
+      windowResponsivenessFlowSteps: [],
+      windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
+      topLongTaskSteps: [],
+      longTaskRootCauseSummary: [],
+      authoringIsolationRootCauseSummary: [],
+      builderExecutionRootCauseSummary: [],
+      journeyResponsivenessSummary: {},
+      adhesiveGlassFirstUse: {},
+      adhesiveGlassProgramProbe: {},
+      adhesiveGlassVisualProbe: {},
+      directMirrorRefreshProbe: {},
+      headerSketchRendererProbe: {},
+      viewerContentsProbe: {},
+      bootMilestones: {},
+      windowBuildFlowPressureSummary: {},
+      journeyBuildPressureSummary: {},
+      stateIntegrityChecks: [],
+      stateIntegritySummary: {},
+      runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
+      projectActionEvents: [],
+      browserSource: browserSupport.browserSource,
+      clipboardWrites: 0,
+    };
+
+    page.on('pageerror', error => {
+      result.runtimeIssues.pageErrors.push(String(error));
+    });
+    page.on('console', message => {
+      if (message.type() === 'error') result.runtimeIssues.consoleErrors.push(message.text());
+    });
+
     const shellState = await withStep(
       result,
       page,

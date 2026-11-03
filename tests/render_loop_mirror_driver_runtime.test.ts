@@ -52,6 +52,7 @@ function createDriver(
     onHide?: () => void;
     scheduleIdleTask?: (run: () => void, timeoutMs: number) => void;
     wakeRenderLoop?: () => void;
+    recordMetric?: Parameters<typeof createRenderLoopMirrorDriver>[1]['recordMetric'];
   }
 ) {
   return createRenderLoopMirrorDriver(app as never, {
@@ -59,6 +60,7 @@ function createDriver(
     now: () => (typeof options?.now === 'function' ? options.now() : (options?.now ?? 0)),
     scheduleIdleTask: options?.scheduleIdleTask,
     wakeRenderLoop: options?.wakeRenderLoop,
+    recordMetric: options?.recordMetric,
     isTaggedMirrorSurface(obj) {
       options?.onTag?.();
       return !!obj?.__taggedMirror;
@@ -131,6 +133,38 @@ function makeDeferredCubeHarness() {
     },
   };
 }
+
+test('cube presentation and update evidence covers debug and perf while client stays uninstrumented', () => {
+  const globals = globalThis as Record<string, unknown>;
+  const keys = ['__WP_BUILD_CLIENT__', '__WP_BUILD_PERF__'] as const;
+  const previous = keys.map(key => Object.getOwnPropertyDescriptor(globals, key));
+  try {
+    for (const mode of ['client', 'debug', 'perf']) {
+      Object.defineProperty(globals, keys[0], { configurable: true, value: mode === 'client' });
+      Object.defineProperty(globals, keys[1], { configurable: true, value: mode === 'perf' });
+      withMirrorCubeExperiment('baseline', () => {
+        const harness = makeDeferredCubeHarness();
+        const metrics: string[] = [];
+        const driver = createDriver(harness.app, harness.slots, {
+          now: 105,
+          recordMetric(name) {
+            metrics.push(name);
+          },
+        });
+        driver.updateMirrorCube();
+        assert.equal(harness.cubeUpdateCount, 1, mode);
+        assert.equal(Boolean(harness.slots.__mirrorCubePresentationPending), mode !== 'client', mode);
+        assert.equal(metrics.includes('mirror.cube.update'), mode !== 'client', mode);
+      });
+    }
+  } finally {
+    keys.forEach((key, index) => {
+      const descriptor = previous[index];
+      if (descriptor) Object.defineProperty(globals, key, descriptor);
+      else delete globals[key];
+    });
+  }
+});
 
 test('deferred mirror cube latch blocks an unrelated second frame until the idle callback unlocks it', () => {
   withMirrorCubeExperiment('defer-first-presentation', () => {
