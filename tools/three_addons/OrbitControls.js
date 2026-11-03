@@ -499,8 +499,7 @@ class OrbitControls extends Controls {
 		this.domElement.addEventListener( 'contextmenu', this._onContextMenu );
 		this.domElement.addEventListener( 'wheel', this._onMouseWheel, { passive: false } );
 
-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
-		document.addEventListener( 'keydown', this._interceptControlDown, { passive: true, capture: true } );
+		this.domElement.ownerDocument.addEventListener( 'keydown', this._interceptControlDown, { passive: true, capture: true } );
 
 		this.domElement.style.touchAction = 'none'; // Disable touch scroll
 
@@ -520,9 +519,8 @@ class OrbitControls extends Controls {
 
 		this.stopListenToKeyEvents();
 
-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
-		document.removeEventListener( 'keydown', this._interceptControlDown, { capture: true } );
-		document.removeEventListener( 'keyup', this._interceptControlUp, { capture: true } );
+		this.domElement.ownerDocument.removeEventListener( 'keydown', this._interceptControlDown, { capture: true } );
+		this.domElement.ownerDocument.removeEventListener( 'keyup', this._interceptControlUp, { capture: true } );
 
 		this._controlActive = false;
 
@@ -1093,7 +1091,7 @@ class OrbitControls extends Controls {
 
 	_handleMouseDownDolly( event ) {
 
-		this._updateZoomParameters( event.clientX, event.clientX );
+		this._updateZoomParameters( event.clientX, event.clientY );
 		this._dollyStart.set( event.clientX, event.clientY );
 
 	}
@@ -1139,6 +1137,15 @@ class OrbitControls extends Controls {
 		}
 
 		this._dollyStart.copy( this._dollyEnd );
+
+		if ( this.zoomToCursor ) {
+
+			// update() resets the cursor zoom, so keep zooming towards the position where the drag started
+
+			this._performCursorZoom = true;
+			this._dollyDirection.set( this._mouse.x, this._mouse.y, 1 ).unproject( this.object ).sub( this.object.position ).normalize();
+
+		}
 
 		this.update();
 
@@ -1804,7 +1811,12 @@ function onTouchStart( event ) {
 
 				case TOUCH.ROTATE:
 
-					if ( this.enableRotate === false ) return;
+					if ( this.enableRotate === false ) {
+
+						this.state = _STATE.NONE;
+						break;
+
+					}
 
 					this._handleTouchStartRotate( event );
 
@@ -1814,7 +1826,12 @@ function onTouchStart( event ) {
 
 				case TOUCH.PAN:
 
-					if ( this.enablePan === false ) return;
+					if ( this.enablePan === false ) {
+
+						this.state = _STATE.NONE;
+						break;
+
+					}
 
 					this._handleTouchStartPan( event );
 
@@ -1944,9 +1961,7 @@ function interceptControlDown( event ) {
 
 		this._controlActive = true;
 
-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
-
-		document.addEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
+		this.domElement.ownerDocument.addEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
 
 	}
 
@@ -1958,9 +1973,7 @@ function interceptControlUp( event ) {
 
 		this._controlActive = false;
 
-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
-
-		document.removeEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
+		this.domElement.ownerDocument.removeEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
 
 	}
 

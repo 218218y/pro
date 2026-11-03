@@ -14,31 +14,31 @@
     }
   },
   "ast": {
-    "version": "0.156.0",
-    "compatibleProjectRange": ">=0.156.0 <0.157.0",
+    "version": "0.157.0",
+    "compatibleProjectRange": ">=0.157.0 <0.158.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
         "installPath": "node_modules/oxc-parser",
-        "file": "vendor/offline/ast/oxc-parser-0.156.0.tgz",
-        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.156.0.tgz",
-        "integrity": "sha512-7JhjgOfZjrIFJH5TlHrpRua864Si5GvwrPr5+eIRCY2sszhKXo6pyhP0HQKOGTtfO4UowwZ72XTGba0+lZphOQ=="
+        "file": "vendor/offline/ast/oxc-parser-0.157.0.tgz",
+        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.157.0.tgz",
+        "integrity": "sha512-2MJ9tZGXUbEIhQT/O2OPLlYCgur75ES26t2Pb1sYrvDQcRjrE7GmubkALgPEB6LzOY6sM81AAHKfl5M/FgnjJg=="
       },
       {
         "lockPath": "node_modules/@oxc-project/types",
         "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/types-0.156.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.156.0.tgz",
-        "integrity": "sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw=="
+        "file": "vendor/offline/ast/types-0.157.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.157.0.tgz",
+        "integrity": "sha512-95iTox1qdt6WGWce3xwNOVayByOfLaYAq+qGPpub6NWbBh9sv0GG3+zyfh9ZBCO/jVu5A0EWI+qQI7g6fevjxg=="
       }
     ],
     "bindings": {
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.156.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.156.0.tgz",
-        "integrity": "sha512-jRfwpN4xKrsEpC+SgrUPY5k0mINYZn7aLrt22I3uQFoumiSgHgsLYgS9f84ntbkvSydH4HiwGuDa2b1XCHaJzw=="
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.157.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.157.0.tgz",
+        "integrity": "sha512-C4BY4QSVzN6R03Ner3r6EtIvLNR4VW4RAb63m+L0tiF/zD7grkBHMn1svyrOBFR4i32+GWJHu05xC4gGQYBhtA=="
       }
     }
   },
@@ -166,28 +166,27 @@
           "pdfjs-dist",
           "react",
           "react-dom",
-          "three",
           "zustand"
         ],
-        "packageCount": 23,
+        "packageCount": 22,
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.0.13",
+            "version": "1.1.0",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.0.13.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.13.tgz",
-            "integrity": "sha512-b87ugZpQ5ViwqVBkjervxpwa0GmJPsKHLBNoZN6GpjWeHzTbDUGryriq+2DYW2XbB+xCqSIINQysC0/I87nPbw=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.1.0.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.1.0.tgz",
+            "integrity": "sha512-k+ph/D8H9GS8ZZ48okvHrKeJynkqAA1kMUZRuzRWNlQUDHXngq7oRaWMZBdmSfd9ZhVy9bwNKei/7wMboI/uMg=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.0.13",
+            "version": "1.1.0",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.0.13.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.13.tgz",
-            "integrity": "sha512-lc48IwknVHBsNzXn9Xs5OkUsRX38Ml3Z1aOybQ51mMEzZckm8+4A0qROlyYHEoBPzr1kL3IU8ZUAqDb7wtdX8w=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.1.0.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.1.0.tgz",
+            "integrity": "sha512-uQ9JuJlRhQdHyttcMWOiwLkfIqkqaB0YFUVe835LUe12THt2b51HXkTItq0fxWT1jdhUPX2ylWZ1walkJyD6GQ=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -317,12 +316,12 @@
           },
           {
             "name": "pdfjs-dist",
-            "version": "6.4.299",
+            "version": "6.5.438",
             "lockPath": "node_modules/pdfjs-dist",
             "installPath": "node_modules/pdfjs-dist",
-            "file": "vendor/offline/runtime/pdfjs-dist-6.4.299.tgz",
-            "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz",
-            "integrity": "sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g=="
+            "file": "vendor/offline/runtime/pdfjs-dist-6.5.438.tgz",
+            "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.5.438.tgz",
+            "integrity": "sha512-vg8Pw1x+AFKy4AMDvhuWl5cOYV8d698UoEANoFFhc79hqXDnZQqnOXoxw3HG907WHOg1JYOvLhP756boddFxpA=="
           },
           {
             "name": "react",
@@ -352,15 +351,6 @@
             "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw=="
           },
           {
-            "name": "three",
-            "version": "0.186.1",
-            "lockPath": "node_modules/three",
-            "installPath": "node_modules/three",
-            "file": "vendor/offline/runtime/three-0.186.1.tgz",
-            "url": "https://registry.npmjs.org/three/-/three-0.186.1.tgz",
-            "integrity": "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA=="
-          },
-          {
             "name": "tslib",
             "version": "2.8.1",
             "lockPath": "node_modules/tslib",
@@ -385,15 +375,6 @@
         "packageCount": 16,
         "packages": [
           {
-            "name": "@oxc-project/types",
-            "version": "0.156.0",
-            "lockPath": "node_modules/@oxc-project/types",
-            "installPath": "node_modules/@oxc-project/types",
-            "file": "vendor/offline/vite/oxc-project__types-0.156.0.tgz",
-            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.156.0.tgz",
-            "integrity": "sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw=="
-          },
-          {
             "name": "@rolldown/binding-linux-x64-gnu",
             "version": "1.2.16",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
@@ -413,12 +394,12 @@
           },
           {
             "name": "@vitejs/plugin-react",
-            "version": "6.1.2",
+            "version": "6.2.1",
             "lockPath": "node_modules/@vitejs/plugin-react",
             "installPath": "node_modules/@vitejs/plugin-react",
-            "file": "vendor/offline/vite/vitejs__plugin-react-6.1.2.tgz",
-            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.2.tgz",
-            "integrity": "sha512-fhJNGUdscQa4HkI0xFxwonWyhnVReCPDbXI7FH7jmzpnVCrFQI7PRrhWecO263610vOrs9tr2Y4xcf8uAdFxbw=="
+            "file": "vendor/offline/vite/vitejs__plugin-react-6.2.1.tgz",
+            "url": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.2.1.tgz",
+            "integrity": "sha512-9KyWCij3r0+qLG3Q62vBmv0VyevmYibAtxaCIVK9o0k6CXgaajZRIe8tpfchQcdZArJ5b/7OrIz4W3b2uxVRDA=="
           },
           {
             "name": "detect-libc",
@@ -500,6 +481,15 @@
             "file": "vendor/offline/vite/rolldown-1.2.16.tgz",
             "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.16.tgz",
             "integrity": "sha512-bWvlMpFKiTfDKfnK7FC2MPgPeWCf/Kpwsq49ApdW+FQaBZb6O6dZ4MAPbPUjp7hYQrw/RobqCzn64BRrQecGHw=="
+          },
+          {
+            "name": "@oxc-project/types",
+            "version": "0.156.0",
+            "lockPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "installPath": "node_modules/rolldown/node_modules/@oxc-project/types",
+            "file": "vendor/offline/vite/oxc-project__types-0.156.0.tgz",
+            "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.156.0.tgz",
+            "integrity": "sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw=="
           },
           {
             "name": "source-map-js",
@@ -806,12 +796,12 @@
           },
           {
             "name": "eslint",
-            "version": "10.13.0",
+            "version": "10.14.0",
             "lockPath": "node_modules/eslint",
             "installPath": "node_modules/eslint",
-            "file": "vendor/offline/eslint/eslint-10.13.0.tgz",
-            "url": "https://registry.npmjs.org/eslint/-/eslint-10.13.0.tgz",
-            "integrity": "sha512-UohDjD4zSzEwhf58M3O7vc/ycc8O1I7dNlhtD0WxE8Px8EHNJKtUwzBqrzeGhisRuv2ag4sAYswszCJRgKXYUg=="
+            "file": "vendor/offline/eslint/eslint-10.14.0.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.14.0.tgz",
+            "integrity": "sha512-T0pNsxkb9IKmtQjhpK3d7nWOpFv+YHuMbTJnSVMoQblF0onvXfErrtp4V1jHtsQPan7dKaGVD0q1WCXnzMF31A=="
           },
           {
             "name": "eslint-scope",
@@ -1230,6 +1220,6 @@
         ]
       }
     },
-    "lockfileSha256": "8c9183a50c2121771821daed2a571e7f0a2401183746aa9b262378e71a6bbb51"
+    "lockfileSha256": "03e43a85080d8dd8a51e8999759526eed69315ea59e34cf9a6319aabcb3a8c58"
   }
 }
