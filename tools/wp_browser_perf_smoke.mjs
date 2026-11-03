@@ -50,6 +50,7 @@ import {
   evaluateBrowserPerfBaseline,
   summarizeBrowserPerfResult,
 } from './wp_browser_perf_support.js';
+import { installBrowserPerfCloudSyncGatewayIsolation } from './wp_browser_perf_cloud_sync_gateway.js';
 import { resolvePlaywrightChromiumLaunchOptions } from './wp_playwright_browser_support.js';
 import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
 import {
@@ -360,83 +361,6 @@ async function assertReleaseServerProvenance(artifact) {
   }
 }
 
-async function installCloudSyncGatewayIsolation(context) {
-  const rows = new Map();
-  await context.route('**/functions/v1/wp-cloud-sync-room', async route => {
-    const request = route.request();
-    const method = String(request.method() || 'GET').toUpperCase();
-    if (method === 'OPTIONS') {
-      await route.fulfill({ status: 204, body: '' });
-      return;
-    }
-
-    if (method !== 'POST') {
-      await route.fulfill({ status: 405, contentType: 'application/json', body: '{"ok":false}' });
-      return;
-    }
-
-    let body = {};
-    try {
-      const parsed = JSON.parse(String(request.postData() || '{}'));
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) body = parsed;
-    } catch {}
-    const action = typeof body.action === 'string' ? body.action : '';
-    const room = typeof body.room === 'string' ? body.room : '';
-    if (action === 'issue-public' || action === 'create-room' || action === 'renew-room') {
-      const issuedRoom =
-        action === 'issue-public'
-          ? 'public'
-          : action === 'renew-room'
-            ? room
-            : `room_perf_${Date.now().toString(36)}`;
-      await route.fulfill({
-        status: action === 'create-room' ? 201 : 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          ok: true,
-          credential: buildBrowserPerfRoomCredential(issuedRoom),
-        }),
-      });
-      return;
-    }
-    if (action === 'read') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true, row: rows.get(room) || null }),
-      });
-      return;
-    }
-    if (action === 'write') {
-      const current = rows.get(room) || null;
-      const expectedRevision = typeof body.expectedRevision === 'number' ? body.expectedRevision : -1;
-      if ((current?.revision || 0) !== expectedRevision) {
-        await route.fulfill({
-          status: 409,
-          contentType: 'application/json',
-          body: JSON.stringify({ ok: false, code: 'revision_conflict', row: current }),
-        });
-        return;
-      }
-      const row = {
-        room,
-        payload: body.payload && typeof body.payload === 'object' ? body.payload : {},
-        revision: expectedRevision + 1,
-        updated_at: new Date().toISOString(),
-        updated_by: typeof body.clientId === 'string' ? body.clientId : 'perf-client',
-      };
-      rows.set(room, row);
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true, row }),
-      });
-      return;
-    }
-    await route.fulfill({ status: 400, contentType: 'application/json', body: '{"ok":false}' });
-  });
-}
-
 const BOOT_READY_TIMEOUT_MS = 45000;
 const BOOT_READY_POLL_MS = 25;
 const BOOT_OVERLAY_IDS = ['wpFatalOverlay', 'wpBootFatalOverlay', 'wp-fatal-overlay'];
@@ -630,6 +554,7 @@ function alignBootStepTimingWindowsToMilestones(result, milestones) {
 }
 
 async function withStep(result, page, name, run, meta = {}) {
+  console.log(`[browser-perf] starting ${name}`);
   if (!Array.isArray(result.windowStoreDebugFlowSteps)) result.windowStoreDebugFlowSteps = [];
   if (!Array.isArray(result.windowBuildDebugFlowSteps)) result.windowBuildDebugFlowSteps = [];
   if (!Array.isArray(result.windowResponsivenessFlowSteps)) result.windowResponsivenessFlowSteps = [];
@@ -640,6 +565,7 @@ async function withStep(result, page, name, run, meta = {}) {
   const startedAt = Date.now();
   const runResult = await run();
   const durationMs = Date.now() - startedAt;
+  console.log(`[browser-perf] completed ${name} (${durationMs}ms)`);
   result.userFlow[name] = durationMs;
   result.userFlowSteps.push({
     name,
@@ -3053,6 +2979,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   let browser;
   let context;
   let page;
+  const browserSupport = resolvePlaywrightChromiumLaunchOptions();
   try {
     const serverReady = await waitForBrowserPerfServer(pageUrl, 1500);
     if (!serverReady) {
@@ -3062,10 +2989,9 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     }
     await assertReleaseServerProvenance(measurementArtifact);
 
-    const browserSupport = resolvePlaywrightChromiumLaunchOptions();
     browser = await chromium.launch({ headless: true, ...browserSupport.launchOptions });
     context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    await installCloudSyncGatewayIsolation(context);
+    await installBrowserPerfCloudSyncGatewayIsolation(context, buildBrowserPerfRoomCredential);
     page = await context.newPage();
     await installInitialStorageReset(page);
     await installClipboardCapture(page);
@@ -3079,89 +3005,90 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     throw error;
   }
 
-  const result = {
-    version: 17,
-    generatedAt: new Date().toISOString(),
-    measurementProfile,
-    measurementArtifact,
-    executionEnvironment: {
-      platform: process.platform,
-      osRelease: os.release(),
-      architecture: process.arch,
-      cpuModel: os.cpus()[0]?.model || 'unknown',
-      logicalCpuCount: os.cpus().length,
-      totalMemoryBytes: os.totalmem(),
-      nodeVersion: process.version,
-      browserVersion: browser.version(),
-      browserSource: browserSupport.browserSource,
-      headless: true,
-      viewport: { width: 1280, height: 800 },
-      cachePolicy: 'fresh-browser-context-per-run',
-      testSequence: 'wp_browser_perf_smoke.v18',
-    },
-    browserPerfRoomId,
-    experiment: {
-      adhesiveGlassWarmupMode,
-      foldedGeometryMode,
-      mirrorCubeExperimentMode,
-      profileFoldedContents,
-      profileShaderWarmup,
-      profileDirectMirrorRefresh,
-      traceLayoutDrawerStackHeavy,
-    },
-    cloudSyncRestIsolated: true,
-    userFlow: {},
-    userFlowSteps: [],
-    userJourneySummary: {},
-    journeyStoreSourceSummary: {},
-    userJourneyDiagnosisSummary: {},
-    windowPerfSummary: {},
-    windowPerfEntries: [],
-    windowPerfPressureSummary: {},
-    windowPerfDomainSummary: {},
-    windowPerfOutcomeSummary: {},
-    windowPerfRecoverySequenceSummary: {},
-    windowPerfRecoveryDebtSummary: {},
-    windowPerfRecoveryHangoverSummary: {},
-    windowBrowserMetrics: {},
-    windowStoreDebugStats: null,
-    windowStoreDebugSummary: {},
-    windowStoreDebugTopSources: [],
-    windowStoreDebugFlowSteps: [],
-    windowStoreFlowPressureSummary: {},
-    windowBuildDebugFlowSteps: [],
-    windowResponsivenessFlowSteps: [],
-    windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
-    topLongTaskSteps: [],
-    longTaskRootCauseSummary: [],
-    authoringIsolationRootCauseSummary: [],
-    builderExecutionRootCauseSummary: [],
-    journeyResponsivenessSummary: {},
-    adhesiveGlassFirstUse: {},
-    adhesiveGlassProgramProbe: {},
-    adhesiveGlassVisualProbe: {},
-    directMirrorRefreshProbe: {},
-    headerSketchRendererProbe: {},
-    viewerContentsProbe: {},
-    bootMilestones: {},
-    windowBuildFlowPressureSummary: {},
-    journeyBuildPressureSummary: {},
-    stateIntegrityChecks: [],
-    stateIntegritySummary: {},
-    runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
-    projectActionEvents: [],
-    browserSource: browserSupport.browserSource,
-    clipboardWrites: 0,
-  };
-
-  page.on('pageerror', error => {
-    result.runtimeIssues.pageErrors.push(String(error));
-  });
-  page.on('console', message => {
-    if (message.type() === 'error') result.runtimeIssues.consoleErrors.push(message.text());
-  });
-
+  let result;
   try {
+    result = {
+      version: 17,
+      generatedAt: new Date().toISOString(),
+      measurementProfile,
+      measurementArtifact,
+      executionEnvironment: {
+        platform: process.platform,
+        osRelease: os.release(),
+        architecture: process.arch,
+        cpuModel: os.cpus()[0]?.model || 'unknown',
+        logicalCpuCount: os.cpus().length,
+        totalMemoryBytes: os.totalmem(),
+        nodeVersion: process.version,
+        browserVersion: browser.version(),
+        browserSource: browserSupport.browserSource,
+        headless: true,
+        viewport: { width: 1280, height: 800 },
+        cachePolicy: 'fresh-browser-context-per-run',
+        testSequence: 'wp_browser_perf_smoke.v18',
+      },
+      browserPerfRoomId,
+      experiment: {
+        adhesiveGlassWarmupMode,
+        foldedGeometryMode,
+        mirrorCubeExperimentMode,
+        profileFoldedContents,
+        profileShaderWarmup,
+        profileDirectMirrorRefresh,
+        traceLayoutDrawerStackHeavy,
+      },
+      cloudSyncRestIsolated: true,
+      userFlow: {},
+      userFlowSteps: [],
+      userJourneySummary: {},
+      journeyStoreSourceSummary: {},
+      userJourneyDiagnosisSummary: {},
+      windowPerfSummary: {},
+      windowPerfEntries: [],
+      windowPerfPressureSummary: {},
+      windowPerfDomainSummary: {},
+      windowPerfOutcomeSummary: {},
+      windowPerfRecoverySequenceSummary: {},
+      windowPerfRecoveryDebtSummary: {},
+      windowPerfRecoveryHangoverSummary: {},
+      windowBrowserMetrics: {},
+      windowStoreDebugStats: null,
+      windowStoreDebugSummary: {},
+      windowStoreDebugTopSources: [],
+      windowStoreDebugFlowSteps: [],
+      windowStoreFlowPressureSummary: {},
+      windowBuildDebugFlowSteps: [],
+      windowResponsivenessFlowSteps: [],
+      windowResponsivenessUnattributed: { longTasks: [], renderSettle: [] },
+      topLongTaskSteps: [],
+      longTaskRootCauseSummary: [],
+      authoringIsolationRootCauseSummary: [],
+      builderExecutionRootCauseSummary: [],
+      journeyResponsivenessSummary: {},
+      adhesiveGlassFirstUse: {},
+      adhesiveGlassProgramProbe: {},
+      adhesiveGlassVisualProbe: {},
+      directMirrorRefreshProbe: {},
+      headerSketchRendererProbe: {},
+      viewerContentsProbe: {},
+      bootMilestones: {},
+      windowBuildFlowPressureSummary: {},
+      journeyBuildPressureSummary: {},
+      stateIntegrityChecks: [],
+      stateIntegritySummary: {},
+      runtimeIssues: { pageErrors: [], consoleErrors: [], diagnostics: [] },
+      projectActionEvents: [],
+      browserSource: browserSupport.browserSource,
+      clipboardWrites: 0,
+    };
+
+    page.on('pageerror', error => {
+      result.runtimeIssues.pageErrors.push(String(error));
+    });
+    page.on('console', message => {
+      if (message.type() === 'error') result.runtimeIssues.consoleErrors.push(message.text());
+    });
+
     const shellState = await withStep(
       result,
       page,
@@ -4872,6 +4799,12 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
         );
       }
     }
+  } catch (error) {
+    writeJson(path.join(path.dirname(latestJsonPath), 'failed.latest.json'), {
+      ...result,
+      failure: { message: String(error?.message || error), stack: error?.stack },
+    });
+    throw error;
   } finally {
     try {
       await browser.close();

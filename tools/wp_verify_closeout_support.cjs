@@ -587,12 +587,19 @@ async function spawnCommand(command, args, options = {}) {
   };
   child.stdout.on('data', chunk => capture('stdout', chunk));
   child.stderr.on('data', chunk => capture('stderr', chunk));
-  child.once('error', error => {
-    spawnError = error;
-  });
+  const closed = new Promise(resolve => child.once('close', resolve));
   // A descendant can retain inherited output pipes after the command exits.
   // Stop the owned process tree on exit, before waiting for pipe closure.
-  child.once('exit', stop);
+  const exited = new Promise(resolve => {
+    child.once('exit', code => {
+      stop();
+      resolve(code);
+    });
+    child.once('error', error => {
+      spawnError = error;
+      resolve(1);
+    });
+  });
   const timeoutMs = options.timeoutMs ?? 15 * 60 * 1000;
   const timer = setTimeout(() => {
     timedOut = true;
@@ -602,9 +609,28 @@ async function spawnCommand(command, args, options = {}) {
     console.log(`[closeout] ${options.label} running (${Math.round((Date.now() - startedAt) / 1000)}s)`);
   }, 30000);
   let code;
+  let retainedPipes = false;
   try {
-    code = await new Promise(resolve => child.once('close', resolve));
+    code = await exited;
     if (termination) await termination.completion;
+    // An escaped descendant can retain pipes even after the owned tree is gone.
+    // Keep that a bounded, explicit failure rather than hanging in child.close.
+    let drainTimer;
+    try {
+      const drained = await Promise.race([
+        closed.then(() => true),
+        new Promise(resolve => {
+          drainTimer = setTimeout(() => resolve(false), options.drainTimeoutMs ?? 2000);
+        }),
+      ]);
+      if (!drained) {
+        retainedPipes = true;
+        child.stdout.destroy();
+        child.stderr.destroy();
+      }
+    } finally {
+      clearTimeout(drainTimer);
+    }
   } finally {
     clearTimeout(timer);
     clearInterval(heartbeat);
@@ -612,8 +638,10 @@ async function spawnCommand(command, args, options = {}) {
   if (timedOut) stderr += `\n[closeout] command timed out after ${timeoutMs}ms`;
   if (outputLimitExceeded) stderr += '\n[closeout] command exceeded the 16 MiB output limit';
   if (spawnError) stderr += `\n[closeout] ${spawnError.message}`;
+  if (retainedPipes)
+    stderr += '\n[closeout] command exited but descendants retained output pipes after cleanup';
   return {
-    exitCode: timedOut || outputLimitExceeded || spawnError ? 1 : (code ?? 1),
+    exitCode: timedOut || outputLimitExceeded || spawnError || retainedPipes ? 1 : (code ?? 1),
     durationMs: Date.now() - startedAt,
     startedAtIso: new Date(startedAt).toISOString(),
     finishedAtIso: nowIso(),

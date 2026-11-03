@@ -131,6 +131,8 @@ For a local full Closeout, run `npm run verify:closeout -- --reset-state` follow
 the complete child process tree, including servers retaining inherited output pipes. Successful lanes
 checkpoint immediately; a timeout is a failure, never release evidence. Browser performance owns its
 server process tree and awaits disposal even when setup or browser shutdown fails.
+If an escaped descendant still holds output pipes after tree cleanup, Closeout bounds the drain wait
+and records a failure instead of waiting indefinitely for pipe closure.
 
 Browser performance has two deliberately separate environments. `npm run perf:browser` is the Vite-dev
 regression lane and uses only the dev baseline. `npm run perf:browser:release` builds a minified, content-hashed

@@ -1,4 +1,11 @@
-import type { AppContainer, RootStateLike, WardrobeProPerfStateFingerprint } from '../../../types/index.js';
+import type {
+  AppContainer,
+  DoorSpecialMap,
+  DoorSurfaceOverlayKind,
+  MirrorLayoutMap,
+  RootStateLike,
+  WardrobeProPerfStateFingerprint,
+} from '../../../types/index.js';
 
 import { asRecord } from './record.js';
 import { getStoreSurfaceMaybe } from './store_surface_access.js';
@@ -58,10 +65,25 @@ function countTruthyRecordEntries(value: unknown): number {
   return count;
 }
 
-function countRecordValue(value: unknown, expected: string): number {
-  const record = asRecord<Record<string, unknown>>(value);
-  if (!record) return 0;
-  return Object.values(record).filter(item => item === expected).length;
+function countDoorSurfaceKind(
+  specialMap: DoorSpecialMap | undefined,
+  layoutMap: MirrorLayoutMap | undefined,
+  expected: DoorSurfaceOverlayKind
+): number {
+  const specials = specialMap || {};
+  const layouts = layoutMap || {};
+  const doorKeys = new Set([...Object.keys(specials), ...Object.keys(layouts)]);
+  let count = 0;
+  for (const key of doorKeys) {
+    const entries = layouts[key] || [];
+    const representative = specials[key];
+    // A compact full-door overlay has no layout; explicit regions own mixed-surface doors.
+    const hasSurface = entries.length
+      ? entries.some(entry => (entry.surfaceKind ?? representative ?? 'mirror') === expected)
+      : representative === expected;
+    if (hasSurface) count += 1;
+  }
+  return count;
 }
 
 function countDoorTrimEntries(value: unknown): number {
@@ -141,7 +163,7 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
     const ui = asRecord<Record<string, unknown>>(root.ui);
     const runtime = asRecord<Record<string, unknown>>(root.runtime);
     const savedColorValues = readPerfStateSavedColorValues(root.config);
-    const config = asRecord<Record<string, unknown>>(root.config);
+    const config = asRecord<RootStateLike['config']>(root.config);
     return {
       bootReady: normalizePerfStateBoolean(asRecord<Record<string, unknown>>(App.lifecycle)?.bootReady),
       systemReady: normalizePerfStateBoolean(runtime?.systemReady),
@@ -167,8 +189,16 @@ export function getPerfStateFingerprint(App: AppContainer): WardrobeProPerfState
       drawerDividerCount: countTruthyRecordEntries(config?.drawerDividersMap),
       internalDrawerPlacementCount: countPerfStateInternalDrawerPlacements(config),
       externalDrawerSelectionCount: countPerfStateExternalDrawerSelections(config),
-      blackAdhesiveGlassDoorCount: countRecordValue(config?.doorSpecialMap, 'black_glass'),
-      frostedAdhesiveGlassDoorCount: countRecordValue(config?.doorSpecialMap, 'frosted_glass'),
+      blackAdhesiveGlassDoorCount: countDoorSurfaceKind(
+        config?.doorSpecialMap,
+        config?.mirrorLayoutMap,
+        'black_glass'
+      ),
+      frostedAdhesiveGlassDoorCount: countDoorSurfaceKind(
+        config?.doorSpecialMap,
+        config?.mirrorLayoutMap,
+        'frosted_glass'
+      ),
     };
   } catch {
     return null;

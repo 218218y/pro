@@ -97,6 +97,8 @@ jobs:
             .artifacts/closeout-state.json
             .artifacts/closeout-logs/**
             .artifacts/test-report/**
+            .artifacts/browser-perf/*.json
+            .artifacts/browser-perf/release/*.json
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14

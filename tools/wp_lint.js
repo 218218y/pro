@@ -75,7 +75,9 @@ if (!jsOnlyProfile) {
 
 if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js/**/*.js');
 if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm/**/*.js', 'esm/**/*.mjs');
-if (fs.existsSync(path.join(ROOT, 'tools'))) defaultTargets.push('tools/**/*.js');
+if (fs.existsSync(path.join(ROOT, 'tools'))) {
+  defaultTargets.push('tools/**/*.js', 'tools/wp_browser_perf_smoke.mjs', 'tools/wp_browser_perf_server.mjs');
+}
 if (fs.existsSync(path.join(ROOT, 'tests'))) defaultTargets.push('tests/**/*.js');
 defaultTargets.push('*.js', '*.cjs', '*.mjs');
 

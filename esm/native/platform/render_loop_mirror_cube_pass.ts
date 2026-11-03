@@ -58,7 +58,7 @@ function setMirrorPresentationPending(
   app: AppContainer,
   detail: UnknownRecord
 ): void {
-  if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
+  if (typeof __WP_BUILD_CLIENT__ !== 'undefined' && __WP_BUILD_CLIENT__ === true) return;
   deps.setRenderSlot(app, '__mirrorCubePresentationPending', detail);
 }
 
@@ -272,7 +272,7 @@ export function runMirrorCubePass(args: {
         }
         throw error;
       } finally {
-        if (typeof __WP_BUILD_PERF__ !== 'undefined' && __WP_BUILD_PERF__ === true) {
+        if (typeof __WP_BUILD_CLIENT__ === 'undefined' || __WP_BUILD_CLIENT__ !== true) {
           const endTime = deps.now();
           const durationMs = Math.max(0, endTime - beforeUpdateMs);
           const rendererAfter = readRendererCounters(renderer);
