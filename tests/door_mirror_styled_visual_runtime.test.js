@@ -27,6 +27,7 @@ const { FULL_MIRROR_INSET_M } = loadTsModule(
 const { warmAdhesiveGlassStandardShaderNow, scheduleAdhesiveGlassStandardShaderWarmup } = loadTsModule(
   path.join(process.cwd(), 'esm/native/runtime/adhesive_glass_shader_warmup.ts')
 );
+const { getPerfEntries } = loadTsModule(path.join(process.cwd(), 'esm/native/runtime/perf_runtime_core.ts'));
 
 class FakeVector3 {
   constructor(x = 0, y = 0, z = 0) {
@@ -986,6 +987,7 @@ test('adhesive glass standard material shader warmup compiles the cube envMap pr
 });
 
 test('adhesive glass async shader warmup remains pending, preserves the live scene, and completes on resolve', async () => {
+  let clock = 10;
   const THREE = createThree();
   const scene = new THREE.Group();
   const existingChild = new THREE.Group();
@@ -1005,7 +1007,7 @@ test('adhesive glass async shader warmup remains pending, preserves the live sce
     },
   };
   const app = {
-    deps: { THREE },
+    deps: { THREE, browser: { performanceNow: () => clock } },
     services: {},
     render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
   };
@@ -1023,15 +1025,23 @@ test('adhesive glass async shader warmup remains pending, preserves the live sce
   assert.equal(renderer.debug.checkShaderErrors, true);
   assert.deepEqual(scene.children, [existingChild]);
 
+  clock = 2010;
   resolveCompile();
   await inFlight;
   assert.equal(state.inFlight, null);
   assert.equal(state.completed, true);
   assert.equal(state.lastSkippedReason, null);
   assert.deepEqual(scene.children, [existingChild]);
+  const metric = getPerfEntries(app).find(entry => entry.name === 'boot.ui.shader-warmup.complete');
+  assert.equal(metric.kind, 'browser-metric');
+  assert.equal(metric.metricValue, 2000);
+  assert.equal(metric.metricUnit, 'ms');
+  assert.equal(metric.codeExecutionMs, 0);
+  assert.equal(metric.status, 'ok');
 });
 
 test('adhesive glass async shader warmup rejection remains retryable', async () => {
+  let clock = 10;
   const THREE = createThree();
   const scene = new THREE.Group();
   const camera = { isCamera: true };
@@ -1048,7 +1058,7 @@ test('adhesive glass async shader warmup rejection remains retryable', async () 
     },
   };
   const app = {
-    deps: { THREE },
+    deps: { THREE, browser: { performanceNow: () => clock } },
     services: {},
     render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
   };
@@ -1056,11 +1066,17 @@ test('adhesive glass async shader warmup rejection remains retryable', async () 
   assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
   const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
   const failedFlight = state.inFlight;
+  clock = 2010;
   rejectFirst(new Error('compile failed'));
   await failedFlight;
   assert.equal(state.completed, false);
   assert.equal(state.inFlight, null);
   assert.equal(state.lastSkippedReason, 'compile-failed');
+  const metric = getPerfEntries(app).find(entry => entry.name === 'boot.ui.shader-warmup.complete');
+  assert.equal(metric.status, 'error');
+  assert.equal(metric.metricValue, 2000);
+  assert.equal(metric.codeExecutionMs, 0);
+  assert.match(metric.error, /compile failed/);
 
   assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
   const retryFlight = state.inFlight;

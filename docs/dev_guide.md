@@ -140,6 +140,11 @@ release artifact in observability mode `perf`, serves that artifact statically, 
 bundle digest, and compares it only with the release baseline. Fixed product UX targets remain independent from
 both generated regression baselines, so regenerating a baseline cannot widen the desired UX envelope.
 
+`boot.ui.shader-warmup.submit` measures synchronous shader submission. The matching `.complete`
+metric records asynchronous completion latency in milliseconds, including failed completions; it is
+not JavaScript execution time. Long Tasks, interaction latency and first-use rendering evidence still
+measure the visible cost independently.
+
 Performance evidence is split into two categories:
 
 - Structural release evidence is deterministic enough for cross-environment CI: initial raw/gzip bytes,

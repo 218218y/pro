@@ -223,6 +223,10 @@ test('winter shelf split controls fit and keep their actions independent at desk
     for (const tab of ['interior', 'sketch'] as const) {
       await openMainTab(page, tab);
       const panel = page.locator(`#reactSidebarRoot .tab-content[data-tab="${tab}"]`);
+      // The panel slides into place; sequential boundingBox calls must observe its settled geometry.
+      await panel.evaluate(async element => {
+        await Promise.all(element.getAnimations().map(animation => animation.finished));
+      });
       if (tab === 'interior') {
         const grid = panel.locator('.wp-tool-card--layout .wp-layout-grid');
         const storage = (await grid.getByRole('button', { name: 'אוגר מצעים', exact: true }).boundingBox())!;
