@@ -49,6 +49,7 @@ export function readNodeRuntimePolicy(root = ROOT) {
     ...primary,
     versionFile: PRIMARY_NODE_VERSION_FILE,
     typeDeclarationMinimumVersion: NODE_TYPES_MINIMUM_VERSION,
+    typeDeclarationMaximumExclusiveVersion: `${primary.major + 1}.0.0`,
     typeDeclarationRange: `^${NODE_TYPES_MINIMUM_VERSION}`,
     engineRange: `>=${primary.version} <${primary.major + 1}`,
   };
@@ -154,13 +155,17 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
   const lockRootTypesRange = lockRoot.devDependencies?.['@types/node'] ?? null;
   const lockInstalledTypesVersion = lock.packages?.['node_modules/@types/node']?.version ?? null;
 
-  pushMismatch(violations, 'package.json @types/node range', packageTypesRange, policy.typeDeclarationRange);
-  pushMismatch(
-    violations,
-    'package-lock root @types/node range',
-    lockRootTypesRange,
-    policy.typeDeclarationRange
-  );
+  const minimumTypes = parsePinnedNodeVersion(policy.typeDeclarationMinimumVersion, '@types/node minimum');
+  const manifestTypesMatch = /^\^(\d+\.\d+\.\d+)$/u.exec(packageTypesRange ?? '');
+  const manifestTypes = manifestTypesMatch ? parsePinnedNodeVersion(manifestTypesMatch[1]) : null;
+  const manifestTypesApproved =
+    manifestTypes?.major === policy.major && compareNodeVersions(manifestTypes, minimumTypes) >= 0;
+  if (!manifestTypesApproved) {
+    violations.push(
+      `package.json @types/node range must be a caret range within >=${minimumTypes.version} <${policy.typeDeclarationMaximumExclusiveVersion}; received ${JSON.stringify(packageTypesRange)}.`
+    );
+  }
+  pushMismatch(violations, 'package-lock root @types/node range', lockRootTypesRange, packageTypesRange);
 
   let installedTypes = null;
   try {
@@ -169,7 +174,6 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
     violations.push(error instanceof Error ? error.message : String(error));
   }
   if (installedTypes) {
-    const minimumTypes = parsePinnedNodeVersion(policy.typeDeclarationMinimumVersion, '@types/node minimum');
     if (installedTypes.major !== policy.major) {
       violations.push(
         `package-lock installed @types/node major ${installedTypes.major} does not match supported Node major ${policy.major}.`
@@ -177,6 +181,10 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
     } else if (compareNodeVersions(installedTypes, minimumTypes) < 0) {
       violations.push(
         `package-lock installed @types/node ${installedTypes.version} is below supported minimum ${minimumTypes.version}.`
+      );
+    } else if (manifestTypesApproved && compareNodeVersions(installedTypes, manifestTypes) < 0) {
+      violations.push(
+        `package-lock installed @types/node ${installedTypes.version} is below manifest minimum ${manifestTypes.version}.`
       );
     }
   }

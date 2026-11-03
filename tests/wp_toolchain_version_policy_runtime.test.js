@@ -31,7 +31,7 @@ test('Node runtime policy is exact, aligned, and clean on the active toolchain',
   assert.equal(pinned.major, 24);
   assert.equal(policy.version, pinned.version);
   assert.equal(policy.versionFile, '.node-version');
-  assert.equal(policy.engineRange, '>=24.22.2 <25');
+  assert.equal(policy.engineRange, `>=${pinned.version} <25`);
   assert.deepEqual(collectNodeRuntimePolicyViolations(), []);
 });
 
@@ -42,11 +42,20 @@ test('Node runtime policy accepts current patches and rejects older patches and 
     collectNodeRuntimePolicyViolations({ currentNodeVersion: '22.16.0' }).join('\n'),
     /outside supported range/u
   );
-  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.2' }), []);
-  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.3' }), []);
-  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.23.0' }), []);
+  const pinned = readNodeRuntimePolicy();
+  for (const currentNodeVersion of [
+    pinned.version,
+    `${pinned.major}.${pinned.minor}.${pinned.patch + 1}`,
+    `${pinned.major}.${pinned.minor + 1}.0`,
+  ]) {
+    assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion }), []);
+  }
+  const olderVersion =
+    pinned.patch > 0
+      ? `${pinned.major}.${pinned.minor}.${pinned.patch - 1}`
+      : `${pinned.major}.${pinned.minor - 1}.999`;
   assert.match(
-    collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.1' }).join('\n'),
+    collectNodeRuntimePolicyViolations({ currentNodeVersion: olderVersion }).join('\n'),
     /outside supported range/u
   );
   assert.match(
@@ -58,6 +67,41 @@ test('Node runtime policy accepts current patches and rejects older patches and 
       collectNodeRuntimePolicyViolations({ currentNodeVersion }).join('\n'),
       /outside supported range/u
     );
+  }
+});
+
+test('Node declaration upgrades stay bounded and require a matching resolved lock version', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'node-types-policy-'));
+  try {
+    fs.copyFileSync('.node-version', path.join(root, '.node-version'));
+    fs.mkdirSync(path.join(root, '.github/workflows'), { recursive: true });
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+    const policy = readNodeRuntimePolicy();
+    const baseline = parsePinnedNodeVersion(policy.typeDeclarationMinimumVersion);
+    const nextVersion = `${baseline.major}.${baseline.minor + 1}.0`;
+    const writeFixture = (range, resolvedVersion) => {
+      pkg.devDependencies['@types/node'] = range;
+      lock.packages[''].devDependencies['@types/node'] = range;
+      lock.packages['node_modules/@types/node'].version = resolvedVersion;
+      fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(pkg));
+      fs.writeFileSync(path.join(root, 'package-lock.json'), JSON.stringify(lock));
+    };
+    writeFixture(`^${nextVersion}`, nextVersion);
+    assert.deepEqual(collectNodeRuntimePolicyViolations({ root }), []);
+    writeFixture(`^${nextVersion}`, baseline.version);
+    assert.match(collectNodeRuntimePolicyViolations({ root }).join('\n'), /below manifest minimum/u);
+    for (const range of ['^22.0.0', '^25.0.0', '*', '>=24.0.0', '^24.0.0']) {
+      writeFixture(range, nextVersion);
+      assert.match(collectNodeRuntimePolicyViolations({ root }).join('\n'), /must be a caret range within/u);
+    }
+    writeFixture(`^${nextVersion}`, '25.0.0');
+    assert.match(
+      collectNodeRuntimePolicyViolations({ root }).join('\n'),
+      /does not match supported Node major/u
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
