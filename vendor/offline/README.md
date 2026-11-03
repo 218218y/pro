@@ -51,6 +51,8 @@ npm run vendor:offline:packages:check
 
 The standard `--all` selection covers the `tsx-tests`, `vite-build`, and `eslint-js-strict` workspace
 profiles in addition to the focused tool packages, so one regular refresh follows runtime dependency updates too.
+The `tsx-tests` roots include production dependencies and the explicitly required Three.js test runtime,
+even when Three.js is declared in `devDependencies`. Refreshing dependencies must preserve that runtime root.
 
 `downloads` prints exact official URLs and destination paths. `refresh` adopts valid files already present and
 downloads only missing targets. For a completely manual/no-network flow, place the files first and run

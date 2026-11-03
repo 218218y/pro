@@ -12,6 +12,8 @@ const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
 const SUPPORTED_PROFILES = Object.freeze(['tsx-tests', 'vite-build', 'eslint-js-strict']);
 const STANDARD_PACKAGE_PROFILES = Object.freeze(['tsx-tests', 'vite-build', 'eslint-js-strict']);
 const PROFILE_SET = new Set(SUPPORTED_PROFILES);
+// Runtime tests import Three.js even when npm classifies it as a build dependency.
+const TSX_TEST_REQUIRED_ROOT_DEPENDENCIES = Object.freeze(['three']);
 const VITE_BUILD_ROOT_DEPENDENCIES = Object.freeze(['@vitejs/plugin-react', 'vite']);
 const VITE_BUILD_EXCLUDED_OPTIONAL_DEPENDENCIES = new Set(['@rolldown/binding-wasm32-wasi']);
 const ESLINT_JS_STRICT_ROOT_DEPENDENCIES = Object.freeze(['eslint']);
@@ -487,7 +489,18 @@ function buildWorkspaceProfile(
 }
 
 function buildTsxTestsProfile(lock, lockfileSha256) {
-  const rootDependencies = Object.keys(lock.packages?.['']?.dependencies ?? {}).sort();
+  const rootPackage = lock.packages?.[''];
+  for (const name of TSX_TEST_REQUIRED_ROOT_DEPENDENCIES) {
+    if (
+      !Object.hasOwn(rootPackage?.dependencies ?? {}, name) &&
+      !Object.hasOwn(rootPackage?.devDependencies ?? {}, name)
+    ) {
+      fail(`TSX test runtime root is not a project dependency: ${name}`);
+    }
+  }
+  const rootDependencies = [
+    ...new Set([...Object.keys(rootPackage.dependencies ?? {}), ...TSX_TEST_REQUIRED_ROOT_DEPENDENCIES]),
+  ].sort();
   return buildWorkspaceProfile(lock, lockfileSha256, {
     profile: 'tsx-tests',
     directory: 'runtime',
