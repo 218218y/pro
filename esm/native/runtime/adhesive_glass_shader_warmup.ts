@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types/index.js';
 import { getBrowserTimers, requestIdleCallbackMaybe } from './api_browser_surface.js';
-import { markPerfPoint, runPerfPhase } from './observability_surface.js';
+import { markPerfPoint, recordPerfMetric, runPerfPhase } from './observability_surface.js';
 import { getCamera, getMirrorRenderTarget, getRenderer, getScene } from './render_access.js';
 import { getCacheBag } from './cache_access.js';
 import { registerAdhesiveGlassDesignIntentWarmup } from './adhesive_glass_shader_warmup_design_intent.js';
@@ -248,23 +248,33 @@ export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown)
         call3(renderer, compileAsync, warmupMesh.mesh, camera, scene)
       );
       if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
-        const completion = runPerfPhase(
-          App as AppContainer,
-          'boot.ui.shader-warmup.complete',
-          'shader-warmup',
-          () => Promise.resolve(result)
-        );
+        const now = getBrowserTimers(App).now;
+        const completionStartedAt = now();
+        const recordCompletion = (status: 'ok' | 'error', error?: unknown) =>
+          recordPerfMetric(
+            App as AppContainer,
+            'boot.ui.shader-warmup.complete',
+            Math.max(0, now() - completionStartedAt),
+            'ms',
+            {
+              status,
+              ...(status === 'error' ? { error } : {}),
+              detail: { measurement: 'async-completion-latency' },
+            }
+          );
         let inFlight: Promise<void>;
-        inFlight = completion.then(
+        inFlight = Promise.resolve(result).then(
           () => {
             if (state.inFlight !== inFlight) return;
+            recordCompletion('ok');
             markWarmupProgramSnapshot(App as AppContainer, 'after', programKeysBefore);
             state.inFlight = null;
             state.completed = true;
             state.lastSkippedReason = null;
           },
-          () => {
+          error => {
             if (state.inFlight !== inFlight) return;
+            recordCompletion('error', error);
             state.inFlight = null;
             state.completed = false;
             state.lastSkippedReason = 'compile-failed';
