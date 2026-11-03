@@ -2,7 +2,6 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 const {
   assertCompatibleVerificationState,
   createVerificationContext,
@@ -554,28 +553,73 @@ function resolveSpawnInvocation(command, args, options = {}) {
   return { command, args: normalizedArgs };
 }
 
-function spawnCommand(command, args) {
+async function spawnCommand(command, args, options = {}) {
+  const { spawnManagedChild, terminateChildWithEscalation } = await import('./wp_child_process_protocol.mjs');
   const startedAt = Date.now();
   const invocation = resolveSpawnInvocation(command, args);
-  const result = spawnSync(invocation.command, invocation.args, {
-    encoding: 'utf8',
-    shell: false,
+  const child = spawnManagedChild(invocation.command, invocation.args, {
+    stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, WP_RELEASE_VERIFY: '1' },
-    maxBuffer: 1024 * 1024 * 16,
+    windowsHide: true,
   });
-  const durationMs = Date.now() - startedAt;
-  const stdout = result.stdout || '';
-  const stderr = result.stderr || '';
-  const combined = `${stdout}\n${stderr}`;
-  const exitCode = Number.isInteger(result.status) ? result.status : 1;
+  let stdout = '';
+  let stderr = '';
+  let timedOut = false;
+  let spawnError = null;
+  let termination = null;
+  let outputBytes = 0;
+  let outputLimitExceeded = false;
+  const stop = () => {
+    termination ??= terminateChildWithEscalation(child, 'SIGTERM');
+  };
+  const capture = (stream, chunk) => {
+    const text = chunk.toString();
+    outputBytes += Buffer.byteLength(text);
+    if (outputBytes > 16 * 1024 * 1024) {
+      outputLimitExceeded = true;
+      stop();
+      return;
+    }
+    if (stream === 'stdout') stdout += text;
+    else stderr += text;
+    process[stream].write(text);
+    if (options.liveLog) fs.appendFileSync(options.liveLog, text);
+  };
+  child.stdout.on('data', chunk => capture('stdout', chunk));
+  child.stderr.on('data', chunk => capture('stderr', chunk));
+  child.once('error', error => {
+    spawnError = error;
+  });
+  // A descendant can retain inherited output pipes after the command exits.
+  // Stop the owned process tree on exit, before waiting for pipe closure.
+  child.once('exit', stop);
+  const timeoutMs = options.timeoutMs ?? 15 * 60 * 1000;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    stop();
+  }, timeoutMs);
+  const heartbeat = setInterval(() => {
+    console.log(`[closeout] ${options.label} running (${Math.round((Date.now() - startedAt) / 1000)}s)`);
+  }, 30000);
+  let code;
+  try {
+    code = await new Promise(resolve => child.once('close', resolve));
+    if (termination) await termination.completion;
+  } finally {
+    clearTimeout(timer);
+    clearInterval(heartbeat);
+  }
+  if (timedOut) stderr += `\n[closeout] command timed out after ${timeoutMs}ms`;
+  if (outputLimitExceeded) stderr += '\n[closeout] command exceeded the 16 MiB output limit';
+  if (spawnError) stderr += `\n[closeout] ${spawnError.message}`;
   return {
-    exitCode,
-    durationMs,
+    exitCode: timedOut || outputLimitExceeded || spawnError ? 1 : (code ?? 1),
+    durationMs: Date.now() - startedAt,
     startedAtIso: new Date(startedAt).toISOString(),
     finishedAtIso: nowIso(),
     stdout: trimOutput(stdout),
     stderr: trimOutput(stderr),
-    combined,
+    combined: `${stdout}\n${stderr}`,
   };
 }
 
@@ -597,7 +641,7 @@ function classifyStatus(expected, exitCode, combined) {
   return 'failed';
 }
 
-function runLane(lane, options = {}) {
+async function runLane(lane, options = {}) {
   const startedAt = Date.now();
   const blockingDependency = findBlockingDependency(lane, options.priorResults || []);
   if (blockingDependency) {
@@ -621,12 +665,18 @@ function runLane(lane, options = {}) {
     writeLaneLogs(options.logDir, result);
     return result;
   }
+  const liveLog = options.logDir ? path.join(options.logDir, `${lane.id}.live.log`) : null;
+  if (liveLog) {
+    ensureDirFor(liveLog);
+    fs.writeFileSync(liveLog, '');
+  }
+  const commandOptions = { ...options, liveLog, label: lane.id };
   if (Array.isArray(lane.steps) && lane.steps.length > 0) {
     const steps = [];
     let status = 'passed';
     let exitCode = 0;
     for (const step of lane.steps) {
-      const spawned = spawnCommand(step.command, step.args);
+      const spawned = await spawnCommand(step.command, step.args, commandOptions);
       const stepStatus = classifyStatus(lane.expected, spawned.exitCode, spawned.combined);
       steps.push({
         label: step.label,
@@ -660,7 +710,7 @@ function runLane(lane, options = {}) {
     writeLaneLogs(options.logDir, result);
     return result;
   }
-  const spawned = spawnCommand(lane.command, lane.args);
+  const spawned = await spawnCommand(lane.command, lane.args, commandOptions);
   const result = {
     ...lane,
     status: classifyStatus(lane.expected, spawned.exitCode, spawned.combined),

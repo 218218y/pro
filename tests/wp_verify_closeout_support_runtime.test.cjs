@@ -375,10 +375,10 @@ test('state file resolves to explicit flag or default artifact path', () => {
   assert.equal(resolveStateFile({}), STATE_JSON_PATH);
 });
 
-test('browser-dependent lanes inherit environment-blocked from preflight', () => {
+test('browser-dependent lanes inherit environment-blocked from preflight', async () => {
   for (const laneId of ['e2e-list', 'e2e-smoke-run', 'browser-perf', 'browser-perf-release']) {
     const lane = CLOSEOUT_LANES.find(entry => entry.id === laneId);
-    const result = runLane(lane, {
+    const result = await runLane(lane, {
       priorResults: [{ id: 'e2e-preflight', status: 'environment-blocked' }],
     });
     assert.equal(result.status, 'environment-blocked');
@@ -387,7 +387,7 @@ test('browser-dependent lanes inherit environment-blocked from preflight', () =>
   }
 });
 
-test('closeout lane logs replace stale streams and grouped-step evidence', () => {
+test('closeout lane logs replace stale streams and grouped-step evidence', async () => {
   const logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-closeout-logs-'));
   const staleLane = {
     id: 'stale-log-probe',
@@ -397,7 +397,7 @@ test('closeout lane logs replace stale streams and grouped-step evidence', () =>
     command: process.execPath,
     args: ['-e', "console.error('old stderr')"],
   };
-  assert.equal(runLane(staleLane, { logDir }).status, 'passed');
+  assert.equal((await runLane(staleLane, { logDir })).status, 'passed');
   assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), /old stderr/u);
 
   const groupedLane = {
@@ -412,7 +412,7 @@ test('closeout lane logs replace stale streams and grouped-step evidence', () =>
       },
     ],
   };
-  assert.equal(runLane(groupedLane, { logDir }).status, 'passed');
+  assert.equal((await runLane(groupedLane, { logDir })).status, 'passed');
   assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.steps.json'), 'utf8'), /grouped success/u);
   assert.equal(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), '');
 
@@ -424,7 +424,7 @@ test('closeout lane logs replace stale streams and grouped-step evidence', () =>
     command: process.execPath,
     args: ['-e', "console.log('fresh stdout')"],
   };
-  assert.equal(runLane(cleanLane, { logDir }).status, 'passed');
+  assert.equal((await runLane(cleanLane, { logDir })).status, 'passed');
   assert.equal(fs.readFileSync(path.join(logDir, 'stale-log-probe.stderr.log'), 'utf8'), '');
   assert.match(fs.readFileSync(path.join(logDir, 'stale-log-probe.stdout.log'), 'utf8'), /fresh stdout/u);
   assert.equal(fs.existsSync(path.join(logDir, 'stale-log-probe.steps.json')), false);
@@ -435,3 +435,54 @@ test('report paths stay under docs and state path stays under artifacts', () => 
   assert.equal(REPORT_MD_PATH, 'docs/FINAL_VERIFICATION_SUMMARY.md');
   assert.equal(STATE_JSON_PATH, '.artifacts/closeout-state.json');
 });
+
+test(
+  'closeout terminates timed-out commands and preserves live diagnostic output',
+  { timeout: 10000 },
+  async () => {
+    const logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-timeout-'));
+    const result = await runLane(
+      {
+        id: 'timeout-probe',
+        command: process.execPath,
+        args: ['-e', "console.log('ready-before-timeout'); setInterval(() => {}, 1000)"],
+        expected: 'pass',
+      },
+      { timeoutMs: 1000, logDir }
+    );
+    assert.equal(result.status, 'failed');
+    assert.match(result.stderr, /command timed out after 1000ms/u);
+    assert.match(
+      fs.readFileSync(path.join(logDir, 'timeout-probe.live.log'), 'utf8'),
+      /ready-before-timeout/u
+    );
+  }
+);
+
+test(
+  'closeout closes inherited pipes from orphaned server descendants',
+  {
+    skip: process.platform === 'win32' ? 'POSIX process group regression' : false,
+    timeout: 15000,
+  },
+  async () => {
+    const result = await runLane(
+      {
+        id: 'orphan-pipe-probe',
+        command: process.execPath,
+        args: [
+          '-e',
+          `
+      const { spawn } = require('node:child_process');
+      spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'inherit' });
+      setTimeout(() => { console.log('parent-complete'); process.exit(0); }, 200);
+    `,
+        ],
+        expected: 'pass',
+      },
+      { timeoutMs: 5000 }
+    );
+    assert.equal(result.status, 'passed', result.stderr);
+    assert.match(result.stdout, /parent-complete/u);
+  }
+);

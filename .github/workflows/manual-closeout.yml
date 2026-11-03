@@ -66,6 +66,7 @@ jobs:
       - name: Reset closeout checkpoint
         run: npm run verify:closeout -- --reset-state
       - name: Run closeout profile
+        timeout-minutes: 45
         run: node tools/wp_run_closeout_profile.cjs "${{ inputs.profile }}"
       - name: Validate final verification evidence
         if: success() && inputs.profile == 'default'
@@ -88,7 +89,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Upload closeout diagnostics
-        if: success() || failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: closeout-diagnostics

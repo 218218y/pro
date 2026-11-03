@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 import { chromium, expect } from '@playwright/test';
 
@@ -52,6 +52,11 @@ import {
 } from './wp_browser_perf_support.js';
 import { resolvePlaywrightChromiumLaunchOptions } from './wp_playwright_browser_support.js';
 import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
+import {
+  startBrowserPerfServer,
+  stopBrowserPerfServer,
+  waitForBrowserPerfServer,
+} from './wp_browser_perf_server.mjs';
 import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
 import {
   areBrowserPerfFailuresConfirmationEligible,
@@ -252,27 +257,11 @@ function ensureTextureFixture(filePath = textureFixturePath) {
   return filePath;
 }
 
-async function waitForServer(url, timeoutMs = 20000) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
-    try {
-      const res = await fetch(url, { method: 'GET' });
-      if (res.ok) return true;
-    } catch {
-      // ignore
-    }
-    await new Promise(resolve => setTimeout(resolve, 400));
-  }
-  return false;
-}
-
 function startServer() {
   const launch = resolveNpmRunLaunchOptions(measurementTarget.serverScript);
-  return spawn(launch.command, launch.args, {
+  return startBrowserPerfServer(launch, {
     cwd: projectRoot,
-    stdio: 'inherit',
     env: process.env,
-    shell: launch.shell,
   });
 }
 
@@ -368,26 +357,6 @@ async function assertReleaseServerProvenance(artifact) {
     throw new Error(
       '[browser-perf] static server is not serving the release artifact produced for this measurement run'
     );
-  }
-}
-
-function stopServer(server) {
-  if (!server) return;
-  if (process.platform === 'win32' && Number.isFinite(Number(server.pid)) && Number(server.pid) > 0) {
-    try {
-      spawnSync('taskkill', ['/pid', String(server.pid), '/t', '/f'], {
-        stdio: 'ignore',
-        windowsHide: true,
-      });
-      return;
-    } catch {
-      // Fall through to the normal kill path.
-    }
-  }
-  try {
-    server.kill('SIGTERM');
-  } catch {
-    // ignore server shutdown failures
   }
 }
 
@@ -3081,22 +3050,34 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   const enforce = process.argv.includes('--enforce');
   const measurementArtifact = prepareMeasurementArtifact();
   let server = null;
-  const serverReady = await waitForServer(pageUrl, 1500);
-  if (!serverReady) {
-    server = startServer();
-    const ok = await waitForServer(pageUrl, 40000);
-    if (!ok) throw new Error(`Failed to start ${measurementTarget.label} server`);
-  }
-  await assertReleaseServerProvenance(measurementArtifact);
+  let browser;
+  let context;
+  let page;
+  try {
+    const serverReady = await waitForBrowserPerfServer(pageUrl, 1500);
+    if (!serverReady) {
+      server = startServer();
+      const ok = await waitForBrowserPerfServer(pageUrl, 40000);
+      if (!ok) throw new Error(`Failed to start ${measurementTarget.label} server`);
+    }
+    await assertReleaseServerProvenance(measurementArtifact);
 
-  const browserSupport = resolvePlaywrightChromiumLaunchOptions();
-  const browser = await chromium.launch({ headless: true, ...browserSupport.launchOptions });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  await installCloudSyncGatewayIsolation(context);
-  const page = await context.newPage();
-  await installInitialStorageReset(page);
-  await installClipboardCapture(page);
-  await installPerfEntryCapture(page);
+    const browserSupport = resolvePlaywrightChromiumLaunchOptions();
+    browser = await chromium.launch({ headless: true, ...browserSupport.launchOptions });
+    context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    await installCloudSyncGatewayIsolation(context);
+    page = await context.newPage();
+    await installInitialStorageReset(page);
+    await installClipboardCapture(page);
+    await installPerfEntryCapture(page);
+  } catch (error) {
+    try {
+      await browser?.close();
+    } finally {
+      await stopBrowserPerfServer(server);
+    }
+    throw error;
+  }
 
   const result = {
     version: 17,
@@ -4892,8 +4873,11 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       }
     }
   } finally {
-    await browser.close();
-    stopServer(server);
+    try {
+      await browser.close();
+    } finally {
+      await stopBrowserPerfServer(server);
+    }
   }
 
   const md = summarizeBrowserPerfResult(result, {

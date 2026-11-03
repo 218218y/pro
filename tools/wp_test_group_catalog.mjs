@@ -1025,6 +1025,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/wp_check_runtime.test.js',
       'tests/wp_release_runtime.test.js',
       'tests/wp_release_dependency_audit_runtime.test.js',
+      'tests/wp_browser_perf_server_runtime.test.js',
       'tests/wp_release_clean_audit_runtime.test.js',
       'tests/wp_release_parity_runtime.test.js',
       'tests/wp_serial_tests_runtime.test.js',

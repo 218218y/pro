@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-03T10:23:52.034Z",
+  "generatedAt": "2026-11-03T15:09:04.060Z",
   "summary": {
     "groups": 67,
     "genericRunnerScript": "test:group",
-    "catalogFileReferences": 488,
+    "catalogFileReferences": 489,
     "sequenceResolvedFileReferences": 129,
     "directPackageTestReferences": 16,
     "catalogIssues": 0,
@@ -1337,8 +1337,8 @@
       "portfolioRole": "primary",
       "serialPolicy": null,
       "childGroups": [],
-      "directFileCount": 27,
-      "resolvedFileCount": 27,
+      "directFileCount": 28,
+      "resolvedFileCount": 28,
       "files": [
         "tests/wp_toolchain_family_contracts.test.js",
         "tests/wp_build_dist_runtime.test.js",
@@ -1346,6 +1346,7 @@
         "tests/wp_check_runtime.test.js",
         "tests/wp_release_runtime.test.js",
         "tests/wp_release_dependency_audit_runtime.test.js",
+        "tests/wp_browser_perf_server_runtime.test.js",
         "tests/wp_release_clean_audit_runtime.test.js",
         "tests/wp_release_parity_runtime.test.js",
         "tests/wp_serial_tests_runtime.test.js",
