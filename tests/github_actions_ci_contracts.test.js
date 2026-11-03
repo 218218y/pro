@@ -169,6 +169,7 @@ test('manual closeout provisions the browser and publishes only validated final 
     /name: Upload final verification evidence\n        if: success\(\) && inputs\.profile == 'default'/u
   );
   const diagnostics = workflow.slice(workflow.indexOf('- name: Upload closeout diagnostics'));
+  assert.ok(diagnostics.includes('if: always()'));
   assert.doesNotMatch(diagnostics, /FINAL_VERIFICATION_SUMMARY/u);
   assert.match(workflow, /trace_deprecations/u);
   assert.match(workflow, /--trace-deprecation/u);

@@ -60,7 +60,7 @@ function readCompatibleState(stateFile, context) {
   return assertCompatibleCloseoutState(payload, { context });
 }
 
-function main() {
+async function main() {
   const options = normalizeCliArgs(process.argv.slice(2));
   const stateFile = resolveStateFile(options);
   const context = createCloseoutContext();
@@ -101,7 +101,7 @@ function main() {
     for (const lane of selectedLanes) {
       console.log(`\n[closeout] running ${lane.id}: ${laneCommandText(lane)}`);
       const priorResults = mergeResults(statePayload?.results || [], results);
-      const result = runLane(lane, { logDir: options.logDir, priorResults });
+      const result = await runLane(lane, { logDir: options.logDir, priorResults });
       results.push(result);
       console.log(
         `[closeout] ${lane.id} -> ${result.status} (exit=${result.exitCode}, duration=${result.durationMs}ms)`
@@ -171,9 +171,7 @@ function main() {
   process.exitCode = ['passed', 'passed-with-environment-blockers'].includes(payload.finalStatus) ? 0 : 1;
 }
 
-try {
-  main();
-} catch (error) {
+main().catch(error => {
   console.error(error && error.message ? error.message : error);
   process.exitCode = 1;
-}
+});

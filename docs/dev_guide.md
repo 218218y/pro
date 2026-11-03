@@ -125,6 +125,13 @@ Use `npm run gate` for broad shared-surface changes, high-risk architecture chan
 
 Do not run `npm run e2e:smoke` by default. Use browser/E2E smoke only for browser boot, UI interaction, Playwright-covered user journeys, canvas pointer behavior, cloud-sync reconnect behavior, or explicit request.
 
+For a local full Closeout, run `npm run verify:closeout -- --reset-state` followed by
+`node tools/wp_run_closeout_profile.cjs default`. Each command streams output, writes a per-lane
+`.live.log` under `.artifacts/closeout-logs`, and has a 15-minute deadline. The runner owns and terminates
+the complete child process tree, including servers retaining inherited output pipes. Successful lanes
+checkpoint immediately; a timeout is a failure, never release evidence. Browser performance owns its
+server process tree and awaits disposal even when setup or browser shutdown fails.
+
 Browser performance has two deliberately separate environments. `npm run perf:browser` is the Vite-dev
 regression lane and uses only the dev baseline. `npm run perf:browser:release` builds a minified, content-hashed
 release artifact in observability mode `perf`, serves that artifact statically, verifies the served build id and
