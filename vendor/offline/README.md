@@ -22,7 +22,7 @@ the repository's Linux x64 glibc offline runtime.
 Minimum set for the usual ChatGPT/Linux x64 glibc environment:
 
 ```text
-vendor/offline/node/node-v24.18.0-linux-x64.tar.xz
+vendor/offline/node/node-v24.22.2-linux-x64.tar.xz
 vendor/offline/ast/oxc-parser-<AST_VERSION>.tgz
 vendor/offline/ast/types-<AST_VERSION>.tgz
 vendor/offline/ast/binding-linux-x64-gnu-<AST_VERSION>.tgz

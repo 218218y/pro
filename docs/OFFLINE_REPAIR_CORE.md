@@ -5,7 +5,7 @@
 The full project toolchain is intentionally large. Most focused architecture and source repairs need a much
 smaller trusted set:
 
-- repository-pinned Node `24.18.0`;
+- repository-pinned Node `24.22.2`;
 - active project `oxc-parser` from `package-lock.json`, constrained by the narrow 0.x patch-line range in `package.json`;
 - signed offline Oxc bundle whose exact version is declared in `vendor/offline/manifest.json`;
 - matching offline `@oxc-project/types`;
@@ -34,7 +34,7 @@ lookup with `Offline repair vendor supports Linux x64 glibc only`.
 ### Node and AST core
 
 ```text
-vendor/offline/node/node-v24.18.0-linux-x64.tar.xz
+vendor/offline/node/node-v24.22.2-linux-x64.tar.xz
 vendor/offline/ast/oxc-parser-<AST_VERSION>.tgz
 vendor/offline/ast/types-<AST_VERSION>.tgz
 vendor/offline/ast/binding-linux-x64-gnu-<AST_VERSION>.tgz
