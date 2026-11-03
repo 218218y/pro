@@ -70,12 +70,14 @@ test('dependency audit gates release dependencies and keeps full toolchain revie
   const ci = read('.github/workflows/ci.yml');
   const pkg = JSON.parse(read('package.json'));
 
-  assert.equal(pkg.scripts['audit:release'], 'npm audit --omit=dev --audit-level=high');
+  assert.equal(pkg.scripts['audit:release'], 'node tools/wp_release_dependency_audit.mjs');
   assert.equal(pkg.scripts['audit:toolchain'], 'npm audit --audit-level=high');
 
   assert.match(ci, /^  audit:\n    name: Release dependency audit/m);
   assert.match(ci, /description: Run release dependency audit/);
-  assert.match(ci, /name: Install release dependencies\n        run: npm ci --ignore-scripts --omit=dev/);
+  const auditJob = ci.match(/^  audit:[\s\S]*?(?=^  required-checks:)/m)?.[0];
+  assert.match(auditJob, /run: npm ci --ignore-scripts/);
+  assert.doesNotMatch(auditJob, /--omit=dev/);
   assert.equal((ci.match(/run: npm run audit:release/g) ?? []).length, 2);
   assert.match(ci, /name: Audit high severity release dependencies\n        run: npm run audit:release/);
   assert.doesNotMatch(ci, /run: npm audit --audit-level=high/);

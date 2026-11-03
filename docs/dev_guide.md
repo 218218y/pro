@@ -114,6 +114,11 @@ npm run perf:boot-report
 
 For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
 
+`npm run audit:release` inventories npm packages in every emitted app chunk and the canonical Three.js
+vendor build, including lazy chunks and dev-classified packages. It checks those exact lock paths against
+the complete lockfile audit and fails on high/critical findings or missing evidence. Build-only advisories
+remain visible through `npm run audit:toolchain`; dependency classification does not define shipped-code coverage.
+
 Source-derived audit reports are checked with `npm run check:generated-reports`. Release evidence is checked separately with `npm run check:verification-summary`; it is intentionally not regenerated or freshness-checked by the ordinary report command. Closeout reports are tied to a versioned source-tree and lane-catalog identity. Use `npm run verify:closeout -- --profile control-plane` for focused control-plane work; a focused pass is not release eligibility and cannot write `FINAL_VERIFICATION_SUMMARY.*`. Only a complete clean default closeout may write that pair through `npm run verify:closeout:release`, or from a complete compatible checkpoint with `npm run verify:closeout -- --from-state --write-final`. Do not copy or regenerate it from stale state; after source or lane-definition changes run `npm run verify:closeout -- --reset-state` before executing the required lanes again.
 
 Use `npm run gate` for broad shared-surface changes, high-risk architecture changes, explicit user requests, or when targeted checks are not enough evidence. Use `npm run gate:full` only before release-style handoff or when explicitly requested.

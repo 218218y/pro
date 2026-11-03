@@ -175,19 +175,25 @@ export async function collectEsnextTargetViolations() {
     ESNEXT_BUILD_TARGET
   );
 
-  const threeVendorSource = readText('tools/wp_three_vendor.js');
+  const threeVendorSource = readText('tools/wp_three_vendor_config.js');
   if (
     !/import\s*\{\s*ESNEXT_BUILD_TARGET\s*\}\s*from\s*['"]\.\/wp_esnext_target_policy\.mjs['"]/.test(
       threeVendorSource
     )
   ) {
-    violations.push('tools/wp_three_vendor.js must import ESNEXT_BUILD_TARGET from the canonical policy');
+    violations.push(
+      'tools/wp_three_vendor_config.js must import ESNEXT_BUILD_TARGET from the canonical policy'
+    );
   }
   if (!/target:\s*ESNEXT_BUILD_TARGET\b/.test(threeVendorSource)) {
-    violations.push('tools/wp_three_vendor.js must use ESNEXT_BUILD_TARGET for the Vite build target');
+    violations.push('tools/wp_three_vendor_config.js must use ESNEXT_BUILD_TARGET for the Vite build target');
   }
 
-  const productionTargetFiles = ['vite.config.mjs', 'tools/wp_bundle_emit.js', 'tools/wp_three_vendor.js'];
+  const productionTargetFiles = [
+    'vite.config.mjs',
+    'tools/wp_bundle_emit.js',
+    'tools/wp_three_vendor_config.js',
+  ];
   const pinnedLegacyTarget = /target\s*:\s*['"]es20\d\d['"]/i;
   for (const relativePath of productionTargetFiles) {
     if (pinnedLegacyTarget.test(readText(relativePath))) {

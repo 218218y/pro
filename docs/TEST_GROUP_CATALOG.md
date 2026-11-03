@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-11-01T03:26:03.271Z
+Generated: 2026-11-03T10:19:40.966Z
 
 ## Summary
 
 - Catalog groups: 67
 - Generic package runner: `test:group`
-- Catalog-owned direct test-file references: 487
+- Catalog-owned direct test-file references: 488
 - Resolved file references across aggregate sequences: 129
 - Direct package.json test-file references still remaining: 16
 - Catalog definition issues: 0
@@ -74,7 +74,7 @@ Generated: 2026-11-01T03:26:03.271Z
 | `structure-tab-family-contracts`            | architecture | node-test      |            1 |              1 |            0 | ui/structure-tab                                                     |
 | `structure-tab-family-core`                 | focused      | serial-tsx     |           22 |             22 |            0 | ui/structure-tab, ui/interior-tab                                    |
 | `tab-surfaces`                              | primary      | serial-tsx     |           51 |             51 |            0 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |
-| `toolchain-surfaces`                        | primary      | node-test      |           26 |             26 |            0 | toolchain                                                            |
+| `toolchain-surfaces`                        | primary      | node-test      |           27 |             27 |            0 | toolchain                                                            |
 | `ui-actions-family-contracts`               | architecture | node-test      |            1 |              1 |            0 | ui/actions                                                           |
 | `ui-lean-contracts`                         | architecture | node-test      |            1 |              1 |            0 | ui/types                                                             |
 | `ui-order-pdf-lean-contracts`               | architecture | node-test      |            1 |              1 |            0 | ui/order-pdf/types                                                   |
