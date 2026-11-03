@@ -11,18 +11,16 @@ import {
   spawnManagedChild,
   terminateChildWithEscalation,
 } from '../tools/wp_child_process_protocol.mjs';
-import { resolveTestIsolationNoneArgument } from '../tools/wp_test_runner_command.mjs';
+import { TEST_ISOLATION_NONE_ARGUMENT } from '../tools/wp_test_runner_command.mjs';
 
 const projectRoot = process.cwd();
 const serialRunnerPath = path.join(projectRoot, 'tools', 'wp_serial_tests.mjs');
 const rerunListPath = path.join(projectRoot, 'tools', 'wp_run_test_file_list.mjs');
 const directTsxRunnerPath = path.join(projectRoot, 'tools', 'wp_run_tsx_tests.mjs');
 const childRunDiagnostics = new WeakMap();
-const testIsolationNoneArgument = resolveTestIsolationNoneArgument();
-const forwardedIsolationArguments = testIsolationNoneArgument ? ['--', testIsolationNoneArgument] : [];
-const serialIsolationArguments = testIsolationNoneArgument
-  ? ['--test-runner-arg', testIsolationNoneArgument]
-  : [];
+const testIsolationNoneArgument = TEST_ISOLATION_NONE_ARGUMENT;
+const forwardedIsolationArguments = ['--', testIsolationNoneArgument];
+const serialIsolationArguments = ['--test-runner-arg', testIsolationNoneArgument];
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-serial-tests-'));
@@ -522,9 +520,7 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering SIGTERM'
-        : testIsolationNoneArgument
-          ? false
-          : 'Current Node test runner does not expose test isolation control',
+        : false,
   },
   async () => {
     const root = tempDir();
@@ -557,9 +553,7 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering SIGTERM'
-        : testIsolationNoneArgument
-          ? false
-          : 'Current Node test runner does not expose test isolation control',
+        : false,
   },
   async () => {
     const root = tempDir();
@@ -679,9 +673,7 @@ test('runner wrappers keep readiness, live-child, and single-timeout termination
 test(
   'direct and file-list runner wrappers preserve requested SIGINT diagnostics and exit code',
   {
-    skip: testIsolationNoneArgument
-      ? false
-      : 'Current Node test runner does not expose test isolation control',
+    skip: false,
   },
   async t => {
     const root = tempDir();
@@ -799,9 +791,7 @@ test('safe IPC signal delivery reports closed-channel exit and readiness diagnos
 test(
   'serial npx fallback interruption leaves no active test process or active summary',
   {
-    skip: testIsolationNoneArgument
-      ? false
-      : 'Current Node test runner does not expose test isolation control',
+    skip: false,
   },
   async () => {
     const root = tempDir();
@@ -953,9 +943,7 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering catchable SIGTERM'
-        : testIsolationNoneArgument
-          ? false
-          : 'Current Node test runner does not expose test isolation control',
+        : false,
   },
   async () => {
     const root = tempDir();

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import {
@@ -25,36 +27,61 @@ import {
 
 test('Node runtime policy is exact, aligned, and clean on the active toolchain', () => {
   const pinned = parsePinnedNodeVersion(fs.readFileSync('.node-version', 'utf8'));
-  const compatibility = parsePinnedNodeVersion(
-    fs.readFileSync('.node-version-compat', 'utf8'),
-    '.node-version-compat'
-  );
   const policy = readNodeRuntimePolicy();
   assert.equal(pinned.major, 24);
-  assert.equal(compatibility.major, 22);
   assert.equal(policy.version, pinned.version);
   assert.equal(policy.versionFile, '.node-version');
-  assert.equal(policy.compatibilityVersion, compatibility.version);
-  assert.equal(policy.compatibilityVersionFile, '.node-version-compat');
-  assert.deepEqual(policy.supportedMajors, [22, 24]);
-  assert.equal(policy.typeBaselineMajor, 22);
-  assert.equal(policy.engineRange, '>=22.16.0 <23 || >=24.0.0 <25');
+  assert.equal(policy.engineRange, '>=24.22.2 <25');
   assert.deepEqual(collectNodeRuntimePolicyViolations(), []);
 });
 
-test('Node runtime policy accepts supported lines and rejects loose or unsupported versions', () => {
+test('Node runtime policy accepts current patches and rejects older patches and other majors', () => {
   assert.throws(() => parsePinnedNodeVersion('24'), /exact Node version/u);
   assert.throws(() => parsePinnedNodeVersion('24.18'), /exact Node version/u);
-  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '22.16.0' }), []);
-  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.18.0' }), []);
   assert.match(
-    collectNodeRuntimePolicyViolations({ currentNodeVersion: '22.15.0' }).join('\n'),
+    collectNodeRuntimePolicyViolations({ currentNodeVersion: '22.16.0' }).join('\n'),
+    /outside supported range/u
+  );
+  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.2' }), []);
+  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.3' }), []);
+  assert.deepEqual(collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.23.0' }), []);
+  assert.match(
+    collectNodeRuntimePolicyViolations({ currentNodeVersion: '24.22.1' }).join('\n'),
     /outside supported range/u
   );
   assert.match(
-    collectNodeRuntimePolicyViolations({ currentNodeVersion: '23.0.0' }).join('\n'),
+    collectNodeRuntimePolicyViolations({ currentNodeVersion: '25.0.0' }).join('\n'),
     /outside supported range/u
   );
+  for (const currentNodeVersion of ['22.23.4', '23.0.0', '26.13.0', '24.22.3-rc.1']) {
+    assert.match(
+      collectNodeRuntimePolicyViolations({ currentNodeVersion }).join('\n'),
+      /outside supported range/u
+    );
+  }
+});
+
+test('Node policy rejects workflow version-file suffixes and unsupported runtime pins', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'node-policy-'));
+  try {
+    for (const name of ['.node-version', 'package.json', 'package-lock.json']) {
+      fs.copyFileSync(name, path.join(root, name));
+    }
+    fs.mkdirSync(path.join(root, '.github/workflows'), { recursive: true });
+    const workflow = path.join(root, '.github/workflows/ci.yml');
+    fs.writeFileSync(
+      workflow,
+      "steps:\n  - uses: actions/setup-node@v5\n    with:\n      node-version-file: '.node-version-compat'\n"
+    );
+    assert.match(
+      collectNodeRuntimePolicyViolations({ root }).join('\n'),
+      /every actions\/setup-node step must use .node-version/u
+    );
+    fs.writeFileSync(path.join(root, '.node-version'), '22.23.4\n');
+    assert.throws(() => readNodeRuntimePolicy(root), /must pin the supported Node 24 runtime/u);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('toolchain version policy allows bounded compatible updates', () => {
@@ -78,7 +105,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
   assert.ok(activeOxcPolicy);
   const baselineRanges = {
     typescript: '7.0.2',
-    '@types/node': '^22.20.1',
+    '@types/node': '^24.19.2',
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
     'oxlint-tsgolint': activeTsgolintVersion,
@@ -102,7 +129,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
   assert.equal(policy.tsgolintTypeScriptAligned, true);
   assert.equal(
     Number.parseInt(byName.get('@types/node').resolvedVersion.split('.')[0], 10),
-    policy.nodeRuntimePolicy.typeBaselineMajor
+    policy.nodeRuntimePolicy.major
   );
   const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
   const activeOxcVersion = byName.get('oxc-parser').resolvedVersion;
@@ -138,8 +165,8 @@ test('bounded caret manifest ranges can advance inside reviewed toolchain window
   assert.equal(isCaretManifestRangeWithinBounds('^1.74.9', '1.75.0', '2.0.0'), false);
   assert.equal(isCaretManifestRangeWithinBounds('^2.0.0', '1.75.0', '2.0.0'), false);
   assert.equal(isCaretManifestRangeWithinBounds('>=1.79.0 <2.0.0', '1.75.0', '2.0.0'), false);
-  assert.equal(isCaretManifestRangeWithinBounds('^22.21.0', '22.20.1', '23.0.0'), true);
-  assert.equal(isCaretManifestRangeWithinBounds('^23.0.0', '22.20.1', '23.0.0'), false);
+  assert.equal(isCaretManifestRangeWithinBounds('^24.20.0', '24.19.2', '25.0.0'), true);
+  assert.equal(isCaretManifestRangeWithinBounds('^25.0.0', '24.19.2', '25.0.0'), false);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {

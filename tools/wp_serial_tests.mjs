@@ -9,7 +9,7 @@ import {
   spawnManagedChild,
   terminateChildWithEscalation,
 } from './wp_child_process_protocol.mjs';
-import { buildTsxTestRun, resolveTestIsolationNoneArgument } from './wp_test_runner_command.mjs';
+import { buildTsxTestRun, TEST_ISOLATION_NONE_ARGUMENT } from './wp_test_runner_command.mjs';
 
 function parseArgs(argv) {
   let batchSize = 1;
@@ -86,9 +86,8 @@ function parseArgs(argv) {
     console.error(`Invalid --timeout-ms value: ${timeoutMs}`);
     process.exit(1);
   }
-  const supportedIsolationArgument = resolveTestIsolationNoneArgument();
   for (const testRunnerArg of testRunnerArgs) {
-    if (!supportedIsolationArgument || testRunnerArg !== supportedIsolationArgument) {
+    if (testRunnerArg !== TEST_ISOLATION_NONE_ARGUMENT) {
       console.error(`Unsupported --test-runner-arg value: ${testRunnerArg}`);
       process.exit(1);
     }

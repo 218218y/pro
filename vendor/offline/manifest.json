@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "node": {
-    "version": "24.18.0",
+    "version": "24.22.2",
     "installDirectory": ".tools/node24",
     "platforms": {
       "linux-x64": {
-        "file": "vendor/offline/node/node-v24.18.0-linux-x64.tar.xz",
-        "url": "https://nodejs.org/download/release/v24.18.0/node-v24.18.0-linux-x64.tar.xz",
-        "sha256": "55aa7153f9d88f28d765fcdad5ae6945b5c0f98a36881703817e4c450fa76742",
-        "archiveMember": "node-v24.18.0-linux-x64/bin/node",
+        "file": "vendor/offline/node/node-v24.22.2-linux-x64.tar.xz",
+        "url": "https://nodejs.org/download/release/v24.22.2/node-v24.22.2-linux-x64.tar.xz",
+        "sha256": "48cc0e21e048790e54c0cf5749c2725005313d652651c40b7a21feb9697aaf75",
+        "archiveMember": "node-v24.22.2-linux-x64/bin/node",
         "installedExecutable": "bin/node"
       }
     }
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "03e43a85080d8dd8a51e8999759526eed69315ea59e34cf9a6319aabcb3a8c58"
+    "lockfileSha256": "7a4f7a66e48d1fd79c6f3859c9992769633f830d88683e7b6dd1a254b2c03973"
   }
 }

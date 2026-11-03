@@ -2,14 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 
-import {
-  buildTsxTestRun,
-  resolveTestIsolationNoneArgument,
-  EXPERIMENTAL_TEST_ISOLATION_NONE_ARGUMENT,
-  TEST_ISOLATION_NONE_ARGUMENT,
-} from '../tools/wp_test_runner_command.mjs';
+import { buildTsxTestRun, TEST_ISOLATION_NONE_ARGUMENT } from '../tools/wp_test_runner_command.mjs';
 import { readNodeRuntimePolicy } from '../tools/wp_node_runtime_policy.mjs';
 
 const projectRoot = process.cwd();
@@ -26,38 +22,27 @@ function collectFiles(root, extensions) {
   return files;
 }
 
-test('Node 22 experimental test isolation is accepted as the compatibility fallback', () => {
-  assert.equal(
-    resolveTestIsolationNoneArgument('  --experimental-test-isolation=... configure test isolation'),
-    EXPERIMENTAL_TEST_ISOLATION_NONE_ARGUMENT
-  );
-});
-
-test('test isolation argument prefers the stable flag when both forms are exposed', () => {
-  assert.equal(
-    resolveTestIsolationNoneArgument(
-      '  --experimental-test-isolation, --test-isolation=... configure test isolation'
-    ),
-    TEST_ISOLATION_NONE_ARGUMENT
-  );
-});
-
-test('test isolation argument is null when Node exposes neither flag', () => {
-  assert.equal(resolveTestIsolationNoneArgument('Usage: node [options] [script.js]'), null);
-});
-
-test('current supported Node exposes a feature-detected isolation argument before test files', () => {
-  const isolationArgument = resolveTestIsolationNoneArgument();
+test('supported Node executes the stable isolation flag before test files', () => {
+  const testRun = buildTsxTestRun(projectRoot, ['tests/example.test.ts'], [TEST_ISOLATION_NONE_ARGUMENT]);
   assert.ok(
-    [TEST_ISOLATION_NONE_ARGUMENT, EXPERIMENTAL_TEST_ISOLATION_NONE_ARGUMENT].includes(isolationArgument)
+    testRun.args.indexOf(TEST_ISOLATION_NONE_ARGUMENT) < testRun.args.indexOf('tests/example.test.ts')
   );
-
-  const testRun = buildTsxTestRun(projectRoot, ['tests/example.test.ts'], [isolationArgument]);
-  assert.ok(testRun.args.indexOf(isolationArgument) < testRun.args.indexOf('tests/example.test.ts'));
-  assert.equal(testRun.command.includes(isolationArgument), true);
+  assert.equal(testRun.command.includes(TEST_ISOLATION_NONE_ARGUMENT), true);
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'node24-isolation-'));
+  try {
+    const fixture = path.join(directory, 'isolation.test.mjs');
+    fs.writeFileSync(fixture, "import test from 'node:test'; test('stable isolation', () => {});\n");
+    const result = spawnSync(process.execPath, ['--test', TEST_ISOLATION_NONE_ARGUMENT, fixture], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 });
 
-test('serial runner accepts only the feature-detected isolation argument', () => {
+test('serial runner accepts only the stable isolation argument', () => {
   const fixture = path.join(projectRoot, 'tests', 'fixtures', 'wp_signal_fixture.test.js');
   const result = spawnSync(
     process.execPath,
@@ -88,17 +73,15 @@ test('test isolation flags stay out of NODE_OPTIONS and literals stay in the res
     if (filePath === currentTestPath) continue;
     assert.doesNotMatch(source, nodeOptionsPattern, `${filePath} puts test isolation in NODE_OPTIONS`);
     if (filePath === canonicalResolverPath) continue;
-    assert.doesNotMatch(source, experimentalPattern, `${filePath} hard-codes the Node 22 compatibility flag`);
+    assert.doesNotMatch(source, experimentalPattern, `${filePath} hard-codes the retired experimental flag`);
     assert.doesNotMatch(source, literalPattern, `${filePath} hard-codes a test isolation argument`);
   }
 });
 
-test('Node runtime policy keeps Node 24 primary while supporting Node 22', () => {
+test('Node runtime policy supports only Node 24', () => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
   const policy = readNodeRuntimePolicy(projectRoot);
   assert.equal(policy.major, 24);
-  assert.deepEqual(policy.supportedMajors, [22, 24]);
-  assert.equal(policy.typeBaselineMajor, 22);
   assert.equal(packageJson.engines?.node, policy.engineRange);
   assert.deepEqual(packageJson.devEngines?.runtime, {
     name: 'node',
