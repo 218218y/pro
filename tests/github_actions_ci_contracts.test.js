@@ -75,7 +75,7 @@ test('dependency audit gates release dependencies and keeps full toolchain revie
 
   assert.match(ci, /^  audit:\n    name: Release dependency audit/m);
   assert.match(ci, /description: Run release dependency audit/);
-  const auditJob = ci.match(/^  audit:[\s\S]*?(?=^  required-checks:)/m)?.[0];
+  const auditJob = ci.slice(ci.indexOf('\n  audit:'), ci.indexOf('\n  required-checks:'));
   assert.match(auditJob, /run: npm ci --ignore-scripts/);
   assert.doesNotMatch(auditJob, /--omit=dev/);
   assert.equal((ci.match(/run: npm run audit:release/g) ?? []).length, 2);
@@ -145,10 +145,33 @@ test('manual closeout workflow exposes only runner-approved profiles', () => {
   assert.match(manualCloseout, /run: node tools\/wp_run_closeout_profile\.cjs "\$\{\{ inputs\.profile \}\}"/);
   assert.match(
     manualCloseout,
-    /if \[ "\$\{\{ inputs\.profile \}\}" = "default" \] && \[ -f docs\/FINAL_VERIFICATION_SUMMARY\.md \]; then/
+    /if \[ "\$\{\{ inputs\.profile \}\}" = "default" \] && \[ "\$\{\{ job\.status \}\}" = "success" \]; then/
   );
   assert.match(manualCloseout, /Focused profiles publish diagnostics\/state artifacts/);
   assert.deepEqual(optionMatches, ALLOWED_PROFILES);
+});
+
+test('manual closeout provisions the browser and publishes only validated final evidence', () => {
+  const workflow = read('.github/workflows/manual-closeout.yml');
+  assert.match(workflow, /runs-on: ubuntu-24\.04/u);
+  assert.match(workflow, /PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: \/usr\/bin\/chromium/u);
+  assert.match(
+    workflow,
+    /run: npm ci --ignore-scripts\n      - name: Sync Three\.js browser mirrors\n        run: npm run three:sync-libs/u
+  );
+  assert.match(workflow, /run: npm run verify:closeout -- --reset-state/u);
+  assert.match(
+    workflow,
+    /name: Validate final verification evidence\n        if: success\(\) && inputs\.profile == 'default'\n        run: npm run check:verification-summary/u
+  );
+  assert.match(
+    workflow,
+    /name: Upload final verification evidence\n        if: success\(\) && inputs\.profile == 'default'/u
+  );
+  const diagnostics = workflow.slice(workflow.indexOf('- name: Upload closeout diagnostics'));
+  assert.doesNotMatch(diagnostics, /FINAL_VERIFICATION_SUMMARY/u);
+  assert.match(workflow, /trace_deprecations/u);
+  assert.match(workflow, /--trace-deprecation/u);
 });
 
 test('GitHub Playwright lanes use the pinned runner Chromium without redundant browser downloads', () => {

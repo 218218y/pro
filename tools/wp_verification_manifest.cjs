@@ -18,6 +18,7 @@ const VERIFICATION_SOURCE_ROOTS = Object.freeze([
   'types',
 ]);
 const VERIFICATION_SOURCE_FILES = Object.freeze([
+  '.node-version',
   'eslint.config.js',
   'oxlint.config.mjs',
   'package-lock.json',

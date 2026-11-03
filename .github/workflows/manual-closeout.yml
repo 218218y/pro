@@ -18,6 +18,11 @@ on:
           - browser-evidence
           - verify
           - default
+      trace_deprecations:
+        description: Include Node deprecation stacks in action and tool logs
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -37,8 +42,11 @@ env:
 jobs:
   closeout:
     name: Closeout profile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
+      NODE_OPTIONS: ${{ inputs.trace_deprecations && '--trace-deprecation' || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -49,25 +57,42 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --ignore-scripts
+      - name: Sync Three.js browser mirrors
+        run: npm run three:sync-libs
+      - name: Verify runner Chromium
+        run: |
+          test -x "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
+          "$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" --version
+      - name: Reset closeout checkpoint
+        run: npm run verify:closeout -- --reset-state
       - name: Run closeout profile
         run: node tools/wp_run_closeout_profile.cjs "${{ inputs.profile }}"
+      - name: Validate final verification evidence
+        if: success() && inputs.profile == 'default'
+        run: npm run check:verification-summary
       - name: Publish closeout summary
         if: success() || failure()
         run: |
-          if [ "${{ inputs.profile }}" = "default" ] && [ -f docs/FINAL_VERIFICATION_SUMMARY.md ]; then
+          if [ "${{ inputs.profile }}" = "default" ] && [ "${{ job.status }}" = "success" ]; then
             cat docs/FINAL_VERIFICATION_SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Closeout profile: ${{ inputs.profile }}" >> "$GITHUB_STEP_SUMMARY"
             echo "Focused profiles publish diagnostics/state artifacts instead of reusing a checked-in final summary." >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Upload final verification evidence
+        if: success() && inputs.profile == 'default'
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-verification
+          path: docs/FINAL_VERIFICATION_SUMMARY.*
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload closeout diagnostics
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: closeout-diagnostics
           path: |
-            docs/FINAL_VERIFICATION_SUMMARY.md
-            docs/FINAL_VERIFICATION_SUMMARY.json
             .artifacts/closeout-state.json
             .artifacts/closeout-logs/**
             .artifacts/test-report/**

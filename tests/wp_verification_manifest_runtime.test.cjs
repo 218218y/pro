@@ -65,6 +65,17 @@ test('source identity is deterministic and changes when owned source changes', (
   assert.notEqual(changed.digest, first.digest);
 });
 
+test('source identity includes the exact Node pin and excludes generated final reports', () => {
+  const root = createProject();
+  fs.writeFileSync(path.join(root, '.node-version'), '24.22.2\n');
+  const first = createVerificationSourceIdentity(root);
+  fs.mkdirSync(path.join(root, 'docs'));
+  fs.writeFileSync(path.join(root, 'docs/FINAL_VERIFICATION_SUMMARY.json'), '{}\n');
+  assert.equal(createVerificationSourceIdentity(root).digest, first.digest);
+  fs.writeFileSync(path.join(root, '.node-version'), '24.22.3\n');
+  assert.notEqual(createVerificationSourceIdentity(root).digest, first.digest);
+});
+
 test('lane catalog identity covers lane execution and profile membership', () => {
   const base = createLaneCatalogIdentity(lanes, profiles);
   const commandChanged = createLaneCatalogIdentity(
