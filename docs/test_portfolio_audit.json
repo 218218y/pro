@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-01T04:48:13.430Z",
+  "generatedAt": "2026-11-03T10:23:53.696Z",
   "totals": {
-    "tests": 1281,
-    "unitRunnerTests": 1269,
+    "tests": 1282,
+    "unitRunnerTests": 1270,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
-    "catalogTestReferences": 487,
-    "totalTestReferences": 503,
+    "catalogTestReferences": 488,
+    "totalTestReferences": 504,
     "oversizedDirectPackageTestScripts": 0,
     "catalogGroups": 67,
     "genericTestGroupRunner": "test:group",
@@ -20,7 +20,7 @@
     "contractOverlapTargets": 140
   },
   "categories": {
-    "contract": 399,
+    "contract": 400,
     "runtime-unit": 351,
     "integration": 488,
     "persistence-ingress": 23,
@@ -7744,6 +7744,10 @@
     },
     {
       "file": "tests/wp_release_clean_audit_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_release_dependency_audit_runtime.test.js",
       "category": "contract"
     },
     {

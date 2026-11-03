@@ -59,6 +59,7 @@ test('closeout lanes keep stable ids and include critical families', () => {
     'toolchain-surfaces',
     'build-dist',
     'perf-smoke',
+    'release-dependency-audit',
     'overlay-export-core',
     'order-pdf-overlay-core',
     'order-pdf-pdf-render',

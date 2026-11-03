@@ -21,7 +21,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-import { ESNEXT_BUILD_TARGET } from './wp_esnext_target_policy.mjs';
+import { createThreeVendorBuildConfig } from './wp_three_vendor_config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -143,41 +143,15 @@ async function main() {
   if (!viteBuild) process.exit(1);
 
   console.log('[WP Three Vendor] Building vendor bundle...');
-  await viteBuild({
-    root,
-    logLevel: 'error',
-    configFile: false,
-    define: {
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    },
-    build: {
-      emptyOutDir: true,
-      outDir: tmpDirAbs,
+  await viteBuild(
+    createThreeVendorBuildConfig({
+      root,
+      entryAbs,
+      tmpDirAbs,
       sourcemap: args.sourcemap,
-      minify: args.minify ? 'oxc' : false,
-      cssMinify: args.minify ? 'lightningcss' : false,
-      copyPublicDir: false,
-      reportCompressedSize: false,
-      target: ESNEXT_BUILD_TARGET,
-      lib: {
-        entry: entryAbs,
-        formats: ['es'],
-        name: 'ThreeVendor',
-        fileName: 'three.vendor',
-      },
-      rolldownOptions: {
-        treeshake: {
-          // Be more aggressive. Three.js source modules are mostly side-effect free.
-          // This helps a lot when we import from `three/src/**`.
-          moduleSideEffects: false,
-          propertyReadSideEffects: false,
-        },
-        output: {
-          codeSplitting: false,
-        },
-      },
-    },
-  });
+      minify: args.minify,
+    })
+  );
 
   const jsCandidates = fs
     .readdirSync(tmpDirAbs)

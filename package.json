@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "audit:release": "npm audit --omit=dev --audit-level=high",
+    "audit:release": "node tools/wp_release_dependency_audit.mjs",
     "audit:toolchain": "npm audit --audit-level=high",
     "build:dist": "node tools/wp_build_dist.js",
     "bundle": "npm run release:release",

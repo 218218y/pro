@@ -51,6 +51,14 @@ const CLOSEOUT_LANES = [
     expected: 'pass',
   },
   {
+    id: 'release-dependency-audit',
+    label: 'Bundled browser dependency security audit',
+    command: 'npm',
+    args: ['run', 'audit:release'],
+    category: 'security',
+    expected: 'pass',
+  },
+  {
     id: 'overlay-export-core',
     label: 'Overlay/export family core verify (direct)',
     category: 'verify',
