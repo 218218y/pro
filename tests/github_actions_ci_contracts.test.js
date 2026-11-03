@@ -90,7 +90,7 @@ test('GitHub CI keeps the monolithic verify flow as a manual release gate only',
   assert.match(ci, /if: github\.event_name == 'workflow_dispatch' && inputs\.run_release_gate/);
   assert.match(
     ci,
-    /name: Audit high severity release dependencies\n        run: npm run audit:release\n\n      - name: Run full release verification gate/
+    /name: Audit high severity release dependencies\n        run: npm run audit:release\n\n      - name: Sync Three.js browser mirrors\n        run: npm run three:sync-libs\n\n      - name: Run full release verification gate/
   );
   assert.equal(pkg.scripts['gate:full'], 'node tools/wp_verify.js --gate');
 

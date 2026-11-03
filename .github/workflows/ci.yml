@@ -496,6 +496,9 @@ jobs:
       - name: Audit high severity release dependencies
         run: npm run audit:release
 
+      - name: Sync Three.js browser mirrors
+        run: npm run three:sync-libs
+
       - name: Run full release verification gate
         run: npm run gate:full
 
