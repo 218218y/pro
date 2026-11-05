@@ -2,7 +2,8 @@ import zlib from 'node:zlib';
 
 export const CLIENT_INITIAL_BUNDLE_BUDGET = Object.freeze({
   rawBytes: 4_100_000,
-  gzipBytes: 990_000,
+  // The synchronous builder includes full shelf pin boring in the client closure.
+  gzipBytes: 991_000,
   chunkCount: 4,
   moduleCount: 1_900,
 });

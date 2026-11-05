@@ -47,20 +47,24 @@ export function planFullShelfPinBoring(args: {
     Math.min(INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM, maxOffset)
   );
   const backZ = internalZ - internalDepth / 2;
-  const depthPositions = [backZ + edgeOffset, backZ + usableDepth - edgeOffset];
-  if (depthPositions[1]! <= depthPositions[0]!) return [];
+  const frontZ = backZ + edgeOffset;
+  const rearZ = backZ + usableDepth - edgeOffset;
+  if (rearZ <= frontZ) return [];
 
-  const sides = [
-    { x: leftInnerX + surfaceOffsetM, hidden: args.exposedSide === 'left' || args.exposedSide === 'both' },
-    { x: rightInnerX - surfaceOffsetM, hidden: args.exposedSide === 'right' || args.exposedSide === 'both' },
-  ];
+  const exposedSide = args.exposedSide;
+  const showLeft = exposedSide !== 'left' && exposedSide !== 'both';
+  const showRight = exposedSide !== 'right' && exposedSide !== 'both';
   const rowCount = Math.floor((topY - bottomY - 2 * endClearanceM + 1e-9) / pitchM) + 1;
   const positions: BoringPosition[] = [];
   for (let row = 0; row < rowCount; row++) {
     const y = bottomY + endClearanceM + row * pitchM;
-    for (const side of sides) {
-      if (side.hidden) continue;
-      for (const z of depthPositions) positions.push({ x: side.x, y, z });
+    if (showLeft) {
+      const x = leftInnerX + surfaceOffsetM;
+      positions.push({ x, y, z: frontZ }, { x, y, z: rearZ });
+    }
+    if (showRight) {
+      const x = rightInnerX - surfaceOffsetM;
+      positions.push({ x, y, z: frontZ }, { x, y, z: rearZ });
     }
   }
   return positions;

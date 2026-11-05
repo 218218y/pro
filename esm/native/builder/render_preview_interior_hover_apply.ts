@@ -11,6 +11,7 @@ import {
   INTERIOR_SHELF_PIN_BORING_POLICY,
   INTERIOR_SHELF_PIN_RENDER_POLICY,
 } from './render_interior_preset_ops_shelves.js';
+import { planFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
 import type {
   PreviewGroupLike,
   PreviewMaterialLike,
@@ -163,16 +164,16 @@ export function setInteriorLayoutHoverPreview(
   if (boringBottom != null && boringTop != null && boringTop > boringBottom) {
     const length = boringTop - boringBottom - INTERIOR_SHELF_PIN_BORING_POLICY.endClearanceM * 2;
     if (length > 0) {
-      const offset = Math.max(
-        INTERIOR_SHELF_PIN_RENDER_POLICY.minEdgeOffsetM,
-        Math.min(
-          INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM,
-          regularDepth / 2 - INTERIOR_SHELF_PIN_RENDER_POLICY.maxDepthSideClearanceM
-        )
-      );
-      const xPositions = [x - innerW / 2, x + innerW / 2];
-      const zPositions = [backZ + offset, backZ + regularDepth - offset];
-      for (let i = 0; i < boringList.length; i++) {
+      const positions = planFullShelfPinBoring({
+        bottomY: boringBottom,
+        topY: boringTop,
+        leftInnerX: x - innerW / 2,
+        rightInnerX: x + innerW / 2,
+        internalZ,
+        internalDepth,
+        regularDepth,
+      });
+      for (let i = 0; i < boringList.length && i < positions.length; i++) {
         const mesh = shared.asPreviewMesh(boringList[i]);
         if (!mesh) continue;
         setVisible(mesh, true);
@@ -181,11 +182,7 @@ export function setInteriorLayoutHoverPreview(
           (isRemove ? ud.__matRemove : ud.__matBrace) ?? null,
           (isRemove ? ud.__lineRemove : ud.__lineBrace) ?? null
         );
-        mesh.position?.set?.(
-          xPositions[Math.floor(i / 2)]!,
-          (boringBottom + boringTop) / 2,
-          zPositions[i % 2]!
-        );
+        mesh.position?.set?.(positions[i]!.x, (boringBottom + boringTop) / 2, positions[i]!.z);
         mesh.scale?.set?.(
           INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM * 2,
           length,

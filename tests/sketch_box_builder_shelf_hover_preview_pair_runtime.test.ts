@@ -7,6 +7,7 @@ import { SHELF_GROUP_PART_ID } from '../esm/native/features/part_identity/api.ts
 import {
   INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
   INTERIOR_SHELF_GEOMETRY_POLICY,
+  INTERIOR_SHELF_PIN_BORING_POLICY,
 } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import {
   INTERIOR_STORAGE_BARRIER_POLICY,
@@ -532,7 +533,12 @@ test('full pin boring hover shows four full-height columns and toggles add/remov
   );
   assert.deepEqual(
     harness.boring.map(mesh => mesh.position.x),
-    [1.5, 1.5, 2.5, 2.5]
+    [
+      2 - 0.5 + INTERIOR_SHELF_PIN_BORING_POLICY.surfaceOffsetM,
+      2 - 0.5 + INTERIOR_SHELF_PIN_BORING_POLICY.surfaceOffsetM,
+      2 + 0.5 - INTERIOR_SHELF_PIN_BORING_POLICY.surfaceOffsetM,
+      2 + 0.5 - INTERIOR_SHELF_PIN_BORING_POLICY.surfaceOffsetM,
+    ]
   );
   assert.equal(harness.boring[0].scale.y, 2.37);
   harness.previewOps.setInteriorLayoutHoverPreview(
