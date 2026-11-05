@@ -17,7 +17,7 @@ test('design-tab groove auto baseline follows orientation and manual distributio
       wardrobeHeightCm: 240,
       wardrobeDoorsCount: 4,
     }),
-    48
+    84
   );
   assert.equal(
     resolveDesignTabGrooveLinesAutoBaseline({
@@ -27,7 +27,7 @@ test('design-tab groove auto baseline follows orientation and manual distributio
       wardrobeHeightCm: 240,
       wardrobeDoorsCount: 4,
     }),
-    12
+    21
   );
   assert.equal(
     resolveDesignTabGrooveLinesAutoBaseline({
@@ -37,7 +37,7 @@ test('design-tab groove auto baseline follows orientation and manual distributio
       wardrobeHeightCm: 240,
       wardrobeDoorsCount: 4,
     }),
-    7
+    12
   );
 });
 

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-03T20:26:29.027Z",
+  "generatedAt": "2026-11-05T14:56:27.651Z",
   "totals": {
-    "tests": 1284,
-    "unitRunnerTests": 1272,
+    "tests": 1286,
+    "unitRunnerTests": 1274,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 400,
-    "runtime-unit": 351,
+    "runtime-unit": 353,
     "integration": 488,
     "persistence-ingress": 23,
     "e2e-smoke": 13,
@@ -7253,6 +7253,14 @@
     {
       "file": "tests/store_zustand_set_flows_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/straight_cornice_and_groove_defaults_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/straight_cornice_miter_and_paint_hover_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/structural_build_refresh_actions_runtime.test.js",
