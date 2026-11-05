@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-05T14:56:27.651Z",
+  "generatedAt": "2026-11-05T15:15:14.646Z",
   "totals": {
-    "tests": 1286,
-    "unitRunnerTests": 1274,
+    "tests": 1287,
+    "unitRunnerTests": 1275,
     "e2eTests": 12,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -21,7 +21,7 @@
   },
   "categories": {
     "contract": 400,
-    "runtime-unit": 353,
+    "runtime-unit": 354,
     "integration": 488,
     "persistence-ingress": 23,
     "e2e-smoke": 13,
@@ -4413,6 +4413,10 @@
     {
       "file": "tests/corner_zero_doors_pentagon_only_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/cornice_type_runtime_parity.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/cornice_wave_front_alignment_runtime.test.ts",
