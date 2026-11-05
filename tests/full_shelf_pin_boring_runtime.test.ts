@@ -25,15 +25,29 @@ const base = {
   regularDepth: 0.45,
 };
 
-test('3 cm pin-boring rows cover all four side corners but respect end clearance and removed walls', () => {
+test('pin-boring rows follow the configured pitch at all four corners and respect clearances', () => {
+  const { pitchM, endClearanceM, surfaceOffsetM } = INTERIOR_SHELF_PIN_BORING_POLICY;
+  assert.ok(Number.isFinite(pitchM) && pitchM > 0);
+  assert.ok(Number.isFinite(endClearanceM) && endClearanceM >= 0);
+
   const points = planFullShelfPinBoring(base);
-  assert.equal(INTERIOR_SHELF_PIN_BORING_POLICY.pitchM, 0.03);
-  assert.equal(points.length, 320);
+  const rowCount = Math.floor((base.topY - base.bottomY - 2 * endClearanceM + 1e-9) / pitchM) + 1;
+  assert.equal(points.length, rowCount * 4);
+  assert.deepEqual(
+    [...new Set(points.map(point => Number(point.x.toFixed(6))))],
+    [base.leftInnerX + surfaceOffsetM, base.rightInnerX - surfaceOffsetM]
+  );
   assert.deepEqual([...new Set(points.map(point => Number(point.z.toFixed(6))))], [-0.235, 0.135]);
-  assert.equal(points[0]?.y, 0.015);
-  assert.ok(Math.abs(points.at(-1)!.y - 2.385) < 1e-10);
-  assert.ok(Math.abs(points[4]!.y - points[0]!.y - 0.03) < 1e-10);
-  assert.equal(planFullShelfPinBoring({ ...base, exposedSide: 'left' }).length, 160);
+  for (let row = 0; row < rowCount; row++) {
+    const expectedY = base.bottomY + endClearanceM + row * pitchM;
+    const rowPoints = points.slice(row * 4, (row + 1) * 4);
+    assert.equal(rowPoints.length, 4);
+    assert.ok(rowPoints.every(point => Math.abs(point.y - expectedY) < 1e-10));
+  }
+  const lastY = points.at(-1)!.y;
+  assert.ok(lastY <= base.topY - endClearanceM + 1e-9);
+  assert.ok(lastY + pitchM > base.topY - endClearanceM - 1e-9);
+  assert.equal(planFullShelfPinBoring({ ...base, exposedSide: 'left' }).length, rowCount * 2);
   assert.equal(planFullShelfPinBoring({ ...base, exposedSide: 'both' }).length, 0);
   assert.deepEqual(planFullShelfPinBoring({ ...base, topY: 0.02 }), []);
   assert.deepEqual(planFullShelfPinBoring({ ...base, internalDepth: 0 }), []);
@@ -215,13 +229,16 @@ test('renderer batches the complete hole pattern into one non-pickable instanced
     roomArchitecturePlan: createTestRoomArchitecturePlan({ widthM: 1, heightM: 2.4, depthM: 0.6 }),
   };
   addFullShelfPinBoring(options as never);
+  const plannedPositions = planFullShelfPinBoring(base);
   assert.equal(added.length, 1);
-  assert.equal(added[0]?.count, 320);
+  assert.equal(added[0]?.count, plannedPositions.length);
+  assert.equal(added[0]?.matrices.length, plannedPositions.length);
   assert.equal(added[0]?.userData.__kind, 'shelf_pin_bore');
   assert.equal(added[0]?.userData.__ignoreRaycast, true);
+  assert.equal(added[0]?.userData.pitchM, INTERIOR_SHELF_PIN_BORING_POLICY.pitchM);
   assert.equal(added[0]?.instanceMatrix.needsUpdate, true);
   assert.equal(added[0]?.matrices[0]?.rotation, Math.PI / 2);
-  assert.deepEqual(added[0]?.matrices[0]?.position, planFullShelfPinBoring(base)[0]);
+  assert.deepEqual(added[0]?.matrices[0]?.position, plannedPositions[0]);
   assert.equal((added[0]?.geometry as CylinderGeometry).radiusTop, 0.0025);
   assert.equal((added[0]?.material as Material).props.color, 0x242424);
   addFullShelfPinBoring({ ...options, enabled: false } as never);
