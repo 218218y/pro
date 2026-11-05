@@ -73,7 +73,10 @@ test('canvas picking config patches use one immediate-build structural meta owne
 
   const sourceTags = source =>
     getCallFacts(source, 'createCanvasPickingConfigStructuralPatchMeta').map(call => call.args[0]);
-  assert.deepEqual(sourceTags(layoutFlowRaw), [{ kind: 'literal', value: 'layoutPreset' }]);
+  assert.deepEqual(sourceTags(layoutFlowRaw), [
+    { kind: 'literal', value: 'fullShelfPinBoring.toggle' },
+    { kind: 'literal', value: 'layoutPreset' },
+  ]);
   assert.deepEqual(sourceTags(layoutFlowManualRaw), [
     { kind: 'literal', value: 'manualLayout.fillAllShelves' },
     { kind: 'literal', value: 'manualLayout.toggleItem' },
