@@ -129,21 +129,21 @@
     },
     "launcher": "bin/oxlint",
     "typeAware": {
-      "version": "7.0.2005",
+      "version": "7.0.2006",
       "package": {
         "lockPath": "node_modules/oxlint-tsgolint",
         "installPath": "node_modules/oxlint-tsgolint",
-        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2005.tgz",
-        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2005.tgz",
-        "integrity": "sha512-6ccPGu4u4J9bwYPHXBFPee3RZrX3BboRdU7k14zRDDB1lvN3O7J/vPRFdaEfa1+CWx4xnQQOp4ctoaF66oO0uw=="
+        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2006.tgz",
+        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2006.tgz",
+        "integrity": "sha512-5B3UtH71kycPHUC1kFEIffivEAs49SUmkJuHZOZnTY0NPj4legp0bcsCQucuLVNCoJzDucS68P2C4WIhP+LypQ=="
       },
       "platforms": {
         "linux-x64": {
           "lockPath": "node_modules/@oxlint-tsgolint/linux-x64",
           "installPath": "node_modules/@oxlint-tsgolint/linux-x64",
-          "file": "vendor/offline/oxlint/linux-x64-7.0.2005.tgz",
-          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2005.tgz",
-          "integrity": "sha512-tKs9yinDQZOHygM0e8EJnjTU3mzJtdfkOZP6Udu82iLMePUSHOhTJ9zzU/mSd1hQxURI4LTRRiFhfzC+PzwdNA=="
+          "file": "vendor/offline/oxlint/linux-x64-7.0.2006.tgz",
+          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2006.tgz",
+          "integrity": "sha512-/k0wsEqHiA5dWBJYuld3Vecv6bIhKCasxpho/aFkvh870Qox33MuTkKUGWIVm/njAxw7W4pu1a/Xfa3jwuKuPQ=="
         }
       },
       "launcher": "bin/tsgolint.js",
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "491a431d6043d2121b3f2eaec00d3fa95a93a3a7b855b9e5fb36f9c3830fc617"
+    "lockfileSha256": "1ee9c3b391379707369ecd895dae431fa1cc5fcff91d60f11a8f0724247ace45"
   }
 }
