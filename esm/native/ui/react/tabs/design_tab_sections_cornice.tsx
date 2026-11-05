@@ -29,6 +29,12 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
             >
               גל
             </DesignTabTypeOption>
+            <DesignTabTypeOption
+              selected={model.corniceType === 'straight'}
+              onClick={() => model.setCorniceType('straight')}
+            >
+              ישר
+            </DesignTabTypeOption>
           </div>
         </div>
       ) : null}

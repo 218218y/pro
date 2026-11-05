@@ -12,7 +12,7 @@ import {
 import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 export const DEFAULT_GROOVE_ORIENTATION: GrooveOrientation = 'vertical';
-export const DEFAULT_GROOVE_DENSITY_PER_M = 20;
+export const DEFAULT_GROOVE_DENSITY_PER_M = 35;
 export const GROOVE_LAYOUT_CENTER_NORM = 0.5;
 export const GROOVE_LAYOUT_CENTER_EPSILON = 1e-6;
 export const GROOVE_LAYOUT_CENTER_SNAP_NORM_THRESHOLD = 0.04;

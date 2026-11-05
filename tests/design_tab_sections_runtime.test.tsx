@@ -36,6 +36,7 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
   assert.match(doorStyleHtml, /<button[^>]*type="button"[^>]*>פרופיל כפול<\/button>/);
   assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>רגיל<\/button>/);
   assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>גל<\/button>/);
+  assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>ישר<\/button>/);
   assert.doesNotMatch(doorStyleHtml, /role="button"/);
   assert.doesNotMatch(corniceHtml, /role="button"/);
 });

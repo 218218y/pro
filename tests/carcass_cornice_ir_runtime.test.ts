@@ -45,6 +45,11 @@ test('carcass cornice typed IR stays valid across the high-risk geometry matrix'
       mode: 'wave_frame',
     },
     {
+      name: 'straight-default',
+      input: { ...BASE, corniceType: 'straight' },
+      mode: 'straight_open_back',
+    },
+    {
       name: 'classic-removed-left',
       input: {
         ...BASE,
@@ -84,6 +89,17 @@ test('carcass cornice typed IR stays valid across the high-risk geometry matrix'
         moduleDepthsTotal: [0.6, 0.78, 0.6],
       },
       mode: 'wave_frame_segmented',
+    },
+    {
+      name: 'straight-height-depth-stepped',
+      input: {
+        ...BASE,
+        corniceType: 'straight',
+        moduleInternalWidths: [w3, w3, w3],
+        moduleHeightsTotal: [2.4, 2.6, 2.4],
+        moduleDepthsTotal: [0.6, 0.78, 0.6],
+      },
+      mode: 'straight_open_back_segmented',
     },
     {
       name: 'classic-hex-footprint',

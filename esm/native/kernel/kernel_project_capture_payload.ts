@@ -8,6 +8,7 @@ import {
   normalizeProjectRoomArchitecture,
 } from '../features/project_config/api.js';
 import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/project_capture_dimension_policy.js';
+import { normalizeCorniceType } from '../../shared/cornice_type.js';
 
 function normalizeCapturedDrawerRunnerType(value: unknown): 'roller' | 'blum' {
   return value === 'blum' ? 'blum' : 'roller';
@@ -113,10 +114,7 @@ function buildProjectCaptureSettings(
     baseLegWidthCm: uiRec.baseLegWidthCm !== undefined ? uiRec.baseLegWidthCm : 4,
     slidingTracksColor: asString(uiRec.slidingTracksColor, 'nickel'),
     doorStyle: asString(uiRec.doorStyle, ''),
-    corniceType:
-      String(asString(uiRec.corniceType, 'classic') || 'classic').toLowerCase() === 'wave'
-        ? 'wave'
-        : 'classic',
+    corniceType: normalizeCorniceType(uiRec.corniceType),
     color: asString(uiRec.colorChoice, '') || asString(uiRec.color, ''),
     customColor: asString(uiRec.customColor, ''),
     structureSelection: asString(uiRec.structureSelect, ''),

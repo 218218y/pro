@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { normalizeCorniceType, type CorniceType } from '../../shared/cornice_type.js';
 import {
   formatIdentityValue,
   normalizeSketchBoxDividerStructuralOrder,
@@ -65,7 +66,7 @@ export type SketchBoxVerticalSegmentState = {
   yNorm: number;
 };
 
-export type SketchBoxAdornmentCorniceType = 'classic' | 'wave';
+export type SketchBoxAdornmentCorniceType = CorniceType;
 export type SketchBoxAdornmentBaseType = 'plinth' | 'legs' | 'none';
 export type SketchBoxAdornmentBaseToolSpec = {
   baseType: SketchBoxAdornmentBaseType;
@@ -124,7 +125,7 @@ export function normalizeSketchBoxDividerYNorm(dividerYNorm: unknown): number | 
 }
 
 export function normalizeSketchBoxCorniceType(value: unknown): SketchBoxAdornmentCorniceType {
-  return typeof value === 'string' && value.trim().toLowerCase() === 'wave' ? 'wave' : 'classic';
+  return normalizeCorniceType(value);
 }
 
 export function normalizeSketchBoxBaseType(value: unknown): SketchBoxAdornmentBaseType {

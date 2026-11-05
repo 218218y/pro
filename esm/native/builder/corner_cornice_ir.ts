@@ -13,7 +13,7 @@ export const CORNER_CORNICE_PART_IDS = [
 
 export type CornerCornicePartId = (typeof CORNER_CORNICE_PART_IDS)[number];
 export type CornerCorniceOwner = 'wing' | 'connector';
-export type CornerCorniceMode = 'profile' | 'wave';
+export type CornerCorniceMode = 'profile' | 'wave' | 'straight';
 export type CornerCorniceMiterMode = 'inner_trim' | 'outer_extend';
 
 export type CornerCornicePoint = { x: number; y: number };
@@ -165,7 +165,7 @@ export function isCornerCorniceOp(value: unknown): value is CornerCorniceOp {
 }
 
 function operationMatchesMode(mode: CornerCorniceMode, op: CornerCorniceOp): boolean {
-  return mode === 'profile'
+  return mode !== 'wave'
     ? op.kind === 'corner_profile'
     : op.kind === 'corner_wave' || op.kind === 'corner_box';
 }
@@ -176,7 +176,7 @@ export function isCornerCornicePlan(value: unknown): value is CornerCornicePlan 
     !record ||
     record.kind !== 'corner_cornice' ||
     (record.owner !== 'wing' && record.owner !== 'connector') ||
-    (record.mode !== 'profile' && record.mode !== 'wave') ||
+    (record.mode !== 'profile' && record.mode !== 'wave' && record.mode !== 'straight') ||
     !Array.isArray(record.operations) ||
     !record.operations.every(isCornerCorniceOp)
   ) {
@@ -224,7 +224,7 @@ function collectOpViolations(
   }
   if (mode) {
     const profileOp = kind === 'corner_profile';
-    if ((mode === 'profile') !== profileOp)
+    if ((mode !== 'wave') !== profileOp)
       violations.push({ path: `${path}.kind`, code: 'mode-operation-mismatch' });
   }
   if (!isPartId(record.partId)) violations.push({ path: `${path}.partId`, code: 'invalid-part-id' });
@@ -284,7 +284,8 @@ export function collectCornerCorniceIrViolations(value: unknown): CornerCorniceI
   if (record.kind !== 'corner_cornice') violations.push({ path: 'kind', code: 'invalid-kind' });
   if (record.owner !== 'wing' && record.owner !== 'connector')
     violations.push({ path: 'owner', code: 'invalid-owner' });
-  const mode = record.mode === 'profile' || record.mode === 'wave' ? record.mode : null;
+  const mode =
+    record.mode === 'profile' || record.mode === 'wave' || record.mode === 'straight' ? record.mode : null;
   if (!mode) violations.push({ path: 'mode', code: 'invalid-mode' });
   if (!Array.isArray(record.operations)) {
     violations.push({ path: 'operations', code: 'invalid-operations' });

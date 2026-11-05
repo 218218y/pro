@@ -121,6 +121,19 @@ test('export order pdf text includes classic cornice only when the main cornice 
   assert.match(details, /קרניז: רגיל/);
 });
 
+test('export order pdf text identifies the straight cornice in manufacturing details', () => {
+  const ops = createExportOrderPdfTextOps(
+    createTextDeps({
+      getUi: () => ({
+        raw: { doors: 4, width: 160, height: 240, depth: 55 },
+        hasCornice: true,
+        corniceType: 'straight',
+      }),
+    })
+  );
+  assert.match(ops.buildOrderDetailsText({} as never), /קרניז: ישר/);
+});
+
 test('export order pdf text omits cornice when the main cornice flag is disabled', () => {
   const ops = createExportOrderPdfTextOps(
     createTextDeps({

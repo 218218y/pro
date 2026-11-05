@@ -22,7 +22,7 @@ export function applyCornerConnectorCornice(params: CornerConnectorCorniceFlowPa
       if (__corniceTypeNorm === 'wave') {
         applyCornerConnectorWaveCornice({ ctx, locals });
       } else {
-        applyCornerConnectorProfileCornice({ ctx, locals });
+        applyCornerConnectorProfileCornice({ ctx, locals, straight: __corniceTypeNorm === 'straight' });
       }
     } catch (_e) {
       reportErrorThrottled(App, _e, { where: 'corner_ops_emit', op: 'L2502', throttleMs: 4000 });

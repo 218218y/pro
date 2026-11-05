@@ -9,6 +9,7 @@ import type {
   CornerCorniceWaveOp,
 } from './corner_cornice_ir.js';
 import { buildCornerCorniceProfile, connectorProfileBaseBandY } from './corner_cornice_profile_plan.js';
+import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,
@@ -21,6 +22,7 @@ import {
 
 const COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
+const STRAIGHT = CARCASS_CORNICE_RENDER_POLICY.straight;
 const WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
 
 type XzPoint = { x: number; z: number };
@@ -99,11 +101,14 @@ function sideProfileOperation(args: {
 
 export function buildCornerConnectorProfileCornicePlan(
   ctx: CornerConnectorCorniceCtx,
-  locals: CornerConnectorCorniceLocals
+  locals: CornerConnectorCorniceLocals,
+  straight = false
 ): CornerCornicePlan {
   const operations: CornerCorniceProfileOp[] = [];
-  const profile = buildCornerCorniceProfile(PROFILE.overhangZM);
-  const sideProfile = buildCornerCorniceProfile(PROFILE.overhangXM);
+  const profile = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(PROFILE.overhangZM);
+  const sideProfile = straight
+    ? buildStraightCorniceProfile()
+    : buildCornerCorniceProfile(PROFILE.overhangXM);
   const yPlace = resolveCornerConnectorCorniceTopY(ctx) + COMMON.yLiftM;
   const a = locals.pts[2];
   const b = locals.pts[3];
@@ -121,7 +126,8 @@ export function buildCornerConnectorProfileCornicePlan(
       const uz = dz / placement.length;
       let xOuter = -Infinity;
       for (const point of profile) xOuter = Math.max(xOuter, point.x);
-      if (!(Number.isFinite(xOuter) && xOuter > 0)) xOuter = PROFILE.minOverhangM;
+      if (!(Number.isFinite(xOuter) && xOuter > 0))
+        xOuter = straight ? STRAIGHT.overhangM : PROFILE.minOverhangM;
       const clampDot = (value: number) => Math.max(-1, Math.min(1, value));
       const safeCotHalf = (theta: number) => {
         const clamped = Math.max(
@@ -144,7 +150,7 @@ export function buildCornerConnectorProfileCornicePlan(
         miterStartTrim: xOuter * safeCotHalf(thetaA),
         miterEndTrim: xOuter * safeCotHalf(thetaB),
         miterMode: 'inner_trim',
-        miterProfileBaseY: connectorProfileBaseBandY(),
+        ...(straight ? null : { miterProfileBaseY: connectorProfileBaseBandY() }),
         miterBaseSealEpsilon: PROFILE.baseSealEpsilonM,
         x: placement.x,
         y: yPlace,
@@ -162,7 +168,7 @@ export function buildCornerConnectorProfileCornicePlan(
     });
     if (operation) operations.push(operation);
   }
-  return { kind: 'corner_cornice', owner: 'connector', mode: 'profile', operations };
+  return { kind: 'corner_cornice', owner: 'connector', mode: straight ? 'straight' : 'profile', operations };
 }
 
 function waveSamples(length: number): number {

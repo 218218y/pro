@@ -24,7 +24,7 @@ function childPartIds(group: { children: unknown[] }): string[] {
 }
 
 function makeConnectorParams(args: {
-  type: 'classic' | 'wave';
+  type: 'classic' | 'wave' | 'straight';
   connectorBodyHeight?: number;
   mainBodyHeight?: number;
   adjacentMainBodyHeight?: number | null;
@@ -79,7 +79,7 @@ function makeConnectorParams(args: {
 }
 
 test('pentagon planners emit valid typed IR before Three.js rendering', () => {
-  for (const type of ['classic', 'wave'] as const) {
+  for (const type of ['classic', 'wave', 'straight'] as const) {
     const { ctx, locals } = makeConnectorParams({
       type,
       connectorBodyHeight: 2.4,
@@ -89,9 +89,9 @@ test('pentagon planners emit valid typed IR before Three.js rendering', () => {
     const plan =
       type === 'wave'
         ? buildCornerConnectorWaveCornicePlan(ctx as never, locals as never)
-        : buildCornerConnectorProfileCornicePlan(ctx as never, locals as never);
+        : buildCornerConnectorProfileCornicePlan(ctx as never, locals as never, type === 'straight');
     assert.equal(plan.owner, 'connector');
-    assert.equal(plan.mode, type === 'wave' ? 'wave' : 'profile');
+    assert.equal(plan.mode, type === 'wave' ? 'wave' : type === 'straight' ? 'straight' : 'profile');
     assert.ok(plan.operations.length >= 3);
     assert.deepEqual(collectCornerCorniceIrViolations(plan), []);
   }
@@ -114,6 +114,18 @@ test('pentagon wave cornice adds exposed side return on the main-cabinet seam wh
     'the taller pentagon needs a full side cornice return where it rises above the main cabinet'
   );
   assert.ok(!partIds.includes('corner_cornice_side_left'), 'equal-height wing seam must stay internal');
+});
+
+test('pentagon straight cornice renders the diagonal and exposed returns in rectangular wood', () => {
+  const { ctx, locals, helpers, cornerGroup } = makeConnectorParams({
+    type: 'straight',
+    adjacentMainBodyHeight: 2.1,
+    adjacentWingBodyHeight: 2.0,
+  });
+  applyCornerConnectorCornice({ ctx, locals, helpers } as never);
+  assert.ok(childPartIds(cornerGroup).includes('corner_cornice_front'));
+  assert.ok(childPartIds(cornerGroup).includes('corner_cornice_side_left'));
+  assert.ok(childPartIds(cornerGroup).includes('corner_cornice_side_right'));
 });
 
 test('pentagon cornice sits above the upper leg stage like the regular wardrobe', () => {

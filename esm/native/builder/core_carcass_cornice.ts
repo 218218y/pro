@@ -19,10 +19,13 @@ import {
   resolveRemovedFrameSideOuterBounds,
   type RemovedFrameSideConstructionPlan,
 } from './removed_frame_side_construction_plan.js';
+import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
+import { normalizeCorniceType } from '../../shared/cornice_type.js';
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
 const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
+const CORNICE_STRAIGHT = CARCASS_CORNICE_RENDER_POLICY.straight;
 
 const CORNICE_EPS = CORNICE_COMMON.epsilonM;
 const CORNICE_Y_EPS = CORNICE_COMMON.yLiftM;
@@ -53,7 +56,7 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
   if (!hasCornice) return null;
 
   const topSurfaceY = startY + cabinetBodyHeight + baseLegTopPlatformHeight;
-  const corniceTypeNorm = String(corniceType || 'classic').toLowerCase();
+  const corniceTypeNorm = normalizeCorniceType(corniceType);
   if (shouldBuildSegmentedCornice(prepared)) {
     return buildSegmentedCornice(prepared, corniceTypeNorm);
   }
@@ -68,7 +71,7 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
   if (corniceTypeNorm === 'wave') {
     return buildWaveCornice(corniceParams);
   }
-  return buildProfileCornice(corniceParams);
+  return buildProfileCornice(corniceParams, corniceTypeNorm === 'straight');
 }
 
 type CorniceParams = {
@@ -182,13 +185,17 @@ function buildSegmentedCornice(
     if (corniceTypeNorm === 'wave') {
       segments.push(...buildWaveCorniceSection(section));
     } else {
-      segments.push(...buildProfileCorniceSection(section));
+      segments.push(...buildProfileCorniceSection(section, corniceTypeNorm === 'straight'));
     }
   }
 
   const isWave = corniceTypeNorm === 'wave';
   return buildCorniceEnvelope({
-    mode: isWave ? 'wave_frame_segmented' : 'profile_open_back_segmented',
+    mode: isWave
+      ? 'wave_frame_segmented'
+      : corniceTypeNorm === 'straight'
+        ? 'straight_open_back_segmented'
+        : 'profile_open_back_segmented',
     segments,
   });
 }
@@ -586,12 +593,13 @@ function shouldUseOuterMiterForPath(renderPath: CornicePathSegment[]): boolean {
 function profileOuterEndZ(
   seg: CornicePathSegment | undefined,
   end: 'start' | 'end',
-  fallbackZ: number
+  fallbackZ: number,
+  overhangZ: number
 ): number {
   if (!seg) return fallbackZ;
   const baseZ = end === 'start' ? seg.az : seg.bz;
   const outward = outwardNormalForPathSegment(seg);
-  const z = baseZ + Math.max(0, PROFILE_OVERHANG_Z) * Math.max(0, outward.z);
+  const z = baseZ + Math.max(0, overhangZ) * Math.max(0, outward.z);
   return Number.isFinite(z) ? z : fallbackZ;
 }
 
@@ -600,12 +608,13 @@ function resolveProfileSideEndZ(args: {
   end: 'start' | 'end';
   defaultEndZ: number;
   useOuterMiter?: boolean;
+  overhangZ: number;
 }): number {
   if (args.useOuterMiter && args.pathSeg && !isStraightFrontPathSegment(args.pathSeg)) {
     return args.end === 'start' ? args.pathSeg.az : args.pathSeg.bz;
   }
-  const z = profileOuterEndZ(args.pathSeg, args.end, args.defaultEndZ);
-  return Math.max(args.defaultEndZ - PROFILE_OVERHANG_Z, z);
+  const z = profileOuterEndZ(args.pathSeg, args.end, args.defaultEndZ, args.overhangZ);
+  return Math.max(args.defaultEndZ - args.overhangZ, z);
 }
 
 function buildWaveCornice(params: CorniceParams): CarcassCornicePlan {
@@ -720,36 +729,43 @@ function buildWaveCorniceSection(
   return segments;
 }
 
-function buildProfileCornice(params: CorniceParams): CarcassCornicePlan {
+function buildProfileCornice(params: CorniceParams, straight = false): CarcassCornicePlan {
   const { D, topY, woodThick } = params;
   const { left, right } = resolveCorniceOuterBounds(params);
-  const segments = buildProfileCorniceSection({
-    left,
-    right,
-    globalD: D,
-    depth: D,
-    woodThick,
-    topY,
-    frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
-    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-  });
+  const segments = buildProfileCorniceSection(
+    {
+      left,
+      right,
+      globalD: D,
+      depth: D,
+      woodThick,
+      topY,
+      frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
+      leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+      rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    },
+    straight
+  );
 
   return buildCorniceEnvelope({
-    mode: 'profile_open_back',
+    mode: straight ? 'straight_open_back' : 'profile_open_back',
     segments,
   });
 }
 
-function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfileSegment[] {
+function buildProfileCorniceSection(params: CorniceSectionParams, straight = false): CorniceProfileSegment[] {
   const { left, right, globalD, depth, topY, frontPath, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
-  const leftOverhang = leftSide != null && !leftSide.internal ? PROFILE_OVERHANG_X : 0;
-  const rightOverhang = rightSide != null && !rightSide.internal ? PROFILE_OVERHANG_X : 0;
-  const profileFront = makeCorniceProfile(PROFILE_OVERHANG_Z);
-  const profileSide = makeCorniceProfile(PROFILE_OVERHANG_X);
-  const profileSideInternal = makeInternalBoundaryCorniceProfile(PROFILE_OVERHANG_X);
-  const defaultSideEndZ = -globalD / 2 + depth + PROFILE_OVERHANG_Z;
+  const overhangX = straight ? CORNICE_STRAIGHT.overhangM : PROFILE_OVERHANG_X;
+  const overhangZ = straight ? CORNICE_STRAIGHT.overhangM : PROFILE_OVERHANG_Z;
+  const leftOverhang = leftSide != null && !leftSide.internal ? overhangX : 0;
+  const rightOverhang = rightSide != null && !rightSide.internal ? overhangX : 0;
+  const profileFront = straight ? buildStraightCorniceProfile() : makeCorniceProfile(overhangZ);
+  const profileSide = straight ? buildStraightCorniceProfile() : makeCorniceProfile(overhangX);
+  const profileSideInternal = straight
+    ? profileSide.map(point => ({ ...point, x: Math.max(0, point.x) }))
+    : makeInternalBoundaryCorniceProfile(overhangX);
+  const defaultSideEndZ = -globalD / 2 + depth + overhangZ;
   const sourcePath = filterCornicePath(frontPath.map(seg => ({ ...seg })));
   const sourceFirst = sourcePath[0];
   const sourceLast = sourcePath[sourcePath.length - 1];
@@ -769,13 +785,13 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
 
     const startJointTrim = previousPathSeg
       ? useOuterMiter
-        ? miterExtensionForPathJoint(previousPathSeg, pathSeg, PROFILE_OVERHANG_Z, PROFILE_OVERHANG_Z).bStart
-        : mutualPathJointMiterTrim(previousPathSeg, pathSeg, PROFILE_OVERHANG_Z)
+        ? miterExtensionForPathJoint(previousPathSeg, pathSeg, overhangZ, overhangZ).bStart
+        : mutualPathJointMiterTrim(previousPathSeg, pathSeg, overhangZ)
       : 0;
     const endJointTrim = nextPathSeg
       ? useOuterMiter
-        ? miterExtensionForPathJoint(pathSeg, nextPathSeg, PROFILE_OVERHANG_Z, PROFILE_OVERHANG_Z).aEnd
-        : mutualPathJointMiterTrim(pathSeg, nextPathSeg, PROFILE_OVERHANG_Z)
+        ? miterExtensionForPathJoint(pathSeg, nextPathSeg, overhangZ, overhangZ).aEnd
+        : mutualPathJointMiterTrim(pathSeg, nextPathSeg, overhangZ)
       : 0;
     const leftExteriorTrim =
       leftSide != null && !leftSide.internal
@@ -783,11 +799,11 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
           ? miterExtensionForPathJoint(
               leftSideConnectionPath(pathSeg),
               pathSeg,
-              PROFILE_OVERHANG_X,
-              PROFILE_OVERHANG_Z,
+              overhangX,
+              overhangZ,
               exteriorSideNormal('left')
             ).bStart
-          : leftExteriorMiterTrim(pathSeg, PROFILE_OVERHANG_X)
+          : leftExteriorMiterTrim(pathSeg, overhangX)
         : 0;
     const rightExteriorTrim =
       rightSide != null && !rightSide.internal
@@ -795,12 +811,12 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
           ? miterExtensionForPathJoint(
               pathSeg,
               rightSideConnectionPath(pathSeg),
-              PROFILE_OVERHANG_Z,
-              PROFILE_OVERHANG_X,
+              overhangZ,
+              overhangX,
               null,
               exteriorSideNormal('right')
             ).aEnd
-          : rightExteriorMiterTrim(pathSeg, PROFILE_OVERHANG_X)
+          : rightExteriorMiterTrim(pathSeg, overhangX)
         : 0;
 
     segments.push({
@@ -835,6 +851,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
       end: 'start',
       defaultEndZ: defaultSideEndZ,
       useOuterMiter,
+      overhangZ,
     });
     const sideLen = Math.max(CORNICE_COMMON.minBoxDimensionM, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
@@ -845,14 +862,14 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
               ? miterExtensionForPathJoint(
                   leftSideConnectionPath(firstPathSeg),
                   firstPathSeg,
-                  PROFILE_OVERHANG_X,
-                  PROFILE_OVERHANG_Z,
+                  overhangX,
+                  overhangZ,
                   exteriorSideNormal('left')
                 ).aEnd
-              : leftExteriorMiterTrim(firstPathSeg, PROFILE_OVERHANG_Z),
+              : leftExteriorMiterTrim(firstPathSeg, overhangZ),
             sideLen
           )
-        : PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS;
+        : overhangZ + PROFILE_SEAM_EPS;
     segments.push({
       kind: 'cornice_profile_seg',
       length: sideLen,
@@ -874,6 +891,7 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
       end: 'end',
       defaultEndZ: defaultSideEndZ,
       useOuterMiter,
+      overhangZ,
     });
     const sideLen = Math.max(CORNICE_COMMON.minBoxDimensionM, sideEndZ - sideStartZ);
     const sideCenterZ = (sideStartZ + sideEndZ) / 2;
@@ -884,15 +902,15 @@ function buildProfileCorniceSection(params: CorniceSectionParams): CorniceProfil
               ? miterExtensionForPathJoint(
                   lastPathSeg,
                   rightSideConnectionPath(lastPathSeg),
-                  PROFILE_OVERHANG_Z,
-                  PROFILE_OVERHANG_X,
+                  overhangZ,
+                  overhangX,
                   null,
                   exteriorSideNormal('right')
                 ).bStart
-              : rightExteriorMiterTrim(lastPathSeg, PROFILE_OVERHANG_Z),
+              : rightExteriorMiterTrim(lastPathSeg, overhangZ),
             sideLen
           )
-        : PROFILE_OVERHANG_Z + PROFILE_SEAM_EPS;
+        : overhangZ + PROFILE_SEAM_EPS;
     segments.push({
       kind: 'cornice_profile_seg',
       length: sideLen,

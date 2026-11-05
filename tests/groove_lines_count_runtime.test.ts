@@ -27,6 +27,12 @@ function makeApp(cfg: Record<string, unknown>) {
   };
 }
 
+test('automatic groove count starts at 14 for a standard 40 cm door and remains width-aware', () => {
+  assert.equal(computeAutoGrooveLinesCount(0.4), 14);
+  assert.equal(computeAutoGrooveLinesCount(0.8), 28);
+  assert.equal(computeAutoGrooveLinesCount(0.4, 20), 8, 'explicit custom density remains supported');
+});
+
 test('groove line count config scalar keeps typed numbers and rejects legacy strings', () => {
   assert.equal(readConfigScalarOrDefault({}, 'grooveLinesCount', null), null);
   assert.equal(readConfigScalarOrDefault({ grooveLinesCount: 20.9 }, 'grooveLinesCount', null), 20);
@@ -195,7 +201,7 @@ test('materializeActiveGrooveLinesCountMap freezes active grooved doors to stabl
 
   assert.deepEqual(asPlainRecord(materializeActiveGrooveLinesCountMap(App as never)), {
     d1_full: 9,
-    d2_full: 10,
+    d2_full: 17,
     d3_mid2: 7,
     d4_mid2: 8,
   });
@@ -237,7 +243,7 @@ test('materializeActiveGrooveLinesCountMap preserves the rendered horizontal aut
   };
 
   assert.deepEqual(asPlainRecord(materializeActiveGrooveLinesCountMap(App as never)), {
-    d2_full: 48,
+    d2_full: 84,
   });
 });
 
@@ -280,7 +286,7 @@ test('materializeActiveGrooveLinesCountMap keeps drawer auto count based on draw
   };
 
   assert.deepEqual(asPlainRecord(materializeActiveGrooveLinesCountMap(App as never)), {
-    drawer_1: 16,
+    drawer_1: 28,
   });
 });
 
@@ -320,5 +326,5 @@ test('pending groove count for drawer fronts uses drawer face width instead of u
     },
   };
 
-  assert.equal(resolvePendingGrooveLinesCount(App as never, null, undefined, 'drawer_2'), 16);
+  assert.equal(resolvePendingGrooveLinesCount(App as never, null, undefined, 'drawer_2'), 28);
 });

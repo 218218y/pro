@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { CorniceType } from '../../../../shared/cornice_type.js';
 
 import type {
   BaseLegColor,
@@ -18,7 +19,7 @@ export type LayoutTypeId =
   | 'regular_shelf'
   | 'winter_brace';
 export type ManualToolId = 'shelf' | 'rod' | 'storage';
-export type SketchBoxCorniceType = 'classic' | 'wave';
+export type SketchBoxCorniceType = CorniceType;
 export type SketchBoxBaseType = 'plinth' | 'legs' | 'none';
 export type SketchBoxLegStyle = BaseLegStyle;
 export type SketchBoxLegColor = BaseLegColor;

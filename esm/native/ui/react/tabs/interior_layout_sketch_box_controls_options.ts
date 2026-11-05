@@ -3,10 +3,11 @@ import type {
   SketchBoxLegPlatformMode,
   SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
+  SketchBoxCorniceType,
 } from './interior_tab_helpers.js';
 
 type SketchBoxBaseOption = Readonly<{ id: 'plinth' | 'legs' | 'none'; label: string }>;
-type SketchBoxCorniceOption = Readonly<{ id: 'classic' | 'wave'; label: string }>;
+type SketchBoxCorniceOption = Readonly<{ id: SketchBoxCorniceType; label: string }>;
 type SketchBoxLegStyleOption = Readonly<{ id: SketchBoxLegStyle; label: string }>;
 type SketchBoxLegColorOption = Readonly<{ id: SketchBoxLegColor; label: string }>;
 type SketchBoxLegPlatformOption = Readonly<{ id: SketchBoxLegPlatformMode; label: string }>;
@@ -22,9 +23,14 @@ export const SKETCH_BOX_BASE_OPTIONS: readonly [
   { id: 'none', label: 'ללא' },
 ];
 
-export const SKETCH_BOX_CORNICE_OPTIONS: readonly [SketchBoxCorniceOption, SketchBoxCorniceOption] = [
+export const SKETCH_BOX_CORNICE_OPTIONS: readonly [
+  SketchBoxCorniceOption,
+  SketchBoxCorniceOption,
+  SketchBoxCorniceOption,
+] = [
   { id: 'classic', label: 'קרניז רגיל' },
   { id: 'wave', label: 'קרניז גל' },
+  { id: 'straight', label: 'קרניז ישר' },
 ];
 
 export const SKETCH_BOX_LEG_STYLE_OPTIONS: readonly [

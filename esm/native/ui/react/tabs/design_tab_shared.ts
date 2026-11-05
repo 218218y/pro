@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react';
 
 import { MODES } from '../../../services/api.js';
+import { normalizeCorniceType, type CorniceType } from '../../../../shared/cornice_type.js';
 
 import type { SavedColor } from './design_tab_multicolor_panel.js';
 import type { UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../types';
 
 export type DesignTabDoorStyle = 'flat' | 'profile' | 'double_profile';
-export type DesignTabCorniceType = 'classic' | 'wave';
+export type DesignTabCorniceType = CorniceType;
 export type DesignTabModeConstants = Partial<
   Record<'GROOVE' | 'SPLIT' | 'REMOVE_DOOR' | 'CELL_DIMS', string>
 >;
@@ -93,8 +94,7 @@ export function readDesignTabCorniceType(
   value: unknown,
   defaultValue: DesignTabCorniceType = 'classic'
 ): DesignTabCorniceType {
-  const raw = (typeof value === 'string' ? value : defaultValue).trim().toLowerCase();
-  return raw === 'wave' || raw === 'classic' ? raw : defaultValue;
+  return normalizeCorniceType(value, defaultValue);
 }
 
 export function readSplitModeVariant(value: unknown): string {

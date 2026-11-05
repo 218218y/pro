@@ -9,6 +9,8 @@ export const CARCASS_CORNICE_MODES = [
   'wave_frame_segmented',
   'profile_open_back',
   'profile_open_back_segmented',
+  'straight_open_back',
+  'straight_open_back_segmented',
 ] as const;
 
 export type CarcassCorniceMode = (typeof CARCASS_CORNICE_MODES)[number];

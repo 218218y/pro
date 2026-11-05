@@ -21,9 +21,11 @@ import {
 test('sketch box adornment tools parse as free-box content kinds', () => {
   assert.equal(parseSketchBoxCorniceTool('sketch_box_cornice:wave'), 'wave');
   assert.equal(parseSketchBoxCorniceTool('sketch_box_cornice:classic'), 'classic');
+  assert.equal(parseSketchBoxCorniceTool('sketch_box_cornice:straight'), 'straight');
   assert.equal(parseSketchBoxBaseTool('sketch_box_base:legs'), 'legs');
   assert.equal(parseSketchBoxBaseTool('sketch_box_base:none'), 'none');
   assert.equal(getSketchFreeBoxContentKind('sketch_box_cornice:wave'), 'cornice');
+  assert.equal(getSketchFreeBoxContentKind('sketch_box_cornice:straight'), 'cornice');
   assert.equal(getSketchFreeBoxContentKind('sketch_box_base:plinth'), 'base');
 });
 
@@ -366,6 +368,40 @@ test('free-placement classic sketch box cornice applies miter trims like the reg
     zs.some(value => value > -halfLen + 0.01),
     'expected trimmed negative-end vertices on the front cornice'
   );
+});
+
+test('free-placement straight sketch box cornice renders three flat-faced wooden sections', () => {
+  const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+  const ok = applyInteriorSketchExtras(
+    makeArgs({
+      sketchExtras: {
+        boxes: [
+          {
+            id: 'straight1',
+            freePlacement: true,
+            absX: 0,
+            absY: 1.1,
+            heightM: 0.62,
+            widthM: 0.72,
+            depthM: 0.45,
+            hasCornice: true,
+            corniceType: 'straight',
+            baseType: 'none',
+          },
+        ],
+      },
+    })
+  );
+
+  assert.equal(ok, true);
+  const corniceMeshes: FakeMesh[] = [];
+  wardrobeGroup.traverse(node => {
+    const mesh = node as FakeMesh;
+    if (mesh.geometry instanceof FakeExtrudeGeometry && String(mesh.userData.partId).includes('cornice')) {
+      corniceMeshes.push(mesh);
+    }
+  });
+  assert.equal(corniceMeshes.length, 3);
 });
 
 test('free-placement sketch box cornice ops rise by the base support height when the box is floor-supported', () => {

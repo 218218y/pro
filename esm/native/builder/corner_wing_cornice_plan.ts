@@ -11,6 +11,7 @@ import {
   buildCornerCorniceProfile,
   buildInternalCornerCorniceProfile,
 } from './corner_cornice_profile_plan.js';
+import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 import {
@@ -40,14 +41,18 @@ import {
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
+const CORNICE_STRAIGHT = CARCASS_CORNICE_RENDER_POLICY.straight;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
 
 export function buildCornerWingProfileCornicePlan(
   ctx: CorniceCtxLike,
-  locals: CorniceLocalsLike
+  locals: CorniceLocalsLike,
+  straight = false
 ): CornerCornicePlan {
-  const profileFront = buildCornerCorniceProfile(CORNICE_PROFILE.overhangZM);
-  const profileSide = buildCornerCorniceProfile(CORNICE_PROFILE.overhangXM);
+  const overhangX = straight ? CORNICE_STRAIGHT.overhangM : CORNICE_PROFILE.overhangXM;
+  const overhangZ = straight ? CORNICE_STRAIGHT.overhangM : CORNICE_PROFILE.overhangZM;
+  const profileFront = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(overhangZ);
+  const profileSide = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(overhangX);
   const profileSideInternal = buildInternalCornerCorniceProfile(profileSide);
   const topY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);
   const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - ctx.wingD / 2;
@@ -63,6 +68,8 @@ export function buildCornerWingProfileCornicePlan(
         profileSide,
         profileSideInternal,
         backTrimZ,
+        overhangX,
+        overhangZ,
       })
     : buildFlatProfileOperations({
         wingW: ctx.wingW,
@@ -72,8 +79,10 @@ export function buildCornerWingProfileCornicePlan(
         frontPlaneZ,
         backTrimZ,
         yPlace: topY + CORNICE_COMMON.yLiftM,
+        overhangX,
+        overhangZ,
       });
-  return { kind: 'corner_cornice', owner: 'wing', mode: 'profile', operations };
+  return { kind: 'corner_cornice', owner: 'wing', mode: straight ? 'straight' : 'profile', operations };
 }
 
 function buildFlatProfileOperations(args: {
@@ -84,9 +93,10 @@ function buildFlatProfileOperations(args: {
   frontPlaneZ: number;
   backTrimZ: number;
   yPlace: number;
+  overhangX: number;
+  overhangZ: number;
 }): CornerCorniceProfileOp[] {
-  const overhangX = CORNICE_PROFILE.overhangXM;
-  const overhangZ = CORNICE_PROFILE.overhangZM;
+  const { overhangX, overhangZ } = args;
   const seam = CORNICE_PROFILE.miterEpsilonZM;
   const frontLen = Math.max(CORNICE_COMMON.minBoxDimensionM, args.wingW + 2 * overhangX);
   const sideEndZ = args.frontPlaneZ + overhangZ;
@@ -142,10 +152,11 @@ function buildSegmentedProfileOperations(args: {
   profileSide: CornerCornicePoint[];
   profileSideInternal: CornerCornicePoint[];
   backTrimZ: number;
+  overhangX: number;
+  overhangZ: number;
 }): CornerCorniceProfileOp[] {
   const operations: CornerCorniceProfileOp[] = [];
-  const overhangX = CORNICE_PROFILE.overhangXM;
-  const overhangZ = CORNICE_PROFILE.overhangZM;
+  const { overhangX, overhangZ } = args;
   const minDimension = CORNICE_COMMON.minBoxDimensionM;
 
   for (const run of args.runs) {
@@ -248,12 +259,13 @@ function appendProfileSide(args: {
   profiles: {
     profileSide: CornerCornicePoint[];
     profileSideInternal: CornerCornicePoint[];
+    overhangX: number;
+    overhangZ: number;
   };
 }): void {
   const closure = args.side === 'left' ? args.run.leftSide : args.run.rightSide;
   if (closure == null || !args.renderPath.length) return;
-  const overhangX = CORNICE_PROFILE.overhangXM;
-  const overhangZ = CORNICE_PROFILE.overhangZM;
+  const { overhangX, overhangZ } = args.profiles;
   const useOuterMiter = shouldUseCornerOuterMiterForPath(args.renderPath);
   const pathSeg = args.side === 'left' ? args.renderPath[0] : args.renderPath[args.renderPath.length - 1];
   if (!pathSeg) return;

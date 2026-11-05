@@ -3,6 +3,7 @@ import type { OrderPdfDraftLike } from '../../../../types/build.js';
 import type { ExportOrderPdfDeps } from './export_order_pdf_types.js';
 import { formatIdentityValue, readIdentityValue } from '../../../shared/identity_value_shared.js';
 import { readFiniteNumber, readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
+import { normalizeCorniceType } from '../../../shared/cornice_type.js';
 
 import {
   DEFAULT_HEIGHT,
@@ -150,9 +151,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
   function readCorniceLabel(ui: Record<string, unknown>): string {
     try {
       if (!readEnabledFlag(ui['hasCornice'])) return '';
-      const rawType = ui['corniceType'];
-      const type = typeof rawType === 'string' ? rawType.trim().toLowerCase() : 'classic';
-      return type === 'wave' ? 'גל' : 'רגיל';
+      const type = normalizeCorniceType(ui['corniceType']);
+      return type === 'wave' ? 'גל' : type === 'straight' ? 'ישר' : 'רגיל';
     } catch (e) {
       _exportReportNonFatalNoApp('readCorniceLabel', e, 3000);
       return '';

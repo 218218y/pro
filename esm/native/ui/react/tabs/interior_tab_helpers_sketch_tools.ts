@@ -157,11 +157,11 @@ export function mkSketchBoxTool(heightCm: number, widthCm: number | null, depthC
 export function readSketchBoxCorniceType(tool: string): SketchBoxCorniceType | null {
   if (!tool || !tool.startsWith(SKETCH_TOOL_BOX_CORNICE_PREFIX)) return null;
   const raw = tool.slice(SKETCH_TOOL_BOX_CORNICE_PREFIX.length).trim().toLowerCase();
-  return raw === 'wave' ? 'wave' : raw === 'classic' ? 'classic' : null;
+  return raw === 'wave' || raw === 'classic' || raw === 'straight' ? raw : null;
 }
 
 export function mkSketchBoxCorniceTool(type: SketchBoxCorniceType): string {
-  return `${SKETCH_TOOL_BOX_CORNICE_PREFIX}${type === 'wave' ? 'wave' : 'classic'}`;
+  return `${SKETCH_TOOL_BOX_CORNICE_PREFIX}${type}`;
 }
 
 export function readSketchBoxBaseType(tool: string): SketchBoxBaseType | null {

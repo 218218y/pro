@@ -16,6 +16,7 @@ import {
 } from '../features/project_config/api.js';
 import { readPersistedProjectConfigSnapshot } from './project_config_persisted_snapshot.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
+import { normalizeCorniceType } from '../../shared/cornice_type.js';
 
 type ReportNonFatalFn = (op: string, err: unknown, throttleMs?: number) => void;
 
@@ -197,7 +198,7 @@ export function buildDefaultProjectDataSnapshot(
       baseLegWidthCm: readFiniteNumber(ui.baseLegWidthCm),
       slidingTracksColor: ui.slidingTracksColor === 'black' ? 'black' : 'nickel',
       doorStyle: ui.doorStyle,
-      corniceType: String(ui.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
+      corniceType: normalizeCorniceType(ui.corniceType),
       color,
       customColor: ui.customColor,
       structureSelection: ui.structureSelect || '',

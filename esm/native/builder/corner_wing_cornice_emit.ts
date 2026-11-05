@@ -19,5 +19,5 @@ export function applyCornerWingCornice(params: CorniceParamsLike): void {
     return;
   }
 
-  applyCornerWingProfileCornice({ ctx, locals });
+  applyCornerWingProfileCornice({ ctx, locals, straight: ctx.__corniceTypeNorm === 'straight' });
 }

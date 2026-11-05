@@ -16,7 +16,7 @@ import type { CornerCell } from '../esm/native/builder/corner_geometry_plan.ts';
 
 const THREE = createFakeThreeRuntime();
 
-function makeCorniceParams(kind: 'classic' | 'wave') {
+function makeCorniceParams(kind: 'classic' | 'wave' | 'straight') {
   const wingGroup = new THREE.Group();
   return {
     wingGroup,
@@ -117,7 +117,7 @@ function childRotationY(child: unknown): number {
 }
 
 test('corner wing planners emit valid typed IR before Three.js rendering', () => {
-  for (const type of ['classic', 'wave'] as const) {
+  for (const type of ['classic', 'wave', 'straight'] as const) {
     const { params } = makeCorniceParams(type);
     params.locals.cornerCells = [
       makeCornerCell({ idx: 0, startX: 0, width: 0.6, depth: 0.45, hasActiveDepth: true }),
@@ -133,9 +133,9 @@ test('corner wing planners emit valid typed IR before Three.js rendering', () =>
     const plan =
       type === 'wave'
         ? buildCornerWingWaveCornicePlan(params.ctx as never, params.locals as never)
-        : buildCornerWingProfileCornicePlan(params.ctx as never, params.locals as never);
+        : buildCornerWingProfileCornicePlan(params.ctx as never, params.locals as never, type === 'straight');
     assert.equal(plan.owner, 'wing');
-    assert.equal(plan.mode, type === 'wave' ? 'wave' : 'profile');
+    assert.equal(plan.mode, type === 'wave' ? 'wave' : type === 'straight' ? 'straight' : 'profile');
     assert.ok(plan.operations.length >= 3);
     assert.deepEqual(collectCornerCorniceIrViolations(plan), []);
   }
@@ -152,6 +152,16 @@ test('corner wing classic cornice builds with real THREE prototype objects when 
     ),
     ['corner_cornice_front', 'corner_cornice_side_right']
   );
+});
+
+test('corner wing straight cornice renders solid rectangular front and exterior side strips', () => {
+  const { params, wingGroup } = makeCorniceParams('straight');
+  applyCornerWingCornice(params as never);
+  assert.deepEqual(wingGroup.children.map(childPartId).sort(), [
+    'corner_cornice_front',
+    'corner_cornice_side_right',
+  ]);
+  assert.ok(wingGroup.children.every(child => geometryDepth(child) > 0));
 });
 
 test('corner wing wave cornice builds with real THREE prototype objects when connector exists', () => {

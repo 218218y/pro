@@ -8,9 +8,10 @@ import { renderCornerCornicePlan } from './corner_cornice_render.js';
 export function applyCornerConnectorProfileCornice(args: {
   ctx: CornerConnectorCorniceCtx;
   locals: CornerConnectorCorniceLocals;
+  straight?: boolean;
 }): void {
   const { ctx, locals } = args;
-  const plan = buildCornerConnectorProfileCornicePlan(ctx, locals);
+  const plan = buildCornerConnectorProfileCornicePlan(ctx, locals, args.straight === true);
   renderCornerCornicePlan(plan, {
     THREE: ctx.THREE,
     group: locals.cornerGroup,

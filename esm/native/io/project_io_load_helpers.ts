@@ -25,6 +25,7 @@ import {
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotImpl } from './project_io_load_helpers_config.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 import { asUiRawInputs } from '../../../types/ui_raw.js';
+import { normalizeCorniceType } from '../../shared/cornice_type.js';
 
 export type {
   ProjectIoPrevUiModeLike,
@@ -142,7 +143,7 @@ export function buildProjectUiSnapshot(
     singleDoorPos: settings.singleDoorPos || 'left',
     ...(typeof settings.doorStyle === 'string' ? { doorStyle: settings.doorStyle } : {}),
 
-    corniceType: String(settings.corniceType || 'classic').toLowerCase() === 'wave' ? 'wave' : 'classic',
+    corniceType: normalizeCorniceType(settings.corniceType),
 
     ...(typeof settings.color === 'string' ? { colorChoice: settings.color, color: settings.color } : {}),
     ...(typeof settings.customColor === 'string' ? { customColor: settings.customColor } : {}),

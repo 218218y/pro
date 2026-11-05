@@ -12,6 +12,7 @@ test('design-tab shared readers normalize legacy/raw values safely', () => {
   assert.equal(readDesignTabDoorStyle('weird', 'double_profile'), 'double_profile');
 
   assert.equal(readDesignTabCorniceType('WAVE'), 'wave');
+  assert.equal(readDesignTabCorniceType('STRAIGHT'), 'straight');
   assert.equal(readDesignTabCorniceType(null), 'classic');
 
   assert.deepEqual(readDesignTabModeState({ primary: 'split', opts: { splitVariant: 'custom' } }), {

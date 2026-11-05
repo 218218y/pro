@@ -54,8 +54,15 @@ export const CARCASS_CORNICE_PROFILE_POLICY = Object.freeze({
   baseBandEpsilonM: meters(0.000001),
 });
 
+export const CARCASS_CORNICE_STRAIGHT_POLICY = Object.freeze({
+  heightM: meters(0.03),
+  depthM: meters(0.1),
+  overhangM: meters(0.02),
+});
+
 export const CARCASS_CORNICE_RENDER_POLICY = Object.freeze({
   common: CARCASS_CORNICE_COMMON_POLICY,
   wave: CARCASS_CORNICE_WAVE_POLICY,
   profile: CARCASS_CORNICE_PROFILE_POLICY,
+  straight: CARCASS_CORNICE_STRAIGHT_POLICY,
 });
