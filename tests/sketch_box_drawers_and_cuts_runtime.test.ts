@@ -919,7 +919,7 @@ test('free-box external drawer fixed runners mount on the inner side faces, not 
 
   assert.equal(ok, true);
   const fixedRight = collectSketchNodes(wardrobeGroup).find(
-    node => node.userData?.__wpDrawerRunnerRole === 'roller-fixed-web-right'
+    node => node.userData?.__wpDrawerRunnerRole === 'blum-fixed-wall-web-right'
   ) as FakeMesh | undefined;
   assert.ok(fixedRight, 'right fixed runner web should render');
 
@@ -972,8 +972,8 @@ test('sketch box shoe drawer keeps its sketch-controlled custom height', () => {
   const runnerRoles = collectSketchNodes(wardrobeGroup)
     .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
     .map(node => String(node.userData.__wpDrawerRunnerRole));
-  assert.ok(runnerRoles.some(role => role.startsWith('roller-fixed-')));
-  assert.ok(runnerRoles.some(role => role.startsWith('roller-moving-')));
+  assert.ok(runnerRoles.some(role => role.startsWith('blum-fixed-')));
+  assert.ok(runnerRoles.some(role => role.startsWith('blum-moving-')));
 });
 
 test('sketch box external drawers emit an individually paintable brace shelf above each stack', () => {

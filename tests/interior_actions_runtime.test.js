@@ -11,6 +11,7 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
       internalDrawersEnabled: false,
       ...initialUi,
     },
+    config: { drawerRunnerType: 'blum' },
   };
   const app = {};
   const api = loadTsRuntimeModule(file, {
@@ -36,6 +37,10 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
       }
       if (specifier === './store_actions.js') {
         return {
+          setCfgScalar: (_app, key, value, meta) => {
+            calls.push(['setCfgScalar', key, value, meta]);
+            store.config[key] = value;
+          },
           setUiCurrentLayoutType: (...args) => calls.push(['setUiCurrentLayoutType', ...args]),
           setUiExtDrawerSelection: (...args) => calls.push(['setUiExtDrawerSelection', ...args]),
           setUiGridDivisionsState: (...args) => calls.push(['setUiGridDivisionsState', ...args]),
@@ -61,6 +66,11 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
           return meta;
         };
         return {
+          applyStructuralConfigMutation: (_app, sourceName, patch, applyDirectMutation, options) => {
+            calls.push(['applyStructuralConfigMutation', sourceName, patch, options]);
+            applyDirectMutation(buildMeta(sourceName, options));
+            return { appliedViaActions: false, requestedBuild: false };
+          },
           applyStructuralUiMutation: (_app, sourceName, patch, applyDirectMutation, options) => {
             calls.push(['applyStructuralUiMutation', sourceName, patch, options]);
             applyDirectMutation(buildMeta(sourceName, options));
@@ -74,6 +84,34 @@ function loadInteriorActionsHarness(initialUi = {}, failures = {}) {
   });
   return { api, calls, store, app };
 }
+
+test('[interior-actions] chest runner selection persists through the canonical config mutation and rebuilds', () => {
+  const { api, calls, store, app } = loadInteriorActionsHarness({ isChestMode: true });
+
+  api.setDrawerRunnerType(app, 'roller');
+  assert.equal(store.config.drawerRunnerType, 'roller');
+  assert.equal(store.ui.isChestMode, true);
+  assert.ok(
+    calls.some(
+      entry =>
+        entry[0] === 'applyStructuralConfigMutation' &&
+        entry[1] === 'react:interior:drawerRunnerType' &&
+        entry[2].drawerRunnerType === 'roller' &&
+        entry[3].buildTiming === 'coalesced'
+    )
+  );
+  assert.ok(
+    calls.some(
+      entry => entry[0] === 'setCfgScalar' && entry[1] === 'drawerRunnerType' && entry[2] === 'roller'
+    )
+  );
+
+  calls.length = 0;
+  api.setDrawerRunnerType(app, 'roller');
+  assert.equal(calls.length, 0, 'reselecting the active runner must not rebuild');
+  api.setDrawerRunnerType(app, 'blum');
+  assert.equal(store.config.drawerRunnerType, 'blum');
+});
 
 test('[interior-actions] shelf shortcuts switch variants in one mode and repeat-click exits', () => {
   const { api, calls, store, app } = loadInteriorActionsHarness();

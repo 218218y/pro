@@ -44,7 +44,7 @@ import { createInternalDrawerBox } from './visuals_chest_mode_drawer_box.js';
 import { createChestDrawerFrontVisual } from './visuals_chest_mode_drawer_front.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
-import { DEFAULT_DRAWER_RUNNER_TYPE } from './drawer_runner_policy.js';
+import { BLUM_TANDEM_DRAWER_RUNNER_POLICY, readDrawerRunnerTypeFromConfig } from './drawer_runner_policy.js';
 import {
   buildDoorTrimSurfaceUserData,
   isCabinetBodyDoorTrimSurfacePartId,
@@ -59,6 +59,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   App = ensureChestModeApp(App);
   const inputs = resolveChestModeBuildInputs(opts);
   const cfg = readChestModeCfgSnapshotFromOpts(opts);
+  const drawerRunnerType = readDrawerRunnerTypeFromConfig(cfg);
   const renderPolicy = requireContentsRenderPolicy(opts.renderPolicy);
   const THREE = ensureChestModeTHREE(App);
   const wardrobeGroup = asChestModeObject3D(getWardrobeGroup(App));
@@ -296,6 +297,17 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const gap = CHEST_DRAWER_GEOMETRY_POLICY.drawerGapM;
   const drawerFrontH = singleDrawerTotalH - gap;
   const drawerWidth = totalW - 2 * thick - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM;
+  const mountingWidth = totalW - 2 * thick;
+  const genericDrawerBoxWidth = drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM;
+  // Concealed Blum runners require 42 mm total cabinet-to-box clearance; the
+  // standard chest drawer-box width was designed for side-mounted roller runners.
+  const drawerBoxWidth =
+    drawerRunnerType === 'blum'
+      ? Math.min(
+          genericDrawerBoxWidth,
+          mountingWidth - BLUM_TANDEM_DRAWER_RUNNER_POLICY.internalDrawerWidthReductionM
+        )
+      : genericDrawerBoxWidth;
   const fixedRunnerHardware = new THREE.Group();
   fixedRunnerHardware.userData = {
     ...fixedRunnerHardware.userData,
@@ -359,7 +371,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     const boxD = D - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxDepthClearanceM;
     const boxMesh = createInternalDrawerBox(
       App,
-      drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
+      drawerBoxWidth,
       boxH,
       boxD,
       drawerBoxMat,
@@ -375,7 +387,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       drawerId,
       __wpDrawerBox: true,
       __wpDrawerOwnerPartId: drawerId,
-      __doorWidth: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
+      __doorWidth: drawerBoxWidth,
       __doorHeight: boxH,
     };
     drawerGroup.add(boxMesh);
@@ -406,11 +418,11 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     appendDrawerRunnerVisuals({
       App,
       THREE,
-      runnerType: DEFAULT_DRAWER_RUNNER_TYPE,
+      runnerType: drawerRunnerType,
       fixedParent: fixedRunnerHardware,
       movingParent: boxMesh,
-      drawerWidthM: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
-      mountingWidthM: totalW - 2 * thick,
+      drawerWidthM: drawerBoxWidth,
+      mountingWidthM: mountingWidth,
       drawerHeightM: boxH,
       drawerDepthM: boxD,
       drawerBoxOffsetZM: 0,

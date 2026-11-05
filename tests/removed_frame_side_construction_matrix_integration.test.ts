@@ -106,10 +106,11 @@ function buildCarcassSnapshot(args: {
   return asRecord(result.carcassOps);
 }
 
-function readBackPanelPartId(carcassOps: AnyRecord, moduleIndex: number): string | null {
+function readBackPanelSegment(carcassOps: AnyRecord, moduleIndex: number): AnyRecord {
   const backPanels = Array.isArray(carcassOps.backPanels) ? carcassOps.backPanels.map(asRecord) : [];
   const panel = backPanels[moduleIndex];
-  return typeof panel?.partId === 'string' ? panel.partId : null;
+  assert.ok(panel, 'each module must have a back-panel segment');
+  return panel;
 }
 
 function assertApprox(actual: number, expected: number, message: string): void {
@@ -376,11 +377,24 @@ for (const scenario of SCENARIOS) {
       modulesLength: scenario.modulesLength,
       corniceType,
     });
-    assert.equal(
-      readBackPanelPartId(carcassOps, scenario.moduleIndex),
-      scenario.expected.backPanelPartId,
-      'observable back-panel identity must agree with the module construction plan'
-    );
+    const backPanelSegment = readBackPanelSegment(carcassOps, scenario.moduleIndex);
+    if (scenario.expected.backPanelPartId) {
+      assert.equal(
+        backPanelSegment.partId,
+        scenario.expected.backPanelPartId,
+        'removed-side wood back identity must agree with the structural construction plan'
+      );
+      assert.equal(backPanelSegment.material, 'wood');
+      assert.equal(backPanelSegment.__wpWoodBackPanel, true);
+    } else {
+      assert.equal(
+        backPanelSegment.partId,
+        `${frameSidePartIdPrefix}body_back_c${scenario.moduleIndex}`,
+        'ordinary masonite needs an individual paint identity without changing the construction plan'
+      );
+      assert.equal(backPanelSegment.material, undefined);
+      assert.equal(backPanelSegment.__wpWoodBackPanel, undefined);
+    }
 
     const intactCarcassOps = buildCarcassSnapshot({
       cfg: { wardrobeType: scenario.cfg.wardrobeType },

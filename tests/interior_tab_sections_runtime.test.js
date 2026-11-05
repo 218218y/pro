@@ -11,6 +11,7 @@ import {
 } from '../esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.js';
 import { InteriorLayoutSketchToolsPanel } from '../esm/native/ui/react/tabs/interior_layout_sketch_controls.js';
 import {
+  InteriorDrawerRunnerSection,
   InteriorExternalDrawersSection,
   InteriorInternalDrawersSection,
   InteriorDividerSection,
@@ -288,18 +289,36 @@ test('[interior-tab-sections-runtime] SketchTabView keeps box cell-dims after sk
   assert.match(src, /useStructureCellDimsControlsProps/);
 });
 
-test('[interior-tab-sections-runtime] InteriorTab hides layout and drawer sections in chest mode but keeps divider and handles', () => {
+test('[interior-tab-sections-runtime] InteriorTab keeps the runner selector in chest mode while hiding wardrobe-only authoring', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/InteriorTab.view.tsx'), 'utf8');
 
   assert.match(src, /!state\.isChestMode \? \(/);
   assert.match(src, /<InteriorLayoutSection/);
   assert.match(src, /<InteriorExternalDrawersSection/);
   assert.match(src, /<InteriorInternalDrawersSection/);
-  assert.doesNotMatch(src, /<InteriorDrawerRunnerSection/);
+  assert.match(src, /\)\s*:\s*\(\s*<InteriorDrawerRunnerSection/);
+  assert.match(src, /testIdPrefix="chest"/);
   assert.match(src, /drawerRunnerType=\{state\.drawerRunnerType\}/);
   assert.match(src, /setDrawerRunnerType=\{workflows\.setDrawerRunnerType\}/);
   assert.match(src, /<InteriorDividerSection/);
   assert.match(src, /<InteriorHandlesSection/);
+});
+
+test('[interior-tab-sections-runtime] chest runner selector defaults to Blum and offers an explicit roller choice', () => {
+  const calls = [];
+  const runnerTree = InteriorDrawerRunnerSection({
+    drawerRunnerType: 'blum',
+    setDrawerRunnerType: value => calls.push(value),
+    testIdPrefix: 'chest',
+  });
+  const runnerHtml = renderToStaticMarkup(runnerTree);
+  assert.match(runnerHtml, /data-testid="chest-drawer-runner-card"/);
+  assert.match(runnerHtml, /data-testid="chest-drawer-runner-blum-button" aria-pressed="true"/);
+  assert.match(runnerHtml, /data-testid="chest-drawer-runner-roller-button" aria-pressed="false"/);
+
+  findElementByTestId(runnerTree, 'chest-drawer-runner-roller-button').props.onClick();
+  findElementByTestId(runnerTree, 'chest-drawer-runner-blum-button').props.onClick();
+  assert.deepEqual(calls, ['roller', 'blum']);
 });
 test('[interior-tab-sections-runtime] layout section renders canonical layout/manual controls with the sketch-division toggle', () => {
   const html = renderToStaticMarkup(React.createElement(InteriorLayoutSection, createLayoutProps()));

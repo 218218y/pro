@@ -456,11 +456,12 @@ test('kernel project capture payload preserves exact persisted key order and ser
     assert.equal(Object.prototype.hasOwnProperty.call(payload.settings, key), false);
   }
 
+  assert.equal(payload.settings.drawerRunnerType, 'blum');
   const serialized = JSON.stringify(payload);
-  assert.equal(serialized.length, 2343);
+  assert.equal(serialized.length, 2341);
   assert.equal(
     createHash('sha256').update(serialized).digest('hex'),
-    '4e0df364114c56cee6c165797f749b19f607ec3ff5128f8b32942c2457be7672'
+    '5d7a0eb3a29521d5e3948e82f1c68a0b46e03507f259260b94a626483a6699bb'
   );
 });
 

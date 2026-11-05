@@ -93,6 +93,19 @@ test('drawer runner selection defaults to Blum and preserves an explicit roller 
   assert.equal(buildProjectConfigSnapshot(rollerSnap).drawerRunnerType, 'roller');
 });
 
+test('chest mode persists its runner selection through project save and load snapshots', () => {
+  for (const selected of [undefined, 'blum', 'roller'] as const) {
+    const snapshot = buildDefaultProjectDataSnapshot({
+      ui: { isChestMode: true, raw: { width: 120, height: 90, depth: 45, doors: 0 } },
+      config: { wardrobeType: 'hinged', ...(selected ? { drawerRunnerType: selected } : {}) },
+    } as never);
+
+    assert.equal(snapshot.toggles.chestMode, true);
+    assert.equal(snapshot.settings.drawerRunnerType, selected ?? 'blum');
+    assert.equal(buildProjectConfigSnapshot(snapshot).drawerRunnerType, selected ?? 'blum');
+  }
+});
+
 test('project save finalizer canonicalizes captured module lists from raw payload snapshots', () => {
   const finalized = finalizeProjectForSavePayload(
     canonicalProjectSource({

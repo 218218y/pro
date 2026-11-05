@@ -294,8 +294,8 @@ test('render sketch shoe drawer from sketch uses one shoe drawer with its custom
   assert.ok(renderedHeight > 0.25 && renderedHeight <= 0.275);
   assert.ok(Math.abs(Number(drawers[0]?.group.userData.__wpFaceMinY) - args.effectiveBottomY) < 1e-9);
   const roles = collectRunnerRoles(args.group);
-  assert.ok(roles.some(role => role.startsWith('roller-fixed-')));
-  assert.ok(roles.some(role => role.startsWith('roller-moving-')));
+  assert.ok(roles.some(role => role.startsWith('blum-fixed-')));
+  assert.ok(roles.some(role => role.startsWith('blum-moving-')));
 });
 
 test('render sketch shoe drawer follows the external Blum runner selection', () => {

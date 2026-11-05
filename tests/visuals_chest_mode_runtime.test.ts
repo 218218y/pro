@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
+import { BLUM_TANDEM_DRAWER_RUNNER_POLICY } from '../esm/native/builder/drawer_runner_policy.ts';
 import { createInternalDrawerBox } from '../esm/native/builder/visuals_chest_mode_drawer_box.ts';
 import { buildChestOnly } from '../esm/native/builder/visuals_chest_mode.ts';
 import {
@@ -861,7 +862,10 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
   assert.equal(mirrorDrawer.userData.__doorHeight, expectedDrawerHeight);
   assert.equal(
     mirrorDrawerBox.userData.__doorWidth,
-    expectedDrawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM
+    Math.min(
+      expectedDrawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
+      1.6 - 2 * thick - BLUM_TANDEM_DRAWER_RUNNER_POLICY.internalDrawerWidthReductionM
+    )
   );
   assert.equal(
     mirrorDrawerBox.userData.__doorHeight,
@@ -1614,35 +1618,71 @@ test('visuals chest mode wheels base creates four compact casters without leg pl
   );
 });
 
-test('visuals chest mode always renders regular roller runners without exposing the external Blum selector', () => {
-  const { App, wardrobeGroup } = createChestApp();
-  buildChestOnly(App, {
-    renderPolicy: App.__outlineRenderPolicy,
-    H: 0.9,
-    totalW: 1.6,
-    D: 0.45,
-    drawersCount: 3,
-    baseType: 'legs',
-    baseLegStyle: 'square',
-    baseLegColor: 'nickel',
-    baseLegHeightCm: 15,
-    baseLegWidthCm: 5,
-    colorChoice: '#ffffff',
-    cfgSnapshot: createChestCfg({ drawerRunnerType: 'blum' }),
-  });
+test('visuals chest mode defaults to Blum, supports roller selection, and sizes each drawer box for the hardware', () => {
+  const cases = [
+    { name: 'missing runner setting', cfg: createChestCfg(), runner: 'blum' },
+    { name: 'explicit Blum', cfg: createChestCfg({ drawerRunnerType: 'blum' }), runner: 'blum' },
+    { name: 'explicit roller', cfg: createChestCfg({ drawerRunnerType: 'roller' }), runner: 'roller' },
+  ];
 
-  const roles = descendants(wardrobeGroup)
-    .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
-    .map(node => String(node.userData?.__wpDrawerRunnerRole));
-  assert.ok(roles.some(role => role === 'roller-fixed-web-left'));
-  assert.ok(roles.some(role => role === 'roller-moving-web-right'));
-  assert.equal(
-    roles.some(role => role.startsWith('blum-')),
-    false
-  );
+  for (const scenario of cases) {
+    const { App, wardrobeGroup } = createChestApp();
+    buildChestOnly(App, {
+      renderPolicy: App.__outlineRenderPolicy,
+      H: 0.9,
+      totalW: 1.6,
+      D: 0.45,
+      drawersCount: 3,
+      baseType: 'legs',
+      baseLegStyle: 'square',
+      baseLegColor: 'nickel',
+      baseLegHeightCm: 15,
+      baseLegWidthCm: 5,
+      colorChoice: '#ffffff',
+      cfgSnapshot: scenario.cfg,
+    });
 
-  const hardwareContainer = wardrobeGroup.children.find(
-    child => child?.userData?.__wpChestDrawerRunnerHardware === true
-  );
-  assert.ok(hardwareContainer, 'expected fixed chest runner hardware to stay outside moving drawer groups');
+    const roles = descendants(wardrobeGroup)
+      .filter(node => node.userData?.__wpDrawerRunnerHardware === true)
+      .map(node => String(node.userData?.__wpDrawerRunnerRole));
+    assert.ok(
+      roles.some(
+        role => role === `${scenario.runner}-fixed-${scenario.runner === 'blum' ? 'runner' : 'web'}-left`
+      ),
+      scenario.name
+    );
+    assert.ok(
+      roles.some(
+        role => role === `${scenario.runner}-moving-${scenario.runner === 'blum' ? 'runner' : 'web'}-right`
+      ),
+      scenario.name
+    );
+    assert.equal(
+      roles.some(role => role.startsWith(scenario.runner === 'blum' ? 'roller-' : 'blum-')),
+      false
+    );
+
+    const hardwareContainer = wardrobeGroup.children.find(
+      child => child?.userData?.__wpChestDrawerRunnerHardware === true
+    );
+    assert.ok(hardwareContainer, `expected cabinet-fixed runner group for ${scenario.name}`);
+    assert.ok(hardwareContainer.children.length > 0);
+
+    const drawer = wardrobeGroup.children.find(child => child?.userData?.partId === 'chest_drawer_0');
+    assert.ok(drawer, `expected a drawer for ${scenario.name}`);
+    const drawerBox = drawer.children.find(child => child?.userData?.__wpDrawerBox === true);
+    assert.ok(drawerBox, `expected a drawer box for ${scenario.name}`);
+    const thick = resolveDoorMountThicknessesFromConfig(scenario.cfg).frameThicknessM;
+    const cabinetInnerWidth = 1.6 - 2 * thick;
+    const expectedBoxWidth =
+      scenario.runner === 'blum'
+        ? cabinetInnerWidth - BLUM_TANDEM_DRAWER_RUNNER_POLICY.internalDrawerWidthReductionM
+        : cabinetInnerWidth -
+          CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM -
+          CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM;
+    assert.ok(
+      Math.abs(Number(drawerBox.userData.__doorWidth) - expectedBoxWidth) < 1e-9,
+      `${scenario.name} should preserve its own mounting clearance`
+    );
+  }
 });

@@ -5,6 +5,7 @@ import { useApp } from '../hooks.js';
 import { TabPanel } from '../components/index.js';
 import {
   InteriorDividerSection,
+  InteriorDrawerRunnerSection,
   InteriorExternalDrawersSection,
   InteriorHandlesSection,
   InteriorInternalDrawersSection,
@@ -80,7 +81,13 @@ function InteriorTabInner(props: { active: boolean }) {
                 }}
               />
             </>
-          ) : null}
+          ) : (
+            <InteriorDrawerRunnerSection
+              drawerRunnerType={state.drawerRunnerType}
+              setDrawerRunnerType={workflows.setDrawerRunnerType}
+              testIdPrefix="chest"
+            />
+          )}
 
           <InteriorDividerSection
             isDividerMode={state.isDividerMode}
