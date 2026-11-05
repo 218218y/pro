@@ -82,7 +82,12 @@ function applyProfileSegmentMiterTrims(args: {
     const vz = readGeometryAttrNumber(position.getZ(vi));
     if (!Number.isFinite(vx) || !Number.isFinite(vz)) continue;
     const tRaw = 1 - vx / xOuter;
-    const t = vx < 0 ? Math.min(3, Math.max(0, tRaw)) : Math.min(1, Math.max(0, tRaw));
+    const t =
+      seg.miterMode === 'full_depth_miter'
+        ? Math.max(0, tRaw)
+        : vx < 0
+          ? Math.min(3, Math.max(0, tRaw))
+          : Math.min(1, Math.max(0, tRaw));
     if (miterEndTrim != null && miterEndTrim > 0 && Math.abs(vz - zPos) < epsZ) {
       position.setZ(vi, vz - miterEndTrim * t);
     }

@@ -8,8 +8,11 @@ import type {
   CornerCorniceProfileOp,
   CornerCorniceWaveOp,
 } from './corner_cornice_ir.js';
-import { buildCornerCorniceProfile, connectorProfileBaseBandY } from './corner_cornice_profile_plan.js';
-import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
+import {
+  buildCornerCorniceProfile,
+  buildStraightCorniceProfile,
+  connectorProfileBaseBandY,
+} from './corner_cornice_profile_plan.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,

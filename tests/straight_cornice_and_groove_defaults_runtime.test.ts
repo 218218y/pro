@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { computeCarcassOps } from '../esm/native/builder/core_pure_compute.ts';
-import { buildStraightCorniceProfile } from '../esm/native/builder/cornice_straight_profile.ts';
+import { buildStraightCorniceProfile } from '../esm/native/builder/corner_cornice_profile_plan.ts';
 import { buildDefaultProjectDataSnapshot } from '../esm/native/io/project_io_save_helpers.ts';
 import { buildProjectUiSnapshot } from '../esm/native/io/project_io_load_helpers.ts';
 import { buildKernelProjectCaptureData } from '../esm/native/kernel/kernel_project_capture_payload.ts';

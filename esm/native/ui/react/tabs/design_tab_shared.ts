@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { MODES } from '../../../services/api.js';
-import { normalizeCorniceType, type CorniceType } from '../../../../shared/cornice_type.js';
+import { normalizeCorniceType, type CorniceType } from '../../../../../types/cornice_type.js';
 
 import type { SavedColor } from './design_tab_multicolor_panel.js';
 import type { UiFeedbackNamespaceLike, UnknownRecord } from '../../../../../types';

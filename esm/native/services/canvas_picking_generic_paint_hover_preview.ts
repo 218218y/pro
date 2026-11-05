@@ -69,6 +69,7 @@ function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
       key === 'body_stack_split_divider' ||
       key === 'plinth_color' ||
       key === 'lower_plinth_color' ||
+      key === 'cornice_color' ||
       isBaseLegPlatformPaintKey(key) ||
       isDrawerBoxPartId(key) ||
       isSketchInternalDrawerCassettePartId(key) ||

@@ -14,7 +14,7 @@ export const CARCASS_CORNICE_MODES = [
 ] as const;
 
 export type CarcassCorniceMode = (typeof CARCASS_CORNICE_MODES)[number];
-export type CorniceMiterMode = 'outer_extend';
+export type CorniceMiterMode = 'outer_extend' | 'full_depth_miter';
 
 export type CorniceProfilePoint = {
   x: number;
@@ -161,7 +161,9 @@ export function isCarcassCorniceSegment(value: unknown): value is CarcassCornice
       typeof record.flipX === 'boolean' &&
       (typeof record.miterStartTrim === 'undefined' || isNonNegativeNumber(record.miterStartTrim)) &&
       (typeof record.miterEndTrim === 'undefined' || isNonNegativeNumber(record.miterEndTrim)) &&
-      (typeof record.miterMode === 'undefined' || record.miterMode === 'outer_extend')
+      (typeof record.miterMode === 'undefined' ||
+        record.miterMode === 'outer_extend' ||
+        record.miterMode === 'full_depth_miter')
     );
   }
 
@@ -279,7 +281,11 @@ function collectSegmentViolations(
   if (typeof record.miterEndTrim !== 'undefined') {
     pushNumberViolation(violations, `${path}.miterEndTrim`, record.miterEndTrim, false);
   }
-  if (typeof record.miterMode !== 'undefined' && record.miterMode !== 'outer_extend') {
+  if (
+    typeof record.miterMode !== 'undefined' &&
+    record.miterMode !== 'outer_extend' &&
+    record.miterMode !== 'full_depth_miter'
+  ) {
     violations.push({ path: `${path}.miterMode`, code: 'invalid-miter-mode' });
   }
 }

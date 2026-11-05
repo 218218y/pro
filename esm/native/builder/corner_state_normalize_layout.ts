@@ -6,7 +6,7 @@ import {
   CORNER_WING_BODY_POLICY,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
-import { normalizeCorniceType } from '../../shared/cornice_type.js';
+import { normalizeCorniceType } from '../../../types/cornice_type.js';
 import {
   normalizeBaseLegPlatformMode,
   normalizeBaseLegPlatformSideMode,

@@ -1,5 +1,5 @@
 import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
-import { normalizeCorniceType, type CorniceType } from '../../shared/cornice_type.js';
+import { normalizeCorniceType, type CorniceType } from '../../../types/cornice_type.js';
 import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 

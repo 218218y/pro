@@ -4,6 +4,17 @@ import type { CornerCornicePoint } from './corner_cornice_ir.js';
 const COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
 
+export function buildStraightCorniceProfile(): CornerCornicePoint[] {
+  const { overhangM, depthM, heightM } = CARCASS_CORNICE_RENDER_POLICY.straight;
+  const bearingM = depthM - overhangM;
+  return [
+    { x: -bearingM, y: 0 },
+    { x: overhangM, y: 0 },
+    { x: overhangM, y: heightM },
+    { x: -bearingM, y: heightM },
+  ];
+}
+
 export function buildCornerCorniceProfile(overhang: number): CornerCornicePoint[] {
   const height = PROFILE.heightM;
   const insetOnRoof = Number(PROFILE.insetOnRoofM);

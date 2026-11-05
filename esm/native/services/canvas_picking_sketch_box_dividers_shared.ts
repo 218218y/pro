@@ -1,5 +1,5 @@
 import type { UnknownRecord } from '../../../types';
-import { normalizeCorniceType, type CorniceType } from '../../shared/cornice_type.js';
+import { normalizeCorniceType, type CorniceType } from '../../../types/cornice_type.js';
 import {
   formatIdentityValue,
   normalizeSketchBoxDividerStructuralOrder,

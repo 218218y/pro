@@ -14,7 +14,7 @@ export const CORNER_CORNICE_PART_IDS = [
 export type CornerCornicePartId = (typeof CORNER_CORNICE_PART_IDS)[number];
 export type CornerCorniceOwner = 'wing' | 'connector';
 export type CornerCorniceMode = 'profile' | 'wave' | 'straight';
-export type CornerCorniceMiterMode = 'inner_trim' | 'outer_extend';
+export type CornerCorniceMiterMode = 'inner_trim' | 'outer_extend' | 'full_depth_miter';
 
 export type CornerCornicePoint = { x: number; y: number };
 
@@ -136,7 +136,8 @@ export function isCornerCorniceOp(value: unknown): value is CornerCorniceOp {
       (typeof record.miterEndTrim === 'undefined' || isNonNegativeNumber(record.miterEndTrim)) &&
       (typeof record.miterMode === 'undefined' ||
         record.miterMode === 'inner_trim' ||
-        record.miterMode === 'outer_extend') &&
+        record.miterMode === 'outer_extend' ||
+        record.miterMode === 'full_depth_miter') &&
       (typeof record.miterProfileBaseY === 'undefined' || isNonNegativeNumber(record.miterProfileBaseY)) &&
       (typeof record.miterBaseSealEpsilon === 'undefined' || isNonNegativeNumber(record.miterBaseSealEpsilon))
     );
@@ -246,7 +247,8 @@ function collectOpViolations(
     if (
       typeof record.miterMode !== 'undefined' &&
       record.miterMode !== 'inner_trim' &&
-      record.miterMode !== 'outer_extend'
+      record.miterMode !== 'outer_extend' &&
+      record.miterMode !== 'full_depth_miter'
     ) {
       violations.push({ path: `${path}.miterMode`, code: 'invalid-miter-mode' });
     }

@@ -25,7 +25,7 @@ import {
 import { buildProjectConfigSnapshot as buildProjectConfigSnapshotImpl } from './project_io_load_helpers_config.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 import { asUiRawInputs } from '../../../types/ui_raw.js';
-import { normalizeCorniceType } from '../../shared/cornice_type.js';
+import { normalizeCorniceType } from '../../../types/cornice_type.js';
 
 export type {
   ProjectIoPrevUiModeLike,

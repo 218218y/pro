@@ -3,7 +3,7 @@ import type { OrderPdfDraftLike } from '../../../../types/build.js';
 import type { ExportOrderPdfDeps } from './export_order_pdf_types.js';
 import { formatIdentityValue, readIdentityValue } from '../../../shared/identity_value_shared.js';
 import { readFiniteNumber, readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
-import { normalizeCorniceType } from '../../../shared/cornice_type.js';
+import { normalizeCorniceType } from '../../../../types/cornice_type.js';
 
 import {
   DEFAULT_HEIGHT,

@@ -19,8 +19,8 @@ import {
   resolveRemovedFrameSideOuterBounds,
   type RemovedFrameSideConstructionPlan,
 } from './removed_frame_side_construction_plan.js';
-import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
-import { normalizeCorniceType } from '../../shared/cornice_type.js';
+import { buildStraightCorniceProfile } from './corner_cornice_profile_plan.js';
+import { normalizeCorniceType } from '../../../types/cornice_type.js';
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
@@ -837,7 +837,11 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
           : leftSide != null && !leftSide.internal
             ? clampMiterTrimForSegment(leftExteriorTrim, len)
             : 0,
-      ...(useOuterMiter ? { miterMode: 'outer_extend' } : null),
+      ...(straight
+        ? { miterMode: 'full_depth_miter' as const }
+        : useOuterMiter
+          ? { miterMode: 'outer_extend' as const }
+          : null),
       x: (pathSeg.ax + pathSeg.bx) / 2,
       y: yPlace,
       z: (pathSeg.az + pathSeg.bz) / 2,
@@ -877,7 +881,11 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
       rotationY: 0,
       flipX: !leftSide.internal,
       miterEndTrim: sideMiterTrim,
-      ...(useOuterMiter ? { miterMode: 'outer_extend' } : null),
+      ...(straight
+        ? { miterMode: 'full_depth_miter' as const }
+        : useOuterMiter
+          ? { miterMode: 'outer_extend' as const }
+          : null),
       x: left,
       y: yPlace,
       z: sideCenterZ,
@@ -918,7 +926,11 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
       rotationY: 0,
       flipX: rightSide.internal,
       miterEndTrim: sideMiterTrim,
-      ...(useOuterMiter ? { miterMode: 'outer_extend' } : null),
+      ...(straight
+        ? { miterMode: 'full_depth_miter' as const }
+        : useOuterMiter
+          ? { miterMode: 'outer_extend' as const }
+          : null),
       x: right,
       y: yPlace,
       z: sideCenterZ,

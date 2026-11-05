@@ -26,6 +26,9 @@ export type ExtrudeGeometryLike = {
   getIndex?: () => IndexLike | null;
   getAttribute: (name: string) => PositionAttributeLike;
   setIndex?: (indices: number[]) => unknown;
+  groups?: Array<{ start: number; count: number; materialIndex?: number }>;
+  clearGroups?: () => unknown;
+  addGroup?: (start: number, count: number, materialIndex?: number) => unknown;
   computeVertexNormals: () => unknown;
 };
 

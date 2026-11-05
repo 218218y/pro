@@ -65,7 +65,8 @@ test('Corner Wing Cornice planners stay plan-first and do not create Three.js ob
   const planSource = read('esm/native/builder/corner_wing_cornice_plan.ts');
   assert.match(planSource, /buildCornerWingProfileCornicePlan/);
   assert.match(planSource, /buildCornerWingWaveCornicePlan/);
-  assert.match(planSource, /kind: 'corner_cornice', owner: 'wing', mode: 'profile'/);
+  assert.match(planSource, /kind: 'corner_cornice', owner: 'wing', mode: straight \? 'straight' : 'profile'/);
+  assert.match(planSource, /op\.miterMode = 'full_depth_miter'/);
   assert.match(planSource, /kind: 'corner_cornice', owner: 'wing', mode: 'wave'/);
 });
 
@@ -74,7 +75,7 @@ test('Corner Wing Cornice flow wrappers route one typed plan through the canonic
   const wave = read('esm/native/builder/corner_wing_cornice_wave.ts');
   const renderer = read('esm/native/builder/corner_cornice_render.ts');
 
-  assert.match(profile, /buildCornerWingProfileCornicePlan\(ctx, locals\)/);
+  assert.match(profile, /buildCornerWingProfileCornicePlan\(ctx, locals, args\.straight === true\)/);
   assert.match(profile, /renderCornerCornicePlan\(plan,/);
   assert.match(wave, /buildCornerWingWaveCornicePlan\(ctx, locals\)/);
   assert.match(wave, /renderCornerCornicePlan\(plan,/);

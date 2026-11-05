@@ -2,14 +2,16 @@ import type { ExtrudeGeometryLike, RenderCarcassRuntime } from './render_carcass
 import { __stripMiterCaps } from './render_carcass_ops_shared.js';
 import type { CorniceProfilePoint, CorniceProfileSegment } from './carcass_cornice_ir.js';
 
-type CorniceMiterMode = 'inner_trim' | 'outer_extend';
+type CorniceMiterMode = 'inner_trim' | 'outer_extend' | 'full_depth_miter';
 
 function readGeometryAttrNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : NaN;
 }
 
 function readCorniceMiterMode(seg: CorniceProfileSegment): CorniceMiterMode {
-  return seg.miterMode === 'outer_extend' ? 'outer_extend' : 'inner_trim';
+  return seg.miterMode === 'outer_extend' || seg.miterMode === 'full_depth_miter'
+    ? seg.miterMode
+    : 'inner_trim';
 }
 
 function clamp01(value: number): number {
@@ -66,6 +68,11 @@ export function applyMiterTrims(
     if (Number.isFinite(miterEndTrim) && miterEndTrim > 0 && Math.abs(vz - zPos) < epsZ) {
       if (miterMode === 'outer_extend') {
         pos.setZ(vi, vz + miterEndTrim * outerExtendT);
+      } else if (miterMode === 'full_depth_miter') {
+        // The straight board is already extended by its 2 cm outside lip.
+        // Retreat the full 10 cm cross-section on a 45-degree cut, including
+        // the 8 cm bearing on the roof; otherwise the two boards overlap.
+        pos.setZ(vi, vz - miterEndTrim * (1 - vx / xOuter));
       } else {
         let zNew = vz - miterEndTrim * innerTrimT;
         if (sealBase) zNew = Math.min(zPos, zNew + baseSealEps);
@@ -75,6 +82,8 @@ export function applyMiterTrims(
     if (Number.isFinite(miterStartTrim) && miterStartTrim > 0 && Math.abs(vz - zNeg) < epsZ) {
       if (miterMode === 'outer_extend') {
         pos.setZ(vi, vz - miterStartTrim * outerExtendT);
+      } else if (miterMode === 'full_depth_miter') {
+        pos.setZ(vi, vz + miterStartTrim * (1 - vx / xOuter));
       } else {
         let zNew = vz + miterStartTrim * innerTrimT;
         if (sealBase) zNew = Math.max(zNeg, zNew - baseSealEps);

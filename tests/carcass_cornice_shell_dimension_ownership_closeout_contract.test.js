@@ -234,6 +234,7 @@ test('Cornice and Shell owners retain exact dependencies and direct frozen owner
       ['common', 'CARCASS_CORNICE_COMMON_POLICY'],
       ['wave', 'CARCASS_CORNICE_WAVE_POLICY'],
       ['profile', 'CARCASS_CORNICE_PROFILE_POLICY'],
+      ['straight', 'CARCASS_CORNICE_STRAIGHT_POLICY'],
     ]
   );
 

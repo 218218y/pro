@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleDoorGrooveLayoutHoverPreview } from '../esm/native/services/canvas_picking_door_action_hover_preview_groove.ts';
+import { computeAutoGrooveLinesCount } from '../esm/native/runtime/groove_lines_access.ts';
+
+const sizedGrooveLines = computeAutoGrooveLinesCount(0.6);
+const narrowFullWidthGrooveLines = computeAutoGrooveLinesCount(0.86);
 
 class Vec3 {
   x = 0;
@@ -194,7 +198,7 @@ test('manual groove hover uses manual-handle-style tolerance and guides for a sy
           centerXNorm: 0.305,
           centerYNorm: 0.6525,
           orientation: 'horizontal',
-          linesCount: 12,
+          linesCount: sizedGrooveLines,
         },
       ],
     },
@@ -252,7 +256,7 @@ test('manual groove hover keeps the cross-door guide long when only the height m
           centerXNorm: 0.5,
           centerYNorm: 0.6525,
           orientation: 'horizontal',
-          linesCount: 12,
+          linesCount: sizedGrooveLines,
         },
       ],
     },
@@ -300,7 +304,7 @@ test('manual groove hover treats full width as the same layout across different 
           heightCm: 60,
           centerYNorm: 0.6525,
           orientation: 'horizontal',
-          linesCount: 12,
+          linesCount: sizedGrooveLines,
         },
       ],
     },
@@ -360,7 +364,7 @@ test('manual groove full-width symmetry marks every door instead of pairing oute
         heightCm: 60,
         centerYNorm: 0.65,
         orientation: 'horizontal',
-        linesCount: 12,
+        linesCount: sizedGrooveLines,
       },
     ],
   };
@@ -420,7 +424,7 @@ test('manual groove hover keeps full-width auto grooves symmetric when door widt
           heightCm: 60,
           centerYNorm: 0.6525,
           orientation: 'vertical',
-          linesCount: 17,
+          linesCount: narrowFullWidthGrooveLines,
         },
       ],
     },
@@ -448,7 +452,7 @@ test('manual groove hover keeps full-width auto grooves symmetric when door widt
           heightCm: 60,
           centerYNorm: 0.6525,
           orientation: 'vertical',
-          linesCount: 18,
+          linesCount: narrowFullWidthGrooveLines + 1,
         },
       ],
     },

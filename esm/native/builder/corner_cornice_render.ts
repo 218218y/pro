@@ -6,6 +6,7 @@ import type {
   CornerCorniceWaveOp,
 } from './corner_cornice_ir.js';
 import { isCornerCornicePlan } from './corner_cornice_ir.js';
+import { __stripMiterCaps } from './render_carcass_ops_shared_geometry.js';
 
 type PositionAttributeLike = {
   count: number;
@@ -117,6 +118,16 @@ function createProfileMesh(
   const geometry = new three.ExtrudeGeometry(shape, { depth: op.length, bevelEnabled: false, steps: 1 });
   geometry.translate?.(0, 0, -op.length / 2);
   applyProfileMiter(geometry, op);
+  if (op.miterMode === 'full_depth_miter') {
+    __stripMiterCaps(
+      geometry as Parameters<typeof __stripMiterCaps>[0],
+      (op.miterStartTrim ?? 0) > 0,
+      (op.miterEndTrim ?? 0) > 0,
+      err => {
+        throw err;
+      }
+    );
+  }
   geometry.computeVertexNormals?.();
   return new three.Mesh(geometry, materialFor(op, runtime));
 }
@@ -164,6 +175,8 @@ function applyProfileMiter(geometry: GeometryLike, op: CornerCorniceProfileOp): 
     if (endTrim > 0 && Math.abs(vz - zPos) < epsZ) {
       if (miterMode === 'outer_extend') {
         position.setZ(index, vz + endTrim * outerExtendT);
+      } else if (miterMode === 'full_depth_miter') {
+        position.setZ(index, vz - endTrim * (1 - vx / xOuter));
       } else {
         let zNew = vz - endTrim * innerTrimT;
         if (sealBase) zNew = Math.min(zPos, zNew + baseSealEpsilon);
@@ -173,6 +186,8 @@ function applyProfileMiter(geometry: GeometryLike, op: CornerCorniceProfileOp): 
     if (startTrim > 0 && Math.abs(vz - zNeg) < epsZ) {
       if (miterMode === 'outer_extend') {
         position.setZ(index, vz - startTrim * outerExtendT);
+      } else if (miterMode === 'full_depth_miter') {
+        position.setZ(index, vz + startTrim * (1 - vx / xOuter));
       } else {
         let zNew = vz + startTrim * innerTrimT;
         if (sealBase) zNew = Math.max(zNeg, zNew - baseSealEpsilon);

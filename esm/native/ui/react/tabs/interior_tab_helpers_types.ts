@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { CorniceType } from '../../../../shared/cornice_type.js';
+import type { CorniceType } from '../../../../../types/cornice_type.js';
 
 import type {
   BaseLegColor,

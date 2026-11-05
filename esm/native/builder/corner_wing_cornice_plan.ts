@@ -9,9 +9,9 @@ import type {
 } from './corner_cornice_ir.js';
 import {
   buildCornerCorniceProfile,
+  buildStraightCorniceProfile,
   buildInternalCornerCorniceProfile,
 } from './corner_cornice_profile_plan.js';
-import { buildStraightCorniceProfile } from './cornice_straight_profile.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 import {
@@ -82,6 +82,11 @@ export function buildCornerWingProfileCornicePlan(
         overhangX,
         overhangZ,
       });
+  if (straight) {
+    for (const op of operations) {
+      if (op.miterStartTrim || op.miterEndTrim) op.miterMode = 'full_depth_miter';
+    }
+  }
   return { kind: 'corner_cornice', owner: 'wing', mode: straight ? 'straight' : 'profile', operations };
 }
 
