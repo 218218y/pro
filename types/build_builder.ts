@@ -672,6 +672,7 @@ export interface BuilderApplyCarcassContextLike extends UnknownRecord {
   App: AppContainer | UnknownRecord;
   addOutlines?: BuilderOutlineFn | null;
   getPartMaterial?: BuilderPartMaterialResolver;
+  getPartColorValue?: BuilderPartColorResolver;
   __sketchMode?: boolean;
   legMat?: unknown;
   masoniteMat?: unknown;

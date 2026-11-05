@@ -160,11 +160,12 @@ function findRunnerMaterial(parent: FakeParent, role: string): FakeMaterial {
   return material;
 }
 
-test('[drawer-runner-visuals-runtime] roller is the canonical default', () => {
-  assert.equal(DEFAULT_DRAWER_RUNNER_TYPE, 'roller');
-  assert.equal(normalizeDrawerRunnerType(undefined), 'roller');
-  assert.equal(normalizeDrawerRunnerType('invalid'), 'roller');
+test('[drawer-runner-visuals-runtime] Blum is the canonical default without overriding explicit roller', () => {
+  assert.equal(DEFAULT_DRAWER_RUNNER_TYPE, 'blum');
+  assert.equal(normalizeDrawerRunnerType(undefined), 'blum');
+  assert.equal(normalizeDrawerRunnerType('invalid'), 'blum');
   assert.equal(normalizeDrawerRunnerType('blum'), 'blum');
+  assert.equal(normalizeDrawerRunnerType('roller'), 'roller');
 });
 
 test('[drawer-runner-visuals-runtime] internal Blum clearance is derived from concealed hardware geometry', () => {
@@ -181,9 +182,10 @@ test('[drawer-runner-visuals-runtime] internal Blum clearance is derived from co
 });
 
 test('[drawer-runner-visuals-runtime] canonical config scalar reader rejects invalid runner values', () => {
-  assert.equal(readConfigScalarOrDefault({}, 'drawerRunnerType'), 'roller');
+  assert.equal(readConfigScalarOrDefault({}, 'drawerRunnerType'), 'blum');
   assert.equal(readConfigScalarOrDefault({ drawerRunnerType: 'blum' }, 'drawerRunnerType'), 'blum');
-  assert.equal(readConfigScalarOrDefault({ drawerRunnerType: 'ball-bearing' }, 'drawerRunnerType'), 'roller');
+  assert.equal(readConfigScalarOrDefault({ drawerRunnerType: 'roller' }, 'drawerRunnerType'), 'roller');
+  assert.equal(readConfigScalarOrDefault({ drawerRunnerType: 'ball-bearing' }, 'drawerRunnerType'), 'blum');
 });
 
 test('[drawer-runner-visuals-runtime] roller runner separates cabinet and moving drawer hardware', () => {

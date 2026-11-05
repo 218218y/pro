@@ -70,13 +70,13 @@ test('project io default snapshot rematerializes saved module lists before expor
   assert.equal(snap.cornerConfiguration.layout, 'shelves');
 });
 
-test('drawer runner selection defaults to roller and survives project save/load snapshots', () => {
+test('drawer runner selection defaults to Blum and preserves an explicit roller choice in snapshots', () => {
   const defaultSnap = buildDefaultProjectDataSnapshot({
     ui: { raw: { width: 180, height: 240, depth: 60, doors: 2 } },
     config: { wardrobeType: 'hinged' },
   } as never);
-  assert.equal(defaultSnap.settings.drawerRunnerType, 'roller');
-  assert.equal(buildProjectConfigSnapshot(defaultSnap).drawerRunnerType, 'roller');
+  assert.equal(defaultSnap.settings.drawerRunnerType, 'blum');
+  assert.equal(buildProjectConfigSnapshot(defaultSnap).drawerRunnerType, 'blum');
 
   const blumSnap = buildDefaultProjectDataSnapshot({
     ui: { raw: { width: 180, height: 240, depth: 60, doors: 2 } },
@@ -84,6 +84,13 @@ test('drawer runner selection defaults to roller and survives project save/load 
   } as never);
   assert.equal(blumSnap.settings.drawerRunnerType, 'blum');
   assert.equal(buildProjectConfigSnapshot(blumSnap).drawerRunnerType, 'blum');
+
+  const rollerSnap = buildDefaultProjectDataSnapshot({
+    ui: { raw: { width: 180, height: 240, depth: 60, doors: 2 } },
+    config: { wardrobeType: 'hinged', drawerRunnerType: 'roller' },
+  } as never);
+  assert.equal(rollerSnap.settings.drawerRunnerType, 'roller');
+  assert.equal(buildProjectConfigSnapshot(rollerSnap).drawerRunnerType, 'roller');
 });
 
 test('project save finalizer canonicalizes captured module lists from raw payload snapshots', () => {

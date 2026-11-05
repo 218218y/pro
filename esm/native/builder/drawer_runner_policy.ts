@@ -4,10 +4,10 @@ import type { DrawerRunnerType } from '../../../types/index.js';
  * Drawer runner selection is a cabinet-wide construction choice for drawers,
  * including external, shoe, and internal drawers.
  */
-export const DEFAULT_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'roller';
+export const DEFAULT_DRAWER_RUNNER_TYPE: DrawerRunnerType = 'blum';
 
 export function normalizeDrawerRunnerType(value: unknown): DrawerRunnerType {
-  return value === 'blum' ? 'blum' : DEFAULT_DRAWER_RUNNER_TYPE;
+  return value === 'roller' ? 'roller' : DEFAULT_DRAWER_RUNNER_TYPE;
 }
 
 export function readDrawerRunnerTypeFromConfig(value: unknown): DrawerRunnerType {

@@ -65,7 +65,7 @@ export const DEFAULTS: ConfigScalarDefaults = {
   grooveLinesCount: null,
   boardMaterial: 'sandwich',
   doorMountMode: 'overlay',
-  drawerRunnerType: 'roller',
+  drawerRunnerType: 'blum',
   overlayFrameThicknessCm: null,
   overlayShelfThicknessCm: null,
   insetFrameThicknessCm: null,
@@ -204,7 +204,7 @@ export function readDoorMountModeDefault(value: unknown): DoorMountModeValue {
 }
 
 export function readDrawerRunnerTypeDefault(value: unknown): DrawerRunnerTypeValue {
-  return normalizeDrawerRunnerType(value, 'roller');
+  return normalizeDrawerRunnerType(value, 'blum');
 }
 
 export function readWardrobeTypeDefault(value: unknown): WardrobeTypeValue {

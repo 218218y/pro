@@ -29,7 +29,7 @@ function readStringNullableMap(value: unknown): Record<string, string | null | u
 }
 
 export function readDrawerConfig(value: unknown): DrawerConfig {
-  if (!isRecord(value)) return { drawerRunnerType: 'roller' };
+  if (!isRecord(value)) return { drawerRunnerType: 'blum' };
   const groovesMap = readObjectMap(value.groovesMap);
   const doorTrimMap = readObjectMap(value.doorTrimMap);
   const drawerDividersMap = readObjectMap(value.drawerDividersMap);

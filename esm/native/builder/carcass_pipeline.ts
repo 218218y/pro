@@ -152,6 +152,7 @@ function createApplyCarcassContext(
     roomArchitecturePlan: args.roomArchitecturePlan,
     addOutlines: args.addOutlines ?? null,
     ...(args.getPartMaterial !== undefined ? { getPartMaterial: args.getPartMaterial } : {}),
+    ...(args.getPartColorValue !== undefined ? { getPartColorValue: args.getPartColorValue } : {}),
     ...(args.__sketchMode !== undefined ? { __sketchMode: args.__sketchMode } : {}),
     legMat: args.legMat,
     masoniteMat: args.masoniteMat,

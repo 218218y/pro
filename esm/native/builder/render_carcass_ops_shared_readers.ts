@@ -87,12 +87,16 @@ export function __asContext(v: unknown): RenderCarcassContext {
   const getPartMaterial = __isFn(rec.getPartMaterial)
     ? __partMaterialFn(rec.getPartMaterial) || undefined
     : undefined;
+  const getPartColorValue = __isFn(rec.getPartColorValue)
+    ? (rec.getPartColorValue as (partId: string) => string | null | undefined)
+    : undefined;
   return {
     ...(App !== undefined ? { App } : {}),
     THREE: rec.THREE,
     ...(roomArchitecturePlan !== undefined ? { roomArchitecturePlan } : {}),
     ...(addOutlines !== undefined ? { addOutlines } : {}),
     ...(getPartMaterial !== undefined ? { getPartMaterial } : {}),
+    ...(getPartColorValue !== undefined ? { getPartColorValue } : {}),
     __sketchMode: rec.__sketchMode === true,
     plinthMat: rec.plinthMat,
     legMat: rec.legMat,

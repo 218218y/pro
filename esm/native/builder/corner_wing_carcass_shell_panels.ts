@@ -78,9 +78,17 @@ export function applyCornerWingCarcassPanels(
       w - CORNER_WING_PANEL_POLICY.panelWidthClearanceM
     );
 
+    const backMaterial =
+      !__sketchMode && Array.isArray(__backPanelMaterial)
+        ? [
+            ...__backPanelMaterial.slice(0, 4),
+            getCornerMat(partId, __backPanelMaterial[4]),
+            __backPanelMaterial[5],
+          ]
+        : __backPanelMaterial;
     const bp = new THREE.Mesh(
       new THREE.BoxGeometry(panelW, panelH, metrics.__wingBackPanelThick),
-      __backPanelMaterial
+      backMaterial
     );
     bp.position.set(centerX, startY + h / 2, __backPanelZ);
     if (!__sketchMode) {
@@ -88,7 +96,13 @@ export function applyCornerWingCarcassPanels(
       bp.receiveShadow = false;
     }
 
-    bp.userData = { partId, moduleIndex: moduleIndex || 'corner', kind: 'backPanel', __wpStack: __stackKey };
+    bp.userData = {
+      partId,
+      moduleIndex: moduleIndex || 'corner',
+      kind: 'backPanel',
+      __wpMasoniteBackPanel: true,
+      __wpStack: __stackKey,
+    };
     wingGroup.add(bp);
   };
 

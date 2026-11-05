@@ -273,7 +273,7 @@ export function setDrawerRunnerType(
 ): void {
   const next = value;
   const cfgSnap = getConfigSnap(app);
-  const current: DrawerRunnerType = cfgSnap.drawerRunnerType === 'blum' ? 'blum' : 'roller';
+  const current: DrawerRunnerType = cfgSnap.drawerRunnerType === 'roller' ? 'roller' : 'blum';
   if (current === next) return;
 
   try {

@@ -107,20 +107,18 @@ function createSetup(overrides: Record<string, unknown> = {}) {
     baseType: 'plinth',
     baseH: 0.09,
     bodyMat: 'body',
-    backPanelMaterialArray: [
-      {
-        polygonOffset: true,
-        polygonOffsetFactor: 3,
-        polygonOffsetUnits: 2,
-        clone() {
-          return {
-            polygonOffset: this.polygonOffset,
-            polygonOffsetFactor: this.polygonOffsetFactor,
-            polygonOffsetUnits: this.polygonOffsetUnits,
-          };
-        },
+    backPanelMaterialArray: Array.from({ length: 6 }, () => ({
+      polygonOffset: true,
+      polygonOffsetFactor: 3,
+      polygonOffsetUnits: 2,
+      clone() {
+        return {
+          polygonOffset: this.polygonOffset,
+          polygonOffsetFactor: this.polygonOffsetFactor,
+          polygonOffsetUnits: this.polygonOffsetUnits,
+        };
       },
-    ],
+    })),
     __individualColors: { corner_pent_plinth: true },
     getCornerMat: (partId: string, fallback: unknown) => `corner:${partId}:${String(fallback)}`,
     addOutlines: (obj: unknown) => outlined.push(obj),
@@ -301,6 +299,21 @@ test('corner connector shell panels add back and attachment panels with outer-fa
   const mainAttach = cornerGroup.children[3] as Mesh;
   assert.equal(wingAttach.userData.partId, 'corner_pent_attach_wing');
   assert.equal(mainAttach.userData.partId, 'corner_pent_attach_main');
+  const paintedBack = (cornerGroup.children as Mesh[]).find(
+    child => child.userData.partId === 'corner_pent_back_side'
+  );
+  assert.ok(paintedBack);
+  assert.equal(paintedBack.userData.__wpMasoniteBackPanel, true);
+  assert.equal(
+    (paintedBack.material as unknown[])[4],
+    'corner:corner_pent_back_side:[object Object]',
+    'the colored corner back face uses its own part id'
+  );
+  assert.equal(
+    (paintedBack.material as unknown[])[5],
+    metrics.backPanelMaterialArrayNoPO[5],
+    'the outside must retain the original brown masonite material'
+  );
   assert.equal(outlined.length, 2);
   assert.notEqual(wingAttach.position.x, (setup.pts[1].x + setup.pts[2].x) / 2);
   assert.notEqual(mainAttach.position.z, (setup.pts[3].z + setup.pts[4].z) / 2);

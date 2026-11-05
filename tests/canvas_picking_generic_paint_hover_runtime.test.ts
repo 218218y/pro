@@ -262,7 +262,7 @@ test('generic paint hover hides stale previews when a target resolves but no pre
   assert.deepEqual(calls, ['layout', 'sketch']);
 });
 
-test('generic paint hover suppresses non-paintable corner back panels instead of showing a stale floating paint target', () => {
+test('generic paint hover targets the selected masonite cell with a front-only preview', () => {
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const cornerBack = createBoxObject('corner_pent_back_side', {
     width: 0.7,
@@ -272,6 +272,7 @@ test('generic paint hover suppresses non-paintable corner back panels instead of
     y: 0.95,
     z: -0.6,
   });
+  cornerBack.userData.__wpMasoniteBackPanel = true;
   const nearbyShelf = createBoxObject('corner_shelf_left_g0', {
     width: 0.7,
     height: 0.018,
@@ -307,8 +308,12 @@ test('generic paint hover suppresses non-paintable corner back panels instead of
     },
   });
 
-  assert.equal(handled, false);
-  assert.equal(previews.length, 0);
+  assert.equal(handled, true);
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0]?.fillFront, true);
+  assert.equal(previews[0]?.fillBack, false);
+  assert.equal(previews[0]?.op, 'add');
+  assert.ok(Number(previews[0]?.d) <= 0.01, 'hover must fit the thin back panel, not the nearby shelf');
   assert.deepEqual(calls, ['layout:true', 'sketch:true']);
 });
 

@@ -56,6 +56,7 @@ export type RenderCarcassContext = {
   roomArchitecturePlan?: RoomArchitecturePlan;
   addOutlines?: OutlineFn;
   getPartMaterial?: PartMaterialFn;
+  getPartColorValue?: (partId: string) => string | null | undefined;
   __sketchMode?: boolean;
   plinthMat?: unknown;
   legMat?: unknown;

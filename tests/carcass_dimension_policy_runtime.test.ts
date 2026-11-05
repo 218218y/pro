@@ -52,7 +52,7 @@ test('carcass shell policy preserves regular shell board and back-panel geometry
     { partId: 'body_right', width: 0.018, height: 2.4, depth: 0.5922, x: 0.891, y: 1.2, z: 0.0039 },
   ]);
   assert.deepEqual(boardSnapshot(result.backPanel), {
-    partId: undefined,
+    partId: 'body_back_c0',
     width: 1.798,
     height: 2.4,
     depth: 0.005,

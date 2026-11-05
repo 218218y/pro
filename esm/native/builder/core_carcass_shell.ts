@@ -65,6 +65,7 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
 
   const backPanel: CarcassBackPanelOp = {
     kind: 'back_panel',
+    partId: 'body_back_c0',
     width: totalW - SHELL_DIMENSIONS.backPanelWidthClearanceM,
     height: cabinetBodyHeight,
     depth: SHELL_DIMENSIONS.backPanelThicknessM,
@@ -148,8 +149,16 @@ export function buildCarcassShell(prepared: PreparedCarcassInput): CarcassShellR
     );
   }
 
-  if (!backPanels && hasRemovedFrameSide(prepared)) {
-    backPanels = buildRemovedFrameSideBackPanelSegments(prepared, backPanel);
+  if (!backPanels && moduleWidths?.length) {
+    backPanels = buildModuleBackPanelSegments(prepared, backPanel);
+  }
+
+  const dividerY = prepared.stackSplitDividerY;
+  if (dividerY != null) {
+    const divided = (backPanels || [backPanel]).flatMap(panel =>
+      splitMasoniteBackPanelAtDivider(panel, dividerY)
+    );
+    backPanels = divided;
   }
 
   appendStackSplitDividerBoardIfNeeded(prepared, boards);
@@ -256,20 +265,34 @@ function markBackPanelAsWood(seg: CarcassBackPanelOp, partId: string): CarcassBa
   };
 }
 
+function splitMasoniteBackPanelAtDivider(seg: CarcassBackPanelOp, dividerY: number): CarcassBackPanelOp[] {
+  if (seg.__wpWoodBackPanel || !seg.partId) return [seg];
+  const bottomY = seg.y - seg.height / 2;
+  const topY = seg.y + seg.height / 2;
+  if (dividerY <= bottomY || dividerY >= topY) return [seg];
+  return [
+    { ...seg, partId: `${seg.partId}_lower`, height: dividerY - bottomY, y: (bottomY + dividerY) / 2 },
+    { ...seg, height: topY - dividerY, y: (dividerY + topY) / 2 },
+  ];
+}
+
 function applyRemovedFrameSideBackPanelIdentity(
   prepared: PreparedCarcassInput,
   backPanels: CarcassBackPanelOp[]
 ): void {
-  if (!hasRemovedFrameSide(prepared)) return;
   const modulesLength = backPanels.length;
   if (!(modulesLength > 0)) return;
   for (const [i, panel] of backPanels.entries()) {
-    const partId = readRemovedBackPanelPartId(prepared, i, modulesLength);
-    if (partId) backPanels[i] = markBackPanelAsWood(panel, partId);
+    const woodPartId = hasRemovedFrameSide(prepared)
+      ? readRemovedBackPanelPartId(prepared, i, modulesLength)
+      : null;
+    backPanels[i] = woodPartId
+      ? markBackPanelAsWood(panel, woodPartId)
+      : { ...panel, partId: `body_back_c${i}` };
   }
 }
 
-function buildRemovedFrameSideBackPanelSegments(
+function buildModuleBackPanelSegments(
   prepared: PreparedCarcassInput,
   fallbackBackPanel: CarcassBackPanelOp
 ): CarcassBackPanelOp[] {
@@ -287,7 +310,7 @@ function buildRemovedFrameSideBackPanelSegments(
       ...fallbackBackPanel,
       ...resolveBackPanelSegmentGeometry(bounds),
     };
-    return [partId ? markBackPanelAsWood(single, partId) : single];
+    return [partId ? markBackPanelAsWood(single, partId) : { ...single, partId: 'body_back_c0' }];
   }
 
   const backPanels: CarcassBackPanelOp[] = [];
@@ -305,7 +328,9 @@ function buildRemovedFrameSideBackPanelSegments(
       ...resolveBackPanelSegmentGeometry(bounds),
     };
     const partId = readRemovedBackPanelPartId(prepared, i, moduleWidths.length);
-    backPanels.push(partId ? markBackPanelAsWood(baseSegment, partId) : baseSegment);
+    backPanels.push(
+      partId ? markBackPanelAsWood(baseSegment, partId) : { ...baseSegment, partId: `body_back_c${i}` }
+    );
     internalLeft += width + (i < moduleWidths.length - 1 ? woodThick : 0);
   }
   return backPanels;
@@ -467,6 +492,7 @@ function appendSteppedShell(params: SteppedShellParams): void {
     });
     const seg: CarcassBackPanelOp = {
       kind: 'back_panel',
+      partId: `body_back_c${i}`,
       ...resolveBackPanelSegmentGeometry(bounds),
       height: Math.max(SHELL_DIMENSIONS.boardMinDimensionM, h),
       depth: SHELL_DIMENSIONS.backPanelThicknessM,

@@ -105,7 +105,7 @@ function appendCornerConnectorBackEdgePanel(
     interiorX,
     interiorZ,
     cornerGroup,
-    ctx: { startY, wingH, __stackKey },
+    ctx: { startY, wingH, __stackKey, getCornerMat },
   } = setup;
   const junctionInset = CORNER_CONNECTOR_SHELL_POLICY.shellBackJunctionInsetM;
   const startInset = resolveBackPanelInset(shrinkStart, junctionInset);
@@ -135,10 +135,11 @@ function appendCornerConnectorBackEdgePanel(
   const len = Math.sqrt(dx * dx + dz * dz);
   if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_SHELL_POLICY.shellPanelMinLengthM) return;
 
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(len, metrics.backWallH, metrics.backPanelThick),
-    metrics.backPanelMaterialArrayNoPO
-  );
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(len, metrics.backWallH, metrics.backPanelThick), [
+    ...metrics.backPanelMaterialArrayNoPO.slice(0, 4),
+    getCornerMat(partId, metrics.backPanelMaterialArrayNoPO[4]),
+    metrics.backPanelMaterialArrayNoPO[5],
+  ]);
   const normalInset =
     partId === 'corner_pent_back_side' ? metrics.backPanelOutsideInsetX : metrics.backPanelOutsideInsetZ;
   const nux = -dz / len;
@@ -151,7 +152,7 @@ function appendCornerConnectorBackEdgePanel(
   const midZ = mid0z + nuz * sign * (metrics.backPanelThick / 2 + normalInset);
   mesh.position.set(midX, startY + wingH / 2, midZ);
   mesh.rotation.y = -Math.atan2(dz, dx) + (sign < 0 ? Math.PI : 0);
-  mesh.userData = { partId, __wpStack: __stackKey };
+  mesh.userData = { partId, kind: 'backPanel', __wpMasoniteBackPanel: true, __wpStack: __stackKey };
   cornerGroup.add(mesh);
 }
 

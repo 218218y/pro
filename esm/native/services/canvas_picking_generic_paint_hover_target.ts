@@ -3,7 +3,6 @@ import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 import { asRecordMap } from './canvas_picking_generic_paint_hover_shared.js';
-import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 import {
   readCanvasPaintTargetScopeFromObject,
   type CanvasPaintTargetScope,
@@ -38,7 +37,6 @@ export function resolveNonDoorHoverTargetFromObject(
   while (curr && !__wp_isViewportRoot(App, curr)) {
     const userData = asRecordMap(curr.userData);
     const pidRaw = typeof userData?.partId === 'string' ? String(userData.partId) : '';
-    if (pidRaw && isNonPaintableCanvasPaintPartId(pidRaw)) return null;
     const isInternalDrawerCassette = userData?.__wpInternalDrawerCassette === true;
     if (
       pidRaw &&

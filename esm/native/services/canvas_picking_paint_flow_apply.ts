@@ -10,7 +10,6 @@ import { applyGroupedOrCornerPaintTarget } from './canvas_picking_paint_flow_app
 import { applyPaintPartMutation } from './canvas_picking_paint_flow_apply_special.js';
 import { tryHandleDoorStyleOverridePaintClick } from './canvas_picking_paint_flow_apply_door_style.js';
 import { commitPaintFlowState } from './canvas_picking_paint_flow_apply_commit.js';
-import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 
 function notifyUnsupportedMirrorPaintTarget(App: unknown, label = 'מראה'): void {
   try {
@@ -27,7 +26,6 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   const { App, foundPartId, isPaintMode } = args;
 
   if (!isPaintMode || !foundPartId) return false;
-  if (isNonPaintableCanvasPaintPartId(foundPartId)) return false;
 
   const tools = getTools(App);
   const paintSelection = typeof tools.getPaintColor === 'function' ? tools.getPaintColor() : null;

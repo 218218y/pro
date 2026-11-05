@@ -25,6 +25,19 @@ export function shouldKeepMaterialsApplyMeshMaterial(obj: WardrobeMeshLike | nul
   return false;
 }
 
+function applyResolvedMaterial(obj: WardrobeMeshLike, material: unknown, userData: ValueRecord): boolean {
+  if (!material) return false;
+  if (userData.__wpMasoniteBackPanel === true && Array.isArray(obj.material) && obj.material.length === 6) {
+    if (obj.material[4] === material) return false;
+    // The interior-facing +Z face alone is paintable; preserve masonite brown on all other faces.
+    obj.material = [...obj.material.slice(0, 4), material, obj.material[5]];
+    return true;
+  }
+  if (obj.material === material) return false;
+  obj.material = material;
+  return true;
+}
+
 export function applyMaterialsToWardrobeTree(args: {
   wardrobeGroup: WardrobeMeshLike;
   getPartMat: (partId: string, stackKey: PartStackKey, userData?: ValueRecord | null) => unknown;
@@ -85,16 +98,10 @@ export function applyMaterialsToWardrobeTree(args: {
         if (!materialCache.has(cacheKey)) {
           const material = getPartMat(ownPartId, ownStackKey, effectiveUserData);
           materialCache.set(cacheKey, material);
-          if (material && obj.material !== material) {
-            obj.material = material;
-            changed = true;
-          }
+          if (applyResolvedMaterial(obj, material, userData)) changed = true;
         } else {
           const material = materialCache.get(cacheKey);
-          if (material && obj.material !== material) {
-            obj.material = material;
-            changed = true;
-          }
+          if (applyResolvedMaterial(obj, material, userData)) changed = true;
         }
       }
     }

@@ -20,7 +20,6 @@ import {
   isGlassPaintSelection,
 } from '../features/door_authoring/api.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
-import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 import type {
   PartHoverPreviewCommand,
   PartHoverPreviewDecision,
@@ -40,9 +39,10 @@ function clearPreviewDecision(
 function createPaintPreviewCommand(args: {
   previewGroup: PaintPreviewGroupBox;
   op: 'add' | 'remove';
-  fillFaces: boolean;
+  fillFront: boolean;
+  fillBack: boolean;
 }): PartHoverPreviewCommand {
-  const { previewGroup, op, fillFaces } = args;
+  const { previewGroup, op, fillFront, fillBack } = args;
   const common = {
     anchor: previewGroup.anchor,
     anchorParent: previewGroup.anchorParent,
@@ -54,8 +54,8 @@ function createPaintPreviewCommand(args: {
     boxH: previewGroup.height,
     d: previewGroup.depth,
     woodThick: previewGroup.woodThick,
-    fillFront: fillFaces,
-    fillBack: fillFaces,
+    fillFront,
+    fillBack,
     overlayThroughScene: false as const,
   };
   return previewGroup.kind === 'object_boxes'
@@ -89,9 +89,6 @@ function resolveGenericPartPaintHoverDecision(args: {
   });
   const primaryHitObject = asRecordMap(hitState?.primaryHitObject);
   const foundPartId = typeof hitState?.foundPartId === 'string' ? String(hitState.foundPartId) : '';
-  if (isNonPaintableCanvasPaintPartId(foundPartId)) {
-    return clearPreviewDecision('layout-and-sketch', 'non-paintable-part');
-  }
 
   const resolvedTarget = resolveGenericPartPaintTarget({
     App,
@@ -140,6 +137,7 @@ function resolveGenericPartPaintHoverDecision(args: {
   const previewGroup = isCornicePreview ? __applyCornicePreviewPadding(previewGroupRaw) : previewGroupRaw;
   const op = __readPaintHoverOp(colors, effectiveKeys, selection);
   const isGroupedShellPreview = effectiveKeys.length > 1 && !isCornicePreview;
+  const isMasoniteBack = asRecordMap(resolvedTarget.object.userData)?.__wpMasoniteBackPanel === true;
 
   return {
     type: 'show',
@@ -148,7 +146,8 @@ function resolveGenericPartPaintHoverDecision(args: {
     command: createPaintPreviewCommand({
       previewGroup,
       op,
-      fillFaces: !isGroupedShellPreview && !isCornicePreview,
+      fillFront: isMasoniteBack || (!isGroupedShellPreview && !isCornicePreview),
+      fillBack: !isMasoniteBack && !isGroupedShellPreview && !isCornicePreview,
     }),
   };
 }

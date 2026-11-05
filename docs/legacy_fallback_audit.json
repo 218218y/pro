@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T14:56:23.073Z",
+  "generatedAt": "2026-11-05T16:11:56.031Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1746,21 +1746,21 @@
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 274,
+      "line": 297,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "fallbackBackPanel: CarcassBackPanelOp"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 287,
+      "line": 310,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"
     },
     {
       "file": "esm/native/builder/core_carcass_shell.ts",
-      "line": 304,
+      "line": 327,
       "term": "fallbackBackPanel",
       "category": "domain-default",
       "text": "...fallbackBackPanel,"

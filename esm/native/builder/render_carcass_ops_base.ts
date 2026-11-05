@@ -410,10 +410,19 @@ export function createApplyCarcassBaseOps() {
     const addBackPanel = (seg: BackPanelSeg): void => {
       const partId = __asString(seg.partId);
       const woodBack = isWoodBackPanel(seg);
+      const frontColor = !woodBack && partId ? ctx.getPartColorValue?.(partId) : undefined;
       const panelMaterial =
         woodBack && partId
           ? (getPartMaterial ? getPartMaterial(partId) : ctx.bodyMat) || ctx.bodyMat
-          : material;
+          : !sketchMode && Array.isArray(material)
+            ? [
+                ...material.slice(0, 4),
+                frontColor && frontColor !== 'mirror' && frontColor !== 'glass'
+                  ? getPartMaterial?.(partId) || ctx.whiteMat
+                  : ctx.whiteMat,
+                material[5],
+              ]
+            : material;
       const sourceBox = boxFromCenterSize({
         x: seg.x,
         y: seg.y,
@@ -430,7 +439,13 @@ export function createApplyCarcassBaseOps() {
         const group = new THREE.Group();
         group.position.set(seg.x, seg.y, seg.z);
         const sharedUserData: AnyMap = {
-          ...(woodBack && partId ? { partId, kind: 'backPanel', __wpWoodBackPanel: true } : {}),
+          ...(partId
+            ? {
+                partId,
+                kind: 'backPanel',
+                ...(woodBack ? { __wpWoodBackPanel: true } : { __wpMasoniteBackPanel: true }),
+              }
+            : {}),
           __wpRoomColumnAdjusted: true,
         };
         group.userData = sharedUserData;
@@ -458,10 +473,16 @@ export function createApplyCarcassBaseOps() {
 
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(seg.width, seg.height, seg.depth), panelMaterial);
       mesh.position.set(seg.x, seg.y, seg.z);
-      if (woodBack && partId) {
-        mesh.userData = { partId, kind: 'backPanel', __wpWoodBackPanel: true };
-        reg(App, partId, mesh, 'body');
-        addOutlines(mesh);
+      if (partId) {
+        mesh.userData = {
+          partId,
+          kind: 'backPanel',
+          ...(woodBack ? { __wpWoodBackPanel: true } : { __wpMasoniteBackPanel: true }),
+        };
+        if (woodBack) {
+          reg(App, partId, mesh, 'body');
+          addOutlines(mesh);
+        }
       }
       if (!sketchMode) {
         mesh.castShadow = true;

@@ -502,7 +502,7 @@ test('paint grouped/corner target migrates legacy unified corner frame colors ba
   });
 });
 
-test('paint click ignores corner back-panel hit ids because those meshes are not individual-color paint targets', () => {
+test('paint click accepts a corner masonite cell as an individual-color paint target', () => {
   const App = createApp({
     maps: {
       individualColors: {},
@@ -533,8 +533,8 @@ test('paint click ignores corner back-panel hit ids because those meshes are not
     hitIdentity: null,
   } as never);
 
-  assert.equal(handled, false);
-  assert.equal(applyPaintCalled, false);
+  assert.equal(handled, true);
+  assert.equal(applyPaintCalled, true);
 });
 
 test('paint click replaces glass with a one-sided mirror through the public paint route on the first click', () => {

@@ -213,7 +213,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       isLibraryMode: false,
       wardrobeType: 'hinged',
       doorMountMode: 'overlay',
-      drawerRunnerType: 'roller',
+      drawerRunnerType: 'blum',
       overlayFrameThicknessCm: null,
       overlayShelfThicknessCm: null,
       insetFrameThicknessCm: null,

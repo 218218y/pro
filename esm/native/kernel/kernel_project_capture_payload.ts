@@ -11,7 +11,7 @@ import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/projec
 import { normalizeCorniceType } from '../../../types/cornice_type.js';
 
 function normalizeCapturedDrawerRunnerType(value: unknown): 'roller' | 'blum' {
-  return value === 'blum' ? 'blum' : 'roller';
+  return value === 'roller' ? 'roller' : 'blum';
 }
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 

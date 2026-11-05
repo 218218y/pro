@@ -116,6 +116,7 @@ export function createPartMaterialResolver(args: {
 
   return (partId: string, stackKey: PartStackKey, userData?: ValueRecord | null) => {
     if (!partId) return globalFrontMat;
+    const isMasoniteBack = userData?.__wpMasoniteBackPanel === true;
     const shelfLike = isShelfLikePart(partId, userData);
     const shelfGroupPartId = shelfLike ? resolveShelfGroupFromUserData(partId, userData) : null;
     const entry = readPartColorEntry({
@@ -146,6 +147,7 @@ export function createPartMaterialResolver(args: {
       return getDrawerBoxBaseMat();
     }
     if (typeof effectiveEntry === 'undefined') {
+      if (isMasoniteBack) return getWhiteBodyMat();
       if (frontColorBraceOnly && shelfLike) {
         return isBraceShelfUserData(userData)
           ? getBraceFrontEdgeMat(readShelfExposedSide(userData?.__wpShelfExposedSide))
@@ -153,7 +155,8 @@ export function createPartMaterialResolver(args: {
       }
       return globalFrontMat;
     }
-    if (effectiveEntry === 'mirror' || effectiveEntry === 'glass') return globalFrontMat;
+    if (effectiveEntry === 'mirror' || effectiveEntry === 'glass')
+      return isMasoniteBack ? getWhiteBodyMat() : globalFrontMat;
 
     return resolveSelectionFrontMaterial({
       selection: effectiveEntry,

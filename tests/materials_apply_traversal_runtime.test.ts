@@ -6,6 +6,28 @@ import {
   shouldKeepMaterialsApplyMeshMaterial,
 } from '../esm/native/builder/materials_apply_traversal.ts';
 
+test('materials-only refresh updates only the masonite front of the selected cell', () => {
+  const faces = ['brown', 'brown', 'brown', 'brown', 'white', 'brown'];
+  const mesh = {
+    isMesh: true,
+    material: [...faces],
+    userData: { partId: 'body_back_c2', __wpMasoniteBackPanel: true },
+    children: [],
+  } as any;
+  const refresh = (front: string) =>
+    applyMaterialsToWardrobeTree({
+      wardrobeGroup: { userData: {}, children: [mesh] } as any,
+      getPartMat: () => front,
+      readPartId: value => (typeof value === 'string' ? value : null),
+      readStackKey: () => null,
+    });
+  assert.equal(refresh('blue'), true);
+  assert.deepEqual(mesh.material, ['brown', 'brown', 'brown', 'brown', 'blue', 'brown']);
+  assert.equal(refresh('blue'), false, 'same resolved material must not trigger another repaint');
+  assert.equal(refresh('white'), true, 'clearing the override restores the original white face');
+  assert.deepEqual(mesh.material, faces);
+});
+
 test('materials apply traversal keeps hidden selector/invisible meshes on their own materials', () => {
   const selectorMaterial = { colorWrite: false, transparent: true, opacity: 0 };
   const selectorMesh = {

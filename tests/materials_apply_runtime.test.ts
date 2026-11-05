@@ -4,6 +4,23 @@ import assert from 'node:assert/strict';
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
 import { makeDrawerBoxPartId } from '../esm/native/features/part_identity/api.ts';
 import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
+import { createPartMaterialResolver } from '../esm/native/builder/materials_apply_color_policy.ts';
+
+test('masonite material resolution defaults to white and honors only the targeted cell color', () => {
+  const resolve = createPartMaterialResolver({
+    ui: { color: '#777777', customColorPicker: '#777777' },
+    cfg: {
+      isMultiColorMode: true,
+      individualColors: { body_back_c1: '#cc0000' },
+    },
+    getMaterial: (color: string | null, kind: string) => `${color}:${kind}`,
+    globalFrontMat: 'global-front',
+  } as never);
+  const cellFace = { __wpMasoniteBackPanel: true };
+  assert.equal(resolve('body_back_c0', null, cellFace), '#ffffff:body');
+  assert.equal(resolve('body_back_c1', null, cellFace), '#cc0000:front');
+  assert.equal(resolve('body_floor', null, {}), 'global-front');
+});
 
 function applyMaterialsFromState(App: any) {
   const state = App.store.getState();

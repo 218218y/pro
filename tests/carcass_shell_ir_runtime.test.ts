@@ -127,6 +127,11 @@ test('unified stack-split divider is emitted inside typed shell IR and keeps the
   assert.ok(divider);
   assert.equal(divider.partId, 'body_stack_split_divider');
   assert.equal(isCarcassBoardOp(divider), true);
+  assert.deepEqual(
+    (ops.backPanels as Array<{ partId: string }>).map(panel => panel.partId),
+    ['body_back_c0_lower', 'body_back_c0'],
+    'unified upper and lower cells must remain separately paintable'
+  );
 
   const shell = {
     boards,

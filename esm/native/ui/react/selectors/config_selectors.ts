@@ -151,7 +151,7 @@ export function selectDoorMountMode(cfg: ConfigStateLike): 'overlay' | 'inset' {
 
 export function selectDrawerRunnerType(cfg: ConfigStateLike): DrawerRunnerType {
   const v = readConfigScalarOrDefault(cfg, 'drawerRunnerType');
-  return v === 'blum' ? 'blum' : 'roller';
+  return v === 'roller' ? 'roller' : 'blum';
 }
 
 export function selectDoorMountThicknessControls(cfg: ConfigStateLike) {
