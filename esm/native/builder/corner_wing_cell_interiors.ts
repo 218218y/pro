@@ -4,6 +4,8 @@
 // delegate heavy shelf/storage/detail policy to dedicated interior pipeline owners.
 
 import type { CornerWingCellFlowParams } from './corner_wing_cell_shared.js';
+import type { InteriorGroupLike, InteriorTHREESurface } from './render_interior_ops_contracts.js';
+import { addFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
 import { createCornerWingInteriorCellRuntime } from './corner_wing_cell_interiors_cell.js';
 import { createCornerWingInteriorRuntime } from './corner_wing_cell_interiors_runtime.js';
 import { createCornerWingInteriorShelfRuntime } from './corner_wing_cell_interiors_shelves.js';
@@ -23,6 +25,21 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
   for (const cell of runtime.cornerCells) {
     const cellRuntime = createCornerWingInteriorCellRuntime(runtime, cell);
     const layoutOps = createCornerWingInteriorLayoutOps(runtime, cellRuntime, shelfRuntime);
+
+    addFullShelfPinBoring({
+      enabled: cellRuntime.cfgCell.fullShelfPinBoring === true,
+      threeSurface: runtime.THREE as unknown as InteriorTHREESurface,
+      group: runtime.wingGroup as unknown as InteriorGroupLike,
+      roomArchitecturePlan: runtime.roomArchitecturePlan,
+      moduleKey: cellRuntime.cellKey,
+      bottomY: cellRuntime.effectiveBottomY,
+      topY: cellRuntime.effectiveTopY,
+      leftInnerX: cellRuntime.cellInnerLeftX,
+      rightInnerX: cellRuntime.cellInnerRightX,
+      internalZ: cellRuntime.__fullDepthCenterZ,
+      internalDepth: cellRuntime.__internalDepth,
+      regularDepth: cellRuntime.__regularDepth,
+    });
 
     emitCornerWingExternalDrawers(runtime, cellRuntime);
 

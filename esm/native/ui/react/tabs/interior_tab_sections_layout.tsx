@@ -37,6 +37,11 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
                       : props.isLayoutMode && props.layoutType === t.id
                 }
                 onClick={() => props.enterLayout(t.id)}
+                {...(t.id === 'full_boring'
+                  ? {
+                      title: 'חירור לפיני מדפים כל 3 ס״מ בארבע פינות התא; לחיצה חוזרת על התא מסירה את החירור',
+                    }
+                  : {})}
               >
                 <i className={t.icon} aria-hidden="true" /> {t.label}
               </OptionBtn>

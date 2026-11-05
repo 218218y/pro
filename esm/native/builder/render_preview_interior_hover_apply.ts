@@ -7,6 +7,10 @@ import {
   SKETCH_BOX_ROD_PREVIEW_POLICY,
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../../shared/dimensions/preview_interior_hover_apply_dimension_policy.js';
+import {
+  INTERIOR_SHELF_PIN_BORING_POLICY,
+  INTERIOR_SHELF_PIN_RENDER_POLICY,
+} from './render_interior_preset_ops_shelves.js';
 import type {
   PreviewGroupLike,
   PreviewMaterialLike,
@@ -38,6 +42,7 @@ export function hideInteriorLayoutHoverPreview(
     const previewMeshes = [
       ...shared.readMeshList(ud.__shelfList),
       ...shared.readMeshList(ud.__rodList),
+      ...shared.readMeshList(ud.__boringList),
       ...(ud.__storage ? [ud.__storage] : []),
     ];
 
@@ -89,6 +94,7 @@ export function setInteriorLayoutHoverPreview(
   const ud = shared.readUserData(group.userData);
   const shelfList = shared.readMeshList(ud.__shelfList);
   const rodList = shared.readMeshList(ud.__rodList);
+  const boringList = shared.readMeshList(ud.__boringList);
   const storage = shared.asPreviewMesh(ud.__storage);
 
   const x = readPreviewNumber(input.x);
@@ -134,6 +140,7 @@ export function setInteriorLayoutHoverPreview(
   const hideAll = () => {
     for (let i = 0; i < shelfList.length; i++) setVisible(shared.asPreviewMesh(shelfList[i]), false);
     for (let i = 0; i < rodList.length; i++) setVisible(shared.asPreviewMesh(rodList[i]), false);
+    for (let i = 0; i < boringList.length; i++) setVisible(shared.asPreviewMesh(boringList[i]), false);
     setVisible(storage, false);
   };
 
@@ -149,6 +156,44 @@ export function setInteriorLayoutHoverPreview(
 
   group.visible = true;
   hideAll();
+
+  const boringBounds = shared.readArgs(input.boringBounds);
+  const boringBottom = readPreviewNumber(boringBounds.bottomY);
+  const boringTop = readPreviewNumber(boringBounds.topY);
+  if (boringBottom != null && boringTop != null && boringTop > boringBottom) {
+    const length = boringTop - boringBottom - INTERIOR_SHELF_PIN_BORING_POLICY.endClearanceM * 2;
+    if (length > 0) {
+      const offset = Math.max(
+        INTERIOR_SHELF_PIN_RENDER_POLICY.minEdgeOffsetM,
+        Math.min(
+          INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM,
+          regularDepth / 2 - INTERIOR_SHELF_PIN_RENDER_POLICY.maxDepthSideClearanceM
+        )
+      );
+      const xPositions = [x - innerW / 2, x + innerW / 2];
+      const zPositions = [backZ + offset, backZ + regularDepth - offset];
+      for (let i = 0; i < boringList.length; i++) {
+        const mesh = shared.asPreviewMesh(boringList[i]);
+        if (!mesh) continue;
+        setVisible(mesh, true);
+        applyStyle(
+          mesh,
+          (isRemove ? ud.__matRemove : ud.__matBrace) ?? null,
+          (isRemove ? ud.__lineRemove : ud.__lineBrace) ?? null
+        );
+        mesh.position?.set?.(
+          xPositions[Math.floor(i / 2)]!,
+          (boringBottom + boringTop) / 2,
+          zPositions[i % 2]!
+        );
+        mesh.scale?.set?.(
+          INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM * 2,
+          length,
+          INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM * 2
+        );
+      }
+    }
+  }
 
   let shelfMat = ud.__matShelf || null;
   let shelfLine = ud.__lineShelf || null;

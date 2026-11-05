@@ -53,6 +53,9 @@ export interface ModuleConfigLike extends UnknownRecord {
   gridDivisions?: number;
   gridDivisionsRow?: number;
 
+  /** Four full-height shelf-pin boring rows, at 30 mm pitch, for this module/cell. */
+  fullShelfPinBoring?: boolean;
+
   // Optional/known extensions used by other features.
   specialDims?: ModuleSpecialDimsLike;
   savedDims?: ModuleSavedDimsLike;
@@ -68,6 +71,7 @@ export interface ModuleConfigPatchLike extends UnknownRecord {
   doors?: number | null;
   gridDivisions?: number | null;
   gridDivisionsRow?: number | null;
+  fullShelfPinBoring?: boolean | null;
   specialDims?: Partial<ModuleSpecialDimsLike> | null;
   savedDims?: Partial<ModuleSavedDimsLike> | null;
   hexCell?: Partial<ModuleHexCellLike> | null;

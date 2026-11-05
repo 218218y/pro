@@ -62,6 +62,7 @@ export function applyCustomInteriorLayout(
         getPartColorValue: input.getPartColorValue,
         wardrobeGroup: input.wardrobeGroup,
         customOps,
+        fullShelfPinBoring: config.fullShelfPinBoring === true,
         gridDivisions,
         braceShelves: readBraceShelves(config),
         createBoard: input.createBoard,

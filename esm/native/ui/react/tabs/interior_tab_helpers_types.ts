@@ -17,7 +17,8 @@ export type LayoutTypeId =
   | 'storage'
   | 'brace_shelves'
   | 'regular_shelf'
-  | 'winter_brace';
+  | 'winter_brace'
+  | 'full_boring';
 export type ManualToolId = 'shelf' | 'rod' | 'storage';
 export type SketchBoxCorniceType = CorniceType;
 export type SketchBoxBaseType = 'plinth' | 'legs' | 'none';

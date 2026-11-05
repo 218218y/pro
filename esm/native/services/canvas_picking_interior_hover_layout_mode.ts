@@ -1,6 +1,9 @@
 import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
-import { __wp_resolveInteriorHoverTarget } from './canvas_picking_local_helpers.js';
+import {
+  __wp_readInteriorModuleConfigRef,
+  __wp_resolveInteriorHoverTarget,
+} from './canvas_picking_local_helpers.js';
 import type { CanvasInteriorHoverFlowArgs } from './canvas_picking_interior_hover_shared.js';
 import {
   hideLayoutPreview,
@@ -27,6 +30,7 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
     hideSketchPreview({ App, hideSketchPreview: hideSketchPreviewFn });
     const layoutType = readLayoutType(App);
     if (
+      layoutType !== 'full_boring' &&
       tryHandlePresetLayoutFreeBoxHover({
         App,
         layoutType,
@@ -45,6 +49,18 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
     if (!target || !setLayoutPreview) {
       hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn });
       return false;
+    }
+
+    if (layoutType === 'full_boring') {
+      const isRemoving =
+        __wp_readInteriorModuleConfigRef(App, target.hitModuleKey, target.isBottom)?.fullShelfPinBoring ===
+        true;
+      setLayoutPreview({
+        ...buildLayoutPreviewPayload({ App, target, shelfYs: [], rodYs: [], storageBarrier: null }),
+        boringBounds: { bottomY: target.bottomY, topY: target.topY },
+        op: isRemoving ? 'remove' : 'add',
+      });
+      return true;
     }
 
     const ops = computeInteriorPresetOps(layoutType);

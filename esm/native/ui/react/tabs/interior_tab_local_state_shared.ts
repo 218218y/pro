@@ -36,6 +36,7 @@ export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
   { id: 'winter_brace', label: 'קושרת חורף', icon: 'far fa-square' },
   { id: 'brace_shelves', label: 'מדפי קושרת', icon: 'fas fa-link' },
   { id: 'regular_shelf', label: 'מדף רגיל', icon: 'fas fa-minus' },
+  { id: 'full_boring', label: 'חירור מלא', icon: 'fas fa-grip-vertical' },
 ];
 
 export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [

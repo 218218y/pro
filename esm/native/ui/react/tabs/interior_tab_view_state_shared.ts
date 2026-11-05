@@ -29,6 +29,7 @@ export function readLayoutTypeId(value: unknown, defaultValue: LayoutTypeId = 's
     raw === 'hanging_split' ||
     raw === 'mixed' ||
     raw === 'storage' ||
+    raw === 'full_boring' ||
     raw === 'brace_shelves'
     ? raw
     : defaultValue;

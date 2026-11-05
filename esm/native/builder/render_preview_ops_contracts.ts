@@ -128,6 +128,7 @@ export type SketchPlacementPreviewUserData = PreviewValueRecord & {
 
 export type InteriorLayoutHoverPreviewUserData = PreviewValueRecord & {
   __shelfList?: PreviewMeshLike[];
+  __boringList?: PreviewMeshLike[];
   __rodList?: PreviewMeshLike[];
   __storage?: PreviewMeshLike;
   __matShelf?: PreviewMaterialLike;

@@ -140,7 +140,10 @@ export function enterLayoutMode(app: AppContainer, layoutType: unknown): void {
     modeOpts: { layoutType: selectedLayout },
     openDoors: true,
     cursor: 'alias',
-    toast: 'בחר חלוקה ואז לחץ על תא ליישום',
+    toast:
+      selectedLayout === 'full_boring'
+        ? 'חירור מלא: עבור מעל תא להצגת הוספה/הסרה ולחץ לשינוי (מרווח 3 ס״מ)'
+        : 'בחר חלוקה ואז לחץ על תא ליישום',
   });
 }
 

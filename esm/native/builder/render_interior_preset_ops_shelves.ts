@@ -8,9 +8,13 @@ import type {
 } from './render_interior_ops_contracts.js';
 import {
   INTERIOR_SHELF_GEOMETRY_POLICY,
+  INTERIOR_SHELF_PIN_BORING_POLICY,
   INTERIOR_SHELF_PIN_RENDER_POLICY,
   INTERIOR_SHELF_POLICY,
 } from '../../shared/dimensions/interior_fittings_policy.js';
+
+// The shelf-support builder owns the shared pin geometry values used by full-height boring.
+export { INTERIOR_SHELF_PIN_BORING_POLICY, INTERIOR_SHELF_PIN_RENDER_POLICY };
 import {
   SHELF_GROUP_PART_ID,
   createModuleShelfPartId,

@@ -19,6 +19,7 @@ import {
 } from './render_interior_preset_ops_shared.js';
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
+import { addFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
@@ -172,6 +173,22 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
+
+    addFullShelfPinBoring({
+      enabled: input.fullShelfPinBoring === true,
+      threeSurface,
+      group,
+      roomArchitecturePlan,
+      moduleKey,
+      bottomY: effectiveBottomY,
+      topY: effectiveTopY,
+      leftInnerX,
+      rightInnerX,
+      internalZ,
+      internalDepth,
+      regularDepth,
+      exposedSide: shelfExposedSide,
+    });
 
     const addGridShelf = createAddGridShelf({
       App,

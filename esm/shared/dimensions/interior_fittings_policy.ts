@@ -43,6 +43,14 @@ export const INTERIOR_SHELF_PIN_RENDER_POLICY = Object.freeze({
   radialSegments: 12,
 });
 
+/** Shelf-pin drilling rows follow the same diameter and front/back offsets as the shelf supports. */
+export const INTERIOR_SHELF_PIN_BORING_POLICY = Object.freeze({
+  pitchM: meters(0.03),
+  endClearanceM: meters(0.015),
+  surfaceOffsetM: meters(0.0003),
+  visualDepthM: meters(0.0004),
+});
+
 export const INTERIOR_ROD_RENDER_POLICY = Object.freeze({
   radiusM: meters(0.015),
   widthClearanceM: meters(0.04),

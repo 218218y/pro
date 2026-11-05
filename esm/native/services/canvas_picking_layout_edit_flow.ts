@@ -17,16 +17,26 @@ function tryHandleCanvasLayoutPresetClick(args: CanvasLayoutEditClickArgs): bool
   const { App, foundModuleIndex, __activeModuleKey, __isLayoutEditMode, __patchConfigForKey, intersects } =
     args;
   if (!__isLayoutEditMode) return false;
-  if (tryCommitPresetLayoutFreeBoxFromHover(App)) return true;
+  const __ui_s3a = __wp_ui(App);
+  const __layoutType =
+    __ui_s3a && typeof __ui_s3a.currentLayoutType === 'string' ? __ui_s3a.currentLayoutType : 'shelves';
+  if (__layoutType !== 'full_boring' && tryCommitPresetLayoutFreeBoxFromHover(App)) return true;
   if (firstRenderableHitIsSketchFreeBox(intersects)) {
     __wp_clearSketchHover(App);
     return true;
   }
   if (foundModuleIndex === null) return false;
 
-  const __ui_s3a = __wp_ui(App);
-  const __layoutType =
-    __ui_s3a && typeof __ui_s3a.currentLayoutType === 'string' ? __ui_s3a.currentLayoutType : 'shelves';
+  if (__layoutType === 'full_boring') {
+    const committed = __patchConfigForKey(
+      __activeModuleKey ?? foundModuleIndex,
+      (cfg: LayoutConfigRecordLike) => {
+        cfg.fullShelfPinBoring = cfg.fullShelfPinBoring !== true;
+      },
+      createCanvasPickingConfigStructuralPatchMeta('fullShelfPinBoring.toggle')
+    );
+    return committed !== false;
+  }
 
   if (
     __layoutType.startsWith('hanging') &&

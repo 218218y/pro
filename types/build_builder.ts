@@ -225,6 +225,7 @@ export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   shelfYs?: BuilderPreviewScalar[] | null;
   rodYs?: BuilderPreviewScalar[] | null;
   storageBarrier?: PreviewStorageBarrierEntryLike | null;
+  boringBounds?: { bottomY: number; topY: number } | null;
 }
 
 export type BuilderSketchIdLike = string | number | null | undefined;

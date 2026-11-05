@@ -389,6 +389,7 @@ function createHoverHarness() {
   const group = node(true);
   const shelves = [node(), node()];
   const rods = [node(), node()];
+  const boring = [node(), node(), node(), node()];
   const storage = node();
   const materials = {
     shelf: { id: 'shelf' },
@@ -404,15 +405,16 @@ function createHoverHarness() {
     lineStorage: { id: 'line-storage' },
     lineRemove: { id: 'line-remove' },
   };
-  for (const mesh of [...shelves, ...rods, storage]) {
+  for (const mesh of [...shelves, ...rods, ...boring, storage]) {
     const outline = node();
     mesh.userData.__outline = outline;
     mesh.add(outline);
   }
-  group.add(...shelves, ...rods, storage);
+  group.add(...shelves, ...rods, ...boring, storage);
   Object.assign(group.userData, {
     __shelfList: shelves,
     __rodList: rods,
+    __boringList: boring,
     __storage: storage,
     __matShelf: materials.shelf,
     __matGlass: materials.glass,
@@ -446,7 +448,7 @@ function createHoverHarness() {
     assertTHREE: () => ({}),
     getThreeMaybe: () => ({}),
   } as unknown as Parameters<typeof createBuilderRenderInteriorLayoutHoverPreviewOps>[0]);
-  return { previewOps, root, group, shelves, rods, storage, materials };
+  return { previewOps, root, group, shelves, rods, boring, storage, materials };
 }
 
 function hoverArgs(overrides: Record<string, unknown> = {}) {
@@ -513,6 +515,49 @@ test('focused hover renderer preserves regular, brace, glass, double, and minimu
 
   harness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ woodThick: 0.00001 }));
   assert.equal(harness.shelves[0].scale.y, SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM);
+});
+
+test('full pin boring hover shows four full-height columns and toggles add/remove color without stale columns', () => {
+  const harness = createHoverHarness();
+  harness.previewOps.setInteriorLayoutHoverPreview(
+    hoverArgs({ shelfYs: [], rodYs: [], storageBarrier: null, boringBounds: { bottomY: 0, topY: 2.4 } })
+  );
+  assert.equal(
+    harness.boring.every(mesh => mesh.visible),
+    true
+  );
+  assert.equal(
+    harness.boring.every(mesh => mesh.material === harness.materials.brace),
+    true
+  );
+  assert.deepEqual(
+    harness.boring.map(mesh => mesh.position.x),
+    [1.5, 1.5, 2.5, 2.5]
+  );
+  assert.equal(harness.boring[0].scale.y, 2.37);
+  harness.previewOps.setInteriorLayoutHoverPreview(
+    hoverArgs({
+      shelfYs: [],
+      rodYs: [],
+      storageBarrier: null,
+      boringBounds: { bottomY: 0, topY: 2.4 },
+      op: 'remove',
+    })
+  );
+  assert.equal(
+    harness.boring.every(mesh => mesh.material === harness.materials.remove),
+    true
+  );
+  harness.previewOps.setInteriorLayoutHoverPreview(hoverArgs());
+  assert.equal(
+    harness.boring.every(mesh => mesh.visible === false),
+    true
+  );
+  harness.previewOps.hideInteriorLayoutHoverPreview({});
+  assert.equal(
+    harness.boring.every(mesh => mesh.visible === false),
+    true
+  );
 });
 
 test('focused hover renderer preserves rod and storage clamps, dimensions, and wood precedence', () => {

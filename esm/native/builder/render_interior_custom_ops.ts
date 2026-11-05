@@ -17,6 +17,7 @@ import {
   readModuleKeyString,
 } from './render_interior_custom_ops_shared.js';
 import { computeCustomModuleInnerFaces } from './render_interior_custom_ops_wall_faces.js';
+import { addFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
@@ -170,6 +171,22 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
         : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
+
+    addFullShelfPinBoring({
+      enabled: input.fullShelfPinBoring === true,
+      threeSurface,
+      group,
+      roomArchitecturePlan,
+      moduleKey,
+      bottomY: effectiveBottomY,
+      topY: effectiveTopY,
+      leftInnerX,
+      rightInnerX,
+      internalZ,
+      internalDepth,
+      regularDepth,
+      exposedSide: shelfExposedSide,
+    });
     const isInternalDrawersEnabled = false;
     const activeSlots: unknown[] = [];
 

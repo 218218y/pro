@@ -27,6 +27,7 @@ export function ensureInteriorLayoutHoverPreview(
         const ud = shared.readUserData(cached.userData);
         const shelfList = shared.readMeshList(ud.__shelfList);
         const rodList = shared.readMeshList(ud.__rodList);
+        const boringList = shared.readMeshList(ud.__boringList);
         const storage = shared.asPreviewMesh(ud.__storage);
         const isAttached = (m: unknown): boolean => {
           const resolved = shared.asPreviewMesh(m) || shared.asPreviewGroup(m);
@@ -35,8 +36,10 @@ export function ensureInteriorLayoutHoverPreview(
         const hasCoreChildren =
           shelfList.length >= 1 &&
           rodList.length >= 1 &&
+          boringList.length === 4 &&
           isAttached(shelfList[0]) &&
           isAttached(rodList[0]) &&
+          isAttached(boringList[0]) &&
           isAttached(storage);
         if (hasCoreChildren) {
           const rootGroup = shared.asPreviewGroup(root);
@@ -161,9 +164,17 @@ function createInteriorLayoutHoverPreviewGroup(
   const storage = mk(matStorage, lineStorage);
   group.add(storage);
 
+  const boringList = [];
+  for (let i = 0; i < 4; i++) {
+    const boreColumn = mk(matBrace, lineBrace);
+    boringList.push(boreColumn);
+    group.add(boreColumn);
+  }
+
   group.userData.__shelfList = shelfList;
   group.userData.__rodList = rodList;
   group.userData.__storage = storage;
+  group.userData.__boringList = boringList;
   group.userData.__matShelf = matShelf;
   group.userData.__matGlass = matGlass;
   group.userData.__matBrace = matBrace;
