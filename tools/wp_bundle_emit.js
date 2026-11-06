@@ -155,15 +155,21 @@ export async function buildBundleArtifacts({
       `[WP Bundle] Building ESM bundle (${normalizeObservabilityBuildMode(args.buildMode, 'client')})...`
     );
     const buildResult = await viteBuild(createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }));
+    const initialBudget =
+      args.minify && normalizeObservabilityBuildMode(args.buildMode, 'client') === 'client'
+        ? CLIENT_INITIAL_BUNDLE_BUDGET
+        : null;
     const topology = assertBundleChunkTopology(buildResult, {
-      initialBudget:
-        args.minify && normalizeObservabilityBuildMode(args.buildMode, 'client') === 'client'
-          ? CLIENT_INITIAL_BUNDLE_BUDGET
-          : null,
+      initialBudget,
     });
     console.log(
       `[WP Bundle] Initial app closure: chunks=${topology.initial.chunkCount}, modules=${topology.initial.moduleCount}, raw=${topology.initial.rawBytes}, gzip=${topology.initial.gzipBytes}`
     );
+    if (initialBudget) {
+      console.log(
+        `[WP Bundle] Client budget remaining: raw=${initialBudget.rawBytes - topology.initial.rawBytes}, gzip=${initialBudget.gzipBytes - topology.initial.gzipBytes}, modules=${initialBudget.moduleCount - topology.initial.moduleCount}`
+      );
+    }
     writeBundleOutputs({
       tmpDirAbs,
       outFileAbs,

@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-11-06T10:17:32.739Z",
+  "generatedAt": "2026-11-06T10:30:05.754Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 617,
-    "totalFiles": 228,
+    "totalOccurrences": 618,
+    "totalFiles": 229,
     "byCategory": {
       "runtime-default": 72,
       "domain-default": 449,
       "error-message-default": 42,
-      "framework-default": 4,
+      "framework-default": 5,
       "browser-adapter": 18,
       "forward-compatibility": 1,
       "legacy-rejection": 3,
@@ -1177,6 +1177,12 @@
         "total": 15,
         "categories": {
           "domain-default": 15
+        }
+      },
+      "esm/native/ui/react/overlay_app.tsx": {
+        "total": 1,
+        "categories": {
+          "framework-default": 1
         }
       },
       "esm/native/ui/react/overlay_feedback_host_timers.ts": {
@@ -5208,6 +5214,13 @@
       "term": "fallbackDelayMs",
       "category": "domain-default",
       "text": "fallbackDelayMs: args.fallbackDelayMs ?? 72,"
+    },
+    {
+      "file": "esm/native/ui/react/overlay_app.tsx",
+      "line": 31,
+      "term": "fallback",
+      "category": "framework-default",
+      "text": "<Suspense fallback={null}>"
     },
     {
       "file": "esm/native/ui/react/overlay_feedback_host_timers.ts",

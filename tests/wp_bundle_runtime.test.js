@@ -438,6 +438,44 @@ test('bundle chunk topology rejects artifact cycles and eager deferred chunks', 
   );
 });
 
+test('notes editor stays outside the initial closure, both as a chunk and as source modules', () => {
+  const entry = {
+    type: 'chunk',
+    fileName: 'wardrobepro.bundle.js',
+    isEntry: true,
+    imports: [],
+    dynamicImports: ['wardrobepro.chunk-NotesOverlay.js'],
+    modules: { '/repo/esm/release_main.js': {} },
+  };
+  const notes = {
+    type: 'chunk',
+    fileName: 'wardrobepro.chunk-NotesOverlay.js',
+    isEntry: false,
+    imports: [],
+    modules: { '/repo/esm/native/ui/react/notes/notes_overlay_controller_runtime.js': {} },
+  };
+
+  const deferred = assertBundleChunkTopology({ output: [entry, notes] });
+  assert.deepEqual(deferred.staticClosure, ['wardrobepro.bundle.js']);
+
+  assert.throws(
+    () => assertBundleChunkTopology({ output: [{ ...entry, imports: [notes.fileName] }, notes] }),
+    /deferred chunks are statically reachable: wardrobepro\.chunk-NotesOverlay\.js/
+  );
+  assert.throws(
+    () =>
+      assertBundleChunkTopology({
+        output: [
+          {
+            ...entry,
+            modules: { '/repo/esm/native/ui/react/notes/notes_overlay_editor_workflows.js': {} },
+          },
+        ],
+      }),
+    /deferred modules are statically reachable: Notes editor UI/
+  );
+});
+
 test('bundle chunk topology enforces deterministic initial byte, chunk, and module budgets', () => {
   const result = {
     output: [
