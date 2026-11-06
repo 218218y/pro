@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T16:11:56.031Z",
+  "generatedAt": "2026-11-06T06:59:33.118Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1851,42 +1851,42 @@
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 54,
+      "line": 55,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": "fallbackBodyHeight: number;"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 56,
+      "line": 57,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": "const { ctx, cfgMod, fallbackBodyHeight } = args;"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 58,
+      "line": 59,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": "const baseAbsCm = baseHeightCm ?? (ctx.startY + fallbackBodyHeight) * 100;"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 61,
+      "line": 62,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": "if (!hasActiveHeight || heightCm == null) return fallbackBodyHeight;"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 68,
+      "line": 69,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": ": fallbackBodyHeight;"
     },
     {
       "file": "esm/native/builder/corner_connector_emit.ts",
-      "line": 94,
+      "line": 95,
       "term": "fallbackBodyHeight",
       "category": "domain-default",
       "text": "fallbackBodyHeight: mainBodyHeight,"

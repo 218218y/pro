@@ -14,14 +14,18 @@ import {
   getRandomBookSpineBandColor,
   getRandomClothColor,
   quantizeVisualContentMetric,
+  resolveFoldedContentsRoomArchitecturePlan,
   resolveContentsOutline,
   resolveLibraryContents,
   resolveShowContents,
   runVisualContentsPerfPhase,
   seededRandom,
+  visualBoundsIntersectRoomColumnCut,
+  visualObjectIntersectsRoomColumnCut,
   type AppAwareAddFoldedClothesFn,
 } from './visuals_contents_shared.js';
-import type { MaterialLike, Object3DLike } from '../../../types/index.js';
+import { resolveHorizontalSpansAgainstRoomColumnCut } from './room_architecture_geometry.js';
+import type { MaterialLike, Object3DLike, RoomArchitectureCutPlan } from '../../../types/index.js';
 
 type FoldedRoundedUsage =
   'folded.body' | 'folded.top-panel' | 'folded.front-fold' | 'folded.collar' | 'folded.sleeve-fold';
@@ -546,9 +550,21 @@ function addWinterBlankets(args: {
   parentGroup: Object3DLike;
   addOutlines: (mesh: unknown) => unknown;
   isSketch: boolean;
+  roomArchitecturePlan: RoomArchitectureCutPlan | null;
 }): void {
-  const { THREE, shelfX, shelfY, shelfZ, width, maxHeight, maxDepth, parentGroup, addOutlines, isSketch } =
-    args;
+  const {
+    THREE,
+    shelfX,
+    shelfY,
+    shelfZ,
+    width,
+    maxHeight,
+    maxDepth,
+    parentGroup,
+    addOutlines,
+    isSketch,
+    roomArchitecturePlan,
+  } = args;
   const dims = WINTER_BLANKET_VISUAL_POLICY;
   const stackPlan = resolveWinterBlanketStackPlan(maxHeight);
   const quiltWidth = Math.min(dims.maxWidthM, width - dims.sideClearanceM * 2);
@@ -617,7 +633,7 @@ function addWinterBlankets(args: {
     stack.add(blanket);
     layerBaseY += height;
   }
-  parentGroup.add?.(stack);
+  if (!visualObjectIntersectsRoomColumnCut(roomArchitecturePlan, THREE, stack)) parentGroup.add?.(stack);
 }
 
 export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
@@ -640,6 +656,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
 
   const isLibraryContents = resolveLibraryContents(policy);
   if (!resolveShowContents(policy)) return;
+  const roomArchitecturePlan = resolveFoldedContentsRoomArchitecturePlan(policy);
   const outline = resolveContentsOutline(policy);
   const addOutlines = (mesh: unknown) => outline?.(mesh);
   const isSketch = policy.sketchMode;
@@ -661,6 +678,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           maxDepth,
           addOutlines,
           isSketch,
+          roomArchitecturePlan,
         });
       });
     }
@@ -705,10 +723,53 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
 
       const itemHeight = dims.itemHeightM;
       const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
-      const stacks = Math.floor(width / dims.stackPitchM);
+      const horizontalSource = {
+        minX: shelfX - width / 2,
+        maxX: shelfX + width / 2,
+        minY: shelfY,
+        maxY: shelfY + resolvedMaxHeight,
+        minZ: shelfZ - (resolvedMaxDepth ?? itemDepth) / 2,
+        maxZ: shelfZ + (resolvedMaxDepth ?? itemDepth) / 2,
+      };
+      const availableSpans =
+        roomArchitecturePlan === null || roomArchitecturePlan.activeCutObstacles.length === 0
+          ? null
+          : resolveHorizontalSpansAgainstRoomColumnCut(roomArchitecturePlan, horizontalSource);
+      const hasColumnClearance =
+        availableSpans !== null &&
+        !(
+          availableSpans.length === 1 &&
+          Math.abs(availableSpans[0]!.minX - horizontalSource.minX) < 1e-6 &&
+          Math.abs(availableSpans[0]!.maxX - horizontalSource.maxX) < 1e-6
+        );
+      const stackPlacements: Array<{ x: number; widthLimit: number }> = [];
+      if (hasColumnClearance && availableSpans) {
+        for (const span of availableSpans) {
+          if (span.length < dims.columnAdjustedMinItemWidthM) continue;
+          const stackCount = Math.max(1, Math.floor(span.length / dims.stackPitchM));
+          const slotWidth = span.length / stackCount;
+          const widthLimit = Math.min(dims.itemWidthM * 1.04, slotWidth - 0.01);
+          if (widthLimit < dims.columnAdjustedMinItemWidthM) continue;
+          for (let index = 0; index < stackCount; index++) {
+            stackPlacements.push({
+              x: span.minX + slotWidth * (index + 0.5),
+              widthLimit,
+            });
+          }
+        }
+      } else {
+        const stacks = Math.floor(width / dims.stackPitchM);
+        for (let index = 0; index < stacks; index++) {
+          stackPlacements.push({
+            x: shelfX - width / 2 + dims.stackXInsetM + index * dims.stackPitchM,
+            widthLimit: Number.POSITIVE_INFINITY,
+          });
+        }
+      }
 
-      for (let i = 0; i < stacks; i++) {
-        const xPos = shelfX - width / 2 + dims.stackXInsetM + i * dims.stackPitchM;
+      for (let i = 0; i < stackPlacements.length; i++) {
+        const placement = stackPlacements[i]!;
+        const xPos = placement.x;
         let itemsInStack = Math.floor(seededRandom.random() * dims.randomItemsRange) + dims.stackBaseItems;
         if (itemsInStack > maxItemsAllowed) itemsInStack = maxItemsAllowed;
         if (itemsInStack < 1 && resolvedMaxHeight > dims.minHeightForSingleItemM) itemsInStack = 1;
@@ -719,7 +780,8 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
         for (let j = 0; j < itemsInStack; j++) {
           const widthScale = 0.92 + seededRandom.random() * 0.12;
           const depthScale = 0.9 + seededRandom.random() * 0.1;
-          const itemWidth = dims.itemWidthM * widthScale;
+          const itemWidth = Math.min(dims.itemWidthM * widthScale, placement.widthLimit);
+          if (hasColumnClearance && itemWidth < dims.columnAdjustedMinItemWidthM) break;
           const actualDepth = itemDepth * depthScale;
           const body = createFoldedClothMesh(
             THREE,
@@ -743,7 +805,10 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           garment.userData.__kind = 'folded_cloth_item';
           garment.add(body);
 
-          const randomOffsetX = (seededRandom.random() - 0.5) * dims.randomOffsetXM;
+          const randomOffsetXLimit = Number.isFinite(placement.widthLimit)
+            ? Math.min(dims.randomOffsetXM, Math.max(0, placement.widthLimit - itemWidth))
+            : dims.randomOffsetXM;
+          const randomOffsetX = (seededRandom.random() - 0.5) * randomOffsetXLimit;
           const randomOffsetZ = (seededRandom.random() - 0.5) * zSpread;
           let zPos = shelfZ + randomOffsetZ;
           if (resolvedMaxDepth != null && minZ != null && maxZ != null) {
@@ -752,8 +817,25 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
             zPos = clamp(zPos, minZ + halfDepth - itemDepth / 2, maxZ - halfDepth + itemDepth / 2);
           }
 
+          const rotationY = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
           garment.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
-          garment.rotation.y = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
+          garment.rotation.y = rotationY;
+          const rotationCos = Math.abs(Math.cos(rotationY));
+          const rotationSin = Math.abs(Math.sin(rotationY));
+          const halfWidth = (itemWidth * rotationCos + actualDepth * rotationSin) / 2 + 0.003;
+          const halfDepth = (itemWidth * rotationSin + actualDepth * rotationCos) / 2 + 0.003;
+          if (
+            visualBoundsIntersectRoomColumnCut(roomArchitecturePlan, {
+              minX: garment.position.x - halfWidth,
+              maxX: garment.position.x + halfWidth,
+              minY: currentY,
+              maxY: currentY + itemHeight,
+              minZ: zPos - halfDepth,
+              maxZ: zPos + halfDepth,
+            })
+          ) {
+            continue;
+          }
           addFoldedGarmentDetails({
             THREE,
             garment,

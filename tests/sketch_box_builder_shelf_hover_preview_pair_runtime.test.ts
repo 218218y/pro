@@ -77,6 +77,7 @@ function createShelfHarness(options: ShelfHarnessOptions = {}) {
   };
   const input = {
     cfgSnapshot: options.cfgSnapshot ?? {},
+    roomArchitecturePlan: null,
     showContentsEnabled: true,
     sketchMode: true,
     addOutlines: () => undefined,
@@ -247,6 +248,7 @@ test('focused shelf renderer preserves content clearances and next-shelf folded 
     sketchMode: true,
     addOutlines: harness.input.addOutlines,
     cfgSnapshot: harness.input.cfgSnapshot,
+    roomArchitecturePlan: null,
   });
 });
 

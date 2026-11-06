@@ -8,6 +8,7 @@ import type {
   CornerConnectorInteriorEmitters,
   CornerConnectorInteriorFlowParams,
 } from './corner_connector_interior_shared.js';
+import type { RoomArchitectureCutPlan } from '../../../types/room_architecture.js';
 import type { FoldedClothesSurfacePlan } from './corner_connector_interior_special_types.js';
 
 function emitFoldedClothesPlan(
@@ -21,6 +22,7 @@ function emitFoldedClothesPlan(
     sketchMode: boolean;
     addOutlines: CornerConnectorInteriorFlowParams['ctx']['addOutlines'];
     cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot'];
+    roomArchitecturePlan: RoomArchitectureCutPlan;
   }
 ): void {
   if (!emitFoldedClothes) return;
@@ -42,6 +44,7 @@ export function emitFoldedClothesPlans(
     sketchMode: boolean;
     addOutlines: CornerConnectorInteriorFlowParams['ctx']['addOutlines'];
     cfgSnapshot: CornerConnectorInteriorFlowParams['cfgSnapshot'];
+    roomArchitecturePlan: RoomArchitectureCutPlan;
   }
 ): void {
   for (const plan of plans) {

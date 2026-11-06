@@ -96,6 +96,7 @@ test('visuals_and_contents install keeps stable content refs live across root re
     sketchMode: false,
     addOutlines: null,
     cfgSnapshot: { isLibraryMode: false },
+    roomArchitecturePlan: null,
   });
   assert.equal(parentA.children.length, 0);
 
@@ -114,6 +115,7 @@ test('visuals_and_contents install keeps stable content refs live across root re
     sketchMode: false,
     addOutlines: null,
     cfgSnapshot: { isLibraryMode: false },
+    roomArchitecturePlan: null,
   });
   assert.ok(parentB.children.length > 0);
 });

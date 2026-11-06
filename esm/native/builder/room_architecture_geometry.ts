@@ -3,6 +3,7 @@ import type {
   ResolvedRoomOpeningGeometry,
   RoomArchitectureColumnGeometry,
   RoomArchitectureConfigLike,
+  RoomArchitectureCutPlan,
   RoomArchitectureGeometry,
   RoomArchitecturePlan,
   RoomArchitecturePlanInput,
@@ -706,7 +707,9 @@ export function resolveRoomColumnAdjustmentGeometries(
   return plan.columnAdjustments;
 }
 
-export function resolveActiveRoomColumnCutObstacles(plan: RoomArchitecturePlan): readonly AxisAlignedBox[] {
+export function resolveActiveRoomColumnCutObstacles(
+  plan: RoomArchitectureCutPlan
+): readonly AxisAlignedBox[] {
   return plan.activeCutObstacles;
 }
 
@@ -734,14 +737,87 @@ export function resolveRoomColumnLinerPanelsForBox(
 }
 
 export function intersectsActiveRoomColumnCutObstacle(
-  plan: RoomArchitecturePlan,
+  plan: RoomArchitectureCutPlan,
   box: AxisAlignedBox
 ): boolean {
   return plan.activeCutObstacles.some(obstacle => !!intersectAxisAlignedBoxes(box, obstacle));
 }
 
+export function translateRoomColumnCutPlanToLocal(args: {
+  plan: RoomArchitectureCutPlan;
+  originX: number;
+  originZ: number;
+  mirrorX: number;
+}): RoomArchitectureCutPlan {
+  if (!Number.isFinite(args.originX) || !Number.isFinite(args.originZ)) {
+    throw new TypeError('[room_architecture_geometry] local cut-plan origin must be finite');
+  }
+  if (args.mirrorX !== 1 && args.mirrorX !== -1) {
+    throw new TypeError('[room_architecture_geometry] local cut-plan mirror must be 1 or -1');
+  }
+  const activeCutObstacles = args.plan.activeCutObstacles.map(obstacle => {
+    const localX1 = (obstacle.minX - args.originX) / args.mirrorX;
+    const localX2 = (obstacle.maxX - args.originX) / args.mirrorX;
+    return Object.freeze({
+      ...obstacle,
+      minX: Math.min(localX1, localX2),
+      maxX: Math.max(localX1, localX2),
+      minZ: obstacle.minZ - args.originZ,
+      maxZ: obstacle.maxZ - args.originZ,
+    });
+  });
+  return Object.freeze({ activeCutObstacles: Object.freeze(activeCutObstacles) });
+}
+
+export function resolveHorizontalSpansAgainstRoomColumnCut(
+  plan: RoomArchitectureCutPlan,
+  source: AxisAlignedBox
+): RoomColumnAdjustedHorizontalSpan[] {
+  const cuts = plan.activeCutObstacles
+    .map(obstacle => intersectAxisAlignedBoxes(source, obstacle))
+    .filter((cut): cut is AxisAlignedBox => cut !== null)
+    .sort((a, b) => a.minX - b.minX);
+  if (cuts.length === 0) {
+    return [
+      {
+        minX: source.minX,
+        maxX: source.maxX,
+        centerX: (source.minX + source.maxX) / 2,
+        length: source.maxX - source.minX,
+      },
+    ];
+  }
+
+  const mergedCuts: Array<{ minX: number; maxX: number }> = [];
+  for (const cut of cuts) {
+    const previous = mergedCuts.at(-1);
+    if (previous && cut.minX <= previous.maxX + ROOM_ARCHITECTURE_EPSILON_M) {
+      previous.maxX = Math.max(previous.maxX, cut.maxX);
+    } else {
+      mergedCuts.push({ minX: cut.minX, maxX: cut.maxX });
+    }
+  }
+
+  const spans: RoomColumnAdjustedHorizontalSpan[] = [];
+  let cursor = source.minX;
+  for (const cut of mergedCuts) {
+    if (cut.minX > cursor + ROOM_ARCHITECTURE_EPSILON_M) {
+      const minX = cursor;
+      const maxX = cut.minX;
+      spans.push({ minX, maxX, centerX: (minX + maxX) / 2, length: maxX - minX });
+    }
+    cursor = Math.max(cursor, cut.maxX);
+  }
+  if (cursor < source.maxX - ROOM_ARCHITECTURE_EPSILON_M) {
+    const minX = cursor;
+    const maxX = source.maxX;
+    spans.push({ minX, maxX, centerX: (minX + maxX) / 2, length: maxX - minX });
+  }
+  return spans;
+}
+
 export function resolveHorizontalSpanAgainstRoomColumnCut(
-  plan: RoomArchitecturePlan,
+  plan: RoomArchitectureCutPlan,
   args: {
     centerX: number;
     centerY: number;
@@ -763,61 +839,19 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
     maxZ: args.centerZ + args.halfDepth,
   };
 
-  if (plan.activeCutObstacles.length === 0) {
-    return {
-      minX: sourceMinX,
-      maxX: sourceMaxX,
-      centerX: args.centerX,
-      length: args.length,
-    };
-  }
-
-  const cuts = plan.activeCutObstacles
-    .map(obstacle => intersectAxisAlignedBoxes(source, obstacle))
-    .filter((cut): cut is AxisAlignedBox => cut !== null)
-    .sort((a, b) => a.minX - b.minX);
-  if (cuts.length === 0) {
-    return {
-      minX: sourceMinX,
-      maxX: sourceMaxX,
-      centerX: args.centerX,
-      length: args.length,
-    };
-  }
-
-  const mergedCuts: Array<{ minX: number; maxX: number }> = [];
-  for (const cut of cuts) {
-    const previous = mergedCuts.at(-1);
-    if (previous && cut.minX <= previous.maxX + ROOM_ARCHITECTURE_EPSILON_M) {
-      previous.maxX = Math.max(previous.maxX, cut.maxX);
-    } else {
-      mergedCuts.push({ minX: cut.minX, maxX: cut.maxX });
-    }
-  }
-
-  const usable: Array<{ minX: number; maxX: number }> = [];
-  let cursor = sourceMinX;
-  for (const cut of mergedCuts) {
-    if (cut.minX > cursor + ROOM_ARCHITECTURE_EPSILON_M) usable.push({ minX: cursor, maxX: cut.minX });
-    cursor = Math.max(cursor, cut.maxX);
-  }
-  if (cursor < sourceMaxX - ROOM_ARCHITECTURE_EPSILON_M) usable.push({ minX: cursor, maxX: sourceMaxX });
-
   // A cut that leaves multiple separate spans would require independent fittings.
   // Keep the established policy: remove that fitting rather than inventing split hardware.
+  const usable = resolveHorizontalSpansAgainstRoomColumnCut(plan, source);
   if (usable.length !== 1) return null;
   const span = usable[0];
   if (!span) return null;
-  const { minX, maxX } = span;
-  const length = maxX - minX;
-  if (!(length >= args.minUsableLength - ROOM_ARCHITECTURE_EPSILON_M)) return null;
-
-  return {
-    minX,
-    maxX,
-    centerX: (minX + maxX) / 2,
-    length,
-  };
+  if (
+    Math.abs(span.minX - sourceMinX) <= ROOM_ARCHITECTURE_EPSILON_M &&
+    Math.abs(span.maxX - sourceMaxX) <= ROOM_ARCHITECTURE_EPSILON_M
+  ) {
+    return span;
+  }
+  return span.length >= args.minUsableLength - ROOM_ARCHITECTURE_EPSILON_M ? span : null;
 }
 
 export function axisAlignedBoxToCenterSize(box: AxisAlignedBox) {

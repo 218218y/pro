@@ -256,6 +256,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
             sketchMode: args.args.input.sketchMode === true,
             addOutlines: args.args.input.addOutlines || null,
             cfgSnapshot: args.args.input.cfgSnapshot,
+            roomArchitecturePlan: args.args.input.roomArchitecturePlan,
             contentKind: 'winter_blankets',
           }
         );
@@ -283,6 +284,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
             sketchMode: args.args.input.sketchMode === true,
             addOutlines: args.args.input.addOutlines || null,
             cfgSnapshot: args.args.input.cfgSnapshot,
+            roomArchitecturePlan: args.args.input.roomArchitecturePlan,
           }
         );
       }

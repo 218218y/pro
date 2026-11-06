@@ -240,6 +240,7 @@ export function applyInteriorSketchOwnedShelves(args: {
         sketchMode: resolved.input.sketchMode === true,
         addOutlines: resolved.input.addOutlines || null,
         cfgSnapshot: resolved.input.cfgSnapshot,
+        roomArchitecturePlan: resolved.input.roomArchitecturePlan,
       },
       currentShelfMat: resolved.currentShelfMat,
       currentBraceShelfMat: resolved.currentBraceShelfMat,

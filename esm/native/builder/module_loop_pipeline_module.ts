@@ -20,18 +20,19 @@ export function runModuleLoopItem(
   index: number
 ): void {
   const mod = runtime.modules[index];
-  const frame = resolveModuleFrame(runtime, state, index, mod?.doors);
-
   const startDoorOfModule = state.globalDoorCounter;
+  const moduleDoors =
+    typeof mod?.doors === 'number' && Number.isFinite(mod.doors) && mod.doors > 0 ? Math.trunc(mod.doors) : 1;
   const removedSideConstruction = resolveRemovedFrameSideModuleConstructionPlan({
     constructionPlan: runtime.removedFrameSidePlan,
     capabilities: runtime.removedFrameSideCapabilities,
     moduleIndex: index,
     modulesLength: runtime.modules.length,
     startDoorId: startDoorOfModule,
-    moduleDoors: frame.modDoors,
+    moduleDoors,
   });
   const frontClosurePlan = removedSideConstruction.frontClosure;
+  const frame = resolveModuleFrame(runtime, state, index, mod?.doors, frontClosurePlan !== null);
 
   registerModuleHitBox(runtime, state, index, frame);
   createInterDivider(runtime, state, index, frame);

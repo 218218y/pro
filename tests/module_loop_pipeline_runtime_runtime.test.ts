@@ -8,6 +8,7 @@ import {
 } from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
 import { resolveModuleLoopRuntimeBase } from '../esm/native/builder/module_loop_pipeline_runtime_base.ts';
 import { resolveModuleLoopRuntimeResolvers } from '../esm/native/builder/module_loop_pipeline_runtime_resolvers.ts';
+import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
 import { createInterDivider } from '../esm/native/builder/module_loop_pipeline_module_dividers.ts';
 import { moduleRequiresCustomBoundaryGeometry } from '../esm/native/builder/module_custom_geometry_policy.ts';
 import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pipeline_module_depth.ts';
@@ -361,6 +362,7 @@ test('module loop runtime resolvers preserve explicit content snapshots and hang
     sketchMode: false,
     addOutlines: null,
     cfgSnapshot: { isLibraryMode: true },
+    roomArchitecturePlan: createTestRoomArchitecturePlan(),
   };
   const hangingPolicy = {
     showContentsEnabled: true,
@@ -382,13 +384,17 @@ test('module loop runtime resolvers preserve explicit content snapshots and hang
 test('module loop replaces intact doors next to a removed frame side with one fixed front closure', () => {
   const boardCalls: unknown[][] = [];
   const hingedOps: unknown[] = [];
+  const interiorOpsInputs: unknown[] = [];
   const App = createApp();
   App.render = { wardrobeGroup: { add() {} } };
   App.services = {
     runtimeCache: {},
     builder: {
       renderOps: {
-        applyInteriorPresetOps: () => true,
+        applyInteriorPresetOps: (args: unknown) => {
+          interiorOpsInputs.push(args);
+          return true;
+        },
       },
     },
   };
@@ -397,12 +403,12 @@ test('module loop replaces intact doors next to a removed frame side with one fi
     cfg: {
       wardrobeType: 'hinged',
       globalHandleType: 'edge',
-      removedDoorsMap: { removed_body_left: true },
+      removedDoorsMap: { removed_body_right: true },
     },
     layout: {
-      modules: [{ doors: 2 }, { doors: 1 }],
-      moduleCfgList: [{ layout: 'shelves' }, { layout: 'shelves' }],
-      moduleInternalWidths: [0.8, 0.6],
+      modules: [{ doors: 2 }],
+      moduleCfgList: [{ layout: 'shelves' }],
+      moduleInternalWidths: [0.8],
       singleUnitWidth: 0.4,
       hingedDoorPivotMap: null,
     },
@@ -416,17 +422,17 @@ test('module loop replaces intact doors next to a removed frame side with one fi
     hinged: { opsList: hingedOps },
   });
   const runtime = resolveModuleLoopRuntime(ctx);
-  const state = { currentX: -0.7, globalDoorCounter: 1 };
+  const state = { currentX: -0.4, globalDoorCounter: 1 };
 
   runModuleLoopItem(runtime, state, 0);
 
-  assert.equal(boardCalls.filter(call => call[7] === 'body_front_closure_left').length, 1);
-  const divider = boardCalls.find(call => call[7] === 'divider_inter_0');
-  assert.ok(divider, 'the boundary next to the fixed closure should still render its divider');
+  assert.equal(boardCalls.filter(call => call[7] === 'body_front_closure_right').length, 1);
+  const interiorOps = interiorOpsInputs[0] as Record<string, unknown> | undefined;
+  assert.ok(interiorOps, 'the module interior should receive the fixed-closure depth profile');
   closeTo(
-    Number(divider[5]) + Number(divider[2]) / 2,
-    ctx.dims.D / 2,
-    'the divider next to the closure should continue to the cabinet front plane'
+    Number(interiorOps.braceFrontZ),
+    Number(interiorOps.internalZ) + Number(interiorOps.internalDepth) / 2,
+    'brace shelves must stop at the fixed closure back face'
   );
   assert.equal(hingedOps.length, 0, 'the closed side cell must not emit hinged-door operations');
   assert.equal(state.globalDoorCounter, 3, 'suppressed door ids must stay reserved for later modules');

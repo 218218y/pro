@@ -47,6 +47,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
     backPanelThick,
     __backPanelOutsideInsetZ,
     cornerGroup,
+    roomColumnCutPlan,
   } = locals;
   const { reportErrorThrottled } = helpers;
   const { emitFoldedClothes } = emitters;
@@ -199,6 +200,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       sketchMode: __sketchMode,
       addOutlines,
       cfgSnapshot,
+      roomArchitecturePlan: roomColumnCutPlan,
     });
   }
 
@@ -226,6 +228,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
       sketchMode: __sketchMode,
       addOutlines,
       cfgSnapshot,
+      roomArchitecturePlan: roomColumnCutPlan,
     });
   }
 }

@@ -49,7 +49,8 @@ export interface ModuleDepthProfile {
 
 export function resolveModuleDepthProfile(
   runtime: ModuleLoopRuntime,
-  config: ModuleConfigLike
+  config: ModuleConfigLike,
+  options: { fixedFrontClosure?: boolean } = {}
 ): ModuleDepthProfile {
   const depthCmActive = getActiveDepthCmFromConfig(config);
   const requestedTotalDepth =
@@ -77,6 +78,7 @@ export function resolveModuleDepthProfile(
     frontZ: moduleFrontZ,
     doorFrontZ: moduleDoorFrontZ,
     internalFrontZ: moduleInternalZ + moduleInternalDepth / 2,
+    ...(options.fixedFrontClosure === true ? { fixedFrontClosure: true } : {}),
   });
   const moduleHitDepth = Math.max(moduleTotalDepth, moduleDoorDepth);
   const moduleHitZ = -runtime.D / 2 + moduleHitDepth / 2;

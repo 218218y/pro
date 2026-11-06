@@ -9,8 +9,10 @@ import {
   createRoomArchitecturePlan,
   intersectAxisAlignedBoxes,
   resolveHorizontalSpanAgainstRoomColumnCut,
+  resolveHorizontalSpansAgainstRoomColumnCut,
   subtractAxisAlignedBox,
   subtractAxisAlignedBoxes,
+  translateRoomColumnCutPlanToLocal,
 } from '../esm/native/builder/room_architecture_geometry.ts';
 import {
   createRoomArchitecturePlanFromBuildSnapshot,
@@ -463,6 +465,26 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
     centerX: 0,
     length: 0.8,
   });
+  const source = {
+    minX: -0.4,
+    maxX: 0.4,
+    minY: args.centerY - args.halfHeight,
+    maxY: args.centerY + args.halfHeight,
+    minZ: args.centerZ - args.halfDepth,
+    maxZ: args.centerZ + args.halfDepth,
+  };
+  assert.deepEqual(resolveHorizontalSpansAgainstRoomColumnCut(noColumn, source), [
+    { minX: -0.4, maxX: 0.4, centerX: 0, length: 0.8 },
+  ]);
+  assert.deepEqual(
+    resolveHorizontalSpanAgainstRoomColumnCut(noColumn, {
+      ...args,
+      length: 0.06,
+      minUsableLength: 0.15,
+    }),
+    { minX: -0.03, maxX: 0.03, centerX: 0, length: 0.06 },
+    'the minimum remaining span applies only after a room-column cut'
+  );
 
   const left = planFor(
     canonicalRoom({
@@ -492,6 +514,27 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
     })
   );
   assert.equal(resolveHorizontalSpanAgainstRoomColumnCut(central, args), null);
+  const centralSpans = resolveHorizontalSpansAgainstRoomColumnCut(central, source);
+  assert.equal(
+    centralSpans.length,
+    2,
+    'content can use both independently clear spans around a central column'
+  );
+  assert.ok(centralSpans[0]!.maxX < centralSpans[1]!.minX);
+  const worldCut = central.activeCutObstacles[0]!;
+  const localCutPlan = translateRoomColumnCutPlanToLocal({
+    plan: central,
+    originX: 0.3,
+    originZ: -0.1,
+    mirrorX: -1,
+  });
+  assert.deepEqual(localCutPlan.activeCutObstacles[0], {
+    ...worldCut,
+    minX: 0.3 - worldCut.maxX,
+    maxX: 0.3 - worldCut.minX,
+    minZ: worldCut.minZ + 0.1,
+    maxZ: worldCut.maxZ + 0.1,
+  });
   assert.equal(resolveHorizontalSpanAgainstRoomColumnCut(left, { ...args, minUsableLength: 0.7 }), null);
 
   const bothEdges = planFor(

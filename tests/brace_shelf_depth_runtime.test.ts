@@ -65,6 +65,15 @@ test('sliding braces retain the track working volume', () => {
   closeTo(profile.braceFrontZ, profile.moduleInternalZ + profile.moduleInternalDepth / 2);
 });
 
+test('brace shelves meet the back face of a removed-side fixed front closure', () => {
+  const profile = resolveModuleDepthProfile(
+    { D: 0.6, woodThick: 0.018, depthReduction: 0.03, cfg: { wardrobeType: 'hinged' } } as never,
+    {},
+    { fixedFrontClosure: true }
+  );
+  closeTo(profile.braceFrontZ, profile.moduleInternalZ + profile.moduleInternalDepth / 2);
+});
+
 test('both brace variants use the extended depth through custom grid, preset and sketch emission with matching hover', () => {
   for (const variant of ['brace', 'winter_brace'] as const) {
     const calls: number[][] = [];

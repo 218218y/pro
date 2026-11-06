@@ -35,9 +35,10 @@ export function resolveBraceShelfFrontZ(args: {
   frontZ: number;
   doorFrontZ: number;
   internalFrontZ: number;
+  fixedFrontClosure?: boolean;
 }): number {
   // Sliding tracks occupy the front of the carcass; preserve their existing working clearance.
-  if (args.wardrobeType === 'sliding') return args.internalFrontZ;
+  if (args.wardrobeType === 'sliding' || args.fixedFrontClosure === true) return args.internalFrontZ;
   return Math.min(
     args.frontZ,
     resolveHingedDoorClosedBackZ(args.doorFrontZ, args.doorMountMode, args.woodThick) -

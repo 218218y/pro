@@ -22,6 +22,7 @@ import {
 import { __asBufferAttribute } from '../esm/native/builder/visuals_and_contents_shared.ts';
 import {
   BOOK_CONTENT_VISUAL_POLICY,
+  FOLDED_CLOTHES_VISUAL_POLICY,
   WINTER_BLANKET_VISUAL_POLICY,
 } from '../esm/shared/dimensions/content_visual_policy.ts';
 import { createRoomArchitecturePlan } from '../esm/native/builder/room_architecture_geometry.ts';
@@ -133,7 +134,14 @@ class FakeBox3 {
   max = new FakeVector3();
   setFromObject(obj: any) {
     const kind = String(obj?.userData?.__kind || '');
-    const halfX = kind === 'single_hanger_group' ? 0.24 : kind === 'hanging_hanger' ? 0.012 : 0.01;
+    const halfX =
+      kind === 'single_hanger_group'
+        ? 0.24
+        : kind === 'hanging_hanger'
+          ? 0.012
+          : kind === 'hanging_cloth'
+            ? 0.018
+            : 0.01;
     const halfY = kind === 'single_hanger_group' ? 0.2 : kind === 'hanging_hanger' ? 0.035 : 0.01;
     const halfZ = kind === 'single_hanger_group' ? 0.035 : 0.02;
     const x = Number(obj?.position?.x || 0);
@@ -244,7 +252,13 @@ function foldedContentsPolicy(
   sketchMode = false,
   addOutlines: ((mesh: unknown) => unknown) | null = null
 ) {
-  return { showContentsEnabled, sketchMode, addOutlines, cfgSnapshot: { isLibraryMode } };
+  return {
+    showContentsEnabled,
+    sketchMode,
+    addOutlines,
+    cfgSnapshot: { isLibraryMode },
+    roomArchitecturePlan: defaultRoomArchitecturePlan,
+  };
 }
 
 function hangingContentsPolicy(
@@ -768,7 +782,7 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
     columns: [
       {
         id: 'room-column-1',
-        offsetLeftCm: 42.5,
+        offsetLeftCm: 44,
         widthCm: 3,
         depthCm: 20,
         heightCm: 200,
@@ -808,9 +822,88 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
   );
   const hangers = hangingParent.children.filter(child => child.userData.__kind === 'hanging_hanger');
   const clothes = hangingParent.children.filter(child => child.userData.__kind === 'hanging_cloth');
-  assert.equal(hangers.length, 3);
-  assert.equal(clothes.length, 3);
-  assert.ok(hangers.every(hanger => hanger.position.x > -0.045));
+  assert.equal(hangers.length, 2, 'hangers whose physical bounds enter the column cut must be omitted');
+  assert.equal(clothes.length, 2, 'garments whose physical bounds enter the column cut must be omitted');
+  assert.ok(hangers.every(hanger => hanger.position.x > -0.03));
+});
+
+test('visuals_contents fits folded clothes into clear shelf spans beside a room column', () => {
+  const { App } = createApp();
+  const roomArchitecturePlan = createRoomArchitecturePlan({
+    config: {
+      backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      columns: [
+        {
+          id: 'room-column-partial-shelf',
+          offsetLeftCm: 30,
+          widthCm: 45,
+          depthCm: 20,
+          heightCm: 200,
+          bottomOffsetCm: 0,
+        },
+      ],
+      openings: [],
+      wallColor: '#f2efe6',
+      surfacesHidden: false,
+    },
+    wardrobeWidthM: 1,
+    wardrobeHeightM: 2,
+    wardrobeDepthM: 0.6,
+  });
+  const parent = new FakeGroup();
+  addFoldedClothes(App, 0, 0.2, 0, 0.72, parent as any, 0.5, 0.46, {
+    ...foldedContentsPolicy(false),
+    roomArchitecturePlan,
+  });
+
+  const obstacle = roomArchitecturePlan.activeCutObstacles[0]!;
+  const garments = parent.children;
+  assert.ok(garments.length > 0, 'the clear space before the column should still hold smaller clothes');
+  for (const garment of garments) {
+    const body = garment.children.find((child: any) => child.userData.__kind === 'folded_cloth_body');
+    assert.ok(body);
+    const halfWidth = (body.geometry.args[0] * body.scale.x) / 2 + 0.003;
+    assert.ok(
+      garment.position.x + halfWidth <= obstacle.minX,
+      'folded clothing must stop before the room-column cut, including its physical width'
+    );
+    assert.ok(
+      body.geometry.args[0] * body.scale.x < FOLDED_CLOTHES_VISUAL_POLICY.itemWidthM,
+      'clothes in a narrow clear span must shrink to fit instead of crossing the column'
+    );
+  }
+
+  const noClearSpacePlan = createRoomArchitecturePlan({
+    config: {
+      backWall: { enabled: true, widthCm: 200, heightCm: 280, wardrobeOffsetLeftCm: 0 },
+      leftWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      rightWall: { enabled: false, depthCm: 300, heightCm: 280 },
+      columns: [
+        {
+          id: 'room-column-full-shelf',
+          offsetLeftCm: 5,
+          widthCm: 90,
+          depthCm: 20,
+          heightCm: 200,
+          bottomOffsetCm: 0,
+        },
+      ],
+      openings: [],
+      wallColor: '#f2efe6',
+      surfacesHidden: false,
+    },
+    wardrobeWidthM: 1,
+    wardrobeHeightM: 2,
+    wardrobeDepthM: 0.6,
+  });
+  const blocked = new FakeGroup();
+  addFoldedClothes(App, 0, 0.2, 0, 0.72, blocked as any, 0.5, 0.46, {
+    ...foldedContentsPolicy(false),
+    roomArchitecturePlan: noClearSpacePlan,
+  });
+  assert.equal(blocked.children.length, 0, 'do not place clothes when no usable shelf width remains');
 });
 
 test('winter blankets follow the configured top clearance with full and thinner layers', () => {
