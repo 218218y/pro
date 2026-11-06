@@ -476,6 +476,15 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
   assert.deepEqual(resolveHorizontalSpansAgainstRoomColumnCut(noColumn, source), [
     { minX: -0.4, maxX: 0.4, centerX: 0, length: 0.8 },
   ]);
+  assert.deepEqual(
+    resolveHorizontalSpanAgainstRoomColumnCut(noColumn, {
+      ...args,
+      length: 0.06,
+      minUsableLength: 0.15,
+    }),
+    { minX: -0.03, maxX: 0.03, centerX: 0, length: 0.06 },
+    'the minimum remaining span applies only after a room-column cut'
+  );
 
   const left = planFor(
     canonicalRoom({
