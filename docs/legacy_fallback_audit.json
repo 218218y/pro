@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T09:54:06.195Z",
+  "generatedAt": "2026-11-06T10:17:32.739Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1963,21 +1963,21 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 58,
+      "line": 60,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 62,
+      "line": 64,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 200,
+      "line": 202,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.fallbackDoorW;"

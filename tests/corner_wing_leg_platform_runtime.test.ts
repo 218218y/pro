@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 
 import { applyCornerWingCarcassFloorAndBase } from '../esm/native/builder/corner_wing_carcass_shell_floor_base.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
-import { CORNER_WING_DRAWER_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
+import {
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_WING_DRAWER_POLICY,
+} from '../esm/shared/dimensions/corner_system_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -104,7 +107,9 @@ test('corner wing legs stage emits lower and upper paintable platform boards', (
     Math.abs(
       bottomPlatforms[0].position.z +
         bottomPlatforms[0].geometry.parameters.depth / 2 -
-        (CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM + 0.04)
+        (CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM +
+          CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2 +
+          0.04)
     ) < 1e-10,
     'the corner stage front must be measured from the rendered closed wing door'
   );

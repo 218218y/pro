@@ -317,8 +317,49 @@ test('free-placement sketch box render rejects string-encoded leg platform overh
 
   assert.equal(platforms.length, 2, 'expected top and bottom platform meshes');
   for (const platform of platforms) {
-    assert.ok(Math.abs(platform.geometry.parameters.width - 0.75) < 1e-9);
+    assert.ok(Math.abs(platform.geometry.parameters.width - 0.76) < 1e-9);
     assert.ok(Math.abs(platform.geometry.parameters.depth - 0.47) < 1e-9);
+  }
+});
+
+test('free-placement sketch box stage reaches the closed door face only when an enabled door exists', () => {
+  for (const doorState of ['absent', 'disabled', 'enabled'] as const) {
+    const hasDoor = doorState === 'enabled';
+    const { wardrobeGroup, applyInteriorSketchExtras, makeArgs } = createSketchInteriorHarness();
+    const ok = applyInteriorSketchExtras(
+      makeArgs({
+        sketchExtras: {
+          boxes: [
+            {
+              id: doorState,
+              freePlacement: true,
+              absX: 0,
+              absY: 1.1,
+              heightM: 0.62,
+              widthM: 0.72,
+              depthM: 0.45,
+              baseType: 'legs',
+              baseLegPlatformMode: 'stage',
+              ...(doorState === 'absent'
+                ? {}
+                : { doors: [{ id: 'door1', enabled: hasDoor, hinge: 'left' }] }),
+            },
+          ],
+        },
+      })
+    );
+
+    assert.equal(ok, true);
+    const platforms: FakeMesh[] = [];
+    wardrobeGroup.traverse(node => {
+      const mesh = node as FakeMesh;
+      if (String(mesh.userData?.partId || '').includes('base_leg_platform')) platforms.push(mesh);
+    });
+    assert.equal(platforms.length, 2);
+    for (const platform of platforms) {
+      assert.ok(Math.abs(platform.geometry.parameters.width - 0.76) < 1e-9);
+      assert.ok(Math.abs(platform.geometry.parameters.depth - (hasDoor ? 0.489 : 0.47)) < 1e-9);
+    }
   }
 });
 

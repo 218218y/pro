@@ -28,7 +28,9 @@ import {
 
 /** Front slab surface, in the corner wing's local coordinate frame. */
 export function resolveCornerWingClosedDoorFrontOffsetM(): number {
-  return CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM;
+  return (
+    CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2
+  );
 }
 
 export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: number): CornerWingDoorState {

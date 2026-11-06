@@ -49,7 +49,12 @@ test('Core Doors imports exactly its two focused owner statements without aliase
         specifier: '../../shared/dimensions/door_system_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['HINGED_DOOR_MOUNT_POLICY', 'SLIDING_DOOR_CONSTRUCTION_POLICY'],
+        importedSymbols: [
+          'HINGED_DOOR_MOUNT_POLICY',
+          'HINGED_DOOR_RENDER_POLICY',
+          'SLIDING_DOOR_CONSTRUCTION_POLICY',
+          'resolveHingedDoorClosedBackZ',
+        ],
       },
       {
         specifier: '../../shared/dimensions/material_thickness_policy.js',

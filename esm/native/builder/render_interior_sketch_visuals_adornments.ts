@@ -8,7 +8,7 @@ import type {
   InteriorTHREESurface,
 } from './render_interior_ops_contracts.js';
 
-import type { SketchBoxExtra } from './render_interior_sketch_shared.js';
+import { readSketchBoxDoors, type SketchBoxExtra } from './render_interior_sketch_shared.js';
 
 export {
   getSketchBoxAdornmentBaseHeight,
@@ -96,7 +96,7 @@ export function renderSketchBoxCarcassAdornment(args: {
     baseLegPlatformSideOverhangCm: readFiniteStateNumber(box.baseLegPlatformSideOverhangCm),
     baseLegPlatformFrontOverhangCm: readFiniteStateNumber(box.baseLegPlatformFrontOverhangCm),
     basePlinthHeightCm: normalizeBasePlinthHeightCm(readFiniteStateNumber(box.basePlinthHeightCm)),
-    doorsCount: 2,
+    doorsCount: readSketchBoxDoors(box).length,
     hasCornice,
     corniceType,
   });

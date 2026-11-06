@@ -12,7 +12,10 @@ import {
 import { collectCornerCorniceIrViolations } from '../esm/native/builder/corner_cornice_ir.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { CARCASS_CORNICE_RENDER_POLICY } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
-import { CORNER_WING_DRAWER_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
+import {
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_WING_DRAWER_POLICY,
+} from '../esm/shared/dimensions/corner_system_policy.ts';
 import type { CornerCell } from '../esm/native/builder/corner_geometry_plan.ts';
 
 const THREE = createFakeThreeRuntime();
@@ -161,7 +164,14 @@ test('corner wing straight cornice renders solid rectangular front and exterior 
   const front = plan.operations.find(operation => operation.partId === 'corner_cornice_front');
   assert.ok(front && front.kind === 'corner_profile');
   const frontOuterZ = front.z + Math.max(...front.profile.map(point => point.x));
-  assert.ok(Math.abs(frontOuterZ - (CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM + 0.02)) < 1e-10);
+  assert.ok(
+    Math.abs(
+      frontOuterZ -
+        (CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM +
+          CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2 +
+          0.02)
+    ) < 1e-10
+  );
   applyCornerWingCornice(params as never);
   assert.deepEqual(wingGroup.children.map(childPartId).sort(), [
     'corner_cornice_front',
