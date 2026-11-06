@@ -113,6 +113,16 @@ export function visualBoundsIntersectRoomColumnCut(
     : intersectsActiveRoomColumnCutObstacle(roomArchitecturePlan, bounds);
 }
 
+export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {
+  if (!isRecord(policy) || typeof policy.sketchMode !== 'boolean') {
+    throw new TypeError('[visuals_contents] sketchMode policy is required');
+  }
+  if (policy.addOutlines !== null && typeof policy.addOutlines !== 'function') {
+    throw new TypeError('[visuals_contents] addOutlines policy must be a function or null');
+  }
+  return policy as BuilderContentsRenderPolicy;
+}
+
 export function resolveFoldedContentsRoomArchitecturePlan(
   policy: BuilderFoldedContentsPolicy
 ): RoomArchitectureCutPlan | null {
@@ -125,16 +135,6 @@ export function resolveFoldedContentsRoomArchitecturePlan(
     throw new TypeError('[visuals_contents] roomArchitecturePlan policy must be a room plan or null');
   }
   return plan as unknown as RoomArchitectureCutPlan;
-}
-
-export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {
-  if (!isRecord(policy) || typeof policy.sketchMode !== 'boolean') {
-    throw new TypeError('[visuals_contents] sketchMode policy is required');
-  }
-  if (policy.addOutlines !== null && typeof policy.addOutlines !== 'function') {
-    throw new TypeError('[visuals_contents] addOutlines policy must be a function or null');
-  }
-  return policy as BuilderContentsRenderPolicy;
 }
 
 export function resolveContentsOutline(policy: BuilderContentsRenderPolicy): BuilderOutlineFn | null {

@@ -864,10 +864,14 @@ test('visuals_contents fits folded clothes into clear shelf spans beside a room 
   for (const garment of garments) {
     const body = garment.children.find((child: any) => child.userData.__kind === 'folded_cloth_body');
     assert.ok(body);
-    const halfWidth = (body.geometry.args[0] * body.scale.x) / 2 + 0.003;
+    const bodyWidth = body.geometry.args[0] * body.scale.x;
+    const bodyDepth = body.geometry.args[2] * body.scale.z;
+    const rotationY = Number(garment.rotation.y || 0);
+    const halfWidth =
+      (bodyWidth * Math.abs(Math.cos(rotationY)) + bodyDepth * Math.abs(Math.sin(rotationY))) / 2 + 0.003;
     assert.ok(
-      garment.position.x + halfWidth <= obstacle.minX,
-      'folded clothing must stop before the room-column cut, including its physical width'
+      garment.position.x + halfWidth <= obstacle.minX || garment.position.x - halfWidth >= obstacle.maxX,
+      'folded clothing must stop before the room-column cut, including its rotated physical bounds'
     );
     assert.ok(
       body.geometry.args[0] * body.scale.x < FOLDED_CLOTHES_VISUAL_POLICY.itemWidthM,

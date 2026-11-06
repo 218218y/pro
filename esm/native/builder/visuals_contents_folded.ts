@@ -20,7 +20,6 @@ import {
   resolveShowContents,
   runVisualContentsPerfPhase,
   seededRandom,
-  visualBoundsIntersectRoomColumnCut,
   visualObjectIntersectsRoomColumnCut,
   type AppAwareAddFoldedClothesFn,
 } from './visuals_contents_shared.js';
@@ -722,6 +721,9 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
         resolvedMaxDepth != null ? Math.min(dims.zSpreadMaxM, zRoom * dims.zSpreadRatio) : dims.zSpreadMaxM;
 
       const itemHeight = dims.itemHeightM;
+      const rotationYRange = Math.min(dims.rotationYRangeRad, 0.035);
+      const maxRotationY = rotationYRange / 2;
+      const columnEdgeClearance = 0.003 + (itemDepth * Math.sin(maxRotationY)) / 2;
       const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
       const horizontalSource = {
         minX: shelfX - width / 2,
@@ -737,18 +739,18 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           : resolveHorizontalSpansAgainstRoomColumnCut(roomArchitecturePlan, horizontalSource);
       const hasColumnClearance =
         availableSpans !== null &&
-        !(
-          availableSpans.length === 1 &&
-          Math.abs(availableSpans[0]!.minX - horizontalSource.minX) < 1e-6 &&
-          Math.abs(availableSpans[0]!.maxX - horizontalSource.maxX) < 1e-6
-        );
+        (availableSpans.length !== 1 ||
+          Math.max(
+            horizontalSource.minX - availableSpans[0]!.minX,
+            horizontalSource.maxX - availableSpans[0]!.maxX
+          ) >= 1e-6);
       const stackPlacements: Array<{ x: number; widthLimit: number }> = [];
       if (hasColumnClearance && availableSpans) {
         for (const span of availableSpans) {
           if (span.length < dims.columnAdjustedMinItemWidthM) continue;
           const stackCount = Math.max(1, Math.floor(span.length / dims.stackPitchM));
           const slotWidth = span.length / stackCount;
-          const widthLimit = Math.min(dims.itemWidthM * 1.04, slotWidth - 0.01);
+          const widthLimit = Math.min(dims.itemWidthM * 1.04, slotWidth - columnEdgeClearance * 2);
           if (widthLimit < dims.columnAdjustedMinItemWidthM) continue;
           for (let index = 0; index < stackCount; index++) {
             stackPlacements.push({
@@ -817,25 +819,9 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
             zPos = clamp(zPos, minZ + halfDepth - itemDepth / 2, maxZ - halfDepth + itemDepth / 2);
           }
 
-          const rotationY = (seededRandom.random() - 0.5) * Math.min(dims.rotationYRangeRad, 0.035);
+          const rotationY = (seededRandom.random() - 0.5) * rotationYRange;
           garment.position.set(xPos + randomOffsetX, currentY + itemHeight / 2, zPos);
           garment.rotation.y = rotationY;
-          const rotationCos = Math.abs(Math.cos(rotationY));
-          const rotationSin = Math.abs(Math.sin(rotationY));
-          const halfWidth = (itemWidth * rotationCos + actualDepth * rotationSin) / 2 + 0.003;
-          const halfDepth = (itemWidth * rotationSin + actualDepth * rotationCos) / 2 + 0.003;
-          if (
-            visualBoundsIntersectRoomColumnCut(roomArchitecturePlan, {
-              minX: garment.position.x - halfWidth,
-              maxX: garment.position.x + halfWidth,
-              minY: currentY,
-              maxY: currentY + itemHeight,
-              minZ: zPos - halfDepth,
-              maxZ: zPos + halfDepth,
-            })
-          ) {
-            continue;
-          }
           addFoldedGarmentDetails({
             THREE,
             garment,

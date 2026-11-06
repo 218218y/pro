@@ -756,12 +756,11 @@ export function translateRoomColumnCutPlanToLocal(args: {
     throw new TypeError('[room_architecture_geometry] local cut-plan mirror must be 1 or -1');
   }
   const activeCutObstacles = args.plan.activeCutObstacles.map(obstacle => {
-    const localX1 = (obstacle.minX - args.originX) / args.mirrorX;
-    const localX2 = (obstacle.maxX - args.originX) / args.mirrorX;
+    // Mirroring reverses the x edges, so translate directly into ascending local bounds.
     return Object.freeze({
       ...obstacle,
-      minX: Math.min(localX1, localX2),
-      maxX: Math.max(localX1, localX2),
+      minX: args.mirrorX === 1 ? obstacle.minX - args.originX : args.originX - obstacle.maxX,
+      maxX: args.mirrorX === 1 ? obstacle.maxX - args.originX : args.originX - obstacle.minX,
       minZ: obstacle.minZ - args.originZ,
       maxZ: obstacle.maxZ - args.originZ,
     });
@@ -788,19 +787,9 @@ export function resolveHorizontalSpansAgainstRoomColumnCut(
     ];
   }
 
-  const mergedCuts: Array<{ minX: number; maxX: number }> = [];
-  for (const cut of cuts) {
-    const previous = mergedCuts.at(-1);
-    if (previous && cut.minX <= previous.maxX + ROOM_ARCHITECTURE_EPSILON_M) {
-      previous.maxX = Math.max(previous.maxX, cut.maxX);
-    } else {
-      mergedCuts.push({ minX: cut.minX, maxX: cut.maxX });
-    }
-  }
-
   const spans: RoomColumnAdjustedHorizontalSpan[] = [];
   let cursor = source.minX;
-  for (const cut of mergedCuts) {
+  for (const cut of cuts) {
     if (cut.minX > cursor + ROOM_ARCHITECTURE_EPSILON_M) {
       const minX = cursor;
       const maxX = cut.minX;
