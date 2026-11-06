@@ -8,15 +8,16 @@ import { buildCornerWingProfileCornicePlan } from '../esm/native/builder/corner_
 import { renderCornerCornicePlan } from '../esm/native/builder/corner_cornice_render.ts';
 import { resolvePaintPreviewGroupBox } from '../esm/native/services/canvas_picking_generic_paint_hover_preview.ts';
 
-function makeStraightCornice() {
+function makeStraightCornice(cfg: Record<string, unknown> = {}, doorsCount = 4) {
   const cornice = computeCarcassOps({
     totalW: 1.6,
     D: 0.55,
     H: 2.4,
     woodThick: 0.018,
-    doorsCount: 4,
+    doorsCount,
     hasCornice: true,
     corniceType: 'straight',
+    cfg,
   }).cornice;
   assert.ok(cornice);
   const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -59,14 +60,15 @@ test('straight cornice front and side returns have one top surface, without over
   const front = cornice.segments.find(seg => Math.abs((seg.rotationY ?? 0) + Math.PI / 2) < 1e-9);
   assert.ok(front);
   const outerX = 1.6 / 2;
-  const frontZ = 0.55 / 2;
+  assert.ok(front.kind === 'cornice_profile_seg');
+  const frontZ = front.z + Math.max(...front.profile.map(point => point.x));
   const topY = front.y + 0.03;
   const ray = new THREE.Raycaster();
   const hitsByPiece = new Set<number>();
   let covered = 0;
   for (const side of [-1, 1]) {
     for (let ix = -18; ix <= 3; ix += 1) {
-      for (let iz = -18; iz <= 3; iz += 1) {
+      for (let iz = -22; iz <= 3; iz += 1) {
         const x = side * (outerX + ix * 0.005 + 0.001);
         const z = frontZ + iz * 0.005 + 0.001;
         ray.set(new THREE.Vector3(x, topY + 0.05, z), new THREE.Vector3(0, -1, 0));
@@ -81,6 +83,37 @@ test('straight cornice front and side returns have one top surface, without over
   }
   assert.ok(covered > 100, 'both mitered corners should have substantial visible wood surface');
   assert.equal(hitsByPiece.size, 3, 'front and both returns should all remain visible');
+});
+
+test('straight front and returns keep non-overlapping miters with inset and sliding doors', () => {
+  const configurations = [
+    [{ doorMountMode: 'inset' }, 4],
+    [{ wardrobeType: 'sliding' }, 4],
+    [{ wardrobeType: 'sliding' }, 1],
+  ] as const;
+  for (const [cfg, doorsCount] of configurations) {
+    const { cornice, meshes } = makeStraightCornice(cfg, doorsCount);
+    const front = cornice.segments.find(segment => Math.abs(segment.rotationY + Math.PI / 2) < 1e-9);
+    assert.ok(front && front.kind === 'cornice_profile_seg');
+    const outerZ = front.z + Math.max(...front.profile.map(point => point.x));
+    const topY = front.y + 0.03;
+    const ray = new THREE.Raycaster();
+    let hitsFound = 0;
+    for (const side of [-1, 1]) {
+      for (let ix = -10; ix <= 3; ix++) {
+        for (let iz = -20; iz <= 2; iz++) {
+          ray.set(
+            new THREE.Vector3(side * (0.8 + ix * 0.005), topY + 0.05, outerZ + iz * 0.005),
+            new THREE.Vector3(0, -1, 0)
+          );
+          const hits = ray.intersectObjects(meshes).filter(hit => Math.abs(hit.point.y - topY) < 1e-5);
+          assert.ok(hits.length <= 1, `miter overlap in ${JSON.stringify(cfg)} with ${doorsCount} doors`);
+          hitsFound += hits.length;
+        }
+      }
+    }
+    assert.ok(hitsFound > 20, 'the joined boards must have a visible top surface');
+  }
 });
 
 test('cornice paint hover produces per-part object previews for the three straight boards', () => {

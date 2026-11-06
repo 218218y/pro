@@ -276,7 +276,7 @@ test('sketch-box base commit stores leg style color and custom height', () => {
   assert.equal(box.baseLegColor, 'gold');
   assert.equal(box.baseLegPlatformMode, 'stage');
   assert.equal(box.baseLegPlatformSideMode, 'overhang');
-  assert.equal(box.baseLegPlatformSideOverhangCm, 1.5);
+  assert.equal(box.baseLegPlatformSideOverhangCm, 2);
   assert.equal(box.baseLegPlatformFrontOverhangCm, 2);
   assert.equal(box.baseLegHeightCm, 18);
   assert.equal(box.baseLegWidthCm, 6);

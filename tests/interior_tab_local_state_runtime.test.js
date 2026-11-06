@@ -25,7 +25,7 @@ const boundaryExports = loadTsRuntimeModule(boundaryPath, {
       DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
     },
     './platform_overhang_support.js': {
-      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 2,
       DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
     },
   },
@@ -64,7 +64,7 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   assert.equal(defaults.sketchBoxLegWidthDraft, '4');
   assert.equal(defaults.sketchBoxLegPlatformMode, 'stage');
   assert.equal(defaults.sketchBoxLegPlatformSideMode, 'overhang');
-  assert.equal(defaults.sketchBoxLegPlatformSideOverhangCm, 1.5);
+  assert.equal(defaults.sketchBoxLegPlatformSideOverhangCm, 2);
   assert.equal(defaults.sketchBoxLegPlatformFrontOverhangCm, 2);
   assert.equal(defaults.sketchExtDrawerType, 'regular');
   assert.equal(defaults.sketchExtDrawerCount, 1);

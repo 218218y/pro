@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { applyCornerWingCarcassFloorAndBase } from '../esm/native/builder/corner_wing_carcass_shell_floor_base.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
+import { CORNER_WING_DRAWER_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -99,6 +100,14 @@ test('corner wing legs stage emits lower and upper paintable platform boards', (
   assert.equal(bottomPlatforms[0].position.y, 0.12 + platformH / 2);
   assert.equal(topPlatforms[0].position.y, 0.12 + platformH + 2.1 + platformH / 2);
   assert.ok(bottomPlatforms[0].geometry.parameters.depth > 0.58, 'front overhang should deepen the platform');
+  assert.ok(
+    Math.abs(
+      bottomPlatforms[0].position.z +
+        bottomPlatforms[0].geometry.parameters.depth / 2 -
+        (CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM + 0.04)
+    ) < 1e-10,
+    'the corner stage front must be measured from the rendered closed wing door'
+  );
   assert.equal(
     outlined.filter(mesh => String(mesh.userData.partId).startsWith('corner_leg_platform')).length,
     4

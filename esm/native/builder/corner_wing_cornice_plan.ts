@@ -1,5 +1,6 @@
 import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
+import { resolveCornerWingClosedDoorFrontOffsetM } from './corner_wing_cell_doors_state.js';
 import type {
   CornerCornicePlan,
   CornerCorniceProfileOp,
@@ -50,8 +51,14 @@ export function buildCornerWingProfileCornicePlan(
   straight = false
 ): CornerCornicePlan {
   const overhangX = straight ? CORNICE_STRAIGHT.overhangM : CORNICE_PROFILE.overhangXM;
-  const overhangZ = straight ? CORNICE_STRAIGHT.overhangM : CORNICE_PROFILE.overhangZM;
-  const profileFront = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(overhangZ);
+  const overhangZ = straight
+    ? CORNICE_STRAIGHT.overhangM +
+      resolveCornerWingClosedDoorFrontOffsetM() -
+      CARCASS_SHELL_DIMENSIONS.frontInsetZM
+    : CORNICE_PROFILE.overhangZM;
+  const profileFront = straight
+    ? buildStraightCorniceProfile(overhangZ)
+    : buildCornerCorniceProfile(overhangZ);
   const profileSide = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(overhangX);
   const profileSideInternal = buildInternalCornerCorniceProfile(profileSide);
   const topY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);

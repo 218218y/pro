@@ -4,7 +4,10 @@
 // profile / hitbox details consume a shared typed contract.
 
 import { CARCASS_CORNICE_COMMON_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
-import { CORNER_CONNECTOR_CORNICE_HIT_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import {
+  CORNER_CONNECTOR_CORNICE_HIT_POLICY,
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { getModuleSelectorMaterial } from './module_selector_material.js';
 import type { UnknownRecord } from '../../../types';
 import type { ThrottleOpts } from '../runtime/throttled_errors.js';
@@ -83,6 +86,19 @@ export function resolveCornerConnectorCorniceTopY(ctx: {
 }): number {
   const bodyHeight = Number.isFinite(ctx.wingH) && ctx.wingH > 0 ? ctx.wingH : 0;
   return ctx.startY + bodyHeight + positiveConnectorTopPlatformHeight(ctx);
+}
+
+export function resolveCornerConnectorStraightFrontOverhangM(
+  ctx: Pick<CornerConnectorCorniceCtx, 'woodThick'>,
+  locals: Pick<CornerConnectorCorniceLocals, 'panelThick'>,
+  nominalOverhangM: number
+): number {
+  return (
+    nominalOverhangM +
+    (locals.panelThick ?? ctx.woodThick) / 2 +
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorOutsetM +
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2
+  );
 }
 
 export type CornerConnectorCorniceSideReturn = {

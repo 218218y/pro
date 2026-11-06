@@ -20,6 +20,7 @@ import type {
 } from './corner_connector_cornice_shared.js';
 import {
   resolveCornerConnectorCorniceSideReturns,
+  resolveCornerConnectorStraightFrontOverhangM,
   resolveCornerConnectorCorniceTopY,
 } from './corner_connector_cornice_shared.js';
 
@@ -108,7 +109,13 @@ export function buildCornerConnectorProfileCornicePlan(
   straight = false
 ): CornerCornicePlan {
   const operations: CornerCorniceProfileOp[] = [];
-  const profile = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(PROFILE.overhangZM);
+  // Connector doors are mounted outside the diagonal front panel's center plane.
+  const frontOverhang = straight
+    ? resolveCornerConnectorStraightFrontOverhangM(ctx, locals, STRAIGHT.overhangM)
+    : PROFILE.overhangZM;
+  const profile = straight
+    ? buildStraightCorniceProfile(frontOverhang)
+    : buildCornerCorniceProfile(frontOverhang);
   const sideProfile = straight
     ? buildStraightCorniceProfile()
     : buildCornerCorniceProfile(PROFILE.overhangXM);

@@ -24,6 +24,7 @@ import {
 import { readModuleConfig } from './build_flow_readers.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import { readCorePureNumberArray } from './core_pure_number_contracts.js';
+import { resolveClosedDoorFrontOffsetM } from './core_doors_compute.js';
 import { _asObject, __asArray, __asInt, __asNum } from './core_pure_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
 
@@ -47,6 +48,7 @@ export type PreparedCarcassInput = {
   baseLegPlatformSideMode: 'overhang' | 'flush';
   baseLegPlatformSideOverhangM: number;
   baseLegPlatformFrontOverhangM: number;
+  closedDoorFrontOffsetM: number;
   baseLegTopPlatformOnly: boolean;
   baseLegSuppressTopPlatform: boolean;
   baseLegBottomPlatformHeight: number;
@@ -74,6 +76,10 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const hasCornice = !!inp.hasCornice;
   const corniceType = typeof inp.corniceType === 'string' && inp.corniceType ? inp.corniceType : 'classic';
   const cfg = _asObject(inp.cfg) || {};
+  const closedDoorFrontOffsetM =
+    doorsCount > 0
+      ? resolveClosedDoorFrontOffsetM(cfg.wardrobeType, cfg.doorMountMode, woodThick, doorsCount)
+      : 0;
   const removedFrameSideCapabilities = createRemovedFrameSideConstructionCapabilities(cfg);
   const baseLegTopPlatformRequested = !!inp.baseLegTopPlatformOnly && baseType !== 'legs';
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(
@@ -165,7 +171,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
       legHeight: readBaseLegOptions(inp).heightM,
       sideMode: baseLegPlatformSideMode,
       sideOverhangM: baseLegPlatformSideOverhangM,
-      frontOverhangM: baseLegPlatformFrontOverhangM,
+      frontOverhangM: baseLegPlatformFrontOverhangM + closedDoorFrontOffsetM,
       includeTop: !baseLegSuppressTopPlatform,
     });
   } else if (baseLegTopPlatformOnly) {
@@ -175,7 +181,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
       H,
       sideMode: baseLegPlatformSideMode,
       sideOverhangM: baseLegPlatformSideOverhangM,
-      frontOverhangM: baseLegPlatformFrontOverhangM,
+      frontOverhangM: baseLegPlatformFrontOverhangM + closedDoorFrontOffsetM,
     });
   }
 
@@ -249,6 +255,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     baseLegPlatformSideMode,
     baseLegPlatformSideOverhangM,
     baseLegPlatformFrontOverhangM,
+    closedDoorFrontOffsetM,
     baseLegTopPlatformOnly,
     baseLegSuppressTopPlatform,
     baseLegBottomPlatformHeight,
@@ -291,7 +298,7 @@ function makeBaseLegPlatformOp(args: {
   sideOverhangM: number;
   frontOverhangM: number;
 }): MutableRecord {
-  const frontOverhang = Math.max(0, __asNum(args.frontOverhangM, 0));
+  const frontOverhang = __asNum(args.frontOverhangM, 0);
   const platformDepth = Math.max(BASE_PLATFORM_RENDER_POLICY.minDepthM, args.depth + frontOverhang);
   const sideOverhang = args.sideMode === 'flush' ? 0 : Math.max(0, __asNum(args.sideOverhangM, 0));
   return {

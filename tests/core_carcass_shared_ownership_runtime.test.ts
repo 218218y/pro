@@ -65,6 +65,7 @@ test('Core Carcass Shared preserves shell constants, Material fallback, module f
     'baseLegPlatformSideMode',
     'baseLegPlatformSideOverhangM',
     'baseLegPlatformFrontOverhangM',
+    'closedDoorFrontOffsetM',
     'baseLegTopPlatformOnly',
     'baseLegSuppressTopPlatform',
     'baseLegBottomPlatformHeight',

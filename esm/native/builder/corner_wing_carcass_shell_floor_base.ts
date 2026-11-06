@@ -2,6 +2,7 @@ import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platfo
 import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import {
   CORNER_CONNECTOR_SHELL_POLICY,
+  CORNER_WING_DRAWER_POLICY,
   CORNER_WING_PANEL_POLICY,
   CORNER_WING_SELECTOR_POLICY,
 } from '../../shared/dimensions/corner_system_policy.js';
@@ -176,10 +177,13 @@ export function applyCornerWingCarcassFloorAndBase(
       : asFinitePositive(baseLegBottomPlatformHeightM);
     if (!(h > 0)) return;
     const d = Number.isFinite(depth) && depth > 0 ? depth : wingD;
-    const frontOverhang = asFinitePositive(
-      baseLegPlatformFrontOverhangM,
-      LEG_PLATFORM_DIMENSIONS.frontOverhangM
-    );
+    const frontOverhang =
+      Math.max(
+        0,
+        typeof baseLegPlatformFrontOverhangM === 'number' && Number.isFinite(baseLegPlatformFrontOverhangM)
+          ? baseLegPlatformFrontOverhangM
+          : LEG_PLATFORM_DIMENSIONS.frontOverhangM
+      ) + CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM;
     const platformD = Math.max(LEG_PLATFORM_DIMENSIONS.minDepthM, d + frontOverhang);
     const sideOverhang = resolvePlatformSideOverhang(
       baseLegPlatformSideMode,

@@ -943,7 +943,7 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   assert.ok(topPlatform);
   const platformDepth = Math.max(
     BASE_PLATFORM_RENDER_POLICY.minDepthM,
-    0.45 + BASE_PLATFORM_RENDER_POLICY.frontOverhangM
+    0.45 + BASE_PLATFORM_RENDER_POLICY.frontOverhangM + CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM
   );
   const platformWidth = Math.max(
     BASE_PLATFORM_RENDER_POLICY.minWidthM,
@@ -1535,6 +1535,38 @@ test('visuals chest mode uses custom inset door mount thickness and sinks drawer
       expectedFrontBackZ - CHEST_CONNECTOR_POLICY.connectorBackInsetM,
     true
   );
+});
+
+test('chest stage default extends 2 cm past its closed drawer front in both mount modes', () => {
+  for (const doorMountMode of ['overlay', 'inset'] as const) {
+    const { App, wardrobeGroup } = createChestApp();
+    buildChestOnly(App, {
+      renderPolicy: App.__outlineRenderPolicy,
+      H: 0.9,
+      totalW: 1.6,
+      D: 0.45,
+      drawersCount: 2,
+      baseType: 'legs',
+      baseLegPlatformMode: 'stage',
+      baseLegPlatformSideMode: 'overhang',
+      baseLegPlatformSideOverhangCm: 2,
+      baseLegPlatformFrontOverhangCm: 2,
+      cfgSnapshot: createChestCfg({ doorMountMode }),
+    });
+    const front = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_drawer_0');
+    const platforms = wardrobeGroup.children.filter((child: any) =>
+      String(child?.userData?.partId).startsWith('chest_leg_platform_')
+    );
+    assert.ok(front);
+    assert.equal(platforms.length, 2);
+    for (const platform of platforms) {
+      const width = Number(platform.geometry.args[0]);
+      const depth = Number(platform.geometry.args[2]);
+      assert.ok(Math.abs(width - 1.64) < 1e-10);
+      assert.ok(Math.abs(platform.position.z - depth / 2 + 0.225) < 1e-10);
+      assert.ok(Math.abs(platform.position.z + depth / 2 - front.userData.__frontMaxZ - 0.02) < 1e-10);
+    }
+  }
 });
 
 test('visuals chest mode wheels base creates four compact casters without leg platforms', () => {

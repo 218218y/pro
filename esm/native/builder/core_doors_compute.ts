@@ -1,7 +1,9 @@
 // Builder core pure door and sliding computations.
 import {
   HINGED_DOOR_MOUNT_POLICY,
+  HINGED_DOOR_RENDER_POLICY,
   SLIDING_DOOR_CONSTRUCTION_POLICY,
+  resolveHingedDoorClosedBackZ,
 } from '../../shared/dimensions/door_system_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
@@ -28,6 +30,28 @@ type SlidingDoorSpec = {
   maxX: number;
   width: number;
 };
+
+/** Closed front offset from the carcass plane, using the same geometry as the door ops. */
+export function resolveClosedDoorFrontOffsetM(
+  wardrobeType: unknown,
+  doorMountMode: unknown,
+  woodThick: number,
+  doorsCount: number
+): number {
+  if (wardrobeType === 'sliding') {
+    const sliding = SLIDING_DOOR_CONSTRUCTION_POLICY;
+    const laneSign = doorsCount === 1 ? -1 : 1;
+    return (
+      (laneSign * sliding.railDepthM) / sliding.railTrackLaneDivisor +
+      sliding.visualThicknessM / 2 -
+      sliding.railDepthM / 2 -
+      sliding.railBackInsetM
+    );
+  }
+  return (
+    resolveHingedDoorClosedBackZ(0, doorMountMode, woodThick) + HINGED_DOOR_RENDER_POLICY.visualThicknessM
+  );
+}
 
 export function computeHingedDoorPivotMap(input: unknown) {
   const inp = _asObject(input) || {};

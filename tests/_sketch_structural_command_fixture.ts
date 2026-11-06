@@ -48,7 +48,7 @@ export function createSetBaseCommand(
     baseLegColor: overrides.baseLegColor ?? 'black',
     baseLegPlatformMode: overrides.baseLegPlatformMode ?? 'stage',
     baseLegPlatformSideMode: overrides.baseLegPlatformSideMode ?? 'overhang',
-    baseLegPlatformSideOverhangCm: overrides.baseLegPlatformSideOverhangCm ?? 1.5,
+    baseLegPlatformSideOverhangCm: overrides.baseLegPlatformSideOverhangCm ?? 2,
     baseLegPlatformFrontOverhangCm: overrides.baseLegPlatformFrontOverhangCm ?? 2,
     baseLegHeightCm: overrides.baseLegHeightCm ?? 12,
     baseLegWidthCm: overrides.baseLegWidthCm ?? 3.5,

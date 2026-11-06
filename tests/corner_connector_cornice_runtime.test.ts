@@ -9,6 +9,7 @@ import {
 } from '../esm/native/builder/corner_connector_cornice_shared.ts';
 import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { CARCASS_CORNICE_RENDER_POLICY } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../esm/shared/dimensions/corner_system_policy.ts';
 import {
   buildCornerConnectorProfileCornicePlan,
   buildCornerConnectorWaveCornicePlan,
@@ -122,6 +123,15 @@ test('pentagon straight cornice renders the diagonal and exposed returns in rect
     adjacentMainBodyHeight: 2.1,
     adjacentWingBodyHeight: 2.0,
   });
+  const plan = buildCornerConnectorProfileCornicePlan(ctx as never, locals as never, true);
+  const front = plan.operations.find(operation => operation.partId === 'corner_cornice_front');
+  assert.ok(front && front.kind === 'corner_profile');
+  const expectedFront =
+    0.02 +
+    ctx.woodThick / 2 +
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorOutsetM +
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2;
+  assert.ok(Math.abs(Math.max(...front.profile.map(point => point.x)) - expectedFront) < 1e-10);
   applyCornerConnectorCornice({ ctx, locals, helpers } as never);
   assert.ok(childPartIds(cornerGroup).includes('corner_cornice_front'));
   assert.ok(childPartIds(cornerGroup).includes('corner_cornice_side_left'));

@@ -185,7 +185,9 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       if (!(BASE_PLATFORM_RENDER_POLICY.heightM > 0) || inputs.baseLegPlatformMode !== 'stage') return;
       const platformDepth = Math.max(
         BASE_PLATFORM_RENDER_POLICY.minDepthM,
-        D + Math.max(0, inputs.baseLegPlatformFrontOverhangM)
+        D +
+          inputs.baseLegPlatformFrontOverhangM +
+          (isInsetDrawerMount ? -insetReveal : CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM)
       );
       const sideOverhang =
         inputs.baseLegPlatformSideMode === 'flush' ? 0 : Math.max(0, inputs.baseLegPlatformSideOverhangM);

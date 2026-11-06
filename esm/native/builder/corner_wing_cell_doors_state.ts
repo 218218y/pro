@@ -4,6 +4,7 @@ import {
   CORNER_WING_BODY_POLICY,
   CORNER_CONNECTOR_DOOR_RENDER_POLICY,
   CORNER_WING_CELL_POLICY,
+  CORNER_WING_DRAWER_POLICY,
   CORNER_WING_PANEL_POLICY,
 } from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
@@ -24,6 +25,11 @@ import {
   isSplitBottom,
   maybeSeedEdgeHandleDefaultNone,
 } from './corner_wing_cell_doors_scope.js';
+
+/** Front slab surface, in the corner wing's local coordinate frame. */
+export function resolveCornerWingClosedDoorFrontOffsetM(): number {
+  return CORNER_WING_DRAWER_POLICY.closedDoorFrontOffsetM;
+}
 
 export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: number): CornerWingDoorState {
   const cell = getCellForDoor(ctx, doorIdx);

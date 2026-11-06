@@ -65,6 +65,7 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
     totalW,
     D,
     woodThick: prepared.woodThick,
+    closedDoorFrontOffsetM: prepared.closedDoorFrontOffsetM,
     topY: topSurfaceY,
     removedFrameSidePlan: prepared.removedFrameSidePlan,
   };
@@ -78,6 +79,7 @@ type CorniceParams = {
   totalW: number;
   D: number;
   woodThick: number;
+  closedDoorFrontOffsetM: number;
   topY: number;
   removedFrameSidePlan: RemovedFrameSideConstructionPlan;
 };
@@ -136,6 +138,7 @@ type CorniceSectionParams = {
   globalD: number;
   depth: number;
   woodThick: number;
+  closedDoorFrontOffsetM: number;
   topY: number;
   frontPath: CornicePathSegment[];
   leftSide: CorniceSideClosure | null;
@@ -177,6 +180,7 @@ function buildSegmentedCornice(
       globalD: prepared.D,
       depth: run.depth,
       woodThick: prepared.woodThick,
+      closedDoorFrontOffsetM: prepared.closedDoorFrontOffsetM,
       topY: run.topY,
       frontPath: run.frontPath,
       leftSide: run.leftSide,
@@ -626,6 +630,7 @@ function buildWaveCornice(params: CorniceParams): CarcassCornicePlan {
     globalD: D,
     depth: D,
     woodThick,
+    closedDoorFrontOffsetM: params.closedDoorFrontOffsetM,
     topY,
     frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
     leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
@@ -739,6 +744,7 @@ function buildProfileCornice(params: CorniceParams, straight = false): CarcassCo
       globalD: D,
       depth: D,
       woodThick,
+      closedDoorFrontOffsetM: params.closedDoorFrontOffsetM,
       topY,
       frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
       leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
@@ -757,10 +763,16 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
   const { left, right, globalD, depth, topY, frontPath, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
   const overhangX = straight ? CORNICE_STRAIGHT.overhangM : PROFILE_OVERHANG_X;
-  const overhangZ = straight ? CORNICE_STRAIGHT.overhangM : PROFILE_OVERHANG_Z;
+  const requestedStraightFrontOverhang = CORNICE_STRAIGHT.overhangM + params.closedDoorFrontOffsetM;
+  // A single sliding leaf can sit behind the roof: keep the board's exterior miter instead of recessing it.
+  const overhangZ = straight
+    ? requestedStraightFrontOverhang > 0
+      ? requestedStraightFrontOverhang
+      : CORNICE_STRAIGHT.overhangM
+    : PROFILE_OVERHANG_Z;
   const leftOverhang = leftSide != null && !leftSide.internal ? overhangX : 0;
   const rightOverhang = rightSide != null && !rightSide.internal ? overhangX : 0;
-  const profileFront = straight ? buildStraightCorniceProfile() : makeCorniceProfile(overhangZ);
+  const profileFront = straight ? buildStraightCorniceProfile(overhangZ) : makeCorniceProfile(overhangZ);
   const profileSide = straight ? buildStraightCorniceProfile() : makeCorniceProfile(overhangX);
   const profileSideInternal = straight
     ? profileSide.map(point => ({ ...point, x: Math.max(0, point.x) }))

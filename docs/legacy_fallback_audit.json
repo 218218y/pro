@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T06:59:33.118Z",
+  "generatedAt": "2026-11-06T09:54:06.195Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1669,77 +1669,77 @@
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 216,
+      "line": 220,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 217,
+      "line": 221,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 307,
+      "line": 311,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 310,
+      "line": 314,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const edgeDepth = Math.max(prepared.woodThick, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 311,
+      "line": 315,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "const fallbackZ = backZ + edgeDepth;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 317,
+      "line": 321,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 338,
+      "line": 342,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: path.length ? path : [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 596,
+      "line": 600,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "fallbackZ: number,"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 599,
+      "line": 603,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "if (!seg) return fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 603,
+      "line": 607,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "return Number.isFinite(z) ? z : fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 653,
+      "line": 658,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
@@ -1767,42 +1767,42 @@
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 308,
+      "line": 332,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "const fallbackMinX = -internalWidthForDoors / 2 + doorWidth / 2;"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 309,
+      "line": 333,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "const fallbackMaxX = internalWidthForDoors / 2 - doorWidth / 2;"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 315,
+      "line": 339,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "minX: fallbackMinX,"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 316,
+      "line": 340,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "maxX: fallbackMaxX,"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 329,
+      "line": 353,
       "term": "fallbackMinX",
       "category": "domain-default",
       "text": "minX: __asNum(sp.minX, fallbackMinX),"
     },
     {
       "file": "esm/native/builder/core_doors_compute.ts",
-      "line": 330,
+      "line": 354,
       "term": "fallbackMaxX",
       "category": "domain-default",
       "text": "maxX: __asNum(sp.maxX, fallbackMaxX),"
@@ -1830,7 +1830,7 @@
     },
     {
       "file": "esm/native/builder/corner_connector_cornice_plan.ts",
-      "line": 219,
+      "line": 226,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(WAVE.frameThicknessMaxM, ctx.woodThick || WAVE.fallbackWoodThicknessM)"
@@ -1921,21 +1921,21 @@
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
-      "line": 143,
+      "line": 144,
       "term": "fallbackMinWidthM",
       "category": "domain-default",
       "text": "const floorW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);"
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
-      "line": 268,
+      "line": 272,
       "term": "fallbackMinWidthM",
       "category": "domain-default",
       "text": "const platformW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);"
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
-      "line": 322,
+      "line": 326,
       "term": "fallbackWidthClearanceM",
       "category": "domain-default",
       "text": "new THREE.BoxGeometry(wingW - PLINTH_DIMENSIONS.fallbackWidthClearanceM, baseH, __plD0),"
@@ -1963,21 +1963,21 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 52,
+      "line": 58,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 56,
+      "line": 62,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 194,
+      "line": 200,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.fallbackDoorW;"
@@ -1991,7 +1991,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cornice_plan.ts",
-      "line": 348,
+      "line": 355,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, ctx.woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"

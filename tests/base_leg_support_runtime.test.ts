@@ -133,8 +133,8 @@ test('carcass leg platform uses custom side/front overhang values and keeps flus
 
   const bottom = customOps.base.platforms[0];
   assert.ok(Math.abs(bottom.width - 1.68) < 0.000001, 'custom side overhang should widen both sides');
-  assert.ok(Math.abs(bottom.depth - 0.61) < 0.000001, 'custom front overhang should deepen only the front');
-  assert.ok(Math.abs(bottom.z - (-0.55 / 2 + 0.61 / 2)) < 0.000001);
+  assert.ok(Math.abs(bottom.depth - 0.629) < 0.000001, 'custom front overhang is measured beyond the door');
+  assert.ok(Math.abs(bottom.z - (-0.55 / 2 + 0.629 / 2)) < 0.000001);
 
   const flushOps = computeCarcassOps({
     totalW: 1.6,
@@ -150,7 +150,7 @@ test('carcass leg platform uses custom side/front overhang values and keeps flus
   }) as any;
 
   assert.equal(flushOps.base.platforms[0].width, 1.6);
-  assert.ok(Math.abs(flushOps.base.platforms[0].depth - 0.61) < 0.000001);
+  assert.ok(Math.abs(flushOps.base.platforms[0].depth - 0.629) < 0.000001);
 });
 
 test('carcass leg platform mode can suppress only the upper stage for decorative stack separators', () => {
@@ -256,7 +256,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'black',
     baseLegPlatformMode: 'stage',
     baseLegPlatformSideMode: 'overhang',
-    baseLegPlatformSideOverhangCm: 1.5,
+    baseLegPlatformSideOverhangCm: 2,
     baseLegPlatformFrontOverhangCm: 2,
     baseLegHeightCm: 12,
     baseLegWidthCm: 4,
@@ -269,7 +269,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'gold',
     baseLegPlatformMode: 'stage',
     baseLegPlatformSideMode: 'overhang',
-    baseLegPlatformSideOverhangCm: 1.5,
+    baseLegPlatformSideOverhangCm: 2,
     baseLegPlatformFrontOverhangCm: 2,
     baseLegHeightCm: 18,
     baseLegWidthCm: 3.5,
@@ -282,7 +282,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'nickel',
     baseLegPlatformMode: 'stage',
     baseLegPlatformSideMode: 'overhang',
-    baseLegPlatformSideOverhangCm: 1.5,
+    baseLegPlatformSideOverhangCm: 2,
     baseLegPlatformFrontOverhangCm: 2,
     baseLegHeightCm: 16,
     baseLegWidthCm: 6.5,
@@ -311,7 +311,7 @@ test('sketch box base tool parser keeps old legs syntax and reads explicit leg o
     baseLegColor: 'black',
     baseLegPlatformMode: 'stage',
     baseLegPlatformSideMode: 'overhang',
-    baseLegPlatformSideOverhangCm: 1.5,
+    baseLegPlatformSideOverhangCm: 2,
     baseLegPlatformFrontOverhangCm: 2,
     baseLegHeightCm: 12,
     baseLegWidthCm: 4,

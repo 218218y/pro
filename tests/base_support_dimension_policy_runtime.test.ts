@@ -103,19 +103,19 @@ test('Base Support policy preserves top/bottom platform geometry for overhang an
     [
       {
         partId: 'base_leg_platform_bottom',
-        width: 1.63,
+        width: 1.64,
         height: 0.028,
-        depth: 0.57,
+        depth: 0.589,
         y: 0.134,
-        z: 0.01,
+        z: 0.0195,
       },
       {
         partId: 'base_leg_platform_top',
-        width: 1.63,
+        width: 1.64,
         height: 0.028,
-        depth: 0.57,
+        depth: 0.589,
         y: 2.414,
-        z: 0.01,
+        z: 0.0195,
       },
     ]
   );
@@ -134,8 +134,30 @@ test('Base Support policy preserves top/bottom platform geometry for overhang an
       z: rounded(Number(platform.z)),
     })),
     [
-      { width: 1.6, depth: 0.57, z: 0.01 },
-      { width: 1.6, depth: 0.57, z: 0.01 },
+      { width: 1.6, depth: 0.589, z: 0.0195 },
+      { width: 1.6, depth: 0.589, z: 0.0195 },
     ]
   );
+});
+
+test('default stage projects 2 cm beyond the actual closed front in overlay, inset and sliding modes', () => {
+  const frontOffsets = [
+    { cfg: {}, offsetM: 0.019 },
+    { cfg: { doorMountMode: 'inset' }, offsetM: -0.003 },
+    { cfg: { wardrobeType: 'sliding' }, offsetM: -0.00975 },
+  ];
+  for (const { cfg, offsetM } of frontOffsets) {
+    const result = computeCarcassOps({
+      ...BASE_INPUT,
+      baseType: 'legs',
+      baseLegPlatformMode: 'stage',
+      cfg,
+    }) as any;
+    assert.equal(result.base.platforms.length, 2);
+    for (const platform of result.base.platforms) {
+      assert.equal(rounded(platform.width), 1.64);
+      assert.equal(rounded(platform.z - platform.depth / 2), -0.275);
+      assert.equal(rounded(platform.z + platform.depth / 2), rounded(0.275 + offsetM + 0.02));
+    }
+  }
 });

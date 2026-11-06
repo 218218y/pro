@@ -225,6 +225,9 @@ export const CORNER_WING_DRAWER_POLICY = Object.freeze({
   shelfOverDrawerMinDepthM: meters(0.05),
   shelfOverDrawerDepthClearanceM: meters(0.002),
   externalFrontOffsetZM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM,
+  closedDoorFrontOffsetM:
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM +
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM / 2,
   externalOpenOffsetZM: EXTERNAL_DRAWER_MOTION_POLICY.openOffsetZM,
   externalVisualWidthClearanceM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM,
   externalBoxWidthClearanceM: EXTERNAL_DRAWER_BOX_POLICY.boxWidthClearanceM,
