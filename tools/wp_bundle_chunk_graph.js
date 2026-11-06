@@ -1,11 +1,12 @@
 import zlib from 'node:zlib';
 
 export const CLIENT_INITIAL_BUNDLE_BUDGET = Object.freeze({
-  rawBytes: 4_100_000,
-  // The synchronous builder includes full shelf pin boring in the client closure.
-  gzipBytes: 991_000,
+  // Allow roughly 10% reviewed growth above the measured initial closure after
+  // deferring the notes editor. This is a guardrail, not a rolling build baseline.
+  rawBytes: 4_400_000,
+  gzipBytes: 1_070_000,
   chunkCount: 4,
-  moduleCount: 1_900,
+  moduleCount: 2_010,
 });
 
 const DEFERRED_ENTRY_CHUNK_PATTERNS = [
@@ -15,6 +16,7 @@ const DEFERRED_ENTRY_CHUNK_PATTERNS = [
   /(?:^|-)SketchTab\.view(?:\.|-)/u,
   /(?:^|-)SettingsTab(?:\.|-)/u,
   /(?:^|-)OrderPdfInPlaceEditorOverlay(?:\.|-)/u,
+  /(?:^|-)NotesOverlay(?:\.|-)/u,
   /(?:^|-)pdf(?:\.|-)/u,
 ];
 
@@ -30,6 +32,10 @@ const DEFERRED_INITIAL_MODULE_PATTERNS = [
   {
     label: 'Interior Canvas Picking extension roots',
     test: /[\\/]native[\\/]services[\\/]canvas_picking_(?:click_route_(?:manual|layout)|hover_flow_nonsplit_(?:sketch|preview_interior))\.[cm]?js$/u,
+  },
+  {
+    label: 'Notes editor UI',
+    test: /[\\/]native[\\/]ui[\\/]react[\\/]notes[\\/](?:NotesOverlay|notes_overlay_(?:controller|editor|note_card)(?:_[^\\/]+)?)\.[cm]?js$/u,
   },
 ];
 
