@@ -828,6 +828,14 @@ test('visuals_contents removes hangers whose physical bounds collide with the ro
 });
 
 test('visuals_contents fits folded clothes into clear shelf spans beside a room column', () => {
+  const dims = FOLDED_CLOTHES_VISUAL_POLICY;
+  const maximumRotatedEdgeExpansion =
+    0.003 + (dims.baseItemDepthM * Math.sin(Math.min(dims.rotationYRangeRad, 0.035) / 2)) / 2;
+  assert.ok(
+    dims.columnEdgeClearanceM >= maximumRotatedEdgeExpansion,
+    'column-fit clearance must contain the largest rotated garment bounds'
+  );
+
   const { App } = createApp();
   const roomArchitecturePlan = createRoomArchitecturePlan({
     config: {

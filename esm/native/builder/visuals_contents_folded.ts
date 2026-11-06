@@ -722,8 +722,6 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
 
       const itemHeight = dims.itemHeightM;
       const rotationYRange = Math.min(dims.rotationYRangeRad, 0.035);
-      const maxRotationY = rotationYRange / 2;
-      const columnEdgeClearance = 0.003 + (itemDepth * Math.sin(maxRotationY)) / 2;
       const maxItemsAllowed = Math.floor((resolvedMaxHeight - dims.heightHeadroomM) / itemHeight);
       const horizontalSource = {
         minX: shelfX - width / 2,
@@ -750,7 +748,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
           if (span.length < dims.columnAdjustedMinItemWidthM) continue;
           const stackCount = Math.max(1, Math.floor(span.length / dims.stackPitchM));
           const slotWidth = span.length / stackCount;
-          const widthLimit = Math.min(dims.itemWidthM * 1.04, slotWidth - columnEdgeClearance * 2);
+          const widthLimit = Math.min(dims.itemWidthM * 1.04, slotWidth - dims.columnEdgeClearanceM * 2);
           if (widthLimit < dims.columnAdjustedMinItemWidthM) continue;
           for (let index = 0; index < stackCount; index++) {
             stackPlacements.push({

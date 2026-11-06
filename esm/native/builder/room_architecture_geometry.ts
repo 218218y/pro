@@ -835,8 +835,8 @@ export function resolveHorizontalSpanAgainstRoomColumnCut(
   const span = usable[0];
   if (!span) return null;
   if (
-    Math.abs(span.minX - sourceMinX) <= ROOM_ARCHITECTURE_EPSILON_M &&
-    Math.abs(span.maxX - sourceMaxX) <= ROOM_ARCHITECTURE_EPSILON_M
+    span.minX - sourceMinX <= ROOM_ARCHITECTURE_EPSILON_M &&
+    sourceMaxX - span.maxX <= ROOM_ARCHITECTURE_EPSILON_M
   ) {
     return span;
   }

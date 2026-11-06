@@ -8,7 +8,6 @@ import {
 
 import type {
   AppContainer,
-  AxisAlignedBox,
   BuilderOutlineFn,
   BuilderAddFoldedClothesFn,
   BuilderAddHangingClothesFn,
@@ -82,35 +81,29 @@ export function visualObjectIntersectsRoomColumnCut(
 ): boolean {
   if (roomArchitecturePlan === null) return false;
   const obstacles = resolveActiveRoomColumnCutObstacles(roomArchitecturePlan);
-  if (obstacles.length === 0 || !object || typeof THREE.Box3 !== 'function') return false;
+  if (obstacles.length === 0) return false;
 
-  try {
-    const bounds = new THREE.Box3().setFromObject(object);
-    const min = bounds?.min;
-    const max = bounds?.max;
-    const minX = typeof min?.x === 'number' && Number.isFinite(min.x) ? min.x : null;
-    const minY = typeof min?.y === 'number' && Number.isFinite(min.y) ? min.y : null;
-    const minZ = typeof min?.z === 'number' && Number.isFinite(min.z) ? min.z : null;
-    const maxX = typeof max?.x === 'number' && Number.isFinite(max.x) ? max.x : null;
-    const maxY = typeof max?.y === 'number' && Number.isFinite(max.y) ? max.y : null;
-    const maxZ = typeof max?.z === 'number' && Number.isFinite(max.z) ? max.z : null;
-    if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
-      return false;
-    }
-    return visualBoundsIntersectRoomColumnCut(roomArchitecturePlan, { minX, maxX, minY, maxY, minZ, maxZ });
-  } catch {
-    // Detached previews and lightweight tests may not expose full THREE bounds machinery.
+  const bounds = new THREE.Box3().setFromObject(object);
+  const min = bounds.min;
+  const max = bounds.max;
+  if (
+    !Number.isFinite(min.x) ||
+    !Number.isFinite(min.y) ||
+    !Number.isFinite(min.z) ||
+    !Number.isFinite(max.x) ||
+    !Number.isFinite(max.y) ||
+    !Number.isFinite(max.z)
+  ) {
     return false;
   }
-}
-
-export function visualBoundsIntersectRoomColumnCut(
-  roomArchitecturePlan: RoomArchitectureCutPlan | null,
-  bounds: AxisAlignedBox
-): boolean {
-  return roomArchitecturePlan === null
-    ? false
-    : intersectsActiveRoomColumnCutObstacle(roomArchitecturePlan, bounds);
+  return intersectsActiveRoomColumnCutObstacle(roomArchitecturePlan, {
+    minX: min.x as number,
+    maxX: max.x as number,
+    minY: min.y as number,
+    maxY: max.y as number,
+    minZ: min.z as number,
+    maxZ: max.z as number,
+  });
 }
 
 export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {
@@ -126,15 +119,13 @@ export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRen
 export function resolveFoldedContentsRoomArchitecturePlan(
   policy: BuilderFoldedContentsPolicy
 ): RoomArchitectureCutPlan | null {
-  if (!isRecord(policy) || !Object.prototype.hasOwnProperty.call(policy, 'roomArchitecturePlan')) {
-    throw new TypeError('[visuals_contents] roomArchitecturePlan policy is required');
-  }
+  // The caller validates the folded policy; this seam validates its room-plan contract.
   const plan = policy.roomArchitecturePlan;
   if (plan === null) return null;
-  if (!isRecord(plan) || !Array.isArray(plan.activeCutObstacles)) {
-    throw new TypeError('[visuals_contents] roomArchitecturePlan policy must be a room plan or null');
+  if (!Array.isArray(plan?.activeCutObstacles)) {
+    throw new TypeError('[visuals_contents] invalid or missing room plan');
   }
-  return plan as unknown as RoomArchitectureCutPlan;
+  return plan;
 }
 
 export function resolveContentsOutline(policy: BuilderContentsRenderPolicy): BuilderOutlineFn | null {
