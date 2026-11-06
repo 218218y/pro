@@ -151,11 +151,6 @@ Performance evidence is split into two categories:
   initial chunk/module counts, static cycles, and forbidden deferred module reachability. The release bundler
   enforces these invariants from the emitted artifact, including PDF and Supabase ecosystem modules, and
   `npm run bundle:analyze` writes subsystem attribution under `.artifacts/bundle-attribution`.
-  The Notes Overlay editor is also deferred until notes are first enabled; its existing draw-mode state
-  is recovered when the editor mounts, and the editor remains mounted after a visibility toggle to preserve
-  in-progress edits and exit hooks. The client size budgets retain approximately 10% capacity above the
-  measured initial closure after that split, while the static chunk topology still requires four or fewer
-  initial chunks. The bundle command prints remaining raw, gzip, and module capacity after every client build.
   `npm run bundle:analyze:supabase` reproduces generic-vendor versus dedicated-Supabase builds on one source
   identity and records deterministic initial-closure deltas in the same artifact directory.
 - Runtime timing is comparable only on the same machine and browser version with the same viewport, release
