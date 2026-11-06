@@ -106,6 +106,8 @@ export const FOLDED_CLOTHES_VISUAL_POLICY = Object.freeze({
   stackPitchM: meters(0.3),
   stackXInsetM: meters(0.15),
   columnAdjustedMinItemWidthM: meters(0.1),
+  // Covers the 3 mm bounds pad and the maximum depth expansion at the current garment limits.
+  columnEdgeClearanceM: meters(0.007),
   randomItemsRange: 4,
   stackBaseItems: 4,
   minHeightForSingleItemM: meters(0.06),

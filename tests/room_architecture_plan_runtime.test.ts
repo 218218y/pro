@@ -521,6 +521,38 @@ test('horizontal fitting span is unchanged without a column, clips at either edg
     'content can use both independently clear spans around a central column'
   );
   assert.ok(centralSpans[0]!.maxX < centralSpans[1]!.minX);
+  const overlappingColumns = planFor(
+    canonicalRoom({
+      columns: [
+        roomColumn({
+          id: 'room-column-overlap-a',
+          offsetLeftCm: 32,
+          widthCm: 34,
+          depthCm: 31,
+          heightCm: 220,
+          bottomOffsetCm: 0,
+        }),
+        roomColumn({
+          id: 'room-column-overlap-b',
+          offsetLeftCm: 43,
+          widthCm: 34,
+          depthCm: 31,
+          heightCm: 220,
+          bottomOffsetCm: 0,
+        }),
+      ],
+    })
+  );
+  const overlapSpans = resolveHorizontalSpansAgainstRoomColumnCut(overlappingColumns, source);
+  assert.equal(overlapSpans.length, 2, 'overlapping cuts should leave only the outside spans');
+  for (const span of overlapSpans) {
+    for (const obstacle of overlappingColumns.activeCutObstacles) {
+      assert.ok(
+        span.maxX <= obstacle.minX || span.minX >= obstacle.maxX,
+        'clear spans must not re-enter an overlapping room-column cut'
+      );
+    }
+  }
   const worldCut = central.activeCutObstacles[0]!;
   const localCutPlan = translateRoomColumnCutPlanToLocal({
     plan: central,
