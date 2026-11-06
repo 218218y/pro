@@ -202,6 +202,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
             sketchMode,
             addOutlines: addOutlines || null,
             cfgSnapshot: { isLibraryMode: cfg.isLibraryMode === true },
+            roomArchitecturePlan: null,
           }
         );
       }

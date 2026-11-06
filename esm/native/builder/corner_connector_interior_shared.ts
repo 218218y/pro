@@ -8,6 +8,7 @@ import type {
   BuilderFoldedContentsPolicy,
   BuilderHangerContentsPolicy,
   BuilderHangingContentsPolicy,
+  RoomArchitectureCutPlan,
   RoomArchitecturePlan,
   UnknownRecord,
 } from '../../../types';
@@ -101,6 +102,7 @@ export type CornerConnectorInteriorLocals = {
   backPanelThick: number;
   __backPanelOutsideInsetZ: number;
   cornerGroup: GroupLike;
+  roomColumnCutPlan: RoomArchitectureCutPlan;
 };
 export type CornerConnectorInteriorHelpers = {
   reportErrorThrottled: (app: unknown, error: unknown, meta: ThrottleOpts) => void;

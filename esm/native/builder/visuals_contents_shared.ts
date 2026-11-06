@@ -2,12 +2,13 @@ import { assertApp, runPerfPhase } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 import {
-  intersectAxisAlignedBoxes,
+  intersectsActiveRoomColumnCutObstacle,
   resolveActiveRoomColumnCutObstacles,
 } from './room_architecture_geometry.js';
 
 import type {
   AppContainer,
+  AxisAlignedBox,
   BuilderOutlineFn,
   BuilderAddFoldedClothesFn,
   BuilderAddHangingClothesFn,
@@ -19,7 +20,7 @@ import type {
   BuilderHangingContentsPolicy,
   GeometryLike,
   MaterialLike,
-  RoomArchitecturePlan,
+  RoomArchitectureCutPlan,
   ThreeLike,
   UnknownRecord,
   VisualContentGeometryCacheCounterLike,
@@ -75,10 +76,11 @@ export function runVisualContentsPerfPhase<T>(App: AppContainer, name: string, r
 }
 
 export function visualObjectIntersectsRoomColumnCut(
-  roomArchitecturePlan: RoomArchitecturePlan,
+  roomArchitecturePlan: RoomArchitectureCutPlan | null,
   THREE: ThreeLike,
   object: unknown
 ): boolean {
+  if (roomArchitecturePlan === null) return false;
   const obstacles = resolveActiveRoomColumnCutObstacles(roomArchitecturePlan);
   if (obstacles.length === 0 || !object || typeof THREE.Box3 !== 'function') return false;
 
@@ -95,12 +97,34 @@ export function visualObjectIntersectsRoomColumnCut(
     if (minX == null || minY == null || minZ == null || maxX == null || maxY == null || maxZ == null) {
       return false;
     }
-    const boundsBox = { minX, maxX, minY, maxY, minZ, maxZ };
-    return obstacles.some(obstacle => !!intersectAxisAlignedBoxes(boundsBox, obstacle));
+    return visualBoundsIntersectRoomColumnCut(roomArchitecturePlan, { minX, maxX, minY, maxY, minZ, maxZ });
   } catch {
     // Detached previews and lightweight tests may not expose full THREE bounds machinery.
     return false;
   }
+}
+
+export function visualBoundsIntersectRoomColumnCut(
+  roomArchitecturePlan: RoomArchitectureCutPlan | null,
+  bounds: AxisAlignedBox
+): boolean {
+  return roomArchitecturePlan === null
+    ? false
+    : intersectsActiveRoomColumnCutObstacle(roomArchitecturePlan, bounds);
+}
+
+export function resolveFoldedContentsRoomArchitecturePlan(
+  policy: BuilderFoldedContentsPolicy
+): RoomArchitectureCutPlan | null {
+  if (!isRecord(policy) || !Object.prototype.hasOwnProperty.call(policy, 'roomArchitecturePlan')) {
+    throw new TypeError('[visuals_contents] roomArchitecturePlan policy is required');
+  }
+  const plan = policy.roomArchitecturePlan;
+  if (plan === null) return null;
+  if (!isRecord(plan) || !Array.isArray(plan.activeCutObstacles)) {
+    throw new TypeError('[visuals_contents] roomArchitecturePlan policy must be a room plan or null');
+  }
+  return plan as unknown as RoomArchitectureCutPlan;
 }
 
 export function requireContentsRenderPolicy(policy: unknown): BuilderContentsRenderPolicy {

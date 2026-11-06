@@ -105,6 +105,7 @@ export const FOLDED_CLOTHES_VISUAL_POLICY = Object.freeze({
   heightHeadroomM: meters(0.03),
   stackPitchM: meters(0.3),
   stackXInsetM: meters(0.15),
+  columnAdjustedMinItemWidthM: meters(0.1),
   randomItemsRange: 4,
   stackBaseItems: 4,
   minHeightForSingleItemM: meters(0.06),

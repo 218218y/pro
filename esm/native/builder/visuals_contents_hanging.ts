@@ -313,7 +313,6 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
         const xPos = rodX - width / 2 + i * dims.spacingM + dims.xOffsetM;
         const hanger = createStyledHanger({ THREE, dims, xPos, rodY, rodZ });
         if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, hanger)) continue;
-        parentGroup.add(hanger);
 
         const variant = selectGarmentVariant();
         let clothHeight =
@@ -327,7 +326,10 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
           dims.minRenderableHeightM,
           Math.max(dims.minRenderableHeightM, maxHeight - dims.bottomClearanceM)
         );
-        if (clothHeight <= dims.minRenderableHeightM) continue;
+        if (clothHeight <= dims.minRenderableHeightM) {
+          parentGroup.add(hanger);
+          continue;
+        }
 
         const clothWidth = dims.clothWidthM * (0.92 + seededRandom.random() * 0.18);
         const clothColor = getRandomClothColor();
@@ -366,7 +368,12 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
           height: clothHeight,
           depth: baseClothDepth,
         });
+        if (visualObjectIntersectsRoomColumnCut(policy.roomArchitecturePlan, THREE, cloth)) {
+          parentGroup.add(hanger);
+          continue;
+        }
         addOutlines?.(cloth);
+        parentGroup.add(hanger);
         parentGroup.add(cloth);
       }
     })

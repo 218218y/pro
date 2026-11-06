@@ -202,6 +202,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         sketchMode: input.sketchMode === true,
         addOutlines: __isFn(input.addOutlines) ? input.addOutlines : null,
         cfgSnapshot: input.cfg,
+        roomArchitecturePlan,
       },
       currentShelfMat,
       currentBraceShelfMat,

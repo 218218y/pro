@@ -54,10 +54,11 @@ export function resolveModuleFrame(
   runtime: ModuleLoopRuntime,
   state: ModuleLoopMutableState,
   index: number,
-  modDoorsRaw: unknown
+  modDoorsRaw: unknown,
+  fixedFrontClosure = false
 ): ResolvedModuleFrame {
   const config = runtime.moduleCfgList[index] || DEFAULT_MODULE_CONFIG;
-  const depth = resolveModuleDepthProfile(runtime, config);
+  const depth = resolveModuleDepthProfile(runtime, config, { fixedFrontClosure });
   const modDoors =
     typeof modDoorsRaw === 'number' && Number.isFinite(modDoorsRaw) && modDoorsRaw > 0
       ? Math.trunc(modDoorsRaw)

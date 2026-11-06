@@ -28,7 +28,7 @@ import type {
   DoorTrimMap,
 } from './maps';
 import type { ActionMetaLike } from './kernel';
-import type { RoomArchitecturePlan, RoomWallId } from './room_architecture';
+import type { RoomArchitectureCutPlan, RoomArchitecturePlan, RoomWallId } from './room_architecture';
 import type { BuildStateLike, ConfigStateLike, UiSnapshotLike } from './build_state';
 import type {
   BuilderContentsSurfaceLike,
@@ -73,6 +73,7 @@ export type BuilderHangingContentsPolicy = BuilderContentsVisibilityPolicy &
 export type BuilderFoldedContentsPolicy = BuilderContentsVisibilityPolicy &
   Readonly<{
     cfgSnapshot: ConfigStateLike;
+    roomArchitecturePlan: RoomArchitectureCutPlan | null;
     contentKind?: 'winter_blankets';
   }>;
 export type BuilderHangerContentsPolicy = BuilderContentsRenderPolicy &

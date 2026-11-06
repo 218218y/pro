@@ -31,6 +31,7 @@ import type { CornerOpsEmitContext } from './corner_ops_emit_common.js';
 import { createCornerConnectorSetup } from './corner_connector_emit_shared.js';
 import { buildCornerConnectorShell } from './corner_connector_emit_shell.js';
 import { applyCornerConnectorInteriorFlow } from './corner_connector_interior_emit.js';
+import { translateRoomColumnCutPlanToLocal } from './room_architecture_geometry.js';
 import { applyCornerConnectorDoorFlow } from './corner_connector_door_emit.js';
 import { applyCornerConnectorCornice } from './corner_connector_cornice_emit.js';
 import { deriveCornerWingCells } from './corner_wing_extension_cells.js';
@@ -154,6 +155,12 @@ export function emitCornerConnector(ctx: CornerOpsEmitContext): void {
       backPanelThick,
       __backPanelOutsideInsetZ: backPanelOutsideInsetZ,
       cornerGroup,
+      roomColumnCutPlan: translateRoomColumnCutPlanToLocal({
+        plan: ctx.roomArchitecturePlan,
+        originX: ctx.roomCornerX,
+        originZ: ctx.roomCornerZ + ctx.__stackOffsetZ,
+        mirrorX: ctx.__mirrorX,
+      }),
     },
     helpers: { reportErrorThrottled },
   });

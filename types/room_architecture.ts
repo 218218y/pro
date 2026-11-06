@@ -157,6 +157,8 @@ export interface RoomArchitecturePlan extends RoomArchitectureGeometry {
   activeCutObstacles: readonly AxisAlignedBox[];
 }
 
+export type RoomArchitectureCutPlan = Pick<RoomArchitecturePlan, 'activeCutObstacles'>;
+
 export interface RoomColumnAdjustedHorizontalSpan {
   minX: number;
   maxX: number;

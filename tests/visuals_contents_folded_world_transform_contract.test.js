@@ -128,6 +128,7 @@ function createFoldedScene(mode) {
     sketchMode: false,
     addOutlines: null,
     cfgSnapshot: { isLibraryMode: false },
+    roomArchitecturePlan: null,
   });
   return parent;
 }

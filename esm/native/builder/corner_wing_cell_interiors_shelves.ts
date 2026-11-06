@@ -311,6 +311,7 @@ export function addCornerWingGridShelf(
           sketchMode: runtime.__sketchMode === true,
           addOutlines: runtime.addOutlines,
           cfgSnapshot: runtime.__cfg,
+          roomArchitecturePlan: runtime.roomArchitecturePlan,
           contentKind: 'winter_blankets',
         }
       );
@@ -333,6 +334,7 @@ export function addCornerWingGridShelf(
         sketchMode: runtime.__sketchMode === true,
         addOutlines: runtime.addOutlines,
         cfgSnapshot: runtime.__cfg,
+        roomArchitecturePlan: runtime.roomArchitecturePlan,
         ...(cellBelowWinter ? { contentKind: 'winter_blankets' as const } : {}),
       }
     );
