@@ -156,6 +156,10 @@ Performance evidence is split into two categories:
   in-progress edits and exit hooks. The client size budgets retain approximately 10% capacity above the
   measured initial closure after that split, while the static chunk topology still requires four or fewer
   initial chunks. The bundle command prints remaining raw, gzip, and module capacity after every client build.
+  CI build smoke runs `bundle:analyze` against the minified client release graph, so the fixed budget and
+  deferred module boundaries are checked on pull requests before release packaging.
+  Viewer measurement loads on button hover, focus, or activation. The UI enters measurement mode only after
+  the tool is ready, so the first canvas hover and click use the same synchronous picking path as later input.
   `npm run bundle:analyze:supabase` reproduces generic-vendor versus dedicated-Supabase builds on one source
   identity and records deterministic initial-closure deltas in the same artifact directory.
 - Runtime timing is comparable only on the same machine and browser version with the same viewport, release

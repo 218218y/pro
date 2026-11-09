@@ -13,7 +13,6 @@ import {
 import { createViewerMeasurementFeatureRuntime } from './viewer_measurement_tool_runtime.js';
 import { resolveViewerMeasurementHitStateWithRoom } from './viewer_measurement_room_target.js';
 
-export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
 export { resolveViewerMeasurementPartLabel } from './viewer_measurement_part_label.js';
 

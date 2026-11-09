@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, ReactElement } from 'react';
 
 import {
   VIEWER_MEASUREMENT_MODE_ID,
-  clearViewerMeasurementOverlay,
   getUiNotesServiceMaybe,
-  getViewerMeasurementToolMode,
+  getViewerMeasurementTool,
   getModeId,
   isNotesScreenDrawMode,
+  loadViewerMeasurementTool,
+  requireViewerMeasurementTool,
   runPerfAction,
-  setViewerMeasurementToolMode,
   subscribeNotesDrawMode,
 } from '../../services/api.js';
 
-import { enterPrimaryMode, exitPrimaryMode } from './actions/modes_actions.js';
+import { enterPrimaryMode, exitPrimaryMode, getPrimaryMode } from './actions/modes_actions.js';
 import { setUiNotesEnabled, setUiShowContents } from './actions/store_actions.js';
 import { IconButton } from './components/IconButton.js';
 import { useApp, useMeta, useModeSelector, useUiFeedback, useUiSelector } from './hooks.js';
@@ -76,18 +76,26 @@ export function ViewerNotesControls(): ReactElement {
   const measurementModeId = getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID;
   const primaryMode = useModeSelector(mode => String(mode.primary || 'none'));
   const measurementMode = primaryMode === measurementModeId;
-  const [measurementToolMode, setMeasurementToolModeState] = useState(() =>
-    getViewerMeasurementToolMode(app)
+  const [measurementToolMode, setMeasurementToolModeState] = useState(
+    () => getViewerMeasurementTool()?.getViewerMeasurementToolMode(app) ?? 'part'
   );
+  const [measurementLoading, setMeasurementLoading] = useState(false);
+  const measurementActivation = useRef<AbortController | null>(null);
   const notesDrawMode = useViewerNotesDrawMode();
 
   useEffect(() => {
-    setMeasurementToolModeState(getViewerMeasurementToolMode(app));
-  }, [app]);
+    const tool = getViewerMeasurementTool();
+    if (measurementMode && tool) setMeasurementToolModeState(tool.getViewerMeasurementToolMode(app));
+    if (!measurementMode) tool?.clearViewerMeasurementOverlay(app, true);
+  }, [app, measurementMode]);
 
   useEffect(() => {
-    if (!measurementMode) clearViewerMeasurementOverlay(app, true);
-  }, [app, measurementMode]);
+    setMeasurementLoading(false);
+    return () => {
+      measurementActivation.current?.abort();
+      measurementActivation.current = null;
+    };
+  }, [app]);
 
   const setNotesVisible = useCallback(
     (on: boolean) => {
@@ -131,35 +139,61 @@ export function ViewerNotesControls(): ReactElement {
     );
   }, [app, showContents]);
 
-  const toggleMeasurementMode = useCallback(() => {
+  const prefetchMeasurementTool = useCallback(() => {
+    void loadViewerMeasurementTool().catch(error => {
+      reportOverlayAppNonFatal(app, 'viewer-measurement:prefetch', error);
+    });
+  }, [app]);
+
+  const toggleMeasurementMode = useCallback(async () => {
+    if (measurementActivation.current) return;
     const next = !measurementMode;
-    runPerfAction(
-      app,
-      'viewer.measurement.mode.toggle',
-      () => {
-        if (next) {
-          setViewerMeasurementToolMode(app, 'part', false);
-          setMeasurementToolModeState('part');
-          enterPrimaryMode(app, measurementModeId, {
+    const activation = new AbortController();
+    measurementActivation.current = activation;
+    try {
+      await runPerfAction(
+        app,
+        'viewer.measurement.mode.toggle',
+        async () => {
+          if (next) {
+            let tool = getViewerMeasurementTool();
+            if (!tool) {
+              setMeasurementLoading(true);
+              tool = await loadViewerMeasurementTool();
+              if (activation.signal.aborted || getPrimaryMode(app) !== primaryMode) return;
+            }
+            tool.setViewerMeasurementToolMode(app, 'part', false);
+            setMeasurementToolModeState('part');
+            enterPrimaryMode(app, measurementModeId, {
+              preserveDoors: true,
+              cursor: 'crosshair',
+              toast: 'מצב מדידה: בחר סוג מדידה, או לחץ על חלק/חלל למדידה לפי חלק',
+              source: 'react:viewerMeasurementControls:enter',
+              immediate: true,
+            });
+            return;
+          }
+
+          exitPrimaryMode(app, measurementModeId, {
             preserveDoors: true,
-            cursor: 'crosshair',
-            toast: 'מצב מדידה: בחר סוג מדידה, או לחץ על חלק/חלל למדידה לפי חלק',
-            source: 'react:viewerMeasurementControls:enter',
+            source: 'react:viewerMeasurementControls:exit',
             immediate: true,
           });
-          return;
-        }
-
-        exitPrimaryMode(app, measurementModeId, {
-          preserveDoors: true,
-          source: 'react:viewerMeasurementControls:exit',
-          immediate: true,
-        });
-        clearViewerMeasurementOverlay(app, true);
-      },
-      { detail: { checked: next } }
-    );
-  }, [app, measurementMode, measurementModeId]);
+          requireViewerMeasurementTool().clearViewerMeasurementOverlay(app, true);
+        },
+        { detail: { checked: next } }
+      );
+    } catch (error) {
+      if (activation.signal.aborted) return;
+      reportOverlayAppNonFatal(app, 'viewer-measurement:toggle', error);
+      fb.toast('לא ניתן להפעיל את סרגל המדידה', 'error');
+    } finally {
+      if (measurementActivation.current === activation) {
+        measurementActivation.current = null;
+        setMeasurementLoading(false);
+      }
+    }
+  }, [app, fb, measurementMode, measurementModeId, primaryMode]);
 
   const selectMeasurementToolMode = useCallback(
     (mode: 'part' | 'points') => {
@@ -167,7 +201,7 @@ export function ViewerNotesControls(): ReactElement {
         app,
         'viewer.measurement.toolMode.select',
         () => {
-          setViewerMeasurementToolMode(app, mode, true);
+          requireViewerMeasurementTool().setViewerMeasurementToolMode(app, mode, true);
           setMeasurementToolModeState(mode);
           fb.toast(
             mode === 'points'
@@ -254,13 +288,19 @@ export function ViewerNotesControls(): ReactElement {
           <IconButton
             variant="camera"
             className={`wp-viewer-measurement-btn hint-bottom wp-r-styled-tooltip${measurementMode ? ' is-on' : ''}`}
-            data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
+            data-tooltip={
+              measurementLoading ? 'סרגל המדידה נטען' : measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'
+            }
             aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
             aria-pressed={measurementMode}
+            aria-busy={measurementLoading}
+            aria-disabled={measurementLoading}
             data-testid="viewer-measurement-toggle-button"
+            onMouseEnter={prefetchMeasurementTool}
+            onFocus={prefetchMeasurementTool}
             onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
               stopViewerNotesControlEvent(event);
-              toggleMeasurementMode();
+              void toggleMeasurementMode();
             }}
           >
             <i className="fas fa-ruler-combined" aria-hidden="true" />

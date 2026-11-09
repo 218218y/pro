@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { __coreHandleCanvasHoverNDC } from '../esm/native/services/canvas_picking_hover_flow.ts';
+import { loadViewerMeasurementTool } from '../esm/native/services/viewer_measurement_tool_loader.ts';
 
 function createRaycaster(intersects: any[]) {
   return {
@@ -132,7 +133,8 @@ test('hover flow paint mode routes through the canonical generic paint preview p
   assert.deepEqual(raycaster.lastMouse, { x: 0.15, y: -0.25 });
 });
 
-test('hover flow measurement mode returns the canonical part label with cursor preservation', () => {
+test('hover flow measurement mode returns the canonical part label with cursor preservation', async () => {
+  await loadViewerMeasurementTool();
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const bodyLeft = createBoxObject('body_left');
   bodyLeft.parent = wardrobeGroup;
@@ -149,7 +151,8 @@ test('hover flow measurement mode returns the canonical part label with cursor p
   });
 });
 
-test('hover flow measurement mode recognizes room wall targets through the room measurement picking seam', () => {
+test('hover flow measurement mode recognizes room wall targets through the room measurement picking seam', async () => {
+  await loadViewerMeasurementTool();
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const roomTarget = {
     type: 'Mesh',

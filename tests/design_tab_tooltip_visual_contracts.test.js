@@ -114,7 +114,7 @@ test('[viewer-notes-tooltips] sketch overlay controls use the shared viewport-sa
       /wp-viewer-note-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{notesDrawMode \? 'סיום עריכת הערות' : 'הערה'\}/,
       /wp-viewer-note-eye hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{notesEnabled \? 'הסתר הערות' : 'הצג הערות'\}/,
       /wp-viewer-contents-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{showContents \? 'הסתר תכולה' : 'הצג תכולה'\}/,
-      /wp-viewer-measurement-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{measurementMode \? 'סיום סרגל מדידה' : 'סרגל מדידה'\}/,
+      /wp-viewer-measurement-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{\s*measurementLoading \? 'סרגל המדידה נטען' : measurementMode \? 'סיום סרגל מדידה' : 'סרגל מדידה'\s*\}/,
       /wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip="מדידה לפי חלק"/,
       /wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip="מדידה לפי מיקום מדוייק"/,
     ],

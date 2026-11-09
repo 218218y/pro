@@ -17,6 +17,7 @@ const DEFERRED_ENTRY_CHUNK_PATTERNS = [
   /(?:^|-)SettingsTab(?:\.|-)/u,
   /(?:^|-)OrderPdfInPlaceEditorOverlay(?:\.|-)/u,
   /(?:^|-)NotesOverlay(?:\.|-)/u,
+  /(?:^|-)viewer_measurement_tool(?:\.|-)/u,
   /(?:^|-)pdf(?:\.|-)/u,
 ];
 
@@ -36,6 +37,10 @@ const DEFERRED_INITIAL_MODULE_PATTERNS = [
   {
     label: 'Notes editor UI',
     test: /[\\/]native[\\/]ui[\\/]react[\\/]notes[\\/](?:NotesOverlay|notes_overlay_(?:controller|editor|note_card)(?:_[^\\/]+)?)\.[cm]?js$/u,
+  },
+  {
+    label: 'Viewer measurement implementation',
+    test: /[\\/]native[\\/]services[\\/]viewer_measurement_(?:part_label|room_target|tool(?:_(?!loader\.)[^\\/]+)?)\.[cm]?js$/u,
   },
 ];
 
