@@ -346,6 +346,9 @@ jobs:
       - name: Run release parity source smoke
         run: npm run release:parity:source
 
+      - name: Enforce client initial bundle budget
+        run: npm run bundle:analyze
+
       - name: Upload build diagnostics
         if: failure()
         uses: actions/upload-artifact@v4

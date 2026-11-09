@@ -19,6 +19,49 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('viewer measurement waits for its tool and handles the first hover and click @critical', async ({
+    page,
+  }) => {
+    const issues = collectRuntimeIssues(page);
+    const toolModule = /\/viewer_measurement_tool\.ts(?:\?.*)?$/u;
+    const loadGate = Promise.withResolvers<void>();
+    await page.route(toolModule, async route => {
+      await loadGate.promise;
+      await route.continue();
+    });
+
+    try {
+      await gotoSmokeApp(page);
+      const toggle = page.getByTestId('viewer-measurement-toggle-button');
+      const menu = page.getByTestId('viewer-measurement-mode-menu');
+      await expect(toggle).toHaveAttribute('aria-busy', 'false');
+
+      const toolRequest = page.waitForRequest(toolModule);
+      await toggle.press('Enter');
+      await toolRequest;
+      await expect(toggle).toHaveAttribute('aria-busy', 'true');
+      await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+      await expect(menu).toHaveCount(0);
+      loadGate.resolve();
+
+      await expect(menu).toBeVisible();
+      const point = { x: 0.1, y: 0 };
+      const canvas = page.locator('#viewer-container canvas').first();
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('Expected a visible viewer canvas');
+      await page.mouse.move(box.x + ((point.x + 1) / 2) * box.width, box.y + box.height / 2);
+      await expect(page.locator('[data-wp-viewer-measurement-part-tooltip].is-open')).toBeVisible();
+
+      // The first click on empty canvas is consumed by the measurement tool and exits the mode.
+      await page.mouse.click(box.x + box.width * 0.05, box.y + box.height * 0.85);
+      await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+      await expect(menu).toHaveCount(0);
+      expectNoRuntimeIssues(issues);
+    } finally {
+      loadGate.resolve();
+    }
+  });
+
   test('manual door split can be removed at the same pointer position after rebuilding', async ({ page }) => {
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);

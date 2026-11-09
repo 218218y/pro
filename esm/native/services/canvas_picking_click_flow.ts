@@ -12,7 +12,7 @@ import { routeCanvasPickingClick } from './canvas_picking_click_route.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
-import { tryHandleViewerMeasurementClick } from './viewer_measurement_tool.js';
+import { requireViewerMeasurementTool } from './viewer_measurement_tool_loader.js';
 import { tryHandleRoomOpeningPlacementClick } from './room_opening_placement.js';
 import { tryHandleRoomDoorToggleClick } from './room_door_interaction.js';
 
@@ -64,6 +64,17 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
     raycaster: __wpRaycaster,
     mouse: __wpMouse,
   });
+  if (modeState.__isMeasureMode) {
+    requireViewerMeasurementTool().tryHandleViewerMeasurementClick({
+      App,
+      hitState,
+      ndcX,
+      ndcY,
+      raycaster: __wpRaycaster,
+      mouse: __wpMouse,
+    });
+    return;
+  }
   // A cut is a gap in the door mesh, so the ray can hit a selector or carcass
   // behind it. Match the hover's projected cut line whenever no door was hit;
   // a resolved door retains priority over neighboring screen-space candidates.
@@ -75,20 +86,7 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
   ) {
     return;
   }
-  if (!hitState) {
-    if (modeState.__isMeasureMode) {
-      tryHandleViewerMeasurementClick({
-        App,
-        hitState: null,
-        ndcX,
-        ndcY,
-        raycaster: __wpRaycaster,
-        mouse: __wpMouse,
-      });
-      return;
-    }
-    return;
-  }
+  if (!hitState) return;
 
   const moduleRefs = createCanvasPickingClickModuleRefs({
     App,

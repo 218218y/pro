@@ -91,11 +91,10 @@ export {
 
 export {
   VIEWER_MEASUREMENT_MODE_ID,
-  clearViewerMeasurementOverlay,
-  getViewerMeasurementToolMode,
-  setViewerMeasurementToolMode,
-  tryHandleViewerMeasurementClick,
-} from './viewer_measurement_tool.js';
+  getViewerMeasurementTool,
+  loadViewerMeasurementTool,
+  requireViewerMeasurementTool,
+} from './viewer_measurement_tool_loader.js';
 
 export {
   beginRoomOpeningPlacement,

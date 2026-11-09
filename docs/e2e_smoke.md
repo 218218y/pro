@@ -70,7 +70,8 @@ Keep E2E focused on critical journeys:
 - order PDF open/edit/export lifecycle
 - cloud sync visible controls
 - cloud sync offline/reconnect smoke around visible controls and post-reconnect actions
-- canvas hover/click pointer parity around real browser pointer events
+- canvas hover/click pointer parity around real browser pointer events, including the first measurement
+  interaction after a delayed tool load
 - settings backup import/export resilience
 
 ## Current build coverage

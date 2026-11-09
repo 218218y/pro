@@ -6,22 +6,10 @@ import {
   isCanvasPickingInteriorClickMode,
   requireCanvasPickingInteriorExtension,
 } from './canvas_picking_interior_extension_registry.js';
-import { tryHandleViewerMeasurementClick } from './viewer_measurement_tool.js';
 
 export type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
 
 export function routeCanvasPickingClick(args: CanvasPickingClickRouteArgs): void {
-  if (args.modeState.__isMeasureMode) {
-    tryHandleViewerMeasurementClick({
-      App: args.App,
-      hitState: args.hitState,
-      ndcX: args.ndcX,
-      ndcY: args.ndcY,
-      raycaster: args.raycaster,
-      mouse: args.mouse,
-    });
-    return;
-  }
   if (tryHandleCanvasPickingCellDimsRoute(args)) return;
   if (isCanvasPickingInteriorClickMode(args.modeState)) {
     if (requireCanvasPickingInteriorExtension().tryHandleClickRoute(args)) return;

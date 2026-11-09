@@ -517,6 +517,34 @@ test('bundle chunk topology enforces deterministic initial byte, chunk, and modu
   );
 });
 
+test('viewer measurement keeps only its loader in the initial closure', () => {
+  const entry = {
+    type: 'chunk',
+    fileName: 'wardrobepro.bundle.js',
+    isEntry: true,
+    imports: [],
+    dynamicImports: ['wardrobepro.chunk-viewer_measurement_tool.js'],
+    modules: { '/repo/esm/native/services/viewer_measurement_tool_loader.js': {} },
+  };
+  const tool = {
+    type: 'chunk',
+    fileName: 'wardrobepro.chunk-viewer_measurement_tool.js',
+    imports: [],
+    modules: { '/repo/esm/native/services/viewer_measurement_tool_resolution.js': {} },
+  };
+
+  assert.deepEqual(assertBundleChunkTopology({ output: [entry, tool] }).staticClosure, [entry.fileName]);
+  assert.throws(
+    () => assertBundleChunkTopology({ output: [{ ...entry, imports: [tool.fileName] }, tool] }),
+    /deferred chunks are statically reachable: wardrobepro\.chunk-viewer_measurement_tool\.js/
+  );
+  assert.throws(
+    () =>
+      assertBundleChunkTopology({ output: [{ ...entry, modules: { ...entry.modules, ...tool.modules } }] }),
+    /deferred modules are statically reachable: Viewer measurement implementation/
+  );
+});
+
 test('bundle attribution groups initial modules by subsystem without counting deferred chunks', () => {
   assert.equal(
     classifyInitialModuleSubsystem('/repo/esm/native/services/canvas_picking_core.ts'),

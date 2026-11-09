@@ -23,7 +23,9 @@ const MODULE_CONTRACTS = [
       './canvas_picking_click_mode_state.js': ['resolveCanvasPickingClickModeState'],
       './canvas_picking_click_module_refs.js': ['createCanvasPickingClickModuleRefs'],
       './canvas_picking_click_route.js': ['routeCanvasPickingClick'],
+      './viewer_measurement_tool_loader.js': ['requireViewerMeasurementTool'],
     },
+    forbiddenImports: ['./viewer_measurement_tool.js'],
   },
   {
     file: 'esm/native/services/canvas_picking_click_mode_state.ts',
@@ -55,7 +57,6 @@ const MODULE_CONTRACTS = [
         'isCanvasPickingInteriorClickMode',
         'requireCanvasPickingInteriorExtension',
       ],
-      './viewer_measurement_tool.js': ['tryHandleViewerMeasurementClick'],
     },
     forbiddenImports: [
       './canvas_picking_click_route_manual.js',
@@ -66,6 +67,7 @@ const MODULE_CONTRACTS = [
       './canvas_picking_paint_flow.js',
       './canvas_picking_handle_assign_flow.js',
       './canvas_picking_toggle_flow.js',
+      './viewer_measurement_tool.js',
     ],
   },
   {

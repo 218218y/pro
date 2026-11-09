@@ -25,12 +25,9 @@ import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_mat
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { tryHandleRoomOpeningPlacementHover } from './room_opening_placement.js';
 import {
-  getViewerMeasurementToolMode,
-  resolveViewerMeasurementHitState,
-  resolveViewerMeasurementPartLabel,
-  tryHandleViewerMeasurementHover,
+  requireViewerMeasurementTool,
   VIEWER_MEASUREMENT_MODE_ID,
-} from './viewer_measurement_tool.js';
+} from './viewer_measurement_tool_loader.js';
 
 const CANVAS_HOVER_CURSOR_PRESERVE = '__wp_canvas_hover_cursor_preserve';
 const VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND = 'viewer-measurement';
@@ -126,6 +123,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
     const __isMirrorPaintMode = __paintSelection === 'mirror' || isAdhesiveGlassValue(__paintSelection);
 
     if (__isMeasureMode) {
+      const measurement = requireViewerMeasurementTool();
       const hitState = resolveCanvasPickingClickHitState({
         App,
         ndcX,
@@ -134,7 +132,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      const measurementHitState = resolveViewerMeasurementHitState({
+      const measurementHitState = measurement.resolveViewerMeasurementHitState({
         App,
         hitState,
         ndcX,
@@ -142,7 +140,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      tryHandleViewerMeasurementHover({
+      measurement.tryHandleViewerMeasurementHover({
         App,
         hitState,
         preResolvedHitState: measurementHitState,
@@ -152,8 +150,8 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         mouse: __wpMouse,
       });
       const partLabel =
-        getViewerMeasurementToolMode(App) === 'part'
-          ? resolveViewerMeasurementPartLabel(measurementHitState)
+        measurement.getViewerMeasurementToolMode(App) === 'part'
+          ? measurement.resolveViewerMeasurementPartLabel(measurementHitState)
           : null;
       return {
         kind: VIEWER_MEASUREMENT_HOVER_FEEDBACK_KIND,

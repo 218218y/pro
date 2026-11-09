@@ -5,9 +5,9 @@ import type { AppContainer, TabId } from '../../../../types';
 import { useApp, useMeta, useModeSelector, useUiSelectorShallow } from './hooks.js';
 import {
   VIEWER_MEASUREMENT_MODE_ID,
-  clearViewerMeasurementOverlay,
   getModeId,
   isSite2Variant,
+  requireViewerMeasurementTool,
 } from '../../services/api.js';
 import { selectActiveTabId, selectSite2GateState } from './selectors/ui_selectors.js';
 import { setUiActiveTab } from './actions/store_actions.js';
@@ -55,7 +55,7 @@ function isViewerMeasurementPrimaryMode(primaryMode: string): boolean {
 function clearViewerMeasurementOnSidebarExit(app: AppContainer, primaryMode: string): void {
   if (!isViewerMeasurementPrimaryMode(primaryMode)) return;
   try {
-    clearViewerMeasurementOverlay(app, true);
+    requireViewerMeasurementTool().clearViewerMeasurementOverlay(app, true);
   } catch {
     // ignore measurement overlay cleanup failures; the primary mode transition still owns the exit.
   }
