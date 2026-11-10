@@ -4,6 +4,7 @@ import type { DrawerRunnerType } from '../../../../../types';
 
 import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/finish_palette/api.js';
 import type { HandleFinishColor, HandleFinishPresetColor } from '../../../features/finish_palette/api.js';
+import type { LayoutTypeOption, ManualToolOption } from './interior_tab_local_state_shared.js';
 import type {
   DoorTrimUiAxis,
   DoorTrimUiColor,
@@ -18,9 +19,6 @@ import type {
   SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
-
-export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
-export type ManualToolOption = { id: ManualToolId; label: string };
 
 export const METAL_FINISH_SWATCH_BG_BY_COLOR: Record<HandleFinishPresetColor, string> = {
   nickel: METAL_FINISH_PALETTE_BY_COLOR.nickel.cssHex,
@@ -91,7 +89,6 @@ export type InteriorLayoutSectionProps = {
   toggleWinterBraceDoorLock: () => void;
   wardrobeType: 'sliding' | 'hinged';
   isChestMode: boolean;
-  layoutActive: boolean;
   isLayoutMode: boolean;
   isManualLayoutMode: boolean;
   isBraceShelvesMode: boolean;
@@ -102,14 +99,9 @@ export type InteriorLayoutSectionProps = {
   manualTool: ManualToolId;
   manualToolRaw: string;
   manualUiTool: ManualToolId;
-  activeManualToolForUi: ManualToolId;
   currentGridDivisions: number;
   gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
-  showManualRow: boolean;
-  showGridControls: boolean;
-  showShelfVariantControls: boolean;
   sketchShelvesOpen: boolean;
-  sketchRowOpen: boolean;
   sketchBoxHeightCm: number;
   sketchBoxHeightDraft: string;
   sketchBoxWidthCm: number | '';
@@ -162,10 +154,7 @@ export type InteriorLayoutSectionProps = {
   manualTools: ManualToolOption[];
   gridDivs: number[];
   formFieldIdScope?: string;
-  setManualRowOpen: Dispatch<SetStateAction<boolean>>;
-  setManualUiTool: Dispatch<SetStateAction<ManualToolId>>;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchRowOpen: Dispatch<SetStateAction<boolean>>;
   setSketchBoxHeightCm: Dispatch<SetStateAction<number>>;
   setSketchBoxHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxWidthCm: Dispatch<SetStateAction<number | ''>>;

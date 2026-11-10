@@ -24,7 +24,6 @@ export type EmbeddedSketchExternalDrawersControlsProps = {
   sketchExtDrawerHeightCm: number;
   sketchExtDrawerHeightDraft: string;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchRowOpen: Dispatch<SetStateAction<boolean>>;
   setSketchExtDrawersPanelOpen: Dispatch<SetStateAction<boolean>>;
   setSketchExtDrawerCount: Dispatch<SetStateAction<number>>;
   setSketchExtDrawerHeightCm: Dispatch<SetStateAction<number>>;
@@ -39,7 +38,6 @@ export type EmbeddedSketchInternalDrawersControlsProps = {
   sketchIntDrawerHeightCm: number;
   sketchIntDrawerHeightDraft: string;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchRowOpen: Dispatch<SetStateAction<boolean>>;
   setSketchIntDrawerHeightCm: Dispatch<SetStateAction<number>>;
   setSketchIntDrawerHeightDraft: Dispatch<SetStateAction<string>>;
   enterSketchIntDrawersTool: (drawerHeightCm: number) => void;

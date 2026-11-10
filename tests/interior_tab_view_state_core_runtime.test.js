@@ -38,7 +38,6 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
           isIntDrawerMode: false,
           isHandleMode: true,
           isDoorTrimMode: false,
-          layoutActive: true,
           layoutType: 'mixed',
           manualTool: 'rod',
           manualToolRaw: 'sketch_shelf_double',
@@ -56,12 +55,6 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
           handleToolType: args.isHandleMode ? 'none' : 'edge',
           globalEdgeHandleVariant: 'long',
           handleToolEdgeVariant: 'short',
-        }),
-        deriveInteriorTabVisibilityState: args => ({
-          showManualRow: args.manualRowOpen || args.isSketchDivisionToolActive,
-          activeManualToolForUi: args.manualUiTool,
-          showGridControls: args.manualUiTool === 'rod',
-          showShelfVariantControls: args.manualUiTool === 'shelf',
         }),
       };
     }
@@ -150,8 +143,6 @@ test('interior tab core runtime derives canonical mode consts and merged view st
       opts: { manualTool: 'rod' },
     },
     modeConsts,
-    manualRowOpen: false,
-    manualUiTool: 'rod',
   });
 
   assert.equal(state.manualTool, 'rod');
@@ -159,8 +150,5 @@ test('interior tab core runtime derives canonical mode consts and merged view st
   assert.equal(state.isSketchDivisionToolActive, true);
   assert.equal(state.extDrawerType, 'shoe');
   assert.equal(state.handleToolType, 'none');
-  assert.equal(state.activeManualToolForUi, 'rod');
-  assert.equal(state.showGridControls, true);
-  assert.equal(state.showShelfVariantControls, false);
   assert.deepEqual(state.modeOpts, { marker: 'mode', raw: { manualTool: 'rod' } });
 });

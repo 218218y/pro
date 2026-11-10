@@ -5,7 +5,6 @@ import { asStr } from './interior_tab_helpers.js';
 import {
   deriveInteriorTabModeState,
   deriveInteriorTabUiToolState,
-  deriveInteriorTabVisibilityState,
 } from './interior_tab_view_state_runtime.js';
 
 export type InteriorHandleCfgView = {
@@ -93,12 +92,10 @@ export type InteriorTabDerivedStateArgs = {
   handleCfg: InteriorHandleCfgView;
   mode: InteriorModeView;
   modeConsts: InteriorModeConsts;
-  manualRowOpen: boolean;
-  manualUiTool: 'shelf' | 'rod' | 'storage';
 };
 
 export function deriveInteriorTabCoreState(args: InteriorTabDerivedStateArgs) {
-  const { ui, handleCfg, mode, modeConsts, manualRowOpen, manualUiTool } = args;
+  const { ui, handleCfg, mode, modeConsts } = args;
   const primary = asStr(mode.primary, modeConsts.modeNone);
   const modeState = deriveInteriorTabModeState({
     primary,
@@ -121,19 +118,9 @@ export function deriveInteriorTabCoreState(args: InteriorTabDerivedStateArgs) {
     isHandleMode: modeState.isHandleMode,
   });
 
-  const visibilityState = deriveInteriorTabVisibilityState({
-    manualRowOpen,
-    isManualLayoutMode: modeState.isManualLayoutMode,
-    isSketchToolActive: modeState.isSketchToolActive,
-    isSketchDivisionToolActive: modeState.isSketchDivisionToolActive,
-    manualTool: modeState.manualTool,
-    manualUiTool,
-  });
-
   return {
     primary,
     ...modeState,
     ...uiToolState,
-    ...visibilityState,
   };
 }

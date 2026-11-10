@@ -1725,37 +1725,91 @@
   gap: 6px;
 }
 
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-toggle {
-  width: 100%;
-  margin-top: 6px;
-}
-
 #reactSidebarRoot
-  .tab-content[data-tab='interior']
-  .wp-tool-card--layout
-  .wp-manual-toggle.type-option--compact {
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  min-height: 38px;
-}
-
-#reactSidebarRoot
-  .tab-content[data-tab='interior']
-  .wp-tool-card--layout
-  .wp-manual-row
-  .type-option--compact {
-  padding: 8px;
-  font-size: 0.82rem;
-  min-height: 34px;
-}
-
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-row {
-  display: flex;
+  .wp-interior-layout
+  :is(
+    .wp-interior-layout-methods,
+    .wp-interior-layout-items,
+    .wp-interior-layout-options,
+    .wp-interior-layout-counts
+  ) {
+  display: grid;
   gap: 6px;
-  margin-top: 8px;
-  padding: 6px;
-  border-radius: 6px;
-  background: rgba(241, 245, 249, 0.45);
+}
+
+#reactSidebarRoot .wp-interior-layout :is(.wp-interior-layout-methods, .wp-interior-layout-items) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-options > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-counts {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#reactSidebarRoot .wp-interior-layout .type-option.wp-r-option-button--micro {
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 3px;
+  gap: 5px;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-methods .type-option {
+  flex-direction: column;
+  min-height: 48px;
+}
+
+#reactSidebarRoot .wp-interior-layout :is(.wp-interior-layout-help, .wp-interior-layout-label) {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-help {
+  margin: 8px 0;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-settings {
+  margin-top: 10px;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-edits {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-edits summary {
+  padding: 10px 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+#reactSidebarRoot .wp-interior-layout :is(button, summary):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-winter-brace-control > .type-option:focus-visible {
+  outline-offset: -4px;
 }
 
 #reactSidebarRoot .tab-content[data-tab='sketch'] .wp-sketch-no-main-row {
@@ -1894,17 +1948,6 @@
 
 #reactSidebarRoot .wp-tool-card--layout .wp-winter-brace-row {
   margin-top: 6px;
-}
-
-#reactSidebarRoot .wp-layout-shortcut-cell {
-  display: flex;
-  min-width: 0;
-  gap: 4px;
-}
-
-#reactSidebarRoot .wp-layout-shortcut-cell > .type-option {
-  min-width: 0;
-  white-space: normal;
 }
 
 #reactSidebarRoot .wp-winter-brace-control {
@@ -2134,18 +2177,6 @@
 /* Reduce the gap between the internal-drawers card and the next card headers */
 #reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--intdrawer {
   margin-bottom: 6px;
-}
-
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .grid-divisions-row {
-  gap: 2px;
-  flex-wrap: nowrap;
-}
-
-#reactSidebarRoot .tab-content[data-tab='interior'] .wp-tool-card--layout .grid-divisions-row .type-option {
-  padding: 8px 2px;
-  font-size: 0.85rem;
-  min-width: 0;
-  flex: 1 1 auto;
 }
 
 #reactSidebarRoot
@@ -3321,7 +3352,6 @@ body.wp-ui-react .btn-cancel:hover {
   box-shadow: var(--wp-r-shadow-pressed-control);
 }
 
-#reactSidebarRoot .grid-divisions-row .type-option.selected,
 #reactSidebarRoot .wp-door-trim-panel .type-option.selected {
   box-shadow: var(--wp-r-shadow-pressed-control-compact);
 }
@@ -3337,21 +3367,6 @@ body.wp-ui-react .btn-cancel:hover {
   justify-content: center;
   gap: 6px;
   min-height: 34px;
-}
-
-#reactSidebarRoot .grid-divisions-row {
-  gap: 2px;
-  flex-wrap: nowrap;
-}
-
-#reactSidebarRoot .grid-divisions-row .type-option {
-  padding: 8px 2px;
-  font-size: 0.85rem;
-  min-width: 0;
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #reactSidebarRoot .control-section {
@@ -3951,15 +3966,6 @@ body.wp-ui-react .btn-sm {
   grid-template-columns: repeat(2, 1fr);
   margin-bottom: 10px;
   gap: 6px;
-}
-
-#reactSidebarRoot .wp-manual-row {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 6px;
-  background: #f1f5f9;
 }
 
 #reactSidebarRoot .wp-swatch-row {
@@ -7826,18 +7832,9 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   color: var(--text-main);
 }
 
-#reactSidebarRoot .wp-r-theme-dark .wp-manual-row,
 #reactSidebarRoot .wp-r-theme-dark .wp-sketch-row,
 #reactSidebarRoot .wp-r-theme-dark .wp-r-embedded-sketch-drawers,
 #reactSidebarRoot .wp-r-theme-dark .wp-sketch-choice-panel-inner {
-  background: var(--wp-r-dark-card-bg-muted);
-  border-color: var(--wp-r-dark-card-border);
-}
-
-/* Keep the manual division strip dark: the interior layout card owns a more-specific
- * light surface rule for this row, so the dark override must match that ownership.
- */
-#reactSidebarRoot .wp-r-theme-dark .tab-content[data-tab='interior'] .wp-tool-card--layout .wp-manual-row {
   background: var(--wp-r-dark-card-bg-muted);
   border-color: var(--wp-r-dark-card-border);
 }

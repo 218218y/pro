@@ -1,189 +1,110 @@
 import type { ReactElement } from 'react';
 
-import { InlineNotice } from '../components/InlineNotice.js';
-import { ModeToggleButton } from '../components/index.js';
-import { OptionBtn, cx, parseSketchShelfVariant } from './interior_tab_helpers.js';
+import { OptionButton } from '../components/index.js';
 import {
-  WinterBraceShelfControls,
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
+  SHELF_VARIANT_OPTIONS,
+  WinterBraceShelfControls,
 } from './interior_layout_sketch_shelves_section.js';
+import { parseSketchShelfVariant } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
-type GridShelfVariant = 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
+type ManualLayoutControlsProps = InteriorLayoutSectionProps & { method: 'grid' | 'sketch' };
+type ShelfVariant = InteriorLayoutSectionProps['gridShelfVariant'];
 
-const GRID_SHELF_VARIANTS: ReadonlyArray<[GridShelfVariant, string, string]> = [
-  ['regular', 'רגיל', 'fas fa-minus'],
-  ['double', 'כפול', 'fas fa-clone'],
-  ['glass', 'זכוכית', 'fas fa-gem'],
-  ['brace', 'קושרת', 'fas fa-link'],
-];
+export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): ReactElement {
+  const isSketch = props.method === 'sketch';
+  const hasActiveTool = isSketch
+    ? props.isSketchDivisionToolActive
+    : props.isManualLayoutMode && !props.isSketchToolActive;
+  const tool = hasActiveTool ? props.manualTool : props.manualUiTool;
+  const showShelfSettings =
+    tool === 'shelf' && !(isSketch && (props.isBraceShelvesMode || props.isLayoutMode));
+  const sketchVariant = isSketch && hasActiveTool ? parseSketchShelfVariant(props.manualToolRaw) : null;
+  const activeShelfVariant =
+    sketchVariant === 'winter_brace'
+      ? sketchVariant
+      : (SHELF_VARIANT_OPTIONS.find(option => option.variant === sketchVariant)?.variant ??
+        props.gridShelfVariant);
 
-function readActiveShelfVariantForUi(props: InteriorLayoutSectionProps): GridShelfVariant {
-  if (!props.isSketchDivisionToolActive) return props.gridShelfVariant;
-  const variant = parseSketchShelfVariant(props.manualToolRaw);
-  return variant === 'double' ||
-    variant === 'glass' ||
-    variant === 'brace' ||
-    variant === 'winter_brace' ||
-    variant === 'regular'
-    ? variant
-    : props.gridShelfVariant;
-}
-
-export function InteriorLayoutManualControls(props: InteriorLayoutSectionProps): ReactElement {
-  const activeShelfVariantForUi = readActiveShelfVariantForUi(props);
+  function selectShelf(variant: ShelfVariant) {
+    props.setGridShelfVariant(variant);
+    if (isSketch) props.enterSketchDivision('shelf', variant);
+    else if (!hasActiveTool || tool !== 'shelf') props.enterManual('shelf');
+  }
 
   return (
     <>
-      <OptionBtn
-        className="wp-manual-toggle"
-        selected={props.showManualRow}
-        onClick={() => {
-          if (props.showManualRow) {
-            props.setManualRowOpen(false);
-            if (props.isManualLayoutMode) props.exitManual();
-            return;
-          }
-
-          props.setManualUiTool('shelf');
-          props.setManualRowOpen(true);
-          props.enterManual('shelf');
-        }}
-      >
-        <strong>⚙️ חלוקה ידנית</strong>
-        <i
-          className={cx('fas', props.showManualRow ? 'fa-chevron-up' : 'fa-chevron-down', 'wp-chevron')}
-          aria-hidden="true"
-        />
-      </OptionBtn>
-
-      <div className={cx('wp-manual-row', props.showManualRow ? '' : 'hidden')}>
-        {props.manualTools.map(t => (
-          <OptionBtn
-            key={t.id}
-            className="wp-flex-1"
-            selected={props.activeManualToolForUi === t.id}
-            testId={`interior-manual-tool-${t.id}-button`}
+      <div className="wp-interior-layout-items" role="group" aria-label="פריט להצבה">
+        {props.manualTools.map(option => (
+          <OptionButton
+            key={option.id}
+            density="micro"
+            selected={hasActiveTool && tool === option.id}
+            testId={`interior-manual-tool-${option.id}-button`}
             onClick={() => {
-              props.setManualRowOpen(true);
-              props.setManualUiTool(t.id);
-              if (props.isSketchDivisionToolActive) {
-                props.enterSketchDivision(t.id, activeShelfVariantForUi);
-                return;
-              }
-              props.enterManual(t.id);
+              if (isSketch) props.enterSketchDivision(option.id, activeShelfVariant);
+              else props.enterManual(option.id);
             }}
           >
-            {t.label}
-          </OptionBtn>
+            {option.label}
+          </OptionButton>
         ))}
       </div>
 
-      <div className={cx('wp-muted-label', props.showGridControls ? '' : 'hidden')}>
-        מספרי חלוקת תאים בארון
-      </div>
-
-      <div className={cx('grid-divisions-row', 'wp-row', 'wp-gap-8', props.showGridControls ? '' : 'hidden')}>
-        {props.gridDivs.map(n => (
-          <OptionBtn
-            key={n}
-            className="wp-flex-1"
-            selected={props.currentGridDivisions === n}
-            onClick={() => {
-              props.setManualRowOpen(true);
-              props.setManualUiTool('shelf');
-              if (!props.isManualLayoutMode || props.manualTool !== 'shelf') props.enterManual('shelf');
-              props.setGridDivisions(n);
-            }}
-            title={`חלוקה ל-${n}`}
-          >
-            {n}
-          </OptionBtn>
-        ))}
-      </div>
-
-      <ModeToggleButton
-        active={props.isSketchDivisionToolActive}
-        className={cx('wp-r-editmode-toggle--fullrow', props.showManualRow ? '' : 'hidden')}
-        icon={
-          <i
-            className={props.isSketchDivisionToolActive ? 'fas fa-check' : 'fas fa-pencil-ruler'}
-            aria-hidden="true"
-          />
-        }
-        onClick={() => {
-          props.setManualRowOpen(true);
-          if (props.isSketchDivisionToolActive) {
-            props.enterManual(props.activeManualToolForUi);
-            return;
-          }
-          props.enterSketchDivision(props.activeManualToolForUi, activeShelfVariantForUi);
-        }}
-        data-testid="interior-manual-layout-sketch-button"
-      >
-        חלוקה לפי סקיצה
-      </ModeToggleButton>
-
-      <div className={cx('wp-muted-label', props.showShelfVariantControls ? '' : 'hidden')}>סוג מדף</div>
-
-      <div
-        className={cx(
-          'wp-r-type-selector',
-          'type-selector',
-          'wp-sketch-shelf-subrow',
-          'wp-grid-shelf-variant-row',
-          props.showShelfVariantControls ? '' : 'hidden'
-        )}
-        style={{ direction: 'rtl' }}
-      >
-        {GRID_SHELF_VARIANTS.map(([variant, label, icon]) => (
-          <ModeToggleButton
-            key={variant}
-            active={activeShelfVariantForUi === variant}
-            className="wp-sketch-shelf-btn wp-sketch-shelf-subbtn"
-            data-testid={`interior-manual-shelf-variant-${variant}-button`}
-            icon={
-              <i className={activeShelfVariantForUi === variant ? 'fas fa-check' : icon} aria-hidden="true" />
-            }
-            onClick={() => {
-              props.setManualRowOpen(true);
-              props.setManualUiTool('shelf');
-              props.setGridShelfVariant(variant);
-              if (props.isSketchDivisionToolActive) {
-                props.enterSketchDivision('shelf', variant);
-                return;
-              }
-              if (!props.isManualLayoutMode || props.isSketchToolActive || props.manualTool !== 'shelf') {
-                props.enterManual('shelf');
-              }
-            }}
-          >
-            {label}
-          </ModeToggleButton>
-        ))}
-      </div>
-
-      {props.showShelfVariantControls ? (
-        <WinterBraceShelfControls
-          props={props}
-          active={activeShelfVariantForUi === 'winter_brace'}
-          onSelect={() => {
-            props.setManualRowOpen(true);
-            props.setManualUiTool('shelf');
-            props.setGridShelfVariant('winter_brace');
-            if (props.isSketchDivisionToolActive) props.enterSketchDivision('shelf', 'winter_brace');
-            else if (!props.isManualLayoutMode || props.isSketchToolActive || props.manualTool !== 'shelf')
-              props.enterManual('shelf');
-          }}
-        />
+      {!isSketch && tool !== 'storage' ? (
+        <div className="wp-interior-layout-settings">
+          <span className="wp-interior-layout-label">מספר חלוקות לגובה התא</span>
+          <div className="wp-interior-layout-counts" role="group" aria-label="מספר חלוקות לגובה התא">
+            {props.gridDivs.map(count => (
+              <OptionButton
+                key={count}
+                density="micro"
+                selected={props.currentGridDivisions === count}
+                testId={`interior-layout-grid-count-${count}`}
+                onClick={() => {
+                  if (!hasActiveTool) props.enterManual(tool);
+                  props.setGridDivisions(count);
+                }}
+              >
+                {count}
+              </OptionButton>
+            ))}
+          </div>
+        </div>
       ) : null}
 
-      <InteriorSketchShelfDepthField {...props} formFieldIdScope="interior-layout-manual-controls" />
-      <InteriorSketchStorageHeightField {...props} formFieldIdScope="interior-layout-manual-controls" />
+      {showShelfSettings ? (
+        <div className="wp-interior-layout-settings">
+          <span className="wp-interior-layout-label">סוג מדף</span>
+          <div className="wp-interior-layout-options" role="group" aria-label="סוג מדף">
+            {SHELF_VARIANT_OPTIONS.map(({ variant, label, icon }) => (
+              <OptionButton
+                key={variant}
+                density="micro"
+                selected={variant === activeShelfVariant}
+                icon={<i className={icon} aria-hidden="true" />}
+                testId={`interior-manual-shelf-variant-${variant}-button`}
+                onClick={() => selectShelf(variant)}
+              >
+                {label}
+              </OptionButton>
+            ))}
+          </div>
+          <WinterBraceShelfControls
+            props={props}
+            active={activeShelfVariant === 'winter_brace'}
+            onSelect={() => selectShelf('winter_brace')}
+          />
+        </div>
+      ) : null}
 
-      {props.isBraceShelvesMode ? (
-        <InlineNotice>מדפי קושרת: לחץ על מדף כדי להחליף בין רגיל (45 ס"מ) לקושרת (עומק מלא).</InlineNotice>
+      {isSketch && hasActiveTool && tool === 'shelf' ? (
+        <InteriorSketchShelfDepthField {...props} formFieldIdScope="interior-layout-manual-controls" />
+      ) : null}
+      {isSketch && hasActiveTool && tool === 'storage' ? (
+        <InteriorSketchStorageHeightField {...props} formFieldIdScope="interior-layout-manual-controls" />
       ) : null}
     </>
   );

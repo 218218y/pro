@@ -135,7 +135,6 @@ function EmbeddedExternalDrawerSketchControls(props: {
         }
         onClick={() => {
           sketchControls.setSketchShelvesOpen(false);
-          sketchControls.setSketchRowOpen(false);
           if (isSketchExternalDrawersToolActive) {
             sketchControls.setSketchExtDrawersPanelOpen(false);
             sketchControls.exitManual();
@@ -412,7 +411,6 @@ export function InteriorInternalDrawersSection(props: InteriorInternalDrawersSec
                 return;
               }
               props.sketchControls.setSketchShelvesOpen(false);
-              props.sketchControls.setSketchRowOpen(false);
               if (isSketchInternalDrawersToolActive) {
                 props.sketchControls.exitManual();
                 return;

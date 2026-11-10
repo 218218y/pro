@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
-const viewStatePath = path.join(
+const layoutPath = path.join(
   __dirname,
   '..',
   'esm',
@@ -10,18 +10,18 @@ const viewStatePath = path.join(
   'ui',
   'react',
   'tabs',
-  'interior_tab_view_state_runtime.ts'
+  'interior_tab_sections_layout.tsx'
 );
-const viewState = fs.readFileSync(viewStatePath, 'utf8');
+const layout = fs.readFileSync(layoutPath, 'utf8');
 
 assert.match(
-  viewState,
-  /const usesManualDivisionControls =\s*isManualLayoutMode && \(!isSketchToolActive \|\| isSketchDivisionToolActive\);/,
-  'Only canonical sketch division tools may reuse the generic manual-layout chooser while sketch tools such as add-box stay separate.'
+  layout,
+  /if \(props\.isBraceShelvesMode \|\| props\.isSketchDivisionToolActive\) return 'sketch';/,
+  'Only canonical sketch division and shelf conversion tools select the interior sketch panel.'
 );
 
 assert.match(
-  viewState,
-  /const activeManualToolForUi = usesManualDivisionControls \? manualTool : manualUiTool;/,
-  'Unrelated sketch tools must keep the generic manual-layout UI selection, while sketch division tools project their canonical shelf\/rod\/storage choice.'
+  layout,
+  /if \(props\.isManualLayoutMode && !props\.isSketchToolActive\) return 'grid';\s*return null;/,
+  'Unrelated sketch tools such as add-box do not enter the interior grid panel.'
 );

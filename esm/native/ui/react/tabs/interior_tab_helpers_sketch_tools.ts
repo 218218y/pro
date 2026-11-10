@@ -53,8 +53,7 @@ import type {
 } from './interior_tab_helpers_types.js';
 
 // ---------------------------------------------------------------------------
-// Sketch tools (previously a dedicated "סקיצה" tab).
-// We embed them under Interior > "חלוקה ידנית" behind a toggle button.
+// Sketch tool identifiers used by Interior and Sketch.
 // ---------------------------------------------------------------------------
 
 export const SKETCH_TOOL_SHELF_DOUBLE = 'sketch_shelf:double';

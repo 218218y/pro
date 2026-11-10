@@ -22,24 +22,28 @@ import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
 } from '../../../features/interior_tab_defaults.js';
 
-export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
+export type LayoutTypeOption = {
+  id: LayoutTypeId;
+  label: string;
+  icon: string;
+  group: 'presets' | 'edits';
+};
 export type ManualToolOption = { id: ManualToolId; label: string };
 
 export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
-  { id: 'shelves', label: 'מדפים', icon: 'fas fa-th-large' },
-  { id: 'hanging', label: 'תלייה', icon: 'fas fa-tshirt' },
-  { id: 'hanging_split', label: 'תלייה כפולה', icon: 'fas fa-grip-lines' },
-  { id: 'mixed', label: 'משולב', icon: 'fas fa-border-all' },
-  { id: 'storage', label: 'אוגר מצעים', icon: 'fas fa-box-open' },
-  { id: 'winter_brace', label: 'קושרת חורף', icon: 'far fa-square' },
-  { id: 'brace_shelves', label: 'מדפי קושרת', icon: 'fas fa-link' },
-  { id: 'regular_shelf', label: 'מדף רגיל', icon: 'fas fa-minus' },
-  { id: 'full_boring', label: 'חירור מלא', icon: 'fas fa-grip-vertical' },
+  { id: 'shelves', label: 'מדפים', icon: 'fas fa-th-large', group: 'presets' },
+  { id: 'hanging', label: 'תלייה', icon: 'fas fa-tshirt', group: 'presets' },
+  { id: 'hanging_split', label: 'תלייה כפולה', icon: 'fas fa-grip-lines', group: 'presets' },
+  { id: 'mixed', label: 'משולב', icon: 'fas fa-border-all', group: 'presets' },
+  { id: 'storage', label: 'אוגר מצעים', icon: 'fas fa-box-open', group: 'presets' },
+  { id: 'brace_shelves', label: 'המרה לקושרת', icon: 'fas fa-link', group: 'edits' },
+  { id: 'regular_shelf', label: 'המרה למדף רגיל', icon: 'fas fa-minus', group: 'edits' },
+  { id: 'full_boring', label: 'חירור מלא', icon: 'fas fa-grip-vertical', group: 'edits' },
 ];
 
 export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [
   { id: 'shelf', label: 'מדף' },
-  { id: 'rod', label: 'תלייה' },
+  { id: 'rod', label: 'מוט תלייה' },
   { id: 'storage', label: 'אוגר מצעים' },
 ];
 
@@ -97,8 +101,6 @@ export type InteriorTabLocalStateDefaults = {
   doorTrimVerticalCustomDraft: string;
   doorTrimVerticalCrossCm: number | '';
   doorTrimVerticalCrossDraft: string;
-  manualRowOpen: boolean;
-  sketchRowOpen: boolean;
   manualUiTool: ManualToolId;
 };
 
@@ -163,8 +165,6 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
     doorTrimVerticalCustomDraft: '',
     doorTrimVerticalCrossCm: '',
     doorTrimVerticalCrossDraft: '',
-    manualRowOpen: false,
-    sketchRowOpen: false,
     manualUiTool: 'shelf',
   };
 }

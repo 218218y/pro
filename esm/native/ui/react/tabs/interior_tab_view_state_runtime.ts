@@ -56,15 +56,6 @@ export type InteriorTabUiToolStateArgs = {
   isHandleMode: boolean;
 };
 
-export type InteriorTabVisibilityStateArgs = {
-  manualRowOpen: boolean;
-  isManualLayoutMode: boolean;
-  isSketchToolActive: boolean;
-  isSketchDivisionToolActive: boolean;
-  manualTool: 'shelf' | 'rod' | 'storage';
-  manualUiTool: 'shelf' | 'rod' | 'storage';
-};
-
 export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
   const {
     primary,
@@ -90,7 +81,6 @@ export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
   const isHandleMode = primary === modeHandle;
   const isManualHandlePositionMode = isHandleMode && isManualHandlePlacementMode(modeOpts.handlePlacement);
   const isDoorTrimMode = primary === modeDoorTrim;
-  const layoutActive = isLayoutMode || isManualLayoutMode || isBraceShelvesMode || isDoorTrimMode;
   const layoutType = isLayoutMode ? readLayoutTypeId(modeOpts.layoutType, layoutTypeUi) : layoutTypeUi;
   const manualToolRaw =
     isManualLayoutMode && typeof modeOpts.manualTool === 'string' ? modeOpts.manualTool : '';
@@ -113,7 +103,6 @@ export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
     isHandleMode,
     isManualHandlePositionMode,
     isDoorTrimMode,
-    layoutActive,
     layoutType,
     manualTool,
     manualToolRaw,
@@ -185,32 +174,5 @@ export function deriveInteriorTabUiToolState(args: InteriorTabUiToolStateArgs) {
     handleToolColor,
     globalEdgeHandleVariant,
     handleToolEdgeVariant,
-  };
-}
-
-export function deriveInteriorTabVisibilityState(args: InteriorTabVisibilityStateArgs) {
-  const {
-    manualRowOpen,
-    isManualLayoutMode,
-    isSketchToolActive,
-    isSketchDivisionToolActive,
-    manualTool,
-    manualUiTool,
-  } = args;
-  const usesManualDivisionControls =
-    isManualLayoutMode && (!isSketchToolActive || isSketchDivisionToolActive);
-  const showManualRow = manualRowOpen || usesManualDivisionControls;
-  const activeManualToolForUi = usesManualDivisionControls ? manualTool : manualUiTool;
-  const showGridControls =
-    showManualRow &&
-    !isSketchToolActive &&
-    (activeManualToolForUi === 'shelf' || activeManualToolForUi === 'rod');
-  const showShelfVariantControls = showManualRow && activeManualToolForUi === 'shelf';
-
-  return {
-    showManualRow,
-    activeManualToolForUi,
-    showGridControls,
-    showShelfVariantControls,
   };
 }

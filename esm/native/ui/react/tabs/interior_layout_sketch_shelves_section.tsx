@@ -24,12 +24,12 @@ import {
 } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
-const SKETCH_SHELF_VARIANTS: ReadonlyArray<[string, string, string, string]> = [
-  [SKETCH_TOOL_SHELF_REGULAR, 'regular', 'רגיל', 'fas fa-minus'],
-  [SKETCH_TOOL_SHELF_DOUBLE, 'double', 'כפול', 'fas fa-clone'],
-  [SKETCH_TOOL_SHELF_GLASS, 'glass', 'זכוכית', 'fas fa-gem'],
-  [SKETCH_TOOL_SHELF_BRACE, 'brace', 'קושרת', 'fas fa-link'],
-];
+export const SHELF_VARIANT_OPTIONS = [
+  { prefix: SKETCH_TOOL_SHELF_REGULAR, variant: 'regular', label: 'רגיל', icon: 'fas fa-minus' },
+  { prefix: SKETCH_TOOL_SHELF_DOUBLE, variant: 'double', label: 'כפול', icon: 'fas fa-clone' },
+  { prefix: SKETCH_TOOL_SHELF_GLASS, variant: 'glass', label: 'זכוכית', icon: 'fas fa-gem' },
+  { prefix: SKETCH_TOOL_SHELF_BRACE, variant: 'brace', label: 'קושרת', icon: 'fas fa-link' },
+] as const;
 
 const SKETCH_SHELF_DEPTH_MIN_CM = 5;
 const SKETCH_SHELF_DEPTH_MAX_CM = 120;
@@ -170,7 +170,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         )}
         style={{ direction: 'rtl' }}
       >
-        {SKETCH_SHELF_VARIANTS.map(([prefix, variant, label, icon]) => (
+        {SHELF_VARIANT_OPTIONS.map(({ prefix, variant, label, icon }) => (
           <ModeToggleButton
             key={variant}
             active={props.isSketchToolActive && props.manualToolRaw.startsWith(prefix)}

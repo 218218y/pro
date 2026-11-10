@@ -45,7 +45,6 @@ export type InteriorTabViewState = {
   isHandleMode: boolean;
   isManualHandlePositionMode: boolean;
   isDoorTrimMode: boolean;
-  layoutActive: boolean;
   layoutType: LayoutTypeId;
   manualTool: ManualToolId;
   manualToolRaw: string;
@@ -65,13 +64,7 @@ export type InteriorTabViewState = {
   handleToolColor: HandleUiColor;
   globalEdgeHandleVariant: EdgeHandleVariant;
   handleToolEdgeVariant: EdgeHandleVariant;
-  manualRowOpen: boolean;
-  sketchRowOpen: boolean;
   manualUiTool: ManualToolId;
-  showManualRow: boolean;
-  activeManualToolForUi: ManualToolId;
-  showGridControls: boolean;
-  showShelfVariantControls: boolean;
   sketchShelvesOpen: boolean;
   sketchBoxHeightCm: number;
   sketchBoxHeightDraft: string;
@@ -123,8 +116,6 @@ export type InteriorTabViewState = {
   manualTools: ManualToolOption[];
   gridDivs: number[];
   extCounts: number[];
-  setManualRowOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchRowOpen: Dispatch<SetStateAction<boolean>>;
   setManualUiTool: Dispatch<SetStateAction<ManualToolId>>;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
   setSketchBoxHeightCm: Dispatch<SetStateAction<number>>;

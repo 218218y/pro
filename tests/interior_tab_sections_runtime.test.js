@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { InteriorLayoutSection } from '../esm/native/ui/react/tabs/interior_tab_sections_layout.js';
+import { INTERIOR_LAYOUT_TYPES } from '../esm/native/ui/react/tabs/interior_tab_local_state_shared.js';
 import { InteriorLayoutManualControls } from '../esm/native/ui/react/tabs/interior_layout_manual_controls.js';
 import {
   InteriorSketchShelfDepthField,
@@ -79,8 +80,7 @@ function createLayoutProps(overrides = {}) {
   return {
     wardrobeType: 'hinged',
     isChestMode: false,
-    layoutActive: true,
-    isLayoutMode: true,
+    isLayoutMode: false,
     isManualLayoutMode: false,
     isBraceShelvesMode: false,
     isSketchToolActive: false,
@@ -89,14 +89,9 @@ function createLayoutProps(overrides = {}) {
     manualTool: 'shelf',
     manualToolRaw: '',
     manualUiTool: 'shelf',
-    activeManualToolForUi: 'shelf',
     currentGridDivisions: 4,
     gridShelfVariant: 'glass',
-    showManualRow: true,
-    showGridControls: true,
-    showShelfVariantControls: true,
     sketchShelvesOpen: false,
-    sketchRowOpen: false,
     sketchBoxHeightCm: 120,
     sketchBoxHeightDraft: '120',
     sketchBoxWidthCm: 60,
@@ -145,21 +140,14 @@ function createLayoutProps(overrides = {}) {
     doorTrimVerticalCustomDraft: '',
     doorTrimVerticalCrossCm: '',
     doorTrimVerticalCrossDraft: '',
-    layoutTypes: [
-      { id: 'shelves', label: 'מדפים', icon: 'fas fa-minus' },
-      { id: 'hanging', label: 'תליה', icon: 'fas fa-tshirt' },
-      { id: 'brace_shelves', label: 'קושרת', icon: 'fas fa-link' },
-    ],
+    layoutTypes: INTERIOR_LAYOUT_TYPES,
     manualTools: [
       { id: 'shelf', label: 'מדף' },
       { id: 'rod', label: 'מוט' },
       { id: 'storage', label: 'אחסון' },
     ],
     gridDivs: [2, 3, 4],
-    setManualRowOpen: setStateNoop,
-    setManualUiTool: setStateNoop,
     setSketchShelvesOpen: setStateNoop,
-    setSketchRowOpen: setStateNoop,
     setSketchBoxHeightCm: setStateNoop,
     setSketchBoxHeightDraft: setStateNoop,
     setSketchBoxWidthCm: setStateNoop,
@@ -234,7 +222,6 @@ function createSketchExternalDrawerControls(overrides = {}) {
     sketchExtDrawerHeightCm: 22,
     sketchExtDrawerHeightDraft: '22',
     setSketchShelvesOpen: setStateNoop,
-    setSketchRowOpen: setStateNoop,
     setSketchExtDrawersPanelOpen: setStateNoop,
     setSketchExtDrawerCount: setStateNoop,
     setSketchExtDrawerHeightCm: setStateNoop,
@@ -251,7 +238,6 @@ function createSketchInternalDrawerControls(overrides = {}) {
     sketchIntDrawerHeightCm: 16.5,
     sketchIntDrawerHeightDraft: '16.5',
     setSketchShelvesOpen: setStateNoop,
-    setSketchRowOpen: setStateNoop,
     setSketchIntDrawerHeightCm: setStateNoop,
     setSketchIntDrawerHeightDraft: setStateNoop,
     enterSketchIntDrawersTool: noop,
@@ -320,51 +306,64 @@ test('[interior-tab-sections-runtime] chest runner selector defaults to Blum and
   findElementByTestId(runnerTree, 'chest-drawer-runner-blum-button').props.onClick();
   assert.deepEqual(calls, ['roller', 'blum']);
 });
-test('[interior-tab-sections-runtime] layout section renders canonical layout/manual controls with the sketch-division toggle', () => {
+test('[interior-tab-sections-runtime] preset tools appear first without canvas editing or duplicate sketch tools', () => {
   const html = renderToStaticMarkup(React.createElement(InteriorLayoutSection, createLayoutProps()));
-  assert.match(html, /חלוקות פנים/);
-  assert.match(html, /חלוקה ידנית/);
-  assert.doesNotMatch(html, /חלוקה ידנית לפי סקיצה/);
-  assert.match(html, /חלוקה לפי סקיצה/);
-  assert.match(html, /מספרי חלוקת תאים בארון/);
-  assert.match(html, /מדף/);
-  assert.match(html, /מוט/);
-  assert.match(html, /אחסון/);
-  assert.doesNotMatch(html, /גובה מגירה פנימית/);
+  assert.match(html, /חלוקת פנים/);
+  assert.match(html, /interior-layout-method-presets" aria-pressed="true"/);
+  assert.match(html, /interior-layout-method-grid" aria-pressed="false"/);
+  assert.match(html, /interior-layout-method-sketch" aria-pressed="false"/);
+  assert.equal(
+    (html.match(/data-testid="interior-layout-(?:shelves|hanging|hanging_split|mixed|storage)"/g) ?? [])
+      .length,
+    5
+  );
+  assert.doesNotMatch(
+    html,
+    /interior-layout-finish|interior-manual-tool|winter-brace-shelf-button|חירור מלא/
+  );
 });
 
-test('[interior-tab-sections-runtime] manual controls keep tool selection while toggling sketch division mode', () => {
+test('[interior-tab-sections-runtime] a rod stays active when changing grid count', () => {
   const calls = [];
-  const props = createLayoutProps({
-    activeManualToolForUi: 'storage',
-    enterSketchDivision: (...args) => calls.push(['enterSketchDivision', ...args]),
-    enterManual: (...args) => calls.push(['enterManual', ...args]),
-  });
-  const tree = InteriorLayoutManualControls(props);
-  const sketchButton = findElementByTestId(tree, 'interior-manual-layout-sketch-button');
-  assert.ok(sketchButton);
-  sketchButton.props.onClick();
-  assert.deepEqual(calls, [['enterSketchDivision', 'storage', 'glass']]);
-
-  calls.length = 0;
-  const sketchTree = InteriorLayoutManualControls(
+  const tree = InteriorLayoutManualControls(
     createLayoutProps({
+      method: 'grid',
+      isManualLayoutMode: true,
+      manualTool: 'rod',
+      enterManual: (...args) => calls.push(['enterManual', ...args]),
+      setGridDivisions: (...args) => calls.push(['setGridDivisions', ...args]),
+    })
+  );
+  const count = findElementByTestId(tree, 'interior-layout-grid-count-4');
+  assert.ok(count);
+  count.props.onClick();
+  assert.deepEqual(calls, [['setGridDivisions', 4]]);
+  assert.equal(findElementByTestId(tree, 'interior-manual-tool-rod-button').props.selected, true);
+  assert.equal(findElementByTestId(tree, 'interior-manual-shelf-variant-glass-button'), null);
+});
+
+test('[interior-tab-sections-runtime] sketch shows the active shelf variant and sends sketch actions', () => {
+  const calls = [];
+  const tree = InteriorLayoutManualControls(
+    createLayoutProps({
+      method: 'sketch',
       isManualLayoutMode: true,
       isSketchToolActive: true,
       isSketchDivisionToolActive: true,
-      manualTool: 'rod',
-      manualToolRaw: 'sketch_rod',
-      activeManualToolForUi: 'rod',
-      showGridControls: false,
-      showShelfVariantControls: false,
+      manualToolRaw: 'sketch_shelf:double@30',
       enterSketchDivision: (...args) => calls.push(['enterSketchDivision', ...args]),
-      enterManual: (...args) => calls.push(['enterManual', ...args]),
+      setGridShelfVariant: (...args) => calls.push(['setGridShelfVariant', ...args]),
     })
   );
-  const storageButton = findElementByTestId(sketchTree, 'interior-manual-tool-storage-button');
-  assert.ok(storageButton);
-  storageButton.props.onClick();
-  assert.deepEqual(calls, [['enterSketchDivision', 'storage', 'glass']]);
+  assert.equal(findElementByTestId(tree, 'interior-manual-shelf-variant-double-button').props.selected, true);
+  assert.equal(findElementByTestId(tree, 'interior-layout-grid-count-4'), null);
+  findElementByTestId(tree, 'interior-manual-tool-storage-button').props.onClick();
+  findElementByTestId(tree, 'interior-manual-shelf-variant-glass-button').props.onClick();
+  assert.deepEqual(calls, [
+    ['enterSketchDivision', 'storage', 'double'],
+    ['setGridShelfVariant', 'glass'],
+    ['enterSketchDivision', 'shelf', 'glass'],
+  ]);
 });
 
 test('[interior-tab-sections-runtime] sketch tools panel renders the moved sketch controls without the old master toggle', () => {
@@ -783,7 +782,6 @@ test('[interior-tab-sections-runtime] shoe drawers and sketch mode switch in bot
     sketchExtDrawerHeightCm: 20,
     sketchExtDrawerHeightDraft: '20',
     setSketchShelvesOpen: value => shoeFirstCalls.push(['shelves', value]),
-    setSketchRowOpen: value => shoeFirstCalls.push(['row', value]),
     setSketchExtDrawerCount: value => shoeFirstCalls.push(['count', value]),
     setSketchExtDrawersPanelOpen: value => shoeFirstCalls.push(['panel', value]),
     setSketchExtDrawerHeightCm: value => shoeFirstCalls.push(['height', value]),
@@ -810,7 +808,6 @@ test('[interior-tab-sections-runtime] shoe drawers and sketch mode switch in bot
   sketchButton.props.onClick();
   assert.deepEqual(shoeFirstCalls, [
     ['shelves', false],
-    ['row', false],
     ['count', 3],
     ['height', 20],
     ['draft', '20'],

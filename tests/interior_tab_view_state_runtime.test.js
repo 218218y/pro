@@ -94,8 +94,7 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
   },
 });
 
-const { deriveInteriorTabModeState, deriveInteriorTabUiToolState, deriveInteriorTabVisibilityState } =
-  moduleExports;
+const { deriveInteriorTabModeState, deriveInteriorTabUiToolState } = moduleExports;
 
 test('interior tab view-state runtime derives primary mode flags and sketch tool state', () => {
   const state = deriveInteriorTabModeState({
@@ -113,7 +112,6 @@ test('interior tab view-state runtime derives primary mode flags and sketch tool
   assert.equal(state.isManualLayoutMode, true);
   assert.equal(state.isSketchToolActive, true);
   assert.equal(state.isSketchDivisionToolActive, true);
-  assert.equal(state.layoutActive, true);
   assert.equal(state.layoutType, 'hanging');
   assert.equal(state.manualTool, 'shelf');
   assert.equal(state.manualToolRaw, 'sketch_shelf:double');
@@ -218,46 +216,6 @@ test('interior tab view-state runtime keeps advanced handle tool choices after e
   assert.equal(state.handleToolType, 'edge');
   assert.equal(state.handleToolColor, 'black');
   assert.equal(state.handleToolEdgeVariant, 'long');
-});
-
-test('interior tab view-state runtime derives manual row visibility from layout and sketch state', () => {
-  const active = deriveInteriorTabVisibilityState({
-    manualRowOpen: false,
-    isManualLayoutMode: true,
-    isSketchToolActive: false,
-    isSketchDivisionToolActive: false,
-    manualTool: 'rod',
-    manualUiTool: 'storage',
-  });
-  assert.equal(active.showManualRow, true);
-  assert.equal(active.activeManualToolForUi, 'rod');
-  assert.equal(active.showGridControls, true);
-  assert.equal(active.showShelfVariantControls, false);
-
-  const sketch = deriveInteriorTabVisibilityState({
-    manualRowOpen: false,
-    isManualLayoutMode: true,
-    isSketchToolActive: true,
-    isSketchDivisionToolActive: false,
-    manualTool: 'rod',
-    manualUiTool: 'storage',
-  });
-  assert.equal(sketch.showManualRow, false);
-  assert.equal(sketch.activeManualToolForUi, 'storage');
-  assert.equal(sketch.showGridControls, false);
-
-  const sketchDivision = deriveInteriorTabVisibilityState({
-    manualRowOpen: false,
-    isManualLayoutMode: true,
-    isSketchToolActive: true,
-    isSketchDivisionToolActive: true,
-    manualTool: 'shelf',
-    manualUiTool: 'storage',
-  });
-  assert.equal(sketchDivision.showManualRow, true);
-  assert.equal(sketchDivision.activeManualToolForUi, 'shelf');
-  assert.equal(sketchDivision.showGridControls, false);
-  assert.equal(sketchDivision.showShelfVariantControls, true);
 });
 
 test('interior tab view-state runtime preserves custom and pink handle colors canonically', () => {

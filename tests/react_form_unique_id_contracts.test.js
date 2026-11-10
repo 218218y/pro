@@ -25,7 +25,6 @@ function assertNoLiteralFieldId(source, id, label) {
 }
 
 test('dual-mounted sketch tool fields use instance-scoped DOM ids', () => {
-  const sketchControls = read('esm/native/ui/react/tabs/interior_layout_sketch_controls.tsx');
   const manualControls = read('esm/native/ui/react/tabs/interior_layout_manual_controls.tsx');
   const interiorTab = read('esm/native/ui/react/tabs/InteriorTab.view.tsx');
   const sketchTab = read('esm/native/ui/react/tabs/SketchTab.view.tsx');
@@ -33,20 +32,11 @@ test('dual-mounted sketch tool fields use instance-scoped DOM ids', () => {
   const sketchBox = read('esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx');
   const fieldIdHelper = read('esm/native/ui/react/components/form_field_id.ts');
 
-  assert.match(
-    interiorTab,
-    /<InteriorLayoutSection\b/,
-    'Interior tab owns the normal sketch tools entry point'
-  );
-  assert.match(
-    sketchControls,
-    /<InteriorLayoutSketchToolsPanel\b/,
-    'Interior sketch controls render the shared tool panel'
-  );
+  assert.match(interiorTab, /<InteriorLayoutSection\b/, 'Interior tab mounts the interior layout controls');
   assert.match(
     sketchTab,
     /<InteriorLayoutSketchToolsPanel\b/,
-    'Sketch tab renders the same shared tool panel'
+    'Sketch tab mounts the full sketch tool panel'
   );
 
   assert.match(
@@ -70,7 +60,6 @@ test('dual-mounted sketch tool fields use instance-scoped DOM ids', () => {
   );
 
   assert.match(manualControls, /formFieldIdScope="interior-layout-manual-controls"/);
-  assert.match(sketchControls, /formFieldIdScope="interior-layout-sketch-tools"/);
   assert.match(sketchTab, /formFieldIdScope="sketch-tab-sketch-tools"/);
 
   assertNoLiteralFieldId(sketchShelves, 'wp-r-sketch-shelf-depth', 'sketch shelf depth field');

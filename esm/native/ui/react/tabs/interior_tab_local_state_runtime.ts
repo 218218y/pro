@@ -154,8 +154,6 @@ export function useInteriorTabLocalState() {
     () => defaults.doorTrimVerticalCrossDraft
   );
 
-  const [manualRowOpen, setManualRowOpen] = useState<boolean>(() => defaults.manualRowOpen);
-  const [sketchRowOpen, setSketchRowOpen] = useState<boolean>(() => defaults.sketchRowOpen);
   const [manualUiTool, setManualUiTool] = useState<ManualToolId>(() => defaults.manualUiTool);
 
   return {
@@ -206,8 +204,6 @@ export function useInteriorTabLocalState() {
     doorTrimVerticalCustomDraft,
     doorTrimVerticalCrossCm,
     doorTrimVerticalCrossDraft,
-    manualRowOpen,
-    sketchRowOpen,
     manualUiTool,
     setSketchShelvesOpen,
     setSketchBoxHeightCm,
@@ -256,8 +252,6 @@ export function useInteriorTabLocalState() {
     setDoorTrimVerticalCustomDraft,
     setDoorTrimVerticalCrossCm,
     setDoorTrimVerticalCrossDraft,
-    setManualRowOpen,
-    setSketchRowOpen,
     setManualUiTool,
     layoutTypes: INTERIOR_LAYOUT_TYPES,
     manualTools: INTERIOR_MANUAL_TOOLS,

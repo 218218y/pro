@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactElement, ReactNode, Ref } from 'react';
 
 export type OptionButtonDensity = 'regular' | 'compact' | 'micro';
 export type OptionButtonLayout = 'default' | 'iconRow';
@@ -13,6 +13,7 @@ function normalizeTooltip(value: unknown): string | undefined {
 }
 
 export type OptionButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'onClick'> & {
+  ref?: Ref<HTMLButtonElement>;
   selected?: boolean;
   density?: OptionButtonDensity;
   layout?: OptionButtonLayout;

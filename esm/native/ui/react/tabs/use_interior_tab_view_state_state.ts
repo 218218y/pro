@@ -59,10 +59,8 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
         handleCfg,
         mode,
         modeConsts,
-        manualRowOpen: localState.manualRowOpen,
-        manualUiTool: localState.manualUiTool,
       }),
-    [ui, handleCfg, mode, modeConsts, localState.manualRowOpen, localState.manualUiTool]
+    [ui, handleCfg, mode, modeConsts]
   );
 
   const syncInput = useMemo<InteriorTabViewStateSyncInput>(
@@ -116,7 +114,6 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       isHandleMode: coreState.isHandleMode,
       isManualHandlePositionMode: coreState.isManualHandlePositionMode,
       isDoorTrimMode: coreState.isDoorTrimMode,
-      layoutActive: coreState.layoutActive,
       layoutType: coreState.layoutType,
       manualTool: coreState.manualTool,
       manualToolRaw: coreState.manualToolRaw,
@@ -139,10 +136,6 @@ export function useInteriorTabViewStateState(app: AppContainer): UseInteriorTabV
       ...localState,
       gridDivs: [...localState.gridDivs],
       extCounts: [...localState.extCounts],
-      showManualRow: coreState.showManualRow,
-      activeManualToolForUi: coreState.activeManualToolForUi,
-      showGridControls: coreState.showGridControls,
-      showShelfVariantControls: coreState.showShelfVariantControls,
     }),
     [
       coreState,
