@@ -1371,6 +1371,10 @@
       "entry": "door_authoring/api.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_paint_targets.ts",
+      "entry": "part_identity/api.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },

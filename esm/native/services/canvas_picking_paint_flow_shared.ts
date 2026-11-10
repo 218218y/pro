@@ -237,7 +237,7 @@ export function materializePaintMirrorLayoutSurfaceKinds(
   }));
 }
 
-export function getPaintSourceTag(paint: string, foundPartId: string): string {
+export function getPaintSourceTag(paint: string, foundPartId: string, isBoxShell = false): string {
   const selection = String(paint || '')
     .trim()
     .toLowerCase();
@@ -245,6 +245,7 @@ export function getPaintSourceTag(paint: string, foundPartId: string): string {
   if (selection === 'mirror') return 'paint.apply:mirror';
   if (isAdhesiveGlassValue(selection)) return 'paint.apply:adhesiveGlass';
   if (isGlassPaintSelection(selection)) return 'paint.apply:glass';
+  if (isBoxShell) return 'paint.apply:group';
   if (
     foundPartId &&
     (MAIN_BODY_PARTS.includes(foundPartId) ||

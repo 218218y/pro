@@ -90,7 +90,7 @@ test('segmented classic cornice follows module depth and only exposes the deeper
   );
   assert.equal(sideProfiles.length, 4);
   assert.equal(
-    sideProfiles.filter(seg => Number(Number(seg.length).toFixed(3)) === 0.24).length,
+    sideProfiles.filter(seg => Number(Number(seg.length).toFixed(3)) === 0.239).length,
     2,
     'only the deeper middle run should get short internal side returns for the exposed depth extension'
   );
@@ -121,7 +121,7 @@ test('segmented wave cornice paints internal depth-step side returns with the fr
     seg =>
       seg.kind === 'cornice_wave_side' &&
       seg.partId === 'cornice_wave_front' &&
-      Number(Number(seg.depth).toFixed(3)) === 0.2
+      Number(Number(seg.depth).toFixed(3)) === 0.239
   );
   assert.equal(
     shortInternalReturns.length,
@@ -167,8 +167,8 @@ test('segmented wave cornice fronts follow the module depth instead of the globa
   const fronts = asSegments(cornice.segments).filter(seg => seg.kind === 'cornice_wave_front');
   assert.equal(fronts.length, 3);
   assert.deepEqual(
-    fronts.map(seg => Number(Number(seg.z).toFixed(3))),
-    [0.257, 0.457, 0.257]
+    fronts.map(seg => Number((Number(seg.z) + Number(seg.depth) / 2).toFixed(3))),
+    [0.314, 0.514, 0.314]
   );
 });
 
@@ -363,7 +363,7 @@ test('classic cornice follows a hex-cell roof footprint instead of stopping at t
       Number(Number(doorFront?.miterStartTrim).toFixed(4)),
       Number(Number(doorFront?.miterEndTrim).toFixed(4)),
     ],
-    [0.0065, 0.0065],
+    [0.0063, 0.0063],
     'the shared front-path miter trim should fully bevel both joining profile runs so the front and diagonal profiles close cleanly'
   );
   const diagonals = fronts.filter(seg => Math.abs(Number(seg.rotationY) + Math.PI / 2) > 1e-3);

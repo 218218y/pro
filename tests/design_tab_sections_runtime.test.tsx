@@ -42,7 +42,12 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
   assert.doesNotMatch(doorStyleHtml, /role="button"/);
   assert.doesNotMatch(corniceHtml, /role="button"/);
   assert.equal((corniceHtml.match(/type="number"/g) ?? []).length, 3);
-  assert.equal((corniceHtml.match(/aria-label="החזר/g) ?? []).length, 3);
+  assert.equal((corniceHtml.match(/aria-label="איפוס קרניז/g) ?? []).length, 3);
+  assert.match(corniceHtml, /wp-r-cornice-dimensions/);
+  assert.match(corniceHtml, />מהצד</);
+  assert.match(corniceHtml, />מהחזית</);
+  assert.match(corniceHtml, />גובה</);
+  assert.match(corniceHtml, /value="2.0"/);
   assert.match(corniceHtml, /value="9.5"/);
 });
 

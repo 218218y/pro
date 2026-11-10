@@ -15,9 +15,9 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
 
   const defaults = resolveCorniceDimensionsM(model.corniceType);
   const fields = [
-    { key: 'sideCm', label: 'בליטה מהצד', defaultValue: defaults.sideM * 100 },
-    { key: 'frontCm', label: 'בליטה מהחזית', defaultValue: defaults.frontM * 100 },
-    { key: 'heightCm', label: 'גובה קרניז', defaultValue: defaults.heightM * 100 },
+    { key: 'sideCm', label: 'מהצד', defaultValue: defaults.sideM * 100 },
+    { key: 'frontCm', label: 'מהחזית', defaultValue: defaults.frontM * 100 },
+    { key: 'heightCm', label: 'גובה', defaultValue: defaults.heightM * 100 },
   ] as const;
 
   return (
@@ -48,15 +48,15 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
               ישר
             </DesignTabTypeOption>
           </div>
-          <div className="wp-r-mt-2">
+          <div className="wp-r-door-thickness-fields wp-r-cornice-dimensions wp-r-mt-2">
             {fields.map(({ key, label, defaultValue }) => (
               <StructurePlatformOverhangField
                 key={key}
-                label={`${label} (ס"מ)`}
+                label={label}
                 value={model.corniceDimensions?.[key] ?? defaultValue}
                 defaultValue={defaultValue}
                 min={CORNICE_DIMENSION_MIN_CM[key]}
-                resetTitle={`החזר ${label} לברירת המחדל`}
+                resetTitle={`איפוס קרניז — ${label}`}
                 onChange={value => model.setCorniceDimension(key, value)}
                 onReset={() => model.setCorniceDimension(key, undefined)}
               />

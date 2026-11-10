@@ -4,6 +4,7 @@ import { __wp_isViewportRoot } from './canvas_picking_local_helpers.js';
 
 export type CanvasPaintTargetScope = {
   stackSplitUnifiedFrame: boolean;
+  sketchBoxShellPartId?: string;
 };
 
 function asRecord(value: unknown): UnknownRecord | null {
@@ -24,7 +25,12 @@ export function readCanvasPaintTargetScopeFromObject(
 ): CanvasPaintTargetScope {
   let curr: UnknownRecord | null = asRecord(start);
   while (curr && !__wp_isViewportRoot(App, curr)) {
-    const flag = readUnifiedFrameFlag(asRecord(curr.userData));
+    const data = asRecord(curr.userData);
+    const shellPartId = data?.__wpSketchBoxShellPartId;
+    if (typeof shellPartId === 'string' && shellPartId) {
+      return { stackSplitUnifiedFrame: false, sketchBoxShellPartId: shellPartId };
+    }
+    const flag = readUnifiedFrameFlag(data);
     if (flag !== null) return { stackSplitUnifiedFrame: flag };
     curr = asRecord(curr.parent);
   }

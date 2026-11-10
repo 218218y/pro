@@ -66,7 +66,7 @@ export function connectorProfileBaseBandY(height: number = PROFILE.heightM): num
   );
 }
 
-export function offsetWaveCornicePath(
+export function offsetCornicePath(
   path: { ax: number; az: number; bx: number; bz: number }[],
   front: number,
   left: number,

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readPartColorEntry } from '../esm/native/builder/material_color_lookup.ts';
 import assert from 'node:assert/strict';
 
 import { tryHandleCanvasPaintClick } from '../esm/native/services/canvas_picking_paint_flow.ts';
@@ -2510,4 +2511,29 @@ test('paint commit never refreshes a write that failed inside history batch and 
     ),
     true
   );
+});
+
+test('paint click uses one persisted color for all shell boards of attached and free boxes', () => {
+  for (const boxPartId of ['sketch_box_0_alpha', 'sketch_box_free_0_alpha']) {
+    const left = `${boxPartId}_side_left`;
+    const right = `${boxPartId}_side_right`;
+    const shelf = `${boxPartId}_shelf_1`;
+    const state = createManualState({ colors0: { [boxPartId]: 'oak', [left]: 'birch', [shelf]: 'white' } });
+    const command = createPaintCommand({
+      foundPartId: right,
+      paintSelection: 'oak',
+      primaryHitObject: { userData: { partId: right, __wpSketchBoxShellPartId: boxPartId } },
+    });
+    assert.equal(command.mutationKind, 'group');
+    assert.equal(applyGroupedOrCornerPaintTarget({ state, command }), true);
+    assert.deepEqual(state.colors, { [boxPartId]: 'oak', [shelf]: 'white' });
+    for (const partId of [left, right, boxPartId]) {
+      assert.equal(
+        readPartColorEntry({ individualColors: state.colors, isMulti: true, partId, stackKey: 'top' }),
+        'oak'
+      );
+    }
+    assert.equal(applyGroupedOrCornerPaintTarget({ state, command }), true);
+    assert.deepEqual(state.colors, { [shelf]: 'white' });
+  }
 });

@@ -529,7 +529,15 @@ test.describe('Playwright authoring build coverage', () => {
     );
     expectMeaningfulBuildAndRenderDelta('design-authoring', designDelta);
 
-    const corniceHeight = page.getByRole('spinbutton', { name: /גובה קרניז/ });
+    const corniceDimensions = page.locator('.wp-r-cornice-dimensions');
+    const corniceFields = corniceDimensions.getByRole('spinbutton');
+    await expect(corniceFields).toHaveCount(3);
+    const fieldRows = await corniceFields.evaluateAll(fields =>
+      fields.map(field => field.getBoundingClientRect().top)
+    );
+    expect(Math.max(...fieldRows) - Math.min(...fieldRows)).toBeLessThan(1);
+    await expect(corniceDimensions.getByRole('spinbutton', { name: 'מהחזית' })).toHaveValue('2.0');
+    const corniceHeight = corniceDimensions.getByRole('spinbutton', { name: 'גובה' });
     await expect(corniceHeight).toHaveValue('8.0');
     const corniceDelta = await measureBuildAndRenderDelta(
       page,
@@ -542,7 +550,7 @@ test.describe('Playwright authoring build coverage', () => {
     );
     expectMeaningfulBuildAndRenderDelta('cornice-dimensions', corniceDelta);
     expect(asRecord(asRecord((await readDebugStoreState(page)).ui).corniceDimensions).heightCm).toBe(11);
-    await page.getByRole('button', { name: 'החזר גובה קרניז לברירת המחדל' }).click();
+    await page.getByRole('button', { name: 'איפוס קרניז — גובה' }).click();
     await expect(corniceHeight).toHaveValue('8.0');
     expect(asRecord(asRecord((await readDebugStoreState(page)).ui).corniceDimensions).heightCm).toBeNull();
 

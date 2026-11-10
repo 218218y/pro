@@ -1,5 +1,9 @@
 import { readDoorVisualMapEntry } from '../features/door_authoring/api.js';
-import { isIndividualShelfPartId, resolveShelfGroupPartId } from '../features/part_identity/api.js';
+import {
+  isIndividualShelfPartId,
+  readRemovableSketchBoxSideFromPartId,
+  resolveShelfGroupPartId,
+} from '../features/part_identity/api.js';
 import type { IndividualColorsMap } from '../../../types/maps';
 import type { PartStackKey } from './materials_apply_shared.js';
 
@@ -246,6 +250,9 @@ export function readPartColorEntry(args: {
 
   const colorEntry = readDoorVisualMapEntry(individualColors, partId);
   if (colorEntry) return colorEntry.value;
+
+  const boxSide = readRemovableSketchBoxSideFromPartId(partId);
+  if (boxSide) return readOwnMapValue(individualColors, boxSide.boxPartId);
 
   const shelfGroupPartId = isIndividualShelfPartId(partId) ? resolveShelfGroupPartId(partId) : null;
   if (shelfGroupPartId) {

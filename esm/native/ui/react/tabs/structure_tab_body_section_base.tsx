@@ -214,7 +214,7 @@ export function StructureBodyBaseControls(props: {
                 />
               ) : null}
               <StructurePlatformOverhangField
-                label="בליטה מעבר לחזית הדלת/המגירה (ס״מ)"
+                label="בליטה מהחזית"
                 value={props.baseLegPlatformFrontOverhangCm}
                 defaultValue={DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM}
                 resetTitle="איפוס בליטה מהחזית לברירת מחדל"

@@ -1033,3 +1033,38 @@ test('module and free box shelves use the same paint overlay as ordinary shelves
     assert.deepEqual(previews[0]?.previewObjects, [shelf]);
   }
 });
+
+test('a sketch box side previews its visible shell without picking up adjacent box shelves', () => {
+  const boxPartId = 'sketch_box_free_0_alpha';
+  const sidePartId = `${boxPartId}_side_left`;
+  const wardrobeGroup = { children: [] as unknown[] };
+  const roof = createBoxObject(boxPartId, { height: 0.018, y: 1.5 });
+  const side = createBoxObject(sidePartId, { width: 0.018, x: -0.3 });
+  const removed = createBoxObject(`${boxPartId}_side_right`, { width: 0.018, x: 0.3 });
+  const shelf = createBoxObject(`${boxPartId}_shelf_1`, { height: 0.018, y: 0.8 });
+  for (const board of [roof, side, removed]) {
+    Object.assign(board.userData, { __wpSketchBoxShellPartId: boxPartId });
+  }
+  Object.assign(removed.userData, { __wpRemovablePartRemoved: true });
+  for (const part of [roof, side, removed, shelf]) {
+    part.parent = wardrobeGroup;
+    wardrobeGroup.children.push(part);
+  }
+  const App = createApp({ wardrobeGroup, maps: { individualColors: { [boxPartId]: 'oak' } } });
+  const previews: Record<string, unknown>[] = [];
+  assert.equal(
+    tryHandleGenericPartPaintHover({
+      App,
+      ndcX: 0,
+      ndcY: 0,
+      paintSelection: 'oak',
+      raycaster: createRaycaster([{ object: side, point: { x: -0.3, y: 1, z: 0.15 } }]),
+      mouse: { x: 0, y: 0 },
+      previewRo: { setSketchPlacementPreview: (preview: Record<string, unknown>) => previews.push(preview) },
+    }),
+    true
+  );
+  assert.equal(previews[0]?.kind, 'object_boxes');
+  assert.equal(previews[0]?.op, 'remove');
+  assert.deepEqual(previews[0]?.previewObjects, [roof, side]);
+});

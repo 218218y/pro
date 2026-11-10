@@ -62,7 +62,7 @@ test('straight cornice stays 3 cm high and 10 cm deep with a 2 cm lateral return
   assert.ok(sides.some(segment => segment.flipX === false));
 });
 
-test('straight cornice front ends 2 cm ahead of the closed door in overlay, inset and sliding wardrobes', () => {
+test('each cornice style measures the front overhang from the closed door', () => {
   const depth = 0.55;
   const woodThick = 0.018;
   const modes = [
@@ -93,36 +93,34 @@ test('straight cornice front ends 2 cm ahead of the closed door in overlay, inse
     },
   ];
   for (const { cfg, doorsCount, frontOffset } of modes) {
-    const result = computeCarcassOps({
-      totalW: 1.6,
-      D: depth,
-      H: 2.4,
-      woodThick,
-      doorsCount,
-      hasCornice: true,
-      corniceType: 'straight',
-      cfg,
-    });
-    const front = result.cornice?.segments.find(
-      segment => segment.kind === 'cornice_profile_seg' && Math.abs(segment.rotationY + Math.PI / 2) < 1e-9
-    );
-    assert.ok(front && front.kind === 'cornice_profile_seg');
-    const outsideZ = front.z + Math.max(...front.profile.map(point => point.x));
-    const requestedOutsideZ = depth / 2 + frontOffset + 0.02;
-    const expectedOutsideZ = requestedOutsideZ > depth / 2 ? requestedOutsideZ : depth / 2 + 0.02;
-    assert.ok(Math.abs(outsideZ - expectedOutsideZ) < 1e-10);
-    assert.ok(
-      Math.abs(
-        Math.max(...front.profile.map(point => point.x)) -
-          Math.min(...front.profile.map(point => point.x)) -
-          0.1
-      ) < 1e-10
-    );
-    const side = result.cornice?.segments.find(
-      segment => segment.kind === 'cornice_profile_seg' && Math.abs(segment.rotationY) < 1e-9
-    );
-    assert.ok(side && side.kind === 'cornice_profile_seg');
-    assert.equal(Math.max(...side.profile.map(point => point.x)), 0.02);
+    for (const corniceType of ['classic', 'wave', 'straight'] as const) {
+      for (const frontCm of [null, 0, 5]) {
+        const result = computeCarcassOps({
+          totalW: 1.6,
+          D: depth,
+          H: 2.4,
+          woodThick,
+          doorsCount,
+          hasCornice: true,
+          corniceType,
+          corniceDimensions: { sideCm: null, frontCm, heightCm: null },
+          cfg,
+        });
+        const front = result.cornice?.segments.find(
+          segment =>
+            segment.kind === 'cornice_wave_front' ||
+            (segment.kind === 'cornice_profile_seg' && Math.abs(segment.rotationY + Math.PI / 2) < 1e-9)
+        );
+        assert.ok(front && (front.kind === 'cornice_wave_front' || front.kind === 'cornice_profile_seg'));
+        const outsideZ =
+          front.z +
+          (front.kind === 'cornice_wave_front'
+            ? front.depth / 2
+            : Math.max(...front.profile.map(point => point.x)));
+        const expectedZ = depth / 2 + frontOffset + (frontCm ?? 2) / 100;
+        assert.ok(Math.abs(outsideZ - expectedZ) < 1e-10, `${corniceType} ${JSON.stringify(cfg)} ${frontCm}`);
+      }
+    }
   }
 });
 

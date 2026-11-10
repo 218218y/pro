@@ -66,7 +66,7 @@ export function applySketchBoxPickMeta(
   partId: string,
   moduleKey: string,
   boxId: string,
-  opts?: { door?: boolean; preserveExistingPartId?: boolean }
+  opts?: { door?: boolean; shellPartId?: string }
 ): void {
   if (!mesh) return;
   const userData = readObject<InteriorValueRecord>(mesh.userData) || {};
@@ -75,6 +75,7 @@ export function applySketchBoxPickMeta(
   userData.__wpSketchModuleKey = moduleKey;
   if (moduleKey) userData.moduleIndex = moduleKey;
   if (opts?.door === true) userData.__wpSketchBoxDoor = true;
+  if (opts?.shellPartId) userData.__wpSketchBoxShellPartId = opts.shellPartId;
   mesh.userData = userData;
 }
 

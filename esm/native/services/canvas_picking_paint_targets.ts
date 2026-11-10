@@ -1,3 +1,4 @@
+import { sketchBoxSideToPartId } from '../features/part_identity/api.js';
 import {
   __wp_canonDoorPartKeyForMaps,
   __wp_scopeCornerPartKeyForStack,
@@ -238,6 +239,23 @@ function resolveCornerLegPlatformPaintTargetKey(partId: string): string | null {
   return null;
 }
 
+export function resolveSketchBoxShellPaintKeys(boxPartId: string): [string, string, string] {
+  return [boxPartId, sketchBoxSideToPartId(boxPartId, 'left'), sketchBoxSideToPartId(boxPartId, 'right')];
+}
+
+export function readSketchBoxShellPaintOp(
+  colors: Record<string, unknown>,
+  boxPartId: string,
+  selection: string
+): 'add' | 'remove' {
+  const [box, left, right] = resolveSketchBoxShellPaintKeys(boxPartId);
+  return colors[box] === selection &&
+    (colors[left] === undefined || colors[left] === selection) &&
+    (colors[right] === undefined || colors[right] === selection)
+    ? 'remove'
+    : 'add';
+}
+
 export function resolvePaintTargetKeys(
   foundPartId: string | null | undefined,
   activeStack: 'top' | 'bottom',
@@ -245,6 +263,8 @@ export function resolvePaintTargetKeys(
 ): string[] {
   const partId = typeof foundPartId === 'string' ? String(foundPartId) : '';
   if (!partId) return [];
+  if (targetScope?.sketchBoxShellPartId)
+    return resolveSketchBoxShellPaintKeys(targetScope.sketchBoxShellPartId);
   const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(partId, activeStack, targetScope);
   if (unifiedCornerFrameKeys !== null) return unifiedCornerFrameKeys;
   if (MAIN_BODY_PARTS.includes(partId)) return [...MAIN_BODY_PARTS];
