@@ -813,6 +813,7 @@ test('segmented sketch handle suppressions are not reported again during generic
     getEdgeHandleVariant: () => 'long',
     getHandleType: () => 'edge',
     getHandleColor: () => 'black',
+    getHandleSizeMm: () => undefined,
     getManualHandlePosition: () => null,
     clampAbsYToGroup: absY => absY,
     removeExistingHandleChildren(group: FakeNode) {
@@ -896,6 +897,7 @@ test('handle refresh rebuilds custom sketch box segmented-door handles from curr
       calls.push(`type:${String(partId)}`);
       return 'edge';
     },
+    getHandleSizeMm: () => undefined,
     getHandleColor: partId => {
       calls.push(`color:${String(partId)}`);
       return 'gold';
@@ -971,6 +973,7 @@ test('handle refresh applies manual handle position to custom sketch box segment
     getEdgeHandleVariant: () => 'short',
     getHandleType: () => 'standard',
     getHandleColor: () => 'black',
+    getHandleSizeMm: () => undefined,
     getManualHandlePosition: partId => (partId === topPartId ? { xRatio: 0.75, yRatio: 0.7 } : null),
     clampAbsYToGroup: absY => absY,
     removeExistingHandleChildren(group: FakeNode) {
