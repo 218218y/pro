@@ -9,7 +9,7 @@ import {
   encodeHandleSize,
   handleSizePartKey,
   isHandleType,
-  isSurfaceHandleType,
+  usesCatalogHandleGeometry,
   getSurfaceHandleFootprint,
   clampSurfaceHandleCenter,
   resolveConfiguredHandleSizeMm,
@@ -22,7 +22,7 @@ import { validateProjectData } from '../esm/native/io/project_schema_validation.
 import { readConfigStateProjectConfigSnapshot } from '../esm/native/features/project_config/project_config_persisted_snapshot.ts';
 
 const handleTypes = Object.keys(HANDLE_CATALOG).filter(isHandleType);
-const surfaceTypes = handleTypes.filter(isSurfaceHandleType);
+const surfaceTypes = handleTypes.filter(type => usesCatalogHandleGeometry(type));
 const noOutlines = () => undefined;
 
 test('every handle ID, finish, legacy variant and catalog size survives project normalization', () => {
@@ -74,6 +74,7 @@ test('catalog meshes have distinct topology, real mounting planes and matching b
   const App = { deps: { THREE }, services: { builder: { handles: { cache: {} } } } };
   const signatures = new Set<string>();
   for (const type of surfaceTypes) {
+    if (type === 'standard') continue;
     assert.equal(supportsHandleHost(type, 'sliding'), false);
     for (const host of ['door', 'drawer'] as const) {
       const model = createHandleMeshV7(type, 0.6, 1.2, true, host === 'drawer', {
@@ -187,4 +188,26 @@ test('split-leaf catalog fit and cabinet inheritance use the same snapshot on re
   assert.equal(handles[0]!.userData.partId, 'd1_top');
   assert.equal(handles[0]!.userData.handleType, 'knob_round');
   assert.ok(handles[0]!.position.x > -0.3 && handles[0]!.position.x < 0.3);
+});
+
+test('standard spacing preserves the original 128 mm geometry and changes fitted footprints at other sizes', () => {
+  const App = { deps: { THREE }, services: { builder: { handles: { cache: {} } } } };
+  const opts = { App, addOutlines: noOutlines };
+  const implicit = createHandleMeshV7('standard', 0.6, 1.2, true, true, opts);
+  const defaultSize = createHandleMeshV7('standard', 0.6, 1.2, true, true, { ...opts, handleSizeMm: 128 });
+  const longer = createHandleMeshV7('standard', 0.6, 1.2, true, true, { ...opts, handleSizeMm: 192 });
+  const bounds = (object: unknown) => new THREE.Box3().setFromObject(object as THREE.Object3D);
+  assert.deepEqual(bounds(implicit), bounds(defaultSize));
+  assert.ok(Math.abs(bounds(longer).getSize(new THREE.Vector3()).x - 0.224) < 1e-6);
+  assert.equal(usesCatalogHandleGeometry('standard', 128), false);
+  assert.equal(usesCatalogHandleGeometry('standard', 192), true);
+  assert.equal(
+    clampSurfaceHandleCenter(
+      getSurfaceHandleFootprint('standard', 'drawer', 320),
+      { minX: -0.14, maxX: 0.14, minY: -0.07, maxY: 0.07 },
+      0,
+      0
+    ),
+    null
+  );
 });

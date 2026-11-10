@@ -1,5 +1,5 @@
 import type { BuilderOutlineFn, ThreeLike } from '../../../types';
-import { getSurfaceHandleFootprint, readHandleSizeMm } from '../../shared/handle_catalog.js';
+import { HANDLE_CATALOG, getSurfaceHandleFootprint, readHandleSizeMm } from '../../shared/handle_catalog.js';
 import type { SurfaceHandleType } from '../../shared/handle_catalog.js';
 import type { NodeLike } from './handles_shared.js';
 
@@ -20,7 +20,7 @@ export function addCatalogHandleGeometry(args: {
   const footprint = getSurfaceHandleFootprint(type, 'drawer', sizeMm);
   const { width, height, depth } = footprint;
   const grip = new THREE.Group();
-  if (!isDrawer && (type === 'bar_slim' || type === 'bar_round' || type === 'bow')) {
+  if (!isDrawer && HANDLE_CATALOG[type].sizesMm.length > 0) {
     grip.rotation.z = Math.PI / 2;
   }
   group.add(grip);
@@ -54,6 +54,14 @@ export function addCatalogHandleGeometry(args: {
 
   const spacing = (size ?? 0) / 1000;
   switch (type) {
+    case 'standard':
+      mesh(
+        geometryFor('grip', () => new THREE.BoxGeometry(width, height, depth)),
+        0,
+        0,
+        depth / 2
+      );
+      break;
     case 'bar_slim':
       for (const x of [-spacing / 2, spacing / 2]) {
         mesh(

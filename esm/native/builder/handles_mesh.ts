@@ -1,4 +1,4 @@
-import { isHandleType, isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
 import { addCatalogHandleGeometry } from './handles_catalog_geometry.js';
 import { createDoorEdgeHandleProfile, createDrawerEdgeHandleProfile } from './edge_handle_profile.js';
 import {
@@ -118,7 +118,7 @@ export function createHandleMeshV7(
     }));
   recordPersistentMaterialCacheUse(stdMat, !!cachedStdMat);
 
-  if (isSurfaceHandleType(type)) {
+  if (usesCatalogHandleGeometry(type, ctx?.handleSizeMm)) {
     if (typeof ctx?.addOutlines !== 'function') {
       throw new TypeError('[handles_mesh] snapshot outline binding is required');
     }

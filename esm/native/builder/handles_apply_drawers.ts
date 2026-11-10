@@ -1,7 +1,8 @@
 import {
   clampSurfaceHandleCenter,
   getSurfaceHandleFootprint,
-  isSurfaceHandleType,
+  isHandleType,
+  usesCatalogHandleGeometry,
 } from '../../shared/handle_catalog.js';
 import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
@@ -43,9 +44,9 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const drawH =
       readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ??
       DRAWER_HANDLE_PLACEMENT_POLICY.drawerDefaultHeightM;
-    if (isSurfaceHandleType(hType)) {
+    const size = isHandleType(hType) ? runtime.getHandleSizeMm(id, hType) : undefined;
+    if (usesCatalogHandleGeometry(hType, size)) {
       const rect = readDrawerHandleRectFromUserData(g.userData);
-      const size = runtime.getHandleSizeMm(id, hType);
       const manual = resolveManualHandleLocalPosition({
         rect,
         position: runtime.getManualHandlePosition(id),

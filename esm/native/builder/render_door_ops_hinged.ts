@@ -1,4 +1,8 @@
-import { isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import {
+  isHandleType,
+  resolveConfiguredHandleSizeMm,
+  usesCatalogHandleGeometry,
+} from '../../shared/handle_catalog.js';
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
@@ -276,7 +280,10 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       const allowHandle = doorOp.allowHandle !== false;
       if (allowHandle && absY !== null && createHandleMesh) {
         const handleType = resolveHandleType(getHandleType, partId);
-        const handleMesh = isSurfaceHandleType(handleType)
+        const size = isHandleType(handleType)
+          ? resolveConfiguredHandleSizeMm(handlesMap, partId, handleType)
+          : undefined;
+        const handleMesh = usesCatalogHandleGeometry(handleType, size)
           ? null
           : createHandleMesh(handleType, doorOp.width, doorOp.height, doorOp.isLeftHinge, {
               handleColor: resolveConfiguredHandleColor(handlesMap, partId),

@@ -1,7 +1,7 @@
 import {
   clampSurfaceHandleCenter,
   getSurfaceHandleFootprint,
-  isSurfaceHandleType,
+  usesCatalogHandleGeometry,
 } from '../../shared/handle_catalog.js';
 import {
   EDGE_HANDLE_PROFILE_RENDER_POLICY,
@@ -523,7 +523,7 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
   });
   const drawerHost = isManualHandleDrawerHost(scopedHitDoorPid, userData);
   const type = modeOpts?.handleType;
-  const catalogSize = isSurfaceHandleType(type)
+  const catalogSize = usesCatalogHandleGeometry(type, modeOpts?.handleSizeMm)
     ? getSurfaceHandleFootprint(type, drawerHost ? 'drawer' : 'door', modeOpts?.handleSizeMm)
     : null;
   const position = resolveManualHandleLocalPosition({ rect, position: manualPosition });

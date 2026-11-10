@@ -917,20 +917,6 @@
   ],
   "reviewedOwnershipBudgets": [
     {
-      "from": "services",
-      "to": "runtime",
-      "fromFile": "esm/native/services/canvas_picking_handle_assign_flow.ts",
-      "statement": {
-        "toFile": "esm/native/runtime/cfg_access.ts",
-        "kind": "value",
-        "syntax": "static-import",
-        "importedSymbols": ["setCfgHandlesMap"]
-      },
-      "owner": "handle-catalog",
-      "reason": "Handle selection commits its type, finish, size and position atomically through the named config map writer.",
-      "id": "handle-catalog-services-atomic-handle-map-commit"
-    },
-    {
       "from": "builder",
       "to": "shared",
       "fromFile": "esm/native/builder/doors_state_utils.ts",
@@ -965,7 +951,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isSurfaceHandleType"],
+        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -993,7 +979,12 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["clampSurfaceHandleCenter", "getSurfaceHandleFootprint", "isSurfaceHandleType"],
+        "importedSymbols": [
+          "clampSurfaceHandleCenter",
+          "getSurfaceHandleFootprint",
+          "isHandleType",
+          "usesCatalogHandleGeometry"
+        ],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1040,7 +1031,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["getSurfaceHandleFootprint", "readHandleSizeMm"],
+        "importedSymbols": ["HANDLE_CATALOG", "getSurfaceHandleFootprint", "readHandleSizeMm"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1110,7 +1101,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "isSurfaceHandleType"],
+        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1138,7 +1129,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isSurfaceHandleType"],
+        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1166,7 +1157,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isSurfaceHandleType"],
+        "importedSymbols": ["isHandleType", "resolveConfiguredHandleSizeMm", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1194,7 +1185,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "isSurfaceHandleType"],
+        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1362,7 +1353,11 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["clampSurfaceHandleCenter", "getSurfaceHandleFootprint", "isSurfaceHandleType"],
+        "importedSymbols": [
+          "clampSurfaceHandleCenter",
+          "getSurfaceHandleFootprint",
+          "usesCatalogHandleGeometry"
+        ],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1384,8 +1379,8 @@
           "handleOverrideBaseId",
           "handleSizePartKey",
           "isHandleType",
-          "isSurfaceHandleType",
-          "supportsHandleHost"
+          "supportsHandleHost",
+          "usesCatalogHandleGeometry"
         ],
         "syntax": "static-import"
       },
@@ -1482,6 +1477,20 @@
       "owner": "handle-catalog",
       "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
       "id": "handle-catalog-ui-interior-tab-view-state-shared-handle-catalog-value"
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_handle_assign_flow.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/cfg_access.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["setCfgHandlesMap"]
+      },
+      "owner": "handle-catalog",
+      "reason": "Handle selection commits its type, finish, size and position atomically through the named config map writer.",
+      "id": "handle-catalog-services-atomic-handle-map-commit"
     },
     {
       "from": "services",

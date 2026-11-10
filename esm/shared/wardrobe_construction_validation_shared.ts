@@ -1,4 +1,4 @@
-import { getSurfaceHandleFootprint, isSurfaceHandleType } from './handle_catalog.js';
+import { getSurfaceHandleFootprint, usesCatalogHandleGeometry } from './handle_catalog.js';
 import { EXTERNAL_DRAWER_SIZE_POLICY } from './dimensions/external_drawer_policy.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from './dimensions/door_system_policy.js';
 import { EDGE_HANDLE_SIZE_POLICY, STANDARD_HANDLE_RENDER_POLICY } from './dimensions/handle_policy.js';
@@ -127,7 +127,7 @@ export function getDoorHandleFootprintHeightM(
   handleSizeMm?: unknown
 ): number {
   if (handleType === 'none' || handleType == null) return 0;
-  if (isSurfaceHandleType(handleType))
+  if (usesCatalogHandleGeometry(handleType, handleSizeMm))
     return getSurfaceHandleFootprint(handleType, 'door', handleSizeMm).height;
   if (handleType === 'edge') {
     return edgeHandleVariant === 'long'

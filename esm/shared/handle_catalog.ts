@@ -19,7 +19,11 @@ export const HANDLE_CATALOG = {
     label: 'סטנדרטית',
     family: 'bars',
     description: 'ידית ישרה בעיצוב הקיים',
-    sizesMm: fixed,
+    sizesMm: barSizes,
+    defaultSizeMm: 128,
+    crossM: STANDARD_HANDLE_RENDER_POLICY.drawerHeightM,
+    endAllowanceM: STANDARD_HANDLE_RENDER_POLICY.drawerWidthM - 0.128,
+    depthM: STANDARD_HANDLE_RENDER_POLICY.drawerDepthM,
   },
   bar_slim: {
     ...surface,
@@ -107,7 +111,7 @@ export const HANDLE_CATALOG = {
 } as const;
 
 export type HandleType = keyof typeof HANDLE_CATALOG;
-export type SurfaceHandleType = Exclude<HandleType, 'standard' | 'edge' | 'none'>;
+export type SurfaceHandleType = Exclude<HandleType, 'edge' | 'none'>;
 export type HandleHost = (typeof allFronts)[number];
 export type HandleFootprint = { width: number; height: number; depth: number };
 export type HandleFrontRect = { minX: number; maxX: number; minY: number; maxY: number };
@@ -116,8 +120,13 @@ export function isHandleType(value: unknown): value is HandleType {
   return typeof value === 'string' && Object.hasOwn(HANDLE_CATALOG, value);
 }
 
-export function isSurfaceHandleType(value: unknown): value is SurfaceHandleType {
-  return isHandleType(value) && value !== 'standard' && value !== 'edge' && value !== 'none';
+export function usesCatalogHandleGeometry(value: unknown, sizeMm?: unknown): value is SurfaceHandleType {
+  return (
+    isHandleType(value) &&
+    value !== 'edge' &&
+    value !== 'none' &&
+    (value !== 'standard' || readHandleSizeMm(value, sizeMm) !== HANDLE_CATALOG.standard.defaultSizeMm)
+  );
 }
 
 export function supportsHandleHost(type: HandleType, host: HandleHost): boolean {

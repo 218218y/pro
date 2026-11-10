@@ -1,4 +1,4 @@
-import { isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
 import type { SurfaceHandleType } from '../../shared/handle_catalog.js';
 import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
 import { getDoorsArray } from '../runtime/render_access.js';
@@ -67,11 +67,12 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     if (!hType || hType === 'none') continue;
 
     const isLeftHinge = !!g.userData.__hingeLeft;
-    if (isSurfaceHandleType(hType)) {
+    const size = isHandleType(hType) ? runtime.getHandleSizeMm(partId, hType) : undefined;
+    if (usesCatalogHandleGeometry(hType, size)) {
       const rect = readDoorLeafRectFromUserData(g.userData);
       const absY = readOptionalFinite(g.userData.__handleAbsY);
       const y = absY == null ? 0 : absY - g.position.y;
-      if (!rect || !attachCatalogDoorHandle(runtime, g, g, partId, hType, rect, isLeftHinge, y, 0)) {
+      if (!rect || !attachCatalogDoorHandle(runtime, g, g, partId, hType, size, rect, isLeftHinge, y, 0)) {
         if (partId) standardSuppressedPartIds.push(partId);
       }
       continue;
@@ -329,7 +330,8 @@ function refreshSketchSegmentedDoorHandles(
     const hType = runtime.getHandleType(leaf.partId, stackKey);
     if (!hType || hType === 'none') continue;
 
-    if (isSurfaceHandleType(hType)) {
+    const size = isHandleType(hType) ? runtime.getHandleSizeMm(leaf.partId, hType) : undefined;
+    if (usesCatalogHandleGeometry(hType, size)) {
       const x = readOptionalFinite(root.userData.__doorMeshOffsetX) ?? 0;
       const rect = {
         minX: x - leaf.rootWidth / 2,
@@ -345,6 +347,7 @@ function refreshSketchSegmentedDoorHandles(
           leaf.node,
           leaf.partId,
           hType,
+          size,
           rect,
           leaf.isLeftHinge,
           y,
@@ -478,12 +481,12 @@ function attachCatalogDoorHandle(
   leaf: NodeLike,
   id: string,
   type: SurfaceHandleType,
+  size: number | undefined,
   rect: NonNullable<ReturnType<typeof readDoorLeafRectFromUserData>>,
   isLeftHinge: boolean,
   y: number,
   offsetY: number
 ): boolean {
-  const size = runtime.getHandleSizeMm(id, type);
   const manual = resolveManualHandleLocalPosition({ rect, position: runtime.getManualHandlePosition(id) });
   const center = resolveCatalogDoorHandleCenter(type, size, rect, isLeftHinge, y, manual);
   if (!center) return false;

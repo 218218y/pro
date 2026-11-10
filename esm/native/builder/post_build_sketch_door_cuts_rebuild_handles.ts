@@ -1,4 +1,4 @@
-import { isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
 import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
 // Post-build sketch external-drawer segmented-door rebuild handle helpers (Pure ESM)
 //
@@ -52,8 +52,10 @@ export function maybeAttachSegmentHandle(args: {
         ? runtime.resolveEdgeHandleVariant(segmentPartId)
         : undefined;
     const segCenterY = (seg.yMin + seg.yMax) / 2;
-    if (isSurfaceHandleType(handleType)) {
-      const size = runtime.resolveHandleSizeMm?.(segmentPartId, handleType);
+    const size = isHandleType(handleType)
+      ? runtime.resolveHandleSizeMm?.(segmentPartId, handleType)
+      : undefined;
+    if (usesCatalogHandleGeometry(handleType, size)) {
       const rect = {
         minX: doorMeshOffsetX - width / 2,
         maxX: doorMeshOffsetX + width / 2,

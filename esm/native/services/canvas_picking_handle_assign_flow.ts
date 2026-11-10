@@ -6,7 +6,7 @@ import {
   handleOverrideBaseId,
   HANDLE_INHERIT_GLOBAL,
   isHandleType,
-  isSurfaceHandleType,
+  usesCatalogHandleGeometry,
   supportsHandleHost,
 } from '../../shared/handle_catalog.js';
 import type { HandleHost, HandleType } from '../../shared/handle_catalog.js';
@@ -187,7 +187,8 @@ function writeSelectedHandleConfig(args: {
     if (handleType !== 'none') {
       map[colorKey] = normalizeHandleFinishColor(modeOpts?.handleColor ?? DEFAULT_HANDLE_FINISH_COLOR);
     }
-    const size = encodeHandleSize(handleType, modeOpts?.handleSizeMm);
+    const size =
+      modeOpts?.handleSizeMm === undefined ? null : encodeHandleSize(handleType, modeOpts.handleSizeMm);
     if (size !== null) map[sizeKey] = size;
     if (position) map[positionKey] = serializeManualHandlePosition(position);
   }
@@ -229,7 +230,8 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
       : isDrawerPartId(partId)
         ? 'drawer'
         : 'door';
-  if (!reset && !supportsHandleHost(handleType, host)) {
+  const useCatalogGeometry = usesCatalogHandleGeometry(handleType, __modeOpts?.handleSizeMm);
+  if (!reset && (!supportsHandleHost(handleType, host) || (host === 'sliding' && useCatalogGeometry))) {
     getUiFeedback(App).toast('מרווח המסילה אינו מספיק לידית זו בדלת הזזה.', 'warning');
     return true;
   }
@@ -251,7 +253,7 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
   const point = manual && owner ? readManualHandlePoint(args, owner) : null;
   if (manual && (!rect || !point)) return true;
   const fitted =
-    !reset && isSurfaceHandleType(handleType)
+    !reset && useCatalogGeometry
       ? rect &&
         clampSurfaceHandleCenter(
           getSurfaceHandleFootprint(handleType, host, __modeOpts?.handleSizeMm),
@@ -260,7 +262,7 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
           point?.y ?? 0
         )
       : point;
-  if (!reset && isSurfaceHandleType(handleType) && !fitted) {
+  if (!reset && useCatalogGeometry && !fitted) {
     getUiFeedback(App).toast('אין מספיק מקום לידית במידה שנבחרה בחזית הזו.', 'warning');
     return true;
   }

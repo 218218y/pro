@@ -20,6 +20,24 @@ test('catalog selection builds real geometry and survives history and a project 
   const global = page.getByTestId('handle-picker-global');
   const summary = global.getByText('כל סוגי הידיות');
   const baseline = await readSceneGeometrySnapshot(page);
+  const sizes = global.getByLabel('מרחק בין חורים');
+  await expect(sizes).toHaveValue('128');
+  expect(
+    await sizes.evaluate(node =>
+      Boolean(
+        node.compareDocumentPosition(node.closest('.wp-handle-picker')!.querySelector('summary')!) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    )
+  ).toBe(true);
+  await sizes.selectOption('192');
+  await expect
+    .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint)
+    .not.toBe(baseline.fingerprint);
+  await sizes.selectOption('128');
+  await expect
+    .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint)
+    .toBe(baseline.fingerprint);
 
   await summary.press('Enter');
   await expect(global.getByTestId('handle-global-bar_round')).toBeVisible();

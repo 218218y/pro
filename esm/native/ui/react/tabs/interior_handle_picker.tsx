@@ -96,6 +96,27 @@ export function InteriorHandlePicker(props: {
         ))}
       </div>
 
+      {model.sizesMm.length > 0 && (
+        <div className="wp-handle-size">
+          <label htmlFor={id}>מרחק בין חורים</label>
+          <select
+            id={id}
+            value={props.size}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => props.onSize(Number(event.target.value))}
+          >
+            {model.sizesMm.map(size => (
+              <option key={size} value={size}>
+                {size} מ״מ
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {props.sliding && props.type === 'standard' && (
+        <p className="wp-handle-host-note">מרחק החורים חל על דלתות ציר ומגירות.</p>
+      )}
+
       <details
         className="wp-handle-catalog"
         ref={details}
@@ -144,22 +165,6 @@ export function InteriorHandlePicker(props: {
         ))}
       </details>
 
-      {model.sizesMm.length > 0 && (
-        <div className="wp-handle-size">
-          <label htmlFor={id}>מרחק בין חורים</label>
-          <select
-            id={id}
-            value={props.size}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => props.onSize(Number(event.target.value))}
-          >
-            {model.sizesMm.map(size => (
-              <option key={size} value={size}>
-                {size} מ״מ
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       {props.sliding && !supportsHandleHost(props.type, 'sliding') && (
         <p className="wp-handle-host-note" role="status">
           הדגם מתאים לדלתות ציר ולמגירות. מרווח המסילה אינו מספיק לידית זו בדלת הזזה.

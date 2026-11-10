@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T10:47:32.251Z",
+  "generatedAt": "2026-11-10T15:48:20.960Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -2039,21 +2039,21 @@
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 120,
+      "line": 133,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-handle-visual-fallback: optional handle visual metadata must not block door rendering"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 156,
+      "line": 169,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "const fallbackHingeLeft = !!root.userData?.__hingeLeft;"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 197,
+      "line": 210,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "isLeftHinge: typeof ud.__hingeLeft === 'boolean' ? !!ud.__hingeLeft : fallbackHingeLeft,"
@@ -2284,14 +2284,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 204,
+      "line": 209,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = doorOp.isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 206,
+      "line": 211,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "doorOp.isMirror || mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
@@ -2326,14 +2326,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "line": 152,
+      "line": 154,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = visualState.isMirror ? 'mirror' : visualState.adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "line": 153,
+      "line": 155,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const hasLayoutMirror = mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
@@ -5504,7 +5504,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",
-      "line": 30,
+      "line": 31,
       "term": "fallback",
       "category": "browser-adapter",
       "text": "// browser-input-fallback: programmatic file-input click may be blocked; the explicit click path remains available."

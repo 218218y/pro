@@ -200,13 +200,13 @@ The Interior tab uses one picker for cabinet defaults and per-front assignments.
 same footprint to fit a surface handle to a leaf and the canvas tool uses it for its clearance preview.
 A front too small for the selected size keeps its configuration and suppresses the mesh with feedback.
 
-| Models                                                   | Hinged, corner and segmented leaves | Drawer fronts                   | Sliding leaves                      |
-| -------------------------------------------------------- | ----------------------------------- | ------------------------------- | ----------------------------------- |
-| Standard and edge                                        | Existing mount and edge lengths     | Existing mount and edge lengths | Existing rail profiles when enabled |
-| Rectangular bar, round bar, bow, round knob, T knob, cup | Surface mount                       | Surface mount                   | Blocked by track clearance          |
-| No handle                                                | Supported                           | Supported                       | Supported                           |
+| Models                                                   | Hinged, corner and segmented leaves     | Drawer fronts                           | Sliding leaves                      |
+| -------------------------------------------------------- | --------------------------------------- | --------------------------------------- | ----------------------------------- |
+| Standard and edge                                        | Standard hole spacings and edge lengths | Standard hole spacings and edge lengths | Existing rail profiles when enabled |
+| Rectangular bar, round bar, bow, round knob, T knob, cup | Surface mount                           | Surface mount                           | Blocked by track clearance          |
+| No handle                                                | Supported                               | Supported                               | Supported                           |
 
-Bar sizes are hole-to-hole distances in millimetres. `handlesMap` stores a typed `model:size` string
+Bar sizes are hole-to-hole distances in millimetres. Standard handles default to a nominal 128 mm spacing, which preserves the original 160 mm body and mount. Other standard sizes apply to hinged leaves and drawers. `handlesMap` stores a typed `model:size` string
 under `__wp_handle_size_global` or `__wp_handle_size:<partId>`. A size applies only to its model.
 An edit commits type, size, finish, and manual position in one map update. A front reset removes its
 own keys and can explicitly opt out of inherited split-parent overrides. Global changes keep
