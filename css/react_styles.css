@@ -708,11 +708,9 @@
 
 #reactSidebarRoot .wp-r-cornice-dimensions .wp-r-door-thickness-label {
   width: calc(100% - var(--wp-r-input-h) - var(--wp-r-cornice-field-gap));
-  white-space: normal;
 }
 
 #reactSidebarRoot .wp-r-cornice-dimensions .wp-r-platform-overhang-input-row {
-  margin-block-start: auto;
   gap: var(--wp-r-cornice-field-gap);
 }
 
