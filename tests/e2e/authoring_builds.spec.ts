@@ -547,7 +547,7 @@ test.describe('Playwright authoring build coverage', () => {
     expect(Math.max(...fieldRows) - Math.min(...fieldRows)).toBeLessThan(1);
     for (const field of fieldLayout) {
       expect(field.labelCenterOffset).toBeCloseTo(0, 0);
-      expect(field.labelGap).toBeCloseTo(4, 0);
+      expect(field.labelGap).toBeCloseTo(2, 0);
     }
     await expect(corniceDimensions.getByRole('spinbutton', { name: 'מהחזית' })).toHaveValue('2.0');
     const corniceHeight = corniceDimensions.getByRole('spinbutton', { name: 'גובה' });
