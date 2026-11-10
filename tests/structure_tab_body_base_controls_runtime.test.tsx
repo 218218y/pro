@@ -61,7 +61,7 @@ test('[structure-base] stage platform renders side and front overhang controls',
   });
 
   assert.match(html, /בליטה מהצדדים/);
-  assert.match(html, /בליטה מהחזית/);
+  assert.match(html, /בליטה מהחזית \(ס״מ\)/);
   assert.match(html, /איפוס בליטה מהצדדים לברירת מחדל/);
   assert.match(html, /איפוס בליטה מהחזית לברירת מחדל/);
   assert.match(html, /data-tooltip="איפוס בליטה מהצדדים לברירת מחדל"/);
@@ -81,7 +81,7 @@ test('[structure-base] flush platform keeps only the front overhang control', ()
   });
 
   assert.doesNotMatch(html, /בליטה מהצדדים/);
-  assert.match(html, /בליטה מהחזית/);
+  assert.match(html, /בליטה מהחזית \(ס״מ\)/);
 });
 
 test('[structure-base] chest base selector hides none and exposes wheels', () => {
