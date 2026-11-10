@@ -179,3 +179,44 @@ test('carcass cornice IR validator rejects semantic geometry corruption', () => 
   assert.ok(waveViolations.some(v => v.path.endsWith('.width') && v.code === 'non-positive-number'));
   assert.ok(waveViolations.some(v => v.path.endsWith('.waveCycles') && v.code === 'invalid-wave-cycles'));
 });
+
+test('cornice dimensions resize all three styles and absent overrides reproduce their defaults', () => {
+  const near = (actual: number, expected: number) => assert.ok(Math.abs(actual - expected) < 1e-9);
+  for (const corniceType of ['classic', 'wave', 'straight'] as const) {
+    const input = { ...BASE, doorsCount: 0, corniceType };
+    const baseline = requireCornicePlan(input);
+    assert.deepEqual(
+      requireCornicePlan({
+        ...input,
+        corniceDimensions: { sideCm: null, frontCm: null, heightCm: null },
+      }),
+      baseline
+    );
+    const { segments } = requireCornicePlan({
+      ...input,
+      corniceDimensions: { sideCm: 7, frontCm: 5, heightCm: 11 },
+    });
+    const [front, left, right] = segments;
+    if (
+      front?.kind === 'cornice_wave_front' &&
+      left?.kind === 'cornice_wave_side' &&
+      right?.kind === 'cornice_wave_side'
+    ) {
+      near(front.heightMax, 0.11);
+      const baselineFront = baseline.segments[0];
+      assert.equal(baselineFront?.kind, 'cornice_wave_front');
+      near(front.z + front.depth / 2, BASE.D / 2 + 0.05);
+      near(front.z - front.depth / 2, baselineFront.z - baselineFront.depth / 2);
+      near(left.x - left.width / 2, -BASE.totalW / 2 - 0.07);
+      near(right.x + right.width / 2, BASE.totalW / 2 + 0.07);
+    } else {
+      assert.equal(front?.kind, 'cornice_profile_seg');
+      assert.equal(left?.kind, 'cornice_profile_seg');
+      assert.equal(right?.kind, 'cornice_profile_seg');
+      near(Math.max(...front.profile.map(point => point.y)), 0.11);
+      near(Math.max(...front.profile.map(point => point.x)), 0.05);
+      near(Math.max(...left.profile.map(point => point.x)), 0.07);
+      near(Math.max(...right.profile.map(point => point.x)), 0.07);
+    }
+  }
+});

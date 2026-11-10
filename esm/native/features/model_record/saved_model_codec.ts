@@ -1,3 +1,4 @@
+import { isCorniceDimensionsCm } from '../../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { SavedModelLike, UnknownRecord } from '../../../../types/index.js';
 import {
   cloneCanonicalFeatureValue,
@@ -262,6 +263,7 @@ function isStoredModelSettings(value: unknown): boolean {
     if (!hasValidOptionalField(value, key, entry => typeof entry === 'string')) return false;
   }
   return (
+    hasValidOptionalField(value, 'corniceDimensions', isCorniceDimensionsCm) &&
     hasValidOptionalField(value, 'wardrobeType', entry => entry === 'hinged' || entry === 'sliding') &&
     hasValidOptionalField(value, 'boardMaterial', entry => entry === 'sandwich' || entry === 'melamine') &&
     hasValidOptionalField(value, 'doorMountMode', entry => entry === 'overlay' || entry === 'inset') &&

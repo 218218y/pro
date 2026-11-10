@@ -1,3 +1,4 @@
+import type { CorniceDimensionsCm, CorniceDimensionOverridesCm } from '../../../../../types/cornice_type.js';
 import type { FrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
 import type { GrooveOrientation } from '../../../../../types';
 import type { DesignTabColorManagerModel } from './use_design_tab_color_manager.js';
@@ -63,8 +64,10 @@ export type DesignTabCorniceSectionModel = {
   noMainWardrobeActive: boolean;
   hasCornice: boolean;
   corniceType: DesignTabCorniceType;
+  corniceDimensions: CorniceDimensionOverridesCm | undefined;
   setHasCornice: (checked: boolean) => void;
   setCorniceType: (value: DesignTabCorniceType) => void;
+  setCorniceDimension: (key: keyof CorniceDimensionsCm, value: number | undefined) => void;
 };
 
 export type DesignTabControllerModel = {
@@ -96,6 +99,7 @@ export type DesignTabControllerState = {
   removeDoorsEnabled: boolean;
   hasCornice: boolean;
   corniceType: DesignTabCorniceType;
+  corniceDimensions: CorniceDimensionOverridesCm | undefined;
   grooveLinesCount: string;
   grooveLinesCountIsAuto: boolean;
   grooveLinesCountAutoBaseline: number;

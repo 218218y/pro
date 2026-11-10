@@ -461,11 +461,11 @@
       "from": "features",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 42,
+      "maxImporterCount": 43,
       "maxImportCount": 49,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
-      "maxValueImporterCount": 42,
+      "maxValueImporterCount": 43,
       "maxValueImportCount": 48,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -517,11 +517,11 @@
       "from": "io",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 4,
+      "maxImporterCount": 7,
       "maxImportCount": 6,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 4,
+      "maxValueImporterCount": 7,
       "maxValueImportCount": 6,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -685,12 +685,12 @@
       "from": "services",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 136,
-      "maxImportCount": 160,
+      "maxImporterCount": 137,
+      "maxImportCount": 159,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 136,
-      "maxValueImportCount": 160,
+      "maxValueImporterCount": 137,
+      "maxValueImportCount": 159,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Services orchestrate persistence and UI-independent workflows over shared domain contracts."
@@ -727,11 +727,11 @@
       "from": "ui",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 24,
+      "maxImporterCount": 26,
       "maxImportCount": 25,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 24,
+      "maxValueImporterCount": 26,
       "maxValueImportCount": 25,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -916,6 +916,146 @@
     }
   ],
   "reviewedOwnershipBudgets": [
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["readCorniceDimensionOverrides"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The carcass input preparer reads the same validated dimension overrides as project load.",
+      "id": "dimension-owner-builder-core-carcass-shared-carcass-cornice-render-policy"
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/model_record/saved_model_codec.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["isCorniceDimensionsCm"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Stored model validation uses the same dimension bounds as project import.",
+      "id": "dimension-owner-features-saved-model-codec-carcass-cornice-render-policy"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_io_load_helpers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["readCorniceDimensionOverrides"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Project load materializes every cornice dimension override so older projects reset them.",
+      "id": "dimension-owner-io-project-io-load-helpers-carcass-cornice-render-policy"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_io_save_helpers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["captureCorniceDimensions"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Project export writes only explicit cornice dimension overrides.",
+      "id": "dimension-owner-io-project-io-save-helpers-carcass-cornice-render-policy"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_schema_validation.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["isCorniceDimensionsCm"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Project validation enforces the cornice dimension contract at the file boundary.",
+      "id": "dimension-owner-io-project-schema-validation-carcass-cornice-render-policy"
+    },
+    {
+      "from": "kernel",
+      "to": "shared",
+      "fromFile": "esm/native/kernel/kernel_project_capture_payload.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["captureCorniceDimensions"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Kernel capture and file export serialize the same cornice dimension overrides.",
+      "id": "dimension-owner-kernel-kernel-project-capture-payload-carcass-cornice-render-policy"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_brace_mode.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Shelf shortcut measurements use the same guide placement as sketch authoring.",
+      "id": "dimension-owner-services-canvas-picking-interior-hover-brace-mode-sketch-box-preview-policy"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "Free box shelf shortcuts use the sketch guide and shelf preview geometry policies.",
+      "id": "dimension-owner-services-canvas-picking-manual-layout-free-box-plans-sketch-box-preview-policy"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/design_tab_controller_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["readCorniceDimensionCm"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The design controller uses the shared bounds for each override.",
+      "id": "dimension-owner-ui-design-tab-controller-runtime-carcass-cornice-render-policy"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/design_tab_sections_cornice.tsx",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNICE_DIMENSION_MIN_CM", "resolveCorniceDimensionsM"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The design controls display the same nominal dimensions used to build each style.",
+      "id": "dimension-owner-ui-design-tab-sections-cornice-carcass-cornice-render-policy"
+    },
     {
       "from": "builder",
       "to": "shared",
@@ -1636,7 +1776,10 @@
       "statement": {
         "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
         "kind": "value",
-        "importedSymbols": ["INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"],
+        "importedSymbols": [
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY",
+          "resolveSketchBoxGlassShelfRearClearanceM"
+        ],
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",
@@ -2651,7 +2794,7 @@
       "statement": {
         "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
         "kind": "value",
-        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY", "resolveSketchBoxGlassShelfRearClearanceM"],
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",

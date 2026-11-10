@@ -1,3 +1,4 @@
+import { captureCorniceDimensions } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   BuildStateLike,
   ConfigStateLike,
@@ -199,6 +200,7 @@ export function buildDefaultProjectDataSnapshot(
       slidingTracksColor: ui.slidingTracksColor === 'black' ? 'black' : 'nickel',
       doorStyle: ui.doorStyle,
       corniceType: normalizeCorniceType(ui.corniceType),
+      ...captureCorniceDimensions(ui.corniceDimensions),
       color,
       customColor: ui.customColor,
       structureSelection: ui.structureSelect || '',

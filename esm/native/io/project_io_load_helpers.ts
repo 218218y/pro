@@ -1,3 +1,4 @@
+import { readCorniceDimensionOverrides } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   ConfigStateLike,
   ProjectDataLike,
@@ -144,6 +145,7 @@ export function buildProjectUiSnapshot(
     ...(typeof settings.doorStyle === 'string' ? { doorStyle: settings.doorStyle } : {}),
 
     corniceType: normalizeCorniceType(settings.corniceType),
+    corniceDimensions: readCorniceDimensionOverrides(settings.corniceDimensions),
 
     ...(typeof settings.color === 'string' ? { colorChoice: settings.color, color: settings.color } : {}),
     ...(typeof settings.customColor === 'string' ? { customColor: settings.customColor } : {}),

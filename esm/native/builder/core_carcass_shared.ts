@@ -1,3 +1,5 @@
+import { readCorniceDimensionOverrides } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // Builder core carcass shared preparation and normalization helpers.
 import {
   BASE_LEG_LAYOUT_POLICY,
@@ -40,6 +42,7 @@ export type PreparedCarcassInput = {
   doorsCount: number;
   hasCornice: boolean;
   corniceType: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   baseHeight: number;
   startY: number;
   cabinetBodyHeight: number;
@@ -247,6 +250,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     doorsCount,
     hasCornice,
     corniceType,
+    corniceDimensions: readCorniceDimensionOverrides(inp.corniceDimensions),
     baseHeight,
     startY,
     cabinetBodyHeight,

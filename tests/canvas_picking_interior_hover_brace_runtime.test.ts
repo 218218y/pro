@@ -255,7 +255,12 @@ test('brace-shelves hover targets exact sketch shelves stored in sketchExtras', 
           gridDivisions: 6,
           customData: { shelves: [false, false, false, false, false], shelfVariants: [] },
           braceShelves: [],
-          sketchExtras: { shelves: [{ id: 'exact-1', yNorm: 0.3, variant: 'regular', depthM: 0.4 }] },
+          sketchExtras: {
+            shelves: [
+              { id: 'exact-1', yNorm: 0.3, variant: 'regular', depthM: 0.4 },
+              { id: 'upper', yNorm: 0.65, variant: 'glass' },
+            ],
+          },
         },
       ],
     },
@@ -288,4 +293,8 @@ test('brace-shelves hover targets exact sketch shelves stored in sketchExtras', 
   assert.equal(preview?.variant, 'brace');
   assert.equal(preview?.op, 'add');
   assert.ok(preview && Math.abs(Number(preview.y) - 0.72) < 1e-9);
+  assert.deepEqual(
+    preview.clearanceMeasurements.map((entry: AnyRecord) => entry.role),
+    ['cell', 'cell', 'neighbor']
+  );
 });

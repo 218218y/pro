@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-06T10:30:05.754Z",
+  "generatedAt": "2026-11-10T09:44:02.089Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 618,
+    "totalOccurrences": 617,
     "totalFiles": 229,
     "byCategory": {
       "runtime-default": 72,
-      "domain-default": 449,
+      "domain-default": 448,
       "error-message-default": 42,
       "framework-default": 5,
       "browser-adapter": 18,
@@ -303,9 +303,9 @@
         }
       },
       "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts": {
-        "total": 2,
+        "total": 1,
         "categories": {
-          "domain-default": 2
+          "domain-default": 1
         }
       },
       "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts": {
@@ -1675,77 +1675,77 @@
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 220,
+      "line": 215,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 221,
+      "line": 216,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 311,
+      "line": 306,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 314,
+      "line": 309,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const edgeDepth = Math.max(prepared.woodThick, fallbackDepth);"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 315,
+      "line": 310,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "const fallbackZ = backZ + edgeDepth;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 321,
+      "line": 316,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 342,
+      "line": 337,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "path: path.length ? path : [{ ax: left, az: fallbackZ, bx: right, bz: fallbackZ }],"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 600,
+      "line": 595,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "fallbackZ: number,"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 603,
+      "line": 598,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "if (!seg) return fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 607,
+      "line": 602,
       "term": "fallbackZ",
       "category": "domain-default",
       "text": "return Number.isFinite(z) ? z : fallbackZ;"
     },
     {
       "file": "esm/native/builder/core_carcass_cornice.ts",
-      "line": 658,
+      "line": 654,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
@@ -1836,7 +1836,7 @@
     },
     {
       "file": "esm/native/builder/corner_connector_cornice_plan.ts",
-      "line": 226,
+      "line": 228,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(WAVE.frameThicknessMaxM, ctx.woodThick || WAVE.fallbackWoodThicknessM)"
@@ -1997,7 +1997,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cornice_plan.ts",
-      "line": 355,
+      "line": 360,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, ctx.woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
@@ -2388,13 +2388,6 @@
       "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
     },
     {
-      "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_materials.ts",
-      "line": 39,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// builder-material-fallback: unresolved optional part material falls back to the canonical default material"
-    },
-    {
       "file": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
       "line": 24,
       "term": "fallback",
@@ -2704,28 +2697,28 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 34,
+      "line": 35,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 37,
+      "line": 38,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 38,
+      "line": 39,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "let shelfDepth = fallbackDepth;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 162,
+      "line": 163,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: isBrace ? braceDepth : regularDepth,"
@@ -5686,7 +5679,7 @@
     },
     {
       "file": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
-      "line": 21,
+      "line": 26,
       "term": "fallbackWoodThicknessM",
       "category": "runtime-default",
       "text": "fallbackWoodThicknessM: MATERIAL_THICKNESS_POLICY.wood.thicknessM,"

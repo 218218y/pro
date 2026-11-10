@@ -19,6 +19,8 @@ export function StructurePlatformOverhangField(props: {
   defaultValue: number;
   onChange: (value: number) => void;
   resetTitle: string;
+  min?: number;
+  onReset?: () => void;
 }): ReactElement {
   const inputId = useId();
 
@@ -34,7 +36,7 @@ export function StructurePlatformOverhangField(props: {
           type="number"
           inputMode="decimal"
           className="wp-r-door-thickness-input wp-r-platform-overhang-input"
-          min={PLATFORM_OVERHANG_MIN_CM}
+          min={props.min ?? PLATFORM_OVERHANG_MIN_CM}
           max={PLATFORM_OVERHANG_MAX_CM}
           step={PLATFORM_OVERHANG_STEP_CM}
           value={formatPlatformOverhangInputValue(props.value)}
@@ -44,7 +46,12 @@ export function StructurePlatformOverhangField(props: {
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const rawValue = event.currentTarget.value;
             if (rawValue === '') return;
-            props.onChange(normalizePlatformOverhangCm(rawValue, props.defaultValue));
+            props.onChange(
+              Math.max(
+                props.min ?? PLATFORM_OVERHANG_MIN_CM,
+                normalizePlatformOverhangCm(rawValue, props.defaultValue)
+              )
+            );
           }}
         />
         <Button
@@ -54,7 +61,7 @@ export function StructurePlatformOverhangField(props: {
           title={props.resetTitle}
           aria-label={props.resetTitle}
           data-tooltip={props.resetTitle}
-          onClick={() => props.onChange(props.defaultValue)}
+          onClick={props.onReset ?? (() => props.onChange(props.defaultValue))}
         >
           <i className="fas fa-undo-alt" aria-hidden="true" />
         </Button>

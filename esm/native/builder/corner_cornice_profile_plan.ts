@@ -5,10 +5,11 @@ const COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
 
 export function buildStraightCorniceProfile(
-  overhangM: number = CARCASS_CORNICE_RENDER_POLICY.straight.overhangM
+  overhangM: number = CARCASS_CORNICE_RENDER_POLICY.straight.overhangM,
+  heightM: number = CARCASS_CORNICE_RENDER_POLICY.straight.heightM
 ): CornerCornicePoint[] {
-  const { depthM, heightM } = CARCASS_CORNICE_RENDER_POLICY.straight;
-  const bearingM = depthM - overhangM;
+  const { depthM } = CARCASS_CORNICE_RENDER_POLICY.straight;
+  const bearingM = Math.max(PROFILE.insetOnRoofM, depthM - overhangM);
   return [
     { x: -bearingM, y: 0 },
     { x: overhangM, y: 0 },
@@ -17,8 +18,11 @@ export function buildStraightCorniceProfile(
   ];
 }
 
-export function buildCornerCorniceProfile(overhang: number): CornerCornicePoint[] {
-  const height = PROFILE.heightM;
+export function buildCornerCorniceProfile(
+  overhang: number,
+  height: number = PROFILE.heightM
+): CornerCornicePoint[] {
+  const heightScale = height / PROFILE.heightM;
   const insetOnRoof = Number(PROFILE.insetOnRoofM);
   const safeOverhang = Math.max(PROFILE.minOverhangM, overhang);
   const step1Base = Math.max(0, PROFILE.step1OutM);
@@ -29,9 +33,9 @@ export function buildCornerCorniceProfile(overhang: number): CornerCornicePoint[
   let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
   if (!Number.isFinite(xMaxBase) || xMaxBase < COMMON.epsilonM) xMaxBase = PROFILE.xMaxDefaultM;
   const sx = safeOverhang / xMaxBase;
-  const y1 = Math.min(PROFILE.baseHeightM, height * PROFILE.baseHeightRatio);
-  const y2 = Math.min(y1 + PROFILE.slopeHeightM, height * PROFILE.slopeHeightRatio);
-  const y3 = Math.min(y2 + PROFILE.capRiseM, height * PROFILE.capHeightRatio);
+  const y1 = Math.min(PROFILE.baseHeightM, PROFILE.heightM * PROFILE.baseHeightRatio) * heightScale;
+  const y2 = Math.min(y1 + PROFILE.slopeHeightM * heightScale, height * PROFILE.slopeHeightRatio);
+  const y3 = Math.min(y2 + PROFILE.capRiseM * heightScale, height * PROFILE.capHeightRatio);
   const x1 = step1Base * sx;
   const x2 = x1 + slopeBase * sx;
   const x3 = x2 + step2Base * sx;
@@ -55,6 +59,24 @@ export function buildInternalCornerCorniceProfile(profile: CornerCornicePoint[])
   return profile.map(point => ({ ...point, x: Math.max(0, point.x) }));
 }
 
-export function connectorProfileBaseBandY(): number {
-  return Math.min(PROFILE.baseHeightM, PROFILE.heightM * PROFILE.baseHeightRatio) + PROFILE.baseBandEpsilonM;
+export function connectorProfileBaseBandY(height: number = PROFILE.heightM): number {
+  return (
+    Math.min(PROFILE.baseHeightM, PROFILE.heightM * PROFILE.baseHeightRatio) * (height / PROFILE.heightM) +
+    PROFILE.baseBandEpsilonM
+  );
+}
+
+export function offsetWaveCornicePath(
+  path: { ax: number; az: number; bx: number; bz: number }[],
+  front: number,
+  left: number,
+  right: number
+) {
+  if (!front && !left && !right) return path;
+  return path.map((segment, index) => ({
+    ax: segment.ax - (index === 0 ? left : 0),
+    az: segment.az + front,
+    bx: segment.bx + (index === path.length - 1 ? right : 0),
+    bz: segment.bz + front,
+  }));
 }

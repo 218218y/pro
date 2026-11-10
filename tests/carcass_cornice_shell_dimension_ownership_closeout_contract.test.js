@@ -35,15 +35,31 @@ const expectedCorniceInventory = Object.freeze({
   'esm/native/builder/corner_connector_cornice_plan.ts': Object.freeze([
     'CARCASS_CORNICE_ANGLE_POLICY',
     'CARCASS_CORNICE_RENDER_POLICY',
+    'resolveCorniceDimensionsM',
   ]),
   'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze(['CARCASS_CORNICE_COMMON_POLICY']),
   'esm/native/builder/corner_cornice_profile_plan.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/native/builder/corner_cornice_render.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
-  'esm/native/builder/corner_wing_cornice_plan.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_cornice_plan.ts': Object.freeze([
+    'CARCASS_CORNICE_RENDER_POLICY',
+    'resolveCorniceDimensionsM',
+  ]),
   'esm/native/builder/core_carcass_cornice.ts': Object.freeze([
     'CARCASS_CORNICE_ANGLE_POLICY',
     'CARCASS_CORNICE_RENDER_POLICY',
+    'resolveCorniceDimensionsM',
+  ]),
+  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['readCorniceDimensionOverrides']),
+  'esm/native/features/model_record/saved_model_codec.ts': Object.freeze(['isCorniceDimensionsCm']),
+  'esm/native/io/project_io_load_helpers.ts': Object.freeze(['readCorniceDimensionOverrides']),
+  'esm/native/io/project_io_save_helpers.ts': Object.freeze(['captureCorniceDimensions']),
+  'esm/native/io/project_schema_validation.ts': Object.freeze(['isCorniceDimensionsCm']),
+  'esm/native/kernel/kernel_project_capture_payload.ts': Object.freeze(['captureCorniceDimensions']),
+  'esm/native/ui/react/tabs/design_tab_controller_runtime.ts': Object.freeze(['readCorniceDimensionCm']),
+  'esm/native/ui/react/tabs/design_tab_sections_cornice.tsx': Object.freeze([
+    'CORNICE_DIMENSION_MIN_CM',
+    'resolveCorniceDimensionsM',
   ]),
 });
 
@@ -201,7 +217,7 @@ test('Carcass Cornice and Carcass Shell focused-owner inventories are exact and 
 
 test('Cornice and Shell owners retain exact dependencies and direct frozen owner shapes', () => {
   const expectedDependencies = new Map([
-    [corniceOwnerRel, ['./material_thickness_policy.js', './units.js']],
+    [corniceOwnerRel, ['../../../types/cornice_type.js', './material_thickness_policy.js', './units.js']],
     [shellOwnerRel, ['./carcass_interior_grid_policy.js', './units.js']],
   ]);
 

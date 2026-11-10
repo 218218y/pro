@@ -28,7 +28,7 @@ test('Builder Shelf/Hover pair imports exact focused owners without aggregate pa
       specifier: '../../shared/dimensions/interior_fittings_policy.js',
       kind: 'value',
       syntax: 'static-import',
-      symbols: ['INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY'],
+      symbols: ['INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY', 'resolveSketchBoxGlassShelfRearClearanceM'],
     },
     {
       specifier: '../../shared/dimensions/material_thickness_policy.js',

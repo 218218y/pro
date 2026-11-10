@@ -1,6 +1,9 @@
+import { readCorniceDimensionCm } from '../../../../shared/dimensions/carcass_cornice_render_policy.js';
+import type { CorniceDimensionsCm } from '../../../../../types/cornice_type.js';
 import type { AppContainer, ConfigStateLike, GrooveOrientation, UiStateLike } from '../../../../../types';
 
 import {
+  patchUi,
   runHistoryBatch,
   setCfgScalar,
   setUiCorniceType,
@@ -32,6 +35,7 @@ import type {
 export type DesignTabControllerRuntime = {
   setDoorStyle: (style: DesignTabDoorStyle) => void;
   setCorniceType: (value: DesignTabCorniceType) => void;
+  setCorniceDimension: (key: keyof CorniceDimensionsCm, value: number | undefined) => void;
   setFeatureToggle: (key: DesignTabFeatureToggleKey, on: boolean) => void;
   setHasCornice: (checked: boolean) => void;
   setGrooveLinesCount: (count: number) => void;
@@ -125,6 +129,21 @@ export function createDesignTabControllerRuntime(
         meta => {
           setUiCorniceType(app, next, meta);
         },
+        COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
+      );
+    },
+
+    setCorniceDimension(key, value) {
+      const next = readCorniceDimensionCm(key, value);
+      if (value !== undefined && next === null) return;
+      const current = readStoreStateMaybe(app)?.ui?.corniceDimensions;
+      if ((current?.[key] ?? null) === next) return;
+      const patch = { corniceDimensions: { [key]: next } };
+      applyStructuralUiMutation(
+        app,
+        'react:design:corniceDimensions',
+        patch,
+        meta => patchUi(app, patch, meta),
         COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
       );
     },

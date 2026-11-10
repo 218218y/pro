@@ -144,6 +144,7 @@ test('[design-tab-view-state-runtime] derives cfg/ui/design feature state throug
       removeDoorsEnabled: true,
       hasCornice: true,
       corniceType: 'wave',
+      corniceDimensions: undefined,
     })
   );
 

@@ -78,6 +78,7 @@ export function createCornerWingEmitContext(args: {
     hasCorniceEnabled: state.hasCorniceEnabled,
     __corniceAllowedForThisStack: state.__corniceAllowedForThisStack,
     __corniceTypeNorm: state.__corniceTypeNorm,
+    corniceDimensions: state.uiAny.corniceDimensions,
     __cfg: state.__cfg,
     config: state.config,
     __removedDoorsMap: state.__removedDoorsMap,

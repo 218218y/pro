@@ -3,12 +3,12 @@
 import {
   CARCASS_CORNICE_ANGLE_POLICY,
   CARCASS_CORNICE_RENDER_POLICY,
+  resolveCorniceDimensionsM,
 } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CarcassCorniceMode,
   CarcassCornicePlan,
   CarcassCorniceSegment,
-  CorniceProfilePoint,
   CorniceProfileSegment,
   CorniceWaveFrontSegment,
   CorniceWaveSideSegment,
@@ -19,36 +19,25 @@ import {
   resolveRemovedFrameSideOuterBounds,
   type RemovedFrameSideConstructionPlan,
 } from './removed_frame_side_construction_plan.js';
-import { buildStraightCorniceProfile } from './corner_cornice_profile_plan.js';
-import { normalizeCorniceType } from '../../../types/cornice_type.js';
+import {
+  buildCornerCorniceProfile,
+  buildInternalCornerCorniceProfile,
+  buildStraightCorniceProfile,
+  offsetWaveCornicePath,
+} from './corner_cornice_profile_plan.js';
+import { normalizeCorniceType, type CorniceType } from '../../../types/cornice_type.js';
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
 const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
-const CORNICE_STRAIGHT = CARCASS_CORNICE_RENDER_POLICY.straight;
 
 const CORNICE_EPS = CORNICE_COMMON.epsilonM;
 const CORNICE_Y_EPS = CORNICE_COMMON.yLiftM;
 const CORNICE_THETA_CLAMP_RAD = CARCASS_CORNICE_ANGLE_POLICY.thetaClampRad;
 
-const WAVE_MAX_HEIGHT = CORNICE_WAVE.maxHeightM;
-const WAVE_CYCLES = CORNICE_WAVE.cycles;
-
-const PROFILE_HEIGHT = CORNICE_PROFILE.heightM;
-const PROFILE_OVERHANG_X = CORNICE_PROFILE.overhangXM;
-const PROFILE_OVERHANG_Z = CORNICE_PROFILE.overhangZM;
-const PROFILE_INSET_ON_ROOF = Number(CORNICE_PROFILE.insetOnRoofM);
-const PROFILE_BACK_STEP = CORNICE_PROFILE.backStepM;
 const PROFILE_SEAM_EPS = CORNICE_PROFILE.seamEpsilonM;
 
-const PROFILE_BASE_H = CORNICE_PROFILE.baseHeightM;
-const PROFILE_STEP1_OUT = CORNICE_PROFILE.step1OutM;
-const PROFILE_SLOPE_H = CORNICE_PROFILE.slopeHeightM;
-const PROFILE_SLOPE_OUT = CORNICE_PROFILE.slopeOutM;
-const PROFILE_STEP2_OUT = CORNICE_PROFILE.step2OutM;
-const PROFILE_CAP_RISE = CORNICE_PROFILE.capRiseM;
-const PROFILE_CAP_OUT = CORNICE_PROFILE.capOutM;
-const PROFILE_TOP_LIP_OUT = CORNICE_PROFILE.topLipOutM;
+type CorniceDimensions = ReturnType<typeof resolveCorniceDimensionsM>;
 
 export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCornicePlan | null {
   const { totalW, D, startY, cabinetBodyHeight, hasCornice, corniceType, baseLegTopPlatformHeight } =
@@ -57,13 +46,15 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
 
   const topSurfaceY = startY + cabinetBodyHeight + baseLegTopPlatformHeight;
   const corniceTypeNorm = normalizeCorniceType(corniceType);
+  const dimensions = resolveCorniceDimensionsM(corniceTypeNorm, prepared.corniceDimensions);
   if (shouldBuildSegmentedCornice(prepared)) {
-    return buildSegmentedCornice(prepared, corniceTypeNorm);
+    return buildSegmentedCornice(prepared, corniceTypeNorm, dimensions);
   }
 
   const corniceParams: CorniceParams = {
     totalW,
     D,
+    dimensions,
     woodThick: prepared.woodThick,
     closedDoorFrontOffsetM: prepared.closedDoorFrontOffsetM,
     topY: topSurfaceY,
@@ -76,6 +67,7 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): CarcassCorn
 }
 
 type CorniceParams = {
+  dimensions: CorniceDimensions;
   totalW: number;
   D: number;
   woodThick: number;
@@ -133,6 +125,7 @@ type CorniceRun = {
 };
 
 type CorniceSectionParams = {
+  dimensions: CorniceDimensions;
   left: number;
   right: number;
   globalD: number;
@@ -167,7 +160,8 @@ function hasHexCorniceFootprint(prepared: PreparedCarcassInput): boolean {
 
 function buildSegmentedCornice(
   prepared: PreparedCarcassInput,
-  corniceTypeNorm: string
+  corniceTypeNorm: CorniceType,
+  dimensions: CorniceDimensions
 ): CarcassCornicePlan | null {
   const runs = buildCorniceRuns(prepared);
   if (!runs.length) return null;
@@ -175,6 +169,7 @@ function buildSegmentedCornice(
   const segments: CarcassCorniceSegment[] = [];
   for (const run of runs) {
     const section: CorniceSectionParams = {
+      dimensions,
       left: run.left,
       right: run.right,
       globalD: prepared.D,
@@ -627,6 +622,7 @@ function buildWaveCornice(params: CorniceParams): CarcassCornicePlan {
   const segments = buildWaveCorniceSection({
     left,
     right,
+    dimensions: params.dimensions,
     globalD: D,
     depth: D,
     woodThick,
@@ -657,75 +653,91 @@ function buildWaveCorniceSection(
     CORNICE_WAVE.frameThicknessMinM,
     Math.min(CORNICE_WAVE.frameThicknessMaxM, woodThick || CORNICE_WAVE.fallbackWoodThicknessM)
   );
-  const waveAmp = Math.min(
-    Math.max(sectionW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
-    CORNICE_WAVE.amplitudeMaxM
+  const waveAmp =
+    Math.min(
+      Math.max(sectionW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
+      CORNICE_WAVE.amplitudeMaxM
+    ) *
+    (params.dimensions.heightM / CORNICE_WAVE.maxHeightM);
+  const { sideM, frontM, heightM } = params.dimensions;
+  const leftExtension = leftSide && !leftSide.internal ? sideM : 0;
+  const rightExtension = rightSide && !rightSide.internal ? sideM : 0;
+  const leftWidth = frameT + leftExtension;
+  const rightWidth = frameT + rightExtension;
+  // Extending the outer faces leaves the original bearing on the roof.
+  const frontThickness = frontM > 0 ? frameT * 1.5 + frontM : frameT;
+  const wavePath = offsetWaveCornicePath(frontPath, frontM, leftExtension, rightExtension);
+  const renderPath = trimCornicePath(
+    wavePath,
+    leftSide == null ? 0 : leftWidth,
+    rightSide == null ? 0 : rightWidth
   );
-  const leftInset = leftSide == null ? 0 : frameT;
-  const rightInset = rightSide == null ? 0 : frameT;
-  const renderPath = trimCornicePath(frontPath, leftInset, rightInset);
+  const endZ = -globalD / 2 + depth + frontM;
 
   const segments: Array<CorniceWaveFrontSegment | CorniceWaveSideSegment> = [];
   for (const pathSeg of renderPath) {
     const len = cornicePathSegmentLength(pathSeg);
     if (len <= CORNICE_COMMON.minSegmentLengthM) continue;
     if (isStraightFrontPathSegment(pathSeg)) {
-      const center = inwardWaveCenterForPathSegment(pathSeg, frameT);
+      const center = inwardWaveCenterForPathSegment(pathSeg, frontM > 0 ? frontThickness / 2 : frameT);
       segments.push({
         kind: 'cornice_wave_front',
         width: len,
-        depth: frameT,
-        heightMax: WAVE_MAX_HEIGHT,
+        depth: frontThickness,
+        heightMax: heightM,
         waveAmp,
-        waveCycles: WAVE_CYCLES,
+        waveCycles: CORNICE_WAVE.cycles,
         rotationY: waveRotationForPathSegment(pathSeg),
         x: center.x,
-        y: yPlace + WAVE_MAX_HEIGHT / 2,
+        y: yPlace + heightM / 2,
         z: center.z,
         partId: 'cornice_wave_front',
       });
       continue;
     }
 
-    const center = inwardWaveCenterForPathSegment(pathSeg, frameT / 2);
+    const center = inwardWaveCenterForPathSegment(pathSeg, (frameT + frontM) / 2);
     segments.push({
       kind: 'cornice_wave_side',
-      width: frameT,
-      height: WAVE_MAX_HEIGHT,
+      width: frameT + frontM,
+      height: heightM,
       depth: len,
       rotationY: profileRotationForPathSegment(pathSeg),
       x: center.x,
-      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      y: yPlace + heightM / 2,
       z: center.z,
       partId: 'cornice_wave_front',
     });
   }
 
   if (leftSide != null) {
-    const sideDepth = Math.max(CORNICE_COMMON.minSegmentLengthM, depth - leftSide.startDepth);
+    const sideDepth = Math.max(CORNICE_COMMON.minSegmentLengthM, endZ - (-globalD / 2 + leftSide.startDepth));
     const sideZ = -globalD / 2 + leftSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
-      width: frameT,
-      height: WAVE_MAX_HEIGHT,
+      width: leftWidth,
+      height: heightM,
       depth: sideDepth,
-      x: left + frameT / 2,
-      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      x: left - leftExtension + leftWidth / 2,
+      y: yPlace + heightM / 2,
       z: sideZ,
       partId: waveSidePaintPart(leftSide, 'cornice_wave_side_left'),
     });
   }
 
   if (rightSide != null) {
-    const sideDepth = Math.max(CORNICE_COMMON.minSegmentLengthM, depth - rightSide.startDepth);
+    const sideDepth = Math.max(
+      CORNICE_COMMON.minSegmentLengthM,
+      endZ - (-globalD / 2 + rightSide.startDepth)
+    );
     const sideZ = -globalD / 2 + rightSide.startDepth + sideDepth / 2;
     segments.push({
       kind: 'cornice_wave_side',
-      width: frameT,
-      height: WAVE_MAX_HEIGHT,
+      width: rightWidth,
+      height: heightM,
       depth: sideDepth,
-      x: right - frameT / 2,
-      y: yPlace + WAVE_MAX_HEIGHT / 2,
+      x: right + rightExtension - rightWidth / 2,
+      y: yPlace + heightM / 2,
       z: sideZ,
       partId: waveSidePaintPart(rightSide, 'cornice_wave_side_right'),
     });
@@ -741,6 +753,7 @@ function buildProfileCornice(params: CorniceParams, straight = false): CarcassCo
     {
       left,
       right,
+      dimensions: params.dimensions,
       globalD: D,
       depth: D,
       woodThick,
@@ -762,21 +775,16 @@ function buildProfileCornice(params: CorniceParams, straight = false): CarcassCo
 function buildProfileCorniceSection(params: CorniceSectionParams, straight = false): CorniceProfileSegment[] {
   const { left, right, globalD, depth, topY, frontPath, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
-  const overhangX = straight ? CORNICE_STRAIGHT.overhangM : PROFILE_OVERHANG_X;
-  const requestedStraightFrontOverhang = CORNICE_STRAIGHT.overhangM + params.closedDoorFrontOffsetM;
-  // A single sliding leaf can sit behind the roof: keep the board's exterior miter instead of recessing it.
-  const overhangZ = straight
-    ? requestedStraightFrontOverhang > 0
-      ? requestedStraightFrontOverhang
-      : CORNICE_STRAIGHT.overhangM
-    : PROFILE_OVERHANG_Z;
+  const { sideM: overhangX, frontM, heightM } = params.dimensions;
+  const requestedStraightFrontOverhang = frontM + params.closedDoorFrontOffsetM;
+  // A single sliding leaf can sit behind the roof.
+  const overhangZ = straight && requestedStraightFrontOverhang > 0 ? requestedStraightFrontOverhang : frontM;
   const leftOverhang = leftSide != null && !leftSide.internal ? overhangX : 0;
   const rightOverhang = rightSide != null && !rightSide.internal ? overhangX : 0;
-  const profileFront = straight ? buildStraightCorniceProfile(overhangZ) : makeCorniceProfile(overhangZ);
-  const profileSide = straight ? buildStraightCorniceProfile() : makeCorniceProfile(overhangX);
-  const profileSideInternal = straight
-    ? profileSide.map(point => ({ ...point, x: Math.max(0, point.x) }))
-    : makeInternalBoundaryCorniceProfile(overhangX);
+  const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
+  const profileFront = buildProfile(overhangZ, heightM);
+  const profileSide = buildProfile(overhangX, heightM);
+  const profileSideInternal = buildInternalCornerCorniceProfile(profileSide);
   const defaultSideEndZ = -globalD / 2 + depth + overhangZ;
   const sourcePath = filterCornicePath(frontPath.map(seg => ({ ...seg })));
   const sourceFirst = sourcePath[0];
@@ -950,56 +958,6 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
   }
 
   return segments;
-}
-
-function makeInternalBoundaryCorniceProfile(overhang: number): CorniceProfilePoint[] {
-  return makeCorniceProfile(overhang).map(point => ({
-    ...point,
-    x: Math.max(0, typeof point.x === 'number' && Number.isFinite(point.x) ? point.x : 0),
-  }));
-}
-
-function makeCorniceProfile(overhang: number): CorniceProfilePoint[] {
-  const oh = Math.max(CORNICE_PROFILE.minOverhangM, overhang);
-  const step1Base = Math.max(0, PROFILE_STEP1_OUT);
-  const slopeBase = Math.max(0, PROFILE_SLOPE_OUT);
-  const step2Base = Math.max(0, PROFILE_STEP2_OUT);
-  const capBase = Math.max(0, PROFILE_CAP_OUT);
-  const lipBase = Math.max(0, PROFILE_TOP_LIP_OUT);
-
-  let xMaxBase = step1Base + slopeBase + step2Base + capBase + lipBase;
-  if (!Number.isFinite(xMaxBase) || xMaxBase < CORNICE_COMMON.epsilonM)
-    xMaxBase = CORNICE_PROFILE.xMaxDefaultM;
-  const sx = oh / xMaxBase;
-
-  const step1 = step1Base * sx;
-  const slopeOut = slopeBase * sx;
-  const step2 = step2Base * sx;
-  const capOut = capBase * sx;
-
-  const y1 = Math.min(PROFILE_BASE_H, PROFILE_HEIGHT * CORNICE_PROFILE.baseHeightRatio);
-  const y2 = Math.min(y1 + PROFILE_SLOPE_H, PROFILE_HEIGHT * CORNICE_PROFILE.slopeHeightRatio);
-  const y3 = Math.min(y2 + PROFILE_CAP_RISE, PROFILE_HEIGHT * CORNICE_PROFILE.capHeightRatio);
-
-  const x1 = step1;
-  const x2 = x1 + slopeOut;
-  const x3 = x2 + step2;
-  const x4 = x3 + capOut;
-  const x5 = oh;
-  const xTopReturn = Math.max(0, oh - PROFILE_BACK_STEP);
-
-  return [
-    { x: -PROFILE_INSET_ON_ROOF, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: y1 },
-    { x: x1, y: y1 },
-    { x: x2, y: y2 },
-    { x: x3, y: y2 },
-    { x: x4, y: y3 },
-    { x: x5, y: y3 },
-    { x: xTopReturn, y: PROFILE_HEIGHT },
-    { x: -PROFILE_INSET_ON_ROOF, y: PROFILE_HEIGHT },
-  ];
 }
 
 type CorniceEnvelopeParams = {

@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // esm/native/builder/carcass_pipeline.js
 // Carcass/frame pipeline extracted from builder/core.js.
 // Pure-ESM, store-driven, DOM-free. Fail-fast by design.
@@ -48,6 +49,7 @@ type ApplyCarcassAndGetCabinetMetricsArgs = {
   doorsCount?: number;
   hasCornice?: boolean;
   corniceType?: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   // In sketch mode, caller passes the outline function; otherwise null/undefined.
   // (Historically this was a boolean, but render ops expects a function.)
   addOutlines?: BuilderApplyCarcassContextLike['addOutlines'];
@@ -230,6 +232,7 @@ export function applyCarcassAndGetCabinetMetrics(
     doorsCount: safeDoorsCount,
     hasCornice: !!safeArgs.hasCornice,
     corniceType: typeof safeArgs.corniceType === 'string' ? safeArgs.corniceType : undefined,
+    corniceDimensions: safeArgs.corniceDimensions,
     moduleInternalWidths: safeArgs.moduleInternalWidths,
     moduleHeightsTotal: safeArgs.moduleHeightsTotal,
     moduleDepthsTotal: safeArgs.moduleDepthsTotal,

@@ -23,6 +23,7 @@ export const SKETCH_NO_MAIN_RESTORE_UI_KEYS = [
   'removeDoorsEnabled',
   'hasCornice',
   'corniceType',
+  'corniceDimensions',
   'currentCurtainChoice',
   'handleControl',
   'hingeDirection',

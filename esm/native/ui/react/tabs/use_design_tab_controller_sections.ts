@@ -178,16 +178,20 @@ export function useDesignTabControllerSections(args: {
       noMainWardrobeActive: state.noMainWardrobeActive,
       hasCornice: state.hasCornice,
       corniceType: state.corniceType,
+      corniceDimensions: state.corniceDimensions,
       setHasCornice: controllerRuntime.setHasCornice,
       setCorniceType: controllerRuntime.setCorniceType,
+      setCorniceDimension: controllerRuntime.setCorniceDimension,
     }),
     [
       state.isChestMode,
       state.noMainWardrobeActive,
       state.hasCornice,
       state.corniceType,
+      state.corniceDimensions,
       controllerRuntime.setHasCornice,
       controllerRuntime.setCorniceType,
+      controllerRuntime.setCorniceDimension,
     ]
   );
 

@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // Corner connector cornice contracts/helpers.
 //
 // Keep the public connector cornice owner focused on orchestration while wave /
@@ -47,6 +48,7 @@ export type CornerConnectorCorniceCtx = {
   hasCorniceEnabled?: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   bodyMat: unknown;
   addOutlines: (mesh: unknown) => void;
   getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;

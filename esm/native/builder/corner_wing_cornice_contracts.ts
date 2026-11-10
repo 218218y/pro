@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // Corner wing cornice contracts/helpers.
 //
 // Keep the public wing cornice owner focused on flow routing while the heavier
@@ -25,6 +26,7 @@ export type CorniceCtxLike = {
   hasCorniceEnabled: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   getCornerMat: (partId: string, defaultMaterial: unknown) => unknown;
   bodyMat: unknown;
   addOutlines: (mesh: unknown) => void;

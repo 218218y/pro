@@ -521,10 +521,28 @@ test.describe('Playwright authoring build coverage', () => {
         await setGrooveLinesCount(page, 12);
         await setDoorFeatureToggle(page, 'splitDoors', true);
         await setDoorFeatureToggle(page, 'removeDoorsEnabled', true);
+        await page.getByRole('checkbox', { name: 'הוסף קרניז עליון (כתר)' }).check();
       },
       { minBuildRequests: 1, minBuildExecutes: 1, minRenderRequests: 1 }
     );
     expectMeaningfulBuildAndRenderDelta('design-authoring', designDelta);
+
+    const corniceHeight = page.getByRole('spinbutton', { name: /גובה קרניז/ });
+    await expect(corniceHeight).toHaveValue('8.0');
+    const corniceDelta = await measureBuildAndRenderDelta(
+      page,
+      async () => {
+        await corniceHeight.fill('11');
+        await corniceHeight.blur();
+        await expect(corniceHeight).toHaveValue('11.0');
+      },
+      { minBuildRequests: 1, minBuildExecutes: 1, minRenderRequests: 1 }
+    );
+    expectMeaningfulBuildAndRenderDelta('cornice-dimensions', corniceDelta);
+    expect(asRecord(asRecord((await readDebugStoreState(page)).ui).corniceDimensions).heightCm).toBe(11);
+    await page.getByRole('button', { name: 'החזר גובה קרניז לברירת המחדל' }).click();
+    await expect(corniceHeight).toHaveValue('8.0');
+    expect(asRecord(asRecord((await readDebugStoreState(page)).ui).corniceDimensions).heightCm).toBeNull();
 
     const interiorDelta = await measureBuildAndRenderDelta(
       page,

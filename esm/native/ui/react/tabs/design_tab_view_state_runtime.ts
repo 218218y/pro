@@ -1,3 +1,5 @@
+import type { UiStateLike } from '../../../../../types';
+import type { CorniceDimensionOverridesCm } from '../../../../../types/cornice_type.js';
 import {
   DESIGN_TAB_WARDROBE_DEFAULTS,
   resolveDesignTabGrooveLinesAutoBaseline,
@@ -52,6 +54,7 @@ export type DesignTabUiState = {
   removeDoorsEnabled: boolean;
   hasCornice: boolean;
   corniceType: DesignTabCorniceType;
+  corniceDimensions: CorniceDimensionOverridesCm | undefined;
 };
 
 export type DesignTabDoorFeaturesViewState = {
@@ -102,7 +105,7 @@ export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {
   };
 }
 
-export function readDesignTabUiState(ui: unknown): DesignTabUiState {
+export function readDesignTabUiState(ui: UiStateLike | null | undefined): DesignTabUiState {
   const rec = asRecord(ui);
   const doors = readUiRawIntFromSnapshot(ui, 'doors', -1);
   return {
@@ -125,6 +128,7 @@ export function readDesignTabUiState(ui: unknown): DesignTabUiState {
     removeDoorsEnabled: readBoolean(rec?.removeDoorsEnabled),
     hasCornice: readBoolean(rec?.hasCornice),
     corniceType: readDesignTabCorniceType(rec?.corniceType),
+    corniceDimensions: ui?.corniceDimensions,
   };
 }
 

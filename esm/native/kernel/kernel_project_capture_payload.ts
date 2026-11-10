@@ -1,3 +1,4 @@
+import { captureCorniceDimensions } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
@@ -115,6 +116,7 @@ function buildProjectCaptureSettings(
     slidingTracksColor: asString(uiRec.slidingTracksColor, 'nickel'),
     doorStyle: asString(uiRec.doorStyle, ''),
     corniceType: normalizeCorniceType(uiRec.corniceType),
+    ...captureCorniceDimensions(uiRec.corniceDimensions),
     color: asString(uiRec.colorChoice, '') || asString(uiRec.color, ''),
     customColor: asString(uiRec.customColor, ''),
     structureSelection: asString(uiRec.structureSelect, ''),

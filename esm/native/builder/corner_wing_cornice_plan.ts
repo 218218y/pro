@@ -1,4 +1,7 @@
-import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import {
+  CARCASS_CORNICE_RENDER_POLICY,
+  resolveCorniceDimensionsM,
+} from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { resolveCornerWingClosedDoorFrontOffsetM } from './corner_wing_cell_doors_state.js';
 import type {
@@ -12,6 +15,7 @@ import {
   buildCornerCorniceProfile,
   buildStraightCorniceProfile,
   buildInternalCornerCorniceProfile,
+  offsetWaveCornicePath,
 } from './corner_cornice_profile_plan.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
@@ -42,7 +46,6 @@ import {
 
 const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
 const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
-const CORNICE_STRAIGHT = CARCASS_CORNICE_RENDER_POLICY.straight;
 const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
 
 export function buildCornerWingProfileCornicePlan(
@@ -50,16 +53,17 @@ export function buildCornerWingProfileCornicePlan(
   locals: CorniceLocalsLike,
   straight = false
 ): CornerCornicePlan {
-  const overhangX = straight ? CORNICE_STRAIGHT.overhangM : CORNICE_PROFILE.overhangXM;
+  const {
+    sideM: overhangX,
+    frontM,
+    heightM,
+  } = resolveCorniceDimensionsM(straight ? 'straight' : 'classic', ctx.corniceDimensions);
   const overhangZ = straight
-    ? CORNICE_STRAIGHT.overhangM +
-      resolveCornerWingClosedDoorFrontOffsetM() -
-      CARCASS_SHELL_DIMENSIONS.frontInsetZM
-    : CORNICE_PROFILE.overhangZM;
-  const profileFront = straight
-    ? buildStraightCorniceProfile(overhangZ)
-    : buildCornerCorniceProfile(overhangZ);
-  const profileSide = straight ? buildStraightCorniceProfile() : buildCornerCorniceProfile(overhangX);
+    ? frontM + resolveCornerWingClosedDoorFrontOffsetM() - CARCASS_SHELL_DIMENSIONS.frontInsetZM
+    : frontM;
+  const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
+  const profileFront = buildProfile(overhangZ, heightM);
+  const profileSide = buildProfile(overhangX, heightM);
   const profileSideInternal = buildInternalCornerCorniceProfile(profileSide);
   const topY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);
   const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - ctx.wingD / 2;
@@ -344,6 +348,7 @@ export function buildCornerWingWaveCornicePlan(
   ctx: CorniceCtxLike,
   locals: CorniceLocalsLike
 ): CornerCornicePlan {
+  const dimensions = resolveCorniceDimensionsM('wave', ctx.corniceDimensions);
   const topY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);
   const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - ctx.wingD / 2;
   const frontPlaneZ = zCenter + ctx.wingD / 2;
@@ -356,9 +361,10 @@ export function buildCornerWingWaveCornicePlan(
   );
   const runs = buildCornerWingCorniceRuns(ctx, locals);
   const operations = runs.length
-    ? buildSegmentedWaveOperations({ runs, frameT })
+    ? buildSegmentedWaveOperations({ runs, frameT, dimensions })
     : buildFlatWaveOperations({
         ctx,
+        dimensions,
         frameT,
         topY,
         frontPlaneZ,
@@ -377,44 +383,53 @@ function waveSamples(length: number): number {
 function buildFlatWaveOperations(args: {
   ctx: CorniceCtxLike;
   frameT: number;
+  dimensions: ReturnType<typeof resolveCorniceDimensionsM>;
   topY: number;
   frontPlaneZ: number;
   backTrimZ: number;
 }): Array<CornerCorniceWaveOp | CornerCorniceBoxOp> {
-  const leftInset = args.ctx.cornerConnectorActive ? 0 : args.frameT;
-  const rightInset = args.frameT;
-  const length = Math.max(CORNICE_COMMON.minSegmentLengthM, args.ctx.wingW - leftInset - rightInset);
-  const waveAmp = Math.min(
-    Math.max(args.ctx.wingW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
-    CORNICE_WAVE.amplitudeMaxM
-  );
+  const { sideM, frontM, heightM } = args.dimensions;
+  const left = args.ctx.cornerConnectorActive ? 0 : -sideM;
+  const right = args.ctx.wingW + sideM;
+  const frontZ = args.frontPlaneZ + frontM;
+  const sideWidth = args.frameT + sideM;
+  const frontThickness = args.frameT + frontM;
+  const leftInset = args.ctx.cornerConnectorActive ? 0 : sideWidth;
+  const rightInset = sideWidth;
+  const length = Math.max(CORNICE_COMMON.minSegmentLengthM, right - left - leftInset - rightInset);
+  const waveAmp =
+    Math.min(
+      Math.max(args.ctx.wingW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
+      CORNICE_WAVE.amplitudeMaxM
+    ) *
+    (heightM / CORNICE_WAVE.maxHeightM);
   const operations: Array<CornerCorniceWaveOp | CornerCorniceBoxOp> = [
     {
       kind: 'corner_wave',
       partId: 'corner_cornice_front',
       length,
-      depth: args.frameT,
-      heightMax: CORNICE_WAVE.maxHeightM,
+      depth: frontThickness,
+      heightMax: heightM,
       waveAmp,
       waveCycles: CORNICE_WAVE.cycles,
       samples: waveSamples(length),
-      x: leftInset + length / 2,
+      x: left + leftInset + length / 2,
       y: args.topY + CORNICE_COMMON.yLiftM,
-      z: args.frontPlaneZ - args.frameT,
+      z: frontZ - frontThickness,
       rotationY: 0,
     },
   ];
-  const sideDepth = Math.max(CORNICE_COMMON.minBoxDimensionM, args.frontPlaneZ - args.backTrimZ);
-  const sideZ = (args.backTrimZ + args.frontPlaneZ) / 2;
-  const sideY = args.topY + CORNICE_COMMON.yLiftM + CORNICE_WAVE.maxHeightM / 2;
+  const sideDepth = Math.max(CORNICE_COMMON.minBoxDimensionM, frontZ - args.backTrimZ);
+  const sideZ = (args.backTrimZ + frontZ) / 2;
+  const sideY = args.topY + CORNICE_COMMON.yLiftM + heightM / 2;
   if (!args.ctx.cornerConnectorActive) {
     operations.push({
       kind: 'corner_box',
       partId: 'corner_cornice_side_left',
-      width: args.frameT,
-      height: CORNICE_WAVE.maxHeightM,
+      width: sideWidth,
+      height: heightM,
       depth: sideDepth,
-      x: args.frameT / 2,
+      x: left + sideWidth / 2,
       y: sideY,
       z: sideZ,
       rotationY: 0,
@@ -423,10 +438,10 @@ function buildFlatWaveOperations(args: {
   operations.push({
     kind: 'corner_box',
     partId: 'corner_cornice_side_right',
-    width: args.frameT,
-    height: CORNICE_WAVE.maxHeightM,
+    width: sideWidth,
+    height: heightM,
     depth: sideDepth,
-    x: args.ctx.wingW - args.frameT / 2,
+    x: right - sideWidth / 2,
     y: sideY,
     z: sideZ,
     rotationY: 0,
@@ -437,30 +452,38 @@ function buildFlatWaveOperations(args: {
 function buildSegmentedWaveOperations(args: {
   runs: CornerCorniceRun[];
   frameT: number;
+  dimensions: ReturnType<typeof resolveCorniceDimensionsM>;
 }): Array<CornerCorniceWaveOp | CornerCorniceBoxOp> {
   const operations: Array<CornerCorniceWaveOp | CornerCorniceBoxOp> = [];
+  const { sideM, frontM, heightM } = args.dimensions;
+  const frontThickness = args.frameT + frontM;
   for (const run of args.runs) {
+    const left = run.leftSide && !run.leftSide.internal ? sideM : 0;
+    const right = run.rightSide && !run.rightSide.internal ? sideM : 0;
+    const path = offsetWaveCornicePath(run.frontPath, frontM, left, right);
     const sectionW = Math.max(CORNICE_COMMON.minBoxDimensionM, run.right - run.left);
-    const waveAmp = Math.min(
-      Math.max(sectionW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
-      CORNICE_WAVE.amplitudeMaxM
-    );
+    const waveAmp =
+      Math.min(
+        Math.max(sectionW * CORNICE_WAVE.amplitudeRatio, CORNICE_WAVE.amplitudeMinM),
+        CORNICE_WAVE.amplitudeMaxM
+      ) *
+      (heightM / CORNICE_WAVE.maxHeightM);
     const renderPath = trimCornerCornicePath(
-      run.frontPath,
-      run.leftSide == null ? 0 : args.frameT,
-      run.rightSide == null ? 0 : args.frameT
+      path,
+      run.leftSide == null ? 0 : args.frameT + left,
+      run.rightSide == null ? 0 : args.frameT + right
     );
     for (const pathSeg of renderPath) {
       const len = cornerCornicePathSegmentLength(pathSeg);
       if (len <= CORNICE_COMMON.minSegmentLengthM) continue;
       if (isStraightCornerFrontPathSegment(pathSeg)) {
-        const center = inwardCornerWaveCenterForPathSegment(pathSeg, args.frameT);
+        const center = inwardCornerWaveCenterForPathSegment(pathSeg, frontThickness);
         operations.push({
           kind: 'corner_wave',
           partId: 'corner_cornice_front',
           length: len,
-          depth: args.frameT,
-          heightMax: CORNICE_WAVE.maxHeightM,
+          depth: frontThickness,
+          heightMax: heightM,
           waveAmp,
           waveCycles: CORNICE_WAVE.cycles,
           samples: waveSamples(len),
@@ -470,22 +493,23 @@ function buildSegmentedWaveOperations(args: {
           rotationY: cornerWaveRotationForPathSegment(pathSeg),
         });
       } else {
-        const center = inwardCornerWaveCenterForPathSegment(pathSeg, args.frameT / 2);
+        const center = inwardCornerWaveCenterForPathSegment(pathSeg, frontThickness / 2);
         operations.push({
           kind: 'corner_box',
           partId: 'corner_cornice_front',
-          width: args.frameT,
-          height: CORNICE_WAVE.maxHeightM,
+          width: frontThickness,
+          height: heightM,
           depth: len,
           x: center.x,
-          y: run.topY + CORNICE_COMMON.yLiftM + CORNICE_WAVE.maxHeightM / 2,
+          y: run.topY + CORNICE_COMMON.yLiftM + heightM / 2,
           z: center.z,
           rotationY: cornerProfileRotationForPathSegment(pathSeg),
         });
       }
     }
-    appendWaveSide(operations, run, 'left', run.leftSide, args.frameT);
-    appendWaveSide(operations, run, 'right', run.rightSide, args.frameT);
+    const waveRun = { ...run, left: run.left - left, right: run.right + right, frontPath: path };
+    appendWaveSide(operations, waveRun, 'left', run.leftSide, args.frameT + left, heightM);
+    appendWaveSide(operations, waveRun, 'right', run.rightSide, args.frameT + right, heightM);
   }
   return operations;
 }
@@ -495,7 +519,8 @@ function appendWaveSide(
   run: CornerCorniceRun,
   side: 'left' | 'right',
   closure: CornerCorniceSideClosure | null,
-  frameT: number
+  frameT: number,
+  heightM: number
 ): void {
   if (closure == null || !run.frontPath.length) return;
   const frontSeg = side === 'left' ? run.frontPath[0] : run.frontPath[run.frontPath.length - 1];
@@ -510,10 +535,10 @@ function appendWaveSide(
         ? 'corner_cornice_side_left'
         : 'corner_cornice_side_right',
     width: frameT,
-    height: CORNICE_WAVE.maxHeightM,
+    height: heightM,
     depth,
     x: side === 'left' ? run.left + frameT / 2 : run.right - frameT / 2,
-    y: run.topY + CORNICE_COMMON.yLiftM + CORNICE_WAVE.maxHeightM / 2,
+    y: run.topY + CORNICE_COMMON.yLiftM + heightM / 2,
     z: (closure.startZ + sideEndZ) / 2,
     rotationY: 0,
   });
