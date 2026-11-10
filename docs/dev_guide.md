@@ -212,6 +212,20 @@ An edit commits type, size, finish, and manual position in one map update. A fro
 own keys and can explicitly opt out of inherited split-parent overrides. Global changes keep
 per-front settings. Recessed and integrated products require front geometry operations.
 
+Surface-mounted models use generic furniture-hardware proportions. The round bar has a 10 mm
+section and 31 mm projection, the low arch has 24 mm under-grip clearance at its midpoint, and
+the round and square knobs use 32 mm heads. Dimensions are modeled in metres, with drill spacing
+in millimetres. Hardware references include [IKEA BAGGANÄS](https://www.ikea.com/se/en/p/bagganaes-handle-brass-colour-00338407/),
+[Amerock Radius](https://www.amerock.com/radius-cabinet-knob-radius--knob),
+[Amerock Stature](https://www.amerock.com/stature-cabinet-knob-stature--knob) and
+[Emtek technical drawings](https://www.emtek.com/media/salsify/documents/pe/pe6wxoshid-2024-05-23T194412Z-EMTEK_Contemporary_Cabinet_Hardware_Technical_Specifications.pdf).
+
+The edge profile follows the actual opening edge of a hinged leaf and the top of a drawer front.
+A 1.5 mm web wraps the panel thickness, with a rear fixing flange and a 23 mm forward grip. Manual
+placement slides it along that edge. The sliding variant uses 5 mm forward projection so the lip
+and opposite backing flange fit within the nominal 8 mm lane gap. Short and long project values
+remain 200 mm and 400 mm. Drawers shorten the profile when needed to keep 20 mm clear at each end.
+
 ## Install rules
 
 - Installers must be idempotent and healing: safe to call again, able to restore missing methods, and never wrap an already-installed surface repeatedly.

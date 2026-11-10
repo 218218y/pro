@@ -7,6 +7,8 @@ import {
   HANDLE_INHERIT_GLOBAL,
   isHandleType,
   usesCatalogHandleGeometry,
+  readHandleVisualFrontRect,
+  resolveEdgeHandleMount,
   supportsHandleHost,
 } from '../../shared/handle_catalog.js';
 import type { HandleHost, HandleType } from '../../shared/handle_catalog.js';
@@ -252,6 +254,22 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
   const rect = readDoorLeafRectFromUserData(ownerData);
   const point = manual && owner ? readManualHandlePoint(args, owner) : null;
   if (manual && (!rect || !point)) return true;
+  if (
+    !reset &&
+    handleType === 'edge' &&
+    host !== 'sliding' &&
+    rect &&
+    !resolveEdgeHandleMount(
+      readHandleVisualFrontRect(rect, ownerData),
+      host,
+      ownerData?.__hingeLeft === true,
+      __modeOpts?.edgeHandleVariant,
+      point ?? { x: 0, y: 0 }
+    )
+  ) {
+    getUiFeedback(App).toast('אין מספיק מקום לידית במידה שנבחרה על שפת החזית.', 'warning');
+    return true;
+  }
   const fitted =
     !reset && useCatalogGeometry
       ? rect &&

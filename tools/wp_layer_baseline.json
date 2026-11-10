@@ -951,7 +951,12 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
+        "importedSymbols": [
+          "isHandleType",
+          "readHandleVisualFrontRect",
+          "resolveEdgeHandleMount",
+          "usesCatalogHandleGeometry"
+        ],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -983,6 +988,7 @@
           "clampSurfaceHandleCenter",
           "getSurfaceHandleFootprint",
           "isHandleType",
+          "resolveEdgeHandleMount",
           "usesCatalogHandleGeometry"
         ],
         "syntax": "static-import"
@@ -1101,7 +1107,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
+        "importedSymbols": ["getEdgeHandleLengthM", "isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1129,7 +1135,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
+        "importedSymbols": ["isHandleType", "resolveEdgeHandleMount", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",
@@ -1355,7 +1361,10 @@
         "kind": "value",
         "importedSymbols": [
           "clampSurfaceHandleCenter",
+          "getEdgeHandlePreviewFootprint",
           "getSurfaceHandleFootprint",
+          "readHandleVisualFrontRect",
+          "resolveEdgeHandleMount",
           "usesCatalogHandleGeometry"
         ],
         "syntax": "static-import"
@@ -1379,6 +1388,8 @@
           "handleOverrideBaseId",
           "handleSizePartKey",
           "isHandleType",
+          "readHandleVisualFrontRect",
+          "resolveEdgeHandleMount",
           "supportsHandleHost",
           "usesCatalogHandleGeometry"
         ],
@@ -2527,7 +2538,7 @@
       "statement": {
         "toFile": "esm/shared/dimensions/handle_policy.ts",
         "kind": "value",
-        "importedSymbols": ["EDGE_HANDLE_SIZE_POLICY", "STANDARD_HANDLE_RENDER_POLICY"],
+        "importedSymbols": ["STANDARD_HANDLE_RENDER_POLICY"],
         "syntax": "static-import"
       },
       "owner": "dimension-reviewed-ownership",

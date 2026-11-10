@@ -39,7 +39,10 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
     w: number,
     h: number,
     isLeftHinge: boolean,
-    extraOpts?: { handleColor?: string | null; edgeHandleVariant?: string | null }
+    extraOpts?: Pick<
+      BuilderHandleMeshOptionsLike,
+      'handleColor' | 'edgeHandleVariant' | 'handleSizeMm' | 'frontThicknessM'
+    >
   ): unknown {
     if (!type || type === 'none') return null;
 

@@ -1,11 +1,13 @@
 import {
   clampSurfaceHandleCenter,
   getSurfaceHandleFootprint,
+  getEdgeHandlePreviewFootprint,
+  readHandleVisualFrontRect,
+  resolveEdgeHandleMount,
   usesCatalogHandleGeometry,
 } from '../../shared/handle_catalog.js';
 import {
   EDGE_HANDLE_PROFILE_RENDER_POLICY,
-  EDGE_HANDLE_SIZE_POLICY,
   STANDARD_HANDLE_RENDER_POLICY,
 } from '../../shared/dimensions/handle_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
@@ -64,48 +66,7 @@ type ManualHandleSceneCandidate = {
 };
 
 const MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE = 0.88;
-function readHandleType(modeOpts: UnknownRecord | null): 'standard' | 'edge' {
-  return modeOpts?.handleType === 'edge' ? 'edge' : 'standard';
-}
-
-function readEdgeVariant(modeOpts: UnknownRecord | null): 'short' | 'long' {
-  return modeOpts?.edgeHandleVariant === 'long' ? 'long' : 'short';
-}
-
-function resolvePreviewSize(args: {
-  modeOpts: UnknownRecord | null;
-  isDrawerHost: boolean;
-  rect: { minX: number; maxX: number };
-}): {
-  width: number;
-  height: number;
-  depth: number;
-} {
-  const { modeOpts, isDrawerHost, rect } = args;
-  const handleType = readHandleType(modeOpts);
-  if (handleType === 'edge') {
-    const targetLength =
-      readEdgeVariant(modeOpts) === 'long'
-        ? EDGE_HANDLE_SIZE_POLICY.longLengthM
-        : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
-    if (isDrawerHost) {
-      const hostWidth = Math.max(0, rect.maxX - rect.minX);
-      const handleWidth = Math.max(
-        EDGE_HANDLE_SIZE_POLICY.minLengthM,
-        Math.min(Math.max(0, hostWidth - EDGE_HANDLE_SIZE_POLICY.drawerWidthClearanceM), targetLength)
-      );
-      return {
-        width: handleWidth,
-        height: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountThicknessM,
-        depth: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountDepthM,
-      };
-    }
-    return {
-      width: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountThicknessM,
-      height: targetLength,
-      depth: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountDepthM,
-    };
-  }
+function resolveStandardPreviewSize(isDrawerHost: boolean) {
   if (isDrawerHost) {
     return {
       width: STANDARD_HANDLE_RENDER_POLICY.drawerWidthM,
@@ -527,8 +488,37 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     ? getSurfaceHandleFootprint(type, drawerHost ? 'drawer' : 'door', modeOpts?.handleSizeMm)
     : null;
   const position = resolveManualHandleLocalPosition({ rect, position: manualPosition });
+  const visualRect = readHandleVisualFrontRect(rect, userData);
+  const drawerOffset =
+    drawerHost && typeof userData?.__wpFaceOffsetY === 'number' && userData.__doorRectMaxY === undefined
+      ? userData.__wpFaceOffsetY
+      : 0;
+  visualRect.maxY += drawerOffset;
+  visualRect.minY += drawerOffset;
+  const hingeLeft = userData?.__hingeLeft === true;
+  const edgeMount =
+    type === 'edge' && position
+      ? resolveEdgeHandleMount(
+          visualRect,
+          drawerHost ? 'drawer' : 'door',
+          hingeLeft,
+          modeOpts?.edgeHandleVariant,
+          position
+        )
+      : null;
+  const edgeSize = edgeMount && getEdgeHandlePreviewFootprint(edgeMount.length, drawerHost);
+  const inward = edgeSize
+    ? (drawerHost ? edgeSize.height : edgeSize.width) / 2 - EDGE_HANDLE_PROFILE_RENDER_POLICY.metalThicknessM
+    : 0;
   const placement =
-    position && catalogSize ? clampSurfaceHandleCenter(catalogSize, rect, position.x, position.y) : position;
+    type === 'edge'
+      ? edgeMount && {
+          x: edgeMount.x + (drawerHost ? 0 : (hingeLeft ? -1 : 1) * inward),
+          y: edgeMount.y - (drawerHost ? inward : 0),
+        }
+      : position && catalogSize
+        ? clampSurfaceHandleCenter(catalogSize, rect, position.x, position.y)
+        : position;
   if (
     !manualPosition ||
     !placement ||
@@ -539,16 +529,8 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     return false;
   }
 
-  const size =
-    catalogSize ??
-    resolvePreviewSize({
-      modeOpts,
-      isDrawerHost: isManualHandleDrawerHost(scopedHitDoorPid, userData),
-      rect,
-    });
-  const currentHostKind: ManualHandleHostKind = isManualHandleDrawerHost(scopedHitDoorPid, userData)
-    ? 'drawer'
-    : 'door';
+  const size = edgeSize ?? catalogSize ?? resolveStandardPreviewSize(drawerHost);
+  const currentHostKind: ManualHandleHostKind = drawerHost ? 'drawer' : 'door';
   const handleZ = zOff + (zOff >= 0 ? 0.003 : -0.003);
   const { horizontalLabelOutset, verticalLabelOutset } = resolveCellMeasurementLabelOutsets(
     MANUAL_HANDLE_MEASUREMENT_TEXT_SCALE

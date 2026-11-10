@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T15:48:20.960Z",
+  "generatedAt": "2026-11-10T19:24:05.106Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -2039,21 +2039,21 @@
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 133,
+      "line": 166,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-handle-visual-fallback: optional handle visual metadata must not block door rendering"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 169,
+      "line": 202,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "const fallbackHingeLeft = !!root.userData?.__hingeLeft;"
     },
     {
       "file": "esm/native/builder/handles_apply_doors.ts",
-      "line": 210,
+      "line": 243,
       "term": "fallbackHingeLeft",
       "category": "domain-default",
       "text": "isLeftHinge: typeof ud.__hingeLeft === 'boolean' ? !!ud.__hingeLeft : fallbackHingeLeft,"
@@ -2284,14 +2284,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 209,
+      "line": 212,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = doorOp.isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 211,
+      "line": 214,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "doorOp.isMirror || mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
@@ -2326,14 +2326,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "line": 154,
+      "line": 155,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = visualState.isMirror ? 'mirror' : visualState.adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
-      "line": 155,
+      "line": 156,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const hasLayoutMirror = mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"

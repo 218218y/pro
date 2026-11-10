@@ -101,6 +101,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         __wpStack: wpStackArg,
         __doorWidth: faceW,
         __doorHeight: drawerOp.visualH,
+        __wpFrontThickness: drawerOp.visualT || EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
         __wpFaceOffsetX: faceOffsetX,
         __wpFrontZ: baseFrontZ,
         __wpType: 'extDrawer',

@@ -1,15 +1,11 @@
 import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
-import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
 import {
   createWinterBraceShelfGeometry,
   resolveWinterBraceShelfFrame,
 } from './winter_brace_shelf_geometry.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
-import {
-  EDGE_HANDLE_SIZE_POLICY,
-  STANDARD_HANDLE_RENDER_POLICY,
-} from '../../shared/dimensions/handle_policy.js';
+import { STANDARD_HANDLE_RENDER_POLICY } from '../../shared/dimensions/handle_policy.js';
 import {
   INTERIOR_SHELF_ROUNDED_RENDER_POLICY,
   INTERIOR_SHELF_GEOMETRY_POLICY,
@@ -701,13 +697,15 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const addOutlines = opts.addOutlines;
     if (!THREE) return null;
     if (!isHandleType(type) || type === 'none') return null;
-    if (usesCatalogHandleGeometry(type, opts.handleSizeMm)) {
+    if (type === 'edge' || usesCatalogHandleGeometry(type, opts.handleSizeMm)) {
       if (!__isFn(addOutlines)) throw new TypeError('[handles] snapshot outline binding is required');
       return createHandleMeshV7(type, w, h, isLeftHinge, false, {
         App,
         addOutlines,
         handleSizeMm: typeof opts.handleSizeMm === 'number' ? opts.handleSizeMm : undefined,
         handleColor: typeof opts.handleColor === 'string' ? opts.handleColor : null,
+        edgeHandleVariant: typeof opts.edgeHandleVariant === 'string' ? opts.edgeHandleVariant : null,
+        frontThicknessM: typeof opts.frontThicknessM === 'number' ? opts.frontThicknessM : undefined,
       });
     }
 
@@ -719,32 +717,6 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     handleGroup.userData.__kind = 'handle';
     handleGroup.userData.handleType = type;
     handleGroup.userData.__keepMaterialSubtree = true;
-
-    if (type === 'edge') {
-      const handleH =
-        opts.edgeHandleVariant === 'long'
-          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
-          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
-      const mat = new THREE.MeshStandardMaterial({
-        color: palette.hex,
-        emissive: palette.emissiveHex,
-        emissiveIntensity: 0.08,
-        roughness: palette.roughness,
-        metalness: palette.metalness,
-      });
-      const xPos = isLeftHinge
-        ? w - EDGE_HANDLE_SIZE_POLICY.renderPrimitiveDoorAnchorInsetM
-        : -w + EDGE_HANDLE_SIZE_POLICY.renderPrimitiveDoorAnchorInsetM;
-      const profile = createDoorEdgeHandleProfile({
-        THREE,
-        material: mat,
-        length: handleH,
-        anchorX: xPos,
-        isLeftHinge,
-      });
-      if (profile) handleGroup.add(profile);
-      return handleGroup;
-    }
 
     const handleGeo = new THREE.BoxGeometry(
       STANDARD_HANDLE_RENDER_POLICY.doorWidthM,

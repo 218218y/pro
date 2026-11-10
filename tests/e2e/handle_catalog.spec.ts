@@ -39,6 +39,15 @@ test('catalog selection builds real geometry and survives history and a project 
     .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint)
     .toBe(baseline.fingerprint);
 
+  await global.getByRole('button', { name: 'רוכבת', exact: true }).click();
+  await expect
+    .poll(async () => (await readSceneGeometrySnapshot(page)).fingerprint)
+    .not.toBe(baseline.fingerprint);
+  expectHealthySceneGeometry(await readSceneGeometrySnapshot(page));
+  await page.screenshot({ path: info.outputPath('edge-handle-mounted.png') });
+  await global.getByRole('button', { name: 'סטנדרטית', exact: true }).click();
+  await expect(sizes).toHaveValue('128');
+
   await summary.press('Enter');
   await expect(global.getByTestId('handle-global-bar_round')).toBeVisible();
   await expect(global.locator('[aria-pressed="true"]').last()).toHaveText(/סטנדרטית/);
@@ -66,10 +75,10 @@ test('catalog selection builds real geometry and survives history and a project 
   await page.getByText('ניהול ידיות מתקדם', { exact: true }).click();
   const part = page.getByTestId('handle-picker-part');
   await part.getByText('כל סוגי הידיות').click();
-  const partCup = part.getByTestId('handle-part-cup');
-  await partCup.click();
-  await expect(partCup).toHaveAttribute('aria-pressed', 'true');
-  await expect(partCup).toBeVisible();
+  const partSquare = part.getByTestId('handle-part-knob_square');
+  await partSquare.click();
+  await expect(partSquare).toHaveAttribute('aria-pressed', 'true');
+  await expect(partSquare).toBeVisible();
   await part.getByText('כל סוגי הידיות').click();
   await page.getByRole('button', { name: 'מיקום ידיות ידני' }).click();
 
@@ -83,13 +92,13 @@ test('catalog selection builds real geometry and survives history and a project 
   await page.mouse.move(click.x, click.y);
   await page.mouse.click(click.x, click.y);
   const positionKey = `__wp_manual_handle_position:${partId}`;
-  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('cup');
+  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('knob_square');
   await expect.poll(async () => (await readHandleConfig()).handlesMap?.[positionKey]).toBeTruthy();
   await page.locator('button[data-tooltip^="בטל ("]').click();
   await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBeUndefined();
   await expect.poll(async () => (await readHandleConfig()).handlesMap?.[positionKey]).toBeUndefined();
   await page.locator('button[data-tooltip^="החזר ("]').click();
-  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('cup');
+  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('knob_square');
   await expect.poll(async () => (await readHandleConfig()).handlesMap?.[positionKey]).toBeTruthy();
   expectHealthySceneGeometry(await readSceneGeometrySnapshot(page));
   await page.screenshot({ path: info.outputPath('handle-catalog-3d.png') });
@@ -99,11 +108,11 @@ test('catalog selection builds real geometry and survives history and a project 
   expect(path).toBeTruthy();
   await global.getByRole('button', { name: 'ללא', exact: true }).click();
   await expect.poll(async () => (await readHandleConfig()).globalHandleType).toBe('none');
-  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('cup');
+  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('knob_square');
   await loadProjectViaHeader(page, path!);
   await openMainTab(page, 'interior');
   await expect(global.getByLabel('מרחק בין חורים')).toHaveValue('192');
-  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('cup');
+  await expect.poll(async () => (await readHandleConfig()).handlesMap?.[partId]).toBe('knob_square');
   expectNoRuntimeIssues(issues);
 });
 

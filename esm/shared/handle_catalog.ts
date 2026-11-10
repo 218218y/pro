@@ -1,4 +1,8 @@
-import { STANDARD_HANDLE_RENDER_POLICY } from './dimensions/handle_policy.js';
+import {
+  EDGE_HANDLE_PROFILE_RENDER_POLICY,
+  EDGE_HANDLE_SIZE_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from './dimensions/handle_policy.js';
 
 const allFronts = ['door', 'drawer', 'sliding'] as const;
 const hingedFronts = ['door', 'drawer'] as const;
@@ -32,9 +36,9 @@ export const HANDLE_CATALOG = {
     description: 'חתך מלבני ושני תומכים',
     sizesMm: barSizes,
     defaultSizeMm: 128,
-    crossM: 0.01,
+    crossM: 0.012,
     endAllowanceM: 0.02,
-    depthM: 0.029,
+    depthM: 0.035,
   },
   bar_round: {
     ...surface,
@@ -43,9 +47,9 @@ export const HANDLE_CATALOG = {
     description: 'מוט גלילי על שני תומכים',
     sizesMm: barSizes,
     defaultSizeMm: 128,
-    crossM: 0.012,
-    endAllowanceM: 0.028,
-    depthM: 0.032,
+    crossM: 0.01,
+    endAllowanceM: 0.016,
+    depthM: 0.031,
   },
   bow: {
     ...surface,
@@ -55,8 +59,8 @@ export const HANDLE_CATALOG = {
     sizesMm: bowSizes,
     defaultSizeMm: 128,
     crossM: 0.012,
-    endAllowanceM: 0.012,
-    depthM: 0.029,
+    endAllowanceM: 0.02,
+    depthM: 0.032,
   },
   knob_round: {
     ...surface,
@@ -64,9 +68,19 @@ export const HANDLE_CATALOG = {
     family: 'knobs',
     description: 'ראש עגול על תושבת יחידה',
     sizesMm: fixed,
-    widthM: 0.034,
-    heightM: 0.034,
-    depthM: 0.026,
+    widthM: 0.032,
+    heightM: 0.032,
+    depthM: 0.027,
+  },
+  knob_square: {
+    ...surface,
+    label: 'כפתור מרובע',
+    family: 'knobs',
+    description: 'ראש מרובע מעוגל בפינות על תושבת מרכזית',
+    sizesMm: fixed,
+    widthM: 0.032,
+    heightM: 0.032,
+    depthM: 0.032,
   },
   knob_t: {
     ...surface,
@@ -74,9 +88,9 @@ export const HANDLE_CATALOG = {
     family: 'knobs',
     description: 'מוט קצר על תושבת מרכזית',
     sizesMm: fixed,
-    widthM: 0.052,
-    heightM: 0.014,
-    depthM: 0.03,
+    widthM: 0.051,
+    heightM: 0.013,
+    depthM: 0.032,
   },
   cup: {
     ...surface,
@@ -84,9 +98,9 @@ export const HANDLE_CATALOG = {
     family: 'classic',
     description: 'קונכייה פתוחה מלמטה, למגירות ולדלתות',
     sizesMm: fixed,
-    widthM: 0.096,
+    widthM: 0.102,
     heightM: 0.032,
-    depthM: 0.024,
+    depthM: 0.025,
   },
   edge: {
     ...surface,
@@ -226,4 +240,60 @@ export function clampSurfaceHandleCenter(
 
 export function getSurfaceDoorAnchorX(width: number, isLeftHinge: boolean): number {
   return (isLeftHinge ? 1 : -1) * Math.max(0, width / 2 - STANDARD_HANDLE_RENDER_POLICY.doorOffsetM);
+}
+
+export function getEdgeHandleLengthM(variant: unknown, drawerWidth?: number): number {
+  const { shortLengthM, longLengthM, drawerWidthClearanceM, minLengthM } = EDGE_HANDLE_SIZE_POLICY;
+  const length = variant === 'long' ? longLengthM : shortLengthM;
+  if (drawerWidth === undefined) return length;
+  const fitted = Math.min(length, drawerWidth - drawerWidthClearanceM);
+  return fitted >= minLengthM ? fitted : 0;
+}
+
+export function resolveEdgeHandleMount(
+  rect: HandleFrontRect,
+  host: 'door' | 'drawer',
+  isLeftHinge: boolean,
+  variant: unknown,
+  point: { x: number; y: number }
+): { x: number; y: number; length: number } | null {
+  const drawer = host === 'drawer';
+  const length = getEdgeHandleLengthM(variant, drawer ? rect.maxX - rect.minX : undefined);
+  const pad = drawer ? EDGE_HANDLE_SIZE_POLICY.drawerWidthClearanceM / 2 : 0;
+  const min = (drawer ? rect.minX : rect.minY) + length / 2 + pad;
+  const max = (drawer ? rect.maxX : rect.maxY) - length / 2 - pad;
+  const requested = drawer ? point.x : point.y;
+  if (length <= 0 || !Number.isFinite(requested) || !(min <= max + 1e-8)) return null;
+  const along = Math.max(min, Math.min(max, requested));
+  return drawer
+    ? { x: along, y: rect.maxY, length }
+    : { x: isLeftHinge ? rect.maxX : rect.minX, y: along, length };
+}
+
+export function getEdgeHandlePreviewFootprint(length: number, drawer: boolean): HandleFootprint {
+  const { metalThicknessM, gripInsetM, gripProjectionM } = EDGE_HANDLE_PROFILE_RENDER_POLICY;
+  const cross = metalThicknessM + gripInsetM;
+  return { width: drawer ? length : cross, height: drawer ? cross : length, depth: gripProjectionM };
+}
+
+export function readHandleVisualFrontRect(
+  rect: HandleFrontRect,
+  data: Readonly<Record<string, unknown>> | null | undefined
+): HandleFrontRect {
+  const width = data?.__wpFrontVisualWidth;
+  const height = data?.__wpFrontVisualHeight;
+  const xInset =
+    typeof width === 'number' && Number.isFinite(width) && width > 0
+      ? (rect.maxX - rect.minX - width) / 2
+      : 0;
+  const yInset =
+    typeof height === 'number' && Number.isFinite(height) && height > 0
+      ? (rect.maxY - rect.minY - height) / 2
+      : 0;
+  return {
+    minX: rect.minX + xInset,
+    maxX: rect.maxX - xInset,
+    minY: rect.minY + yInset,
+    maxY: rect.maxY - yInset,
+  };
 }

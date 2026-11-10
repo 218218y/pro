@@ -257,6 +257,8 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       width,
       seg,
       segHeight,
+      frontWidth: segmentVisualWidth,
+      frontThickness: thickness,
       centerY,
       handleAbsY,
       isLeftHinge,

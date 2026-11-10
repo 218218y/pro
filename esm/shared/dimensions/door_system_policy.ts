@@ -153,14 +153,10 @@ export const SLIDING_DOOR_CONSTRUCTION_POLICY = Object.freeze({
 });
 
 export const SLIDING_DOOR_HANDLE_RENDER_POLICY = Object.freeze({
-  handleProfileZOffsetM: meters(0.024),
   standardHandleProfileWidthM: meters(0.025),
   standardHandleProfileDepthM: meters(0.025),
   standardHandleProfileInsetM: meters(0.0125),
   standardHandleProfileFrontZM: meters(0.025),
-  edgeHandleWidthM: meters(0.01),
-  edgeHandleDepthM: meters(0.03),
-  edgeHandleInsetM: meters(0.005),
 });
 
 export const SLIDING_DOOR_MOTION_POLICY = Object.freeze({

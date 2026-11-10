@@ -1,3 +1,4 @@
+import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
 import { isHandleType, supportsHandleHost } from '../../shared/handle_catalog.js';
 import {
   SLIDING_DOOR_CONSTRUCTION_POLICY,
@@ -246,7 +247,6 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           roughness: handlePalette.roughness,
           metalness: handlePalette.metalness,
         });
-        const profileZ = SLIDING_DOOR_HANDLE_RENDER_POLICY.handleProfileZOffsetM;
         if (handleType === 'standard') {
           const profileGeo = new THREE.BoxGeometry(
             SLIDING_DOOR_HANDLE_RENDER_POLICY.standardHandleProfileWidthM,
@@ -271,33 +271,19 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           if (addOutlines) addOutlines(rightProfile);
           group.add(rightProfile);
         } else if (handleType === 'edge') {
-          const edgeGeo = new THREE.BoxGeometry(
-            SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleWidthM,
-            doorOp.height,
-            SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleDepthM
-          );
-          const edgeMat = new THREE.MeshStandardMaterial({
-            color: handlePalette.hex,
-            emissive: handlePalette.emissiveHex,
-            emissiveIntensity: 0.08,
-            roughness: handlePalette.roughness,
-            metalness: handlePalette.metalness,
-          });
-          const leftEdge = new THREE.Mesh(edgeGeo, edgeMat);
-          leftEdge.position.set(
-            -doorOp.width / 2 + SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleInsetM,
-            0,
-            profileZ
-          );
-          group.add(leftEdge);
-
-          const rightEdge = new THREE.Mesh(edgeGeo, edgeMat);
-          rightEdge.position.set(
-            doorOp.width / 2 - SLIDING_DOOR_HANDLE_RENDER_POLICY.edgeHandleInsetM,
-            0,
-            profileZ
-          );
-          group.add(rightEdge);
+          const thickness = SLIDING_DOOR_CONSTRUCTION_POLICY.visualThicknessM;
+          for (const isLeftHinge of [false, true]) {
+            const edge = createDoorEdgeHandleProfile({
+              THREE,
+              material: profileMat,
+              length: doorOp.height,
+              frontThicknessM: thickness,
+              isLeftHinge,
+              sliding: true,
+            });
+            edge.position.set(((isLeftHinge ? 1 : -1) * doorOp.width) / 2, 0, thickness / 2);
+            group.add(edge);
+          }
         }
       }
 

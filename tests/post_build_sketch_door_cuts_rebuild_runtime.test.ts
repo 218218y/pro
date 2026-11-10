@@ -12,7 +12,7 @@ import {
   HINGED_DOOR_HARDWARE_RENDER_POLICY,
   HINGED_DOOR_RENDER_POLICY,
 } from '../esm/shared/dimensions/door_system_policy.ts';
-import { HANDLE_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
+import { STANDARD_HANDLE_RENDER_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
@@ -478,8 +478,8 @@ test('segmented sketch door manual handle placement includes hinged parent mesh 
           handle.userData.__kind = 'handle';
           const visibleHandle = new FakeGroup();
           visibleHandle.position.x = isLeftHinge
-            ? w - HANDLE_POLICY.standard.doorOffsetM
-            : -w + HANDLE_POLICY.standard.doorOffsetM;
+            ? w - STANDARD_HANDLE_RENDER_POLICY.doorOffsetM
+            : -w + STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
           handle.add(visibleHandle);
           return handle;
         },

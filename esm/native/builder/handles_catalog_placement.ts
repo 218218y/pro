@@ -8,6 +8,7 @@ import {
 import type { HandleFrontRect, SurfaceHandleType } from '../../shared/handle_catalog.js';
 import {
   readGeometryUserDataNumberKey,
+  readGeometryUserDataPositiveNumberKey,
   readGeometryUserDataSignKey,
 } from './geometry_user_data_contracts.js';
 
@@ -28,6 +29,13 @@ export function resolveCatalogDoorHandleCenter(
   );
 }
 
+export function readHandleDoorThickness(data: Object3DLike['userData']): number {
+  return (
+    readGeometryUserDataPositiveNumberKey(data, '__wpFrontThickness') ??
+    HINGED_DOOR_RENDER_POLICY.visualThicknessM
+  );
+}
+
 export function mountCatalogDoorHandle(
   handle: Object3DLike,
   center: { x: number; y: number },
@@ -36,8 +44,8 @@ export function mountCatalogDoorHandle(
   rootData: Object3DLike['userData']
 ): void {
   const sign = readGeometryUserDataSignKey(rootData, '__handleZSign', 1) ?? 1;
-  const frontZ =
-    readGeometryUserDataNumberKey(leafData, '__frontMaxZ') ?? HINGED_DOOR_RENDER_POLICY.visualThicknessM / 2;
+  const thickness = readHandleDoorThickness(leafData);
+  const frontZ = readGeometryUserDataNumberKey(leafData, '__frontMaxZ') ?? thickness / 2;
   handle.position.set(center.x, center.y + offsetY, sign * frontZ);
-  handle.scale.z = sign;
+  if (sign === -1) handle.scale.z = sign;
 }

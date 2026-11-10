@@ -356,6 +356,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     const frontBackZ = frontCenterZ - frontThickness / 2;
     frontMesh.position.set(0, 0, frontCenterZ);
     drawerGroup.userData.__frontMaxZ = frontSurfaceZ;
+    drawerGroup.userData.__wpFrontThickness = frontThickness;
     drawerGroup.add(frontMesh);
     appendDoorTrimVisuals({
       App,

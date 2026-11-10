@@ -1,14 +1,15 @@
-import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
+import {
+  isHandleType,
+  resolveEdgeHandleMount,
+  usesCatalogHandleGeometry,
+} from '../../shared/handle_catalog.js';
 import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
 // Post-build sketch external-drawer segmented-door rebuild handle helpers (Pure ESM)
 //
 // Owns handle placement/clamping for segmented sketch-door rebuild flows.
 
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
-import {
-  EDGE_HANDLE_SIZE_POLICY,
-  STANDARD_HANDLE_RENDER_POLICY,
-} from '../../shared/dimensions/handle_policy.js';
+import { STANDARD_HANDLE_RENDER_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { clampDoorHandleLocalCenterYToFit } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { asObject3D, asRecord } from './post_build_extras_shared.js';
@@ -32,6 +33,8 @@ export function maybeAttachSegmentHandle(args: {
   width: number;
   seg: SketchDrawerCutSegment;
   segHeight: number;
+  frontWidth: number;
+  frontThickness: number;
   centerY: number;
   handleAbsY: number | null;
   isLeftHinge: boolean;
@@ -52,6 +55,50 @@ export function maybeAttachSegmentHandle(args: {
         ? runtime.resolveEdgeHandleVariant(segmentPartId)
         : undefined;
     const segCenterY = (seg.yMin + seg.yMax) / 2;
+    if (handleType === 'edge') {
+      const rect = {
+        minX: doorMeshOffsetX - args.frontWidth / 2,
+        maxX: doorMeshOffsetX + args.frontWidth / 2,
+        minY: -segHeight / 2,
+        maxY: segHeight / 2,
+      };
+      const manual = resolveManualHandleLocalPosition({
+        rect,
+        position: runtime.resolveManualHandlePosition(segmentPartId),
+      });
+      const targetY =
+        resolveSegmentHandleAbsY({
+          seg,
+          handleAbsY,
+          padding: resolveSegmentHandleClampPadding(edgeHandleVariant),
+        }) ?? segCenterY;
+      const mount = resolveEdgeHandleMount(
+        rect,
+        'door',
+        isLeftHinge,
+        edgeHandleVariant,
+        manual ?? { x: 0, y: targetY - segCenterY }
+      );
+      if (!mount) return 'suppressed';
+      const node = asObject3D(
+        createHandleMesh(handleType, args.frontWidth, segHeight, isLeftHinge, {
+          edgeHandleVariant,
+          handleColor: resolveHandleColor?.(segmentPartId),
+          frontThicknessM: args.frontThickness,
+        })
+      );
+      if (!node) return 'skipped';
+      mountCatalogDoorHandle(
+        node,
+        mount,
+        segCenterY - centerY,
+        { __wpFrontThickness: args.frontThickness },
+        g.userData
+      );
+      node.userData.partId = segmentPartId;
+      g.add(node);
+      return 'attached';
+    }
     const size = isHandleType(handleType)
       ? runtime.resolveHandleSizeMm?.(segmentPartId, handleType)
       : undefined;
@@ -142,12 +189,7 @@ export function maybeAttachSegmentHandle(args: {
   }
 }
 
-function resolveDefaultSegmentHandleAnchorX(handleType: string, width: number, isLeftHinge: boolean): number {
-  if (handleType === 'edge') {
-    return isLeftHinge
-      ? width + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
-      : -width - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
-  }
+function resolveDefaultSegmentHandleAnchorX(width: number, isLeftHinge: boolean): number {
   const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
   return isLeftHinge ? width - offset : -width + offset;
 }
@@ -184,7 +226,7 @@ function placeSegmentHandleFromManualPosition(args: {
   });
   if (clampedLocalY == null) return 'suppressed';
 
-  const defaultAnchorX = resolveDefaultSegmentHandleAnchorX(args.handleType, args.width, args.isLeftHinge);
+  const defaultAnchorX = resolveDefaultSegmentHandleAnchorX(args.width, args.isLeftHinge);
   if (args.handleObj.position) {
     args.handleObj.position.x = args.doorMeshOffsetX + local.x - defaultAnchorX;
     args.handleObj.position.y = args.segCenterY + clampedLocalY - args.centerY;

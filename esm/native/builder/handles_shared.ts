@@ -108,6 +108,7 @@ export type CreateHandleMeshCtx =
       edgeHandleVariant?: string | null;
       handleColor?: string | null;
       handleSizeMm?: number | undefined;
+      frontThicknessM?: number | undefined;
     }
   | null
   | undefined;

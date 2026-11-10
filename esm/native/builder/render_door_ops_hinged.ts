@@ -165,6 +165,9 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         __wpModuleDoors: doorOp.moduleDoors,
         __wpStack: wpStackArg,
         __hingeLeft: doorOp.isLeftHinge,
+        __wpFrontThickness: hingedDims.visualThicknessM,
+        __wpFrontVisualWidth: doorOp.width - hingedDims.visualWidthClearanceM,
+        __wpFrontVisualHeight: doorOp.height - hingedDims.visualHeightClearanceM,
         __wpDoorId: doorIdNum,
       };
       __reg(App, partId, group, 'hingedDoor');
@@ -283,11 +286,12 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         const size = isHandleType(handleType)
           ? resolveConfiguredHandleSizeMm(handlesMap, partId, handleType)
           : undefined;
-        const handleMesh = usesCatalogHandleGeometry(handleType, size)
-          ? null
-          : createHandleMesh(handleType, doorOp.width, doorOp.height, doorOp.isLeftHinge, {
-              handleColor: resolveConfiguredHandleColor(handlesMap, partId),
-            });
+        const handleMesh =
+          handleType === 'edge' || usesCatalogHandleGeometry(handleType, size)
+            ? null
+            : createHandleMesh(handleType, doorOp.width, doorOp.height, doorOp.isLeftHinge, {
+                handleColor: resolveConfiguredHandleColor(handlesMap, partId),
+              });
         if (handleMesh) {
           handleMesh.position.y = absY - group.position.y;
           group.add(handleMesh);

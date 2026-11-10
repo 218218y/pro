@@ -27,6 +27,7 @@ export function createSketchBoxExternalDrawerGroupNode(
         : 'top',
     __doorWidth: opPlan.faceW,
     __doorHeight: opPlan.visualH,
+    __wpFrontThickness: opPlan.visualD,
     __wpFaceOffsetX: opPlan.faceOffsetX,
     __wpFaceOffsetY: opPlan.faceOffsetY,
     __wpFaceMinY: opPlan.faceMinY,

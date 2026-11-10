@@ -1,153 +1,51 @@
 import type { Object3DLike, ThreeLike } from '../../../types';
-
 import { EDGE_HANDLE_PROFILE_RENDER_POLICY } from '../../shared/dimensions/handle_policy.js';
 
-type EdgeProfileThreeLike = Pick<ThreeLike, 'Group' | 'Mesh' | 'BoxGeometry'>;
-
 type EdgeHandleProfileArgs = {
-  THREE: EdgeProfileThreeLike;
+  THREE: Pick<ThreeLike, 'Group' | 'Mesh' | 'BoxGeometry'>;
   material: unknown;
   length: number;
-  keepMaterial?: boolean;
+  frontThicknessM?: number | undefined;
+  sliding?: boolean;
 };
 
-type DoorEdgeHandleProfileArgs = EdgeHandleProfileArgs & {
-  anchorX: number;
-  isLeftHinge: boolean;
-};
+/** Section origin is the intersection of the panel edge and front surface. */
+function createEdgeHandleProfile(
+  { THREE, material, length, frontThicknessM, sliding }: EdgeHandleProfileArgs,
+  axis: 'x' | 'y',
+  inwardSign: 1 | -1
+): Object3DLike {
+  const policy = EDGE_HANDLE_PROFILE_RENDER_POLICY;
+  const t = policy.metalThicknessM;
+  const board = frontThicknessM ?? policy.nominalFrontThicknessM;
+  const projection = sliding ? policy.slidingGripProjectionM : policy.gripProjectionM;
+  const group = new THREE.Group();
 
-type DrawerEdgeHandleProfileArgs = EdgeHandleProfileArgs;
+  function section(name: string, min: number, max: number, back: number, front: number): void {
+    const cross = max - min;
+    const across = (inwardSign * (min + max)) / 2;
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(axis === 'x' ? cross : length, axis === 'y' ? cross : length, front - back),
+      material
+    );
+    mesh.name = name;
+    mesh.userData = { __keepMaterial: true };
+    mesh.position.set(axis === 'x' ? across : 0, axis === 'y' ? across : 0, (back + front) / 2);
+    group.add(mesh);
+  }
 
-type PositionLike = Object3DLike['position'];
-
-type ObjectLike = Object3DLike;
-
-const EDGE_HANDLE_MOUNT_THICKNESS: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.mountThicknessM;
-const EDGE_HANDLE_MOUNT_DEPTH: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.mountDepthM;
-const EDGE_HANDLE_MOUNT_FRONT_Z: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.mountFrontZM;
-
-const EDGE_HANDLE_RETURN_THICKNESS: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.returnThicknessM;
-const EDGE_HANDLE_RETURN_DEPTH: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.returnDepthM;
-const EDGE_HANDLE_RETURN_FRONT_Z: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.returnFrontZM;
-const EDGE_HANDLE_RETURN_INSET: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.returnInsetM;
-
-const EDGE_HANDLE_BRIDGE_THICKNESS: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.bridgeThicknessM;
-const EDGE_HANDLE_BRIDGE_OVERLAP: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.bridgeOverlapM;
-
-const EDGE_HANDLE_DRAWER_RETURN_DROP: number = EDGE_HANDLE_PROFILE_RENDER_POLICY.drawerReturnDropM;
-
-function setVec3(target: PositionLike, x: number, y: number, z: number): void {
-  target.set(x, y, z);
-}
-
-function markKeepMaterial(node: ObjectLike | null | undefined, keepMaterial: boolean): void {
-  if (!node) return;
-  node.userData = node.userData || {};
-  if (keepMaterial) node.userData.__keepMaterial = true;
-}
-
-function createMesh(
-  THREE: EdgeProfileThreeLike,
-  material: unknown,
-  width: number,
-  height: number,
-  depth: number,
-  keepMaterial: boolean
-): ObjectLike {
-  const mesh: ObjectLike = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
-  markKeepMaterial(mesh, keepMaterial);
-  return mesh;
-}
-
-export function createDoorEdgeHandleProfile(args: DoorEdgeHandleProfileArgs): Object3DLike {
-  const { THREE, material, length, anchorX, isLeftHinge, keepMaterial = true } = args;
-  const inwardSign = isLeftHinge ? -1 : 1;
-  const group: ObjectLike = new THREE.Group();
-  setVec3(group.position, anchorX, 0, 0);
-
-  const mount = createMesh(
-    THREE,
-    material,
-    EDGE_HANDLE_MOUNT_THICKNESS,
-    length,
-    EDGE_HANDLE_MOUNT_DEPTH,
-    keepMaterial
-  );
-  setVec3(mount.position, 0, 0, EDGE_HANDLE_MOUNT_FRONT_Z);
-  group.add(mount);
-
-  const grip = createMesh(
-    THREE,
-    material,
-    EDGE_HANDLE_RETURN_THICKNESS,
-    length,
-    EDGE_HANDLE_RETURN_DEPTH,
-    keepMaterial
-  );
-  setVec3(grip.position, inwardSign * EDGE_HANDLE_RETURN_INSET, 0, EDGE_HANDLE_RETURN_FRONT_Z);
-  group.add(grip);
-
-  const dx = inwardSign * EDGE_HANDLE_RETURN_INSET;
-  const dz = EDGE_HANDLE_RETURN_FRONT_Z - EDGE_HANDLE_MOUNT_FRONT_Z;
-  const bridge = createMesh(
-    THREE,
-    material,
-    Math.hypot(dx, dz) + EDGE_HANDLE_BRIDGE_OVERLAP,
-    length,
-    EDGE_HANDLE_BRIDGE_THICKNESS,
-    keepMaterial
-  );
-  setVec3(bridge.position, dx / 2, 0, EDGE_HANDLE_MOUNT_FRONT_Z + dz / 2);
-  bridge.rotation.y = Math.atan2(dz, dx);
-  group.add(bridge);
-
+  section('edge-handle-back-flange', -t, policy.backFlangeInsetM, -board - t, -board);
+  section('edge-handle-web', -t, 0, -board, projection);
+  section('edge-handle-grip', 0, policy.gripInsetM, projection - t, projection);
   return group;
 }
 
-export function createDrawerEdgeHandleProfile(args: DrawerEdgeHandleProfileArgs): Object3DLike {
-  const { THREE, material, length, keepMaterial = true } = args;
-  const group: ObjectLike = new THREE.Group();
+export function createDoorEdgeHandleProfile(
+  args: EdgeHandleProfileArgs & { isLeftHinge: boolean }
+): Object3DLike {
+  return createEdgeHandleProfile(args, 'x', args.isLeftHinge ? -1 : 1);
+}
 
-  const mount = createMesh(
-    THREE,
-    material,
-    length,
-    EDGE_HANDLE_MOUNT_THICKNESS,
-    EDGE_HANDLE_MOUNT_DEPTH,
-    keepMaterial
-  );
-  setVec3(mount.position, 0, -(EDGE_HANDLE_MOUNT_THICKNESS / 2), EDGE_HANDLE_MOUNT_FRONT_Z);
-  group.add(mount);
-
-  const grip = createMesh(
-    THREE,
-    material,
-    length,
-    EDGE_HANDLE_RETURN_DEPTH,
-    EDGE_HANDLE_RETURN_THICKNESS,
-    keepMaterial
-  );
-  setVec3(grip.position, 0, -EDGE_HANDLE_DRAWER_RETURN_DROP, EDGE_HANDLE_RETURN_FRONT_Z);
-  group.add(grip);
-
-  const drop = EDGE_HANDLE_DRAWER_RETURN_DROP - EDGE_HANDLE_MOUNT_THICKNESS / 2;
-  const dz = EDGE_HANDLE_RETURN_FRONT_Z - EDGE_HANDLE_MOUNT_FRONT_Z;
-  const bridge = createMesh(
-    THREE,
-    material,
-    length,
-    EDGE_HANDLE_BRIDGE_THICKNESS,
-    Math.hypot(drop, dz) + EDGE_HANDLE_BRIDGE_OVERLAP,
-    keepMaterial
-  );
-  setVec3(
-    bridge.position,
-    0,
-    -(EDGE_HANDLE_MOUNT_THICKNESS / 2 + drop / 2),
-    EDGE_HANDLE_MOUNT_FRONT_Z + dz / 2
-  );
-  bridge.rotation.x = Math.atan2(drop, dz);
-  group.add(bridge);
-
-  return group;
+export function createDrawerEdgeHandleProfile(args: EdgeHandleProfileArgs): Object3DLike {
+  return createEdgeHandleProfile(args, 'y', -1);
 }

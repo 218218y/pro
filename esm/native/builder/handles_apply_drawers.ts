@@ -2,6 +2,7 @@ import {
   clampSurfaceHandleCenter,
   getSurfaceHandleFootprint,
   isHandleType,
+  resolveEdgeHandleMount,
   usesCatalogHandleGeometry,
 } from '../../shared/handle_catalog.js';
 import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
@@ -44,6 +45,42 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const drawH =
       readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ??
       DRAWER_HANDLE_PLACEMENT_POLICY.drawerDefaultHeightM;
+    if (hType === 'edge') {
+      const rect = readDrawerHandleRectFromUserData(g.userData);
+      const manual = resolveManualHandleLocalPosition({
+        rect,
+        position: runtime.getManualHandlePosition(id),
+      });
+      const variant = runtime.getEdgeHandleVariant(id);
+      const mount =
+        rect &&
+        resolveEdgeHandleMount(
+          rect,
+          'drawer',
+          true,
+          variant,
+          manual ?? { x: (rect.minX + rect.maxX) / 2, y: rect.maxY }
+        );
+      if (!rect || !mount) {
+        if (id) suppressed.push(id);
+        continue;
+      }
+      const thickness = readGeometryUserDataPositiveNumberKey(g.userData, '__wpFrontThickness');
+      const handle = createHandleMeshV7(hType, rect.maxX - rect.minX, drawH, true, true, {
+        App: runtime.App,
+        addOutlines: runtime.addOutlines,
+        edgeHandleVariant: variant,
+        handleColor: runtime.getHandleColor(id),
+        frontThicknessM: thickness ?? undefined,
+      });
+      if (handle) {
+        const face = readGeometryUserDataNumberKey(g.userData, '__frontMaxZ');
+        const frontZ = face ?? (thickness === null ? computeGroupMaxZLocal(g) : thickness / 2);
+        handle.position.set(mount.x, mount.y, frontZ);
+        g.add(handle);
+      }
+      continue;
+    }
     const size = isHandleType(hType) ? runtime.getHandleSizeMm(id, hType) : undefined;
     if (usesCatalogHandleGeometry(hType, size)) {
       const rect = readDrawerHandleRectFromUserData(g.userData);
@@ -79,14 +116,13 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
-      edgeHandleVariant: hType === 'edge' ? runtime.getEdgeHandleVariant(id) : null,
       handleColor: runtime.getHandleColor(id),
     });
     if (!handle) continue;
 
-    positionDrawerHandleZ(g, handle, hType, computeGroupMaxZLocal);
+    positionDrawerHandleZ(g, handle, computeGroupMaxZLocal);
     if (!positionDrawerHandleManual(runtime, g, handle, id)) {
-      positionDrawerHandleY(runtime, g, handle, hType, drawH);
+      positionDrawerHandleY(runtime, g, handle, drawH);
     }
     g.add(handle);
   }
@@ -96,10 +132,14 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
 function readDrawerHandleRectFromUserData(
   userData: NodeLike['userData'] | null | undefined
 ): { minX: number; maxX: number; minY: number; maxY: number } | null {
-  return (
-    readExplicitDoorRectFromGeometryUserData(userData) ??
-    readDoorLeafRectFromGeometryUserData(userData, { offsetKeys: ['__doorMeshOffsetX', '__wpFaceOffsetX'] })
-  );
+  const explicit = readExplicitDoorRectFromGeometryUserData(userData);
+  if (explicit) return explicit;
+  const rect = readDoorLeafRectFromGeometryUserData(userData, {
+    offsetKeys: ['__doorMeshOffsetX', '__wpFaceOffsetX'],
+  });
+  if (!rect) return null;
+  const offsetY = readGeometryUserDataNumberKey(userData, '__wpFaceOffsetY') ?? 0;
+  return { ...rect, minY: rect.minY + offsetY, maxY: rect.maxY + offsetY };
 }
 
 function positionDrawerHandleManual(
@@ -231,7 +271,6 @@ function createGroupMaxZLocalReader(runtime: HandlesApplyRuntime): (root: NodeLi
 function positionDrawerHandleZ(
   group: NodeLike,
   handle: NodeLike,
-  hType: string,
   computeGroupMaxZLocal: (root: NodeLike) => number
 ): void {
   let maxZ = 0;
@@ -244,7 +283,6 @@ function positionDrawerHandleZ(
 
   const eps = DRAWER_HANDLE_PLACEMENT_POLICY.zPositionEpsilonM;
   let handleMinZ = Infinity;
-  let handleMaxZ = -Infinity;
   handle.traverse?.((ch: NodeLike) => {
     if (ch && ch.isMesh && ch.geometry) {
       if (!ch.geometry.boundingBox && typeof ch.geometry.computeBoundingBox === 'function')
@@ -253,57 +291,19 @@ function positionDrawerHandleZ(
       if (!bb) return;
       const localZ = ch.position && Number.isFinite(ch.position.z) ? ch.position.z : 0;
       const bbMinZ = typeof bb.min.z === 'number' ? bb.min.z : 0;
-      const bbMaxZ = typeof bb.max.z === 'number' ? bb.max.z : 0;
       handleMinZ = Math.min(handleMinZ, localZ + bbMinZ);
-      handleMaxZ = Math.max(handleMaxZ, localZ + bbMaxZ);
     }
   });
   if (!Number.isFinite(handleMinZ)) handleMinZ = 0;
   handle.position.z = maxZ - handleMinZ + eps;
-
-  if (hType === 'edge' && Number.isFinite(handleMaxZ)) {
-    const handleDepthZ = handleMaxZ - handleMinZ;
-    const targetVisibleProtrusionZ = DRAWER_HANDLE_PLACEMENT_POLICY.drawerEdgeVisibleProtrusionM;
-    const seatInsetZ = Math.max(0, handleDepthZ - targetVisibleProtrusionZ);
-    handle.position.z -= seatInsetZ;
-  }
 }
 
 function positionDrawerHandleY(
   runtime: HandlesApplyRuntime,
   group: NodeLike,
   handle: NodeLike,
-  hType: string,
   drawH: number
 ): void {
-  const eps = DRAWER_HANDLE_PLACEMENT_POLICY.zPositionEpsilonM;
-  if (hType === 'edge') {
-    const doorHeight = readGeometryUserDataPositiveNumberKey(group.userData, '__doorHeight');
-    if (doorHeight != null) {
-      handle.position.y = doorHeight / 2 + eps;
-      return;
-    }
-
-    let maxY = 0;
-    let foundParts = false;
-    group.children.forEach((c: NodeLike) => {
-      if (c.isMesh && c.geometry) {
-        if (!c.geometry.boundingBox && typeof c.geometry.computeBoundingBox === 'function')
-          c.geometry.computeBoundingBox();
-        const y =
-          c.position.y +
-          (c.geometry.boundingBox && typeof c.geometry.boundingBox.max.y === 'number'
-            ? c.geometry.boundingBox.max.y
-            : 0);
-        if (y > maxY) maxY = y;
-        foundParts = true;
-      }
-    });
-    if (!foundParts) maxY = drawH / 2;
-    handle.position.y = maxY + eps;
-    return;
-  }
-
   const handleAbsY = readGeometryUserDataNumberKey(group.userData, '__handleAbsY');
   if (handleAbsY != null) {
     const groupY = readGeometryUserDataNumber(group.position?.y) ?? 0;

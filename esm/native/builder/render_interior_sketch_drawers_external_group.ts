@@ -31,6 +31,7 @@ export function createSketchExternalDrawerGroupNode(
   groupUd.__wpStack = resolvedStackKey;
   groupUd.__doorWidth = opPlan.faceW;
   groupUd.__doorHeight = opPlan.visualH;
+  groupUd.__wpFrontThickness = opPlan.visualD;
   groupUd.__wpFaceOffsetX = opPlan.faceOffsetX;
   groupUd.__wpFaceOffsetY = opPlan.faceOffsetY;
   groupUd.__wpFaceMinY = opPlan.faceMinY;

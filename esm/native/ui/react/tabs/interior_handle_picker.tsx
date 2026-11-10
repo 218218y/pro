@@ -19,6 +19,7 @@ const previews: Record<HandleType, string> = {
   bar_round: 'M10 12h44a4 4 0 0 1 0 8H10a4 4 0 0 1 0-8z M16 20v8 M48 20v8',
   bow: 'M9 26Q32 0 55 26h-5Q32 10 14 26z',
   knob_round: 'M32 5a12 12 0 1 0 .01 0z M25 11a9 9 0 0 1 9-3',
+  knob_square: 'M21 6h22l4 4v14l-4 4H21l-4-4V10z M21 11h22v12H21z',
   knob_t: 'M19 10h26a4 4 0 0 1 0 8H19a4 4 0 0 1 0-8z M29 18v10h6V18',
   cup: 'M8 25a24 18 0 0 1 48 0z M15 24q17-13 34 0',
   edge: 'M11 10h42v7H17v10h-6z M17 20h34',

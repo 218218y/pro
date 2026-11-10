@@ -1,9 +1,17 @@
-import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
+import {
+  isHandleType,
+  readHandleVisualFrontRect,
+  resolveEdgeHandleMount,
+  usesCatalogHandleGeometry,
+} from '../../shared/handle_catalog.js';
 import type { SurfaceHandleType } from '../../shared/handle_catalog.js';
-import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
+import {
+  resolveCatalogDoorHandleCenter,
+  mountCatalogDoorHandle,
+  readHandleDoorThickness,
+} from './handles_catalog_placement.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import {
-  EDGE_HANDLE_SIZE_POLICY,
   EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY,
   STANDARD_HANDLE_RENDER_POLICY,
 } from '../../shared/dimensions/handle_policy.js';
@@ -30,8 +38,7 @@ import {
 } from './geometry_user_data_contracts.js';
 
 export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
-  const { App, removeDoorsEnabled, isDoorRemovedV7, getHandleType, getEdgeHandleVariant, getHandleColor } =
-    runtime;
+  const { App, removeDoorsEnabled, isDoorRemovedV7, getHandleType, getHandleColor } = runtime;
   const doorsArray = getDoorsArray(App);
   if (!Array.isArray(doorsArray)) return;
   const standardSuppressedPartIds: string[] = [];
@@ -72,12 +79,46 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
       const rect = readDoorLeafRectFromUserData(g.userData);
       const absY = readOptionalFinite(g.userData.__handleAbsY);
       const y = absY == null ? 0 : absY - g.position.y;
-      if (!rect || !attachCatalogDoorHandle(runtime, g, g, partId, hType, size, rect, isLeftHinge, y, 0)) {
+      if (
+        !rect ||
+        !attachCatalogDoorHandle(
+          runtime,
+          g,
+          g,
+          partId,
+          hType,
+          size,
+          readHandleVisualFrontRect(rect, g.userData),
+          isLeftHinge,
+          y,
+          0
+        )
+      ) {
         if (partId) standardSuppressedPartIds.push(partId);
       }
       continue;
     }
-    const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : null;
+    if (hType === 'edge') {
+      const rect = readDoorLeafRectFromUserData(g.userData);
+      const absY = readOptionalFinite(g.userData.__handleAbsY);
+      if (
+        !rect ||
+        !attachDoorEdgeHandle(
+          runtime,
+          g,
+          g,
+          partId,
+          rect,
+          isLeftHinge,
+          absY == null ? 0 : absY - g.position.y,
+          0
+        )
+      ) {
+        if (partId) standardSuppressedPartIds.push(partId);
+      }
+      continue;
+    }
+    const edgeHandleVariant = null;
 
     const handle = createHandleMeshV7(hType, doorW, doorH, isLeftHinge, false, {
       App,
@@ -88,15 +129,7 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     if (!handle) continue;
 
     applyDoorHandleZFlip(g, handle);
-    const isManualPlacement = applyDoorHandleManualPlacement(
-      runtime,
-      g,
-      handle,
-      doorW,
-      isLeftHinge,
-      hType,
-      id
-    );
+    const isManualPlacement = applyDoorHandleManualPlacement(runtime, g, handle, doorW, isLeftHinge, id);
     if (!isManualPlacement) {
       applyDoorHandleVerticalPlacement(runtime, g, handle, doorH);
     }
@@ -273,7 +306,7 @@ function resolveSegmentManualHandleLocalY(args: {
   });
   if (!fit.fits) return null;
 
-  const defaultAnchorX = resolveDefaultHandleAnchorX(hType, leaf.rootWidth, leaf.isLeftHinge);
+  const defaultAnchorX = resolveDefaultHandleAnchorX(leaf.rootWidth, leaf.isLeftHinge);
   handle.position.x = meshOffsetX + local.x - defaultAnchorX;
   return local.y;
 }
@@ -358,7 +391,33 @@ function refreshSketchSegmentedDoorHandles(
       }
       continue;
     }
-    const edgeHandleVariant = hType === 'edge' ? runtime.getEdgeHandleVariant(leaf.partId) : null;
+    if (hType === 'edge') {
+      const x = readOptionalFinite(root.userData.__doorMeshOffsetX) ?? 0;
+      const width = readOptionalFinite(leaf.node.userData.__doorWidth) ?? leaf.rootWidth;
+      const rect = {
+        minX: x - width / 2,
+        maxX: x + width / 2,
+        minY: -leaf.height / 2,
+        maxY: leaf.height / 2,
+      };
+      const target = leaf.handleAbsY == null ? 0 : leaf.handleAbsY - root.position.y - leaf.centerLocalY;
+      if (
+        !attachDoorEdgeHandle(
+          runtime,
+          root,
+          leaf.node,
+          leaf.partId,
+          rect,
+          leaf.isLeftHinge,
+          target,
+          leaf.centerLocalY
+        )
+      ) {
+        suppressedPartIds.push(leaf.partId);
+      }
+      continue;
+    }
+    const edgeHandleVariant = null;
     const handle = createHandleMeshV7(hType, leaf.rootWidth, leaf.height, leaf.isLeftHinge, false, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
@@ -392,12 +451,7 @@ function refreshSketchSegmentedDoorHandles(
   }
 }
 
-function resolveDefaultHandleAnchorX(hType: string, doorW: number, isLeftHinge: boolean): number {
-  if (hType === 'edge') {
-    return isLeftHinge
-      ? doorW + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
-      : -doorW - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
-  }
+function resolveDefaultHandleAnchorX(doorW: number, isLeftHinge: boolean): number {
   const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
   return isLeftHinge ? doorW - offset : -doorW + offset;
 }
@@ -408,7 +462,6 @@ function applyDoorHandleManualPlacement(
   handle: NodeLike,
   doorW: number,
   isLeftHinge: boolean,
-  hType: string,
   id: unknown
 ): boolean {
   const manualPosition = runtime.getManualHandlePosition(id);
@@ -418,7 +471,7 @@ function applyDoorHandleManualPlacement(
   const local = resolveManualHandleLocalPosition({ rect, position: manualPosition });
   if (!local) return false;
 
-  const defaultAnchorX = resolveDefaultHandleAnchorX(hType, doorW, isLeftHinge);
+  const defaultAnchorX = resolveDefaultHandleAnchorX(doorW, isLeftHinge);
   handle.position.x = local.x - defaultAnchorX;
   handle.position.y = local.y;
   return true;
@@ -498,6 +551,42 @@ function attachCatalogDoorHandle(
   });
   if (!handle) return false;
   mountCatalogDoorHandle(handle, center, offsetY, leaf.userData, root.userData);
+  handle.userData.partId = id;
+  root.add(handle);
+  return true;
+}
+
+function attachDoorEdgeHandle(
+  runtime: HandlesApplyRuntime,
+  root: NodeLike,
+  leaf: NodeLike,
+  id: string,
+  rect: NonNullable<ReturnType<typeof readDoorLeafRectFromUserData>>,
+  isLeftHinge: boolean,
+  y: number,
+  offsetY: number
+): boolean {
+  const visual = readHandleVisualFrontRect(rect, leaf.userData);
+  const manual = resolveManualHandleLocalPosition({ rect, position: runtime.getManualHandlePosition(id) });
+  const variant = runtime.getEdgeHandleVariant(id);
+  const mount = resolveEdgeHandleMount(visual, 'door', isLeftHinge, variant, manual ?? { x: 0, y });
+  if (!mount) return false;
+  const handle = createHandleMeshV7(
+    'edge',
+    visual.maxX - visual.minX,
+    visual.maxY - visual.minY,
+    isLeftHinge,
+    false,
+    {
+      App: runtime.App,
+      addOutlines: runtime.addOutlines,
+      edgeHandleVariant: variant,
+      handleColor: runtime.getHandleColor(id),
+      frontThicknessM: readHandleDoorThickness(leaf.userData),
+    }
+  );
+  if (!handle) return false;
+  mountCatalogDoorHandle(handle, mount, offsetY, leaf.userData, root.userData);
   handle.userData.partId = id;
   root.add(handle);
   return true;

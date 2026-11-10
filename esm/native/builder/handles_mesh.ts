@@ -1,4 +1,8 @@
-import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
+import {
+  getEdgeHandleLengthM,
+  isHandleType,
+  usesCatalogHandleGeometry,
+} from '../../shared/handle_catalog.js';
 import { addCatalogHandleGeometry } from './handles_catalog_geometry.js';
 import { createDoorEdgeHandleProfile, createDrawerEdgeHandleProfile } from './edge_handle_profile.js';
 import {
@@ -10,10 +14,7 @@ import {
   type NodeLike,
 } from './handles_shared.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
-import {
-  EDGE_HANDLE_SIZE_POLICY,
-  STANDARD_HANDLE_RENDER_POLICY,
-} from '../../shared/dimensions/handle_policy.js';
+import { STANDARD_HANDLE_RENDER_POLICY } from '../../shared/dimensions/handle_policy.js';
 
 function recordPersistentMaterialCacheUse(material: unknown, cacheHit: boolean): void {
   if (typeof __WP_BUILD_PERF__ === 'undefined' || __WP_BUILD_PERF__ !== true) return;
@@ -71,38 +72,14 @@ export function createHandleMeshV7(
       }));
     recordPersistentMaterialCacheUse(edgeMat, !!cachedEdgeMat);
 
-    if (isDrawer) {
-      const targetEdgeLen =
-        edgeHandleVariant === 'long'
-          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
-          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
-      const handleW = Math.max(
-        EDGE_HANDLE_SIZE_POLICY.minLengthM,
-        Math.min(w - EDGE_HANDLE_SIZE_POLICY.drawerWidthClearanceM, targetEdgeLen)
-      );
-      const profile = createDrawerEdgeHandleProfile({
-        THREE,
-        material: edgeMat,
-        length: handleW,
-      });
-      if (profile) g.add(profile);
-    } else {
-      const handleH =
-        edgeHandleVariant === 'long'
-          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
-          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
-      const xPos = isLeftHinge
-        ? w + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
-        : -w - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
-      const profile = createDoorEdgeHandleProfile({
-        THREE,
-        material: edgeMat,
-        length: handleH,
-        anchorX: xPos,
-        isLeftHinge,
-      });
-      if (profile) g.add(profile);
-    }
+    const length = getEdgeHandleLengthM(edgeHandleVariant, isDrawer ? w : undefined);
+    if (length <= 0) return null;
+    const profileArgs = { THREE, material: edgeMat, length, frontThicknessM: ctx?.frontThicknessM };
+    g.add(
+      isDrawer
+        ? createDrawerEdgeHandleProfile(profileArgs)
+        : createDoorEdgeHandleProfile({ ...profileArgs, isLeftHinge })
+    );
     return g;
   }
 

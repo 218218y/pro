@@ -211,3 +211,53 @@ test('standard spacing preserves the original 128 mm geometry and changes fitted
     null
   );
 });
+
+test('the final builder seats a hinged handle on the visible leaf edge and a drawer handle on its offset front', () => {
+  const door = new THREE.Group();
+  door.userData = {
+    partId: 'd1',
+    __doorWidth: 0.6,
+    __doorHeight: 1.2,
+    __doorMeshOffsetX: 0.3,
+    __hingeLeft: true,
+    __wpFrontThickness: 0.019,
+    __wpFrontVisualWidth: 0.596,
+    __wpFrontVisualHeight: 1.196,
+  };
+  const drawer = new THREE.Group();
+  drawer.userData = {
+    partId: 'd2_draw_0',
+    __doorWidth: 0.36,
+    __doorHeight: 0.16,
+    __wpFaceOffsetX: 0.05,
+    __wpFaceOffsetY: 0.012,
+    __wpFrontThickness: 0.02,
+  };
+  const App = {
+    deps: { THREE },
+    services: { builder: { handles: { cache: {} } }, platform: {} },
+    store: { getState: () => ({ config: {}, ui: {}, runtime: {}, mode: {} }) },
+    render: { doorsArray: [{ group: door, type: 'hinged' }], drawersArray: [{ group: drawer }] },
+  };
+  applyHandles({
+    App,
+    addOutlines: noOutlines,
+    removeDoorsEnabled: false,
+    triggerRender: false,
+    cfgSnapshot: {
+      globalHandleType: 'edge',
+      handlesMap: {
+        '__wp_manual_handle_position:d1': '{"xRatio":0.25,"yRatio":0.5}',
+        '__wp_manual_handle_position:d2_draw_0': '{"xRatio":0.75,"yRatio":0.25}',
+      },
+    },
+  });
+  const [doorHandle, drawerHandle] = [door.children[0]!, drawer.children[0]!];
+  assert.equal(doorHandle.userData.handleType, 'edge');
+  assert.ok(Math.abs(doorHandle.position.x - 0.598) < 1e-8);
+  assert.equal(doorHandle.position.z, 0.0095);
+  assert.equal(drawerHandle.userData.handleType, 'edge');
+  assert.equal(drawerHandle.position.y, 0.092);
+  assert.equal(drawerHandle.position.z, 0.01);
+  assert.ok(drawerHandle.position.x > 0.05);
+});

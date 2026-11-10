@@ -47,6 +47,39 @@ export function addCatalogHandleGeometry(args: {
     grip.add(part);
   }
 
+  function roundedPrism(width: number, height: number, depth: number, radius: number): Geometry {
+    const x = width / 2;
+    const y = height / 2;
+    const shape = new THREE.Shape();
+    shape.moveTo(-x + radius, -y);
+    shape.lineTo(x - radius, -y);
+    shape.quadraticCurveTo(x, -y, x, -y + radius);
+    shape.lineTo(x, y - radius);
+    shape.quadraticCurveTo(x, y, x - radius, y);
+    shape.lineTo(-x + radius, y);
+    shape.quadraticCurveTo(-x, y, -x, y - radius);
+    shape.lineTo(-x, -y + radius);
+    shape.quadraticCurveTo(-x, -y, -x + radius, -y);
+    return new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 5 });
+  }
+
+  function roundGrip(): Geometry {
+    const radius = height / 2;
+    const end = width / 2;
+    const chamfer = 0.0008;
+    return new THREE.LatheGeometry(
+      [
+        new THREE.Vector2(0, -end),
+        new THREE.Vector2(radius - chamfer, -end),
+        new THREE.Vector2(radius, -end + chamfer),
+        new THREE.Vector2(radius, end - chamfer),
+        new THREE.Vector2(radius - chamfer, end),
+        new THREE.Vector2(0, end),
+      ],
+      28
+    );
+  }
+
   function post(x: number, radius: number, length: number): void {
     const geometry = geometryFor('post', () => new THREE.CylinderGeometry(radius, radius, length, 16));
     mesh(geometry, x, 0, length / 2, Math.PI / 2);
@@ -65,29 +98,22 @@ export function addCatalogHandleGeometry(args: {
     case 'bar_slim':
       for (const x of [-spacing / 2, spacing / 2]) {
         mesh(
-          geometryFor('post', () => new THREE.BoxGeometry(0.016, height, 0.024)),
+          geometryFor('post', () => new THREE.BoxGeometry(0.016, height - 0.002, depth - 0.005)),
           x,
           0,
-          0.012
+          (depth - 0.005) / 2
         );
       }
       mesh(
-        geometryFor('grip', () => new THREE.BoxGeometry(width, height, 0.006)),
+        geometryFor('grip', () => roundedPrism(width, height, 0.006, 0.002)),
         0,
         0,
-        depth - 0.003
+        depth - 0.006
       );
       break;
     case 'bar_round':
-      for (const x of [-spacing / 2, spacing / 2]) post(x, height / 2, 0.027);
-      mesh(
-        geometryFor('grip', () => new THREE.CylinderGeometry(height / 2, height / 2, width, 20)),
-        0,
-        0,
-        depth - height / 2,
-        0,
-        Math.PI / 2
-      );
+      for (const x of [-spacing / 2, spacing / 2]) post(x, height / 2, depth - height / 2);
+      mesh(geometryFor('grip', roundGrip), 0, 0, depth - height / 2, 0, Math.PI / 2);
       break;
     case 'bow': {
       const arch = geometryFor('grip', () => {
@@ -95,34 +121,47 @@ export function addCatalogHandleGeometry(args: {
         const shape = new THREE.Shape();
         shape.moveTo(-half, 0);
         shape.quadraticCurveTo(0, depth * 2, half, 0);
-        shape.lineTo(spacing / 2 - 0.006, 0);
-        shape.quadraticCurveTo(0, (depth - 0.007) * 2, -spacing / 2 + 0.006, 0);
+        const innerFoot = spacing - half;
+        shape.lineTo(innerFoot, 0);
+        shape.quadraticCurveTo(0, (depth - 0.008) * 2, -innerFoot, 0);
         shape.closePath();
         return new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false, curveSegments: 16 });
       });
       mesh(arch, 0, height / 2, 0, Math.PI / 2);
       break;
     }
-    case 'knob_round':
-      post(0, 0.009, 0.018);
+    case 'knob_round': {
+      const rounded = geometryFor('grip', () => {
+        const capDepth = 0.008;
+        const startAngle = -Math.PI / 3;
+        const rootZ = depth - capDepth;
+        const points = [
+          new THREE.Vector2(0, 0),
+          new THREE.Vector2(0.008, 0),
+          new THREE.Vector2(0.0055, 0.005),
+          new THREE.Vector2(0.0055, rootZ + capDepth * Math.sin(startAngle) - 0.002),
+        ];
+        for (let i = 0; i <= 25; i++) {
+          const angle = startAngle + ((Math.PI / 2 - startAngle) * i) / 25;
+          points.push(new THREE.Vector2((width / 2) * Math.cos(angle), rootZ + capDepth * Math.sin(angle)));
+        }
+        return new THREE.LatheGeometry(points, 32);
+      });
+      mesh(rounded, 0, 0, 0, Math.PI / 2);
+      break;
+    }
+    case 'knob_square':
+      post(0, 0.008, depth - 0.009);
       mesh(
-        geometryFor('grip', () => new THREE.CylinderGeometry(width / 2 - 0.003, width / 2, 0.009, 28)),
+        geometryFor('grip', () => roundedPrism(width, height, 0.01, 0.002)),
         0,
         0,
-        depth - 0.0045,
-        Math.PI / 2
+        depth - 0.01
       );
       break;
     case 'knob_t':
-      post(0, height / 2, 0.025);
-      mesh(
-        geometryFor('grip', () => new THREE.CylinderGeometry(height / 2, height / 2, width, 20)),
-        0,
-        0,
-        depth - height / 2,
-        0,
-        Math.PI / 2
-      );
+      post(0, 0.0048, depth - height / 2);
+      mesh(geometryFor('grip', roundGrip), 0, 0, depth - height / 2, 0, Math.PI / 2);
       break;
     case 'cup':
       mesh(

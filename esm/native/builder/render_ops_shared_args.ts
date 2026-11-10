@@ -63,6 +63,10 @@ export function __handleMeshOpts(x: unknown): HandleMeshOpts {
   const opts = __commonArgs(x);
   const size = __asMap(x)?.handleSizeMm;
   if (typeof size === 'number') opts.handleSizeMm = size;
+  const thickness = __asMap(x)?.frontThicknessM;
+  if (typeof thickness === 'number' && Number.isFinite(thickness) && thickness > 0) {
+    opts.frontThicknessM = thickness;
+  }
   return opts;
 }
 
