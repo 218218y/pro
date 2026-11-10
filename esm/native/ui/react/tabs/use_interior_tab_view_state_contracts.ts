@@ -18,14 +18,12 @@ import type {
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
 import type {
-  HandleTypeOption as InteriorHandleTypeOption,
   LayoutTypeOption as InteriorLayoutTypeOption,
   ManualToolOption as InteriorManualToolOption,
 } from './interior_tab_local_state_runtime.js';
 
 export type LayoutTypeOption = InteriorLayoutTypeOption;
 export type ManualToolOption = InteriorManualToolOption;
-export type HandleTypeOption = InteriorHandleTypeOption;
 
 export type InteriorTabViewState = {
   hasWinterBrace: boolean;
@@ -60,6 +58,9 @@ export type InteriorTabViewState = {
   handleControlEnabled: boolean;
   globalHandleType: HandleType;
   handleToolType: HandleType;
+  globalHandleSize: number | undefined;
+  handleToolSize: number | undefined;
+  isHandleResetMode: boolean;
   globalHandleColor: HandleUiColor;
   handleToolColor: HandleUiColor;
   globalEdgeHandleVariant: EdgeHandleVariant;
@@ -122,7 +123,6 @@ export type InteriorTabViewState = {
   manualTools: ManualToolOption[];
   gridDivs: number[];
   extCounts: number[];
-  handleTypes: HandleTypeOption[];
   setManualRowOpen: Dispatch<SetStateAction<boolean>>;
   setSketchRowOpen: Dispatch<SetStateAction<boolean>>;
   setManualUiTool: Dispatch<SetStateAction<ManualToolId>>;

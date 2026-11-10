@@ -1,3 +1,4 @@
+import type { HandleType } from '../../shared/handle_catalog.js';
 // Post-build sketch external-drawer door cuts contracts (Pure ESM)
 //
 // Owns the canonical runtime + selection contracts shared by sketch external-drawer door-cut flows.
@@ -35,6 +36,7 @@ export type SketchDoorCutsRuntime = {
   getMirrorMaterial: (() => unknown) | null;
   resolveHandleType: (partId: string) => string;
   resolveEdgeHandleVariant: (partId: string) => 'short' | 'long';
+  resolveHandleSizeMm?: (partId: string, type: HandleType) => number | undefined;
   resolveHandleColor: (partId: string) => string;
   resolveManualHandlePosition: (partId: string) => ManualHandlePosition | null;
   resolveCurtain: (partId: string) => string | null;

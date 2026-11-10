@@ -1,3 +1,4 @@
+import { HANDLE_INHERIT_GLOBAL } from '../../shared/handle_catalog.js';
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
 import {
@@ -7,7 +8,7 @@ import {
 } from '../runtime/doors_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { cfgBatch, setCfgGlobalHandleType, setCfgHandlesMap } from '../runtime/cfg_access.js';
+import { setCfgGlobalHandleType } from '../runtime/cfg_access.js';
 import {
   splitBottomKey,
   splitKey,
@@ -70,7 +71,8 @@ function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): Unknow
       const id = formatIdentityValue(readIdentityValue(doorId));
       const value =
         handlesMap && typeof handlesMap === 'object' && id && id in handlesMap ? handlesMap[id] : undefined;
-      if (typeof value !== 'undefined' && value !== null && value !== '') return value;
+      if (typeof value !== 'undefined' && value !== null && value !== '' && value !== HANDLE_INHERIT_GLOBAL)
+        return value;
       const globalHandleType =
         typeof state.doorsSelect.globalHandleType === 'function'
           ? state.doorsSelect.globalHandleType()
@@ -137,15 +139,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
     },
     setGlobalHandleType(handleType: string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setGlobalHandleType');
-      const nextType = typeof handleType === 'undefined' ? null : handleType;
-      return cfgBatch(
-        state.App,
-        function () {
-          setCfgGlobalHandleType(state.App, nextType, nextMeta);
-          setCfgHandlesMap(state.App, {}, nextMeta);
-        },
-        nextMeta
-      );
+      return setCfgGlobalHandleType(state.App, handleType, nextMeta);
     },
   };
 }

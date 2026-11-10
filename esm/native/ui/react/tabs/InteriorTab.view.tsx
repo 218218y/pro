@@ -105,7 +105,13 @@ function InteriorTabInner(props: { active: boolean }) {
           handleToolColor={state.handleToolColor}
           globalEdgeHandleVariant={state.globalEdgeHandleVariant}
           handleToolEdgeVariant={state.handleToolEdgeVariant}
-          handleTypes={state.handleTypes}
+          wardrobeType={state.wardrobeType}
+          globalHandleSize={state.globalHandleSize}
+          handleToolSize={state.handleToolSize}
+          isHandleResetMode={state.isHandleResetMode}
+          setGlobalHandleSize={workflows.setGlobalHandleSize}
+          setHandleModeSize={workflows.setHandleModeSize}
+          enterHandleResetMode={workflows.enterHandleResetMode}
           setGlobalHandle={workflows.setGlobalHandle}
           setGlobalHandleColor={workflows.setGlobalHandleColor}
           setGlobalEdgeHandleVariant={workflows.setGlobalEdgeHandleVariant}

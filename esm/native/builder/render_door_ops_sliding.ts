@@ -1,3 +1,4 @@
+import { isHandleType, supportsHandleHost } from '../../shared/handle_catalog.js';
 import {
   SLIDING_DOOR_CONSTRUCTION_POLICY,
   SLIDING_DOOR_HANDLE_RENDER_POLICY,
@@ -97,6 +98,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
       group.userData.__doorWidth = doorOp.width;
       group.userData.__doorHeight = doorOp.height;
       group.userData.__doorType = 'sliding';
+      group.userData.__wpSlidingHandlesEnabled = cfg.slidingDoorHandlesEnabled === true;
       group.userData.__doorPivotCentered = true;
       group.userData.__hingeLeft = false;
       group.userData.__doorMeshOffsetX = 0;
@@ -233,8 +235,9 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
         faceSign: 1,
       });
 
-      if (cfg.slidingDoorHandlesEnabled) {
-        const handleType = resolveHandleType(getHandleType, slideID);
+      const handleType = resolveHandleType(getHandleType, slideID);
+      const supportsHandle = isHandleType(handleType) && supportsHandleHost(handleType, 'sliding');
+      if (cfg.slidingDoorHandlesEnabled && supportsHandle && handleType !== 'none') {
         const handlePalette = resolveHandleFinishPalette(resolveConfiguredHandleColor(handlesMap, slideID));
         const profileMat = new THREE.MeshStandardMaterial({
           color: handlePalette.hex,

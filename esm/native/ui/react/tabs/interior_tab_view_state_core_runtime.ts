@@ -28,6 +28,7 @@ export type InteriorUiSnapshot = {
   internalDrawersEnabled?: unknown;
   handleControl?: unknown;
   currentHandleToolType?: unknown;
+  currentHandleToolSize?: unknown;
   currentHandleToolColor?: unknown;
   currentHandleToolEdgeVariant?: unknown;
 };
@@ -54,6 +55,7 @@ export function readInteriorTabUiSnapshot(ui: InteriorUiSnapshot): InteriorUiSna
     internalDrawersEnabled: ui.internalDrawersEnabled,
     handleControl: ui.handleControl,
     currentHandleToolType: ui.currentHandleToolType,
+    currentHandleToolSize: ui.currentHandleToolSize,
     currentHandleToolColor: ui.currentHandleToolColor,
     currentHandleToolEdgeVariant: ui.currentHandleToolEdgeVariant,
   };

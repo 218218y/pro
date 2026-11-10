@@ -76,6 +76,7 @@ const UI_DOMAIN_BY_KEY = {
   internalDrawersEnabled: INTERIOR,
   handleControl: INTERIOR,
   currentHandleToolType: INTERIOR_APPEARANCE,
+  currentHandleToolSize: INTERIOR_APPEARANCE,
   currentHandleToolColor: INTERIOR_APPEARANCE,
   currentHandleToolEdgeVariant: INTERIOR_APPEARANCE,
   perCellGridMap: INTERIOR,

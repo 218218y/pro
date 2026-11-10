@@ -7975,3 +7975,96 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   border-color: var(--wp-r-dark-card-border);
   color: var(--text-secondary);
 }
+
+.wp-handle-picker {
+  display: grid;
+  gap: 0.65rem;
+  min-inline-size: 0;
+}
+
+.wp-handle-picker-current {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid currentColor;
+  border-radius: 0.65rem;
+  padding: 0.5rem;
+}
+
+.wp-handle-picker-current small,
+.wp-handle-catalog-tile small {
+  display: block;
+  font-size: 0.78em;
+  line-height: 1.35;
+}
+
+.wp-handle-preview {
+  inline-size: 3.4rem;
+  block-size: 2rem;
+  flex: none;
+}
+
+.wp-handle-catalog summary {
+  cursor: pointer;
+  align-content: center;
+  min-block-size: 44px;
+  font-weight: 650;
+}
+
+.wp-handle-family h4 {
+  margin-block: 0.7rem 0.35rem;
+}
+
+.wp-handle-catalog-grid {
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(6.8rem, 100%), 1fr));
+}
+
+.wp-handle-catalog-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  padding: 0.45rem;
+  min-block-size: 44px;
+  border: 1px solid currentColor;
+  border-radius: 0.65rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.wp-handle-catalog-tile[aria-pressed='true'] {
+  border-width: 2px;
+}
+
+.wp-handle-tile-selected {
+  position: absolute;
+  inset-block-start: 0.25rem;
+  inset-inline-end: 0.35rem;
+}
+
+.wp-handle-picker :is(button, summary, select):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.wp-handle-size {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wp-handle-size select {
+  min-block-size: 44px;
+  max-inline-size: 100%;
+  font: inherit;
+}
+
+.wp-handle-host-note {
+  margin: 0;
+  font-size: 0.85em;
+}

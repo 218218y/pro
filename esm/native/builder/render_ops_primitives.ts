@@ -1,3 +1,5 @@
+import { isHandleType, isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { createHandleMeshV7 } from './handles_mesh.js';
 import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
 import {
   createWinterBraceShelfGeometry,
@@ -698,7 +700,16 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const THREE = opts.THREE;
     const addOutlines = opts.addOutlines;
     if (!THREE) return null;
-    if (type === 'none') return null;
+    if (!isHandleType(type) || type === 'none') return null;
+    if (isSurfaceHandleType(type)) {
+      if (!__isFn(addOutlines)) throw new TypeError('[handles] snapshot outline binding is required');
+      return createHandleMeshV7(type, w, h, isLeftHinge, false, {
+        App,
+        addOutlines,
+        handleSizeMm: typeof opts.handleSizeMm === 'number' ? opts.handleSizeMm : undefined,
+        handleColor: typeof opts.handleColor === 'string' ? opts.handleColor : null,
+      });
+    }
 
     const handleColor = normalizeHandleFinishColor(opts.handleColor);
     const palette = resolveHandleFinishPalette(handleColor);

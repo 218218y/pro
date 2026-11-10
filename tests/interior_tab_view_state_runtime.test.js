@@ -1,3 +1,4 @@
+import * as handleCatalog from '../esm/shared/handle_catalog.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
@@ -7,6 +8,7 @@ import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const srcPath = path.resolve('esm/native/ui/react/tabs/interior_tab_view_state_runtime.ts');
 const moduleExports = loadTsRuntimeModule(srcPath, {
   mock: spec => {
+    if (spec === '../../../../shared/handle_catalog.js') return handleCatalog;
     if (spec === '../actions/handles_actions.js') {
       return { EDGE_HANDLE_VARIANT_GLOBAL_KEY: '__edge_variant__' };
     }
@@ -78,7 +80,7 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
           const raw = String(value ?? fallback)
             .trim()
             .toLowerCase();
-          return ['standard', 'edge', 'none'].includes(raw) ? raw : fallback;
+          return handleCatalog.isHandleType(raw) ? raw : fallback;
         },
         readEdgeHandleVariant: (value, fallback = 'short') =>
           String(value ?? fallback)

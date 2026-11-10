@@ -1,3 +1,8 @@
+import {
+  decodeHandleSize,
+  HANDLE_SIZE_GLOBAL_KEY,
+  readHandleSizeMm,
+} from '../../../../shared/handle_catalog.js';
 import { EDGE_HANDLE_VARIANT_GLOBAL_KEY } from '../actions/handles_actions.js';
 import { isManualHandlePositionMode as isManualHandlePlacementMode } from '../../../features/manual_handle_position.js';
 import {
@@ -38,6 +43,7 @@ export type InteriorTabUiToolStateArgs = {
     internalDrawersEnabled?: unknown;
     handleControl?: unknown;
     currentHandleToolType?: unknown;
+    currentHandleToolSize?: unknown;
     currentHandleToolColor?: unknown;
     currentHandleToolEdgeVariant?: unknown;
   };
@@ -146,6 +152,16 @@ export function deriveInteriorTabUiToolState(args: InteriorTabUiToolStateArgs) {
   const handleToolType = isHandleMode
     ? readHandleType(modeOpts.handleType, storedHandleToolType)
     : storedHandleToolType;
+  const globalHandleSize =
+    decodeHandleSize(globalHandleType, handlesMap[HANDLE_SIZE_GLOBAL_KEY]) ??
+    readHandleSizeMm(globalHandleType);
+  const storedToolSize =
+    decodeHandleSize(handleToolType, ui.currentHandleToolSize) ??
+    decodeHandleSize(handleToolType, handlesMap[HANDLE_SIZE_GLOBAL_KEY]);
+  const handleToolSize = readHandleSizeMm(
+    handleToolType,
+    (isHandleMode ? modeOpts.handleSizeMm : undefined) ?? storedToolSize
+  );
   const handleToolColor = isHandleMode
     ? readHandleUiColor(modeOpts.handleColor, storedHandleToolColor)
     : storedHandleToolColor;
@@ -162,6 +178,9 @@ export function deriveInteriorTabUiToolState(args: InteriorTabUiToolStateArgs) {
     handleControlEnabled,
     globalHandleType,
     handleToolType,
+    globalHandleSize,
+    handleToolSize,
+    isHandleResetMode: isHandleMode && modeOpts.handleReset === true,
     globalHandleColor,
     handleToolColor,
     globalEdgeHandleVariant,

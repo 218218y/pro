@@ -32,6 +32,8 @@ export interface GeometryLike extends UnknownRecord {
   setFromPoints?: (points: unknown[]) => GeometryLike;
   computeBoundingBox?: () => unknown;
   computeVertexNormals?: () => unknown;
+  setAttribute?: (name: string, value: BufferAttributeLike) => GeometryLike;
+  setIndex?: (indices: number[]) => GeometryLike;
   translate?: (x: number, y: number, z: number) => GeometryLike;
 }
 

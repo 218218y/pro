@@ -11,7 +11,7 @@ export type WardrobeType = 'hinged' | 'sliding';
 export type HingeDir = 'left' | 'right';
 
 /** Known global handle types used by the React UI (can be extended later). */
-export type HandleType = 'standard' | 'edge' | 'none';
+export type { HandleType } from '../esm/shared/handle_catalog.js';
 
 /** Board material selection used by React Structure tab. */
 export type BoardMaterial = 'sandwich' | 'melamine';

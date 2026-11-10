@@ -1,3 +1,4 @@
+import { handleOverrideBaseId, resolveConfiguredHandleSizeMm } from '../../shared/handle_catalog.js';
 // Post-build sketch external-drawer door-cut runtime resolver assembly (Pure ESM)
 //
 // Owns runtime surface resolution for segmented sketch-door rebuild flows.
@@ -91,9 +92,8 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     readGrooveLayoutListForPart({ map: grooveLayoutMap, partId })?.layouts || null;
   const resolveHandleColor = (partId: string): string =>
     resolveConfiguredHandleColor(readKey(cfg, 'handlesMap'), partId);
-  const stripSuffix = (partId: string): string => partId.replace(/_(top|mid\d*|bot|full)$/, '');
   const resolveManualHandlePosition = (partId: string) => {
-    const base = stripSuffix(partId);
+    const base = handleOverrideBaseId(handlesMap, partId);
     return readManualHandlePositionForPart(handlesMap, partId, base);
   };
   const readHandleOverride = (key: string): string | undefined => {
@@ -102,7 +102,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     return typeof value === 'string' && value ? value : undefined;
   };
   const resolveEdgeHandleVariant = (partId: string): 'short' | 'long' => {
-    const base = stripSuffix(partId);
+    const base = handleOverrideBaseId(handlesMap, partId);
     const partValue =
       readHandleOverride(edgeHandleVariantPartKey(partId)) ??
       (base !== partId ? readHandleOverride(edgeHandleVariantPartKey(base)) : undefined);
@@ -123,6 +123,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     resolveHandleType,
     resolveEdgeHandleVariant,
     resolveHandleColor,
+    resolveHandleSizeMm: (id, type) => resolveConfiguredHandleSizeMm(handlesMap, id, type),
     resolveManualHandlePosition,
     resolveCurtain,
     resolveSpecial,

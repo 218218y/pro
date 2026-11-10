@@ -723,11 +723,7 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
       handleToolColor: 'gold',
       globalEdgeHandleVariant: 'long',
       handleToolEdgeVariant: 'short',
-      handleTypes: [
-        { id: 'standard', label: 'רגילה' },
-        { id: 'edge', label: 'קנט' },
-        { id: 'none', label: 'ללא' },
-      ],
+      wardrobeType: 'hinged',
       setGlobalHandle: noop,
       setGlobalHandleColor: noop,
       setGlobalEdgeHandleVariant: noop,
@@ -739,6 +735,8 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   );
   assert.match(handlesHtml, /ידיות/);
   assert.match(handlesHtml, /ידית לכל הארון/);
+  assert.match(handlesHtml, /data-testid="handle-global-cup"/);
+  assert.match(handlesHtml, /data-testid="handle-part-cup"/);
   assert.match(handlesHtml, /ניהול ידיות מתקדם/);
   assert.match(handlesHtml, /ידית לפי דלת\/מגירה/);
   assert.match(handlesHtml, /צבע ידית ברירת מחדל/);
@@ -936,11 +934,7 @@ test('interior handles section keeps advanced controls open when handle editing 
       handleToolColor: 'black',
       globalEdgeHandleVariant: 'short',
       handleToolEdgeVariant: 'long',
-      handleTypes: [
-        { id: 'standard', label: 'סטנדרטי' },
-        { id: 'edge', label: 'רוכבת' },
-        { id: 'none', label: 'ללא' },
-      ],
+      wardrobeType: 'hinged',
       setGlobalHandle: noop,
       setGlobalHandleColor: noop,
       setGlobalEdgeHandleVariant: noop,

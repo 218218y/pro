@@ -107,7 +107,7 @@ test('handle assign click reads parent-chain part ids and preserves edge variant
   assert.deepEqual(calls[1].args, [
     '__wp_edge_handle_variant:d12_front',
     'short',
-    { source: 'handles:assignEdgeVariant', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.equal(calls[0].owner, App.store);
   assert.equal(calls[1].owner, App.store);
@@ -115,7 +115,7 @@ test('handle assign click reads parent-chain part ids and preserves edge variant
   assert.deepEqual(calls[2].args, [
     '__wp_handle_color:d12_front',
     'nickel',
-    { source: 'handles:assignColor', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.equal(calls[2].owner, App.store);
 });
@@ -164,12 +164,12 @@ test('manual handle position click stores normalized door-local position and exp
   assert.deepEqual(calls[1].args, [
     '__wp_handle_color:d2_full',
     'nickel',
-    { source: 'handles:assignColor', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.equal(calls[2].op, 'setHandle');
   assert.equal(calls[2].args[0], '__wp_manual_handle_position:d2_full');
   assert.deepEqual(JSON.parse(String(calls[2].args[1])), { xRatio: 0.75, yRatio: 0.75 });
-  assert.deepEqual(calls[2].args[2], { source: 'handles:assignManualPosition', immediate: true });
+  assert.deepEqual(calls[2].args[2], { source: 'handles:assign', immediate: true });
 });
 
 test('manual handle position click stores drawer-local position for external drawer fronts', () => {
@@ -216,19 +216,19 @@ test('manual handle position click stores drawer-local position for external dra
   assert.deepEqual(calls[1].args, [
     '__wp_edge_handle_variant:d2_draw_0',
     'short',
-    { source: 'handles:assignEdgeVariant', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.deepEqual(calls[2].args, [
     '__wp_handle_color:d2_draw_0',
     'black',
-    { source: 'handles:assignColor', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.equal(calls[3].op, 'setHandle');
   assert.equal(calls[3].args[0], '__wp_manual_handle_position:d2_draw_0');
   const manualPosition = JSON.parse(String(calls[3].args[1]));
   assert.ok(Math.abs(Number(manualPosition.xRatio) - 0.75) < 1e-12);
   assert.ok(Math.abs(Number(manualPosition.yRatio) - 0.7) < 1e-12);
-  assert.deepEqual(calls[3].args[2], { source: 'handles:assignManualPosition', immediate: true });
+  assert.deepEqual(calls[3].args[2], { source: 'handles:assign', immediate: true });
 });
 
 test('manual handle position reader accepts the canonical serialized shape only', () => {
@@ -304,7 +304,7 @@ test('handle assignment targets internal drawer owner ids from drawer-box hits',
   assert.deepEqual(calls[1].args, [
     '__wp_handle_color:div_int_sketch_0_d1_lower',
     'black',
-    { source: 'handles:assignColor', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
 });
 
@@ -337,7 +337,58 @@ test('normal handle assignment clears a previous manual door handle position', (
   assert.deepEqual(calls[0].args, [
     '__wp_manual_handle_position:d3_full',
     null,
-    { source: 'handles:clearManualPosition', immediate: true },
+    { source: 'handles:assign', immediate: true },
   ]);
   assert.deepEqual(calls[1].args, ['d3_full', 'standard', { source: 'handles:assign', immediate: true }]);
+});
+
+test('resetting a split leaf restores its cabinet default without changing the sibling or parent override', () => {
+  const { App, calls } = createHandleAssignHarness({
+    modeOpts: { handleReset: true },
+    config: {
+      globalHandleType: 'bar_round',
+      handlesMap: {
+        d3: 'bow',
+        d3_top: 'cup',
+        d3_bot: 'knob_round',
+        '__wp_handle_color:d3': 'black',
+        '__wp_handle_size:d3_top': 'bow:128',
+        '__wp_manual_handle_position:d3_top': '{"xRatio":0.5,"yRatio":0.5}',
+      },
+    },
+  });
+  const handled = tryHandleCanvasHandleAssignClick({
+    App,
+    primaryHitObject: null,
+    foundDrawerId: null,
+    effectiveDoorId: 'd3_top',
+    foundPartId: null,
+    isHandleEditMode: true,
+  });
+  assert.equal(handled, true);
+  const map = App.store.getState().config.handlesMap;
+  assert.deepEqual(
+    { ...map },
+    {
+      d3: 'bow',
+      d3_top: '__wp_inherit_global',
+      d3_bot: 'knob_round',
+      '__wp_handle_color:d3': 'black',
+    }
+  );
+  assert.ok(calls.every(call => call.args[2].source === 'handles:assign'));
+});
+
+test('a new surface handle cannot be assigned to a sliding leaf', () => {
+  const { App, calls } = createHandleAssignHarness({ handleType: 'knob_t' });
+  const handled = tryHandleCanvasHandleAssignClick({
+    App,
+    primaryHitObject: null,
+    foundDrawerId: null,
+    effectiveDoorId: 'slide_1',
+    foundPartId: null,
+    isHandleEditMode: true,
+  });
+  assert.equal(handled, true);
+  assert.deepEqual(calls, []);
 });

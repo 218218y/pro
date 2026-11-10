@@ -1,3 +1,5 @@
+import { isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
 // Post-build sketch external-drawer segmented-door rebuild handle helpers (Pure ESM)
 //
 // Owns handle placement/clamping for segmented sketch-door rebuild flows.
@@ -50,6 +52,39 @@ export function maybeAttachSegmentHandle(args: {
         ? runtime.resolveEdgeHandleVariant(segmentPartId)
         : undefined;
     const segCenterY = (seg.yMin + seg.yMax) / 2;
+    if (isSurfaceHandleType(handleType)) {
+      const size = runtime.resolveHandleSizeMm?.(segmentPartId, handleType);
+      const rect = {
+        minX: doorMeshOffsetX - width / 2,
+        maxX: doorMeshOffsetX + width / 2,
+        minY: -segHeight / 2,
+        maxY: segHeight / 2,
+      };
+      const manual = resolveManualHandleLocalPosition({
+        rect,
+        position: runtime.resolveManualHandlePosition(segmentPartId),
+      });
+      const center = resolveCatalogDoorHandleCenter(
+        handleType,
+        size,
+        rect,
+        isLeftHinge,
+        (handleAbsY ?? segCenterY) - segCenterY,
+        manual
+      );
+      if (!center) return 'suppressed';
+      const node = asObject3D(
+        createHandleMesh(handleType, width, segHeight, isLeftHinge, {
+          handleSizeMm: size,
+          handleColor: runtime.resolveHandleColor(segmentPartId),
+        })
+      );
+      if (!node) return 'skipped';
+      mountCatalogDoorHandle(node, center, segCenterY - centerY, g.userData, g.userData);
+      node.userData.partId = segmentPartId;
+      g.add(node);
+      return 'attached';
+    }
     const handle = createHandleMesh(
       handleType,
       width,

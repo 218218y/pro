@@ -75,19 +75,13 @@ const expectedBoundaryDependencies = Object.freeze([
   }),
 ]);
 const expectedUiExports = Object.freeze({
-  type: Object.freeze([
-    'HandleTypeOption',
-    'InteriorTabLocalStateDefaults',
-    'LayoutTypeOption',
-    'ManualToolOption',
-  ]),
+  type: Object.freeze(['InteriorTabLocalStateDefaults', 'LayoutTypeOption', 'ManualToolOption']),
   value: Object.freeze([
     'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM',
     'DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE',
     'DEFAULT_SKETCH_STORAGE_HEIGHT_CM',
     'INTERIOR_EXT_COUNTS',
     'INTERIOR_GRID_DIVS',
-    'INTERIOR_HANDLE_TYPES',
     'INTERIOR_LAYOUT_TYPES',
     'INTERIOR_MANUAL_TOOLS',
     'createInteriorTabLocalStateDefaults',

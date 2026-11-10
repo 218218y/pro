@@ -1,3 +1,9 @@
+import {
+  clampSurfaceHandleCenter,
+  getSurfaceHandleFootprint,
+  isSurfaceHandleType,
+} from '../../shared/handle_catalog.js';
+import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import { DRAWER_HANDLE_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
@@ -18,6 +24,7 @@ import type { DrawerVisualEntryLike } from '../../../types';
 export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
   const safeDrawers = collectSafeDrawers(runtime);
   const processedUUIDs = new Set();
+  const suppressed: string[] = [];
   const computeGroupMaxZLocal = createGroupMaxZLocalReader(runtime);
 
   for (const g of safeDrawers) {
@@ -36,6 +43,38 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     const drawH =
       readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ??
       DRAWER_HANDLE_PLACEMENT_POLICY.drawerDefaultHeightM;
+    if (isSurfaceHandleType(hType)) {
+      const rect = readDrawerHandleRectFromUserData(g.userData);
+      const size = runtime.getHandleSizeMm(id, hType);
+      const manual = resolveManualHandleLocalPosition({
+        rect,
+        position: runtime.getManualHandlePosition(id),
+      });
+      const center =
+        rect &&
+        clampSurfaceHandleCenter(
+          getSurfaceHandleFootprint(hType, 'drawer', size),
+          rect,
+          manual?.x ?? (rect.minX + rect.maxX) / 2,
+          manual?.y ?? 0
+        );
+      if (!center) {
+        if (id) suppressed.push(id);
+        continue;
+      }
+      const mounted = createHandleMeshV7(hType, drawW, drawH, true, true, {
+        App: runtime.App,
+        addOutlines: runtime.addOutlines,
+        handleColor: runtime.getHandleColor(id),
+        handleSizeMm: size,
+      });
+      if (mounted) {
+        const frontZ = readGeometryUserDataNumberKey(g.userData, '__frontMaxZ') ?? computeGroupMaxZLocal(g);
+        mounted.position.set(center.x, center.y, frontZ);
+        g.add(mounted);
+      }
+      continue;
+    }
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
@@ -50,6 +89,7 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
     }
     g.add(handle);
   }
+  notifyHandleFitSuppressions(runtime.App, suppressed, { scope: 'drawer-handles', completePass: true });
 }
 
 function readDrawerHandleRectFromUserData(

@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { InteriorHandlePicker } from './interior_handle_picker.js';
+import { useId, useRef } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 
 import { isHandleFinishCustomColor } from '../../../features/finish_palette/api.js';
@@ -37,6 +38,7 @@ function HandleColorRow(props: {
   onSelect: (color: HandleUiColor) => void;
   className?: string;
 }): ReactElement {
+  const colorInputId = useId();
   const colorInputRef = useRef<HTMLInputElement | null>(null);
   const customSelected = isHandleFinishCustomColor(props.selectedColor);
   const customLabel = customSelected ? props.selectedColor.toUpperCase() : 'מיוחד';
@@ -90,7 +92,7 @@ function HandleColorRow(props: {
             <span>{customLabel}</span>
             <input
               ref={colorInputRef}
-              id="wp-r-handle-custom-color"
+              id={colorInputId}
               name="handleCustomColor"
               type="color"
               value={readPickerValue(props.selectedColor)}
@@ -125,18 +127,19 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
       <div className="wp-tool-card wp-tool-card--handles">
         <InteriorToolCardHeader title="🧷 ידית לכל הארון" />
 
-        <div className="wp-row wp-gap-8 wp-wrap wp-r-handle-global">
-          {props.handleTypes.map(t => (
-            <OptionBtn
-              key={t.id}
-              className="wp-flex-1 wp-r-handle-btn"
-              selected={props.globalHandleType === t.id}
-              onClick={() => props.setGlobalHandle(t.id)}
-            >
-              {t.label}
-            </OptionBtn>
-          ))}
-        </div>
+        <InteriorHandlePicker
+          type={props.globalHandleType}
+          size={props.globalHandleSize}
+          variant={props.globalEdgeHandleVariant}
+          finish={
+            METAL_FINISH_OPTIONS.find(color => color.id === props.globalHandleColor)?.label ??
+            props.globalHandleColor
+          }
+          scope="global"
+          sliding={props.wardrobeType === 'sliding'}
+          onSelect={props.setGlobalHandle}
+          onSize={props.setGlobalHandleSize}
+        />
 
         {props.globalHandleType === 'edge' ? (
           <InteriorEdgeHandleVariantRow
@@ -173,18 +176,19 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
             onExit={() => props.toggleHandleMode()}
           />
 
-          <div className="wp-row wp-gap-8 wp-wrap wp-r-handle-advanced">
-            {props.handleTypes.map(t => (
-              <OptionBtn
-                key={t.id}
-                className="wp-flex-1 wp-r-handle-btn"
-                selected={props.handleToolType === t.id}
-                onClick={() => props.toggleHandleMode(t.id)}
-              >
-                {t.label}
-              </OptionBtn>
-            ))}
-          </div>
+          <InteriorHandlePicker
+            type={props.handleToolType}
+            size={props.handleToolSize}
+            variant={props.handleToolEdgeVariant}
+            finish={
+              METAL_FINISH_OPTIONS.find(color => color.id === props.handleToolColor)?.label ??
+              props.handleToolColor
+            }
+            scope="part"
+            sliding={props.wardrobeType === 'sliding'}
+            onSelect={props.toggleHandleMode}
+            onSize={props.setHandleModeSize}
+          />
 
           {props.handleToolType === 'edge' ? (
             <InteriorEdgeHandleVariantRow
@@ -210,14 +214,19 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
             >
               מיקום ידיות ידני
             </OptionBtn>
+            <OptionBtn selected={props.isHandleResetMode} onClick={props.enterHandleResetMode}>
+              חזרה לברירת המחדל של הארון
+            </OptionBtn>
           </div>
 
           {props.isHandleMode ? (
             <div className="wp-hint wp-hint--handle wp-mt-8">
               <i className="fas fa-info-circle" aria-hidden="true" />{' '}
-              {props.isManualHandlePositionMode
-                ? 'רחף על דלת, כוון גובה ורוחב, ולחץ כדי לקבע מיקום ידית ידני.'
-                : 'לחץ על דלת או מגירה כדי לשנות ידית, ואז לחץ "סיום עריכה".'}
+              {props.isHandleResetMode
+                ? 'לחץ על דלת או מגירה כדי להחזיר את הידית לברירת המחדל.'
+                : props.isManualHandlePositionMode
+                  ? 'רחף על דלת, כוון גובה ורוחב, ולחץ כדי לקבע מיקום ידית ידני.'
+                  : 'לחץ על דלת או מגירה כדי לשנות ידית, ואז לחץ "סיום עריכה".'}
             </div>
           ) : (
             <InlineNotice>בחר סוג ידית כדי להיכנס למצב עריכה, או לחץ "מיקום ידיות ידני".</InlineNotice>

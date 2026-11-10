@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 import { isCorniceDimensionsCm } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { ProjectDataLike, ProjectSchemaValidationResult, UnknownRecord } from '../../../types/index.js';
 
@@ -172,13 +173,8 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
     ) {
       errors.push('settings.drawerRunnerType must be roller or blum');
     }
-    if (
-      hasOwn(settings, 'globalHandleType') &&
-      settings.globalHandleType !== 'standard' &&
-      settings.globalHandleType !== 'edge' &&
-      settings.globalHandleType !== 'none'
-    ) {
-      errors.push('settings.globalHandleType must be standard, edge, or none');
+    if (hasOwn(settings, 'globalHandleType') && !isHandleType(settings.globalHandleType)) {
+      errors.push('settings.globalHandleType must identify a catalog handle');
     }
     if (hasOwn(settings, 'cornerSide') && settings.cornerSide !== 'left' && settings.cornerSide !== 'right') {
       errors.push('settings.cornerSide must be left or right');

@@ -2,6 +2,9 @@ import type { AppContainer } from '../../../../../types';
 import {
   setHandleControlEnabled as handlesSetControlEnabled,
   setGlobalHandleType as handlesSetGlobalHandleType,
+  setGlobalHandleSize,
+  setHandleModeSize,
+  enterHandleResetMode,
   setGlobalHandleColor as handlesSetGlobalHandleColor,
   setGlobalEdgeHandleVariant as handlesSetGlobalEdgeVariant,
   setHandleModeColor as handlesSetHandleModeColor,
@@ -18,6 +21,9 @@ type InteriorTabHandlesWorkflowController = Pick<
   | 'setGlobalEdgeHandleVariant'
   | 'setHandleModeEdgeVariant'
   | 'setGlobalHandle'
+  | 'setGlobalHandleSize'
+  | 'setHandleModeSize'
+  | 'enterHandleResetMode'
   | 'setGlobalHandleColor'
   | 'toggleHandleMode'
   | 'setHandleModeColor'
@@ -28,6 +34,9 @@ export function createInteriorTabHandlesWorkflowController(
   app: AppContainer
 ): InteriorTabHandlesWorkflowController {
   return {
+    setGlobalHandleSize: size => setGlobalHandleSize(app, size),
+    setHandleModeSize: size => setHandleModeSize(app, size),
+    enterHandleResetMode: () => enterHandleResetMode(app),
     setHandleControlEnabled(on: boolean) {
       handlesSetControlEnabled(app, on);
     },

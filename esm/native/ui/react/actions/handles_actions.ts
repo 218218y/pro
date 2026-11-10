@@ -1,3 +1,10 @@
+import {
+  decodeHandleSize,
+  encodeHandleSize,
+  HANDLE_SIZE_GLOBAL_KEY,
+  isHandleType,
+  readHandleSizeMm,
+} from '../../../../shared/handle_catalog.js';
 // React UI actions: handles (global type + handle edit mode)
 
 import type {
@@ -34,6 +41,7 @@ import { resolveRemoveDoorsEnabledFromSnapshots } from '../../../features/door_a
 export const EDGE_HANDLE_VARIANT_GLOBAL_KEY = '__wp_edge_handle_variant_global';
 
 const HANDLE_TOOL_TYPE_UI_KEY = 'currentHandleToolType';
+const HANDLE_TOOL_SIZE_UI_KEY = 'currentHandleToolSize';
 const HANDLE_TOOL_COLOR_UI_KEY = 'currentHandleToolColor';
 const HANDLE_TOOL_EDGE_VARIANT_UI_KEY = 'currentHandleToolEdgeVariant';
 const HANDLE_COLOR_PART_PREFIX = '__wp_handle_color:';
@@ -131,7 +139,7 @@ function readHandleColor(value: unknown) {
 
 function readModeHandleType(value: unknown): HandleType {
   const raw = typeof value === 'string' ? value.trim() : '';
-  return raw === 'edge' || raw === 'none' ? (raw as HandleType) : 'standard';
+  return isHandleType(raw) ? raw : 'standard';
 }
 
 function readManualModeHandleType(value: unknown): HandleType {
@@ -168,7 +176,11 @@ function patchHandleToolUi(app: AppContainer, patch: UnknownRecord, source: stri
 }
 
 function isGlobalHandleToolMapKey(key: string): boolean {
-  return key === HANDLE_COLOR_GLOBAL_KEY || key === EDGE_HANDLE_VARIANT_GLOBAL_KEY;
+  return (
+    key === HANDLE_COLOR_GLOBAL_KEY ||
+    key === EDGE_HANDLE_VARIANT_GLOBAL_KEY ||
+    key === HANDLE_SIZE_GLOBAL_KEY
+  );
 }
 
 function isPerPartHandleToolMapKey(key: string): boolean {
@@ -325,7 +337,8 @@ export function setHandleControlEnabled(app: AppContainer, on: unknown): void {
 }
 
 export function setGlobalHandleType(app: AppContainer, t: HandleType): void {
-  const type = String(t || 'standard');
+  if (!isHandleType(t)) throw new TypeError('[handles] invalid catalog handle');
+  const type = t;
 
   try {
     const setGlobalHandleTypeAction = getDoorsActionFn<(type: string, meta?: ActionMetaLike) => unknown>(
@@ -350,6 +363,61 @@ export function setGlobalHandleType(app: AppContainer, t: HandleType): void {
   }
 
   applyHandlesBestEffort(app);
+}
+
+export function setGlobalHandleSize(app: AppContainer, size: number): void {
+  const type = readModeHandleType(getCfgSnap(app).globalHandleType);
+  patchHandlesMapReservedKey(
+    app,
+    HANDLE_SIZE_GLOBAL_KEY,
+    encodeHandleSize(type, size),
+    'react:handles:globalSize'
+  );
+  applyHandlesBestEffort(app);
+}
+
+function readStoredToolSize(app: AppContainer, type: HandleType): number | undefined {
+  const config = readRecord(getCfgSnap(app).handlesMap);
+  return (
+    decodeHandleSize(type, getUiSnap(app)[HANDLE_TOOL_SIZE_UI_KEY]) ??
+    decodeHandleSize(type, config?.[HANDLE_SIZE_GLOBAL_KEY]) ??
+    readHandleSizeMm(type)
+  );
+}
+
+export function setHandleModeSize(app: AppContainer, size: number): void {
+  const mode = getModeState(app);
+  const opts = mode.primary === getHandleModeId() ? readRecord(mode.opts) || {} : {};
+  const type = readModeHandleType(opts.handleType ?? readStoredHandleToolType(app));
+  patchHandleToolUi(
+    app,
+    { [HANDLE_TOOL_SIZE_UI_KEY]: encodeHandleSize(type, size) },
+    'react:handles:toolSize'
+  );
+  enterHandleEditMode(
+    app,
+    {
+      ...opts,
+      handleType: type,
+      handleSizeMm: readHandleSizeMm(type, size),
+      handleReset: false,
+      handleColor: opts.handleColor ?? readStoredHandleToolColor(app),
+    },
+    isManualHandlePositionMode(opts.handlePlacement) ? 'crosshair' : 'pointer'
+  );
+}
+
+export function enterHandleResetMode(app: AppContainer): void {
+  const mode = getModeState(app);
+  const opts = mode.primary === getHandleModeId() ? readRecord(mode.opts) || {} : {};
+  if (opts.handleReset === true) {
+    exitPrimaryMode(app, getHandleModeId(), { preserveDoors: true });
+    return;
+  }
+  enterHandleEditMode(app, {
+    handleType: readStoredHandleToolType(app),
+    handleReset: true,
+  });
 }
 
 export function setGlobalHandleColor(app: AppContainer, color: unknown): void {
@@ -390,6 +458,7 @@ export function setHandleModeEdgeVariant(app: AppContainer, v: unknown): void {
   enterHandleEditMode(app, {
     ...curOpts,
     handleType: 'edge',
+    ...(curOpts.handleReset === true ? { handleReset: false } : {}),
     edgeHandleVariant: next,
     handleColor,
   });
@@ -423,6 +492,7 @@ export function setHandleModeColor(app: AppContainer, color: unknown): void {
     handleType,
     edgeHandleVariant,
     handleColor: nextColor,
+    ...(curOpts.handleReset === true ? { handleReset: false } : {}),
   });
 }
 
@@ -448,6 +518,7 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
     ? readManualModeHandleType(curOpts.handleType)
     : readManualModeHandleType(readStoredHandleToolType(app));
   const selectedColor = isHandleMode ? readHandleColor(curOpts.handleColor) : readStoredHandleToolColor(app);
+  const handleSizeMm = readStoredToolSize(app, selectedType);
   const selectedEdgeVariant =
     selectedType === 'edge'
       ? isHandleMode
@@ -471,6 +542,7 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
       edgeHandleVariant: selectedEdgeVariant,
       handleColor: selectedColor,
       handlePlacement: MANUAL_HANDLE_POSITION_MODE,
+      ...(handleSizeMm !== undefined ? { handleSizeMm } : {}),
     },
     preserveDoors: true,
     cursor: 'crosshair',
@@ -526,5 +598,20 @@ export function toggleHandleMode(app: AppContainer, t?: unknown): void {
     'react:handles:toolType'
   );
 
-  enterHandleEditMode(app, { ...curOpts, handleType, edgeHandleVariant, handleColor });
+  const handleSizeMm = readStoredToolSize(app, handleType);
+  const nextOpts = { ...curOpts };
+  delete nextOpts.handleSizeMm;
+  delete nextOpts.handleReset;
+  if (handleType === 'none') delete nextOpts.handlePlacement;
+  enterHandleEditMode(
+    app,
+    {
+      ...nextOpts,
+      handleType,
+      edgeHandleVariant,
+      handleColor,
+      ...(handleSizeMm !== undefined ? { handleSizeMm } : {}),
+    },
+    isManualHandlePositionMode(nextOpts.handlePlacement) ? 'crosshair' : 'pointer'
+  );
 }

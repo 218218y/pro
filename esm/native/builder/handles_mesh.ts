@@ -1,3 +1,5 @@
+import { isHandleType, isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import { addCatalogHandleGeometry } from './handles_catalog_geometry.js';
 import { createDoorEdgeHandleProfile, createDrawerEdgeHandleProfile } from './edge_handle_profile.js';
 import {
   appFromCtx,
@@ -42,7 +44,7 @@ export function createHandleMeshV7(
   const { cache } = ensureHandlesSurface(App);
   const THREE = getHandlesThree(App);
 
-  if (!type || type === 'none') return null;
+  if (!isHandleType(type) || type === 'none') return null;
 
   const g = new THREE.Group();
   g.name = 'handle_group_v7';
@@ -115,6 +117,23 @@ export function createHandleMeshV7(
       metalness: palette.metalness,
     }));
   recordPersistentMaterialCacheUse(stdMat, !!cachedStdMat);
+
+  if (isSurfaceHandleType(type)) {
+    if (typeof ctx?.addOutlines !== 'function') {
+      throw new TypeError('[handles_mesh] snapshot outline binding is required');
+    }
+    addCatalogHandleGeometry({
+      THREE,
+      group: g,
+      type,
+      sizeMm: ctx.handleSizeMm,
+      cache: (cache.catalogGeometry ??= new Map()),
+      isDrawer,
+      material: stdMat,
+      addOutlines: ctx.addOutlines,
+    });
+    return g;
+  }
 
   if (isDrawer) {
     const geo = new THREE.BoxGeometry(

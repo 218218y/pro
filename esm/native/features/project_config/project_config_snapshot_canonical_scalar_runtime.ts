@@ -1,3 +1,5 @@
+import { isHandleType } from '../../../shared/handle_catalog.js';
+import type { HandleType } from '../../../shared/handle_catalog.js';
 import type {
   RoomArchitectureConfigLike,
   RoomArchitecturePatch,
@@ -340,8 +342,8 @@ function normalizeDrawerRunnerType(value: unknown): 'roller' | 'blum' | '' {
   return value === 'roller' || value === 'blum' ? value : '';
 }
 
-function normalizeGlobalHandleType(value: unknown): 'standard' | 'edge' | 'none' | '' {
-  return value === 'standard' || value === 'edge' || value === 'none' ? value : '';
+function normalizeGlobalHandleType(value: unknown): HandleType | '' {
+  return isHandleType(value) ? value : '';
 }
 
 function normalizeCustomUploadedDataUrl(value: unknown): string | null {

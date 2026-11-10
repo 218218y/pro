@@ -51,6 +51,7 @@ export const SKETCH_NO_MAIN_RESTORE_UI_KEYS = [
   'currentExtDrawerType',
   'currentExtDrawerCount',
   'currentHandleToolType',
+  'currentHandleToolSize',
   'currentHandleToolColor',
   'currentHandleToolEdgeVariant',
   'internalDrawersEnabled',

@@ -1,3 +1,4 @@
+import { HANDLE_INHERIT_GLOBAL, handleOverrideBaseId } from '../../shared/handle_catalog.js';
 // Door state helpers (Pure ESM)
 //
 // Centralizes per-door map lookups (hinge dir, split, bottom split, curtain, groove).
@@ -193,17 +194,13 @@ export function makeHandleTypeResolver(args: {
     if (!Object.prototype.hasOwnProperty.call(hm, key)) return undefined;
     const v = hm[key];
     // Empty/cleared values behave like "no override".
-    if (v === undefined || v === null || v === '') return undefined;
+    if (v === undefined || v === null || v === '' || v === HANDLE_INHERIT_GLOBAL) return undefined;
     return v;
-  };
-
-  const stripSuffix = (id: string): string => {
-    return id.replace(/_(top|mid|bot|full)$/, '');
   };
 
   return function getHandleType(id: unknown): unknown {
     const sid = formatIdentityValue(readIdentityValue(id));
-    const base = stripSuffix(sid);
+    const base = handleOverrideBaseId(hm, sid);
 
     // Bottom segment created by bottom-split: NO handle by default.
     // Allow handle only if user explicitly set one for that id (or for the base id).
@@ -213,7 +210,7 @@ export function makeHandleTypeResolver(args: {
     }
 
     // Explicit overrides always win.
-    const override = readOverride(sid) ?? (stripSuffix(sid) !== sid ? readOverride(base) : undefined);
+    const override = readOverride(sid) ?? (base !== sid ? readOverride(base) : undefined);
     if (override !== undefined) return override;
 
     // Global EDGE default: one handle per 2 adjacent doors (right door only).

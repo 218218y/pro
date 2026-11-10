@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 // Tools runtime state installer (Pure ESM)
 //
 // Purpose:
@@ -42,7 +43,7 @@ function readToolsRuntimeState(App: AppContainer): RuntimeToolsState {
 }
 
 function normalizeHandleType(value: string | null): HandleType {
-  return value === 'edge' || value === 'none' ? value : 'standard';
+  return isHandleType(value) ? value : 'standard';
 }
 
 function buildTransientMeta(App: AppContainer, meta?: ActionMetaLike): ActionMetaLike {

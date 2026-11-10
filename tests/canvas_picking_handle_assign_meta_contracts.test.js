@@ -24,18 +24,9 @@ test('canvas picking handle-assignment writes use one immediate structural meta 
   );
   assert.doesNotMatch(handleAssignFlow, /\{\s*source:\s*'handles:[^}]*immediate:\s*true\s*\}/);
   assert.doesNotMatch(handleAssignFlow, /\{\s*immediate:\s*true\s*,\s*source:\s*'handles:/);
-  assert.match(handleAssignFlow, /createCanvasPickingHandleAssignStructuralMeta\('handles:assign'\)/);
   assert.match(
     handleAssignFlow,
-    /createCanvasPickingHandleAssignStructuralMeta\('handles:assignEdgeVariant'\)/
+    /setCfgHandlesMap\(App, map, createCanvasPickingHandleAssignStructuralMeta\('handles:assign'\)\)/
   );
-  assert.match(handleAssignFlow, /createCanvasPickingHandleAssignStructuralMeta\('handles:assignColor'\)/);
-  assert.match(
-    handleAssignFlow,
-    /createCanvasPickingHandleAssignStructuralMeta\('handles:assignManualPosition'\)/
-  );
-  assert.match(
-    handleAssignFlow,
-    /createCanvasPickingHandleAssignStructuralMeta\('handles:clearManualPosition'\)/
-  );
+  assert.doesNotMatch(handleAssignFlow, /\bwriteHandle\(/);
 });

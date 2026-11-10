@@ -193,6 +193,25 @@ Performance evidence is split into two categories:
 - Avoid duplicate builds, duplicate writes, and rerenders that do not reflect semantic state changes.
 - Groove hover, click placement, and rendered strips must share the groove-surface rectangle emitted by the door visual. Do not infer a second rectangle from outer door bounds, especially for profile doors.
 
+### Handle catalog
+
+`esm/shared/handle_catalog.ts` owns handle IDs, hole spacings, front support, and physical footprints.
+The Interior tab uses one picker for cabinet defaults and per-front assignments. The builder uses the
+same footprint to fit a surface handle to a leaf and the canvas tool uses it for its clearance preview.
+A front too small for the selected size keeps its configuration and suppresses the mesh with feedback.
+
+| Models                                                   | Hinged, corner and segmented leaves | Drawer fronts                   | Sliding leaves                      |
+| -------------------------------------------------------- | ----------------------------------- | ------------------------------- | ----------------------------------- |
+| Standard and edge                                        | Existing mount and edge lengths     | Existing mount and edge lengths | Existing rail profiles when enabled |
+| Rectangular bar, round bar, bow, round knob, T knob, cup | Surface mount                       | Surface mount                   | Blocked by track clearance          |
+| No handle                                                | Supported                           | Supported                       | Supported                           |
+
+Bar sizes are hole-to-hole distances in millimetres. `handlesMap` stores a typed `model:size` string
+under `__wp_handle_size_global` or `__wp_handle_size:<partId>`. A size applies only to its model.
+An edit commits type, size, finish, and manual position in one map update. A front reset removes its
+own keys and can explicitly opt out of inherited split-parent overrides. Global changes keep
+per-front settings. Recessed and integrated products require front geometry operations.
+
 ## Install rules
 
 - Installers must be idempotent and healing: safe to call again, able to restore missing methods, and never wrap an already-installed surface repeatedly.

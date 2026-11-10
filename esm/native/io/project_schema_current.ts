@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 import type { ProjectDataLike } from '../../../types/index.js';
 
 import { normalizeKnownProjectConfigMap } from './project_config_codec_access.js';
@@ -24,7 +25,7 @@ function normalizeDrawerRunnerType(settings: Record<string, unknown>): void {
 
 function normalizeGlobalHandleType(settings: Record<string, unknown>): void {
   const value = settings.globalHandleType;
-  if (value === 'edge' || value === 'none' || value === 'standard') return;
+  if (isHandleType(value)) return;
   if (typeof value !== 'undefined') delete settings.globalHandleType;
 }
 

@@ -1,3 +1,4 @@
+import { isHandleType } from '../../../../shared/handle_catalog.js';
 import type { UnknownRecord } from '../../../../../types';
 
 import { normalizeHandleFinishColor } from '../../../features/finish_palette/api.js';
@@ -56,7 +57,7 @@ export function readExtDrawerType(value: unknown, defaultValue: ExtDrawerType = 
 
 export function readHandleType(value: unknown, defaultValue: HandleType = 'standard'): HandleType {
   const raw = asStr(value, defaultValue).trim().toLowerCase();
-  return raw === 'edge' || raw === 'none' || raw === 'standard' ? raw : defaultValue;
+  return isHandleType(raw) ? raw : defaultValue;
 }
 
 export function readEdgeHandleVariant(

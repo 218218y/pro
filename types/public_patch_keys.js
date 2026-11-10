@@ -41,6 +41,7 @@ export const PUBLIC_UI_PATCH_KEYS = [
   'internalDrawersEnabled',
   'handleControl',
   'currentHandleToolType',
+  'currentHandleToolSize',
   'currentHandleToolColor',
   'currentHandleToolEdgeVariant',
   'perCellGridMap',

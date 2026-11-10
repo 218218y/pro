@@ -77,7 +77,6 @@ const expectedUiTypeSymbols = Object.freeze([
   'DoorTrimUiColor',
   'DoorTrimUiSpan',
   'ExtDrawerType',
-  'HandleType',
   'LayoutTypeId',
   'ManualToolId',
   'SketchBoxBaseType',

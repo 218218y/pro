@@ -1,4 +1,9 @@
 import {
+  clampSurfaceHandleCenter,
+  getSurfaceHandleFootprint,
+  isSurfaceHandleType,
+} from '../../shared/handle_catalog.js';
+import {
   EDGE_HANDLE_PROFILE_RENDER_POLICY,
   EDGE_HANDLE_SIZE_POLICY,
   STANDARD_HANDLE_RENDER_POLICY,
@@ -516,17 +521,31 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     localX: localHit.x,
     localY: localHit.y,
   });
-  const placement = resolveManualHandleLocalPosition({ rect, position: manualPosition });
-  if (!manualPosition || !placement) {
+  const drawerHost = isManualHandleDrawerHost(scopedHitDoorPid, userData);
+  const type = modeOpts?.handleType;
+  const catalogSize = isSurfaceHandleType(type)
+    ? getSurfaceHandleFootprint(type, drawerHost ? 'drawer' : 'door', modeOpts?.handleSizeMm)
+    : null;
+  const position = resolveManualHandleLocalPosition({ rect, position: manualPosition });
+  const placement =
+    position && catalogSize ? clampSurfaceHandleCenter(catalogSize, rect, position.x, position.y) : position;
+  if (
+    !manualPosition ||
+    !placement ||
+    userData?.__doorType === 'sliding' ||
+    /^(?:lower_)?slid/.test(scopedHitDoorPid)
+  ) {
     if (doorMarker) doorMarker.visible = false;
     return false;
   }
 
-  const size = resolvePreviewSize({
-    modeOpts,
-    isDrawerHost: isManualHandleDrawerHost(scopedHitDoorPid, userData),
-    rect,
-  });
+  const size =
+    catalogSize ??
+    resolvePreviewSize({
+      modeOpts,
+      isDrawerHost: isManualHandleDrawerHost(scopedHitDoorPid, userData),
+      rect,
+    });
   const currentHostKind: ManualHandleHostKind = isManualHandleDrawerHost(scopedHitDoorPid, userData)
     ? 'drawer'
     : 'door';
@@ -566,7 +585,9 @@ export function tryHandleDoorManualHandleHoverPreview(args: DoorManualHandleHove
     currentKey: manualKey,
     currentRect: rect,
     currentPlacement: placement,
-    currentPosition: manualPosition,
+    currentPosition:
+      createManualHandlePositionFromLocalPoint({ rect, localX: placement.x, localY: placement.y }) ??
+      manualPosition,
     currentHostKind,
     scratch: localHit,
   });

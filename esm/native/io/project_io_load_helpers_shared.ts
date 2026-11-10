@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 import type {
   ProjectDataLike,
   ProjectLoadOpts,
@@ -67,8 +68,7 @@ export function readStringMap(value: unknown): ProjectTextMapLike {
 }
 
 export function normalizeGlobalHandleType(value: unknown): HandleType | undefined {
-  if (value === 'edge' || value === 'none' || value === 'standard') return value;
-  return undefined;
+  return isHandleType(value) ? value : undefined;
 }
 
 export function captureProjectPrevUiMode(uiState: unknown): ProjectIoPrevUiModeLike {

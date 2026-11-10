@@ -1,3 +1,4 @@
+import { getSurfaceHandleFootprint, isSurfaceHandleType } from './handle_catalog.js';
 import { EXTERNAL_DRAWER_SIZE_POLICY } from './dimensions/external_drawer_policy.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from './dimensions/door_system_policy.js';
 import { EDGE_HANDLE_SIZE_POLICY, STANDARD_HANDLE_RENDER_POLICY } from './dimensions/handle_policy.js';
@@ -31,6 +32,7 @@ export type ExternalDrawerFitResult = {
 
 export type DoorHandleFitInput = {
   handleType: unknown;
+  handleSizeMm?: unknown;
   edgeHandleVariant?: unknown;
   doorHeightM: number;
   localCenterYM: number;
@@ -119,8 +121,14 @@ export function resolveExternalDrawerFitFromBounds(input: ExternalDrawerFitInput
   };
 }
 
-export function getDoorHandleFootprintHeightM(handleType: unknown, edgeHandleVariant?: unknown): number {
+export function getDoorHandleFootprintHeightM(
+  handleType: unknown,
+  edgeHandleVariant?: unknown,
+  handleSizeMm?: unknown
+): number {
   if (handleType === 'none' || handleType == null) return 0;
+  if (isSurfaceHandleType(handleType))
+    return getSurfaceHandleFootprint(handleType, 'door', handleSizeMm).height;
   if (handleType === 'edge') {
     return edgeHandleVariant === 'long'
       ? EDGE_HANDLE_SIZE_POLICY.longLengthM
@@ -132,7 +140,11 @@ export function getDoorHandleFootprintHeightM(handleType: unknown, edgeHandleVar
 export function resolveDoorHandleVerticalFit(input: DoorHandleFitInput): DoorHandleFitResult {
   const doorHeight = readFiniteNumber(input.doorHeightM) ?? 0;
   const localCenterY = readFiniteNumber(input.localCenterYM) ?? 0;
-  const handleHeightM = getDoorHandleFootprintHeightM(input.handleType, input.edgeHandleVariant);
+  const handleHeightM = getDoorHandleFootprintHeightM(
+    input.handleType,
+    input.edgeHandleVariant,
+    input.handleSizeMm
+  );
   const halfDoor = doorHeight / 2;
   const halfHandle = handleHeightM / 2;
   const minCenterYM = -halfDoor + halfHandle;

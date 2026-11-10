@@ -27,7 +27,7 @@ export type SketchBoxLegColor = BaseLegColor;
 export type SketchBoxLegPlatformMode = BaseLegPlatformMode;
 export type SketchBoxLegPlatformSideMode = BaseLegPlatformSideMode;
 
-export type HandleType = 'standard' | 'edge' | 'none';
+export type { HandleType } from '../../../../../types';
 export type EdgeHandleVariant = 'short' | 'long';
 
 export type ExtDrawerType = 'shoe' | 'regular';

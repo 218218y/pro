@@ -27,6 +27,7 @@ export type HandlesCacheLike = ValueRecord & {
   _stdHandleMat?: unknown;
   _edgeHandleMatByColor?: Record<string, unknown>;
   _stdHandleMatByColor?: Record<string, unknown>;
+  catalogGeometry?: Map<string, InstanceType<ThreeLike['BoxGeometry']>>;
 };
 
 export type HandlesApplyOptions = BuilderHandlesApplyOptionsLike;
@@ -71,8 +72,10 @@ export type BoundingBoxLike = {
 };
 
 export type GeometryLike = {
+  userData?: ValueRecord;
   boundingBox?: BoundingBoxLike | null;
   computeBoundingBox?: () => void;
+  dispose?: () => void;
 };
 
 export type NodeLike = Object3DLike & {
@@ -90,6 +93,13 @@ export type NodeLike = Object3DLike & {
   userData: HandleUserDataLike;
 };
 
+export function disposeDetachedHandleGeometry(handle: NodeLike): void {
+  handle.traverse?.((part: NodeLike) => {
+    const geometry = part.geometry;
+    if (geometry?.userData?.isCached !== true) geometry?.dispose?.();
+  });
+}
+
 export type EdgeHandleVariant = 'short' | 'long';
 export type CreateHandleMeshCtx =
   | {
@@ -97,6 +107,7 @@ export type CreateHandleMeshCtx =
       addOutlines: BuilderOutlineFn;
       edgeHandleVariant?: string | null;
       handleColor?: string | null;
+      handleSizeMm?: number | undefined;
     }
   | null
   | undefined;

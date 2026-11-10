@@ -1,3 +1,4 @@
+import * as handleCatalog from '../esm/shared/handle_catalog.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
@@ -30,6 +31,7 @@ function loadHandlesActionsHarness(initial = {}) {
 
   const api = loadTsRuntimeModule(srcPath, {
     mock: spec => {
+      if (spec === '../../../../shared/handle_catalog.js') return handleCatalog;
       if (spec === './modes_actions.js') {
         return {
           getPrimaryMode: () => store.mode.primary,

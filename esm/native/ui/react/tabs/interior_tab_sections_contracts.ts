@@ -3,8 +3,6 @@ import type { DrawerRunnerType } from '../../../../../types';
 
 import type { EdgeHandleVariant, ExtDrawerType, HandleType, HandleUiColor } from './interior_tab_helpers.js';
 
-export type HandleTypeOption = { id: HandleType; label: string };
-
 export type InteriorToolCardHeaderProps = {
   title: ReactNode;
   active?: boolean;
@@ -81,17 +79,23 @@ export type InteriorDividerSectionProps = {
 };
 
 export type InteriorHandlesSectionProps = {
+  wardrobeType: 'hinged' | 'sliding';
   handleControlEnabled: boolean;
   isHandleMode: boolean;
   isManualHandlePositionMode: boolean;
   globalHandleType: HandleType;
   handleToolType: HandleType;
+  globalHandleSize: number | undefined;
+  handleToolSize: number | undefined;
+  isHandleResetMode: boolean;
   globalHandleColor: HandleUiColor;
   handleToolColor: HandleUiColor;
   globalEdgeHandleVariant: EdgeHandleVariant;
   handleToolEdgeVariant: EdgeHandleVariant;
-  handleTypes: HandleTypeOption[];
   setGlobalHandle: (type: HandleType) => void;
+  setGlobalHandleSize: (size: number) => void;
+  setHandleModeSize: (size: number) => void;
+  enterHandleResetMode: () => void;
   setGlobalHandleColor: (color: HandleUiColor) => void;
   setGlobalEdgeHandleVariant: (variant: EdgeHandleVariant) => void;
   setHandleControlEnabled: (enabled: boolean) => void;

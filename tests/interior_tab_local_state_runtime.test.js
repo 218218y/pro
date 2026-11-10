@@ -38,7 +38,6 @@ const {
   DEFAULT_SKETCH_STORAGE_HEIGHT_CM,
   INTERIOR_EXT_COUNTS,
   INTERIOR_GRID_DIVS,
-  INTERIOR_HANDLE_TYPES,
   INTERIOR_LAYOUT_TYPES,
   INTERIOR_MANUAL_TOOLS,
 } = loadTsRuntimeModule(srcPath, {
@@ -112,8 +111,4 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   );
   assert.deepEqual(Array.from(INTERIOR_GRID_DIVS), [8, 7, 6, 5, 4, 3, 2]);
   assert.deepEqual(Array.from(INTERIOR_EXT_COUNTS), [1, 2, 3, 4, 5, 6]);
-  assert.deepEqual(
-    Array.from(INTERIOR_HANDLE_TYPES, item => item.id),
-    ['standard', 'edge', 'none']
-  );
 });

@@ -1,3 +1,4 @@
+import { normalizeHandleMapSizeEntry } from '../../shared/handle_catalog.js';
 import type { KnownMapName, MapsByName } from '../../../types';
 
 import { isCanonicalDoorVisualMapKey } from '../../shared/door_visual_key_contracts_shared.js';
@@ -75,7 +76,10 @@ export function normalizeHandlesMap(value: unknown): MapsByName['handlesMap'] {
       out[key] = null;
       continue;
     }
-    if (typeof entry === 'string') out[key] = entry;
+    if (typeof entry === 'string') {
+      const normalized = normalizeHandleMapSizeEntry(key, entry);
+      if (normalized !== undefined) out[key] = normalized;
+    }
   }
   return out;
 }

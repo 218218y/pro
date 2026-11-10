@@ -1,3 +1,4 @@
+import { normalizeHandleMapSizeEntry } from '../../../shared/handle_catalog.js';
 import {
   cloneCanonicalFeatureValue,
   fingerprintCanonicalFeatureValue,
@@ -97,7 +98,10 @@ function normalizeHandlesMap(value: unknown): Record<string, string | null> {
       out[key] = null;
       continue;
     }
-    if (typeof entry === 'string') out[key] = entry;
+    if (typeof entry === 'string') {
+      const normalized = normalizeHandleMapSizeEntry(key, entry);
+      if (normalized !== undefined) out[key] = normalized;
+    }
   }
   return out;
 }

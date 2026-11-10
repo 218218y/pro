@@ -5,7 +5,6 @@ import { useInteriorTabViewStateState } from './use_interior_tab_view_state_stat
 import { useInteriorTabViewStateSync } from './use_interior_tab_view_state_sync.js';
 
 export type {
-  HandleTypeOption,
   InteriorTabViewState,
   LayoutTypeOption,
   ManualToolOption,

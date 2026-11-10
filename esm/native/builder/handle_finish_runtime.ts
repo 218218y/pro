@@ -1,3 +1,4 @@
+import { handleOverrideBaseId } from '../../shared/handle_catalog.js';
 import {
   DEFAULT_HANDLE_FINISH_COLOR,
   HANDLE_COLOR_GLOBAL_KEY,
@@ -17,13 +18,9 @@ function readStringEntry(mapLike: unknown, key: string): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-function stripDoorPartSuffix(partId: string): string {
-  return String(partId || '').replace(/_(top|mid|bot|full)$/i, '');
-}
-
 export function resolveConfiguredHandleColor(handlesMapLike: unknown, partId: unknown): string {
   const sid = formatIdentityValue(readIdentityValue(partId));
-  const base = stripDoorPartSuffix(sid);
+  const base = handleOverrideBaseId(isRecord(handlesMapLike) ? handlesMapLike : null, sid);
   const direct = readStringEntry(handlesMapLike, handleColorPartKey(sid));
   const baseValue = base !== sid ? readStringEntry(handlesMapLike, handleColorPartKey(base)) : undefined;
   const globalValue = readStringEntry(handlesMapLike, HANDLE_COLOR_GLOBAL_KEY);

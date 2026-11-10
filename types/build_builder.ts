@@ -579,6 +579,7 @@ export interface BuilderRenderCommonArgsLike extends UnknownRecord {
   addOutlines?: NullableBuilderOutlineFn;
 }
 export interface BuilderHandleMeshOptionsLike extends BuilderRenderCommonArgsLike {
+  handleSizeMm?: number | undefined;
   handleColor?: string | null;
   edgeHandleVariant?: string | null;
 }

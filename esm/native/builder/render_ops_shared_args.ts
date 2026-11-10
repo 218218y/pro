@@ -60,7 +60,10 @@ export function __commonArgs(x: unknown): RenderCommonArgs {
 }
 
 export function __handleMeshOpts(x: unknown): HandleMeshOpts {
-  return __commonArgs(x);
+  const opts = __commonArgs(x);
+  const size = __asMap(x)?.handleSizeMm;
+  if (typeof size === 'number') opts.handleSizeMm = size;
+  return opts;
 }
 
 export function __boardArgs(x: unknown): BoardArgs {

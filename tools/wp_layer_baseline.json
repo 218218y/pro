@@ -223,11 +223,11 @@
       "from": "builder",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 193,
+      "maxImporterCount": 197,
       "maxImportCount": 209,
-      "maxTypeImporterCount": 0,
+      "maxTypeImporterCount": 5,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 193,
+      "maxValueImporterCount": 196,
       "maxValueImportCount": 209,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -463,7 +463,7 @@
       "decision": "allow",
       "maxImporterCount": 43,
       "maxImportCount": 49,
-      "maxTypeImporterCount": 1,
+      "maxTypeImporterCount": 2,
       "maxTypeImportCount": 2,
       "maxValueImporterCount": 43,
       "maxValueImportCount": 48,
@@ -517,11 +517,11 @@
       "from": "io",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 7,
+      "maxImporterCount": 9,
       "maxImportCount": 6,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 7,
+      "maxValueImporterCount": 9,
       "maxValueImportCount": 6,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -629,11 +629,11 @@
       "from": "runtime",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 17,
+      "maxImporterCount": 19,
       "maxImportCount": 28,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 17,
+      "maxValueImporterCount": 19,
       "maxValueImportCount": 27,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -685,11 +685,11 @@
       "from": "services",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 137,
+      "maxImporterCount": 138,
       "maxImportCount": 159,
-      "maxTypeImporterCount": 0,
+      "maxTypeImporterCount": 1,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 137,
+      "maxValueImporterCount": 138,
       "maxValueImportCount": 159,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -727,11 +727,11 @@
       "from": "ui",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 26,
+      "maxImporterCount": 30,
       "maxImportCount": 25,
-      "maxTypeImporterCount": 1,
+      "maxTypeImporterCount": 2,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 26,
+      "maxValueImporterCount": 30,
       "maxValueImportCount": 25,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -827,7 +827,7 @@
       "reason": "Permanently review and preserve the Runtime Product Limits public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
     },
     {
       "id": "runtime-wardrobe-defaults-public-compatibility",
@@ -856,7 +856,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Defaults public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
     },
     {
       "id": "runtime-stack-split-public-compatibility",
@@ -884,7 +884,7 @@
       "reason": "Permanently review and preserve the Runtime Stack Split public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
     },
     {
       "id": "runtime-default-resolution-public-compatibility",
@@ -912,10 +912,577 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Default Resolution public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
     }
   ],
   "reviewedOwnershipBudgets": [
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_handle_assign_flow.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/cfg_access.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["setCfgHandlesMap"]
+      },
+      "owner": "handle-catalog",
+      "reason": "Handle selection commits its type, finish, size and position atomically through the named config map writer.",
+      "id": "handle-catalog-services-atomic-handle-map-commit"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/doors_state_utils.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["HANDLE_INHERIT_GLOBAL", "handleOverrideBaseId"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-doors-state-utils-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handle_finish_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["handleOverrideBaseId"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handle-finish-runtime-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_apply_doors.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-apply-doors-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_apply_doors.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["SurfaceHandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-apply-doors-handle-catalog-type"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_apply_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["clampSurfaceHandleCenter", "getSurfaceHandleFootprint", "isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-apply-drawers-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_apply_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "HANDLE_INHERIT_GLOBAL",
+          "handleOverrideBaseId",
+          "isHandleType",
+          "resolveConfiguredHandleSizeMm"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-apply-shared-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_apply_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-apply-shared-handle-catalog-type"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_catalog_geometry.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["getSurfaceHandleFootprint", "readHandleSizeMm"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-catalog-geometry-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_catalog_geometry.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["SurfaceHandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-catalog-geometry-handle-catalog-type"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_catalog_placement.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-catalog-placement-door-system-policy-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_catalog_placement.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["clampSurfaceHandleCenter", "getSurfaceDoorAnchorX", "getSurfaceHandleFootprint"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-catalog-placement-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_catalog_placement.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleFrontRect", "SurfaceHandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-catalog-placement-handle-catalog-type"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/handles_mesh.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType", "isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-handles-mesh-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-post-build-sketch-door-cuts-contracts-handle-catalog-type"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-post-build-sketch-door-cuts-rebuild-handles-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["handleOverrideBaseId", "resolveConfiguredHandleSizeMm"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-post-build-sketch-door-cuts-runtime-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_door_ops_hinged.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-render-door-ops-hinged-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_door_ops_sliding.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType", "supportsHandleHost"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-render-door-ops-sliding-handle-catalog-value"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_ops_primitives.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType", "isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-builder-render-ops-primitives-handle-catalog-value"
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/project_config/project_config_snapshot_canonical_map_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["normalizeHandleMapSizeEntry"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-features-project-config-snapshot-canonical-map-runtime-handle-catalog-value"
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/project_config/project_config_snapshot_canonical_scalar_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-features-project-config-snapshot-canonical-scalar-runtime-handle-catalog-value"
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/project_config/project_config_snapshot_canonical_scalar_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-features-project-config-snapshot-canonical-scalar-runtime-handle-catalog-type"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_io_load_helpers_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-io-project-io-load-helpers-shared-handle-catalog-value"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_schema_current.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-io-project-schema-current-handle-catalog-value"
+    },
+    {
+      "from": "io",
+      "to": "shared",
+      "fromFile": "esm/native/io/project_schema_validation.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-io-project-schema-validation-handle-catalog-value"
+    },
+    {
+      "from": "kernel",
+      "to": "shared",
+      "fromFile": "esm/native/kernel/domain_api_surface_sections_bindings_doors.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["HANDLE_INHERIT_GLOBAL"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-kernel-domain-api-surface-sections-bindings-doors-handle-catalog-value"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/cfg_access_scalars.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-runtime-cfg-access-scalars-handle-catalog-value"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/config_selectors_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-runtime-config-selectors-shared-handle-catalog-value"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/maps_access_normalizers_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["normalizeHandleMapSizeEntry"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-runtime-maps-access-normalizers-shared-handle-catalog-value"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/tools_runtime_state.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-runtime-tools-runtime-state-handle-catalog-value"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_door_action_hover_preview_manual_handle.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["clampSurfaceHandleCenter", "getSurfaceHandleFootprint", "isSurfaceHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-services-canvas-picking-door-action-hover-preview-manual-handle-handle-catalog-value"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_handle_assign_flow.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "HANDLE_INHERIT_GLOBAL",
+          "clampSurfaceHandleCenter",
+          "encodeHandleSize",
+          "getSurfaceHandleFootprint",
+          "handleOverrideBaseId",
+          "handleSizePartKey",
+          "isHandleType",
+          "isSurfaceHandleType",
+          "supportsHandleHost"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-services-canvas-picking-handle-assign-flow-handle-catalog-value"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_handle_assign_flow.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleHost", "HandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-services-canvas-picking-handle-assign-flow-handle-catalog-type"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/actions/handles_actions.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "HANDLE_SIZE_GLOBAL_KEY",
+          "decodeHandleSize",
+          "encodeHandleSize",
+          "isHandleType",
+          "readHandleSizeMm"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-ui-handles-actions-handle-catalog-value"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_handle_picker.tsx",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["HANDLE_CATALOG", "isHandleType", "supportsHandleHost"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-ui-interior-handle-picker-handle-catalog-value"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_handle_picker.tsx",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "type",
+        "importedSymbols": ["HandleType"],
+        "syntax": "type-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-ui-interior-handle-picker-handle-catalog-type"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_tab_view_state_runtime.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["HANDLE_SIZE_GLOBAL_KEY", "decodeHandleSize", "readHandleSizeMm"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-ui-interior-tab-view-state-runtime-handle-catalog-value"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_tab_view_state_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/handle_catalog.ts",
+        "kind": "value",
+        "importedSymbols": ["isHandleType"],
+        "syntax": "static-import"
+      },
+      "owner": "handle-catalog",
+      "reason": "This direct import binds catalog validation, editing or geometry to the same IDs, dimensions and mounting policy.",
+      "id": "handle-catalog-ui-interior-tab-view-state-shared-handle-catalog-value"
+    },
     {
       "from": "services",
       "to": "features",

@@ -1,3 +1,6 @@
+import { isSurfaceHandleType } from '../../shared/handle_catalog.js';
+import type { SurfaceHandleType } from '../../shared/handle_catalog.js';
+import { resolveCatalogDoorHandleCenter, mountCatalogDoorHandle } from './handles_catalog_placement.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import {
   EDGE_HANDLE_SIZE_POLICY,
@@ -64,6 +67,15 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
     if (!hType || hType === 'none') continue;
 
     const isLeftHinge = !!g.userData.__hingeLeft;
+    if (isSurfaceHandleType(hType)) {
+      const rect = readDoorLeafRectFromUserData(g.userData);
+      const absY = readOptionalFinite(g.userData.__handleAbsY);
+      const y = absY == null ? 0 : absY - g.position.y;
+      if (!rect || !attachCatalogDoorHandle(runtime, g, g, partId, hType, rect, isLeftHinge, y, 0)) {
+        if (partId) standardSuppressedPartIds.push(partId);
+      }
+      continue;
+    }
     const edgeHandleVariant = hType === 'edge' ? getEdgeHandleVariant(id) : null;
 
     const handle = createHandleMeshV7(hType, doorW, doorH, isLeftHinge, false, {
@@ -317,6 +329,32 @@ function refreshSketchSegmentedDoorHandles(
     const hType = runtime.getHandleType(leaf.partId, stackKey);
     if (!hType || hType === 'none') continue;
 
+    if (isSurfaceHandleType(hType)) {
+      const x = readOptionalFinite(root.userData.__doorMeshOffsetX) ?? 0;
+      const rect = {
+        minX: x - leaf.rootWidth / 2,
+        maxX: x + leaf.rootWidth / 2,
+        minY: -leaf.height / 2,
+        maxY: leaf.height / 2,
+      };
+      const y = leaf.handleAbsY == null ? 0 : leaf.handleAbsY - root.position.y - leaf.centerLocalY;
+      if (
+        !attachCatalogDoorHandle(
+          runtime,
+          root,
+          leaf.node,
+          leaf.partId,
+          hType,
+          rect,
+          leaf.isLeftHinge,
+          y,
+          leaf.centerLocalY
+        )
+      ) {
+        suppressedPartIds.push(leaf.partId);
+      }
+      continue;
+    }
     const edgeHandleVariant = hType === 'edge' ? runtime.getEdgeHandleVariant(leaf.partId) : null;
     const handle = createHandleMeshV7(hType, leaf.rootWidth, leaf.height, leaf.isLeftHinge, false, {
       App: runtime.App,
@@ -432,4 +470,32 @@ function notifySuppressedSketchSegmentDoorHandles(App: unknown, partIds: string[
     scope: 'sketch-segment-door-handles',
     completePass: true,
   });
+}
+
+function attachCatalogDoorHandle(
+  runtime: HandlesApplyRuntime,
+  root: NodeLike,
+  leaf: NodeLike,
+  id: string,
+  type: SurfaceHandleType,
+  rect: NonNullable<ReturnType<typeof readDoorLeafRectFromUserData>>,
+  isLeftHinge: boolean,
+  y: number,
+  offsetY: number
+): boolean {
+  const size = runtime.getHandleSizeMm(id, type);
+  const manual = resolveManualHandleLocalPosition({ rect, position: runtime.getManualHandlePosition(id) });
+  const center = resolveCatalogDoorHandleCenter(type, size, rect, isLeftHinge, y, manual);
+  if (!center) return false;
+  const handle = createHandleMeshV7(type, rect.maxX - rect.minX, rect.maxY - rect.minY, isLeftHinge, false, {
+    App: runtime.App,
+    addOutlines: runtime.addOutlines,
+    handleColor: runtime.getHandleColor(id),
+    handleSizeMm: size,
+  });
+  if (!handle) return false;
+  mountCatalogDoorHandle(handle, center, offsetY, leaf.userData, root.userData);
+  handle.userData.partId = id;
+  root.add(handle);
+  return true;
 }

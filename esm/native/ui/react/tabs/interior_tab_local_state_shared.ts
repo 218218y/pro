@@ -2,7 +2,6 @@ import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
   ExtDrawerType,
-  HandleType,
   LayoutTypeId,
   ManualToolId,
   SketchBoxBaseType,
@@ -25,7 +24,6 @@ import {
 
 export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
 export type ManualToolOption = { id: ManualToolId; label: string };
-export type HandleTypeOption = { id: HandleType; label: string };
 
 export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
   { id: 'shelves', label: 'מדפים', icon: 'fas fa-th-large' },
@@ -50,12 +48,6 @@ export const INTERIOR_EXT_COUNTS: readonly [1, 2, 3, 4, 5, 6] = [1, 2, 3, 4, 5, 
 export const DEFAULT_SKETCH_STORAGE_HEIGHT_CM = 50;
 export const DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE = '';
 export { DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM };
-
-export const INTERIOR_HANDLE_TYPES: HandleTypeOption[] = [
-  { id: 'standard', label: 'סטנדרטית' },
-  { id: 'edge', label: 'רוכבת' },
-  { id: 'none', label: 'ללא' },
-];
 
 export type InteriorTabLocalStateDefaults = {
   sketchShelvesOpen: boolean;

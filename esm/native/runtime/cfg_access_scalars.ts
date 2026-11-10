@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 import type {
   ActionMetaLike,
   ConfigScalarKey,
@@ -152,7 +153,7 @@ export function setCfgGlobalHandleType(
   value: unknown,
   meta?: ActionMetaLike
 ): HandleType | undefined {
-  if (value !== 'standard' && value !== 'edge' && value !== 'none') return undefined;
+  if (!isHandleType(value)) return undefined;
   void cfgSetScalar(App, 'globalHandleType', value, meta);
   return value;
 }

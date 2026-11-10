@@ -2,6 +2,7 @@ import { getScene, getWardrobeGroup } from '../runtime/render_access.js';
 import { asRecord } from '../runtime/record.js';
 import {
   appFromCtx,
+  disposeDetachedHandleGeometry,
   asNode,
   ensureHandlesSurface,
   requireHandlesRemoveDoorsEnabled,
@@ -60,6 +61,9 @@ export function purgeHandlesForRemovedDoors(ctx: HandlesPurgeContext): void {
 
   for (let i = 0; i < toRemove.length; i++) {
     const n = toRemove[i];
-    if (n && n.parent && typeof n.parent.remove === 'function') n.parent.remove(n);
+    if (n && n.parent && typeof n.parent.remove === 'function') {
+      n.parent.remove(n);
+      disposeDetachedHandleGeometry(n);
+    }
   }
 }

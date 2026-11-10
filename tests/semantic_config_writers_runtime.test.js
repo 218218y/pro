@@ -133,7 +133,7 @@ test('[semantic-config-writers] domain api stack/textures/doors writes mutate ca
   const { state, calls, store } = createStoreStub({
     modulesConfiguration: [{ width: 40 }, { width: 50 }],
     stackSplitLowerModulesConfiguration: [{ width: 25 }, { width: 35 }],
-    handlesMap: { door_1: 'old' },
+    handlesMap: { door_1: 'knob_round' },
   });
 
   const App = { actions: {}, store };
@@ -142,7 +142,7 @@ test('[semantic-config-writers] domain api stack/textures/doors writes mutate ca
 
   App.actions.modules.patchForStack('top', 1, { width: 55 }, { source: 'domain:top' });
   App.actions.modules.patchForStack('bottom', 0, { width: 30 }, { source: 'domain:bottom' });
-  App.actions.doors.setGlobalHandleType('edge', { source: 'domain:handleType' });
+  App.actions.doors.setGlobalHandleType('bow', { source: 'domain:handleType' });
   App.actions.textures.setCustomUploadedDataURL('data:image/png;base64,abc', { source: 'domain:texture' });
 
   assert.deepEqual(
@@ -153,8 +153,8 @@ test('[semantic-config-writers] domain api stack/textures/doors writes mutate ca
     state.config.stackSplitLowerModulesConfiguration.map(item => item.width),
     [30, 35]
   );
-  assert.equal(state.config.globalHandleType, 'edge');
-  assert.deepEqual(state.config.handlesMap, {});
+  assert.equal(state.config.globalHandleType, 'bow');
+  assert.deepEqual(state.config.handlesMap, { door_1: 'knob_round' });
   assert.equal(state.config.customUploadedDataURL, 'data:image/png;base64,abc');
 
   const configPatches = calls.filter(call => call.op === 'store.setConfig').map(call => call.patch);

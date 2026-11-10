@@ -1,3 +1,10 @@
+import {
+  HANDLE_INHERIT_GLOBAL,
+  handleOverrideBaseId,
+  isHandleType,
+  resolveConfiguredHandleSizeMm,
+} from '../../shared/handle_catalog.js';
+import type { HandleType } from '../../shared/handle_catalog.js';
 import { DRAWER_HANDLE_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
@@ -10,6 +17,7 @@ import {
 import { asRecord } from '../runtime/record.js';
 import {
   appFromCtx,
+  disposeDetachedHandleGeometry,
   edgeHandleVariantPartKey,
   EDGE_HANDLE_VARIANT_GLOBAL_KEY,
   ensureHandlesSurface,
@@ -45,21 +53,18 @@ export type HandlesApplyRuntime = {
   getEdgeHandleVariant: (id: unknown) => EdgeHandleVariant;
   getHandleType: (id: unknown, stackKey?: 'top' | 'bottom', defaultNoHandle?: boolean) => string;
   getHandleColor: (id: unknown) => string;
+  getHandleSizeMm: (id: string, type: HandleType) => number | undefined;
   getManualHandlePosition: (id: unknown) => ManualHandlePosition | null;
   clampAbsYToGroup: (absY: number, centerY: number, height: number) => number;
   removeExistingHandleChildren: (group: NodeLike) => void;
 };
-
-function stripSuffix(sid: string): string {
-  return sid.replace(/_(top|mid|bot|full)$/, '');
-}
 
 function readOverride(hm: ValueRecord | null | undefined, key: string): string | undefined {
   try {
     if (!hm || typeof hm !== 'object' || !key) return undefined;
     if (!Object.prototype.hasOwnProperty.call(hm, key)) return undefined;
     const v = hm[key];
-    if (v === undefined || v === null || v === '') return undefined;
+    if (v === undefined || v === null || v === '' || v === HANDLE_INHERIT_GLOBAL) return undefined;
     return typeof v === 'string' ? v : undefined;
   } catch (_e) {
     return undefined;
@@ -69,12 +74,12 @@ function readOverride(hm: ValueRecord | null | undefined, key: string): string |
 function createEdgeHandleVariantResolver(handlesMap: ValueRecord): (id: unknown) => EdgeHandleVariant {
   return (id: unknown): EdgeHandleVariant => {
     const sid = formatIdentityValue(readIdentityValue(id));
-    const base = stripSuffix(sid);
+    const base = handleOverrideBaseId(handlesMap, sid);
     const hm = handlesMap;
 
     const partV =
       readOverride(hm, edgeHandleVariantPartKey(sid)) ??
-      (stripSuffix(sid) !== sid ? readOverride(hm, edgeHandleVariantPartKey(base)) : undefined);
+      (base !== sid ? readOverride(hm, edgeHandleVariantPartKey(base)) : undefined);
 
     if (partV === 'long') return 'long';
     if (partV === 'short') return 'short';
@@ -87,7 +92,7 @@ function createEdgeHandleVariantResolver(handlesMap: ValueRecord): (id: unknown)
 function createHandleColorResolver(handlesMap: ValueRecord): (id: unknown) => string {
   return (id: unknown): string => {
     const sid = formatIdentityValue(readIdentityValue(id));
-    const base = stripSuffix(sid);
+    const base = handleOverrideBaseId(handlesMap, sid);
     const hm = handlesMap;
     const partV = readOverride(hm, handleColorPartKey(sid));
     const baseV = sid !== base ? readOverride(hm, handleColorPartKey(base)) : undefined;
@@ -102,7 +107,7 @@ function createManualHandlePositionResolver(
   return (id: unknown): ManualHandlePosition | null => {
     const sid = formatIdentityValue(readIdentityValue(id));
     if (!sid) return null;
-    const base = stripSuffix(sid);
+    const base = handleOverrideBaseId(handlesMap, sid);
     return readManualHandlePositionForPart(handlesMap, sid, base);
   };
 }
@@ -125,20 +130,19 @@ function createHandleTypeResolver(
   const hm = cfgSnapshot.handlesMap;
   const splitDoorsBottomMap = cfgSnapshot.splitDoorsBottomMap;
   const __rawGht = asRecord<ValueRecord>(cfg)?.globalHandleType;
-  const globalHandleType =
-    __rawGht === 'standard' || __rawGht === 'edge' || __rawGht === 'none' ? __rawGht : 'standard';
+  const globalHandleType = isHandleType(__rawGht) ? __rawGht : 'standard';
 
   return (id: unknown, stackKey?: 'top' | 'bottom', defaultNoHandle?: boolean): string => {
     const sid = formatIdentityValue(readIdentityValue(id));
-    const base = stripSuffix(sid);
+    const base = handleOverrideBaseId(hm, sid);
     const sk: 'top' | 'bottom' = stackKey === 'bottom' ? 'bottom' : 'top';
 
     if (isBottomSplitBotPartFromSnapshot(splitDoorsBottomMap, sid)) {
-      const ov = readOverride(hm, sid) ?? (stripSuffix(sid) !== sid ? readOverride(hm, base) : undefined);
+      const ov = readOverride(hm, sid) ?? (base !== sid ? readOverride(hm, base) : undefined);
       return ov !== undefined ? ov : 'none';
     }
 
-    const override = readOverride(hm, sid) ?? (stripSuffix(sid) !== sid ? readOverride(hm, base) : undefined);
+    const override = readOverride(hm, sid) ?? (base !== sid ? readOverride(hm, base) : undefined);
     if (override !== undefined) return override;
 
     if (
@@ -188,6 +192,7 @@ function removeExistingHandleChildren(group: NodeLike): void {
       (c.userData && (c.userData.__kind === 'handle' || c.userData.isHandle))
     ) {
       group.remove(c);
+      disposeDetachedHandleGeometry(c);
     }
   }
 }
@@ -253,6 +258,7 @@ export function createHandlesApplyRuntime(ctx: HandlesApplyContext): HandlesAppl
     getEdgeHandleVariant,
     getHandleType,
     getHandleColor,
+    getHandleSizeMm: (id, type) => resolveConfiguredHandleSizeMm(handlesCfg.handlesMap, id, type),
     getManualHandlePosition,
     clampAbsYToGroup,
     removeExistingHandleChildren,

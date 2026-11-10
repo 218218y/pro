@@ -1,3 +1,4 @@
+import { isHandleType } from '../../shared/handle_catalog.js';
 import type {
   ConfigStateLike,
   ConfigScalarKey,
@@ -172,7 +173,7 @@ export function normalizeGlobalHandleType(
   defaultValue: GlobalHandleTypeValue
 ): GlobalHandleTypeValue {
   const s = typeof value === 'string' ? value.trim() : '';
-  return s === 'standard' || s === 'edge' || s === 'none' ? s : defaultValue;
+  return isHandleType(s) ? s : defaultValue;
 }
 
 export function normalizeNullableGrooveLinesCount(

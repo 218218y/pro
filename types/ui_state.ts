@@ -61,6 +61,7 @@ export interface UiState {
   internalDrawersEnabled?: boolean;
   handleControl?: boolean;
   currentHandleToolType?: unknown;
+  currentHandleToolSize?: unknown;
   currentHandleToolColor?: unknown;
   currentHandleToolEdgeVariant?: unknown;
   perCellGridMap?: UnknownRecord;

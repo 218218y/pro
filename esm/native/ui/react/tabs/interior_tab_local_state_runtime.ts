@@ -16,13 +16,11 @@ import {
   createInteriorTabLocalStateDefaults,
   INTERIOR_EXT_COUNTS,
   INTERIOR_GRID_DIVS,
-  INTERIOR_HANDLE_TYPES,
   INTERIOR_LAYOUT_TYPES,
   INTERIOR_MANUAL_TOOLS,
 } from './interior_tab_local_state_shared.js';
 
 export type {
-  HandleTypeOption,
   InteriorTabLocalStateDefaults,
   LayoutTypeOption,
   ManualToolOption,
@@ -265,6 +263,5 @@ export function useInteriorTabLocalState() {
     manualTools: INTERIOR_MANUAL_TOOLS,
     gridDivs: INTERIOR_GRID_DIVS,
     extCounts: INTERIOR_EXT_COUNTS,
-    handleTypes: INTERIOR_HANDLE_TYPES,
   };
 }
