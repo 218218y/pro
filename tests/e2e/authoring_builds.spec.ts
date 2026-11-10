@@ -532,12 +532,21 @@ test.describe('Playwright authoring build coverage', () => {
     const corniceDimensions = page.locator('.wp-r-cornice-dimensions');
     const corniceFields = corniceDimensions.getByRole('spinbutton');
     await expect(corniceFields).toHaveCount(3);
-    const fieldRows = await corniceFields.evaluateAll(fields =>
-      fields.map(field => field.getBoundingClientRect().top)
+    const fieldLayout = await corniceFields.evaluateAll(fields =>
+      fields.map(field => {
+        const input = field.getBoundingClientRect();
+        const label = field instanceof HTMLInputElement ? field.labels?.[0]?.getBoundingClientRect() : null;
+        return {
+          top: input.top,
+          labelCenterOffset: label ? label.left + label.width / 2 - (input.left + input.width / 2) : null,
+        };
+      })
     );
+    const fieldRows = fieldLayout.map(field => field.top);
     expect(Math.max(...fieldRows) - Math.min(...fieldRows)).toBeLessThan(1);
-    await expect(corniceDimensions.getByRole('spinbutton', { name: 'מהחזית' })).toHaveValue('2.0');
-    const corniceHeight = corniceDimensions.getByRole('spinbutton', { name: 'גובה' });
+    for (const field of fieldLayout) expect(field.labelCenterOffset).toBeCloseTo(0, 0);
+    await expect(corniceDimensions.getByRole('spinbutton', { name: 'מהחזית (ס״מ)' })).toHaveValue('2.0');
+    const corniceHeight = corniceDimensions.getByRole('spinbutton', { name: 'גובה (ס״מ)' });
     await expect(corniceHeight).toHaveValue('8.0');
     const corniceDelta = await measureBuildAndRenderDelta(
       page,

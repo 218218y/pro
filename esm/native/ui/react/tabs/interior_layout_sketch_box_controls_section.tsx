@@ -317,7 +317,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                           />
                         ) : null}
                         <SketchBoxPlatformOverhangField
-                          label="בליטה מהחזית"
+                          label="בליטה מהחזית (ס״מ)"
                           value={props.sketchBoxLegPlatformFrontOverhangCm}
                           defaultValue={DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM}
                           resetTitle="איפוס בליטה מהחזית לברירת מחדל"
