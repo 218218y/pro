@@ -1191,7 +1191,7 @@
       "statement": {
         "toFile": "esm/shared/handle_catalog.ts",
         "kind": "value",
-        "importedSymbols": ["isHandleType", "usesCatalogHandleGeometry"],
+        "importedSymbols": ["getEdgeHandleLengthM", "isHandleType", "usesCatalogHandleGeometry"],
         "syntax": "static-import"
       },
       "owner": "handle-catalog",

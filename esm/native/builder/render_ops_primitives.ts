@@ -1,5 +1,10 @@
-import { isHandleType, usesCatalogHandleGeometry } from '../../shared/handle_catalog.js';
+import {
+  getEdgeHandleLengthM,
+  isHandleType,
+  usesCatalogHandleGeometry,
+} from '../../shared/handle_catalog.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
+import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
 import {
   createWinterBraceShelfGeometry,
   resolveWinterBraceShelfFrame,
@@ -697,15 +702,13 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const addOutlines = opts.addOutlines;
     if (!THREE) return null;
     if (!isHandleType(type) || type === 'none') return null;
-    if (type === 'edge' || usesCatalogHandleGeometry(type, opts.handleSizeMm)) {
+    if (usesCatalogHandleGeometry(type, opts.handleSizeMm)) {
       if (!__isFn(addOutlines)) throw new TypeError('[handles] snapshot outline binding is required');
       return createHandleMeshV7(type, w, h, isLeftHinge, false, {
         App,
         addOutlines,
         handleSizeMm: typeof opts.handleSizeMm === 'number' ? opts.handleSizeMm : undefined,
         handleColor: typeof opts.handleColor === 'string' ? opts.handleColor : null,
-        edgeHandleVariant: typeof opts.edgeHandleVariant === 'string' ? opts.edgeHandleVariant : null,
-        frontThicknessM: typeof opts.frontThicknessM === 'number' ? opts.frontThicknessM : undefined,
       });
     }
 
@@ -717,6 +720,26 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     handleGroup.userData.__kind = 'handle';
     handleGroup.userData.handleType = type;
     handleGroup.userData.__keepMaterialSubtree = true;
+
+    if (type === 'edge') {
+      const material = new THREE.MeshStandardMaterial({
+        color: palette.hex,
+        emissive: palette.emissiveHex,
+        emissiveIntensity: 0.08,
+        roughness: palette.roughness,
+        metalness: palette.metalness,
+      });
+      handleGroup.add(
+        createDoorEdgeHandleProfile({
+          THREE,
+          material,
+          length: getEdgeHandleLengthM(opts.edgeHandleVariant),
+          isLeftHinge,
+          frontThicknessM: typeof opts.frontThicknessM === 'number' ? opts.frontThicknessM : undefined,
+        })
+      );
+      return handleGroup;
+    }
 
     const handleGeo = new THREE.BoxGeometry(
       STANDARD_HANDLE_RENDER_POLICY.doorWidthM,

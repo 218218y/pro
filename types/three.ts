@@ -244,7 +244,6 @@ export interface ThreeLike {
   BoxGeometry: ThreeBoxGeometryCtor;
   PlaneGeometry: ThreePlaneGeometryCtor;
   CylinderGeometry: ThreeCylinderGeometryCtor;
-  LatheGeometry: new (points: Vector2Like[], segments?: number) => GeometryLike;
   TorusGeometry: ThreeTorusGeometryCtor;
   BufferGeometry: ThreeBufferGeometryCtor;
   EdgesGeometry: ThreeEdgesGeometryCtor;

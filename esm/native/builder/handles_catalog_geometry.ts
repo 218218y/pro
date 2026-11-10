@@ -67,14 +67,15 @@ export function addCatalogHandleGeometry(args: {
     const radius = height / 2;
     const end = width / 2;
     const chamfer = 0.0008;
-    return new THREE.LatheGeometry(
+    return revolveHandleProfile(
+      THREE,
       [
-        new THREE.Vector2(0, -end),
-        new THREE.Vector2(radius - chamfer, -end),
-        new THREE.Vector2(radius, -end + chamfer),
-        new THREE.Vector2(radius, end - chamfer),
-        new THREE.Vector2(radius - chamfer, end),
-        new THREE.Vector2(0, end),
+        [0, -end],
+        [radius - chamfer, -end],
+        [radius, -end + chamfer],
+        [radius, end - chamfer],
+        [radius - chamfer, end],
+        [0, end],
       ],
       28
     );
@@ -135,17 +136,17 @@ export function addCatalogHandleGeometry(args: {
         const capDepth = 0.008;
         const startAngle = -Math.PI / 3;
         const rootZ = depth - capDepth;
-        const points = [
-          new THREE.Vector2(0, 0),
-          new THREE.Vector2(0.008, 0),
-          new THREE.Vector2(0.0055, 0.005),
-          new THREE.Vector2(0.0055, rootZ + capDepth * Math.sin(startAngle) - 0.002),
+        const points: ProfilePoint[] = [
+          [0, 0],
+          [0.008, 0],
+          [0.0055, 0.005],
+          [0.0055, rootZ + capDepth * Math.sin(startAngle) - 0.002],
         ];
         for (let i = 0; i <= 25; i++) {
           const angle = startAngle + ((Math.PI / 2 - startAngle) * i) / 25;
-          points.push(new THREE.Vector2((width / 2) * Math.cos(angle), rootZ + capDepth * Math.sin(angle)));
+          points.push([(width / 2) * Math.cos(angle), rootZ + capDepth * Math.sin(angle)]);
         }
-        return new THREE.LatheGeometry(points, 32);
+        return revolveHandleProfile(THREE, points, 32);
       });
       mesh(rounded, 0, 0, 0, Math.PI / 2);
       break;
@@ -174,12 +175,44 @@ export function addCatalogHandleGeometry(args: {
   }
 }
 
-/** Hollow half-dome. The bottom remains open for fingers and the rim meets the front. */
-function createCupGeometry(THREE: ThreeLike, width: number, height: number, depth: number): Geometry {
+type ProfilePoint = readonly [radius: number, axis: number];
+
+function revolveHandleProfile(
+  THREE: ThreeLike,
+  profile: readonly ProfilePoint[],
+  segments: number
+): Geometry {
+  const positions: number[] = [];
+  const indices: number[] = [];
+  for (const [radius, axis] of profile) {
+    for (let col = 0; col < segments; col++) {
+      const angle = (2 * Math.PI * col) / segments;
+      positions.push(radius * Math.sin(angle), axis, radius * Math.cos(angle));
+    }
+  }
+  for (let row = 0; row < profile.length - 1; row++) {
+    for (let col = 0; col < segments; col++) {
+      const a = row * segments + col;
+      const next = row * segments + ((col + 1) % segments);
+      indices.push(a, next, a + segments, a + segments, next, next + segments);
+    }
+  }
+  return buildHandleGeometry(THREE, positions, indices);
+}
+
+function buildHandleGeometry(THREE: ThreeLike, positions: number[], indices: number[]): Geometry {
   const geometry = new THREE.BufferGeometry();
   if (typeof geometry.setAttribute !== 'function' || typeof geometry.setIndex !== 'function') {
-    throw new TypeError('[handles] cup requires indexed buffer geometry');
+    throw new TypeError('[handles] curved handles require indexed buffer geometry');
   }
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals?.();
+  return geometry;
+}
+
+/** Hollow half-dome. The bottom remains open for fingers and the rim meets the front. */
+function createCupGeometry(THREE: ThreeLike, width: number, height: number, depth: number): Geometry {
   const columns = 24;
   const rows = 8;
   const positions: number[] = [];
@@ -224,8 +257,5 @@ function createCupGeometry(THREE: ThreeLike, width: number, height: number, dept
     joinRim((row + 1) * stride + columns, row * stride + columns);
   }
   for (let col = 0; col < columns; col++) joinRim(rows * stride + col + 1, rows * stride + col);
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals?.();
-  return geometry;
+  return buildHandleGeometry(THREE, positions, indices);
 }

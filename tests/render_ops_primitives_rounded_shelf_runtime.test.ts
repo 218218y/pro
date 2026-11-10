@@ -567,7 +567,7 @@ test('rounded shelf omits the hidden cap face that is flush with the remaining c
   );
 });
 
-test('render primitive handles preserve focused policy dimensions and placement', () => {
+test('render primitive edge handles use the mounting plane while the standard handle keeps its dimensions', () => {
   const { App, THREE, ops } = createPrimitiveHarness();
 
   const shortEdge = ops.createHandleMesh('edge', 0.5, 2, true, {
@@ -577,20 +577,25 @@ test('render primitive handles preserve focused policy dimensions and placement'
     handleColor: '#111111',
   }) as FakeGroup;
   const shortProfile = shortEdge.children[0] as FakeGroup;
-  const shortMount = shortProfile.children[0] as FakeMesh;
-  assert.equal(shortProfile.position.x, 0.4975);
-  assert.deepEqual((shortMount.geometry as FakeBoxGeometry).args, [0.0045, 0.2, 0.014]);
+  const shortWeb = shortProfile.children[1] as FakeMesh;
+  assert.equal(shortProfile.position.x, 0);
+  assert.equal(shortWeb.position.x, 0.00075);
+  assert.deepEqual((shortWeb.geometry as FakeBoxGeometry).args.slice(0, 2), [0.0015, 0.2]);
 
   const longEdge = ops.createHandleMesh('edge', 0.5, 2, false, {
     App,
     THREE,
     edgeHandleVariant: 'long',
+    frontThicknessM: 0.018,
     handleColor: '#111111',
   }) as FakeGroup;
   const longProfile = longEdge.children[0] as FakeGroup;
-  const longMount = longProfile.children[0] as FakeMesh;
-  assert.equal(longProfile.position.x, -0.4975);
-  assert.deepEqual((longMount.geometry as FakeBoxGeometry).args, [0.0045, 0.4, 0.014]);
+  const [backFlange, longWeb] = longProfile.children as FakeMesh[];
+  assert.equal(longProfile.position.x, 0);
+  assert.equal(longWeb!.position.x, -0.00075);
+  assert.deepEqual((longWeb!.geometry as FakeBoxGeometry).args.slice(0, 2), [0.0015, 0.4]);
+  const flangeDepth = (backFlange!.geometry as FakeBoxGeometry).args[2]!;
+  assert.ok(Math.abs(backFlange!.position.z + flangeDepth / 2 + 0.018) < 1e-8);
 
   const standard = ops.createHandleMesh('standard', 0.5, 2, true, {
     App,

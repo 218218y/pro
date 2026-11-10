@@ -16,8 +16,8 @@ function createEdgeHandleProfile(
   inwardSign: 1 | -1
 ): Object3DLike {
   const policy = EDGE_HANDLE_PROFILE_RENDER_POLICY;
-  const t = policy.metalThicknessM;
-  const board = frontThicknessM ?? policy.nominalFrontThicknessM;
+  const t: number = policy.metalThicknessM;
+  const board: number = frontThicknessM ?? policy.nominalFrontThicknessM;
   const projection = sliding ? policy.slidingGripProjectionM : policy.gripProjectionM;
   const group = new THREE.Group();
 
