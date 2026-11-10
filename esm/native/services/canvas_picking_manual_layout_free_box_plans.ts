@@ -1,7 +1,3 @@
-import {
-  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
-  SKETCH_BOX_SHELF_PREVIEW_POLICY,
-} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   resolveShelfShortcutOperation,
@@ -14,7 +10,9 @@ import {
   INTERIOR_STORAGE_BARRIER_POLICY,
   INTERIOR_STORAGE_GRID_POLICY,
   MATERIAL_THICKNESS_POLICY,
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
   SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { asRecord } from '../runtime/record.js';

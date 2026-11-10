@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T09:49:07.217Z",
+  "generatedAt": "2026-11-10T09:54:17.209Z",
   "totals": {
     "tests": 1288,
     "unitRunnerTests": 1276,
@@ -179,10 +179,6 @@
         {
           "file": "tests/builder_surface_family_contracts.test.js",
           "kind": "contract"
-        },
-        {
-          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
-          "kind": "ownership"
         },
         {
           "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",

@@ -1,4 +1,3 @@
-import { readCorniceDimensionOverrides } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // Builder core carcass shared preparation and normalization helpers.
 import {
@@ -7,6 +6,7 @@ import {
   BASE_PLINTH_POLICY,
   CARCASS_SHELL_DIMENSIONS,
   MATERIAL_THICKNESS_POLICY,
+  readCorniceDimensionOverrides,
 } from '../../shared/dimensions/core_carcass_dimension_policy.js';
 import {
   normalizeBaseLegPlatformMode,

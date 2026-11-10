@@ -50,7 +50,7 @@ const expectedCorniceInventory = Object.freeze({
     'CARCASS_CORNICE_RENDER_POLICY',
     'resolveCorniceDimensionsM',
   ]),
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['readCorniceDimensionOverrides']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['readCorniceDimensionOverrides']),
   'esm/native/features/model_record/saved_model_codec.ts': Object.freeze(['isCorniceDimensionsCm']),
   'esm/native/io/project_io_load_helpers.ts': Object.freeze(['readCorniceDimensionOverrides']),
   'esm/native/io/project_io_save_helpers.ts': Object.freeze(['captureCorniceDimensions']),

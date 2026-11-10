@@ -917,20 +917,6 @@
   ],
   "reviewedOwnershipBudgets": [
     {
-      "from": "builder",
-      "to": "shared",
-      "fromFile": "esm/native/builder/core_carcass_shared.ts",
-      "statement": {
-        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
-        "kind": "value",
-        "importedSymbols": ["readCorniceDimensionOverrides"],
-        "syntax": "static-import"
-      },
-      "owner": "dimension-reviewed-ownership",
-      "reason": "The carcass input preparer reads the same validated dimension overrides as project load.",
-      "id": "dimension-owner-builder-core-carcass-shared-carcass-cornice-render-policy"
-    },
-    {
       "from": "features",
       "to": "shared",
       "fromFile": "esm/native/features/model_record/saved_model_codec.ts",
@@ -1013,20 +999,6 @@
       "owner": "dimension-reviewed-ownership",
       "reason": "Shelf shortcut measurements use the same guide placement as sketch authoring.",
       "id": "dimension-owner-services-canvas-picking-interior-hover-brace-mode-sketch-box-preview-policy"
-    },
-    {
-      "from": "services",
-      "to": "shared",
-      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
-      "statement": {
-        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
-        "kind": "value",
-        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
-        "syntax": "static-import"
-      },
-      "owner": "dimension-reviewed-ownership",
-      "reason": "Free box shelf shortcuts use the sketch guide and shelf preview geometry policies.",
-      "id": "dimension-owner-services-canvas-picking-manual-layout-free-box-plans-sketch-box-preview-policy"
     },
     {
       "from": "ui",
@@ -1130,7 +1102,8 @@
           "BASE_PLATFORM_RENDER_POLICY",
           "BASE_PLINTH_POLICY",
           "CARCASS_SHELL_DIMENSIONS",
-          "MATERIAL_THICKNESS_POLICY"
+          "MATERIAL_THICKNESS_POLICY",
+          "readCorniceDimensionOverrides"
         ]
       },
       "owner": "core-carcass-dimension-consolidation-owner",
@@ -2495,7 +2468,9 @@
           "INTERIOR_STORAGE_BARRIER_POLICY",
           "INTERIOR_STORAGE_GRID_POLICY",
           "MATERIAL_THICKNESS_POLICY",
-          "SKETCH_BOX_PREVIEW_CORE_POLICY"
+          "SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY",
+          "SKETCH_BOX_PREVIEW_CORE_POLICY",
+          "SKETCH_BOX_SHELF_PREVIEW_POLICY"
         ]
       },
       "owner": "manual-layout-free-box-plans-dimension-consolidation-owner",

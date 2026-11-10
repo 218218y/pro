@@ -39,12 +39,6 @@ test('Manual Free Box preview pair imports exact focused owners without aggregat
   ]);
   assert.deepEqual(focusedDimensionImports(plansRel), [
     {
-      specifier: '../../shared/dimensions/sketch_box_preview_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY', 'SKETCH_BOX_SHELF_PREVIEW_POLICY'],
-    },
-    {
       specifier: '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js',
       kind: 'value',
       syntax: 'static-import',
@@ -54,7 +48,9 @@ test('Manual Free Box preview pair imports exact focused owners without aggregat
         'INTERIOR_STORAGE_BARRIER_POLICY',
         'INTERIOR_STORAGE_GRID_POLICY',
         'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
         'SKETCH_BOX_PREVIEW_CORE_POLICY',
+        'SKETCH_BOX_SHELF_PREVIEW_POLICY',
       ],
     },
   ]);
