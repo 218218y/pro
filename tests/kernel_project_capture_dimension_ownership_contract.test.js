@@ -401,6 +401,12 @@ function inspectConsumer(source) {
     stableJson(sharedDependencies.map(dependencyFacts)) !==
     stableJson([
       {
+        specifier: '../../shared/dimensions/carcass_cornice_render_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        symbols: ['captureCorniceDimensions'],
+      },
+      {
         specifier: ownerSpecifier,
         kind: 'value',
         syntax: 'static-import',

@@ -36,14 +36,14 @@ test('Manual Free Box preview pair imports exact focused owners without aggregat
       syntax: 'static-import',
       symbols: ['MATERIAL_THICKNESS_POLICY'],
     },
+  ]);
+  assert.deepEqual(focusedDimensionImports(plansRel), [
     {
       specifier: '../../shared/dimensions/sketch_box_preview_policy.js',
       kind: 'value',
       syntax: 'static-import',
-      symbols: ['SKETCH_BOX_SHELF_PREVIEW_POLICY'],
+      symbols: ['SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY', 'SKETCH_BOX_SHELF_PREVIEW_POLICY'],
     },
-  ]);
-  assert.deepEqual(focusedDimensionImports(plansRel), [
     {
       specifier: '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js',
       kind: 'value',
@@ -81,10 +81,10 @@ test('Manual Free Box preview pair imports exact focused owners without aggregat
 test('Manual Free Box preview pair keeps the focused-owner formulas structurally exact', () => {
   const content = read(contentRel);
   const plans = read(plansRel);
-  assert.match(
-    content,
-    /w:\s*Math\.max\(\s*SKETCH_BOX_SHELF_PREVIEW_POLICY\.shelfMinWidthM,\s*args\.plan\.previewW\s*-\s*\(isBrace\s*\? SKETCH_BOX_SHELF_PREVIEW_POLICY\.shelfBraceClearanceM\s*:\s*SKETCH_BOX_SHELF_PREVIEW_POLICY\.shelfRegularClearanceM\)\s*\)/u
-  );
+  assert.match(content, /w:\s*args\.plan\.previewW/u);
+  assert.match(content, /clearanceMeasurements:\s*args\.plan\.clearanceMeasurements/u);
+  assert.match(plans, /buildSketchBoxStackAwareMeasurementEntries\(/u);
+  assert.match(plans, /Math\.max\(\s*SKETCH_BOX_SHELF_PREVIEW_POLICY\.shelfMinWidthM,\s*metrics\.previewW/u);
   assert.equal((content.match(/MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/gu) ?? []).length, 2);
   assert.match(
     content,

@@ -521,7 +521,9 @@ test.describe('Playwright authoring build coverage', () => {
         await setGrooveLinesCount(page, 12);
         await setDoorFeatureToggle(page, 'splitDoors', true);
         await setDoorFeatureToggle(page, 'removeDoorsEnabled', true);
-        await page.getByRole('checkbox', { name: 'הוסף קרניז עליון (כתר)' }).check();
+        const corniceToggle = page.getByRole('checkbox', { name: 'הוסף קרניז עליון (כתר)' });
+        await corniceToggle.locator('xpath=ancestor::label[1]').click();
+        await expect(corniceToggle).toBeChecked();
       },
       { minBuildRequests: 1, minBuildExecutes: 1, minRenderRequests: 1 }
     );

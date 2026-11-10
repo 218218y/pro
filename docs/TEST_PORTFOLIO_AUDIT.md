@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-11-05T17:05:23.659Z
+Generated: 2026-11-10T09:49:07.217Z
 
 ## Summary
 
@@ -20,7 +20,7 @@ Generated: 2026-11-05T17:05:23.659Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 140
+- Cross-kind contract overlap targets: 144
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -58,7 +58,7 @@ Generated: 2026-11-05T17:05:23.659Z
 - `esm/native/builder/build_wardrobe_flow_context.ts` — contract / ownership — `tests/build_hotpath_runtime_cleanup_contracts.test.js`, `tests/builder_corner_typed_surface_contracts.test.js`, `tests/builder_service_access_contracts.test.js`, `tests/door_removal_visibility_contracts.test.js`, `tests/room_architecture_plan_ownership_contract.test.js`
 - `esm/native/builder/chest_mode_pipeline.ts` — contract / ownership — `tests/builder_scalar_geometry_type_hardening_contracts.test.js`, `tests/chest_mode_builder_aggregate_pair_ownership_contract.test.js`, `tests/chest_mode_builder_aggregate_pair_ownership_runtime.test.ts`, `tests/root_surface_ast_guard.test.js`
 - `esm/native/builder/core_carcass_cornice.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/wp_legacy_fallback_audit_runtime.test.js`
-- `esm/native/builder/core_carcass_shared.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_pipeline_number_contracts_runtime.test.ts`, `tests/core_carcass_shared_ownership_runtime.test.ts`
+- `esm/native/builder/core_carcass_shared.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/carcass_pipeline_number_contracts_runtime.test.ts`, `tests/core_carcass_shared_ownership_runtime.test.ts`
 - `esm/native/builder/core_carcass_shell.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/wp_lint_architecture_contracts_runtime.test.js`
 - `esm/native/builder/core_doors_compute.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/core_doors_material_door_system_ownership_contract.test.js`, `tests/core_pure_number_contracts_runtime.test.ts`, `tests/door_system_dimension_ownership_closeout_contract.test.js`
 - `esm/native/builder/core_layout_compute.ts` — contract / ownership — `tests/builder_service_access_contracts.test.js`, `tests/core_module_layout_ownership_runtime.test.ts`, `tests/core_pure_number_contracts_runtime.test.ts`
@@ -97,15 +97,17 @@ Generated: 2026-11-05T17:05:23.659Z
 - `esm/native/features/project_config/project_config_map_readers.ts` — contract / source-guard — `tests/door_trim_center_contract_runtime.test.ts`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
 - `esm/native/features/stack_split/module_config.ts` — contract / ownership — `tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js`, `tests/library_preset_dimension_owner_contract.test.js`
 - `esm/native/io/project_io_load_helpers_maps.ts` — contract / source-guard — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_io_contracts.test.js`, `tests/project_payload_schema_contracts.test.js`
+- `esm/native/io/project_io_load_helpers.ts` — contract / ownership — `tests/actions_domain_access_contracts.test.js`, `tests/app_boot_browser_project_family_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canonical_strict_state_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/project_io_contracts.test.js`, `tests/project_payload_schema_contracts.test.js`, `tests/zustand_domain_paths_contracts.test.js`
+- `esm/native/io/project_io_save_helpers.ts` — contract / ownership — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
 - `esm/native/io/project_load_canonical_snapshot.ts` — contract / source-guard — `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_migration_boundary_contracts.test.js`
 - `esm/native/io/project_schema_current.ts` — contract / source-guard — `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_payload_schema_contracts.test.js`
-- `esm/native/io/project_schema_validation.ts` — contract / source-guard — `tests/builder_scalar_geometry_type_hardening_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_payload_schema_contracts.test.js`
+- `esm/native/io/project_schema_validation.ts` — contract / ownership / source-guard — `tests/builder_scalar_geometry_type_hardening_contracts.test.js`, `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/project_payload_schema_contracts.test.js`
 - `esm/native/kernel/domain_api_colors_section.ts` — contract / ownership — `tests/kernel_di_and_owner_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
 - `esm/native/kernel/domain_api_surface_sections_bindings_doors.ts` — contract / ownership — `tests/domain_api_surface_sections_decomposition_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_parity_integration_paths_guard.test.js`
 - `esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts` — contract / ownership — `tests/domain_api_surface_sections_decomposition_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_parity_integration_paths_guard.test.js`
 - `esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts` — contract / ownership — `tests/domain_api_surface_sections_decomposition_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_parity_integration_paths_guard.test.js`
 - `esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts` — contract / ownership — `tests/domain_api_surface_sections_decomposition_contracts.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_parity_integration_paths_guard.test.js`
-- `esm/native/kernel/kernel_project_capture_payload.ts` — contract / ownership / source-guard — `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/kernel_snapshot_capture_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
+- `esm/native/kernel/kernel_project_capture_payload.ts` — contract / ownership / source-guard — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/kernel_project_capture_dimension_ownership_contract.test.js`, `tests/kernel_snapshot_capture_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`
 - `esm/native/kernel/kernel_state_kernel_config_maps_shared.ts` — contract / source-guard — `tests/kernel_di_and_owner_contracts.test.js`, `tests/project_config_visual_maps_canonical_only_source_guard.test.js`, `tests/runtime_platform_core_family_contracts.test.js`
 - `esm/native/kernel/maps_api_named_maps.ts` — contract / ownership — `tests/maps_saved_colors_storage_bridge_guard.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_domain_paths_contracts.test.js`
 - `esm/native/kernel/state_api_config_namespace_maps.ts` — contract / ownership — `tests/canvas_picking_config_meta_contracts.test.js`, `tests/config_map_noop_reuse_guard.test.js`, `tests/visual_maps_writer_ownership_topology_contract.test.js`, `tests/zustand_store_contracts.test.js`
@@ -170,6 +172,8 @@ Generated: 2026-11-05T17:05:23.659Z
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_surface_contracts.ts` — contract / ownership — `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/runtime_pipeline_ownership_topology_contract.test.js`
 - `esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx` — contract / ownership — `tests/app_boot_browser_project_family_contracts.test.js`, `tests/export_download_dom_contracts.test.js`, `tests/react_bridge_surface_family_guard.test.js`, `tests/runtime_pipeline_ownership_topology_contract.test.js`
 - `esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx` — contract / ownership — `tests/export_download_dom_contracts.test.js`, `tests/order_pdf_toolbar_visual_contracts.test.js`, `tests/react_bridge_surface_family_guard.test.js`, `tests/react_selector_hotspots_contracts.test.js`, `tests/react_store_cleanup_contracts.test.js`, `tests/runtime_pipeline_ownership_topology_contract.test.js`
+- `esm/native/ui/react/tabs/design_tab_controller_runtime.ts` — contract / ownership — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/design_tab_owner_contracts.test.js`
+- `esm/native/ui/react/tabs/design_tab_sections_cornice.tsx` — contract / ownership — `tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js`, `tests/design_tab_owner_contracts.test.js`
 - `esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx` — contract / source-guard — `tests/interior_sketch_box_validation_source_guard.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/structure_tab_family_contracts.test.js`
 - `esm/native/ui/react/tabs/interior_layout_sketch_box_controls_runtime_dimensions.ts` — contract / source-guard — `tests/interior_sketch_box_validation_source_guard.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/structure_tab_family_contracts.test.js`
 - `esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx` — contract / source-guard — `tests/interior_sketch_box_validation_source_guard.test.js`, `tests/mirror_center_and_box_controls_guard.test.js`, `tests/react_form_unique_id_contracts.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_double_doors_guard.test.cjs`, `tests/sketch_box_manual_dims_guard.test.js`, `tests/structure_tab_family_contracts.test.js`
