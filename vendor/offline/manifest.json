@@ -14,31 +14,31 @@
     }
   },
   "ast": {
-    "version": "0.157.0",
-    "compatibleProjectRange": ">=0.157.0 <0.158.0",
+    "version": "0.158.0",
+    "compatibleProjectRange": ">=0.158.0 <0.159.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
         "installPath": "node_modules/oxc-parser",
-        "file": "vendor/offline/ast/oxc-parser-0.157.0.tgz",
-        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.157.0.tgz",
-        "integrity": "sha512-2MJ9tZGXUbEIhQT/O2OPLlYCgur75ES26t2Pb1sYrvDQcRjrE7GmubkALgPEB6LzOY6sM81AAHKfl5M/FgnjJg=="
+        "file": "vendor/offline/ast/oxc-parser-0.158.0.tgz",
+        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.158.0.tgz",
+        "integrity": "sha512-BKmaZZXp667kLC8Od/ivIkbw6yaxTSqw8ViI1Tvl21E6r+6NLdwDmo43LpL2Ebt/PDMu1d4tcdBucMSor+cL1g=="
       },
       {
         "lockPath": "node_modules/@oxc-project/types",
         "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/types-0.157.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.157.0.tgz",
-        "integrity": "sha512-95iTox1qdt6WGWce3xwNOVayByOfLaYAq+qGPpub6NWbBh9sv0GG3+zyfh9ZBCO/jVu5A0EWI+qQI7g6fevjxg=="
+        "file": "vendor/offline/ast/types-0.158.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.158.0.tgz",
+        "integrity": "sha512-xZ66qA4WmLbTLlxH3mqMd8f9UKbaOzOT0ATwFf4DH/14pMgpUrtqtjyYzOQmgfl2a0iRAAMbQ9G1th/67jRzGw=="
       }
     ],
     "bindings": {
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.157.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.157.0.tgz",
-        "integrity": "sha512-C4BY4QSVzN6R03Ner3r6EtIvLNR4VW4RAb63m+L0tiF/zD7grkBHMn1svyrOBFR4i32+GWJHu05xC4gGQYBhtA=="
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.158.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.158.0.tgz",
+        "integrity": "sha512-COR5cFRE6DqmxZGE9QCJG1X7uUYxNdSYkMR7J9igRLnZqZ8ki6kJIa5S4czYHeIjdNyYn4vo1CsK3rQsK5sjrA=="
       }
     }
   },
@@ -1230,6 +1230,6 @@
         ]
       }
     },
-    "lockfileSha256": "bc6f3bd957fc77e43e4c6363fc6931fb649e796a1b81d3af5529488f804d614c"
+    "lockfileSha256": "1fc91302b28f553b9519bc0eec872c69a3c00b53f938140777937dfee3705c67"
   }
 }
