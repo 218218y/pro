@@ -69,3 +69,31 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(boring).toBeVisible();
   expectNoRuntimeIssues(issues);
 });
+
+test('interior layout uses dark card and button surfaces across placement methods', async ({ page }) => {
+  await gotoSmokeApp(page);
+  await openMainTab(page, 'settings');
+  const darkMode = page.getByTestId('toggle-dark-mode');
+  if (!(await darkMode.isChecked())) await darkMode.locator('..').click();
+  await expect(darkMode).toBeChecked();
+  await openMainTab(page, 'interior');
+
+  const layout = page.getByTestId('interior-layout');
+  await expect(layout).toHaveCSS('background-color', 'rgb(32, 38, 45)');
+  await expect(layout.getByTestId('interior-layout-shelves')).toHaveCSS(
+    'background-color',
+    'rgb(32, 38, 45)'
+  );
+
+  const grid = layout.getByTestId('interior-layout-method-grid');
+  await grid.click();
+  await expect(grid).toHaveCSS('color', 'rgb(159, 242, 232)');
+  await layout.getByTestId('interior-manual-tool-shelf-button').click();
+  await expect(layout).toHaveCSS('background-color', 'rgba(77, 182, 172, 0.12)');
+
+  await layout.getByTestId('interior-layout-method-sketch').click();
+  await expect(layout.getByText('המרת מדפים וחירור', { exact: true })).toHaveCSS(
+    'color',
+    'rgb(168, 179, 189)'
+  );
+});
