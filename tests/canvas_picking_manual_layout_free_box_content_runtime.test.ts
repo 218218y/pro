@@ -1006,6 +1006,9 @@ test('brace hover preserves brace clearance and regular minimum-width branches',
     assert.deepEqual(harness.events, ['hide-layout', 'set-sketch']);
     assert.equal(harness.sketchPreviews[0]?.variant, entry.nextVariant);
     assert.equal(harness.sketchPreviews[0]?.w, entry.expectedWidth);
+    const measurements = harness.sketchPreviews[0]?.clearanceMeasurements;
+    assert.ok(Array.isArray(measurements));
+    assert.equal(measurements.filter(entry => entry.role === 'cell').length, 2);
   }
 });
 

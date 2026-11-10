@@ -1004,3 +1004,32 @@ test('generic paint hover positions corner wing side preview in wardrobe coordin
   assert.ok(Math.abs(Number(previews[0]?.w) - 0.5) < 1e-9);
   assert.ok(Math.abs(Number(previews[0]?.d) - 0.04) < 1e-9);
 });
+
+test('module and free box shelves use the same paint overlay as ordinary shelves', () => {
+  for (const partId of ['sketch_box_0_sb_1_shelf_s1', 'sketch_box_free_0_sbf_1_shelf_s1']) {
+    const wardrobeGroup = { children: [] as unknown[] };
+    const shelf = createBoxObject(partId, { height: 0.018, y: 1 });
+    const box = { children: [shelf], parent: wardrobeGroup };
+    wardrobeGroup.children.push(box);
+    shelf.parent = box;
+    const App = createApp({ wardrobeGroup, maps: { individualColors: { [partId]: 'oak' } } });
+    const previews: Record<string, unknown>[] = [];
+    assert.equal(
+      tryHandleGenericPartPaintHover({
+        App,
+        ndcX: 0,
+        ndcY: 0,
+        paintSelection: 'oak',
+        raycaster: createRaycaster([{ object: shelf, point: { x: 0, y: 1, z: 0.25 } }]),
+        mouse: { x: 0, y: 0 },
+        previewRo: {
+          setSketchPlacementPreview: (preview: Record<string, unknown>) => previews.push(preview),
+        },
+      }),
+      true
+    );
+    assert.equal(previews[0]?.kind, 'object_boxes');
+    assert.equal(previews[0]?.op, 'remove');
+    assert.deepEqual(previews[0]?.previewObjects, [shelf]);
+  }
+});

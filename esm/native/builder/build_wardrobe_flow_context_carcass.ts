@@ -71,6 +71,7 @@ export function resolveBuildWardrobeCarcassMetrics(args: {
     doorsCount: plan.doorsCount,
     hasCornice: plan.hasCornice,
     corniceType: plan.corniceType,
+    corniceDimensions: plan.uiState?.corniceDimensions,
     moduleInternalWidths: plan.moduleInternalWidths,
     moduleHeightsTotal: plan.stackSplitUnifiedFrame ? null : plan.moduleHeightsTotal,
     moduleDepthsTotal: plan.moduleDepthsTotal,

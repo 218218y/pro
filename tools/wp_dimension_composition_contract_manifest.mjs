@@ -222,6 +222,7 @@ export const DIMENSION_COMPOSITION_CONTRACT_LANES = deepFreeze({
         'BASE_PLINTH_POLICY',
         'CARCASS_SHELL_DIMENSIONS',
         'MATERIAL_THICKNESS_POLICY',
+        'readCorniceDimensionOverrides',
       ],
       sources: [
         {
@@ -235,6 +236,10 @@ export const DIMENSION_COMPOSITION_CONTRACT_LANES = deepFreeze({
         {
           file: 'esm/shared/dimensions/base_plinth_policy.ts',
           symbols: ['BASE_PLINTH_POLICY'],
+        },
+        {
+          file: 'esm/shared/dimensions/carcass_cornice_render_policy.ts',
+          symbols: ['readCorniceDimensionOverrides'],
         },
         {
           file: 'esm/shared/dimensions/carcass_shell_policy.ts',
@@ -287,7 +292,9 @@ export const DIMENSION_COMPOSITION_CONTRACT_LANES = deepFreeze({
         'INTERIOR_STORAGE_BARRIER_POLICY',
         'INTERIOR_STORAGE_GRID_POLICY',
         'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
         'SKETCH_BOX_PREVIEW_CORE_POLICY',
+        'SKETCH_BOX_SHELF_PREVIEW_POLICY',
       ],
       sources: [
         {
@@ -304,7 +311,11 @@ export const DIMENSION_COMPOSITION_CONTRACT_LANES = deepFreeze({
         },
         {
           file: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
-          symbols: ['SKETCH_BOX_PREVIEW_CORE_POLICY'],
+          symbols: [
+            'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+            'SKETCH_BOX_PREVIEW_CORE_POLICY',
+            'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+          ],
         },
       ],
     },

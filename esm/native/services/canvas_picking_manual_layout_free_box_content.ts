@@ -1,7 +1,6 @@
 import type { AppContainer } from '../../../types';
 import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-import { SKETCH_BOX_SHELF_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { __wp_raycastReuse } from './canvas_picking_core_helpers.js';
 import {
@@ -253,7 +252,6 @@ function writeBraceShelvesHoverPreview(args: {
   hideLayoutPreview: () => void;
 }): boolean {
   if (!args.setSketchPreview) return false;
-  const isBrace = args.plan.nextVariant === 'brace';
   args.hideLayoutPreview();
   args.setSketchPreview({
     App: args.App,
@@ -264,14 +262,9 @@ function writeBraceShelvesHoverPreview(args: {
     x: args.plan.previewX,
     y: args.plan.shelfY,
     z: args.plan.previewInternalZ - args.plan.previewInnerD / 2 + args.plan.nextDepthM / 2,
-    w: Math.max(
-      SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
-      args.plan.previewW -
-        (isBrace
-          ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
-          : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
-    ),
-    h: args.plan.nextVariant === 'brace' ? args.plan.previewWoodThick : args.plan.previewWoodThick,
+    w: args.plan.previewW,
+    h: args.plan.previewWoodThick,
+    clearanceMeasurements: args.plan.clearanceMeasurements,
     d: args.plan.nextDepthM,
     woodThick: args.plan.previewWoodThick,
     op: args.plan.blockedReason ? 'blocked' : args.plan.previewOp,

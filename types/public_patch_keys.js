@@ -25,6 +25,7 @@ export const PUBLIC_UI_PATCH_KEYS = [
   'removeDoorsEnabled',
   'hasCornice',
   'corniceType',
+  'corniceDimensions',
   'currentCurtainChoice',
   'grooveManualEnabled',
   'currentGrooveDraftHeightCm',

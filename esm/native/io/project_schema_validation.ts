@@ -1,3 +1,4 @@
+import { isCorniceDimensionsCm } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { ProjectDataLike, ProjectSchemaValidationResult, UnknownRecord } from '../../../types/index.js';
 
 import {
@@ -134,6 +135,9 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
       if (hasOwn(settings, key) && (typeof settings[key] !== 'number' || !Number.isFinite(settings[key]))) {
         errors.push(`settings.${key} must be a finite number`);
       }
+    }
+    if (hasOwn(settings, 'corniceDimensions') && !isCorniceDimensionsCm(settings.corniceDimensions)) {
+      errors.push('settings.corniceDimensions contains invalid cornice dimensions');
     }
     for (const key of BOOLEAN_SETTINGS_KEYS) {
       if (hasOwn(settings, key) && typeof settings[key] !== 'boolean') {

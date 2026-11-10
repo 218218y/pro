@@ -27,6 +27,8 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
         corniceType: 'wave',
         setHasCornice: noop,
         setCorniceType: noop,
+        corniceDimensions: undefined,
+        setCorniceDimension: noop,
       },
     })
   );
@@ -39,6 +41,9 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
   assert.match(corniceHtml, /<button[^>]*type="button"[^>]*>ישר<\/button>/);
   assert.doesNotMatch(doorStyleHtml, /role="button"/);
   assert.doesNotMatch(corniceHtml, /role="button"/);
+  assert.equal((corniceHtml.match(/type="number"/g) ?? []).length, 3);
+  assert.equal((corniceHtml.match(/aria-label="החזר/g) ?? []).length, 3);
+  assert.match(corniceHtml, /value="9.5"/);
 });
 
 test('[design-tab-sections-runtime] door-features section keeps hinged/sliding visibility and edit controls canonical', () => {
@@ -227,6 +232,8 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
         corniceType: 'classic',
         setHasCornice: noop,
         setCorniceType: noop,
+        corniceDimensions: undefined,
+        setCorniceDimension: noop,
       },
     })
   );
@@ -253,6 +260,8 @@ test('[design-tab-sections-runtime] no-main wardrobe mode hides height additions
         corniceType: 'classic',
         setHasCornice: noop,
         setCorniceType: noop,
+        corniceDimensions: undefined,
+        setCorniceDimension: noop,
       },
     })
   );

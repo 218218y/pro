@@ -60,6 +60,7 @@ const UI_DOMAIN_BY_KEY = {
   removeDoorsEnabled: APPEARANCE,
   hasCornice: APPEARANCE,
   corniceType: APPEARANCE,
+  corniceDimensions: APPEARANCE,
   currentCurtainChoice: APPEARANCE,
   grooveManualEnabled: APPEARANCE,
   currentGrooveDraftHeightCm: APPEARANCE,

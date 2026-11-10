@@ -196,7 +196,7 @@ export function createBraceSketchShelfPreview(args: {
   backZ: number;
   woodThick: number;
   regularDepth: number;
-}): UnknownRecord {
+}) {
   const operation = resolveShelfShortcutOperation(args.match.shelf, args.targetVariant ?? 'brace');
   const shelfPreview = createSketchModuleShelfPreviewGeometry({
     innerW: args.innerW,

@@ -1,3 +1,4 @@
+import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   resolveShelfShortcutOperation,
   type ShelfShortcutVariant,
@@ -9,7 +10,9 @@ import {
   INTERIOR_STORAGE_BARRIER_POLICY,
   INTERIOR_STORAGE_GRID_POLICY,
   MATERIAL_THICKNESS_POLICY,
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
   SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { asRecord } from '../runtime/record.js';
@@ -332,6 +335,42 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     shelfVariant: 'regular',
   });
   const state = metrics.state;
+  const measure = (y: number, width: number, depth: number) => {
+    const policy = SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY;
+    return buildSketchBoxStackAwareMeasurementEntries({
+      bottomY: state.cellBottomY,
+      topY: state.cellTopY,
+      totalHeight: state.cellHeight,
+      pad: woodThick,
+      woodThick,
+      neighborBottomY: args.targetCenterY - args.targetHeight / 2,
+      neighborTopY: args.targetCenterY + args.targetHeight / 2,
+      neighborTotalHeight: args.targetHeight,
+      targetBox: args.targetBox,
+      targetGeo: args.targetGeo,
+      activeSegment: state.activeSegment,
+      boxSegments: state.boxSegments,
+      pickSegment: pickSketchBoxSegment,
+      targetCenterX: metrics.previewX,
+      targetCenterY: y,
+      targetWidth: width,
+      targetHeight: woodThick,
+      z:
+        args.targetGeo.innerBackZ +
+        depth +
+        Math.max(policy.measurementZOffsetMinM, depth * policy.measurementZOffsetDepthRatio),
+      styleKey: 'cell',
+      textScale: policy.measurementTextScale,
+    });
+  };
+  const previewWidth = (variant: ShelfShortcutVariant) =>
+    Math.max(
+      SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+      metrics.previewW -
+        (variant === 'brace'
+          ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+          : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
+    );
   const shelves = Array.isArray(readRecordValue(args.targetBox, 'shelves'))
     ? (readRecordValue(args.targetBox, 'shelves') as RecordMap[])
     : [];
@@ -371,16 +410,17 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
       shelfYNorm: clampUnit(yNorm),
       contentXNorm: xNorm,
       previewX: metrics.previewX,
-      previewW: metrics.previewW,
+      previewW: previewWidth(nextVariant),
       previewInternalZ: args.targetGeo.innerBackZ + args.targetGeo.innerD / 2,
       previewInnerD: args.targetGeo.innerD,
       previewWoodThick: woodThick,
       currentVariant,
       nextVariant,
       nextDepthM,
+      clearanceMeasurements: [],
     };
   }
-  if (best) return best;
+  if (best) return { ...best, clearanceMeasurements: measure(best.shelfY, best.previewW, best.nextDepthM) };
   const variant = args.targetVariant ?? 'brace';
   const y = state.clampBoxCenterY(args.pointerY, woodThick / 2);
   const blockers = buildSketchBoxVerticalContentBlockers({
@@ -406,6 +446,8 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
         })
       ? 'collision'
       : null;
+  const nextDepthM = resolveShelfDepth({ variant, innerD: args.targetGeo.innerD, woodThick });
+  const previewW = previewWidth(variant);
   return {
     blockedReason,
     action: 'add',
@@ -417,12 +459,13 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     shelfYNorm: clampUnit((y - (args.targetCenterY - args.targetHeight / 2)) / args.targetHeight),
     contentXNorm: metrics.contentXNorm,
     previewX: metrics.previewX,
-    previewW: metrics.previewW,
+    previewW,
     previewInternalZ: args.targetGeo.innerBackZ + args.targetGeo.innerD / 2,
     previewInnerD: args.targetGeo.innerD,
     previewWoodThick: woodThick,
     currentVariant: variant,
     nextVariant: variant,
-    nextDepthM: resolveShelfDepth({ variant, innerD: args.targetGeo.innerD, woodThick }),
+    nextDepthM,
+    clearanceMeasurements: measure(y, previewW, nextDepthM),
   };
 }

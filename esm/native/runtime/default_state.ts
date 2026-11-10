@@ -91,6 +91,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       splitDoors: false,
       internalDrawersEnabled: false,
       hasCornice: false,
+      corniceDimensions: { sideCm: null, frontCm: null, heightCm: null },
       // Split wardrobe into 2 stacked units (lower has base + custom depth, upper has no base).
       stackSplitEnabled: false,
       stackSplitDecorativeSeparatorEnabled: false,

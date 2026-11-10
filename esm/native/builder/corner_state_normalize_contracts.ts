@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 import type {
   BuilderContentsRenderPolicy,
   ConfigStateLike,
@@ -49,6 +50,7 @@ export type CornerBuildUI = UnknownRecord & {
   cornerDepth?: unknown;
   removeDoorsEnabled?: boolean;
   corniceType?: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   baseType?: unknown;
   baseLegStyle?: unknown;
   baseLegColor?: unknown;

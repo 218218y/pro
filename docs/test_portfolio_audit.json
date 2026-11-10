@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T17:05:23.659Z",
+  "generatedAt": "2026-11-10T09:54:17.209Z",
   "totals": {
     "tests": 1288,
     "unitRunnerTests": 1276,
@@ -17,7 +17,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 140
+    "contractOverlapTargets": 144
   },
   "categories": {
     "contract": 400,
@@ -915,6 +915,66 @@
       ]
     },
     {
+      "target": "esm/native/io/project_io_load_helpers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/app_boot_browser_project_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/canonical_strict_state_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/project_io_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/project_payload_schema_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/io/project_io_save_helpers.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/actions_domain_access_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/builder_surface_family_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/zustand_domain_paths_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
       "target": "esm/native/io/project_load_canonical_snapshot.ts",
       "kinds": ["contract", "source-guard"],
       "owners": [
@@ -944,11 +1004,15 @@
     },
     {
       "target": "esm/native/io/project_schema_validation.ts",
-      "kinds": ["contract", "source-guard"],
+      "kinds": ["contract", "ownership", "source-guard"],
       "owners": [
         {
           "file": "tests/builder_scalar_geometry_type_hardening_contracts.test.js",
           "kind": "contract"
+        },
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
         },
         {
           "file": "tests/project_config_visual_maps_canonical_only_source_guard.test.js",
@@ -1054,6 +1118,10 @@
       "target": "esm/native/kernel/kernel_project_capture_payload.ts",
       "kinds": ["contract", "ownership", "source-guard"],
       "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
         {
           "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
           "kind": "ownership"
@@ -2269,6 +2337,34 @@
         {
           "file": "tests/runtime_pipeline_ownership_topology_contract.test.js",
           "kind": "ownership"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/design_tab_controller_runtime.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/design_tab_owner_contracts.test.js",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/ui/react/tabs/design_tab_sections_cornice.tsx",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
+        },
+        {
+          "file": "tests/design_tab_owner_contracts.test.js",
+          "kind": "contract"
         }
       ]
     },

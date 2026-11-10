@@ -1,3 +1,4 @@
+import type { CorniceDimensionsCm } from './cornice_type.js';
 // Project payload/schema typing (high-value boundary)
 //
 // Goal:
@@ -98,6 +99,7 @@ export interface ProjectSettingsLike extends UnknownRecord {
   singleDoorPos?: string | undefined;
   doorStyle?: string | undefined;
   corniceType?: string | undefined;
+  corniceDimensions?: CorniceDimensionsCm | undefined;
   color?: string | undefined;
   customColor?: string | undefined;
 

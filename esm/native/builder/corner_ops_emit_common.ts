@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from '../../../types/cornice_type.js';
 // Shared corner-ops helpers.
 //
 // Keep the shared typed snapshot/render contract here so connector/wing emitters
@@ -65,6 +66,7 @@ export interface CornerOpsEmitContext extends UnknownRecord {
   cornerConnectorActive: boolean;
   __corniceAllowedForThisStack: boolean;
   __corniceTypeNorm: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   __cfg: unknown;
   config: unknown;
   __stackScopePartKey: (partId: unknown) => string;

@@ -17,26 +17,3 @@ export function resolveSketchBoxContentPartMaterial(args: {
   }
   return defaultMaterial;
 }
-
-export function resolveSketchBoxShelfMaterial(args: {
-  getPartMaterial?: RenderSketchBoxContentsArgs['args']['getPartMaterial'];
-  getPartColorValue?: RenderSketchBoxContentsArgs['args']['getPartColorValue'];
-  isFn: RenderSketchBoxContentsArgs['args']['isFn'];
-  partId: string;
-  isGlass: boolean;
-  glassMat: RenderSketchBoxContentsArgs['args']['glassMat'];
-  currentShelfMat: unknown;
-}): unknown {
-  const { getPartMaterial, getPartColorValue, isFn, partId, isGlass, glassMat, currentShelfMat } = args;
-  let shelfMat = isGlass && glassMat ? glassMat : currentShelfMat;
-  try {
-    const partColorValue = isFn(getPartColorValue) ? getPartColorValue(partId) : null;
-    if (!isGlass && partColorValue && isFn(getPartMaterial)) {
-      const resolved = getPartMaterial(partId);
-      if (resolved) shelfMat = resolved;
-    }
-  } catch {
-    // builder-material-fallback: unresolved optional part material falls back to the canonical default material
-  }
-  return shelfMat;
-}

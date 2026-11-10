@@ -1,3 +1,4 @@
+import type { CorniceDimensionOverridesCm } from './cornice_type.js';
 // Canonical UI slice state.
 //
 // This is the closed, store-owned UI state contract. External/project payloads
@@ -42,6 +43,7 @@ export interface UiState {
   removeDoorsEnabled?: boolean;
   hasCornice?: boolean;
   corniceType?: string;
+  corniceDimensions?: CorniceDimensionOverridesCm | undefined;
   currentCurtainChoice?: string;
   grooveManualEnabled?: boolean;
   currentGrooveDraftHeightCm?: string;

@@ -1,6 +1,7 @@
 import {
   INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
   INTERIOR_SHELF_GEOMETRY_POLICY,
+  resolveSketchBoxGlassShelfRearClearanceM,
 } from '../../shared/dimensions/interior_fittings_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
@@ -155,7 +156,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     const shelfW = boxHere ? (boxShelfW ?? baseShelfW) : baseShelfW;
     const braceDepth = Math.max(woodThick, (args.braceFrontZ ?? backZ + internalDepth) - backZ);
     const maxShelfDepth = isBrace ? braceDepth : internalDepth;
-    const shelfDepth = resolveShelfDepth({
+    const nominalShelfDepth = resolveShelfDepth({
       requestedDepth: shelf.depthM,
       woodThick,
       internalDepth: maxShelfDepth,
@@ -164,7 +165,10 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     });
 
     const backZ0 = boxHere ? boxHere.innerBackZ : internalDepth > 0 ? backZ : internalZ;
-    const shelfZ = backZ0 + shelfDepth / 2;
+    const rearClearance =
+      isGlass && boxHere ? resolveSketchBoxGlassShelfRearClearanceM(nominalShelfDepth) : 0;
+    const shelfDepth = nominalShelfDepth - rearClearance;
+    const shelfZ = backZ0 + rearClearance + shelfDepth / 2;
     const shelfH = shelfHeightForVariant(variant);
     const shelfPartId = createSketchShelfPartId(moduleKeyStr, i + 1);
     const mat =

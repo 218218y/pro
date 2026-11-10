@@ -46,6 +46,7 @@ test('Core Carcass Shared preserves shell constants, Material fallback, module f
     H: 2.4,
     woodThick: String(MATERIAL_THICKNESS_POLICY.wood.thicknessM),
   });
+  assert.deepEqual(defaults.corniceDimensions, { sideCm: null, frontCm: null, heightCm: null });
   assert.equal(defaults.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   assert.equal(numericString.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   assert.deepEqual(Object.keys(defaults), [
@@ -57,6 +58,7 @@ test('Core Carcass Shared preserves shell constants, Material fallback, module f
     'doorsCount',
     'hasCornice',
     'corniceType',
+    'corniceDimensions',
     'baseHeight',
     'startY',
     'cabinetBodyHeight',

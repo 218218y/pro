@@ -1,4 +1,7 @@
-import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+  resolveSketchBoxGlassShelfRearClearanceM,
+} from '../../shared/dimensions/interior_fittings_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
@@ -188,7 +191,9 @@ export function resolveSketchBoxShelfPreview(
         ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
         : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
   );
-  const previewZ = targetGeo.innerBackZ + shelfDepth / 2;
+  const rearClearance = variant === 'glass' ? resolveSketchBoxGlassShelfRearClearanceM(shelfDepth) : 0;
+  const previewDepth = shelfDepth - rearClearance;
+  const previewZ = targetGeo.innerBackZ + rearClearance + previewDepth / 2;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
     bottomY: cellBottomY,
     topY: cellTopY,
@@ -210,7 +215,7 @@ export function resolveSketchBoxShelfPreview(
     targetHeight: shelfH,
     z:
       previewZ +
-      shelfDepth / 2 +
+      previewDepth / 2 +
       Math.max(
         SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
         shelfDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
@@ -242,7 +247,7 @@ export function resolveSketchBoxShelfPreview(
       z: previewZ,
       w: previewW,
       h: shelfH,
-      d: shelfDepth,
+      d: previewDepth,
       woodThick,
       op: blockedReason ? 'blocked' : op,
       blockedReason: blockedReason ?? undefined,

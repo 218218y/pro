@@ -11,6 +11,11 @@ export const INTERIOR_SHELF_GEOMETRY_POLICY = Object.freeze({
   winterBraceFrameWidthCm: 8,
 });
 
+// Keep the rear glass face clear of the box back while retaining its front edge.
+export function resolveSketchBoxGlassShelfRearClearanceM(depthM: number): number {
+  return Math.min(0.001, depthM / 2);
+}
+
 export const INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY = Object.freeze({
   contentsWidthClearanceM: meters(0.06),
   contentsHeightClearanceM: meters(0.006),

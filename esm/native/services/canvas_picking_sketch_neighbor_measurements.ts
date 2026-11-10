@@ -88,10 +88,19 @@ function readLayoutShelfState(
   if (isCustom) {
     const customData = isRecord(readValue(cfgRef, 'customData')) ? readValue(cfgRef, 'customData') : null;
     const shelves = isRecord(customData) && Array.isArray(customData.shelves) ? customData.shelves : [];
+    const variants =
+      isRecord(customData) && Array.isArray(customData.shelfVariants) ? customData.shelfVariants : [];
+    const braceShelves = readValue(cfgRef, 'braceShelves');
     return {
       divisions,
       existsAt: index => !!shelves[index - 1],
-      variantAt: () => 'double',
+      variantAt: index => {
+        const variant = variants[index - 1];
+        if (typeof variant === 'string' && variant) return variant;
+        return Array.isArray(braceShelves) && braceShelves.some(value => Number(value) === index)
+          ? 'brace'
+          : 'double';
+      },
     };
   }
 
@@ -328,6 +337,8 @@ export function buildSketchModuleStackAwareMeasurementEntries(
     shelves?: RecordMap[] | null | undefined;
     drawers?: RecordMap[] | null | undefined;
     extDrawers?: RecordMap[] | null | undefined;
+    containerBottomY?: number | undefined;
+    containerTopY?: number | undefined;
     targetCenterX: number;
     targetCenterY: number;
     targetWidth: number;
@@ -337,14 +348,16 @@ export function buildSketchModuleStackAwareMeasurementEntries(
     textScale?: number | undefined;
   }
 ): HoverClearanceMeasurementEntry[] {
+  const bottomY = args.containerBottomY ?? args.bottomY;
+  const topY = args.containerTopY ?? args.topY;
   return buildStackAwareVerticalClearanceMeasurementEntries({
-    containerMinY: args.bottomY,
-    containerMaxY: args.topY,
+    containerMinY: bottomY,
+    containerMaxY: topY,
     targetCenterX: args.targetCenterX,
     targetCenterY: args.targetCenterY,
     targetWidth: args.targetWidth,
     targetHeight: args.targetHeight,
-    neighbors: buildModuleNeighborRanges(args),
+    neighbors: buildModuleNeighborRanges(args).filter(range => range.minY < topY && range.maxY > bottomY),
     z: args.z,
     styleKey: args.styleKey,
     textScale: args.textScale,

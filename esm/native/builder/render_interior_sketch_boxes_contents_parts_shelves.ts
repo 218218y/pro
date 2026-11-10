@@ -1,4 +1,7 @@
-import { INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+  resolveSketchBoxGlassShelfRearClearanceM,
+} from '../../shared/dimensions/interior_fittings_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   SKETCH_BOX_DOOR_PREVIEW_POLICY,
@@ -8,6 +11,7 @@ import {
   SHELF_GROUP_PART_ID,
   markShelfBoardUserData,
   readSketchBoxRemovedSideShelfState,
+  resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
 import type { BuilderCreateBoardOptions } from '../../../types';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
@@ -22,7 +26,6 @@ import {
   normalizeSketchShelfVariant,
   resolveSketchBoxSegmentForContent,
 } from './render_interior_sketch_layout.js';
-import { resolveSketchBoxShelfMaterial } from './render_interior_sketch_boxes_contents_parts_materials.js';
 import { isCellBelowWinterBrace, resolveWinterBlanketSupport } from './winter_brace_contents_layout.js';
 import {
   resolveSketchBoxUsableContentCenterZ,
@@ -167,15 +170,15 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     const depthM = readPositiveNumber(shelf.depthM);
     if (depthM != null) shelfDepth = Math.min(maxShelfDepth, Math.max(woodThick, depthM));
     const shelfPid = `${boxPid}_shelf_${String(shelf.id ?? si)}`;
-    const shelfMat = resolveSketchBoxShelfMaterial({
-      getPartMaterial,
-      getPartColorValue,
-      isFn,
-      partId: shelfPid,
-      isGlass,
-      glassMat,
-      currentShelfMat: isBrace ? currentBraceShelfMat || currentShelfMat : currentShelfMat,
-    });
+    const shelfMat =
+      isGlass && glassMat
+        ? glassMat
+        : resolveShelfPartMaterial({
+            getPartMaterial,
+            getPartColorValue,
+            partId: shelfPid,
+            currentShelfMat: isBrace ? currentBraceShelfMat || currentShelfMat : currentShelfMat,
+          });
     const shelfInnerW = shelfSegment ? shelfSegment.width : geometry.innerW;
     const shelfCenterX = shelfSegment ? shelfSegment.centerX : geometry.centerX;
     const shelfW = Math.max(
@@ -185,7 +188,9 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
           ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
           : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
     );
-    const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth);
+    const rearClearance = isGlass ? resolveSketchBoxGlassShelfRearClearanceM(shelfDepth) : 0;
+    shelfDepth -= rearClearance;
+    const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth) + rearClearance;
     const shelfOptions: BuilderCreateBoardOptions | null =
       variant === 'winter_brace'
         ? { shape: 'winter_brace_shelf', shelfExposedSide }

@@ -45,7 +45,7 @@ test('Vertical Shelf/Occupancy pair imports exact focused owners without aggrega
       specifier: '../../shared/dimensions/interior_fittings_policy.js',
       kind: 'value',
       syntax: 'static-import',
-      symbols: ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+      symbols: ['INTERIOR_SHELF_GEOMETRY_POLICY', 'resolveSketchBoxGlassShelfRearClearanceM'],
     },
     {
       specifier: '../../shared/dimensions/material_thickness_policy.js',

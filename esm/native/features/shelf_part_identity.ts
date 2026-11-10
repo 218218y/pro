@@ -72,12 +72,17 @@ function isCornerPentagonInteriorShelfPartId(partId: string): boolean {
   );
 }
 
+function isSketchBoxShelfPartId(partId: string): boolean {
+  return /^sketch_box_.+_shelf_.+$/.test(partId);
+}
+
 export function isIndividualShelfPartId(partId: unknown): boolean {
   const pid = withoutLowerStackPrefix(formatIdentityValue(readIdentityValue(partId)));
   return (
     pid.startsWith(MODULE_SHELF_PART_PREFIX) ||
     pid.startsWith(SKETCH_SHELF_PART_PREFIX) ||
     pid.startsWith(CORNER_SHELF_PART_PREFIX) ||
+    isSketchBoxShelfPartId(pid) ||
     isCornerPentagonInteriorShelfPartId(pid)
   );
 }
@@ -87,7 +92,11 @@ export function resolveShelfGroupPartId(partId: unknown): string | null {
   if (pid.startsWith(CORNER_SHELF_PART_PREFIX) || isCornerPentagonInteriorShelfPartId(pid)) {
     return CORNER_SHELF_GROUP_PART_ID;
   }
-  if (pid.startsWith(MODULE_SHELF_PART_PREFIX) || pid.startsWith(SKETCH_SHELF_PART_PREFIX)) {
+  if (
+    pid.startsWith(MODULE_SHELF_PART_PREFIX) ||
+    pid.startsWith(SKETCH_SHELF_PART_PREFIX) ||
+    isSketchBoxShelfPartId(pid)
+  ) {
     return SHELF_GROUP_PART_ID;
   }
   return null;

@@ -1,3 +1,4 @@
+import type { HoverClearanceMeasurementEntry } from './canvas_picking_hover_clearance_measurements.js';
 import type { UnknownRecord } from '../../../types/index.js';
 
 import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
@@ -65,6 +66,7 @@ export type BraceShelvesFreeBoxPlan = {
   currentVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   nextVariant: 'regular' | 'brace';
   nextDepthM: number;
+  clearanceMeasurements: HoverClearanceMeasurementEntry[];
 };
 
 export function readNumber(value: unknown): number | null {

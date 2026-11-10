@@ -1,6 +1,7 @@
 import {
   CARCASS_CORNICE_ANGLE_POLICY,
   CARCASS_CORNICE_RENDER_POLICY,
+  resolveCorniceDimensionsM,
 } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CornerCorniceBoxOp,
@@ -109,16 +110,15 @@ export function buildCornerConnectorProfileCornicePlan(
   straight = false
 ): CornerCornicePlan {
   const operations: CornerCorniceProfileOp[] = [];
+  const { sideM, frontM, heightM } = resolveCorniceDimensionsM(
+    straight ? 'straight' : 'classic',
+    ctx.corniceDimensions
+  );
   // Connector doors are mounted outside the diagonal front panel's center plane.
-  const frontOverhang = straight
-    ? resolveCornerConnectorStraightFrontOverhangM(ctx, locals, STRAIGHT.overhangM)
-    : PROFILE.overhangZM;
-  const profile = straight
-    ? buildStraightCorniceProfile(frontOverhang)
-    : buildCornerCorniceProfile(frontOverhang);
-  const sideProfile = straight
-    ? buildStraightCorniceProfile()
-    : buildCornerCorniceProfile(PROFILE.overhangXM);
+  const frontOverhang = straight ? resolveCornerConnectorStraightFrontOverhangM(ctx, locals, frontM) : frontM;
+  const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
+  const profile = buildProfile(frontOverhang, heightM);
+  const sideProfile = buildProfile(sideM, heightM);
   const yPlace = resolveCornerConnectorCorniceTopY(ctx) + COMMON.yLiftM;
   const a = locals.pts[2];
   const b = locals.pts[3];
@@ -160,7 +160,7 @@ export function buildCornerConnectorProfileCornicePlan(
         miterStartTrim: xOuter * safeCotHalf(thetaA),
         miterEndTrim: xOuter * safeCotHalf(thetaB),
         miterMode: 'inner_trim',
-        ...(straight ? null : { miterProfileBaseY: connectorProfileBaseBandY() }),
+        ...(straight ? null : { miterProfileBaseY: connectorProfileBaseBandY(heightM) }),
         miterBaseSealEpsilon: PROFILE.baseSealEpsilonM,
         x: placement.x,
         y: yPlace,
@@ -192,6 +192,7 @@ function sideWaveBox(args: {
   side: CornerConnectorCorniceSideReturn;
   frameT: number;
   maxH: number;
+  sideOverhang: number;
   yPlace: number;
   interiorX: number;
   interiorZ: number;
@@ -200,12 +201,12 @@ function sideWaveBox(args: {
   const length = pathLength(a, b);
   if (!(length > COMMON.minSegmentLengthM)) return null;
   const outward = outwardNormal(a, b, args.interiorX, args.interiorZ);
-  const centerX = (a.x + b.x) / 2 - outward.x * (args.frameT / 2);
-  const centerZ = (a.z + b.z) / 2 - outward.z * (args.frameT / 2);
+  const centerX = (a.x + b.x) / 2 + outward.x * ((args.sideOverhang - args.frameT) / 2);
+  const centerZ = (a.z + b.z) / 2 + outward.z * ((args.sideOverhang - args.frameT) / 2);
   return {
     kind: 'corner_box',
     partId: args.side.partId,
-    width: args.frameT,
+    width: args.frameT + args.sideOverhang,
     height: args.maxH,
     depth: length,
     rotationY: Math.atan2(-(b.x - a.x), -(b.z - a.z)),
@@ -220,6 +221,7 @@ export function buildCornerConnectorWaveCornicePlan(
   locals: CornerConnectorCorniceLocals
 ): CornerCornicePlan {
   const operations: Array<CornerCorniceWaveOp | CornerCorniceBoxOp> = [];
+  const { sideM, frontM, heightM } = resolveCorniceDimensionsM('wave', ctx.corniceDimensions);
   const yPlace = resolveCornerConnectorCorniceTopY(ctx) + COMMON.yLiftM;
   const frameT = Math.max(
     WAVE.frameThicknessMinM,
@@ -238,14 +240,16 @@ export function buildCornerConnectorWaveCornicePlan(
       const plusLocalZ = { x: -dz / length, z: dx / length };
       const outward = outwardNormal(a, b, locals.interiorX, locals.interiorZ);
       const localZIsOutward = plusLocalZ.x * outward.x + plusLocalZ.z * outward.z >= 0;
-      const localShift = localZIsOutward ? -frameT - WAVE.connectorInsetM : WAVE.connectorInsetM;
+      const localShift = localZIsOutward ? -frameT - WAVE.connectorInsetM : WAVE.connectorInsetM - frontM;
       operations.push({
         kind: 'corner_wave',
         partId: 'corner_cornice_front',
         length,
-        depth: frameT,
-        heightMax: WAVE.maxHeightM,
-        waveAmp: Math.min(Math.max(length * WAVE.amplitudeRatio, WAVE.amplitudeMinM), WAVE.amplitudeMaxM),
+        depth: frameT + frontM,
+        heightMax: heightM,
+        waveAmp:
+          Math.min(Math.max(length * WAVE.amplitudeRatio, WAVE.amplitudeMinM), WAVE.amplitudeMaxM) *
+          (heightM / WAVE.maxHeightM),
         waveCycles: WAVE.cycles,
         samples: waveSamples(length),
         rotationY: -ang,
@@ -259,7 +263,8 @@ export function buildCornerConnectorWaveCornicePlan(
     const operation = sideWaveBox({
       side,
       frameT,
-      maxH: WAVE.maxHeightM,
+      maxH: heightM,
+      sideOverhang: sideM,
       yPlace,
       interiorX: locals.interiorX,
       interiorZ: locals.interiorZ,

@@ -154,6 +154,11 @@ test('focused shelf renderer preserves variants, owner widths, pins, glass flags
   assert.equal(harness.boards.length, 5);
   const [glass, double, brace, regular, defaultShelf] = harness.boards;
   assert.equal(boardNumber(glass, 1), MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM);
+  const backZ = harness.shell.geometry.innerBackZ;
+  const rearFace = boardNumber(glass, 5) - boardNumber(glass, 2) / 2;
+  const frontFace = boardNumber(glass, 5) + boardNumber(glass, 2) / 2;
+  assert.ok(Math.abs(rearFace - (backZ + 0.001)) < 1e-9);
+  assert.ok(Math.abs(frontFace - (backZ + harness.shell.regularDepth)) < 1e-9);
   assert.equal(boardNumber(double, 1), Math.max(harness.woodThick, harness.woodThick * 2));
   assert.equal(boardNumber(brace, 1), harness.woodThick);
   assert.equal(boardNumber(regular, 1), harness.woodThick);

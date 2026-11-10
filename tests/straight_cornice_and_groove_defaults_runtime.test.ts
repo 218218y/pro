@@ -128,11 +128,21 @@ test('straight cornice front ends 2 cm ahead of the closed door in overlay, inse
 
 test('straight cornice type survives local capture, project save and reload', () => {
   const raw = { doors: 4, width: 160, height: 240, depth: 55 };
-  const ui = { raw, corniceType: 'straight', hasCornice: true };
+  const corniceDimensions = { sideCm: 0, frontCm: null, heightCm: 11 };
+  const ui = { raw, corniceType: 'straight', hasCornice: true, corniceDimensions };
   const saved = buildDefaultProjectDataSnapshot({ ui, config: {} });
   assert.equal(saved.settings.corniceType, 'straight');
+  assert.deepEqual(saved.settings.corniceDimensions, { sideCm: 0, heightCm: 11 });
   const loaded = buildProjectUiSnapshot(saved, 'Wardrobe');
   assert.equal(loaded.uiState.corniceType, 'straight');
+  assert.deepEqual(loaded.uiState.corniceDimensions, corniceDimensions);
+  const oldProject = buildDefaultProjectDataSnapshot({ ui: { raw }, config: {} });
+  assert.equal('corniceDimensions' in oldProject.settings, false);
+  assert.deepEqual(buildProjectUiSnapshot(oldProject, 'Wardrobe').uiState.corniceDimensions, {
+    sideCm: null,
+    frontCm: null,
+    heightCm: null,
+  });
 
   const captured = buildKernelProjectCaptureData({
     uiRec: ui,
@@ -141,6 +151,10 @@ test('straight cornice type survives local capture, project save and reload', ()
     savedNotes: [],
   });
   assert.equal((captured.settings as Record<string, unknown>).corniceType, 'straight');
+  assert.deepEqual((captured.settings as Record<string, unknown>).corniceDimensions, {
+    sideCm: 0,
+    heightCm: 11,
+  });
 });
 
 test('straight cornice remains selectable and authorable on sketch boxes', () => {

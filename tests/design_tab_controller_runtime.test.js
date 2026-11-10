@@ -11,6 +11,11 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
   const file = path.join(process.cwd(), 'esm/native/ui/react/tabs/design_tab_controller_runtime.ts');
   let structuralBuildRefreshActions;
   const localRequire = specifier => {
+    if (specifier === '../../../../shared/dimensions/carcass_cornice_render_policy.js') {
+      return loadTsRuntimeModule(
+        path.join(process.cwd(), 'esm/shared/dimensions/carcass_cornice_render_policy.ts')
+      );
+    }
     if (specifier === '../actions/store_actions.js') {
       return {
         runHistoryBatch:

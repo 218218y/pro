@@ -1,3 +1,12 @@
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
+import type { UnknownRecord } from '../../../types';
+import type { InteriorHoverTarget } from './canvas_picking_hover_targets_shared.js';
+import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
+import {
+  filterSketchModuleContentItemsForCell,
+  resolveSketchModulePartitionCell,
+} from './canvas_picking_sketch_module_partition.js';
+import { asRecord } from './canvas_picking_layout_edit_flow_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import {
   readShelfShortcutVariant,
@@ -38,6 +47,54 @@ import {
   createBraceSketchShelfPreview,
   resolveBraceSketchShelfMatch,
 } from './canvas_picking_brace_shelves_sketch_extras.js';
+
+function measureShelfShortcut(
+  target: InteriorHoverTarget,
+  cfgRef: UnknownRecord,
+  shelf: { x: number; y: number; z: number; w: number; h: number; d: number }
+) {
+  const extras = asRecord(cfgRef.sketchExtras);
+  const cell = resolveSketchModulePartitionCell({
+    sketchExtras: extras,
+    geometry: target,
+    pointerX: shelf.x,
+    pointerY: shelf.y,
+  });
+  const itemsInCell = (value: unknown) =>
+    filterSketchModuleContentItemsForCell({
+      sketchExtras: extras,
+      geometry: target,
+      cell,
+      items: Array.isArray(value)
+        ? value.map(item => asRecord(item)).filter((item): item is UnknownRecord => item !== null)
+        : [],
+    }).map(entry => entry.item);
+  const policy = SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY;
+  return buildSketchModuleStackAwareMeasurementEntries({
+    bottomY: target.bottomY,
+    topY: target.topY,
+    totalHeight: target.spanH,
+    containerBottomY: cell?.bottomY,
+    containerTopY: cell?.topY,
+    pad: target.woodThick,
+    woodThick: target.woodThick,
+    cfgRef,
+    info: target.info,
+    shelves: itemsInCell(extras?.shelves),
+    drawers: itemsInCell(extras?.drawers),
+    extDrawers: itemsInCell(extras?.extDrawers),
+    targetCenterX: shelf.x,
+    targetCenterY: shelf.y,
+    targetWidth: shelf.w,
+    targetHeight: shelf.h,
+    z:
+      shelf.z +
+      shelf.d / 2 +
+      Math.max(policy.measurementZOffsetMinM, shelf.d * policy.measurementZOffsetDepthRatio),
+    styleKey: 'cell',
+    textScale: policy.measurementTextScale,
+  });
+}
 
 export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -100,21 +157,23 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
         targetVariant,
       });
       __wp_writeSketchHover(App, hoverRecord);
+      const preview = createBraceSketchShelfPreview({
+        match: sketchShelfMatch,
+        targetVariant,
+        internalCenterX: target.internalCenterX,
+        innerW: target.innerW,
+        internalDepth: target.internalDepth,
+        braceFrontZ: readNumber(target.info.braceFrontZ),
+        backZ: target.backZ,
+        woodThick: target.woodThick,
+        regularDepth: target.regularDepth,
+      });
       return setPreview(setSketchPreview, {
         App,
         THREE: getThreeMaybe(App),
         anchor: target.hitSelectorObj,
-        ...createBraceSketchShelfPreview({
-          match: sketchShelfMatch,
-          targetVariant,
-          internalCenterX: target.internalCenterX,
-          innerW: target.innerW,
-          internalDepth: target.internalDepth,
-          braceFrontZ: readNumber(target.info.braceFrontZ),
-          backZ: target.backZ,
-          woodThick: target.woodThick,
-          regularDepth: target.regularDepth,
-        }),
+        ...preview,
+        clearanceMeasurements: measureShelfShortcut(target, cfgRef, preview),
       });
     }
     __wp_clearSketchHover(App);
@@ -164,14 +223,14 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
         regularDepth: target.regularDepth,
         variant: targetVariant,
       });
+      const preview = { ...geometry, x: addition.centerX, y: addition.y };
       return setPreview(setSketchPreview, {
         App,
         THREE: getThreeMaybe(App),
         anchor: target.hitSelectorObj,
         kind: 'shelf',
-        x: addition.centerX,
-        y: addition.y,
-        ...geometry,
+        ...preview,
+        clearanceMeasurements: measureShelfShortcut(target, cfgRef, preview),
         woodThick: target.woodThick,
         op: addition.blocked ? 'blocked' : 'add',
       });
@@ -194,14 +253,14 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
       regularDepth: target.regularDepth,
       variant: nextVariant,
     });
+    const preview = { ...geometry, x: target.internalCenterX, y: shelfY };
     return setPreview(setSketchPreview, {
       App,
       THREE: getThreeMaybe(App),
       anchor: target.hitSelectorObj,
       kind: 'shelf',
-      x: target.internalCenterX,
-      y: shelfY,
-      ...geometry,
+      ...preview,
+      clearanceMeasurements: measureShelfShortcut(target, cfgRef, preview),
       woodThick: target.woodThick,
       op: targetVariant === 'regular' ? (isBrace ? 'add' : 'remove') : isBrace ? 'remove' : 'add',
     });
