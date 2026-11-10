@@ -52,7 +52,7 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
             {fields.map(({ key, label, defaultValue }) => (
               <StructurePlatformOverhangField
                 key={key}
-                label={`${label} (ס״מ)`}
+                label={label}
                 value={model.corniceDimensions?.[key] ?? defaultValue}
                 defaultValue={defaultValue}
                 min={CORNICE_DIMENSION_MIN_CM[key]}
