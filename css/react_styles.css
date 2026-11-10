@@ -707,8 +707,7 @@
 }
 
 #reactSidebarRoot .wp-r-cornice-dimensions .wp-r-door-thickness-label {
-  position: relative;
-  inset-block-start: 2px;
+  margin-block: 6px 0;
   width: calc(100% - var(--wp-r-input-h) - var(--wp-r-cornice-field-gap));
 }
 
