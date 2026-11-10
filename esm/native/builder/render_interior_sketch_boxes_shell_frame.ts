@@ -255,7 +255,9 @@ function createSketchBoxHexHorizontalCapMesh(args: {
   if (mesh.rotation) mesh.rotation.x = Math.PI / 2;
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  applySketchBoxPickMeta(mesh, args.partId, args.renderArgs.moduleKeyStr, args.state.boxId);
+  applySketchBoxPickMeta(mesh, args.partId, args.renderArgs.moduleKeyStr, args.state.boxId, {
+    shellPartId: args.state.boxPid,
+  });
   addSketchBoxOutlines(args.renderArgs, mesh);
   args.renderArgs.group.add?.(mesh);
   return mesh;
@@ -427,8 +429,8 @@ export function renderSketchBoxShellFrame(args: {
       xL,
       centerY,
       geometry.centerZ,
-      boxMat,
-      leftSidePartId || boxPid
+      resolveSketchBoxPartMaterial({ renderArgs, partId: leftSidePartId, defaultMaterial: boxMat }),
+      leftSidePartId
     )
   );
   const boxRightMesh = asMesh(
@@ -439,8 +441,8 @@ export function renderSketchBoxShellFrame(args: {
       xR,
       centerY,
       geometry.centerZ,
-      boxMat,
-      rightSidePartId || boxPid
+      resolveSketchBoxPartMaterial({ renderArgs, partId: rightSidePartId, defaultMaterial: boxMat }),
+      rightSidePartId
     )
   );
   const boxBackMesh = asMesh(
@@ -455,11 +457,11 @@ export function renderSketchBoxShellFrame(args: {
       boxPid
     )
   );
-  applySketchBoxPickMeta(boxTopMesh, boxPid, moduleKeyStr, boxId);
-  applySketchBoxPickMeta(boxBottomMesh, boxPid, moduleKeyStr, boxId);
-  applySketchBoxPickMeta(boxLeftMesh, leftSidePartId || boxPid, moduleKeyStr, boxId);
-  applySketchBoxPickMeta(boxRightMesh, rightSidePartId || boxPid, moduleKeyStr, boxId);
-  applySketchBoxPickMeta(boxBackMesh, boxPid, moduleKeyStr, boxId);
+  applySketchBoxPickMeta(boxTopMesh, boxPid, moduleKeyStr, boxId, { shellPartId: boxPid });
+  applySketchBoxPickMeta(boxBottomMesh, boxPid, moduleKeyStr, boxId, { shellPartId: boxPid });
+  applySketchBoxPickMeta(boxLeftMesh, leftSidePartId, moduleKeyStr, boxId, { shellPartId: boxPid });
+  applySketchBoxPickMeta(boxRightMesh, rightSidePartId, moduleKeyStr, boxId, { shellPartId: boxPid });
+  applySketchBoxPickMeta(boxBackMesh, boxPid, moduleKeyStr, boxId, { shellPartId: boxPid });
   addSketchBoxHexDiagonalPanels({ state, renderArgs });
   renderFreeSketchBoxRoomColumnLiners({ state, renderArgs });
 

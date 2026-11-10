@@ -265,7 +265,7 @@ test('corner wing classic cornice follows per-cell depth changes instead of one 
     child => Math.abs((child as { position: { x: number } }).position.x - 0.6) < 1e-9
   );
   assert.ok(cellDepthReturn, 'depth transition between the two wing cells should stay bridged');
-  assert.equal(Number(geometryDepth(cellDepthReturn).toFixed(3)), 0.34);
+  assert.equal(Number(geometryDepth(cellDepthReturn).toFixed(3)), 0.334);
 });
 
 test('corner wing wave cornice follows a hex-cell footprint instead of a straight wing front', () => {
@@ -296,12 +296,12 @@ test('corner wing wave cornice follows a hex-cell footprint instead of a straigh
     connectorReturn,
     'hex cell next to the pentagon should bridge from the pentagon endpoint to the hex side depth'
   );
-  assert.equal(Number(geometryDepth(connectorReturn).toFixed(3)), 0.15);
+  assert.equal(Number(geometryDepth(connectorReturn).toFixed(3)), 0.116);
   assert.deepEqual(
     frontPieces
       .filter(child => child !== connectorReturn)
       .map(child => Number((child as { position: { z: number } }).position.z.toFixed(3))),
-    [-0.012, 0.107, -0.012]
+    [0.008, 0.107, 0.008]
   );
   assert.ok(frontPieces.some(child => Math.abs(childRotationY(child)) > 0.01));
 });
@@ -325,8 +325,8 @@ test('corner wing wave cornice bridges a changed-depth first cell back to the pe
     connectorReturn,
     'wave cornice needs a visible connector seam return for a deeper first wing cell'
   );
-  assert.equal(Number(geometryDepth(connectorReturn).toFixed(3)), 0.15);
-  assert.equal(Number((connectorReturn as { position: { z: number } }).position.z.toFixed(3)), 0.08);
+  assert.equal(Number(geometryDepth(connectorReturn).toFixed(3)), 0.184);
+  assert.equal(Number((connectorReturn as { position: { z: number } }).position.z.toFixed(3)), 0.097);
 });
 
 test('corner wing classic cornice exposes the connector-side return when the first wing cell is taller than the pentagon', () => {

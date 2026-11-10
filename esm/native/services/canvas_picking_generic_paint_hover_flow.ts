@@ -19,6 +19,7 @@ import {
   isDoorStyleOverridePaintToken,
   isGlassPaintSelection,
 } from '../features/door_authoring/api.js';
+import { readSketchBoxShellPaintOp } from './canvas_picking_paint_targets.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
 import type {
   PartHoverPreviewCommand,
@@ -120,12 +121,14 @@ function resolveGenericPartPaintHoverDecision(args: {
     resolvedTarget.stackKey,
     groupedPreviewKeys
   );
+  const boxPartId = resolvedTarget.targetScope?.sketchBoxShellPartId;
   const previewGroupRaw = resolvePaintPreviewGroupBox({
     App,
     wardrobeGroup,
     partKeys: previewTargetKeys,
     anchorObject: resolvedTarget.object,
     anchorParent: resolvedTarget.parent,
+    preferObjectBoxes: !!boxPartId,
   });
   if (!previewGroupRaw) {
     return clearPreviewDecision('layout-and-sketch', 'preview-geometry-unavailable');
@@ -135,7 +138,9 @@ function resolveGenericPartPaintHoverDecision(args: {
   const effectiveKeys = targetKeys.length ? targetKeys : [resolvedTarget.partId];
   const isCornicePreview = effectiveKeys.some(__isCornicePaintKey);
   const previewGroup = isCornicePreview ? __applyCornicePreviewPadding(previewGroupRaw) : previewGroupRaw;
-  const op = __readPaintHoverOp(colors, effectiveKeys, selection);
+  const op = boxPartId
+    ? readSketchBoxShellPaintOp(colors, boxPartId, selection)
+    : __readPaintHoverOp(colors, effectiveKeys, selection);
   const isGroupedShellPreview = effectiveKeys.length > 1 && !isCornicePreview;
   const isMasoniteBack = asRecordMap(resolvedTarget.object.userData)?.__wpMasoniteBackPanel === true;
 

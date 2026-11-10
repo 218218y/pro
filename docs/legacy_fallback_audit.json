@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T09:44:02.089Z",
+  "generatedAt": "2026-11-10T10:47:32.251Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 617,
@@ -1836,7 +1836,7 @@
     },
     {
       "file": "esm/native/builder/corner_connector_cornice_plan.ts",
-      "line": 228,
+      "line": 229,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(WAVE.frameThicknessMaxM, ctx.woodThick || WAVE.fallbackWoodThicknessM)"
@@ -1997,7 +1997,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cornice_plan.ts",
-      "line": 360,
+      "line": 361,
       "term": "fallbackWoodThicknessM",
       "category": "domain-default",
       "text": "Math.min(CORNICE_WAVE.frameThicknessMaxM, ctx.woodThick || CORNICE_WAVE.fallbackWoodThicknessM)"
@@ -5679,7 +5679,7 @@
     },
     {
       "file": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
-      "line": 26,
+      "line": 27,
       "term": "fallbackWoodThicknessM",
       "category": "runtime-default",
       "text": "fallbackWoodThicknessM: MATERIAL_THICKNESS_POLICY.wood.thicknessM,"

@@ -166,7 +166,15 @@ export function resolveCanvasPaintCommand(
     foundDrawerId: drawerId,
     activeStack: stack,
   });
-  const sourceTag = getPaintSourceTag(paintSelection, originalFoundPartId);
+  const targetScope = readCanvasPaintTargetScopeFromObject(
+    args.App,
+    args.primaryHitObject || args.doorHitObject
+  );
+  const sourceTag = getPaintSourceTag(
+    paintSelection,
+    originalFoundPartId,
+    !!targetScope.sketchBoxShellPartId
+  );
   const isDoorStyleSelection = parseDoorStyleOverridePaintToken(paintSelection) != null;
   const mutationKind = resolvePaintCommandMutationKind({
     selection: paintSelection,
@@ -191,7 +199,7 @@ export function resolveCanvasPaintCommand(
     doorStyleTargetKey,
     drawerId,
     stack,
-    targetScope: readCanvasPaintTargetScopeFromObject(args.App, args.primaryHitObject || args.doorHitObject),
+    targetScope,
     hitIdentity,
     hitReferences: {
       primaryObject: args.primaryHitObject ?? null,

@@ -13,6 +13,7 @@ export const CARCASS_CORNICE_ANGLE_POLICY = Object.freeze({
 export const CARCASS_CORNICE_COMMON_POLICY = Object.freeze({
   epsilonM: meters(0.000001),
   yLiftM: meters(0.0006),
+  frontOverhangM: meters(0.02),
   minSegmentLengthM: meters(0.02),
   minBoxDimensionM: meters(0.001),
   thetaClampM: CARCASS_CORNICE_ANGLE_POLICY.thetaClampRad,
@@ -37,7 +38,6 @@ export const CARCASS_CORNICE_WAVE_POLICY = Object.freeze({
 export const CARCASS_CORNICE_PROFILE_POLICY = Object.freeze({
   heightM: meters(0.08),
   overhangXM: meters(0.06),
-  overhangZM: meters(0.04),
   insetOnRoofM: meters(0.03),
   backStepM: meters(0.02),
   seamEpsilonM: meters(0),
@@ -103,15 +103,14 @@ export function readCorniceDimensionOverrides(value: unknown): CorniceDimensionO
 }
 
 export function resolveCorniceDimensionsM(type: CorniceType, dimensions?: CorniceDimensionOverridesCm) {
-  const { wave, profile, straight } = CARCASS_CORNICE_RENDER_POLICY;
+  const { common, wave, profile, straight } = CARCASS_CORNICE_RENDER_POLICY;
   const sideM = type === 'classic' ? profile.overhangXM : type === 'straight' ? straight.overhangM : 0;
-  const frontM = type === 'classic' ? profile.overhangZM : type === 'straight' ? straight.overhangM : 0;
   const heightM =
     type === 'classic' ? profile.heightM : type === 'straight' ? straight.heightM : wave.maxHeightM;
   const { sideCm, frontCm, heightCm } = readCorniceDimensionOverrides(dimensions);
   return {
     sideM: sideCm === null ? sideM : sideCm / 100,
-    frontM: frontCm === null ? frontM : frontCm / 100,
+    frontM: frontCm === null ? common.frontOverhangM : frontCm / 100,
     heightM: heightCm === null ? heightM : heightCm / 100,
   };
 }

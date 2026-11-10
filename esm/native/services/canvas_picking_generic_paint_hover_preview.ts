@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import { isDrawerBoxPartId, isShelfBoardPartId } from '../features/part_identity/api.js';
 import { isSketchInternalDrawerCassettePartId } from '../features/sketch_internal_drawer_cassette.js';
-import type { PaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_shared.js';
+import { asRecordMap, type PaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_shared.js';
 import { collectPaintPreviewPartObjects } from './canvas_picking_generic_paint_hover_preview_objects.js';
 import {
   resolveCornerCorniceFrontObjectLocalPreview,
@@ -87,9 +87,13 @@ export function resolvePaintPreviewGroupBox(args: {
   partKeys: string[];
   anchorObject: UnknownRecord;
   anchorParent: UnknownRecord | null;
+  preferObjectBoxes?: boolean;
 }): PaintPreviewGroupBox | null {
   const { App, wardrobeGroup, partKeys, anchorObject, anchorParent } = args;
-  const objects = collectPaintPreviewPartObjects({ App, wardrobeGroup, partKeys });
+  const partObjects = collectPaintPreviewPartObjects({ App, wardrobeGroup, partKeys });
+  const objects = args.preferObjectBoxes
+    ? partObjects.filter(object => asRecordMap(object.userData)?.__wpRemovablePartRemoved !== true)
+    : partObjects;
 
   const cornerCorniceObjectPreview = resolveCornerCorniceGroupObjectPreview({
     wardrobeGroup,
@@ -108,7 +112,7 @@ export function resolvePaintPreviewGroupBox(args: {
   });
   if (cornerCorniceFrontPreview) return cornerCorniceFrontPreview;
 
-  const useObjectBoxesPreview = shouldUseObjectBoxesPaintPreview(partKeys);
+  const useObjectBoxesPreview = args.preferObjectBoxes || shouldUseObjectBoxesPaintPreview(partKeys);
 
   if (!objects.length) {
     if (useObjectBoxesPreview) {

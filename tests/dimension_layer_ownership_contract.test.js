@@ -22,8 +22,8 @@ test('dimension layer ownership stores current statements without migration hist
   assert.equal(Object.hasOwn(baseline, 'migrationRetirements'), false);
   assert.equal(Object.hasOwn(baseline, 'migrationConsolidations'), false);
   assert.equal(baseline.compatibilityBudgets.length, 4);
-  assert.equal(baseline.reviewedOwnershipBudgets.length, 142);
-  assert.equal(new Set(baseline.reviewedOwnershipBudgets.map(entry => entry.id)).size, 142);
+  assert.equal(baseline.reviewedOwnershipBudgets.length, 143);
+  assert.equal(new Set(baseline.reviewedOwnershipBudgets.map(entry => entry.id)).size, 143);
   assert.equal(
     baseline.reviewedOwnershipBudgets.every(
       entry =>

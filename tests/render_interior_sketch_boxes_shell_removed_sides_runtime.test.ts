@@ -37,6 +37,8 @@ function createFrameHarness(removedDoorsMap: Record<string, unknown> = {}) {
     y: number;
     z: number;
     partId?: string | null;
+    material: unknown;
+    mesh: { userData: Record<string, unknown> };
   }> = [];
 
   const woodThick = 0.018;
@@ -74,11 +76,11 @@ function createFrameHarness(removedDoorsMap: Record<string, unknown> = {}) {
       x: number,
       y: number,
       z: number,
-      _mat: unknown,
+      material: unknown,
       partId?: string | null
     ) {
       const mesh = { userData: partId ? { partId } : {} };
-      boards.push({ w, h, d, x, y, z, partId });
+      boards.push({ w, h, d, x, y, z, partId, material, mesh });
       return mesh;
     },
     group: {},
@@ -332,4 +334,21 @@ test('free-placement sketch box adds its own masonite liner around a room-column
     'the visible inner face must use the white masonite side'
   );
   assert.equal(front.material[0], renderArgs.masoniteMat);
+});
+
+test('box boards share a paint scope while both sides keep their removal identities and use the material resolver', () => {
+  const { boards, boxPid, renderArgs, state } = createFrameHarness();
+  const leftMaterial = { id: 'existing-side-color' };
+  renderArgs.isFn = (value: unknown) => typeof value === 'function';
+  renderArgs.getPartMaterial = (partId: string) =>
+    partId === `${boxPid}_side_left` ? leftMaterial : state.boxMat;
+
+  renderSketchBoxShellFrame({ state, renderArgs });
+
+  assert.equal(boards.length, 5);
+  assert.ok(boards.every(board => board.mesh.userData.__wpSketchBoxShellPartId === boxPid));
+  assert.equal(boards[2]?.mesh.userData.partId, `${boxPid}_side_left`);
+  assert.equal(boards[3]?.mesh.userData.partId, `${boxPid}_side_right`);
+  assert.equal(boards[2]?.material, leftMaterial);
+  assert.equal(boards[3]?.material, state.boxMat);
 });

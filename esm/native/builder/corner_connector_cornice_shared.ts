@@ -90,7 +90,7 @@ export function resolveCornerConnectorCorniceTopY(ctx: {
   return ctx.startY + bodyHeight + positiveConnectorTopPlatformHeight(ctx);
 }
 
-export function resolveCornerConnectorStraightFrontOverhangM(
+export function resolveCornerConnectorFrontOverhangM(
   ctx: Pick<CornerConnectorCorniceCtx, 'woodThick'>,
   locals: Pick<CornerConnectorCorniceLocals, 'panelThick'>,
   nominalOverhangM: number

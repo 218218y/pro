@@ -643,11 +643,11 @@
       "from": "services",
       "to": "features",
       "decision": "allow",
-      "maxImporterCount": 104,
+      "maxImporterCount": 105,
       "maxImportCount": 156,
       "maxTypeImporterCount": 16,
       "maxTypeImportCount": 16,
-      "maxValueImporterCount": 101,
+      "maxValueImporterCount": 102,
       "maxValueImportCount": 149,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -916,6 +916,20 @@
     }
   ],
   "reviewedOwnershipBudgets": [
+    {
+      "from": "services",
+      "to": "features",
+      "fromFile": "esm/native/services/canvas_picking_paint_targets.ts",
+      "statement": {
+        "toFile": "esm/native/features/part_identity/api.ts",
+        "kind": "value",
+        "importedSymbols": ["sketchBoxSideToPartId"],
+        "syntax": "static-import"
+      },
+      "owner": "sketch-box-shell-paint",
+      "reason": "Shell paint targets and removable sides use the same part identity.",
+      "id": "sketch-box-shell-paint-side-identity"
+    },
     {
       "from": "features",
       "to": "shared",

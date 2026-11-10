@@ -700,6 +700,24 @@
   width: 100%;
 }
 
+#reactSidebarRoot .wp-r-cornice-dimensions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-r-cornice-dimensions .wp-r-platform-overhang-input-row {
+  gap: 3px;
+}
+
+#reactSidebarRoot .wp-r-cornice-dimensions .wp-r-platform-overhang-input {
+  padding-inline: 2px;
+  appearance: textfield;
+}
+
+#reactSidebarRoot .wp-r-cornice-dimensions .wp-r-platform-overhang-input::-webkit-inner-spin-button {
+  appearance: none;
+}
+
 #reactSidebarRoot .wp-r-door-thickness-field {
   display: flex;
   flex-direction: column;

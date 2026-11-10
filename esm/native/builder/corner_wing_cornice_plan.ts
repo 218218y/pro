@@ -15,7 +15,7 @@ import {
   buildCornerCorniceProfile,
   buildStraightCorniceProfile,
   buildInternalCornerCorniceProfile,
-  offsetWaveCornicePath,
+  offsetCornicePath,
 } from './corner_cornice_profile_plan.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
@@ -58,9 +58,8 @@ export function buildCornerWingProfileCornicePlan(
     frontM,
     heightM,
   } = resolveCorniceDimensionsM(straight ? 'straight' : 'classic', ctx.corniceDimensions);
-  const overhangZ = straight
-    ? frontM + resolveCornerWingClosedDoorFrontOffsetM() - CARCASS_SHELL_DIMENSIONS.frontInsetZM
-    : frontM;
+  const overhangZ =
+    frontM + resolveCornerWingClosedDoorFrontOffsetM() - CARCASS_SHELL_DIMENSIONS.frontInsetZM;
   const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
   const profileFront = buildProfile(overhangZ, heightM);
   const profileSide = buildProfile(overhangX, heightM);
@@ -349,6 +348,8 @@ export function buildCornerWingWaveCornicePlan(
   locals: CorniceLocalsLike
 ): CornerCornicePlan {
   const dimensions = resolveCorniceDimensionsM('wave', ctx.corniceDimensions);
+  const frontProjection =
+    dimensions.frontM + resolveCornerWingClosedDoorFrontOffsetM() - CARCASS_SHELL_DIMENSIONS.frontInsetZM;
   const topY = resolveCornerWingCorniceTopY(ctx, ctx.wingH);
   const zCenter = CARCASS_SHELL_DIMENSIONS.frontInsetZM - ctx.wingD / 2;
   const frontPlaneZ = zCenter + ctx.wingD / 2;
@@ -360,11 +361,12 @@ export function buildCornerWingWaveCornicePlan(
     Math.min(CORNICE_WAVE.frameThicknessMaxM, ctx.woodThick || CORNICE_WAVE.fallbackWoodThicknessM)
   );
   const runs = buildCornerWingCorniceRuns(ctx, locals);
+  const waveDimensions = { ...dimensions, frontM: frontProjection };
   const operations = runs.length
-    ? buildSegmentedWaveOperations({ runs, frameT, dimensions })
+    ? buildSegmentedWaveOperations({ runs, frameT, dimensions: waveDimensions })
     : buildFlatWaveOperations({
         ctx,
-        dimensions,
+        dimensions: waveDimensions,
         frameT,
         topY,
         frontPlaneZ,
@@ -460,7 +462,7 @@ function buildSegmentedWaveOperations(args: {
   for (const run of args.runs) {
     const left = run.leftSide && !run.leftSide.internal ? sideM : 0;
     const right = run.rightSide && !run.rightSide.internal ? sideM : 0;
-    const path = offsetWaveCornicePath(run.frontPath, frontM, left, right);
+    const path = offsetCornicePath(run.frontPath, frontM, left, right);
     const sectionW = Math.max(CORNICE_COMMON.minBoxDimensionM, run.right - run.left);
     const waveAmp =
       Math.min(

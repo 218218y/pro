@@ -14,6 +14,8 @@ import {
   __isCorniceWavePart,
   __isCornerCornicePart,
   resolveUnifiedCornerFramePaintTargetKeys,
+  readSketchBoxShellPaintOp,
+  resolveSketchBoxShellPaintKeys,
 } from './canvas_picking_paint_targets.js';
 import {
   toggleCorniceGroupPaint,
@@ -105,6 +107,17 @@ export function applyGroupedOrCornerPaintTarget(args: {
     selection: paintSelection,
     targetScope,
   } = command;
+  if (targetScope.sketchBoxShellPartId) {
+    const boxPartId = targetScope.sketchBoxShellPartId;
+    const colors = state.ensureColors();
+    const op = readSketchBoxShellPaintOp(colors, boxPartId, paintSelection);
+    const [box, left, right] = resolveSketchBoxShellPaintKeys(boxPartId);
+    delete colors[left];
+    delete colors[right];
+    if (op === 'remove') delete colors[box];
+    else colors[box] = paintSelection;
+    return true;
+  }
   const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(
     foundPartId,
     activeStack,

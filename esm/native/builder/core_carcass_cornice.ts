@@ -23,7 +23,7 @@ import {
   buildCornerCorniceProfile,
   buildInternalCornerCorniceProfile,
   buildStraightCorniceProfile,
-  offsetWaveCornicePath,
+  offsetCornicePath,
 } from './corner_cornice_profile_plan.js';
 import { normalizeCorniceType, type CorniceType } from '../../../types/cornice_type.js';
 
@@ -664,22 +664,24 @@ function buildWaveCorniceSection(
   const rightExtension = rightSide && !rightSide.internal ? sideM : 0;
   const leftWidth = frameT + leftExtension;
   const rightWidth = frameT + rightExtension;
-  // Extending the outer faces leaves the original bearing on the roof.
-  const frontThickness = frontM > 0 ? frameT * 1.5 + frontM : frameT;
-  const wavePath = offsetWaveCornicePath(frontPath, frontM, leftExtension, rightExtension);
+  const frontProjection = params.closedDoorFrontOffsetM + frontM;
+  // Keep a full board thickness even when the closed door is recessed.
+  const frontThickness = Math.max(frameT, frameT * 1.5 + frontProjection);
+  const diagonalThickness = Math.max(frameT, frameT + frontProjection);
+  const wavePath = offsetCornicePath(frontPath, frontProjection, leftExtension, rightExtension);
   const renderPath = trimCornicePath(
     wavePath,
     leftSide == null ? 0 : leftWidth,
     rightSide == null ? 0 : rightWidth
   );
-  const endZ = -globalD / 2 + depth + frontM;
+  const endZ = -globalD / 2 + depth + frontProjection;
 
   const segments: Array<CorniceWaveFrontSegment | CorniceWaveSideSegment> = [];
   for (const pathSeg of renderPath) {
     const len = cornicePathSegmentLength(pathSeg);
     if (len <= CORNICE_COMMON.minSegmentLengthM) continue;
     if (isStraightFrontPathSegment(pathSeg)) {
-      const center = inwardWaveCenterForPathSegment(pathSeg, frontM > 0 ? frontThickness / 2 : frameT);
+      const center = inwardWaveCenterForPathSegment(pathSeg, frontThickness / 2);
       segments.push({
         kind: 'cornice_wave_front',
         width: len,
@@ -696,10 +698,10 @@ function buildWaveCorniceSection(
       continue;
     }
 
-    const center = inwardWaveCenterForPathSegment(pathSeg, (frameT + frontM) / 2);
+    const center = inwardWaveCenterForPathSegment(pathSeg, diagonalThickness / 2);
     segments.push({
       kind: 'cornice_wave_side',
-      width: frameT + frontM,
+      width: diagonalThickness,
       height: heightM,
       depth: len,
       rotationY: profileRotationForPathSegment(pathSeg),
@@ -776,17 +778,20 @@ function buildProfileCorniceSection(params: CorniceSectionParams, straight = fal
   const { left, right, globalD, depth, topY, frontPath, leftSide, rightSide } = params;
   const yPlace = topY + CORNICE_Y_EPS;
   const { sideM: overhangX, frontM, heightM } = params.dimensions;
-  const requestedStraightFrontOverhang = frontM + params.closedDoorFrontOffsetM;
-  // A single sliding leaf can sit behind the roof.
-  const overhangZ = straight && requestedStraightFrontOverhang > 0 ? requestedStraightFrontOverhang : frontM;
+  const frontProjection = params.closedDoorFrontOffsetM + frontM;
+  // Recessed doors can put the outer edge behind the roof. Shift the profile
+  // origin while keeping a positive projection for the side joints.
+  const minProfileWidth = straight ? CORNICE_COMMON.frontOverhangM : CORNICE_PROFILE.minOverhangM;
+  const overhangZ = Math.max(minProfileWidth, frontProjection);
+  const frontPlaneShift = frontProjection - overhangZ;
   const leftOverhang = leftSide != null && !leftSide.internal ? overhangX : 0;
   const rightOverhang = rightSide != null && !rightSide.internal ? overhangX : 0;
   const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
   const profileFront = buildProfile(overhangZ, heightM);
   const profileSide = buildProfile(overhangX, heightM);
   const profileSideInternal = buildInternalCornerCorniceProfile(profileSide);
-  const defaultSideEndZ = -globalD / 2 + depth + overhangZ;
-  const sourcePath = filterCornicePath(frontPath.map(seg => ({ ...seg })));
+  const defaultSideEndZ = -globalD / 2 + depth + frontProjection;
+  const sourcePath = filterCornicePath(offsetCornicePath(frontPath, frontPlaneShift, 0, 0));
   const sourceFirst = sourcePath[0];
   const sourceLast = sourcePath[sourcePath.length - 1];
   const startExtension = shouldExtendExteriorProfilePath(sourceFirst) ? leftOverhang : 0;

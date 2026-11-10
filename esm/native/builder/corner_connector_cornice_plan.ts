@@ -21,7 +21,7 @@ import type {
 } from './corner_connector_cornice_shared.js';
 import {
   resolveCornerConnectorCorniceSideReturns,
-  resolveCornerConnectorStraightFrontOverhangM,
+  resolveCornerConnectorFrontOverhangM,
   resolveCornerConnectorCorniceTopY,
 } from './corner_connector_cornice_shared.js';
 
@@ -115,7 +115,7 @@ export function buildCornerConnectorProfileCornicePlan(
     ctx.corniceDimensions
   );
   // Connector doors are mounted outside the diagonal front panel's center plane.
-  const frontOverhang = straight ? resolveCornerConnectorStraightFrontOverhangM(ctx, locals, frontM) : frontM;
+  const frontOverhang = resolveCornerConnectorFrontOverhangM(ctx, locals, frontM);
   const buildProfile = straight ? buildStraightCorniceProfile : buildCornerCorniceProfile;
   const profile = buildProfile(frontOverhang, heightM);
   const sideProfile = buildProfile(sideM, heightM);
@@ -222,6 +222,7 @@ export function buildCornerConnectorWaveCornicePlan(
 ): CornerCornicePlan {
   const operations: Array<CornerCorniceWaveOp | CornerCorniceBoxOp> = [];
   const { sideM, frontM, heightM } = resolveCorniceDimensionsM('wave', ctx.corniceDimensions);
+  const frontProjection = resolveCornerConnectorFrontOverhangM(ctx, locals, frontM);
   const yPlace = resolveCornerConnectorCorniceTopY(ctx) + COMMON.yLiftM;
   const frameT = Math.max(
     WAVE.frameThicknessMinM,
@@ -240,12 +241,12 @@ export function buildCornerConnectorWaveCornicePlan(
       const plusLocalZ = { x: -dz / length, z: dx / length };
       const outward = outwardNormal(a, b, locals.interiorX, locals.interiorZ);
       const localZIsOutward = plusLocalZ.x * outward.x + plusLocalZ.z * outward.z >= 0;
-      const localShift = localZIsOutward ? -frameT - WAVE.connectorInsetM : WAVE.connectorInsetM - frontM;
+      const localShift = localZIsOutward ? -frameT - WAVE.connectorInsetM : -frontProjection;
       operations.push({
         kind: 'corner_wave',
         partId: 'corner_cornice_front',
         length,
-        depth: frameT + frontM,
+        depth: frameT + WAVE.connectorInsetM + frontProjection,
         heightMax: heightM,
         waveAmp:
           Math.min(Math.max(length * WAVE.amplitudeRatio, WAVE.amplitudeMinM), WAVE.amplitudeMaxM) *
