@@ -55,10 +55,15 @@ export function installCanvasInteractions(
       pointerOps.commitKeyboardAtClientPoint(state.hoverLastCx, state.hoverLastCy),
   });
 
-  const onPointerMove: EventListener = e => {
+  const onPointerMove = (e: PointerEvent): void => {
     hoverOps.onPointerMove(e);
     pointerOps.onMoveRender(e);
   };
+
+  const previousTabIndex = domEl.getAttribute('tabindex');
+  const previousLabel = domEl.getAttribute('aria-label');
+  domEl.tabIndex = 0;
+  domEl.setAttribute('aria-label', 'תצוגת הארון בתלת־ממד');
 
   const removers: Array<() => void> = [];
   removers.push(add('pointerdown', pointerOps.onPointerDown, { passive: true }));
@@ -69,6 +74,7 @@ export function installCanvasInteractions(
   removers.push(add('pointermove', onPointerMove, { passive: true }));
   removers.push(add('wheel', pointerOps.onWheel, { passive: true }));
   removers.push(add('click', pointerOps.onClick, { passive: true }));
+  removers.push(add('keydown', pointerOps.onNavigationKeyDown));
 
   const dispose = () => {
     if (state.disposed) return;
@@ -76,6 +82,10 @@ export function installCanvasInteractions(
     try {
       hoverOps.disposeHover();
       disposeAuthoringKeyboard();
+      if (previousTabIndex === null) domEl.removeAttribute('tabindex');
+      else domEl.setAttribute('tabindex', previousTabIndex);
+      if (previousLabel === null) domEl.removeAttribute('aria-label');
+      else domEl.setAttribute('aria-label', previousLabel);
       for (const fn of removers) {
         try {
           fn();

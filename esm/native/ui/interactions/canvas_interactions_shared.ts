@@ -49,10 +49,7 @@ export type CanvasInteractionsOptions = {
 
 export type PointerInfo = { cx: number; cy: number; pointerId: number | null };
 export type CanvasInteractionState = {
-  downX: number;
-  downY: number;
-  hasDown: boolean;
-  downPointerId: number | null;
+  clickStart: (PointerInfo & { maxDistPx: number }) | null;
   lastMoveAt: number;
   cursorManaged: boolean;
   hoverRafId: number;
@@ -104,10 +101,7 @@ export function readRecord(value: unknown): Record<string, unknown> | null {
 
 export function createCanvasInteractionState(): CanvasInteractionState {
   return {
-    downX: 0,
-    downY: 0,
-    hasDown: false,
-    downPointerId: null,
+    clickStart: null,
     lastMoveAt: 0,
     cursorManaged: false,
     hoverRafId: 0,
@@ -482,7 +476,11 @@ export function cancelQueuedCanvasHoverRefresh(
 }
 
 export function createEventBinding(App: AppContainer, domEl: HTMLElement) {
-  return (type: string, handler: EventListener, opts?: boolean | AddEventListenerOptions) => {
+  return <K extends keyof HTMLElementEventMap>(
+    type: K,
+    handler: (event: HTMLElementEventMap[K]) => void,
+    opts?: boolean | AddEventListenerOptions
+  ) => {
     try {
       domEl.addEventListener(type, handler, opts);
       return () => {

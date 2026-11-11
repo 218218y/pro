@@ -16,7 +16,7 @@ const EXPECTED_STATEMENT_FREE_CATCHES_BY_LAYER = Object.freeze({
   platform: 38,
   runtime: 80,
   services: 76,
-  ui: 158,
+  ui: 157,
 });
 const EXPECTED_BARE_CATCHES_BY_LAYER = Object.freeze({
   adapters: 0,

@@ -85,8 +85,7 @@ export function createCanvasHoverInteractionOps(
   };
 
   const onPointerLeave: EventListener = () => {
-    state.hasDown = false;
-    state.downPointerId = null;
+    state.clickStart = null;
     cancelQueuedCanvasHoverRefresh(App, state, timers, 'pointerleave.cancelRaf');
     cancelCanvasPostBuildHoverRefresh(App);
     clearCanvasDoorSplitPointerHover(App);

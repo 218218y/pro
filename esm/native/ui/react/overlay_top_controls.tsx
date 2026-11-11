@@ -159,6 +159,29 @@ function CameraControls() {
       >
         <i className="fas fa-cube" />
       </IconButton>
+
+      <IconButton
+        variant="camera"
+        className="wp-r-styled-tooltip"
+        data-tooltip="הזזה, סיבוב וזום"
+        aria-label="עזרה בשליטה בתצוגה"
+        popoverTarget="wp-viewer-navigation-help"
+      >
+        <i className="fas fa-question" aria-hidden="true" />
+      </IconButton>
+      <div id="wp-viewer-navigation-help" className="wp-viewer-navigation-help" popover="auto" dir="rtl">
+        <dl>
+          <dt>הזזה בלי שינוי זווית</dt>
+          <dd>
+            גרירה בלחצן ימני, או <kbd dir="ltr">Shift</kbd> עם גרירה בלחצן שמאלי בעכבר או במשטח המגע.
+          </dd>
+          <dd>במסך מגע גררו בשתי אצבעות. במקלדת מקדו את התצוגה והשתמשו בחצים.</dd>
+          <dt>סיבוב</dt>
+          <dd>גרירה בלחצן שמאלי או באצבע אחת.</dd>
+          <dt>זום</dt>
+          <dd>גלגלת, גלילה בשתי אצבעות במשטח המגע, או צביטה במסך מגע.</dd>
+        </dl>
+      </div>
     </div>
   );
 }

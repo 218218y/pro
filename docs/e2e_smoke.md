@@ -42,12 +42,13 @@ cache policies, or test sequences are explicitly not directly comparable. Journe
 Long Task count/total/max/p95 and render-settle attribution so document-wide totals are not used alone to choose
 a refactor target.
 
-`npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It keeps the five
-canonical Chromium `@critical` journeys (app boot/navigation, real authoring/build follow-through,
-save/load roundtrip, canvas pointer preview/commit parity, and the order-PDF overlay lifecycle) and also
-runs one targeted `@matrix` journey across five profiles: desktop, XS portrait, XS landscape, touch+DPR2,
-and reduced motion. The matrix journey verifies shell interaction, a real structure edit, and deterministic
-scene-geometry invariants. It does **not** multiply the rest of the smoke suite across devices.
+`npm run e2e:critical` is the required CI lane for pull requests and normal pushes. Its Chromium
+`@critical` journeys cover app boot/navigation, real authoring/build follow-through, save/load roundtrip,
+canvas pointer preview/commit parity, camera navigation during canvas editing, and the order-PDF overlay
+lifecycle. It also runs one targeted `@matrix` journey across five profiles: desktop, XS portrait,
+XS landscape, touch+DPR2, and reduced motion. The matrix journey verifies shell interaction, a real
+structure edit, and deterministic scene-geometry invariants. It does **not** multiply the rest of the
+smoke suite across devices.
 
 `npm run e2e:matrix` runs only that five-profile matrix. Cloud Sync offline/reconnect remains a dedicated
 single-profile browser scenario (`e2e:cloud-sync-reconnect`); it is intentionally not duplicated across

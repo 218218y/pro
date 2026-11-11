@@ -13,6 +13,19 @@ import { createCanvasPointerInteractionOps } from '../esm/native/ui/interactions
 import { tryHandleDrawerDividerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_divider.ts';
 import { getDrawerRebuildIntentSnapshot } from '../esm/native/runtime/doors_access.ts';
 
+function pointer(overrides: Partial<PointerEvent> = {}): PointerEvent {
+  return {
+    clientX: 60,
+    clientY: 45,
+    pointerId: 7,
+    pointerType: 'mouse',
+    isPrimary: true,
+    button: 0,
+    buttons: 1,
+    ...overrides,
+  } as PointerEvent;
+}
+
 function createDomEl() {
   const captures: number[] = [];
   return {
@@ -127,13 +140,13 @@ test('canvas pointer interactions convert stable clicks, refresh hover after the
     rectOps
   );
 
-  ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 7 } as any);
-  assert.equal(state.hasDown, true);
+  ops.onPointerDown(pointer());
+  assert.equal(state.clickStart?.pointerId, 7);
   assert.deepEqual(domEl.captures, [7]);
 
-  ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 7 } as any);
+  ops.onPointerUp(pointer({ buttons: 0 }));
 
-  assert.equal(state.hasDown, false);
+  assert.equal(state.clickStart, null);
   assert.deepEqual(clickCalls, [{ x: 0, y: 0 }]);
   assert.deepEqual(hoverCalls, []);
   assert.deepEqual(renderCalls, [true, true]);
@@ -157,6 +170,59 @@ test('canvas pointer interactions convert stable clicks, refresh hover after the
   ]);
   assert.equal(domEl.style.cursor, 'pointer');
   assert.deepEqual(renderCalls, [true, true, false]);
+});
+
+test('camera navigation gestures cannot commit canvas authoring on release', () => {
+  const domEl = createDomEl();
+  const state = createCanvasInteractionState();
+  const App = createApp(false, createRafQueue());
+  let commits = 0;
+  const ops = createCanvasPointerInteractionOps(
+    App,
+    {
+      domEl,
+      triggerRender() {},
+      handleCanvasClickNDC() {
+        commits++;
+      },
+      handleCanvasHoverNDC() {},
+    },
+    state,
+    { clickMaxDistPx: 5, moveThrottleMs: 20, notesClickFirst: true },
+    createRectCacheOps(domEl, state)
+  );
+
+  for (const button of [1, 2]) {
+    ops.onPointerDown(pointer({ button }));
+    ops.onPointerUp(pointer({ button }));
+  }
+
+  ops.onPointerDown(pointer({ shiftKey: true }));
+  ops.onMoveRender(pointer({ shiftKey: true, clientX: 61 }));
+  ops.onPointerUp(pointer({ shiftKey: true, buttons: 0 }));
+
+  ops.onPointerDown(pointer());
+  ops.onMoveRender(pointer({ clientY: 65 }));
+  ops.onPointerUp(pointer({ buttons: 0 }));
+
+  const firstFinger = pointer({ pointerType: 'touch' });
+  const secondFinger = pointer({ pointerType: 'touch', pointerId: 8, isPrimary: false });
+  for (const releaseOrder of [
+    [firstFinger, secondFinger],
+    [secondFinger, firstFinger],
+  ]) {
+    ops.onPointerDown(firstFinger);
+    ops.onPointerDown(secondFinger);
+    for (const finger of releaseOrder) ops.onPointerUp(finger);
+  }
+  assert.equal(commits, 0);
+
+  ops.onPointerDown(pointer({ shiftKey: true }));
+  ops.onPointerUp(pointer({ buttons: 0 }));
+  assert.equal(commits, 1);
+  ops.onPointerDown(firstFinger);
+  ops.onPointerUp(firstFinger);
+  assert.equal(commits, 2);
 });
 
 test('canvas pointer interactions do not lose a real pointer move while post-click hover refresh is pending', () => {
@@ -193,8 +259,8 @@ test('canvas pointer interactions do not lose a real pointer move while post-cli
     rectOps
   );
 
-  ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 7 } as any);
-  ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 7 } as any);
+  ops.onPointerDown(pointer());
+  ops.onPointerUp(pointer({ buttons: 0 }));
 
   // Simulates a real pointermove that arrives before the post-click RAF executes.
   // The scheduled post-click refresh must consume the latest pointer position, not stale click coords.
@@ -237,8 +303,8 @@ test('canvas pointer interactions can suppress the automatic post-click hover re
     rectOps
   );
 
-  ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 7 } as any);
-  ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 7 } as any);
+  ops.onPointerDown(pointer());
+  ops.onPointerUp(pointer({ buttons: 0 }));
 
   assert.deepEqual(hoverCalls, []);
   assert.equal(rafQueue.size, 0);
@@ -317,8 +383,8 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
     rectOps
   );
 
-  ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 7 } as any);
-  ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 7 } as any);
+  ops.onPointerDown(pointer());
+  ops.onPointerUp(pointer({ buttons: 0 }));
 
   const pendingAfterAdd = consumeCanvasPostBuildHoverRefresh(App);
   assert.equal(pendingAfterAdd?.reason, 'canvas.pointer.click.postBuildHover');
@@ -328,8 +394,8 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
   rafQueue.flushFrame();
   assert.deepEqual(hoverCalls, [{ x: 0, y: 0, hasDivider: true }]);
 
-  ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 7 } as any);
-  ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 7 } as any);
+  ops.onPointerDown(pointer());
+  ops.onPointerUp(pointer({ buttons: 0 }));
 
   const pendingAfterRemove = consumeCanvasPostBuildHoverRefresh(App);
   assert.equal(pendingAfterRemove?.reason, 'canvas.pointer.click.postBuildHover');
@@ -561,16 +627,16 @@ test('canvas pointer interactions honor notes-first mode and throttle move rende
       rectOps
     );
 
-    ops.onPointerDown({ clientX: 60, clientY: 45, pointerId: 1 } as any);
-    ops.onPointerUp({ clientX: 60, clientY: 45, pointerId: 1 } as any);
+    ops.onPointerDown(pointer());
+    ops.onPointerUp(pointer({ buttons: 0 }));
     assert.deepEqual(clickCalls, []);
     assert.deepEqual(renderCalls, [true]);
 
-    ops.onMoveRender({} as any);
+    ops.onMoveRender(pointer());
     nowMs = 1_010;
-    ops.onMoveRender({} as any);
+    ops.onMoveRender(pointer());
     nowMs = 1_050;
-    ops.onMoveRender({} as any);
+    ops.onMoveRender(pointer());
     ops.onWheel({} as any);
 
     assert.deepEqual(renderCalls, [true, false, false, false]);

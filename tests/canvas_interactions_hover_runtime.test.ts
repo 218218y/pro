@@ -245,6 +245,7 @@ test('canvas hover pointerleave cancels queued hover work, clears previews, and 
   const domEl = createDomEl();
   domEl.style.cursor = 'pointer';
   const state = createCanvasInteractionState();
+  state.clickStart = { cx: 60, cy: 45, pointerId: 1, maxDistPx: 5 };
   state.hoverRafId = 1;
   state.hoverMoveQueued = true;
   state.cursorManaged = true;
@@ -276,8 +277,7 @@ test('canvas hover pointerleave cancels queued hover work, clears previews, and 
   assert.deepEqual(cancelled, [1]);
   assert.equal(state.hoverRafId, 0);
   assert.equal(state.hoverMoveQueued, false);
-  assert.equal(state.hasDown, false);
-  assert.equal(state.downPointerId, null);
+  assert.equal(state.clickStart, null);
   assert.equal(domEl.style.cursor, '');
   assert.deepEqual(hideCalls, ['sketch', 'layout']);
   assert.deepEqual(renderCalls, [false]);

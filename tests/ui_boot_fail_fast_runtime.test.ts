@@ -17,12 +17,16 @@ type FakeElement = FakeNode & {
   style: { cursor: string };
   clientWidth?: number;
   clientHeight?: number;
+  getAttribute: (name: string) => string | null;
+  setAttribute: (name: string, value: string) => void;
+  removeAttribute: (name: string) => void;
   getBoundingClientRect?: () => { left: number; top: number; width: number; height: number };
   addEventListener?: (...args: unknown[]) => void;
   removeEventListener?: (...args: unknown[]) => void;
 };
 
 function createFakeElement(id = ''): FakeElement {
+  const attributes = new Map<string, string>();
   const el: FakeElement = {
     nodeType: 1,
     id,
@@ -35,6 +39,15 @@ function createFakeElement(id = ''): FakeElement {
     },
     contains(node: FakeNode) {
       return this.children!.includes(node);
+    },
+    getAttribute(name) {
+      return attributes.get(name) ?? null;
+    },
+    setAttribute(name, value) {
+      attributes.set(name, value);
+    },
+    removeAttribute(name) {
+      attributes.delete(name);
     },
     getBoundingClientRect() {
       return { left: 0, top: 0, width: this.clientWidth || 1, height: this.clientHeight || 1 };

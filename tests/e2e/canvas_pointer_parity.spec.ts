@@ -19,6 +19,58 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('viewer pans with mouse and focused arrow keys without applying canvas edits @critical', async ({
+    page,
+  }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+
+    const help = page.getByRole('button', { name: 'עזרה בשליטה בתצוגה' });
+    await help.click();
+    await expect(page.getByText('הזזה בלי שינוי זווית', { exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByText('הזזה בלי שינוי זווית', { exact: true })).toBeHidden();
+
+    await setCellDimsMode(page, true);
+    await resetAllCellDimsOverrides(page);
+    const canvas = page.locator('#viewer-container canvas').first();
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('Expected a visible viewer canvas');
+    const ndc = { x: 0.1, y: 0 };
+    const x = box.x + ((ndc.x + 1) / 2) * box.width;
+    const y = box.y + box.height / 2;
+    const hitHeight = async () => {
+      const hit = await inspectCanvasViaDebugNdc(page, ndc);
+      if (hit?.moduleHitY == null) throw new Error('Expected a module hit in the viewer');
+      return hit.moduleHitY;
+    };
+
+    await page.mouse.click(x, y, { button: 'right' });
+    expect(await readLinearModuleSpecialDims(page, 'top')).toEqual([]);
+
+    const beforeRightDrag = await hitHeight();
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(x + 28, y + 42, { steps: 4 });
+    await page.mouse.up({ button: 'right' });
+    await expect.poll(hitHeight).toBeGreaterThan(beforeRightDrag + 0.04);
+
+    const beforeShiftDrag = await hitHeight();
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(x, y, { steps: 4 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await expect.poll(hitHeight).toBeLessThan(beforeShiftDrag - 0.04);
+
+    const beforeArrow = await hitHeight();
+    await canvas.focus();
+    await expect(canvas).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect.poll(hitHeight).toBeGreaterThan(beforeArrow + 0.02);
+    expect(await readLinearModuleSpecialDims(page, 'top')).toEqual([]);
+    expectNoRuntimeIssues(issues);
+  });
+
   test('viewer measurement waits for its tool and handles the first hover and click @critical', async ({
     page,
   }) => {

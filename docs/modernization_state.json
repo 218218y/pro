@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T20:28:56.613Z",
+  "generatedAt": "2026-11-11T09:18:24.046Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -8,14 +8,14 @@
     "testPortfolio": true
   },
   "silentCatches": {
-    "statementFree": 513,
+    "statementFree": 512,
     "bare": 0,
     "vagueComments": 0,
-    "files": 279
+    "files": 278
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 617,
-    "filesWithOccurrences": 229,
+    "totalCategorizedOccurrences": 616,
+    "filesWithOccurrences": 228,
     "guardedOccurrences": 21,
     "guardedFiles": 12,
     "projectMigration": 1,

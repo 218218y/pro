@@ -5,6 +5,7 @@ type IconButtonVariant = 'default' | 'step' | 'light' | 'header' | 'camera';
 
 type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: IconButtonVariant;
+  popoverTarget?: string;
 };
 
 function cx(...parts: Array<string | false | null | undefined>): string {

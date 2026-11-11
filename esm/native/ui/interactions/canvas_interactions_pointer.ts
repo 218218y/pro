@@ -2,6 +2,7 @@ import type { AppContainer } from '../../../../types';
 import {
   cancelCanvasPostBuildHoverRefresh,
   consumeSuppressNextCanvasPostClickHoverRefresh,
+  getViewportCameraControls,
   requestCanvasPostBuildHoverRefresh,
   resolveCanvasPrecisionAxisLockedClientPoint,
 } from '../../services/api.js';
@@ -19,7 +20,16 @@ import {
   type CanvasInteractionsDeps,
   type CanvasInteractionsOptions,
   type CanvasRectOps,
+  type PointerInfo,
 } from './canvas_interactions_shared.js';
+
+const KEYBOARD_PAN_STEP_PX = 24;
+const KEYBOARD_PAN_DELTAS = new Map<string, readonly [number, number]>([
+  ['ArrowUp', [0, KEYBOARD_PAN_STEP_PX]],
+  ['ArrowDown', [0, -KEYBOARD_PAN_STEP_PX]],
+  ['ArrowLeft', [KEYBOARD_PAN_STEP_PX, 0]],
+  ['ArrowRight', [-KEYBOARD_PAN_STEP_PX, 0]],
+]);
 
 export function createCanvasPointerInteractionOps(
   App: AppContainer,
@@ -130,15 +140,22 @@ export function createCanvasPointerInteractionOps(
     return clickNdc !== null;
   };
 
-  const onPointerDown: EventListener = e => {
+  const isNearClickStart = (point: PointerInfo, start: NonNullable<CanvasInteractionState['clickStart']>) =>
+    Math.abs(point.cx - start.cx) <= start.maxDistPx && Math.abs(point.cy - start.cy) <= start.maxDistPx;
+
+  const onPointerDown = (event: PointerEvent): void => {
+    state.clickStart = null;
+    cancelCanvasPostBuildHoverRefresh(App);
     try {
-      const xy = getClientXY(e, App);
+      const xy = getClientXY(event, App);
       if (!xy) return;
-      state.downX = xy.cx;
-      state.downY = xy.cy;
-      state.downPointerId = xy.pointerId;
-      state.hasDown = true;
-      cancelCanvasPostBuildHoverRefresh(App);
+      if (event.isPrimary && event.button === 0) {
+        // OrbitControls pans on modified left drags. A stationary Shift+click
+        // still commits an axis-locked authoring preview.
+        const pansOnDrag =
+          event.pointerType === 'mouse' && (event.shiftKey || event.ctrlKey || event.metaKey);
+        state.clickStart = { ...xy, maxDistPx: pansOnDrag ? 0 : opts.clickMaxDistPx };
+      }
 
       try {
         if (typeof deps.domEl.setPointerCapture === 'function' && typeof xy.pointerId === 'number') {
@@ -148,8 +165,7 @@ export function createCanvasPointerInteractionOps(
         reportCanvasInteractionsNonFatal(App, 'pointerDown.capture', err);
       }
     } catch {
-      state.hasDown = false;
-      state.downPointerId = null;
+      state.clickStart = null;
     }
 
     rectOps.invalidateRectCache();
@@ -161,40 +177,30 @@ export function createCanvasPointerInteractionOps(
     }
   };
 
-  const onPointerUp: EventListener = e => {
-    let isClick = true;
-    let upXy: ReturnType<typeof getClientXY> = null;
-
-    try {
-      upXy = getClientXY(e, App);
-      if (upXy && state.hasDown) {
-        if (state.downPointerId != null && upXy.pointerId != null && state.downPointerId !== upXy.pointerId)
-          return;
-
-        const dx = Math.abs(upXy.cx - state.downX);
-        const dy = Math.abs(upXy.cy - state.downY);
-        if (dx > opts.clickMaxDistPx || dy > opts.clickMaxDistPx) isClick = false;
-      }
-    } catch {
-      // pointer-compatibility: coordinate probing may fail on exotic events; preserve the conservative click decision.
-    }
-
-    state.hasDown = false;
-    state.downPointerId = null;
+  const onPointerUp = (event: PointerEvent): void => {
+    const start = state.clickStart;
+    state.clickStart = null;
     rectOps.invalidateRectCache();
 
-    if (opts.notesClickFirst && callNotesFirst(App)) return;
-    if (!isClick) {
+    const point = getClientXY(event, App);
+    if (
+      !start ||
+      !event.isPrimary ||
+      event.button !== 0 ||
+      !point ||
+      point.pointerId !== start.pointerId ||
+      !isNearClickStart(point, start)
+    ) {
       cancelCanvasPostBuildHoverRefresh(App);
       return;
     }
 
-    if (upXy) commitAtClientPoint(upXy, 'pointer');
+    if (opts.notesClickFirst && callNotesFirst(App)) return;
+    commitAtClientPoint(point, 'pointer');
   };
 
   const onPointerCancel: EventListener = () => {
-    state.hasDown = false;
-    state.downPointerId = null;
+    state.clickStart = null;
     rectOps.invalidateRectCache();
     cancelCanvasPostBuildHoverRefresh(App);
   };
@@ -217,7 +223,12 @@ export function createCanvasPointerInteractionOps(
     }
   };
 
-  const onMoveRender: EventListener = () => {
+  const onMoveRender = (event: PointerEvent): void => {
+    const start = state.clickStart;
+    if (start && event.pointerId === start.pointerId) {
+      const point = getClientXY(event, App);
+      if (event.buttons !== 1 || !point || !isNearClickStart(point, start)) state.clickStart = null;
+    }
     const now = Date.now();
     rectOps.invalidateRectCache();
     if (now - state.lastMoveAt > opts.moveThrottleMs) {
@@ -233,6 +244,21 @@ export function createCanvasPointerInteractionOps(
   const commitKeyboardAtClientPoint = (cx: number, cy: number): boolean =>
     commitAtClientPoint({ cx, cy, pointerId: null }, 'keyboard');
 
+  const onNavigationKeyDown = (event: KeyboardEvent): void => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const delta = KEYBOARD_PAN_DELTAS.get(event.key);
+    if (!delta) return;
+    const controls = getViewportCameraControls(App)?.controls;
+    if (!controls?.enabled || !controls.enablePan || !controls.pan) return;
+    event.preventDefault();
+    try {
+      controls.pan(...delta);
+      deps.triggerRender(false);
+    } catch (err) {
+      reportCanvasInteractionsNonFatal(App, 'keyboardPan', err);
+    }
+  };
+
   return {
     onPointerDown,
     onPointerUp,
@@ -240,6 +266,7 @@ export function createCanvasPointerInteractionOps(
     onWheel,
     onClick,
     onMoveRender,
+    onNavigationKeyDown,
     commitKeyboardAtClientPoint,
   };
 }

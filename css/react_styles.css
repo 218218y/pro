@@ -4771,6 +4771,33 @@ body.wp-ui-react .camera-controls {
   gap: 8px;
 }
 
+body.wp-ui-react .wp-viewer-navigation-help {
+  width: min(22rem, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  padding: 16px 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: white;
+  color: #334155;
+  box-shadow: var(--wp-r-shadow-floating);
+  line-height: 1.5;
+  pointer-events: auto;
+}
+
+body.wp-ui-react .wp-viewer-navigation-help dl,
+body.wp-ui-react .wp-viewer-navigation-help dd {
+  margin: 0;
+}
+
+body.wp-ui-react .wp-viewer-navigation-help dt {
+  font-weight: 700;
+}
+
+body.wp-ui-react .wp-viewer-navigation-help dd + dt {
+  margin-top: 10px;
+}
+
 body.wp-ui-react .wp-viewer-notes-controls {
   position: absolute;
   top: 20px;

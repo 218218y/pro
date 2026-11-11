@@ -65,7 +65,10 @@ export interface CameraLike extends UnknownRecord {
 
 export interface ControlsLike extends EventTarget, UnknownRecord {
   target: Vector3Like;
+  enabled?: boolean;
+  enablePan?: boolean;
   enableDamping?: boolean;
+  pan?: (deltaX: number, deltaY: number) => void;
   update: () => unknown;
 }
 
