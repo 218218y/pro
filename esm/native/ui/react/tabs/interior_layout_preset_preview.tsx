@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { LayoutTypeId } from './interior_tab_helpers_types.js';
+import type { LayoutTypeId } from './interior_tab_helpers.js';
 
 type PresetIllustration = {
   description: string;
