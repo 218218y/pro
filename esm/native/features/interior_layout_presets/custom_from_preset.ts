@@ -70,6 +70,6 @@ export function buildPresetBackedCustomData(layoutType: unknown, divsRaw: number
     rods,
     rodOps,
     storage: !!ops.storageBarrier,
-    shelfVariants: Array.from({ length: Math.max(0, divs - 1) }, () => ''),
+    shelfVariants: shelves.map(exists => (exists ? ops.shelfVariant || '' : '')),
   };
 }

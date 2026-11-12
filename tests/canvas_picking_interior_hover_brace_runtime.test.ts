@@ -1,3 +1,4 @@
+import { tryHandleCanvasPresetLayoutHover } from '../esm/native/services/canvas_picking_interior_hover_layout_mode.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -296,5 +297,48 @@ test('brace-shelves hover targets exact sketch shelves stored in sketchExtras', 
   assert.deepEqual(
     preview.clearanceMeasurements.map((entry: AnyRecord) => entry.role),
     ['cell', 'cell', 'neighbor']
+  );
+});
+
+test('double hanging hover previews one full-depth brace at the middle and rods near the roof and brace', () => {
+  const selector = makeSelector('0', 1.2);
+  const { App, raycaster, mouse } = createApp([{ object: selector, point: { x: 0, y: 1.2, z: 0 } }], {
+    config: { modulesConfiguration: [{ layout: 'shelves', isCustom: false }] },
+    ui: { currentLayoutType: 'hanging_split' },
+  });
+  getInternalGridMap(App, false)['0'] = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    woodThick: 0.018,
+    internalDepth: 0.55,
+    innerW: 1,
+    internalCenterX: 0,
+    internalZ: 0,
+  };
+  let preview: AnyRecord | null = null;
+  assert.equal(
+    tryHandleCanvasPresetLayoutHover({
+      App,
+      raycaster,
+      mouse,
+      ndcX: 0,
+      ndcY: 0,
+      setLayoutPreview: value => {
+        preview = value;
+      },
+      hideLayoutPreview: () => {},
+      hideSketchPreview: () => {},
+    } as never),
+    true
+  );
+  assert.equal(preview?.shelfVariant, 'brace');
+  assert.deepEqual(
+    preview?.shelfYs.map((y: number) => Number(y.toFixed(2))),
+    [1.2]
+  );
+  assert.deepEqual(
+    preview?.rodYs.map((y: number) => Number(y.toFixed(2))),
+    [2.32, 1.12]
   );
 });

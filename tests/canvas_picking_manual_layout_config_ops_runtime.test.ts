@@ -325,7 +325,7 @@ test('manual-layout config ops remove only the exact preset rod metadata for the
 
   removeManualLayoutBaseRod(cfg, {
     divs: 6,
-    rodIndex: 5,
+    rodIndex: 6,
     topY: 1.2,
     bottomY: 0,
   });
@@ -335,15 +335,15 @@ test('manual-layout config ops remove only the exact preset rod metadata for the
     rodOps: Array<{ gridIndex?: number; yFactor?: number }>;
   };
 
-  assert.equal(customData.rods[4], false);
-  assert.equal(customData.rods[1], true);
+  assert.equal(customData.rods[5], false);
+  assert.equal(customData.rods[2], true);
   assert.deepEqual(customData.rodOps, [
     {
-      gridIndex: 2,
-      yFactor: 2.3,
+      gridIndex: 3,
+      yFactor: 2.8,
       enableHangingClothes: true,
       enableSingleHanger: true,
-      limitFactor: 1.3,
+      limitFactor: 2.8,
       limitAdd: 0,
     },
   ]);

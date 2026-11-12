@@ -1,3 +1,4 @@
+import { computeInteriorPresetOps } from './pure_api.js';
 import { createWinterBraceShelfGeometry } from './winter_brace_shelf_geometry.js';
 import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import {
@@ -77,6 +78,8 @@ export function createCornerWingInteriorShelfRuntime(
     cfgCell: CornerCellCfg,
     gridIndex: number
   ): 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace' => {
+    const presetVariant = !cfgCell.isCustom ? computeInteriorPresetOps(cfgCell.layout).shelfVariant : null;
+    if (presetVariant) return presetVariant;
     const customData = runtime.isRecord(cfgCell.customData) ? cfgCell.customData : null;
     const variants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
     const raw =

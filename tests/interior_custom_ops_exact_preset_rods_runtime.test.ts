@@ -46,33 +46,40 @@ test('computeInteriorCustomOps prefers exact preset-backed rodOps over rounded g
   );
 });
 
-test('computeInteriorPresetOps keeps split upper rod shelf clearance equal to regular hanging', async () => {
-  const { computeInteriorPresetOps } = await import('../esm/native/features/interior_layout_presets/ops.ts');
-  const hanging = computeInteriorPresetOps('hanging_top2');
+test('double hanging has only a middle brace and two rods below the roof and brace', async () => {
+  const { computeInteriorPresetOps, buildPresetBackedCustomData } =
+    await import('../esm/native/features/interior_layout_presets/api.ts');
   const split = computeInteriorPresetOps('hanging_split');
-
-  const hangingRod = hanging.rods[0];
-  const splitLowerRod = split.rods.reduce((lowest, rod) => (rod.yFactor < lowest.yFactor ? rod : lowest));
-  const splitUpperRod = split.rods.reduce((highest, rod) => (rod.yFactor > highest.yFactor ? rod : highest));
-
-  const nearestShelfAbove = (shelves: number[], yFactor: number): number =>
-    shelves.filter(row => row > yFactor).sort((a, b) => a - b)[0];
-  const clearance = (shelfRow: number, yFactor: number): number => Number((shelfRow - yFactor).toFixed(3));
-
-  const hangingClearance = clearance(
-    nearestShelfAbove(hanging.shelves, hangingRod.yFactor),
-    hangingRod.yFactor
+  assert.deepEqual(split.shelves, [3]);
+  assert.equal(split.shelfVariant, 'brace');
+  assert.deepEqual(
+    split.rods.map(rod => [rod.yFactor, rod.limitFactor]),
+    [
+      [5.8, 2.8],
+      [2.8, 2.8],
+    ]
   );
-  const splitUpperClearance = clearance(
-    nearestShelfAbove(split.shelves, splitUpperRod.yFactor),
-    splitUpperRod.yFactor
-  );
-
-  assert.equal(splitUpperClearance, hangingClearance);
-  assert.equal(
-    Number(splitUpperRod.limitFactor?.toFixed(3)),
-    Number((splitUpperRod.yFactor - splitLowerRod.yFactor).toFixed(3))
-  );
+  for (const rod of split.rods) {
+    assert.equal(rod.enableHangingClothes, true);
+    assert.equal(rod.enableSingleHanger, true);
+  }
+  for (const divisions of [6, 12]) {
+    const seeded = buildPresetBackedCustomData('hanging_split', divisions);
+    const middle = divisions / 2 - 1;
+    assert.deepEqual(
+      seeded.shelves.map((exists, i) => (exists ? i : -1)).filter(i => i >= 0),
+      [middle]
+    );
+    assert.equal(seeded.shelfVariants[middle], 'brace');
+    const custom = computeInteriorCustomOps(seeded, divisions);
+    assert.deepEqual(
+      custom.rods.map(rod => [rod.yFactor, rod.limitFactor]),
+      [
+        [2.8, 2.8],
+        [5.8, 2.8],
+      ]
+    );
+  }
 });
 
 test('computeInteriorPresetOps aligns storage rod height with the regular hanging preset', async () => {

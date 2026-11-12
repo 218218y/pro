@@ -1271,7 +1271,7 @@
       "entry": "modules_configuration/modules_config_api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_interior_hover_layout_mode.ts",
+      "file": "esm/native/services/canvas_picking_interior_hover_layout_family_shared.ts",
       "entry": "interior_layout_presets/api.js"
     },
     {

@@ -58,6 +58,7 @@ export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOps
       break;
     case 'hanging_split':
       ops.shelves = Array.from(presetShelfRows.splitShelfRows);
+      ops.shelfVariant = 'brace';
       pushRod(
         presetRodFactors.splitUpperRodYFactor,
         true,

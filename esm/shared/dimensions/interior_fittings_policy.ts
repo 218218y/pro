@@ -99,7 +99,7 @@ export const INTERIOR_ROD_POLICY = Object.freeze({
 
 const FULL_SHELF_ROWS = Object.freeze([1, 2, 3, 4, 5]);
 const HANGING_SHELF_ROWS = Object.freeze([5, 4]);
-const SPLIT_SHELF_ROWS = Object.freeze([5, 1]);
+const SPLIT_SHELF_ROWS = Object.freeze([3]);
 
 export const INTERIOR_PRESET_SHELF_ROWS_POLICY = Object.freeze({
   fullShelfRows: FULL_SHELF_ROWS,
@@ -110,10 +110,10 @@ export const INTERIOR_PRESET_SHELF_ROWS_POLICY = Object.freeze({
 export const INTERIOR_PRESET_ROD_FACTORS_POLICY = Object.freeze({
   mixedRodYFactor: 3.5,
   hangingRodYFactor: 3.8,
-  splitUpperRodYFactor: 4.8,
-  splitUpperRodLimitFactor: 2.5,
-  splitLowerRodYFactor: 2.3,
-  splitLowerRodLimitFactor: 1.3,
+  splitUpperRodYFactor: 5.8,
+  splitUpperRodLimitFactor: 2.8,
+  splitLowerRodYFactor: 2.8,
+  splitLowerRodLimitFactor: 2.8,
   storageRodYFactor: 3.8,
   storageRodLimitFactor: 3.8,
 });

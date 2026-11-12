@@ -4,7 +4,10 @@ import {
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
-import { readExistingShelfVariant } from './canvas_picking_interior_hover_layout_family_shared.js';
+import {
+  hasShelfAtIndex,
+  readExistingShelfVariant,
+} from './canvas_picking_interior_hover_layout_family_shared.js';
 import {
   createSketchModuleShelfPreviewGeometry,
   findNearestSketchModuleShelf,
@@ -135,33 +138,7 @@ export function resolveSketchModuleShelfRemovePreview(
                 )
               : epsNoBoard;
           if (isWithinInclusiveTolerance(shelfHitY, targetY, eps)) {
-            let exists = false;
-            const isCustom = !!readRecordValue(cfgRef, 'isCustom');
-            if (isCustom) {
-              const cd = asRecord(readRecordValue(cfgRef, 'customData')) ?? {};
-              const shelvesArr = Array.isArray(cd.shelves) ? cd.shelves : [];
-              exists = !!shelvesArr[shelfIndex - 1];
-            } else {
-              const layoutValue = readRecordValue(cfgRef, 'layout');
-              const lt = typeof layoutValue === 'string' && layoutValue ? layoutValue : 'shelves';
-              switch (lt) {
-                case 'shelves':
-                case 'mixed':
-                  exists = true;
-                  break;
-                case 'hanging':
-                case 'hanging_top2':
-                case 'storage':
-                case 'storage_shelf':
-                  exists = shelfIndex === 4 || shelfIndex === 5;
-                  break;
-                case 'hanging_split':
-                  exists = shelfIndex === 1 || shelfIndex === 5;
-                  break;
-                default:
-                  exists = false;
-              }
-            }
+            const exists = hasShelfAtIndex(cfgRef || {}, shelfIndex);
             if (exists) {
               op = 'remove';
               shelfRemoveKind = 'base';
@@ -171,17 +148,13 @@ export function resolveSketchModuleShelfRemovePreview(
               const isBraceExisting = Array.isArray(braceShelves) && braceShelves.indexOf(shelfIndex) >= 0;
               const custom = asRecord(readRecordValue(cfgRef, 'customData'));
               const shelfVariants = Array.isArray(custom?.shelfVariants) ? custom.shelfVariants : [];
-              const savedVariant = shelfVariants[shelfIndex - 1];
-              variantPreview =
-                typeof savedVariant === 'string' && savedVariant !== ''
-                  ? readExistingShelfVariant({
-                      braceList: isBraceExisting ? [shelfIndex] : [],
-                      shelfIndex,
-                      shelfVariants,
-                    })
-                  : isBraceExisting
-                    ? 'brace'
-                    : 'double';
+              const variant = readExistingShelfVariant({
+                braceList: isBraceExisting ? [shelfIndex] : [],
+                shelfIndex,
+                shelfVariants,
+                cfgRef: cfgRef || {},
+              });
+              variantPreview = variant === 'regular' && !shelfVariants[shelfIndex - 1] ? 'double' : variant;
             }
           }
         }

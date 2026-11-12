@@ -1402,3 +1402,24 @@ test('brace-shelves shortcut toggles an existing free-box shelf instead of the m
   assert.equal(shelf.depthM, undefined, 'converted shelves use the canonical depth for their new variant');
   assert.equal(__wp_readSketchHover(App as never), null);
 });
+
+test('double hanging free-box plan preserves the middle brace depth and exact two rod levels', () => {
+  const plan = resolvePresetLayoutFreeBoxPlan({
+    targetBox: { id: 'double-hanging', freePlacement: true },
+    targetGeo: { centerX: 0, innerW: 1, innerD: 0.6, innerBackZ: -0.3 },
+    targetCenterY: 1.2,
+    targetHeight: 2.4,
+    pointerX: 0,
+    pointerY: 1.2,
+    layoutType: 'hanging_split',
+    woodThick: 0.02,
+  });
+  assert.equal(plan.blockedReason, null);
+  assert.equal(plan.shelfVariant, 'brace');
+  assert.equal(plan.shelfDepthM, 0.6);
+  assert.equal(plan.shelfYs.length, 1);
+  assert.equal(plan.shelfYNorms[0], 0.5);
+  assert.equal(plan.rodYs.length, 2);
+  assert.ok(plan.rodYs[0] > plan.shelfYs[0]);
+  assert.ok(plan.rodYs[1] < plan.shelfYs[0]);
+});

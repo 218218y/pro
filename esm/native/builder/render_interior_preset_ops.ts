@@ -121,7 +121,10 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     if (Array.isArray(ops.shelves)) {
       for (const rawShelfIndex of ops.shelves) {
         const shelfIndex = readPresetGridIndex(rawShelfIndex);
-        if (shelfIndex != null) shelfSet[shelfIndex] = true;
+        if (shelfIndex != null) {
+          shelfSet[shelfIndex] = true;
+          if (ops.shelfVariant === 'brace') braceSet[shelfIndex] = true;
+        }
       }
     }
     const removedFrameSidePlan = resolveRemovedFrameSideConstructionPlanAtBoundary({

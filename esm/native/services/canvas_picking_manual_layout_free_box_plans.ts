@@ -228,9 +228,10 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
   const divs = INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   const step = divs > 0 ? state.cellHeight / divs : 0;
   const ops = computeInteriorPresetOps(args.layoutType);
-  const shelfH = shelfThicknessForVariant('regular', woodThick);
+  const shelfVariant = ops.shelfVariant || 'regular';
+  const shelfH = shelfThicknessForVariant(shelfVariant, woodThick);
   const rodH = INTERIOR_ROD_RENDER_POLICY.radiusM * 2;
-  const shelfDepthM = resolveShelfDepth({ variant: 'regular', innerD: args.targetGeo.innerD, woodThick });
+  const shelfDepthM = resolveShelfDepth({ variant: shelfVariant, innerD: args.targetGeo.innerD, woodThick });
   const shelfYs: number[] = [];
   const shelfYNorms: number[] = [];
   const rodYs: number[] = [];
@@ -292,6 +293,7 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
 
   return {
     layoutType: args.layoutType || 'shelves',
+    shelfVariant,
     shelfYs,
     shelfYNorms,
     rodYs,

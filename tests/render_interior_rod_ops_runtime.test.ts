@@ -665,7 +665,7 @@ test('rod clearance preserves all preset shelf rows and rod factors', () => {
     },
     {
       layout: 'hanging_split',
-      yPos: 1,
+      yPos: 1.18,
       blocker: INTERIOR_PRESET_ROD_FACTORS_POLICY.splitLowerRodYFactor * 0.4,
     },
     {

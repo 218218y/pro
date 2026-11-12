@@ -27,6 +27,12 @@ test('interior layout keeps the three placement methods distinct on desktop and 
     'תלייה מדפים עליונים ומוט'
   );
   await expect(layout.getByTestId('interior-layout-mixed')).toHaveAccessibleName('משולב מדפים ומוט תלייה');
+  await expect(layout.getByTestId('interior-layout-hanging_split')).toHaveAccessibleName(
+    'תלייה כפולה קושרת אמצעית ושני מוטות'
+  );
+  await expect(
+    layout.getByTestId('interior-layout-hanging_split').locator('svg path').first()
+  ).toHaveAttribute('d', 'M9 32H39');
   await expect(item('shelf')).toHaveCount(0);
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
@@ -34,8 +40,15 @@ test('interior layout keeps the three placement methods distinct on desktop and 
       await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
     });
     const presets = layout.getByRole('group', { name: 'תבניות לתא' });
-    const shelves = (await layout.getByTestId('interior-layout-shelves').boundingBox())!;
-    const storage = (await layout.getByTestId('interior-layout-storage').boundingBox())!;
+    // Compare one layout snapshot: sequential browser reads can straddle a sidebar resize.
+    const { shelves, storage } = await presets.evaluate(element => {
+      const bounds = (id: string) => {
+        const button = element.querySelector(`[data-testid="interior-layout-${id}"]`)!;
+        const { x, width } = button.getBoundingClientRect();
+        return { x, width };
+      };
+      return { shelves: bounds('shelves'), storage: bounds('storage') };
+    });
     expect(Math.abs(storage.width - shelves.width)).toBeLessThan(1);
     expect(Math.abs(storage.x - shelves.x)).toBeLessThan(1);
     for (const button of await presets.getByRole('button').all()) {

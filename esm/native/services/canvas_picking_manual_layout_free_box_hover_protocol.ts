@@ -403,7 +403,7 @@ export function createPresetLayoutHoverRecord(args: {
     cellYNormMin: args.plan.cellYNormMin,
     cellYNormMax: args.plan.cellYNormMax,
     contentXNorm: args.plan.contentXNorm,
-    variant: 'regular',
+    variant: args.plan.shelfVariant,
     depthM: args.plan.shelfDepthM,
     blockedReason: args.plan.blockedReason,
   };

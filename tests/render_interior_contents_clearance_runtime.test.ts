@@ -1,3 +1,4 @@
+import { computeInteriorPresetOps } from '../esm/native/features/interior_layout_presets/api.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -777,5 +778,48 @@ test('repartitioning one/two-door bays preserves all four visible preset/custom 
       }
       currentX += width + (index < scenario.signature.length - 1 ? woodThick : 0);
     }
+  }
+});
+
+function assertClose(actual: number, expected: number): void {
+  assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} != ${expected}`);
+}
+
+test('double hanging builds exactly one full-depth middle brace and two correctly limited rods', () => {
+  for (const bottom of [0, 1.1]) {
+    const boards: Array<{
+      width: number;
+      depth: number;
+      y: number;
+      userData?: { __wpShelfIsBrace?: boolean };
+    }> = [];
+    const rods: Array<{ y: number; limit: number }> = [];
+    const renderer = createPresetRenderer();
+    assert.equal(
+      renderer.applyInteriorPresetOps({
+        ...commonInput([]),
+        presetOps: computeInteriorPresetOps('hanging_split'),
+        effectiveBottomY: bottom,
+        effectiveTopY: bottom + 2.4,
+        braceFrontZ: 0.29,
+        createBoard: (width: number, _h: number, depth: number, _x: number, y: number) => {
+          const board = { width, depth, y };
+          boards.push(board);
+          return board;
+        },
+        createRod: (y: number, _clothes: boolean, _single: boolean, limit: number) => rods.push({ y, limit }),
+      }),
+      true
+    );
+    assert.equal(boards.length, 1);
+    assertClose(boards[0].y, bottom + 1.2);
+    assertClose(boards[0].width, 1);
+    assertClose(boards[0].depth, 0.565);
+    assert.equal(boards[0].userData?.__wpShelfIsBrace, true);
+    assert.equal(rods.length, 2);
+    assertClose(rods[0].y, bottom + 2.32);
+    assertClose(rods[1].y, bottom + 1.12);
+    assertClose(rods[0].limit, 1.12);
+    assertClose(rods[1].limit, 1.12);
   }
 });

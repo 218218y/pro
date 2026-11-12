@@ -133,7 +133,8 @@ test('interior pipeline routes preset layouts through the canonical preset owner
   );
 
   assert.equal(presetCalls.length, 1);
-  assert.deepEqual(presetCalls[0].presetOps.shelves, [5, 1]);
+  assert.deepEqual(presetCalls[0].presetOps.shelves, [3]);
+  assert.equal(presetCalls[0].presetOps.shelfVariant, 'brace');
   assert.deepEqual(presetCalls[0].braceShelves, [5]);
   assert.equal(presetCalls[0].removedFrameSidePlan, removedFrameSidePlan);
 });

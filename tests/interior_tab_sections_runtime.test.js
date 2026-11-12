@@ -1,3 +1,4 @@
+import { InteriorLayoutPresetPreview } from '../esm/native/ui/react/tabs/interior_layout_preset_preview.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -331,7 +332,7 @@ test('[interior-tab-sections-runtime] preset tools appear first without canvas e
   assert.equal((html.match(/<svg\b/g) ?? []).length, 5);
   assert.equal((html.match(/class="wp-interior-preset-description"/g) ?? []).length, 5);
   assert.match(html, /מדפים עליונים ומוט/);
-  assert.match(html, /שני מפלסי תלייה/);
+  assert.match(html, /קושרת אמצעית ושני מוטות/);
   assert.match(html, /מדפים, תלייה ואוגר/);
 });
 
@@ -1000,4 +1001,14 @@ test('interior handles section keeps advanced controls open when handle editing 
   assert.match(html, /צבע לידית שתשויך/);
   assert.match(html, /בחר סוג ידית כדי להיכנס למצב עריכה/);
   assert.doesNotMatch(html, /סיום עריכה/);
+});
+
+test('double hanging button shows one middle brace and two hanging levels', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(InteriorLayoutPresetPreview, { id: 'hanging_split', label: 'תלייה כפולה' })
+  );
+  assert.ok(html.includes('קושרת אמצעית ושני מוטות'));
+  const paths = [...html.matchAll(/<path[^>]+d="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(paths[0], 'M9 32H39');
+  assert.equal(paths[1], 'M11 10H37 M11 34H37');
 });
