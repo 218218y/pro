@@ -5,13 +5,13 @@ import {
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
   SHELF_VARIANT_OPTIONS,
-  WinterBraceShelfControls,
+  WinterBraceShelfButton,
 } from './interior_layout_sketch_shelves_section.js';
 import { parseSketchShelfVariant } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
 type ManualLayoutControlsProps = InteriorLayoutSectionProps & { method: 'grid' | 'sketch' };
-type ShelfVariant = InteriorLayoutSectionProps['gridShelfVariant'];
+type ShelfVariant = (typeof SHELF_VARIANT_OPTIONS)[number]['variant'];
 
 export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): ReactElement {
   const isSketch = props.method === 'sketch';
@@ -19,14 +19,14 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
     ? props.isSketchDivisionToolActive
     : props.isManualLayoutMode && !props.isSketchToolActive;
   const tool = hasActiveTool ? props.manualTool : props.manualUiTool;
-  const showShelfSettings =
-    tool === 'shelf' && !(isSketch && (props.isBraceShelvesMode || props.isLayoutMode));
   const sketchVariant = isSketch && hasActiveTool ? parseSketchShelfVariant(props.manualToolRaw) : null;
+  const isWinterBrace = sketchVariant === 'winter_brace';
   const activeShelfVariant =
-    sketchVariant === 'winter_brace'
-      ? sketchVariant
-      : (SHELF_VARIANT_OPTIONS.find(option => option.variant === sketchVariant)?.variant ??
-        props.gridShelfVariant);
+    SHELF_VARIANT_OPTIONS.find(option => option.variant === sketchVariant)?.variant ??
+    SHELF_VARIANT_OPTIONS.find(option => option.variant === props.gridShelfVariant)?.variant ??
+    'regular';
+  const showShelfSettings =
+    tool === 'shelf' && !isWinterBrace && !(isSketch && (props.isBraceShelvesMode || props.isLayoutMode));
 
   function selectShelf(variant: ShelfVariant) {
     props.setGridShelfVariant(variant);
@@ -36,21 +36,36 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
 
   return (
     <>
-      <div className="wp-interior-layout-items" role="group" aria-label="פריט להצבה">
+      <div
+        className={`wp-interior-layout-items${isSketch ? ' wp-interior-layout-items--sketch' : ''}`}
+        role="group"
+        aria-label="פריט להצבה"
+      >
         {props.manualTools.map(option => (
           <OptionButton
             key={option.id}
             density="micro"
-            selected={hasActiveTool && tool === option.id}
+            selected={hasActiveTool && tool === option.id && !isWinterBrace}
             testId={`interior-manual-tool-${option.id}-button`}
             onClick={() => {
-              if (isSketch) props.enterSketchDivision(option.id, activeShelfVariant);
+              if (option.id === 'shelf') selectShelf(activeShelfVariant);
+              else if (isSketch) props.enterSketchDivision(option.id, activeShelfVariant);
               else props.enterManual(option.id);
             }}
           >
             {option.label}
           </OptionButton>
         ))}
+        {isSketch ? (
+          <WinterBraceShelfButton
+            props={props}
+            active={isWinterBrace}
+            onSelect={() => {
+              if (isWinterBrace) props.exitManual();
+              else props.enterSketchShelfTool('winter_brace');
+            }}
+          />
+        ) : null}
       </div>
 
       {!isSketch && tool !== 'storage' ? (
@@ -92,11 +107,6 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
               </OptionButton>
             ))}
           </div>
-          <WinterBraceShelfControls
-            props={props}
-            active={activeShelfVariant === 'winter_brace'}
-            onSelect={() => selectShelf('winter_brace')}
-          />
         </div>
       ) : null}
 

@@ -3,6 +3,7 @@ import { useRef, useState, type ReactElement } from 'react';
 import { OptionButton } from '../components/index.js';
 import { cx } from './interior_tab_helpers.js';
 import { InteriorLayoutManualControls } from './interior_layout_manual_controls.js';
+import { InteriorLayoutPresetPreview } from './interior_layout_preset_preview.js';
 import { InteriorToolCardHeader } from './interior_tab_sections_controls.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
@@ -49,7 +50,7 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
   function renderLayoutOptions(group: 'presets' | 'edits') {
     return (
       <div
-        className="wp-interior-layout-options"
+        className={cx('wp-interior-layout-options', group === 'presets' && 'wp-interior-layout-presets')}
         role="group"
         aria-label={group === 'presets' ? 'תבניות לתא' : 'המרה וחירור'}
       >
@@ -67,11 +68,16 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
                 key={option.id}
                 selected={selected}
                 density="micro"
-                icon={<i className={option.icon} aria-hidden="true" />}
+                {...(group === 'presets' ? { className: 'wp-interior-preset-button' } : {})}
+                icon={group === 'edits' ? <i className={option.icon} aria-hidden="true" /> : undefined}
                 testId={`interior-layout-${option.id}`}
                 onClick={() => props.enterLayout(option.id)}
               >
-                {option.label}
+                {group === 'presets' ? (
+                  <InteriorLayoutPresetPreview id={option.id} label={option.label} />
+                ) : (
+                  option.label
+                )}
               </OptionButton>
             );
           })}

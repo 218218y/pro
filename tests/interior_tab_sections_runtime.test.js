@@ -49,6 +49,13 @@ test('winter shelf compound control keeps the main action and lock independently
   assert.equal((empty.match(/<button\b/g) ?? []).length, 1);
 });
 function findElementByTestId(node, testId) {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const match = findElementByTestId(child, testId);
+      if (match) return match;
+    }
+    return null;
+  }
   if (!node || typeof node !== 'object') return null;
   if (node.props?.['data-testid'] === testId || node.props?.testId === testId) return node;
   const children = node.props?.children;
@@ -321,6 +328,51 @@ test('[interior-tab-sections-runtime] preset tools appear first without canvas e
     html,
     /interior-layout-finish|interior-manual-tool|winter-brace-shelf-button|חירור מלא/
   );
+  assert.equal((html.match(/<svg\b/g) ?? []).length, 5);
+  assert.equal((html.match(/class="wp-interior-preset-description"/g) ?? []).length, 5);
+  assert.match(html, /מדפים עליונים ומוט/);
+  assert.match(html, /שני מפלסי תלייה/);
+  assert.match(html, /מדפים, תלייה ואוגר/);
+});
+
+test('[interior-tab-sections-runtime] winter brace is a sketch item with independent selection and never a grid variant', () => {
+  const calls = [];
+  const props = createLayoutProps({
+    method: 'sketch',
+    enterSketchShelfTool: value => calls.push(['sketchShelf', value]),
+    setGridShelfVariant: value => calls.push(['gridVariant', value]),
+    enterSketchDivision: (...args) => calls.push(['division', ...args]),
+    exitManual: () => calls.push(['exit']),
+  });
+  const tree = InteriorLayoutManualControls(props);
+  const winter = findElementByTypeName(tree, 'WinterBraceShelfButton');
+  assert.ok(winter);
+  assert.equal(winter.props.active, false);
+  winter.props.onSelect();
+  assert.deepEqual(calls, [['sketchShelf', 'winter_brace']]);
+
+  const active = InteriorLayoutManualControls({
+    ...props,
+    isManualLayoutMode: true,
+    isSketchToolActive: true,
+    isSketchDivisionToolActive: true,
+    manualToolRaw: 'sketch_shelf:winter_brace@50',
+  });
+  assert.equal(findElementByTestId(active, 'interior-manual-tool-shelf-button').props.selected, false);
+  assert.equal(findElementByTestId(active, 'interior-manual-shelf-variant-glass-button'), null);
+  assert.equal(findElementByTypeName(active, 'WinterBraceShelfButton').props.active, true);
+  findElementByTypeName(active, 'WinterBraceShelfButton').props.onSelect();
+  findElementByTestId(active, 'interior-manual-tool-shelf-button').props.onClick();
+  assert.deepEqual(calls.slice(1), [['exit'], ['gridVariant', 'glass'], ['division', 'shelf', 'glass']]);
+
+  for (const gridShelfVariant of ['regular', 'winter_brace']) {
+    const gridProps = { ...props, method: 'grid', gridShelfVariant };
+    const grid = InteriorLayoutManualControls(gridProps);
+    assert.equal(findElementByTypeName(grid, 'WinterBraceShelfButton'), null);
+    const html = renderToStaticMarkup(React.createElement(InteriorLayoutManualControls, gridProps));
+    assert.doesNotMatch(html, /winter-brace|קושרת חורף/);
+    assert.match(html, /סוג מדף/);
+  }
 });
 
 test('[interior-tab-sections-runtime] a rod stays active when changing grid count', () => {

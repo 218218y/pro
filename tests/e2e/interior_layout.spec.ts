@@ -7,7 +7,7 @@ import {
   readDebugStoreState,
 } from './helpers/project_flows';
 
-test('interior layout keeps the three placement methods distinct on desktop and narrow screens', async ({
+test('interior layout keeps the three placement methods distinct on desktop and narrow screens @critical', async ({
   page,
 }, testInfo) => {
   const issues = collectRuntimeIssues(page);
@@ -22,8 +22,38 @@ test('interior layout keeps the three placement methods distinct on desktop and 
 
   await expect(method('presets')).toHaveAttribute('aria-pressed', 'true');
   await expect(layout.getByRole('group', { name: 'תבניות לתא' }).getByRole('button')).toHaveCount(5);
+  await expect(layout.locator('.wp-interior-preset-preview')).toHaveCount(5);
+  await expect(layout.getByTestId('interior-layout-hanging')).toHaveAccessibleName(
+    'תלייה מדפים עליונים ומוט'
+  );
+  await expect(layout.getByTestId('interior-layout-mixed')).toHaveAccessibleName('משולב מדפים ומוט תלייה');
   await expect(item('shelf')).toHaveCount(0);
-  await layout.screenshot({ path: testInfo.outputPath('interior-presets-desktop.png') });
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.locator('#reactSidebarRoot').evaluate(async element => {
+      await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
+    });
+    const presets = layout.getByRole('group', { name: 'תבניות לתא' });
+    const shelves = (await layout.getByTestId('interior-layout-shelves').boundingBox())!;
+    const storage = (await layout.getByTestId('interior-layout-storage').boundingBox())!;
+    expect(Math.abs(storage.width - shelves.width)).toBeLessThan(1);
+    expect(Math.abs(storage.x - shelves.x)).toBeLessThan(1);
+    for (const button of await presets.getByRole('button').all()) {
+      await expect(button).toHaveCSS('display', 'grid');
+      const bounds = (await button.boundingBox())!;
+      const title = (await button.locator('.wp-interior-preset-title').boundingBox())!;
+      const description = (await button.locator('.wp-interior-preset-description').boundingBox())!;
+      const diagram = (await button.locator('svg').boundingBox())!;
+      await expect(button.locator('svg')).toHaveCSS('width', '52px');
+      await expect(button.locator('svg')).toHaveCSS('height', '72px');
+      expect(title.y + title.height).toBeLessThanOrEqual(description.y);
+      expect(diagram.x + diagram.width).toBeLessThanOrEqual(title.x);
+      expect(diagram.x).toBeGreaterThanOrEqual(bounds.x);
+      expect(description.x + description.width).toBeLessThanOrEqual(bounds.x + bounds.width);
+    }
+    await layout.screenshot({ path: testInfo.outputPath(`interior-presets-${width}.png`) });
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
   await layout.getByTestId('interior-layout-mixed').click();
   await expect.poll(mode).toMatchObject({ primary: 'layout', opts: { layoutType: 'mixed' } });
 
@@ -39,7 +69,7 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(layout.getByTestId('interior-layout-grid-count-4')).toHaveAttribute('aria-pressed', 'true');
   await expect(layout.getByRole('group', { name: 'סוג מדף' })).toHaveCount(0);
   await item('shelf').click();
-  await expect(layout.getByTestId('winter-brace-shelf-button')).toHaveCount(1);
+  await expect(layout.getByTestId('winter-brace-shelf-button')).toHaveCount(0);
   await layout.screenshot({ path: testInfo.outputPath('interior-grid-desktop.png') });
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -50,11 +80,21 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_shelf:glass' } });
   await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toBeVisible();
   await expect(layout.getByTestId('winter-brace-shelf-button')).toHaveCount(1);
+  const items = layout.getByRole('group', { name: 'פריט להצבה' });
+  await expect(items.getByRole('button')).toHaveCount(4);
+  await items.getByTestId('winter-brace-shelf-button').click();
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_shelf:winter_brace' } });
+  await expect(item('shelf')).toHaveAttribute('aria-pressed', 'false');
+  await expect(layout.getByRole('group', { name: 'סוג מדף' })).toHaveCount(0);
+  await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toBeVisible();
+  await item('shelf').click();
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_shelf:glass' } });
   await layout.screenshot({ path: testInfo.outputPath('interior-sketch-narrow.png') });
   await item('storage').click();
   await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_storage:50' } });
   await expect(layout.getByLabel('גובה אוגר מצעים (ס"מ)')).toBeVisible();
   await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toHaveCount(0);
+  await expect(items.getByTestId('winter-brace-shelf-button')).toBeVisible();
 
   const boring = layout.getByTestId('interior-layout-full_boring');
   await expect(boring).toBeHidden();

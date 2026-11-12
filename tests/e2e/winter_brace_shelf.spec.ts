@@ -229,18 +229,18 @@ test('winter shelf split controls fit and keep their actions independent at desk
         await Promise.all(element.getAnimations().map(animation => animation.finished));
       });
       if (tab === 'interior') {
-        await panel.getByTestId('interior-layout-method-grid').click();
-        await expect(panel.getByTestId('winter-brace-shelf-button')).toHaveCount(1);
+        await panel.getByTestId('interior-layout-method-sketch').click();
       } else {
         const shelves = panel.locator('.wp-sketch-shelf-headrow button').first();
         await shelves.click();
       }
-      const row = panel.locator('.wp-winter-brace-row:visible').first();
+      const row = panel.getByTestId('winter-brace-combined-button').filter({ visible: true }).first();
       await expect(row.getByTestId('winter-brace-shelf-button')).toHaveText('קושרת חורף');
       const lock = row.getByTestId('winter-brace-door-lock-button');
       await expect(lock).toHaveAccessibleName('דלתות נעולות');
       await expectShelfButtonsFit(panel);
       await expectCombinedWinterControl(row);
+      if (tab === 'interior') await panel.getByTestId('interior-manual-tool-shelf-button').click();
       const variants =
         tab === 'interior'
           ? panel.getByRole('group', { name: 'סוג מדף' })
@@ -248,7 +248,8 @@ test('winter shelf split controls fit and keep their actions independent at desk
       expect(await variants.getByRole('button').count()).toBe(4);
       const variantsBounds = (await variants.boundingBox())!;
       const rowBounds = (await row.boundingBox())!;
-      expect(rowBounds.y).toBeGreaterThanOrEqual(variantsBounds.y + variantsBounds.height);
+      if (tab === 'interior') expect(rowBounds.y + rowBounds.height).toBeLessThanOrEqual(variantsBounds.y);
+      else expect(rowBounds.y).toBeGreaterThanOrEqual(variantsBounds.y + variantsBounds.height);
       const modeBefore = (await readDebugStoreState(page)).mode;
       await lock.click();
       await expect(lock).toHaveAccessibleName('דלתות משוחררות');
