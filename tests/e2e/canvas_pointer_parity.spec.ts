@@ -44,17 +44,35 @@ test.describe('Canvas pointer parity smoke', () => {
       if (hit?.moduleHitY == null) throw new Error('Expected a module hit in the viewer');
       return hit.moduleHitY;
     };
+    const settledHitHeight = async () => {
+      let previous = await hitHeight();
+      let stableSamples = 0;
+      // OrbitControls damping continues after pointer-up. Capture each gesture's baseline
+      // only after the preceding motion has settled, including on slow CI renderers.
+      await expect
+        .poll(
+          async () => {
+            const current = await hitHeight();
+            stableSamples = Math.abs(current - previous) < 0.00001 ? stableSamples + 1 : 0;
+            previous = current;
+            return stableSamples;
+          },
+          { intervals: [100], timeout: 15_000 }
+        )
+        .toBeGreaterThanOrEqual(3);
+      return previous;
+    };
 
     await page.mouse.click(x, y, { button: 'right' });
     expect(await readLinearModuleSpecialDims(page, 'top')).toEqual([]);
 
-    const beforeRightDrag = await hitHeight();
+    const beforeRightDrag = await settledHitHeight();
     await page.mouse.down({ button: 'right' });
     await page.mouse.move(x + 28, y + 42, { steps: 4 });
     await page.mouse.up({ button: 'right' });
     await expect.poll(hitHeight).toBeGreaterThan(beforeRightDrag + 0.04);
 
-    const beforeShiftDrag = await hitHeight();
+    const beforeShiftDrag = await settledHitHeight();
     await page.keyboard.down('Shift');
     await page.mouse.down();
     await page.mouse.move(x, y, { steps: 4 });
@@ -62,7 +80,7 @@ test.describe('Canvas pointer parity smoke', () => {
     await page.keyboard.up('Shift');
     await expect.poll(hitHeight).toBeLessThan(beforeShiftDrag - 0.04);
 
-    const beforeArrow = await hitHeight();
+    const beforeArrow = await settledHitHeight();
     await canvas.focus();
     await expect(canvas).toBeFocused();
     await page.keyboard.press('ArrowUp');
