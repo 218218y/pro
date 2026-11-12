@@ -1745,8 +1745,62 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-#reactSidebarRoot .wp-interior-layout .wp-interior-layout-options > :last-child:nth-child(odd) {
+#reactSidebarRoot
+  .wp-interior-layout
+  .wp-interior-layout-options:not(.wp-interior-layout-presets)
+  > :last-child:nth-child(odd) {
   grid-column: 1 / -1;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-items--sketch {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-layout-presets > .type-option.wp-interior-preset-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 5px;
+  min-height: 88px;
+  padding: 7px;
+  text-align: start;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-preview {
+  width: 52px;
+  height: 72px;
+  color: var(--primary);
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-title {
+  font-weight: 700;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-description {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-shell {
+  fill: var(--bg-app);
+  stroke: var(--text-secondary);
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-hanger {
+  stroke-width: 1.2;
+}
+
+#reactSidebarRoot .wp-interior-layout .wp-interior-preset-storage {
+  fill: var(--primary);
+  fill-opacity: 0.2;
 }
 
 #reactSidebarRoot .wp-interior-layout .wp-interior-layout-counts {
