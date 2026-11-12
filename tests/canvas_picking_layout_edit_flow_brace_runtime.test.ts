@@ -206,3 +206,28 @@ test('brace-shelves click toggles an exact sketch shelf to brace and back to reg
   assert.equal(shelves[0].variant, 'regular');
   assert.deepEqual(cfg.braceShelves, []);
 });
+
+test('both shelf shortcuts can convert the intrinsic double-hanging brace without moving the rods', () => {
+  for (const shortcut of ['regular', 'brace'] as const) {
+    const App = createApp(shortcut);
+    const cfg: Record<string, unknown> = { layout: 'hanging_split', isCustom: false };
+    getInternalGridMap(App, false)['0'] = { effectiveTopY: 2.4, effectiveBottomY: 0, gridDivisions: 6 };
+    const args = baseArgs(App, cfg, { current: null });
+    args.moduleHitY = 1.2;
+    args.intersects[0].point.y = 1.2;
+    args.intersects[1].point.y = 1.2;
+    assert.equal(tryHandleCanvasBraceShelvesClick(args as never), true);
+    assert.equal(cfg.isCustom, true);
+    const custom = cfg.customData as {
+      shelves: boolean[];
+      shelfVariants: string[];
+      rodOps: Array<{ yFactor: number }>;
+    };
+    assert.deepEqual(custom.shelves, [false, false, true, false, false]);
+    assert.equal(custom.shelfVariants[2], '');
+    assert.deepEqual(
+      custom.rodOps.map(rod => rod.yFactor),
+      [5.8, 2.8]
+    );
+  }
+});

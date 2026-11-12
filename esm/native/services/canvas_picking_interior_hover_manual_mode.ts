@@ -196,7 +196,7 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
     const braceList = readBraceShelves(cfgRef);
     const exists = !!shelvesArr[shelfIndex - 1];
-    const existingVariant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants });
+    const existingVariant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants, cfgRef });
     const op = !exists ? 'add' : existingVariant !== shelfVariant ? 'add' : 'remove';
     const isBrace = shelfVariant === 'brace' || shelfVariant === 'winter_brace';
     const depthM = isBrace

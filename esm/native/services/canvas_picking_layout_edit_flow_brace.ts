@@ -1,5 +1,8 @@
 import { getInternalGridMap } from '../runtime/cache_access.js';
-import { hasShelfAtIndex } from './canvas_picking_interior_hover_layout_family_shared.js';
+import {
+  hasShelfAtIndex,
+  readExistingShelfVariant,
+} from './canvas_picking_interior_hover_layout_family_shared.js';
 import {
   readShelfShortcutVariant,
   readFreshShelfShortcutAddition,
@@ -37,6 +40,7 @@ import {
 import {
   addBraceShelfIndex,
   removeBraceShelfIndex,
+  preparePresetBackedManualLayoutGrid,
 } from './canvas_picking_manual_layout_config_ops_shared.js';
 import { tryCommitBraceShelvesFreeBoxFromHover } from './canvas_picking_manual_layout_free_box_content.js';
 import {
@@ -183,10 +187,20 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
       return;
     }
 
+    const presetBrace =
+      !configRef.isCustom &&
+      readExistingShelfVariant({
+        cfgRef: configRef,
+        braceList: [],
+        shelfVariants: [],
+        shelfIndex,
+      }) === 'brace';
+
     if (targetVariant === 'regular') {
       __patchConfigForKey(
         mapKey,
         cfg => {
+          if (presetBrace) preparePresetBackedManualLayoutGrid(cfg, { divs: divisions, topY, bottomY });
           const custom = asRecord(cfg.customData);
           const variants = Array.isArray(custom?.shelfVariants) ? custom.shelfVariants : [];
           const braces = Array.isArray(cfg.braceShelves) ? cfg.braceShelves : [];
@@ -212,6 +226,7 @@ export function tryHandleCanvasBraceShelvesClick(args: CanvasLayoutEditClickArgs
     __patchConfigForKey(
       mapKey,
       cfg => {
+        if (presetBrace) preparePresetBackedManualLayoutGrid(cfg, { divs: divisions, topY, bottomY });
         const list = ensureBraceShelves(cfg);
         const customData = asRecord(cfg.customData);
         const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : null;

@@ -1,5 +1,3 @@
-import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
-import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import {
   __wp_readInteriorModuleConfigRef,
   __wp_resolveInteriorHoverTarget,
@@ -8,11 +6,12 @@ import type { CanvasInteriorHoverFlowArgs } from './canvas_picking_interior_hove
 import {
   hideLayoutPreview,
   hideSketchPreview,
-  readGridDivisions,
   readLayoutType,
-  readNumber,
 } from './canvas_picking_interior_hover_shared.js';
-import { buildLayoutPreviewPayload } from './canvas_picking_interior_hover_layout_family_shared.js';
+import {
+  buildLayoutPreviewPayload,
+  buildPresetLayoutPreviewPayload,
+} from './canvas_picking_interior_hover_layout_family_shared.js';
 import { tryHandlePresetLayoutFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
 
 export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowArgs): boolean {
@@ -63,40 +62,7 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
       return true;
     }
 
-    const ops = computeInteriorPresetOps(layoutType);
-    const divisions = readGridDivisions(
-      CARCASS_INTERIOR_GRID_POLICY.divisions,
-      CARCASS_INTERIOR_GRID_POLICY.divisions
-    );
-    const step =
-      divisions > 0 ? target.spanH / divisions : target.spanH / CARCASS_INTERIOR_GRID_POLICY.divisions;
-
-    const shelfYs = Array.isArray(ops.shelves)
-      ? ops.shelves
-          .map(v => Number(v))
-          .filter(v => Number.isFinite(v) && v >= 1 && v < divisions)
-          .map(v => target.bottomY + v * step)
-      : [];
-    const rodYs = Array.isArray(ops.rods)
-      ? ops.rods
-          .map(r => {
-            const yFactor = readNumber(r?.yFactor);
-            const yAdd = readNumber(r?.yAdd) ?? 0;
-            return yFactor != null ? target.bottomY + yFactor * step + yAdd : NaN;
-          })
-          .filter(v => Number.isFinite(v))
-      : [];
-    const barrierH = readNumber(ops.storageBarrier?.barrierH) ?? 0;
-    const storageBarrier =
-      barrierH > 0
-        ? {
-            y: target.bottomY + barrierH / 2,
-            h: barrierH,
-            z: target.internalZ + target.internalDepth / 2 - 0.06,
-          }
-        : null;
-
-    setLayoutPreview(buildLayoutPreviewPayload({ App, target, shelfYs, rodYs, storageBarrier }));
+    setLayoutPreview(buildPresetLayoutPreviewPayload({ App, target, layoutType }));
     return true;
   } catch {
     return false;

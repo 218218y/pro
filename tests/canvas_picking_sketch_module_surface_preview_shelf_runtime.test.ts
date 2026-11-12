@@ -379,8 +379,8 @@ test('custom and built-in layout interpretation preserves shelf existence and br
     assertBaseRemoval(resolve({ cfgRef: { layout }, intersects: [shelfBoardHit(0.8)], yClamped: 0.8 }), 4);
   }
   assertBaseRemoval(
-    resolve({ cfgRef: { layout: 'hanging_split' }, intersects: [shelfBoardHit(0.2)], yClamped: 0.2 }),
-    1
+    resolve({ cfgRef: { layout: 'hanging_split' }, intersects: [shelfBoardHit(0.6)], yClamped: 0.6 }),
+    3
   );
   assert.equal(resolve({ cfgRef: { layout: 'unknown' } }).handled, false);
 

@@ -1,3 +1,7 @@
+import {
+  hasShelfAtIndex,
+  readExistingShelfVariant,
+} from './canvas_picking_interior_hover_layout_family_shared.js';
 import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
@@ -107,30 +111,15 @@ function readLayoutShelfState(
   const layoutRaw = readValue(cfgRef, 'layout');
   if (layoutRaw == null || layoutRaw === '') return null;
   if (typeof layoutRaw !== 'string') return null;
-  const layout = layoutRaw;
   const braceShelvesRaw = readValue(cfgRef, 'braceShelves');
   const braceShelves = Array.isArray(braceShelvesRaw)
     ? new Set(braceShelvesRaw.map(value => Number(value)).filter(Number.isFinite))
     : new Set<number>();
+  const presetVariant = readExistingShelfVariant({ cfgRef, braceList: [], shelfIndex: 1, shelfVariants: [] });
   return {
     divisions,
-    existsAt: index => {
-      switch (layout) {
-        case 'shelves':
-        case 'mixed':
-          return true;
-        case 'hanging':
-        case 'hanging_top2':
-        case 'storage':
-        case 'storage_shelf':
-          return index === 4 || index === 5;
-        case 'hanging_split':
-          return index === 1 || index === 5;
-        default:
-          return false;
-      }
-    },
-    variantAt: index => (braceShelves.has(index) ? 'brace' : 'double'),
+    existsAt: index => hasShelfAtIndex(cfgRef, index),
+    variantAt: index => (braceShelves.has(index) || presetVariant === 'brace' ? 'brace' : 'double'),
   };
 }
 

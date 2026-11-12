@@ -27,6 +27,12 @@ test('interior layout keeps the three placement methods distinct on desktop and 
     'תלייה מדפים עליונים ומוט'
   );
   await expect(layout.getByTestId('interior-layout-mixed')).toHaveAccessibleName('משולב מדפים ומוט תלייה');
+  await expect(layout.getByTestId('interior-layout-hanging_split')).toHaveAccessibleName(
+    'תלייה כפולה קושרת אמצעית ושני מוטות'
+  );
+  await expect(
+    layout.getByTestId('interior-layout-hanging_split').locator('svg path').first()
+  ).toHaveAttribute('d', 'M9 32H39');
   await expect(item('shelf')).toHaveCount(0);
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });

@@ -308,8 +308,8 @@ test('focused rod preview preserves every built-in preset factor and grid behavi
   }
 
   for (const [factor, rodIndex] of [
-    [INTERIOR_PRESET_ROD_FACTORS_POLICY.splitUpperRodYFactor, 5],
-    [INTERIOR_PRESET_ROD_FACTORS_POLICY.splitLowerRodYFactor, 2],
+    [INTERIOR_PRESET_ROD_FACTORS_POLICY.splitUpperRodYFactor, 6],
+    [INTERIOR_PRESET_ROD_FACTORS_POLICY.splitLowerRodYFactor, 3],
   ] as const) {
     const y = factor * step;
     const result = resolveFocusedRodPreview({

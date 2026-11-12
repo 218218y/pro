@@ -173,6 +173,7 @@ export type InteriorRodOpLike = UnknownRecord & {
 
 export type InteriorPresetOpsLike = UnknownRecord & {
   shelves: number[];
+  shelfVariant?: 'regular' | 'brace';
   rods: InteriorRodOpLike[];
   storageBarrier?: StorageBarrierOpLike;
 };

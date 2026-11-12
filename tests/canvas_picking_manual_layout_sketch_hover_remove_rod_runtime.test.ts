@@ -24,7 +24,7 @@ test('hover click apply removes one preset-backed split rod without moving the r
       host,
       removeKind: 'base',
       removeIdx: null,
-      rodIndex: 5,
+      rodIndex: 6,
     }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
@@ -49,15 +49,15 @@ test('hover click apply removes one preset-backed split rod without moving the r
   assert.equal(cfg.isCustom, true);
   assert.ok(Array.isArray(customData?.shelves));
   assert.ok(Array.isArray(customData?.rods));
-  assert.equal(customData?.rods?.[4], false);
-  assert.equal(customData?.rods?.[1], true);
+  assert.equal(customData?.rods?.[5], false);
+  assert.equal(customData?.rods?.[2], true);
   assert.deepEqual(customData?.rodOps, [
     {
-      gridIndex: 2,
-      yFactor: 2.3,
+      gridIndex: 3,
+      yFactor: 2.8,
       enableHangingClothes: true,
       enableSingleHanger: true,
-      limitFactor: 1.3,
+      limitFactor: 2.8,
       limitAdd: 0,
     },
   ]);

@@ -28,6 +28,7 @@ export type ManualLayoutFreeBoxShelfGridPlan = {
 
 export type PresetLayoutFreeBoxPlan = {
   layoutType: string;
+  shelfVariant: 'regular' | 'brace';
   shelfYs: number[];
   shelfYNorms: number[];
   rodYs: number[];

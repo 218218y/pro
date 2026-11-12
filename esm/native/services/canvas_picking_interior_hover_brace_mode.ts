@@ -241,7 +241,7 @@ export function tryHandleCanvasBraceShelvesHover(args: CanvasInteriorHoverFlowAr
     const braceList = readBraceShelves(cfgRef);
     const customData = readCustomData(cfgRef);
     const shelfVariants = Array.isArray(customData?.shelfVariants) ? customData.shelfVariants : [];
-    const variant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants });
+    const variant = readExistingShelfVariant({ braceList, shelfIndex, shelfVariants, cfgRef });
     const isBrace = variant === 'brace' || variant === 'winter_brace';
     const nextVariant = targetVariant === 'regular' || isBrace ? 'regular' : 'brace';
     const geometry = createSketchModuleShelfPreviewGeometry({

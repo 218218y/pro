@@ -237,7 +237,7 @@ function writePresetLayoutHoverPreview(args: {
     shelfYs: args.plan.shelfYs,
     rodYs: args.plan.rodYs,
     storageBarrier: args.plan.storageBarrier,
-    shelfVariant: 'regular',
+    shelfVariant: args.plan.shelfVariant,
     op: args.plan.blockedReason ? 'blocked' : 'add',
     blockedReason: args.plan.blockedReason ?? undefined,
   });

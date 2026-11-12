@@ -57,6 +57,7 @@ test('manual free-box preset hover protocol keeps shelves, rods and storage in o
     boxId: 'box-2',
     plan: {
       layoutType: 'storage',
+      shelfVariant: 'regular',
       shelfYs: [0.1],
       shelfYNorms: [0.2],
       rodYs: [0.7],

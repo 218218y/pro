@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { buildPresetBackedCustomData } from '../esm/native/features/interior_layout_presets/api.js';
 import { computeInteriorCustomOps } from '../esm/native/builder/core_storage_compute.js';
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createTestRoomArchitecturePlan } from './room_architecture_test_helpers.ts';
@@ -68,46 +69,15 @@ function createRenderHarness() {
   };
 }
 
-test('renderInteriorCustomOps keeps exact preset-backed hanging_split rod heights', () => {
-  const ops = computeInteriorCustomOps(
-    {
-      shelves: [true, false, false, false, true],
-      rods: [false, true, false, false, true, false],
-      rodOps: [
-        {
-          gridIndex: 2,
-          yFactor: 2.3,
-          enableHangingClothes: true,
-          enableSingleHanger: true,
-          limitFactor: 1.3,
-          limitAdd: 0,
-        },
-        {
-          gridIndex: 5,
-          yFactor: 4.8,
-          enableHangingClothes: true,
-          enableSingleHanger: true,
-          limitFactor: 2.5,
-          limitAdd: 0,
-        },
-      ],
-      storage: false,
-      shelfVariants: [],
-    },
-    6
-  );
-
+test('renderInteriorCustomOps preserves double hanging heights after preset conversion', () => {
+  const ops = computeInteriorCustomOps(buildPresetBackedCustomData('hanging_split', 6), 6);
   const harness = createRenderHarness();
   assert.equal(harness.apply(ops), true);
-  assert.equal(harness.rodCalls.length, 2);
   assert.deepEqual(
-    harness.rodCalls.map(call => ({
-      y: Number(call.y.toFixed(2)),
-      limit: call.limit == null ? null : Number(call.limit.toFixed(2)),
-    })),
+    harness.rodCalls.map(call => ({ y: Number(call.y.toFixed(2)), limit: Number(call.limit?.toFixed(2)) })),
     [
-      { y: 0.92, limit: 0.52 },
-      { y: 1.92, limit: 1 },
+      { y: 1.12, limit: 1.12 },
+      { y: 2.32, limit: 1.12 },
     ]
   );
 });

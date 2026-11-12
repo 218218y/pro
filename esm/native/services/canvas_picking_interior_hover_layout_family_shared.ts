@@ -1,3 +1,5 @@
+import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
+import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { InteriorHoverTarget } from './canvas_picking_hover_targets_shared.js';
 import type {
@@ -10,6 +12,7 @@ import {
   asHoverCustomData,
   readBooleanArray,
   readNumber,
+  readGridDivisions,
   readString,
 } from './canvas_picking_interior_hover_shared.js';
 
@@ -42,6 +45,55 @@ export function buildLayoutPreviewPayload(args: {
   };
 }
 
+export function buildPresetLayoutPreviewPayload(args: {
+  App: AppContainer;
+  target: InteriorHoverTarget;
+  layoutType: string;
+}): LayoutPreviewPayload {
+  const { App, target, layoutType } = args;
+  const ops = computeInteriorPresetOps(layoutType);
+  const divisions = readGridDivisions(
+    CARCASS_INTERIOR_GRID_POLICY.divisions,
+    CARCASS_INTERIOR_GRID_POLICY.divisions
+  );
+  const step =
+    divisions > 0 ? target.spanH / divisions : target.spanH / CARCASS_INTERIOR_GRID_POLICY.divisions;
+
+  const shelfYs = Array.isArray(ops.shelves)
+    ? ops.shelves
+        .map(v => Number(v))
+        .filter(v => Number.isFinite(v) && v >= 1 && v < divisions)
+        .map(v => target.bottomY + v * step)
+    : [];
+  const rodYs = Array.isArray(ops.rods)
+    ? ops.rods
+        .map(r => {
+          const yFactor = readNumber(r?.yFactor);
+          const yAdd = readNumber(r?.yAdd) ?? 0;
+          return yFactor != null ? target.bottomY + yFactor * step + yAdd : NaN;
+        })
+        .filter(v => Number.isFinite(v))
+    : [];
+  const barrierH = readNumber(ops.storageBarrier?.barrierH) ?? 0;
+  const storageBarrier =
+    barrierH > 0
+      ? {
+          y: target.bottomY + barrierH / 2,
+          h: barrierH,
+          z: target.internalZ + target.internalDepth / 2 - 0.06,
+        }
+      : null;
+
+  return buildLayoutPreviewPayload({
+    App,
+    target,
+    shelfYs,
+    rodYs,
+    storageBarrier,
+    shelfVariant: ops.shelfVariant,
+  });
+}
+
 export function readSavedGridDivisions(cfgRef: HoverModuleConfigLike | null, defaultValue: number): number {
   return readNumber(cfgRef?.gridDivisions) ?? defaultValue;
 }
@@ -50,9 +102,14 @@ export function readExistingShelfVariant(args: {
   braceList: number[];
   shelfIndex: number;
   shelfVariants: unknown[];
+  cfgRef?: { isCustom?: unknown; layout?: unknown } | null;
 }): ShelfVariant {
   const { braceList, shelfIndex, shelfVariants } = args;
-  const isBraceExisting = braceList.some(v => Number(v) === shelfIndex);
+  const isPresetBrace =
+    args.cfgRef &&
+    !args.cfgRef.isCustom &&
+    computeInteriorPresetOps(args.cfgRef.layout).shelfVariant === 'brace';
+  const isBraceExisting = isPresetBrace || braceList.some(v => Number(v) === shelfIndex);
   const savedVariant =
     typeof shelfVariants[shelfIndex - 1] === 'string' ? String(shelfVariants[shelfIndex - 1]) : '';
   if (savedVariant === 'winter_brace') return savedVariant;
@@ -72,19 +129,7 @@ export function hasShelfAtIndex(
     const shelvesArr = readBooleanArray(asHoverCustomData(cfgRef.customData)?.shelves);
     return !!shelvesArr[shelfIndex - 1];
   }
-  const layoutType = readString(cfgRef.layout, 'shelves');
-  switch (layoutType) {
-    case 'shelves':
-    case 'mixed':
-      return true;
-    case 'hanging':
-    case 'hanging_top2':
-    case 'storage':
-    case 'storage_shelf':
-      return shelfIndex === 4 || shelfIndex === 5;
-    case 'hanging_split':
-      return shelfIndex === 1 || shelfIndex === 5;
-    default:
-      return false;
-  }
+  const layout = readString(cfgRef.layout, 'shelves');
+  if (layout === 'shelves' || layout === 'mixed') return true;
+  return computeInteriorPresetOps(layout).shelves.includes(shelfIndex);
 }
