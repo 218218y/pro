@@ -328,7 +328,7 @@ test('[canvas-family] core + interior-hover seams stay thin over focused owners'
   assertMatchesAll(
     assert,
     interiorHoverLayoutMode,
-    [/computeInteriorPresetOps\(/, /buildLayoutPreviewPayload\(/],
+    [/buildPresetLayoutPreviewPayload\(/, /buildLayoutPreviewPayload\(/],
     'interior hover layout mode'
   );
   assertMatchesAll(
@@ -343,6 +343,8 @@ test('[canvas-family] core + interior-hover seams stay thin over focused owners'
     interiorHoverLayoutShared,
     [
       /export function buildLayoutPreviewPayload\(/,
+      /export function buildPresetLayoutPreviewPayload\(/,
+      /computeInteriorPresetOps\(/,
       /export function readSavedGridDivisions\(/,
       /export function readExistingShelfVariant\(/,
       /export function hasShelfAtIndex\(/,

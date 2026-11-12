@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T09:17:58.334Z",
+  "generatedAt": "2026-11-12T19:37:37.869Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 616,
@@ -4322,7 +4322,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
-      "line": 191,
+      "line": 164,
       "term": "fallback",
       "category": "domain-default",
       "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
