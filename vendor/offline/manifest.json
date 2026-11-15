@@ -77,13 +77,13 @@
     "executable": "dist/cli.mjs"
   },
   "prettier": {
-    "version": "3.9.10",
+    "version": "3.10.1",
     "package": {
       "lockPath": "node_modules/prettier",
       "installPath": "node_modules/prettier",
-      "file": "vendor/offline/prettier/prettier-3.9.10.tgz",
-      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.10.tgz",
-      "integrity": "sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA=="
+      "file": "vendor/offline/prettier/prettier-3.10.1.tgz",
+      "url": "https://registry.npmjs.org/prettier/-/prettier-3.10.1.tgz",
+      "integrity": "sha512-70vp3ZUYoPlFbF9uiTdXHUUCGEIp7d4+6p+8DYbkm2jP7x/3i/paXVF6dopSI3zd/CEitrZN1rc4i85xWmmXlg=="
     },
     "executable": "bin/prettier.cjs"
   },
@@ -129,21 +129,21 @@
     },
     "launcher": "bin/oxlint",
     "typeAware": {
-      "version": "7.0.2006",
+      "version": "7.0.2007",
       "package": {
         "lockPath": "node_modules/oxlint-tsgolint",
         "installPath": "node_modules/oxlint-tsgolint",
-        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2006.tgz",
-        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2006.tgz",
-        "integrity": "sha512-5B3UtH71kycPHUC1kFEIffivEAs49SUmkJuHZOZnTY0NPj4legp0bcsCQucuLVNCoJzDucS68P2C4WIhP+LypQ=="
+        "file": "vendor/offline/oxlint/oxlint-tsgolint-7.0.2007.tgz",
+        "url": "https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-7.0.2007.tgz",
+        "integrity": "sha512-i8X2qf6VVqFzoNVP34joMKuZpO6T2uXMOgKJaSPFc6p+E3FTnbIGPRbI8K4ZApmtDTMu2CIeGfpzeK1zzGwfnA=="
       },
       "platforms": {
         "linux-x64": {
           "lockPath": "node_modules/@oxlint-tsgolint/linux-x64",
           "installPath": "node_modules/@oxlint-tsgolint/linux-x64",
-          "file": "vendor/offline/oxlint/linux-x64-7.0.2006.tgz",
-          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2006.tgz",
-          "integrity": "sha512-/k0wsEqHiA5dWBJYuld3Vecv6bIhKCasxpho/aFkvh870Qox33MuTkKUGWIVm/njAxw7W4pu1a/Xfa3jwuKuPQ=="
+          "file": "vendor/offline/oxlint/linux-x64-7.0.2007.tgz",
+          "url": "https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-7.0.2007.tgz",
+          "integrity": "sha512-75vx0067HSgxq/HEZzlHwqhcujn3bshg43fVLTx604jZdZZMQfPVCcxTh2RTEShP7ACT1PRty6vboZlWh5RtEA=="
         }
       },
       "launcher": "bin/tsgolint.js",
@@ -173,21 +173,21 @@
         "packages": [
           {
             "name": "@napi-rs/canvas",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "lockPath": "node_modules/@napi-rs/canvas",
             "installPath": "node_modules/@napi-rs/canvas",
-            "file": "vendor/offline/runtime/napi-rs__canvas-1.1.0.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.1.0.tgz",
-            "integrity": "sha512-k+ph/D8H9GS8ZZ48okvHrKeJynkqAA1kMUZRuzRWNlQUDHXngq7oRaWMZBdmSfd9ZhVy9bwNKei/7wMboI/uMg=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-1.1.1.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.1.1.tgz",
+            "integrity": "sha512-UyNspnx0rXclATMOBXiWgy1xtWUSUDm4UOO6+YO8xzyVKaZRpvK+SlJSCtRoSI9J/mEqklJiPYtroN1B+hgLXg=="
           },
           {
             "name": "@napi-rs/canvas-linux-x64-gnu",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "lockPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
             "installPath": "node_modules/@napi-rs/canvas-linux-x64-gnu",
-            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.1.0.tgz",
-            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.1.0.tgz",
-            "integrity": "sha512-uQ9JuJlRhQdHyttcMWOiwLkfIqkqaB0YFUVe835LUe12THt2b51HXkTItq0fxWT1jdhUPX2ylWZ1walkJyD6GQ=="
+            "file": "vendor/offline/runtime/napi-rs__canvas-linux-x64-gnu-1.1.1.tgz",
+            "url": "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.1.1.tgz",
+            "integrity": "sha512-7bZfDI9lxKqj9wJRHiSQBimCRanxDGHYE7TugnOmFJ9ScpgFSsLHFQtOH9wvmbQvBwv5nBuDBGJlG0+7iGkN+w=="
           },
           {
             "name": "@pdf-lib/fontkit",
@@ -386,21 +386,21 @@
         "packages": [
           {
             "name": "@rolldown/binding-linux-x64-gnu",
-            "version": "1.2.18",
+            "version": "1.2.19",
             "lockPath": "node_modules/@rolldown/binding-linux-x64-gnu",
             "installPath": "node_modules/@rolldown/binding-linux-x64-gnu",
-            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.18.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.18.tgz",
-            "integrity": "sha512-xX1Tt4o5jUMma0vJsXp5eRZA9nOuyigb2dKJMMzZRmzMxLYGE9PaKKSqHPzPvSQgM8ZOEacSTQwDQcwWfh0xmQ=="
+            "file": "vendor/offline/vite/rolldown__binding-linux-x64-gnu-1.2.19.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.19.tgz",
+            "integrity": "sha512-rm75/9DkHKeU2WnA8w4X94WGYgLlDCFCfkQC+4bguVJmC/jvDRv2B+2wLOYhyE0fVuv7//Ckk39OoOufyCu76Q=="
           },
           {
             "name": "@rolldown/pluginutils",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "lockPath": "node_modules/@rolldown/pluginutils",
             "installPath": "node_modules/@rolldown/pluginutils",
-            "file": "vendor/offline/vite/rolldown__pluginutils-1.1.0.tgz",
-            "url": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.1.0.tgz",
-            "integrity": "sha512-K+NU2HDCEem4sClgHH4ZZXwdJeNFkJo+hRk479DIwdIviAPN2hFJH1KHHwg8CxHQXvi0M5XY4deTXINfIiSG6w=="
+            "file": "vendor/offline/vite/rolldown__pluginutils-1.1.1.tgz",
+            "url": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.1.1.tgz",
+            "integrity": "sha512-glFIJDvLNDtJhT9qrMFWLPbvS+skxgt4L0K8Ei2YtnhPysAJnsI7nyxSJxKj4ADeKX0OLjC4ntRkwpLOoS3rwA=="
           },
           {
             "name": "@vitejs/plugin-react",
@@ -476,21 +476,21 @@
           },
           {
             "name": "postcss",
-            "version": "8.5.32",
+            "version": "8.5.33",
             "lockPath": "node_modules/postcss",
             "installPath": "node_modules/postcss",
-            "file": "vendor/offline/vite/postcss-8.5.32.tgz",
-            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.32.tgz",
-            "integrity": "sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g=="
+            "file": "vendor/offline/vite/postcss-8.5.33.tgz",
+            "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.33.tgz",
+            "integrity": "sha512-RVHEU9/Pp1Fnjr/MpAJsZoADukCKhfIi15OunEYiGktIkYLkPVvC1sioWolGDS7XByMTx9m/IGbro0Js13zhnQ=="
           },
           {
             "name": "rolldown",
-            "version": "1.2.18",
+            "version": "1.2.19",
             "lockPath": "node_modules/rolldown",
             "installPath": "node_modules/rolldown",
-            "file": "vendor/offline/vite/rolldown-1.2.18.tgz",
-            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.18.tgz",
-            "integrity": "sha512-C1uuT3UR60SShuCaPQFAAZyefJCWZlAKB02BV3BuPE2Rs4fevRQltEKoFO2tV5W9/eJhU5RieV6vJj3euulfNQ=="
+            "file": "vendor/offline/vite/rolldown-1.2.19.tgz",
+            "url": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.19.tgz",
+            "integrity": "sha512-QIiV1J9d0pzN4jeeTH4sjPy0AZ6cAy2cG0ExeoE1+U8Rvj+hR3gYkokx0YbeUNGlZqiQJJ2utcETe0oKXwzsuA=="
           },
           {
             "name": "@oxc-project/types",
@@ -521,18 +521,18 @@
           },
           {
             "name": "vite",
-            "version": "8.3.7",
+            "version": "8.3.8",
             "lockPath": "node_modules/vite",
             "installPath": "node_modules/vite",
-            "file": "vendor/offline/vite/vite-8.3.7.tgz",
-            "url": "https://registry.npmjs.org/vite/-/vite-8.3.7.tgz",
-            "integrity": "sha512-oxh0dMxrayBr33ScJvvBJ2HBQ2jc1TBrXKR2NyL/MJ9WPuX19mN2DXWUmywKdyw5RFVQBo8hmtb2FMC0LHrnng=="
+            "file": "vendor/offline/vite/vite-8.3.8.tgz",
+            "url": "https://registry.npmjs.org/vite/-/vite-8.3.8.tgz",
+            "integrity": "sha512-LzOn3h9rG/0vhLdXrV4yJ4QFA9eEoqCl+Yx+kGJd7aB9w6nfNgVHKSYwLPZUHrz4ZGa+t+kXjV9itvcHDLQouA=="
           }
         ]
       },
       "eslint-js-strict": {
         "rootDependencies": ["eslint"],
-        "packageCount": 77,
+        "packageCount": 78,
         "packages": [
           {
             "name": "@cacheable/memory",
@@ -581,12 +581,12 @@
           },
           {
             "name": "@eslint/config-array",
-            "version": "0.23.5",
+            "version": "0.23.6",
             "lockPath": "node_modules/@eslint/config-array",
             "installPath": "node_modules/@eslint/config-array",
-            "file": "vendor/offline/eslint/eslint__config-array-0.23.5.tgz",
-            "url": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.23.5.tgz",
-            "integrity": "sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA=="
+            "file": "vendor/offline/eslint/eslint__config-array-0.23.6.tgz",
+            "url": "https://registry.npmjs.org/@eslint/config-array/-/config-array-0.23.6.tgz",
+            "integrity": "sha512-WrTH7nioI9QPY4NZGnsywmecswJdgeq4BCM76qok9VgjTO29ZgUzUvcuJLVPYVQM4uDbaPBU0M33R9DIxI8X3w=="
           },
           {
             "name": "@eslint/config-helpers",
@@ -668,6 +668,15 @@
             "file": "vendor/offline/eslint/humanwhocodes__retry-0.4.3.tgz",
             "url": "https://registry.npmjs.org/@humanwhocodes/retry/-/retry-0.4.3.tgz",
             "integrity": "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="
+          },
+          {
+            "name": "@isaacs/nonrecursive-glob-match",
+            "version": "1.1.0",
+            "lockPath": "node_modules/@isaacs/nonrecursive-glob-match",
+            "installPath": "node_modules/@isaacs/nonrecursive-glob-match",
+            "file": "vendor/offline/eslint/isaacs__nonrecursive-glob-match-1.1.0.tgz",
+            "url": "https://registry.npmjs.org/@isaacs/nonrecursive-glob-match/-/nonrecursive-glob-match-1.1.0.tgz",
+            "integrity": "sha512-GPm/Dbvk5RLmhRnxXIa7nTpK0xtl4E0wj0MslsuNiJ1FIROU+2+9lgUC/dgF7Ey4QCWhfEsgxilMRMCdHPfDfw=="
           },
           {
             "name": "@keyv/bigmap",
@@ -752,12 +761,12 @@
           },
           {
             "name": "brace-expansion",
-            "version": "5.0.12",
+            "version": "5.0.13",
             "lockPath": "node_modules/brace-expansion",
             "installPath": "node_modules/brace-expansion",
-            "file": "vendor/offline/eslint/brace-expansion-5.0.12.tgz",
-            "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz",
-            "integrity": "sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ=="
+            "file": "vendor/offline/eslint/brace-expansion-5.0.13.tgz",
+            "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.13.tgz",
+            "integrity": "sha512-Vh3dmFbc4wZeox7M9I/0L9GfFd83Su4+yCck/OF9Gi/P/dAHn0RT7X4K9R7gMNMhDck3DvhR6QXsnQdjjgwNvQ=="
           },
           {
             "name": "cacheable",
@@ -806,12 +815,12 @@
           },
           {
             "name": "eslint",
-            "version": "10.14.0",
+            "version": "10.15.0",
             "lockPath": "node_modules/eslint",
             "installPath": "node_modules/eslint",
-            "file": "vendor/offline/eslint/eslint-10.14.0.tgz",
-            "url": "https://registry.npmjs.org/eslint/-/eslint-10.14.0.tgz",
-            "integrity": "sha512-T0pNsxkb9IKmtQjhpK3d7nWOpFv+YHuMbTJnSVMoQblF0onvXfErrtp4V1jHtsQPan7dKaGVD0q1WCXnzMF31A=="
+            "file": "vendor/offline/eslint/eslint-10.15.0.tgz",
+            "url": "https://registry.npmjs.org/eslint/-/eslint-10.15.0.tgz",
+            "integrity": "sha512-+5Wg4p+ze3sG1WErYgUO/3H1IQIfFBymVUA0Fo/XTeBOLS6UQIUekpSJ8sdRkn7O7wjh84b55w/roqavH2aScg=="
           },
           {
             "name": "eslint-scope",
@@ -1058,12 +1067,12 @@
           },
           {
             "name": "minimatch",
-            "version": "10.2.6",
+            "version": "11.0.8",
             "lockPath": "node_modules/minimatch",
             "installPath": "node_modules/minimatch",
-            "file": "vendor/offline/eslint/minimatch-10.2.6.tgz",
-            "url": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
-            "integrity": "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A=="
+            "file": "vendor/offline/eslint/minimatch-11.0.8.tgz",
+            "url": "https://registry.npmjs.org/minimatch/-/minimatch-11.0.8.tgz",
+            "integrity": "sha512-nFQuYSTVrGvysVBps5Ih+0BdnYFN/Cj3C816r6+p7yK+FHrVLGE4O4N9AFwykrlNlvM2HYt+Rad1Uiro6h88Ig=="
           },
           {
             "name": "ms",
@@ -1230,6 +1239,6 @@
         ]
       }
     },
-    "lockfileSha256": "1fc91302b28f553b9519bc0eec872c69a3c00b53f938140777937dfee3705c67"
+    "lockfileSha256": "f5ca10851506b60429829729041ef4bfdce414559ef13d73993d6a0a5e5fcdfc"
   }
 }
