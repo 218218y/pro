@@ -7,6 +7,7 @@ import { InteriorLayoutSection } from '../esm/native/ui/react/tabs/interior_tab_
 import { INTERIOR_LAYOUT_TYPES } from '../esm/native/ui/react/tabs/interior_tab_local_state_shared.js';
 import { InteriorLayoutManualControls } from '../esm/native/ui/react/tabs/interior_layout_manual_controls.js';
 import {
+  InteriorSketchShelvesSection,
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
   WinterBraceShelfButton,
@@ -267,7 +268,9 @@ test('[interior-tab-sections-runtime] SketchTabView renders room architecture co
 test('[interior-tab-sections-runtime] SketchTabView marks the sketch tool card active only from real edit modes', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
   assert.doesNotMatch(src, /wp-tool-card wp-tool-card--layout is-active/);
-  assert.match(src, /state\.isDoorTrimMode \|\| \(!state\.isChestMode && state\.isSketchToolActive\)/);
+  assert.match(src, /state\.isDoorTrimMode/);
+  assert.match(src, /state\.isSketchToolActive/);
+  assert.match(src, /state\.isLayoutMode && state\.layoutType === 'full_boring'/);
 });
 test('[interior-tab-sections-runtime] SketchTabView keeps box cell-dims after sketch tools and hides it in chest mode', () => {
   const src = fs.readFileSync(path.resolve('esm/native/ui/react/tabs/SketchTab.view.tsx'), 'utf8');
@@ -1029,4 +1032,47 @@ test('[interior-tab-sections-runtime] full boring follows winter brace and repla
   assert.equal(findElementByTestId(tree, 'interior-layout-regular_shelf'), null);
   findElementByTestId(tree, 'interior-layout-full_boring').props.onClick();
   assert.deepEqual(calls, ['full_boring']);
+});
+
+test('[sketch-tab] shelf and full-boring controls are compact grid items with independent actions', () => {
+  const calls = [];
+  const props = createLayoutProps({
+    enterSketchShelfTool: variant => calls.push(['shelf', variant]),
+    enterLayout: layout => calls.push(['layout', layout]),
+    activateManualToolId: tool => calls.push(['manual', tool]),
+    exitManual: () => calls.push(['exit']),
+  });
+  const tree = InteriorSketchShelvesSection(props);
+  const html = renderToStaticMarkup(React.createElement(InteriorSketchShelvesSection, props));
+  assert.match(html, /class="wp-sketch-shelf-tools-grid"/);
+  assert.match(html, /aria-label="מדפים ותלייה לפי סקיצה"/);
+  assert.equal((html.match(/data-testid="sketch-shelf-tool-/g) ?? []).length, 6);
+  for (const variant of ['regular', 'double', 'glass', 'brace']) {
+    assert.match(html, new RegExp(`data-testid="sketch-shelf-tool-${variant}"`));
+    assert.equal(findElementByTestId(tree, `sketch-shelf-tool-${variant}`).props.density, 'micro');
+    findElementByTestId(tree, `sketch-shelf-tool-${variant}`).props.onClick();
+  }
+  assert.ok(
+    html.indexOf('data-testid="sketch-layout-full_boring"') > html.indexOf('winter-brace-shelf-button')
+  );
+  findElementByTestId(tree, 'sketch-layout-full_boring').props.onClick();
+  assert.deepEqual(calls, [
+    ['shelf', 'regular'],
+    ['shelf', 'double'],
+    ['shelf', 'glass'],
+    ['shelf', 'brace'],
+    ['layout', 'full_boring'],
+  ]);
+
+  const active = InteriorSketchShelvesSection({
+    ...props,
+    isLayoutMode: true,
+    layoutType: 'full_boring',
+  });
+  assert.equal(findElementByTestId(active, 'sketch-layout-full_boring').props.selected, true);
+  const css = fs.readFileSync(path.resolve('css/react_styles.css'), 'utf8');
+  assert.match(
+    css,
+    /\.wp-sketch-shelf-tools-grid\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
+  );
 });

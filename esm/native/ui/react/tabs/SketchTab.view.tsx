@@ -79,7 +79,10 @@ function SketchTabInner(props: SketchTabViewProps): ReactElement {
     SKETCH_NO_MAIN_SELECTOR_SLICES,
     'structure'
   );
-  const sketchCardActive = state.isDoorTrimMode || (!state.isChestMode && state.isSketchToolActive);
+  const sketchCardActive =
+    state.isDoorTrimMode ||
+    (!state.isChestMode &&
+      (state.isSketchToolActive || (state.isLayoutMode && state.layoutType === 'full_boring')));
 
   const handleNoMainToggle = useCallback(() => {
     runPerfAction(

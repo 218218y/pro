@@ -1,6 +1,7 @@
 import { __wp_ui } from './canvas_picking_core_helpers.js';
 import { __wp_clearSketchHover } from './canvas_picking_local_helpers.js';
 import { firstRenderableHitIsSketchFreeBox } from './canvas_picking_sketch_free_box_hit_policy.js';
+import { tryToggleFullBoringSketchBox } from './canvas_picking_full_boring_box.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { tryHandleCanvasBraceShelvesClick } from './canvas_picking_layout_edit_flow_brace.js';
 import { tryHandleCanvasManualLayoutClick } from './canvas_picking_layout_edit_flow_manual.js';
@@ -21,6 +22,11 @@ function tryHandleCanvasLayoutPresetClick(args: CanvasLayoutEditClickArgs): bool
   const __layoutType =
     __ui_s3a && typeof __ui_s3a.currentLayoutType === 'string' ? __ui_s3a.currentLayoutType : 'shelves';
   if (__layoutType !== 'full_boring' && tryCommitPresetLayoutFreeBoxFromHover(App)) return true;
+  if (
+    __layoutType === 'full_boring' &&
+    tryToggleFullBoringSketchBox({ App, intersects, preferredBottom: args.__isBottomStack })
+  )
+    return true;
   if (firstRenderableHitIsSketchFreeBox(intersects)) {
     __wp_clearSketchHover(App);
     return true;

@@ -13,6 +13,9 @@ import {
   buildPresetLayoutPreviewPayload,
 } from './canvas_picking_interior_hover_layout_family_shared.js';
 import { tryHandlePresetLayoutFreeBoxHover } from './canvas_picking_manual_layout_free_box_content.js';
+import { previewFullBoringSketchBox } from './canvas_picking_full_boring_box.js';
+import { __wp_getViewportRoots } from './canvas_picking_local_helpers_runtime.js';
+import { __wp_raycastReuse } from './canvas_picking_core_helpers.js';
 
 export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowArgs): boolean {
   const {
@@ -43,6 +46,31 @@ export function tryHandleCanvasPresetLayoutHover(args: CanvasInteriorHoverFlowAr
       })
     ) {
       return true;
+    }
+    if (layoutType === 'full_boring') {
+      const { camera, wardrobeGroup } = __wp_getViewportRoots(App);
+      if (camera && wardrobeGroup) {
+        const intersects = __wp_raycastReuse({
+          App,
+          raycaster,
+          mouse,
+          camera,
+          ndcX,
+          ndcY,
+          objects: [wardrobeGroup],
+          recursive: true,
+        });
+        if (
+          previewFullBoringSketchBox({
+            App,
+            intersects,
+            wardrobeGroup,
+            setLayoutPreview,
+            hideLayoutPreview: () => hideLayoutPreview({ App, hideLayoutPreview: hideLayoutPreviewFn }),
+          })
+        )
+          return true;
+      }
     }
     const target = __wp_resolveInteriorHoverTarget(App, raycaster, mouse, ndcX, ndcY);
     if (!target || !setLayoutPreview) {

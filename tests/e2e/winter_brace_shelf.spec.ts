@@ -230,9 +230,6 @@ test('winter shelf split controls fit and keep their actions independent at desk
       });
       if (tab === 'interior') {
         await panel.getByTestId('interior-layout-method-sketch').click();
-      } else {
-        const shelves = panel.locator('.wp-sketch-shelf-headrow button').first();
-        await shelves.click();
       }
       const row = panel.getByTestId('winter-brace-combined-button').filter({ visible: true }).first();
       await expect(row.getByTestId('winter-brace-shelf-button')).toHaveText('קושרת חורף');
@@ -244,12 +241,21 @@ test('winter shelf split controls fit and keep their actions independent at desk
       const variants =
         tab === 'interior'
           ? panel.getByRole('group', { name: 'סוג מדף' })
-          : panel.locator('.wp-sketch-shelf-subrow:visible').first();
-      expect(await variants.getByRole('button').count()).toBe(4);
+          : panel.locator('.wp-sketch-shelf-tools-grid');
+      if (tab === 'interior') expect(await variants.getByRole('button').count()).toBe(4);
+      else {
+        await expect(variants.locator('[data-testid^="sketch-shelf-tool-"]')).toHaveCount(6);
+        await expect(panel.getByTestId('sketch-layout-full_boring')).toBeVisible();
+      }
       const variantsBounds = (await variants.boundingBox())!;
       const rowBounds = (await row.boundingBox())!;
       if (tab === 'interior') expect(rowBounds.y + rowBounds.height).toBeLessThanOrEqual(variantsBounds.y);
-      else expect(rowBounds.y).toBeGreaterThanOrEqual(variantsBounds.y + variantsBounds.height);
+      else {
+        expect(rowBounds.width).toBeLessThanOrEqual(variantsBounds.width / 2 + 1);
+        expect(rowBounds.x + rowBounds.width).toBeLessThanOrEqual(
+          variantsBounds.x + variantsBounds.width + 1
+        );
+      }
       const modeBefore = (await readDebugStoreState(page)).mode;
       await lock.click();
       await expect(lock).toHaveAccessibleName('דלתות משוחררות');

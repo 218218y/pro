@@ -1973,6 +1973,28 @@
   font-size: 0.82rem;
 }
 
+/* Sketch-tab shelf actions use the same compact two-column item grid as Interior > Sketch. */
+#reactSidebarRoot .wp-sketch-shelf-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#reactSidebarRoot .wp-sketch-shelf-tools-grid > .type-option,
+#reactSidebarRoot .wp-sketch-shelf-tools-grid .wp-winter-brace-control {
+  min-width: 0;
+  width: 100%;
+}
+
+#reactSidebarRoot .wp-sketch-shelf-tools-grid .type-option.wp-r-option-button--micro {
+  min-height: 40px;
+  padding: 6px 4px;
+  gap: 5px;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  white-space: normal;
+}
+
 /* Shelf controls wrap on narrow sidebars; winter brace controls have their own row. */
 #reactSidebarRoot
   :is(.tab-content[data-tab='interior'], .tab-content[data-tab='sketch'])

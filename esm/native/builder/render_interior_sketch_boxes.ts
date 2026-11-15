@@ -16,6 +16,7 @@ import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import { renderSketchBoxShell } from './render_interior_sketch_boxes_shell.js';
 import { renderSketchBoxContents } from './render_interior_sketch_boxes_contents.js';
 import { renderSketchBoxFronts } from './render_interior_sketch_boxes_fronts.js';
+import { renderSketchBoxBoring } from './render_interior_sketch_boxes_boring.js';
 import {
   readSketchBoxDividers,
   readSketchBoxHorizontalDividers,
@@ -266,6 +267,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
       args,
     });
 
+    renderSketchBoxBoring({ renderArgs: args, shell: shellResult.state, startChildCount });
     wrapNewFreePlacementObjects({
       renderArgs: args,
       startIndex: startChildCount,

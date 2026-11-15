@@ -319,6 +319,8 @@ export interface BuilderSketchBoxDoorLike extends UnknownRecord {
 export interface BuilderSketchBoxLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
   freePlacement?: boolean | null;
+  /** Full-height shelf-pin boring on the inner sides of this sketch box, independent of its host module. */
+  fullShelfPinBoring?: boolean | null;
   placementWall?: RoomWallId | null;
   heightM?: BuilderSketchScalar;
   hM?: BuilderSketchScalar;

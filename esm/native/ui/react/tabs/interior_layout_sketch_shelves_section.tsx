@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 
 import { buildScopedFormFieldId } from '../components/form_field_id.js';
 
-import { Button, ModeToggleButton } from '../components/index.js';
+import { Button, ModeToggleButton, OptionButton } from '../components/index.js';
 import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
   DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
@@ -77,137 +77,70 @@ function resetSketchStorageHeight(props: InteriorLayoutSectionProps): void {
 }
 
 export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps): ReactElement {
+  const activeShelfVariant = props.isSketchToolActive ? parseSketchShelfVariant(props.manualToolRaw) : null;
+
   return (
     <div className="wp-field">
       <div className="wp-r-label wp-r-label--center">מדפים ותלייה</div>
-
-      <div className="wp-r-type-selector type-selector wp-sketch-shelf-headrow" style={{ direction: 'rtl' }}>
-        <ModeToggleButton
-          active={props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_SHELF_PREFIX)}
-          className="wp-sketch-shelf-btn wp-sketch-shelf-group-btn"
-          icon={
-            <i
-              className={
-                props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_SHELF_PREFIX)
-                  ? 'fas fa-check'
-                  : 'fas fa-th-large'
-              }
-              aria-hidden="true"
-            />
-          }
+      <div className="wp-sketch-shelf-tools-grid" role="group" aria-label="מדפים ותלייה לפי סקיצה" dir="rtl">
+        {SHELF_VARIANT_OPTIONS.map(({ variant, label, icon }) => (
+          <OptionButton
+            key={variant}
+            density="micro"
+            selected={activeShelfVariant === variant}
+            icon={<i className={activeShelfVariant === variant ? 'fas fa-check' : icon} aria-hidden="true" />}
+            testId={`sketch-shelf-tool-${variant}`}
+            onClick={() => {
+              if (activeShelfVariant === variant) props.exitManual();
+              else props.enterSketchShelfTool(variant);
+            }}
+          >
+            {label}
+          </OptionButton>
+        ))}
+        <OptionButton
+          density="micro"
+          selected={props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD}
+          icon={<i className="fas fa-tshirt" aria-hidden="true" />}
+          testId="sketch-shelf-tool-rod"
           onClick={() => {
-            const isOn = props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_SHELF_PREFIX);
-            if (isOn) {
-              props.setSketchShelvesOpen(false);
-              props.exitManual();
-              return;
-            }
-            props.setSketchShelvesOpen(true);
-            props.enterSketchShelfTool('regular');
-          }}
-        >
-          מדפים
-          <i
-            className={cx('fas', props.sketchShelvesOpen ? 'fa-chevron-up' : 'fa-chevron-down', 'wp-chevron')}
-            aria-hidden="true"
-          />
-        </ModeToggleButton>
-
-        <ModeToggleButton
-          active={props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD}
-          className="wp-sketch-shelf-btn"
-          icon={
-            <i
-              className={
-                props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD
-                  ? 'fas fa-check'
-                  : 'fas fa-tshirt'
-              }
-              aria-hidden="true"
-            />
-          }
-          onClick={() => {
-            props.setSketchShelvesOpen(false);
-            const isOn = props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD;
-            if (isOn) props.exitManual();
+            if (props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD) props.exitManual();
             else props.activateManualToolId(SKETCH_TOOL_ROD);
           }}
         >
           תלייה
-        </ModeToggleButton>
-
-        <ModeToggleButton
-          active={props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_STORAGE_PREFIX)}
-          className="wp-sketch-shelf-btn"
-          icon={
-            <i
-              className={
-                props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_STORAGE_PREFIX)
-                  ? 'fas fa-check'
-                  : 'fas fa-box-open'
-              }
-              aria-hidden="true"
-            />
-          }
+        </OptionButton>
+        <OptionButton
+          density="micro"
+          selected={props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_STORAGE_PREFIX)}
+          icon={<i className="fas fa-box-open" aria-hidden="true" />}
+          testId="sketch-shelf-tool-storage"
           onClick={() => {
-            props.setSketchShelvesOpen(false);
-            const isOn =
-              props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_STORAGE_PREFIX);
-            if (isOn) props.exitManual();
+            if (props.isSketchToolActive && props.manualToolRaw.startsWith(SKETCH_TOOL_STORAGE_PREFIX))
+              props.exitManual();
             else props.activateManualToolId(mkSketchStorageTool(props.sketchStorageHeightCm));
           }}
         >
           אוגר מצעים
-        </ModeToggleButton>
+        </OptionButton>
+        <WinterBraceShelfButton
+          props={props}
+          active={activeShelfVariant === 'winter_brace'}
+          onSelect={() => {
+            if (activeShelfVariant === 'winter_brace') props.exitManual();
+            else props.enterSketchShelfTool('winter_brace');
+          }}
+        />
+        <OptionButton
+          density="micro"
+          selected={props.isLayoutMode && props.layoutType === 'full_boring'}
+          icon={<i className="fas fa-grip-vertical" aria-hidden="true" />}
+          testId="sketch-layout-full_boring"
+          onClick={() => props.enterLayout('full_boring')}
+        >
+          חירור מלא
+        </OptionButton>
       </div>
-
-      <div
-        className={cx(
-          'wp-r-type-selector',
-          'type-selector',
-          'wp-sketch-shelf-subrow',
-          props.sketchShelvesOpen ? '' : 'hidden'
-        )}
-        style={{ direction: 'rtl' }}
-      >
-        {SHELF_VARIANT_OPTIONS.map(({ prefix, variant, label, icon }) => (
-          <ModeToggleButton
-            key={variant}
-            active={props.isSketchToolActive && props.manualToolRaw.startsWith(prefix)}
-            className="wp-sketch-shelf-btn wp-sketch-shelf-subbtn"
-            icon={
-              <i
-                className={
-                  props.isSketchToolActive && props.manualToolRaw.startsWith(prefix) ? 'fas fa-check' : icon
-                }
-                aria-hidden="true"
-              />
-            }
-            onClick={() => {
-              const isOn = props.isSketchToolActive && props.manualToolRaw.startsWith(prefix);
-              if (isOn) {
-                props.setSketchShelvesOpen(false);
-                props.exitManual();
-                return;
-              }
-              props.setSketchShelvesOpen(true);
-              props.activateManualToolId(mkSketchShelfTool(variant, null));
-            }}
-          >
-            {label}
-          </ModeToggleButton>
-        ))}
-      </div>
-
-      <WinterBraceShelfControls
-        props={props}
-        active={props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace'}
-        onSelect={() => {
-          if (props.isSketchToolActive && parseSketchShelfVariant(props.manualToolRaw) === 'winter_brace')
-            props.exitManual();
-          else props.enterSketchShelfTool('winter_brace');
-        }}
-      />
       <InteriorSketchShelfDepthField {...props} />
       <InteriorSketchStorageHeightField {...props} />
     </div>
