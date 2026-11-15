@@ -33,10 +33,11 @@ export const SOURCE_SHAPE_REGEX_KEYS = Object.freeze([
 // explicit and exact instead of mixing them into the implementation-shape modernization debt.
 export const SOURCE_POLICY_REGEX_CONTRACTS = Object.freeze({
   'tests/order_pdf_toolbar_visual_contracts.test.js': Object.freeze({
-    reason: 'Order-PDF toolbar/editor CSS/DOM/z-index/typography policy is intentionally source-structural.',
-    patterns: 39,
+    reason:
+      'Order-PDF toolbar/editor CSS/DOM/z-index/typography policy is intentionally source-structural; scoped CSS rule assertions replace cross-rule regexes.',
+    patterns: 34,
     categories: Object.freeze({
-      crossStatement: 38,
+      crossStatement: 33,
       exactObjectCall: 1,
       optionalTypeSyntax: 0,
       indexedAccessSyntax: 0,

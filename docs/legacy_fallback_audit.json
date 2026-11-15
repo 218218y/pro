@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-12T19:37:37.869Z",
+  "generatedAt": "2026-11-15T04:56:28.208Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 616,
-    "totalFiles": 228,
+    "totalOccurrences": 618,
+    "totalFiles": 229,
     "byCategory": {
       "runtime-default": 72,
-      "domain-default": 448,
+      "domain-default": 450,
       "error-message-default": 42,
       "framework-default": 5,
       "browser-adapter": 17,
@@ -1316,6 +1316,12 @@
         "total": 4,
         "categories": {
           "domain-default": 4
+        }
+      },
+      "esm/native/ui/react/viewer_search_catalog.ts": {
+        "total": 2,
+        "categories": {
+          "domain-default": 2
         }
       },
       "esm/native/ui/settings_backup_action_result.ts": {
@@ -5477,14 +5483,14 @@
     },
     {
       "file": "esm/native/ui/react/sidebar_app.tsx",
-      "line": 97,
+      "line": 106,
       "term": "fallback",
       "category": "framework-default",
       "text": "fallback={"
     },
     {
       "file": "esm/native/ui/react/sidebar_shared.ts",
-      "line": 95,
+      "line": 96,
       "term": "fallback",
       "category": "domain-default",
       "text": "// config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list."
@@ -5628,6 +5634,20 @@
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
+    },
+    {
+      "file": "esm/native/ui/react/viewer_search_catalog.ts",
+      "line": 25,
+      "term": "activateFallback",
+      "category": "domain-default",
+      "text": "const activateFallback = (selector: string): SearchRevealStep => ({"
+    },
+    {
+      "file": "esm/native/ui/react/viewer_search_catalog.ts",
+      "line": 37,
+      "term": "activateFallback",
+      "category": "domain-default",
+      "text": "const adhesiveBlack = [...multi, activateFallback('[data-wp-search-special=\"black_glass\"]')];"
     },
     {
       "file": "esm/native/ui/settings_backup_action_result.ts",

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactElement } from 'react';
 
-import { getSite2EnabledTabs } from './sidebar_shared.js';
-import { isSite2Variant } from '../../services/api.js';
+import { getViewerSearchEnabledTabs } from './sidebar_shared.js';
 import { IconButton } from './components/IconButton.js';
 import { useApp } from './hooks.js';
 import {
@@ -23,10 +22,7 @@ export function ViewerSearchControl(): ReactElement {
   const input = useRef<HTMLInputElement>(null);
   const resultScroll = useRef<HTMLDivElement>(null);
   const resultListId = 'wp-viewer-search-results';
-  const enabledTabs = useMemo(
-    () => (isSite2Variant(app) ? new Set(getSite2EnabledTabs(app)) : undefined),
-    [app]
-  );
+  const enabledTabs = useMemo(() => getViewerSearchEnabledTabs(app), [app]);
   const results = useMemo(
     () => searchViewerDestinations(query, enabledTabs, MAX_RESULTS),
     [query, enabledTabs]
@@ -117,6 +113,8 @@ export function ViewerSearchControl(): ReactElement {
             <i className="fas fa-search" aria-hidden="true" />
             <input
               ref={input}
+              id="wp-viewer-search-input"
+              name="viewerSearch"
               type="search"
               autoComplete="off"
               spellCheck={false}

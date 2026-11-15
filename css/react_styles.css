@@ -8192,9 +8192,8 @@ body.wp-ui-react .wp-viewer-search-popover {
   border: 1px solid #dce2eb;
   color: #19263a;
   border-radius: 15px;
-  box-shadow: 0 14px 38px rgb(15 23 42 / 22%);
+  box-shadow: var(--wp-r-shadow-viewer-search-popover);
   pointer-events: auto;
-  z-index: 10;
 }
 
 body.wp-ui-react .wp-viewer-search-input-wrap {
@@ -8211,7 +8210,7 @@ body.wp-ui-react .wp-viewer-search-input-wrap {
 
 body.wp-ui-react .wp-viewer-search-input-wrap:focus-within {
   border-color: #4388cf;
-  box-shadow: 0 0 0 3px rgb(67 136 207 / 12%);
+  box-shadow: var(--wp-r-shadow-viewer-search-focus);
 }
 
 body.wp-ui-react .wp-viewer-search-input-wrap input {
@@ -8327,7 +8326,7 @@ body.wp-ui-react .wp-r-search-target-flash {
   65% {
     outline: 3px solid #e6a832;
     outline-offset: 3px;
-    box-shadow: 0 0 0 7px rgb(230 168 50 / 16%);
+    box-shadow: var(--wp-r-shadow-viewer-search-flash);
   }
 }
 

@@ -3,6 +3,7 @@ import { lazy } from 'react';
 import type { AppContainer, CloudSyncServiceLike, TabId, UnknownRecord } from '../../../../types';
 import {
   getCloudSyncServiceMaybe,
+  isSite2Variant,
   loadCanvasPickingInteriorExtension,
   readRuntimeConfigValueFromApp,
 } from '../../services/api.js';
@@ -95,6 +96,12 @@ export function getSite2EnabledTabs(app: AppContainer): TabId[] {
     // config-probe-fallback: malformed site-tab configuration falls back to the canonical default tab list.
   }
   return SITE2_ENABLED_TABS_DEFAULT.slice();
+}
+
+/** Search uses the same Site 2 visibility policy as the sidebar, without adding
+ * a separate UI -> services dependency from the viewer overlay. */
+export function getViewerSearchEnabledTabs(app: AppContainer): ReadonlySet<TabId> | undefined {
+  return isSite2Variant(app) ? new Set(getSite2EnabledTabs(app)) : undefined;
 }
 
 function prefetchDeferredSidebarTabIntent(tabId: TabId): void {

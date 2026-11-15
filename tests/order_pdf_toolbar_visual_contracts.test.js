@@ -295,17 +295,27 @@ test('order PDF color swatches do not show hexadecimal tooltips', () => {
 test('order PDF sketch drawing toolbar and floating palettes do not create internal scrollbars', () => {
   const css = readSource('css/react_styles.css');
 
-  assert.match(
-    css,
-    /body\.wp-ui-react \.wp-pdf-sketch-toolbar-stack \{[\s\S]*?max-height:\s*none;[\s\S]*?overflow:\s*visible;/
-  );
-  assert.match(
-    css,
-    /body\.wp-ui-react \.wp-pdf-sketch-toolbar--floating\.is-fixed \{[\s\S]*?position:\s*fixed;/
-  );
-  assert.match(css, /body\.wp-ui-react \.wp-pdf-sketch-floating-palette \{[\s\S]*?overflow:\s*visible;/);
-  assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-sketch-toolbar-stack \{[\s\S]*?overflow-y:\s*auto;/);
-  assert.doesNotMatch(css, /body\.wp-ui-react \.wp-pdf-sketch-floating-palette \{[\s\S]*?overflow:\s*auto;/);
+  // Inspect the declarations belonging to each exact CSS rule. A [\s\S]*? match
+  // crosses closing braces and incorrectly treats scrolling in an unrelated later
+  // control (e.g. search suggestions) as a PDF palette regression.
+  const ruleBodies = selector => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(?:^|\\n)\\s*${escaped}\\s*\\{([^}]*)\\}`, 'g');
+    const bodies = [...css.matchAll(pattern)].map(match => match[1]);
+    assert.ok(bodies.length, `missing CSS rule: ${selector}`);
+    return bodies;
+  };
+  const stackRules = ruleBodies('body.wp-ui-react .wp-pdf-sketch-toolbar-stack');
+  const floatingRules = ruleBodies('body.wp-ui-react .wp-pdf-sketch-floating-palette');
+  const fixedToolbarRules = ruleBodies('body.wp-ui-react .wp-pdf-sketch-toolbar--floating.is-fixed');
+  assert.match(stackRules[0], /max-height:\s*none;/);
+  assert.match(stackRules[0], /overflow:\s*visible;/);
+  assert.match(fixedToolbarRules[0], /position:\s*fixed;/);
+  assert.match(floatingRules[0], /overflow:\s*visible;/);
+  for (const rule of stackRules) assert.doesNotMatch(rule, /overflow-y:\s*auto;/);
+  for (const rule of floatingRules) assert.doesNotMatch(rule, /overflow:\s*auto;/);
+  // The search suggestions should remain independently scrollable.
+  assert.match(ruleBodies('body.wp-ui-react .wp-viewer-search-results')[0], /overflow:\s*auto;/);
 
   const sketchToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_toolbar_view.tsx');
   const shapeToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_shape_toolbar.tsx');
