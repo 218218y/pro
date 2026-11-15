@@ -6,11 +6,34 @@ import type { TabId } from '../../../../types';
  */
 export type SearchRevealStep = {
   selector: string;
-  action: 'check' | 'press' | 'activate' | 'open';
+  action: 'check' | 'press' | 'activate' | 'expand';
   onlyIfTargetMissing?: boolean;
 };
 
-export type ViewerSearchDestination = {
+export type ViewerSearchContextKey =
+  | 'main'
+  | 'cabinet'
+  | 'hinged'
+  | 'sliding'
+  | 'single-door'
+  | 'hinge-direction'
+  | 'removed-side'
+  | 'chest-entry'
+  | 'corner-entry'
+  | 'dimensions'
+  | 'wardrobe-dimensions'
+  | 'structure-pattern'
+  | 'drawer-runners'
+  | 'not-chest';
+
+type SearchMeaning = {
+  /** Exact names for the option's own subject, rather than its surrounding context. */
+  aliases?: readonly string[];
+  importance?: 'primary' | 'secondary';
+  requires?: readonly ViewerSearchContextKey[];
+};
+
+export type ViewerSearchDestination = SearchMeaning & {
   id: string;
   tab: TabId;
   label: string;
@@ -22,6 +45,7 @@ export type ViewerSearchDestination = {
 const check = (selector: string): SearchRevealStep => ({ selector, action: 'check' });
 const press = (selector: string): SearchRevealStep => ({ selector, action: 'press' });
 const activate = (selector: string): SearchRevealStep => ({ selector, action: 'activate' });
+const expand = (selector: string): SearchRevealStep => ({ selector, action: 'expand' });
 const activateFallback = (selector: string): SearchRevealStep => ({
   selector,
   action: 'activate',
@@ -59,15 +83,24 @@ function item(
   label: string,
   selector: string,
   keywords = '',
-  reveal: readonly SearchRevealStep[] = []
+  reveal: readonly SearchRevealStep[] = [],
+  meaning: SearchMeaning = {}
 ): ViewerSearchDestination {
-  return { tab, id, label, selector, keywords, reveal };
+  return { tab, id, label, selector, keywords, reveal, ...meaning };
 }
 
 export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   // מבנה: סוגי ארונות, מידות, חומרים, בסיסים ועריכה לפי תא
-  item('structure', 'type-hinged', 'ארון פתיחה', tid('structure-type-hinged-button'), 'דלתות ציר'),
-  item('structure', 'type-sliding', 'ארון הזזה', tid('structure-type-sliding-button'), 'דלתות הזזה'),
+  item('structure', 'type-hinged', 'ארון פתיחה', tid('structure-type-hinged-button'), 'דלתות ציר', [], {
+    aliases: ['ארון', 'פתיחה', 'ארון פתיחה'],
+    importance: 'primary',
+    requires: ['cabinet'],
+  }),
+  item('structure', 'type-sliding', 'ארון הזזה', tid('structure-type-sliding-button'), 'דלתות הזזה', [], {
+    aliases: ['הזזה'],
+    importance: 'primary',
+    requires: ['cabinet'],
+  }),
   item(
     'structure',
     'board-sandwich',
@@ -82,24 +115,53 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     tid('structure-board-material-melamine-button'),
     'חומר גוף'
   ),
-  item('structure', 'door-overlay', 'דלת חיצונית', tid('structure-door-mount-overlay-button'), 'התקנת דלת'),
-  item('structure', 'door-inset', 'דלת שקועה', tid('structure-door-mount-inset-button'), 'התקנת דלת'),
-  item('structure', 'frame-thickness', 'עובי מסגרת', tid('structure-frame-thickness-input')),
-  item('structure', 'shelf-thickness', 'עובי מדפים', tid('structure-shelf-thickness-input')),
-  item('structure', 'doors', 'מספר דלתות', dim('doors'), 'מידות ארון'),
-  item('structure', 'width', 'רוחב ארון', dim('width'), 'מידות'),
-  item('structure', 'height', 'גובה ארון', dim('height'), 'מידות'),
-  item('structure', 'depth', 'עומק ארון', dim('depth'), 'מידות'),
-  item('structure', 'base', 'סוג בסיס הארון', tid('structure-base-type-controls'), 'צוקל רגליים'),
-  item('structure', 'plinth-height', 'גובה צוקל', '#wp-r-base-plinth-height', 'בסיס', basePlinth),
-  item('structure', 'leg-platform', 'במת רגליים', '.wp-r-base-leg-platform-selector', 'בסיס במה', baseLegs),
+  item(
+    'structure',
+    'door-overlay',
+    'דלת חיצונית',
+    tid('structure-door-mount-overlay-button'),
+    'התקנת דלת',
+    [],
+    { requires: ['hinged'] }
+  ),
+  item('structure', 'door-inset', 'דלת שקועה', tid('structure-door-mount-inset-button'), 'התקנת דלת', [], {
+    requires: ['hinged'],
+  }),
+  item('structure', 'frame-thickness', 'עובי מסגרת', tid('structure-frame-thickness-input'), '', []),
+  item('structure', 'shelf-thickness', 'עובי מדפים', tid('structure-shelf-thickness-input'), '', [], {
+    requires: ['not-chest'],
+  }),
+  item('structure', 'doors', 'מספר דלתות', dim('doors'), 'מידות ארון', [], {
+    requires: ['wardrobe-dimensions'],
+  }),
+  item('structure', 'width', 'רוחב ארון', dim('width'), 'מידות', [], { requires: ['dimensions'] }),
+  item('structure', 'height', 'גובה ארון', dim('height'), 'מידות', [], { requires: ['dimensions'] }),
+  item('structure', 'depth', 'עומק ארון', dim('depth'), 'מידות', [], { requires: ['dimensions'] }),
+  item('structure', 'base', 'סוג בסיס הארון', tid('structure-base-type-controls'), 'צוקל רגליים', [], {
+    aliases: ['רגליים', 'רגל', 'בסיס', 'צוקל'],
+    importance: 'primary',
+    requires: ['main'],
+  }),
+  item('structure', 'plinth-height', 'גובה צוקל', '#wp-r-base-plinth-height', 'בסיס', basePlinth, {
+    requires: ['main'],
+  }),
+  item(
+    'structure',
+    'leg-platform',
+    'במה לבסיס הארון',
+    '.wp-r-base-leg-platform-selector',
+    'במה בסיס רגליים',
+    baseLegs,
+    { aliases: ['במה'], importance: 'secondary', requires: ['main'] }
+  ),
   item(
     'structure',
     'leg-platform-side',
     'בליטת במה צדדית',
     '.wp-r-base-leg-platform-side-selector',
     'רגליים במה',
-    baseStage
+    baseStage,
+    { importance: 'secondary', requires: ['main'] }
   ),
   item(
     'structure',
@@ -107,27 +169,44 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'סוג רגליים',
     '.wp-r-base-leg-style-selector',
     'עגולות שפיץ מרובעות',
-    baseLegs
+    baseLegs,
+    { aliases: ['סוג רגל', 'סוג רגליים'], importance: 'primary', requires: ['main'] }
   ),
-  item('structure', 'leg-color', 'צבע רגליים', '.wp-r-base-leg-color-selector', 'ניקל שחור זהב', baseLegs),
-  item('structure', 'leg-height', 'גובה רגליים', '#wp-r-base-leg-height', 'מידות בסיס', baseLegs),
-  item('structure', 'leg-width', 'רוחב רגליים', '#wp-r-base-leg-width', 'מידות בסיס', baseLegs),
-  item('structure', 'sliding-tracks', 'מסילות הזזה', '.wp-r-sliding-tracks-selector', 'שחור ניקל'),
-  item('structure', 'structure-pattern', 'מבנה וחלוקת הדלתות', '.wp-r-structure-selector', 'חלוקה מבנה'),
-  item('structure', 'single-door', 'מיקום דלת בודדת', '.wp-r-single-door-selector', 'ימין שמאל אמצע'),
+  item('structure', 'leg-color', 'צבע רגליים', '.wp-r-base-leg-color-selector', 'ניקל שחור זהב', baseLegs, {
+    requires: ['main'],
+  }),
+  item('structure', 'leg-height', 'גובה רגליים', '#wp-r-base-leg-height', 'מידות בסיס', baseLegs, {
+    requires: ['main'],
+  }),
+  item('structure', 'leg-width', 'רוחב רגליים', '#wp-r-base-leg-width', 'מידות בסיס', baseLegs, {
+    requires: ['main'],
+  }),
+  item('structure', 'sliding-tracks', 'מסילות הזזה', '.wp-r-sliding-tracks-selector', 'שחור ניקל', [], {
+    requires: ['main', 'sliding'],
+  }),
+  item('structure', 'structure-pattern', 'מבנה וחלוקת הדלתות', '.wp-r-structure-selector', 'חלוקה מבנה', [], {
+    requires: ['structure-pattern'],
+  }),
+  item('structure', 'single-door', 'מיקום דלת בודדת', '.wp-r-single-door-selector', 'ימין שמאל אמצע', [], {
+    requires: ['single-door'],
+  }),
   item(
     'structure',
     'hinge-direction',
     'כיוון פתיחת דלת',
     '[data-testid="structure-hinge-direction-toggle"]',
-    'ציר'
+    'ציר',
+    [],
+    { requires: ['hinge-direction'] }
   ),
   item(
     'structure',
     'cell-dims',
     'מידות מיוחדות לפי תא',
     tid('structure-cell-dims-mode-button'),
-    'שינוי מידות'
+    'שינוי מידות',
+    [],
+    { aliases: ['מידות מיוחדות'], importance: 'primary', requires: ['wardrobe-dimensions', 'hinged'] }
   ),
   item(
     'structure',
@@ -135,20 +214,35 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'מספר דלתות בתא',
     tid('structure-cell-dims-door-count-controls'),
     'דלת אחת שתי דלתות',
-    cell
+    cell,
+    { requires: ['wardrobe-dimensions', 'hinged'] }
   ),
-  item('structure', 'cell-width', 'רוחב תא', dim('cellDimsWidth'), 'מידות מיוחדות', cell),
-  item('structure', 'cell-height', 'גובה תא', dim('cellDimsHeight'), 'מידות מיוחדות', cell),
-  item('structure', 'cell-depth', 'עומק תא', dim('cellDimsDepth'), 'מידות מיוחדות', cell),
-  item('structure', 'hex-cell', 'תא משושה', tid('structure-cell-dims-hex-mode-button'), 'תא פינה', cell),
-  item('structure', 'hex-protrusion', 'בליטת תא משושה', dim('cellDimsHexProtrusion'), 'מידות', hex),
-  item('structure', 'hex-door-width', 'רוחב דלת תא משושה', dim('cellDimsHexDoorWidth'), 'מידות', hex),
+  item('structure', 'cell-width', 'רוחב תא', dim('cellDimsWidth'), 'מידות מיוחדות', cell, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
+  item('structure', 'cell-height', 'גובה תא', dim('cellDimsHeight'), 'מידות מיוחדות', cell, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
+  item('structure', 'cell-depth', 'עומק תא', dim('cellDimsDepth'), 'מידות מיוחדות', cell, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
+  item('structure', 'hex-cell', 'תא משושה', tid('structure-cell-dims-hex-mode-button'), 'תא פינה', cell, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
+  item('structure', 'hex-protrusion', 'בליטת תא משושה', dim('cellDimsHexProtrusion'), 'מידות', hex, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
+  item('structure', 'hex-door-width', 'רוחב דלת תא משושה', dim('cellDimsHexDoorWidth'), 'מידות', hex, {
+    requires: ['wardrobe-dimensions', 'hinged'],
+  }),
   item(
     'structure',
     'stack',
     'ארון על ארון – חלוקה עליון ותחתון',
     tid('structure-stack-split-mode-button'),
-    'שתי קומות'
+    'שתי קומות',
+    [],
+    { aliases: ['ארון על ארון', 'קומות'], importance: 'primary', requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -156,7 +250,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'הפרדה מעוצבת בין חלקי הארון',
     tid('structure-stack-split-decorative-separator-button'),
     'במה בליטה',
-    stack
+    stack,
+    { requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -164,7 +259,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'בליטה צדדית של הפרדה',
     tid('structure-stack-split-section') + ' .wp-r-platform-overhang-fields',
     'במה',
-    separator
+    separator,
+    { requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -172,7 +268,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'גובה ארון תחתון',
     dim('stackSplitLowerHeight'),
     'ארון על ארון',
-    stack
+    stack,
+    { requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -180,7 +277,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'עומק ארון תחתון',
     dim('stackSplitLowerDepth'),
     'ארון על ארון',
-    stack
+    stack,
+    { requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -188,7 +286,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'רוחב ארון תחתון',
     dim('stackSplitLowerWidth'),
     'ארון על ארון',
-    stack
+    stack,
+    { requires: ['wardrobe-dimensions'] }
   ),
   item(
     'structure',
@@ -196,23 +295,45 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'דלתות ארון תחתון',
     dim('stackSplitLowerDoors'),
     'ארון על ארון',
-    stack
+    stack,
+    { requires: ['wardrobe-dimensions'] }
   ),
-  item('structure', 'corner', 'ארון פינתי', tid('structure-corner-mode-toggle'), 'פינה'),
-  item('structure', 'corner-side', 'כיוון פינה', tid('structure-corner-side-button'), 'ימין שמאל', corner),
-  item('structure', 'corner-doors', 'דלתות פינה', dim('cornerDoors'), 'ארון פינתי', corner),
-  item('structure', 'corner-width', 'רוחב פינה', dim('cornerWidth'), 'ארון פינתי', corner),
-  item('structure', 'corner-height', 'גובה פינה', dim('cornerHeight'), 'ארון פינתי', corner),
-  item('structure', 'corner-depth', 'עומק פינה', dim('cornerDepth'), 'ארון פינתי', corner),
-  item('structure', 'chest', 'מצב שידה', tid('structure-chest-mode-toggle'), 'מגירות שידה'),
-  item('structure', 'chest-drawers', 'מספר מגירות שידה', dim('chestDrawersCount'), 'שידה', chest),
+  item('structure', 'corner', 'ארון פינתי', tid('structure-corner-mode-toggle'), 'פינה', [], {
+    aliases: ['פינה', 'פינתי', 'ארון פינה'],
+    importance: 'primary',
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'corner-side', 'כיוון פינה', tid('structure-corner-side-button'), 'ימין שמאל', corner, {
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'corner-doors', 'דלתות פינה', dim('cornerDoors'), 'ארון פינתי', corner, {
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'corner-width', 'רוחב פינה', dim('cornerWidth'), 'ארון פינתי', corner, {
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'corner-height', 'גובה פינה', dim('cornerHeight'), 'ארון פינתי', corner, {
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'corner-depth', 'עומק פינה', dim('cornerDepth'), 'ארון פינתי', corner, {
+    requires: ['corner-entry'],
+  }),
+  item('structure', 'chest', 'מצב שידה', tid('structure-chest-mode-toggle'), 'מגירות שידה', [], {
+    aliases: ['שידה'],
+    importance: 'primary',
+    requires: ['chest-entry'],
+  }),
+  item('structure', 'chest-drawers', 'מספר מגירות שידה', dim('chestDrawersCount'), 'שידה', chest, {
+    requires: ['chest-entry'],
+  }),
   item(
     'structure',
     'commode',
     'שידת מגירות ומראה',
     tid('structure-chest-commode-button'),
     'קומודה מראה',
-    chest
+    chest,
+    { aliases: ['קומודה'], importance: 'primary', requires: ['chest-entry'] }
   ),
   item(
     'structure',
@@ -220,7 +341,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'גובה מראת שידה',
     dim('chestCommodeMirrorHeightCm'),
     'מראה קומודה',
-    commode
+    commode,
+    { importance: 'secondary', requires: ['chest-entry'] }
   ),
   item(
     'structure',
@@ -228,16 +350,22 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'רוחב מראת שידה',
     dim('chestCommodeMirrorWidthCm'),
     'מראה קומודה',
-    commode
+    commode,
+    { importance: 'secondary', requires: ['chest-entry'] }
   ),
-  item('structure', 'library', 'מצב ספריות', tid('structure-library-mode-button'), 'ספריה'),
+  item('structure', 'library', 'מצב ספריות', tid('structure-library-mode-button'), 'ספריה', [], {
+    aliases: ['ספריה', 'ספרייה', 'ספריות'],
+    importance: 'primary',
+    requires: ['cabinet', 'hinged'],
+  }),
   item(
     'structure',
     'library-upper-doors',
     'דלתות עליונות בספריה',
     tid('structure-library-upper-doors-button'),
     'הסר החזר',
-    library
+    library,
+    { requires: ['cabinet', 'hinged'] }
   ),
   item(
     'structure',
@@ -245,7 +373,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'זכוכית לדלתות ספריה',
     tid('structure-library-glass-buttons'),
     'ספריות זכוכית וילון',
-    library
+    library,
+    { importance: 'secondary', requires: ['cabinet', 'hinged'] }
   ),
 
   // עיצוב: צבע חזית, חריטות, חיתוך, מראה, זכוכית ווילון
@@ -258,22 +387,31 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     tid('design-door-style-double-profile-button'),
     'סגנון דלת'
   ),
-  item('design', 'front-color', 'צבע חזית ראשי', tid('design-color-swatch-row'), 'צבע דלתות'),
+  item('design', 'front-color', 'צבע חזית ראשי', tid('design-color-swatch-row'), 'צבע דלתות', [], {
+    aliases: ['צבע', 'צבעים', 'צבע דלתות'],
+    importance: 'primary',
+  }),
   item(
     'design',
     'shelf-inherit',
     'צביעת מדפים וקנט קושרת',
     tid('design-front-color-shelf-mode-toggle'),
-    'צבע חזית'
+    'צבע חזית',
+    [],
+    { importance: 'secondary' }
   ),
   item('design', 'custom-color', 'צבע מותאם אישית', tid('design-custom-color-toggle'), 'הוסף צבע'),
-  item('design', 'texture', 'העלאת טקסטורה', tid('design-custom-texture-upload-button'), 'טקסטורה תמונה'),
+  item('design', 'texture', 'העלאת טקסטורה', tid('design-custom-texture-upload-button'), 'טקסטורה תמונה', [
+    expand(tid('design-custom-color-toggle')),
+  ]),
   item(
     'design',
     'multicolor',
     'צביעה מתקדמת ותוספות',
     tid('design-multicolor-enabled-toggle'),
-    'כל חלק בנפרד'
+    'כל חלק בנפרד',
+    [],
+    { aliases: ['צביעה', 'צביעה מתקדמת'], importance: 'primary' }
   ),
   item(
     'design',
@@ -281,9 +419,13 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'מראה או זכוכית לדלתות',
     '.multi-special-section .multi-special-header',
     'מראה וזכוכית וילון',
-    multi
+    multi,
+    { importance: 'secondary' }
   ),
-  item('design', 'mirror', 'הוספת מראה לדלת', '[data-wp-search-special="mirror"]', 'מראה תוסף', multi),
+  item('design', 'mirror', 'הוספת מראה לדלת', '[data-wp-search-special="mirror"]', 'מראה תוסף', multi, {
+    aliases: ['מראה'],
+    importance: 'primary',
+  }),
   item(
     'design',
     'mirror-height',
@@ -306,7 +448,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'דלת זכוכית עם וילון',
     '[data-wp-search-special="glass_curtain"]',
     'זכוכית וילון זכוכית וילונות',
-    multi
+    multi,
+    { aliases: ['זכוכית'], importance: 'primary' }
   ),
   item(
     'design',
@@ -325,16 +468,19 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'זכוכית',
     glass
   ),
-  item('design', 'curtain', 'בחירת צבע וילון', '.wp-r-design-curtain-options', 'זכוכית וילון', glass),
-  item('design', 'curtain-white', 'וילון לבן', '[data-curtain="white"]', 'זכוכית וילון לבן', glass),
-  item('design', 'curtain-pink', 'וילון ורוד', '[data-curtain="pink"]', 'זכוכית וילון ורוד', glass),
-  item('design', 'curtain-purple', 'וילון סגול', '[data-curtain="purple"]', 'זכוכית וילון סגול', glass),
+  item('design', 'curtain', 'בחירת צבע וילון', '.wp-r-design-curtain-options', 'זכוכית וילון', glass, {
+    aliases: ['וילון', 'וילונות'],
+    importance: 'primary',
+  }),
+  item('design', 'curtain-white', 'וילון לבן', '[data-curtain="white"]', 'צבע זכוכית וילון לבן', glass),
+  item('design', 'curtain-pink', 'וילון ורוד', '[data-curtain="pink"]', 'צבע זכוכית וילון ורוד', glass),
+  item('design', 'curtain-purple', 'וילון סגול', '[data-curtain="purple"]', 'צבע זכוכית וילון סגול', glass),
   item(
     'design',
     'black-glass',
     'זכוכית שחורה מודבקת',
     '[data-wp-search-special="black_glass"]',
-    'מראה זכוכית',
+    'זכוכית מודבקת',
     multi
   ),
   item(
@@ -342,7 +488,7 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'frosted-glass',
     'זכוכית חלבית מודבקת',
     '[data-wp-search-special="frosted_glass"]',
-    'מראה זכוכית',
+    'זכוכית מודבקת',
     multi
   ),
   item(
@@ -369,7 +515,10 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'פרופיל פוסט',
     multi
   ),
-  item('design', 'grooves', 'חריטה CNC', tid('design-grooves-toggle'), 'חריטות'),
+  item('design', 'grooves', 'חריטה CNC', tid('design-grooves-toggle'), 'חריטות', [], {
+    aliases: ['חריטה', 'חריטות', 'cnc'],
+    importance: 'primary',
+  }),
   item('design', 'groove-edit', 'עריכת חריטה', tid('design-groove-mode-button'), 'חריטת דלת', groove),
   item(
     'design',
@@ -387,18 +536,34 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'עומדת שוכבת',
     groove
   ),
-  item('design', 'groove-count', 'מספר חריטות', tid('design-groove-lines-input'), 'קווים', groove),
-  item('design', 'split', 'דלתות חתוכות', tid('design-split-doors-toggle'), 'חיתוך דלתות split'),
-  item('design', 'split-edit', 'חיתוך דלתות', tid('design-split-mode-button'), 'הוסף הסר', split),
-  item('design', 'split-custom', 'חיתוך דלתות ידני', tid('design-split-custom-mode-button'), 'חיתוך', split),
-  item('design', 'remove-doors', 'הסרת דלתות או דפנות', tid('design-remove-doors-toggle'), 'הסר דלת'),
+  item('design', 'groove-count', 'מספר חריטות', tid('design-groove-lines-input'), 'קווים', [
+    ...groove,
+    press(tid('design-groove-mode-button')),
+  ]),
+  item('design', 'split', 'דלתות חתוכות', tid('design-split-doors-toggle'), 'חיתוך דלתות split', [], {
+    aliases: ['חיתוך', 'חיתוך דלת'],
+    importance: 'primary',
+    requires: ['not-chest'],
+  }),
+  item('design', 'split-edit', 'חיתוך דלתות', tid('design-split-mode-button'), 'הוסף הסר', split, {
+    requires: ['not-chest'],
+  }),
+  item('design', 'split-custom', 'חיתוך דלתות ידני', tid('design-split-custom-mode-button'), 'חיתוך', split, {
+    requires: ['not-chest'],
+  }),
+  item('design', 'remove-doors', 'הסרת דלתות או דפנות', tid('design-remove-doors-toggle'), 'הסר דלת', [], {
+    aliases: ['הסרת דלת', 'הסרת דופן', 'הסרת דפנות'],
+    importance: 'primary',
+    requires: ['not-chest'],
+  }),
   item(
     'design',
     'remove-door-mode',
     'עריכת הסרת דלת',
     tid('design-remove-door-mode-button'),
     'הסר החזר',
-    remove
+    remove,
+    { requires: ['not-chest'] }
   ),
   item(
     'design',
@@ -406,29 +571,47 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'שינוי מספר דלתות בתא',
     tid('design-cell-door-count-controls'),
     'דלתות',
-    remove
+    remove,
+    { requires: ['not-chest', 'hinged'] }
   ),
   item(
     'design',
     'rounded-shelves',
     'מדפים צדדיים למסגרת מעוגלת',
     tid('design-rounded-frame-side-shelves-button'),
-    'מסגרת'
+    'מסגרת',
+    remove,
+    { requires: ['not-chest', 'hinged', 'removed-side'] }
   ),
-  item('design', 'cornice', 'קרניז עליון – כתר', '[data-testid="design-cornice-toggle"]', 'תוספות גובה'),
+  item('design', 'cornice', 'קרניז עליון – כתר', '[data-testid="design-cornice-toggle"]', 'תוספות גובה', [], {
+    aliases: ['קרניז', 'כתר'],
+    importance: 'primary',
+    requires: ['cabinet'],
+  }),
 
   // פנים: חלוקה, מדפים, כלי סקיצה, מגירות וידיות
-  item('interior', 'layout', 'חלוקת פנים', tid('interior-layout'), 'מדפים חלוקה'),
-  item('interior', 'layout-presets', 'תבניות חלוקה', tid('interior-layout-method-presets'), 'תא'),
-  item('interior', 'layout-grid', 'חלוקה לפי תאים', tid('interior-layout-method-grid'), 'רשת'),
-  item('interior', 'layout-sketch', 'חלוקה לפי סקיצה', tid('interior-layout-method-sketch'), 'ציור'),
+  item('interior', 'layout', 'חלוקת פנים', tid('interior-layout'), 'מדפים חלוקה', [], {
+    aliases: ['חלוקה', 'חלוקת פנים'],
+    importance: 'primary',
+    requires: ['not-chest'],
+  }),
+  item('interior', 'layout-presets', 'תבניות חלוקה', tid('interior-layout-method-presets'), 'תא', [], {
+    requires: ['not-chest'],
+  }),
+  item('interior', 'layout-grid', 'חלוקה לפי תאים', tid('interior-layout-method-grid'), 'רשת', [], {
+    requires: ['not-chest'],
+  }),
+  item('interior', 'layout-sketch', 'חלוקה לפי סקיצה', tid('interior-layout-method-sketch'), 'ציור', [], {
+    requires: ['not-chest'],
+  }),
   item(
     'interior',
     'manual-shelves',
     'הוספת מדפים לפי תא',
     tid('interior-manual-tool-shelf-button'),
     'מדף',
-    interiorGrid
+    interiorGrid,
+    { aliases: ['מדף', 'מדפים'], importance: 'primary', requires: ['not-chest'] }
   ),
   item(
     'interior',
@@ -436,7 +619,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'אוגר מצעים',
     tid('interior-manual-tool-storage-button'),
     'אחסון',
-    interiorGrid
+    interiorGrid,
+    { aliases: ['אוגר', 'מצעים', 'אחסון'], importance: 'primary', requires: ['not-chest'] }
   ),
   item(
     'interior',
@@ -444,7 +628,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'מוט תלייה לפי תא',
     tid('interior-manual-tool-rod-button'),
     'מוט בגדים',
-    interiorGrid
+    interiorGrid,
+    { aliases: ['תלייה', 'מוט תלייה'], importance: 'primary', requires: ['not-chest'] }
   ),
   item(
     'interior',
@@ -452,7 +637,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'סוגי מדפים',
     '.wp-interior-layout-options[aria-label="סוג מדף"]',
     'מדף מחוזק',
-    [...interiorGrid, activate(tid('interior-manual-tool-shelf-button'))]
+    [...interiorGrid, activate(tid('interior-manual-tool-shelf-button'))],
+    { requires: ['not-chest'] }
   ),
   item(
     'interior',
@@ -460,7 +646,8 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'חירור מלא',
     tid('interior-layout-full_boring'),
     'חורי מדף לפי סקיצה',
-    interiorSketch
+    interiorSketch,
+    { requires: ['not-chest'] }
   ),
   item(
     'interior',
@@ -468,33 +655,57 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     'מדף קושרת והמרת מדפים',
     tid('interior-manual-shelf-variant-brace-button'),
     'המרת מדף רגיל לקושרת לפי סקיצה',
-    [...interiorSketch, activate(tid('interior-manual-tool-shelf-button'))]
+    [...interiorSketch, activate(tid('interior-manual-tool-shelf-button'))],
+    { requires: ['not-chest'] }
   ),
   item(
     'interior',
     'external-drawers',
     'מגירות חיצוניות',
     tid('interior-external-drawers-card'),
-    'מיקום מגירות'
+    'מיקום מגירות',
+    [],
+    {
+      aliases: ['מגירות', 'מגירה', 'מגירה חיצונית'],
+      importance: 'primary',
+      requires: ['not-chest', 'hinged'],
+    }
   ),
   item(
     'interior',
     'external-sketch',
     'מגירות חיצוניות בסקיצה',
     tid('interior-external-drawers-sketch-button'),
-    'שרטוט'
+    'שרטוט',
+    [],
+    { requires: ['not-chest', 'hinged'] }
   ),
-  item('interior', 'drawer-runners', 'מסילות למגירות', '.wp-r-external-drawer-runner', 'טריקה שקטה'),
-  item('interior', 'internal-drawers', 'מגירות פנימיות', tid('interior-internal-drawers-card'), 'מיקום'),
+  item('interior', 'drawer-runners', 'מסילות למגירות', '.wp-r-external-drawer-runner', 'טריקה שקטה', [], {
+    requires: ['drawer-runners'],
+  }),
+  item(
+    'interior',
+    'internal-drawers',
+    'מגירות פנימיות',
+    tid('interior-internal-drawers-toggle'),
+    'מיקום',
+    [],
+    { aliases: ['מגירה פנימית'], importance: 'primary', requires: ['not-chest'] }
+  ),
   item(
     'interior',
     'internal-drawer-mode',
     'מיקום מגירות פנימיות',
     tid('interior-internal-drawers-mode-button'),
-    'מגירות'
+    'מגירות',
+    [check(tid('interior-internal-drawers-toggle'))],
+    { requires: ['not-chest'] }
   ),
-  item('interior', 'drawer-divider', 'מחיצה למגירה', '.wp-tool-card--divider', 'מחיצה'),
-  item('interior', 'handles', 'ידיות לכל הארון', '.wp-tool-card--handles', 'ידית'),
+  item('interior', 'drawer-divider', 'מחיצה למגירה', '.wp-tool-card--divider', 'מחיצה', []),
+  item('interior', 'handles', 'ידיות לכל הארון', '.wp-tool-card--handles', 'ידית', [], {
+    aliases: ['ידית', 'ידיות'],
+    importance: 'primary',
+  }),
   item(
     'interior',
     'advanced-handles',
@@ -504,7 +715,10 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   ),
 
   // סקיצה חופשית וקופסאות
-  item('sketch', 'sketch-main', 'כלי חלוקה לפי סקיצה', '.wp-sketch-row', 'חלוקה'),
+  item('sketch', 'sketch-main', 'כלי חלוקה לפי סקיצה', '.wp-sketch-row', 'חלוקה', [], {
+    aliases: ['סקיצה'],
+    importance: 'primary',
+  }),
   item(
     'sketch',
     'no-main',
@@ -512,37 +726,84 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     tid('sketch-no-main-wardrobe-toggle-button'),
     'סקיצה חופשית'
   ),
-  item('sketch', 'box-dimensions', 'מידות מיוחדות לקופסא', tid('sketch-box-cell-dims-mode-button'), 'קופסא'),
-  item('sketch', 'box-hex', 'קופסא משושה', tid('sketch-box-cell-dims-hex-mode-button'), 'קופסא פינה', [
-    press(tid('sketch-box-cell-dims-mode-button')),
-  ]),
-  item('sketch', 'sketch-winter-brace', 'קושרת חורף', tid('winter-brace-combined-button'), 'קושרת מדף'),
-  item('sketch', 'sketch-winter-shelf', 'מדף קושרת חורף', tid('winter-brace-shelf-button'), 'מדפים'),
+  item(
+    'sketch',
+    'box-dimensions',
+    'מידות מיוחדות לקופסא',
+    tid('sketch-box-cell-dims-mode-button'),
+    'קופסא',
+    [],
+    { requires: ['not-chest'] }
+  ),
+  item(
+    'sketch',
+    'box-hex',
+    'קופסא משושה',
+    tid('sketch-box-cell-dims-hex-mode-button'),
+    'קופסא פינה',
+    [press(tid('sketch-box-cell-dims-mode-button'))],
+    { requires: ['not-chest'] }
+  ),
+  item('sketch', 'sketch-winter-brace', 'קושרת חורף', tid('winter-brace-combined-button'), 'קושרת מדף', [], {
+    aliases: ['קושרת', 'קושרת חורף'],
+    importance: 'primary',
+    requires: ['not-chest'],
+  }),
+  item('sketch', 'sketch-winter-shelf', 'מדף קושרת חורף', tid('winter-brace-shelf-button'), 'מדפים', [], {
+    importance: 'secondary',
+    requires: ['not-chest'],
+  }),
 
   // הגדרות, ייצוא וסביבה
-  item('settings', 'snapshot', 'צילום הדמיה', tid('export-snapshot-button'), 'תמונה ייצוא'),
+  item('settings', 'snapshot', 'צילום הדמיה', tid('export-snapshot-button'), 'תמונה ייצוא', [], {
+    aliases: ['צילום', 'תמונה'],
+    importance: 'primary',
+  }),
   item('settings', 'copy', 'העתקת תמונה ללוח', tid('export-copy-button'), 'תמונה'),
   item('settings', 'render-sketch', 'ייצוא סקיצה והדמיה', tid('export-render-sketch-button'), 'תמונה'),
   item('settings', 'open-closed', 'ייצוא פתוח / סגור', tid('export-dual-image-button'), 'תמונה'),
   item('settings', 'pdf-open-close', 'PDF פתוח / סגור A4', tid('export-dual-image-a4-pdf-button'), 'ייצוא'),
   item('settings', 'pdf-sketch', 'PDF סקיצה / הדמיה A4', tid('export-render-sketch-a4-pdf-button'), 'ייצוא'),
-  item('settings', 'pdf-editor', 'עורך PDF להזמנה', tid('export-open-pdf-button'), 'הזמנה'),
+  item('settings', 'pdf-editor', 'עורך PDF להזמנה', tid('export-open-pdf-button'), 'הזמנה', [], {
+    aliases: ['pdf', 'הזמנה'],
+    importance: 'primary',
+  }),
   item('settings', 'dark-mode', 'מצב כהה', tid('toggle-dark-mode'), 'תצוגה'),
   item('settings', 'dimensions-display', 'הצגת מידות', tid('toggle-show-dimensions'), 'תצוגה'),
-  item('settings', 'real-mirror', 'מראה ממשית בהדמיה', tid('toggle-mirror-reflector'), 'מראה תצוגה'),
+  item('settings', 'real-mirror', 'מראה ממשית בהדמיה', tid('toggle-mirror-reflector'), 'מראה תצוגה', [], {
+    importance: 'secondary',
+  }),
   item('settings', 'global-click', 'פתיחת כל הארון בלחיצה', tid('toggle-global-click'), 'תצוגה'),
-  item('settings', 'light-control', 'מצבי תאורה מתקדמים', tid('toggle-advanced-lighting'), 'שמש תאורה'),
+  item('settings', 'light-control', 'מצבי תאורה מתקדמים', tid('toggle-advanced-lighting'), 'שמש תאורה', [], {
+    aliases: ['תאורה', 'אור', 'שמש'],
+    importance: 'primary',
+  }),
   item('settings', 'light-ambient', 'עוצמת אור סביבתי', '[name="lightAmb"]', 'תאורה', lighting),
   item('settings', 'light-sun', 'עוצמת שמש', '[name="lightDir"]', 'תאורה', lighting),
   item('settings', 'light-x', 'כיוון אור X', '[name="lightX"]', 'תאורה', lighting),
   item('settings', 'light-y', 'כיוון אור Y', '[name="lightY"]', 'תאורה', lighting),
   item('settings', 'light-z', 'כיוון אור Z', '[name="lightZ"]', 'תאורה', lighting),
-  item('settings', 'room-architecture', 'הוספת קירות ואדריכלות', tid('settings-room-architecture'), 'חדר'),
-  item('settings', 'room-openings', 'חלונות ודלתות בחדר', tid('settings-room-openings'), 'פתחים', roomWall),
-  item('settings', 'room-window', 'הוספת חלון', tid('settings-room-opening-window'), 'קיר', roomWall),
-  item('settings', 'room-door', 'הוספת דלת לחדר', tid('settings-room-opening-door'), 'קיר', roomWall),
-  item('settings', 'cloud', 'סנכרון לענן', tid('cloud-sync-panel'), 'ענן פרויקטים'),
-  item('settings', 'backup', 'גיבוי ושחזור', tid('settings-backup-panel'), 'יבוא ייצוא'),
+  item('sketch', 'room-architecture', 'הוספת קירות ואדריכלות', tid('settings-room-architecture'), 'חדר', [], {
+    aliases: ['קירות', 'קיר', 'אדריכלות', 'חדר'],
+    importance: 'primary',
+  }),
+  item('sketch', 'room-openings', 'חלונות ודלתות בחדר', tid('settings-room-openings'), 'פתחים', roomWall),
+  item('sketch', 'room-window', 'הוספת חלון', tid('settings-room-opening-window'), 'קיר', roomWall, {
+    aliases: ['חלון', 'חלונות'],
+    importance: 'primary',
+  }),
+  item('sketch', 'room-door', 'הוספת דלת לחדר', tid('settings-room-opening-door'), 'קיר', roomWall, {
+    aliases: ['דלת חדר'],
+    importance: 'primary',
+  }),
+  item('settings', 'cloud', 'סנכרון לענן', tid('cloud-sync-panel'), 'ענן פרויקטים', [], {
+    aliases: ['ענן', 'סנכרון'],
+    importance: 'primary',
+  }),
+  item('settings', 'backup', 'גיבוי ושחזור', tid('settings-backup-panel'), 'יבוא ייצוא', [], {
+    aliases: ['גיבוי', 'שחזור'],
+    importance: 'primary',
+  }),
   item('settings', 'backup-export', 'ייצוא גיבוי', tid('settings-backup-export-button'), 'הורדה'),
   item('settings', 'backup-import', 'ייבוא גיבוי', tid('settings-backup-import-button'), 'שחזור'),
 ];
@@ -572,27 +833,47 @@ export function findViewerSearchDestination(id: string): ViewerSearchDestination
   return VIEWER_SEARCH_DESTINATIONS.find(item => item.id === id);
 }
 
-export function searchViewerDestinations(query: string, enabledTabs?: ReadonlySet<TabId>, limit = 12) {
+export function searchViewerDestinations(
+  query: string,
+  enabledTabs?: ReadonlySet<TabId>,
+  limit = 12,
+  context?: ReadonlySet<ViewerSearchContextKey>
+) {
   const normalized = normalizeViewerSearchText(query);
   const tokens = normalized.split(' ').filter(Boolean);
-  const matches = VIEWER_SEARCH_DESTINATIONS.filter(entry => !enabledTabs || enabledTabs.has(entry.tab))
+  const matches = VIEWER_SEARCH_DESTINATIONS.filter(
+    entry =>
+      (!enabledTabs || enabledTabs.has(entry.tab)) &&
+      (!context || !entry.requires || entry.requires.every(key => context.has(key)))
+  )
     .map(entry => {
       const name = normalizeViewerSearchText(entry.label);
-      const text = normalizeViewerSearchText(`${entry.label} ${entry.keywords} ${TAB_LABELS[entry.tab]}`);
-      if (tokens.length && !tokens.every(token => text.includes(token))) return null;
+      const aliases = (entry.aliases ?? []).map(normalizeViewerSearchText);
+      const words = normalizeViewerSearchText(`${entry.label} ${entry.keywords} ${aliases.join(' ')}`).split(
+        ' '
+      );
+      // Prefixes support typing a word in progress without matching arbitrary word interiors.
+      if (tokens.length && !tokens.every(token => words.some(word => word.startsWith(token)))) return null;
       const score = !tokens.length
         ? 0
         : name === normalized
-          ? 4
-          : name.startsWith(normalized)
-            ? 3
-            : name.includes(normalized)
-              ? 2
+          ? 5
+          : aliases.includes(normalized)
+            ? 4
+            : tokens.every(token => name.split(' ').some(word => word.startsWith(token)))
+              ? 3
               : 1;
-      return { entry, score };
+      const importance = entry.importance === 'primary' ? 2 : entry.importance === 'secondary' ? 0 : 1;
+      return { entry, score, importance };
     })
-    .filter((entry): entry is { entry: ViewerSearchDestination; score: number } => entry !== null)
-    .sort((a, b) => b.score - a.score);
+    .filter(
+      (entry): entry is { entry: ViewerSearchDestination; score: number; importance: number } =>
+        entry !== null
+    )
+    .sort(
+      (a, b) =>
+        b.score - a.score || b.importance - a.importance || a.entry.reveal.length - b.entry.reveal.length
+    );
   // A single logical ID can appear once, even if it matches several aliases.
   const seen = new Set<string>();
   return matches

@@ -13,18 +13,14 @@ function needsAction(element: Element, step: SearchRevealStep): boolean {
       return element instanceof element.ownerDocument.defaultView!.HTMLInputElement && !element.checked;
     case 'press':
       return element.getAttribute('aria-pressed') !== 'true';
-    case 'open':
-      return element instanceof element.ownerDocument.defaultView!.HTMLDetailsElement && !element.open;
+    case 'expand':
+      return element.getAttribute('aria-expanded') !== 'true';
     case 'activate':
       return element.getAttribute('aria-pressed') !== 'true' && !element.classList.contains('is-selected');
   }
 }
 
-function applyAction(element: Element, step: SearchRevealStep): void {
-  if (step.action === 'open') {
-    (element as HTMLDetailsElement).open = true;
-    return;
-  }
+function applyAction(element: Element): void {
   (element as HTMLElement).click();
 }
 
@@ -50,12 +46,16 @@ export function advanceViewerSearchNavigation(
     if (needsAction(control, step)) {
       if (acted.has(index)) return { progress: 'waiting' };
       acted.add(index);
-      applyAction(control, step);
+      applyAction(control);
       return { progress: 'waiting' };
     }
   }
   const target = panel.querySelector<HTMLElement>(route.selector);
-  if (target && visible(target)) return { progress: 'found', target };
+  if (target && visible(target)) {
+    // ToggleRow intentionally hides its native checkbox. Reveal and highlight the
+    // visible label/switch row while keeping navigation separate from its value.
+    return { progress: 'found', target: target.closest<HTMLElement>('.wp-r-toggle-row') ?? target };
+  }
   // React may still be mounting a lazy tab or rendering a newly activated mode.
   // Never substitute an unrelated node or scroll to the tab top as a fake success.
   return { progress: 'waiting' };

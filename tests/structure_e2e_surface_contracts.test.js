@@ -13,8 +13,15 @@ test('[structure-e2e-surface] structure controls expose stable button hooks and 
   assert.match(structureControlsSource, /data-testid="structure-type-selector"/);
   assert.match(structureControlsSource, /data-testid="structure-type-row"/);
   assert.match(structureControlsSource, /data-testid="structure-board-material-row"/);
-  assert.match(structureControlsSource, /data-testid=\{`structure-type-\$\{option\.id\}-button`\}/);
-  assert.match(structureControlsSource, /data-testid=\{`structure-board-material-\$\{option\.id\}-button`\}/);
+  // OptionButton owns the DOM attribute through testId; a raw data-testid prop
+  // is overwritten by that component and does not produce a usable search hook.
+  assert.match(structureControlsSource, /testId=\{`structure-type-\$\{option\.id\}-button`\}/);
+  assert.match(structureControlsSource, /testId=\{`structure-board-material-\$\{option\.id\}-button`\}/);
+  assert.match(structureControlsSource, /testId=\{`structure-door-mount-\$\{option\.id\}-button`\}/);
+  assert.doesNotMatch(
+    structureControlsSource,
+    /data-testid=\{`structure-(?:type|board-material|door-mount)-/
+  );
   assert.match(structureControlsSource, /aria-pressed=\{selected\}/);
 });
 

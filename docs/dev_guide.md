@@ -172,6 +172,8 @@ Performance evidence is split into two categories:
 
 ## UI/state rules
 
+- Viewer search destinations declare their owning tab, exact control, reveal steps, primary subject aliases, and store-derived availability requirements. Rank an option's own subject above incidental context; do not index a tab name as a keyword for every child. Availability follows the same selectors/derivations as the tab, and navigation opens only declared prerequisite panels or modes without clicking the destination value. Keep broad-subject ranking and nested navigation covered by the search runtime tests and the cross-tab browser journey.
+
 - UI updates go through `App.actions.*`, especially `App.actions.ui.patch(...)` for simple UI state updates.
 - Public mutation surfaces are exact contracts, not generic property bags: unknown root/slice keys and backend patch metadata are rejected before commit. Use semantic config-map/snapshot owners for map replacement or snapshot operations, and keep root `actions.patch` for intentional atomic multi-slice transactions.
 - Action-only controls, such as export or file dialogs, should not be modeled as persistent UI state unless there is real state to preserve.

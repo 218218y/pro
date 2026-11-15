@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T09:12:05.282Z",
+  "generatedAt": "2026-11-15T14:54:06.781Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 618,
@@ -5637,14 +5637,14 @@
     },
     {
       "file": "esm/native/ui/react/viewer_search_catalog.ts",
-      "line": 25,
+      "line": 49,
       "term": "activateFallback",
       "category": "domain-default",
       "text": "const activateFallback = (selector: string): SearchRevealStep => ({"
     },
     {
       "file": "esm/native/ui/react/viewer_search_catalog.ts",
-      "line": 36,
+      "line": 60,
       "term": "activateFallback",
       "category": "domain-default",
       "text": "const adhesiveBlack = [...multi, activateFallback('[data-wp-search-special=\"black_glass\"]')];"

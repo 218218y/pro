@@ -73,6 +73,14 @@ test('[store-selector-domains] React selectors declare slice and semantic domain
   assert.match(modulesSelectorCall, /readModulesCountFromRootSnapshot\(st, doors\)/);
   assert.match(modulesSelectorCall, /undefined, 'all', 'structure'/);
 
+  // Search needs one consistent UI/config snapshot when determining whether a
+  // route exists. Every field it reads belongs to the structure change domain.
+  const viewerSearch = normalize(read('esm/native/ui/react/overlay_viewer_search.tsx'));
+  assert.match(
+    viewerSearch,
+    /useStoreSelectorShallow\(selectViewerSearchContext, \['ui', 'config'\], 'structure'\)/
+  );
+
   const reactFiles = listFiles(path.join(repoRoot, 'esm/native/ui/react'), ['.ts', '.tsx']);
   const directRootSelectorFiles = reactFiles
     .filter(file => relPath(file) !== 'esm/native/ui/react/hooks.tsx')
@@ -81,6 +89,7 @@ test('[store-selector-domains] React selectors declare slice and semantic domain
     .sort();
 
   assert.deepEqual(directRootSelectorFiles, [
+    'esm/native/ui/react/overlay_viewer_search.tsx',
     'esm/native/ui/react/tabs/SketchTab.view.tsx',
     'esm/native/ui/react/tabs/use_structure_tab_view_state_state.ts',
   ]);

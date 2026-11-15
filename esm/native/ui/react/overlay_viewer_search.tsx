@@ -3,7 +3,8 @@ import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactElement } from 'react
 
 import { getViewerSearchEnabledTabs } from './sidebar_shared.js';
 import { IconButton } from './components/IconButton.js';
-import { useApp } from './hooks.js';
+import { useApp, useStoreSelectorShallow } from './hooks.js';
+import { selectViewerSearchContext, viewerSearchContextKeys } from './viewer_search_context.js';
 import {
   searchViewerDestinations,
   viewerSearchTabLabel,
@@ -23,9 +24,11 @@ export function ViewerSearchControl(): ReactElement {
   const resultScroll = useRef<HTMLDivElement>(null);
   const resultListId = 'wp-viewer-search-results';
   const enabledTabs = useMemo(() => getViewerSearchEnabledTabs(app), [app]);
+  const contextState = useStoreSelectorShallow(selectViewerSearchContext, ['ui', 'config'], 'structure');
+  const context = useMemo(() => viewerSearchContextKeys(contextState), [contextState]);
   const results = useMemo(
-    () => searchViewerDestinations(query, enabledTabs, MAX_RESULTS),
-    [query, enabledTabs]
+    () => searchViewerDestinations(query, enabledTabs, MAX_RESULTS, context),
+    [query, enabledTabs, context]
   );
   const active = Math.min(selected, Math.max(results.length - 1, 0));
 
